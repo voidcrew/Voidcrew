@@ -215,6 +215,7 @@
 /mob/living/carbon/get_equipped_speed_mod_items()
 	return ..() + get_equipped_items()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/doUnEquip(obj/item/item_dropping, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
 	. = ..() //Sets the default return value to what the parent returns.
 	if(!. || !item_dropping) //We don't want to set anything to null if the parent returned 0.
@@ -264,6 +265,7 @@
 	hud_used?.update_locked_slots()
 
 /// Returns the helmet if an air tank compatible helmet is equipped.
+// VOIDCREW EDIT END
 /mob/living/carbon/proc/can_breathe_helmet()
 	if (isclothing(head) && (head.clothing_flags & HEADINTERNALS))
 		return head
@@ -377,6 +379,7 @@
  * Arguments:
  * * is_external - A boolean which indicates if the air tank must be equipped, or stored elsewhere.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/proc/toggle_close_internals(is_external = FALSE)
 	if (!internal && !external)
 		return
@@ -385,6 +388,8 @@
 
 /// Prepares emergency disconnect from open air tanks and notifies in chat. Usually called after mob suddenly unequips breathing apparatus.
 /// reason names the call site so intermittent cutoffs can be traced - see log_internals_cutoff().
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/proc/cutoff_internals(reason = "unspecified")
 	if (!external && !internal)
 		return
@@ -393,23 +398,13 @@
 	close_all_airtanks()
 
 /**
- * Records why an open air tank was cut off, plus everything invalid_internals() reads.
- * Cutoffs have been reported during shuttle docking with the tank still slotted and the mask
- * still worn, which no call path explains - this dumps the state at the moment it happens.
- * Goes to the shuttle log so it lands next to the dock entries for the same tick.
- */
-/mob/living/carbon/proc/log_internals_cutoff(reason)
-	var/obj/item/tank/closing = external || internal
-	var/atom/tank_loc = closing.loc
-	log_shuttle("INTERNALS CUTOFF: [key_name(src)] at [AREACOORD(src)] reason=[reason] tank=[closing.type] ([external ? "external" : "internal"]) tank_loc=[tank_loc] ([tank_loc?.type]) loc_is_mob=[tank_loc == src ? "yes" : "NO"] apparatus=[can_breathe_internals() || "NONE"] mask=[wear_mask ? "[wear_mask.type] up=[wear_mask.up] flags=[wear_mask.clothing_flags]" : "NONE"] head=[head ? "[head.type] flags=[head.clothing_flags]" : "NONE"] tube=[can_breathe_tube() ? "yes" : "no"] stat=[stat]")
-
-/**
  * Toggles the given internal air tank open, or close the currently open one, if a compatible breathing apparatus is found.
  * Returns TRUE if the tank was opened successfully.
  *
  * Arguments:
  * * tank - The given tank to toggle open and start breathing from internally.
  */
+// VOIDCREW EDIT END
 /mob/living/carbon/proc/toggle_internals(obj/item/tank)
 	// Carbons can't open their own internals tanks.
 	return FALSE

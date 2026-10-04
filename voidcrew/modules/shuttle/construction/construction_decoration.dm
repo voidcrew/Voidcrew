@@ -14,44 +14,26 @@
 		return UI_CLOSE
 	return ..()
 
-/datum/action/innate/construction/ship/decal_configure
-	name = "Configure Decal Painter"
-	button_icon = 'icons/obj/devices/tool.dmi'
-	button_icon_state = "decal_sprayer"
+/// Paints the selected decal on the tile
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_paint_decal(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	if(!internal_painter)
+		return FALSE
+	user.changeNext_move(CLICK_CD_RANGE)
+	return !!decorate_turf(target, user, "decal")
 
-/datum/action/innate/construction/ship/decal_configure/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = base_console
-	console.internal_painter?.ui_interact(owner)
-
-/datum/action/innate/construction/ship/decal_paint
-	name = "Paint Decal"
-	button_icon = 'icons/obj/devices/tool.dmi'
-	button_icon_state = "decal_sprayer"
-
-/datum/action/innate/construction/ship/decal_paint/Activate()
-	if(..() || !check_spot())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = base_console
-	if(!console.internal_painter)
-		return
-	console.decorate_turf(get_turf(remote_eye), owner, "decal")
-
-/datum/action/innate/construction/ship/decal_remove
-	name = "Remove Decals"
-	desc = "Remove painted floor markings without lifting the tiles."
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rtd_remove"
-
-/datum/action/innate/construction/ship/decal_remove/Activate()
-	if(..() || !check_spot())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/console = base_console
-	if(!console.internal_painter)
-		return
-	if(!console.decorate_turf(get_turf(remote_eye), owner, "decal_remove"))
-		remote_eye.balloon_alert(owner, "no decals removed!")
+/// Removes painted floor markings without lifting the tiles.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/drone_remove_decal(mob/user, turf/target)
+	if(!drone_can_work_at(user, target))
+		return FALSE
+	if(!internal_painter)
+		return FALSE
+	user.changeNext_move(CLICK_CD_RANGE)
+	if(!decorate_turf(target, user, "decal_remove"))
+		drone_alert(user, "no decals removed!")
+		return FALSE
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/decorate_turf(turf/target, mob/user, tool_kind)
 	if(!can_operate() || !is_operational || !is_crew_member(user) || !can_build_at(target))
@@ -103,6 +85,12 @@
 		var/list/materials = list(/datum/material/iron = SHIP_RTD_TILE_IRON)
 		if(!rcd.check_materials(materials, user))
 			return FALSE
+		// A finished floor is lifted and refunded first, as right-click removal does. The new tile is checked
+		// above so a silo that cannot pay leaves the old floor alone.
+		if(!istype(target, /turf/open/floor/plating))
+			target = drone_lift_floor(target, user)
+			if(!istype(target, /turf/open/floor/plating))
+				return FALSE
 		// Create in nullspace so a loose stack on the floor cannot absorb the new tile.
 		var/obj/item/stack/tile/tile = job.tile_design.new_tile(null, facing)
 		if(!ispath(tile.turf_type) || !rcd.use_materials(materials, user))

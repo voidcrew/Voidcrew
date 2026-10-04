@@ -50,6 +50,7 @@
 	var/mob/living/carbon/carbon_user = usr
 	carbon_user.unset_sting()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/hud/human/New(mob/living/carbon/human/owner)
 	..()
 
@@ -298,6 +299,7 @@
 
 	update_locked_slots()
 
+// VOIDCREW EDIT END
 /datum/hud/human/update_locked_slots()
 	if(!mymob)
 		return

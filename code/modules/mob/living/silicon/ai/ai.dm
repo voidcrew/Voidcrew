@@ -2,6 +2,7 @@
 #define CHARACTER_TYPE_SELF "My Character"
 #define CHARACTER_TYPE_CREWMEMBER "Station Member"
 
+// VOIDCREW EDIT START - PR #425: Support cyborg and AI ship crew.
 /mob/living/silicon/ai/Initialize(mapload, datum/ai_laws/L, mob/target_ai)
 	. = ..()
 	if(!target_ai) //If there is no player/brain inside.
@@ -91,6 +92,7 @@
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_LISTENER_TRIGGERED, PROC_REF(alarm_triggered))
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_LISTENER_CLEARED, PROC_REF(alarm_cleared))
 
+// VOIDCREW EDIT END
 /mob/living/silicon/ai/weak_syndie
 	radio = /obj/item/radio/headset/silicon/ai/evil
 	radio_enabled = TRUE

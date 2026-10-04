@@ -37,6 +37,7 @@
  * * encode_title - if TRUE, the title will be HTML encoded
  * * encode_text - if TRUE, the text will be HTML encoded
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /proc/priority_announce(text, title = "", sound, type, sender_override, has_important_message = FALSE, list/mob/players = GLOB.player_list, encode_title = TRUE, encode_text = TRUE, color_override)
 	if(!text)
 		return
@@ -92,6 +93,7 @@
 		else
 			GLOB.news_network.submit_article(text, "[command_name()] Update", NEWSCASTER_STATION_ANNOUNCEMENTS, null)
 
+// VOIDCREW EDIT END
 /proc/print_command_report(text = "", title = null, announce=TRUE)
 	if(!title)
 		title = "Classified [command_name()] Update"
@@ -147,6 +149,7 @@
 	dispatch_announcement_to_players(finalized_announcement, players, custom_sound, should_play_sound)
 
 /// Sends an announcement about the level changing to players. Uses the passed in datum and the subsystem's previous security level to generate the message.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /proc/level_announce(datum/security_level/selected_level, previous_level_number, list/players = GLOB.player_list)
 	var/current_level_number = selected_level.number_level
 	var/current_level_name = selected_level.name
@@ -173,6 +176,7 @@
 
 /// Proc that just generates a custom header based on variables fed into `priority_announce()`
 /// Will return a string.
+// VOIDCREW EDIT END
 /proc/generate_unique_announcement_header(title, sender_override)
 	var/list/returnable_strings = list()
 	if(isnull(sender_override))

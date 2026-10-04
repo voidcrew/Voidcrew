@@ -213,6 +213,7 @@
 		RegisterSignal(SSearly_assets, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(enable_character_setup))
 		RegisterSignal(SSatoms, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(enable_character_setup))
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/lobby/button/character_setup/Click(location, control, params)
 	. = ..()
 	if(!.)
@@ -231,6 +232,7 @@
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)
 
+// VOIDCREW EDIT END
 /atom/movable/screen/lobby/button/character_setup/proc/enable_character_setup()
 	SIGNAL_HANDLER
 	flick("[base_icon_state]_enabled", src)
@@ -413,6 +415,7 @@
 		RegisterSignal(SSearly_assets, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(enable_settings))
 		RegisterSignal(SSatoms, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(enable_settings))
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/lobby/button/bottom/settings/Click(location, control, params)
 	. = ..()
 	if(!.)
@@ -426,6 +429,7 @@
 	preferences.update_static_data(usr)
 	preferences.ui_interact(usr)
 
+// VOIDCREW EDIT END
 /atom/movable/screen/lobby/button/bottom/settings/proc/enable_settings()
 	SIGNAL_HANDLER
 	set_button_status(TRUE)
@@ -744,6 +748,7 @@
 	update_appearance(UPDATE_ICON)
 	update_text()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/lobby/new_player_info/proc/update_text()
 	if(!hud || !show_static)
 		maptext = null
@@ -791,3 +796,4 @@
 #undef SHUTTER_MOVEMENT_DURATION
 #undef SHUTTER_WAIT_DURATION
 #undef MAX_STATION_TRAIT_BUTTONS_VERTICAL
+// VOIDCREW EDIT END

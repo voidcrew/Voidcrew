@@ -278,9 +278,21 @@
 		pending_offers -= list(offer)
 		return "items no longer on pad"
 
+	// Nothing living goes this way: a bag with a bounty criminal in it is not an item (voidcrew/modules/bounties/bounty_turn_in.dm)
+	var/cargo_refusal = bounty_offer_refusal(items_on_pad)
+	if(cargo_refusal)
+		return cargo_refusal
+
 	// Get creator's pad for receiving items
 	var/obj/machinery/mission_pad/creator_pad = get_creator_pad()
 	var/turf/dest_turf = creator_pad ? get_turf(creator_pad) : null
+
+	// People folded into a bag or held as a mob never ride a pad into another zone. Refused
+	// before anything moves or anyone is paid.
+	if(dest_turf && teleport_crosses_zone(sender_pad, dest_turf))
+		for(var/obj/item/item in items_on_pad)
+			if(atom_carries_living_mob(item))
+				return "zone boundary blocks passengers"
 
 	// Transfer items
 	var/sent_count = 0
@@ -296,6 +308,7 @@
 
 	// Award credits
 	sender_ship.ship_account?.adjust_money(reward)
+	record_metric_paid(sender_ship, sent_count) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
 	// Announcements
 	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
@@ -351,6 +364,7 @@
  * Refunds reward to creator.
  */
 /datum/player_bounty/proc/cancel()
+	record_metric_cancelled() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
 
 	// Refund the creator

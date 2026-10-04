@@ -1,19 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"gVJ" = (
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/turf/open/floor/iron/white/textured_large,
-/area/template_noop)
 "ipP" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
 	},
 /obj/modular_map_connector,
 /obj/machinery/plumbing/output,
+/obj/structure/cable,
+/turf/open/floor/iron/white/textured_large,
+/area/template_noop)
+"iRD" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/iron/white/textured_large,
 /area/template_noop)
@@ -36,7 +34,7 @@
 ipP
 "}
 (2,1,1) = {"
-gVJ
+iRD
 "}
 (3,1,1) = {"
 pEp

@@ -62,6 +62,7 @@ SUBSYSTEM_DEF(missions)
 			continue
 		if(world.time - mission.posted_at > MISSION_BOARD_EXPIRY)
 			ship.available_missions -= mission
+			tally_mission_offer(mission, ship, "mission_offer_expired") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			qdel(mission)
 
 	// Reserve one of the existing slots before rolling the rest of the board.
@@ -75,6 +76,7 @@ SUBSYSTEM_DEF(missions)
 		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed))
 		if(new_mission)
 			ship.available_missions += new_mission
+			tally_mission_offer(new_mission, ship, "mission_offered") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
 /**
  * The zone band the next offer should prefer, rolled per offer.
@@ -179,6 +181,7 @@ SUBSYSTEM_DEF(missions)
 		ship.available_missions -= replaced
 		qdel(replaced)
 	ship.available_missions += safe_offer
+	tally_mission_offer(safe_offer, ship, "mission_offered") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	return TRUE
 
 /**

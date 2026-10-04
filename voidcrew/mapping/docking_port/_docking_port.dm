@@ -357,6 +357,10 @@ GLOBAL_LIST_EMPTY(ship_site_occupancy)
  * before the base proc's arrival machinery can run.
  */
 /obj/docking_port/mobile/voidcrew/check()
+	// A direct template/docking move can yield in PREARRIVAL with no destination.
+	// Let its owner finish before the timer driver attempts a second arrival.
+	if(move_in_flight())
+		return
 	if(mode == SHUTTLE_CALL && isnull(destination) && timeLeft(1) <= 0)
 		timer = INFINITY
 	return ..()

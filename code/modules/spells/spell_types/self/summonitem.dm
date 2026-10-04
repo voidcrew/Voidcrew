@@ -110,7 +110,18 @@
 
 /// Recalls our marked item to the caster. May bring some unexpected things along.
 /datum/action/cooldown/spell/summonitem/proc/try_recall_item(mob/living/caster)
+	// VOIDCREW EDIT ADDITION START - an outpost shop sale breaks marks made before it (outpost_market.dm)
+	if(recall_severed(caster))
+		return
+	// VOIDCREW EDIT ADDITION END
 	var/obj/item_to_retrieve = marked_item
+
+	// VOIDCREW EDIT ADDITION START: nothing is recalled across an overmap zone boundary; the
+	// whole container comes along, people included (voidcrew/modules/overmap, zone_teleport.dm)
+	if(teleport_crosses_zone(item_to_retrieve, caster))
+		to_chat(caster, span_warning("Bluespace disruption along the zone boundary breaks your link to [item_to_retrieve]."))
+		return
+	// VOIDCREW EDIT ADDITION END
 
 	if(item_to_retrieve.loc)
 		// I don't want to know how someone could put something
@@ -142,6 +153,11 @@
 
 			else if(isobj(item_to_retrieve.loc))
 				var/obj/retrieved_item = item_to_retrieve.loc
+				// VOIDCREW EDIT ADDITION START - outpost shop stock and rented lockers hold their items (outpost_market.dm)
+				if(blocks_magic_recall(retrieved_item))
+					to_chat(caster, span_warning("Something holds [item_to_retrieve] in place."))
+					return
+				// VOIDCREW EDIT ADDITION END
 				// Can't bring anchored things
 				if(retrieved_item.anchored)
 					break

@@ -1,0 +1,191 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dIU" = (
+/turf/template_noop,
+/area/template_noop)
+"eKJ" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_west"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"glG" = (
+/obj/structure/platform/iron,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/cryo,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/inferno{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ijD" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"kVh" = (
+/obj/structure/platform/iron,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"lQA" = (
+/obj/structure/platform/iron,
+/obj/structure/mecha_wreckage/ripley,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"mdV" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"nys" = (
+/obj/structure/platform/iron,
+/obj/vehicle/sealed/mecha/ripley/paddy/preset,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qYT" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_west"
+	},
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"rAb" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/machinery/recharger{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"sHg" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"tyH" = (
+/obj/structure/table/reinforced,
+/obj/item/inducer{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"vfN" = (
+/obj/structure/platform/iron,
+/obj/structure/ore_box,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wgL" = (
+/obj/structure/platform/iron,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/item/clothing/head/utility/welding,
+/obj/item/storage/toolbox/mechanical/old,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"xMJ" = (
+/obj/machinery/suit_storage_unit/security,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+
+(1,1,1) = {"
+dIU
+dIU
+qYT
+"}
+(2,1,1) = {"
+dIU
+vfN
+eKJ
+"}
+(3,1,1) = {"
+dIU
+lQA
+eKJ
+"}
+(4,1,1) = {"
+dIU
+wgL
+eKJ
+"}
+(5,1,1) = {"
+dIU
+dIU
+dIU
+"}
+(6,1,1) = {"
+mdV
+xMJ
+dIU
+"}
+(7,1,1) = {"
+ijD
+ijD
+ijD
+"}
+(8,1,1) = {"
+ijD
+ijD
+ijD
+"}
+(9,1,1) = {"
+rAb
+xMJ
+dIU
+"}
+(10,1,1) = {"
+dIU
+dIU
+dIU
+"}
+(11,1,1) = {"
+dIU
+glG
+sHg
+"}
+(12,1,1) = {"
+dIU
+nys
+sHg
+"}
+(13,1,1) = {"
+dIU
+kVh
+sHg
+"}
+(14,1,1) = {"
+dIU
+dIU
+tyH
+"}

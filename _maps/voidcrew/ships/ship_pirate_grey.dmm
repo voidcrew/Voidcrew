@@ -39,6 +39,12 @@
 /obj/structure/cable,
 /turf/closed/wall/r_wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
+"af" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 8
+	},
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/pirate_grey)
 "ag" = (
 /obj/structure/table/wood,
 /obj/effect/decal/cleanable/dirt,
@@ -1239,15 +1245,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
-"MG" = (
-/obj/effect/turf_decal/trimline/yellow/warning{
-	dir = 8
-	},
-/obj/machinery/ship_combat/laser_turret{
-	dir = 8
-	},
-/turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/pirate_grey)
 "Nm" = (
 /obj/effect/spawner/random/structure/closet_maintenance,
 /obj/item/storage/box/lights/mixed,
@@ -1610,15 +1607,15 @@ je
 je
 oE
 nY
-zB
-MG
+af
+Gr
 Gr
 lL
 je
 jG
 Gr
-MG
-zB
+Gr
+af
 Bl
 oE
 je

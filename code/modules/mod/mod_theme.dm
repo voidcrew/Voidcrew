@@ -178,6 +178,7 @@
 	acid = 25
 	wound = 5
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/mod_theme/civilian
 	name = "civilian"
 	desc = "A light-weight civilian suit that offers unmatched ease of movement without giving up a vacuum seal."
@@ -225,6 +226,7 @@
 		),
 	)
 
+// VOIDCREW EDIT END
 /datum/armor/mod_theme_civilian
 	melee = 5
 	bullet = 5
@@ -440,6 +442,7 @@
 	acid = 90
 	wound = 10
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/mod_theme/mining
 	name = "mining"
 	desc = "A Nanotrasen mining suit for on-site operations, fit with accreting ash armor and a sphere form."
@@ -535,6 +538,7 @@
 		),
 	)
 
+// VOIDCREW EDIT END
 /datum/mod_theme/mining/New()
 	.=..()
 	allowed_suit_storage = GLOB.mining_suit_allowed
@@ -550,6 +554,7 @@
 	acid = 75
 	wound = 15
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/mod_theme/loader
 	name = "loader"
 	desc = "An experimental motorized harness manufactured by Scarborough Arms for quick and efficient munition supplies."
@@ -608,6 +613,7 @@
 		),
 	)
 
+// VOIDCREW EDIT END
 /datum/armor/mod_theme_loader
 	melee = 15
 	bullet = 5
@@ -1329,6 +1335,7 @@
 	acid = 100
 	wound = 25
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/mod_theme/infiltrator
 	name = "infiltrator"
 	desc = "A specialized infiltration suit, developed by the Roseus Galactic Actors Guild to strike fear and awe into the hearts of the public."
@@ -1392,6 +1399,7 @@
 		),
 	)
 
+// VOIDCREW EDIT END
 /datum/armor/mod_theme_infiltrator
 	melee = 50
 	bullet = 50

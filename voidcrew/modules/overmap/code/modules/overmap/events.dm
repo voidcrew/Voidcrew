@@ -463,6 +463,9 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 			break
 		new /obj/effect/zone_mobs/asteroid(pick_n_take(open_turfs))
 
+	// World population (voidcrew/modules/ambient_npcs): maybe someone already working the rock
+	SSambient_npcs.populate_field(src, open_turfs)
+
 /**
  * Releases the field's map slot and docks when nobody's using it. Unlike space ruins,
  * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.

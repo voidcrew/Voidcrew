@@ -9,10 +9,12 @@
 	// A delayed signal must not finish work on a replacement link, or pay twice.
 	if(web.completed_experiments[type] || !(src in web.available_experiments))
 		return FALSE
+	var/metric_points_before = metric_web_points(web) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	. = ..()
 	web.add_point_list(list(
 		TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT),
 	)
+	record_experiment_completed(web, type, metric_web_points(web) - metric_points_before, experiment_handler.parent)
 	return TRUE
 
 /// Stop physical callbacks when a relay, disk or selected experiment is removed.
@@ -58,12 +60,14 @@
 	var/experiment_path = paper_to_add?.experiment_path
 	// Nothing to pay for if we can't tell which experiment this is, or it was already completed before this paper.
 	var/completed_before = isnull(experiment_path) || !isnull(completed_experiments[experiment_path])
+	var/metric_points_before = metric_web_points(src) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	. = ..()
 	if(!. || completed_before)
 		return
 	if(isnull(completed_experiments[experiment_path])) // paper published, but it didn't complete the experiment
 		return
 	add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT))
+	record_experiment_completed(src, experiment_path, metric_web_points(src) - metric_points_before)
 
 #undef RESEARCH_POINTS_PER_EXPERIMENT
 

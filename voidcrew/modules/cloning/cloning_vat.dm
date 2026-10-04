@@ -16,6 +16,7 @@
  * * The imprint expires if the mind is deleted, or if the player has moved on to
  *   playing a different (living) character.
  * * Re-imprinting a vat (by anyone) discards the old imprint and restarts growth.
+ *   Outpost vats (outpost_cloning_bay.dm) refuse to overwrite and are used up by a claim.
  * * Growth only advances while the vat is anchored and powered; while it isn't,
  *   progress slowly decays, and a ready clone can decay back to "not ready".
  * * Deconstructing or destroying a vat with a part-grown clone leaves a mess.
@@ -36,6 +37,10 @@
 #define CLONING_VAT_READY_BAND 0.95
 /// Fraction of growth above which deconstruction/destruction leaves a mess.
 #define CLONING_VAT_MESS_THRESHOLD 0.25
+
+/// Player ckey -> the cloning vats imprinted by that player's minds. Kept on imprint, wipe and
+/// Destroy, so the ghost-side chooser (clone_wake.dm) never walks every vat in the world.
+GLOBAL_LIST_EMPTY(imprinted_vats_by_ckey)
 
 /obj/machinery/cloning_vat
 	name = "cloning vat"
@@ -66,17 +71,29 @@
 	var/body_ready = FALSE
 	/// Whether we have successfully delivered a "your clone is ready" prompt for the holder's current death.
 	var/death_notified = FALSE
+	/// world.time the "your clone is ready" prompt reached the dead holder; 0 while none has
+	var/ready_notified_at = 0
 	/// Whether we have already announced this clone finishing growth. Cleared once the clone
 	/// decays out of the ready band, so only a real outage earns a second announcement.
 	var/completion_announced = FALSE
+	/// Whether examine tells players that imprinting again discards the stored pattern
+	var/overwrite_allowed = TRUE
+	/// The ckey this vat is filed under in GLOB.imprinted_vats_by_ckey, while it holds an imprint
+	var/imprint_index_key
 
 /obj/machinery/cloning_vat/Initialize(mapload)
 	. = ..()
 	register_context()
 
 /obj/machinery/cloning_vat/Destroy()
+	var/datum/mind/mind = imprint_mind_ref?.resolve()
+	var/mob/dead/observer/ghost = mind && holder_ghost(mind)
+	if(ghost && (!mind.current || mind.current.stat == DEAD))
+		to_chat(ghost, span_warning("Your clone at [clone_site_name()] is gone."))
+	unindex_imprint()
 	QDEL_NULL(imprint_dna)
 	imprint_mind_ref = null
+	refresh_clone_ready_alert(ghost)
 	return ..()
 
 /obj/machinery/cloning_vat/RefreshParts()
@@ -118,7 +135,7 @@
 	if(isnull(imprint_mind_ref))
 		. += span_notice("It has no genetic pattern imprinted. A living crewmember can press their hand to the scanner to imprint themselves.")
 		return
-	. += span_notice("It is imprinted with the genetic pattern of <b>[imprint_name]</b>. Re-imprinting it will discard that pattern.")
+	. += span_notice("It is imprinted with the genetic pattern of <b>[imprint_name]</b>.[overwrite_allowed ? " Re-imprinting it will discard that pattern." : ""]")
 	if(body_ready)
 		. += span_boldnotice("The clone inside is fully grown. If [imprint_name] dies, their ghost can click the vat to wake up in it.")
 	else
@@ -165,6 +182,8 @@
 
 /// Clears all imprint state and dissolves any grown progress.
 /obj/machinery/cloning_vat/proc/wipe_imprint()
+	var/datum/mind/old_mind = imprint_mind_ref?.resolve()
+	unindex_imprint()
 	imprint_mind_ref = null
 	imprint_name = null
 	imprint_age = 30
@@ -172,10 +191,28 @@
 	growth_progress = 0
 	body_ready = FALSE
 	death_notified = FALSE
+	ready_notified_at = 0
 	completion_announced = FALSE
 	if(use_power != IDLE_POWER_USE)
 		update_use_power(IDLE_POWER_USE)
 	update_appearance(UPDATE_ICON_STATE)
+	if(old_mind)
+		refresh_clone_ready_alert(holder_ghost(old_mind))
+
+/// Files this vat under its holder's ckey for the chooser
+/obj/machinery/cloning_vat/proc/index_imprint(datum/mind/mind)
+	unindex_imprint()
+	var/player_key = ckey(mind?.key)
+	if(!player_key)
+		return
+	imprint_index_key = player_key
+	LAZYADDASSOCLIST(GLOB.imprinted_vats_by_ckey, player_key, src)
+
+/obj/machinery/cloning_vat/proc/unindex_imprint()
+	if(!imprint_index_key)
+		return
+	LAZYREMOVEASSOC(GLOB.imprinted_vats_by_ckey, imprint_index_key, src)
+	imprint_index_key = null
 
 /obj/machinery/cloning_vat/process(seconds_per_tick)
 	if(isnull(imprint_mind_ref))
@@ -197,6 +234,8 @@
 				body_ready = FALSE
 				visible_message(span_warning("The clone in [src] twitches as the nutrient feed cuts out."))
 				update_appearance(UPDATE_ICON_STATE)
+				if(death_notified)
+					refresh_clone_ready_alert(holder_ghost(mind))
 		if(growth_progress <= 0)
 			visible_message(span_warning("The half-formed clone in [src] dissolves into the fluid."))
 			update_appearance(UPDATE_ICON_STATE)
@@ -238,35 +277,23 @@
 	var/mob/living/current_body = mind.current
 	if(current_body && current_body.stat != DEAD)
 		death_notified = FALSE // Alive again - re-arm the prompt for their next death.
+		ready_notified_at = 0
 		return
 	if(death_notified)
 		return
 	// Find whoever is holding the player right now: their ghost, or their corpse if still in it.
-	var/mob/target = mind.get_ghost(even_if_they_cant_reenter = TRUE, ghosts_with_clients = TRUE)
+	var/mob/target = holder_ghost(mind)
 	if(isnull(target) && current_body?.client)
 		target = current_body
 	if(isnull(target)) // Player is logged out; keep trying until they return.
 		return
 	death_notified = TRUE
-	to_chat(target, span_ghostalert("A clone of you is ready in [get_area_name(src, format_text = TRUE)]. [isobserver(target) ? "Click the vat (or the alert) to be reborn." : "Ghost, then click the vat to be reborn."]"))
+	ready_notified_at = world.time
+	to_chat(target, span_ghostalert("A clone of you is ready in [get_area_name(src, format_text = TRUE)]."))
 	SEND_SOUND(target, sound('sound/machines/chime.ogg', volume = 50))
 	window_flash(target.client)
-	if(!isobserver(target))
-		return
-	var/mob/dead/observer/ghost = target
-	var/mutable_appearance/alert_overlay = get_small_overlay(src)
-	alert_overlay.appearance_flags |= TILE_BOUND
-	alert_overlay.layer = FLOAT_LAYER
-	alert_overlay.plane = FLOAT_PLANE
-	var/atom/movable/screen/alert/notify_action/toast = ghost.throw_alert(
-		category = "[REF(src)]_vat_clone_ready",
-		type = /atom/movable/screen/alert/notify_action,
-	)
-	toast.add_overlay(alert_overlay)
-	toast.name = "Clone Ready"
-	toast.desc = "A clone of you is fully grown. Click to claim it."
-	toast.click_interact = TRUE
-	toast.target_ref = WEAKREF(src)
+	if(isobserver(target))
+		notify_clone_holder(target)
 
 // ---------------------------------------------------------------------------
 // Imprinting (living players)
@@ -319,6 +346,7 @@
 	imprint_age = user.age
 	imprint_dna = new
 	user.dna.copy_dna(imprint_dna)
+	index_imprint(user.mind)
 	update_use_power(ACTIVE_POWER_USE)
 	update_appearance(UPDATE_ICON_STATE)
 	user.log_message("imprinted their genetic pattern onto [src].", LOG_GAME)
@@ -326,49 +354,96 @@
 	if(had_clone)
 		visible_message(span_warning("The old clone in [src] dissolves as a new pattern is imprinted."))
 	balloon_alert(user, "pattern imprinted")
-	to_chat(user, span_notice("[src] hums to life and starts growing a new body. It'll take about [DisplayTimeText(growth_time)], and just as long to regrow after every use."))
+	to_chat(user, span_notice("[src] hums to life and starts growing a new body.[is_single_use() ? "" : " It'll take about [DisplayTimeText(growth_time)], and just as long to regrow after every use."]"))
 
 // ---------------------------------------------------------------------------
 // Claiming (ghosts)
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether this ghost is the imprinted player. Ghosting by suicide, DNR or the Ghost verb while
+ * alive cuts the ghost's link to its mind (ghostize(FALSE)), so such a ghost is matched by ckey:
+ * the same player, not a lobby observer, whose character is dead or gone.
+ */
+/obj/machinery/cloning_vat/proc/holder_matches(mob/dead/observer/ghost, datum/mind/mind)
+	if(!ghost || !mind)
+		return FALSE
+	if(ghost.mind == mind)
+		return TRUE
+	if(ghost.mind || ghost.started_as_observer || !ghost.ckey || ghost.ckey != ckey(mind.key))
+		return FALSE
+	if(mind.current && mind.current.stat != DEAD)
+		return FALSE
+	// The player may already be someone else: a new character that used the Ghost verb before the
+	// vat's next tick expired this imprint would otherwise wake here as the old one.
+	for(var/datum/mind/other as anything in SSticker.minds)
+		if(other == mind || !other.current || other.current.stat == DEAD)
+			continue
+		if(ckey(other.key) == ghost.ckey)
+			return FALSE
+	return TRUE
+
+/// The imprinted player's connected ghost, if they have one
+/obj/machinery/cloning_vat/proc/holder_ghost(datum/mind/mind)
+	var/mob/dead/observer/ghost = mind.get_ghost(even_if_they_cant_reenter = TRUE, ghosts_with_clients = TRUE)
+	if(ghost)
+		return ghost
+	var/client/holder_client = GLOB.directory[ckey(mind.key)]
+	if(isobserver(holder_client?.mob) && holder_matches(holder_client.mob, mind))
+		return holder_client.mob
+	return null
+
 /obj/machinery/cloning_vat/attack_ghost(mob/dead/observer/user)
 	var/datum/mind/mind = imprint_mind_ref?.resolve()
-	if(mind && user.mind == mind)
+	if(mind && holder_matches(user, mind))
 		try_claim(user, mind)
 		return TRUE
 	return ..()
 
+/**
+ * Why this ghost cannot wake in the clone right now, or null when it can. Never sleeps, so a
+ * caller that acts on a null result straight away cannot race another claim.
+ */
+/obj/machinery/cloning_vat/proc/claim_denial(mob/dead/observer/user, datum/mind/mind)
+	if(QDELETED(src) || QDELETED(user) || !mind)
+		return "No clone here."
+	// Expire a stale imprint now rather than on the next machine tick
+	if(validate_imprint() != mind)
+		return "No clone here."
+	if(!holder_matches(user, mind))
+		return "Not your clone."
+	if(!body_ready)
+		return growth_progress > 0 ? "Still growing." : "No clone grown."
+	if(!is_operational || !anchored)
+		return "Vat is offline."
+	if(mind.current && mind.current.stat != DEAD)
+		return "You are still alive."
+	return null
+
+/// A reason to think twice before waking here that does not stop the claim, or null
+/obj/machinery/cloning_vat/proc/claim_warning(mob/dead/observer/user)
+	return null
+
 /// The imprinted player's ghost wants to wake up in the clone.
 /obj/machinery/cloning_vat/proc/try_claim(mob/dead/observer/user, datum/mind/mind)
-	if(!body_ready)
-		if(growth_progress > 0)
-			balloon_alert(user, "clone only [get_growth_percent()]% grown!")
-		else
-			balloon_alert(user, "no clone grown!")
+	var/denial = claim_denial(user, mind)
+	if(denial)
+		balloon_alert(user, LOWER_TEXT(denial))
 		return
-	if(!is_operational || !anchored)
-		balloon_alert(user, "vat is offline!")
-		return
-	var/mob/living/current_body = mind.current
-	if(current_body && current_body.stat != DEAD)
-		balloon_alert(user, "you are still alive!")
-		return
-	if(tgui_alert(user, "Wake up in your clone? Your old body and everything on it stays where it is.", name, list("Wake Up", "Not Yet")) != "Wake Up")
+	var/warning = claim_warning(user)
+	if(tgui_alert(user, "[warning ? "[warning] " : ""]Wake up in your clone? Your old body and everything on it stays where it is.", name, list("Wake Up", "Not Yet")) != "Wake Up")
 		return
 	// Revalidate after the blocking prompt.
-	if(QDELETED(src) || QDELETED(user) || !body_ready || !is_operational || !anchored)
-		return
-	if(user.mind != mind || imprint_mind_ref?.resolve() != mind)
-		return
-	current_body = mind.current
-	if(current_body && current_body.stat != DEAD)
-		balloon_alert(user, "you are still alive!")
+	denial = claim_denial(user, mind)
+	if(denial)
+		if(!QDELETED(user))
+			to_chat(user, span_warning(denial))
 		return
 	claim(user, mind)
 
 /// Decants the clone and moves the player into it.
 /obj/machinery/cloning_vat/proc/claim(mob/dead/observer/user, datum/mind/mind)
+	var/mob/old_body = mind.current
 	var/mob/living/carbon/human/clone = create_clone_body()
 	mind.transfer_to(clone, force_key_move = TRUE)
 	clone.forceMove(drop_location())
@@ -386,7 +461,12 @@
 	to_chat(clone, span_boldnotice("You wake up in a brand-new body, gasping and retching as the vat's fluid drains out of your lungs."))
 	to_chat(clone, span_notice("Everything you were carrying is still on your old corpse."))
 	clone.log_message("was reborn from a cloning vat imprint.", LOG_GAME)
+	metric_clone_revival(clone, old_body)
 
+	after_claim(clone)
+
+/// The clone has been claimed. Ship vats keep the imprint and regrow the same person.
+/obj/machinery/cloning_vat/proc/after_claim(mob/living/carbon/human/clone)
 	// Back to square one - the vat has to regrow before it can be used again.
 	growth_progress = 0
 	body_ready = FALSE

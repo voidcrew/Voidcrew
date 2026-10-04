@@ -28,6 +28,12 @@
 /// Max simultaneous hangar berths per trader outpost (purely a gameplay/perf cap)
 #define OUTPOST_MAX_BERTHS 6
 
+/// Clear deck kept between a standard berth's landing pad and each hangar wall
+#define OUTPOST_BERTH_MARGIN 4
+
+/// Shown when ship construction tries to extend a hull in a standard berth
+#define OUTPOST_BERTH_CONSTRUCTION_DENIAL "Unavailable in standard hangar parking."
+
 /// Fake travel time of the hangar elevator between floors
 #define OUTPOST_ELEVATOR_TRAVEL_TIME (3 SECONDS)
 
@@ -124,6 +130,10 @@
 /// /datum/element/outpost_property). Doubles as the element's attach guard:
 /// the load-time sweep and a subtype's own Initialize can both add it.
 #define TRAIT_OUTPOST_PROPERTY "outpost_property"
+
+/// A creature that was there when a trader outpost loaded (see outpost_residents.dm).
+/// Outpost turrets leave it alone.
+#define TRAIT_OUTPOST_RESIDENT "outpost_resident"
 
 // Trader hologram speech line categories
 #define TRADER_LINE_GREETING "greeting"

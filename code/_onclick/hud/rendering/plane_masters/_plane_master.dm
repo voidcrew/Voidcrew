@@ -199,6 +199,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 	else
 		unhide_plane(our_mob)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/proc/outside_bounds(mob/relevant)
 	if(force_hidden || is_outside_bounds)
 		return
@@ -222,6 +223,8 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 		return
 	hide_from(relevant)
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /atom/movable/screen/plane_master/proc/inside_bounds(mob/relevant)
 	is_outside_bounds = FALSE
 	if(critical & PLANE_CRITICAL_DISPLAY)
@@ -238,3 +241,4 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 
 		return
 	show_to(relevant)
+// VOIDCREW EDIT END

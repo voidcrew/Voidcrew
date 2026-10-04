@@ -59,6 +59,7 @@
 		// shield_impact() creates explosion effects but with reduced damage since shield absorbed it
 		// Player assault pods ride the same effect type, so this is also what kills a
 		// boarding party that launched before the shields were down - see assault_pod.dm.
+		ship_metric_missile_hit(missile, "shield")
 		missile.shield_impact()
 	// Note: NPC boarding pods use the supplypod drop-from-above system and don't
 	// physically travel through space, so they can't hit shields. The AI checks if

@@ -1,0 +1,371 @@
+{
+	"lines": {
+		"contraband_hide": {
+			"any": [
+				"Nothing. I'm not doing anything.",
+				"What? I'm just sitting here.",
+				"Didn't see you there. I was just sitting."
+			],
+			"grumpy": [
+				"Can't I sit on my own bed?",
+				"What are you looking at?"
+			],
+			"nervous": [
+				"I wasn't doing anything, honest.",
+				"You scared me. I was only sitting."
+			],
+			"chatty": [
+				"Oh, hey! Just sitting. You know how it is.",
+				"Me? Nothing. Just killing time."
+			],
+			"quiet": [
+				"Nothing.",
+				"Just sitting."
+			]
+		},
+		"contraband_inherit": {
+			"any": [
+				"Someone left me a present.",
+				"Huh. The last one in here left something behind.",
+				"Well, what have we got here?"
+			],
+			"chatty": [
+				"The last tenant left me something. Nice of them."
+			],
+			"grumpy": [
+				"Great. Somebody else's mess to deal with."
+			],
+			"nervous": [
+				"This isn't mine. This really isn't mine."
+			],
+			"cheerful": [
+				"Somebody left me a present! How thoughtful."
+			]
+		},
+		"drunk": {
+			"any": [
+				"Whoo. That's the good stuff.",
+				"Is the floor moving, or is it me?",
+				"I love you lot. I mean it.",
+				"Who turned the lights up?"
+			],
+			"chatty": [
+				"You know what your problem is? Nobody listens. I listen.",
+				"Best batch yet, I swear."
+			],
+			"grumpy": [
+				"Don't look at me like that. I'm fine.",
+				"What are you staring at, huh?"
+			],
+			"cheerful": [
+				"Everybody sing! Come on!",
+				"Best day I've had in here, honestly."
+			],
+			"quiet": [
+				"Mm. Warm.",
+				"I'm going to sit down now."
+			],
+			"nervous": [
+				"My face feels funny.",
+				"Is it hot in here? It's hot in here."
+			]
+		},
+		"shakedown_found": {
+			"any": [
+				"That's not mine.",
+				"Never seen that before in my life.",
+				"Somebody planted that."
+			],
+			"grumpy": [
+				"That was there when I got here.",
+				"Great. Now you've got something to write up."
+			],
+			"nervous": [
+				"I don't know how that got there, I swear.",
+				"Please don't write me up for that."
+			],
+			"chatty": [
+				"Funny story about that, actually. It's not mine."
+			],
+			"quiet": [
+				"Not mine."
+			]
+		},
+		"shakedown_empty": {
+			"any": [
+				"Happy now?",
+				"Told you there was nothing.",
+				"You done tossing my bed?"
+			],
+			"grumpy": [
+				"You going to make it back up, too?",
+				"Find anything? No? Didn't think so."
+			],
+			"nervous": [
+				"I told you I don't have anything.",
+				"Is that it? Am I in trouble?"
+			],
+			"cheerful": [
+				"Nothing under there but crumbs. Could've told you."
+			],
+			"quiet": [
+				"Done?"
+			]
+		},
+		"patdown_found": {
+			"any": [
+				"Hey, that's mine.",
+				"That was a present.",
+				"Come on, give that back."
+			],
+			"grumpy": [
+				"Of course you found it.",
+				"Fine. Take it."
+			],
+			"nervous": [
+				"I was going to hand it in, honest.",
+				"It came in the post. I didn't ask for it."
+			],
+			"chatty": [
+				"Okay, okay, you got me. Fair's fair."
+			],
+			"cheerful": [
+				"Worth a try, right?"
+			]
+		},
+		"patdown_empty": {
+			"any": [
+				"Told you. Nothing.",
+				"Can I take my hands off the wall now?",
+				"Satisfied?"
+			],
+			"grumpy": [
+				"Every time. Every single time.",
+				"Enjoy that, did you?"
+			],
+			"nervous": [
+				"I haven't done anything, I promise.",
+				"Why is it always me?"
+			],
+			"quiet": [
+				"Done?",
+				"Can I go?"
+			],
+			"cheerful": [
+				"Clean as a whistle. Told you."
+			]
+		},
+		"patdown_onlooker": {
+			"any": [
+				"Leave {other} alone, {other}'s all right.",
+				"What's {other} ever done to you?",
+				"Pick on someone else for once."
+			],
+			"chatty": [
+				"Come on, {other} wouldn't hide a sandwich."
+			],
+			"grumpy": [
+				"Leave {other} be. Bunch of bullies.",
+				"Search me next, why don't you."
+			],
+			"cheerful": [
+				"{other}'s the nicest one in here, come on."
+			],
+			"nervous": [
+				"{other} hasn't done anything. Honest."
+			]
+		},
+		"mail_waiting": {
+			"any": [
+				"Any mail for me, {staff}?",
+				"Anything come in the post for me?",
+				"Is there a letter for me? I heard the ding."
+			],
+			"chatty": [
+				"{staff}! Anything for me today? I'm expecting a letter.",
+				"Mail call yet? Please say yes."
+			],
+			"nervous": [
+				"Did anything come for me? Just checking.",
+				"Is that letter for me, {staff}?"
+			],
+			"grumpy": [
+				"If there's mail for me, I'd like it before it's old news."
+			],
+			"quiet": [
+				"Mail for me?"
+			],
+			"cheerful": [
+				"Is it mail day? I love mail day!"
+			]
+		},
+		"mail_good": {
+			"any": [
+				"Good news from home!",
+				"They're doing fine. That's a weight off.",
+				"Best letter I've had in ages."
+			],
+			"chatty": [
+				"Listen to this, everyone back home is doing great. Great!"
+			],
+			"grumpy": [
+				"Huh. Good news, for once."
+			],
+			"nervous": [
+				"Oh, thank goodness. They're all right."
+			],
+			"cheerful": [
+				"Look at this! Everything's fine back home!"
+			],
+			"quiet": [
+				"Good. That's good."
+			]
+		},
+		"mail_kid": {
+			"any": [
+				"My kid drew me a picture. Look at that.",
+				"That's me, apparently. Green hair and all.",
+				"I'm putting this up on the wall."
+			],
+			"chatty": [
+				"Look! That's our house, that's me, and that's a dog we don't have."
+			],
+			"grumpy": [
+				"Don't say anything. It's a good drawing."
+			],
+			"cheerful": [
+				"A drawing! Best thing anyone's ever sent me."
+			],
+			"nervous": [
+				"They still remember me. That's good."
+			],
+			"quiet": [
+				"Nice drawing."
+			]
+		},
+		"mail_news": {
+			"any": [
+				"Huh. News from home.",
+				"Sounds like nothing's changed out there.",
+				"Well, that's something to think about."
+			],
+			"chatty": [
+				"My cousin got married! To who? No idea. Nobody tells me anything."
+			],
+			"grumpy": [
+				"Weather's bad and prices are up. Thanks for that."
+			],
+			"quiet": [
+				"Hm. News."
+			],
+			"cheerful": [
+				"Nice to hear what's going on out there."
+			]
+		},
+		"mail_bad": {
+			"any": [
+				"Oh no.",
+				"I need a minute.",
+				"That's not good. That's really not good."
+			],
+			"grumpy": [
+				"Great. Just great.",
+				"Should've stayed in bed."
+			],
+			"nervous": [
+				"No, no, no. This can't be right."
+			],
+			"chatty": [
+				"I don't really want to talk right now."
+			],
+			"quiet": [
+				"Leave me alone for a bit."
+			],
+			"cheerful": [
+				"It'll be okay. It has to be."
+			]
+		},
+		"mail_opened": {
+			"any": [
+				"Who opened this?",
+				"This has been opened. Who's been reading my mail?",
+				"Somebody's already been through this."
+			],
+			"grumpy": [
+				"Read my mail, did you? Hope you enjoyed it.",
+				"You people have no shame."
+			],
+			"nervous": [
+				"Somebody opened it. What did they take?"
+			],
+			"chatty": [
+				"Hey, this was open! Is that even allowed?"
+			],
+			"quiet": [
+				"It's been opened."
+			]
+		},
+		"mail_not_mine": {
+			"any": [
+				"That's not mine. Wrong name.",
+				"Not me. Check the name.",
+				"That's for someone else."
+			],
+			"grumpy": [
+				"Can't you read? That's not my name."
+			],
+			"chatty": [
+				"Ooh, someone's got mail! Not me, though."
+			],
+			"nervous": [
+				"I shouldn't take that. It's not mine."
+			],
+			"cheerful": [
+				"Not mine, but I hope it's good news for them."
+			]
+		}
+	},
+	"letters": {
+		"good": [
+			"{name},\n\nWe got your last message and everyone here is well. The garden came in nicely this year and we sold most of it. Keep your head down and come home soon.\n\nLove, {sender}",
+			"Dear {name},\n\nI got the job at the shipyard! It's steady work and the pay is decent. We're all doing fine, so don't worry about us.\n\n{sender}",
+			"{name},\n\nThe baby's walking now, if you can believe it. Everyone asks after you. We'll have a big dinner the day you're out.\n\nLove, {sender}",
+			"Hey {name},\n\nJust writing to say we paid off the loan. It's a weight off all of us. Hope they're feeding you properly in there.\n\n{sender}"
+		],
+		"kid": [
+			"{name}!!\n\nI drew you. You are the one with the big hat. I got a star at school for reading.\n\nFrom your kid ({sender} helped with the spelling)",
+			"To {name},\n\nThis is our house and this is the dog. We don't have a dog yet but you said maybe. Please come home soon.\n\nLove from your kid, and from {sender}",
+			"Hi {name},\n\nI lost a tooth and got two credits for it. This is you flying a ship. It's a very fast ship.\n\nFrom your kid, sent by {sender}"
+		],
+		"news": [
+			"{name},\n\nNot much to report. The station put the docking fees up again and everyone's grumbling about it. Your cousin says hello.\n\n{sender}",
+			"Dear {name},\n\nThe old market closed down and they're building a hangar there instead. It's been raining for a week. Write back if they let you.\n\n{sender}",
+			"{name},\n\nThere was a big pirate scare out past the belt, but it came to nothing. Prices are up and wages aren't. Same as ever.\n\nTake care, {sender}"
+		],
+		"bad": [
+			"{name},\n\nI don't know how to say this, so I'll just say it. Grandpa passed last week. It was quiet and he wasn't in pain.\n\n{sender}",
+			"Dear {name},\n\nWe've lost the flat. The rent went up again and we couldn't keep up. We're staying with friends for now, so try not to worry.\n\n{sender}",
+			"{name},\n\nThe ship I was crewing on got impounded, and I'm out of work. I don't know what's next. Sorry to put this on you.\n\n{sender}",
+			"{name},\n\nThe dog got out and we couldn't find him. We looked everywhere, for days. I'm so sorry.\n\n{sender}"
+		],
+		"contraband": [
+			"{name},\n\nNothing much new here. I tucked a little something in with this, so don't let anyone see it. Stay safe.\n\n{sender}",
+			"Dear {name},\n\nThe weather's turned and the station's quiet. There's something extra in the envelope that might help. Keep it to yourself.\n\n{sender}",
+			"{name},\n\nYour friend from the old crew asked me to send this along. They didn't say what it was for and I didn't ask. Take care of yourself.\n\n{sender}"
+		]
+	},
+	"senders": [
+		"your sister Ana",
+		"your brother Tomas",
+		"Mum",
+		"Dad",
+		"your cousin Priya",
+		"your aunt Ruth",
+		"your old crewmate Dmitri",
+		"your friend Jess",
+		"Grandma",
+		"your brother Kofi",
+		"your sister Mei",
+		"your uncle Sal"
+	]
+}

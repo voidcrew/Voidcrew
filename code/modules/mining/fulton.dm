@@ -160,6 +160,11 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 
 	var/turf/flooring_near_beacon = list()
 	var/turf/beacon_turf = get_turf(beacon_ref.resolve())
+	// VOIDCREW EDIT ADDITION START: the beacon's ship crossed into another zone mid-flight, so
+	// come back down where it went up (voidcrew/modules/overmap, zone_teleport.dm)
+	if(teleport_crosses_zone(holder_obj, beacon_turf))
+		beacon_turf = get_turf(holder_obj)
+	// VOIDCREW EDIT ADDITION END
 	for(var/turf/floor as anything in RANGE_TURFS(1, beacon_turf))
 		if(!floor.is_blocked_turf())
 			flooring_near_beacon += floor

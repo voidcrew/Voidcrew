@@ -74,6 +74,23 @@ before a round restart. Pruning failures retain the verified URL and log a warni
 If bucket versioning is enabled, configure noncurrent-version expiration too;
 ordinary object deletion does not remove historical versions.
 
+## Client builds that abort the download
+
+BYOND 516.1677 through at least 516.1688 abort the archive download in roughly
+half of all attempts, on fast connections as well as slow ones, and 516.1687's
+release note acknowledges a race in the HTTP client used for `preload_rsc`.
+While the download is running, and after it has been cut short, those clients do
+not load `browse()` windows: every tgui window is closed as a zombie, chat images
+fail, and sounds are dropped. Reconnecting starts another download that usually
+aborts again. Sessions where the client skipped the download and fetched
+resources on demand behaved normally.
+
+`EXTERNAL_RSC_ON_DEMAND_FROM_BUILD` (default 1677) therefore keeps `preload_rsc`
+at 0 for clients on that build or newer, so they pull resources from the server
+as they need them, and hands the archive only to older builds. Raise it once
+BYOND ships a build that completes the download reliably, or set it to 0 to give
+the archive to everyone. The access log records which delivery each client got.
+
 ## Verify and disable
 
 After activation, run from an administrator PowerShell on the game host:

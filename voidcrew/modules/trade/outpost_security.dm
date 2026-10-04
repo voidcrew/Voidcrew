@@ -27,9 +27,9 @@
 		return FALSE
 	return istype(get_area(location), /area/voidcrew/trader_outpost) || !isnull(get_trader_outpost_for_turf(location))
 
-/// Engine hazards transported into a market must stop before processing damage.
+/// Engine hazards transported into a market, or into a player outpost's service room, must stop before processing damage.
 /proc/neutralize_trader_outpost_hazard(atom/movable/hazard)
-	if(!is_trader_outpost_protected(hazard))
+	if(!is_trader_outpost_protected(hazard) && !is_outpost_service_tile(hazard))
 		return FALSE
 	log_game("OUTPOST PROTECTION: Neutralized [hazard] ([hazard.type]) at [AREACOORD(hazard)].")
 	qdel(hazard)
@@ -199,7 +199,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		return TRUE
 	if(creature.client || creature.mind) // Player-driven, so the strike ladder decides, not the wildlife rule.
 		return FALSE
-	if(in_faction(creature)) // Traders, loiterers, bots and the other turrets.
+	if(in_faction(creature)) // Traders, ambient outpost NPCs, bots and the other turrets.
+		return FALSE
+	if(HAS_TRAIT(creature, TRAIT_OUTPOST_RESIDENT)) // Whatever the outpost was built with.
 		return FALSE
 	return is_hostile_creature(creature)
 
@@ -378,6 +380,15 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/obj/property = target
 	property.resistance_flags |= INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	property.AddElement(/datum/element/empprotection, EMP_PROTECT_ALL)
+	// The RPD's unwrench upgrade and the construction console's Remove Pipe call wrench_act()
+	// directly, skipping the tool signal below; both still ask can_unwrench()
+	if(istype(target, /obj/machinery/atmospherics))
+		var/obj/machinery/atmospherics/atmos_part = target
+		atmos_part.can_unwrench = FALSE
+	// A seat dragged onto someone folds into a carried chair (chair.dm)
+	if(istype(target, /obj/structure/chair))
+		var/obj/structure/chair/seat = target
+		seat.item_chair = null
 
 	RegisterSignals(target, list(
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
@@ -409,6 +420,12 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	RegisterSignal(target, COMSIG_ATOM_HULK_ATTACK, PROC_REF(on_hulk_attack))
 	RegisterSignal(target, COMSIG_ATOM_ATTACK_MECH, PROC_REF(on_mech_attack))
 
+/// A desk bell dragged onto someone turns into a held bell (desk_bell.dm). Outpost property stays put.
+/obj/structure/desk_bell/mouse_drop_dragged(atom/over_object, mob/user)
+	if(HAS_TRAIT(src, TRAIT_OUTPOST_PROPERTY))
+		return FALSE
+	return ..()
+
 /datum/element/outpost_property/Detach(datum/source, ...)
 	UnregisterSignal(source, list(
 		COMSIG_ATOM_TOOL_ACT(TOOL_CROWBAR),
@@ -439,10 +456,14 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /**
  * A bluespace RPED skips the panel_open check in exchange_parts(), so blocking the
- * screwdriver doesn't keep the parts inside on its own.
+ * screwdriver doesn't keep the parts inside on its own. An RPD (pipe dispenser) clicked on
+ * a pipe or atmos machine unwrenches, repaints or reprograms it without any tool signal.
  */
 /datum/element/outpost_property/proc/block_part_replacer(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
+	if(istype(tool, /obj/item/pipe_dispenser))
+		source.balloon_alert(user, "outpost property!")
+		return ITEM_INTERACT_BLOCKING
 	if(!istype(tool, /obj/item/storage/part_replacer))
 		return NONE
 	source.balloon_alert(user, "casing is sealed!")

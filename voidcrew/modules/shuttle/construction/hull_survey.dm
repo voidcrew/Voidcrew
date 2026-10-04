@@ -1202,6 +1202,7 @@
 
 	vessel.update_flight_parallax()
 	SEND_SIGNAL(port, COMSIG_VOIDCREW_SHIP_LOADED)
+	ship_metric_spawned(vessel, creator = user, source = "commissioned")
 
 	// The builders own what they built. setup_from_template() creates the crew roster
 	// but nothing used to put anyone ON it, so a commissioned hull launched with a crew

@@ -173,13 +173,6 @@
 	},
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/spitfire/dormitories)
-"jt" = (
-/obj/effect/turf_decal/box,
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/carbon
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/spitfire/maintenance)
 "jD" = (
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
@@ -493,6 +486,14 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/spitfire/medbay)
+"vo" = (
+/obj/effect/turf_decal/box,
+/obj/machinery/plumbing/synthesizer{
+	reagent_id = /datum/reagent/fuel;
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/spitfire/maintenance)
 "vC" = (
 /obj/item/construction/plumbing,
 /obj/item/stack/ducts/fifty,
@@ -528,13 +529,6 @@
 /obj/machinery/duct,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/spitfire/maintenance)
-"xc" = (
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/hydrogen
-	},
-/obj/effect/turf_decal/box,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/spitfire/maintenance)
 "xH" = (
 /obj/machinery/atmospherics/components/tank/air{
 	piping_layer = 4
@@ -558,6 +552,14 @@
 "zP" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/spitfire/medbay/operating)
+"zZ" = (
+/obj/machinery/plumbing/synthesizer{
+	reagent_id = /datum/reagent/hydrogen;
+	dir = 1
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/spitfire/maintenance)
 "An" = (
 /obj/machinery/stasis,
 /obj/structure/cable,
@@ -614,6 +616,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/spitfire/medbay)
+"Ch" = (
+/obj/effect/turf_decal/box,
+/obj/machinery/plumbing/synthesizer{
+	reagent_id = /datum/reagent/carbon;
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/spitfire/maintenance)
 "Cu" = (
 /obj/effect/turf_decal/tile/brown/half,
 /obj/machinery/light,
@@ -721,13 +731,6 @@
 "Gj" = (
 /turf/template_noop,
 /area/template_noop)
-"Gm" = (
-/obj/effect/turf_decal/box,
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/fuel
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/spitfire/maintenance)
 "Gn" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
@@ -1570,7 +1573,7 @@ vd
 kZ
 hs
 os
-xc
+zZ
 Fd
 Gj
 Gj
@@ -1590,7 +1593,7 @@ NA
 ej
 hs
 rX
-Gm
+vo
 Fd
 Gj
 Gj
@@ -1610,7 +1613,7 @@ aV
 YN
 hs
 os
-jt
+Ch
 Fd
 Gj
 Gj

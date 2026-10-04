@@ -2,7 +2,7 @@
 #define DIRFLIP(d) turn(d, 180)
 
 /**
- * Fixture NPCs - outpost traders, outpost loiterers, vestige patrons - refuse to be put
+ * Fixture NPCs - outpost traders, ambient outpost NPCs, vestige patrons - refuse to be put
  * inside anything: lockers, crates, body bags, bluespace body bags, roller beds.
  *
  * They already cancel COMSIG_MOUSEDROP_ONTO and carry move_resist = INFINITY, but a

@@ -1,0 +1,142 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bnv" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"fvO" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"hdW" = (
+/turf/template_noop,
+/area/template_noop)
+"hnz" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"ilz" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"jVm" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"jVQ" = (
+/obj/modular_map_connector,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"jVU" = (
+/obj/machinery/recharger{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/mechanical,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"msm" = (
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"msv" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"mQm" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"nmr" = (
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"oiX" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"tsh" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/communications{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"usM" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/item/binoculars,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"wnG" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/computer/crew,
+/obj/item/folder/documents,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+
+(1,1,1) = {"
+msm
+hdW
+hdW
+msm
+hdW
+hdW
+jVQ
+"}
+(2,1,1) = {"
+mQm
+nmr
+nmr
+nmr
+nmr
+nmr
+oiX
+"}
+(3,1,1) = {"
+wnG
+hnz
+jVm
+msv
+nmr
+nmr
+usM
+"}
+(4,1,1) = {"
+hdW
+bnv
+ilz
+fvO
+tsh
+jVU
+hdW
+"}

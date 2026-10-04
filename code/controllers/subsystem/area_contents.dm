@@ -26,6 +26,7 @@ SUBSYSTEM_DEF(area_contents)
 	return ..()
 
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/area_contents/fire(resumed)
 	if(!resumed)
 		currentrun = GLOB.areas.Copy()
@@ -107,3 +108,4 @@ SUBSYSTEM_DEF(area_contents)
 		marked_for_clearing.len--
 
 #undef ALLOWED_LOOSE_TURFS
+// VOIDCREW EDIT END

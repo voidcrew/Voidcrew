@@ -115,6 +115,7 @@
 	found_turfs[start] = TRUE // i'm sure this is fine
 	return TRUE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/pathfind/jps/search_step()
 	. = ..()
 	if(!.)
@@ -144,6 +145,7 @@
 			return TRUE
 	return TRUE
 
+// VOIDCREW EDIT END
 /datum/pathfind/jps/finished()
 	//we're done! turn our reversed path (end to start) into a path (start to end)
 	found_turfs = null

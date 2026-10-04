@@ -107,6 +107,7 @@
 	to_chat(new_captain, span_boldnotice("You hold command of [name]. Ship Management is in your action buttons."))
 	ship_notify("Command of [name] has passed to [new_captain.real_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("[key_name(new_captain)] took command of ship [name] ([reason]); relieved [former ? key_name(former) : "nobody"]")
+	ship_metric_command_changed(src, new_captain, former, reason)
 	return TRUE
 
 // ===== TRANSFER =====

@@ -1019,11 +1019,13 @@
 		UnregisterSignal(breath_mask.loc, COMSIG_MOVABLE_MOVED)
 	breath_mask = null
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/table/optable/make_climbable()
 	AddComponent(/datum/component/climb_walkable)
 	AddElement(/datum/element/elevation, pixel_shift = 12)
 
 ///Align the mob with the table when buckled.
+// VOIDCREW EDIT END
 /obj/structure/table/optable/post_buckle_mob(mob/living/buckled)
 	buckled.add_offsets(type, z_add = 6)
 
@@ -1421,4 +1423,3 @@
 		R.add_fingerprint(user)
 		qdel(src)
 	building = FALSE
-

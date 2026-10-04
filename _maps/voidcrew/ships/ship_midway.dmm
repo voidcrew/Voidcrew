@@ -975,10 +975,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/hallway)
-"Ie" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/closed/wall/mineral/titanium,
-/area/shuttle/voidcrew/midway/dorms)
 "Ih" = (
 /obj/machinery/door/airlock/command{
 	name = "Bridge"
@@ -1893,7 +1889,7 @@ bb
 yq
 Td
 Zn
-Ie
+jb
 Un
 PF
 Zb

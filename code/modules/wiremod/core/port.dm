@@ -124,19 +124,12 @@
  */
 /datum/port/output
 	//VOIDCREW EDIT ADDITION: singular outputs, for the chemistry circuits.
-	/// How many input ports are currently reading from this output.
-	var/connected_inputs = 0
-	/// How many input ports may read from this output at once. Unlimited by default,
-	/// which is the historic behaviour and what every stock component still gets.
-	var/max_inputs = INFINITY
 	//VOIDCREW EDIT END
 
 //VOIDCREW EDIT ADDITION: an output only one input may connect to.
 //The chemistry components move a *quantity* of reagent down a wire rather than a
 //readable value, so fanning one output into two inputs would silently duplicate the
 //payload. Capping the fan-out at one makes that impossible to wire up in the first place.
-/datum/port/output/singular
-	max_inputs = 1
 //VOIDCREW EDIT END
 
 /**

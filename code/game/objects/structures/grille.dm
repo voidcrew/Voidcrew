@@ -91,6 +91,7 @@
 			)
 	return FALSE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/grille/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
 	switch(rcd_data["[RCD_DESIGN_MODE]"])
 		if(RCD_DECONSTRUCT)
@@ -124,6 +125,7 @@
 			return TRUE
 	return FALSE
 
+// VOIDCREW EDIT END
 /obj/structure/grille/proc/clear_tile(mob/user)
 	var/at_users_feet = get_turf(user)
 

@@ -747,11 +747,13 @@
 			playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
 			if(user)
 				to_chat(user, span_notice("Force dock successful (reserve ports)! Target cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
+			ship_metric_force_docked(our_ship, dock_target, user)
 			return TRUE
 	else
 		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
 		if(user)
 			to_chat(user, span_notice("Force dock successful! Target cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
+		ship_metric_force_docked(our_ship, dock_target, user)
 		return TRUE
 
 // ========== UTILITY ==========

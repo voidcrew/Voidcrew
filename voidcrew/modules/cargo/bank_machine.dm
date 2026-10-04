@@ -61,9 +61,13 @@
 		return //don't let them continue the attack chain because they'll waste money on a machine with no account
 
 	var/previous_balance = site?.treasury.account_balance
+	var/datum/bank_account/deposit_account = synced_bank_account
+	var/deposit_value = iscash(weapon) ? weapon.get_item_credit_value() : 0
 	. = ..()
 	if(site && site.treasury.account_balance > previous_balance)
 		site.treasury.add_log_to_history(0, "Physical deposit of [site.treasury.account_balance - previous_balance] cr from [user.ckey] to [site.treasury.account_holder]")
+	if(deposit_value && QDELETED(weapon))
+		metric_cash_deposit(deposit_account, user, deposit_value, weapon.type, "bank terminal")
 
 /// Switch only the presented card's account; neither the terminal nor either balance changes.
 /obj/machinery/computer/bank_machine/proc/link_id_account(obj/item/card/id/card, mob/living/user)

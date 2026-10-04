@@ -55,6 +55,38 @@
 	lighting_corner_NW?.self_destruct_if_idle()
 
 /**
+ * The rest of what a raw turf swap (`new turf_type(old_turf)`) must undo by hand. The swap runs no
+ * Destroy(), so the old turf's components and its detach-on-destroy elements stay bound to the
+ * coordinate and pass to the replacement: a wet floor keeps ticking over null air, and a glass
+ * floor's transparency signals are still registered when the next glass floor attaches its own.
+ */
+/turf/proc/scrub_datum_state_for_raw_swap()
+	if(HAS_TRAIT(src, TURF_Z_TRANSPARENT_TRAIT))
+		RemoveElement(/datum/element/turf_z_transparency)
+	// Every other detach-on-destroy element (a grass patch's diggable) waits on our COMSIG_QDELETING,
+	// which a raw swap never sends. Detach them the way qdel would, or the element keeps this
+	// coordinate on its books and the next turf here that adds it trips the signal override warning
+	// and is left unregistered.
+	var/qdeleting_listeners = _listen_lookup?[COMSIG_QDELETING]
+	if(qdeleting_listeners)
+		var/list/listeners = islist(qdeleting_listeners) ? qdeleting_listeners : list(qdeleting_listeners)
+		for(var/datum/element/element in listeners.Copy())
+			if(element.element_flags & ELEMENT_DETACH_ON_HOST_DESTROY)
+				element.Detach(src)
+	var/list/component_table = _datum_components
+	if(!component_table)
+		return
+	var/list/doomed = list()
+	for(var/component_key in component_table)
+		var/entry = component_table[component_key]
+		if(islist(entry))
+			doomed |= entry
+		else if(entry)
+			doomed |= entry
+	for(var/datum/component/component as anything in doomed)
+		qdel(component, FALSE)
+
+/**
  * The one thing a RAW turf swap (`new turf_type(existing_turf)`) must do before it drops
  * the old turf on the floor, and the cheapest possible version of it.
  *
@@ -112,6 +144,7 @@
  */
 /turf/proc/return_to_uninitialized_space()
 	scrub_lighting_for_teardown()
+	scrub_datum_state_for_raw_swap()
 	if(isopenturf(src))
 		var/turf/open/open_self = src
 		if(open_self.excited)
@@ -389,3 +422,13 @@
 		QUEUE_SMOOTH(src)
 
 	return new_turf
+
+/**
+ * A circuit floor registers for its area's power signal in Initialize() and again whenever its
+ * area changes. A shuttle move re-initializes the turf where the area can already hold that
+ * registration, which warned "area_power_change overridden". Clear it first.
+ */
+/turf/open/floor/circuit/Initialize(mapload)
+	if(loc)
+		UnregisterSignal(loc, COMSIG_AREA_POWER_CHANGE)
+	return ..()

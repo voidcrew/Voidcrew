@@ -28,8 +28,6 @@
 	var/r_hand
 	/// Path of the left hand held item we give to the mob's visuals.
 	var/l_hand
-	/// VOIDCREW EDIT: subtypes with bespoke static sprites (e.g. boat pirates) set this FALSE to keep their own icon.
-	var/use_dynamic_appearance = TRUE
 
 /mob/living/basic/trooper/Initialize(mapload)
 	. = ..()

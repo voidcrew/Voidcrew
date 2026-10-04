@@ -1,0 +1,150 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"alm" = (
+/obj/structure/platform/bamboo,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"fdv" = (
+/obj/item/kirbyplants/organic/plant14,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"fJR" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"lsu" = (
+/obj/structure/platform/bamboo,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"lFh" = (
+/obj/machinery/vending/snack/green,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"odO" = (
+/obj/item/kirbyplants/organic/plant18,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"okM" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"ozT" = (
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"pcY" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"pwH" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"skx" = (
+/obj/structure/closet/crate/bin,
+/obj/item/storage/bag/trash/filled,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"uKn" = (
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"vGD" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"wnf" = (
+/obj/item/pillow,
+/obj/effect/spawner/random/bedsheet/double{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"wpE" = (
+/turf/template_noop,
+/area/template_noop)
+"wux" = (
+/obj/item/pillow,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+"wxa" = (
+/obj/structure/dresser,
+/turf/open/floor/bamboo/tatami/black,
+/area/template_noop)
+
+(1,1,1) = {"
+lFh
+wpE
+vGD
+"}
+(2,1,1) = {"
+ozT
+wux
+wpE
+"}
+(3,1,1) = {"
+fdv
+lsu
+wpE
+"}
+(4,1,1) = {"
+ozT
+wux
+wpE
+"}
+(5,1,1) = {"
+wpE
+wpE
+wpE
+"}
+(6,1,1) = {"
+wpE
+skx
+pwH
+"}
+(7,1,1) = {"
+ozT
+uKn
+wnf
+"}
+(8,1,1) = {"
+ozT
+uKn
+pcY
+"}
+(9,1,1) = {"
+wpE
+okM
+wxa
+"}
+(10,1,1) = {"
+wpE
+wpE
+wpE
+"}
+(11,1,1) = {"
+ozT
+wux
+wpE
+"}
+(12,1,1) = {"
+odO
+alm
+wpE
+"}
+(13,1,1) = {"
+ozT
+wux
+wpE
+"}
+(14,1,1) = {"
+fJR
+wpE
+wpE
+"}

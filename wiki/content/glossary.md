@@ -62,7 +62,6 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Neural load** | What each piece of chrome costs against your 20-point capacity. Going over capacity browns every piece out at once. |
 | **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Turrets shoot people who keep starting fights. See [Trader Outposts](trader-outposts.md). |
 | **Player outpost** | A base a crew plants for itself using an outpost deed. See [Player Outposts](player-outposts.md). |
-| **Siege** | Missile fire against a raidable player outpost. The one case where ship weapons work outside the red ring. The yellow ring allows it, green still does not. |
 | **Custom slot** | A saved spawn loadout tied to your account, swapped onto a ship's job at the cryogenic oversight console. The first is free; the second and third are bought with your persistent account credits. |
 
 ## Danger

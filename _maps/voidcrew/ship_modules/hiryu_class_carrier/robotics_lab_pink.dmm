@@ -1,0 +1,116 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"auT" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/assembly/flash,
+/obj/item/assembly/flash,
+/obj/item/assembly/prox_sensor,
+/obj/item/storage/medkit,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"cyC" = (
+/obj/structure/table/reinforced,
+/obj/item/clothing/head/utility/welding{
+	pixel_x = -4;
+	pixel_y = 10
+	},
+/obj/item/clothing/glasses/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/belt/utility/full/inducer{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"cHh" = (
+/turf/template_noop,
+/area/template_noop)
+"dFY" = (
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"fXi" = (
+/obj/structure/frame/machine/secured,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"gfX" = (
+/obj/modular_map_connector,
+/obj/structure/sign/departments/science/directional/east,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"iWp" = (
+/obj/structure/table/optable,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"jXw" = (
+/obj/machinery/mecha_part_fabricator,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"kkf" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ljr" = (
+/obj/effect/spawner/surgery_tray/full/morgue/deployed,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qvy" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"xhK" = (
+/obj/structure/table/reinforced,
+/obj/item/mmi{
+	pixel_x = 0;
+	pixel_y = 7
+	},
+/obj/item/mmi,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+dFY
+dFY
+gfX
+"}
+(2,1,1) = {"
+cHh
+dFY
+cHh
+"}
+(3,1,1) = {"
+xhK
+dFY
+ljr
+"}
+(4,1,1) = {"
+fXi
+dFY
+iWp
+"}
+(5,1,1) = {"
+qvy
+dFY
+kkf
+"}
+(6,1,1) = {"
+fXi
+dFY
+cyC
+"}
+(7,1,1) = {"
+jXw
+dFY
+auT
+"}

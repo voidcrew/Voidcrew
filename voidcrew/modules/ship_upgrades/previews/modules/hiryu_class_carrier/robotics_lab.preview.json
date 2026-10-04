@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "hiryu_class_carrier/robotics_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_robotics_lab_pink.png",
+     "src_md5": "ddd78a558ecf1eaa597e4dff89a260e7",
+     "width": 7
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_robotics_lab_standard.png",
+     "src_md5": "a0d066947f186eca538f4fbaed6f2622",
+     "width": 7
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "hiryu_class_carrier_robotics_lab_syndicate.png",
+     "src_md5": "4d6179bd437a07a9e157a420898361fd",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

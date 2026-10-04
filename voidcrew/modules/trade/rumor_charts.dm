@@ -93,17 +93,29 @@
 
 /**
  * Gets an unused overmap square in the given zone band (ZONE_RED/YELLOW/GREEN).
- * Same contract as get_unused_overmap_square_in_green_zone, any band.
+ * Same contract as get_unused_overmap_square_in_green_zone, any band, except that it
+ * only returns null when the band has no free square at all.
  */
 /datum/controller/subsystem/overmap/proc/get_unused_overmap_square_in_zone_band(band, thing_not_to_have = /obj/structure/overmap, tries = MAX_OVERMAP_PLACEMENT_ATTEMPTS)
+	var/list/turf/overmap_squares = block(locate(OVERMAP_LEFT_SIDE_COORD + 1, OVERMAP_SOUTH_SIDE_COORD + 1, OVERMAP_Z_LEVEL), locate(OVERMAP_RIGHT_SIDE_COORD - 1, OVERMAP_NORTH_SIDE_COORD - 1, OVERMAP_Z_LEVEL))
 	for(var/_ in 1 to tries)
-		var/turf/candidate = pick(block(locate(OVERMAP_LEFT_SIDE_COORD + 1, OVERMAP_SOUTH_SIDE_COORD + 1, OVERMAP_Z_LEVEL), locate(OVERMAP_RIGHT_SIDE_COORD - 1, OVERMAP_NORTH_SIDE_COORD - 1, OVERMAP_Z_LEVEL)))
+		var/turf/candidate = pick(overmap_squares)
 		if(locate(thing_not_to_have) in candidate)
 			continue
 		if(get_zone_band_for_turf(candidate) != band)
 			continue
 		return candidate
-	return null
+	// Random picks over the whole chart often miss a narrow band. Green is ~9% of the
+	// squares and every hull spawns there: with 130 green squares free, 40 picks still
+	// found none about one time in nine. Check every square before giving up.
+	var/list/turf/free_squares = list()
+	for(var/turf/candidate as anything in overmap_squares)
+		if(get_zone_band_for_turf(candidate) != band)
+			continue
+		if(locate(thing_not_to_have) in candidate)
+			continue
+		free_squares += candidate
+	return length(free_squares) ? pick(free_squares) : null
 
 /**
  * # Rumor chart SKU
@@ -167,4 +179,5 @@
 	ship.add_pending_rumor(chart)
 
 	to_chat(user, span_notice("The rumor data is encrypted and beamed to [ship]'s helm console. Reveal it when your crew is ready to move."))
+	metric_shop_purchase(src, user, credit_price, price_vouchers)
 	return TRUE

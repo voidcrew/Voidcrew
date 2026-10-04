@@ -1043,10 +1043,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance/cargo)
-"Ul" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/closed/wall/rust,
-/area/shuttle/voidcrew/hightide/maintenance)
 "Un" = (
 /obj/structure/closet/secure_closet/freezer/cream_pie,
 /turf/open/floor/plating,
@@ -1471,7 +1467,7 @@ VU
 ko
 VU
 ni
-Ul
+of
 nB
 nT
 xg

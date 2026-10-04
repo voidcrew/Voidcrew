@@ -56,4 +56,7 @@
 /datum/techweb/research_node(datum/techweb_node/node, force = FALSE, auto_adjust_cost = TRUE, get_that_dosh = TRUE, atom/research_source)
 	if(!force && istype(node) && !have_surveys_for_node(node))
 		return FALSE
-	return ..()
+	var/mob/metric_queued_by = force ? null : metric_node_queued_by(node) // round metrics, voidcrew/modules/metrics/research_metrics.dm
+	. = ..()
+	if(. && !force)
+		record_node_researched(node, research_source, metric_queued_by)

@@ -62,15 +62,8 @@ SUBSYSTEM_DEF(mapping)
 	/// List of lists of turfs to reserve
 	var/list/lists_to_reserve = list()
 	// VOIDCREW EDIT ADDITION: one-shot latch for the dead-area recovery in fire() below.
-	/// Whether we have already reported a reservation turf found sitting in a destroyed area.
-	var/warned_about_dead_reservation_area = FALSE
 	// VOIDCREW EDIT ADDITION: released reservation turfs whose starlight has been switched
-	/// off and which still have to be taken out of GLOB.starlight. Assoc turf -> TRUE so the
-	/// compaction below is a membership test rather than a search. See release_reservation_starlight().
-	var/list/starlight_release_queue
 	// VOIDCREW EDIT ADDITION: world.time the next used_turfs orphan sweep may run at.
-	/// Rate limit for reconcile_used_turfs(), which walks all of used_turfs.
-	var/next_used_turf_reconcile = 0
 
 	var/list/reservation_ready = list()
 	var/clearing_reserved_turfs = FALSE
@@ -755,6 +748,7 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		return null
 	UNTIL((!z_reservation || reservation_ready["[z_reservation]"]) && !clearing_reserved_turfs)
 	var/datum/turf_reservation/reserve = new reservation_type
+	reserve.requester = requester // VOIDCREW EDIT ADDITION: which feature holds the block (voidcrew/mapping/_mapping.dm)
 	if(!isnull(turf_type_override))
 		reserve.turf_type = turf_type_override
 	if(!z_reservation)
@@ -767,7 +761,12 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		// that one more drain pass would have made unnecessary. Wait out any queued releases
 		// (bounded - a stuck drain must not wedge every requester) and retry the existing
 		// levels before reaching for a mint.
-		if(length(lists_to_reserve))
+		// VOIDCREW EDIT: ...unless everything still draining adds up to less than this
+		// request. Then no amount of waiting can make room, and the wait only delays the mint.
+		var/queued_turfs = 0
+		for(var/list/packet as anything in lists_to_reserve)
+			queued_turfs += length(packet)
+		if(queued_turfs >= width * height)
 			var/drain_deadline = world.time + 30 SECONDS
 			while(length(lists_to_reserve) && world.time < drain_deadline)
 				stoplag()
@@ -802,6 +801,7 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 ///This is not for wiping reserved levels, use wipe_reservations() for that.
 ///If this is called after SSatom init, it will call Initialize on all turfs on the passed z, as its name promises
 // VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/controller/subsystem/mapping/proc/initialize_reserved_level(z)
 	UNTIL(!clearing_reserved_turfs) //regardless, lets add a check just in case.
 	clearing_reserved_turfs = TRUE //This operation will likely clear any existing reservations, so lets make sure nothing tries to make one while we're doing it.
@@ -832,6 +832,7 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 
 /// Schedules a group of turfs to be handed back to the reservation system's control
 /// If await is true, will sleep until the turfs are finished work
+// VOIDCREW EDIT END
 /datum/controller/subsystem/mapping/proc/reserve_turfs(list/turfs, await = FALSE)
 	lists_to_reserve += list(turfs)
 	if(await)

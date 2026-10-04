@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "bogatyr_freshen_up": {
+   "height": 20,
+   "png": "ship_bogatyr_freshen_up.png",
+   "slots": {
+    "engineering": [
+     9,
+     1
+    ],
+    "eva_bay": [
+     2,
+     5
+    ],
+    "laboratory": [
+     10,
+     16
+    ],
+    "medical_bay": [
+     14,
+     8
+    ]
+   },
+   "src_md5": "c68adc90b32a6035d4b09f5aacada6e9",
+   "width": 17
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

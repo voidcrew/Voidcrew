@@ -1,0 +1,46 @@
+{
+ "hulls": {},
+ "modules": {
+  "hiryu_class_carrier/pacman_bay.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "pink": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "hiryu_class_carrier_pacman_bay_pink.png",
+     "src_md5": "abd3c505f45693b077f0c3b401927576",
+     "width": 8
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "hiryu_class_carrier_pacman_bay_standard.png",
+     "src_md5": "b7b7e8d1ae42e282486a7ec7180cc40a",
+     "width": 8
+    },
+    "syndicate": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "hiryu_class_carrier_pacman_bay_syndicate.png",
+     "src_md5": "4e5b2d04e60fafebdb6f43ff36020fb5",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

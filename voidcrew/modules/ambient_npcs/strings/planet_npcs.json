@@ -1,0 +1,373 @@
+{
+	"_owner": "PB (planet and field NPCs): miners, fishers, the jungle, peddlers. Placeholders: {name}, {other}, {place}; the peddler's ruin_tip also fills {dir}.",
+	"any": {
+		"idle": [
+			"Quiet out here.",
+			"Wind's picking up.",
+			"Long way from anywhere."
+		],
+		"talk": [
+			"Hm? Oh. Hello.",
+			"Didn't hear you land.",
+			"Mind your step out here."
+		],
+		"attacked": [
+			"Hey! Back off!",
+			"What's wrong with you?",
+			"Get away from me!"
+		],
+		"flee": [
+			"Not worth it!",
+			"Leave me alone!"
+		],
+		"storm": [
+			"Storm's coming. Find cover.",
+			"Sky's going bad. Get under something."
+		],
+		"chat": [
+			"Seen anything out past the ridge?",
+			"Water's lower than last year."
+		],
+		"reply": [
+			"Yeah.",
+			"Maybe.",
+			"Could be."
+		],
+		"work": [
+			"Almost there.",
+			"Come on, you."
+		]
+	},
+	"miner": {
+		"idle": [
+			"Iron, iron, iron. There's gold in here somewhere. I can feel it.",
+			"Twelve years on rocks like this. My knees are worse than the rocks.",
+			"If you hear rumbling, it isn't me."
+		],
+		"talk": [
+			"Careful, that wall's loose.",
+			"Found a vein this morning. Not telling you where.",
+			"Got any water? I'll trade you a chunk of something shiny.",
+			"You here to dig, or to watch?"
+		],
+		"work": [
+			"Come on, you.",
+			"Almost through.",
+			"There's something in here. I can hear it."
+		],
+		"attacked": [
+			"Put that down! I've got nothing worth taking!",
+			"Hey! I swing a pick for a living!"
+		],
+		"flee": [
+			"Take the rocks! Take them!",
+			"I'm going, I'm going!"
+		],
+		"barter": [
+			"Fair trade. Here.",
+			"That'll do. Take these.",
+			"Now we're talking."
+		],
+		"barter_none": [
+			"Haven't dug anything worth trading yet.",
+			"Bag's empty. Come back later."
+		],
+		"barter_done": [
+			"That's all I'm trading today.",
+			"The rest pays for the trip home."
+		],
+		"storm": [
+			"Storm's coming. I'm getting under the ledge.",
+			"Rocks don't mind the weather. I do."
+		]
+	},
+	"lava_fisher": {
+		"idle": [
+			"Don't lean over the edge. It doesn't give things back.",
+			"I mine in the morning and fish in the afternoon. Nobody bothers me in the afternoon."
+		],
+		"fishing": [
+			"Lava loops bite at shift change. Don't ask me how they know.",
+			"Normal line melts. Took me three rods to find that out.",
+			"Come on. I can see you down there."
+		],
+		"talk": [
+			"Hooked a bone once. Had a ring on it. Kept the ring.",
+			"If the ground starts glowing, walk the other way.",
+			"Pull up a rock. Not that one, it's hot."
+		],
+		"bite": [
+			"Here we go.",
+			"Easy. Easy."
+		],
+		"catch": [
+			"That's dinner. It's still hot. It's always still hot.",
+			"Got one!",
+			"Look at that. Still glowing."
+		],
+		"miss": [
+			"Gone. Figures.",
+			"Took the bait and half the hook."
+		],
+		"cooking": [
+			"About a minute on the stone. Less if you like it chewy.",
+			"Smells like a forge. Tastes better."
+		],
+		"gift": [
+			"Here. Eat that before it cools.",
+			"Take one. I've got more than I can eat."
+		],
+		"work": [
+			"The rock can wait. No, it can't.",
+			"One more wall, then back to the line."
+		],
+		"attacked": [
+			"Hey! I've got a pickaxe too!",
+			"Wrong man to rob!"
+		],
+		"flee": [
+			"Keep the fish!",
+			"Not today!"
+		],
+		"storm": [
+			"Ash is coming. Cover your face.",
+			"Wind's full of cinders. Get down."
+		]
+	},
+	"boat_fisher": {
+		"idle": [
+			"I row out, I sit, I row back. Best job in the galaxy.",
+			"Don't wave. It scares them."
+		],
+		"fishing": [
+			"They're running deep today. Deep and sulky.",
+			"Come on. I know you're hungry.",
+			"Quiet water. Good sign."
+		],
+		"talk": [
+			"Ahoy. Mind the rope.",
+			"Sharks came by an hour ago. Took one look at me and left. Rude.",
+			"Got a bucket of grumps if you're hungry. They taste like disappointment."
+		],
+		"bite": [
+			"Shh. Something's on it.",
+			"Come on, come on."
+		],
+		"catch": [
+			"Ha! Got you.",
+			"Not bad. Not bad at all."
+		],
+		"miss": [
+			"Got away. They always get away.",
+			"Bait thief."
+		],
+		"sharks": [
+			"Go on! Get! Nothing for you here!",
+			"Shoo! Find your own boat!"
+		],
+		"gift": [
+			"Here, catch!",
+			"Take one. Plenty more down there."
+		],
+		"attacked": [
+			"Hey! What did I ever do to you?",
+			"Leave me be!"
+		],
+		"storm": [
+			"Storm's coming. You can see it on the water.",
+			"Swell's getting up. I'm heading in."
+		]
+	},
+	"cannibal": {
+		"idle": [
+			"Low and slow. That's the secret.",
+			"He was a trader. Now he's dinner."
+		],
+		"cooking": [
+			"Smells good, doesn't it? Nobody ever says no to the smell.",
+			"Almost done on this side.",
+			"Needs more salt. Always needs more salt."
+		],
+		"invite": [
+			"Sit down. There's plenty. There's always plenty.",
+			"Hungry? Come closer.",
+			"Don't be shy. Pull up a log."
+		],
+		"warn": [
+			"More meat walking in on its own. Lucky day.",
+			"Don't look at me like that. You eat meat too."
+		],
+		"attack": [
+			"Hold still. It's quicker.",
+			"Dinner's here."
+		],
+		"talk": [
+			"Don't look at me like that. You eat meat too.",
+			"Sit down. There's plenty."
+		],
+		"attacked": [
+			"So it's the hard way.",
+			"Now you've made me angry."
+		],
+		"storm": [
+			"Rain puts the fire out. I hate the rain.",
+			"Weather's turning. Help me cover the fire."
+		]
+	},
+	"tribal": {
+		"idle": [
+			"The herd went east.",
+			"Wind's off the river. Good for hunting.",
+			"We move camp when the rains come."
+		],
+		"talk": [
+			"We saw you land. We see everything that lands.",
+			"Your ship is loud. You scared off the herd.",
+			"Leave the fruit. Take nothing from the trees."
+		],
+		"warn": [
+			"This is our ground. Walk around it.",
+			"Turn back. The poles mean what they mean.",
+			"Far enough, stranger."
+		],
+		"attack": [
+			"You were told!",
+			"Spears!"
+		],
+		"trade_offer": [
+			"You carry no spear. Sit. What do you trade?",
+			"A hide, or meat, and this is yours."
+		],
+		"trade_done": [
+			"A fair trade.",
+			"It flies true. Look after it."
+		],
+		"trade_refused": [
+			"One spear is enough for your people.",
+			"We have traded already."
+		],
+		"attacked": [
+			"You were told!",
+			"Bring it down!"
+		],
+		"hunt": [
+			"Quiet. Downwind.",
+			"There. In the grass."
+		],
+		"chat": [
+			"The river is low this year.",
+			"Your spear pulls left.",
+			"The strangers' ships come more often now."
+		],
+		"reply": [
+			"It does not.",
+			"I saw.",
+			"Then we move sooner.",
+			"Mm."
+		],
+		"conversations": [
+			{
+				"opener": "The herd came down to the river again.",
+				"replies": ["Then we eat well tomorrow.", "Good. The young ones are hungry."]
+			},
+			{
+				"opener": "Another ship came down in the night.",
+				"replies": ["Let them come. They'll see the poles.", "We watch. We wait."]
+			}
+		],
+		"storm": [
+			"Storm coming. Cover the fire.",
+			"Into the trees. Wait it out."
+		]
+	},
+	"peddler": {
+		"idle": [
+			"Goods for sale! Nothing stolen, nothing cursed, nothing refunded.",
+			"Something's following us. Don't look. Keep smiling.",
+			"The pony carries the stock. I carry the conversation."
+		],
+		"talk": [
+			"Walked in from one ridge. Walking out the other.",
+			"Seen any settlements? No? Just you, then. You'll do.",
+			"Water, bandages, flares. Everything you forgot on the ship."
+		],
+		"camp": [
+			"Right. Rug down, prices up.",
+			"Here's as good a spot as any. Come and look!"
+		],
+		"hawk": [
+			"Goods for sale!",
+			"Flares! Water! Bandages!",
+			"Last one of these I've got, friend."
+		],
+		"ruin_tip": [
+			"Old walls off to the {dir}. Nobody's lived there in a while. Something might still be in there.",
+			"Head {dir} and you'll find a ruin. Bring a light."
+		],
+		"pack_lost": [
+			"They got the pack! There's nothing left to sell!",
+			"My stock. All of it. On that poor animal."
+		],
+		"ambush_over": [
+			"Still breathing? Good. I remember a friend.",
+			"That was close. Thank you, truly."
+		],
+		"farewell": [
+			"That's me. Safe roads.",
+			"Off I go. Mind the wildlife."
+		],
+		"attacked": [
+			"Hey! I'm just a trader!",
+			"Guard!"
+		],
+		"chat": [
+			"We'll make the ridge by dark.",
+			"How's the leg?"
+		],
+		"reply": [
+			"If you say so.",
+			"Fine. Keep walking."
+		],
+		"conversations": [
+			{
+				"opener": "You ever think about settling down somewhere?",
+				"replies": ["Every night. Then the sun comes up.", "Where? It's all rocks and bugs."]
+			}
+		],
+		"storm": [
+			"Storm's coming. Hold the pony.",
+			"Weather's turning. Cover the bags."
+		]
+	},
+	"caravan_guard": {
+		"idle": [
+			"Keep moving.",
+			"Eyes open.",
+			"I don't like this stretch."
+		],
+		"talk": [
+			"Buying? Talk to the boss.",
+			"Keep your hands where I can see them."
+		],
+		"ambush": [
+			"Here they come! Watch the pack!",
+			"Company! Get behind the pony!"
+		],
+		"attacked": [
+			"Big mistake.",
+			"You want some too?"
+		],
+		"chat": [
+			"Leg's fine. Stop asking.",
+			"Someone's been on this trail before us."
+		],
+		"reply": [
+			"Sure.",
+			"We'll see."
+		],
+		"storm": [
+			"Weather's turning. Stay close.",
+			"Storm. Keep the pony calm."
+		]
+	}
+}

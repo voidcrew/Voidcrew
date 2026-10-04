@@ -173,10 +173,6 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 /datum/error_viewer/error_source
 	var/list/errors = list()
 	var/next_message_at = 0
-	/// VOIDCREW ADDITION: every runtime this source has produced, retained or not.
-	var/total_errors = 0
-	/// VOIDCREW ADDITION: how many of those were counted but not kept as a full entry.
-	var/dropped_errors = 0
 
 /datum/error_viewer/error_source/New(exception/e)
 	if (!istype(e))
@@ -243,8 +239,10 @@ GLOBAL_DATUM(error_cache, /datum/error_viewer/error_cache)
 
 	browse_to(user, html)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/error_viewer/error_entry/make_link(linktext, datum/error_viewer/back_to, linear)
 	return is_skip_count ? name : ..()
 
 #undef ERROR_CACHE_MAX_PER_SOURCE
 #undef ERROR_CACHE_MAX_ENTRIES
+// VOIDCREW EDIT END

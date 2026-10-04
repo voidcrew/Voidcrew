@@ -152,6 +152,7 @@
 	generate_mission_details()
 
 /datum/mission/Destroy()
+	record_metric_dropped() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	if(timeout_timer)
 		deltimer(timeout_timer)
 		timeout_timer = null
@@ -210,6 +211,7 @@
 		author = generate_mission_author()
 	if(gps_tag_prefix)
 		gps_tag = "[gps_tag_prefix]-[uppertext(random_string(3, GLOB.hex_characters))]"
+	note_metric_item_value() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	update_text()
 
 /**
@@ -325,6 +327,8 @@
 	// Chart the mission's target on the helm waypoint readout, if it has one
 	push_waypoint()
 
+	record_metric_accepted() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
+
 	// Per-type start effects (courier pods, claim kits...). May fail the mission.
 	on_mission_started()
 	if(failed || QDELETED(src))
@@ -391,6 +395,7 @@
 	if(failed || completed)
 		return
 
+	record_metric_failed(reason) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	failed = TRUE
 	active = FALSE
 	deactivate_objectives()
@@ -775,6 +780,8 @@
 	var/favor_gain = get_favor_reward()
 	if(favor_gain > 0 && servant && shop)
 		shop.grant_favor(servant, favor_gain)
+
+	record_metric_completed(reward_anchor, favor_gain) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
 	// Notify ship
 	if(servant)

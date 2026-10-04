@@ -1,0 +1,163 @@
+// Prison warden console (OutpostPrison.tsx), on the shared .Outpost shell
+// from OutpostManagement.scss. Kept in its own file so a future merge of
+// the management stylesheet can't drop these rules again.
+
+// Same values as the shared variables in OutpostManagement.scss.
+$amber: #efb966;
+$muted: #969588;
+$text: #dddcd4;
+$good: #9fbd85;
+$bad: #e7a296;
+
+.OutpostPrison { display: flex; flex-direction: column; }
+.OutpostPrison__head {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 9px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba($amber, 0.22);
+  background: rgba(0, 0, 0, 0.28);
+  font: 12px 'Consolas', monospace;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: $amber;
+}
+// The yard's mood and the wing's power, on the right of the head
+.OutpostPrison__head-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  > span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+}
+.OutpostPrison__alert { color: $bad; }
+// Riot / escape / breakout banner under the head. Outside the scrolling body, so it stays in view.
+.OutpostPrison__alarm {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 10px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-bottom: 1px solid;
+  font: bold 13px 'Consolas', monospace;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  > .Icon { font-size: 16px; }
+  > strong { min-width: 0; overflow-wrap: anywhere; }
+}
+.OutpostPrison__alarm--red {
+  background: #6b1c16;
+  border-color: #e0503c;
+  color: #ffd9d2;
+  animation: OutpostPrison__alarm-pulse 1s ease-in-out infinite alternate;
+}
+.OutpostPrison__alarm--amber {
+  background: #4f3814;
+  border-color: $amber;
+  color: #ffe0a5;
+}
+@keyframes OutpostPrison__alarm-pulse {
+  from { background: #6b1c16; box-shadow: inset 0 0 0 #e0503c00; }
+  to { background: #a3261b; box-shadow: inset 0 0 14px #ff6a50a0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .OutpostPrison__alarm--red { animation: none; }
+}
+.OutpostPrison__body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 12px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #5b5142 transparent;
+}
+// The warden's switches, one row each: intake and the next transfer, visitors and the debt,
+// bounty prisoners, the experiment
+.OutpostPrison__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0 4px;
+}
+.OutpostPrison__control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  min-height: 28px;
+  font-size: 11px;
+}
+.OutpostPrison__control-label { color: $muted; font-size: 11px; }
+.OutpostPrison__intake-line { color: $muted; font: 11px 'Consolas', monospace; overflow-wrap: anywhere; }
+.OutpostPrison__debt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: $bad;
+  b { color: $bad; }
+}
+.OutpostPrison__stage--good { color: $good; }
+.OutpostPrison__stage--average { color: $amber; }
+.OutpostPrison__stage--orange { color: #f0955a; }
+.OutpostPrison__stage--bad { color: $bad; }
+.OutpostPrison__stage--label { color: $muted; }
+.OutpostPrison__experiment-what { min-width: 0; color: $text; font-size: 12px; overflow-wrap: anywhere; }
+.OutpostPrison__experiment-stage {
+  margin-left: auto;
+  font: bold 11px 'Consolas', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.OutpostPrison__roster-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 44px 84px;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  font-size: 12px;
+  .Outpost__person strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.OutpostPrison__roster-row--dead { opacity: 0.5; }
+.OutpostPrison__cell { color: $muted; font: 11px 'Consolas', monospace; }
+.OutpostPrison__vacant { color: $muted; font-size: 11px; }
+.OutpostPrison__number { font: 11px 'Consolas', monospace; text-align: right; }
+.OutpostPrison__status { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; white-space: nowrap; }
+.OutpostPrison__tone--good { color: $good; }
+.OutpostPrison__tone--average { color: $amber; }
+.OutpostPrison__tone--bad { color: $bad; }
+.OutpostPrison__tone--label { color: $muted; }
+// Guards: one row per guard, then the wage and the hire button
+.OutpostPrison__staff-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+  font-size: 12px;
+  .Outpost__person strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.OutpostPrison__staff-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 12px;
+  padding-top: 6px;
+  small { color: $muted; font-size: 11px; }
+  small:first-child { margin-right: auto; }
+}
+.OutpostPrison__log {
+  padding-top: 6px;
+  font-size: 11px;
+  > div { display: flex; gap: 8px; padding: 2px 0; }
+  span { flex: 0 0 auto; color: $muted; font-family: 'Consolas', monospace; }
+}

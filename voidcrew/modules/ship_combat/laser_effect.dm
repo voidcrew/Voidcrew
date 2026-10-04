@@ -288,6 +288,7 @@
 	damage_along_path(start_turf, impact_turf, impact_path)
 
 	// Deal final impact damage based on what we hit
+	ship_metric_laser_hit(src, hit_shield && shield_hit)
 	if(hit_shield && shield_hit)
 		// Hit shields - they absorb with laser multiplier
 		shield_hit.absorb_laser_damage(damage, impact_turf)

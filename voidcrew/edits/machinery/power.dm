@@ -22,6 +22,20 @@
 	UnregisterSignal(area_to_unregister, COMSIG_AREA_POWER_CHANGE)
 
 /**
+ * Upstream race on entering an area: power_change() can switch a machine off NO_POWER_USE,
+ * and update_use_power() then registers this same area in setup_area_power_relationship().
+ * The registration below warned "area_power_change overridden" whenever an unpowered hull
+ * passed into always-powered transit. Same body as upstream, registering with override.
+ */
+/obj/machinery/on_enter_area(datum/source, area/area_to_register)
+	SIGNAL_HANDLER
+	if(always_area_sensitive && use_power == NO_POWER_USE)
+		return
+	update_current_power_usage()
+	power_change()
+	RegisterSignal(area_to_register, COMSIG_AREA_POWER_CHANGE, PROC_REF(power_change), override = TRUE)
+
+/**
  * Ion storms drain the SMES but leave its input/output configuration alone.
  *
  * Upstream's emp_act rolls `output_attempt = rand(0, 1)` and randomises both power

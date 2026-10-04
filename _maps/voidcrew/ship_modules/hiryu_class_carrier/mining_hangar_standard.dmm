@@ -1,0 +1,188 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ccy" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_west"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"dom" = (
+/obj/structure/steps{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	id = "hiryu_east"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"duc" = (
+/obj/machinery/mineral/ore_redemption{
+	input_dir = 2;
+	output_dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"ege" = (
+/turf/template_noop,
+/area/template_noop)
+"fvL" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"gLH" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"hBK" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"jnK" = (
+/obj/structure/platform/iron,
+/obj/vehicle/sealed/mecha/ripley/mining,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"ldO" = (
+/obj/structure/platform/iron,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/clothing/head/utility/welding,
+/obj/item/storage/toolbox/mechanical/old,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"lhM" = (
+/obj/modular_map_connector,
+/obj/structure/table/reinforced,
+/obj/item/inducer{
+	pixel_x = -1;
+	pixel_y = 10
+	},
+/obj/item/weldingtool/largetank{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_west"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"qpv" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/machinery/button/door/directional/north{
+	name = "Mech Bay Shutters";
+	id = "hiryu_east"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"sYR" = (
+/obj/structure/ore_box,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"tzO" = (
+/obj/structure/platform/iron,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"vBo" = (
+/obj/structure/platform/iron,
+/obj/structure/mecha_wreckage/ripley/paddy,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wgG" = (
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/structure/platform/iron,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"xNw" = (
+/obj/structure/platform/iron,
+/obj/item/screwdriver,
+/obj/item/stack/cable_coil,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/crowbar,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+ege
+ege
+lhM
+"}
+(2,1,1) = {"
+ege
+wgG
+ccy
+"}
+(3,1,1) = {"
+ege
+jnK
+ccy
+"}
+(4,1,1) = {"
+ege
+tzO
+ccy
+"}
+(5,1,1) = {"
+ege
+ege
+ege
+"}
+(6,1,1) = {"
+fvL
+gLH
+ege
+"}
+(7,1,1) = {"
+hBK
+hBK
+hBK
+"}
+(8,1,1) = {"
+hBK
+hBK
+hBK
+"}
+(9,1,1) = {"
+duc
+sYR
+ege
+"}
+(10,1,1) = {"
+ege
+ege
+ege
+"}
+(11,1,1) = {"
+ege
+xNw
+dom
+"}
+(12,1,1) = {"
+ege
+vBo
+dom
+"}
+(13,1,1) = {"
+ege
+ldO
+dom
+"}
+(14,1,1) = {"
+ege
+ege
+qpv
+"}

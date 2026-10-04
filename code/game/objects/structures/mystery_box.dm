@@ -22,7 +22,9 @@
 /// Pooled across the crew rather than handed out per person: a full ship would otherwise
 /// strip every use out of a chest on its own, while a two-man crew could never spend more
 /// than a fraction of them.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 #define TREASURE_CHEST_CREW_SPINS 6
+// VOIDCREW EDIT END
 
 GLOBAL_LIST_INIT(mystery_box_guns, list(
 	/obj/item/gun/energy/recharge/ebow/large,
@@ -282,6 +284,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 	valid_types = GLOB.mystery_magic
 
 ///A fishing and pirate-themed mystery box, rarely found by fishing in the ocean, then another cannot be caught for the next 30 minutes.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/mystery_box/fishing
 	name = "treasure chest"
 	desc = "A piratey coffer equally magical and mysterious, capable of granting different pieces of gear to whoever opens it."
@@ -291,9 +294,8 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 	damage_deflection = 30
 	grant_extra_mag = FALSE
 	anchored = FALSE
-	/// Weakref of a crew - their ship, or the opener's own mind when they crew for none - to the spins that crew has already taken out of this chest.
-	var/list/spins_by_crew
 
+// VOIDCREW EDIT END
 /obj/structure/mystery_box/handle_deconstruct(disassembled)
 	new /obj/item/stack/sheet/mineral/wood(drop_location(), 2)
 	return ..()
@@ -301,17 +303,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 /obj/structure/mystery_box/fishing/generate_valid_types()
 	valid_types = GLOB.mystery_fishing
 
-/obj/structure/mystery_box/fishing/Destroy()
-	spins_by_crew = null
-	return ..()
-
-/// Which spin pool this opener draws from: the ship they crew for, or their own mind if they crew for none.
-/obj/structure/mystery_box/fishing/proc/get_spin_pool(mob/user)
-	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
-	if(crew_ship)
-		return WEAKREF(crew_ship)
-	return user?.mind ? WEAKREF(user.mind) : null
-
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/mystery_box/fishing/examine(mob/user)
 	. = ..()
 	var/datum/weakref/pool = get_spin_pool(user)
@@ -323,6 +315,8 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 		return
 	. += span_notice("It has [spins_left] spin[spins_left == 1 ? "" : "s"] left for your crew.")
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/mystery_box/fishing/activate(mob/living/user)
 	var/datum/weakref/pool = get_spin_pool(user)
 	if(pool && LAZYACCESS(spins_by_crew, pool) >= TREASURE_CHEST_CREW_SPINS)
@@ -334,6 +328,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 		spins_by_crew[pool] += 1
 
 /// This represents the item that comes out of the box and is constantly changing before the box finishes deciding. Can probably be just an /atom or /movable.
+// VOIDCREW EDIT END
 /obj/effect/abstract/mystery_box_item
 	name = "???"
 	desc = "Who knows what it'll be??"
@@ -403,6 +398,7 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 	claimable = TRUE
 
 /// Sink back into the box
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/effect/abstract/mystery_box_item/proc/expire_animation()
 	var/matrix/shrink_back = matrix()
 	shrink_back.Scale(0.5,0.5)
@@ -417,3 +413,4 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 #undef MBOX_DURATION_EXPIRING
 #undef MBOX_DURATION_STANDBY
 #undef TREASURE_CHEST_CREW_SPINS
+// VOIDCREW EDIT END

@@ -1,0 +1,133 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dlC" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"drT" = (
+/obj/structure/closet/crate/radiation{
+	name = "fuel crate"
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 20
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"gRt" = (
+/obj/structure/tank_dispenser,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"iuE" = (
+/obj/structure/closet/crate/critter{
+	name = "rare and exotic russian native animals"
+	},
+/mob/living/basic/pet/dog/corgi,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"jKP" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"kwd" = (
+/obj/structure/closet/crate/hydroponics,
+/obj/effect/spawner/random/maintenance/three,
+/obj/item/reagent_containers/spray/cleaner,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"lqo" = (
+/obj/structure/closet/crate{
+	name = "authentic russian cuisine crate"
+	},
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/food/rationpack,
+/obj/item/reagent_containers/cup/glass/waterbottle/large,
+/obj/item/reagent_containers/cup/glass/waterbottle/large,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka,
+/obj/machinery/light/broken,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"mNp" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"oSm" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"prF" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"qbV" = (
+/obj/structure/closet/crate/miningcar{
+	name = "traditional russian storage apparatus"
+	},
+/obj/item/pickaxe/improvised,
+/obj/item/pickaxe/improvised,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"uWE" = (
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"wlI" = (
+/obj/structure/closet/crate/internals,
+/obj/effect/spawner/random/maintenance/three,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+uWE
+uWE
+uWE
+dlC
+"}
+(2,1,1) = {"
+uWE
+jKP
+jKP
+uWE
+"}
+(3,1,1) = {"
+jKP
+iuE
+jKP
+jKP
+"}
+(4,1,1) = {"
+prF
+wlI
+jKP
+qbV
+"}
+(5,1,1) = {"
+kwd
+drT
+jKP
+lqo
+"}
+(6,1,1) = {"
+jKP
+jKP
+jKP
+jKP
+"}
+(7,1,1) = {"
+gRt
+mNp
+oSm
+oSm
+"}

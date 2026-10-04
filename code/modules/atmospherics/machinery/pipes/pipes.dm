@@ -77,7 +77,9 @@
 /obj/machinery/atmospherics/pipe/return_air()
 	if(air_temporary)
 		return air_temporary
-	return parent.air
+	// VOIDCREW EDIT: a template's meters start processing as they initialize, before
+	// setup_template_machinery() has built the pipelines they watch - no network yet, no air
+	return parent?.air
 
 /obj/machinery/atmospherics/pipe/return_analyzable_air()
 	if(air_temporary)

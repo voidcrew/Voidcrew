@@ -47,7 +47,8 @@
 	// TRAIT_HYPERSPACED check below, so somebody hyperspace ALREADY has hold of gets caught
 	// when they drift back into a hull's lee. Living mobs only, and never anything holding
 	// a hyperspace exemption - confined ship debris is meant to keep flying (ship_debris.dm).
-	if(isliving(enterer) && !HAS_TRAIT(enterer, TRAIT_FREE_HYPERSPACE_MOVEMENT))
+	// A running jetpack's exemption does not count: its rider still takes the grip.
+	if(isliving(enterer) && !hyperspace_free_without_jetpack(enterer))
 		var/obj/docking_port/mobile/holding = hyperspace_hull_near(src)
 		if(holding)
 			if(!enterer.GetComponent(/datum/component/hyperspace_hull_grip))

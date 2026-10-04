@@ -202,3 +202,13 @@
 	if(home?.is_resident(user))
 		return TRUE
 	return ..()
+
+/// The same resident access for mobs that carry a lock, which in practice means bots:
+/// residents unlock and set the bots working on their outpost without a robotics ID.
+/// Bots aboard a docked hull are off the claim and keep that ship's rules.
+/mob/allowed(mob/user)
+	if(length(req_access) || length(req_one_access))
+		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+		if(home?.is_resident(user))
+			return TRUE
+	return ..()

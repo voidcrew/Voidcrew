@@ -2,6 +2,7 @@
 
 // Approved manifest.
 // At most20 credits or10% of payment: cheap goodies and flash coupons cannot subsidize themselves.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/manifest_correct
 	cost = CARGO_CRATE_VALUE * 0.1
 	k_elasticity = 0
@@ -9,10 +10,7 @@
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 	scannable = FALSE
 
-/datum/export/manifest_correct/get_cost(obj/O, apply_elastic = TRUE)
-	var/obj/item/paper/fluff/jobs/cargo/manifest/manifest = O
-	return max(0, min(..(), FLOOR(manifest.order_cost * 0.1, 1)))
-
+// VOIDCREW EDIT END
 /datum/export/manifest_correct/applies_to(obj/O)
 	if(!..())
 		return FALSE

@@ -20,26 +20,8 @@
 	var/obj/effect/jaunt_out_type = /obj/effect/temp_visual/wizard/out
 	/// VOIDCREW EDIT: physical exit references travel with the deck during shuttle movement.
 	var/list/exit_point_list
-	var/obj/effect/abstract/jaunt_exit/start_point_anchor
-
-// VOIDCREW EDIT: reclaim reference effects even when the action loses its owner first.
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/Destroy()
-	clear_exit_points()
-	return ..()
-
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/clear_exit_points()
-	QDEL_NULL(start_point_anchor)
-	QDEL_LIST(exit_point_list)
-	exit_point_list = null
 
 /// An invisible location reference, carried by ordinary shuttle movement and rotation.
-/obj/effect/abstract/jaunt_exit
-	name = "jaunt return reference"
-	icon = null
-	invisibility = INVISIBILITY_ABSTRACT
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	anchored = TRUE
-
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/enter_jaunt(mob/living/jaunter, turf/loc_override)
 	. = ..()
 	if(!.)
@@ -86,6 +68,7 @@
  * - immediately, if jaunt_in_time >= 2.5 seconds
  * - 2.5 seconds - jaunt_in_time seconds otherwise
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/stop_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, atom/start_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
@@ -140,6 +123,7 @@
  *
  * Calls end_jaunt.
  */
+// VOIDCREW EDIT END
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/do_jaunt_in(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
@@ -165,6 +149,7 @@
  * If the final_point is dense for some reason,
  * tries to put the caster in an adjacent turf.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/end_jaunt(mob/living/cast_on, obj/effect/dummy/phased_mob/spell_jaunt/holder, turf/final_point)
 	if(QDELETED(cast_on) || QDELETED(holder) || QDELETED(src))
 		return
@@ -185,13 +170,6 @@
 		if(length(aside_turfs))
 			cast_on.forceMove(pick(aside_turfs))
 
-/// Removal, body changes and forced ejection can end the return animation early.
-/datum/action/cooldown/spell/jaunt/ethereal_jaunt/on_jaunt_exited(obj/effect/dummy/phased_mob/jaunt, mob/living/unjaunter)
-	UnregisterSignal(jaunt, COMSIG_MOVABLE_MOVED)
-	clear_exit_points()
-	REMOVE_TRAIT(unjaunter, TRAIT_IMMOBILIZED, REF(src))
-	return ..()
-
 /**
  * Updates the exit point of the jaunt
  *
@@ -200,6 +178,7 @@
  * spots are kept in the list, in case the last few changed since we passed
  * by (doors closing, engineers building walls, etc)
  */
+// VOIDCREW EDIT END
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/proc/update_exit_point(mob/living/source)
 	SIGNAL_HANDLER
 

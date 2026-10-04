@@ -95,6 +95,7 @@
 	if(linked_console?.bank_account_holder?.synced_bank_account && pending_loan.bonus_credits > 0)
 		linked_console.bank_account_holder.synced_bank_account.adjust_money(pending_loan.bonus_credits)
 		record_transaction("loan", pending_loan.logging_desc, 1, pending_loan.bonus_credits)
+		metric_cargo_loan(pending_loan, linked_console.bank_account_holder.synced_bank_account, usr)
 
 	// Announce acceptance
 	if(target_ship)
@@ -226,28 +227,12 @@
 
 	// Space for the shuttle to sit in while it is "in transit". Held as a local, not on a
 	// transit port, until there is a port to own it.
-	var/datum/turf_reservation/reservation = SSmapping.request_turf_block_reservation(
-		template.width + SHUTTLE_TRANSIT_BORDER * 2,
-		template.height + SHUTTLE_TRANSIT_BORDER * 2,
-		1,
-		reservation_type = /datum/turf_reservation/transit,
-		requester = "cargo shuttle transit",
-	)
-
-	if(!reservation)
+	var/datum/parking = claim_parking(template)
+	if(!parking)
 		qdel(template)
 		return FALSE
 
-	// The block we were just granted is recycled ground and can contain docking ports
-	// stranded by an earlier tenant: /turf/proc/empty() excludes /obj/docking_port from
-	// every reservation sweep, so stale ports survive release. The locate() below adopts
-	// the first mobile port it finds, ghost or not (round 12, 2026-08-23: a stranded port
-	// hijacked every delivery that landed on its coordinates). Reap them by name first.
-	reap_reservation_docking_ports(reservation)
-
-	var/turf/transit_turf = reservation.bottom_left_turfs[1]
-	// Offset by border to center shuttle in reservation
-	transit_turf = locate(transit_turf.x + SHUTTLE_TRANSIT_BORDER, transit_turf.y + SHUTTLE_TRANSIT_BORDER, transit_turf.z)
+	var/turf/transit_turf = parking_origin(parking, template)
 
 	// Load the shuttle template - register = TRUE so shuttle_areas get populated
 	template.load(transit_turf, centered = FALSE, register = TRUE)
@@ -260,7 +245,7 @@
 			break
 
 	if(!shuttle_port)
-		qdel(reservation)
+		release_parking(parking)
 		qdel(template)
 		return FALSE
 
@@ -290,12 +275,50 @@
 	// Take ownership of the parking ground directly - no transit dock, no
 	// assigned_transit (see the doc comment above). The only consumer either ever had
 	// was the SSshuttle sweep that kept reclaiming us.
-	transit_reservation = reservation
+	keep_parking(parking)
 
 	template.post_load(shuttle_port)
 	qdel(template)
 
 	return TRUE
+
+/**
+ * Claims the ground the ferry waits on until it docks, or null when there is none: a bare
+ * transit reservation with a border round the ferry. An outpost's ferry waits in the pen on
+ * the outpost's own level instead (outpost_freight.dm).
+ */
+/datum/voidcrew_cargo_shuttle/proc/claim_parking(datum/map_template/shuttle/template)
+	var/datum/turf_reservation/reservation = SSmapping.request_turf_block_reservation(
+		template.width + SHUTTLE_TRANSIT_BORDER * 2,
+		template.height + SHUTTLE_TRANSIT_BORDER * 2,
+		1,
+		reservation_type = /datum/turf_reservation/transit,
+		requester = "cargo shuttle transit",
+	)
+	if(!reservation)
+		return null
+	// The block we were just granted is recycled ground and can contain docking ports
+	// stranded by an earlier tenant: /turf/proc/empty() excludes /obj/docking_port from
+	// every reservation sweep, so stale ports survive release. The locate() in
+	// spawn_shuttle_impl() adopts the first mobile port it finds, ghost or not (round 12,
+	// 2026-08-23: a stranded port hijacked every delivery that landed on its coordinates).
+	// Reap them by name first.
+	reap_reservation_docking_ports(reservation)
+	return reservation
+
+/// The turf the ferry template loads at on the claimed ground: centred in the reservation's border.
+/datum/voidcrew_cargo_shuttle/proc/parking_origin(datum/turf_reservation/parking, datum/map_template/shuttle/template)
+	var/turf/corner = parking.bottom_left_turfs[1]
+	return locate(corner.x + SHUTTLE_TRANSIT_BORDER, corner.y + SHUTTLE_TRANSIT_BORDER, corner.z)
+
+/// Hands parking ground back that no ferry holds.
+/datum/voidcrew_cargo_shuttle/proc/release_parking(datum/parking)
+	if(!QDELETED(parking))
+		qdel(parking)
+
+/// The ferry exists: from here this datum holds its parking and destroy_shuttle() lets it go.
+/datum/voidcrew_cargo_shuttle/proc/keep_parking(datum/parking)
+	transit_reservation = parking
 
 /**
  * Returns the cargo bay turf for spawning items
@@ -776,9 +799,17 @@
 			underlying_area = space_area
 		T.change_area(T.loc, underlying_area)
 
+	// Each load of the ferry template makes its own areas, and the ferry has just handed back all
+	// their ground. Nothing else deletes them, so every delivery used to leak one.
+	var/list/ferry_areas = shuttle_port.shuttle_areas?.Copy()
+
 	// Delete the shuttle port (force = TRUE to actually delete it)
 	qdel(shuttle_port, force = TRUE)
 	shuttle_port = null
+
+	for(var/area/shuttle/ferry_area in ferry_areas)
+		if(!QDELETED(ferry_area) && !(ferry_area.area_flags & UNIQUE_AREA) && !ferry_area.has_resident_turfs())
+			qdel(ferry_area)
 
 /**
  * Positions the cargo dock adjacent to the player's ship dock

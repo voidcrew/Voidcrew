@@ -440,6 +440,9 @@ MINUTE_CLICK_LIMIT 400
 ## Which channels will have a message about a new game starting, message includes the station name.
 #CHANNEL_ANNOUNCE_NEW_GAME
 
+## Discord ID of a role to ping in that new-round announcement. Only used when CHANNEL_ANNOUNCE_NEW_GAME is set.
+#NEW_ROUND_ALERT_ROLE_ID
+
 ## Which channels will have a message about a new game starting, message includes the round ID of the game that has just ended.
 #CHANNEL_ANNOUNCE_END_GAME
 

@@ -669,6 +669,11 @@
 	if(!has_cap_visuals)
 		return
 
+	// VOIDCREW EDIT ADDITION START - a sweep can delete our cap before us; never put a deleted one back (outpost zone wipes)
+	if(QDELETED(cap_overlay))
+		cap_overlay = null
+	// VOIDCREW EDIT ADDITION END
+
 	cap_overlay?.moveToNullspace()
 
 	if(!HAS_TRAIT(src, TRAIT_UNDERFLOOR))

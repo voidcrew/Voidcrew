@@ -278,6 +278,7 @@
 		if(!account.adjust_money(-remainder, "Neural Imprint: [schematic_name]"))
 			return FALSE
 	loaded_credits -= from_cash
+	metric_outpost_service("neural_imprint", user, src, fee, 0, schematic_name, list("from_cash" = from_cash))
 	return TRUE
 
 // --- UI ----------------------------------------------------------------

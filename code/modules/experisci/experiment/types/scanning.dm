@@ -35,6 +35,7 @@
  *
  * Returns TRUE/FALSE as to if the necessary number of atoms have been scanned.
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/experiment/scanning/is_complete()
 	. = TRUE
 	var/destructive = traits & EXPERIMENT_TRAIT_DESTRUCTIVE
@@ -59,6 +60,7 @@
  * This proc returns a string describing the number of atoms that
  * have been scanned as well as the target number of atoms.
  */
+// VOIDCREW EDIT END
 /datum/experiment/scanning/check_progress()
 	. = list()
 	for (var/atom_type in required_atoms)
@@ -109,6 +111,7 @@
  * Arguments:
  * * target - The atom to attempt to scan
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/experiment/scanning/proc/experiment_requirements(datum/component/experiment_handler/experiment_handler, atom/target)
 	var/destructive = (traits & EXPERIMENT_TRAIT_DESTRUCTIVE)
 	var/typecache = (traits & EXPERIMENT_TRAIT_TYPECACHE)
@@ -138,6 +141,7 @@
  * * target - The atom being scanned
  * * typepath - The typepath (selected index) of the target atom
  */
+// VOIDCREW EDIT END
 /datum/experiment/scanning/proc/final_contributing_index_checks(datum/component/experiment_handler/experiment_handler, atom/target, typepath)
 	return TRUE
 

@@ -97,6 +97,7 @@
 /turf/closed/wall/attack_tk()
 	return
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/wall/proc/dismantle_wall(devastated = FALSE, explode = FALSE, disassembled = FALSE)
 	// VOIDCREW: successful hand demolition supersedes repairs, including during flight.
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller
@@ -126,6 +127,7 @@
 	if(repair_controller)
 		repair_controller.repair_applying = was_repairing
 
+// VOIDCREW EDIT END
 /turf/closed/wall/proc/break_wall()
 	new sheet_type(src, sheet_amount)
 	if(girder_type)
@@ -262,6 +264,7 @@
 
 	return FALSE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/wall/proc/try_decon(obj/item/I, mob/user)
 	if(I.tool_behaviour == TOOL_WELDER)
 		if(!I.tool_start_check(user, amount=round(slicing_duration / 50), heat_required = HIGH_TEMPERATURE_REQUIRED))
@@ -276,6 +279,7 @@
 
 	return FALSE
 
+// VOIDCREW EDIT END
 /turf/closed/wall/singularity_pull(atom/singularity, current_size)
 	..()
 	wall_singularity_pull(current_size)

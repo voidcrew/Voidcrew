@@ -1,0 +1,198 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"f" = (
+/obj/structure/closet/crate/internals,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"g" = (
+/obj/machinery/portable_atmospherics/canister/air,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"i" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/brown{
+	dir = 4
+	},
+/obj/item/trash/raisins,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"j" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"k" = (
+/turf/template_noop,
+/area/template_noop)
+"n" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"p" = (
+/obj/item/reagent_containers/cup/glass/waterbottle/empty,
+/obj/item/trash/can,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"q" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Lifeboat Hatch"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"t" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"u" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"M" = (
+/obj/item/trash/sosjerky,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"O" = (
+/obj/effect/landmark/ambient_lifeboat_survivor,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"V" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+"Z" = (
+/obj/item/trash/flare,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/space/has_grav/powered/ambient_lifeboat)
+
+(1,1,1) = {"
+k
+k
+k
+k
+k
+k
+k
+k
+k
+"}
+(2,1,1) = {"
+k
+k
+c
+c
+c
+c
+c
+k
+k
+"}
+(3,1,1) = {"
+k
+c
+i
+p
+u
+S
+g
+c
+k
+"}
+(4,1,1) = {"
+k
+c
+M
+u
+u
+u
+u
+c
+k
+"}
+(5,1,1) = {"
+k
+c
+V
+u
+O
+u
+u
+c
+k
+"}
+(6,1,1) = {"
+k
+t
+u
+u
+S
+u
+n
+q
+k
+"}
+(7,1,1) = {"
+k
+c
+u
+u
+u
+u
+u
+c
+k
+"}
+(8,1,1) = {"
+k
+c
+S
+u
+u
+u
+u
+c
+k
+"}
+(9,1,1) = {"
+k
+c
+u
+j
+j
+Z
+f
+c
+k
+"}
+(10,1,1) = {"
+k
+k
+c
+t
+t
+c
+c
+k
+k
+"}
+(11,1,1) = {"
+k
+k
+k
+k
+k
+k
+k
+k
+k
+"}

@@ -96,6 +96,7 @@
 
 
 /// Loads in any mob segments of the map
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/quantum_server/proc/load_mob_segments()
 	if(!length(generated_domain.mob_modules))
 		return TRUE
@@ -136,6 +137,7 @@
 
 
 /// Scans over neo's contents for bitrunning tech disks. Loads the items or abilities onto the avatar.
+// VOIDCREW EDIT END
 /obj/machinery/quantum_server/proc/stock_gear(mob/living/carbon/human/avatar, mob/living/carbon/human/neo, datum/lazy_template/virtual_domain/generated_domain)
 	var/domain_forbids_flags = generated_domain.external_load_flags
 

@@ -126,7 +126,7 @@ GLOBAL_LIST_EMPTY(overmap_objects)
 	if(get_interior_footprint()?.contains_turf(location))
 		return TRUE
 	for(var/datum/outpost_berth/berth as anything in berths)
-		if(berth?.reservation?.contains_turf(location))
+		if(berth?.contains_turf(location))
 			return TRUE
 	return FALSE
 
@@ -215,21 +215,23 @@ GLOBAL_LIST_EMPTY(overmap_objects)
 	close_overmap_objects = null
 	return ..()
 
-// ===== COMBAT TARGET API =====
-// Ship weapons historically targeted only ships; these hooks let other overmap
-// objects (raidable player outposts) opt in. See voidcrew/modules/ship_combat.
+// ===== NOTIFICATIONS =====
 
-/// Notification hook used by combat/docking systems. Ships notify their crew,
-/// player outposts their occupants and owner. No-op by default.
+/// Notification hook used by combat, docking and service systems. Ships notify their
+/// crew, player outposts their occupants and owner. No-op by default.
 /obj/structure/overmap/proc/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
 	return
+
+// ===== COMBAT TARGET API =====
+// Hooks ship weapons use on their target. See voidcrew/modules/ship_combat.
+// Only ships override these (ship.dm); nothing else can be a combat target.
 
 /// Whether ship weapons may acquire a lock on this object
 /obj/structure/overmap/proc/is_combat_targetable()
 	return FALSE
 
 /// Areas that scope combat sounds/shakes/camera static to the target.
-/// Null means "don't filter", correct for targets that own their whole z-level.
+/// Null means "don't filter".
 /obj/structure/overmap/proc/get_combat_target_areas()
 	return null
 

@@ -1,0 +1,121 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aWt" = (
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"bNQ" = (
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"bPv" = (
+/obj/machinery/power/rtg/advanced,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"eNa" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"fbc" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"hli" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/autolathe,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_x = -7;
+	pixel_y = 0
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 7;
+	pixel_y = 0
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"pHB" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"pZy" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"sJR" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+sJR
+bNQ
+bNQ
+bNQ
+bNQ
+bNQ
+pHB
+"}
+(2,1,1) = {"
+bNQ
+bNQ
+bNQ
+bNQ
+bNQ
+bNQ
+bNQ
+"}
+(3,1,1) = {"
+sJR
+sJR
+sJR
+bNQ
+sJR
+sJR
+sJR
+"}
+(4,1,1) = {"
+sJR
+sJR
+bPv
+bNQ
+pZy
+sJR
+sJR
+"}
+(5,1,1) = {"
+sJR
+sJR
+bPv
+bNQ
+hli
+sJR
+sJR
+"}
+(6,1,1) = {"
+sJR
+sJR
+bPv
+bNQ
+bNQ
+sJR
+sJR
+"}
+(7,1,1) = {"
+sJR
+sJR
+bNQ
+bNQ
+fbc
+sJR
+sJR
+"}
+(8,1,1) = {"
+sJR
+sJR
+aWt
+bNQ
+eNa
+sJR
+sJR
+"}

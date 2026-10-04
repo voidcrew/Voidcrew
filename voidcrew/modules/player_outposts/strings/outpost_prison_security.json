@@ -1,0 +1,344 @@
+{
+	"lines": {
+		"turret_hit": {
+			"any": [
+				"Ouch. That's gotta hurt.",
+				"Told you that thing's watching.",
+				"That's what you get.",
+				"They've got a turret on us now?"
+			],
+			"grumpy": [
+				"Stupid machines.",
+				"Next it'll shoot us for breathing."
+			],
+			"nervous": [
+				"I'm staying right here. Right here.",
+				"Oh no. Oh no, no."
+			],
+			"chatty": [
+				"Did you see that? Dropped like a sack.",
+				"And that's why I sit still."
+			],
+			"cheerful": [
+				"Somebody's taking a nap.",
+				"Well, that settles that."
+			],
+			"quiet": [
+				"Idiot.",
+				"Should've stopped."
+			]
+		},
+		"turret_smash": {
+			"any": [
+				"Get the turret!",
+				"Smash that thing!",
+				"Take out the gun first!",
+				"Break that turret!"
+			],
+			"grumpy": [
+				"Rip it out of the wall!",
+				"I've wanted to do this all week."
+			],
+			"chatty": [
+				"Turret first, then the rest!",
+				"Everybody, the turret!"
+			],
+			"nervous": [
+				"Somebody break that gun!",
+				"Get it before it gets us!"
+			],
+			"cheerful": [
+				"Let's see how it likes it!",
+				"Scrap time!"
+			],
+			"quiet": [
+				"The gun.",
+				"Break it."
+			]
+		},
+		"greet_staff": {
+			"any": [
+				"Hey, {staff}.",
+				"Hi, {staff}.",
+				"Oh, hey. Good to see you.",
+				"Hi there.",
+				"Hey. How's it going out there?"
+			],
+			"chatty": [
+				"{staff}! Come here, I've got a story for you.",
+				"Hey, {staff}, what's new out there?",
+				"Oh good, company."
+			],
+			"cheerful": [
+				"Look who it is! Hi, {staff}!",
+				"Hey hey, {staff}!",
+				"Hi! Nice to see a friendly face."
+			],
+			"quiet": [
+				"Hey.",
+				"{staff}."
+			],
+			"grumpy": [
+				"Oh. It's you. Hi.",
+				"{staff}. Hi, I guess."
+			],
+			"nervous": [
+				"H-hi, {staff}.",
+				"Oh, hi. Everything okay?"
+			]
+		},
+		"staff_enters_restless": {
+			"any": [
+				"Look who finally showed up.",
+				"Oh, now you come in.",
+				"About time, {staff}.",
+				"We've got things to talk about.",
+				"Here's the boss. Great."
+			],
+			"grumpy": [
+				"You've got some nerve walking in here.",
+				"Took you long enough, {staff}."
+			],
+			"nervous": [
+				"Um. Maybe don't stay long, {staff}.",
+				"It's getting bad in here."
+			],
+			"chatty": [
+				"Hey! We need to talk, {staff}.",
+				"Finally. Listen, things aren't good in here."
+			],
+			"cheerful": [
+				"Not a great day to visit, {staff}.",
+				"Heads up, folks are pretty sore."
+			],
+			"quiet": [
+				"Careful.",
+				"Watch yourself."
+			]
+		},
+		"huddle": {
+			"any": [
+				"When they open that door, we move.",
+				"Keep it down. They're watching.",
+				"How many of us are in?",
+				"Not yet. Wait for it.",
+				"Pass it on."
+			],
+			"grumpy": [
+				"I'm done waiting.",
+				"First one through that door is mine."
+			],
+			"nervous": [
+				"I don't like this. I don't like this at all.",
+				"What if they've got batons?"
+			],
+			"chatty": [
+				"Okay, here's the plan.",
+				"Tell the others. Quietly."
+			],
+			"cheerful": [
+				"This is kind of exciting, honestly.",
+				"Shh. Act natural."
+			],
+			"quiet": [
+				"Ready.",
+				"Wait."
+			]
+		},
+		"riot_chant": {
+			"any": [
+				"Out! Out! Out!",
+				"Let us out!",
+				"Enough! Enough!",
+				"We want out!",
+				"Open up! Open up!"
+			],
+			"grumpy": [
+				"Open the door!",
+				"No more! No more!"
+			],
+			"chatty": [
+				"Everybody! Let us out!",
+				"Louder! Let us out!"
+			],
+			"nervous": [
+				"Out! Out!",
+				"Let us out! Please!"
+			],
+			"cheerful": [
+				"Out, out, out!",
+				"Come on, louder!"
+			],
+			"quiet": [
+				"Out.",
+				"Now."
+			]
+		},
+		"riot_roar": {
+			"any": [
+				"Get 'em!",
+				"Now!",
+				"Tear it down!",
+				"Go, go, go!",
+				"Break everything!"
+			],
+			"grumpy": [
+				"Payback time!",
+				"Smash it all!"
+			],
+			"chatty": [
+				"This is it, everybody!",
+				"Now! Now!"
+			],
+			"nervous": [
+				"Oh god, here we go!",
+				"Okay, okay, go!"
+			],
+			"cheerful": [
+				"Woo! Here we go!",
+				"Let's go!"
+			],
+			"quiet": [
+				"Now.",
+				"Go."
+			]
+		}
+	},
+	"examine": {
+		"mood_0": {
+			"any": [
+				"{They} look{s} furious.",
+				"{They} look{s} ready to hit someone.",
+				"{Their} fists are clenched."
+			],
+			"grumpy": [
+				"{They} glare{s} at anyone who comes near.",
+				"{They} look{s} like {they} could break something."
+			],
+			"nervous": [
+				"{They} look{s} scared and angry at once.",
+				"{They} can't keep still. {They} look{s} close to snapping."
+			],
+			"chatty": [
+				"{They} mutter{s} angrily to nobody in particular.",
+				"{They} won't stop ranting about the wing."
+			],
+			"cheerful": [
+				"Even {they} look{s} furious now.",
+				"{They} look{s} livid, which isn't like {them}."
+			],
+			"quiet": [
+				"{They} stare{s} straight ahead, jaw tight.",
+				"{They} say{s} nothing, but {their} eyes are hard."
+			]
+		},
+		"mood_20": {
+			"any": [
+				"{They} look{s} angry.",
+				"{They} look{s} fed up and angry.",
+				"{They} seem{s} to be spoiling for a fight."
+			],
+			"grumpy": [
+				"{They} scowl{s} at everything.",
+				"{They} look{s} in a foul mood."
+			],
+			"nervous": [
+				"{They} look{s} jumpy and irritable.",
+				"{They} bite{s} {their} nails, looking cross."
+			],
+			"chatty": [
+				"{They} complain{s} to anyone who will listen.",
+				"{They} look{s} annoyed and want{s} to vent."
+			],
+			"cheerful": [
+				"{They} look{s} unusually cross.",
+				"{Their} smile is gone."
+			],
+			"quiet": [
+				"{They} look{s} sullen.",
+				"{They} keep{s} {their} head down and scowl{s}."
+			]
+		},
+		"mood_35": {
+			"any": [
+				"{They} look{s} unhappy.",
+				"{They} look{s} a bit sour.",
+				"{They} seem{s} fed up."
+			],
+			"grumpy": [
+				"{They} look{s} grumpy, even for {them}.",
+				"{They} grumble{s} under {their} breath."
+			],
+			"nervous": [
+				"{They} look{s} worried.",
+				"{They} keep{s} glancing at the door."
+			],
+			"chatty": [
+				"{They} look{s} like {they} could use someone to talk to.",
+				"{They} sigh{s} a lot."
+			],
+			"cheerful": [
+				"{They} look{s} a little down.",
+				"{They} manage{s} a weak smile."
+			],
+			"quiet": [
+				"{They} look{s} withdrawn.",
+				"{They} stare{s} at the floor."
+			]
+		},
+		"mood_50": {
+			"any": [
+				"{They} seem{s} alright.",
+				"{They} look{s} calm enough.",
+				"{They} seem{s} to be getting by."
+			],
+			"grumpy": [
+				"{They} look{s} no grumpier than usual.",
+				"{They} seem{s} to be putting up with things."
+			],
+			"nervous": [
+				"{They} look{s} a little on edge, but alright.",
+				"{They} seem{s} calm for now."
+			],
+			"chatty": [
+				"{They} look{s} up for a chat.",
+				"{They} seem{s} in a decent mood."
+			],
+			"cheerful": [
+				"{They} look{s} fairly cheerful.",
+				"{They} look{s} in good enough spirits."
+			],
+			"quiet": [
+				"{They} look{s} settled.",
+				"{They} seem{s} at ease."
+			]
+		},
+		"mood_75": {
+			"any": [
+				"{They} look{s} content.",
+				"{They} look{s} relaxed and happy.",
+				"{They} seem{s} in good spirits."
+			],
+			"grumpy": [
+				"{They} look{s} almost pleased. Almost.",
+				"For once, {they} look{s} happy."
+			],
+			"nervous": [
+				"{They} look{s} relaxed for once.",
+				"{They} seem{s} calm and comfortable."
+			],
+			"chatty": [
+				"{They} look{s} happy and ready to talk.",
+				"{They} grin{s} at whoever passes."
+			],
+			"cheerful": [
+				"{They} look{s} really happy.",
+				"{They} beam{s} at everyone."
+			],
+			"quiet": [
+				"{They} look{s} peaceful.",
+				"{They} seem{s} content."
+			]
+		}
+	}
+}

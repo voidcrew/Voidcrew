@@ -37,6 +37,9 @@
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
 	var/has_crash_landed = FALSE
+	/// Set while a crash landing waits for its dock to complete; complete_dock() then runs the crash effects.
+	/// Not a COMSIG_VOIDCREW_SHIP_DOCKED registration: NPC ships already hold that signal for themselves.
+	var/crash_dock_pending = FALSE
 	/// Integrity (mass) value when the ship crashed (for repair progress calculation)
 	var/crashed_at_integrity = 0
 	/// Timer ID for critical state alert loop
@@ -98,6 +101,7 @@
 /obj/structure/overmap/ship/proc/on_ship_recovered()
 	has_crash_landed = FALSE
 	crashed_at_integrity = 0
+	ship_metric_hull_restored(src)
 	play_ship_sound('sound/machines/computer/computer_start.ogg', 15)
 
 	// "Systems operational" on its own sends the crew straight to a refused undock, because the
@@ -135,6 +139,7 @@
 	has_crash_landed = TRUE
 	// Record current integrity for repair progress calculation
 	crashed_at_integrity = integrity
+	ship_metric_hull_failed(src)
 
 	// Stop the ship dead
 	speed[1] = 0
@@ -372,17 +377,17 @@
 	shuttle.port_destinations = dock_to_use
 	crash_site.adjust_dock_to_shuttle(dock_to_use, shuttle)
 
-	// Register for dock completion signal - effects happen the instant we land
-	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_crash_dock_complete))
+	// Effects happen the instant we land: complete_dock() runs them (see crash_dock_pending)
+	crash_dock_pending = TRUE
 
 	dock(crash_site, dock_to_use, instant = TRUE)
 
 /**
- * Signal handler - crash effects the instant docking completes
+ * Crash effects the instant docking completes
  */
-/obj/structure/overmap/ship/proc/on_crash_dock_complete(datum/source)
-	SIGNAL_HANDLER
-	UnregisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+/obj/structure/overmap/ship/proc/on_crash_dock_complete()
+	SHOULD_NOT_SLEEP(TRUE)
+	crash_dock_pending = FALSE
 
 	// Both crash paths land here, so this is the one place to catch a hull that has
 	// somehow ended up against the reservation cordon.

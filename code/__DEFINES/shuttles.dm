@@ -67,7 +67,6 @@
 // makes freed holes come back in commensurate sizes (a despawned Goon's hole fits the next
 // Goon exactly) and cuts the ~50k-entry candidate scan by ~64x. Costs at most stride-1
 // turfs of padding per axis against blocks 35-90 wide.
-#define RESERVATION_ORIGIN_STRIDE 8
 
 #define PARALLAX_LOOP_TIME 25
 #define HYPERSPACE_END_TIME 5

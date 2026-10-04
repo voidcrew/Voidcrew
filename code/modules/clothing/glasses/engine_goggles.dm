@@ -169,6 +169,7 @@
 
 	modes = list(MODE_NONE = MODE_ATMOS_THERMAL, MODE_ATMOS_THERMAL = MODE_NONE)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/clothing/glasses/meson/engine/atmos_imaging/update_icon_state()
 	icon_state = inhand_icon_state = "trayson-[mode]"
 	return ..()
@@ -182,6 +183,8 @@
  * case. A remote operator - the ship construction console's drone pilot - has to pass the
  * camera, or the readout appears around them at the console rather than around the drone.
  */
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /proc/atmos_thermal(mob/viewer, range = 5, duration = 10, atom/centre)
 	if(!ismob(viewer) || !viewer.client)
 		return
@@ -224,3 +227,4 @@
 #undef TEMP_SHADE_GREEN
 #undef TEMP_SHADE_YELLOW
 #undef TEMP_SHADE_RED
+// VOIDCREW EDIT END

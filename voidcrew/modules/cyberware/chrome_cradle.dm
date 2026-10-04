@@ -206,6 +206,7 @@
 		if(!account.adjust_money(-remainder, "Chrome Cradle: [service_name]"))
 			return FALSE
 	loaded_credits -= from_cash
+	metric_outpost_service("chrome_cradle_service", user, src, fee, 0, service_name, list("from_cash" = from_cash))
 	return TRUE
 
 // ---- Tray --------------------------------------------------------------

@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/laboratory_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "png": "bogatyr_workshop_laboratory_basic.png",
+   "src_md5": "13df39c1c772322fe0c16632eb252136",
+   "themes": {
+    "freshen_up": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "bogatyr_workshop_laboratory_basic_freshen_up.png",
+     "src_md5": "f54de37db1368850756de197a44f2ba0",
+     "width": 5
+    },
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "bogatyr_workshop_laboratory_basic_nightclub.png",
+     "src_md5": "e6e86c4920b896b873e358ff964cccb4",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

@@ -11,7 +11,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/proc/knows_contact(obj/structure/overmap/contact)
 	if(!contact)
 		return FALSE
-	// Anything that isn't a vessel (an outpost, a fixture) was never anonymous.
+	// Anything that isn't a vessel was never anonymous.
 	var/obj/structure/overmap/ship/vessel = contact
 	if(!istype(vessel))
 		return TRUE
@@ -99,7 +99,7 @@
 			to_chat(user, span_warning("Cannot target your own ship!"))
 		return FALSE
 
-	// Protected targets (e.g. green-zone player outposts) never enter the lock pipeline
+	// Only ships are combat targets; nothing else enters the lock pipeline
 	if(!new_target.is_combat_targetable())
 		if(user)
 			to_chat(user, span_warning("Weapons systems cannot resolve a firing solution on [contact_label(new_target)]."))
@@ -361,7 +361,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/proc/set_target_ship(obj/structure/overmap/new_target, mob/user)
 	return start_targeting(new_target, user)
 
-/// Gets the target's default aim turf (ships: their docking port; outposts: their arrival point)
+/// Gets the target's default aim turf (a ship's docking port)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_target_ship_port_turf()
 	return target_ship?.get_combat_default_turf()
 

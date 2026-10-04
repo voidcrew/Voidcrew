@@ -250,6 +250,8 @@
 * * seconds_per_tick - the time displacement between the last call and the current, 1 is a standard step
 * * purity_modifier - how much to modify the step's purity by (0 - 1)
 */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/equilibrium/proc/react_timestep(seconds_per_tick, purity_modifier = 1)
 	if(to_delete) //Sanity incase we try to complete a failed reaction
 		return FALSE
@@ -418,3 +420,5 @@
 	//and yielding less products than intended
 	if(total_step_added >= step_target_vol && length(holder.reaction_list) == 1)
 		to_delete = TRUE
+// VOIDCREW EDIT END
+// VOIDCREW EDIT END

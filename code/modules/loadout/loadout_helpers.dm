@@ -11,6 +11,7 @@
  * * preference_source - the preferences to draw loadout items from.
  * * visuals_only - whether we call special equipped procs, or if we just look like we equipped it
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/human/proc/equip_outfit_and_loadout(
 	datum/outfit/outfit = /datum/outfit,
 	datum/preferences/preference_source,
@@ -59,6 +60,7 @@
  *
  * Returns a list of singleton datums
  */
+// VOIDCREW EDIT END
 /proc/loadout_list_to_datums(list/loadout_list) as /list
 	var/list/datums = list()
 

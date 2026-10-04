@@ -1,0 +1,84 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aVZ" = (
+/obj/machinery/rnd/production/circuit_imprinter,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"byH" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/fishing,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"fsh" = (
+/obj/machinery/computer/rdconsole,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"fWz" = (
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"iqy" = (
+/obj/machinery/rnd/production/protolathe,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"mak" = (
+/obj/structure/closet/crate/science,
+/obj/item/stack/sheet/iron{
+	amount = 15
+	},
+/obj/item/stack/sheet/glass{
+	amount = 30
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"mnN" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"tUF" = (
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"wHh" = (
+/obj/structure/table,
+/obj/item/experi_scanner,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+"xLK" = (
+/obj/item/computer_disk/ship_disk,
+/obj/structure/frame/machine/secured,
+/obj/item/stock_parts/scanning_module,
+/obj/item/screwdriver,
+/obj/item/multitool,
+/obj/item/circuitboard/machine/rdserver/ship,
+/obj/item/stack/cable_coil/five,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+aVZ
+tUF
+fWz
+"}
+(2,1,1) = {"
+fsh
+tUF
+tUF
+"}
+(3,1,1) = {"
+iqy
+tUF
+wHh
+"}
+(4,1,1) = {"
+xLK
+tUF
+mnN
+"}
+(5,1,1) = {"
+mak
+tUF
+byH
+"}

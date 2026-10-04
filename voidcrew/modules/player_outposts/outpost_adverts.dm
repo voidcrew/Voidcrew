@@ -2,9 +2,8 @@
  * # Outpost Advertisements
  *
  * Paid galaxy-wide broadcasts. Buying one (at the outpost management console)
- * pushes a one-time notification to every crewed ship, lists the outpost on
- * the mission board's broadcast feed, and pins it on every helm's nav chart
- * for the advert's duration.
+ * pushes a one-time notification to every crewed ship and pins the outpost on
+ * every helm's nav chart for the advert's duration.
  */
 
 /// All live outpost advertisements

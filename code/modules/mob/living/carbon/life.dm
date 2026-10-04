@@ -440,6 +440,7 @@
 	breath.temperature = bodytemperature
 
 /// Attempts to take a breath from the external or internal air tank.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/proc/get_breath_from_internal(volume_needed)
 	if(invalid_internals())
 		// Unexpectely lost breathing apparatus and ability to breathe from the internal air tank.
@@ -455,6 +456,7 @@
 	// To differentiate between no internals and active, but empty internals.
 	return . || FALSE
 
+// VOIDCREW EDIT END
 /mob/living/carbon/proc/handle_blood(seconds_per_tick, times_fired)
 	return
 

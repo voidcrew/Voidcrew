@@ -11,8 +11,8 @@
  * (one interface per tgui src_object) so both can be open at once.
  *
  * Unkillable AND protected: godmode makes violence pointless, and attacking a
- * trader is aggression against outpost property. Embargo rules apply (unlike
- * the loiterers, who are squatters, not staff).
+ * trader is aggression against outpost property. Embargo rules apply. The
+ * ambient NPCs milling about are killable, and hurting them counts as violence too.
  *
  * Speech lines come from the outpost's shop datum, so each trader has their
  * own voice (see the trader_lines lists on the /datum/outpost_shop subtypes).
@@ -21,6 +21,8 @@
 #define TRADER_NPC_OPTION_TRADE "Trade"
 #define TRADER_NPC_OPTION_TALK "Talk"
 #define TRADER_NPC_OPTION_CONTRACTS "Contracts"
+/// Bounty hunting (bounty_outpost.dm): a ship hunting a fugitive here asks for a clue
+#define TRADER_NPC_OPTION_ASK "Ask about the wanted person"
 
 /// How far a customer may stand from a trader and still be served, in tiles.
 /// Two, so the counter itself doesn't have to be walked around.
@@ -178,6 +180,8 @@
 		TRADER_NPC_OPTION_TRADE = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buy"),
 		TRADER_NPC_OPTION_TALK = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_talk"),
 	)
+	if(bounty_outpost_ask_posting(src, user))
+		options[TRADER_NPC_OPTION_ASK] = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_crime")
 	if(isnull(shop_type)) // the main trader also runs the contract ledger
 		options[TRADER_NPC_OPTION_CONTRACTS] = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_quest")
 	// No require_near: that one is hardcoded to adjacency, so check_menu does the
@@ -190,6 +194,8 @@
 			shop_ui.ui_interact(user)
 		if(TRADER_NPC_OPTION_TALK)
 			speak_line(TRADER_LINE_IDLE)
+		if(TRADER_NPC_OPTION_ASK)
+			bounty_outpost_ask(src, user)
 		if(TRADER_NPC_OPTION_CONTRACTS)
 			outpost.ensure_shop_offers()
 			contracts_ui.ui_interact(user)
@@ -704,3 +710,4 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 #undef TRADER_NPC_OPTION_TRADE
 #undef TRADER_NPC_OPTION_TALK
 #undef TRADER_NPC_OPTION_CONTRACTS
+#undef TRADER_NPC_OPTION_ASK

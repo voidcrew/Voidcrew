@@ -37,7 +37,12 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
  * pinned to a person's, so it stays honest if that strategy gains more variants.
  */
 /proc/creature_threatens_people(mob/living/creature)
-	var/datum/targeting_strategy/basic/of_size/sizer = GET_TARGETING_STRATEGY(creature.ai_controller?.blackboard[BB_TARGETING_STRATEGY])
+	// No strategy to look up without a running controller: none at all, or a mob that has not
+	// initialized yet, whose ai_controller is still a type path (a trader outpost's crew while
+	// the outpost loads, with its turrets already scanning).
+	var/datum/ai_controller/controller = creature.ai_controller
+	var/strategy_type = istype(controller) ? controller.blackboard[BB_TARGETING_STRATEGY] : null
+	var/datum/targeting_strategy/basic/of_size/sizer = strategy_type ? GET_TARGETING_STRATEGY(strategy_type) : null
 	if(!istype(sizer)) // Anything not size-gated will take a swing at whatever it can reach.
 		return TRUE
 	if(sizer.inclusive && creature.mob_size == MOB_SIZE_HUMAN)
@@ -60,6 +65,26 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
  * GLOB.ai_subtrees, so this is a handful of list lookups.
  */
 /proc/is_hostile_creature(mob/living/creature)
+	// Outpost prisoners (outpost_prison_*.dm): left alone inside their wing, rioting or not;
+	// once loose outside it they are fair game. Turrets players build use outpost_prison_security.dm instead.
+	if(istype(creature, /mob/living/basic/outpost_prisoner))
+		return is_loose_outpost_prisoner(creature)
+	// Prison experiment creatures (outpost_prison_creatures.dm): fair game anywhere, like the
+	// headslug, whose stock AI already reads as hostile. Their custom AI does not.
+	if(istype(creature, /mob/living/basic/outpost_experiment))
+		return is_outpost_experiment_turret_target(creature)
+	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm): trader-outpost
+	// turrets leave them to the hunters, and no turret shoots a criminal already down, stunned or cuffed.
+	if(istype(creature, /mob/living/basic/bounty_criminal) || istype(creature, /mob/living/basic/bounty_companion))
+		if(bounty_turret_ignores(creature, istype(get_area(creature), /area/voidcrew/trader_outpost)))
+			return FALSE
+	// Bees from an outpost's own apiary never sting anyone (outpost_apiary.dm), but their
+	// stock AI still carries the hunting subtree.
+	if(istype(creature, /mob/living/basic/bee))
+		var/mob/living/basic/bee/bee = creature
+		if(bee.is_outpost_bee())
+			return FALSE
+
 	// The /hostile branch of the old simple animal tree is aggressive by definition; its
 	// retaliate-only subtypes were all moved over to /mob/living/basic long ago.
 	if(istype(creature, /mob/living/simple_animal/hostile))
@@ -75,7 +100,7 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 		return FALSE
 
 	var/datum/ai_controller/controller = creature.ai_controller
-	if(!controller)
+	if(!istype(controller)) // no AI, or not started yet (still a type path)
 		return FALSE
 
 	var/provoked = FALSE

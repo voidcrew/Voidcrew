@@ -54,19 +54,6 @@
 	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
 	},
 /area/shuttle/voidcrew/goon/commons/d)
-"cx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/medbay/d)
 "cW" = (
 /obj/structure/cable,
 /obj/item/clothing/suit/hooded/wintercoat{
@@ -130,29 +117,9 @@
 "ga" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/d)
-"gM" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/engineering/d)
 "gY" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
-"hZ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/obj/item/reagent_containers/cup/soda_cans/cola{
-	pixel_x = 9;
-	pixel_y = 6
-	},
-/turf/open/floor/iron/dollhouse/checker,
-/area/shuttle/voidcrew/goon/commons/d)
 "iY" = (
 /obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
@@ -202,6 +169,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/engineering/d)
+"lJ" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
 "mv" = (
 /obj/structure/cable,
@@ -267,6 +238,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
+"ql" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
 "qG" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 4
@@ -533,6 +510,16 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
+"BC" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/reagent_containers/cup/soda_cans/cola{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
 "CD" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_lounge"
@@ -640,6 +627,11 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/goon/bridge/d)
+"Nv" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
 "NP" = (
 /obj/structure/fans/tiny,
 /obj/machinery/button/door{
@@ -986,8 +978,8 @@ Eh
 IG
 Eh
 rI
-gY
-gM
+lJ
+UH
 Bn
 mL
 IZ
@@ -995,8 +987,8 @@ IZ
 (7,1,1) = {"
 IZ
 uW
-Eh
-cx
+Nv
+IG
 QF
 mL
 gY
@@ -1035,7 +1027,7 @@ Mx
 vc
 zK
 ZV
-hZ
+BC
 aI
 vs
 xn
@@ -1048,7 +1040,7 @@ Mx
 OT
 bl
 wU
-wU
+ql
 Qj
 eX
 wU

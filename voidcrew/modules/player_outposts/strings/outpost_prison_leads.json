@@ -1,0 +1,323 @@
+{
+	"lines": {
+		"lead_hint": {
+			"any": [
+				"I could tell you a thing or two about what's drifting out past the lanes.",
+				"Heard some useful things before they locked me up. Not that anyone asks.",
+				"I know where there's a wreck nobody's picked over yet.",
+				"Funny what you hear on a freighter. Places that aren't on anyone's chart."
+			],
+			"chatty": [
+				"I've got a story about a wreck out there. Ask me sometime.",
+				"Somebody should ask me about what I saw out in the black. Good stuff."
+			],
+			"grumpy": [
+				"Nobody in here ever asks the right questions.",
+				"I know things. Not that this crew would care."
+			],
+			"nervous": [
+				"I shouldn't say, but I know about a place out there.",
+				"I heard something before the arrest. Probably shouldn't mention it."
+			],
+			"cheerful": [
+				"Ask me about the lanes sometime! I've got a good one."
+			],
+			"quiet": [
+				"I know a place."
+			]
+		},
+		"lead_none": {
+			"any": [
+				"Nothing worth your time, boss.",
+				"Don't know anything. Sorry.",
+				"I've got nothing for you.",
+				"Can't help you there."
+			],
+			"chatty": [
+				"I wish I had something good for you. Honestly, nothing.",
+				"Nope. All my stories are boring ones."
+			],
+			"grumpy": [
+				"I don't know anything. Go ask someone else.",
+				"Do I look like a star chart to you?"
+			],
+			"nervous": [
+				"I don't know anything, I swear.",
+				"Nothing. Really. Nothing."
+			],
+			"cheerful": [
+				"Nothing juicy, sorry! Maybe next time."
+			],
+			"quiet": [
+				"Nothing.",
+				"Don't know."
+			]
+		},
+		"lead_no_ship": {
+			"any": [
+				"You've got no ship to chart it on.",
+				"Get yourself a ship first, then we'll talk.",
+				"What's the point? You've got no ship."
+			],
+			"chatty": [
+				"I'd tell you, but you've got nowhere to put it. Get a ship."
+			],
+			"grumpy": [
+				"No ship, no story."
+			],
+			"quiet": [
+				"You need a ship."
+			]
+		},
+		"lead_refuse": {
+			"any": [
+				"Why would I tell you anything?",
+				"After how you've kept us? No.",
+				"Ask me when this place stops being a dump.",
+				"I'm not helping you."
+			],
+			"chatty": [
+				"Funny. I used to talk a lot. Not to you, though."
+			],
+			"grumpy": [
+				"Get lost. You get nothing from me.",
+				"Treat us right first. Then maybe."
+			],
+			"nervous": [
+				"I don't want to talk about it. Not here.",
+				"Please, just leave me alone."
+			],
+			"cheerful": [
+				"Even I'm not in a sharing mood right now."
+			],
+			"quiet": [
+				"No."
+			]
+		},
+		"lead_refuse_hit": {
+			"any": [
+				"You hit me, and now you want favours?",
+				"You put your hands on me. We're done talking.",
+				"Hit me first, then ask nicely? No."
+			],
+			"chatty": [
+				"You know what gets people talking? Not punching them."
+			],
+			"grumpy": [
+				"You swing at me and expect a tip? Get lost."
+			],
+			"nervous": [
+				"Stay back. I'm not telling you anything."
+			],
+			"quiet": [
+				"Not after that."
+			]
+		},
+		"lead_nothing": {
+			"any": [
+				"There was a wreck I heard about, but somebody's picked it clean by now.",
+				"Old news. Whatever I knew, someone's already been there."
+			],
+			"chatty": [
+				"I had a good one, but it's all been charted since. Figures."
+			],
+			"grumpy": [
+				"Forget it. Somebody beat you to it."
+			],
+			"nervous": [
+				"It's probably gone by now. Sorry."
+			],
+			"quiet": [
+				"Too late for that one."
+			]
+		},
+		"lead_tell": {
+			"any": [
+				"There's a place called {place}, out in {band}. Nobody's picked it over yet.",
+				"Look for {place}. It's sitting out in {band}. That's all I know.",
+				"Heard a crew talking about {place} in {band}. Said it was still full."
+			],
+			"chatty": [
+				"Okay, so. {place}, out in {band}. A guy I knew swore by it."
+			],
+			"grumpy": [
+				"{place}, out in {band}. Don't say I never gave you anything."
+			],
+			"nervous": [
+				"Keep this quiet, okay? {place}, out in {band}."
+			],
+			"cheerful": [
+				"Oh, you'll like this one. {place}, out in {band}. Have fun."
+			],
+			"quiet": [
+				"{place}. Out in {band}."
+			]
+		},
+		"lead_gossip_lie": {
+			"any": [
+				"Don't fly on that. {teller}'s never been past the green.",
+				"{teller} made that up. I watched it happen.",
+				"I wouldn't trust that one. {teller} will say anything to get rid of you."
+			],
+			"chatty": [
+				"Between us? {teller} just made that place up. Classic {teller}."
+			],
+			"grumpy": [
+				"{teller}'s lying to you. Figured someone should say it."
+			],
+			"nervous": [
+				"Um. {teller} doesn't really know anything about that. Just so you know."
+			],
+			"cheerful": [
+				"Ha! {teller}'s pulling your leg, you know."
+			],
+			"quiet": [
+				"{teller} made that up."
+			]
+		},
+		"lead_gossip_true": {
+			"any": [
+				"{teller}'s not wrong. I heard about that one too.",
+				"That one's real. A friend of {teller}'s flew out there once.",
+				"{teller}'s telling it straight, for once."
+			],
+			"chatty": [
+				"Oh, that place! {teller}'s right, I heard about it too."
+			],
+			"grumpy": [
+				"Yeah, that one's real. Don't make me say it twice."
+			],
+			"nervous": [
+				"It's true, I think. {teller} wouldn't lie about that."
+			],
+			"cheerful": [
+				"That's a good tip. {teller} knows the lanes."
+			],
+			"quiet": [
+				"That one's real."
+			]
+		},
+		"lead_vouch_true": {
+			"any": [
+				"{teller}'s tip? That's real. I heard the same story.",
+				"Yeah, {teller} knows what they're talking about.",
+				"That one's straight. I'd fly it."
+			],
+			"chatty": [
+				"Oh, {teller}'s thing? That's real. Half the yard's heard of it."
+			],
+			"grumpy": [
+				"It's real. Now leave me alone."
+			],
+			"nervous": [
+				"I think it's true. {teller} doesn't lie about stuff like that."
+			],
+			"cheerful": [
+				"{teller}'s good for it. Go get it!"
+			],
+			"quiet": [
+				"It's real."
+			]
+		},
+		"lead_vouch_lie": {
+			"any": [
+				"{teller}? Made it up. Don't waste your fuel.",
+				"I wouldn't. {teller} just wanted you gone.",
+				"That place doesn't exist. {teller} was having a laugh."
+			],
+			"chatty": [
+				"Honestly? {teller} makes things up all the time. That was one of them."
+			],
+			"grumpy": [
+				"{teller}'s full of it. Everyone in here knows."
+			],
+			"nervous": [
+				"Don't tell {teller} I said so, but it's made up."
+			],
+			"cheerful": [
+				"Oh, that's a wind-up. {teller} does that."
+			],
+			"quiet": [
+				"It's made up."
+			]
+		},
+		"lead_vouch_unsure": {
+			"any": [
+				"How would I know?",
+				"No idea. Ask {teller}.",
+				"Could be real. Could be nothing."
+			],
+			"chatty": [
+				"Could go either way with {teller}. I really couldn't say."
+			],
+			"grumpy": [
+				"Not my problem."
+			],
+			"nervous": [
+				"I don't know. Honestly."
+			],
+			"cheerful": [
+				"Beats me! Maybe fly out and see?"
+			],
+			"quiet": [
+				"Don't know."
+			]
+		},
+		"lead_lie_caught": {
+			"any": [
+				"Worth a shot, boss.",
+				"Nothing there? Huh. Must have moved.",
+				"Can't blame a guy for trying."
+			],
+			"chatty": [
+				"Okay, okay. Maybe I got the name wrong. Or the place."
+			],
+			"grumpy": [
+				"What, you believed me? That's on you."
+			],
+			"nervous": [
+				"Sorry. I just wanted you to go away."
+			],
+			"cheerful": [
+				"Hey, at least you got some flying in!"
+			],
+			"quiet": [
+				"Worth a shot."
+			]
+		}
+	},
+	"tells": {
+		"any": [
+			"won't meet anyone's eye.",
+			"answers a bit too quickly.",
+			"glances at the others before answering.",
+			"clears their throat twice."
+		],
+		"chatty": [
+			"talks faster than usual.",
+			"laughs a little too loudly."
+		],
+		"grumpy": [
+			"holds a stare a beat too long.",
+			"folds their arms and looks away."
+		],
+		"nervous": [
+			"fidgets with their sleeve.",
+			"swallows hard."
+		],
+		"cheerful": [
+			"smiles a bit too widely."
+		],
+		"quiet": [
+			"looks at the floor."
+		]
+	},
+	"fake_names": [
+		"Kessler Relay",
+		"Ore Barge Amity",
+		"Drydock Nine",
+		"The Long Haul",
+		"Halvorsen Salvage Tender",
+		"Tern Survey Post"
+	]
+}

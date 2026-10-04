@@ -1,8 +1,11 @@
 /datum/map_template/shuttle/voidcrew/bogatyr
+	available_themes = list("trashed", "freshen_up", "nightclub")
+	has_upgrade_slots = TRUE
+	upgrade_slot_ids = list("eva_bay", "laboratory", "medical_bay", "engineering")
 	name = "Bogatyr-class Explorator"
 	suffix = "bogatyr"
 	short_name = "Bogatyr-class"
-	part_requirements = list(PART_CLASS_SCIENCE = 2)
+	part_requirements = list(PART_CLASS_COMBAT = 5, PART_CLASS_SCIENCE = 2, PART_CLASS_TRADE = 2, PART_CLASS_MISC = 1)
 
 	job_slots = list(
 		list(

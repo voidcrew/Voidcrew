@@ -373,6 +373,7 @@
 
 	// Update state
 	negotiation_state = success ? NEGOTIATION_ACCEPTED : NEGOTIATION_REJECTED
+	npc_metric_negotiation_ended(src, success, reason)
 
 	// Grant immunity BEFORE telling AI to disengage (prevents immediate re-targeting)
 	if(success)

@@ -377,7 +377,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/medbay)
 "ie" = (
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/turf/closed/wall/r_wall/plastitanium/syndicate/nodiagonal,
 /area/shuttle/voidcrew/luxembourg/dormitories)
 "ig" = (
 /obj/structure/table,
@@ -652,6 +652,14 @@
 /area/shuttle/voidcrew/luxembourg/engineering)
 "qg" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/luxembourg/engineering)
+"qh" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 1
+	},
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/luxembourg/engineering)
@@ -1055,7 +1063,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/cargo)
 "CP" = (
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/turf/closed/wall/r_wall/plastitanium/syndicate/nodiagonal,
 /area/shuttle/voidcrew/luxembourg/cargo)
 "Db" = (
 /obj/structure/table,
@@ -1577,7 +1585,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/cargo)
 "VR" = (
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/turf/closed/wall/r_wall/plastitanium/syndicate/nodiagonal,
 /area/shuttle/voidcrew/luxembourg/engineering)
 "VZ" = (
 /obj/machinery/power/terminal{
@@ -1911,7 +1919,7 @@ Ka
 Hy
 sq
 vx
-qg
+qh
 iR
 hd
 "}

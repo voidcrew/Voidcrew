@@ -1,82 +1,25 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"byP" = (
-/obj/modular_map_connector,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/obj/effect/turf_decal/siding/white{
-	dir = 10
-	},
-/turf/template_noop,
-/area/template_noop)
-"cdp" = (
-/obj/effect/turf_decal/siding/white{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/turf/template_noop,
-/area/template_noop)
-"cfu" = (
-/obj/effect/turf_decal/siding/white{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/turf/template_noop,
-/area/template_noop)
-"fbz" = (
-/obj/effect/turf_decal/siding/white,
-/turf/template_noop,
-/area/template_noop)
-"gSm" = (
-/obj/effect/turf_decal/siding/thinplating/dark{
-	layer = 2.041
-	},
-/obj/item/storage/belt/mining/alt,
-/obj/item/clothing/glasses/meson,
-/obj/item/gps/mining{
-	pixel_x = -8;
-	pixel_y = -8
-	},
-/obj/item/clothing/shoes/workboots{
-	pixel_x = -4;
-	pixel_y = -9
-	},
-/obj/item/clothing/gloves/fingerless{
-	pixel_x = -1;
-	pixel_y = -4
-	},
-/obj/effect/turf_decal/siding/wideplating/dark{
-	dir = 1
-	},
+"dGw" = (
 /obj/structure/closet/secure_closet/miner{
 	name = "miner's locker";
 	anchored = 1
 	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	layer = 2.041
+	},
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
 /turf/template_noop,
 /area/template_noop)
-"hdK" = (
+"dUI" = (
 /obj/effect/turf_decal/siding/white{
-	dir = 5
+	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
-"mPK" = (
-/obj/effect/turf_decal/siding/white,
-/obj/structure/extinguisher_cabinet/directional/south{
-	pixel_x = -6;
-	pixel_y = -28
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/template_noop,
-/area/template_noop)
-"oGb" = (
+"ePQ" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
 	layer = 2.041
 	},
@@ -86,23 +29,47 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"xJs" = (
+"foz" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fWp" = (
+/obj/modular_map_connector,
+/obj/structure/cable,
+/obj/effect/turf_decal/siding/white{
+	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"lFN" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"lKI" = (
+/obj/effect/turf_decal/siding/white,
+/turf/template_noop,
+/area/template_noop)
+"reL" = (
+/obj/effect/turf_decal/siding/white,
+/obj/structure/extinguisher_cabinet/directional/south{
+	pixel_x = -6;
+	pixel_y = -28
+	},
+/turf/template_noop,
+/area/template_noop)
+"uHu" = (
+/obj/structure/closet/secure_closet/miner{
+	name = "miner's locker";
+	anchored = 1
+	},
 /obj/effect/turf_decal/siding/thinplating/dark{
 	layer = 2.041
-	},
-/obj/item/storage/belt/mining/alt,
-/obj/item/clothing/glasses/meson,
-/obj/item/gps/mining{
-	pixel_x = -8;
-	pixel_y = -8
-	},
-/obj/item/clothing/shoes/workboots{
-	pixel_x = -4;
-	pixel_y = -9
-	},
-/obj/item/clothing/gloves/fingerless{
-	pixel_x = -1;
-	pixel_y = -4
 	},
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -110,13 +77,9 @@
 /obj/machinery/camera/autoname{
 	dir = 1
 	},
-/obj/structure/closet/secure_closet/miner{
-	name = "miner's locker";
-	anchored = 1
-	},
 /turf/template_noop,
 /area/template_noop)
-"yhg" = (
+"xom" = (
 /obj/structure/table,
 /obj/item/stack/medical/suture{
 	pixel_x = -3;
@@ -137,22 +100,22 @@
 /area/template_noop)
 
 (1,1,1) = {"
-oGb
-cdp
-byP
+ePQ
+dUI
+fWp
 "}
 (2,1,1) = {"
-oGb
-cfu
-mPK
+ePQ
+lFN
+reL
 "}
 (3,1,1) = {"
-gSm
-cfu
-fbz
+dGw
+lFN
+lKI
 "}
 (4,1,1) = {"
-xJs
-hdK
-yhg
+uHu
+foz
+xom
 "}

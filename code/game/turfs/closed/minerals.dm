@@ -56,6 +56,7 @@
 	overlays += wall_overlay
 
 // Inlined version of the bump click element. way faster this way, the element's nice but it's too much overhead
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/mineral/Bumped(atom/movable/bumped_atom)
 	. = ..()
 	if(!isliving(bumped_atom))
@@ -76,6 +77,7 @@
 	else if(!held_item) // Preserve empty-hand bump digging for snow and mining arms.
 		INVOKE_ASYNC(bumping, TYPE_PROC_REF(/mob, ClickOn), src)
 
+// VOIDCREW EDIT END
 /turf/closed/mineral/proc/Spread_Vein()
 	var/spreadChance = initial(mineralType.spreadChance)
 	if(spreadChance)
@@ -164,6 +166,7 @@
 	return ..()
 
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /turf/closed/mineral/attackby(obj/item/I, mob/user, list/modifiers)
 	if (!ISADVANCEDTOOLUSER(user))
 		to_chat(usr, span_warning("You don't have the dexterity to do this!"))
@@ -194,6 +197,7 @@
 		gets_drilled(user, 1)
 		SSblackbox.record_feedback("tally", "pick_used_mining", 1, I.type)
 
+// VOIDCREW EDIT END
 /turf/closed/mineral/attack_hand(mob/user)
 	var/mining_arms = HAS_TRAIT(user, TRAIT_FIST_MINING)
 	if(!weak_turf && !mining_arms)

@@ -7,12 +7,11 @@
 /obj/effect/turf_decal/siding/red,
 /turf/template_noop,
 /area/template_noop)
-"laM" = (
-/obj/effect/decal/cleanable/greenglow,
-/obj/vehicle/sealed/mecha/ripley/paddy,
-/obj/effect/turf_decal/siding/red,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+"jKK" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
 /turf/template_noop,
 /area/template_noop)
 "mqp" = (
@@ -28,13 +27,10 @@
 /obj/structure/table/reinforced/titaniumglass,
 /turf/template_noop,
 /area/template_noop)
-"oVm" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/neutral/filled/warning,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+"oFG" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/vehicle/sealed/mecha/ripley/paddy,
+/obj/effect/turf_decal/siding/red,
 /turf/template_noop,
 /area/template_noop)
 "pVi" = (
@@ -61,8 +57,8 @@ pVi
 fzm
 "}
 (2,1,1) = {"
-oVm
-laM
+jKK
+oFG
 "}
 (3,1,1) = {"
 mqp

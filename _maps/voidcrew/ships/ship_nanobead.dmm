@@ -248,14 +248,6 @@
 	dir = 1
 	},
 /area/shuttle/voidcrew/ship_nanobead/hall)
-"egG" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/siding/thinplating_new,
-/obj/item/storage/fancy/donut_box{
-	pixel_z = 6
-	},
-/turf/open/floor/iron/large,
-/area/shuttle/voidcrew/ship_nanobead/bridge)
 "eRX" = (
 /obj/machinery/power/smes/engineering{
 	dir = 4
@@ -605,7 +597,7 @@
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "nje" = (
 /obj/structure/grille,
-/turf/template_noop,
+/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/ship_nanobead/maint)
 "njt" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -832,6 +824,11 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/ship_nanobead/maint)
+"tlB" = (
+/obj/machinery/computer/voidcrew_cargo,
+/obj/effect/turf_decal/siding/thinplating_new,
+/turf/open/floor/iron/large,
+/area/shuttle/voidcrew/ship_nanobead/bridge)
 "twf" = (
 /obj/machinery/computer/security{
 	dir = 8
@@ -1465,7 +1462,7 @@ ahq
 ahq
 ahq
 hHh
-egG
+tlB
 fAJ
 xwZ
 rEk

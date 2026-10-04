@@ -1,0 +1,226 @@
+{
+	"_owner": "PD (faction recruiters). Lines for the Nanotrasen and Syndicate recruiters at the trader outposts. Flavour only: no line promises a sign-up, a reward or a mechanic. A side's barbs are said to the other recruiter, so a barb's replies are in the OTHER side's voice. A conversation's replies are said by whoever the recruiter pitched to. Placeholders: {name}, {other}, {place}.",
+	"nanotrasen": {
+		"pitch": [
+			"Nanotrasen is hiring! Pilots, engineers, medics, cooks.",
+			"Steady work, a pension and a uniform that fits. Think about it.",
+			"Tired of dodging pirates on your own? We have convoys for that.",
+			"Take a pamphlet. It has pictures.",
+			"Nanotrasen looks after its own. Regular pay, a real doctor, and a ship that isn't held together with tape.",
+			"Out past the yellow line nobody's coming for you. With us, somebody is.",
+			"Full medical. Dental too. Ask me about the dental.",
+			"Nanotrasen is coming to this sector. Better to be on the inside when it does.",
+			"Hot meals, clean air, paid on time.",
+			"Whole crews welcome! Bring your captain."
+		],
+		"talk": [
+			"Hi there! Ever thought about a career with Nanotrasen?",
+			"You look like someone who appreciates a steady paycheck.",
+			"We're not taking names today. Soon, though. Remember the face.",
+			"No commitment. Just have a read.",
+			"Nanotrasen has big plans for this sector. You could be part of them.",
+			"Your whole crew could fly under our colours one day. Think about that.",
+			"Don't listen to the rumours. Our medics are very good."
+		],
+		"pamphlet": [
+			"Here, take one.",
+			"Have a read when you get a minute.",
+			"One for you. Show your captain.",
+			"The pictures are on the back.",
+			"Pass it round your crew."
+		],
+		"idle": [
+			"Where did I put my stapler?",
+			"Smile. Always smile.",
+			"Nobody reads these.",
+			"Head office wants more foot traffic.",
+			"I was promised a desk."
+		],
+		"chat": [
+			"Have you considered a career with Nanotrasen?",
+			"We've got openings for people like you.",
+			"Our dental plan is the envy of the sector.",
+			"Nanotrasen always needs good hands.",
+			"How's your employer treating you? Be honest."
+		],
+		"reply": [
+			"Nanotrasen would have that fixed by now.",
+			"Sounds like you need a better employer.",
+			"Mm. Have you got a pamphlet?",
+			"That's why we're out here.",
+			"We have a form for that."
+		],
+		"conversations": [
+			{
+				"opener": "Ever thought about a real job?",
+				"replies": ["I've got a job.", "Does it pay?", "Is this about my debts?"]
+			},
+			{
+				"opener": "Nanotrasen has openings. Great benefits.",
+				"replies": ["What's the catch?", "I've heard about your benefits.", "My cousin worked for you. Once."]
+			},
+			{
+				"opener": "You look like Nanotrasen material, friend.",
+				"replies": ["I look tired.", "I'll pass.", "Leave me out of it."]
+			}
+		],
+		"barbs": [
+			{
+				"opener": "Don't listen to {other}. Everyone {other} recruits ends up on a wanted poster.",
+				"replies": ["At least they got their pictures up.", "Better a poster than a payroll number."]
+			},
+			{
+				"opener": "Folks, {other}'s dental plan is a pair of pliers.",
+				"replies": ["Still beats your pension.", "Yours comes in triplicate."]
+			},
+			{
+				"opener": "Anyone handing out flyers in a corner isn't hiring. They're hiding.",
+				"replies": ["Says the one with a clipboard and a quota.", "Hiding from you. Can you blame us?"]
+			},
+			{
+				"opener": "Outpost security has your picture, {other}.",
+				"replies": ["Framed, I hope.", "Tell them I said hello."]
+			}
+		],
+		"poster": [
+			"There. Much better.",
+			"Straight? Straight enough.",
+			"Head office will love that."
+		],
+		"tear": [
+			"Not on this concourse.",
+			"Vandals.",
+			"That's coming down."
+		],
+		"convoy": [
+			"See that convoy? Nanotrasen runs dozens like it.",
+			"Convoys on time. That's the Nanotrasen way."
+		],
+		"leave": [
+			"Right, that's my shift.",
+			"Back to the office."
+		],
+		"attacked": [
+			"Hey! I'm with Nanotrasen!",
+			"I'll be filing a report!"
+		],
+		"violence": [
+			"I'm not paid enough for this.",
+			"Everyone stay calm!"
+		],
+		"cover": [
+			"This never happens on Nanotrasen stations!",
+			"I'm just a recruiter!"
+		]
+	},
+	"syndicate": {
+		"pitch": [
+			"The Company owns your ship, your air and your name. We only want your help.",
+			"Nanotrasen pays in scrip and promises. We pay in credits.",
+			"Free crews. Free lanes. No inspections.",
+			"Take a flyer. Read it somewhere private.",
+			"They'll tell you we're pirates. Ask them who charges for oxygen.",
+			"The Company's coming out this far. You'll want friends who aren't on its payroll.",
+			"Nobody out here asked for a landlord.",
+			"Keep your ship. Keep your cargo. Keep your name off their forms."
+		],
+		"talk": [
+			"You're not Company. Good. Talk to me.",
+			"Keep your voice down. They've got ears on this concourse.",
+			"We're not recruiting. Officially. Come back when things heat up.",
+			"You fly your own ship? Good. Keep it that way.",
+			"I'm just a friend of free crews. Nothing more.",
+			"When it starts, you'll know where to find us.",
+			"It's going to get crowded out here. Pick your side early."
+		],
+		"pamphlet": [
+			"Here. Don't let the Company see it.",
+			"Read it later. Somewhere quiet.",
+			"Take one. Pass it on.",
+			"Keep that out of sight."
+		],
+		"idle": [
+			"Too many cameras on this deck.",
+			"My contact's late. Again.",
+			"Keep moving. Look busy.",
+			"Company rats everywhere.",
+			"Smells like scrip in here."
+		],
+		"chat": [
+			"The Company treat you right? Didn't think so.",
+			"How much of your pay goes on docking fees?",
+			"We could use someone like you. Later.",
+			"Who do you think owns this station? Think harder.",
+			"Ever wonder where your fees go?"
+		],
+		"reply": [
+			"Company's fault, probably.",
+			"That's how they want it.",
+			"Figures.",
+			"Keep that to yourself.",
+			"Won't be like that forever."
+		],
+		"conversations": [
+			{
+				"opener": "Company's charging for air again. You heard?",
+				"replies": ["Everyone's heard.", "I didn't hear it from you.", "Keep your voice down."]
+			},
+			{
+				"opener": "How long till they own your ship too?",
+				"replies": ["They can try.", "Already do, near enough.", "Not my problem."]
+			},
+			{
+				"opener": "There's work for free crews. The right kind.",
+				"replies": ["I'm listening. Quietly.", "Not interested.", "Sounds like trouble."]
+			}
+		],
+		"barbs": [
+			{
+				"opener": "Your pension plan is a funeral with a logo, {other}.",
+				"replies": ["Our funerals are fully catered.", "At least ours has a plan."]
+			},
+			{
+				"opener": "How's the leash, {other}?",
+				"replies": ["Comfortable. Padded, even.", "It comes with dental."]
+			},
+			{
+				"opener": "Don't sign anything {other} gives you. Not even the pamphlet.",
+				"replies": ["The pamphlet doesn't need signing.", "Nobody's reading your flyers either."]
+			},
+			{
+				"opener": "Ask {other} what happened to the last crew who read the small print.",
+				"replies": ["They got promoted.", "They're very happy. It says so in the newsletter."]
+			}
+		],
+		"poster": [
+			"That'll give them something to read.",
+			"Let them tear that one down.",
+			"Good spot."
+		],
+		"tear": [
+			"Company rubbish.",
+			"Nobody needs to see that.",
+			"Down you come."
+		],
+		"convoy": [
+			"Company freight. Count the guns on it.",
+			"Another convoy. Wonder who paid for the escort."
+		],
+		"leave": [
+			"That's enough exposure for one day.",
+			"Time to move."
+		],
+		"attacked": [
+			"Wrong person, friend.",
+			"You'll regret that."
+		],
+		"violence": [
+			"Not my fight.",
+			"That's my cue."
+		],
+		"cover": [
+			"Heads down. Not our business.",
+			"Wake me when it's over."
+		]
+	}
+}

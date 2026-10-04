@@ -2,19 +2,52 @@ Any time you make a change to the schema files, remember to increment the databa
 
 Make sure to also update `DB_MAJOR_VERSION` and `DB_MINOR_VERSION`, which can be found in `code/__DEFINES/subsystem.dm`.
 
-The latest database version is 5.33; The query to update the schema revision table is:
+The latest database version is 5.34; The query to update the schema revision table is:
 
 ```sql
-INSERT INTO `schema_revision` (`major`, `minor`) VALUES (5, 33);
+INSERT INTO `schema_revision` (`major`, `minor`) VALUES (5, 34);
 ```
 
 or
 
 ```sql
-INSERT INTO `SS13_schema_revision` (`major`, `minor`) VALUES (5, 33);
+INSERT INTO `SS13_schema_revision` (`major`, `minor`) VALUES (5, 34);
 ```
 
 In any query remember to add a prefix to the table names if you use one.
+
+---
+
+Version 5.34, 28 September 2026, by Jackriip
+Adds the `round_metric` table for Voidcrew round metrics: economy, trade, cargo, missions, research,
+NPC ship encounters, combat tallies and deaths, one row per event.
+
+```sql
+CREATE TABLE `round_metric` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `round_id` INT(11) NOT NULL,
+  `round_seconds` INT(11) NOT NULL,
+  `datetime` DATETIME NOT NULL,
+  `category` VARCHAR(32) NOT NULL,
+  `event` VARCHAR(64) NOT NULL,
+  `ckey` VARCHAR(32) NULL,
+  `other_ckey` VARCHAR(32) NULL,
+  `ship_id` VARCHAR(64) NULL,
+  `ship_name` VARCHAR(128) NULL,
+  `ship_class` VARCHAR(128) NULL,
+  `zone` VARCHAR(8) NULL,
+  `subject` VARCHAR(255) NULL,
+  `credits` INT(11) NOT NULL DEFAULT 0,
+  `vouchers` INT(11) NOT NULL DEFAULT 0,
+  `points` INT(11) NOT NULL DEFAULT 0,
+  `quantity` INT(11) NOT NULL DEFAULT 0,
+  `details` TEXT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_round_event` (`round_id`, `category`, `event`),
+  KEY `idx_ckey_round` (`ckey`, `round_id`),
+  KEY `idx_event_datetime` (`event`, `datetime`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+```
 
 ---
 

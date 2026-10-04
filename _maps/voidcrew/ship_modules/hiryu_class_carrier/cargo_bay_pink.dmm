@@ -1,0 +1,145 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"akM" = (
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"aNl" = (
+/obj/structure/closet/crate/glitter/lavender,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"gqH" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"ikq" = (
+/obj/structure/chair/office,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"iUE" = (
+/obj/structure/closet/crate/glitter,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"jaH" = (
+/obj/effect/spawner/random/engineering/vending_restock,
+/obj/structure/closet/crate/glitter,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"jci" = (
+/obj/item/storage/bag/trash,
+/obj/structure/closet/crate/glitter/lavender,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"lyS" = (
+/obj/structure/dresser,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"nHG" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"oCB" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"oZC" = (
+/turf/template_noop,
+/area/template_noop)
+"pUt" = (
+/obj/item/circuitboard/machine/vending,
+/obj/item/screwdriver,
+/obj/structure/frame/machine/secured,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"uhW" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"uAl" = (
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"uBs" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/effect/spawner/random/maintenance,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"vEu" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+pUt
+oZC
+vEu
+"}
+(2,1,1) = {"
+akM
+jaH
+oZC
+"}
+(3,1,1) = {"
+akM
+jci
+oZC
+"}
+(4,1,1) = {"
+akM
+jaH
+oZC
+"}
+(5,1,1) = {"
+oZC
+oZC
+oZC
+"}
+(6,1,1) = {"
+uAl
+nHG
+nHG
+"}
+(7,1,1) = {"
+uAl
+uAl
+oCB
+"}
+(8,1,1) = {"
+uAl
+uAl
+lyS
+"}
+(9,1,1) = {"
+uAl
+uhW
+uBs
+"}
+(10,1,1) = {"
+oZC
+oZC
+oZC
+"}
+(11,1,1) = {"
+akM
+aNl
+oZC
+"}
+(12,1,1) = {"
+akM
+iUE
+oZC
+"}
+(13,1,1) = {"
+ikq
+aNl
+oZC
+"}
+(14,1,1) = {"
+gqH
+oZC
+oZC
+"}

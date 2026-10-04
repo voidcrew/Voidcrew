@@ -6,12 +6,11 @@
 /obj/effect/turf_decal/siding/dark,
 /turf/template_noop,
 /area/template_noop)
-"cuV" = (
-/obj/effect/decal/cleanable/greenglow,
-/obj/effect/turf_decal/siding/dark,
-/obj/vehicle/sealed/mecha/ripley,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+"cez" = (
+/obj/effect/turf_decal/siding/wideplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/neutral/filled/warning,
 /turf/template_noop,
 /area/template_noop)
 "eDq" = (
@@ -49,13 +48,10 @@
 /obj/modular_map_connector,
 /turf/template_noop,
 /area/template_noop)
-"rEY" = (
-/obj/effect/turf_decal/siding/wideplating_new{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/neutral/filled/warning,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+"rQS" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/turf_decal/siding/dark,
+/obj/vehicle/sealed/mecha/ripley,
 /turf/template_noop,
 /area/template_noop)
 
@@ -64,8 +60,8 @@ eSr
 jmY
 "}
 (2,1,1) = {"
-rEY
-cuV
+cez
+rQS
 "}
 (3,1,1) = {"
 eDq

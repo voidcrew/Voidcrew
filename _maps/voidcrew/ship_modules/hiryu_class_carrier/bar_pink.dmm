@@ -1,0 +1,163 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bCI" = (
+/obj/machinery/computer/cryopod{
+	pixel_x = 32
+	},
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"cRi" = (
+/obj/structure/table/wood,
+/obj/item/food/cakeslice/birthday,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"dAL" = (
+/obj/structure/table/wood,
+/obj/machinery/coffeemaker/impressa{
+	pixel_y = 6;
+	pixel_x = 2
+	},
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"gfU" = (
+/turf/template_noop,
+/area/template_noop)
+"ggp" = (
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"gwF" = (
+/obj/effect/spawner/random/bedsheet,
+/obj/structure/bed,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"gTg" = (
+/obj/structure/chair/comfy{
+	dir = 4
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"iuB" = (
+/obj/structure/closet/secure_closet/bar/lavaland_bartender_clothes,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"iLM" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"jZo" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"kkK" = (
+/obj/structure/closet/crate/bin,
+/obj/item/storage/bag/trash/filled,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"nyD" = (
+/obj/structure/chair/comfy/brown,
+/obj/item/trash/boritos/red,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"oOi" = (
+/obj/machinery/vending/snack/green,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"oWX" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"vma" = (
+/obj/machinery/computer/arcade{
+	dir = 1
+	},
+/turf/open/floor/eighties/red,
+/area/template_noop)
+"wwN" = (
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+"xiJ" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
+"xro" = (
+/obj/structure/table/wood,
+/obj/machinery/chem_dispenser/drinks{
+	dir = 8
+	},
+/obj/item/storage/box/drinkingglasses,
+/turf/open/floor/carpet/purple,
+/area/template_noop)
+
+(1,1,1) = {"
+oOi
+gfU
+oWX
+"}
+(2,1,1) = {"
+xiJ
+vma
+gfU
+"}
+(3,1,1) = {"
+nyD
+vma
+gfU
+"}
+(4,1,1) = {"
+xiJ
+vma
+gfU
+"}
+(5,1,1) = {"
+gfU
+gfU
+gfU
+"}
+(6,1,1) = {"
+ggp
+gwF
+gwF
+"}
+(7,1,1) = {"
+wwN
+wwN
+wwN
+"}
+(8,1,1) = {"
+wwN
+wwN
+kkK
+"}
+(9,1,1) = {"
+ggp
+bCI
+iLM
+"}
+(10,1,1) = {"
+gfU
+gfU
+gfU
+"}
+(11,1,1) = {"
+gTg
+jZo
+gfU
+"}
+(12,1,1) = {"
+cRi
+dAL
+gfU
+"}
+(13,1,1) = {"
+wwN
+iuB
+gfU
+"}
+(14,1,1) = {"
+xro
+gfU
+gfU
+"}

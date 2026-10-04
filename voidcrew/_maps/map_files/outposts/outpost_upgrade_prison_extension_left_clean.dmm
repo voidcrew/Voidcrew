@@ -1,0 +1,403 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/closed/wall,
+/area/voidcrew/player_outpost/prison_extension)
+"d" = (
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 3
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"e" = (
+/obj/structure/bookcase/random/outpost_prison,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"h" = (
+/obj/machinery/washing_machine,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"j" = (
+/obj/structure/outpost_kessler_vent,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"k" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 1
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"l" = (
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 2
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"m" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"o" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 3
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"q" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"r" = (
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"s" = (
+/obj/machinery/door/airlock/security/glass/outpost_prison_cell{
+	extension_slot = 2
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"t" = (
+/turf/template_noop,
+/area/template_noop)
+"u" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"v" = (
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"w" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"x" = (
+/obj/structure/table,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"y" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"A" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"F" = (
+/obj/effect/landmark/outpost_upgrade_snap/left{
+	seam_openings = list(3,8,10)
+	},
+/turf/closed/wall,
+/area/voidcrew/player_outpost/prison_extension)
+"G" = (
+/obj/structure/table/reinforced/prison_hatch,
+/obj/machinery/door/window/outpost_prison_yard/directional/north,
+/obj/machinery/door/window/brigdoor/outpost_prison_staff/directional/south,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"I" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"J" = (
+/obj/structure/toilet{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"L" = (
+/obj/structure/sink/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_scrubber,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"N" = (
+/obj/machinery/button/outpost_prison_bolt/directional/north{
+	extension_slot = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"O" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost/prison_extension)
+"P" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/orange{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"S" = (
+/obj/structure/closet,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/under/rank/prisoner/outpost,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/obj/item/clothing/shoes/sneakers/orange,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost/prison_extension)
+"T" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+"U" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost/prison_extension)
+"X" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost/prison_extension)
+
+(1,1,1) = {"
+b
+b
+b
+b
+b
+b
+U
+b
+U
+b
+b
+b
+b
+b
+b
+F
+"}
+(2,1,1) = {"
+b
+J
+j
+q
+b
+d
+j
+u
+r
+r
+b
+h
+m
+v
+v
+b
+"}
+(3,1,1) = {"
+U
+v
+v
+v
+o
+r
+r
+r
+r
+r
+b
+S
+v
+v
+v
+b
+"}
+(4,1,1) = {"
+b
+P
+v
+L
+U
+r
+r
+r
+r
+r
+b
+v
+v
+v
+v
+b
+"}
+(5,1,1) = {"
+b
+b
+b
+b
+b
+w
+r
+r
+r
+r
+b
+v
+v
+v
+v
+b
+"}
+(6,1,1) = {"
+b
+J
+j
+q
+b
+l
+r
+r
+r
+r
+U
+v
+v
+v
+v
+b
+"}
+(7,1,1) = {"
+U
+v
+v
+v
+s
+r
+T
+x
+A
+r
+G
+v
+v
+v
+v
+U
+"}
+(8,1,1) = {"
+b
+P
+v
+L
+U
+r
+T
+X
+A
+r
+U
+v
+v
+v
+v
+b
+"}
+(9,1,1) = {"
+b
+b
+b
+b
+b
+w
+T
+x
+A
+r
+b
+v
+v
+v
+v
+b
+"}
+(10,1,1) = {"
+b
+J
+j
+q
+b
+N
+r
+r
+r
+I
+b
+v
+v
+v
+v
+b
+"}
+(11,1,1) = {"
+U
+v
+v
+v
+k
+r
+r
+r
+r
+e
+b
+v
+v
+v
+v
+b
+"}
+(12,1,1) = {"
+b
+P
+v
+L
+U
+r
+r
+O
+r
+e
+b
+v
+y
+v
+v
+b
+"}
+(13,1,1) = {"
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+t
+"}

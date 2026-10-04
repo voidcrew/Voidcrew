@@ -80,6 +80,7 @@
 		if(!..())
 			break
 
+// VOIDCREW EDIT START - PR #272: Removes Tend Wounds Surgery Clothes-On Penalty.
 /datum/surgery_step/heal/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery, default_display_results = FALSE)
 	var/user_msg = "You succeed in fixing some of [target]'s wounds" //no period, add initial space to "addons"
 	var/target_msg = "[user] fixes some of [target]'s wounds" //see above
@@ -114,6 +115,7 @@
 		the_surgery.antispam = TRUE
 	return ..()
 
+// VOIDCREW EDIT END
 /datum/surgery_step/heal/failure(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	display_results(
 		user,

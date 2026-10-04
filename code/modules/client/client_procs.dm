@@ -935,7 +935,14 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 #if (PRELOAD_RSC == 0)
 	var/static/next_external_rsc = 0
 	var/list/external_rsc_urls = CONFIG_GET(keyed_list/external_rsc_urls)
-	if(length(external_rsc_urls))
+	// VOIDCREW EDIT ADDITION START - newer BYOND builds abort the external archive download
+	// and then stall every browser window; leave preload_rsc at 0 so they fetch on demand.
+	// See /datum/config_entry/number/external_rsc_on_demand_from_build in voidcrew/edits/config.dm.
+	var/on_demand_from_build = CONFIG_GET(number/external_rsc_on_demand_from_build)
+	if(length(external_rsc_urls) && on_demand_from_build && byond_build >= on_demand_from_build)
+		log_access("Resources: [key] on BYOND [byond_version].[byond_build] gets on-demand delivery instead of the external archive")
+	// VOIDCREW EDIT ADDITION END
+	else if(length(external_rsc_urls)) // VOIDCREW EDIT CHANGE - was if(length(external_rsc_urls))
 		next_external_rsc = WRAP(next_external_rsc+1, 1, external_rsc_urls.len+1)
 		preload_rsc = external_rsc_urls[next_external_rsc]
 #endif

@@ -421,9 +421,9 @@
 			playsound(src, 'sound/machines/pda_button/pda_button1.ogg', 100)
 			activate_survey_map(ui.user)
 		if("printResearch")
-			print_survey_notes()
+			print_survey_notes(ui.user)
 		if("cashOut")
-			cash_out()
+			cash_out(ui.user)
 		if("setTheme")
 			theme = params["theme"]
 		if("saveData")
@@ -607,6 +607,7 @@
 
 	soundloop.start()
 	survey_in_progress = TRUE
+	metric_surveyor_ckey = metric_ckey(user) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	current_survey_target = current_object
 
 	if(istype(current_object, /obj/structure/overmap/planet))
@@ -644,6 +645,7 @@
 	if(values)
 		banked_points += values["points"]
 		banked_cash += values["cash"]
+	record_metric_survey(object, values) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	data.update_survey_data(object)
 	sync_research_surveys()
 	object.surveyed = TRUE
@@ -810,17 +812,19 @@
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked), override = TRUE)
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked), override = TRUE)
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/print_survey_notes()
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/print_survey_notes(mob/user)
 	playsound(src, 'sound/items/taperecorder/taperecorder_print.ogg', 60)
 	new /obj/item/research_notes/loot/custom(src.loc, banked_points, "survey results")
+	record_metric_notes_printed(user, banked_points) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	banked_points = 0
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cash_out()
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cash_out(mob/user)
 	if(banked_cash <= 0)
 		return
 
 	var/remaining_amount = banked_cash
 	banked_cash = 0
+	record_metric_cash_out(user, remaining_amount) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 
 	var/static/list/bill_denominations = list(
 		/obj/item/stack/spacecash/c10000 = 10000,

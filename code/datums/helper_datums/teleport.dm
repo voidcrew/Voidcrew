@@ -66,9 +66,20 @@
 
 	if(!forced)
 		if(!check_teleport_valid(teleatom, destturf, channel, original_destination = destination))
-			if(ismob(teleatom))
+			// VOIDCREW EDIT CHANGE START: a zone crossing says why (voidcrew/modules/overmap, zone_teleport.dm)
+			if(teleport_crosses_zone(curturf, destturf))
+				zone_teleport_refused(teleatom)
+			else if(ismob(teleatom))
 				teleatom.balloon_alert(teleatom, "something holds you back!")
+			// VOIDCREW EDIT CHANGE END
 			return FALSE
+	// VOIDCREW EDIT ADDITION START: forced teleports skip check_teleport_valid(), but must still
+	// stay inside one overmap zone (voidcrew/modules/overmap, zone_teleport.dm), except the outpost
+	// network's own trips (voidcrew/modules/player_outposts/outpost_network.dm)
+	else if(teleport_crosses_zone(curturf, destturf) && !outpost_network_may_cross(teleatom, destturf, channel))
+		zone_teleport_refused(teleatom)
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
 
 	if(SEND_SIGNAL(teleatom, COMSIG_MOVABLE_TELEPORTING, destination, channel))
 		return FALSE
@@ -311,5 +322,16 @@
 	if(SSbitrunning.is_domain_turf(get_turf(teleported_atom)) != SSbitrunning.is_domain_turf(destination_turf))
 		return FALSE
 	// VOIDCREW EDIT END
+
+	// VOIDCREW EDIT ADDITION START - a player outpost's berths, ship bay, shipyard and ferry pen share
+	// its level but are reached only by the hangar lift (voidcrew/modules/player_outposts/outpost_level_layout.dm).
+	if(outpost_zone_teleport_refused(get_turf(teleported_atom), destination_turf, istype(original_destination) ? get_turf(original_destination) : null))
+		return FALSE
+	// VOIDCREW EDIT END
+
+	// VOIDCREW EDIT ADDITION START: teleports never cross an overmap zone boundary (voidcrew/modules/overmap, zone_teleport.dm)
+	if(teleport_crosses_zone(teleported_atom, destination_turf))
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
 
 	return TRUE

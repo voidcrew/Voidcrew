@@ -169,6 +169,7 @@
 	I.play_tool_sound(src, 80)
 	return remove_tile(user, silent)
 
+// VOIDCREW EDIT START - PR #395: Keep mapped floor dir when a ship module loads over hull plating.
 /turf/open/floor/proc/remove_tile(mob/user, silent = FALSE, make_tile = TRUE, force_plating)
 	// VOIDCREW: taking up tiles with a tool is deliberate remodeling.
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller
@@ -192,6 +193,7 @@
 	if(repair_controller)
 		repair_controller.repair_applying = was_repairing
 
+// VOIDCREW EDIT END
 /turf/open/floor/proc/has_tile()
 	return floor_tile
 
@@ -288,6 +290,7 @@
 	return FALSE
 
 /// if you are updating this make to to update /turf/open/misc/rcd_act() too
+// VOIDCREW EDIT START - PR #395: Keep mapped floor dir when a ship module loads over hull plating.
 /turf/open/floor/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
 	switch(rcd_data["[RCD_DESIGN_MODE]"])
 		if(RCD_TURF)
@@ -394,6 +397,7 @@
 			return TRUE
 	return FALSE
 
+// VOIDCREW EDIT END
 /turf/open/floor/rust_turf()
 	if(HAS_TRAIT(src, TRAIT_RUSTY))
 		return

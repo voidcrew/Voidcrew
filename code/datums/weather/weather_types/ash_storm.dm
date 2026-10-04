@@ -28,6 +28,7 @@
 	var/list/weak_sounds = list()
 	var/list/strong_sounds = list()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/ash_storm/telegraph()
 	for(var/area/impacted_area as anything in impacted_areas)
 		if(impacted_area.outdoors)
@@ -42,6 +43,7 @@
 	GLOB.ash_storm_sounds += weak_sounds
 	return ..()
 
+// VOIDCREW EDIT END
 /datum/weather/ash_storm/start()
 	GLOB.ash_storm_sounds -= weak_sounds
 	GLOB.ash_storm_sounds += strong_sounds
@@ -64,6 +66,7 @@
 	victim.adjustFireLoss(4, required_bodytype = BODYTYPE_ORGANIC)
 	return ..()
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/ash_storm/end()
 	GLOB.ash_storm_sounds -= weak_sounds
 	GLOB.ash_storm_sounds -= strong_sounds
@@ -74,6 +77,7 @@
 	return ..()
 
 //Emberfalls are the result of an ash storm passing by close to the playable area of lavaland. They have a 10% chance to trigger in place of an ash storm.
+// VOIDCREW EDIT END
 /datum/weather/ash_storm/emberfall
 	name = "emberfall"
 	desc = "A passing ash storm blankets the area in harmless embers."

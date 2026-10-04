@@ -1,0 +1,739 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ab" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/obj/item/newspaper{
+	pixel_x = -4;
+	pixel_y = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -4
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ac" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryo_cell/outpost_lab{
+	dir = 1
+	},
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ad" = (
+/turf/closed/indestructible/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ae" = (
+/obj/machinery/cryo_cell/outpost_lab{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"af" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged5";
+	alpha = 110
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ag" = (
+/obj/structure/chair/comfy/beige{
+	dir = 4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ah" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/trash/candy{
+	pixel_x = -5;
+	pixel_y = -6
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ai" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged3";
+	alpha = 140
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aj" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 2
+	},
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ak" = (
+/obj/structure/filingcabinet,
+/obj/item/folder/white,
+/obj/item/folder/white,
+/obj/structure/sign/poster/official/help_others/directional/north,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"al" = (
+/turf/open/indestructible/grimy{
+	color = "#C6B9A6"
+	},
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"am" = (
+/turf/closed/indestructible/reinforced/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"an" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor5";
+	color = "#6E4A2E";
+	alpha = 80
+	},
+/obj/structure/sink/directional/south,
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ao" = (
+/obj/structure/sign/warning/cold_temp/directional/north,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ap" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#5A3B28";
+	alpha = 90
+	},
+/obj/structure/fluff/shower_drain,
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aq" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ar" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 140
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 2
+	},
+/obj/machinery/portable_atmospherics/canister/outpost_lab_drain,
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"as" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/sleeper/outpost/medical_lab{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"at" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#7FB7D6";
+	alpha = 70
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged2";
+	alpha = 120
+	},
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"au" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/general/hidden{
+	dir = 8
+	},
+/turf/closed/indestructible/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"av" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 2
+	},
+/obj/machinery/portable_atmospherics/canister/anesthetic_mix/outpost_lab,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aw" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer/on/outpost_lab{
+	dir = 2
+	},
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ax" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "wood-broken3";
+	alpha = 170
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ay" = (
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"az" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
+	dir = 5
+	},
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aA" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged2";
+	alpha = 120
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/cleanliness/directional/west,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aC" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt{
+	pixel_x = -7;
+	pixel_y = 3
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aE" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/sleeper/outpost/medical_lab{
+	dir = 8
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aF" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged1";
+	alpha = 150
+	},
+/turf/open/indestructible/grimy{
+	color = "#C6B9A6"
+	},
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy{
+	color = "#B8AE9E"
+	},
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aH" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged4";
+	alpha = 130
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
+	dir = 10
+	},
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aI" = (
+/obj/machinery/atmospherics/components/trinary/filter/atmos/co2/outpost_lab{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/wtf_is_co2/directional/north,
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aK" = (
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -5
+	},
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aL" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aM" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#4A3A30";
+	alpha = 70
+	},
+/obj/machinery/outpost_autosurgeon,
+/obj/machinery/light/cold/no_nightlight/directional/north,
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/contraband/interdyne_gene_clinics/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aO" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aP" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "cryo log";
+	default_raw_text = "Tanks checked. Loop cold. Filter fine.<br>Tanks checked. Loop cold. Filter fine.<br>Tanks checked. Loop cold. Filter making a noise.";
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = 2
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/plating/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/item/cigbutt{
+	pixel_x = -6;
+	pixel_y = -8
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aR" = (
+/turf/open/indestructible/carpet/red,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/general/hidden{
+	dir = 1
+	},
+/turf/closed/indestructible/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aT" = (
+/obj/machinery/door/airlock/outpost/service/staff/maintenance{
+	name = "plant room"
+	},
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aU" = (
+/obj/machinery/atmospherics/pipe/smart/simple/general/hidden{
+	dir = 9
+	},
+/turf/closed/indestructible/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aV" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/folder/white{
+	pixel_x = 4;
+	pixel_y = 1
+	},
+/obj/structure/sign/eyechart/directional/north,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aW" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor4";
+	color = "#2A2622";
+	alpha = 110
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aX" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aY" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 6
+	},
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"aZ" = (
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 4
+	},
+/obj/machinery/computer/outpost_autosurgeon{
+	dir = 2
+	},
+/turf/open/indestructible/freezer,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"eT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/apc/outpost/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ih" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"mf" = (
+/obj/effect/turf_decal{
+	icon = 'icons/turf/damaged.dmi';
+	icon_state = "damaged4";
+	alpha = 110
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"op" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "med";
+	paint_colour = "#B3372E";
+	color = "#B3372E";
+	name = "painted cross";
+	desc = "A red cross, painted by hand beside the door."
+	},
+/turf/closed/indestructible/reinforced/rusty,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"pu" = (
+/obj/item/kirbyplants{
+	icon_state = "plant-10"
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"tT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants{
+	dead = 1;
+	icon_state = "plant-25"
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"vd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/bin,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"vA" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/obj/structure/noticeboard/directional/south,
+/obj/item/paper{
+	name = "notice";
+	default_raw_text = "<b>PAYMENT BEFORE TREATMENT</b><br>No credit. No exceptions."
+	},
+/obj/item/paper{
+	name = "note";
+	default_raw_text = "The slab is not a bed. Stop sleeping on the slab."
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"EV" = (
+/obj/machinery/computer/outpost_medlab_terminal{
+	dir = 1
+	},
+/obj/machinery/digital_clock/directional/south,
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"Ln" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/obj/structure/sign/warning/no_smoking/circle/directional/south,
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = -9
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"Mv" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/coffeepot{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"MQ" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/obj/machinery/light/warm/dim/directional/south,
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"Nu" = (
+/obj/structure/table,
+/obj/structure/sign/poster/contraband/smoke/directional/south,
+/obj/item/flashlight/lamp{
+	pixel_x = -7;
+	pixel_y = 10
+	},
+/obj/item/paper{
+	name = "consent form";
+	default_raw_text = "I agree to treatment by the auto-surgeon. The clinic is not responsible for lost teeth, lost time or lost property.<br><br>Signed: ______________";
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/obj/item/pen{
+	pixel_x = 8;
+	pixel_y = -2
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"Vp" = (
+/obj/structure/chair/office/light{
+	dir = 2
+	},
+/turf/open/indestructible/grimy,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"WR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/trash/can{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = -2;
+	pixel_y = 12
+	},
+/obj/item/cigbutt{
+	pixel_x = -10;
+	pixel_y = 5
+	},
+/obj/item/newspaper{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"Xl" = (
+/obj/machinery/door/airlock/outpost/service/maintenance{
+	name = "clinic"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+"ZW" = (
+/obj/machinery/door/airlock/outpost/service/maintenance{
+	name = "clinic"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/turf/open/indestructible/plating,
+/area/voidcrew/player_outpost/service_room/medical_lab)
+
+(1,1,1) = {"
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+"}
+(2,1,1) = {"
+am
+aw
+az
+aT
+aX
+aB
+ah
+ag
+tT
+am
+"}
+(3,1,1) = {"
+am
+av
+aA
+au
+ae
+aL
+aR
+aR
+vA
+am
+"}
+(4,1,1) = {"
+am
+ar
+aI
+aS
+ac
+aO
+aR
+aK
+MQ
+am
+"}
+(5,1,1) = {"
+ad
+aJ
+aH
+aU
+aP
+ay
+aR
+aR
+Ln
+am
+"}
+(6,1,1) = {"
+am
+ad
+ad
+ad
+ad
+ao
+aQ
+ax
+WR
+am
+"}
+(7,1,1) = {"
+am
+an
+at
+aj
+al
+aD
+ay
+vd
+eT
+op
+"}
+(8,1,1) = {"
+am
+aM
+ap
+aC
+af
+aF
+af
+mf
+ih
+ZW
+"}
+(9,1,1) = {"
+am
+aZ
+aa
+aY
+ay
+aG
+ay
+ay
+EV
+am
+"}
+(10,1,1) = {"
+ad
+ak
+aq
+ay
+ai
+aW
+al
+Vp
+Nu
+am
+"}
+(11,1,1) = {"
+am
+aV
+as
+aE
+ab
+aN
+ay
+pu
+Mv
+am
+"}
+(12,1,1) = {"
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+"}

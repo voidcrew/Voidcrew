@@ -10,5 +10,13 @@
 		candidate = mergers[id]
 	if(!candidate)
 		new /datum/merger(id, allowed_types, src)
-		candidate = mergers[id]
+		// VOIDCREW EDIT CHANGE START - original: candidate = mergers[id]
+		// A new group gives way to an existing group it meets, trusting that group's refresh to
+		// take us in. It does not when the member it met was itself cut off from that group
+		// (that refresh drops the member too), which left us in no group and mergers null.
+		candidate = mergers?[id]
+		if(!candidate)
+			new /datum/merger(id, allowed_types, src)
+			candidate = mergers?[id]
+		// VOIDCREW EDIT END
 	return candidate

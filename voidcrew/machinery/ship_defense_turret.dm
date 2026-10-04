@@ -103,13 +103,21 @@
  * and an anti-boarding gun that boarders can switch off is not doing its job. So the
  * gate is crew membership itself: the panel answers to minds on the owning ship's
  * team, which is exactly the set of people the turret exists to protect.
+ *
+ * Bolted to a player outpost it answers to the outpost's members instead: its owner,
+ * stewards, treasurers, residents and builders. A hull docked there keeps the ship rule,
+ * since get_outpost_from_atom() finds no outpost inside a hull.
  */
 /obj/machinery/porta_turret/ship_defense/proc/allowed_operator(mob/user)
 	if(isAdminGhostAI(user))
 		return TRUE
 	var/area/shuttle/voidcrew/ship_area = get_area(src)
 	if(!istype(ship_area))
-		return TRUE // Workshop floor, outpost, ruin - nobody's ship, nobody's lock.
+		var/obj/structure/overmap/dynamic/player_outpost/home = get_outpost_from_atom(src)
+		// Workshop floor, ruin, or a claim nobody holds: nobody's lock, like a derelict.
+		if(isnull(home) || !home.founder_ckey)
+			return TRUE
+		return home.can_manage(user) || home.can_spend(user) || home.is_resident(user) || home.can_build(user)
 	var/obj/structure/overmap/ship/ship = ship_area.shuttle_port?.current_ship
 	if(isnull(ship))
 		return TRUE
@@ -134,7 +142,7 @@
 /obj/machinery/porta_turret/ship_defense/interact(mob/user)
 	update_last_used(user)
 	if(!allowed_operator(user))
-		balloon_alert(user, "controls locked to crew!")
+		balloon_alert(user, "controls locked!")
 		return TRUE
 	toggle_on(!on)
 	balloon_alert(user, on ? "turret switched on" : "turret switched off")
@@ -150,14 +158,29 @@
  * The stock turret's ID branch flips `locked`, which used to gate the TGUI panel. There is
  * no panel any more and allowed_operator() decides who may work the controls, so a swipe
  * would have printed "Controls are now locked." and changed nothing at all - the worst kind
- * of feedback, since a crew would think they had secured the gun. Every other branch of the
- * parent (crowbar salvage, wrench bolts) is left alone.
+ * of feedback, since a crew would think they had secured the gun.
+ *
+ * The parent's other branches, unbolting a switched-off turret with a wrench and prying a
+ * wrecked one apart with a crowbar, answer to allowed_operator() as the controls do, or a
+ * visitor could carry off or scrap a turret that only needed switching off first.
  */
 /obj/machinery/porta_turret/ship_defense/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	if(!(machine_stat & BROKEN) && attacking_item.GetID())
 		balloon_alert(user, "no card reader")
-		to_chat(user, span_notice("[src] has no card reader. Its controls answer to the crew of the ship it is bolted to."))
+		to_chat(user, span_notice("[src] has no card reader. Its controls answer to the crew of the ship it is bolted to, or to the members of the outpost it is bolted to."))
 		return TRUE
+	var/unbolting = anchored && !on && !(machine_stat & BROKEN) && attacking_item.tool_behaviour == TOOL_WRENCH
+	var/salvaging = (machine_stat & BROKEN) && attacking_item.tool_behaviour == TOOL_CROWBAR
+	if((unbolting || salvaging) && !allowed_operator(user))
+		balloon_alert(user, "controls locked!")
+		return TRUE
+	return ..()
+
+/// Saving it to a multitool links it to a turret control panel, which can switch it off from anywhere.
+/obj/machinery/porta_turret/ship_defense/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(!allowed_operator(user))
+		balloon_alert(user, "controls locked!")
+		return ITEM_INTERACT_BLOCKING
 	return ..()
 
 /// Alt-click toggles wildlife targeting, leaving the turret watching for boarders only.
@@ -166,7 +189,7 @@
 		balloon_alert(user, "it's wrecked!")
 		return CLICK_ACTION_BLOCKING
 	if(!allowed_operator(user))
-		balloon_alert(user, "controls locked to crew!")
+		balloon_alert(user, "controls locked!")
 		return CLICK_ACTION_BLOCKING
 	target_wildlife = !target_wildlife
 	balloon_alert(user, target_wildlife ? "targeting wildlife" : "holding fire on wildlife")
@@ -274,7 +297,8 @@
 	// With wildlife targeting off the turret only watches for boarding parties, which are
 	// all trooper-type humanoids (pirates and their kin). Lets the crew hunt the local
 	// fauna themselves without the turret stealing every kill.
-	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper))
+	// Escaped outpost prisoners count as boarders (outpost_prison_riot.dm).
+	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper) && !is_loose_outpost_prisoner(creature))
 		return FALSE
 	if(!is_hostile_creature(creature)) // Livestock, pets and passive fauna get left alone.
 		return FALSE
@@ -344,7 +368,7 @@
 
 	if(!(machine_stat & BROKEN))
 		. += span_notice("It is switched [on ? "on" : "off"], and set to fire on [target_wildlife ? "hostile wildlife and boarding parties" : "boarding parties only"].")
-	. += span_notice("Click the housing to switch it on or off, or alt-click it to toggle wildlife targeting. The controls only answer to the crew of the ship it is bolted to.")
+	. += span_notice("Click the housing to switch it on or off, or alt-click it to toggle wildlife targeting. The controls only answer to the crew of the ship it is bolted to, or to the members of the outpost it is bolted to.")
 
 	if(anchored)
 		. += span_notice("It is bolted down. Switch it off and use a wrench to free it.")

@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lazy_template/virtual_domain/colossus
 	name = "Celestial Trial"
 	cost = BITRUNNER_COST_APEX_BOSS
@@ -11,3 +12,4 @@
 	key = "colossus"
 	map_name = "colossus"
 	reward_points = BITRUNNER_REWARD_HIGH
+// VOIDCREW EDIT END

@@ -1,0 +1,114 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bVV" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"cYl" = (
+/obj/structure/closet/crate/miningcar,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe/drill,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/gps/mining,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"eNT" = (
+/obj/structure/closet/crate/radiation{
+	name = "fuel crate"
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 20
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ikG" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"lSb" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"mho" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+"pDQ" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qjJ" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sqD" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tEh" = (
+/obj/structure/table,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ygm" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/template_noop)
+
+(1,1,1) = {"
+lSb
+bVV
+bVV
+ygm
+"}
+(2,1,1) = {"
+qjJ
+qjJ
+qjJ
+mho
+"}
+(3,1,1) = {"
+qjJ
+qjJ
+qjJ
+qjJ
+"}
+(4,1,1) = {"
+eNT
+qjJ
+qjJ
+tEh
+"}
+(5,1,1) = {"
+cYl
+qjJ
+qjJ
+tEh
+"}
+(6,1,1) = {"
+qjJ
+qjJ
+qjJ
+qjJ
+"}
+(7,1,1) = {"
+pDQ
+pDQ
+ikG
+sqD
+"}

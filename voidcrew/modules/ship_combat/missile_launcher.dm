@@ -56,7 +56,7 @@
 	else
 		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
 	if(!is_on_exterior())
-		. += span_warning("NOT ON EXTERIOR - Must be adjacent to outside of ship to fire!")
+		. += span_warning("Its firing line is blocked. It needs a clear path out to open space.")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
@@ -303,8 +303,9 @@
 	if(linked_console_ref?.resolve())
 		return
 
-	// Only auto-link if on exterior of ship
-	if(!is_on_exterior())
+	// Only auto-link if placed on the exterior of the ship. A blast door that
+	// happens to be shut right now does not change where the launcher sits.
+	if(!is_on_exterior(ignore_doors = TRUE))
 		return
 
 	// Find what ship we're on by checking areas
@@ -344,7 +345,7 @@
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys
 /// approach_dir is the direction missiles come FROM (NORTH means missiles come from north, fly south)
 /obj/machinery/ship_combat/missile_launcher/proc/fire(turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spawn_offset_x = 0, spawn_offset_y = 0, approach_dir = null)
-	if(!can_fire(target_ship))
+	if(!can_fire())
 		return FALSE
 
 	if(!target)
@@ -413,9 +414,8 @@
 	update_appearance()
 	return TRUE
 
-/// Checks if the launcher can fire. Pass the console's locked target (if any)
-/// so the yellow-zone siege exception can be evaluated.
-/obj/machinery/ship_combat/missile_launcher/proc/can_fire(obj/structure/overmap/locked_target = null)
+/// Checks if the launcher can fire
+/obj/machinery/ship_combat/missile_launcher/proc/can_fire()
 	if(machine_stat & (BROKEN|NOPOWER))
 		return FALSE
 	if(!anchored)
@@ -424,36 +424,13 @@
 		return FALSE
 	if(!is_on_exterior())
 		return FALSE
-	// Zone restriction check - weapons disabled in neutral and contested zones,
-	// unless this is a siege shot against a raidable player outpost
-	if(!SSovermap_zones.weapons_allowed_at(src) && !is_siege_shot_allowed(locked_target))
+	// Zone restriction check - weapons disabled in neutral and contested zones
+	if(!SSovermap_zones.weapons_allowed_at(src))
 		return FALSE
 	return TRUE
 
-/**
- * The yellow-zone siege exception: missile launchers may fire outside the red
- * zone when (and only when) the locked target is a raidable player outpost and
- * the firing ship isn't sitting in patrolled green space. Define-gated so it
- * can be flipped off if it warps ship-vs-ship balance.
- */
-/obj/machinery/ship_combat/missile_launcher/proc/is_siege_shot_allowed(obj/structure/overmap/locked_target)
-#ifdef PLAYER_OUTPOST_YELLOW_SIEGE_ENABLED
-	if(!istype(locked_target, /obj/structure/overmap/dynamic/player_outpost))
-		return FALSE
-	var/obj/structure/overmap/dynamic/player_outpost/outpost = locked_target
-	if(!outpost.raidable)
-		return FALSE
-	var/obj/structure/overmap/ship/our_ship = get_ship_from_atom(src)
-	if(!our_ship)
-		return FALSE
-	var/zone_type = SSovermap_zones.get_zone_type(get_turf(our_ship))
-	return zone_type == ZONE_YELLOW || zone_type == ZONE_RED
-#else
-	return FALSE
-#endif
-
 /// Returns status info for the combat console UI
-/obj/machinery/ship_combat/missile_launcher/proc/get_status(obj/structure/overmap/locked_target = null)
+/obj/machinery/ship_combat/missile_launcher/proc/get_status()
 	var/on_ext = is_on_exterior()
 	return list(
 		"id" = launcher_id,
@@ -461,7 +438,7 @@
 		"loaded" = loaded_missile ? 1 : 0,
 		"missile_name" = loaded_missile ? loaded_missile["name"] : null,
 		"missile_damage" = loaded_missile ? loaded_missile["damage"] : null,
-		"ready" = can_fire(locked_target),
+		"ready" = can_fire(),
 		"on_exterior" = on_ext,
 		"enabled" = on_ext && anchored && !(machine_stat & (BROKEN|NOPOWER)),  // Can potentially fire (positioned correctly)
 	)

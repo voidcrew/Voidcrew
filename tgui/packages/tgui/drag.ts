@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Refresh screen offsets when dragging across monitor or DPI contexts.
 /**
  * @file
  * @copyright 2020 Aleksej Komarov
@@ -315,3 +316,4 @@ const resizeMoveHandler = (event: MouseEvent) => {
   size[1] = Math.max(size[1], 50 * pixelRatio);
   setWindowSize(size);
 };
+// VOIDCREW EDIT END

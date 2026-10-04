@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/lazy_template/virtual_domain/wendigo
 	name = "Glacial Devourer"
 	cost = BITRUNNER_COST_APEX_BOSS
@@ -13,6 +14,7 @@
 	map_name = "wendigo"
 	reward_points = BITRUNNER_REWARD_HIGH
 
+// VOIDCREW EDIT END
 /obj/effect/mob_spawn/corpse/human/bitrunner/special(mob/living/spawned_mob)
 	. = ..()
 	spawned_mob.apply_status_effect(/datum/status_effect/gutted)

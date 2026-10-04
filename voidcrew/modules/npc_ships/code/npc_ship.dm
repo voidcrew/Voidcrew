@@ -279,6 +279,7 @@
 
 	// Spawn pirate crew
 	spawn_crew()
+	npc_metric_spawned(src)
 
 /obj/structure/overmap/ship/npc/examine(mob/user)
 	. = ..()
@@ -434,6 +435,7 @@
 
 	// Check if all crew are dead
 	if(!length(tracked_crew))
+		npc_metric_crew_wiped(src)
 		// The pool slot frees the instant the crew is wiped. The abandonment timer below
 		// is a separate concern - it holds the hull claimable for a while - and must not
 		// delay the replacement spawn.
@@ -488,6 +490,7 @@
 	if(spawner_resolved)
 		return FALSE
 	spawner_resolved = TRUE
+	npc_metric_resolved(src, reason)
 
 	// Report the band this hull was budgeted against; fall back to the live turf for
 	// hulls that never went through the pool spawner (admin/mission spawns)
@@ -599,6 +602,7 @@
 	SIGNAL_HANDLER
 	// When interdicted, the ship becomes boardable via force dock
 	update_boarding_state()
+	npc_metric_interdicted(src)
 
 /**
  * Updates whether this ship can be boarded based on current state.
@@ -768,6 +772,7 @@
 	// seen is the pristine one. Taking a running max also survives the AI initialising
 	// before the hull's cables have propagated a powernet.
 	baseline_engine_parts = max(baseline_engine_parts, structural_parts)
+	npc_metric_check_immobilized(src)
 
 /// Fraction of this hull's original engine bank that still contributes, 0 to 1.
 /obj/structure/overmap/ship/npc/proc/thrust_fraction()

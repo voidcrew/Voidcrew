@@ -1,0 +1,73 @@
+{
+	"_owner": "P0 seams. Fallback lines for every ambient NPC: a context an NPC's own file leaves out comes from here. Placeholders: {name}, {other}, {place}.",
+	"default": {
+		"idle": [
+			"Long day.",
+			"Could use a drink.",
+			"Nice to stand somewhere that isn't moving.",
+			"Where did I put my card?",
+			"Same as yesterday. Same as tomorrow."
+		],
+		"talk": [
+			"Hm? Oh. Hello.",
+			"Can I help you?",
+			"Busy day.",
+			"Don't mind me.",
+			"Nice ship you came in on. Probably."
+		],
+		"attacked": [
+			"Hey! Watch it!",
+			"What's your problem?",
+			"Hands off!",
+			"Are you out of your mind?"
+		],
+		"violence": [
+			"Get down!",
+			"Not again.",
+			"I'm out of here.",
+			"Somebody call the turrets!"
+		],
+		"storm": [
+			"Storm's coming! Get under something!",
+			"Weather's turning. Find cover.",
+			"Sky's going bad. Get inside."
+		],
+		"chat": [
+			"You hear about the convoy?",
+			"How's your crew holding up?",
+			"I'm thinking of signing on with a new ship.",
+			"Prices keep going up.",
+			"Did you see that wreck on the way in?"
+		],
+		"reply": [
+			"Yeah.",
+			"Can't say I have.",
+			"Tell me about it.",
+			"Same as always.",
+			"Don't get me started."
+		],
+		"leave": [
+			"That's me done.",
+			"Right. Off I go."
+		],
+		"work": [
+			"Almost got it.",
+			"Come on, you.",
+			"Who installed this?"
+		],
+		"cover": [
+			"Heads down!",
+			"Not in here. Not again."
+		],
+		"conversations": [
+			{
+				"opener": "Did your captain ever pay you for last week?",
+				"replies": ["Paid me in rations.", "What do you think?", "Half. The other half is a promise."]
+			},
+			{
+				"opener": "I swear the lift gets slower every time.",
+				"replies": ["It's the same lift.", "Take the stairs, then.", "There are no stairs."]
+			}
+		]
+	}
+}

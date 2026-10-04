@@ -342,7 +342,7 @@ together. Read their geometry notes before adapting the maps.
    every theme's `template_suffix` point to the intended hull DMMs.
 
 Player shipyard visibility is controlled by
-[`is_player_purchasable_ship()`](../../../code/modules/ship_purchase/ship_catalog_ui.dm).
+[`is_player_purchasable_ship()`](ship_catalog_ui.dm).
 Normal modular hulls need `has_upgrade_slots` and a nonempty slot or theme list,
 with `player_hidden = FALSE`. `player_hidden = TRUE` keeps development fixtures
 off the shelf. `force_purchasable` is for deliberately listed exceptions such as

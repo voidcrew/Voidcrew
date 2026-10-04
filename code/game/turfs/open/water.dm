@@ -83,32 +83,6 @@
 	UnregisterSignal(src, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
 	return ..()
 
-// VOIDCREW EDIT ADDITION START - water is RCD-buildable, like every other hazardous open turf.
-//
-// /turf/open/water hangs off /turf/open directly rather than off /turf/open/floor or
-// /turf/open/misc, so it inherited /atom/rcd_vals()'s bare FALSE and had no rcd_act() at
-// all. rcd_create() returns NONE on a falsey rcd_vals with no message, so clicking water
-// with an RCD did nothing whatsoever and said nothing about it. Ponds and rivers are all
-// over the planet ruins here, which is where the report came from.
-//
-// Deliberately the same terms lava, chasms and open space already get (see
-// /turf/open/lava/rcd_vals, /turf/open/chasm/rcd_vals, /turf/open/openspace/rcd_vals):
-// 3 matter units, no delay, plating placed ON TOP so the water stays underneath it and
-// comes back when the plating is pulled up. Deep water is not treated differently -
-// bridging it is the point, and lava is not gated either.
-/turf/open/water/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
-	if(the_rcd.mode == RCD_TURF && the_rcd.rcd_design_path == /turf/open/floor/plating/rcd)
-		return list("delay" = 0, "cost" = 3)
-	return FALSE
-
-/turf/open/water/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
-	if(rcd_data["[RCD_DESIGN_MODE]"] == RCD_TURF && rcd_data["[RCD_DESIGN_PATH]"] == /turf/open/floor/plating/rcd)
-		place_on_top(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
-		return TRUE
-	return FALSE
-// VOIDCREW EDIT ADDITION END
-
-
 /turf/open/water/jungle
 
 /turf/open/water/no_planet_atmos
@@ -227,9 +201,11 @@
 
 ///Registers the signals from the immerse element and calls dip_in if the movable has the required trait.
 /turf/open/water/hot_spring/proc/enter_hot_spring(atom/movable/movable)
-	RegisterSignal(movable, SIGNAL_ADDTRAIT(TRAIT_IMMERSED), PROC_REF(dip_in))
+	// VOIDCREW EDIT CHANGE START - a loading ship can init an atom and then enter it on the same spring
+	RegisterSignal(movable, SIGNAL_ADDTRAIT(TRAIT_IMMERSED), PROC_REF(dip_in), override = TRUE)
 	if(isliving(movable)) //so far, exiting a hot spring only has effects on living mobs.
-		RegisterSignal(movable, SIGNAL_REMOVETRAIT(TRAIT_IMMERSED), PROC_REF(dip_out))
+		RegisterSignal(movable, SIGNAL_REMOVETRAIT(TRAIT_IMMERSED), PROC_REF(dip_out), override = TRUE)
+	// VOIDCREW EDIT CHANGE END
 
 	if(HAS_TRAIT(movable, TRAIT_IMMERSED))
 		dip_in(movable)

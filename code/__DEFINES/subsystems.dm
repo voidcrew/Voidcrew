@@ -20,7 +20,7 @@
  *
  * make sure you add an update to the schema_version stable in the db changelog
  */
-#define DB_MINOR_VERSION 33
+#define DB_MINOR_VERSION 34 // VOIDCREW EDIT - 34 adds round_metric (voidcrew/modules/metrics)
 
 
 //! ## Timing subsystem

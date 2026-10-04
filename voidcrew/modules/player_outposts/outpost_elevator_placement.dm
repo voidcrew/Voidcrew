@@ -2,7 +2,7 @@
  * # Outpost Hangar Elevator Placement
  *
  * Construction-console workflow that lets a player outpost install the hangar
- * elevator used by trader outposts. Three drone actions:
+ * elevator used by trader outposts. Three Tools-tab actions of the outpost console:
  *
  * - Plan: projects a survey-console-style overlay of the elevator kit under the
  *   drone, a 3x3 alcove, a 3-tile backing wall and a ghost of the wall panel.
@@ -26,12 +26,6 @@
 	var/elevator_preview_dir = NORTH
 	/// Live blueprint overlay images (shown to current_user while planning)
 	var/list/elevator_preview_images
-
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/populate_actions_list()
-	..()
-	actions += new /datum/action/innate/construction/ship/elevator_plan(src)
-	actions += new /datum/action/innate/construction/ship/elevator_rotate(src)
-	actions += new /datum/action/innate/construction/ship/elevator_confirm(src)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/remove_eye_control(mob/living/user)
 	stop_elevator_planning()
@@ -160,6 +154,8 @@
 		return FALSE
 	if(locate(/obj/docking_port) in tile)
 		return FALSE
+	if(outpost.upgrade_at_turf(tile))
+		return FALSE
 	for(var/obj/machinery/computer/console in tile)
 		if(console == src || istype(console, /obj/machinery/computer/player_outpost_management))
 			return FALSE
@@ -244,55 +240,45 @@
 		if(obstruction.anchored || obstruction.density)
 			qdel(obstruction)
 
-// ===== DRONE ACTIONS =====
+// ===== TOOLS TAB =====
 
-/datum/action/innate/construction/ship/elevator_plan
-	name = "Plan Hangar Elevator"
-	button_icon = 'icons/mob/actions/actions_mecha.dmi'
-	button_icon_state = "mech_zoom_off"
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/ui_static_data(mob/user)
+	. = ..()
+	.["isOutpost"] = TRUE
 
-/datum/action/innate/construction/ship/elevator_plan/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/console = base_console
-	if(!istype(console) || !console.outpost)
-		return
-	if(console.elevator_planning)
-		console.stop_elevator_planning()
-		remote_eye.balloon_alert(owner, "elevator blueprint cleared")
-	else
-		console.start_elevator_planning()
-		remote_eye.balloon_alert(owner, "elevator blueprint projected")
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/ui_data(mob/user)
+	. = ..()
+	.["elevatorPlanning"] = elevator_planning
 
-/datum/action/innate/construction/ship/elevator_rotate
-	name = "Rotate Elevator Blueprint"
-	button_icon = 'icons/mob/actions/actions_mecha.dmi'
-	button_icon_state = "mech_cycle_equip_off"
-
-/datum/action/innate/construction/ship/elevator_rotate/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/console = base_console
-	if(!istype(console))
-		return
-	if(!console.elevator_planning)
-		remote_eye.balloon_alert(owner, "no elevator blueprint active!")
-		return
-	console.elevator_preview_dir = turn(console.elevator_preview_dir, -90)
-	console.update_elevator_preview()
-	remote_eye.balloon_alert(owner, "panel wall: [dir2text(console.elevator_preview_dir)]")
-
-/datum/action/innate/construction/ship/elevator_confirm
-	name = "Confirm Elevator Placement"
-	button_icon = 'icons/mob/actions/actions_construction.dmi'
-	button_icon_state = "build"
-
-/datum/action/innate/construction/ship/elevator_confirm/Activate()
-	if(..())
-		return
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/console = base_console
-	if(!istype(console))
-		return
-	console.try_place_elevator(owner)
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/drone_tool_act(action, list/params, mob/user)
+	switch(action)
+		if("elevator_plan")
+			if(!is_drone_operator(user))
+				return TRUE
+			if(!outpost)
+				return TRUE
+			if(elevator_planning)
+				stop_elevator_planning()
+				drone_alert(user, "elevator blueprint cleared")
+			else
+				start_elevator_planning()
+				drone_alert(user, "elevator blueprint projected")
+			return TRUE
+		if("elevator_rotate")
+			if(!is_drone_operator(user))
+				return TRUE
+			if(!elevator_planning)
+				drone_alert(user, "no elevator blueprint active!")
+				return TRUE
+			elevator_preview_dir = turn(elevator_preview_dir, -90)
+			update_elevator_preview()
+			drone_alert(user, "panel wall: [dir2text(elevator_preview_dir)]")
+			return TRUE
+		if("elevator_confirm")
+			if(!is_drone_operator(user))
+				return TRUE
+			try_place_elevator(user)
+			return TRUE
+	return ..()
 
 #undef ELEVATOR_ALCOVE_SIZE

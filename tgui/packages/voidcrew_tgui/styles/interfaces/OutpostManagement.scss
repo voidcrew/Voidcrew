@@ -1,0 +1,586 @@
+$amber: #efb966;
+$ice: #80c7d0;
+$ink: #0c0a0b;
+$text: #dddcd4;
+$muted: #969588;
+$red: #b3283f;
+$line: rgba(158, 36, 52, 0.36);
+
+// ===== Shell =====
+
+.Outpost {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 42%, rgba(122, 18, 34, 0.24), transparent 72%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px),
+    $ink;
+  color: $text;
+  font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  user-select: none;
+}
+
+.Outpost__header {
+  display: flex;
+  flex: 0 0 auto;
+  height: 34px;
+  margin: 8px 10px 0;
+  border: 1px solid rgba(158, 36, 52, 0.4);
+  background: linear-gradient(#1a0e10, #110a0b);
+}
+.Outpost__cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 14px;
+  border-left: 1px solid rgba(158, 36, 52, 0.3);
+  font: 12px Consolas, monospace;
+  white-space: nowrap;
+  &:first-child { border-left: 0; }
+  strong { overflow: hidden; text-overflow: ellipsis; }
+}
+.Outpost__cell--name {
+  flex: 1 1 auto;
+  color: $amber;
+  font-size: 14px;
+  .Icon { color: $red; }
+}
+.Outpost__cell--owner { color: $text; }
+.Outpost__cell--treasury strong { color: $ice; }
+.Outpost__cell-label { font-size: 9px; letter-spacing: 1.5px; color: $muted; }
+
+.Outpost__tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 3px;
+  margin: 8px 10px 0;
+  padding-left: 2px;
+  border-bottom: 1px solid rgba(179, 40, 63, 0.6);
+}
+.Outpost__tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 31px;
+  margin-bottom: -1px;
+  padding: 0 18px;
+  border: 1px solid rgba(158, 36, 52, 0.3);
+  border-bottom-color: rgba(179, 40, 63, 0.6);
+  background: linear-gradient(#1a1012, #120b0c);
+  color: #9d9384;
+  font: 11px 'Arial Narrow', 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  outline: none;
+  &:hover { color: #f1dfbb; }
+  .Icon { color: #7a5a4a; }
+}
+.Outpost__tab--active {
+  color: $amber;
+  background: linear-gradient(#2c1418, #0f0a0b);
+  border-color: rgba(179, 40, 63, 0.75);
+  border-bottom-color: #0f0a0b;
+  .Icon { color: $amber; }
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    top: -1px;
+    height: 2px;
+    background: $amber;
+  }
+}
+.Outpost__badge {
+  min-width: 17px;
+  padding: 1px 5px;
+  border-radius: 9px;
+  background: $red;
+  color: #ffeacb;
+  font: bold 10px Consolas, monospace;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.Outpost__banner {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 7px;
+  margin: 8px 10px 0;
+  padding: 5px 10px;
+  border: 1px solid rgba($amber, 0.3);
+  background: rgba($amber, 0.1);
+  color: $amber;
+  font-size: 11px;
+}
+
+// ===== Pages and frames =====
+
+.Outpost__page {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 10px;
+  min-height: 0;
+  padding: 10px;
+}
+.Outpost__page--single { grid-template-columns: 1fr; }
+.Outpost__page--halves { grid-template-columns: 1fr 1fr; }
+.Outpost__page--ships { grid-template-columns: 5fr 7fr; }
+.Outpost__page--wide-left { grid-template-columns: 7fr 5fr; }
+.Outpost__col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.Outpost__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-height: 0;
+  border: 1px solid $line;
+  background: rgba(15, 10, 11, 0.78);
+  box-shadow: inset 0 0 36px rgba(96, 12, 26, 0.14);
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    pointer-events: none;
+  }
+  &::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid $red;
+    border-left: 2px solid $red;
+  }
+  &::after {
+    right: -1px;
+    bottom: -1px;
+    border-right: 2px solid $red;
+    border-bottom: 2px solid $red;
+  }
+}
+.Outpost__frame--fill { flex: 1 1 auto; }
+.Outpost__frame-head {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(158, 36, 52, 0.32);
+  background: linear-gradient(90deg, rgba(128, 22, 38, 0.3), rgba(128, 22, 38, 0) 75%);
+  color: $amber;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  .Icon { color: #c2485a; }
+}
+.Outpost__frame-extra {
+  margin-left: auto;
+  color: $muted;
+  font: 11px Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.Outpost__frame-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 2px 12px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #5e2a31 transparent;
+}
+.Outpost__frame-body--flush {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+.Outpost__frame-foot {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid rgba(158, 36, 52, 0.28);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+// ===== Rows and text =====
+
+.Outpost__section {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba($ice, 0.16);
+  color: $ice;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+.Outpost__section-count {
+  margin-left: auto;
+  color: $muted;
+  font: 10px Consolas, monospace;
+  letter-spacing: 0;
+}
+.Outpost__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  > .Icon { flex: 0 0 auto; color: #7c6a5c; }
+  > .Button, > .NumberInput { flex-shrink: 0; }
+}
+.Outpost__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #e4dfd2;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.Outpost__plain { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.Outpost__grow { flex: 1 1 auto; min-width: 0; }
+.Outpost__none { padding: 9px 0; color: #6e695f; font-size: 11px; }
+// Shared with the prison warden console (OutpostPrison.tsx).
+.Outpost__section-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-bottom: 7px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: $ice;
+  border-bottom: 1px solid rgba($ice, 0.18);
+  span { font-family: 'Consolas', monospace; color: $muted; }
+}
+.Outpost__quiet { padding: 10px 0; color: $muted; font-size: 11px; }
+.Outpost__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 65px;
+  color: $muted;
+  font-size: 11px;
+  > .Icon { font-size: 18px; opacity: 0.7; }
+}
+.Outpost__tag {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid rgba($amber, 0.3);
+  color: #cfae7a;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.Outpost__mono { font-family: Consolas, monospace; }
+.Outpost__muted { color: $muted; }
+.Outpost__dash { color: #5c574f; }
+.Outpost__label {
+  flex: 0 0 auto;
+  min-width: 72px;
+  color: $muted;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.Outpost__field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  font-size: 12px;
+  > .Input, > .Dropdown, > .Outpost__grow {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+.Outpost__field-row--follow { margin-top: 6px; }
+.Outpost__field-row--password { margin-top: 8px; }
+.Outpost__field-row--lead { margin-top: 10px; }
+.Outpost__field-row--apart { margin-top: 14px; }
+.Outpost__field-label {
+  display: block;
+  margin: 14px 0 6px;
+  color: $muted;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.Outpost__alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-left: 2px solid $amber;
+  background: rgba($amber, 0.08);
+  color: $amber;
+  font-size: 12px;
+}
+.Outpost__dot { flex: 0 0 5px; height: 5px; border-radius: 50%; background: #645f53; }
+.Outpost__dot--online { background: #8dbb79; box-shadow: 0 0 6px #63945280; }
+.Outpost__person {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  small { color: $muted; font-size: 10px; }
+}
+.Outpost__countdown { flex: 0 0 auto; color: $amber; font: 12px 'Consolas', monospace; }
+.Outpost__amount { flex: 0 0 auto; color: #9fbd85; font: 12px 'Consolas', monospace; }
+.Outpost__amount--refund { color: #e7a296; }
+.Outpost__time { flex: 0 0 38px; color: $muted; font: 10px 'Consolas', monospace; }
+
+// ===== Switches =====
+
+.Outpost__segment { display: flex; margin-top: 10px; }
+.Outpost__segment--inline { margin-top: 0; }
+.Outpost .Outpost__segment > .Button {
+  flex: 1 1 0;
+  min-width: 0;
+  margin-left: -1px;
+  border-radius: 0;
+  &:first-child { margin-left: 0; border-radius: 2px 0 0 2px; }
+  &:last-child { border-radius: 0 2px 2px 0; }
+  &.Button--selected { position: relative; z-index: 1; }
+}
+.Outpost .Outpost__segment--inline > .Button { flex: 0 0 auto; min-height: 24px; padding: 0 8px; }
+.Outpost__chips { display: flex; gap: 3px; }
+.Outpost .Outpost__chips > .Button { min-height: 24px; padding: 0 8px; }
+
+// ===== Ships =====
+
+.Outpost__ships-head, .Outpost__ship {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 126px 124px 92px;
+  align-items: center;
+  column-gap: 10px;
+}
+.Outpost__ships-head {
+  padding: 9px 0 5px 12px;
+  border-bottom: 1px solid rgba($ice, 0.16);
+  color: $ice;
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+.Outpost__ship {
+  position: relative;
+  min-height: 50px;
+  padding: 6px 0 6px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+    width: 2px;
+    background: rgba($amber, 0.4);
+  }
+}
+.Outpost__ship--leaving {
+  background: linear-gradient(90deg, rgba(150, 30, 44, 0.16), transparent 70%);
+  &::before { background: #c2364b; }
+}
+.Outpost__ship-name {
+  overflow: hidden;
+  color: #e4dfd2;
+  font-size: 13px;
+  font-weight: bold;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.Outpost__ship-sub { margin-top: 3px; color: $muted; font: 11px Consolas, monospace; }
+.Outpost__slot { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.Outpost__slot--end { justify-content: flex-end; }
+.Outpost__state { color: #cfae7a; font-size: 11px; }
+
+// ===== Rooms =====
+
+.Outpost__room {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 124px;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 38px;
+  margin: 0 -8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 2px solid transparent;
+  font-size: 12px;
+  cursor: pointer;
+  &:hover { background: rgba($amber, 0.05); }
+}
+.Outpost__room--selected {
+  border-left-color: $amber;
+  background: linear-gradient(90deg, rgba($amber, 0.12), rgba($amber, 0.02));
+}
+.Outpost__room-sub {
+  margin: 0 -8px;
+  padding: 2px 8px 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  .Outpost__row { min-height: 30px; }
+}
+.Outpost__price { color: $amber; font: 12px Consolas, monospace; white-space: nowrap; }
+.Outpost__preview {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 180px;
+  border: 1px solid rgba(158, 36, 52, 0.3);
+  background: rgba(0, 0, 0, 0.45);
+}
+.Outpost__desc { flex: 0 0 auto; margin-top: 10px; color: #bdb8ab; font-size: 12px; }
+.Outpost__buy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  > .Outpost__price { flex: 1 1 auto; font-size: 14px; }
+}
+
+// ===== Placement map =====
+
+.Outpost__heading {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba($amber, 0.19);
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: $amber;
+}
+.Outpost__placement { flex-direction: row; align-items: flex-start; gap: 12px; }
+.Outpost__map {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 0;
+  line-height: 0;
+  border: 1px solid rgba($amber, 0.22);
+  > canvas { display: block; width: 576px; max-width: 100%; height: auto; cursor: crosshair; }
+}
+.Outpost__map--panning > canvas { cursor: grabbing; }
+.Outpost__map-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: normal;
+  color: $amber;
+  font-size: 12px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.55);
+}
+.Outpost__map-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  line-height: normal;
+  background: rgba(11, 12, 12, 0.94);
+  border: 1px solid rgba($amber, 0.4);
+  box-shadow: 0 2px 8px #000000a0;
+  z-index: 2;
+  > .Button { justify-content: flex-start; }
+}
+.Outpost__map-side {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 170px;
+  max-height: 100%;
+  overflow-y: auto;
+}
+.Outpost__map-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.Outpost__map-actions--first { margin-top: 0; }
+
+// ===== Pricing and outpost =====
+
+.Outpost__readout { color: $amber; font: 20px Consolas, monospace; }
+.Outpost__total {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  margin-top: 4px;
+  border-top: 1px solid rgba($amber, 0.3);
+  color: $amber;
+  font-size: 12px;
+  font-weight: bold;
+  > span:first-child { flex: 1 1 auto; }
+}
+
+// ===== Controls =====
+
+.Outpost {
+  .Button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    margin: 0;
+    padding: 0 9px;
+    border: 1px solid #75604170;
+    border-radius: 2px;
+    background: linear-gradient(#343026, #211e18);
+    box-shadow: inset 0 1px 0 #ffffff09, 0 1px 2px #00000060;
+    color: #d0c4ab;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    // The shared content wrapper stretches by default, defeating the button's centering.
+    > .Button__content { align-self: center; }
+    &.Button--selected { background: linear-gradient(#71552d, #4c381d); border-color: #d2a25790; color: #ffe0a5; }
+    &:hover:not(.Button--disabled) { border-color: $amber; color: #fff3d4; }
+    &.Button--disabled { opacity: 0.4; }
+    &.Button--color--bad { background: linear-gradient(#492820, #301b18); color: #e7a296; border-color: #94564b80; }
+    &.Button--color--good { background: linear-gradient(#2a402b, #1a2c1d); color: #b2d8a0; border-color: #7b986380; }
+  }
+  .Input, .TextArea, .NumberInput { background: #0b0d0ca8; border-color: #77664760; color: $text; font-size: 12px; }
+  .Input { min-height: 28px; }
+  .Input__input, .TextArea__textarea { color: $text; font-family: 'Consolas', monospace; }
+  .NumberInput { min-height: 27px; }
+  .Dropdown__control {
+    min-height: 28px;
+    width: 100% !important;
+    background: linear-gradient(#343026, #211e18);
+    border: 1px solid #75604170;
+    color: $text;
+  }
+}

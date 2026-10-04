@@ -235,6 +235,10 @@
 	var/max_height = world.maxy - (SHUTTLE_TRANSIT_BORDER * 2) - 1
 	return width <= max_width && height <= max_height
 
+/datum/turf_reservation
+	/// Who asked for this block: request_turf_block_reservation()'s `requester` text, or null
+	var/requester
+
 /**
  * Deals out a zone band (ZONE_GREEN/YELLOW/RED) for the next roundstart planet.
  *

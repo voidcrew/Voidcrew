@@ -24,7 +24,6 @@
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "bl" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "br" = (
@@ -45,46 +44,20 @@
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "bU" = (
-/obj/item/clothing/suit/toggle/labcoat/science,
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
-"cx" = (
-/mob/living/basic/blankbody{
-	health = 200;
-	name = "Chief Science Officer"
-	},
-/turf/open/floor/mineral/titanium/purple,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "cD" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "cL" = (
-/obj/machinery/computer/communications,
+/obj/machinery/computer/mission_board,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"cT" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/bogatyr/infirmary)
 "dm" = (
-/obj/structure/closet/crate/science,
-/obj/item/stack/cable_coil,
-/obj/item/stack/sheet/iron/fifty,
-/obj/item/stack/sheet/glass/fifty,
-/obj/effect/decal/cleanable/blood,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/storage/box/rndboards{
-	desc = "A box containing a gift for worthy russians.";
-	name = "\proper russian science program"
-	},
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "dH" = (
 /obj/effect/decal/cleanable/dirt,
@@ -94,18 +67,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "dS" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	name = "\improper TOZ-1"
-	},
-/obj/item/ammo_casing/shotgun/laserslug{
-	pixel_x = 2;
-	pixel_y = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/item/ammo_casing/shotgun/improvised,
 /obj/machinery/airalarm/directional/north,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/armory)
 "en" = (
 /obj/structure/table,
@@ -113,61 +76,11 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"eB" = (
-/obj/item/storage/toolbox/mechanical{
-	pixel_x = -1
-	},
-/obj/item/clothing/under/rank/engineering/engineer,
-/obj/item/clothing/gloves/color/yellow,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/stack/cable_coil,
-/obj/item/stack/cable_coil,
-/obj/machinery/power/terminal,
-/obj/structure/cable,
-/obj/item/clothing/head/utility/welding,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
-"fa" = (
-/obj/structure/frame/computer,
-/obj/effect/decal/cleanable/blood/gibs/down,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
-"fm" = (
-/obj/structure/closet/crate/miningcar{
-	name = "traditional russian storage apparatus"
-	},
-/obj/item/pickaxe/improvised,
-/obj/item/pickaxe/improvised,
-/obj/item/mining_scanner,
-/obj/item/mining_scanner,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/storage/bag/ore,
-/obj/item/storage/bag/ore,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "fA" = (
 /obj/structure/chair,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"fR" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/maintenance)
-"gg" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
-"gs" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
 "gv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small,
@@ -179,8 +92,7 @@
 "ix" = (
 /obj/machinery/airalarm/directional/north,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/mineral/titanium/yellow,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "iN" = (
 /turf/closed/wall/r_wall,
@@ -191,30 +103,21 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"jT" = (
-/obj/structure/cable,
-/obj/machinery/power/shuttle_engine/ship/electric{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "kh" = (
 /obj/structure/sign/poster/contraband/free_tonto,
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/central)
 "kp" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/turf/open/floor/mineral/plastitanium,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "la" = (
-/obj/effect/decal/cleanable/blood,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "lJ" = (
 /obj/structure/chair/office{
@@ -254,12 +157,8 @@
 /obj/item/reagent_containers/cup/glass/flask/gold{
 	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
 	},
-/obj/item/areaeditor/shuttle,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"on" = (
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "oq" = (
 /obj/machinery/door/airlock/medical{
 	name = "Infirmary"
@@ -269,36 +168,17 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/infirmary)
-"ow" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/power/terminal,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "oz" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"oS" = (
-/obj/structure/closet/crate/radiation{
-	name = "fuel crate"
-	},
-/obj/item/stack/sheet/mineral/uranium/five,
-/obj/item/stack/sheet/mineral/uranium/five,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/greenglow,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "pF" = (
-/obj/effect/decal/cleanable/blood/old,
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/structure/bed,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "pG" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -307,10 +187,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bogatyr/central)
-"pO" = (
-/obj/structure/sign/poster/official/twelve_gauge,
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/armory)
 "pV" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
@@ -318,20 +194,17 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bogatyr/maintenance)
 "pX" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/obj/modular_map_root/ship_upgrade{
+	key = "laboratory"
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "qo" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"qs" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "qw" = (
 /obj/machinery/vending/cigarette,
 /obj/structure/cable,
@@ -350,49 +223,26 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "qR" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/item/trash/syndi_cakes,
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
-/turf/open/floor/mineral/plastitanium,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "ri" = (
-/obj/effect/decal/cleanable/glass,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/purple,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
-"rv" = (
-/obj/structure/sign/poster/random,
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/infirmary)
-"rK" = (
-/obj/structure/sign/poster/contraband/syndicate_recruitment{
-	pixel_x = 4;
-	pixel_y = 4
-	},
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/armory)
 "rO" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "st" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -7;
-	pixel_y = 2
-	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small{
 	dir = 8
 	},
-/obj/item/ammo_box/a762,
-/obj/item/ammo_box/a762,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/armory)
 "sx" = (
 /obj/effect/decal/cleanable/dirt,
@@ -422,22 +272,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"ue" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/power/terminal,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "uh" = (
-/obj/structure/closet/crate/hydroponics,
-/obj/effect/spawner/random/maintenance/three,
-/obj/item/reagent_containers/spray/cleaner,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/item/radio/intercom/directional/north,
-/turf/open/floor/mineral/titanium/yellow,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "vH" = (
 /obj/structure/chair{
@@ -448,16 +287,18 @@
 /area/shuttle/voidcrew/bogatyr/central)
 "vX" = (
 /obj/machinery/mineral/ore_redemption{
-	req_access = null
+	req_access = null;
+	dir = 4;
+	input_dir = 8;
+	output_dir = 4
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "wt" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "wN" = (
 /obj/machinery/atmospherics/components/tank/air{
@@ -475,54 +316,23 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "xm" = (
-/obj/structure/rack,
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/armory)
 "xy" = (
-/obj/structure/closet/crate/internals,
-/obj/effect/spawner/random/maintenance/three,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/yellow,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "xL" = (
 /obj/machinery/cryopod,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "xR" = (
-/obj/structure/tank_dispenser,
-/turf/open/floor/mineral/titanium/yellow,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
-"yG" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
-"yR" = (
-/obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery{
-	pixel_y = 5
-	},
-/turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/bogatyr/infirmary)
-"zc" = (
-/obj/machinery/power/smes,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "zf" = (
 /obj/machinery/light{
 	dir = 1
@@ -532,18 +342,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "zl" = (
-/obj/structure/rack,
-/obj/item/knife/hunting{
-	pixel_y = -1
-	},
-/obj/item/knife/hunting{
-	pixel_y = 7
-	},
-/obj/item/knife/hunting{
-	pixel_y = -9
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/armory)
 "zL" = (
 /obj/structure/table,
@@ -558,14 +357,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"Ak" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/armory)
 "AD" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -575,16 +366,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"AH" = (
-/obj/structure/fans/tiny,
-/obj/machinery/door/poddoor{
-	id = "blastdoors"
-	},
-/obj/docking_port/mobile/voidcrew/bogatyr{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "AQ" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small{
@@ -597,6 +378,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
+/obj/machinery/mission_pad,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
 "AV" = (
@@ -619,25 +401,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"By" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "BA" = (
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/bridge)
 "BE" = (
-/obj/structure/table,
-/obj/item/toy/plush/moth{
-	name = "emotional support moth plushie"
-	},
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "CP" = (
 /obj/effect/decal/cleanable/dirt,
@@ -652,18 +423,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"Dk" = (
-/obj/structure/closet/crate/critter{
-	name = "rare and exotic russian native animals"
-	},
-/obj/item/food/deadmouse,
-/mob/living/basic/cockroach/glockroach,
-/mob/living/basic/pet/dog/corgi,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "Do" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -683,11 +442,10 @@
 "DN" = (
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/kirbyplants/dead{
-	desc = "A little bit of nature contained in a pot. It looks dead, and reeks of potato liquor.";
-	name = "potted plant"
-	},
 /obj/item/radio/intercom/directional/north,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "Eo" = (
@@ -697,15 +455,11 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "EC" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/machinery/light/small/broken{
-	dir = 4;
-	name = "light fixture"
-	},
-/obj/structure/bed,
 /obj/machinery/airalarm/directional/east,
-/obj/item/radio/intercom/directional/north,
-/turf/open/floor/mineral/titanium/blue,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "ED" = (
 /obj/structure/sign/poster/contraband/d_day_promo,
@@ -720,10 +474,6 @@
 /obj/machinery/autolathe,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"EN" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "EQ" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/structure/cable,
@@ -738,7 +488,7 @@
 /area/shuttle/voidcrew/bogatyr/maintenance)
 "FF" = (
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "FI" = (
 /obj/effect/decal/cleanable/dirt,
@@ -760,10 +510,6 @@
 /obj/effect/decal/cleanable/food/egg_smudge,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"Gw" = (
-/obj/effect/decal/cleanable/blood/gibs/core,
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
 "Hb" = (
 /obj/machinery/door/airlock{
 	name = "Dormitories"
@@ -804,19 +550,16 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/cargo)
-"JC" = (
-/obj/structure/table,
-/obj/item/storage/medkit/toxin{
-	pixel_y = 8
-	},
-/obj/item/storage/medkit/o2{
-	pixel_y = -1
-	},
-/turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/bogatyr/infirmary)
+"Jr" = (
+/obj/modular_map_connector,
+/turf/closed/wall/r_wall,
+/area/shuttle/voidcrew/bogatyr/maintenance)
 "JP" = (
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
+/obj/modular_map_root/ship_upgrade{
+	key = "engineering"
+	},
+/turf/template_noop,
+/area/shuttle/voidcrew/bogatyr/maintenance)
 "Kj" = (
 /obj/structure/chair/office{
 	dir = 1
@@ -836,28 +579,16 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "Ks" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/frame/machine,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
-"KT" = (
-/obj/machinery/power/smes/engineering,
-/obj/structure/cable,
-/obj/machinery/door/window{
-	dir = 1
-	},
-/obj/structure/window/reinforced/spawner,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "LM" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "LQ" = (
 /obj/machinery/vending/sovietsoda,
@@ -865,9 +596,8 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
 "LU" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "LY" = (
 /turf/closed/wall/r_wall,
@@ -880,33 +610,8 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"Nq" = (
-/obj/structure/closet/crate{
-	name = "authentic russian cuisine crate"
-	},
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/food/rationpack,
-/obj/item/reagent_containers/cup/glass/waterbottle/large,
-/obj/item/reagent_containers/cup/glass/waterbottle/large,
-/obj/item/reagent_containers/cup/glass/bottle/vodka,
-/obj/item/reagent_containers/cup/glass/bottle/vodka,
-/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka,
-/obj/machinery/light/broken,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "NC" = (
-/obj/machinery/door/airlock/external,
-/obj/structure/fans/tiny,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
-"NM" = (
-/obj/structure/sign/poster/random,
-/turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/maintenance)
 "NW" = (
 /obj/effect/decal/cleanable/dirt,
@@ -927,33 +632,17 @@
 /obj/machinery/computer/helm,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"Pa" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small{
-	dir = 1
-	},
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
 "Pv" = (
-/obj/effect/decal/cleanable/blood/gibs/up,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/directional/north,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "PC" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "Qo" = (
-/obj/effect/decal/cleanable/blood/innards,
-/obj/effect/decal/cleanable/blood,
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/laboratory)
 "Qr" = (
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -961,50 +650,15 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "QB" = (
-/obj/structure/rack,
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = 8
-	},
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = -7
-	},
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = 1
-	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small{
 	dir = 4
 	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/armory)
-"Rv" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/armory)
-"RD" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
-"RN" = (
-/obj/machinery/door/airlock/vault{
-	name = "Armory"
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium/red,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/armory)
 "Sg" = (
-/obj/machinery/iv_drip,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "Sl" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1015,13 +669,6 @@
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/dormitories)
-"SP" = (
-/obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "To" = (
 /obj/machinery/door/airlock/command{
 	name = "Bridge"
@@ -1032,8 +679,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
 "TD" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium,
+/obj/modular_map_root/ship_upgrade{
+	key = "eva_bay"
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "TF" = (
 /obj/machinery/vending/sustenance,
@@ -1047,10 +696,9 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/cargo)
 "Ut" = (
-/obj/structure/barricade/wooden/crude,
 /obj/machinery/door/airlock/science{
 	name = "Laboratory"
 	},
@@ -1060,43 +708,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/laboratory)
-"Ux" = (
-/obj/machinery/button/door{
-	id = "blastdoors";
-	name = "Cargo Bay Blast Doors";
-	pixel_x = -24
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/cargo)
-"UX" = (
-/obj/structure/rack,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/melee/chainofcommand,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/armory)
-"UZ" = (
-/obj/machinery/power/port_gen/pacman/pre_loaded,
-/obj/effect/turf_decal/box,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/turf/open/floor/plating,
+"Vs" = (
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/maintenance)
-"VD" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/table_frame,
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
 "VF" = (
-/obj/structure/closet/crate/freezer/blood,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
-"VL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "VM" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/maintenance)
@@ -1108,12 +725,21 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
 "Wu" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/turf/open/floor/mineral/titanium/blue,
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
+"Wv" = (
+/obj/docking_port/mobile/voidcrew/bogatyr{
+	dir = 1;
+	port_direction = 2;
+	preferred_direction = 4
+	},
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/bogatyr/maintenance)
 "WR" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor{
@@ -1121,16 +747,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"WX" = (
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/armory)
-"WY" = (
-/obj/effect/decal/cleanable/blood/oil,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/bogatyr/cargo)
 "Xh" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/cargo)
@@ -1148,19 +764,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
 "XL" = (
-/obj/machinery/modular_computer/console/preset/command,
+/obj/machinery/computer/bank_machine,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
-"Yr" = (
-/obj/machinery/light/broken{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/radio/intercom/directional/north,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/purple,
-/area/shuttle/voidcrew/bogatyr/laboratory)
 "YI" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/directional/north,
@@ -1178,17 +784,21 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
 "YY" = (
-/obj/machinery/light,
-/obj/structure/cable,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/central)
+/obj/machinery/button/door{
+	id = "blastdoors";
+	name = "Cargo Bay Blast Doors";
+	pixel_x = -24
+	},
+/turf/template_noop,
+/area/shuttle/voidcrew/bogatyr/cargo)
 "Zr" = (
 /turf/template_noop,
 /area/template_noop)
 "ZE" = (
-/obj/structure/table,
-/obj/item/storage/medkit/regular,
-/turf/open/floor/mineral/titanium/blue,
+/obj/modular_map_root/ship_upgrade{
+	key = "medical_bay"
+	},
+/turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/infirmary)
 "ZK" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1199,19 +809,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"ZX" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/bogatyr/maintenance)
-"ZZ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogatyr/armory)
 
 (1,1,1) = {"
 Zr
@@ -1228,7 +825,7 @@ aE
 Xh
 Xh
 Jl
-AH
+Jl
 Jl
 Xh
 Zr
@@ -1248,9 +845,9 @@ qQ
 mM
 EK
 cD
-Ux
-on
-on
+YY
+xR
+xR
 TD
 ED
 VM
@@ -1271,8 +868,8 @@ oz
 xb
 Uk
 kp
-JP
-yG
+kp
+kp
 qR
 VM
 wN
@@ -1292,8 +889,8 @@ tk
 Gs
 ZK
 vX
-WY
-Dk
+LM
+xR
 wt
 LM
 Je
@@ -1312,12 +909,12 @@ CY
 br
 Ho
 CP
-YY
+Ie
 Xh
 ix
 xy
-VL
-fm
+xR
+xR
 VM
 gv
 VM
@@ -1325,7 +922,7 @@ Zr
 "}
 (6,1,1) = {"
 WR
-XL
+cL
 AR
 qo
 Sl
@@ -1337,17 +934,17 @@ Gf
 Ie
 Xh
 uh
-oS
-SP
-Nq
+xR
+xR
+xR
 VM
 pV
 VM
-Zr
+VM
 "}
 (7,1,1) = {"
 WR
-cL
+XL
 NW
 To
 xb
@@ -1358,14 +955,14 @@ rO
 aL
 jm
 bC
-EN
-By
-JP
-JP
+xR
+xR
+xR
+xR
 VM
 pV
 NC
-Zr
+Wv
 "}
 (8,1,1) = {"
 WR
@@ -1381,13 +978,13 @@ LQ
 xb
 Xh
 xR
-RD
-qs
-qs
+xR
+xR
+xR
 VM
 pV
 VM
-Zr
+Jr
 "}
 (9,1,1) = {"
 qo
@@ -1401,21 +998,21 @@ LY
 LY
 SB
 xb
-WX
-pO
-WX
-rK
-VM
-VM
-gg
-fR
-ZX
+zl
+zl
+zl
+zl
+Vs
+Vs
+Vs
+Vs
+JP
 "}
 (10,1,1) = {"
 Zr
 iN
 Pv
-fa
+Ks
 pX
 iN
 YI
@@ -1423,42 +1020,42 @@ Qr
 Xx
 LY
 sx
-WX
+zl
 dS
 st
 zl
-VM
-zc
-ue
-KT
-jT
+Vs
+Vs
+Vs
+Vs
+Vs
 "}
 (11,1,1) = {"
 Zr
 iN
 Ks
 bU
-gs
+la
 aB
 sB
 dH
 bl
 LY
 AD
-RN
-ZZ
-Rv
-Ak
-NM
-Pa
-ow
-KT
-jT
+zl
+zl
+zl
+zl
+Vs
+Vs
+Vs
+Vs
+Vs
 "}
 (12,1,1) = {"
 Zr
 iN
-Yr
+Ks
 ri
 la
 iN
@@ -1467,42 +1064,42 @@ AQ
 bl
 LY
 aL
-WX
+zl
 xm
 QB
-UX
-VM
-UZ
-eB
-KT
-jT
+zl
+Vs
+Vs
+Vs
+Vs
+Vs
 "}
 (13,1,1) = {"
 Zr
 iN
-Gw
-cx
 Ks
+Ks
+dm
 iN
 xL
 SB
 LY
 LY
 oq
-WX
-WX
-WX
-WX
-VM
-VM
-VM
-VM
-Zr
+zl
+zl
+zl
+zl
+Vs
+Vs
+Vs
+Vs
+Vs
 "}
 (14,1,1) = {"
 Zr
 iN
-VD
+Ks
 Qo
 dm
 iN
@@ -1511,7 +1108,7 @@ PC
 BE
 FF
 Wu
-cT
+VF
 ZE
 PC
 Zr
@@ -1534,7 +1131,7 @@ VF
 LU
 Sg
 Kq
-JC
+VF
 PC
 Zr
 Zr
@@ -1554,9 +1151,9 @@ Zr
 PC
 PC
 EC
-yR
+VF
 pF
-rv
+PC
 PC
 Zr
 Zr

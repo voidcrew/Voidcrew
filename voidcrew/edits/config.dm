@@ -17,6 +17,23 @@
 	default = FALSE
 
 /**
+ * Clients on this BYOND build or newer are not given EXTERNAL_RSC_URLS and fetch
+ * resources on demand instead.
+ *
+ * Builds 516.1677 through at least 516.1688 abort the external resource archive
+ * download in roughly half of all attempts (CloudFront logs, 16-18 Sep 2026:
+ * 516.1667 6% partial, 516.1679 45%, 516.1681 47%, 516.1685 53%, 516.1687 47%).
+ * While the download runs, and after it aborts, those clients do not load
+ * browse() windows, so every tgui window times out as a zombie and sounds are
+ * dropped. Sessions where the client skipped the download and fetched on demand
+ * worked normally. 516.1687's release note admits a race in the HTTP client used
+ * for preload_rsc. Raise this when BYOND ships a fixed build; 0 disables the check.
+ */
+/datum/config_entry/number/external_rsc_on_demand_from_build
+	default = 1677
+	min_val = 0
+
+/**
  * Hard ceiling on world.maxz.
  *
  * BYOND never frees a z-level. Every one ever minted keeps its full 255x255 turf plane

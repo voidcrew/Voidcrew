@@ -162,6 +162,8 @@ SUBSYSTEM_DEF(planet_mobs)
 		return
 	total_managed_mobs = max(0, total_managed_mobs - tracker.spawned_count)
 	tracker.spawned_count = 0
+	// World population (voidcrew/modules/ambient_npcs): its sites go with it; the next build is a new planet
+	SSambient_npcs.forget_planet(planet_key)
 
 	// Drop ourselves out of the z's tenant list rather than deleting the key: on a packed
 	// level the other tenants are still standing on it.
@@ -254,7 +256,11 @@ SUBSYSTEM_DEF(planet_mobs)
 
 /// Populates the planet from its pre-indexed spawn turfs.
 /datum/controller/subsystem/planet_mobs/proc/spawn_planet_mobs(datum/planet_mob_tracker/tracker)
-	tracker.spawned_count += spawn_for_tracker(tracker)
+	// World population (voidcrew/modules/ambient_npcs): the planet's people first, out of the same budget
+	var/people = SSambient_npcs.populate_planet(tracker)
+	tracker.spawned_count += people
+	total_managed_mobs += people
+	tracker.spawned_count += spawn_for_tracker(tracker, people)
 	tracker.populated = TRUE
 
 /**
@@ -301,9 +307,9 @@ SUBSYSTEM_DEF(planet_mobs)
 		return TRUE
 	return FALSE
 
-/// Spawns up to this planet's own zone-scaled cap from its candidate turfs.
-/// Returns how many mobs it actually spawned.
-/datum/controller/subsystem/planet_mobs/proc/spawn_for_tracker(datum/planet_mob_tracker/tracker)
+/// Spawns up to this planet's own zone-scaled cap from its candidate turfs, less `already_spawned`
+/// (the planet's people, spawned first out of the same cap). Returns how many mobs it actually spawned.
+/datum/controller/subsystem/planet_mobs/proc/spawn_for_tracker(datum/planet_mob_tracker/tracker, already_spawned = 0)
 	var/list/spawn_turfs = tracker.surface_spawn_turfs
 	if(!length(spawn_turfs))
 		return 0
@@ -313,7 +319,7 @@ SUBSYSTEM_DEF(planet_mobs)
 	// instead of four of them splitting one z's worth.
 	var/planet_cap = tracker.mob_cap || per_planet_mob_cap
 
-	var/spawned = 0
+	var/spawned = already_spawned
 	var/list/available_turfs = spawn_turfs.Copy()
 	// Where the crew's ships are parked, plus PLANET_DOCK_HOSTILE_CLEARANCE. Fauna spawns the
 	// moment somebody lands, from candidates scattered over the whole planet - including the
@@ -360,7 +366,7 @@ SUBSYSTEM_DEF(planet_mobs)
 		spawned++
 		total_managed_mobs++
 
-	return spawned
+	return spawned - already_spawned
 
 /**
  * A biome's mob_spawn_list minus structure spawners and the SPAWN_MEGAFAUNA sentinel -
@@ -418,6 +424,8 @@ SUBSYSTEM_DEF(planet_mobs)
 	tracker.spawned_count = 0
 	tracker.populated = FALSE
 	tracker.player_left_time = 0
+	// World population (voidcrew/modules/ambient_npcs): the sweep took the planet's people too, until the next visit
+	SSambient_npcs.planet_depopulated(tracker)
 
 /**
  * Whether a mob may be despawned. Anything a player is attached to, anything dead

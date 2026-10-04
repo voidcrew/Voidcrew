@@ -1,0 +1,138 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"eVG" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/obj/item/folder/syndicate/red,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"hOd" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = /obj/item/katana
+	},
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 29
+	},
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"jJe" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"mxC" = (
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"nTz" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/dresser,
+/obj/structure/mirror/directional/east,
+/obj/item/toy/captainsaid,
+/obj/item/binoculars,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"oFg" = (
+/turf/template_noop,
+/area/template_noop)
+"pFb" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"pIl" = (
+/obj/machinery/mission_pad,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 9
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"qDi" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"qIh" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"qKc" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"rPX" = (
+/mob/living/basic/carp/pet/cayenne,
+/obj/structure/bed/dogbed/cayenne,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 10
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"sCl" = (
+/obj/structure/table/wood,
+/obj/machinery/recharger,
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 11
+	},
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"vEi" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+"xNq" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/template_noop)
+
+(1,1,1) = {"
+oFg
+oFg
+oFg
+mxC
+oFg
+oFg
+jJe
+"}
+(2,1,1) = {"
+qIh
+mxC
+mxC
+mxC
+mxC
+mxC
+qDi
+"}
+(3,1,1) = {"
+eVG
+mxC
+pIl
+qKc
+rPX
+mxC
+nTz
+"}
+(4,1,1) = {"
+oFg
+hOd
+xNq
+vEi
+pFb
+sCl
+oFg
+"}

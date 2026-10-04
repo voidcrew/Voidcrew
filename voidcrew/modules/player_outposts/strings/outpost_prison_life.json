@@ -1,0 +1,975 @@
+{
+	"lines": {
+		"arrival_crew_friend": {
+			"any": [
+				"{other}? They got you too?",
+				"Well, look who it is. Hey, {other}.",
+				"{other}! Didn't think I'd see you in here.",
+				"At least I know someone. Hi, {other}.",
+				"Same crew, same cell block. Figures.",
+				"Good. A friendly face.",
+				"Oh, thank god, someone I know."
+			],
+			"chatty": [
+				"{other}! Save me a seat at dinner, yeah?",
+				"Oh, this is great. {other}, you have to tell me everything.",
+				"No way. The whole crew's ending up in here, isn't it?"
+			],
+			"cheerful": [
+				"{other}! Best news I've had all week.",
+				"Hey, crewmate! Still owe me for that card game.",
+				"Well, this just got a lot less boring."
+			],
+			"grumpy": [
+				"{other}. Great. Now I get to hear you snore again.",
+				"Of course you're here, {other}.",
+				"Didn't think they'd catch you. Guess they caught everyone."
+			],
+			"nervous": [
+				"{other}? Oh, thank god. Stick with me, okay?",
+				"Is that {other}? Okay. Okay, good.",
+				"At least I'm not on my own in here."
+			],
+			"quiet": [
+				"Hey, {other}.",
+				"Didn't expect you here.",
+				"Good to see a face I know."
+			]
+		},
+		"arrival_crew_rival": {
+			"any": [
+				"Oh, you've got to be kidding me. {other}.",
+				"{other}. Stay out of my way in here.",
+				"Of all the cell blocks in the sector.",
+				"I know you, {other}. Don't think I forgot.",
+				"Great. Someone I can't stand, right off.",
+				"Keep your distance, {other}.",
+				"Brilliant. Guess who's in here."
+			],
+			"grumpy": [
+				"{other}. You still owe me, and I haven't forgotten.",
+				"Should've known you'd end up in here too.",
+				"Of course. Of course they're here."
+			],
+			"chatty": [
+				"Well, if it isn't {other}. Lovely. Really.",
+				"{other}! Still telling people it was my fault?",
+				"You know who's in here? The one person I didn't want to see."
+			],
+			"nervous": [
+				"Oh no. {other}'s here.",
+				"Please tell me that's not {other}.",
+				"Oh, this is bad. This is really bad."
+			],
+			"quiet": [
+				"{other}.",
+				"Not you.",
+				"Great."
+			],
+			"cheerful": [
+				"{other}! No hard feelings? No? Okay.",
+				"Well, we'll just have to get along, won't we?"
+			]
+		},
+		"fight_argue_grudge": {
+			"any": [
+				"You've had it in for me since I got here.",
+				"This is about last time, isn't it?",
+				"I'm sick of you, {other}.",
+				"You think I forgot what you did?",
+				"Every day it's something with you.",
+				"Say it to my face, {other}.",
+				"I've been waiting for this.",
+				"We're settling this now."
+			],
+			"grumpy": [
+				"I've put up with you long enough.",
+				"You and me, {other}. Right now.",
+				"I've had it with you."
+			],
+			"nervous": [
+				"I didn't do anything to you, {other}! Back off!",
+				"Why is it always me?",
+				"Leave me alone! I mean it!"
+			],
+			"chatty": [
+				"You want to talk about last time? Fine, let's talk.",
+				"Everyone knows what you did, {other}.",
+				"Go on, tell everyone your side. I'll wait."
+			],
+			"cheerful": [
+				"I was trying to be nice, {other}. I'm done trying.",
+				"I've been patient. I'm out of patience."
+			],
+			"quiet": [
+				"Not again.",
+				"Leave it, {other}. I mean it.",
+				"Enough."
+			]
+		},
+		"friend_breaks_up": {
+			"any": [
+				"Hey. Hey! {other}, leave it. Not worth it.",
+				"Come on, {other}. Walk away.",
+				"Easy. Both of you, easy.",
+				"{other}, look at me. Let it go.",
+				"Not today. Break it up.",
+				"You'll lose your yard time over this. Drop it.",
+				"Enough. Go cool off."
+			],
+			"chatty": [
+				"{other}, you're better than this. Come on.",
+				"Guys, guys. Nobody needs a black eye today.",
+				"Come shoot some hoops with me, {other}. Forget them."
+			],
+			"cheerful": [
+				"Hey, hey. Let's all just calm down, okay?",
+				"{other}, come on, it's not worth it. Come sit with me."
+			],
+			"grumpy": [
+				"Knock it off, the pair of you.",
+				"Sit down, {other}. You're embarrassing yourself."
+			],
+			"quiet": [
+				"{other}. Stop.",
+				"That's enough."
+			],
+			"nervous": [
+				"Please don't. Please, {other}, it's not worth it.",
+				"Stop, both of you, before someone gets hurt."
+			]
+		},
+		"farewell": {
+			"any": [
+				"Take care of yourself, {other}.",
+				"Don't come back, {other}. I mean that nicely.",
+				"See you on the outside.",
+				"Look after yourself out there.",
+				"Going to miss you, {other}.",
+				"Stay out of trouble, yeah?",
+				"Good luck out there."
+			],
+			"chatty": [
+				"Write to me, {other}! Or don't. But do.",
+				"Tell everyone out there I said hi.",
+				"First drink's on you when I get out."
+			],
+			"cheerful": [
+				"Go on, {other}! Get out of here!",
+				"Have a real meal for me, okay?",
+				"Lucky you! Enjoy it!"
+			],
+			"grumpy": [
+				"Don't do anything stupid out there, {other}.",
+				"Lucky. See you."
+			],
+			"quiet": [
+				"Bye, {other}.",
+				"Take care."
+			],
+			"nervous": [
+				"It'll be weird in here without you, {other}.",
+				"Don't forget about us in here."
+			]
+		},
+		"farewell_reply": {
+			"any": [
+				"You too, {other}. Keep your head down.",
+				"See you around, {other}.",
+				"Won't miss the food. Will miss you.",
+				"Hang in there, {other}.",
+				"I'll see you when you're out.",
+				"Look after yourself.",
+				"Bye, everyone."
+			],
+			"chatty": [
+				"I'll save you a stool at the bar, {other}.",
+				"Don't let them give my bunk to someone who snores."
+			],
+			"cheerful": [
+				"It won't be long for you either, {other}!",
+				"Keep smiling in here, all right?"
+			],
+			"grumpy": [
+				"Stay out of trouble, {other}.",
+				"Yeah, yeah. Bye."
+			],
+			"quiet": [
+				"Bye.",
+				"Take care, {other}."
+			]
+		},
+		"release_thanks": {
+			"any": [
+				"Thanks for everything. I mean it.",
+				"You ran a decent place. Thanks.",
+				"Thanks, {staff}. Wasn't so bad in here.",
+				"You treated us right. Thanks.",
+				"Thanks for looking after us.",
+				"Wasn't the worst stretch I've done. Thanks.",
+				"Cheers, {staff}. Take care."
+			],
+			"chatty": [
+				"I'm telling everyone this was the best cell block in the sector!",
+				"Thanks, {staff}! Honestly, the food was all right."
+			],
+			"cheerful": [
+				"Thanks! I'll miss the basketball.",
+				"You were good to us, {staff}. Thanks."
+			],
+			"grumpy": [
+				"Fine. It wasn't terrible. Thanks.",
+				"Don't let it go to your head, but thanks."
+			],
+			"quiet": [
+				"Thank you.",
+				"Thanks, {staff}."
+			],
+			"nervous": [
+				"Thanks for keeping it calm in here.",
+				"Thank you. Really."
+			]
+		},
+		"release_bitter": {
+			"any": [
+				"Finally. I'm out of this dump.",
+				"Worst stretch I've ever done.",
+				"Hope you're proud of this place.",
+				"Nobody should be kept like that.",
+				"I'm telling everyone what this place is like.",
+				"Don't expect a thank you.",
+				"Good riddance."
+			],
+			"grumpy": [
+				"Starved and filthy the whole time. Great job.",
+				"I've seen cleaner cargo holds."
+			],
+			"chatty": [
+				"Oh, I'll be talking about this place. Believe me.",
+				"Five stars for the door out."
+			],
+			"nervous": [
+				"I just want to go. Please.",
+				"Never again. Never."
+			],
+			"quiet": [
+				"Finally.",
+				"Never again."
+			],
+			"cheerful": [
+				"Well. At least it's over."
+			]
+		},
+		"cards": {
+			"any": [
+				"Deal me in.",
+				"Who's up for a hand?",
+				"Cut the deck, {other}.",
+				"Your deal next.",
+				"No peeking.",
+				"High card wins. Simple.",
+				"Anyone want to play?",
+				"Shuffle properly this time."
+			],
+			"chatty": [
+				"Pull up a stool, {other}. I'll go easy on you.",
+				"Did I ever tell you about the game I lost a ship in?",
+				"Cards, anyone? Come on, it's better than staring at walls."
+			],
+			"cheerful": [
+				"Cards! Come on, it'll be fun.",
+				"One more round, I'm feeling lucky."
+			],
+			"grumpy": [
+				"Stop counting cards, {other}.",
+				"This deck's got no luck in it."
+			],
+			"quiet": [
+				"Hand?",
+				"Deal."
+			],
+			"nervous": [
+				"We're not betting, right? Just playing?",
+				"Okay. Okay, I'm in."
+			]
+		},
+		"cards_win": {
+			"any": [
+				"Ha! Mine.",
+				"Read it and weep, {other}.",
+				"That's another one for me.",
+				"Beat that.",
+				"Lucky? That's skill.",
+				"Winner.",
+				"Look at that. Mine again."
+			],
+			"chatty": [
+				"Did you see that? Did everyone see that?",
+				"Keep dealing like that, {other}, I love it."
+			],
+			"cheerful": [
+				"Oh, nice! Good game, {other}.",
+				"I never win! I won!"
+			],
+			"grumpy": [
+				"About time.",
+				"Finally, a decent card."
+			],
+			"quiet": [
+				"Mine.",
+				"Huh. Won."
+			],
+			"nervous": [
+				"Wait, I won? Really?"
+			]
+		},
+		"cards_lose": {
+			"any": [
+				"Ugh. Again.",
+				"Deal again. That one didn't count.",
+				"You're cheating, {other}.",
+				"Nice hand, {staff}. Don't get used to it.",
+				"I want a rematch.",
+				"Rotten luck.",
+				"Figures."
+			],
+			"grumpy": [
+				"This deck's rigged.",
+				"Who taught you to shuffle, {other}?"
+			],
+			"chatty": [
+				"Okay, okay, best of five.",
+				"Staff shouldn't be allowed to win, {staff}. House rules."
+			],
+			"cheerful": [
+				"Good one! Next one's mine.",
+				"Nice, {other}."
+			],
+			"nervous": [
+				"I always lose.",
+				"Sorry. I'm bad at this."
+			],
+			"quiet": [
+				"Hm.",
+				"Next hand."
+			]
+		},
+		"cards_put_down": {
+			"any": [
+				"Card stays on the table.",
+				"Put it down, {staff}. No peeking.",
+				"You sit this one out. Rules.",
+				"Hey. Cards stay face down till I flip.",
+				"Not how we play. You're out this hand.",
+				"Put it back. That hand's dead."
+			],
+			"grumpy": [
+				"You pick it up, you're out. Everyone knows that.",
+				"Cheating in a prison. Bold."
+			],
+			"chatty": [
+				"Oh, come on, {staff}! Cards on the table!",
+				"In here that gets you a lot of dirty looks, you know."
+			],
+			"cheerful": [
+				"Ha, nice try! You're out this round.",
+				"Put it down, you'll ruin the surprise."
+			],
+			"quiet": [
+				"Table.",
+				"You're out this hand."
+			],
+			"nervous": [
+				"Um. You're supposed to leave it there."
+			]
+		},
+		"cards_missing": {
+			"any": [
+				"Who's been nicking cards?",
+				"Deck's short again.",
+				"We're missing cards. Great.",
+				"Somebody took cards out of this deck.",
+				"Can't play a proper game with half a deck.",
+				"Whoever's got the aces, put them back."
+			],
+			"grumpy": [
+				"Some joker walked off with half the deck.",
+				"Every time. Every time someone pinches cards."
+			],
+			"chatty": [
+				"Whoever took the cards, I bet it was staff. I just know it.",
+				"Missing cards. Someone's building a card house somewhere."
+			],
+			"cheerful": [
+				"Deck's a bit thin. We'll manage.",
+				"Missing a few. Still counts!"
+			],
+			"quiet": [
+				"Deck's short.",
+				"Cards are missing."
+			]
+		},
+		"dice": {
+			"any": [
+				"Come on, six.",
+				"Blow on it for luck.",
+				"Your throw.",
+				"Roll it already.",
+				"High roll wins.",
+				"Here we go.",
+				"Big one. Come on."
+			],
+			"chatty": [
+				"I feel a big one coming, {other}.",
+				"Watch the wrist. It's all in the wrist."
+			],
+			"cheerful": [
+				"Lucky dice! Come on!",
+				"Best two out of three?"
+			],
+			"grumpy": [
+				"Stop blowing on it, {other}. Just throw.",
+				"These dice are loaded."
+			],
+			"quiet": [
+				"Roll.",
+				"Go on."
+			],
+			"nervous": [
+				"Please be good. Please."
+			]
+		},
+		"dice_win": {
+			"any": [
+				"Higher. Mine.",
+				"Beat you, {other}.",
+				"Ha! Try again.",
+				"That's how you roll.",
+				"Lucky throw.",
+				"Dice love me today.",
+				"Mine. Again."
+			],
+			"chatty": [
+				"And the crowd goes wild!",
+				"Want to go again, {other}? You look like you want to go again."
+			],
+			"cheerful": [
+				"Yes! Good game, {other}.",
+				"I won! Finally!"
+			],
+			"grumpy": [
+				"About time these dice did something.",
+				"Told you."
+			],
+			"quiet": [
+				"Mine.",
+				"Won."
+			]
+		},
+		"birthday_arrival": {
+			"any": [
+				"It's my birthday, by the way.",
+				"Spending my birthday in a cell. Brilliant.",
+				"Happy birthday to me, I guess.",
+				"Of all days. It's my birthday.",
+				"Some birthday this is.",
+				"They booked me in on my birthday. Classy."
+			],
+			"chatty": [
+				"It's my birthday! Does anyone get cake around here?",
+				"Birthday in the cell block. That's a new one for the list."
+			],
+			"cheerful": [
+				"Hey, it's my birthday! Still counts in here, right?",
+				"Birthday! Anyone want to sing?"
+			],
+			"grumpy": [
+				"It's my birthday. Nobody sing.",
+				"Great birthday present. A cell."
+			],
+			"quiet": [
+				"It's my birthday today.",
+				"Birthday. Whatever."
+			],
+			"nervous": [
+				"It's my birthday. Is that bad luck in here?"
+			]
+		},
+		"birthday": {
+			"any": [
+				"Still my birthday, if anyone's wondering.",
+				"No cake, huh? Figures.",
+				"Back home they'd be singing by now.",
+				"A cake would be nice. Just saying.",
+				"Birthday in the clink. Not how I pictured it.",
+				"Somebody should bake me a cake.",
+				"Wonder if the crew knows it's my birthday."
+			],
+			"chatty": [
+				"If anyone has a cake hidden, now's the time!",
+				"My mum makes a lemon cake every year. Miss that."
+			],
+			"cheerful": [
+				"Birthday's still a birthday. Even in here.",
+				"One more year! Cake would be a bonus."
+			],
+			"grumpy": [
+				"Nobody even said happy birthday.",
+				"Great birthday. Ration paste and a bunk."
+			],
+			"quiet": [
+				"It's still my birthday.",
+				"No cake."
+			],
+			"nervous": [
+				"Nobody's going to do anything for my birthday, are they?"
+			]
+		},
+		"birthday_party": {
+			"any": [
+				"Happy birthday, {other}!",
+				"Speech! Speech!",
+				"Many happy returns, {other}.",
+				"Happy birthday!",
+				"Make a wish!",
+				"Cake! Actual cake!",
+				"Hip hip!"
+			],
+			"chatty": [
+				"Happy birthday, {other}! Who baked this? I want to marry them.",
+				"Everybody sing! Come on!"
+			],
+			"cheerful": [
+				"Happy birthday, {other}! Best day in here in ages!",
+				"Woo! Birthday!"
+			],
+			"grumpy": [
+				"Happy birthday. Now cut the cake.",
+				"Yeah, yeah, happy birthday. Cake."
+			],
+			"quiet": [
+				"Happy birthday, {other}.",
+				"Happy birthday."
+			],
+			"nervous": [
+				"Happy birthday! We're allowed cake, right? We're allowed cake."
+			]
+		},
+		"birthday_thanks": {
+			"any": [
+				"Thanks for the cake. Really.",
+				"Best birthday I've had in years. Thanks, {staff}.",
+				"You didn't have to do that. Thank you.",
+				"That was really decent of you.",
+				"Thanks for the cake, {staff}.",
+				"Nobody's done that for me in a long time. Thanks."
+			],
+			"chatty": [
+				"Thank you, {staff}! I'm telling everyone about this!",
+				"Best cake in the sector. Thanks!"
+			],
+			"cheerful": [
+				"Thank you so much! That made my year.",
+				"You're the best, {staff}!"
+			],
+			"grumpy": [
+				"Fine. That was nice. Thanks.",
+				"Thanks. Don't tell anyone I got soppy."
+			],
+			"quiet": [
+				"Thank you.",
+				"Thanks, {staff}."
+			],
+			"nervous": [
+				"Thank you. Really. Thank you."
+			]
+		},
+		"watch_cheer": {
+			"any": [
+				"Nice shot!",
+				"Swish!",
+				"Come on, {other}!",
+				"Go on, {staff}!",
+				"Shoot it!",
+				"Yes! Nothing but net!",
+				"Again! Do it again!"
+			],
+			"chatty": [
+				"Did you see that? Did you all see that?",
+				"Somebody sign {other} up for the league!"
+			],
+			"cheerful": [
+				"Woo! Go {other}!",
+				"Beautiful shot!"
+			],
+			"grumpy": [
+				"Lucky.",
+				"Fine. That was a good one."
+			],
+			"quiet": [
+				"Nice.",
+				"Good shot."
+			],
+			"nervous": [
+				"Oh! It went in!"
+			]
+		},
+		"game_heckle": {
+			"any": [
+				"Brick!",
+				"Air ball!",
+				"My nan shoots better than that.",
+				"You call that a shot, {other}?",
+				"Miss! Miss!",
+				"Aim for the hoop, {staff}. The round thing.",
+				"Is the hoop too high for you?"
+			],
+			"chatty": [
+				"Oh, that's embarrassing. Do it again so everyone sees.",
+				"Maybe stick to cards, {other}."
+			],
+			"grumpy": [
+				"Pathetic.",
+				"Throw it properly."
+			],
+			"cheerful": [
+				"Unlucky! You'll get the next one!",
+				"So close!"
+			],
+			"quiet": [
+				"Miss.",
+				"Close."
+			],
+			"nervous": [
+				"Oof."
+			]
+		},
+		"game_score_call": {
+			"any": [
+				"That's {band}.",
+				"Score's {band}.",
+				"{band}. Keep up.",
+				"Okay, {band}.",
+				"{band}, if anyone's counting.",
+				"That makes it {band}."
+			],
+			"chatty": [
+				"{band}! Somebody write this down!",
+				"Folks, it's {band}. Tense stuff."
+			],
+			"cheerful": [
+				"{band}! Come on, come on!",
+				"Ooh, {band}!"
+			],
+			"grumpy": [
+				"{band}. Not that anyone asked.",
+				"{band}. Try harder."
+			],
+			"quiet": [
+				"{band}.",
+				"It's {band}."
+			],
+			"nervous": [
+				"Is it {band}? It's {band}."
+			]
+		},
+		"game_won": {
+			"any": [
+				"Game! We win!",
+				"That's five. Yard wins!",
+				"Good game, {staff}. Better luck next time.",
+				"And that's the game!",
+				"Undefeated. Well, today.",
+				"Pay up, {staff}. Not really. But pay up."
+			],
+			"chatty": [
+				"The yard wins! Tell your friends, {staff}!",
+				"Rematch any time. We'll be here. Obviously."
+			],
+			"cheerful": [
+				"We won! Good game, everyone!",
+				"Yes! Thanks for playing, {staff}!"
+			],
+			"grumpy": [
+				"Told you. Staff can't play.",
+				"Game. Now go do some work."
+			],
+			"quiet": [
+				"Game.",
+				"We win."
+			]
+		},
+		"game_lost": {
+			"any": [
+				"Fine. Good game, {staff}.",
+				"You got lucky.",
+				"Rematch. Tomorrow.",
+				"Okay, okay, you win.",
+				"We let you win, {staff}.",
+				"That's five. Staff wins. Ugh.",
+				"Good game. Don't gloat."
+			],
+			"grumpy": [
+				"Staff always win. Rigged.",
+				"Don't let it go to your head, {staff}."
+			],
+			"chatty": [
+				"We were going easy on you, obviously.",
+				"Best of three, {staff}. Come on."
+			],
+			"cheerful": [
+				"Good game! You're pretty good, {staff}.",
+				"Aw. Next time!"
+			],
+			"quiet": [
+				"Good game.",
+				"You win."
+			],
+			"nervous": [
+				"Sorry. We'll play better next time."
+			]
+		},
+		"cell_marks": {
+			"any": [
+				"Someone's scratched their name in here.",
+				"Other people's names on the wall. Cozy.",
+				"Somebody's been counting days on this wall.",
+				"Nice. Graffiti.",
+				"Wonder who drew that.",
+				"Guess I'm not the first in this cell."
+			],
+			"chatty": [
+				"Ooh, cell art. The last lot had taste.",
+				"Look at that. Somebody left their mark."
+			],
+			"grumpy": [
+				"Great. Scribbles on the walls.",
+				"Somebody's been carving up my cell."
+			],
+			"nervous": [
+				"What happened to the last person in here?",
+				"Who were these people?"
+			],
+			"quiet": [
+				"Names on the wall.",
+				"Someone was here."
+			],
+			"cheerful": [
+				"Somebody decorated! That's nice."
+			]
+		},
+		"mark_scrubbed": {
+			"any": [
+				"Who scrubbed my wall?",
+				"My mark's gone. Somebody cleaned it off.",
+				"That was mine. You scrubbed it.",
+				"Took me ages to scratch that in.",
+				"Oh, come on. You cleaned my wall?",
+				"Somebody wiped off my mark."
+			],
+			"grumpy": [
+				"Scrubbed it right off. Unbelievable.",
+				"Leave my wall alone."
+			],
+			"chatty": [
+				"That was art! You scrubbed off art!",
+				"Who cleans a cell wall? Honestly?"
+			],
+			"nervous": [
+				"My mark's gone. Did I do something wrong?",
+				"Was I not allowed to do that?"
+			],
+			"quiet": [
+				"It's gone.",
+				"My mark's gone."
+			],
+			"cheerful": [
+				"Aw, it's gone. Oh well."
+			]
+		}
+	},
+	"conversations_friendly": [
+		{
+			"opener": "You doing all right, {other}?",
+			"replies": [
+				"Better now. Thanks for asking.",
+				"Hanging in there. You?",
+				"Could be worse. Could be in the next cell over.",
+				"Yeah. Having you around helps."
+			]
+		},
+		{
+			"opener": "Save me a seat at dinner, {other}.",
+			"replies": [
+				"Always do.",
+				"Only if you give me your pudding.",
+				"Same table as yesterday.",
+				"Course. Who else would I sit with?"
+			]
+		},
+		{
+			"opener": "When we're out, first round's on me.",
+			"replies": [
+				"Holding you to that.",
+				"Make it two rounds.",
+				"Deal. Somewhere with real chairs.",
+				"You said that last time."
+			]
+		},
+		{
+			"opener": "Remember that job on the old freighter, {other}?",
+			"replies": [
+				"How could I forget? You fell in the cargo hold.",
+				"Best week of my life. Until the fine.",
+				"Don't. I still dream about it.",
+				"Worth it. Mostly."
+			]
+		},
+		{
+			"opener": "Want to shoot some hoops later?",
+			"replies": [
+				"Only if you stop traveling.",
+				"Sure. Loser tidies the table.",
+				"Yeah, after lunch.",
+				"You're on."
+			]
+		},
+		{
+			"opener": "You're the only sane one in here, {other}.",
+			"replies": [
+				"That's a low bar.",
+				"Don't tell the others.",
+				"You're not far behind.",
+				"Thanks. I think."
+			]
+		},
+		{
+			"opener": "Heard anything from your family, {other}?",
+			"replies": [
+				"Not yet. Soon, maybe.",
+				"My sister says hi. To everyone. It's weird.",
+				"They think I'm on a long haul job.",
+				"Nah. You?"
+			]
+		},
+		{
+			"opener": "I'd have gone mad in here without you.",
+			"replies": [
+				"Same, {other}. Same.",
+				"You'd have been fine. Probably.",
+				"Anytime.",
+				"Don't go soft on me now."
+			]
+		},
+		{
+			"opener": "Watch my back in the yard, yeah?",
+			"replies": [
+				"Always.",
+				"You know I will.",
+				"Same as ever.",
+				"Who's bothering you?"
+			]
+		},
+		{
+			"opener": "We should start a band when we get out.",
+			"replies": [
+				"You can't sing.",
+				"I call drums.",
+				"We'd be terrible. Let's do it.",
+				"What would we even call it?"
+			]
+		}
+	],
+	"conversations_hostile": [
+		{
+			"opener": "Stay out of my way, {other}.",
+			"replies": [
+				"Or what?",
+				"Gladly.",
+				"It's a small yard. Good luck.",
+				"Make me."
+			]
+		},
+		{
+			"opener": "Keep looking at me like that, {other}.",
+			"replies": [
+				"Like what?",
+				"I'll look where I want.",
+				"Don't flatter yourself.",
+				"You'll do what, exactly?"
+			]
+		},
+		{
+			"opener": "You still owe me, {other}.",
+			"replies": [
+				"I owe you nothing.",
+				"Take it up with my lawyer.",
+				"Dream on.",
+				"You'll get it when you get it."
+			]
+		},
+		{
+			"opener": "Everybody knows what you did.",
+			"replies": [
+				"They know what you told them.",
+				"Prove it.",
+				"And yet here you are, still talking.",
+				"Say that louder, go on."
+			]
+		},
+		{
+			"opener": "Nice seat. Mine now.",
+			"replies": [
+				"Try it.",
+				"Not a chance.",
+				"Plenty of seats. Find your own.",
+				"Touch it and see."
+			]
+		},
+		{
+			"opener": "I'm counting the days till I never see you again, {other}.",
+			"replies": [
+				"Same here.",
+				"Feeling's mutual.",
+				"Count faster.",
+				"Aw. You'll miss me."
+			]
+		},
+		{
+			"opener": "You snore like a busted engine.",
+			"replies": [
+				"At least I'm not a snitch.",
+				"You talk in your sleep. I've heard things.",
+				"Get earplugs.",
+				"Better than your singing."
+			]
+		},
+		{
+			"opener": "Why are you always hanging around, {other}?",
+			"replies": [
+				"Same yard, genius.",
+				"Why are you always noticing?",
+				"Relax. I'm not here for you.",
+				"Where else would I go?"
+			]
+		},
+		{
+			"opener": "Don't touch my stuff again.",
+			"replies": [
+				"What stuff? You own a spoon.",
+				"Wasn't me.",
+				"Then don't leave it lying around.",
+				"Or you'll what?"
+			]
+		},
+		{
+			"opener": "One more word, {other}. One more.",
+			"replies": [
+				"Word.",
+				"Big talk.",
+				"Go on then.",
+				"Staff are watching. Your lucky day."
+			]
+		}
+	]
+}

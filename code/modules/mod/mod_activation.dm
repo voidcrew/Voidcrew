@@ -250,6 +250,7 @@
 		return TRUE
 
 ///Seals or unseals the given part.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/mod/control/proc/seal_part(obj/item/clothing/part, is_sealed)
 	var/datum/mod_part/part_datum = get_part_datum(part)
 	part_datum.sealed = is_sealed
@@ -294,6 +295,7 @@
 			module.deactivate(display_message = FALSE)
 
 /// Finishes the suit's activation
+// VOIDCREW EDIT END
 /obj/item/mod/control/proc/control_activation(is_on)
 	var/datum/mod_part/part_datum = get_part_datum(src)
 	part_datum.sealed = is_on

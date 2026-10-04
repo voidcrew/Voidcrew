@@ -130,13 +130,6 @@
 /obj/machinery/cryopod,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
-"iR" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/goon/commons/c)
 "iY" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/c)
@@ -391,6 +384,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
+"Fs" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/c)
 "FJ" = (
 /obj/machinery/camera/autoname/directional/west,
 /obj/effect/turf_decal/stripes/white/line{
@@ -411,6 +409,10 @@
 	},
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"GY" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/c)
 "Hc" = (
 /obj/machinery/door/airlock/hatch{
 	name = "Port Compartment"
@@ -432,6 +434,12 @@
 /obj/structure/sign/warning/explosives/alt/directional/west,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
+"Ii" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/c)
 "Ik" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -550,15 +558,6 @@
 "Pm" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
-"PU" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/engineering/c)
 "PX" = (
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 4
@@ -571,19 +570,6 @@
 "Rg" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/commons/c)
-"Ru" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/medbay/c)
 "Si" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/c)
@@ -761,8 +747,8 @@ DI
 Og
 DI
 jM
-bq
-PU
+GY
+Ik
 Sm
 Pm
 IZ
@@ -770,8 +756,8 @@ IZ
 (7,1,1) = {"
 IZ
 VO
-DI
-Ru
+Fs
+Og
 kc
 Pm
 bq
@@ -810,7 +796,7 @@ MU
 YR
 My
 bf
-iR
+VU
 VU
 BH
 VU
@@ -823,7 +809,7 @@ MU
 wp
 Rg
 Si
-Si
+Ii
 Pj
 jA
 Si

@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/eva_bay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "bogatyr_workshop_eva_bay_basic.png",
+   "src_md5": "120a075ed3f0945786154111734c1a99",
+   "themes": {
+    "freshen_up": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "bogatyr_workshop_eva_bay_basic_freshen_up.png",
+     "src_md5": "e55431b3ebb160182135814ae5290802",
+     "width": 7
+    },
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "bogatyr_workshop_eva_bay_basic_nightclub.png",
+     "src_md5": "7f18bb3690bceca3654196cf71007276",
+     "width": 7
+    }
+   },
+   "width": 7
+  }
+ },
+ "tile_px": 32
+}

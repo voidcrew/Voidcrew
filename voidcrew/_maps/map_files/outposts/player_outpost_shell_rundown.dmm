@@ -1,0 +1,4488 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"ab" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 7
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ad" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"ae" = (
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"ag" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ah" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ai" = (
+/obj/structure/chair/wood/wings{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aj" = (
+/obj/structure/sign/poster/contraband/random/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ak" = (
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"al" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"am" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/cabinet{
+	name = "pantry cabinet"
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"an" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Dispatch"
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"ao" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ap" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/light/small/directional/east,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"ar" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"as" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"at" = (
+/turf/template_noop,
+/area/template_noop)
+"au" = (
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"av" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"aw" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ax" = (
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ay" = (
+/turf/closed/wall/r_wall,
+/area/voidcrew/player_outpost)
+"az" = (
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aA" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"aB" = (
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"aC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aD" = (
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost)
+"aE" = (
+/turf/closed/wall,
+/area/voidcrew/player_outpost)
+"aF" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"aH" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 90
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"aI" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark,
+/area/voidcrew/player_outpost)
+"aK" = (
+/turf/closed/wall/r_wall/rusted,
+/area/voidcrew/player_outpost)
+"aL" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aM" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aN" = (
+/obj/machinery/light/warm/dim/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aO" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/north,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"aP" = (
+/obj/structure/sink/kitchen/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"aQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"aT" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"aU" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"aW" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"aX" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured_large,
+/area/voidcrew/player_outpost)
+"bj" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "tracks";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"bL" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 3;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"bN" = (
+/obj/item/chair{
+	dir = 4;
+	pixel_x = 3;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"bX" = (
+/obj/structure/chair/sofa/middle/brown{
+	dir = 2
+	},
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"bY" = (
+/obj/structure/sink/directional/east,
+/obj/structure/mirror/broken/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"cr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"cD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/noticeboard/directional/south{
+	name = "notice board"
+	},
+/obj/item/paper{
+	name = "driver of the month";
+	default_raw_text = "DRIVER OF THE MONTH: nobody. The board would like to see some effort."
+	},
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"cH" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"cP" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"cT" = (
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"df" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/item/radio/intercom/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"dp" = (
+/obj/structure/sign/warning/no_smoking/circle/directional/west,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 130
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"dG" = (
+/obj/structure/barrel,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"dK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/obj/item/cigbutt{
+	pixel_x = 2;
+	pixel_y = -6
+	},
+/turf/open/floor/carpet/black,
+/area/voidcrew/player_outpost)
+"dY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ef" = (
+/obj/effect/decal/cleanable/molten_object,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"ey" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"eL" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"eS" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#7FB7D6";
+	alpha = 70
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"fa" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/obj/item/cigbutt{
+	pixel_x = -9;
+	pixel_y = -6
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"fB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"fH" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"fM" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"fS" = (
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"fW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"gd" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/noticeboard/directional/east{
+	name = "route board"
+	},
+/obj/item/paper{
+	name = "run sheet";
+	default_raw_text = "<b>RUN SHEET</b><br>Belt 4 to the refinery - two loads.<br>Belt 7 - cancelled, rocks too big.<br>Return empties to the east door."
+	},
+/obj/item/paper{
+	name = "memo";
+	default_raw_text = "Drivers sign in at the window, not at the bar."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"gg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/brown{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"gk" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"gz" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable/outpost,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"gN" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"gO" = (
+/obj/structure/cable/outpost,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"gV" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = 9
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"hf" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"hl" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"hm" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"hx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"hH" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"il" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"iB" = (
+/turf/open/floor/carpet/black,
+/area/voidcrew/player_outpost)
+"iE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate{
+	name = "footlocker"
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"iK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood/large,
+/area/voidcrew/player_outpost)
+"iQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"iX" = (
+/obj/structure/chair/stool{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/voidcrew/player_outpost)
+"iY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"jb" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 80
+	},
+/obj/structure/sign/chalkboard_menu{
+	pixel_y = 32;
+	name = "chalkboard";
+	desc = "The menu says coffee. Someone has added a second coffee underneath."
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"jf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"jg" = (
+/obj/machinery/door/airlock/wood{
+	name = "Bunkhouse"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"jE" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/barrel,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"jI" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/bookcase{
+	name = "ledger shelf"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"kd" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 7;
+	pixel_y = 2
+	},
+/obj/item/cigbutt{
+	pixel_x = 5;
+	pixel_y = 11
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"kj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/voidcrew/player_outpost)
+"kp" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -2;
+	pixel_y = 13
+	},
+/obj/item/clipboard{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/obj/item/pen{
+	pixel_x = -8;
+	pixel_y = -4
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"ku" = (
+/obj/item/cigbutt{
+	pixel_x = -6;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"kx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"kJ" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/bottle{
+	pixel_x = -2;
+	pixel_y = 11
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 7;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"kO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/item/kirbyplants/random/dead,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"kS" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"lj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/item/kirbyplants/random/dead,
+/obj/structure/sign/clock/directional/east,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"ls" = (
+/obj/structure/table_frame,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"lN" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = 11
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"lZ" = (
+/obj/structure/fireplace{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/large,
+/area/voidcrew/player_outpost)
+"mf" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"mg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 180
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"mi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/newspaper{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"mT" = (
+/obj/structure/chair/sofa/corp{
+	dir = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 3;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"mY" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"mZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nc" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ne" = (
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"ng" = (
+/obj/structure/barrel,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nj" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 4
+	},
+/obj/structure/noticeboard/directional/west{
+	name = "hauler board"
+	},
+/obj/item/paper{
+	name = "haul rates";
+	default_raw_text = "<b>HAUL RATES</b><br>Ore by the tonne, paid at the window.<br>No credit. No exceptions.<br>Scale readings are final."
+	},
+/obj/item/paper{
+	name = "note";
+	default_raw_text = "Whoever keeps parking across the lift: the lift does not go around you."
+	},
+/obj/item/paper{
+	name = "wanted";
+	default_raw_text = "WANTED: one cook. Must be able to make coffee. Must be willing to make coffee."
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -9
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nA" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Power Room"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"nC" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"nS" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"ok" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"om" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/closet,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"ox" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"oH" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"pc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/rack,
+/obj/item/folder{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"pq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 8
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"pz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"pF" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"pH" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"pM" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/obj/machinery/barsign/all_access/directional/north,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"pQ" = (
+/obj/structure/sign/poster/contraband/random/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"pX" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"qj" = (
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"qn" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Service Bay"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"qo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/left/brown{
+	dir = 2
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"qz" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/random/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"qG" = (
+/obj/structure/closet/crate/bin,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"qJ" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"qN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/voidcrew/player_outpost)
+"rd" = (
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = -5;
+	pixel_y = -8
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"ro" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"rt" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"rv" = (
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"rA" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 80
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"rE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"rG" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"rP" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/light/warm/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"rX" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"sb" = (
+/obj/structure/chair/wood/wings{
+	dir = 2
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"sk" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"sN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"sS" = (
+/obj/structure/table,
+/obj/machinery/microwave{
+	pixel_y = 5
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"sT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"sV" = (
+/obj/structure/sign/warning/electric_shock/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"sZ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/red/dim/directional/north,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"ta" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"tf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"tk" = (
+/obj/structure/barrel,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"ts" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "amyjon";
+	paint_colour = "#3F7FD1";
+	name = "graffiti";
+	desc = "Somebody loves somebody, according to the wall."
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"tB" = (
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor4";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"tV" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Washroom"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"tY" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"uD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 80
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"uY" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"vj" = (
+/obj/machinery/door/airlock/wood{
+	name = "Bunks"
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"vk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"vC" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"vJ" = (
+/obj/structure/closet/cardboard,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"vP" = (
+/obj/machinery/computer/security/telescreen/entertainment/directional/south,
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"vS" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable/outpost,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"we" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"wq" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"wx" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"wD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"wN" = (
+/obj/structure/chair/stool{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"wQ" = (
+/obj/machinery/light/warm/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"wR" = (
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"wY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"xe" = (
+/obj/machinery/computer/player_outpost_management{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"xx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = -4
+	},
+/obj/item/cigbutt{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"yC" = (
+/obj/item/trash/can{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"yO" = (
+/obj/structure/closet,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"yZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"za" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"zp" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"zZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ad" = (
+/obj/structure/mirror/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ae" = (
+/obj/machinery/ore_silo,
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Al" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/closet,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Am" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/sign/clock/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Ao" = (
+/obj/structure/noticeboard/directional/north{
+	name = "roster"
+	},
+/obj/item/paper{
+	name = "bunk roster";
+	default_raw_text = "Bunks are first come, first served. Strip your sheet when you leave. Boots off the beds."
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"AE" = (
+/obj/structure/frame/machine,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor1";
+	color = "#2A2622";
+	alpha = 200
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"AH" = (
+/obj/item/trash/chips{
+	pixel_x = -4;
+	pixel_y = -7
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"AM" = (
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"AO" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Bh" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Bm" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Bn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Bo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/soda_cans/cola{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/obj/item/trash/chips{
+	pixel_x = 3;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"BD" = (
+/obj/machinery/shower/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"BR" = (
+/obj/machinery/power/smes/ship,
+/obj/structure/cable/outpost,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"BW" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/sign/calendar/directional/south,
+/obj/item/paper{
+	pixel_x = 5;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Cv" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"CH" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"CO" = (
+/obj/structure/closet,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"CY" = (
+/obj/effect/landmark/player_outpost_arrival,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"Dk" = (
+/obj/structure/closet/cardboard,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Do" = (
+/obj/machinery/light/small/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Dy" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"DD" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 9
+	},
+/obj/item/folder/yellow{
+	pixel_x = 3;
+	pixel_y = -4
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"DJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/no_smoking/circle/directional/south,
+/obj/item/cigbutt{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -9
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"DQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ea" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/folder{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/folder/yellow{
+	pixel_x = 0;
+	pixel_y = 4
+	},
+/obj/item/folder/red{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Eg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 120
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Eo" = (
+/obj/structure/frame/machine,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Eq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Er" = (
+/obj/machinery/light/warm/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Es" = (
+/obj/structure/chair/wood/wings{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"Eu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"EI" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"ET" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/obj/item/newspaper{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ff" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"Fo" = (
+/obj/structure/holosign/wetsign,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor4";
+	color = "#7FB7D6";
+	alpha = 70
+	},
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Fp" = (
+/obj/item/paper{
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/item/paper{
+	pixel_x = 4;
+	pixel_y = -9
+	},
+/obj/item/folder{
+	pixel_x = 1;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Fr" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"FF" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"FG" = (
+/obj/structure/bookcase,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"FI" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"FJ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ga" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Gm" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/dim/directional/east,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Gp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Gr" = (
+/obj/structure/chair/wood/wings{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Gv" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 190
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Gw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/fluff/commsbuoy_processor{
+	name = "breaker cabinet";
+	desc = "The station power cabinet. Half the breakers are labelled in marker, the other half are guesses."
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"GJ" = (
+/obj/structure/toilet{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"GU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"Ha" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Hb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/bank_machine{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Hl" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -3;
+	pixel_y = 10
+	},
+/obj/item/cigbutt{
+	pixel_x = 8;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"HE" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"HF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"HR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"HS" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"HT" = (
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"HZ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ie" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "tracks";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 110
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 200
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ii" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Io" = (
+/obj/machinery/light/small/directional/east,
+/obj/structure/sign/poster/contraband/random/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"It" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/toy/cards/deck{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"IF" = (
+/obj/structure/table/wood,
+/obj/item/folder/yellow{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -6
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"IK" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"IL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 8
+	},
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"IN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable/outpost,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"IO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"IY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/red,
+/area/voidcrew/player_outpost)
+"Jd" = (
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Jj" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/light/warm/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Jk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "tracks";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Jn" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = -6;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Jw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"JE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can{
+	pixel_x = 4;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"JO" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"JR" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 4
+	},
+/obj/item/newspaper{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/structure/sign/poster/official/random/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"JX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"JY" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/obj/item/flashlight/lamp{
+	pixel_x = 6;
+	pixel_y = 12
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Ko" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Storeroom"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Kv" = (
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Kz" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"KM" = (
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"KS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Le" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor3";
+	color = "#2A2622";
+	alpha = 180
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Lf" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -6
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"Lj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor6";
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"LC" = (
+/obj/effect/turf_decal/delivery/white,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"LF" = (
+/obj/structure/dresser,
+/obj/structure/sign/poster/contraband/random/directional/north,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"LG" = (
+/obj/structure/closet/emcloset,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"LH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/sofa/right/brown{
+	dir = 2
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"LI" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"LN" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/obj/structure/fans/tiny,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"LP" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/closet/crate/wooden{
+	name = "lost and found"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"LX" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"LY" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"LZ" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Mb" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"Mc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/obj/item/radio/intercom/directional/east,
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"Ml" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Mo" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Mx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"My" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/closet/crate/wooden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"MG" = (
+/obj/structure/chair/sofa/bench/solo{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"MH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/kirbyplants/random/dead,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"MW" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/obj/machinery/light/warm/dim/directional/east,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"MZ" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/machinery/light/warm/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ng" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/barrel,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Nj" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 4
+	},
+/obj/machinery/light/warm/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Nm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Nn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"NG" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"NJ" = (
+/obj/machinery/light/small/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"NR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Ol" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -7;
+	pixel_y = 10
+	},
+/obj/effect/spawner/random/maintenance,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Oq" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/barrel,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Or" = (
+/obj/structure/sign/warning/no_smoking/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"OB" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 2
+	},
+/obj/structure/closet/cardboard,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"OM" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"OP" = (
+/obj/structure/noticeboard/directional/north{
+	name = "notice board"
+	},
+/obj/item/paper{
+	name = "notice of sale";
+	default_raw_text = "<b>COLONIAL REGISTRY - NOTICE OF SALE</b><br>This property, formerly a hauler station, is sold as it stands. Fixtures, wiring and plumbing are included. The Registry accepts no liability for any of them."
+	},
+/obj/item/paper{
+	name = "sign here";
+	default_raw_text = "Visitors sign in at the dispatch window. Wipe your boots."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"OV" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Ph" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/rack,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 7
+	},
+/obj/item/paper{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Pk" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Pr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/rack,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"PA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"PM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/obj/item/cigbutt{
+	pixel_x = -8;
+	pixel_y = -9
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Qa" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Qd" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Qh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	name = "letter";
+	default_raw_text = "Tell Mum the money is coming. The run took longer than they said. Back after the next one.";
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Qi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"Qj" = (
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/effect/spawner/random/bedsheet{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Qm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Qr" = (
+/obj/item/chair/wood{
+	dir = 4;
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Qu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/reagent_containers/cup/soda_cans/space_mountain_wind{
+	pixel_x = -6;
+	pixel_y = -8
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"Rk" = (
+/obj/structure/chair/sofa/bench/solo{
+	dir = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = -7;
+	pixel_y = -8
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"RJ" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/item/radio/intercom/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"RL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"RS" = (
+/obj/effect/turf_decal/delivery/white,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"RT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"RY" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/bottle{
+	pixel_x = -7;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/bottle/small{
+	pixel_x = 3;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 8;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"Sb" = (
+/obj/structure/barrel,
+/obj/structure/sign/warning/no_smoking/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Sw" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/smooth_large,
+/area/voidcrew/player_outpost)
+"Sy" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"SA" = (
+/obj/structure/sink/directional/east,
+/obj/structure/mirror/directional/west,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"SH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/curtain,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Tb" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"Tf" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/red/dim/directional/south,
+/obj/structure/cable/outpost,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Tk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood/poker,
+/obj/item/dice/d6{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/dice/d6{
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/turf/open/floor/carpet,
+/area/voidcrew/player_outpost)
+"Tr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"TG" = (
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"TP" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 180
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"TY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/item/kirbyplants/random,
+/obj/structure/sign/poster/official/random/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ul" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/item/kirbyplants/random/dead,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Uq" = (
+/obj/machinery/light/warm/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Ur" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"UA" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"UH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 11
+	},
+/obj/item/clipboard{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/cigbutt{
+	pixel_x = 9;
+	pixel_y = -5
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"UI" = (
+/obj/structure/sign/departments/restroom,
+/turf/closed/wall/rusted,
+/area/voidcrew/player_outpost)
+"UK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"UM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"UP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "tracks";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 150
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"UT" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "scale log";
+	default_raw_text = "<b>SCALE LOG</b><br>Tare the plate before every load.<br>The plate reads light by about a tonne. Do not tell the drivers.";
+	pixel_x = 5;
+	pixel_y = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"UX" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "tracks";
+	dir = 1;
+	color = "#2A2622";
+	alpha = 110
+	},
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 200
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Vh" = (
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"Vj" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 1
+	},
+/obj/item/paper{
+	pixel_x = 2;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Vw" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -7;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"VC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"VP" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 150
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Wu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Wv" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	name = "generator log";
+	default_raw_text = "<b>GENERATOR LOG</b><br>Refuelled.<br>Refuelled.<br>Kicked it. Refuelled.";
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"WF" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"WR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"WX" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"WZ" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/obj/structure/filingcabinet/chestdrawer,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Xl" = (
+/obj/machinery/light_switch/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"Xm" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Xq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/folder/blue{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"Xw" = (
+/obj/structure/table,
+/obj/item/flashlight/lamp{
+	pixel_x = -8;
+	pixel_y = 10
+	},
+/obj/item/paper_bin{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"XA" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"XD" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"XM" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"XN" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/cigbutt{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"XT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Yt" = (
+/obj/structure/barrel,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rusted,
+/area/voidcrew/player_outpost)
+"YC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/vacuum/external/directional/east,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"YD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal{
+	icon = 'icons/effects/blood.dmi';
+	icon_state = "floor2";
+	color = "#2A2622";
+	alpha = 120
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"YP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"YQ" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/cable/outpost,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+"YW" = (
+/obj/effect/turf_decal{
+	icon = 'icons/effects/rust_overlay.dmi';
+	icon_state = "rust_default";
+	alpha = 90
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"Zj" = (
+/obj/structure/mop_bucket,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/voidcrew/player_outpost)
+"ZA" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/bottle{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/cafeteria,
+/area/voidcrew/player_outpost)
+"ZB" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/voidcrew/player_outpost)
+"ZE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"ZG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"ZH" = (
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/grimy,
+/area/voidcrew/player_outpost)
+"ZW" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark/textured,
+/area/voidcrew/player_outpost)
+
+(1,1,1) = {"
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aK
+ta
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(2,1,1) = {"
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aK
+sZ
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(3,1,1) = {"
+aK
+aK
+aK
+aK
+ay
+aK
+aK
+as
+as
+as
+aK
+aK
+aK
+aK
+as
+as
+aK
+ay
+aK
+aK
+rt
+aK
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(4,1,1) = {"
+aK
+am
+aH
+aL
+aM
+aN
+az
+ab
+aU
+aW
+aj
+ao
+aD
+dY
+ax
+Qj
+ax
+Qj
+aD
+Dk
+pX
+aB
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(5,1,1) = {"
+aK
+aP
+aT
+ag
+aM
+aC
+ax
+ai
+aC
+aw
+aC
+ax
+aD
+Hl
+Gp
+Qh
+ax
+iE
+aD
+NJ
+LC
+Al
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(6,1,1) = {"
+aK
+sS
+uD
+bL
+aM
+FJ
+AH
+rv
+aV
+aQ
+ax
+au
+aD
+Ml
+iB
+qN
+kj
+ax
+aD
+fW
+Ur
+yO
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(7,1,1) = {"
+aK
+Vw
+rA
+kx
+OV
+ax
+ax
+sb
+fa
+LX
+FJ
+FJ
+aD
+LF
+kj
+dK
+iB
+FJ
+vj
+fW
+NR
+om
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(8,1,1) = {"
+aK
+pM
+KM
+kJ
+PM
+FJ
+ax
+LX
+Tk
+Lf
+aC
+ZB
+aD
+ax
+iB
+iX
+iB
+Xl
+aD
+hx
+Ur
+ZG
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(9,1,1) = {"
+ay
+RY
+aH
+ET
+aM
+ax
+nc
+rv
+JO
+rv
+aC
+ax
+aD
+CO
+iB
+kj
+kj
+ax
+aD
+AM
+KS
+YW
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(10,1,1) = {"
+aK
+ZA
+aT
+kx
+aM
+ax
+XN
+Qr
+ax
+FJ
+VC
+DJ
+aD
+CO
+Ad
+Kz
+ax
+Io
+aE
+NJ
+Ur
+rd
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(11,1,1) = {"
+aK
+jb
+aT
+FJ
+xx
+JE
+kS
+ax
+aC
+aQ
+rv
+rv
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Ao
+Ur
+Xm
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(12,1,1) = {"
+aK
+FG
+lN
+aQ
+aC
+ax
+ax
+aC
+ax
+LH
+Qu
+aQ
+aD
+BD
+TG
+SA
+bY
+Zj
+aD
+il
+NR
+hH
+ay
+at
+at
+at
+at
+at
+at
+at
+"}
+(13,1,1) = {"
+aK
+Ml
+rv
+rv
+FJ
+FJ
+Gr
+FJ
+aC
+bX
+Bo
+vP
+aD
+SH
+Tb
+Tb
+TG
+Tb
+tV
+fW
+yC
+Oq
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(14,1,1) = {"
+aK
+lZ
+rv
+Mb
+FJ
+oH
+It
+ax
+FJ
+qo
+gg
+aQ
+aD
+SH
+Fo
+eS
+Tb
+ts
+UI
+fW
+KS
+qJ
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(15,1,1) = {"
+aK
+iK
+rv
+Mc
+pQ
+MW
+mT
+XM
+ax
+ax
+ax
+XA
+aD
+GJ
+TG
+Eu
+qG
+Tb
+aD
+fW
+Ur
+kO
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(16,1,1) = {"
+aK
+aD
+aD
+aE
+aD
+aD
+aD
+aD
+ah
+ah
+ah
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+jg
+aD
+aK
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(17,1,1) = {"
+aK
+aD
+aD
+aD
+Bh
+nj
+Nj
+JR
+ak
+UM
+Qm
+Dy
+Jj
+kd
+cP
+vC
+aD
+MH
+Rk
+Jw
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(18,1,1) = {"
+aK
+aD
+aD
+aD
+UM
+ak
+UM
+Qm
+Qm
+Qm
+ak
+Qm
+Qm
+Qm
+ak
+Qm
+aD
+OP
+Qm
+LG
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(19,1,1) = {"
+aK
+aF
+aA
+ad
+WF
+ak
+HT
+HT
+IY
+HT
+HT
+HT
+IY
+IY
+fM
+PA
+Jw
+Jw
+UM
+Qm
+aK
+aK
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(20,1,1) = {"
+aK
+aO
+ar
+aX
+WF
+UM
+HT
+CY
+HT
+iY
+IY
+HT
+IY
+Fr
+IO
+Jw
+iQ
+PA
+Jw
+RS
+LN
+Gm
+cH
+at
+at
+at
+at
+at
+at
+at
+"}
+(21,1,1) = {"
+aK
+av
+ap
+al
+wD
+UM
+HT
+IY
+IY
+IY
+HT
+IY
+HT
+IY
+fM
+UM
+Qm
+UM
+Qm
+UM
+aK
+aK
+aK
+at
+at
+at
+at
+at
+at
+at
+"}
+(22,1,1) = {"
+aK
+aD
+aD
+aD
+Qm
+UM
+ak
+ak
+ak
+ak
+ak
+Qm
+ak
+Ur
+Jw
+ak
+aD
+ne
+ku
+cr
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(23,1,1) = {"
+aK
+aD
+aD
+aD
+lj
+nS
+YP
+nS
+qz
+Qm
+df
+DQ
+qz
+LP
+PA
+TY
+aD
+MG
+fS
+zp
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(24,1,1) = {"
+aK
+aD
+aD
+aD
+aD
+aa
+aI
+aa
+aD
+an
+aD
+aD
+aD
+aD
+qn
+aD
+aD
+aD
+aE
+aD
+aD
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+"}
+(25,1,1) = {"
+aK
+WX
+RJ
+vk
+Hb
+hm
+Mo
+ZH
+hm
+ae
+Ha
+aD
+LI
+ak
+tY
+jE
+XD
+UH
+mg
+ak
+Pk
+XT
+VP
+RT
+aB
+uY
+Eg
+we
+tk
+aK
+"}
+(26,1,1) = {"
+aK
+WZ
+Wu
+Wu
+ae
+yZ
+ae
+yZ
+Wu
+yZ
+eL
+aD
+sT
+ZW
+Qm
+rE
+mf
+nM
+nM
+mf
+rX
+Jw
+Ur
+Eq
+Ur
+aB
+Ur
+KS
+Yt
+aK
+"}
+(27,1,1) = {"
+aK
+Xw
+Fp
+Wu
+ae
+Fr
+Es
+HT
+yZ
+Wu
+jI
+aD
+Ol
+aB
+Qm
+wD
+Jk
+UX
+Gv
+ls
+HZ
+iQ
+aB
+Jd
+aB
+Eo
+KS
+Ur
+Pr
+aK
+"}
+(28,1,1) = {"
+as
+xe
+mY
+yZ
+ae
+Ff
+IL
+IY
+yZ
+ae
+cD
+aE
+gV
+Jn
+UM
+UA
+Gv
+Gv
+ak
+wx
+sN
+Vh
+Ur
+Jd
+aB
+aB
+bN
+aB
+qJ
+aK
+"}
+(29,1,1) = {"
+as
+wR
+rG
+Wu
+Wu
+HT
+kp
+wY
+Wu
+Wu
+OB
+aD
+za
+UM
+ak
+EI
+Jk
+AE
+Ie
+Gv
+sN
+iQ
+Eq
+Eq
+Ur
+wN
+aB
+aB
+Jd
+aK
+"}
+(30,1,1) = {"
+as
+Xq
+sk
+Wu
+ae
+GU
+IF
+IY
+yZ
+Wu
+Ga
+aD
+wQ
+Ur
+ak
+UA
+Lj
+Gv
+Gv
+ef
+nC
+Jw
+KS
+KS
+Ii
+mi
+tf
+Ur
+ZE
+ay
+"}
+(31,1,1) = {"
+aK
+DD
+yZ
+Wu
+Wu
+HT
+hf
+Fr
+ae
+yZ
+BW
+aD
+ng
+ak
+Qm
+EI
+bj
+UP
+nN
+Qm
+HZ
+Vh
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aK
+"}
+(32,1,1) = {"
+aK
+Ea
+yZ
+ae
+ae
+ae
+gk
+Wu
+ae
+ae
+fH
+aD
+Sb
+Qm
+cT
+LY
+WR
+WR
+WR
+gN
+RL
+Uq
+aD
+ok
+Er
+Ur
+tB
+dp
+tk
+aK
+"}
+(33,1,1) = {"
+aK
+Ul
+rP
+Am
+gd
+JY
+pq
+Vj
+rP
+yZ
+HS
+aD
+qj
+ro
+Eq
+ak
+cT
+ak
+ak
+Qm
+Qm
+Jw
+nA
+CH
+il
+fW
+IN
+aB
+Wv
+ay
+"}
+(34,1,1) = {"
+aK
+aD
+aD
+aE
+aD
+aD
+aD
+aD
+aD
+Ko
+aD
+aD
+Kv
+TP
+vJ
+UM
+ey
+NG
+Qd
+Qm
+qj
+Nn
+aD
+Ur
+pH
+KS
+il
+Ur
+OM
+aK
+"}
+(35,1,1) = {"
+aK
+UK
+Eq
+LZ
+Eq
+Cv
+Eq
+Ng
+Do
+Ur
+FI
+aD
+UT
+UM
+YD
+UM
+ox
+Sw
+JX
+UM
+Tr
+sV
+aD
+HE
+BR
+gz
+gO
+hl
+Nm
+aK
+"}
+(36,1,1) = {"
+ay
+pF
+KS
+Eq
+Ur
+aB
+Eq
+Ur
+Eq
+Eq
+ZE
+aD
+ak
+IK
+jf
+Eq
+FF
+HR
+Mx
+ak
+ak
+zZ
+aD
+HF
+il
+gO
+Ur
+Eq
+pz
+aK
+"}
+(37,1,1) = {"
+aK
+pc
+Qi
+Ph
+Or
+AO
+fB
+Bm
+we
+Bn
+My
+aD
+dG
+Ae
+Le
+UM
+YC
+Sy
+wq
+YQ
+MZ
+mZ
+aD
+Gw
+Ur
+vS
+Bn
+Qa
+ZE
+aK
+"}
+(38,1,1) = {"
+aK
+aK
+aK
+aK
+aK
+aK
+ay
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+aK
+ta
+aK
+aK
+aK
+aK
+aK
+ay
+aK
+aK
+aK
+aK
+aK
+aK
+"}
+(39,1,1) = {"
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aK
+Tf
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}
+(40,1,1) = {"
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aK
+rt
+aK
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+"}

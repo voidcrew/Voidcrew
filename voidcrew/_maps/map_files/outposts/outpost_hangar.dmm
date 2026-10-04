@@ -1,4 +1,78 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ab" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ac" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ad" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/south,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ae" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"af" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ag" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ah" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
+"ai" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/smooth_large,
+/area/voidcrew/outpost_hangar)
 "aR" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/structure/chair/sofa/bench/tram{
@@ -351,10 +425,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/outpost_hangar)
-"CN" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/turf/open/indestructible/light,
-/area/voidcrew/outpost_hangar)
 "CQ" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -590,11 +660,6 @@
 /obj/item/kirbyplants/organic/plant22,
 /obj/item/radio/intercom/directional/west,
 /turf/open/indestructible/dark,
-/area/voidcrew/outpost_hangar)
-"NE" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/machinery/outpost_elevator/directional/south,
-/turf/open/indestructible/light,
 /area/voidcrew/outpost_hangar)
 "NM" = (
 /obj/effect/turf_decal/stripes/line{
@@ -2533,9 +2598,9 @@ WM
 ek
 ek
 dL
-CN
-CN
-CN
+ac
+ab
+aa
 GZ
 "}
 (32,1,1) = {"
@@ -2590,9 +2655,9 @@ Lw
 ek
 ek
 Zz
-CN
-CN
-NE
+af
+ae
+ad
 GZ
 "}
 (33,1,1) = {"
@@ -2647,9 +2712,9 @@ WM
 ek
 ek
 EY
-CN
-CN
-CN
+ai
+ah
+ag
 GZ
 "}
 (34,1,1) = {"

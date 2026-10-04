@@ -20,6 +20,7 @@
 	var/datum/antagonist/crew/crew_antag = new()
 	crew_antag.crew_team = src
 	new_member.add_antag_datum(crew_antag)
+	ship_metric_crew_changed(src, new_member, joined = TRUE)
 
 /datum/team/voidcrew/remove_member(datum/mind/member)
 	. = ..()
@@ -44,6 +45,7 @@
 	// officer back into command - they need their Ship Management button back, and
 	// nothing else would ever give it to them.
 	ship?.refresh_command_buttons()
+	ship_metric_crew_changed(src, member, joined = FALSE)
 
 	// Remove this team from the member's list
 	LAZYREMOVE(member.ship_teams, src)

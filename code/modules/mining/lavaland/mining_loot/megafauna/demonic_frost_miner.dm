@@ -27,6 +27,18 @@
 	INVOKE_ASYNC(user.dna, TYPE_PROC_REF(/datum/dna, copy_dna), clone.dna, COPY_DNA_SE|COPY_DNA_SPECIES)
 	clone.updateappearance(mutcolor_update=1)
 	var/turf/T = find_maintenance_spawn(atmos_sensitive = TRUE, require_darkness = TRUE) || find_safe_turf()
+	// VOIDCREW EDIT ADDITION START: no rebirth in another overmap zone. Try a few more spots in
+	// this zone, then wake up where you fell (voidcrew/modules/overmap, zone_teleport.dm)
+	if(!T || teleport_crosses_zone(user, T))
+		T = null
+		for(var/attempt in 1 to 5)
+			var/turf/candidate = find_safe_turf()
+			if(candidate && !teleport_crosses_zone(user, candidate))
+				T = candidate
+				break
+		if(!T)
+			T = get_turf(user)
+	// VOIDCREW EDIT ADDITION END
 	user.forceMove(T)
 	user.revive(ADMIN_HEAL_ALL)
 	INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/living/carbon, set_species), /datum/species/shadow)

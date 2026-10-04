@@ -108,17 +108,18 @@
 /datum/outpost_shell_catalog_ui/ui_state(mob/user)
 	return GLOB.hands_state
 
+/datum/outpost_shell_catalog_ui/ui_assets(mob/user)
+	return list(get_asset_datum(/datum/asset/simple/outpost_shell_previews))
+
 /datum/outpost_shell_catalog_ui/ui_static_data(mob/user)
 	var/list/data = list()
 	var/list/shells = list()
-	for(var/shell_type in subtypesof(/datum/map_template/player_outpost))
-		if(shell_type == /datum/map_template/player_outpost/nothing)
-			continue
-		var/datum/map_template/player_outpost/shell = shell_type
+	for(var/datum/map_template/player_outpost/shell_type as anything in outpost_selectable_shells())
 		shells += list(list(
 			"id" = "[shell_type]",
-			"name" = initial(shell.name),
-			"description" = initial(shell.catalog_desc),
+			"name" = initial(shell_type.name),
+			"description" = initial(shell_type.catalog_desc),
+			"preview" = outpost_shell_preview_asset(shell_type),
 		))
 	data["shells"] = shells
 	data["max_name_length"] = MAX_CHARTER_LEN
@@ -159,7 +160,7 @@
 		return
 
 	var/datum/map_template/player_outpost/shell_type = text2path(params["shell_id"])
-	if(!(shell_type in list(/datum/map_template/player_outpost/small, /datum/map_template/player_outpost/medium)))
+	if(!(shell_type in outpost_selectable_shells()))
 		return
 	var/datum/map_template/player_outpost/shell = new shell_type
 

@@ -1,0 +1,157 @@
+{
+	"lines": {
+		"bounty_arrival": {
+			"any": [
+				"So this is where the {place} crew sends people.",
+				"Didn't think the {place} crew would actually find me.",
+				"The {place} crew got paid for me. Hope it was worth it.",
+				"Last thing I saw was the {place}'s mission pad.",
+				"Bet the {place} crew is spending my bounty right now.",
+				"Of all the crews out there, it had to be the {place}.",
+				"Tell the {place} crew thanks for the ride.",
+				"The {place} crew dropped me here. Great."
+			],
+			"grumpy": [
+				"The {place} crew. I'll remember that name.",
+				"Dumped in here by the {place} crew. Wonderful."
+			],
+			"quiet": [
+				"The {place}. Should've seen them coming.",
+				"Caught by the {place} crew. Figures."
+			],
+			"nervous": [
+				"The {place} crew said this place was alright. Is it?",
+				"Please tell me the {place} crew isn't coming back."
+			],
+			"chatty": [
+				"Hi, all. The {place} crew sends their regards, I guess.",
+				"You'd never guess who caught me. The {place} crew. Long story."
+			]
+		},
+		"bounty_captor_seen": {
+			"any": [
+				"I know you. You're off the {place}.",
+				"You're with the {place}. Your crew put me here.",
+				"The {place} crew. Come to check on your bounty?",
+				"Look who it is. Somebody off the {place}.",
+				"Hope the {place} spent my bounty on something nice.",
+				"I remember you from the {place}. I remember all of you.",
+				"Hey, {place}! Enjoying the view?",
+				"You're off the {place}, right? I never forget a face."
+			],
+			"grumpy": [
+				"{place} crew. Don't think I've forgotten.",
+				"Keep walking, {place}."
+			],
+			"quiet": [
+				"The {place}. I remember.",
+				"You're off the {place}."
+			],
+			"nervous": [
+				"Oh. You're from the {place}. I'm not causing trouble, honest.",
+				"The {place} crew again. I'm being good, I swear."
+			],
+			"chatty": [
+				"Hey, it's the {place} crew! Tell your captain I said hello.",
+				"The {place} crew! Nice work catching me, honestly."
+			]
+		},
+		"boss_move_charge": {
+			"any": [
+				"Out of my way!",
+				"Move or get moved.",
+				"Here I come!",
+				"You're going down.",
+				"Brace yourself."
+			],
+			"grumpy": [
+				"Should've stayed in the office.",
+				"I'm going through you."
+			],
+			"quiet": [
+				"Stand still.",
+				"This will hurt."
+			]
+		},
+		"boss_move_fire": {
+			"any": [
+				"Let's warm this place up.",
+				"Hope somebody brought water.",
+				"Everybody likes a fire.",
+				"Nice and dry, this bunk."
+			],
+			"grumpy": [
+				"Never liked that bunk anyway.",
+				"Burn, then."
+			],
+			"quiet": [
+				"Watch it go.",
+				"Pretty, isn't it?"
+			]
+		},
+		"boss_move_rig": {
+			"any": [
+				"Stand back from the door.",
+				"This door's coming down.",
+				"Everybody get clear.",
+				"Knock knock."
+			],
+			"grumpy": [
+				"I'm done knocking.",
+				"No door's held me yet."
+			],
+			"quiet": [
+				"Give it a few seconds.",
+				"Nobody touch that."
+			]
+		},
+		"boss_move_slip": {
+			"any": [
+				"You call these cuffs?",
+				"Almost there.",
+				"Should've checked these.",
+				"These are too loose."
+			],
+			"grumpy": [
+				"Cheap cuffs. Figures.",
+				"Nothing holds me for long."
+			],
+			"quiet": [
+				"Just a little more.",
+				"Easy now."
+			]
+		},
+		"boss_move_barricade": {
+			"any": [
+				"Come and get me.",
+				"Try getting past that.",
+				"Nobody comes through here.",
+				"Hold the line!"
+			],
+			"grumpy": [
+				"Stay on your side.",
+				"You want in? Earn it."
+			],
+			"quiet": [
+				"That'll hold.",
+				"Now we wait."
+			]
+		},
+		"boss_move_bribe": {
+			"any": [
+				"Take the rest of the shift off, officer.",
+				"Something for your trouble.",
+				"You didn't see anything.",
+				"Go get yourself a coffee."
+			],
+			"grumpy": [
+				"Take it and walk away.",
+				"Everyone has a price."
+			],
+			"quiet": [
+				"Look the other way.",
+				"A small gift. Go on."
+			]
+		}
+	}
+}

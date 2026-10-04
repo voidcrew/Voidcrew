@@ -44,18 +44,6 @@
 /obj/machinery/rnd/production/techfab,
 /turf/template_noop,
 /area/template_noop)
-"fNb" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4
-	},
-/turf/template_noop,
-/area/template_noop)
 "gqe" = (
 /obj/structure/railing/corner{
 	dir = 8
@@ -87,10 +75,35 @@
 /obj/effect/turf_decal/siding/wideplating/dark,
 /turf/template_noop,
 /area/template_noop)
+"iBw" = (
+/obj/effect/turf_decal/tile/purple/half{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
 "iSH" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
 	},
+/turf/template_noop,
+/area/template_noop)
+"jPb" = (
+/obj/effect/turf_decal/box,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"ljq" = (
+/obj/structure/railing/corner,
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating/dark/corner,
+/obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
 "msI" = (
@@ -113,23 +126,6 @@
 /obj/machinery/rnd/production/circuit_imprinter,
 /turf/template_noop,
 /area/template_noop)
-"nwk" = (
-/obj/effect/turf_decal/box,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/template_noop,
-/area/template_noop)
-"nYY" = (
-/obj/structure/railing{
-	layer = 3.4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/siding/wideplating/dark,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/template_noop,
-/area/template_noop)
 "pmy" = (
 /obj/structure/railing/corner{
 	dir = 8
@@ -140,6 +136,14 @@
 /obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
+"pJK" = (
+/obj/structure/railing{
+	layer = 3.4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/siding/wideplating/dark,
+/turf/template_noop,
+/area/template_noop)
 "pOa" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/siding/wideplating/dark{
@@ -147,17 +151,8 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"rGY" = (
-/obj/effect/turf_decal/tile/purple/half{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4;
-	layer = 2.5
-	},
+"qeI" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/template_noop)
 "seT" = (
@@ -171,12 +166,6 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"sxK" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/template_noop,
-/area/template_noop)
 "sJD" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 4;
@@ -188,21 +177,20 @@
 /obj/structure/sign/poster/official/safety_eye_protection/directional/south,
 /turf/template_noop,
 /area/template_noop)
+"vfr" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
 "vgM" = (
 /obj/machinery/mecha_part_fabricator{
 	dir = 1
 	},
-/turf/template_noop,
-/area/template_noop)
-"vYo" = (
-/obj/structure/railing/corner,
-/obj/effect/turf_decal/siding/dark{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating/dark/corner,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
 "wpk" = (
@@ -218,27 +206,27 @@
 
 (1,1,1) = {"
 seT
-rGY
+iBw
 cyQ
 "}
 (2,1,1) = {"
-vYo
-fNb
+ljq
+vfr
 wpk
 "}
 (3,1,1) = {"
 hVP
-nwk
+jPb
 vgM
 "}
 (4,1,1) = {"
 pmy
-sxK
+qeI
 msI
 "}
 (5,1,1) = {"
-nYY
-nwk
+pJK
+jPb
 vgM
 "}
 (6,1,1) = {"

@@ -926,6 +926,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
 	return open_storage_on_signal(source, user) ? CLICK_ACTION_SUCCESS : NONE
 
 /// Opens the storage to the mob, showing them the contents to their UI.
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /datum/storage/proc/open_storage(mob/living/to_show)
 	if(isobserver(to_show))
 		show_contents(to_show)
@@ -972,6 +973,7 @@ GLOBAL_LIST_EMPTY(cached_storage_typecaches)
 
 
 /// Async version of putting something into a mobs hand.
+// VOIDCREW EDIT END
 /datum/storage/proc/put_in_hands_async(mob/to_show, obj/item/toremove)
 	if(!to_show.put_in_hands(toremove))
 		if(!silent)

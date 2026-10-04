@@ -22,6 +22,10 @@
 	var/total_score = 0
 	/// The chance to score a ball into the hoop based on distance
 	var/static/list/throw_range_success = list(95, 80, 65, 50, 35, 20)
+	// VOIDCREW EDIT ADDITION START - a quieter hoop for the outpost prison's yard (voidcrew/modules/player_outposts/outpost_prison_fixtures.dm)
+	/// Volume of the buzzer when someone scores or is dunked
+	var/buzzer_volume = 100
+	// VOIDCREW EDIT ADDITION END
 
 /obj/structure/hoop/Initialize(mapload)
 	. = ..()
@@ -38,7 +42,7 @@
 
 /obj/structure/hoop/proc/score(obj/item/toy/basketball/ball, mob/living/baller, points)
 	// we still play buzzer sound regardless of the object
-	playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 100, FALSE)
+	playsound(src, 'sound/machines/scanner/scanbuzz.ogg', buzzer_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 100
 
 	if(!istype(ball))
 		return
@@ -126,7 +130,7 @@
 	loser.forceMove(loc)
 	loser.Paralyze(100)
 	visible_message(span_danger("[baller] dunks [loser] into \the [src]!"))
-	playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 100, FALSE)
+	playsound(src, 'sound/machines/scanner/scanbuzz.ogg', buzzer_volume, FALSE) // VOIDCREW EDIT CHANGE - ORIGINAL: 100
 	baller.adjustStaminaLoss(STAMINA_COST_DUNKING_MOB)
 	baller.stop_pulling()
 

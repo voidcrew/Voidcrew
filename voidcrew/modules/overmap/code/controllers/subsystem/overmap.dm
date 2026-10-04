@@ -88,6 +88,9 @@ SUBSYSTEM_DEF(overmap)
 	setup_space_ruins()
 	setup_trader_outposts()
 	setup_dangers()
+#ifndef UNIT_TESTS
+	spawn_derelict_outpost() // this round's derelict outpost: on the chart, built when a ship docks (voidcrew/modules/derelict_outposts)
+#endif
 	schedule_vestige_ruins()
 	schedule_contested_caches()
 	schedule_lich_lair()
@@ -176,6 +179,12 @@ SUBSYSTEM_DEF(overmap)
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships.Copy())
 		if(QDELETED(ship))
 			continue
+		// Paid recovery retires the original even when it was parked at an outpost.
+		// The teardown itself still protects players physically aboard the wreck.
+		if(ship.retired_by_checkpoint)
+			if(!despawned_one)
+				despawned_one = ship.despawn_derelict()
+			continue
 		if(ship.has_active_crew())
 			ship.crewless_since = 0
 			ship.site_dead_since = 0
@@ -185,7 +194,9 @@ SUBSYSTEM_DEF(overmap)
 		// derelict in the field - none of the three clocks above should run against it
 		// at all, occupied or not. Unlike every other site type, presence doesn't even
 		// enter into it here.
-		if(istype(ship.docked, /obj/structure/overmap/dynamic/player_outpost))
+		// An unclaimed derelict outpost is nobody's home: its visitors' hulls take the ordinary clocks (voidcrew/modules/derelict_outposts)
+		var/obj/structure/overmap/dynamic/player_outpost/home_outpost = ship.docked
+		if(istype(home_outpost) && home_outpost.shelters_docked_hulls())
 			ship.crewless_since = 0
 			ship.site_dead_since = 0
 			ship.site_dead_undock_refused = FALSE
@@ -951,6 +962,9 @@ SUBSYSTEM_DEF(overmap)
 #ifdef UNIT_TESTS
 	var/list/remaining_templates = subtypesof(/datum/map_template/shuttle/voidcrew)
 	for(var/templates in remaining_templates)
+		// Commissioned/registered hulls are supplied at runtime, not map files.
+		if(ispath(templates, /datum/map_template/shuttle/voidcrew/commissioned))
+			continue
 		var/obj/structure/overmap/ship/loaded_ship = SSshuttle.create_ship(templates)
 		if(!initial_ship && loaded_ship)
 			initial_ship = loaded_ship
@@ -1132,7 +1146,13 @@ SUBSYSTEM_DEF(overmap)
 		qdel(planet_type)
 
 	if(ruin && ruin_list && !ruin_type)
-		ruin_type = ruin_list[pick(ruin_list)]
+		// BOUNTY (P10 review L7): never an unpickable template (a bounty lair, the lich lair, the contested cache)
+		var/list/pickable_ruins = list()
+		for(var/ruin_name in ruin_list)
+			var/datum/map_template/ruin/candidate = ruin_list[ruin_name]
+			if(!istype(candidate) || !candidate.unpickable)
+				pickable_ruins += ruin_name
+		ruin_type = ruin_list[pick(length(pickable_ruins) ? pickable_ruins : ruin_list)]
 		if(ispath(ruin_type))
 			ruin_type = new ruin_type
 

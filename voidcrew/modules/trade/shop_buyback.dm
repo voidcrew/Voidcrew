@@ -221,6 +221,8 @@
 			to_chat(user, span_notice("Your voucher payout lands at your feet."))
 	if(!quiet)
 		to_chat(user, span_notice("Sold: [get_wanted_text()] ([get_payment_text()])."))
+		// Quiet sales come from try_sell_bulk(), which records the whole batch once
+		metric_shop_buyback(src, user, vendor, 1)
 	return TRUE
 
 /**
@@ -272,4 +274,5 @@
 		if(pay_credits > 0)
 			payout += "[pay_credits * sold] cr"
 		to_chat(user, span_notice("Sold [sold]x [get_wanted_text()] ([payout.Join(" + ")])."))
+		metric_shop_buyback(src, user, vendor, sold)
 	return sold

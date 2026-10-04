@@ -1,4 +1,5 @@
 /// Removes all the loot and achievements from megafauna for bitrunning related
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/simple_animal/hostile/megafauna/proc/make_virtual_megafauna()
 	var/new_max = clamp(maxHealth * 0.5, 600, 1300)
 	maxHealth = new_max
@@ -19,3 +20,4 @@
 
 	crusher_loot.Cut()
 	crusher_loot += /obj/structure/closet/crate/secure/bitrunning/encrypted
+// VOIDCREW EDIT END

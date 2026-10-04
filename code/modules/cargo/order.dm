@@ -41,6 +41,7 @@
 /obj/item/paper/fluff/jobs/cargo/manifest/proc/is_denied()
 	return LAZYLEN(stamp_cache) && ("stamp-deny" in stamp_cache)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order
 	var/id
 	var/cost_type
@@ -60,11 +61,8 @@
 	var/manifest_can_fail = TRUE
 	///Boolean on whether the manifest can be cancelled through cargo consoles.
 	var/can_be_cancelled = TRUE
-	/// Actual ship-account payment, also used by its manifest. Null until settled.
-	var/ship_paid_cost
-	/// Last refusal from ship settlement, for delivery feedback.
-	var/ship_settlement_error
 
+// VOIDCREW EDIT END
 /datum/supply_order/New(
 	datum/supply_pack/pack,
 	orderer,
@@ -106,29 +104,6 @@
 		cost *= 1.1
 	return round(cost)
 
-/// Settle a ship order atomically before generating any goods or changing market stock.
-/datum/supply_order/proc/settle_ship_order(datum/bank_account/account)
-	ship_settlement_error = null
-	if(!account || !isnull(ship_paid_cost))
-		ship_settlement_error = "No paying account, or order already paid."
-		return FALSE
-	var/datum/supply_pack/custom/minerals/material_order = astype(pack)
-	if(material_order)
-		ship_settlement_error = material_order.ship_order_error()
-		if(ship_settlement_error)
-			return FALSE
-	var/price = get_final_cost()
-	if(!isnum(price) || price < 0)
-		ship_settlement_error = "Invalid order price."
-		return FALSE
-	// adjust_money(0) reports failure, although a fully discounted order is valid.
-	if(price > 0 && !account.adjust_money(-price))
-		ship_settlement_error = "Insufficient credits; order remains in the cart."
-		return FALSE
-	ship_paid_cost = price
-	material_order?.commit_ship_order()
-	return TRUE
-
 /datum/supply_order/proc/generateRequisition(turf/T)
 	var/obj/item/paper/requisition/requisition_paper = new(T)
 
@@ -167,7 +142,7 @@
 		manifest_text += "Item: [packname]<br/>"
 	manifest_text += "Contents: <br/>"
 	manifest_text += "<ul>"
-	var/container_contents = list() // Associative list with the format (item_name = nº of occurrences, ...)
+	var/container_contents = list() // Associative list with the format (item_name = nÂº of occurrences, ...)
 	for(var/obj/item/stuff in container.contents - manifest_paper)
 		if(isstack(stuff))
 			var/obj/item/stack/thing = stuff
@@ -209,6 +184,7 @@
 
 	return manifest_paper
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order/proc/generate(atom/A)
 	var/account_holder
 	if(paying_account)
@@ -225,6 +201,7 @@
 	generateManifest(crate, account_holder, pack, isnull(ship_paid_cost) ? pack.cost : ship_paid_cost)
 	return crate
 
+// VOIDCREW EDIT END
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents, misc_cost)
 	for (var/I in misc_contents)
 		new I(miscbox)
@@ -246,6 +223,7 @@
 	return ..()
 
 /// Custom material order to append cargo crate value to the final order cost
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order/disposable/materials/get_final_cost()
 	// The material quote is captured when ordered. It is not an ordinary pack
 	// price, and must not receive a station-trait modifier or a coupon a second time.
@@ -255,3 +233,4 @@
 #undef MANIFEST_ERROR_NAME
 #undef MANIFEST_ERROR_CONTENTS
 #undef MANIFEST_ERROR_ITEM
+// VOIDCREW EDIT END

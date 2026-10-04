@@ -1331,6 +1331,7 @@
 /mob/living/can_hold_items(obj/item/I)
 	return ..() && HAS_TRAIT(src, TRAIT_CAN_HOLD_ITEMS) && usable_hands
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/living/can_perform_action(atom/target, action_bitflags)
 	if(!istype(target))
 		CRASH("Missing target arg for can_perform_action")
@@ -1411,6 +1412,7 @@
 
 	return TRUE
 
+// VOIDCREW EDIT END
 /mob/living/proc/can_use_guns(obj/item/G)//actually used for more than guns!
 	if(G.trigger_guard == TRIGGER_GUARD_NONE)
 		to_chat(src, span_warning("You are unable to fire this!"))
@@ -2357,6 +2359,7 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 	looking_holder = new(get_looking_turf(DOWN), src, DOWN)
 	reset_perspective(looking_holder)
 
+// VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /mob/living/set_stat(new_stat)
 	. = ..()
 	if(isnull(.))
@@ -2424,6 +2427,7 @@ GLOBAL_LIST_EMPTY(fire_appearances)
 
 
 ///Reports the event of the change in value of the buckled variable.
+// VOIDCREW EDIT END
 /mob/living/proc/set_buckled(new_buckled)
 	if(new_buckled == buckled)
 		return

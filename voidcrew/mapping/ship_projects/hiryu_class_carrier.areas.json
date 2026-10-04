@@ -1,0 +1,26 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/hiryu_class_carrier",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay",
+      "Name": "Hiryu-class Medbay",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines",
+      "Name": "Hiryu-class Engines",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engineering",
+      "Name": "Hiryu-class Engineering",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm",
+      "Name": "Hiryu-class Helm",
+      "IconState": "bridge"
+    }
+  ]
+}

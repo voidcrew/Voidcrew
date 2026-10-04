@@ -1,6 +1,7 @@
 // -------------------------
 //  SmartFridge.  Much todo
 // -------------------------
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge
 	name = "smartfridge"
 	desc = "Keeps cold things cold and hot things cold."
@@ -24,8 +25,6 @@
 	var/list/initial_contents
 	/// If the machine shows an approximate number of its contents on its sprite
 	var/visible_contents = TRUE
-	/// Whether the sprite has a separate glass overlay layer
-	var/has_glass_overlay = TRUE
 	/// Is this smartfridge going to have a glowing screen? (Drying Racks are not)
 	var/has_emissive = TRUE
 	/// Whether the smartfridge is welded down to the floor disabling unwrenching
@@ -36,6 +35,7 @@
 	var/vend_sound = 'sound/machines/machine_vend.ogg'
 	layout_prefs_used = /datum/preference/choiced/tgui_layout/smartfridge
 
+// VOIDCREW EDIT END
 /obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
 	create_reagents(100, NO_REACT)
@@ -231,6 +231,7 @@
 /obj/machinery/smartfridge/proc/visible_items()
 	return contents.len - 1 // Exclude circuitboard
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge/update_overlays()
 	. = ..()
 
@@ -252,6 +253,7 @@
 		. += mutable_appearance(icon, "[base_icon_state]-powered")
 		. += emissive_appearance(icon, "[base_icon_state]-light-mask", src, alpha = src.alpha)
 
+// VOIDCREW EDIT END
 /obj/machinery/smartfridge/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
 		if(BRUTE)
@@ -796,6 +798,7 @@
 // ----------------------------
 // Disk """fridge"""
 // ----------------------------
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge/disks
 	name = "disk compartmentalizer"
 	desc = "A machine capable of storing a variety of disks. Denoted by most as the DSU (disk storage unit)."
@@ -809,5 +812,6 @@
 	has_emissive = FALSE
 	base_build_path = /obj/machinery/smartfridge/disks
 
+// VOIDCREW EDIT END
 /obj/machinery/smartfridge/disks/accept_check(obj/item/weapon)
 	return istype(weapon, /obj/item/disk)

@@ -65,6 +65,7 @@
 		vote_on_poll_handler(poll, href_list)
 
 //When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/dead/new_player/proc/make_me_an_observer()
 	if(QDELETED(src) || !src.client)
 		ready = PLAYER_NOT_READY
@@ -107,6 +108,7 @@
 	qdel(src)
 	return TRUE
 
+// VOIDCREW EDIT END
 /proc/get_job_unavailable_error_message(retval, jobtitle)
 	switch(retval)
 		if(JOB_AVAILABLE)
@@ -150,6 +152,7 @@
 		return JOB_UNAVAILABLE_GENERIC
 	return JOB_AVAILABLE
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/dead/new_player/proc/AttemptLateSpawn(rank)
 	// Check that they're picking someone new for new character respawning
 	if(CONFIG_GET(flag/allow_respawn) == RESPAWN_FLAG_NEW_CHARACTER)
@@ -247,6 +250,7 @@
 	log_manifest(character.mind.key, character.mind, character, latejoin = TRUE)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, character.mind.assigned_role.title)
 
+// VOIDCREW EDIT END
 /mob/dead/new_player/proc/AddEmploymentContract(mob/living/carbon/human/employee)
 	//TODO:  figure out a way to exclude wizards/nukeops/demons from this.
 	for(var/C in GLOB.employmentCabinets)
@@ -255,6 +259,7 @@
 			employmentCabinet.addFile(employee)
 
 /// Creates, assigns and returns the new_character to spawn as. Assumes a valid mind.assigned_role exists.
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/dead/new_player/proc/create_character(atom/destination, datum/callback/validate_arrival)
 	spawning = TRUE
 
@@ -277,6 +282,8 @@
 	new_character = .
 
 
+// VOIDCREW EDIT END
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/dead/new_player/proc/transfer_character()
 	. = new_character
 	if(!.)
@@ -290,6 +297,7 @@
 	new_character = null
 	qdel(src)
 
+// VOIDCREW EDIT END
 /mob/dead/new_player/proc/ViewManifest()
 	if(!client)
 		return

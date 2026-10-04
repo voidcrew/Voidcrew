@@ -1,3 +1,4 @@
+// VOIDCREW EDIT START - Voidcrew character-slot and loadout integration.
 import { useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Button, Stack } from 'tgui-core/components';
@@ -152,3 +153,4 @@ export function CharacterPreferenceWindow(props) {
     </Stack>
   );
 }
+// VOIDCREW EDIT END

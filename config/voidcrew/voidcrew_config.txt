@@ -11,3 +11,9 @@ FREE_SHIPS 1
 ## under Resources in the escape menu. Blank it out to hide all three.
 
 WIKIURL https://wiki.voidcrew-lrp.com
+
+## Round metrics: records money, trade, missions, research, NPC ship encounters, combat and deaths
+## to the round_metric database table for balance work. Needs the database and the table from
+## SQL/migrations/voidcrew_round_metrics.sql. On by default; set to 0 to switch it off.
+
+#ROUND_METRICS 0

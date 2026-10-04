@@ -248,6 +248,7 @@
 	slip.match_number = book.match_number
 	slip.name = "betting slip, [amount] cr on [target.display_name]"
 	user.put_in_hands(slip)
+	metric_colosseum_bet(user, amount, target.mind, src)
 	balloon_alert(user, "wager placed!")
 	playsound(src, 'sound/machines/ping.ogg', 40, TRUE)
 
@@ -268,6 +269,7 @@
 	if(payout > 0)
 		var/obj/item/holochip/winnings = new(get_turf(user), payout)
 		user.put_in_hands(winnings)
+		metric_colosseum_bet_payout(user, payout, slip.amount, backed, src)
 		to_chat(user, span_boldnotice("The console stamps the slip PAID and dispenses [payout] credits."))
 		playsound(src, 'sound/machines/ping.ogg', 50, TRUE)
 	else

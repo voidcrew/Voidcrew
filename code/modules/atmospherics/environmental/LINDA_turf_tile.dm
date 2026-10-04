@@ -375,6 +375,15 @@
 		archive()
 		// We share 100% of our mix in this step. Let's jive
 		var/difference = our_air.share(enemy_mix, 1, 1)
+		// VOIDCREW EDIT ADDITION START: a space neighbour that already ran this cycle was skipped
+		// above and formed no group with us. When nothing else did either (a turf opened or
+		// regrouped while SSair was paused mid-cycle: shuttle moves, turf wipes), the check below
+		// read a null group. Vent under a group of our own, as the planetary share above does.
+		if(!our_excited_group && our_air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			var/datum/excited_group/vent_group = new
+			vent_group.add_turf(src)
+			our_excited_group = excited_group
+		// VOIDCREW EDIT ADDITION END
 		LAST_SHARE_CHECK
 		if(!difference)
 			continue

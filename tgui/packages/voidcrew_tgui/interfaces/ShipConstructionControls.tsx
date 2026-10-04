@@ -78,10 +78,6 @@ export const ShipConstructionControls = () => {
           ))}
         </LabeledList.Item>
       </LabeledList>
-      <Box color="label" mt={1}>
-        Area brushes skip existing tiles. 3×3 is centered on the drone; 2×2
-        extends north and east. Applies to RCD builds, tiles and decals.
-      </Box>
       {!!queueUnlocked && (
         <Stack vertical mt={1}>
           <Stack.Item>

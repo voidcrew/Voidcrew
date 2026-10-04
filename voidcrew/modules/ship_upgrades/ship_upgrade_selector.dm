@@ -333,12 +333,20 @@
  * generated manifest. Returns null when no preview art exists for this ship.
  */
 /datum/ship_upgrade_selector/proc/build_preview_data()
+	return build_ship_preview_data(template)
+
+/// build_preview_data() for any hull. The outpost shipyard console uses it too.
+/proc/build_ship_preview_data(datum/map_template/shuttle/voidcrew/template)
+	if(!template)
+		return null
 	var/list/manifest = get_ship_preview_manifest()
 	var/list/manifest_hulls = manifest["hulls"]
 	var/list/manifest_modules = manifest["modules"]
 	if(!length(manifest_hulls))
 		return null
 
+	var/list/available_themes = get_themes_for_ship(template.type)
+	var/list/available_modules = get_modules_for_ship(template.type)
 	var/list/theme_hulls = list()
 	for(var/theme_id in available_themes)
 		var/datum/ship_theme/theme = available_themes[theme_id]
@@ -493,6 +501,7 @@
 				return FALSE
 
 			to_chat(user, span_notice("Successfully unlocked [hull.name]!"))
+			ship_metric_hull_unlocked(user, hull)
 
 		if("select_theme")
 			// Select a theme (must be unlocked)
@@ -706,6 +715,7 @@
 		return FALSE
 
 	log_game("SHIP_UPGRADE: [ckey] purchased theme '[theme.id]' for [template.type]")
+	ship_metric_unlocked("ship_theme_unlocked", purchasing_user, template.type, theme.id, cost, CONFIG_GET(flag/free_ships))
 	return TRUE
 
 /**
@@ -767,4 +777,5 @@
 		return FALSE
 
 	log_game("SHIP_UPGRADE: [ckey] purchased upgrade '[module.id]' for [template.type]")
+	ship_metric_unlocked("ship_module_unlocked", purchasing_user, template.type, module.id, cost, CONFIG_GET(flag/free_ships))
 	return TRUE

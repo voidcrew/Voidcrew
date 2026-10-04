@@ -164,6 +164,7 @@
 	animate(filter, alpha = 110, time = 1.5 SECONDS, loop = -1)
 	animate(alpha = 40, time = 2.5 SECONDS)
 
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/component/irradiated/proc/on_clean(datum/source, clean_types)
 	SIGNAL_HANDLER
 
@@ -181,6 +182,7 @@
 	qdel(src)
 	return COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
 
+// VOIDCREW EDIT END
 /datum/component/irradiated/proc/on_geiger_counter_scan(datum/source, mob/user, obj/item/geiger_counter/geiger_counter)
 	SIGNAL_HANDLER
 

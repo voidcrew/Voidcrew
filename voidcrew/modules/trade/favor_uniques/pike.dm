@@ -365,6 +365,7 @@
 			return
 	sku.stock--
 	uses_left--
+	metric_shop_purchase(sku, user, credit_price, 0, "freight beacon")
 
 	playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
 	to_chat(user, span_notice("Order confirmed: [sku.name]. Supply pod inbound to the beacon's position."))

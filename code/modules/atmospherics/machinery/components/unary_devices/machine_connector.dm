@@ -13,6 +13,12 @@
 	gas_connector = new(location)
 	gas_connector.dir = connected_machine.dir
 	gas_connector.airs[1].volume = gas_volume
+	// VOIDCREW EDIT ADDITION START - in a shuttle move the machine carries its connector along (see
+	// moved_connected_machine()), so the move never lists the connector as cargo of its own.
+	// The landing's stowaway sweep then took it for something already lying on the berth and
+	// shoved it off the hull, and a docked cryo cell was left with no pipe connection.
+	gas_connector.resistance_flags |= SHUTTLE_CRUSH_PROOF
+	// VOIDCREW EDIT END
 
 	SSair.start_processing_machine(connected_machine)
 	register_with_machine()
@@ -41,6 +47,7 @@
 	RegisterSignal(connected_machine, COMSIG_MACHINERY_DEFAULT_ROTATE_WRENCH, PROC_REF(wrenched_connected_machine))
 	RegisterSignal(connected_machine, COMSIG_OBJ_DECONSTRUCT, PROC_REF(deconstruct_connected_machine))
 	RegisterSignal(connected_machine, COMSIG_QDELETING, PROC_REF(destroy_connected_machine))
+	RegisterSignal(connected_machine, COMSIG_ATOM_AFTER_SHUTTLE_MOVE, PROC_REF(shuttle_moved_connected_machine)) // VOIDCREW EDIT ADDITION
 
 /**
  * Unregister the signals previously registered
@@ -51,8 +58,23 @@
 		COMSIG_MOVABLE_PRE_MOVE,
 		COMSIG_MACHINERY_DEFAULT_ROTATE_WRENCH,
 		COMSIG_OBJ_DECONSTRUCT,
-		COMSIG_QDELETING
+		COMSIG_QDELETING, // VOIDCREW EDIT CHANGE - comma for the addition below
+		COMSIG_ATOM_AFTER_SHUTTLE_MOVE, // VOIDCREW EDIT ADDITION
 	))
+
+// VOIDCREW EDIT ADDITION START
+/**
+ * The connector is not part of the move's cargo, so a turning hull never rotates it. Face it
+ * the way its machine now faces; its pipe link is untouched, as every other pipe's is.
+ */
+/datum/gas_machine_connector/proc/shuttle_moved_connected_machine(obj/machinery/source, turf/old_turf)
+	SIGNAL_HANDLER
+	if(gas_connector.dir == connected_machine.dir)
+		return
+	gas_connector.dir = connected_machine.dir
+	gas_connector.set_init_directions()
+	gas_connector.update_appearance()
+// VOIDCREW EDIT ADDITION END
 
 /**
  * Called when the machine has been moved, reconnect to the pipe network
@@ -92,6 +114,7 @@
 /**
  * Called when the machine has been destroyed
  */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/gas_machine_connector/proc/destroy_connected_machine()
 	SIGNAL_HANDLER
 
@@ -106,6 +129,7 @@
 /**
  * Handles the disconnection from the pipe network
  */
+// VOIDCREW EDIT END
 /datum/gas_machine_connector/proc/disconnect_connector()
 	var/obj/machinery/atmospherics/node = gas_connector.nodes[1]
 	if(node)

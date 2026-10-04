@@ -1,0 +1,38 @@
+{
+ "hulls": {},
+ "modules": {
+  "bogatyr/workshop/engineering_and_classic_armory.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "png": "bogatyr_workshop_engineering_and_classic_armory.png",
+   "src_md5": "75edd923c6041b33f9bc99bf4363dabe",
+   "themes": {
+    "freshen_up": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "bogatyr_workshop_engineering_and_classic_armory_freshen_up.png",
+     "src_md5": "28f1044f06233197a82cf1b3295d5cd7",
+     "width": 5
+    },
+    "nightclub": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "bogatyr_workshop_engineering_and_classic_armory_nightclub.png",
+     "src_md5": "0a03c99353b9632cae6f78ff87f2d44f",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

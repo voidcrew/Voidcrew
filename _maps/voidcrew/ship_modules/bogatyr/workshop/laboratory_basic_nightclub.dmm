@@ -1,0 +1,61 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"fJB" = (
+/obj/structure/table_frame,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"geu" = (
+/obj/modular_map_connector,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"jqx" = (
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"jRk" = (
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"lmM" = (
+/obj/structure/frame/machine,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"qUy" = (
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+"tJM" = (
+/obj/structure/frame/computer,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
+"wEo" = (
+/obj/structure/closet/crate/science,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/light/colour_cycle,
+/area/template_noop)
+
+(1,1,1) = {"
+qUy
+tJM
+geu
+"}
+(2,1,1) = {"
+lmM
+jRk
+jRk
+"}
+(3,1,1) = {"
+jqx
+jRk
+jRk
+"}
+(4,1,1) = {"
+jRk
+jRk
+lmM
+"}
+(5,1,1) = {"
+fJB
+jRk
+wEo
+"}

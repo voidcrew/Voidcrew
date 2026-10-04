@@ -304,6 +304,7 @@ Works together with spawning an observer, noted above.
 /*
 This is the proc mobs get to turn into a ghost. Forked from ghostize due to compatibility issues.
 */
+// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/verb/ghost()
 	set category = "OOC"
 	set name = "Ghost"
@@ -321,6 +322,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	ghostize(FALSE) // FALSE parameter is so we can never re-enter our body. U ded.
 	return TRUE
 
+// VOIDCREW EDIT END
 /mob/eye/verb/ghost()
 	set category = "OOC"
 	set name = "Ghost"
