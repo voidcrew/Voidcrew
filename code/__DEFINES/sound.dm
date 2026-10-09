@@ -14,7 +14,11 @@
 #define CHANNEL_WEATHER 1012
 //THIS SHOULD ALWAYS BE THE LOWEST ONE!
 //KEEP IT UPDATED
-#define CHANNEL_HIGHEST_AVAILABLE 1011
+// VOIDCREW EDIT CHANGE START - Voidcrew plays voice barks (and econ scans) on fixed channel 1010,
+// which sat inside the reservable pool: whatever reserved 1010 (a rhythm battle's music, a
+// jukebox) got cut off by the next person to speak.
+#define CHANNEL_HIGHEST_AVAILABLE 1009 // ORIGINAL: 1011
+// VOIDCREW EDIT CHANGE END
 
 #define MAX_INSTRUMENT_CHANNELS (128 * 6)
 

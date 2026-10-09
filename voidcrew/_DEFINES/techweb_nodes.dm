@@ -69,3 +69,6 @@
 #define TECHWEB_NODE_SHIP_REPAIR_SWARM "ship_repair_swarm"
 #define TECHWEB_NODE_SHIP_FABRICATION_MK3 "ship_fabrication_mk3"
 #define TECHWEB_NODE_SHIP_FABRICATION_MK4 "ship_fabrication_mk4"
+
+// MOD modules
+#define TECHWEB_NODE_MOD_MORTALITY "mod_mortality"

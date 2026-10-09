@@ -371,6 +371,8 @@ ROUNDSTART_RACES plasmaman
 
 ## Races that are better than humans in some ways, but worse in others
 ROUNDSTART_RACES ethereal
+ROUNDSTART_RACES experiment
+ROUNDSTART_RACES milkie
 #ROUNDSTART_RACES jelly
 #ROUNDSTART_RACES abductor
 #ROUNDSTART_RACES snail

@@ -1,0 +1,272 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/spoiler{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"b" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram,
+/turf/open/floor/plating,
+/area/gag_room)
+"c" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic/light,
+/obj/effect/gag_scenery/standing{
+	icon = 'icons/obj/doors/airlocks/tram/tram.dmi';
+	icon_state = "closed"
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"d" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic/light,
+/turf/open/floor/plating,
+/area/gag_room)
+"e" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/split,
+/turf/open/floor/plating,
+/area/gag_room)
+"f" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/split,
+/obj/effect/gag_scenery/standing{
+	icon = 'icons/obj/tram/tram_display.dmi';
+	icon_state = "desto_blank";
+	pixel_x = -8
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"g" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/spoiler{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"h" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/turf/open/floor/plating,
+/area/gag_room)
+"i" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/right,
+/turf/open/floor/plating,
+/area/gag_room)
+"j" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram,
+/turf/open/floor/plating,
+/area/gag_room)
+"k" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/left,
+/obj/effect/gag_scenery/standing{
+	icon = 'icons/obj/machines/computer.dmi';
+	icon_state = "tram_controls";
+	dir = 2;
+	pixel_x = -8;
+	pixel_y = 32
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"l" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"m" = (
+/obj/effect/turf_decal/tile/neutral/tram,
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram,
+/turf/open/indestructible/tram/plate,
+/area/gag_room)
+"n" = (
+/obj/effect/turf_decal/tile/neutral/tram,
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 4
+	},
+/turf/open/indestructible/tram/plate,
+/area/gag_room)
+"o" = (
+/obj/effect/turf_decal/tile/neutral/tram,
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic/light,
+/turf/open/indestructible/tram/plate,
+/area/gag_room)
+"p" = (
+/obj/effect/turf_decal/tile/neutral/tram,
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 8
+	},
+/turf/open/indestructible/tram/plate,
+/area/gag_room)
+"q" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"r" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/left{
+	dir = 1
+	},
+/obj/effect/gag_scenery/standing{
+	icon = 'icons/obj/machines/computer.dmi';
+	icon_state = "tram_controls";
+	dir = 1;
+	pixel_x = 8;
+	pixel_y = -32
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"s" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"t" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/chair/sofa/bench/tram/right{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"u" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/thermoplastic,
+/obj/structure/sign/tram_plate/directional/south,
+/turf/open/floor/plating,
+/area/gag_room)
+"v" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/spoiler,
+/turf/open/floor/plating,
+/area/gag_room)
+"w" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/split,
+/obj/effect/gag_scenery/standing{
+	icon = 'icons/obj/tram/tram_display.dmi';
+	icon_state = "desto_blank";
+	pixel_x = 8
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+"x" = (
+/obj/effect/gag_scenery/tram_subfloor,
+/obj/structure/tram/spoiler{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/gag_room)
+
+(1,1,1) = {"
+a
+b
+m
+b
+v
+"}
+
+(2,1,1) = {"
+b
+h
+n
+q
+b
+"}
+
+(3,1,1) = {"
+c
+d
+o
+d
+c
+"}
+
+(4,1,1) = {"
+d
+d
+o
+d
+d
+"}
+
+(5,1,1) = {"
+e
+i
+o
+r
+w
+"}
+
+(6,1,1) = {"
+e
+j
+o
+s
+e
+"}
+
+(7,1,1) = {"
+f
+k
+o
+t
+e
+"}
+
+(8,1,1) = {"
+c
+d
+o
+d
+c
+"}
+
+(9,1,1) = {"
+d
+d
+o
+d
+d
+"}
+
+(10,1,1) = {"
+b
+l
+p
+u
+b
+"}
+
+(11,1,1) = {"
+g
+b
+m
+b
+x
+"}

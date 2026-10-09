@@ -1,0 +1,17 @@
+[package]
+name = "vcphys"
+version = "0.1.0"
+edition = "2021"
+description = "Box2D physics for Voidcrew's limb rig, called from BYOND through call_ext."
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+box2d-rs = "=0.0.4"
+
+[profile.release]
+opt-level = 3
+# Panics are caught at the boundary and turned into ERR replies; they must unwind to be caught.
+panic = "unwind"
