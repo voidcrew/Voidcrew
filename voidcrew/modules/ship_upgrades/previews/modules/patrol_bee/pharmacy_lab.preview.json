@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/pharmacy_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_pharmacy_lab_standard.png",
+     "src_md5": "f79a8260295c5c9f480cd9560c2828c2",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_pharmacy_lab_syndicate_black.png",
+     "src_md5": "d90e9356ebb61894c1cca0ed00b3ad7b",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

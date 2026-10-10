@@ -1,0 +1,199 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ajf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/structure/table,
+/obj/machinery/processor{
+	pixel_y = 16;
+	layer = 3;
+	pixel_x = 7
+	},
+/obj/machinery/reagentgrinder{
+	pixel_x = -9;
+	pixel_y = 18;
+	layer = 4
+	},
+/obj/item/knife/kitchen{
+	pixel_x = -8;
+	layer = 5
+	},
+/obj/item/kitchen/rollingpin{
+	pixel_x = -1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"hHe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sink/kitchen/directional/west,
+/obj/machinery/computer/order_console/cook{
+	dir = 8
+	},
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"jED" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"kUZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/deepfryer,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"lAW" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"obN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/door/window/left/directional/west,
+/obj/structure/table,
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -1
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"pow" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/airlock{
+	name = "Kitchen"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"pZd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/button/door/directional/north{
+	id = "cafe_counter"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"rmz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/oven/range,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"rCI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/machinery/microwave{
+	pixel_y = 3
+	},
+/obj/item/storage/box/donkpockets,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"rMh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/decal/cleanable/food/tomato_smudge,
+/obj/item/reagent_containers/cup/glass/bottle/juice/tomatojuice{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"ttK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"vcA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"vjt" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"vxv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/freezer/fridge/open,
+/obj/item/reagent_containers/condiment/enzyme,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/condiment/milk,
+/obj/item/food/meat/slab,
+/obj/item/food/meat/slab,
+/obj/item/food/meat/slab,
+/obj/item/reagent_containers/condiment/sugar,
+/turf/open/floor/iron/checker,
+/area/template_noop)
+"wQh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/griddle,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"xWx" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+obN
+wQh
+pow
+xWx
+xWx
+xWx
+jED
+"}
+(2,1,1) = {"
+pZd
+vcA
+vcA
+ttK
+lAW
+lAW
+vxv
+"}
+(3,1,1) = {"
+rmz
+rMh
+ajf
+vjt
+kUZ
+hHe
+rCI
+"}

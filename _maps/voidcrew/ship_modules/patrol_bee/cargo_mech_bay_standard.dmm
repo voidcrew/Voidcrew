@@ -1,0 +1,142 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aeC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/arrows/red{
+	dir = 1;
+	pixel_y = -10
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"fCD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 1
+	},
+/obj/effect/turf_decal/box/white,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"gdL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"hpe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/effect/turf_decal/bot_white,
+/obj/structure/ore_box,
+/turf/open/floor/plating,
+/area/template_noop)
+"jkv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"jDC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/vehicle/sealed/mecha/ripley,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"lNi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"mpJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"mOI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"npc" = (
+/obj/effect/decal/cleanable/fuel_pool,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"oSc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot_white,
+/obj/item/storage/belt/utility/full/engi,
+/obj/structure/closet/crate/engineering/electrical,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"rlm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/cargo/mining,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/mecha_parts/mecha_equipment/mining_scanner,
+/obj/item/stock_parts/scanning_module/adv,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"sjf" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"tVz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/mech_bay_recharge_port{
+	dir = 8
+	},
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"wrX" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"wLm" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/fuel_pool,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"yjY" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+yjY
+rlm
+mpJ
+aeC
+hpe
+"}
+(2,1,1) = {"
+yjY
+jDC
+mpJ
+gdL
+tVz
+"}
+(3,1,1) = {"
+sjf
+jkv
+mOI
+lNi
+fCD
+"}
+(4,1,1) = {"
+wLm
+npc
+wrX
+lNi
+oSc
+"}

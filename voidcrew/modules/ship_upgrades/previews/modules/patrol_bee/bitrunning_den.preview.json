@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/bitrunning_den.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_bitrunning_den_standard.png",
+     "src_md5": "61a1346260362b4252616fa03cac67a2",
+     "width": 4
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_bitrunning_den_syndicate_black.png",
+     "src_md5": "9308db11b4bbc647c875e7328ba8d4cd",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

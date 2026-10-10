@@ -1,0 +1,61 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/patrol_bee",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/bridge",
+      "Name": "Bridge",
+      "IconState": "bridge"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/south_cargo_bay",
+      "Name": "South Cargo Bay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/north_cargo_bay",
+      "Name": "North Cargo Bay",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/dormitories",
+      "Name": "Dormitories",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/atmospherics",
+      "Name": "Atmospherics",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/engineering",
+      "Name": "Engineering",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/main_hall",
+      "Name": "Main Hall",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/service",
+      "Name": "Service",
+      "IconState": "commons"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/cleanroom",
+      "Name": "Cleanroom",
+      "IconState": "medbay"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/closet",
+      "Name": "Closet",
+      "IconState": "station"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/patrol_bee/security_office",
+      "Name": "Security Office",
+      "IconState": "station"
+    }
+  ]
+}

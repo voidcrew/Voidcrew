@@ -1,0 +1,122 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bFs" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"bMK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/right/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron,
+/area/template_noop)
+"hmo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"jap" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"lFf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/contraband,
+/obj/effect/spawner/random/armory/riot_armor,
+/obj/effect/spawner/random/armory/riot_helmet,
+/obj/effect/spawner/random/armory/riot_shield,
+/obj/item/storage/box/flashbangs,
+/turf/open/floor/iron,
+/area/template_noop)
+"pKY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window/brigdoor/security/cell/left/directional/south{
+	name = "Brig Cell"
+	},
+/obj/structure/chair{
+	pixel_y = 10
+	},
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron,
+/area/template_noop)
+"rqa" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"smn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted,
+/turf/open/floor/iron,
+/area/template_noop)
+"wcy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/book/manual/wiki/security_space_law{
+	pixel_x = -6;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/spray/pepper{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/obj/effect/spawner/random/armory/barrier_grenades{
+	pixel_x = 3;
+	pixel_y = 6
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"xhI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/machinery/light/small/directional/north,
+/obj/structure/reagent_dispensers/wall/peppertank/directional/north,
+/obj/structure/guncase/shotgun{
+	open = 0;
+	anchored = 1
+	},
+/obj/item/gun/ballistic/shotgun/automatic/combat,
+/turf/open/floor/iron,
+/area/template_noop)
+"xsa" = (
+/turf/template_noop,
+/area/template_noop)
+"yfJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/red/half/contrasted,
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+bMK
+hmo
+jap
+"}
+(2,1,1) = {"
+rqa
+lFf
+yfJ
+"}
+(3,1,1) = {"
+pKY
+bFs
+smn
+"}
+(4,1,1) = {"
+xsa
+xhI
+wcy
+"}

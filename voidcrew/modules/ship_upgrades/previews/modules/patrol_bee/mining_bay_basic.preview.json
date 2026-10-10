@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/mining_bay_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 5,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_mining_bay_basic_standard.png",
+     "src_md5": "5af14145cfb4af58d4f843f603f2973e",
+     "width": 4
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 5,
+     "png": "patrol_bee_mining_bay_basic_syndicate_black.png",
+     "src_md5": "cf65261380a978b9d798bf99e883b62d",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/custodial_closet.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 1,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "patrol_bee_custodial_closet_standard.png",
+     "src_md5": "68795aaf77fa144ec5a9ca2a96a3e0ca",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 1,
+     "png": "patrol_bee_custodial_closet_syndicate_black.png",
+     "src_md5": "2f2be1fa53144399c6415c5e7b4b291e",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

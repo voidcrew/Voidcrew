@@ -1,0 +1,156 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bAP" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"bXV" = (
+/turf/open/floor/iron/dark/small,
+/area/template_noop)
+"dFn" = (
+/obj/effect/turf_decal/tile/blue/full,
+/obj/machinery/hydroponics/constructable,
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"dMj" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/green,
+/obj/machinery/chem_master/condimaster{
+	desc = "Used to separate out liquids - useful for purifying botanical extracts. Also dispenses condiments.";
+	name = "SapMaster XP"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"dVP" = (
+/turf/template_noop,
+/area/template_noop)
+"eny" = (
+/obj/machinery/biogenerator,
+/obj/effect/turf_decal/tile/green{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"fSJ" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"hbQ" = (
+/obj/effect/turf_decal/tile/blue/full,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"iIw" = (
+/obj/effect/turf_decal/tile/green{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/green,
+/obj/machinery/vending/hydroseeds,
+/obj/structure/sign/poster/official/random/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"mLp" = (
+/obj/effect/turf_decal/tile/green/full,
+/obj/machinery/hydroponics/constructable,
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"naX" = (
+/obj/effect/turf_decal/tile/blue/full,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/reagent_containers/cup/watering_can,
+/obj/item/shovel/spade,
+/obj/item/wirecutters,
+/obj/item/wrench,
+/obj/item/cultivator,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"oHp" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/green,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"oMT" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/green,
+/obj/machinery/seed_extractor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"poX" = (
+/obj/effect/turf_decal/tile/green{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"tyz" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
+	dir = 1
+	},
+/obj/machinery/door/airlock/hydroponics/glass{
+	name = "Hydroponics"
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"tMh" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/template_noop,
+/area/template_noop)
+"vid" = (
+/obj/effect/turf_decal/tile/green/full,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"xrw" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+eny
+tMh
+tyz
+dVP
+dVP
+dVP
+fSJ
+"}
+(2,1,1) = {"
+poX
+xrw
+oHp
+bXV
+hbQ
+vid
+naX
+"}
+(3,1,1) = {"
+iIw
+dMj
+oMT
+bAP
+mLp
+dFn
+mLp
+"}
