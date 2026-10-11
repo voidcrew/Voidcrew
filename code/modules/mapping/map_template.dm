@@ -96,7 +96,7 @@
 			continue
 		var/area/loc_area = unlit.loc
 		if(!loc_area.static_lighting)
-			// VOIDCREW EDIT: ambient-lit ground (a planet surface) carries no lighting objects
+			// VOIDCREW EDIT START: ambient-lit ground (a planet surface) carries no lighting objects
 			// at all, with one exception - a turf that lights itself, e.g. a ruin dropping a
 			// /lit tile straight onto surface ground rather than into its own area. Its light
 			// needs somewhere to render. See /turf/proc/skips_lighting_object().
@@ -158,6 +158,7 @@
 	if((T.y+height) - 1 > world.maxy)
 		return
 
+	// VOIDCREW EDIT: Retain self-lit planetary tiles and instrument live template loading (voidcrew/modules/worldgen_logging/worldgen.dm).
 	var/datum/worldgen_probe/probe = worldgen_begin("template", "[name] [width]x[height] @ [T.x],[T.y],[T.z]")
 
 	// Cache for sonic speed
@@ -188,11 +189,13 @@
 		no_changeturf = (SSatoms.initialized == INITIALIZATION_INSSATOMS),
 		place_on_top = should_place_on_top,
 	))
+		// VOIDCREW EDIT: Retain self-lit planetary tiles and instrument live template loading (voidcrew/modules/worldgen_logging/worldgen.dm).
 		worldgen_end(probe, "parse-failed")
 		return
 
 	var/list/bounds = parsed.bounds
 	if(!bounds)
+		// VOIDCREW EDIT: Retain self-lit planetary tiles and instrument live template loading (voidcrew/modules/worldgen_logging/worldgen.dm).
 		worldgen_end(probe, "no-bounds")
 		return
 
@@ -206,6 +209,7 @@
 		generate_ceiling(affected_turfs)
 
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")
+	// VOIDCREW EDIT: Retain self-lit planetary tiles and instrument live template loading (voidcrew/modules/worldgen_logging/worldgen.dm).
 	worldgen_end(probe)
 	return bounds
 

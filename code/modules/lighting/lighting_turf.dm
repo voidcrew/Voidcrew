@@ -97,28 +97,30 @@
 ///Transfer the lighting of one area to another
 /turf/proc/transfer_area_lighting(area/old_area, area/new_area)
 	if(SSlighting.initialized && !space_lit)
+		// VOIDCREW EDIT START: Update ambient bleed on area transfers and tolerate live z-level growth (voidcrew/edits/lighting.dm).
 		var/static_lighting_changed = (new_area.static_lighting != old_area.static_lighting)
-		// VOIDCREW EDIT: remembered so the ambient bleed block below can tell whether this
+		// VOIDCREW EDIT START: remembered so the ambient bleed block below can tell whether this
 		// transfer actually took our lighting object away. See voidcrew/edits/lighting.dm.
 		var/had_lighting_object = !!lighting_object
 		// END VOIDCREW EDIT
 		if (static_lighting_changed)
+		// VOIDCREW EDIT END
 			if (new_area.static_lighting)
 				lighting_build_overlay()
-			// VOIDCREW EDIT: a turf that lights itself inside an ambient-lit area - fallout
+			// VOIDCREW EDIT START: a turf that lights itself inside an ambient-lit area - fallout
 			// ground, a lava river - keeps its object, or its own light has nothing to render
 			// on. Everything else on the dynamic side loses it exactly as upstream.
 			else if(!new_area.ambient_lighting || skips_lighting_object())
 				lighting_clear_overlay()
 			// END VOIDCREW EDIT (was: else lighting_clear_overlay())
-		// VOIDCREW EDIT: moving into ambient-lit ground from another DYNAMIC area does not
+		// VOIDCREW EDIT START: moving into ambient-lit ground from another DYNAMIC area does not
 		// trip static_lighting_changed, but the object still has to go - that ground carries
 		// none at all.
 		else if(lighting_object && skips_lighting_object())
 			lighting_clear_overlay()
 		// END VOIDCREW EDIT
 
-		// VOIDCREW EDIT: ambient bleed. Changing area without changing type - a ship
+		// VOIDCREW EDIT START: ambient bleed. Changing area without changing type - a ship
 		// landing or taking off, a room being repainted, cave generation claiming a tile -
 		// changes both whether we bleed light ourselves and whether we are something worth
 		// bleeding onto, and nothing else on this path notices. See
@@ -134,12 +136,15 @@
 
 	// We will only run this logic on turfs off the prime z layer
 	// Since on the prime z layer, we use an overlay on the area instead, to save time
+	// VOIDCREW EDIT: Update ambient bleed on area transfers and tolerate live z-level growth (voidcrew/edits/lighting.dm).
 	if(z <= length(SSmapping.z_level_to_plane_offset) && SSmapping.z_level_to_plane_offset[z])
 		var/index = SSmapping.z_level_to_plane_offset[z] + 1
 		//Inherit overlay of new area
+		// VOIDCREW EDIT START: Update ambient bleed on area transfers and tolerate live z-level growth (voidcrew/edits/lighting.dm).
 		if(old_area.lighting_effects && index <= length(old_area.lighting_effects))
 			cut_overlay(old_area.lighting_effects[index])
 		if(new_area.lighting_effects && index <= length(new_area.lighting_effects))
+		// VOIDCREW EDIT END
 			add_overlay(new_area.lighting_effects[index])
 
 	// Manage removing/adding starlight overlays, we'll inherit from the area so we can drop it if the area has it already

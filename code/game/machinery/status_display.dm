@@ -422,8 +422,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/evac, 32)
 			return PROCESS_KILL
 
 /obj/machinery/status_display/evac/receive_signal(datum/signal/signal)
+	// VOIDCREW EDIT START - comms: keep announcements, alert state and status displays local to the communicating ship
 	if(signal.data["voidcrew_net"] && signal.data["voidcrew_net"] != voidcrew_local_comms_net(src))
 		return
+	// VOIDCREW EDIT END
 	switch(signal.data["command"])
 		if("blank")
 			current_mode = SD_BLANK
@@ -466,16 +468,18 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/evac, 32)
 /// Changes only when we are in 'alert' mode ([SD_PICTURE] and one of the alert's icon state already set)
 /obj/machinery/status_display/evac/proc/on_sec_level_change(datum/source, new_level)
 	SIGNAL_HANDLER
+	// VOIDCREW EDIT START - comms: keep announcements, alert state and status displays local to the communicating ship
 	var/obj/docking_port/mobile/ship = voidcrew_communications_ship(src)
 	if(ship && source != ship)
 		return
+	// VOIDCREW EDIT END
 	if(current_mode != SD_PICTURE)
 		return
 	if(!(current_picture in SSsecurity_level.alert_level_icons))
 		return
 
 	var/datum/security_level/alert_level = SSsecurity_level.available_levels[SSsecurity_level.number_level_to_text(new_level)]
-	last_picture = alert_level.status_display_icon_state
+	last_picture = alert_level.status_display_icon_state // VOIDCREW EDIT: comms: keep announcements, alert state and status displays local to the communicating ship
 	set_picture(alert_level.status_display_icon_state)
 
 /// Supply display which shows the status of the supply shuttle.

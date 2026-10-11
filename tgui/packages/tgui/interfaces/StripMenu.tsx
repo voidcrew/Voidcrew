@@ -260,6 +260,7 @@ type StripMenuData = {
 export const StripMenu = (props) => {
   const { act, data } = useBackend<StripMenuData>();
 
+  // VOIDCREW EDIT: clothing types strip-menu positions as the flexible grid keys.
   const gridSpots = new Map<FlexSpotKey, string>();
   for (const key of Object.keys(data.items)) {
     gridSpots.set(SLOTS[key].gridSpot, key);

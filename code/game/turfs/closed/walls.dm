@@ -38,7 +38,7 @@
 	. = ..()
 	if(!can_engrave)
 		ADD_TRAIT(src, TRAIT_NOT_ENGRAVABLE, INNATE_TRAIT)
-	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// VOIDCREW EDIT CHANGE START: never register ALLOCATOR-DEALT ground - original was - overmap: contain observers and effects within their packed encounter
 	// `if(is_station_level(z))`. is_station_level() means "any z with a hull on it" in this
 	// fork, so a ruin stamped onto a packed level while a neighbour has a ship docked put
 	// every wall it owns into GLOB.station_turfs; the removal below is skipped because the
@@ -76,7 +76,7 @@
 	dismantle_wall(TRUE, FALSE)
 
 /turf/closed/wall/Destroy()
-	// VOIDCREW EDIT CHANGE: symmetric with the guard in Initialize() - original was
+	// VOIDCREW EDIT CHANGE START: symmetric with the guard in Initialize() - original was - overmap: contain observers and effects within their packed encounter
 	// `if(is_station_level(z))`, which is a DIFFERENT condition by the time a turf dies
 	// (the level's station flag is refcounted off the hulls standing on it, and teardown
 	// runs after the last one has left), so the entry survived its own turf.
@@ -107,6 +107,7 @@
 	if(repair_controller)
 		repair_controller.forget_repair_record(repair_controller.repair_coordinate_key(src))
 		repair_controller.repair_applying = TRUE
+// VOIDCREW EDIT END
 	if(devastated)
 		devastate_wall()
 	else
@@ -124,10 +125,11 @@
 	else
 		ScrapeAway()
 	QUEUE_SMOOTH_NEIGHBORS(src)
+	// VOIDCREW EDIT START - ship_repairs: deliberate remodeling supersedes pending repairs
 	if(repair_controller)
 		repair_controller.repair_applying = was_repairing
+	// VOIDCREW EDIT END
 
-// VOIDCREW EDIT END
 /turf/closed/wall/proc/break_wall()
 	new sheet_type(src, sheet_amount)
 	if(girder_type)
@@ -274,7 +276,7 @@
 		if(I.use_tool(src, user, slicing_duration, volume=100))
 			if(iswallturf(src))
 				to_chat(user, span_notice("You remove the outer plating."))
-				dismantle_wall(disassembled = TRUE)
+				dismantle_wall(disassembled = TRUE) // VOIDCREW EDIT: ship_repairs: deliberate remodeling supersedes pending repairs
 			return TRUE
 
 	return FALSE

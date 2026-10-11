@@ -172,6 +172,7 @@
 
 	var/finalized_announcement = CHAT_ALERT_COLORED_SPAN(current_level_color, jointext(level_announcement_strings, ""))
 
+	// VOIDCREW EDIT: Keep ship security announcements scoped to their recipient crew (voidcrew/modules/comms/communications_console.dm).
 	dispatch_announcement_to_players(finalized_announcement, players, current_level_sound)
 
 /// Proc that just generates a custom header based on variables fed into `priority_announce()`

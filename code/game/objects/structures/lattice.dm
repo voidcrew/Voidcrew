@@ -143,13 +143,13 @@
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/lattice/catwalk/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
 	if(rcd_data["[RCD_DESIGN_MODE]"] == RCD_DECONSTRUCT)
+// VOIDCREW EDIT END
 		var/turf/turf = loc
 		for(var/obj/structure/cable/cable_coil in turf)
 			cable_coil.deconstruct()
 		qdel(src)
 		return TRUE
 
-// VOIDCREW EDIT END
 /obj/structure/lattice/catwalk/mining
 	name = "reinforced catwalk"
 	desc = "A heavily reinforced catwalk used to build bridges in hostile environments. It doesn't look like anything could make this budge."

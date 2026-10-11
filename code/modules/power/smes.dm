@@ -71,11 +71,13 @@
 	update_appearance(UPDATE_OVERLAYS)
 
 	// Connect to powernet if there's a cable under us
+	// VOIDCREW EDIT START - shuttle power integration: bind mapped SMES to the cable beneath it (voidcrew/edits/machinery/power.dm)
 	if(!powernet)
 		var/obj/structure/cable/C = locate() in loc
 		if(!QDELETED(C))
 			cable_layer = C.cable_layer
 			connect_to_network()
+	// VOIDCREW EDIT END
 
 /obj/machinery/power/smes/on_construction(mob/user)
 	var/obj/structure/cable/C = locate() in loc

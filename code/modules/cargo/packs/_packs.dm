@@ -149,6 +149,8 @@
 	src.cost = cost
 	src.contains = contains
 
+// VOIDCREW EDIT: cargo validates and commits pooled material orders; implementation in voidcrew/edits/modules/cargo/packs/_packs.dm.
+
 ///Alters material amrkey & adjust order quantities if they exceed whats on the market
 /datum/supply_pack/custom/minerals/proc/adjust_market()
 	. = list()

@@ -18,14 +18,6 @@
 /// How long after the box closes until it can go again
 #define MBOX_DURATION_STANDBY (2.7 SECONDS)
 
-/// How many spins one crew gets out of a treasure chest before it stops opening for them.
-/// Pooled across the crew rather than handed out per person: a full ship would otherwise
-/// strip every use out of a chest on its own, while a two-man crew could never spend more
-/// than a fraction of them.
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-#define TREASURE_CHEST_CREW_SPINS 6
-// VOIDCREW EDIT END
-
 GLOBAL_LIST_INIT(mystery_box_guns, list(
 	/obj/item/gun/energy/recharge/ebow/large,
 	/obj/item/gun/energy/e_gun,
@@ -303,32 +295,9 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 /obj/structure/mystery_box/fishing/generate_valid_types()
 	valid_types = GLOB.mystery_fishing
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-/obj/structure/mystery_box/fishing/examine(mob/user)
-	. = ..()
-	var/datum/weakref/pool = get_spin_pool(user)
-	if(!pool)
-		return
-	var/spins_left = max(TREASURE_CHEST_CREW_SPINS - LAZYACCESS(spins_by_crew, pool), 0)
-	if(!spins_left)
-		. += span_warning("It has nothing left for your crew.")
-		return
-	. += span_notice("It has [spins_left] spin[spins_left == 1 ? "" : "s"] left for your crew.")
-
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-/obj/structure/mystery_box/fishing/activate(mob/living/user)
-	var/datum/weakref/pool = get_spin_pool(user)
-	if(pool && LAZYACCESS(spins_by_crew, pool) >= TREASURE_CHEST_CREW_SPINS)
-		to_chat(user, span_warning("[src] refuses to open for your crew anymore. Perhaps you should hand it off to another one..."))
-		return
-	. = ..()
-	if(pool)
-		LAZYINITLIST(spins_by_crew)
-		spins_by_crew[pool] += 1
+// VOIDCREW EDIT REMOVAL: Crew-pooled activation and examination live in voidcrew/edits/game/objects/structures/mystery_box.dm.
 
 /// This represents the item that comes out of the box and is constantly changing before the box finishes deciding. Can probably be just an /atom or /movable.
-// VOIDCREW EDIT END
 /obj/effect/abstract/mystery_box_item
 	name = "???"
 	desc = "Who knows what it'll be??"
@@ -412,5 +381,4 @@ GLOBAL_LIST_INIT(mystery_fishing, list(
 #undef MBOX_DURATION_PRESENTING
 #undef MBOX_DURATION_EXPIRING
 #undef MBOX_DURATION_STANDBY
-#undef TREASURE_CHEST_CREW_SPINS
 // VOIDCREW EDIT END

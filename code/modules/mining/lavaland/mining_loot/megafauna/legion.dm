@@ -38,7 +38,7 @@
 		return
 	var/datum/weather/affected_weather
 	for(var/datum/weather/weather as anything in SSweather.processing)
-		// VOIDCREW EDIT ADDITION: storms are per-SITE, not per-level. Every voidcrew planet
+		// VOIDCREW EDIT ADDITION START: overmap - storms are per-SITE, not per-level. Every voidcrew planet
 		// storm uses area_type = /area/overmap_encounter/planetoid, so on a packed planet
 		// level this matched a CO-TENANT's storm and wind_down() cancelled it outright for a
 		// crew standing on a different planet. A storm with no site keeps the z-wide match.
@@ -96,7 +96,7 @@
 	for(var/datum/weather/weather as anything in SSweather.processing)
 		if(weather.stage != MAIN_STAGE)
 			continue
-		// VOIDCREW EDIT ADDITION: same site scoping as attack_self() above - the damage
+		// VOIDCREW EDIT ADDITION START: overmap - same site scoping as attack_self() above - the damage
 		// boost leaked off a co-tenant planet's storm exactly the same way.
 		if(weather.weather_site && !weather.weather_site.contains_turf(target_turf))
 			continue

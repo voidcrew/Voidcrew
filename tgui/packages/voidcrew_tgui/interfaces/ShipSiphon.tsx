@@ -1,7 +1,13 @@
-// VOIDCREW EDIT START - Voidcrew ship credit siphon controls.
-import { useBackend } from '../backend';
-import { Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
-import { Window } from '../layouts';
+import {
+  Button,
+  LabeledList,
+  NoticeBox,
+  ProgressBar,
+  Section,
+} from 'tgui-core/components';
+
+import { useBackend } from '../../tgui/backend';
+import { Window } from '../../tgui/layouts';
 
 type SiphonData = {
   active: boolean;
@@ -79,7 +85,7 @@ export const ShipSiphon = (props) => {
             </ProgressBar>
           )}
 
-          {active && siphon_goal > 0 && (
+          {!!active && siphon_goal > 0 && (
             <ProgressBar
               value={goal_progress}
               maxValue={100}
@@ -170,4 +176,3 @@ export const ShipSiphon = (props) => {
     </Window>
   );
 };
-// VOIDCREW EDIT END

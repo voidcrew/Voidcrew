@@ -215,7 +215,6 @@
 /mob/living/carbon/get_equipped_speed_mod_items()
 	return ..() + get_equipped_items()
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/doUnEquip(obj/item/item_dropping, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
 	. = ..() //Sets the default return value to what the parent returns.
 	if(!. || !item_dropping) //We don't want to set anything to null if the parent returned 0.
@@ -253,7 +252,7 @@
 
 	// Not an else-if because we're probably equipped in another slot
 	if(item_dropping == internal && (QDELETED(src) || QDELETED(item_dropping) || item_dropping.loc != src))
-		cutoff_internals("tank unequipped from slot, newloc=[item_dropping.loc]")
+		cutoff_internals("tank unequipped from slot, newloc=[item_dropping.loc]") // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 		if(!QDELETED(src))
 			update_mob_action_buttons(UPDATE_BUTTON_STATUS)
 
@@ -265,7 +264,6 @@
 	hud_used?.update_locked_slots()
 
 /// Returns the helmet if an air tank compatible helmet is equipped.
-// VOIDCREW EDIT END
 /mob/living/carbon/proc/can_breathe_helmet()
 	if (isclothing(head) && (head.clothing_flags & HEADINTERNALS))
 		return head
@@ -379,7 +377,6 @@
  * Arguments:
  * * is_external - A boolean which indicates if the air tank must be equipped, or stored elsewhere.
  */
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /mob/living/carbon/proc/toggle_close_internals(is_external = FALSE)
 	if (!internal && !external)
 		return
@@ -388,12 +385,10 @@
 
 /// Prepares emergency disconnect from open air tanks and notifies in chat. Usually called after mob suddenly unequips breathing apparatus.
 /// reason names the call site so intermittent cutoffs can be traced - see log_internals_cutoff().
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-/mob/living/carbon/proc/cutoff_internals(reason = "unspecified")
+/mob/living/carbon/proc/cutoff_internals(reason = "unspecified") // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 	if (!external && !internal)
 		return
-	log_internals_cutoff(reason)
+	log_internals_cutoff(reason) // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 	to_chat(src, span_notice("Your internals disconnect from [external || internal] and the valve closes."))
 	close_all_airtanks()
 
@@ -404,7 +399,6 @@
  * Arguments:
  * * tank - The given tank to toggle open and start breathing from internally.
  */
-// VOIDCREW EDIT END
 /mob/living/carbon/proc/toggle_internals(obj/item/tank)
 	// Carbons can't open their own internals tanks.
 	return FALSE

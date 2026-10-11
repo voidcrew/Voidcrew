@@ -7,21 +7,18 @@
 	var/question = "Travel back?"
 	var/list/zlevels
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/signpost/Initialize(mapload)
 	. = ..()
 	set_light(2)
+// VOIDCREW EDIT REMOVAL: mining resolves signpost destinations through the crew ship.
 
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/signpost/interact(mob/user)
 	. = ..()
 	if(.)
 		return
 	if(tgui_alert(usr,question,name,list("Yes","No")) == "Yes" && Adjacent(user))
-		var/turf/T = get_destination_turf(user)
-
-		// VOIDCREW EDIT ADDITION START: no way home across an overmap zone boundary (voidcrew/modules/overmap, zone_teleport.dm)
+		var/turf/T = get_destination_turf(user) // VOIDCREW EDIT: mining resolves signpost destinations through the crew ship.
+		// VOIDCREW EDIT ADDITION START: signposts respect zone boundaries.
 		if(T && teleport_crosses_zone(user, T))
 			to_chat(user, span_warning("Nothing happens. The way home is past the zone boundary."))
 			return
@@ -38,7 +35,8 @@
 		else
 			to_chat(user, "Nothing happens. You feel that this is a bad sign.")
 
-// VOIDCREW EDIT END
+// VOIDCREW EDIT: mining returns explorers to their own crew ship; implementation in voidcrew/edits/modules/awaymissions/signpost.dm.
+
 /obj/structure/signpost/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	return interact(user)
 
@@ -77,3 +75,5 @@
 	zlevels -= SSmapping.levels_by_trait(ZTRAIT_CENTCOM) // no easy victory, even with meme signposts
 	// also, could you think of the horror if they ended up in a holodeck
 	// template or something
+
+// VOIDCREW EDIT: mining preserves the exit signpost random destination; implementation in voidcrew/edits/modules/awaymissions/signpost.dm.

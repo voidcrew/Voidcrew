@@ -29,10 +29,11 @@
 	/// Path of the left hand held item we give to the mob's visuals.
 	var/l_hand
 
+
 /mob/living/basic/trooper/Initialize(mapload)
 	. = ..()
 	if(use_dynamic_appearance) // VOIDCREW EDIT
-		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
+		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand) // VOIDCREW EDIT: trooper appearance integration: respect static fork sprites (voidcrew/edits/modules/mob/living/basic/trooper/trooper.dm)
 	if(LAZYLEN(loot) || corpse)
 		LAZYOR(loot, corpse)
 		loot = string_list(loot)

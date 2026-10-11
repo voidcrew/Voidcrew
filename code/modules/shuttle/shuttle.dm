@@ -172,7 +172,8 @@
 		return P.shuttle_id
 
 // Say that A in the absolute (rectangular) bounds of this shuttle or no.
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/docking_port/proc/is_in_shuttle_bounds(atom/A)
+	// VOIDCREW EDIT: shuttle separates geometric hull bounds from area membership.
 	return is_in_shuttle_bounds_geometric(A)
-// VOIDCREW EDIT END
+
+// VOIDCREW EDIT: shuttle exposes geometric hull bounds for engine membership; implementation in voidcrew/edits/modules/shuttle/shuttle.dm.

@@ -1,7 +1,6 @@
 //Landmarks and other helpers which speed up the mapping process and reduce the number of unique instances/subtypes of items/turf/ect
 
 
-
 /obj/effect/baseturf_helper //Set the baseturfs of every turf in the /area/ it is placed.
 	name = "baseturf editor"
 	icon = 'icons/effects/mapping_helpers.dmi'
@@ -1147,7 +1146,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/mapping_helpers/no_atoms_ontop)
 	var/datum/space_level/level = SSmapping.z_list[z]
 	if(!level || !length(traits_to_add))
 		return
-	// VOIDCREW EDIT ADDITION: a template loaded onto the slot lattice must not rewrite the
+	// VOIDCREW EDIT ADDITION START: a template loaded onto the slot lattice must not rewrite the
 	// LEVEL's traits - all four tenants inherit them, and one of them is ZTRAIT_BASETURF,
 	// the fallback every flat tenant resolves a scraped floor through. The level's own
 	// weather site would be rebuilt rect-less for everybody too.

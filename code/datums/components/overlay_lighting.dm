@@ -463,6 +463,7 @@
 	// Our holder can be stale: whatever the parent is inside can move without the parent
 	// itself moving, and only the parent moving re-runs this. Must happen before we set
 	// LIGHTING_ON, or set_holder() applies the light and we then apply it a second time.
+	// VOIDCREW EDIT: Refresh contained light holders before enabling the overlay (voidcrew/edits/datums/components/overlay_lighting.dm).
 	check_holder()
 	overlay_lighting_flags |= LIGHTING_ON
 	if(current_holder)

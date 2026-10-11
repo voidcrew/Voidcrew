@@ -127,7 +127,7 @@
 	if(allowed_z_levels && !(source_z in allowed_z_levels))
 		return
 
-	// VOIDCREW EDIT ADDITION: packed-level containment. Resolved live rather than
+	// VOIDCREW EDIT ADDITION START: packed-level containment. Resolved live rather than
 	// snapshotted - a ship-mounted console changes z constantly, and its site with it.
 	var/atom/region_anchor = region_anchor_ref?.resolve()
 	if(region_anchor)

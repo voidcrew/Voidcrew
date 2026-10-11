@@ -3,7 +3,7 @@
 	vision_range = 2
 	atmos_requirements = null
 	faction = list(FACTION_MINING)
-	// VOIDCREW EDIT: TRAIT_SNOWSTORM_IMMUNE added. /mob/living/basic/mining - the newer
+	// VOIDCREW EDIT START: TRAIT_SNOWSTORM_IMMUNE added. /mob/living/basic/mining - the newer - overmap planets: legacy mining wildlife shares plasma-river immunity with basic mining mobs
 	// base every other icemoon mob already sits on - grants all THREE of these
 	// (see its Initialize), and this one being two-thirds of that list is an oversight
 	// upstream never felt because on icemoon the plasma rivers are mapped, not carved.

@@ -76,7 +76,7 @@
 			var/next_step_handled = next_step.try_op(user, target, user.zone_selected, user.get_active_held_item(), surgery)
 			qdel(next_step)
 			// VOIDCREW EDIT END
-			if(next_step_handled)
+			if(next_step_handled) // VOIDCREW EDIT: surgery reclaims the fallback step after its channel ends.
 				return TRUE
 			else
 				surgery.status--

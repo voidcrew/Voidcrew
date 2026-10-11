@@ -1,8 +1,8 @@
 import { useBackend } from 'tgui/backend';
 import { Box, Button, Section, Stack } from 'tgui-core/components';
 
-import { JobPriority, type PreferencesMenuData } from '../types';
-import { useServerPrefs } from '../useServerPrefs';
+import { JobPriority, type PreferencesMenuData } from '../../../../tgui/interfaces/PreferencesMenu/types';
+import { useServerPrefs } from '../../../../tgui/interfaces/PreferencesMenu/useServerPrefs';
 
 const PRIORITY_BUTTON_SIZE = '18px';
 

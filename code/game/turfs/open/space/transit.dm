@@ -37,8 +37,10 @@
 	SIGNAL_HANDLER
 
 	// The async initialization callback can outlive the move or turf replacement.
+	// VOIDCREW EDIT START - hyperspace integration: honor movement exemptions and reject stale asynchronous entries (voidcrew/edits/hyperspace_overboard.dm)
 	if(QDELETED(enterer) || enterer.loc != src || !istype(src, /turf/open/space/transit))
 		return
+	// VOIDCREW EDIT END
 
 	// VOIDCREW EDIT ADDITION START - the hull grace zone. Close in against a ship, hyperspace
 	// does not take hold. The tiles are still vacuum and you still get around by pushing off
@@ -47,7 +49,8 @@
 	// TRAIT_HYPERSPACED check below, so somebody hyperspace ALREADY has hold of gets caught
 	// when they drift back into a hull's lee. Living mobs only, and never anything holding
 	// a hyperspace exemption - confined ship debris is meant to keep flying (ship_debris.dm).
-	if(isliving(enterer) && !HAS_TRAIT(enterer, TRAIT_FREE_HYPERSPACE_MOVEMENT))
+	// A running jetpack's exemption does not count: its rider still takes the grip.
+	if(isliving(enterer) && !hyperspace_free_without_jetpack(enterer))
 		var/obj/docking_port/mobile/holding = hyperspace_hull_near(src)
 		if(holding)
 			if(!enterer.GetComponent(/datum/component/hyperspace_hull_grip))
@@ -69,7 +72,7 @@
 
 	var/turf/location = gone.loc
 	// VOIDCREW: crossing into a normal-space breach respects the same exemption as the soft cordon.
-	if(istype(location, /turf/open/space) && !istype(location, src.type) && !HAS_TRAIT(gone, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT))
+	if(istype(location, /turf/open/space) && !istype(location, src.type) && !HAS_TRAIT(gone, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT)) // VOIDCREW EDIT: hyperspace integration: honor movement exemptions and reject stale asynchronous entries (voidcrew/edits/hyperspace_overboard.dm)
 		dump_in_space(gone) //launch them into game space, away from transitspace
 
 ///Get rid of all our contents, called when our reservation is released (which in our case means the shuttle arrived)

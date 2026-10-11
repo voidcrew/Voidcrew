@@ -39,7 +39,7 @@
 */
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/airlock_painter/decal/proc/paint_floor(turf/open/floor/target)
-	var/list/decal_data = get_decal_data()
+	var/list/decal_data = get_decal_data() // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/tools/painter/decal_painter.dm)
 
 	target.AddElement( \
 		/datum/element/decal, \

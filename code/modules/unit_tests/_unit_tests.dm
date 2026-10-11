@@ -85,7 +85,6 @@
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 /// Helper to allocate a new object with the implied type (the type of the variable it's assigned to) in the corner of the test room
 #define EASY_ALLOCATE(arguments...) allocate(__IMPLIED_TYPE__, run_loc_floor_bottom_left, ##arguments)
-// VOIDCREW EDIT START - PR #425: Support cyborg and AI ship crew.
 
 // BEGIN_INCLUDE
 #include "abductor_baton_spell.dm"
@@ -246,7 +245,6 @@
 #include "plantgrowth_tests.dm"
 #include "preference_species.dm"
 #include "preferences.dm"
-#include "prisoner_photos.dm"
 #include "projectiles.dm"
 #include "quirks.dm"
 #include "range_return.dm"
@@ -336,4 +334,3 @@
 #undef TEST_ASSERT_NOTEQUAL
 //#undef TEST_FOCUS - This define is used by vscode unit test extension to pick specific unit tests to run and appended later so needs to be used out of scope here
 #endif
-// VOIDCREW EDIT END

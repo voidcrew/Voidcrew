@@ -62,6 +62,8 @@ GLOBAL_LIST_EMPTY(scanned_fish_by_techweb)
 	message += "</span>"
 	examine_list += message
 
+// VOIDCREW EDIT: research clamps shared fish progress to the experiment requirement; implementation in voidcrew/edits/modules/experisci/experiment/types/scanning_fish.dm.
+
 ///Only scannable fish will contribute towards the experiment.
 /datum/experiment/scanning/fish/final_contributing_index_checks(datum/component/experiment_handler/experiment_handler, obj/item/fish/target, typepath)
 	return target.fish_flags & FISH_FLAG_EXPERIMENT_SCANNABLE

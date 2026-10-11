@@ -132,7 +132,6 @@
 	var/mob/living/navigator = usr
 	navigator.navigate()
 
-/// Shortcut to the same personal skill report provided by the View Skills verb.
 /atom/movable/screen/craft
 	name = "crafting menu"
 	icon = 'icons/hud/screen_midnight.dmi'
@@ -187,6 +186,7 @@
 	if(world.time <= usr.next_move)
 		return TRUE
 
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(usr.incapacitated_except_softcrit(INCAPABLE_STASIS))
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
@@ -279,6 +279,7 @@
 		return TRUE
 	if(world.time <= user.next_move)
 		return TRUE
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(user.incapacitated_except_softcrit())
 		return TRUE
 	if (ismecha(user.loc)) // stops inventory actions in a mech
@@ -525,6 +526,7 @@
 
 	if(world.time <= usr.next_move)
 		return TRUE
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	if(usr.incapacitated_except_softcrit())
 		return TRUE
 	if(ismecha(usr.loc)) // stops inventory actions in a mech
@@ -644,6 +646,7 @@
 
 // VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/zone_sel/MouseExited(location, control, params)
+	// VOIDCREW EDIT: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	. = ..()
 	if(!isobserver(usr) && hovering)
 		vis_contents -= hover_overlays_cache[hovering]
@@ -803,6 +806,7 @@
 
 // VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /atom/movable/screen/healthdoll/human/update_body_zones()
+	// VOIDCREW EDIT REMOVAL: Allow inventory interaction in soft crit via incapacitated_except_softcrit().
 	vis_contents.Cut()
 	QDEL_LIST_ASSOC_VAL(limbs)
 	limbs ||= list()

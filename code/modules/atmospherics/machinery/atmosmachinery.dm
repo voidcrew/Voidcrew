@@ -200,8 +200,10 @@
 	// braces with the guards in SSair.add_to_rebuild_queue()/process_rebuilds(): this one
 	// also covers any caller that reaches rebuild_pipes() without going through the queue.
 	if(QDELETED(src))
+		// VOIDCREW EDIT START: Avoid new pipelines for dying atmos machines and tolerate asymmetric node teardown.
 		rebuilding = FALSE
 		return
+		// VOIDCREW EDIT END
 	var/list/targets = get_rebuild_targets()
 	rebuilding = FALSE
 	for(var/datum/pipeline/build_off as anything in targets)
@@ -419,8 +421,10 @@
 	// VOIDCREW EDIT: Find() returns 0 on an asymmetric link, and nodes[0] runtimes -
 	// aborting the caller's Destroy() chain before any of its cleanup runs
 	var/node_index = nodes.Find(reference)
+	// VOIDCREW EDIT START: Avoid new pipelines for dying atmos machines and tolerate asymmetric node teardown.
 	if(node_index)
 		nodes[node_index] = null
+	// VOIDCREW EDIT END
 	update_appearance()
 
 /obj/machinery/atmospherics/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)

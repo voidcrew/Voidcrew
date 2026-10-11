@@ -221,13 +221,14 @@
  * Arguments:
  * * output_port - The output port to remove.
  */
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/circuit_component/proc/remove_output_port(datum/port/output/output_port)
 	output_ports -= output_port
 	qdel(output_port)
 	if(parent)
 		SStgui.update_uis(parent)
 	return null //explicitly set the port to null if used like this: `port = remove_output_port(port)`
+
+// VOIDCREW EDIT: circuits provides chemistry trigger cleanup and power hooks; implementation in voidcrew/edits/modules/wiremod/core/component.dm.
 
 /**
  * Called whenever an input is received from one of the ports.
@@ -237,7 +238,6 @@
  * * port - Can be null. The port that sent the input
  * * return_values - Only defined if the component is receiving an input due to instant execution. Contains the values to be returned once execution has stopped.
  */
-// VOIDCREW EDIT END
 /obj/item/circuit_component/proc/trigger_component(datum/port/input/port, list/return_values)
 	SHOULD_NOT_SLEEP(TRUE)
 	pre_input_received(port)
@@ -442,4 +442,4 @@
 /obj/item/circuit_component/proc/send_ntnet_data(datum/port/input/port, key, signal_type = COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
 	// Voidcrew: the sender rides along so receivers can scope the broadcast to one ship.
 	// See on_same_ship_network() in voidcrew/modules/circuits/ntnet_ship_scope.dm.
-	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src)))
+	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port), "sender" = WEAKREF(src))) // VOIDCREW EDIT: circuits includes the sender in ship-scoped NTNet broadcasts.

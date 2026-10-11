@@ -151,7 +151,7 @@
 	var/turf/there = get_turf(signal)
 	if(isnull(here) || isnull(there) || !is_valid_z_level(here, there))
 		return RADAR_NOT_TRACKABLE
-	// VOIDCREW EDIT ADDITION: packed-level containment. is_valid_z_level() is bare z
+	// VOIDCREW EDIT ADDITION START: overmap - packed-level containment. is_valid_z_level() is bare z
 	// equality, so a Lifeline (or Fission360, or the custodial locator) in one slot tracked
 	// any suit-sensor crewmember in the neighbouring slot and track() handed the client a
 	// true bearing and pixel offset off raw coordinate arithmetic. Refuses only a

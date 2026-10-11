@@ -72,7 +72,7 @@
 					if(isliving(cached_my_atom) && !reaction.mob_react) //Makes it so certain chemical reactions don't occur in mobs
 						continue
 
-					//VOIDCREW EDIT ADDITION: keeps mob-spawning mixtures out of plant chemistry
+					//VOIDCREW EDIT ADDITION START: keeps mob-spawning mixtures out of plant chemistry - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 					if((reaction.reaction_flags & REACTION_NOT_IN_PLANTS) && istype(cached_my_atom, /obj/item/food/grown))
 						continue
 					//VOIDCREW EDIT END
@@ -91,7 +91,7 @@
 					LAZYADD(failed_but_capable_reactions, reaction)
 					continue
 
-				//VOIDCREW EDIT: only recipes that opt in with REACTION_USES_PURITY are gated on pH.
+				//VOIDCREW EDIT START: only recipes that opt in with REACTION_USES_PURITY are gated on pH. - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 				if((reaction.reaction_flags & REACTION_USES_PURITY) && (ph < reaction.optimal_ph_min - reaction.determin_ph_range && ph > reaction.optimal_ph_max + reaction.determin_ph_range))
 					LAZYADD(failed_but_capable_reactions, reaction)
 					continue
@@ -150,7 +150,7 @@
 		else
 			if(reaction.required_temp < chem_temp)
 				return TRUE
-		//VOIDCREW EDIT: a reaction that doesn't opt into pH mechanics is never held back by pH,
+		//VOIDCREW EDIT START: a reaction that doesn't opt into pH mechanics is never held back by pH, - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 		//so it's always eligible to restart once its other conditions are met.
 		if(reaction.reaction_flags & REACTION_USES_PURITY)
 			if(((ph >= (reaction.optimal_ph_min - reaction.determin_ph_range)) && (ph <= (reaction.optimal_ph_max + reaction.determin_ph_range))))
