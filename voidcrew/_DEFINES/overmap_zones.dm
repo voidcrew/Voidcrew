@@ -118,7 +118,8 @@
 #define ZONE_PLANET_SPAWNER_SPACING 24
 
 /**
- * How many anomalies a planet may seed, per zone.
+ * Percent chance a planet seeds an anomaly, per zone. At most one per planet: they are
+ * meant to be a rare find, and a planet rebuilds with a fresh roll each time it reloads.
  *
  * Anomalies used to be a ship-scoped dynamic event, which made them something that
  * happened TO a crew in their own corridors with nowhere to stand back to. On a planet
@@ -126,19 +127,17 @@
  * open ground, and the crew chose to walk over there. Approaching one is a decision, and
  * a crew carrying a neutralizer (Anomaly Research, tier 3) gets a core out of it.
  *
- * Green stays empty for the same reason it seeds no megafauna: it is where a crew takes
- * its first landing.
+ * Green gets the occasional one, deeper bands more often.
  */
-#define ZONE_PLANET_ANOMALY_BUDGET_GREEN 0
-#define ZONE_PLANET_ANOMALY_BUDGET_YELLOW 2
-#define ZONE_PLANET_ANOMALY_BUDGET_RED 3
+#define ZONE_PLANET_ANOMALY_CHANCE_GREEN 5
+#define ZONE_PLANET_ANOMALY_CHANCE_YELLOW 15
+#define ZONE_PLANET_ANOMALY_CHANCE_RED 25
 
-/// Minimum tiles between two planet anomalies, so a budget of 3 is three separate finds
-/// rather than one lethal clearing.
+/// Minimum tiles between two planet anomalies, should a planet ever seed more than one
 #define ZONE_PLANET_ANOMALY_SPACING 20
 
-/// Cap on random turf draws while placing the anomaly budget. A planet whose open ground
-/// is nearly all taken simply seeds fewer than its budget rather than spinning.
+/// Cap on random turf draws while placing a planet's anomaly. A planet whose open ground
+/// is nearly all taken simply goes without rather than spinning.
 #define PLANET_ANOMALY_PLACEMENT_ATTEMPTS 400
 
 /// Multiplier on ore mined per planet rock wall (mineralAmt), per zone, green stays baseline (x1). Applied in /turf/closed/mineral/proc/zone_scaled_ore_amount()

@@ -31,6 +31,11 @@
 	var/spawn_zone = ZONE_RED
 	/// One successful reveal per paid chart; failed placement remains retryable.
 	var/revealed = FALSE
+	/// What the helm calls the revealed target in its readout
+	var/reveal_noun = "rare signal"
+	/// Charts with work left after the reveal (anomaly charts wait for the crew to
+	/// arrive) manage their own lifetime instead of being deleted on reveal.
+	var/keep_after_reveal = FALSE
 
 /**
  * Spawns the chart's ruin at an unused square in the chart's zone band and
@@ -78,18 +83,19 @@
 	ship_notify("Encrypted rumor data received: \"[chart.name]\". Reveal it from the helm console when ready.", "HELM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
- * Reveals a pending rumor: spawns its ruin, charts the waypoint and consumes
- * the sealed entry. Returns the ruin, or null on failure (entry is kept).
+ * Reveals a pending rumor: spawns or picks its site, charts the waypoint and
+ * consumes the sealed entry. Returns the site, or null on failure (entry is kept).
  */
 /obj/structure/overmap/ship/proc/reveal_pending_rumor(datum/rumor_chart/chart)
 	if(!(chart in pending_rumors))
 		return null
-	var/obj/structure/overmap/space_ruin/ruin = chart.reveal(src)
-	if(!ruin)
+	var/obj/structure/overmap/site = chart.reveal(src)
+	if(!site)
 		return null
 	pending_rumors -= chart
-	qdel(chart)
-	return ruin
+	if(!chart.keep_after_reveal)
+		qdel(chart)
+	return site
 
 /**
  * Gets an unused overmap square in the given zone band (ZONE_RED/YELLOW/GREEN).

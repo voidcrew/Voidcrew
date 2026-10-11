@@ -43,7 +43,6 @@
 		/obj/item/gun/energy/laser/retro = 6,
 		/obj/item/gun/energy/recharge/ebow = 4,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
-		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/science = 7,
 		// lab hardware worn instead of carried: a sonar transceiver socketed
@@ -52,6 +51,7 @@
 	)
 	loot_prime = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 10,
+		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/stock_parts/capacitor/super = 8,
 		/obj/item/stock_parts/micro_laser/ultra = 8,
 		/obj/item/stock_parts/matter_bin/super = 7,
@@ -89,6 +89,8 @@
 		/obj/item/reagent_containers/cup/beaker/entangled = 2,
 		/obj/item/clothing/gloves/fingerless/chronal_splint = 1,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 1,
+		// no longer researchable: three shots and no way to recharge it
+		/obj/item/gun/energy/event_horizon = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/research
