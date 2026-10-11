@@ -6,6 +6,7 @@
 #include "drift_vectors.dm"
 #include "gas_connector_lifecycle.dm"
 #include "glass_floor_baseturfs.dm"
+#include "hyperspace_jetpack.dm"
 #include "late_initialization_reentry.dm"
 #include "map_parser_attributes.dm"
 #include "mod_night_vision.dm"

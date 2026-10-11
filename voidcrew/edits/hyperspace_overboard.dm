@@ -14,7 +14,7 @@
  * Process_Spacemove() returns FALSE forever and the mob cannot take a single step for the
  * rest of the round.
  *
- * Two changes, both of which this file owns:
+ * Three changes, all of which this file owns:
  *
  * 1. A grace zone. Within HYPERSPACE_HULL_GRACE_RANGE tiles of a hull, hyperspace does not
  *    take hold of you. That is ALL it does: the tiles are still vacuum and you still move
@@ -27,10 +27,19 @@
  *    standing on it, another ship's hull, or a loaded planet or ruin a ship can fly to.
  *    Space landings are always placed against something solid, so the castaway can push off
  *    and move. Ground landings are a fall from orbit, and break every bone you have.
+ *
+ * 3. Jetpacks work. While a jetpack could fire, hyperspace does not pull its wearer anywhere
+ *    in the corridor. Flying off the corridor's edge still throws them out.
  */
 
 /// How far outside a hull's rectangle hyperspace still lets you hold on.
 #define HYPERSPACE_HULL_GRACE_RANGE 2
+/// Trait source for the one move that sets a castaway down, so it does not throw them out again.
+#define OVERBOARD_LANDING_TRAIT "overboard_landing"
+/// Start of every trait source a running jetpack frees its wearer from hyperspace under.
+#define JETPACK_HYPERSPACE_SOURCE_PREFIX "[JETPACK_TRAIT]:"
+/// One source per jetpack, so switching one off does not ground a wearer who has a second running.
+#define JETPACK_HYPERSPACE_SOURCE(jetpack) "[JETPACK_HYPERSPACE_SOURCE_PREFIX][REF(jetpack)]"
 /// Turfs sampled inside a candidate site before we give up on it and try the next one.
 #define OVERBOARD_SAMPLE_TRIES 256
 /// How far out from a hull we will look for a tile to put a castaway on.
@@ -443,7 +452,13 @@
 
 	dumpee.pulledby?.stop_pulling()
 	dumpee.stop_pulling()
+	// Stepping off a hyperspace tile into open space is what throws people out (transit
+	// Exited()). This move IS that throw. Without the exemption it runs a second time from
+	// wherever it just put them, treats the hull they were set down beside as the one they
+	// fell off, and sends them somewhere else.
+	ADD_TRAIT(dumpee, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, OVERBOARD_LANDING_TRAIT)
 	dumpee.forceMove(destination)
+	REMOVE_TRAIT(dumpee, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, OVERBOARD_LANDING_TRAIT)
 
 	if(!isliving(dumpee))
 		return TRUE
@@ -456,7 +471,75 @@
 	log_shuttle("[key_name(castaway)] was dumped out of [origin ? "[origin]'s hyperspace corridor" : "space"] and landed at [AREACOORD(destination)].")
 	return TRUE
 
+/**
+ * Whether hyperspace leaves this alone for any reason other than a jetpack it is flying on.
+ *
+ * A jetpack rider still takes the hull grip beside their ship like anyone else. The grip is what
+ * carries them out of hyperspace with their ship, and what holds them there if the jetpack cuts
+ * out.
+ */
+/proc/hyperspace_free_without_jetpack(atom/movable/thing)
+	var/prefix_length = length(JETPACK_HYPERSPACE_SOURCE_PREFIX)
+	for(var/source in GET_TRAIT_SOURCES(thing, TRAIT_FREE_HYPERSPACE_MOVEMENT))
+		if(!istext(source) || copytext(source, 1, prefix_length + 1) != JETPACK_HYPERSPACE_SOURCE_PREFIX)
+			return TRUE
+	return FALSE
+
+/**
+ * A jetpack that could fire keeps its wearer out of hyperspace's pull.
+ *
+ * Jetpack thrust is a drift loop at MOVEMENT_SPACE_PRIORITY, the pull is a loop at
+ * MOVEMENT_ABOVE_SPACE_PRIORITY, and a mob only ever runs one loop. So once hyperspace had
+ * somebody, every input and stabilizer tick their jetpack made was ignored while they were
+ * dragged off at five tiles a second. Instead, while the wearer is in hyperspace and the jetpack
+ * could fire, they hold TRAIT_FREE_HYPERSPACE_MOVEMENT, which shuttle_cling already answers by
+ * stopping its pull and starting it again when the trait goes.
+ *
+ * Checked every tick the jetpack processes rather than once at switch-on, so running dry, a
+ * moth's wings in vacuum or passing out hands the wearer straight back to the pull.
+ */
+/datum/component/jetpack/process(seconds_per_tick)
+	. = ..()
+	update_hyperspace_freedom()
+
+/datum/component/jetpack/deactivate(datum/source, mob/old_user)
+	SIGNAL_HANDLER
+	release_hyperspace_freedom(old_user)
+	release_hyperspace_freedom(user)
+	return ..()
+
+/datum/component/jetpack/Destroy(force)
+	release_hyperspace_freedom(user)
+	return ..()
+
+/datum/component/jetpack/proc/update_hyperspace_freedom()
+	var/mob/wearer = user
+	if(QDELETED(wearer))
+		return
+	if(!istype(wearer.loc, /turf/open/space/transit))
+		release_hyperspace_freedom(wearer)
+		return
+	var/can_fire = should_trigger(wearer) && (isnull(check_on_move) || check_on_move.Invoke(FALSE))
+	// Checking the fuel switches an empty jetpack off, and that has already let go of the wearer.
+	if(user != wearer)
+		return
+	if(!can_fire)
+		release_hyperspace_freedom(wearer)
+		return
+	var/source = JETPACK_HYPERSPACE_SOURCE(src)
+	if(!HAS_TRAIT_FROM(wearer, TRAIT_FREE_HYPERSPACE_MOVEMENT, source))
+		ADD_TRAIT(wearer, TRAIT_FREE_HYPERSPACE_MOVEMENT, source)
+
+/datum/component/jetpack/proc/release_hyperspace_freedom(mob/wearer)
+	if(isnull(wearer) || !HAS_TRAIT(wearer, TRAIT_FREE_HYPERSPACE_MOVEMENT))
+		return
+	var/source = JETPACK_HYPERSPACE_SOURCE(src)
+	REMOVE_TRAIT(wearer, TRAIT_FREE_HYPERSPACE_MOVEMENT, source)
+
 #undef HYPERSPACE_HULL_GRACE_RANGE
+#undef OVERBOARD_LANDING_TRAIT
+#undef JETPACK_HYPERSPACE_SOURCE_PREFIX
+#undef JETPACK_HYPERSPACE_SOURCE
 #undef OVERBOARD_SAMPLE_TRIES
 #undef OVERBOARD_HULL_SEARCH_RANGE
 #undef OVERBOARD_FALL_HEIGHT
