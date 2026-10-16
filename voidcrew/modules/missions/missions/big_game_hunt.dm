@@ -304,12 +304,13 @@
 	spawn_field_objects(get_nearby_open_turf(lure_turf, 4))
 
 /datum/mission_objective/field/kill_named/big_game/spawn_field_objects(turf/spawn_turf)
-	var/mob/living/beast = new target_mob_type(spawn_turf)
+	var/mob/living/beast = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	beast.name = mission.objective_name
 	beast.desc += " This one is old, scarred, and much too big. The guild wants it as a wall piece."
 	if(health_override > beast.maxHealth)
 		beast.maxHealth = health_override
 		beast.health = health_override
+	beast.npc_spawn_context.finalize()
 	target_mob = beast
 	protect_field_mob(beast)
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
@@ -317,8 +318,9 @@
 	// The entourage: lesser fauna drawn in by the blood on the wind. Killing
 	// them pays nothing - the contract is the name on the trophy.
 	for(var/guard_type in guard_types)
-		var/mob/living/guard = new guard_type(get_nearby_open_turf(spawn_turf))
+		var/mob/living/guard = spawn_field_npc(guard_type, get_nearby_open_turf(spawn_turf), finalize = FALSE)
 		guard.desc += " It followed something much bigger here."
+		guard.npc_spawn_context.finalize()
 	beast.visible_message(span_boldwarning("[beast] comes crashing in and goes straight for the lure!"))
 	notify_crew("The lure's been taken. [mission.objective_name] is out in the open - good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
