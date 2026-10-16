@@ -6,7 +6,7 @@
 
 /obj/structure/ore_vent
 	name = "ore vent"
-	desc = "An ore vent, brimming with underground ore. Scan with an advanced mining scanner to start extracting ore from it."
+	desc = "A fissure brimming with underground ore." // VOIDCREW EDIT: keep descriptions in character.
 	icon = 'icons/obj/mining_zones/terrain.dmi'
 	icon_state = "ore_vent"
 	base_icon_state = "ore_vent"
@@ -116,15 +116,15 @@
 	if(!HAS_TRAIT(user, TRAIT_BOULDER_BREAKER))
 		return
 	if(!discovered)
-		to_chat(user, span_notice("You can't quite find the weakpoint of [src]... Perhaps it needs to be scanned first?"))
+		to_chat(user, span_notice("You can't find a weak point in [src].")) // VOIDCREW EDIT: omit scanner instructions.
 		return
 	to_chat(user, span_notice("You start striking [src] with your golem's fist, attempting to dredge up a boulder..."))
 	for(var/i in 1 to 3)
 		if(do_after(user, boulder_size * 1 SECONDS, src))
 			user.apply_damage(20, STAMINA)
 			playsound(src, 'sound/items/weapons/genhit.ogg', 50, TRUE)
-	produce_boulder(TRUE)
-	visible_message(span_notice("You've successfully produced a boulder! Boy are your arms tired."))
+	if(produce_boulder(TRUE)) // VOIDCREW EDIT: exhausted vents produce nothing.
+		visible_message(span_notice("A boulder breaks free!"))
 
 /obj/structure/ore_vent/attack_basic_mob(mob/user, list/modifiers)
 	. = ..()
@@ -148,8 +148,7 @@
 				. += span_notice("This vent produces [span_bold("medium")] boulders containing [ore_string]")
 			if(BOULDER_SIZE_LARGE)
 				. += span_notice("This vent produces [span_bold("large")] boulders containing [ore_string]")
-	else
-		. += span_notice("This vent can be scanned with a [span_bold("Mining Scanner")].")
+	// VOIDCREW EDIT: omit scanner instructions.
 
 /obj/structure/ore_vent/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	if(is_type_in_list(held_item, scanning_equipment))
@@ -160,7 +159,8 @@
  * This proc is called when the ore vent is initialized, in order to determine what minerals boulders it spawns can contain.
  * The materials available are determined by SSore_generation.ore_vent_minerals, which is a list of all minerals that can be contained in ore vents for a given cave generation.
  * As a result, minerals use a weighted list as seen by ore_vent_minerals_lavaland, which is then copied to ore_vent_minerals.
- * Once a material is picked from the weighted list, it's removed from ore_vent_minerals, so that it can't be picked again and provided its own internal weight used when assigning minerals to boulders spawned by this vent.
+ * VOIDCREW EDIT: each weighted pick spends one allocation; only exhausted entries are removed.
+ * The selected material gets its own internal weight for this vent's boulders.
  * May also be called after the fact, as seen in SSore_generation's initialize, to add more minerals to an existing vent.
  *
  * The above applies only when spawning in at mapload, otherwise we pick randomly from ore_vent_minerals_lavaland.
@@ -171,25 +171,13 @@
 /obj/structure/ore_vent/proc/generate_mineral_breakdown(new_minerals = MINERAL_TYPE_OPTIONS_RANDOM, map_loading = FALSE)
 	if(new_minerals < 1)
 		CRASH("generate_mineral_breakdown called with new_minerals < 1.")
-	var/list/available_mats = difflist(first = SSore_generation.ore_vent_minerals, second = mineral_breakdown, skiprep = 1)
+	// VOIDCREW EDIT ADDITION START - weighted, finite allocation (mining/ore_vents.dm).
 	for(var/i in 1 to new_minerals)
-		if(!length(SSore_generation.ore_vent_minerals) && map_loading)
-			// We should prevent this from happening in SSore_generation, but if not then we crash here
-			CRASH("No minerals left to pick from! We may have spawned too many ore vents in init, or the map config in seedRuins may not have enough resources for the mineral budget.")
-		var/datum/material/new_material
-		if(map_loading)
-			if(length(available_mats))
-				new_material = pick(GLOB.ore_vent_minerals_lavaland)
-				var/datum/material/surrogate_mat = pick(SSore_generation.ore_vent_minerals)
-				available_mats -= surrogate_mat
-				SSore_generation.ore_vent_minerals -= surrogate_mat
-			else
-				new_material = pick(available_mats)
-				available_mats -= new_material
-				SSore_generation.ore_vent_minerals -= new_material
-		else
-			new_material = pick(GLOB.ore_vent_minerals_lavaland)
+		var/new_material = select_vent_mineral(map_loading)
+		if(isnull(new_material))
+			break
 		mineral_breakdown[new_material] = rand(1, 4)
+	// VOIDCREW EDIT ADDITION END
 
 
 /**
@@ -417,6 +405,17 @@
 		return
 	// VOIDCREW EDIT END
 
+	// VOIDCREW EDIT ADDITION START - prepare and debit both finite limits before emission.
+	if(!can_produce_ore())
+		return
+	var/list/mats_list = list()
+	for(var/iteration in 1 to MINERALS_PER_BOULDER)
+		var/datum/material/material = pick_weight(mineral_breakdown)
+		mats_list[material] += ore_quantity_function(iteration)
+	if(!commit_ore_payload(mats_list))
+		return
+	// VOIDCREW EDIT ADDITION END
+
 	//produce the boulder
 	var/obj/item/boulder/new_rock
 	if(prob(artifact_chance))
@@ -425,11 +424,6 @@
 		new_rock = new /obj/item/boulder(loc)
 	Shake(duration = 1.5 SECONDS)
 
-	//decorate the boulder with materials
-	var/list/mats_list = list()
-	for(var/iteration in 1 to MINERALS_PER_BOULDER)
-		var/datum/material/material = pick_weight(mineral_breakdown)
-		mats_list[material] += ore_quantity_function(iteration)
 	new_rock.set_custom_materials(mats_list)
 
 	//set size & durability
