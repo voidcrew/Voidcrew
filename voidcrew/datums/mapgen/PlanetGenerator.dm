@@ -397,7 +397,7 @@
 	var/mob_chance_mult = 1
 	var/mob_upgrade_prob = 0
 	var/spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_GREEN
-	var/anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_GREEN
+	var/anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_GREEN
 	// Megafauna are apex content and stay out of the shallow end entirely - a green-zone
 	// planet is where a crew takes its first landing.
 	var/megafauna_allowed = FALSE
@@ -418,13 +418,13 @@
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_YELLOW
-			anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_YELLOW
+			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_YELLOW
 			megafauna_allowed = TRUE
 		if(ZONE_RED)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_RED
-			anomaly_chance = ZONE_PLANET_ANOMALY_CHANCE_RED
+			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_RED
 			megafauna_allowed = TRUE
 
 	// Structure spawners and megafauna are placed after the pass, not during it. Both are
@@ -562,8 +562,6 @@
 
 	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
 	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
-	// One anomaly at most, and only on a successful roll: they are a rare find
-	var/anomaly_budget = prob(anomaly_chance) ? 1 : 0
 	var/anomalies_placed = place_budgeted_anomalies(turfs, anomaly_budget)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \
@@ -618,29 +616,28 @@
  * instead: pick() is O(1), where walking the list in order would put every anomaly in the
  * low corner of the map, get_block() handing out turfs row-major.
  *
- * The draw is attempt-bounded rather than exhaustive. A planet whose open ground is
- * nearly all spoken for seeds fewer anomalies than its budget, which is the right way to
- * fail: this is optional scenery, not something worth stalling a build over.
+ * If random sampling misses safe ground, scan the supplied planet turfs to fill the
+ * remainder. Both passes yield to the worldgen budget and use the same safety checks.
  *
  * The landing strip is off limits, the same as it is to spawners and megafauna. A rejected
- * draw costs one of PLANET_ANOMALY_PLACEMENT_ATTEMPTS attempts and the budget is re-spent
- * on the next roll, so this moves anomalies off the berths rather than losing any. The
- * strip is the bottom 54 rows of a 123-row planet, so a bit under half the draws land in it
- * - against 400 attempts for a budget of at most three, which is not close to tight.
+ * draw is re-spent on another tile. If the geometry cannot fit the budget safely, report
+ * the shortfall rather than relaxing the spacing or putting a hazard on reserved ground.
  */
 /datum/map_generator/planet_generator/proc/place_budgeted_anomalies(list/turfs, budget)
-	if(!length(turfs) || budget <= 0)
+	if(budget <= 0)
 		return 0
 
 	var/list/placed_at = list()
 	var/placed = 0
 
-	for(var/attempt in 1 to PLANET_ANOMALY_PLACEMENT_ATTEMPTS)
+	var/random_attempts = length(turfs) ? PLANET_ANOMALY_PLACEMENT_ATTEMPTS : 0
+	for(var/attempt in 1 to random_attempts + length(turfs))
 		if(placed >= budget)
 			break
+		SSovermap.worldgen_yield(throttled)
 
-		var/turf/candidate = pick(turfs)
-		if(!isturf(candidate) || candidate.density)
+		var/turf/candidate = attempt <= random_attempts ? pick_anomaly_turf(turfs) : turfs[attempt - random_attempts]
+		if(!isturf(candidate) || candidate.density || candidate.planet_river)
 			continue
 
 		// Reserved ground: the planet's landing strip (reserve_dock_strip() flags the berth
@@ -673,9 +670,14 @@
 		new anomaly_type(candidate)
 		placed_at += candidate
 		placed++
-		CHECK_TICK
 
+	if(placed < budget)
+		log_world("[name] anomaly placement shortfall: [placed]/[budget] safe sites.")
 	return placed
+
+/// Samples the planet's supplied turf list before the exhaustive placement pass.
+/datum/map_generator/planet_generator/proc/pick_anomaly_turf(list/turfs)
+	return pick(turfs)
 
 /// Places a single megafauna from the banked candidates. One per planet, and only where
 /// the zone band allows them at all - see megafauna_allowed in populate_terrain().

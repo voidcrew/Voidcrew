@@ -21,7 +21,7 @@
 
 /obj/item/gun/energy/event_horizon/process_fire(atom/target, mob/living/user, message, params, zone_override, bonus_spread)
 	if(!COOLDOWN_FINISHED(src, shot_cooldown))
-		balloon_alert(user, "ready in [round(COOLDOWN_TIMELEFT(src, shot_cooldown) / (1 SECONDS))]s!")
+		balloon_alert(user, "still cycling")
 		return
 	. = ..()
 	if(.)
@@ -30,7 +30,7 @@
 /obj/item/gun/energy/event_horizon/examine(mob/user)
 	. = ..()
 	if(!COOLDOWN_FINISHED(src, shot_cooldown))
-		. += span_notice("It is still cycling. It can fire again in [DisplayTimeText(COOLDOWN_TIMELEFT(src, shot_cooldown))].")
+		. += span_notice("It is still cycling.")
 
 /obj/item/ammo_casing/energy/event_horizon
 	e_cost = LASER_SHOTS(3, STANDARD_CELL_CHARGE)
