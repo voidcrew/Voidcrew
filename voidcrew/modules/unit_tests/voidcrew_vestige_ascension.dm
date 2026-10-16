@@ -522,7 +522,8 @@
 	ship.shuttle = port
 	var/datum/team/voidcrew/crew = allocate(/datum/team/voidcrew)
 	crew.ship = ship
-	user.mind.ship_teams = list(crew)
+	ship.ship_team = crew
+	crew.join_member(user.mind)
 	TEST_ASSERT(!get_ship_from_atom(user), "The keeper must start off the ship for the crew fallback regression")
 	var/datum/vestige_ascension/offer = allocate(/datum/vestige_ascension/oracle)
 	var/datum/vestige_ascension_run/unit_test_disappearance/run = allocate(/datum/vestige_ascension_run/unit_test_disappearance, offer, user)

@@ -203,7 +203,10 @@
 		return FALSE
 
 	// Claim the ship!
-	if(claim_npc_ship(npc_ship, user))
+	var/form_new = choose_new_reputation_crew(user)
+	if(isnull(form_new) || QDELETED(key) || key.get_ship() != current_ship || !user.can_perform_action(src) || !user.is_holding(key))
+		return FALSE
+	if(claim_npc_ship(npc_ship, user, form_new))
 		to_chat(user, span_notice("Ship authorization accepted. You now have command of [npc_ship.name]."))
 		playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
 		// Send signal that key was used before destroying
@@ -217,11 +220,18 @@
 		return FALSE
 
 /// Converts an NPC ship to player control
-/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer)
+/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer, form_new = FALSE)
 	if(npc_ship?.retired_by_checkpoint || npc_ship?.checkpoint_rebuilding)
 		return FALSE
 	if(!istype(npc_ship))
 		return FALSE
+	if(!claimer?.mind || (npc_ship.player_controlled && !npc_ship.abandoned) || length(npc_ship.ship_team?.members))
+		return FALSE
+	if(!npc_ship.ship_team)
+		npc_ship.ship_team = new /datum/team/voidcrew()
+		npc_ship.ship_team.name = npc_ship.name
+		npc_ship.ship_team.ship = npc_ship
+	npc_ship.bind_reputation_crew(claimer.mind, form_new)
 	npc_metric_claimed(npc_ship, claimer, "key")
 
 	// Cancel abandonment timer if one is running
@@ -291,21 +301,10 @@
 	// Announce the change of ownership
 	npc_ship.ship_notify("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
-	// Add claimer to ship team if it exists, or create one
-	// Note: Players can be members of multiple ship teams simultaneously
-	if(claimer?.mind)
-		if(!npc_ship.ship_team)
-			// Create a ship team if one doesn't exist
-			npc_ship.ship_team = new /datum/team/voidcrew()
-			npc_ship.ship_team.name = npc_ship.name
-			npc_ship.ship_team.ship = npc_ship
-		npc_ship.ship_team.add_member(claimer.mind)
-
-		// Set the claimer as captain (for NPC ships without job_slots)
-		npc_ship.claimed_captain = claimer.mind
-
-		// Grant the Captain Management action button
-		grant_captain_management(claimer, npc_ship)
+	// The hull was bound to the claimer's continuing crew before conversion.
+	npc_ship.enlist_crewmember(claimer)
+	npc_ship.claimed_captain = claimer.mind
+	grant_captain_management(claimer, npc_ship)
 
 	// Log the claim
 	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
@@ -1101,7 +1100,10 @@
 			var/mob/living/living_user = usr
 			if(!istype(living_user))
 				return
-			if(current_ship.claim_abandoned_ship(living_user))
+			var/form_new = choose_new_reputation_crew(living_user)
+			if(isnull(form_new) || QDELETED(current_ship) || !living_user.can_perform_action(src))
+				return
+			if(current_ship.claim_abandoned_ship(living_user, form_new))
 				playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
 				update_static_data(usr, ui)
 			else

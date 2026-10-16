@@ -40,6 +40,9 @@
 	var/datum/ship_checkpoint/snapshot
 	/// Retained after the checkpoint is consumed, and shared with its original crew.
 	var/list/research_reward_ledger
+	var/datum/weakref/crew_record_ref
+	/// Explicit empty-hull departure, offered by new ship orders only.
+	var/form_new_crew = FALSE
 	var/datum/weakref/panel_ref
 	/// Only used to reapply console upgrade disks while the hidden copy is prepared.
 	var/datum/weakref/operator_ref
@@ -116,6 +119,7 @@
 	operator_ref = WEAKREF(user)
 	snapshot = blueprint
 	research_reward_ledger = blueprint.research_reward_ledger
+	crew_record_ref = blueprint.crew_record_ref
 	home = blueprint.outpost
 	captain_ckey = blueprint.captain_ckey
 	ship_name = blueprint.ship_name
@@ -162,6 +166,7 @@
 	bay = null
 	snapshot = null
 	research_reward_ledger = null
+	crew_record_ref = null
 	port = null
 	vessel = null
 	// A load still writing into the shipyard lets it go itself when it returns (load_source()).
@@ -402,6 +407,15 @@
 		return null
 	if(!isnull(research_reward_ledger))
 		record.ship_team.research_reward_ledger = research_reward_ledger
+	// Redeem rights are unchanged. Identity follows the saved captain's CURRENT crew;
+	// a snapshot can never restore a crew they left. Both references stay live, not copied.
+	var/datum/voidcrew_crew_record/current_crew = GLOB.voidcrew_crew_roster[captain_ckey]
+	var/datum/voidcrew_crew_record/saved_crew = crew_record_ref?.resolve()
+	var/datum/mind/command = captain_mind()
+	current_crew = command?.recover_reputation_crew() || current_crew
+	if(current_crew && !form_new_crew)
+		record.ship_team.set_crew_record(current_crew == saved_crew ? saved_crew : current_crew)
+	command?.join_reputation_crew(record.get_crew_record())
 	return record
 
 /// Names the record and its hull. A rebuild keeps the saved ship's name.
@@ -1118,12 +1132,16 @@
 /datum/checkpoint_construction/proc/enlist_captain(datum/mind/command)
 	if(!command || !vessel?.ship_team)
 		return FALSE
+	// Recheck after construction signals: never pull a departed captain back into a crew.
+	var/datum/voidcrew_crew_record/current_crew = command.recover_reputation_crew()
+	if(current_crew != vessel.get_crew_record())
+		return FALSE
 	var/mob/living/body = command.current
 	if(isliving(body) && body.mind == command)
 		vessel.enlist_crewmember(body)
 		grant_captain_management(body, vessel)
 	else
-		vessel.ship_team.add_member(command)
+		vessel.ship_team.join_member(command)
 		if(!(command.name in vessel.manifest))
 			vessel.manifest += command.name
 		if(captain_ckey)

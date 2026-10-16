@@ -230,6 +230,7 @@
 #include "voidcrew_weapon_ladder.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_windoor_survey.dm"
+#include "voidcrew_zone_identity.dm"
 #include "voidcrew_zone_logging.dm"
 #include "voidcrew_zone_teleport.dm"
 #include "weather_mob_targeting.dm"
