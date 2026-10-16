@@ -9,8 +9,8 @@
 	name = "Exploration Contract"
 	weight = 10
 	// Green-band pay; apply_zone_scaling() raises it for deeper zones
-	value_min = 400
-	value_max = 700
+	value_min = 150
+	value_max = 250
 
 /datum/mission/exploration/setup_target()
 	var/datum/mission_target/coords/coords = new(src)
@@ -31,7 +31,7 @@
 
 /datum/mission/exploration/update_text()
 	name = "Exploration Contract: ([target.target_x], [target.target_y])"
-	desc = "Chart the sector at coordinates ([target.target_x], [target.target_y]) in the [target_zone_name]. Fly to this location, then return to the mission board to collect the fee."
+	desc = "Chart the sector at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/exploration/waypoint_label()
 	return "Survey site"

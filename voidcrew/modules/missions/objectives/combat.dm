@@ -275,7 +275,7 @@
 		return
 	kill_count++
 	if(kill_count >= required_kills)
-		notify_crew("Suppression quota met ([kill_count]/[required_kills]). Return to the mission board to collect payment.")
+		notify_crew("Suppression sweep complete.")
 		complete()
 		return
 	notify_crew("Kill confirmed: [kill_count]/[required_kills].", sound = 'voidcrew/sound/notify2.ogg')

@@ -42,6 +42,10 @@
 //     Hook: /obj/structure/overmap/trader_outpost/ensure_shop_offers().
 // board_refreshed - a crew rerolled its mission board. ckey, ship. quantity: offers thrown
 //     away. Hook: the mission board's "refresh" action.
+// mission_quote_posted - the quoted cash, vouchers, research and package value of one offer.
+// guarded_prize_paid - diagnostic item row for a suit or gadget, including its family, quote
+//     zone and first_suit_s. Console/contract mission_completed.total_value already includes
+//     this prize; do not add this diagnostic row a second time to mission receipts.
 // pirate_bounty_accepted - a crew took a bounty on an NPC pirate ship from its mission board.
 //     ckey, ship. subject: the pirate ship's typepath. zone: where the pirate is.
 //     details: reward, heavy.
@@ -88,6 +92,8 @@
 
 /// The zone name of this mission's target, or null when it has none.
 /datum/mission/proc/metric_target_zone()
+	if(!isnull(quote_zone))
+		return metric_zone_name(quote_zone)
 	var/zone_type = target?.get_zone_type()
 	if(!isnull(zone_type))
 		return metric_zone_name(zone_type)
@@ -147,7 +153,12 @@
  * a back-room prize at CONTRACT_EXCLUSIVE_VALUE. Called once, when the contract is generated.
  */
 /datum/mission/proc/note_metric_item_value()
-	if(!shop || !SSmetrics.accepting)
+	if(!SSmetrics.accepting)
+		return
+	if(!shop)
+		metric_item_value = 0
+		for(var/reward_type in get_reward_types())
+			metric_item_value += mission_utility_value(reward_type)
 		return
 	var/list/reward_types = get_reward_types()
 	if(!length(reward_types))
@@ -164,6 +175,27 @@
 		else
 			total += sku_values[reward_type] || 0
 	metric_item_value = total
+
+/// Value utility at its catalog price without constructing shops or consuming stock.
+/proc/mission_utility_value(item_type)
+	var/static/list/prices
+	if(isnull(prices))
+		prices = list()
+		for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
+			var/item_path = initial(sku_type.item_path)
+			var/price = initial(sku_type.price_credits) + initial(sku_type.price_vouchers) * VOUCHER_CREDIT_VALUE
+			if(!item_path || price <= 0)
+				continue
+			if(!prices[item_path] || price < prices[item_path])
+				prices[item_path] = price
+	return prices[item_type] || 0
+
+/// One row per actual named prize, shared by console, outpost kills and bounty lairs.
+/proc/record_guarded_prize(obj/structure/overmap/ship/ship, family, category, zone, prize_type, source_type)
+	var/list/details = list("family" = family, "prize_type" = category, "source" = source_type, "item_value" = category == "suit" ? 9000 : 3600)
+	if(category == "suit")
+		details["first_suit_s"] = ship.mission_first_suit_seconds
+	record_metric(METRIC_MISSION, "guarded_prize_paid", ship = ship, zone = metric_zone_name(zone), subject = prize_type, quantity = 1, details = details)
 
 /// Remembers the ship parts in a prize crate this mission just paid.
 /datum/mission/proc/note_metric_ship_parts(obj/structure/closet/crate/prize)
@@ -235,6 +267,12 @@
 	var/item_value = paid_goods ? metric_item_value : 0
 	if(item_value > 0)
 		details["item_value"] = item_value
+	if(paid_goods && guarded_prize)
+		var/prize_value = ispath(guarded_prize, /obj/item/mod/control) ? 9000 : 3600
+		details["prize"] = guarded_prize
+		details["prize_value"] = prize_value
+		item_value += prize_value
+		item_count++
 	details["total_value"] = paid_credits + item_value + paid_vouchers * VOUCHER_CREDIT_VALUE
 	if(favor)
 		details["favor"] = favor
@@ -276,6 +314,13 @@
 	if(!SSmetrics.accepting || QDELETED(offer))
 		return
 	tally_metric(METRIC_MISSION, event, ship = ship, zone = offer.metric_target_zone(), subject = offer.type)
+	if(event == "mission_offered" || event == "contract_offered")
+		var/list/details = offer.metric_base_details()
+		details["item_value"] = offer.metric_item_value
+		details["offer"] = offer.value
+		details["vouchers"] = offer.voucher_count
+		details["research"] = offer.research_reward
+		record_metric(METRIC_MISSION, "mission_quote_posted", ship = ship, zone = offer.metric_target_zone(), subject = offer.type, details = details)
 
 /// board_refreshed. Called before the board is cleared, so the count is what was thrown away.
 /proc/record_mission_board_refreshed(obj/structure/overmap/ship/ship, mob/user)
