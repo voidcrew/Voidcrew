@@ -1,27 +1,6 @@
 /**
- * Weapon schematics: blueprint-gated crafting-menu recipes
- *
- * A blueprint is a physical schematic scroll. Its recipe appears in the
- * ordinary tg crafting menu when EITHER:
- *   1. the crafter is carrying the physical blueprint anywhere on them, or
- *   2. the crafter's ckey holds a neural imprint of it for the round
- *      (bought at an outpost's neural schematic imprinter, destroying the
- *      physical copy, see voidcrew/modules/trade/blueprint_imprinter.dm).
- *
- * The availability gate lives in a //VOID EDIT inside
- * /datum/component/personal_crafting/is_recipe_available().
- *
- * The tension is deliberate: keep the physical copy and it's shareable,
- * resellable and stealable; imprint it and it's theft-proof but gone.
- *
- * Machined gun parts stay the R&D clock: each gun's part design prints at
- * the protolathe behind its techweb part node (see the per-gun files), and the
- * crafting recipes consume that part. Gun recipes also want a firing pin.
- * Crafted guns get a clean standard pin installed in place of any
- * faction-locked default (see on_craft_completion below). No bench or other
- * machinery is required; the recipe and its reqs are the whole gate, so
- * crafting can happen anywhere. Ballistic guns arrive unloaded; ammunition
- * must be manufactured or acquired separately.
+ * Schematics unlock crafting recipes when carried or neurally imprinted.
+ * The availability gate lives in personal_crafting/is_recipe_available().
  */
 
 /// ckey -> list of /datum/crafting_recipe/blueprint types imprinted this round
@@ -49,7 +28,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
  */
 /obj/item/blueprint
 	name = "schematic"
-	desc = "A rolled-up fabrication schematic. Carry it and its recipe shows up in your crafting menu."
+	desc = "A rolled-up fabrication schematic."
 	icon = 'icons/obj/scrolls.dmi'
 	icon_state = "blueprints"
 	inhand_icon_state = "blueprints"
@@ -91,24 +70,6 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 /obj/item/blueprint/examine(mob/user)
 	. = ..()
 	. += span_notice("Schematic: <b>[schematic_name]</b>.")
-	var/datum/crafting_recipe/recipe = get_recipe()
-	if(recipe)
-		var/list/req_names = list()
-		for(var/req_path in recipe.reqs)
-			var/atom/req_cast = req_path
-			var/req_amount = recipe.reqs[req_path]
-			req_names += "[req_amount > 1 ? "[req_amount]x " : ""][initial(req_cast.name)]"
-		if(length(req_names))
-			. += span_notice("Requires: [req_names.Join(", ")].")
-		if(ispath(recipe.result, /obj/item/gun/ballistic))
-			. += span_notice("Builds an unloaded weapon. Ammunition and detachable magazines must be acquired separately.")
-		if(length(recipe.machinery))
-			var/list/machine_names = list()
-			for(var/machine_path in recipe.machinery)
-				var/atom/machine_cast = machine_path
-				machine_names += initial(machine_cast.name)
-			. += span_notice("Needs a [machine_names.Join(" or ")] nearby.")
-	. += span_notice("While you're carrying this, the recipe is in your crafting menu. An outpost <b>neural imprinter</b> can burn it into your memory for the rest of the round, but the scroll is destroyed doing it.")
 
 /**
  * # Blueprint recipes
@@ -119,56 +80,3 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 /datum/crafting_recipe/blueprint
 	time = 10 SECONDS
 	category = CAT_WEAPON_RANGED
-
-/// Gun schematics: consume the techweb-gated machined part plus a firing pin.
-/// No machinery requirement: craftable anywhere the schematic is available.
-/datum/crafting_recipe/blueprint/gun
-	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
-
-/**
- * Blueprint-crafted guns swap any faction-locked default pin (syndicate
- * implant pins on the C-20r, SAW, Bulldog...) for a clean standard pin, the
- * recipe consumed one as a requirement. Without this the crafted gun would
- * refuse its own crew.
- */
-/obj/item/gun/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
-	. = ..()
-	if(!istype(current_recipe, /datum/crafting_recipe/blueprint))
-		return
-	if(pin && pin.type != /obj/item/firing_pin)
-		QDEL_NULL(pin)
-	if(!pin)
-		pin = new /obj/item/firing_pin(src)
-
-/// Schematics manufacture the gun, not its default magazine or ammunition.
-/obj/item/gun/ballistic/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
-	. = ..()
-	if(!istype(current_recipe, /datum/crafting_recipe/blueprint/gun))
-		return
-	QDEL_NULL(chambered)
-	if(internal_magazine && magazine)
-		// Keep integral feed mechanisms, including the empty slots in revolver
-		// cylinders. ammo_list() also resolves ammunition that is still lazy-loaded.
-		for(var/obj/item/ammo_casing/casing in magazine.ammo_list())
-			qdel(casing)
-		magazine.update_appearance()
-	else
-		QDEL_NULL(magazine)
-	if(bolt_type == BOLT_TYPE_OPEN || bolt_type == BOLT_TYPE_LOCKING)
-		bolt_locked = TRUE
-	update_appearance()
-
-/**
- * # Machined gun part
- *
- * The R&D clock made physical: prints at the protolathe once its techweb
- * part node is researched, then feeds the gun's crafting recipe.
- */
-/obj/item/gun_part
-	name = "weapon component"
-	desc = "A machined firearm component. You'll need the matching schematic to build it into a working gun."
-	icon = 'voidcrew/modules/weapons_bench/icons/gun_parts.dmi'
-	icon_state = "gun_part"
-	lefthand_file = 'voidcrew/modules/weapons_bench/icons/gun_parts_lefthand.dmi'
-	righthand_file = 'voidcrew/modules/weapons_bench/icons/gun_parts_righthand.dmi'
-	w_class = WEIGHT_CLASS_NORMAL

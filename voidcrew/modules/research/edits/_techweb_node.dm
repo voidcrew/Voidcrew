@@ -8,3 +8,8 @@
 	// 	stars = 0,
 	// )
 	var/list/required_surveyed_objects
+
+/datum/techweb_node/riot_supression/New()
+	. = ..()
+	design_ids = design_ids.Copy()
+	design_ids -= "pin_testing"
