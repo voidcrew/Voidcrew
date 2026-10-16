@@ -8,7 +8,7 @@
    ],
    "height": 9,
    "png": "bogatyr_workshop_engineering_and_classic_armory.png",
-   "src_md5": "75edd923c6041b33f9bc99bf4363dabe",
+   "src_md5": "383d07b5ac5949c43d5c63acd40a5a51",
    "themes": {
     "freshen_up": {
      "connector": [
@@ -17,7 +17,7 @@
      ],
      "height": 9,
      "png": "bogatyr_workshop_engineering_and_classic_armory_freshen_up.png",
-     "src_md5": "28f1044f06233197a82cf1b3295d5cd7",
+     "src_md5": "ae9234353fd1eac51150ad9bd7d70889",
      "width": 5
     },
     "nightclub": {
@@ -27,7 +27,7 @@
      ],
      "height": 9,
      "png": "bogatyr_workshop_engineering_and_classic_armory_nightclub.png",
-     "src_md5": "0a03c99353b9632cae6f78ff87f2d44f",
+     "src_md5": "cab37a3ec359bb173771f83c8bb70701",
      "width": 5
     }
    },

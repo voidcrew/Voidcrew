@@ -1,4 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
 "bx" = (
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/decal/cleanable/dirt,
@@ -274,11 +279,6 @@
 /area/ruin/unpowered)
 "xY" = (
 /obj/structure/reagent_dispensers/watertank/high,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"yM" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "AF" = (
@@ -1028,7 +1028,7 @@ iB
 Ed
 AU
 XX
-yM
+aa
 XS
 FR
 XS

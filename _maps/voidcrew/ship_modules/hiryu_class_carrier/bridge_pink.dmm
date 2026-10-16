@@ -1,4 +1,21 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/item/binoculars,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
 "bnv" = (
 /obj/machinery/computer/bank_machine{
 	dir = 8
@@ -80,23 +97,6 @@
 	},
 /turf/open/floor/iron/dollhouse,
 /area/template_noop)
-"usM" = (
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/structure/table/reinforced,
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 3
-	},
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 9
-	},
-/obj/item/binoculars,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/turf/open/floor/iron/dollhouse,
-/area/template_noop)
 "wnG" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/machinery/computer/crew,
@@ -129,7 +129,7 @@ jVm
 msv
 nmr
 nmr
-usM
+aaa
 "}
 (4,1,1) = {"
 hdW

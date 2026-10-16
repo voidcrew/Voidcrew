@@ -2,6 +2,20 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
+"ab" = (
+/obj/structure/cable,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/siding/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/bridge/d)
 "cr" = (
 /obj/structure/plaque/static_plaque{
 	name = "Boiler Room";
@@ -1497,20 +1511,6 @@
 	},
 /turf/open/floor/carpet/blue,
 /area/shuttle/voidcrew/delta/bridge/d)
-"QD" = (
-/obj/structure/cable,
-/obj/item/gun/energy/laser/retro,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/bridge/d)
 "RF" = (
 /obj/machinery/light/directional/south,
 /obj/structure/cable,
@@ -1924,7 +1924,7 @@ Ji
 Qc
 Ab
 Yb
-QD
+ab
 Qj
 jp
 Qc

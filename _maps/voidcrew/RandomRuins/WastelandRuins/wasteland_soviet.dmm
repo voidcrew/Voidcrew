@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/gimmick/russian,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/toolbox/ammobox/strilka310/surplus,
+/obj/item/knife/combat/survival,
+/obj/item/ammo_box/n762,
+/turf/open/floor/wood,
+/area/ruin)
 "aw" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
@@ -90,14 +98,6 @@
 	},
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"sf" = (
-/obj/structure/closet/gimmick/russian,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/storage/toolbox/ammobox/strilka310/surplus,
-/obj/item/knife/combat/survival,
-/obj/item/ammo_box/n762,
-/turf/open/floor/wood,
-/area/ruin)
 "sr" = (
 /obj/effect/decal/cleanable/wrapping,
 /obj/structure/cable,
@@ -413,7 +413,7 @@ nP
 Mn
 jY
 nP
-sf
+aa
 Pg
 PI
 rW

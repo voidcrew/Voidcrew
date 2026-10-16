@@ -14,6 +14,14 @@
 /obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/grass/fairy,
 /area/ruin/reebe)
+"e" = (
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/suit/costume/bronze,
+/obj/item/clothing/head/costume/bronze,
+/obj/item/clothing/shoes/bronze,
+/mob/living/basic/mining/goliath/ancient,
+/turf/open/floor/bronze,
+/area/ruin/reebe)
 "f" = (
 /turf/closed/mineral/random/reebe,
 /area/ruin/reebe)
@@ -26,14 +34,6 @@
 /area/ruin/reebe)
 "I" = (
 /turf/open/floor/grass/fairy/reebe,
-/area/ruin/reebe)
-"O" = (
-/obj/item/gun/ballistic/bow,
-/obj/item/clothing/suit/costume/bronze,
-/obj/item/clothing/head/costume/bronze,
-/obj/item/clothing/shoes/bronze,
-/mob/living/basic/mining/goliath/ancient,
-/turf/open/floor/bronze,
 /area/ruin/reebe)
 "R" = (
 /mob/living/basic/mining/goliath/ancient,
@@ -258,7 +258,7 @@ f
 f
 f
 Z
-O
+e
 Z
 f
 f

@@ -11,6 +11,19 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/ruin/space/has_grav/whiteship/box)
+"ad" = (
+/obj/item/melee/baseball_bat{
+	pixel_y = -12
+	},
+/obj/machinery/light/broken/directional/east,
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 4
+	},
+/obj/structure/rack,
+/turf/open/floor/iron/textured_edge{
+	dir = 4
+	},
+/area/ruin/space/has_grav/whiteship/box)
 "ag" = (
 /obj/machinery/power/shuttle_engine/huge{
 	dir = 8;
@@ -1280,19 +1293,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/titanium/white/airless,
 /area/ruin/space/has_grav/whiteship/box)
-"OJ" = (
-/obj/item/gun/energy/laser/retro{
-	pixel_y = -12
-	},
-/obj/machinery/light/broken/directional/east,
-/obj/effect/turf_decal/siding/wideplating{
-	dir = 4
-	},
-/obj/structure/rack,
-/turf/open/floor/iron/textured_edge{
-	dir = 4
-	},
-/area/ruin/space/has_grav/whiteship/box)
 "OS" = (
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt,
@@ -1981,7 +1981,7 @@ nH
 nH
 kK
 Pe
-OJ
+ad
 rp
 HR
 IA

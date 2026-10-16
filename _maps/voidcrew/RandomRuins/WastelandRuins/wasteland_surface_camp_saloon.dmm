@@ -1,4 +1,56 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/clothing/head/cowboy{
+	pixel_x = -17
+	},
+/obj/effect/decal/remains/human,
+/obj/item/clothing/mask/gas/clown_hat,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/ammo_casing/c357{
+	pixel_x = 9;
+	pixel_y = 5
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = -13
+	},
+/turf/template_noop,
+/area/overmap_encounter/planetoid/wasteland)
+"ab" = (
+/obj/structure/closet/cabinet,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/belt/bandolier,
+/obj/item/ammo_casing/shotgun/dragonsbreath,
+/obj/item/ammo_casing/shotgun/dragonsbreath,
+/obj/item/ammo_casing/shotgun/dragonsbreath,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"ac" = (
+/obj/item/clothing/head/cowboy{
+	pixel_x = 13
+	},
+/obj/effect/decal/remains/human,
+/obj/item/clothing/mask/gas/mime,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/ammo_casing/c357{
+	dir = 10;
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = -14
+	},
+/turf/template_noop,
+/area/overmap_encounter/planetoid/wasteland)
+"ad" = (
+/obj/structure/closet/cabinet,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/reagent_containers/cup/bottle/morphine,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "aq" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
@@ -162,16 +214,6 @@
 "nZ" = (
 /obj/structure/table/wood/poker,
 /obj/item/toy/cards/deck/syndicate,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"oA" = (
-/obj/structure/closet/cabinet,
-/obj/item/gun/ballistic/shotgun/riot,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/belt/bandolier,
-/obj/item/ammo_casing/shotgun/dragonsbreath,
-/obj/item/ammo_casing/shotgun/dragonsbreath,
-/obj/item/ammo_casing/shotgun/dragonsbreath,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "oB" = (
@@ -361,22 +403,6 @@
 /obj/item/toy/cards/deck,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"Ig" = (
-/obj/item/clothing/head/cowboy{
-	pixel_x = -17
-	},
-/obj/effect/decal/remains/human,
-/obj/item/clothing/mask/gas/clown_hat,
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/ammo_casing/c357{
-	pixel_x = 9;
-	pixel_y = 5
-	},
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = -13
-	},
-/turf/template_noop,
-/area/overmap_encounter/planetoid/wasteland)
 "Io" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/flare/candle/infinite,
@@ -475,23 +501,6 @@
 	broken = 1
 	},
 /area/ruin/unpowered)
-"Qs" = (
-/obj/item/clothing/head/cowboy{
-	pixel_x = 13
-	},
-/obj/effect/decal/remains/human,
-/obj/item/clothing/mask/gas/mime,
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/ammo_casing/c357{
-	dir = 10;
-	pixel_x = 4;
-	pixel_y = -1
-	},
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = -14
-	},
-/turf/template_noop,
-/area/overmap_encounter/planetoid/wasteland)
 "QQ" = (
 /obj/machinery/jukebox,
 /turf/open/floor/wood,
@@ -565,15 +574,6 @@
 /obj/structure/sign/poster/random,
 /turf/closed/wall/mineral/wood,
 /area/ruin/unpowered)
-"Yj" = (
-/obj/structure/closet/cabinet,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/reagent_containers/cup/bottle/morphine,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/ammo_box/magazine/m9mm,
-/obj/item/ammo_box/magazine/m9mm,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 "Yo" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -633,7 +633,7 @@ xr
 yt
 gF
 gF
-Ig
+aa
 gF
 "}
 (3,1,1) = {"
@@ -714,7 +714,7 @@ gF
 "}
 (7,1,1) = {"
 VF
-oA
+ab
 Px
 xr
 yt
@@ -880,12 +880,12 @@ gC
 Bp
 gF
 gF
-Qs
+ac
 gF
 "}
 (16,1,1) = {"
 VF
-Yj
+ad
 Px
 Px
 VF
