@@ -370,6 +370,19 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	var/checkpoint_id
 	var/list/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/checkpoint_scanners = list()
 
+// Match the public concourses without losing the checkpoint's scan gate.
+/obj/machinery/door/airlock/outpost/checkpoint/glass
+	icon = 'icons/obj/doors/airlocks/public/glass.dmi'
+	overlays_file = 'icons/obj/doors/airlocks/public/overlays.dmi'
+	opacity = FALSE
+	glass = TRUE
+
+// Undertow uses the same interior plating as its bar access door.
+/obj/machinery/door/airlock/outpost/checkpoint/grunge
+	icon = 'icons/obj/doors/airlocks/centcom/centcom.dmi'
+	overlays_file = 'icons/obj/doors/airlocks/centcom/overlays.dmi'
+	can_be_glass = FALSE
+
 /obj/machinery/door/airlock/outpost/checkpoint/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/outpost_property)
