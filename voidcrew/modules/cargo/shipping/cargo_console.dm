@@ -233,9 +233,15 @@
 		/datum/supply_pack/goody/thermal_single,
 		/datum/supply_pack/goody/double_barrel,
 		/datum/supply_pack/goody/hell_single,
+		/datum/supply_pack/imports/mafia,
+		/datum/supply_pack/imports/abandoned,
+		/datum/supply_pack/imports/russian,
 	))
 	if(is_type_in_typecache(pack, forbidden_packs))
 		return FALSE
+	for(var/item_type in pack.contains)
+		if(is_ladder_restricted_production(item_type))
+			return FALSE
 	if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
 		return FALSE
 	return !pack.contraband || contraband

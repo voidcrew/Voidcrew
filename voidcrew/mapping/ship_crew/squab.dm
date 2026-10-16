@@ -29,11 +29,13 @@
 	name = "Squab — Security Detail"
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_squab_job_15/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	ladder_add_survival_knife()
 
 /datum/outfit/job/workshop_squab_job_16
 	parent_type = /datum/outfit/job/engineer
@@ -70,11 +72,13 @@
 	name = "Squab — Security Detail"
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_squab_job_9/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	ladder_add_survival_knife()
 
 /datum/outfit/job/workshop_squab_job_10
 	parent_type = /datum/outfit/job/engineer
@@ -109,11 +113,13 @@
 	name = "Squab — Security Detail"
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_squab_job_19/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/rank/security/officer/grey
 	head = /obj/item/clothing/head/beret/sec
+	ladder_add_survival_knife()
 
 /datum/outfit/job/workshop_squab_job_20
 	parent_type = /datum/outfit/job/engineer

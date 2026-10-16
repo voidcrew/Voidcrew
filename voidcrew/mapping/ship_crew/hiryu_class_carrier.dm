@@ -6,46 +6,46 @@
 	uniform = /obj/item/clothing/under/costume/maid
 	head = /obj/item/clothing/head/costume/maid_headband
 	neck = null
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_20/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/costume/maid
 	head = /obj/item/clothing/head/costume/maid_headband
 	neck = null
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_12
 	parent_type = /datum/outfit/job/bartender
 	name = "Hiryu-class Carrier — Bartender"
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_12/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_14
 	parent_type = /datum/outfit/job/bartender
 	name = "Hiryu-class Carrier — Bartender"
 	uniform = /obj/item/clothing/under/syndicate
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_14/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/syndicate
-	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
+	suit_store = null
 	accessory = null
-	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
+	backpack_contents = list()
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_21
 	parent_type = /datum/outfit/job/cook
@@ -60,7 +60,7 @@
 	l_hand = null
 	r_hand = null
 	accessory = /obj/item/clothing/accessory/maidapron
-	backpack_contents = list(/obj/item/knife/combat = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_21/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -74,7 +74,7 @@
 	l_hand = null
 	r_hand = null
 	accessory = /obj/item/clothing/accessory/maidapron
-	backpack_contents = list(/obj/item/knife/combat = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_9
 	parent_type = /datum/outfit/job/cook
@@ -88,7 +88,7 @@
 	l_pocket = null
 	l_hand = /obj/item/kitchen/tongs
 	r_hand = /obj/item/reagent_containers/cup/soda_cans/beer
-	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_9/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -101,7 +101,7 @@
 	l_pocket = null
 	l_hand = /obj/item/kitchen/tongs
 	r_hand = /obj/item/reagent_containers/cup/soda_cans/beer
-	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_15
 	parent_type = /datum/outfit/job/cook
@@ -115,7 +115,7 @@
 	l_pocket = null
 	l_hand = /obj/item/kitchen/tongs
 	r_hand = /obj/item/reagent_containers/cup/soda_cans/beer
-	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_15/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -128,7 +128,7 @@
 	l_pocket = null
 	l_hand = /obj/item/kitchen/tongs
 	r_hand = /obj/item/reagent_containers/cup/soda_cans/beer
-	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/sharpener = 1, /obj/item/storage/box/ingredients/carnivore = 3)
+	backpack_contents = list(/obj/item/knife/kitchen = 1, /obj/item/storage/box/ingredients/carnivore = 3)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_16
 	parent_type = /datum/outfit/job/doctor
@@ -244,7 +244,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_18/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -257,7 +257,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_8
 	parent_type = /datum/outfit/job/security
@@ -271,7 +271,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_8/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -284,7 +284,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_5
 	parent_type = /datum/outfit/job/security
@@ -300,7 +300,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_5/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -315,7 +315,7 @@
 	r_pocket = /obj/item/modular_computer/pda/security
 	l_hand = null
 	accessory = /obj/item/clothing/accessory/medal/silver/security
-	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1)
+	backpack_contents = list(/obj/item/clothing/head/utility/welding = 1, /obj/item/weldingtool/hugetank = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_28
 	parent_type = /datum/outfit/job/captain
