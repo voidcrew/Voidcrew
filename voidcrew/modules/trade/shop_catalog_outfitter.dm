@@ -26,6 +26,7 @@
 	shoes = /obj/item/clothing/shoes/jackboots
 
 /datum/outpost_shop/outfitter
+	back_room_line = "The wardens speak well of you. I'll clear it."
 	outpost_name = "\improper Quartermain Depot"
 	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
 	trader_name = "Sarge"
@@ -147,7 +148,7 @@
 		/datum/shop_sku/outfitter/rare/ablative_vest,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
-	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/skunkworks_cell,
 		/datum/shop_sku/favor/fitter_gauntlets,
@@ -254,6 +255,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/energy_gun
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/e_gun
 	price_vouchers = 0
@@ -329,7 +331,7 @@
 /datum/shop_sku/outfitter/engine_plasma
 	category = "Ship Systems"
 	name = "plasma thruster board"
-	desc = "Board for a plasma thruster, the standard workhorse drive. It draws fuel from a heater mounted right behind it, so you need one of those in the line too."
+	desc = "The circuit board for a plasma thruster."
 	item_path = /obj/item/circuitboard/machine/engine/plasma
 	price_credits = 1800
 	stock_min = 1
@@ -338,7 +340,7 @@
 /datum/shop_sku/outfitter/engine_expulsion
 	category = "Ship Systems"
 	name = "expulsion thruster board"
-	desc = "Board for an expulsion thruster. It burns whatever gas is in the heater and wastes most of it, which is the point when plasma is scarce."
+	desc = "The circuit board for an expulsion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/expulsion
 	price_credits = 1200
 	stock_min = 1
@@ -347,7 +349,7 @@
 /datum/shop_sku/outfitter/engine_ion
 	category = "Ship Systems"
 	name = "ion thruster board"
-	desc = "Board for an ion thruster. No fuel line and no heater, just a heavy draw on the powernet, at about 40% of a plasma thruster's push."
+	desc = "The circuit board for an ion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/electric
 	price_credits = 2400
 	stock_min = 1
@@ -356,7 +358,7 @@
 /datum/shop_sku/outfitter/engine_oil
 	category = "Ship Systems"
 	name = "oil thruster board"
-	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. Buying one here skips the shuttle research your lathe would need to print it."
+	desc = "The circuit board for an oil thruster."
 	item_path = /obj/item/circuitboard/machine/engine/oil
 	price_credits = 1800
 	stock_min = 1
@@ -365,7 +367,7 @@
 /datum/shop_sku/outfitter/engine_heater
 	category = "Ship Systems"
 	name = "engine heater board"
-	desc = "Board for a fueled engine heater. Plasma and expulsion thrusters latch onto one to draw fuel and won't fire without it."
+	desc = "The circuit board for an engine heater."
 	item_path = /obj/item/circuitboard/machine/shuttle/heater
 	price_credits = 900
 	stock_min = 2
@@ -374,7 +376,7 @@
 /datum/shop_sku/outfitter/laser_turret_board
 	category = "Ship Systems"
 	name = "laser turret board"
-	desc = "Board for a hull-mounted laser turret. It takes a standard power cell you can swap out for a bigger one, and Sarge will not discuss where the crate came from."
+	desc = "The circuit board for a hull-mounted laser turret."
 	item_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	price_vouchers = 0
 	price_credits = 2000
@@ -402,7 +404,7 @@
 /datum/shop_sku/outfitter/missile_light
 	category = "Ship Ordnance"
 	name = "light missile (armed)"
-	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher, no assembly, no fuss."
+	desc = "A light ship-to-ship missile, packed for shipment."
 	item_path = /obj/structure/ship_missile/armed/light
 	price_vouchers = 0
 	price_credits = 800
@@ -562,7 +564,7 @@
 
 /datum/shop_sku/outfitter/welding_fuel
 	name = "welding fuel tank"
-	desc = "A full tank of welding fuel on a wheeled frame. Drag it aboard and stop rationing your repairs."
+	desc = "A full tank of welding fuel on a wheeled frame."
 	category = "Fuel & Gas"
 	item_path = /obj/structure/reagent_dispensers/fueltank
 	price_credits = 400
@@ -581,6 +583,7 @@
 // ===== ROTATING SHELF =====
 
 /datum/shop_sku/outfitter/rotating/riot_suit
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/riot
 	price_credits = 4500
@@ -623,6 +626,7 @@
 // ===== RARE SHOWCASE =====
 
 /datum/shop_sku/outfitter/rare/ablative_vest
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/laserproof
 	price_vouchers = 1
@@ -636,7 +640,7 @@
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
 	name = "heavy missile (armed)"
-	desc = "A ready-to-fire heavy missile: devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
+	desc = "A heavy ship-to-ship missile in a reinforced shipping cradle."
 	item_path = /obj/structure/ship_missile/armed/heavy
 	price_vouchers = 0
 	price_credits = 2000
@@ -703,25 +707,29 @@
 	stock_max = 2
 
 // ===== BACK ROOM =====
-// Sarge's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Sarge's favor uniques: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/skunkworks_cell
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	item_path = /obj/item/stock_parts/power_store/cell/skunkworks
 	price_credits = 4200
 	price_vouchers = 2
 
 /datum/shop_sku/favor/fitter_gauntlets
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/clothing/gloves/tinkerer/fitter
 	price_credits = 3600
 	price_vouchers = 2
 
 /datum/shop_sku/favor/maneuvering_harness
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
 	price_credits = 3800
 	price_vouchers = 2
 /datum/shop_sku/outfitter/riot_shotgun
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/ballistic/shotgun/riot
 	price_credits = 1800
