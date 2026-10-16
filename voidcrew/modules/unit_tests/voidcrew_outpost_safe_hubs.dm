@@ -339,11 +339,38 @@
 		var/obj/structure/overmap/trader_outpost/market = allocate(host_type)
 		TEST_ASSERT(market.load_level(), "Could not load [host_type]")
 		var/turf/origin = market.template_bottom_left
+		var/list/restored_fixtures = list()
+		var/expected_door_type = /obj/machinery/door/airlock/outpost/checkpoint/glass
+		var/obj/machinery/door/airlock/style_type = /obj/machinery/door/airlock/public/glass
+		if(host_type == /obj/structure/overmap/trader_outpost/general)
+			restored_fixtures = list(
+				list(36, 29, /obj/machinery/light/floor),
+				list(40, 29, /obj/machinery/light/floor),
+				list(36, 35, /obj/machinery/light/floor),
+				list(40, 35, /obj/machinery/light/floor),
+				list(38, 30, /obj/structure/table/reinforced),
+			)
+		else if(host_type == /obj/structure/overmap/trader_outpost/black_market)
+			expected_door_type = /obj/machinery/door/airlock/outpost/checkpoint/grunge
+			style_type = /obj/machinery/door/airlock/centcom
+			restored_fixtures = list(
+				list(28, 6, /obj/item/radio/intercom/directional/south),
+				list(28, 6, /obj/machinery/light/red/directional/south),
+				list(28, 8, /obj/machinery/newscaster/directional/north),
+			)
+		for(var/list/fixture as anything in restored_fixtures)
+			var/turf/fixture_turf = locate(origin.x + fixture[1] - 1, origin.y + fixture[2] - 1, origin.z)
+			var/obj/restored = locate(fixture[3]) in fixture_turf
+			TEST_ASSERT_NOTNULL(restored, "[host_type] lost [fixture[3]] beside its elevator")
 		var/list/entries = circuits[host_type]
 		for(var/list/entry as anything in entries)
 			var/turf/door_turf = locate(origin.x + entry[1] - 1, origin.y + entry[2] - 1, origin.z)
 			var/obj/machinery/door/airlock/outpost/checkpoint/checkpoint = locate() in door_turf
 			TEST_ASSERT_NOTNULL(checkpoint, "[host_type] is missing its checkpoint at [entry[1]],[entry[2]]")
+			TEST_ASSERT_EQUAL(checkpoint.type, expected_door_type, "Mapped checkpoint lost its interior door style")
+			TEST_ASSERT_EQUAL(checkpoint.icon, initial(style_type.icon), "Mapped checkpoint has the wrong door sprite")
+			TEST_ASSERT_EQUAL(checkpoint.overlays_file, initial(style_type.overlays_file), "Mapped checkpoint has the wrong door overlays")
+			TEST_ASSERT_EQUAL(checkpoint.glass, initial(style_type.glass), "Mapped checkpoint has the wrong glazing")
 			TEST_ASSERT_EQUAL(checkpoint.outpost, market, "Mapped checkpoint linked to the wrong host")
 			TEST_ASSERT_EQUAL(length(checkpoint.checkpoint_scanners), 2, "Mapped checkpoint does not have two scanners")
 			TEST_ASSERT(HAS_TRAIT(checkpoint, "outpost_property"), "Mapped checkpoint lost property protection")
@@ -355,9 +382,18 @@
 				TEST_ASSERT(gate in checkpoint.checkpoint_scanners, "Mapped approach scanner is not in the circuit")
 				TEST_ASSERT_EQUAL(gate.checkpoint_door?.resolve(), checkpoint, "Mapped scanner points at the wrong door")
 				TEST_ASSERT(HAS_TRAIT(gate, "outpost_property"), "Mapped scanner lost property protection")
+				TEST_ASSERT(gate.anchored, "Mapped scanner can travel with the elevator")
 				for(var/atom/movable/blocker in approach)
 					TEST_ASSERT(!blocker.density, "[blocker] blocks a checkpoint approach")
+				// Equip the rider before permitting the automatic turf-entry scan.
+				var/old_stat = gate.machine_stat
+				gate.set_machine_stat(NOPOWER)
 				var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, approach)
+				var/obj/item/gun/weapon = allocate(/obj/item/gun/ballistic/automatic/pistol, rider)
+				gate.set_machine_stat(old_stat)
+				gate.perform_scan(rider)
+				TEST_ASSERT(checkpoint.density && !checkpoint.operating, "A styled checkpoint admitted an armed rider")
+				qdel(weapon)
 				gate.perform_scan(rider)
 				sleep(2 SECONDS)
 				TEST_ASSERT(!checkpoint.density, "A mapped circuit did not open from direction [direction]")
@@ -372,9 +408,12 @@
 						var/turf/landing = locate(origin.x + entry[4] + x_offset - 1, origin.y + entry[5] + y_offset - 1, origin.z)
 						TEST_ASSERT_EQUAL(market.lobby_alcove_turfs[++index], landing, "Elevator landing order changed")
 						TEST_ASSERT(isopenturf(landing), "Elevator landing was walled over")
+						for(var/atom/movable/blocker in landing)
+							TEST_ASSERT(!blocker.density, "[blocker] blocks an elevator landing")
 				TEST_ASSERT_EQUAL(length(market.lobby_panels), 1, "Elevator panel disappeared")
 				var/obj/machinery/outpost_elevator/panel = market.lobby_panels[1]
 				TEST_ASSERT_EQUAL(panel.get_own_alcove(), market.lobby_alcove_turfs, "Elevator panel lost its ordered landing")
+				TEST_ASSERT(get_turf(panel) in market.lobby_alcove_turfs, "Elevator panel cannot be reached from its landing")
 				check_elevator_travel(market, panel)
 			checked++
 	TEST_ASSERT_EQUAL(checked, 6, "Did not check all six trader entrances")
@@ -391,14 +430,23 @@
 	berth.panel.outpost = market
 	berth.panel.berth = berth
 	var/list/obj/item/coin/passengers = list()
+	var/list/stationary_fixtures = list()
 	for(var/turf/landing as anything in market.lobby_alcove_turfs)
 		passengers += allocate(/obj/item/coin, landing)
+		for(var/obj/machinery/fixture in landing)
+			if(fixture.anchored)
+				stationary_fixtures[fixture] = landing
 	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, market.lobby_alcove_turfs[5])
+	TEST_ASSERT(get_dist(rider, lobby_panel) <= 1, "Elevator controls are out of reach of a standing rider")
 	lobby_panel.complete_ride(1, WEAKREF(rider))
+	for(var/obj/machinery/fixture as anything in stationary_fixtures)
+		TEST_ASSERT_EQUAL(get_turf(fixture), stationary_fixtures[fixture], "Elevator carried an anchored fixture downstairs")
 	for(var/i in 1 to 9)
 		TEST_ASSERT_EQUAL(get_turf(passengers[i]), berth.alcove_turfs[i], "Elevator changed the outgoing tile order")
 	TEST_ASSERT_EQUAL(get_turf(rider), berth.alcove_turfs[5], "Elevator did not carry the rider down")
 	berth.panel.complete_ride(0, WEAKREF(rider))
+	for(var/obj/machinery/fixture as anything in stationary_fixtures)
+		TEST_ASSERT_EQUAL(get_turf(fixture), stationary_fixtures[fixture], "Elevator moved an anchored fixture on return")
 	for(var/i in 1 to 9)
 		TEST_ASSERT_EQUAL(get_turf(passengers[i]), market.lobby_alcove_turfs[i], "Elevator changed the returning tile order")
 	TEST_ASSERT_EQUAL(get_turf(rider), market.lobby_alcove_turfs[5], "Elevator did not return the rider")

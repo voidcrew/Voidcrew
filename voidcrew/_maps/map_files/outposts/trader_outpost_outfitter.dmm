@@ -114,10 +114,6 @@
 "ao" = (
 /turf/template_noop,
 /area/template_noop)
-"ap" = (
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
 "aq" = (
 /obj/structure/railing/unbreakable{
 	dir = 4
@@ -259,19 +255,6 @@
 /obj/effect/turf_decal/bot,
 /obj/structure/closet/crate,
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost)
-"aI" = (
-/obj/machinery/door/airlock/outpost/checkpoint{
-	checkpoint_id = "quartermain_west_yard";
-	dir = 4;
-	name = "West Yard Gate"
-	},
-/obj/effect/turf_decal/bot,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "aJ" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
@@ -445,15 +428,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/white,
 /area/voidcrew/trader_outpost)
-"ba" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/door/airlock/outpost/checkpoint{
-	checkpoint_id = "quartermain_elevator";
-	dir = 2;
-	name = "Hangar Elevator"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "bb" = (
 /obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
 	checkpoint_id = "quartermain_elevator";
@@ -475,19 +449,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
-"bd" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/door/airlock/outpost/checkpoint{
-	checkpoint_id = "quartermain_east_yard";
-	dir = 4;
-	name = "East Yard Gate"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "be" = (
 /obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
@@ -1469,6 +1430,19 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"oH" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/door/airlock/outpost/checkpoint/glass{
+	checkpoint_id = "quartermain_east_yard";
+	dir = 4;
+	name = "East Yard Gate"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
 "oU" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -2360,6 +2334,19 @@
 	base_icon_state = "stairs-l";
 	icon_state = "stairs-l"
 	},
+/area/voidcrew/trader_outpost)
+"Af" = (
+/obj/machinery/door/airlock/outpost/checkpoint/glass{
+	checkpoint_id = "quartermain_west_yard";
+	dir = 4;
+	name = "West Yard Gate"
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "Ah" = (
 /obj/effect/turf_decal/trimline/yellow/corner{
@@ -3823,6 +3810,15 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"XY" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/door/airlock/outpost/checkpoint/glass{
+	checkpoint_id = "quartermain_elevator";
+	dir = 2;
+	name = "Hangar Elevator"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "XZ" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
@@ -4426,7 +4422,7 @@ dU
 dU
 dU
 dU
-aI
+Af
 dU
 lE
 lE
@@ -4530,7 +4526,7 @@ KA
 ly
 ly
 aS
-ba
+XY
 bb
 at
 as
@@ -4939,11 +4935,11 @@ WK
 Gw
 Gw
 pp
-ap
+ah
 aH
 aD
 qk
-ap
+ah
 aH
 aD
 qk
@@ -4977,11 +4973,11 @@ au
 cg
 Ky
 ly
-ap
+ah
 aA
 aD
 qk
-ap
+ah
 IF
 fc
 qk
@@ -5019,7 +5015,7 @@ au
 cg
 BD
 ly
-ap
+ah
 aD
 aH
 qk
@@ -5027,7 +5023,7 @@ gT
 aD
 aH
 qk
-ap
+ah
 aD
 IF
 qk
@@ -5061,15 +5057,15 @@ au
 Jt
 JH
 ly
-ap
+ah
 aD
 su
 qk
-ap
+ah
 aD
 aD
 qk
-ap
+ah
 aH
 aD
 qk
@@ -5145,11 +5141,11 @@ au
 cg
 fC
 ly
-ap
+ah
 aD
 fc
 qk
-ap
+ah
 aD
 su
 qk
@@ -5187,15 +5183,15 @@ au
 tQ
 Yg
 vb
-ap
+ah
 fc
 vQ
 qk
-ap
+ah
 aH
 aA
 qk
-ap
+ah
 aD
 aH
 qk
@@ -5237,7 +5233,7 @@ gT
 aD
 aH
 qk
-ap
+ah
 aA
 aD
 cA
@@ -5275,11 +5271,11 @@ Ob
 Ei
 ly
 ly
-ap
+ah
 aD
 aH
 qk
-ap
+ah
 aD
 aA
 qk
@@ -5414,7 +5410,7 @@ dU
 dU
 dU
 dU
-bd
+oH
 dU
 dU
 aV
