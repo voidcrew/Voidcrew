@@ -207,6 +207,13 @@
 		/datum/supply_pack/goody/thermal_single,
 		/datum/supply_pack/goody/double_barrel,
 		/datum/supply_pack/goody/hell_single,
+		/datum/supply_pack/imports/mafia,
+		/datum/supply_pack/imports/abandoned,
+		/datum/supply_pack/imports/wt550,
+		/datum/supply_pack/imports/moistnuggets,
+		/datum/supply_pack/imports/giant_wrench_parts,
+		/datum/supply_pack/imports/specialops,
+		/datum/supply_pack/imports/russian,
 	)
 	var/list/banned_packs = list()
 	for(var/pack_type in banned_types)

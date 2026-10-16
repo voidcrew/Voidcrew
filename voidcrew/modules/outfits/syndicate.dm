@@ -6,11 +6,11 @@
 
 	uniform = /obj/item/clothing/under/syndicate
 	suit = /obj/item/clothing/suit/armor/vest/capcarapace/syndicate
-	suit_store = /obj/item/gun/ballistic/revolver/mateba
+	suit_store = null
 	head = /obj/item/clothing/head/hats/hos/beret/syndicate
 	glasses = /obj/item/clothing/glasses/thermal/eyepatch
 
-	l_pocket = /obj/item/melee/energy/sword/saber/red
+	l_pocket = /obj/item/knife/combat/survival
 	r_pocket = /obj/item/melee/baton/telescopic
 
 	id = /obj/item/card/id/advanced/black/syndicate_command/captain_id
@@ -97,10 +97,10 @@
 	belt = /obj/item/storage/belt/military
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	suit = /obj/item/clothing/suit/armor/vest/blueshirt
-	suit_store = /obj/item/gun/ballistic/automatic/pistol
+	suit_store = null
 	shoes = /obj/item/clothing/shoes/combat
 
-	l_pocket = /obj/item/ammo_box/magazine/m10mm
+	l_pocket = null
 	r_pocket = /obj/item/knife/combat/survival
 
 	id = /obj/item/card/id/advanced/black/syndicate_command/crew_id
