@@ -238,9 +238,11 @@
 		paid = TRUE
 	votive.forceMove(get_turf(user))
 	votive.anchored = TRUE
+	votive.get_npc_spawn_context()
 	running = TRUE
 	for(var/index in 1 to 3)
-		var/mob/living/basic/carp/vestige_clot/clot = new(pick_n_take(places))
+		var/datum/npc_spawn_context/context = new(votive)
+		var/mob/living/basic/carp/vestige_clot/clot = spawn_npc_in_zone(/mob/living/basic/carp/vestige_clot, pick_n_take(places), context)
 		clots += clot
 		RegisterSignal(clot, COMSIG_LIVING_DEATH, PROC_REF(clot_died))
 	refresh_tracker()
