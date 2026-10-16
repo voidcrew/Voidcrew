@@ -209,7 +209,7 @@
 	if(!pod)
 		return "Pod waiting with the posting trader"
 	var/datum/mission_target/target = mission?.target
-	return "Deliver the pod to its destination ([target?.target_x], [target?.target_y])"
+	return "Freight for ([target?.target_x], [target?.target_y])"
 
 /**
  * # Sealed Freight Pod

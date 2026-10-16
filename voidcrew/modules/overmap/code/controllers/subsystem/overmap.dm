@@ -783,11 +783,11 @@ SUBSYSTEM_DEF(overmap)
  * * pass - which round of one-per-type this is. Pass 1 is generated during the lobby;
  *   later passes are numbered in the contact's name and build on first visit.
  */
-/datum/controller/subsystem/overmap/proc/spawn_dynamic_planet(obj/structure/overmap/planet/marker_type, pass = 1, wanted_band = null, datum/overmap_layout/layout)
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_planet(obj/structure/overmap/planet/marker_type, pass = 1, wanted_band = null, datum/overmap_layout/layout, strict_band = FALSE)
 	if(isnull(wanted_band))
 		wanted_band = SSmapping.next_planet_zone_band()
 	var/turf/turf_for_planet = layout ? layout.pick_destination(wanted_band) : get_unused_overmap_square_in_zone_band(wanted_band, tries = 80)
-	if(!turf_for_planet && layout)
+	if(!turf_for_planet && (layout || strict_band))
 		return null // The caller can try another band without mismatching planet difficulty.
 	if(!turf_for_planet)
 		log_mapping("SSovermap: Failed to place dynamic planet [marker_type] in zone band [wanted_band], falling back to any free square")
@@ -817,6 +817,60 @@ SUBSYSTEM_DEF(overmap)
 	layout?.record_destination(turf_for_planet, "planet")
 	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
 	return planet_to_spawn
+
+/// Contact creation stays unloaded; actual docking still claims ground through the capacity gate.
+/datum/controller/subsystem/overmap/proc/mission_contact_capacity(tenant_class)
+	return length(find_free_slot(tenant_class)) || !SSmapping.at_z_level_ceiling()
+
+/// Only ordinary terrain biomes can supply scheduled field work.
+/datum/controller/subsystem/overmap/proc/spawn_mission_planet(band, wanted_planet)
+	if(!(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) || !mission_contact_capacity(MAP_TENANT_CLASS_PLANET))
+		log_mapping("SSmissions: planet contact unavailable for band [band]: invalid band or world capacity")
+		return null
+	var/list/markers = list(
+		/obj/structure/overmap/planet/lava,
+		/obj/structure/overmap/planet/ice,
+		/obj/structure/overmap/planet/jungle,
+		/obj/structure/overmap/planet/beach,
+		/obj/structure/overmap/planet/wasteland,
+	)
+	for(var/obj/structure/overmap/planet/marker as anything in markers.Copy())
+		if(wanted_planet && initial(marker.planet) != wanted_planet)
+			markers -= marker
+	if(!length(markers))
+		log_mapping("SSmissions: no repeatable planet biome for [wanted_planet]")
+		return null
+	var/obj/structure/overmap/planet/contact = spawn_dynamic_planet(pick(markers), 1, band, null, TRUE)
+	if(!contact)
+		log_mapping("SSmissions: no free overmap square for planet contact in band [band]")
+	return contact
+
+/// Scheduled shortages may add an ordinary repeatable signal, never a chart or unique ruin.
+/datum/controller/subsystem/overmap/proc/spawn_mission_ruin(band)
+	if(!(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return null
+	var/list/templates = list()
+	for(var/key in SSmapping.space_ruins_templates)
+		var/datum/map_template/ruin/space/template = SSmapping.space_ruins_templates[key]
+		if(!istype(template) || template.unpickable || !template.allow_duplicates || !ruin_fits_in_level(template))
+			continue
+		var/tenant_class = ruin_fits_in_slot(template) ? MAP_TENANT_CLASS_FLAT : MAP_TENANT_CLASS_SOLO
+		if(mission_contact_capacity(tenant_class))
+			templates[template] = template.placement_weight || 1
+	if(!length(templates))
+		log_mapping("SSmissions: no repeatable ruin contact available in band [band]: templates or world capacity")
+		return null
+	var/turf/destination = get_unused_overmap_square_in_zone_band(band, tries = 80)
+	if(!destination)
+		log_mapping("SSmissions: no free overmap square for ruin contact in band [band]")
+		return null
+	return place_space_ruin_contact(pick_weight(templates), destination)
+
+/// Shared with natural seeding; no interior is loaded during offer generation.
+/datum/controller/subsystem/overmap/proc/place_space_ruin_contact(datum/map_template/ruin/space/template, turf/destination)
+	var/obj/structure/overmap/space_ruin/contact = new(destination)
+	contact.set_ruin_template(template)
+	return contact
 
 /// Roman numeral for a planet's place in its type, so the chart reads "Lava Planet II"
 /// rather than a second "Lava Planet".
@@ -891,8 +945,7 @@ SUBSYSTEM_DEF(overmap)
 	for(var/i in 1 to length(positions))
 		var/turf/turf_for_ruin = positions[i]
 		var/datum/map_template/ruin/space/selected_ruin = used_ruins[i]
-		var/obj/structure/overmap/space_ruin/new_ruin = new(turf_for_ruin)
-		new_ruin.set_ruin_template(selected_ruin)
+		place_space_ruin_contact(selected_ruin, turf_for_ruin)
 		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at ([turf_for_ruin.x], [turf_for_ruin.y])")
 
 	// Asteroid mining no longer has a guarantee here - space ruin signals retired the

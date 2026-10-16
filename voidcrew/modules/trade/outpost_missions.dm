@@ -325,6 +325,10 @@
 	for(var/datum/mission/active as anything in SSmissions.all_active_missions)
 		if(active.type == mission_type && active != excluding)
 			count++
+	for(var/obj/structure/overmap/ship/ship in SSovermap.simulated_ships)
+		for(var/datum/mission/offer in ship.available_missions)
+			if(!QDELETED(offer) && offer.type == mission_type && offer != excluding)
+				count++
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		for(var/datum/mission/offer as anything in outpost.shop_offers)
 			if(!QDELETED(offer) && offer.type == mission_type && offer != excluding)
@@ -334,6 +338,17 @@
 
 // ===== BOARD QUOTES AND SETTLEMENT =====
 // Shared shell hooks live here so both trader and ship-pad handovers use them.
+
+/// Filter a view without deleting offers that another crew can still accept.
+/obj/structure/overmap/trader_outpost/proc/get_contract_offers_for(obj/structure/overmap/ship/ship)
+	var/list/offers = list()
+	if(QDELETED(ship))
+		return offers
+	for(var/datum/mission/offer in shop_offers)
+		if(offer.can_accept_work(ship))
+			offers += offer
+	return offers
+
 /datum/mission
 	/// Total value, fixed at posting; null on work outside this reward channel.
 	var/contract_quote
@@ -346,6 +361,8 @@
 	var/contract_stock_reserved = FALSE
 	var/contract_settled = FALSE
 	var/contract_turning_in = FALSE
+	/// Shared crew purchase slots held by this package, keyed by quoted item path.
+	var/list/contract_purchase_claims = list()
 
 /datum/mission/proc/is_routine_contract()
 	if(!istype(src, /datum/mission/outpost_supply))
@@ -361,6 +378,62 @@
 	value_min = value
 	value_max = value
 
+/// Admission and caps use the same record as the accepted receipt, never a helper's crew.
+/datum/mission/proc/contract_line_allowed(datum/shop_sku/sku, datum/voidcrew_crew_record/record, reserved = FALSE)
+	if(QDELETED(record))
+		record = null
+	if(QDELETED(sku) || (!reserved && sku.stock <= 0))
+		return FALSE
+	if(!isnum(sku.zone_permission) || sku.zone_permission < ZONE_PERMISSION_PUBLIC \
+		|| (record ? !record.has_zone_permission(sku.zone_permission) : sku.zone_permission != ZONE_PERMISSION_PUBLIC))
+		return FALSE
+	if(!reserved && sku.crew_limit > 0 && (!record || (record.favor_unique_purchases[sku.type] || 0) >= sku.crew_limit))
+		return FALSE
+	return TRUE
+
+/// Pure viewer projection: it cannot reserve stock or rewrite the shared quote.
+/datum/mission/proc/get_effective_contract_package(datum/voidcrew_crew_record/record)
+	if(isnull(contract_quote))
+		return null
+	var/list/items = list()
+	var/package_value = 0
+	for(var/item_path in contract_stock)
+		var/datum/shop_sku/sku = contract_stock[item_path]
+		if(!contract_line_allowed(sku, record, contract_stock_reserved))
+			continue
+		items += item_path
+		package_value += contract_item_values[item_path]
+	var/remainder = contract_quote - package_value
+	var/vouchers = contract_no_vouchers ? 0 : floor(remainder / VOUCHER_CREDIT_VALUE)
+	return list("items" = items, "item_value" = package_value, "vouchers" = vouchers, "credits" = remainder - vouchers * VOUCHER_CREDIT_VALUE)
+
+/// Return one held line and its purchase slot to the original crew.
+/datum/mission/proc/drop_contract_line(item_path)
+	var/datum/shop_sku/sku = contract_stock[item_path]
+	if(contract_stock_reserved && !QDELETED(sku))
+		sku.reserved_stock--
+		sku.stock++
+	var/purchase_type = contract_purchase_claims[item_path]
+	if(purchase_type)
+		accepting_crew?.release_purchase(purchase_type)
+		contract_purchase_claims -= item_path
+	contract_stock -= item_path
+	mission_rewards -= item_path
+	reward_amounts -= item_path
+
+/// Live permission loss converts held goods to their exact quoted currency value.
+/datum/mission/proc/revalidate_contract_package()
+	if(isnull(contract_quote) || !contract_stock_reserved || contract_settled)
+		return
+	var/package_value = 0
+	for(var/item_path in contract_stock.Copy())
+		if(!contract_line_allowed(contract_stock[item_path], accepting_crew, TRUE))
+			drop_contract_line(item_path)
+			continue
+		package_value += contract_item_values[item_path]
+	metric_item_value = package_value
+	set_contract_currency(contract_quote - package_value)
+
 /// No yields between checking and claiming stock. Lost shelf objects become currency.
 /datum/mission/proc/reserve_contract_stock()
 	if(isnull(contract_quote) || contract_stock_reserved || contract_settled)
@@ -369,11 +442,18 @@
 	var/package_value = 0
 	for(var/item_path in contract_stock.Copy())
 		var/datum/shop_sku/sku = contract_stock[item_path]
-		if(QDELETED(sku) || sku.stock <= 0)
+		if(!contract_line_allowed(sku, accepting_crew))
 			contract_stock -= item_path
 			mission_rewards -= item_path
 			reward_amounts -= item_path
 			continue
+		if(sku.crew_limit > 0)
+			if(!accepting_crew.claim_purchase(sku.type, sku.crew_limit))
+				contract_stock -= item_path
+				mission_rewards -= item_path
+				reward_amounts -= item_path
+				continue
+			contract_purchase_claims[item_path] = sku.type
 		sku.stock--
 		sku.reserved_stock++
 		package_value += contract_item_values[item_path]
@@ -385,6 +465,10 @@
 	if(!contract_stock_reserved)
 		return
 	contract_stock_reserved = FALSE
+	if(!consumed)
+		for(var/item_path in contract_purchase_claims)
+			accepting_crew?.release_purchase(contract_purchase_claims[item_path])
+	contract_purchase_claims.Cut()
 	for(var/item_path in contract_stock)
 		var/datum/shop_sku/sku = contract_stock[item_path]
 		if(QDELETED(sku))
@@ -397,6 +481,9 @@
 	if(shop || !isnull(contract_quote))
 		if(QDELETED(src) || active || failed || completed || QDELETED(ship) || QDELETED(ship.ship_account))
 			return FALSE
+		if(!can_accept_work(ship))
+			return FALSE
+		accepting_crew = ship.get_crew_record()
 		reserve_contract_stock()
 	. = ..()
 	if(!. && !QDELETED(src))
@@ -416,6 +503,7 @@
 	if(!isnull(contract_quote))
 		if(contract_settled)
 			return
+		revalidate_contract_package()
 		contract_settled = TRUE
 		release_contract_stock(consumed = TRUE)
 	return ..()
@@ -426,6 +514,7 @@
 	contract_reward_shop = null
 	contract_stock = null
 	contract_item_values = null
+	contract_purchase_claims = null
 	return ..()
 
 /datum/mission/get_contract_pay_summary()
