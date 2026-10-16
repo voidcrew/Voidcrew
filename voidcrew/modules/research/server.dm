@@ -17,12 +17,34 @@
  */
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
+/datum/team/voidcrew
+	/// Shared entitlement across every source disk and replacement server owned by this crew.
+	var/list/research_reward_ledger = list()
+
+/obj/structure/overmap/dynamic/player_outpost
+	/// Site research retains its entitlement across server replacements and ownership changes.
+	var/list/research_reward_ledger = list()
+
 /datum/techweb
 	/// Physical disk webs must not become unscoped fallback webs when uninstalled.
 	var/requires_physical_server = FALSE
 
+/// Relays expose the physical source web, so only its installed server determines who earns rewards.
+/datum/techweb/proc/experiment_reward_ledger()
+	for(var/obj/machinery/rnd/server/ship/server in techweb_servers)
+		if(QDELETED(server) || server.stored_research != src || !server.source_code_hdd || server.source_code_hdd.loc != server || server.source_code_hdd.stored_research != src)
+			continue
+		var/obj/structure/overmap/site = get_research_service_site(server)
+		if(istype(site, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/ship = site
+			return ship.ship_team?.research_reward_ledger
+		if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
+			var/obj/structure/overmap/dynamic/player_outpost/home = site
+			return home.research_reward_ledger
+	return null
+
 /obj/machinery/rnd/server/ship
-	desc = "A computer system that hosts a physical R&D source disk and shares its research with linked machinery on the same ship or outpost. Use a multitool to connect local research equipment."
+	desc = "A computer system with a removable research drive."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
 	///Installed source code files that hosts our research.
 	var/obj/item/computer_disk/ship_disk/source_code_hdd

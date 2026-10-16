@@ -2,6 +2,23 @@
 /// code/__DEFINES/research.dm: one experiment funds exactly one tier-5 node.
 #define RESEARCH_POINTS_PER_EXPERIMENT 200
 
+/// Both scanner callbacks and ordnance publications complete through this path.
+/datum/techweb/complete_experiment(datum/experiment/completed_experiment)
+	if(QDELETED(completed_experiment) || completed_experiments[completed_experiment.type] || !(completed_experiment in available_experiments))
+		return null
+	return ..()
+
+/// Claim before granting either reward. Completion state and paid-node refunds remain web-local.
+/datum/techweb/proc/award_experiment_completion(datum/experiment/experiment)
+	var/list/ledger = experiment_reward_ledger()
+	if(isnull(ledger) || ledger[experiment.type])
+		return list()
+	ledger[experiment.type] = TRUE
+	var/list/reward = experiment.points_reward?.Copy() || list()
+	reward[TECHWEB_POINT_TYPE_GENERIC] += RESEARCH_POINTS_PER_EXPERIMENT
+	add_point_list(reward)
+	return reward
+
 /datum/experiment/finish_experiment(datum/component/experiment_handler/experiment_handler)
 	if(QDELETED(experiment_handler) || !experiment_handler.validate_research_site())
 		return FALSE
@@ -11,9 +28,6 @@
 		return FALSE
 	var/metric_points_before = metric_web_points(web) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	. = ..()
-	web.add_point_list(list(
-		TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT),
-	)
 	record_experiment_completed(web, type, metric_web_points(web) - metric_points_before, experiment_handler.parent)
 	return TRUE
 
@@ -49,12 +63,8 @@
 
 /**
  * Ordnance experiments never pass through finish_experiment() - they are finished off from
- * /datum/techweb/add_scientific_paper(), which flips the experiment's completed flag and calls
- * complete_experiment() on us directly, so publishing a paper paid none of the flat experiment bonus above.
- *
- * Pay it here when (and only when) the publication is what actually completed the experiment. Papers that
- * complete nothing pay nothing: publishing a further tier of an already-completed experiment finds it in
- * completed_experiments, so add_experiment() refuses to re-add it and complete_experiment() is never reached.
+ * /datum/techweb/add_scientific_paper(), which calls complete_experiment() directly.
+ * Keep publication metrics here; both routes award points through the same completion hook.
  */
 /datum/techweb/add_scientific_paper(datum/scientific_paper/paper_to_add)
 	var/experiment_path = paper_to_add?.experiment_path
@@ -66,7 +76,6 @@
 		return
 	if(isnull(completed_experiments[experiment_path])) // paper published, but it didn't complete the experiment
 		return
-	add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT))
 	record_experiment_completed(src, experiment_path, metric_web_points(src) - metric_points_before)
 
 #undef RESEARCH_POINTS_PER_EXPERIMENT
@@ -152,8 +161,7 @@
 	if(linked_web)
 		examine_text += span_notice("It is linked to the R&D server network of [linked_web.organization].")
 		return
-	examine_text += span_warning("It has no R&D server link, so it cannot run experiments or bank any points.")
-	examine_text += span_notice("Copy a techweb from an R&D server with a [EXAMINE_HINT("multitool")], then use the multitool on this.")
+	examine_text += span_warning("It has no R&D server link.")
 
 /**
  * Handlers with no server link have no network to announce on. Without this they'd all match each
@@ -198,7 +206,7 @@
 	if(isnull(linked_web) && !(config_flags & EXPERIMENT_CONFIG_SILENT_FAIL))
 		playsound(user, 'sound/machines/buzz/buzz-sigh.ogg', 25)
 		var/atom/scanner = parent
-		to_chat(user, span_warning("[scanner] has no R&D server link. Copy a techweb from an R&D server with a multitool, then use the multitool on [scanner]."))
+		to_chat(user, span_warning("[scanner] has no R&D server link."))
 		return
 	return ..()
 
