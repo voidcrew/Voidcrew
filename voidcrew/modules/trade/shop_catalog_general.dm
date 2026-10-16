@@ -2,7 +2,7 @@
  * # Waystation Halcyon: the green-zone general store
  *
  * Sundries, survival kit and honest prices for the safe inner ring. Credits
- * only; the most dangerous thing on the shelf is the chili in the rations.
+ * only, with surplus arms behind the counter.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  */
 
@@ -34,6 +34,7 @@
 		"Tools & Repair",
 		"Medical",
 		"Prospecting",
+		"Arms",
 		"Fuel & Gas",
 		"Galley & Comforts",
 		"Ship Sundries",
@@ -49,35 +50,29 @@
 		/datum/shop_sku/general/breath_mask,
 		/datum/shop_sku/general/eva_suit,
 		/datum/shop_sku/general/eva_helmet,
-		/datum/shop_sku/general/gps,
 		/datum/shop_sku/general/flare,
 		/datum/shop_sku/general/glowstick,
 		/datum/shop_sku/general/survival_medipen,
 		/datum/shop_sku/general/oxygen_canister,
 		/datum/shop_sku/general/jetpack,
 		// Tools & Repair
-		/datum/shop_sku/general/toolbelt,
-		/datum/shop_sku/general/big_welder,
 		/datum/shop_sku/general/welding_fuel,
-		/datum/shop_sku/general/light_replacer,
-		/datum/shop_sku/general/holofan,
-		/datum/shop_sku/general/rcd,
 		// Medical
 		/datum/shop_sku/general/medkit,
 		/datum/shop_sku/general/burn_kit,
 		/datum/shop_sku/general/o2_kit,
-		/datum/shop_sku/general/health_analyzer,
 		/datum/shop_sku/general/epipen,
 		/datum/shop_sku/general/gauze,
 		/datum/shop_sku/general/suture,
 		/datum/shop_sku/general/regen_mesh,
 		// Prospecting
-		/datum/shop_sku/general/pickaxe,
-		/datum/shop_sku/general/mesons,
 		/datum/shop_sku/general/ore_bag,
-		/datum/shop_sku/general/mining_scanner,
 		/datum/shop_sku/general/adv_mining_scanner,
 		/datum/shop_sku/general/diamond_pick,
+		// Arms
+		/datum/shop_sku/general/hunting_knife,
+		/datum/shop_sku/general/survival_knife,
+		/datum/shop_sku/general/surplus_rifle,
 		// Fuel & Gas
 		/datum/shop_sku/general/plasma_canister,
 		/datum/shop_sku/general/plasma_sheets,
@@ -113,12 +108,7 @@
 		/datum/shop_sku/general/rotating/freight_crate,
 		/datum/shop_sku/general/rotating/metalfoam,
 		/datum/shop_sku/general/rotating/bikehorn,
-		/datum/shop_sku/general/rotating/welding_goggles,
 		/datum/shop_sku/general/rotating/guitar,
-	)
-	rare_pool = list(
-		/datum/shop_sku/general/rare/bluespace_bodybag,
-		/datum/shop_sku/general/rare/drill,
 	)
 	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
@@ -253,11 +243,6 @@
 	stock_min = 10
 	stock_max = 20
 
-/datum/shop_sku/general/gps
-	category = "Survival & EVA"
-	item_path = /obj/item/gps
-	price_credits = 200
-
 /datum/shop_sku/general/flare
 	category = "Survival & EVA"
 	item_path = /obj/item/flashlight/flare
@@ -299,18 +284,12 @@
 
 // ===== TOOLS & REPAIR =====
 
+// Retained for the ordinary-shelf unit-test fixture; not sold at an outpost.
 /datum/shop_sku/general/toolbelt
 	category = "Tools & Repair"
 	item_path = /obj/item/storage/belt/utility/full
-	desc = "A loaded repair belt with hand tools, a multitool and cable. Supplies the tools and wiring needed to assemble a replacement autolathe and link a research bay."
+	desc = "A loaded repair belt with hand tools and cable."
 	price_credits = 500
-
-// The large-tank welder only prints on a hacked lathe, so this is the cheap
-// rung on a shelf that otherwise starts at 250 cr.
-/datum/shop_sku/general/big_welder
-	category = "Tools & Repair"
-	item_path = /obj/item/weldingtool/largetank
-	price_credits = 300
 
 /datum/shop_sku/general/welding_fuel
 	name = "welding fuel tank"
@@ -320,32 +299,6 @@
 	price_credits = 400
 	stock_min = 2
 	stock_max = 4
-
-/datum/shop_sku/general/light_replacer
-	category = "Tools & Repair"
-	item_path = /obj/item/lightreplacer
-	price_credits = 400
-	stock_min = 1
-	stock_max = 3
-
-/datum/shop_sku/general/holofan
-	category = "Tools & Repair"
-	name = "holofan projector"
-	item_path = /obj/item/holosign_creator/atmos
-	price_credits = 600
-	stock_min = 1
-	stock_max = 2
-
-// The expensive rung on the repair shelf, and the reason ships limp back here
-// instead of to a depot: a breach closes in seconds instead of a welding shift.
-/datum/shop_sku/general/rcd
-	name = "rapid construction device"
-	desc = "Lays and removes walls, floors and airlocks out of stored matter. The fast way to shut a breach while the compartment is still venting. Feed it iron, glass, or compressed matter cartridges."
-	category = "Tools & Repair"
-	item_path = /obj/item/construction/rcd
-	price_credits = 2400
-	stock_min = 1
-	stock_max = 2
 
 // ===== MEDICAL =====
 
@@ -369,11 +322,6 @@
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
 	price_credits = 400
-
-/datum/shop_sku/general/health_analyzer
-	category = "Medical"
-	item_path = /obj/item/healthanalyzer
-	price_credits = 200
 
 /datum/shop_sku/general/epipen
 	category = "Medical"
@@ -411,25 +359,10 @@
 
 // ===== PROSPECTING =====
 
-/datum/shop_sku/general/pickaxe
-	category = "Prospecting"
-	item_path = /obj/item/pickaxe
-	price_credits = 200
-
-/datum/shop_sku/general/mesons
-	category = "Prospecting"
-	item_path = /obj/item/clothing/glasses/meson
-	price_credits = 400
-
 /datum/shop_sku/general/ore_bag
 	category = "Prospecting"
 	item_path = /obj/item/storage/bag/ore
 	price_credits = 200
-
-/datum/shop_sku/general/mining_scanner
-	category = "Prospecting"
-	item_path = /obj/item/t_scanner/adv_mining_scanner/lesser
-	price_credits = 450
 
 /datum/shop_sku/general/adv_mining_scanner
 	desc = "The full-range model of the scanner on the shelf beside it: seven tiles of rock instead of four, and it re-sweeps half again as fast. Worth it on a planet where the good seams sit deep."
@@ -625,8 +558,13 @@
 	category = "Ship Sundries"
 	name = "unclaimed freight"
 	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside, and he'd rather you opened it somewhere else."
-	item_path = /obj/structure/closet/crate/zone_loot/syndicate
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate/trader
 	price_credits = 750
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/general/rotating/metalfoam
 	category = "Ship Sundries"
@@ -639,26 +577,11 @@
 	item_path = /obj/item/bikehorn
 	price_credits = 80
 
-/datum/shop_sku/general/rotating/welding_goggles
-	category = "Tools & Repair"
-	item_path = /obj/item/clothing/glasses/welding
-	price_credits = 180
-
 /datum/shop_sku/general/rotating/guitar
 	item_path = /obj/item/instrument/guitar
 	price_credits = 400
 
 // ===== RARE SHOWCASE =====
-
-/datum/shop_sku/general/rare/bluespace_bodybag
-	category = "Ship Sundries"
-	item_path = /obj/item/bodybag/bluespace
-	price_credits = 3000
-
-/datum/shop_sku/general/rare/drill
-	category = "Prospecting"
-	item_path = /obj/item/pickaxe/drill
-	price_credits = 1800
 
 // ===== BARNABY'S PROSPECTOR COUNTER (buybacks) =====
 
@@ -775,3 +698,31 @@
 	price_credits = 300
 	stock_min = 3
 	stock_max = 6
+// ===== ARMS =====
+
+/datum/shop_sku/general/hunting_knife
+	category = "Arms"
+	item_path = /obj/item/knife/hunting
+	price_credits = 200
+	price_vouchers = 0
+	stock_min = 4
+	stock_max = 4
+
+/datum/shop_sku/general/survival_knife
+	category = "Arms"
+	item_path = /obj/item/knife/combat/survival
+	price_credits = 350
+	price_vouchers = 0
+	stock_min = 4
+	stock_max = 4
+
+/datum/shop_sku/general/surplus_rifle
+	category = "Arms"
+	item_path = /obj/item/gun/ballistic/rifle/boltaction/surplus
+	price_credits = 900
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
