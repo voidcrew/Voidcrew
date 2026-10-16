@@ -94,6 +94,10 @@
 	var/list/datum/mission_objective/objectives = list()
 	/// Index (1-based) of the current objective
 	var/objective_index = 1
+	/// Lifetime kill progress; resetting the site's objectives cannot undo it.
+	var/named_kill_completed = FALSE
+	/// Shared by every incarnation of this mission's named pirate target.
+	var/boss_cash_issued = FALSE
 
 	// ===== TARGET =====
 	/// Where the mission points on the overmap, if anywhere
@@ -387,6 +391,25 @@
 	if(objective?.active)
 		objective.deactivate()
 
+/// Re-arm the site, resuming a completed hunt at proof recovery rather than setup.
+/datum/mission/proc/restart_objectives()
+	deactivate_objectives()
+	objective_index = 1
+	if(named_kill_completed)
+		for(var/datum/mission_objective/field/kill_named/hunt in objectives)
+			objective_index = objectives.Find(hunt)
+			break
+	for(var/index in objective_index to length(objectives))
+		var/datum/mission_objective/objective = objectives[index]
+		objective.reset()
+
+/// Claim before creating cash, regardless of death-handler ordering or retargets.
+/datum/mission/proc/claim_boss_cash()
+	if(failed || completed || boss_cash_issued)
+		return FALSE
+	boss_cash_issued = TRUE
+	return TRUE
+
 /**
  * Marks the mission as failed.
  * * reason - Optional reason for failure (shown to crew)
@@ -566,8 +589,8 @@
  * So this rewinds rather than retargets. The watch on whatever is standing in
  * the dead site is dropped before the wipe can fire it (otherwise the wipe reads
  * as a destroyed objective and burns a retarget re-rolling to a ruin the crew
- * has no reason to be at), the objective chain resets, and the field step
- * re-arms on the load signal - so docking there again lays the job out fresh.
+ * has no reason to be at). A completed hunt re-arms only its proof recovery;
+ * other chains restart from setup when the interior loads again.
  *
  * Anything the crew already carried out is untouched: it isn't in the site, so
  * the contract is still on its delivery step and nothing here applies.
@@ -578,20 +601,17 @@
 	if(!quest_atom || !is_quest_atom_stranded())
 		return
 
-	UnregisterSignal(quest_atom, COMSIG_QDELETING)
-	quest_atom = null
-	quest_atom_bounds = null
+	forget_quest_atom(quest_atom)
+	if(named_kill_completed)
+		binding_serial++ // stranded proof must not match its replacement
 
-	deactivate_objectives()
-	for(var/datum/mission_objective/objective as anything in objectives)
-		objective.reset()
-	objective_index = 1
+	restart_objectives()
 	activate_current_objective()
 	push_waypoint()
-	servant?.ship_notify("[name]: the site powered down before we recovered anything, and our gear went with it. The contract stands - it will be set up again next time you dock at ([target.target_x], [target.target_y]).", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+	servant?.ship_notify("[name]: contact lost. The contract stands.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 /**
- * Re-picks the target and restarts the objective chain from step one.
+ * Re-picks the target and restarts unfinished work, preserving completed kills.
  * Free while the mission sits on the board; budgeted while active.
  */
 /datum/mission/proc/retarget(reason = "Target lost - contract void.")
@@ -610,10 +630,7 @@
 		fail(reason)
 		return
 
-	deactivate_objectives()
-	for(var/datum/mission_objective/objective as anything in objectives)
-		objective.reset()
-	objective_index = 1
+	restart_objectives()
 	update_text()
 
 	if(active)
