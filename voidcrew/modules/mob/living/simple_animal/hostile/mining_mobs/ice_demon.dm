@@ -62,6 +62,5 @@
 	move_resist = MOVE_RESIST_DEFAULT
 	pull_force = PULL_FORCE_DEFAULT
 	new /obj/item/stack/ore/bluespace_crystal(loc, 10)
-	if(prob(20))
-		new /obj/item/assembly/signaler/anomaly/bluespace(loc)
+	// Core rolls use the shared spawn-bound allowance in anomalies/core_rewards.dm.
 	return ..()

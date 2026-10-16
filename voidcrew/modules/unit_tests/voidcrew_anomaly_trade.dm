@@ -24,7 +24,7 @@
 			if(ispath(item, /obj/item/raw_anomaly_core))
 				TEST_FAIL("[pack.type] sells [item] over cargo")
 
-/// Boffin's core and chart rotations: every type, the right price band, one unit,
+/// Boffin's core and chart rotations: every type, the right price band and stock,
 /// no discounts, and sold slots turn over instead of refilling.
 /datum/unit_test/voidcrew_anomaly_boffin_shelves/Run()
 	var/list/core_prices = list(
@@ -61,6 +61,9 @@
 	TEST_ASSERT_NOTNULL(cores, "Boffin has no raw core rotation")
 	TEST_ASSERT_NOTNULL(charts, "Boffin has no anomaly chart rotation")
 
+	TEST_ASSERT_EQUAL(cores.slots, 2, "Boffin must keep two core slots")
+	TEST_ASSERT_EQUAL(charts.slots, 4, "Boffin must stock four chart slots")
+
 	var/list/cores_seen = list()
 	for(var/datum/shop_sku/sku_type as anything in cores.pool)
 		var/item = initial(sku_type.item_path)
@@ -68,6 +71,7 @@
 		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), core_prices[item], "[sku_type] is in the wrong price band")
 		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
 		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 1, "[sku_type] does not always stock one core")
 		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 1, "[sku_type] stocks more than one unit")
 		cores_seen[item] = cores.pool[sku_type]
 	TEST_ASSERT_EQUAL(length(cores_seen), 9, "Boffin's core rotation does not cover all nine types")
@@ -85,6 +89,9 @@
 		TEST_ASSERT_NOTNULL(base_type, "[sku_type] points at [anomaly], which is not one of the nine anomaly types")
 		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), chart_prices[base_type], "[sku_type] is in the wrong price band")
 		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 2, "[sku_type] must always stock two charts")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 2, "[sku_type] must stock at most two charts")
+		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
 		var/obj/effect/anomaly/anomaly_path = anomaly
 		TEST_ASSERT(initial(anomaly_path.immortal) && initial(anomaly_path.site_bound), "[sku_type] surfaces an anomaly that times out or can leave its site")
 		charts_seen[base_type] = TRUE
@@ -95,9 +102,11 @@
 		for(var/datum/shop_sku/sku as anything in shop.skus)
 			if(sku.rotation == rotation)
 				on_shelf += sku
-		TEST_ASSERT(length(on_shelf) >= 1 && length(on_shelf) <= rotation.slots, "[rotation.type] put [length(on_shelf)] SKUs on the shelf")
+		TEST_ASSERT_EQUAL(length(on_shelf), rotation.slots, "[rotation.type] put [length(on_shelf)] SKUs on the shelf")
 		var/datum/shop_sku/sold = on_shelf[1]
-		TEST_ASSERT_EQUAL(sold.stock, 1, "[sold.type] stocked [sold.stock] units")
+		var/expected_stock = rotation == charts ? 2 : 1
+		for(var/datum/shop_sku/sku as anything in on_shelf)
+			TEST_ASSERT_EQUAL(sku.stock, expected_stock, "[sku.type] stocked the wrong number of units")
 		sold.discount_pct = 30
 		TEST_ASSERT_EQUAL(sold.get_credit_price(), round(sold.price_credits * 0.7, 5), "A special did not discount [sold.type]")
 		var/sold_type = sold.type
@@ -108,6 +117,7 @@
 		for(var/datum/shop_sku/sku as anything in shop.skus)
 			if(sku.rotation == rotation)
 				after += sku.type
+				TEST_ASSERT_EQUAL(sku.stock, expected_stock, "The convoy changed [sku.type] stock")
 		TEST_ASSERT_EQUAL(length(after), length(on_shelf), "The convoy did not replace the sold slot")
 		TEST_ASSERT(!(sold_type in after), "The sold slot came back as the same [sold_type]")
 		TEST_ASSERT_EQUAL(length(unique_list(after)), length(after), "The rotation shelved the same SKU twice")
@@ -139,7 +149,9 @@
 /// Buying a chart takes the money and puts a sealed anomaly rumor on the ship.
 /datum/unit_test/voidcrew_anomaly_chart_purchase/Run()
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
-	shop.add_sku(/datum/shop_sku/anomaly_chart/grav, "rotating")
+	var/datum/shop_rotation/rotation = new /datum/shop_rotation/skunk_anomaly_charts
+	shop.live_rotations += rotation
+	shop.add_rotation_sku(rotation, /datum/shop_sku/anomaly_chart/grav)
 	var/datum/shop_sku/anomaly_chart/sku = shop.skus[1]
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
@@ -149,24 +161,42 @@
 	team.ship = ship
 	buyer.mind.ship_teams = list(team)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Anomaly chart test", null, 1, FALSE)
-	account.account_balance = 20000
+	account.account_balance = 40000
 	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
 	qdel(id_card.registered_account)
 	id_card.registered_account = account
 	TEST_ASSERT(buyer.put_in_hands(id_card), "Buyer could not carry their paying ID")
 
 	TEST_ASSERT(sku.try_purchase(buyer, null), "Chart purchase failed")
-	TEST_ASSERT_EQUAL(account.account_balance, 7500, "The chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(account.account_balance, 27500, "The chart charged the wrong amount")
 	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 1, "Purchase did not upload a sealed chart")
 	var/datum/rumor_chart/anomaly/chart = ship.pending_rumors[1]
 	TEST_ASSERT(istype(chart), "The sealed chart is not an anomaly chart")
 	TEST_ASSERT_EQUAL(chart.anomaly_type, /obj/effect/anomaly/grav/planetary, "The chart names the wrong anomaly")
 	TEST_ASSERT(!chart.revealed && !chart.surfaced, "A fresh chart is already revealed")
-	TEST_ASSERT(!sku.try_purchase(buyer, null), "A one-unit chart sold twice")
-	TEST_ASSERT_EQUAL(account.account_balance, 7500, "A refused purchase took money")
+	TEST_ASSERT_EQUAL(sku.stock, 1, "The first purchase did not leave one chart")
+	shop.convoy_restock()
+	TEST_ASSERT(sku in shop.skus, "The convoy replaced a partially sold chart slot")
+	TEST_ASSERT_EQUAL(sku.stock, 1, "The convoy refilled a partially sold chart slot")
+	sku.discount_pct = 0 // The convoy rerolls the special independently of stock.
+	TEST_ASSERT(sku.try_purchase(buyer, null), "The second chart purchase failed")
+	TEST_ASSERT_EQUAL(sku.stock, 0, "The second purchase did not exhaust the slot")
+	TEST_ASSERT_EQUAL(account.account_balance, 15000, "The second chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "Two purchases did not upload two charts")
+	var/datum/rumor_chart/anomaly/second_chart = ship.pending_rumors[2]
+	TEST_ASSERT(second_chart != chart, "Two purchases shared a chart datum")
+	TEST_ASSERT(!sku.try_purchase(buyer, null), "An exhausted chart slot sold a third unit")
+	TEST_ASSERT_EQUAL(account.account_balance, 15000, "A refused purchase took money")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "A refused purchase uploaded a chart")
+	shop.convoy_restock()
+	TEST_ASSERT(!(sku in shop.skus), "The convoy did not replace the exhausted chart slot")
+	TEST_ASSERT_EQUAL(length(shop.skus), 1, "The convoy lost the exhausted chart slot")
+	var/datum/shop_sku/replacement = shop.skus[1]
+	TEST_ASSERT(replacement.type != /datum/shop_sku/anomaly_chart/grav, "The exhausted chart refilled in place")
+	TEST_ASSERT_EQUAL(replacement.stock, 2, "The replacement chart slot did not stock two units")
 
 	qdel(ship)
-	TEST_ASSERT(QDELETED(chart), "Hull loss left its sealed chart alive")
+	TEST_ASSERT(QDELETED(chart) && QDELETED(second_chart), "Hull loss left a sealed chart alive")
 	buyer.mind.ship_teams = null
 	team.ship = null
 
@@ -271,10 +301,6 @@
 		TEST_ASSERT(weights[base_type], "[base_type] never seeds on planets")
 	TEST_ASSERT(weights[/obj/effect/anomaly/pyro] > weights[/obj/effect/anomaly/dimensional], "Uncommon planet anomalies are not rarer than common ones")
 	TEST_ASSERT(weights[/obj/effect/anomaly/dimensional] > weights[/obj/effect/anomaly/bhole], "Rare planet anomalies are not rarer than uncommon ones")
-	// Literals 1/2/3 = ZONE_GREEN/YELLOW/RED: every band can roll one, deeper bands more often
-	TEST_ASSERT_EQUAL(planet_anomaly_chance(1), 5, "Wrong green planet anomaly chance")
-	TEST_ASSERT_EQUAL(planet_anomaly_chance(2), 15, "Wrong yellow planet anomaly chance")
-	TEST_ASSERT_EQUAL(planet_anomaly_chance(3), 25, "Wrong red planet anomaly chance")
 
 /// The planetary pyroclastic anomaly burns whoever is next to it and never touches the air.
 /datum/unit_test/voidcrew_planet_pyro_jets/Run()

@@ -161,7 +161,7 @@
 		return FALSE
 	var/turf/spawn_turf = find_spawn_turf(site)
 	if(!spawn_turf)
-		buyer.ship_notify("Faint anomalous readings near [site.name], too unsteady to fix. They may settle on your next approach.", "SENSORS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+		buyer.ship_notify("Faint anomalous readings near [site.name].", "SENSORS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return FALSE
 
 	surfaced = TRUE
@@ -288,14 +288,14 @@
 	buyer = null
 	revealed = FALSE
 	ship.pending_rumors |= src
-	ship.ship_notify("The site on the \"[name]\" chart has dropped off the scopes. The chart is sealed again and can be revealed from the helm for a new fix.", "HELM", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+	ship.ship_notify("The site on the \"[name]\" chart has dropped off the scopes.", "HELM", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /**
  * # Anomaly chart SKU
  *
  * Sold on Boffin's chart rotation. No goods change hands: the sealed chart goes
  * straight to the buyer's ship, and its reveal and arrival do the rest. Stock is
- * one, and a sold chart's slot turns over to a different anomaly at the next
+ * two, and an exhausted slot turns over to a different anomaly at the next
  * convoy rather than refilling (see /datum/shop_rotation).
  */
 /datum/shop_sku/anomaly_chart
@@ -303,8 +303,8 @@
 	icon_override = 'icons/obj/scrolls.dmi'
 	icon_state_override = "blueprints"
 	is_chart = TRUE
-	stock_min = 1
-	stock_max = 1
+	stock_min = 2
+	stock_max = 2
 	contract_reward = FALSE
 	/// The site-bound anomaly the chart surfaces
 	var/obj/effect/anomaly/anomaly_type
@@ -318,14 +318,14 @@
 	var/anomaly_name = initial(anomaly_type.name)
 	var/band_name = spawn_zone == ZONE_RED ? ZONE_NAME_RED : ZONE_NAME_YELLOW
 	name = "anomaly chart: [anomaly_name]"
-	desc = "Sensor logs on \a [anomaly_name] settling somewhere in the [band_name], either aboard a derelict or out on a planet. Uploaded sealed to your helm. The readings only firm up once your own ship is docked at the site."
+	desc = "Sensor logs on \a [anomaly_name] somewhere in the [band_name]."
 
 /datum/shop_sku/anomaly_chart/get_denial_reason(mob/living/user)
 	. = ..()
 	if(.)
 		return
 	if(!get_crew_ship(user))
-		return "No crew registration, you need a ship to upload the chart to."
+		return "No crew registration."
 
 /datum/shop_sku/anomaly_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
@@ -348,7 +348,7 @@
 
 	stock--
 	ship.add_pending_rumor(create_chart())
-	to_chat(user, span_notice("The chart is encrypted and beamed to [ship]'s helm console. Reveal it when your crew is ready to move."))
+	to_chat(user, span_notice("The chart is beamed to [ship]'s helm console."))
 	return TRUE
 
 /// A fresh sealed chart for one purchase
@@ -356,7 +356,7 @@
 	var/datum/rumor_chart/anomaly/chart = new
 	var/anomaly_name = initial(anomaly_type.name)
 	chart.name = capitalize(anomaly_name)
-	chart.desc = "[capitalize("\a [anomaly_name]")] in the [spawn_zone == ZONE_RED ? ZONE_NAME_RED : ZONE_NAME_YELLOW]. Nothing will show on the site until your ship docks there."
+	chart.desc = "[capitalize("\a [anomaly_name]")] in the [spawn_zone == ZONE_RED ? ZONE_NAME_RED : ZONE_NAME_YELLOW]."
 	chart.anomaly_type = anomaly_type
 	chart.spawn_zone = spawn_zone
 	return chart

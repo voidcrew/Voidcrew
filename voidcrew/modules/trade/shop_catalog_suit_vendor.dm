@@ -204,8 +204,8 @@
 	exclusive_rewards = list(
 		/obj/item/mod/control/pre_equipped/magnate,
 		/obj/item/mod/control/pre_equipped/safeguard,
-		/obj/item/mod/module/anomaly_locked/kinesis/prebuilt,
-		/obj/item/mod/module/anomaly_locked/teleporter/prebuilt,
+		/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked,
+		/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -856,8 +856,8 @@
 /datum/shop_sku/fitter/rare/mod_antigrav
 	category = "Mobility"
 	name = "MOD anti-gravity module (cored)"
-	desc = "An anti-gravity module with a gravitational anomaly core already seated, so it works the moment it's installed. Wick does not say where the core came from."
-	item_path = /obj/item/mod/module/anomaly_locked/antigrav/prebuilt
+	desc = "An anti-gravity module with a sealed core. Wick does not say where it came from."
+	item_path = /obj/item/mod/module/anomaly_locked/antigrav/prebuilt/locked
 	price_vouchers = 2
 	price_credits = 2400
 
