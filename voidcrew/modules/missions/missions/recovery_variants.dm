@@ -29,6 +29,9 @@
 
 /datum/mission/recovery/survey
 	name = "Survey Contract"
+	value_min = 550
+	value_max = 750
+	guarded_prize_family = "waves"
 	weight = 8
 	mission_limit = 2
 	gps_tag_prefix = "SRVY"
@@ -61,11 +64,7 @@
 
 /datum/mission/recovery/survey/update_text()
 	name = "Survey Contract: [objective_name]"
-	desc = "Our probes seeded [chain ? chain.points_total : 3] survey pylons through the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Calibrate each with an empty hand, in any order. Each completed calibration draws a wave of hostiles, so go armed. \
-		The last pylon you finish prints the survey core; bring that back to the mission pad. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive a beacon for every pylon still standing ([gps_tag])."
+	desc = "Survey requested at ([target.target_x], [target.target_y]) in the [target_zone_name]: [objective_name]."
 
 /datum/mission/recovery/survey/waypoint_label()
 	return "Survey: [objective_name]"
@@ -78,7 +77,7 @@
  */
 /obj/structure/mission_survey_pylon
 	name = "survey pylon"
-	desc = "A tripod-mounted survey unit, dropped from orbit and waiting on someone to calibrate it. The routine is very loud."
+	desc = "A tripod-mounted survey unit, dropped from orbit."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "survey_pylon"
 	anchored = TRUE
@@ -94,7 +93,7 @@
 	if(calibrated)
 		. += span_notice("Its display reads: SURVEY SEGMENT COMPLETE.")
 	else
-		. += span_notice("Its display blinks: AWAITING FIELD CALIBRATION. Use an empty hand to start it. The routine takes a while, and it is <b>loud</b>.")
+		. += span_notice("Its display blinks: AWAITING FIELD CALIBRATION.")
 
 /obj/structure/mission_survey_pylon/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
@@ -133,6 +132,9 @@
 
 /datum/mission/recovery/extraction
 	name = "Extraction Contract"
+	value_min = 500
+	value_max = 700
+	guarded_prize_family = "waves"
 	weight = 8
 	mission_limit = 2
 	gps_tag_prefix = "XTRC"
@@ -174,10 +176,7 @@
 
 /datum/mission/recovery/extraction/update_text()
 	name = "Extraction Contract: [objective_name]"
-	desc = "A [objective_name] is bolted down inside the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Use an empty hand to start wrenching it loose. It takes a while and it will trip the site's alarm, so plan for company, then haul it to the mission pad. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the cargo's beacon ([gps_tag])."
+	desc = "Recover the [objective_name] from ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/recovery/extraction/waypoint_label()
 	return "Extraction: [objective_name]"
@@ -192,7 +191,7 @@
 	var/turf/site = get_turf(cargo)
 	new wave_theme(site, list(1, 2))
 	second_wave_timer = addtimer(CALLBACK(src, PROC_REF(second_wave), site), EXTRACTION_SECOND_WAVE_DELAY, TIMER_STOPPABLE)
-	servant?.ship_notify("[name]: site security tripped. Expect resistance in waves.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+	servant?.ship_notify("[name]: site security alarm triggered.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 /datum/mission/recovery/extraction/proc/second_wave(turf/site)
 	second_wave_timer = null
@@ -207,7 +206,7 @@
  * the deck. Unbolting is a channel that trips the mission's alarm.
  */
 /obj/item/mission_recovery/anchored
-	desc = "Flagged for recovery under a standing contract, and bolted to the deck. Getting it loose takes a while, and it won't be quiet."
+	desc = "Contracted salvage, bolted to the deck."
 	icon_state = "recovery_anchored"
 	anchored = TRUE
 	w_class = WEIGHT_CLASS_BULKY
@@ -215,7 +214,7 @@
 /obj/item/mission_recovery/anchored/examine(mob/user)
 	. = ..()
 	if(anchored)
-		. += span_warning("It is bolted down. Use an empty hand to start wrenching it free.")
+		. += span_warning("It is bolted down.")
 
 /obj/item/mission_recovery/anchored/attack_hand(mob/living/user, list/modifiers)
 	if(!anchored)

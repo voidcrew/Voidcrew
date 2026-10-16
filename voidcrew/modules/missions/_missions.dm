@@ -98,6 +98,15 @@
 	var/named_kill_completed = FALSE
 	/// Shared by every incarnation of this mission's named pirate target.
 	var/boss_cash_issued = FALSE
+	/// Reward band fixed when posted, independent of ask difficulty.
+	var/quote_zone
+	var/zone_scaling_applied = FALSE
+	/// Family eligible for a completion prize; null for unguarded work.
+	var/guarded_prize_family
+	var/guarded_prize_rolled = FALSE
+	var/guarded_prize
+	/// Prevent reentrant partial handovers as well as final settlements.
+	var/turning_in = FALSE
 
 	// ===== TARGET =====
 	/// Where the mission points on the overmap, if anywhere
@@ -146,12 +155,13 @@
 	/// linked later still gets the full set and cleanup drops every tag.
 	var/list/aux_gps_beacons
 
-/datum/mission/New(datum/outpost_shop/shop, preferred_zone)
+/datum/mission/New(datum/outpost_shop/shop, preferred_zone, posting_zone)
 	. = ..()
 	src.shop = shop
 	// Has to land before generate_mission_details(): setup_target() builds the
 	// target datum, which copies this off us in its own New().
 	src.preferred_zone = preferred_zone
+	quote_zone = posting_zone
 	posted_at = world.time
 	generate_mission_details()
 
@@ -195,13 +205,22 @@
 		return
 
 	if(target)
-		var/zone_type = target.get_zone_type()
-		if(!isnull(zone_type))
-			apply_zone_scaling(zone_type)
+		quote_zone = target.get_zone_type()
+		if(!isnull(quote_zone))
+			// Board quotes and the drug run keep their existing generation hooks.
+			if(shop)
+				apply_zone_scaling(quote_zone)
+			else
+				set_zone_details(quote_zone)
 
 	generate_details()
 	if(generation_failed)
 		return
+
+	if(!shop)
+		if(!isnull(quote_zone))
+			apply_zone_scaling(quote_zone)
+		roll_posted_rewards()
 
 	build_objectives()
 	if(generation_failed)
@@ -246,32 +265,41 @@
 	objectives += objective
 	return objective
 
-/**
- * The zone scaling service: one table mapping the target's zone to
- * difficulty, zone name, pay multiplier and a red-zone voucher bonus.
- * Types tune pay by setting their green-zone value band.
- */
+/// Targeted work takes its difficulty from the site; asks keep their own.
+/datum/mission/proc/set_zone_details(zone_type)
+	quote_zone = zone_type
+	switch(zone_type)
+		if(ZONE_YELLOW)
+			target_zone_name = ZONE_NAME_YELLOW
+		if(ZONE_RED)
+			target_zone_name = ZONE_NAME_RED
+		else
+			target_zone_name = ZONE_NAME_GREEN
+	if(target || shop)
+		difficulty = zone_type
+
+/// Scale only once, after the chosen ask and hazard have set their base bands.
 /datum/mission/proc/apply_zone_scaling(zone_type)
-	var/static/list/zone_scaling = list(
-		"[ZONE_GREEN]" = list("name" = ZONE_NAME_GREEN, "difficulty" = MISSION_DIFFICULTY_EASY, "value_mult" = 1, "research_mult" = 1, "voucher_bonus" = 0),
-		"[ZONE_YELLOW]" = list("name" = ZONE_NAME_YELLOW, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "value_mult" = 1.7, "research_mult" = 1.4, "voucher_bonus" = 0),
-		"[ZONE_RED]" = list("name" = ZONE_NAME_RED, "difficulty" = MISSION_DIFFICULTY_HARD, "value_mult" = 2.6, "research_mult" = 1.8, "voucher_bonus" = 1),
-	)
-	var/list/row = zone_scaling["[zone_type]"] || zone_scaling["[ZONE_GREEN]"]
-	target_zone_name = row["name"]
-	difficulty = row["difficulty"]
-	value_min = round(value_min * row["value_mult"], 10)
-	value_max = round(value_max * row["value_mult"], 10)
-	// Points scale slower than credits on purpose. Credits are spent and gone, so a
-	// deep-band contract can pay several times a green one without distorting
-	// anything; research is permanent progress on a tree the whole ship shares, and
-	// riding the 2.6x credit multiplier put one Lawless contract ahead of every other
-	// point faucet in the game combined. The danger premium is paid in credits and
-	// vouchers - the band (MISSION_RESEARCH_PAY_*) is what sets the science.
+	if(zone_scaling_applied)
+		return
+	zone_scaling_applied = TRUE
+	set_zone_details(zone_type)
+	if(shop)
+		return // M1 packages and currency already define the complete board quote.
+	var/value_mult = zone_type == ZONE_RED ? 2.2 : (zone_type == ZONE_YELLOW ? 1.5 : 1)
+	var/research_mult = zone_type == ZONE_RED ? 1.8 : (zone_type == ZONE_YELLOW ? 1.4 : 1)
+	if(!istype(src, /datum/mission/delivery) && !istype(src, /datum/mission/suppression))
+		value_min = round(value_min * value_mult, 10)
+		value_max = round(value_max * value_mult, 10)
 	if(research_reward > 0)
-		research_reward = round(research_reward * row["research_mult"], 10)
-	if(voucher_count > 0)
-		voucher_count += row["voucher_bonus"]
+		research_reward = round(research_reward * research_mult, 10)
+
+/// One posting-time voucher roll; utility rewards override this hook too.
+/datum/mission/proc/roll_posted_rewards()
+	if(istype(src, /datum/mission/prospect_stake))
+		voucher_count = 1
+	else if(guarded_prize_family || istype(src, /datum/mission/suppression))
+		voucher_count = prob(quote_zone == ZONE_RED ? 75 : (quote_zone == ZONE_YELLOW ? 50 : 25)) ? 1 : 0
 
 /**
  * Rebuilds name/desc from current state. Called at the end of generation and
@@ -305,12 +333,12 @@
 /datum/mission/proc/start_mission(obj/structure/overmap/ship/ship)
 	if(!ship)
 		return FALSE
-	if(active)
+	if(QDELETED(src) || active || failed || completed)
 		return FALSE
 
 	// The target may have died while the mission sat on the board
 	if(target && !target.is_valid())
-		if(!target.resolve())
+		if(!resolve_quoted_target())
 			return FALSE
 		update_text()
 
@@ -558,6 +586,9 @@
 /datum/mission/proc/on_target_moved()
 	if(failed || completed)
 		return
+	if(!isnull(quote_zone) && target?.get_zone_type() != quote_zone)
+		handle_quest_loss()
+		return
 	update_text()
 	if(active)
 		push_waypoint()
@@ -626,7 +657,7 @@
 		if(retargets_left < 0)
 			fail(reason)
 			return
-	if(!target?.resolve())
+	if(!resolve_quoted_target())
 		fail(reason)
 		return
 
@@ -637,6 +668,16 @@
 		activate_current_objective()
 		push_waypoint()
 		servant?.ship_notify("[name]: target signal relocated to ([target.target_x], [target.target_y]), [target_zone_name].", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+
+/// Target preferences may fall back across zones; a fixed quote may not.
+/datum/mission/proc/resolve_quoted_target()
+	if(!target)
+		return FALSE
+	if(!isnull(quote_zone))
+		target.preferred_zone = quote_zone
+	if(!target.resolve())
+		return FALSE
+	return isnull(quote_zone) || target.get_zone_type() == quote_zone
 
 // =========================================================================
 // COMPLETION & TURN-IN
@@ -753,8 +794,16 @@
  * (it is qdeleted by then) or just advanced a counted hand-over.
  */
 /datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)
-	if(failed || completed)
+	if(QDELETED(src) || failed || completed || turning_in)
 		return FALSE
+	// Console handovers validate the account before consuming even a partial ask.
+	if(!shop && (QDELETED(servant) || QDELETED(servant.ship_account) || !active || !get_turf(reward_anchor) || !can_turn_in_at(reward_anchor)))
+		return FALSE
+	turning_in = TRUE
+	. = settle_turn_in(reward_anchor, turned_in_item, force)
+	turning_in = FALSE
+
+/datum/mission/proc/settle_turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)
 
 	if(!force)
 		if(requires_item)
@@ -762,6 +811,8 @@
 				return FALSE
 			var/datum/mission_objective/objective = current_objective()
 			var/result = objective.accept_item(turned_in_item, reward_anchor)
+			if(result == MISSION_ITEM_REFUSED)
+				return FALSE
 			if(result == MISSION_ITEM_PROGRESS)
 				return TRUE // partial hand-over; mission continues
 			if(!all_objectives_satisfied())
@@ -777,6 +828,8 @@
  * The mission is done: run objective finalizers, pay out, notify, clean up.
  */
 /datum/mission/proc/finish_mission(atom/reward_anchor)
+	if(QDELETED(src) || failed || completed)
+		return
 	completed = TRUE
 	active = FALSE
 
@@ -956,13 +1009,12 @@
 		. += mission_rewards
 
 /**
- * Human-readable summary of the item rewards, e.g. "a standard missile, 2×
- * light warhead and an ablative vest". Returns "goods" when nothing is set.
+ * Human-readable item summary, empty when the settlement is currency only.
  */
 /datum/mission/proc/get_reward_summary()
 	var/list/types = get_reward_types()
 	if(!length(types))
-		return "goods"
+		return ""
 	// Collapse duplicates into counts so a bundle reads "2× light missile"
 	var/list/counts = list()
 	for(var/reward_type in types)
@@ -978,13 +1030,16 @@
 
 /**
  * The whole of what an outpost contract pays, goods and scrip together, e.g.
- * "a laser gun and 2× stimpack + 2 trade vouchers". Board contracts never pay
- * credits, so the item bundle plus any voucher top-up is the entire settlement.
+ * "a laser gun and 2× stimpack + 2 trade vouchers + 50 cr".
  */
 /datum/mission/proc/get_contract_pay_summary()
-	var/list/parts = list(get_reward_summary())
+	var/list/parts = list()
+	if(length(get_reward_types()))
+		parts += get_reward_summary()
 	if(voucher_count > 0)
 		parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+	if(value > 0)
+		parts += "[value] cr"
 	return parts.Join(" + ")
 
 /**
@@ -1026,6 +1081,10 @@
 	if(voucher_count > 0 && reward_turf)
 		new /obj/item/stack/trade_voucher(reward_turf, voucher_count)
 		flash_reward_anchor(reward_anchor)
+
+	if(completed && !failed && guarded_prize_family && !guarded_prize_rolled)
+		guarded_prize_rolled = TRUE
+		guarded_prize = servant.award_guarded_prize(guarded_prize_family, quote_zone, reward_anchor, type)
 
 /**
  * Turn-in visual: pads get their teleport effect, other anchors stay quiet

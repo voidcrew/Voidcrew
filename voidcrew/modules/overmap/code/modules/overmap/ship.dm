@@ -209,9 +209,14 @@
 	var/list/datum/mission/active_missions = list()
 	/// Maximum number of active missions (captain can adjust)
 	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
-	/// World time of the last manual mission refresh (rate-limited). Starts a whole cooldown back, so a
-	/// ship that never refreshed can, rather than waiting out the first minutes after the server boots.
+	/// Last scheduled refresh, retained for callers of the original board API.
 	var/last_mission_refresh = -MISSION_REFRESH_COOLDOWN
+	/// Fixed offer-set schedule, shared by every console on this hull.
+	var/next_mission_refresh = 0
+	/// Guarded prizes are round-local entitlements of the hull, including after transfer.
+	var/mission_suit_paid = FALSE
+	var/mission_gadget_paid = FALSE
+	var/mission_first_suit_seconds
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
@@ -4645,6 +4650,69 @@
 	return istype(port) ? port.current_ship : null
 
 // ===== MISSION PROCS =====
+
+/// Disjoint ranges on a single roll, in tenths of a percent.
+/proc/mission_prize_outcome(zone, roll)
+	var/suit_chance = zone == ZONE_RED ? 200 : (zone == ZONE_YELLOW ? 40 : 30)
+	var/gadget_chance = zone == ZONE_RED ? 100 : (zone == ZONE_YELLOW ? 20 : 15)
+	if(roll <= suit_chance)
+		return "suit"
+	if(roll <= suit_chance + gadget_chance)
+		return "gadget"
+	return null
+
+/// Every eligible family uses the same caps, regardless of its completion surface.
+/proc/mission_prize_pool(family, category)
+	var/static/list/suits = list(
+		"kill" = list(/obj/item/mod/control/pre_equipped/traitor_elite),
+		"hunt" = list(/obj/item/mod/control/pre_equipped/safeguard),
+		"poacher" = list(/obj/item/mod/control/pre_equipped/empty/ninja),
+		"capture" = list(/obj/item/mod/control/pre_equipped/empty/ninja),
+		"waves" = list(/obj/item/mod/control/pre_equipped/magnate, /obj/item/mod/control/pre_equipped/safeguard),
+		"stake" = list(/obj/item/mod/control/pre_equipped/safeguard),
+		"lair" = list(/obj/item/mod/control/pre_equipped/traitor_elite, /obj/item/mod/control/pre_equipped/safeguard),
+	)
+	var/static/list/gadgets = list(
+		"kill" = list(/obj/item/gun/energy/laser/captain),
+		"hunt" = list(/obj/item/organ/cyberimp/cyberware/piledriver),
+		"poacher" = list(/obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"capture" = list(/obj/item/gun/energy/laser/captain),
+		"waves" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"stake" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"lair" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+	)
+	return category == "suit" ? suits[family] : (category == "gadget" ? gadgets[family] : null)
+
+/obj/structure/overmap/ship/proc/roll_mission_prize(zone)
+	return mission_prize_outcome(zone, rand(1, 1000))
+
+/// A capped result is spent without rerolling; claim before the constructor can yield.
+/obj/structure/overmap/ship/proc/award_guarded_prize(family, zone, atom/reward_anchor, source_type)
+	if(QDELETED(src) || !(zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return null
+	if(zone == ZONE_GREEN && (family == "stake" || family == "lair"))
+		return null
+	var/turf/spot = get_turf(reward_anchor)
+	if(!spot || !length(mission_prize_pool(family, "suit")))
+		return null
+	var/category = roll_mission_prize(zone)
+	var/list/pool = mission_prize_pool(family, category)
+	if(!length(pool))
+		return null
+	if(category == "suit")
+		if(mission_suit_paid)
+			return null
+		mission_suit_paid = TRUE
+		mission_first_suit_seconds = metric_round_seconds()
+	else
+		if(mission_gadget_paid)
+			return null
+		mission_gadget_paid = TRUE
+	var/prize_type = pick(pool)
+	new prize_type(spot)
+	record_guarded_prize(src, family, category, zone, prize_type, source_type)
+	ship_notify("Requisition cleared.", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	return prize_type
 
 /**
  * Accepts a mission, moving it from available to active.

@@ -170,6 +170,9 @@
 	for(var/core_type in core_types)
 		var/datum/mission/mission = allocate(/datum/mission)
 		mission.value = 0
+		mission.servant = allocate(/obj/structure/overmap/ship)
+		mission.servant.ship_account = allocate(/datum/bank_account)
+		mission.active = TRUE
 		mission.requires_item = TRUE
 		var/datum/mission_objective/deliver/delivery = new
 		delivery.required_type = core_type
@@ -188,6 +191,9 @@
 /datum/unit_test/voidcrew_mission_pad_requirements/Run()
 	var/datum/mission/mission = allocate(/datum/mission)
 	mission.value = 0
+	mission.servant = allocate(/obj/structure/overmap/ship)
+	mission.servant.ship_account = allocate(/datum/bank_account)
+	mission.active = TRUE
 	mission.requires_item = TRUE
 	var/datum/mission_objective/deliver/delivery = new
 	delivery.required_type = /obj/item/stack/ore/iron
@@ -338,6 +344,7 @@
 		mission.value = 1000
 		mission.voucher_count = initial(rescue_type.voucher_count)
 		mission.servant = ship
+		mission.active = TRUE
 		var/datum/mission_objective/field/escort/escort = new
 		mission.add_objective(escort)
 		escort.spawn_field_objects(pad_turf)
@@ -506,6 +513,8 @@
 
 /datum/unit_test/voidcrew_mission_kill_rewind/proc/make_hunt(big_game = FALSE)
 	var/datum/mission/kill_rewind_test/mission = allocate(__IMPLIED_TYPE__)
+	mission.servant = allocate(/obj/structure/overmap/ship)
+	mission.servant.ship_account = allocate(/datum/bank_account)
 	mission.active = TRUE
 	mission.requires_item = TRUE
 	mission.objective_name = "Old Testbeard"

@@ -13,15 +13,15 @@
 	name = "Rescue Contract"
 	weight = 8
 	mission_limit = 2
-	voucher_count = 1
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "RESQ"
 	// The survivor cannot defend themselves, so this contract does not share a
 	// wreck with a bounty's entourage or anybody else's spawns
 	exclusive_site = TRUE
 	// Green-band base pay
-	value_min = 800
-	value_max = 1100
+	value_min = 650
+	value_max = 850
 
 /datum/mission/rescue/setup_target()
 	var/datum/mission_target/space_ruin/ruin_target = new(src)
@@ -46,7 +46,7 @@
 
 /datum/mission/rescue/update_text()
 	name = "Rescue Contract: [objective_name]"
-	desc = "A [objective_name]'s survival beacon is still pinging at ([target.target_x], [target.target_y]) in the [target_zone_name]. Bring them home alive."
+	desc = "Bring [objective_name] home. Last signal at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/rescue/waypoint_label()
 	return "Rescue: [objective_name]"
@@ -97,9 +97,9 @@
 	. = ..()
 	var/mob/following = following_ref?.resolve()
 	if(following)
-		. += span_notice("They're sticking close to [following]. An empty hand tells them to stay put.")
+		. += span_notice("They're sticking close to [following].")
 	else
-		. += span_notice("Offer them an empty hand and they'll follow you.")
+		. += span_notice("They look lost.")
 
 /mob/living/basic/mission_survivor/attack_hand(mob/living/user, list/modifiers)
 	. = ..()

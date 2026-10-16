@@ -96,6 +96,7 @@
 #include "voidcrew_mining_input.dm"
 #include "voidcrew_mining_qol.dm"
 #include "voidcrew_mission_board_rewards.dm"
+#include "voidcrew_mission_console_rewards.dm"
 #include "voidcrew_mission_gps.dm"
 #include "voidcrew_mission_metrics.dm"
 #include "voidcrew_missions.dm"
