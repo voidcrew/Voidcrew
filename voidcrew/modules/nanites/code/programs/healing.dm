@@ -209,37 +209,74 @@
 
 /datum/nanite_program/defib
 	name = "Defibrillation"
-	desc = "The nanites shock the host's heart when triggered, bringing them back to life if the body can sustain it."
+	desc = "The nanites deliver a pulse to the host's heart."
 	can_trigger = TRUE
 	trigger_cost = 25
 	trigger_cooldown = 120
 	rogue_types = list(/datum/nanite_program/shocking)
 
 /datum/nanite_program/defib/on_trigger(comm_message)
-	host_mob.notify_revival("Your heart is being defibrillated by nanites. Re-enter your corpse if you want to be revived!")
-	host_mob.grab_ghost()
-	addtimer(CALLBACK(src, PROC_REF(zap)), 50)
+	if(!check_revivable())
+		return
+	var/mob/living/carbon/patient = host_mob
+	patient.notify_revival("Your heart is being defibrillated by nanites.")
+	if(patient.can_defib() == DEFIB_POSSIBLE)
+		patient.grab_ghost()
+	addtimer(CALLBACK(src, PROC_REF(zap), WEAKREF(patient)), 5 SECONDS)
 
 /datum/nanite_program/defib/proc/check_revivable()
-	if(!iscarbon(host_mob)) //nonstandard biology
+	if(QDELETED(src) || QDELETED(host_mob) || !iscarbon(host_mob) || host_mob.stat != DEAD)
 		return FALSE
 	var/mob/living/carbon/C = host_mob
-	if(C.get_ghost())
-		return FALSE
-	return C.can_defib()
+	var/defib_result = C.can_defib()
+	return defib_result == DEFIB_POSSIBLE || defib_result == DEFIB_NOGRAB_AGHOST
 
-/datum/nanite_program/defib/proc/zap()
+/datum/nanite_program/defib/proc/zap(datum/weakref/intended_host)
+	var/mob/living/carbon/patient = intended_host?.resolve()
+	if(QDELETED(patient) || host_mob != patient || !check_revivable())
+		return
+	playsound(patient, 'sound/machines/defib/defib_charge.ogg', 50, FALSE)
+	sleep(3 SECONDS)
+	if(QDELETED(src) || QDELETED(patient) || host_mob != patient)
+		return
+	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 50, FALSE)
+	if(!defibrillate())
+		playsound(patient, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
+
+/// Rechecked after the windup, immediately before healing and revival.
+/datum/nanite_program/defib/proc/defibrillate()
+	if(!check_revivable())
+		return FALSE
 	var/mob/living/carbon/C = host_mob
-	playsound(C, 'sound/machines/defib/defib_charge.ogg', 50, FALSE)
-	sleep(30)
-	playsound(C, 'sound/machines/defib/defib_zap.ogg', 50, FALSE)
-	if(check_revivable())
-		playsound(C, 'sound/machines/defib/defib_success.ogg', 50, FALSE)
-		C.set_heartattack(FALSE)
-		C.revive(full_heal_flags = HEAL_ADMIN)
-		C.emote("gasp")
-		C.set_timed_status_effect(10 SECONDS, /datum/status_effect/jitter, only_if_higher = TRUE)
-		SEND_SIGNAL(C, COMSIG_LIVING_MINOR_SHOCK)
-		log_game("[C] has been successfully defibrillated by nanites.")
+	C.heal_for_defib()
+	C.set_heartattack(FALSE)
+	if(!C.revive_from("nanites"))
+		return FALSE
+	playsound(C, 'sound/machines/defib/defib_success.ogg', 50, FALSE)
+	C.emote("gasp")
+	C.set_timed_status_effect(10 SECONDS, /datum/status_effect/jitter, only_if_higher = TRUE)
+	SEND_SIGNAL(C, COMSIG_LIVING_MINOR_SHOCK)
+	log_game("[C] has been successfully defibrillated by nanites.")
+	return TRUE
+
+/// The paddles' damage redistribution, shared with nanites. Leaves unrelated injuries alone.
+/mob/living/carbon/proc/heal_for_defib()
+	var/target_health = -50
+	var/need_mob_update = FALSE
+	if(health > target_health)
+		need_mob_update += adjustOxyLoss(health - target_health, updating_health = FALSE)
 	else
-		playsound(C, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
+		var/total_brute = getBruteLoss()
+		var/total_burn = getFireLoss()
+		var/total_oxy = getOxyLoss()
+		var/total_tox = getToxLoss()
+		var/overall_damage = total_brute + total_burn + total_oxy + total_tox
+		if(overall_damage <= 0)
+			return
+		var/damage_change = health - target_health
+		need_mob_update += adjustOxyLoss(damage_change * (total_oxy / overall_damage), updating_health = FALSE)
+		need_mob_update += adjustToxLoss(damage_change * (total_tox / overall_damage), updating_health = FALSE, forced = TRUE)
+		need_mob_update += adjustFireLoss(damage_change * (total_burn / overall_damage), updating_health = FALSE)
+		need_mob_update += adjustBruteLoss(damage_change * (total_brute / overall_damage), updating_health = FALSE)
+	if(need_mob_update)
+		updatehealth()

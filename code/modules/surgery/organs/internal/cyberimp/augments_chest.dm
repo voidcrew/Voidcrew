@@ -42,15 +42,24 @@
 	hunger_threshold = NUTRITION_LEVEL_HUNGRY
 	poison_amount = 10
 
+// VOIDCREW EDIT ADDITION START: scoped reviver activation and cooldown (combat metrics).
 /obj/item/organ/cyberimp/chest/reviver
 	name = "reviver implant"
-	desc = "This implant will attempt to revive and heal you if you lose consciousness. For the faint of heart!"
+	desc = "A small implant with a faint, steady buzz."
 	icon_state = "reviver_implant"
 	aug_overlay = "reviver"
 	emissive_overlay = TRUE
 	slot = ORGAN_SLOT_HEART_AID
 	var/revive_cost = 0
+	/// Removing an active implant must not erase healing it has already paid for.
+	var/resume_healing_cost = FALSE
 	var/reviving = FALSE
+	/// Invalidates callbacks when an activation ends, including removal and reinsertion.
+	var/activation_generation = 0
+	var/implantation_generation = 0
+	var/heal_generation = 0
+	var/heal_timer
+	var/heal_due = 0
 	COOLDOWN_DECLARE(reviver_cooldown)
 	COOLDOWN_DECLARE(defib_cooldown)
 
@@ -63,71 +72,131 @@
 	try_heal()
 
 /obj/item/organ/cyberimp/chest/reviver/proc/try_heal()
+	if(QDELETED(src) || QDELETED(owner))
+		return
 	if(reviving)
 		if(owner.stat == CONSCIOUS)
-			COOLDOWN_START(src, reviver_cooldown, revive_cost)
-			reviving = FALSE
-			to_chat(owner, span_notice("Your reviver implant shuts down and starts recharging. It will be ready again in [DisplayTimeText(revive_cost)]."))
-		else
-			addtimer(CALLBACK(src, PROC_REF(heal)), 3 SECONDS)
+			reviver_cooldown = reviver_time() + revive_cost
+			cancel_activation()
+			to_chat(owner, span_notice("Your reviver implant falls silent."))
+		else if(!heal_timer)
+			queue_heal(3 SECONDS)
 		return
 
-	if(!COOLDOWN_FINISHED(src, reviver_cooldown) || HAS_TRAIT(owner, TRAIT_SUICIDED))
+	if(reviver_time() < reviver_cooldown || HAS_TRAIT(owner, TRAIT_SUICIDED))
 		return
 
 	if(owner.stat != CONSCIOUS)
-		revive_cost = 0
+		if(!resume_healing_cost)
+			revive_cost = 0
+		resume_healing_cost = FALSE
 		reviving = TRUE
+		activation_generation++
 		to_chat(owner, span_notice("You feel a faint buzzing as your reviver implant starts patching your wounds..."))
-		COOLDOWN_START(src, defib_cooldown, 8 SECONDS) // 5 seconds after heal proc delay
+		defib_cooldown = reviver_time() + 8 SECONDS // 5 seconds after heal proc delay
 
+/// Overridden by the clock-controlled regression scenario.
+/obj/item/organ/cyberimp/chest/reviver/proc/reviver_time()
+	return world.time
 
-/obj/item/organ/cyberimp/chest/reviver/proc/heal()
-	if(COOLDOWN_FINISHED(src, defib_cooldown))
-		revive_dead()
+/obj/item/organ/cyberimp/chest/reviver/proc/queue_heal(delay)
+	if(heal_timer || !reviving || QDELETED(src) || QDELETED(owner))
+		return
+	heal_generation++
+	heal_due = reviver_time() + delay
+	heal_timer = addtimer(CALLBACK(src, PROC_REF(heal), WEAKREF(owner), activation_generation, heal_generation), delay, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/obj/item/organ/cyberimp/chest/reviver/proc/cancel_activation()
+	activation_generation++
+	reviving = FALSE
+	heal_due = 0
+	if(heal_timer)
+		deltimer(heal_timer)
+		heal_timer = null
+
+/obj/item/organ/cyberimp/chest/reviver/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	implantation_generation++
+	if(reviving)
+		resume_healing_cost = TRUE
+	cancel_activation()
+	return ..()
+
+/obj/item/organ/cyberimp/chest/reviver/Destroy()
+	cancel_activation()
+	return ..()
+
+/obj/item/organ/cyberimp/chest/reviver/proc/heal(datum/weakref/intended_owner, generation, callback_generation)
+	if(QDELETED(src) || QDELETED(owner) || !reviving || generation != activation_generation || callback_generation != heal_generation || intended_owner?.resolve() != owner || !heal_timer)
+		return
+	var/mob/living/carbon/patient = owner
+	deltimer(heal_timer)
+	heal_timer = null
+	heal_due = 0
+	if(owner.stat == CONSCIOUS)
+		try_heal()
+		return
 
 	/// boolean that stands for if PHYSICAL damage being patched
 	var/body_damage_patched = FALSE
 	var/need_mob_update = FALSE
-	if(owner.getOxyLoss())
-		need_mob_update += owner.adjustOxyLoss(-5, updating_health = FALSE)
+	if(patient.getOxyLoss())
+		need_mob_update += patient.adjustOxyLoss(-5, updating_health = FALSE)
 		revive_cost += 5
-	if(owner.getBruteLoss())
-		need_mob_update += owner.adjustBruteLoss(-2, updating_health = FALSE)
+	if(patient.getBruteLoss())
+		need_mob_update += patient.adjustBruteLoss(-2, updating_health = FALSE)
 		revive_cost += 40
 		body_damage_patched = TRUE
-	if(owner.getFireLoss())
-		need_mob_update += owner.adjustFireLoss(-2, updating_health = FALSE)
+	if(patient.getFireLoss())
+		need_mob_update += patient.adjustFireLoss(-2, updating_health = FALSE)
 		revive_cost += 40
 		body_damage_patched = TRUE
-	if(owner.getToxLoss())
-		need_mob_update += owner.adjustToxLoss(-1, updating_health = FALSE)
+	if(patient.getToxLoss())
+		need_mob_update += patient.adjustToxLoss(-1, updating_health = FALSE)
 		revive_cost += 40
 	if(need_mob_update)
-		owner.updatehealth()
+		patient.updatehealth()
+	if(QDELETED(src) || QDELETED(patient) || owner != patient || generation != activation_generation || !reviving)
+		return
 
 	if(body_damage_patched && prob(35)) // healing is called every few seconds, not every tick
-		owner.visible_message(span_warning("[owner]'s body twitches a bit."), span_notice("You feel like something is patching your injured body."))
+		patient.visible_message(span_warning("[patient]'s body twitches a bit."), span_notice("You feel like something is patching your injured body."))
 
+	revive_dead()
+	// Previously each mob tick queued a delayed heal. Preserve that cadence without overlap.
+	if(!QDELETED(src) && !QDELETED(patient) && owner == patient && generation == activation_generation && reviving)
+		queue_heal(SSmobs.wait)
 
 /obj/item/organ/cyberimp/chest/reviver/proc/revive_dead()
-	if(!COOLDOWN_FINISHED(src, defib_cooldown) || owner.stat != DEAD || owner.can_defib() != DEFIB_POSSIBLE)
-		return
-	owner.notify_revival("You are being revived by [src]!")
-	revive_cost += 10 MINUTES // Additional 10 minutes cooldown after revival.
-	owner.grab_ghost()
+	if(QDELETED(src) || QDELETED(owner) || !reviving || reviver_time() < defib_cooldown || owner.stat != DEAD || owner.health <= owner.hardcrit_threshold || owner.can_defib() != DEFIB_POSSIBLE)
+		return FALSE
+	var/mob/living/carbon/patient = owner
+	var/healing_cost = revive_cost
+	var/generation = activation_generation
+	patient.notify_revival("You are being revived by [src]!")
+	patient.grab_ghost()
+	if(QDELETED(src) || QDELETED(patient) || owner != patient || generation != activation_generation || !reviving)
+		return FALSE
 
 	defib_cooldown += 16 SECONDS // delay so it doesn't spam
 
-	owner.visible_message(span_warning("[owner]'s body convulses a bit."))
-	playsound(owner, SFX_BODYFALL, 50, TRUE)
-	playsound(owner, 'sound/machines/defib/defib_zap.ogg', 75, TRUE, -1)
-	owner.set_heartattack(FALSE)
-	owner.revive()
-	owner.emote("gasp")
-	owner.set_jitter_if_lower(200 SECONDS)
-	SEND_SIGNAL(owner, COMSIG_LIVING_MINOR_SHOCK)
-	log_game("[owner] been revived by [src]")
+	patient.set_heartattack(FALSE)
+	if(!patient.revive_from("reviver_implant"))
+		return FALSE
+	if(QDELETED(src))
+		return TRUE
+	revive_cost = healing_cost + 10 MINUTES
+	reviver_cooldown = reviver_time() + revive_cost
+	cancel_activation()
+	if(!QDELETED(patient))
+		patient.visible_message(span_warning("[patient]'s body convulses a bit."))
+		playsound(patient, SFX_BODYFALL, 50, TRUE)
+		playsound(patient, 'sound/machines/defib/defib_zap.ogg', 75, TRUE, -1)
+		patient.emote("gasp")
+		patient.set_jitter_if_lower(200 SECONDS)
+		SEND_SIGNAL(patient, COMSIG_LIVING_MINOR_SHOCK)
+		log_game("[patient] been revived by [src]")
+	return TRUE
+// VOIDCREW EDIT ADDITION END
 
 
 /obj/item/organ/cyberimp/chest/reviver/emp_act(severity)
@@ -145,12 +214,14 @@
 		if(human_owner.stat != DEAD && prob(50 / severity) && human_owner.can_heartattack())
 			human_owner.set_heartattack(TRUE)
 			to_chat(human_owner, span_userdanger("You feel a horrible agony in your chest!"))
-			addtimer(CALLBACK(src, PROC_REF(undo_heart_attack)), 600 / severity)
+			addtimer(CALLBACK(src, PROC_REF(undo_heart_attack), WEAKREF(human_owner), implantation_generation), 600 / severity) // VOIDCREW EDIT: keep the EMP callback on its intended body.
 
-/obj/item/organ/cyberimp/chest/reviver/proc/undo_heart_attack()
-	var/mob/living/carbon/human/human_owner = owner
-	if(!istype(human_owner))
+// VOIDCREW EDIT ADDITION START: do not apply a delayed EMP recovery to a different owner.
+/obj/item/organ/cyberimp/chest/reviver/proc/undo_heart_attack(datum/weakref/intended_owner, generation)
+	var/mob/living/carbon/human/human_owner = intended_owner?.resolve()
+	if(QDELETED(src) || QDELETED(human_owner) || owner != human_owner || generation != implantation_generation)
 		return
+// VOIDCREW EDIT ADDITION END
 	human_owner.set_heartattack(FALSE)
 	if(human_owner.stat == CONSCIOUS)
 		to_chat(human_owner, span_notice("You feel your heart beating again!"))
