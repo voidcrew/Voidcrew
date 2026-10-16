@@ -118,7 +118,6 @@
 			"Bring me anomaly cores. Intact, please. INTACT. We've had incidents.",
 			"The imprinter is perfectly safe. The screaming is a licensing formality.",
 			"Slime extracts, glands, crystals: if a planet made it and it shouldn't exist, I'm buying.",
-			"A better servo saves material and print time. Check which part your machine actually needs.",
 			"The convoy escort calls this annex 'the spooky room'. The convoy escort is correct.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -158,7 +157,7 @@
 /datum/shop_sku/skunk/alien_sample
 	category = "Gadgetry"
 	name = "alien crowbar sample"
-	desc = "An alien tool for destructive research. Each sample is consumed to reveal one alien research field. Bring three to investigate all three fields."
+	desc = "An alien crowbar with an unfamiliar metal finish."
 	item_path = /obj/item/crowbar/abductor
 	price_credits = 1500
 	stock_min = 3
@@ -194,7 +193,7 @@
 /datum/shop_sku/skunk/rped
 	category = "Ship Retrofit"
 	name = "rapid part exchange device"
-	desc = "Point at machine, click, parts swap themselves. Sold empty; the parts are the shelf above."
+	desc = "An empty rapid part exchange device."
 	item_path = /obj/item/storage/part_replacer
 	price_credits = 300
 	stock_min = 1
@@ -245,11 +244,12 @@
 /datum/shop_sku/skunk/rotating/foam_grenade
 	category = "Gadgetry"
 	name = "smart metal foam grenade"
-	desc = "A hull-patch grenade. Set it off near a breach and the foam finds the hole on its own."
+	desc = "A canister of expanding hull-patch foam."
 	item_path = /obj/item/grenade/chem_grenade/smart_metal_foam
 	price_credits = 500
 
 /datum/shop_sku/skunk/rotating/thermal_glasses
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/thermal
 	price_vouchers = 2
