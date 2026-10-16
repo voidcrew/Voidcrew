@@ -96,6 +96,15 @@
 	},
 /turf/open/floor/pod/light,
 /area/ruin/space/has_grav/crashedship/aft)
+"et" = (
+/obj/effect/turf_decal/siding/thinplating_new/light{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/crashedship/midship)
 "eC" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -837,13 +846,6 @@
 /obj/structure/door_assembly/door_assembly_mhatch,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/crashedship/aft)
-"EO" = (
-/obj/effect/turf_decal/siding/thinplating_new/light{
-	dir = 8
-	},
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/engine,
-/area/ruin/space/has_grav/crashedship/midship)
 "EW" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible/layer2,
@@ -2205,7 +2207,7 @@ Jv
 gH
 fp
 uf
-EO
+et
 fp
 xa
 uz

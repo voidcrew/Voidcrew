@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aGd" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/sechailer;
+	storage_type = /obj/item/tank/internals/oxygen
+	},
+/turf/template_noop,
+/area/template_noop)
 "aRZ" = (
 /obj/effect/turf_decal/siding/wood,
 /obj/effect/turf_decal/siding/wood{
@@ -15,17 +29,6 @@
 /obj/structure/displaycase/noalert{
 	start_showpiece_type = /obj/item/gun/energy/e_gun/hos
 	},
-/turf/template_noop,
-/area/template_noop)
-"mdF" = (
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4;
-	layer = 2.5
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 8
-	},
-/obj/machinery/suit_storage_unit/hos,
 /turf/template_noop,
 /area/template_noop)
 "ods" = (
@@ -80,7 +83,7 @@
 /area/template_noop)
 
 (1,1,1) = {"
-mdF
+aGd
 tJR
 "}
 (2,1,1) = {"

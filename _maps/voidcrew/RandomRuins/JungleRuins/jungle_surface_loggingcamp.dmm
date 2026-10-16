@@ -78,20 +78,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"iS" = (
-/obj/machinery/light/dim,
-/obj/item/chainsaw/doomslayer{
-	force_on = 35;
-	name = "THE GREAT TREEFELLER"
-	},
-/obj/item/clothing/suit/space/syndicate/black{
-	name = "Lumberjack Powersuit"
-	},
-/obj/structure/safe/floor,
-/obj/item/grenade/frag,
-/obj/item/grenade/frag,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "jz" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/grass/jungle,
@@ -261,6 +247,16 @@
 /area/ruin/powered)
 "yY" = (
 /obj/structure/mecha_wreckage/ripley,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"zq" = (
+/obj/machinery/light/dim,
+/obj/item/clothing/suit/space/syndicate/black{
+	name = "Lumberjack Powersuit"
+	},
+/obj/structure/safe/floor,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "zu" = (
@@ -1077,7 +1073,7 @@ Yo
 AR
 wP
 Nr
-iS
+zq
 wP
 Ds
 Ta

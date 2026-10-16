@@ -883,15 +883,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/derelictoutpost/cargobay)
-"dT" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/derelictoutpost/cargostorage)
-"dU" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/obj/machinery/light/directional/north,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/derelictoutpost/cargostorage)
 "dV" = (
 /obj/structure/closet/crate,
 /obj/item/stack/sheet/glass/fifty,
@@ -1285,11 +1276,24 @@
 /obj/structure/alien/weeds/creature,
 /turf/closed/wall/mineral/iron,
 /area/ruin/space/has_grav/derelictoutpost/dockedship)
+"BB" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/derelictoutpost/cargostorage)
 "BI" = (
 /obj/structure/closet/crate/medical,
 /obj/item/storage/medkit/brute,
 /obj/item/storage/medkit/fire,
 /obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/derelictoutpost/cargostorage)
+"BZ" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/machinery/light/directional/north,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/derelictoutpost/cargostorage)
 "Cr" = (
@@ -1787,7 +1791,7 @@ ab
 ZN
 dm
 dL
-dT
+BB
 dW
 dW
 ex
@@ -1823,7 +1827,7 @@ ab
 Hc
 Cr
 dL
-dU
+BZ
 dW
 dW
 ex

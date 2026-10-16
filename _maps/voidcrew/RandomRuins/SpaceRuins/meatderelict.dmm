@@ -356,6 +356,14 @@
 /obj/structure/sign/warning,
 /turf/closed/indestructible/reinforced,
 /area/ruin/space/has_grav/powered/biooutpost/vault)
+"hS" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath;
+	storage_type = /obj/item/tank/internals/oxygen
+	},
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/biooutpost)
 "hW" = (
 /obj/effect/turf_decal/siding/purple,
 /obj/effect/decal/cleanable/blood/splatter,
@@ -1081,11 +1089,6 @@
 "uq" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/decal/cleanable/blood/tracks,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered/biooutpost)
-"us" = (
-/obj/machinery/suit_storage_unit/spaceruin,
-/obj/machinery/light/small/dim/directional/south,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/biooutpost)
 "uC" = (
@@ -3550,7 +3553,7 @@ YD
 lm
 mU
 Jh
-us
+hS
 ij
 cQ
 tS

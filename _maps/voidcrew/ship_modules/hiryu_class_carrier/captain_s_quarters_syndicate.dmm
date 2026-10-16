@@ -5,9 +5,9 @@
 /obj/item/folder/syndicate/red,
 /turf/open/floor/wood/ebony,
 /area/template_noop)
-"hOd" = (
+"hVg" = (
 /obj/structure/displaycase/captain{
-	start_showpiece_type = /obj/item/katana
+	start_showpiece_type = null
 	},
 /obj/structure/plaque/static_plaque/golden/captain{
 	pixel_y = 29
@@ -129,7 +129,7 @@ nTz
 "}
 (4,1,1) = {"
 oFg
-hOd
+hVg
 xNq
 vEi
 pFb
