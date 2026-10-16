@@ -36,6 +36,8 @@
 	var/announce_cloud_takeover = FALSE
 	///All nanite programs in the user
 	var/list/datum/nanite_program/programs = list()
+	/// Suppress intermediate checks and brownouts while committing an already checked complete set.
+	var/programming_transaction = FALSE
 	///How many programs this user can have at once
 	var/max_programs = NANITE_PROGRAM_LIMIT
 
@@ -137,6 +139,7 @@
 /datum/component/nanites/Destroy()
 	STOP_PROCESSING(SSnanites, src)
 	QDEL_LIST(programs)
+	cyberware_reevaluate_brownout(host_mob)
 	if(host_mob)
 		set_nanite_bar(TRUE)
 		host_mob.hud_set_nanite_indicator()
@@ -151,6 +154,7 @@
 		adjust_nanites(null, amount) //just add to the nanite volume
 
 /datum/component/nanites/process()
+	capacity_changed()
 	if(!HAS_TRAIT(host_mob, TRAIT_STASIS))
 		adjust_nanites(null, regen_rate)
 		for(var/datum/nanite_program/NP as anything in programs)
@@ -186,11 +190,24 @@
 	. = NONE
 	var/list/programs_to_remove = programs.Copy()
 	var/list/programs_to_add = source.programs.Copy()
+	// Build the complete result before copying settings or deleting incumbents.
 	for(var/datum/nanite_program/NP as anything in programs)
 		for(var/datum/nanite_program/SNP as anything in programs_to_add)
 			if(NP.type == SNP.type)
 				programs_to_remove -= NP
 				programs_to_add -= SNP
+				break
+	var/list/result = programs.Copy()
+	if(full_overwrite)
+		result -= programs_to_remove
+	result += programs_to_add
+	if(length(result) > max_programs || !programs_fit_capacity(result))
+		capacity_changed()
+		return NONE
+	programming_transaction = TRUE
+	for(var/datum/nanite_program/NP as anything in programs)
+		for(var/datum/nanite_program/SNP as anything in source.programs)
+			if(NP.type == SNP.type)
 				if(SNP.programming_differs(NP, copy_activation))
 					. |= NANITE_SYNC_REPLACED
 				SNP.copy_programming(NP, copy_activation)
@@ -202,6 +219,31 @@
 	for(var/datum/nanite_program/SNP as anything in programs_to_add)
 		. |= NANITE_SYNC_ADDED
 		add_program(null, SNP.copy())
+	programming_transaction = FALSE
+	capacity_changed()
+
+/// Cloud backups have no body. Only a hosted complete result has a capacity ceiling.
+/datum/component/nanites/proc/programs_fit_capacity(list/result)
+	if(!iscarbon(host_mob))
+		return TRUE
+	var/load = get_chrome_load(host_mob)
+	for(var/datum/nanite_program/program in programs)
+		load -= program.capacity_cost()
+	for(var/datum/nanite_program/program in result)
+		load += program.capacity_cost()
+	return load <= get_chrome_capacity(host_mob)
+
+/datum/component/nanites/proc/capacity_changed()
+	if(!programming_transaction)
+		cyberware_reevaluate_brownout(host_mob)
+
+/// Only withdraw effects here; resuming uses normal processing and its fuel/condition checks.
+/datum/component/nanites/proc/settle_capacity(over)
+	if(programming_transaction)
+		return
+	for(var/datum/nanite_program/program in programs)
+		if(over && program.capacity_beneficial() && program.passive_enabled)
+			program.disable_passive_effect()
 
 /**
  * Tells the host one line about what their nanites are doing. Dropped entirely when there is no
@@ -246,16 +288,29 @@
 /datum/component/nanites/proc/add_program(datum/source, datum/nanite_program/new_program, datum/nanite_program/source_program)
 	SIGNAL_HANDLER
 
-	for(var/X in programs)
-		var/datum/nanite_program/NP = X
+	if(new_program in programs)
+		capacity_changed()
+		return COMPONENT_PROGRAM_INSTALLED
+	var/list/replaced = list()
+	for(var/datum/nanite_program/NP in programs)
 		if(NP.unique && NP.type == new_program.type)
-			qdel(NP)
-	if(programs.len >= max_programs)
+			replaced += NP
+	var/list/result = programs - replaced
+	result += new_program
+	if(length(result) > max_programs)
 		return COMPONENT_PROGRAM_NOT_INSTALLED
+	if(!programming_transaction && !installed_capacity_check(host_mob, list(new_program), replaced, silent = TRUE))
+		return COMPONENT_PROGRAM_NOT_INSTALLED
+	var/was_transaction = programming_transaction
+	programming_transaction = TRUE
+	for(var/datum/nanite_program/NP in replaced)
+		qdel(NP)
 	if(source_program)
 		source_program.copy_programming(new_program)
 	programs += new_program
 	new_program.on_add(src)
+	programming_transaction = was_transaction
+	capacity_changed()
 	return COMPONENT_PROGRAM_INSTALLED
 
 /datum/component/nanites/proc/consume_nanites(amount, force = FALSE)

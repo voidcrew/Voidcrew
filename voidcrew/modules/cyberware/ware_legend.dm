@@ -576,10 +576,10 @@
 // =========================================================================
 
 /**
- * # Governor Delete (T4, head, governor slot, load 0, +6 capacity)
+ * # Governor Delete (T4, chest OS, load 0, +15 capacity)
  *
  * The enabler: a neural governor with its limiter firmware deleted, worth
- * six points of chrome capacity and nothing else. Deliberately built on the
+ * fifteen points of capacity and nothing else. Deliberately built on the
  * generic chrome base rather than tg's brain-implant subtype, the brain
  * base answers EMP with a 200/severity stun, which on a PvP server would
  * turn a one-voucher grenade into an execution button. Here it browns out
@@ -587,13 +587,13 @@
  */
 /obj/item/organ/cyberimp/cyberware/governor_delete
 	name = "\improper Governor Delete"
-	desc = "A factory neural governor with the governing part surgically removed. It tells your nervous system it has six more points of headroom than it really does, and your nervous system believes it."
+	desc = "A factory neural governor with its limiter firmware stripped out."
 	icon_state = "governor_delete"
-	zone = BODY_ZONE_HEAD
-	slot = ORGAN_SLOT_CYBERWARE_GOVERNOR
+	zone = BODY_ZONE_CHEST
+	slot = ORGAN_SLOT_CYBERWARE_OS
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 0
-	chrome_capacity_bonus = 6
+	chrome_capacity_bonus = 15
 	tier = CYBERWARE_TIER_4
 
 // =========================================================================

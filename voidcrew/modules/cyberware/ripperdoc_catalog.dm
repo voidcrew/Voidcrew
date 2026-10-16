@@ -389,7 +389,7 @@
 
 /datum/shop_sku/ripperdoc/governor_delete
 	category = "Legend Chrome"
-	desc = "Firmware surgery. Your capacity governor goes back in believing your spine can carry six more points of load, and it holds. Everything else on this shelf needs it."
+	desc = "A factory neural governor with its limiter firmware stripped out."
 	item_path = /obj/item/organ/cyberimp/cyberware/governor_delete
 	price_vouchers = 5
 	stock_min = 1
