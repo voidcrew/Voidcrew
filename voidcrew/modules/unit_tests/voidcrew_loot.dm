@@ -358,8 +358,9 @@
 		test_theme.gun_chance = gun ? list(100, 100, 100) : list(0, 0, 0)
 		for(var/zone in list(1, 2, 3))
 			for(var/bonus in list(0, 2))
-				var/obj/structure/closet/crate/zone_loot/cache = allocate(bonus ? /obj/structure/closet/crate/zone_loot/syndicate/reinforced : /obj/structure/closet/crate/zone_loot/armory)
+				var/obj/structure/closet/crate/zone_loot/cache = allocate(/obj/structure/closet/crate/zone_loot/armory)
 				cache.theme = /datum/loot_theme/armory
+				cache.bonus_draws = bonus
 				cache.loot_zone = zone
 				cache.PopulateContents()
 				var/weapons = 0
