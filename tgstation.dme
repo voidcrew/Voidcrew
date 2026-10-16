@@ -7685,6 +7685,7 @@
 #if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
 #include "voidcrew\modules\unit_tests\voidcrew_mission_board_rewards.dm"
 #include "voidcrew\modules\unit_tests\voidcrew_mission_console_rewards.dm"
+#include "voidcrew\modules\unit_tests\voidcrew_zone_missions.dm"
 #endif
 #include "voidcrew\modules\vehicles\atv.dm"
 #include "voidcrew\modules\vending\_vending.dm"

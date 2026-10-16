@@ -123,16 +123,7 @@
 	return "bounty"
 
 /datum/mission/poacher_bust/setup_target()
-	// Only offer busts for planet types actually on the overmap this round
-	var/list/present_types = list()
-	for(var/obj/structure/overmap/planet/candidate as anything in GLOB.overmap_planets)
-		if(QDELETED(candidate))
-			continue
-		if(!istype(get_turf(candidate), /turf/open/overmap))
-			continue
-		if(!candidate.planet || !bust_tables[candidate.planet])
-			continue
-		present_types |= candidate.planet
+	var/list/present_types = get_work_biomes(bust_tables)
 	if(!length(present_types))
 		return FALSE
 	bust_planet_type = pick(present_types)

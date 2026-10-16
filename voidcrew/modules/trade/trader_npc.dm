@@ -602,10 +602,10 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 	var/list/offers = list()
 	if(outpost)
-		for(var/datum/mission/offer as anything in outpost.shop_offers)
+		for(var/datum/mission/offer as anything in outpost.get_contract_offers_for(ship))
 			if(QDELETED(offer))
 				continue
-			var/list/offer_data = offer.get_ui_data()
+			var/list/offer_data = offer.get_ui_data(ship.get_crew_record())
 			offer_data["quote_value"] = offer.contract_quote
 			offer_data["wanted_text"] = offer.get_progress_string()
 			offers += list(offer_data)

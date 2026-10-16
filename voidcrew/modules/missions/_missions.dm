@@ -1,3 +1,30 @@
+GLOBAL_VAR_INIT(mission_work_serial, 0)
+
+/// One generated objective encounter. Aliases retain this datum, never a proof's ref.
+/// Rewinds, revival, replacement proof and same-band retargets keep this identity.
+/datum/mission_work_receipt
+	var/serial
+	var/family
+	var/band
+	var/difficulty
+	var/datum/voidcrew_crew_record/crew
+	var/claimed = FALSE
+	/// Settlement diagnostics consumed by mission metrics.
+	var/credited = 0
+	var/permission_before
+	var/permission_after
+
+/datum/mission_work_receipt/New(family, band, difficulty)
+	. = ..()
+	serial = ++GLOB.mission_work_serial
+	src.family = family
+	src.band = band
+	src.difficulty = difficulty
+
+/datum/mission_work_receipt/Destroy()
+	crew = null
+	return ..()
+
 /**
  * # Mission Datum (shell)
  *
@@ -100,6 +127,13 @@
 	var/boss_cash_issued = FALSE
 	/// Reward band fixed when posted, independent of ask difficulty.
 	var/quote_zone
+	/// Original service affiliation, including routine work that only earns favor.
+	var/datum/voidcrew_crew_record/accepting_crew
+	var/datum/mission_work_receipt/work_receipt
+	/// Generation context only; shared trader offers leave this unset.
+	var/list/eligible_target_zones
+	/// Only the scheduled useful-family batch may create a field contact.
+	var/create_field_contact = FALSE
 	var/zone_scaling_applied = FALSE
 	/// Family eligible for a completion prize; null for unguarded work.
 	var/guarded_prize_family
@@ -111,10 +145,7 @@
 	// ===== TARGET =====
 	/// Where the mission points on the overmap, if anywhere
 	var/datum/mission_target/target
-	/// Zone band (ZONE_*) this offer would rather point at, or null for no
-	/// preference. Set by whoever posts the offer - SSmissions steers boards on
-	/// ships with no combat research toward Neutral space. The target honours it
-	/// where it can and ignores it where it can't, so it never fails generation.
+	/// Required target band, or null to select from the eligible pool.
 	var/preferred_zone
 	/// Display name of the target's zone at generation time
 	var/target_zone_name = MISSION_ZONE_UNKNOWN
@@ -155,15 +186,18 @@
 	/// linked later still gets the full set and cleanup drops every tag.
 	var/list/aux_gps_beacons
 
-/datum/mission/New(datum/outpost_shop/shop, preferred_zone, posting_zone)
+/datum/mission/New(datum/outpost_shop/shop, preferred_zone, posting_zone, list/eligible_target_zones, create_field_contact = FALSE)
 	. = ..()
 	src.shop = shop
 	// Has to land before generate_mission_details(): setup_target() builds the
 	// target datum, which copies this off us in its own New().
 	src.preferred_zone = preferred_zone
+	src.eligible_target_zones = eligible_target_zones?.Copy()
+	src.create_field_contact = create_field_contact
 	quote_zone = posting_zone
 	posted_at = world.time
 	generate_mission_details()
+	create_field_contact = FALSE // Retargeting and UI actions cannot mint opportunities.
 
 /datum/mission/Destroy()
 	record_metric_dropped() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
@@ -187,6 +221,11 @@
 	// only thing collecting those, once every 30 seconds, and it skipped entries while it ran.
 	SSmissions.all_active_missions -= src
 	shop = null
+	if(accepting_crew)
+		UnregisterSignal(accepting_crew, COMSIG_QDELETING)
+	accepting_crew = null
+	work_receipt = null
+	eligible_target_zones = null
 	return ..()
 
 // =========================================================================
@@ -206,6 +245,9 @@
 
 	if(target)
 		quote_zone = target.get_zone_type()
+		if(!target.is_valid() || !target.zone_is_eligible(quote_zone))
+			generation_failed = TRUE
+			return
 		if(!isnull(quote_zone))
 			// Board quotes and the drug run keep their existing generation hooks.
 			if(shop)
@@ -234,6 +276,7 @@
 		author = generate_mission_author()
 	if(gps_tag_prefix)
 		gps_tag = "[gps_tag_prefix]-[uppertext(random_string(3, GLOB.hex_characters))]"
+	prepare_work_receipt()
 	note_metric_item_value() // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 	update_text()
 
@@ -243,6 +286,73 @@
  */
 /datum/mission/proc/setup_target()
 	return TRUE
+
+/// Resolve the six server-owned families once, before the offer can be accepted.
+/datum/mission/proc/prepare_work_receipt()
+	if(work_receipt || !target || !target.is_valid())
+		return
+	var/family = zone_reputation_family(type)
+	var/band = target.get_zone_type()
+	if(family && band == quote_zone && band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		work_receipt = new(family, band, difficulty)
+
+/// Used by views and again by start_mission; ship.accept_mission also checks live bands.
+/datum/mission/proc/can_accept_work(obj/structure/overmap/ship/ship)
+	if(QDELETED(src) || generation_failed || active || failed || completed || QDELETED(ship))
+		return FALSE
+	if(!target)
+		return !work_receipt // Routine asks keep posted pay, never an admission band.
+	if(work_receipt?.crew && work_receipt.crew != ship.get_crew_record())
+		return FALSE
+	var/band = target.get_zone_type()
+	if(!target.is_valid() || band != quote_zone || !ship.get_crew_record()?.can_work_in_zone(band))
+		return FALSE
+	if(work_receipt && (work_receipt.band != band || work_receipt.family != zone_reputation_family(type)))
+		return FALSE
+	return TRUE
+
+/// The claim and capped gain happen before finalizers or any reward spawning can yield.
+/datum/mission/proc/claim_work_receipt()
+	if(!completed || failed || !work_receipt || work_receipt.claimed || QDELETED(accepting_crew) || work_receipt.crew != accepting_crew \
+		|| work_receipt.family != zone_reputation_family(type) || work_receipt.band != quote_zone)
+		return 0
+	work_receipt.claimed = TRUE
+	work_receipt.permission_before = accepting_crew.get_zone_permission()
+	work_receipt.credited = accepting_crew.claim_zone_work(work_receipt.family, work_receipt.band, work_receipt.difficulty, "[work_receipt.serial]:[work_receipt.family]")
+	work_receipt.permission_after = accepting_crew.get_zone_permission()
+	return work_receipt.credited
+
+/// Admin/round disposal must not leave a deleted record retained by accepted missions.
+/datum/mission/proc/on_accepting_crew_deleted(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_QDELETING)
+	if(!isnull(contract_quote) && contract_stock_reserved)
+		for(var/item_path in contract_stock.Copy())
+			drop_contract_line(item_path)
+		metric_item_value = 0
+		set_contract_currency(contract_quote)
+	release_contract_stock()
+	accepting_crew = null
+	if(work_receipt)
+		work_receipt.crew = null
+
+/// Choose content from eligible sites first; the scheduled batch may seed a missing biome.
+/datum/mission/proc/get_work_biomes(list/tables)
+	var/list/biomes = list()
+	var/datum/mission_target/criteria = new(src)
+	for(var/obj/structure/overmap/planet/candidate in GLOB.overmap_planets)
+		if(QDELETED(candidate) || !(candidate.planet in tables) || candidate.mission_exclusive \
+			|| !istype(get_turf(candidate), /turf/open/overmap) \
+			|| !criteria.zone_is_eligible(SSovermap_zones?.get_zone_type(get_turf(candidate))))
+			continue
+		if((exclusive_site || create_field_contact) && (candidate.loaded || candidate.loading || candidate.mission_claims > 0))
+			continue
+		biomes |= candidate.planet
+	qdel(criteria)
+	if(!length(biomes) && create_field_contact)
+		for(var/biome in tables)
+			biomes += biome
+	return biomes
 
 /// Per-type generation rolls (names, asks, rewards). May set generation_failed.
 /datum/mission/proc/generate_details()
@@ -341,6 +451,17 @@
 		if(!resolve_quoted_target())
 			return FALSE
 		update_text()
+	if(!can_accept_work(ship))
+		return FALSE
+	prepare_work_receipt()
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	if(work_receipt?.crew && work_receipt.crew != record)
+		return FALSE
+	accepting_crew = record
+	if(record)
+		RegisterSignal(record, COMSIG_QDELETING, PROC_REF(on_accepting_crew_deleted))
+	if(work_receipt)
+		work_receipt.crew = record
 
 	servant = ship
 	active = TRUE
@@ -677,7 +798,7 @@
 		target.preferred_zone = quote_zone
 	if(!target.resolve())
 		return FALSE
-	return isnull(quote_zone) || target.get_zone_type() == quote_zone
+	return quote_zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED) && target.get_zone_type() == quote_zone
 
 // =========================================================================
 // COMPLETION & TURN-IN
@@ -796,6 +917,8 @@
 /datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)
 	if(QDELETED(src) || failed || completed || turning_in)
 		return FALSE
+	if(target?.is_valid() && target.get_zone_type() != quote_zone)
+		return FALSE
 	// Console handovers validate the account before consuming even a partial ask.
 	if(!shop && (QDELETED(servant) || QDELETED(servant.ship_account) || !active || !get_turf(reward_anchor) || !can_turn_in_at(reward_anchor)))
 		return FALSE
@@ -830,8 +953,12 @@
 /datum/mission/proc/finish_mission(atom/reward_anchor)
 	if(QDELETED(src) || failed || completed)
 		return
+	var/work_satisfied = active && !QDELETED(servant) && !QDELETED(servant.ship_account) \
+		&& get_turf(reward_anchor) && all_objectives_satisfied()
 	completed = TRUE
 	active = FALSE
+	if(work_satisfied)
+		claim_work_receipt()
 
 	if(timeout_timer)
 		deltimer(timeout_timer)
@@ -848,8 +975,9 @@
 
 	// Standing with the posting trader (board contracts only; see trader_favor.dm)
 	var/favor_gain = get_favor_reward()
-	if(favor_gain > 0 && servant && shop)
-		shop.grant_favor(servant, favor_gain)
+	if(favor_gain > 0 && !QDELETED(accepting_crew) && shop)
+		var/key = shop.favor_key()
+		accepting_crew.trader_favor[key] = (accepting_crew.trader_favor[key] || 0) + favor_gain
 
 	record_metric_completed(reward_anchor, favor_gain) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
@@ -864,8 +992,6 @@
 			reward_parts += "[research_reward] research points"
 		if(voucher_count > 0)
 			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
-		if(favor_gain > 0 && shop)
-			reward_parts += "+[favor_gain] standing with [shop.favor_trader_name()]"
 		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
 		servant.ship_notify("[name] completed! Reward: [reward_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
@@ -1173,10 +1299,12 @@
 /**
  * Returns mission data for TGUI display.
  */
-/datum/mission/proc/get_ui_data()
+/datum/mission/proc/get_ui_data(datum/voidcrew_crew_record/viewing_crew)
+	var/list/package = get_effective_contract_package(active ? accepting_crew : viewing_crew)
+	var/list/shown_rewards = package ? package["items"] : get_reward_types()
 	// Every reward in the bundle, each with its own sprite and a rarity accent
 	var/list/reward_items = list()
-	for(var/reward_type in get_reward_types())
+	for(var/reward_type in shown_rewards)
 		var/atom/reward_cast = reward_type
 		var/stack_amount = LAZYACCESS(reward_amounts, reward_type) || 1
 		reward_items += list(list(
@@ -1199,7 +1327,7 @@
 		"name" = name,
 		"desc" = desc,
 		"author" = author,
-		"value" = value,
+		"value" = package ? package["credits"] : value,
 		"reward_items" = reward_items,
 		"reward_item" = first_reward ? first_reward["name"] : null,
 		"reward_item_icon" = first_reward ? first_reward["icon"] : null,
@@ -1218,9 +1346,7 @@
 		"zone_name" = (target_zone_name == MISSION_ZONE_UNKNOWN) ? null : target_zone_name,
 		"zone_color" = get_zone_color(),
 		"requires_item" = requires_item,
-		"voucher_count" = voucher_count,
+		"voucher_count" = package ? package["vouchers"] : voucher_count,
 		"research_reward" = research_reward,
 		"archetype" = get_archetype(),
-		"favor_reward" = get_favor_reward(),
-		"favor_trader" = shop ? shop.favor_trader_name() : null,
 	)
