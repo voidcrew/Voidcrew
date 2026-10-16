@@ -58,6 +58,61 @@
 
 /datum/unit_test/voidcrew_mission_wiring
 
+/// Steal-objective guns exist at spawn; opening any gun cache yields one gun total.
+/datum/unit_test/voidcrew_pirate_reward_guns/Run()
+	var/list/cache_guns = list(
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers = /obj/item/gun/energy/laser,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers = /obj/item/gun/energy/disabler,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns = /obj/item/gun/energy/e_gun,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns = /obj/item/gun/ballistic/shotgun/automatic/combat,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines = /obj/item/gun/energy/laser/carbine,
+	)
+	var/list/immediate_caches = list(
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns,
+	)
+	var/turf/cache_turf = run_loc_floor_bottom_left
+	for(var/cache_type in cache_guns)
+		var/obj/structure/closet/crate/secure/weapon/pirate_loot/cache = allocate(cache_type, cache_turf)
+		var/expected_before = (cache_type in immediate_caches) ? 1 : 0
+		TEST_ASSERT_EQUAL(length(cache.get_all_contents_type(/obj/item/gun)), expected_before, "[cache_type] has the wrong gun count before opening")
+		TEST_ASSERT_EQUAL(length(cache.get_all_contents_type(cache_guns[cache_type])), expected_before, "[cache_type] has the wrong gun type before opening")
+		TEST_ASSERT(!cache.contents_initialized, "[cache_type] must retain lazy population of other contents")
+		TEST_ASSERT(cache.open(null, TRUE, FALSE), "[cache_type] could not open")
+		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/gun)), 1, "[cache_type] must contain exactly one gun after opening")
+		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(cache_guns[cache_type])), 1, "[cache_type] must retain its gun type")
+		if(cache_type == /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns)
+			TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/storage/belt/bandolier)), 3, "The shotgun cache must retain all three bandoliers")
+		TEST_ASSERT(cache.close(), "[cache_type] could not close")
+		TEST_ASSERT(cache.open(null, TRUE, FALSE), "[cache_type] could not reopen")
+		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/gun)), 1, "Reopening [cache_type] duplicated its gun")
+		for(var/atom/movable/drop in cache_turf.contents - cache)
+			if(!istype(drop, /obj/effect/landmark))
+				qdel(drop)
+		qdel(cache)
+
+/// Initial, rebuilt and refilled SolGov inventories cannot recreate the removed sword.
+/datum/unit_test/voidcrew_solgov_vendor_stock/Run()
+	var/obj/machinery/vending/security/marine/solgov/vendor = allocate(/obj/machinery/vending/security/marine/solgov)
+	assert_no_sword(vendor)
+	TEST_ASSERT(!outpost_checkpoint_saves(vendor), "Ship checkpoints must exclude SolGov vendors")
+	vendor.update_canister()
+	vendor.RefreshParts()
+	assert_no_sword(vendor)
+	var/obj/item/vending_refill/security/refill = allocate(/obj/item/vending_refill/security)
+	// Old stock in a canister must not add a product absent from the new inventory.
+	refill.products = list(/obj/item/melee/energy/sword/saber/blue = 1, /obj/item/restraints/handcuffs = 10)
+	for(var/datum/data/vending_product/product in vendor.product_records)
+		product.amount = 0
+	TEST_ASSERT(vendor.restock(refill) > 0, "The refill must still replenish supported products")
+	assert_no_sword(vendor)
+
+/datum/unit_test/voidcrew_solgov_vendor_stock/proc/assert_no_sword(obj/machinery/vending/security/marine/solgov/vendor)
+	TEST_ASSERT(!(/obj/item/melee/energy/sword/saber/blue in vendor.products), "SolGov's products still include the blue sword")
+	for(var/datum/data/vending_product/product in vendor.product_records + vendor.hidden_records + vendor.coin_records)
+		TEST_ASSERT(!ispath(product.product_path, /obj/item/melee/energy/sword/saber/blue), "SolGov's live inventory still includes the blue sword")
+
 /datum/unit_test/voidcrew_mission_wiring/Run()
 	var/checked = 0
 	for(var/datum/mission/mission_type as anything in subtypesof(/datum/mission))

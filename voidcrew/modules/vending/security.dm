@@ -50,7 +50,6 @@
 		/obj/item/grenade/frag = 5,
 		/obj/item/grenade/flashbang = 5,
 		/obj/item/grenade/barrier = 10,
-		/obj/item/melee/energy/sword/saber/blue = 1,
 		)
 	voucher_items = list(
 		"Tactical Energy Gun" = /obj/item/gun/energy/e_gun/stun,

@@ -27,6 +27,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_infrastructure, typecacheof(list(
 GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/machinery/portable_atmospherics,
 	/obj/machinery/computer/ship_checkpoint,
+	// Internal vending stock is not scrubbed by clear_stock().
+	/obj/machinery/vending/security/marine/solgov,
 	// Made by its turret.
 	/obj/machinery/porta_turret_cover,
 	// Never rebuilt: user decision, 2026-09-24.
