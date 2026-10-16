@@ -350,7 +350,7 @@
 /obj/item/storage/medkit/regular,
 /obj/item/storage/medkit/o2,
 /obj/item/storage/medkit/toxin,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
 /turf/open/floor/iron,

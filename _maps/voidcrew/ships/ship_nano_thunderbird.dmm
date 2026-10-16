@@ -500,7 +500,7 @@
 /area/shuttle/voidcrew/thunderbird/security/armory)
 "Fc" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/effect/turf_decal/tile/blue,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
