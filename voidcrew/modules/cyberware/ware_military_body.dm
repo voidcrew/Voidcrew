@@ -294,6 +294,8 @@
 	tier = CYBERWARE_TIER_3
 	/// TRUE during the one-second windup.
 	var/jolting = FALSE
+	/// Changes on every windup/cancellation; old callbacks cannot spend a new installation's charge.
+	var/jolt_generation = 0
 	/// The once-per-six-minutes clock.
 	COOLDOWN_DECLARE(jolt_cooldown)
 
@@ -312,6 +314,12 @@
 	. = ..()
 	UnregisterSignal(organ_owner, COMSIG_MOB_STATCHANGE)
 	jolting = FALSE
+	jolt_generation++
+
+/obj/item/organ/cyberimp/cyberware/lazarus/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	jolting = FALSE
+	jolt_generation++
 
 /**
  * Signal proc for [COMSIG_MOB_STATCHANGE]: fires the windup on the
@@ -322,7 +330,8 @@
 	SIGNAL_HANDLER
 	if(jolting)
 		return
-	if(organ_flags & ORGAN_FAILING)
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(source != owner || !chrome?.is_running())
 		return
 	if(new_stat == CONSCIOUS || new_stat == DEAD)
 		return
@@ -331,7 +340,7 @@
 	if(!COOLDOWN_FINISHED(src, jolt_cooldown))
 		return
 	jolting = TRUE
-	COOLDOWN_START(src, jolt_cooldown, CYBERWARE_LAZARUS_COOLDOWN)
+	jolt_generation++
 	source.visible_message(
 		span_boldwarning("[source] seizes, something under [source.p_their()] ribs whines up to full charge!"),
 		span_userdanger("The Lazarus node screams up to charge..."),
@@ -339,20 +348,26 @@
 	playsound(source, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	source.set_jitter_if_lower(4 SECONDS)
 	source.do_jitter_animation(200)
-	addtimer(CALLBACK(src, PROC_REF(jolt)), CYBERWARE_LAZARUS_WINDUP)
+	addtimer(CALLBACK(src, PROC_REF(jolt), jolt_generation, WEAKREF(source)), CYBERWARE_LAZARUS_WINDUP)
 
 /// The discharge: heal to 30%, clear the floor out from under every stun,
 /// and stand the patient up with a thunderclap. Skipped if they died (or
 /// recovered) during the windup, that second belongs to the attacker.
-/obj/item/organ/cyberimp/cyberware/lazarus/proc/jolt()
-	jolting = FALSE
-	var/mob/living/carbon/patient = owner
-	if(QDELETED(src) || QDELETED(patient))
+/obj/item/organ/cyberimp/cyberware/lazarus/proc/jolt(windup_generation, datum/weakref/intended_patient)
+	if(!jolting || windup_generation != jolt_generation)
 		return
-	if(organ_flags & ORGAN_FAILING)
+	jolting = FALSE
+	var/mob/living/carbon/patient = intended_patient?.resolve()
+	if(QDELETED(src) || QDELETED(patient) || patient != owner)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(!chrome?.is_running())
 		return
 	if(patient.stat == DEAD || patient.stat == CONSCIOUS)
 		return
+	if(!COOLDOWN_FINISHED(src, jolt_cooldown))
+		return
+	COOLDOWN_START(src, jolt_cooldown, CYBERWARE_LAZARUS_COOLDOWN)
 	var/needed = (patient.maxHealth * CYBERWARE_LAZARUS_HEAL_TO) - patient.health
 	if(needed > 0)
 		var/oxy_heal = min(needed, patient.getOxyLoss())
