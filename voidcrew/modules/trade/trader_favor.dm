@@ -98,15 +98,7 @@
 	var/new_tier = get_favor_tier(crew_ship)
 	if(new_tier <= old_tier)
 		return
-	var/perk_text
-	switch(new_tier)
-		if(3)
-			perk_text = "[FAVOR_DISCOUNT_TRUSTED]% off credit prices, and the back-room shelf is open to your crew."
-		if(2)
-			perk_text = "[FAVOR_DISCOUNT_PARTNER]% off credit prices."
-		else
-			perk_text = "[FAVOR_DISCOUNT_REGULAR]% off credit prices."
-	crew_ship.ship_notify("[favor_trader_name()] now counts your crew as [LOWER_TEXT(get_favor_tier_name(new_tier))]: [perk_text]", \
+	crew_ship.ship_notify("[favor_trader_name()] now counts your crew as [LOWER_TEXT(get_favor_tier_name(new_tier))].", \
 		"TRADER STANDING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /// How many units of `sku_type` this crew has bought off the favor shelf
@@ -136,6 +128,8 @@
 /datum/mission/proc/get_favor_reward()
 	if(!shop)
 		return 0
+	if(is_routine_contract())
+		return FAVOR_GAIN_EASY
 	switch(difficulty)
 		if(MISSION_DIFFICULTY_HARD)
 			return FAVOR_GAIN_HARD

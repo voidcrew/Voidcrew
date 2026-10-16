@@ -2,9 +2,7 @@
  * # Outpost Supply Contracts
  *
  * The shop-specific mission loop: each trader outpost posts a couple of
- * supply requests ("bring me X"), and the pay is a FREE ITEM off the shop's
- * own shelves rather than credits. Gives a ship a reason to detour to an
- * outpost even with empty pockets.
+ * supply requests with fixed packages and currency settlements.
  *
  * The player-facing side is the trader NPC's Contracts radial (see
  * trader_npc.dm). Wiring rides the existing mission pipeline end to end:
@@ -12,9 +10,6 @@
  * turn-in happens at the trader or back at the ship's own mission board +
  * pad, where the reward item spawns exactly like voucher/item rewards do.
  */
-
-/// How many contracts an outpost keeps posted at once
-#define OUTPOST_SHOP_OFFER_COUNT 4
 
 /// Exact request types; fish and bear hides are deliberate owner exceptions.
 /proc/is_outpost_procurement_type(item_type)
@@ -28,7 +23,7 @@
 		/obj/item/stack/telecrystal_raw,
 		/obj/item/organ/monster_core/regenerative_core/legion,
 		/obj/item/stack/glacial_core,
-		// Eligibility only: suit-vendor rows still need reward-design inputs.
+		// Salvaged suit goods; module matching stays exact at handover.
 		/obj/item/mod/construction/broken_core,
 		/obj/item/mod/control/pre_equipped,
 		/obj/item/mod/module/springlock,
@@ -87,8 +82,7 @@
  * # Outpost Supply Mission
  *
  * Delivery-style: haul the asked goods to your ship's mission pad or any
- * trader. Pays no credits. The reward is one free item rolled off the
- * posting shop's SKU list at creation time.
+ * trader. The package and currency quote are fixed at posting.
  */
 /datum/mission/outpost_supply
 	name = "Supply Request"
@@ -101,6 +95,9 @@
 	var/required_type
 	var/required_name
 	var/required_amount = 1
+	/// Optional fixed target band for recovered suit goods.
+	var/request_pay_min
+	var/request_pay_max
 
 /datum/mission/outpost_supply/get_archetype()
 	return "procurement"
@@ -115,12 +112,11 @@
 	if(generation_failed)
 		return
 
-	// The pay: kit off the shelf, assembled to the difficulty band and floored
-	// by what the ask itself fetches at this trader's own buyback window. A
-	// contract for five glacial cores has to beat carrying those same cores
-	// twenty steps to the counter, or there is no reason to take it.
-	voucher_count = 0
-	if(!shop.roll_contract_reward(src, shop.get_counter_value(required_type, required_amount)))
+	var/datum/outpost_shop/reward_shop = contract_reward_shop || shop
+	var/ask_value = reward_shop.get_counter_value(required_type, required_amount)
+	if(ispath(required_type, /obj/item/mod/module))
+		ask_value = 250 * required_amount // Reference only; never a buyback.
+	if(!reward_shop.roll_contract_reward(src, ask_value))
 		generation_failed = TRUE
 
 /// Rolls the ask off the shop's request table. Override for themed asks.
@@ -134,6 +130,12 @@
 	required_name = request["name"]
 	required_amount = request["amount"]
 	difficulty = request["difficulty"]
+	request_pay_min = request["pay_min"]
+	request_pay_max = request["pay_max"]
+	if(request["reward_shop"])
+		contract_reward_shop = shop.type == request["reward_shop"] ? shop : shop.outpost?.get_shop(request["reward_shop"])
+		if(!contract_reward_shop)
+			generation_failed = TRUE
 
 /datum/mission/outpost_supply/build_objectives()
 	var/datum/mission_objective/deliver/procurement/ask = new
@@ -154,8 +156,7 @@
  * Bring a rod."
  *
  * A fish-shaped supply request posted only by outposts that actually run a
- * fishing stall (see the shop's extra_offer_mix). Same goods-for-goods deal;
- * trophy asks reach the exclusive shelf like any hard contract.
+ * fishing stall (see the shop's extra_offer_mix).
  */
 /datum/mission/outpost_supply/angler
 	/// Trophy gate in grams (0 = any fish)
@@ -254,8 +255,13 @@
  * folded in. Discards failed rolls (e.g. courier with no second outpost).
  */
 /obj/structure/overmap/trader_outpost/proc/ensure_shop_offers()
-	if(!shop)
+	if(!shop || world.time < next_contract_refill)
 		return
+	// Keep the original cadence if a visit beats a delayed timer callback.
+	if(!next_contract_refill)
+		next_contract_refill = world.time + OUTPOST_CONTRACT_REFILL_INTERVAL
+	else
+		next_contract_refill += (floor((world.time - next_contract_refill) / OUTPOST_CONTRACT_REFILL_INTERVAL) + 1) * OUTPOST_CONTRACT_REFILL_INTERVAL
 	var/static/list/offer_mix = list(
 		/datum/mission/outpost_supply = 40,
 		/datum/mission/recovery/kill/outpost = 25,
@@ -274,6 +280,10 @@
 	for(var/datum/mission/posted as anything in shop_offers.Copy())
 		if(QDELETED(posted))
 			shop_offers -= posted
+		else if(posted.failed || posted.completed || world.time - posted.posted_at >= OUTPOST_CONTRACT_EXPIRY)
+			shop_offers -= posted
+			tally_mission_offer(posted, null, "contract_offer_expired")
+			qdel(posted)
 	var/safety = 12
 	while(length(shop_offers) < OUTPOST_SHOP_OFFER_COUNT && safety-- > 0)
 		// Keep a plain supply request on the board only when its pool is eligible.
@@ -321,4 +331,125 @@
 				count++
 	return count < limit
 
-#undef OUTPOST_SHOP_OFFER_COUNT
+
+// ===== BOARD QUOTES AND SETTLEMENT =====
+// Shared shell hooks live here so both trader and ship-pad handovers use them.
+/datum/mission
+	/// Total value, fixed at posting; null on work outside this reward channel.
+	var/contract_quote
+	var/contract_no_vouchers = FALSE
+	/// May be the fitter while shop remains the outfitter that receives favor.
+	var/datum/outpost_shop/contract_reward_shop
+	/// Quoted item path -> live core SKU and its fixed value.
+	var/list/contract_stock
+	var/list/contract_item_values
+	var/contract_stock_reserved = FALSE
+	var/contract_settled = FALSE
+	var/contract_turning_in = FALSE
+
+/datum/mission/proc/is_routine_contract()
+	if(!istype(src, /datum/mission/outpost_supply))
+		return FALSE
+	var/datum/mission/outpost_supply/supply = src
+	return istype(src, /datum/mission/outpost_supply/cook) || istype(src, /datum/mission/outpost_supply/angler) \
+		|| supply.required_type == /obj/item/fish || supply.required_type == /obj/item/stack/sheet/animalhide/bear
+
+/// Set both bounds: the shell rolls value after generate_details().
+/datum/mission/proc/set_contract_currency(remainder)
+	voucher_count = contract_no_vouchers ? 0 : floor(remainder / VOUCHER_CREDIT_VALUE)
+	value = remainder - voucher_count * VOUCHER_CREDIT_VALUE
+	value_min = value
+	value_max = value
+
+/// No yields between checking and claiming stock. Lost shelf objects become currency.
+/datum/mission/proc/reserve_contract_stock()
+	if(isnull(contract_quote) || contract_stock_reserved || contract_settled)
+		return
+	contract_stock_reserved = TRUE
+	var/package_value = 0
+	for(var/item_path in contract_stock.Copy())
+		var/datum/shop_sku/sku = contract_stock[item_path]
+		if(QDELETED(sku) || sku.stock <= 0)
+			contract_stock -= item_path
+			mission_rewards -= item_path
+			reward_amounts -= item_path
+			continue
+		sku.stock--
+		sku.reserved_stock++
+		package_value += contract_item_values[item_path]
+	metric_item_value = package_value
+	set_contract_currency(contract_quote - package_value)
+
+/// Completion consumes the hold; every other deletion releases it, once.
+/datum/mission/proc/release_contract_stock(consumed = FALSE)
+	if(!contract_stock_reserved)
+		return
+	contract_stock_reserved = FALSE
+	for(var/item_path in contract_stock)
+		var/datum/shop_sku/sku = contract_stock[item_path]
+		if(QDELETED(sku))
+			continue
+		sku.reserved_stock--
+		if(!consumed)
+			sku.stock++
+
+/datum/mission/start_mission(obj/structure/overmap/ship/ship)
+	if(shop || !isnull(contract_quote))
+		if(QDELETED(src) || active || failed || completed || QDELETED(ship) || QDELETED(ship.ship_account))
+			return FALSE
+		reserve_contract_stock()
+	. = ..()
+	if(!. && !QDELETED(src))
+		release_contract_stock()
+
+/datum/mission/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)
+	if(shop || !isnull(contract_quote))
+		if(QDELETED(src) || !active || failed || completed || contract_turning_in || QDELETED(servant) || QDELETED(servant.ship_account))
+			return FALSE
+		if(!get_turf(reward_anchor) || !can_turn_in_at(reward_anchor))
+			return FALSE
+		contract_turning_in = TRUE
+	. = ..()
+	contract_turning_in = FALSE
+
+/datum/mission/distribute_rewards(atom/reward_anchor)
+	if(!isnull(contract_quote))
+		if(contract_settled)
+			return
+		contract_settled = TRUE
+		release_contract_stock(consumed = TRUE)
+	return ..()
+
+/datum/mission/Destroy()
+	shop?.outpost?.shop_offers -= src
+	release_contract_stock()
+	contract_reward_shop = null
+	contract_stock = null
+	contract_item_values = null
+	return ..()
+
+/datum/mission/get_contract_pay_summary()
+	var/list/parts = list()
+	if(length(get_reward_types()))
+		parts += get_reward_summary()
+	if(voucher_count > 0)
+		parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+	if(value > 0)
+		parts += "[value] cr"
+	return parts.Join(" + ")
+
+/// The fixed package may come from the fitter rather than the posting counter.
+/datum/mission/note_metric_item_value()
+	if(!isnull(contract_quote))
+		return // roll_contract_reward and acceptance track the actual reserved package.
+	return ..()
+
+/datum/mission/finish_mission(atom/reward_anchor)
+	if((shop || !isnull(contract_quote)) && (QDELETED(src) || !active || failed || completed || QDELETED(servant) || QDELETED(servant.ship_account) || !get_turf(reward_anchor)))
+		return
+	return ..()
+
+/datum/mission/get_reward_summary()
+	if(shop && !length(get_reward_types()))
+		return ""
+	return ..()

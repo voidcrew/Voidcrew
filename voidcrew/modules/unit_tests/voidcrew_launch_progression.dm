@@ -185,16 +185,16 @@
 	TEST_ASSERT_EQUAL(length(first.deal_chart_picks()), 1, "First shop could not deal its chart")
 	TEST_ASSERT_EQUAL(length(second.deal_chart_picks()), 1, "First shop reserved the second shop's chart")
 
-/// A sparse reward pool must meet the actual ask premium within600cr tolerance.
+/// A sparse reward pool must settle its fixed quote exactly.
 /datum/unit_test/voidcrew_launch_thin_contract/Run()
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/general/beans, "core")
-	var/datum/mission/mission = allocate(/datum/mission)
+	var/datum/mission/outpost_supply/mission = allocate(/datum/mission/outpost_supply)
 	mission.difficulty = 1
 	TEST_ASSERT(shop.roll_contract_reward(mission, 12000), "A thin priced catalog must still fund its contract")
 	var/datum/shop_sku/sku = shop.skus[1]
-	var/value = shop.get_sku_value(sku) + mission.voucher_count * 1200
-	TEST_ASSERT(value >= 12000 * 1.6 - 600, "Sparse rewards fell below the actual ask premium after voucher rounding")
+	var/value = shop.get_sku_value(sku) + mission.voucher_count * 1200 + mission.value
+	TEST_ASSERT_EQUAL(value, 13800, "Sparse rewards must settle the 1.15 ask premium exactly")
 	TEST_ASSERT_EQUAL(length(mission.mission_rewards), 1, "Thin reward generation duplicated the same item")
 
 /// Repeated purchases use real payment, stock and crew lookup, even with a sealed copy.
@@ -250,7 +250,8 @@
 					TEST_FAIL("[shop_type] cannot fund a [difficulty] contract")
 					qdel(mission)
 					continue
-				var/value = mission.voucher_count * 1200
+				var/value = mission.voucher_count * 1200 + mission.value
+				TEST_ASSERT_EQUAL(length(mission.mission_rewards), 0, "Depleted shelves must pay currency")
 				for(var/item_type in mission.mission_rewards)
 					if(item_type in mission.rare_reward_types)
 						value += 3600
@@ -262,12 +263,13 @@
 						if(sku.dispense_amount > 1 && mission.reward_amounts?[item_type] != sku.dispense_amount)
 							TEST_FAIL("[shop_type] awards the wrong quantity of [item_type]")
 						break
-				var/minimum = 1400
+				var/minimum = 600
 				if(difficulty == 2)
-					minimum = 2600
+					minimum = 1300
 				else if(difficulty == 3)
-					minimum = 5500
-				if(value < minimum - 600)
-					TEST_FAIL("[shop_type] pays [value] against minimum [minimum] with tolerance [600]")
+					minimum = 2400
+				if(value < minimum)
+					TEST_FAIL("[shop_type] pays [value] against minimum [minimum]")
+				TEST_ASSERT_EQUAL(value, mission.contract_quote, "Currency must exactly meet the quote")
 				qdel(mission)
 		qdel(shop)
