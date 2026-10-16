@@ -80,6 +80,12 @@ SUBSYSTEM_DEF(overmap)
 	/// contact with no interior until a ship actually goes there, so raising this adds
 	/// places to go without adding anything to the round-start wait.
 	var/dynamic_planets_per_type = 6
+	/// Ordinary combat ruins approved for repeat mission contacts, independently of natural seeding's duplicate limit.
+	var/static/list/mission_ruin_templates = list(
+		/datum/map_template/ruin/space/derelict_sulaco,
+		/datum/map_template/ruin/space/listeningstation,
+		/datum/map_template/ruin/space/turreted_outpost,
+	)
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -852,7 +858,7 @@ SUBSYSTEM_DEF(overmap)
 	var/list/templates = list()
 	for(var/key in SSmapping.space_ruins_templates)
 		var/datum/map_template/ruin/space/template = SSmapping.space_ruins_templates[key]
-		if(!istype(template) || template.unpickable || !template.allow_duplicates || !ruin_fits_in_level(template))
+		if(!istype(template) || !(template.type in mission_ruin_templates) || template.unpickable || !ruin_fits_in_level(template))
 			continue
 		var/tenant_class = ruin_fits_in_slot(template) ? MAP_TENANT_CLASS_FLAT : MAP_TENANT_CLASS_SOLO
 		if(mission_contact_capacity(tenant_class))

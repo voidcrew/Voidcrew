@@ -117,13 +117,14 @@ SUBSYSTEM_DEF(missions)
 	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
 	for(var/mission_type in mission_types)
 		var/family = zone_reputation_family(mission_type)
-		if(!family || (contributions && contributions[family] >= cap))
+		if(!family || (contributions && contributions[family] >= cap) || !mission_type_within_limit(mission_type))
 			continue
 		LAZYINITLIST(families[family])
 		families[family] += mission_type
-	var/vacancies = 0
 	var/reserved_slots = min(3, length(families))
-	for(var/slot in 1 to reserved_slots)
+	var/filled_slots = 0
+	// Exhaust the remaining useful families in this batch before leaving any reserved slot vacant.
+	while(length(families) && filled_slots < reserved_slots)
 		var/family = pick(families)
 		var/list/types = families[family]
 		families -= family
@@ -138,12 +139,12 @@ SUBSYSTEM_DEF(missions)
 				continue
 			offer = create_mission(mission_type, band, null, list(band), TRUE)
 		if(!offer)
-			vacancies++
 			log_mapping("SSmissions: ship [REF(ship)] reserved [family] in band [band] has no eligible offer after bounded retries")
 			continue
 		ship.available_missions += offer
+		filled_slots++
 		tally_mission_offer(offer, ship, "mission_offered")
-	return vacancies
+	return reserved_slots - filled_slots
 
 /**
  * The zone band the next offer should prefer, rolled per offer.
