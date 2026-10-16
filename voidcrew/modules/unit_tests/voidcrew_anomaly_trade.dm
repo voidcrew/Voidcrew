@@ -133,11 +133,11 @@
 	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	buyer.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(buyer.mind)
 	sku.discount_pct = 0
 	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 35000, "A stranger got a discount")
-	ship.trader_favor = list()
-	ship.trader_favor[shop.favor_key()] = 6 // FAVOR_TIER_TRUSTED, 15% off
+	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED, 15% off
 	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 29750, "A Trusted crew did not get the normal favor discount")
 	sku.discount_pct = 30
 	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 24500, "The better special did not win over favor")
@@ -159,7 +159,8 @@
 	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	buyer.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(buyer.mind)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Anomaly chart test", null, 1, FALSE)
 	account.account_balance = 40000
 	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)

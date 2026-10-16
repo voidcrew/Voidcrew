@@ -460,10 +460,10 @@
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	user.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(user.mind)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
-	ship.trader_favor = list()
-	ship.trader_favor[shop.favor_key()] = 6 // FAVOR_TIER_TRUSTED
+	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED
 	TEST_ASSERT_EQUAL(shop.get_discount_pct(ship), 15, "Favor fixture did not reach the maximum discount")
 	var/list/restricted = list(
 		/datum/shop_sku/general/surplus_rifle, /datum/shop_sku/outfitter/disabler,

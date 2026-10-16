@@ -465,8 +465,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 	// Not over the line yet: warn and give them a chance to stand down.
 	if(strikes < OUTPOST_AGGRESSION_STRIKES)
-		var/remaining = OUTPOST_AGGRESSION_STRIKES - strikes
-		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning. [remaining] more infraction\s and they fire."))
+		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning."))
 		if(trader)
 			trader.speak_line(TRADER_LINE_WARNING)
 		return
@@ -474,11 +473,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// Final strike: mark them and embargo their crew's ships.
 	aggressor_minds[offender.mind] = world.time + OUTPOST_AGGRESSION_MARK_DURATION
 
-	for(var/datum/team/voidcrew/team as anything in offender.mind.ship_teams)
+	var/datum/voidcrew_crew_record/crew = offender.mind.get_reputation_crew()
+	for(var/datum/team/voidcrew/team in crew?.teams)
 		if(team.ship)
 			embargo_ship(team.ship)
 
-	to_chat(offender, span_userdanger("Outpost defense systems lock onto you. Your trade privileges have been revoked for [OUTPOST_AGGRESSION_MARK_DURATION / (1 MINUTES)] minutes."))
+	to_chat(offender, span_userdanger("Outpost defense systems lock onto you."))
 	if(trader)
 		trader.speak_line(TRADER_LINE_AGGRESSION)
 
@@ -489,7 +489,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!istype(ship))
 		return
 	embargoed_ships[ship] = world.time + OUTPOST_EMBARGO_DURATION
-	ship.ship_notify("[name] has placed your vessel under trade embargo for [OUTPOST_EMBARGO_DURATION / (1 MINUTES)] minutes.", "TRADE EMBARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
+	ship.ship_notify("[name] has placed your vessel under trade embargo.", "TRADE EMBARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
 
 /**
  * Whether a ship is currently embargoed here. Expired entries are pruned lazily.
@@ -527,7 +527,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		return FALSE
 	if(is_marked_aggressor(user.mind))
 		return TRUE
-	for(var/datum/team/voidcrew/team as anything in user.mind.ship_teams)
+	var/datum/voidcrew_crew_record/crew = user.mind.get_reputation_crew()
+	for(var/datum/team/voidcrew/team in crew?.teams)
 		if(team.ship && is_ship_embargoed(team.ship))
 			return TRUE
 	return FALSE

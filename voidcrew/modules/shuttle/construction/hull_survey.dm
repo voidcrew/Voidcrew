@@ -1133,7 +1133,7 @@
  *
  * Returns the new overmap ship, or null on failure.
  */
-/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name)
+/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name, form_new = FALSE)
 	prepare_claimed_turfs(turfs)
 
 	// create_shuttle() seats the mobile port on whatever turf it is handed as the origin, and
@@ -1181,6 +1181,7 @@
 	if(!vessel.setup_from_template(new /datum/map_template/shuttle/voidcrew/commissioned()))
 		qdel(vessel)
 		return null
+	vessel.bind_reputation_crew(user?.mind, form_new)
 
 	port.current_ship = vessel
 	vessel.shuttle = port
@@ -1222,8 +1223,7 @@
 	if(vessel.enlist_crewmember(user))
 		vessel.claimed_captain = user.mind
 		grant_captain_management(user, vessel)
-		to_chat(user, span_notice("You are registered as the commanding officer of [vessel_name]. \
-			Use the Ship Management button to invite crew, set a memo, or set a join password."))
+		to_chat(user, span_notice("You are registered as the commanding officer of [vessel_name]."))
 
 	message_admins("[key_name(user)] commissioned a scratch-built vessel, [vessel_name], at [ADMIN_VERBOSEJMP(origin)].")
 	log_shuttle("[key_name(user)] commissioned scratch-built vessel [vessel_name] at [get_area(origin)].")
@@ -1467,6 +1467,9 @@
 	if(!vessel_name)
 		to_chat(src, span_warning("That name will not do."))
 		return
+	var/form_new = choose_new_reputation_crew(src)
+	if(isnull(form_new))
+		return
 
 	to_chat(src, span_notice("You begin surveying the enclosure - [length(claim.turfs)] tiles."))
 	if(!do_after(src, HULL_SURVEY_DURATION, origin))
@@ -1481,7 +1484,7 @@
 		to_chat(src, span_warning("The helm console is no longer inside the enclosure."))
 		return
 
-	var/obj/structure/overmap/ship/vessel = commission_vessel(src, origin, fresh.turfs, vessel_name)
+	var/obj/structure/overmap/ship/vessel = commission_vessel(src, origin, fresh.turfs, vessel_name, form_new)
 	if(!vessel)
 		to_chat(src, span_warning("The survey failed to resolve into a hull."))
 		return
