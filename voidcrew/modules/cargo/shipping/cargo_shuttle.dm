@@ -84,18 +84,24 @@
  * Returns TRUE if accepted successfully
  */
 /datum/voidcrew_cargo_shuttle/proc/accept_loan()
-	if(!pending_loan)
+	if(!pending_loan || loan_accepted)
 		return FALSE
 	if(state != CARGO_SHUTTLE_AWAY)
+		return FALSE
+
+	var/datum/bank_account/receiving_account = linked_console?.bank_account_holder?.synced_bank_account
+	if(pending_loan.bonus_credits > 0 && QDELETED(receiving_account))
 		return FALSE
 
 	loan_accepted = TRUE
 
 	// Add bonus credits to the linked bank account
-	if(linked_console?.bank_account_holder?.synced_bank_account && pending_loan.bonus_credits > 0)
-		linked_console.bank_account_holder.synced_bank_account.adjust_money(pending_loan.bonus_credits)
+	if(pending_loan.bonus_credits > 0)
+		if(!receiving_account.adjust_money(pending_loan.bonus_credits))
+			loan_accepted = FALSE
+			return FALSE
 		record_transaction("loan", pending_loan.logging_desc, 1, pending_loan.bonus_credits)
-		metric_cargo_loan(pending_loan, linked_console.bank_account_holder.synced_bank_account, usr)
+		metric_cargo_loan(pending_loan, receiving_account, usr)
 
 	// Announce acceptance
 	if(target_ship)
