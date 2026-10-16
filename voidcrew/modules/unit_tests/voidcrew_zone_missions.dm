@@ -79,6 +79,9 @@
 
 /datum/mission/big_game_hunt/zone_missions_test/on_mission_started()
 
+/datum/mission/big_game_hunt/zone_missions_test/capped
+	mission_limit = 1
+
 /datum/mission/live_capture/zone_missions_test
 	weight = 0
 	mission_limit = 0
@@ -90,6 +93,9 @@
 
 /datum/mission/live_capture/zone_missions_test/on_mission_started()
 
+/datum/mission/live_capture/zone_missions_test/capped
+	mission_limit = 1
+
 /datum/mission/poacher_bust/zone_missions_test
 	weight = 0
 	mission_limit = 0
@@ -100,6 +106,9 @@
 /datum/mission/poacher_bust/zone_missions_test/update_text()
 
 /datum/mission/poacher_bust/zone_missions_test/on_mission_started()
+
+/datum/mission/poacher_bust/zone_missions_test/capped
+	mission_limit = 1
 
 /datum/mission/recovery/survey/zone_missions_test
 	weight = 0
@@ -275,11 +284,16 @@
 /datum/controller/subsystem/missions/zone_missions_test
 	var/fail_work = FALSE
 	var/work_attempts = 0
+	var/fail_first_families = 0
+	var/list/failed_families = list()
 
 /datum/controller/subsystem/missions/zone_missions_test/create_mission(mission_type, preferred_zone, posting_zone, list/eligible_zones, create_field_contact = FALSE)
-	if(zone_reputation_family(mission_type))
+	var/family = zone_reputation_family(mission_type)
+	if(family)
 		work_attempts++
-		if(fail_work)
+		if(length(failed_families) < fail_first_families)
+			failed_families |= family
+		if(fail_work || (family in failed_families))
 			return null
 	return ..()
 
@@ -581,7 +595,7 @@
 	ship.next_mission_refresh = world.time
 	TEST_ASSERT(controller.refresh_ship_missions(ship), "Scheduled shortage did not refresh")
 	TEST_ASSERT_EQUAL(length(ship.available_missions), 2, "Failed useful slots were silently filled with unrelated work")
-	TEST_ASSERT(controller.work_attempts - attempts_before <= 24, "Shortage retries were unbounded")
+	TEST_ASSERT(controller.work_attempts - attempts_before <= 48, "Shortage retries exceeded eight attempts for each of six useful families")
 	TEST_ASSERT(accepted in ship.active_missions, "Refresh removed accepted work")
 	var/obj/structure/overmap/ship/partial = make_ship()
 	var/datum/voidcrew_crew_record/record = partial.get_crew_record()
@@ -600,6 +614,69 @@
 	TEST_ASSERT_EQUAL(controller.next_work_band(record), 3, "Next unmet band was not red")
 	record.zone_totals["3"] = 9
 	TEST_ASSERT_NULL(controller.next_work_band(record), "Elite crew retained reserved progression work")
+
+/// Globally held families cannot reserve failed slots ahead of available work.
+/datum/unit_test/voidcrew_zone_missions/globally_capped_opportunities/Run()
+	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
+	var/obj/structure/overmap/ship/holder = make_ship()
+	SSovermap.simulated_ships |= holder
+	var/list/capped_types = list(
+		/datum/mission/big_game_hunt/zone_missions_test/capped,
+		/datum/mission/live_capture/zone_missions_test/capped,
+		/datum/mission/poacher_bust/zone_missions_test/capped,
+	)
+	for(var/mission_type in capped_types)
+		var/datum/mission/held = allocate(mission_type)
+		holder.available_missions += held
+		TEST_ASSERT(!mission_type_within_limit(mission_type), "Another hull's offer did not occupy its global cap")
+	controller.mission_types = capped_types + list(/datum/mission/recovery/kill/zone_missions_test)
+	var/obj/structure/overmap/ship/partial = make_ship()
+	TEST_ASSERT(controller.refresh_ship_missions(partial), "Partial useful supply did not refresh")
+	TEST_ASSERT_EQUAL(length(partial.available_missions), 5, "Globally capped families consumed otherwise available board slots")
+	TEST_ASSERT_EQUAL(controller.work_attempts, 1, "Partial supply did not reserve exactly its one available family")
+
+	controller.mission_types += /datum/mission/recovery/survey/zone_missions_test
+	controller.mission_types += /datum/mission/recovery/extraction/zone_missions_test
+	var/obj/structure/overmap/ship/ship = make_ship()
+	TEST_ASSERT(controller.refresh_ship_missions(ship), "Globally capped supply did not refresh")
+	var/list/families = list()
+	for(var/datum/mission/offer in ship.available_missions)
+		if(offer.work_receipt)
+			families |= offer.work_receipt.family
+			TEST_ASSERT_EQUAL(offer.quote_zone, 1, "Zero-standing crew received higher-band work")
+	TEST_ASSERT_EQUAL(length(families), 3, "Held hunt, capture and poacher jobs hid available useful families")
+	for(var/family in list("named_kill", "pylons", "extraction"))
+		TEST_ASSERT(family in families, "Available [family] work was not reserved")
+	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Global caps left a board vacancy despite useful supply")
+
+/// Failures use bounded retries, then the remaining useful families in the same scheduled batch.
+/datum/unit_test/voidcrew_zone_missions/remaining_families/Run()
+	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
+	controller.mission_types = list(
+		/datum/mission/recovery/kill/zone_missions_test,
+		/datum/mission/big_game_hunt/zone_missions_test,
+		/datum/mission/live_capture/zone_missions_test,
+		/datum/mission/poacher_bust/zone_missions_test,
+		/datum/mission/recovery/survey/zone_missions_test,
+		/datum/mission/recovery/extraction/zone_missions_test,
+	)
+	controller.fail_first_families = 3
+	var/obj/structure/overmap/ship/ship = make_ship()
+	TEST_ASSERT(controller.refresh_ship_missions(ship), "Scheduled fallback did not refresh")
+	TEST_ASSERT_EQUAL(length(controller.failed_families), 3, "Fixture did not exhaust the first three chosen families")
+	TEST_ASSERT_EQUAL(controller.work_attempts, 27, "Fallback did not bound retries and try all remaining families")
+	var/list/families = list()
+	for(var/datum/mission/offer in ship.available_missions)
+		if(offer.work_receipt)
+			families |= offer.work_receipt.family
+			TEST_ASSERT(!(offer.work_receipt.family in controller.failed_families), "A failed family produced an offer")
+	TEST_ASSERT_EQUAL(length(families), 3, "Remaining useful families did not fill the reserved slots")
+	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Family fallback lost a board slot")
+	var/attempts_before = controller.work_attempts
+	var/refresh_at = ship.next_mission_refresh
+	TEST_ASSERT(!controller.force_refresh_ship_missions(ship), "Family fallback allowed an immediate reroll")
+	TEST_ASSERT_EQUAL(controller.work_attempts, attempts_before, "An immediate refresh retried useful families")
+	TEST_ASSERT_EQUAL(ship.next_mission_refresh, refresh_at, "Family fallback changed the fixed refresh clock")
 
 /// Actual contact entry points fail closed at capacity and never fall back across bands.
 /datum/unit_test/voidcrew_zone_missions/capacity/Run()
@@ -694,14 +771,11 @@
 
 /// Factory output stays unloaded and uses only ordinary repeatable content in the pinned band.
 /datum/unit_test/voidcrew_zone_missions/field_contacts
-	var/list/saved_templates
 	var/turf/destination
 	var/original_type
 
 /datum/unit_test/voidcrew_zone_missions/field_contacts/Destroy()
 	. = ..()
-	if(saved_templates)
-		SSmapping.space_ruins_templates = saved_templates
 	if(destination)
 		destination.ChangeTurf(original_type)
 
@@ -718,22 +792,25 @@
 	allocated += planet
 	TEST_ASSERT_EQUAL(planet.zone_band, 2, "Field planet escaped its band")
 	TEST_ASSERT(!planet.loaded && !planet.mapzone && !planet.footprint, "Offer generation loaded a planet interior")
-	var/datum/map_template/ruin/space/repeatable = allocate(__IMPLIED_TYPE__)
-	repeatable.width = 10
-	repeatable.height = 10
-	repeatable.allow_duplicates = TRUE
-	repeatable.unpickable = FALSE
-	var/datum/map_template/ruin/space/unique = allocate(__IMPLIED_TYPE__)
-	unique.width = 10
-	unique.height = 10
-	unique.allow_duplicates = FALSE
-	unique.unpickable = TRUE
-	saved_templates = SSmapping.space_ruins_templates
-	SSmapping.space_ruins_templates = list("repeatable" = repeatable, "chart" = unique)
+	// Use the production registry: the old synthetic duplicate-enabled template hid an empty pool.
+	var/list/approved = list()
+	TEST_ASSERT_EQUAL(length(controller.mission_ruin_templates), 3, "The approved ordinary combat ruin list changed")
+	for(var/datum/map_template/ruin/space/template_type as anything in controller.mission_ruin_templates)
+		var/datum/map_template/ruin/space/template = SSmapping.space_ruins_templates[initial(template_type.name)]
+		TEST_ASSERT_NOTNULL(template, "Approved ruin [template_type] is absent from the production registry")
+		TEST_ASSERT_EQUAL(template.type, template_type, "Approved ruin resolved to a different template")
+		TEST_ASSERT(!template.unpickable && !template.allow_duplicates, "Mission approval changed natural seeding or selected unique content")
+		TEST_ASSERT(template.width > 0 && template.height > 0 && fexists(template.mappath), "Approved ruin has no production map")
+		TEST_ASSERT(controller.ruin_fits_in_level(template), "Approved ruin cannot be docked")
+		approved += template
+		// Every approved template is already in use; mission replacement must still be allowed.
+		var/obj/structure/overmap/space_ruin/existing = allocate(__IMPLIED_TYPE__, destination)
+		existing.set_ruin_template(template)
+		existing.mission_claims = 1
 	var/obj/structure/overmap/space_ruin/ruin = controller.spawn_mission_ruin(2)
 	TEST_ASSERT_NOTNULL(ruin, "An empty eligible ruin pool could not create a contact")
 	allocated += ruin
-	TEST_ASSERT_EQUAL(ruin.ruin_template, repeatable, "A field contact reused chart or unique content")
+	TEST_ASSERT(ruin.ruin_template in approved, "A field contact reused unapproved, chart or unique content")
 	TEST_ASSERT(!ruin.loaded && !ruin.mapzone && !ruin.footprint, "Offer generation loaded a ruin interior")
 	TEST_ASSERT_EQUAL(SSovermap_zones.get_zone_type(get_turf(ruin)), 2, "Field ruin escaped its pinned band")
 
