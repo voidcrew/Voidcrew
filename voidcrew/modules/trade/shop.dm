@@ -64,6 +64,8 @@
 	/// SKU typepaths on the favor-locked back-room shelf, stocked every round
 	/// (see trader_favor.dm, supply is per-crew, not shared)
 	var/list/favor_sku_types = list()
+	/// Spoken on request when this crew can order from the back room.
+	var/back_room_line
 	/// Chart/rumor SKU typepaths this shop's chart shelf draws from. Every
 	/// outpost draws independently from the same catalog: charts are deliberately
 	/// zone-mixed, so which band a tip points at has nothing to do with which
@@ -215,9 +217,7 @@
 /datum/outpost_shop/proc/roll_special()
 	var/list/eligible = list()
 	for(var/datum/shop_sku/sku as anything in skus)
-		// The back room never goes on special: a favor unique is already the
-		// cheapest it gets at Trusted, and specials stack on the max() in
-		// get_credit_price
+		// Back-room prices use only the crew's ordinary credit discount.
 		if(sku.shelf == SHELF_FAVOR)
 			continue
 		if(sku.fixed_price)
@@ -397,6 +397,15 @@
 		return null
 	return pick(lines)
 
+/datum/outpost_shop/proc/get_back_room_line(mob/user)
+	var/datum/voidcrew_crew_record/crew = get_crew_ship(user)?.get_crew_record()
+	if(!crew || !back_room_line)
+		return null
+	for(var/datum/shop_sku/sku in skus)
+		if(sku.shelf == SHELF_FAVOR && sku.has_zone_permission(crew))
+			return back_room_line
+	return null
+
 /**
  * # Shop SKU
  *
@@ -416,10 +425,12 @@
 	var/shelf = SHELF_CORE
 	/// The shop stocking this SKU (stamped by add_sku; favor pricing/gating read it)
 	var/datum/outpost_shop/shop
-	/// Favor points a buyer's crew needs before this sells (the back-room gate)
+	/// Legacy catalog field; favor only changes credit prices, never admission.
 	var/favor_required = 0
+	/// Continuing crew permission required by every occurrence of this SKU.
+	var/zone_permission = ZONE_PERMISSION_PUBLIC
 	/// Max units one crew may buy per round (0 = uncapped; favor uniques cap at
-	/// FAVOR_UNIQUE_CREW_LIMIT). Enforced per ship, see trader_favor.dm.
+	/// FAVOR_UNIQUE_CREW_LIMIT). Enforced on the continuing crew record.
 	var/crew_limit = 0
 	/// TRUE on the intel SKUs (star charts, ruin charts, rumor tips). Whenever
 	/// one of these lands on the rotating shelf, convoy_restock must never
@@ -486,12 +497,12 @@
  * applies (max, not stacked. Favor shouldn't turn a 30%-off special into 45%).
  * Without a buyer (catalog/static contexts) only the authored special shows.
  */
-/datum/shop_sku/proc/get_credit_price(mob/living/user)
+/datum/shop_sku/proc/get_credit_price(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
 	if(price_credits <= 0 || fixed_price)
 		return price_credits
 	var/pct = discount_pct
 	if(user && shop)
-		pct = max(pct, shop.get_discount_pct(get_crew_ship(user)))
+		pct = max(pct, shop.get_discount_pct(crew_ship))
 	if(!pct)
 		return price_credits
 	return max(5, round(price_credits * (100 - pct) / 100, 5))
@@ -527,6 +538,8 @@
  * Whether the user can pay right now (does not charge).
  */
 /datum/shop_sku/proc/can_afford(mob/living/user)
+	if(get_favor_denial(user))
+		return FALSE
 	if(price_vouchers > 0 && count_trade_vouchers(user) < price_vouchers)
 		return FALSE
 	if(get_credit_price(user) > 0)
@@ -535,24 +548,35 @@
 			return FALSE
 	return TRUE
 
-/**
- * The favor-shelf gate: why this buyer's crew can't have it, or null when the
- * shelf is open to them. Split out so purchase and denial share one truth.
- */
-/datum/shop_sku/proc/get_favor_denial(mob/living/user)
-	if(favor_required <= 0)
-		return null
-	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
-	if(!crew_ship)
+/// Shared by retail and contract packages; missing crew context has Public access.
+/datum/shop_sku/proc/has_zone_permission(datum/voidcrew_crew_record/crew)
+	if(zone_permission == ZONE_PERMISSION_PUBLIC)
+		return TRUE
+	return !QDELETED(crew) && crew.has_zone_permission(zone_permission)
+
+/// Legacy proc name retained for callers; trader favor no longer admits a buyer.
+/datum/shop_sku/proc/get_favor_denial(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
+	if(crew_ship && get_crew_ship(user, crew_ship) != crew_ship)
 		return "I can't clear that shipment."
-	if(!shop)
-		return "Unavailable."
-	var/favor = shop.get_favor(crew_ship)
-	if(favor < favor_required)
+	var/datum/voidcrew_crew_record/crew = crew_ship?.get_crew_record()
+	if(!has_zone_permission(crew) || (crew_limit > 0 && !crew))
 		return "I can't clear that shipment."
-	if(crew_limit > 0 && shop.get_crew_purchases(crew_ship, type) >= crew_limit)
+	if(crew_limit > 0 && (crew.favor_unique_purchases[type] || 0) >= crew_limit)
 		return "I've filled that order already."
 	return null
+
+/// Recheck the live counter even when the caller has a stale interactive UI.
+/datum/shop_sku/proc/can_trade(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	if(QDELETED(src) || QDELETED(user))
+		return FALSE
+	if(shop && (QDELETED(shop) || !(src in shop.skus)))
+		return FALSE
+	if(vendor && (QDELETED(vendor) || vendor.shop != shop || !vendor.check_menu(user)))
+		return FALSE
+	var/obj/structure/overmap/trader_outpost/outpost = shop?.outpost
+	if(outpost && (QDELETED(outpost) || outpost.is_user_barred(user) || (vendor && (vendor.outpost != outpost || !outpost.contains_site_turf(get_turf(vendor))))))
+		return FALSE
+	return TRUE
 
 /**
  * Why the user can't buy, shown as a tooltip / chat line.
@@ -566,13 +590,13 @@
 	if(price_vouchers > 0)
 		var/carrying = count_trade_vouchers(user)
 		if(carrying < price_vouchers)
-			return "Need [price_vouchers] trade voucher[price_vouchers > 1 ? "s" : ""] (carrying [carrying])."
+			return "Insufficient vouchers."
 	if(get_credit_price(user) > 0)
 		var/datum/bank_account/account = get_account(user)
 		if(!account)
 			return "No bank account on your ID."
 		if(!account.has_money(get_credit_price(user)))
-			return "Insufficient credits ([get_credit_price(user)] cr needed)."
+			return "Insufficient credits."
 	return null
 
 /**
@@ -580,29 +604,36 @@
  * over the counter. Returns TRUE on success.
  */
 /datum/shop_sku/proc/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	if(!can_trade(user, vendor))
+		return FALSE
 	if(stock <= 0 && shelf != SHELF_FAVOR)
 		return FALSE
-	if(get_favor_denial(user))
+	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
+	if(get_favor_denial(user, crew_ship))
 		return FALSE
 
 	// Validate the credit half before consuming any vouchers
-	var/credit_price = get_credit_price(user)
+	var/credit_price = get_credit_price(user, crew_ship)
 	var/datum/bank_account/account
 	if(credit_price > 0)
 		account = get_account(user)
 		if(!account || !account.has_money(credit_price))
 			return FALSE
+	if(price_vouchers > 0 && count_trade_vouchers(user) < price_vouchers)
+		return FALSE
 
 	// Reserve on the same continuing record before any debit or item creation.
 	var/datum/voidcrew_crew_record/capped_crew
-	if(shelf == SHELF_FAVOR && crew_limit > 0)
-		capped_crew = get_crew_ship(user)?.get_crew_record()
+	if(crew_limit > 0)
+		capped_crew = crew_ship?.get_crew_record()
 		if(!capped_crew?.claim_purchase(type, crew_limit))
 			return FALSE
-	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+	if(credit_price > 0 && !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
 		capped_crew?.release_purchase(type)
 		return FALSE
-	if(credit_price > 0 && !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
+	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+		if(credit_price > 0)
+			account.adjust_money(credit_price, "Trader Outpost: [name] refund")
 		capped_crew?.release_purchase(type)
 		return FALSE
 
@@ -677,7 +708,7 @@
 	return null
 
 /datum/shop_sku/barter/can_afford(mob/living/user)
-	return !!find_barter_item(user)
+	return !get_favor_denial(user) && !!find_barter_item(user)
 
 /datum/shop_sku/barter/get_denial_reason(mob/living/user)
 	if(stock <= 0 && shelf != SHELF_FAVOR)
@@ -690,16 +721,19 @@
 	return null
 
 /datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	if(!can_trade(user, vendor))
+		return FALSE
 	if(stock <= 0 && shelf != SHELF_FAVOR)
 		return FALSE
-	if(get_favor_denial(user))
+	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
+	if(get_favor_denial(user, crew_ship))
 		return FALSE
 	var/obj/item/offered = find_barter_item(user)
 	if(!offered)
 		return FALSE
 	var/datum/voidcrew_crew_record/capped_crew
-	if(shelf == SHELF_FAVOR && crew_limit > 0)
-		capped_crew = get_crew_ship(user)?.get_crew_record()
+	if(crew_limit > 0)
+		capped_crew = crew_ship?.get_crew_record()
 		if(!capped_crew?.claim_purchase(type, crew_limit))
 			return FALSE
 	if(isstack(offered))
@@ -719,11 +753,11 @@
 /proc/get_crew_ships(mob/user)
 	var/list/ships = list()
 	var/datum/voidcrew_crew_record/record = user?.mind?.get_reputation_crew()
-	if(!record)
+	if(!record || !(user.mind in record.minds))
 		return ships
 	for(var/datum/team/voidcrew/team in record.teams)
 		var/obj/structure/overmap/ship/ship = team.ship
-		if(!QDELETED(ship) && ship.ship_team == team && !ship.abandoned && !ship.retired_by_checkpoint && !ship.checkpoint_rebuilding)
+		if(!QDELETED(ship) && ship.ship_team == team && team.crew_record == record && !ship.abandoned && !ship.retired_by_checkpoint && !ship.checkpoint_rebuilding)
 			ships |= ship
 	return ships
 

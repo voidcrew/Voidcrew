@@ -34,6 +34,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 
 /datum/outpost_shop/black_market
+	back_room_line = "All right. Let's talk business."
 	outpost_name = "\improper Undertow Exchange"
 	outpost_desc = "A heavily armored den of fences and quartermasters who don't ask questions. Somehow, nobody has ever managed to rob it."
 	trader_name = "Vex"
@@ -146,7 +147,7 @@
 		/datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/black_market/rare/mod_adrenaline,
 	)
-	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/vex_insurance,
 	)
@@ -289,9 +290,10 @@
 //   one that still owes a bench a full loadout.
 
 /datum/shop_sku/black_market/mod_chassis_syndicate
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "MODsuits"
 	name = "syndicate MOD chassis"
-	desc = "A blood-red MODsuit frame with a super cell in the core and no modules whatsoever. Cheaper than a kitted suit because you're buying the armor and nothing else."
+	desc = "A blood-red MODsuit frame, sold without modules."
 	item_path = /obj/item/mod/control/pre_equipped/empty/syndicate
 	price_vouchers = 2
 	price_credits = 3600
@@ -299,9 +301,10 @@
 	stock_max = 2
 
 /datum/shop_sku/black_market/mod_chassis_elite
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	name = "elite MOD chassis"
-	desc = "The heavier plating the Syndicate issues to people it expects to get shot at, sold bare. Same deal as the red one: frame, core, cell, no modules."
+	desc = "A heavy Syndicate MODsuit frame, sold without modules."
 	item_path = /obj/item/mod/control/pre_equipped/empty/elite
 	price_vouchers = 3
 	price_credits = 5400
@@ -309,6 +312,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_interdyne
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "MODsuits"
 	name = "Interdyne MODsuit"
 	desc = "A field surgery suit: combat defibrillator, health analyzer, injector and a loaded surgical processor. Sawbones next door thinks it's the best thing Vex sells."
@@ -319,34 +323,38 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_infiltrator
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	name = "infiltrator MODsuit"
-	desc = "Silent footsteps, no name on examine, and it doesn't register as contraband. Comes with the stealth core programs already welded in."
+	desc = "A matte-black MODsuit with an unmarked control unit."
 	item_path = /obj/item/mod/control/pre_equipped/infiltrator
 	price_vouchers = 4
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_traitor
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	name = "syndicate MODsuit (equipped)"
-	desc = "The full loadout: syndicate storage, EMP shielding, shock absorbers, magnetic harness, jetpack and a DNA lock. An expedition's worth of vouchers, and it shows."
+	desc = "A blood-red MODsuit with a full complement of Syndicate modules."
 	item_path = /obj/item/mod/control/pre_equipped/traitor
 	price_vouchers = 5
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_storage
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
-	desc = "Cybersun compression storage. Twenty-one items in a back panel, and it fits things a normal storage module won't."
+	desc = "A Cybersun compression storage module."
 	item_path = /obj/item/mod/module/storage/syndicate
 	price_vouchers = 1
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/black_market/mod_plate_compression
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
-	desc = "Squeezes a stowed suit down to normal size so it fits in a bag. Nothing else fits in the suit afterwards."
+	desc = "A compact plate-compression assembly for a MODsuit."
 	item_path = /obj/item/mod/module/plate_compression
 	price_vouchers = 1
 	price_credits = 1800
@@ -354,16 +362,18 @@
 	stock_max = 2
 
 /datum/shop_sku/black_market/mod_energy_shield
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "MODsuits"
-	desc = "A back-mounted deflector that eats one incoming attack and then needs ten seconds to come back. The best defensive module money can buy here."
+	desc = "A back-mounted energy deflector."
 	item_path = /obj/item/mod/module/energy_shield
 	price_vouchers = 3
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_wraith_cloak
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
-	desc = "Bends light around the suit until you're nearly invisible. Taking a hit or throwing a punch drops it, and it drinks power."
+	desc = "An unmarked optical shroud for a MODsuit."
 	item_path = /obj/item/mod/module/stealth/wraith
 	price_vouchers = 3
 	stock_min = 1
@@ -376,9 +386,10 @@
 // defensive and dirty half, and the cloak board is a contract reward only.
 
 /datum/shop_sku/black_market/shield_generator_board
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Ship Systems"
 	name = "shield generator board"
-	desc = "The machine board for a ship shield generator. If your ship didn't spawn with one, this is the only place in the galaxy that will sell you the part."
+	desc = "The circuit board for a ship shield generator."
 	item_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
 	price_vouchers = 4
 	price_credits = 6000
@@ -386,9 +397,10 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/interdictor_board
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Ship Systems"
 	name = "interdiction system board"
-	desc = "Board for an interdictor. Holds a ship in place so it can't jump away from the fight it started."
+	desc = "The circuit board for a ship interdiction system."
 	item_path = /obj/item/circuitboard/machine/ship_combat/interdictor
 	price_vouchers = 3
 	price_credits = 4800
@@ -396,9 +408,10 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/data_siphon_board
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Ship Systems"
 	name = "data siphon board"
-	desc = "Pirate hardware that pulls credits off another ship's account while you hold a lock on it. Vex sells it without comment."
+	desc = "An off-ledger data siphon circuit board."
 	item_path = /obj/item/circuitboard/machine/ship_combat/data_siphon
 	price_vouchers = 3
 	price_credits = 3600
@@ -406,9 +419,10 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/ew_suite_board
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Ship Systems"
 	name = "electronic warfare suite board"
-	desc = "The machine board for an electronic warfare suite. Links to a weapons console and runs whatever exploit software you load into it."
+	desc = "The circuit board for an electronic warfare suite."
 	item_path = /obj/item/circuitboard/machine/ship_combat/ew_suite
 	price_vouchers = 3
 	price_credits = 3200
@@ -468,7 +482,7 @@
 /datum/shop_sku/black_market/ew_comms_blackout
 	category = "Exploit Software"
 	name = "Comms Blackout exploit cartridge"
-	desc = "Jams the target ship's internal radio net for a full minute."
+	desc = "An encrypted radio-jamming cartridge."
 	item_path = /obj/item/ew_exploit/comms_blackout
 	price_credits = 1000
 	stock_min = 1
@@ -477,7 +491,7 @@
 /datum/shop_sku/black_market/ew_sensor_ghosts
 	category = "Exploit Software"
 	name = "Ghost Contacts exploit cartridge"
-	desc = "Feeds three phantom ship contacts into the target's sensor picture."
+	desc = "An encrypted sensor-spoofing cartridge."
 	item_path = /obj/item/ew_exploit/sensor_ghosts
 	price_credits = 950
 	stock_min = 1
@@ -536,13 +550,14 @@
 /datum/shop_sku/black_market/emag
 	category = "Infiltration"
 	name = "cryptographic sequencer"
-	desc = "Opens outpost rental lockers, the cargo console's restricted list, and some colosseum machinery. That's the whole list, hence the price."
+	desc = "A cryptographic sequencer with its serial number filed off."
 	item_path = /obj/item/card/emag
 	price_vouchers = 2
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/black_market/thermals
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Infiltration"
 	item_path = /obj/item/clothing/glasses/thermal/syndi
 	price_vouchers = 3
@@ -651,6 +666,7 @@
 // ===== ROTATING SHELF =====
 
 /datum/shop_sku/black_market/rotating/mateba
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/revolver/mateba
 	price_vouchers = 1
@@ -667,12 +683,14 @@
 	price_vouchers = 3
 
 /datum/shop_sku/black_market/rotating/mod_flamethrower
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
-	desc = "A suit-mounted flamethrower. Three seconds between bursts and it costs a lot of charge, so pick your moment."
+	desc = "A suit-mounted flamethrower."
 	item_path = /obj/item/mod/module/flamethrower
 	price_vouchers = 3
 
 /datum/shop_sku/black_market/rotating/mod_chameleon
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	desc = "Disguises the whole stowed suit as some other object. Useful for walking a MODsuit past people who would object to a MODsuit."
 	item_path = /obj/item/mod/module/chameleon
@@ -688,13 +706,14 @@
 /datum/shop_sku/black_market/rotating/ew_helm_poltergeist
 	category = "Exploit Software"
 	name = "Poltergeist exploit cartridge"
-	desc = "Yanks the target's helm onto a new random heading every few seconds."
+	desc = "An encrypted helm-control exploit cartridge."
 	item_path = /obj/item/ew_exploit/helm_poltergeist
 	price_vouchers = 2
 
 // ===== RARE SHOWCASE =====
 
 /datum/shop_sku/black_market/rare/energy_sword
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Weapons"
 	item_path = /obj/item/melee/energy/sword/saber
 	price_vouchers = 4
@@ -706,8 +725,9 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/black_market/rare/mod_adrenaline
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
-	desc = "Spider Clan chemistry in a suit module. Clears stamina damage and every immobilizing effect, then needs 20u of radium before it will do it again. Can't be uninstalled once fitted."
+	desc = "A sealed Spider Clan chemical injector for a MODsuit."
 	item_path = /obj/item/mod/module/adrenaline_boost
 	price_vouchers = 3
 
@@ -793,13 +813,14 @@
 	demand_max = 5
 
 // ===== BACK ROOM =====
-// Vex's favor unique: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Vex's favor unique: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/vex_insurance
+	zone_permission = ZONE_PERMISSION_ELITE
 	name = "Vex's insurance policy"
-	desc = "A one-shot casualty implant: the first time your body starts shutting down, it floods you with stabilizer and recalls you to your registered ship. One claim per policy. Vex does not discuss the actuarial tables."
+	desc = "A casualty implant bearing Vex's seal."
 	item_path = /obj/item/implanter/vex_insurance
 	price_credits = 3000
 	price_vouchers = 3
@@ -826,6 +847,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/black_market/c20r
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/automatic/c20r/unrestricted
 	price_credits = 3600
@@ -837,6 +859,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/black_market/wt550
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/automatic/wt550
 	price_credits = 4200
