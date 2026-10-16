@@ -58,6 +58,59 @@
 
 /datum/unit_test/voidcrew_mission_wiring
 
+/// Pirate quotes retain their variance, loot tier and tracking deduction after the cash cut.
+/datum/unit_test/voidcrew_pirate_bounty_pay
+	var/turf/open/overmap/overmap_tile
+	var/original_turf_type
+	var/metrics_were_accepting
+
+/datum/unit_test/voidcrew_pirate_bounty_pay/New()
+	. = ..()
+	metrics_were_accepting = SSmetrics.accepting
+	SSmetrics.accepting = FALSE
+
+/datum/unit_test/voidcrew_pirate_bounty_pay/Destroy()
+	if(overmap_tile)
+		overmap_tile.current_zone = null
+		overmap_tile.ChangeTurf(original_turf_type)
+	SSmetrics.accepting = metrics_were_accepting
+	return ..()
+
+/datum/unit_test/voidcrew_pirate_bounty_pay/Run()
+	original_turf_type = run_loc_floor_bottom_left.type
+	overmap_tile = run_loc_floor_bottom_left.ChangeTurf(/turf/open/overmap)
+	var/obj/structure/overmap/ship/winner = allocate(/obj/structure/overmap/ship)
+	winner.ship_account = allocate(/datum/bank_account)
+	// Zone (ZONE_YELLOW/RED), low/base/high quote, tracking fee, tracked payout.
+	var/list/cases = list(list(2, 3200, 4000, 4800, 1000, 3000), list(3, 9600, 12000, 14400, 3000, 9000))
+	var/list/reward_rolls = list(80, 100, 120)
+	for(var/list/pay_case as anything in cases)
+		overmap_tile.current_zone = allocate(/datum/overmap_zone, pay_case[1])
+		var/obj/structure/overmap/ship/npc/pirate = allocate(/obj/structure/overmap/ship/npc, overmap_tile)
+		// Teardown must not refill the live pirate pool.
+		pirate.spawner_resolved = TRUE
+		var/obj/item/ship_key/key = allocate(/obj/item/ship_key, run_loc_floor_top_right, pirate)
+		key.spawner_notified = TRUE
+		for(var/tracking in list(FALSE, TRUE))
+			var/datum/pirate_bounty/bounty = allocate(/datum/pirate_bounty, pirate, key)
+			TEST_ASSERT(bounty.reward >= pay_case[2] && bounty.reward <= pay_case[4], "Generated pirate quote is outside the reduced band")
+			TEST_ASSERT_EQUAL(bounty.is_heavy_bounty, pay_case[1] == 3, "The cash cut changed the pirate loot tier")
+			for(var/index in 1 to length(reward_rolls))
+				TEST_ASSERT_EQUAL(bounty.calculate_reward(pirate, reward_rolls[index]), pay_case[index + 1], "Wrong pirate bounty quote at [reward_rolls[index]]%")
+			bounty.reward = bounty.calculate_reward(pirate, 100)
+			TEST_ASSERT_EQUAL(bounty.get_tracking_cost(), pay_case[5], "Tracking cost did not follow the reduced quote")
+			TEST_ASSERT(bounty.add_claimant(winner), "Could not accept the pirate bounty")
+			TEST_ASSERT(bounty.can_turn_in(key, winner), "The matching pirate key was refused")
+			if(tracking)
+				TEST_ASSERT(bounty.enable_tracking(winner), "Could not enable pirate tracking")
+			var/expected_pay = tracking ? pay_case[6] : pay_case[3]
+			var/balance_before = winner.ship_account.account_balance
+			TEST_ASSERT_EQUAL(bounty.complete(winner, null), expected_pay, "Pirate completion returned the wrong payment")
+			TEST_ASSERT_EQUAL(winner.ship_account.account_balance - balance_before, expected_pay, "Pirate completion credited the wrong payment")
+			TEST_ASSERT(!bounty.can_turn_in(key, winner), "A completed pirate bounty accepted its key again")
+			TEST_ASSERT_EQUAL(bounty.complete(winner, null), 0, "A completed pirate bounty paid twice")
+			TEST_ASSERT_EQUAL(winner.ship_account.account_balance - balance_before, expected_pay, "Duplicate completion changed the ship balance")
+
 /// Steal-objective guns exist at spawn; opening any gun cache yields one gun total.
 /datum/unit_test/voidcrew_pirate_reward_guns/Run()
 	var/list/cache_guns = list(
