@@ -12,6 +12,26 @@
 
 /datum/loot_theme/research
 	name = "research"
+	gun_chance = LOOT_GUN_CHANCE_RESEARCH
+	gun_pool = LOOT_GUN_POOL_SYNDICATE
+	gun_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/energy/e_gun/mini = 1,
+			/obj/item/gun/energy/laser/retro = 1,
+		),
+		LOOT_WEAPON_RED = list(
+			/obj/item/gun/energy/event_horizon = 1,
+			/obj/item/gun/energy/laser/carbine = 1,
+			/obj/item/gun/energy/lasercannon/unrestricted = 1,
+			/obj/item/gun/energy/recharge/ebow = 1,
+			/obj/item/gun/energy/temperature/unrestricted = 1,
+		),
+	)
+	melee_extras = list(
+		LOOT_WEAPON_RED = list(
+			/obj/item/singularityhammer = 1,
+		),
+	)
 	guard_themes = list(/obj/effect/zone_mobs/bug, /obj/effect/zone_mobs/bug/boss)
 	theme_skus = list(
 		/datum/shop_sku/ripperdoc/doppler,
@@ -26,8 +46,6 @@
 		/obj/item/petri_dish = 6,
 		/obj/item/experi_scanner = 5,
 		/obj/item/research_notes/loot/tiny = 5,
-		// containment sidearm: every lab that kept specimens kept one
-		/obj/item/gun/energy/e_gun/mini = 5,
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
 	)
 	loot_uncommon = list(
@@ -39,8 +57,6 @@
 		/obj/item/slime_extract/gold = 5,
 		/obj/item/clothing/glasses/night = 5,
 		/obj/item/research_notes/loot/small = 5,
-		/obj/item/gun/energy/laser/retro = 6,
-		/obj/item/gun/energy/recharge/ebow = 4,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
 		/obj/item/ship_parts/science = 7,
 		// lab hardware worn instead of carried: a sonar transceiver socketed
@@ -57,10 +73,6 @@
 		/obj/item/slime_extract/adamantine = 5,
 		/obj/item/research_notes/loot/medium = 5,
 		/obj/item/clothing/shoes/bhop = 4,
-		/obj/item/gun/energy/xray = 4,
-		// finished blueprint gun, prime only: the annex built its own
-		/obj/item/gun/energy/laser/carbine = 4,
-		/obj/item/gun/energy/temperature/unrestricted = 4,
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
 		/obj/item/assembly/signaler/anomaly/grav = 3,
 		/obj/item/storage/backpack/holding = 2,
@@ -68,11 +80,8 @@
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/research_notes/loot/big = 4,
-		/obj/item/gun/energy/lasercannon/unrestricted = 3,
 		/obj/item/book/granter/action/spell/charge = 2,
-		/obj/item/gun/magic/wand/polymorph = 2,
 		/obj/item/research_notes/loot/genius = 2,
-		/obj/item/singularityhammer = 2,
 		// the annex's own interface work: a skull jack that flies a ship from
 		// anywhere aboard it, as long as the hull still has a helm console
 		/obj/item/organ/cyberimp/cyberware/rigger = 2,
@@ -87,8 +96,6 @@
 		/obj/item/reagent_containers/cup/beaker/entangled = 2,
 		/obj/item/clothing/gloves/fingerless/chronal_splint = 1,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 1,
-		// no longer researchable: three shots and no way to recharge it
-		/obj/item/gun/energy/event_horizon = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/research

@@ -33,20 +33,98 @@
 /obj/item/gun/energy/temperature/unrestricted
 	pin = /obj/item/firing_pin
 
-/**
- * The armory contraband spawner is scattered through a dozen ruins, and its two
- * `/contraband` pistols roll a 1-in-10 clown pin on spawn: usually a gun the
- * finder simply cannot fire, and on the super-ultra roll one that detonates in
- * their hands. Same guns, same odds, without the coin flip.
- */
+// Incidental contraband rolls cannot bypass the guarded weapon ladder.
 /obj/effect/spawner/random/contraband/armory
 	loot = list(
-		/obj/item/gun/ballistic/automatic/pistol = 80,
-		/obj/item/gun/ballistic/shotgun/automatic/combat = 50,
-		/obj/item/storage/box/syndie_kit/throwing_weapons = 30,
-		/obj/item/grenade/clusterbuster/teargas = 20,
-		/obj/item/grenade/clusterbuster = 20,
-		/obj/item/gun/ballistic/automatic/pistol/deagle,
-		/obj/item/gun/ballistic/revolver/mateba = 9,
-		/obj/item/gun/ballistic/revolver/reverse/mateba = 1,
+		/obj/item/knife/combat/survival = 1,
+		/obj/item/spear = 1,
+		/obj/item/hatchet = 1,
+		/obj/item/melee/baseball_bat = 1,
 	)
+
+/// Main entries have equal weight; theme-specific retained variants have weight one.
+GLOBAL_LIST_INIT(loot_gun_pools, list(
+	LOOT_GUN_POOL_ARMORY = list(
+		LOOT_WEAPON_GREEN = list(
+			/obj/item/gun/ballistic/rifle/boltaction/surplus = 10,
+		),
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/energy/laser = 10,
+			/obj/item/gun/energy/e_gun = 10,
+			/obj/item/gun/ballistic/automatic/wt550 = 10,
+		),
+		LOOT_WEAPON_RED = list(
+			/obj/item/gun/energy/laser/carbine = 10,
+			/obj/item/gun/energy/lasercannon/unrestricted = 10,
+			/obj/item/gun/energy/laser/scatter = 10,
+			/obj/item/gun/ballistic/rifle/sniper_rifle = 10,
+			/obj/item/gun/ballistic/shotgun/automatic/combat = 10,
+		),
+	),
+	LOOT_GUN_POOL_SYNDICATE = list(
+		LOOT_WEAPON_GREEN = list(
+			/obj/item/gun/ballistic/automatic/pistol = 10,
+		),
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/c20r/unrestricted = 10,
+			/obj/item/gun/ballistic/automatic/mini_uzi = 10,
+		),
+		LOOT_WEAPON_RED = list(
+			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = 10,
+			/obj/item/gun/energy/xray = 10,
+			/obj/item/gun/energy/e_gun/nuclear = 10,
+		),
+	),
+	LOOT_GUN_POOL_PLUNDER = list(
+		LOOT_WEAPON_GREEN = list(
+			/obj/item/gun/ballistic/revolver/c38/detective = 10,
+			/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
+		),
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/revolver = 10,
+			/obj/item/gun/ballistic/automatic/tommygun = 10,
+		),
+		LOOT_WEAPON_RED = list(
+			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,
+			/obj/item/gun/energy/laser/hellgun = 10,
+		),
+	),
+	LOOT_GUN_POOL_FREIGHT = list(
+		LOOT_WEAPON_GREEN = list(
+			/obj/item/gun/ballistic/rifle/boltaction/surplus = 10,
+			/obj/item/gun/ballistic/automatic/pistol = 10,
+			/obj/item/gun/ballistic/revolver/c38/detective = 10,
+			/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
+		),
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/shotgun/riot = 10,
+			/obj/item/gun/ballistic/automatic/tommygun = 10,
+			/obj/item/gun/ballistic/automatic/mini_uzi = 10,
+		),
+	),
+))
+
+GLOBAL_LIST_INIT(loot_melee_pools, list(
+	LOOT_WEAPON_GREEN = list(
+		/obj/item/knife/combat/survival = 10,
+		/obj/item/spear = 10,
+		/obj/item/hatchet = 10,
+		/obj/item/melee/baseball_bat = 10,
+	),
+	LOOT_WEAPON_YELLOW = list(
+		/obj/item/knife/combat = 10,
+		/obj/item/claymore/shortsword = 10,
+		/obj/item/melee/baseball_bat/ablative = 10,
+		/obj/item/fireaxe = 10,
+		/obj/item/melee/cleric_mace = 10,
+		/obj/item/melee/sabre = 10,
+	),
+	LOOT_WEAPON_RED = list(
+		/obj/item/claymore = 10,
+		/obj/item/claymore/cutlass = 10,
+		/obj/item/katana = 10,
+		/obj/item/mjollnir = 10,
+		/obj/item/melee/energy/sword/saber = 10,
+		/obj/item/melee/energy/sword/pirate = 10,
+	),
+))

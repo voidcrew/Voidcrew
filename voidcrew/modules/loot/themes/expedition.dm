@@ -17,6 +17,20 @@
 
 /datum/loot_theme/expedition
 	name = "expedition"
+	gun_chance = LOOT_GUN_CHANCE_EXPEDITION
+	gun_pool = LOOT_GUN_POOL_ARMORY
+	gun_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/rifle/boltaction = 1,
+			/obj/item/gun/ballistic/rifle/boltaction/prime = 1,
+			/obj/item/gun/ballistic/shotgun/riot = 1,
+		),
+	)
+	melee_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/kinetic_crusher = 1,
+		),
+	)
 	guard_themes = list(
 		/obj/effect/zone_mobs/wildlife,
 		/obj/effect/zone_mobs/wildlife/boss,
@@ -31,8 +45,6 @@
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
-		/obj/item/knife/combat/survival = 9,
-		/obj/item/gun/ballistic/rifle/boltaction/surplus = 8,
 		/obj/item/gps/mining = 8,
 		/obj/item/flashlight/flare = 8,
 		/obj/item/stack/marker_beacon/thirty = 6,
@@ -50,9 +62,6 @@
 		/obj/item/pickaxe/diamond = 7,
 		/obj/item/t_scanner/adv_mining_scanner/lesser = 6,
 		/obj/item/wormhole_jaunter = 6,
-		// wildlife stoppers: the KA is a mining tool first, these are not
-		/obj/item/gun/ballistic/shotgun/riot = 6,
-		/obj/item/gun/ballistic/rifle/boltaction = 5,
 		/obj/item/survivalcapsule = 5,
 		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
 		/obj/item/gun/energy/plasmacutter = 4,
@@ -67,14 +76,8 @@
 		/obj/item/clothing/shoes/bhop = 7,
 		/obj/item/resonator = 7,
 		/obj/item/gun/energy/plasmacutter/adv = 6,
-		/obj/item/gun/ballistic/shotgun/automatic/combat = 6,
-		/obj/item/gun/energy/laser = 5,
-		/obj/item/kinetic_crusher = 5,
 		/obj/item/clothing/glasses/heat = 4,
 		/obj/item/clothing/suit/hooded/cloak/drake = 2,
-		// the deepest slice of the theme, previously reachable only through
-		// a sealed cache: now the long tail of prime, open to any band
-		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
 		// top-end survey chrome: eyes that pulse ore through rock, the wrist
 		// winch that exists nowhere else, and four tiles of standing jump
 		/obj/item/organ/eyes/robotic/cyberware/prospector = 3,
