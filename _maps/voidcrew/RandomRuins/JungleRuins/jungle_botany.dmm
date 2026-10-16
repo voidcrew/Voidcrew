@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos/centcom;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/turf/open/floor/iron,
+/area/overmap_encounter/planet_ruin)
 "aM" = (
 /obj/structure/table,
 /obj/item/disk/data,
@@ -438,6 +445,13 @@
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/iron,
 /area/overmap_encounter/planet_ruin)
+"RO" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos/centcom;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/turf/open/floor/iron,
+/area/overmap_encounter/planet_ruin)
 "Se" = (
 /obj/structure/closet/secure_closet/personal,
 /turf/open/floor/iron,
@@ -509,10 +523,6 @@
 /obj/item/toy/cards/deck/tarot,
 /turf/open/floor/iron,
 /area/overmap_encounter/planet_ruin)
-"Zq" = (
-/obj/machinery/suit_storage_unit/ert/engineer,
-/turf/open/floor/iron,
-/area/overmap_encounter/planet_ruin)
 "ZO" = (
 /obj/structure/bed,
 /obj/item/bedsheet/green,
@@ -547,10 +557,10 @@ Sh
 "}
 (2,1,1) = {"
 nF
-Zq
+aa
 Hu
 Hu
-Zq
+RO
 XO
 aM
 Vn

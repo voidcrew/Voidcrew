@@ -38,6 +38,14 @@
 /obj/effect/mapping_helpers/airlock/access/all/away/security,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/waystation/securestorage)
+"aQ" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/waystation)
 "be" = (
 /obj/structure/toilet{
 	dir = 8
@@ -2906,12 +2914,6 @@
 /obj/item/multitool,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/waystation/power)
-"YD" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/waystation)
 "YX" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
@@ -4278,7 +4280,7 @@ dm
 QN
 QN
 TT
-YD
+aQ
 ym
 bN
 TT

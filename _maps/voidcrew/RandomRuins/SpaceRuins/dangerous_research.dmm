@@ -300,6 +300,14 @@
 /obj/effect/decal/cleanable/blood/gibs/robot_debris/up,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/dangerous_research/medical)
+"ei" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/effect/turf_decal/tile/purple/diagonal_edge,
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/iron/diagonal,
+/area/ruin/space/has_grav/dangerous_research)
 "eq" = (
 /obj/effect/turf_decal/tile/purple/anticorner/contrasted{
 	dir = 4
@@ -3199,12 +3207,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dark/diagonal,
 /area/ruin/space/has_grav/dangerous_research/dorms)
-"PL" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/effect/turf_decal/tile/purple/diagonal_edge,
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/iron/diagonal,
-/area/ruin/space/has_grav/dangerous_research)
 "PM" = (
 /obj/item/stack/rods/ten,
 /obj/effect/decal/cleanable/blood/bubblegum,
@@ -4650,7 +4652,7 @@ Hq
 Hq
 RD
 pk
-PL
+ei
 ax
 Cq
 Bq

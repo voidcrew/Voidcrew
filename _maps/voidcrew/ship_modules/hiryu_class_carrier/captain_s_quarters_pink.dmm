@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bkb" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 29
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
 "buH" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/machinery/computer/bank_machine{
@@ -93,15 +102,6 @@
 /obj/modular_map_connector,
 /turf/open/floor/iron/dollhouse,
 /area/template_noop)
-"xfu" = (
-/obj/structure/displaycase/captain{
-	start_showpiece_type = /obj/item/katana
-	},
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_y = 29
-	},
-/turf/open/floor/wood/mahogany,
-/area/template_noop)
 
 (1,1,1) = {"
 sJk
@@ -132,7 +132,7 @@ uhQ
 "}
 (4,1,1) = {"
 nXX
-xfu
+bkb
 vTp
 ssU
 buH

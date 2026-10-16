@@ -127,6 +127,13 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
+"aA" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/syndicate_forgotten_ship)
 "aB" = (
 /obj/structure/chair/comfy/black,
 /turf/open/floor/carpet/royalblack,
@@ -433,13 +440,6 @@
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "bI" = (
 /turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/syndicate_forgotten_ship)
-"bJ" = (
-/obj/machinery/suit_storage_unit/syndicate{
-	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/black;
-	suit_type = /obj/item/clothing/suit/space/syndicate/black
-	},
-/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "bL" = (
 /obj/structure/tank_dispenser/oxygen,
@@ -1030,19 +1030,19 @@
 /obj/effect/spawner/random/contraband/armory,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
+"ly" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/syndicate_forgotten_ship)
 "lQ" = (
 /obj/machinery/ore_silo,
 /obj/machinery/light/directional/west,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/syndicate_forgotten_cargopod)
-"ml" = (
-/obj/machinery/suit_storage_unit/syndicate{
-	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/black;
-	suit_type = /obj/item/clothing/suit/space/syndicate/black
-	},
-/obj/machinery/light/small/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/syndicate_forgotten_ship)
 "mm" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1197,6 +1197,13 @@
 /obj/item/storage/box/firingpins/syndicate,
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/syndicate_forgotten_ship)
+"PW" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/syndicate_forgotten_ship)
 "VF" = (
 /obj/structure/table/reinforced,
@@ -2366,7 +2373,7 @@ aP
 al
 bZ
 al
-bJ
+PW
 bZ
 aa
 aa
@@ -2413,7 +2420,7 @@ aP
 al
 bZ
 al
-ml
+ly
 bZ
 aa
 aa
@@ -2507,7 +2514,7 @@ aL
 al
 an
 al
-bJ
+aA
 bZ
 aa
 aa

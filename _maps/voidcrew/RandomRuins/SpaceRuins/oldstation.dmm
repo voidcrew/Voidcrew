@@ -68,6 +68,16 @@
 /obj/effect/zone_mobs/bug/boss,
 /turf/open/floor/engine/airless,
 /area/ruin/space/ancientstation/beta/supermatter)
+"an" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/suit_storage_unit/ruin_zone{
+	storage_type = /obj/item/tank/internals/oxygen/yellow
+	},
+/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/ancientstation/charlie/engie)
 "ao" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien/drone,
@@ -803,6 +813,18 @@
 	},
 /turf/open/floor/iron/airless,
 /area/ruin/space/ancientstation/beta/medbay)
+"dG" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/suit_storage_unit/ruin_zone{
+	storage_type = /obj/item/tank/jetpack/void
+	},
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/effect/mapping_helpers/airalarm/away_general_access,
+/turf/open/floor/iron,
+/area/ruin/space/ancientstation/beta/mining)
 "dH" = (
 /obj/structure/lattice/catwalk,
 /turf/template_noop,
@@ -2645,14 +2667,6 @@
 /obj/item/shard/plasma,
 /turf/open/floor/engine/airless,
 /area/ruin/space/ancientstation/beta/supermatter)
-"lJ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/suit_storage_unit/void_old,
-/obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
-	dir = 4
-	},
-/turf/open/floor/iron,
-/area/ruin/space/ancientstation/charlie/engie)
 "lO" = (
 /obj/machinery/door/poddoor{
 	id = "proto"
@@ -4039,16 +4053,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/ruin/space/ancientstation/charlie/hall)
-"ur" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/suit_storage_unit/void_old/jetpack,
-/obj/effect/turf_decal/tile/brown/half/contrasted{
-	dir = 8
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/effect/mapping_helpers/airalarm/away_general_access,
-/turf/open/floor/iron,
-/area/ruin/space/ancientstation/beta/mining)
 "uv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -11113,7 +11117,7 @@ aa
 Hf
 jV
 ci
-ur
+dG
 pP
 WI
 mW
@@ -12043,7 +12047,7 @@ jE
 zJ
 mY
 kQ
-lJ
+an
 oP
 en
 zZ

@@ -225,6 +225,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
+"ep" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "ew" = (
 /obj/item/kirbyplants/random,
 /obj/machinery/light/small{
@@ -2779,19 +2792,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/nitrogen_output,
 /turf/open/floor/engine/n2,
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/a)
-"Os" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "Ov" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/kitchen/a)
@@ -2875,6 +2875,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"Py" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "PA" = (
 /obj/structure/rack,
 /obj/item/pickaxe,
@@ -3177,16 +3190,6 @@
 /obj/structure/table/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
-"TS" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "TX" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 8;
@@ -4648,7 +4651,7 @@ jK
 Pd
 jK
 CO
-Os
+ep
 xU
 Gh
 CO
@@ -5084,7 +5087,7 @@ oZ
 YY
 LL
 Ta
-TS
+Py
 KT
 FQ
 lI
