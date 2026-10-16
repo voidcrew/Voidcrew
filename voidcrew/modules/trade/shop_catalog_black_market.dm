@@ -58,14 +58,14 @@
 	)
 	sku_types = list(
 		// Weapons
-		/datum/shop_sku/black_market/pistol,
+		/datum/shop_sku/black_market/boarding_axe,
+		/datum/shop_sku/black_market/cutlass,
+		/datum/shop_sku/black_market/c20r,
+		/datum/shop_sku/black_market/wt550,
+		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
-		/datum/shop_sku/black_market/revolver,
 		/datum/shop_sku/black_market/speedloader,
-		/datum/shop_sku/black_market/suppressor,
 		/datum/shop_sku/black_market/quiet_word_mag,
-		/datum/shop_sku/black_market/combat_knife,
-		/datum/shop_sku/black_market/switchblade,
 		// Explosives
 		/datum/shop_sku/black_market/c4,
 		/datum/shop_sku/black_market/emp_grenade,
@@ -136,25 +136,19 @@
 	)
 	chart_picks = 3
 	rotating_pool = list(
-		/datum/shop_sku/black_market/rotating/mateba,
-		/datum/shop_sku/black_market/rotating/ebow,
 		/datum/shop_sku/black_market/rotating/minibomb,
-		/datum/shop_sku/black_market/rotating/dart_pistol,
 		/datum/shop_sku/black_market/rotating/mod_flamethrower,
 		/datum/shop_sku/black_market/rotating/mod_chameleon,
-		/datum/shop_sku/black_market/rotating/mod_active_sonar,
 		/datum/shop_sku/black_market/rotating/ew_runaway_burn,
 		/datum/shop_sku/black_market/rotating/ew_helm_poltergeist,
 	)
 	rare_pool = list(
 		/datum/shop_sku/black_market/rare/energy_sword,
-		/datum/shop_sku/black_market/rare/energy_shield,
 		/datum/shop_sku/black_market/rare/mod_adrenaline,
 	)
 	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/vex_insurance,
-		/datum/shop_sku/favor/quiet_word,
 	)
 	// The consignment window: Vex fences planet exotics and ruin loot at the
 	// best rates in the system. Voucher payouts are strictly planet/danger-gated.
@@ -227,27 +221,12 @@
 
 // ===== WEAPONS =====
 
-/datum/shop_sku/black_market/pistol
-	category = "Weapons"
-	item_path = /obj/item/gun/ballistic/automatic/pistol
-	price_vouchers = 2
-	price_credits = 1500
-	stock_min = 2
-	stock_max = 4
-
 /datum/shop_sku/black_market/pistol_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m9mm
 	price_credits = 900
 	stock_min = 4
 	stock_max = 8
-
-/datum/shop_sku/black_market/revolver
-	category = "Weapons"
-	item_path = /obj/item/gun/ballistic/revolver
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 2
 
 /datum/shop_sku/black_market/speedloader
 	category = "Weapons"
@@ -256,35 +235,13 @@
 	stock_min = 2
 	stock_max = 5
 
-/datum/shop_sku/black_market/suppressor
-	category = "Weapons"
-	item_path = /obj/item/suppressor
-	price_credits = 1200
-	stock_min = 2
-	stock_max = 4
-
-// Feeds the back room's Quiet Word (and any 10mm pistol); on the open shelf so
-// the gun stays fed after the one-per-crew purchase is spent
+// Reloads for salvaged 10mm pistols.
 /datum/shop_sku/black_market/quiet_word_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m10mm/quiet_word
 	price_credits = 1000 // PROVISIONAL BALANCE. A shade over the 9mm mag; 10mm hits harder
 	stock_min = 3
 	stock_max = 6
-
-/datum/shop_sku/black_market/combat_knife
-	category = "Weapons"
-	item_path = /obj/item/knife/combat
-	price_credits = 1050
-	stock_min = 2
-	stock_max = 4
-
-/datum/shop_sku/black_market/switchblade
-	category = "Weapons"
-	item_path = /obj/item/switchblade
-	price_credits = 900
-	stock_min = 2
-	stock_max = 4
 
 // ===== EXPLOSIVES =====
 
@@ -640,29 +597,32 @@
 // through chart_pool above. The generic rumor rides the core shelf.
 
 // ===== MYSTERY CARGO =====
-// The gamble channel, sold over the counter: sealed caches rolling the zone
-// loot tables. The crate pins its band to the spawn turf, bought at the
-// Undertow, it rolls on lawless odds. The reinforced one is not a different
-// table, just a fuller crate; nothing here is unobtainable from a cache
-// found in the field.
+// Bought caches keep syndicate supplies but use freight weapon odds and classes.
+// The premium crate adds nonweapon draws only.
 
 /datum/shop_sku/black_market/mystery_cache
 	category = "Mystery Cargo"
 	name = "sealed cache"
 	desc = "A locked syndicate supply cache, contents sight-unseen. Vex guarantees it's worth something. Vex guarantees nothing else."
-	item_path = /obj/structure/closet/crate/zone_loot/syndicate
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate/trader
 	price_vouchers = 2
-	stock_min = 2
-	stock_max = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/black_market/mystery_cache_rare
 	category = "Mystery Cargo"
 	name = "reinforced cache"
 	desc = "The good crate. The one from the back room. Even Vex looks curious when one moves."
-	item_path = /obj/structure/closet/crate/zone_loot/syndicate/reinforced
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate/trader/reinforced
 	price_vouchers = 4
 	stock_min = 1
 	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 // ===== SUNDRIES =====
 
@@ -693,23 +653,18 @@
 /datum/shop_sku/black_market/rotating/mateba
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/revolver/mateba
-	price_vouchers = 4
-
-/datum/shop_sku/black_market/rotating/ebow
-	category = "Weapons"
-	name = "miniature energy crossbow"
-	item_path = /obj/item/gun/energy/recharge/ebow
-	price_vouchers = 6
+	price_vouchers = 1
+	price_credits = 3000
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/black_market/rotating/minibomb
 	category = "Explosives"
 	item_path = /obj/item/grenade/syndieminibomb
 	price_vouchers = 3
-
-/datum/shop_sku/black_market/rotating/dart_pistol
-	category = "Weapons"
-	item_path = /obj/item/gun/syringe/syndicate
-	price_vouchers = 2
 
 /datum/shop_sku/black_market/rotating/mod_flamethrower
 	category = "MODsuits"
@@ -721,12 +676,6 @@
 	category = "MODsuits"
 	desc = "Disguises the whole stowed suit as some other object. Useful for walking a MODsuit past people who would object to a MODsuit."
 	item_path = /obj/item/mod/module/chameleon
-	price_vouchers = 2
-
-/datum/shop_sku/black_market/rotating/mod_active_sonar
-	category = "MODsuits"
-	desc = "Pings for living things around you and puts them on your HUD. Everyone in earshot hears the ping too."
-	item_path = /obj/item/mod/module/active_sonar
 	price_vouchers = 2
 
 /datum/shop_sku/black_market/rotating/ew_runaway_burn
@@ -749,11 +698,12 @@
 	category = "Weapons"
 	item_path = /obj/item/melee/energy/sword/saber
 	price_vouchers = 4
-
-/datum/shop_sku/black_market/rare/energy_shield
-	category = "Weapons"
-	item_path = /obj/item/shield/energy
-	price_vouchers = 3
+	price_credits = 4000
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/black_market/rare/mod_adrenaline
 	category = "MODsuits"
@@ -843,7 +793,7 @@
 	demand_max = 5
 
 // ===== BACK ROOM =====
-// Vex's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Vex's favor unique: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
@@ -854,7 +804,141 @@
 	price_credits = 3000
 	price_vouchers = 3
 
-/datum/shop_sku/favor/quiet_word
-	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine/quiet_word
-	price_credits = 2000
+// ===== COUNTER ARMS =====
+
+/datum/shop_sku/black_market/boarding_axe
+	category = "Weapons"
+	item_path = /obj/item/fireaxe/boardingaxe
+	price_credits = 2400
+	price_vouchers = 0
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/cutlass
+	category = "Weapons"
+	item_path = /obj/item/claymore/cutlass
+	price_credits = 3000
 	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/c20r
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/c20r/unrestricted
+	price_credits = 3600
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/wt550
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/wt550
+	price_credits = 4200
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/// Counter-bought caches retain themed supplies, with a single freight weapon roll.
+/// Kept separate from guarded caches so buying a crate cannot buy advanced guns.
+/obj/structure/closet/crate/zone_loot/syndicate/trader
+	var/manifest_opened = FALSE
+
+/obj/structure/closet/crate/zone_loot/syndicate/trader/reinforced
+	name = "reinforced syndicate cache"
+	desc = "A matte-black drop crate in an extra layer of plating."
+	bonus_draws = 2
+
+/// Replaces the guarded-cache payout; deliberately does not call its parent.
+/obj/structure/closet/crate/zone_loot/syndicate/trader/PopulateContents()
+	if(manifest_opened)
+		return
+	manifest_opened = TRUE
+	if(isnull(loot_zone))
+		loot_zone = SSovermap_zones.get_zone_type_anywhere(spawn_turf)
+	if(isnull(loot_zone))
+		loot_zone = ZONE_GREEN
+	spawn_turf = null
+
+	var/list/pools = get_supply_pools()
+	var/draws_min = ZONE_LOOT_DRAWS_MIN_GREEN
+	var/draws_max = ZONE_LOOT_DRAWS_MAX_GREEN
+	var/list/tier_odds = ZONE_LOOT_ODDS_GREEN
+	switch(loot_zone)
+		if(ZONE_YELLOW)
+			draws_min = ZONE_LOOT_DRAWS_MIN_YELLOW
+			draws_max = ZONE_LOOT_DRAWS_MAX_YELLOW
+			tier_odds = ZONE_LOOT_ODDS_YELLOW
+		if(ZONE_RED)
+			draws_min = ZONE_LOOT_DRAWS_MIN_RED
+			draws_max = ZONE_LOOT_DRAWS_MAX_RED
+			tier_odds = ZONE_LOOT_ODDS_RED
+	// The weapon replaces one ordinary draw; premium draws remain supplies.
+	roll_loot_draws(src, pools, rand(draws_min, draws_max) - 1 + bonus_draws, tier_odds)
+	var/weapon_path = roll_weapon()
+	new weapon_path(src)
+	var/spare_ammo = GLOB.loot_gun_spare_ammo[weapon_path]
+	if(spare_ammo)
+		new spare_ammo(src)
+
+/// Working copies only: filtering a bought crate must never change field loot.
+/obj/structure/closet/crate/zone_loot/syndicate/trader/proc/get_supply_pools()
+	var/datum/loot_theme/loot_theme = GLOB.loot_themes[theme]
+	var/list/pools = list(
+		"[LOOT_TIER_COMMON]" = loot_theme.loot_common.Copy(),
+		"[LOOT_TIER_UNCOMMON]" = loot_theme.loot_uncommon.Copy(),
+		"[LOOT_TIER_PRIME]" = loot_theme.loot_prime.Copy(),
+		"[LOOT_TIER_UNIQUE]" = loot_theme.loot_uniques.Copy(),
+	)
+	for(var/tier in pools)
+		var/list/pool = pools[tier]
+		for(var/loot_path in pool.Copy())
+			if(ispath(loot_path, /obj/item/gun) || ispath(loot_path, /obj/item/knife) || ispath(loot_path, /obj/item/melee) \
+				|| ispath(loot_path, /obj/item/claymore) || ispath(loot_path, /obj/item/katana) || ispath(loot_path, /obj/item/fireaxe) \
+				|| ispath(loot_path, /obj/item/spear) || ispath(loot_path, /obj/item/hatchet) || ispath(loot_path, /obj/item/mjollnir) \
+				|| ispath(loot_path, /obj/item/organ/cyberimp) || ispath(loot_path, /obj/item/organ/eyes/robotic/cyberware) \
+				|| ispath(loot_path, /obj/item/cyberware_pair_case) || ispath(loot_path, /obj/item/storage/case/cyberware))
+				pool -= loot_path
+	return pools
+
+/obj/structure/closet/crate/zone_loot/syndicate/trader/proc/get_gun_chance()
+	switch(loot_zone)
+		if(ZONE_YELLOW)
+			return 19
+		if(ZONE_RED)
+			return 33
+	return 8
+
+/obj/structure/closet/crate/zone_loot/syndicate/trader/proc/get_weapon_class_weights(gun)
+	switch(loot_zone)
+		if(ZONE_YELLOW)
+			return gun ? list("green" = 45, "yellow" = 54, "red" = 1) : list("green" = 35, "yellow" = 64, "red" = 1)
+		if(ZONE_RED)
+			return gun ? list("green" = 15, "yellow" = 35, "red" = 50) : list("green" = 10, "yellow" = 45, "red" = 45)
+	return gun ? list("green" = 940, "yellow" = 59, "red" = 1) : list("green" = 900, "yellow" = 99, "red" = 1)
+
+/obj/structure/closet/crate/zone_loot/syndicate/trader/proc/get_weapon_pool(gun, weapon_class)
+	if(gun)
+		if(weapon_class == "green")
+			return list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel)
+		// Freight substitutes ordinary guns even when the advanced class wins.
+		return list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi)
+	switch(weapon_class)
+		if("green")
+			return list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat)
+		if("yellow")
+			return list(/obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/melee/baseball_bat/ablative, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre)
+		if("red")
+			return list(/obj/item/claymore, /obj/item/claymore/cutlass, /obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate)
+
+/obj/structure/closet/crate/zone_loot/syndicate/trader/proc/roll_weapon()
+	var/gun = prob(get_gun_chance())
+	return pick(get_weapon_pool(gun, pick_weight(get_weapon_class_weights(gun))))
