@@ -275,6 +275,94 @@
 	TEST_ASSERT_EQUAL(red.ore_reserve.sheets_remaining, balance, "Failed manual extraction debited the reserve")
 	TEST_ASSERT(!(other in SSore_generation.processed_vents), "A capped vent remained in automatic processing")
 
+/datum/unit_test/voidcrew_ore_balance/vent_retrieval
+	var/list/old_processed_vents
+	var/list/old_exhausted_vents
+	var/list/old_available_boulders
+
+/datum/unit_test/voidcrew_ore_balance/vent_retrieval/New()
+	..()
+	// Fire the real subsystem without producing or collecting any other site's stock.
+	old_processed_vents = SSore_generation.processed_vents
+	old_exhausted_vents = SSore_generation.exhausted_vents
+	old_available_boulders = SSore_generation.available_boulders
+	SSore_generation.processed_vents = list()
+	SSore_generation.exhausted_vents = list()
+	SSore_generation.available_boulders = list()
+
+/datum/unit_test/voidcrew_ore_balance/vent_retrieval/Destroy()
+	SSore_generation.processed_vents = old_processed_vents
+	SSore_generation.exhausted_vents = old_exhausted_vents
+	SSore_generation.available_boulders = old_available_boulders
+	return ..()
+
+/datum/unit_test/voidcrew_ore_balance/vent_retrieval/Run()
+	var/turf/vent_turf = run_loc_floor_bottom_left
+	var/turf/partner_turf = get_step(vent_turf, EAST)
+	var/turf/retrieval_turf = get_step(partner_turf, EAST)
+	var/obj/structure/overmap/planet/site = planet_at(vent_turf, get_step(vent_turf, NORTH), 1)
+	site.footprint.set_rect(vent_turf.x, vent_turf.y, 2, 1)
+	for(var/exhaust_reserve in list(FALSE, TRUE))
+		// A unique vent is absent from possible_vents, but its stock must remain discoverable too.
+		var/obj/structure/ore_vent/vent = allocate(/obj/structure/ore_vent/starter_resources, vent_turf)
+		var/obj/item/boulder/old_rock = vent.produce_boulder()
+		TEST_ASSERT(old_rock, "The retrieval fixture failed to produce its initial boulder")
+		allocated += old_rock
+		var/obj/structure/ore_vent/partner
+		var/obj/item/boulder/partner_rock
+		if(exhaust_reserve)
+			partner = allocate(/obj/structure/ore_vent, partner_turf)
+			partner.mineral_breakdown = list(/datum/material/iron = 1)
+			partner.tapped = TRUE
+			SSore_generation.processed_vents |= partner
+			partner_rock = partner.produce_boulder()
+			TEST_ASSERT(partner_rock, "The shared-reserve fixture failed to produce its initial boulder")
+			allocated += partner_rock
+			site.ore_reserve.sheets_remaining = 1
+		else
+			vent.boulders_remaining = 1
+
+		SSore_generation.fire(FALSE)
+		allocated |= SSore_generation.available_boulders
+		var/expected_stock = exhaust_reserve ? 3 : 2
+		TEST_ASSERT(!(vent in SSore_generation.processed_vents), "An exhausted vent kept producing")
+		TEST_ASSERT(old_rock in SSore_generation.available_boulders, "Exhaustion hid a vent's existing boulder")
+		TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), expected_stock, "The exhaustion tick lost or duplicated a boulder")
+		if(exhaust_reserve)
+			TEST_ASSERT(!(partner in SSore_generation.processed_vents), "A shared-reserve vent kept producing")
+			TEST_ASSERT(partner_rock in SSore_generation.available_boulders, "Shared exhaustion hid another vent's stock")
+		var/remaining_sheets = site.ore_reserve.sheets_remaining
+		var/remaining_boulders = vent.boulders_remaining
+		for(var/iteration in 1 to 2)
+			SSore_generation.fire(FALSE)
+			TEST_ASSERT(old_rock in SSore_generation.available_boulders, "A later subsystem tick hid an exhausted vent's boulder")
+			TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), expected_stock, "A later tick lost stock or produced extra boulders")
+		TEST_ASSERT_EQUAL(site.ore_reserve.sheets_remaining, remaining_sheets, "Discovery debited an exhausted reserve")
+		TEST_ASSERT_EQUAL(vent.boulders_remaining, remaining_boulders, "Discovery debited an exhausted vent")
+
+		var/obj/machinery/brm/retriever = allocate(/obj/machinery/brm, retrieval_turf)
+		retriever.set_machine_stat(NONE)
+		retriever.toggled_on = TRUE
+		retriever.boulders_processing_max = 1
+		retriever.process()
+		var/obj/item/boulder/collected = locate() in retrieval_turf
+		TEST_ASSERT(collected, "A retrieval machine could not collect an exhausted vent's boulder")
+		TEST_ASSERT(!(collected in SSore_generation.available_boulders), "Collection left the boulder listed")
+		SSore_generation.fire(FALSE)
+		TEST_ASSERT(!(collected in SSore_generation.available_boulders), "A collected boulder was rediscovered")
+		TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), expected_stock - 1, "Collection hid the remaining boulders")
+		for(var/obj/item/boulder/rock in SSore_generation.available_boulders.Copy())
+			qdel(rock)
+		TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), 0, "Deleted boulders remained listed")
+		SSore_generation.fire(FALSE)
+		TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), 0, "Deleted boulders were rediscovered")
+		qdel(collected)
+		qdel(retriever)
+		qdel(vent)
+		if(partner)
+			qdel(partner)
+		TEST_ASSERT_EQUAL(length(SSore_generation.exhausted_vents), 0, "Deleted vents remained in boulder discovery")
+
 /datum/unit_test/voidcrew_ore_balance/vent_weights/Run()
 	var/list/old_pool = SSore_generation.ore_vent_minerals
 	var/obj/structure/ore_vent/vent = allocate(/obj/structure/ore_vent)
