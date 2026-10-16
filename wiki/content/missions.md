@@ -2,90 +2,90 @@
 title: Missions
 category: Economy
 order: 2
-blurb: The contract board every ship carries, the mission pad, what the contracts ask for, and what they pay.
+blurb: Ship missions, outpost contracts, the mission pad, and the rewards crews can earn.
 ---
 
-Missions are the reliable way to make money in Voidcrew. Every standard hull carries a mission board that posts fresh contracts all round, and a mission pad next to it where you hand things in and rewards appear. Contracts pay credits into the ship account and, on the dangerous ones, trade vouchers into your hand.
+Missions give your crew work across the sector: deliver supplies, chart a route, retrieve salvage, or hunt a wanted target. Your ship's **mission board** lists jobs and tracks accepted work. Its **mission pad** handles deliveries and physical rewards. Traders at outposts have their own contract boards.
 
 ## The board and the pad
 
-The **mission board** is a console. It links itself to any **mission pad** within a few tiles, and the two work as a unit: the board is where you accept, track, and turn in, and the pad is where physical objects change hands.
+The mission board links to a nearby mission pad. Open **Available** to browse work and **Active** to see what your crew has taken on. Your ship can have **three missions active at once**, including jobs accepted from traders.
 
-The board keeps **five offers** posted at a time and tops itself back up as you take them. An offer nobody accepts rotates off after 20 minutes and is replaced. A **refresh** button wipes all five and deals a new hand, on a 5-minute cooldown. Use it when the board has nothing your crew can do, not to fish for the top-paying contract.
+The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
 
-For a simple starting job, look for a green-band **Exploration Contract**. Fly to its marked coordinates and return to the board to collect 400–700 credits. The board reserves an offer for one when available.
+For a starting job, look for an **Exploration Contract** in green space. Fly to its marked coordinates, then collect the listed fee at the board.
 
-Your ship can run **three missions at once**. Each has its own clock, usually 30 minutes, longer on the planet-side contracts.
-
-Accepting a contract does three things: it starts the timer, it drops a waypoint on the helm chart so the pilot can find the target, and for some contracts it dispenses equipment onto your mission pad. Tapping a **handheld GPS unit** on the board uploads the objective beacons of every active mission to that unit, which is how you find a small object inside a large ruin.
-
-Contracts with more than one step show a checklist on the board, and only one step is live at a time. The board tells you which.
+Each offer shows its task, pay, and allowed time. Accepting starts its deadline and adds a helm waypoint when there is a destination. Some jobs also leave equipment on the mission pad: collect it before leaving. Tap a handheld GPS on the board to copy active mission beacons, or use **Link Mission Beacons** with a fitted MOD GPS.
 
 ## Turning in
 
-Contracts finish one of two ways. If there is nothing to hand over (exploration, surveying, a kill sweep) the turn-in button goes live once the objectives are satisfied. If the contract wants something physical, **put it on the pad first**, then pick it from the item list on the board and turn in.
+For a physical delivery, put the requested goods on the mission pad and choose **Turn In** on the active contract. You do not need to select individual pad items. Jobs without a delivery, such as exploration or a survey, can be completed once their objectives are met.
 
-Rewards arrive in two places: credits go straight into the ship's bank account, while vouchers and item rewards materialise on the pad.
+Credits go into the ship's bank account. Vouchers, named item rewards, and research notes appear at the turn-in point. Research notes are physical papers to take to an R&D console. See [Research](research.md).
 
-!!! warning "Missions fail on the clock"
-    A contract that times out is a failure, and the ship is told about it. If it is going badly, **abandon** it from the board instead. Abandoning costs nothing and frees the slot.
+A trader can also receive item contracts. Hold the goods in hand and open their contract board to turn them in. **Courier pods must reach the destination trader.** Keep a working ship account for contract payments.
 
-Some contracts also fail if the thing they are about is destroyed. Recovery-family contracts will quietly re-pick a target twice before giving up; contracts built around one specific creature, beacon, or batch just void.
+A missed deadline fails the mission. Some jobs also fail if their creature, cargo, or equipment is destroyed. Check the active contract's progress and deadline before setting out.
 
-## Pay and zones
+## Outpost contract boards
 
-Every contract that points somewhere on the overmap is priced by the zone band its target sits in. Farther out is worth more: a contract in the contested middle band pays roughly 1.7× the inner-ring rate, and one in the lawless deep pays about 2.6×. Contracts in the deep also add an extra trade voucher on top of whatever they already paid.
+Talk to a main trader and choose **Contracts** to see their postings. Each board has **four shared offers**: another crew can take an offer before you do. Vacancies fill on an **11-minute schedule**, and unaccepted offers close after **22 minutes**. Taking or losing a contract does not immediately post another one.
 
-The board labels each offer Easy, Medium, or Hard, and that label is just the zone band restated. A "hard" contract is not a harder puzzle. It is the same job somewhere that will shoot at you.
+Outpost jobs include supply requests, salvage recoveries, kill contracts, and courier runs. Halcyon also posts kitchen orders and fishing requests. Quartermain's board asks for recovered MOD cores, salvaged MOD control units, and certain recovered modules. Take a control unit off before handing it over.
+
+Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen orders, fish, and bear hides are also accepted. Qualifying goods already in your hold can be delivered. Kitchen orders require player-cooked dishes, rather than factory food or meals bought from an outpost kitchen.
+
+Contracts can pay a mix of **credits, trade vouchers, and named goods from trader stock**. Some pay entirely in currency. Listed goods are set aside when your crew accepts; if an item is unavailable then, currency replaces it. Read the pay line again after accepting.
+
+Completing a trader's contracts also improves your crew's standing with that trader. Standing can reduce credit prices and open the back room. Counter sales and board contracts are separate: selling goods over the counter does not complete an accepted contract. See [Trader Outposts](trader-outposts.md).
+
+## Pay and rare gear
+
+Read each offer's pay line before accepting. It shows the quoted credits, vouchers, and goods. Jobs farther into dangerous space generally pay more, while routine supply work pays modest fees. Taking a quoted job into a different zone does not raise its listed pay.
+
+Survey contracts can include useful field equipment, such as scanners, extraction packs, jetpacks, or survival capsules. Rescue fees can be higher when the survivor comes home healthy. Prospect stakes pay their listed credits and voucher.
+
+Dangerous jobs with guarded objectives sometimes pay rare gear alongside the ordinary reward. That can include specialist MODsuits, a captain's laser, a Piledriver implant, or a cloak-device board. Rare gear can also be earned from guarded work in green space.
 
 ## The contract types
 
 | Contract | What it asks |
 |---|---|
-| Delivery Contract | Bring a listed quantity of ore, sheets, or crystals to the pad. No travel required if you already have the goods. |
-| Exploration Contract | Fly the ship to marked coordinates, then come home and collect. |
-| Survey Contract | Scan a number of celestial objects (nebulas, asteroid fields, planets, stars, storms) with the orbital survey console. |
-| Recovery Contract | Retrieve a named object from inside a space ruin and carry it back to the pad. |
-| Kill Contract | Hunt down a named pirate captain holed up in a ruin and bring back their identification tag. Harder targets keep bodyguards. |
-| Survey Contract (pylons) | Calibrate three survey pylons inside a ruin, one at a time. Each calibration is loud and draws a wave of defenders. The last pylon prints the core you carry home. |
-| Extraction Contract | Unbolt a fixed piece of cargo inside a ruin. Wrenching it loose takes time and trips an alarm that answers in two waves. |
-| Rescue Contract | A survivor is alive inside a wreck. Get them out and back to the pad breathing. The fee doubles if they are unharmed. |
-| Suppression Sweep | Confirm a number of pirate kills anywhere in the contested band or deeper. No item turn-in; it settles at the board. |
-| Gas Harvest Contract | Deliver a tank holding a required quantity of a specific gas. See [Fuel & Gas](gas-economy.md). |
-| Field Expedition | A probe went down on a planet. Find the wreck, pull its core, and be ready for whatever lifting it wakes up. |
-| Big Game Hunt | Stake a supplied lure on a planet surface, kill the apex predator it draws out, and carry back a trophy. |
-| Live Capture | Track a survey-marked animal on a planet, wear it down without killing it, and seal it in the supplied crate. It has to arrive alive. |
-| Poacher Bust | Raid an illegal hunting camp on a planet, wipe the squad, and recover their tagged evidence cache. |
-| Prospect Stake | Fly to marked coordinates in the contested band or deeper, deploy the supplied claim beacon aboard your ship, and keep it intact for eight minutes while holding station. The filing goes out on Wideband, so the whole sector knows. Top of the pay curve, and the deep-band version sometimes pays a crate of ship parts instead of vouchers. |
+| Delivery Contract | Bring the listed goods to the pad: spice pods, sinew, goliath hides, glacial cores, raw telecrystals, a sea crystal, or Syndicate documents. Stored goods qualify. |
+| Exploration Contract | Fly the ship to marked coordinates, then collect the fee. |
+| Survey Contract | Scan the requested celestial objects with the orbital survey console. |
+| Telemetry Contract | Gather the requested survey scans and return for credits and research notes. |
+| Recovery Contract | Retrieve a named object from inside a space ruin. |
+| Kill Contract | Hunt a named pirate captain in a ruin and bring back their identification tag. |
+| Survey Contract (pylons) | Calibrate the ruin's survey pylons, survive their defenders, and bring back the printed core. |
+| Extraction Contract | Unbolt cargo inside a ruin, deal with the defenders, and bring it home. |
+| Rescue Contract | Escort a survivor out of a wreck and bring them back alive. |
+| Suppression Sweep | Confirm the requested pirate kills in the required area, then collect at the board. |
+| Gas Harvest Contract | Deliver a tank containing the requested gas and amount. Gas already aboard qualifies. See [Fuel & Gas](gas-economy.md). |
+| Field Expedition | Find a fallen probe on a planet and recover its core. |
+| Big Game Hunt | Deploy the supplied lure, kill the named beast, and return its trophy. |
+| Live Capture | Find the marked specimen, weaken it without killing it, and deliver it alive in the supplied capture crate. |
+| Poacher Bust | Clear a poacher camp and recover its evidence cache. |
+| Prospect Stake | Deploy a claim beacon aboard your ship at the marked coordinates, hold station through its defense, and deliver the deed. |
+| Containment Contract | Find and neutralize the named anomaly, then deliver its core. |
+| Core Sample Contract | Complete a planet's sampling work and return the sample. |
 
-Not every type is available at once. Several are capped so the galaxy only ever has one or two running, and the planet contracts only appear when a planet of the right kind is actually in this round's sector.
-
-!!! tip "Read the description before you accept"
-    Each offer's text names its coordinates, its zone band, its beacon tag, and whether it dispenses equipment. The planet contracts in particular hand you a lure, a crate, or a claim kit at accept, if you launch without collecting it off the pad, you have wasted the run.
+The available jobs depend on the planets, ruins, and targets in the sector. Collect any supplied kit from the pad before departure.
 
 ## Bounties
 
-Everything the board has on offer sits in one mixed list: contracts, **wanted criminals** to find and bring to your pad, alive for full pay (see [Bounty Hunting](bounty-hunting.md)), **pirate bounties** and jobs other crews have posted. Whatever your crew has taken on moves to the **Active** tab.
+The board mixes missions with **wanted criminals**, **pirate bounties**, and **jobs posted by other crews**. Accepted work appears under **Active**.
 
-**Pirate bounties** are competitive: a named pirate captain is posted galaxy-wide (only some pirates carry one at a time, and they move around), several crews can hunt the same one, and it goes to whoever kills them and puts their **ship key** on the mission pad. Paying a fee out of the ship account tracks the target on your chart, deducted from the reward.
+Wanted posters state who to find, where they were last seen, and whether they are wanted alive or dead. Bring them to your pad under the poster's terms. See [Bounty Hunting](bounty-hunting.md).
 
-**Player bounties** let you post a job for other crews yourself with **Post Bounty**, funded from your account. A crew that takes it puts what you asked for on their pad and submits it as an offer. You approve or reject each offer from your board, and approving completes the exchange.
+Pirate bounties are competitive. Several crews can hunt the same captain; the reward goes to the crew that turns in the pirate's **ship key**. Paid tracking marks the target on your chart, and the displayed reward reflects that charge.
 
-Trader outposts also run their own boards, separate from your ship's. You take those by talking to the trader in person, and they pay in **goods off that trader's shelves** rather than money. See [Trader Outposts](trader-outposts.md).
+Use **Post Bounty** to fund a job for other crews from your ship account. A contractor puts the requested goods on their own pad and submits an offer. You approve or reject it at your board.
 
 ## Street Chemistry
 
-One contract type is never posted on any board and never rolls at random. The **kingpin**, the crime boss in the lounge at the Undertow Exchange in the lawless deep, is the only person in the galaxy who gives out a **Drug Run**. Fly out there and ask him for work (see [the kingpin](bounty-hunting.md#the-kingpin)). **Vex**, the fence at the Undertow's counter, is the only one who will buy the product. Only one crew can run it at a time, and a crew that takes it can't hunt the kingpin or turn him in for the rest of the round.
+The **kingpin** at the Undertow Exchange offers a **Drug Run** in person. It does not appear among the ship console's random offers. Only one crew can run it at a time, and accepting closes that crew's hunt for the kingpin for the round. See [the kingpin](bounty-hunting.md#the-kingpin).
 
-The run has three stages and a one-hour clock.
+Collect the formula chip from your mission pad and gather its wild ingredients from the marked planetary sites. The contract also marks a laboratory in space. Work through its mixer, catalyst rig, and crystallizer to produce the batch, then deliver it to **Vex** at the Undertow counter in person. The batch's quality affects the fee.
 
-**Gather.** A formula chip lands on your mission pad naming three wild ingredients, each growing on a different kind of planet. Each has a fixed harvest site on its planet's surface, marked on your chart and on the mission's beacon. The contract only gets offered when enough of the right planets are in this round's sector.
-
-**Cook.** Accepting also raises a hidden laboratory out in space, marked as a signal on your helm. Inside is a three-station chain: a mixer that flashes hopper sequences at you, a catalyst rig running a timing chart, and a crystallizer you catch output from. Each station gives you attempts and lets you commit or retry a score. How well you play sets the batch's purity, 0.7× the fee at street grade, the full fee at pure, 1.4× plus an extra voucher at primo.
-
-**Deliver.** The finished batch can only be handed to Vex, at the Undertow, in person. Nobody else fences it, and losing it after the cook voids the contract.
-
-Base pay is 4000–5000 credits before zone scaling, plus three trade vouchers, the largest single payout on any contract.
-
-!!! danger "The cook lights you up"
-    There is a coin-flip chance that finishing the batch trips somebody's sensor net. If it does, an NT customs corvette spawns near your ship and runs a full shakedown: a hail, a fine, and interdiction and boarding if you refuse. The fine scales with the contract's value. You can also surrender the shipment instead of paying, which ends the run.
+Watch the deadline and keep the shipment intact. The cook can attract an NT customs patrol, so be prepared for a hail on the way out.
