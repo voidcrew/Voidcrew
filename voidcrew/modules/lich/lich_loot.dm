@@ -671,7 +671,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 		refuse_draught()
 		return
 
-	var/came_back = drinker.heal_and_revive(
+	var/came_back = drinker.heal_and_revive_from(
+		"phylactery",
 		LICH_PHYLACTERY_REVIVE_TO,
 		span_boldwarning("[drinker] jerks upright in a wash of green light, and somewhere a jar breaks."),
 	)

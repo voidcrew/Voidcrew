@@ -6938,6 +6938,7 @@
 #include "voidcrew\edits\subsystem\ticker.dm"
 #include "voidcrew\edits\subsystem\tutorials.dm"
 #include "voidcrew\edits\surgery\decapitation.dm"
+#include "voidcrew\edits\surgery\installed_capacity.dm"
 #include "voidcrew\edits\surgery\leg_manipulation.dm"
 #include "voidcrew\edits\surgery\self_surgery.dm"
 #include "voidcrew\edits\vehicles\mecha.dm"

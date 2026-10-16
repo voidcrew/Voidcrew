@@ -26,7 +26,7 @@
 	/// CYBERWARE_TIER_*, drives accent colours and Splice's bedside manner.
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware ADDS to its bearer while installed, the
-	/// Overclock Governor hook. Load 0 + bonus 6 is a Governor.
+	/// Governor Delete hook. Load 0 + bonus 15 is a Governor.
 	var/capacity_bonus = 0
 	/// TRUE while the bearer is over capacity and this ware is browned out.
 	var/browned_out = FALSE
@@ -186,9 +186,10 @@
  */
 /datum/component/cyberware/proc/settle_passives(mob/living/carbon/bearer)
 	var/obj/item/organ/ware = parent
-	var/installed_here = !QDELETED(ware) && bearer && ware.owner == bearer
-	var/ware_running = !browned_out && !emp_down && !(ware.organ_flags & ORGAN_FAILING)
-	var/should_be_online = installed_here && ware_running
+	var/should_be_online = bearer && ware.owner == bearer && is_running()
+	if(!should_be_online && istype(ware, /obj/item/organ/cyberimp/arm/toolkit/cyberware))
+		var/obj/item/organ/cyberimp/arm/toolkit/cyberware/arm = ware
+		arm.Retract()
 	if(passives_online == !!should_be_online)
 		return
 	passives_online = !!should_be_online
@@ -201,7 +202,12 @@
 /// settle (see the registration comment in on_implanted()).
 /datum/component/cyberware/proc/on_owner_life(mob/living/carbon/source, seconds_per_tick, times_fired)
 	SIGNAL_HANDLER
-	settle_passives(source)
+	update_failing()
+
+/// Read our own failure sources: organ healing can clear the shared failing bit mid-reboot.
+/datum/component/cyberware/proc/is_running()
+	var/obj/item/organ/ware = parent
+	return !QDELETED(ware) && ware.owner && !browned_out && !emp_down && ware.damage < ware.maxHealth && !(ware.organ_flags & ORGAN_FAILING)
 
 // ---- Install context ---------------------------------------------------
 // Cyberware refuses Insert() outside a legit context: organ-manipulation
@@ -243,20 +249,86 @@
 		if(organ.GetComponent(/datum/component/cyberware))
 			. += organ
 
-/// Chrome load of a single organ; 0 for anything that isn't chrome.
+/// Compatibility helper for callers quoting an organ's installed load.
 /proc/get_organ_chrome_load(obj/item/organ/ware)
-	var/datum/component/cyberware/chrome = ware?.GetComponent(/datum/component/cyberware)
-	return chrome ? chrome.chrome_load : 0
+	return get_installed_capacity_cost(ware)
 
-/// The target's total neural load, summed live off the installed organs.
+/// All non-chrome costs. Ordinary anatomy is free; chrome retains its component's cost.
+GLOBAL_LIST_INIT(installed_capacity_costs, list(
+	"implant" = 1,
+	"robotic_organ" = 1,
+	"bioware" = 1,
+	"prosthetic_limb" = 0,
+))
+
+/proc/get_installed_capacity_cost(datum/installed)
+	if(QDELETED(installed))
+		return 0
+	if(isorgan(installed))
+		var/obj/item/organ/organ = installed
+		var/datum/component/cyberware/chrome = organ.GetComponent(/datum/component/cyberware)
+		if(chrome)
+			return chrome.chrome_load
+		return (IS_ROBOTIC_ORGAN(organ) || istype(organ, /obj/item/organ/cyberimp)) ? GLOB.installed_capacity_costs["robotic_organ"] : 0
+	if(istype(installed, /obj/item/implant))
+		return GLOB.installed_capacity_costs["implant"]
+	if(istype(installed, /datum/status_effect/bioware))
+		return GLOB.installed_capacity_costs["bioware"]
+	if(istype(installed, /obj/item/bodypart))
+		return GLOB.installed_capacity_costs["prosthetic_limb"]
+	if(istype(installed, /datum/nanite_program))
+		var/datum/nanite_program/program = installed
+		return program.capacity_cost()
+	return 0
+
+/// A set of installed objects, so chrome never also counts as a generic robotic organ.
+/proc/get_installed_capacity_items(mob/living/carbon/target)
+	var/list/installed = list()
+	if(!iscarbon(target))
+		return installed
+	installed |= target.organs
+	if(target.implants)
+		installed |= target.implants
+	installed |= target.bodyparts
+	for(var/datum/status_effect/bioware/enhancement in target.status_effects)
+		installed |= enhancement
+	var/datum/component/nanites/nanites = target.GetComponent(/datum/component/nanites)
+	if(nanites && !QDELETED(nanites))
+		installed |= nanites.programs
+	return installed
+
+/// Check the complete resulting body before mutating it. Removal and load-neutral recovery stay possible.
+/proc/installed_capacity_check(mob/living/carbon/target, list/additions, list/removals, silent = FALSE)
+	if(!iscarbon(target))
+		return TRUE
+	var/list/projected = get_installed_capacity_items(target)
+	if(removals)
+		projected -= removals
+	if(additions)
+		projected |= additions
+	var/load = 0
+	var/capacity = CYBERWARE_BASE_CAPACITY
+	var/addition_cost = 0
+	for(var/datum/item in additions)
+		addition_cost += get_installed_capacity_cost(item)
+	for(var/datum/item in projected)
+		load += get_installed_capacity_cost(item)
+		if(isorgan(item))
+			var/datum/component/cyberware/chrome = item.GetComponent(/datum/component/cyberware)
+			capacity += chrome?.capacity_bonus
+	if(load <= capacity || (!addition_cost && load <= get_chrome_load(target) && capacity >= get_chrome_capacity(target)))
+		return TRUE
+	if(!silent)
+		target.balloon_alert(target, "no neural headroom!")
+	return FALSE
+
+/// The target's total installed load, including disabled programs.
 /proc/get_chrome_load(mob/living/carbon/target)
 	. = 0
 	if(!iscarbon(target))
 		return
-	for(var/obj/item/organ/organ in target.organs)
-		var/datum/component/cyberware/chrome = organ.GetComponent(/datum/component/cyberware)
-		if(chrome)
-			. += chrome.chrome_load
+	for(var/datum/item in get_installed_capacity_items(target))
+		. += get_installed_capacity_cost(item)
 
 /// The target's chrome capacity: the body's baseline plus every installed
 /// ware's capacity bonus (the Governor hook).
@@ -291,9 +363,9 @@
 	if(!iscarbon(target) || QDELETED(target))
 		return
 	var/list/installed = get_installed_cyberware(target)
-	if(!length(installed))
-		return
 	var/over = get_chrome_load(target) > get_chrome_capacity(target)
+	var/datum/component/nanites/nanites = target.GetComponent(/datum/component/nanites)
+	nanites?.settle_capacity(over)
 	var/newly_tripped = FALSE
 	var/any_recovered = FALSE
 	for(var/obj/item/organ/ware as anything in installed)
@@ -306,7 +378,7 @@
 			any_recovered = TRUE
 	if(newly_tripped)
 		target.balloon_alert(target, "chrome brownout!")
-		to_chat(target, span_boldwarning("Your chrome browns out. Too much load on the wetware. Shed some ware to bring it back."))
+		to_chat(target, span_boldwarning("Your chrome goes dark."))
 		do_sparks(2, TRUE, target)
 	else if(any_recovered)
 		target.balloon_alert(target, "chrome back online")
