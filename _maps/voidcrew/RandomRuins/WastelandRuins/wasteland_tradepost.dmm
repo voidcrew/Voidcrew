@@ -34,12 +34,6 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"gy" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/obj/effect/decal/cleanable/cobweb,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
 "gA" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/misc/wasteland/lit,
@@ -56,6 +50,14 @@
 /obj/structure/statue/sandstone/assistant,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"ke" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "kf" = (
 /obj/structure/ore_box,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -573,7 +575,7 @@ De
 "}
 (11,1,1) = {"
 Ue
-gy
+ke
 Sn
 RE
 en

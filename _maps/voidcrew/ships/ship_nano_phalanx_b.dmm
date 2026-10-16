@@ -935,6 +935,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
+"jo" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "jp" = (
 /obj/item/kirbyplants/random,
 /obj/effect/turf_decal/siding/wood{
@@ -3009,19 +3022,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/b)
-"Jj" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/chapel/office/b)
 "Jm" = (
 /obj/machinery/light{
 	dir = 8
@@ -3634,16 +3634,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
-"QQ" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "QT" = (
 /obj/structure/sign/poster/official/twelve_gauge{
 	pixel_y = 32
@@ -4135,6 +4125,19 @@
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
+"XO" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/b)
 "XT" = (
 /obj/machinery/light{
 	dir = 4
@@ -5430,7 +5433,7 @@ qZ
 HL
 qZ
 Qm
-Jj
+XO
 FI
 CE
 Qm
@@ -5866,7 +5869,7 @@ oZ
 iN
 BV
 el
-QQ
+jo
 zo
 Cm
 sc

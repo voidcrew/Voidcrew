@@ -130,13 +130,6 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/unpowered)
-"rp" = (
-/obj/machinery/suit_storage_unit{
-	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/space/syndicate
-	},
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "rE" = (
 /obj/machinery/power/smes,
 /turf/open/floor/plating,
@@ -157,6 +150,12 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"xD" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate
+	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
 "yj" = (
 /obj/machinery/door/airlock/hatch,
@@ -287,6 +286,12 @@
 "Sx" = (
 /turf/open/misc/wasteland/lit,
 /area/ruin/unpowered)
+"SQ" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "Ts" = (
 /obj/effect/decal/cleanable/ash,
 /obj/effect/decal/cleanable/ash{
@@ -336,14 +341,6 @@
 /obj/machinery/portable_atmospherics/scrubber,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"ZX" = (
-/obj/machinery/suit_storage_unit{
-	helmet_type = /obj/item/clothing/head/helmet/space/syndicate;
-	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/armor/vest
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 RJ
@@ -705,8 +702,8 @@ RJ
 RJ
 af
 kZ
-ZX
-rp
+xD
+SQ
 fw
 CM
 CM

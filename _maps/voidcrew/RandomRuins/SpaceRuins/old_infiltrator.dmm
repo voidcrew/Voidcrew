@@ -238,11 +238,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
-"pv" = (
-/obj/effect/turf_decal/bot_red,
-/obj/machinery/suit_storage_unit/nuke_med,
-/turf/open/floor/iron/dark/airless,
-/area/ruin/space/unpowered)
 "qL" = (
 /obj/machinery/door/window/brigdoor/left/directional/west{
 	req_access = list("syndicate");
@@ -423,6 +418,11 @@
 	pixel_x = -8
 	},
 /turf/open/floor/mineral/plastitanium/red/airless,
+/area/ruin/space/unpowered)
+"Cj" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/suit_storage_unit/ruin_zone,
+/turf/open/floor/iron/dark/airless,
 /area/ruin/space/unpowered)
 "Cv" = (
 /obj/item/ammo_casing/c357/match,
@@ -942,7 +942,7 @@ la
 Da
 LP
 Nv
-pv
+Cj
 Pq
 uE
 vK
