@@ -192,8 +192,7 @@ GLOBAL_LIST_EMPTY(bounty_real_weapons)
 /// Puts its hand numbers on `fighter`'s own blow. The blow's timing stays the fighter's.
 /datum/bounty_real_weapon/proc/apply_melee(mob/living/basic/fighter)
 	read_melee()
-	fighter.melee_damage_lower = force_low
-	fighter.melee_damage_upper = force_high
+	fighter.set_npc_zone_melee(force_low, force_high)
 	fighter.melee_damage_type = damage_type
 	fighter.sharpness = sharpness
 	fighter.wound_bonus = wound_bonus

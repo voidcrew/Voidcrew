@@ -191,7 +191,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(attack_sound)
 		playsound(target, attack_sound, 50, TRUE)
 	target.visible_message(span_danger("[src] [attack_verb_continuous] [target]!"))
-	boss_hit(target, rand(melee_damage_lower, melee_damage_upper), melee_damage_type, MELEE, 0, armour_penetration)
+	boss_hit(target, rand(melee_damage_lower, melee_damage_upper), melee_damage_type, MELEE, 0, armour_penetration, TRUE)
 	SEND_SIGNAL(src, COMSIG_HOSTILE_POST_ATTACKINGTARGET, target, TRUE)
 	if(!ignore_cooldown)
 		changeNext_move(melee_attack_cooldown)
@@ -473,8 +473,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(!length(table) || !count)
 		return FALSE
 	var/wanted = table[clamp(count, 1, length(table))]
+	var/raw_health = wanted
+	wanted *= npc_zone_health_factor
 	if(wanted <= maxHealth)
 		return FALSE
+	npc_zone_original_max_health = raw_health
 	var/share = maxHealth > 0 ? health / maxHealth : 1
 	setMaxHealth(wanted)
 	if(boss_tired)
@@ -553,7 +556,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
  * One hit from an ability on `victim`: `damage` of `damage_type` against `armour_flag` armour, and
  * a knockdown. A mech takes it on its hull (H2).
  */
-/mob/living/basic/bounty_criminal/boss/proc/boss_hit(atom/victim, damage, damage_type = BRUTE, armour_flag = MELEE, knockdown = 0, armour_penetration = 0)
+/mob/living/basic/bounty_criminal/boss/proc/boss_hit(atom/victim, damage, damage_type = BRUTE, armour_flag = MELEE, knockdown = 0, armour_penetration = 0, already_scaled = FALSE)
+	damage = npc_zone_damage(damage, src, already_scaled)
 	if(ismecha(victim))
 		var/obj/vehicle/sealed/mecha/mech = victim
 		mech.take_damage(damage, damage_type, armour_flag, TRUE, get_dir(mech, src), armour_penetration)
@@ -1160,6 +1164,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	var/list/turfs
 	/// The boss whose fire it is, for who it may hurt
 	var/datum/weakref/boss_ref
+	var/damage_factor = 1
 
 /obj/effect/bounty_boss_fire_pool/Initialize(mapload, list/fire_turfs, lifetime, mob/living/basic/bounty_criminal/boss/boss, landing_damage = 0)
 	. = ..()
@@ -1174,6 +1179,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(!length(turfs))
 		return INITIALIZE_HINT_QDEL
 	boss_ref = boss ? WEAKREF(boss) : null
+	damage_factor = boss ? boss.get_npc_zone_damage_factor() : 1
 	// Invisible, but the light comes from here: sit it where the fire is.
 	var/turf/middle = turfs[round((length(turfs) + 1) / 2)]
 	if(middle != loc)
@@ -1205,13 +1211,13 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 				continue
 			if(ismecha(thing))
 				var/obj/vehicle/sealed/mecha/mech = thing
-				mech.take_damage(max(damage, BOUNTY_BOSS_BURNING_DAMAGE), BURN, FIRE, FALSE)
+				mech.take_damage(npc_zone_damage(max(damage, BOUNTY_BOSS_BURNING_DAMAGE), damage_factor), BURN, FIRE, FALSE)
 				continue
 			var/mob/living/victim = thing
 			if(damage > 0)
-				victim.apply_damage(damage, BURN, blocked = victim.run_armor_check(null, FIRE, silent = TRUE), spread_damage = TRUE)
+				victim.apply_damage(npc_zone_damage(damage, damage_factor), BURN, blocked = victim.run_armor_check(null, FIRE, silent = TRUE), spread_damage = TRUE)
 				to_chat(victim, span_userdanger("You're caught in the flames!"))
-			victim.apply_status_effect(/datum/status_effect/bounty_boss_burning)
+			victim.apply_status_effect(/datum/status_effect/bounty_boss_burning, damage_factor)
 
 /obj/effect/bounty_boss_fire_pool/proc/burn_out()
 	qdel(src)
@@ -1229,6 +1235,15 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	alert_type = null
 	/// The flames on them
 	var/mutable_appearance/flames
+	var/damage_factor = 1
+
+/datum/status_effect/bounty_boss_burning/on_creation(mob/living/new_owner, factor = 1)
+	damage_factor = factor
+	return ..()
+
+/datum/status_effect/bounty_boss_burning/refresh(mob/living/new_owner, factor = 1)
+	damage_factor = factor
+	return ..()
 
 /datum/status_effect/bounty_boss_burning/on_apply()
 	if(owner.stat != CONSCIOUS || HAS_TRAIT(owner, TRAIT_NOFIRE))
@@ -1241,7 +1256,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(owner.stat != CONSCIOUS)
 		qdel(src)
 		return
-	owner.apply_damage(BOUNTY_BOSS_BURNING_DAMAGE, BURN, blocked = owner.run_armor_check(null, FIRE, silent = TRUE), spread_damage = TRUE)
+	owner.apply_damage(npc_zone_damage(BOUNTY_BOSS_BURNING_DAMAGE, damage_factor), BURN, blocked = owner.run_armor_check(null, FIRE, silent = TRUE), spread_damage = TRUE)
 
 /datum/status_effect/bounty_boss_burning/on_remove()
 	if(flames)

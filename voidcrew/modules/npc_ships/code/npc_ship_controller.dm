@@ -26,6 +26,12 @@
 
 	/// Delayed boarding actions belonging to the current encounter.
 	var/list/boarding_timers = list()
+	/// Captured once per target engagement, retained through combat escalation.
+	var/datum/npc_spawn_context/boarding_context
+	var/boarding_budget = 0
+	var/boarding_committed = 0
+	var/boarding_pending = 0
+	var/boarding_boss_sent = FALSE
 
 /datum/ai_controller/npc_ship/New(atom/new_pawn)
 	// Initialize combat blackboard
@@ -432,6 +438,12 @@
 	// Crew-wipe findings are about one hull. Don't carry "I've seen them alive" or a
 	// half-elapsed wipe timer over onto whoever we point at next.
 	if(old_target != target)
+		cleanup_boarding_signals()
+		boarding_context = null
+		boarding_budget = 0
+		boarding_committed = 0
+		boarding_pending = 0
+		boarding_boss_sent = FALSE
 		clear_blackboard_key(BB_NPC_TARGET_CREW_SEEN)
 		clear_blackboard_key(BB_NPC_CREW_WIPE_SINCE)
 
@@ -443,6 +455,7 @@
 
 	if(target)
 		set_blackboard_key(BB_NPC_TARGET, target)
+		capture_boarding_encounter(target)
 		// Mark this target as engaged by us (only one pirate can engage at a time)
 		// Don't overwrite if another active pirate already has this target claimed
 		if(our_ship)
@@ -619,11 +632,10 @@
 
 /**
  * TRUE if the target we are raiding is in the lawless (red) band.
- * Red runs the full wave gauntlet plus a boss; everywhere else gets the
- * lighter single-wave raid.
+ * Red adds one boss to the single ordinary boarding budget.
  */
 /datum/ai_controller/npc_ship/proc/is_red_zone_raid()
-	return get_raid_zone()?.zone_type == ZONE_RED
+	return (boarding_context ? boarding_context.zone_type : get_raid_zone()?.zone_type) == ZONE_RED
 
 /**
  * TRUE if the thing waiting at the end of this hail is the data siphon rather
@@ -661,7 +673,7 @@
  * fighting in.
  */
 /datum/ai_controller/npc_ship/proc/get_boarding_wave_count()
-	return is_red_zone_raid() ? NPC_BOARDING_WAVE_COUNT : NPC_BOARDING_WAVE_COUNT_YELLOW
+	return NPC_BOARDING_WAVE_COUNT
 
 /**
  * End a yellow-zone raid. The single wave has been repelled, so the pirate
@@ -677,7 +689,7 @@
 	var/obj/structure/overmap/ship/target = get_target()
 
 	if(target && !QDELETED(target))
-		target.ship_notify("Boarding party eliminated! [ship?.name || "The attacker"] is breaking off.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship?.name || "The attacker"] is breaking off.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	ship?.ship_notify("Boarding party lost. Disengaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 	clear_target()
@@ -697,8 +709,8 @@
 		return FALSE
 
 	// Count and store player crew count for wave scaling
-	var/crew_count = count_player_crew(target)
-	set_blackboard_key(BB_NPC_BOARDING_INITIAL_CREW_COUNT, crew_count)
+	capture_boarding_encounter(target)
+	set_blackboard_key(BB_NPC_BOARDING_INITIAL_CREW_COUNT, boarding_budget)
 
 	// Start tracking player crew deaths
 	start_tracking_player_crew(target)
@@ -774,24 +786,15 @@
 		return
 
 	// Announce boarding phase start
-	ship.ship_notify("Boarding operation initiated. Wave 1 deploying.", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+	ship.ship_notify("Boarding operation initiated.", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
 	target.ship_notify("[ship.name] is deploying boarding parties! Prepare to repel boarders!", "COMBAT", SHIP_NOTIFY_DANGER)
-	target.ship_notify("First wave incoming in 30 seconds!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+	target.ship_notify("Boarding pods inbound!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 
 /**
- * Count living humanoid crew on the target ship.
- * Used for wave scaling.
+ * Count living connected carbon and silicon crew on the target ship.
  */
 /datum/ai_controller/npc_ship/proc/count_player_crew(obj/structure/overmap/ship/target)
-	if(!target?.shuttle?.shuttle_areas)
-		return 0
-
-	var/count = 0
-	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
-		for(var/mob/living/carbon/human/H in shuttle_area)
-			if(H.stat != DEAD)
-				count++
-	return count
+	return max(0, count_living_crew(target))
 
 /**
  * Launch a boarding wave of the specified number.
@@ -811,27 +814,9 @@
 	if(!ship || !target || QDELETED(target))
 		return FALSE
 
-	// Get wave size range from ship config
-	var/list/wave_sizes = ship.boarding_wave_sizes
-	if(!wave_sizes || wave_number > length(wave_sizes))
+	if(wave_number != 1)
 		return FALSE
-
-	var/list/wave_range = wave_sizes[wave_number]
-	var/base_min = wave_range[1]
-	var/base_max = wave_range[2]
-
-	// Scale wave size based on initial crew count
-	var/initial_crew = blackboard[BB_NPC_BOARDING_INITIAL_CREW_COUNT] || 1
-	var/scale_factor = get_crew_scale_factor(initial_crew)
-
-	var/scaled_min = round(base_min * scale_factor)
-	var/scaled_max = round(base_max * scale_factor)
-
-	// Ensure at least 1 boarder
-	scaled_min = max(1, scaled_min)
-	scaled_max = max(scaled_min, scaled_max)
-
-	var/boarder_count = rand(scaled_min, scaled_max)
+	var/boarder_count = max(0, boarding_budget - boarding_committed)
 
 	// Get mob types to spawn (use boarding pod types or crew types)
 	var/list/mob_types = ship.boarding_pod_mob_types
@@ -877,25 +862,10 @@
 	blackboard[BB_NPC_BOARDING_TARGET_POS] = list(target.x, target.y)
 
 	// Notify target ship
-	target.ship_notify("Wave [wave_number]: [length(wave_boarders)] hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+	target.ship_notify("Hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 	npc_metric_boarding_wave(src, wave_number, length(wave_boarders))
 
 	return TRUE
-
-/**
- * Get crew scaling factor based on player crew count.
- * Returns multiplier for wave sizes.
- */
-/datum/ai_controller/npc_ship/proc/get_crew_scale_factor(crew_count)
-	switch(crew_count)
-		if(0 to 2)
-			return 0.75  // Solo/duo - smaller waves
-		if(3 to 4)
-			return 1.0   // Standard crew - normal waves
-		if(5 to 6)
-			return 1.25  // Larger crew - bigger waves
-		else
-			return 1.5   // Full crew - maximum waves
 
 /**
  * Find valid turfs on the target ship for spawning boarders.
@@ -947,7 +917,7 @@
 /datum/ai_controller/npc_ship/proc/check_wave_complete()
 	// Guard against multiple calls - only process if we're in BOARDING state
 	var/combat_state = get_combat_state()
-	if(combat_state != NPC_COMBAT_BOARDING && combat_state != NPC_COMBAT_BOSS_PHASE)
+	if(combat_state != NPC_COMBAT_BOARDING || !validate_boarding_target())
 		return
 
 	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
@@ -1043,7 +1013,7 @@
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 
-	if(!ship || !target)
+	if(!ship || !target || boarding_boss_sent || !is_red_zone_raid())
 		return
 
 	// Enter cooldown state (reuse boarding cooldown state)
@@ -1062,7 +1032,7 @@
 			target.ship_notify("[ship.name]: \"[taunt]\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 
 	// Announce boss incoming
-	target.ship_notify("All waves repelled! Enemy commander boarding in 30 seconds...", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+	target.ship_notify("Enemy commander inbound!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 
 	// Schedule boss spawn
 	boarding_timers += addtimer(CALLBACK(src, PROC_REF(spawn_boarding_boss)), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
@@ -1224,7 +1194,7 @@
 	// walking every turf of every shuttle area - this runs on a 5 second poll per pirate.
 	var/count = 0
 	for(var/mob/living/crew in GLOB.player_list)
-		if(crew.stat == DEAD)
+		if(crew.stat == DEAD || !crew.client)
 			continue
 		if(!iscarbon(crew) && !issilicon(crew))
 			continue
@@ -1359,6 +1329,8 @@
 	for(var/timer_id in boarding_timers)
 		deltimer(timer_id)
 	boarding_timers.Cut()
+	boarding_committed -= boarding_pending
+	boarding_pending = 0
 
 	// Unregister from player crew deaths
 	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
@@ -1410,10 +1382,11 @@
 	set_combat_state(NPC_COMBAT_ENGAGING)
 
 /**
- * Handle wave timeout - advance to next wave instead of escalating to combat.
- * Only escalate to ship combat if ALL waves time out (none defeated).
+ * Finish the ordinary wave on timeout, with the same band transition as clearance.
  */
 /datum/ai_controller/npc_ship/proc/handle_wave_timeout()
+	if(get_combat_state() != NPC_COMBAT_BOARDING || !validate_boarding_target())
+		return
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 	var/current_wave = blackboard[BB_NPC_BOARDING_WAVE] || 1
@@ -1430,27 +1403,10 @@
 				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
 	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
 
-	// Check if this was the final wave
-	if(current_wave >= NPC_BOARDING_WAVE_COUNT)
-		// All waves timed out - escalate to boss phase
-		ship.ship_notify("Time's up! Sending in the heavy hitter!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
-		target.ship_notify("[ship.name]: \"You've stalled long enough. Meet our enforcer.\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+	if(is_red_zone_raid())
 		start_boss_cooldown()
-		return
-
-	// Advance to next wave
-	var/next_wave = current_wave + 1
-	ship.ship_notify("Wave [current_wave] timed out. Sending wave [next_wave]!", "COMBAT", SHIP_NOTIFY_WARNING)
-	target.ship_notify("[ship.name]: \"Your stalling won't save you. More incoming!\"", "COMMS", SHIP_NOTIFY_WARNING)
-
-	// Start cooldown for next wave
-	set_combat_state(NPC_COMBAT_BOARDING_COOLDOWN)
-	var/cooldown_end = world.time + NPC_BOARDING_WAVE_COOLDOWN
-	set_blackboard_key(BB_NPC_BOARDING_COOLDOWN_END, cooldown_end)
-	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, null)
-
-	// Schedule next wave
-	boarding_timers += addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN, TIMER_STOPPABLE)
+	else
+		end_yellow_raid()
 
 /**
  * Check if any boarders have fallen into space and clean them up.
@@ -1478,3 +1434,38 @@
 			spaced.death()
 			wave_boarders -= spaced
 			UnregisterSignal(spaced, COMSIG_LIVING_DEATH)
+
+/// Snapshot the target band and connected crew exactly once, including combat-only raids.
+/datum/ai_controller/npc_ship/proc/capture_boarding_encounter(obj/structure/overmap/ship/target)
+	if(boarding_context || QDELETED(target))
+		return
+	boarding_context = new(target, get_raid_zone(target)?.zone_type || ZONE_GREEN, "ordinary")
+	boarding_budget = max(1, count_player_crew(target))
+
+/datum/ai_controller/npc_ship/proc/reserve_boarders(obj/structure/overmap/ship/target, requested)
+	capture_boarding_encounter(target)
+	var/reserved = min(max(0, requested), max(0, boarding_budget - boarding_committed))
+	boarding_committed += reserved
+	return reserved
+
+/// Timer callbacks must still belong to this encounter after docking or target changes.
+/datum/ai_controller/npc_ship/proc/deploy_combat_boarder(turf/spot, obj/structure/overmap/ship/target, mob_type, datum/npc_spawn_context/encounter)
+	if(get_target() != target || boarding_context != encounter)
+		return
+	boarding_pending--
+	return create_boarding_pod(spot, target, get_ship(), mob_type, encounter, TRUE)
+
+/datum/ai_controller/npc_ship/proc/deploy_combat_boss(obj/structure/overmap/ship/target)
+	if(!is_red_zone_raid() || boarding_boss_sent || boarding_pending || boarding_committed < boarding_budget)
+		return FALSE
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/list/spots = get_target_spawn_turfs(target)
+	if(!istype(ship) || !ship.boss_type || !length(spots))
+		return FALSE
+	var/mob/living/boss = create_boss_boarding_pod(pick(spots), target, ship, ship.boss_type)
+	if(!boss)
+		return FALSE
+	set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
+	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
+	npc_metric_boss_deployed(src, boss)
+	return TRUE

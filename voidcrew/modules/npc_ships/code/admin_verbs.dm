@@ -91,7 +91,8 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 	var/setup_patrol = tgui_alert(user, "Set up door-to-door patrol AI? (Requires being on a ship)", "Patrol AI", list("Yes", "No"))
 
 	// Spawn the pirate
-	var/mob/living/basic/trooper/pirate/spawned_pirate = new mob_path(spawn_turf)
+	var/datum/npc_spawn_context/context = new(spawn_turf, null, "ordinary")
+	var/mob/living/basic/trooper/pirate/spawned_pirate = spawn_npc_in_zone(mob_path, spawn_turf, context, FALSE)
 	if(!spawned_pirate)
 		to_chat(user, span_warning("Failed to spawn pirate."))
 		return
@@ -142,6 +143,7 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 	else
 		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) without patrol AI."))
 
+	context.finalize()
 	message_admins("[key_name_admin(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	log_admin("[key_name(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn NPC Pirate")
