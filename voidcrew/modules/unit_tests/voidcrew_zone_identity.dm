@@ -203,6 +203,24 @@
 	TEST_ASSERT_NULL(new_life.mind.get_reputation_crew(), "Explicit kick retained affiliation")
 	TEST_ASSERT_NULL(GLOB.voidcrew_crew_roster["zoneidentityrespawn"], "Explicit kick retained keyed recovery")
 
+/// Respawn eviction must finish before the replacement's same-name manifest entry is written.
+/datum/unit_test/voidcrew_zone_identity/same_name_respawn/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/mob/living/carbon/human/old_life = make_member("zoneidentitysamename")
+	old_life.real_name = "Same Name"
+	var/datum/job/assistant/old_job = allocate(/datum/job/assistant)
+	ship.manifest_inject(old_life, old_job)
+	TEST_ASSERT_EQUAL(ship.manifest[old_life.real_name], old_job, "Old life was not added to the manifest")
+	var/mob/living/carbon/human/new_life = make_member("zoneidentitysamename")
+	new_life.real_name = old_life.real_name
+	var/datum/job/station_engineer/new_job = allocate(/datum/job/station_engineer)
+	ship.manifest_inject(new_life, new_job)
+	TEST_ASSERT(!(old_life.mind in ship.ship_team.members), "Same-hull respawn retained the old life")
+	TEST_ASSERT_NULL(old_life.mind.get_reputation_crew(), "Same-hull respawn retained the old affiliation")
+	TEST_ASSERT(new_life.mind in ship.ship_team.members, "Same-hull respawn did not enroll the replacement")
+	TEST_ASSERT_EQUAL(length(ship.manifest), 1, "Same-name respawn did not retain exactly one manifest entry")
+	TEST_ASSERT_EQUAL(ship.manifest[new_life.real_name], new_job, "Same-name respawn lost the replacement's manifest job")
+
 /// Silicon spawn takes exactly the same join transaction as human spawning.
 /datum/unit_test/voidcrew_zone_identity/silicon/Run()
 	var/obj/structure/overmap/ship/old_ship = make_ship()
@@ -315,12 +333,29 @@
 	TEST_ASSERT(job.enlist_captain(captain.mind), "Checkpoint handover failed")
 	TEST_ASSERT_EQUAL(job.vessel.get_crew_record().get_zone_permission(), 1, "Checkpoint lost post-save gains")
 	var/datum/checkpoint_construction/order/zone_identity_test/order = allocate(/datum/checkpoint_construction/order/zone_identity_test)
+	order.order = allocate(/datum/ship_order, template)
 	order.template = template
 	order.buyer_mind_ref = WEAKREF(captain.mind)
 	order.vessel = order.create_vessel()
 	allocated += order.vessel
 	TEST_ASSERT_EQUAL(record_for(order.vessel), record, "Simultaneous order commissioned a copied crew")
 	TEST_ASSERT(order.enlist_captain(captain.mind), "Outpost order handover failed")
+	TEST_ASSERT_EQUAL(order.vessel.claimed_captain, captain.mind, "Outpost order did not give its buyer command")
+	TEST_ASSERT(captain.mind in order.vessel.ship_team.members, "Outpost order did not enroll its buyer")
+	var/datum/checkpoint_construction/order/zone_identity_test/independent = allocate(/datum/checkpoint_construction/order/zone_identity_test)
+	independent.order = order.order
+	independent.template = template
+	independent.buyer_mind_ref = WEAKREF(captain.mind)
+	independent.form_new_crew = TRUE
+	independent.vessel = independent.create_vessel()
+	allocated += independent.vessel
+	var/datum/voidcrew_crew_record/new_crew = record_for(independent.vessel)
+	TEST_ASSERT(new_crew != record, "Independent shipyard order continued the buyer's former crew")
+	TEST_ASSERT_EQUAL(new_crew.get_zone_permission(), 0, "Independent shipyard order inherited standing")
+	TEST_ASSERT_EQUAL(captain.mind.get_reputation_crew(), new_crew, "Independent shipyard order did not bind its buyer")
+	TEST_ASSERT(independent.enlist_captain(captain.mind), "Independent shipyard order handover failed")
+	TEST_ASSERT_EQUAL(independent.vessel.claimed_captain, captain.mind, "Independent shipyard order did not give its buyer command")
+	TEST_ASSERT(captain.mind in independent.vessel.ship_team.members, "Independent shipyard order did not enroll its buyer")
 	var/obj/structure/overmap/ship/other = make_ship()
 	other.enlist_crewmember(captain)
 	var/datum/voidcrew_crew_record/current = record_for(other)
@@ -331,6 +366,19 @@
 	// The shared template belongs to this fixture, not the construction job teardown.
 	job.template = null
 	order.template = null
+	independent.template = null
+
+/// Deleting an unclaimed NPC hull must discard its unused provisional identity.
+/datum/unit_test/voidcrew_zone_identity/npc_cleanup/Run()
+	var/registry_size = length(GLOB.voidcrew_crew_records)
+	var/datum/map_template/shuttle/voidcrew/commissioned/template = allocate(/datum/map_template/shuttle/voidcrew/commissioned)
+	var/obj/structure/overmap/ship/npc/ship = allocate(/obj/structure/overmap/ship/npc)
+	TEST_ASSERT(ship.setup_from_template(template), "NPC identity fixture could not set up its hull")
+	var/datum/voidcrew_crew_record/record = record_for(ship)
+	TEST_ASSERT_EQUAL(length(GLOB.voidcrew_crew_records), registry_size + 1, "NPC hull did not create one provisional record")
+	qdel(ship)
+	TEST_ASSERT(QDELETED(record), "Deleted NPC hull retained its provisional record")
+	TEST_ASSERT_EQUAL(length(GLOB.voidcrew_crew_records), registry_size, "Deleting an NPC hull grew the crew registry")
 
 /// Registry/admin disposal drops hull, mind and ckey references without deleting the hulls.
 /datum/unit_test/voidcrew_zone_identity/cleanup/Run()

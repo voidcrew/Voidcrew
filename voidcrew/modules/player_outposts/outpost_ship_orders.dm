@@ -337,6 +337,12 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	if(!record.setup_from_template(template, order.theme))
 		qdel(record)
 		return null
+	// Bind before commissioning signals can yield; a new crew keeps the fresh record.
+	var/datum/mind/command = captain_mind()
+	var/datum/voidcrew_crew_record/current_crew = command?.recover_reputation_crew() || GLOB.voidcrew_crew_roster[captain_ckey]
+	if(current_crew && !form_new_crew)
+		record.ship_team.set_crew_record(current_crew)
+	command?.join_reputation_crew(record.get_crew_record())
 	return record
 
 /// A new ship takes its hull's name, as a spawned one does.

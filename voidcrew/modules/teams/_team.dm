@@ -69,6 +69,12 @@
 	crew_service_ship_ref = null
 	return ..()
 
+/// Evict the old life before manifest insertion; normal registration adds the new hull HUD.
+/obj/structure/overmap/ship/manifest_inject(mob/living/carbon/human/H, datum/job/human_job)
+	set waitfor = FALSE
+	H.mind?.join_reputation_crew(ship_team?.ensure_crew_record())
+	return ..()
+
 /datum/team/voidcrew
 	show_roundend_report = TRUE
 	var/obj/structure/overmap/ship/ship
@@ -173,8 +179,11 @@
 /datum/team/voidcrew/Destroy(force, ...)
 	for(var/datum/mind/team_minds in members.Copy())
 		remove_member(team_minds)
-	crew_record?.teams.Remove(src)
+	var/datum/voidcrew_crew_record/previous = crew_record
+	previous?.teams.Remove(src)
 	crew_record = null
+	if(previous?.is_unfounded())
+		qdel(previous)
 	ship = null
 	return ..()
 
