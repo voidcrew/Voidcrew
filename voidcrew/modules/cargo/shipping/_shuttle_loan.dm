@@ -194,11 +194,21 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	var/thanks_msg = "Your shuttle will return with our cargo. Payment has been transferred."
 	/// Description for logging
 	var/logging_desc = "generic loan"
+	/// One captured host band for all hostile cargo in this delivery.
+	var/datum/npc_spawn_context/npc_source
 
 /// Spawns items on the shuttle when it arrives
 /datum/voidcrew_shuttle_loan/proc/spawn_items(datum/voidcrew_cargo_shuttle/shuttle)
 	SHOULD_CALL_PARENT(FALSE)
 	CRASH("Unimplemented spawn_items() on [src.type].")
+
+/// The cargo bay can be off-map; its host ship supplies the encounter band.
+/datum/voidcrew_shuttle_loan/proc/spawn_hostile(mob_type, turf/location, datum/voidcrew_cargo_shuttle/shuttle)
+	if(!npc_source)
+		var/turf/source_turf = get_turf(shuttle.target_ship)
+		npc_source = new(shuttle, SSovermap_zones.get_zone_type_anywhere(source_turf) || ZONE_GREEN, source_turf = source_turf)
+	var/datum/npc_spawn_context/context = new(shuttle, npc_source.zone_type, "ordinary", source_turf = npc_source.source_turf)
+	return spawn_npc_in_zone(mob_type, location, context)
 
 /// Department resupply - free supplies, no bonus
 /datum/voidcrew_shuttle_loan/department_resupply
@@ -431,13 +441,13 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	for(var/i in 1 to 2)
 		if(!length(cargo_turfs))
 			break
-		new /mob/living/basic/trooper/syndicate/ranged/infiltrator(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
 
 	// Chance for more
 	if(prob(75) && length(cargo_turfs))
-		new /mob/living/basic/trooper/syndicate/ranged/infiltrator(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
 	if(prob(50) && length(cargo_turfs))
-		new /mob/living/basic/trooper/syndicate/ranged/infiltrator(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/trooper/syndicate/ranged/infiltrator, pick_n_take(cargo_turfs), shuttle)
 
 /// Lots of bees - Toxic bees and beekeeping equipment
 /datum/voidcrew_shuttle_loan/lots_of_bees
@@ -492,7 +502,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	for(var/i in 1 to 8)
 		if(!length(cargo_turfs))
 			break
-		new /mob/living/basic/bee/toxin(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/bee/toxin, pick_n_take(cargo_turfs), shuttle)
 
 	// Blood and bug guts
 	for(var/i in 1 to 5)
@@ -568,17 +578,17 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 	// The Russians
 	if(length(cargo_turfs))
-		new /mob/living/basic/trooper/russian(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/trooper/russian, pick_n_take(cargo_turfs), shuttle)
 	if(length(cargo_turfs))
-		new /mob/living/basic/trooper/russian/ranged(pick_n_take(cargo_turfs)) // This one drops a mateba
+		spawn_hostile(/mob/living/basic/trooper/russian/ranged, pick_n_take(cargo_turfs), shuttle) // This one drops a mateba
 	if(length(cargo_turfs))
-		new /mob/living/basic/bear/russian(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/bear/russian, pick_n_take(cargo_turfs), shuttle)
 
 	// Chance for more
 	if(prob(75) && length(cargo_turfs))
-		new /mob/living/basic/trooper/russian(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/trooper/russian, pick_n_take(cargo_turfs), shuttle)
 	if(prob(50) && length(cargo_turfs))
-		new /mob/living/basic/bear/russian(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/bear/russian, pick_n_take(cargo_turfs), shuttle)
 
 /// Spider gift - Giant spiders from the Spider Clan
 /datum/voidcrew_shuttle_loan/spider_gift
@@ -601,13 +611,13 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 	// THE SPIDERS
 	if(length(cargo_turfs))
-		new /mob/living/basic/spider/giant(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/spider/giant, pick_n_take(cargo_turfs), shuttle)
 	if(length(cargo_turfs))
-		new /mob/living/basic/spider/giant(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/spider/giant, pick_n_take(cargo_turfs), shuttle)
 	if(length(cargo_turfs))
-		new /mob/living/basic/spider/giant/nurse(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/spider/giant/nurse, pick_n_take(cargo_turfs), shuttle)
 	if(prob(50) && length(cargo_turfs))
-		new /mob/living/basic/spider/giant/hunter(pick_n_take(cargo_turfs))
+		spawn_hostile(/mob/living/basic/spider/giant/hunter, pick_n_take(cargo_turfs), shuttle)
 
 	// Victim remains
 	if(length(cargo_turfs))
