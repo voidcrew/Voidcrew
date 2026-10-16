@@ -103,6 +103,22 @@
 	chest.receive_damage(20, blocked = 30, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(swarm.nanite_volume, before, "Forced, nonphysical, zero, healing or direct limb damage spent nanites")
 
+/// Exercise the real forced spread hit with a nonzero armor check, without relying on RNG.
+/datum/action/cooldown/cyberware/piledriver_leap/nanite_accounting_test/should_spread_crush_damage()
+	return TRUE
+
+/datum/unit_test/armor_partial_modifiers/nanites/forced_piledriver/Run()
+	setup()
+	var/mob/living/carbon/human/jumper = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/piledriver/frame = allocate(/obj/item/organ/cyberimp/cyberware/piledriver)
+	var/datum/action/cooldown/cyberware/piledriver_leap/nanite_accounting_test/leap = allocate(/datum/action/cooldown/cyberware/piledriver_leap/nanite_accounting_test, frame)
+	TEST_ASSERT_EQUAL(patient.run_armor_check(attack_flag = MELEE, silent = TRUE), 30, "Forced-hit fixture has no armor to bypass")
+	var/before = swarm.nanite_volume
+	leap.crush_victim(jumper, patient)
+	TEST_ASSERT(abs(patient.getBruteLoss() - 60) <= DAMAGE_PRECISION, "Forced Piledriver spread damage was reduced by armor") // CYBERWARE_PILEDRIVER_CRUSH_DAMAGE
+	TEST_ASSERT_EQUAL(swarm.nanite_volume, before, "Forced Piledriver damage spent nanites on bypassed armor")
+	TEST_ASSERT(hardening.passive_enabled && refractive.passive_enabled, "Forced damage disabled funded nanite armor")
+
 /datum/armor/nanite_accounting_test
 	melee = 75
 	bullet = 75

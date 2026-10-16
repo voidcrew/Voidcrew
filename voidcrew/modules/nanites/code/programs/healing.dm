@@ -233,24 +233,24 @@
 
 /datum/nanite_program/defib/proc/zap(datum/weakref/intended_host)
 	var/mob/living/carbon/patient = intended_host?.resolve()
-	if(QDELETED(patient) || host_mob != patient || !check_revivable())
+	if(QDELETED(patient) || host_mob != patient || !check_revivable() || capacity_blocked())
 		return
 	playsound(patient, 'sound/machines/defib/defib_charge.ogg', 50, FALSE)
 	sleep(3 SECONDS)
-	if(QDELETED(src) || QDELETED(patient) || host_mob != patient)
+	if(QDELETED(src) || QDELETED(patient) || host_mob != patient || capacity_blocked())
 		return
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 50, FALSE)
-	if(!defibrillate())
+	if(!defibrillate() && !capacity_blocked())
 		playsound(patient, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
 
 /// Rechecked after the windup, immediately before healing and revival.
 /datum/nanite_program/defib/proc/defibrillate()
-	if(!check_revivable())
+	if(!check_revivable() || capacity_blocked())
 		return FALSE
 	var/mob/living/carbon/C = host_mob
 	C.heal_for_defib()
 	C.set_heartattack(FALSE)
-	if(!C.revive_from("nanites"))
+	if(capacity_blocked() || !C.revive_from("nanites"))
 		return FALSE
 	playsound(C, 'sound/machines/defib/defib_success.ogg', 50, FALSE)
 	C.emote("gasp")
