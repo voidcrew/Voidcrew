@@ -178,7 +178,7 @@
 	// Survey complete: the last pylon prints the core
 	var/obj/item/mission_recovery/core = new(pylon.drop_location())
 	core.name = "[mission.objective_name] core"
-	core.desc = "A completed survey core, warm from compiling. The mission pad will accept it."
+	core.desc = "A completed survey core, warm from compiling."
 	mission.bind_item(core)
 	mission.register_quest_atom(core)
 	notify_crew("Survey complete. Recover the [mission.objective_name] core and return it to the mission pad.")
@@ -253,7 +253,7 @@
 	anomaly.stabilize(anchor = TRUE)
 	anomaly.countdown?.stop()
 	RegisterSignal(anomaly, COMSIG_QDELETING, PROC_REF(on_anomaly_gone))
-	notify_crew("Containment target is live and holding at the site. Read its field with an analyzer, then match that frequency and code on a signaler to neutralize it.")
+	notify_crew("Containment target confirmed at the site.")
 
 /**
  * The anomaly is gone. A proper neutralization has already dropped its core on
@@ -391,7 +391,7 @@
 	if(grace_timer) // already counting down; a re-death mid-revival doesn't restart it
 		return
 	grace_timer = addtimer(CALLBACK(src, PROC_REF(on_grace_expired)), revival_grace, TIMER_STOPPABLE)
-	notify_crew("Survivor's vitals flatlined - the beacon is still holding their tag. Get them breathing again within [DisplayTimeText(revival_grace)] and the contract stands.", type = SHIP_NOTIFY_WARNING)
+	notify_crew("Survivor's vitals flatlined.", type = SHIP_NOTIFY_WARNING)
 
 /// Somebody got them back up inside the window
 /datum/mission_objective/field/escort/proc/on_survivor_revived(mob/living/source, full_heal_flags)
@@ -402,7 +402,7 @@
 		return
 	clear_grace()
 	was_revived = TRUE
-	notify_crew("Survivor is breathing again. Bring them to the pad - the fee holds, the unharmed bonus does not.")
+	notify_crew("Survivor is breathing again.")
 
 /// Nobody brought them back in time
 /datum/mission_objective/field/escort/proc/on_grace_expired()
@@ -517,7 +517,7 @@
 		return FALSE
 	kit = new(kit_turf)
 	kit.objective_ref = WEAKREF(src)
-	notify_crew("Claim beacon kit delivered to your mission pad. Deploy it while holding at the marked coordinates.")
+	notify_crew("Claim beacon kit delivered.")
 	return TRUE
 
 /// Whether the ship is close enough to the stake coordinates to count
@@ -539,7 +539,7 @@
 	QDEL_NULL(kit)
 	var/datum/mission_target/target = mission.target
 	beacon.file_claim("Prospect filing: mineral-rights claim staked at grid [target.target_x], [target.target_y]. Claim matures in [round(defend_duration / (1 MINUTES))] minutes. All counterclaims settled on-site.")
-	notify_crew("Claim filed on Wideband. The whole sector heard it - hold the site for [round(defend_duration / (1 MINUTES))] minutes.", type = SHIP_NOTIFY_WARNING)
+	notify_crew("Claim filed on Wideband.", type = SHIP_NOTIFY_WARNING)
 
 /// One second of defending, ticked by the beacon's process
 /datum/mission_objective/claim_defense/proc/tick_defense(seconds)
@@ -565,7 +565,7 @@
 	deed_printed = TRUE
 	var/obj/item/mission_recovery/deed = new(beacon.drop_location())
 	deed.name = "notarized claim deed"
-	deed.desc = "A matured mineral-rights filing, printed and bonded. The mission pad will accept it."
+	deed.desc = "A matured mineral-rights filing, printed and bonded."
 	mission.bind_item(deed)
 	mission.register_quest_atom(deed)
 	beacon.retire()

@@ -113,7 +113,7 @@
 		balloon_alert(user, "[live_beacons] beacon[live_beacons > 1 ? "s" : ""] linked")
 		playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 	else if(linked)
-		balloon_alert(user, "linked - no objective marked yet")
+		balloon_alert(user, "signal pending")
 	else
 		// A hunt at a trader outpost has no tracker by design: say so rather than sound broken
 		var/why_none = bounty_gps_refusal(ship)
@@ -139,7 +139,7 @@
 	data["active_count"] = length(ship.active_missions)
 	data["has_pad"] = !!linked_pad
 	data["has_mod_gps"] = !!get_worn_mod_gps(user)
-	data["refresh_cooldown_remaining"] = max(0, round((MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)) / 10))
+	data["refresh_cooldown_remaining"] = max(0, round((ship.next_mission_refresh - world.time) / 10))
 
 	// Available missions
 	data["available_missions"] = list()
@@ -188,6 +188,11 @@
 	if(!ship)
 		balloon_alert(usr, "console not on a ship!")
 		return TRUE
+	if(!is_operational || !ui.user.can_perform_action(src, FORBID_TELEKINESIS_REACH))
+		return TRUE
+	if(!ship.is_ship_crew(ui.user))
+		balloon_alert(ui.user, "Crew access only.")
+		return TRUE
 
 	switch(action)
 		if("link_mod_gps")
@@ -232,11 +237,9 @@
 			return TRUE
 
 		if("refresh")
-			var/cooldown_remaining = MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)
-			if(cooldown_remaining > 0)
-				balloon_alert(usr, "wait [round(cooldown_remaining / 10)]s")
+			if(world.time < ship.next_mission_refresh)
+				balloon_alert(usr, "Offer closed.")
 				return TRUE
-			ship.last_mission_refresh = world.time
 			record_mission_board_refreshed(ship, usr) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			SSmissions.force_refresh_ship_missions(ship)
 			balloon_alert(usr, "missions refreshed!")
@@ -322,7 +325,7 @@
 
 			var/obj/item/ship_key/key = locate() in linked_pad.get_items_on_pad()
 			if(!key)
-				balloon_alert(usr, "place captain's key on pad!")
+				balloon_alert(usr, "captain's key missing!")
 				return TRUE
 
 			// Find what bounty this ship is hunting (ships can only have one)
@@ -470,7 +473,7 @@
 			// Get items on pad
 			var/list/items_on_pad = linked_pad.get_items_on_pad()
 			if(!length(items_on_pad))
-				balloon_alert(usr, "place items on pad first!")
+				balloon_alert(usr, "shipment missing!")
 				return TRUE
 
 			// Create the offer

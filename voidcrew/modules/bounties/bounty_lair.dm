@@ -302,6 +302,13 @@
 	lair_kind = null
 	return ..()
 
+/// The existing atomic claim closes the bounty before returning its successful pay.
+/datum/criminal_bounty/kill_only/lair/board_claim(obj/structure/overmap/ship/ship, obj/machinery/mission_pad/pad, atom/movable/target, state, mob/user)
+	var/prize_zone = board_zone
+	. = ..()
+	if(islist(.) && !QDELETED(ship))
+		ship.award_guarded_prize("lair", prize_zone, pad, type)
+
 /// Its clock also waits while anyone is inside the lair: a crew deep in it never loses the bounty to the clock
 /datum/criminal_bounty/kill_only/lair/board_clock_held(now = world.time)
 	if(..())
