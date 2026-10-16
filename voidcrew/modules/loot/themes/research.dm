@@ -14,7 +14,6 @@
 	name = "research"
 	guard_themes = list(/obj/effect/zone_mobs/bug, /obj/effect/zone_mobs/bug/boss)
 	theme_skus = list(
-		/datum/shop_sku/outfitter/carbine_blueprint,
 		/datum/shop_sku/ripperdoc/doppler,
 		/datum/shop_sku/ripperdoc/rigger,
 	)
@@ -43,7 +42,6 @@
 		/obj/item/gun/energy/laser/retro = 6,
 		/obj/item/gun/energy/recharge/ebow = 4,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
-		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/science = 7,
 		// lab hardware worn instead of carried: a sonar transceiver socketed
 		// into the bone behind the ear, reading movement through walls
