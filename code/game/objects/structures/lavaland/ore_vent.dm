@@ -602,7 +602,10 @@
 	if(!COOLDOWN_FINISHED(src, wave_cooldown))
 		return
 	// Completely override the normal wave defense, and just spawn the boss.
-	var/mob/living/simple_animal/hostile/megafauna/boss = new summoned_boss(loc)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: capture the vent's planet band before construction.
+	var/datum/npc_spawn_context/context = new(src, SSovermap_zones.planet_zone_type_for_turf(get_turf(src)), "boss")
+	var/mob/living/simple_animal/hostile/megafauna/boss = spawn_npc_in_zone(summoned_boss, loc, context)
+	// VOIDCREW EDIT ADDITION END
 	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(handle_wave_conclusion))
 	SSblackbox.record_feedback("tally", "ore_vent_mobs_spawned", 1, summoned_boss)
 	COOLDOWN_START(src, wave_cooldown, INFINITY) //Basically forever

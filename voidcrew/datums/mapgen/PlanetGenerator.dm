@@ -551,7 +551,8 @@
 					break
 
 				if(can_spawn)
-					new picked_mob(target_turf)
+					var/datum/npc_spawn_context/context = new(src, zone_band, "auto", source_turf = target_turf)
+					spawn_npc_in_zone(picked_mob, target_turf, context)
 					spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See
@@ -560,8 +561,8 @@
 		// forward-progress floor than the default, to keep its tick overshoot in line.
 		SSovermap.worldgen_yield(throttled, min_iterations = 8)
 
-	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
-	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
+	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget, zone_band)
+	var/megafauna_placed = place_planet_megafauna(megafauna_candidates, zone_band)
 	var/anomalies_placed = place_budgeted_anomalies(turfs, anomaly_budget)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \
@@ -577,7 +578,7 @@
  * row-major, so taking the first N would put every tendril on the planet in the same
  * corner. Returns how many were placed.
  */
-/datum/map_generator/planet_generator/proc/place_budgeted_spawners(list/candidates, budget)
+/datum/map_generator/planet_generator/proc/place_budgeted_spawners(list/candidates, budget, zone_band)
 	if(!length(candidates) || budget <= 0)
 		return 0
 
@@ -599,7 +600,8 @@
 			continue
 
 		var/spawner_type = candidates[candidate]
-		new spawner_type(candidate)
+		var/datum/npc_spawn_context/context = new(src, zone_band, "auto", source_turf = candidate)
+		spawn_npc_in_zone(spawner_type, candidate, context)
 		placed_at += candidate
 		placed++
 		CHECK_TICK
@@ -681,7 +683,7 @@
 
 /// Places a single megafauna from the banked candidates. One per planet, and only where
 /// the zone band allows them at all - see megafauna_allowed in populate_terrain().
-/datum/map_generator/planet_generator/proc/place_planet_megafauna(list/candidates)
+/datum/map_generator/planet_generator/proc/place_planet_megafauna(list/candidates, zone_band)
 	if(!length(candidates))
 		return 0
 
@@ -691,7 +693,8 @@
 		if(!isturf(candidate) || candidate.density)
 			continue
 		var/megafauna_type = candidates[candidate]
-		new megafauna_type(candidate)
+		var/datum/npc_spawn_context/context = new(src, zone_band, "boss", source_turf = candidate)
+		spawn_npc_in_zone(megafauna_type, candidate, context)
 		return 1
 
 	return 0
