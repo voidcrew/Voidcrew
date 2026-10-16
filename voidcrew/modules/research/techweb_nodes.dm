@@ -263,6 +263,7 @@
 
 /datum/techweb_node/nanite_combat
 	id = "nanite_military"
+	zone_permission = ZONE_PERMISSION_ELITE
 	display_name = "Military Nanite Programming"
 	description = "Nanite programs that perform military-grade functions."
 	prereq_ids = list("nanite_harmonic", "syndicate_basic")
@@ -423,6 +424,7 @@
 
 /datum/techweb_node/specialist_ammo
 	id = TECHWEB_NODE_SPECIALIST_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Specialist Ammunition"
 	description = "Precision, armor-piercing, hollow-point and incendiary loads for conventional firearms."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXOTIC_AMMO)
@@ -471,6 +473,7 @@
 
 /datum/techweb_node/experimental_ammo
 	id = TECHWEB_NODE_EXPERIMENTAL_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Experimental Ammunition"
 	description = "Guided and phasic projectiles, advanced payloads and high-energy shells."
 	prereq_ids = list(TECHWEB_NODE_SPECIALIST_AMMO, TECHWEB_NODE_APPLIED_BLUESPACE)
