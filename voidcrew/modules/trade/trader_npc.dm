@@ -441,14 +441,9 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 	var/obj/structure/overmap/ship/crew_ship = add_crew_context_data(data, user)
 
-	// Buyer's wallet snapshot, for the header. Vouchers count from the whole
-	// inventory, same as payment accepts them
+	// The same selected ship account used for purchases. Vouchers remain personal.
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
-	var/obj/item/card/id/id_card
-	if(isliving(user))
-		var/mob/living/living_user = user
-		id_card = living_user.get_idcard(TRUE)
-	data["account_credits"] = id_card?.registered_account ? id_card.registered_account.account_balance : null
+	data["account_credits"] = crew_ship?.ship_account?.account_balance
 
 	var/list/stock_states = list()
 	if(shop)

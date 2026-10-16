@@ -489,11 +489,15 @@
 		TEST_ASSERT_EQUAL(length(mission.contract_stock), 0, "A contract reserved restricted stock")
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Ladder counter test", null, 1, FALSE)
 	account.account_balance = 2700
+	ship.ship_account = account
 	var/obj/item/card/id/advanced/card = allocate(/obj/item/card/id/advanced)
 	qdel(card.registered_account)
 	card.registered_account = account
 	TEST_ASSERT(user.put_in_hands(card), "First buyer could not carry their ID")
 	var/mob/living/carbon/human/other_buyer = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	other_buyer.mind_initialize()
+	allocated += other_buyer.mind
+	team.join_member(other_buyer.mind)
 	var/obj/item/card/id/advanced/other_card = allocate(/obj/item/card/id/advanced)
 	qdel(other_card.registered_account)
 	other_card.registered_account = account

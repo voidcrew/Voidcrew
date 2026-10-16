@@ -14,6 +14,9 @@
 /datum/unit_test/voidcrew_zone_shops/proc/fund(mob/living/carbon/human/buyer, credits = 10000, vouchers = 20)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Shop test", null, 1, FALSE)
 	account.account_balance = credits
+	var/obj/structure/overmap/ship/ship = get_crew_ship(buyer)
+	TEST_ASSERT_NOTNULL(ship, "Shop funding requires a selected ship")
+	ship.ship_account = account
 	var/obj/item/card/id/advanced/card = allocate(/obj/item/card/id/advanced)
 	qdel(card.registered_account)
 	card.registered_account = account
@@ -315,6 +318,63 @@
 	TEST_ASSERT(!sku.can_trade(buyer, npc), "Moving the counter left a stale live context")
 	TEST_ASSERT(!sku.try_purchase(buyer, npc), "A stale action purchased beyond counter range")
 
+/// An ID for one hull cannot redirect the selected hull's balance or payment.
+/datum/unit_test/voidcrew_zone_shops/selected_account/Run()
+	var/mob/living/carbon/human/buyer = make_member()
+	var/obj/structure/overmap/ship/first = make_ship()
+	first.enlist_crewmember(buyer)
+	var/datum/bank_account/first_account = fund(buyer, 0)
+	var/datum/voidcrew_crew_record/crew = record_for(first)
+	set_permission(crew, 1)
+	var/obj/structure/overmap/ship/second = make_ship(crew)
+	var/datum/bank_account/second_account = allocate(/datum/bank_account, "Selected ship", null, 1, FALSE)
+	second_account.account_balance = 10000
+	second.ship_account = second_account
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	shop.add_sku(/datum/shop_sku/favor/pike_ledger, "favor")
+	var/datum/shop_sku/sku = shop.skus[1]
+	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	npc.shop = shop
+	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
+	var/list/data = facet.ui_data(buyer)
+	TEST_ASSERT_NULL(data["account_credits"], "Ambiguous fleet displayed the ID's account")
+	TEST_ASSERT_NULL(sku.get_account(buyer), "Ambiguous fleet fell back to the ID's account")
+	TEST_ASSERT(facet.select_service_ship(buyer, REF(second)), "Could not select the second ship")
+	TEST_ASSERT_EQUAL(buyer.get_idcard(TRUE).registered_account, first_account, "Selecting a ship rewrote the carried ID")
+	data = facet.ui_data(buyer)
+	TEST_ASSERT_EQUAL(data["account_credits"], 10000, "Storefront did not display the selected ship's balance")
+	TEST_ASSERT(sku.can_afford(buyer), "An empty ID account blocked the funded selected ship")
+	TEST_ASSERT_NULL(sku.get_denial_reason(buyer), "The selected ship's funds were denied")
+	var/list/stock_state = data["stock_states"][1]
+	TEST_ASSERT(stock_state["can_buy"], "Storefront refused the funded selected ship")
+	TEST_ASSERT(sku.try_purchase(buyer, npc), "The selected ship could not pay")
+	TEST_ASSERT_EQUAL(first_account.account_balance, 0, "Purchase charged the ID's ship")
+	TEST_ASSERT_EQUAL(second_account.account_balance, 6800, "Purchase did not charge the selected ship")
+	data = facet.ui_data(buyer)
+	TEST_ASSERT_EQUAL(data["account_credits"], 6800, "Storefront did not refresh the selected ship's balance")
+	TEST_ASSERT_EQUAL(shop.get_crew_purchases(second, sku.type), 1, "Purchase did not use the selected ship's crew cap")
+
+	first_account.account_balance = 10000
+	second_account.account_balance = 0
+	TEST_ASSERT(!sku.can_afford(buyer), "The ID's funds bypassed the selected ship's empty account")
+	TEST_ASSERT_NOTNULL(sku.get_denial_reason(buyer), "Empty selected account had no denial")
+	TEST_ASSERT(!sku.try_purchase(buyer, npc), "Purchase fell back to the funded ID account")
+	TEST_ASSERT_EQUAL(first_account.account_balance, 10000, "Refused purchase charged the ID's ship")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 18, "Refused purchase consumed vouchers")
+	TEST_ASSERT_EQUAL(shop.get_crew_purchases(second, sku.type), 1, "Refused purchase consumed a cap slot")
+	data = facet.ui_data(buyer)
+	TEST_ASSERT_EQUAL(data["account_credits"], 0, "Storefront hid an empty selected account")
+	stock_state = data["stock_states"][1]
+	TEST_ASSERT(!stock_state["can_buy"], "Storefront offered an unaffordable purchase")
+	second.ship_account = null
+	TEST_ASSERT_NULL(sku.get_account(buyer), "Missing selected account fell back to the ID")
+	TEST_ASSERT(!sku.try_purchase(buyer, npc), "Missing selected account charged the ID")
+	var/obj/structure/overmap/ship/foreign = make_ship()
+	foreign.ship_account = first_account
+	TEST_ASSERT_NULL(sku.get_account(buyer, foreign), "Explicit foreign ship supplied a payment account")
+	foreign.ship_account = null
+	second.ship_account = second_account
+
 /// A quote retains the tagged SKU, including through its stock reservation.
 /// Z2 uses this same permission predicate for the viewer's effective package.
 /datum/unit_test/voidcrew_zone_shops/packages/Run()
@@ -357,6 +417,7 @@
 	refusing.account_balance = 10000
 	var/obj/item/card/id/card = buyer.get_idcard(TRUE)
 	card.registered_account = refusing
+	ship.ship_account = refusing
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/favor/pike_ledger, "favor")
 	var/datum/shop_sku/sku = shop.skus[1]

@@ -163,6 +163,7 @@
 	team.join_member(buyer.mind)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Anomaly chart test", null, 1, FALSE)
 	account.account_balance = 40000
+	ship.ship_account = account
 	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
 	qdel(id_card.registered_account)
 	id_card.registered_account = account
