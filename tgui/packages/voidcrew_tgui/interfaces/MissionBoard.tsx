@@ -681,8 +681,15 @@ const BountyCard = (props: BountyCardProps) => {
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
           <Box color="label">
-            <Box as="span" color={bounty.hunter_count > 0 ? 'orange' : 'gray'}>
-              {bounty.hunter_count > 0
+            <Box
+              as="span"
+              color={
+                bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
+                  ? 'orange'
+                  : 'gray'
+              }
+            >
+              {bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
                 ? 'Other crews hunting'
                 : 'No other hunters'}
             </Box>
