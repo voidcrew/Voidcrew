@@ -284,6 +284,7 @@
  * entourage of lesser fauna. Death drops the mission-bound trophy.
  */
 /datum/mission_objective/field/kill_named/big_game
+	proof_type = /obj/item/mission_recovery/trophy
 	/// Where the lure was staked; the beast breaks cover next to it
 	var/turf/lure_turf
 	/// The trophy the beast drops ("tendril-crowned skull"), set by the mission
@@ -298,22 +299,23 @@
 
 /// The beast answers the lure, not a random spawn point
 /datum/mission_objective/field/kill_named/big_game/do_field_spawn()
+	if(spawned)
+		return
 	if(!lure_turf)
 		return ..()
 	spawned = TRUE
 	spawn_field_objects(get_nearby_open_turf(lure_turf, 4))
 
 /datum/mission_objective/field/kill_named/big_game/spawn_field_objects(turf/spawn_turf)
+	if(mission.named_kill_completed)
+		return ..()
 	var/mob/living/beast = new target_mob_type(spawn_turf)
 	beast.name = mission.objective_name
 	beast.desc += " This one is old, scarred, and much too big. The guild wants it as a wall piece."
 	if(health_override > beast.maxHealth)
 		beast.maxHealth = health_override
 		beast.health = health_override
-	target_mob = beast
-	protect_field_mob(beast)
-	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
-	mission.register_quest_atom(beast)
+	track_target(beast)
 	// The entourage: lesser fauna drawn in by the blood on the wind. Killing
 	// them pays nothing - the contract is the name on the trophy.
 	for(var/guard_type in guard_types)
@@ -322,25 +324,8 @@
 	beast.visible_message(span_boldwarning("[beast] comes crashing in and goes straight for the lure!"))
 	notify_crew("The lure's been taken. [mission.objective_name] is out in the open - good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
-/**
- * The beast died: drop the bound trophy, track it instead, and advance.
- * Full override of kill_named's proof drop - same signal, hunt flavor.
- */
-/datum/mission_objective/field/kill_named/big_game/on_target_death(mob/living/source, gibbed)
-	SIGNAL_HANDLER
-	if(target_killed || !mission || mission.failed || mission.completed)
-		return
-	target_killed = TRUE
-	UnregisterSignal(source, COMSIG_LIVING_DEATH)
-	target_mob = null
-
-	var/obj/item/mission_recovery/trophy/trophy = new(source.drop_location())
-	trophy.name = "[mission.objective_name]'s [trophy_part]"
-	mission.bind_item(trophy)
-	mission.register_quest_atom(trophy)
-
-	notify_crew("[mission.objective_name] is down. Recover the [trophy_part] and return it to the mission pad.")
-	complete()
+/datum/mission_objective/field/kill_named/big_game/get_proof_name()
+	return "[mission.objective_name]'s [trophy_part]"
 
 /datum/mission_objective/field/kill_named/big_game/get_progress_string()
 	if(!spawned)
