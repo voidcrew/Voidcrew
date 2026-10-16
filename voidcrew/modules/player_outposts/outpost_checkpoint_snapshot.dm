@@ -144,6 +144,9 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		keys += list("icon", "icon_door", "base_icon_state", "enable_door_overlay", "has_opened_overlay", "has_closed_overlay", "wall_mounted", "horizontal", "locked", "req_one_access")
 		// Closet stock is otherwise generated lazily on first opening.
 		properties += "contents_initialized = 1"
+		if(istype(object, /obj/structure/closet/crate/secure/loot))
+			// A saved freight shell never receives a fresh code-lock payout.
+			properties += "spawned_loot = 1"
 	if(istype(object, /obj/machinery/light))
 		// Lights otherwise materialize a charged mock battery after map loading.
 		properties += "start_with_cell = 0"

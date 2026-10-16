@@ -1,59 +1,15 @@
 /**
- * # Abandoned crate loot
- *
- * Replaces tg's `spawn_loot()` (code/modules/mining/abandoned_crates.dm),
- * which was a 1-100 switch that paid a plushie, a balloon, kitty ears or a
- * banhammer-and-bwoink-mines gag roughly seven times in ten. That table is
- * written for a station round where the crate is a bit of maintenance
- * furniture. Out here a crate is a two-jump trip and a bomb you have to
- * out-think, so it pays like one.
- *
- * WHAT THIS IS NOT: a zone cache. The nine themed caches
- * (voidcrew/modules/loot/themes/) are the other channel and they stay the
- * better one, because they are guarded, band-scaled and hold the authored
- * uniques. This crate is the flat one: a shipping container nobody came back
- * for, identical odds in green space and in red. The lock is what it charges
- * instead of a zone (see the header block on the constants in
- * voidcrew/_DEFINES/loot.dm for why that trade is the whole design).
- *
- * The content split follows from that. A themed cache is a PURPOSEFUL
- * stockpile: an armory holds an armory's guns, a lab holds a lab's science, a
- * pirate hoard holds treasure. Freight is COMMERCIAL CARGO, which is to say
- * anything a hauler moves: a pallet of plasteel, a case of medkits, a crate of
- * surplus rifles, a bale of winter coats. Breadth is the identity, not a
- * subject.
- *
- * That extends to the guns, and it is the main thing keeping this table off
- * the armory theme's toes. The armory pays the SEC-ISSUE ladder (vest and
- * helmet, disabler, seclite, baton, riot line). Freight pays what turns up in
- * a container: surplus bolt-actions, hunting doubles, a riot pump, a Makarov,
- * a detective's .38, an uzi, a tommygun. Civilian, surplus and criminal
- * hardware rather than anybody's service weapon, and every ballistic brings a
- * spare reload via GLOB.loot_gun_spare_ammo so a gun roll is never dead.
- *
- * Still excluded, all four the other channel's job: cyberware, authored
- * uniques, themed weapon SETS, and five-figure cash.
- *
- * Tuned against the outpost shelves, which are the certainty channel to this
- * crate's gamble (plasteel x20 = 900cr, jetpack = 2100cr, RCD = 2400cr, the
- * dearest general SKU = 3600cr). A cracked crate averages a couple of hundred
- * credits of loose cash, about one gun, and 5-7 items a crew would otherwise
- * have flown to a trader for. It is a good crate. It is not a round-winning
- * one.
+ * Deca-code freight keeps its lock and 5-7 draws. One draw is a weapon from
+ * its spawn-zone profile; the others retain the nonweapon freight tables.
+ * Freight never pays advanced guns, cyberware or authored unique weapons.
  */
 
-/// Freight bulk: consumables, kit and the surplus long gun off the bottom of
-/// the manifest. A crate that paid nothing but these would still be worth
-/// cracking, which is the bar this tier has to clear.
+/// Nonweapon commercial cargo, drawn without replacement within each tier.
 GLOBAL_LIST_INIT(abandoned_crate_common, list(
 	/obj/item/storage/medkit/regular = 8,
 	/obj/item/stack/sheet/iron/fifty = 8,
-	// the container gun: war-surplus, one shot at a time, and it arrives with
-	// a box of 310 to feed it
-	/obj/item/gun/ballistic/rifle/boltaction/surplus = 7,
 	/obj/item/stack/sheet/glass/fifty = 7,
 	/obj/item/tank/internals/oxygen = 7,
-	/obj/item/knife/combat = 6,
 	/obj/item/reagent_containers/hypospray/medipen = 6,
 	/obj/item/storage/box/donkpockets = 6,
 	/obj/item/food/rationpack = 5,
@@ -75,19 +31,12 @@ GLOBAL_LIST_INIT(abandoned_crate_uncommon, list(
 	/obj/item/stack/sheet/plasteel/twenty = 8,
 	/obj/item/tank/jetpack/oxygen = 7,
 	/obj/item/storage/medkit/advanced = 7,
-	/obj/item/gun/ballistic/shotgun/riot = 6,
 	/obj/item/clothing/suit/armor/vest = 6,
 	/obj/item/stack/spacecash/c500 = 6,
 	/obj/item/stack/sheet/mineral/plasma/thirty = 6,
-	/obj/item/gun/ballistic/automatic/pistol = 5,
-	/obj/item/gun/ballistic/revolver/c38/detective = 5,
-	/obj/item/gun/ballistic/shotgun/doublebarrel = 5,
 	/obj/item/stock_parts/power_store/cell/super = 5,
 	/obj/item/stack/sheet/mineral/titanium/fifty = 5,
 	/obj/item/reagent_containers/hypospray/medipen/survival = 5,
-	// somebody was moving these in a crate marked FARM EQUIPMENT
-	/obj/item/gun/ballistic/automatic/mini_uzi = 4,
-	/obj/item/gun/ballistic/automatic/tommygun = 4,
 	/obj/item/storage/backpack/duffelbag/med = 4,
 	/obj/item/survivalcapsule = 4,
 	/obj/item/wormhole_jaunter = 4,
@@ -102,16 +51,11 @@ GLOBAL_LIST_INIT(abandoned_crate_prime, list(
 	/obj/item/stack/sheet/plasteel/fifty = 7,
 	/obj/item/ship_parts/combat = 7,
 	/obj/item/construction/rcd/loaded = 6,
-	/obj/item/gun/ballistic/shotgun/automatic/combat = 6,
-	/obj/item/gun/energy/e_gun = 5,
-	/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
 	/obj/item/stock_parts/power_store/cell/hyper = 5,
 	/obj/item/defibrillator/compact = 5,
 	/obj/item/stack/spacecash/c1000 = 5,
 	/obj/item/stack/sheet/mineral/uranium/fifty = 5,
 	/obj/item/stack/sheet/mineral/gold/fifty = 5,
-	/obj/item/gun/energy/laser = 4,
-	/obj/item/gun/ballistic/rifle/boltaction = 4,
 	/obj/item/storage/medkit/surgery = 4,
 	/obj/item/stack/sheet/mineral/diamond/five = 4,
 	/obj/item/clothing/glasses/night = 4,
@@ -121,21 +65,132 @@ GLOBAL_LIST_INIT(abandoned_crate_prime, list(
 	/obj/item/storage/part_replacer/bluespace/tier3 = 3,
 ))
 
+GLOBAL_LIST_INIT(abandoned_crate_guns_green, list(
+	/obj/item/gun/ballistic/rifle/boltaction/surplus,
+	/obj/item/gun/ballistic/automatic/pistol,
+	/obj/item/gun/ballistic/revolver/c38/detective,
+	/obj/item/gun/ballistic/shotgun/doublebarrel,
+))
+
+GLOBAL_LIST_INIT(abandoned_crate_guns_yellow, list(
+	/obj/item/gun/ballistic/shotgun/riot,
+	/obj/item/gun/ballistic/automatic/tommygun,
+	/obj/item/gun/ballistic/automatic/mini_uzi,
+))
+
+GLOBAL_LIST_INIT(abandoned_crate_melee_green, list(
+	/obj/item/knife/combat/survival,
+	/obj/item/spear,
+	/obj/item/hatchet,
+	/obj/item/melee/baseball_bat,
+))
+
+GLOBAL_LIST_INIT(abandoned_crate_melee_yellow, list(
+	/obj/item/knife/combat,
+	/obj/item/claymore/shortsword,
+	/obj/item/melee/baseball_bat/ablative,
+	/obj/item/fireaxe,
+	/obj/item/melee/cleric_mace,
+	/obj/item/melee/sabre,
+))
+
+GLOBAL_LIST_INIT(abandoned_crate_melee_red, list(
+	/obj/item/claymore,
+	/obj/item/claymore/cutlass,
+	/obj/item/katana,
+	/obj/item/mjollnir,
+	/obj/item/melee/energy/sword/saber,
+	/obj/item/melee/energy/sword/pirate,
+))
+
 /**
- * Fires once, and only from the correct-code branch of attack_hand(). A crate
- * that gets blown, cut or emagged never reaches here, which is why the table
- * can afford to be this good.
- *
- * Draws WITHOUT replacement, so one crate never pays the same line twice, and
- * an exhausted tier walks down rather than wasting the draw (see
- * draw_loot_from_tier in zone_loot.dm). There is no UNIQUE tier here; the
- * odds never select one, and the walk-down handles the missing shelf anyway.
+ * One Bernoulli gun roll, then a class roll in thousandths. Freight folds
+ * the gun ladder's red class into yellow (940/60, 450/550, 150/850).
+ * Melee retains all three classes: 900/99/1, 350/640/10, 100/450/450.
+ * Explicit rolls let tests enumerate the exact distribution without sampling.
  */
+/proc/freight_weapon_pool(zone_type, gun_roll = rand(1, 100), class_roll = rand(1, 1000))
+	var/gun_chance = 8
+	var/gun_green = 940
+	var/melee_green = 900
+	var/melee_through_yellow = 999
+	switch(zone_type)
+		if(ZONE_YELLOW)
+			gun_chance = 19
+			gun_green = 450
+			melee_green = 350
+			melee_through_yellow = 990
+		if(ZONE_RED)
+			gun_chance = 33
+			gun_green = 150
+			melee_green = 100
+			melee_through_yellow = 550
+	if(gun_roll <= gun_chance)
+		return class_roll <= gun_green ? GLOB.abandoned_crate_guns_green : GLOB.abandoned_crate_guns_yellow
+	if(class_roll <= melee_green)
+		return GLOB.abandoned_crate_melee_green
+	if(class_roll <= melee_through_yellow)
+		return GLOB.abandoned_crate_melee_yellow
+	return GLOB.abandoned_crate_melee_red
+
+/obj/structure/closet/crate/secure/loot
+	/// Resolved once at the origin; moving the crate cannot improve it.
+	var/loot_zone
+	var/turf/spawn_turf
+
+/obj/structure/closet/crate/secure/loot/Initialize(mapload)
+	spawn_turf = spawned_loot ? null : get_turf(src)
+	return ..()
+
+/obj/structure/closet/crate/secure/loot/LateInitialize()
+	. = ..()
+	if(!spawned_loot)
+		new /datum/zone_resolver(spawn_turf, CALLBACK(src, PROC_REF(on_freight_zone_resolved)))
+
+/obj/structure/closet/crate/secure/loot/proc/on_freight_zone_resolved(zone_type)
+	if(QDELETED(src) || spawned_loot || !isnull(loot_zone) || isnull(zone_type))
+		return
+	loot_zone = zone_type
+	spawn_turf = null
+
+/// The same latch covers correct-code payout, forced opening and rebuilds.
+/obj/structure/closet/crate/secure/loot/proc/consume_freight_loot()
+	spawned_loot = TRUE
+	spawn_turf = null
+
+/obj/structure/closet/crate/secure/loot/dump_contents()
+	// All opening, break, cut and anti-tamper explosion paths dump contents.
+	// Only the correct-code branch calls spawn_loot() before reaching this.
+	consume_freight_loot()
+	return ..()
+
+/obj/structure/closet/crate/secure/loot/emag_act(mob/user, obj/item/card/emag/emag_card)
+	consume_freight_loot()
+	return ..()
+
+/obj/structure/closet/crate/secure/loot/Destroy()
+	consume_freight_loot()
+	return ..()
+
+/// Replaces upstream's gag table; only a correct code requests this payout.
 /obj/structure/closet/crate/secure/loot/spawn_loot()
+	if(QDELETED(src) || spawned_loot)
+		return
+	// Claim before any item constructor can yield or re-enter this proc.
+	spawned_loot = TRUE
+	if(isnull(loot_zone))
+		loot_zone = SSovermap_zones.get_zone_type_anywhere(spawn_turf)
+	if(isnull(loot_zone))
+		loot_zone = ZONE_GREEN
+	consume_freight_loot()
+	var/weapon_path = pick(freight_weapon_pool(loot_zone))
+	new weapon_path(src)
+	var/spare_ammo = GLOB.loot_gun_spare_ammo[weapon_path]
+	if(spare_ammo)
+		new spare_ammo(src)
 	var/list/pools = list(
 		"[LOOT_TIER_COMMON]" = GLOB.abandoned_crate_common.Copy(),
 		"[LOOT_TIER_UNCOMMON]" = GLOB.abandoned_crate_uncommon.Copy(),
 		"[LOOT_TIER_PRIME]" = GLOB.abandoned_crate_prime.Copy(),
 	)
-	roll_loot_draws(src, pools, rand(ABANDONED_CRATE_DRAWS_MIN, ABANDONED_CRATE_DRAWS_MAX), ABANDONED_CRATE_ODDS)
-	spawned_loot = TRUE
+	roll_loot_draws(src, pools, rand(ABANDONED_CRATE_DRAWS_MIN, ABANDONED_CRATE_DRAWS_MAX) - 1, ABANDONED_CRATE_ODDS)
