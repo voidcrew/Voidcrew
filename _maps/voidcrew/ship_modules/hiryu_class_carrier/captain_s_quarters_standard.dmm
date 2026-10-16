@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"dfb" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 29
+	},
+/turf/open/floor/wood,
+/area/template_noop)
 "drI" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -19,15 +28,6 @@
 	dir = 8
 	},
 /turf/open/floor/carpet/blue,
-/area/template_noop)
-"qNH" = (
-/obj/structure/displaycase/captain{
-	start_showpiece_type = /obj/item/katana
-	},
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_y = 29
-	},
-/turf/open/floor/wood,
 /area/template_noop)
 "rbk" = (
 /obj/structure/window/reinforced/spawner/directional/north,
@@ -129,7 +129,7 @@ sxf
 "}
 (4,1,1) = {"
 yjK
-qNH
+dfb
 vmU
 vbd
 rDl

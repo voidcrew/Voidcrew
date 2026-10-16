@@ -117,6 +117,24 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"dC" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos;
+	storage_type = /obj/item/watertank/atmos
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown/anticorner,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "ej" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/green{
@@ -803,21 +821,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"BC" = (
-/obj/machinery/suit_storage_unit/atmos,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/brown/anticorner,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "BV" = (
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/gibs/body,
@@ -1052,20 +1055,6 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/turf/open/floor/cult,
-/area/ruin/unpowered)
-"IU" = (
-/obj/machinery/suit_storage_unit/atmos,
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/brown/anticorner,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
 "Jh" = (
@@ -1362,6 +1351,23 @@
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"XS" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos;
+	storage_type = /obj/item/watertank/atmos
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown/anticorner,
+/turf/open/floor/cult,
 /area/ruin/unpowered)
 "XV" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
@@ -1662,7 +1668,7 @@ xD
 "}
 (14,1,1) = {"
 xD
-IU
+XS
 II
 mx
 qS
@@ -1742,7 +1748,7 @@ nv
 "}
 (18,1,1) = {"
 Nt
-BC
+dC
 my
 Fe
 cD
