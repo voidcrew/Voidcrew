@@ -226,3 +226,81 @@
 	module.job_slots_add_by_theme -= "medical"
 	actual = get_module_job_definitions(null, selections, slots, "medical")
 	TEST_ASSERT_EQUAL(actual[1], shared[1], "removing an override did not restore the existing room crew")
+
+/// First and subsequent chaplains receive one holy weapon, even with occupied hands.
+/datum/unit_test/voidcrew_chaplain_starting_equipment
+	var/original_religion
+	var/original_deity
+	var/original_bible_name
+	var/original_bible_icon_state
+	var/original_bible_inhand_icon_state
+	var/original_holy_weapon_type
+	var/datum/religion_sect/original_religious_sect
+
+/datum/unit_test/voidcrew_chaplain_starting_equipment/New()
+	..()
+	original_religion = GLOB.religion
+	original_deity = GLOB.deity
+	original_bible_name = GLOB.bible_name
+	original_bible_icon_state = GLOB.bible_icon_state
+	original_bible_inhand_icon_state = GLOB.bible_inhand_icon_state
+	original_holy_weapon_type = GLOB.holy_weapon_type
+	original_religious_sect = GLOB.religious_sect
+
+/datum/unit_test/voidcrew_chaplain_starting_equipment/Destroy()
+	GLOB.religion = original_religion
+	GLOB.deity = original_deity
+	GLOB.bible_name = original_bible_name
+	GLOB.bible_icon_state = original_bible_icon_state
+	GLOB.bible_inhand_icon_state = original_bible_inhand_icon_state
+	GLOB.holy_weapon_type = original_holy_weapon_type
+	GLOB.religious_sect = original_religious_sect
+	return ..()
+
+/datum/unit_test/voidcrew_chaplain_starting_equipment/Run()
+	var/datum/job/chaplain/chaplain_job = allocate(/datum/job/chaplain)
+	GLOB.religious_sect = null
+	GLOB.bible_icon_state = null
+	GLOB.bible_inhand_icon_state = null
+	for(var/selected_weapon in list(null, /obj/item/nullrod/claymore))
+		for(var/full_hands in list(FALSE, TRUE))
+			GLOB.religion = null
+			GLOB.deity = null
+			GLOB.bible_name = null
+			GLOB.holy_weapon_type = selected_weapon
+			check_chaplain(chaplain_job, full_hands, selected_weapon || /obj/item/nullrod, HOLY_ROLE_HIGHPRIEST)
+			TEST_ASSERT(GLOB.religion, "The first chaplain did not establish a religion")
+			check_chaplain(chaplain_job, full_hands, selected_weapon || /obj/item/nullrod, HOLY_ROLE_PRIEST)
+			TEST_ASSERT_EQUAL(GLOB.holy_weapon_type, selected_weapon, "Spawning a chaplain changed the selected holy weapon")
+
+/datum/unit_test/voidcrew_chaplain_starting_equipment/proc/check_chaplain(datum/job/chaplain/chaplain_job, full_hands, expected_weapon, expected_role)
+	var/mob/living/carbon/human/consistent/chaplain = allocate(/mob/living/carbon/human/consistent)
+	chaplain.mind_initialize()
+	chaplain.equipOutfit(/datum/outfit/job/chaplain)
+	if(full_hands)
+		for(var/hand_index in 1 to length(chaplain.held_items))
+			TEST_ASSERT(chaplain.put_in_hand(allocate(/obj/item/pen), hand_index), "Could not fill the chaplain's hands")
+	var/turf/spawn_turf = get_turf(chaplain)
+	var/list/previous_contents = spawn_turf.contents.Copy()
+	chaplain_job.after_spawn(chaplain, null)
+
+	var/list/holy_weapons = chaplain.get_all_contents_type(/obj/item/nullrod)
+	for(var/obj/item/nullrod/dropped_weapon in (spawn_turf.contents - previous_contents))
+		holy_weapons += dropped_weapon
+	var/context = "holy role [expected_role], full hands [full_hands], weapon [expected_weapon]"
+	TEST_ASSERT_EQUAL(length(holy_weapons), 1, "Chaplain must receive exactly one holy weapon ([context])")
+	var/obj/item/nullrod/holy_weapon = holy_weapons[1]
+	TEST_ASSERT_EQUAL(holy_weapon.type, expected_weapon, "Chaplain received the wrong holy weapon ([context])")
+	if(full_hands)
+		TEST_ASSERT_EQUAL(holy_weapon.loc, spawn_turf, "The holy weapon must drop at the chaplain's feet when hands are full")
+		TEST_ASSERT_EQUAL(chaplain.get_num_held_items(), 2, "The holy weapon displaced an existing held item")
+	else
+		TEST_ASSERT(chaplain.is_holding(holy_weapon), "The chaplain did not hold their holy weapon ([context])")
+	if(!GLOB.holy_weapon_type)
+		TEST_ASSERT(holy_weapon.GetComponent(/datum/component/subtype_picker), "The default null rod lost its weapon selection")
+	TEST_ASSERT_EQUAL(chaplain.mind.holy_role, expected_role, "Chaplain received the wrong holy role ([context])")
+	var/list/bibles = chaplain.get_all_contents_type(/obj/item/book/bible/booze)
+	TEST_ASSERT_EQUAL(length(bibles), 1, "Chaplain must retain their bible ([context])")
+	var/obj/item/book/bible/booze/holy_bible = bibles[1]
+	TEST_ASSERT_EQUAL(holy_bible.name, GLOB.bible_name, "Chaplain bible lost the established name")
+	TEST_ASSERT_EQUAL(holy_bible.deity_name, GLOB.deity, "Chaplain bible lost the established deity")
