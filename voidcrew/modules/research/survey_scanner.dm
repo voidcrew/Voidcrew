@@ -6,8 +6,10 @@
 #define SURVEY_SCAN_DECAY 0.04
 /// Once a site is worth less than this fraction, it is tapped out for the rest of the round.
 #define SURVEY_MIN_PENALTY 0.20
-/// Points per scan per servo rating, before the decay multiplier. 9/18/27/36.
-#define SURVEY_GAIN_PER_SERVO 9
+
+/obj/structure/overmap
+	/// Successful ground scans at this site, retained when its interior is unloaded.
+	var/survey_scans_completed = 0
 
 /**
  * Survey scanner
@@ -24,7 +26,7 @@
  */
 /obj/machinery/survey_scanner
 	name = "survey scanner"
-	desc = "A machine that scans whatever it is bolted to and refines the readings into research data. It runs off an internal power cell, so it works anywhere you can carry it."
+	desc = "A rugged, battery-powered survey instrument."
 	icon = 'voidcrew/modules/research/icons/objects.dmi'
 	icon_state = "hivebot_fab"
 	density = TRUE
@@ -53,15 +55,6 @@
 	var/next_scan = 0
 	///Amount of research points we've generated from processing.
 	var/stored_points
-	///How many times each SITE has been scanned, keyed by get_scan_history_key().
-	///
-	///Was keyed by z-level, which meant "this site" only while a site owned a z-level of its
-	///own. Sites share levels now: crew B scanning at the encounter next door burned down
-	///crew A's payout, and could push the shared counter past SURVEY_MIN_PENALTY so that A's
-	///scanner reported "unable to locate valuable information" at ground nobody had touched.
-	///`static` also meant the count outlived the z-level itself, so a recycled level handed
-	///its next occupant a used-up site.
-	var/static/list/site_scan_history = list()
 
 /obj/machinery/survey_scanner/Initialize(mapload)
 	. = ..()
@@ -79,16 +72,16 @@
 /obj/machinery/survey_scanner/examine(mob/user)
 	. = ..()
 	if(cell)
-		. += span_notice("It has \a [cell] installed, at [round(cell.percent())]% charge.")
+		. += span_notice("It has \a [cell] installed.")
 	else
-		. += span_warning("It has no power cell. Open the maintenance panel with a screwdriver to fit one.")
+		. += span_warning("Its cell compartment is empty.")
 	if(stored_points)
-		. += "It currently has [round(stored_points, 1)] points. You can Right-Click to print it."
+		. += "Its data spool is ready."
 
 /obj/machinery/survey_scanner/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
 	if(istype(held_item, /obj/item/stock_parts/power_store))
-		context[SCREENTIP_CONTEXT_LMB] = panel_open ? "Install cell" : "Open panel first"
+		context[SCREENTIP_CONTEXT_LMB] = panel_open ? "Install cell" : "Panel closed"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(!isnull(held_item))
@@ -125,7 +118,7 @@
 /obj/machinery/survey_scanner/RefreshParts()
 	. = ..()
 	research_power = max(total_part_rating(/datum/stock_part/matter_bin), 1)
-	research_gain = max(total_part_rating(/datum/stock_part/servo), 1) * SURVEY_GAIN_PER_SERVO //9, 18, 27, 36
+	research_gain = 6 + 3 * clamp(total_part_rating(/datum/stock_part/servo), 1, 4)
 
 	//cell drain is cut, not increased - better lasers mean one cell lasts longer.
 	active_power_usage = initial(active_power_usage) / (1 + total_part_rating(/datum/stock_part/micro_laser))
@@ -167,7 +160,7 @@
 		return ..()
 
 	if(!panel_open)
-		balloon_alert(user, "open the panel first!")
+		balloon_alert(user, "panel closed!")
 		return ITEM_INTERACT_BLOCKING
 	if(cell)
 		balloon_alert(user, "already has a cell!")
@@ -177,7 +170,7 @@
 
 	cell = tool
 	balloon_alert(user, "cell installed")
-	to_chat(user, span_notice("You slot [tool] into [src]. Close the maintenance panel to run it."))
+	to_chat(user, span_notice("You slot [tool] into [src]."))
 	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 	return ITEM_INTERACT_SUCCESS
 
@@ -206,7 +199,7 @@
 	if(. == SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN)
 		return
 	if(!stored_points)
-		say("No research points found, nothing to dispense.")
+		say("Data spool empty.")
 		return
 
 	//accumulator is fractional (gain * decay), so only round at the point it becomes an item
@@ -225,6 +218,12 @@
 	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 
 /obj/machinery/survey_scanner/process(seconds_per_tick)
+	var/obj/structure/overmap/site = get_scan_site()
+	if(!site)
+		say("No survey target. Scanning stopped.")
+		disable()
+		return
+
 	// Bill the internal cell, not the area - see the type comment.
 	if(!cell?.use(active_power_usage * seconds_per_tick, force = TRUE))
 		say("Power cell depleted, scanning stopped.")
@@ -241,33 +240,37 @@
 	// the decay, so a better matter bin keeps a site productive for longer - it does NOT
 	// scale the payout. (It used to be applied as a raw multiplier, which stacked with the
 	// longer run and made a maxed scanner worth ~9x the entire techweb from one planet.)
-	var/scan_key = get_scan_history_key()
-	var/penalty = 1 - ((site_scan_history[scan_key] - 1) * SURVEY_SCAN_DECAY / max(research_power, 1))
+	var/penalty = 1 - site.survey_scans_completed * SURVEY_SCAN_DECAY / max(research_power, 1)
 	if(penalty < SURVEY_MIN_PENALTY) // tapped out, and it stays that way for the round
-		say("Unable to locate valuable information in current sector, scanning stopped.")
+		say("Survey complete. Scanning stopped.")
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 20)
 		disable()
 		return
 
 	playsound(src, 'sound/machines/ding.ogg', 20)
-	site_scan_history[scan_key]++
 	stored_points += (research_gain * penalty)
+	site.survey_scans_completed++
 	tally_metric_scan(research_gain * penalty) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 
-/**
- * The history key for wherever this scanner is standing.
- *
- * A map region (see map_region_for_turf) is the site: the planet or encounter footprint on a
- * packed level, or the turf reservation for a ruin or asteroid field. Ground that belongs to
- * no region - a roundstart level, a ship in deep space - falls back to the z-level, which is
- * exactly what the whole list used to be.
- */
-/obj/machinery/survey_scanner/proc/get_scan_history_key()
+/// Resolve natural ground to its persistent contact, never to a reusable interior slot.
+/obj/machinery/survey_scanner/proc/get_scan_site()
 	var/turf/here = get_turf(src)
-	if(!here)
-		return "z_[z]"
-	var/datum/region = map_region_for_turf(here)
-	return region ? "site_[REF(region)]" : "z_[here.z]"
+	if(!here || SSshuttle.get_containing_shuttle(here) || get_voidcrew_ship_for_turf(here))
+		return null
+	var/obj/structure/overmap/site = SSovermap_zones.get_overmap_object_for_turf(here)
+	if(QDELETED(site))
+		return null
+	// The resolver also supports legacy whole-level tenants. Surveying requires owned ground.
+	var/datum/map_footprint/footprint = site.get_interior_footprint()
+	if(!footprint?.contains_turf(here))
+		return null
+	if(istype(site, /obj/structure/overmap/space_ruin) || istype(site, /obj/structure/overmap/event/meteor))
+		return site
+	if(istype(site, /obj/structure/overmap/planet) && !istype(site, /obj/structure/overmap/planet/empty))
+		var/obj/structure/overmap/planet/planet = site
+		if(planet.is_terrain_planet())
+			return planet
+	return null
 
 /obj/machinery/survey_scanner/wrench_act(mob/living/user, obj/item/tool)
 	if(enabled)
@@ -295,21 +298,20 @@
  */
 /obj/machinery/survey_scanner/proc/enable()
 	if(!anchored)
-		say("Unable to operate, not anchored properly to the floor!")
+		say("Anchor unsecured.")
 		return
 	if(panel_open)
-		say("Unable to operate, maintenance panel is open!")
+		say("Maintenance panel open.")
 		return
 	if(!cell)
-		say("Unable to operate, no power cell installed!")
+		say("Power cell missing.")
 		return
 	if(!cell.charge)
-		say("Unable to operate, power cell is depleted!")
+		say("Power cell depleted.")
 		return
-	//don't have a history here, create one.
-	var/scan_key = get_scan_history_key()
-	if(!site_scan_history[scan_key])
-		site_scan_history[scan_key] = 1
+	if(!get_scan_site())
+		say("No survey target.")
+		return
 	next_scan = world.time //first scan lands on the next tick, so it visibly does something
 	enabled = TRUE
 	note_metric_operator() // round metrics, voidcrew/modules/metrics/research_metrics.dm
@@ -348,7 +350,7 @@
  */
 /datum/design/board/survey_scanner
 	name = "Survey Scanner Machine Board"
-	desc = "The Machine Circuit board for a Survey scanner which allows research generation through power."
+	desc = "A circuit board for a survey scanner."
 	id = "surveyscanner"
 	build_path = /obj/item/circuitboard/machine/survey_scanner
 	category = list(
@@ -373,4 +375,3 @@
 #undef SURVEY_SCAN_INTERVAL
 #undef SURVEY_SCAN_DECAY
 #undef SURVEY_MIN_PENALTY
-#undef SURVEY_GAIN_PER_SERVO

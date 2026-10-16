@@ -38,6 +38,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home
 	var/datum/outpost_berth/ship_bay/bay
 	var/datum/ship_checkpoint/snapshot
+	/// Retained after the checkpoint is consumed, and shared with its original crew.
+	var/list/research_reward_ledger
 	var/datum/weakref/panel_ref
 	/// Only used to reapply console upgrade disks while the hidden copy is prepared.
 	var/datum/weakref/operator_ref
@@ -113,6 +115,7 @@
 	panel_ref = terminal ? WEAKREF(terminal) : null
 	operator_ref = WEAKREF(user)
 	snapshot = blueprint
+	research_reward_ledger = blueprint.research_reward_ledger
 	home = blueprint.outpost
 	captain_ckey = blueprint.captain_ckey
 	ship_name = blueprint.ship_name
@@ -158,6 +161,7 @@
 	home = null
 	bay = null
 	snapshot = null
+	research_reward_ledger = null
 	port = null
 	vessel = null
 	// A load still writing into the shipyard lets it go itself when it returns (load_source()).
@@ -396,6 +400,8 @@
 	if(!record.setup_from_template(template))
 		qdel(record)
 		return null
+	if(!isnull(research_reward_ledger))
+		record.ship_team.research_reward_ledger = research_reward_ledger
 	return record
 
 /// Names the record and its hull. A rebuild keeps the saved ship's name.
