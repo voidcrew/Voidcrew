@@ -20,18 +20,12 @@
 #define TECHWEB_NODE_NANITE_SMART "nanite_smart"
 #define TECHWEB_NODE_NANITE_MESH "nanite_mesh"
 
-// Weapon blueprint pipeline (per-gun part/ammo nodes)
-#define TECHWEB_NODE_WEAPON_PART_L6_SAW "weapon_part_l6_saw"
+// Per-gun ammunition nodes
 #define TECHWEB_NODE_WEAPON_AMMO_L6_SAW "weapon_ammo_l6_saw"
-#define TECHWEB_NODE_WEAPON_PART_C20R "weapon_part_c20r"
 #define TECHWEB_NODE_WEAPON_AMMO_C20R "weapon_ammo_c20r"
-#define TECHWEB_NODE_WEAPON_PART_SNIPER "weapon_part_sniper"
 #define TECHWEB_NODE_WEAPON_AMMO_SNIPER "weapon_ammo_sniper"
-#define TECHWEB_NODE_WEAPON_PART_BULLDOG "weapon_part_bulldog"
 #define TECHWEB_NODE_WEAPON_AMMO_BULLDOG "weapon_ammo_bulldog"
-#define TECHWEB_NODE_WEAPON_PART_WT550 "weapon_part_wt550"
 #define TECHWEB_NODE_WEAPON_AMMO_WT550 "weapon_ammo_wt550"
-#define TECHWEB_NODE_WEAPON_PART_CARBINE "weapon_part_carbine"
 
 // Ship Combat
 #define TECHWEB_NODE_SHIP_COMBAT "ship_combat"
@@ -54,7 +48,7 @@
 #define TECHWEB_NODE_TRANSPORTER_TARGETING "transporter_targeting"
 #define TECHWEB_NODE_TRANSPORTER_BIOFILTER "transporter_biofilter"
 
-// Generic ammunition (the per-gun blueprint ammo nodes live in _DEFINES above)
+// Generic ammunition (per-gun ammunition nodes are defined above)
 #define TECHWEB_NODE_BALLISTIC_AMMO "ballistic_ammo"
 #define TECHWEB_NODE_AUTOMATIC_AMMO "automatic_ammo"
 #define TECHWEB_NODE_SPECIALIST_AMMO "specialist_ammo"

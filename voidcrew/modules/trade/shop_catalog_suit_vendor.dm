@@ -79,7 +79,6 @@
 		/datum/shop_sku/fitter/frame_boots,
 		/datum/shop_sku/fitter/plating_civilian,
 		// Cores & Power
-		/datum/shop_sku/fitter/core_standard,
 		/datum/shop_sku/fitter/core_plasma,
 		/datum/shop_sku/fitter/cell,
 		// Mobility
@@ -327,15 +326,6 @@
 // ===== CORES & POWER =====
 // Boffin owns the cell ladder. Wick stocks exactly one basic cell so a bare
 // core is usable the moment you buy it, and points at the Skunkworks for more.
-
-/datum/shop_sku/fitter/core_standard
-	category = "Cores & Power"
-	name = "MOD standard core"
-	desc = "The baseline power core. It ships empty, so drop a cell in it or the suit won't run. Boffin stocks the higher grades."
-	item_path = /obj/item/mod/core/standard
-	price_credits = 300
-	stock_min = 2
-	stock_max = 3
 
 /datum/shop_sku/fitter/core_plasma
 	category = "Cores & Power"

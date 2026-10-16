@@ -10,7 +10,7 @@
  *   spawn every rare-loot unique at once.
  * - Dynamic events: fire a chosen event at a chosen ship.
  * - Missions: hand a chosen mission type to a ship, force-resolve any active one.
- * - Trade: grant vouchers, reveal rare rumor-chart ruins, spawn gun blueprints.
+ * - Trade: grant vouchers, reveal rare rumor-chart ruins.
  * - Overmap: spawn gas nebulas (ram scoop testing), surface a contested cache.
  *
  * Complements the per-module verbs that already exist: colosseum match control
@@ -700,29 +700,6 @@ ADMIN_VERB(reveal_rare_ruin, R_ADMIN|R_DEBUG, "Trade: Reveal Rare Ruin", "Spawn 
 	message_admins("[key_name_admin(user)] revealed rare ruin '[template.name]' at overmap ([coords[1]], [coords[2]]).")
 	log_admin("[key_name(user)] revealed rare ruin '[template.name]'.")
 	BLACKBOX_LOG_ADMIN_VERB("Reveal Rare Ruin")
-
-ADMIN_VERB(spawn_gun_blueprint, R_ADMIN|R_DEBUG, "Trade: Spawn Blueprint", "Spawn a specific weapons-bench gun blueprint at your feet.", ADMIN_CATEGORY_DEBUG)
-	var/turf/drop_turf = get_turf(user.mob)
-	if(!drop_turf)
-		to_chat(user, span_warning("You need a physical location to spawn a blueprint at."))
-		return
-	var/list/choices = list()
-	for(var/obj/item/blueprint/blueprint_type as anything in subtypesof(/obj/item/blueprint))
-		if(blueprint_type == /obj/item/blueprint/gun)
-			continue
-		choices[initial(blueprint_type.name)] = blueprint_type
-	var/choice = tgui_input_list(user, "Which blueprint?", "Spawn Blueprint", sort_list(choices))
-	if(!choice)
-		return
-	var/blueprint_type = choices[choice]
-	var/obj/item/blueprint/blueprint = new blueprint_type(drop_turf)
-	var/mob/living/admin_mob = user.mob
-	if(isliving(admin_mob))
-		admin_mob.put_in_hands(blueprint)
-	to_chat(user, span_notice("[blueprint] spawned."))
-	message_admins("[key_name_admin(user)] spawned blueprint '[blueprint]'.")
-	log_admin("[key_name(user)] spawned blueprint '[blueprint]'.")
-	BLACKBOX_LOG_ADMIN_VERB("Spawn Gun Blueprint")
 
 // ===== OVERMAP / GAS ECONOMY =====
 
