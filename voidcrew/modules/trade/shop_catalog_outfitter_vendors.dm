@@ -289,7 +289,7 @@
 	)
 
 /datum/shop_rotation/skunk_anomaly_charts
-	slots = 2
+	slots = 4
 	pool = list(
 		/datum/shop_sku/anomaly_chart/flux = 6,
 		/datum/shop_sku/anomaly_chart/grav = 6,
