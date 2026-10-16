@@ -67,6 +67,7 @@ GLOBAL_VAR(npc_zone_construction_context)
 	if(QDELETED(source))
 		return
 	source.npc_zone_initialization_complete = TRUE
+	source.apply_npc_weapon_ladder()
 	// Ownership can change long after spawn. Signals are installed once per body.
 	RegisterSignal(source, list(COMSIG_MOB_LOGIN, COMSIG_MOB_MIND_INITIALIZED, COMSIG_MOB_MIND_TRANSFERRED_INTO), PROC_REF(npc_zone_owned))
 	RegisterSignal(source, COMSIG_LIVING_BEFRIENDED, PROC_REF(npc_zone_befriended))
