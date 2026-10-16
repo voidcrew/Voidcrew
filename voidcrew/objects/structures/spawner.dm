@@ -1,6 +1,6 @@
 /obj/structure/spawner/cave
 	name = "cave"
-	desc = "You spot something glimmering from within. Maybe you can reach in and try to grab it?"
+	desc = "Something glimmers in the depths."
 	icon = 'voidcrew/icons/obj/animal_spawner.dmi'
 	icon_state = "cave_den"
 	mob_types = list(/mob/living/basic/bear/cave)
@@ -20,25 +20,14 @@
 		/obj/item/research_notes/loot/genius = 1,
 		/obj/item/stack/ore/diamond = 10,
 		/obj/item/stack/telecrystal/five = 1,
-		/obj/item/gun/ballistic/bow = 10,
-		///obj/item/gun/ballistic/shotgun/doublebarrel/improvised/sawn = 10,
-		///obj/item/gun/ballistic/automatic/zip_pistol = 10,
-		///obj/item/gun/ballistic/rifle/boltaction/polymer = 9,
-		///obj/item/gun/ballistic/shotgun/winchester = 5,
-		/obj/item/gun/ballistic/revolver/nagant = 3,
-		/obj/item/gun/ballistic/rifle/boltaction = 2,
-		///obj/item/gun/ballistic/automatic/aks74u = 1,
-		///obj/item/gun/ballistic/shotgun/doublebarrel/hook = 1,
+		"green_melee" = 38,
 		/obj/item/pickaxe/diamond = 10,
-		/obj/item/kinetic_crusher = 6,
-		/obj/item/gun/energy/recharge/kinetic_accelerator = 5,
 		/obj/item/binoculars = 10,
 		/obj/item/grenade/frag/mega = 6,
 		///obj/item/reagent_containers/food/drinks/drinkingglass/filled/nuka_cola = 10,
 		///obj/item/reagent_containers/food/snacks/breadslice/moldy = 10,
 		/obj/item/instrument/guitar = 10,
 		///obj/item/storage/fancy/cigarettes/derringer/gold = 3,
-		/obj/item/spear/explosive = 10,
 		///obj/item/ammo_casing/caseless/arrow/wood = 10,
 		///obj/item/ammo_casing/caseless/arrow/bone = 6,
 		/obj/item/survivalcapsule = 7,
@@ -61,7 +50,6 @@
 		/obj/item/reagent_containers/cup/bottle/romerol = 1,
 		//obj/item/implanter/adrenalin = 3,
 		/obj/item/implanter/stealth = 1,
-		/obj/item/melee/greykingsword = 2
 	)
 
 /obj/structure/spawner/cave/Initialize()
@@ -87,6 +75,8 @@
 			if(prob(85))
 				to_chat(user, "<span class='alert'>You found something!</span>")
 				var/picked_loot = pickweight(caveloot)
+				if(picked_loot == "green_melee")
+					picked_loot = pick(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat)
 				new picked_loot(loc)
 				uses -= 1
 				if (uses == 0)
@@ -94,14 +84,14 @@
 					qdel(src)
 					return
 			else
-				to_chat(user, "<span class='warning'>You didn't find anything, maybe try looking again?</span>")
+				to_chat(user, "<span class='warning'>You didn't find anything.</span>")
 	else
 		to_chat(user, "<span class='warning'><b>Your search was interrupted!</b></span>")
 	in_use = FALSE
 
 /obj/structure/spawner/cave/beach
 	name = "oak barrel"
-	desc = "A musty barrel. Reach in and unlock its mold-covered mysteries!"
+	desc = "A musty, mold-covered barrel."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "barrel"
 	mob_types = list(/mob/living/basic/trooper/pirate/melee/beach, /mob/living/basic/trooper/pirate/ranged/beach)
@@ -130,11 +120,6 @@
 		/obj/item/slimecross/chilling/gold = 10,
 		/obj/item/slimecross/chilling/adamantine = 10,
 		/obj/item/instrument/banjo = 10,
-		/obj/item/gun/ballistic/automatic/mini_uzi = 10,
-		/obj/item/gun/ballistic/automatic/pistol/deagle/gold = 10,
-		/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted = 10,
-		/obj/item/melee/energy/sword/pirate = 5,
-		///obj/item/melee/transforming/energy/ctf/solgov = 2,
+		"green_melee" = 35,
 
 	)
-

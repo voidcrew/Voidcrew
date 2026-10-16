@@ -330,6 +330,7 @@
 
 /mob/living/basic/vestige_warframe/Initialize(mapload)
 	. = ..()
+	npc_red_weapon_drop = npc_ladder_red_drop()
 	add_traits(list(TRAIT_NOFIRE, TRAIT_NOBREATH, TRAIT_RESISTHIGHPRESSURE, TRAIT_RESISTLOWPRESSURE), INNATE_TRAIT)
 
 	AddElement(/datum/element/footstep, FOOTSTEP_MOB_HEAVY)
@@ -627,9 +628,8 @@
 /**
  * The drops.
  *
- * Same shape as the Matriarch's: one guaranteed piece so the kill is always worth
- * something, then a jackpot rolled from a pool where both entries hand you a piece of
- * what just beat you. The capstone itself is paid out by the ascension run, not here.
+ * The blade is rolled once at construction. The utility prize and ascension
+ * capstone keep their separate reward paths.
  */
 /mob/living/basic/vestige_warframe/proc/drop_the_match()
 	if(loot_dropped)
@@ -638,7 +638,8 @@
 	if(isnull(spot))
 		return
 	loot_dropped = TRUE
-	new /obj/item/sparring_blade(spot)
+	if(npc_red_weapon_drop)
+		new /obj/item/sparring_blade(spot)
 	var/static/list/jackpot_pool = list(
 		/obj/item/warframe_contact_plate,
 		/obj/item/warframe_actuator,

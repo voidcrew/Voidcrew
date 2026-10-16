@@ -64,8 +64,8 @@
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers = /obj/item/gun/energy/laser,
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers = /obj/item/gun/energy/disabler,
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns = /obj/item/gun/energy/e_gun,
-		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns = /obj/item/gun/ballistic/shotgun/automatic/combat,
-		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines = /obj/item/gun/energy/laser/carbine,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns = /obj/item/gun/energy/laser,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines = /obj/item/gun/energy/e_gun,
 	)
 	var/list/immediate_caches = list(
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers,
@@ -83,7 +83,7 @@
 		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/gun)), 1, "[cache_type] must contain exactly one gun after opening")
 		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(cache_guns[cache_type])), 1, "[cache_type] must retain its gun type")
 		if(cache_type == /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns)
-			TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/storage/belt/bandolier)), 3, "The shotgun cache must retain all three bandoliers")
+			TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/storage/belt/bandolier)), 0, "The replacement laser cache must not retain shotgun bandoliers")
 		TEST_ASSERT(cache.close(), "[cache_type] could not close")
 		TEST_ASSERT(cache.open(null, TRUE, FALSE), "[cache_type] could not reopen")
 		TEST_ASSERT_EQUAL(length(cache_turf.get_all_contents_type(/obj/item/gun)), 1, "Reopening [cache_type] duplicated its gun")
