@@ -115,16 +115,7 @@
 	return "bounty"
 
 /datum/mission/big_game_hunt/setup_target()
-	// Only offer hunts for planet types actually on the overmap this round
-	var/list/present_types = list()
-	for(var/obj/structure/overmap/planet/candidate as anything in GLOB.overmap_planets)
-		if(QDELETED(candidate))
-			continue
-		if(!istype(get_turf(candidate), /turf/open/overmap))
-			continue
-		if(!candidate.planet || !hunt_tables[candidate.planet])
-			continue
-		present_types |= candidate.planet
+	var/list/present_types = get_work_biomes(hunt_tables)
 	if(!length(present_types))
 		return FALSE
 	hunt_planet_type = pick(present_types)

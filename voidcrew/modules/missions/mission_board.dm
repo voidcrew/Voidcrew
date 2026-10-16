@@ -144,9 +144,9 @@
 	// Available missions
 	data["available_missions"] = list()
 	for(var/datum/mission/mission as anything in ship.available_missions)
-		if(QDELETED(mission))
+		if(QDELETED(mission) || !mission.can_accept_work(ship))
 			continue
-		data["available_missions"] += list(mission.get_ui_data())
+		data["available_missions"] += list(mission.get_ui_data(ship.get_crew_record()))
 
 	// Active missions
 	data["active_missions"] = list()

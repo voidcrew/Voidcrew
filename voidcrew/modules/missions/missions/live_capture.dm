@@ -109,16 +109,7 @@
 	return "procurement"
 
 /datum/mission/live_capture/setup_target()
-	// Only offer contracts for planet types actually on the overmap this round
-	var/list/present_types = list()
-	for(var/obj/structure/overmap/planet/candidate as anything in GLOB.overmap_planets)
-		if(QDELETED(candidate))
-			continue
-		if(!istype(get_turf(candidate), /turf/open/overmap))
-			continue
-		if(!candidate.planet || !capture_tables[candidate.planet])
-			continue
-		present_types |= candidate.planet
+	var/list/present_types = get_work_biomes(capture_tables)
 	if(!length(present_types))
 		return FALSE
 	capture_planet_type = pick(present_types)
