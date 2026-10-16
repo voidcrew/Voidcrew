@@ -92,6 +92,20 @@
 /obj/structure/alien/weeds/node,
 /turf/open/floor/iron/dark,
 /area/ruin/space/ancientstation/delta/ai)
+"ar" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/melee/baseball_bat{
+	pixel_x = -2;
+	pixel_y = -2
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/effect/mapping_helpers/airalarm/away_general_access,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/ruin/space/ancientstation/charlie/sec)
 "as" = (
 /turf/closed/wall,
 /area/ruin/space/ancientstation/charlie/bridge)
@@ -102,6 +116,34 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/space/ancientstation/charlie/bridge)
+"au" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/melee/baseball_bat{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/tile/red/half/contrasted,
+/turf/open/floor/iron,
+/area/ruin/space/ancientstation/charlie/sec)
+"av" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/white/textured,
+/area/ruin/space/ancientstation/delta/proto)
+"aw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/obj/structure/closet/crate/secure/weapon{
+	req_access = list("away_sec")
+	},
+/obj/item/spess_knife,
+/obj/item/clothing/suit/armor/vest/old,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/strilka310,
+/obj/item/ammo_box/strilka310,
+/turf/open/floor/plating,
+/area/ruin/space/ancientstation/delta/hall)
 "ax" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/blue{
@@ -1933,16 +1975,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/space/ancientstation/beta/medbay)
-"iA" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/rack,
-/obj/item/gun/energy/laser/retro/old{
-	pixel_x = 2;
-	pixel_y = 2
-	},
-/obj/effect/turf_decal/tile/red/half/contrasted,
-/turf/open/floor/iron,
-/area/ruin/space/ancientstation/charlie/sec)
 "iB" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/rack,
@@ -2536,11 +2568,6 @@
 /obj/effect/spawner/random/trash/botanical_waste,
 /turf/open/floor/iron,
 /area/ruin/space/ancientstation/charlie/hydro)
-"lc" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/energy/e_gun/old,
-/turf/open/floor/iron/white/textured,
-/area/ruin/space/ancientstation/delta/proto)
 "ld" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/blood/tracks,
@@ -3813,20 +3840,6 @@
 	},
 /turf/open/floor/iron/white/textured,
 /area/ruin/space/ancientstation/delta/biolab)
-"sw" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/rack,
-/obj/item/gun/energy/laser/retro/old{
-	pixel_x = -2;
-	pixel_y = -2
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/effect/mapping_helpers/airalarm/away_general_access,
-/obj/effect/turf_decal/tile/red/anticorner/contrasted{
-	dir = 8
-	},
-/turf/open/floor/iron,
-/area/ruin/space/ancientstation/charlie/sec)
 "sx" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
@@ -5153,19 +5166,6 @@
 	},
 /turf/open/floor/pod/dark,
 /area/ruin/space/ancientstation/delta/biolab)
-"BS" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small/directional/east,
-/obj/structure/closet/crate/secure/weapon{
-	req_access = list("away_sec")
-	},
-/obj/item/spess_knife,
-/obj/item/clothing/suit/armor/vest/old,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310,
-/obj/item/ammo_box/strilka310,
-/turf/open/floor/plating,
-/area/ruin/space/ancientstation/delta/hall)
 "BU" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/cleanable/blood/gibs/xeno/larva/body,
@@ -13246,7 +13246,7 @@ ha
 Pn
 Bp
 hz
-sw
+ar
 eJ
 cW
 ia
@@ -13312,7 +13312,7 @@ hb
 hA
 eu
 eu
-iA
+au
 eJ
 FV
 ic
@@ -14972,7 +14972,7 @@ mm
 Oh
 uj
 Mx
-lc
+av
 uj
 aa
 aa
@@ -15361,7 +15361,7 @@ Km
 wV
 rp
 jg
-BS
+aw
 yx
 bE
 Jg

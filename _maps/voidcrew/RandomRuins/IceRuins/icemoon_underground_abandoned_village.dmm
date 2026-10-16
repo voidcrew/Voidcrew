@@ -1,4 +1,10 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ac" = (
+/obj/structure/sacrificealtar,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/spear,
+/turf/open/floor/engine/cult,
+/area/ruin/powered)
 "ay" = (
 /turf/open/floor/carpet,
 /area/ruin/powered)
@@ -333,12 +339,6 @@
 	dir = 8
 	},
 /turf/open/floor/carpet,
-/area/ruin/powered)
-"Cl" = (
-/obj/structure/sacrificealtar,
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/knife/bloodletter,
-/turf/open/floor/engine/cult,
 /area/ruin/powered)
 "Dm" = (
 /obj/structure/flora/grass/brown/style_random,
@@ -1052,7 +1052,7 @@ tN
 Og
 Ei
 Vn
-Cl
+ac
 PQ
 Ed
 jk

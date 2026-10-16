@@ -2,12 +2,48 @@
 "a" = (
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"b" = (
+/obj/item/clothing/suit/hooded/ablative,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/structure/closet/secure_closet{
+	name = "armory armor locker";
+	icon_state = "armory";
+	req_access = list("armory")
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "c" = (
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"g" = (
-/obj/structure/closet/secure_closet/armory2,
+"d" = (
+/obj/machinery/vending/security/marine/solgov{
+	voucher_items = list()
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/firingpins,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/structure/closet/secure_closet{
+	name = "armory ballistics locker";
+	icon_state = "tac";
+	icon_door = "armory_shotgun";
+	req_access = list("armory")
+	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "h" = (
@@ -47,10 +83,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
 	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"w" = (
-/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "x" = (
@@ -112,10 +144,6 @@
 /obj/structure/closet/l3closet/security,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"R" = (
-/obj/structure/closet/secure_closet/armory1,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "S" = (
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/bot,
@@ -129,7 +157,7 @@
 /area/template_noop)
 
 (1,1,1) = {"
-R
+b
 h
 a
 M
@@ -159,8 +187,8 @@ p
 c
 "}
 (6,1,1) = {"
-g
-w
+e
+d
 m
 z
 "}

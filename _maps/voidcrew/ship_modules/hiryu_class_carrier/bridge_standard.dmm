@@ -1,4 +1,21 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/item/binoculars,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
 "cRv" = (
 /obj/machinery/computer/bank_machine{
 	dir = 8
@@ -82,23 +99,6 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
-"wCS" = (
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/structure/table/reinforced,
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 3
-	},
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 9
-	},
-/obj/item/binoculars,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/turf/open/floor/mineral/titanium,
-/area/template_noop)
 "xnv" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /turf/open/floor/mineral/titanium/blue,
@@ -129,7 +129,7 @@ ixv
 dwQ
 njK
 njK
-wCS
+aaa
 "}
 (4,1,1) = {"
 jlZ

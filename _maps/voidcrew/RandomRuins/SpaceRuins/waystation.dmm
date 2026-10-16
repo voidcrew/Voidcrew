@@ -17,6 +17,101 @@
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
+"ad" = (
+/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/item/ammo_casing/shotgun/buckshot/spent{
+	pixel_x = 3;
+	pixel_y = 10
+	},
+/obj/item/ammo_casing/shotgun/buckshot/spent{
+	pixel_x = 6;
+	pixel_y = 1
+	},
+/obj/item/ammo_casing/shotgun/buckshot/spent{
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/waystation/dorms)
+"ae" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/waystation/cargooffice)
+"af" = (
+/obj/effect/turf_decal/loading_area/red,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/waystation/cargobay)
+"ag" = (
+/obj/effect/decal/cleanable/blood,
+/obj/item/ammo_casing/c45/spent{
+	dir = 8;
+	pixel_y = -4
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 8;
+	pixel_y = -4
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 9;
+	pixel_x = 2;
+	pixel_y = -5
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 9;
+	pixel_x = 6
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 8;
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 8;
+	pixel_y = -4
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 8
+	},
+/obj/item/ammo_casing/c45/spent{
+	pixel_x = -4
+	},
+/obj/item/ammo_casing/c45/spent{
+	dir = 8;
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/structure/chair/office,
+/obj/item/ammo_box/magazine/m45{
+	pixel_x = -10;
+	pixel_y = -6;
+	start_empty = 1
+	},
+/obj/item/melee/baseball_bat{
+	pixel_x = -4;
+	pixel_y = 10
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/waystation/securestorage)
+"ah" = (
+/mob/living/basic/trooper/syndicate/melee/space,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/waystation/securestorage)
+"ai" = (
+/mob/living/basic/trooper/syndicate/ranged/space,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/waystation/cargobay)
+"aj" = (
+/obj/effect/turf_decal/bot_red,
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/wt550m9,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/waystation/securestorage)
 "ar" = (
 /obj/machinery/vending/coffee,
 /obj/effect/turf_decal/siding/green,
@@ -69,10 +164,6 @@
 /obj/structure/closet/firecloset,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/waystation)
-"bA" = (
-/mob/living/basic/trooper/syndicate/melee/sword/space/stormtrooper,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/waystation/securestorage)
 "bG" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/cafeteria,
@@ -90,22 +181,6 @@
 /obj/structure/closet/secure_closet/freezer/meat/open,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/waystation/kitchen)
-"bR" = (
-/mob/living/basic/trooper/syndicate/ranged/shotgun/space,
-/obj/item/ammo_casing/shotgun/buckshot/spent{
-	pixel_x = 3;
-	pixel_y = 10
-	},
-/obj/item/ammo_casing/shotgun/buckshot/spent{
-	pixel_x = 6;
-	pixel_y = 1
-	},
-/obj/item/ammo_casing/shotgun/buckshot/spent{
-	pixel_x = -3;
-	pixel_y = 1
-	},
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/waystation/dorms)
 "bU" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
@@ -548,15 +623,6 @@
 /obj/machinery/light/dim/directional/west,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
-"jN" = (
-/obj/effect/turf_decal/bot_red,
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/ballistic/automatic/wt550{
-	pin = /obj/item/firing_pin
-	},
-/obj/item/ammo_box/magazine/wt550m9,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/waystation/securestorage)
 "jV" = (
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/dorms)
@@ -1981,10 +2047,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/waystation/cargobay)
-"JM" = (
-/mob/living/basic/trooper/syndicate/ranged/shotgun/space,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/waystation/cargobay)
 "Kc" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 1
@@ -2139,13 +2201,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/waystation/securestorage)
-"LW" = (
-/obj/effect/turf_decal/loading_area/red,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/mob/living/basic/trooper/syndicate/ranged/smg/space,
-/obj/structure/cable,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/waystation/cargobay)
 "Mi" = (
 /obj/machinery/vending/dinnerware,
 /obj/effect/decal/cleanable/dirt,
@@ -2618,12 +2673,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/dorms)
-"UC" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/mob/living/basic/trooper/syndicate/ranged/smg/space,
-/obj/structure/cable,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/waystation/cargooffice)
 "UG" = (
 /turf/closed/wall,
 /area/ruin/space/has_grav/waystation/cargooffice)
@@ -2632,57 +2681,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
-"Va" = (
-/obj/effect/decal/cleanable/blood,
-/obj/item/ammo_casing/c45/spent{
-	dir = 8;
-	pixel_y = -4
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 8;
-	pixel_y = -4
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 9;
-	pixel_x = 2;
-	pixel_y = -5
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 9;
-	pixel_x = 6
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 8;
-	pixel_x = 5;
-	pixel_y = -2
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 8;
-	pixel_y = -4
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 8
-	},
-/obj/item/ammo_casing/c45/spent{
-	pixel_x = -4
-	},
-/obj/item/ammo_casing/c45/spent{
-	dir = 8;
-	pixel_x = 4;
-	pixel_y = 3
-	},
-/obj/structure/chair/office,
-/obj/item/ammo_box/magazine/m45{
-	pixel_x = -10;
-	pixel_y = -6;
-	start_empty = 1
-	},
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag{
-	pixel_x = -4;
-	pixel_y = 10
-	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/waystation/securestorage)
 "Vb" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
@@ -4271,7 +4269,7 @@ Pj
 oa
 oa
 Id
-bR
+ad
 xw
 jV
 QN
@@ -4524,7 +4522,7 @@ xw
 xw
 Dx
 Sm
-UC
+ae
 HN
 Eh
 TT
@@ -5126,12 +5124,12 @@ pK
 pK
 yi
 Lt
-Va
+ag
 ZJ
 er
 hd
 aP
-LW
+af
 gu
 Xa
 Ko
@@ -5250,7 +5248,7 @@ pK
 pK
 yi
 qG
-bA
+ah
 er
 er
 ex
@@ -5395,7 +5393,7 @@ bW
 SD
 Xa
 rq
-JM
+ai
 SD
 bW
 SD
@@ -5436,7 +5434,7 @@ pK
 pK
 yi
 Ok
-jN
+aj
 er
 nD
 Ar

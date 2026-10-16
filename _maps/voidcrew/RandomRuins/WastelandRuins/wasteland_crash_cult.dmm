@@ -11,10 +11,25 @@
 /obj/effect/zone_mobs/cult,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
+"ad" = (
+/obj/item/knife/combat/survival,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "ae" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/zone_mobs/cult,
 /turf/open/floor/cult,
+/area/ruin/unpowered)
+"af" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "as" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
@@ -721,15 +736,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"xT" = (
-/obj/structure/table,
-/obj/machinery/recharger,
-/obj/item/gun/energy/laser/retro,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "xY" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -1099,12 +1105,6 @@
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
-"KH" = (
-/obj/item/chainsaw,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "KV" = (
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
@@ -1436,7 +1436,7 @@ Nt
 Yn
 EQ
 HE
-KH
+ad
 EQ
 Ju
 Nt
@@ -1896,7 +1896,7 @@ as
 as
 JX
 vT
-xT
+af
 GW
 xD
 xD

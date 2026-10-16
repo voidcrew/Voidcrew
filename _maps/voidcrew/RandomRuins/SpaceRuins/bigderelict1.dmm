@@ -128,6 +128,22 @@
 	},
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/space/has_grav/derelictoutpost/dockedship)
+"aE" = (
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/derelictoutpost/powerstorage)
+"aF" = (
+/obj/item/melee/baseball_bat,
+/obj/structure/alien/weeds/creature,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/derelictoutpost/cargobay)
+"aG" = (
+/obj/structure/alien/weeds/creature,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m45,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/derelictoutpost)
 "aH" = (
 /obj/structure/closet/crate/engineering,
 /obj/item/storage/toolbox/mechanical,
@@ -399,12 +415,6 @@
 	name = "spent bullet casing"
 	},
 /obj/machinery/light/directional/west,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/derelictoutpost/powerstorage)
-"bI" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911{
-	spawnwithmagazine = 0
-	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/derelictoutpost/powerstorage)
 "bJ" = (
@@ -823,14 +833,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/derelictoutpost)
-"dJ" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911{
-	spawnwithmagazine = 0
-	},
-/obj/structure/alien/weeds/creature,
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/derelictoutpost/cargobay)
 "dL" = (
 /turf/closed/wall,
 /area/ruin/space/has_grav/derelictoutpost/cargostorage)
@@ -1222,14 +1224,6 @@
 	},
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/structure/alien/weeds/creature,
-/turf/open/misc/asteroid,
-/area/ruin/space/has_grav/derelictoutpost)
-"wh" = (
-/obj/structure/alien/weeds/creature,
-/obj/item/gun/ballistic/automatic/pistol/m1911{
-	spawnwithmagazine = 0
-	},
-/obj/item/ammo_box/magazine/m45,
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/derelictoutpost)
 "xT" = (
@@ -1637,7 +1631,7 @@ aA
 aA
 bb
 br
-bI
+aE
 bY
 co
 aS
@@ -1682,7 +1676,7 @@ ak
 ak
 cT
 bx
-dJ
+aF
 bx
 bx
 ak
@@ -2867,7 +2861,7 @@ Hw
 vr
 au
 oU
-wh
+aG
 vr
 xT
 vr

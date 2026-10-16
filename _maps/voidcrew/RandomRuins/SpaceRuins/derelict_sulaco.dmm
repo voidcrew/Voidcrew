@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/obj/item/storage/lockbox,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/smooth_edge,
+/area/ruin/space/has_grav/derelictsulaco)
 "ag" = (
 /obj/effect/turf_decal/siding/wideplating/dark/corner{
 	dir = 8
@@ -1570,12 +1578,6 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"WQ" = (
-/obj/structure/table/reinforced,
-/obj/effect/turf_decal/tile/red/fourcorners,
-/obj/item/storage/lockbox/dueling,
-/turf/open/floor/iron/smooth_edge,
-/area/ruin/space/has_grav/derelictsulaco)
 "Xg" = (
 /obj/structure/cable,
 /obj/machinery/power/floodlight{
@@ -2150,7 +2152,7 @@ Hj
 lr
 rW
 SW
-WQ
+aa
 VT
 Ki
 lf

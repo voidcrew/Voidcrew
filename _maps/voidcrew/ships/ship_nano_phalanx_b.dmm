@@ -30,6 +30,66 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
+"ae" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/b)
+"af" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light/warm{
+	dir = 1
+	},
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/b)
+"ag" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
+"ah" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "aq" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
@@ -386,11 +446,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"dt" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/b)
 "du" = (
 /obj/machinery/porta_turret/ship_defense{
 	dir = 2
@@ -1165,20 +1220,6 @@
 /obj/machinery/washing_machine,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/b)
-"lQ" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light/warm{
-	dir = 1
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/b)
 "lU" = (
 /obj/machinery/door/airlock/medical,
 /obj/machinery/door/firedoor,
@@ -1898,16 +1939,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/b)
-"vE" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "vF" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -3149,14 +3180,6 @@
 "KY" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/medbay/b)
-"Lb" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "Ld" = (
 /obj/machinery/power/port_gen/pacman/pre_loaded{
 	anchored = 1
@@ -4564,7 +4587,7 @@ Ld
 NN
 Mo
 Fe
-dt
+ae
 qO
 LY
 re
@@ -5770,7 +5793,7 @@ oZ
 oZ
 oZ
 eR
-lQ
+af
 di
 db
 Bf
@@ -5997,7 +6020,7 @@ oZ
 zo
 ad
 Mv
-Lb
+ag
 zo
 QT
 Gz
@@ -6029,7 +6052,7 @@ oZ
 zo
 WQ
 dC
-vE
+ah
 zo
 aa
 cL

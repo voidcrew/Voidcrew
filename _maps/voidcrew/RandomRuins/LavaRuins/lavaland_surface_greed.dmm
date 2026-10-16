@@ -8,11 +8,6 @@
 "c" = (
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"e" = (
-/obj/structure/table/wood/poker,
-/obj/item/gun/ballistic/revolver/russian/soul,
-/turf/open/floor/carpet,
-/area/ruin/powered/greed)
 "f" = (
 /obj/structure/cursed_slot_machine,
 /turf/open/floor/carpet,
@@ -115,6 +110,11 @@
 "w" = (
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/engine/cult,
+/area/ruin/powered/greed)
+"y" = (
+/obj/structure/table/wood/poker,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/carpet,
 /area/ruin/powered/greed)
 "J" = (
 /obj/machinery/door/airlock/gold,
@@ -308,7 +308,7 @@ b
 a
 c
 W
-e
+y
 h
 t
 m

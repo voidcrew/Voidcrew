@@ -1,4 +1,65 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/secure_closet/bar{
+	req_access = null
+	},
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
+/obj/item/storage/toolbox/mechanical,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/clothing/under/rank/civilian/bartender,
+/obj/item/clothing/under/rank/civilian/bartender/purple,
+/obj/item/clothing/under/rank/civilian/bartender/skirt,
+/obj/item/clothing/suit/apron/purple_bartender,
+/obj/item/toy/figure/bartender,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/item/card/emag,
+/obj/item/storage/belt/bandolier,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/bogardee_b/service/bar)
+"ab" = (
+/obj/machinery/vending/games{
+	contraband = list(/obj/item/dice/fudge = 9, /obj/item/clothing/shoes/wheelys/skishoes = 4, /obj/item/instrument/musicalmoth = 1, /obj/item/melee/baseball_bat = 1, /obj/item/skillchip/acrobatics = 1)
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/cargo/vault)
+"ac" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/machinery/door/window/right/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
+"ad" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/door/window/right/directional/north,
+/obj/item/melee/baseball_bat,
+/obj/item/gun/energy/taser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
+"ae" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/machinery/door/window/right/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
 "as" = (
 /obj/machinery/atmospherics/components/unary/passive_vent/layer2,
 /turf/open/floor/plating/airless,
@@ -312,15 +373,6 @@
 /area/shuttle/voidcrew/bogardee_b/service/kitchen)
 "kw" = (
 /obj/machinery/suit_storage_unit/syndicate,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
-"kD" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/item/gun/energy/laser/retro,
-/obj/item/gun/energy/laser/retro,
-/obj/item/gun/energy/laser/retro,
-/obj/machinery/door/window/right/directional/north,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogardee_b/armory)
 "kH" = (
@@ -1187,43 +1239,6 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/bogardee_b/service/bar)
-"Jt" = (
-/obj/structure/closet/secure_closet/bar{
-	req_access = null
-	},
-/obj/item/radio/intercom{
-	pixel_y = -28
-	},
-/obj/item/storage/toolbox/mechanical,
-/obj/item/stack/cable_coil,
-/obj/item/stack/sheet/iron/twenty,
-/obj/item/stack/sheet/glass/fifty,
-/obj/item/clothing/under/rank/civilian/bartender,
-/obj/item/clothing/under/rank/civilian/bartender/purple,
-/obj/item/clothing/under/rank/civilian/bartender/skirt,
-/obj/item/clothing/suit/apron/purple_bartender,
-/obj/item/toy/figure/bartender,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/card/emag,
-/obj/item/storage/belt/bandolier,
-/obj/item/gun/ballistic/shotgun/automatic,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/bogardee_b/service/bar)
-"Jy" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/c38,
-/obj/item/ammo_box/c38,
-/obj/item/ammo_box/c38,
-/obj/item/ammo_box/c38,
-/obj/machinery/door/window/right/directional/north,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
 "JF" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1368,15 +1383,6 @@
 /obj/structure/cable,
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/bogardee_b/service/bar)
-"Pd" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/machinery/door/window/right/directional/north,
-/obj/item/gun/energy/laser/scatter,
-/obj/item/gun/energy/taser,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
 "Pk" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1665,10 +1671,6 @@
 /obj/structure/desk_bell,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/bogardee_b/service/entrance)
-"Vm" = (
-/obj/machinery/vending/games,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/cargo/vault)
 "VA" = (
 /obj/machinery/newscaster/directional/south,
 /obj/structure/chair/stool/directional/west,
@@ -2189,7 +2191,7 @@ rr
 zw
 xO
 jL
-Jt
+aa
 Bd
 Rf
 EE
@@ -2212,7 +2214,7 @@ Dy
 iX
 iX
 Bd
-Vm
+ab
 sy
 ZI
 sy
@@ -2362,7 +2364,7 @@ Eu
 Ap
 kw
 SJ
-kD
+ac
 Ap
 vZ
 "}
@@ -2383,7 +2385,7 @@ km
 Ap
 kw
 FE
-Pd
+ad
 Ap
 vZ
 "}
@@ -2404,7 +2406,7 @@ Mp
 Ap
 rx
 ud
-Jy
+ae
 Ap
 vZ
 "}

@@ -7,6 +7,12 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/pod/dark,
 /area/overmap_encounter/planetoid/wasteland)
+"c" = (
+/obj/structure/closet/secure_closet/miner/unlocked,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/pod/dark,
+/area/overmap_encounter/planetoid/wasteland)
 "f" = (
 /obj/structure/closet/crate/grave,
 /turf/open/misc/wasteland/lit,
@@ -41,12 +47,6 @@
 "r" = (
 /obj/effect/decal/fakelattice,
 /turf/open/misc/dust/lit,
-/area/overmap_encounter/planetoid/wasteland)
-"u" = (
-/obj/structure/closet/secure_closet/miner/unlocked,
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/ammo_box/magazine/m9mm,
-/turf/open/floor/pod/dark,
 /area/overmap_encounter/planetoid/wasteland)
 "v" = (
 /obj/effect/decal/cleanable/blood/splatter,
@@ -100,11 +100,6 @@
 /obj/machinery/microwave,
 /turf/open/floor/pod/dark,
 /area/overmap_encounter/planetoid/wasteland)
-"Y" = (
-/obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger,
-/turf/open/floor/pod/dark,
-/area/overmap_encounter/planetoid/wasteland)
 "Z" = (
 /obj/structure/table/reinforced,
 /obj/item/t_scanner/adv_mining_scanner,
@@ -127,7 +122,7 @@ a
 Q
 l
 I
-u
+c
 n
 X
 Q
@@ -157,7 +152,7 @@ a
 Q
 j
 w
-Y
+K
 w
 r
 Q

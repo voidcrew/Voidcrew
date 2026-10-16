@@ -2,6 +2,60 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
+"ab" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/machinery/firealarm/directional/west,
+/obj/item/clothing/shoes/laceup,
+/obj/item/clothing/shoes/laceup,
+/obj/item/clothing/shoes/laceup,
+/turf/open/floor/iron/white/smooth_large,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"ac" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/iron/white/smooth_large,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"ad" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/melee/baseball_bat,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_x = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/obj/item/pai_card,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
 "aA" = (
 /obj/machinery/porta_turret/ship_defense{
 	dir = 4;
@@ -246,27 +300,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/kilo/cargo/d)
-"nc" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/item/gun/energy/e_gun/mini,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/machinery/airalarm/directional/south,
-/turf/open/floor/iron/white/smooth_large,
-/area/shuttle/voidcrew/kilo/dorms/d)
 "nT" = (
 /obj/structure/tank_dispenser/oxygen,
 /obj/effect/turf_decal/trimline/neutral/warning,
@@ -842,27 +875,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
-"GC" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/machinery/firealarm/directional/west,
-/obj/item/clothing/shoes/laceup,
-/obj/item/clothing/shoes/laceup,
-/obj/item/clothing/shoes/laceup,
-/turf/open/floor/iron/white/smooth_large,
-/area/shuttle/voidcrew/kilo/dorms/d)
 "Ic" = (
 /obj/machinery/light{
 	dir = 4
@@ -1002,18 +1014,6 @@
 	},
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/kilo/bridge/d)
-"Pb" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/laser/retro,
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_x = 32
-	},
-/obj/machinery/status_display/evac{
-	pixel_y = 32
-	},
-/obj/item/pai_card,
-/turf/open/floor/carpet,
-/area/shuttle/voidcrew/kilo/dorms/d)
 "Pk" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_service"
@@ -1605,7 +1605,7 @@ PU
 yU
 UB
 vg
-GC
+ab
 BI
 aa
 "}
@@ -1620,7 +1620,7 @@ AJ
 Zf
 Qs
 ED
-nc
+ac
 Qs
 aa
 "}
@@ -1678,7 +1678,7 @@ gO
 Qb
 dE
 Qs
-Pb
+ad
 KK
 BI
 aa

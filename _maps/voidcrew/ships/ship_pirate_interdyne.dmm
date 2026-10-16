@@ -27,6 +27,20 @@
 /area/shuttle/voidcrew/pirate_interdyne{
 	requires_power = 0
 	})
+"ac" = (
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/gun/medbeam,
+/obj/item/melee/baseball_bat,
+/obj/item/pen/sleepy{
+	name = "Interdyne Chem Pen"
+	},
+/obj/item/defibrillator/compact/combat/loaded,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_interdyne{
+	requires_power = 0
+	})
 "ad" = (
 /obj/machinery/button/door/directional/south{
 	id = "interdynebridge";
@@ -396,20 +410,6 @@
 "bm" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_interdyne{
-	requires_power = 0
-	})
-"bo" = (
-/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted,
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/gun/medbeam,
-/obj/item/gun/syringe/rapidsyringe,
-/obj/item/pen/sleepy{
-	name = "Interdyne Chem Pen"
-	},
-/obj/item/defibrillator/compact/combat/loaded,
-/obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/pirate_interdyne{
 	requires_power = 0
@@ -1244,7 +1244,7 @@ jv
 dV
 bA
 vB
-bo
+ac
 aj
 aj
 DD

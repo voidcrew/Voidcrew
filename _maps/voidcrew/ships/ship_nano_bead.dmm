@@ -4,6 +4,59 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bead/maintenance/starboard)
+"ab" = (
+/obj/machinery/vending/security/marine/solgov{
+	voucher_items = list()
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/armory)
+"ac" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot_red,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/armory)
+"ad" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 8
+	},
+/obj/item/ammo_box/a357,
+/obj/item/ammo_box/a357,
+/obj/item/melee/baseball_bat,
+/obj/item/areaeditor/shuttle,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/bridge)
 "an" = (
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 1
@@ -294,20 +347,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/hallway)
-"nD" = (
-/obj/structure/rack,
-/obj/effect/turf_decal/bot_red,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/armory)
 "nJ" = (
 /obj/machinery/door/airlock/security,
 /obj/structure/cable,
@@ -811,11 +850,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/brig)
-"Ih" = (
-/obj/machinery/vending/security/marine/solgov,
-/obj/effect/turf_decal/bot_red,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/armory)
 "It" = (
 /obj/structure/rack,
 /obj/item/storage/bag/ore,
@@ -932,20 +966,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/maintenance/port)
-"PG" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/structure/railing{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating_new{
-	dir = 8
-	},
-/obj/item/ammo_box/a357,
-/obj/item/ammo_box/a357,
-/obj/item/gun/ballistic/revolver/mateba,
-/obj/item/areaeditor/shuttle,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/bridge)
 "PZ" = (
 /obj/machinery/door/airlock/engineering/glass,
 /obj/structure/cable,
@@ -1337,7 +1357,7 @@ ku
 pC
 FP
 kB
-Ih
+ab
 ku
 lX
 QT
@@ -1379,7 +1399,7 @@ ku
 wm
 Kg
 gk
-nD
+ac
 ku
 rb
 ss
@@ -1590,7 +1610,7 @@ IQ
 IQ
 GX
 jM
-PG
+ad
 Yb
 pB
 Yb

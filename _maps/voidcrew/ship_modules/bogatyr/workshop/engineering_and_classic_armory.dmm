@@ -1,4 +1,19 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat{
+	pixel_x = -7;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"aab" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "bfw" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/directional/north,
@@ -161,14 +176,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"ssG" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	name = "\improper TOZ-1"
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "sTI" = (
 /obj/machinery/power/port_gen/pacman/pre_loaded,
 /obj/effect/turf_decal/box,
@@ -190,15 +197,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"wKM" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -7;
-	pixel_y = 2
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 
 (1,1,1) = {"
 imp
@@ -213,8 +211,8 @@ jNA
 "}
 (2,1,1) = {"
 imp
-ssG
-wKM
+aab
+aaa
 jOk
 imp
 lxr

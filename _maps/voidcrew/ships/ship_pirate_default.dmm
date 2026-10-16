@@ -12,24 +12,6 @@
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
-"ab" = (
-/obj/structure/table,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/recharger,
-/obj/item/gun/energy/laser{
-	pixel_x = -3;
-	pixel_y = 6
-	},
-/obj/item/gun/energy/laser{
-	pixel_y = 3
-	},
-/obj/effect/turf_decal/tile/red/anticorner/contrasted{
-	dir = 8
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
 "ac" = (
 /obj/machinery/computer/helm,
 /obj/effect/decal/cleanable/dirt,
@@ -227,6 +209,40 @@
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
+"as" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/melee/baseball_bat{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = 3
+	},
+/obj/machinery/recharger,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
+"at" = (
+/obj/structure/table,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/recharger,
+/obj/item/melee/baseball_bat{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
 "au" = (
 /obj/machinery/door/airlock/hatch{
 	id_tag = "piratebridgebolt";
@@ -290,6 +306,47 @@
 	},
 /obj/effect/turf_decal/tile/bar/opposingcorners,
 /turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
+"aA" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/obj/machinery/light/small/directional/north,
+/obj/machinery/firealarm/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/spear{
+	pixel_x = -1;
+	pixel_y = 6
+	},
+/obj/item/spear{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/spear{
+	pixel_x = 13;
+	pixel_y = 6
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
+"aB" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/storage/box/lethalshot,
+/obj/item/melee/baseball_bat{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -500,22 +557,6 @@
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
-"bg" = (
-/obj/effect/turf_decal/stripes/line,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/obj/item/gun/energy/laser{
-	pixel_x = -3;
-	pixel_y = 6
-	},
-/obj/item/gun/energy/laser{
-	pixel_y = 3
-	},
-/obj/machinery/recharger,
-/turf/open/floor/pod/light,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
 "bk" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -571,30 +612,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line,
 /turf/open/floor/wood,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
-"bt" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 10
-	},
-/obj/machinery/light/small/directional/north,
-/obj/machinery/firealarm/directional/north,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = -1;
-	pixel_y = 6
-	},
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = 13;
-	pixel_y = 6
-	},
-/turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -1005,23 +1022,6 @@
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
-"vB" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 9
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/storage/box/lethalshot,
-/obj/item/gun/ballistic/shotgun/automatic/combat{
-	pixel_x = -2;
-	pixel_y = 2
-	},
-/turf/open/floor/pod/light,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
 "wf" = (
 /obj/machinery/door/airlock{
 	name = "Unisex Restrooms"
@@ -1303,7 +1303,7 @@ ey
 aC
 aW
 aj
-bg
+as
 gY
 JT
 aj
@@ -1317,7 +1317,7 @@ aj
 af
 af
 ey
-ab
+at
 ae
 bf
 aj
@@ -1357,7 +1357,7 @@ ad
 ah
 an
 aj
-bt
+aA
 gY
 bI
 aj
@@ -1377,7 +1377,7 @@ sP
 aj
 ek
 bA
-vB
+aB
 aj
 np
 aO
