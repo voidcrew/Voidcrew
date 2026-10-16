@@ -164,6 +164,7 @@
 #include "voidcrew_outpost_upgrade_snaps.dm"
 #include "voidcrew_outpost_upgrades.dm"
 #include "voidcrew_outpost_yard_droids.dm"
+#include "voidcrew_ore_balance.dm"
 #include "voidcrew_overmap_management.dm"
 #include "voidcrew_pandora_links.dm"
 #include "voidcrew_planet_cleanup.dm"
