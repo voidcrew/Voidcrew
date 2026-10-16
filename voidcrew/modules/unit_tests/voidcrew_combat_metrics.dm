@@ -11,6 +11,7 @@
 	var/patient_number = 0
 	var/shocks = 0
 	var/nested_restored = FALSE
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/defib_governor
 
 /datum/unit_test/voidcrew_combat_metrics/Run()
 	for(var/hit in list("attacked", "shot", "threw and hit", "punched", "kicked"))
@@ -445,6 +446,55 @@
 	TEST_ASSERT_EQUAL(shocks, 0, "A windup failure emitted success effects")
 	TEST_ASSERT_EQUAL(revival_count(windup), 0, "A windup failure was logged as success")
 	program.host_mob = null
+	check_nanite_capacity_windup()
+
+/datum/unit_test/voidcrew_combat_metrics/proc/check_nanite_capacity_windup()
+	var/mob/living/carbon/human/consistent/voidcrew_revival_test/body = patient()
+	defib_governor = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete)
+	var/obj/item/organ/cyberimp/cyberware/test_heavy/heavy = allocate(/obj/item/organ/cyberimp/cyberware/test_heavy)
+	TEST_ASSERT(defib_governor.Insert(body, TRUE), "Could not install the defib capacity governor")
+	TEST_ASSERT(heavy.Insert(body, TRUE), "Could not install the defib capacity load")
+	var/datum/component/nanites/swarm = body.AddComponent(/datum/component/nanites)
+	STOP_PROCESSING(SSnanites, swarm)
+	swarm.regen_rate = 0
+	var/datum/nanite_program/defib/program = allocate(/datum/nanite_program/defib)
+	TEST_ASSERT_EQUAL(swarm.add_program(null, program), 1, "Could not install the capacity defib fixture") // COMPONENT_PROGRAM_INSTALLED
+	body.setOxyLoss(250)
+	body.death()
+	TEST_ASSERT(program.check_revivable() && !program.capacity_blocked(), "The capacity defib fixture cannot start")
+	shocks = 0
+	RegisterSignal(body, COMSIG_LIVING_MINOR_SHOCK, PROC_REF(note_shock))
+	var/health_before = body.health
+	addtimer(CALLBACK(defib_governor, TYPE_PROC_REF(/obj/item/organ, Remove), body, TRUE), 1)
+	program.zap(WEAKREF(body))
+	TEST_ASSERT(program.capacity_blocked(), "Removing Governor Delete did not overload the defib host")
+	TEST_ASSERT_EQUAL(body.health, health_before, "Nanites healed after losing capacity during windup")
+	TEST_ASSERT(!program.defibrillate(), "Direct defibrillation ignored the capacity gate")
+	TEST_ASSERT_EQUAL(body.health, health_before, "Direct defibrillation healed an overloaded host")
+	TEST_ASSERT_EQUAL(body.revive_calls, 0, "An overloaded nanite program attempted revival")
+	TEST_ASSERT_EQUAL(body.stat, DEAD, "Nanites revived after losing capacity during windup")
+	TEST_ASSERT_EQUAL(shocks, 0, "A capacity windup failure emitted success effects")
+	TEST_ASSERT_EQUAL(revival_count(body), 0, "A capacity windup failure was logged as success")
+
+	// Healing can notify other systems; capacity must still hold when revival is attempted.
+	TEST_ASSERT(defib_governor.Insert(body, TRUE), "Could not restore capacity before healing")
+	RegisterSignal(body, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(remove_defib_governor_on_heal))
+	TEST_ASSERT(!program.defibrillate(), "Nanites revived after losing capacity during healing")
+	TEST_ASSERT(program.capacity_blocked(), "The healing callback did not remove capacity")
+	TEST_ASSERT(body.health > health_before, "The capacity callback did not run during healing")
+	TEST_ASSERT_EQUAL(body.revive_calls, 0, "Nanites attempted revival after healing removed capacity")
+	TEST_ASSERT_EQUAL(body.stat, DEAD, "Healing capacity loss revived the host")
+	TEST_ASSERT_EQUAL(shocks, 0, "Healing capacity loss emitted success effects")
+	TEST_ASSERT_EQUAL(revival_count(body), 0, "Healing capacity loss was logged as success")
+	TEST_ASSERT(defib_governor.Insert(body, TRUE), "Could not restore capacity after healing")
+	TEST_ASSERT(program.defibrillate(), "Nanite defibrillation did not recover with capacity")
+	TEST_ASSERT_EQUAL(revival_count(body, "nanites"), 1, "Recovered defibrillation lost its attribution")
+	defib_governor = null
+
+/datum/unit_test/voidcrew_combat_metrics/proc/remove_defib_governor_on_heal(mob/living/carbon/body)
+	SIGNAL_HANDLER
+	UnregisterSignal(body, COMSIG_LIVING_HEALTH_UPDATE)
+	defib_governor.Remove(body, TRUE)
 
 /datum/unit_test/voidcrew_combat_metrics/proc/blacklist_during_windup(mob/living/body)
 	ADD_TRAIT(body, TRAIT_DEFIB_BLACKLISTED, INNATE_TRAIT)

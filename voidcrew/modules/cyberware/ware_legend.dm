@@ -818,14 +818,13 @@
 /datum/action/cooldown/cyberware/piledriver_leap/proc/crush_victim(mob/living/jumper, mob/living/victim)
 	if(QDELETED(victim) || QDELETED(jumper))
 		return
-	var/blocked = victim.run_armor_check(attack_flag = MELEE)
 	if(iscarbon(victim))
 		var/mob/living/carbon/carbon_victim = victim
-		if(prob(CYBERWARE_PILEDRIVER_CRUSH_SPREAD_CHANCE))
+		if(should_spread_crush_damage())
 			carbon_victim.apply_damage(
 				CYBERWARE_PILEDRIVER_CRUSH_DAMAGE,
 				BRUTE,
-				blocked = blocked,
+				blocked = 0, // Forced damage bypasses armor, including nanite armor accounting.
 				forced = TRUE,
 				spread_damage = TRUE,
 				attack_direction = jumper.dir,
@@ -839,7 +838,7 @@
 		victim.apply_damage(
 			CYBERWARE_PILEDRIVER_CRUSH_DAMAGE,
 			BRUTE,
-			blocked = blocked,
+			blocked = 0,
 			forced = TRUE,
 			attack_direction = jumper.dir,
 		)
@@ -852,6 +851,9 @@
 		span_userdanger("[jumper] lands on you with the whole weight of the frame behind [jumper.p_them()]. Things break."),
 	)
 	log_combat(jumper, victim, "crushed with a Meteor Piledriver landing")
+
+/datum/action/cooldown/cyberware/piledriver_leap/proc/should_spread_crush_damage()
+	return prob(CYBERWARE_PILEDRIVER_CRUSH_SPREAD_CHANCE)
 
 #undef CYBERWARE_CASCADE_WINDOW
 #undef CYBERWARE_CASCADE_CRASH
