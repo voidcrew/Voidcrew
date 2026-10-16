@@ -24,6 +24,17 @@
 		ore_reserve = new(ore_zone())
 	return ore_reserve
 
+/datum/controller/subsystem/ore_generation
+	/// Vents that stopped producing but can still have boulders awaiting retrieval.
+	var/list/obj/structure/ore_vent/exhausted_vents = list()
+
+/datum/controller/subsystem/ore_generation/fire(resumed)
+	. = ..()
+	// The parent rebuilds stock from producing vents; exhausted vents only supply existing rocks.
+	for(var/obj/structure/ore_vent/vent in exhausted_vents)
+		for(var/obj/item/boulder/rock in vent.loc)
+			available_boulders |= rock
+
 /obj/structure/ore_vent
 	/// Binding is permanent, including if the source is subsequently deleted.
 	var/ore_source_bound = FALSE
@@ -37,6 +48,7 @@
 	bind_ore_reserve()
 
 /obj/structure/ore_vent/Destroy()
+	SSore_generation.exhausted_vents -= src
 	ore_source_ref = null
 	QDEL_NULL(unowned_ore_reserve)
 	return ..()
@@ -72,9 +84,15 @@
 /obj/structure/ore_vent/proc/can_produce_ore()
 	var/datum/planet_ore_reserve/reserve = bound_ore_reserve()
 	if(boulders_remaining <= 0 || !reserve || reserve.sheets_remaining < 1)
-		SSore_generation.processed_vents -= src
+		stop_ore_production()
 		return FALSE
 	return !isnull(get_turf(src))
+
+/// Preserve discovery for vents whose boulders were available during automatic production.
+/obj/structure/ore_vent/proc/stop_ore_production()
+	if(src in SSore_generation.processed_vents)
+		SSore_generation.exhausted_vents |= src
+		SSore_generation.processed_vents -= src
 
 /// Truncate to whole sheets of contained material, before refinery efficiency bonuses.
 /// No sleeps between rechecking the shared balance, debiting it, and debiting the vent.
@@ -97,11 +115,11 @@
 	reserve.sheets_remaining -= spent
 	boulders_remaining--
 	if(!boulders_remaining)
-		SSore_generation.processed_vents -= src
+		stop_ore_production()
 	if(reserve.sheets_remaining < 1)
 		for(var/obj/structure/ore_vent/vent in SSore_generation.processed_vents.Copy())
 			if(vent.bound_ore_reserve() == reserve)
-				SSore_generation.processed_vents -= vent
+				vent.stop_ore_production()
 	return TRUE
 
 /// The finite allocation pool stores counts, not just membership.
