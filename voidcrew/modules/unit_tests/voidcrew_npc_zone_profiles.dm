@@ -310,6 +310,132 @@
 		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, REF(tracker), "Deferred fauna lost tracker identity")
 		qdel(body)
 
+/// Keep these route fixtures focused on fauna and structures, without natural anomalies.
+/datum/map_generator/planet_generator/npc_zone_test/place_budgeted_anomalies(list/turfs, budget)
+	return 0
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes
+	abstract_type = /datum/unit_test/voidcrew_npc_zone_planet_routes
+	var/turf/location
+	var/datum/biome/original_biome
+	var/original_flags
+	var/original_river
+	var/datum/biome/biome
+	var/datum/map_generator/planet_generator/npc_zone_test/generator
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/New()
+	. = ..()
+	location = run_loc_floor_bottom_left
+	original_biome = location.generating_biome
+	original_flags = location.turf_flags
+	original_river = location.planet_river
+	biome = allocate(/datum/biome)
+	biome.open_turf_types = list(location.type)
+	biome.flora_spawn_chance = 0
+	biome.feature_spawn_chance = 0
+	biome.mob_spawn_chance = 100
+	biome.dangerous_mob_spawn_list = null
+	location.generating_biome = biome
+	location.turf_flags &= ~(NO_RUINS | TURF_BLOCKS_POPULATE_TERRAIN_FLORAFEATURES)
+	location.planet_river = FALSE
+	generator = allocate(/datum/map_generator/planet_generator/npc_zone_test)
+	generator.throttled = FALSE
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/Destroy()
+	location.generating_biome = original_biome
+	location.turf_flags = original_flags
+	location.planet_river = original_river
+	return ..()
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/fallback/Run()
+	TEST_ASSERT_NULL(SSplanet_mobs.tracker_for_turf(location), "Fallback fixture unexpectedly has deferred fauna tracking")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, generator, 3, "auto", FALSE, location)
+	for(var/mob_type in list(/mob/living/basic/npc_zone_test, /mob/living/basic/npc_zone_test/replacement, /mob/living/basic/npc_zone_test/passive))
+		biome.mob_spawn_list = list((mob_type) = 1)
+		generator.populate_terrain(list(location), get_area(location), 3)
+		var/mob/living/basic/npc_zone_test/body = locate() in location
+		TEST_ASSERT_NOTNULL(body, "Planet fallback did not produce [mob_type]")
+		allocated += body
+		TEST_ASSERT_EQUAL(body.npc_spawn_context?.role, "auto", "Planet fallback bypassed the environmental hostility gate")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_turf, location, "Planet fallback pinned the wrong source turf")
+		if(mob_type == /mob/living/basic/npc_zone_test/passive)
+			TEST_ASSERT(!body.npc_zone_applied, "Passive fallback fauna received a hostile profile")
+			TEST_ASSERT_EQUAL(body.maxHealth, 100, "Passive fallback fauna health changed")
+		else
+			check_npc_zone_child(body, expected)
+		qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/megafauna/Run()
+	biome.mob_spawn_list = list(SPAWN_MEGAFAUNA = 1)
+	biome.megafauna_spawn_list = list(/mob/living/simple_animal/hostile/megafauna = 1)
+	generator.populate_terrain(list(location), get_area(location), 3)
+	var/mob/living/simple_animal/hostile/megafauna/boss = locate() in location
+	TEST_ASSERT_NOTNULL(boss, "Planet generator did not place its red megafauna")
+	allocated += boss
+	TEST_ASSERT_EQUAL(boss.npc_spawn_context?.role, "boss", "Planet megafauna omitted its explicit boss role")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, generator, 3, "boss", FALSE, location)
+	check_npc_zone_child(boss, expected, boss = TRUE)
+
+/// Both biome tables converge on the same budgeted structure placement route.
+/datum/unit_test/voidcrew_npc_zone_planet_routes/nests/Run()
+	for(var/from_features in list(FALSE, TRUE))
+		biome.mob_spawn_list = from_features ? null : list(/obj/structure/spawner = 1)
+		biome.feature_spawn_list = from_features ? list(/obj/structure/spawner = 1) : null
+		biome.feature_spawn_chance = from_features ? 100 : 0
+		generator.populate_terrain(list(location), get_area(location), 3)
+		var/obj/structure/spawner/nest = locate() in location
+		TEST_ASSERT_NOTNULL(nest, "Planet generator lost a budgeted nest")
+		allocated += nest
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context?.zone_type, 3, "Planet nest lost the selected band")
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context.role, "auto", "Planet nest omitted its environmental role")
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context.source_id, REF(generator), "Planet nest lost its generator source")
+		var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, nest)
+		var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right, child_context)
+		allocated += child
+		check_npc_zone_child(child, nest.npc_spawn_context)
+		qdel(child)
+		qdel(nest)
+
+/// Use the real vent boss route and a yellow planet footprint on the shared test level.
+/datum/unit_test/voidcrew_npc_zone_ore_vent_route
+	parent_type = /datum/unit_test/voidcrew_npc_zone_packed
+
+/datum/unit_test/voidcrew_npc_zone_ore_vent_route/Run()
+	zones_were_active = SSovermap_zones.zones_active
+	SSovermap_zones.zones_active = TRUE
+	var/turf/base = run_loc_floor_bottom_left
+	var/original_type = base.type
+	var/turf/open/overmap/token = base.ChangeTurf(/turf/open/overmap)
+	overmap_turfs[token] = original_type
+	token.current_zone = allocate(/datum/overmap_zone, 2)
+	var/turf/location = run_loc_floor_top_right
+	var/datum/map_zone/zone = allocate(/datum/map_zone)
+	zone.z_levels = list(reservation)
+	var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
+	footprint.z_value = location.z
+	footprint.set_rect(location.x, location.y, 1, 1)
+	var/obj/structure/overmap/planet/site = allocate(/obj/structure/overmap/planet, token)
+	sites += site
+	site.mapzone = zone
+	site.footprint = footprint
+	var/obj/structure/ore_vent/boss/vent = allocate(/obj/structure/ore_vent/boss, location)
+	vent.summoned_boss = /mob/living/simple_animal/hostile/megafauna
+	vent.start_wave_defense()
+	var/mob/living/simple_animal/hostile/megafauna/boss = locate() in location
+	TEST_ASSERT_NOTNULL(boss, "Vent did not summon its boss")
+	allocated += boss
+	TEST_ASSERT_EQUAL(boss.npc_spawn_context?.role, "boss", "Vent omitted its explicit boss role")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, vent, 2, "boss", FALSE, location)
+	check_npc_zone_child(boss, expected, boss = TRUE)
+	// Death still reaches the original conclusion, and its neutral drone stays baseline.
+	boss.set_health(0)
+	boss.death()
+	var/mob/living/basic/node_drone/drone = locate() in location
+	TEST_ASSERT_NOTNULL(drone, "Profiled vent boss lost its death callback")
+	allocated += drone
+	TEST_ASSERT(drone.is_npc_zone_exempt() && !drone.npc_zone_applied, "Vent node drone received a hostile profile")
+	TEST_ASSERT_EQUAL(drone.maxHealth, initial(drone.maxHealth), "Vent node drone health was scaled")
+
 /datum/unit_test/voidcrew_npc_zone_spawner
 	var/mob/living/watcher
 	var/watched_z
