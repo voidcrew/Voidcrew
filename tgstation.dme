@@ -7687,7 +7687,6 @@
 #include "voidcrew\modules\weapons_bench\guns\bulldog.dm"
 #include "voidcrew\modules\weapons_bench\guns\c20r.dm"
 #include "voidcrew\modules\weapons_bench\guns\l6_saw.dm"
-#include "voidcrew\modules\weapons_bench\guns\laser_carbine.dm"
 #include "voidcrew\modules\weapons_bench\guns\sniper.dm"
 #include "voidcrew\modules\weapons_bench\guns\wt550.dm"
 #include "voidcrew\objects\items\blueprints.dm"

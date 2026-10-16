@@ -52,7 +52,6 @@
 		"Infiltration",
 		"Combat Medical",
 		"Intel & Charts",
-		"Blueprints",
 		"Mystery Cargo",
 		"Sundries",
 		"Back Room",
@@ -112,10 +111,6 @@
 		// Intel & Charts: named ruin tips are dealt onto the rotating shelf
 		// from chart_pool below; the generic tip is the cheap standing rung.
 		/datum/shop_sku/rumor,
-		// Blueprints
-		/datum/shop_sku/black_market/saw_blueprint,
-		/datum/shop_sku/black_market/sniper_blueprint,
-		/datum/shop_sku/black_market/bulldog_blueprint,
 		// Mystery Cargo
 		/datum/shop_sku/black_market/mystery_cache,
 		/datum/shop_sku/black_market/mystery_cache_rare,
@@ -230,7 +225,6 @@
 			"Stock's limited. The galaxy is not a reliable supplier.",
 			"Raw telecrystal. The burning worlds are full of it, and the fools who mine it. Bring me both. Just kidding. Just the crystal.",
 			"The mystery caches? Sealed when they got here. I make a point of not knowing.",
-			"Somebody asked what the imprinter does with the schematics. Confetti. Expensive confetti.",
 			"Legion cores keep better than legionnaires. Cooler's under the counter.",
 			"Quartermain will sell you a mining suit. I sell the ones with the Cybersun stamp still on the plating.",
 			"The bare chassis are cheaper for a reason. You're buying a frame and a cell, not a loadout.",
@@ -660,31 +654,6 @@
 // ===== INTEL & CHARTS =====
 // Every chart SKU now lives in shop_catalog_charts.dm and reaches this shelf
 // through chart_pool above. The generic rumor rides the core shelf.
-
-// ===== BLUEPRINTS =====
-// The only trader route to these guns; build them via their schematics.
-// Reusable, so priced at the top of the ladder.
-
-/datum/shop_sku/black_market/saw_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/l6_saw
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/black_market/sniper_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/sniper_rifle
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/black_market/bulldog_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/bulldog
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
 
 // ===== MYSTERY CARGO =====
 // The gamble channel, sold over the counter: sealed caches rolling the zone

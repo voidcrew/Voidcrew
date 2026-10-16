@@ -94,6 +94,24 @@ GLOBAL_LIST_INIT(outpost_checkpoint_restocked, typecacheof(list(
 					for(var/datum/gas_mixture/mix as anything in stored)
 						mix?.gases.Cut()
 			// Stock kept outside contents or in counters rather than as items.
+			if(istype(object, /obj/structure/closet))
+				var/obj/structure/closet/closet = object
+				closet.contents_initialized = TRUE
+			if(istype(object, /obj/structure/closet/crate/secure/loot))
+				var/obj/structure/closet/crate/secure/loot/freight = object
+				freight.spawned_loot = TRUE
+			if(istype(object, /obj/machinery/suit_storage_unit))
+				var/obj/machinery/suit_storage_unit/unit = object
+				unit.suit = null
+				unit.helmet = null
+				unit.mask = null
+				unit.mod = null
+				unit.storage = null
+				if(istype(unit, /obj/machinery/suit_storage_unit/ruin_zone))
+					var/obj/machinery/suit_storage_unit/ruin_zone/ruin_unit = unit
+					ruin_unit.stock_consumed = TRUE
+					ruin_unit.stock_spawn_turf = null
+				unit.update_appearance()
 			if(istype(object, /obj/structure/closet/crate/critter))
 				var/obj/structure/closet/crate/critter/crate = object
 				QDEL_NULL(crate.tank)
@@ -122,3 +140,9 @@ GLOBAL_LIST_INIT(outpost_checkpoint_restocked, typecacheof(list(
 			if(istype(object, /obj/machinery/atmospherics/components/unary/shuttle/heater))
 				var/obj/machinery/atmospherics/components/unary/shuttle/heater/heater = object
 				heater.fuel_tank = null
+
+/// Mapped suit rewards are fittings only when rebuilt, even if unbolted at save time.
+/obj/machinery/suit_storage_unit/checkpoint_type()
+	if(!..())
+		return null
+	return /obj/machinery/suit_storage_unit

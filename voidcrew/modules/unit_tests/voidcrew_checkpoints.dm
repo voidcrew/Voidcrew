@@ -35,6 +35,65 @@
 	var/obj/machinery/computer/ship_checkpoint/terminal
 	var/turf/terminal_turf
 
+/// Only clear_stock is under test; no bay, checkpoint or reconstruction job is needed.
+/datum/checkpoint_construction/stock_test/New()
+	state = "complete" // CHECKPOINT_BUILD_COMPLETE, defined after the test includes.
+
+/obj/docking_port/mobile/voidcrew/stock_test/return_turfs()
+	return list(get_turf(src))
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock
+	var/obj/docking_port/mobile/voidcrew/stock_test/source_port
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock/Destroy()
+	if(source_port)
+		qdel(source_port, force = TRUE)
+	source_port = null
+	return ..()
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock/Run()
+	source_port = new(run_loc_floor_bottom_left)
+	source_port.shuttle_areas = list()
+	source_port.shuttle_areas[get_area(run_loc_floor_bottom_left)] = TRUE
+	var/datum/checkpoint_construction/stock_test/job = allocate(/datum/checkpoint_construction/stock_test)
+	var/obj/structure/closet/crate/zone_loot/research/cache = allocate(/obj/structure/closet/crate/zone_loot/research)
+	var/obj/structure/closet/crate/secure/loot/freight = allocate(/obj/structure/closet/crate/secure/loot)
+	var/obj/machinery/suit_storage_unit/ruin_zone/unit = allocate(/obj/machinery/suit_storage_unit/ruin_zone)
+	TEST_ASSERT(!unit.stock_consumed && !unit.mod, "Test unit did not start with a deferred resolver")
+	var/obj/machinery/suit_storage_unit/base_tier/base = allocate(/obj/machinery/suit_storage_unit/base_tier)
+	TEST_ASSERT_NOTNULL(base.mod, "Base fixture has no initial stock to scrub")
+	for(var/obj/machinery/suit_storage_unit/machine as anything in list(base, unit))
+		machine.anchored = FALSE
+		TEST_ASSERT_EQUAL(machine.checkpoint_type(), /obj/machinery/suit_storage_unit, "Unbolted suit reward retained its stocked rebuild type")
+		var/rebuilt_type = machine.checkpoint_type()
+		var/obj/machinery/suit_storage_unit/rebuilt = allocate(rebuilt_type, run_loc_floor_top_right)
+		TEST_ASSERT_NULL(rebuilt.mod, "Rebuilt suit unit stocked a reward")
+	job.clear_stock(source_port)
+	TEST_ASSERT(cache.contents_initialized && freight.contents_initialized && freight.spawned_loot, "Scrubbed containers retain a lazy stock path")
+	TEST_ASSERT(unit.stock_consumed && isnull(unit.stock_spawn_turf), "Scrubbed unit retained its deferred stock claim")
+	// Reopening takes the real closet path; a solved freight lock also checks spawned_loot.
+	for(var/obj/structure/closet/container as anything in list(cache, freight))
+		container.open(force = TRUE, special_effects = FALSE)
+		container.dump_contents()
+	TEST_ASSERT_NULL(locate(/obj/item/mod/control) in base.contents, "Scrubbing retained the base suit")
+	TEST_ASSERT_NULL(base.mod, "Scrubbing retained a reference to the deleted suit")
+	var/turf/red = SSovermap.get_unused_overmap_square_in_zone_band(3) // ZONE_RED
+	TEST_ASSERT_NOTNULL(red, "No red square for the deferred stock test")
+	unit.forceMove(red)
+	// ZONE_RESOLVE_ATTEMPTS * ZONE_RESOLVE_RETRY_DELAY, plus a tick of margin.
+	sleep(61 SECONDS)
+	TEST_ASSERT_NULL(unit.mod, "Deferred resolver replenished the rebuilt machine")
+	unit.stock_for_zone(3)
+	TEST_ASSERT_NULL(unit.mod, "A repeated resolver callback replenished the rebuilt machine")
+	for(var/obj/structure/closet/container as anything in list(cache, freight))
+		container.dump_contents()
+	for(var/obj/item/item in run_loc_floor_bottom_left.get_all_contents())
+		if(ismachinery(item.loc))
+			var/obj/machinery/machine = item.loc
+			if((item in machine.component_parts) || item == machine.circuit)
+				continue
+		TEST_FAIL("Reopened checkpoint fixture returned stock: [item.type]")
+
 /// Recovery must also work after the hull and the captain's original body are gone.
 /datum/unit_test/voidcrew_checkpoints/lost
 	destroy_original = TRUE

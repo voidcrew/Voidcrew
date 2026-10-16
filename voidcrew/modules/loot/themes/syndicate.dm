@@ -6,11 +6,6 @@
 // TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop_catalog_black_market.dm.
-// Weapon blueprints are seeded across both channels: the outfitter sells the
-// c20r/wt550/carbine schematics (uncommon-tier), the black market sells the
-// l6_saw/sniper/bulldog three (prime-tier), the same blueprints ride these
-// cache tables at matching tiers. Craft them from the recipe anywhere, once
-// you have the part and a firing pin (modules/weapons_bench/blueprint.dm).
 // Cyberware rides the same two channels: the parlor's smuggling cavity and
 // door spike sit at uncommon, and the three voucher-only pieces an operative
 // would carry (cloak weave, wire, reflex shunt) sit at the bottom of prime.
@@ -22,16 +17,10 @@
 	theme_skus = list(
 		/datum/shop_sku/black_market/emag,
 		/datum/shop_sku/black_market/tactical_medkit,
-		/datum/shop_sku/black_market/saw_blueprint,
-		/datum/shop_sku/black_market/sniper_blueprint,
-		/datum/shop_sku/black_market/bulldog_blueprint,
 		/datum/shop_sku/black_market/mystery_cache,
 		/datum/shop_sku/black_market/mystery_cache_rare,
 		/datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/general/rotating/freight_crate,
-		/datum/shop_sku/outfitter/smg_blueprint,
-		/datum/shop_sku/outfitter/wt550_blueprint,
-		/datum/shop_sku/outfitter/carbine_blueprint,
 		/datum/shop_sku/ripperdoc/cargo_cavity,
 		/datum/shop_sku/ripperdoc/icepick,
 		/datum/shop_sku/ripperdoc/slipwire,
@@ -58,9 +47,6 @@
 		/obj/item/card/id/advanced/chameleon = 4,
 		/obj/item/clothing/shoes/chameleon/noslip = 4,
 		/obj/item/clothing/glasses/thermal/syndi = 3,
-		/obj/item/blueprint/gun/c20r = 4,
-		/obj/item/blueprint/gun/wt550 = 3,
-		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 8,
 		// courier chrome: a shielded rib compartment scanners read past, and
 		// a wrist spike for door motors and turret IFF
@@ -76,9 +62,6 @@
 		/obj/item/pen/sleepy = 4,
 		/obj/item/grenade/syndieminibomb = 3,
 		/obj/item/card/emag = 2,
-		/obj/item/blueprint/gun/l6_saw = 3,
-		/obj/item/blueprint/gun/sniper_rifle = 3,
-		/obj/item/blueprint/gun/bulldog = 3,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = 3,
