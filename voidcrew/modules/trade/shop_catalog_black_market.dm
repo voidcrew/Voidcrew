@@ -172,18 +172,6 @@
 		list("type" = /obj/item/stack/telecrystal_raw, "name" = "raw telecrystal", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/organ/monster_core/regenerative_core/legion, "name" = "legion core", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
-	// The back shelf: hard contracts only, never sold. Each of these is the top
-	// of a ladder Vex otherwise stops short of, the elite suit above the
-	// syndicate one, the Spider Clan chassis above that, and the one combat
-	// board that is on no shelf anywhere.
-	exclusive_rewards = list(
-		/obj/item/mod/control/pre_equipped/traitor_elite,
-		/obj/item/mod/control/pre_equipped/empty/ninja,
-		/obj/item/circuitboard/machine/ship_combat/cloak_device,
-		// The one piece of chrome Splice can't get: a prototype drop-leg frame
-		// that never reached his supplier. Hard contracts only.
-		/obj/item/organ/cyberimp/cyberware/piledriver,
-	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Welcome to the Undertow. Touch nothing you can't pay for.",

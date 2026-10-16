@@ -102,6 +102,12 @@
 			list(/obj/item/stack/sheet/animalhide/goliath_hide, 4, 3),
 			list(/obj/item/stack/sheet/sinew, 4, 2),
 			list(/obj/item/stack/glacial_core, 5, 2),
+			list(/obj/item/mod/construction/broken_core, 2, 1),
+			list(/obj/item/mod/control/pre_equipped, 1, 2),
+			list(/obj/item/mod/module/springlock, 1, 2),
+			list(/obj/item/mod/module/visor/rave, 1, 2),
+			list(/obj/item/mod/module/balloon, 1, 2),
+			list(/obj/item/mod/module/stamp, 1, 2),
 		),
 	)
 	for(var/shop_type in expected_catalogs)
@@ -122,7 +128,7 @@
 			TEST_ASSERT(shop.extra_offer_mix[/datum/mission/outpost_supply/cook] > 0, "The owner's Kitchen Orders must remain available")
 
 	var/datum/outpost_shop/vendor/suit_fitter/fitter = allocate(/datum/outpost_shop/vendor/suit_fitter)
-	TEST_ASSERT_EQUAL(length(fitter.mission_requests), 0, "New suit salvage requests need reward-design inputs before activation")
+	TEST_ASSERT_EQUAL(length(fitter.mission_requests), 6, "The fitter must supply all six salvage requests")
 	var/datum/mission/delivery/delivery = allocate(/datum/mission/delivery)
 	TEST_ASSERT_EQUAL(delivery.weight, 0, "Ore-only ship deliveries must not roll")
 	TEST_ASSERT(delivery.generation_failed, "Explicit generation must also refuse suspended ship deliveries")
@@ -174,8 +180,11 @@
 		list(list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = 2)),
 	)
 	for(var/list/pool as anything in pools)
-		QDEL_LIST(outpost.shop_offers)
+		for(var/datum/mission/posted as anything in outpost.shop_offers.Copy())
+			qdel(posted)
+		outpost.shop_offers.Cut()
 		outpost.shop.mission_requests = pool
+		outpost.next_contract_refill = world.time
 		outpost.ensure_shop_offers()
 		// OUTPOST_SHOP_OFFER_COUNT = 4, defined after this test's include.
 		TEST_ASSERT_EQUAL(length(outpost.shop_offers), 4, "Supply eligibility stalled the outpost board")
