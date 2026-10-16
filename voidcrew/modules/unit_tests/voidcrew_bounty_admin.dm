@@ -480,7 +480,8 @@
 	give_mind = player.mind
 	give_team = new
 	give_team.ship = ship
-	give_mind.ship_teams = list(give_team)
+	ship.ship_team = give_team
+	give_team.join_member(give_mind)
 	run_checks(panel, operator, ship, player)
 	give_mind.ship_teams = null
 	give_team.ship = null

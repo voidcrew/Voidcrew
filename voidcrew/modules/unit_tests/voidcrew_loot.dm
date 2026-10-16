@@ -386,7 +386,8 @@
 	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = second_ship
-	buyer.mind.ship_teams = list(team)
+	second_ship.ship_team = team
+	team.join_member(buyer.mind)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart refund test", null, 1, FALSE)
 	account.account_balance = 20000
 	var/obj/item/card/id/advanced/id = allocate(/obj/item/card/id/advanced)

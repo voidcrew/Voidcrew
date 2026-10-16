@@ -135,6 +135,9 @@
 /mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme)
 	if(!template)
 		return select_ship()
+	var/form_new = choose_new_reputation_crew(src)
+	if(isnull(form_new))
+		return
 
 	// Prevent double-click spawning
 	if(spawning_ship)
@@ -155,6 +158,7 @@
 			to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
 		return select_ship()
 
+	target.bind_reputation_crew(mind, form_new)
 	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
 	ship_metric_purchased(target, src)
 
@@ -162,7 +166,7 @@
 	// The buyer is cleared anyway so a password set before they seat themselves (or
 	// after a failed spawn) can never lock them out of the hull they paid for.
 	target.password_cleared_ckeys[ckey] = TRUE
-	to_chat(src, span_notice("Your ship is open for anyone to join. To lock it, set a join password from Ship Management once aboard."))
+	to_chat(src, span_notice("Your ship is ready."))
 
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
 		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
@@ -188,6 +192,9 @@
 	if(!can_requisition_hull(src))
 		to_chat(src, span_warning("A position opened up in the fleet while you were deciding. Join a crew instead."))
 		return select_ship()
+	var/form_new = choose_new_reputation_crew(src)
+	if(isnull(form_new))
+		return
 
 	// Prevent double-click spawning
 	if(spawning_ship)
@@ -202,6 +209,7 @@
 		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
 		return select_ship()
 
+	target.bind_reputation_crew(mind, form_new)
 	SSblackbox.record_feedback("tally", "ship_requisitioned", 1, target.source_template?.name || "[target.type]")
 	log_shuttle("[key_name(src)] requisitioned a free hull: [target.name]")
 	ship_metric_purchased(target, src, requisition = TRUE)

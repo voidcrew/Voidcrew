@@ -246,11 +246,12 @@
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	user.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(user.mind)
 	TEST_ASSERT(npc.can_use_contracts(user), "A present crew member could not use the board")
-	user.mind.ship_teams = list()
+	user.mind.leave_reputation_crew()
 	TEST_ASSERT(!npc.can_use_contracts(user), "A former crew member could send a stale action")
-	user.mind.ship_teams = list(team)
+	team.join_member(user.mind)
 	npc.forceMove(get_step(run_loc_floor_bottom_left, NORTH))
 	TEST_ASSERT(!npc.can_use_contracts(user), "A relocated trader could settle outside its site")
 	user.mind.ship_teams = list()

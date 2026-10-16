@@ -59,10 +59,28 @@
 #define SHELF_FAVOR "favor"
 
 // ===== TRADER FAVOR =====
-// Standing a crew (ship) earns with a trader by running their board contracts.
-// Tracked per ship on ship.trader_favor, keyed by the outpost's MAIN shop type,
-// so every stall on an outpost honors the same standing. Favor dies with the
-// hull by design (losing the ship costs the crew its reputation too).
+// Favor and purchase caps live on the round-owned voidcrew_crew_record.
+// Hull teams share that record; hull accounts and mission slots stay separate.
+
+// Internal service permissions, never player-facing tier labels.
+#define ZONE_PERMISSION_PUBLIC 0
+#define ZONE_PERMISSION_YELLOW 1
+#define ZONE_PERMISSION_ADVANCED 2
+#define ZONE_PERMISSION_ELITE 3
+
+#define ZONE_REPUTATION_GREEN_REQUIRED 3
+#define ZONE_REPUTATION_YELLOW_REQUIRED 6
+#define ZONE_REPUTATION_RED_REQUIRED 9
+#define ZONE_REPUTATION_GREEN_FAMILY_CAP 1
+#define ZONE_REPUTATION_DANGER_FAMILY_CAP 5
+
+// Canonical progression families. Guarded prize families deliberately differ.
+#define ZONE_FAMILY_NAMED_KILL "named_kill"
+#define ZONE_FAMILY_HUNT "hunt"
+#define ZONE_FAMILY_CAPTURE "capture"
+#define ZONE_FAMILY_POACHERS "poachers"
+#define ZONE_FAMILY_PYLONS "pylons"
+#define ZONE_FAMILY_EXTRACTION "extraction"
 
 // Tier thresholds, in favor points
 #define FAVOR_TIER_REGULAR 2
