@@ -2,6 +2,69 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
+"ab" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/cowboy,
+/obj/item/clothing/shoes/cowboy,
+/obj/item/clothing/shoes/cowboy,
+/obj/machinery/firealarm/directional/west,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/a)
+"ac" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/greenglow,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/a)
+"ad" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/melee/baseball_bat,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_x = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/obj/item/pai_card,
+/obj/item/clothing/shoes/cowboy/white,
+/obj/item/clothing/head/cowboy/red,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/a)
 "ap" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -391,20 +454,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
-"mu" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/laser/retro,
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_x = 32
-	},
-/obj/machinery/status_display/evac{
-	pixel_y = 32
-	},
-/obj/item/pai_card,
-/obj/item/clothing/shoes/cowboy/white,
-/obj/item/clothing/head/cowboy/red,
-/turf/open/floor/carpet,
-/area/shuttle/voidcrew/kilo/dorms/a)
 "mz" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -670,28 +719,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
-"xK" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/greenglow,
-/obj/item/gun/energy/e_gun/mini,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/machinery/airalarm/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/dorms/a)
 "xS" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 4
@@ -975,33 +1002,6 @@
 /obj/item/tank/internals/emergency_oxygen,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
-"HA" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/cowboy,
-/obj/item/clothing/shoes/cowboy,
-/obj/item/clothing/shoes/cowboy,
-/obj/machinery/firealarm/directional/west,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/dorms/a)
 "HR" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "kilo_dock"
@@ -1782,7 +1782,7 @@ lW
 Qu
 wZ
 hA
-HA
+ab
 DA
 aa
 "}
@@ -1797,7 +1797,7 @@ Wm
 pY
 Iq
 kD
-xK
+ac
 Iq
 aa
 "}
@@ -1855,7 +1855,7 @@ dD
 Ww
 aM
 Iq
-mu
+ad
 TO
 DA
 aa

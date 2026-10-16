@@ -39,6 +39,18 @@
 /obj/structure/closet/secure_closet/freezer/meat/open,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/deepstorage/kitchen)
+"aj" = (
+/obj/structure/closet/cardboard,
+/obj/item/storage/box/mousetraps,
+/obj/item/storage/box/mousetraps,
+/obj/item/storage/box/drinkingglasses,
+/obj/item/storage/box/zipties,
+/obj/item/knife/combat/survival,
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/deepstorage/storage)
 "ak" = (
 /obj/machinery/conveyor{
 	dir = 4;
@@ -2736,18 +2748,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage/dorm)
-"YH" = (
-/obj/structure/closet/cardboard,
-/obj/item/storage/box/mousetraps,
-/obj/item/storage/box/mousetraps,
-/obj/item/storage/box/drinkingglasses,
-/obj/item/storage/box/zipties,
-/obj/item/switchblade,
-/obj/effect/turf_decal/delivery,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/directional/north,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/deepstorage/storage)
 "Zv" = (
 /obj/machinery/door/airlock/highsecurity{
 	name = "Secure Storage"
@@ -3622,7 +3622,7 @@ ab
 ab
 ab
 hU
-YH
+aj
 aU
 DI
 DD

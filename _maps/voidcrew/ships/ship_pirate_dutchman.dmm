@@ -1,4 +1,75 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/cabinet{
+	anchored = 1;
+	desc = "What kind of scary things could be here?";
+	name = "Davy Jones' Locker"
+	},
+/obj/item/restraints/legcuffs/bola,
+/obj/item/restraints/legcuffs/bola,
+/obj/item/restraints/legcuffs/bola,
+/obj/item/melee/baseball_bat,
+/obj/item/megaphone,
+/obj/item/melee/chainofcommand/tailwhip/kitty,
+/obj/item/spear,
+/turf/open/floor/carpet/royalblack/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"ab" = (
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = 3
+	},
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"ac" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/storage/box/lethalshot,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"ad" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/spear{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/spear,
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
+"ae" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = 3
+	},
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "af" = (
 /turf/template_noop,
 /area/template_noop)
@@ -195,17 +266,6 @@
 	},
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/carpet/blue/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"dc" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/structure/table/wood,
-/obj/item/storage/box/lethalshot,
-/obj/item/gun/ballistic/shotgun/automatic/combat,
-/turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -888,38 +948,9 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"KZ" = (
-/obj/structure/table/wood,
-/obj/item/gun/energy/laser{
-	pixel_x = -3;
-	pixel_y = 6
-	},
-/obj/item/gun/energy/laser{
-	pixel_y = 3
-	},
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
 "Le" = (
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 8
-	},
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"Lt" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/structure/table/wood,
-/obj/item/gun/energy/laser{
-	pixel_x = -3;
-	pixel_y = 6
-	},
-/obj/item/gun/energy/laser{
-	pixel_y = 3
 	},
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
@@ -945,20 +976,6 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 1
 	},
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"PS" = (
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
-	},
-/obj/structure/table/wood,
-/obj/item/claymore/cutlass{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/claymore/cutlass,
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
@@ -1111,23 +1128,6 @@
 	dir = 1
 	},
 /turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
-"Yr" = (
-/obj/structure/closet/cabinet{
-	anchored = 1;
-	desc = "What kind of scary things could be here?";
-	name = "Davy Jones' Locker"
-	},
-/obj/item/restraints/legcuffs/bola,
-/obj/item/restraints/legcuffs/bola,
-/obj/item/restraints/legcuffs/bola,
-/obj/item/gun/energy/laser,
-/obj/item/megaphone,
-/obj/item/melee/chainofcommand/tailwhip/kitty,
-/obj/item/claymore/cutlass,
-/turf/open/floor/carpet/royalblack/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
@@ -1435,7 +1435,7 @@ WR
 WR
 Ms
 vt
-Yr
+aa
 WR
 "}
 (10,1,1) = {"
@@ -1456,7 +1456,7 @@ WS
 RO
 Sp
 dM
-KZ
+ab
 Le
 Ac
 WR
@@ -1482,7 +1482,7 @@ eG
 WS
 Gr
 QM
-dc
+ac
 WB
 WB
 Gr
@@ -1508,8 +1508,8 @@ xY
 WR
 WS
 Le
-Lt
-PS
+ae
+ad
 hV
 RO
 gS

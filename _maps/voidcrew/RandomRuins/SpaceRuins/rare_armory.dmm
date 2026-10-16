@@ -121,15 +121,6 @@
 /obj/machinery/light/small/red/directional/west,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"as" = (
-/obj/structure/closet/crate/secure/weapon{
-	name = "deadstock crate"
-	},
-/obj/item/gun/ballistic/automatic/wt550,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
 "at" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -163,17 +154,6 @@
 	name = "scrawled note";
 	default_raw_text = "tried to reset the grid from the checkpoint. it reset me instead. vault code died with the captain. cut your way in. sorry."
 	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"az" = (
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun{
-	pixel_y = 5
-	},
-/obj/item/gun/energy/e_gun{
-	pixel_y = -2
-	},
-/obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "aA" = (
@@ -227,25 +207,6 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
 	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"aI" = (
-/obj/item/gun/energy/e_gun/mini{
-	pixel_x = 4;
-	pixel_y = -2
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"aJ" = (
-/obj/structure/rack,
-/obj/item/gun/energy/laser{
-	pixel_y = 5
-	},
-/obj/item/gun/energy/laser{
-	pixel_y = -2
-	},
-/obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "aK" = (
@@ -331,6 +292,45 @@
 /area/ruin/space/has_grav/powered)
 "aZ" = (
 /turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ba" = (
+/obj/item/melee/baseball_bat{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"bb" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/automatic/pistol/m1911{
+	pixel_y = 5
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"bc" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat{
+	pixel_y = 5
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"bd" = (
+/obj/structure/closet/crate/secure/weapon{
+	name = "deadstock crate"
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "cq" = (
 /obj/machinery/door/airlock/external/ruin{
@@ -547,7 +547,7 @@ aB
 aR
 ab
 af
-aI
+ba
 PR
 at
 ao
@@ -959,7 +959,7 @@ aB
 (20,1,1) = {"
 aB
 aL
-az
+bb
 aT
 ax
 aH
@@ -985,7 +985,7 @@ aB
 (21,1,1) = {"
 aB
 aL
-aJ
+bc
 aT
 ax
 ax
@@ -1141,7 +1141,7 @@ aB
 (27,1,1) = {"
 aB
 aL
-as
+bd
 aT
 aG
 aS

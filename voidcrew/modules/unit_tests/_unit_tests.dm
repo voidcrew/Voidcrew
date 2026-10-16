@@ -188,6 +188,7 @@
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_cleanup.dm"
 #include "voidcrew_ruin_reservation.dm"
+#include "voidcrew_ruin_turrets.dm"
 #include "voidcrew_science_program.dm"
 #include "voidcrew_ship_abandonment.dm"
 #include "voidcrew_ship_access.dm"

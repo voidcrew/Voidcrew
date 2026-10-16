@@ -1,4 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/secure_closet/bar{
+	req_access = null
+	},
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/medkit/advanced,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bogardee/service/bar)
 "as" = (
 /obj/structure/disposalpipe/junction{
 	dir = 4
@@ -923,19 +936,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bogardee/service/kitchen)
-"xM" = (
-/obj/structure/closet/secure_closet/bar{
-	req_access = null
-	},
-/obj/item/radio/intercom{
-	pixel_y = -28
-	},
-/obj/item/stack/sheet/glass/fifty,
-/obj/item/stack/sheet/iron/twenty,
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/item/storage/medkit/advanced,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bogardee/service/bar)
 "xW" = (
 /obj/structure/chair/stool/bar/directional/south,
 /turf/open/floor/wood,
@@ -2529,7 +2529,7 @@ rr
 zw
 Nv
 BQ
-xM
+aa
 yB
 iB
 ma

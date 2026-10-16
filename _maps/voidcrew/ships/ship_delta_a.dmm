@@ -2,6 +2,15 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
+"ab" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "ca" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/tank/plasma,
@@ -678,15 +687,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
-"wl" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/item/gun/energy/laser/retro,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "wx" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1720,7 +1720,7 @@ pB
 tP
 lj
 dy
-wl
+ab
 Ph
 Jn
 tP

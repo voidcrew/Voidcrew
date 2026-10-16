@@ -1,8 +1,62 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/vending/security/marine{
+	voucher_items = list();
+	products = list(/obj/item/restraints/handcuffs = 3, /obj/item/assembly/flash/handheld = 2, /obj/item/flashlight/seclite = 2, /obj/item/ammo_box/magazine/m9mm = 3, /obj/item/ammo_box/magazine/m10mm = 3, /obj/item/ammo_box/magazine/smgm45 = 3, /obj/item/ammo_box/magazine/sniper_rounds = 3, /obj/item/ammo_box/magazine/m12g = 3, /obj/item/grenade/c4 = 1, /obj/item/grenade/frag = 1)
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/equipment)
+"ab" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/equipment)
+"ac" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
 "ad" = (
 /obj/machinery/ship_combat/interdictor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/medbay)
+"ae" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/duffelbag/syndie/c4,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/rubbershot,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
+"af" = (
+/obj/structure/table/reinforced,
+/obj/structure/railing{
+	dir = 9
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/ammo_box/magazine/smgm9mm/ap,
+/obj/item/ammo_box/magazine/smgm9mm/fire,
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
 "aj" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -32,14 +86,6 @@
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/blackbeard/bridge)
-"aT" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/rocketlauncher/unrestricted,
-/obj/structure/railing{
-	dir = 10
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "bl" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
@@ -537,19 +583,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
-"DZ" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/pistol/aps,
-/obj/item/gun/ballistic/automatic/pistol/aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/equipment)
 "Ed" = (
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor,
@@ -707,18 +740,6 @@
 /obj/machinery/light,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
-"ND" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/syndie/c4,
-/obj/structure/railing{
-	dir = 8
-	},
-/obj/item/gun/ballistic/shotgun/automatic/dual_tube,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/rubbershot,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "Oa" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
@@ -763,24 +784,6 @@
 /obj/machinery/ship_combat/missile_launcher,
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/fore)
-"Rp" = (
-/obj/structure/table/reinforced,
-/obj/structure/railing{
-	dir = 9
-	},
-/obj/item/gun/ballistic/automatic/proto/unrestricted{
-	desc = "A prototype full auto 9mm submachine gun, designated 'SABR'. Has a threaded barrel for suppressors and a folding stock, this one has a crudely scratched S overtop the Nanotrasen Logo."
-	},
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/ammo_box/magazine/smgm9mm/ap,
-/obj/item/ammo_box/magazine/smgm9mm/fire,
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/gun/ballistic/automatic/ar{
-	desc = "A robust assault rifle used by Nanotrasen fighting forces, this one has has a crudely scratched in S over the Nanotrasen Logo."
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "Rt" = (
 /obj/structure/window/reinforced/plasma/spawner,
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -937,10 +940,6 @@
 /obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/bridge)
-"ZO" = (
-/obj/machinery/vending/security/marine,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/equipment)
 
 (1,1,1) = {"
 TQ
@@ -1235,7 +1234,7 @@ Pi
 qW
 et
 dx
-ZO
+aa
 qW
 Pi
 yC
@@ -1250,7 +1249,7 @@ av
 qW
 et
 Jb
-ZO
+aa
 qW
 av
 Kj
@@ -1265,7 +1264,7 @@ av
 qW
 WT
 Gc
-DZ
+ab
 qW
 dy
 Kj
@@ -1413,9 +1412,9 @@ TQ
 im
 Wp
 yl
-Rp
-ND
-aT
+af
+ae
+ac
 XD
 Wp
 im

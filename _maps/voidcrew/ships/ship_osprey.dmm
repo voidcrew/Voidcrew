@@ -36,6 +36,74 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/medbay/lobby)
+"ag" = (
+/obj/item/storage/backpack,
+/obj/item/clothing/gloves/color/white,
+/obj/item/clothing/under/rank/centcom/officer,
+/obj/machinery/airalarm/directional/south,
+/obj/item/melee/baseball_bat,
+/obj/item/dog_bone,
+/obj/item/storage/bag/garment/hop,
+/obj/item/storage/lockbox/medal/service,
+/obj/item/computer_disk/command/hop,
+/obj/item/radio/headset/heads/hop,
+/obj/item/storage/box/ids,
+/obj/item/storage/box/silver_ids,
+/obj/item/megaphone/command,
+/obj/item/assembly/flash/handheld,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/door_remote/head_of_personnel,
+/obj/item/circuitboard/machine/techfab/department/service,
+/obj/item/storage/photo_album/hop,
+/obj/item/storage/lockbox/medal/hop,
+/obj/structure/closet/secure_closet{
+	name = "head of personnel's locker";
+	icon_state = "hop";
+	req_access = list("hop")
+	},
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/osprey/bridge)
+"ah" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "\proper captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/item/clothing/under/rank/centcom/commander,
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/voidcrew/osprey/bridge)
+"ai" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/binary/pump/on/layer4{
+	dir = 1;
+	name = "Air to Distro"
+	},
+/obj/structure/fireaxecabinet/directional/west{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/osprey/engineering/atmospherics)
 "az" = (
 /obj/machinery/computer/rdconsole{
 	dir = 4
@@ -3844,14 +3912,6 @@
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/starboard)
-"Lh" = (
-/obj/item/storage/backpack,
-/obj/item/clothing/gloves/color/white,
-/obj/item/clothing/under/rank/centcom/officer,
-/obj/machinery/airalarm/directional/south,
-/obj/structure/closet/secure_closet/hop,
-/turf/open/floor/carpet/blue,
-/area/shuttle/voidcrew/osprey/bridge)
 "Lj" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -4380,17 +4440,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/service/janitor)
-"QJ" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/binary/pump/on/layer4{
-	dir = 1;
-	name = "Air to Distro"
-	},
-/obj/structure/fireaxecabinet/directional/west,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/osprey/engineering/atmospherics)
 "QL" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp,
@@ -5022,16 +5071,6 @@
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark/textured,
 /area/shuttle/voidcrew/osprey/engineering)
-"XS" = (
-/obj/structure/closet/secure_closet/captains{
-	name = "\proper captain's locker"
-	},
-/obj/item/clothing/under/rank/centcom/commander,
-/obj/structure/sign/poster/official/random{
-	pixel_x = 32
-	},
-/turf/open/floor/carpet/royalblue,
-/area/shuttle/voidcrew/osprey/bridge)
 "XU" = (
 /turf/template_noop,
 /area/template_noop)
@@ -5909,7 +5948,7 @@ ke
 yZ
 hC
 zW
-Lh
+ag
 ke
 IA
 BC
@@ -6257,7 +6296,7 @@ ke
 uH
 iC
 dI
-XS
+ah
 ke
 JV
 EW
@@ -6726,7 +6765,7 @@ yx
 gU
 ka
 CI
-QJ
+ai
 tW
 lf
 TI

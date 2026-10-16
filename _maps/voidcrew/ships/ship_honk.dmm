@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/glass,
+/obj/item/storage/toolbox/mechanical,
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/item/pneumatic_cannon/pie/selfcharge,
+/obj/item/nullrod/clown,
+/obj/item/clothing/neck/petcollar,
+/obj/item/bikehorn/golden,
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/head/chaplain/clownmitre,
+/turf/open/floor/mineral/bananium,
+/area/shuttle/voidcrew/honk)
 "aj" = (
 /obj/structure/cable,
 /obj/machinery/light,
@@ -424,20 +438,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/honk/supermatter)
-"Nj" = (
-/obj/structure/table/glass,
-/obj/item/storage/toolbox/mechanical,
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/item/pneumatic_cannon/pie/selfcharge,
-/obj/item/nullrod/clown,
-/obj/item/clothing/neck/petcollar,
-/obj/item/bikehorn/golden,
-/obj/item/gun/ballistic/revolver/russian/soul,
-/obj/item/clothing/head/chaplain/clownmitre,
-/turf/open/floor/mineral/bananium,
-/area/shuttle/voidcrew/honk)
 "NI" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/yellow,
@@ -866,7 +866,7 @@ YY
 YY
 YY
 ZT
-Nj
+aa
 Uv
 Yd
 Xn

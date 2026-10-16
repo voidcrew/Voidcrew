@@ -5,6 +5,12 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
+"b" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/item/knife/combat/survival,
+/obj/item/storage/box/holy/follower,
+/turf/open/misc/dirt/jungle,
+/area/ruin/unpowered)
 "d" = (
 /obj/effect/mob_spawn/ghost_role/human/skeleton/jungle,
 /turf/open/misc/dirt/jungle,
@@ -58,12 +64,6 @@
 "s" = (
 /obj/structure/fluff/drake_statue,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"t" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/obj/item/nullrod/claymore/darkblade,
-/obj/item/storage/box/holy/follower,
-/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "v" = (
 /obj/item/stack/sheet/bone,
@@ -223,7 +223,7 @@ o
 Y
 k
 T
-t
+b
 E
 h
 M

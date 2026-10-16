@@ -1,4 +1,115 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "warden";
+	name = "foreman's locker";
+	req_access = list(56)
+	},
+/obj/item/clothing/shoes/jackboots,
+/obj/item/clothing/under/syndicate/tacticool,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/gloves/combat,
+/obj/item/storage/belt/utility/chief,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/glasses/welding,
+/obj/item/storage/toolbox/syndicate,
+/obj/item/wrench/combat,
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/melee/baseball_bat,
+/obj/item/grenade/chem_grenade/metalfoam,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/carpet/red,
+/area/shuttle/voidcrew/hyena/bridge/foreman)
+"ab" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat{
+	pixel_y = 2
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = -2
+	},
+/obj/item/ammo_box/c10mm,
+/obj/item/ammo_box/c10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/hyena/cargo_bay)
+"ac" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/vending/security/marine{
+	voucher_items = list();
+	products = list(/obj/item/restraints/handcuffs = 3, /obj/item/assembly/flash/handheld = 2, /obj/item/flashlight/seclite = 2, /obj/item/ammo_box/magazine/m9mm = 3, /obj/item/ammo_box/magazine/m10mm = 3, /obj/item/ammo_box/magazine/smgm45 = 3, /obj/item/ammo_box/magazine/sniper_rounds = 3, /obj/item/ammo_box/magazine/m12g = 3, /obj/item/grenade/c4 = 1, /obj/item/grenade/frag = 1)
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hyena/armory)
+"ad" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/security/marine{
+	voucher_items = list();
+	products = list(/obj/item/restraints/handcuffs = 3, /obj/item/assembly/flash/handheld = 2, /obj/item/flashlight/seclite = 2, /obj/item/ammo_box/magazine/m9mm = 3, /obj/item/ammo_box/magazine/m10mm = 3, /obj/item/ammo_box/magazine/smgm45 = 3, /obj/item/ammo_box/magazine/sniper_rounds = 3, /obj/item/ammo_box/magazine/m12g = 3, /obj/item/grenade/c4 = 1, /obj/item/grenade/frag = 1)
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hyena/armory)
+"ae" = (
+/obj/item/storage/backpack/security,
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/clothing/suit/armor/vest/capcarapace/syndicate,
+/obj/item/clothing/shoes/jackboots,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/glasses/thermal/eyepatch,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/a357/match,
+/obj/item/knife/combat/survival,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/melee/baseball_bat,
+/obj/item/pinpointer/nuke,
+/obj/item/computer_disk/command/hos,
+/obj/item/radio/headset/heads/hos,
+/obj/item/radio/headset/heads/hos/alt,
+/obj/item/storage/bag/garment/hos,
+/obj/item/storage/lockbox/medal/sec,
+/obj/item/megaphone/sec,
+/obj/item/holosign_creator/security,
+/obj/item/storage/lockbox/loyalty,
+/obj/item/storage/box/flashbangs,
+/obj/item/knife/combat/survival,
+/obj/item/storage/belt/security/full,
+/obj/item/circuitboard/machine/techfab/department/security,
+/obj/item/storage/photo_album/hos,
+/obj/structure/closet/secure_closet{
+	name = "head of security's locker";
+	icon_state = "hos";
+	req_access = list("hos")
+	},
+/obj/item/clothing/head/hats/hos/cap/syndicate,
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/hyena/bridge)
 "aF" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -85,36 +196,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/equipment)
-"cV" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = 2
-	},
-/obj/item/gun/ballistic/automatic/pistol{
-	pixel_y = -2
-	},
-/obj/item/ammo_box/c10mm,
-/obj/item/ammo_box/c10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "dc" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
@@ -242,20 +323,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"fv" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/vending/security/marine,
-/obj/machinery/airalarm/directional/north,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/armory)
 "fA" = (
 /obj/structure/tank_dispenser/oxygen,
 /obj/machinery/light/small{
@@ -302,21 +369,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/hidden,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
-"hs" = (
-/obj/item/storage/backpack/security,
-/obj/item/clothing/under/syndicate/combat,
-/obj/item/clothing/suit/armor/vest/capcarapace/syndicate,
-/obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/gloves/combat,
-/obj/item/clothing/glasses/thermal/eyepatch,
-/obj/item/gun/ballistic/revolver,
-/obj/item/ammo_box/a357/match,
-/obj/item/pen/edagger,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/closet/secure_closet/hos,
-/obj/item/clothing/head/hats/hos/cap/syndicate,
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/hyena/bridge)
 "hv" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/hyena/dorms)
@@ -1787,11 +1839,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"OX" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/vending/security/marine,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/armory)
 "Pw" = (
 /obj/machinery/button/door{
 	dir = 1;
@@ -2046,28 +2093,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/equipment)
-"VY" = (
-/obj/structure/closet/secure_closet{
-	anchored = 1;
-	icon_state = "warden";
-	name = "foreman's locker";
-	req_access = list(56)
-	},
-/obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/under/syndicate/tacticool,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/gloves/combat,
-/obj/item/storage/belt/utility/chief,
-/obj/item/clothing/glasses/meson,
-/obj/item/clothing/glasses/welding,
-/obj/item/storage/toolbox/syndicate,
-/obj/item/wrench/combat,
-/obj/item/ammo_box/magazine/m10mm/ap,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/grenade/chem_grenade/metalfoam,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/carpet/red,
-/area/shuttle/voidcrew/hyena/bridge/foreman)
 "Wc" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp,
@@ -2547,7 +2572,7 @@ Sh
 Zn
 qN
 KW
-VY
+aa
 rk
 nn
 Og
@@ -2619,10 +2644,10 @@ Ru
 px
 Pw
 jI
-fv
-OX
+ad
+ac
 jI
-cV
+ab
 jH
 Ik
 qN
@@ -2654,7 +2679,7 @@ de
 "}
 (21,1,1) = {"
 XN
-hs
+ae
 tw
 Dq
 rd
