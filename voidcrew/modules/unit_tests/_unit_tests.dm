@@ -230,6 +230,7 @@
 #include "voidcrew_vestige_status.dm"
 #include "voidcrew_vestige_visuals.dm"
 #include "voidcrew_wall_break_atmos.dm"
+#include "voidcrew_weapon_ladder.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_windoor_survey.dm"
 #include "voidcrew_zone_logging.dm"

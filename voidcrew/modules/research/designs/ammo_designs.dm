@@ -24,6 +24,18 @@
 /datum/design/pin_testing
 	build_type = NONE
 
+/datum/design/rapidsyringe
+	name = "Syringe Gun"
+	desc = "A pneumatic syringe projector."
+	build_path = /obj/item/gun/syringe
+
+// Keep ammunition and work tools; completed weapons and their kits have no printer.
+/datum/design/New()
+	. = ..()
+	if(is_ladder_restricted_production(build_path))
+		build_type = NONE
+		autolathe_exportable = FALSE
+
 //
 // Ballistic Ammunition - what a boarding party burns through.
 //

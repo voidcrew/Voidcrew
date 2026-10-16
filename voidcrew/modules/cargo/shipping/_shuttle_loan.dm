@@ -202,6 +202,14 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	SHOULD_CALL_PARENT(FALSE)
 	CRASH("Unimplemented spawn_items() on [src.type].")
 
+/// Loan deliveries use packs without passing through the order catalog.
+/datum/voidcrew_shuttle_loan/proc/spawn_supply_pack(datum/supply_pack/pack, turf/destination)
+	var/obj/structure/closet/crate/delivery = pack.generate(destination)
+	for(var/obj/item/item in delivery.get_all_contents())
+		if(is_ladder_restricted_production(item.type))
+			qdel(item)
+	return delivery
+
 /// The cargo bay can be off-map; its host ship supplies the encounter band.
 /datum/voidcrew_shuttle_loan/proc/spawn_hostile(mob_type, turf/location, datum/voidcrew_cargo_shuttle/shuttle)
 	if(!npc_source)
@@ -231,7 +239,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	for(var/crate_type in crate_types)
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[crate_type]
 		if(pack && length(cargo_turfs))
-			pack.generate(pick_n_take(cargo_turfs))
+			spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 /// Salvage recovery - mixed loot and danger
 /datum/voidcrew_shuttle_loan/salvage_recovery
@@ -353,7 +361,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	// Medical supplies
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/medical/supplies]
 	if(pack)
-		pack.generate(pick_n_take(cargo_turfs))
+		spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 	var/list/extra_supplies = list(
 		/obj/item/storage/medkit/regular,
@@ -435,7 +443,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	// Spawn special ops crate
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/imports/specialops]
 	if(pack && length(cargo_turfs))
-		pack.generate(pick_n_take(cargo_turfs))
+		spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 	// Spawn syndicate infiltrators
 	for(var/i in 1 to 2)
@@ -466,7 +474,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	// Beekeeping crate
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/organic/hydroponics/beekeeping_fullkit]
 	if(pack && length(cargo_turfs))
-		pack.generate(pick_n_take(cargo_turfs))
+		spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 	// Corpses from the incident
 	var/list/corpse_types = list(
@@ -479,12 +487,6 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 		if(!length(cargo_turfs))
 			break
 		new corpse_type(pick_n_take(cargo_turfs))
-
-	// Weapons from the fight
-	if(length(cargo_turfs))
-		new /obj/item/gun/ballistic/automatic/pistol/no_mag(pick_n_take(cargo_turfs))
-	if(length(cargo_turfs))
-		new /obj/item/gun/ballistic/automatic/pistol/m1911/no_mag(pick_n_take(cargo_turfs))
 
 	// Beekeeping stuff
 	for(var/i in 1 to 3)
@@ -574,7 +576,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	// Party supplies
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/service/party]
 	if(pack && length(cargo_turfs))
-		pack.generate(pick_n_take(cargo_turfs))
+		spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 	// The Russians
 	if(length(cargo_turfs))
@@ -607,7 +609,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	// Special ops crate (the "gift")
 	var/datum/supply_pack/pack = SSshuttle.supply_packs[/datum/supply_pack/imports/specialops]
 	if(pack && length(cargo_turfs))
-		pack.generate(pick_n_take(cargo_turfs))
+		spawn_supply_pack(pack, pick_n_take(cargo_turfs))
 
 	// THE SPIDERS
 	if(length(cargo_turfs))
