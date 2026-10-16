@@ -196,7 +196,7 @@
 			if(sku.rotation != rotation)
 				continue
 			on_shelf += sku.type
-			if(sku.stock <= 0)
+			if(sku.stock <= 0 && !sku.restock_interval)
 				sold_out += sku
 		for(var/datum/shop_sku/gone as anything in sold_out)
 			skus -= gone
@@ -237,6 +237,9 @@
 /datum/outpost_shop/proc/convoy_restock()
 	// Core shelves creep back toward full
 	for(var/datum/shop_sku/sku as anything in skus)
+		// Timed stock has its own clock; INFINITY keeps a finite shelf exhausted.
+		if(sku.restock_interval)
+			continue
 		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max - sku.reserved_stock)
 			sku.stock = min(sku.stock_max - sku.reserved_stock, sku.stock + max(1, round(sku.stock_max / 2)))
 		// A new paid chart creates a fresh ruin, so named tips can be sold again.
@@ -249,7 +252,7 @@
 	// a sold tip for an unrelated good. Named tips replenish separately above.
 	var/list/depleted = list()
 	for(var/datum/shop_sku/sku as anything in skus)
-		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && !sku.rotation && sku.stock <= 0)
+		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && !sku.rotation && !sku.restock_interval && sku.stock <= 0)
 			depleted += sku
 	if(length(depleted))
 		var/datum/shop_sku/gone = pick(depleted)
@@ -448,10 +451,16 @@
 	var/fixed_price = FALSE
 	/// Whether outpost contracts may pay this out as part of a reward bundle
 	var/contract_reward = TRUE
+	/// 0 uses convoys; a positive interval returns one unit; INFINITY never refills.
+	var/restock_interval = 0
+	/// Independent of convoy arrivals, visits, specials and crew ownership.
+	var/restock_timer
 
 /datum/shop_sku/New()
 	..()
 	stock = rand(stock_min, stock_max)
+	if(restock_interval > 0 && restock_interval < INFINITY)
+		restock_timer = addtimer(CALLBACK(src, PROC_REF(restock_unit)), restock_interval, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 	if(item_path)
 		var/atom/movable/cast = item_path
 		if(!name)
@@ -460,9 +469,16 @@
 			desc = initial(cast.desc)
 
 /datum/shop_sku/Destroy()
+	if(restock_timer)
+		deltimer(restock_timer)
+		restock_timer = null
 	shop = null
 	rotation = null
 	return ..()
+
+/// Never bank missed deliveries while full, or replenish a reserved contract unit.
+/datum/shop_sku/proc/restock_unit()
+	stock = min(max(0, stock_max - reserved_stock), stock + 1)
 
 /**
  * The credit price after discounts, rounded down to a clean 5. With a buyer,
