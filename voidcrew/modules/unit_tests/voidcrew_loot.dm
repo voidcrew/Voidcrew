@@ -599,6 +599,7 @@
 	team.join_member(buyer.mind)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart refund test", null, 1, FALSE)
 	account.account_balance = 20000
+	second_ship.ship_account = account
 	var/obj/item/card/id/advanced/id = allocate(/obj/item/card/id/advanced)
 	qdel(id.registered_account)
 	id.registered_account = account

@@ -538,13 +538,15 @@
  * Whether the user can pay right now (does not charge).
  */
 /datum/shop_sku/proc/can_afford(mob/living/user)
-	if(get_favor_denial(user))
+	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
+	if(get_favor_denial(user, crew_ship))
 		return FALSE
 	if(price_vouchers > 0 && count_trade_vouchers(user) < price_vouchers)
 		return FALSE
-	if(get_credit_price(user) > 0)
-		var/datum/bank_account/account = get_account(user)
-		if(!account || !account.has_money(get_credit_price(user)))
+	var/credit_price = get_credit_price(user, crew_ship)
+	if(credit_price > 0)
+		var/datum/bank_account/account = get_account(user, crew_ship)
+		if(!account || !account.has_money(credit_price))
 			return FALSE
 	return TRUE
 
@@ -584,18 +586,20 @@
 /datum/shop_sku/proc/get_denial_reason(mob/living/user)
 	if(stock <= 0 && shelf != SHELF_FAVOR)
 		return "Out of stock."
-	var/favor_denial = get_favor_denial(user)
+	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
+	var/favor_denial = get_favor_denial(user, crew_ship)
 	if(favor_denial)
 		return favor_denial
 	if(price_vouchers > 0)
 		var/carrying = count_trade_vouchers(user)
 		if(carrying < price_vouchers)
 			return "Insufficient vouchers."
-	if(get_credit_price(user) > 0)
-		var/datum/bank_account/account = get_account(user)
+	var/credit_price = get_credit_price(user, crew_ship)
+	if(credit_price > 0)
+		var/datum/bank_account/account = get_account(user, crew_ship)
 		if(!account)
-			return "No bank account on your ID."
-		if(!account.has_money(get_credit_price(user)))
+			return "No ship account."
+		if(!account.has_money(credit_price))
 			return "Insufficient credits."
 	return null
 
@@ -616,7 +620,7 @@
 	var/credit_price = get_credit_price(user, crew_ship)
 	var/datum/bank_account/account
 	if(credit_price > 0)
-		account = get_account(user)
+		account = get_account(user, crew_ship)
 		if(!account || !account.has_money(credit_price))
 			return FALSE
 	if(price_vouchers > 0 && count_trade_vouchers(user) < price_vouchers)
@@ -663,11 +667,12 @@
 	return goods
 
 /**
- * The bank account on the user's ID card.
+ * The selected ship's account, revalidated against the user's current crew.
  */
-/datum/shop_sku/proc/get_account(mob/living/user)
-	var/obj/item/card/id/id_card = user.get_idcard(TRUE)
-	return id_card?.registered_account
+/datum/shop_sku/proc/get_account(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
+	if(!crew_ship || get_crew_ship(user, crew_ship) != crew_ship)
+		return null
+	return crew_ship.ship_account
 
 /**
  * # Barter SKU
