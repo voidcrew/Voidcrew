@@ -198,16 +198,8 @@
 		/datum/shop_buyback/fitter/salvage_spacesuit,
 		/datum/shop_buyback/fitter/salvage_space_helmet,
 	)
-	// A suit shop eats refined metal and very little else
-	mission_requests = list(
-		list("type" = /obj/item/stack/sheet/mineral/titanium, "name" = "titanium sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/sheet/mineral/plasma, "name" = "plasma sheets", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/sheet/mineral/silver, "name" = "silver sheets", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/sheet/mineral/gold, "name" = "gold sheets", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/sheet/mineral/uranium, "name" = "uranium sheets", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/sheet/plasteel, "name" = "plasteel sheets", "amount" = 14, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
-	)
+	// Salvage requests await quantities and difficulties from the reward design.
+	mission_requests = list()
 	// Never on a shelf: two chassis Nakamura doesn't retail, and the two
 	// anomaly modules that come with their core already seated
 	exclusive_rewards = list(

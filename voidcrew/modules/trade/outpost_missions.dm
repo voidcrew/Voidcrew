@@ -16,6 +16,73 @@
 /// How many contracts an outpost keeps posted at once
 #define OUTPOST_SHOP_OFFER_COUNT 4
 
+/// Exact request types; fish and bear hides are deliberate owner exceptions.
+/proc/is_outpost_procurement_type(item_type)
+	var/static/list/eligible_types = list(
+		/obj/item/fish,
+		/obj/item/stack/sheet/animalhide/bear,
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew,
+		/obj/item/stack/spice_pods,
+		/obj/item/sea_crystal,
+		/obj/item/stack/telecrystal_raw,
+		/obj/item/organ/monster_core/regenerative_core/legion,
+		/obj/item/stack/glacial_core,
+		// Eligibility only: suit-vendor rows still need reward-design inputs.
+		/obj/item/mod/construction/broken_core,
+		/obj/item/mod/control/pre_equipped,
+		/obj/item/mod/module/springlock,
+		/obj/item/mod/module/visor/rave,
+		/obj/item/mod/module/balloon,
+		/obj/item/mod/module/stamp,
+	)
+	return item_type in eligible_types
+
+/// Fail closed on unsupported types or incomplete request rows.
+/datum/outpost_shop/proc/get_procurement_requests()
+	var/list/eligible_requests = list()
+	for(var/list/request as anything in mission_requests)
+		if(!islist(request) || !is_outpost_procurement_type(request["type"]))
+			continue
+		if(!istext(request["name"]) || !length(request["name"]))
+			continue
+		var/amount = request["amount"]
+		if(!isnum(amount) || amount < 1 || amount != round(amount))
+			continue
+		if(!(request["difficulty"] in list(MISSION_DIFFICULTY_EASY, MISSION_DIFFICULTY_MEDIUM, MISSION_DIFFICULTY_HARD)))
+			continue
+		if(ispath(request["type"], /obj/item/stack))
+			var/obj/item/stack/stack_type = request["type"]
+			if(amount > initial(stack_type.max_amount))
+				continue
+		eligible_requests += list(request)
+	return eligible_requests
+
+/// Procurement validates the configured ask again when goods are handed over.
+/datum/mission_objective/deliver/procurement
+
+/datum/mission_objective/deliver/procurement/matches_ask(obj/item/item)
+	if(QDELETED(item) || !is_outpost_procurement_type(required_type) || !..())
+		return FALSE
+	if(istype(item, /obj/item/mod/control/pre_equipped))
+		var/obj/item/mod/control/pre_equipped/control = item
+		return isnull(control.wearer)
+	// A loot module's descendants may be manufactured or have different sources.
+	if(istype(item, /obj/item/mod/module))
+		return item.type == required_type
+	return TRUE
+
+/datum/mission_objective/deliver/procurement/can_turn_in(obj/item/item)
+	if(completed || !matches_ask(item))
+		return FALSE
+	return ..()
+
+/datum/mission_objective/deliver/procurement/accept_item(obj/item/item, atom/reward_anchor)
+	if(!can_turn_in(item))
+		return MISSION_ITEM_REFUSED
+	// The parent forgets the quest atom before consuming stacks or loose goods.
+	return ..()
+
 /**
  * # Outpost Supply Mission
  *
@@ -58,17 +125,18 @@
 
 /// Rolls the ask off the shop's request table. Override for themed asks.
 /datum/mission/outpost_supply/proc/pick_request()
-	var/list/request = length(shop.mission_requests) ? pick(shop.mission_requests) : null
+	var/list/eligible_requests = shop.get_procurement_requests()
+	var/list/request = length(eligible_requests) ? pick(eligible_requests) : null
 	if(!request)
 		generation_failed = TRUE
 		return
 	required_type = request["type"]
 	required_name = request["name"]
-	required_amount = request["amount"] || 1
-	difficulty = request["difficulty"] || MISSION_DIFFICULTY_MEDIUM
+	required_amount = request["amount"]
+	difficulty = request["difficulty"]
 
 /datum/mission/outpost_supply/build_objectives()
-	var/datum/mission_objective/deliver/ask = new
+	var/datum/mission_objective/deliver/procurement/ask = new
 	ask.required_type = required_type
 	ask.required_name = required_name
 	ask.required_amount = required_amount
@@ -76,10 +144,8 @@
 
 /datum/mission/outpost_supply/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
-	var/datum/mission_objective/deliver/ask = objectives[1]
 	name = "Supply Request: [item_text]"
-	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader.[ask.get_delivery_instructions()] \
-		Pays [get_contract_pay_summary()], straight off the shelf."
+	desc = "[author] wants [item_text]."
 
 /**
  * # Angler's Request
@@ -123,8 +189,7 @@
 /datum/mission/outpost_supply/angler/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Angler's Request: [item_text]"
-	desc = "[author] wants [item_text]. Any species is accepted, alive or dead. \
-		Hand in each fish separately at any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
+	desc = "[author] wants [item_text]."
 
 /**
  * # Kitchen Order
@@ -177,17 +242,8 @@
 
 /datum/mission/outpost_supply/cook/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
-	var/obj/item/food/example_dish = /obj/item/food/pizza/mushroom
-	switch(min_complexity)
-		if(FOOD_COMPLEXITY_3)
-			example_dish = /obj/item/food/pizza/donkpocket
-		if(FOOD_COMPLEXITY_4)
-			example_dish = /obj/item/food/pizza/pineapple
 	name = "Kitchen Order: [item_text]"
-	desc = "[author] at the diner is buying [item_text], cooked or crafted by a player. \
-		Each dish needs recipe complexity [min_complexity] or higher; a player-made [initial(example_dish.name)] qualifies. \
-		Factory food and meals bought from the outpost diner do not qualify. \
-		Hand in each dish separately at any outpost trader or your own mission pad. Pays [get_contract_pay_summary()], off the shelf."
+	desc = "[author] at the diner wants [item_text]."
 
 // ===== OFFER MANAGEMENT (lives on the outpost) =====
 
@@ -206,11 +262,13 @@
 		/datum/mission/recovery/outpost = 20,
 		/datum/mission/outpost_courier = 15,
 	)
-	var/list/mix = offer_mix
+	var/list/mix = offer_mix.Copy()
 	if(length(shop.extra_offer_mix))
-		mix = offer_mix.Copy()
 		for(var/offer_type in shop.extra_offer_mix)
 			mix[offer_type] = shop.extra_offer_mix[offer_type]
+	var/has_procurement = length(shop.get_procurement_requests()) > 0
+	if(!has_procurement)
+		mix -= /datum/mission/outpost_supply
 	// Prune offers that died on the board (e.g. their pinned target vanished
 	// before anyone accepted) so they don't hold a slot or count against caps
 	for(var/datum/mission/posted as anything in shop_offers.Copy())
@@ -218,9 +276,9 @@
 			shop_offers -= posted
 	var/safety = 12
 	while(length(shop_offers) < OUTPOST_SHOP_OFFER_COUNT && safety-- > 0)
-		// Always keep at least one plain supply request on the board
+		// Keep a plain supply request on the board only when its pool is eligible.
 		var/offer_type = /datum/mission/outpost_supply
-		if(has_posted_offer_type(/datum/mission/outpost_supply))
+		if(!has_procurement || has_posted_offer_type(/datum/mission/outpost_supply))
 			offer_type = pick_weight(mix)
 		// Capped types (drug runs) count live missions AND posted offers; the
 		// ship-board roll enforces this in SSmissions, boards must match
