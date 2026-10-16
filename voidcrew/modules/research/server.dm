@@ -49,6 +49,19 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	///Installed source code files that hosts our research.
 	var/obj/item/computer_disk/ship_disk/source_code_hdd
 
+/// Resolve the source server's current site, never a consumer's crew or a disk snapshot.
+/obj/machinery/rnd/server/ship/proc/get_research_crew_record()
+	var/obj/structure/overmap/site = get_research_service_site(src)
+	if(istype(site, /obj/structure/overmap/ship))
+		var/obj/structure/overmap/ship/ship = site
+		return ship.get_crew_record()
+	if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
+		var/obj/structure/overmap/dynamic/player_outpost/home = site
+		// The round roster survives cryo/mind replacement and changes on explicit departure.
+		if(home.founder_ckey)
+			return GLOB.voidcrew_crew_roster[ckey(home.founder_ckey)]
+	return null
+
 /obj/machinery/rnd/server/ship/Initialize(mapload)
 	. = ..()
 	QDEL_NULL(stored_research)
@@ -255,7 +268,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	victim_web.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = stolen))
 	new /obj/item/research_notes(loc, stolen, "thievery")
 	record_research_stolen(thief, stolen) // round metrics, voidcrew/modules/metrics/research_metrics.dm
-	balloon_alert(thief, "siphoned [stolen] points!")
+	balloon_alert(thief, "research siphoned!")
 
 #undef RESEARCH_STOLEN_PER_THEFT
 
@@ -265,7 +278,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  */
 /obj/item/computer_disk/ship_disk
 	name = "R&D server source code"
-	desc = "This drive stores research for a ship or outpost. Insert it into an R&D server, then use a multitool to link local research equipment."
+	desc = "A hard drive containing research records."
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research

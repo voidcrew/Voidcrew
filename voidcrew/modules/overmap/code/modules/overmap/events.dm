@@ -642,6 +642,11 @@ GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 		/datum/gas/plasma = 55,
 		/datum/gas/nitrogen = 30,
 		/datum/gas/water_vapor = 15,
+		/datum/gas/miasma = 1,
+		/datum/gas/tritium = 1,
+		/datum/gas/pluoxium = 1,
+		/datum/gas/nitrium = 1,
+		/datum/gas/hypernoblium = 1,
 	),
 	"[ZONE_YELLOW]" = list(
 		/datum/gas/plasma = 40,
@@ -661,7 +666,7 @@ GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 ))
 
 /// Moles per second a rating-1 ram scoop pulls from a nebula of each gas.
-/// The precious stuff comes slower on top of already being red-band-only
+/// The precious stuff comes slower as well as being rarer in the safer bands.
 GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 	/datum/gas/plasma = 8,
 	/datum/gas/nitrogen = 8,
@@ -739,7 +744,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 
 /obj/structure/overmap/event/nebula/get_hazard_note()
 	if((GLOB.nebula_gas_radioactivity[gas_type] || 0) > 0)
-		return "Radioactive nebula: irradiates the crew unless protected by an active nebula shielder."
+		return "Radioactive gas."
 	return null
 
 /// Display name of the carried gas, for survey readouts and examine

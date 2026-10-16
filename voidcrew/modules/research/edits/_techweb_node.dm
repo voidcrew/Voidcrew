@@ -1,4 +1,6 @@
 /datum/techweb_node
+	/// Standing required for direct research only; imported knowledge remains usable.
+	var/zone_permission = ZONE_PERMISSION_PUBLIC
 	// list(
 	// 	nebulas = 0,
 	// 	asteroids = 0,
