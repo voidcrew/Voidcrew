@@ -62,6 +62,15 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"aj" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_west_yard";
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/floor,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
 "ak" = (
 /obj/effect/landmark/outpost_elevator_alcove,
 /obj/effect/turf_decal/stripes/line{
@@ -251,6 +260,19 @@
 /obj/structure/closet/crate,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"aI" = (
+/obj/machinery/door/airlock/outpost/checkpoint{
+	checkpoint_id = "quartermain_west_yard";
+	dir = 4;
+	name = "West Yard Gate"
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
 "aJ" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 1
@@ -284,6 +306,18 @@
 	dir = 8
 	},
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aM" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_west_yard";
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/thinplating_new,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible,
 /area/voidcrew/trader_outpost)
 "aN" = (
 /obj/effect/turf_decal/stripes,
@@ -339,6 +373,14 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aS" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_elevator";
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes,
+/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "aT" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -402,6 +444,59 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"ba" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/door/airlock/outpost/checkpoint{
+	checkpoint_id = "quartermain_elevator";
+	dir = 2;
+	name = "Hangar Elevator"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"bb" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_elevator";
+	dir = 2
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"bc" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_east_yard";
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"bd" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/door/airlock/outpost/checkpoint{
+	checkpoint_id = "quartermain_east_yard";
+	dir = 4;
+	name = "East Yard Gate"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"be" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "quartermain_east_yard";
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/floor,
+/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "bf" = (
 /obj/structure/closet/wardrobe/mixed,
@@ -4289,7 +4384,7 @@ aV
 aV
 aV
 dU
-ZV
+aj
 dU
 aV
 aV
@@ -4331,7 +4426,7 @@ dU
 dU
 dU
 dU
-aR
+aI
 dU
 lE
 lE
@@ -4373,7 +4468,7 @@ lw
 NJ
 lE
 dP
-aP
+aM
 HH
 HF
 HF
@@ -4434,9 +4529,9 @@ aq
 KA
 ly
 ly
-iT
-LQ
-aw
+aS
+ba
+bb
 at
 as
 dU
@@ -5277,7 +5372,7 @@ pA
 zN
 Cm
 Yo
-xZ
+bc
 WU
 dU
 aV
@@ -5319,7 +5414,7 @@ dU
 dU
 dU
 dU
-bO
+bd
 dU
 dU
 aV
@@ -5361,7 +5456,7 @@ aV
 aV
 aV
 dU
-ZV
+be
 dU
 aV
 aV

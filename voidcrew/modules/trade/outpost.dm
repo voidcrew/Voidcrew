@@ -209,6 +209,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	)
 	if(!top_right)
 		return
+	var/list/obj/machinery/door/airlock/outpost/checkpoint/checkpoint_doors = list()
+	var/list/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/checkpoint_scanners = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
@@ -230,6 +232,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = src
+				if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint))
+					checkpoint_doors += door
+			else if(istype(machine, /obj/machinery/scanner_gate/preset_guns/outpost_checkpoint))
+				checkpoint_scanners += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
 				panel.outpost = src
@@ -244,6 +250,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/obj/fixture in interior_turf)
 			if(ismachinery(fixture) || isstructure(fixture))
 				fixture.AddElement(/datum/element/outpost_property)
+	// Only machines collected from this concourse reservation can form a circuit.
+	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in checkpoint_doors)
+		for(var/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner as anything in checkpoint_scanners)
+			if(door.checkpoint_id && door.checkpoint_id == scanner.checkpoint_id)
+				door.link_scanner(scanner)
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
 	// yet, dressing the appearance dummy that early is unsafe, so those
