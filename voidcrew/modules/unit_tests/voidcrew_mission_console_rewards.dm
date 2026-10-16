@@ -56,6 +56,9 @@
 
 /datum/unit_test/voidcrew_m2_rewards/proc/test_ship()
 	var/obj/structure/overmap/ship/m2_rewards_test/ship = allocate(/obj/structure/overmap/ship/m2_rewards_test)
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	allocated += ship.get_crew_record()
 	ship.ship_account = allocate(/datum/bank_account)
 	return ship
 
@@ -415,6 +418,7 @@
 	mission.add_objective(hunt)
 	mission.add_objective(new /datum/mission_objective/deliver/bound/proof)
 	TEST_ASSERT(mission.start_mission(ship), "Rewind hunt did not start")
+	var/datum/mission_work_receipt/receipt = mission.work_receipt
 	var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/boss = hunt.target_mob
 	TEST_ASSERT_NOTNULL(boss, "Rewind fixture did not spawn its boss")
 	boss.death(FALSE)
@@ -429,10 +433,12 @@
 		target.interior_loaded = TRUE
 		mission.on_target_interior_loaded()
 		TEST_ASSERT(mission.can_turn_in(mission.quest_atom), "Rewind lost proof recovery")
+		TEST_ASSERT_EQUAL(mission.work_receipt, receipt, "Rewind replaced the progression receipt")
 		TEST_ASSERT_NULL(hunt.target_mob, "Completed kill respawned a boss")
 	TEST_ASSERT_EQUAL(length(run_loc_floor_top_right.get_all_contents_type(/obj/item/holochip)), 1, "Rewind or revival issued another boss chip")
 	var/before = ship.ship_account.account_balance
 	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, mission.quest_atom), "Recovered proof did not settle")
+	TEST_ASSERT(receipt.claimed && receipt.credited == 1, "Recovered proof did not claim exactly one green contribution")
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance - before, 600, "Recovered proof paid the wrong fee")
 	TEST_ASSERT_EQUAL(ship.prize_rolls, 1, "Recovered proof must make exactly one completion roll")
 	TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Repeated proof settlement succeeded")

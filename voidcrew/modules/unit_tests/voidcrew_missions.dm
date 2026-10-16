@@ -537,6 +537,9 @@
 /datum/mission_target/kill_rewind_test/resolve()
 	return TRUE
 
+/datum/mission_target/kill_rewind_test/get_zone_type()
+	return 1 // ZONE_GREEN: lifecycle fixtures still need an identified work band.
+
 /datum/mission_target/kill_rewind_test/is_interior_loaded()
 	return interior_loaded
 
@@ -569,6 +572,7 @@
 	mission.servant = allocate(/obj/structure/overmap/ship)
 	mission.servant.ship_account = allocate(/datum/bank_account)
 	mission.active = TRUE
+	mission.quote_zone = 1 // ZONE_GREEN
 	mission.requires_item = TRUE
 	mission.objective_name = "Old Testbeard"
 	var/datum/mission_target/kill_rewind_test/target = allocate(__IMPLIED_TYPE__, mission)

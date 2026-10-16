@@ -268,6 +268,9 @@
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Physical settlement", null, 1, FALSE)
 	ship.ship_account = account
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	allocated += ship.get_crew_record()
 	TEST_ASSERT(mission.start_mission(ship), "The physical settlement could not start")
 	var/cash = mission.value
 	var/vouchers = mission.voucher_count
