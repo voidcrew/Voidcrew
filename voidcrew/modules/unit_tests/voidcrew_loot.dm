@@ -44,6 +44,7 @@
 				TEST_FAIL("[theme_path] has an empty [table_name] table")
 				continue
 			for(var/entry in table)
+				TEST_ASSERT(!ispath(entry, /obj/item/blueprint/gun), "[theme_path].[table_name] still drops a gun schematic: [entry]")
 				if(!ispath(entry, /atom/movable))
 					TEST_FAIL("[theme_path].[table_name] entry [entry] is not an /atom/movable path")
 				var/weight = table[entry]
@@ -60,6 +61,21 @@
 		for(var/sku in theme.theme_skus)
 			if(!ispath(sku, /datum/shop_sku))
 				TEST_FAIL("[theme_path].theme_skus entry [sku] is not a shop SKU")
+			else
+				var/datum/shop_sku/sku_path = sku
+				TEST_ASSERT(!ispath(initial(sku_path.item_path), /obj/item/blueprint/gun), "[theme_path] still references a gun schematic SKU: [sku]")
+
+	for(var/list/table as anything in list(GLOB.abandoned_crate_common, GLOB.abandoned_crate_uncommon, GLOB.abandoned_crate_prime))
+		for(var/entry in table)
+			TEST_ASSERT(!ispath(entry, /obj/item/blueprint/gun), "Freight still drops a gun schematic: [entry]")
+	var/datum/loot_theme/syndicate/syndicate = GLOB.loot_themes[/datum/loot_theme/syndicate]
+	var/datum/loot_theme/plunder/plunder = GLOB.loot_themes[/datum/loot_theme/plunder]
+	var/datum/loot_theme/research/research = GLOB.loot_themes[/datum/loot_theme/research]
+	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/automatic/c20r/unrestricted], "Schematic removal also removed the finished C-20r")
+	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/automatic/l6_saw/unrestricted], "Schematic removal also removed the finished L6")
+	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/rifle/sniper_rifle], "Schematic removal also removed the finished sniper rifle")
+	TEST_ASSERT(plunder.loot_prime[/obj/item/gun/ballistic/shotgun/bulldog/unrestricted], "Schematic removal also removed the finished Bulldog")
+	TEST_ASSERT(research.loot_prime[/obj/item/gun/energy/laser/carbine], "Schematic removal also removed the finished laser carbine")
 
 	// every crate subtype must point at a registered theme
 	for(var/obj/structure/closet/crate/zone_loot/crate_path as anything in subtypesof(/obj/structure/closet/crate/zone_loot))
@@ -242,3 +258,167 @@
 	for(var/area/area_path as anything in warded)
 		if(!initial(area_path.repels_megafauna))
 			TEST_FAIL("[area_path] does not set repels_megafauna. A megafauna that reaches it can stay there for the rest of the round")
+
+/// Control when the real resolver starts, including after moving the machine.
+/obj/machinery/suit_storage_unit/ruin_zone/stock_test/LateInitialize()
+	return
+
+/datum/unit_test/voidcrew_ruin_suit_stock/Run()
+	var/list/expected = list(
+		/obj/item/mod/control/pre_equipped/standard,
+		/obj/item/mod/control/pre_equipped/civilian,
+		/obj/item/mod/control/pre_equipped/engineering,
+		/obj/item/mod/control/pre_equipped/atmospheric,
+		/obj/item/mod/control/pre_equipped/mining,
+		/obj/item/mod/control/pre_equipped/medical,
+	)
+	TEST_ASSERT_EQUAL(length(GLOB.base_tier_modsuits), 6, "Base-tier allowlist changed")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
+	for(var/suit_path in expected)
+		TEST_ASSERT(suit_path in GLOB.base_tier_modsuits, "Base-tier allowlist lost [suit_path]")
+		TEST_ASSERT_NULL(GLOB.base_tier_modsuits[suit_path], "Base-tier selection must be uniform")
+		var/obj/item/mod/control/suit = allocate(suit_path)
+		TEST_ASSERT(suit.allowed(user), "Base reward [suit_path] is access-locked")
+	var/obj/machinery/suit_storage_unit/base_tier/base = allocate(/obj/machinery/suit_storage_unit/base_tier)
+	TEST_ASSERT(base.mod?.type in expected, "Base unit did not select its suit before parent initialization")
+	TEST_ASSERT_EQUAL(base.mod.loc, base, "Base unit did not stock its selected suit")
+
+	var/before_loose = 0
+	for(var/obj/item/mod/control/suit in run_loc_floor_top_right)
+		before_loose++
+	new /obj/effect/spawner/random/modsuit/base_tier(run_loc_floor_top_right)
+	var/after_loose = 0
+	for(var/obj/item/mod/control/suit in run_loc_floor_top_right)
+		after_loose++
+		TEST_ASSERT(suit.type in expected, "Loose spawner selected a suit outside the allowlist")
+	TEST_ASSERT_EQUAL(after_loose, before_loose + 1, "Loose spawner did not pay exactly one suit")
+	TEST_ASSERT_EQUAL(length(GLOB.base_tier_modsuits), 6, "Loose spawner mutated the shared allowlist")
+	for(var/suit_path in expected)
+		TEST_ASSERT_NULL(GLOB.base_tier_modsuits[suit_path], "Loose spawner changed shared weights")
+
+	// Literals 1/2/3 are ZONE_GREEN/YELLOW/RED, defined after unit-test includes.
+	for(var/zone in list(1, 2, 3))
+		var/turf/spawn_turf = SSovermap.get_unused_overmap_square_in_zone_band(zone)
+		TEST_ASSERT_NOTNULL(spawn_turf, "No test square in zone [zone]")
+		var/obj/machinery/suit_storage_unit/ruin_zone/stock_test/unit = allocate(/obj/machinery/suit_storage_unit/ruin_zone/stock_test, spawn_turf)
+		TEST_ASSERT_NULL(unit.mod, "Ruin unit stocked before resolution")
+		unit.state_open = TRUE
+		TEST_ASSERT(!unit.check_interactable(user), "Unresolved unit permits retrieval")
+		TEST_ASSERT_EQUAL(unit.stock_spawn_turf, spawn_turf, "Unit did not pin its spawn turf")
+		unit.forceMove(run_loc_floor_bottom_left)
+		new /datum/zone_resolver(unit.stock_spawn_turf, CALLBACK(unit, TYPE_PROC_REF(/obj/machinery/suit_storage_unit/ruin_zone, stock_for_zone)))
+		TEST_ASSERT(unit.stock_consumed, "Resolver did not complete stock resolution")
+		if(zone == 1)
+			TEST_ASSERT(unit.mod?.type in expected, "Moved green unit did not retain base-tier stock")
+		else
+			var/expected_type = zone == 2 ? /obj/item/mod/control/pre_equipped/security : /obj/item/mod/control/pre_equipped/nuclear/unrestricted
+			TEST_ASSERT_EQUAL(unit.mod?.type, expected_type, "Moved unit changed suit tier")
+		TEST_ASSERT(unit.check_interactable(user) && unit.access_check(user), "Resolved unit blocks retrieval")
+		TEST_ASSERT(unit.mod.allowed(user), "Zone [zone] suit is access-locked")
+		var/obj/item/mod/control/reward = unit.mod
+		unit.stock_for_zone(3)
+		TEST_ASSERT_EQUAL(unit.mod, reward, "Repeated callback created another suit")
+		unit.dump_inventory_contents()
+		unit.stock_for_zone(3)
+		TEST_ASSERT_NULL(unit.mod, "Retrieving the suit allowed replenishment")
+
+	var/obj/machinery/suit_storage_unit/ruin_zone/stock_test/fallback = allocate(/obj/machinery/suit_storage_unit/ruin_zone/stock_test)
+	fallback.stock_for_zone(null)
+	TEST_ASSERT(fallback.mod?.type in expected, "Unresolved zone did not fall back to base-tier stock")
+
+/// A real yielding creation window exercises the registry's claim.
+/datum/ruin_chart_site/concurrency_test
+	var/creations = 0
+
+/datum/ruin_chart_site/concurrency_test/create_site(spawn_zone)
+	creations++
+	sleep(2)
+	return ..()
+
+/datum/unit_test/voidcrew_named_chart_registry
+	var/list/saved_registry
+	var/obj/structure/overmap/space_ruin/created_site
+
+/datum/unit_test/voidcrew_named_chart_registry/Destroy()
+	if(!QDELETED(created_site))
+		qdel(created_site)
+	if(saved_registry)
+		for(var/template_path in GLOB.ruin_chart_sites.Copy())
+			qdel(GLOB.ruin_chart_sites[template_path])
+		GLOB.ruin_chart_sites = saved_registry
+	return ..()
+
+/datum/unit_test/voidcrew_named_chart_registry/Run()
+	saved_registry = GLOB.ruin_chart_sites
+	GLOB.ruin_chart_sites = list()
+	var/template_path = /datum/map_template/ruin/space/rare/hospice
+	var/datum/ruin_chart_site/concurrency_test/entry = new(template_path)
+	GLOB.ruin_chart_sites[template_path] = entry
+	var/obj/structure/overmap/ship/first_ship = allocate(/obj/structure/overmap/ship)
+	var/obj/structure/overmap/ship/second_ship = allocate(/obj/structure/overmap/ship)
+	var/datum/rumor_chart/first = allocate(/datum/rumor_chart)
+	var/datum/rumor_chart/second = allocate(/datum/rumor_chart)
+	first.ruin_template_path = template_path
+	second.ruin_template_path = template_path
+	first.spawn_zone = 1 // ZONE_GREEN
+	second.spawn_zone = 1
+	first_ship.add_pending_rumor(first)
+	second_ship.add_pending_rumor(second)
+	INVOKE_ASYNC(first_ship, TYPE_PROC_REF(/obj/structure/overmap/ship, reveal_pending_rumor), first)
+	TEST_ASSERT(entry.claimed, "Creation yielded without claiming its template")
+	TEST_ASSERT_NULL(second_ship.reveal_pending_rumor(second), "Competing reveal created a second site")
+	TEST_ASSERT(!second.revealed && (second in second_ship.pending_rumors), "Competing reveal consumed its chart")
+	sleep(3)
+	created_site = entry.site_ref?.resolve()
+	TEST_ASSERT_NOTNULL(created_site, "Claimed reveal did not finish")
+	created_site.visited = TRUE
+	TEST_ASSERT_EQUAL(second_ship.reveal_pending_rumor(second), created_site, "Retry failed to chart the registered site")
+	TEST_ASSERT_EQUAL(entry.creations, 1, "Concurrent charts created more than one site")
+	qdel(first_ship)
+	TEST_ASSERT_EQUAL(get_ruin_chart_site(template_path), entry, "Ship deletion lost the round-wide registry")
+
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
+	buyer.mind_initialize()
+	allocated += buyer.mind
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = second_ship
+	buyer.mind.ship_teams = list(team)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart refund test", null, 1, FALSE)
+	account.account_balance = 20000
+	var/obj/item/card/id/advanced/id = allocate(/obj/item/card/id/advanced)
+	qdel(id.registered_account)
+	id.registered_account = account
+	TEST_ASSERT(buyer.put_in_hands(id), "Buyer cannot hold their ID")
+	var/obj/item/stack/trade_voucher/vouchers = allocate(/obj/item/stack/trade_voucher, buyer, 10)
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	shop.add_sku(/datum/shop_sku/ruin_chart/biolab, "rotating")
+	var/datum/shop_sku/ruin_chart/sku = shop.skus[1]
+	sku.ruin_template_path = template_path
+	sku.stock = 2
+	var/price = sku.get_credit_price(buyer)
+	var/voucher_price = sku.price_vouchers
+	TEST_ASSERT(sku.try_purchase(buyer, null), "Live registered site refused a purchase")
+	var/datum/rumor_chart/revealed_copy = second_ship.pending_rumors[1]
+	TEST_ASSERT_EQUAL(second_ship.reveal_pending_rumor(revealed_copy), created_site, "Paid chart did not reuse the visited site")
+	TEST_ASSERT(sku.try_purchase(buyer, null), "Pending refund purchase failed")
+	var/datum/rumor_chart/pending = second_ship.pending_rumors[1]
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - 2 * price, "Purchase charged the wrong credits")
+	TEST_ASSERT_EQUAL(vouchers.amount, 10 - 2 * voucher_price, "Purchase charged the wrong vouchers")
+	// Refund the actual bill, even after shelf prices change.
+	sku.price_credits *= 2
+	sku.price_vouchers *= 2
+	qdel(created_site)
+	TEST_ASSERT(entry.retired && isnull(entry.site_ref), "Deleted site did not leave a tombstone")
+	TEST_ASSERT(QDELETED(pending) && !length(second_ship.pending_rumors), "Retired site retained a paid pending chart")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "Retirement did not refund exactly the pending credit bill")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - voucher_price, "Retirement did not refund exactly the pending voucher bill")
+	sku.stock = 1
+	TEST_ASSERT(sku.get_denial_reason(buyer), "Retired site has no purchase denial")
+	TEST_ASSERT(!sku.try_purchase(buyer, null), "Retired site allowed another purchase")
+	TEST_ASSERT_EQUAL(sku.stock, 1, "Refused purchase consumed stock")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "Refused purchase charged credits")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - voucher_price, "Refused purchase charged vouchers")
+	TEST_ASSERT_NULL(entry.get_or_create(1), "Retired template created another vault")
+	TEST_ASSERT_EQUAL(entry.creations, 1, "Tombstone allowed another creation")
+	buyer.mind.ship_teams = null
+	team.ship = null
