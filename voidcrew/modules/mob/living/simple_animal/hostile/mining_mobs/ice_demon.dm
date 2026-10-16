@@ -1,6 +1,7 @@
 /mob/living/basic/mining/ice_demon/random/Initialize()
 	. = ..()
-	if(prob(15))
+	var/datum/npc_spawn_context/context = GLOB.npc_zone_construction_context
+	if(context?.zone_type == ZONE_RED && prob(15))
 		new /mob/living/simple_animal/hostile/asteroid/old_demon(loc)
 		return INITIALIZE_HINT_QDEL
 

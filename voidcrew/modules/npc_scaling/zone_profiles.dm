@@ -18,6 +18,7 @@
 	/// Weak references include replacements; discarded precursors are skipped.
 	var/list/bodies = list()
 	var/datum/zone_resolver/resolver
+	var/suppress_gun_loot = FALSE
 
 /datum/npc_spawn_context/New(datum/source, zone_type, role = "auto", exempt = FALSE, turf/source_turf)
 	var/atom/source_atom = isatom(source) ? source : null
@@ -27,6 +28,7 @@
 	src.source_turf = inherited ? inherited.source_turf : (source_turf || get_turf(source_atom))
 	src.zone_type = isnull(zone_type) ? inherited?.zone_type : zone_type
 	src.role = role
+	suppress_gun_loot = inherited?.suppress_gun_loot || (source_atom && (source_atom.flags_1 & ADMIN_SPAWNED_1))
 	src.exempt = exempt || role == "exempt" || source_atom?.npc_zone_exempt || inherited?.exempt
 	if(isliving(source))
 		var/mob/living/owner = source
@@ -56,6 +58,7 @@
 	zone_type = isnull(resolved_zone) ? ZONE_GREEN : resolved_zone
 	for(var/datum/weakref/body_ref as anything in bodies)
 		var/mob/living/body = body_ref.resolve()
+		body?.apply_npc_weapon_ladder()
 		if(body?.npc_zone_ready)
 			body.finalize_npc_zone()
 
@@ -65,6 +68,9 @@
 	for(var/datum/weakref/body_ref as anything in bodies)
 		var/mob/living/body = body_ref.resolve()
 		if(!QDELETED(body))
+			// Conjure marks every surviving summon before its finalization request.
+			if(body.flags_1 & ADMIN_SPAWNED_1)
+				suppress_gun_loot = TRUE
 			body.finalize_npc_zone(src)
 
 /atom
@@ -151,6 +157,7 @@
 	npc_zone_ready = TRUE
 	if(!npc_zone_initialization_complete)
 		return
+	apply_npc_weapon_ladder()
 	if(is_npc_zone_exempt())
 		exempt_npc_zone()
 		return

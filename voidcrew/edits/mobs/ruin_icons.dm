@@ -6,6 +6,7 @@
 		/obj/effect/decal/remains/human,
 		/obj/item/clothing/suit/chaplainsuit/armor/templar,
 		/obj/item/clothing/head/helmet/chaplain,
+		/obj/item/hatchet,
 	)
 
 /mob/living/basic/skeleton/plasmaminer
