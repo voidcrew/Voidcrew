@@ -16,6 +16,20 @@
 
 /datum/loot_theme/industrial
 	name = "industrial"
+	gun_chance = LOOT_GUN_CHANCE_INDUSTRIAL
+	gun_pool = LOOT_GUN_POOL_ARMORY
+	gun_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/automatic/proto/unrestricted = 1,
+			/obj/item/gun/energy/ionrifle = 1,
+			/obj/item/gun/energy/ionrifle/carbine = 1,
+		),
+	)
+	melee_extras = list(
+		LOOT_WEAPON_RED = list(
+			/obj/item/cyberware_pair_case/gorilla_arms = 1,
+		),
+	)
 	guard_themes = list(/obj/effect/zone_mobs/robot, /obj/effect/zone_mobs/robot/boss)
 	theme_skus = list(
 		/datum/shop_sku/skunk/capacitor,
@@ -39,8 +53,6 @@
 		/obj/item/stock_parts/matter_bin/adv = 6,
 		/obj/item/storage/toolbox/mechanical = 5,
 		/obj/item/weldingtool/largetank = 5,
-		// the line's own prototype SMG, never finished, still fires
-		/obj/item/gun/ballistic/automatic/proto/unrestricted = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 	)
@@ -54,9 +66,6 @@
 		/obj/item/stock_parts/matter_bin/super = 6,
 		/obj/item/stock_parts/power_store/cell/super = 5,
 		/obj/item/storage/part_replacer = 4,
-		// asset-denial kit, and the answer to this theme's own hivebot
-		// guards: ion weapons wreck automation
-		/obj/item/gun/energy/ionrifle/carbine = 6,
 		/obj/item/circuitboard/machine/autolathe = 4,
 		/obj/item/flamethrower/full = 3,
 		/obj/item/stack/sheet/mineral/gold/fifty = 3,
@@ -75,14 +84,11 @@
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/stack/sheet/mineral/diamond/five = 6,
 		/obj/item/stock_parts/power_store/cell/hyper = 5,
-		/obj/item/gun/energy/ionrifle = 6,
 		/obj/item/stack/sheet/bluespace_crystal = 4,
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
-		// hot-work and heavy-lift chrome: a body-wide coolant loop, and the
-		// cased myomer arm pair (both halves, one per arm)
+		// Hot-work chrome: a body-wide coolant loop.
 		/obj/item/organ/cyberimp/cyberware/coolant = 3,
-		/obj/item/cyberware_pair_case/gorilla_arms = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

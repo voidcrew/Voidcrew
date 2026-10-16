@@ -71,11 +71,15 @@
 	var/datum/loot_theme/syndicate/syndicate = GLOB.loot_themes[/datum/loot_theme/syndicate]
 	var/datum/loot_theme/plunder/plunder = GLOB.loot_themes[/datum/loot_theme/plunder]
 	var/datum/loot_theme/research/research = GLOB.loot_themes[/datum/loot_theme/research]
-	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/automatic/c20r/unrestricted], "Schematic removal also removed the finished C-20r")
-	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/automatic/l6_saw/unrestricted], "Schematic removal also removed the finished L6")
-	TEST_ASSERT(syndicate.loot_prime[/obj/item/gun/ballistic/rifle/sniper_rifle], "Schematic removal also removed the finished sniper rifle")
-	TEST_ASSERT(plunder.loot_prime[/obj/item/gun/ballistic/shotgun/bulldog/unrestricted], "Schematic removal also removed the finished Bulldog")
-	TEST_ASSERT(research.loot_prime[/obj/item/gun/energy/laser/carbine], "Schematic removal also removed the finished laser carbine")
+	var/list/weapons = syndicate.get_weapon_pool(TRUE, "2") // LOOT_WEAPON_YELLOW
+	TEST_ASSERT(weapons[/obj/item/gun/ballistic/automatic/c20r/unrestricted], "Schematic removal also removed the finished C-20r")
+	weapons = syndicate.get_weapon_pool(TRUE, "3") // LOOT_WEAPON_RED
+	TEST_ASSERT(weapons[/obj/item/gun/ballistic/automatic/l6_saw/unrestricted], "Schematic removal also removed the finished L6")
+	TEST_ASSERT(weapons[/obj/item/gun/ballistic/rifle/sniper_rifle], "Schematic removal also removed the finished sniper rifle")
+	weapons = plunder.get_weapon_pool(TRUE, "3")
+	TEST_ASSERT(weapons[/obj/item/gun/ballistic/shotgun/bulldog/unrestricted], "Schematic removal also removed the finished Bulldog")
+	weapons = research.get_weapon_pool(TRUE, "3")
+	TEST_ASSERT(weapons[/obj/item/gun/energy/laser/carbine], "Schematic removal also removed the finished laser carbine")
 
 	// every crate subtype must point at a registered theme
 	for(var/obj/structure/closet/crate/zone_loot/crate_path as anything in subtypesof(/obj/structure/closet/crate/zone_loot))
@@ -241,6 +245,210 @@
 			TEST_FAIL("[map_path] (rumor chart [chart_path]) has no /boss marker or hand-placed setpiece. A bought ruin must be defended")
 
 #undef VOIDCREW_RUIN_MAP_ROOT
+
+/// Enumerate the Bernoulli and conditional class rolls; no statistical tolerance.
+/datum/unit_test/voidcrew_cache_weapon_odds/Run()
+	// Zone and weapon-class literals compile before Voidcrew's defines.
+	var/list/chances = list(
+		/datum/loot_theme/armory = list(12, 32, 55),
+		/datum/loot_theme/syndicate = list(6, 18, 36),
+		/datum/loot_theme/plunder = list(6, 18, 36),
+		/datum/loot_theme/expedition = list(4, 12, 24),
+		/datum/loot_theme/industrial = list(2, 6, 12),
+		/datum/loot_theme/medical = list(1, 4, 8),
+		/datum/loot_theme/research = list(2, 8, 18),
+		/datum/loot_theme/occult = list(2, 6, 12),
+		/datum/loot_theme/wardrobe = list(2, 6, 12),
+	)
+	var/list/freight_chances = list(8, 19, 33)
+	for(var/theme_path in chances)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		var/list/expected = chances[theme_path]
+		for(var/zone in list(1, 2, 3))
+			TEST_ASSERT_EQUAL(get_cache_gun_chance(zone, theme), expected[zone], "[theme_path] gun chance changed in zone [zone]")
+			TEST_ASSERT_EQUAL(get_cache_gun_chance(zone, theme, TRUE), freight_chances[zone], "Purchased cache did not use freight odds")
+			for(var/freight in list(FALSE, TRUE))
+				var/guns = 0
+				for(var/roll in 1 to 100)
+					var/weapon = select_cache_weapon(zone, theme, freight, roll, 1)
+					TEST_ASSERT_NOTNULL(weapon, "Weapon roll paid nothing")
+					if(ispath(weapon, /obj/item/gun))
+						guns++
+				TEST_ASSERT_EQUAL(guns, freight ? freight_chances[zone] : expected[zone], "[theme_path] has the wrong per-cache gun probability")
+		TEST_ASSERT_EQUAL(get_cache_gun_chance(null, theme), expected[1], "Unresolved cache did not fall back to green")
+
+	var/list/gun_classes = list(list(940, 59, 1), list(450, 540, 10), list(150, 350, 500))
+	var/list/melee_classes = list(list(900, 99, 1), list(350, 640, 10), list(100, 450, 450))
+	for(var/gun in list(FALSE, TRUE))
+		for(var/zone in list(1, 2, 3))
+			var/list/counts = list("1" = 0, "2" = 0, "3" = 0)
+			for(var/roll in 1 to 1000)
+				counts[get_cache_weapon_class(zone, gun, roll)]++
+			var/list/expected = gun ? gun_classes[zone] : melee_classes[zone]
+			for(var/class in list("1", "2", "3"))
+				TEST_ASSERT_EQUAL(counts[class], expected[text2num(class)], "Conditional weapon class [class] changed in zone [zone], gun=[gun]")
+	TEST_ASSERT_EQUAL(get_cache_weapon_class(null, TRUE, 941), "2", "Unresolved class roll did not use green odds")
+
+/// A working copy may be consumed without damaging another crate's singleton tables.
+/datum/unit_test/voidcrew_cache_weapon_pools/Run()
+	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 2, 2), "freight" = list(4, 3))
+	for(var/family in main_counts)
+		var/list/counts = main_counts[family]
+		var/list/classes = GLOB.loot_gun_pools[family]
+		TEST_ASSERT_EQUAL(length(classes), length(counts), "Main gun family gained an unexpected class")
+		for(var/class in classes)
+			var/list/pool = classes[class]
+			TEST_ASSERT_EQUAL(length(pool), counts[text2num(class)], "Main gun class changed size")
+			for(var/entry in pool)
+				TEST_ASSERT_EQUAL(pool[entry], 10, "Main gun class is not uniform")
+	var/list/melee_counts = list(4, 6, 6)
+	for(var/class in GLOB.loot_melee_pools)
+		var/list/pool = GLOB.loot_melee_pools[class]
+		TEST_ASSERT_EQUAL(length(pool), melee_counts[text2num(class)], "Main melee class changed size")
+		for(var/entry in pool)
+			TEST_ASSERT_EQUAL(pool[entry], 10, "Main melee class is not uniform")
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/gun in list(FALSE, TRUE))
+			for(var/class in list("1", "2", "3"))
+				var/list/pool = theme.get_weapon_pool(gun, class)
+				TEST_ASSERT(length(pool), "[theme_path] lost weapon class [class], gun=[gun]")
+				var/list/snapshot = pool.Copy()
+				for(var/entry in pool)
+					TEST_ASSERT(ispath(entry, /obj/item), "Weapon pool contains a non-item: [entry]")
+					TEST_ASSERT(pool[entry] == 10 || pool[entry] == 1, "Weapon [entry] has an unexpected weight")
+				pool.Cut()
+				pool = theme.get_weapon_pool(gun, class)
+				TEST_ASSERT_EQUAL(length(pool), length(snapshot), "Consuming a working pool changed the singleton")
+				for(var/entry in snapshot)
+					TEST_ASSERT_EQUAL(pool[entry], snapshot[entry], "Consuming a working pool changed [entry]'s weight")
+				var/list/freight_pool = theme.get_weapon_pool(gun, class, TRUE)
+				var/list/freight_main = get_cache_weapon_pool(gun, class, "freight")
+				TEST_ASSERT_EQUAL(length(freight_pool), length(freight_main), "Freight inherited weapon extras")
+				for(var/entry in freight_pool)
+					TEST_ASSERT_EQUAL(freight_pool[entry], freight_main[entry], "Freight inherited a themed weapon")
+					TEST_ASSERT(!ispath(entry, /obj/item/organ) && !ispath(entry, /obj/item/cyberware_pair_case), "Freight paid weapon chrome")
+	var/list/yellow = get_cache_weapon_pool(TRUE, "2", "freight")
+	var/list/red = get_cache_weapon_pool(TRUE, "3", "freight")
+	TEST_ASSERT_EQUAL(length(yellow), 3, "Freight ordinary gun pool changed")
+	TEST_ASSERT_EQUAL(length(red), length(yellow), "Freight did not substitute ordinary guns for advanced guns")
+	for(var/entry in yellow)
+		TEST_ASSERT_EQUAL(red[entry], yellow[entry], "Freight advanced-class substitution changed [entry]")
+
+/datum/unit_test/voidcrew_cache_weapon_population
+	var/datum/loot_theme/saved_theme
+
+/datum/unit_test/voidcrew_cache_weapon_population/Destroy()
+	if(saved_theme)
+		GLOB.loot_themes[/datum/loot_theme/armory] = saved_theme
+	return ..()
+
+/datum/unit_test/voidcrew_cache_weapon_population/Run()
+	saved_theme = GLOB.loot_themes[/datum/loot_theme/armory]
+	var/datum/loot_theme/armory/test_theme = allocate(/datum/loot_theme/armory)
+	// Freight's main guns all have one boxed reload. The test controls the
+	// Bernoulli outcome while retaining the real cache population path.
+	test_theme.gun_pool = "freight"
+	test_theme.gun_extras = null
+	test_theme.melee_extras = null
+	GLOB.loot_themes[/datum/loot_theme/armory] = test_theme
+	var/list/minimums = list(2, 3, 4)
+	var/list/maximums = list(3, 4, 5)
+	for(var/gun in list(FALSE, TRUE))
+		test_theme.gun_chance = gun ? list(100, 100, 100) : list(0, 0, 0)
+		for(var/zone in list(1, 2, 3))
+			for(var/bonus in list(0, 2))
+				var/obj/structure/closet/crate/zone_loot/cache = allocate(bonus ? /obj/structure/closet/crate/zone_loot/syndicate/reinforced : /obj/structure/closet/crate/zone_loot/armory)
+				cache.theme = /datum/loot_theme/armory
+				cache.loot_zone = zone
+				cache.PopulateContents()
+				var/weapons = 0
+				for(var/obj/item/item in cache)
+					if(istype(item, /obj/item/gun) && !istype(item, /obj/item/gun/energy/disabler))
+						weapons++
+					else if(item.type in GLOB.loot_melee_pools["1"] || item.type in GLOB.loot_melee_pools["2"] || item.type in GLOB.loot_melee_pools["3"])
+						weapons++
+				TEST_ASSERT_EQUAL(weapons, 1, "Cache did not pay exactly one weapon, bonus=[bonus]")
+				var/prizes = length(cache.contents) - (gun ? 1 : 0)
+				TEST_ASSERT(prizes >= minimums[zone] + bonus && prizes <= maximums[zone] + bonus, "Weapon roll changed the cache's draw count")
+				var/list/contents = cache.contents.Copy()
+				cache.PopulateContents()
+				TEST_ASSERT_EQUAL(length(cache.contents), length(contents), "Repeated population paid again")
+				for(var/atom/movable/item as anything in contents)
+					qdel(item)
+				cache.dump_contents()
+				cache.PopulateContents()
+				TEST_ASSERT_EQUAL(length(cache.contents), 0, "Emptying a cache allowed replenishment")
+
+	var/turf/origin = SSovermap.get_unused_overmap_square_in_zone_band(1)
+	var/turf/destination = SSovermap.get_unused_overmap_square_in_zone_band(3)
+	TEST_ASSERT(origin && destination, "Missing overmap test squares")
+	var/obj/structure/closet/crate/zone_loot/armory/moved = allocate(/obj/structure/closet/crate/zone_loot/armory, origin)
+	moved.forceMove(destination)
+	moved.PopulateContents()
+	TEST_ASSERT_EQUAL(moved.loot_zone, 1, "Moving a cache upgraded its spawn band")
+
+/// All three bought caches must be stamped before their first opening.
+/datum/unit_test/voidcrew_purchased_cache_weapons/Run()
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
+	for(var/sku_path in list(/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare))
+		var/datum/shop_sku/sku = allocate(sku_path)
+		var/obj/structure/closet/crate/zone_loot/cache = sku.dispense(buyer, null)
+		allocated += cache
+		TEST_ASSERT(cache.freight_weapons, "[sku_path] dispensed guarded weapon odds over the counter")
+		TEST_ASSERT(!cache.loot_consumed && !cache.contents_initialized, "Bought cache populated before freight rules were applied")
+		TEST_ASSERT_EQUAL(cache.theme, /datum/loot_theme/syndicate, "Bought cache lost its themed nonweapon supplies")
+		TEST_ASSERT_EQUAL(cache.bonus_draws, sku_path == /datum/shop_sku/black_market/mystery_cache_rare ? 2 : 0, "Bought cache lost its bonus draws")
+
+/// Every ballistic outcome has a usable reload, including retained specialist guns.
+/datum/unit_test/voidcrew_cache_weapon_ammunition/Run()
+	var/list/weapons = list()
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/class in list("1", "2", "3"))
+			weapons |= theme.get_weapon_pool(TRUE, class)
+	for(var/weapon_path in weapons)
+		if(!ispath(weapon_path, /obj/item/gun/ballistic))
+			continue
+		var/obj/structure/closet/crate/box = allocate(/obj/structure/closet/crate)
+		var/obj/item/gun/ballistic/gun = spawn_loot_prize(box, weapon_path)
+		TEST_ASSERT(!istype(gun.pin, /obj/item/firing_pin/implant), "Loot gun [weapon_path] requires an implant")
+		var/obj/item/ammo_box/magazine/magazine_path = gun.accepted_magazine_type
+		var/has_reload = FALSE
+		var/list/spares = box.get_all_contents() - gun.get_all_contents()
+		for(var/obj/item/ammo_casing/casing in spares)
+			if(casing.caliber == initial(magazine_path.caliber))
+				has_reload = TRUE
+		// Boxes may store rounds as paths until first accessed.
+		for(var/obj/item/ammo_box/ammo in spares)
+			var/obj/item/ammo_casing/casing_path = ammo.ammo_type
+			if(initial(casing_path.caliber) == initial(magazine_path.caliber) && length(ammo.stored_ammo))
+				has_reload = TRUE
+		TEST_ASSERT(has_reload, "Loot gun [weapon_path] has no compatible spare reload")
+
+/// Contraband and low-zone guards cannot bypass the ladder.
+/datum/unit_test/voidcrew_loot_weapon_bypasses/Run()
+	var/list/before = run_loc_floor_top_right.contents.Copy()
+	var/obj/effect/spawner/random/contraband/armory/spawner = new(run_loc_floor_top_right)
+	var/list/green_melee = GLOB.loot_melee_pools["1"]
+	TEST_ASSERT_EQUAL(length(spawner.loot), 4, "Contraband armory is no longer uniform green melee")
+	for(var/entry in spawner.loot)
+		TEST_ASSERT(entry in green_melee, "Contraband bypass pays [entry]")
+		TEST_ASSERT_EQUAL(spawner.loot[entry], 1, "Contraband green melee is not uniform")
+	var/spawned = 0
+	for(var/obj/item/item in run_loc_floor_top_right.contents - before)
+		allocated += item
+		spawned++
+		TEST_ASSERT(item.type in green_melee, "Contraband spawned a weapon outside green melee")
+	TEST_ASSERT_EQUAL(spawned, 1, "Contraband did not pay exactly one green melee weapon")
+	for(var/marker_path in list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss))
+		var/obj/effect/zone_mobs/marker = new marker_path()
+		TEST_ASSERT_EQUAL(length(marker.mobs_green), 1, "Green syndicate pool still includes sword guards")
+		TEST_ASSERT(marker.mobs_green[/mob/living/basic/trooper/syndicate/melee], "Green syndicate guards lost their knives")
+		for(var/entry in marker.mobs_yellow)
+			TEST_ASSERT(!ispath(entry, /mob/living/basic/trooper/syndicate/ranged/smg) && !ispath(entry, /mob/living/basic/trooper/syndicate/ranged/shotgun), "Yellow syndicate guard has an advanced ranged weapon")
+		TEST_ASSERT(marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg] || marker.mobs_red[/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper], "Red syndicate pool lost its SMG guards")
+		qdel(marker)
 
 /**
  * # Outpost megafauna ban
@@ -426,3 +634,194 @@
 	TEST_ASSERT_EQUAL(entry.creations, 1, "Tombstone allowed another creation")
 	buyer.mind.ship_teams = null
 	team.ship = null
+
+/// Every retained path stays in its catalog class, including themed chrome and uniques.
+/datum/unit_test/voidcrew_cache_weapon_classes/Run()
+	var/list/expected = list(
+		"1" = list(
+			/obj/item/bambostaff,
+			/obj/item/gun/ballistic/automatic/pistol,
+			/obj/item/gun/ballistic/automatic/pistol/m1911,
+			/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
+			/obj/item/gun/ballistic/automatic/pistol/no_mag,
+			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/automatic/toy,
+			/obj/item/gun/ballistic/bow,
+			/obj/item/gun/ballistic/revolver/c38,
+			/obj/item/gun/ballistic/revolver/c38/detective,
+			/obj/item/gun/ballistic/revolver/nagant,
+			/obj/item/gun/ballistic/revolver/russian,
+			/obj/item/gun/ballistic/revolver/russian/soul,
+			/obj/item/gun/ballistic/rifle/boltaction/pipegun,
+			/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
+			/obj/item/gun/ballistic/rifle/boltaction/surplus,
+			/obj/item/gun/ballistic/shotgun/doublebarrel,
+			/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
+			/obj/item/gun/ballistic/shotgun/doublebarrel/slugs,
+			/obj/item/gun/ballistic/shotgun/musket,
+			/obj/item/gun/ballistic/shotgun/toy,
+			/obj/item/gun/ballistic/shotgun/toy/crossbow,
+			/obj/item/hatchet,
+			/obj/item/knife/combat/bone,
+			/obj/item/knife/combat/survival,
+			/obj/item/knife/envy,
+			/obj/item/lead_pipe,
+			/obj/item/melee/baseball_bat,
+			/obj/item/spear,
+			/obj/item/spear/bamboospear,
+			/obj/item/spear/bonespear,
+			/obj/item/spear/military,
+			/obj/item/storage/case/cyberware/scrapper,
+			/obj/item/tailclub,
+		),
+		"2" = list(
+			/obj/item/chainsaw,
+			/obj/item/claymore/cutlass/old,
+			/obj/item/claymore/shortsword,
+			/obj/item/claymore/weak,
+			/obj/item/crowbar/large/twenty_force,
+			/obj/item/fireaxe,
+			/obj/item/fireaxe/boardingaxe,
+			/obj/item/fireaxe/boneaxe,
+			/obj/item/gun/ballistic/automatic/ar,
+			/obj/item/gun/ballistic/automatic/c20r/unrestricted,
+			/obj/item/gun/ballistic/automatic/mini_uzi,
+			/obj/item/gun/ballistic/automatic/pistol/aps,
+			/obj/item/gun/ballistic/automatic/pistol/deagle,
+			/obj/item/gun/ballistic/automatic/pistol/deagle/camo,
+			/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
+			/obj/item/gun/ballistic/automatic/proto/unrestricted,
+			/obj/item/gun/ballistic/automatic/smartgun,
+			/obj/item/gun/ballistic/automatic/tommygun,
+			/obj/item/gun/ballistic/automatic/wt550,
+			/obj/item/gun/ballistic/revolver,
+			/obj/item/gun/ballistic/revolver/c38/housecall,
+			/obj/item/gun/ballistic/revolver/golden,
+			/obj/item/gun/ballistic/revolver/mateba,
+			/obj/item/gun/ballistic/rifle/boltaction,
+			/obj/item/gun/ballistic/rifle/boltaction/donkrifle,
+			/obj/item/gun/ballistic/rifle/boltaction/pipegun/prime,
+			/obj/item/gun/ballistic/rifle/boltaction/prime,
+			/obj/item/gun/ballistic/rifle/rebarxbow/forced,
+			/obj/item/gun/ballistic/shotgun,
+			/obj/item/gun/ballistic/shotgun/lethal,
+			/obj/item/gun/ballistic/shotgun/musket/no_quarter,
+			/obj/item/gun/ballistic/shotgun/riot,
+			/obj/item/gun/energy/e_gun,
+			/obj/item/gun/energy/e_gun/dragnet,
+			/obj/item/gun/energy/e_gun/mini,
+			/obj/item/gun/energy/e_gun/old,
+			/obj/item/gun/energy/ionrifle,
+			/obj/item/gun/energy/ionrifle/carbine,
+			/obj/item/gun/energy/laser,
+			/obj/item/gun/energy/laser/luxurypaywall,
+			/obj/item/gun/energy/laser/retro,
+			/obj/item/gun/energy/laser/retro/old,
+			/obj/item/gun/magic/hook/marlinspike,
+			/obj/item/gun/syringe/rapidsyringe,
+			/obj/item/gun/syringe/syndicate,
+			/obj/item/kinetic_crusher,
+			/obj/item/knife/combat,
+			/obj/item/melee/baseball_bat/ablative,
+			/obj/item/melee/cleric_mace,
+			/obj/item/melee/parsnip_sabre,
+			/obj/item/melee/sabre,
+			/obj/item/nullrod/claymore,
+			/obj/item/nullrod/claymore/chainsaw_sword,
+			/obj/item/nullrod/claymore/darkblade,
+			/obj/item/nullrod/claymore/glowing,
+			/obj/item/nullrod/claymore/katana,
+			/obj/item/nullrod/claymore/multiverse,
+			/obj/item/nullrod/claymore/saber,
+			/obj/item/nullrod/claymore/saber/pirate,
+			/obj/item/nullrod/claymore/saber/red,
+			/obj/item/nullrod/hypertool,
+			/obj/item/nullrod/vibro,
+			/obj/item/nullrod/vibro/spellblade,
+			/obj/item/nullrod/vibro/talking,
+			/obj/item/pen/edagger,
+			/obj/item/shield/buckler,
+			/obj/item/shield/buckler/parmula,
+			/obj/item/shield/kite,
+			/obj/item/shield/riot,
+			/obj/item/shield/riot/phalanx_buckler,
+			/obj/item/shield/riot/tele,
+			/obj/item/shield/roman,
+			/obj/item/shovel/serrated,
+			/obj/item/spear/grey_tide,
+			/obj/item/switchblade,
+		),
+		"3" = list(
+			/obj/item/claymore,
+			/obj/item/claymore/cutlass,
+			/obj/item/claymore/cutlass/parley,
+			/obj/item/clothing/gloves/knock_knock,
+			/obj/item/cursed_katana,
+			/obj/item/cyberware_pair_case/gorilla_arms,
+			/obj/item/cyberware_pair_case/mantis_blades,
+			/obj/item/energy_katana,
+			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
+			/obj/item/gun/ballistic/automatic/m90/unrestricted,
+			/obj/item/gun/ballistic/rifle/sniper_rifle,
+			/obj/item/gun/ballistic/shotgun/automatic/combat,
+			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
+			/obj/item/gun/energy/e_gun/hos,
+			/obj/item/gun/energy/e_gun/nuclear,
+			/obj/item/gun/energy/event_horizon,
+			/obj/item/gun/energy/laser/carbine,
+			/obj/item/gun/energy/laser/carbine/cybersun/unrestricted,
+			/obj/item/gun/energy/laser/hellgun,
+			/obj/item/gun/energy/laser/scatter,
+			/obj/item/gun/energy/lasercannon/unrestricted,
+			/obj/item/gun/energy/recharge/ebow,
+			/obj/item/gun/energy/temperature/unrestricted,
+			/obj/item/gun/energy/xray,
+			/obj/item/heave_ho,
+			/obj/item/house_edge,
+			/obj/item/katana,
+			/obj/item/knife/bloodletter,
+			/obj/item/knife/understudy,
+			/obj/item/melee/energy/sword/pirate,
+			/obj/item/melee/energy/sword/saber,
+			/obj/item/melee/energy/sword/saber/blue,
+			/obj/item/melee/energy/sword/saber/purple,
+			/obj/item/melee/energy/sword/saber/red,
+			/obj/item/melee/greykingsword,
+			/obj/item/mjollnir,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
+			/obj/item/shield/energy,
+			/obj/item/singularityhammer,
+			/obj/item/storage/toolbox/mechanical/old/clean,
+			/obj/item/veilrender,
+			/obj/item/veilrender/honkrender,
+			/obj/item/veilrender/vealrender,
+		),
+	)
+	var/list/all_weapons = list()
+	for(var/class in expected)
+		all_weapons += expected[class]
+	var/list/seen = list()
+	var/list/utility_guns = list(
+		/obj/item/gun/energy/disabler,
+		/obj/item/gun/energy/recharge/kinetic_accelerator,
+		/obj/item/gun/energy/plasmacutter,
+		/obj/item/gun/energy/plasmacutter/adv,
+	)
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		for(var/gun in list(FALSE, TRUE))
+			for(var/class in expected)
+				var/list/pool = theme.get_weapon_pool(gun, class)
+				for(var/entry in pool)
+					TEST_ASSERT(entry in expected[class], "[theme_path] weapon [entry] is outside catalog class [class]")
+					seen |= entry
+		for(var/list/pool as anything in list(theme.loot_common, theme.loot_uncommon, theme.loot_prime, theme.loot_uniques))
+			for(var/entry in pool)
+				TEST_ASSERT(!(entry in all_weapons), "[theme_path] can pay an extra weapon from its nonweapon draws: [entry]")
+				if(ispath(entry, /obj/item/gun))
+					TEST_ASSERT(entry in utility_guns, "[theme_path] bypasses its weapon roll with [entry]")
+				TEST_ASSERT(entry != /obj/item/his_grace, "His Grace remains in ordinary cache loot")
+	for(var/entry in all_weapons)
+		TEST_ASSERT(entry in seen, "Retained weapon [entry] lost its guarded cache source")

@@ -1,59 +1,24 @@
 /**
- * # Loot themes
+ * Each theme owns four nonweapon tiers plus retained weapon variants.
+ * A cache replaces one draw with the shared gun-or-melee selector. The
+ * spawn zone changes draw counts and odds; every weapon class remains
+ * reachable everywhere. Utility tools and control gear keep their sources.
  *
- * One datum per loot theme (armory, plunder, ...), owning everything the
- * theme hands out and everything defending it: the four tier tables
- * consumed by /obj/structure/closet/crate/zone_loot (zone_loot.dm), plus,
- * by file colocation, the theme's crate subtype and the guard-marker
- * subtypes (/obj/effect/zone_mobs) that watch over it.
- *
- * A theme is ONE pool split by how good the item is, not by where you are.
- * Overmap zone never selects a table. It only decides how many draws a
- * cache gets and how the odds lean across the four tiers (see zone_loot.dm).
- * Every band can reach every tier; deep space just reaches the top of it far
- * more often. This mirrors how zones already scale planet ore, fauna and
- * weather (voidcrew/_DEFINES/overmap_zones.dm): amounts and odds, not kinds.
- *
- * Why a datum instead of vars on the crate subtype (the old shape): the
- * cache weights are hand-tuned against outpost shop prices ("the gamble
- * channel and the certainty channel stay on one curve") and against the
- * theme's own guard tables. Keeping tables, guards and the SKU
- * cross-reference list in one file per theme makes that curve a same-screen
- * edit instead of a comment maintained across three files, and gives the
- * loot audit unit test (code/modules/unit_tests/voidcrew_loot.dm) a single
- * registry to walk.
- *
- * CYBERWARE (2026-08-05): the parlor roster rides these tables the same way
- * the gun blueprints do. The shop is the certainty channel, the caches are
- * the gamble channel, and both sit on one curve. Chrome enters at the tier
- * that matches what Splice charges for it
- * (voidcrew/modules/cyberware/ripperdoc_catalog.dm):
- * - Street chrome (400-2000cr) -> common / uncommon
- * - Pro chrome (2800-3600cr, 1-2 vouchers) -> uncommon / prime
- * - Military chrome (2-4 vouchers) -> the long tail of prime, weight 2-3
- * Two exclusions, both deliberate: Legend chrome (Cascade, Redline, Governor
- * Delete) is the authored chase and is always on Splice's shelf, and the
- * Piledriver is the black market's contract-only reward, neither drops. The
- * Skyhook Wrist is the mirror of that: it has no SKU anywhere, so a cache is
- * the only place it exists (expedition prime).
- *
- * A found piece is not a worn piece. Chrome still installs only at a Chrome
- * Cradle or through organ-manipulation surgery, and it still costs capacity,
- * so a cache pays the hardware and never the seat in the chair.
- *
- * HARD RULE (design): no megafauna anywhere in the zone system, not in
- * guard tables, not as bosses, never as generic cache guards in new maps.
- * Megafauna (including this fork's /mob/living/basic/boss tier, see
- * ismegafauna()) belong to planet apex spawns and to the handful of
- * purpose-built boss-arena ruins enumerated in the unit test's whitelist
- * (blood-drunk shrines, the hierophant arena, the wendigo cave, ...).
- * "Harder versions of normal mobs" (elites, ancients, captains) are the
- * ceiling everywhere else; the unit test enforces this for the tables and
- * for every shipped ruin .dmm.
+ * Weapon extras have weight one against weight ten per main entry. Chrome
+ * weapons belong here too; other implants remain in the nonweapon tiers.
+ * Guards stay colocated with their theme. Megafauna never enter these
+ * guard tables: only the purpose-built arena ruins may place them.
  */
 /datum/loot_theme
 	/// Debug/audit label
 	var/name
+	/// Per-container gun percentages, indexed by ZONE_GREEN/YELLOW/RED.
+	var/list/gun_chance
+	/// Main gun family; each class also accepts the theme's retained variants.
+	var/gun_pool = LOOT_GUN_POOL_ARMORY
+	/// Class -> weighted extra weapon paths, separate from all nonweapon draws.
+	var/list/gun_extras
+	var/list/melee_extras
 	/// Weighted tier tables (typepath -> weight). Bread and butter; what a
 	/// cache pays most of the time in any band.
 	var/list/loot_common
@@ -74,6 +39,10 @@
 	/// weight change and a price change happen on the same screen, and so the
 	/// audit unit test can walk the curve.
 	var/list/theme_skus
+
+/// Returns a disposable pool. Freight never inherits themed weapon extras.
+/datum/loot_theme/proc/get_weapon_pool(gun, weapon_class, freight = FALSE)
+	return get_cache_weapon_pool(gun, weapon_class, freight ? LOOT_GUN_POOL_FREIGHT : gun_pool, freight ? null : (gun ? gun_extras : melee_extras))
 
 /// theme typepath -> singleton instance; built once at world init
 GLOBAL_LIST_INIT(loot_themes, init_loot_themes())
