@@ -41,8 +41,8 @@
 
 /**
  * Weighted table of anomaly types a planet may seed, in three rarity bands that match
- * the price bands Boffin sells their cores and charts in. Whether a planet gets one at
- * all is a per-zone roll (ZONE_PLANET_ANOMALY_CHANCE_*, see planet_anomaly_chance()).
+ * the price bands Boffin sells their cores and charts in. The per-zone natural count
+ * is set by ZONE_PLANET_ANOMALY_BUDGET_* in PlanetGenerator.dm.
  */
 GLOBAL_LIST_INIT(voidcrew_planet_anomalies, list(
 	// Common
@@ -58,15 +58,6 @@ GLOBAL_LIST_INIT(voidcrew_planet_anomalies, list(
 	/obj/effect/anomaly/bluespace/planetary = 5,
 	/obj/effect/anomaly/bhole/planetary = 5,
 ))
-
-/// Percent chance a planet in `zone_band` seeds its one anomaly
-/proc/planet_anomaly_chance(zone_band)
-	switch(zone_band)
-		if(ZONE_YELLOW)
-			return ZONE_PLANET_ANOMALY_CHANCE_YELLOW
-		if(ZONE_RED)
-			return ZONE_PLANET_ANOMALY_CHANCE_RED
-	return ZONE_PLANET_ANOMALY_CHANCE_GREEN
 
 /obj/effect/anomaly
 	/// Whether this anomaly is leashed to the site it formed on (see anomaly_site_leash)
