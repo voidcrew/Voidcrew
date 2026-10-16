@@ -36,6 +36,7 @@
 	categories = list(
 		"Armor",
 		"Firearms & Ammo",
+		"Melee",
 		"Ship Systems",
 		"Ship Ordnance",
 		"Security Gear",
@@ -59,14 +60,19 @@
 		/datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/energy_gun,
 		/datum/shop_sku/outfitter/laser_gun,
-		/datum/shop_sku/outfitter/double_barrel,
 		/datum/shop_sku/outfitter/rubbershot,
 		/datum/shop_sku/outfitter/lethalshot,
-		/datum/shop_sku/outfitter/boltaction,
 		/datum/shop_sku/outfitter/rifle_clip,
 		/datum/shop_sku/outfitter/smg_mag,
 		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/firing_pin,
+		/datum/shop_sku/outfitter/riot_shotgun,
+		// Melee
+		/datum/shop_sku/outfitter/combat_knife,
+		/datum/shop_sku/outfitter/shortsword,
+		/datum/shop_sku/outfitter/ablative_bat,
+		/datum/shop_sku/outfitter/fireaxe,
+		/datum/shop_sku/outfitter/sabre,
 		// Ship Systems
 		/datum/shop_sku/outfitter/engine_plasma,
 		/datum/shop_sku/outfitter/engine_expulsion,
@@ -79,8 +85,6 @@
 		/datum/shop_sku/outfitter/warhead_standard,
 		/datum/shop_sku/outfitter/missile_light,
 		// Security Gear
-		/datum/shop_sku/outfitter/seclite,
-		/datum/shop_sku/outfitter/flash,
 		/datum/shop_sku/outfitter/security_belt,
 		/datum/shop_sku/outfitter/pepper_spray,
 		/datum/shop_sku/outfitter/riot_shield,
@@ -97,8 +101,6 @@
 		/datum/shop_sku/outfitter/hot_sauce,
 		// Utility
 		/datum/shop_sku/outfitter/gas_mask,
-		/datum/shop_sku/outfitter/jaws,
-		/datum/shop_sku/outfitter/magboots,
 		// Hull Stock
 		/datum/shop_sku/outfitter/plasteel_stock,
 		/datum/shop_sku/outfitter/iron_stock,
@@ -143,8 +145,6 @@
 	)
 	rare_pool = list(
 		/datum/shop_sku/outfitter/rare/ablative_vest,
-		/datum/shop_sku/outfitter/rare/compact_defib,
-		/datum/shop_sku/outfitter/rare/ion_rifle,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
 	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
@@ -249,28 +249,30 @@
 	price_credits = 400
 	stock_min = 1
 	stock_max = 3
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/energy_gun
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/e_gun
 	price_vouchers = 0
-	price_credits = 1500
+	price_credits = 2400
 	stock_min = 1
-	stock_max = 2
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/laser_gun
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/laser
-	price_credits = 600
+	price_credits = 1500
 	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/outfitter/double_barrel
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/ballistic/shotgun/doublebarrel
-	price_credits = 900
-	stock_min = 1
-	stock_max = 2
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/rubbershot
 	category = "Firearms & Ammo"
@@ -285,13 +287,6 @@
 	price_credits = 280
 	stock_min = 10
 	stock_max = 20
-
-/datum/shop_sku/outfitter/boltaction
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/ballistic/rifle/boltaction
-	price_credits = 900
-	stock_min = 1
-	stock_max = 2
 
 /datum/shop_sku/outfitter/rifle_clip
 	category = "Firearms & Ammo"
@@ -416,16 +411,6 @@
 
 // ===== SECURITY GEAR =====
 
-/datum/shop_sku/outfitter/seclite
-	category = "Security Gear"
-	item_path = /obj/item/flashlight/seclite
-	price_credits = 450
-
-/datum/shop_sku/outfitter/flash
-	category = "Security Gear"
-	item_path = /obj/item/assembly/flash/handheld
-	price_credits = 750
-
 /datum/shop_sku/outfitter/security_belt
 	category = "Security Gear"
 	item_path = /obj/item/storage/belt/security/full
@@ -527,22 +512,6 @@
 	category = "Utility"
 	item_path = /obj/item/clothing/mask/gas
 	price_credits = 200
-
-/datum/shop_sku/outfitter/jaws
-	category = "Utility"
-	name = "jaws of life"
-	item_path = /obj/item/crowbar/power
-	price_vouchers = 1
-	price_credits = 750
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/outfitter/magboots
-	category = "Utility"
-	item_path = /obj/item/clothing/shoes/magboots
-	price_credits = 1200
-	stock_min = 1
-	stock_max = 2
 
 // ===== HULL STOCK =====
 // Bulk repair material for crews who can't mine or can't wait. Sold by the
@@ -664,12 +633,6 @@
 	item_path = /obj/item/defibrillator/compact
 	price_credits = 2400
 
-/datum/shop_sku/outfitter/rare/ion_rifle
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/energy/ionrifle
-	price_vouchers = 2
-	price_credits = 3000
-
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
 	name = "heavy missile (armed)"
@@ -758,3 +721,55 @@
 	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
 	price_credits = 3800
 	price_vouchers = 2
+/datum/shop_sku/outfitter/riot_shotgun
+	category = "Firearms & Ammo"
+	item_path = /obj/item/gun/ballistic/shotgun/riot
+	price_credits = 1800
+	price_vouchers = 0
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+// ===== MELEE =====
+
+/datum/shop_sku/outfitter/combat_knife
+	category = "Melee"
+	item_path = /obj/item/knife/combat
+	price_credits = 900
+	price_vouchers = 0
+	stock_min = 3
+	stock_max = 3
+
+/datum/shop_sku/outfitter/shortsword
+	category = "Melee"
+	item_path = /obj/item/claymore/shortsword
+	price_credits = 1200
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/ablative_bat
+	category = "Melee"
+	item_path = /obj/item/melee/baseball_bat/ablative
+	price_credits = 1000
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/fireaxe
+	category = "Melee"
+	item_path = /obj/item/fireaxe
+	price_credits = 1500
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/sabre
+	category = "Melee"
+	item_path = /obj/item/melee/sabre
+	price_credits = 1800
+	price_vouchers = 0
+	stock_min = 1
+	stock_max = 1

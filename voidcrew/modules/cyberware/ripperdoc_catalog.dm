@@ -3,10 +3,8 @@
  *
  * The Undertow's chrome parlor: a vendor stall (own stock, own voice, own
  * ledger) fronted by Splice, who sits behind the counter in the neon annex off
- * the Dregs. He sells cyberware and nothing else, the whole roster, tiered up
- * the voucher ladder, with the flagships always on the shelf so the chase is
- * plannable. Ammunition for the arm weapons is parlor-only: the return-visit
- * hook.
+ * the Dregs. He sells utility chrome, limited melee implants and ammunition
+ * for salvaged gun arms.
  *
  * Balance shape mirrors Vex's counter: credits buy the street and pro-utility
  * ware, vouchers gate everything that changes how you fight. Splice's intake
@@ -92,11 +90,9 @@
 		/datum/shop_sku/ripperdoc/atlas,
 		/datum/shop_sku/ripperdoc/gorilla,
 		/datum/shop_sku/ripperdoc/monowire,
-		/datum/shop_sku/ripperdoc/ronin,
 		/datum/shop_sku/ripperdoc/rigger,
 		/datum/shop_sku/ripperdoc/slabskin,
 		/datum/shop_sku/ripperdoc/mantis,
-		/datum/shop_sku/ripperdoc/bunker_buster,
 		/datum/shop_sku/ripperdoc/ghostskin,
 		/datum/shop_sku/ripperdoc/lazarus,
 		// ---- Legend Chrome (the chase, always listed) ----
@@ -334,20 +330,35 @@
 /datum/shop_sku/ripperdoc/gorilla
 	category = "Military Chrome"
 	name = "Gorilla Arms (pair)"
-	desc = "A pair of chrome forearms that punch through people, doors, and rock in that order. Sold cased; install one side at a time."
+	desc = "A cased pair of heavy chrome forearms."
 	item_path = /obj/item/cyberware_pair_case/gorilla_arms
 	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/monowire
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire
 	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/ronin
 	category = "Military Chrome"
-	desc = "A submachine gun that folds into your forearm. Feeds a proprietary caliber only I sell. See the Ammunition shelf. Nobody is disarming you of it."
+	desc = "A submachine gun folded into a chrome forearm."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	price_vouchers = 3
+	stock_min = 0
+	stock_max = 0
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/rigger
 	category = "Military Chrome"
@@ -363,15 +374,25 @@
 /datum/shop_sku/ripperdoc/mantis
 	category = "Military Chrome"
 	name = "Mantis Blades (pair)"
-	desc = "A pair of folded blades where your forearms were. The lunge is the selling point; the reaction you get is free. Sold cased, install one side at a time."
+	desc = "A cased pair of folding forearm blades."
 	item_path = /obj/item/cyberware_pair_case/mantis_blades
 	price_vouchers = 4
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/bunker_buster
 	category = "Military Chrome"
-	desc = "A two-shot rocket pod built into the forearm. Reloads are parlor-only. See the Ammunition shelf. Shaped charge, so it won't open your hull. Or theirs. Just whoever's standing in it."
+	desc = "A rocket pod built into a chrome forearm."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	price_vouchers = 4
+	stock_min = 0
+	stock_max = 0
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/ghostskin
 	category = "Military Chrome"
