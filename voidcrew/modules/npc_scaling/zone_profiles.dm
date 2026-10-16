@@ -45,8 +45,12 @@
 	if(!isnull(zone_type))
 		return
 	resolver = new /datum/zone_resolver(source_turf, CALLBACK(src, PROC_REF(on_zone_resolved)))
+	// A synchronous callback runs before the constructor's result is assigned.
+	if(!isnull(zone_type))
+		resolver = null
 
 /datum/npc_spawn_context/proc/on_zone_resolved(resolved_zone)
+	resolver = null
 	if(!isnull(zone_type))
 		return
 	zone_type = isnull(resolved_zone) ? ZONE_GREEN : resolved_zone
@@ -120,7 +124,17 @@
 
 /// Environmental auto gate: passive fauna and mobs without autonomous AI stay baseline.
 /mob/living/proc/is_npc_zone_hostile()
-	return ishostile(src) || (isbasicmob(src) && ai_controller && combat_mode)
+	if(ishostile(src))
+		return TRUE
+	if(!isbasicmob(src) || !ai_controller)
+		return FALSE
+	if(combat_mode)
+		return TRUE
+	// Autonomous target acquisition does not depend on the pawn's combat stance.
+	for(var/datum/ai_planning_subtree/simple_find_target/targeting in ai_controller.planning_subtrees)
+		if(targeting.target_key == BB_BASIC_MOB_CURRENT_TARGET)
+			return TRUE
+	return FALSE
 
 /mob/living/proc/is_npc_zone_exempt()
 	return npc_zone_exempt || npc_spawn_context?.exempt || client || mind || (FACTION_NEUTRAL in faction)

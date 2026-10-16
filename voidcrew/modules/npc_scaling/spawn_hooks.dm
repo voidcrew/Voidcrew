@@ -81,3 +81,13 @@ GLOBAL_VAR(npc_zone_construction_context)
 	SIGNAL_HANDLER
 	if(friend && (friend.client || friend.mind || friend.npc_zone_exempt))
 		source.exempt_npc_zone()
+
+// Replace upstream's bare constructor so the regular megafauna attack inherits its source.
+// No parent call: it would create an additional, unprofiled skull.
+/datum/action/cooldown/mob_cooldown/create_legion_skull/create(atom/target)
+	owner.get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(owner, role = "ordinary")
+	var/mob/living/basic/legion_brood/minion = spawn_npc_in_zone(/mob/living/basic/legion_brood, owner.loc, context, FALSE)
+	minion.assign_creator(owner)
+	minion.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	context.finalize()
