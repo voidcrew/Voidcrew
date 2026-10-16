@@ -263,6 +263,64 @@
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]
 
+/// Rescue bonuses affect credits alone, once, and never return after revival.
+/datum/unit_test/voidcrew_mission_rescue_reward/Run()
+	var/turf/pad_turf = run_loc_floor_bottom_left
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, pad_turf)
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	ship.ship_account = allocate(/datum/bank_account/ship, "Rescue Test", null, 1, FALSE)
+	ship.linked_mission_pads = list(pad)
+	var/datum/mission/rescue/rescue_type = /datum/mission/rescue
+	var/expected_vouchers = 0
+	var/list/delivery_cases = list(
+		list("healthy", 0, FALSE, 1250),
+		list("80% health", 12, FALSE, 1250),
+		list("injured", 13, FALSE, 1000),
+		list("revived and healed", 13, TRUE, 1000),
+	)
+	for(var/list/delivery_case as anything in delivery_cases)
+		var/datum/mission/mission = allocate(/datum/mission)
+		mission.value = 1000
+		mission.voucher_count = initial(rescue_type.voucher_count)
+		mission.servant = ship
+		var/datum/mission_objective/field/escort/escort = new
+		mission.add_objective(escort)
+		escort.spawn_field_objects(pad_turf)
+		var/mob/living/survivor = escort.survivor
+		survivor.adjustBruteLoss(delivery_case[2])
+		if(delivery_case[3])
+			survivor.death()
+			TEST_ASSERT(escort.grace_timer, "The survivor's death must start the revival window")
+			survivor.revive(ADMIN_HEAL_ALL)
+			TEST_ASSERT(survivor.stat != DEAD, "The survivor must actually revive")
+			TEST_ASSERT_EQUAL(survivor.health, survivor.maxHealth, "The revived survivor must be fully healed")
+			TEST_ASSERT(escort.was_revived, "Healing must preserve the survivor's revival history")
+			TEST_ASSERT_NULL(escort.grace_timer, "Revival must clear the recovery timer")
+		var/balance_before = ship.ship_account.account_balance
+		expected_vouchers += mission.voucher_count
+		TEST_ASSERT(mission.turn_in(pad), "The [delivery_case[1]] survivor must be accepted")
+		TEST_ASSERT_EQUAL(ship.ship_account.account_balance - balance_before, delivery_case[4], "The [delivery_case[1]] survivor paid the wrong credits")
+		TEST_ASSERT(QDELETED(survivor), "The delivered survivor must be removed")
+		TEST_ASSERT(QDELETED(mission), "Delivering the survivor must complete the mission")
+		var/vouchers_paid = 0
+		for(var/obj/item/stack/trade_voucher/vouchers in pad_turf)
+			vouchers_paid += vouchers.amount
+		TEST_ASSERT_EQUAL(vouchers_paid, expected_vouchers, "The [delivery_case[1]] survivor must leave the voucher payout unchanged")
+
+	// Exercise the finalizer twice while the mission and objective still exist.
+	var/datum/mission/repeated = allocate(/datum/mission)
+	repeated.value = 1000
+	repeated.voucher_count = initial(rescue_type.voucher_count)
+	var/datum/mission_objective/field/escort/repeated_escort = new
+	repeated.add_objective(repeated_escort)
+	repeated_escort.survivor = allocate(/mob/living/basic/mission_survivor, pad_turf)
+	repeated_escort.on_turn_in_finalized(pad)
+	TEST_ASSERT_EQUAL(repeated.value, 1250, "A healthy survivor must add 25% to credits")
+	TEST_ASSERT_NULL(repeated_escort.survivor, "Finalization must clear the survivor reference")
+	repeated_escort.on_turn_in_finalized(pad)
+	TEST_ASSERT_EQUAL(repeated.value, 1250, "Repeated finalization must not stack the bonus")
+	TEST_ASSERT_EQUAL(repeated.voucher_count, initial(rescue_type.voucher_count), "Repeated finalization must not change vouchers")
+
 /**
  * A contract that marks itself exclusive_site must get a wreck to itself.
  *

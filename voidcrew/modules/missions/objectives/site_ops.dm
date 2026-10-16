@@ -305,7 +305,7 @@
 	/// Health fraction at turn-in for the "still walking" pay bonus
 	var/unharmed_threshold = 0.8
 	/// Multiplier applied to mission credits when unharmed
-	var/unharmed_bonus = 2
+	var/unharmed_bonus = 1.25
 	/// How long a flatlined survivor stays recoverable before the contract writes them off
 	var/revival_grace = 3 MINUTES
 	/// Timer id for the grace window; non-null exactly while the survivor is down
@@ -439,11 +439,11 @@
 	if(QDELETED(survivor))
 		return
 	clear_grace()
-	// Still walking pays double - somebody who had to be brought back doesn't count,
+	// Somebody who had to be brought back doesn't count toward the unharmed bonus,
 	// however healthy the revival left them
 	if(!was_revived && survivor.health >= survivor.maxHealth * unharmed_threshold)
 		mission.value *= unharmed_bonus
-		notify_crew("Survivor recovered unharmed - fee doubled.")
+		notify_crew("Survivor recovered unharmed.")
 	// Repatriation: they step onto the pad and ship out
 	var/mob/living/leaving = survivor
 	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
