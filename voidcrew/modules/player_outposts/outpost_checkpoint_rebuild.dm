@@ -99,7 +99,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_restocked, typecacheof(list(
 				closet.contents_initialized = TRUE
 			if(istype(object, /obj/structure/closet/crate/secure/loot))
 				var/obj/structure/closet/crate/secure/loot/freight = object
-				freight.spawned_loot = TRUE
+				freight.consume_freight_loot()
 			if(istype(object, /obj/machinery/suit_storage_unit))
 				var/obj/machinery/suit_storage_unit/unit = object
 				unit.suit = null
