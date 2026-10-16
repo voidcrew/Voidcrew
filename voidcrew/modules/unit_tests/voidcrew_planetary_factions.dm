@@ -8,6 +8,69 @@
  */
 /datum/unit_test/voidcrew_planetary_factions
 
+/// Check real death drops, including corpse equipment, rather than visual weapons.
+/datum/unit_test/voidcrew_melee_death_drops/Run()
+	var/list/mob_loot = list(
+		/mob/living/basic/trooper/pirate/faction/silverscale/captain = list(),
+		/mob/living/basic/trooper/pirate/faction/lustrous/captain = list(),
+		/mob/living/basic/trooper/pirate/faction/interdyne/captain = list(),
+		/mob/living/basic/trooper/pirate/faction/boss/silverscale = list(
+			/obj/item/clothing/suit/hooded/cloak/drake,
+			/obj/item/clothing/head/hooded/cloakhood/drake,
+		),
+		/mob/living/basic/trooper/pirate/faction/boss/skeleton = list(/obj/item/gun/ballistic/shotgun/hook),
+		/mob/living/basic/skeleton/templar = list(
+			/obj/effect/decal/remains/human,
+			/obj/item/clothing/suit/chaplainsuit/armor/templar,
+			/obj/item/clothing/head/helmet/chaplain,
+		),
+	)
+	var/turf/death_turf = run_loc_floor_bottom_left
+	for(var/mob_type in mob_loot)
+		var/mob/living/basic/victim = allocate(mob_type, death_turf)
+		// Keep the original body to exercise the repeated-death guard safely.
+		victim.basic_mob_flags &= ~DEL_ON_DEATH
+		var/list/before_death = death_turf.get_all_contents()
+		var/list/expected_loot = mob_loot[mob_type].Copy()
+		if(istype(victim, /mob/living/basic/trooper/pirate/faction))
+			expected_loot += list(/mob/living/carbon/human, /obj/item/holochip)
+		victim.death()
+		TEST_ASSERT_EQUAL(victim.stat, DEAD, "[mob_type] must actually die")
+		var/list/drops = death_turf.contents - before_death
+		for(var/drop_type in expected_loot)
+			var/count = 0
+			for(var/atom/movable/drop in drops)
+				if(istype(drop, drop_type))
+					count++
+			TEST_ASSERT_EQUAL(count, 1, "[mob_type] must drop [drop_type] exactly once")
+
+		var/expected_count = length(expected_loot)
+		if(istype(victim, /mob/living/basic/trooper/pirate/faction))
+			var/mob/living/basic/trooper/pirate/faction/pirate = victim
+			var/is_boss = istype(pirate, /mob/living/basic/trooper/pirate/faction/boss)
+			var/obj/item/holochip/payment = locate() in drops
+			TEST_ASSERT_NOTNULL(payment, "[mob_type] must retain its credit drop")
+			TEST_ASSERT_EQUAL(payment.credits, is_boss ? 3000 : 1000, "[mob_type] must retain its payout")
+			if(!is_boss)
+				var/auxiliary_count = 0
+				for(var/obj/item/drop in drops)
+					if(drop.type in pirate.random_loot_2)
+						auxiliary_count++
+				TEST_ASSERT_EQUAL(auxiliary_count, 1, "[mob_type] must retain one auxiliary drop")
+				expected_count++
+		TEST_ASSERT_EQUAL(length(drops), expected_count, "[mob_type] emitted extra or missing death drops")
+		var/list/all_drops = death_turf.get_all_contents() - before_death
+		for(var/obj/item/drop in all_drops)
+			TEST_ASSERT(!istype(drop, /obj/item/claymore/cutlass), "[mob_type] still drops a cutlass")
+			TEST_ASSERT(!istype(drop, /obj/item/claymore/weak), "[mob_type] still drops a holy sword")
+
+		var/list/after_death = death_turf.get_all_contents()
+		victim.death()
+		TEST_ASSERT_EQUAL(length(death_turf.get_all_contents() - after_death), 0, "A repeated death call duplicated [mob_type]'s loot")
+		for(var/atom/movable/drop in drops)
+			qdel(drop)
+		qdel(victim)
+
 /datum/unit_test/voidcrew_planetary_factions/Run()
 	var/datum/space_level/test_level = SSmapping.z_list[run_loc_floor_bottom_left.z]
 	if(!test_level)
