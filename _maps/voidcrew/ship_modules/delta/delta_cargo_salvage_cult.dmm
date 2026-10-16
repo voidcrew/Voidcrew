@@ -1,4 +1,14 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "c" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
@@ -116,16 +126,6 @@
 	 pixel_y = -3
 	},
 /obj/machinery/light/small/red/directional/south,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"B" = (
-/obj/effect/turf_decal/box/corners{
-	dir = 8
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
-/obj/item/flashlight/seclite,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "G" = (
@@ -314,7 +314,7 @@ U
 O
 M
 Y
-B
+a
 z
 "}
 (6,1,1) = {"

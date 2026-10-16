@@ -9,9 +9,58 @@
 /obj/effect/zone_mobs/syndicate/boss,
 /turf/open/floor/wood,
 /area/ruin/syndicate_lava_base/bar)
+"ad" = (
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
+	dir = 4;
+	outfit_override = list("r_pocket" = null, "r_hand" = null)
+	},
+/obj/machinery/airalarm/directional/north,
+/obj/item/bedsheet/syndie{
+	dir = 4
+	},
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airalarm/syndicate_access,
+/turf/open/floor/carpet/red,
+/area/ruin/syndicate_lava_base/dormitories)
 "ae" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/syndicate_lava_base/testlab)
+"af" = (
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
+	dir = 4;
+	outfit_override = list("r_pocket" = null, "r_hand" = null)
+	},
+/obj/item/bedsheet/syndie{
+	dir = 4
+	},
+/obj/structure/bed{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/syndicate_lava_base/dormitories)
+"ag" = (
+/obj/structure/table,
+/obj/item/storage/box/syringes,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/white/side{
+	dir = 8
+	},
+/area/ruin/syndicate_lava_base/medbay)
+"ah" = (
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
+	dir = 8;
+	outfit_override = list("r_pocket" = null, "r_hand" = null)
+	},
+/obj/machinery/airalarm/directional/north,
+/obj/item/bedsheet/syndie,
+/obj/structure/bed,
+/obj/effect/mapping_helpers/airalarm/syndicate_access,
+/turf/open/floor/carpet/red,
+/area/ruin/syndicate_lava_base/dormitories)
 "ai" = (
 /obj/structure/table/wood,
 /obj/machinery/chem_dispenser/drinks/fullupgrade{
@@ -37,6 +86,15 @@
 /obj/machinery/vending/medical/syndicate,
 /turf/open/floor/iron/white,
 /area/ruin/syndicate_lava_base/medbay)
+"am" = (
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms{
+	dir = 8;
+	outfit_override = list("r_pocket" = null, "r_hand" = /obj/item/spear)
+	},
+/obj/item/bedsheet/syndie,
+/obj/structure/bed,
+/turf/open/floor/carpet/red,
+/area/ruin/syndicate_lava_base/dormitories)
 "ap" = (
 /obj/machinery/light/small/directional/east,
 /obj/machinery/smartfridge/organ,
@@ -85,26 +143,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/syndicate_lava_base/engineering)
-"aU" = (
-/obj/structure/table,
-/obj/item/storage/box/syringes,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/gun/syringe/syndicate,
-/turf/open/floor/iron/white/side{
-	dir = 8
-	},
-/area/ruin/syndicate_lava_base/medbay)
-"aV" = (
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
-	dir = 8
-	},
-/obj/machinery/airalarm/directional/north,
-/obj/item/bedsheet/syndie,
-/obj/structure/bed,
-/obj/effect/mapping_helpers/airalarm/syndicate_access,
-/turf/open/floor/carpet/red,
-/area/ruin/syndicate_lava_base/dormitories)
 "aW" = (
 /obj/machinery/button/door{
 	id = "lavalandsyndi_arrivals";
@@ -132,20 +170,6 @@
 /obj/effect/turf_decal/sand/plating/volcanic,
 /turf/open/floor/plating/lavaland_atmos,
 /area/lavaland/surface/outdoors)
-"bB" = (
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
-	dir = 4
-	},
-/obj/machinery/airalarm/directional/north,
-/obj/item/bedsheet/syndie{
-	dir = 4
-	},
-/obj/structure/bed{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/airalarm/syndicate_access,
-/turf/open/floor/carpet/red,
-/area/ruin/syndicate_lava_base/dormitories)
 "bC" = (
 /obj/machinery/light/small/directional/north,
 /obj/structure/table,
@@ -2906,14 +2930,6 @@
 /obj/effect/mapping_helpers/airalarm/syndicate_access,
 /turf/open/floor/wood,
 /area/ruin/syndicate_lava_base/dormitories)
-"CC" = (
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms{
-	dir = 8
-	},
-/obj/item/bedsheet/syndie,
-/obj/structure/bed,
-/turf/open/floor/carpet/red,
-/area/ruin/syndicate_lava_base/dormitories)
 "CE" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/medical/glass{
@@ -4309,18 +4325,6 @@
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer,
 /turf/open/floor/iron,
 /area/ruin/syndicate_lava_base/engineering)
-"Xi" = (
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate{
-	dir = 4
-	},
-/obj/item/bedsheet/syndie{
-	dir = 4
-	},
-/obj/structure/bed{
-	dir = 4
-	},
-/turf/open/floor/carpet/red,
-/area/ruin/syndicate_lava_base/dormitories)
 "Xv" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -5731,7 +5735,7 @@ hz
 ce
 lj
 hz
-bB
+ad
 Zu
 jy
 jy
@@ -5776,7 +5780,7 @@ IX
 he
 hz
 UX
-Xi
+af
 hz
 wV
 tP
@@ -6031,14 +6035,14 @@ BX
 OF
 Jr
 hz
-aV
+ah
 Zu
 hz
 hJ
 zm
 kQ
 lm
-aU
+ag
 ey
 mA
 bQ
@@ -6076,7 +6080,7 @@ ze
 he
 hz
 Jj
-CC
+am
 hz
 KT
 TE

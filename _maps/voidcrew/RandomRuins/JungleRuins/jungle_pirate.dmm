@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/gun/ballistic/shotgun/doublebarrel,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "ab" = (
 /obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/carpet/red,
@@ -20,6 +27,25 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/zone_mobs/pirate,
 /turf/open/floor/pod/dark,
+/area/ruin/unpowered)
+"ag" = (
+/obj/structure/table/wood/poker,
+/obj/item/knife/combat/survival,
+/obj/item/spear,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ah" = (
+/obj/structure/table/wood/poker,
+/obj/item/spear,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ai" = (
+/obj/structure/safe,
+/obj/item/gun/energy/laser,
+/obj/item/spear,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "ay" = (
 /obj/structure/statue/sandstone/venus{
@@ -143,11 +169,6 @@
 	},
 /mob/living/basic/trooper/pirate/ranged,
 /turf/open/floor/wood,
-/area/ruin/unpowered)
-"qL" = (
-/obj/structure/table/wood/poker,
-/obj/item/gun/energy/laser,
-/turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "rc" = (
 /obj/effect/decal/cleanable/dirt,
@@ -302,26 +323,11 @@
 /obj/structure/fluff/oldturret,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"PI" = (
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 "Qq" = (
 /turf/template_noop,
 /area/template_noop)
 "RY" = (
 /obj/effect/decal/cleanable/food/flour,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"Sk" = (
-/obj/structure/safe,
-/obj/item/gun/ballistic/shotgun/lethal,
-/obj/item/gun/ballistic/shotgun/lethal,
-/obj/item/gun/ballistic/shotgun/lethal,
-/obj/item/gun/grenadelauncher,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "SA" = (
@@ -387,12 +393,6 @@
 /area/ruin/unpowered)
 "Xb" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/carpet/red,
-/area/ruin/unpowered)
-"Xt" = (
-/obj/structure/table/wood/poker,
-/obj/item/nullrod/claymore/saber/pirate,
-/obj/item/melee/energy/sword/pirate,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "XA" = (
@@ -547,7 +547,7 @@ DV
 Kl
 "}
 (9,1,1) = {"
-PI
+aa
 ej
 tG
 tG
@@ -623,8 +623,8 @@ DV
 kh
 Er
 Xb
-qL
-Xt
+ah
+ag
 ad
 pd
 kh
@@ -659,7 +659,7 @@ kh
 Ew
 sH
 sH
-Sk
+ai
 kh
 kh
 tG

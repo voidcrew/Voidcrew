@@ -29,6 +29,15 @@
 /obj/effect/spawner/structure/window/reinforced/shuttle/indestructible,
 /turf/open/indestructible/plating,
 /area/ruin/space/has_grav/powered/biooutpost)
+"ag" = (
+/obj/effect/turf_decal/tile/neutral/opposingcorners,
+/obj/effect/turf_decal/stripes/end{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/turf/open/indestructible/dark,
+/area/ruin/space/has_grav/powered/biooutpost)
 "aj" = (
 /obj/effect/turf_decal/siding/blue,
 /obj/structure/table,
@@ -1203,17 +1212,6 @@
 "wy" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/indestructible/meat,
-/area/ruin/space/has_grav/powered/biooutpost)
-"wH" = (
-/obj/effect/turf_decal/tile/neutral/opposingcorners,
-/obj/effect/turf_decal/stripes/end{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/wt550{
-	pin = /obj/item/firing_pin
-	},
-/turf/open/indestructible/dark,
 /area/ruin/space/has_grav/powered/biooutpost)
 "wJ" = (
 /obj/structure/grille/broken,
@@ -3626,7 +3624,7 @@ EN
 TU
 Yc
 UX
-wH
+ag
 jU
 ZG
 gK

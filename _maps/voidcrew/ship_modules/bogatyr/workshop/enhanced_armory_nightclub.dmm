@@ -1,19 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"bxd" = (
-/obj/structure/window/reinforced/spawner,
-/obj/machinery/power/smes,
-/obj/structure/cable,
+"aaa" = (
+/obj/item/melee/baseball_bat,
+/obj/machinery/recharger,
+/obj/structure/table/reinforced/plasmarglass,
 /turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
-"bxo" = (
-/obj/structure/sign/poster/contraband/syndicate_recruitment{
-	pixel_x = 4;
-	pixel_y = 4
-	},
-/turf/closed/wall/r_wall,
-/area/template_noop)
-"cAP" = (
-/obj/item/gun/ballistic/rifle/boltaction{
+"aab" = (
+/obj/item/melee/baseball_bat{
 	pixel_x = -6;
 	pixel_y = -2
 	},
@@ -31,6 +24,19 @@
 	},
 /obj/structure/table/reinforced/plasmarglass,
 /turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"bxd" = (
+/obj/structure/window/reinforced/spawner,
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"bxo" = (
+/obj/structure/sign/poster/contraband/syndicate_recruitment{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/closed/wall/r_wall,
 /area/template_noop)
 "elB" = (
 /obj/machinery/light/small{
@@ -172,12 +178,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"sWY" = (
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/machinery/recharger,
-/obj/structure/table/reinforced/plasmarglass,
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
 "vpz" = (
 /obj/structure/closet/secure_closet/security,
 /obj/machinery/light/blacklight/directional/east,
@@ -216,8 +216,8 @@ pTu
 gAx
 nHL
 wAG
-cAP
-sWY
+aab
+aaa
 elB
 wUb
 pyD

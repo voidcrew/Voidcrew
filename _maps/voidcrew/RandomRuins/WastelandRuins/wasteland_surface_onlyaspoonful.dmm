@@ -5,6 +5,38 @@
 	},
 /turf/open/floor/plastic,
 /area/ruin/powered)
+"ab" = (
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"ac" = (
+/obj/effect/decal/cleanable/blood/gibs/core,
+/obj/item/knife/combat/survival,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"ad" = (
+/obj/item/ammo_casing/spent{
+	dir = 5;
+	pixel_x = -5;
+	pixel_y = -6
+	},
+/obj/item/ammo_casing/spent{
+	dir = 4;
+	pixel_x = 8;
+	pixel_y = 9
+	},
+/obj/effect/decal/cleanable/blood/tracks,
+/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"ae" = (
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plastic,
+/area/ruin/powered)
 "aU" = (
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/open/floor/plastic,
@@ -26,11 +58,6 @@
 /area/ruin/powered)
 "bh" = (
 /obj/structure/filingcabinet/security,
-/turf/open/floor/plastic,
-/area/ruin/powered)
-"bo" = (
-/obj/effect/decal/cleanable/blood/gibs/core,
-/obj/item/knife/combat,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "bz" = (
@@ -321,21 +348,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plastic,
 /area/ruin/powered)
-"vZ" = (
-/obj/item/ammo_casing/spent{
-	dir = 5;
-	pixel_x = -5;
-	pixel_y = -6
-	},
-/obj/item/ammo_casing/spent{
-	dir = 4;
-	pixel_x = 8;
-	pixel_y = 9
-	},
-/obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger,
-/turf/open/floor/plastic,
-/area/ruin/powered)
 "wr" = (
 /obj/structure/rack,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -544,14 +556,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plastic,
 /area/ruin/powered)
-"Lm" = (
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 5
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plastic,
-/area/ruin/powered)
 "Lz" = (
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -699,10 +703,6 @@
 	pixel_y = 7
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plastic,
-/area/ruin/powered)
-"Tt" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "TA" = (
@@ -903,7 +903,7 @@ HA
 ud
 Pi
 sw
-Tt
+ab
 Me
 Ze
 KY
@@ -1005,7 +1005,7 @@ Ij
 bz
 pl
 OJ
-bo
+ac
 HS
 VR
 dk
@@ -1018,11 +1018,11 @@ ct
 ct
 dl
 XL
-Lm
+ae
 YY
 Hi
 ga
-vZ
+ad
 Mu
 pZ
 gG

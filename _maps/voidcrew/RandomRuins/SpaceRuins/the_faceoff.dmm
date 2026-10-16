@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/airless,
+/area/ruin/space)
+"ac" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
+/obj/effect/decal/cleanable/blood,
+/obj/effect/decal/cleanable/blood/gibs/limb,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/smooth_large/airless,
+/area/ruin/space)
 "aj" = (
 /obj/item/ammo_casing/c357/spent{
 	pixel_x = 5;
@@ -239,12 +253,6 @@
 "aa" = (
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/plastitanium/red/airless,
-/area/ruin/space)
-"hl" = (
-/obj/effect/mapping_helpers/broken_floor,
-/obj/effect/mapping_helpers/burnt_floor,
-/obj/item/gun/ballistic/rifle/boltaction/pipegun,
-/turf/open/floor/iron/dark/airless,
 /area/ruin/space)
 "ht" = (
 /obj/effect/mapping_helpers/burnt_floor,
@@ -607,14 +615,6 @@
 "xm" = (
 /obj/structure/sign/poster/contraband/syndicate_recruitment,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/ruin/space)
-"xI" = (
-/obj/effect/mapping_helpers/broken_floor,
-/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
-/obj/effect/decal/cleanable/blood,
-/obj/effect/decal/cleanable/blood/gibs/limb,
-/obj/item/gun/energy/e_gun/mini,
-/turf/open/floor/iron/dark/smooth_large/airless,
 /area/ruin/space)
 "xT" = (
 /obj/structure/sign/poster/contraband/soviet_propaganda,
@@ -1894,7 +1894,7 @@ Qn
 yd
 Uy
 aj
-hl
+ab
 ds
 zx
 ED
@@ -2232,7 +2232,7 @@ ZC
 Lg
 Ef
 sa
-xI
+ac
 sa
 Ds
 eA

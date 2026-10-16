@@ -5,6 +5,12 @@
 	},
 /turf/open/floor/iron/smooth_large,
 /area/ruin/unpowered)
+"ab" = (
+/obj/item/chair,
+/obj/effect/decal/cleanable/blood,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/grimy,
+/area/ruin/unpowered)
 "jC" = (
 /obj/machinery/suit_storage_unit/ruin_zone{
 	mask_type = /obj/item/clothing/mask/gas/explorer
@@ -292,12 +298,6 @@
 	},
 /turf/open/floor/iron/grimy,
 /area/ruin/unpowered)
-"TI" = (
-/obj/item/chair,
-/obj/effect/decal/cleanable/blood,
-/obj/item/gun/ballistic/automatic/pistol/m1911,
-/turf/open/floor/iron/grimy,
-/area/ruin/unpowered)
 "Uu" = (
 /obj/machinery/light/broken{
 	dir = 1
@@ -529,7 +529,7 @@ yZ
 oj
 yZ
 Vw
-TI
+ab
 Wz
 Vw
 yZ

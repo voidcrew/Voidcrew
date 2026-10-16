@@ -6,6 +6,23 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/dangerous_research)
+"ac" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/obj/item/toy/plush/snakeplushie{
+	pixel_x = -14;
+	pixel_y = -9
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/dangerous_research/lab)
+"ad" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/dangerous_research/medical)
 "ae" = (
 /obj/structure/table,
 /obj/machinery/light/small/directional/west,
@@ -1195,15 +1212,6 @@
 /obj/effect/decal/cleanable/blood/bubblegum,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/dangerous_research/medical)
-"pR" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/obj/item/gun/ballistic/revolver/c38{
-	name = "outpost revolver";
-	pin = /obj/item/firing_pin
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/dangerous_research/medical)
 "qc" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/door/airlock/command{
@@ -1496,17 +1504,6 @@
 /obj/item/shard,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/dangerous_research/medical)
-"tq" = (
-/obj/effect/decal/cleanable/blood/splatter,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small/directional/north,
-/obj/item/toy/plush/snakeplushie{
-	pixel_x = -14;
-	pixel_y = -9
-	},
-/obj/item/switchblade/extended,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/dangerous_research/lab)
 "ts" = (
 /turf/closed/wall,
 /area/ruin/space/has_grav/dangerous_research/dorms)
@@ -4419,7 +4416,7 @@ Qv
 Bg
 Bg
 Tc
-tq
+ac
 La
 Tc
 dw
@@ -5184,7 +5181,7 @@ Bg
 Zv
 Zv
 iw
-pR
+ad
 gN
 Lr
 Xy

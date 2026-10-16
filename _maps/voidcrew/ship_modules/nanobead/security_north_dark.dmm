@@ -1,18 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"ahQ" = (
-/obj/effect/turf_decal/trimline/red/filled/warning{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/mid_joiner{
-	dir = 1
-	},
-/turf/open/floor/iron/dark/smooth_edge{
-	dir = 1
-	},
-/area/template_noop)
-"bgz" = (
+"aaa" = (
 /obj/structure/guncase/wt550,
-/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/melee/baseball_bat,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
 	},
@@ -27,6 +16,45 @@
 /obj/item/ammo_box/magazine/wt550m9,
 /obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"aab" = (
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/turf_decal/siding/thinplating_new/dark,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"aac" = (
+/obj/structure/guncase/shotgun,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/effect/spawner/random/armory/buckshot,
+/obj/effect/spawner/random/armory/buckshot,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"ahQ" = (
+/obj/effect/turf_decal/trimline/red/filled/warning{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/mid_joiner{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/smooth_edge{
+	dir = 1
+	},
 /area/template_noop)
 "cgf" = (
 /obj/effect/turf_decal/trimline/red/filled/corner,
@@ -218,16 +246,6 @@
 	dir = 1
 	},
 /area/template_noop)
-"qpV" = (
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 2
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
-/obj/item/gun/energy/laser,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
 "rER" = (
 /obj/structure/railing{
 	dir = 6
@@ -280,24 +298,6 @@
 /obj/effect/turf_decal/trimline/red/filled/mid_joiner{
 	dir = 8
 	},
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
-"ttc" = (
-/obj/structure/guncase/shotgun,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
-	dir = 1
-	},
-/obj/structure/extinguisher_cabinet/directional/east,
-/obj/machinery/airalarm/directional/south,
-/obj/effect/spawner/random/armory/buckshot,
-/obj/effect/spawner/random/armory/buckshot,
-/obj/item/gun/ballistic/shotgun/riot,
 /turf/open/floor/iron/dark/smooth_large,
 /area/template_noop)
 "tua" = (
@@ -398,18 +398,18 @@ fuX
 (4,1,1) = {"
 jLq
 lND
-qpV
+aab
 dmo
 ihX
-bgz
+aaa
 "}
 (5,1,1) = {"
 jLq
 jLq
-qpV
+aab
 xFc
 nTm
-ttc
+aac
 "}
 (6,1,1) = {"
 jLq

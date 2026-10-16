@@ -1,4 +1,52 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/safe,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/reagent_containers/cup/beaker/bluespace{
+	list_reagents = list(/datum/reagent/consumable/salt = 300)
+	},
+/obj/item/storage/box/slugs,
+/obj/item/storage/bag/money,
+/obj/item/circuitboard/computer/arcade/amputation,
+/obj/item/coin/gold,
+/obj/item/coin/gold,
+/obj/item/coin/gold,
+/obj/item/coin/gold,
+/obj/item/coin/gold,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/silver,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/iron,
+/obj/item/coin/diamond,
+/obj/item/coin/diamond,
+/obj/machinery/light,
+/obj/item/melee/baseball_bat,
+/turf/open/indestructible,
+/area/ruin/powered)
 "ao" = (
 /obj/effect/decal/cleanable/food/salt,
 /obj/structure/chair/stool/bar,
@@ -326,54 +374,6 @@
 "yi" = (
 /obj/item/cigbutt/cigarbutt,
 /turf/open/floor/carpet/royalblack,
-/area/ruin/powered)
-"yv" = (
-/obj/structure/safe,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/reagent_containers/cup/beaker/bluespace{
-	list_reagents = list(/datum/reagent/consumable/salt = 300)
-	},
-/obj/item/storage/box/slugs,
-/obj/item/storage/bag/money,
-/obj/item/circuitboard/computer/arcade/amputation,
-/obj/item/coin/gold,
-/obj/item/coin/gold,
-/obj/item/coin/gold,
-/obj/item/coin/gold,
-/obj/item/coin/gold,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/silver,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/iron,
-/obj/item/coin/diamond,
-/obj/item/coin/diamond,
-/obj/machinery/light,
-/obj/item/gun/ballistic/shotgun/riot,
-/turf/open/indestructible,
 /area/ruin/powered)
 "yw" = (
 /obj/effect/decal/cleanable/food/salt,
@@ -1037,7 +1037,7 @@ xD
 Jh
 uY
 yw
-yv
+aa
 uY
 Jh
 YG

@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/closet/crate/secure/weapon,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/smartgun,
+/obj/item/ammo_box/magazine/smartgun,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/unpowered)
 "b" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate/zone_loot/syndicate,
@@ -11,10 +19,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
-"d" = (
-/obj/item/gun/ballistic/automatic/pistol/no_mag,
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "e" = (
 /obj/structure/barricade/wooden,
 /obj/machinery/door/airlock/centcom{
@@ -24,6 +28,10 @@
 /obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"f" = (
+/obj/item/melee/baseball_bat,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "h" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/ruin/unpowered)
@@ -165,14 +173,6 @@
 "O" = (
 /turf/template_noop,
 /area/template_noop)
-"P" = (
-/obj/structure/closet/crate/secure/weapon,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/gun/ballistic/automatic/smartgun,
-/obj/item/ammo_box/magazine/smartgun,
-/obj/item/ammo_box/magazine/smartgun,
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/unpowered)
 "R" = (
 /obj/machinery/door/airlock/centcom{
 	name = "Assault Pod"
@@ -254,14 +254,14 @@ c
 F
 w
 r
-P
+a
 h
 "}
 (4,1,1) = {"
 O
 O
 z
-d
+f
 R
 p
 L

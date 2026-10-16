@@ -192,6 +192,26 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
+"au" = (
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/spear{
+	pixel_y = 12
+	},
+/obj/item/spear{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/obj/item/spear{
+	pixel_x = 17
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
 "av" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 1
@@ -225,6 +245,54 @@
 /obj/item/bedsheet/pirate,
 /obj/structure/cable,
 /turf/open/floor/carpet/royalblack,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
+"az" = (
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/item/ammo_box/strilka310/phasic{
+	pixel_y = -5;
+	pixel_x = 5
+	},
+/obj/item/ammo_box/strilka310/phasic{
+	pixel_x = 5
+	},
+/obj/item/ammo_box/strilka310/phasic{
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/item/ammo_box/strilka310/phasic{
+	pixel_x = -5
+	},
+/obj/item/melee/baseball_bat{
+	pixel_y = 4
+	},
+/obj/item/melee/baseball_bat,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
+"aA" = (
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/obj/effect/turf_decal/bot,
+/obj/item/melee/baseball_bat,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
+"aB" = (
+/obj/structure/guncase,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -626,26 +694,6 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
-"xR" = (
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_y = 12
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_x = 8;
-	pixel_y = 7
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_x = 17
-	},
-/obj/effect/turf_decal/bot,
-/obj/structure/cable,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
 "zB" = (
 /obj/structure/table/glass,
 /obj/machinery/chem_dispenser/drinks/beer{
@@ -821,16 +869,6 @@
 	id = "silverbridge"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
-"Id" = (
-/obj/structure/guncase,
-/obj/item/gun/energy/laser/luxurypaywall{
-	projectile_damage_multiplier = 1.30;
-	desc = "A laser gun modified to cost 20 credits to fire. Someone on the station should have an ID that works with this thing."
-	},
-/turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1096,34 +1134,6 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
-"RO" = (
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/effect/turf_decal/bot,
-/obj/item/ammo_box/strilka310/phasic{
-	pixel_y = -5;
-	pixel_x = 5
-	},
-/obj/item/ammo_box/strilka310/phasic{
-	pixel_x = 5
-	},
-/obj/item/ammo_box/strilka310/phasic{
-	pixel_x = -5;
-	pixel_y = -5
-	},
-/obj/item/ammo_box/strilka310/phasic{
-	pixel_x = -5
-	},
-/obj/item/gun/ballistic/rifle/boltaction/prime{
-	pixel_y = 4
-	},
-/obj/item/gun/ballistic/rifle/boltaction/prime,
-/obj/structure/cable,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
 "RU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
@@ -1292,19 +1302,6 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
-"Yj" = (
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/lethalshot,
-/obj/effect/turf_decal/bot,
-/obj/item/gun/ballistic/shotgun/doublebarrel/slugs,
-/obj/structure/cable,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
 "YD" = (
 /obj/structure/table,
 /obj/machinery/button/door{
@@ -1414,9 +1411,9 @@ aZ
 aZ
 aZ
 Is
-Yj
-RO
-xR
+aA
+az
+au
 rB
 Fk
 QI
@@ -1454,7 +1451,7 @@ fR
 Ox
 iS
 wa
-Id
+aB
 rB
 UV
 es

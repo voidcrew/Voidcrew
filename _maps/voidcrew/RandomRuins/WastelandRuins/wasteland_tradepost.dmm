@@ -1,4 +1,36 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/rack,
+/obj/item/stack/wrapping_paper,
+/obj/effect/spawner/random/entertainment/gambling{
+	loot = list(/obj/item/melee/baseball_bat = 5, /obj/item/clothing/head/costume/ushanka = 3, /obj/effect/spawner/random/entertainment/coin = 3, /obj/effect/spawner/random/entertainment/money = 3, /obj/item/dice/d6 = 3, /obj/item/storage/box/syndie_kit/throwing_weapons = 1, /obj/item/reagent_containers/cup/glass/bottle/vodka/badminka = 1)
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"ab" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/entertainment/gambling{
+	loot = list(/obj/item/melee/baseball_bat = 5, /obj/item/clothing/head/costume/ushanka = 3, /obj/effect/spawner/random/entertainment/coin = 3, /obj/effect/spawner/random/entertainment/money = 3, /obj/item/dice/d6 = 3, /obj/item/storage/box/syndie_kit/throwing_weapons = 1, /obj/item/reagent_containers/cup/glass/bottle/vodka/badminka = 1)
+	},
+/obj/effect/decal/cleanable/garbage,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/wrench,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"ac" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/entertainment/gambling{
+	loot = list(/obj/item/melee/baseball_bat = 5, /obj/item/clothing/head/costume/ushanka = 3, /obj/effect/spawner/random/entertainment/coin = 3, /obj/effect/spawner/random/entertainment/money = 3, /obj/item/dice/d6 = 3, /obj/item/storage/box/syndie_kit/throwing_weapons = 1, /obj/item/reagent_containers/cup/glass/bottle/vodka/badminka = 1)
+	},
+/obj/effect/decal/cleanable/garbage,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"ad" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/pod/light,
+/area/ruin/unpowered)
 "aj" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/aimodule/harmless,
@@ -26,13 +58,6 @@
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"fC" = (
-/obj/structure/rack,
-/obj/item/stack/wrapping_paper,
-/obj/effect/spawner/random/entertainment/gambling,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "gA" = (
 /obj/effect/decal/cleanable/glass,
@@ -68,11 +93,6 @@
 "kF" = (
 /obj/structure/closet/crate/bin,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"kU" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/energy/laser/retro,
-/turf/open/floor/pod/light,
 /area/ruin/unpowered)
 "kW" = (
 /obj/machinery/power/shuttle_engine/propulsion{
@@ -123,12 +143,6 @@
 /obj/structure/rack,
 /obj/item/stack/wrapping_paper,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"sW" = (
-/obj/structure/rack,
-/obj/effect/spawner/random/entertainment/gambling,
-/obj/effect/decal/cleanable/garbage,
-/turf/open/floor/plating,
 /area/ruin/unpowered)
 "tl" = (
 /obj/structure/barricade/wooden/crude,
@@ -322,14 +336,6 @@
 "Qt" = (
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
-"QD" = (
-/obj/structure/rack,
-/obj/effect/spawner/random/entertainment/gambling,
-/obj/effect/decal/cleanable/garbage,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/wrench,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "Rn" = (
 /obj/structure/closet/crate,
 /obj/effect/turf_decal/stripes/full,
@@ -422,7 +428,7 @@ De
 "}
 (2,1,1) = {"
 Ue
-fC
+aa
 ch
 im
 Ga
@@ -441,7 +447,7 @@ De
 Ue
 sT
 wB
-QD
+ab
 Sn
 tl
 wM
@@ -456,7 +462,7 @@ De
 "}
 (4,1,1) = {"
 Ue
-sW
+ac
 Ga
 Cf
 CC
@@ -533,7 +539,7 @@ Hm
 Hm
 Qt
 Lm
-kU
+ad
 wA
 Lm
 Qt
