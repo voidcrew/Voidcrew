@@ -13,7 +13,7 @@
 	name = "Suppression Sweep"
 	weight = 8
 	mission_limit = 2
-	voucher_count = 1
+	voucher_count = 0
 
 	/// Kills asked for
 	var/required_kills = 8
@@ -34,17 +34,19 @@
 	if(prob(30))
 		minimum_zone = ZONE_RED
 		required_kills = rand(5, 7)
-		value_min = 1800
-		value_max = 2600
+		value_min = 1100
+		value_max = 1500
 		difficulty = MISSION_DIFFICULTY_HARD
 		target_zone_name = ZONE_NAME_RED
 	else
 		minimum_zone = ZONE_YELLOW
 		required_kills = rand(7, 10)
-		value_min = 1100
-		value_max = 1600
+		value_min = 700
+		value_max = 1000
 		difficulty = MISSION_DIFFICULTY_MEDIUM
 		target_zone_name = ZONE_NAME_YELLOW
+
+	quote_zone = minimum_zone
 
 /datum/mission/suppression/build_objectives()
 	counter = new
@@ -54,6 +56,4 @@
 
 /datum/mission/suppression/update_text()
 	name = "Suppression Sweep: [target_zone_name]"
-	desc = "Confirm [required_kills] pirate faction NPC kills in the [target_zone_name][minimum_zone == ZONE_YELLOW ? " or deeper" : ""] after accepting this contract. \
-		Your crew must make the kill or have a living member nearby to confirm it. Player pirates and destroyed ships do not count. \
-		Complete the full quota, then collect the contract payment at the mission board. Includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]."
+	desc = "Wanted dead: [required_kills] pirates in the [target_zone_name][minimum_zone == ZONE_YELLOW ? " or deeper" : ""]."

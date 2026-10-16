@@ -205,6 +205,8 @@
 
 /// Procurement rejects forged submissions and consumes only eligible goods.
 /datum/unit_test/voidcrew_procurement_turn_in/Run()
+	var/obj/structure/overmap/ship/receiving_ship = allocate(/obj/structure/overmap/ship)
+	receiving_ship.ship_account = allocate(/datum/bank_account)
 	var/list/unsupported_types = list(
 		/obj/item/stack/ore/iron,
 		/obj/item/stack/sheet/plasteel,
@@ -218,6 +220,8 @@
 	for(var/item_type in unsupported_types)
 		var/datum/mission/mission = allocate(/datum/mission)
 		mission.requires_item = TRUE
+		mission.servant = receiving_ship
+		mission.active = TRUE
 		var/datum/mission_objective/deliver/procurement/ask = new
 		ask.required_type = item_type
 		mission.add_objective(ask)
@@ -228,6 +232,8 @@
 
 	var/datum/mission/control_mission = allocate(/datum/mission)
 	control_mission.requires_item = TRUE
+	control_mission.servant = receiving_ship
+	control_mission.active = TRUE
 	var/datum/mission_objective/deliver/procurement/control_ask = new
 	control_ask.required_type = /obj/item/mod/control/pre_equipped
 	control_mission.add_objective(control_ask)
@@ -254,6 +260,8 @@
 	for(var/item_type in loose_types)
 		var/datum/mission/mission = allocate(/datum/mission)
 		mission.requires_item = TRUE
+		mission.servant = receiving_ship
+		mission.active = TRUE
 		var/datum/mission_objective/deliver/procurement/ask = new
 		ask.required_type = item_type
 		ask.required_amount = 2
@@ -275,6 +283,8 @@
 	for(var/list/stack_case as anything in stack_cases)
 		var/datum/mission/mission = allocate(/datum/mission)
 		mission.requires_item = TRUE
+		mission.servant = receiving_ship
+		mission.active = TRUE
 		var/datum/mission_objective/deliver/procurement/ask = new
 		ask.required_type = stack_case[1]
 		ask.required_amount = stack_case[2]

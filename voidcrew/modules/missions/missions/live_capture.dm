@@ -42,17 +42,18 @@
 
 /datum/mission/live_capture
 	name = "Live Capture"
+	guarded_prize_family = "capture"
 	weight = 8
 	mission_limit = 1
 	duration = 35 MINUTES
-	voucher_count = 1
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL
 	gps_tag_prefix = "FAUNA"
 	// Green-band pay between field_expedition and big_game_hunt: harder than
 	// pulling a probe core, gentler than killing an apex - the specimen is
 	// smaller fauna, but you have to win WITHOUT the killing blow.
-	value_min = 900
-	value_max = 1250
+	value_min = 600
+	value_max = 800
 
 	/// Per-planet capture tables, keyed by /datum/overmap/planet typepath:
 	/// the specimen, the board-title form, the ask phrase, and the habitat
@@ -150,7 +151,7 @@
 
 /datum/mission/live_capture/build_objectives()
 	var/datum/mission_objective/goto_coords/approach = new
-	approach.arrival_message = "On station over the habitat. Take the capture crate down to the surface and find the marked specimen."
+	approach.arrival_message = "On station over the habitat."
 	add_objective(approach)
 
 	capture = new
@@ -168,12 +169,7 @@
 	var/datum/mission_target/planet/planet_target = target
 	var/planet_name = istype(planet_target) ? (planet_target.planet?.name || "the planet") : "the planet"
 	name = "Live Capture: [capture_row["title"]]"
-	desc = "[flavor_line] \
-		The guild survey has tagged [objective_name] in the [capture_row["ground"]] of [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		A capture crate lands on your mission pad when you accept. Find the marked specimen and reduce it to [CAPTURE_HEALTH_FRACTION * 100]% health or less, or incapacitate it, while keeping it alive. \
-		With combat mode off, use the crate on the tagged animal while it is on the ground. Bring the sealed crate to the mission pad with the specimen alive; its death voids the contract. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to follow the specimen's survey tag ([gps_tag])."
+	desc = "Bring back [objective_name] alive from [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/live_capture/waypoint_label()
 	return "Capture: [objective_name]"
@@ -249,7 +245,7 @@
 	mission.bind_item(kit)
 	// One crate per contract: losing it voids the capture
 	RegisterSignal(kit, COMSIG_QDELETING, PROC_REF(on_crate_destroyed))
-	notify_crew("Capture crate delivered to your mission pad. It only seals the survey-marked specimen, and only subdued.")
+	notify_crew("Capture crate delivered.")
 	return TRUE
 
 /datum/mission_objective/field/capture_beast/spawn_field_objects(turf/spawn_turf)
@@ -261,7 +257,7 @@
 	beast.npc_spawn_context.finalize()
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(beast)
-	notify_crew("Survey tag live - the marked specimen is on the surface ([mission.gps_tag]). Wear it down and crate it breathing.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+	notify_crew("Specimen sighted ([mission.gps_tag]).", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
 /**
  * The specimen died before delivery: the client pays for live capture only.
@@ -296,7 +292,7 @@
 	if(deliver_objective)
 		deliver_objective.crate = crate
 		deliver_objective.beast = beast
-	notify_crew("Specimen sealed and stable in suspension. Bring the crate back to the mission pad alive.", sound = 'voidcrew/sound/notify2.ogg')
+	notify_crew("Specimen secured.", sound = 'voidcrew/sound/notify2.ogg')
 	complete()
 
 /datum/mission_objective/field/capture_beast/get_progress_string()
@@ -446,8 +442,7 @@
  */
 /obj/item/mission_recovery/capture_crate
 	name = "capture crate"
-	desc = "A guild-issue xenofauna transport pod: reinforced shell, intake maw, suspension-field emitter. \
-		It only takes the survey-marked specimen, and only once it's been worn down. After it seals, nobody opens it but the client's assayer."
+	desc = "A guild-issue xenofauna transport pod with a reinforced shell and suspension-field emitter."
 	icon_state = "capture_crate"
 	base_icon_state = "capture_crate"
 	w_class = WEIGHT_CLASS_BULKY

@@ -540,7 +540,7 @@
 	r_hand = /obj/item/fireaxe/boardingaxe
 	loot_pool = list(/obj/item/fireaxe/boardingaxe)
 	random_loot = null
-	plunder_credits = 300
+	plunder_credits = 1000
 
 /mob/living/basic/trooper/pirate/faction/medieval/captain/Initialize(mapload)
 	. = ..()
