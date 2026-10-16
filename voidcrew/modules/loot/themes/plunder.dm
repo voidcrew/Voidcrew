@@ -16,8 +16,6 @@
 	guard_themes = list(/obj/effect/zone_mobs/pirate, /obj/effect/zone_mobs/pirate/boss)
 	theme_skus = list(
 		/datum/shop_sku/black_market/rotating/mateba,
-		/datum/shop_sku/black_market/bulldog_blueprint,
-		/datum/shop_sku/outfitter/carbine_blueprint,
 		/datum/shop_sku/ripperdoc/gecko,
 		/datum/shop_sku/ripperdoc/mantis,
 		/datum/shop_sku/ripperdoc/ronin,
@@ -47,7 +45,6 @@
 		/obj/item/clothing/head/costume/pirate/armored = 4,
 		/obj/item/clothing/suit/costume/pirate/armored = 4,
 		/obj/item/reagent_containers/cup/glass/bottle/rum/aged = 4,
-		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 7,
 		// boarder's palms: your hands clamp shut on your gun when you go
 		// down, and tables stop being furniture
@@ -66,7 +63,6 @@
 		/obj/item/reagent_containers/cup/glass/bottle/absinthe/premium = 4,
 		/obj/item/clothing/suit/costume/pirate/captain/armored = 3,
 		/obj/item/clothing/head/costume/pirate/captain = 3,
-		/obj/item/blueprint/gun/bulldog = 3,
 		/obj/item/stack/spacecash/c10000 = 2,
 		// the captain's cut, all of it voucher-grade chrome: the cased blade
 		// pair, the arm gun nobody can disarm you of, and the rocket pod.

@@ -97,9 +97,7 @@ GLOBAL_LIST_INIT(abandoned_crate_uncommon, list(
 
 /// The top of freight, and deliberately the top of nothing else. Gear a crew
 /// reorganizes an afternoon around, never gear it reorganizes the round
-/// around: no uniques, no chrome, no five-figure cash. The blueprint is the
-/// one long-odds reach into the weapons-bench pipeline, at the tier the themed
-/// caches already put a mid blueprint on.
+/// around: no uniques, no chrome, no five-figure cash.
 GLOBAL_LIST_INIT(abandoned_crate_prime, list(
 	/obj/item/stack/sheet/plasteel/fifty = 7,
 	/obj/item/ship_parts/combat = 7,
@@ -117,7 +115,6 @@ GLOBAL_LIST_INIT(abandoned_crate_prime, list(
 	/obj/item/storage/medkit/surgery = 4,
 	/obj/item/stack/sheet/mineral/diamond/five = 4,
 	/obj/item/clothing/glasses/night = 4,
-	/obj/item/blueprint/gun/wt550 = 3,
 	// a loaded bluespace RPED: ten each of tier-3 parts, enough to re-fit
 	// every machine on a hull in one pass. Tier 4 exists a line above this one
 	// in part_replacer.dm if this plays too weak

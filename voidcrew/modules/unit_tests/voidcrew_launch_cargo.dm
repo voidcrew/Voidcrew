@@ -158,7 +158,9 @@
 	qdel(delivery)
 
 	// An ordinary discounted shipment must record the final paid bill as well.
-	var/datum/supply_pack/plating_pack = allocate(/datum/supply_pack/security/modsuit_plating)
+	var/datum/supply_pack/plating_pack = allocate(/datum/supply_pack)
+	plating_pack.cost = CARGO_CRATE_VALUE
+	plating_pack.contains = list(/obj/item/mod/construction/plating/civilian)
 	var/datum/supply_order/plating_order = allocate(/datum/supply_order, plating_pack)
 	plating_order.manifest_can_fail = FALSE
 	plating_order.applied_coupon = allocate(/obj/item/coupon)

@@ -46,7 +46,6 @@
 		"Fuel & Gas",
 		"Colonial Registry",
 		"Intel & Charts",
-		"Blueprints",
 		"Barter Deals",
 		"Back Room",
 	)
@@ -82,7 +81,6 @@
 		// Security Gear
 		/datum/shop_sku/outfitter/seclite,
 		/datum/shop_sku/outfitter/flash,
-		/datum/shop_sku/outfitter/bola,
 		/datum/shop_sku/outfitter/security_belt,
 		/datum/shop_sku/outfitter/pepper_spray,
 		/datum/shop_sku/outfitter/riot_shield,
@@ -92,7 +90,6 @@
 		/datum/shop_sku/outfitter/advanced_medkit,
 		/datum/shop_sku/outfitter/stimpack,
 		/datum/shop_sku/outfitter/suture,
-		/datum/shop_sku/outfitter/health_hud,
 		// Mess Tin
 		/datum/shop_sku/outfitter/rations,
 		/datum/shop_sku/outfitter/energy_bar,
@@ -114,10 +111,6 @@
 		/datum/shop_sku/outpost_deed,
 		// Intel & Charts: the dealt chart shelf adds to this from chart_pool
 		/datum/shop_sku/rumor,
-		// Blueprints
-		/datum/shop_sku/outfitter/smg_blueprint,
-		/datum/shop_sku/outfitter/wt550_blueprint,
-		/datum/shop_sku/outfitter/carbine_blueprint,
 		// Barter
 		/datum/shop_sku/barter/plasteel_for_shield,
 	)
@@ -224,7 +217,6 @@
 			"Firing pins. Everyone forgets the firing pins. Don't be everyone.",
 			"Thruster boards are on the back wall. If your ship's limping, that's the fix, and it beats buying a new ship.",
 			"Most crews can't build a turret. Most crews also can't afford mine. Work on the second problem.",
-			"The schematics I stock are legal. The fun ones are two zones that way.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"Convoy made it through. Shelves are full, for now.",
@@ -322,12 +314,10 @@
 	stock_min = 10
 	stock_max = 20
 
-// Magazines for the two ballistics whose blueprints are on the shelf below.
-// Print the gun once, buy the ammo forever.
 /datum/shop_sku/outfitter/smg_mag
 	category = "Firearms & Ammo"
 	name = "c-20r magazine"
-	desc = "A loaded .45 magazine for a C-20r. Sarge stocks these because the schematic's on her own shelf."
+	desc = "A loaded .45 magazine for a C-20r."
 	item_path = /obj/item/ammo_box/magazine/smgm45
 	price_credits = 250
 	stock_min = 10
@@ -342,7 +332,6 @@
 	stock_min = 10
 	stock_max = 20
 
-// The quiet backbone of the blueprint economy: no pin, no gun
 /datum/shop_sku/outfitter/firing_pin
 	category = "Firearms & Ammo"
 	item_path = /obj/item/firing_pin
@@ -451,11 +440,6 @@
 	item_path = /obj/item/assembly/flash/handheld
 	price_credits = 750
 
-/datum/shop_sku/outfitter/bola
-	category = "Security Gear"
-	item_path = /obj/item/restraints/legcuffs/bola
-	price_credits = 600
-
 /datum/shop_sku/outfitter/security_belt
 	category = "Security Gear"
 	item_path = /obj/item/storage/belt/security/full
@@ -512,17 +496,6 @@
 	price_credits = 180
 	stock_min = 10
 	stock_max = 20
-
-// Triage glasses. Reads live health off everyone in view, which is worth more
-// in a boarding action than knowing who a station flagged as wanted.
-/datum/shop_sku/outfitter/health_hud
-	category = "Combat Medical"
-	name = "medical HUD sunglasses"
-	desc = "Tinted health-scanner glasses. Everyone in view gets a status icon, so you can tell who's down from who's dead without walking over."
-	item_path = /obj/item/clothing/glasses/hud/health/sunglasses
-	price_credits = 1500
-	stock_min = 1
-	stock_max = 3
 
 // ===== MESS TIN =====
 // Field chow. Nothing here is cooking. It's calories that survive a webbing
@@ -649,32 +622,6 @@
 	price_credits = 120
 	stock_min = 10
 	stock_max = 20
-
-// ===== BLUEPRINTS =====
-// Yellow-tier guns, carried or imprinted, crafted anywhere. The charts and
-// rumor tips that used to share this shelf now come off chart_pool.
-
-/datum/shop_sku/outfitter/smg_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/c20r
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/outfitter/wt550_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/wt550
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/outfitter/carbine_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/laser_carbine
-	price_vouchers = 2
-	price_credits = 3000
-	stock_min = 1
-	stock_max = 1
 
 // ===== ROTATING SHELF =====
 

@@ -71,3 +71,12 @@
 
 	TEST_ASSERT(shops_checked >= 5, "only [shops_checked] shops with a category list were checked")
 	TEST_ASSERT(skus_checked >= 100, "only [skus_checked] SKUs were checked. The catalog walk is not seeing the shelves")
+
+	var/list/banned_gear = list(
+		/obj/item/restraints/legcuffs/bola,
+		/obj/item/clothing/glasses/hud/health/sunglasses,
+		/obj/item/mod/core/standard,
+	)
+	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
+		TEST_ASSERT(!(initial(sku_type.item_path) in banned_gear), "[sku_type] still sells removed craftable gear.")
+		TEST_ASSERT(findtext("[initial(sku_type.item_path)]/", "/obj/item/blueprint/gun/") != 1, "[sku_type] still sells a gun schematic.")
