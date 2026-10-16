@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access_txt = "1"
+	},
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
 "am" = (
 /obj/structure/table,
 /turf/open/floor/plating/rust,
@@ -388,13 +395,6 @@
 	smoothing_flags = 0;
 	smoothing_groups = null
 	},
-/area/ruin/powered)
-"xD" = (
-/obj/structure/closet/crate/secure/gear{
-	req_access_txt = "1"
-	},
-/obj/item/gun/ballistic/revolver/c38/detective,
-/turf/open/floor/plating/rust,
 /area/ruin/powered)
 "xO" = (
 /obj/machinery/conveyor/auto{
@@ -972,7 +972,7 @@ wZ
 wW
 qk
 rx
-xD
+aa
 hv
 wB
 wB

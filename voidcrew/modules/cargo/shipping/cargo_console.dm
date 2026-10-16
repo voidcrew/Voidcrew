@@ -209,7 +209,7 @@
 	data["supplies"] = list()
 	for(var/pack_id in SSshuttle.supply_packs)
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
-		if(!data["supplies"][pack.group])
+		if(can_order_pack(pack) && !data["supplies"][pack.group])
 			data["supplies"][pack.group] = list(
 				"name" = pack.group,
 				"packs" = get_packs_data(pack.group),
@@ -223,6 +223,25 @@
 /obj/machinery/computer/voidcrew_cargo/proc/can_order_pack(datum/supply_pack/pack)
 	if(!pack)
 		return FALSE
+	var/static/list/forbidden_packs = typecacheof(list(
+		/datum/supply_pack/security,
+		/datum/supply_pack/goody/mars_single,
+		/datum/supply_pack/goody/ballistic_single,
+		/datum/supply_pack/goody/disabler_single,
+		/datum/supply_pack/goody/energy_single,
+		/datum/supply_pack/goody/laser_single,
+		/datum/supply_pack/goody/thermal_single,
+		/datum/supply_pack/goody/double_barrel,
+		/datum/supply_pack/goody/hell_single,
+		/datum/supply_pack/imports/mafia,
+		/datum/supply_pack/imports/abandoned,
+		/datum/supply_pack/imports/russian,
+	))
+	if(is_type_in_typecache(pack, forbidden_packs))
+		return FALSE
+	for(var/item_type in pack.contains)
+		if(is_ladder_restricted_production(item_type))
+			return FALSE
 	if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
 		return FALSE
 	return !pack.contraband || contraband
@@ -510,6 +529,12 @@
 					if(!site && !length(checkout_list) && !cargo_shuttle.loan_accepted)
 						say("Error: No orders in cart.")
 						return TRUE
+
+					// Outpost freight reserves payment during dispatch, before buy().
+					for(var/datum/supply_order/order as anything in checkout_list)
+						if(!can_order_pack(order.pack))
+							say("Order unavailable.")
+							return TRUE
 
 					// Check if we have enough credits for the order
 					var/total_cost = get_cart_total()

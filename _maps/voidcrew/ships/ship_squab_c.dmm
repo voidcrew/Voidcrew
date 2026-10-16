@@ -1,4 +1,51 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/effect/turf_decal/box{
+	color = "#B11111"
+	},
+/obj/structure/rack,
+/obj/item/melee/baseball_bat{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/obj/item/melee/baseball_bat{
+	pixel_x = 0;
+	pixel_y = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/squab/office)
+"aab" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/shuttle/voidcrew/squab/captain_quarters)
 "afY" = (
 /obj/machinery/door/firedoor/border_only,
 /obj/machinery/door/firedoor/border_only{
@@ -521,21 +568,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/squab/engineering)
-"dHy" = (
-/obj/effect/turf_decal/box{
-	color = "#B11111"
-	},
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = 4
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/squab/office)
 "dIb" = (
 /obj/effect/turf_decal/siding/thinplating/light{
 	dir = 4
@@ -1443,20 +1475,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/squab/bridge)
-"jIn" = (
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4;
-	layer = 2.5
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 8
-	},
-/obj/structure/closet/secure_closet/captains,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/turf/open/floor/iron/dark/textured_large,
-/area/shuttle/voidcrew/squab/captain_quarters)
 "jNj" = (
 /obj/structure/railing{
 	dir = 4
@@ -3630,7 +3648,7 @@ ecX
 (11,1,1) = {"
 ecX
 wZK
-dHy
+aaa
 qHQ
 rXg
 kFY
@@ -3810,7 +3828,7 @@ rYj
 cyJ
 oEd
 cED
-jIn
+aab
 kRF
 kIW
 coU

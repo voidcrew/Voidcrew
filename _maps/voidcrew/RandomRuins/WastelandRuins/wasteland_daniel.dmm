@@ -129,18 +129,6 @@
 /obj/structure/chair/office,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"w" = (
-/obj/effect/decal/cleanable/blood,
-/obj/effect/decal/cleanable/blood/drip,
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/effect/mob_spawn/corpse/human,
-/obj/item/gun/ballistic/automatic/pistol/m1911,
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/item/food/cakeslice/birthday,
-/turf/open/floor/carpet,
-/area/ruin/unpowered)
 "x" = (
 /obj/structure/bed,
 /obj/item/bedsheet/red,
@@ -185,6 +173,18 @@
 /area/ruin/unpowered)
 "E" = (
 /turf/closed/wall/mineral/wood,
+/area/ruin/unpowered)
+"F" = (
+/obj/effect/decal/cleanable/blood,
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/effect/mob_spawn/corpse/human,
+/obj/item/melee/baseball_bat,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/food/cakeslice/birthday,
+/turf/open/floor/carpet,
 /area/ruin/unpowered)
 "Q" = (
 /obj/structure/fans/tiny,
@@ -276,7 +276,7 @@ j
 j
 j
 E
-w
+F
 a
 E
 "}

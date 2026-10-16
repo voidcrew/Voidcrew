@@ -24,6 +24,30 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/meta/cargo)
+"af" = (
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/meta/cargo)
+"ag" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/meta/dorms)
+"ah" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/meta/dorms)
 "ai" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/meta/dorms)
@@ -117,15 +141,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/meta/dorms)
-"au" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/e_gun/mini,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/meta/dorms)
 "av" = (
 /obj/structure/bed,
@@ -739,15 +754,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/meta/engineering)
-"bV" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/e_gun/mini,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/meta/dorms)
 "bW" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -1234,12 +1240,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/directional/west,
 /obj/machinery/airalarm/directional/west,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/meta/cargo)
-"cQ" = (
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/energy/laser/retro,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/meta/cargo)
 "cR" = (
@@ -2238,7 +2238,7 @@ dc
 RG
 ap
 ap
-cQ
+af
 dc
 aR
 em
@@ -2418,7 +2418,7 @@ Gj
 "}
 (20,1,1) = {"
 ai
-au
+ag
 ai
 ba
 ai
@@ -2494,7 +2494,7 @@ Gj
 "}
 (24,1,1) = {"
 ai
-bV
+ah
 ai
 be
 hr

@@ -27,6 +27,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_infrastructure, typecacheof(list(
 GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/machinery/portable_atmospherics,
 	/obj/machinery/computer/ship_checkpoint,
+	// Internal vending stock is not scrubbed by clear_stock().
+	/obj/machinery/vending/security/marine/solgov,
 	// Made by its turret.
 	/obj/machinery/porta_turret_cover,
 	// Never rebuilt: user decision, 2026-09-24.
@@ -83,6 +85,10 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 /datum/ship_checkpoint
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/datum/weakref/source_ship
+	/// Live crew entitlement, never a snapshot copy: awards after capture must survive recovery.
+	var/list/research_reward_ledger
+	/// Live round identity; weak because only the round registry owns record lifetime.
+	var/datum/weakref/crew_record_ref
 	var/captain_ckey
 	var/ship_name
 	var/saved_at
@@ -105,6 +111,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		original.checkpoint_ref = null
 	outpost = null
 	source_ship = null
+	research_reward_ledger = null
+	crew_record_ref = null
 	tgm = null
 	rooms = null
 	machines = null
@@ -139,6 +147,9 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		keys += list("icon", "icon_door", "base_icon_state", "enable_door_overlay", "has_opened_overlay", "has_closed_overlay", "wall_mounted", "horizontal", "locked", "req_one_access")
 		// Closet stock is otherwise generated lazily on first opening.
 		properties += "contents_initialized = 1"
+		if(istype(object, /obj/structure/closet/crate/secure/loot))
+			// A saved freight shell never receives a fresh code-lock payout.
+			properties += "spawned_loot = 1"
 	if(istype(object, /obj/machinery/light))
 		// Lights otherwise materialize a charged mock battery after map loading.
 		properties += "start_with_cell = 0"
@@ -248,6 +259,9 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(!valid)
 		return "The hull design could not be read back. No payment was taken."
 	source_ship = WEAKREF(ship)
+	research_reward_ledger = ship.ship_team?.research_reward_ledger
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	crew_record_ref = crew ? WEAKREF(crew) : null
 	captain_ckey = owner_ckey
 	ship_name = ship.name
 	saved_at = world.time

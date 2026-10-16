@@ -10,7 +10,7 @@
  *   spawn every rare-loot unique at once.
  * - Dynamic events: fire a chosen event at a chosen ship.
  * - Missions: hand a chosen mission type to a ship, force-resolve any active one.
- * - Trade: grant vouchers, reveal rare rumor-chart ruins, spawn gun blueprints.
+ * - Trade: grant vouchers, reveal rare rumor-chart ruins.
  * - Overmap: spawn gas nebulas (ram scoop testing), surface a contested cache.
  *
  * Complements the per-module verbs that already exist: colosseum match control
@@ -651,6 +651,113 @@ ADMIN_VERB(force_resolve_mission, R_ADMIN|R_DEBUG, "Missions: Resolve Mission", 
 
 // ===== TRADE =====
 
+/// Includes crews with no surviving hull or connected member.
+/proc/voidcrew_admin_pick_crew_record(client/user)
+	var/list/choices = list()
+	for(var/datum/voidcrew_crew_record/record in GLOB.voidcrew_crew_records)
+		choices["Crew #[record.crew_id]: [voidcrew_zone_permission_name(record.get_zone_permission())], [length(record.teams)] hulls, [length(record.ckeys)] members"] = record
+	if(!length(choices))
+		to_chat(user, span_warning("No crew records exist."))
+		return null
+	var/choice = tgui_input_list(user, "Select a round crew record:", "Crew Reputation", sort_list(choices))
+	var/datum/voidcrew_crew_record/selected = choices[choice]
+	return QDELETED(selected) ? null : selected
+
+/// Keep totals derived from bounded family contributions, even for admin edits.
+/datum/voidcrew_crew_record/proc/admin_set_zone_family(family, band, amount)
+	if(QDELETED(src) || !(src in GLOB.voidcrew_crew_records) || !(family in zone_reputation_families()) \
+		|| !(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) || !isnum(amount))
+		return FALSE
+	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
+	if(amount != round(amount) || amount < 0 || amount > cap)
+		return FALSE
+	var/list/families = zone_families["[band]"]
+	families[family] = amount
+	var/total = 0
+	for(var/canonical_family in zone_reputation_families())
+		total += families[canonical_family]
+	zone_totals["[band]"] = total
+	return TRUE
+
+/// Reset the live shared balance in place. Settled encounters remain spent, including aliases.
+/datum/voidcrew_crew_record/proc/admin_reset_zone_record()
+	if(QDELETED(src) || !(src in GLOB.voidcrew_crew_records))
+		return FALSE
+	for(var/band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		var/list/families = zone_families["[band]"]
+		for(var/family in zone_reputation_families())
+			families[family] = 0
+		zone_totals["[band]"] = 0
+	trader_favor.Cut()
+	favor_unique_purchases.Cut()
+	return TRUE
+
+/datum/voidcrew_crew_record/proc/admin_zone_report()
+	var/list/lines = list("<h2>Crew #[crew_id]: [voidcrew_zone_permission_name(get_zone_permission())]</h2>")
+	lines += "<p>Roster: [html_encode(ckeys.Join(", "))]<br>Claimed encounters: [length(settlement_claims)]</p>"
+	for(var/datum/team/voidcrew/team in teams)
+		if(!QDELETED(team.ship))
+			lines += "<p>Hull: [html_encode(team.ship.name)]</p>"
+	lines += "<table border='1'><tr><th>Band</th><th>Total</th>"
+	for(var/family in zone_reputation_families())
+		lines += "<th>[family]</th>"
+	lines += "</tr>"
+	for(var/band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		var/list/families = zone_families["[band]"]
+		lines += "<tr><td>[metric_zone_name(band)]</td><td>[zone_totals["[band]"]]</td>"
+		for(var/family in zone_reputation_families())
+			lines += "<td>[families[family]]</td>"
+		lines += "</tr>"
+	lines += "</table><h3>Trader favor</h3>"
+	for(var/trader in trader_favor)
+		lines += "<p>[html_encode("[trader]")]: [trader_favor[trader]]</p>"
+	lines += "<h3>Unique purchases</h3>"
+	for(var/sku in favor_unique_purchases)
+		lines += "<p>[html_encode("[sku]")]: [favor_unique_purchases[sku]]</p>"
+	return lines.Join("")
+
+ADMIN_VERB(zone_crew_reputation, R_ADMIN|R_DEBUG, "Zones: Crew Reputation", "Inspect, set family contributions or reset a continuing crew's shared record.", ADMIN_CATEGORY_DEBUG)
+	var/datum/voidcrew_crew_record/record = voidcrew_admin_pick_crew_record(user)
+	if(!record)
+		return
+	var/action = tgui_input_list(user, "Crew #[record.crew_id]", "Crew Reputation", list("Inspect", "Set family", "Reset record"))
+	if(!action || QDELETED(record) || !check_rights_for(user, R_ADMIN|R_DEBUG))
+		return
+	if(action == "Inspect")
+		var/datum/browser/popup = new(user.mob, "crewreputation", "Crew Reputation", 760, 600)
+		popup.set_content(record.admin_zone_report())
+		popup.open()
+		return
+	var/family
+	var/band
+	var/amount
+	if(action == "Set family")
+		band = voidcrew_admin_pick_zone_band(user, "Crew Reputation")
+		if(isnull(band) || QDELETED(record))
+			return
+		family = tgui_input_list(user, "Which family?", "Crew Reputation", zone_reputation_families())
+		if(!family || QDELETED(record))
+			return
+		var/list/families = record.zone_families["[band]"]
+		var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
+		amount = tgui_input_number(user, "Lifetime contribution (0-[cap]):", "Crew Reputation", families[family], cap, 0)
+		if(isnull(amount))
+			return
+	else if(tgui_alert(user, "Reset Crew #[record.crew_id]'s zone contributions, trader favor and unique purchase counts? Membership and spent encounter claims stay intact.", "Reset Crew Record", list("Reset", "Cancel")) != "Reset")
+		return
+	// Every prompt yields; check rights and registry membership again before touching the ledger.
+	if(QDELETED(record) || !(record in GLOB.voidcrew_crew_records) || !check_rights_for(user, R_ADMIN|R_DEBUG))
+		return
+	var/list/before = record.zone_totals.Copy()
+	var/changed = action == "Set family" ? record.admin_set_zone_family(family, band, amount) : record.admin_reset_zone_record()
+	if(!changed)
+		return
+	var/operation = action == "Set family" ? "set [metric_zone_name(band)]/[family] to [amount]" : "reset balances and purchase counts"
+	message_admins("[key_name_admin(user)] [operation] for crew #[record.crew_id].")
+	log_admin("[key_name(user)] [operation] for crew #[record.crew_id]; zone totals [json_encode(before)] -> [json_encode(record.zone_totals)].")
+	record_metric(METRIC_MISSION, "zone_record_admin_changed", ckey = metric_ckey(user.mob), subject = "crew_[record.crew_id]", details = list("crew_id" = record.crew_id, "operation" = operation, "totals_before" = before, "totals_after" = record.zone_totals.Copy()))
+	BLACKBOX_LOG_ADMIN_VERB("Crew Reputation")
+
 ADMIN_VERB(give_trade_vouchers, R_ADMIN|R_DEBUG, "Trade: Give Vouchers", "Put a stack of trade vouchers in a player's hands.", ADMIN_CATEGORY_DEBUG)
 	var/mob/living/target = voidcrew_admin_pick_player(user, "Give Trade Vouchers")
 	if(!target)
@@ -700,29 +807,6 @@ ADMIN_VERB(reveal_rare_ruin, R_ADMIN|R_DEBUG, "Trade: Reveal Rare Ruin", "Spawn 
 	message_admins("[key_name_admin(user)] revealed rare ruin '[template.name]' at overmap ([coords[1]], [coords[2]]).")
 	log_admin("[key_name(user)] revealed rare ruin '[template.name]'.")
 	BLACKBOX_LOG_ADMIN_VERB("Reveal Rare Ruin")
-
-ADMIN_VERB(spawn_gun_blueprint, R_ADMIN|R_DEBUG, "Trade: Spawn Blueprint", "Spawn a specific weapons-bench gun blueprint at your feet.", ADMIN_CATEGORY_DEBUG)
-	var/turf/drop_turf = get_turf(user.mob)
-	if(!drop_turf)
-		to_chat(user, span_warning("You need a physical location to spawn a blueprint at."))
-		return
-	var/list/choices = list()
-	for(var/obj/item/blueprint/blueprint_type as anything in subtypesof(/obj/item/blueprint))
-		if(blueprint_type == /obj/item/blueprint/gun)
-			continue
-		choices[initial(blueprint_type.name)] = blueprint_type
-	var/choice = tgui_input_list(user, "Which blueprint?", "Spawn Blueprint", sort_list(choices))
-	if(!choice)
-		return
-	var/blueprint_type = choices[choice]
-	var/obj/item/blueprint/blueprint = new blueprint_type(drop_turf)
-	var/mob/living/admin_mob = user.mob
-	if(isliving(admin_mob))
-		admin_mob.put_in_hands(blueprint)
-	to_chat(user, span_notice("[blueprint] spawned."))
-	message_admins("[key_name_admin(user)] spawned blueprint '[blueprint]'.")
-	log_admin("[key_name(user)] spawned blueprint '[blueprint]'.")
-	BLACKBOX_LOG_ADMIN_VERB("Spawn Gun Blueprint")
 
 // ===== OVERMAP / GAS ECONOMY =====
 

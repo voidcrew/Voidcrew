@@ -76,7 +76,7 @@
 			if(3) //VICTORY ROYALE
 				to_chat(affected_mob, span_hierophant("You win, and the malevolent spirits fade away as well as your wounds."))
 				affected_mob.client.give_award(/datum/award/achievement/jobs/helbitaljanken, affected_mob)
-				affected_mob.revive(HEAL_ALL & ~HEAL_REFRESH_ORGANS)
+				affected_mob.revive_from("reagent", HEAL_ALL & ~HEAL_REFRESH_ORGANS) // VOIDCREW EDIT: explicit combat metrics attribution.
 				holder.del_reagent(type)
 				return
 

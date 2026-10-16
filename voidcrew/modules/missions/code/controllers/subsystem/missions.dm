@@ -45,7 +45,7 @@ SUBSYSTEM_DEF(missions)
 		CHECK_TICK
 
 /**
- * Fills a ship's available missions list up to the default count.
+ * Replaces a ship's fixed offer set only when its scheduled refresh is due.
  * * ship - The ship to refresh missions for
  */
 /datum/controller/subsystem/missions/proc/refresh_ship_missions(obj/structure/overmap/ship/ship)
@@ -55,28 +55,96 @@ SUBSYSTEM_DEF(missions)
 	if(istype(ship, /obj/structure/overmap/ship/npc))
 		return
 
-	// Remove deleted missions and rotate out offers that sat unaccepted too long
+	// Deletion leaves a vacancy, not a retained reference or an early replacement.
+	for(var/index in length(ship.available_missions) to 1 step -1)
+		if(QDELETED(ship.available_missions[index]))
+			ship.available_missions.Cut(index, index + 1)
+	if(world.time < ship.next_mission_refresh)
+		return FALSE
+	// Claim the schedule before generation, so console rebuilds and vacant slots cannot reroll it.
+	ship.next_mission_refresh = world.time + MISSION_REFRESH_COOLDOWN
+	ship.last_mission_refresh = world.time
 	for(var/datum/mission/mission as anything in ship.available_missions)
-		if(QDELETED(mission))
-			ship.available_missions -= mission
-			continue
-		if(world.time - mission.posted_at > MISSION_BOARD_EXPIRY)
-			ship.available_missions -= mission
+		if(!QDELETED(mission))
 			tally_mission_offer(mission, ship, "mission_offer_expired") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 			qdel(mission)
+	ship.available_missions = list()
 
 	// Reserve one of the existing slots before rolling the rest of the board.
 	ensure_safe_exploration_offer(ship)
-	// Fill up to default count
-	var/missions_needed = DEFAULT_AVAILABLE_MISSIONS - length(ship.available_missions)
+	var/reserved_vacancies = reserve_useful_family_offers(ship)
+	var/list/eligible_zones = eligible_work_bands(ship)
 	// Asked once and reused: the lookup walks the hull for an R&D server the
 	// first time it misses, and five offers is five walks.
 	var/unarmed = !ship.has_ship_combat_research()
-	for(var/i in 1 to missions_needed)
-		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed))
+	var/posting_zone = SSovermap_zones?.get_zone_type(get_turf(ship))
+	// Resolve failed rolls inside this scheduled batch; never retry vacancies afterward.
+	var/attempts_left = DEFAULT_AVAILABLE_MISSIONS * 10
+	while(length(ship.available_missions) + reserved_vacancies < DEFAULT_AVAILABLE_MISSIONS && attempts_left-- > 0)
+		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed), posting_zone, eligible_zones)
 		if(new_mission)
 			ship.available_missions += new_mission
 			tally_mission_offer(new_mission, ship, "mission_offered") // round metrics, voidcrew/modules/metrics/mission_metrics.dm
+	return TRUE
+
+/datum/controller/subsystem/missions/proc/eligible_work_bands(obj/structure/overmap/ship/ship)
+	var/list/bands = list(ZONE_GREEN)
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	for(var/band in list(ZONE_YELLOW, ZONE_RED))
+		if(record?.can_work_in_zone(band))
+			bands += band
+	return bands
+
+/// Earliest unmet cumulative band; elite crews no longer need reserved work.
+/datum/controller/subsystem/missions/proc/next_work_band(datum/voidcrew_crew_record/record)
+	switch(record?.get_zone_permission())
+		if(ZONE_PERMISSION_YELLOW)
+			return ZONE_YELLOW
+		if(ZONE_PERMISSION_ADVANCED)
+			return ZONE_RED
+		if(ZONE_PERMISSION_ELITE)
+			return null
+	return ZONE_GREEN
+
+/// Returns reserved vacancies, which ordinary rolls must not silently replace.
+/datum/controller/subsystem/missions/proc/reserve_useful_family_offers(obj/structure/overmap/ship/ship)
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	var/band = next_work_band(record)
+	if(isnull(band))
+		return 0
+	var/list/families = list()
+	var/list/contributions = record?.zone_families["[band]"]
+	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
+	for(var/mission_type in mission_types)
+		var/family = zone_reputation_family(mission_type)
+		if(!family || (contributions && contributions[family] >= cap) || !mission_type_within_limit(mission_type))
+			continue
+		LAZYINITLIST(families[family])
+		families[family] += mission_type
+	var/reserved_slots = min(3, length(families))
+	var/filled_slots = 0
+	// Exhaust the remaining useful families in this batch before leaving any reserved slot vacant.
+	while(length(families) && filled_slots < reserved_slots)
+		var/family = pick(families)
+		var/list/types = families[family]
+		families -= family
+		var/datum/mission/offer
+		var/attempts = 8
+		while(!offer && attempts-- > 0)
+			var/mission_type = pick(types)
+			if(!mission_type_within_limit(mission_type))
+				types -= mission_type
+				if(!length(types))
+					break
+				continue
+			offer = create_mission(mission_type, band, null, list(band), TRUE)
+		if(!offer)
+			log_mapping("SSmissions: ship [REF(ship)] reserved [family] in band [band] has no eligible offer after bounded retries")
+			continue
+		ship.available_missions += offer
+		filled_slots++
+		tally_mission_offer(offer, ship, "mission_offered")
+	return reserved_slots - filled_slots
 
 /**
  * The zone band the next offer should prefer, rolled per offer.
@@ -96,11 +164,11 @@ SUBSYSTEM_DEF(missions)
  * Returns a new mission datum, or null if none available.
  * * preferred_zone - ZONE_* band the offer should aim at where it can, or null
  */
-/datum/controller/subsystem/missions/proc/generate_random_mission(preferred_zone)
+/datum/controller/subsystem/missions/proc/generate_random_mission(preferred_zone, posting_zone, list/eligible_zones)
 	var/mission_type = get_weighted_mission_type()
 	if(!mission_type)
 		return null
-	return create_mission(mission_type, preferred_zone)
+	return create_mission(mission_type, preferred_zone, posting_zone, eligible_zones)
 
 /**
  * Selects a random mission type based on weight.
@@ -114,16 +182,8 @@ SUBSYSTEM_DEF(missions)
 	for(var/mission_type in mission_types)
 		var/datum/mission/M = mission_type
 		var/type_weight = initial(M.weight)
-		var/type_limit = initial(M.mission_limit)
-
-		// Check mission limit
-		if(type_limit > 0)
-			var/active_count = 0
-			for(var/datum/mission/active in all_active_missions)
-				if(active.type == mission_type)
-					active_count++
-			if(active_count >= type_limit)
-				continue
+		if(!mission_type_within_limit(mission_type))
+			continue
 
 		weighted_types[mission_type] = type_weight
 
@@ -136,10 +196,10 @@ SUBSYSTEM_DEF(missions)
  * Creates a new mission of the specified type.
  * * mission_type - The type path of the mission to create
  */
-/datum/controller/subsystem/missions/proc/create_mission(mission_type, preferred_zone)
+/datum/controller/subsystem/missions/proc/create_mission(mission_type, preferred_zone, posting_zone, list/eligible_zones, create_field_contact = FALSE)
 	if(!mission_type)
 		return null
-	var/datum/mission/mission = new mission_type(null, preferred_zone)
+	var/datum/mission/mission = new mission_type(null, preferred_zone, posting_zone, eligible_zones, create_field_contact)
 	// Some mission types (e.g. recovery) can fail generation if no valid target exists
 	if(mission.generation_failed)
 		qdel(mission)
@@ -147,21 +207,14 @@ SUBSYSTEM_DEF(missions)
 	return mission
 
 /**
- * Force-generates new available missions for a specific ship.
- * Clears existing available missions and generates fresh ones.
+ * Requests a scheduled refresh for a specific ship; never bypasses its timer.
  * * ship - The ship to regenerate missions for
  */
 /datum/controller/subsystem/missions/proc/force_refresh_ship_missions(obj/structure/overmap/ship/ship)
 	if(!ship || istype(ship, /obj/structure/overmap/ship/npc))
 		return
 
-	// Delete existing available missions
-	for(var/datum/mission/mission as anything in ship.available_missions)
-		if(!QDELETED(mission))
-			qdel(mission)
-	ship.available_missions = list()
-
-	refresh_ship_missions(ship)
+	return refresh_ship_missions(ship)
 
 /// Retain or reserve one valid green travel job; never exceed the board's five slots.
 /datum/controller/subsystem/missions/proc/ensure_safe_exploration_offer(obj/structure/overmap/ship/ship)

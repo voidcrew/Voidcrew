@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms/icemoon{
+	dir = 1;
+	outfit_override = list("r_pocket" = null, "r_hand" = /obj/item/spear)
+	},
+/turf/open/floor/iron/white,
+/area/ruin/comms_agent)
 "ag" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
@@ -65,12 +72,6 @@
 "eE" = (
 /obj/structure/cable,
 /turf/open/floor/wood,
-/area/ruin/comms_agent)
-"eT" = (
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms/icemoon{
-	dir = 1
-	},
-/turf/open/floor/iron/white,
 /area/ruin/comms_agent)
 "fk" = (
 /obj/structure/rack,
@@ -2026,7 +2027,7 @@ pV
 WR
 BZ
 WL
-eT
+ab
 YI
 rA
 uk

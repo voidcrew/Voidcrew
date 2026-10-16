@@ -12,11 +12,8 @@
  *   and grower's supply, Pike owns tackle and the rods. Pike's stall stocks
  *   nothing a stock ship autolathe prints for free, that ruled out the
  *   aquarium kit and fish case.
- * - Fern's hand tools ARE autolathe designs, and they're priced like it: pocket
- *   change, sold for the crew that wants a garden running before they've built
- *   a lathe or walked back to one. Her tray board is the real sale, it sits
- *   behind the hydroponics techweb node, so a ship with no R&D bay has no other
- *   way to add a tray.
+ * - Fern stocks seeds and supplies rather than printable hand tools. Her
+ *   tray board is the fabrication-gated infrastructure for adding a garden.
  * - Fern's produce and graft buybacks pay pocket change on purpose: it's the
  *   "sell your harvest at the waystation" fantasy, not an economy. Her graft
  *   ledger refuses plain repeated-harvest cuttings so a tray of wheat can't be
@@ -78,13 +75,6 @@
 		/datum/shop_sku/potting/robust_harvest,
 		/datum/shop_sku/potting/left4zed,
 		/datum/shop_sku/potting/overalls,
-		// Grower's Supply: hand tools
-		/datum/shop_sku/potting/cultivator,
-		/datum/shop_sku/potting/spade,
-		/datum/shop_sku/potting/hatchet,
-		/datum/shop_sku/potting/secateurs,
-		/datum/shop_sku/potting/watering_can,
-		/datum/shop_sku/potting/plant_analyzer,
 		// Grower's Supply: the tray itself
 		/datum/shop_sku/potting/tray_board,
 		// The Apiary
@@ -129,7 +119,6 @@
 			"The bees know the way to the pond and back. Nobody taught them. I don't ask.",
 			"Bring me grafts with something actually in them. A cutting off a wheat stalk is just a cutting.",
 			"Tray boards are on the shelf behind me. Two bins, a servo, a sheet of glass, and you've got a garden.",
-			"Take the tools while you're here. They're cheap, and I'd rather you weren't pulling weeds with your hands.",
 			"Ash flora seeds off the burning worlds. I pay proper credits. They grow ANYWHERE. It's terrifying. I love them.",
 			"Pike keeps saying fish fertilizer would double my yield. Pike is banned from the conservatory.",
 		),
@@ -247,64 +236,8 @@
 	stock_min = 1
 	stock_max = 3
 
-// ----- Hand tools -----
-// Every one of these is a service autolathe design, so a ship with a working
-// lathe can print the set for scrap. Priced accordingly: this is the rack you
-// grab on the way out rather than a supply line.
-
-/datum/shop_sku/potting/cultivator
-	category = "Grower's Supply"
-	desc = "A hand rake for turning weeds out of a tray. Fern sells them by the bundle and still finds people pulling weeds by hand."
-	item_path = /obj/item/cultivator
-	price_credits = 30
-	stock_min = 4
-	stock_max = 8
-
-/datum/shop_sku/potting/spade
-	category = "Grower's Supply"
-	desc = "For digging a plant out of a tray without killing it, and for repotting whatever you dug up."
-	item_path = /obj/item/shovel/spade
-	price_credits = 30
-	stock_min = 4
-	stock_max = 8
-
-/datum/shop_sku/potting/hatchet
-	category = "Grower's Supply"
-	desc = "Chops down a tower cap, splits logs, and harvests anything too woody for bare hands. Fern would like it noted that it is a gardening tool."
-	item_path = /obj/item/hatchet
-	price_credits = 50
-	stock_min = 3
-	stock_max = 6
-
-/datum/shop_sku/potting/secateurs
-	category = "Grower's Supply"
-	desc = "Pruning shears sharp enough to take a clean graft off a stem. The cutting keeps whatever trait the parent was carrying."
-	item_path = /obj/item/secateurs
-	price_credits = 50
-	stock_min = 3
-	stock_max = 6
-
-/datum/shop_sku/potting/watering_can
-	category = "Grower's Supply"
-	desc = "Holds enough water for a row of trays. Fill it at any sink, or at Pike's pond if you want to hear his opinion about it."
-	item_path = /obj/item/reagent_containers/cup/watering_can
-	price_credits = 40
-	stock_min = 3
-	stock_max = 6
-
-/datum/shop_sku/potting/plant_analyzer
-	category = "Grower's Supply"
-	desc = "Reads a plant's stats and traits, and a tray's water, nutrients and pest level. Growing without one works, but you're guessing."
-	item_path = /obj/item/plant_analyzer
-	price_credits = 60
-	stock_min = 3
-	stock_max = 6
-
 // ----- The tray itself -----
-// Unlike the hand tools this one is genuinely gated: the design sits behind the
-// hydroponics techweb node, so it's the only tray a ship without an R&D bay can
-// get hold of. Priced so two boards plus the tools still cost more loose than
-// the botany starter pack in shop_catalog_job_packs.dm.
+// Infrastructure for crews adding a garden without an existing research bay.
 
 /datum/shop_sku/potting/tray_board
 	category = "Grower's Supply"
@@ -486,9 +419,6 @@
 		/datum/shop_sku/bait/rotating/carp_plushie,
 		/datum/shop_sku/bait/rotating/stocked_aquarium,
 	)
-	rare_pool = list(
-		/datum/shop_sku/bait/rare/tech_rod,
-	)
 	buyback_types = list(
 		/datum/shop_buyback/bait/pike,
 		/datum/shop_buyback/bait/donkfish,
@@ -645,15 +575,6 @@
 	name = "stocked aquarium"
 	desc = "A full aquarium, fish included, sold as-is off Pike's display shelf. Transporting it is your problem and the fish's."
 	item_path = /obj/structure/aquarium/prefilled
-	price_credits = 600
-
-// ===== RARE SHOWCASE =====
-
-/datum/shop_sku/bait/rare/tech_rod
-	category = "Rods & Reels"
-	desc = "A self-reeling smart rod. Pike calls it cheating and stocks it anyway, because cheating sells."
-	item_path = /obj/item/fishing_rod/tech
-	price_vouchers = 1
 	price_credits = 600
 
 // ===== PIKE'S TROPHY LEDGER (buybacks) =====

@@ -89,6 +89,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/porta_turret/outpost/turrets = list()
 	/// Looping timer id for the supply convoy restock
 	var/restock_timer
+	/// Board clock is independent of visits, acceptance and the supply convoy.
+	var/next_contract_refill = 0
+	var/contract_refill_timer
 
 /// A market, as against a crew's own colony. Both are "Outposts" on the readout.
 /obj/structure/overmap/trader_outpost/get_contact_variant()
@@ -102,7 +105,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	GLOB.trader_outposts += src
 	berths = new /list(OUTPOST_MAX_BERTHS)
 	ensure_main_shop()
-	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
+	ensure_shop_offers()
+	contract_refill_timer = addtimer(CALLBACK(src, PROC_REF(ensure_shop_offers)), OUTPOST_CONTRACT_REFILL_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
+	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 
 /**
  * Creates the main shop on first need. SSovermap spawns outposts and pre-loads
@@ -119,6 +124,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return shop
 
 /obj/structure/overmap/trader_outpost/Destroy()
+	if(contract_refill_timer)
+		deltimer(contract_refill_timer)
+		contract_refill_timer = null
 	if(restock_timer)
 		deltimer(restock_timer)
 		restock_timer = null
@@ -209,6 +217,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	)
 	if(!top_right)
 		return
+	var/list/obj/machinery/door/airlock/outpost/checkpoint/checkpoint_doors = list()
+	var/list/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/checkpoint_scanners = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
@@ -230,6 +240,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = src
+				if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint))
+					checkpoint_doors += door
+			else if(istype(machine, /obj/machinery/scanner_gate/preset_guns/outpost_checkpoint))
+				checkpoint_scanners += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
 				panel.outpost = src
@@ -244,6 +258,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/obj/fixture in interior_turf)
 			if(ismachinery(fixture) || isstructure(fixture))
 				fixture.AddElement(/datum/element/outpost_property)
+	// Only machines collected from this concourse reservation can form a circuit.
+	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in checkpoint_doors)
+		for(var/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner as anything in checkpoint_scanners)
+			if(door.checkpoint_id && door.checkpoint_id == scanner.checkpoint_id)
+				door.link_scanner(scanner)
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
 	// yet, dressing the appearance dummy that early is unsafe, so those
@@ -446,8 +465,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 	// Not over the line yet: warn and give them a chance to stand down.
 	if(strikes < OUTPOST_AGGRESSION_STRIKES)
-		var/remaining = OUTPOST_AGGRESSION_STRIKES - strikes
-		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning. [remaining] more infraction\s and they fire."))
+		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning."))
 		if(trader)
 			trader.speak_line(TRADER_LINE_WARNING)
 		return
@@ -455,11 +473,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	// Final strike: mark them and embargo their crew's ships.
 	aggressor_minds[offender.mind] = world.time + OUTPOST_AGGRESSION_MARK_DURATION
 
-	for(var/datum/team/voidcrew/team as anything in offender.mind.ship_teams)
+	var/datum/voidcrew_crew_record/crew = offender.mind.get_reputation_crew()
+	for(var/datum/team/voidcrew/team in crew?.teams)
 		if(team.ship)
 			embargo_ship(team.ship)
 
-	to_chat(offender, span_userdanger("Outpost defense systems lock onto you. Your trade privileges have been revoked for [OUTPOST_AGGRESSION_MARK_DURATION / (1 MINUTES)] minutes."))
+	to_chat(offender, span_userdanger("Outpost defense systems lock onto you."))
 	if(trader)
 		trader.speak_line(TRADER_LINE_AGGRESSION)
 
@@ -470,7 +489,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!istype(ship))
 		return
 	embargoed_ships[ship] = world.time + OUTPOST_EMBARGO_DURATION
-	ship.ship_notify("[name] has placed your vessel under trade embargo for [OUTPOST_EMBARGO_DURATION / (1 MINUTES)] minutes.", "TRADE EMBARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
+	ship.ship_notify("[name] has placed your vessel under trade embargo.", "TRADE EMBARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
 
 /**
  * Whether a ship is currently embargoed here. Expired entries are pruned lazily.
@@ -508,7 +527,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		return FALSE
 	if(is_marked_aggressor(user.mind))
 		return TRUE
-	for(var/datum/team/voidcrew/team as anything in user.mind.ship_teams)
+	var/datum/voidcrew_crew_record/crew = user.mind.get_reputation_crew()
+	for(var/datum/team/voidcrew/team in crew?.teams)
 		if(team.ship && is_ship_embargoed(team.ship))
 			return TRUE
 	return FALSE

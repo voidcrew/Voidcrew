@@ -1,4 +1,32 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/rack,
+/obj/machinery/airalarm/directional/south,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
+"ab" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
+"ac" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
+"ad" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/vending/security/marine/solgov{
+	voucher_items = list()
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security)
 "bi" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
@@ -28,13 +56,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
-"dy" = (
-/obj/structure/rack,
-/obj/machinery/airalarm/directional/south,
-/obj/item/gun/ballistic/shotgun/riot,
-/obj/item/gun/ballistic/shotgun/riot,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
 "dB" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium,
@@ -250,11 +271,6 @@
 /obj/docking_port/mobile/voidcrew/thunderbird,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/thunderbird/dormitories)
-"oU" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/vending/security/marine/solgov,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security)
 "po" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -500,7 +516,7 @@
 /area/shuttle/voidcrew/thunderbird/security/armory)
 "Fc" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/effect/turf_decal/tile/blue,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
@@ -766,12 +782,6 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
-"Xr" = (
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun,
-/obj/item/gun/energy/e_gun,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
 "Xz" = (
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/machinery/light{
@@ -844,14 +854,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/cargo_bay)
-"ZX" = (
-/obj/structure/rack,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
 
 (1,1,1) = {"
 zq
@@ -975,7 +977,7 @@ Ub
 cJ
 in
 EN
-dy
+aa
 Ub
 zq
 "}
@@ -996,7 +998,7 @@ GO
 ka
 qj
 in
-ZX
+ab
 Ub
 zq
 "}
@@ -1024,7 +1026,7 @@ zq
 (9,1,1) = {"
 zq
 OD
-oU
+ad
 kE
 zk
 zk
@@ -1038,7 +1040,7 @@ mt
 mt
 pR
 XM
-Xr
+ac
 Ub
 zq
 "}

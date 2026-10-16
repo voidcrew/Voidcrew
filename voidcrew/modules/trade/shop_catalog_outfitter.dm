@@ -26,6 +26,7 @@
 	shoes = /obj/item/clothing/shoes/jackboots
 
 /datum/outpost_shop/outfitter
+	back_room_line = "The wardens speak well of you. I'll clear it."
 	outpost_name = "\improper Quartermain Depot"
 	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
 	trader_name = "Sarge"
@@ -36,6 +37,7 @@
 	categories = list(
 		"Armor",
 		"Firearms & Ammo",
+		"Melee",
 		"Ship Systems",
 		"Ship Ordnance",
 		"Security Gear",
@@ -46,7 +48,6 @@
 		"Fuel & Gas",
 		"Colonial Registry",
 		"Intel & Charts",
-		"Blueprints",
 		"Barter Deals",
 		"Back Room",
 	)
@@ -60,14 +61,19 @@
 		/datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/energy_gun,
 		/datum/shop_sku/outfitter/laser_gun,
-		/datum/shop_sku/outfitter/double_barrel,
 		/datum/shop_sku/outfitter/rubbershot,
 		/datum/shop_sku/outfitter/lethalshot,
-		/datum/shop_sku/outfitter/boltaction,
 		/datum/shop_sku/outfitter/rifle_clip,
 		/datum/shop_sku/outfitter/smg_mag,
 		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/firing_pin,
+		/datum/shop_sku/outfitter/riot_shotgun,
+		// Melee
+		/datum/shop_sku/outfitter/combat_knife,
+		/datum/shop_sku/outfitter/shortsword,
+		/datum/shop_sku/outfitter/ablative_bat,
+		/datum/shop_sku/outfitter/fireaxe,
+		/datum/shop_sku/outfitter/sabre,
 		// Ship Systems
 		/datum/shop_sku/outfitter/engine_plasma,
 		/datum/shop_sku/outfitter/engine_expulsion,
@@ -80,9 +86,6 @@
 		/datum/shop_sku/outfitter/warhead_standard,
 		/datum/shop_sku/outfitter/missile_light,
 		// Security Gear
-		/datum/shop_sku/outfitter/seclite,
-		/datum/shop_sku/outfitter/flash,
-		/datum/shop_sku/outfitter/bola,
 		/datum/shop_sku/outfitter/security_belt,
 		/datum/shop_sku/outfitter/pepper_spray,
 		/datum/shop_sku/outfitter/riot_shield,
@@ -92,7 +95,6 @@
 		/datum/shop_sku/outfitter/advanced_medkit,
 		/datum/shop_sku/outfitter/stimpack,
 		/datum/shop_sku/outfitter/suture,
-		/datum/shop_sku/outfitter/health_hud,
 		// Mess Tin
 		/datum/shop_sku/outfitter/rations,
 		/datum/shop_sku/outfitter/energy_bar,
@@ -100,8 +102,6 @@
 		/datum/shop_sku/outfitter/hot_sauce,
 		// Utility
 		/datum/shop_sku/outfitter/gas_mask,
-		/datum/shop_sku/outfitter/jaws,
-		/datum/shop_sku/outfitter/magboots,
 		// Hull Stock
 		/datum/shop_sku/outfitter/plasteel_stock,
 		/datum/shop_sku/outfitter/iron_stock,
@@ -114,10 +114,6 @@
 		/datum/shop_sku/outpost_deed,
 		// Intel & Charts: the dealt chart shelf adds to this from chart_pool
 		/datum/shop_sku/rumor,
-		// Blueprints
-		/datum/shop_sku/outfitter/smg_blueprint,
-		/datum/shop_sku/outfitter/wt550_blueprint,
-		/datum/shop_sku/outfitter/carbine_blueprint,
 		// Barter
 		/datum/shop_sku/barter/plasteel_for_shield,
 	)
@@ -150,11 +146,9 @@
 	)
 	rare_pool = list(
 		/datum/shop_sku/outfitter/rare/ablative_vest,
-		/datum/shop_sku/outfitter/rare/compact_defib,
-		/datum/shop_sku/outfitter/rare/ion_rifle,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
-	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/skunkworks_cell,
 		/datum/shop_sku/favor/fitter_gauntlets,
@@ -168,25 +162,11 @@
 		/datum/shop_buyback/outfitter/sinew,
 		/datum/shop_buyback/outfitter/glacial_core,
 	)
-	// Depot resupply runs: industrial quantities, decent free kit
+	// Field harvests for depot resupply
 	mission_requests = list(
-		list("type" = /obj/item/stack/sheet/plasteel, "name" = "plasteel sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/ore/titanium, "name" = "titanium ore", "amount" = 12, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/ore/silver, "name" = "silver ore", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		// Stack asks are settled from ONE stack, so never ask above max_amount -
-		// cable coil caps at MAXCOIL (30) and a bigger ask can never be paid
-		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 30, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/goliath_hide, "name" = "goliath hide plates", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/sheet/sinew, "name" = "beast sinew", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-	)
-	// The armory back room: hard contracts only, never sold. Everything here has
-	// to be unobtainable elsewhere, so no item that drops in a zone loot theme
-	// and nothing that appears on the Ship Systems shelf.
-	exclusive_rewards = list(
-		/obj/item/circuitboard/machine/ship_combat/missile_launcher,
-		/obj/item/circuitboard/machine/engine/void,
-		/obj/item/gun/energy/laser/captain,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -224,7 +204,6 @@
 			"Firing pins. Everyone forgets the firing pins. Don't be everyone.",
 			"Thruster boards are on the back wall. If your ship's limping, that's the fix, and it beats buying a new ship.",
 			"Most crews can't build a turret. Most crews also can't afford mine. Work on the second problem.",
-			"The schematics I stock are legal. The fun ones are two zones that way.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"Convoy made it through. Shelves are full, for now.",
@@ -271,28 +250,31 @@
 	price_credits = 400
 	stock_min = 1
 	stock_max = 3
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/energy_gun
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/e_gun
 	price_vouchers = 0
-	price_credits = 1500
+	price_credits = 2400
 	stock_min = 1
-	stock_max = 2
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/laser_gun
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/laser
-	price_credits = 600
+	price_credits = 1500
 	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/outfitter/double_barrel
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/ballistic/shotgun/doublebarrel
-	price_credits = 900
-	stock_min = 1
-	stock_max = 2
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/rubbershot
 	category = "Firearms & Ammo"
@@ -308,13 +290,6 @@
 	stock_min = 10
 	stock_max = 20
 
-/datum/shop_sku/outfitter/boltaction
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/ballistic/rifle/boltaction
-	price_credits = 900
-	stock_min = 1
-	stock_max = 2
-
 /datum/shop_sku/outfitter/rifle_clip
 	category = "Firearms & Ammo"
 	item_path = /obj/item/ammo_box/strilka310
@@ -322,12 +297,10 @@
 	stock_min = 10
 	stock_max = 20
 
-// Magazines for the two ballistics whose blueprints are on the shelf below.
-// Print the gun once, buy the ammo forever.
 /datum/shop_sku/outfitter/smg_mag
 	category = "Firearms & Ammo"
 	name = "c-20r magazine"
-	desc = "A loaded .45 magazine for a C-20r. Sarge stocks these because the schematic's on her own shelf."
+	desc = "A loaded .45 magazine for a C-20r."
 	item_path = /obj/item/ammo_box/magazine/smgm45
 	price_credits = 250
 	stock_min = 10
@@ -342,7 +315,6 @@
 	stock_min = 10
 	stock_max = 20
 
-// The quiet backbone of the blueprint economy: no pin, no gun
 /datum/shop_sku/outfitter/firing_pin
 	category = "Firearms & Ammo"
 	item_path = /obj/item/firing_pin
@@ -359,7 +331,7 @@
 /datum/shop_sku/outfitter/engine_plasma
 	category = "Ship Systems"
 	name = "plasma thruster board"
-	desc = "Board for a plasma thruster, the standard workhorse drive. It draws fuel from a heater mounted right behind it, so you need one of those in the line too."
+	desc = "The circuit board for a plasma thruster."
 	item_path = /obj/item/circuitboard/machine/engine/plasma
 	price_credits = 1800
 	stock_min = 1
@@ -368,7 +340,7 @@
 /datum/shop_sku/outfitter/engine_expulsion
 	category = "Ship Systems"
 	name = "expulsion thruster board"
-	desc = "Board for an expulsion thruster. It burns whatever gas is in the heater and wastes most of it, which is the point when plasma is scarce."
+	desc = "The circuit board for an expulsion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/expulsion
 	price_credits = 1200
 	stock_min = 1
@@ -377,7 +349,7 @@
 /datum/shop_sku/outfitter/engine_ion
 	category = "Ship Systems"
 	name = "ion thruster board"
-	desc = "Board for an ion thruster. No fuel line and no heater, just a heavy draw on the powernet, at about 40% of a plasma thruster's push."
+	desc = "The circuit board for an ion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/electric
 	price_credits = 2400
 	stock_min = 1
@@ -386,7 +358,7 @@
 /datum/shop_sku/outfitter/engine_oil
 	category = "Ship Systems"
 	name = "oil thruster board"
-	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. Buying one here skips the shuttle research your lathe would need to print it."
+	desc = "The circuit board for an oil thruster."
 	item_path = /obj/item/circuitboard/machine/engine/oil
 	price_credits = 1800
 	stock_min = 1
@@ -395,7 +367,7 @@
 /datum/shop_sku/outfitter/engine_heater
 	category = "Ship Systems"
 	name = "engine heater board"
-	desc = "Board for a fueled engine heater. Plasma and expulsion thrusters latch onto one to draw fuel and won't fire without it."
+	desc = "The circuit board for an engine heater."
 	item_path = /obj/item/circuitboard/machine/shuttle/heater
 	price_credits = 900
 	stock_min = 2
@@ -404,7 +376,7 @@
 /datum/shop_sku/outfitter/laser_turret_board
 	category = "Ship Systems"
 	name = "laser turret board"
-	desc = "Board for a hull-mounted laser turret. It takes a standard power cell you can swap out for a bigger one, and Sarge will not discuss where the crate came from."
+	desc = "The circuit board for a hull-mounted laser turret."
 	item_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	price_vouchers = 0
 	price_credits = 2000
@@ -432,7 +404,7 @@
 /datum/shop_sku/outfitter/missile_light
 	category = "Ship Ordnance"
 	name = "light missile (armed)"
-	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher, no assembly, no fuss."
+	desc = "A light ship-to-ship missile, packed for shipment."
 	item_path = /obj/structure/ship_missile/armed/light
 	price_vouchers = 0
 	price_credits = 800
@@ -440,21 +412,6 @@
 	stock_max = 2
 
 // ===== SECURITY GEAR =====
-
-/datum/shop_sku/outfitter/seclite
-	category = "Security Gear"
-	item_path = /obj/item/flashlight/seclite
-	price_credits = 450
-
-/datum/shop_sku/outfitter/flash
-	category = "Security Gear"
-	item_path = /obj/item/assembly/flash/handheld
-	price_credits = 750
-
-/datum/shop_sku/outfitter/bola
-	category = "Security Gear"
-	item_path = /obj/item/restraints/legcuffs/bola
-	price_credits = 600
 
 /datum/shop_sku/outfitter/security_belt
 	category = "Security Gear"
@@ -513,17 +470,6 @@
 	stock_min = 10
 	stock_max = 20
 
-// Triage glasses. Reads live health off everyone in view, which is worth more
-// in a boarding action than knowing who a station flagged as wanted.
-/datum/shop_sku/outfitter/health_hud
-	category = "Combat Medical"
-	name = "medical HUD sunglasses"
-	desc = "Tinted health-scanner glasses. Everyone in view gets a status icon, so you can tell who's down from who's dead without walking over."
-	item_path = /obj/item/clothing/glasses/hud/health/sunglasses
-	price_credits = 1500
-	stock_min = 1
-	stock_max = 3
-
 // ===== MESS TIN =====
 // Field chow. Nothing here is cooking. It's calories that survive a webbing
 // pouch, a decompression and the customer. Every outpost feeds its lane;
@@ -568,22 +514,6 @@
 	category = "Utility"
 	item_path = /obj/item/clothing/mask/gas
 	price_credits = 200
-
-/datum/shop_sku/outfitter/jaws
-	category = "Utility"
-	name = "jaws of life"
-	item_path = /obj/item/crowbar/power
-	price_vouchers = 1
-	price_credits = 750
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/outfitter/magboots
-	category = "Utility"
-	item_path = /obj/item/clothing/shoes/magboots
-	price_credits = 1200
-	stock_min = 1
-	stock_max = 2
 
 // ===== HULL STOCK =====
 // Bulk repair material for crews who can't mine or can't wait. Sold by the
@@ -634,7 +564,7 @@
 
 /datum/shop_sku/outfitter/welding_fuel
 	name = "welding fuel tank"
-	desc = "A full tank of welding fuel on a wheeled frame. Drag it aboard and stop rationing your repairs."
+	desc = "A full tank of welding fuel on a wheeled frame."
 	category = "Fuel & Gas"
 	item_path = /obj/structure/reagent_dispensers/fueltank
 	price_credits = 400
@@ -650,35 +580,10 @@
 	stock_min = 10
 	stock_max = 20
 
-// ===== BLUEPRINTS =====
-// Yellow-tier guns, carried or imprinted, crafted anywhere. The charts and
-// rumor tips that used to share this shelf now come off chart_pool.
-
-/datum/shop_sku/outfitter/smg_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/c20r
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/outfitter/wt550_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/wt550
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/outfitter/carbine_blueprint
-	category = "Blueprints"
-	item_path = /obj/item/blueprint/gun/laser_carbine
-	price_vouchers = 2
-	price_credits = 3000
-	stock_min = 1
-	stock_max = 1
-
 // ===== ROTATING SHELF =====
 
 /datum/shop_sku/outfitter/rotating/riot_suit
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/riot
 	price_credits = 4500
@@ -721,6 +626,7 @@
 // ===== RARE SHOWCASE =====
 
 /datum/shop_sku/outfitter/rare/ablative_vest
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/laserproof
 	price_vouchers = 1
@@ -731,16 +637,10 @@
 	item_path = /obj/item/defibrillator/compact
 	price_credits = 2400
 
-/datum/shop_sku/outfitter/rare/ion_rifle
-	category = "Firearms & Ammo"
-	item_path = /obj/item/gun/energy/ionrifle
-	price_vouchers = 2
-	price_credits = 3000
-
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
 	name = "heavy missile (armed)"
-	desc = "A ready-to-fire heavy missile: devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
+	desc = "A heavy ship-to-ship missile in a reinforced shipping cradle."
 	item_path = /obj/structure/ship_missile/armed/heavy
 	price_vouchers = 0
 	price_credits = 2000
@@ -807,21 +707,77 @@
 	stock_max = 2
 
 // ===== BACK ROOM =====
-// Sarge's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Sarge's favor uniques: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/skunkworks_cell
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	item_path = /obj/item/stock_parts/power_store/cell/skunkworks
 	price_credits = 4200
 	price_vouchers = 2
 
 /datum/shop_sku/favor/fitter_gauntlets
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/clothing/gloves/tinkerer/fitter
 	price_credits = 3600
 	price_vouchers = 2
 
 /datum/shop_sku/favor/maneuvering_harness
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
 	price_credits = 3800
 	price_vouchers = 2
+/datum/shop_sku/outfitter/riot_shotgun
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	item_path = /obj/item/gun/ballistic/shotgun/riot
+	price_credits = 1800
+	price_vouchers = 0
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+// ===== MELEE =====
+
+/datum/shop_sku/outfitter/combat_knife
+	category = "Melee"
+	item_path = /obj/item/knife/combat
+	price_credits = 900
+	price_vouchers = 0
+	stock_min = 3
+	stock_max = 3
+
+/datum/shop_sku/outfitter/shortsword
+	category = "Melee"
+	item_path = /obj/item/claymore/shortsword
+	price_credits = 1200
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/ablative_bat
+	category = "Melee"
+	item_path = /obj/item/melee/baseball_bat/ablative
+	price_credits = 1000
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/fireaxe
+	category = "Melee"
+	item_path = /obj/item/fireaxe
+	price_credits = 1500
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/outfitter/sabre
+	category = "Melee"
+	item_path = /obj/item/melee/sabre
+	price_credits = 1800
+	price_vouchers = 0
+	stock_min = 1
+	stock_max = 1

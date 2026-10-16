@@ -4,6 +4,20 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
+"ab" = (
+/obj/structure/displaycase/noalert{
+	start_showpiece_type = null
+	},
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"ac" = (
+/obj/structure/closet/cardboard,
+/obj/structure/fluff/paper/stack,
+/obj/item/paper,
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
 "av" = (
 /obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 9
@@ -528,12 +542,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
-"wp" = (
-/obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/gun/energy/laser/captain
-	},
-/turf/open/floor/iron/white,
-/area/ruin/powered)
 "ww" = (
 /obj/structure/table,
 /obj/effect/decal/cleanable/dirt,
@@ -754,14 +762,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"Kk" = (
-/obj/structure/closet/cardboard,
-/obj/structure/fluff/paper/stack,
-/obj/item/paper,
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -1242,7 +1242,7 @@ Rw
 bG
 gw
 bz
-wp
+ab
 Bv
 GR
 bz
@@ -1573,7 +1573,7 @@ VP
 qZ
 EW
 Ea
-Kk
+ac
 Yv
 ZS
 CN

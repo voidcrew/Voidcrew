@@ -33,17 +33,18 @@
  */
 /datum/mission/poacher_bust
 	name = "Poacher Bust"
+	guarded_prize_family = "poacher"
 	weight = 7
 	mission_limit = 1
 	duration = 40 MINUTES
-	voucher_count = 2
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL
 	gps_tag_prefix = "WARDN"
 	// Green-band pay between field_expedition and big_game_hunt: a squad
 	// fight plus a counted evidence haul, but no elite at the end of it.
 	// The zone table makes a Lawless-zone bust a serious payday.
-	value_min = 900
-	value_max = 1200
+	value_min = 600
+	value_max = 800
 
 	/// Per-planet bust tables, keyed by /datum/overmap/planet typepath: the
 	/// protected species (named for the planet's actual fauna), the hunting
@@ -122,16 +123,7 @@
 	return "bounty"
 
 /datum/mission/poacher_bust/setup_target()
-	// Only offer busts for planet types actually on the overmap this round
-	var/list/present_types = list()
-	for(var/obj/structure/overmap/planet/candidate as anything in GLOB.overmap_planets)
-		if(QDELETED(candidate))
-			continue
-		if(!istype(get_turf(candidate), /turf/open/overmap))
-			continue
-		if(!candidate.planet || !bust_tables[candidate.planet])
-			continue
-		present_types |= candidate.planet
+	var/list/present_types = get_work_biomes(bust_tables)
 	if(!length(present_types))
 		return FALSE
 	bust_planet_type = pick(present_types)
@@ -197,7 +189,7 @@
 
 /datum/mission/poacher_bust/build_objectives()
 	var/datum/mission_objective/goto_coords/approach = new
-	approach.arrival_message = "On station over the poaching grounds. Take a ground team down and sweep for [objective_name]'s camp."
+	approach.arrival_message = "On station over the poaching grounds."
 	add_objective(approach)
 
 	wipe = new
@@ -238,11 +230,7 @@
 	var/datum/mission_target/planet/planet_target = target
 	var/planet_name = istype(planet_target) ? (planet_target.planet?.name || "the planet") : "the planet"
 	name = "Poacher Bust: [objective_name]"
-	desc = "[flavor_line] \
-		Warden's warrant: [objective_name] are running an illegal [protected_species] harvest from a camp in the [bust_row["ground"]] of [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Kill the whole squad to unlock their trophy cache, then return all [evidence_count] pieces of tagged evidence to the mission pad, one at a time. Destroying any evidence voids the contract. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to follow the case beacon ([gps_tag])."
+	desc = "Wanted dead: [objective_name], poaching [protected_species] on [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. Recover [evidence_count] pieces of evidence."
 
 /datum/mission/poacher_bust/waypoint_label()
 	return "Bust: [objective_name]"
@@ -323,13 +311,14 @@
 	// The squad, scattered around the campsite
 	for(var/i in 1 to length(squad_types))
 		var/poacher_type = squad_types[i]
-		var/mob/living/simple_animal/poacher = new poacher_type(get_nearby_open_turf(camp_turf, 3))
+		var/mob/living/simple_animal/poacher = spawn_field_npc(poacher_type, get_nearby_open_turf(camp_turf, 3), finalize = FALSE)
 		if(i <= length(squad_names))
 			poacher.name = squad_names[i]
 		poacher.desc += " The kit is professional: snare wire, skinning knives, and the brand of [mission.objective_name] burned into the stock."
 		// Outfitted expedition: cold-weather gear keeps an ice-planet camp
 		// from freezing to death before the crew arrives
 		poacher.minbodytemp = 0
+		poacher.npc_spawn_context.finalize()
 		protect_field_mob(poacher)
 		RegisterSignal(poacher, COMSIG_LIVING_DEATH, PROC_REF(on_poacher_death))
 		RegisterSignal(poacher, COMSIG_QDELETING, PROC_REF(on_poacher_removed))
@@ -353,7 +342,8 @@
 			var/obj/item/pet_carrier/cage = new(get_nearby_open_turf(camp_turf, 2))
 			cage.name = "live-catch cage"
 			cage.desc = "A warden-banned live trap, still occupied. The lock is a simple latch."
-			var/mob/living/critter = new critter_type(cage)
+			var/datum/npc_spawn_context/context = new(mission?.target || src, mission?.target?.get_zone_type(), "exempt", source_turf = camp_turf)
+			var/mob/living/critter = spawn_npc_in_zone(critter_type, cage, context)
 			cage.add_occupant(critter)
 			cage.open = FALSE
 			cage.locked = TRUE
@@ -454,7 +444,7 @@
 		cache.locked = FALSE
 		cache.update_appearance()
 		cache.visible_message(span_notice("[cache]'s mag-seal releases with a hiss."))
-	notify_crew("Camp cleared - all [squad_size] poachers accounted for. Warden override sent: the trophy cache is unlocked. Recover the evidence and return it to the mission pad.")
+	notify_crew("Camp cleared. Trophy cache unlocked.")
 
 /datum/mission_objective/field/wipe_camp/get_progress_string()
 	if(!spawned)
@@ -536,7 +526,7 @@
  */
 /obj/item/mission_recovery/poacher_evidence
 	name = "tagged evidence"
-	desc = "A confiscated poaching trophy under a warden-service evidence tag. Destroying it kills the case - the mission pad will accept it."
+	desc = "A confiscated poaching trophy under a warden-service evidence tag."
 	icon_state = "recovery"
 	w_class = WEIGHT_CLASS_NORMAL
 
@@ -550,7 +540,7 @@
  */
 /obj/structure/closet/crate/secure/poacher_cache
 	name = "sealed trophy cache"
-	desc = "A battered cargo crate under a poacher outfit's mag-seal. The warden service can override the lock once the camp is confirmed clear."
+	desc = "A battered cargo crate under a poacher outfit's mag-seal."
 
 /obj/structure/closet/crate/secure/poacher_cache/togglelock(mob/living/user, silent)
 	if(locked)

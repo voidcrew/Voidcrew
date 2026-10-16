@@ -423,6 +423,7 @@
 
 /// Wakes the watch: the egg warms, the ground is chosen, and the first tide is heralded
 /obj/structure/vestige_dragon_egg/proc/begin_assault(mob/living/user)
+	get_npc_spawn_context()
 	assault_underway = TRUE
 	START_PROCESSING(SSobj, src)
 	color = "#d8905a" // the cold gives way
@@ -459,9 +460,12 @@
 		return
 	wave_lost = FALSE
 	stage++
+	get_npc_spawn_context()
 	for(var/i in 1 to 2)
-		var/mob/living/basic/carp/vestige_brood/hunter = new(wave_perch)
+		var/datum/npc_spawn_context/context = new(src)
+		var/mob/living/basic/carp/vestige_brood/hunter = spawn_npc_in_zone(/mob/living/basic/carp/vestige_brood, wave_perch, context, FALSE)
 		enlist(hunter, egg_bound = (i % 2 == 0))
+		context.finalize()
 	visible_message(span_boldwarning("The brood pours from the announced approach and turns toward [src]!"))
 	playsound(src, 'sound/effects/magic/wand_teleport.ogg', 70, TRUE)
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
@@ -651,6 +655,7 @@
  * hunts, and tamed to the keeper by the constructor's tamer argument.
  */
 /mob/living/basic/carp/pet/vestige_hatchling
+	npc_zone_exempt = TRUE
 	name = "dragonet"
 	desc = "A carp the colour of banked embers, fresh from a shell it had no business fitting inside. It is extremely certain it is a dragon. Nothing so far has dared correct it."
 	gender = NEUTER

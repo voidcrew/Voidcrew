@@ -15,6 +15,16 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"b" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "d" = (
 /obj/item/storage/medkit/regular{
 	
@@ -88,16 +98,6 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"w" = (
-/obj/effect/turf_decal/box/corners{
-	dir = 1
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
-/obj/item/flashlight/seclite,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "y" = (
@@ -227,7 +227,7 @@ R
 d
 "}
 (5,1,1) = {"
-w
+b
 N
 p
 R

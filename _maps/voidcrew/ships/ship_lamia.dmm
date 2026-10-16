@@ -1,4 +1,19 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/cabinet,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/beanbag,
+/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/clothing/glasses/sunglasses/reagent,
+/obj/item/clothing/head/wizard/black{
+	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
+	name = "beer wizard hat"
+	},
+/obj/item/roulette_wheel_beacon,
+/obj/item/etherealballdeployer,
+/obj/item/storage/belt/bandolier,
+/turf/open/floor/carpet/purple,
+/area/shuttle/voidcrew/lamia/bar)
 "ab" = (
 /obj/structure/window/reinforced/fulltile{
 	color = "#008000"
@@ -14,6 +29,14 @@
 /area/shuttle/voidcrew/lamia/bridge)
 "ad" = (
 /obj/machinery/computer/communications,
+/turf/open/floor/carpet/stellar,
+/area/shuttle/voidcrew/lamia/bridge)
+"ae" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/melee/baseball_bat{
+	pixel_x = -2;
+	pixel_y = 2
+	},
 /turf/open/floor/carpet/stellar,
 /area/shuttle/voidcrew/lamia/bridge)
 "af" = (
@@ -34,6 +57,10 @@
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/carpet/stellar,
 /area/shuttle/voidcrew/lamia/bridge)
+"ah" = (
+/obj/machinery/vending/games,
+/turf/open/floor/carpet/royalblack,
+/area/shuttle/voidcrew/lamia/game_room)
 "ai" = (
 /obj/structure/showcase/wizard,
 /turf/open/floor/carpet/stellar,
@@ -122,10 +149,6 @@
 /obj/structure/cable,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/lamia/hallway/fore)
-"aB" = (
-/obj/machinery/vending/games,
-/turf/open/floor/carpet/royalblack,
-/area/shuttle/voidcrew/lamia/game_room)
 "aC" = (
 /obj/structure/table/wood/poker,
 /obj/item/toy/cards/deck/tarot{
@@ -350,7 +373,7 @@
 /obj/item/storage/medkit/regular,
 /obj/item/storage/medkit/o2,
 /obj/item/storage/medkit/toxin,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
 /turf/open/floor/iron,
@@ -1273,14 +1296,6 @@
 /obj/structure/sign/poster/contraband/random,
 /turf/closed/wall/mineral/iron,
 /area/shuttle/voidcrew/lamia/study)
-"Ma" = (
-/obj/structure/table/wood/fancy/royalblue,
-/obj/item/gun/energy/e_gun/mini{
-	pixel_x = -2;
-	pixel_y = 2
-	},
-/turf/open/floor/carpet/stellar,
-/area/shuttle/voidcrew/lamia/bridge)
 "Mb" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -1497,24 +1512,6 @@
 "Vy" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/lamia/hallway/aft)
-"VC" = (
-/obj/structure/closet/cabinet,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	desc = "Despite the fact you're on a ship meant for wizards, with spells and all that, a bartender is still never far from a double-barreled twelve-gauge shotgun.";
-	sawn_desc = "Gooblamaphous's coming!"
-	},
-/obj/item/storage/box/beanbag,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/glasses/sunglasses/reagent,
-/obj/item/clothing/head/wizard/black{
-	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
-	name = "beer wizard hat"
-	},
-/obj/item/roulette_wheel_beacon,
-/obj/item/etherealballdeployer,
-/obj/item/storage/belt/bandolier,
-/turf/open/floor/carpet/purple,
-/area/shuttle/voidcrew/lamia/bar)
 "VP" = (
 /obj/item/storage/dice{
 	icon_state = "magicdicebag";
@@ -1819,7 +1816,7 @@ MR
 Ql
 Fu
 vJ
-VC
+aa
 aW
 MA
 NF
@@ -1875,7 +1872,7 @@ No
 "}
 (9,1,1) = {"
 ab
-Ma
+ae
 io
 Mb
 ab
@@ -2014,7 +2011,7 @@ Vj
 an
 aq
 Ek
-aB
+ah
 VP
 VX
 aR

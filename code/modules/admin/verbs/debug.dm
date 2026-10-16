@@ -459,7 +459,7 @@ ADMIN_VERB_ONLY_CONTEXT_MENU(cmd_admin_rejuvenate, R_ADMIN, "Rejuvenate", mob/li
 	if(!istype(M))
 		tgui_alert(user,"Cannot revive a ghost")
 		return
-	M.revive(ADMIN_HEAL_ALL)
+	M.revive_from("admin", ADMIN_HEAL_ALL) // VOIDCREW EDIT: explicit combat metrics attribution.
 
 	log_admin("[key_name(user)] healed / revived [key_name(M)]")
 	var/msg = span_danger("Admin [key_name_admin(user)] healed / revived [ADMIN_LOOKUPFLW(M)]!")

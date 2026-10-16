@@ -1003,7 +1003,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_52/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1017,7 +1017,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_20
 	parent_type = /datum/outfit/job/security
@@ -1032,7 +1032,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_20/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1046,7 +1046,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_68
 	parent_type = /datum/outfit/job/security
@@ -1061,7 +1061,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_68/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1075,7 +1075,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_36
 	parent_type = /datum/outfit/job/security
@@ -1090,7 +1090,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_36/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -1104,7 +1104,7 @@
 	belt = /obj/item/storage/belt/security/full
 	l_pocket = /obj/item/modular_computer/pda/heads/hos
 	accessory = /obj/item/clothing/accessory/armband/deputy
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_ship_nanobead_job_46
 	parent_type = /datum/outfit/job/assistant

@@ -11,10 +11,25 @@
 /obj/effect/zone_mobs/cult,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
+"ad" = (
+/obj/item/knife/combat/survival,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "ae" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/zone_mobs/cult,
 /turf/open/floor/cult,
+/area/ruin/unpowered)
+"af" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "as" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
@@ -115,6 +130,24 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"dC" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos;
+	storage_type = /obj/item/watertank/atmos
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown/anticorner,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "ej" = (
@@ -703,15 +736,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"xT" = (
-/obj/structure/table,
-/obj/machinery/recharger,
-/obj/item/gun/energy/laser/retro,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "xY" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -801,21 +825,6 @@
 /area/overmap_encounter/planetoid/wasteland)
 "Bz" = (
 /obj/machinery/atmospherics/components/unary/vent_pump,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"BC" = (
-/obj/machinery/suit_storage_unit/atmos,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/brown/anticorner,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "BV" = (
@@ -1054,20 +1063,6 @@
 	},
 /turf/open/floor/cult,
 /area/ruin/unpowered)
-"IU" = (
-/obj/machinery/suit_storage_unit/atmos,
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/brown/anticorner{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/brown/anticorner,
-/turf/open/floor/cult,
-/area/ruin/unpowered)
 "Jh" = (
 /turf/open/floor/cult,
 /area/ruin/unpowered)
@@ -1109,12 +1104,6 @@
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/cult,
-/area/ruin/unpowered)
-"KH" = (
-/obj/item/chainsaw,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/plating,
 /area/ruin/unpowered)
 "KV" = (
 /obj/effect/decal/cleanable/blood,
@@ -1363,6 +1352,23 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"XS" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/atmos;
+	storage_type = /obj/item/watertank/atmos
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown/anticorner{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown/anticorner,
+/turf/open/floor/cult,
+/area/ruin/unpowered)
 "XV" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1430,7 +1436,7 @@ Nt
 Yn
 EQ
 HE
-KH
+ad
 EQ
 Ju
 Nt
@@ -1662,7 +1668,7 @@ xD
 "}
 (14,1,1) = {"
 xD
-IU
+XS
 II
 mx
 qS
@@ -1742,7 +1748,7 @@ nv
 "}
 (18,1,1) = {"
 Nt
-BC
+dC
 my
 Fe
 cD
@@ -1890,7 +1896,7 @@ as
 as
 JX
 vT
-xT
+af
 GW
 xD
 xD

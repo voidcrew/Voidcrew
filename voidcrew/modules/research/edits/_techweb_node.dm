@@ -1,4 +1,6 @@
 /datum/techweb_node
+	/// Standing required for direct research only; imported knowledge remains usable.
+	var/zone_permission = ZONE_PERMISSION_PUBLIC
 	// list(
 	// 	nebulas = 0,
 	// 	asteroids = 0,
@@ -8,3 +10,16 @@
 	// 	stars = 0,
 	// )
 	var/list/required_surveyed_objects
+
+/datum/techweb_node/riot_supression/New()
+	. = ..()
+	design_ids = design_ids.Copy()
+	design_ids -= "pin_testing"
+
+/// Prices are per-web copies: discounts must never make a debit negative or alter global nodes.
+/datum/techweb_node/get_price(datum/techweb/host)
+	var/list/prices = ..()
+	prices = prices.Copy()
+	for(var/point_type in prices)
+		prices[point_type] = max(0, prices[point_type])
+	return prices

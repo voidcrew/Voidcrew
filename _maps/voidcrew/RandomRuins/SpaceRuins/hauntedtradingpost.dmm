@@ -14,6 +14,32 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/employees)
+"af" = (
+/obj/item/knife/combat/survival,
+/obj/item/grenade/barrier,
+/obj/effect/decal/cleanable/plastic,
+/obj/machinery/light/warm/dim/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hauntedtradingpost/maint/toolstorage)
+"ag" = (
+/obj/structure/closet/crate/large{
+	desc = "A hefty wooden crate labelled 'REJECT - DEFECTIVE'. You'll need a crowbar to get it open."
+	},
+/obj/item/ammo_casing/shotgun/ion{
+	pixel_y = 4;
+	pixel_x = -4
+	},
+/obj/item/ammo_casing/shotgun/ion,
+/obj/item/ammo_casing/shotgun/ion{
+	pixel_y = 4;
+	pixel_x = 4
+	},
+/obj/machinery/duct,
+/obj/item/melee/baseball_bat{
+	pixel_y = -7
+	},
+/turf/open/floor/carpet/donk,
+/area/ruin/space/has_grav/hauntedtradingpost/employees/workstation)
 "ah" = (
 /obj/structure/cable/layer1,
 /obj/machinery/camera/xray/directional/north,
@@ -28,6 +54,27 @@
 	suicide_pact_id = "donk_vault_lasertrap"
 	},
 /turf/open/floor/wood,
+/area/ruin/space/has_grav/hauntedtradingpost/office)
+"ai" = (
+/obj/structure/cable/layer1,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/spawner/random/exotic/technology,
+/obj/effect/mapping_helpers/apc/syndicate_access,
+/obj/item/melee/baseball_bat,
+/obj/effect/mapping_helpers/apc/full_charge,
+/obj/machinery/power/apc/auto_name/directional/south{
+	cable_layer = 1
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
+"aj" = (
+/obj/structure/safe,
+/obj/item/pet_carrier,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/food/ready_donk/donkrange_chicken,
+/obj/item/melee/baseball_bat,
+/obj/item/tank/internals/emergency_oxygen/engi,
+/turf/open/floor/wood/large,
 /area/ruin/space/has_grav/hauntedtradingpost/office)
 "am" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2100,18 +2147,6 @@
 /obj/structure/cable/layer1,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
-"ss" = (
-/obj/structure/cable/layer1,
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/effect/spawner/random/exotic/technology,
-/obj/effect/mapping_helpers/apc/syndicate_access,
-/obj/item/gun/energy/laser/carbine/cybersun/unrestricted,
-/obj/effect/mapping_helpers/apc/full_charge,
-/obj/machinery/power/apc/auto_name/directional/south{
-	cable_layer = 1
-	},
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "su" = (
 /obj/structure/cable/layer1,
 /obj/effect/decal/cleanable/dirt,
@@ -2706,25 +2741,6 @@
 /obj/structure/frame/machine/secured,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
-"xr" = (
-/obj/structure/closet/crate/large{
-	desc = "A hefty wooden crate labelled 'REJECT - DEFECTIVE'. You'll need a crowbar to get it open."
-	},
-/obj/item/ammo_casing/shotgun/ion{
-	pixel_y = 4;
-	pixel_x = -4
-	},
-/obj/item/ammo_casing/shotgun/ion,
-/obj/item/ammo_casing/shotgun/ion{
-	pixel_y = 4;
-	pixel_x = 4
-	},
-/obj/machinery/duct,
-/obj/item/gun/ballistic/shotgun/musket{
-	pixel_y = -7
-	},
-/turf/open/floor/carpet/donk,
-/area/ruin/space/has_grav/hauntedtradingpost/employees/workstation)
 "xs" = (
 /obj/structure/cable/layer1,
 /obj/structure/table/wood,
@@ -4759,15 +4775,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/maint/disposals)
-"Pg" = (
-/obj/structure/safe,
-/obj/item/pet_carrier,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/food/ready_donk/donkrange_chicken,
-/obj/item/gun/ballistic/rifle/boltaction/donkrifle,
-/obj/item/tank/internals/emergency_oxygen/engi,
-/turf/open/floor/wood/large,
-/area/ruin/space/has_grav/hauntedtradingpost/office)
 "Pk" = (
 /obj/structure/cable/layer1,
 /obj/machinery/vending/tool{
@@ -5023,13 +5030,6 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/hauntedtradingpost/public)
-"RA" = (
-/obj/item/shield/buckler,
-/obj/item/grenade/barrier,
-/obj/effect/decal/cleanable/plastic,
-/obj/machinery/light/warm/dim/directional/west,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/hauntedtradingpost/maint/toolstorage)
 "RC" = (
 /obj/structure/cable/layer1,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
@@ -6123,7 +6123,7 @@ qP
 ZK
 wz
 yE
-RA
+af
 sM
 wn
 lQ
@@ -6396,7 +6396,7 @@ Rb
 rs
 Ls
 FO
-xr
+ag
 Vw
 OL
 iS
@@ -6851,7 +6851,7 @@ kl
 Gk
 iv
 PX
-ss
+ai
 MR
 tl
 Xe
@@ -7018,7 +7018,7 @@ Bi
 ur
 Wv
 Rj
-Pg
+aj
 Pq
 tL
 VJ

@@ -1,14 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "ab" = (
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/wood,
@@ -22,6 +12,65 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
+"ae" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/d)
+"af" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light/warm/directional/north,
+/obj/item/melee/baseball_bat,
+/obj/item/flashlight/lantern/on{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/turf/open/floor/bamboo/tatami,
+/area/shuttle/voidcrew/phalanx/dorms/d)
+"ag" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/d)
+"ah" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "ax" = (
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/iron,
@@ -670,6 +719,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/d)
+"jn" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "jt" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
@@ -789,6 +851,19 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/aft/d)
+"lq" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/bamboo/tatami,
+/area/shuttle/voidcrew/phalanx/chapel/office/d)
 "lv" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
 /turf/open/floor/engine,
@@ -819,16 +894,6 @@
 	},
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/phalanx/bridge/d)
-"lI" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "lJ" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/lantern/on{
@@ -2178,19 +2243,6 @@
 /obj/structure/window/reinforced/spawner/directional/south,
 /turf/open/floor/wood/tile,
 /area/shuttle/voidcrew/phalanx/kitchen/d)
-"Dm" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/turf/open/floor/bamboo/tatami,
-/area/shuttle/voidcrew/phalanx/chapel/office/d)
 "Do" = (
 /obj/machinery/light/small/directional/east,
 /obj/structure/rack,
@@ -2743,14 +2795,6 @@
 /obj/machinery/airalarm/directional/north,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/d)
-"Ju" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "JB" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -3464,11 +3508,6 @@
 "Tl" = (
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/shuttle/voidcrew/phalanx/kitchen/d)
-"Tn" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/d)
 "Tp" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -3805,19 +3844,6 @@
 /obj/effect/mapping_helpers/airlock/access/any/engineering/general,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/d)
-"XP" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light/warm/directional/north,
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/item/flashlight/lantern/on{
-	pixel_x = -6;
-	pixel_y = 6
-	},
-/turf/open/floor/bamboo/tatami,
-/area/shuttle/voidcrew/phalanx/dorms/d)
 "XS" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/bamboo,
@@ -4185,7 +4211,7 @@ rW
 Vv
 hy
 CH
-Tn
+ae
 NP
 sp
 wT
@@ -5054,7 +5080,7 @@ lV
 Fv
 lV
 tL
-Dm
+lq
 RR
 pa
 tL
@@ -5391,7 +5417,7 @@ oZ
 oZ
 oZ
 ZS
-XP
+af
 Ew
 do
 iE
@@ -5490,7 +5516,7 @@ oZ
 ka
 bz
 YQ
-lI
+jn
 Ub
 gM
 GD
@@ -5618,7 +5644,7 @@ oZ
 Ub
 Pe
 DC
-Ju
+ag
 Ub
 RD
 Ad
@@ -5650,7 +5676,7 @@ oZ
 Ub
 bM
 VM
-aa
+ah
 Ub
 Gc
 sm

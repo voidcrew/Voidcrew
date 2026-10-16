@@ -114,7 +114,7 @@
  * Note: Ships are confined to their spawn zone (BB_NPC_SPAWN_ZONE),
  * so the zone at spawn time is the zone for the ship's lifetime.
  */
-/datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship)
+/datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship, reward_roll = rand(80, 120))
 	// Base reward - yellow zone pirates
 	var/base_reward = 5000
 
@@ -125,8 +125,8 @@
 		base_reward = 15000
 		is_heavy_bounty = TRUE
 
-	// Add some variance (80-120%)
-	return round(base_reward * rand(80, 120) / 100)
+	// Reduce pirate bounty cash to 80%, retaining the usual 80-120% variance.
+	return round(base_reward * 0.8 * reward_roll / 100)
 
 /**
  * Checks if the bounty is still valid (target exists and not resolved).

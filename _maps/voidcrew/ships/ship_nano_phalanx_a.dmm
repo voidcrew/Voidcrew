@@ -13,15 +13,75 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/phalanx/bridge/a)
+"ac" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/a)
 "ad" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/a)
+"ae" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/a)
+"af" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "ag" = (
 /obj/machinery/door/airlock/shuttle/glass,
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
+"ah" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "aw" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/cable,
@@ -225,6 +285,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
+"ep" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "ew" = (
 /obj/item/kirbyplants/random,
 /obj/machinery/light/small{
@@ -687,16 +760,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
-"lQ" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "lT" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/firedoor,
@@ -2312,14 +2375,6 @@
 "Ju" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/engineering/storage/a)
-"Jx" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "JB" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
@@ -2338,11 +2393,6 @@
 /obj/effect/turf_decal/trimline/white/filled/corner,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/a)
-"JJ" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/a)
 "Ka" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "phalanx_bay_north"
@@ -2483,20 +2533,6 @@
 /obj/structure/window/reinforced/spawner/directional/east,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
-"LA" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/a)
 "LB" = (
 /obj/machinery/griddle,
 /obj/machinery/airalarm/directional/north,
@@ -2779,19 +2815,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/nitrogen_output,
 /turf/open/floor/engine/n2,
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/a)
-"Os" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "Ov" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/kitchen/a)
@@ -2875,6 +2898,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"Py" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "PA" = (
 /obj/structure/rack,
 /obj/item/pickaxe,
@@ -3177,16 +3213,6 @@
 /obj/structure/table/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
-"TS" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "TX" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 8;
@@ -3779,7 +3805,7 @@ oy
 Mo
 dj
 Gd
-JJ
+ac
 PS
 MU
 oG
@@ -4648,7 +4674,7 @@ jK
 Pd
 jK
 CO
-Os
+ep
 xU
 Gh
 CO
@@ -4985,7 +5011,7 @@ oZ
 oZ
 oZ
 iD
-LA
+ae
 Kc
 xp
 dQ
@@ -5084,7 +5110,7 @@ oZ
 YY
 LL
 Ta
-TS
+Py
 KT
 FQ
 lI
@@ -5212,7 +5238,7 @@ oZ
 KT
 vE
 kO
-Jx
+af
 KT
 sn
 Gz
@@ -5244,7 +5270,7 @@ oZ
 KT
 mY
 KM
-lQ
+ah
 KT
 Tg
 EJ

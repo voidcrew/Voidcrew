@@ -231,6 +231,10 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 /datum/checkpoint_construction/order/create_template()
 	return order.make_template()
 
+/datum/checkpoint_construction/order/captain_mind()
+	// Keyed respawns use the live character; keyless commissioning still has its buyer.
+	return ..() || (!captain_ckey ? buyer_mind_ref?.resolve() : null)
+
 /// Upgrade slots find their module and theme on the order while the copy loads.
 /datum/checkpoint_construction/order/load_copy(datum/shuttle_template_load/load_owner)
 	SSshuttle.loading_ship = null
@@ -333,6 +337,12 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	if(!record.setup_from_template(template, order.theme))
 		qdel(record)
 		return null
+	// Bind before commissioning signals can yield; a new crew keeps the fresh record.
+	var/datum/mind/command = captain_mind()
+	var/datum/voidcrew_crew_record/current_crew = command?.recover_reputation_crew() || GLOB.voidcrew_crew_roster[captain_ckey]
+	if(current_crew && !form_new_crew)
+		record.ship_team.set_crew_record(current_crew)
+	command?.join_reputation_crew(record.get_crew_record())
 	return record
 
 /// A new ship takes its hull's name, as a spawned one does.
@@ -432,6 +442,10 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	if(!accepted)
 		qdel(order)
 		return FALSE
+	var/form_new = choose_new_reputation_crew(user)
+	if(isnull(form_new))
+		qdel(order)
+		return FALSE
 	// Anything may have changed while the prompt was open.
 	error = order_denial(user, order, choice)
 	payer = resolve_payer(user, choice)
@@ -442,6 +456,7 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 		return FALSE
 	working = TRUE
 	var/datum/checkpoint_construction/order/job = create_order_job(user, order, payer[1], paying_ship)
+	job.form_new_crew = form_new
 	var/started = FALSE
 	if(job.bay)
 		started = job.prepare()

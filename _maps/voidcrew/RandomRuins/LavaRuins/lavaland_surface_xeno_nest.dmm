@@ -32,6 +32,13 @@
 /obj/structure/alien/weeds,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
+"h" = (
+/obj/structure/alien/weeds,
+/obj/structure/bed/nest,
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/item/melee/baseball_bat,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/ruin/unpowered/xenonest)
 "i" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
@@ -49,13 +56,6 @@
 /area/ruin/unpowered/xenonest)
 "l" = (
 /obj/structure/alien/weeds/node,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/ruin/unpowered/xenonest)
-"o" = (
-/obj/structure/alien/weeds,
-/obj/structure/bed/nest,
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/item/gun/ballistic/automatic/pistol,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
 "r" = (
@@ -447,7 +447,7 @@ a
 a
 G
 b
-o
+h
 v
 g
 b

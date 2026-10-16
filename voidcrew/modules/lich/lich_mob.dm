@@ -406,8 +406,12 @@
 /mob/living/basic/lich/proc/register_summon(mob/living/summon)
 	if(QDELETED(summon) || (summon in live_summons))
 		return
+	get_npc_spawn_context()
+	if(!summon.npc_spawn_context)
+		summon.npc_spawn_context = new /datum/npc_spawn_context(src, role = "ordinary")
 	live_summons += summon
 	RegisterSignals(summon, list(COMSIG_QDELETING, COMSIG_LIVING_DEATH), PROC_REF(on_summon_lost))
+	summon.finalize_npc_zone(summon.npc_spawn_context)
 
 /mob/living/basic/lich/proc/on_summon_lost(mob/living/source)
 	SIGNAL_HANDLER
@@ -620,7 +624,7 @@
 	SIGNAL_HANDLER
 	if(attack_flags & (ATTACKER_STAMINA_ATTACK|ATTACKER_SHOVING))
 		return
-	attacker.adjustFireLoss(15)
+	attacker.adjustFireLoss(npc_zone_damage(15, src))
 	to_chat(attacker, span_warning("The image bursts, and something cold pours down your arm!"))
 
 /mob/living/basic/lich/mirror_image/examine(mob/user)

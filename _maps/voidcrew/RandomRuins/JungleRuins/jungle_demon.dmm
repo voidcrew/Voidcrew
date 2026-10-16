@@ -1,4 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
 "bx" = (
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/decal/cleanable/dirt,
@@ -276,11 +281,6 @@
 /obj/structure/reagent_dispensers/watertank/high,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"yM" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "AF" = (
 /obj/vehicle/ridden/wheelchair,
 /turf/open/floor/iron/dark,
@@ -403,6 +403,14 @@
 /obj/structure/flora/junglebush,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
+"KM" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
 "KV" = (
 /obj/machinery/light/floor,
 /obj/effect/decal/cleanable/dirt,
@@ -484,11 +492,6 @@
 /area/ruin/unpowered)
 "Pe" = (
 /obj/effect/decal/cleanable/ash,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"PA" = (
-/obj/machinery/suit_storage_unit/syndicate,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -737,7 +740,7 @@ iB
 (6,1,1) = {"
 iB
 Ed
-PA
+KM
 KV
 Wi
 Lu
@@ -1025,7 +1028,7 @@ iB
 Ed
 AU
 XX
-yM
+aa
 XS
 FR
 XS

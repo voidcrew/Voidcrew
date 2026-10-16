@@ -54,10 +54,10 @@
 /mob/living/simple_animal/hostile/asteroid/hermit/survivor/random/Initialize()
 	. = ..()
 	if(prob(10))
-		new /mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger(loc)
+		spawn_npc_in_zone(/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger, loc, get_npc_spawn_context(), FALSE)
 		return INITIALIZE_HINT_QDEL
 	if(prob(35))
-		new /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter(loc)
+		spawn_npc_in_zone(/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter, loc, get_npc_spawn_context(), FALSE)
 		return INITIALIZE_HINT_QDEL
 
 /mob/living/simple_animal/hostile/asteroid/hermit/ranged

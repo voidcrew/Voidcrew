@@ -1,4 +1,27 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/item/areaeditor/shuttle,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/energia/bridge)
 "ab" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -9,6 +32,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/energia/maintenance)
+"ad" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/displaycase/captain{
+	req_access = null;
+	start_showpiece_type = null
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/energia/bridge)
 "ao" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/yellow/visible,
 /obj/machinery/power/port_gen/pacman,
@@ -90,11 +121,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/energia/cargo_bay)
-"et" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/item/areaeditor/shuttle,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/energia/bridge)
 "eL" = (
 /obj/machinery/computer/crew,
 /turf/open/floor/iron,
@@ -637,7 +663,7 @@
 /area/shuttle/voidcrew/energia/maintenance)
 "IZ" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/effect/turf_decal/tile/blue,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/energia/medbay)
@@ -784,13 +810,6 @@
 /obj/effect/turf_decal/stripes/full,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/energia/supermatter)
-"Pz" = (
-/obj/machinery/airalarm/directional/east,
-/obj/structure/displaycase/captain{
-	req_access = null
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/energia/bridge)
 "PH" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
@@ -1410,7 +1429,7 @@ rF
 eL
 DE
 Es
-et
+aa
 JM
 rw
 Vj
@@ -1429,7 +1448,7 @@ vj
 vj
 vj
 rF
-Pz
+ad
 Gc
 Ea
 tP

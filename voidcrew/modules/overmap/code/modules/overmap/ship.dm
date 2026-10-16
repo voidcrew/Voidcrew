@@ -209,9 +209,14 @@
 	var/list/datum/mission/active_missions = list()
 	/// Maximum number of active missions (captain can adjust)
 	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
-	/// World time of the last manual mission refresh (rate-limited). Starts a whole cooldown back, so a
-	/// ship that never refreshed can, rather than waiting out the first minutes after the server boots.
+	/// Last scheduled refresh, retained for callers of the original board API.
 	var/last_mission_refresh = -MISSION_REFRESH_COOLDOWN
+	/// Fixed offer-set schedule, shared by every console on this hull.
+	var/next_mission_refresh = 0
+	/// Guarded prizes are round-local entitlements of the hull, including after transfer.
+	var/mission_suit_paid = FALSE
+	var/mission_gadget_paid = FALSE
+	var/mission_first_suit_seconds
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
@@ -692,6 +697,7 @@
 	ship_team = new()
 	ship_team.name = template.name
 	ship_team.ship = src
+	ship_team.ensure_crew_record()
 
 	// Pick a random bright color for ship runechat
 	var/static/list/ship_chat_colors = list(
@@ -1006,7 +1012,8 @@
 	register_crewmember(H)
 
 /obj/structure/overmap/ship/proc/register_crewmember(mob/living/carbon/human/crewmate)
-	ship_team.add_member(crewmate.mind)
+	if(!ship_team?.join_member(crewmate?.mind))
+		return FALSE
 	// Remember crew across respawns until the password changes or join access is reset.
 	if(crewmate.ckey)
 		password_cleared_ckeys[crewmate.ckey] = TRUE
@@ -1032,21 +1039,49 @@
  *
  * NOT register_crewmember(): that is for fresh spawns only - it wipes the mind's
  * memory and folds their bank account into ours, which would trash the character of
- * anyone who already has a life on another ship. This also deliberately leaves their
- * other crew memberships alone: founding or being handed a second hull should not
- * strip a player off their first one.
+ * anyone who already has a life on another ship. Same-crew hull rosters survive;
+ * joining a different crew removes all former-crew memberships.
  *
  * Returns TRUE if they ended up on the roster.
  */
 /obj/structure/overmap/ship/proc/enlist_crewmember(mob/living/crewmate)
 	if(!crewmate?.mind || !ship_team)
 		return FALSE
-	ship_team.add_member(crewmate.mind) // no-op if they are already aboard
+	if(!ship_team.join_member(crewmate.mind))
+		return FALSE
 	if(!(crewmate.real_name in manifest))
 		manifest += crewmate.real_name
 	if(crewmate.ckey)
 		password_cleared_ckeys[crewmate.ckey] = TRUE
 	return TRUE
+
+/// Stable service/research interface. Unclaimed hulls without teams have no standing.
+/obj/structure/overmap/ship/proc/get_crew_record()
+	return ship_team?.ensure_crew_record()
+
+/// Bind a successfully loaded empty hull before enrollment or commissioning signals yield.
+/// Checkpoints pass a live saved record only as a fallback for an unchanged roster.
+/obj/structure/overmap/ship/proc/bind_reputation_crew(datum/mind/commissioner, form_new = FALSE)
+	if(!ship_team || length(ship_team.members))
+		return FALSE
+	var/datum/voidcrew_crew_record/record = form_new ? null : commissioner?.recover_reputation_crew()
+	if(!record)
+		record = new
+	if(!ship_team.set_crew_record(record))
+		return FALSE
+	// The hull has loaded successfully. Reserve founding affiliation now, before
+	// any commissioning signal yields, so two builds by one newcomer share it.
+	commissioner?.join_reputation_crew(record)
+	return TRUE
+
+/// Shared prompt for empty-hull registration. Null is cancellation, not consent.
+/proc/choose_new_reputation_crew(mob/user)
+	if(!user?.client || !user.mind?.recover_reputation_crew())
+		return FALSE
+	var/choice = tgui_alert(user, "Crew registration", "Crew registration", list("Continue crew", "Form a new crew", "Cancel"))
+	if(!choice || choice == "Cancel")
+		return null
+	return choice == "Form a new crew"
 
 /**
  * ##destroy_ship
@@ -1327,25 +1362,13 @@
 /**
  * Whether a mob counts as this ship's crew.
  *
- * Two things make you crew and either one is enough: your mind is on the ship's team
- * (you serve aboard right now), or your ckey is cleared past the join password - you
- * bought the hull, you were invited, you typed the password, or you served aboard
- * earlier this round, since the last password change or join access reset. The ckey
- * clause is what keeps a crewman who died and came back
- * through the lobby from being locked out of their own airlocks while the new body's
- * mind is still being put on the roster.
- *
+ * Current shared crew affiliation grants services aboard all of its hulls.
+ * Password clearance only permits a future job join, never current service access.
  * Deliberately takes a plain /mob: ghosts and non-human crew ask this too.
  */
 /obj/structure/overmap/ship/proc/is_ship_crew(mob/checking)
-	if(!checking)
-		return FALSE
-	if(checking.mind && (checking.mind in ship_team?.members))
-		return TRUE
-	var/checking_ckey = checking.ckey
-	if(!checking_ckey)
-		return FALSE
-	return (checking_ckey in password_cleared_ckeys)
+	var/datum/voidcrew_crew_record/record = checking?.mind?.get_reputation_crew()
+	return record && record == ship_team?.crew_record
 
 /**
  * Turns the crew-only airlock lock on or off. Returns TRUE if the state changed.
@@ -1381,13 +1404,15 @@
  * Claims an abandoned ship for a new owner.
  * * claimer - The mob claiming the ship
  */
-/obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer)
+/obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer, form_new = FALSE)
 	if(retired_by_checkpoint || checkpoint_rebuilding)
 		to_chat(claimer, span_warning("This ship is retired or being rebuilt from a checkpoint."))
 		return FALSE
 	if(!abandoned)
 		return FALSE
 	if(!claimer?.mind)
+		return FALSE
+	if(length(ship_team?.members))
 		return FALSE
 	ship_metric_claimed_abandoned(src, claimer)
 
@@ -1406,7 +1431,8 @@
 	// Add claimer to ship team. Every crew-adding path also clears the ckey through
 	// the join password gate - the claimer must never be locked out of the hull they
 	// now command if they die and respawn through the lobby.
-	ship_team.add_member(claimer.mind)
+	bind_reputation_crew(claimer.mind, form_new)
+	ship_team.join_member(claimer.mind)
 	if(claimer.ckey)
 		password_cleared_ckeys[claimer.ckey] = TRUE
 
@@ -4646,6 +4672,69 @@
 
 // ===== MISSION PROCS =====
 
+/// Disjoint ranges on a single roll, in tenths of a percent.
+/proc/mission_prize_outcome(zone, roll)
+	var/suit_chance = zone == ZONE_RED ? 200 : (zone == ZONE_YELLOW ? 40 : 30)
+	var/gadget_chance = zone == ZONE_RED ? 100 : (zone == ZONE_YELLOW ? 20 : 15)
+	if(roll <= suit_chance)
+		return "suit"
+	if(roll <= suit_chance + gadget_chance)
+		return "gadget"
+	return null
+
+/// Every eligible family uses the same caps, regardless of its completion surface.
+/proc/mission_prize_pool(family, category)
+	var/static/list/suits = list(
+		"kill" = list(/obj/item/mod/control/pre_equipped/traitor_elite),
+		"hunt" = list(/obj/item/mod/control/pre_equipped/safeguard),
+		"poacher" = list(/obj/item/mod/control/pre_equipped/empty/ninja),
+		"capture" = list(/obj/item/mod/control/pre_equipped/empty/ninja),
+		"waves" = list(/obj/item/mod/control/pre_equipped/magnate, /obj/item/mod/control/pre_equipped/safeguard),
+		"stake" = list(/obj/item/mod/control/pre_equipped/safeguard),
+		"lair" = list(/obj/item/mod/control/pre_equipped/traitor_elite, /obj/item/mod/control/pre_equipped/safeguard),
+	)
+	var/static/list/gadgets = list(
+		"kill" = list(/obj/item/gun/energy/laser/captain),
+		"hunt" = list(/obj/item/organ/cyberimp/cyberware/piledriver),
+		"poacher" = list(/obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"capture" = list(/obj/item/gun/energy/laser/captain),
+		"waves" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"stake" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+		"lair" = list(/obj/item/gun/energy/laser/captain, /obj/item/organ/cyberimp/cyberware/piledriver, /obj/item/circuitboard/machine/ship_combat/cloak_device),
+	)
+	return category == "suit" ? suits[family] : (category == "gadget" ? gadgets[family] : null)
+
+/obj/structure/overmap/ship/proc/roll_mission_prize(zone)
+	return mission_prize_outcome(zone, rand(1, 1000))
+
+/// A capped result is spent without rerolling; claim before the constructor can yield.
+/obj/structure/overmap/ship/proc/award_guarded_prize(family, zone, atom/reward_anchor, source_type)
+	if(QDELETED(src) || !(zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return null
+	if(zone == ZONE_GREEN && (family == "stake" || family == "lair"))
+		return null
+	var/turf/spot = get_turf(reward_anchor)
+	if(!spot || !length(mission_prize_pool(family, "suit")))
+		return null
+	var/category = roll_mission_prize(zone)
+	var/list/pool = mission_prize_pool(family, category)
+	if(!length(pool))
+		return null
+	if(category == "suit")
+		if(mission_suit_paid)
+			return null
+		mission_suit_paid = TRUE
+		mission_first_suit_seconds = metric_round_seconds()
+	else
+		if(mission_gadget_paid)
+			return null
+		mission_gadget_paid = TRUE
+	var/prize_type = pick(pool)
+	new prize_type(spot)
+	record_guarded_prize(src, family, category, zone, prize_type, source_type)
+	ship_notify("Requisition cleared.", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	return prize_type
+
 /**
  * Accepts a mission, moving it from available to active.
  * * mission - The mission to accept
@@ -4660,6 +4749,12 @@
 		return "Your ship's active mission limit reached ([max_missions])."
 	if(mission.active)
 		return "Mission already accepted."
+	// Authoritative admission: callers cannot bypass this through a cached board.
+	// Z2 pins/retargets receipts; this validates the resolved work band, never the shop.
+	if(mission.target)
+		var/band = mission.target.get_zone_type()
+		if(!mission.target.is_valid() || band != mission.quote_zone || !get_crew_record()?.can_work_in_zone(band))
+			return "Authorization declined."
 	// Boards can hold more copies of a capped contract than the cap allows (the
 	// roll only counts live missions), so the cap has to hold here too or N ships
 	// run the same "limit 1" job at once.

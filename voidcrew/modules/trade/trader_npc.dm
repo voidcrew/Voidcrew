@@ -30,7 +30,7 @@
 
 /mob/living/basic/outpost_trader
 	name = "trader"
-	desc = "An independent merchant. The prices aren't negotiable, and the turrets are on their side."
+	desc = "An independent merchant behind a well-worn counter."
 	icon = 'icons/mob/simple/simple_human.dmi'
 	unique_name = FALSE
 	combat_mode = FALSE
@@ -120,7 +120,7 @@
 /mob/living/basic/outpost_trader/examine(mob/user)
 	. = ..()
 	if(shop)
-		. += span_notice("[name] runs the counter at [shop.outpost_name]. Click them from anywhere along the counter to do business.")
+		. += span_notice("[name] runs the counter at [shop.outpost_name].")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
 
@@ -193,7 +193,7 @@
 		if(TRADER_NPC_OPTION_TRADE)
 			shop_ui.ui_interact(user)
 		if(TRADER_NPC_OPTION_TALK)
-			speak_line(TRADER_LINE_IDLE)
+			speak_line(TRADER_LINE_IDLE, shop.get_back_room_line(user))
 		if(TRADER_NPC_OPTION_ASK)
 			bounty_outpost_ask(src, user)
 		if(TRADER_NPC_OPTION_CONTRACTS)
@@ -213,12 +213,12 @@
  * Rate-limited except for aggression lines, which always go through. Barks
  * fire automatically through the mob's say() (see modules/voice_barks).
  */
-/mob/living/basic/outpost_trader/proc/speak_line(category)
+/mob/living/basic/outpost_trader/proc/speak_line(category, line)
 	if(!shop)
 		return
 	if(category != TRADER_LINE_AGGRESSION && !COOLDOWN_FINISHED(src, speak_cooldown))
 		return
-	var/line = shop.get_line(category)
+	line ||= shop.get_line(category)
 	if(!line)
 		return
 	COOLDOWN_START(src, speak_cooldown, 3 SECONDS)
@@ -323,6 +323,24 @@
 /datum/outpost_trader_ui/ui_state(mob/user)
 	return GLOB.trader_counter_state
 
+/// Account choices contain only live hulls belonging to the viewer's current crew.
+/datum/outpost_trader_ui/proc/add_crew_context_data(list/data, mob/user)
+	var/list/ships = list()
+	for(var/obj/structure/overmap/ship/ship in get_crew_ships(user))
+		ships += list(list("ref" = REF(ship), "name" = ship.name))
+	var/obj/structure/overmap/ship/selected = get_crew_ship(user)
+	data["crew_ships"] = ships
+	data["crew_ship_ref"] = selected ? REF(selected) : null
+	return selected
+
+/datum/outpost_trader_ui/proc/select_service_ship(mob/living/user, ship_ref)
+	if(QDELETED(npc) || !npc.check_menu(user) || npc.outpost?.is_user_barred(user))
+		return FALSE
+	if(npc.outpost && !npc.outpost.contains_site_turf(get_turf(npc)))
+		return FALSE
+	var/obj/structure/overmap/ship/selected = locate(ship_ref) in get_crew_ships(user)
+	return selected && user.mind.select_crew_service_ship(selected)
+
 /**
  * # tgui state: the trader's counter
  *
@@ -387,10 +405,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				"price_credits" = sku.price_credits,
 				"final_credits" = sku.get_credit_price(),
 				"price_vouchers" = sku.price_vouchers,
-				"discount_pct" = sku.discount_pct,
 				"price_text" = sku.get_price_text(),
 				"barter" = istype(sku, /datum/shop_sku/barter),
-				"favor_required" = sku.favor_required,
 				"crew_limit" = sku.crew_limit,
 			))
 	data["catalog"] = catalog
@@ -423,28 +439,11 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	var/restock_remaining = timeleft(npc.outpost?.restock_timer)
 	data["restock_remaining"] = isnull(restock_remaining) ? null : max(0, restock_remaining)
 
-	// The viewer's crew standing with this trader, for the header and the
-	// back-room shelf. Everything favor is per-viewer, so it all rides ui_data.
-	var/obj/structure/overmap/ship/crew_ship = isliving(user) ? get_crew_ship(user) : null
-	if(shop)
-		var/tier = shop.get_favor_tier(crew_ship)
-		data["favor"] = list(
-			"points" = shop.get_favor(crew_ship),
-			"tier" = tier,
-			"tier_name" = shop.get_favor_tier_name(tier),
-			"discount_pct" = shop.get_discount_pct(crew_ship),
-			"next_at" = shop.get_next_tier_threshold(crew_ship),
-			"trader" = shop.favor_trader_name(),
-		)
+	var/obj/structure/overmap/ship/crew_ship = add_crew_context_data(data, user)
 
-	// Buyer's wallet snapshot, for the header. Vouchers count from the whole
-	// inventory, same as payment accepts them
+	// The same selected ship account used for purchases. Vouchers remain personal.
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
-	var/obj/item/card/id/id_card
-	if(isliving(user))
-		var/mob/living/living_user = user
-		id_card = living_user.get_idcard(TRUE)
-	data["account_credits"] = id_card?.registered_account ? id_card.registered_account.account_balance : null
+	data["account_credits"] = crew_ship?.ship_account?.account_balance
 
 	var/list/stock_states = list()
 	if(shop)
@@ -489,23 +488,29 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 		return
 
 	var/mob/living/user = ui.user
+	if(action == "select_ship")
+		return select_service_ship(user, params["ref"])
 	var/datum/outpost_shop/shop = npc.shop
-	if(!istype(user) || !shop)
+	if(!istype(user) || !shop || !npc.check_menu(user))
+		return
+	if(npc.outpost && !npc.outpost.contains_site_turf(get_turf(npc)))
 		return
 
 	switch(action)
 		if("buy")
 			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
-				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				to_chat(user, span_warning("Service refused."))
 				npc.play_denial()
 				return TRUE
 			var/datum/shop_sku/sku = locate(params["ref"]) in shop.skus
 			if(!sku)
 				return TRUE
-			if(sku.stock <= 0)
+			if(sku.stock <= 0 && sku.shelf != SHELF_FAVOR)
 				to_chat(user, span_warning("Out of stock."))
 				npc.play_denial()
+				return TRUE
+			if(!sku.can_trade(user, npc))
 				return TRUE
 			var/denial = sku.get_denial_reason(user)
 			if(denial)
@@ -519,7 +524,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 		if("sell")
 			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
-				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				to_chat(user, span_warning("Service refused."))
 				npc.play_denial()
 				return TRUE
 			var/datum/shop_buyback/buyback = locate(params["ref"]) in shop.buybacks
@@ -541,7 +546,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 		if("sell_all")
 			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
-				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				to_chat(user, span_warning("Service refused."))
 				npc.play_denial()
 				return TRUE
 			var/datum/shop_buyback/buyback = locate(params["ref"]) in shop.buybacks
@@ -582,28 +587,17 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	data["trader_name"] = shop ? shop.trader_name : ""
 	data["barred"] = outpost ? outpost.is_user_barred(user) : FALSE
 
-	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	var/obj/structure/overmap/ship/ship = add_crew_context_data(data, user)
 	data["ship_name"] = ship ? ship.name : null
 	data["ship_mission_slots_free"] = ship ? (ship.max_missions - length(ship.active_missions)) : 0
 
-	// Standing with this trader, so the board shows what the contracts build toward
-	if(shop)
-		var/tier = shop.get_favor_tier(ship)
-		data["favor"] = list(
-			"points" = shop.get_favor(ship),
-			"tier" = tier,
-			"tier_name" = shop.get_favor_tier_name(tier),
-			"discount_pct" = shop.get_discount_pct(ship),
-			"next_at" = shop.get_next_tier_threshold(ship),
-			"trader" = shop.favor_trader_name(),
-		)
-
 	var/list/offers = list()
 	if(outpost)
-		for(var/datum/mission/offer as anything in outpost.shop_offers)
+		for(var/datum/mission/offer as anything in outpost.get_contract_offers_for(ship))
 			if(QDELETED(offer))
 				continue
-			var/list/offer_data = offer.get_ui_data()
+			var/list/offer_data = offer.get_ui_data(ship.get_crew_record())
+			offer_data["quote_value"] = offer.contract_quote
 			offer_data["wanted_text"] = offer.get_progress_string()
 			offers += list(offer_data)
 	data["offers"] = offers
@@ -617,6 +611,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			if(QDELETED(mission))
 				continue
 			var/list/mission_data = mission.get_ui_data()
+			mission_data["quote_value"] = mission.contract_quote
 			mission_data["from_this_shop"] = (mission.shop == outpost?.shop)
 			var/location_ok = mission.can_turn_in_at(npc)
 			mission_data["location_ok"] = location_ok
@@ -631,7 +626,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			else if(!location_ok)
 				turn_in_hint = mission.get_wrong_location_reason(npc)
 			else if(!holding_valid)
-				turn_in_hint = offered ? mission.get_failure_reason(offered) : "Hold the contract goods in hand."
+				turn_in_hint = offered ? mission.get_failure_reason(offered) : "Shipment declined."
 			mission_data["turn_in_hint"] = turn_in_hint
 			ship_missions += list(mission_data)
 	data["ship_missions"] = ship_missions
@@ -644,23 +639,25 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 		return
 
 	var/mob/living/user = ui.user
+	if(action == "select_ship")
+		return select_service_ship(user, params["ref"])
 	var/obj/structure/overmap/trader_outpost/outpost = npc.outpost
-	if(!istype(user) || !outpost?.shop)
+	if(!istype(user) || !outpost?.shop || !npc.can_use_contracts(user))
 		return
 
 	switch(action)
 		if("accept")
 			if(outpost.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
-				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				to_chat(user, span_warning("Service refused."))
 				return TRUE
 			var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 			if(!ship)
 				npc.balloon_alert(user, "you have no ship!")
 				return TRUE
 			var/datum/mission/offer = locate(params["ref"]) in outpost.shop_offers
-			if(!offer || QDELETED(offer))
-				npc.balloon_alert(user, "offer no longer posted!")
+			if(!offer || QDELETED(offer) || offer.active || offer.failed || offer.completed || world.time - offer.posted_at >= OUTPOST_CONTRACT_EXPIRY)
+				npc.balloon_alert(user, "offer closed!")
 				return TRUE
 
 			// Ride the standard accept path so limits/bookkeeping all apply
@@ -673,7 +670,6 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				return TRUE
 
 			outpost.shop_offers -= offer
-			outpost.ensure_shop_offers()
 			npc.balloon_alert(user, "contract accepted!")
 			playsound(npc, 'sound/machines/ding.ogg', 50, TRUE)
 			npc.speak_line(TRADER_LINE_GREETING)
@@ -682,7 +678,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 		if("turn_in")
 			if(outpost.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
-				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				to_chat(user, span_warning("Service refused."))
 				return TRUE
 			var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 			if(!ship)
@@ -705,6 +701,17 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			playsound(npc, 'sound/effects/cashregister.ogg', 50, TRUE)
 			npc.speak_line(TRADER_LINE_SALE)
 			return TRUE
+
+/// Stale UI actions must still originate from a crew member at the actual counter.
+/mob/living/basic/outpost_trader/proc/can_use_contracts(mob/living/user)
+	if(!check_menu(user) || QDELETED(outpost) || outpost.trader != src || shop != outpost.shop)
+		return FALSE
+	if(!outpost.contains_site_turf(get_turf(src)))
+		return FALSE
+	if(!get_crew_ship(user))
+		to_chat(user, span_warning("Crew access only."))
+		return FALSE
+	return TRUE
 
 #undef TRADER_COUNTER_RANGE
 #undef TRADER_NPC_OPTION_TRADE

@@ -2,6 +2,68 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
+"ab" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/cowboy,
+/obj/item/clothing/shoes/cowboy,
+/obj/item/clothing/shoes/cowboy,
+/obj/machinery/firealarm/directional/west,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/kilo/dorms/b)
+"ac" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/item/melee/baseball_bat,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/kilo/dorms/b)
+"ad" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/melee/baseball_bat,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_x = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/obj/item/pai_card,
+/obj/item/clothing/shoes/cowboy/white,
+/obj/item/clothing/head/cowboy/red,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/b)
 "al" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -715,20 +777,6 @@
 "Ar" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/kilo/cargo/b)
-"Bn" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/item/gun/energy/laser/retro,
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_x = 32
-	},
-/obj/machinery/status_display/evac{
-	pixel_y = 32
-	},
-/obj/item/pai_card,
-/obj/item/clothing/shoes/cowboy/white,
-/obj/item/clothing/head/cowboy/red,
-/turf/open/floor/carpet,
-/area/shuttle/voidcrew/kilo/dorms/b)
 "BH" = (
 /obj/effect/turf_decal/stripes{
 	dir = 4
@@ -773,33 +821,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/b)
-"CE" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/workboots,
-/obj/item/clothing/shoes/cowboy,
-/obj/item/clothing/shoes/cowboy,
-/obj/item/clothing/shoes/cowboy,
-/obj/machinery/firealarm/directional/west,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/dorms/b)
 "Dc" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -867,27 +888,6 @@
 /obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/b)
-"Fb" = (
-/obj/structure/closet/secure_closet/personal,
-/obj/effect/turf_decal/trimline/white/filled/line{
-	dir = 1
-	},
-/obj/item/gun/energy/e_gun/mini,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/item/clothing/suit/hazardvest,
-/obj/machinery/airalarm/directional/south,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/kilo/dorms/b)
 "Gn" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -1727,7 +1727,7 @@ xk
 Qh
 zf
 Re
-CE
+ab
 Mh
 aa
 "}
@@ -1742,7 +1742,7 @@ Kh
 ro
 Tl
 rx
-Fb
+ac
 Tl
 aa
 "}
@@ -1800,7 +1800,7 @@ kV
 Sc
 Rg
 Tl
-Bn
+ad
 Nx
 Mh
 aa

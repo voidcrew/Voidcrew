@@ -22,8 +22,6 @@
 /obj/structure/closet/crate/secure/weapon/pirate_loot/lasers/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/laser(src)
-	new /obj/item/gun/energy/laser(src)
-	new /obj/item/gun/energy/laser(src)
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/disablers
 	name = "pirate disabler cache"
@@ -32,8 +30,6 @@
 // Same as the laser cache: steal objective, so populate before first open.
 /obj/structure/closet/crate/secure/weapon/pirate_loot/disablers/populate_contents_immediate()
 	. = ..()
-	new /obj/item/gun/energy/disabler(src)
-	new /obj/item/gun/energy/disabler(src)
 	new /obj/item/gun/energy/disabler(src)
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/armor
@@ -85,30 +81,22 @@
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/e_gun(src)
-	new /obj/item/gun/energy/e_gun(src)
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns
-	name = "pirate combat shotgun cache"
-	desc = "A crate of combat shotguns recovered from a pirate vessel."
+	name = "pirate laser cache"
+	desc = "A crate of laser weapons recovered from a pirate vessel."
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns/PopulateContents()
 	. = ..()
-	new /obj/item/gun/ballistic/shotgun/automatic/combat(src)
-	new /obj/item/gun/ballistic/shotgun/automatic/combat(src)
-	new /obj/item/gun/ballistic/shotgun/automatic/combat(src)
-	new /obj/item/storage/belt/bandolier(src)
-	new /obj/item/storage/belt/bandolier(src)
-	new /obj/item/storage/belt/bandolier(src)
+	new /obj/item/gun/energy/laser(src)
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines
-	name = "pirate laser carbine cache"
-	desc = "A crate of laser carbines recovered from a pirate vessel."
+	name = "pirate energy gun cache"
+	desc = "A crate of energy guns recovered from a pirate vessel."
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines/PopulateContents()
 	. = ..()
-	new /obj/item/gun/energy/laser/carbine(src)
-	new /obj/item/gun/energy/laser/carbine(src)
-	new /obj/item/gun/energy/laser/carbine(src)
+	new /obj/item/gun/energy/e_gun(src)
 
 /obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/swat
 	name = "pirate tactical gear cache"

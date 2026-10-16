@@ -20,6 +20,28 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"ad" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ae" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
 "af" = (
 /obj/machinery/door/airlock/medical,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -32,6 +54,44 @@
 /obj/item/kirbyplants/organic/plant9,
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/phalanx/bridge/c)
+"ah" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain{
+	start_showpiece_type = null
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"ai" = (
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "al" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/cargo/c)
@@ -611,16 +671,6 @@
 /obj/structure/cable,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/c)
-"gT" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "gY" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -2061,6 +2111,25 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/kitchen/c)
+"Ay" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
 "AC" = (
 /obj/machinery/mass_driver{
 	id = "phalanx_massdriver"
@@ -2704,6 +2773,19 @@
 /obj/structure/cable,
 /turf/open/floor/grass,
 /area/shuttle/voidcrew/phalanx/chapel/c)
+"IO" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "IS" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/cable,
@@ -2896,16 +2978,6 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/cafeteria/c)
-"Lc" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "Le" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -3613,39 +3685,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/c)
-"Ut" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/chapel/office/c)
-"UB" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/c)
 "UE" = (
 /obj/structure/cable,
 /obj/item/kirbyplants/organic/plant11,
@@ -3745,14 +3784,6 @@
 /obj/structure/table/wood/poker,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/dorms/c)
-"VE" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "VS" = (
 /obj/machinery/vending/clothing,
 /obj/effect/turf_decal/trimline/green/filled/line{
@@ -4127,11 +4158,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/c)
-"ZS" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/c)
 "ZZ" = (
 /obj/structure/closet/secure_closet/freezer/fridge/open,
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
@@ -4282,7 +4308,7 @@ fD
 hy
 NN
 YU
-ZS
+ad
 tg
 SJ
 xS
@@ -5151,7 +5177,7 @@ Sm
 RL
 Sm
 Og
-Ut
+Ay
 IY
 Vf
 Og
@@ -5488,7 +5514,7 @@ oZ
 oZ
 oZ
 RO
-UB
+ae
 pW
 hf
 VA
@@ -5587,7 +5613,7 @@ oZ
 Ns
 Rb
 KW
-Lc
+IO
 EN
 RR
 Wn
@@ -5715,7 +5741,7 @@ oZ
 EN
 Xn
 ys
-VE
+ah
 EN
 lo
 Lo
@@ -5747,7 +5773,7 @@ oZ
 EN
 Fh
 Hr
-gT
+ai
 EN
 pJ
 Jy

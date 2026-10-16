@@ -10,6 +10,18 @@
 /obj/effect/zone_mobs/robot/boss,
 /turf/open/misc/dirt/jungle/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
+"d" = (
+/mob/living/simple_animal/hostile/asteroid/elite/herald{
+	desc = "Director?";
+	name = "the research director"
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/suit/toggle/labcoat,
+/obj/item/clothing/under/rank/rnd/research_director/skirt,
+/obj/item/clothing/shoes/sneakers/brown,
+/obj/item/clothing/neck/cloak/rd,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
 "e" = (
 /obj/effect/zone_mobs/robot,
 /turf/open/misc/dirt/jungle/wasteland,
@@ -19,18 +31,6 @@
 /area/overmap_encounter/planetoid/wasteland)
 "B" = (
 /obj/structure/girder/displaced,
-/turf/open/misc/dirt/jungle/wasteland,
-/area/overmap_encounter/planetoid/wasteland)
-"D" = (
-/mob/living/simple_animal/hostile/asteroid/elite/herald{
-	desc = "Director?";
-	name = "the research director"
-	},
-/obj/item/gun/energy/e_gun,
-/obj/item/clothing/suit/toggle/labcoat,
-/obj/item/clothing/under/rank/rnd/research_director/skirt,
-/obj/item/clothing/shoes/sneakers/brown,
-/obj/item/clothing/neck/cloak/rd,
 /turf/open/misc/dirt/jungle/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
 "O" = (
@@ -336,7 +336,7 @@ k
 k
 k
 c
-D
+d
 k
 k
 k

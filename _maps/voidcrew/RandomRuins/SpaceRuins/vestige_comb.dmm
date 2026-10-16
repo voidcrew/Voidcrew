@@ -284,6 +284,12 @@
 /obj/structure/sign/warning/vacuum,
 /turf/closed/wall,
 /area/ruin/space/has_grav/vestige/comb)
+"ba" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/explorer
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
 "bp" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/mechanical{
@@ -620,6 +626,12 @@
 	},
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/vestige/comb)
+"TJ" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/explorer
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
 "Va" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/airless,
@@ -664,10 +676,6 @@
 /obj/effect/decal/remains/human,
 /obj/effect/decal/cleanable/shreds,
 /turf/open/floor/iron,
-/area/ruin/space/has_grav/vestige/comb)
-"YC" = (
-/obj/machinery/suit_storage_unit/mining,
-/turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/vestige/comb)
 "Zl" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1046,8 +1054,8 @@ aV
 ae
 Va
 ar
-YC
-YC
+ba
+TJ
 fo
 Bx
 Va

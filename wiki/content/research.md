@@ -94,7 +94,7 @@ A better **micro-laser** cuts the power draw, which matters: a scanner on the ch
 
 Feed a **refined anomaly core** to the destructive analyzer and it pays **200 points**. Nine core types exist and each pays once per techweb, so the full set is 1,800. Load an item and the analyzer tells you what it is worth before you pull the trigger.
 
-Getting there is about 240 points of bluespace research: Bluespace Theory, Applied Bluespace, then **Anomaly Research** for the refinery. Raw cores come from anomalies that turn up aboard your ship as a [dynamic event](dynamic-events.md), and from research-themed loot caches.
+Getting there is about 240 points of bluespace research: Bluespace Theory, Applied Bluespace, then **Anomaly Research** for the refinery. Raw cores come from Boffin at Quartermain Depot (see [Trader Outposts](trader-outposts.md)) and from research-themed loot caches. Neutralizing an anomaly on a [planet](planets.md) or at an anomaly chart's site gives you a finished core directly.
 
 Cores are the only items that pay research points when deconstructed.
 

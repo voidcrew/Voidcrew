@@ -109,7 +109,7 @@
 /obj/item/storage/box/syndie_kit/chameleon,
 /obj/item/card/id/advanced/black/syndicate_command,
 /obj/item/card/emag,
-/obj/item/storage/belt/sabre,
+/obj/item/storage/belt/sheath/sabre,
 /obj/item/gun/energy/recharge/kinetic_accelerator,
 /obj/item/tank/internals/emergency_oxygen/double,
 /obj/item/clothing/under/syndicate,
@@ -296,7 +296,7 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/medbay)
 "gM" = (

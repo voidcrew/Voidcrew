@@ -331,7 +331,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(!found_lich && !spent)
 		var/turf/spawn_turf = boss_spawn_turf || get_random_layer_turf(/area/ruin/space/has_grav/powered/lich_lair/sanctum)
 		if(spawn_turf)
-			found_lich = new /mob/living/basic/lich(spawn_turf)
+			var/datum/npc_spawn_context/context = new(src, role = "boss")
+			found_lich = spawn_npc_in_zone(/mob/living/basic/lich, spawn_turf, context)
 			log_mapping("LICH: template placed no lich. Spawned one at ([spawn_turf.x], [spawn_turf.y]).")
 		else
 			log_mapping("LICH: no lich, no boss_spawn landmark and no sanctum turf. The raid has no boss.")
@@ -350,6 +351,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /obj/structure/overmap/space_ruin/lich_lair/proc/bind_lich(mob/living/boss)
 	if(QDELETED(boss))
 		return
+	if(!boss.npc_spawn_context)
+		boss.finalize_npc_zone(new /datum/npc_spawn_context(src, role = "boss"))
 	lich_ref = WEAKREF(boss)
 	RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death), override = TRUE)
 

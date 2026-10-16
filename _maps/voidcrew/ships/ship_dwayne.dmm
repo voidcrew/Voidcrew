@@ -1,4 +1,41 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/yellow/anticorner{
+	dir = 4
+	},
+/obj/structure/guncase/shotgun,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/pai_card,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/dwayne/cargo_bay)
+"ab" = (
+/obj/effect/turf_decal/tile/blue/half{
+	dir = 4
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/knife/combat/survival,
+/obj/item/storage/backpack/captain,
+/obj/item/storage/backpack/satchel/cap,
+/obj/item/storage/backpack/duffelbag/captain,
+/obj/item/storage/backpack/messenger/cap,
+/obj/item/clothing/neck/petcollar,
+/obj/item/pet_carrier,
+/obj/item/storage/bag/garment/captain,
+/obj/item/computer_disk/command/captain,
+/obj/item/radio/headset/heads/captain/alt,
+/obj/item/radio/headset/heads/captain,
+/obj/item/door_remote/captain,
+/obj/item/storage/photo_album/captain,
+/obj/structure/closet/secure_closet{
+	name = "captain's locker";
+	icon_state = "cap";
+	req_access = list("captain")
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/dwayne/bridge)
 "ak" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -165,18 +202,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/dwayne/engineering)
-"gr" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/tile/yellow/anticorner{
-	dir = 4
-	},
-/obj/structure/guncase/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/pai_card,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/dwayne/cargo_bay)
 "gs" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
@@ -316,13 +341,6 @@
 /obj/effect/turf_decal/tile/blue/half,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/bridge)
-"iO" = (
-/obj/effect/turf_decal/tile/blue/half{
-	dir = 4
-	},
-/obj/structure/closet/secure_closet/captains,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/dwayne/bridge)
 "iZ" = (
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
@@ -374,7 +392,7 @@
 	},
 /obj/structure/table,
 /obj/item/book/manual/wiki/surgery,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/item/clothing/mask/surgical,
 /obj/item/clothing/suit/apron/surgical,
 /obj/item/clothing/gloves/latex/nitrile,
@@ -1781,7 +1799,7 @@ FP
 FP
 tX
 Pd
-gr
+aa
 uc
 or
 bv
@@ -2032,7 +2050,7 @@ ms
 ms
 dl
 NK
-iO
+ab
 ms
 ms
 OJ

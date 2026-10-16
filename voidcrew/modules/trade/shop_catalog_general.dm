@@ -2,7 +2,7 @@
  * # Waystation Halcyon: the green-zone general store
  *
  * Sundries, survival kit and honest prices for the safe inner ring. Credits
- * only; the most dangerous thing on the shelf is the chili in the rations.
+ * only, with surplus arms behind the counter.
  * Shop machinery lives in shop.dm; this file is pure catalog.
  */
 
@@ -22,6 +22,7 @@
 	r_hand = /obj/item/reagent_containers/cup/glass/coffee
 
 /datum/outpost_shop/general
+	back_room_line = "I'll put a word in at the depot."
 	outpost_name = "\improper Waystation Halcyon"
 	outpost_desc = "A sleepy general store and rest stop on the safe inner ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
@@ -34,6 +35,7 @@
 		"Tools & Repair",
 		"Medical",
 		"Prospecting",
+		"Arms",
 		"Fuel & Gas",
 		"Galley & Comforts",
 		"Ship Sundries",
@@ -49,35 +51,29 @@
 		/datum/shop_sku/general/breath_mask,
 		/datum/shop_sku/general/eva_suit,
 		/datum/shop_sku/general/eva_helmet,
-		/datum/shop_sku/general/gps,
 		/datum/shop_sku/general/flare,
 		/datum/shop_sku/general/glowstick,
 		/datum/shop_sku/general/survival_medipen,
 		/datum/shop_sku/general/oxygen_canister,
 		/datum/shop_sku/general/jetpack,
 		// Tools & Repair
-		/datum/shop_sku/general/toolbelt,
-		/datum/shop_sku/general/big_welder,
 		/datum/shop_sku/general/welding_fuel,
-		/datum/shop_sku/general/light_replacer,
-		/datum/shop_sku/general/holofan,
-		/datum/shop_sku/general/rcd,
 		// Medical
 		/datum/shop_sku/general/medkit,
 		/datum/shop_sku/general/burn_kit,
 		/datum/shop_sku/general/o2_kit,
-		/datum/shop_sku/general/health_analyzer,
 		/datum/shop_sku/general/epipen,
 		/datum/shop_sku/general/gauze,
 		/datum/shop_sku/general/suture,
 		/datum/shop_sku/general/regen_mesh,
 		// Prospecting
-		/datum/shop_sku/general/pickaxe,
-		/datum/shop_sku/general/mesons,
 		/datum/shop_sku/general/ore_bag,
-		/datum/shop_sku/general/mining_scanner,
 		/datum/shop_sku/general/adv_mining_scanner,
 		/datum/shop_sku/general/diamond_pick,
+		// Arms
+		/datum/shop_sku/general/hunting_knife,
+		/datum/shop_sku/general/survival_knife,
+		/datum/shop_sku/general/surplus_rifle,
 		// Fuel & Gas
 		/datum/shop_sku/general/plasma_canister,
 		/datum/shop_sku/general/plasma_sheets,
@@ -113,14 +109,9 @@
 		/datum/shop_sku/general/rotating/freight_crate,
 		/datum/shop_sku/general/rotating/metalfoam,
 		/datum/shop_sku/general/rotating/bikehorn,
-		/datum/shop_sku/general/rotating/welding_goggles,
 		/datum/shop_sku/general/rotating/guitar,
 	)
-	rare_pool = list(
-		/datum/shop_sku/general/rare/bluespace_bodybag,
-		/datum/shop_sku/general/rare/drill,
-	)
-	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/pike_ledger,
 		/datum/shop_sku/favor/field_contract_pad,
@@ -163,19 +154,10 @@
 		/datum/mission/outpost_supply/cook = 15,
 	)
 	mission_requests = list(
-		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/fish, "name" = "fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/sea_crystal, "name" = "sea crystal", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
-	)
-	// Under the counter: hard contracts only, never sold
-	exclusive_rewards = list(
-		/obj/item/storage/bag/ore/holding,
-		/obj/item/fishing_rod/telescopic/master,
-		/obj/item/pickaxe/drill/jackhammer,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -212,7 +194,6 @@
 			"The pod foragers come back smelling like a spice rack and looking like they lost a fight. I pay them anyway.",
 			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never crack a single one.",
 			"Take a rumor with you, dear. The lanes talk to me and I do love to pass it on.",
-			"We had a jackhammer in the back once. Contract work only, mind. Ask at the board.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"The supply run's in! Fresh everything, and the biscuit tin's full again.",
@@ -262,11 +243,6 @@
 	stock_min = 10
 	stock_max = 20
 
-/datum/shop_sku/general/gps
-	category = "Survival & EVA"
-	item_path = /obj/item/gps
-	price_credits = 200
-
 /datum/shop_sku/general/flare
 	category = "Survival & EVA"
 	item_path = /obj/item/flashlight/flare
@@ -290,7 +266,7 @@
 
 /datum/shop_sku/general/oxygen_canister
 	name = "oxygen canister (full)"
-	desc = "A full canister of breathable oxygen. Wheel it into a compartment that lost its air, crack the valve, and give it a minute. The waystation moves a lot of these."
+	desc = "A full canister of breathable oxygen."
 	category = "Survival & EVA"
 	item_path = /obj/machinery/portable_atmospherics/canister/oxygen
 	price_credits = 1200
@@ -299,7 +275,7 @@
 
 /datum/shop_sku/general/jetpack
 	name = "jetpack (oxygen)"
-	desc = "A compressed oxygen tank rigged for propulsion. It will breathe you or fly you, but not both for very long. Standard kit for anyone patching a hull from the outside."
+	desc = "A compressed oxygen tank rigged for propulsion."
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/jetpack/oxygen
 	price_credits = 2100
@@ -308,53 +284,21 @@
 
 // ===== TOOLS & REPAIR =====
 
+// Retained for the ordinary-shelf unit-test fixture; not sold at an outpost.
 /datum/shop_sku/general/toolbelt
 	category = "Tools & Repair"
 	item_path = /obj/item/storage/belt/utility/full
-	desc = "A loaded repair belt with hand tools, a multitool and cable. Supplies the tools and wiring needed to assemble a replacement autolathe and link a research bay."
+	desc = "A loaded repair belt with hand tools and cable."
 	price_credits = 500
-
-// The large-tank welder only prints on a hacked lathe, so this is the cheap
-// rung on a shelf that otherwise starts at 250 cr.
-/datum/shop_sku/general/big_welder
-	category = "Tools & Repair"
-	item_path = /obj/item/weldingtool/largetank
-	price_credits = 300
 
 /datum/shop_sku/general/welding_fuel
 	name = "welding fuel tank"
-	desc = "A thousand units of industrial welding fuel in a tank you can drag aboard. Enough to keep a repair crew going for a long shift. Don't weld it."
+	desc = "A wheeled tank of industrial welding fuel."
 	category = "Tools & Repair"
 	item_path = /obj/structure/reagent_dispensers/fueltank
 	price_credits = 400
 	stock_min = 2
 	stock_max = 4
-
-/datum/shop_sku/general/light_replacer
-	category = "Tools & Repair"
-	item_path = /obj/item/lightreplacer
-	price_credits = 400
-	stock_min = 1
-	stock_max = 3
-
-/datum/shop_sku/general/holofan
-	category = "Tools & Repair"
-	name = "holofan projector"
-	item_path = /obj/item/holosign_creator/atmos
-	price_credits = 600
-	stock_min = 1
-	stock_max = 2
-
-// The expensive rung on the repair shelf, and the reason ships limp back here
-// instead of to a depot: a breach closes in seconds instead of a welding shift.
-/datum/shop_sku/general/rcd
-	name = "rapid construction device"
-	desc = "Lays and removes walls, floors and airlocks out of stored matter. The fast way to shut a breach while the compartment is still venting. Feed it iron, glass, or compressed matter cartridges."
-	category = "Tools & Repair"
-	item_path = /obj/item/construction/rcd
-	price_credits = 2400
-	stock_min = 1
-	stock_max = 2
 
 // ===== MEDICAL =====
 
@@ -378,11 +322,6 @@
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
 	price_credits = 400
-
-/datum/shop_sku/general/health_analyzer
-	category = "Medical"
-	item_path = /obj/item/healthanalyzer
-	price_credits = 200
 
 /datum/shop_sku/general/epipen
 	category = "Medical"
@@ -420,28 +359,13 @@
 
 // ===== PROSPECTING =====
 
-/datum/shop_sku/general/pickaxe
-	category = "Prospecting"
-	item_path = /obj/item/pickaxe
-	price_credits = 200
-
-/datum/shop_sku/general/mesons
-	category = "Prospecting"
-	item_path = /obj/item/clothing/glasses/meson
-	price_credits = 400
-
 /datum/shop_sku/general/ore_bag
 	category = "Prospecting"
 	item_path = /obj/item/storage/bag/ore
 	price_credits = 200
 
-/datum/shop_sku/general/mining_scanner
-	category = "Prospecting"
-	item_path = /obj/item/t_scanner/adv_mining_scanner/lesser
-	price_credits = 450
-
 /datum/shop_sku/general/adv_mining_scanner
-	desc = "The full-range model of the scanner on the shelf beside it: seven tiles of rock instead of four, and it re-sweeps half again as fast. Worth it on a planet where the good seams sit deep."
+	desc = "An industrial mineral scanner with a reinforced casing."
 	category = "Prospecting"
 	item_path = /obj/item/t_scanner/adv_mining_scanner
 	price_credits = 1500
@@ -530,7 +454,7 @@
 
 /datum/shop_sku/general/plasteel
 	name = "plasteel sheets (20)"
-	desc = "Twenty sheets of plasteel for serious hull work. It needs a smelter to make and most ships don't carry one, so this is the honest way to get it."
+	desc = "Twenty sheets of plasteel, bundled for shipment."
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/plasteel
 	dispense_amount = 20
@@ -553,7 +477,7 @@
 // The ore is the cheaper option per sheet, but only if you can actually smelt it.
 /datum/shop_sku/general/plasma_sheets
 	name = "solid plasma (20)"
-	desc = "Twenty sheets of solid plasma, the grade portable generators burn. Buy these if your ship has no way to smelt its own ore."
+	desc = "Twenty sheets of solid plasma."
 	category = "Fuel & Gas"
 	item_path = /obj/item/stack/sheet/mineral/plasma
 	dispense_amount = 20
@@ -563,7 +487,7 @@
 
 /datum/shop_sku/general/plasma_ore
 	name = "plasma ore (15)"
-	desc = "Fifteen chunks of raw plasma ore, cheaper by weight than the refined sheets. You need an ore redemption machine to get anything out of it. A welder will not do the job."
+	desc = "Fifteen chunks of raw plasma ore."
 	category = "Fuel & Gas"
 	item_path = /obj/item/stack/ore/plasma
 	dispense_amount = 15
@@ -573,7 +497,7 @@
 
 /datum/shop_sku/general/scoop_board
 	name = "nebula ram scoop board"
-	desc = "The circuit board for a nebula ram scoop. Park inside a nebula and drink your fuel straight out of the cloud. Barnaby keeps them behind the counter with the good stock."
+	desc = "The circuit board for a nebula ram scoop."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
 	price_credits = 600
@@ -584,7 +508,7 @@
 // engine can at least keep the lights and the air handlers running.
 /datum/shop_sku/general/portable_generator
 	name = "portable plasma generator"
-	desc = "A P.A.C.M.A.N. generator that burns solid plasma for power. Bolt it down, wire it to the grid, and it will hold up the essentials while the engine is out. It eats the plasma sheets Barnaby stocks two shelves over."
+	desc = "A portable P.A.C.M.A.N. plasma generator."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/power/port_gen/pacman
 	price_credits = 1800
@@ -603,7 +527,7 @@
 // autosurgeon because there was no other way to get one.)
 /datum/shop_sku/general/autolathe_board
 	name = "autolathe board"
-	desc = "The circuit board for an autolathe. If yours is gone, this is the only way to start fabricating again, so Barnaby keeps a couple in the back."
+	desc = "The circuit board for an autolathe."
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/machine/autolathe
 	price_credits = 500 // invented, unplaytested
@@ -634,8 +558,13 @@
 	category = "Ship Sundries"
 	name = "unclaimed freight"
 	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside, and he'd rather you opened it somewhere else."
-	item_path = /obj/structure/closet/crate/zone_loot/syndicate
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate/trader
 	price_credits = 750
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
 
 /datum/shop_sku/general/rotating/metalfoam
 	category = "Ship Sundries"
@@ -648,26 +577,11 @@
 	item_path = /obj/item/bikehorn
 	price_credits = 80
 
-/datum/shop_sku/general/rotating/welding_goggles
-	category = "Tools & Repair"
-	item_path = /obj/item/clothing/glasses/welding
-	price_credits = 180
-
 /datum/shop_sku/general/rotating/guitar
 	item_path = /obj/item/instrument/guitar
 	price_credits = 400
 
 // ===== RARE SHOWCASE =====
-
-/datum/shop_sku/general/rare/bluespace_bodybag
-	category = "Ship Sundries"
-	item_path = /obj/item/bodybag/bluespace
-	price_credits = 3000
-
-/datum/shop_sku/general/rare/drill
-	category = "Prospecting"
-	item_path = /obj/item/pickaxe/drill
-	price_credits = 1800
 
 // ===== BARNABY'S PROSPECTOR COUNTER (buybacks) =====
 
@@ -756,21 +670,24 @@
 	stock_max = 4
 
 // ===== BACK ROOM =====
-// Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Barnaby's favor uniques: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/pike_ledger
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/pike_ledger
 	price_credits = 3200
 	price_vouchers = 2
 
 /datum/shop_sku/favor/field_contract_pad
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/field_contract_pad
 	price_credits = 3600
 	price_vouchers = 2
 
 /datum/shop_sku/favor/freight_beacon
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/freight_beacon
 	price_credits = 2400
 	price_vouchers = 1
@@ -778,9 +695,37 @@
 // The replacement lathe cannot print its own construction parts.
 /datum/shop_sku/general/basic_parts
 	name = "basic machine parts box"
-	desc = "Three each of basic matter bins, servos, capacitors, micro-lasers and scanners. Enough parts to rebuild an autolathe; bring a board, five iron sheets for its frame, five cables and one glass sheet."
+	desc = "A boxed assortment of basic machine components."
 	category = "Ship Sundries"
 	item_path = /obj/item/storage/box/stockparts/basic
 	price_credits = 300
 	stock_min = 3
 	stock_max = 6
+// ===== ARMS =====
+
+/datum/shop_sku/general/hunting_knife
+	category = "Arms"
+	item_path = /obj/item/knife/hunting
+	price_credits = 200
+	price_vouchers = 0
+	stock_min = 4
+	stock_max = 4
+
+/datum/shop_sku/general/survival_knife
+	category = "Arms"
+	item_path = /obj/item/knife/combat/survival
+	price_credits = 350
+	price_vouchers = 0
+	stock_min = 4
+	stock_max = 4
+
+/datum/shop_sku/general/surplus_rifle
+	category = "Arms"
+	item_path = /obj/item/gun/ballistic/rifle/boltaction/surplus
+	price_credits = 900
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE

@@ -1,28 +1,137 @@
-/**
- * # Trader Favor
- *
- * Standing a crew earns with a trader by completing that trader's board
- * contracts. Favor buys nothing by itself: it discounts credit prices by tier
- * and, at the top tier, unlocks the trader's back-room shelf (SHELF_FAVOR) of
- * bespoke uniques, each capped at FAVOR_UNIQUE_CREW_LIMIT per crew per round.
- *
- * "Per crew" means the ship, same as the embargo and the contract board
- * (get_crew_ship). The ledger lives on the ship datum and dies with the hull
- * on purpose, a crew that loses its ship starts over with every trader.
- *
- * Favor is keyed by the outpost's MAIN shop type, not the shop instance:
- * a trader is a character (every general outpost is Barnaby's waystation),
- * and the vendor stalls on an outpost honor the host trader's standing rather
- * than running ledgers of their own. Voucher prices are never discounted.
- * Contracts pay vouchers, so a voucher discount would double-dip.
- */
+GLOBAL_LIST_EMPTY(voidcrew_crew_records)
+GLOBAL_LIST_EMPTY(voidcrew_crew_roster)
+GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 
-/obj/structure/overmap/ship
-	/// Favor points this crew holds per trader, keyed by the outpost's main
-	/// shop typepath (see /datum/outpost_shop/proc/favor_key)
-	var/list/trader_favor
-	/// Units of each favor-shelf unique this crew has bought, keyed by SKU type
-	var/list/favor_unique_purchases
+/** Round-only identity. The registry owns its lifetime, including after all hulls are lost.
+ * Z2 claims immutable encounter/family receipt keys here before any yielding payout.
+ * Z3/Z4 consume get_zone_permission(); neither favor nor imported knowledge changes it.
+ */
+/datum/voidcrew_crew_record
+	var/crew_id
+	var/list/teams = list()
+	var/list/minds = list()
+	var/list/ckeys = list()
+	/// Trader keys are main-shop typepaths; SKU keys are SKU typepaths.
+	var/list/trader_favor = list()
+	var/list/favor_unique_purchases = list()
+	/// Band keys are strings because numeric ZONE_* values are list indices in DM.
+	var/list/zone_totals = list("1" = 0, "2" = 0, "3" = 0)
+	var/list/zone_families = list()
+	/// Immutable encounter/family serial strings, shared by aliases of one settlement.
+	var/list/settlement_claims = list()
+
+/datum/voidcrew_crew_record/New()
+	crew_id = ++GLOB.voidcrew_crew_serial
+	GLOB.voidcrew_crew_records += src
+	for(var/band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		var/list/families = list()
+		for(var/family in zone_reputation_families())
+			families[family] = 0
+		zone_families["[band]"] = families
+	return ..()
+
+/datum/voidcrew_crew_record/Destroy()
+	GLOB.voidcrew_crew_records -= src
+	for(var/rostered_ckey in ckeys)
+		if(GLOB.voidcrew_crew_roster[rostered_ckey] == src)
+			GLOB.voidcrew_crew_roster -= rostered_ckey
+	for(var/datum/team/voidcrew/team in teams.Copy())
+		team.crew_record = null
+	for(var/datum/mind/member in minds.Copy())
+		member.leave_reputation_crew()
+	teams.Cut()
+	minds.Cut()
+	ckeys.Cut()
+	return ..()
+
+/// Round cleanup/admin disposal, not hull teardown. Never serialize these records.
+/proc/clear_voidcrew_crew_records()
+	for(var/datum/voidcrew_crew_record/record in GLOB.voidcrew_crew_records.Copy())
+		qdel(record)
+	GLOB.voidcrew_crew_roster.Cut()
+
+/proc/zone_reputation_families()
+	return list(ZONE_FAMILY_NAMED_KILL, ZONE_FAMILY_HUNT, ZONE_FAMILY_CAPTURE, ZONE_FAMILY_POACHERS, ZONE_FAMILY_PYLONS, ZONE_FAMILY_EXTRACTION)
+
+/// Explicit subtype map: ordinary surveys, stakes, lairs and suppression are excluded.
+/proc/zone_reputation_family(mission_type)
+	if(ispath(mission_type, /datum/mission/recovery/kill))
+		return ZONE_FAMILY_NAMED_KILL
+	if(ispath(mission_type, /datum/mission/big_game_hunt))
+		return ZONE_FAMILY_HUNT
+	if(ispath(mission_type, /datum/mission/live_capture))
+		return ZONE_FAMILY_CAPTURE
+	if(ispath(mission_type, /datum/mission/poacher_bust))
+		return ZONE_FAMILY_POACHERS
+	if(ispath(mission_type, /datum/mission/recovery/survey) || ispath(mission_type, /datum/mission/research/core_sample))
+		return ZONE_FAMILY_PYLONS
+	if(ispath(mission_type, /datum/mission/recovery/extraction))
+		return ZONE_FAMILY_EXTRACTION
+	return null
+
+/// Shared E/M/H weight for existing board favor and Z2's console/board receipts.
+/proc/zone_work_reward(difficulty)
+	switch(difficulty)
+		if(MISSION_DIFFICULTY_HARD)
+			return FAVOR_GAIN_HARD
+		if(MISSION_DIFFICULTY_MEDIUM)
+			return FAVOR_GAIN_MEDIUM
+	return FAVOR_GAIN_EASY
+
+/// Returns credited points, claiming even a capped receipt. Caller validates successful work.
+/// No yield: simultaneous aliases cannot both claim. Never pass a proof object's ref as key.
+/datum/voidcrew_crew_record/proc/claim_zone_work(family, band, difficulty, receipt_key)
+	var/list/families = zone_families["[band]"]
+	if(!families || !(family in families) || !(difficulty in list(MISSION_DIFFICULTY_EASY, MISSION_DIFFICULTY_MEDIUM, MISSION_DIFFICULTY_HARD)) \
+		|| !istext(receipt_key) || !length(receipt_key) || settlement_claims[receipt_key])
+		return 0
+	settlement_claims[receipt_key] = TRUE
+	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
+	var/gain = min(zone_work_reward(difficulty), max(0, cap - families[family]))
+	families[family] += gain
+	zone_totals["[band]"] += gain
+	return gain
+
+/datum/voidcrew_crew_record/proc/get_zone_permission()
+	if(zone_totals["[ZONE_GREEN]"] < ZONE_REPUTATION_GREEN_REQUIRED)
+		return ZONE_PERMISSION_PUBLIC
+	if(zone_totals["[ZONE_YELLOW]"] < ZONE_REPUTATION_YELLOW_REQUIRED)
+		return ZONE_PERMISSION_YELLOW
+	if(zone_totals["[ZONE_RED]"] < ZONE_REPUTATION_RED_REQUIRED)
+		return ZONE_PERMISSION_ADVANCED
+	return ZONE_PERMISSION_ELITE
+
+/datum/voidcrew_crew_record/proc/has_zone_permission(required_permission)
+	return isnum(required_permission) && required_permission >= ZONE_PERMISSION_PUBLIC && required_permission <= get_zone_permission()
+
+/// Targetless routine asks are Public; unknown targeted bands fail closed.
+/datum/voidcrew_crew_record/proc/can_work_in_zone(band)
+	switch(band)
+		if(ZONE_GREEN)
+			return TRUE
+		if(ZONE_YELLOW)
+			return has_zone_permission(ZONE_PERMISSION_YELLOW)
+		if(ZONE_RED)
+			return has_zone_permission(ZONE_PERMISSION_ADVANCED)
+	return FALSE
+
+/// Atomic shared-cap reservation for Z3. Call before payment/grant; release on failure.
+/datum/voidcrew_crew_record/proc/claim_purchase(sku_type, limit = FAVOR_UNIQUE_CREW_LIMIT)
+	var/bought = favor_unique_purchases[sku_type] || 0
+	if(limit <= 0 || bought >= limit)
+		return FALSE
+	favor_unique_purchases[sku_type] = bought + 1
+	return TRUE
+
+/datum/voidcrew_crew_record/proc/release_purchase(sku_type)
+	var/bought = favor_unique_purchases[sku_type] || 0
+	if(bought > 0)
+		favor_unique_purchases[sku_type] = bought - 1
+
+/// Only never-used provisional identities may be discarded before round cleanup.
+/datum/voidcrew_crew_record/proc/is_unfounded()
+	return !length(teams) && !length(minds) && !length(ckeys) && !length(trader_favor) && !length(favor_unique_purchases) && !length(settlement_claims) \
+		&& !zone_totals["[ZONE_GREEN]"] && !zone_totals["[ZONE_YELLOW]"] && !zone_totals["[ZONE_RED]"]
 
 /// The key a shop's standing is stored under: its outpost's main shop type.
 /// Falls back to our own type for shops with no outpost (shouldn't happen).
@@ -37,9 +146,8 @@
 
 /// Favor points `crew_ship` holds with this shop's trader
 /datum/outpost_shop/proc/get_favor(obj/structure/overmap/ship/crew_ship)
-	if(!crew_ship || !crew_ship.trader_favor)
-		return 0
-	return crew_ship.trader_favor[favor_key()] || 0
+	var/datum/voidcrew_crew_record/record = crew_ship?.get_crew_record()
+	return record?.trader_favor[favor_key()] || 0
 
 /// Favor tier for `crew_ship`: 0 stranger, 1 regular, 2 partner, 3 trusted
 /datum/outpost_shop/proc/get_favor_tier(obj/structure/overmap/ship/crew_ship)
@@ -85,41 +193,24 @@
 			return FAVOR_TIER_TRUSTED
 	return 0
 
-/**
- * Credits `amount` favor to `crew_ship` and announces tier crossings. The
- * routine +N line rides the mission-complete toast (finish_mission), so this
- * only speaks up when a threshold is actually crossed.
- */
+/// Credits trader favor without exposing internal standing to players.
 /datum/outpost_shop/proc/grant_favor(obj/structure/overmap/ship/crew_ship, amount)
-	if(!crew_ship || amount <= 0)
+	var/datum/voidcrew_crew_record/record = crew_ship?.get_crew_record()
+	if(!record || amount <= 0)
 		return
-	var/old_tier = get_favor_tier(crew_ship)
-	LAZYSET(crew_ship.trader_favor, favor_key(), get_favor(crew_ship) + amount)
-	var/new_tier = get_favor_tier(crew_ship)
-	if(new_tier <= old_tier)
-		return
-	var/perk_text
-	switch(new_tier)
-		if(3)
-			perk_text = "[FAVOR_DISCOUNT_TRUSTED]% off credit prices, and the back-room shelf is open to your crew."
-		if(2)
-			perk_text = "[FAVOR_DISCOUNT_PARTNER]% off credit prices."
-		else
-			perk_text = "[FAVOR_DISCOUNT_REGULAR]% off credit prices."
-	crew_ship.ship_notify("[favor_trader_name()] now counts your crew as [LOWER_TEXT(get_favor_tier_name(new_tier))]: [perk_text]", \
-		"TRADER STANDING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	record.trader_favor[favor_key()] = get_favor(crew_ship) + amount
 
 /// How many units of `sku_type` this crew has bought off the favor shelf
 /datum/outpost_shop/proc/get_crew_purchases(obj/structure/overmap/ship/crew_ship, sku_type)
-	if(!crew_ship || !crew_ship.favor_unique_purchases)
-		return 0
-	return crew_ship.favor_unique_purchases[sku_type] || 0
+	var/datum/voidcrew_crew_record/record = crew_ship?.get_crew_record()
+	return record?.favor_unique_purchases[sku_type] || 0
 
 /// Records a favor-shelf purchase against the crew's per-round cap
 /datum/outpost_shop/proc/record_crew_purchase(obj/structure/overmap/ship/crew_ship, sku_type)
-	if(!crew_ship)
+	var/datum/voidcrew_crew_record/record = crew_ship?.get_crew_record()
+	if(!record)
 		return
-	LAZYSET(crew_ship.favor_unique_purchases, sku_type, get_crew_purchases(crew_ship, sku_type) + 1)
+	return record.claim_purchase(sku_type)
 
 /**
  * # Back-room SKU base
@@ -136,9 +227,6 @@
 /datum/mission/proc/get_favor_reward()
 	if(!shop)
 		return 0
-	switch(difficulty)
-		if(MISSION_DIFFICULTY_HARD)
-			return FAVOR_GAIN_HARD
-		if(MISSION_DIFFICULTY_MEDIUM)
-			return FAVOR_GAIN_MEDIUM
-	return FAVOR_GAIN_EASY
+	if(is_routine_contract())
+		return FAVOR_GAIN_EASY
+	return zone_work_reward(difficulty)

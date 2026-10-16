@@ -158,7 +158,9 @@
 	qdel(delivery)
 
 	// An ordinary discounted shipment must record the final paid bill as well.
-	var/datum/supply_pack/plating_pack = allocate(/datum/supply_pack/security/modsuit_plating)
+	var/datum/supply_pack/plating_pack = allocate(/datum/supply_pack)
+	plating_pack.cost = CARGO_CRATE_VALUE
+	plating_pack.contains = list(/obj/item/mod/construction/plating/civilian)
 	var/datum/supply_order/plating_order = allocate(/datum/supply_order, plating_pack)
 	plating_order.manifest_can_fail = FALSE
 	plating_order.applied_coupon = allocate(/obj/item/coupon)
@@ -324,3 +326,130 @@
 	var/datum/export_report/steel_report = export_item_and_contents(plasteel, apply_elastic = FALSE, dry_run = TRUE)
 	TEST_ASSERT_EQUAL(counterlist_sum(steel_report.total_value), 400, "Plasteel direct resale retained its former inflated material price")
 	TEST_ASSERT(counterlist_sum(steel_report.total_value) < 630, "Repair-stock resale exceeds Barnaby's strongest special")
+
+/// Market tests isolate event state as well as the shared export fixture's prices.
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market
+	abstract_type = /datum/unit_test/voidcrew_launch_cargo_fixture/material_market
+	var/list/base_prices = list(
+		/datum/material/diamond = 120,
+		/datum/material/bluespace = 80,
+		/datum/material/gold = 40,
+		/datum/material/titanium = 40,
+		/datum/material/uranium = 30,
+		/datum/material/silver = 15,
+		/datum/material/iron = 2,
+		/datum/material/glass = 2,
+	)
+	var/list/saved_trends
+	var/list/saved_trend_life
+	var/list/saved_events
+	var/saved_news
+	var/list/saved_crash_sources
+
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market/proc/save_market()
+	save_economy()
+	saved_trends = SSstock_market.materials_trends.Copy()
+	saved_trend_life = SSstock_market.materials_trend_life.Copy()
+	saved_events = SSstock_market.active_events
+	SSstock_market.active_events = list()
+	saved_news = SSstock_market.news_string
+	var/list/crash_sources = GET_TRAIT_SOURCES(SSeconomy, TRAIT_MARKET_CRASHING)
+	saved_crash_sources = crash_sources.Copy()
+	REMOVE_TRAIT(SSeconomy, TRAIT_MARKET_CRASHING, saved_crash_sources)
+
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market/Destroy()
+	if(saved_trends)
+		QDEL_LIST(SSstock_market.active_events)
+		SSstock_market.active_events = saved_events
+		SSstock_market.materials_trends = saved_trends
+		SSstock_market.materials_trend_life = saved_trend_life
+		SSstock_market.news_string = saved_news
+		REMOVE_TRAIT(SSeconomy, TRAIT_MARKET_CRASHING, TRAIT_SOURCE_UNIT_TESTS)
+		for(var/source in saved_crash_sources)
+			ADD_TRAIT(SSeconomy, TRAIT_MARKET_CRASHING, source)
+	return ..()
+
+/// Trading, ordinary trends and economy-wide crashes retain their price bounds.
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market/adjustments/Run()
+	save_market()
+	for(var/datum/material/material as anything in base_prices)
+		var/base = base_prices[material]
+		TEST_ASSERT_EQUAL(material.value_per_unit, base / SHEET_MATERIAL_AMOUNT, "[material] has the wrong base value per material unit")
+		if(material == /datum/material/iron || material == /datum/material/glass)
+			TEST_ASSERT_EQUAL(material.minimum_value_override * SHEET_MATERIAL_AMOUNT, 1, "[material] lost its one-credit floor")
+		else
+			TEST_ASSERT_NULL(material.minimum_value_override, "[material] must retain its half-base floor")
+		var/minimum = round(base * 0.5)
+		var/maximum = round(base * 1.5)
+		SSstock_market.materials_prices[material] = base
+		SSstock_market.adjust_material_price(material, base * 100)
+		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], maximum, "[material] purchase adjustment exceeded the ceiling")
+		SSstock_market.adjust_material_price(material, -base * 100)
+		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], minimum, "[material] sale adjustment crossed the floor")
+		SSstock_market.adjust_material_price(material, base - minimum)
+		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], base, "[material] could not return to its base price")
+
+		for(var/trend in list(MARKET_TREND_DOWNWARD, MARKET_TREND_STABLE, MARKET_TREND_UPWARD))
+			for(var/starting_price in list(minimum, base, maximum))
+				SSstock_market.materials_prices[material] = starting_price
+				SSstock_market.materials_trends[material] = trend
+				SSstock_market.materials_trend_life[material] = 1
+				SSstock_market.handle_trends_and_price(material)
+				var/price = SSstock_market.materials_prices[material]
+				TEST_ASSERT(price >= minimum && price <= maximum, "[material] ordinary trend left the price bounds: [price]")
+
+	ADD_TRAIT(SSeconomy, TRAIT_MARKET_CRASHING, TRAIT_SOURCE_UNIT_TESTS)
+	for(var/datum/material/material as anything in base_prices)
+		SSstock_market.materials_prices[material] = base_prices[material] * 1.5
+		SSstock_market.handle_trends_and_price(material)
+		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], round(base_prices[material] * 0.5), "[material] crash crossed its price floor")
+
+/// Events use their own clamp, and both reset paths restore the new base prices.
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market/events/Run()
+	save_market()
+	for(var/datum/material/material as anything in base_prices)
+		var/base = base_prices[material]
+		for(var/event_type in list(/datum/stock_market_event/large_boost, /datum/stock_market_event/large_drop, /datum/stock_market_event/hotcakes, /datum/stock_market_event/market_reset))
+			for(var/starting_price in list(base * 0.5, base, base * 1.5))
+				SSstock_market.materials_prices[material] = starting_price
+				var/datum/stock_market_event/event = allocate(event_type)
+				TEST_ASSERT(event.start_event(material), "[event_type] failed to start for [material]")
+				var/price = SSstock_market.materials_prices[material]
+				TEST_ASSERT(price >= base * 0.5 && price <= base * 1.5, "[event_type] left [material] outside its bounds: [price]")
+				if(event_type == /datum/stock_market_event/hotcakes)
+					TEST_ASSERT_EQUAL(price, round(base * 1.5), "Hotcakes used the wrong ceiling for [material]")
+				if(event_type == /datum/stock_market_event/market_reset)
+					TEST_ASSERT_EQUAL(price, base, "Market reset restored the old base for [material]")
+				qdel(event)
+
+		var/datum/stock_market_event/lockdown/lockdown = allocate(/datum/stock_market_event/lockdown)
+		TEST_ASSERT(lockdown.start_event(material), "Lockdown failed to start for [material]")
+		SSstock_market.active_events += lockdown
+		SSstock_market.materials_prices[material] = base * 1.5
+		lockdown.handle()
+		TEST_ASSERT_EQUAL(SSstock_market.materials_quantity[material], 0, "Lockdown failed to suspend [material] stock")
+		lockdown.handle()
+		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], base, "Lockdown restored the old base for [material]")
+		TEST_ASSERT(!(lockdown in SSstock_market.active_events), "Ended lockdown remained active")
+
+/// Quote the entire stack before depressing the market or its export demand.
+/datum/unit_test/voidcrew_launch_cargo_fixture/material_market/diamond_stack/Run()
+	save_market()
+	SSstock_market.materials_prices[/datum/material/diamond] = 120
+	SSstock_market.materials_quantity[/datum/material/diamond] = 50
+	var/datum/export/material/market/diamond/exporter = locate(/datum/export/material/market/diamond) in GLOB.exports_list
+	TEST_ASSERT_NOTNULL(exporter, "Diamond market exporter is missing")
+	var/obj/item/stack/sheet/mineral/diamond/diamonds = allocate(/obj/item/stack/sheet/mineral/diamond, run_loc_floor_bottom_left, 50)
+	var/datum/export_report/quote = export_item_and_contents(diamonds, apply_elastic = TRUE, dry_run = TRUE)
+	TEST_ASSERT_EQUAL(counterlist_sum(quote.total_value), 6000, "Fifty diamonds did not quote at the full base price")
+	TEST_ASSERT_EQUAL(SSstock_market.materials_prices[/datum/material/diamond], 120, "Dry quote changed the market price")
+	TEST_ASSERT_EQUAL(SSstock_market.materials_quantity[/datum/material/diamond], 50, "Dry quote changed available stock")
+	TEST_ASSERT_EQUAL(exporter.cost, exporter.init_cost, "Dry quote depressed export demand")
+	var/datum/export_report/sale = export_item_and_contents(diamonds, apply_elastic = TRUE, dry_run = FALSE)
+	TEST_ASSERT_EQUAL(counterlist_sum(sale.total_value), 6000, "Market or elasticity changed before the whole-stack sale was quoted")
+	TEST_ASSERT_EQUAL(SSstock_market.materials_prices[/datum/material/diamond], 60, "Completed sale failed to depress the subsequent market price")
+	TEST_ASSERT_EQUAL(SSstock_market.materials_quantity[/datum/material/diamond], 100, "Completed sale failed to add the whole stack to stock")
+	TEST_ASSERT(exporter.cost < exporter.init_cost, "Completed sale failed to consume export demand")
+	var/depressed_cost = exporter.cost
+	exporter.process()
+	TEST_ASSERT(exporter.cost > depressed_cost && exporter.cost <= exporter.init_cost, "Export demand no longer recovers within its base limit")

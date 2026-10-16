@@ -2,6 +2,13 @@
 "a" = (
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"b" = (
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/gun/energy/disabler,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "c" = (
 /obj/structure/chair{
 	dir = 4
@@ -13,13 +20,6 @@
 	dir = 2
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"f" = (
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/gun/energy/disabler,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "j" = (
@@ -169,7 +169,7 @@ U
 c
 "}
 (4,1,1) = {"
-f
+b
 J
 v
 e

@@ -5,6 +5,17 @@
 "ab" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/box/cargo)
+"ac" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/chief_medical,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/box/bridge)
 "ae" = (
 /obj/structure/fans/tiny,
 /obj/effect/turf_decal/stripes{
@@ -58,7 +69,7 @@
 /obj/item/storage/belt/medical,
 /obj/item/storage/belt/medical,
 /obj/item/reagent_containers/spray/cleaner,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/machinery/light/directional/west,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/box/medbay)
@@ -657,17 +668,6 @@
 /obj/structure/closet/crate/freezer/blood,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/box/medbay)
-"cx" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/structure/closet/secure_closet/chief_medical,
-/obj/item/gun/energy/e_gun/mini,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/box/bridge)
 "cy" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/rack,
@@ -1091,7 +1091,7 @@
 /area/shuttle/voidcrew/box/medbay)
 "mE" = (
 /obj/structure/table/glass,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -2008,7 +2008,7 @@ bx
 bJ
 ca
 cn
-cx
+ac
 be
 ot
 nQ

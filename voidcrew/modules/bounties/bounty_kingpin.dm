@@ -1236,7 +1236,9 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 /datum/bounty_kingpin_crew/proc/spawn_goon(turf/post, weapon = BOUNTY_GOON_WEAPON_PISTOL)
 	if(!post)
 		return null
-	var/mob/living/basic/bounty_kingpin_goon/goon = new(post)
+	var/mob/living/basic/bounty_criminal/kingpin/kingpin = kingpin_ref?.resolve()
+	var/datum/npc_spawn_context/context = new(kingpin || post, null, "ordinary", source_turf = post)
+	var/mob/living/basic/bounty_kingpin_goon/goon = spawn_npc_in_zone(/mob/living/basic/bounty_kingpin_goon, post, context, FALSE)
 	goon.goon_weapon = weapon
 	goon.goon_post = post
 	goon.goon_rounds = bounty_kingpin_goon_mag(weapon)
@@ -1255,6 +1257,7 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		goon.goon_post_dir = facing || SOUTH
 		goon.setDir(goon.goon_post_dir)
 	add_goon(goon)
+	context.finalize()
 	return goon
 
 /// Makes `goon` one of the crew
@@ -2469,13 +2472,15 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 /proc/bounty_kingpin_setup(turf/seat, list/posts, datum/bounty_record/record)
 	if(!seat)
 		return null
-	var/mob/living/basic/bounty_criminal/kingpin/kingpin = new(seat)
+	var/datum/npc_spawn_context/context = new(seat, null, "boss")
+	var/mob/living/basic/bounty_criminal/kingpin/kingpin = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/kingpin, seat, context, FALSE)
 	kingpin.kingpin_crew = new /datum/bounty_kingpin_crew(kingpin, seat)
 	kingpin.body_setup(record, null)
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(seat)
 	if(outpost)
 		kingpin.body_set_site(outpost)
 	kingpin.kingpin_sit()
+	context.finalize()
 	for(var/list/post as anything in posts)
 		kingpin.kingpin_crew.crew_posts += list(post.Copy())
 		kingpin.kingpin_crew.spawn_goon(post[1], post[2])
@@ -2934,3 +2939,7 @@ SUBSYSTEM_DEF(bounty_kingpin)
 	if(!posting)
 		return panel.refuse(user, "The kingpin couldn't be posted.")
 	return "post the kingpin bounty on [posting.record?.name || "nobody"] at [posting.board_site_name || "the black market"]"
+
+/// His lounge faction stays neutral; his explicit boss encounter is still profiled.
+/mob/living/basic/bounty_criminal/kingpin/is_npc_zone_exempt()
+	return npc_zone_exempt || npc_spawn_context?.exempt || client || mind

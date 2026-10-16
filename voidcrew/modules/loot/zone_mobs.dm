@@ -20,7 +20,7 @@
  * back to green (the weakest table), so a broken resolution can never flood
  * a ruin.
  *
- * The /boss variants are single-slot setpiece markers: green gets the
+ * The /boss variants are setpiece markers: green gets the
  * theme's lieutenant, red gets the real monster. "Real monster" tops out at
  * elite-tier ("harder versions of normal mobs"). Megafauna are BANNED from
  * the zone system, and from ruin maps outside the purpose-built boss-arena
@@ -44,22 +44,26 @@
 	var/list/mobs_yellow
 	var/list/mobs_red
 	/// Spawn count ranges per zone: list(min, max)
-	var/list/count_green = list(0, 1)
+	var/list/count_green = list(1, 2)
 	var/list/count_yellow = list(1, 2)
-	var/list/count_red = list(2, 3)
+	var/list/count_red = list(1, 2)
+	/// Explicit setpiece role; shared mob types must not infer it from their name.
+	var/npc_role = "auto"
 	/// How far spawns scatter from the marker
 	var/scatter_radius = 2
 
 /**
  * Runtime spawns (mission waves) can pass a count override:
  * new /obj/effect/zone_mobs/pirate(T, list(1, 2)) guarantees 1-2 spawns in
- * green/yellow and one extra in red, regardless of the theme's defaults.
+ * every band, regardless of the theme's defaults.
  */
 /obj/effect/zone_mobs/Initialize(mapload, list/count_override)
+	if(npc_role == "auto" && npc_zone_boss_type(type))
+		npc_role = "boss"
 	if(islist(count_override) && length(count_override) >= 2)
 		count_green = count_override
 		count_yellow = count_override
-		count_red = list(count_override[1] + 1, count_override[2] + 1)
+		count_red = count_override
 	. = ..()
 	return INITIALIZE_HINT_LATELOAD
 
@@ -102,7 +106,8 @@
 		if(!mob_path)
 			continue
 		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
-		new mob_path(spot)
+		var/datum/npc_spawn_context/context = new(src, zone_type, npc_role)
+		spawn_npc_in_zone(mob_path, spot, context)
 
 /**
  * Open, unblocked turfs around the marker the pack can scatter onto.

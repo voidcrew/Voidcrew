@@ -9,6 +9,15 @@
 //
 // EVENT CATALOG
 //
+// Lifecycle details also carry the accepting crew_id and immutable work_receipt_serial,
+// work_family, work_band and work_difficulty when present. Hull changes never redirect these.
+// zone_work_claimed - one diagnostic row per settled receipt, including fully capped work.
+//     points: credited gain. details: attempted_gain, capped_gain, permission_before/after.
+// zone_permission_crossed - one diagnostic row per newly opened permission; subject: its
+//     internal name. The row's round_seconds gives the access time across replacement hulls.
+//     These rows move no money. Use zone_work_claimed.points for progression totals; the
+//     mission_completed.details.zone_gain mirror must not be added to it.
+//
 // mission_accepted - a crew takes a mission from its board, or a contract from an outpost
 //     trader. Hook: /datum/mission/start_mission().
 //     ckey: the player who accepted. details: board ("ship" or "outpost"), difficulty,
@@ -42,6 +51,10 @@
 //     Hook: /obj/structure/overmap/trader_outpost/ensure_shop_offers().
 // board_refreshed - a crew rerolled its mission board. ckey, ship. quantity: offers thrown
 //     away. Hook: the mission board's "refresh" action.
+// mission_quote_posted - the quoted cash, vouchers, research and package value of one offer.
+// guarded_prize_paid - diagnostic item row for a suit or gadget, including its family, quote
+//     zone and first_suit_s. Console/contract mission_completed.total_value already includes
+//     this prize; do not add this diagnostic row a second time to mission receipts.
 // pirate_bounty_accepted - a crew took a bounty on an NPC pirate ship from its mission board.
 //     ckey, ship. subject: the pirate ship's typepath. zone: where the pirate is.
 //     details: reward, heavy.
@@ -61,6 +74,8 @@
 /datum/mission
 	/// ckey of the player who accepted this mission
 	var/metric_accepted_by
+	/// Continuing crew id captured at acceptance, including after admin disposal of its record.
+	var/metric_crew_id
 	/// ship_id, ship_name and ship_class when the mission was accepted, for rows written while
 	/// the ship itself is being deleted
 	var/list/metric_ship_fields
@@ -75,6 +90,23 @@
 	/// refunded straight away writes neither the post nor the refund
 	var/metric_posted = FALSE
 
+/datum/mission_work_receipt
+	/// Shared by encounter aliases, so completion logging cannot duplicate a claim/crossing.
+	var/metric_recorded = FALSE
+
+/// Internal labels, used only in metrics and admin diagnostics.
+/proc/voidcrew_zone_permission_name(permission)
+	switch(permission)
+		if(ZONE_PERMISSION_PUBLIC)
+			return "Public"
+		if(ZONE_PERMISSION_YELLOW)
+			return "Yellow"
+		if(ZONE_PERMISSION_ADVANCED)
+			return "Advanced"
+		if(ZONE_PERMISSION_ELITE)
+			return "Elite"
+	return "Unknown"
+
 /// The ckey of the player whose action is running this proc chain. Only trust it on paths that
 /// start with a player's click or UI action; timers and subsystems have no usr.
 /proc/metric_acting_ckey()
@@ -88,6 +120,8 @@
 
 /// The zone name of this mission's target, or null when it has none.
 /datum/mission/proc/metric_target_zone()
+	if(!isnull(quote_zone))
+		return metric_zone_name(quote_zone)
 	var/zone_type = target?.get_zone_type()
 	if(!isnull(zone_type))
 		return metric_zone_name(zone_type)
@@ -113,6 +147,13 @@
 		"difficulty" = get_difficulty_name(),
 		"archetype" = get_archetype(),
 	)
+	if(metric_crew_id || !QDELETED(accepting_crew))
+		details["crew_id"] = metric_crew_id || accepting_crew.crew_id
+	if(work_receipt)
+		details["work_receipt_serial"] = work_receipt.serial
+		details["work_family"] = work_receipt.family
+		details["work_band"] = metric_zone_name(work_receipt.band)
+		details["work_difficulty"] = work_receipt.difficulty
 	if(shop)
 		details["outpost"] = shop.outpost_name
 		details["trader"] = shop.trader_name
@@ -147,7 +188,12 @@
  * a back-room prize at CONTRACT_EXCLUSIVE_VALUE. Called once, when the contract is generated.
  */
 /datum/mission/proc/note_metric_item_value()
-	if(!shop || !SSmetrics.accepting)
+	if(!SSmetrics.accepting)
+		return
+	if(!shop)
+		metric_item_value = 0
+		for(var/reward_type in get_reward_types())
+			metric_item_value += mission_utility_value(reward_type)
 		return
 	var/list/reward_types = get_reward_types()
 	if(!length(reward_types))
@@ -165,6 +211,27 @@
 			total += sku_values[reward_type] || 0
 	metric_item_value = total
 
+/// Value utility at its catalog price without constructing shops or consuming stock.
+/proc/mission_utility_value(item_type)
+	var/static/list/prices
+	if(isnull(prices))
+		prices = list()
+		for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
+			var/item_path = initial(sku_type.item_path)
+			var/price = initial(sku_type.price_credits) + initial(sku_type.price_vouchers) * VOUCHER_CREDIT_VALUE
+			if(!item_path || price <= 0)
+				continue
+			if(!prices[item_path] || price < prices[item_path])
+				prices[item_path] = price
+	return prices[item_type] || 0
+
+/// One row per actual named prize, shared by console, outpost kills and bounty lairs.
+/proc/record_guarded_prize(obj/structure/overmap/ship/ship, family, category, zone, prize_type, source_type)
+	var/list/details = list("family" = family, "prize_type" = category, "source" = source_type, "item_value" = category == "suit" ? 9000 : 3600)
+	if(category == "suit")
+		details["first_suit_s"] = ship.mission_first_suit_seconds
+	record_metric(METRIC_MISSION, "guarded_prize_paid", ship = ship, zone = metric_zone_name(zone), subject = prize_type, quantity = 1, details = details)
+
 /// Remembers the ship parts in a prize crate this mission just paid.
 /datum/mission/proc/note_metric_ship_parts(obj/structure/closet/crate/prize)
 	if(!prize || !SSmetrics.accepting)
@@ -178,6 +245,7 @@
 	if(!SSmetrics.accepting)
 		return
 	metric_accepted_by = metric_acting_ckey()
+	metric_crew_id = QDELETED(accepting_crew) ? null : accepting_crew.crew_id
 	if(servant)
 		var/list/ship_row = SSmetrics.build_row(METRIC_MISSION, null, null, null, servant, null, null, 0, 0, 0, 0, null)
 		metric_ship_fields = list(
@@ -205,6 +273,7 @@
 /datum/mission/proc/record_metric_completed(atom/reward_anchor, favor_gain)
 	if(!SSmetrics.accepting)
 		return
+	var/recorded_work = record_metric_work_receipt()
 	var/paid_goods = servant && get_turf(reward_anchor)
 	var/paid_credits = (servant?.ship_account && value > 0) ? value : 0
 	var/paid_vouchers = (paid_goods && voucher_count > 0) ? voucher_count : 0
@@ -224,6 +293,8 @@
 			item_count++
 
 	var/list/details = metric_base_details()
+	details["zone_claimed"] = recorded_work
+	details["zone_gain"] = recorded_work ? work_receipt.credited : 0
 	details["seconds"] = metric_seconds_active()
 	var/turned_in_by = metric_acting_ckey() || metric_accepted_by
 	if(metric_accepted_by && metric_accepted_by != turned_in_by)
@@ -235,6 +306,12 @@
 	var/item_value = paid_goods ? metric_item_value : 0
 	if(item_value > 0)
 		details["item_value"] = item_value
+	if(paid_goods && guarded_prize)
+		var/prize_value = ispath(guarded_prize, /obj/item/mod/control) ? 9000 : 3600
+		details["prize"] = guarded_prize
+		details["prize_value"] = prize_value
+		item_value += prize_value
+		item_count++
 	details["total_value"] = paid_credits + item_value + paid_vouchers * VOUCHER_CREDIT_VALUE
 	if(favor)
 		details["favor"] = favor
@@ -243,6 +320,34 @@
 		details["retargets"] = retargets_used
 	metric_completion_details(details)
 	record_mission_metric("mission_completed", turned_in_by, paid_credits, paid_vouchers, paid_points, item_count, details)
+
+/// Consume Z2's settled diagnostics only. This never claims work or changes standing.
+/datum/mission/proc/record_metric_work_receipt()
+	if(!SSmetrics.accepting || !work_receipt?.claimed || work_receipt.metric_recorded || QDELETED(accepting_crew) \
+		|| work_receipt.crew != accepting_crew || isnull(work_receipt.permission_before) || isnull(work_receipt.permission_after))
+		return FALSE
+	work_receipt.metric_recorded = TRUE
+	var/list/details = metric_base_details()
+	var/attempted_gain = zone_work_reward(work_receipt.difficulty)
+	details["attempted_gain"] = attempted_gain
+	details["capped_gain"] = max(0, attempted_gain - work_receipt.credited)
+	details["permission_before"] = work_receipt.permission_before
+	details["permission_after"] = work_receipt.permission_after
+	var/acting_ckey = metric_acting_ckey() || metric_accepted_by
+	record_mission_metric("zone_work_claimed", acting_ckey, points = work_receipt.credited, quantity = 1, details = details)
+	if(work_receipt.permission_after > work_receipt.permission_before)
+		for(var/permission in (work_receipt.permission_before + 1) to work_receipt.permission_after)
+			var/list/crossing = details.Copy()
+			crossing["permission"] = permission
+			var/obj/structure/overmap/ship/ship = QDELETED(servant) ? null : servant
+			// Use the same ship snapshot fallback as the mission lifecycle rows.
+			var/list/row = SSmetrics.build_row(METRIC_MISSION, "zone_permission_crossed", acting_ckey, null, ship, metric_zone_name(work_receipt.band), voidcrew_zone_permission_name(permission), 0, 0, 0, 1, crossing)
+			if(!ship && metric_ship_fields)
+				row["ship_id"] = metric_ship_fields["ship_id"]
+				row["ship_name"] = metric_ship_fields["ship_name"]
+				row["ship_class"] = metric_ship_fields["ship_class"]
+			SSmetrics.queue_row(row)
+	return TRUE
 
 /**
  * mission_failed or mission_expired. Called from fail() before any state changes. Offers that
@@ -276,6 +381,15 @@
 	if(!SSmetrics.accepting || QDELETED(offer))
 		return
 	tally_metric(METRIC_MISSION, event, ship = ship, zone = offer.metric_target_zone(), subject = offer.type)
+	if(event == "mission_offered" || event == "contract_offered")
+		var/list/details = offer.metric_base_details()
+		if(ship && !QDELETED(ship.get_crew_record()))
+			details["crew_id"] = ship.get_crew_record().crew_id
+		details["item_value"] = offer.metric_item_value
+		details["offer"] = offer.value
+		details["vouchers"] = offer.voucher_count
+		details["research"] = offer.research_reward
+		record_metric(METRIC_MISSION, "mission_quote_posted", ship = ship, zone = offer.metric_target_zone(), subject = offer.type, details = details)
 
 /// board_refreshed. Called before the board is cleared, so the count is what was thrown away.
 /proc/record_mission_board_refreshed(obj/structure/overmap/ship/ship, mob/user)
