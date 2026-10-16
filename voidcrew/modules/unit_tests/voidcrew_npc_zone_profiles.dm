@@ -153,6 +153,7 @@
 	))
 		TEST_ASSERT(npc_zone_boss_type(boss_type), "Approved boss type missing: [boss_type]")
 	TEST_ASSERT(!npc_zone_boss_type(/mob/living/basic/npc_zone_test), "An ordinary mob was classified as a boss")
+	TEST_ASSERT(!npc_zone_boss_type(/mob/living/basic/lich/mirror_image), "Disposable lich images were classified as bosses")
 	// Research's count overrides belong to W1, but its setpiece role is core policy.
 	var/obj/effect/zone_mobs/bug/boss/research_marker = allocate(/obj/effect/zone_mobs/bug/boss)
 	TEST_ASSERT_EQUAL(research_marker.npc_role, "boss", "Research marker did not select the explicit boss role")
@@ -810,3 +811,306 @@
 	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, child_context)
 	allocated += child
 	TEST_ASSERT(child.npc_zone_exempt && !child.npc_zone_applied, "Recruit descendants lost exemption")
+
+/// Check a real route's output against raw type stats, never against its stored originals.
+/datum/unit_test/proc/check_npc_zone_child(mob/living/child, datum/npc_spawn_context/parent_context, exempt = FALSE, boss = FALSE)
+	TEST_ASSERT_NOTNULL(child, "Child route did not produce a surviving body")
+	if(!child)
+		return
+	TEST_ASSERT_NOTNULL(child.npc_spawn_context, "[child.type] omitted its construction context")
+	if(!child.npc_spawn_context)
+		return
+	TEST_ASSERT_EQUAL(child.npc_spawn_context.source_id, parent_context.source_id, "[child.type] lost its parent's source identity")
+	TEST_ASSERT_EQUAL(child.npc_spawn_context.zone_type, parent_context.zone_type, "[child.type] resolved against its landing site")
+	TEST_ASSERT_EQUAL(child.npc_zone_applied, !exempt, "[child.type] ignored its source exemption")
+	if(exempt)
+		TEST_ASSERT(child.npc_zone_exempt, "[child.type] did not retain permanent exemption")
+		TEST_ASSERT_EQUAL(child.maxHealth, initial(child.maxHealth), "Exempt child health was scaled")
+		return
+	var/list/health_factors = boss ? list(1, 1.15, 1.3) : list(1, 1.35, 1.8)
+	var/list/damage_factors = boss ? list(1, 1.1, 1.2) : list(1, 1.15, 1.35)
+	TEST_ASSERT_EQUAL(child.npc_zone_role, boss ? "boss" : "ordinary", "Child inherited its parent's role instead of its own")
+	TEST_ASSERT(abs(child.maxHealth - initial(child.maxHealth) * health_factors[parent_context.zone_type]) < 0.001, "[child.type] did not scale its raw health exactly once")
+	TEST_ASSERT(abs(child.melee_damage_upper - initial(child.melee_damage_upper) * damage_factors[parent_context.zone_type]) < 0.001, "[child.type] did not scale its raw melee exactly once")
+	var/previous_health = child.maxHealth
+	child.npc_spawn_context.finalize()
+	TEST_ASSERT_EQUAL(child.maxHealth, previous_health, "Child finalization stacked its profile")
+
+/// Force the replacement parasite so its inheritance is deterministic.
+/mob/living/basic/mining/legion/npc_zone_test/consume(mob/living/carbon/human/consumed)
+	. = ..()
+	var/obj/item/organ/legion_tumour/tumour = new()
+	tumour.Insert(consumed, special = TRUE, movement_flags = DELETE_IF_REPLACED)
+
+/datum/unit_test/voidcrew_npc_zone_child_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/turf/landing = run_loc_floor_top_right
+	var/mob/living/basic/bait = allocate(/mob/living/basic/npc_zone_test, landing)
+	for(var/band in 1 to 3)
+		for(var/exempt in list(FALSE, TRUE))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, band, "boss", exempt)
+			var/mob/living/basic/mining/hivelord/hive = spawn_npc_in_zone(/mob/living/basic/mining/hivelord, location, context)
+			hive.forceMove(landing)
+			hive.spawn_brood.complete_spawn(location, bait)
+			var/mob/living/basic/hivelord_brood/brood = locate() in location
+			check_npc_zone_child(brood, context, exempt)
+			TEST_ASSERT_EQUAL(brood.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Hivelord attack brood lost its target setup")
+			qdel(brood)
+			hive.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bait)
+			hive.complete_spawn(location)
+			brood = locate() in location
+			check_npc_zone_child(brood, context, exempt)
+			TEST_ASSERT_EQUAL(brood.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Hivelord death brood lost its target setup")
+			qdel(brood)
+			// This callback must also finalize an Initialize replacement after setup.
+			hive.death_spawn_type = /mob/living/basic/npc_zone_test/replacement
+			hive.complete_spawn(location)
+			var/mob/living/basic/npc_zone_test/replacement = locate() in location
+			check_npc_zone_child(replacement, context, exempt)
+			qdel(replacement)
+			var/datum/action/cooldown/mob_cooldown/skull_launcher/launcher = allocate(/datum/action/cooldown/mob_cooldown/skull_launcher)
+			launcher.Grant(hive)
+			launcher.spawn_skull(location, bait)
+			var/mob/living/basic/legion_brood/skull = locate() in location
+			check_npc_zone_child(skull, context, exempt)
+			TEST_ASSERT_EQUAL(skull.created_by.resolve(), hive, "Legion skull lost creator assignment")
+			// The infected human is a victim, not the source or controller of the legion.
+			var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, location)
+			skull.infest(victim)
+			var/mob/living/basic/mining/legion/infested = locate() in location
+			check_npc_zone_child(infested, context, exempt)
+			TEST_ASSERT_EQUAL(infested.stored_mob, victim, "Infestation finalized before consuming its victim")
+			qdel(infested)
+			var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human/consistent, location)
+			var/obj/item/organ/legion_tumour/tumour = allocate(/obj/item/organ/legion_tumour)
+			tumour.npc_spawn_context = context
+			tumour.spawn_type = /mob/living/basic/mining/legion/npc_zone_test
+			tumour.Insert(host, special = TRUE)
+			skull = tumour.spawn_brood(landing)
+			check_npc_zone_child(skull, context, exempt)
+			TEST_ASSERT_EQUAL(skull.created_by.resolve(), host, "Tumour brood missed its host assignment")
+			qdel(skull)
+			tumour.infest()
+			infested = locate() in location
+			check_npc_zone_child(infested, context, exempt)
+			var/obj/item/organ/legion_tumour/replacement_tumour = host.get_organ_slot(ORGAN_SLOT_PARASITE_EGG)
+			TEST_ASSERT_EQUAL(replacement_tumour.npc_spawn_context.source_id, context.source_id, "Replacement parasite lost the original infection source")
+			TEST_ASSERT_EQUAL(replacement_tumour.npc_spawn_context.zone_type, band, "Replacement parasite retiered against its host")
+			qdel(infested)
+			qdel(launcher)
+			qdel(hive)
+
+/datum/unit_test/voidcrew_npc_zone_legion_split_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	for(var/exempt in list(FALSE, TRUE))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss", exempt)
+		var/mob/living/simple_animal/hostile/megafauna/legion/parent = spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion, location, context)
+		parent.forceMove(run_loc_floor_top_right)
+		parent.Split()
+		var/list/mediums = list()
+		for(var/mob/living/simple_animal/hostile/megafauna/legion/medium/child in run_loc_floor_top_right)
+			mediums += child
+			check_npc_zone_child(child, context, exempt, TRUE)
+		TEST_ASSERT_EQUAL(length(mediums), 3, "Large Legion did not produce three medium children")
+		var/mob/living/simple_animal/hostile/megafauna/legion/medium/medium = mediums[1]
+		medium.forceMove(location)
+		medium.Split()
+		var/small_count = 0
+		for(var/mob/living/simple_animal/hostile/megafauna/legion/small/child in location)
+			small_count++
+			check_npc_zone_child(child, context, exempt, TRUE)
+			qdel(child)
+		TEST_ASSERT_EQUAL(small_count, 3, "Medium Legion did not produce three small children")
+		QDEL_LIST(mediums)
+		qdel(parent)
+
+/// The post hook overrides health and faction and must run before finalization.
+/datum/action/cooldown/spell/conjure/npc_zone_test
+	summon_type = list(/mob/living/basic/npc_zone_test/replacement)
+	summon_radius = 0
+
+/datum/action/cooldown/spell/conjure/npc_zone_test/post_summon(atom/summoned_object, atom/cast_on)
+	var/mob/living/body = summoned_object
+	if(body.npc_zone_applied)
+		CRASH("Conjure finalized before post_summon setup")
+	body.faction = list(FACTION_HOSTILE)
+	body.setMaxHealth(200)
+	body.setBruteLoss(50)
+
+/datum/unit_test/voidcrew_npc_zone_conjure_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/caster = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_top_right, context)
+	var/datum/action/cooldown/spell/conjure/npc_zone_test/spell = allocate(/datum/action/cooldown/spell/conjure/npc_zone_test)
+	spell.Grant(caster)
+	for(var/player_owned in list(FALSE, TRUE))
+		if(player_owned)
+			caster.mind_initialize()
+		spell.cast(location)
+		var/mob/living/basic/npc_zone_test/body = locate() in location
+		TEST_ASSERT_NOTNULL(body, "Conjure lost its Initialize replacement")
+		TEST_ASSERT_EQUAL(body.maxHealth, player_owned ? 200 : 360, "Conjure lost ownership exemption or post-summon health setup")
+		TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "Conjure finalization healed its output")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, context.source_id, "Conjure lost caster source identity")
+		TEST_ASSERT_EQUAL(body.npc_zone_exempt, player_owned, "Player summons did not retain exemption")
+		var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, body)
+		var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, child_context)
+		check_npc_zone_child(child, context, player_owned)
+		qdel(child)
+		qdel(body)
+	qdel(caster)
+
+/datum/unit_test/voidcrew_npc_zone_lich_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/structure/overmap/space_ruin/lich_lair/site = allocate(/obj/structure/overmap/space_ruin/lich_lair)
+	site.npc_spawn_context = allocate(/datum/npc_spawn_context, site, 3)
+	site.ruin_bottom_left = location
+	var/datum/map_template/ruin/template = allocate(/datum/map_template/ruin)
+	template.width = 1
+	template.height = 1
+	site.ruin_template = template
+	allocate(/obj/effect/landmark/lich/boss_spawn, location)
+	site.link_interior()
+	var/mob/living/basic/lich/lich = site.lich_ref?.resolve()
+	TEST_ASSERT_NOTNULL(lich, "Lich site's fallback spawn did not bind a boss")
+	allocated += lich
+	check_npc_zone_child(lich, site.npc_spawn_context, FALSE, TRUE)
+	// A mapped lich uses the auto role and starts with combat mode off.
+	var/datum/npc_spawn_context/auto_context = allocate(/datum/npc_spawn_context, site, 3)
+	var/mob/living/basic/lich/mapped = spawn_npc_in_zone(/mob/living/basic/lich, run_loc_floor_top_right, auto_context)
+	check_npc_zone_child(mapped, site.npc_spawn_context, FALSE, TRUE)
+	qdel(mapped)
+	var/datum/action/cooldown/spell/conjure/lich_raise_dead/raise = allocate(/datum/action/cooldown/spell/conjure/lich_raise_dead)
+	raise.Grant(lich)
+	raise.cast(lich)
+	TEST_ASSERT_EQUAL(length(lich.live_summons), 2, "Lich did not register its conjured minions")
+	for(var/mob/living/minion as anything in lich.live_summons)
+		check_npc_zone_child(minion, site.npc_spawn_context)
+		TEST_ASSERT("verdigris" in minion.faction, "Lich summon missed its faction setup") // FACTION_LICH
+	var/mob/living/basic/victim = allocate(/mob/living/basic/npc_zone_test, run_loc_floor_top_right)
+	var/datum/action/cooldown/spell/pointed/lich_mirror_images/images = allocate(/datum/action/cooldown/spell/pointed/lich_mirror_images)
+	images.Grant(lich)
+	images.cast(victim)
+	TEST_ASSERT(length(images.copies) >= 1, "Lich mirror route produced no registered copies")
+	for(var/mob/living/basic/lich/mirror_image/image as anything in images.copies)
+		check_npc_zone_child(image, site.npc_spawn_context)
+		TEST_ASSERT(image in lich.live_summons, "Mirror image bypassed the lich's cleanup registry")
+		image.on_attacked(image, victim, ATTACKER_DAMAGING_ATTACK)
+		TEST_ASSERT(abs(victim.getBruteLoss() - 20.25) < 0.001, "Mirror retaliation did not use its ordinary damage factor")
+		victim.fully_heal()
+	var/datum/action/cooldown/spell/pointed/lich_grave_dirt/dirt = allocate(/datum/action/cooldown/spell/pointed/lich_grave_dirt)
+	dirt.Grant(lich)
+	dirt.cast(victim)
+	TEST_ASSERT_EQUAL(dirt.npc_damage_factor, 1.2, "Grave dirt did not capture the boss's damage factor")
+	dirt.Remove(lich)
+	qdel(lich)
+	dirt.burn_tick(list(get_turf(victim)), world.time)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 6, "Delayed grave dirt lost damage scaling after creator deletion")
+	qdel(dirt)
+
+/// Use the actual guard creation path and its record, without a second prison map load.
+/datum/unit_test/voidcrew_npc_zone_guard_route
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+
+/datum/unit_test/voidcrew_npc_zone_guard_route/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("npczoneguard")
+	TEST_ASSERT_NOTNULL(home, "Guard profile fixture could not load its prison")
+	home.npc_spawn_context = allocate(/datum/npc_spawn_context, home, 3)
+	var/datum/outpost_prison/prison = test_prison(home)
+	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE)
+	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	check_npc_zone_child(guard, home.npc_spawn_context, TRUE)
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, guard)
+	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, get_turf(guard), context)
+	check_npc_zone_child(child, home.npc_spawn_context, TRUE)
+	qdel(child)
+
+/// Arena geometry is irrelevant to spawn_wave's provided turf list.
+/datum/colosseum_controller/npc_zone_test/snapshot_arena()
+	return
+
+/datum/unit_test/voidcrew_npc_zone_arena_route/Run()
+	var/datum/colosseum_controller/controller = allocate(/datum/colosseum_controller/npc_zone_test)
+	controller.state = "live" // COLOSSEUM_STATE_LIVE
+	var/datum/colosseum_modifier/beast_interlude/modifier = allocate(/datum/colosseum_modifier/beast_interlude)
+	modifier.controller = controller
+	modifier.spawn_wave(list(run_loc_floor_bottom_left), list(/mob/living/basic/mining/legion = 1))
+	TEST_ASSERT_EQUAL(length(modifier.beasts), 1, "Arena wave lost its output")
+	var/mob/living/basic/mining/legion/beast = modifier.beasts[1]
+	TEST_ASSERT(beast.npc_zone_exempt && !beast.npc_zone_applied, "Colosseum beast received an environmental profile")
+	var/datum/action/cooldown/mob_cooldown/skull_launcher/launcher = beast.ai_controller.blackboard[BB_TARGETED_ACTION]
+	launcher.spawn_skull(run_loc_floor_top_right, null)
+	var/mob/living/basic/legion_brood/skull = locate() in run_loc_floor_top_right
+	TEST_ASSERT(skull.npc_zone_exempt && !skull.npc_zone_applied, "Arena beast descendants escaped exemption")
+	qdel(skull)
+
+/// Real wave methods use their deployed objective's source, not the player's mind.
+/datum/unit_test/voidcrew_npc_zone_vestige_routes/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, center)
+	keeper.mind_initialize()
+	var/obj/item/vestige_blood_votive/votive = allocate(/obj/item/vestige_blood_votive, center)
+	votive.npc_spawn_context = allocate(/datum/npc_spawn_context, votive, 2)
+	var/datum/vestige_trial/vigil/vigil = allocate(/datum/vestige_trial/vigil, keeper.mind)
+	vigil.votive = votive
+	vigil.unfold(keeper)
+	TEST_ASSERT_EQUAL(length(vigil.clots), 3, "Cult fixture did not unfold its hostile pack")
+	for(var/mob/living/clot as anything in vigil.clots)
+		check_npc_zone_child(clot, votive.npc_spawn_context)
+	vigil.reset_rite()
+	var/obj/structure/vestige_dragon_egg/dragon = allocate(/obj/structure/vestige_dragon_egg, center)
+	dragon.npc_spawn_context = allocate(/datum/npc_spawn_context, dragon, 3)
+	dragon.assault_underway = TRUE
+	dragon.wave_pending = TRUE
+	dragon.wave_perch = pick(vestige_hunt_approaches(dragon, 4))
+	dragon.unleash_wave()
+	TEST_ASSERT_EQUAL(length(dragon.brood), 2, "Dragon trial did not emit its wave")
+	for(var/mob/living/hunter as anything in dragon.brood.Copy())
+		check_npc_zone_child(hunter, dragon.npc_spawn_context)
+		qdel(hunter)
+	var/obj/structure/vestige_comb_egg/comb = allocate(/obj/structure/vestige_comb_egg, center)
+	comb.npc_spawn_context = allocate(/datum/npc_spawn_context, comb, 2)
+	comb.assault_underway = TRUE
+	comb.squad_pending = TRUE
+	comb.squad_perch = pick(vestige_hunt_approaches(comb, 4, chew_resin = TRUE))
+	comb.land_squad()
+	TEST_ASSERT_EQUAL(length(comb.chewers), 1, "Comb trial did not emit its first squad")
+	for(var/mob/living/chewer as anything in comb.chewers.Copy())
+		check_npc_zone_child(chewer, comb.npc_spawn_context)
+		qdel(chewer)
+	var/obj/structure/vestige_tremor_line/line = allocate(/obj/structure/vestige_tremor_line, center)
+	line.npc_spawn_context = allocate(/datum/npc_spawn_context, line, 3)
+	var/datum/vestige_trial/loom_tremor/loom = allocate(/datum/vestige_trial/loom_tremor, keeper.mind)
+	loom.send_thief(line, keeper)
+	TEST_ASSERT_EQUAL(length(loom.thieves), 1, "Spider trial did not emit a thief")
+	for(var/mob/living/thief as anything in loom.thieves.Copy())
+		check_npc_zone_child(thief, line.npc_spawn_context)
+		TEST_ASSERT_EQUAL(thief.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], line, "Spider thief missed its target setup")
+		qdel(thief)
+	// Reward pets retain baseline stats even under an explicit hostile role.
+	var/datum/npc_spawn_context/pet_context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/pet = spawn_npc_in_zone(/mob/living/basic/carp/pet/vestige_hatchling, center, pet_context)
+	allocated += pet
+	TEST_ASSERT(pet.npc_zone_exempt && !pet.npc_zone_applied, "Reward dragonet received a hostile profile")
+
+/datum/unit_test/voidcrew_npc_zone_player_spell_route/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/caster = allocate(/mob/living/carbon/human/consistent, center)
+	caster.mind_initialize()
+	var/datum/action/cooldown/spell/grave_mirage/spell = allocate(/datum/action/cooldown/spell/grave_mirage)
+	spell.Grant(caster)
+	spell.cast(caster)
+	TEST_ASSERT(length(spell.mirages) >= 1, "Player mirage spell produced no copies")
+	for(var/mob/living/mirage as anything in spell.mirages)
+		TEST_ASSERT(mirage.npc_zone_exempt && !mirage.npc_zone_applied, "Player mirage received an environmental profile")
+		TEST_ASSERT_EQUAL(mirage.maxHealth, initial(mirage.maxHealth), "Player mirage health was scaled")
+		TEST_ASSERT_EQUAL(mirage.npc_spawn_context.source_id, REF(caster), "Player mirage lost caster identity")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, get_step(caster, EAST))
+	victim.stat = HARD_CRIT
+	var/obj/item/organ/legion_tumour/tumour = allocate(/obj/item/organ/legion_tumour)
+	TEST_ASSERT(tumour.try_apply(victim, caster), "Manual tumour fixture could not reach the infestation route")
+	// The victim starts beside the caster, and the infestation stays on the victim's tile.
+	var/mob/living/basic/mining/legion/infested = locate() in get_turf(victim)
+	TEST_ASSERT_NOTNULL(infested, "Manual tumour did not produce a legion")
+	TEST_ASSERT(infested.npc_zone_exempt && !infested.npc_zone_applied, "Player-applied infestation lost the player's exemption")
+	qdel(infested)

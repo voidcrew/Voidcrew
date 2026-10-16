@@ -83,6 +83,9 @@
 /// Approved boss classification, including marker types that grant a boss role
 /// to otherwise ordinary bodies. Other setpiece producers pass "boss" explicitly.
 /proc/npc_zone_boss_type(candidate_type)
+	// A lich's disposable images are registered minions, not additional bosses.
+	if(ispath(candidate_type, /mob/living/basic/lich/mirror_image))
+		return FALSE
 	var/static/list/boss_types = list(
 		/mob/living/simple_animal/hostile/megafauna,
 		/mob/living/simple_animal/hostile/asteroid/elite,
@@ -141,7 +144,8 @@
 		return
 	if(!isbasicmob(src) && !isanimal(src))
 		return
-	if(context.role == "auto" && !is_npc_zone_hostile())
+	// Named bosses (including the lich) need not start with combat mode enabled.
+	if(context.role == "auto" && !is_npc_zone_hostile() && !npc_zone_boss_type(type))
 		return
 	npc_zone_role = (context.role == "boss" || npc_zone_boss_type(type)) ? "boss" : "ordinary"
 	npc_zone_original_max_health = maxHealth
