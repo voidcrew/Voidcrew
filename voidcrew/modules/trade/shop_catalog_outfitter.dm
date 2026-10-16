@@ -167,14 +167,6 @@
 		list("type" = /obj/item/stack/sheet/sinew, "name" = "beast sinew", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 	)
-	// The armory back room: hard contracts only, never sold. Everything here has
-	// to be unobtainable elsewhere, so no item that drops in a zone loot theme
-	// and nothing that appears on the Ship Systems shelf.
-	exclusive_rewards = list(
-		/obj/item/circuitboard/machine/ship_combat/missile_launcher,
-		/obj/item/circuitboard/machine/engine/void,
-		/obj/item/gun/energy/laser/captain,
-	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Quartermain Depot. State your needs, keep your sidearm holstered.",

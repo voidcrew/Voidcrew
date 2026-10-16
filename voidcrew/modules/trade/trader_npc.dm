@@ -120,7 +120,7 @@
 /mob/living/basic/outpost_trader/examine(mob/user)
 	. = ..()
 	if(shop)
-		. += span_notice("[name] runs the counter at [shop.outpost_name]. Click them from anywhere along the counter to do business.")
+		. += span_notice("[name] runs the counter at [shop.outpost_name].")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
 
@@ -490,7 +490,9 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 	var/mob/living/user = ui.user
 	var/datum/outpost_shop/shop = npc.shop
-	if(!istype(user) || !shop)
+	if(!istype(user) || !shop || !npc.check_menu(user))
+		return
+	if(npc.outpost && !npc.outpost.contains_site_turf(get_turf(npc)))
 		return
 
 	switch(action)
@@ -604,6 +606,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			if(QDELETED(offer))
 				continue
 			var/list/offer_data = offer.get_ui_data()
+			offer_data["quote_value"] = offer.contract_quote
 			offer_data["wanted_text"] = offer.get_progress_string()
 			offers += list(offer_data)
 	data["offers"] = offers
@@ -617,6 +620,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			if(QDELETED(mission))
 				continue
 			var/list/mission_data = mission.get_ui_data()
+			mission_data["quote_value"] = mission.contract_quote
 			mission_data["from_this_shop"] = (mission.shop == outpost?.shop)
 			var/location_ok = mission.can_turn_in_at(npc)
 			mission_data["location_ok"] = location_ok
@@ -631,7 +635,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			else if(!location_ok)
 				turn_in_hint = mission.get_wrong_location_reason(npc)
 			else if(!holding_valid)
-				turn_in_hint = offered ? mission.get_failure_reason(offered) : "Hold the contract goods in hand."
+				turn_in_hint = offered ? mission.get_failure_reason(offered) : "Shipment declined."
 			mission_data["turn_in_hint"] = turn_in_hint
 			ship_missions += list(mission_data)
 	data["ship_missions"] = ship_missions
@@ -645,7 +649,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 
 	var/mob/living/user = ui.user
 	var/obj/structure/overmap/trader_outpost/outpost = npc.outpost
-	if(!istype(user) || !outpost?.shop)
+	if(!istype(user) || !outpost?.shop || !npc.can_use_contracts(user))
 		return
 
 	switch(action)
@@ -659,8 +663,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				npc.balloon_alert(user, "you have no ship!")
 				return TRUE
 			var/datum/mission/offer = locate(params["ref"]) in outpost.shop_offers
-			if(!offer || QDELETED(offer))
-				npc.balloon_alert(user, "offer no longer posted!")
+			if(!offer || QDELETED(offer) || offer.active || offer.failed || offer.completed || world.time - offer.posted_at >= OUTPOST_CONTRACT_EXPIRY)
+				npc.balloon_alert(user, "offer closed!")
 				return TRUE
 
 			// Ride the standard accept path so limits/bookkeeping all apply
@@ -673,7 +677,6 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				return TRUE
 
 			outpost.shop_offers -= offer
-			outpost.ensure_shop_offers()
 			npc.balloon_alert(user, "contract accepted!")
 			playsound(npc, 'sound/machines/ding.ogg', 50, TRUE)
 			npc.speak_line(TRADER_LINE_GREETING)
@@ -705,6 +708,17 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 			playsound(npc, 'sound/effects/cashregister.ogg', 50, TRUE)
 			npc.speak_line(TRADER_LINE_SALE)
 			return TRUE
+
+/// Stale UI actions must still originate from a crew member at the actual counter.
+/mob/living/basic/outpost_trader/proc/can_use_contracts(mob/living/user)
+	if(!check_menu(user) || QDELETED(outpost) || outpost.trader != src || shop != outpost.shop)
+		return FALSE
+	if(!outpost.contains_site_turf(get_turf(src)))
+		return FALSE
+	if(!get_crew_ship(user))
+		to_chat(user, span_warning("Crew access only."))
+		return FALSE
+	return TRUE
 
 #undef TRADER_COUNTER_RANGE
 #undef TRADER_NPC_OPTION_TRADE
