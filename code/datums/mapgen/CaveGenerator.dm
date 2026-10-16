@@ -374,7 +374,10 @@
 					weighted_megafauna_spawn_list.Remove(picked_mob)
 					megafauna_spawn_list = expand_weights(weighted_megafauna_spawn_list)
 					megas_allowed = megas_allowed && length(megafauna_spawn_list)
-				new picked_mob(target_turf)
+				// VOIDCREW EDIT ADDITION START: npc_scaling pins this generating site.
+				var/datum/npc_spawn_context/context = new(src, role = is_megafauna ? "boss" : "auto", source_turf = target_turf)
+				spawn_npc_in_zone(picked_mob, target_turf, context)
+				// VOIDCREW EDIT ADDITION END
 				spawned_something = TRUE
 		// VOIDCREW EDIT: worldgen_yield, not CHECK_TICK - mid-round asteroid/field
 		// builds run this under the worldgen queue and must share its budget

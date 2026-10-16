@@ -114,6 +114,11 @@
  * type_path_to_make - what are we spawning?
  **/
 /obj/effect/spawner/random/proc/make_item(spawn_loc, type_path_to_make)
+	// VOIDCREW EDIT ADDITION START: npc_scaling also catches Initialize replacements.
+	if(ispath(type_path_to_make, /mob/living) || ispath(type_path_to_make, /obj/structure/spawner))
+		var/datum/npc_spawn_context/context = new(src)
+		return spawn_npc_in_zone(type_path_to_make, spawn_loc, context)
+	// VOIDCREW EDIT ADDITION END
 	return new type_path_to_make(spawn_loc)
 
 ///If the spawner has a spawn_scatter_radius set, this creates a list of nearby turfs available that are in view and have an unblocked line to them.

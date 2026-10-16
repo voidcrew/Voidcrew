@@ -123,9 +123,6 @@
 
 /obj/effect/zone_mobs/robot/boss
 	name = "zone mob spawner (robot boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 2)
 	mobs_green = list(
 		/mob/living/basic/hivebot/strong = 1,
 	)
