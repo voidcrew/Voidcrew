@@ -537,7 +537,7 @@
 	patient.updatehealth()
 	patient.set_heartattack(FALSE)
 	patient.grab_ghost()
-	patient.revive()
+	patient.revive_from("meridian_heart")
 	patient.emote("gasp")
 	patient.set_jitter_if_lower(200 SECONDS)
 	SEND_SIGNAL(patient, COMSIG_LIVING_MINOR_SHOCK)
@@ -729,7 +729,7 @@
 
 	target.grab_ghost(force = TRUE)
 	target.fully_heal(HEAL_ALL) // also cures husk, unconditionally - see /mob/living/proc/fully_heal
-	target.revive(force_grab_ghost = TRUE)
+	target.revive_from("lazarus_line", force_grab_ghost = TRUE)
 	if(target.stat == DEAD)
 		to_chat(user, span_warning("[target] convulses, then lies still. It didn't take."))
 		return FALSE
