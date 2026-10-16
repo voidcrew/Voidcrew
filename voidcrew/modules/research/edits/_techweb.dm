@@ -3,6 +3,9 @@
 	var/list/connected_machines = list()
 	/// Research data collected from a survey console. Used to restrict tech behind surveys
 	var/datum/survey_research/survey_data
+	/// Node id -> remaining actual payment by currency and the discounts still owed to that purchase.
+	/// These receipts belong only to this web; research transfers never copy them.
+	var/list/experiment_payment_receipts = list()
 
 /datum/techweb/Destroy()
 	survey_data = null
@@ -42,6 +45,42 @@
 
 /datum/techweb/can_unlock_node(datum/techweb_node/node)
 	return can_afford(node.get_price(src)) && have_experiments_for_node(node) && have_surveys_for_node(node)
+
+/// Called immediately after a successful purchase's debit, before the node is marked researched.
+/datum/techweb/proc/record_node_payment(datum/techweb_node/node, list/points_before)
+	if(node.starting_node || researched_nodes[node.id])
+		return
+	var/list/pending_discounts = list()
+	for(var/experiment_type in node.discount_experiments)
+		if(!completed_experiments[experiment_type] && node.discount_experiments[experiment_type] > 0)
+			pending_discounts[experiment_type] = node.discount_experiments[experiment_type]
+	if(!length(pending_discounts))
+		return
+	var/list/paid_points = list()
+	for(var/point_type in points_before)
+		var/paid = points_before[point_type] - research_points[point_type]
+		if(paid > 0)
+			paid_points[point_type] = paid
+	if(length(paid_points))
+		experiment_payment_receipts[node.id] = list("remaining" = paid_points, "discounts" = pending_discounts)
+
+/// Each missing experiment may refund its discount once per paid node, capped in each currency.
+/datum/techweb/proc/refund_experiment_discounts(datum/experiment/experiment)
+	var/list/refund = list()
+	for(var/node_id in experiment_payment_receipts)
+		var/list/receipt = experiment_payment_receipts[node_id]
+		var/list/discounts = receipt["discounts"]
+		var/discount = discounts[experiment.type]
+		if(!discount)
+			continue
+		discounts -= experiment.type
+		var/list/remaining = receipt["remaining"]
+		for(var/point_type in remaining)
+			var/amount = min(discount, remaining[point_type])
+			remaining[point_type] -= amount
+			refund[point_type] += amount
+	add_point_list(refund)
+	return refund
 
 /**
  * The survey requirement has to be enforced here as well as in can_unlock_node. That proc only

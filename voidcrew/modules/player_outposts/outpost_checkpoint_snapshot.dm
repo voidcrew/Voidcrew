@@ -83,6 +83,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 /datum/ship_checkpoint
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/datum/weakref/source_ship
+	/// Live crew entitlement, never a snapshot copy: awards after capture must survive recovery.
+	var/list/research_reward_ledger
 	var/captain_ckey
 	var/ship_name
 	var/saved_at
@@ -105,6 +107,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		original.checkpoint_ref = null
 	outpost = null
 	source_ship = null
+	research_reward_ledger = null
 	tgm = null
 	rooms = null
 	machines = null
@@ -248,6 +251,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(!valid)
 		return "The hull design could not be read back. No payment was taken."
 	source_ship = WEAKREF(ship)
+	research_reward_ledger = ship.ship_team?.research_reward_ledger
 	captain_ckey = owner_ckey
 	ship_name = ship.name
 	saved_at = world.time
