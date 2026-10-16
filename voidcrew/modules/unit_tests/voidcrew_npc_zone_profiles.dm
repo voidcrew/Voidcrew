@@ -11,6 +11,10 @@
 	unsuitable_cold_damage = 0
 	unsuitable_heat_damage = 0
 
+/mob/living/basic/npc_zone_test/passive
+	combat_mode = FALSE
+	ai_controller = /datum/ai_controller/basic_controller/simple
+
 /mob/living/simple_animal/hostile/npc_zone_test
 	health = 100
 	maxHealth = 100
@@ -104,8 +108,7 @@
 		qdel(body)
 		qdel(child)
 	var/datum/npc_spawn_context/passive_context = allocate(/datum/npc_spawn_context, src, 3)
-	var/mob/living/basic/passive = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, passive_context, FALSE)
-	passive.combat_mode = FALSE
+	var/mob/living/basic/passive = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/passive, location, passive_context, FALSE)
 	passive_context.finalize()
 	TEST_ASSERT(!passive.npc_zone_applied, "Passive ambient fauna received a hostile profile")
 	qdel(passive)
@@ -256,6 +259,38 @@
 	for(var/band in 1 to 3)
 		TEST_ASSERT_EQUAL(SSplanet_mobs.mob_cap_for_band(band), 15, "Band [band] does not have the flat fauna cap")
 
+/datum/unit_test/voidcrew_npc_zone_skeleton_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/effect/zone_mobs/undead/marker = allocate(/obj/effect/zone_mobs/undead, null, list(1, 1))
+	marker.forceMove(location)
+	marker.scatter_radius = 0
+	marker.mobs_red = list(/mob/living/basic/skeleton/templar = 1)
+	marker.do_spawn(3)
+	var/mob/living/basic/skeleton/templar/skeleton = locate() in location
+	TEST_ASSERT_NOTNULL(skeleton, "Red undead marker did not produce its templar")
+	TEST_ASSERT(!skeleton.combat_mode, "Skeleton fixture no longer starts outside combat mode")
+	TEST_ASSERT_EQUAL(skeleton.npc_zone_role, "ordinary", "Hostile skeleton AI missed its ordinary profile")
+	TEST_ASSERT_EQUAL(skeleton.npc_spawn_context.zone_type, 3, "Skeleton route lost its red source")
+	TEST_ASSERT(abs(skeleton.maxHealth - initial(skeleton.maxHealth) * 1.8) < 0.001, "Red skeleton retained baseline health")
+	TEST_ASSERT(abs(skeleton.melee_damage_upper - initial(skeleton.melee_damage_upper) * 1.35) < 0.001, "Red skeleton retained baseline damage")
+	qdel(skeleton)
+	qdel(marker)
+
+/datum/unit_test/voidcrew_npc_zone_resolver_cleanup/Run()
+	// Nullspace leaves the resolver pending until its final fallback attempt.
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_bottom_left, context)
+	context.resolve_zone()
+	var/datum/zone_resolver/pending = context.resolver
+	TEST_ASSERT_NOTNULL(pending, "Unresolved context did not retain its pending resolver")
+	pending.attempts_left = 0
+	pending.attempt()
+	TEST_ASSERT_EQUAL(context.zone_type, 1, "Resolver fallback did not finalize its context")
+	TEST_ASSERT(body.npc_zone_applied, "Resolver completion did not finalize its surviving NPC")
+	TEST_ASSERT(QDELETED(pending), "Completed resolver did not delete itself")
+	TEST_ASSERT_NULL(context.resolver, "Surviving NPC context retained a completed resolver")
+	qdel(body)
+
 /datum/unit_test/voidcrew_npc_zone_deferred/Run()
 	var/turf/location = run_loc_floor_bottom_left
 	var/datum/planet_mob_tracker/tracker = allocate(/datum/planet_mob_tracker)
@@ -361,6 +396,7 @@
 			continue
 		body.npc_spawn_context.resolve_zone()
 		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, band, "Mapped replacement resolved a different site")
+		TEST_ASSERT_NULL(body.npc_spawn_context.resolver, "Synchronous construction retained its completed resolver")
 		TEST_ASSERT_EQUAL(body.maxHealth, band == 1 ? 100 : 180, "Mapped replacement used its neighbour's factor")
 		body.forceMove(locations[band == 1 ? 2 : 1])
 		body.finalize_npc_zone()
@@ -922,6 +958,29 @@
 			qdel(child)
 		TEST_ASSERT_EQUAL(small_count, 3, "Medium Legion did not produce three small children")
 		QDEL_LIST(mediums)
+		qdel(parent)
+
+/datum/unit_test/voidcrew_npc_zone_legion_skull_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/turf/landing = run_loc_floor_top_right
+	var/mob/living/basic/bait = allocate(/mob/living/basic/npc_zone_test, location)
+	for(var/exempt in list(FALSE, TRUE))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss", exempt, location)
+		var/mob/living/simple_animal/hostile/megafauna/legion/parent = spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion, location, context)
+		parent.forceMove(landing)
+		parent.create_legion_skull.create(bait)
+		var/mob/living/basic/legion_brood/skull = locate() in landing
+		check_npc_zone_child(skull, context, exempt)
+		TEST_ASSERT_EQUAL(skull.npc_spawn_context.source_turf, location, "Megafauna skull repinned its source after its creator moved")
+		TEST_ASSERT_EQUAL(skull.created_by.resolve(), parent, "Megafauna skull lost its creator assignment")
+		TEST_ASSERT_EQUAL(skull.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Megafauna skull lost its attack target")
+		var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, landing)
+		skull.infest(victim)
+		var/mob/living/basic/mining/legion/infested = locate() in landing
+		check_npc_zone_child(infested, context, exempt)
+		TEST_ASSERT_EQUAL(infested.npc_spawn_context.source_turf, location, "Infestation lost the megafauna's pinned source")
+		TEST_ASSERT_EQUAL(infested.stored_mob, victim, "Megafauna skull infestation did not consume its victim")
+		qdel(infested)
 		qdel(parent)
 
 /// The post hook overrides health and faction and must run before finalization.
