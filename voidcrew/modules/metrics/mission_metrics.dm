@@ -9,6 +9,15 @@
 //
 // EVENT CATALOG
 //
+// Lifecycle details also carry the accepting crew_id and immutable work_receipt_serial,
+// work_family, work_band and work_difficulty when present. Hull changes never redirect these.
+// zone_work_claimed - one diagnostic row per settled receipt, including fully capped work.
+//     points: credited gain. details: attempted_gain, capped_gain, permission_before/after.
+// zone_permission_crossed - one diagnostic row per newly opened permission; subject: its
+//     internal name. The row's round_seconds gives the access time across replacement hulls.
+//     These rows move no money. Use zone_work_claimed.points for progression totals; the
+//     mission_completed.details.zone_gain mirror must not be added to it.
+//
 // mission_accepted - a crew takes a mission from its board, or a contract from an outpost
 //     trader. Hook: /datum/mission/start_mission().
 //     ckey: the player who accepted. details: board ("ship" or "outpost"), difficulty,
@@ -65,6 +74,8 @@
 /datum/mission
 	/// ckey of the player who accepted this mission
 	var/metric_accepted_by
+	/// Continuing crew id captured at acceptance, including after admin disposal of its record.
+	var/metric_crew_id
 	/// ship_id, ship_name and ship_class when the mission was accepted, for rows written while
 	/// the ship itself is being deleted
 	var/list/metric_ship_fields
@@ -78,6 +89,23 @@
 	/// TRUE once player_bounty_posted was written, so a bounty whose setup failed and was
 	/// refunded straight away writes neither the post nor the refund
 	var/metric_posted = FALSE
+
+/datum/mission_work_receipt
+	/// Shared by encounter aliases, so completion logging cannot duplicate a claim/crossing.
+	var/metric_recorded = FALSE
+
+/// Internal labels, used only in metrics and admin diagnostics.
+/proc/voidcrew_zone_permission_name(permission)
+	switch(permission)
+		if(ZONE_PERMISSION_PUBLIC)
+			return "Public"
+		if(ZONE_PERMISSION_YELLOW)
+			return "Yellow"
+		if(ZONE_PERMISSION_ADVANCED)
+			return "Advanced"
+		if(ZONE_PERMISSION_ELITE)
+			return "Elite"
+	return "Unknown"
 
 /// The ckey of the player whose action is running this proc chain. Only trust it on paths that
 /// start with a player's click or UI action; timers and subsystems have no usr.
@@ -119,6 +147,13 @@
 		"difficulty" = get_difficulty_name(),
 		"archetype" = get_archetype(),
 	)
+	if(metric_crew_id || !QDELETED(accepting_crew))
+		details["crew_id"] = metric_crew_id || accepting_crew.crew_id
+	if(work_receipt)
+		details["work_receipt_serial"] = work_receipt.serial
+		details["work_family"] = work_receipt.family
+		details["work_band"] = metric_zone_name(work_receipt.band)
+		details["work_difficulty"] = work_receipt.difficulty
 	if(shop)
 		details["outpost"] = shop.outpost_name
 		details["trader"] = shop.trader_name
@@ -210,6 +245,7 @@
 	if(!SSmetrics.accepting)
 		return
 	metric_accepted_by = metric_acting_ckey()
+	metric_crew_id = QDELETED(accepting_crew) ? null : accepting_crew.crew_id
 	if(servant)
 		var/list/ship_row = SSmetrics.build_row(METRIC_MISSION, null, null, null, servant, null, null, 0, 0, 0, 0, null)
 		metric_ship_fields = list(
@@ -237,6 +273,7 @@
 /datum/mission/proc/record_metric_completed(atom/reward_anchor, favor_gain)
 	if(!SSmetrics.accepting)
 		return
+	var/recorded_work = record_metric_work_receipt()
 	var/paid_goods = servant && get_turf(reward_anchor)
 	var/paid_credits = (servant?.ship_account && value > 0) ? value : 0
 	var/paid_vouchers = (paid_goods && voucher_count > 0) ? voucher_count : 0
@@ -256,6 +293,8 @@
 			item_count++
 
 	var/list/details = metric_base_details()
+	details["zone_claimed"] = recorded_work
+	details["zone_gain"] = recorded_work ? work_receipt.credited : 0
 	details["seconds"] = metric_seconds_active()
 	var/turned_in_by = metric_acting_ckey() || metric_accepted_by
 	if(metric_accepted_by && metric_accepted_by != turned_in_by)
@@ -281,6 +320,34 @@
 		details["retargets"] = retargets_used
 	metric_completion_details(details)
 	record_mission_metric("mission_completed", turned_in_by, paid_credits, paid_vouchers, paid_points, item_count, details)
+
+/// Consume Z2's settled diagnostics only. This never claims work or changes standing.
+/datum/mission/proc/record_metric_work_receipt()
+	if(!SSmetrics.accepting || !work_receipt?.claimed || work_receipt.metric_recorded || QDELETED(accepting_crew) \
+		|| work_receipt.crew != accepting_crew || isnull(work_receipt.permission_before) || isnull(work_receipt.permission_after))
+		return FALSE
+	work_receipt.metric_recorded = TRUE
+	var/list/details = metric_base_details()
+	var/attempted_gain = zone_work_reward(work_receipt.difficulty)
+	details["attempted_gain"] = attempted_gain
+	details["capped_gain"] = max(0, attempted_gain - work_receipt.credited)
+	details["permission_before"] = work_receipt.permission_before
+	details["permission_after"] = work_receipt.permission_after
+	var/acting_ckey = metric_acting_ckey() || metric_accepted_by
+	record_mission_metric("zone_work_claimed", acting_ckey, points = work_receipt.credited, quantity = 1, details = details)
+	if(work_receipt.permission_after > work_receipt.permission_before)
+		for(var/permission in (work_receipt.permission_before + 1) to work_receipt.permission_after)
+			var/list/crossing = details.Copy()
+			crossing["permission"] = permission
+			var/obj/structure/overmap/ship/ship = QDELETED(servant) ? null : servant
+			// Use the same ship snapshot fallback as the mission lifecycle rows.
+			var/list/row = SSmetrics.build_row(METRIC_MISSION, "zone_permission_crossed", acting_ckey, null, ship, metric_zone_name(work_receipt.band), voidcrew_zone_permission_name(permission), 0, 0, 0, 1, crossing)
+			if(!ship && metric_ship_fields)
+				row["ship_id"] = metric_ship_fields["ship_id"]
+				row["ship_name"] = metric_ship_fields["ship_name"]
+				row["ship_class"] = metric_ship_fields["ship_class"]
+			SSmetrics.queue_row(row)
+	return TRUE
 
 /**
  * mission_failed or mission_expired. Called from fail() before any state changes. Offers that
@@ -316,6 +383,8 @@
 	tally_metric(METRIC_MISSION, event, ship = ship, zone = offer.metric_target_zone(), subject = offer.type)
 	if(event == "mission_offered" || event == "contract_offered")
 		var/list/details = offer.metric_base_details()
+		if(ship && !QDELETED(ship.get_crew_record()))
+			details["crew_id"] = ship.get_crew_record().crew_id
 		details["item_value"] = offer.metric_item_value
 		details["offer"] = offer.value
 		details["vouchers"] = offer.voucher_count

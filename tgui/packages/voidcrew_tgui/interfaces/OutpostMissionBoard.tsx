@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import {
   Box,
   Button,
+  Dropdown,
   Icon,
   NoticeBox,
   Section,
@@ -33,14 +34,8 @@ type Offer = {
   duration: number;
   zone_name: string | null;
   zone_color: string;
-  progress: string;
   archetype: string;
   time_remaining_text: string;
-};
-
-type FavorStanding = {
-  tier: number;
-  tier_name: string;
 };
 
 type ShipMission = Offer & {
@@ -59,7 +54,8 @@ type Data = {
   ship_mission_slots_free: number;
   offers: Offer[];
   ship_missions: ShipMission[];
-  favor?: FavorStanding;
+  crew_ships: { ref: string; name: string }[];
+  crew_ship_ref: string | null;
 };
 
 const ARCHETYPE_ICONS = {
@@ -151,7 +147,11 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
     <Section>
       <Stack align="center">
         <Stack.Item>
-          <Icon name={archetypeIcon(offer.archetype)} size={1.6} color="label" />
+          <Icon
+            name={archetypeIcon(offer.archetype)}
+            size={1.6}
+            color="label"
+          />
         </Stack.Item>
         <Stack.Item grow>
           <Stack vertical>
@@ -178,6 +178,7 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
           <Button
             icon="file-signature"
             disabled={!canAccept}
+            tooltip={canAccept ? undefined : 'Order declined.'}
             onClick={() => act('accept', { ref: offer.ref })}
           >
             Accept
@@ -216,11 +217,6 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
         <Box color="label" fontSize="0.85em">
           {mission.desc}
         </Box>
-        {!!mission.progress && (
-          <Box color="label" fontSize="0.85em">
-            {mission.progress}
-          </Box>
-        )}
         <Box color="label" fontSize="0.85em">
           Due in: {mission.time_remaining_text}
         </Box>
@@ -238,7 +234,7 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
 };
 
 export const OutpostMissionBoard = (props) => {
-  const { data } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const {
     shop_name,
     trader_name,
@@ -247,7 +243,8 @@ export const OutpostMissionBoard = (props) => {
     ship_mission_slots_free,
     offers = [],
     ship_missions = [],
-    favor,
+    crew_ships = [],
+    crew_ship_ref,
   } = data;
 
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
@@ -256,34 +253,30 @@ export const OutpostMissionBoard = (props) => {
     <Window title={`${shop_name}, Contract Board`} width={560} height={620}>
       <Window.Content scrollable>
         {!!barred && (
-          <NoticeBox danger>
-            {trader_name}: Service refused.
-          </NoticeBox>
+          <NoticeBox danger>{trader_name}: Service refused.</NoticeBox>
         )}
-        {!ship_name && (
-          <NoticeBox>No crew registration found.</NoticeBox>
+        {!ship_name && <NoticeBox>No ship account selected.</NoticeBox>}
+        {crew_ships.length > 0 && (
+          <Section>
+            <Box inline mr={1} color="label">
+              Ship account
+            </Box>
+            <Dropdown
+              selected={crew_ship_ref ?? ''}
+              displayText={
+                crew_ships.find((ship) => ship.ref === crew_ship_ref)?.name ??
+                'Ship account'
+              }
+              options={crew_ships.map((ship) => ({
+                value: ship.ref,
+                displayText: ship.name,
+              }))}
+              disabled={!!barred}
+              onSelected={(ref) => act('select_ship', { ref })}
+            />
+          </Section>
         )}
-        <Section
-          title={`${trader_name}'s postings`}
-          buttons={
-            ship_name ? (
-              <Box inline color="label">
-                {!!favor && (
-                  <Box
-                    inline
-                    bold
-                    color={favor.tier >= 3 ? 'orange' : 'good'}
-                    mr={1}
-                  >
-                    {favor.tier_name}
-                  </Box>
-                )}
-                {ship_name} · {ship_mission_slots_free} slot
-                {ship_mission_slots_free === 1 ? '' : 's'} free
-              </Box>
-            ) : null
-          }
-        >
+        <Section title={`${trader_name}'s postings`}>
           {offers.length === 0 && (
             <Box color="label">Nothing posted right now.</Box>
           )}
