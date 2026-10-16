@@ -92,14 +92,6 @@
 	base_icon_state = "syndicrate"
 	theme = /datum/loot_theme/syndicate
 
-/// The black market's premium cache SKU (shop_catalog_black_market.dm). Same
-/// tables as any other syndicate cache. It is simply packed fuller, which is
-/// what the extra vouchers buy.
-/obj/structure/closet/crate/zone_loot/syndicate/reinforced
-	name = "reinforced syndicate cache"
-	desc = "A matte-black drop crate in an extra layer of plating. Whatever's inside, somebody thought it was worth the postage."
-	bonus_draws = 2
-
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
