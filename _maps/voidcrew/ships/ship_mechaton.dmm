@@ -642,7 +642,7 @@
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/mechaton/robotics)
 "Dc" = (

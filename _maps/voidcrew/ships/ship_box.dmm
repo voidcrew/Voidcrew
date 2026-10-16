@@ -58,7 +58,7 @@
 /obj/item/storage/belt/medical,
 /obj/item/storage/belt/medical,
 /obj/item/reagent_containers/spray/cleaner,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/machinery/light/directional/west,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/box/medbay)
@@ -1091,7 +1091,7 @@
 /area/shuttle/voidcrew/box/medbay)
 "mE" = (
 /obj/structure/table/glass,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
