@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box,
   Button,
+  Dropdown,
   Image,
   NoticeBox,
   Section,
@@ -25,10 +26,8 @@ type CatalogSku = {
   price_credits: number;
   final_credits: number;
   price_vouchers: number;
-  discount_pct: number;
   price_text: string;
   barter: BooleanLike;
-  crew_limit: number;
 };
 
 type StockState = {
@@ -39,11 +38,6 @@ type StockState = {
   final_credits: number;
   crew_remaining: number | null;
   favor_locked: BooleanLike;
-};
-
-type FavorStanding = {
-  tier: number;
-  tier_name: string;
 };
 
 type LedgerEntry = {
@@ -78,7 +72,8 @@ type Data = {
   account_credits: number | null;
   stock_states: StockState[];
   ledger_states: LedgerState[];
-  favor?: FavorStanding;
+  crew_ships: { ref: string; name: string }[];
+  crew_ship_ref: string | null;
 };
 
 const SHELF_TAGS = {
@@ -86,19 +81,6 @@ const SHELF_TAGS = {
   rare: { label: 'RARE FIND', color: 'purple' },
   favor: { label: 'BACK ROOM', color: 'orange' },
 } as const;
-
-const StandingHeader = (props: { favor: FavorStanding }) => {
-  const { favor } = props;
-  const tierColor =
-    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
-  return (
-    <Box inline nowrap color="label" fontSize={1} fontWeight="normal">
-      <Box inline bold color={tierColor}>
-        {favor.tier_name}
-      </Box>
-    </Box>
-  );
-};
 
 const WalletHeader = (props: {
   held_vouchers: number;
@@ -150,9 +132,6 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
       </Box>
     );
   }
-  // Struck-through whenever the buyer's real price beats the sticker,
-  // authored special or their crew's favor discount, whichever applied
-  const discounted = sku.price_credits > 0 && finalCredits < sku.price_credits;
   return (
     <Box inline textAlign="right">
       {sku.price_vouchers > 0 && (
@@ -166,20 +145,9 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
         </Box>
       )}
       {sku.price_credits > 0 && (
-        <>
-          {!!discounted && (
-            <Box
-              inline
-              color="label"
-              style={{ textDecoration: 'line-through' }}
-            >
-              {formatMoney(sku.price_credits)}
-            </Box>
-          )}{' '}
-          <Box inline bold color="gold">
-            {formatMoney(finalCredits)} cr
-          </Box>
-        </>
+        <Box inline bold color="gold">
+          {formatMoney(finalCredits)} cr
+        </Box>
       )}
       {sku.price_vouchers <= 0 && sku.price_credits <= 0 && (
         <Box inline color="good">
@@ -199,8 +167,6 @@ const SkuRow = (props: {
   const { sku, live, barred } = props;
   const isFavor = sku.shelf === 'favor';
   const stock = live?.stock ?? 0;
-  // The back room never runs a shared shelf dry. Its scarcity is the
-  // per-crew cap, shown in the stock column instead
   const soldOut = isFavor
     ? (live?.crew_remaining ?? 0) <= 0 && live?.crew_remaining !== null
     : stock <= 0;
@@ -247,7 +213,7 @@ const SkuRow = (props: {
       <Stack.Item color="label" minWidth="30px" textAlign="center">
         {isFavor ? (
           <Box color={soldOut ? 'bad' : 'label'}>
-            x{live?.crew_remaining ?? sku.crew_limit}
+            {soldOut ? '—' : 'In stock'}
           </Box>
         ) : (
           <>x{stock}</>
@@ -255,17 +221,7 @@ const SkuRow = (props: {
       </Stack.Item>
       <Stack.Item>
         {live?.denial && !live.can_buy && !barred && !soldOut ? (
-          <Tooltip
-            content={
-              locked
-                ? 'Back room closed.'
-                : sku.barter
-                  ? 'Barter goods missing.'
-                  : live.denial
-            }
-          >
-            {buyButton}
-          </Tooltip>
+          <Tooltip content={live.denial}>{buyButton}</Tooltip>
         ) : (
           buyButton
         )}
@@ -306,7 +262,7 @@ const BuyView = (props: { barred: BooleanLike }) => {
             selected={category === 'All'}
             onClick={() => setCategory('All')}
           >
-            All ({catalog.length})
+            All
           </Tabs.Tab>
           {withItems.map((cat) => (
             <Tabs.Tab
@@ -314,7 +270,7 @@ const BuyView = (props: { barred: BooleanLike }) => {
               selected={category === cat}
               onClick={() => setCategory(cat)}
             >
-              {cat} ({catalog.filter((sku) => sku.category === cat).length})
+              {cat}
             </Tabs.Tab>
           ))}
         </Tabs>
@@ -437,21 +393,20 @@ const SellView = (props: { barred: BooleanLike }) => {
 };
 
 export const TraderShop = (props) => {
-  const { data } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const {
     shop_name,
     trader_name,
     barred,
     held_vouchers,
     account_credits,
-    catalog = [],
     ledger = [],
-    favor,
+    crew_ships = [],
+    crew_ship_ref,
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const hasBuybacks = ledger.length > 0;
-  const specials = catalog.filter((sku) => sku.discount_pct > 0);
 
   return (
     <Window title={shop_name} width={720} height={640}>
@@ -459,17 +414,27 @@ export const TraderShop = (props) => {
         <Stack fill vertical>
           {!!barred && (
             <Stack.Item>
-              <NoticeBox danger>
-                Service refused.
-              </NoticeBox>
+              <NoticeBox danger>Service refused.</NoticeBox>
             </Stack.Item>
           )}
-          {specials.length > 0 && tab === 'buy' && (
+          {crew_ships.length > 0 && (
             <Stack.Item>
-              <NoticeBox info>
-                {trader_name}&apos;s special today:{' '}
-                {specials.map((sku) => sku.name).join(', ')}
-              </NoticeBox>
+              <Box inline mr={1} color="label">
+                Ship account
+              </Box>
+              <Dropdown
+                selected={crew_ship_ref ?? ''}
+                displayText={
+                  crew_ships.find((ship) => ship.ref === crew_ship_ref)?.name ??
+                  'Ship account'
+                }
+                options={crew_ships.map((ship) => ({
+                  value: ship.ref,
+                  displayText: ship.name,
+                }))}
+                disabled={!!barred}
+                onSelected={(ref) => act('select_ship', { ref })}
+              />
             </Stack.Item>
           )}
           <Stack.Item grow>
@@ -499,11 +464,6 @@ export const TraderShop = (props) => {
                       )}
                     </Tabs>
                   </Stack.Item>
-                  {!!favor && (
-                    <Stack.Item>
-                      <StandingHeader favor={favor} />
-                    </Stack.Item>
-                  )}
                   <Stack.Item>
                     <WalletHeader
                       held_vouchers={held_vouchers}
