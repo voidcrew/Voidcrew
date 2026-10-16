@@ -197,15 +197,14 @@
 		/datum/shop_buyback/fitter/salvage_spacesuit,
 		/datum/shop_buyback/fitter/salvage_space_helmet,
 	)
-	// Salvage requests await quantities and difficulties from the reward design.
-	mission_requests = list()
-	// Never on a shelf: two chassis Nakamura doesn't retail, and the two
-	// anomaly modules that come with their core already seated
-	exclusive_rewards = list(
-		/obj/item/mod/control/pre_equipped/magnate,
-		/obj/item/mod/control/pre_equipped/safeguard,
-		/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked,
-		/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked,
+	// These requests share Sarge's board; Wick supplies the quoted package.
+	mission_requests = list(
+		list("type" = /obj/item/mod/construction/broken_core, "name" = "Recovered MOD cores", "amount" = 2, "difficulty" = MISSION_DIFFICULTY_EASY, "pay_min" = 600, "pay_max" = 700, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
+		list("type" = /obj/item/mod/control/pre_equipped, "name" = "Salvaged MOD control unit", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "pay_min" = 850, "pay_max" = 850, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
+		list("type" = /obj/item/mod/module/springlock, "name" = "Recovered springlock module", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "pay_min" = 600, "pay_max" = 600, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
+		list("type" = /obj/item/mod/module/visor/rave, "name" = "Recovered rave visor", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "pay_min" = 600, "pay_max" = 600, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
+		list("type" = /obj/item/mod/module/balloon, "name" = "Recovered balloon module", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "pay_min" = 600, "pay_max" = 600, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
+		list("type" = /obj/item/mod/module/stamp, "name" = "Recovered stamp module", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM, "pay_min" = 600, "pay_max" = 600, "reward_shop" = /datum/outpost_shop/vendor/suit_fitter),
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -947,3 +946,9 @@
 	pay_credits = 20
 	demand_min = 3
 	demand_max = 5
+
+/// One ordinary request pool gives all nine asks equal weight in the existing slots.
+/datum/outpost_shop/outfitter/New(obj/structure/overmap/trader_outpost/outpost)
+	. = ..()
+	var/datum/outpost_shop/vendor/suit_fitter/fitter_type = /datum/outpost_shop/vendor/suit_fitter
+	mission_requests = mission_requests + initial(fitter_type.mission_requests)

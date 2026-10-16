@@ -168,12 +168,6 @@
 		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/sea_crystal, "name" = "sea crystal", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
-	// Under the counter: hard contracts only, never sold
-	exclusive_rewards = list(
-		/obj/item/storage/bag/ore/holding,
-		/obj/item/fishing_rod/telescopic/master,
-		/obj/item/pickaxe/drill/jackhammer,
-	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Welcome to Halcyon! Mind the gift shop on your way out. We are the gift shop.",

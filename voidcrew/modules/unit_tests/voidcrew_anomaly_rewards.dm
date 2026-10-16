@@ -191,13 +191,15 @@
 /// Catalog entries supply functioning modules whose seated cores resist the real tool path.
 /datum/unit_test/voidcrew_anomaly_rewards/trader_modules/Run()
 	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
-	var/list/module_types = list()
-	for(var/reward in shop.exclusive_rewards)
-		if(ispath(reward, /obj/item/mod/module/anomaly_locked))
-			module_types += reward
+	// Automatic Hard-board draws are gone; verify the former prize types stay locked.
+	TEST_ASSERT_EQUAL(length(shop.exclusive_rewards), 0, "The fitter retained an automatic exclusive pool")
+	var/list/module_types = list(
+		/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked,
+		/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked,
+	)
 	var/datum/shop_sku/fitter/rare/mod_antigrav/sku = allocate(/datum/shop_sku/fitter/rare/mod_antigrav)
 	module_types += sku.item_path
-	TEST_ASSERT_EQUAL(length(module_types), 3, "The fitter no longer offers all three anomaly modules")
+	TEST_ASSERT_EQUAL(length(module_types), 3, "The locked anomaly module coverage changed")
 	TEST_ASSERT(/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked in module_types, "The kinesis reward is not locked")
 	TEST_ASSERT(/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked in module_types, "The teleporter reward is not locked")
 	TEST_ASSERT(/obj/item/mod/module/anomaly_locked/antigrav/prebuilt/locked in module_types, "The anti-gravity SKU is not locked")
