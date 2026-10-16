@@ -96,9 +96,10 @@
 		if(generator)
 			// DERELICT_GENERATOR_CLEAR_RADIUS
 			TEST_ASSERT(get_dist(hostile, generator) > 4, "[theme_id]: [hostile] starts within 4 of the generator")
-		// DERELICT_BOSS_HEALTH_MULT_* 1.5 / 2, DERELICT_HEALTH_MULT_* 1.5 / 1.8
-		var/multiplier = i == 1 ? (red ? 2 : 1.5) : (red ? 1.8 : 1.5)
-		TEST_ASSERT_EQUAL(hostile.maxHealth, round(initial(hostile.maxHealth) * multiplier), "[theme_id]: [hostile]'s health was not scaled by [multiplier]")
+		// Named boss types retain their boss role even in the regular roster.
+		var/is_boss = i == 1 || npc_zone_boss_type(hostile.type)
+		var/multiplier = is_boss ? (red ? 1.3 : 1.15) : (red ? 1.8 : 1.35)
+		TEST_ASSERT(abs(hostile.maxHealth - hostile.npc_zone_original_max_health * multiplier) < 0.001, "[theme_id]: [hostile]'s health was not scaled by [multiplier]")
 
 /// Dressing stays under DERELICT_MAX_DRESSING (160); lights break at the theme's rate, give or take one fixture
 /datum/unit_test/voidcrew_derelict_theme/proc/check_dressing(obj/structure/overmap/dynamic/player_outpost/derelict/site, placed, dressing_before, list/lights_before)

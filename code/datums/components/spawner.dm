@@ -33,6 +33,10 @@
 	src.max_spawn_per_attempt = max_spawn_per_attempt
 	src.spawn_distance = spawn_distance
 	src.spawn_distance_exclude = spawn_distance_exclude
+	// VOIDCREW EDIT ADDITION START: npc_scaling pins the environmental source now.
+	var/atom/spawner = parent
+	spawner.get_npc_spawn_context()
+	// VOIDCREW EDIT ADDITION END
 	// If set, doesn't instantly spawn a creature when the spawner component is applied.
 	if(initial_spawn_delay)
 		COOLDOWN_START(src, spawn_delay, spawn_time)
@@ -109,19 +113,26 @@
 	for(var/i in 1 to adjusted_spawn_count)
 		var/atom/created
 		var/turf/picked_spot
+		// VOIDCREW EDIT: a fresh construction context inherits the parent's pinned site.
+		var/datum/npc_spawn_context/context = new(spawner)
 
 		if(spawn_distance == 1)
-			created = new chosen_mob_type(spawner.loc)
+			created = spawn_npc_in_zone(chosen_mob_type, spawner.loc, context, FALSE) // VOIDCREW EDIT: npc_scaling
 		else if(spawn_distance >= 1 && spawn_distance_exclude >= 1)
 			picked_spot = pick(turf_peel(spawn_distance, spawn_distance_exclude, spawner.loc, view_based = TRUE))
 			if(!picked_spot)
 				picked_spot = pick(circle_range_turfs(spawner.loc, spawn_distance))
 			if(picked_spot == spawner.loc)
 				SEND_SIGNAL(spawner, COMSIG_SPAWNER_SPAWNED_DEFAULT)
-			created = new chosen_mob_type(picked_spot)
+			created = spawn_npc_in_zone(chosen_mob_type, picked_spot, context, FALSE) // VOIDCREW EDIT: npc_scaling
 		else if (spawn_distance >= 1)
 			picked_spot = pick(circle_range_turfs(spawner.loc, spawn_distance))
-			created = new chosen_mob_type(picked_spot)
+			created = spawn_npc_in_zone(chosen_mob_type, picked_spot, context, FALSE) // VOIDCREW EDIT: npc_scaling
+
+		// VOIDCREW EDIT ADDITION START
+		if(QDELETED(created))
+			continue
+		// VOIDCREW EDIT ADDITION END
 
 		created.flags_1 |= (spawner.flags_1 & ADMIN_SPAWNED_1)
 		spawned_things += WEAKREF(created)
@@ -138,6 +149,7 @@
 		SEND_SIGNAL(src, COMSIG_SPAWNER_SPAWNED, created)
 		RegisterSignal(created, COMSIG_QDELETING, PROC_REF(on_deleted))
 		spawn_callback?.Invoke(created)
+		context.finalize() // VOIDCREW EDIT: npc_scaling runs after faction and callback setup.
 
 
 	if (spawn_text)

@@ -105,6 +105,7 @@
 #include "voidcrew_nanite_research.dm"
 #include "voidcrew_npc_boarding_docking.dm"
 #include "voidcrew_npc_disarm.dm"
+#include "voidcrew_npc_zone_profiles.dm"
 #include "voidcrew_outpost_admin.dm"
 #include "voidcrew_outpost_admin_bays.dm"
 #include "voidcrew_outpost_admin_checkpoints.dm"

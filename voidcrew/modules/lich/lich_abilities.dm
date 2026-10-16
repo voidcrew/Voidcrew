@@ -250,6 +250,7 @@
 		/mob/living/basic/skeleton/templar,
 	)
 	summon_radius = 2
+	npc_summon_role = "ordinary"
 	summon_amount = 2
 	summon_respects_density = TRUE
 	// Permanent. The cap plus the mob's death cleanup is what keeps this safe, not a
@@ -298,7 +299,6 @@
 		qdel(risen)
 		return
 
-	ilthuun.register_summon(risen)
 	// FACTION_LICH is what makes the ward machines read this thing as its layer's
 	// garrison rather than as somebody's pet, so the gates open when the hall is
 	// actually clear. FACTION_SKELETON is kept so the /mob/living/basic/skeleton types
@@ -309,6 +309,7 @@
 	if(risen_turf)
 		new /obj/effect/temp_visual/small_smoke/halfsecond(risen_turf)
 		playsound(risen_turf, 'sound/effects/magic/RATTLEMEBONES.ogg', 45, vary = TRUE)
+	ilthuun.register_summon(risen)
 
 // ===== DESTRUCTION =====
 
@@ -452,6 +453,8 @@
 	var/burn_interval = 1 SECONDS
 	/// Burn applied per tick to anyone standing on an affected tile.
 	var/burn_per_tick = 5
+	/// Captured at cast time; the patch never depends on a surviving caster for damage.
+	var/npc_damage_factor = 1
 	/// The live patch's ground visuals, so his deletion can snuff them early.
 	var/list/obj/effect/temp_visual/lich_grave_dirt/active_dirt = list()
 	/// Stoppable id of the pending ignition, null outside the telegraph window.
@@ -481,6 +484,7 @@
 	var/turf/center = get_turf(cast_on)
 	if(isnull(center))
 		return
+	npc_damage_factor = isliving(owner) ? npc_zone_damage(1, owner) : 1
 
 	if(owner)
 		owner.visible_message(span_boldwarning("Ilthuun drives a hand downward, and the ground around [cast_on] darkens into turned earth."))
@@ -538,7 +542,7 @@
 		for(var/mob/living/victim in tile)
 			if(!can_burn(victim))
 				continue
-			victim.adjustFireLoss(burn_per_tick)
+			victim.adjustFireLoss(npc_zone_damage(burn_per_tick, npc_damage_factor))
 			to_chat(victim, span_danger("The grave-dirt sears you from below!"))
 	// The first application lands at ignition, so reschedule only while the NEXT one
 	// would still fall inside the window: 7 ticks total, not 8.
@@ -660,11 +664,14 @@
 		var/turf/spot = get_step(cast_on, pick_n_take(directions))
 		if(isnull(spot) || spot.is_blocked_turf(exclude_mobs = TRUE))
 			continue
-		var/mob/living/basic/lich/mirror_image/copy = new(spot)
+		ilthuun.get_npc_spawn_context()
+		var/datum/npc_spawn_context/context = new(ilthuun, role = "ordinary")
+		var/mob/living/basic/lich/mirror_image/copy = spawn_npc_in_zone(/mob/living/basic/lich/mirror_image, spot, context, FALSE)
 		ilthuun.register_summon(copy)
 		copies += copy
 		RegisterSignals(copy, list(COMSIG_QDELETING, COMSIG_LIVING_DEATH), PROC_REF(lost_copy))
 		QDEL_IN(copy, image_lifespan)
+		context.finalize()
 		placed++
 
 	if(!placed)
@@ -833,7 +840,7 @@
 		// mend_the_dead() in lich_spells.dm.
 		victim.heal_overall_damage(brute = 10, burn = 10, forced = TRUE)
 		return
-	victim.adjustToxLoss(8, forced = TRUE)
+	victim.adjustToxLoss(npc_zone_damage(8, npc_zone_damage_factor), forced = TRUE)
 	to_chat(victim, span_danger("Something starts rotting where the bolt went in."))
 
 #undef VERDIGRIS_TINT

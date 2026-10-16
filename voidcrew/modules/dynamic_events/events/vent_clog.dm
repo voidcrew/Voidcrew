@@ -74,12 +74,15 @@
 	var/list/filth_spawn_types = list()
 	/// Whether this datum currently has signals registered on vent.
 	var/signals_registered = FALSE
+	/// Capture the owning ship's band, including while docked or in transit.
+	var/datum/npc_spawn_context/npc_source
 
 /datum/round_event/voidcrew/vent_clog/setup()
 	if(!target_valid())
 		finish_event()
 		return
 
+	npc_source = new(target_ship, SSovermap_zones.get_zone_type_anywhere(get_turf(target_ship)) || ZONE_GREEN)
 	vent = get_vent()
 	if(QDELETED(vent) || !target_ship.is_aboard(vent))
 		finish_event()
@@ -205,7 +208,10 @@
 	if(length(living_mobs) >= min(maximum_spawns, crew_scaled_cap))
 		return
 
-	var/mob/living/new_mob = new spawned_mob(vent_loc)
+	var/datum/npc_spawn_context/context = new(target_ship, npc_source.zone_type, source_turf = npc_source.source_turf)
+	var/mob/living/new_mob = spawn_npc_in_zone(spawned_mob, vent_loc, context)
+	if(QDELETED(new_mob))
+		return
 	living_mobs += WEAKREF(new_mob)
 	vent.visible_message(span_warning("[new_mob] crawls out of [vent]!"))
 

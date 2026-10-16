@@ -62,6 +62,7 @@
 		ai_target = owner.ai_controller?.blackboard[ai_target_key]
 
 	var/target_dir = get_dir(owner, target)
+	owner.get_npc_spawn_context() // npc_scaling: pin the source before the landing delay.
 
 	var/obj/effect/temp_visual/legion_skull_depart/launch = new(get_turf(owner))
 	launch.set_appearance(spawn_type)
@@ -74,7 +75,11 @@
 
 /// Actually create a mob
 /datum/action/cooldown/mob_cooldown/skull_launcher/proc/spawn_skull(turf/spawn_location, target)
-	var/mob/living/basic/legion_brood/brood = new spawn_type(spawn_location)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: finalize the surviving child after creator setup.
+	owner.get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(owner, role = "ordinary")
+	var/mob/living/basic/legion_brood/brood = spawn_npc_in_zone(spawn_type, spawn_location, context, FALSE)
+	// VOIDCREW EDIT ADDITION END
 	if (istype(brood))
 		brood.assign_creator(owner)
 	brood.ai_controller?.set_blackboard_key(ai_target_key, target)
@@ -83,6 +88,7 @@
 		brood.face_atom(target)
 	else
 		brood.dir = get_dir(owner, spawn_location)
+	context.finalize() // VOIDCREW EDIT - npc_scaling
 
 
 /// Animation for launching a skull
