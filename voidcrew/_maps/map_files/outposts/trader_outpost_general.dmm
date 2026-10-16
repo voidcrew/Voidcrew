@@ -329,6 +329,20 @@
 /obj/machinery/light/floor,
 /turf/open/indestructible/large,
 /area/voidcrew/trader_outpost)
+"aM" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "halcyon_elevator";
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating_new/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
 "aN" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 9
@@ -349,6 +363,15 @@
 /obj/structure/sign/departments/medbay/alt/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"aP" = (
+/obj/machinery/door/airlock/outpost/checkpoint{
+	checkpoint_id = "halcyon_elevator";
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/thinplating_new,
+/obj/effect/turf_decal/tile/neutral/full,
+/turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
 "aQ" = (
 /obj/structure/railing/unbreakable{
 	dir = 5
@@ -358,6 +381,17 @@
 	},
 /obj/effect/turf_decal/tile/neutral/full,
 /turf/open/indestructible/large,
+/area/voidcrew/trader_outpost)
+"aR" = (
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint{
+	checkpoint_id = "halcyon_elevator";
+	dir = 2
+	},
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
 "aS" = (
 /obj/structure/chair/stool/directional/north,
@@ -7786,11 +7820,11 @@ aZ
 aY
 aY
 lf
-aC
-ad
-ad
-ad
-aJ
+ak
+ak
+ak
+ak
+ak
 dp
 WP
 aY
@@ -7852,11 +7886,11 @@ ac
 aY
 aY
 GQ
-Vv
+ak
 al
 ah
 aa
-zB
+ak
 eK
 ac
 aY
@@ -7917,12 +7951,12 @@ lU
 kE
 Or
 kE
-Aa
-Vv
-at
+aM
+aP
+aR
 aq
 an
-Uo
+ak
 dk
 kE
 Or
@@ -7984,11 +8018,11 @@ WP
 aY
 aY
 GQ
-Vv
+ak
 aA
 ax
 av
-zB
+ak
 eK
 WP
 aY
@@ -8050,11 +8084,11 @@ aZ
 aY
 aY
 aQ
-aI
-ib
-ib
-ib
-aL
+ak
+ak
+ak
+ak
+ak
 Md
 ac
 aY

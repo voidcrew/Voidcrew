@@ -305,6 +305,127 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 		outpost.register_aggression(hitting_projectile.firer)
 	return ..()
 
+/// Trader entrance scanners retain Guns-mode storage shielding, but never exempt an ID or mindshield.
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint
+	name = "outpost scanner"
+	desc = "A sealed weapons scanner."
+	base_false_beep = 0
+	move_resist = INFINITY
+	var/checkpoint_id
+	var/datum/weakref/checkpoint_door
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/Destroy()
+	var/obj/machinery/door/airlock/outpost/checkpoint/door = checkpoint_door?.resolve()
+	door?.unlink_scanner(src)
+	checkpoint_door = null
+	return ..()
+
+// ID swipes and emags must not unlock configuration. Tools still follow the property protection signals.
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	if(attacking_item.GetID())
+		return TRUE
+	return ..()
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	return FALSE
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/examine(mob/user)
+	// The base scanner appends configuration instructions that do not apply to this sealed model.
+	return list("[icon2html(src, user)] [name]", desc)
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/proc/checkpoint_operational()
+	return !QDELETED(src) && anchored && !panel_open && !(machine_stat & (BROKEN | NOPOWER))
+
+/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/perform_scan(atom/movable/thing)
+	if(!thing || !checkpoint_operational())
+		return
+	// This is tg's recursive Guns search with only the personnel exemptions removed.
+	var/armed = isgun(thing)
+	if(!armed)
+		for(var/obj/item/content in thing.get_all_contents_skipping_traits(TRAIT_CONTRABAND_BLOCKER))
+			if(isgun(content))
+				armed = TRUE
+				break
+	playsound(src, SFX_INDUSTRIAL_SCAN, 20, TRUE, -2, TRUE, FALSE)
+	if(armed)
+		alarm_beep("Weapons")
+		SEND_SIGNAL(src, COMSIG_SCANGATE_PASS_TRIGGER, thing)
+	else
+		SEND_SIGNAL(src, COMSIG_SCANGATE_PASS_NO_TRIGGER, thing)
+		set_scanline("scanning", 1 SECONDS)
+	use_energy(active_power_usage)
+
+/// Permission is an argument to one immediate opening call; there is no stored clean result to rebuild or reuse.
+/obj/machinery/door/airlock/outpost/checkpoint
+	name = "outpost checkpoint"
+	desc = "An armored checkpoint door."
+	move_resist = INFINITY
+	var/checkpoint_id
+	var/list/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/checkpoint_scanners = list()
+
+/obj/machinery/door/airlock/outpost/checkpoint/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/outpost_property)
+
+/obj/machinery/door/airlock/outpost/checkpoint/Destroy()
+	for(var/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner as anything in checkpoint_scanners.Copy())
+		unlink_scanner(scanner)
+	return ..()
+
+/obj/machinery/door/airlock/outpost/checkpoint/proc/link_scanner(obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner)
+	var/obj/structure/overmap/trader_outpost/host = outpost
+	if(!istype(host) || !host.reservation?.contains_turf(get_turf(src)) || !host.reservation.contains_turf(get_turf(scanner)))
+		return FALSE
+	if(!checkpoint_id || scanner.checkpoint_id != checkpoint_id || get_dist(src, scanner) != 1 || !(get_dir(src, scanner) in GLOB.cardinals))
+		return FALSE
+	var/obj/machinery/door/airlock/outpost/checkpoint/old_door = scanner.checkpoint_door?.resolve()
+	old_door?.unlink_scanner(scanner)
+	checkpoint_scanners |= scanner
+	scanner.checkpoint_door = WEAKREF(src)
+	RegisterSignal(scanner, COMSIG_SCANGATE_PASS_NO_TRIGGER, PROC_REF(on_clean_scan))
+	return TRUE
+
+/obj/machinery/door/airlock/outpost/checkpoint/proc/unlink_scanner(obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner)
+	UnregisterSignal(scanner, COMSIG_SCANGATE_PASS_NO_TRIGGER)
+	// A weakref already stops resolving once this door enters Destroy().
+	if((scanner in checkpoint_scanners) || scanner.checkpoint_door?.resolve() == src)
+		scanner.checkpoint_door = null
+	checkpoint_scanners -= scanner
+
+/obj/machinery/door/airlock/outpost/checkpoint/proc/on_clean_scan(obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner, atom/movable/thing)
+	SIGNAL_HANDLER
+	if(isliving(thing))
+		INVOKE_ASYNC(src, PROC_REF(open), DEFAULT_DOOR_CHECKS, scanner, thing)
+
+/obj/machinery/door/airlock/outpost/checkpoint/open(forced = DEFAULT_DOOR_CHECKS, obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner, mob/living/actor, safety_reopen = FALSE)
+	if(safety_reopen)
+		if(!safe || !(locate(/mob/living) in get_turf(src)))
+			return FALSE
+	else
+		var/obj/structure/overmap/trader_outpost/host = outpost
+		if(!istype(host) || !isliving(actor) || QDELETED(actor) || QDELETED(scanner) || !(scanner in checkpoint_scanners))
+			return FALSE
+		if(scanner.checkpoint_door?.resolve() != src || !scanner.checkpoint_operational() || scanner.checkpoint_id != checkpoint_id)
+			return FALSE
+		if(!host.reservation?.contains_turf(get_turf(src)) || !host.reservation.contains_turf(get_turf(scanner)))
+			return FALSE
+		if(actor.loc != scanner.loc || get_dist(src, scanner) != 1 || !(get_dir(src, scanner) in GLOB.cardinals) || !allowed(actor))
+			return FALSE
+	return ..(forced)
+
+/obj/machinery/door/airlock/outpost/checkpoint/CheckForMobs()
+	// A living obstruction arriving during the close animation must still be released.
+	if(safe && (locate(/mob/living) in get_turf(src)))
+		SLEEP_NOT_DEL(0.1 SECONDS)
+		open(safety_reopen = TRUE)
+
 /**
  * # Outpost Wall
  *
