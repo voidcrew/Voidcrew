@@ -458,3 +458,234 @@
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
 		ruin.mission_claims = saved_claims[ruin]
+
+/// Isolate mission lifecycle tests from overmap generation and bank accounts.
+/datum/mission/kill_rewind_test
+	var/reward_calls = 0
+
+/datum/mission/kill_rewind_test/generate_mission_details()
+	return
+
+/datum/mission/kill_rewind_test/distribute_rewards(atom/reward_anchor)
+	reward_calls++
+
+/// The far corner is the site; the near corner represents the crew's ship.
+/datum/mission_target/kill_rewind_test
+	var/turf/spawn_turf
+	var/interior_loaded = TRUE
+
+/datum/mission_target/kill_rewind_test/resolve()
+	return TRUE
+
+/datum/mission_target/kill_rewind_test/is_interior_loaded()
+	return interior_loaded
+
+/datum/mission_target/kill_rewind_test/get_spawn_turf()
+	return spawn_turf
+
+/datum/mission_target/kill_rewind_test/contains_turf(turf/where)
+	return where == spawn_turf
+
+/datum/mission_target/kill_rewind_test/get_interior_bounds()
+	return list(spawn_turf.x, spawn_turf.y, spawn_turf.x, spawn_turf.y, spawn_turf.z)
+
+/// Retain the original body so real revival can exercise the cash handler.
+/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test
+	ai_controller = null
+	basic_mob_flags = NONE
+	use_dynamic_appearance = FALSE
+	corpse = null
+	loot = null
+	loot_pool = null
+	plunder_credits = 3000
+	unsuitable_cold_damage = 0
+	unsuitable_heat_damage = 0
+
+/datum/unit_test/voidcrew_mission_kill_rewind
+	abstract_type = /datum/unit_test/voidcrew_mission_kill_rewind
+
+/datum/unit_test/voidcrew_mission_kill_rewind/proc/make_hunt(big_game = FALSE)
+	var/datum/mission/kill_rewind_test/mission = allocate(__IMPLIED_TYPE__)
+	mission.active = TRUE
+	mission.requires_item = TRUE
+	mission.objective_name = "Old Testbeard"
+	var/datum/mission_target/kill_rewind_test/target = allocate(__IMPLIED_TYPE__, mission)
+	mission.target = target
+	target.spawn_turf = run_loc_floor_top_right
+	var/datum/mission_objective/field/kill_named/hunt
+	var/datum/mission_objective/set_lure/lure
+	if(big_game)
+		lure = allocate(__IMPLIED_TYPE__)
+		mission.add_objective(lure)
+		var/datum/mission_objective/field/kill_named/big_game/trophy_hunt = allocate(__IMPLIED_TYPE__)
+		trophy_hunt.trophy_part = "scarred jawbone"
+		trophy_hunt.health_override = 450
+		hunt = trophy_hunt
+		lure.hunt_objective = trophy_hunt
+	else
+		hunt = allocate(__IMPLIED_TYPE__)
+	hunt.target_mob_type = /mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test
+	hunt.guard_types = list(/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test)
+	mission.add_objective(hunt)
+	mission.add_objective(allocate(big_game ? /datum/mission_objective/deliver/bound/trophy : /datum/mission_objective/deliver/bound/proof))
+	if(lure)
+		lure.kit = allocate(/obj/item/hunting_lure, target.spawn_turf)
+		mission.register_quest_atom(lure.kit)
+	mission.activate_current_objective()
+	if(lure)
+		lure.on_planted(null, target.spawn_turf)
+		// The single-turf fixture stands in for the whole hunting ground.
+		hunt.target_mob.forceMove(target.spawn_turf)
+	return mission
+
+/datum/unit_test/voidcrew_mission_kill_rewind/proc/test_mobs()
+	var/list/mobs = list()
+	for(var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/boss in GLOB.mob_list)
+		if(!QDELETED(boss))
+			mobs += boss
+	return mobs
+
+/datum/unit_test/voidcrew_mission_kill_rewind/proc/floor_items(item_type)
+	var/list/items = list()
+	for(var/turf/tile in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
+		for(var/obj/item/item in tile.contents)
+			if(istype(item, item_type) && !QDELETED(item))
+				items += item
+	return items
+
+/// Kill, strand the proof and rebuild the interior more than once.
+/datum/unit_test/voidcrew_mission_kill_rewind/repeated/Run()
+	check_repeated_rewinds(FALSE)
+
+/// The same lifecycle must restore trophies without another lure or beast.
+/datum/unit_test/voidcrew_mission_kill_rewind/trophy/Run()
+	check_repeated_rewinds(TRUE)
+
+/datum/unit_test/voidcrew_mission_kill_rewind/proc/check_repeated_rewinds(big_game)
+	var/datum/mission/kill_rewind_test/mission = make_hunt(big_game)
+	var/datum/mission_target/kill_rewind_test/target = mission.target
+	var/datum/mission_objective/field/kill_named/hunt = mission.current_objective()
+	var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/boss = hunt.target_mob
+	TEST_ASSERT_EQUAL(length(test_mobs()), 2, "The initial hunt must spawn a target and guard")
+	boss.death(FALSE)
+	TEST_ASSERT(mission.named_kill_completed, "The mission must retain the completed kill")
+	TEST_ASSERT(mission.boss_cash_issued, "The first death must claim the mission's cash entitlement")
+	var/obj/item/mission_recovery/proof = mission.quest_atom
+	TEST_ASSERT(istype(proof, big_game ? /obj/item/mission_recovery/trophy : /obj/item/mission_recovery/proof), "The initial proof must have the right subtype")
+	TEST_ASSERT(mission.can_turn_in(proof), "The original proof must be deliverable")
+
+	SEND_SIGNAL(boss, COMSIG_LIVING_DEATH, FALSE)
+	hunt.on_target_death(boss, FALSE)
+	TEST_ASSERT(boss.revive(ADMIN_HEAL_ALL), "The retained original boss must be revivable")
+	boss.death(FALSE)
+	TEST_ASSERT_EQUAL(mission.quest_atom, proof, "Duplicate death signals and revival must not replace the proof")
+	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/mission_recovery)), 1, "A revived boss must not create another proof")
+	var/list/cash = floor_items(/obj/item/holochip)
+	TEST_ASSERT_EQUAL(length(cash), 1, "Duplicate deaths and revival must issue one holochip")
+	var/obj/item/holochip/payment = cash[1]
+	TEST_ASSERT_EQUAL(payment.credits, boss.plunder_credits, "The boss cash amount must stay unchanged")
+	payment.forceMove(run_loc_floor_bottom_left)
+	var/retargets_before = mission.retargets_left
+
+	for(var/rewind in 1 to 3)
+		var/obj/item/mission_recovery/old_proof = mission.quest_atom
+		var/old_serial = mission.binding_serial
+		target.interior_loaded = FALSE
+		mission.on_target_interior_unloaded()
+		TEST_ASSERT_NULL(mission.quest_atom, "Unload must forget stranded proof before the wipe")
+		TEST_ASSERT_EQUAL(mission.current_objective(), hunt, "A completed kill must wait at proof recovery")
+		TEST_ASSERT(mission.named_kill_completed && mission.boss_cash_issued, "Rewind must retain both lifetime flags")
+		TEST_ASSERT(mission.binding_serial > old_serial, "Replacement proof must get a fresh binding")
+		for(var/mob/living/left_behind in test_mobs())
+			qdel(left_behind)
+		// Keep one obsolete proof through reload to check stale-binding rejection.
+		if(rewind != 1)
+			qdel(old_proof)
+		TEST_ASSERT(!mission.failed && !QDELETED(mission), "Deleting forgotten quest atoms must not trigger quest loss")
+		target.interior_loaded = TRUE
+		mission.on_target_interior_loaded()
+		var/obj/item/mission_recovery/replacement = mission.quest_atom
+		TEST_ASSERT_NOTNULL(replacement, "Reload must place replacement proof")
+		TEST_ASSERT(replacement != old_proof, "Reload must bind a newly created proof")
+		TEST_ASSERT_EQUAL(replacement.type, big_game ? /obj/item/mission_recovery/trophy : /obj/item/mission_recovery/proof, "Reload must preserve the proof subtype")
+		TEST_ASSERT_EQUAL(replacement.name, big_game ? "Old Testbeard's scarred jawbone" : "Old Testbeard's identification tag", "Reload must preserve the proof's identity")
+		TEST_ASSERT(mission.can_turn_in(replacement), "Reload must resume the delivery step")
+		if(rewind == 1)
+			TEST_ASSERT(!mission.can_turn_in(old_proof), "Stranded proof must not match the new binding")
+			qdel(old_proof)
+		mission.on_target_interior_loaded()
+		hunt.do_field_spawn()
+		TEST_ASSERT_EQUAL(length(test_mobs()), 0, "Completed hunts must never respawn a boss or guards")
+		TEST_ASSERT_EQUAL(length(floor_items(/obj/item/mission_recovery)), 1, "Repeated load callbacks must leave exactly one proof")
+		TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), 1, "Rewinds must not issue more boss cash")
+		TEST_ASSERT_EQUAL(mission.retargets_left, retargets_before, "Interior rewinds must not consume retargets")
+		if(big_game)
+			var/datum/mission_objective/set_lure/lure = mission.objectives[1]
+			TEST_ASSERT(lure.completed, "A completed trophy hunt must never ask for another lure")
+
+	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, mission.quest_atom), "Replacement proof must finish the mission")
+	TEST_ASSERT(!mission.failed && mission.completed, "Proof consumption must finish rather than void the mission")
+	TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Repeated forced turn-in must still honor mission completion")
+	TEST_ASSERT_EQUAL(mission.reward_calls, 1, "Repeated turn-in must not distribute rewards twice")
+
+/// Carried proof stays valid while the crew revisits an emptied site.
+/datum/unit_test/voidcrew_mission_kill_rewind/carried/Run()
+	for(var/big_game in list(FALSE, TRUE))
+		var/datum/mission/kill_rewind_test/mission = make_hunt(big_game)
+		var/datum/mission_target/kill_rewind_test/target = mission.target
+		var/datum/mission_objective/field/kill_named/hunt = mission.current_objective()
+		var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/boss = hunt.target_mob
+		boss.death(FALSE)
+		var/obj/item/mission_recovery/proof = mission.quest_atom
+		var/mob/living/carbon/human/carrier = allocate(__IMPLIED_TYPE__)
+		TEST_ASSERT(carrier.put_in_hands(proof), "The crew must be able to carry out the proof")
+		var/serial_before = mission.binding_serial
+		var/datum/mission_objective/delivery = mission.current_objective()
+		for(var/rewind in 1 to 3)
+			target.interior_loaded = FALSE
+			mission.on_target_interior_unloaded()
+			target.interior_loaded = TRUE
+			mission.on_target_interior_loaded()
+			TEST_ASSERT_EQUAL(mission.quest_atom, proof, "Extracted proof must stay tracked")
+			TEST_ASSERT_EQUAL(mission.binding_serial, serial_before, "Extracted proof must keep its binding")
+			TEST_ASSERT_EQUAL(mission.current_objective(), delivery, "Extracted proof must stay on delivery")
+			TEST_ASSERT(mission.can_turn_in(proof), "Carried proof must remain valid")
+		TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, proof), "Carried proof must still finish the contract")
+		TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, proof), "The same proof cannot pay twice")
+		TEST_ASSERT_EQUAL(mission.reward_calls, 1, "Carried proof must pay once")
+		var/cash_count = length(floor_items(/obj/item/holochip))
+		boss.on_death_drop_credits(boss)
+		TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), cash_count, "An expired mission reference must never become an unbound cash drop")
+
+/// An abandoned live target and its replacement share the same cash entitlement.
+/datum/unit_test/voidcrew_mission_kill_rewind/replacement/Run()
+	var/datum/mission/kill_rewind_test/mission = make_hunt()
+	var/datum/mission_target/kill_rewind_test/target = mission.target
+	var/datum/mission_objective/field/kill_named/hunt = mission.current_objective()
+	var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/original = hunt.target_mob
+	target.interior_loaded = FALSE
+	mission.on_target_interior_unloaded()
+	TEST_ASSERT(!mission.named_kill_completed && !mission.boss_cash_issued, "A live target's rewind must not invent completion or spend cash")
+	TEST_ASSERT_NULL(hunt.target_mob, "Reset must release the original target")
+	target.interior_loaded = TRUE
+	mission.on_target_interior_loaded()
+	var/mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test/replacement = hunt.target_mob
+	TEST_ASSERT(replacement && replacement != original, "An unfinished hunt must spawn a replacement target")
+	original.death(FALSE)
+	TEST_ASSERT(!mission.named_kill_completed, "The original target's old death handler must be unregistered")
+	TEST_ASSERT_EQUAL(mission.quest_atom, replacement, "An obsolete target must not replace the live quest atom")
+	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/mission_recovery)), 0, "An obsolete target must not drop proof")
+	replacement.death(FALSE)
+	TEST_ASSERT(mission.named_kill_completed, "The current target must complete the kill")
+	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), 1, "Original and replacement targets must share one cash payment")
+	var/obj/item/mission_recovery/old_proof = mission.quest_atom
+	var/mob_count = length(test_mobs())
+	mission.retarget()
+	TEST_ASSERT(mission.named_kill_completed && mission.boss_cash_issued, "Retargeting must preserve both lifetime flags")
+	TEST_ASSERT_EQUAL(length(test_mobs()), mob_count, "Retargeting a completed kill must restore proof without more mobs")
+	TEST_ASSERT(!mission.can_turn_in(old_proof), "A retarget must reject the obsolete proof")
+	TEST_ASSERT(mission.can_turn_in(mission.quest_atom), "A retarget must resume proof delivery")
+	qdel(old_proof)
+	SEND_SIGNAL(original, COMSIG_LIVING_DEATH, FALSE)
+	SEND_SIGNAL(replacement, COMSIG_LIVING_DEATH, FALSE)
+	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), 1, "Retargeting must not replenish the boss cash entitlement")

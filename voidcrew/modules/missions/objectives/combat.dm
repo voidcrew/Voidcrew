@@ -149,8 +149,8 @@
 	var/target_mob_type
 	/// Guard typepaths spawned around the target (may repeat; may be empty)
 	var/list/guard_types
-	/// Whether the named target is dead (the proof tag exists)
-	var/target_killed = FALSE
+	/// Proof subtype, shared by the initial kill and subsequent interior rewinds.
+	var/proof_type = /obj/item/mission_recovery/proof
 	/// The live target, while they're alive
 	var/mob/living/target_mob
 
@@ -161,41 +161,59 @@
 	return ..()
 
 /datum/mission_objective/field/kill_named/reset()
+	deactivate() // also unhook a surviving target before forgetting it
 	. = ..()
-	target_killed = FALSE
-	target_mob = null
 
 /datum/mission_objective/field/kill_named/spawn_field_objects(turf/spawn_turf)
+	if(mission.named_kill_completed)
+		create_proof(spawn_turf)
+		complete()
+		return
 	var/mob/living/target = new target_mob_type(spawn_turf)
 	target.name = mission.objective_name
 	target.desc += " They look like they're worth something dead."
-	target_mob = target
-	protect_field_mob(target)
-	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
-	mission.register_quest_atom(target)
+	track_target(target)
 	// The entourage: untracked muscle around the target. Killing them pays
 	// nothing - the contract is the name on the tag.
 	for(var/guard_type in guard_types)
 		var/mob/living/guard = new guard_type(get_nearby_open_turf(spawn_turf))
 		guard.desc += " They're on somebody's payroll."
 
+/// Keep death tracking and the cash entitlement attached to the same mission.
+/datum/mission_objective/field/kill_named/proc/track_target(mob/living/target)
+	target_mob = target
+	protect_field_mob(target)
+	if(istype(target, /mob/living/basic/trooper/pirate/faction))
+		var/mob/living/basic/trooper/pirate/faction/pirate = target
+		pirate.mission_payout_ref = WEAKREF(mission)
+	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
+	mission.register_quest_atom(target)
+
+/datum/mission_objective/field/kill_named/proc/get_proof_name()
+	return "[mission.objective_name]'s identification tag"
+
+/// The one proof factory for both a first kill and recovery after a rewind.
+/datum/mission_objective/field/kill_named/proc/create_proof(atom/proof_location)
+	var/obj/item/mission_recovery/proof = new proof_type(proof_location)
+	proof.name = get_proof_name()
+	mission.bind_item(proof)
+	mission.register_quest_atom(proof)
+	return proof
+
 /**
  * The target died: drop the proof item, track it instead, and advance.
  */
 /datum/mission_objective/field/kill_named/proc/on_target_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
-	if(target_killed || !mission || mission.failed || mission.completed)
+	if(!active || source != target_mob || !mission || mission.failed || mission.completed || mission.named_kill_completed)
 		return
-	target_killed = TRUE
+	mission.named_kill_completed = TRUE
 	UnregisterSignal(source, COMSIG_LIVING_DEATH)
 	target_mob = null
 
-	var/obj/item/mission_recovery/proof/proof = new(source.drop_location())
-	proof.name = "[mission.objective_name]'s identification tag"
-	mission.bind_item(proof)
-	mission.register_quest_atom(proof)
+	create_proof(source.drop_location())
 
-	notify_crew("[mission.objective_name] eliminated. Recover the identification tag and return it to the mission pad.")
+	notify_crew("[mission.objective_name] is dead.")
 	complete()
 
 /datum/mission_objective/field/kill_named/get_progress_string()

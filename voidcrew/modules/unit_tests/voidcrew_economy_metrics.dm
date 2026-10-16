@@ -99,3 +99,56 @@
 	SSmetrics.pending = old_pending
 	SSmetrics.tallies = old_tallies
 	return ..()
+
+/// Printable disks have no special export reward, regardless of their saved programs.
+/datum/unit_test/voidcrew_nanite_disk_exports/Run()
+	if(!length(GLOB.exports_list))
+		setupExports()
+	var/datum/export/nanite_disk/disk_export = locate(/datum/export/nanite_disk) in GLOB.exports_list
+	TEST_ASSERT_NOTNULL(disk_export, "The nanite disk export should exist")
+	TEST_ASSERT_EQUAL(disk_export.cost, 0, "Nanite disks should have no special export reward")
+	TEST_ASSERT_EQUAL(disk_export.init_cost, 0, "Non-elastic nanite disk valuation should also be zero")
+
+	var/datum/design/nanite_disk/design = allocate(/datum/design/nanite_disk)
+	var/obj/item/disk/nanite_program/source_disk = allocate(design.build_path)
+	var/datum/nanite_program/source_program = new /datum/nanite_program/regenerative
+	source_program.trigger_code = 321
+	source_disk.backup += source_program
+
+	for(var/apply_elastic in list(FALSE, TRUE))
+		var/datum/export_report/sale_report = allocate(/datum/export_report)
+		for(var/batch in 1 to 3)
+			for(var/disk_state in list("blank", "programmed", "copied"))
+				var/obj/item/disk/nanite_program/disk = allocate(design.build_path)
+				// Fabricated items retain the materials spent on their design.
+				disk.set_custom_materials(design.materials)
+				switch(disk_state)
+					if("programmed")
+						disk.backup += new /datum/nanite_program/regenerative
+					if("copied")
+						// The cloud controller saves backups through program.copy().
+						var/datum/nanite_program/copied_program = source_program.copy()
+						disk.backup += copied_program
+						TEST_ASSERT(copied_program != source_program, "A copied disk should contain an independent program")
+						TEST_ASSERT_EQUAL(copied_program.trigger_code, 321, "The copied disk should retain its saved programming")
+
+				var/context = "[disk_state] disk, batch [batch], elasticity [apply_elastic]"
+				TEST_ASSERT_EQUAL(disk_export.get_cost(disk, apply_elastic), 0, "[context] should have no special export value")
+				var/backup_count = length(disk.backup)
+				var/datum/export_report/quote = export_item_and_contents(disk, apply_elastic = apply_elastic, dry_run = TRUE)
+				TEST_ASSERT_NULL(quote.total_value[disk_export], "Dry-run valuation should not reward [context]")
+				TEST_ASSERT_NULL(quote.total_amount[disk_export], "Dry-run valuation should not count [context] as a special export")
+				TEST_ASSERT(!QDELETED(disk), "Dry-run valuation should preserve [context]")
+				TEST_ASSERT_EQUAL(length(disk.backup), backup_count, "Dry-run valuation should preserve the programs on [context]")
+				qdel(quote)
+
+				var/list/recyclable = disk.get_material_composition()
+				TEST_ASSERT_EQUAL(recyclable[GET_MATERIAL_REF(/datum/material/iron)], 300, "[context] should retain its recyclable iron")
+				TEST_ASSERT_EQUAL(recyclable[GET_MATERIAL_REF(/datum/material/glass)], 100, "[context] should retain its recyclable glass")
+				export_item_and_contents(disk, apply_elastic = apply_elastic, dry_run = FALSE, external_report = sale_report)
+				TEST_ASSERT(QDELETED(disk), "An actual cargo export should consume [context]")
+				TEST_ASSERT_NULL(sale_report.total_value[disk_export], "Repeated manufacture/export should not reward [context]")
+				TEST_ASSERT_NULL(sale_report.total_amount[disk_export], "Repeated manufacture/export should not count [context] as a special export")
+
+	disk_export.process()
+	TEST_ASSERT_EQUAL(disk_export.cost, 0, "Export price recovery should not restore a nanite disk reward")

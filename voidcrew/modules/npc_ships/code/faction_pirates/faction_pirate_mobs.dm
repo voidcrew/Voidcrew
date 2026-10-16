@@ -14,6 +14,8 @@
 	obj_damage = 60  // Can break doors/objects like blobbernauts
 	/// Guaranteed loot items dropped on death. All items in this list are spawned.
 	var/list/loot_pool
+	/// A named mission target keeps this even after replacement or mission expiry.
+	var/datum/weakref/mission_payout_ref
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
 		/obj/item/pen/edagger,\
@@ -56,6 +58,10 @@
 /// Drops plunder_credits as a holochip on death
 /mob/living/basic/trooper/pirate/faction/proc/on_death_drop_credits(mob/living/source)
 	SIGNAL_HANDLER
+	if(mission_payout_ref)
+		var/datum/mission/mission = mission_payout_ref.resolve()
+		if(!mission?.claim_boss_cash())
+			return
 	new /obj/item/holochip(drop_location(), plunder_credits)
 
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
