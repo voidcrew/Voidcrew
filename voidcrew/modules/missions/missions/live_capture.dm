@@ -253,11 +253,12 @@
 	return TRUE
 
 /datum/mission_objective/field/capture_beast/spawn_field_objects(turf/spawn_turf)
-	var/mob/living/beast = new target_mob_type(spawn_turf)
+	var/mob/living/beast = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	beast.name = "marked [beast.name]"
-	beast.desc += " It's wearing a guild survey tag. This is the contracted specimen, and it's worth nothing dead."
+	beast.desc += " It's wearing a guild survey tag."
 	target_mob = beast
 	protect_field_mob(beast)
+	beast.npc_spawn_context.finalize()
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(beast)
 	notify_crew("Survey tag live - the marked specimen is on the surface ([mission.gps_tag]). Wear it down and crate it breathing.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')

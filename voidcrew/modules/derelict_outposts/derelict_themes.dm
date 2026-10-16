@@ -720,7 +720,7 @@
 	// The boss first, at its anchor
 	var/turf/boss_tile = (boss_anchor && hostile_can_start(boss_anchor, generator)) ? boss_anchor : pick_hostile_tile(legal, spawned, boss_anchor, FALSE)
 	if(boss_tile)
-		add_hostile(theme, theme.boss_type, boss_tile, red ? DERELICT_BOSS_HEALTH_MULT_RED : DERELICT_BOSS_HEALTH_MULT_YELLOW, spawned)
+		add_hostile(theme, theme.boss_type, boss_tile, "boss", spawned)
 	else
 		log_mapping("Derelict outpost [site.true_name]: no room for its [theme.name] boss.")
 	// Then the roster, taking the anchors in turn so every cluster is guarded
@@ -741,7 +741,7 @@
 			if(!tile)
 				log_mapping("Derelict outpost [site.true_name]: no room for a [hostile_type].")
 				continue
-			add_hostile(theme, hostile_type, tile, red ? DERELICT_HEALTH_MULT_RED : DERELICT_HEALTH_MULT_YELLOW, spawned)
+			add_hostile(theme, hostile_type, tile, "ordinary", spawned)
 
 /**
  * A start tile for one hostile from `legal`, spaced DERELICT_HOSTILE_SPACING from the others (1 if nothing fits).
@@ -772,19 +772,13 @@
 	return null
 
 /// Spawns one hostile of `hostile_type` on `tile`, readies, scales and leashes it. Returns it, or null.
-/datum/derelict_scene/proc/add_hostile(datum/derelict_theme/theme, hostile_type, turf/tile, multiplier, list/mob/living/spawned)
-	var/mob/living/hostile = new hostile_type(tile)
+/datum/derelict_scene/proc/add_hostile(datum/derelict_theme/theme, hostile_type, turf/tile, role, list/mob/living/spawned)
+	var/datum/npc_spawn_context/context = new(site, site.derelict_band, role)
+	var/mob/living/hostile = spawn_npc_in_zone(hostile_type, tile, context, FALSE)
 	if(QDELETED(hostile))
-		// A mi-go can come out as its rare variant, which takes its place on the tile
-		hostile = null
-		for(var/mob/living/replacement in tile)
-			if(istype(replacement, hostile_type) && !QDELETED(replacement) && !(replacement in spawned))
-				hostile = replacement
-				break
-		if(!hostile)
-			return null
+		return null
 	theme.prepare_hostile(hostile)
-	scale_npc_ship_pirate_health(hostile, multiplier)
+	context.finalize()
 	hostile.AddComponent(/datum/component/derelict_leash, site)
 	site.derelict_hostiles += WEAKREF(hostile)
 	spawned += hostile

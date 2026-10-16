@@ -323,13 +323,14 @@
 	// The squad, scattered around the campsite
 	for(var/i in 1 to length(squad_types))
 		var/poacher_type = squad_types[i]
-		var/mob/living/simple_animal/poacher = new poacher_type(get_nearby_open_turf(camp_turf, 3))
+		var/mob/living/simple_animal/poacher = spawn_field_npc(poacher_type, get_nearby_open_turf(camp_turf, 3), finalize = FALSE)
 		if(i <= length(squad_names))
 			poacher.name = squad_names[i]
 		poacher.desc += " The kit is professional: snare wire, skinning knives, and the brand of [mission.objective_name] burned into the stock."
 		// Outfitted expedition: cold-weather gear keeps an ice-planet camp
 		// from freezing to death before the crew arrives
 		poacher.minbodytemp = 0
+		poacher.npc_spawn_context.finalize()
 		protect_field_mob(poacher)
 		RegisterSignal(poacher, COMSIG_LIVING_DEATH, PROC_REF(on_poacher_death))
 		RegisterSignal(poacher, COMSIG_QDELETING, PROC_REF(on_poacher_removed))
@@ -353,7 +354,8 @@
 			var/obj/item/pet_carrier/cage = new(get_nearby_open_turf(camp_turf, 2))
 			cage.name = "live-catch cage"
 			cage.desc = "A warden-banned live trap, still occupied. The lock is a simple latch."
-			var/mob/living/critter = new critter_type(cage)
+			var/datum/npc_spawn_context/context = new(mission?.target || src, mission?.target?.get_zone_type(), "exempt", source_turf = camp_turf)
+			var/mob/living/critter = spawn_npc_in_zone(critter_type, cage, context)
 			cage.add_occupant(critter)
 			cage.open = FALSE
 			cage.locked = TRUE

@@ -117,9 +117,6 @@
 /// The pirate setpiece: a captain holding the vault, a proper boss in the red.
 /obj/effect/zone_mobs/pirate/boss
 	name = "zone mob spawner (pirate boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 1)
 	mobs_green = list(
 		/mob/living/basic/trooper/pirate/faction/grey/captain = 1,
 		/mob/living/basic/trooper/pirate/faction/skeleton/captain = 1,

@@ -90,6 +90,10 @@
 	// callback after we delete it.
 	for(var/marker_path in subtypesof(/obj/effect/zone_mobs))
 		var/obj/effect/zone_mobs/marker = new marker_path()
+		for(var/list/count_range in list(marker.count_green, marker.count_yellow, marker.count_red))
+			TEST_ASSERT_EQUAL(length(count_range), 2, "[marker_path] has no minimum/maximum guard count")
+			TEST_ASSERT_EQUAL(count_range[1], 1, "[marker_path] minimum guard count must be one in every band")
+			TEST_ASSERT_EQUAL(count_range[2], 2, "[marker_path] maximum guard count must be two in every band")
 		for(var/table in list(marker.mobs_green, marker.mobs_yellow, marker.mobs_red))
 			for(var/entry in table)
 				if(!ispath(entry, /mob/living))

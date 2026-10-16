@@ -110,8 +110,8 @@
  * planet - roughly 60 permanent hostiles on top of the 15 SSplanet_mobs allows.
  */
 #define ZONE_PLANET_SPAWNER_BUDGET_GREEN 3
-#define ZONE_PLANET_SPAWNER_BUDGET_YELLOW 5
-#define ZONE_PLANET_SPAWNER_BUDGET_RED 8
+#define ZONE_PLANET_SPAWNER_BUDGET_YELLOW 3
+#define ZONE_PLANET_SPAWNER_BUDGET_RED 3
 
 /// Minimum tiles between two structure spawners on a planet. Keeps the budget spread out
 /// instead of letting the whole allowance land in one corner of the map.

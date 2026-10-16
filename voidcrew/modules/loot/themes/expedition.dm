@@ -128,9 +128,6 @@
 /// tendril chest, the cache they guard is the prize.
 /obj/effect/zone_mobs/wildlife/boss
 	name = "zone mob spawner (wildlife boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 1)
 	mobs_green = list(
 		/mob/living/basic/mining/goliath = 1,
 	)

@@ -100,6 +100,11 @@
 /datum/mission_objective/field/proc/spawn_field_objects(turf/spawn_turf)
 	return
 
+/// Construct against the mission site before replacement rolls or caller setup.
+/datum/mission_objective/field/proc/spawn_field_npc(mob_type, turf/spawn_turf, role = "auto", finalize = TRUE)
+	var/datum/npc_spawn_context/context = new(mission?.target || src, mission?.target?.get_zone_type(), role, source_turf = spawn_turf)
+	return spawn_npc_in_zone(mob_type, spawn_turf, context, finalize)
+
 /**
  * Marks a mob the contract can't finish without, so the planet's fauna sweep
  * leaves it alone (SSplanet_mobs clears every unclaimed living mob off an empty
@@ -169,15 +174,17 @@
 		create_proof(spawn_turf)
 		complete()
 		return
-	var/mob/living/target = new target_mob_type(spawn_turf)
+	var/mob/living/target = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	target.name = mission.objective_name
 	target.desc += " They look like they're worth something dead."
+	target.npc_spawn_context.finalize()
 	track_target(target)
 	// The entourage: untracked muscle around the target. Killing them pays
 	// nothing - the contract is the name on the tag.
 	for(var/guard_type in guard_types)
-		var/mob/living/guard = new guard_type(get_nearby_open_turf(spawn_turf))
+		var/mob/living/guard = spawn_field_npc(guard_type, get_nearby_open_turf(spawn_turf), finalize = FALSE)
 		guard.desc += " They're on somebody's payroll."
+		guard.npc_spawn_context.finalize()
 
 /// Keep death tracking and the cash entitlement attached to the same mission.
 /datum/mission_objective/field/kill_named/proc/track_target(mob/living/target)
