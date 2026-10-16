@@ -6875,6 +6875,7 @@
 #include "voidcrew\edits\mobs\respawn_timer.dm"
 #include "voidcrew\edits\mobs\ruin_icons.dm"
 #include "voidcrew\edits\mobs\ship_join_menu.dm"
+#include "voidcrew\edits\mobs\weapon_drops.dm"
 #include "voidcrew\edits\modules\antagonists\abductor\equipment\glands\heal.dm"
 #include "voidcrew\edits\modules\antagonists\heretic\magic\rust_construction.dm"
 #include "voidcrew\edits\modules\asset_cache\assets\rcd.dm"

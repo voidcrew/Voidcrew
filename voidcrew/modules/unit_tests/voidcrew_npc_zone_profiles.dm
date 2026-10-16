@@ -1299,3 +1299,101 @@
 	TEST_ASSERT_NOTNULL(infested, "Manual tumour did not produce a legion")
 	TEST_ASSERT(infested.npc_zone_exempt && !infested.npc_zone_applied, "Player-applied infestation lost the player's exemption")
 	qdel(infested)
+
+/// Low-zone shooters use the unchanged base pistol archetype before W3 scaling.
+/datum/unit_test/voidcrew_npc_ladder_profiles/Run()
+	var/list/shooters = list(
+		/mob/living/basic/trooper/nanotrasen/ranged/smg,
+		/mob/living/basic/trooper/nanotrasen/ranged/assault,
+		/mob/living/basic/trooper/nanotrasen/ranged/elite,
+		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
+		/mob/living/basic/trooper/nanotrasen/ranged/assault/customs,
+		/mob/living/basic/trooper/syndicate/ranged/smg,
+		/mob/living/basic/trooper/syndicate/ranged/shotgun,
+		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
+	)
+	for(var/mob_type in shooters)
+		for(var/zone in 1 to 3)
+			var/is_nt = ispath(mob_type, /mob/living/basic/trooper/nanotrasen)
+			var/is_customs = mob_type == /mob/living/basic/trooper/nanotrasen/ranged/smg/customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
+			var/replaced = zone == 1 || (zone == 2 && (!is_nt || is_customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
+			var/mob/living/basic/trooper/body = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
+			var/datum/component/ranged_attacks/ranged = body.GetComponent(/datum/component/ranged_attacks)
+			TEST_ASSERT_NOTNULL(ranged, "[mob_type] lost its ranged attack")
+			if(replaced)
+				TEST_ASSERT_EQUAL(ranged.casing_type, is_nt ? /obj/item/ammo_casing/c45 : /obj/item/ammo_casing/c9mm, "[mob_type]/[zone] retained its advanced ammunition")
+				TEST_ASSERT(!ranged.burst_shots, "[mob_type]/[zone] retained its burst")
+				TEST_ASSERT_EQUAL(ranged.cooldown_time, 1 SECONDS, "Replacement changed the base pistol cadence")
+				TEST_ASSERT(abs(body.maxHealth - (zone == 2 ? 135 : 100)) < 0.001, "Replacement did not receive W3 scaling exactly once")
+			else
+				TEST_ASSERT_EQUAL(ranged.casing_type, initial(body:casingtype), "A retained higher-zone shooter changed ammunition")
+				TEST_ASSERT_EQUAL(ranged.cooldown_time, initial(body:ranged_cooldown), "A retained shooter changed cadence")
+			qdel(body)
+	for(var/mob_type in list(/mob/living/basic/trooper/syndicate/melee/sword, /mob/living/basic/trooper/syndicate/melee/sword/space/stormtrooper))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 1)
+		var/mob/living/basic/trooper/syndicate/melee/guard = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
+		TEST_ASSERT_EQUAL(guard.melee_damage_upper, 15, "Green sword guard did not become the knife archetype")
+		TEST_ASSERT_EQUAL(guard.maxHealth, 100, "Green stormtrooper kept its stormtrooper health")
+		TEST_ASSERT_EQUAL(guard.armour_penetration, 0, "Green sword guard kept its armor penetration")
+		TEST_ASSERT_EQUAL(guard.projectile_deflect_chance, 0, "Green sword guard kept its energy shield")
+		qdel(guard)
+
+/// Deferred resolution and movement cannot change a pirate's loot band or pay twice.
+/datum/unit_test/voidcrew_npc_ladder_deferred/Run()
+	var/turf/source = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, null, "ordinary", FALSE, source)
+	var/mob/living/basic/trooper/pirate/faction/medieval/melee/pirate = spawn_npc_in_zone(/mob/living/basic/trooper/pirate/faction/medieval/melee, source, context)
+	TEST_ASSERT(!pirate.weapon_loot_initialized, "Unresolved pirate rolled against a guessed zone")
+	pirate.forceMove(run_loc_floor_top_right)
+	context.on_zone_resolved(2)
+	TEST_ASSERT(pirate.weapon_loot_initialized, "Resolved source did not initialize the pirate's weapon")
+	TEST_ASSERT_EQUAL(context.source_turf, source, "Moving a pirate changed its spawn source")
+	context.on_zone_resolved(3)
+	TEST_ASSERT_EQUAL(context.zone_type, 2, "Later resolution replaced a pinned zone")
+	context.finalize()
+	TEST_ASSERT_EQUAL(pirate.maxHealth, 135, "Deferred loot setup changed or stacked the W3 profile")
+	qdel(pirate)
+
+/// A real conjure cast cannot manufacture basic-mob or legacy-simple-animal guns.
+/datum/unit_test/voidcrew_npc_ladder_summons/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/caster = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_top_right, context)
+	var/datum/action/cooldown/spell/conjure/spell = allocate(/datum/action/cooldown/spell/conjure)
+	spell.summon_radius = 0
+	spell.Grant(caster)
+	for(var/mob_type in list(/mob/living/basic/trooper/russian/ranged, /mob/living/basic/trooper/pirate/faction/irs/captain, /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner))
+		spell.summon_type = list(mob_type)
+		spell.cast(floor)
+		var/mob/living/summoned = locate(mob_type) in floor
+		TEST_ASSERT_NOTNULL(summoned, "Conjure failed to produce [mob_type]")
+		TEST_ASSERT(summoned.npc_spawn_context.suppress_gun_loot, "Summoned [mob_type] lost its construction restriction")
+		var/list/before = floor.get_all_contents()
+		summoned.health = 0
+		summoned.death(TRUE)
+		TEST_ASSERT(summoned.stat == DEAD || QDELETED(summoned), "Summoned [mob_type] did not actually die")
+		for(var/obj/item/drop in floor.get_all_contents() - before)
+			TEST_ASSERT(!istype(drop, /obj/item/gun), "A conjured [mob_type] manufactured a gun")
+		for(var/atom/movable/drop in floor.contents - before)
+			qdel(drop)
+		qdel(summoned)
+	qdel(caster)
+
+/// Primordial-demon replacements remain a red encounter, with normal W3 inheritance.
+/datum/unit_test/voidcrew_npc_ladder_ice_demons/Run()
+	for(var/zone in 1 to 3)
+		var/found_elite = FALSE
+		for(var/attempt in 1 to (zone == 3 ? 256 : 16))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
+			var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/mining/ice_demon/random, run_loc_floor_bottom_left, context)
+			found_elite = istype(body, /mob/living/simple_animal/hostile/asteroid/old_demon)
+			TEST_ASSERT(zone == 3 || !found_elite, "A low-zone ice demon became a primordial demon")
+			TEST_ASSERT_EQUAL(body.npc_spawn_context, context, "Ice demon replacement lost its source")
+			if(found_elite)
+				TEST_ASSERT_EQUAL(body.maxHealth, 390, "Red primordial demon lost its W3 boss profile")
+			qdel(body)
+			if(found_elite)
+				break
+		if(zone == 3)
+			TEST_ASSERT(found_elite, "Red ice demons never exercised their elite replacement")

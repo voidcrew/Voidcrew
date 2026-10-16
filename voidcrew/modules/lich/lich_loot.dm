@@ -157,6 +157,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 
 	var/list/turf/remaining = scatter.Copy()
 	for(var/hoard_type as anything in GLOB.lich_hoard_contents)
+		if(hoard_type == /obj/item/melee/verdigris_staff && (!istype(drop_near, /mob/living/basic/lich) || !drop_near:npc_red_weapon_drop))
+			continue
 		if(!length(remaining))
 			remaining = scatter.Copy()
 		new hoard_type(pick_n_take(remaining))
