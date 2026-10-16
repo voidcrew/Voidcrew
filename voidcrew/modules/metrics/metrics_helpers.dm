@@ -71,12 +71,9 @@ GLOBAL_VAR_INIT(metric_ship_count, 0)
 		return ckey(player.mind.key)
 	return null
 
-/// The ship a mob crews. Falls back to the ship they are standing on.
+/// Use the same current affiliation/hull selection as services, including ambiguous fleets.
 /proc/metric_crew_ship(mob/player)
-	for(var/datum/team/voidcrew/team as anything in player.mind?.ship_teams)
-		if(team.ship)
-			return team.ship
-	return get_ship_from_atom(player)
+	return get_crew_ship(player)
 
 /// "green", "yellow" or "red" for where an atom is, counting a ship's interior as the ship's tile.
 /// Null when the place isn't tied to the overmap.

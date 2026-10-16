@@ -544,14 +544,14 @@
 		return null
 	var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
 	if(!crew_ship)
-		return "Back-room stock goes to standing crews only."
+		return "I can't clear that shipment."
 	if(!shop)
 		return "Unavailable."
 	var/favor = shop.get_favor(crew_ship)
 	if(favor < favor_required)
-		return "Requires [favor_required] standing with [shop.favor_trader_name()]. Your crew has [favor]."
+		return "I can't clear that shipment."
 	if(crew_limit > 0 && shop.get_crew_purchases(crew_ship, type) >= crew_limit)
-		return "Your crew has had its [crew_limit] this round."
+		return "I've filled that order already."
 	return null
 
 /**
@@ -593,16 +593,20 @@
 		if(!account || !account.has_money(credit_price))
 			return FALSE
 
+	// Reserve on the same continuing record before any debit or item creation.
+	var/datum/voidcrew_crew_record/capped_crew
+	if(shelf == SHELF_FAVOR && crew_limit > 0)
+		capped_crew = get_crew_ship(user)?.get_crew_record()
+		if(!capped_crew?.claim_purchase(type, crew_limit))
+			return FALSE
 	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+		capped_crew?.release_purchase(type)
 		return FALSE
 	if(credit_price > 0 && !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
+		capped_crew?.release_purchase(type)
 		return FALSE
 
-	if(shelf == SHELF_FAVOR)
-		// The back room doesn't share stock; the sale counts against the crew's cap
-		if(crew_limit > 0)
-			shop?.record_crew_purchase(get_crew_ship(user), type)
-	else
+	if(shelf != SHELF_FAVOR)
 		stock--
 	dispense(user, vendor)
 	metric_shop_purchase(src, user, credit_price, price_vouchers)
@@ -682,7 +686,7 @@
 	if(favor_denial)
 		return favor_denial
 	if(!find_barter_item(user))
-		return "Hold the asked item in hand: [get_price_text()]."
+		return "That isn't what I asked for."
 	return null
 
 /datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
@@ -693,32 +697,68 @@
 	var/obj/item/offered = find_barter_item(user)
 	if(!offered)
 		return FALSE
+	var/datum/voidcrew_crew_record/capped_crew
+	if(shelf == SHELF_FAVOR && crew_limit > 0)
+		capped_crew = get_crew_ship(user)?.get_crew_record()
+		if(!capped_crew?.claim_purchase(type, crew_limit))
+			return FALSE
 	if(isstack(offered))
 		var/obj/item/stack/offered_stack = offered
 		if(!offered_stack.use(barter_amount))
+			capped_crew?.release_purchase(type)
 			return FALSE
 	else
 		qdel(offered)
-	if(shelf == SHELF_FAVOR)
-		if(crew_limit > 0)
-			shop?.record_crew_purchase(get_crew_ship(user), type)
-	else
+	if(shelf != SHELF_FAVOR)
 		stock--
 	dispense(user, vendor)
 	metric_shop_purchase(src, user)
 	return TRUE
 
-/**
- * The first ship this user crews for (first team with a live ship), the same
- * mind-to-ship mapping the embargo and the contract board use.
- */
-/proc/get_crew_ship(mob/user)
-	if(!user?.mind)
+/// Eligible hull contexts for the current crew. Roster order never chooses an account.
+/proc/get_crew_ships(mob/user)
+	var/list/ships = list()
+	var/datum/voidcrew_crew_record/record = user?.mind?.get_reputation_crew()
+	if(!record)
+		return ships
+	for(var/datum/team/voidcrew/team in record.teams)
+		var/obj/structure/overmap/ship/ship = team.ship
+		if(!QDELETED(ship) && ship.ship_team == team && !ship.abandoned && !ship.retired_by_checkpoint && !ship.checkpoint_rebuilding)
+			ships |= ship
+	return ships
+
+/// Z3/Z5 may pass an explicit hull or persist it through select_crew_service_ship().
+/// Prefer the hull aboard/alone at this site; ambiguous fleets require a selection.
+/proc/get_crew_ship(mob/user, obj/structure/overmap/ship/requested_ship)
+	var/list/ships = get_crew_ships(user)
+	if(!length(ships))
 		return null
-	for(var/datum/team/voidcrew/team as anything in user.mind.ship_teams)
-		if(team.ship)
-			return team.ship
+	if(requested_ship)
+		return (requested_ship in ships) ? requested_ship : null
+	var/obj/structure/overmap/ship/aboard = get_ship_from_atom(user)
+	if(aboard in ships)
+		return aboard
+	var/obj/structure/overmap/site = SSovermap_zones.get_overmap_object_for_turf(get_turf(user))
+	var/list/berthed = list()
+	if(site)
+		for(var/obj/structure/overmap/ship/ship in ships)
+			if(ship.docked == site)
+				berthed += ship
+	if(length(berthed) == 1)
+		return berthed[1]
+	var/obj/structure/overmap/ship/selected = user.mind.crew_service_ship_ref?.resolve()
+	if(selected in ships)
+		return selected
+	if(length(ships) == 1)
+		return ships[1]
 	return null
+
+/// Revalidated on every subsequent action; membership switches clear the selection.
+/datum/mind/proc/select_crew_service_ship(obj/structure/overmap/ship/ship)
+	if(!current || !(ship in get_crew_ships(current)))
+		return FALSE
+	crew_service_ship_ref = WEAKREF(ship)
+	return TRUE
 
 /**
  * # Shop rotation
