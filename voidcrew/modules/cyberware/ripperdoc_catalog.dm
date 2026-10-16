@@ -148,11 +148,6 @@
 			"Sawbones does organs. I do upgrades. We don't compete. We share a supplier.",
 			"The mirror's there for after. Everyone looks. Take your time.",
 			"The bar watches installs through that window. Dram charges them for the seat.",
-			"EMP will drop your chrome for a few seconds. It comes back. You might not. Plan around it.",
-			"Capacity's not a suggestion. Your spine carries twenty points of load. After that, things brown out.",
-			"Trade-ins get you half list on the street grades. Military chrome I don't buy back. Nobody sells it anyway.",
-			"A courier once asked me to hide two kilos in his chest. The cavity's one slot. Read the tag.",
-			"Borging shreds every implant in the body. Cloning leaves them on the corpse. Bring the corpse.",
 			"I don't do discounts. I do work that doesn't need discounts.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -172,7 +167,7 @@
 
 /datum/shop_sku/ripperdoc/chromatic_dermis
 	category = "Street Chrome"
-	desc = "Programmable circuit-tattoos under the skin. They flare when you take a hit, strobe when your chrome fires, and go dim when you're starving. Pure show, and worth every credit."
+	desc = "Programmable circuit tattoos beneath the skin."
 	item_path = /obj/item/organ/cyberimp/cyberware/chromatic_dermis
 	price_credits = 400
 	stock_min = 2
@@ -180,7 +175,7 @@
 
 /datum/shop_sku/ripperdoc/gastro
 	category = "Street Chrome"
-	desc = "A furnace where your stomach was. Eats anything that qualifies as food, and it's generous about qualifying. Immune to whatever the Dregs calls a special."
+	desc = "A reinforced synthetic stomach with an industrial lining."
 	item_path = /obj/item/organ/cyberimp/cyberware/gastro
 	price_credits = 400
 	stock_min = 2
@@ -195,7 +190,7 @@
 
 /datum/shop_sku/ripperdoc/nightshade
 	category = "Street Chrome"
-	desc = "Sees in the dark, and doesn't blind you when someone pops a flash. The printed thermals can't say that. Diagnostic bus is stock, so you'll read how much chrome the other guy is carrying, but never what."
+	desc = "A pair of chrome low-light optics."
 	item_path = /obj/item/organ/eyes/robotic/cyberware/nightshade
 	price_credits = 600
 	stock_min = 1
@@ -204,7 +199,7 @@
 /datum/shop_sku/ripperdoc/scrapper
 	category = "Street Chrome"
 	name = "Scrapper's Knuckles (pair)"
-	desc = "Reinforced knuckle plating for both hands. Hits people harder, hits machines and doors a lot harder. Sold as a set; install one side at a time."
+	desc = "A cased pair of reinforced knuckle plates."
 	item_path = /obj/item/storage/case/cyberware/scrapper
 	price_credits = 800
 	stock_min = 1
@@ -226,7 +221,7 @@
 
 /datum/shop_sku/ripperdoc/cargo_cavity
 	category = "Street Chrome"
-	desc = "One sealed slot behind the sternum. Scanners skip it and pat-downs miss it. I don't ask what goes in."
+	desc = "A concealed storage cavity behind the sternum."
 	item_path = /obj/item/organ/cyberimp/cyberware/cargo_cavity
 	price_credits = 1000
 	stock_min = 1
@@ -284,7 +279,7 @@
 
 /datum/shop_sku/ripperdoc/icepick
 	category = "Pro Chrome"
-	desc = "A data spike for the doors and turrets that won't open or stand down when asked. Outpost defenses ignore it, before you get ideas."
+	desc = "A chrome forearm with a retractable data spike."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
 	price_vouchers = 1
 
@@ -323,11 +318,13 @@
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/atlas
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/atlas
 	price_vouchers = 2
 
 /datum/shop_sku/ripperdoc/gorilla
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	name = "Gorilla Arms (pair)"
 	desc = "A cased pair of heavy chrome forearms."
@@ -340,6 +337,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/monowire
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire
 	price_vouchers = 3
@@ -350,6 +348,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/ronin
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	desc = "A submachine gun folded into a chrome forearm."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
@@ -361,17 +360,20 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/rigger
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
-	desc = "Skull jack. Opens your ship's helm wherever you're standing on it: engineering, a corridor, medbay with your hands full. It borrows a real console, so a hull with no helm left gives you nothing, and you're walking, not running, the whole time you're flying."
+	desc = "A skull jack with a ship's control interface."
 	item_path = /obj/item/organ/cyberimp/cyberware/rigger
 	price_vouchers = 3
 
 /datum/shop_sku/ripperdoc/slabskin
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/slabskin
 	price_vouchers = 3
 
 /datum/shop_sku/ripperdoc/mantis
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	name = "Mantis Blades (pair)"
 	desc = "A cased pair of folding forearm blades."
@@ -384,6 +386,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/bunker_buster
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	desc = "A rocket pod built into a chrome forearm."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
@@ -395,11 +398,13 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/ghostskin
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/ghostskin
 	price_vouchers = 4
 
 /datum/shop_sku/ripperdoc/lazarus
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/lazarus
 	price_vouchers = 4
@@ -409,6 +414,7 @@
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/governor_delete
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Legend Chrome"
 	desc = "A factory neural governor with its limiter firmware stripped out."
 	item_path = /obj/item/organ/cyberimp/cyberware/governor_delete
@@ -417,6 +423,7 @@
 	stock_max = 1
 
 /datum/shop_sku/ripperdoc/redline
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Legend Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/redline
 	price_vouchers = 6
@@ -424,8 +431,9 @@
 	stock_max = 1
 
 /datum/shop_sku/ripperdoc/cascade
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Legend Chrome"
-	desc = "Sandevistan-class reflex lattice. Eight seconds where everyone else may as well be furniture, then a crash that puts you on the floor. The most expensive thing I've ever bolted into a spine."
+	desc = "A Sandevistan reflex lattice in a sealed surgical case."
 	item_path = /obj/item/organ/cyberimp/cyberware/cascade
 	price_vouchers = 8
 	stock_min = 1
@@ -436,6 +444,7 @@
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/ronin_mag
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Ammunition"
 	name = "Ronin magazine"
 	desc = "Proprietary caliber for the Popup Ronin. Nowhere else stocks it, which is the point."
@@ -445,6 +454,7 @@
 	stock_max = 6
 
 /datum/shop_sku/ripperdoc/buster_rockets
+	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Ammunition"
 	name = "Bunker Buster rockets"
 	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle them carefully. They're meant to go off at the far end."

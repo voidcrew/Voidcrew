@@ -237,6 +237,7 @@
 #include "voidcrew_zone_identity.dm"
 #include "voidcrew_zone_logging.dm"
 #include "voidcrew_zone_research.dm"
+#include "voidcrew_zone_shops.dm"
 #include "voidcrew_zone_teleport.dm"
 #include "weather_mob_targeting.dm"
 // END_INCLUDE

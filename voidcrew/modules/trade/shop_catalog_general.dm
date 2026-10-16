@@ -22,6 +22,7 @@
 	r_hand = /obj/item/reagent_containers/cup/glass/coffee
 
 /datum/outpost_shop/general
+	back_room_line = "I'll put a word in at the depot."
 	outpost_name = "\improper Waystation Halcyon"
 	outpost_desc = "A sleepy general store and rest stop on the safe inner ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
@@ -110,7 +111,7 @@
 		/datum/shop_sku/general/rotating/bikehorn,
 		/datum/shop_sku/general/rotating/guitar,
 	)
-	// The back room: Trusted-standing uniques, per-crew supply (trader_favor.dm)
+	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/pike_ledger,
 		/datum/shop_sku/favor/field_contract_pad,
@@ -193,7 +194,6 @@
 			"The pod foragers come back smelling like a spice rack and looking like they lost a fight. I pay them anyway.",
 			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never crack a single one.",
 			"Take a rumor with you, dear. The lanes talk to me and I do love to pass it on.",
-			"We had a jackhammer in the back once. Contract work only, mind. Ask at the board.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"The supply run's in! Fresh everything, and the biscuit tin's full again.",
@@ -266,7 +266,7 @@
 
 /datum/shop_sku/general/oxygen_canister
 	name = "oxygen canister (full)"
-	desc = "A full canister of breathable oxygen. Wheel it into a compartment that lost its air, crack the valve, and give it a minute. The waystation moves a lot of these."
+	desc = "A full canister of breathable oxygen."
 	category = "Survival & EVA"
 	item_path = /obj/machinery/portable_atmospherics/canister/oxygen
 	price_credits = 1200
@@ -275,7 +275,7 @@
 
 /datum/shop_sku/general/jetpack
 	name = "jetpack (oxygen)"
-	desc = "A compressed oxygen tank rigged for propulsion. It will breathe you or fly you, but not both for very long. Standard kit for anyone patching a hull from the outside."
+	desc = "A compressed oxygen tank rigged for propulsion."
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/jetpack/oxygen
 	price_credits = 2100
@@ -293,7 +293,7 @@
 
 /datum/shop_sku/general/welding_fuel
 	name = "welding fuel tank"
-	desc = "A thousand units of industrial welding fuel in a tank you can drag aboard. Enough to keep a repair crew going for a long shift. Don't weld it."
+	desc = "A wheeled tank of industrial welding fuel."
 	category = "Tools & Repair"
 	item_path = /obj/structure/reagent_dispensers/fueltank
 	price_credits = 400
@@ -365,7 +365,7 @@
 	price_credits = 200
 
 /datum/shop_sku/general/adv_mining_scanner
-	desc = "The full-range model of the scanner on the shelf beside it: seven tiles of rock instead of four, and it re-sweeps half again as fast. Worth it on a planet where the good seams sit deep."
+	desc = "An industrial mineral scanner with a reinforced casing."
 	category = "Prospecting"
 	item_path = /obj/item/t_scanner/adv_mining_scanner
 	price_credits = 1500
@@ -454,7 +454,7 @@
 
 /datum/shop_sku/general/plasteel
 	name = "plasteel sheets (20)"
-	desc = "Twenty sheets of plasteel for serious hull work. It needs a smelter to make and most ships don't carry one, so this is the honest way to get it."
+	desc = "Twenty sheets of plasteel, bundled for shipment."
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/plasteel
 	dispense_amount = 20
@@ -477,7 +477,7 @@
 // The ore is the cheaper option per sheet, but only if you can actually smelt it.
 /datum/shop_sku/general/plasma_sheets
 	name = "solid plasma (20)"
-	desc = "Twenty sheets of solid plasma, the grade portable generators burn. Buy these if your ship has no way to smelt its own ore."
+	desc = "Twenty sheets of solid plasma."
 	category = "Fuel & Gas"
 	item_path = /obj/item/stack/sheet/mineral/plasma
 	dispense_amount = 20
@@ -487,7 +487,7 @@
 
 /datum/shop_sku/general/plasma_ore
 	name = "plasma ore (15)"
-	desc = "Fifteen chunks of raw plasma ore, cheaper by weight than the refined sheets. You need an ore redemption machine to get anything out of it. A welder will not do the job."
+	desc = "Fifteen chunks of raw plasma ore."
 	category = "Fuel & Gas"
 	item_path = /obj/item/stack/ore/plasma
 	dispense_amount = 15
@@ -497,7 +497,7 @@
 
 /datum/shop_sku/general/scoop_board
 	name = "nebula ram scoop board"
-	desc = "The circuit board for a nebula ram scoop. Park inside a nebula and drink your fuel straight out of the cloud. Barnaby keeps them behind the counter with the good stock."
+	desc = "The circuit board for a nebula ram scoop."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
 	price_credits = 600
@@ -508,7 +508,7 @@
 // engine can at least keep the lights and the air handlers running.
 /datum/shop_sku/general/portable_generator
 	name = "portable plasma generator"
-	desc = "A P.A.C.M.A.N. generator that burns solid plasma for power. Bolt it down, wire it to the grid, and it will hold up the essentials while the engine is out. It eats the plasma sheets Barnaby stocks two shelves over."
+	desc = "A portable P.A.C.M.A.N. plasma generator."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/power/port_gen/pacman
 	price_credits = 1800
@@ -527,7 +527,7 @@
 // autosurgeon because there was no other way to get one.)
 /datum/shop_sku/general/autolathe_board
 	name = "autolathe board"
-	desc = "The circuit board for an autolathe. If yours is gone, this is the only way to start fabricating again, so Barnaby keeps a couple in the back."
+	desc = "The circuit board for an autolathe."
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/machine/autolathe
 	price_credits = 500 // invented, unplaytested
@@ -670,21 +670,24 @@
 	stock_max = 4
 
 // ===== BACK ROOM =====
-// Barnaby's favor uniques: Trusted standing only, up to FAVOR_UNIQUE_CREW_LIMIT
+// Barnaby's favor uniques: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
 // per crew per round. Priced above the rare shelf on purpose, standing opens
 // the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/pike_ledger
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/pike_ledger
 	price_credits = 3200
 	price_vouchers = 2
 
 /datum/shop_sku/favor/field_contract_pad
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/field_contract_pad
 	price_credits = 3600
 	price_vouchers = 2
 
 /datum/shop_sku/favor/freight_beacon
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/freight_beacon
 	price_credits = 2400
 	price_vouchers = 1
@@ -692,7 +695,7 @@
 // The replacement lathe cannot print its own construction parts.
 /datum/shop_sku/general/basic_parts
 	name = "basic machine parts box"
-	desc = "Three each of basic matter bins, servos, capacitors, micro-lasers and scanners. Enough parts to rebuild an autolathe; bring a board, five iron sheets for its frame, five cables and one glass sheet."
+	desc = "A boxed assortment of basic machine components."
 	category = "Ship Sundries"
 	item_path = /obj/item/storage/box/stockparts/basic
 	price_credits = 300
