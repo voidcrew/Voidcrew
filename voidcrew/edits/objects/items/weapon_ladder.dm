@@ -22,7 +22,7 @@
 
 /// Weapons which cannot come from free kits, fabrication or cargo.
 /proc/is_ladder_restricted_melee(item_type)
-	if(ispath(item_type, /obj/item/knife/combat/survival) || ispath(item_type, /obj/item/knife/combat/bone))
+	if(ispath(item_type, /obj/item/knife/combat/survival) || ispath(item_type, /obj/item/knife/combat/bone) || ispath(item_type, /obj/item/shovel/serrated/dull))
 		return FALSE
 	var/static/list/restricted = typecacheof(list(
 		/obj/item/knife/combat,
@@ -44,7 +44,9 @@
 		/obj/item/singularityhammer,
 		/obj/item/house_edge,
 		/obj/item/shovel/giant_wrench,
+		/obj/item/shovel/serrated,
 		/obj/item/spear/explosive,
+		/obj/item/spear/grey_tide,
 		/obj/item/shield/riot,
 		/obj/item/shield/kite,
 		/obj/item/shield/buckler,
@@ -161,3 +163,13 @@
 
 /datum/market_item/tool/riot_shield
 	availability_prob = 0
+
+// Rebuilt vendors must inherit the same stock as mapped ones.
+/obj/machinery/vending/games
+	contraband = list(
+		/obj/item/dice/fudge = 9,
+		/obj/item/clothing/shoes/wheelys/skishoes = 4,
+		/obj/item/instrument/musicalmoth = 1,
+		/obj/item/melee/baseball_bat = 1,
+		/obj/item/skillchip/acrobatics = 1,
+	)
