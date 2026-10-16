@@ -6,12 +6,10 @@
  * still be registering (planet mapzones attach only after their template
  * load returns). Fires the callback exactly once with the resolved zone
  * type, or null if every attempt failed. The consumer picks its own
- * fallback (both current consumers fall back to ZONE_GREEN, the weakest
+ * fallback (loot and guard consumers fall back to ZONE_GREEN, the weakest
  * table, so a broken resolution can never inflate a payout).
  *
- * Used by the zone loot caches (zone_loot.dm) and the zone mob markers
- * (zone_mobs.dm), which previously each carried their own copy of this
- * retry loop.
+ * Used by zone loot caches, freight crates and zone mob markers.
  */
 
 /// How many times a resolver re-attempts zone resolution
