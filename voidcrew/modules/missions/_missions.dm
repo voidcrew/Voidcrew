@@ -798,7 +798,7 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		target.preferred_zone = quote_zone
 	if(!target.resolve())
 		return FALSE
-	return quote_zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED) && target.get_zone_type() == quote_zone
+	return (quote_zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) && target.get_zone_type() == quote_zone
 
 // =========================================================================
 // COMPLETION & TURN-IN

@@ -21,9 +21,10 @@
 
 /datum/mission_target/m2_rewards_test
 	var/resolved_zone = 1 // ZONE_GREEN
+	var/can_resolve = TRUE
 
 /datum/mission_target/m2_rewards_test/resolve()
-	return TRUE
+	return can_resolve
 
 /datum/mission_target/m2_rewards_test/get_zone_type()
 	return resolved_zone
@@ -211,11 +212,20 @@
 	var/datum/mission/quoted = allocate(/datum/mission/m2_rewards_test)
 	var/datum/mission_target/m2_rewards_test/target = allocate(/datum/mission_target/m2_rewards_test, quoted)
 	quoted.target = target
+	for(var/quoted_band in 1 to 3)
+		quoted.quote_zone = quoted_band
+		for(var/resolved_band in 1 to 3)
+			target.resolved_zone = resolved_band
+			TEST_ASSERT_EQUAL(quoted.resolve_quoted_target(), quoted_band == resolved_band, "Retarget from band [quoted_band] to [resolved_band] ignored the quote")
+			TEST_ASSERT_EQUAL(target.preferred_zone, quoted_band, "Retarget did not request its quoted band")
+	for(var/invalid_band in list(null, 99))
+		quoted.quote_zone = invalid_band
+		target.resolved_zone = invalid_band
+		TEST_ASSERT(!quoted.resolve_quoted_target(), "Retarget accepted an unknown quoted band")
 	quoted.quote_zone = 1
-	target.resolved_zone = 2
-	TEST_ASSERT(!quoted.resolve_quoted_target(), "Retarget escaped the quoted band")
 	target.resolved_zone = 1
-	TEST_ASSERT(quoted.resolve_quoted_target(), "Same-band retarget failed")
+	target.can_resolve = FALSE
+	TEST_ASSERT(!quoted.resolve_quoted_target(), "Retarget accepted a failed resolution in the quoted band")
 
 /// Every scan/gas row and all six utility cells retain ask difficulty independently of zone.
 /datum/unit_test/voidcrew_m2_rewards/asks/Run()
