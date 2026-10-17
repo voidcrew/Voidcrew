@@ -68,6 +68,40 @@
 	for(var/obj/item/item in ghost_wearer.get_all_contents())
 		TEST_ASSERT(!is_ladder_combat_gun(item.type), "A ghost-role outfit still starts with [item.type].")
 
+/// Registered recipes must agree with the ladder even before static initialization.
+/datum/unit_test/voidcrew_ladder_recipe_registration/Run()
+	var/list/expected_recipes = list(
+		/datum/crafting_recipe/strobeshield = TRUE,
+		/datum/crafting_recipe/moonflowershield = TRUE,
+		/datum/crafting_recipe/chainsaw = TRUE,
+		/datum/crafting_recipe/boneaxe = TRUE,
+		/datum/crafting_recipe/house_edge = TRUE,
+		/datum/crafting_recipe/giant_wrench = TRUE,
+		/datum/crafting_recipe/singulo_hammer = TRUE,
+		/datum/crafting_recipe/sm_sword = TRUE,
+		/datum/crafting_recipe/boneshovel = TRUE,
+		/datum/crafting_recipe/pipegun = TRUE,
+		/datum/crafting_recipe/receiver = TRUE,
+		/datum/crafting_recipe/spear = FALSE,
+		/datum/crafting_recipe/bonespear = FALSE,
+		/datum/crafting_recipe/bonedagger = FALSE,
+		/datum/crafting_recipe/smoothbore_disabler = FALSE,
+		/datum/crafting_recipe/smoothbore_disabler_prime = FALSE,
+	)
+	var/list/expected_stacks = list(
+		/obj/item/shield/buckler = TRUE,
+		/obj/structure/closet/crate/coffin = FALSE,
+	)
+	for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
+		if(recipe.type in expected_recipes)
+			TEST_ASSERT_EQUAL(!!recipe.non_craftable, expected_recipes[recipe.type], "[recipe.type] registered with the wrong availability")
+			expected_recipes -= recipe.type
+		if(istype(recipe, /datum/crafting_recipe/stack) && (recipe.result in expected_stacks))
+			TEST_ASSERT_EQUAL(!!recipe.non_craftable, expected_stacks[recipe.result], "Stack result [recipe.result] registered with the wrong availability")
+			expected_stacks -= recipe.result
+	TEST_ASSERT_EQUAL(length(expected_recipes), 0, "Recipe registration missed [english_list(expected_recipes)]")
+	TEST_ASSERT_EQUAL(length(expected_stacks), 0, "Stack recipe registration missed [english_list(expected_stacks)]")
+
 /// Learned recipes, stock slapcrafting and a carried upgrade kit cannot bypass scarcity.
 /datum/unit_test/voidcrew_ladder_manufacture/Run()
 	var/atom/movable/crafter = allocate(__IMPLIED_TYPE__)

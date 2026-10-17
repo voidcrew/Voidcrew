@@ -86,7 +86,7 @@
 	name = "pirate laser cache"
 	desc = "A crate of laser weapons recovered from a pirate vessel."
 
-/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns/PopulateContents()
+/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/laser(src)
 
@@ -94,7 +94,7 @@
 	name = "pirate energy gun cache"
 	desc = "A crate of energy guns recovered from a pirate vessel."
 
-/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines/PopulateContents()
+/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/e_gun(src)
 

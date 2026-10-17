@@ -2,58 +2,63 @@
 /proc/is_ladder_combat_gun(item_type)
 	if(!ispath(item_type, /obj/item/gun))
 		return FALSE
-	var/static/list/tool_guns = typecacheof(list(
-		/obj/item/gun/energy/disabler,
-		/obj/item/gun/energy/floragun,
-		/obj/item/gun/energy/wiremod_gun,
-		/obj/item/gun/energy/plasmacutter,
-		/obj/item/gun/energy/recharge/kinetic_accelerator,
-		/obj/item/gun/energy/recharge/fisher,
-		/obj/item/gun/medbeam,
-		/obj/item/gun/energy/laser/bluetag,
-		/obj/item/gun/energy/laser/redtag,
-		/obj/item/gun/energy/laser/chameleon,
-		/obj/item/gun/ballistic/automatic/toy,
-		/obj/item/gun/ballistic/automatic/pistol/toy,
-		/obj/item/gun/ballistic/shotgun/toy,
-		/obj/item/gun/magic/wand/nothing,
-	))
+	// Recipe registration runs before static initializers, so build caches on demand.
+	var/static/list/tool_guns
+	if(!tool_guns)
+		tool_guns = typecacheof(list(
+			/obj/item/gun/energy/disabler,
+			/obj/item/gun/energy/floragun,
+			/obj/item/gun/energy/wiremod_gun,
+			/obj/item/gun/energy/plasmacutter,
+			/obj/item/gun/energy/recharge/kinetic_accelerator,
+			/obj/item/gun/energy/recharge/fisher,
+			/obj/item/gun/medbeam,
+			/obj/item/gun/energy/laser/bluetag,
+			/obj/item/gun/energy/laser/redtag,
+			/obj/item/gun/energy/laser/chameleon,
+			/obj/item/gun/ballistic/automatic/toy,
+			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/shotgun/toy,
+			/obj/item/gun/magic/wand/nothing,
+		))
 	return item_type != /obj/item/gun/syringe && !is_type_in_typecache(item_type, tool_guns)
 
 /// Weapons which cannot come from free kits, fabrication or cargo.
 /proc/is_ladder_restricted_melee(item_type)
 	if(ispath(item_type, /obj/item/knife/combat/survival) || ispath(item_type, /obj/item/knife/combat/bone) || ispath(item_type, /obj/item/shovel/serrated/dull))
 		return FALSE
-	var/static/list/restricted = typecacheof(list(
-		/obj/item/knife/combat,
-		/obj/item/knife/bloodletter,
-		/obj/item/knife/hunting/wildhunter,
-		/obj/item/claymore,
-		/obj/item/katana,
-		/obj/item/energy_katana,
-		/obj/item/melee/energy/sword,
-		/obj/item/melee/sabre,
-		/obj/item/melee/cleric_mace,
-		/obj/item/melee/baseball_bat/ablative,
-		/obj/item/melee/parsnip_sabre,
-		/obj/item/melee/supermatter_sword,
-		/obj/item/fireaxe,
-		/obj/item/chainsaw,
-		/obj/item/kinetic_crusher,
-		/obj/item/switchblade,
-		/obj/item/singularityhammer,
-		/obj/item/house_edge,
-		/obj/item/shovel/giant_wrench,
-		/obj/item/shovel/serrated,
-		/obj/item/spear/explosive,
-		/obj/item/spear/grey_tide,
-		/obj/item/shield/riot,
-		/obj/item/shield/kite,
-		/obj/item/shield/buckler,
-		/obj/item/shield/roman,
-		/obj/item/shield/energy,
-		/obj/item/storage/toolbox/mechanical/old/clean,
-	))
+	var/static/list/restricted
+	if(!restricted)
+		restricted = typecacheof(list(
+			/obj/item/knife/combat,
+			/obj/item/knife/bloodletter,
+			/obj/item/knife/hunting/wildhunter,
+			/obj/item/claymore,
+			/obj/item/katana,
+			/obj/item/energy_katana,
+			/obj/item/melee/energy/sword,
+			/obj/item/melee/sabre,
+			/obj/item/melee/cleric_mace,
+			/obj/item/melee/baseball_bat/ablative,
+			/obj/item/melee/parsnip_sabre,
+			/obj/item/melee/supermatter_sword,
+			/obj/item/fireaxe,
+			/obj/item/chainsaw,
+			/obj/item/kinetic_crusher,
+			/obj/item/switchblade,
+			/obj/item/singularityhammer,
+			/obj/item/house_edge,
+			/obj/item/shovel/giant_wrench,
+			/obj/item/shovel/serrated,
+			/obj/item/spear/explosive,
+			/obj/item/spear/grey_tide,
+			/obj/item/shield/riot,
+			/obj/item/shield/kite,
+			/obj/item/shield/buckler,
+			/obj/item/shield/roman,
+			/obj/item/shield/energy,
+			/obj/item/storage/toolbox/mechanical/old/clean,
+		))
 	return is_type_in_typecache(item_type, restricted)
 
 /proc/is_ladder_restricted_production(item_type)

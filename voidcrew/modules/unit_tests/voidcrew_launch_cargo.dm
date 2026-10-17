@@ -91,6 +91,24 @@
 	TEST_ASSERT(!valid_material_order_contents(list(/obj/item/stack/sheet/iron = MAX_STACK_SIZE * 10, /obj/item/stack/sheet/glass = 1)), "Mixed materials bypassed ten-stack cap")
 	TEST_ASSERT(valid_material_order_contents(list(/obj/item/stack/sheet/iron = MAX_STACK_SIZE * 9, /obj/item/stack/sheet/glass = MAX_STACK_SIZE)), "Ten valid mixed stacks were rejected")
 
+	// Market-generated packs are hidden catalog entries, but must still ship normally.
+	console.obj_flags &= ~EMAGGED
+	console.contraband = FALSE
+	var/datum/supply_pack/custom/minerals/materials = allocate(/datum/supply_pack/custom/minerals, "Market guard", 5, list(/obj/item/stack/sheet/iron = 1))
+	TEST_ASSERT(materials.hidden, "Material fixture must exercise the hidden-pack exception")
+	TEST_ASSERT(console.can_order_pack(materials), "An ordinary console rejected a valid market order")
+	materials.contraband = TRUE
+	TEST_ASSERT(!console.can_order_pack(materials), "A market order bypassed the contraband restriction")
+	materials.contraband = FALSE
+	materials.special = TRUE
+	TEST_ASSERT(!console.can_order_pack(materials), "A market order bypassed the special-pack restriction")
+	materials.special = FALSE
+	materials.drop_pod_only = TRUE
+	TEST_ASSERT(!console.can_order_pack(materials), "A market order bypassed the pod-only restriction")
+	materials.drop_pod_only = FALSE
+	materials.contains = list(/obj/item/stack/sheet/iron = 0)
+	TEST_ASSERT(!console.can_order_pack(materials), "An invalid material order bypassed the hidden-pack restriction")
+
 /// Run real buy(), bank debits, material preflight, crate construction and manifests.
 /datum/unit_test/voidcrew_launch_cargo_fixture/settlement/Run()
 	save_economy()
@@ -109,6 +127,7 @@
 	bank.synced_bank_account = account
 	console.link_ship_bank(bank)
 	var/datum/supply_pack/custom/minerals/pack = allocate(/datum/supply_pack/custom/minerals, "Cargo test", 360, list(/obj/item/stack/sheet/iron = 12, /obj/item/stack/sheet/mineral/plasma = 15))
+	TEST_ASSERT(!(console.obj_flags & EMAGGED) && console.can_order_pack(pack), "Market settlement must work through an ordinary cargo console")
 	var/datum/supply_order/disposable/materials/order = allocate(/datum/supply_order/disposable/materials, pack)
 	order.manifest_can_fail = FALSE
 	order.applied_coupon = allocate(/obj/item/coupon)
@@ -419,7 +438,8 @@
 				if(event_type == /datum/stock_market_event/hotcakes)
 					TEST_ASSERT_EQUAL(price, round(base * 1.5), "Hotcakes used the wrong ceiling for [material]")
 				if(event_type == /datum/stock_market_event/market_reset)
-					TEST_ASSERT_EQUAL(price, base, "Market reset restored the old base for [material]")
+					// Per-unit values round through BYOND floats when converted back to sheets.
+					TEST_ASSERT(isnum(price) && abs(price - base) < 0.0001, "Market reset restored [price] instead of [base] for [material]")
 				qdel(event)
 
 		var/datum/stock_market_event/lockdown/lockdown = allocate(/datum/stock_market_event/lockdown)
@@ -429,7 +449,8 @@
 		lockdown.handle()
 		TEST_ASSERT_EQUAL(SSstock_market.materials_quantity[material], 0, "Lockdown failed to suspend [material] stock")
 		lockdown.handle()
-		TEST_ASSERT_EQUAL(SSstock_market.materials_prices[material], base, "Lockdown restored the old base for [material]")
+		var/reset_price = SSstock_market.materials_prices[material]
+		TEST_ASSERT(isnum(reset_price) && abs(reset_price - base) < 0.0001, "Lockdown restored [reset_price] instead of [base] for [material]")
 		TEST_ASSERT(!(lockdown in SSstock_market.active_events), "Ended lockdown remained active")
 
 /// Quote the entire stack before depressing the market or its export demand.
