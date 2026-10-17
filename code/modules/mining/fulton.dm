@@ -80,7 +80,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	if(area != target_area && ((area.area_flags & LOCAL_TELEPORT) || (target_area.area_flags & LOCAL_TELEPORT)))
 		balloon_alert(user, "unable to activate!")
 		return
-	// VOIDCREW EDIT ADDITION: fultons don't go through do_teleport(), so they need the
+	// VOIDCREW EDIT ADDITION START: mining - fultons don't go through do_teleport(), so they need the
 	// bitrunning boundary check of their own. The LOCAL_TELEPORT test above misses a
 	// domain's reservation floor, which is plain /area/space.
 	if(SSbitrunning.is_domain_turf(get_turf(thing)) != SSbitrunning.is_domain_turf(get_turf(beacon)))

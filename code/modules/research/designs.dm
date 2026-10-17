@@ -124,12 +124,13 @@ other types of metals and chemistry for reagents).
 	///The bepis node we have the design id's of
 	var/datum/techweb_node/bepis_node
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/disk/design_disk/bepis/Initialize(mapload)
 	. = ..()
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	refill_experimental_technology_deck()
 	if(!length(SSresearch.techweb_nodes_experimental))
 		return INITIALIZE_HINT_QDEL
+	// VOIDCREW EDIT END
 	var/bepis_id = pick(SSresearch.techweb_nodes_experimental)
 	bepis_node = (SSresearch.techweb_node_by_id(bepis_id))
 
@@ -138,7 +139,6 @@ other types of metals and chemistry for reagents).
 		blueprints += new_entry
 
 ///Unhide and research our node so we show up in the R&D console.
-// VOIDCREW EDIT END
 /obj/item/disk/design_disk/bepis/on_upload(datum/techweb/stored_research, atom/research_source)
 	stored_research.hidden_nodes -= bepis_node.id
 	stored_research.research_node(bepis_node, force = TRUE, auto_adjust_cost = FALSE, research_source = research_source)
@@ -152,14 +152,18 @@ other types of metals and chemistry for reagents).
 	name = "Reformatted technology disk"
 	desc = "A disk containing a new, completed tech from the B.E.P.I.S. Upload the disk to an R&D Console to redeem the tech."
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/disk/design_disk/bepis/remove_tech/Initialize(mapload)
 	. = ..()
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	if(. == INITIALIZE_HINT_QDEL)
 		return
+	// VOIDCREW EDIT END
 	SSresearch.techweb_nodes_experimental -= bepis_node.id
+	// VOIDCREW EDIT START: research cycles the finite experimental technology deck.
 	log_research("[bepis_node.display_name] drawn from the experimental technology deck.")
 	// Bitrunning checks this pool BEFORE making a disk. Refill at exhaustion,
 	// rather than waiting for an Initialize() that the caller would never reach.
 	refill_experimental_technology_deck()
-// VOIDCREW EDIT END
+	// VOIDCREW EDIT END
+
+// VOIDCREW EDIT: research refills the experimental technology deck at exhaustion; implementation in voidcrew/edits/modules/research/designs.dm.

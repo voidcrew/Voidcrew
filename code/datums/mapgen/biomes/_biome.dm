@@ -59,6 +59,7 @@
 	// vertices that already have them and steals them from every neighbour it shares them
 	// with. See /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
 	if(!SSlighting.initialized)
+		// VOIDCREW EDIT START: Carry lighting corners and rebuild adjacency for live planetary terrain swaps (voidcrew/edits/turf.dm).
 		return new turf_type(gen_turf)
 	gen_turf.release_light_for_raw_swap()
 	var/datum/lighting_corner/corner_ne = gen_turf.lighting_corner_NE
@@ -68,6 +69,7 @@
 	var/old_dynamic_lumcount = gen_turf.dynamic_lumcount
 	var/turf/new_turf = new turf_type(gen_turf)
 	new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+		// VOIDCREW EDIT END
 	return new_turf
 
 
@@ -103,6 +105,7 @@
 		// can idle a corner out from under us. See
 		// /turf/proc/adopt_lighting_from_raw_swap() in voidcrew/edits/turf.dm.
 		var/datum/lighting_corner/corner_ne
+		// VOIDCREW EDIT START: Carry lighting corners and rebuild adjacency for live planetary terrain swaps (voidcrew/edits/turf.dm).
 		var/datum/lighting_corner/corner_se
 		var/datum/lighting_corner/corner_sw
 		var/datum/lighting_corner/corner_nw
@@ -117,6 +120,7 @@
 		var/turf/new_turf = new turf_type(gen_turf)
 		if(lighting_live)
 			new_turf.adopt_lighting_from_raw_swap(corner_ne, corner_se, corner_sw, corner_nw, old_dynamic_lumcount)
+		// VOIDCREW EDIT END
 		new_turfs += new_turf
 
 		if(gen_turf.turf_flags & NO_RUINS)
@@ -126,6 +130,7 @@
 		// raw `new` never scrubs itself out of its neighbours' atmos_adjacent_turfs.
 		// See the matching edit in CaveGenerator.dm.
 		if(SSair.initialized && isclosedturf(new_turf))
+			// VOIDCREW EDIT: Carry lighting corners and rebuild adjacency for live planetary terrain swaps (voidcrew/edits/turf.dm).
 			CALCULATE_ADJACENT_TURFS(new_turf, NORMAL_TURF)
 
 		CHECK_TICK

@@ -255,7 +255,7 @@
 		if(reagent.purity < equilibrium.reaction.purity_min)
 			purity_alert = ENABLE_FLASHING//Because 0 is seen as null
 			danger = TRUE
-		//VOIDCREW EDIT: only alarm on pH for recipes that actually care about it. Without
+		//VOIDCREW EDIT START: only alarm on pH for recipes that actually care about it. Without - Voidcrew chemistry: apply pH gating only to recipes opting into purity (voidcrew/modules/chemistry)
 		//REACTION_USES_PURITY the mixture's pH has no effect on the reaction, so flashing the
 		//meter at the chemist would be warning them about nothing.
 		if(flashing != ENABLE_FLASHING && (equilibrium.reaction.reaction_flags & REACTION_USES_PURITY))//So that the pH meter flashes for ANY reactions out of optimal

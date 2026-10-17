@@ -11,7 +11,6 @@
 	return null
 
 
-
 /turf/proc/hotspot_expose(exposed_temperature, exposed_volume, soh = 0)
 	return
 
@@ -191,6 +190,7 @@
 		// VOIDCREW EDIT: return_air() so a turf still on the shared planetary mix takes a
 		// private one; what we remove here has to be missing when assume_air() puts it back.
 		var/datum/gas_mixture/location_air = location.return_air()
+		// VOIDCREW EDIT: Materialize private planetary air before fire removes gas (voidcrew/edits/planetary_shared_air.dm).
 		var/datum/gas_mixture/affected = location_air.remove_ratio(volume/location_air.volume)
 		if(affected) //in case volume is 0
 			reference = affected // Our color and volume will depend on this small sparked gasmix

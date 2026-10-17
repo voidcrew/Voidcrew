@@ -35,6 +35,7 @@
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/snow_storm/start()
+	// VOIDCREW EDIT REMOVAL: Preserve independent snow storm sounds across sites.
 	for(var/area/impacted_area as anything in impacted_areas)
 		active_sounds[impacted_area] = /datum/looping_sound/snowstorm
 	GLOB.snowstorm_sounds += active_sounds
@@ -43,6 +44,7 @@
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/snow_storm/end()
+	// VOIDCREW EDIT: Preserve independent snow storm sounds across sites.
 	GLOB.snowstorm_sounds -= active_sounds
 	return ..()
 

@@ -39,15 +39,19 @@
 	// Voidcrew: ships are their own NTNet node, and the broadcast is scoped to one of them.
 	// The global signal reaches every receiver in the world, so without this a crew could
 	// read - and jam - the circuit traffic of a ship they have never met.
+	// VOIDCREW EDIT START: circuits restricts NTNet reception to the sender ship network.
 	var/turf/our_turf = get_circuit_turf(parent)
 	if(!ntnet_reachable_from(our_turf))
+	// VOIDCREW EDIT END
 		return
 	if(data["enc_key"] != enc_key.value)
+		// VOIDCREW EDIT START: circuits restricts NTNet reception to the sender ship network.
 		return
 
 	var/datum/weakref/sender_ref = data["sender"]
 	var/obj/item/circuit_component/sender = sender_ref?.resolve()
 	if(isnull(sender) || !on_same_ship_network(get_circuit_turf(sender.parent), our_turf))
+		// VOIDCREW EDIT END
 		return
 
 	var/datum/weakref/ref = data["port"]

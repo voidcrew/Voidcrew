@@ -26,7 +26,7 @@ GLOBAL_LIST_EMPTY(all_wormholes) // So we can pick wormholes to teleport to
 
 /datum/round_event/wormholes/start()
 	for(var/turf/open/floor/valid in GLOB.station_turfs)
-		// VOIDCREW EDIT ADDITION: 400 portals are seeded out of this list and
+		// VOIDCREW EDIT ADDITION START: overmap - 400 portals are seeded out of this list and
 		// /obj/effect/portal/wormhole/teleport() picks its destination from the GLOBAL
 		// wormhole list with no z or site filter, so a portal on recycled encounter ground
 		// walks a crewmember straight through the five-turf cordon into an unrelated
@@ -38,7 +38,7 @@ GLOBAL_LIST_EMPTY(all_wormholes) // So we can pick wormholes to teleport to
 		// VOIDCREW EDIT END
 		pick_turfs += valid
 
-	// VOIDCREW EDIT ADDITION: pick() on an empty list runtimes, and the filter above can
+	// VOIDCREW EDIT ADDITION START: overmap - pick() on an empty list runtimes, and the filter above can
 	// legitimately empty it (a fleet with no permanent station ground).
 	if(!length(pick_turfs))
 		return

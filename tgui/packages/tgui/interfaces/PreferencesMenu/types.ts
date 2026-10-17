@@ -186,6 +186,7 @@ export type PreferencesMenuData = {
   window: PrefsWindow;
 
   // Voidcrew ship category preferences (from middleware ui_data)
+  // VOIDCREW EDIT: preferences carries ship role categories and priorities.
   ship_category_preferences?: Record<string, JobPriority>;
 };
 
@@ -206,8 +207,10 @@ export type ServerData = {
   };
   species: Record<string, Species>;
   // Voidcrew ship categories (from middleware constant data)
+  // VOIDCREW EDIT START: preferences carries ship role categories and priorities.
   ship_categories?: {
     ship_categories: string[];
   };
+  // VOIDCREW EDIT END
   [otherKey: string]: unknown;
 };

@@ -8,6 +8,7 @@
 	openToolTip(usr,src,params,title = name,content = desc, theme = "blob")
 
 /atom/movable/screen/blob/MouseExited()
+	// VOIDCREW EDIT: Run parent screen initialization for Voidcrew HUD extensions in voidcrew/edits/_onclick/hud.
 	. = ..()
 	closeToolTip(usr)
 

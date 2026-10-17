@@ -256,7 +256,7 @@
 	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 	to_chat(user, span_notice("You successfully disassemble [src]."))
 	// VOIDCREW: this tool path deletes directly, bypassing deconstruct(TRUE).
-	record_ship_fixture_damage(src, disassembled = TRUE)
+	record_ship_fixture_damage(src, disassembled = TRUE) // VOIDCREW EDIT: ship_repairs: distinguish damaged fixtures from deliberate dismantling
 	qdel(src)
 	return ITEM_INTERACT_SUCCESS
 

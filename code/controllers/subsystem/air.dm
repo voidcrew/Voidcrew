@@ -135,6 +135,7 @@ SUBSYSTEM_DEF(air)
 	// outside process_rebuilds() - that block only runs when a queue is non-empty, and an
 	// orphan by definition is not in any queue. Runs before the drain so it can never be
 	// editing networks/expansion_queue while expand_pipeline() is walking them.
+	// VOIDCREW EDIT: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 	reap_orphan_pipelines()
 
 	// Every time we fire, we want to make sure pipenets are rebuilt. The game state could have changed between each fire() proc call
@@ -310,6 +311,7 @@ SUBSYSTEM_DEF(air)
 	// constantly: pipe/nullify_node() queues the neighbour it just disconnected from, and
 	// during a mass deletion that neighbour is very often already in the qdel queue.
 	if(QDELETED(atmos_machine))
+		// VOIDCREW EDIT: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 		return
 	if(istype(atmos_machine, /obj/machinery/atmospherics) && !atmos_machine.rebuilding)
 		rebuild_queue += atmos_machine
@@ -327,6 +329,7 @@ SUBSYSTEM_DEF(air)
 	for(var/list/packet in expansion_queue.Copy())
 		if(packet[SSAIR_REBUILD_PIPELINE] == line)
 			expansion_queue -= packet
+// VOIDCREW EDIT REMOVAL: Remove every queued expansion packet for a deleted pipeline instead of stopping after the first match.
 
 /datum/controller/subsystem/air/proc/process_atoms(resumed = FALSE)
 	if(!resumed)
@@ -428,6 +431,7 @@ SUBSYSTEM_DEF(air)
 			return
 
 /datum/controller/subsystem/air/proc/process_rebuilds()
+	// VOIDCREW EDIT: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 	reap_pipeline_husks()
 	//Yes this does mean rebuilding pipenets can freeze up the subsystem forever, but if we're in that situation something else is very wrong
 	var/list/currentrun = rebuild_queue
@@ -506,11 +510,13 @@ SUBSYSTEM_DEF(air)
 			// expansion_queue, which is the list this very drain is walking. Park it and
 			// let reap_pipeline_husks() take it on a later fire - leaving it was a
 			// permanent member-less pipeline in SSair.networks, one per site build.
+			// VOIDCREW EDIT START: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 			if(stolen_from && stolen_from != net && !QDELETED(stolen_from) && !length(stolen_from.members) && !length(stolen_from.other_atmos_machines))
 				if(stolen_from.building)
 					pipeline_husks |= stolen_from
 				else
 					qdel(stolen_from)
+			// VOIDCREW EDIT END
 
 			if(item.air_temporary)
 				net.air.merge(item.air_temporary)
@@ -770,6 +776,7 @@ SUBSYSTEM_DEF(air)
 		// pipeline into SSair.networks, and a machine that deleted itself during its own
 		// Initialize() will never delete that pipeline again.
 		if(QDELETED(AM))
+			// VOIDCREW EDIT: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 			continue
 		var/list/targets = AM.get_rebuild_targets()
 		for(var/datum/pipeline/build_off as anything in targets)
@@ -804,6 +811,7 @@ GLOBAL_LIST_EMPTY(colored_images)
 		// (stacked pipes on one turf, which every voidcrew hull has some of). Minting a
 		// pipeline for it leaks one per template load, and this soak loads constantly.
 		if(QDELETED(AM))
+			// VOIDCREW EDIT: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 			continue
 		var/list/targets = AM.get_rebuild_targets()
 		for(var/datum/pipeline/build_off as anything in targets)
@@ -863,8 +871,10 @@ GLOBAL_LIST_EMPTY(colored_images)
 		// ADD_GAS below then indexes a null list once per turf that uses the string.
 		// Warn once for the mix instead and leave that component out.
 		if(!ispath(path))
+			// VOIDCREW EDIT START: Keep atmos rebuild cleanup safe across repeated site loads (voidcrew/edits/controllers/subsystem/air.dm).
 			stack_trace("parse_gas_string(): unknown gas id \"[id]\" in gas string \"[gas_string]\" - ignoring it.")
 			continue
+			// VOIDCREW EDIT END
 		ADD_GAS(path, gases)
 		gases[path][MOLES] = text2num(gas[id])
 

@@ -28,8 +28,10 @@
 
 	var/postfix = "[sobject][saddition][hp]"
 	// VOIDCREW: ranged attacks can cross hulls; preserve the target's location too.
+	// VOIDCREW EDIT START: Record the target ship and overmap zone for cross-hull attacks (voidcrew/modules/admin).
 	if(target && target != user)
 		postfix += " \[Target location: [overmap_zone_log_context(target)]\]"
+	// VOIDCREW EDIT END
 
 	var/message = "[what_done] [starget][postfix]"
 	user.log_message(message, LOG_ATTACK, color="red")

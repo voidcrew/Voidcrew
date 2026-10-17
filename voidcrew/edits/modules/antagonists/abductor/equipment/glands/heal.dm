@@ -7,7 +7,6 @@
 /// Removal invalidates pending work even if this gland returns to the same body.
 /obj/item/organ/heart/gland/heal/proc/can_finish_healing(mob/living/carbon/recipient, generation)
 	return !QDELETED(src) && !QDELETED(recipient) && owner == recipient && active && generation == healing_generation && ownerCheck()
-// VOIDCREW ADD END
 
 /obj/item/organ/heart/gland/heal
 	var/healing_generation = 0

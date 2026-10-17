@@ -526,30 +526,38 @@ GLOBAL_LIST_INIT(specific_fish_icons, generate_specific_fish_icons())
 		return
 	// VOIDCREW EDIT: water gets one low-chance roll per tile, independent of other blasts.
 	var/is_water = iswaterturf(location)
+	// VOIDCREW EDIT START: mining limits explosive water catches and preserves shared rare fish.
 	var/reward_attempts = severity + 2
 	var/reward_chance = 100 + 100 * severity
+	// VOIDCREW EDIT END
 	var/multiplier = 1
+	// VOIDCREW EDIT START: mining limits explosive water catches and preserves shared rare fish.
 	if(is_water)
 		reward_attempts = 1
 		reward_chance = 2 * severity // 2% light, 4% heavy, 6% devastation.
 	else if(fish_source_flags & FISH_SOURCE_FLAG_EXPLOSIVE_MALUS)
+	// VOIDCREW EDIT END
 		if(explosive_fishing_score <= 0)
 			explosive_fishing_score = 1
 			START_PROCESSING(SSprocessing, src)
 		else
 			explosive_fishing_score++
 			multiplier = explosive_fishing_score**-EXPLOSIVE_FISHING_MALUS_EXPONENT
+	// VOIDCREW EDIT START: mining limits explosive water catches and preserves shared rare fish.
 	for(var/i in 1 to reward_attempts)
 		if(!prob(reward_chance / i * multiplier))
+	// VOIDCREW EDIT END
 			continue
+		// VOIDCREW EDIT START: mining limits explosive water catches and preserves shared rare fish.
 		var/list/reward_table = get_fish_table(location, from_explosion = TRUE)
-		// VOIDCREW ADDITION START: water blasts must not deplete shared rare catches for other players.
+		// VOIDCREW EDIT ADDITION START: water blasts must not deplete shared rare catches for other players.
 		if(is_water)
 			reward_table -= fish_counts
 		if(!length(reward_table))
 			return
-		// VOIDCREW ADDITION END
+		// VOIDCREW EDIT ADDITION END
 		var/reward_loot = pick_weight(reward_table)
+		// VOIDCREW EDIT END
 		var/atom/spawn_location = isturf(location) ? location : location.drop_location()
 		var/atom/movable/reward = simple_dispense_reward(reward_loot, spawn_location, location)
 		if(isnull(reward))

@@ -192,11 +192,11 @@
 	var/power_usage = active_power_usage * seconds_per_tick
 	if(machine_stat & (BROKEN))
 		return
-	if(!welded)
+	if(!welded) // VOIDCREW EDIT: shuttle power integration: preserve enabled emitters while a hull powernet reconnects (voidcrew/edits/machinery/power.dm)
 		active = FALSE
 		update_appearance()
 		return
-	if(!powernet && power_usage)
+	if(!powernet && power_usage) // VOIDCREW EDIT: shuttle power integration: preserve enabled emitters while a hull powernet reconnects (voidcrew/edits/machinery/power.dm)
 		// VOIDCREW EDIT CHANGE - original: `if(!welded || (!powernet && power_usage))` above.
 		// A ship jump severs the hull cables of any net that reaches past the hull in
 		// cable/beforeShuttleMove() (self-contained nets now travel intact, see
@@ -207,12 +207,14 @@
 		// merely being rebuilt: reconnect or wait. Only an actually missing cable turns the
 		// emitter off.
 		var/turf/here = loc
+		// VOIDCREW EDIT START - shuttle power integration: preserve enabled emitters while a hull powernet reconnects (voidcrew/edits/machinery/power.dm)
 		if(!connect_to_network() && isturf(here) && here.get_cable_node(cable_layer))
 			return
 		if(!powernet)
 			active = FALSE
 			update_appearance()
 			return
+		// VOIDCREW EDIT END
 	if(!active)
 		return
 	if(power_usage && surplus() < power_usage)

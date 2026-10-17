@@ -58,13 +58,16 @@
 
 	return FALSE
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
+// VOIDCREW EDIT: cargo refuses station supply apps without a supply shuttle; implementation in voidcrew/edits/modules/modular_computers/file_system/programs/budgetordering.dm.
+
 /datum/computer_file/program/budgetorders/ui_data(mob/user)
 	var/list/data = list()
 	// can_run() should stop us ever opening without a supply shuttle, but a half filled
 	// in app is still a far better failure than the blue screen a runtime here causes.
+	// VOIDCREW EDIT START: cargo handles the absent station supply shuttle in the budget app.
 	var/obj/docking_port/mobile/supply/supply_shuttle = SSshuttle.supply
 	data["location"] = supply_shuttle ? supply_shuttle.getStatusText() : "OFFLINE"
+	// VOIDCREW EDIT END
 	data["department"] = "Cargo"
 	var/datum/bank_account/buyer = SSeconomy.get_dep_account(cargo_account)
 	var/obj/item/card/id/id_card = computer.computer_id_slot?.GetID()
@@ -114,9 +117,9 @@
 
 	//Data regarding the User's capability to buy things.
 	data["has_id"] = id_card
-	data["away"] = supply_shuttle ? (supply_shuttle.getDockedId() == docking_away) : FALSE
+	data["away"] = supply_shuttle ? (supply_shuttle.getDockedId() == docking_away) : FALSE // VOIDCREW EDIT: cargo handles the absent station supply shuttle in the budget app.
 	data["self_paid"] = self_paid
-	data["docked"] = supply_shuttle ? (supply_shuttle.mode == SHUTTLE_IDLE) : FALSE
+	data["docked"] = supply_shuttle ? (supply_shuttle.mode == SHUTTLE_IDLE) : FALSE // VOIDCREW EDIT: cargo handles the absent station supply shuttle in the budget app.
 	data["loan"] = !!SSshuttle.shuttle_loan
 	data["loan_dispatched"] = SSshuttle.shuttle_loan && SSshuttle.shuttle_loan.dispatched
 	data["can_send"] = FALSE //There is no situation where I want the app to be able to send the shuttle AWAY from the station, but conversely is fine.
@@ -171,19 +174,19 @@
 
 	return data
 
-// VOIDCREW EDIT END
 /datum/computer_file/program/budgetorders/ui_static_data(mob/user)
 	var/list/data = list()
 	data["max_order"] = CARGO_MAX_ORDER
 	return data
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/computer_file/program/budgetorders/ui_act(action, params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	// Same reasoning as ui_data(): every branch below assumes a station supply shuttle,
 	// and there isn't one here. Nothing this app does is meaningful without it.
+	// VOIDCREW EDIT START: cargo handles the absent station supply shuttle in the budget app.
 	if(isnull(SSshuttle.supply))
 		return
+	// VOIDCREW EDIT END
 	switch(action)
 		if("send")
 			if(!SSshuttle.supply.canMove())
@@ -323,7 +326,6 @@
 	if(.)
 		post_signal(cargo_shuttle)
 
-// VOIDCREW EDIT END
 /datum/computer_file/program/budgetorders/proc/post_signal(command)
 
 	var/datum/radio_frequency/frequency = SSradio.return_frequency(FREQ_STATUS_DISPLAYS)

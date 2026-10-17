@@ -37,6 +37,7 @@ type UserData = {
   account_holder: string;
   account_assignment: string;
   accesses: string[];
+  // VOIDCREW EDIT: research tolerates missing silo entries and matches the backend user record.
   chameleon_override: string | null;
   silicon_override: string | null;
   id_read_failure: string | null;
@@ -50,6 +51,7 @@ type Log = {
   amount: number;
   time: string;
   noun: string;
+  // VOIDCREW EDIT: research tolerates missing silo entries and matches the backend user record.
   user_data: UserData | null;
 };
 
@@ -151,6 +153,7 @@ const MachineList = (props: MachineListProps) => {
 
   return machines.length > 0 ? (
     <Section fill scrollable>
+      {/* VOIDCREW EDIT START: research tolerates missing silo entries and matches the backend user record. */}
       {machines.map(
         (machine, index) =>
           // VOIDCREW EDIT: a null entry killed the whole window; keep the index so
@@ -164,6 +167,7 @@ const MachineList = (props: MachineListProps) => {
             />
           ),
       )}
+      {/* VOIDCREW EDIT END */}
     </Section>
   ) : (
     <NoticeBox>No machines connected!</NoticeBox>
@@ -283,6 +287,7 @@ const LogsList = (props: LogsListProps) => {
 };
 
 const UserItem = (props: UserData) => {
+  // VOIDCREW EDIT: research tolerates missing silo entries and matches the backend user record.
   const { account_id, silicon_override, id_read_failure } = props;
   const { name, assignment } = describeUser(props); // VOIDCREW EDIT - was reading name/assignment straight off the record
   const { act, data } = useBackend<Data>();
@@ -330,6 +335,7 @@ const LogEntry = (props: Log) => {
   const user = describeUser(user_data); // VOIDCREW EDIT - user_data can be absent on machine-driven entries
   return (
     <Collapsible
+      // VOIDCREW EDIT: research tolerates missing silo entries and matches the backend user record.
       title={`${action.toUpperCase()} ${formatAmount(action, amount)} ${noun}, [${user.name} | ${user.assignment.toUpperCase()}]`}
     >
       <Section className="__LogEntry">
@@ -346,6 +352,7 @@ const LogEntry = (props: Log) => {
             {raw_materials}
           </LabeledList.Item>
           <LabeledList.Item label="User">
+            {/* VOIDCREW EDIT: research tolerates missing silo entries and matches the backend user record. */}
             {user_data ? <UserItem {...user_data} /> : user.name}
           </LabeledList.Item>
         </LabeledList>

@@ -63,7 +63,7 @@
 	//SDMM supports colors, this is simply for easier mapping
 	//and should be removed on initialize
 	color = MAP_SWITCH(null, COLOR_ORANGE_BROWN)
-	base_decon_state = "rusty_wall"
+	base_decon_state = "rusty_wall" // VOIDCREW EDIT: Voidcrew wall integration: use the rusty wall deconstruction icon state (voidcrew/edits)
 
 // VOIDCREW EDIT END
 /turf/closed/wall/r_wall/rust/Initialize(mapload)

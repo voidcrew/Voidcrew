@@ -16,4 +16,3 @@
 		return
 
 	wall.remove_filter("rust_wall")
-// END VOIDCREW EDIT

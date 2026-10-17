@@ -215,6 +215,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 		// all pass `our_hud?.mymob`). hide_from() below tolerates that, so this must too -
 		// a runtime here aborts whatever loop is walking the plane masters and leaves the
 		// client with planes nothing is managing.
+		// VOIDCREW EDIT: Tolerate detached HUD mobs while hiding and restoring plane masters.
 		var/client/our_client = relevant?.client
 		if(our_client)
 			for(var/atom/movable/render_plane_relay/relay as anything in relays)
@@ -234,6 +235,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 
 		if(!(critical & PLANE_CRITICAL_NO_RELAY))
 			return
+		// VOIDCREW EDIT: Tolerate detached HUD mobs while hiding and restoring plane masters.
 		var/client/our_client = relevant?.client
 		if(our_client)
 			for(var/atom/movable/render_plane_relay/relay as anything in relays)

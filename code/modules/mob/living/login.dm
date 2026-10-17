@@ -6,7 +6,7 @@
 	//Mind updates
 	sync_mind()
 	// VOIDCREW: retain physical boarding history across reconnects.
-	LoadComponent(/datum/component/ship_zone_logging)
+	LoadComponent(/datum/component/ship_zone_logging) // VOIDCREW EDIT: overmap logging: retain ship boarding history on reconnect
 
 	update_damage_hud()
 	update_health_hud()

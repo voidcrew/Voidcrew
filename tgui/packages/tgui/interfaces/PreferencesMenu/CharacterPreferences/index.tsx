@@ -6,14 +6,18 @@ import { exhaustiveCheck } from 'tgui-core/exhaustive';
 
 import { PageButton } from '../components/PageButton';
 import type { PreferencesMenuData } from '../types';
+// VOIDCREW EDIT REMOVAL: preferences replaces station occupations and antagonists with ship roles.
 import { LoadoutPage } from './loadout';
 import { MainPage } from './MainPage';
 import { QuirksPage } from './QuirksPage';
-import { ShipCategoriesPage } from './ShipCategoriesPage';
+// VOIDCREW EDIT: preferences replaces station occupations and antagonists with ship roles.
+import { ShipCategoriesPage } from '../../../../voidcrew_tgui/interfaces/PreferencesMenu/CharacterPreferences/ShipCategoriesPage';
 import { SpeciesPage } from './SpeciesPage';
 
 enum Page {
+  // VOIDCREW EDIT REMOVAL: preferences replaces station occupations and antagonists with ship roles.
   Main,
+  // VOIDCREW EDIT: preferences replaces station occupations and antagonists with ship roles.
   ShipCategories,
   Species,
   Quirks,
@@ -56,8 +60,10 @@ export function CharacterPreferenceWindow(props) {
   let pageContents;
 
   switch (currentPage) {
+    // VOIDCREW EDIT START: preferences replaces station occupations and antagonists with ship roles.
     case Page.ShipCategories:
       pageContents = <ShipCategoriesPage />;
+    // VOIDCREW EDIT END
       break;
     case Page.Main:
       pageContents = (
@@ -128,9 +134,11 @@ export function CharacterPreferenceWindow(props) {
           <Stack.Item grow>
             <PageButton
               currentPage={currentPage}
+              // VOIDCREW EDIT: preferences replaces station occupations and antagonists with ship roles.
               page={Page.ShipCategories}
               setPage={setCurrentPage}
             >
+              {/* VOIDCREW EDIT: preferences replaces station occupations and antagonists with ship roles. */}
               Ship Roles
             </PageButton>
           </Stack.Item>

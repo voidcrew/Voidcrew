@@ -270,7 +270,7 @@
 /obj/item/reagent_containers/proc/on_reagent_change(datum/reagents/holder, ...)
 	SIGNAL_HANDLER
 	update_appearance()
-	//VOIDCREW EDIT ADDITION: lets reagents react to their own container changing (Australium)
+	//VOIDCREW EDIT ADDITION START: lets reagents react to their own container changing (Australium) - Voidcrew reagents: reprocess container-sensitive reagents after a container change (voidcrew/modules/chemistry)
 	reagent_processing()
 	//VOIDCREW EDIT END
 

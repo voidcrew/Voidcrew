@@ -1396,6 +1396,8 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
 
+// VOIDCREW EDIT: research exposes ship-buildable bitrunning boards; implementation in voidcrew/edits/modules/research/designs/machine_designs.dm.
+
 /datum/design/board/netpod
 	name = "Netpod Board"
 	desc = "The circuit board for a netpod."

@@ -31,7 +31,7 @@
 	if(mapload && prob(33))
 		MakeDirty()
 
-	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// VOIDCREW EDIT CHANGE START: never register ALLOCATOR-DEALT ground - original was - overmap: contain observers and effects within their packed encounter
 	// `if(is_station_level(z))`. See the matching comment on /turf/closed/wall/Initialize().
 	if(is_station_level(z) && !map_region_for_turf(src))
 		GLOB.station_turfs += src
@@ -44,7 +44,7 @@
 	return list()
 
 /turf/open/floor/Destroy()
-	// VOIDCREW EDIT CHANGE: symmetric with the guard in Initialize() - original was
+	// VOIDCREW EDIT CHANGE START: symmetric with the guard in Initialize() - original was - overmap: contain observers and effects within their packed encounter
 	// `if(is_station_level(z))`. See /turf/closed/wall/Destroy().
 	if(length(GLOB.station_turfs) && !map_region_for_turf(src))
 		GLOB.station_turfs -= src
@@ -122,7 +122,7 @@
 	if(!ispath(path, /turf/open/floor))
 		return ..()
 	var/old_dir = dir
-	// VOIDCREW EDIT ADDITION: when the map loader is the caller it has already queued the
+	// VOIDCREW EDIT ADDITION START: when the map loader is the caller it has already queued the - ship_upgrades: retain mapped floor directions when loading modules onto hull plating
 	// mapped vars - dir included - for /atom/New() to apply to the turf ..() creates.
 	// Restoring old_dir below would then stomp that with whatever floor sat here before.
 	// Ship upgrade modules load onto hull plating, every tile of which faces SOUTH, so
@@ -172,6 +172,7 @@
 // VOIDCREW EDIT START - PR #395: Keep mapped floor dir when a ship module loads over hull plating.
 /turf/open/floor/proc/remove_tile(mob/user, silent = FALSE, make_tile = TRUE, force_plating)
 	// VOIDCREW: taking up tiles with a tool is deliberate remodeling.
+	// VOIDCREW EDIT START - ship_repairs: deliberate remodeling supersedes pending repairs
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/repair_controller
 	if(user)
 		repair_controller = SSship_repairs.area_controllers[get_area(src)]
@@ -179,6 +180,7 @@
 	if(repair_controller)
 		repair_controller.forget_repair_record(repair_controller.repair_coordinate_key(src))
 		repair_controller.repair_applying = TRUE
+	// VOIDCREW EDIT END
 	if(broken || burnt)
 		broken = FALSE
 		burnt = FALSE
@@ -189,9 +191,11 @@
 			to_chat(user, span_notice("You remove the floor tile."))
 		if(make_tile)
 			spawn_tile()
+	// VOIDCREW EDIT START - ship_repairs: deliberate remodeling supersedes pending repairs
 	. = make_plating(force_plating)
 	if(repair_controller)
 		repair_controller.repair_applying = was_repairing
+	// VOIDCREW EDIT END
 
 // VOIDCREW EDIT END
 /turf/open/floor/proc/has_tile()
@@ -313,11 +317,13 @@
 			if(!initial(window_path.fulltile))
 				//not user.dir: a remotely driven RCD builds where its drone is looking, not
 				//where the body credited with the build happens to be pointing
+				// VOIDCREW EDIT START - shuttle construction: directional builds follow the remote drone (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 				var/build_dir = the_rcd.rcd_build_dir(user)
 				if(!valid_build_direction(src, build_dir, is_fulltile = FALSE))
+				// VOIDCREW EDIT END
 					balloon_alert(user, "window already here!")
 					return FALSE
-				var/obj/structure/window/WD = new window_path(src, build_dir)
+				var/obj/structure/window/WD = new window_path(src, build_dir) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 				WD.set_anchored(TRUE)
 				return TRUE
 
@@ -332,8 +338,10 @@
 
 			if(ispath(airlock_type, /obj/machinery/door/window))
 				//see the window branch above - the drone's facing, not the operator's
+				// VOIDCREW EDIT START - shuttle construction: directional builds follow the remote drone (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 				var/build_dir = the_rcd.rcd_build_dir(user)
 				if(!valid_build_direction(src, build_dir, is_fulltile = FALSE))
+				// VOIDCREW EDIT END
 					balloon_alert(user, "there's already a windoor!")
 					return FALSE
 				for(var/obj/machinery/door/door in src)
@@ -342,7 +350,7 @@
 					balloon_alert(user, "there's already a door!")
 					return FALSE
 				//create the assembly and let it finish itself
-				var/obj/structure/windoor_assembly/assembly = new (src, build_dir)
+				var/obj/structure/windoor_assembly/assembly = new (src, build_dir) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 				assembly.secure = ispath(airlock_type, /obj/machinery/door/window/brigdoor)
 				assembly.electronics = the_rcd.airlock_electronics.create_copy(assembly)
 				assembly.finish_door()
@@ -386,7 +394,7 @@
 			)
 			if(is_path_in_list(locate_type, dir_types))
 				//see the window branch above - the drone's facing, not the operator's
-				design.setDir(the_rcd.rcd_build_dir(user))
+				design.setDir(the_rcd.rcd_build_dir(user)) // VOIDCREW EDIT: shuttle construction: directional builds follow the remote drone (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 			return TRUE
 		if(RCD_DECONSTRUCT)
 			if(rcd_proof)

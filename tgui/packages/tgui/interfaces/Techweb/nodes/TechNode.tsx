@@ -207,6 +207,7 @@ export function TechNode(props: Props) {
             if (thisExp === null || thisExp === undefined) {
               return <LockedExperiment key={index} />;
             }
+            // VOIDCREW EDIT: research keys experiment rows by their stable node identifier.
             return <Experiment key={k} exp={thisExp} />;
           })}
         </Collapsible>
@@ -222,6 +223,7 @@ export function TechNode(props: Props) {
               return <LockedExperiment key={index} />;
             }
             return (
+              // VOIDCREW EDIT: research keys experiment rows by their stable node identifier.
               <Experiment key={k} exp={thisExp}>
                 <Box className="Techweb__ExperimentDiscount">
                   Provides a discount of {discount_experiments[k]} points to all

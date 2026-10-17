@@ -79,7 +79,7 @@
 		return
 	// Close open air tank if it got dropped by its current user.
 	if (loc != breathing_mob)
-		breathing_mob.cutoff_internals("tank dropped by [user], now in [loc] ([loc?.type])")
+		breathing_mob.cutoff_internals("tank dropped by [user], now in [loc] ([loc?.type])") // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 
 /// Closes the tank if given to another mob while open.
 // VOIDCREW EDIT END
@@ -88,7 +88,7 @@
 	. = ..()
 	// Close open air tank if it was equipped by a mob other than the current user.
 	if (breathing_mob && (user != breathing_mob))
-		breathing_mob.cutoff_internals("tank equipped to slot [slot] by [user || "NULL USER"]")
+		breathing_mob.cutoff_internals("tank equipped to slot [slot] by [user || "NULL USER"]") // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 
 /// Called by carbons after they connect the tank to their breathing apparatus.
 // VOIDCREW EDIT END

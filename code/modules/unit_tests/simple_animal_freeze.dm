@@ -32,6 +32,7 @@
 		// Voidcrew: mining and wasteland fauna carried over from the fork's original
 		// mob set, grandfathered here so the freeze still catches genuinely new
 		// simple animals. They are queued for the basic mob refactor like the rest.
+		// VOIDCREW EDIT START: unit_tests retains the existing mining fauna during basic-mob migration.
 		/mob/living/simple_animal/hostile/asteroid/hermit,
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged,
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger,
@@ -39,10 +40,13 @@
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random,
 		/mob/living/simple_animal/hostile/asteroid/old_demon,
+		// VOIDCREW EDIT END
 		/mob/living/simple_animal/hostile/asteroid/polarbear,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/lesser,
+		// VOIDCREW EDIT START: unit_tests retains the existing mining fauna during basic-mob migration.
 		/mob/living/simple_animal/hostile/asteroid/polarbear/random,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
+		// VOIDCREW EDIT END
 		/mob/living/simple_animal/hostile/illusion,
 		/mob/living/simple_animal/hostile/illusion/escape,
 		/mob/living/simple_animal/hostile/illusion/mirage,

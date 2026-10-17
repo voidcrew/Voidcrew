@@ -294,7 +294,7 @@
 		return
 
 	if(istype(attack_target, /obj/item/rpd_upgrade))
-		return install_upgrade(attack_target, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
+		return install_upgrade(attack_target, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING // VOIDCREW EDIT: construction tools: share disk installation between both item interaction directions (voidcrew/edits/game/objects/items/rcd/RPD.dm)
 
 	//So that changing the menu settings doesn't affect the pipes already being built.
 	var/queued_pipe_type = recipe.id

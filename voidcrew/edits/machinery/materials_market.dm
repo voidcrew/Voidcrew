@@ -1,5 +1,5 @@
 /**
- * VOIDCREW EDIT: the Galactic Materials Market, aboard a ship.
+ * Voidcrew: the Galactic Materials Market, aboard a ship.
  *
  * The stock machine is a fixture of a station cargo department: it quotes against
  * ACCOUNT_CAR or the buyer's own ID, gates the budget on ACCESS_CARGO, and files its

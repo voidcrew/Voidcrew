@@ -100,14 +100,14 @@
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preference_middleware/loadout/get_ui_data(mob/user)
 	var/list/data = list()
-	data["job_clothes"] = preferences.get_character_preview_view(user)?.show_job_clothes
+	data["job_clothes"] = preferences.get_character_preview_view(user)?.show_job_clothes // VOIDCREW EDIT: preferences recovers missing loadout preview views.
 	return data
 
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/preference_middleware/loadout/get_ui_static_data(mob/user)
 	var/list/data = list()
-	data["loadout_preview_view"] = preferences.get_character_preview_view(user)?.assigned_map
+	data["loadout_preview_view"] = preferences.get_character_preview_view(user)?.assigned_map // VOIDCREW EDIT: preferences recovers missing loadout preview views.
 	return data
 
 // VOIDCREW EDIT END

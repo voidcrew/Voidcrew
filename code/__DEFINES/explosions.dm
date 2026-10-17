@@ -20,6 +20,7 @@
 
 /// A wrapper for [/atom/proc/ex_act] to ensure that the explosion propagation and attendant signal are always handled.
 /// VOIDCREW: recheck outpost protection when queued or direct damage is applied.
+// VOIDCREW EDIT START: Block explosions on protected trader outposts before contents and signals fire (voidcrew/modules/trade/outpost_security.dm).
 #define EX_ACT(target, args...)\
 	if(!is_trader_outpost_protected(target)) { \
 		if(!(target.flags_1 & PREVENT_CONTENTS_EXPLOSION_1)) { \
@@ -30,6 +31,7 @@
 			target.ex_act(##args);\
 		} \
 	}
+// VOIDCREW EDIT END
 
 // Internal explosion argument list keys.
 // Must match the arguments to [/datum/controller/subsystem/explosions/proc/propagate_blastwave]

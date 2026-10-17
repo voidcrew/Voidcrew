@@ -48,6 +48,7 @@ export const NtosSkillTracker = (props) => {
                           %
                         </ProgressBar>
                       ) : (
+                        // VOIDCREW EDIT: preferences uses client-compatible fallback glyphs.
                         '-'
                       )}
                     </Table.Cell>
@@ -65,6 +66,7 @@ export const NtosSkillTracker = (props) => {
                           %
                         </ProgressBar>
                       ) : (
+                        // VOIDCREW EDIT: preferences uses client-compatible fallback glyphs.
                         '-'
                       )}
                     </Table.Cell>
