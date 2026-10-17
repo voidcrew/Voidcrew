@@ -62,7 +62,7 @@
 		ai_target = owner.ai_controller?.blackboard[ai_target_key]
 
 	var/target_dir = get_dir(owner, target)
-	owner.get_npc_spawn_context() // npc_scaling: pin the source before the landing delay.
+	owner.get_npc_spawn_context() // VOIDCREW EDIT: npc_scaling: pin the source before the landing delay.
 
 	var/obj/effect/temp_visual/legion_skull_depart/launch = new(get_turf(owner))
 	launch.set_appearance(spawn_type)

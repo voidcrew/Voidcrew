@@ -204,7 +204,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 // VOIDCREW EDIT END
 
 	var/list/results = list()
-	// voidcrew/modules/nanites: Monitoring shares the same scoped sensor feed.
+	// VOIDCREW EDIT: nanite Monitoring shares the same scoped sensor feed (voidcrew/modules/nanites).
 	for(var/tracked_mob in (GLOB.suit_sensors_list | SSnanites.nanite_monitored_mobs))
 		if(!tracked_mob)
 			stack_trace("Null entry in suit sensors list.")
@@ -226,6 +226,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z, source_turf)) // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 			continue
 
+		// VOIDCREW EDIT CHANGE START - nanites: Monitoring reports without a uniform (voidcrew/modules/nanites).
 		var/monitored = (tracked_living_mob in SSnanites.nanite_monitored_mobs)
 		var/obj/item/clothing/under/uniform
 		var/sensor_mode = SENSOR_COORDS
@@ -244,6 +245,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 				stack_trace("Human without active suit sensors is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
 				continue
 			sensor_mode = uniform.sensor_mode
+		// VOIDCREW EDIT CHANGE END
 
 		// The entry for this human
 		var/list/entry = list(
@@ -262,7 +264,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 				entry["ijob"] = jobs[trim_assignment]
 
 		// Broken sensors show garbage data
-		if (!monitored && uniform.has_sensor == BROKEN_SENSORS)
+		if (!monitored && uniform.has_sensor == BROKEN_SENSORS) // VOIDCREW EDIT: nanite Monitoring has no uniform.
 			entry["life_status"] = rand(0,1)
 			entry["area"] = pick_list (ION_FILE, "ionarea")
 			entry["oxydam"] = rand(0,175)

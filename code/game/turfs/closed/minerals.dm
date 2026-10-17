@@ -318,6 +318,7 @@
 	)
 
 /turf/closed/mineral/random/Initialize(mapload)
+	// VOIDCREW EDIT REMOVAL: ore choices come from zone profiles below, not a per-type cache.
 	. = ..()
 	// VOIDCREW EDIT ADDITION START - zone profiles, independent of vent proximity (mining/ore_profiles.dm).
 	if (ore_initial_roll())

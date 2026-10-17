@@ -123,8 +123,10 @@
 		if(do_after(user, boulder_size * 1 SECONDS, src))
 			user.apply_damage(20, STAMINA)
 			playsound(src, 'sound/items/weapons/genhit.ogg', 50, TRUE)
-	if(produce_boulder(TRUE)) // VOIDCREW EDIT: exhausted vents produce nothing.
+	// VOIDCREW EDIT CHANGE START - exhausted vents produce nothing (mining/ore_vents.dm).
+	if(produce_boulder(TRUE))
 		visible_message(span_notice("A boulder breaks free!"))
+	// VOIDCREW EDIT CHANGE END
 
 /obj/structure/ore_vent/attack_basic_mob(mob/user, list/modifiers)
 	. = ..()
@@ -424,6 +426,7 @@
 		new_rock = new /obj/item/boulder(loc)
 	Shake(duration = 1.5 SECONDS)
 
+	// VOIDCREW EDIT REMOVAL: the materials are rolled and debited before the boulder is made, above.
 	new_rock.set_custom_materials(mats_list)
 
 	//set size & durability
