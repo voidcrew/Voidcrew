@@ -294,6 +294,29 @@
 
 // ===== LIFECYCLE AND THE ZONE SEAM =====
 
+/// The placement walk follows railings without crossing their blocked edges.
+/datum/unit_test/voidcrew_outpost_network_pad_edges/Run()
+	var/obj/structure/overmap/trader_outpost/market = allocate(/obj/structure/overmap/trader_outpost/general)
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/destination = get_step(start, NORTH)
+	var/obj/structure/railing/unbreakable/railing = allocate(/obj/structure/railing/unbreakable, start)
+	railing.setDir(EAST)
+	TEST_ASSERT(!market.network_pad_step_blocked(start, destination), "A side railing blocked travel along the walkway")
+	railing.setDir(NORTH)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "The placement walk crossed a railing on its starting tile")
+	railing.setDir(NORTHEAST)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "The placement walk crossed a corner railing")
+	railing.forceMove(destination)
+	railing.setDir(SOUTH)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "The placement walk crossed a railing on its destination tile")
+	railing.setDir(EAST)
+	TEST_ASSERT(!market.network_pad_step_blocked(start, destination), "A destination's side railing blocked travel along the walkway")
+	var/obj/structure/table/obstruction = allocate(/obj/structure/table, destination)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "The placement walk passed through dense furniture")
+	qdel(obstruction)
+	allocate(/obj/machinery/door/airlock/outpost/checkpoint, destination)
+	TEST_ASSERT(!market.network_pad_step_blocked(start, destination), "A checkpoint door blocked the placement search")
+
 /datum/unit_test/voidcrew_outpost_network_lifecycle
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -325,20 +348,26 @@
 	TEST_ASSERT_EQUAL(account.account_balance, 1000, "A trip to a deleted pad charged the traveller")
 	TEST_ASSERT_NULL(room_b.pad_ref?.resolve(), "The room kept a deleted pad")
 
-	// Trading outposts get a public pad at load, if the test world has any
+	// Exercise every checkpoint layout even when the test world has no loaded traders.
+	var/list/markets = GLOB.trader_outposts.Copy()
+	for(var/market_type in list(/obj/structure/overmap/trader_outpost/general, /obj/structure/overmap/trader_outpost/outfitter, /obj/structure/overmap/trader_outpost/black_market))
+		var/obj/structure/overmap/trader_outpost/market = allocate(market_type)
+		TEST_ASSERT(market.load_level(), "Could not load [market_type] for the network placement check")
+		markets += market
+	// Trading outposts get exactly one public pad in their connected concourse.
 	var/checked = 0
-	for(var/obj/structure/overmap/trader_outpost/market as anything in GLOB.trader_outposts)
+	for(var/obj/structure/overmap/trader_outpost/market as anything in markets)
 		if(!market.loaded)
 			continue
 		var/obj/machinery/outpost_network_pad/trader/public_pad = market.network_pad_ref?.resolve()
 		TEST_ASSERT(istype(public_pad), "[market.name] has no network pad")
+		TEST_ASSERT_EQUAL(market.spawn_network_pad(), public_pad, "[market.name] duplicated its network pad")
 		TEST_ASSERT(istype(get_area(public_pad), /area/voidcrew/trader_outpost), "[market.name]'s pad is outside its concourse")
 		TEST_ASSERT(!(get_turf(public_pad) in market.lobby_alcove_turfs), "[market.name]'s pad is in the elevator alcove")
 		TEST_ASSERT_NULL(public_pad.arrival_tile_denial(), "[market.name]'s arrival spot is blocked")
 		TEST_ASSERT_EQUAL(public_pad.arrival_denial(visitor, public_pad), "No route", "A trader pad routes to itself")
 		checked++
-	if(!checked)
-		log_test("No trading outpost is loaded in this test world; trader pads were not checked.")
+	TEST_ASSERT(checked >= 3, "The three trader checkpoint layouts were not checked")
 	network_test_cleanup(rig)
 
 // ===== ONE CHARGE PER PAD, BUSY RULES, CLUTTER (abuse review B-06, B-11, B-12, B-14) =====

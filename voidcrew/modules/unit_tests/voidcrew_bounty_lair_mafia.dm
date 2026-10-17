@@ -288,7 +288,9 @@
 	var/mob/living/basic/bounty_lair_boss/mafia_mech/mech = allocate(/mob/living/basic/bounty_lair_boss/mafia_mech, spot(2, 2))
 	mech.finalize_npc_zone(allocate(/datum/npc_spawn_context, src, 3, "boss"))
 	TEST_ASSERT(!ispath(mech.type, /mob/living/basic/boss), "The mech is a megafauna boss")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 455, "The mech doesn't start at its one-hunter health") // BOUNTY_MECH_HEALTH_1
+	TEST_ASSERT_EQUAL(mech.npc_zone_role, "boss", "The mech must use the boss zone profile")
+	TEST_ASSERT(abs(mech.npc_zone_health_factor - 1.3) < 0.001, "The mech must retain the red boss health factor")
+	TEST_ASSERT(abs(mech.maxHealth - 455) < 0.001, "The mech doesn't start at its one-hunter health") // BOUNTY_MECH_HEALTH_1 * 1.3
 	TEST_ASSERT_EQUAL(mech.damage_coeff[BRUTE], 0.6, "The mech's brute armour is wrong") // BOUNTY_MECH_BRUTE_MOD
 	TEST_ASSERT_EQUAL(mech.damage_coeff[BURN], 0.8, "The mech's burn armour is wrong") // BOUNTY_MECH_BURN_MOD
 	TEST_ASSERT_EQUAL(mech.damage_coeff[STAMINA], 0, "The mech takes stamina damage")
@@ -298,19 +300,19 @@
 	for(var/i in 1 to 5)
 		hunters += hunter_at(spot(i - 1, 0))
 	TEST_ASSERT(mech.mech_engage(hunters[1]), "The first hunter didn't join the posse")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 455, "One hunter changed the mech's health")
+	TEST_ASSERT(abs(mech.maxHealth - 455) < 0.001, "One hunter changed the mech's health")
 	mech.adjust_health(100)
-	TEST_ASSERT_EQUAL(mech.health, 355, "The mech didn't take the damage")
+	TEST_ASSERT(abs(mech.health - 355) < 0.001, "The mech didn't take the damage")
 	TEST_ASSERT(mech.mech_engage(hunters[2]), "The second hunter didn't join the posse")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 910, "Two hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_2
-	TEST_ASSERT_EQUAL(mech.health, 810, "The mech's damage didn't carry over when its health rose")
+	TEST_ASSERT(abs(mech.maxHealth - 910) < 0.001, "Two hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_2 * 1.3
+	TEST_ASSERT(abs(mech.health - 810) < 0.001, "The mech's damage didn't carry over when its health rose")
 	TEST_ASSERT(!mech.mech_engage(hunters[2]), "The same hunter joined twice")
 	mech.mech_engage(hunters[3])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1365, "Three hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_3
+	TEST_ASSERT(abs(mech.maxHealth - 1365) < 0.001, "Three hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_3 * 1.3
 	mech.mech_engage(hunters[4])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1820, "Four hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_4
+	TEST_ASSERT(abs(mech.maxHealth - 1820) < 0.001, "Four hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_4 * 1.3
 	mech.mech_engage(hunters[5])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1820, "A fifth hunter raised the mech past its 4+ health")
+	TEST_ASSERT(abs(mech.maxHealth - 1820) < 0.001, "A fifth hunter raised the mech past its 4+ health")
 
 // ===== THE EMP STALL =====
 

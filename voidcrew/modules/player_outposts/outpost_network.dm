@@ -632,8 +632,9 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
  * Puts this trading outpost's network pad in its concourse. Called once the interior has loaded,
  * outside the load's try block: a runtime inside it would unwind the whole load. The trader maps
  * are regenerated from plans, so the pad is placed here rather than mapped: a breadth-first walk
- * from the elevator alcove to the first clear tile 2 to 4 steps out, against a wall where one is
- * available, with a clear arrival spot beside it.
+ * from the elevator alcove through the connected concourse, beyond any checkpoint or railed
+ * walkway, to a clear tile at least 2 steps out with a clear arrival spot beside it. Prefer
+ * a wall within the original 4-step search; beyond that, use the nearest suitable distance.
  */
 /obj/structure/overmap/trader_outpost/proc/spawn_network_pad()
 	var/obj/machinery/outpost_network_pad/existing = network_pad_ref?.resolve()
@@ -667,6 +668,19 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 			return FALSE
 	return TRUE
 
+/// Doors can open; border fixtures only obstruct the edges they actually cover.
+/obj/structure/overmap/trader_outpost/proc/network_pad_step_blocked(turf/source, turf/target)
+	var/direction = get_dir(source, target)
+	for(var/atom/movable/border as anything in source)
+		if(border.density && !istype(border, /obj/machinery/door) && (border.flags_1 & ON_BORDER_1) && (border.dir & direction))
+			return TRUE
+	for(var/atom/movable/thing as anything in target)
+		if(!thing.density || istype(thing, /obj/machinery/door) || isliving(thing))
+			continue
+		if(!(thing.flags_1 & ON_BORDER_1) || (thing.dir & REVERSE_DIR(direction)))
+			return TRUE
+	return FALSE
+
 /// list(pad turf, arrival turf) for the network pad, or null
 /obj/structure/overmap/trader_outpost/proc/find_network_pad_spot()
 	if(!length(lobby_alcove_turfs))
@@ -681,18 +695,11 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 	while(index <= length(queue))
 		var/turf/current = queue[index++]
 		var/steps = distance[current]
-		if(steps >= 4)
-			continue
 		for(var/direction in GLOB.cardinals)
 			var/turf/next = get_step(current, direction)
 			if(!next || !isnull(distance[next]) || !isopenturf(next) || !istype(next.loc, /area/voidcrew/trader_outpost))
 				continue
-			var/walkable = TRUE
-			for(var/atom/movable/thing as anything in next)
-				if(thing.density && !istype(thing, /obj/machinery/door) && !isliving(thing))
-					walkable = FALSE
-					break
-			if(!walkable)
+			if(network_pad_step_blocked(current, next))
 				continue
 			distance[next] = steps + 1
 			queue += next
@@ -700,6 +707,8 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 				candidates += next
 	var/list/fallback
 	for(var/turf/candidate as anything in candidates)
+		if(fallback && distance[candidate] > max(4, distance[fallback[1]]))
+			break
 		var/turf/arrival
 		for(var/direction in GLOB.cardinals)
 			var/turf/beside = get_step(candidate, direction)

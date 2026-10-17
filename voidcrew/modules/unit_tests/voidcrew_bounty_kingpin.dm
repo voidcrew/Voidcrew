@@ -37,12 +37,16 @@
 	for(var/datum/criminal_bounty/posting as anything in GLOB.criminal_bounties.Copy())
 		posting.close("admin") // BOUNTY_CLOSE_ADMIN
 	// A crew roster holds its ship and its members' minds hold the crew: undone here, or none of them is ever collected
+	var/list/records = list()
 	for(var/datum/team/voidcrew/team as anything in kingpin_test_teams)
+		if(team.crew_record)
+			records |= team.crew_record
 		for(var/datum/mind/member as anything in team.members.Copy())
 			team.remove_member(member)
 		team.ship?.ship_team = null
 		team.ship = null
 	kingpin_test_teams.Cut()
+	QDEL_LIST(records)
 	bounty_pool_clear("kingpin test")
 	SSbounty_kingpin.kingpin_reset()
 	SSbounty_kingpin.kingpin_next_at = kingpin_test_old_next
@@ -82,11 +86,12 @@
 	return ship
 
 /// A person with a mind at `spot`, on `ship`'s crew if given
-/datum/unit_test/voidcrew_bounty_kingpin/proc/kingpin_test_person(turf/spot, obj/structure/overmap/ship/ship)
+/datum/unit_test/voidcrew_bounty_kingpin/proc/kingpin_test_person(turf/spot, obj/structure/overmap/ship/ship, player_key)
 	var/mob/living/carbon/human/consistent/person = allocate(/mob/living/carbon/human/consistent, spot)
 	person.mind_initialize()
+	person.mind.key = player_key
 	if(ship)
-		ship.ship_team.add_member(person.mind)
+		ship.ship_team.join_member(person.mind)
 	return person
 
 /**
@@ -1092,13 +1097,14 @@
 
 	// L4: bound by player as well as by character
 	var/obj/structure/overmap/ship/working_ship = kingpin_test_ship()
-	var/mob/living/carbon/human/worker = kingpin_test_person(kingpin_test_spot(1, 2), working_ship)
-	worker.mind.key = "p9kingpintestworker"
+	var/mob/living/carbon/human/worker = kingpin_test_person(kingpin_test_spot(1, 2), working_ship, "p9kingpintestworker")
+	TEST_ASSERT_EQUAL(get_crew_ship(worker), working_ship, "The keyed worker must be rostered before asking for work")
 	kingpin.kingpin_talk(worker, "Got any work?")
 	TEST_ASSERT_NOTNULL(kingpin.kingpin_take_job(worker), "The worker couldn't take his job")
 	var/obj/structure/overmap/ship/new_ship = kingpin_test_ship()
-	var/mob/living/carbon/human/new_character = kingpin_test_person(kingpin_test_spot(1, 3), new_ship)
-	new_character.mind.key = "p9kingpintestworker"
+	var/mob/living/carbon/human/new_character = kingpin_test_person(kingpin_test_spot(1, 3), new_ship, "p9kingpintestworker")
+	TEST_ASSERT_EQUAL(get_crew_ship(new_character), new_ship, "The replacement character must join its new crew")
+	TEST_ASSERT(!(worker.mind in working_ship.ship_team.members), "The replacement character left its old life rostered")
 	TEST_ASSERT(SSbounty_kingpin.kingpin_mind_bound(new_character.mind), "The worker's new character isn't bound")
 	TEST_ASSERT(istext(SSbounty_kingpin.kingpin_bound_refusal(new_ship, new_character)), "The worker's new character could turn him in")
 	TEST_ASSERT(istext(posting.hunt_refusal(new_ship)), "A ship with the worker's new character aboard could hunt him")

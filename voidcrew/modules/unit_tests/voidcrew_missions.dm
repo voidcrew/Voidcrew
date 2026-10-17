@@ -748,7 +748,10 @@
 	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), 1, "Original and replacement targets must share one cash payment")
 	var/obj/item/mission_recovery/old_proof = mission.quest_atom
 	var/mob_count = length(test_mobs())
+	var/retargets_before = mission.retargets_left
 	mission.retarget()
+	TEST_ASSERT(!mission.failed && mission.active, "A same-band retarget must keep the contract active")
+	TEST_ASSERT_EQUAL(mission.retargets_left, retargets_before - 1, "A real retarget must consume one retarget")
 	TEST_ASSERT(mission.named_kill_completed && mission.boss_cash_issued, "Retargeting must preserve both lifetime flags")
 	TEST_ASSERT_EQUAL(length(test_mobs()), mob_count, "Retargeting a completed kill must restore proof without more mobs")
 	TEST_ASSERT(!mission.can_turn_in(old_proof), "A retarget must reject the obsolete proof")
@@ -757,3 +760,6 @@
 	SEND_SIGNAL(original, COMSIG_LIVING_DEATH, FALSE)
 	SEND_SIGNAL(replacement, COMSIG_LIVING_DEATH, FALSE)
 	TEST_ASSERT_EQUAL(length(floor_items(/obj/item/holochip)), 1, "Retargeting must not replenish the boss cash entitlement")
+	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, mission.quest_atom), "Retargeted proof must finish the mission")
+	TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Retargeted proof must not allow another turn-in")
+	TEST_ASSERT_EQUAL(mission.reward_calls, 1, "Retargeted proof must pay the mission reward once")

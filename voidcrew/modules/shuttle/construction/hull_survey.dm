@@ -1216,7 +1216,7 @@
 	vessel.ship_team.name = vessel_name // not the template's "Commissioned Vessel" placeholder
 	for(var/turf/claimed as anything in turfs)
 		for(var/mob/living/builder in claimed)
-			if(builder == user || !builder.mind || !builder.client || builder.stat == DEAD)
+			if(builder == user || !builder.mind || !GET_CLIENT(builder) || builder.stat == DEAD)
 				continue
 			if(vessel.enlist_crewmember(builder))
 				to_chat(builder, span_notice("You are registered as crew of [vessel_name]."))
