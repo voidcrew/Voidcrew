@@ -242,7 +242,9 @@
 	for(var/item_type in pack.contains)
 		if(is_ladder_restricted_production(item_type))
 			return FALSE
-	if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
+	// The materials market files hidden custom packs into this same cart.
+	var/material_order = istype(pack, /datum/supply_pack/custom/minerals) && valid_material_order_contents(pack.contains)
+	if((pack.hidden && !material_order && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
 		return FALSE
 	return !pack.contraband || contraband
 

@@ -57,6 +57,26 @@
 	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost/outfitter)
 	var/datum/outpost_shop/vendor/suit_fitter/fitter = outpost.get_shop(/datum/outpost_shop/vendor/suit_fitter)
 	TEST_ASSERT_EQUAL(length(outpost.shop.get_procurement_requests()), 9, "The shared outfitter pool must contain nine equal rows")
+	var/datum/outpost_shop/outfitter/standalone = allocate(/datum/outpost_shop/outfitter)
+	TEST_ASSERT_EQUAL(length(standalone.get_procurement_requests()), 9, "A standalone outfitter lost the fitter requests")
+	var/list/expected_types = list(
+		/obj/item/stack/sheet/animalhide/goliath_hide,
+		/obj/item/stack/sheet/sinew,
+		/obj/item/stack/glacial_core,
+		/obj/item/mod/construction/broken_core,
+		/obj/item/mod/control/pre_equipped,
+		/obj/item/mod/module/springlock,
+		/obj/item/mod/module/visor/rave,
+		/obj/item/mod/module/balloon,
+		/obj/item/mod/module/stamp,
+	)
+	for(var/list/request as anything in outpost.shop.get_procurement_requests())
+		TEST_ASSERT(request["type"] in expected_types, "The shared pool duplicated or substituted an ask")
+		expected_types -= request["type"]
+	TEST_ASSERT_EQUAL(length(expected_types), 0, "The shared pool omitted an ask")
+	TEST_ASSERT_EQUAL(length(fitter.mission_requests), 6, "Wick must supply all six salvage rows")
+	for(var/list/request as anything in fitter.mission_requests)
+		TEST_ASSERT(request in outpost.shop.mission_requests, "Sarge's board did not retain Wick's request")
 	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market))
 		var/datum/outpost_shop/shop = shop_type == /datum/outpost_shop/outfitter ? outpost.shop : allocate(shop_type)
 		var/list/requests = shop.mission_requests.Copy()

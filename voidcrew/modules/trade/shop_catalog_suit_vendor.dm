@@ -957,5 +957,10 @@
 /// One ordinary request pool gives all nine asks equal weight in the existing slots.
 /datum/outpost_shop/outfitter/New(obj/structure/overmap/trader_outpost/outpost)
 	. = ..()
-	var/datum/outpost_shop/vendor/suit_fitter/fitter_type = /datum/outpost_shop/vendor/suit_fitter
-	mission_requests = mission_requests + initial(fitter_type.mission_requests)
+	// Request lists belong to instances; initial() on the type cannot read them.
+	var/datum/outpost_shop/vendor/suit_fitter/fitter = outpost?.get_shop(/datum/outpost_shop/vendor/suit_fitter)
+	if(!fitter)
+		fitter = new
+	mission_requests += fitter.mission_requests
+	if(!outpost)
+		qdel(fitter)

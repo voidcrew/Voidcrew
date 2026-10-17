@@ -444,7 +444,12 @@
 		var/obj/item/disk = new disk_type(builder)
 		builder.item_interaction(captain, disk)
 	var/expected_construction_upgrades = builder.console_upgrades
-	new /obj/machinery/power/shuttle_engine/ship/liquid/oil(fixture_turf)
+	var/obj/machinery/power/shuttle_engine/ship/liquid/oil/oil_engine = new(fixture_turf)
+	// Runtime engines start unbolted. Install this fitting so the co-located freight
+	// crate cannot swallow it during the rebuilt map's LateInitialize().
+	oil_engine.set_anchored(TRUE)
+	oil_engine.engine_state = 2 // ENGINE_WELDED
+	oil_engine.connect_to_shuttle(FALSE, original.shuttle)
 	new /obj/machinery/vending/cola(fixture_turf)
 	var/obj/machinery/ore_silo/ship_silo = new(fixture_turf)
 	ship_silo.materials.insert_amount_mat(5000, /datum/material/iron)
@@ -516,6 +521,7 @@
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "Checkpoint fee was refunded through the outpost treasury")
 	TEST_ASSERT(!other_panel.save_quote(captain), "A stale save overwrote the paid checkpoint")
 	var/datum/ship_checkpoint/snapshot = home.checkpoints[1]
+	TEST_ASSERT(findtext(snapshot.tgm, "/obj/machinery/power/shuttle_engine/ship/liquid/oil"), "The checkpoint omitted its installed oil engine")
 	TEST_ASSERT(!panel.save_quote(captain), "A repeated save reused the paid snapshot")
 	// Updating must capture the newest design, charge 5k and preserve the old one on failure.
 	lathe.name = "updated checkpoint fixture"
