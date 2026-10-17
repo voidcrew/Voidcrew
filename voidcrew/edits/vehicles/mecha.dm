@@ -93,46 +93,14 @@
 	if(istype(tool, /obj/item/assembly/signaler/anomaly) && !istype(tool, /obj/item/assembly/signaler/anomaly/bluespace))
 		to_chat(user, "The anomaly core socket only accepts bluespace anomaly cores!")
 		return ITEM_INTERACT_BLOCKING
-	return ..()
+	return
 
 /obj/item/mecha_parts/part/phazon_torso
 	desc = "A Phazon torso part. The socket for the bluespace core that powers the exosuit's unique phase drives is located in the middle."
 
-/datum/component/construction/mecha/phazon/get_outer_plating_steps()
-	return list(
-		list(
-			"key" = outer_plating,
-			"amount" = 1,
-			"action" = ITEM_DELETE,
-			"back_key" = TOOL_WELDER,
-			"desc" = "Internal armor is welded, [initial(outer_plating.name)] can be used as external armor.",
-			"forward_message" = "added external armor layer",
-			"backward_message" = "cut off internal armor layer"
-		),
-		list(
-			"key" = TOOL_WRENCH,
-			"back_key" = TOOL_CROWBAR,
-			"desc" = "External armor is installed, and can be <b>wrenched</b> into place.",
-			"forward_message" = "secured external armor layer",
-			"backward_message" = "pried off external armor"
-		),
-		list(
-			"key" = TOOL_WELDER,
-			"back_key" = TOOL_WRENCH,
-			"desc" = "External armor is wrenched, and can be <b>welded</b>.",
-			"forward_message" = "welded external armor",
-			"backward_message" = "unfastened external armor layer"
-		),
-		list(
-			"key" = /obj/item/assembly/signaler/anomaly/bluespace,
-			"action" = ITEM_DELETE,
-			"back_key" = TOOL_WELDER,
-			"desc" = "The external armor is welded, and the <b>bluespace anomaly core</b> socket is open.",
-			"icon_state" = "phazon26",
-			"forward_message" = "inserted bluespace anomaly core",
-			"backward_message" = "cut off external armor"
-		)
-	)
+// Direct change in TG core code of:
+// /datum/component/construction/mecha/phazon/get_outer_plating_steps()
+
 
 /datum/bounty/item/science/ref_anomaly
 	description = "Our roboticist wont shut up about making a phazon, please ship us a bluespace anomaly core."
