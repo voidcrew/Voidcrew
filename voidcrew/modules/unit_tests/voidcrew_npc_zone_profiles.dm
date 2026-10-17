@@ -1121,6 +1121,8 @@
 	body.faction = list(FACTION_HOSTILE)
 	body.setMaxHealth(200)
 	body.setBruteLoss(50)
+	// Basic setBruteLoss() does not update health when the previous loss was zero.
+	body.updatehealth()
 
 /datum/unit_test/voidcrew_npc_zone_conjure_route/Run()
 	var/turf/location = run_loc_floor_bottom_left
@@ -1181,7 +1183,7 @@
 		check_npc_zone_child(image, site.npc_spawn_context)
 		TEST_ASSERT(image in lich.live_summons, "Mirror image bypassed the lich's cleanup registry")
 		image.on_attacked(image, victim, ATTACKER_DAMAGING_ATTACK)
-		TEST_ASSERT(abs(victim.getBruteLoss() - 20.25) < 0.001, "Mirror retaliation did not use its ordinary damage factor")
+		TEST_ASSERT_EQUAL(victim.getBruteLoss(), round(20.25, DAMAGE_PRECISION), "Mirror retaliation did not use its ordinary damage factor")
 		victim.fully_heal()
 	var/datum/action/cooldown/spell/pointed/lich_grave_dirt/dirt = allocate(/datum/action/cooldown/spell/pointed/lich_grave_dirt)
 	dirt.Grant(lich)

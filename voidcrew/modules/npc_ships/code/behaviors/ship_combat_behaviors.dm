@@ -1080,7 +1080,7 @@
 	// Check 3: Target has moved within same zone (trying to escape but still in range)
 	var/list/initial_pos = controller.blackboard[BB_NPC_BOARDING_TARGET_POS]
 	if(initial_pos && length(initial_pos) >= 2)
-		if(target.x != initial_pos[1] || target.y != initial_pos[2])
+		if(target.x != initial_pos["x"] || target.y != initial_pos["y"])
 			ship.ship_notify("Target is trying to escape! Weapons free!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
 			target.ship_notify("[ship.name]: \"Running won't save you! All guns, fire!\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 			controller.escalate_boarding_to_combat("movement")

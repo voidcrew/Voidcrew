@@ -182,7 +182,9 @@
 	var/mob/living/carbon/human/consistent/voidcrew_revival_test/body = patient()
 	var/obj/item/organ/cyberimp/chest/reviver/voidcrew_clock_test/implant = allocate(/obj/item/organ/cyberimp/chest/reviver/voidcrew_clock_test)
 	implant.Insert(body)
-	body.setOxyLoss(250)
+	// Stay within adjustOxyLoss's cap; its first heal otherwise clamps 250 straight to 200.
+	body.setOxyLoss(200)
+	var/healing_pulses = round((body.getOxyLoss() - (body.maxHealth - body.hardcrit_threshold)) / 5) + 1
 	body.death()
 	var/start_time = 1 HOURS
 	var/list/attempt_times = list(0, 45 SECONDS, 90 SECONDS, 135 SECONDS, 180 SECONDS, 225 SECONDS, 270 SECONDS, 315 SECONDS, 360 SECONDS, 405 SECONDS, 450 SECONDS)
@@ -226,7 +228,7 @@
 	TEST_ASSERT_EQUAL(attempts, 11, "The scenario did not exercise all eleven observed requests")
 	TEST_ASSERT(reached_hardcrit, "The scenario never reached the exact hard-crit boundary")
 	TEST_ASSERT_NOTNULL(succeeded_at, "The implant never revived after healing past hard crit")
-	TEST_ASSERT_EQUAL(succeeded_at, start_time + 3 SECONDS + 24 * SSmobs.wait, "Single-callback scheduling changed the existing healing rate")
+	TEST_ASSERT_EQUAL(succeeded_at, start_time + 3 SECONDS + (healing_pulses - 1) * SSmobs.wait, "Single-callback scheduling changed the existing healing rate")
 	TEST_ASSERT_EQUAL(body.hardcrit_revive_calls, 0, "revive() was attempted at hard-crit health")
 	TEST_ASSERT_EQUAL(body.revive_calls, 1, "The implant attempted a second revival during cooldown")
 	TEST_ASSERT_EQUAL(revival_count(body, "reviver_implant"), 1, "The scenario did not produce exactly one attributed success")
@@ -391,8 +393,9 @@
 		liver.Remove(body, special = TRUE)
 		var/obj/item/bodypart/arm = body.get_bodypart(BODY_ZONE_L_ARM)
 		arm.drop_limb()
-		body.setBruteLoss(80)
-		body.setFireLoss(40)
+		// Identical limb placement matters: legs weight damage differently from the torso.
+		body.get_bodypart(BODY_ZONE_CHEST).set_initial_damage(50, 30)
+		body.get_bodypart(BODY_ZONE_R_LEG).set_initial_damage(30, 10)
 		body.setToxLoss(30, TRUE, FALSE, ALL)
 		body.setOxyLoss(110)
 		body.get_organ_slot(ORGAN_SLOT_HEART).set_organ_damage(20)
@@ -409,6 +412,9 @@
 	TEST_ASSERT_EQUAL(nanite_body.getToxLoss(), paddle_body.getToxLoss(), "Nanite toxin redistribution differs from paddles")
 	TEST_ASSERT_EQUAL(nanite_body.getOxyLoss(), paddle_body.getOxyLoss(), "Nanite oxygen redistribution differs from paddles")
 	for(var/mob/living/carbon/body in list(nanite_body, paddle_body))
+		TEST_ASSERT(abs(body.health + 50) <= 4 * DAMAGE_PRECISION, "Defib missed its health target with weighted limb injuries")
+		TEST_ASSERT_EQUAL(body.get_bodypart(BODY_ZONE_CHEST).brute_dam, 30, "Defib redistributed a torso injury onto another limb")
+		TEST_ASSERT_EQUAL(body.get_bodypart(BODY_ZONE_R_LEG).brute_dam, 18, "Defib did not preserve a leg injury's proportion")
 		TEST_ASSERT_NULL(body.get_organ_slot(ORGAN_SLOT_LIVER), "Defib restored an unrelated missing organ")
 		TEST_ASSERT_NULL(body.get_bodypart(BODY_ZONE_L_ARM), "Defib restored a missing limb")
 		TEST_ASSERT_EQUAL(body.get_organ_loss(ORGAN_SLOT_HEART), 20, "Defib cured unrelated heart damage")
@@ -501,6 +507,8 @@
 
 /// Simulate time without modifying world.time or replacing the implant's healing/revival code.
 /obj/item/organ/cyberimp/chest/reviver/voidcrew_clock_test
+	// This clock fixture does not exercise the upstream implant overlay destructor.
+	aug_overlay = null
 	var/clock = 0
 
 /obj/item/organ/cyberimp/chest/reviver/voidcrew_clock_test/reviver_time()
