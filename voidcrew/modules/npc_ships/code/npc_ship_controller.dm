@@ -859,7 +859,9 @@
 
 	// Track wave start time and target position (for time limit and movement detection)
 	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, world.time)
-	blackboard[BB_NPC_BOARDING_TARGET_POS] = list(target.x, target.y)
+	// Blackboard deletion walks nested lists as associations; numeric coordinates
+	// cannot be keys into a two-element positional list.
+	blackboard[BB_NPC_BOARDING_TARGET_POS] = list("x" = target.x, "y" = target.y)
 
 	// Notify target ship
 	target.ship_notify("Hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)

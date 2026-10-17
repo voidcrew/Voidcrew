@@ -26,7 +26,10 @@
 	return (zone_type == ZONE_YELLOW || zone_type == ZONE_RED) ? zone_type : ZONE_GREEN
 
 /proc/is_ordinary_ore(ore_type)
-	var/static/list/ores = ordinary_ore_weights(ZONE_GREEN)
+	// Proc statics are initialized at world creation; the profile's own lists may not exist yet.
+	var/static/list/ores
+	if(isnull(ores))
+		ores = ordinary_ore_weights(ZONE_GREEN)
 	return ore_type in ores
 
 /obj/structure/overmap/planet/proc/ore_zone()

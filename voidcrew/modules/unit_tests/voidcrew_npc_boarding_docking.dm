@@ -119,6 +119,13 @@
 		TEST_ASSERT(controller.launch_boarding_wave(1), "The scripted boarding fixture did not launch")
 		TEST_ASSERT_EQUAL(length(controller.blackboard["npc_boarding_wave_boarders"]), 3, "Scripted raid did not launch exactly one boarder per initial crew")
 		TEST_ASSERT_EQUAL(controller.boarding_committed, 3, "Scripted raid escaped shared engagement accounting")
+		var/obj/effect/cleanup_probe = allocate(/obj/effect, combat.test_floor)
+		controller.set_blackboard_key("boarding_cleanup_probe", cleanup_probe)
+		qdel(cleanup_probe)
+		TEST_ASSERT_NULL(controller.blackboard["boarding_cleanup_probe"], "Deleting a tracked object did not clear its blackboard key")
+		var/list/initial_position = controller.blackboard["npc_boarding_target_pos"]
+		TEST_ASSERT_EQUAL(initial_position["x"], target.x, "Blackboard cleanup changed the boarding target's x coordinate")
+		TEST_ASSERT_EQUAL(initial_position["y"], target.y, "Blackboard cleanup changed the boarding target's y coordinate")
 		TEST_ASSERT(!controller.launch_boarding_wave(2), "A second ordinary wave was allowed")
 		TEST_ASSERT(!combat.fire_boarding_pods(target, 5, list(/mob/living/basic/npc_zone_test)) || band == 3, "Combat replenished a scripted raid's ordinary budget")
 		target.state = "idle"
@@ -131,7 +138,8 @@
 /datum/unit_test/voidcrew_npc_boarding_docking/Run()
 	var/obj/structure/overmap/ship/npc/pirate/pirate = allocate(/obj/structure/overmap/ship/npc/pirate)
 	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
-	var/datum/ai_controller/npc_ship/controller = allocate(/datum/ai_controller/npc_ship/boarding_docking_test, pirate)
+	var/datum/ai_controller/npc_ship/boarding_docking_test/profile/controller = allocate(/datum/ai_controller/npc_ship/boarding_docking_test/profile, pirate)
+	controller.test_zone = allocate(/datum/overmap_zone, 3)
 	var/datum/ai_planning_subtree/npc_ship_combat/planner = allocate(/datum/ai_planning_subtree/npc_ship_combat)
 
 	for(var/ship_state in list("docking", "idle", "undocking"))
@@ -162,6 +170,7 @@
 	target.state = "flying"
 	controller.set_target(target)
 	controller.start_boss_cooldown()
+	TEST_ASSERT_EQUAL(controller.get_combat_state(), "boarding_cooldown", "The red encounter did not schedule a boss")
 	target.state = "idle"
 	controller.spawn_boarding_boss()
 	TEST_ASSERT_NULL(controller.get_target(), "A delayed boss must abort the docked encounter")

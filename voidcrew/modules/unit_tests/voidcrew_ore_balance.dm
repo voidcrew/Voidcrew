@@ -64,11 +64,13 @@
 		for(var/index in 1 to length(ores))
 			TEST_ASSERT_EQUAL(weights[ores[index]], row[index], "Incorrect zone ore weight")
 			TEST_ASSERT(weights[ores[index]] > 0, "An ordinary ore is zone-exclusive")
+			TEST_ASSERT(is_ordinary_ore(ores[index]), "The ordinary ore classifier lost a profile entry")
 		weights[/obj/item/stack/ore/iron] = -1
 		var/list/fresh = ordinary_ore_weights(zone_type)
 		TEST_ASSERT_EQUAL(fresh[/obj/item/stack/ore/iron], row[1], "A caller mutated the profile")
 	TEST_ASSERT_EQUAL(ordinary_ore_zone(null), 1, "Unzoned rock must use green")
 	TEST_ASSERT_EQUAL(ordinary_ore_zone(99), 1, "Unknown rock must use green")
+	TEST_ASSERT(!is_ordinary_ore(null) && !is_ordinary_ore(/obj/item/boulder/gulag), "Special rock was classified as ordinary ore")
 	var/list/severity_rows = list(list(60, 30, 10), list(25, 50, 25), list(10, 30, 60))
 	var/list/meteor_types = list(/obj/structure/overmap/event/meteor/minor, /obj/structure/overmap/event/meteor, /obj/structure/overmap/event/meteor/majour)
 	for(var/zone_type in 1 to 3)
@@ -325,6 +327,7 @@
 		SSore_generation.fire(FALSE)
 		allocated |= SSore_generation.available_boulders
 		var/expected_stock = exhaust_reserve ? 3 : 2
+		TEST_ASSERT(!(null in SSore_generation.available_boulders), "Exhaustion added a null boulder to retrieval stock")
 		TEST_ASSERT(!(vent in SSore_generation.processed_vents), "An exhausted vent kept producing")
 		TEST_ASSERT(old_rock in SSore_generation.available_boulders, "Exhaustion hid a vent's existing boulder")
 		TEST_ASSERT_EQUAL(length(SSore_generation.available_boulders), expected_stock, "The exhaustion tick lost or duplicated a boulder")
@@ -430,10 +433,15 @@
 	TEST_ASSERT(!field.retiring && field.loaded, "An occupied berth was torn down")
 	field.first_dock_taken = FALSE
 	var/mob/living/basic/player = allocate(/mob/living/basic, inside)
-	GLOB.player_list |= player
+	// The teardown guard reads the connected-mob index, not GLOB.player_list.
+	var/list/players_on_level = SSmobs.clients_by_zlevel[inside.z]
+	players_on_level |= player
 	var/player_blocked = !field.can_release_interior()
-	GLOB.player_list -= player
+	player.forceMove(get_step(inside, EAST))
+	var/neighbour_blocked = !field.can_release_interior()
+	players_on_level -= player
 	TEST_ASSERT(player_blocked, "A connected occupant did not prevent teardown")
+	TEST_ASSERT(!neighbour_blocked, "A player outside the footprint prevented teardown")
 	field.load_level() // The loaded field must be reused, never regenerated.
 	TEST_ASSERT_EQUAL(field.footprint, footprint, "Redocking replaced an existing field")
 	var/fields_before = length(GLOB.meteor_fields)

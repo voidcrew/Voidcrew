@@ -30,6 +30,8 @@
 
 /datum/controller/subsystem/ore_generation/fire(resumed)
 	. = ..()
+	// Exhaustion can make the parent's final produce_boulder() return null.
+	available_boulders -= null
 	// The parent rebuilds stock from producing vents; exhausted vents only supply existing rocks.
 	for(var/obj/structure/ore_vent/vent in exhausted_vents)
 		for(var/obj/item/boulder/rock in vent.loc)

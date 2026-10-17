@@ -266,17 +266,25 @@
 	if(health > target_health)
 		need_mob_update += adjustOxyLoss(health - target_health, updating_health = FALSE)
 	else
-		var/total_brute = getBruteLoss()
-		var/total_burn = getFireLoss()
-		var/total_oxy = getOxyLoss()
-		var/total_tox = getToxLoss()
-		var/overall_damage = total_brute + total_burn + total_oxy + total_tox
+		// Limb damage has different health weights. Heal the same fraction of each
+		// limb's injuries, rather than selecting random limbs for an aggregate heal.
+		var/overall_damage = maxHealth - health
 		if(overall_damage <= 0)
 			return
-		var/damage_change = health - target_health
-		need_mob_update += adjustOxyLoss(damage_change * (total_oxy / overall_damage), updating_health = FALSE)
-		need_mob_update += adjustToxLoss(damage_change * (total_tox / overall_damage), updating_health = FALSE, forced = TRUE)
-		need_mob_update += adjustFireLoss(damage_change * (total_burn / overall_damage), updating_health = FALSE)
-		need_mob_update += adjustBruteLoss(damage_change * (total_brute / overall_damage), updating_health = FALSE)
+		var/healing_fraction = (target_health - health) / overall_damage
+		need_mob_update += adjustOxyLoss(-getOxyLoss() * healing_fraction, updating_health = FALSE)
+		need_mob_update += adjustToxLoss(-getToxLoss() * healing_fraction, updating_health = FALSE, forced = TRUE)
+		var/brute_fraction = can_adjust_brute_loss(-getBruteLoss() * healing_fraction, FALSE, null) ? healing_fraction : 0
+		var/burn_fraction = can_adjust_fire_loss(-getFireLoss() * healing_fraction, FALSE, null) ? healing_fraction : 0
+		var/update_overlays = FALSE
+		for(var/obj/item/bodypart/part as anything in bodyparts)
+			var/brute_heal = part.brute_dam * brute_fraction
+			var/burn_heal = part.burn_dam * burn_fraction
+			if(!brute_heal && !burn_heal)
+				continue
+			update_overlays |= part.heal_damage(brute_heal, burn_heal, updating_health = FALSE)
+			need_mob_update = TRUE
+		if(update_overlays)
+			update_damage_overlays()
 	if(need_mob_update)
 		updatehealth()
