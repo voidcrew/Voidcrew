@@ -123,9 +123,6 @@
 
 /obj/effect/zone_mobs/bug/boss
 	name = "zone mob spawner (bug boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 1)
 	mobs_green = list(
 		/mob/living/basic/spider/giant/hunter = 1,
 	)

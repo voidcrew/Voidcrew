@@ -124,6 +124,8 @@
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers,
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers,
 		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns,
+		/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines,
 	)
 	var/turf/cache_turf = run_loc_floor_bottom_left
 	for(var/cache_type in cache_guns)

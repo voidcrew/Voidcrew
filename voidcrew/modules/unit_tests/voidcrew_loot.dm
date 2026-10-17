@@ -364,12 +364,15 @@
 				cache.loot_zone = zone
 				cache.PopulateContents()
 				var/weapons = 0
+				var/guns = 0
 				for(var/obj/item/item in cache)
 					if(istype(item, /obj/item/gun) && !istype(item, /obj/item/gun/energy/disabler))
 						weapons++
-					else if(item.type in GLOB.loot_melee_pools["1"] || item.type in GLOB.loot_melee_pools["2"] || item.type in GLOB.loot_melee_pools["3"])
+						guns++
+					else if((item.type in GLOB.loot_melee_pools["1"]) || (item.type in GLOB.loot_melee_pools["2"]) || (item.type in GLOB.loot_melee_pools["3"]))
 						weapons++
 				TEST_ASSERT_EQUAL(weapons, 1, "Cache did not pay exactly one weapon, bonus=[bonus]")
+				TEST_ASSERT_EQUAL(guns, gun, "Cache ignored the forced gun/melee outcome")
 				var/prizes = length(cache.contents) - (gun ? 1 : 0)
 				TEST_ASSERT(prizes >= minimums[zone] + bonus && prizes <= maximums[zone] + bonus, "Weapon roll changed the cache's draw count")
 				var/list/contents = cache.contents.Copy()

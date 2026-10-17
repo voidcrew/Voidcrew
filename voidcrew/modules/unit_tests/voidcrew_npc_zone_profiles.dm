@@ -15,15 +15,6 @@
 	combat_mode = FALSE
 	ai_controller = /datum/ai_controller/basic_controller/simple
 
-/mob/living/simple_animal/hostile/npc_zone_test
-	health = 100
-	maxHealth = 100
-	melee_damage_lower = 10
-	melee_damage_upper = 20
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-
 /// Deterministic equivalent of the wolf/ice-demon Initialize replacement rolls.
 /mob/living/basic/npc_zone_test/replacement/Initialize(mapload)
 	. = ..()
@@ -41,12 +32,16 @@
 	var/turf/location = run_loc_floor_bottom_left
 	var/list/health_factors = list(list(1, 1.35, 1.8), list(1, 1.15, 1.3))
 	var/list/damage_factors = list(list(1, 1.15, 1.35), list(1, 1.1, 1.2))
-	for(var/mob_type in list(/mob/living/basic/npc_zone_test, /mob/living/simple_animal/hostile/npc_zone_test))
+	for(var/mob_type in list(/mob/living/basic/npc_zone_test, /mob/living/simple_animal/hostile))
 		for(var/role_index in 1 to 2)
 			for(var/zone in 1 to 3)
 				var/role = role_index == 1 ? "ordinary" : "boss"
 				var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone, role)
 				var/mob/living/body = spawn_npc_in_zone(mob_type, location, context, FALSE)
+				// Configure an existing legacy type before finalization instead of adding a subtype.
+				body.setMaxHealth(100)
+				body.melee_damage_lower = 10
+				body.melee_damage_upper = 20
 				body.setBruteLoss(40)
 				context.finalize()
 				var/health_factor = health_factors[role_index][zone]
@@ -747,14 +742,14 @@
 		qdel(capture)
 	var/datum/mission_objective/field/wipe_camp/camp = allocate(/datum/mission_objective/field/wipe_camp)
 	camp.mission = mission
-	camp.squad_types = list(/mob/living/simple_animal/hostile/npc_zone_test)
+	camp.squad_types = list(/mob/living/simple_animal/hostile)
 	camp.squad_names = list("Test poacher")
 	// A hostile type makes a missing rescue exemption visible.
 	camp.critter_type = /mob/living/basic/npc_zone_test/replacement
 	camp.spawn_field_objects(location)
 	TEST_ASSERT_EQUAL(length(camp.squad), 1, "Camp did not retain its squad")
 	var/mob/living/poacher = camp.squad[1]
-	TEST_ASSERT_EQUAL(poacher.maxHealth, 180, "Poacher missed camp-band finalization")
+	TEST_ASSERT_EQUAL(poacher.maxHealth, initial(poacher.maxHealth) * 1.8, "Poacher missed camp-band finalization")
 	var/cages = 0
 	for(var/obj/item/pet_carrier/cage in range(3, location))
 		for(var/mob/living/rescued in cage)
