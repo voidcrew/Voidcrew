@@ -282,10 +282,15 @@
 	return null
 
 /datum/controller/subsystem/missions/zone_missions_test
+	flags = SS_NO_INIT | SS_NO_FIRE
 	var/fail_work = FALSE
 	var/work_attempts = 0
 	var/fail_first_families = 0
 	var/list/failed_families = list()
+
+/datum/controller/subsystem/missions/zone_missions_test/New()
+	// The MC constructs every subtype. Skip singleton registration and parent PreInit.
+	return
 
 /datum/controller/subsystem/missions/zone_missions_test/create_mission(mission_type, preferred_zone, posting_zone, list/eligible_zones, create_field_contact = FALSE)
 	var/family = zone_reputation_family(mission_type)
@@ -305,9 +310,14 @@
 	return TRUE
 
 /datum/controller/subsystem/overmap/zone_missions_test
+	flags = SS_NO_INIT | SS_NO_FIRE
 	var/capacity = FALSE
 	var/any_band_calls = 0
 	var/turf/destination
+
+/datum/controller/subsystem/overmap/zone_missions_test/New()
+	// The MC constructs every subtype. Skip singleton registration and parent PreInit.
+	return
 
 /datum/controller/subsystem/overmap/zone_missions_test/mission_contact_capacity(tenant_class)
 	return capacity
@@ -358,6 +368,44 @@
 		for(var/family in list("named_kill", "hunt", "capture"))
 			record.claim_zone_work(family, 3, 3, "setup_red_[family]")
 	return ship
+
+/// Boot and manually allocated fixtures leave the real subsystems and dependency graph intact.
+/datum/unit_test/voidcrew_zone_missions/subsystem_isolation/Run()
+	var/datum/controller/subsystem/missions/real_missions = SSmissions
+	var/datum/controller/subsystem/overmap/real_overmap = SSovermap
+	TEST_ASSERT_EQUAL(real_missions.type, /datum/controller/subsystem/missions, "The missions global is a test fixture")
+	TEST_ASSERT_EQUAL(real_overmap.type, /datum/controller/subsystem/overmap, "The overmap global is a test fixture")
+	var/list/type_to_subsystem = list()
+	for(var/datum/controller/subsystem/subsystem as anything in Master.subsystems)
+		type_to_subsystem[subsystem.type] = subsystem
+	TEST_ASSERT_EQUAL(type_to_subsystem[/datum/controller/subsystem/missions], real_missions, "The MC lost the exact missions type")
+	TEST_ASSERT_EQUAL(type_to_subsystem[/datum/controller/subsystem/overmap], real_overmap, "The MC lost the exact overmap type")
+	for(var/fixture_type in list(/datum/controller/subsystem/missions/zone_missions_test, /datum/controller/subsystem/overmap/zone_missions_test))
+		var/datum/controller/subsystem/boot_fixture = type_to_subsystem[fixture_type]
+		TEST_ASSERT_NOTNULL(boot_fixture, "The MC did not construct [fixture_type]")
+		TEST_ASSERT_EQUAL(boot_fixture.flags & (SS_NO_INIT | SS_NO_FIRE), SS_NO_INIT | SS_NO_FIRE, "A boot fixture can initialize or fire")
+		TEST_ASSERT_EQUAL(boot_fixture.times_fired, 0, "The MC fired a test fixture")
+		for(var/dependency_type in boot_fixture.dependencies)
+			var/datum/controller/subsystem/dependency = type_to_subsystem[dependency_type]
+			TEST_ASSERT_NOTNULL(dependency, "A fixture's inherited dependency [dependency_type] does not resolve")
+			TEST_ASSERT(!QDELETED(dependency), "A fixture's inherited dependency was deleted")
+			TEST_ASSERT(boot_fixture.init_stage >= dependency.init_stage, "A fixture precedes an inherited dependency's init stage")
+		var/datum/controller/subsystem/fixture = allocate(fixture_type)
+		TEST_ASSERT_EQUAL(SSmissions, real_missions, "Constructing a fixture replaced SSmissions")
+		TEST_ASSERT_EQUAL(SSovermap, real_overmap, "Constructing a fixture replaced SSovermap")
+		TEST_ASSERT(!QDELETED(real_missions) && !QDELETED(real_overmap), "Constructing a fixture deleted a real subsystem")
+		TEST_ASSERT(real_missions in Master.subsystems, "Constructing a fixture removed missions from the MC")
+		TEST_ASSERT(real_overmap in Master.subsystems, "Constructing a fixture removed overmap from the MC")
+		TEST_ASSERT_EQUAL(fixture.flags & (SS_NO_INIT | SS_NO_FIRE), SS_NO_INIT | SS_NO_FIRE, "An allocated fixture can initialize or fire")
+		Master.init_subsystem(fixture)
+		TEST_ASSERT(fixture.initialized, "The MC did not mark the inert fixture ready")
+		qdel(fixture)
+		TEST_ASSERT_EQUAL(SSmissions, real_missions, "Deleting a fixture changed SSmissions")
+		TEST_ASSERT_EQUAL(SSovermap, real_overmap, "Deleting a fixture changed SSovermap")
+	var/datum/controller/subsystem/missions/zone_missions_test/boot_missions = type_to_subsystem[/datum/controller/subsystem/missions/zone_missions_test]
+	var/datum/controller/subsystem/overmap/zone_missions_test/boot_overmap = type_to_subsystem[/datum/controller/subsystem/overmap/zone_missions_test]
+	TEST_ASSERT_EQUAL(length(boot_missions.mission_types), 0, "The MC initialized the missions fixture")
+	TEST_ASSERT_NULL(boot_overmap.overmap_centre, "The MC initialized a second overmap")
 
 /// Console and board variants all settle through the real shell, with claims before finalizers.
 /datum/unit_test/voidcrew_zone_missions/families/Run()
