@@ -339,10 +339,6 @@
 // ===== BOARD QUOTES AND SETTLEMENT =====
 // Shared shell hooks live here so both trader and ship-pad handovers use them.
 
-// Shared catalog field; Z3 assigns the exact SKU tags.
-/datum/shop_sku
-	var/zone_permission = ZONE_PERMISSION_PUBLIC
-
 /// Filter a view without deleting offers that another crew can still accept.
 /obj/structure/overmap/trader_outpost/proc/get_contract_offers_for(obj/structure/overmap/ship/ship)
 	var/list/offers = list()
