@@ -658,10 +658,12 @@
 		goods = new item_path(drop_loc, dispense_amount)
 	else
 		goods = new item_path(drop_loc)
-	if(isitem(goods) && user.put_in_hands(goods))
-		to_chat(user, span_notice("You receive [goods]."))
+	// Past a trader outpost's checkpoint a gun is handed over sealed (outpost_trespass.dm)
+	var/atom/movable/handed = outpost_seal_goods(goods)
+	if(isitem(handed) && user.put_in_hands(handed))
+		to_chat(user, span_notice("You receive [handed]."))
 	else
-		to_chat(user, span_notice("[goods] is set down at your feet."))
+		to_chat(user, span_notice("[handed] is set down at your feet."))
 	// Returned so SKU subtypes can stamp what they hand over (the diner's
 	// plated shelf adds TRAIT_FOOD_CHEF_MADE here, see shop_catalog_diner.dm)
 	return goods

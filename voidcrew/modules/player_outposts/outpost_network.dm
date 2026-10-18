@@ -669,8 +669,11 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 	return TRUE
 
 /// Doors can open; border fixtures only obstruct the edges they actually cover.
+/// The checkpoint's doors and exit gate are walls here, so the pad stays in the checkpoint lobby.
 /obj/structure/overmap/trader_outpost/proc/network_pad_step_blocked(turf/source, turf/target)
 	var/direction = get_dir(source, target)
+	if((locate(/obj/machinery/door/airlock/outpost/checkpoint) in target) || (locate(/obj/structure/outpost_exit_gate) in target))
+		return TRUE
 	for(var/atom/movable/border as anything in source)
 		if(border.density && !istype(border, /obj/machinery/door) && (border.flags_1 & ON_BORDER_1) && (border.dir & direction))
 			return TRUE
@@ -683,6 +686,12 @@ GLOBAL_LIST_EMPTY(outpost_network_ready_at)
 
 /// list(pad turf, arrival turf) for the network pad, or null
 /obj/structure/overmap/trader_outpost/proc/find_network_pad_spot()
+	// The map's own spot first (/obj/effect/landmark/outpost_network_pad_spot)
+	if(network_pad_spot && network_pad_tile_clear(network_pad_spot))
+		for(var/direction in GLOB.cardinals)
+			var/turf/beside = get_step(network_pad_spot, direction)
+			if(beside && network_pad_tile_clear(beside) && !network_pad_step_blocked(network_pad_spot, beside))
+				return list(network_pad_spot, beside)
 	if(!length(lobby_alcove_turfs))
 		return null
 	var/list/distance = list()

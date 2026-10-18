@@ -143,6 +143,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	QDEL_LIST_ASSOC_VAL(extra_shops)
 	template_bottom_left = null
 	embargoed_ships.Cut()
+	clear_checkpoint_state()
 	aggressor_minds.Cut()
 	aggressor_strikes.Cut()
 	aggressor_strike_times.Cut()
@@ -218,13 +219,16 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!top_right)
 		return
 	var/list/obj/machinery/door/airlock/outpost/checkpoint/checkpoint_doors = list()
-	var/list/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/checkpoint_scanners = list()
+	var/list/obj/machinery/outpost_checkpoint_scanner/checkpoint_arches = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
 			lobby_alcove_turfs += interior_turf
 			qdel(alcove_mark)
+		for(var/obj/effect/landmark/outpost_network_pad_spot/pad_mark in interior_turf)
+			network_pad_spot = interior_turf
+			qdel(pad_mark)
 		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
 			npc.outpost = src
 			npc.shop = get_shop(npc.shop_type)
@@ -242,8 +246,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				door.outpost = src
 				if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint))
 					checkpoint_doors += door
-			else if(istype(machine, /obj/machinery/scanner_gate/preset_guns/outpost_checkpoint))
-				checkpoint_scanners += machine
+			else if(istype(machine, /obj/machinery/outpost_checkpoint_scanner))
+				checkpoint_arches += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
 				panel.outpost = src
@@ -258,11 +262,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/obj/fixture in interior_turf)
 			if(ismachinery(fixture) || isstructure(fixture))
 				fixture.AddElement(/datum/element/outpost_property)
-	// Only machines collected from this concourse reservation can form a circuit.
-	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in checkpoint_doors)
-		for(var/obj/machinery/scanner_gate/preset_guns/outpost_checkpoint/scanner as anything in checkpoint_scanners)
-			if(door.checkpoint_id && door.checkpoint_id == scanner.checkpoint_id)
-				door.link_scanner(scanner)
+	// Only parts collected from this concourse reservation form a checkpoint
+	// (outpost_checkpoint.dm); the guards linked above are matched to theirs.
+	build_checkpoints(checkpoint_doors, checkpoint_arches)
+	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
 	// yet, dressing the appearance dummy that early is unsafe, so those
@@ -520,9 +523,16 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 /**
  * Whether this user is refused service: personally marked as an aggressor,
- * or crew of an embargoed ship.
+ * crew of an embargoed ship, or recently caught armed past the checkpoint
+ * (outpost_trespass.dm).
  */
 /obj/structure/overmap/trader_outpost/proc/is_user_barred(mob/user)
+	if(!user?.mind)
+		return FALSE
+	return is_aggression_barred(user) || is_trespass_barred(user.mind)
+
+/// Marked as an aggressor, or crew of an embargoed ship
+/obj/structure/overmap/trader_outpost/proc/is_aggression_barred(mob/user)
 	if(!user?.mind)
 		return FALSE
 	if(is_marked_aggressor(user.mind))
@@ -536,11 +546,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /**
  * Whether the outpost has barred this mob from the sanctuary: marked aggressors
  * AND crew of embargoed ships, an embargo means shot on sight, not just refused
- * service. Per-mind, so it holds for a player in any body. The turrets layer
+ * service. Armed trespassers too, for their shorter hostile window only
+ * (outpost_trespass.dm). Per-mind, so it holds for a player in any body. The turrets layer
  * their own on-sight rules (xenos, hostile wildlife) on top in valid_target().
  */
 /obj/structure/overmap/trader_outpost/proc/is_turret_target(mob/living/target)
-	return istype(target) && is_user_barred(target)
+	return istype(target) && (is_aggression_barred(target) || is_armed_trespasser(target.mind))
 
 /**
  * Resolves which trader outpost protects a turf by checking its concourse and

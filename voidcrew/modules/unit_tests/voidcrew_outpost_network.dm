@@ -314,8 +314,12 @@
 	var/obj/structure/table/obstruction = allocate(/obj/structure/table, destination)
 	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "The placement walk passed through dense furniture")
 	qdel(obstruction)
-	allocate(/obj/machinery/door/airlock/outpost/checkpoint, destination)
-	TEST_ASSERT(!market.network_pad_step_blocked(start, destination), "A checkpoint door blocked the placement search")
+	// The pad stays in the checkpoint lobby: a checkpoint door is a wall to the placement search
+	var/obj/machinery/door/airlock/outpost/checkpoint/inner/checkpoint_door = allocate(/obj/machinery/door/airlock/outpost/checkpoint/inner, destination)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "A checkpoint door let the placement search through")
+	qdel(checkpoint_door)
+	allocate(/obj/structure/outpost_exit_gate, destination)
+	TEST_ASSERT(market.network_pad_step_blocked(start, destination), "An exit gate let the placement search through")
 
 /datum/unit_test/voidcrew_outpost_network_lifecycle
 	parent_type = /datum/unit_test/voidcrew_outpost_management

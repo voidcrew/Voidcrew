@@ -331,6 +331,10 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		return list()
 	var/list/floor = bounty_outpost_public_floor(outpost)
 	floor -= outpost.lobby_alcove_turfs
+	// Nobody blends in at the checkpoint (outpost_checkpoint.dm): the hunt is past it
+	for(var/turf/checkpoint_tile as anything in floor.Copy())
+		if(istype(checkpoint_tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			floor -= checkpoint_tile
 	var/turf/near_turf = get_turf(near)
 	if(near_turf)
 		floor -= near_turf
