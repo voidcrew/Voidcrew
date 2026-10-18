@@ -1,11 +1,5 @@
-// Event Horizon rifle rebalance. It is a rare loot find rather than a research print:
-// three shots that never recharge and 20 seconds between shots. Whoever it hits dies but is
-// not gibbed, and the reality tear eats the room but only throws people around.
-
-/datum/techweb_node/unregulated_bluespace
-	design_ids = list(
-		"desynchronizer",
-	)
+// Event Horizon rifle rebalance: three shots that never recharge and 20 seconds between shots.
+// Whoever it hits dies but is not gibbed, and the reality tear eats the room but only throws people around.
 
 /obj/item/gun/energy/event_horizon
 	selfcharge = FALSE

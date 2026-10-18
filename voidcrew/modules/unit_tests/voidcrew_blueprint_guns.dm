@@ -1,4 +1,4 @@
-/// Finished guns have no schematic, receiver, crafting result or fabrication design.
+/// The six Voidcrew guns have no schematic, receiver, crafting result or fabrication design.
 /datum/unit_test/voidcrew_blueprint_guns/Run()
 	var/list/guns = list(
 		/obj/item/gun/ballistic/automatic/c20r,
@@ -34,6 +34,11 @@
 		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
 		for(var/removed_node in node_suffixes)
 			TEST_ASSERT(!("weapon_part_[removed_node]" in node.prereq_ids), "[node_id] still requires a removed receiver node.")
+	var/datum/design/receiver/modular_receiver = SSresearch.techweb_designs["receiver"]
+	TEST_ASSERT_NOTNULL(modular_receiver, "The unrelated TG modular receiver design disappeared.")
+	TEST_ASSERT_EQUAL(modular_receiver.build_path, /obj/item/weaponcrafting/receiver, "The modular receiver design has the wrong output.")
+	TEST_ASSERT_EQUAL(modular_receiver.build_type, AUTOLATHE, "The TG modular receiver lost autolathe fabrication.")
+	TEST_ASSERT(RND_CATEGORY_HACKED in modular_receiver.category, "The TG modular receiver lost its hacked-autolathe gate.")
 
 /// Ammunition remains connected to the research tree, including specialist loads.
 /datum/unit_test/voidcrew_gun_ammo_research/Run()
