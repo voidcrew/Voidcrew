@@ -79,6 +79,7 @@
 #include "voidcrew_drug_recipe.dm"
 #include "voidcrew_dynamic_events.dm"
 #include "voidcrew_economy_metrics.dm"
+#include "voidcrew_event_horizon.dm"
 #include "voidcrew_fleet_waypoints.dm"
 #include "voidcrew_helm_access.dm"
 #include "voidcrew_helpers.dm"
