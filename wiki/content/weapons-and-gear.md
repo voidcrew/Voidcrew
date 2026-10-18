@@ -64,7 +64,9 @@ The Event Horizon recharges itself and fires a long-range beam that opens a brie
 
 Traders sell ammunition, and the [research tree](research.md) unlocks magazines and specialty loads. A 50-round L6 SAW magazine costs **50 iron, 10 titanium, 10 plasma and 5 plastic sheets** before lathe discounts. Its 80-point node requires Exotic Ammunition and Automatic Ammunition. Fully upgraded lathes reduce the material cost to 40%.
 
-**No Quarter** uses heavy cartridges. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
+Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need yellow [zone reputation](zone-reputation.md) to research; L6, Bulldog, sniper and explosive ammunition need advanced.
+
+**No Quarter** uses heavy cartridges, which fit no other gun. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
 
 Sarge sells ordinary **firing pins for 250 credits**. Fit one to a gun that lacks a pin. Removing a fitted pin destroys it. **Riot Supression** research also unlocks the printable **Test-Range Firing Pin**, which only allows firing near a test range.
 

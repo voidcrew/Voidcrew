@@ -144,4 +144,4 @@ See [Ship Combat](ship-combat.md), [Ship Upgrades](ship-upgrades.md) and [Nanite
 
 ### Zone reputation
 
-[Zone reputation](zone-reputation.md) is required to buy Specialist Ammunition, Experimental Ammunition and Military Nanite Programming. Imported research still works. Copying technology does not grant reputation for other purchases.
+Some research needs [zone reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need yellow; L6, Bulldog, sniper, Explosive and Experimental Ammunition need advanced; Military Nanite Programming needs elite. Imported research still works. Copying technology does not grant reputation for other purchases.

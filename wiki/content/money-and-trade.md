@@ -80,9 +80,9 @@ Sample lines: Barnaby at the waystation pays 300 credits per five gold ore, 500 
 
 ## Ammunition
 
-No Quarter's heavy cartridges can be crafted.
+No Quarter's heavy cartridges can be crafted, and fit only No Quarter.
 
-A 50-round 7mm magazine for the **L6 SAW** costs 50 iron, 10 titanium, 10 plasma and 5 plastic sheets before lathe discounts. Ammunition research costs **80 points** after Exotic Ammunition and Automatic Ammunition, so it can supply a salvaged L6. Fully upgraded lathes reduce printed material costs to 40%.
+A 50-round 7mm magazine for the **L6 SAW** costs 50 iron, 10 titanium, 10 plasma and 5 plastic sheets before lathe discounts. Its research costs **80 points** after Exotic Ammunition and Automatic Ammunition and needs advanced [zone reputation](zone-reputation.md). Fully upgraded lathes reduce printed material costs to 40%. See [Weapons & Gear](weapons-and-gear.md) for the other ammunition.
 
 Firing pins cost 250 credits at Quartermain Depot. Fit one to a salvaged gun that has no pin. You cannot reuse a pin from another gun: prying one out destroys it.
 
