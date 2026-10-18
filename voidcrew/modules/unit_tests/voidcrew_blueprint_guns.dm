@@ -76,11 +76,11 @@
 
 	var/datum/design/pin_testing/pin = SSresearch.techweb_designs["pin_testing"]
 	TEST_ASSERT_NOTNULL(pin, "The upstream test-range pin design must remain defined.")
-	TEST_ASSERT_EQUAL(pin.build_type, NONE, "Test-range pins still have a fabrication channel.")
+	TEST_ASSERT_EQUAL(pin.build_type, PROTOLATHE | AWAY_LATHE, "Test-range pins lost their lathe channels.")
 	var/datum/techweb_node/riot_supression/riot = SSresearch.techweb_nodes[TECHWEB_NODE_RIOT_SUPRESSION]
 	TEST_ASSERT_NOTNULL(riot, "Riot Suppression must remain available.")
-	TEST_ASSERT(!("pin_testing" in riot.design_ids), "Riot Suppression still unlocks test-range pins.")
-	TEST_ASSERT("clown_firing_pin" in riot.design_ids, "Removing test-range pins lost another firing pin design.")
+	TEST_ASSERT("pin_testing" in riot.design_ids, "Riot Suppression must unlock test-range pins.")
+	TEST_ASSERT("clown_firing_pin" in riot.design_ids, "Riot Suppression lost another firing pin design.")
 
 /// The unrelated heavy-cartridge schematic retains the carried-schematic gate.
 /datum/unit_test/voidcrew_cartridge_schematic/Run()

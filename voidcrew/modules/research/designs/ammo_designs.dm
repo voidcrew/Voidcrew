@@ -21,9 +21,6 @@
  * 1 sheet, and the specialist shell adds the same plasma the .38 hotshot design uses.
  */
 
-/datum/design/pin_testing
-	build_type = NONE
-
 /datum/design/rapidsyringe
 	name = "Syringe Gun"
 	desc = "A pneumatic syringe projector."

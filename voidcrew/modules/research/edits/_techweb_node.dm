@@ -11,11 +11,6 @@
 	// )
 	var/list/required_surveyed_objects
 
-/datum/techweb_node/riot_supression/New()
-	. = ..()
-	design_ids = design_ids.Copy()
-	design_ids -= "pin_testing"
-
 /// Prices are per-web copies: discounts must never make a debit negative or alter global nodes.
 /datum/techweb_node/get_price(datum/techweb/host)
 	var/list/prices = ..()
