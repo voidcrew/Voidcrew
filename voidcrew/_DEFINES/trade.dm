@@ -168,3 +168,48 @@
 #define TRADER_LINE_WARNING "warning"
 #define TRADER_LINE_IDLE "idle"
 #define TRADER_LINE_RESTOCK "restock"
+
+// Trader outpost weapons checkpoint (voidcrew/modules/trade/outpost_checkpoint.dm, outpost_trespass.dm)
+/// How long the scan chamber hums before its verdict
+#define OUTPOST_CHECKPOINT_SCAN_TIME (2 SECONDS)
+/// How long the inner door stays open after a clean scan
+#define OUTPOST_CHECKPOINT_PASS_TIME (5 SECONDS)
+/// How long the outer door stays open before it closes and the chamber scans
+#define OUTPOST_CHECKPOINT_OUTER_HOLD (4 SECONDS)
+/// How long the outer door stays open to let a refused group back out
+#define OUTPOST_CHECKPOINT_REJECT_HOLD (6 SECONDS)
+/// How long prying (or hacking) the inner door open takes
+#define OUTPOST_CHECKPOINT_FORCE_TIME (20 SECONDS)
+/// How long a forced inner door stays open before it shuts again
+#define OUTPOST_CHECKPOINT_FORCED_OPEN_TIME (10 SECONDS)
+/// Minimum gap between two lines from the checkpoint about the same thing
+#define OUTPOST_CHECKPOINT_LINE_COOLDOWN (4 SECONDS)
+/// Turrets treat an armed trespasser as hostile until this long after they were last seen armed inside
+#define OUTPOST_TRESPASS_HOSTILE_DURATION (10 MINUTES)
+/// An armed trespasser is refused by the traders, the permit desk and the checkpoint until this long after they were last seen armed inside
+#define OUTPOST_TRESPASS_BAR_DURATION (30 MINUTES)
+/// How often the outpost looks for drawn guns past the checkpoint
+#define OUTPOST_ARMED_SWEEP_INTERVAL (2 SECONDS)
+/// A gun has to stay in hand this long before it counts as drawn (a gun shoved into someone's hand can be dropped)
+#define OUTPOST_ARMED_SIGHTING_GRACE (2 SECONDS)
+/// A weapons permit lasts this long
+#define OUTPOST_WEAPONS_PERMIT_DURATION (20 MINUTES)
+/// A weapons permit costs this many credits
+#define OUTPOST_WEAPONS_PERMIT_PRICE 1000
+/// After a permit runs out, a gun still in hand is overlooked for this long
+#define OUTPOST_WEAPONS_PERMIT_GRACE (30 SECONDS)
+
+// Checkpoint states (/datum/outpost_checkpoint)
+#define CHECKPOINT_IDLE "idle"
+#define CHECKPOINT_SCANNING "scanning"
+#define CHECKPOINT_PASSING "passing"
+#define CHECKPOINT_REJECTING "rejecting"
+#define CHECKPOINT_FORCED "forced"
+
+// Checkpoint guard speech line categories (read from the guard shop's trader_lines)
+#define CHECKPOINT_LINE_PASS "checkpoint_pass"
+#define CHECKPOINT_LINE_ARMED "checkpoint_armed"
+#define CHECKPOINT_LINE_BARRED "checkpoint_barred"
+#define CHECKPOINT_LINE_FORCING "checkpoint_forcing"
+#define CHECKPOINT_LINE_INTRUDER "checkpoint_intruder"
+#define CHECKPOINT_LINE_PERMIT_LAPSED "checkpoint_permit_lapsed"
