@@ -48,9 +48,10 @@
 
 /**
  * Loads all three trader outposts and checks their checkpoints (voidcrew/modules/trade/outpost_checkpoint.dm):
- * every mapped scan chamber links up where the map put it, the lift lands in the checkpoint lobby, the lobby
- * and the exterior only reach the concourse through a checkpoint, and one real cycle refuses a gun and passes
- * a clean visitor. The chamber's rules themselves are in voidcrew_trader_checkpoint.dm.
+ * every mapped scan chamber links up where the map put it with a scanner on its wall, the lift lands in the
+ * checkpoint lobby, the lobby and the exterior only reach the concourse through a checkpoint, and one real
+ * cycle refuses a gun and passes a clean visitor. The chamber's rules themselves are in
+ * voidcrew_trader_checkpoint.dm.
  */
 /datum/unit_test/voidcrew_trader_checkpoint_maps/Run()
 	// checkpoint id -> list(outer x, outer y, inner x, inner y, chamber tiles, has a guard), map-local coordinates
@@ -88,6 +89,9 @@
 			TEST_ASSERT_EQUAL(get_turf(checkpoint.outer_door), locate(origin.x + entry[1] - 1, origin.y + entry[2] - 1, origin.z), "[checkpoint_id]'s outer door moved")
 			TEST_ASSERT_EQUAL(get_turf(checkpoint.inner_door), locate(origin.x + entry[3] - 1, origin.y + entry[4] - 1, origin.z), "[checkpoint_id]'s inner door moved")
 			TEST_ASSERT_EQUAL(length(checkpoint.chamber_turfs), entry[5], "[checkpoint_id]'s chamber is the wrong size")
+			TEST_ASSERT_NOTNULL(checkpoint.sensor, "[checkpoint_id] has no wall scanner")
+			TEST_ASSERT(get_turf(checkpoint.sensor) in checkpoint.chamber_turfs, "[checkpoint_id]'s wall scanner is not in its chamber")
+			TEST_ASSERT(isclosedturf(get_step(checkpoint.sensor, checkpoint.sensor.dir)), "[checkpoint_id]'s wall scanner is not on a wall")
 			TEST_ASSERT_EQUAL(!isnull(checkpoint.guard), entry[6], "[checkpoint_id]'s guard is missing or unexpected")
 			TEST_ASSERT(market.is_secured_turf(checkpoint.secured_turf), "[checkpoint_id]'s inner door does not lead past the checkpoint")
 			TEST_ASSERT(!market.is_secured_turf(checkpoint.lobby_turf), "[checkpoint_id]'s outer door opens onto the concourse")

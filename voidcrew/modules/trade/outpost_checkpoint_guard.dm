@@ -14,7 +14,7 @@
 /mob/living/basic/outpost_trader/checkpoint_guard
 	name = "guard"
 	desc = "Outpost security, behind armored glass."
-	/// The checkpoint this guard keeps: matches its doors' and arches' checkpoint_id
+	/// The checkpoint this guard keeps: matches its doors' checkpoint_id
 	var/checkpoint_id
 	/// Set when the outpost links its interior
 	var/datum/outpost_checkpoint/checkpoint

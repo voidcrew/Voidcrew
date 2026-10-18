@@ -32,8 +32,8 @@ A berth is locked to its own crew. Only your crew can send the elevator down to 
 
 No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a glass booth.
 
-- Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a combat gun or a mech weapon, the inner door stays shut and you are sent back out. Everyone in the chamber goes through together, or nobody does.
-- The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too.
+- Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a combat gun or a mech weapon, the inner door stays shut and the outer door opens again so you can walk back out. Everyone in the chamber goes through together, or nobody does.
+- The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too, and a gun left there keeps the chamber refusing everyone until someone carries it out.
 - **Lockers** line the lobby. Shut your guns in one and swipe your ID to lock it to yourself. It frees up again once you empty it.
 - You leave through the **exit gate**, a one-way light curtain beside the checkpoint. Nothing comes in through it.
 

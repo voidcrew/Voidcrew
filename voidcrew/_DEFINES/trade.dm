@@ -170,8 +170,22 @@
 #define OUTPOST_CHECKPOINT_PASS_TIME (5 SECONDS)
 /// How long the outer door stays open before it closes and the chamber scans
 #define OUTPOST_CHECKPOINT_OUTER_HOLD (4 SECONDS)
-/// How long the outer door stays open to let a refused group back out
+/// How long the outer door stays open at least after a refusal, to let the refused group back out
 #define OUTPOST_CHECKPOINT_REJECT_HOLD (6 SECONDS)
+/// After that, how often a refusing chamber looks again for whatever it refused; the outer door shuts once it is gone
+#define OUTPOST_CHECKPOINT_REJECT_RECHECK (2 SECONDS)
+/// A door waits this long before trying again to close on a doorway someone is standing in
+#define OUTPOST_CHECKPOINT_DOORWAY_WAIT (1 SECONDS)
+/// The same line from the checkpoint is not said again within this long
+#define OUTPOST_CHECKPOINT_REPEAT_LINE (20 SECONDS)
+/// A refused walk into a checkpoint door shows at most once this often
+#define OUTPOST_CHECKPOINT_DENY_COOLDOWN (2 SECONDS)
+/// An ambient NPC off the lift gives up going through the checkpoint after this long
+#define OUTPOST_CHECKPOINT_NPC_PATIENCE (90 SECONDS)
+/// An ambient NPC waiting at a checkpoint asks a door at most once this often
+#define OUTPOST_CHECKPOINT_NPC_ASK_GAP (4 SECONDS)
+/// On an NPC going through a checkpoint (outpost_checkpoint_npcs.dm): pathing lets them through its open doors
+#define TRAIT_CHECKPOINT_CROSSING "checkpoint_crossing"
 /// How long prying (or hacking) the inner door open takes
 #define OUTPOST_CHECKPOINT_FORCE_TIME (20 SECONDS)
 /// How long a forced inner door stays open before it shuts again

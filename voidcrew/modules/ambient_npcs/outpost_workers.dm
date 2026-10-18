@@ -858,9 +858,11 @@
 	var/mob/living/basic/ambient_npc/drunk = anchor()
 	if(!drunk || drunk.fading || drunk.stat != CONSCIOUS || !istype(drunk.activity, /datum/ambient_activity/leave))
 		return AMBIENT_STEP_DONE
-	// They can manage the last few steps to the lift; the barback stays off it
+	// They can manage the last few steps to the lift; the barback stays off it, and on this side of the checkpoint
 	var/mob/living/basic/ambient_npc/outpost/barback = doer
 	var/obj/structure/overmap/trader_outpost/outpost = istype(barback) ? barback.get_outpost() : null
+	if(length(outpost?.checkpoints) && !outpost.is_secured_turf(get_turf(drunk)))
+		return AMBIENT_STEP_DONE
 	for(var/turf/alcove as anything in outpost?.lobby_alcove_turfs)
 		if(alcove.z == drunk.z && get_dist(alcove, drunk) <= 2)
 			return AMBIENT_STEP_DONE
@@ -950,9 +952,10 @@
 	return ..()
 
 /**
- * Unloading the convoy: sealed crates from beside the lift to the loading area in front of the
- * depot's counter, a few trips over about a minute and a half. The crates are part of the look:
- * they go when they are set down, and the shelves are the convoy's business, not theirs.
+ * Unloading the convoy: sealed crates from beside the lift (just inside the weapons checkpoint, where
+ * there is one) to the loading area in front of the depot's counter, a few trips over about a
+ * minute and a half. The crates are part of the look: they go when they are set down, and the
+ * shelves are the convoy's business, not theirs.
  */
 /datum/ambient_activity/convoy_unload
 	name = "unloading the convoy"
@@ -961,7 +964,7 @@
 	var/trips_left = WORKER_CONVOY_TRIPS
 	/// A crate in their arms
 	var/carrying = FALSE
-	/// Beside the lift
+	/// Beside the lift, or just inside the weapons checkpoint
 	var/turf/pickup
 	/// In front of the counter, out of the customers' way
 	var/turf/dropoff
@@ -982,10 +985,17 @@
 	if(!trader)
 		return FALSE
 	var/list/lift_spots = list()
-	for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
-		var/turf/spot = ambient_waiting_spot(doer, alcove, 2, 3, failed_spots, loiter = FALSE)
-		if(spot)
+	// Past a weapons checkpoint the crates are handed through it, and picked up on this side
+	var/datum/outpost_checkpoint/checkpoint = outpost.lobby_checkpoint(doer)
+	if(checkpoint?.secured_turf)
+		var/turf/spot = ambient_waiting_spot(doer, checkpoint.secured_turf, 2, 3, failed_spots, loiter = FALSE)
+		if(spot && outpost.is_secured_turf(spot))
 			lift_spots += spot
+	else
+		for(var/turf/alcove as anything in outpost.lobby_alcove_turfs)
+			var/turf/spot = ambient_waiting_spot(doer, alcove, 2, 3, failed_spots, loiter = FALSE)
+			if(spot)
+				lift_spots += spot
 	pickup = ambient_nearest_tile(doer, lift_spots)
 	dropoff = ambient_waiting_spot(doer, trader, 3, 4, failed_spots, loiter = FALSE)
 	if(!pickup || !dropoff)

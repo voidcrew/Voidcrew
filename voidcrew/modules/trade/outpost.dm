@@ -234,7 +234,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!top_right)
 		return
 	var/list/obj/machinery/door/airlock/outpost/checkpoint/checkpoint_doors = list()
-	var/list/obj/machinery/outpost_checkpoint_scanner/checkpoint_arches = list()
+	var/list/obj/effect/landmark/outpost_checkpoint_chamber/checkpoint_chambers = list()
+	var/list/obj/machinery/outpost_checkpoint_sensor/checkpoint_sensors = list()
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
 		// block() iterates y-major then x, same order the hangar-side alcove
 		// collects in, so the elevator can map alcove turf i to alcove turf i.
@@ -244,6 +245,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/obj/effect/landmark/outpost_network_pad_spot/pad_mark in interior_turf)
 			network_pad_spot = interior_turf
 			qdel(pad_mark)
+		for(var/obj/effect/landmark/outpost_checkpoint_chamber/chamber_mark in interior_turf)
+			checkpoint_chambers += chamber_mark
 		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
 			npc.outpost = src
 			npc.shop = get_shop(npc.shop_type)
@@ -261,8 +264,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				door.outpost = src
 				if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint))
 					checkpoint_doors += door
-			else if(istype(machine, /obj/machinery/outpost_checkpoint_scanner))
-				checkpoint_arches += machine
+			else if(istype(machine, /obj/machinery/outpost_checkpoint_sensor))
+				checkpoint_sensors += machine
 			else if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
 				panel.outpost = src
@@ -279,7 +282,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				fixture.AddElement(/datum/element/outpost_property)
 	// Only parts collected from this concourse reservation form a checkpoint
 	// (outpost_checkpoint.dm); the guards linked above are matched to theirs.
-	build_checkpoints(checkpoint_doors, checkpoint_arches)
+	build_checkpoints(checkpoint_doors, checkpoint_chambers, checkpoint_sensors)
 	start_armed_sweep()
 	// The traders' names/appearances depend on their shops, so setup runs
 	// post-link. In the roundstart pre-load path the mobs haven't initialized
