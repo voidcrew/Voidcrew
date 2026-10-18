@@ -330,11 +330,11 @@
 // ----- doors -----
 
 /// Hands `door` permission for exactly one opening
-/datum/outpost_checkpoint/proc/open_door(obj/machinery/door/airlock/outpost/checkpoint/door)
+/datum/outpost_checkpoint/proc/open_door(obj/machinery/door/airlock/outpost/checkpoint/door, forced = DEFAULT_DOOR_CHECKS)
 	if(QDELETED(door) || !door.density)
 		return
 	door.opening_permitted = TRUE
-	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open), forced)
 
 /// Whether someone (standing or lying) or something bulky is in `door`'s doorway, so it must not close yet
 /datum/outpost_checkpoint/proc/doorway_blocked(obj/machinery/door/door)
@@ -542,7 +542,7 @@
 	wash_chamber(CHECKPOINT_REFUSE_COLOR)
 	playsound(inner_door, 'sound/machines/warning-buzzer.ogg', 70, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	inner_door.set_breached(TRUE)
-	open_door(inner_door)
+	open_door(inner_door, BYPASS_DOOR_CHECKS)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(end_breach)), OUTPOST_CHECKPOINT_FORCED_OPEN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /datum/outpost_checkpoint/proc/end_breach()
@@ -605,6 +605,10 @@
 	if(!opening_permitted)
 		return FALSE
 	opening_permitted = FALSE
+	return ..()
+
+// Checkpoint permission bypasses the opening checks without selecting the pry sound for an ordinary cycle.
+/obj/machinery/door/airlock/outpost/checkpoint/try_to_force_door_open(force_type = DEFAULT_DOOR_CHECKS)
 	return ..(BYPASS_DOOR_CHECKS)
 
 // Someone got into the doorway as it shut: it opens again for them, and its checkpoint closes it once they have moved
