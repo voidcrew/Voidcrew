@@ -294,7 +294,7 @@
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
 	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
 	var/datum/techweb/web = install_reward_disk(server, user)
-	TEST_ASSERT_EQUAL(web.experiment_reward_ledger(), first_ship.ship_team.research_reward_ledger, "The physical source did not resolve its crew's ledger")
+	TEST_ASSERT_EQUAL(web.experiment_reward_ledger(), first_ship.get_crew_record().research_reward_ledger, "The physical source did not resolve its crew's ledger")
 	complete_arcade(web, get_turf(server))
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 237, "Physical completion did not pay the flat and intrinsic rewards once")
 	publish_reward_paper(web)
@@ -318,7 +318,7 @@
 	publish_reward_paper(web)
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "Replacing the physical servers reset entitlement")
 	var/obj/structure/overmap/ship/other_ship = make_reward_ship(run_loc_floor_top_right)
-	TEST_ASSERT(other_ship.ship_team.research_reward_ledger != first_ship.ship_team.research_reward_ledger, "Separate crews share one ledger")
+	TEST_ASSERT(other_ship.get_crew_record().research_reward_ledger != first_ship.get_crew_record().research_reward_ledger, "Separate crews share one ledger")
 	server = allocate(/obj/machinery/rnd/server/ship, run_loc_floor_top_right)
 	web = install_reward_disk(server, user)
 	complete_arcade(web, get_turf(server))
@@ -346,7 +346,7 @@
 		TEST_ASSERT_NOTNULL(link, "The reward fixture could not propose a relay")
 		TEST_ASSERT(link.approve(crew, relay), "The reward fixture could not approve a relay")
 		TEST_ASSERT_EQUAL(relay.stored_research.experiment_reward_ledger(), home.research_reward_ledger, "A relay used the consuming crew's ledger")
-		TEST_ASSERT_EQUAL(length(ship.ship_team.research_reward_ledger), 0, "Sharing outpost research consumed the visitor's entitlement")
+		TEST_ASSERT_EQUAL(length(ship.get_crew_record().research_reward_ledger), 0, "Sharing outpost research consumed the visitor's entitlement")
 	complete_arcade(web, run_loc_floor_bottom_left)
 	publish_reward_paper(web)
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "Relay-backed research did not award exactly once to the source site")
@@ -370,7 +370,7 @@
 		TEST_ASSERT_NOTNULL(link, "The replacement source could not invite an existing relay crew")
 		TEST_ASSERT(link.approve(member.current, relay), "An existing relay could not reconnect to the replacement source")
 		TEST_ASSERT_EQUAL(relay.stored_research.experiment_reward_ledger(), home.research_reward_ledger, "Reconnecting a relay replaced the site ledger")
-		TEST_ASSERT_EQUAL(length(ship.ship_team.research_reward_ledger), 0, "Outpost rewards consumed a visitor crew's entitlement")
+		TEST_ASSERT_EQUAL(length(ship.get_crew_record().research_reward_ledger), 0, "Outpost rewards consumed a visitor crew's entitlement")
 	complete_arcade(web, run_loc_floor_top_right)
 	publish_reward_paper(web)
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "Replacing an outpost server reset its shared entitlement")
@@ -461,7 +461,7 @@
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
 	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
 	var/datum/techweb/web = install_reward_disk(server, user)
-	ship.ship_team.research_reward_ledger[/datum/experiment/physical/arcade_winner] = TRUE
+	ship.get_crew_record().research_reward_ledger[/datum/experiment/physical/arcade_winner] = TRUE
 	web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 100))
 	var/datum/techweb_node/node = allocate(/datum/techweb_node)
 	node.id = "rewarded_experiment_refund_test"
@@ -491,23 +491,29 @@
 	TEST_ASSERT(notes.merge(incoming), "A zero-value incoming paper could not merge")
 	TEST_ASSERT(QDELETED(incoming) && notes.value == 2500, "A zero-value paper changed the total or survived merging")
 
-/// Exercise the real reconstruction after the original ship and crew datum have been deleted.
+/// Exercise reconstruction after the original hull and team are deleted; round identity survives.
 /datum/unit_test/voidcrew_checkpoints/research_reward_ledger
 	destroy_original = TRUE
 
 /datum/unit_test/voidcrew_checkpoints/research_reward_ledger/build_hull(datum/checkpoint_construction/job, obj/structure/overmap/dynamic/player_outpost/registry_test/home, datum/outpost_berth/ship_bay/bay, mob/living/carbon/human/captain, obj/structure/overmap/ship/original, datum/ship_checkpoint_ui/registry_test/panel, datum/ship_checkpoint/snapshot)
-	var/list/ledger = snapshot.research_reward_ledger
-	TEST_ASSERT_NOTNULL(ledger, "Deleting the original crew lost the checkpoint's ledger")
-	TEST_ASSERT_EQUAL(job.research_reward_ledger, ledger, "Reconstruction copied or replaced the saved ledger")
+	var/datum/voidcrew_crew_record/crew = snapshot.crew_record_ref?.resolve()
+	TEST_ASSERT_NOTNULL(crew, "Deleting the original hull lost the checkpoint's crew")
+	var/list/ledger = crew.research_reward_ledger
+	TEST_ASSERT_EQUAL(job.crew_record_ref.resolve(), crew, "Reconstruction copied or replaced the saved crew")
 	ledger[/datum/experiment/physical/arcade_winner] = TRUE
+	crew.mission_suit_paid = TRUE
 	job.fast_forward(1)
 	TEST_ASSERT(QDELETED(snapshot), "The checkpoint was not consumed at the first piece")
-	TEST_ASSERT_EQUAL(job.research_reward_ledger, ledger, "Consuming the checkpoint lost the ledger")
+	TEST_ASSERT_EQUAL(job.crew_record_ref.resolve().research_reward_ledger, ledger, "Consuming the checkpoint lost the ledger")
 	ledger[/datum/experiment/ordnance/explosive/lowyieldbomb] = TRUE
+	crew.mission_gadget_paid = TRUE
 	job.fast_forward()
 	var/obj/structure/overmap/ship/rebuilt = bay.ship
 	TEST_ASSERT_NOTNULL(rebuilt, "The reward-ledger checkpoint did not finish reconstruction")
-	TEST_ASSERT_EQUAL(rebuilt.ship_team.research_reward_ledger, ledger, "The rebuilt crew restored an older reward entitlement")
+	TEST_ASSERT_EQUAL(rebuilt.get_crew_record(), crew, "The rebuilt hull did not restore its crew")
+	TEST_ASSERT_EQUAL(rebuilt.get_crew_record().research_reward_ledger, ledger, "The rebuilt crew restored an older reward entitlement")
+	TEST_ASSERT(crew.mission_suit_paid && crew.mission_gadget_paid, "Reconstruction reset guarded prize claims")
+	TEST_ASSERT_NULL(rebuilt.award_guarded_prize("kill", 3, get_turf(rebuilt.shuttle)), "Reconstruction repaid a guarded prize")
 	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship, get_turf(rebuilt.shuttle))
 	var/obj/item/computer_disk/ship_disk/disk = allocate(/obj/item/computer_disk/ship_disk)
 	server.attacked_by(disk, captain)

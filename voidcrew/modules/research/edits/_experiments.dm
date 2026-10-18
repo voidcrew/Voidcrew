@@ -6,7 +6,11 @@
 /datum/techweb/complete_experiment(datum/experiment/completed_experiment)
 	if(QDELETED(completed_experiment) || completed_experiments[completed_experiment.type] || !(completed_experiment in available_experiments))
 		return null
-	return ..()
+	var/list/ledger = experiment_reward_ledger()
+	var/grant_claimed = ledger?[completed_experiment.type]
+	. = ..()
+	if(. && grant_claimed)
+		. += "\nResearch grant already claimed."
 
 /// Claim before granting either reward. Completion state and paid-node refunds remain web-local.
 /datum/techweb/proc/award_experiment_completion(datum/experiment/experiment)

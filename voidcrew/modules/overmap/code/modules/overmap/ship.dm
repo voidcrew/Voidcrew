@@ -213,9 +213,7 @@
 	var/last_mission_refresh = -MISSION_REFRESH_COOLDOWN
 	/// Fixed offer-set schedule, shared by every console on this hull.
 	var/next_mission_refresh = 0
-	/// Guarded prizes are round-local entitlements of the hull, including after transfer.
-	var/mission_suit_paid = FALSE
-	var/mission_gadget_paid = FALSE
+	/// Round time of this hull's first suit award, for mission metrics.
 	var/mission_first_suit_seconds
 
 	var/pending_dock = FALSE
@@ -4718,19 +4716,22 @@
 	var/turf/spot = get_turf(reward_anchor)
 	if(!spot || !length(mission_prize_pool(family, "suit")))
 		return null
+	var/datum/voidcrew_crew_record/crew = get_crew_record()
+	if(!crew)
+		return null
 	var/category = roll_mission_prize(zone)
 	var/list/pool = mission_prize_pool(family, category)
 	if(!length(pool))
 		return null
 	if(category == "suit")
-		if(mission_suit_paid)
+		if(crew.mission_suit_paid)
 			return null
-		mission_suit_paid = TRUE
+		crew.mission_suit_paid = TRUE
 		mission_first_suit_seconds = metric_round_seconds()
 	else
-		if(mission_gadget_paid)
+		if(crew.mission_gadget_paid)
 			return null
-		mission_gadget_paid = TRUE
+		crew.mission_gadget_paid = TRUE
 	var/prize_type = pick(pool)
 	new prize_type(spot)
 	record_guarded_prize(src, family, category, zone, prize_type, source_type)

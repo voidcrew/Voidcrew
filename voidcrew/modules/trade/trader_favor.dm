@@ -23,6 +23,11 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 	var/list/zone_families = list()
 	/// Immutable encounter/family serial strings, shared by aliases of one settlement.
 	var/list/settlement_claims = list()
+	/// One suit and one gadget across all of the crew's hulls this round.
+	var/mission_suit_paid = FALSE
+	var/mission_gadget_paid = FALSE
+	/// Experiment grants shared by every source disk, server and hull in this crew.
+	var/list/research_reward_ledger = list()
 
 /datum/voidcrew_crew_record/New()
 	crew_id = ++GLOB.voidcrew_crew_serial
@@ -68,11 +73,14 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 		for(var/datum/mind/candidate in leadership_members)
 			if(ship.is_ship_captain_mind(candidate))
 				leader = candidate
-				return
+				break
 		break // Without a captain on the oldest hull, fall back to member join order.
-	for(var/datum/mind/candidate in leadership_members)
-		leader = candidate
-		return
+	if(!leader && length(leadership_members))
+		leader = leadership_members[1]
+	if(leader && !QDELETED(src))
+		var/leader_name = leader.current?.real_name || leader.name
+		for(var/datum/mind/crewmate in minds)
+			to_chat(crewmate.current, span_notice("[leader_name] now leads the crew."))
 
 /// Round cleanup/admin disposal, not hull teardown. Never serialize these records.
 /proc/clear_voidcrew_crew_records()
@@ -161,7 +169,8 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 /// Only never-used provisional identities may be discarded before round cleanup.
 /datum/voidcrew_crew_record/proc/is_unfounded()
 	return !length(teams) && !length(minds) && !length(ckeys) && !length(trader_favor) && !length(favor_unique_purchases) && !length(settlement_claims) \
-		&& !zone_totals["[ZONE_GREEN]"] && !zone_totals["[ZONE_YELLOW]"] && !zone_totals["[ZONE_RED]"]
+		&& !zone_totals["[ZONE_GREEN]"] && !zone_totals["[ZONE_YELLOW]"] && !zone_totals["[ZONE_RED]"] \
+		&& !mission_suit_paid && !mission_gadget_paid && !length(research_reward_ledger)
 
 /// The key a shop's standing is stored under: its outpost's main shop type.
 /// Falls back to our own type for shops with no outpost (shouldn't happen).

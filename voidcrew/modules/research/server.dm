@@ -17,10 +17,6 @@
  */
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
-/datum/team/voidcrew
-	/// Shared entitlement across every source disk and replacement server owned by this crew.
-	var/list/research_reward_ledger = list()
-
 /obj/structure/overmap/dynamic/player_outpost
 	/// Site research retains its entitlement across server replacements and ownership changes.
 	var/list/research_reward_ledger = list()
@@ -37,7 +33,8 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		var/obj/structure/overmap/site = get_research_service_site(server)
 		if(istype(site, /obj/structure/overmap/ship))
 			var/obj/structure/overmap/ship/ship = site
-			return ship.ship_team?.research_reward_ledger
+			var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+			return crew?.research_reward_ledger
 		if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
 			var/obj/structure/overmap/dynamic/player_outpost/home = site
 			return home.research_reward_ledger

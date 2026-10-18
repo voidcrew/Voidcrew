@@ -1213,18 +1213,15 @@
 	SEND_SIGNAL(port, COMSIG_VOIDCREW_SHIP_LOADED)
 	ship_metric_spawned(vessel, creator = user, source = "commissioned")
 
-	// The builders own what they built. setup_from_template() creates the crew roster
-	// but nothing used to put anyone ON it, so a commissioned hull launched with a crew
-	// of nobody: every roster-gated console refused the people who welded it together,
-	// there was no captain to invite anyone aboard, and the only way out was an admin
-	// hand-editing team membership (round 6, 2026-08-15, ticket #1). Enlist the surveyor
-	// as commanding officer and everyone standing inside the enclosure as crew.
-	// enlist_crewmember() also clears each ckey through the join password, per the
-	// crew-adding rules in ship.dm.
+	// Enlist unaffiliated builders and the surveyor's crew; visitors keep their affiliation.
 	vessel.ship_team.name = vessel_name // not the template's "Commissioned Vessel" placeholder
+	var/datum/voidcrew_crew_record/vessel_crew = vessel.get_crew_record()
 	for(var/turf/claimed as anything in turfs)
 		for(var/mob/living/builder in claimed)
 			if(builder == user || !builder.mind || !GET_CLIENT(builder) || builder.stat == DEAD)
+				continue
+			var/datum/voidcrew_crew_record/builder_crew = builder.mind.recover_reputation_crew()
+			if(builder_crew && builder_crew != vessel_crew)
 				continue
 			if(vessel.enlist_crewmember(builder))
 				to_chat(builder, span_notice("You are registered as crew of [vessel_name]."))

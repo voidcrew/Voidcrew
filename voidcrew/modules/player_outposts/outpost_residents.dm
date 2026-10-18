@@ -24,6 +24,14 @@
 /obj/structure/overmap/dynamic/player_outpost/proc/is_resident(mob/user)
 	return is_owner(user) || (user?.mind && user.mind in residents)
 
+/// Commit a validated pod arrival through the same crew transaction as ship arrivals.
+/obj/structure/overmap/dynamic/player_outpost/proc/register_resident_arrival(mob/living/character, player_key)
+	var/datum/voidcrew_crew_record/crew = character.mind.recover_reputation_crew()
+	if(crew)
+		character.mind.join_reputation_crew(crew)
+	residents |= character.mind
+	resident_clearance[player_key] = resident_access_revision
+
 /obj/structure/overmap/dynamic/player_outpost/proc/has_resident_clearance(player_key)
 	return player_key && !(player_key in blocked_residents) && (player_key == founder_ckey || invited_residents[player_key] || resident_clearance[player_key] == resident_access_revision)
 
@@ -149,8 +157,7 @@
 		return FALSE
 	home.arrival_reservations -= player_key
 	pod.arrival_reserved = FALSE
-	home.residents |= character.mind
-	home.resident_clearance[player_key] = home.resident_access_revision
+	home.register_resident_arrival(character, player_key)
 	SSticker.queued_players -= src
 	SSticker.queue_delay = 4
 	transfer_character()
@@ -171,7 +178,7 @@
 	log_manifest(character.mind.key, character.mind, character, latejoin = TRUE)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
 	log_shuttle("[character.ckey] arrived as a resident of [home.name]")
-	to_chat(character, span_boldnotice("You are a resident of [home.name]. Your ID keeps its own account. Management can delegate treasury and construction authority separately."))
+	to_chat(character, span_boldnotice("You are a resident of [home.name]."))
 	try_show_orientation_briefing(character)
 	return TRUE
 
