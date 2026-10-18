@@ -1189,13 +1189,9 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		for(var/reward_type in reward_types)
 			// Stacks carry their bundled count, matching what the shelf sells
 			var/stack_amount = LAZYACCESS(reward_amounts, reward_type)
-			var/atom/movable/reward
-			if(stack_amount > 1 && ispath(reward_type, /obj/item/stack))
-				reward = new reward_type(reward_turf, stack_amount)
-			else
-				reward = new reward_type(reward_turf)
+			var/atom/movable/reward = create_trader_goods(reward_type, reward_turf, stack_amount)
 			// Paid out past a trader outpost's checkpoint, a gun comes sealed (outpost_trespass.dm)
-			outpost_seal_goods(reward)
+			mark_trader_goods(outpost_seal_goods(reward))
 		flash_reward_anchor(reward_anchor)
 
 	// Research payouts are physical: a dossier the crew has to carry to an R&D

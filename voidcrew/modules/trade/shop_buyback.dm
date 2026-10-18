@@ -92,6 +92,8 @@
  * Whether this item counts for this ledger entry.
  */
 /datum/shop_buyback/proc/matches(obj/item/offered)
+	if(is_trader_good(offered))
+		return FALSE
 	if(match_subtypes ? !istype(offered, item_path) : offered.type != item_path)
 		return FALSE
 	// No selling the trader a projection of the goods
@@ -168,6 +170,9 @@
 	if(demand <= 0)
 		return "Not buying any more this shift."
 	if(count_carried_units(user) < 1)
+		for(var/obj/item/offered in user.get_all_contents())
+			if(istype(offered, item_path) && is_trader_good(offered))
+				return "I don't buy back shop stock."
 		// Exact-type ledgers (match_subtypes = FALSE) refuse processed/lab-made
 		// variants of the wanted goods. Without this, a player holding a refined
 		// bluespace crystal at the "natural bluespace crystals" window just got
