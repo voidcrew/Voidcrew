@@ -186,6 +186,93 @@
 	TEST_ASSERT(!inner.open(BYPASS_DOOR_CHECKS), "A forced open() got through the inner door")
 	TEST_ASSERT(!outer.open(BYPASS_DOOR_CHECKS), "A forced open() got through the outer door")
 
+/// The force mode passed to the airlock animation selects its normal or pry sound.
+/datum/unit_test/voidcrew_trader_checkpoint/door_sounds
+	var/list/open_modes = list()
+	var/list/close_modes = list()
+
+/datum/unit_test/voidcrew_trader_checkpoint/door_sounds/Destroy()
+	open_modes = null
+	close_modes = null
+	return ..()
+
+/datum/unit_test/voidcrew_trader_checkpoint/door_sounds/proc/on_open(obj/machinery/door/airlock/door, forced)
+	SIGNAL_HANDLER
+	open_modes[door] = forced
+
+/datum/unit_test/voidcrew_trader_checkpoint/door_sounds/proc/on_close(obj/machinery/door/airlock/door, forced)
+	SIGNAL_HANDLER
+	close_modes[door] = forced
+
+/datum/unit_test/voidcrew_trader_checkpoint/door_sounds/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/person = visitor()
+	for(var/obj/machinery/door/airlock/door in list(outer, inner))
+		RegisterSignal(door, COMSIG_AIRLOCK_OPEN, PROC_REF(on_open))
+		RegisterSignal(door, COMSIG_AIRLOCK_CLOSE, PROC_REF(on_close))
+		door.req_access = list(ACCESS_CENT_SPECOPS)
+		TEST_ASSERT(!door.allowed(person), "The visitor unexpectedly has door access")
+	// Ordinary entry keeps the controller's bypass, including power and emag checks.
+	outer.set_machine_stat(NOPOWER)
+	outer.obj_flags |= EMAGGED
+	TEST_ASSERT(checkpoint.request_outer(person), "The checkpoint refused ordinary entry")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!outer.density, "The controller no longer bypasses opening checks")
+	TEST_ASSERT(outer in open_modes, "The outer door did not report an opening")
+	TEST_ASSERT_EQUAL(open_modes[outer], DEFAULT_DOOR_CHECKS, "Ordinary entry selected the pry sound")
+	outer.set_machine_stat(NONE)
+	outer.obj_flags &= ~EMAGGED
+	checkpoint.close_door(outer)
+	TEST_ASSERT(wait_shut(outer), "The outer door did not close")
+	TEST_ASSERT_EQUAL(close_modes[outer], FORCING_DOOR_CHECKS, "Closing the outer door selected the pry sound")
+	// A clean scan opens the inner door without requiring the visitor's access.
+	person.forceMove(chamber[1])
+	TEST_ASSERT(scan_now(person), "Could not start a clean scan")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!inner.density, "The clean scan did not open the inner door")
+	TEST_ASSERT(inner in open_modes, "The inner door did not report an opening")
+	TEST_ASSERT_EQUAL(open_modes[inner], DEFAULT_DOOR_CHECKS, "A scan pass selected the pry sound")
+	person.forceMove(secured)
+	checkpoint.close_door(inner)
+	TEST_ASSERT(wait_shut(inner), "The inner door did not close")
+	TEST_ASSERT_EQUAL(close_modes[inner], FORCING_DOOR_CHECKS, "Closing the inner door selected the pry sound")
+	// Unguarded exterior hatch chambers also cycle outward with the normal sound.
+	TEST_ASSERT(scan_now(person), "Could not start an outward hatch cycle")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!inner.density, "The outward hatch cycle did not open the inner door")
+	TEST_ASSERT_EQUAL(open_modes[inner], DEFAULT_DOOR_CHECKS, "An outward hatch cycle selected the pry sound")
+	checkpoint.close_door(inner)
+	TEST_ASSERT(wait_shut(inner), "The inner door did not close after the outward cycle")
+	// A refusal opens the outer door normally, then closes it once the chamber is clear.
+	person.forceMove(chamber[1])
+	var/obj/item/gun/energy/laser/gun = allocate(/obj/item/gun/energy/laser, chamber[2])
+	TEST_ASSERT(scan_now(person), "Could not start a refused scan")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!outer.density && inner.density, "The refusal did not open only the outer door")
+	TEST_ASSERT_EQUAL(open_modes[outer], DEFAULT_DOOR_CHECKS, "A refusal selected the pry sound")
+	gun.forceMove(lobby)
+	person.forceMove(lobby)
+	checkpoint.check_refused()
+	TEST_ASSERT(wait_shut(outer), "The outer door did not close after the refusal")
+	// Only the successful player breach uses the pry sound. Following through and closing do not.
+	checkpoint.breach(person)
+	sleep(1 SECONDS)
+	TEST_ASSERT(!inner.density, "The breach did not open the inner door")
+	TEST_ASSERT_EQUAL(open_modes[inner], BYPASS_DOOR_CHECKS, "A player breach lost the pry sound")
+	TEST_ASSERT(checkpoint.request_outer(person), "Could not open the outer door during a breach")
+	sleep(1 SECONDS)
+	TEST_ASSERT(!outer.density, "The outer door did not open during the breach")
+	TEST_ASSERT_EQUAL(open_modes[outer], DEFAULT_DOOR_CHECKS, "Following through a breach selected the pry sound")
+	checkpoint.end_breach()
+	TEST_ASSERT(wait_shut(outer) && wait_shut(inner), "The checkpoint did not close after the breach")
+	TEST_ASSERT_EQUAL(close_modes[inner], FORCING_DOOR_CHECKS, "Closing after a breach selected the pry sound")
+	TEST_ASSERT(!inner.open(BYPASS_DOOR_CHECKS), "A breach left permission to open the inner door")
+	// The safety reopening also sounds normal, even when the previous opening was forced.
+	person.forceMove(get_turf(inner))
+	inner.CheckForMobs()
+	TEST_ASSERT(!inner.density, "The door did not reopen for someone in its doorway")
+	TEST_ASSERT_EQUAL(open_modes[inner], DEFAULT_DOOR_CHECKS, "A safety reopening selected the pry sound")
+
 /// Only one door is ever open: the outer door closes before the chamber scans, and nothing opens the inner door around the scan
 /datum/unit_test/voidcrew_trader_checkpoint/interlock/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
