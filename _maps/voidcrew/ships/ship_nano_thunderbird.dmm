@@ -37,14 +37,6 @@
 /obj/structure/window/reinforced/spawner/directional/east,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
-"cJ" = (
-/obj/structure/rack,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
 "cM" = (
 /obj/structure/table/reinforced,
 /obj/item/food/pizza/meat/raw,
@@ -669,6 +661,10 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/cargo_bay)
+"Pa" = (
+/obj/structure/rack,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
 "Pc" = (
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/hallway)
@@ -974,7 +970,7 @@ Ww
 Ww
 Xz
 Ub
-cJ
+Pa
 in
 EN
 aa

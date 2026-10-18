@@ -29,17 +29,6 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"ac" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/structure/table/wood,
-/obj/item/storage/box/lethalshot,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
 "ad" = (
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 1
@@ -937,6 +926,16 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
+"Kc" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "Ki" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
@@ -1482,7 +1481,7 @@ eG
 WS
 Gr
 QM
-ac
+Kc
 WB
 WB
 Gr

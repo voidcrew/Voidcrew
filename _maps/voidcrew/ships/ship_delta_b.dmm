@@ -180,22 +180,6 @@
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/delta/medbay/b)
-"ib" = (
-/obj/structure/rack,
-/obj/item/storage/belt/utility,
-/obj/item/radio/off{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/radio/off,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/airalarm/directional/north,
-/obj/structure/sign/warning/explosives/alt/directional/east,
-/obj/item/clothing/mask/gas/syndicate,
-/obj/item/clothing/mask/gas/syndicate,
-/obj/item/ammo_box/magazine/m10mm,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "ik" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor{
@@ -490,15 +474,6 @@
 /obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/airlock/starboard/b)
-"vX" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/clothing/mask/gas/syndicate,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/engineering/b)
 "wo" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -788,6 +763,14 @@
 /obj/item/clothing/mask/gas/syndicate,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/engineering/b)
+"Ec" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/clothing/mask/gas/syndicate,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/engineering/b)
 "Ef" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -948,6 +931,21 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/airlock/port/b)
+"JK" = (
+/obj/structure/rack,
+/obj/item/storage/belt/utility,
+/obj/item/radio/off{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/radio/off,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/airalarm/directional/north,
+/obj/structure/sign/warning/explosives/alt/directional/east,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/mask/gas/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "JN" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
@@ -1629,7 +1627,7 @@ aa
 Yw
 TZ
 lt
-vX
+Ec
 Ll
 Zb
 Zb
@@ -1865,7 +1863,7 @@ aa
 aa
 aa
 cW
-ib
+JK
 NO
 VJ
 VJ

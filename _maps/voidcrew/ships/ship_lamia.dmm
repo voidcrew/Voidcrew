@@ -1,19 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/closet/cabinet,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/box/beanbag,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/glasses/sunglasses/reagent,
-/obj/item/clothing/head/wizard/black{
-	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
-	name = "beer wizard hat"
-	},
-/obj/item/roulette_wheel_beacon,
-/obj/item/etherealballdeployer,
-/obj/item/storage/belt/bandolier,
-/turf/open/floor/carpet/purple,
-/area/shuttle/voidcrew/lamia/bar)
 "ab" = (
 /obj/structure/window/reinforced/fulltile{
 	color = "#008000"
@@ -702,6 +687,20 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/lamia/engines)
+"gS" = (
+/obj/structure/closet/cabinet,
+/obj/item/melee/baseball_bat,
+/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/clothing/glasses/sunglasses/reagent,
+/obj/item/clothing/head/wizard/black{
+	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
+	name = "beer wizard hat"
+	},
+/obj/item/roulette_wheel_beacon,
+/obj/item/etherealballdeployer,
+/obj/item/storage/belt/bandolier,
+/turf/open/floor/carpet/purple,
+/area/shuttle/voidcrew/lamia/bar)
 "hh" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1816,7 +1815,7 @@ MR
 Ql
 Fu
 vJ
-aa
+gS
 aW
 MA
 NF

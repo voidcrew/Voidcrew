@@ -409,8 +409,9 @@
 
 /datum/techweb_node/automatic_ammunition
 	id = TECHWEB_NODE_AUTOMATIC_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Automatic Ammunition"
-	description = "High-capacity feed devices and specialist shells. Keeping an automatic fed costs a lot more metal than keeping a pistol fed."
+	description = "High-capacity feed devices and specialist shells."
 	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
 	design_ids = list(
 		"vc_mag_m9mm_aps",

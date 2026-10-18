@@ -8,7 +8,7 @@
    ],
    "height": 5,
    "png": "delta_delta_cargo_salvage.png",
-   "src_md5": "1d5b9f411a9d0a852970a7f52292cfdf",
+   "src_md5": "f0e2a0cc12c12d17251c5af49f6875c6",
    "themes": {
     "cult": {
      "connector": [
@@ -17,7 +17,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_salvage_cult.png",
-     "src_md5": "999e9ce1454221127df6ce121c00ae7c",
+     "src_md5": "d41494ec77577f1d41586d37e2f32679",
      "width": 7
     },
     "lightship": {
@@ -27,7 +27,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_salvage_lightship.png",
-     "src_md5": "190d4bf021b08f6ed0b3b544181d852e",
+     "src_md5": "67bbe9a862f1b1e701ba0e35a3c927ec",
      "width": 7
     },
     "syndicate": {
@@ -37,7 +37,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_salvage_syndicate.png",
-     "src_md5": "5861a6b9fe8fa2af438d259638f22cb3",
+     "src_md5": "8ecaf55064a2c7ff3950af7b61c1e279",
      "width": 7
     }
    },

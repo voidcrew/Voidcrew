@@ -1,22 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
-/obj/structure/guncase/wt550,
-/obj/item/melee/baseball_bat,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
-	dir = 1
-	},
-/obj/machinery/light/directional/south,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
 "aab" = (
 /obj/structure/closet/secure_closet/contraband/armory,
 /obj/effect/turf_decal/siding/thinplating_new/dark,
@@ -336,6 +318,21 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/template_noop)
+"tZS" = (
+/obj/structure/guncase/wt550,
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
 "wvs" = (
 /obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 4
@@ -399,7 +396,7 @@ aDU
 aab
 ruD
 dPa
-aaa
+tZS
 "}
 (5,1,1) = {"
 ksK

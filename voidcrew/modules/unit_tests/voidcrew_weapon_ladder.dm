@@ -1,3 +1,51 @@
+/// Ammunition nodes follow the standing of the weapons they feed.
+/datum/unit_test/voidcrew_ammunition_permissions/Run()
+	// ZONE_PERMISSION_PUBLIC / YELLOW / ADVANCED; fork defines follow test includes.
+	var/list/permissions = list(
+		/datum/techweb_node/ballistic_ammunition = 0,
+		/datum/techweb_node/explosive_ammo = 0,
+		/datum/techweb_node/automatic_ammunition = 1,
+		/datum/techweb_node/weapon_ammo_c20r = 1,
+		/datum/techweb_node/weapon_ammo_wt550 = 1,
+		/datum/techweb_node/specialist_ammo = 1,
+		/datum/techweb_node/weapon_ammo_l6_saw = 2,
+		/datum/techweb_node/weapon_ammo_bulldog = 2,
+		/datum/techweb_node/weapon_ammo_sniper_rifle = 2,
+		/datum/techweb_node/experimental_ammo = 2,
+	)
+	for(var/datum/techweb_node/node_type as anything in permissions)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[initial(node_type.id)]
+		TEST_ASSERT_NOTNULL(node, "Missing ammunition node [node_type].")
+		TEST_ASSERT_EQUAL(node.zone_permission, permissions[node_type], "[node.id] has the wrong ammunition permission.")
+
+/// Exercise actual magazine loading, including full and spent single-shot chambers.
+/datum/unit_test/voidcrew_no_quarter_ammunition/Run()
+	var/obj/item/gun/ballistic/shotgun/musket/no_quarter/cannon = allocate(__IMPLIED_TYPE__)
+	var/obj/item/gun/ballistic/shotgun/pump = allocate(__IMPLIED_TYPE__)
+	var/obj/item/gun/ballistic/shotgun/doublebarrel/double = allocate(__IMPLIED_TYPE__)
+	for(var/obj/item/gun/ballistic/shotgun/gun as anything in list(cannon, pump, double))
+		QDEL_NULL(gun.chambered)
+		for(var/obj/item/ammo_casing/round as anything in gun.magazine.ammo_list())
+			qdel(round)
+		gun.magazine.stored_ammo.Cut()
+		var/obj/item/ammo_casing/shotgun/no_quarter/cartridge = allocate(__IMPLIED_TYPE__)
+		TEST_ASSERT_EQUAL(!!gun.magazine.give_round(cartridge), gun == cannon, "[gun.type] has the wrong heavy cartridge compatibility.")
+	var/obj/item/ammo_casing/shotgun/ordinary = allocate(__IMPLIED_TYPE__)
+	TEST_ASSERT(!cannon.magazine.give_round(ordinary), "An ordinary shell replaced a live heavy cartridge.")
+	var/obj/item/ammo_casing/spent = cannon.magazine.get_round()
+	QDEL_NULL(spent.loaded_projectile)
+	TEST_ASSERT(cannon.magazine.give_round(ordinary), "No Quarter lost ordinary 12g loading or spent-round replacement.")
+	TEST_ASSERT_EQUAL(cannon.magazine.get_round(), ordinary, "No Quarter did not retain the loaded 12g shell.")
+	var/obj/item/ammo_casing/shotgun/no_quarter/next_cartridge = allocate(__IMPLIED_TYPE__)
+	TEST_ASSERT(!cannon.magazine.give_round(next_cartridge), "A heavy cartridge replaced a live 12g shell.")
+	QDEL_NULL(ordinary.loaded_projectile)
+	TEST_ASSERT(cannon.magazine.give_round(next_cartridge), "No Quarter cannot replace a spent 12g shell with its heavy cartridge.")
+	TEST_ASSERT_EQUAL(length(cannon.magazine.stored_ammo), 1, "No Quarter exceeded its single-round capacity.")
+	var/obj/item/storage/belt/bandolier/no_quarter/bandolier = locate() in run_loc_floor_bottom_left
+	TEST_ASSERT_NOTNULL(bandolier, "No Quarter lost its cartridge bandolier.")
+	TEST_ASSERT_EQUAL(length(bandolier.contents), 12, "No Quarter's bandolier lost cartridges.")
+	qdel(bandolier)
+
 /// Test the finished kits, after Workshop pre_equip has replaced inherited lists.
 /datum/unit_test/voidcrew_ladder_outfits/Run()
 	var/list/role_outfits = list(

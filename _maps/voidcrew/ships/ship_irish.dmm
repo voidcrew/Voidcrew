@@ -200,6 +200,13 @@
 /obj/structure/plaque/static_plaque,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/resistance/bridge)
+"qG" = (
+/obj/item/radio/intercom{
+	pixel_y = 28
+	},
+/obj/structure/rack,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/resistance/bridge)
 "qQ" = (
 /obj/machinery/atmospherics/components/tank/air,
 /turf/open/floor/plating,
@@ -341,19 +348,6 @@
 /obj/machinery/suit_storage_unit/engine,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/resistance/maintenance)
-"wr" = (
-/obj/item/radio/intercom{
-	pixel_y = 28
-	},
-/obj/structure/rack,
-/obj/item/ammo_box/magazine/sniper_rounds,
-/obj/item/ammo_box/magazine/sniper_rounds,
-/obj/item/ammo_box/magazine/sniper_rounds/soporific,
-/obj/item/ammo_box/magazine/sniper_rounds/soporific,
-/obj/item/ammo_box/magazine/sniper_rounds/soporific,
-/obj/item/ammo_box/magazine/sniper_rounds/soporific,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/resistance/bridge)
 "xb" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/resistance/bridge)
@@ -1113,7 +1107,7 @@ fo
 fo
 fo
 xb
-wr
+qG
 aa
 zm
 Ex
