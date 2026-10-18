@@ -28,8 +28,15 @@
 /// Check the entire tree, including public industrial/medical nodes and nanite siblings.
 /datum/unit_test/voidcrew_zone_research/tags/Run()
 	var/list/expected = list(
+		/datum/techweb_node/automatic_ammunition = 1,
+		/datum/techweb_node/weapon_ammo_c20r = 1,
+		/datum/techweb_node/weapon_ammo_wt550 = 1,
+		/datum/techweb_node/weapon_ammo_l6_saw = 2,
+		/datum/techweb_node/weapon_ammo_bulldog = 2,
+		/datum/techweb_node/weapon_ammo_sniper_rifle = 2,
 		/datum/techweb_node/specialist_ammo = 1,
 		/datum/techweb_node/experimental_ammo = 2,
+		/datum/techweb_node/explosive_ammo = 2,
 		/datum/techweb_node/nanite_combat = 3,
 	)
 	var/gated = 0
@@ -38,7 +45,7 @@
 		TEST_ASSERT_EQUAL(node.zone_permission, expected[node.type] || 0, "Unexpected standing requirement on [node_id]")
 		if(node.zone_permission)
 			gated++
-	TEST_ASSERT_EQUAL(gated, 3, "The direct-research gate must cover exactly three nodes")
+	TEST_ASSERT_EQUAL(gated, 10, "The direct-research gate must cover exactly ten nodes")
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("nanite_military").type, /datum/techweb_node/nanite_combat, "Military nanites changed id")
 
 /datum/unit_test/voidcrew_zone_research/direct/Run()

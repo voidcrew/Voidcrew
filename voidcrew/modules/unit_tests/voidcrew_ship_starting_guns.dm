@@ -216,6 +216,145 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 	TEST_ASSERT(maps_checked >= 443, "Only [maps_checked] hull/module maps were audited.")
 	TEST_ASSERT_EQUAL(kilo_maps_checked, 4, "The audit must include all four Kilo themes.")
 
+/// Authored reload placements (including filled boxes) must serve a starting gun.
+/// Shop stock and crew outfits are separate supply channels, not map placements.
+/datum/unit_test/voidcrew_ship_starting_ammo
+	priority = TEST_LONGER
+	var/list/map_inventories = list()
+	var/list/source_inventories = list()
+
+/datum/unit_test/voidcrew_ship_starting_ammo/proc/merge_inventory(list/target, list/addition)
+	for(var/category in list("ammo", "magazines", "mounted"))
+		target[category] |= addition[category]
+
+/datum/unit_test/voidcrew_ship_starting_ammo/proc/empty_inventory()
+	return list("ammo" = list(), "magazines" = list(), "mounted" = list())
+
+/// Respect mapped overrides and lazy ammo boxes, just as the gun audit does.
+/datum/unit_test/voidcrew_ship_starting_ammo/proc/source_inventory(source_type, list/attributes)
+	var/signature = "[source_type]:[json_encode(attributes)]"
+	if(source_inventories[signature])
+		return source_inventories[signature]
+	var/list/inventory = empty_inventory()
+	SSatoms.map_loader_begin("starting ammo audit")
+	world.preloader_setup(attributes, source_type)
+	var/atom/movable/source = new source_type(run_loc_floor_bottom_left)
+	if(GLOB.use_preloader && source)
+		world.preloader_load(source)
+	SSatoms.map_loader_stop("starting ammo audit")
+	SSatoms.InitializeAtoms(list(source))
+	var/list/pending = source.get_all_contents()
+	for(var/atom/entry in pending)
+		if(istype(entry, /obj/item/gun/ballistic))
+			var/obj/item/gun/ballistic/gun = entry
+			inventory["magazines"] |= gun.accepted_magazine_type
+		if(istype(entry, /obj/structure/mounted_gun))
+			var/obj/structure/mounted_gun/gun = entry
+			inventory["mounted"] |= gun.ammo_type
+		if(istype(entry, /obj/item/ammo_box))
+			var/obj/item/ammo_box/box = entry
+			pending |= box.ammo_list()
+	// ammo_list may have materialized casings that were absent from get_all_contents.
+	for(var/obj/item/ammo_casing/round in pending)
+		var/list/ammo = inventory["ammo"]
+		ammo["[round.type]:[round.caliber]"] = list("type" = round.type, "caliber" = round.caliber)
+	qdel(source)
+	source_inventories[signature] = inventory
+	return inventory
+
+/datum/unit_test/voidcrew_ship_starting_ammo/proc/map_inventory(map_path)
+	if(map_inventories[map_path])
+		return map_inventories[map_path]
+	var/list/inventory = empty_inventory()
+	var/datum/parsed_map/map = new(file(map_path))
+	TEST_ASSERT_NOTNULL(map.parsed_bounds, "Cannot parse starting ammo in [map_path].")
+	var/list/cache = map.build_cache(TRUE)
+	var/list/placed_keys = list()
+	for(var/datum/grid_set/grid as anything in map.gridSets)
+		for(var/line in grid.gridLines)
+			for(var/offset = 1; offset <= length(line); offset += map.key_len)
+				placed_keys[copytext(line, offset, offset + map.key_len)] = TRUE
+	var/static/list/sources = typecacheof(list(
+		/obj/item/gun/ballistic,
+		/obj/item/ammo_box,
+		/obj/item/ammo_casing,
+		/obj/item/storage/box,
+		/obj/structure/mounted_gun,
+	))
+	for(var/key in placed_keys)
+		if(key == cache[SPACE_KEY])
+			continue
+		var/list/model = cache[key]
+		TEST_ASSERT_NOTNULL(model, "[map_path] uses missing ammo map key [key].")
+		var/list/members = model[1]
+		var/list/attributes = model[2]
+		for(var/index in 1 to length(members))
+			if(is_type_in_typecache(members[index], sources))
+				merge_inventory(inventory, source_inventory(members[index], attributes[index]))
+	qdel(map)
+	map_inventories[map_path] = inventory
+	return inventory
+
+/datum/unit_test/voidcrew_ship_starting_ammo/proc/check_ammo(list/inventory, label)
+	var/list/ammunition = inventory["ammo"]
+	for(var/signature in ammunition)
+		var/list/round_info = ammunition[signature]
+		var/round_type = round_info["type"]
+		var/fits = FALSE
+		for(var/mounted_ammo in inventory["mounted"])
+			if(ispath(round_type, mounted_ammo))
+				fits = TRUE
+		if(fits)
+			continue
+		var/obj/item/ammo_casing/round = allocate(round_type)
+		round.caliber = round_info["caliber"]
+		for(var/magazine_type in inventory["magazines"])
+			var/obj/item/ammo_box/magazine/magazine = allocate(magazine_type)
+			for(var/obj/item/ammo_casing/stock as anything in magazine.ammo_list())
+				qdel(stock)
+			magazine.stored_ammo.Cut()
+			fits = magazine.give_round(round)
+			qdel(magazine)
+			if(fits)
+				break
+		qdel(round)
+		TEST_ASSERT(fits, "[label] starts with [round_type] but no compatible gun in any theme/module option.")
+
+/datum/unit_test/voidcrew_ship_starting_ammo/Run()
+	ensure_ship_upgrades_initialized()
+	var/list/hulls = vc_test_voidcrew_hull_templates()
+	for(var/hull_type in hulls)
+		var/datum/map_template/shuttle/voidcrew/hull = hulls[hull_type]
+		var/list/maps = list(hull.mappath)
+		var/list/themes = GLOB.ship_themes[hull_type]
+		for(var/theme_id in themes)
+			var/datum/ship_theme/theme = themes[theme_id]
+			maps |= "[hull.prefix]ship_[theme.template_suffix].dmm"
+			for(var/slot_key in get_upgrade_slot_ids_for_theme(hull, theme))
+				for(var/datum/ship_upgrade_module/module as anything in get_modules_for_ship_slot(hull_type, theme_id, slot_key))
+					maps |= vc_test_module_map_path(module, theme_id)
+		if(!length(themes))
+			var/list/modules = GLOB.ship_upgrade_modules[hull_type]
+			for(var/module_id in modules)
+				var/datum/ship_upgrade_module/module = modules[module_id]
+				maps |= vc_test_module_map_path(module, null)
+		// Keep reloads if ANY theme/module combination of this hull starts a fitting gun.
+		var/list/inventory = empty_inventory()
+		for(var/map_path in maps)
+			if(map_path && fexists(map_path))
+				merge_inventory(inventory, map_inventory(map_path))
+		check_ammo(inventory, "[hull_type]")
+		CHECK_TICK
+	// Include unused legacy hulls and module variants as well as registered maps.
+	var/list/all_maps = list()
+	vc_test_collect_dmm_files("_maps/voidcrew/ships/", all_maps)
+	vc_test_collect_dmm_files("_maps/voidcrew/ship_modules/", all_maps)
+	for(var/map_path in all_maps)
+		if(!map_inventories[map_path])
+			check_ammo(map_inventory(map_path), map_path)
+		CHECK_TICK
+	TEST_ASSERT(length(map_inventories) >= 443, "The ammo audit missed hull or module maps.")
+
 /// Discover crew equipment from all hulls, themes, modules and Workshop crew files.
 /datum/unit_test/voidcrew_ship_starting_outfits
 	parent_type = /datum/unit_test/voidcrew_ship_starting_guns

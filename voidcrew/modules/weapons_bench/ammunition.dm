@@ -30,6 +30,7 @@
 
 /datum/techweb_node/weapon_ammo_bulldog
 	id = TECHWEB_NODE_WEAPON_AMMO_BULLDOG
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "12g Drum Production"
 	description = "Bulk buckshot and slug drums for the Bulldog."
 	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
@@ -53,6 +54,7 @@
 
 /datum/techweb_node/weapon_ammo_c20r
 	id = TECHWEB_NODE_WEAPON_AMMO_C20R
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = ".45 SMG Ammunition"
 	description = "Bulk .45 production for the C-20r."
 	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)
@@ -82,6 +84,7 @@
 
 /datum/techweb_node/weapon_ammo_l6_saw
 	id = TECHWEB_NODE_WEAPON_AMMO_L6_SAW
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "7mm Machine Gun Ammunition"
 	description = "Belt-fed 7mm production for the L6 SAW."
 	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO, TECHWEB_NODE_AUTOMATIC_AMMO)
@@ -105,6 +108,7 @@
 
 /datum/techweb_node/weapon_ammo_sniper_rifle
 	id = TECHWEB_NODE_WEAPON_AMMO_SNIPER
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = ".50 BMG Ammunition"
 	description = "Bulk .50 BMG production for the anti-materiel rifle."
 	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
@@ -128,6 +132,7 @@
 
 /datum/techweb_node/weapon_ammo_wt550
 	id = TECHWEB_NODE_WEAPON_AMMO_WT550
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "4.6x30mm Ammunition"
 	description = "Bulk 4.6x30mm production for the WT-550."
 	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)

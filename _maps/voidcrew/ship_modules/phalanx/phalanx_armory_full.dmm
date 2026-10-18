@@ -30,22 +30,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"e" = (
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/box/firingpins,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/structure/closet/secure_closet{
-	name = "armory ballistics locker";
-	icon_state = "tac";
-	icon_door = "armory_shotgun";
-	req_access = list("armory")
-	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "h" = (
 /obj/structure/closet/bombcloset/security,
 /turf/open/floor/iron/dark,
@@ -67,6 +51,19 @@
 /area/template_noop)
 "n" = (
 /obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/firingpins,
+/obj/structure/closet/secure_closet{
+	name = "armory ballistics locker";
+	icon_state = "tac";
+	icon_door = "armory_shotgun";
+	req_access = list("armory")
+	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "v" = (
@@ -173,7 +170,7 @@ a
 c
 "}
 (6,1,1) = {"
-e
+p
 d
 m
 z

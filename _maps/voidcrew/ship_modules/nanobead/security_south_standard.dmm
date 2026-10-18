@@ -13,18 +13,6 @@
 /obj/item/melee/baseball_bat,
 /turf/open/floor/iron/dark/smooth_large,
 /area/template_noop)
-"aab" = (
-/obj/structure/guncase/wt550,
-/obj/item/melee/baseball_bat,
-/obj/effect/turf_decal/trimline/red/filled/line,
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
-/obj/machinery/light/directional/north,
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
 "aac" = (
 /obj/structure/guncase/shotgun,
 /obj/effect/turf_decal/trimline/red/filled/line,
@@ -245,6 +233,15 @@
 	dir = 1
 	},
 /area/template_noop)
+"qmF" = (
+/obj/structure/guncase/wt550,
+/obj/item/melee/baseball_bat,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/siding/thinplating_new/dark,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
 "rsQ" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 1
@@ -392,7 +389,7 @@ uuH
 aSa
 "}
 (4,1,1) = {"
-aab
+qmF
 rsQ
 sdo
 aaa

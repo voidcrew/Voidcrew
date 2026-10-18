@@ -767,6 +767,7 @@
 #define NO_QUARTER_RELOAD_TIME (5 SECONDS)
 #define NO_QUARTER_THROW_RANGE 6
 #define NO_QUARTER_BANDOLIER_SHELLS 12
+#define NO_QUARTER_CALIBER "heavy cartridge"
 
 /// One shot: breaches a normal wall outright, or throws a person six tiles.
 /// Five seconds to load the next cartridge.
@@ -828,13 +829,26 @@
 /obj/item/ammo_box/magazine/internal/shot/single/no_quarter
 	name = "\"No Quarter\" chamber"
 	ammo_type = /obj/item/ammo_casing/shotgun/no_quarter
+	caliber = NO_QUARTER_CALIBER
 
-/// "Gunpowder and a metal slug, twisted shut", the one cartridge type
-/// No Quarter feeds on. Subtypes the real shotgun slug casing (icon/caliber/
-/// materials inherited verbatim) and just swaps the projectile it fires.
+/// The hand cannon also retains its ordinary shotgun loads.
+/obj/item/ammo_box/magazine/internal/shot/single/no_quarter/give_round(obj/item/ammo_casing/new_round)
+	if(new_round?.caliber != CALIBER_SHOTGUN)
+		return ..()
+	var/obj/item/ammo_casing/current_round = get_round()
+	if(current_round?.loaded_projectile)
+		return FALSE
+	if(current_round)
+		current_round.forceMove(get_turf(src))
+	stored_ammo += new_round
+	new_round.forceMove(src)
+	return TRUE
+
+/// A paper cartridge for the hand cannon, with the ordinary slug's icon and materials.
 /obj/item/ammo_casing/shotgun/no_quarter
 	name = "heavy cartridge"
-	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut. Only \"No Quarter\" takes them."
+	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut."
+	caliber = NO_QUARTER_CALIBER
 	projectile_type = /obj/projectile/bullet/shotgun_slug/no_quarter
 
 /// The bandolier the gun turns up with. Twelve cartridges, then you craft your own.
@@ -884,6 +898,7 @@
 	wall_target.dismantle_wall(devastated = TRUE)
 
 #undef NO_QUARTER_BANDOLIER_SHELLS
+#undef NO_QUARTER_CALIBER
 #undef NO_QUARTER_THROW_RANGE
 #undef NO_QUARTER_RELOAD_TIME
 
