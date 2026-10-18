@@ -649,3 +649,46 @@
 	TEST_ASSERT(gate.CanAStarPass(NORTH, npc_walk), "A leaving NPC cannot path out through the gate")
 	TEST_ASSERT(!gate.CanAStarPass(SOUTH, npc_walk), "A leaving NPC paths in through the gate")
 	npc.end_activity()
+
+/// Someone off the lift goes through like a player: one request per door, in once it is open, a wait through the scan, out once it passes
+/datum/unit_test/voidcrew_trader_checkpoint/npc_crossing/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(host)
+	var/mob/living/basic/ambient_npc/outpost/customer/npc = allocate(/mob/living/basic/ambient_npc/outpost/customer, lobby)
+	npc.set_place(place)
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	var/datum/ambient_activity/cross_checkpoint/crossing = npc.activity
+	TEST_ASSERT(istype(crossing), "Someone off the lift did not set off through the checkpoint")
+	TEST_ASSERT(HAS_TRAIT(npc, "checkpoint_crossing"), "Someone going through could not path through its doors") // TRAIT_CHECKPOINT_CROSSING
+	// At the outer door: one request, and nothing more however often their routine comes round
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 0, "Someone at the outer door did not wait for it") // AMBIENT_STEP_CONTINUE
+	TEST_ASSERT(crossing.next_ask_at > world.time, "Someone at the outer door did not ask it to open")
+	for(var/i in 1 to 5)
+		npc.activity_step(1)
+	TEST_ASSERT(outer.animation != "deny" && inner.animation != "deny", "Someone going through set off a door's refusal")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!outer.density, "The outer door did not open for someone off the lift")
+	// Open: in they go
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "Someone did not go in through the open outer door") // AMBIENT_STEP_MOVE
+	TEST_ASSERT(crossing.spot in checkpoint.chamber_turfs, "Someone was sent somewhere other than the chamber")
+	npc.forceMove(crossing.spot)
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 0, "Someone in the chamber did not wait") // AMBIENT_STEP_CONTINUE
+	// The outer door shuts on them and the chamber scans; they wait it out
+	for(var/i in 1 to 60)
+		if(checkpoint.state == "scanning") // CHECKPOINT_SCANNING
+			break
+		sleep(0.1 SECONDS)
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The chamber did not scan someone who walked in") // CHECKPOINT_SCANNING
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 0, "Someone did something mid-scan") // AMBIENT_STEP_CONTINUE
+	checkpoint.finish_scan()
+	TEST_ASSERT_EQUAL(checkpoint.state, "passing", "The chamber refused someone with nothing on them") // CHECKPOINT_PASSING
+	sleep(2 SECONDS)
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 1, "Someone did not go through the open inner door") // AMBIENT_STEP_MOVE
+	TEST_ASSERT_EQUAL(crossing.spot, secured, "Someone was not sent onto the concourse")
+	npc.forceMove(secured)
+	TEST_ASSERT_EQUAL(npc.activity_step(1), 2, "Someone on the concourse kept going through the checkpoint") // AMBIENT_STEP_DONE
+	npc.end_activity()
+	TEST_ASSERT(!HAS_TRAIT(npc, "checkpoint_crossing"), "Someone through the checkpoint could still path through its doors")
+	// Already past it, nobody sets off through it
+	ambient_cross_checkpoint_on_arrival(npc, host)
+	TEST_ASSERT_NULL(npc.activity, "Someone on the concourse set off through the checkpoint")
