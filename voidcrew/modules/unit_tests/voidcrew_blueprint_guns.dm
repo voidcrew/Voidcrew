@@ -19,7 +19,7 @@
 			TEST_ASSERT(!ispath(design.build_path, gun_type), "[design.type] still fabricates [design.build_path].")
 
 	// Text paths avoid recreating the removed parents or requiring deleted defines.
-	for(var/removed_parent in list("/obj/item/blueprint/gun", "/datum/crafting_recipe/blueprint/gun", "/obj/item/gun_part"))
+	for(var/removed_parent in list("/obj/item/blueprint", "/datum/crafting_recipe/blueprint", "/obj/item/gun_part"))
 		TEST_ASSERT_NULL(text2path(removed_parent), "[removed_parent] still exists.")
 	var/list/node_suffixes = list("c20r", "wt550", "carbine", "l6_saw", "sniper", "bulldog")
 	for(var/removed_node in node_suffixes)
@@ -87,18 +87,24 @@
 	TEST_ASSERT("pin_testing" in riot.design_ids, "Riot Suppression must unlock test-range pins.")
 	TEST_ASSERT("clown_firing_pin" in riot.design_ids, "Riot Suppression lost another firing pin design.")
 
-/// The unrelated heavy-cartridge schematic retains the carried-schematic gate.
-/datum/unit_test/voidcrew_cartridge_schematic/Run()
+/// No Quarter's heavy cartridges are ordinary crafting recipes with the original cost.
+/datum/unit_test/voidcrew_no_quarter_cartridge/Run()
 	var/mob/living/carbon/human/consistent/crafter = allocate(__IMPLIED_TYPE__)
-	var/obj/item/blueprint/no_quarter_cartridge/schematic = allocate(__IMPLIED_TYPE__)
-	var/datum/crafting_recipe/blueprint/recipe = schematic.get_recipe()
+	var/datum/component/personal_crafting/crafting = crafter.AddComponent(__IMPLIED_TYPE__)
+	crafting.ignored_flags = CRAFT_IGNORE_DO_AFTER
+	var/datum/crafting_recipe/no_quarter_cartridge/recipe = locate(/datum/crafting_recipe/no_quarter_cartridge) in GLOB.crafting_recipes
 	TEST_ASSERT_NOTNULL(recipe, "The No Quarter cartridge recipe disappeared.")
-	TEST_ASSERT_EQUAL(recipe.result, /obj/item/ammo_casing/shotgun/no_quarter, "The heavy-cartridge schematic has the wrong recipe.")
-	TEST_ASSERT(!is_blueprint_recipe_available(recipe, crafter), "A nearby schematic must not unlock a recipe.")
-	TEST_ASSERT(crafter.put_in_hands(schematic), "Could not carry the cartridge schematic.")
-	TEST_ASSERT(is_blueprint_recipe_available(recipe, crafter), "Carrying the cartridge schematic must unlock its recipe.")
-	qdel(schematic)
-	TEST_ASSERT(!is_blueprint_recipe_available(recipe, crafter), "The recipe remained available after losing the schematic.")
+	TEST_ASSERT(!recipe.non_craftable, "The heavy cartridge is absent from the crafting menu.")
+	TEST_ASSERT(crafting.is_recipe_available(recipe, crafter), "The heavy cartridge must be available without a schematic or imprint.")
+	TEST_ASSERT_EQUAL(recipe.time, 3 SECONDS, "The heavy cartridge crafting time changed.")
+	TEST_ASSERT(recipe.mass_craftable, "The heavy cartridge lost batch crafting.")
+	TEST_ASSERT_EQUAL(crafting.construct_item(crafter, recipe), ", missing component.", "The heavy cartridge bypassed its ingredient cost.")
+	var/obj/item/stack/sheet/iron/iron = allocate(__IMPLIED_TYPE__, crafter.loc, 2, FALSE)
+	var/obj/item/paper/paper = allocate(__IMPLIED_TYPE__, crafter.loc)
+	var/atom/result = crafting.construct_item(crafter, recipe)
+	TEST_ASSERT(istype(result, /obj/item/ammo_casing/shotgun/no_quarter), "The heavy cartridge failed to craft without a schematic: [result].")
+	TEST_ASSERT(QDELETED(iron) && QDELETED(paper), "Crafting a heavy cartridge did not consume two iron sheets and one paper.")
+	qdel(result)
 
 /// Map/loot guns and unrelated crafting recipes retain their ordinary loaded state.
 /datum/unit_test/voidcrew_blueprint_ammo_scope/Run()

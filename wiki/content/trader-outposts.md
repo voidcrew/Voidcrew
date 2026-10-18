@@ -63,8 +63,6 @@ Vex's own shelves carry the other half of the deep-band trade: **exploit softwar
 
 ## Services
 
-Halcyon and Quartermain both have a **neural schematic imprinter**, which burns a weapon schematic into your memory for the round and shreds the paper. The Undertow does not have one, so a red-tier schematic bought from Vex has to be imprinted elsewhere. See [Money & Trade](money-and-trade.md).
-
 Every outpost has a free **first-aid locker** and a heavy-duty **recovery sleeper**. The locker is an ordinary closet and taking the supplies is expected; the sleeper is fixed machinery and hitting it is not.
 
 Nobody goes hungry at a market, either: Halcyon has the diner, Sarge sells field rations off a **Mess Tin** shelf at Quartermain (with snack and hot-dog machines beside the coffee corner), and the Dregs runs a heat-lamp **Greasy Spoon** menu at the Undertow next to its own hot-dog machine.

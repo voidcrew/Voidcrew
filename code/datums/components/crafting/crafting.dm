@@ -419,12 +419,7 @@
 		return FALSE
 	if (recipe.category == CAT_CULT && !IS_CULTIST(user)) // Skip blood cult recipes if not cultist
 		return FALSE
-	//VOID EDIT - blueprint schematics: only visible while carrying the physical blueprint or holding a round-long neural imprint (voidcrew/modules/weapons_bench/blueprint.dm)
-	// VOIDCREW EDIT START: Gate schematic crafting on a carried blueprint or imprint (voidcrew/modules/weapons_bench/blueprint.dm).
-	if(istype(recipe, /datum/crafting_recipe/blueprint) && !is_blueprint_recipe_available(recipe, user))
-		return FALSE
-	// VOIDCREW EDIT END
-	//VOID EDIT END
+	// VOIDCREW EDIT: Removed the schematic gate from weapons_bench; recipes use ordinary availability.
 	return TRUE
 
 /datum/component/personal_crafting/proc/component_ui_interact(atom/movable/screen/craft/image, location, control, params, user)

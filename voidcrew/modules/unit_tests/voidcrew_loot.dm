@@ -44,7 +44,7 @@
 				TEST_FAIL("[theme_path] has an empty [table_name] table")
 				continue
 			for(var/entry in table)
-				TEST_ASSERT(findtext("[entry]/", "/obj/item/blueprint/gun/") != 1, "[theme_path].[table_name] still drops a gun schematic: [entry]")
+				TEST_ASSERT(findtext("[entry]/", "/obj/item/blueprint/") != 1, "[theme_path].[table_name] still drops a schematic: [entry]")
 				if(!ispath(entry, /atom/movable))
 					TEST_FAIL("[theme_path].[table_name] entry [entry] is not an /atom/movable path")
 				var/weight = table[entry]
@@ -63,11 +63,11 @@
 				TEST_FAIL("[theme_path].theme_skus entry [sku] is not a shop SKU")
 			else
 				var/datum/shop_sku/sku_path = sku
-				TEST_ASSERT(findtext("[initial(sku_path.item_path)]/", "/obj/item/blueprint/gun/") != 1, "[theme_path] still references a gun schematic SKU: [sku]")
+				TEST_ASSERT(findtext("[initial(sku_path.item_path)]/", "/obj/item/blueprint/") != 1, "[theme_path] still references a schematic SKU: [sku]")
 
 	for(var/list/table as anything in list(GLOB.abandoned_crate_common, GLOB.abandoned_crate_uncommon, GLOB.abandoned_crate_prime))
 		for(var/entry in table)
-			TEST_ASSERT(findtext("[entry]/", "/obj/item/blueprint/gun/") != 1, "Freight still drops a gun schematic: [entry]")
+			TEST_ASSERT(findtext("[entry]/", "/obj/item/blueprint/") != 1, "Freight still drops a schematic: [entry]")
 	var/datum/loot_theme/syndicate/syndicate = GLOB.loot_themes[/datum/loot_theme/syndicate]
 	var/datum/loot_theme/plunder/plunder = GLOB.loot_themes[/datum/loot_theme/plunder]
 	var/datum/loot_theme/research/research = GLOB.loot_themes[/datum/loot_theme/research]

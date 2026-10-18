@@ -82,7 +82,7 @@
 	)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		TEST_ASSERT(!(initial(sku_type.item_path) in banned_gear), "[sku_type] still sells removed craftable gear.")
-		TEST_ASSERT(findtext("[initial(sku_type.item_path)]/", "/obj/item/blueprint/gun/") != 1, "[sku_type] still sells a gun schematic.")
+		TEST_ASSERT(findtext("[initial(sku_type.item_path)]/", "/obj/item/blueprint/") != 1, "[sku_type] still sells a schematic.")
 
 /// Existing field-good quantities and difficulties, including owner exceptions.
 /datum/unit_test/voidcrew_procurement_catalog/Run()

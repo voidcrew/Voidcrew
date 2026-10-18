@@ -41,11 +41,6 @@
 /// before self-freeing (dock warmup is 10s, plus shuttle transit and margin)
 #define OUTPOST_BERTH_ARRIVAL_GRACE (45 SECONDS)
 
-// Blueprint tiers: drive the neural imprinter's fee and the schematic's tint
-#define BLUEPRINT_TIER_GREEN 1
-#define BLUEPRINT_TIER_YELLOW 2
-#define BLUEPRINT_TIER_RED 3
-
 // Shop shelf kinds: how a SKU entered the shop's live list (drives UI styling,
 // per-round supply caps and, later, restock behavior)
 /// Always stocked, every round

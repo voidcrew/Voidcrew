@@ -2,19 +2,19 @@
 title: Money & Trade
 category: Economy
 order: 1
-blurb: Credits, trade vouchers, the ship bank, the cargo console, and the schematics that unlock new gear.
+blurb: Credits, trade vouchers, the ship bank, and the cargo console.
 ---
 
 Voidcrew has no station budget and no paychecks. Every credit your crew spends is one you earned by selling something, finishing a contract, or taking it off somebody else. There are two in-round currencies. Credits, which live in your ship's shared bank account, and trade vouchers, which are physical chits you carry, and they buy different things on purpose.
 
 ## The two currencies
 
-**Credits** are the everyday money. They sit in one bank account shared by the whole crew: when you spawn, your ID is bound to the ship's account rather than a personal one, so anything anyone earns goes into the same pot and anything anyone spends comes out of it. The account starts empty. Credits pay for cargo orders, most trader stock, neural imprint fees, outpost deeds, and bounties you post yourself.
+**Credits** are the everyday money. They sit in one bank account shared by the whole crew: when you spawn, your ID is bound to the ship's account rather than a personal one, so anything anyone earns goes into the same pot and anything anyone spends comes out of it. The account starts empty. Credits pay for cargo orders, most trader stock, outpost deeds, and bounties you post yourself.
 
 **Trade vouchers** are tamper-sealed chits that stack in your pocket like cash. They cannot be bought with credits, ever. You earn them by finishing dangerous contracts and by selling traders loot that can't be manufactured aboard a ship. Planet minerals, fauna harvests, ruin finds, deep-band gases. Any trader outpost honours them. Being a physical item, they can also be dropped, stolen and demanded as pirate tribute, so carrying a large stack into the deep is a real decision.
 
 !!! tip "What vouchers are for"
-    Vouchers buy the tier of gear no shop will sell for money: weapon schematics, syndicate MODsuit hardware, ship shield and interdiction boards, military-grade [cyberware](cyberware.md), top-tier [exploit software](ship-hacking.md), and the charts that reveal rare ruins. If you want any of that, you have to go somewhere dangerous.
+    Vouchers buy the tier of gear no shop will sell for money: syndicate MODsuit hardware, ship shield and interdiction boards, military-grade [cyberware](cyberware.md), top-tier [exploit software](ship-hacking.md), and the charts that reveal rare ruins. If you want any of that, you have to go somewhere dangerous.
 
 There is also a persistent currency, [ship parts](ship-parts.md), banked through an extraction case when you bluespace jump or the round ends. Spend banked parts on permanent hull, theme and module unlocks in the [shipyard](ship-upgrades.md). Your parts balance is separate from the credits in your ship's bank.
 
@@ -26,7 +26,7 @@ If the machine ever loses its link (you built a new one, or the ship changed han
 
 The bank machine is also where **physical money** turns into spendable credits. Loose cash and holochips looted out of a ruin do nothing sitting in your bag; feed them to the machine and the value lands in the ship's account. It refuses cash while it has no account connected, so nobody wastes a holochip on an unlinked machine.
 
-Your own ID is what pays at trader counters, at the neural imprinter, and for outpost broadcasts. If your ID has no account on it, those machines will refuse you.
+Your own ID is what pays at trader counters and for outpost broadcasts. If your ID has no account on it, those services will refuse you.
 
 ## The cargo console
 
@@ -61,44 +61,13 @@ Selling at a counter differs from cargo in three ways:
 
 Sample lines: Barnaby at the waystation pays 300 credits per five gold ore, 500 per two diamonds, 150 for any fresh fish. Roux at the waystation diner pays 60 per home-cooked meal, 120 per hand-made pie and 180 per whole cake, real cooking only, never vending-machine food or her own plates. Sarge at the depot pays 250 per two goliath hide plates, 400 per three glacial cores. Vex at the black market is the only trader who pays in vouchers, one per five raw telecrystals, one per legion core, two per set of syndicate documents. Traders also buy **gas** by the tank; see [Fuel & Gas](gas-economy.md).
 
-## Blueprints and the imprinter
+## Ammunition
 
-Some weapons cannot be researched, bought assembled, or printed. They exist only as **schematics**: rolled-up paper you find in ruin loot or buy from a trader.
+No Quarter's heavy cartridges can be crafted.
 
-While you are carrying a schematic anywhere on your person, its recipe appears in your ordinary crafting menu. No workbench is involved; you can build it wherever you are standing. Gun recipes still consume a machined weapon component (printed at a protolathe behind its research node) plus a firing pin, so the schematic is the permission, not the whole cost.
+A 50-round 7mm magazine for the **L6 SAW** costs 50 iron, 10 titanium, 10 plasma and 5 plastic sheets before lathe discounts. Ammunition research costs **80 points** after Exotic Ammunition and Automatic Ammunition, so it can supply a salvaged L6. Fully upgraded lathes reduce printed material costs to 40%.
 
-**Crafted ballistic weapons arrive unloaded**, with no detachable magazine or chambered round. Manufacture or find ammunition separately.
-
-The **L6 SAW** is a major manufacturing investment. Material quantities below are in sheets, before lathe discounts:
-
-| Step | Materials |
-|---|---|
-| Print the receiver | 100 iron, 30 titanium, 20 plastic, 10 silver, 10 diamond |
-| Assemble the gun (45 seconds) | Receiver, 20 plasteel, one firing pin |
-| Print a 50-round 7mm magazine | 50 iron, 10 titanium, 10 plasma, 5 plastic |
-
-Receiver research costs **160 points** after Exotic Ammunition. Ammunition research costs **80 points** after Exotic Ammunition and Automatic Ammunition, independently of receiver research, so it can supply a salvaged L6.
-
-The receiver exceeds a basic protolathe's local storage, so upgrade its matter bins or supply it through a material silo. Fully upgraded lathes reduce printed material costs to 40%; the assembly's plasteel requirement stays at 20 sheets.
-
-Firing pins cost 250 credits at Quartermain Depot. Fit one to a crafted or salvaged gun that has no pin. You cannot reuse a pin from another gun: prying one out destroys it.
-
-Six schematics exist:
-
-| Schematic | Tier | Sold at |
-|---|---|---|
-| C-20r SMG | Yellow | Quartermain Depot, 3 vouchers |
-| WT-550 autorifle | Yellow | Quartermain Depot, 3 vouchers |
-| Laser carbine | Yellow | Quartermain Depot, 2 vouchers + 3000 cr |
-| L6 SAW | Red | Undertow Exchange, 5 vouchers |
-| Anti-materiel sniper rifle | Red | Undertow Exchange, 5 vouchers |
-| Bulldog shotgun | Red | Undertow Exchange, 5 vouchers |
-
-All six also turn up as ruin loot, so a schematic you can't afford this round may still be sitting in a derelict.
-
-The **neural schematic imprinter** is a machine at a trader outpost that converts a schematic into knowledge. Slot the scroll into the open cradle, climb in, seal yourself shut, and pay the fee. The posted rates are 250 credits at green tier, 500 at yellow and 1000 at red, so a gun schematic costs you either 500 or 1000. The fee comes out of cash you loaded into the cradle first, then your ID's account for the remainder.
-
-What you get is the recipe bound to you for the rest of the round: theft-proof, and nothing to carry. What you lose is the paper. A physical schematic is shareable, resellable and stealable; an imprint is none of those things. The imprinter refuses if you already know a recipe, so no scroll gets wasted twice on the same gun.
+Firing pins cost 250 credits at Quartermain Depot. Fit one to a salvaged gun that has no pin. You cannot reuse a pin from another gun: prying one out destroys it.
 
 ## Job packs
 
