@@ -18,3 +18,15 @@
 	for(var/point_type in prices)
 		prices[point_type] = max(0, prices[point_type])
 	return prices
+
+/datum/techweb_node/electric_weapons
+	zone_permission = ZONE_PERMISSION_YELLOW
+
+/datum/techweb_node/beam_weapons
+	zone_permission = ZONE_PERMISSION_ADVANCED
+
+/datum/techweb_node/syndicate_basic
+	zone_permission = ZONE_PERMISSION_ELITE
+
+/datum/techweb_node/unregulated_bluespace
+	zone_permission = ZONE_PERMISSION_ELITE

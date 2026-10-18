@@ -56,7 +56,17 @@ Pirate bounty weapon bundles hold one gun each. Other bundles can contain armour
 
 Use the ordinary crafting menu for improvised guns, melee weapons and shields. Research unlocks printable weapons and conversion kits as usual. Fit each kit to the gun named by its recipe.
 
-Electric Weaponry supplies tesla, ion and temperature kits. Advanced Beam Weaponry supplies advanced energy gun and X-ray kits. Illegal Technology supplies the energy crossbow kit and rapid syringe gun. Unregulated Bluespace Research supplies the **Event Horizon** kit; Illumination Applications supplies the photon cannon kit.
+Kit research needs crew [zone reputation](zone-reputation.md):
+
+| Research | Unlocks | Reputation required |
+|---|---|---|
+| Electric Weaponry | Tesla, ion and temperature kits | Yellow |
+| Advanced Beam Weaponry | Advanced energy gun and X-ray kits | Advanced |
+| Illegal Technology | Energy crossbow kit and rapid syringe gun | Elite |
+| Unregulated Bluespace Research | **Event Horizon** kit | Elite |
+| Illumination Applications | Photon cannon kit | None |
+
+The requirement covers every design on each node. You still need its usual prerequisites and research points. Imported research remains usable.
 
 The Event Horizon recharges itself and fires a long-range beam that opens a brief reality tear on impact. It has **no scope**. Keep it away from your own crew and hull.
 
