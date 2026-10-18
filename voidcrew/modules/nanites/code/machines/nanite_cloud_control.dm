@@ -375,6 +375,7 @@
 				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 				if(backup)
 					if(!can_import_backup(disk.backup))
+						to_chat(usr, span_warning("Backup refused."))
 						return TRUE
 					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 25, FALSE)
 					var/datum/component/nanites/nanites = backup.nanites

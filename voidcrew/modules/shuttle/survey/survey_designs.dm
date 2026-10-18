@@ -113,30 +113,3 @@
 	id = "survey_console_information_upgrade_elite"
 	research_icon = 'icons/obj/service/bureaucracy.dmi'
 	research_icon_state = "docs_red"
-
-// Research-only survey bases. All variants inherit their family's value.
-/obj/structure/overmap/star
-	survey_value = 250
-
-/obj/structure/overmap/planet
-	survey_value = 150
-
-/obj/structure/overmap/space_ruin
-	survey_value = 75
-
-/obj/structure/overmap/event/emp
-	survey_value = 100
-
-/obj/structure/overmap/event/electric
-	survey_value = 75
-
-/obj/structure/overmap/event/meteor
-	survey_value = 50
-
-// Dangerous nebulae share this base pending the owner's balance decision.
-#define SURVEY_NEBULA_BASE 25
-
-/obj/structure/overmap/event/nebula
-	survey_value = SURVEY_NEBULA_BASE
-
-#undef SURVEY_NEBULA_BASE

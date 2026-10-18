@@ -138,6 +138,7 @@
 		/mob/living/basic/bounty_criminal/kingpin,
 		/mob/living/basic/bounty_lair_boss,
 		/mob/living/basic/lich,
+		/mob/living/basic/hoarfrost_matriarch,
 		/mob/living/basic/trooper/pirate/faction/silverscale/captain,
 		/mob/living/basic/trooper/pirate/faction/skeleton/captain,
 		/mob/living/basic/trooper/pirate/faction/grey/captain,
@@ -164,6 +165,18 @@
 	context.finalize()
 	TEST_ASSERT_EQUAL(body.npc_zone_role, "ordinary", "Name/health inferred boss status")
 	qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_matriarch/Run()
+	for(var/zone_type in list(1, 2, 3))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone_type)
+		var/mob/living/basic/hoarfrost_matriarch/body = spawn_npc_in_zone(/mob/living/basic/hoarfrost_matriarch, run_loc_floor_bottom_left, context)
+		var/health_factor = zone_type == 3 ? 1.3 : (zone_type == 2 ? 1.15 : 1)
+		var/damage_factor = zone_type == 3 ? 1.2 : (zone_type == 2 ? 1.1 : 1)
+		TEST_ASSERT_EQUAL(body.npc_zone_role, "boss", "The Matriarch received the ordinary profile in zone [zone_type]")
+		TEST_ASSERT(abs(body.maxHealth - 800 * health_factor) < 0.001, "Incorrect Matriarch health in zone [zone_type]")
+		TEST_ASSERT(abs(body.melee_damage_lower - 25 * damage_factor) < 0.001, "Incorrect Matriarch lower melee damage in zone [zone_type]")
+		TEST_ASSERT(abs(body.melee_damage_upper - 30 * damage_factor) < 0.001, "Incorrect Matriarch upper melee damage in zone [zone_type]")
+		qdel(body)
 
 /datum/unit_test/voidcrew_npc_zone_replacements/Run()
 	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 2)

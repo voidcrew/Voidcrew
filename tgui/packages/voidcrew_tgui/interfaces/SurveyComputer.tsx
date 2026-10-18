@@ -68,18 +68,6 @@ interface SurveyTarget {
   dist: number;
   points: number;
   mappable: number;
-  /** Seconds the charted surface stays generated, or null when it is not counting down. */
-  holdSeconds: number | null;
-}
-
-/** "14m 20s" / "45s" - short enough to sit inline in a target row. */
-function formatHold(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  if (minutes <= 0) {
-    return `${rest}s`;
-  }
-  return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
 }
 
 interface Data {
@@ -491,14 +479,6 @@ const Surveying = () => {
     notices.push('Ship in motion');
   }
 
-  if (selectedTarget && selectedTarget.holdSeconds !== null) {
-    notices.push(
-      `Charted surface of ${selectedTarget.name} holds for ${formatHold(
-        selectedTarget.holdSeconds,
-      )}`,
-    );
-  }
-
   if (bankedPoints && bankedPoints !== 0) {
     notices.push(`Research awaiting print: ${bankedPoints}`);
   }
@@ -550,9 +530,6 @@ const Surveying = () => {
                     {target.name}
                     {target.atRange ? ` (${target.dist} tiles out)` : ''}
                     {target.status === 'complete' ? ' — surveyed' : ''}
-                    {target.holdSeconds !== null
-                      ? ` — holds ${formatHold(target.holdSeconds)}`
-                      : ''}
                   </Tabs.Tab>
                 );
               })}

@@ -105,6 +105,7 @@
 		/mob/living/basic/bounty_criminal/kingpin,
 		/mob/living/basic/bounty_lair_boss,
 		/mob/living/basic/lich,
+		/mob/living/basic/hoarfrost_matriarch,
 		/mob/living/basic/trooper/pirate/faction/silverscale/captain,
 		/mob/living/basic/trooper/pirate/faction/skeleton/captain,
 		/mob/living/basic/trooper/pirate/faction/grey/captain,

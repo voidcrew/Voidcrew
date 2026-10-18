@@ -1,3 +1,4 @@
+#define NANITE_SYNC_REFUSED (1<<2)
 #define NANITE_DEFAULT_MAX_VOLUME 500
 
 /datum/component/nanites
@@ -32,6 +33,8 @@
 	var/next_sync = 0
 	///World time before which the "can't reach the cloud" warning stays quiet, so an unreachable cloud tells the host at most once every NANITE_CLOUD_WARNING_DELAY
 	var/next_cloud_warning = 0
+	/// Capacity refusals have a separate throttle from unreachable clouds.
+	var/next_update_warning = 0
 	///TRUE while the host still has to be told that the cloud took their programming over. Set whenever a cloud ID is assigned, cleared by the first sync that changes anything.
 	var/announce_cloud_takeover = FALSE
 	///All nanite programs in the user
@@ -183,6 +186,7 @@
  *
  * Returns a bitfield describing what actually changed, so callers can tell a sync that rewrote the
  * host's programming from the 30-second one that found everything already identical:
+ * * NANITE_SYNC_REFUSED - the complete package exceeded the host's capacity
  * * NANITE_SYNC_ADDED - programs were installed
  * * NANITE_SYNC_REPLACED - programming the host already had was deleted or overwritten with different settings
  */
@@ -203,7 +207,7 @@
 	result += programs_to_add
 	if(length(result) > max_programs || !programs_fit_capacity(result))
 		capacity_changed()
-		return NONE
+		return NANITE_SYNC_REFUSED
 	programming_transaction = TRUE
 	for(var/datum/nanite_program/NP as anything in programs)
 		for(var/datum/nanite_program/SNP as anything in source.programs)
@@ -266,6 +270,12 @@
 				if(cloud_copy)
 					var/sync_changes = sync_programming(cloud_copy)
 					next_cloud_warning = 0 //the cloud is back, so a future outage warns immediately
+					if(sync_changes & NANITE_SYNC_REFUSED)
+						if(world.time >= next_update_warning)
+							next_update_warning = world.time + NANITE_CLOUD_WARNING_DELAY
+							notify_host("Nanite update refused.", warning = TRUE)
+						return
+					next_update_warning = 0
 					//The cloud copy is authoritative, so the first sync after joining a cloud wipes
 					//whatever the host programmed locally. Say so once instead of letting it look
 					//like the programming vanished on its own.
@@ -446,6 +456,7 @@
 		//A new cloud owes the host one takeover notice, and starts with a clean warning cooldown
 		announce_cloud_takeover = !!cloud_id
 		next_cloud_warning = 0
+		next_update_warning = 0
 	//Re-pair to the ship the host is standing on when the ID is assigned. Chambers can only
 	//set this on their occupant, so joining a ship's cloud requires being physically aboard it.
 	cloud_ship_ref = (cloud_id && host_mob) ? WEAKREF(get_service_site(host_mob)) : null
@@ -577,3 +588,5 @@
 	data["mob_programs"] = mob_programs
 
 #undef NANITE_DEFAULT_MAX_VOLUME
+
+#undef NANITE_SYNC_REFUSED

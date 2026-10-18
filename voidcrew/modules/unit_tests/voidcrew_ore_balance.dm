@@ -124,11 +124,11 @@
 			TEST_ASSERT(wall.mineralAmt >= 1 && wall.mineralAmt <= 3, "A direct or spread-style Change_Ore used the old amount")
 	var/obj/structure/ore_vent/vent = allocate(/obj/structure/ore_vent, get_step(wall, NORTH))
 	wall.test_zone = 1
-	TEST_ASSERT_EQUAL(wall.proximity_ore_chance(), 8, "A nearby vent changed the wall chance")
+	TEST_ASSERT_EQUAL(wall.ore_roll_chance(), 8, "A nearby vent changed the wall chance")
 	for(var/iteration in 1 to 20)
-		TEST_ASSERT(wall.scale_ore_to_vent() in list(1, 2, 3), "A nearby vent changed the wall yield")
+		TEST_ASSERT(wall.ordinary_ore_amount(wall.mineralType) in list(1, 2, 3), "A nearby vent changed the wall yield")
 	vent.forceMove(get_step(wall, EAST))
-	TEST_ASSERT_EQUAL(wall.proximity_ore_chance(), 8, "Moving a vent changed the wall chance")
+	TEST_ASSERT_EQUAL(wall.ore_roll_chance(), 8, "Moving a vent changed the wall chance")
 	var/turf/closed/mineral/gibtonite/gib = change(get_step(wall, EAST), /turf/closed/mineral/gibtonite)
 	TEST_ASSERT_EQUAL(gib.ordinary_ore_amount(null), initial(gib.mineralAmt), "Gibtonite bookkeeping was treated as ore")
 	wall.mineralAmt = 7
@@ -246,6 +246,7 @@
 	TEST_ASSERT_EQUAL(green.ore_reserve.sheets_remaining, 0, "Manual extraction did not debit the shared reserve")
 	TEST_ASSERT_NULL(second.produce_boulder(), "Automatic production bypassed the shared reserve")
 	TEST_ASSERT_EQUAL(second.boulders_remaining, 20, "Failed extraction consumed a vent counter")
+	assert_spent_vent(second)
 	TEST_ASSERT(!(first in SSore_generation.processed_vents) && !(second in SSore_generation.processed_vents), "Exhausted vents remained in automatic processing")
 	TEST_ASSERT_EQUAL(red.ore_reserve.sheets_remaining, 10000, "Packed neighbour reserves were shared")
 	first.forceMove(red_surface)
@@ -276,6 +277,28 @@
 	TEST_ASSERT_NULL(other.produce_boulder(TRUE), "Manual extraction bypassed the automatic vent counter")
 	TEST_ASSERT_EQUAL(red.ore_reserve.sheets_remaining, balance, "Failed manual extraction debited the reserve")
 	TEST_ASSERT(!(other in SSore_generation.processed_vents), "A capped vent remained in automatic processing")
+	assert_spent_vent(other)
+
+/// Both local exhaustion and an exhausted shared reserve must refuse before do_after.
+/datum/unit_test/voidcrew_ore_balance/proc/assert_spent_vent(obj/structure/ore_vent/vent)
+	var/mob/living/carbon/human/miner = allocate(/mob/living/carbon/human/consistent, get_turf(vent))
+	ADD_TRAIT(miner, TRAIT_BOULDER_BREAKER, TRAIT_SOURCE_UNIT_TESTS)
+	vent.discovered = TRUE
+	var/examine_text = jointext(vent.examine(miner), "\n")
+	TEST_ASSERT(findtext(examine_text, "The seam is spent."), "An exhausted vent did not describe the spent seam")
+	TEST_ASSERT(!findtext(examine_text, "This vent produces"), "An exhausted vent advertised boulder production")
+	var/start_tick = world.time
+	var/start_stamina = miner.getStaminaLoss()
+	var/start_count = vent.boulders_remaining
+	var/datum/planet_ore_reserve/reserve = vent.bound_ore_reserve()
+	var/start_reserve = reserve.sheets_remaining
+	vent.attack_hand(miner, list())
+	TEST_ASSERT_EQUAL(world.time, start_tick, "Striking an exhausted vent entered the delay")
+	TEST_ASSERT_EQUAL(miner.getStaminaLoss(), start_stamina, "Striking an exhausted vent spent stamina")
+	TEST_ASSERT_NULL(vent.produce_boulder(TRUE), "An exhausted vent produced a manual boulder")
+	TEST_ASSERT_NULL(vent.produce_boulder(), "An exhausted vent produced an automatic boulder")
+	TEST_ASSERT_EQUAL(vent.boulders_remaining, start_count, "Refused production consumed a vent counter")
+	TEST_ASSERT_EQUAL(reserve.sheets_remaining, start_reserve, "Refused production debited the reserve")
 
 /datum/unit_test/voidcrew_ore_balance/vent_retrieval
 	var/list/old_processed_vents

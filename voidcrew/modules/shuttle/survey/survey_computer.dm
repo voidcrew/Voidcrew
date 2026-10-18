@@ -388,7 +388,6 @@
 			"atRange" = at_range,
 			"dist" = (at_range && ship_turf) ? get_dist(ship_turf, get_turf(candidate)) : 0,
 			"points" = values ? values["points"] : 0,
-			"holdSeconds" = get_interior_hold_seconds(candidate),
 			"mappable" = (istype(candidate, /obj/structure/overmap/planet) || istype(candidate, /obj/structure/overmap/space_ruin) || istype(candidate, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE,
 		))
 	tgui_data["surveyTargets"] = targets
@@ -432,22 +431,6 @@
 			playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 
 	return TRUE
-
-/**
- * Seconds this target's charted surface stays generated, or null when nothing is
- * counting down.
- *
- * A charted planet nobody has landed on is on a cleanup countdown - it is a whole
- * z-level slot, and the round cannot afford to keep every surveyed surface resident.
- * The crew paid for the chart, so they get to see the clock rather than fly back to a
- * planet that quietly moved sectors. Docking stops it (/obj/structure/overmap/planet/Entered).
- */
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_interior_hold_seconds(obj/structure/overmap/object)
-	var/obj/structure/overmap/planet/planet = astype(object, /obj/structure/overmap/planet)
-	if(isnull(planet))
-		return null
-	var/remaining = planet.get_interior_hold_remaining()
-	return isnull(remaining) ? null : round(remaining / 10)
 
 /// Overmap types the console refuses to treat as survey targets
 /// Callers must treat the returned list as READ-ONLY - both are shared statics.

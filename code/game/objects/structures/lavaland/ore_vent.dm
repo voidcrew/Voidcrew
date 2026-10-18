@@ -142,7 +142,7 @@
 
 /obj/structure/ore_vent/examine(mob/user)
 	. = ..()
-	if(discovered)
+	if(discovered && can_produce_ore()) // VOIDCREW EDIT: spent seams do not advertise production (mining/ore_vents.dm).
 		switch(boulder_size)
 			if(BOULDER_SIZE_SMALL)
 				. += span_notice("This vent produces [span_bold("small")] boulders containing [ore_string]")
