@@ -85,9 +85,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 /datum/ship_checkpoint
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/datum/weakref/source_ship
-	/// Live crew entitlement, never a snapshot copy: awards after capture must survive recovery.
-	var/list/research_reward_ledger
-	/// Live round identity; weak because only the round registry owns record lifetime.
+	/// Live round identity and entitlements; only the round registry owns record lifetime.
 	var/datum/weakref/crew_record_ref
 	var/captain_ckey
 	var/ship_name
@@ -111,7 +109,6 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		original.checkpoint_ref = null
 	outpost = null
 	source_ship = null
-	research_reward_ledger = null
 	crew_record_ref = null
 	tgm = null
 	rooms = null
@@ -259,7 +256,6 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(!valid)
 		return "The hull design could not be read back. No payment was taken."
 	source_ship = WEAKREF(ship)
-	research_reward_ledger = ship.ship_team?.research_reward_ledger
 	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	crew_record_ref = crew ? WEAKREF(crew) : null
 	captain_ckey = owner_ckey

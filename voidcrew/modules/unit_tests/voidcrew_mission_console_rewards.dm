@@ -354,7 +354,7 @@
 		TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left), "A stale completion succeeded")
 		mission.finish_mission(run_loc_floor_bottom_left)
 	TEST_ASSERT_EQUAL(ship.prize_rolls, 2, "Each completion must roll once, including outpost kills")
-	TEST_ASSERT(ship.mission_suit_paid && !ship.mission_gadget_paid, "Capped suit rerolled into a gadget")
+	TEST_ASSERT(ship.get_crew_record().mission_suit_paid && !ship.get_crew_record().mission_gadget_paid, "Capped suit rerolled into a gadget")
 	TEST_ASSERT_EQUAL(length(run_loc_floor_bottom_left.get_all_contents_type(/obj/item/mod/control/pre_equipped/traitor_elite)), 1, "Suit cap allowed a duplicate")
 	ship.prize_category = "gadget"
 	TEST_ASSERT_EQUAL(ship.award_guarded_prize("kill", 1, run_loc_floor_bottom_left), /obj/item/gun/energy/laser/captain, "Suit cap blocked the separate gadget")
@@ -391,7 +391,7 @@
 	TEST_ASSERT(islist(posting.board_claim(ship, pad, proof, "dead")), "Lair trophy claim failed")
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance - before, 5000, "Lair pay changed")
 	TEST_ASSERT_EQUAL(ship.prize_rolls, 1, "Successful lair must roll one prize")
-	TEST_ASSERT(ship.mission_suit_paid, "Lair did not claim the hull's suit flag")
+	TEST_ASSERT(ship.get_crew_record().mission_suit_paid, "Lair did not claim the crew's suit flag")
 	TEST_ASSERT(!islist(posting.board_claim(ship, pad, proof, "dead")), "Closed lair paid twice")
 	TEST_ASSERT_EQUAL(ship.prize_rolls, 1, "Closed lair rolled again")
 

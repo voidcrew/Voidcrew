@@ -8,6 +8,7 @@
 	return accept_new_crew
 
 /datum/unit_test/voidcrew_zone_identity
+	abstract_type = /datum/unit_test/voidcrew_zone_identity
 	var/list/test_records = list()
 	var/list/test_ports = list()
 
@@ -44,6 +45,59 @@
 /datum/unit_test/voidcrew_zone_identity/proc/clear_green(datum/voidcrew_crew_record/record)
 	for(var/family in list("named_kill", "hunt", "capture"))
 		record.claim_zone_work(family, 1, 1, "green_[family]")
+
+/// Fix the roll while exercising the production award and crew-claim transaction.
+/obj/structure/overmap/ship/zone_identity_prize_test
+	var/prize_category = "suit"
+
+/obj/structure/overmap/ship/zone_identity_prize_test/roll_mission_prize(zone)
+	return prize_category
+
+/datum/unit_test/voidcrew_zone_identity/guarded_prizes/Run()
+	var/obj/structure/overmap/ship/zone_identity_prize_test/first = allocate(/obj/structure/overmap/ship/zone_identity_prize_test)
+	first.ship_team = new
+	first.ship_team.ship = first
+	var/datum/voidcrew_crew_record/crew = record_for(first)
+	var/obj/structure/overmap/ship/zone_identity_prize_test/second = allocate(/obj/structure/overmap/ship/zone_identity_prize_test)
+	second.ship_team = new
+	second.ship_team.ship = second
+	second.ship_team.set_crew_record(crew)
+	TEST_ASSERT_EQUAL(first.award_guarded_prize("kill", 3, run_loc_floor_bottom_left), /obj/item/mod/control/pre_equipped/traitor_elite, "The first crew suit was refused")
+	TEST_ASSERT_NULL(second.award_guarded_prize("lair", 3, run_loc_floor_bottom_left), "A second hull's lair bypassed the crew suit cap")
+	second.prize_category = "gadget"
+	TEST_ASSERT_EQUAL(second.award_guarded_prize("capture", 3, run_loc_floor_bottom_left), /obj/item/gun/energy/laser/captain, "The suit claim consumed the crew gadget allowance")
+	first.prize_category = "gadget"
+	TEST_ASSERT_NULL(first.award_guarded_prize("lair", 3, run_loc_floor_bottom_left), "A different hull bypassed the crew gadget cap")
+	TEST_ASSERT(crew.mission_suit_paid && crew.mission_gadget_paid, "Awards were not recorded on the crew")
+	var/datum/voidcrew_crew_record/other_crew = allocate(/datum/voidcrew_crew_record)
+	second.ship_team.set_crew_record(other_crew)
+	TEST_ASSERT_EQUAL(second.award_guarded_prize("kill", 3, run_loc_floor_bottom_left), /obj/item/gun/energy/laser/captain, "A separate crew inherited the old hull's prize claims")
+	qdel(first)
+	TEST_ASSERT(!QDELETED(crew) && (crew in GLOB.voidcrew_crew_records), "Losing the last hull discarded the crew's prize claims")
+
+/// Successful resident registration recovers the saved crew and evicts the previous life.
+/datum/unit_test/voidcrew_zone_identity/resident_arrival/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/crew = record_for(ship)
+	var/mob/living/carbon/human/old_life = make_member("zoneidentityresident")
+	ship.enlist_crewmember(old_life)
+	ship.claimed_captain = old_life.mind
+	var/mob/living/carbon/human/arrival = make_member("zoneidentityresident")
+	TEST_ASSERT_NULL(arrival.mind.get_reputation_crew(), "The replacement was already affiliated")
+	TEST_ASSERT_EQUAL(arrival.mind.recover_reputation_crew(), crew, "The resident's crew was not saved")
+	var/obj/structure/overmap/dynamic/player_outpost/home = allocate(/obj/structure/overmap/dynamic/player_outpost)
+	home.register_resident_arrival(arrival, "zoneidentityresident")
+	TEST_ASSERT_EQUAL(arrival.mind.get_reputation_crew(), crew, "Resident arrival did not restore crew affiliation")
+	TEST_ASSERT(arrival.mind in crew.minds, "Resident arrival skipped the crew join path")
+	TEST_ASSERT_NULL(old_life.mind.get_reputation_crew(), "Resident arrival retained the previous life's affiliation")
+	TEST_ASSERT(!(old_life.mind in ship.ship_team.members), "Resident arrival retained the previous life's hull roster")
+	TEST_ASSERT_NULL(ship.claimed_captain, "Resident arrival retained the previous life's command")
+	TEST_ASSERT(home.is_resident(arrival), "Crew recovery lost outpost residency")
+	TEST_ASSERT(home.has_resident_clearance("zoneidentityresident"), "Crew recovery lost arrival clearance")
+	var/mob/living/carbon/human/newcomer = make_member("zoneidentityresidentnew")
+	home.register_resident_arrival(newcomer, "zoneidentityresidentnew")
+	TEST_ASSERT_NULL(newcomer.mind.get_reputation_crew(), "An unaffiliated resident inherited another resident's crew")
+	TEST_ASSERT(home.is_resident(newcomer), "An unaffiliated resident was refused")
 
 /// The eight families, lifetime caps, cumulative permissions and once-only claim boundary.
 /datum/unit_test/voidcrew_zone_identity/progression/Run()
@@ -557,9 +611,15 @@
 	var/obj/structure/overmap/ship/foreign = make_ship()
 	foreign.enlist_crewmember(founder)
 	TEST_ASSERT_EQUAL(record.leader, old_captain.mind, "Leaving did not promote the oldest hull's captain")
+	old_captain.real_name = "Old Hull Captain"
+	var/datum/captain_management_ui/panel = allocate(/datum/captain_management_ui, newer, new_captain)
+	var/list/data = panel.ui_data(new_captain)
+	TEST_ASSERT_EQUAL(data["crew_leader"], old_captain.real_name, "Management did not name the crew leader on another hull")
 	qdel(oldest)
 	old_captain.mind.leave_reputation_crew()
 	TEST_ASSERT_EQUAL(record.leader, new_captain.mind, "Succession selected a destroyed hull's captain")
+	data = panel.ui_data(new_captain)
+	TEST_ASSERT_EQUAL(data["crew_leader"], new_captain.real_name, "Management retained the previous leader's name")
 	var/obj/machinery/cryopod/pod = allocate(/obj/machinery/cryopod)
 	pod.detach_from_crews(new_captain.mind, new_captain.real_name)
 	TEST_ASSERT_EQUAL(record.leader, earliest.mind, "Cryo did not promote the earliest remaining member")
@@ -804,6 +864,14 @@
 	occupant.mind_initialize()
 	allocated += occupant.mind
 	occupant.mock_client = allocate(/datum/client_interface)
+	var/mob/living/carbon/human/consistent/unaffiliated = allocate(/mob/living/carbon/human/consistent, spot(3, 4))
+	unaffiliated.mind_initialize()
+	allocated += unaffiliated.mind
+	unaffiliated.mock_client = allocate(/datum/client_interface)
+	var/mob/living/carbon/human/consistent/crewmate = allocate(/mob/living/carbon/human/consistent, spot(5, 4))
+	crewmate.mind_initialize()
+	allocated += crewmate.mind
+	crewmate.mock_client = allocate(/datum/client_interface)
 	var/obj/structure/overmap/ship/original = allocate(/obj/structure/overmap/ship)
 	original.ship_team = new
 	original.ship_team.ship = original
@@ -813,6 +881,7 @@
 		allocated += leader.mind
 		original.enlist_crewmember(leader)
 	original.enlist_crewmember(surveyor)
+	original.enlist_crewmember(crewmate)
 	var/datum/voidcrew_crew_record/record = original.get_crew_record()
 	crew_records += record
 	record.claim_zone_work("hunt", 1, 1, "before_build")
@@ -820,6 +889,7 @@
 	occupant_home.ship_team = new
 	occupant_home.ship_team.ship = occupant_home
 	occupant_home.enlist_crewmember(occupant)
+	occupant_home.claimed_captain = occupant.mind
 	crew_records += occupant_home.get_crew_record()
 	if(nonleader)
 		var/datum/mind/crewlead_test/surveyor_mind = surveyor.mind
@@ -838,9 +908,14 @@
 	else
 		TEST_ASSERT_EQUAL(commissioned_crew, record, "First occupant replaced the surveyor's crew identity")
 		TEST_ASSERT(surveyor.mind in original.ship_team.members, "Commissioning removed the leader from their own crew")
-	TEST_ASSERT(occupant.mind in commissioned.ship_team.members, "Commissioning did not enroll its occupant")
-	TEST_ASSERT(!(occupant.mind in occupant_home.ship_team.members), "Commissioning left its occupant in a second crew")
-	TEST_ASSERT_EQUAL(occupant.mind.get_reputation_crew(), commissioned_crew, "Occupant did not join the surveyor's crew")
+	TEST_ASSERT(!(occupant.mind in commissioned.ship_team.members), "Commissioning drafted another crew's occupant")
+	TEST_ASSERT(occupant.mind in occupant_home.ship_team.members, "Commissioning evicted an occupant from their own hull")
+	TEST_ASSERT_EQUAL(occupant.mind.get_reputation_crew(), occupant_home.get_crew_record(), "Commissioning changed another crew's affiliation")
+	TEST_ASSERT_EQUAL(occupant_home.claimed_captain, occupant.mind, "Commissioning removed another crew's command")
+	TEST_ASSERT(unaffiliated.mind in commissioned.ship_team.members, "Commissioning did not enroll an unaffiliated builder")
+	TEST_ASSERT_EQUAL(unaffiliated.mind.get_reputation_crew(), commissioned_crew, "An unaffiliated builder did not join the new hull's crew")
+	TEST_ASSERT(crewmate.mind in original.ship_team.members, "Commissioning removed a crewmate's original hull membership")
+	TEST_ASSERT_EQUAL((crewmate.mind in commissioned.ship_team.members), !nonleader, "Commissioning did not respect the crewmate's continuing affiliation")
 	TEST_ASSERT_EQUAL(record.zone_totals["1"], 1, "Commissioning changed standing")
 
 /datum/mission_target/zone_identity_test

@@ -38,8 +38,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home
 	var/datum/outpost_berth/ship_bay/bay
 	var/datum/ship_checkpoint/snapshot
-	/// Retained after the checkpoint is consumed, and shared with its original crew.
-	var/list/research_reward_ledger
+	/// Live round identity retains prize and research claims after checkpoint consumption.
 	var/datum/weakref/crew_record_ref
 	/// Confirmed departure when registration would found a different crew.
 	var/form_new_crew = FALSE
@@ -120,7 +119,6 @@
 	panel_ref = terminal ? WEAKREF(terminal) : null
 	operator_ref = WEAKREF(user)
 	snapshot = blueprint
-	research_reward_ledger = blueprint.research_reward_ledger
 	crew_record_ref = blueprint.crew_record_ref
 	home = blueprint.outpost
 	captain_ckey = blueprint.captain_ckey
@@ -167,7 +165,6 @@
 	home = null
 	bay = null
 	snapshot = null
-	research_reward_ledger = null
 	crew_record_ref = null
 	registration_crew_ref = null
 	port = null
@@ -448,8 +445,6 @@
 	if(!record.setup_from_template(template))
 		qdel(record)
 		return null
-	if(!isnull(research_reward_ledger))
-		record.ship_team.research_reward_ledger = research_reward_ledger
 	var/datum/mind/command = captain_mind()
 	if(restores_crew_ship(command))
 		record.ship_team.set_crew_record(crew_record_ref.resolve())

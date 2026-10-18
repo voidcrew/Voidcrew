@@ -135,6 +135,8 @@
 	data["is_captain"] = ship.is_ship_captain(captain)
 
 	// Crew list
+	var/datum/mind/crew_leader = ship.get_crew_record()?.leader
+	data["crew_leader"] = crew_leader?.current?.real_name || crew_leader?.name || "None"
 	data["crew"] = list()
 	if(ship.ship_team)
 		for(var/datum/mind/member in ship.ship_team.members)

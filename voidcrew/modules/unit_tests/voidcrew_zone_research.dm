@@ -25,6 +25,48 @@
 	web.unhide_node(node)
 	web.add_points_all(100000)
 
+/// Fresh disks on separate hulls restore knowledge, but share the crew's completion grants.
+/datum/unit_test/voidcrew_zone_research/shared_entitlement/Run()
+	var/obj/structure/overmap/ship/first = zone_ship(run_loc_floor_bottom_left)
+	var/datum/voidcrew_crew_record/crew = first.get_crew_record()
+	var/obj/structure/overmap/ship/second = zone_ship(run_loc_floor_top_right)
+	TEST_ASSERT(second.ship_team.set_crew_record(crew), "The second hull could not continue its crew")
+	var/mob/living/carbon/human/user = make_player(run_loc_floor_bottom_left, "zoneresearchentitlement")
+	var/obj/machinery/rnd/server/ship/first_server = allocate(/obj/machinery/rnd/server/ship)
+	var/obj/machinery/rnd/server/ship/second_server = allocate(/obj/machinery/rnd/server/ship, run_loc_floor_top_right)
+	var/datum/techweb/first_web = install_reward_disk(first_server, user)
+	var/datum/techweb/second_web = install_reward_disk(second_server, user)
+	TEST_ASSERT_EQUAL(first_web.experiment_reward_ledger(), second_web.experiment_reward_ledger(), "Two hulls in one crew have separate grant ledgers")
+	complete_arcade(first_web, run_loc_floor_bottom_left)
+	publish_reward_paper(first_web)
+	TEST_ASSERT_EQUAL(first_web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "The first hull did not earn both grants")
+	complete_arcade(second_web, run_loc_floor_top_right)
+	publish_reward_paper(second_web)
+	TEST_ASSERT_EQUAL(second_web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "A second hull repaid its crew's flat or intrinsic experiment rewards")
+	TEST_ASSERT(second_web.completed_experiments[/datum/experiment/physical/arcade_winner], "An unpaid repeat did not restore experiment completion")
+	TEST_ASSERT(second_web.completed_experiments[/datum/experiment/ordnance/explosive/lowyieldbomb], "An unpaid publication did not restore experiment completion")
+
+/// The returned announcement is used by both scanners and ordnance publications.
+/datum/unit_test/voidcrew_zone_research/grant_receipt/Run()
+	zone_ship(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = make_player(run_loc_floor_bottom_left, "zoneresearchreceipt")
+	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
+	var/datum/techweb/web = install_reward_disk(server, user)
+	var/datum/experiment/experiment = allocate(/datum/experiment/physical/arcade_winner)
+	web.available_experiments |= experiment
+	var/announcement = web.complete_experiment(experiment)
+	TEST_ASSERT(findtext(announcement, "has been completed!"), "A paid experiment lost its completion announcement")
+	TEST_ASSERT(!findtext(announcement, "Research grant already claimed."), "A paid experiment reported a duplicate grant")
+	server.source_code_hdd.forceMove(run_loc_floor_bottom_left)
+	web = install_reward_disk(server, user)
+	experiment = allocate(/datum/experiment/physical/arcade_winner)
+	web.available_experiments |= experiment
+	announcement = web.complete_experiment(experiment)
+	TEST_ASSERT(findtext(announcement, "has been completed!"), "An unpaid repeat lost its completion announcement")
+	TEST_ASSERT(findtext(announcement, "Research grant already claimed."), "An unpaid repeat did not report its claimed grant")
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "An unpaid receipt still paid a grant")
+	TEST_ASSERT_NULL(web.complete_experiment(experiment), "A duplicate callback announced the same completion twice")
+
 /// Check the entire tree, including public industrial/medical nodes and nanite siblings.
 /datum/unit_test/voidcrew_zone_research/tags/Run()
 	var/list/expected = list(
