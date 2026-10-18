@@ -11,6 +11,10 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 	var/list/teams = list()
 	var/list/minds = list()
 	var/list/ckeys = list()
+	/// The founder, then the oldest surviving hull's captain or earliest remaining member.
+	var/datum/mind/leader
+	/// Join order for current characters. Cryo keeps affiliation but relinquishes leadership.
+	var/list/leadership_members = list()
 	/// Trader keys are main-shop typepaths; SKU keys are SKU typepaths.
 	var/list/trader_favor = list()
 	var/list/favor_unique_purchases = list()
@@ -42,7 +46,33 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 	teams.Cut()
 	minds.Cut()
 	ckeys.Cut()
+	leader = null
+	leadership_members.Cut()
 	return ..()
+
+/datum/voidcrew_crew_record/proc/join_leadership_roster(datum/mind/member)
+	leadership_members |= member
+	if(!leader)
+		leader = member
+
+/datum/voidcrew_crew_record/proc/leave_leadership_roster(datum/mind/member)
+	leadership_members -= member
+	if(leader != member)
+		return
+	leader = null
+	// teams retain hull enrollment order, including when several were built in one tick.
+	for(var/datum/team/voidcrew/team in teams)
+		var/obj/structure/overmap/ship/ship = team.ship
+		if(QDELETED(ship) || ship.abandoned || ship.retired_by_checkpoint)
+			continue
+		for(var/datum/mind/candidate in leadership_members)
+			if(ship.is_ship_captain_mind(candidate))
+				leader = candidate
+				return
+		break // Without a captain on the oldest hull, fall back to member join order.
+	for(var/datum/mind/candidate in leadership_members)
+		leader = candidate
+		return
 
 /// Round cleanup/admin disposal, not hull teardown. Never serialize these records.
 /proc/clear_voidcrew_crew_records()

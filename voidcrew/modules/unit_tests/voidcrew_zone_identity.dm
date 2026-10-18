@@ -1,4 +1,12 @@
 /// Round identity contracts. Fork defines follow test includes, so bands/permissions use literals.
+/datum/mind/crewlead_test
+	var/accept_new_crew = TRUE
+	var/confirmations = 0
+
+/datum/mind/crewlead_test/confirm_new_ship_crew(datum/voidcrew_crew_record/record)
+	confirmations++
+	return accept_new_crew
+
 /datum/unit_test/voidcrew_zone_identity
 	var/list/test_records = list()
 	var/list/test_ports = list()
@@ -26,8 +34,8 @@
 
 /datum/unit_test/voidcrew_zone_identity/proc/make_member(player_key)
 	var/mob/living/carbon/human/consistent/member = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	member.mind = allocate(/datum/mind/crewlead_test)
 	member.mind_initialize()
-	allocated += member.mind
 	if(player_key)
 		member.key = player_key
 	member.mind.key = player_key
@@ -92,6 +100,7 @@
 	var/datum/voidcrew_crew_record/record = record_for(first)
 	var/mob/living/carbon/human/member = make_member("zoneidentitycontinuation")
 	first.enlist_crewmember(member)
+	TEST_ASSERT_EQUAL(record.leader, member.mind, "The founder did not become crew leader")
 	clear_green(record)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.grant_favor(first, 6)
@@ -120,11 +129,12 @@
 	TEST_ASSERT_EQUAL(GLOB.voidcrew_crew_roster["zoneidentitycontinuation"], record, "Mind replacement lost recovery")
 	var/mob/living/carbon/human/replacement = make_member("zoneidentitycontinuation")
 	var/obj/structure/overmap/ship/rebuilt = make_ship()
-	rebuilt.bind_reputation_crew(replacement.mind)
+	TEST_ASSERT(!rebuilt.bind_reputation_crew(replacement.mind), "A new character inherited the old character's leadership")
+	TEST_ASSERT(rebuilt.bind_reputation_crew(replacement.mind, choose_new_reputation_crew(replacement)), "A confirmed replacement could not found a crew")
 	rebuilt.enlist_crewmember(replacement)
-	TEST_ASSERT_EQUAL(record_for(rebuilt), record, "Respawned buyer did not recover the live crew")
+	TEST_ASSERT(record_for(rebuilt) != record, "Respawned buyer recovered the old character's leadership")
 	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Wreck/recovery lost reputation")
-	TEST_ASSERT_EQUAL(shop.get_crew_purchases(rebuilt, /datum/shop_sku/favor/pike_ledger), 2, "Recovery reset caps")
+	TEST_ASSERT_EQUAL(shop.get_crew_purchases(rebuilt, /datum/shop_sku/favor/pike_ledger), 0, "A new character inherited old purchase caps")
 	var/obj/structure/overmap/ship/fresh = make_ship()
 	TEST_ASSERT(fresh.bind_reputation_crew(replacement.mind, TRUE), "Could not form a new crew on an empty hull")
 	fresh.enlist_crewmember(replacement)
@@ -244,7 +254,7 @@
 	TEST_ASSERT(!(borg.mind in old_ship.ship_team.members), "Silicon retained its former crew")
 	new_ship.shuttle = null
 
-/// Claims continue any crewmate's identity, and cannot overwrite occupied hulls.
+/// A leader's claims continue their identity, and cannot overwrite occupied hulls.
 /datum/unit_test/voidcrew_zone_identity/claims/Run()
 	var/obj/structure/overmap/ship/home = make_ship()
 	var/mob/living/carbon/human/member = make_member()
@@ -254,7 +264,7 @@
 	var/obj/structure/overmap/ship/derelict = make_ship()
 	derelict.abandoned = TRUE
 	TEST_ASSERT(derelict.claim_abandoned_ship(member), "Abandoned claim failed")
-	TEST_ASSERT_EQUAL(record_for(derelict), record, "Abandoned claim reset a non-captain's standing")
+	TEST_ASSERT_EQUAL(record_for(derelict), record, "Abandoned claim reset the leader's standing")
 	var/obj/structure/overmap/ship/npc/pirate = allocate(/obj/structure/overmap/ship/npc)
 	var/obj/machinery/computer/helm/helm = allocate(/obj/machinery/computer/helm)
 	TEST_ASSERT(helm.claim_npc_ship(pirate, member), "NPC key-claim transaction failed")
@@ -266,6 +276,187 @@
 	TEST_ASSERT(independent.claim_abandoned_ship(member, TRUE), "Independent claim failed")
 	TEST_ASSERT(record_for(independent) != record, "Independent claim reused the former crew")
 	TEST_ASSERT(!(member.mind in home.ship_team.members), "Independent claim left former memberships")
+
+/// Non-leaders must confirm departure before either purchase registration or hull claim.
+/datum/unit_test/voidcrew_zone_identity/nonleader_registration/Run()
+	var/obj/structure/overmap/ship/home = make_ship()
+	var/mob/living/carbon/human/leader = make_member()
+	var/mob/living/carbon/human/member = make_member("zoneidentitynonleader")
+	home.enlist_crewmember(leader)
+	home.enlist_crewmember(member)
+	var/datum/voidcrew_crew_record/record = record_for(home)
+	clear_green(record)
+	var/datum/mind/crewlead_test/member_mind = member.mind
+	var/obj/structure/overmap/ship/purchased = make_ship()
+	TEST_ASSERT(!purchased.bind_reputation_crew(member.mind), "A non-leader bypassed purchase confirmation")
+	TEST_ASSERT_EQUAL(choose_new_reputation_crew(member), TRUE, "A non-leader was offered continuation")
+	TEST_ASSERT(purchased.bind_reputation_crew(member.mind, TRUE), "A confirmed purchase could not found a crew")
+	purchased.enlist_crewmember(member)
+	var/datum/voidcrew_crew_record/independent = record_for(purchased)
+	TEST_ASSERT(independent != record && independent.leader == member.mind, "A confirmed purchase did not found an independent crew")
+	TEST_ASSERT_EQUAL(independent.get_zone_permission(), 0, "A new crew inherited standing")
+	TEST_ASSERT_EQUAL(GLOB.voidcrew_crew_roster["zoneidentitynonleader"], independent, "A purchase retained the old keyed affiliation")
+	TEST_ASSERT(!(member.mind in home.ship_team.members), "A purchase retained the former HUD roster")
+	TEST_ASSERT_EQUAL(record.leader, leader.mind, "A departing non-leader displaced the old leader")
+
+	home.enlist_crewmember(member)
+	member_mind.accept_new_crew = FALSE
+	var/obj/structure/overmap/ship/derelict = make_ship()
+	derelict.abandoned = TRUE
+	var/datum/voidcrew_crew_record/unclaimed = record_for(derelict)
+	TEST_ASSERT(!derelict.claim_abandoned_ship(member), "A declined claim succeeded")
+	TEST_ASSERT(derelict.abandoned && !derelict.claimed_captain, "A declined claim changed command")
+	TEST_ASSERT_EQUAL(record_for(derelict), unclaimed, "A declined claim rebound the hull")
+	TEST_ASSERT_EQUAL(member.mind.get_reputation_crew(), record, "A declined claim changed affiliation")
+	TEST_ASSERT(member.mind in home.ship_team.members, "A declined claim removed the old HUD roster")
+	member_mind.accept_new_crew = TRUE
+	TEST_ASSERT(derelict.claim_abandoned_ship(member), "A confirmed non-leader claim failed")
+	TEST_ASSERT(record_for(derelict) != record, "A non-leader added a claimed hull to the old crew")
+	TEST_ASSERT_EQUAL(derelict.get_crew_record().leader, member.mind, "A claimant did not lead their new crew")
+	TEST_ASSERT(!(member.mind in home.ship_team.members), "A claim retained the old crew")
+
+	home.enlist_crewmember(member)
+	member_mind.accept_new_crew = FALSE
+	var/obj/structure/overmap/ship/npc/pirate = allocate(/obj/structure/overmap/ship/npc)
+	var/obj/machinery/computer/helm/helm = allocate(/obj/machinery/computer/helm)
+	TEST_ASSERT(!helm.claim_npc_ship(pirate, member), "A declined NPC claim succeeded")
+	TEST_ASSERT(!pirate.player_controlled && !length(pirate.ship_team?.members), "A declined NPC claim changed ownership")
+	TEST_ASSERT_EQUAL(member.mind.get_reputation_crew(), record, "A declined NPC claim changed affiliation")
+	member_mind.accept_new_crew = TRUE
+	TEST_ASSERT(helm.claim_npc_ship(pirate, member), "A confirmed non-leader NPC claim failed")
+	TEST_ASSERT(record_for(pirate) != record, "A non-leader added an NPC hull to the old crew")
+	TEST_ASSERT_EQUAL(pirate.get_crew_record().leader, member.mind, "An NPC claimant did not found their crew")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Departures changed the old crew's standing")
+
+/// Cancellation exercises the actual lobby and credit-order entry points before loading or charge.
+/mob/dead/new_player/crewlead_test/select_ship()
+	return
+
+/datum/ship_checkpoint_ui/crewlead_test
+	var/datum/bank_account/test_payer
+
+/datum/ship_checkpoint_ui/crewlead_test/New()
+	return // No real console or outpost; only the pre-order confirmation is exercised.
+
+/datum/ship_checkpoint_ui/crewlead_test/order_denial(mob/living/user, datum/ship_order/order, choice)
+	return null
+
+/datum/ship_checkpoint_ui/crewlead_test/resolve_payer(mob/living/user, choice)
+	return list(test_payer, null)
+
+/datum/ship_checkpoint_ui/crewlead_test/confirm_order(mob/user, prompt_text)
+	return TRUE
+
+/datum/ship_checkpoint_ui/crewlead_test/Destroy()
+	test_payer = null
+	return ..()
+
+/datum/unit_test/voidcrew_zone_identity/declined_purchase/Run()
+	var/obj/structure/overmap/ship/home = make_ship()
+	var/mob/living/carbon/human/leader = make_member()
+	var/mob/living/carbon/human/member = make_member()
+	home.enlist_crewmember(leader)
+	home.enlist_crewmember(member)
+	var/datum/voidcrew_crew_record/record = record_for(home)
+	var/datum/mind/crewlead_test/member_mind = member.mind
+	member_mind.accept_new_crew = FALSE
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Crew buyer", null, 1, FALSE)
+	account.account_balance = 100000
+	var/datum/map_template/shuttle/voidcrew/commissioned/template = allocate(/datum/map_template/shuttle/voidcrew/commissioned)
+	var/datum/ship_checkpoint_ui/crewlead_test/panel = allocate(/datum/ship_checkpoint_ui/crewlead_test)
+	panel.test_payer = account
+	panel.cart = allocate(/datum/ship_order, template)
+	TEST_ASSERT(!panel.place_order(member), "A declined crew departure placed a paid order")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "A declined order charged the buyer")
+	TEST_ASSERT(!panel.working, "A declined order kept the console busy")
+	TEST_ASSERT_EQUAL(member.mind.get_reputation_crew(), record, "A declined order changed affiliation")
+	TEST_ASSERT(member.mind in home.ship_team.members, "A declined order removed the old HUD roster")
+	var/mob/dead/new_player/crewlead_test/lobby = allocate(/mob/dead/new_player/crewlead_test)
+	var/datum/mind/crewlead_test/lobby_mind = allocate(/datum/mind/crewlead_test)
+	lobby.mind = lobby_mind
+	lobby_mind.join_reputation_crew(record)
+	lobby_mind.accept_new_crew = FALSE
+	var/ship_count = length(SSovermap.simulated_ships)
+	lobby.spawn_ship_with_upgrades(template, list(), null)
+	TEST_ASSERT(!lobby.spawning_ship, "A declined lobby registration started loading")
+	TEST_ASSERT_EQUAL(length(SSovermap.simulated_ships), ship_count, "A declined lobby purchase created a hull")
+	TEST_ASSERT_EQUAL(lobby_mind.get_reputation_crew(), record, "A declined lobby registration changed affiliation")
+	TEST_ASSERT_EQUAL(account.account_balance, 100000, "A declined lobby registration charged an account")
+
+/// Succession prefers captains in hull order, then members in original join order.
+/datum/unit_test/voidcrew_zone_identity/leadership_succession/Run()
+	var/obj/structure/overmap/ship/oldest = make_ship()
+	var/datum/voidcrew_crew_record/record = record_for(oldest)
+	var/obj/structure/overmap/ship/newer = make_ship(record)
+	var/mob/living/carbon/human/founder = make_member("zoneidentityfounder")
+	var/mob/living/carbon/human/earliest = make_member()
+	var/mob/living/carbon/human/new_captain = make_member()
+	var/mob/living/carbon/human/old_captain = make_member()
+	oldest.enlist_crewmember(founder)
+	oldest.enlist_crewmember(earliest)
+	newer.enlist_crewmember(new_captain)
+	oldest.enlist_crewmember(old_captain)
+	newer.claimed_captain = new_captain.mind
+	oldest.claimed_captain = old_captain.mind
+	oldest.enlist_crewmember(earliest) // Reenrollment must not reset join order.
+	var/obj/structure/overmap/ship/foreign = make_ship()
+	foreign.enlist_crewmember(founder)
+	TEST_ASSERT_EQUAL(record.leader, old_captain.mind, "Leaving did not promote the oldest hull's captain")
+	qdel(oldest)
+	old_captain.mind.leave_reputation_crew()
+	TEST_ASSERT_EQUAL(record.leader, new_captain.mind, "Succession selected a destroyed hull's captain")
+	var/obj/machinery/cryopod/pod = allocate(/obj/machinery/cryopod)
+	pod.detach_from_crews(new_captain.mind, new_captain.real_name)
+	TEST_ASSERT_EQUAL(record.leader, earliest.mind, "Cryo did not promote the earliest remaining member")
+	TEST_ASSERT_EQUAL(new_captain.mind.get_reputation_crew(), record, "Cryo succession erased Z1 affiliation")
+	qdel(earliest.mind)
+	TEST_ASSERT_NULL(record.leader, "A deleted leader or sleeping character retained leadership")
+	newer.enlist_crewmember(new_captain)
+	TEST_ASSERT_EQUAL(record.leader, new_captain.mind, "A returning sole member could not lead")
+	var/mob/living/carbon/human/backup = make_member()
+	newer.enlist_crewmember(backup)
+	var/mob/living/carbon/human/replacement = make_member("zoneidentityfounder")
+	foreign.enlist_crewmember(backup)
+	foreign.enlist_crewmember(replacement)
+	TEST_ASSERT_EQUAL(foreign.get_crew_record().leader, backup.mind, "Respawn inherited leadership instead of promoting a surviving member")
+
+/// A captainless oldest hull falls back to join order, rather than a newer ship's command.
+/datum/unit_test/voidcrew_zone_identity/captainless_succession/Run()
+	var/obj/structure/overmap/ship/oldest = make_ship()
+	var/datum/voidcrew_crew_record/record = record_for(oldest)
+	var/obj/structure/overmap/ship/newer = make_ship(record)
+	var/mob/living/carbon/human/founder = make_member()
+	var/mob/living/carbon/human/earliest = make_member()
+	var/mob/living/carbon/human/captain = make_member()
+	oldest.enlist_crewmember(founder)
+	oldest.enlist_crewmember(earliest)
+	newer.enlist_crewmember(captain)
+	newer.claimed_captain = captain.mind
+	founder.mind.leave_reputation_crew()
+	TEST_ASSERT_EQUAL(record.leader, earliest.mind, "A newer hull's captain displaced the earliest member")
+
+/// Admin enrollment is an override, even for a non-leader of an established crew.
+/datum/unit_test/voidcrew_zone_identity/admin_enrollment/Run()
+	var/obj/structure/overmap/ship/source = make_ship()
+	var/obj/structure/overmap/ship/destination = make_ship()
+	var/mob/living/carbon/human/source_leader = make_member()
+	var/mob/living/carbon/human/destination_leader = make_member()
+	var/mob/living/carbon/human/member = make_member()
+	source.enlist_crewmember(source_leader)
+	source.enlist_crewmember(member)
+	destination.enlist_crewmember(destination_leader)
+	var/datum/admin_crew_panel/panel = allocate(/datum/admin_crew_panel)
+	panel.selected_ship = destination
+	panel.add_crew_member(member.mind, destination_leader)
+	TEST_ASSERT_EQUAL(member.mind.get_reputation_crew(), destination.get_crew_record(), "Admin enrollment did not override a non-leader's affiliation")
+	TEST_ASSERT_EQUAL(destination.get_crew_record().leader, destination_leader.mind, "Admin enrollment displaced the destination's leader")
+	source.ship_team.admin_add_member(source_leader, member.mind)
+	TEST_ASSERT_EQUAL(member.mind.get_reputation_crew(), source.get_crew_record(), "Team panel enrollment did not override affiliation")
+	var/datum/mind/crewlead_test/member_mind = member.mind
+	TEST_ASSERT_EQUAL(member_mind.confirmations, 0, "An admin enrollment prompted for ship registration")
+	panel.add_crew_member(member.mind, destination_leader)
+	panel.kick_crew_member(destination_leader.mind, source_leader)
+	TEST_ASSERT_EQUAL(destination.get_crew_record().leader, member.mind, "Admin removal did not replace the departing leader")
 
 /// Ambiguous fleets need a hull selection; it never selects another crew or survives a switch.
 /datum/unit_test/voidcrew_zone_identity/service_selection/Run()
@@ -311,11 +502,38 @@
 /datum/checkpoint_construction/order/zone_identity_test/New()
 	state = "complete"
 
+/// A departure confirmation cannot authorize leaving a different crew joined while building.
+/datum/unit_test/voidcrew_zone_identity/stale_order/Run()
+	var/obj/structure/overmap/ship/home = make_ship()
+	var/obj/structure/overmap/ship/foreign = make_ship()
+	var/mob/living/carbon/human/home_leader = make_member()
+	var/mob/living/carbon/human/foreign_leader = make_member()
+	var/mob/living/carbon/human/buyer = make_member()
+	home.enlist_crewmember(home_leader)
+	foreign.enlist_crewmember(foreign_leader)
+	home.enlist_crewmember(buyer)
+	var/datum/checkpoint_construction/order/zone_identity_test/order = allocate(/datum/checkpoint_construction/order/zone_identity_test)
+	order.buyer_mind_ref = WEAKREF(buyer.mind)
+	TEST_ASSERT(order.confirm_crew_registration(), "The initial departure was not confirmed")
+	TEST_ASSERT(order.crew_registration_valid(), "The confirmation did not authorize its own crew")
+	foreign.enlist_crewmember(buyer)
+	TEST_ASSERT(!order.crew_registration_valid(), "An old confirmation authorized departure from a different crew")
+	foreign_leader.mind.leave_reputation_crew()
+	TEST_ASSERT_EQUAL(foreign.get_crew_record().leader, buyer.mind, "The buyer did not succeed their new crew's leader")
+	TEST_ASSERT(!order.crew_registration_valid(), "New leadership reused a departure confirmation from another crew")
+	TEST_ASSERT(!order.consume_source(), "A stale registration charged an order")
+	TEST_ASSERT_EQUAL(order.charged, 0, "A stale registration charged credits")
+	TEST_ASSERT(!order.committed, "A stale registration committed the build")
+	TEST_ASSERT_EQUAL(buyer.mind.get_reputation_crew(), foreign.get_crew_record(), "A stale order changed affiliation")
+
 /// A live checkpoint reference includes post-save gains; departed captains cannot recover it.
 /datum/unit_test/voidcrew_zone_identity/checkpoints_and_orders/Run()
 	var/mob/living/carbon/human/captain = make_member("zoneidentitycheckpoint")
+	var/mob/living/carbon/human/leader = make_member()
 	var/obj/structure/overmap/ship/original = make_ship()
+	original.enlist_crewmember(leader)
 	original.enlist_crewmember(captain)
+	original.claimed_captain = captain.mind
 	var/datum/voidcrew_crew_record/record = record_for(original)
 	var/datum/ship_checkpoint/snapshot = allocate(/datum/ship_checkpoint)
 	snapshot.crew_record_ref = WEAKREF(record)
@@ -327,6 +545,10 @@
 	job.crew_record_ref = snapshot.crew_record_ref
 	job.captain_ckey = snapshot.captain_ckey
 	job.test_command = captain.mind
+	TEST_ASSERT(record.leader != captain.mind, "The saved captain must be a non-leader for this regression")
+	TEST_ASSERT(job.confirm_crew_registration(), "Saved captain could not restore the crew's own hull")
+	var/datum/mind/crewlead_test/captain_mind = captain.mind
+	TEST_ASSERT_EQUAL(captain_mind.confirmations, 0, "Restoring the crew's own hull prompted for departure")
 	job.vessel = job.create_vessel()
 	allocated += job.vessel
 	TEST_ASSERT_EQUAL(record_for(job.vessel), record, "Checkpoint copied or reset the live crew record")
@@ -335,18 +557,19 @@
 	var/datum/checkpoint_construction/order/zone_identity_test/order = allocate(/datum/checkpoint_construction/order/zone_identity_test)
 	order.order = allocate(/datum/ship_order, template)
 	order.template = template
-	order.buyer_mind_ref = WEAKREF(captain.mind)
+	order.buyer_mind_ref = WEAKREF(leader.mind)
 	order.vessel = order.create_vessel()
 	allocated += order.vessel
 	TEST_ASSERT_EQUAL(record_for(order.vessel), record, "Simultaneous order commissioned a copied crew")
-	TEST_ASSERT(order.enlist_captain(captain.mind), "Outpost order handover failed")
-	TEST_ASSERT_EQUAL(order.vessel.claimed_captain, captain.mind, "Outpost order did not give its buyer command")
-	TEST_ASSERT(captain.mind in order.vessel.ship_team.members, "Outpost order did not enroll its buyer")
+	TEST_ASSERT(order.enlist_captain(leader.mind), "Outpost order handover failed")
+	TEST_ASSERT_EQUAL(order.vessel.claimed_captain, leader.mind, "Outpost order did not give its buyer command")
+	TEST_ASSERT(leader.mind in order.vessel.ship_team.members, "Outpost order did not enroll its buyer")
 	var/datum/checkpoint_construction/order/zone_identity_test/independent = allocate(/datum/checkpoint_construction/order/zone_identity_test)
 	independent.order = order.order
 	independent.template = template
 	independent.buyer_mind_ref = WEAKREF(captain.mind)
-	independent.form_new_crew = TRUE
+	TEST_ASSERT(independent.confirm_crew_registration(), "A non-leader's confirmed ship order was refused")
+	TEST_ASSERT(independent.form_new_crew, "A non-leader's order did not require a new crew")
 	independent.vessel = independent.create_vessel()
 	allocated += independent.vessel
 	var/datum/voidcrew_crew_record/new_crew = record_for(independent.vessel)
@@ -399,6 +622,10 @@
 	parent_type = /datum/unit_test/voidcrew_hull_survey
 	var/obj/structure/overmap/ship/commissioned
 	var/list/crew_records = list()
+	var/nonleader = FALSE
+
+/datum/unit_test/voidcrew_zone_identity_scratch/nonleader
+	nonleader = TRUE
 
 /datum/unit_test/voidcrew_zone_identity_scratch/Destroy()
 	qdel(commissioned)
@@ -417,14 +644,19 @@
 	TEST_ASSERT_NULL(validate_hull_claim(claim, null), "Scratch fixture is not a valid enclosure")
 	var/mob/living/carbon/human/consistent/surveyor = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
 	var/mob/living/carbon/human/consistent/occupant = allocate(/mob/living/carbon/human/consistent, spot(4, 5))
+	surveyor.mind = allocate(/datum/mind/crewlead_test)
 	surveyor.mind_initialize()
 	occupant.mind_initialize()
-	allocated += surveyor.mind
 	allocated += occupant.mind
 	occupant.mock_client = allocate(/datum/client_interface)
 	var/obj/structure/overmap/ship/original = allocate(/obj/structure/overmap/ship)
 	original.ship_team = new
 	original.ship_team.ship = original
+	if(nonleader)
+		var/mob/living/carbon/human/leader = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+		leader.mind_initialize()
+		allocated += leader.mind
+		original.enlist_crewmember(leader)
 	original.enlist_crewmember(surveyor)
 	var/datum/voidcrew_crew_record/record = original.get_crew_record()
 	crew_records += record
@@ -434,13 +666,26 @@
 	occupant_home.ship_team.ship = occupant_home
 	occupant_home.enlist_crewmember(occupant)
 	crew_records += occupant_home.get_crew_record()
+	if(nonleader)
+		var/datum/mind/crewlead_test/surveyor_mind = surveyor.mind
+		surveyor_mind.accept_new_crew = FALSE
+		TEST_ASSERT_NULL(commission_vessel(surveyor, spot(4, 4), claim.turfs, "Declined fixture"), "Declined scratch commissioning changed the hull")
+		TEST_ASSERT_EQUAL(surveyor.mind.get_reputation_crew(), record, "Declined scratch commissioning changed affiliation")
+		surveyor_mind.accept_new_crew = TRUE
 	commissioned = commission_vessel(surveyor, spot(4, 4), claim.turfs, "Identity fixture")
 	TEST_ASSERT_NOTNULL(commissioned, "Scratch commissioning failed")
-	TEST_ASSERT_EQUAL(commissioned.get_crew_record(), record, "First occupant replaced the surveyor's crew identity")
-	TEST_ASSERT(surveyor.mind in original.ship_team.members, "Commissioning removed the surveyor from their own crew")
+	var/datum/voidcrew_crew_record/commissioned_crew = commissioned.get_crew_record()
+	crew_records |= commissioned_crew
+	if(nonleader)
+		TEST_ASSERT(commissioned_crew != record, "A non-leader added a scratch hull to the old crew")
+		TEST_ASSERT_EQUAL(commissioned_crew.leader, surveyor.mind, "The surveyor did not lead their new crew")
+		TEST_ASSERT(!(surveyor.mind in original.ship_team.members), "Commissioning retained the former crew")
+	else
+		TEST_ASSERT_EQUAL(commissioned_crew, record, "First occupant replaced the surveyor's crew identity")
+		TEST_ASSERT(surveyor.mind in original.ship_team.members, "Commissioning removed the leader from their own crew")
 	TEST_ASSERT(occupant.mind in commissioned.ship_team.members, "Commissioning did not enroll its occupant")
 	TEST_ASSERT(!(occupant.mind in occupant_home.ship_team.members), "Commissioning left its occupant in a second crew")
-	TEST_ASSERT_EQUAL(occupant.mind.get_reputation_crew(), record, "Occupant did not join the surveyor's crew")
+	TEST_ASSERT_EQUAL(occupant.mind.get_reputation_crew(), commissioned_crew, "Occupant did not join the surveyor's crew")
 	TEST_ASSERT_EQUAL(record.zone_totals["1"], 1, "Commissioning changed standing")
 
 /datum/mission_target/zone_identity_test

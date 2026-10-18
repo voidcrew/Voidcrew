@@ -220,18 +220,23 @@
 		return FALSE
 
 /// Converts an NPC ship to player control
-/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer, form_new = FALSE)
+/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer, form_new = null)
 	if(npc_ship?.retired_by_checkpoint || npc_ship?.checkpoint_rebuilding)
 		return FALSE
 	if(!istype(npc_ship))
 		return FALSE
 	if(!claimer?.mind || (npc_ship.player_controlled && !npc_ship.abandoned) || length(npc_ship.ship_team?.members))
 		return FALSE
+	if(isnull(form_new))
+		form_new = choose_new_reputation_crew(claimer)
+		if(isnull(form_new) || QDELETED(npc_ship) || npc_ship.retired_by_checkpoint || npc_ship.checkpoint_rebuilding || (npc_ship.player_controlled && !npc_ship.abandoned) || length(npc_ship.ship_team?.members))
+			return FALSE
 	if(!npc_ship.ship_team)
 		npc_ship.ship_team = new /datum/team/voidcrew()
 		npc_ship.ship_team.name = npc_ship.name
 		npc_ship.ship_team.ship = npc_ship
-	npc_ship.bind_reputation_crew(claimer.mind, form_new)
+	if(!npc_ship.bind_reputation_crew(claimer.mind, form_new))
+		return FALSE
 	npc_metric_claimed(npc_ship, claimer, "key")
 
 	// Cancel abandonment timer if one is running

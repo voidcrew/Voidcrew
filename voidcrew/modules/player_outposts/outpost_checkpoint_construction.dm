@@ -41,8 +41,10 @@
 	/// Retained after the checkpoint is consumed, and shared with its original crew.
 	var/list/research_reward_ledger
 	var/datum/weakref/crew_record_ref
-	/// Explicit empty-hull departure, offered by new ship orders only.
+	/// Confirmed departure when registration would found a different crew.
 	var/form_new_crew = FALSE
+	/// The affiliation whose departure was confirmed, not a later crew joined mid-build.
+	var/datum/weakref/registration_crew_ref
 	var/datum/weakref/panel_ref
 	/// Only used to reapply console upgrade disks while the hidden copy is prepared.
 	var/datum/weakref/operator_ref
@@ -167,6 +169,7 @@
 	snapshot = null
 	research_reward_ledger = null
 	crew_record_ref = null
+	registration_crew_ref = null
 	port = null
 	vessel = null
 	// A load still writing into the shipyard lets it go itself when it returns (load_source()).
@@ -196,6 +199,10 @@
 /datum/checkpoint_construction/proc/prepare()
 	if(!bay)
 		error = "The ship bay is occupied or reserved."
+		return FALSE
+	if(!confirm_crew_registration())
+		if(!QDELETED(src))
+			abort("Registration cancelled. [unspent_note()]")
 		return FALSE
 	// The shared loader is held only for the load itself, never for the build. A rebuild waits
 	// its turn behind purchases and earlier rebuilds, keeping its bay, rather than giving up.
@@ -360,6 +367,9 @@
  * Returns FALSE, with error set, when it cannot be spent; nothing is spent then.
  */
 /datum/checkpoint_construction/proc/consume_source()
+	if(!crew_registration_valid())
+		error = "Registration cancelled. [unspent_note()]"
+		return FALSE
 	committed = TRUE
 	UnregisterSignal(snapshot, COMSIG_QDELETING)
 	var/datum/ship_checkpoint/consumed = snapshot
@@ -377,6 +387,39 @@
 		if(QDELETED(original.shuttle))
 			qdel(original)
 	log_game("Checkpoint for [ship_name] ([captain_ckey]) at [home.name] was consumed by its reconstruction.")
+	return TRUE
+
+/// A saved captain restoring the same crew's own hull needs no new-ship permission.
+/datum/checkpoint_construction/proc/restores_crew_ship(datum/mind/command)
+	var/datum/voidcrew_crew_record/saved_crew = crew_record_ref?.resolve()
+	var/datum/voidcrew_crew_record/current_crew = command?.recover_reputation_crew() || GLOB.voidcrew_crew_roster[captain_ckey]
+	return saved_crew && (!command || ckey(command.key) == captain_ckey) && current_crew == saved_crew
+
+/// No prompt from drone processing: changed registration cancels before the first piece.
+/datum/checkpoint_construction/proc/crew_registration_valid()
+	var/datum/mind/command = captain_mind()
+	if(restores_crew_ship(command))
+		return TRUE
+	var/datum/voidcrew_crew_record/current_crew = command?.recover_reputation_crew()
+	if(!current_crew)
+		return TRUE
+	if(form_new_crew)
+		return IS_WEAKREF_OF(current_crew, registration_crew_ref)
+	return current_crew.leader == command
+
+/// Recheck before consuming a checkpoint or charging a shipyard order.
+/datum/checkpoint_construction/proc/confirm_crew_registration()
+	var/datum/mind/command = captain_mind()
+	if(restores_crew_ship(command))
+		return TRUE
+	var/datum/voidcrew_crew_record/current_crew = command?.recover_reputation_crew()
+	if(crew_registration_valid())
+		return TRUE
+	var/form_new = command.choose_new_ship_crew()
+	if(isnull(form_new) || QDELETED(src))
+		return FALSE
+	form_new_crew = form_new
+	registration_crew_ref = current_crew ? WEAKREF(current_crew) : null
 	return TRUE
 
 /// Lets go of the source when the job stops. Before the first piece it stays spendable.
@@ -407,15 +450,14 @@
 		return null
 	if(!isnull(research_reward_ledger))
 		record.ship_team.research_reward_ledger = research_reward_ledger
-	// Redeem rights are unchanged. Identity follows the saved captain's CURRENT crew;
-	// a snapshot can never restore a crew they left. Both references stay live, not copied.
-	var/datum/voidcrew_crew_record/current_crew = GLOB.voidcrew_crew_roster[captain_ckey]
-	var/datum/voidcrew_crew_record/saved_crew = crew_record_ref?.resolve()
 	var/datum/mind/command = captain_mind()
-	current_crew = command?.recover_reputation_crew() || current_crew
-	if(current_crew && !form_new_crew)
-		record.ship_team.set_crew_record(current_crew == saved_crew ? saved_crew : current_crew)
-	command?.join_reputation_crew(record.get_crew_record())
+	if(restores_crew_ship(command))
+		record.ship_team.set_crew_record(crew_record_ref.resolve())
+		command?.join_reputation_crew(record.get_crew_record())
+	else if(crew_registration_valid())
+		// A departed captain registers a new hull under the ordinary leader rule.
+		// If command changed during building, the normal handover leaves it claimable.
+		record.bind_reputation_crew(command, form_new_crew)
 	return record
 
 /// Names the record and its hull. A rebuild keeps the saved ship's name.

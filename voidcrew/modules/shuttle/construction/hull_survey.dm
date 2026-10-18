@@ -1133,7 +1133,12 @@
  *
  * Returns the new overmap ship, or null on failure.
  */
-/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name, form_new = FALSE)
+/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name, form_new = null)
+	if(isnull(form_new))
+		form_new = choose_new_reputation_crew(user)
+	var/datum/voidcrew_crew_record/crew = user?.mind?.recover_reputation_crew()
+	if(isnull(form_new) || (crew && !form_new && crew.leader != user.mind))
+		return null
 	prepare_claimed_turfs(turfs)
 
 	// create_shuttle() seats the mobile port on whatever turf it is handed as the origin, and
@@ -1181,7 +1186,10 @@
 	if(!vessel.setup_from_template(new /datum/map_template/shuttle/voidcrew/commissioned()))
 		qdel(vessel)
 		return null
-	vessel.bind_reputation_crew(user?.mind, form_new)
+	if(user?.mind?.recover_reputation_crew() != crew || !vessel.bind_reputation_crew(user?.mind, form_new))
+		qdel(vessel)
+		qdel(port, force = TRUE)
+		return null
 
 	port.current_ship = vessel
 	vessel.shuttle = port
@@ -1456,8 +1464,7 @@
 			break
 
 	if(!found_helm)
-		to_chat(src, span_warning("Survey complete, but this enclosure has no helm console. \
-			Without one there is nothing to fly it."))
+		to_chat(src, span_warning("This enclosure has no helm console."))
 		return
 
 	var/vessel_name = tgui_input_text(src, "Designate the vessel:", "Commission Vessel", max_length = MAX_NAME_LEN)
@@ -1470,9 +1477,12 @@
 	var/form_new = choose_new_reputation_crew(src)
 	if(isnull(form_new))
 		return
+	var/datum/voidcrew_crew_record/registration_crew = mind?.recover_reputation_crew()
 
-	to_chat(src, span_notice("You begin surveying the enclosure - [length(claim.turfs)] tiles."))
+	to_chat(src, span_notice("You begin surveying the enclosure."))
 	if(!do_after(src, HULL_SURVEY_DURATION, origin))
+		return
+	if(mind?.recover_reputation_crew() != registration_crew)
 		return
 
 	var/datum/hull_claim/fresh = survey_enclosure(origin)

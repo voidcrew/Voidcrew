@@ -1060,11 +1060,15 @@
 	return ship_team?.ensure_crew_record()
 
 /// Bind a successfully loaded empty hull before enrollment or commissioning signals yield.
-/// Checkpoints pass a live saved record only as a fallback for an unchanged roster.
+/// Only the leader can extend an existing crew; confirmed departures found a new one.
 /obj/structure/overmap/ship/proc/bind_reputation_crew(datum/mind/commissioner, form_new = FALSE)
 	if(!ship_team || length(ship_team.members))
 		return FALSE
-	var/datum/voidcrew_crew_record/record = form_new ? null : commissioner?.recover_reputation_crew()
+	var/datum/voidcrew_crew_record/record = commissioner?.recover_reputation_crew()
+	if(record && !form_new && record.leader != commissioner)
+		return FALSE
+	if(form_new)
+		record = null
 	if(!record)
 		record = new
 	if(!ship_team.set_crew_record(record))
@@ -1076,12 +1080,7 @@
 
 /// Shared prompt for empty-hull registration. Null is cancellation, not consent.
 /proc/choose_new_reputation_crew(mob/user)
-	if(!user?.client || !user.mind?.recover_reputation_crew())
-		return FALSE
-	var/choice = tgui_alert(user, "Crew registration", "Crew registration", list("Continue crew", "Form a new crew", "Cancel"))
-	if(!choice || choice == "Cancel")
-		return null
-	return choice == "Form a new crew"
+	return user?.mind ? user.mind.choose_new_ship_crew() : FALSE
 
 /**
  * ##destroy_ship
@@ -1404,15 +1403,25 @@
  * Claims an abandoned ship for a new owner.
  * * claimer - The mob claiming the ship
  */
-/obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer, form_new = FALSE)
+/obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer, form_new = null)
 	if(retired_by_checkpoint || checkpoint_rebuilding)
-		to_chat(claimer, span_warning("This ship is retired or being rebuilt from a checkpoint."))
+		to_chat(claimer, span_warning("This vessel is unavailable."))
 		return FALSE
 	if(!abandoned)
 		return FALSE
 	if(!claimer?.mind)
 		return FALSE
 	if(length(ship_team?.members))
+		return FALSE
+	if(isnull(form_new))
+		form_new = choose_new_reputation_crew(claimer)
+		if(isnull(form_new) || QDELETED(src) || retired_by_checkpoint || checkpoint_rebuilding || !abandoned || length(ship_team?.members))
+			return FALSE
+	if(!ship_team)
+		ship_team = new /datum/team/voidcrew()
+		ship_team.name = name
+		ship_team.ship = src
+	if(!bind_reputation_crew(claimer.mind, form_new))
 		return FALSE
 	ship_metric_claimed_abandoned(src, claimer)
 
@@ -1422,16 +1431,9 @@
 	crewless_since = 0
 	joining_allowed = TRUE // Re-enable cryopod spawning
 
-	// Create new ship team or use existing (cleared) one
-	if(!ship_team)
-		ship_team = new /datum/team/voidcrew()
-		ship_team.name = name
-		ship_team.ship = src
-
 	// Add claimer to ship team. Every crew-adding path also clears the ckey through
 	// the join password gate - the claimer must never be locked out of the hull they
 	// now command if they die and respawn through the lobby.
-	bind_reputation_crew(claimer.mind, form_new)
 	ship_team.join_member(claimer.mind)
 	if(claimer.ckey)
 		password_cleared_ckeys[claimer.ckey] = TRUE

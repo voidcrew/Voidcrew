@@ -34,7 +34,9 @@
 	for(var/datum/team/voidcrew/team in ship_teams?.Copy())
 		if(team.crew_record != record)
 			team.remove_member(src)
-	previous?.minds.Remove(src)
+	if(previous != record)
+		previous?.minds.Remove(src)
+		previous?.leave_leadership_roster(src)
 	if(player_ckey)
 		previous?.ckeys.Remove(player_ckey)
 		rostered?.ckeys.Remove(player_ckey)
@@ -42,6 +44,7 @@
 		record.ckeys |= player_ckey
 	reputation_crew = record
 	record.minds |= src
+	record.join_leadership_roster(src)
 	crew_service_ship_ref = null
 	return TRUE
 
@@ -54,6 +57,7 @@
 	if(previous)
 		previous.minds -= src
 		previous.ckeys -= player_ckey
+		previous.leave_leadership_roster(src)
 	if(player_ckey && GLOB.voidcrew_crew_roster[player_ckey] == previous)
 		GLOB.voidcrew_crew_roster -= player_ckey
 	reputation_crew = null
@@ -64,10 +68,33 @@
 	for(var/datum/team/voidcrew/team in ship_teams?.Copy())
 		team.remove_member(src)
 	reputation_crew?.minds.Remove(src)
+	reputation_crew?.leave_leadership_roster(src)
 	ship_teams = null
 	reputation_crew = null
 	crew_service_ship_ref = null
 	return ..()
+
+/// Cryo preserves Z1 affiliation recovery, but the sleeping character yields leadership.
+/obj/machinery/cryopod/detach_from_crews(datum/mind/leaving_mind, despawn_name)
+	. = ..()
+	leaving_mind?.get_reputation_crew()?.leave_leadership_roster(leaving_mind)
+
+/// Null cancels registration; TRUE explicitly authorizes leaving to found a crew.
+/datum/mind/proc/choose_new_ship_crew()
+	var/datum/voidcrew_crew_record/record = recover_reputation_crew()
+	if(!record || record.leader == src)
+		return FALSE
+	if(!confirm_new_ship_crew(record) || QDELETED(src) || recover_reputation_crew() != record)
+		return null
+	return TRUE
+
+/// Kept separate so headless tests can answer the same registration transaction.
+/datum/mind/proc/confirm_new_ship_crew(datum/voidcrew_crew_record/record)
+	var/crew_name = "your crew"
+	for(var/datum/team/voidcrew/team in record.teams)
+		crew_name = team.name
+		break
+	return tgui_alert(current, "Start your own crew with this ship? You will leave [crew_name].", "Crew registration", list("Yes", "No")) == "Yes"
 
 /// Evict the old life before manifest insertion; normal registration adds the new hull HUD.
 /obj/structure/overmap/ship/manifest_inject(mob/living/carbon/human/H, datum/job/human_job)
