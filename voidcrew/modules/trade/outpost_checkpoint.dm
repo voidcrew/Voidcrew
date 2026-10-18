@@ -37,7 +37,7 @@
 
 /// Whether `thing` is something the checkpoint stops at the door
 /proc/outpost_checkpoint_weapon(atom/movable/thing)
-	return isgun(thing) || istype(thing, /obj/item/mecha_parts/mecha_equipment/weapon)
+	return is_ladder_combat_gun(thing?.type) || istype(thing, /obj/item/mecha_parts/mecha_equipment/weapon)
 
 /// The living person carrying `thing` anywhere on them (hands, bags, pockets, implants), or null when nobody is
 /proc/outpost_weapon_carrier(atom/movable/thing)

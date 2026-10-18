@@ -124,6 +124,8 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /// Firing a gun past a trader outpost's checkpoint without a permit marks the shooter as an armed trespasser (outpost_trespass.dm)
 /datum/outpost_pvp_enforcement/proc/on_outpost_gun_fired(mob/living/shooter, obj/item/gun/gun, atom/target)
 	SIGNAL_HANDLER
+	if(!outpost_checkpoint_weapon(gun))
+		return
 	var/turf/where = get_turf(shooter)
 	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(where)
 	if(!outpost?.is_secured_turf(where) || !shooter.mind || outpost.has_weapons_permit(shooter, OUTPOST_WEAPONS_PERMIT_GRACE))
