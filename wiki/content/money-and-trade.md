@@ -66,9 +66,15 @@ Solid materials sell at a changing market bid. Base prices are per sheet:
 
 Iron and glass never fall below 1 credit per sheet. Market booms top out at 1.5 times the base price. Plasma exports are capped at 10 credits per sheet. A stack sells whole at the current bid.
 
+Buying materials has a minimum price per sheet: diamond 230 credits, bluespace 160, gold and titanium 80, uranium 60, silver 30, plasma 15, iron and glass 5. A higher market price still applies. Selling uses the market bid.
+
 ## Selling to traders
 
 The cargo console is not the only buyer. Every trader outpost keeps a **wanted ledger**: a short list of things that trader is buying this round, with a fixed payout each. See [Trader Outposts](trader-outposts.md) for where to find them.
+
+Traders and cargo won't buy back goods bought from a trader, an order console or the black market uplink, including the contents of boxes and crates and goods from contract rewards. Splitting or mixing stacks keeps that restriction. New things you cook, craft or smelt from bought supplies can still be sold.
+
+The Patch-Up Clinic buys natural donor organs and monster glands. It does not buy artificial or printed organs, or defibrillators.
 
 Selling at a counter differs from cargo in three ways:
 

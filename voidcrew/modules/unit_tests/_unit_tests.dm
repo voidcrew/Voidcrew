@@ -184,6 +184,7 @@
 #include "voidcrew_plumbing_shuttle_move.dm"
 #include "voidcrew_puzzle_containment.dm"
 #include "voidcrew_repair_robotics.dm"
+#include "voidcrew_resale.dm"
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_respawn_timer.dm"

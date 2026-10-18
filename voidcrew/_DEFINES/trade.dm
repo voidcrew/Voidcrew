@@ -207,3 +207,19 @@
 #define CHECKPOINT_LINE_FORCING "checkpoint_forcing"
 #define CHECKPOINT_LINE_INTRUDER "checkpoint_intruder"
 #define CHECKPOINT_LINE_PERMIT_LAPSED "checkpoint_permit_lapsed"
+
+/// Original shop deliveries cannot be sold to cargo or a trader's wanted ledger.
+#define TRAIT_TRADER_GOODS "trader_goods"
+/// Limbgrower organs share their type with natural donor organs.
+#define TRAIT_PRINTED_ORGAN "printed_organ"
+
+// Settled materials-market asks, in credits per sheet.
+#define MATERIAL_BUY_FLOOR_DIAMOND 230
+#define MATERIAL_BUY_FLOOR_BLUESPACE 160
+#define MATERIAL_BUY_FLOOR_GOLD 80
+#define MATERIAL_BUY_FLOOR_TITANIUM 80
+#define MATERIAL_BUY_FLOOR_URANIUM 60
+#define MATERIAL_BUY_FLOOR_SILVER 30
+#define MATERIAL_BUY_FLOOR_PLASMA 15
+#define MATERIAL_BUY_FLOOR_IRON 5
+#define MATERIAL_BUY_FLOOR_GLASS 5

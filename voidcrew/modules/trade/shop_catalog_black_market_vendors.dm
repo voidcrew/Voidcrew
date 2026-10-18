@@ -391,7 +391,6 @@
 		/datum/shop_buyback/clinic/liver,
 		/datum/shop_buyback/clinic/lungs,
 		/datum/shop_buyback/clinic/monster_gland,
-		/datum/shop_buyback/clinic/used_defib,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -637,8 +636,13 @@
 	price_vouchers = 0
 
 // ===== SAWBONES' INTAKE LEDGER (buybacks) =====
-// Credits only, and nothing a ship lathe can print: organs, monster glands,
-// and pre-owned defibs (the medical equivalent of Vex's gun fencing).
+// Natural donor organs and monster glands only.
+
+/datum/shop_buyback/clinic/matches(obj/item/offered)
+	if(!..() || !istype(offered, /obj/item/organ))
+		return FALSE
+	var/obj/item/organ/organ = offered
+	return (organ.organ_flags & ORGAN_ORGANIC) && !(organ.organ_flags & ORGAN_ROBOTIC) && !HAS_TRAIT(organ, TRAIT_PRINTED_ORGAN)
 
 /datum/shop_buyback/clinic/heart
 	name = "donor heart"
@@ -675,12 +679,3 @@
 	pay_credits = 250
 	demand_min = 3
 	demand_max = 5
-
-/datum/shop_buyback/clinic/used_defib
-	name = "defibrillator (pre-owned)"
-	desc = "Sawbones buys defibs with a history. Scorch marks are fine. Scorch marks are expected."
-	category = "Equipment Intake"
-	item_path = /obj/item/defibrillator
-	pay_credits = 250
-	demand_min = 2
-	demand_max = 4

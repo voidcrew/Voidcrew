@@ -649,13 +649,10 @@
  */
 /datum/shop_sku/proc/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	var/atom/drop_loc = user.drop_location() || vendor?.drop_location()
-	var/atom/movable/goods
-	if(dispense_amount > 1 && ispath(item_path, /obj/item/stack))
-		goods = new item_path(drop_loc, dispense_amount)
-	else
-		goods = new item_path(drop_loc)
+	var/atom/movable/goods = create_trader_goods(item_path, drop_loc, dispense_amount)
 	// Past a trader outpost's checkpoint a gun is handed over sealed (outpost_trespass.dm)
 	var/atom/movable/handed = outpost_seal_goods(goods)
+	mark_trader_goods(handed)
 	if(isitem(handed) && user.put_in_hands(handed))
 		to_chat(user, span_notice("You receive [handed]."))
 	else

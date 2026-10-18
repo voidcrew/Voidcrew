@@ -7678,6 +7678,7 @@
 #include "voidcrew\modules\trade\outpost_security.dm"
 #include "voidcrew\modules\trade\outpost_trespass.dm"
 #include "voidcrew\modules\trade\planetary_goods.dm"
+#include "voidcrew\modules\trade\resale.dm"
 #include "voidcrew\modules\trade\rumor_charts.dm"
 #include "voidcrew\modules\trade\shop.dm"
 #include "voidcrew\modules\trade\shop_buyback.dm"
