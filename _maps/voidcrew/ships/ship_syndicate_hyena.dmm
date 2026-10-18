@@ -110,6 +110,13 @@
 /obj/item/clothing/head/hats/hos/cap/syndicate,
 /turf/open/floor/carpet/black,
 /area/shuttle/voidcrew/hyena/bridge)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/spider/stickyweb,
+/obj/structure/closet/crate/secure,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hyena/maintenance/fore)
 "aF" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -1343,13 +1350,6 @@
 	},
 /turf/open/floor/engine/hull,
 /area/shuttle/voidcrew/hyena/equipment)
-"DF" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/spider/stickyweb,
-/obj/structure/closet/crate/secure/loot,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hyena/maintenance/fore)
 "DH" = (
 /obj/effect/turf_decal/bot_white,
 /obj/structure/reagent_dispensers/fueltank,
@@ -2654,7 +2654,7 @@ qN
 qN
 qN
 de
-DF
+af
 de
 "}
 (20,1,1) = {"
