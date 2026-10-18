@@ -105,9 +105,23 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	GLOB.trader_outposts += src
 	berths = new /list(OUTPOST_MAX_BERTHS)
 	ensure_main_shop()
+	if(SSovermap_zones.initialized)
+		start_contract_offers()
+	else
+		RegisterSignal(SSovermap_zones, COMSIG_SUBSYSTEM_POST_INITIALIZE, PROC_REF(on_contract_zones_ready))
+	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
+
+/// Overmap construction precedes zone assignment; no contract may quote an unzoned site.
+/obj/structure/overmap/trader_outpost/proc/on_contract_zones_ready(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_SUBSYSTEM_POST_INITIALIZE)
+	INVOKE_ASYNC(src, PROC_REF(start_contract_offers))
+
+/obj/structure/overmap/trader_outpost/proc/start_contract_offers()
+	if(QDELETED(src) || contract_refill_timer || !SSovermap_zones.initialized)
+		return
 	ensure_shop_offers()
 	contract_refill_timer = addtimer(CALLBACK(src, PROC_REF(ensure_shop_offers)), OUTPOST_CONTRACT_REFILL_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
-	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 
 /**
  * Creates the main shop on first need. SSovermap spawns outposts and pre-loads
@@ -124,6 +138,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return shop
 
 /obj/structure/overmap/trader_outpost/Destroy()
+	UnregisterSignal(SSovermap_zones, COMSIG_SUBSYSTEM_POST_INITIALIZE)
 	if(contract_refill_timer)
 		deltimer(contract_refill_timer)
 		contract_refill_timer = null

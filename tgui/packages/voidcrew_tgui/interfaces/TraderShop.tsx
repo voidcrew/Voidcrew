@@ -70,6 +70,7 @@ type Data = {
   barred: BooleanLike;
   held_vouchers: number;
   account_credits: number | null;
+  sell_account_credits: number | null;
   stock_states: StockState[];
   ledger_states: LedgerState[];
   crew_ships: { ref: string; name: string }[];
@@ -97,7 +98,7 @@ const WalletHeader = (props: {
       {' · '}
       {account_credits === null ? (
         <Box inline color="bad">
-          no ID account
+          no bank account
         </Box>
       ) : (
         <Box inline bold color="gold">
@@ -220,7 +221,7 @@ const SkuRow = (props: {
         )}
       </Stack.Item>
       <Stack.Item>
-        {live?.denial && !live.can_buy && !barred && !soldOut ? (
+        {live?.denial && !live.can_buy && !barred && (isFavor || !soldOut) ? (
           <Tooltip content={live.denial}>{buyButton}</Tooltip>
         ) : (
           buyButton
@@ -400,6 +401,7 @@ export const TraderShop = (props) => {
     barred,
     held_vouchers,
     account_credits,
+    sell_account_credits,
     ledger = [],
     crew_ships = [],
     crew_ship_ref,
@@ -467,7 +469,9 @@ export const TraderShop = (props) => {
                   <Stack.Item>
                     <WalletHeader
                       held_vouchers={held_vouchers}
-                      account_credits={account_credits}
+                      account_credits={
+                        tab === 'sell' ? sell_account_credits : account_credits
+                      }
                     />
                   </Stack.Item>
                 </Stack>

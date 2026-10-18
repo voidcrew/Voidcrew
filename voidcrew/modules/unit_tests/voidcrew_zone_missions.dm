@@ -351,13 +351,18 @@
 	QDEL_LIST(records)
 	return ..()
 
-/datum/unit_test/voidcrew_zone_missions/proc/make_ship(permission = 0)
+/datum/unit_test/voidcrew_zone_missions/proc/make_ship(permission = 0, crewed = TRUE)
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship/zone_missions_test)
 	ship.ship_team = new
 	ship.ship_team.ship = ship
 	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
 	records += record
 	ship.ship_account = allocate(/datum/bank_account)
+	if(crewed)
+		var/mob/living/carbon/human/member = allocate(/mob/living/carbon/human/consistent)
+		member.mind_initialize()
+		allocated += member.mind
+		ship.enlist_crewmember(member)
 	if(permission >= 1)
 		for(var/family in list("named_kill", "hunt", "capture"))
 			record.claim_zone_work(family, 1, 1, "setup_green_[family]")
@@ -676,7 +681,18 @@
 	for(var/mission_type in capped_types)
 		var/datum/mission/held = allocate(mission_type)
 		holder.available_missions += held
-		TEST_ASSERT(!mission_type_within_limit(mission_type), "Another hull's offer did not occupy its global cap")
+		TEST_ASSERT(mission_type_within_limit(mission_type), "An unaccepted private offer occupied global capacity")
+	controller.mission_types = capped_types
+	var/obj/structure/overmap/ship/second_crew = make_ship()
+	TEST_ASSERT_EQUAL(controller.reserve_useful_family_offers(second_crew), 0, "Private offers left useful-family vacancies for another crew")
+	TEST_ASSERT_EQUAL(length(second_crew.available_missions), 3, "Another crew could not obtain the held families")
+	for(var/datum/mission/held in holder.available_missions.Copy())
+		TEST_ASSERT_EQUAL(holder.accept_mission(held), TRUE, "A private offer blocked acceptance before any mission was running")
+		TEST_ASSERT(!mission_type_within_limit(held.type), "Accepted work failed to occupy its global cap")
+	for(var/datum/mission/racing in second_crew.available_missions)
+		TEST_ASSERT_EQUAL(second_crew.accept_mission(racing), "That contract is already taken.", "Acceptance bypassed running-work capacity")
+	TEST_ASSERT_EQUAL(length(second_crew.active_missions), 0, "Refused acceptance started a mission")
+	controller.work_attempts = 0
 	controller.mission_types = capped_types + list(/datum/mission/recovery/kill/zone_missions_test)
 	var/obj/structure/overmap/ship/partial = make_ship()
 	TEST_ASSERT(controller.refresh_ship_missions(partial), "Partial useful supply did not refresh")
@@ -696,6 +712,26 @@
 	for(var/family in list("named_kill", "pylons", "extraction"))
 		TEST_ASSERT(family in families, "Available [family] work was not reserved")
 	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Global caps left a board vacancy despite useful supply")
+
+/// Empty, dead and abandoned rosters do not roll offers or advance the hull clock.
+/datum/unit_test/voidcrew_zone_missions/idle_hulls/Run()
+	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
+	controller.mission_types = list(/datum/mission/recovery/kill/zone_missions_test)
+	var/obj/structure/overmap/ship/ship = make_ship(0, FALSE)
+	TEST_ASSERT(!controller.refresh_ship_missions(ship), "A crewless hull generated offers")
+	TEST_ASSERT_EQUAL(ship.next_mission_refresh, 0, "Crewless refresh advanced the hull clock")
+	var/mob/living/carbon/human/member = allocate(/mob/living/carbon/human/consistent)
+	member.mind_initialize()
+	allocated += member.mind
+	ship.enlist_crewmember(member)
+	member.stat = DEAD
+	TEST_ASSERT(!controller.refresh_ship_missions(ship), "A dead crew generated offers")
+	member.stat = CONSCIOUS
+	ship.abandoned = TRUE
+	TEST_ASSERT(!controller.refresh_ship_missions(ship), "An abandoned hull generated offers")
+	TEST_ASSERT_EQUAL(length(ship.available_missions), 0, "An idle hull retained generated offers")
+	ship.abandoned = FALSE
+	TEST_ASSERT(controller.refresh_ship_missions(ship), "A living crew could not receive its first batch")
 
 /// Failures use bounded retries, then the remaining useful families in the same scheduled batch.
 /datum/unit_test/voidcrew_zone_missions/remaining_families/Run()

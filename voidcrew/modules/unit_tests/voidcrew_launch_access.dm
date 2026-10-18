@@ -54,6 +54,13 @@
 	GLOB.overmap_blocked_turfs -= target_tile
 
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	allocated += ship.get_crew_record()
+	var/mob/living/carbon/human/member = allocate(/mob/living/carbon/human/consistent)
+	member.mind_initialize()
+	allocated += member.mind
+	ship.enlist_crewmember(member)
 	for(var/index in 1 to 5)
 		ship.available_missions += allocate(/datum/mission)
 	SSmissions.refresh_ship_missions(ship)

@@ -372,8 +372,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
  *
  * The buy/sell tgui, sold against the outpost's shared /datum/outpost_shop
  * stock. Payment is stateless. Nothing is inserted or escrowed. At purchase
- * time it checks the buyer's hands for vouchers / barter goods and their ID's
- * bank account for credits, then charges and dispenses.
+ * time it checks the buyer's hands for vouchers / barter goods and the selected
+ * ship's bank account for credits, then charges and dispenses.
  */
 /datum/outpost_trader_ui/shop/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -444,6 +444,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	// The same selected ship account used for purchases. Vouchers remain personal.
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
 	data["account_credits"] = crew_ship?.ship_account?.account_balance
+	var/datum/bank_account/sell_account = isliving(user) ? get_shop_buyback_account(user) : null
+	data["sell_account_credits"] = sell_account?.account_balance
 
 	var/list/stock_states = list()
 	if(shop)

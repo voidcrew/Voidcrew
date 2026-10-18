@@ -255,7 +255,7 @@
  * folded in. Discards failed rolls (e.g. courier with no second outpost).
  */
 /obj/structure/overmap/trader_outpost/proc/ensure_shop_offers()
-	if(!shop || world.time < next_contract_refill)
+	if(!shop || !SSovermap_zones.initialized || world.time < next_contract_refill)
 		return
 	// Keep the original cadence if a visit beats a delayed timer callback.
 	if(!next_contract_refill)
@@ -290,8 +290,7 @@
 		var/offer_type = /datum/mission/outpost_supply
 		if(!has_procurement || has_posted_offer_type(/datum/mission/outpost_supply))
 			offer_type = pick_weight(mix)
-		// Capped types (drug runs) count live missions AND posted offers; the
-		// ship-board roll enforces this in SSmissions, boards must match
+		// Only running work holds capacity; acceptance rechecks the shared cap.
 		if(!mission_type_within_limit(offer_type))
 			continue
 		var/datum/mission/offer = new offer_type(shop)
@@ -310,9 +309,8 @@
 
 /**
  * Whether another mission of this type may exist right now, per its
- * mission_limit: counts live accepted missions plus every outpost board's
- * unaccepted offers, so a capped contract can't be double-posted (or posted
- * while one is already being run). Limit 0 = uncapped.
+ * mission_limit: only accepted, running work holds global capacity.
+ * Unaccepted offers remain available to other crews. Limit 0 = uncapped.
  * * excluding - a mission datum that shouldn't count against itself, so the
  *   accept-time check can be run on an offer that is still sitting on a board.
  */
@@ -322,18 +320,16 @@
 	if(limit <= 0)
 		return TRUE
 	var/count = 0
-	for(var/datum/mission/active as anything in SSmissions.all_active_missions)
-		if(active.type == mission_type && active != excluding)
+	for(var/datum/mission/active in SSmissions.all_active_missions)
+		if(!QDELETED(active) && active.active && !active.failed && !active.completed && active.type == mission_type && active != excluding)
 			count++
-	for(var/obj/structure/overmap/ship/ship in SSovermap.simulated_ships)
-		for(var/datum/mission/offer in ship.available_missions)
-			if(!QDELETED(offer) && offer.type == mission_type && offer != excluding)
-				count++
-	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
-		for(var/datum/mission/offer as anything in outpost.shop_offers)
-			if(!QDELETED(offer) && offer.type == mission_type && offer != excluding)
-				count++
 	return count < limit
+
+/// Both boards use the ship's admission path; keep its capacity refusal in character.
+/obj/structure/overmap/ship/accept_mission(datum/mission/mission)
+	if(mission && !mission_type_within_limit(mission.type, mission))
+		return "That contract is already taken."
+	return ..()
 
 
 // ===== BOARD QUOTES AND SETTLEMENT =====

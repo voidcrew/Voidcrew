@@ -42,10 +42,12 @@
 	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "a limit-1 contract was refused with nothing of its type running")
 
 	SSmissions.all_active_missions += first
+	first.active = TRUE
 	TEST_ASSERT(!mission_type_within_limit(/datum/mission/unit_test_capped, second), "a limit-1 contract was still 'within limit' with one already running, so a second ship can accept the same capped job. Boards hold more copies than the cap allows, so the cap has to hold at accept time (see /obj/structure/overmap/ship/proc/accept_mission).")
 	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, first), "the running mission counted against its own cap, accept_mission passes the mission being accepted as `excluding` for exactly this reason")
 
 	SSmissions.all_active_missions -= first
+	first.active = FALSE
 	TEST_ASSERT(mission_type_within_limit(/datum/mission/unit_test_capped, second), "the cap did not free up after the running mission ended")
 
 	// mission_limit 0 means uncapped, not "capped at zero"

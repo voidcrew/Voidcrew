@@ -348,6 +348,7 @@
 
 	stock--
 	ship.add_pending_rumor(create_chart())
+	metric_shop_purchase(src, user, credit_price, price_vouchers)
 	to_chat(user, span_notice("The chart is beamed to [ship]'s helm console."))
 	return TRUE
 

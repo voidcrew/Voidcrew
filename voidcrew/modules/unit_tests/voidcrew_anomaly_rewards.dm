@@ -192,7 +192,7 @@
 /datum/unit_test/voidcrew_anomaly_rewards/trader_modules/Run()
 	var/datum/outpost_shop/vendor/suit_fitter/shop = allocate(/datum/outpost_shop/vendor/suit_fitter)
 	// Automatic Hard-board draws are gone; verify the former prize types stay locked.
-	TEST_ASSERT_EQUAL(length(shop.exclusive_rewards), 0, "The fitter retained an automatic exclusive pool")
+	TEST_ASSERT(!("exclusive_rewards" in shop.vars), "The fitter retained the retired automatic exclusive pool")
 	var/list/module_types = list(
 		/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked,
 		/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked,
