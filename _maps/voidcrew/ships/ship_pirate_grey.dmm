@@ -64,6 +64,29 @@
 /obj/item/knife/combat/survival,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
+"ai" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/spawner/random/structure/closet_empty/crate,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_grey)
+"aj" = (
+/obj/effect/spawner/random/structure/closet_empty/crate,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"ak" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/spawner/random/structure/closet_empty/crate,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_grey)
+"al" = (
+/obj/effect/spawner/random/structure/closet_empty/crate,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
 "am" = (
 /obj/structure/cable,
 /turf/closed/wall/rust,
@@ -881,15 +904,6 @@
 "Am" = (
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/pirate_grey)
-"AJ" = (
-/obj/effect/turf_decal/delivery,
-/obj/effect/spawner/random/structure/crate,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
 "AL" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/neutral/half/contrasted{
@@ -985,11 +999,6 @@
 /obj/effect/spawner/random/structure/closet_maintenance,
 /obj/effect/spawner/random/maintenance/two,
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
-"CS" = (
-/obj/effect/spawner/random/structure/crate,
-/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "CY" = (
@@ -1343,11 +1352,6 @@
 /obj/effect/spawner/random/engineering/toolbox,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
-"Qm" = (
-/obj/effect/turf_decal/delivery,
-/obj/effect/spawner/random/structure/crate,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
 "QI" = (
 /obj/structure/chair/stool/bar/directional/south,
 /obj/effect/decal/cleanable/dirt,
@@ -1560,10 +1564,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"Yj" = (
-/obj/effect/spawner/random/structure/crate,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
 "YD" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/contraband/random/directional/south,
@@ -1667,7 +1667,7 @@ de
 tS
 UR
 Ta
-AJ
+ai
 GI
 aJ
 OX
@@ -1688,7 +1688,7 @@ aZ
 KU
 qU
 PS
-CS
+aj
 ie
 qU
 mT
@@ -1724,11 +1724,11 @@ uY
 Wc
 zn
 FP
-Yj
+al
 Ox
-Qm
+ak
 Wy
-Qm
+ak
 VI
 xe
 ax
@@ -1741,7 +1741,7 @@ Fp
 au
 Su
 iL
-CS
+aj
 cH
 eU
 OG
@@ -1749,7 +1749,7 @@ hk
 PM
 Sh
 BL
-Yj
+al
 NI
 jS
 zB
@@ -1785,7 +1785,7 @@ nJ
 Xw
 DX
 it
-Yj
+al
 rV
 Tq
 uE
@@ -1815,7 +1815,7 @@ ei
 HD
 sB
 GE
-Yj
+al
 Nu
 Pn
 am
@@ -1896,7 +1896,7 @@ tJ
 xO
 ax
 YN
-Yj
+al
 Vr
 CF
 Sh
