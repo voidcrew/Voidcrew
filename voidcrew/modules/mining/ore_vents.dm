@@ -38,6 +38,7 @@
 			available_boulders |= rock
 
 /obj/structure/ore_vent
+	desc = "A fissure in the rock."
 	/// Binding is permanent, including if the source is subsequently deleted.
 	var/ore_source_bound = FALSE
 	var/datum/weakref/ore_source_ref
@@ -53,6 +54,17 @@
 	SSore_generation.exhausted_vents -= src
 	ore_source_ref = null
 	QDEL_NULL(unowned_ore_reserve)
+	return ..()
+
+/obj/structure/ore_vent/examine(mob/user)
+	. = ..()
+	if(!can_produce_ore())
+		. += span_notice("The seam is spent.")
+
+/obj/structure/ore_vent/attack_hand(mob/living/user, list/modifiers)
+	if(HAS_TRAIT(user, TRAIT_BOULDER_BREAKER) && !can_produce_ore())
+		balloon_alert(user, "seam spent")
+		return
 	return ..()
 
 /obj/structure/ore_vent/proc/bind_ore_reserve()

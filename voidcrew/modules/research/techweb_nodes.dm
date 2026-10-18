@@ -581,7 +581,6 @@
 	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE)
 	design_ids = list(
 		"survey_ship_docking",
-		"survey_console_rewards_upgrade_advanced",
 		"survey_console_information_upgrade_advanced",
 	)
 	required_surveyed_objects = list(planets = 1, nebulas = 3, electric_storms = 1)

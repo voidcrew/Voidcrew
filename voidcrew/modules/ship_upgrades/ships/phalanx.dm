@@ -213,8 +213,7 @@
 /datum/ship_upgrade_module/phalanx/armory_post
 	id = "phalanx_armory_post"
 	name = "Watch Post"
-	desc = "A duty desk, a rack of disablers and riot shields, and an evidence \
-		locker. Enough to keep order; not enough to start a war."
+	desc = "A duty desk, disablers, survival knives and an evidence locker."
 	slot = "phalanx_armory"
 	map_file = "phalanx/phalanx_armory_post.dmm"
 	is_default = TRUE
@@ -222,8 +221,7 @@
 /datum/ship_upgrade_module/phalanx/armory_full
 	id = "phalanx_armory_full"
 	name = "Ship Armory"
-	desc = "Energy and riot closets, an EOD locker and a marine vendor - a \
-		working slice of the arsenal this hull used to carry."
+	desc = "Armor lockers, baseball bats, survival knives, an EOD locker and a marine vendor."
 	slot = "phalanx_armory"
 	map_file = "phalanx/phalanx_armory_full.dmm"
 	part_cost = list(PART_CLASS_COMBAT = 14)

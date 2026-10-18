@@ -963,7 +963,7 @@
 		TEST_ASSERT_EQUAL(cloud.add_program(null, program), 1, "Hostless backup was capacity-limited")
 		excess += program
 	TEST_ASSERT(cloud.programs_fit_capacity(cloud.programs), "Hostless cloud has a body capacity")
-	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 0, "Over-budget cloud sync changed the body")
+	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, TRUE, TRUE), 4, "Over-budget cloud sync did not report refusal") // NANITE_SYNC_REFUSED
 	TEST_ASSERT(incumbent in nanites.programs, "Rejected cloud sync deleted an incumbent")
 	TEST_ASSERT_EQUAL(shared.activation_code, 12, "Rejected cloud sync copied settings")
 	TEST_ASSERT(!shared.activated, "Rejected cloud sync copied activation")
@@ -983,7 +983,7 @@
 	// A partial sync must count the programs it retains, too.
 	var/datum/nanite_program/hardening/additional = allocate(/datum/nanite_program/hardening)
 	cloud.add_program(null, additional)
-	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, FALSE), 0, "Partial cloud sync ignored retained program load")
+	TEST_ASSERT_EQUAL(nanites.sync_programming(cloud, FALSE), 4, "Partial cloud sync ignored retained program load") // NANITE_SYNC_REFUSED
 	TEST_ASSERT_EQUAL(length(nanites.programs), 2, "Rejected partial sync changed programming")
 
 /datum/unit_test/voidcrew_nanite_capacity_recovery

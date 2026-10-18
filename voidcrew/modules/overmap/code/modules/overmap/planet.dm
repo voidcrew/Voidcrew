@@ -4,7 +4,7 @@
 	icon_state = "strange_event"
 	sensor_detectable = TRUE
 	sensor_category = "Planets"
-	survey_value = 500
+	survey_value = 150
 
 	/// Datum containing all of the information about this planet
 	var/datum/overmap/planet/planet
