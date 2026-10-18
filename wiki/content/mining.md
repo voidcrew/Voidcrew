@@ -81,6 +81,6 @@ Traders also post supply contracts for ore and forage (iron, plasma, spice pods,
 
 ## Kit worth buying
 
-Waystation Halcyon stocks the prospecting counter: pickaxe (200 cr), ore bag (200 cr), mesons (400 cr), mining scanner (450 cr), diamond pickaxe (1200 cr), and a mining drill (1800 cr) when the rare shelf has one. A pickaxe and a scanner are enough to start; the drill and the bag of holding are what turn a two-hour dig into a twenty-minute one.
+Waystation Halcyon stocks the prospecting counter: pickaxe (200 cr), ore bag (100 cr), mesons (400 cr), mining scanner (450 cr), diamond pickaxe (1200 cr), and a mining drill (1800 cr) when the rare shelf has one. A pickaxe and a scanner are enough to start; the drill and the bag of holding are what turn a two-hour dig into a twenty-minute one.
 
 Suits matter as much as tools. Volcanic worlds need sealed gear and internals, frozen worlds need insulation, and asteroid fields are vacuum. See [Planets](planets.md) for what each destination demands.

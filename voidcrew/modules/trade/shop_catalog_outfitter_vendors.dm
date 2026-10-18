@@ -136,14 +136,14 @@
 /datum/shop_sku/skunk/signaler
 	category = "Gadgetry"
 	item_path = /obj/item/assembly/signaler
-	price_credits = 150
+	price_credits = 80
 	stock_min = 3
 	stock_max = 6
 
 /datum/shop_sku/skunk/adv_analyzer
 	category = "Gadgetry"
 	item_path = /obj/item/healthanalyzer/advanced
-	price_credits = 900
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
@@ -159,7 +159,7 @@
 	name = "alien crowbar sample"
 	desc = "An alien crowbar with an unfamiliar metal finish."
 	item_path = /obj/item/crowbar/abductor
-	price_credits = 1500
+	price_credits = 900
 	stock_min = 3
 	stock_max = 3
 
@@ -209,12 +209,12 @@
 /datum/shop_sku/skunk/science_glasses
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/science
-	price_credits = 900
+	price_credits = 200
 
 /datum/shop_sku/skunk/diagnostic_hud
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/hud/diagnostic
-	price_credits = 1800
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -246,7 +246,7 @@
 	name = "smart metal foam grenade"
 	desc = "A canister of expanding hull-patch foam."
 	item_path = /obj/item/grenade/chem_grenade/smart_metal_foam
-	price_credits = 500
+	price_credits = 150
 
 /datum/shop_sku/skunk/rotating/thermal_glasses
 	zone_permission = ZONE_PERMISSION_YELLOW
@@ -311,39 +311,39 @@
 
 /datum/shop_sku/skunk/anomaly_core/flux
 	item_path = /obj/item/raw_anomaly_core/flux
-	price_credits = 25000
+	price_credits = 8000
 
 /datum/shop_sku/skunk/anomaly_core/grav
 	item_path = /obj/item/raw_anomaly_core/grav
-	price_credits = 25000
+	price_credits = 8000
 
 /datum/shop_sku/skunk/anomaly_core/hallucination
 	item_path = /obj/item/raw_anomaly_core/hallucination
-	price_credits = 25000
+	price_credits = 8000
 
 /datum/shop_sku/skunk/anomaly_core/pyro
 	item_path = /obj/item/raw_anomaly_core/pyro
-	price_credits = 25000
+	price_credits = 8000
 
 /datum/shop_sku/skunk/anomaly_core/bioscrambler
 	item_path = /obj/item/raw_anomaly_core/bioscrambler
-	price_credits = 30000
+	price_credits = 10000
 
 /datum/shop_sku/skunk/anomaly_core/ectoplasm
 	item_path = /obj/item/raw_anomaly_core/ectoplasm
-	price_credits = 30000
+	price_credits = 10000
 
 /datum/shop_sku/skunk/anomaly_core/dimensional
 	item_path = /obj/item/raw_anomaly_core/dimensional
-	price_credits = 30000
+	price_credits = 10000
 
 /datum/shop_sku/skunk/anomaly_core/bluespace
 	item_path = /obj/item/raw_anomaly_core/bluespace
-	price_credits = 35000
+	price_credits = 12000
 
 /datum/shop_sku/skunk/anomaly_core/vortex
 	item_path = /obj/item/raw_anomaly_core/vortex
-	price_credits = 35000
+	price_credits = 12000
 
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.

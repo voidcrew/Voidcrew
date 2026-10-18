@@ -246,7 +246,7 @@
 	desc = "A light powered suit fitted with storage, a welder and a light. It is not spaceworthy. The civilian frame trades the seal for speed and takes fewer modules than the industrial ones."
 	item_path = /obj/item/mod/control/pre_equipped/civilian
 	icon_state_override = "civilian-control"
-	price_credits = 2400
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 2
 
@@ -360,7 +360,7 @@
 /datum/shop_sku/fitter/mod_longfall
 	category = "Mobility"
 	item_path = /obj/item/mod/module/longfall
-	price_credits = 1050
+	price_credits = 500
 
 // ===== UTILITY MODULES =====
 
@@ -377,17 +377,17 @@
 /datum/shop_sku/fitter/mod_mouthhole
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/mouthhole
-	price_credits = 600
+	price_credits = 150
 
 /datum/shop_sku/fitter/mod_thermal_regulator
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/thermal_regulator
-	price_credits = 1200
+	price_credits = 400
 
 /datum/shop_sku/fitter/mod_status_readout
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/status_readout
-	price_credits = 900
+	price_credits = 250
 
 // ===== INDUSTRIAL MODULES =====
 
@@ -399,30 +399,30 @@
 /datum/shop_sku/fitter/mod_gps
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/gps
-	price_credits = 750
+	price_credits = 400
 
 /datum/shop_sku/fitter/mod_rad_protection
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/rad_protection
-	price_credits = 1350
+	price_credits = 750
 
 /datum/shop_sku/fitter/mod_headprotector
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/headprotector
-	price_credits = 750
+	price_credits = 250
 
 /datum/shop_sku/fitter/mod_drill
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/drill
-	price_vouchers = 1
-	price_credits = 1200
+	price_vouchers = 0
+	price_credits = 600
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/mod_orebag
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/orebag
-	price_credits = 1200
+	price_credits = 300
 	stock_min = 1
 	stock_max = 3
 
@@ -431,37 +431,37 @@
 /datum/shop_sku/fitter/mod_health_analyzer
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/health_analyzer
-	price_credits = 1050
+	price_credits = 600
 
 /datum/shop_sku/fitter/mod_injector
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/injector
-	price_vouchers = 1
-	price_credits = 1200
+	price_vouchers = 0
+	price_credits = 800
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/fitter/mod_quick_carry
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/quick_carry
-	price_credits = 1200
+	price_credits = 600
 
 // ===== VISORS & SENSORS =====
 
 /datum/shop_sku/fitter/mod_visor_meson
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/meson
-	price_credits = 1200
+	price_credits = 400
 
 /datum/shop_sku/fitter/mod_visor_medhud
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/medhud
-	price_credits = 1050
+	price_credits = 600
 
 /datum/shop_sku/fitter/mod_visor_diaghud
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/diaghud
-	price_credits = 1050
+	price_credits = 600
 
 // ===== ENVIRONMENT GEAR =====
 // The non-MOD half of the stall. Barnaby has the EVA suit and the breath
@@ -620,12 +620,12 @@
 /datum/shop_sku/fitter/rotating/mod_joint_torsion
 	category = "Mobility"
 	item_path = /obj/item/mod/module/joint_torsion
-	price_credits = 1200
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_shock_absorber
 	category = "Mobility"
 	item_path = /obj/item/mod/module/shock_absorber
-	price_credits = 1350
+	price_credits = 750
 
 /datum/shop_sku/fitter/rotating/mod_emp_shield
 	category = "Mobility"
@@ -635,37 +635,37 @@
 /datum/shop_sku/fitter/rotating/mod_storage_large
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage/large_capacity
-	price_credits = 1650
+	price_credits = 1000
 
 /datum/shop_sku/fitter/rotating/mod_dna_lock
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/dna_lock
-	price_credits = 1350
+	price_credits = 300
 
 /datum/shop_sku/fitter/rotating/mod_signlang_radio
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/signlang_radio
-	price_credits = 750
+	price_credits = 200
 
 /datum/shop_sku/fitter/rotating/mod_plasma_stabilizer
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/plasma_stabilizer
-	price_credits = 900
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_recycler
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/recycler
-	price_credits = 1500
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_hat_stabilizer
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/hat_stabilizer
-	price_credits = 600
+	price_credits = 150
 
 /datum/shop_sku/fitter/rotating/mod_fishing_glove
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/fishing_glove
-	price_credits = 1050
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_dispenser
 	category = "Utility Modules"
@@ -675,33 +675,33 @@
 /datum/shop_sku/fitter/rotating/mod_microwave_beam
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/microwave_beam
-	price_credits = 1050
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_t_ray
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/t_ray
-	price_credits = 900
+	price_credits = 300
 
 /datum/shop_sku/fitter/rotating/mod_constructor
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/constructor
-	price_vouchers = 1
-	price_credits = 1800
+	price_vouchers = 0
+	price_credits = 900
 
 /datum/shop_sku/fitter/rotating/mod_mister_atmos
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/mister/atmos
-	price_credits = 1200
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_mister_cleaner
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/mister/cleaner
-	price_credits = 900
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_clamp
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/clamp
-	price_credits = 1200
+	price_credits = 500
 
 /datum/shop_sku/fitter/rotating/mod_hydraulic
 	category = "Industrial Modules"
@@ -717,12 +717,12 @@
 /datum/shop_sku/fitter/rotating/mod_disposal_connector
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/disposal_connector
-	price_credits = 1050
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_paper_dispenser
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/paper_dispenser
-	price_credits = 600
+	price_credits = 150
 
 /datum/shop_sku/fitter/rotating/mod_defibrillator
 	category = "Medical Modules"
@@ -733,17 +733,17 @@
 /datum/shop_sku/fitter/rotating/mod_organizer
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/organizer
-	price_credits = 1500
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_thread_ripper
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/thread_ripper
-	price_credits = 1350
+	price_credits = 500
 
 /datum/shop_sku/fitter/rotating/mod_patient_transport
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/criminalcapture/patienttransport
-	price_credits = 1500
+	price_credits = 750
 
 /datum/shop_sku/fitter/rotating/mod_visor_night
 	category = "Visors & Sensors"
@@ -753,7 +753,7 @@
 /datum/shop_sku/fitter/rotating/mod_reagent_scanner
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/reagent_scanner
-	price_credits = 1200
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_active_sonar
 	zone_permission = ZONE_PERMISSION_YELLOW
@@ -765,17 +765,17 @@
 /datum/shop_sku/fitter/rotating/mod_magnetic_harness
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/magnetic_harness
-	price_credits = 1200
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_holster
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/holster
-	price_credits = 1350
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/mod_megaphone
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/megaphone
-	price_credits = 750
+	price_credits = 200
 
 // ----- rotating environment gear -----
 
@@ -814,12 +814,12 @@
 	category = "Environment Gear"
 	desc = "A pair of combination meson and t-ray goggles."
 	item_path = /obj/item/clothing/glasses/meson/engine
-	price_credits = 750
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/hazard_vest
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/suit/hazardvest
-	price_credits = 200
+	price_credits = 100
 
 // =========================================================================
 // RARE RACK

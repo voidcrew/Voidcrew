@@ -96,7 +96,7 @@ Six schematics exist:
 
 All six also turn up as ruin loot, so a schematic you can't afford this round may still be sitting in a derelict.
 
-The **neural schematic imprinter** is a machine at a trader outpost that converts a schematic into knowledge. Slot the scroll into the open cradle, climb in, seal yourself shut, and pay the fee. The posted rates are 750 credits at green tier, 1500 at yellow and 3000 at red, so a gun schematic costs you either 1500 or 3000. The fee comes out of cash you loaded into the cradle first, then your ID's account for the remainder.
+The **neural schematic imprinter** is a machine at a trader outpost that converts a schematic into knowledge. Slot the scroll into the open cradle, climb in, seal yourself shut, and pay the fee. The posted rates are 250 credits at green tier, 500 at yellow and 1000 at red, so a gun schematic costs you either 500 or 1000. The fee comes out of cash you loaded into the cradle first, then your ID's account for the remainder.
 
 What you get is the recipe bound to you for the rest of the round: theft-proof, and nothing to carry. What you lose is the paper. A physical schematic is shareable, resellable and stealable; an imprint is none of those things. The imprinter refuses if you already know a recipe, so no scroll gets wasted twice on the same gun.
 

@@ -515,28 +515,28 @@
 	original.ship_account.account_balance = before_money
 	var/datum/ship_checkpoint_ui/registry_test/other_panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
 	TEST_ASSERT(other_panel.prepare_save(captain, bay), "Could not prepare a concurrent save")
-	TEST_ASSERT_EQUAL(panel.quoted_fee, 10000, "First checkpoint did not cost 10,000 credits")
+	TEST_ASSERT_EQUAL(panel.quoted_fee, 5000, "First checkpoint did not cost 5,000 credits")
 	TEST_ASSERT(panel.save_quote(captain), "Could not save a checkpoint without silo access: [panel.error]")
-	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 10000, "Save charged the wrong amount")
+	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 5000, "Save charged the wrong amount")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "Checkpoint fee was refunded through the outpost treasury")
 	TEST_ASSERT(!other_panel.save_quote(captain), "A stale save overwrote the paid checkpoint")
 	var/datum/ship_checkpoint/snapshot = home.checkpoints[1]
 	TEST_ASSERT(findtext(snapshot.tgm, "/obj/machinery/power/shuttle_engine/ship/liquid/oil"), "The checkpoint omitted its installed oil engine")
 	TEST_ASSERT(!panel.save_quote(captain), "A repeated save reused the paid snapshot")
-	// Updating must capture the newest design, charge 5k and preserve the old one on failure.
+	// Updating must capture the newest design, charge 2k and preserve the old one on failure.
 	lathe.name = "updated checkpoint fixture"
 	TEST_ASSERT(panel.prepare_save(captain, bay), "Could not prepare an update")
-	TEST_ASSERT_EQUAL(panel.quoted_fee, 5000, "Updating did not cost 5,000 credits")
+	TEST_ASSERT_EQUAL(panel.quoted_fee, 2000, "Updating did not cost 2,000 credits")
 	panel.accept_save = FALSE
 	TEST_ASSERT(!panel.save_quote(captain) && home.checkpoints[1] == snapshot, "Cancelled update lost the old checkpoint")
 	panel.accept_save = TRUE
-	original.ship_account.account_balance = 4999
+	original.ship_account.account_balance = 1999
 	TEST_ASSERT(!panel.save_quote(captain) && home.checkpoints[1] == snapshot, "Unaffordable update lost the old checkpoint")
-	original.ship_account.account_balance = before_money - 10000
+	original.ship_account.account_balance = before_money - 5000
 	TEST_ASSERT(panel.save_quote(captain), "Could not update a checkpoint")
 	TEST_ASSERT(QDELETED(snapshot), "Update retained the old snapshot")
 	TEST_ASSERT_EQUAL(length(home.checkpoints), 1, "Updating created a second checkpoint")
-	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 15000, "Save and update charged the wrong total")
+	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 7000, "Save and update charged the wrong total")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "Update fee was refunded through the outpost treasury")
 	TEST_ASSERT_EQUAL(silo.materials.get_material_amount(/datum/material/iron), before_iron, "Checkpoint consumed silo materials")
 	snapshot = home.checkpoints[1]

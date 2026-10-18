@@ -367,40 +367,40 @@
 
 /datum/shop_sku/anomaly_chart/flux
 	anomaly_type = /obj/effect/anomaly/flux/planetary
-	price_credits = 12500
+	price_credits = 4000
 
 /datum/shop_sku/anomaly_chart/grav
 	anomaly_type = /obj/effect/anomaly/grav/planetary
-	price_credits = 12500
+	price_credits = 4000
 
 /datum/shop_sku/anomaly_chart/hallucination
 	anomaly_type = /obj/effect/anomaly/hallucination/planetary
-	price_credits = 12500
+	price_credits = 4000
 
 /datum/shop_sku/anomaly_chart/pyro
 	anomaly_type = /obj/effect/anomaly/pyro/planetary
-	price_credits = 12500
+	price_credits = 4000
 
 /datum/shop_sku/anomaly_chart/bioscrambler
 	anomaly_type = /obj/effect/anomaly/bioscrambler/planetary
-	price_credits = 15000
+	price_credits = 5000
 
 /datum/shop_sku/anomaly_chart/ectoplasm
 	anomaly_type = /obj/effect/anomaly/ectoplasm/planetary
-	price_credits = 15000
+	price_credits = 5000
 
 /datum/shop_sku/anomaly_chart/dimensional
 	anomaly_type = /obj/effect/anomaly/dimensional/planetary
-	price_credits = 15000
+	price_credits = 5000
 
 /datum/shop_sku/anomaly_chart/bluespace
 	anomaly_type = /obj/effect/anomaly/bluespace/planetary
-	price_credits = 17500
+	price_credits = 6000
 	spawn_zone = ZONE_RED
 
 /datum/shop_sku/anomaly_chart/vortex
 	anomaly_type = /obj/effect/anomaly/bhole/planetary
-	price_credits = 17500
+	price_credits = 6000
 	spawn_zone = ZONE_RED
 
 #undef ANOMALY_CHART_RUIN_MIN_DISTANCE

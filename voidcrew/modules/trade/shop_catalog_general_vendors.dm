@@ -490,7 +490,7 @@
 	category = "Bait & Tackle"
 	item_path = /obj/item/storage/box/fishing_lures
 	desc = "One of every artificial lure, instruction sheet still in the lid. Nothing eats them, so a set lasts, but each one only interests a particular sort of fish and every one of them has to be spun while you wait."
-	price_credits = 425
+	price_credits = 420
 	stock_min = 1
 	stock_max = 2
 

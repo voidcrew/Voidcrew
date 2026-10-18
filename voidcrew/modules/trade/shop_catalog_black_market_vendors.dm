@@ -226,7 +226,7 @@
 	name = "box of donk-pockets"
 	desc = "Six factory donk-pockets, the official cuisine of people being shot at. Microwave not included."
 	item_path = /obj/item/storage/box/donkpockets
-	price_credits = 220
+	price_credits = 200
 	stock_min = 1
 	stock_max = 3
 
@@ -461,7 +461,7 @@
 	name = "O- blood pack"
 	desc = "Universal donor blood. Sawbones swears it's O negative and mostly blood."
 	item_path = /obj/item/reagent_containers/blood/o_minus
-	price_credits = 300
+	price_credits = 150
 	stock_min = 2
 	stock_max = 4
 
@@ -558,7 +558,7 @@
 	name = "pre-owned heart"
 	desc = "One careful owner. Sawbones guarantees it was beating recently."
 	item_path = /obj/item/organ/heart
-	price_credits = 450
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
 
@@ -567,7 +567,7 @@
 	name = "lightly used liver"
 	desc = "Some cosmetic wear, consistent with the previous owner drinking at the Dregs."
 	item_path = /obj/item/organ/liver
-	price_credits = 400
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -576,7 +576,7 @@
 	name = "reconditioned lungs"
 	desc = "Aired out and everything. Non-smoker, allegedly."
 	item_path = /obj/item/organ/lungs
-	price_credits = 400
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -609,7 +609,7 @@
 /datum/shop_sku/clinic/rotating/survival_pen
 	category = "Field Medicine"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
-	price_credits = 400
+	price_credits = 300
 
 /datum/shop_sku/clinic/rotating/prescription_stimulants
 	category = "Back Room"

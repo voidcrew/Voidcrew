@@ -225,14 +225,14 @@
 /datum/shop_sku/black_market/pistol_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m9mm
-	price_credits = 900
+	price_credits = 200
 	stock_min = 4
 	stock_max = 8
 
 /datum/shop_sku/black_market/speedloader
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/a357
-	price_credits = 1800
+	price_credits = 300
 	stock_min = 2
 	stock_max = 5
 
@@ -240,7 +240,7 @@
 /datum/shop_sku/black_market/quiet_word_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m10mm/quiet_word
-	price_credits = 1000 // PROVISIONAL BALANCE. A shade over the 9mm mag; 10mm hits harder
+	price_credits = 250// PROVISIONAL BALANCE. A shade over the 9mm mag; 10mm hits harder
 	stock_min = 3
 	stock_max = 6
 
@@ -645,7 +645,7 @@
 /datum/shop_sku/black_market/soap
 	category = "Sundries"
 	item_path = /obj/item/soap/syndie
-	price_credits = 150
+	price_credits = 80
 	stock_min = 3
 	stock_max = 6
 
@@ -659,7 +659,7 @@
 /datum/shop_sku/black_market/syndie_cigarettes
 	category = "Sundries"
 	item_path = /obj/item/storage/fancy/cigarettes/cigpack_syndicate
-	price_credits = 150
+	price_credits = 80
 	stock_min = 2
 	stock_max = 4
 

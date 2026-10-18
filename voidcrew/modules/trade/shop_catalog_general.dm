@@ -260,7 +260,7 @@
 /datum/shop_sku/general/survival_medipen
 	category = "Survival & EVA"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
-	price_credits = 450
+	price_credits = 300
 	stock_min = 2
 	stock_max = 4
 
@@ -314,14 +314,14 @@
 	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/fire
-	price_credits = 400
+	price_credits = 300
 
 /datum/shop_sku/general/o2_kit
 	stock_max = 20
 	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
-	price_credits = 400
+	price_credits = 300
 
 /datum/shop_sku/general/epipen
 	category = "Medical"
@@ -362,13 +362,13 @@
 /datum/shop_sku/general/ore_bag
 	category = "Prospecting"
 	item_path = /obj/item/storage/bag/ore
-	price_credits = 200
+	price_credits = 100
 
 /datum/shop_sku/general/adv_mining_scanner
 	desc = "An industrial mineral scanner with a reinforced casing."
 	category = "Prospecting"
 	item_path = /obj/item/t_scanner/adv_mining_scanner
-	price_credits = 1500
+	price_credits = 300
 	stock_min = 1
 	stock_max = 3
 
@@ -413,7 +413,7 @@
 /datum/shop_sku/general/cards
 	category = "Galley & Comforts"
 	item_path = /obj/item/toy/cards/deck
-	price_credits = 80
+	price_credits = 60
 
 /datum/shop_sku/general/plushie
 	category = "Galley & Comforts"
@@ -491,7 +491,7 @@
 	category = "Fuel & Gas"
 	item_path = /obj/item/stack/ore/plasma
 	dispense_amount = 15
-	price_credits = 220
+	price_credits = 300
 	stock_min = 2
 	stock_max = 4
 
@@ -500,7 +500,7 @@
 	desc = "The circuit board for a nebula ram scoop."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
-	price_credits = 600
+	price_credits = 250
 	stock_min = 1
 	stock_max = 2
 
@@ -511,7 +511,7 @@
 	desc = "A portable P.A.C.M.A.N. plasma generator."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/power/port_gen/pacman
-	price_credits = 1800
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -530,7 +530,7 @@
 	desc = "The circuit board for an autolathe."
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/machine/autolathe
-	price_credits = 500 // invented, unplaytested
+	price_credits = 250// invented, unplaytested
 	stock_min = 3
 	stock_max = 6
 
@@ -542,7 +542,7 @@
 	desc = "The circuit board for a ship supply console, the one that calls the cargo shuttle. Barnaby finds it very funny to sell you the thing you buy things with."
 	category = "Ship Sundries"
 	item_path = /obj/item/circuitboard/computer/voidcrew_cargo
-	price_credits = 500 // invented, unplaytested
+	price_credits = 250// invented, unplaytested
 	stock_min = 3
 	stock_max = 6
 

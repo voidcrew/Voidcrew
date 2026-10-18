@@ -333,7 +333,7 @@
 	name = "plasma thruster board"
 	desc = "The circuit board for a plasma thruster."
 	item_path = /obj/item/circuitboard/machine/engine/plasma
-	price_credits = 1800
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -342,7 +342,7 @@
 	name = "expulsion thruster board"
 	desc = "The circuit board for an expulsion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/expulsion
-	price_credits = 1200
+	price_credits = 500
 	stock_min = 1
 	stock_max = 3
 
@@ -351,7 +351,7 @@
 	name = "ion thruster board"
 	desc = "The circuit board for an ion thruster."
 	item_path = /obj/item/circuitboard/machine/engine/electric
-	price_credits = 2400
+	price_credits = 600
 	stock_min = 1
 	stock_max = 2
 
@@ -360,7 +360,7 @@
 	name = "oil thruster board"
 	desc = "The circuit board for an oil thruster."
 	item_path = /obj/item/circuitboard/machine/engine/oil
-	price_credits = 1800
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
@@ -369,7 +369,7 @@
 	name = "engine heater board"
 	desc = "The circuit board for an engine heater."
 	item_path = /obj/item/circuitboard/machine/shuttle/heater
-	price_credits = 900
+	price_credits = 300
 	stock_min = 2
 	stock_max = 4
 
@@ -428,7 +428,7 @@
 /datum/shop_sku/outfitter/riot_shield
 	category = "Security Gear"
 	item_path = /obj/item/shield/riot
-	price_credits = 2400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -480,7 +480,7 @@
 	name = "field ration pack"
 	desc = "A sealed ration pack off the depot's own pallet. The main varies. The crackers do not."
 	item_path = /obj/item/food/rationpack
-	price_credits = 45
+	price_credits = 40
 	stock_min = 6
 	stock_max = 12
 

@@ -77,7 +77,7 @@ Every outpost stocks its own selection of charts. Check the destination's band b
 
 **Star charts** reveal every contact in a whole zone band at once: 1200 credits for the neutral ring, 2400 for the contested band, 2 vouchers for the lawless deep.
 
-**Word on the lanes** costs 1500 credits anywhere. The trader marks one uncharted signal on your helm and names the band it sits in.
+**Word on the lanes** costs 400 credits anywhere. The trader marks one uncharted signal on your helm and names the band it sits in.
 
 **Ruin charts** upload a sealed rumour to your ship. When your crew is ready, use the helm's reveal button to mark a fresh copy of the named ruin on your chart in gold. Each purchased chart reveals once.
 
@@ -106,9 +106,9 @@ Boffin also sells **anomaly charts** the same way. A chart names one anomaly. It
 
 | Anomalies | Raw core | Chart | Chart band |
 |---|---|---|---|
-| Flux, gravitational, hallucination, pyroclastic | 25000 cr | 12500 cr | Contested |
-| Bioscrambler, ectoplasm, dimensional | 30000 cr | 15000 cr | Contested |
-| Bluespace, vortex | 35000 cr | 17500 cr | Lawless |
+| Flux, gravitational, hallucination, pyroclastic | 8000 cr | 4000 cr | Contested |
+| Bioscrambler, ectoplasm, dimensional | 10000 cr | 5000 cr | Contested |
+| Bluespace, vortex | 12000 cr | 6000 cr | Lawless |
 
 ## Trader contracts
 

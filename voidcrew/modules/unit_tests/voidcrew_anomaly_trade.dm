@@ -28,26 +28,26 @@
 /// no discounts, and sold slots turn over instead of refilling.
 /datum/unit_test/voidcrew_anomaly_boffin_shelves/Run()
 	var/list/core_prices = list(
-		/obj/item/raw_anomaly_core/flux = 25000,
-		/obj/item/raw_anomaly_core/grav = 25000,
-		/obj/item/raw_anomaly_core/hallucination = 25000,
-		/obj/item/raw_anomaly_core/pyro = 25000,
-		/obj/item/raw_anomaly_core/bioscrambler = 30000,
-		/obj/item/raw_anomaly_core/ectoplasm = 30000,
-		/obj/item/raw_anomaly_core/dimensional = 30000,
-		/obj/item/raw_anomaly_core/bluespace = 35000,
-		/obj/item/raw_anomaly_core/vortex = 35000,
+		/obj/item/raw_anomaly_core/flux = 8000,
+		/obj/item/raw_anomaly_core/grav = 8000,
+		/obj/item/raw_anomaly_core/hallucination = 8000,
+		/obj/item/raw_anomaly_core/pyro = 8000,
+		/obj/item/raw_anomaly_core/bioscrambler = 10000,
+		/obj/item/raw_anomaly_core/ectoplasm = 10000,
+		/obj/item/raw_anomaly_core/dimensional = 10000,
+		/obj/item/raw_anomaly_core/bluespace = 12000,
+		/obj/item/raw_anomaly_core/vortex = 12000,
 	)
 	var/list/chart_prices = list(
-		/obj/effect/anomaly/flux = 12500,
-		/obj/effect/anomaly/grav = 12500,
-		/obj/effect/anomaly/hallucination = 12500,
-		/obj/effect/anomaly/pyro = 12500,
-		/obj/effect/anomaly/bioscrambler = 15000,
-		/obj/effect/anomaly/ectoplasm = 15000,
-		/obj/effect/anomaly/dimensional = 15000,
-		/obj/effect/anomaly/bluespace = 17500,
-		/obj/effect/anomaly/bhole = 17500,
+		/obj/effect/anomaly/flux = 4000,
+		/obj/effect/anomaly/grav = 4000,
+		/obj/effect/anomaly/hallucination = 4000,
+		/obj/effect/anomaly/pyro = 4000,
+		/obj/effect/anomaly/bioscrambler = 5000,
+		/obj/effect/anomaly/ectoplasm = 5000,
+		/obj/effect/anomaly/dimensional = 5000,
+		/obj/effect/anomaly/bluespace = 6000,
+		/obj/effect/anomaly/bhole = 6000,
 	)
 
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop/vendor/skunkworks, null)
@@ -136,13 +136,13 @@
 	ship.ship_team = team
 	team.join_member(buyer.mind)
 	sku.discount_pct = 0
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 35000, "A stranger got a discount")
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 12000, "A stranger got a discount")
 	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED, 15% off
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 29750, "A Trusted crew did not get the normal favor discount")
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "A Trusted crew did not get the normal favor discount")
 	sku.discount_pct = 30
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 24500, "The better special did not win over favor")
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 8400, "The better special did not win over favor")
 	sku.discount_pct = 10
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 29750, "Favor and special stacked, or the better one lost")
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "Favor and special stacked, or the better one lost")
 	buyer.mind.ship_teams = null
 	team.ship = null
 
@@ -170,7 +170,7 @@
 	TEST_ASSERT(buyer.put_in_hands(id_card), "Buyer could not carry their paying ID")
 
 	TEST_ASSERT(sku.try_purchase(buyer, null), "Chart purchase failed")
-	TEST_ASSERT_EQUAL(account.account_balance, 27500, "The chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(account.account_balance, 36000, "The chart charged the wrong amount")
 	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 1, "Purchase did not upload a sealed chart")
 	var/datum/rumor_chart/anomaly/chart = ship.pending_rumors[1]
 	TEST_ASSERT(istype(chart), "The sealed chart is not an anomaly chart")
@@ -183,12 +183,12 @@
 	sku.discount_pct = 0 // The convoy rerolls the special independently of stock.
 	TEST_ASSERT(sku.try_purchase(buyer, null), "The second chart purchase failed")
 	TEST_ASSERT_EQUAL(sku.stock, 0, "The second purchase did not exhaust the slot")
-	TEST_ASSERT_EQUAL(account.account_balance, 15000, "The second chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(account.account_balance, 32000, "The second chart charged the wrong amount")
 	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "Two purchases did not upload two charts")
 	var/datum/rumor_chart/anomaly/second_chart = ship.pending_rumors[2]
 	TEST_ASSERT(second_chart != chart, "Two purchases shared a chart datum")
 	TEST_ASSERT(!sku.try_purchase(buyer, null), "An exhausted chart slot sold a third unit")
-	TEST_ASSERT_EQUAL(account.account_balance, 15000, "A refused purchase took money")
+	TEST_ASSERT_EQUAL(account.account_balance, 32000, "A refused purchase took money")
 	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "A refused purchase uploaded a chart")
 	shop.convoy_restock()
 	TEST_ASSERT(!(sku in shop.skus), "The convoy did not replace the exhausted chart slot")

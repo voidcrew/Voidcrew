@@ -210,7 +210,7 @@
 
 /datum/shop_sku/peddler/odd/lighter
 	item_path = /obj/item/lighter
-	price_credits = 80
+	price_credits = 50
 
 /datum/shop_sku/peddler/odd/whiskey
 	item_path = /obj/item/reagent_containers/cup/glass/bottle/whiskey

@@ -17,7 +17,7 @@
 #define PLAYER_OUTPOST_MEMO_MAX_LEN 256
 
 /// Credit cost of one galaxy-wide advertisement
-#define OUTPOST_ADVERT_COST 2500
+#define OUTPOST_ADVERT_COST 500
 /// How long a purchased advertisement stays live
 #define OUTPOST_ADVERT_DURATION (20 MINUTES)
 /// Minimum time between advertisement purchases per outpost
@@ -34,14 +34,14 @@
 
 /// One permanent construction bay per outpost.
 #define OUTPOST_SHIP_BAY_SLOTS 1
-#define OUTPOST_SHIP_BAY_COST 10000
+#define OUTPOST_SHIP_BAY_COST 6000
 #define OUTPOST_DOCK_VARIANT_BAY "ship_bay"
 
 /// Round-local, prepaid hull recovery. A ship has at most one current registration.
 #define OUTPOST_MAX_CHECKPOINTS 12
 #define OUTPOST_CHECKPOINT_MAX_TEXT (1024 * 1024)
-#define OUTPOST_CHECKPOINT_SAVE_COST 10000
-#define OUTPOST_CHECKPOINT_UPDATE_COST 5000
+#define OUTPOST_CHECKPOINT_SAVE_COST 5000
+#define OUTPOST_CHECKPOINT_UPDATE_COST 2000
 
 /// New ships built to order in the ship bay (outpost_ship_orders.dm). Credits replace parts:
 /// every part a hull, theme or module would cost in the lobby shipyard is this many credits.

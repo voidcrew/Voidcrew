@@ -47,7 +47,7 @@ The **plasma sublimation chamber** is the other half of the loop, for crews who 
 
 Micro-lasers set the output rate here too. Since planets and asteroids hand out plasma ore fairly freely, a mining crew with a sublimator effectively never buys fuel again.
 
-Both machines are unlocked by the same early research node as the engine heater, so any ship that can research at all can print both boards. Waystation Halcyon also sells the **ram scoop board** over the counter for 600 credits, which is the route for crews with no research bay.
+Both machines are unlocked by the same early research node as the engine heater, so any ship that can research at all can print both boards. Waystation Halcyon also sells the **ram scoop board** over the counter for 250 credits, which is the route for crews with no research bay.
 
 ## Buying fuel
 
@@ -58,7 +58,7 @@ If you would rather just buy it, both the general waystation and the outfitter d
 | Full plasma canister | 1800 cr | 1100 cr |
 | Welding fuel tank | 400 cr | 400 cr |
 | Full oxygen tank | 150 cr | 120 cr |
-| Nebula ram scoop board | 600 cr | - |
+| Nebula ram scoop board | 250 cr | - |
 
 Quartermain is cheaper on plasma because it sits further out; Halcyon's markup is the haul to the safe ring.
 

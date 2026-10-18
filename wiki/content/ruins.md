@@ -53,7 +53,7 @@ Each outpost stocks three randomly selected charts. Sold ruin charts return with
 
 Buying uploads a sealed rumour to your ship. Use the helm's reveal button when your crew is ready; it creates the ruin and marks a gold signal and waypoint. Each chart reveals once. Take your loot before everyone leaves, because the site clears out like an ordinary ruin.
 
-There is also a cheap standing tip ("word on the lanes", 1500 credits at any outpost) which simply marks one uncharted ordinary signal on your helm and names the band it sits in. Useful when the chart is empty and you do not want to fly a search pattern.
+There is also a cheap standing tip ("word on the lanes", 400 credits at any outpost) which simply marks one uncharted ordinary signal on your helm and names the band it sits in. Useful when the chart is empty and you do not want to fly a search pattern.
 
 ## Contested caches
 

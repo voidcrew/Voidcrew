@@ -20,9 +20,9 @@
  * aggression (resolved through get_trader_outpost_for_turf, like the walls).
  */
 
-#define IMPRINT_FEE_GREEN 750
-#define IMPRINT_FEE_YELLOW 1500
-#define IMPRINT_FEE_RED 3000
+#define IMPRINT_FEE_GREEN 250
+#define IMPRINT_FEE_YELLOW 500
+#define IMPRINT_FEE_RED 1000
 
 /// How long the imprint channel runs once started, with the occupant sealed in.
 #define IMPRINT_WORK_TIME (3 SECONDS)
