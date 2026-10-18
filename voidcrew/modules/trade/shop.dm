@@ -61,7 +61,7 @@
 	var/list/rare_pool = list()
 	/// Max rare picks per round (min 1 whenever the pool is non-empty)
 	var/rare_picks_max = 2
-	/// SKU typepaths on the favor-locked back-room shelf, stocked every round
+	/// SKU typepaths on the reputation-gated back-room shelf, stocked every round
 	/// (see trader_favor.dm, supply is per-crew, not shared)
 	var/list/favor_sku_types = list()
 	/// Spoken on request when this crew can order from the back room.
@@ -92,8 +92,6 @@
 	/// Supply request table for the outpost mission board: list of
 	/// list("type" = path, "name" = text, "amount" = num, "difficulty" = MISSION_DIFFICULTY_*)
 	var/list/mission_requests = list()
-	/// Legacy catalog field; automatic board draws are disabled.
-	var/list/exclusive_rewards = list()
 	/// Extra contract types this shop's board can post beyond the standard
 	/// mix, as typepath -> weight (the general outpost's angling requests)
 	var/list/extra_offer_mix = list()
@@ -425,8 +423,6 @@
 	var/shelf = SHELF_CORE
 	/// The shop stocking this SKU (stamped by add_sku; favor pricing/gating read it)
 	var/datum/outpost_shop/shop
-	/// Legacy catalog field; favor only changes credit prices, never admission.
-	var/favor_required = 0
 	/// Continuing crew permission required by every occurrence of this SKU.
 	var/zone_permission = ZONE_PERMISSION_PUBLIC
 	/// Max units one crew may buy per round (0 = uncapped; favor uniques cap at
@@ -562,7 +558,7 @@
 		return "I can't clear that shipment."
 	var/datum/voidcrew_crew_record/crew = crew_ship?.get_crew_record()
 	if(!has_zone_permission(crew) || (crew_limit > 0 && !crew))
-		return "I can't clear that shipment."
+		return "Your crew isn't cleared for that yet."
 	if(crew_limit > 0 && (crew.favor_unique_purchases[type] || 0) >= crew_limit)
 		return "I've filled that order already."
 	return null
@@ -767,13 +763,16 @@
 	return ships
 
 /// Z3/Z5 may pass an explicit hull or persist it through select_crew_service_ship().
-/// Prefer the hull aboard/alone at this site; ambiguous fleets require a selection.
+/// Prefer a validated selection, then the hull aboard/alone at this site.
 /proc/get_crew_ship(mob/user, obj/structure/overmap/ship/requested_ship)
 	var/list/ships = get_crew_ships(user)
 	if(!length(ships))
 		return null
 	if(requested_ship)
 		return (requested_ship in ships) ? requested_ship : null
+	var/obj/structure/overmap/ship/selected = user.mind.crew_service_ship_ref?.resolve()
+	if(selected in ships)
+		return selected
 	var/obj/structure/overmap/ship/aboard = get_ship_from_atom(user)
 	if(aboard in ships)
 		return aboard
@@ -785,9 +784,6 @@
 				berthed += ship
 	if(length(berthed) == 1)
 		return berthed[1]
-	var/obj/structure/overmap/ship/selected = user.mind.crew_service_ship_ref?.resolve()
-	if(selected in ships)
-		return selected
 	if(length(ships) == 1)
 		return ships[1]
 	return null

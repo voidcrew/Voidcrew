@@ -141,7 +141,7 @@ const RewardLine = (props: { offer: Offer }) => {
 };
 
 const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
-  const { act } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const { offer, canAccept } = props;
   return (
     <Section>
@@ -178,7 +178,13 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
           <Button
             icon="file-signature"
             disabled={!canAccept}
-            tooltip={canAccept ? undefined : 'Order declined.'}
+            tooltip={
+              canAccept
+                ? undefined
+                : data.ship_name && data.ship_mission_slots_free <= 0
+                  ? 'Docket full.'
+                  : 'Order declined.'
+            }
             onClick={() => act('accept', { ref: offer.ref })}
           >
             Accept

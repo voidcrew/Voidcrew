@@ -264,6 +264,14 @@
 	delivery = locate() in bay
 	TEST_ASSERT_NOTNULL(delivery, "Paid spacewear was not delivered")
 	var/mob/living/carbon/human/seller = allocate(/mob/living/carbon/human/consistent)
+	seller.mind_initialize()
+	allocated += seller.mind
+	var/obj/structure/overmap/ship/selling_ship = allocate(/obj/structure/overmap/ship)
+	selling_ship.ship_team = allocate(/datum/team/voidcrew)
+	selling_ship.ship_team.ship = selling_ship
+	allocated += selling_ship.get_crew_record()
+	selling_ship.enlist_crewmember(seller)
+	selling_ship.ship_account = account
 	var/obj/item/card/id/advanced/seller_id = allocate(/obj/item/card/id/advanced)
 	seller_id.registered_account = account
 	TEST_ASSERT(seller.put_in_hands(seller_id), "Seller could not carry their paying ID")

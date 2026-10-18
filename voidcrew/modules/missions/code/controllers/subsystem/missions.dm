@@ -49,11 +49,19 @@ SUBSYSTEM_DEF(missions)
  * * ship - The ship to refresh missions for
  */
 /datum/controller/subsystem/missions/proc/refresh_ship_missions(obj/structure/overmap/ship/ship)
-	if(!ship)
+	if(QDELETED(ship) || ship.abandoned)
 		return
 	// NPC ships never read their board; don't generate (and churn ruin refs) for them
 	if(istype(ship, /obj/structure/overmap/ship/npc))
 		return
+	var/has_living_crew = FALSE
+	for(var/datum/mind/member in ship.ship_team?.members)
+		var/mob/living/body = member.current
+		if(isliving(body) && !QDELETED(body) && body.stat != DEAD)
+			has_living_crew = TRUE
+			break
+	if(!has_living_crew)
+		return FALSE
 
 	// Deletion leaves a vacancy, not a retained reference or an early replacement.
 	for(var/index in length(ship.available_missions) to 1 step -1)

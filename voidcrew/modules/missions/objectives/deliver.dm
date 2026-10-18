@@ -79,9 +79,13 @@
 	notify_crew("[mission.name]: [delivered_count]/[required_amount] [required_name] received.")
 	return MISSION_ITEM_PROGRESS
 
-/// The console's salvage rows use the exact listed goods, never manufactured descendants.
+/// Salvage stays exact; original Syndicate intelligence comes in several variants.
 /datum/mission_objective/deliver/console/matches_ask(obj/item/item)
-	return !QDELETED(item) && item.type == required_type
+	if(QDELETED(item))
+		return FALSE
+	if(required_type == /obj/item/documents/syndicate)
+		return istype(item, /obj/item/documents/syndicate)
+	return item.type == required_type
 
 /datum/mission_objective/deliver/console/can_turn_in(obj/item/item)
 	return !completed && matches_ask(item) && ..()

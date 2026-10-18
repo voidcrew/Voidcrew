@@ -183,10 +183,35 @@
 	var/obj/item/descendant = allocate(/obj/item/stack/spice_pods/m2_rewards_test)
 	TEST_ASSERT(!exact.can_turn_in(descendant), "A descendant bypassed the exact goods path")
 
+/// Original document variants fulfill the ask; forged photocopies never do.
+/datum/unit_test/voidcrew_m2_rewards/documents/Run()
+	var/obj/structure/overmap/ship/ship = test_ship()
+	var/datum/mission/mission = allocate(/datum/mission/m2_rewards_test)
+	var/datum/mission_objective/deliver/console/ask = new
+	ask.required_type = /obj/item/documents/syndicate
+	mission.add_objective(ask)
+	mission.requires_item = TRUE
+	TEST_ASSERT(mission.start_mission(ship), "Document delivery did not start")
+	var/obj/item/documents/syndicate/red/original = allocate(__IMPLIED_TYPE__)
+	var/obj/item/documents/photocopy/copy = allocate(/obj/item/documents/photocopy, null, original)
+	copy.forgedseal = "red"
+	TEST_ASSERT(!ask.matches_ask(copy) && !mission.turn_in(run_loc_floor_bottom_left, copy), "A forged photocopy satisfied the document delivery")
+	TEST_ASSERT(!QDELETED(copy), "Rejected photocopy was consumed")
+	for(var/document_type in list(/obj/item/documents/syndicate/blue, /obj/item/documents/syndicate/mining))
+		var/obj/item/variant = allocate(document_type)
+		TEST_ASSERT(ask.matches_ask(variant) && ask.can_turn_in(variant), "Original [document_type] was refused")
+	TEST_ASSERT(ask.matches_ask(original), "Red Syndicate intelligence did not match its ask")
+	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, original), "Red Syndicate intelligence did not fulfill the delivery")
+	TEST_ASSERT(ask.completed && QDELETED(original), "Successful delivery did not complete and consume its original")
+
 /// Fixed sets survive acceptance, failure, deletion and rebuilding until the scheduled refresh.
 /datum/unit_test/voidcrew_m2_rewards/offers/Run()
 	SSmissions.mission_types = list(/datum/mission/delivery)
 	var/obj/structure/overmap/ship/ship = test_ship()
+	var/mob/living/carbon/human/member = allocate(/mob/living/carbon/human/consistent)
+	member.mind_initialize()
+	allocated += member.mind
+	ship.enlist_crewmember(member)
 	TEST_ASSERT(SSmissions.refresh_ship_missions(ship), "Initial offer set was not posted")
 	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Initial board does not contain five offers")
 	TEST_ASSERT_EQUAL(ship.next_mission_refresh, world.time + 20 MINUTES, "Offer timer is not twenty minutes")

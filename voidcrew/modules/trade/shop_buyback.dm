@@ -7,8 +7,8 @@
  * *demand* (how many sales the trader still wants this round).
  *
  * Selling accepts goods from anywhere in the seller's inventory (hands first),
- * one sale-unit per click or in bulk. Credits land on your ID's account;
- * voucher payouts materialize in hand.
+ * one sale-unit per click or in bulk. Credits land on the selected ship's account,
+ * falling back to the ID account; voucher payouts materialize in hand.
  *
  * Balance rule: entries that pay VOUCHERS must only ever buy loot that can't
  * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds).
@@ -153,6 +153,14 @@
 		units = length(find_offered_items(user))
 	return units
 
+/// Prefer the selected ship's account, then the seller's carried ID account.
+/proc/get_shop_buyback_account(mob/living/user)
+	var/datum/bank_account/account = get_crew_ship(user)?.ship_account
+	if(account)
+		return account
+	var/obj/item/card/id/id_card = user?.get_idcard(TRUE)
+	return id_card?.registered_account
+
 /**
  * Why the user can't sell right now, shown as a tooltip / chat line.
  */
@@ -169,9 +177,8 @@
 			return "Won't take [near_miss.name] - only [name], nothing processed or lab-made."
 		return "Carrying none of the goods: [get_wanted_text()]."
 	if(pay_credits > 0)
-		var/obj/item/card/id/id_card = user.get_idcard(TRUE)
-		if(!id_card?.registered_account)
-			return "No bank account on your ID to pay into."
+		if(!get_shop_buyback_account(user))
+			return "No bank account on your ID."
 	return null
 
 /**
@@ -186,8 +193,7 @@
 	// Credits need a live account before we consume anything
 	var/datum/bank_account/account
 	if(pay_credits > 0)
-		var/obj/item/card/id/id_card = user.get_idcard(TRUE)
-		account = id_card?.registered_account
+		account = get_shop_buyback_account(user)
 		if(!account)
 			return FALSE
 

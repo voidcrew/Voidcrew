@@ -135,9 +135,6 @@
 /// Credit worth assumed for a back-room exclusive, which no shelf prices
 #define CONTRACT_EXCLUSIVE_VALUE 3600
 
-/// Every quoted credit must be settled.
-#define CONTRACT_SHORTFALL_TOLERANCE 0
-
 /// Never hand over more than this many separate items for one contract
 #define CONTRACT_MAX_REWARD_ITEMS 2
 

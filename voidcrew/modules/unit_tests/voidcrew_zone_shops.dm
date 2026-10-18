@@ -338,8 +338,18 @@
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	var/list/data = facet.ui_data(buyer)
 	TEST_ASSERT_NULL(data["account_credits"], "Ambiguous fleet displayed the ID's account")
+	TEST_ASSERT_EQUAL(data["sell_account_credits"], 0, "Unselected sale did not display the ID's balance")
 	TEST_ASSERT_NULL(sku.get_account(buyer), "Ambiguous fleet fell back to the ID's account")
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost)
+	// Bounds only: no turfs are claimed or released by this reservation fixture.
+	outpost.reservation = allocate(/datum/turf_reservation)
+	outpost.reservation.bottom_left_turfs = list(run_loc_floor_bottom_left)
+	outpost.reservation.width = 1
+	outpost.reservation.height = 1
+	first.docked = outpost
+	TEST_ASSERT_EQUAL(get_crew_ship(buyer), first, "Fixture did not exercise the sole-berthed-hull fallback")
 	TEST_ASSERT(facet.select_service_ship(buyer, REF(second)), "Could not select the second ship")
+	TEST_ASSERT_EQUAL(get_crew_ship(buyer), second, "The sole berthed hull overrode an explicit account selection")
 	TEST_ASSERT_EQUAL(buyer.get_idcard(TRUE).registered_account, first_account, "Selecting a ship rewrote the carried ID")
 	data = facet.ui_data(buyer)
 	TEST_ASSERT_EQUAL(data["account_credits"], 10000, "Storefront did not display the selected ship's balance")
@@ -353,6 +363,16 @@
 	data = facet.ui_data(buyer)
 	TEST_ASSERT_EQUAL(data["account_credits"], 6800, "Storefront did not refresh the selected ship's balance")
 	TEST_ASSERT_EQUAL(shop.get_crew_purchases(second, sku.type), 1, "Purchase did not use the selected ship's crew cap")
+	var/datum/shop_buyback/buyback = allocate(/datum/shop_buyback)
+	buyback.item_path = /obj/item/sea_crystal
+	buyback.pay_credits = 300
+	allocate(/obj/item/sea_crystal, buyer)
+	TEST_ASSERT_NULL(buyback.get_denial_reason(buyer), "An empty ID account blocked a sale to the selected ship")
+	TEST_ASSERT(buyback.try_sell(buyer, null), "The selected ship could not receive a sale")
+	TEST_ASSERT_EQUAL(first_account.account_balance, 0, "Sale paid the ID's ship")
+	TEST_ASSERT_EQUAL(second_account.account_balance, 7100, "Sale did not pay the selected ship")
+	data = facet.ui_data(buyer)
+	TEST_ASSERT_EQUAL(data["sell_account_credits"], 7100, "Sell balance did not reflect the account paid")
 
 	first_account.account_balance = 10000
 	second_account.account_balance = 0
@@ -367,6 +387,15 @@
 	stock_state = data["stock_states"][1]
 	TEST_ASSERT(!stock_state["can_buy"], "Storefront offered an unaffordable purchase")
 	second.ship_account = null
+	allocate(/obj/item/sea_crystal, buyer)
+	TEST_ASSERT_NULL(buyback.get_denial_reason(buyer), "A missing ship account blocked the ID fallback")
+	TEST_ASSERT(buyback.try_sell(buyer, null), "A missing ship account did not fall back to the ID")
+	TEST_ASSERT_EQUAL(first_account.account_balance, 10300, "The ID fallback did not receive the sale")
+	TEST_ASSERT_EQUAL(second_account.account_balance, 0, "The sale paid the detached ship account")
+	TEST_ASSERT_EQUAL(buyback.count_carried_units(buyer), 0, "The ID fallback did not consume the goods")
+	data = facet.ui_data(buyer)
+	TEST_ASSERT_NULL(data["account_credits"], "Purchases displayed the fallback ID account")
+	TEST_ASSERT_EQUAL(data["sell_account_credits"], 10300, "Sell balance did not refresh the ID fallback")
 	TEST_ASSERT_NULL(sku.get_account(buyer), "Missing selected account fell back to the ID")
 	TEST_ASSERT(!sku.try_purchase(buyer, npc), "Missing selected account charged the ID")
 	var/obj/structure/overmap/ship/foreign = make_ship()
@@ -374,6 +403,54 @@
 	TEST_ASSERT_NULL(sku.get_account(buyer, foreign), "Explicit foreign ship supplied a payment account")
 	foreign.ship_account = null
 	second.ship_account = second_account
+
+/// A seller without a crew ship can sell into the account on their ID.
+/datum/unit_test/voidcrew_zone_shops/crewless_sale/Run()
+	var/mob/living/carbon/human/seller = make_member()
+	TEST_ASSERT_NULL(get_crew_ship(seller), "The seller unexpectedly has a crew ship")
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Crewless seller", null, 1, FALSE)
+	account.account_balance = 200
+	var/obj/item/card/id/advanced/card = allocate(/obj/item/card/id/advanced)
+	qdel(card.registered_account)
+	card.registered_account = account
+	TEST_ASSERT(seller.put_in_hands(card), "The seller could not carry their ID")
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	var/datum/shop_buyback/buyback = allocate(/datum/shop_buyback)
+	buyback.item_path = /obj/item/sea_crystal
+	buyback.name = "sea crystal"
+	buyback.pay_credits = 300
+	buyback.demand = 3
+	shop.buybacks += buyback
+	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	npc.shop = shop
+	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
+	allocate(/obj/item/sea_crystal, seller)
+	var/list/data = facet.ui_data(seller)
+	TEST_ASSERT_NULL(data["account_credits"], "Crewless purchases displayed the ID account")
+	TEST_ASSERT_EQUAL(data["sell_account_credits"], 200, "Crewless sale did not display the ID balance")
+	var/list/ledger_state = data["ledger_states"][1]
+	TEST_ASSERT(ledger_state["can_sell"], "The Sell tab denied the crewless ID account")
+	TEST_ASSERT_NULL(buyback.get_denial_reason(seller), "The crewless ID account was denied")
+	TEST_ASSERT(buyback.try_sell(seller, npc), "The crewless seller could not sell for credits")
+	TEST_ASSERT_EQUAL(account.account_balance, 500, "The crewless seller's ID account was not paid")
+	TEST_ASSERT_EQUAL(buyback.count_carried_units(seller), 0, "The sale did not consume the goods")
+	TEST_ASSERT_EQUAL(buyback.demand, 2, "The sale did not consume one demand")
+	data = facet.ui_data(seller)
+	TEST_ASSERT_EQUAL(data["sell_account_credits"], 500, "Sell balance did not refresh the paid ID account")
+	allocate(/obj/item/sea_crystal, seller)
+	TEST_ASSERT_EQUAL(buyback.try_sell_bulk(seller, npc), 1, "Crewless bulk sale could not use the ID account")
+	TEST_ASSERT_EQUAL(account.account_balance, 800, "Bulk sale did not pay the ID account")
+	card.registered_account = null
+	allocate(/obj/item/sea_crystal, seller)
+	TEST_ASSERT_EQUAL(buyback.get_denial_reason(seller), "No bank account on your ID.", "Missing accounts had the wrong refusal")
+	TEST_ASSERT(!buyback.try_sell(seller, npc), "A seller without either account could sell for credits")
+	TEST_ASSERT_EQUAL(buyback.count_carried_units(seller), 1, "An accountless sale consumed the goods")
+	TEST_ASSERT_EQUAL(buyback.demand, 1, "An accountless sale consumed demand")
+	TEST_ASSERT_EQUAL(account.account_balance, 800, "An accountless sale paid the former ID account")
+	data = facet.ui_data(seller)
+	TEST_ASSERT_NULL(data["sell_account_credits"], "Sell balance retained a removed ID account")
+	ledger_state = data["ledger_states"][1]
+	TEST_ASSERT(!ledger_state["can_sell"], "The Sell tab offered a sale without either account")
 
 /// A quote retains the tagged SKU, including through its stock reservation.
 /// Z2 uses this same permission predicate for the viewer's effective package.

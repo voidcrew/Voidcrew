@@ -116,10 +116,14 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 		|| !istext(receipt_key) || !length(receipt_key) || settlement_claims[receipt_key])
 		return 0
 	settlement_claims[receipt_key] = TRUE
+	var/permission_before = get_zone_permission()
 	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
 	var/gain = min(zone_work_reward(difficulty), max(0, cap - families[family]))
 	families[family] += gain
 	zone_totals["[band]"] += gain
+	if(get_zone_permission() > permission_before)
+		for(var/datum/mind/member in minds)
+			to_chat(member.current, span_notice("Word's out about your crew. Better work is open to you."))
 	return gain
 
 /datum/voidcrew_crew_record/proc/get_zone_permission()
@@ -245,12 +249,11 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 /**
  * # Back-room SKU base
  *
- * The favor-shelf line item: standing-gated behind Trusted, supplied per crew
+ * The back-room line item: gated by crew reputation, supplied per crew
  * rather than per shelf. Catalog files subtype this next to their other SKUs.
  */
 /datum/shop_sku/favor
 	category = "Back Room"
-	favor_required = FAVOR_TIER_TRUSTED
 	crew_limit = FAVOR_UNIQUE_CREW_LIMIT
 
 /// Favor this mission pays its posting trader on completion (0 off-board)
