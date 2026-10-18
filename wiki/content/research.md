@@ -144,4 +144,8 @@ See [Ship Combat](ship-combat.md), [Ship Upgrades](ship-upgrades.md) and [Nanite
 
 ### Zone reputation
 
-Some research needs [zone reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need yellow; L6, Bulldog, sniper, Explosive and Experimental Ammunition need advanced; Military Nanite Programming needs elite. Imported research still works. Copying technology does not grant reputation for other purchases.
+Some research needs [zone reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need yellow; L6, Bulldog, sniper, Explosive and Experimental Ammunition need advanced; Military Nanite Programming needs elite.
+
+Electric Weaponry needs yellow reputation for ion, temperature and tesla kits. Advanced Beam Weaponry needs advanced reputation for X-ray and advanced energy gun kits. Illegal Technology needs elite reputation for the energy crossbow kit and rapid syringe gun, as does Unregulated Bluespace Research for the Event Horizon kit. Each requirement covers every design on that node.
+
+Imported research still works. Copying technology does not grant reputation for other purchases.

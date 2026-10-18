@@ -44,9 +44,9 @@ Unlock these in order:
 | Requirement | Access |
 |---|---|
 | Starting crew | Green contracts, ordinary research and public trader stock |
-| **3 green points** | Yellow contracts and stock, Barnaby's back room, fitter's gauntlets; Automatic, C-20r, WT-550 and Specialist Ammunition research |
-| Then **6 yellow points** | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research |
-| Then **9 red points** | Elite trader stock, Vex's back room and Military Nanite Programming research |
+| **3 green points** | Yellow contracts and stock, Barnaby's back room, fitter's gauntlets; Automatic, C-20r, WT-550 and Specialist Ammunition research; Electric Weaponry (ion, temperature and tesla kits) |
+| Then **6 yellow points** | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research; Advanced Beam Weaponry (X-ray and advanced energy gun kits) |
+| Then **9 red points** | Elite trader stock, Vex's back room and Military Nanite Programming research; Illegal Technology (energy crossbow kit and rapid syringe gun) and Unregulated Bluespace Research (Event Horizon kit) |
 
 You still pay the listed prices. Different goods have different requirements: arriving at a red outpost does not unlock its entire shop. Back-room goods have a shared limit of **three of each item per crew per round**.
 
