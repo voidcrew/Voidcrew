@@ -542,67 +542,30 @@
 	fallback.stock_for_zone(null)
 	TEST_ASSERT(fallback.mod?.type in expected, "Unresolved zone did not fall back to base-tier stock")
 
-/// A real yielding creation window exercises the registry's claim.
-/datum/ruin_chart_site/concurrency_test
-	var/creations = 0
+/// Each paid copy creates a fresh site, including after an earlier site is gone.
+/datum/unit_test/voidcrew_named_chart_purchases
+	var/list/spawned_sites = list()
 
-/datum/ruin_chart_site/concurrency_test/create_site(spawn_zone)
-	creations++
-	sleep(2)
+/datum/unit_test/voidcrew_named_chart_purchases/Destroy()
+	for(var/obj/structure/overmap/space_ruin/site in spawned_sites)
+		if(!QDELETED(site))
+			qdel(site)
+	spawned_sites.Cut()
 	return ..()
 
-/datum/unit_test/voidcrew_named_chart_registry
-	var/list/saved_registry
-	var/obj/structure/overmap/space_ruin/created_site
-
-/datum/unit_test/voidcrew_named_chart_registry/Destroy()
-	if(!QDELETED(created_site))
-		qdel(created_site)
-	if(saved_registry)
-		for(var/template_path in GLOB.ruin_chart_sites.Copy())
-			qdel(GLOB.ruin_chart_sites[template_path])
-		GLOB.ruin_chart_sites = saved_registry
-	return ..()
-
-/datum/unit_test/voidcrew_named_chart_registry/Run()
-	saved_registry = GLOB.ruin_chart_sites
-	GLOB.ruin_chart_sites = list()
+/datum/unit_test/voidcrew_named_chart_purchases/Run()
 	var/template_path = /datum/map_template/ruin/space/rare/hospice
-	var/datum/ruin_chart_site/concurrency_test/entry = new(template_path)
-	GLOB.ruin_chart_sites[template_path] = entry
-	var/obj/structure/overmap/ship/first_ship = allocate(/obj/structure/overmap/ship)
-	var/obj/structure/overmap/ship/second_ship = allocate(/obj/structure/overmap/ship)
-	var/datum/rumor_chart/first = allocate(/datum/rumor_chart)
-	var/datum/rumor_chart/second = allocate(/datum/rumor_chart)
-	first.ruin_template_path = template_path
-	second.ruin_template_path = template_path
-	first.spawn_zone = 1 // ZONE_GREEN
-	second.spawn_zone = 1
-	first_ship.add_pending_rumor(first)
-	second_ship.add_pending_rumor(second)
-	INVOKE_ASYNC(first_ship, TYPE_PROC_REF(/obj/structure/overmap/ship, reveal_pending_rumor), first)
-	TEST_ASSERT(entry.claimed, "Creation yielded without claiming its template")
-	TEST_ASSERT_NULL(second_ship.reveal_pending_rumor(second), "Competing reveal created a second site")
-	TEST_ASSERT(!second.revealed && (second in second_ship.pending_rumors), "Competing reveal consumed its chart")
-	sleep(3)
-	created_site = entry.site_ref?.resolve()
-	TEST_ASSERT_NOTNULL(created_site, "Claimed reveal did not finish")
-	created_site.visited = TRUE
-	TEST_ASSERT_EQUAL(second_ship.reveal_pending_rumor(second), created_site, "Retry failed to chart the registered site")
-	TEST_ASSERT_EQUAL(entry.creations, 1, "Concurrent charts created more than one site")
-	qdel(first_ship)
-	TEST_ASSERT_EQUAL(get_ruin_chart_site(template_path), entry, "Ship deletion lost the round-wide registry")
-
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
 	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
 	buyer.mind_initialize()
 	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
-	team.ship = second_ship
-	second_ship.ship_team = team
+	team.ship = ship
+	ship.ship_team = team
 	team.join_member(buyer.mind)
-	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart refund test", null, 1, FALSE)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart purchase test", null, 1, FALSE)
 	account.account_balance = 20000
-	second_ship.ship_account = account
+	ship.ship_account = account
 	var/obj/item/card/id/advanced/id = allocate(/obj/item/card/id/advanced)
 	qdel(id.registered_account)
 	id.registered_account = account
@@ -612,32 +575,54 @@
 	shop.add_sku(/datum/shop_sku/ruin_chart/biolab, "rotating")
 	var/datum/shop_sku/ruin_chart/sku = shop.skus[1]
 	sku.ruin_template_path = template_path
-	sku.stock = 2
+	sku.spawn_zone = 1 // ZONE_GREEN, defined after the unit-test includes.
+	sku.stock = 3
 	var/price = sku.get_credit_price(buyer)
 	var/voucher_price = sku.price_vouchers
-	TEST_ASSERT(sku.try_purchase(buyer, null), "Live registered site refused a purchase")
-	var/datum/rumor_chart/revealed_copy = second_ship.pending_rumors[1]
-	TEST_ASSERT_EQUAL(second_ship.reveal_pending_rumor(revealed_copy), created_site, "Paid chart did not reuse the visited site")
-	TEST_ASSERT(sku.try_purchase(buyer, null), "Pending refund purchase failed")
-	var/datum/rumor_chart/pending = second_ship.pending_rumors[1]
+	TEST_ASSERT(sku.try_purchase(buyer, null), "First named chart purchase failed")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 1, "Purchase did not deliver one sealed chart")
+	var/datum/rumor_chart/first_chart = ship.pending_rumors[1]
+	allocated += first_chart
+	var/obj/structure/overmap/space_ruin/first = ship.reveal_pending_rumor(first_chart)
+	TEST_ASSERT_NOTNULL(first, "First paid chart did not create a site")
+	spawned_sites += first
+	first.mission_exclusive = TRUE
+	TEST_ASSERT(first.rare && !first.loaded && !first.visited, "First purchase did not reveal a fresh rare site")
+	TEST_ASSERT(QDELETED(first_chart) && !length(ship.pending_rumors), "Successful reveal did not consume the first chart")
+
+	TEST_ASSERT(sku.try_purchase(buyer, null), "Another copy of the named chart could not be purchased")
+	var/datum/rumor_chart/second_chart = ship.pending_rumors[1]
+	allocated += second_chart
 	TEST_ASSERT_EQUAL(account.account_balance, 20000 - 2 * price, "Purchase charged the wrong credits")
 	TEST_ASSERT_EQUAL(vouchers.amount, 10 - 2 * voucher_price, "Purchase charged the wrong vouchers")
-	// Refund the actual bill, even after shelf prices change.
-	sku.price_credits *= 2
-	sku.price_vouchers *= 2
-	qdel(created_site)
-	TEST_ASSERT(entry.retired && isnull(entry.site_ref), "Deleted site did not leave a tombstone")
-	TEST_ASSERT(QDELETED(pending) && !length(second_ship.pending_rumors), "Retired site retained a paid pending chart")
-	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "Retirement did not refund exactly the pending credit bill")
-	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - voucher_price, "Retirement did not refund exactly the pending voucher bill")
-	sku.stock = 1
-	TEST_ASSERT(sku.get_denial_reason(buyer), "Retired site has no purchase denial")
-	TEST_ASSERT(!sku.try_purchase(buyer, null), "Retired site allowed another purchase")
-	TEST_ASSERT_EQUAL(sku.stock, 1, "Refused purchase consumed stock")
-	TEST_ASSERT_EQUAL(account.account_balance, 20000 - price, "Refused purchase charged credits")
-	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - voucher_price, "Refused purchase charged vouchers")
-	TEST_ASSERT_NULL(entry.get_or_create(1), "Retired template created another vault")
-	TEST_ASSERT_EQUAL(entry.creations, 1, "Tombstone allowed another creation")
+	qdel(first)
+	TEST_ASSERT(!QDELETED(second_chart) && !second_chart.revealed && (second_chart in ship.pending_rumors), "Deleting an earlier site consumed another paid chart")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - 2 * price, "Deleting an earlier site refunded an independent chart")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - 2 * voucher_price, "Deleting an earlier site refunded independent vouchers")
+	TEST_ASSERT_NULL(sku.get_denial_reason(buyer), "Deleting an earlier site blocked another purchase")
+	TEST_ASSERT(sku.try_purchase(buyer, null), "Named chart could not be purchased after its earlier site was deleted")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "Later purchase replaced an existing sealed chart")
+	var/datum/rumor_chart/third_chart = ship.pending_rumors[2]
+	allocated += third_chart
+	TEST_ASSERT_EQUAL(sku.stock, 0, "Three purchases did not consume three units of stock")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - 3 * price, "Later purchase charged the wrong credits")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 10 - 3 * voucher_price, "Later purchase charged the wrong vouchers")
+
+	var/obj/structure/overmap/space_ruin/second = ship.reveal_pending_rumor(second_chart)
+	TEST_ASSERT_NOTNULL(second, "Pending chart could not reveal after an earlier site was deleted")
+	spawned_sites += second
+	second.mission_exclusive = TRUE
+	TEST_ASSERT(second.rare && !second.loaded && !second.visited, "Pending chart inherited an earlier site's state")
+	second.visited = TRUE
+	var/obj/structure/overmap/space_ruin/third = ship.reveal_pending_rumor(third_chart)
+	TEST_ASSERT_NOTNULL(third, "Later purchase did not reveal another site")
+	spawned_sites += third
+	third.mission_exclusive = TRUE
+	TEST_ASSERT(second != third && get_turf(second) != get_turf(third), "Two purchases reused the same site or coordinates")
+	TEST_ASSERT(third.rare && !third.loaded && !third.visited, "Later purchase inherited the visited site's state")
+	TEST_ASSERT_EQUAL(second.ruin_template.type, template_path, "Pending purchase revealed the wrong template")
+	TEST_ASSERT_EQUAL(third.ruin_template.type, template_path, "Later purchase revealed the wrong template")
+	TEST_ASSERT(QDELETED(second_chart) && QDELETED(third_chart) && !length(ship.pending_rumors), "Successful reveals retained sealed charts")
 	buyer.mind.ship_teams = null
 	team.ship = null
 
