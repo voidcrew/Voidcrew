@@ -5,13 +5,13 @@ order: 1
 blurb: Credits, trade vouchers, the ship bank, and the cargo console.
 ---
 
-Voidcrew has no station budget and no paychecks. Every credit your crew spends is one you earned by selling something, finishing a contract, or taking it off somebody else. There are two in-round currencies. Credits, which live in your ship's shared bank account, and trade vouchers, which are physical chits you carry, and they buy different things on purpose.
+Voidcrew has no station budget and no paychecks. Earn credits by selling salvage, finishing contracts or taking them from another crew. The two in-round currencies are credits in a ship account and physical trade vouchers. They buy different goods.
 
 ## The two currencies
 
-**Credits** are the everyday money. They sit in one bank account shared by the whole crew: when you spawn, your ID is bound to the ship's account rather than a personal one, so anything anyone earns goes into the same pot and anything anyone spends comes out of it. The account starts empty. Credits pay for cargo orders, most trader stock, outpost deeds, and bounties you post yourself.
+**Credits** are the everyday money. They sit in one bank account shared by the whole crew: when you spawn, your ID is bound to the ship's account rather than a personal one, so anything anyone earns goes into the same pot and anything anyone spends comes out of it. Each ship keeps its own account even when its crew runs several ships. A newly commissioned player ship starts with **1,000 credits**; checkpoint rebuilds do not grant another starting payment. Credits pay for cargo orders, most trader stock, outpost deeds, and bounties you post yourself.
 
-**Trade vouchers** are tamper-sealed chits that stack in your pocket like cash. They cannot be bought with credits, ever. You earn them by finishing dangerous contracts and by selling traders loot that can't be manufactured aboard a ship. Planet minerals, fauna harvests, ruin finds, deep-band gases. Any trader outpost honours them. Being a physical item, they can also be dropped, stolen and demanded as pirate tribute, so carrying a large stack into the deep is a real decision.
+**Trade vouchers** are tamper-sealed chits that stack in your pocket like cash. They cannot be bought with credits, ever. You earn them by finishing dangerous contracts and by selling traders loot that can't be manufactured aboard a ship. Raw telecrystals, legion cores and Syndicate documents. Any trader outpost honours them. Being a physical item, they can also be dropped, stolen and demanded as pirate tribute, so carrying a large stack into the deep is a real decision.
 
 !!! tip "What vouchers are for"
     Vouchers buy the tier of gear no shop will sell for money: syndicate MODsuit hardware, ship shield and interdiction boards, military-grade [cyberware](cyberware.md), top-tier [exploit software](ship-hacking.md), and the charts that reveal rare ruins. If you want any of that, you have to go somewhere dangerous.
@@ -47,7 +47,24 @@ The console announces what sold and for how much, and keeps a scrollable transac
 
 Export values are roughly a quarter of what the same item costs to buy, so you cannot make money by cycling crates. Cargo turns salvage, ore and unwanted loot into credits; it is not an arbitrage machine.
 
-Two extras: coupons found in loot slot into the console for a discount on a matching pack, and supply companies occasionally offer a **loan**, free credits now in exchange for a crate of their goods riding along on the next delivery.
+Coupons found in loot slot into the console for a discount on a matching pack. Supply companies also offer cargo **loans**; each loan pays its completion bonus once.
+
+Cargo does not sell the security catalogue, individual combat guns or gun conversion kits. See [Weapons & Gear](weapons-and-gear.md) for weapon sources. Nanite program disks export for no credits. Gas canisters pay for the shell only, whatever gas they contain.
+
+## The materials market
+
+Solid materials sell at a changing market bid. Base prices are per sheet:
+
+| Material | Base credits |
+|---|---|
+| Diamond | 120 |
+| Bluespace crystal | 80 |
+| Gold or titanium | 40 |
+| Uranium | 30 |
+| Silver | 15 |
+| Iron or glass | 2 |
+
+Iron and glass never fall below 1 credit per sheet. Market booms top out at 1.5 times the base price. Plasma exports are capped at 10 credits per sheet. A stack sells whole at the current bid.
 
 ## Selling to traders
 

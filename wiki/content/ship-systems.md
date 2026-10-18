@@ -28,13 +28,13 @@ Both the bank and the cargo console are explained properly in [Money & Trade](mo
 
 ## Fabrication and research
 
-Almost every ship has an **autolathe** somewhere aboard (on modular hulls it arrives with one of the modules) and that single machine is what makes research reachable on any ship. Print the **Research & Development Kit** from it (20 sheets of iron and 40 of glass) and the box contains the boards for the whole suite:
+Almost every ship has an **autolathe** somewhere aboard (on modular hulls it arrives with one of the modules) and that single machine is what makes research reachable on any ship. Print the **Research & Development Kit** from it (50 iron and 50 glass sheets at a basic autolathe) and the box contains the following:
 
-- R&D console
-- Protolathe
-- Destructive analyzer
-- **Circuit imprinter**
-- Ship R&D server, plus the source code disk that goes in it
+- R&D console board and construction materials
+- Flat-packed protolathe, destructive analyzer, **circuit imprinter** and ship R&D server
+- Source code disk for the server
+
+Deploy each flatpack with a multitool.
 
 The imprinter is the important one: machine boards can *only* be printed there, never on a protolathe. A ship without one is stuck with whatever machines it launched with, and a ship with one can eventually build anything.
 
@@ -68,8 +68,7 @@ Ships carry one or more **holopads**, which do double duty: they place calls to 
 
 ## Defence
 
-Weapons are not standard equipment. Most hulls launch unarmed and you buy or build up from there. What you will eventually bolt on:
-
+Hull combat systems depend on the fitout. Personal lethal guns are absent from all starting hulls, lockers and job kits; disablers and work tools remain. See [Weapons & Gear](weapons-and-gear.md). What you can add to the hull:
 - **Shield generators**, which soak damage before the hull does and draw power to regenerate.
 - **Laser turrets** and **missile launchers**, aimed from a ship combat console.
 - An **interdictor**, which pins another ship in place so it cannot undock or run.

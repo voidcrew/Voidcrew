@@ -47,6 +47,8 @@ The reward is fixed when the bounty is posted. It depends on the tier and the zo
 | Public bounty | 45 minutes. The clock stops while a crew hunts it, for up to 30 minutes of each crew's hunt. |
 | Private offer | 20 minutes to accept it, then 30 minutes to bring them in. |
 
+Successful paid criminal turn-ins earn [zone reputation](zone-reputation.md): Petty counts as easy, Wanted as medium, and Most Wanted or a boss as hard. Alive, downed and dead settlements count. The criminal's first capture or death fixes the zone; moving them to another pad does not change it. Lair and other kill-only trophies form a separate kind of reputation work.
+
 ## Taking a bounty
 
 Press **Hunt** on a public bounty, or **Accept Offer** on a private offer. This puts a waypoint on your helm chart (for a pirate ship, the waypoint follows the ship), lets you link GPS units to the criminal's last sighting, and sends your ship notices when anything changes. It doesn't use a mission slot.
@@ -83,7 +85,7 @@ About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a
 - They hide in a locker or crate, pose as a potted plant, or stand still on a dark tile. Opening the locker, bumping into them, examining them from the next tile, hurting them, or lighting up their dark spot finds them. They shove you back a tile and run again.
 - After a minute and a half in hiding they start to fidget: a rustle or a shake every 20 seconds. If nobody is around for a few minutes, they come out.
 - Cornered, they shout and aim a small pistol for half a second, then fire eight quick shots. A stamina hit during the aim makes them fumble it.
-- 120 health. Three disabler shots stun one.
+- 120 base health before [zone scaling](threats-and-elites.md). Three disabler shots stun one.
 
 **Bring:** a disabler or other ranged stun, a flashlight, cuffs, and someone to block the exits.
 
@@ -95,7 +97,7 @@ About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a
 About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted criminal on a pirate ship is always normal.
 
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
-- Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and empties a 15-round magazine before reloading), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons hit like the real thing.
+- Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and empties a 15-round magazine before reloading), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
 - They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
 - Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
 - Badly hurt with nobody around, they break off and retreat. They never heal.
@@ -104,7 +106,7 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 
 ### Mini-bosses
 
-Every Most Wanted criminal is a mini-boss with one of five kits.
+Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and their companions also use the [zone health and damage profile](threats-and-elites.md). The board's **Other crews hunting** line excludes your own active hunt.
 
 - Their health grows with the number of hunters who can see them when the fight starts, and with anyone who hurts them later.
 - Every ability winds up first, with a sound and a mark on the floor. Move out of the mark.

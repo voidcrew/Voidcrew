@@ -5,7 +5,7 @@ order: 5
 blurb: Found a home with its own bank, cargo deliveries, research, and resident cryopods.
 ---
 
-Player outposts are homes on the [overmap](overmap.md) that last for the round. Run a workshop, receive supplies, and welcome returning residents even after your founding ship is gone. Visiting ships keep their own money, equipment links, and crew membership.
+Player outposts are homes on the [overmap](overmap.md) that last for the round. Run a workshop, receive supplies, and welcome returning residents even after your founding ship is gone. Visiting ships keep their own money, equipment links, and crew membership. A crew can operate several ships and share [reputation](zone-reputation.md), but each ship keeps its own account. Services that offer a ship choice charge the selected hull.
 
 ## Founding a home
 
@@ -138,7 +138,7 @@ To share research with a ship, build an **R&D relay** aboard it. Print the relay
 
 Any number of ship relays can share the outpost server's **tech tree and research points**, including after undocking. Research earned or purchased at one connected lab is available at the others. Each ship keeps its own bank account, separate research disk, and fabrication materials.
 
-Outpost Management lists invitations and connections. Cancel an invitation or disconnect an individual relay there; the other fleet ships keep their access. Ship crew can also click their relay empty-handed to disconnect. You cannot download a technology disk through the relay.
+Outpost Management lists invitations and connections. Cancel an invitation or disconnect an individual relay there; the other fleet ships keep their access. Ship crew can also click their relay empty-handed to disconnect. You cannot download a technology disk through the relay. Reputation requirements for buying new research use the crew standing of the source server. A relay or imported disk does not grant your crew shopping or contract access.
 
 Keep the relay and outpost server powered. After a power outage, restore power and relink equipment. Removing the source disk, replacing an endpoint, or changing the outpost owner requires a new invitation. A change of ship captain keeps the connection intact.
 

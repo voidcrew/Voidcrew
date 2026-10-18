@@ -5,23 +5,27 @@ order: 4
 blurb: What lives in the ruins and on the planets, how it scales with the zone you found it in, and the two things in the galaxy that are genuinely raid-sized.
 ---
 
-Most of what tries to kill you off-ship is scaled to where you found it. The same ruin template is close to empty in the Neutral Zone and full of teeth in the Lawless Zone, and the loot inside scales with it. Above that sit two deliberate ceilings: purpose-built apex beasts you hunt on contract, and a handful of legacy arenas where genuine megafauna still live. Knowing which tier you have walked into is most of the survival.
+Most of what tries to kill you off-ship is scaled to where you found it. Hostile NPCs have more health and deal more damage in yellow and red space, and the loot improves too. Above that sit two deliberate ceilings: purpose-built apex beasts you hunt on contract, and a handful of legacy arenas where genuine megafauna still live. Knowing which tier you have walked into is most of the survival.
 
 ## Ruin garrisons
 
 Every [ruin](ruins.md) that carries a loot cache also carries guards, and both are decided the moment the ruin loads, based on the overmap zone it surfaced in.
 
-| Zone | Guards per spawn point |
-|---|---|
-| Neutral | 0–1 |
-| Contested | 1–2 |
-| Lawless | 2–3 |
+Ordinary guard groups generally contain **1-2 enemies in every zone**. The roster still changes with the ruin's theme and zone: pirate sites can hold stronger factions, spiders upgrade to hunters and tarantulas, and undead sites can hold templars or plasma miners. Boss groups have their own fixed composition.
 
-The roster itself changes with the zone, not just the count. A pirate wreck in green space holds a couple of grey-tide thugs; the same wreck in red holds Silverscale and Interdyne gunmen with a faction captain in the vault. Spider nests go from nurses to hunters and tarantulas, robot sites from ordinary hivebots to rapid and mechanic variants, cult sites from proteon constructs to juggernauts, undead sites from skeletons to templars and plasma miners.
+Hostile NPCs keep the profile of the zone where they spawned. Moving one to another zone does not change it.
+
+| Zone | Ordinary health | Ordinary damage | Boss health | Boss damage |
+|---|---|---|---|---|
+| Green | Base | Base | Base | Base |
+| Yellow | 1.35 times | 1.15 times | 1.15 times | 1.1 times |
+| Red | 1.8 times | 1.35 times | 1.3 times | 1.2 times |
+
+This covers hostile wildlife, guards, mission enemies and pirate crews, including their attacks and projectiles. Pets, hired guards, recruits, arena fighters and player summons keep their normal stats. Planet wildlife and nests have the same population limits across zones.
 
 Every ruin with a **rare** cache also carries a setpiece guard: one hand-picked enemy standing on the prize. In green that is a lieutenant; in red it is the real thing, a faction warlord, a spider midwife, or a lavaland **elite** (broodmother, herald, legionnaire, pandora).
 
-Elites are the design ceiling for ruin guards: harder versions of normal mobs, not megafauna. A standalone elite fights as an ordinary NPC and drops nothing special. The cache it is standing on is the reward.
+Elites are the design ceiling for ruin guards: harder versions of normal mobs, not megafauna. A standalone elite fights as an ordinary NPC and drops nothing special. The cache it is standing on is the reward. Strong melee drops from other bosses, such as the hierophant club or cleaving saw, are no longer guaranteed.
 
 !!! tip "Read the zone before you dock"
     A ruin you cleared easily last round can be a wipe this round if it surfaced two bands deeper. Check where you are before you open the airlock.
@@ -44,7 +48,7 @@ The beast is named at random from a list per planet (the Widow Beneath, Old Scar
 
 ### The Hoarfrost Matriarch
 
-The frozen-world quarry is the first purpose-built boss in this tier, with a kit of its own rather than scaled-up stats. She is a huge white predator with 800 health, roughly twice the size of a bear, who fights in two phases. Past a health threshold her ability set upgrades. She is deliberately slow: every attack has a learnable dodge and you can always break contact and reset. She smashes ordinary walls, so a door will not save you, but she cannot tear reinforced walls. She takes extra damage from fire.
+The frozen-world quarry is the first purpose-built boss in this tier, with a kit of its own rather than scaled-up stats. She is a huge white predator with 800 base health before zone scaling, roughly twice the size of a bear, who fights in two phases. Past a health threshold her ability set upgrades. She is deliberately slow: every attack has a learnable dodge and you can always break contact and reset. She smashes ordinary walls, so a door will not save you, but she cannot tear reinforced walls. She takes extra damage from fire.
 
 She drops better loot than anything else in the tier:
 
@@ -55,9 +59,9 @@ She drops better loot than anything else in the tier:
 
 ## Megafauna
 
-True megafauna: blood-drunk miners, the hierophant, the wendigo, the last ash drake, the demonic frost miner, the clockwork defender, legion, The Thing, exist, but **only in the fourteen arenas built to host them**. Outpost 31, the hierophant's arena, the wendigo's cave, the blood-drunk shrines and their kin. Those ruins exist for that fight and nothing else.
+True megafauna include blood-drunk miners, the hierophant, the wendigo, the last ash drake, the demonic frost miner, the clockwork defender, legion and The Thing. Most live in purpose-built arenas. Outpost 31, the hierophant's arena, the wendigo's cave, the blood-drunk shrines and their kin. Those ruins exist for that fight and nothing else.
 
-They will never turn up as generic loot guards, they are banned from the zone garrison tables outright, and no planet mission will roll one. If you meet one, you walked into its house on purpose.
+They do not appear as generic loot guards or ordinary planet-mission targets. Volcanic worlds can also host at most one roaming megafauna where their zone permits it. Take the same precautions outside an arena.
 
 ## The Verdigris
 
@@ -76,6 +80,6 @@ Teleportation does not work anywhere inside, for you or for him. Ilthuun does no
 !!! danger "The lair does not reset"
     Every other ruin wipes itself clean when the last person leaves. This one does not. Boss health, dead guards, spent ammunition and opened wards all persist for the rest of the round. Wipe on layer three and you can come back to a lair that is still three-quarters cleared, but everything you burned getting there is still burned.
 
-Kill him and the beacon goes quiet for good. What he leaves on the sanctum floor: his robe and horned crown (both of which cast), the staff he was leaning on, the spent husk of the phylactery that stopped saving him, a bridle that takes someone else's body off them briefly, and three spell codices in his own hand. That hoard is the entire reward — his magic survives only in those codices, and nothing is handed to crews that stayed home. The site stays put afterward as a lootable husk, so you can strip it and fly home.
+Kill him and the beacon goes quiet for good. What he leaves on the sanctum floor: his robe and horned crown (both of which cast), the staff he was leaning on, the spent husk of the phylactery that stopped saving him, a bridle that takes someone else's body off them briefly, and three spell codices in his own hand. His kill-only [bounty](bounty-hunting.md) also pays credits, vouchers and crew reputation when its trophy is turned in. The hoard is physical loot — his magic survives only in those codices, and nothing is handed to crews that stayed home. The site stays put afterward as a lootable husk, so you can strip it and fly home.
 
 Bring a real party. Four layers of undead is not a two-person job, and the fight at the bottom is on the same tier as the Matriarch.

@@ -13,22 +13,24 @@ A ruin starts as an "unknown signal", a contact with no name and no detail. Ther
 
 To board, fly onto the signal's tile and press Dock; the button reads "(boarding)". Two berths per ruin, same as a planet. Very large hulls are turned away, if the console says the ship is too big to dock, you need a smaller ride or a shuttle.
 
-The interior loads when the first ship arrives and is torn down once everyone leaves. **Anything you leave inside a ruin is gone when it unloads**, and once a ruin has been cleared out and abandoned, a different ruin appears elsewhere in its place. The supply does not run out.
+The interior loads when the first ship arrives and is torn down once everyone leaves. **Anything you leave inside a ruin is gone when it unloads**, and once a ruin has been cleared out and abandoned, a different ruin appears elsewhere in its place. The supply of ordinary space ruins does not run out. [Asteroid fields](mining.md) are different: a field is spent when it unloads.
 
 ## Loot caches
 
-Ruins carry abandoned caches: sealed crates whose contents are rolled from the zone the ruin is sitting in. A cache in the safe inner ring holds modest pickings; the same crate type deep in lawless space holds the good stuff. Some ruins carry a rare variant, which draws from the top of that zone's table.
+Ruins carry abandoned caches: sealed crates whose contents are rolled from the zone the ruin is sitting in. A cache in the safe inner ring holds modest pickings; the same crate type deep in lawless space holds the good stuff. Rare variants provide extra draws from the same zone-weighted tables. Every zone can reach the strongest loot, with better odds farther out.
 
 Two things worth knowing:
 
 - The value is locked in where the crate spawned. Hauling an unopened cache into a more dangerous zone does not improve it.
 - A cache never rolls the same prize twice, so the one-of-a-kind items in the rare tables are genuinely one per crate.
 
+A cache reserves one draw for a gun or melee weapon. Gun chances and weapon strength improve by zone; the other draws contain themed supplies. Freight and purchased mystery caches use a weaker gun selection. See [Weapons & Gear](weapons-and-gear.md).
+
 Not every ruin has one. The ones that do keep it in the most defensible room they have.
 
 ## What is guarding it
 
-Every ruin with a cache has something watching it, and the same ruin plays differently depending on where it spawned. Guard packs roll their size and their nastiness from the ruin's zone band: a green-ring site might have one straggler at the door, while the identical map in the lawless deep has packs at the chokepoints and a real monster on the vault.
+Every ruin with a cache has something watching it, and the same ruin plays differently depending on where it spawned. Ordinary guard groups use the same 1-2 enemy count in every band. Deeper zones improve their roster, health and damage rather than adding more guards to each group.
 
 Expect pirates, Syndicate operatives, cultists, undead, insects, wildlife or hostile robots depending on the ruin's theme. **Elite-tier enemies are the ceiling**. Harder versions of ordinary mobs, captains, lieutenants. Megafauna do not guard loot. The only places you will meet one are the surface of a volcanic planet, a short list of purpose-built arena ruins on volcanic, frozen and apocalyptic planet surfaces, and inside virtual reality ([Bitrunning](bitrunning.md)). See [Threats & Elites](threats-and-elites.md) for what you are actually fighting.
 

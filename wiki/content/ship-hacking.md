@@ -9,7 +9,7 @@ Ship hacking is the quiet half of [ship combat](ship-combat.md). Instead of punc
 
 ## The suite
 
-The **Electronic Warfare Systems** research node (160 points, behind Shuttle Warfare Systems) unlocks the machine board and the three tier-1 cartridges. If your crew does not do research, Vex at the [Undertow Exchange](trader-outposts.md) sells the board for 3,200 credits or 3 vouchers, one per round. Build it with two capacitors, a micro-laser and a servo, wrench it down anywhere on your ship, and link it to your weapons system console with a multitool, a freshly built suite also links itself to a free console automatically. One suite per console.
+The **Electronic Warfare Systems** research node (160 points, behind Shuttle Warfare Systems) unlocks the machine board and the three tier-1 cartridges. If your crew does not do research, Vex at the [Undertow Exchange](trader-outposts.md) sells the board for **3,200 credits plus 3 vouchers**, one unit in stock. Buying it requires advanced [zone reputation](zone-reputation.md), after 3 green and 6 yellow points. Build it with two capacitors, a micro-laser and a servo, wrench it down anywhere on your ship, and link it to your weapons system console with a multitool, a freshly built suite also links itself to a free console automatically. One suite per console.
 
 The suite draws about 2 kW while an exploit is warming up or live, and losing power aborts whatever it was doing. Better parts matter: capacitors cut the signature each execution costs (down to a quarter of base), micro-lasers cut the power draw, and servos cut warmup time. Examining the suite shows its current signature, its loaded cartridges and all three reductions.
 

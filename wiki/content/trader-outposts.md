@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, sundries. Credits only. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and sundries. Back-room goods also cost vouchers. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 
@@ -32,11 +32,11 @@ A berth is locked to its own crew. Only your crew can send the elevator down to 
 
 The trader is a person standing behind a counter, not a vending machine. Click them and a menu opens with **Trade**, **Talk**, and (on the main trader) **Contracts**.
 
-The Trade window has two halves: the shop, sorted into category tabs, and the trader's **wanted ledger** of what they are buying. Prices are fixed. Some lines want credits off your ID's account, some want vouchers out of your pocket, some want both, and a few want a **barter**. Hold the asked item in your hand and swap it across.
+The Trade window has two halves: the shop, sorted into category tabs, and the trader's **wanted ledger** of what they are buying. Each line has a base price; credit specials and favor discounts can reduce it. Some lines want credits off your ID's account, some want vouchers out of your pocket, some want both, and a few want a **barter**. Hold the asked item in your hand and swap it across.
 
-Stock is a single pool every crew at that outpost draws from, arranged in three shelves. **Core** stock is the same every round and restocks. **Rotating** stock is a handful of items rolled fresh each round, one or two units each. **Rare** stock is one or two showcase items, single unit, gone when somebody buys it. One credit-priced item goes on **special** each round at 15–30% off.
+Stock is a single pool every crew at that outpost draws from, arranged in three shelves. Reputation can restrict who may buy a line. Back-room limits are shared across all ships of a crew. **Core** stock is the same every round and restocks. **Rotating** stock is a handful of items rolled fresh each round, one or two units each. **Rare** stock is one or two showcase items, single unit, gone when somebody buys it. One credit-priced item goes on **special** each round at 15–30% off.
 
-Roughly every 22 minutes a **supply convoy** arrives: shelves refill, a sold-out rotating slot is replaced, the special rerolls, and the trader starts buying again. Every berthed ship is notified, which is a decent reason to swing back through.
+Roughly every 22 minutes a **supply convoy** arrives: ordinary shelves partly refill, a sold-out rotating slot is replaced, the special rerolls, and buyback demand recovers. Gun stock has its own clock, generally one unit per hour, and some rare weapons never refill. See [Weapons & Gear](weapons-and-gear.md) for prices and sources. Every berthed ship is notified, which is a decent reason to swing back through.
 
 ## The stalls
 
@@ -110,17 +110,19 @@ Boffin also sells **anomaly charts** the same way. A chart names one anomaly. It
 
 ## Trader contracts
 
-The main trader's **Contracts** menu is a second, separate mission board. Four offers stay posted, and they pay in **goods off that trader's own shelves** rather than money, which makes them worth taking when your account is empty.
+The main trader's **Contracts** menu is a second, separate mission board. Up to four offers stay posted. Vacancies refill every **11 minutes**, and unaccepted offers expire after **22 minutes**. Rewards can mix **credits, vouchers and goods from trader stock**. Some pay entirely in currency. Goods are reserved on acceptance; unavailable goods are replaced with currency.
 
 The mix is supply requests, salvage and kill contracts on ruins, and courier runs hauling a sealed freight pod to a *different* outpost. Halcyon also posts angling requests and **kitchen orders**, because it has a fishing stall and a diner. A kitchen order wants dishes cooked by an actual person at a stated recipe depth. Factory food is refused at turn-in, and so are plates bought off Roux's own counter, so somebody on your crew genuinely has to cook.
 
-Check the offered reward before accepting. Harder contracts can offer rarer gear.
+Supply requests ask for fauna harvests, ruin finds, salvage, raw telecrystal or glacial cores, rather than ore or sheets. Kitchen orders, fish and hides remain. Quartermain's fitter contracts ask for recovered MOD cores, control units or modules. Stored qualifying goods can be delivered.
+
+Check the offered reward before accepting. Higher-zone targeted work requires [zone reputation](zone-reputation.md), and rare completion prizes come from eligible guarded work rather than routine supply orders.
 
 Turn them in at any outpost trader or at your own mission pad. Except courier runs, whose pod only opens at its destination. See [Missions](missions.md).
 
 ### Trader favor
 
-Completing a trader's contracts earns your ship favor with that trader: **1 point** for easy, **2** for medium, and **4** for hard contracts.
+Completing a trader's contracts earns your **crew** favor: **1 point** for easy, **2** for medium and **3** for hard. Kitchen orders, fishing requests and fish or bear-hide supply requests give **1** regardless of difficulty.
 
 | Favor | Standing | Credit discount |
 |---|---|---|
@@ -128,7 +130,9 @@ Completing a trader's contracts earns your ship favor with that trader: **1 poin
 | 4 | Partner | 10% |
 | 6 | Trusted | 15% |
 
-The discount applies at every stall on that outpost. Voucher prices stay the same. **Trusted** also opens the **Back Room** shop, with up to three of each special item available to your crew per round. Favor belongs to the ship, so losing the hull loses its standing.
+The discount applies at every stall on that outpost. Voucher prices stay the same. A special and favor do not stack; you get the better discount. Favor is shared across the crew's ships and survives losing a hull.
+
+**Back Room** purchases require [zone reputation](zone-reputation.md), rather than Trusted favor. Barnaby's goods open after 3 green points. Sarge's fitter gauntlets open then too; his Skunkworks cell and maneuvering harness need the next unlock, after 6 yellow points. Vex's insurance implant needs the elite unlock, after 9 red points. Each crew may buy up to **three of each** per round.
 
 ## Violence
 
@@ -136,7 +140,7 @@ Outposts are indestructible. Walls, doors, machines and traders all shrug off we
 
 Attacking outpost property (or attacking another visitor inside the outpost) earns you a **strike**. The first two only get you a warning, with the turrets swinging around to point at you. On the **third**, three things happen at once:
 
-- You are personally marked. Every trader on the station refuses to serve you for the rest of the round.
+- You are personally marked. Every trader on the station refuses to serve you for 15 minutes.
 - Every ship your crew belongs to is put under a **trade embargo** for 15 minutes.
 - The outpost's turrets go lethal on you and anyone else aboard your embargoed ship.
 

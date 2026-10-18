@@ -30,7 +30,9 @@ Every hull with real rooms launches with the same core kit, wherever the mapper 
 | Cryogenic oversight console and cryopods | Where latejoiners arrive. Adjusts how many slots each job has, up to six, on a two-minute cooldown. Also where the captain can shut joining off. |
 | Autolathe | Prints the Research & Development Kit. |
 
-That last one matters more than it looks. The R&D Kit is a box the autolathe prints for twenty sheets of iron and forty of glass, with no research required, and it contains the R&D console, protolathe, circuit imprinter, destructive analyzer, ship R&D server and the server's source disk. Any ship, however cheap, can build a full research suite on day one. You start with zero research points and no income, so [Research](research.md) is worth reading before someone wastes an hour looking for the machine that generates them.
+That last one matters more than it looks. The R&D Kit costs 50 iron and 50 glass sheets at a basic autolathe, with no research required. Deploy its flat-packed protolathe, circuit imprinter, destructive analyzer and server with a multitool. It also contains the R&D console board, its construction materials and the server's source disk. Any ship, however cheap, can build a full research suite on day one. You start with zero research points and no income, so [Research](research.md) is worth reading before someone wastes an hour looking for the machine that generates them.
+
+Ships do not start with lethal guns, including in job kits and lockers. Security and miners get survival knives; disablers and work tools remain. See [Weapons & Gear](weapons-and-gear.md) for equipment sources.
 
 Everything past that core kit comes from your hull's theme and modules: an engine type, a medbay or a chem lab, a mining bay, a galley, a bunkroom. Read [Ship Systems](ship-systems.md) for the parts you have to keep running.
 
@@ -39,6 +41,8 @@ Everything past that core kit comes from your hull's theme and modules: an engin
 Fly out, find something worth money, bring it home, spend it, go further out.
 
 In practice that means picking a contact off the helm chart and going to look at it. [Planets](planets.md) have ore, ruins and fauna; [space ruins](ruins.md) have loot and usually something guarding it; [asteroid fields](mining.md) are the reliable mining stop; [trader outposts](trader-outposts.md) buy what you dug up and sell what you cannot make. The [mission board](missions.md) hands out contracts that point you at all of the above and pays for finishing them.
+
+Completing varied dangerous work builds [crew reputation](zone-reputation.md), which opens higher-zone contracts, trader stock and some research. It stays with your crew if the ship is lost. A crew can run several ships, but only its leader can add one.
 
 Danger and reward both scale with how far from the star you fly. The safe inner ring around the star is where you start; the rings farther out have better ore yields, nastier wildlife and no rules about shooting each other. [The Overmap](overmap.md) explains the three zones, and it is the first page you should read after this one.
 

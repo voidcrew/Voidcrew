@@ -11,7 +11,7 @@ Missions give your crew work across the sector: deliver supplies, chart a route,
 
 The mission board links to a nearby mission pad. Open **Available** to browse work and **Active** to see what your crew has taken on. Your ship can have **three missions active at once**, including jobs accepted from traders.
 
-The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
+The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Up to three slots are reserved for different kinds of work that can still advance your crew's [zone reputation](zone-reputation.md). Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
 
 For a starting job, look for an **Exploration Contract** in green space. Fly to its marked coordinates, then collect the listed fee at the board.
 
@@ -37,15 +37,49 @@ Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen 
 
 Contracts can pay a mix of **credits, trade vouchers, and named goods from trader stock**. Some pay entirely in currency. Listed goods are set aside when your crew accepts; if an item is unavailable then, currency replaces it. Read the pay line again after accepting.
 
-Completing a trader's contracts also improves your crew's standing with that trader. Standing can reduce credit prices and open the back room. Counter sales and board contracts are separate: selling goods over the counter does not complete an accepted contract. See [Trader Outposts](trader-outposts.md).
+Completing a trader's contracts also improves your crew's favor with that trader and can reduce credit prices. Back rooms and higher-zone contracts require [zone reputation](zone-reputation.md), earned from qualifying field work. Counter sales and board contracts are separate: selling goods over the counter does not complete an accepted contract. See [Trader Outposts](trader-outposts.md).
 
 ## Pay and rare gear
 
 Read each offer's pay line before accepting. It shows the quoted credits, vouchers, and goods. Jobs farther into dangerous space generally pay more, while routine supply work pays modest fees. Taking a quoted job into a different zone does not raise its listed pay.
 
-Survey contracts can include useful field equipment, such as scanners, extraction packs, jetpacks, or survival capsules. Rescue fees can be higher when the survivor comes home healthy. Prospect stakes pay their listed credits and voucher.
+Survey contracts can include useful field equipment, such as scanners, extraction packs, jetpacks, or survival capsules. Rescues pay a 25% bonus when the survivor returns at 80% health or better and has never needed revival. Prospect stakes pay their listed credits and voucher.
 
-Dangerous jobs with guarded objectives sometimes pay rare gear alongside the ordinary reward. That can include specialist MODsuits, a captain's laser, a Piledriver implant, or a cloak-device board. Rare gear can also be earned from guarded work in green space.
+Most ship-console credit rewards use the target zone: base pay in green, 1.5 times in yellow and 2.2 times in red, rounded to the nearest ten. Targetless asks use the posting zone. Delivery and suppression have their own pay rules. Research rewards use 1, 1.4 and 1.8 times instead. Trader-board offers quote their own complete package.
+
+| Ship-console job | Green base credits |
+|---|---|
+| Exploration | 150-250 |
+| Recovery | 450-650 |
+| Named kill or guarded extraction | 500-700 |
+| Guarded survey pylons | 550-750 |
+| Live capture or poacher bust | 600-800 |
+| Big game hunt or rescue | 650-850 |
+
+A named kill target and its payment only count once. Leaving and returning does not restore a completed kill.
+
+### Rare completion prizes
+
+Named kills, big game hunts, live captures, poacher busts, guarded pylons, guarded extractions and core samples can award a rare prize. Prospect stakes and lair trophies qualify in yellow or red only.
+
+| Zone | Suit chance | Gadget chance |
+|---|---|---|
+| Green | 3% | 1.5% |
+| Yellow | 4% | 2% |
+| Red | 20% | 10% |
+
+A completion gives at most one of these. Each **ship** can receive **one suit and one gadget per round** across all eligible jobs. A roll against an already-paid category gives nothing further.
+
+| Work | Possible suit | Possible gadget |
+|---|---|---|
+| Named kill | Elite Syndicate | Captain's laser |
+| Big game hunt | Safeguard | Meteor Piledriver |
+| Capture or poachers | Empty ninja | Captain's laser for capture; cloak-device board for poachers |
+| Guarded pylons, extraction or core sample | Magnate or safeguard | Captain's laser, Meteor Piledriver or cloak-device board |
+| Prospect stake | Safeguard | Any of the three gadgets above |
+| Lair trophy | Elite Syndicate or safeguard | Any of the three gadgets above |
+
+These prizes are separate from the offer's ordinary credits, vouchers and goods. See [Weapons & Gear](weapons-and-gear.md).
 
 ## The contract types
 
@@ -70,7 +104,7 @@ Dangerous jobs with guarded objectives sometimes pay rare gear alongside the ord
 | Containment Contract | Find and neutralize the named anomaly, then deliver its core. |
 | Core Sample Contract | Complete a planet's sampling work and return the sample. |
 
-The available jobs depend on the planets, ruins, and targets in the sector. Collect any supplied kit from the pad before departure.
+The available jobs depend on the planets, ruins, and targets in the sector, and on your crew's zone reputation. Collect any supplied kit from the pad before departure.
 
 ## Bounties
 
