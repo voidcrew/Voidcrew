@@ -21,12 +21,27 @@ All three broadcast their positions constantly, so they show up on your helm's c
 
 Fly to the outpost and dock like anywhere else. Every ship that arrives gets its own private **hangar berth**, up to six at once; if all six are taken, traffic control tells you to come back later. Very large hulls are refused outright.
 
-Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. There is a panel in the concourse for going back.
+Your berth is not the shop. To get to the market you use the **hangar elevator**: step into the marked alcove beside it, use the wall panel, and pick a floor. Floor 0 is the concourse; floors 1 through 6 are the berths, and the panel marks which one your own ship is parked in. The ride takes a few seconds and moves everything standing in the alcove, so crates and dragged bodies come along. Going up, the lift stops in the outpost's arrivals lobby, outside the weapons checkpoint (see below); the panel there takes you back down.
 
 A berth is locked to its own crew. Only your crew can send the elevator down to your berth, and anyone standing in the alcove with you rides along as your guest. If the crew member who pressed the button steps out before the car leaves, it stays put. Anyone can ride back up to the concourse, and once a ship is abandoned its berth is open to everyone.
 
 !!! tip "The elevator is the only way between floors"
     Berths are separate bays, not rooms down a corridor. If you walk out of your ship looking for a door to the shop, you will not find one. Get in the alcove.
+
+## The checkpoint
+
+No guns past the checkpoint. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a glass booth.
+
+- Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a gun, the inner door stays shut and you are sent back out. Everyone in the chamber goes through together, or nobody does.
+- The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too.
+- **Lockers** line the lobby. Shut your guns in one and swipe your ID to lock it to yourself. It frees up again once you empty it.
+- You leave through the **exit gate**, a one-way light curtain beside the checkpoint. Nothing comes in through it.
+
+**Weapons permit.** The guard sells a personal weapons permit at the booth window for 1,000 credits. It is good for twenty minutes, at that outpost only, and lets you through the scan and carry openly inside. It is yours alone: the outpost keeps the record, and the paper the guard hands you is just a receipt. A permit is no licence to shoot anyone; the usual rules on violence still apply.
+
+Guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
+
+**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. Anyone seen inside with a gun in hand, or firing one, without a permit, and anyone who comes through a checkpoint door that was pried or hacked open, is an **armed trespasser**: the turrets treat you as hostile, and the traders, the guard and the checkpoint all refuse you for a good while after. Forcing the inner door takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
 
 ## Shopping
 
@@ -146,5 +161,7 @@ The shoppers, drinkers, staff and odd regulars milling around each concourse can
 
 !!! danger "The embargo covers your whole crew"
     One person losing their temper bars everybody on the ship, including people who were still shopping. Embargoed crew are shot on sight, not merely refused service.
+
+Carrying a gun past the checkpoint without a permit is a separate matter from strikes: see [The checkpoint](#the-checkpoint). It marks only you, and the turrets go for you straight away.
 
 Fuel and gas sold at outposts, and the exotic gases Vex buys by the tank, are covered on [Fuel & Gas](gas-economy.md). Deeds for founding your own station are sold at Halcyon and Quartermain and covered on [Player Outposts](player-outposts.md).

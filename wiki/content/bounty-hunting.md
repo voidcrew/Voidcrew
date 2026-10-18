@@ -164,6 +164,8 @@ A dead criminal can't be revived. If the body is destroyed (gibbed, dusted, or l
 
 Petty and Wanted criminals can hide among the patrons at a trader outpost. Most Wanted never do. There's no GPS beacon here. You have to work out which patron it is.
 
+Guns, disablers included, don't get past the outpost's checkpoint unless you buy a weapons permit from the guard. Batons and cuffs are fine. See [the checkpoint](trader-outposts.md#the-checkpoint).
+
 - The fugitive and three **look-alikes** wear the same clothes and go by the same name: "patron" at Waystation Halcyon, "dockhand" at Quartermain Depot and "spacer" at the Undertow Exchange. They have the same species, sex, skin and eyes.
 - The mugshot on the card is old. Their hair has changed since, and the old hair doesn't match anyone there now.
 - Examine a patron to see their distinguishing features: hair, a scar, a tattoo, a scarf, a limp, glasses, a missing ear. Each look-alike shares one or two of the fugitive's features, never all of them. The warrant lists all of them but one.
