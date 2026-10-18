@@ -30,18 +30,18 @@ A berth is locked to its own crew. Only your crew can send the elevator down to 
 
 ## The checkpoint
 
-No guns past the checkpoint. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a glass booth.
+No combat guns past the checkpoint. Work tools and disablers are fine, including kinetic accelerators and plasma cutters. Every way into an outpost, the lift lobby and the outer hatches alike, runs through a **scan chamber**: a small room between two doors, with a guard watching from a glass booth.
 
-- Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a gun, the inner door stays shut and you are sent back out. Everyone in the chamber goes through together, or nobody does.
+- Walk in through the outer door and walk into the inner door. The outer door shuts behind you, the chamber scans everyone and everything inside it, and if you are clean the inner door opens. If anything in there is a combat gun or a mech weapon, the inner door stays shut and you are sent back out. Everyone in the chamber goes through together, or nobody does.
 - The scan looks everywhere: hands, pockets, bags inside bags, implants. Anything lying on the floor of the chamber counts too.
 - **Lockers** line the lobby. Shut your guns in one and swipe your ID to lock it to yourself. It frees up again once you empty it.
 - You leave through the **exit gate**, a one-way light curtain beside the checkpoint. Nothing comes in through it.
 
 **Weapons permit.** The guard sells a personal weapons permit at the booth window for 1,000 credits. It is good for twenty minutes, at that outpost only, and lets you through the scan and carry openly inside. It is yours alone: the outpost keeps the record, and the paper the guard hands you is just a receipt. A permit is no licence to shoot anyone; the usual rules on violence still apply.
 
-Guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
+Combat guns bought inside the outpost, or paid out by a contract there, come in a **sealed case** (cache crates come with a sealed lid). The seal breaks once you are back outside the checkpoint.
 
-**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. Anyone seen inside with a gun in hand, or firing one, without a permit, and anyone who comes through a checkpoint door that was pried or hacked open, is an **armed trespasser**: the turrets treat you as hostile, and the traders, the guard and the checkpoint all refuse you for a good while after. Forcing the inner door takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
+**Getting a gun in anyway.** It can be done, but the outpost does not take it lightly. Anyone seen inside with a combat gun in hand, or firing one, without a permit, and anyone who comes through a checkpoint door that was pried or hacked open, is an **armed trespasser**: the turrets treat you as hostile, and the traders, the guard and the checkpoint all refuse you for a good while after. Forcing the inner door takes a long time and sets off the alarm. This only applies to the person who did it, not their whole crew.
 
 ## Shopping
 

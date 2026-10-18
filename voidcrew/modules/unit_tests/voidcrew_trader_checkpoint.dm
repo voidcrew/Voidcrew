@@ -110,6 +110,57 @@
 
 // ===== THE CHAMBER =====
 
+/// Work tools and disablers pass every checkpoint weapon check; a laser remains restricted.
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification
+	abstract_type = /datum/unit_test/voidcrew_trader_checkpoint/gun_classification
+	var/gun_type
+	var/restricted = FALSE
+
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification/disabler
+	gun_type = /obj/item/gun/energy/disabler
+
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification/kinetic_accelerator
+	gun_type = /obj/item/gun/energy/recharge/kinetic_accelerator
+
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification/plasma_cutter
+	gun_type = /obj/item/gun/energy/plasmacutter
+
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification/laser
+	gun_type = /obj/item/gun/energy/laser
+	restricted = TRUE
+
+/datum/unit_test/voidcrew_trader_checkpoint/gun_classification/Run()
+	TEST_ASSERT(fixture(FALSE), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/person = visitor(chamber[1])
+	var/obj/item/gun/held_gun = allocate(gun_type)
+	TEST_ASSERT(person.put_in_hands(held_gun), "Could not hold [gun_type] for the scan")
+	TEST_ASSERT(scan_now(person), "Could not start a scan for [gun_type]")
+	var/expected_state = restricted ? "rejecting" : "passing" // CHECKPOINT_REJECTING / CHECKPOINT_PASSING
+	TEST_ASSERT_EQUAL(checkpoint.state, expected_state, "The scan misclassified [gun_type]")
+	person.forceMove(secured)
+	host.armed_sweep(list(person))
+	TEST_ASSERT(!host.is_armed_trespasser(person.mind), "[gun_type] was flagged before the sighting grace")
+	if(!restricted)
+		TEST_ASSERT(!length(host.armed_sightings), "Holding [gun_type] started an armed sighting")
+	host.armed_sightings[person.mind] = world.time - 2 SECONDS // OUTPOST_ARMED_SIGHTING_GRACE
+	host.armed_sweep(list(person))
+	TEST_ASSERT_EQUAL(!!host.is_armed_trespasser(person.mind), restricted, "Holding [gun_type] was misclassified after the sighting grace")
+	TEST_ASSERT(!length(host.armed_sightings), "An armed sighting of [gun_type] was left pending")
+	// A separate visitor proves the fired-gun signal independently of the holding check.
+	var/mob/living/carbon/human/shooter = visitor(secured)
+	var/obj/item/gun/fired_gun = allocate(gun_type)
+	TEST_ASSERT(shooter.put_in_hands(fired_gun), "Could not hold [gun_type] for firing")
+	SEND_SIGNAL(shooter, COMSIG_MOB_FIRED_GUN, fired_gun, lobby, null, null, list(0, 0))
+	TEST_ASSERT_EQUAL(!!host.is_armed_trespasser(shooter.mind), restricted, "Firing [gun_type] was misclassified")
+	var/obj/item/gun/goods = allocate(gun_type, secured)
+	var/obj/item/handed_over = outpost_seal_goods(goods)
+	if(restricted)
+		TEST_ASSERT(istype(handed_over, /obj/item/outpost_sealed_case), "[gun_type] was handed over without a seal")
+		allocated += handed_over
+		TEST_ASSERT_EQUAL(goods.loc, handed_over, "[gun_type] was left outside its sealed case")
+	else
+		TEST_ASSERT_EQUAL(handed_over, goods, "[gun_type] was needlessly sealed")
+
 /// Clean people pass together, and a clean result is never stored on the doors
 /datum/unit_test/voidcrew_trader_checkpoint/clean_group/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
