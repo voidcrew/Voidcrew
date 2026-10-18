@@ -152,3 +152,48 @@
 
 	disk_export.process()
 	TEST_ASSERT_EQUAL(disk_export.cost, 0, "Export price recovery should not restore a nanite disk reward")
+
+/// Cargo quotes and sales pay only for the shell, even with large exotic gas mixtures.
+/datum/unit_test/voidcrew_gas_canister_exports
+	var/datum/export/large/gas_canister/canister_export
+	var/saved_cost
+
+/datum/unit_test/voidcrew_gas_canister_exports/Run()
+	if(!length(GLOB.exports_list))
+		setupExports()
+	canister_export = locate(/datum/export/large/gas_canister) in GLOB.exports_list
+	TEST_ASSERT_NOTNULL(canister_export, "The gas canister export should exist")
+	saved_cost = canister_export.cost
+	var/list/fillings = list(
+		"empty" = list(),
+		"tritium" = list(/datum/gas/tritium = 1000000),
+		"mixed" = list(/datum/gas/antinoblium = 1000000, /datum/gas/nitrium = 1000000),
+	)
+	for(var/apply_elastic in list(FALSE, TRUE))
+		for(var/dry_run in list(TRUE, FALSE))
+			var/empty_value
+			for(var/filling in fillings)
+				var/obj/machinery/portable_atmospherics/canister/canister = allocate(/obj/machinery/portable_atmospherics/canister)
+				var/datum/gas_mixture/mixture = canister.return_air()
+				var/list/gases = fillings[filling]
+				for(var/gas_type in gases)
+					mixture.assert_gas(gas_type)
+					mixture.gases[gas_type][MOLES] = gases[gas_type]
+				// Compare each filling at the same shell price before sale elasticity.
+				canister_export.cost = canister_export.init_cost
+				var/datum/export_report/report = allocate(/datum/export_report)
+				export_item_and_contents(canister, apply_elastic = apply_elastic, dry_run = dry_run, external_report = report)
+				var/value = counterlist_sum(report.total_value)
+				var/context = "[filling] canister, elasticity [apply_elastic], dry run [dry_run]"
+				TEST_ASSERT_EQUAL(report.total_amount[canister_export], 1, "Cargo should count one shell for [context]")
+				TEST_ASSERT_EQUAL(value, canister_export.init_cost, "Cargo should pay only the shell value for [context]")
+				if(filling == "empty")
+					empty_value = value
+				else
+					TEST_ASSERT_EQUAL(value, empty_value, "Gas contents should not increase the empty canister payout for [context]")
+				TEST_ASSERT_EQUAL(!!QDELETED(canister), !dry_run, "Only an actual cargo sale should consume [context]")
+
+/datum/unit_test/voidcrew_gas_canister_exports/Destroy()
+	if(canister_export)
+		canister_export.cost = saved_cost
+	return ..()
