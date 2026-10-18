@@ -189,6 +189,7 @@
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_respawn_timer.dm"
 #include "voidcrew_rnd_kit.dm"
+#include "voidcrew_round_end.dm"
 #include "voidcrew_round_metrics.dm"
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_cleanup.dm"

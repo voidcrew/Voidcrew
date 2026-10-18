@@ -309,6 +309,9 @@ GLOBAL_LIST_INIT(ship_brought_landmarks, typecacheof(list(
 	if(SSovermap.jump_mode > BS_JUMP_IDLE)
 		return
 
+	// An explicit admin departure replaces the automatic schedule.
+	if(SSovermap.round_end_time)
+		SSovermap.cancel_jump(FALSE)
 	SSovermap.request_jump()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Call Shuttle") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	log_admin("[key_name(usr)] admin-initiated a bluespace jump.")
@@ -324,10 +327,8 @@ GLOBAL_LIST_INIT(ship_brought_landmarks, typecacheof(list(
 	if(confirm != "Yes")
 		return
 
-	if(SSovermap.jump_mode != BS_JUMP_CALLED)
+	if(!SSovermap.cancel_jump())
 		return
-
-	SSovermap.cancel_jump()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Cancel Shuttle") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	log_admin("[key_name(usr)] admin-cancelled a bluespace jump.")
 	message_admins("<span class='adminnotice'>[key_name_admin(usr)] admin-cancelled a bluespace jump.</span>")

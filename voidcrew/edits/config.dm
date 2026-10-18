@@ -13,6 +13,11 @@
 /datum/config_entry/flag/allow_vote_transfer
 	default = TRUE
 
+/// Round duration in minutes, measured from roundstart. Zero restores untimed rounds.
+/datum/config_entry/number/round_time_limit
+	default = 360
+	min_val = 0
+
 /datum/config_entry/flag/free_ships
 	default = FALSE
 

@@ -7,6 +7,8 @@ blurb: Your first shift. How you get a ship and a crew, what is already aboard, 
 
 There is no station in Voidcrew. When the round starts you are dropped onto a small ship with a handful of other players, somewhere on the safe edge of a galaxy map called the [overmap](overmap.md), and everything you do that round happens on that ship or somewhere you flew it to. This page covers your first hour.
 
+Rounds last six hours.
+
 ## Joining a round
 
 Ready up in the lobby like normal. When the round starts, the server counts how many people readied and builds a fleet to match: one hull per six ready players, up to four hulls. Everyone who readied is dealt out evenly across those hulls, so a full server is several separate crews flying separate ships, not one big crew.

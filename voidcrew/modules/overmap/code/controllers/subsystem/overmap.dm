@@ -58,6 +58,12 @@ SUBSYSTEM_DEF(overmap)
 	var/jump_request_time = 6000
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
+	/// Absolute world.time deadline, armed only once the round actually starts.
+	var/round_end_time
+	/// Timer requesting the existing fleet jump early enough to meet round_end_time.
+	var/round_end_request_timer
+	/// Independent completion timer so ship launches cannot push back the deadline.
+	var/round_end_timer
 
 	/// Ready players each roundstart hull is expected to carry. The fleet scales off
 	/// this once turnout is known - see SSticker.create_characters().
@@ -88,6 +94,7 @@ SUBSYSTEM_DEF(overmap)
 	)
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(arm_round_end))
 	create_map()
 	setup_sun()
 	setup_planets()
@@ -430,6 +437,22 @@ SUBSYSTEM_DEF(overmap)
  * Bluespace jump procs
  */
 
+/// Use the ticker's actual start timestamp, excluding initialization and the lobby.
+/datum/controller/subsystem/overmap/proc/arm_round_end(datum/source, started_at)
+	SIGNAL_HANDLER
+	var/duration = CONFIG_GET(number/round_time_limit) MINUTES
+	if(!duration || round_end_time || jump_mode != BS_JUMP_IDLE)
+		return
+	round_end_time = started_at + duration
+	var/request_at = max(started_at, round_end_time - jump_request_time - jump_completion_time)
+	round_end_request_timer = addtimer(CALLBACK(src, PROC_REF(request_scheduled_jump)), max(0, request_at - world.time), TIMER_STOPPABLE)
+	round_end_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), max(0, round_end_time - world.time), TIMER_STOPPABLE)
+
+/datum/controller/subsystem/overmap/proc/request_scheduled_jump()
+	round_end_request_timer = null
+	if(round_end_time)
+		request_jump(scheduled = TRUE)
+
 /**
  * ## request_jump
  *
@@ -438,23 +461,39 @@ SUBSYSTEM_DEF(overmap)
  * Arguments:
  * * modifiers - (Optional) Modifies the length of the jump request time (defaults to 1)
  */
-/datum/controller/subsystem/overmap/proc/request_jump(modifier = 1)
+/datum/controller/subsystem/overmap/proc/request_jump(modifier = 1, scheduled = FALSE)
+	// A vote cannot bring forward or restart the scheduled fleet departure.
+	if(jump_mode != BS_JUMP_IDLE || (round_end_time && !scheduled))
+		return FALSE
 	jump_mode = BS_JUMP_CALLED
-	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), jump_request_time * modifier, TIMER_STOPPABLE)
-	priority_announce("Preparing for jump. ETD: [jump_request_time * modifier / 600] minutes.", null, null, "Priority")
+	var/request_delay = scheduled ? max(0, round_end_time - world.time - jump_completion_time) : jump_request_time * modifier
+	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), request_delay, TIMER_STOPPABLE)
+	priority_announce("All ships, prepare for bluespace departure.", null, null, "Priority")
+	return TRUE
 
 /**
  * ##cancel_jump
  *
  * Cancels a currently requested bluespace jump.
- * Can only be done after the jump has been requested, but before the jump has actually begun.
+ * Also cancels an automatic departure before its first announcement, but never after launch.
  */
-/datum/controller/subsystem/overmap/proc/cancel_jump()
-	if(jump_mode != BS_JUMP_CALLED)
-		return
-	deltimer(jump_timer)
+/datum/controller/subsystem/overmap/proc/cancel_jump(announce = TRUE)
+	if(jump_mode >= BS_JUMP_INITIATED || (!round_end_time && jump_mode != BS_JUMP_CALLED))
+		return FALSE
+	if(jump_timer)
+		deltimer(jump_timer)
+		jump_timer = null
+	if(round_end_request_timer)
+		deltimer(round_end_request_timer)
+		round_end_request_timer = null
+	if(round_end_timer)
+		deltimer(round_end_timer)
+		round_end_timer = null
+	round_end_time = null
 	jump_mode = BS_JUMP_IDLE
-	priority_announce("Bluespace jump cancelled.", null, null, "Priority")
+	if(announce)
+		priority_announce("Bluespace departure cancelled.", null, null, "Priority")
+	return TRUE
 
 /**
  * ##initiate_jump
@@ -463,13 +502,29 @@ SUBSYSTEM_DEF(overmap)
  * This cannot be interrupted by conventional means.
  */
 /datum/controller/subsystem/overmap/proc/initiate_jump()
+	if(jump_mode != BS_JUMP_CALLED)
+		return
+	jump_timer = null
 	jump_mode = BS_JUMP_INITIATED
+	// Arm completion before moving ships: enterTransit() can yield during a launch.
+	// Scheduled rounds already have an absolute completion timer from roundstart.
+	if(!round_end_time)
+		jump_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), jump_completion_time, TIMER_STOPPABLE)
+	priority_announce("Fleet jump underway.", null, null, "Priority")
 	for(var/obj/docking_port/mobile/voidcrew/mobile_port as anything in SSshuttle.mobile_docking_ports)
 		mobile_port.hyperspace_sound(HYPERSPACE_WARMUP, mobile_port.shuttle_areas)
 		mobile_port.on_emergency_launch()
 
-	priority_announce("Jump initiated. ETA: [jump_completion_time / 600] minutes.", null, null, "Priority")
-	jump_timer = addtimer(VARSET_CALLBACK(src, jump_mode, BS_JUMP_COMPLETED), jump_completion_time)
+/// Finish through the normal ticker immediately, rather than waiting for its next poll.
+/datum/controller/subsystem/overmap/proc/complete_jump()
+	jump_timer = null
+	round_end_timer = null
+	jump_mode = BS_JUMP_COMPLETED
+	if(SSticker.IsRoundInProgress())
+		// Cinematics must not hold a scheduled round open past its deadline.
+		if(round_end_time)
+			SSticker.roundend_check_paused = FALSE
+		SSticker.fire()
 
 /datum/controller/subsystem/overmap/proc/create_map()
 	// creates the overmap area and sets it up
