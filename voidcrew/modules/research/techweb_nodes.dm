@@ -495,6 +495,7 @@
 
 /datum/techweb_node/explosive_ammo
 	id = TECHWEB_NODE_EXPLOSIVE_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Explosive Ammunition"
 	description = "Gyrojet cartridges, launcher grenades and 84mm rockets."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXPLOSIVES)

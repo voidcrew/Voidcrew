@@ -3,7 +3,7 @@
 	// ZONE_PERMISSION_PUBLIC / YELLOW / ADVANCED; fork defines follow test includes.
 	var/list/permissions = list(
 		/datum/techweb_node/ballistic_ammunition = 0,
-		/datum/techweb_node/explosive_ammo = 0,
+		/datum/techweb_node/explosive_ammo = 2,
 		/datum/techweb_node/automatic_ammunition = 1,
 		/datum/techweb_node/weapon_ammo_c20r = 1,
 		/datum/techweb_node/weapon_ammo_wt550 = 1,
