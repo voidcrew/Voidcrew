@@ -11,17 +11,6 @@
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
-"ab" = (
-/obj/structure/table/reinforced,
-/obj/machinery/recharger,
-/obj/effect/turf_decal/weather/dirt{
-	dir = 1
-	},
-/obj/item/melee/baseball_bat,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode{
-	requires_power = 0
-	})
 "at" = (
 /obj/structure/barricade/wooden,
 /turf/open/floor/fakedirt,
@@ -537,6 +526,17 @@
 	amount = 5
 	},
 /turf/open/floor/fakedirt,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"vP" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/effect/turf_decal/weather/dirt{
+	dir = 1
+	},
+/obj/item/gun/energy/laser/retro,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
 	})
@@ -1634,7 +1634,7 @@ Od
 Od
 DT
 vj
-ab
+vP
 vY
 DT
 Rv
