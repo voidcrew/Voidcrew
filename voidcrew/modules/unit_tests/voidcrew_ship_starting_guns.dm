@@ -1,5 +1,58 @@
 GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_starting_guns)
 
+/// NPC boarding loot is exempt; a shared or newly purchasable hull remains audited.
+/proc/vc_test_npc_only_ship_map(map_path)
+	var/static/list/npc_hull_types
+	if(!npc_hull_types)
+		npc_hull_types = list()
+		for(var/obj/structure/overmap/ship/npc/npc_type as anything in typesof(/obj/structure/overmap/ship/npc))
+			var/hull_type = initial(npc_type.shuttle_template)
+			if(ispath(hull_type, /datum/map_template/shuttle/voidcrew))
+				npc_hull_types |= hull_type
+	var/npc_only = FALSE
+	for(var/shuttle_id in SSmapping.shuttle_templates)
+		var/datum/map_template/shuttle/voidcrew/hull = SSmapping.shuttle_templates[shuttle_id]
+		if(!istype(hull) || hull.mappath != map_path)
+			continue
+		if(!(hull.type in npc_hull_types) || is_player_purchasable_ship(hull) || is_roundstart_eligible_hull(hull))
+			return FALSE
+		npc_only = TRUE
+	return npc_only
+
+/// Every NPC-only hull is exempt, while every player hull and theme stays covered.
+/datum/unit_test/voidcrew_ship_starting_loot_scope/Run()
+	ensure_ship_upgrades_initialized()
+	var/list/hulls = vc_test_voidcrew_hull_templates()
+	for(var/hull_type in list(
+		/datum/map_template/shuttle/voidcrew/nt_patrol,
+		/datum/map_template/shuttle/voidcrew/pirate_default,
+		/datum/map_template/shuttle/voidcrew/pirate_dutchman,
+		/datum/map_template/shuttle/voidcrew/pirate_geode,
+		/datum/map_template/shuttle/voidcrew/pirate_grey,
+		/datum/map_template/shuttle/voidcrew/pirate_interdyne,
+		/datum/map_template/shuttle/voidcrew/pirate_irs,
+		/datum/map_template/shuttle/voidcrew/pirate_medieval,
+		/datum/map_template/shuttle/voidcrew/pirate_silverscale,
+	))
+		var/datum/map_template/shuttle/voidcrew/hull = hulls[hull_type]
+		TEST_ASSERT_NOTNULL(hull, "Missing NPC hull [hull_type].")
+		TEST_ASSERT(vc_test_npc_only_ship_map(hull.mappath), "[hull_type] must keep its boarding loot.")
+	for(var/datum/map_template/shuttle/voidcrew/hull as anything in get_purchasable_ship_templates())
+		TEST_ASSERT(!vc_test_npc_only_ship_map(hull.mappath), "Player hull [hull.type] escaped the starting loot audits.")
+		var/list/themes = GLOB.ship_themes[hull.type]
+		for(var/theme_id in themes)
+			var/datum/ship_theme/theme = themes[theme_id]
+			TEST_ASSERT(!vc_test_npc_only_ship_map("[hull.prefix]ship_[theme.template_suffix].dmm"), "Player theme [theme.type] escaped the starting loot audits.")
+	TEST_ASSERT(!vc_test_npc_only_ship_map("_maps/voidcrew/ships/ship_syndicate_hyena.dmm"), "Hyena is a legacy hull, not an NPC-only hull.")
+	TEST_ASSERT(!vc_test_npc_only_ship_map("_maps/voidcrew/ships/ship_pirate_unknown.dmm"), "An unclassified map must remain audited.")
+	// Selling an NPC hull later must immediately put it back under both policies.
+	var/datum/map_template/shuttle/voidcrew/pirate_default/pirate = hulls[/datum/map_template/shuttle/voidcrew/pirate_default]
+	var/was_force_purchasable = pirate.force_purchasable
+	pirate.force_purchasable = TRUE
+	var/exempt_when_sold = vc_test_npc_only_ship_map(pirate.mappath)
+	pirate.force_purchasable = was_force_purchasable
+	TEST_ASSERT(!exempt_when_sold, "An NPC hull offered to players must be audited.")
+
 /// This policy is independent of fabrication/cargo restrictions and their allowlist.
 /proc/vc_test_lethal_starting_gun(item_type)
 	if(!ispath(item_type, /obj/item/gun))
@@ -53,6 +106,7 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 	var/list/inspected_atoms = list()
 	var/source_description
 	var/maps_checked = 0
+	var/npc_maps_skipped = 0
 	var/kilo_maps_checked = 0
 	var/mapload_source = "starting gun audit"
 
@@ -161,6 +215,9 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 		inspect_contents(source)
 
 /datum/unit_test/voidcrew_ship_starting_guns/proc/inspect_map(map_path)
+	if(vc_test_npc_only_ship_map(map_path))
+		npc_maps_skipped++
+		return
 	source_description = map_path
 	var/datum/parsed_map/map = new(file(map_path))
 	TEST_ASSERT_NOTNULL(map.parsed_bounds, "Cannot parse [map_path].")
@@ -205,6 +262,7 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 			inspect_map("[directory][filename]")
 
 /datum/unit_test/voidcrew_ship_starting_guns/Run()
+	ensure_ship_upgrades_initialized()
 	TEST_ASSERT(vc_test_lethal_starting_gun(/obj/item/gun/energy/e_gun/mini), "Mini e-guns must be detected even when their selected mode is nonlethal.")
 	TEST_ASSERT(vc_test_lethal_starting_gun(/obj/item/gun/energy/laser/retro), "Retro lasers must be detected.")
 	TEST_ASSERT(vc_test_lethal_starting_gun(/obj/item/gun/energy/ionrifle), "Ion guns must be detected.")
@@ -213,7 +271,7 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 	inspect_directory("_maps/voidcrew/ships/")
 	inspect_directory("_maps/voidcrew/ship_modules/")
 	GLOB.voidcrew_starting_gun_audit = null
-	TEST_ASSERT(maps_checked >= 443, "Only [maps_checked] hull/module maps were audited.")
+	TEST_ASSERT(maps_checked + npc_maps_skipped >= 443, "Only [maps_checked] hull/module maps were audited and [npc_maps_skipped] NPC-only maps exempted.")
 	TEST_ASSERT_EQUAL(kilo_maps_checked, 4, "The audit must include all four Kilo themes.")
 
 /// Authored reload placements (including filled boxes) must serve a starting gun.
@@ -325,6 +383,8 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 	var/list/hulls = vc_test_voidcrew_hull_templates()
 	for(var/hull_type in hulls)
 		var/datum/map_template/shuttle/voidcrew/hull = hulls[hull_type]
+		if(vc_test_npc_only_ship_map(hull.mappath))
+			continue
 		var/list/maps = list(hull.mappath)
 		var/list/themes = GLOB.ship_themes[hull_type]
 		for(var/theme_id in themes)
@@ -349,11 +409,15 @@ GLOBAL_DATUM(voidcrew_starting_gun_audit, /datum/unit_test/voidcrew_ship_startin
 	var/list/all_maps = list()
 	vc_test_collect_dmm_files("_maps/voidcrew/ships/", all_maps)
 	vc_test_collect_dmm_files("_maps/voidcrew/ship_modules/", all_maps)
+	var/npc_maps_skipped = 0
 	for(var/map_path in all_maps)
+		if(vc_test_npc_only_ship_map(map_path))
+			npc_maps_skipped++
+			continue
 		if(!map_inventories[map_path])
 			check_ammo(map_inventory(map_path), map_path)
 		CHECK_TICK
-	TEST_ASSERT(length(map_inventories) >= 443, "The ammo audit missed hull or module maps.")
+	TEST_ASSERT(length(map_inventories) + npc_maps_skipped >= 443, "The ammo audit missed hull or module maps.")
 
 /// Discover crew equipment from all hulls, themes, modules and Workshop crew files.
 /datum/unit_test/voidcrew_ship_starting_outfits

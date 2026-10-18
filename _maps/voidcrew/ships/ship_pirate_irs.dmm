@@ -1,57 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/effect/turf_decal/stripes{
-	dir = 1
-	},
-/obj/structure/safe,
-/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
-/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
-/obj/structure/window/reinforced/survival_pod{
-	dir = 10
-	},
-/obj/structure/window/reinforced/survival_pod{
-	dir = 9
-	},
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
-"ab" = (
-/obj/structure/rack,
-/obj/item/storage/box/flashbangs,
-/obj/structure/window/reinforced/tinted/spawner/directional/south,
-/obj/structure/window/reinforced/tinted/spawner/directional/west,
-/obj/item/grenade/smokebomb{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = 2;
-	pixel_y = 5
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = 9;
-	pixel_y = 5
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = 9
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = 2
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = -5
-	},
-/obj/item/melee/baseball_bat{
-	pixel_y = 7
-	},
-/obj/machinery/light/small/directional/west,
-/turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
 "ac" = (
 /obj/effect/turf_decal/tile/dark/full,
 /obj/effect/decal/cleanable/blood/old,
@@ -59,15 +6,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /turf/open/floor/pod/light,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
-"ad" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/tinted/spawner/directional/west,
-/obj/item/storage/box/breacherslug,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -120,14 +58,6 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
-"ag" = (
-/obj/structure/guncase/wt550,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
 "az" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 4
@@ -145,6 +75,15 @@
 	})
 "aT" = (
 /turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ba" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/tinted/spawner/directional/west,
+/obj/item/storage/box/breacherslug,
+/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
+/turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -778,6 +717,14 @@
 	})
 "qm" = (
 /turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qI" = (
+/obj/structure/guncase/wt550,
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/wt550,
+/turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -1467,6 +1414,25 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
+"GN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/safe,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 10
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 9
+	},
+/obj/item/gun/ballistic/revolver/mateba,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
 "Hg" = (
 /obj/effect/turf_decal/siding/dark/end{
 	dir = 4
@@ -1653,6 +1619,40 @@
 	},
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KJ" = (
+/obj/structure/rack,
+/obj/item/storage/box/flashbangs,
+/obj/structure/window/reinforced/tinted/spawner/directional/south,
+/obj/structure/window/reinforced/tinted/spawner/directional/west,
+/obj/item/grenade/smokebomb{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = -5
+	},
+/obj/item/gun/grenadelauncher{
+	pixel_y = 7
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -2745,10 +2745,10 @@ Aw
 uc
 tF
 hK
-ad
-ab
+ba
+KJ
 BG
-aa
+GN
 hK
 xo
 bo
@@ -2873,7 +2873,7 @@ hK
 hK
 py
 Ma
-ag
+qI
 hK
 Bq
 Qn
