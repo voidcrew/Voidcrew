@@ -45,12 +45,12 @@
 	for(var/family in list("named_kill", "hunt", "capture"))
 		record.claim_zone_work(family, 1, 1, "green_[family]")
 
-/// The six families, lifetime caps, cumulative permissions and once-only claim boundary.
+/// The eight families, lifetime caps, cumulative permissions and once-only claim boundary.
 /datum/unit_test/voidcrew_zone_identity/progression/Run()
 	var/datum/voidcrew_crew_record/record = allocate(/datum/voidcrew_crew_record)
 	TEST_ASSERT_EQUAL(length(record.zone_families), 3, "Missing work bands")
 	for(var/band in record.zone_families)
-		TEST_ASSERT_EQUAL(length(record.zone_families[band]), 6, "A band does not have six family counters")
+		TEST_ASSERT_EQUAL(length(record.zone_families[band]), 8, "A band does not have eight family counters")
 	var/list/qualifying = list(
 		/datum/mission/recovery/kill = "named_kill",
 		/datum/mission/recovery/kill/outpost = "named_kill",
@@ -93,6 +93,161 @@
 	TEST_ASSERT_EQUAL(record.zone_totals["1"], 3, "Dangerous work leaked into green")
 	TEST_ASSERT_EQUAL(zone_work_reward(2), 2, "Medium award drifted from board favor")
 	TEST_ASSERT(!record.has_zone_permission(4) && !record.can_work_in_zone(null), "Unknown permission/band passed")
+
+/// Real pad turn-ins with ship interiors and overmap bands; no subsystem fixture is constructed.
+/datum/unit_test/voidcrew_zone_bounties
+	parent_type = /datum/unit_test/voidcrew_zone_teleport
+	abstract_type = /datum/unit_test/voidcrew_zone_bounties
+	var/list/crew_records = list()
+
+/datum/unit_test/voidcrew_zone_bounties/New()
+	. = ..()
+	zones_were_active = SSovermap_zones.zones_active
+	SSovermap_zones.zones_active = TRUE
+	board_test_begin()
+
+/datum/unit_test/voidcrew_zone_bounties/Destroy()
+	board_test_end()
+	QDEL_LIST(crew_records)
+	return ..()
+
+/datum/unit_test/voidcrew_zone_bounties/proc/paid_ship(turf/hull, turf/token, datum/voidcrew_crew_record/crew)
+	var/obj/structure/overmap/ship/ship = make_ship(hull, token)
+	ship.shuttle.width = 1
+	ship.shuttle.height = 1
+	ship.ship_team = new
+	ship.ship_team.ship = ship
+	if(crew)
+		ship.ship_team.set_crew_record(crew)
+	crew_records |= ship.get_crew_record()
+	ship.ship_account = allocate(/datum/bank_account/ship, "Zone Bounty Test", null, 1, FALSE)
+	return ship
+
+/datum/unit_test/voidcrew_zone_bounties/turn_in/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/turf/field = make_zone_turf(get_step(deck, NORTH), 2) // ZONE_YELLOW
+	var/turf/home = make_zone_turf(get_step(field, EAST), 1) // ZONE_GREEN
+	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	var/datum/criminal_bounty/posting = board_test_posting(2) // BOUNTY_TIER_WANTED
+	var/datum/bounty_record/record = posting.record
+	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+	TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A criminal absent from the pad was accepted")
+	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 0, "A refused turn-in earned standing")
+	criminal.body_go_down()
+	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Capture did not bind its actual field band")
+	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 0, "Capture earned standing before a paying turn-in")
+	criminal.forceMove(deck)
+	criminal.body_state_changed()
+	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Transport overwrote the capture band")
+	TEST_ASSERT(islist(posting.turn_in(pad, ship)), "The live criminal was not paid")
+	TEST_ASSERT_EQUAL(crew.zone_families["2"]["criminal_bounty"], 2, "Wanted turn-in did not credit medium in its capture zone")
+	TEST_ASSERT_EQUAL(crew.zone_totals["1"], 0, "The posting/return zone earned the field credit")
+	TEST_ASSERT(crew.settlement_claims["bounty:[record.id]:criminal_bounty"], "Turn-in did not claim its stable receipt")
+	TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A second turn-in was accepted")
+	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 2, "A second turn-in earned more standing")
+	var/obj/structure/overmap/ship/split_ship = paid_ship(get_step(deck, EAST), home, crew)
+	TEST_ASSERT_EQUAL(split_ship.get_crew_record().zone_totals["2"], 2, "A split hull lost its crew's standing")
+	// Reposting the same record under another alias cannot award another crew.
+	var/datum/criminal_bounty/alias_posting = allocate(/datum/criminal_bounty)
+	alias_posting.record = record
+	alias_posting.value = 1000
+	GLOB.criminal_bounties += alias_posting
+	record.status = "wanted" // A repost still carries its spent reputation claim.
+	var/obj/structure/overmap/ship/other = paid_ship(get_step(get_step(deck, EAST), EAST), home)
+	var/obj/machinery/mission_pad/other_pad = allocate(/obj/machinery/mission_pad, get_turf(other.shuttle))
+	var/obj/item/bounty_proof/proof = allocate(/obj/item/bounty_proof, get_turf(other_pad))
+	proof.posting_ref = WEAKREF(alias_posting)
+	proof.record = record
+	alias_posting.board_attach_proof(proof)
+	TEST_ASSERT(islist(alias_posting.turn_in(other_pad, other)), "The repost fixture did not reach the paying path")
+	TEST_ASSERT_EQUAL(other.get_crew_record().zone_totals["2"], 0, "A posting alias awarded a second crew")
+	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 2, "A posting alias changed the original crew's credit")
+
+/datum/unit_test/voidcrew_zone_bounties/caps/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/turf/home = make_zone_turf(get_step(deck, NORTH), 1)
+	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	for(var/band in 1 to 3)
+		var/turf/field = make_zone_turf(locate(home.x + band, home.y, home.z), band)
+		for(var/index in 1 to 3)
+			var/datum/criminal_bounty/posting = board_test_posting(3) // BOUNTY_TIER_MOST_WANTED
+			var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+			criminal.death()
+			TEST_ASSERT_EQUAL(posting.record.board_work_zone, band, "Death did not bind its field band")
+			criminal.forceMove(deck)
+			TEST_ASSERT(islist(posting.turn_in(pad, ship)), "A dead criminal was not paid")
+		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["criminal_bounty"], band == 1 ? 1 : 5, "Criminal family exceeded its band cap")
+	var/datum/criminal_bounty/tier_posting = board_test_posting(1)
+	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 1, "Petty is not easy")
+	tier_posting.record.tier = 2
+	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 2, "Wanted is not medium")
+	tier_posting.record.tier = 3
+	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 3, "Most Wanted is not hard")
+	tier_posting.record.tier = 1
+	tier_posting.record.archetype = "boss"
+	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 3, "A named boss is not hard")
+	tier_posting.record.board_work_zone = 2
+	tier_posting.record.status = "escaped"
+	TEST_ASSERT_EQUAL(tier_posting.board_claim_zone_work(ship), 0, "An escaped prisoner earned standing")
+	TEST_ASSERT(!tier_posting.record.board_reputation_claimed, "An unpaid escape consumed a reputation claim")
+	var/mob/living/basic/bounty_criminal/admin_spawn = allocate(/mob/living/basic/bounty_criminal, home)
+	admin_spawn.body_go_down()
+	TEST_ASSERT_NULL(admin_spawn.posting(), "An admin spawn acquired a posting")
+	TEST_ASSERT_EQUAL(crew.zone_totals["1"], 1, "An admin spawn earned standing")
+
+/datum/unit_test/voidcrew_zone_bounties/surrender/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/turf/field = make_zone_turf(get_step(deck, NORTH), 2)
+	var/turf/home = make_zone_turf(get_step(field, EAST), 1)
+	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	var/datum/criminal_bounty/posting = board_test_posting(2, null, 1000, 0, "normal")
+	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+	criminal.ai_surrender()
+	TEST_ASSERT_EQUAL(posting.record.board_work_zone, 2, "Surrender did not bind the field band")
+	criminal.forceMove(deck)
+	TEST_ASSERT(islist(posting.turn_in(pad, ship)), "An uncuffed surrendered criminal was not paid")
+	TEST_ASSERT_EQUAL(ship.get_crew_record().zone_families["2"]["criminal_bounty"], 2, "A surrendered criminal lost its field credit")
+
+/datum/unit_test/voidcrew_zone_bounties/relist/Run()
+	var/turf/field = make_zone_turf(run_loc_floor_bottom_left, 2)
+	var/datum/criminal_bounty/posting = board_test_posting(2)
+	var/datum/bounty_record/record = posting.record
+	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
+	criminal.body_go_down()
+	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "The first sighting did not bind its capture band")
+	TEST_ASSERT(posting.relist("slipped away"), "The escape did not start relisting")
+	TEST_ASSERT_NULL(record.board_work_zone, "An escaped sighting kept its old work band")
+	TEST_ASSERT(!record.board_reputation_claimed, "An escape earned reputation")
+
+/datum/unit_test/voidcrew_zone_bounties/lairs/Run()
+	var/turf/deck = run_loc_floor_bottom_left
+	var/turf/home = make_zone_turf(get_step(deck, NORTH), 1)
+	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	for(var/band in 1 to 3)
+		var/turf/field = make_zone_turf(locate(home.x + band, home.y, home.z), band)
+		var/obj/structure/overmap/space_ruin/site = allocate(/obj/structure/overmap/space_ruin, field)
+		for(var/index in 1 to 3)
+			var/datum/criminal_bounty/kill_only/lair/posting = allocate(/datum/criminal_bounty/kill_only/lair)
+			posting.record = bounty_kill_record("Test Boss", "testing", MALE, 1000, "test")
+			posting.kill_publish(site, SScriminal_bounties.board_site_zone(site), 0, 60 MINUTES)
+			TEST_ASSERT_EQUAL(posting.board_reputation_difficulty(), 3, "A lair clear is not hard")
+			var/before = crew.zone_totals["[band]"]
+			var/obj/item/bounty_proof/trophy/trophy = posting.kill_drop_trophy(deck)
+			TEST_ASSERT_NOTNULL(trophy, "The cleared lair did not drop its trophy")
+			TEST_ASSERT_EQUAL(crew.zone_totals["[band]"], before, "A lair earned standing before its paying turn-in")
+			TEST_ASSERT(islist(posting.turn_in(pad, ship)), "The lair trophy was not paid")
+			if(index == 1)
+				TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["lair"], band == 1 ? 1 : 3, "A lair did not credit hard in its site zone")
+			TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A lair trophy was accepted twice")
+		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["lair"], band == 1 ? 1 : 5, "Lair family exceeded its band cap")
+		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["criminal_bounty"], 0, "A lair also credited the criminal family")
 
 /// Purchases/requisitions, split hulls, abandonment, wrecks, cryo and keyed mind replacement.
 /datum/unit_test/voidcrew_zone_identity/continuation/Run()

@@ -76,6 +76,8 @@
 #define ZONE_FAMILY_POACHERS "poachers"
 #define ZONE_FAMILY_PYLONS "pylons"
 #define ZONE_FAMILY_EXTRACTION "extraction"
+#define ZONE_FAMILY_CRIMINAL_BOUNTY "criminal_bounty"
+#define ZONE_FAMILY_LAIR "lair"
 
 // Tier thresholds, in favor points
 #define FAVOR_TIER_REGULAR 2

@@ -72,6 +72,31 @@
 		TEST_ASSERT(web.researched_nodes[node.id], "Eligible queued research did not unlock the node")
 		TEST_ASSERT(!length(web.research_queue_nodes), "Successful research remained queued")
 
+/// The console must disable a gated node and refresh availability when standing changes.
+/datum/unit_test/voidcrew_zone_research/console_availability/Run()
+	var/obj/structure/overmap/ship/ship = zone_ship(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = make_player(run_loc_floor_bottom_left, "zoneresearchconsole")
+	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
+	var/datum/techweb/web = install_reward_disk(server, user)
+	var/obj/machinery/computer/rdconsole/console = allocate(/obj/machinery/computer/rdconsole)
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
+	tool.buffer = web
+	TEST_ASSERT(console.multitool_act(user, tool), "Console could not link its local web")
+	var/datum/techweb_node/node = SSresearch.techweb_node_by_id("specialist_ammo")
+	prepare_node(web, node)
+	for(var/permission in 0 to 1)
+		if(permission)
+			grant_permission(ship.get_crew_record(), permission)
+		var/list/data = console.ui_data(user)
+		var/list/entry
+		for(var/list/candidate as anything in data["nodes"])
+			if(candidate["id"] == node.id)
+				entry = candidate
+				break
+		TEST_ASSERT_NOTNULL(entry, "The console omitted the visible gated node")
+		TEST_ASSERT_EQUAL(entry["tier"], 1, "The fixture has unresolved research prerequisites")
+		TEST_ASSERT_EQUAL(entry["can_unlock"], permission, "Console availability did not follow live crew standing")
+
 /// A queued request retains knowledge only if it succeeds against the live source crew.
 /datum/unit_test/voidcrew_zone_research/queue_recheck/Run()
 	var/obj/structure/overmap/ship/ship = zone_ship(run_loc_floor_bottom_left)

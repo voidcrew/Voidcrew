@@ -593,6 +593,8 @@
 /// Records its capture state in worst_state if it is as bad or worse: once downed or dead, it never gets better (spec 12.1)
 /mob/living/basic/bounty_criminal/proc/body_note_state()
 	var/state = capture_state()
+	if(state != BOUNTY_STATE_FREE)
+		posting()?.board_note_work_zone(src)
 	if(bounty_state_rank(state) <= bounty_state_rank(worst_state))
 		worst_state = state
 

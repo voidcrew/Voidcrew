@@ -715,6 +715,7 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		return
 	kingpin_cancel_aim()
 	ADD_TRAIT(src, TRAIT_BOUNTY_SURRENDERED, BOUNTY_TRAIT)
+	body_note_state()
 	visible_message(span_notice("[src] puts [p_their()] hands up."), vision_distance = BOUNTY_KINGPIN_SIGHT)
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living, bounty_say), "surrender", null, TRUE)
 

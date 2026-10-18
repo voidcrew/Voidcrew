@@ -81,9 +81,9 @@ GLOBAL_VAR_INIT(voidcrew_crew_serial, 0)
 	GLOB.voidcrew_crew_roster.Cut()
 
 /proc/zone_reputation_families()
-	return list(ZONE_FAMILY_NAMED_KILL, ZONE_FAMILY_HUNT, ZONE_FAMILY_CAPTURE, ZONE_FAMILY_POACHERS, ZONE_FAMILY_PYLONS, ZONE_FAMILY_EXTRACTION)
+	return list(ZONE_FAMILY_NAMED_KILL, ZONE_FAMILY_HUNT, ZONE_FAMILY_CAPTURE, ZONE_FAMILY_POACHERS, ZONE_FAMILY_PYLONS, ZONE_FAMILY_EXTRACTION, ZONE_FAMILY_CRIMINAL_BOUNTY, ZONE_FAMILY_LAIR)
 
-/// Explicit subtype map: ordinary surveys, stakes, lairs and suppression are excluded.
+/// Mission subtype map: ordinary surveys, stakes and suppression are excluded. Bounties and lairs settle separately.
 /proc/zone_reputation_family(mission_type)
 	if(ispath(mission_type, /datum/mission/recovery/kill))
 		return ZONE_FAMILY_NAMED_KILL

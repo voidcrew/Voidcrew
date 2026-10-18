@@ -77,6 +77,12 @@
 /datum/criminal_bounty/kill_only/board_arm()
 	return FALSE
 
+/datum/criminal_bounty/kill_only/board_reputation_family()
+	return ZONE_FAMILY_LAIR
+
+/datum/criminal_bounty/kill_only/board_reputation_difficulty()
+	return MISSION_DIFFICULTY_HARD
+
 /// Its site is fixed, so a lost site or a lost trophy ends it instead of moving it
 /datum/criminal_bounty/kill_only/relist(reason)
 	if(!is_open())
@@ -185,6 +191,7 @@
 /datum/criminal_bounty/kill_only/proc/kill_publish(obj/structure/overmap/site, zone, vouchers, lifetime)
 	placement_kind = SScriminal_bounties.board_kind_of_site(site) || BOUNTY_PLACEMENT_RUIN
 	board_zone = zone
+	record.board_work_zone = zone
 	value = SScriminal_bounties.board_value_for(record.base_value, zone)
 	board_vouchers = vouchers
 	board_posted_at = world.time

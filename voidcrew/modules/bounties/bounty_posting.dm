@@ -414,6 +414,8 @@
 	site_ref = null
 	// Whoever turns up at the next site is a fresh sighting
 	board_worst_state = BOUNTY_STATE_FREE
+	if(record)
+		record.board_work_zone = null
 	for(var/obj/structure/overmap/ship/hunter as anything in hunter_ships())
 		hunter.remove_waypoint(board_waypoint_key())
 		hunter.ship_notify("WANTED: [record?.name] [reason || "slipped away"].","MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
