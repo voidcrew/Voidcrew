@@ -62,6 +62,13 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"ak" = (
+/obj/effect/turf_decal/box/red,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "quartermain_gate"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "al" = (
 /turf/open/indestructible{
 	base_icon_state = "stairs-l";
@@ -102,6 +109,24 @@
 	icon_state = "stairs-r"
 	},
 /area/voidcrew/trader_outpost)
+"ar" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/light/small/directional/north,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "quartermain_gate"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
+"as" = (
+/obj/effect/turf_decal/box/red,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "quartermain_gate"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/west{
+	checkpoint_id = "quartermain_gate"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "au" = (
 /obj/structure/railing/unbreakable,
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
@@ -127,6 +152,17 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"ay" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/floor,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "quartermain_west_yard"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/north{
+	checkpoint_id = "quartermain_west_yard"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost/checkpoint)
 "az" = (
 /obj/structure/railing/unbreakable{
 	dir = 4
@@ -227,6 +263,17 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"aM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/floor,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "quartermain_east_yard"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/north{
+	checkpoint_id = "quartermain_east_yard"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost/checkpoint)
 "aN" = (
 /obj/effect/turf_decal/stripes,
 /obj/effect/turf_decal/trimline/yellow/warning{
@@ -356,21 +403,6 @@
 /obj/structure/closet/secure_closet/outpost_rental/checkpoint,
 /obj/effect/turf_decal/bot,
 /turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost/checkpoint)
-"bj" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "quartermain_gate"
-	},
-/obj/effect/turf_decal/box/red,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
-"bk" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "quartermain_gate"
-	},
-/obj/effect/turf_decal/box/red,
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
 "bl" = (
 /obj/structure/filingcabinet/security,
@@ -622,15 +654,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost/checkpoint)
-"bT" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "quartermain_west_yard";
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/floor,
-/turf/open/indestructible/plating,
-/area/voidcrew/trader_outpost/checkpoint)
 "bU" = (
 /obj/machinery/door/airlock/outpost/checkpoint/outer{
 	checkpoint_id = "quartermain_east_yard";
@@ -648,15 +671,6 @@
 	},
 /obj/effect/turf_decal/bot,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/plating,
-/area/voidcrew/trader_outpost/checkpoint)
-"bW" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "quartermain_east_yard";
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/floor,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost/checkpoint)
 "bX" = (
@@ -4389,7 +4403,7 @@ aV
 aV
 aV
 dU
-bT
+ay
 dU
 aV
 aV
@@ -4744,8 +4758,8 @@ aH
 qk
 ag
 aI
-bj
-bj
+as
+ak
 br
 bv
 bm
@@ -4786,8 +4800,8 @@ aA
 cA
 bN
 dU
-bk
-bj
+ar
+ak
 dU
 bw
 bm
@@ -5461,7 +5475,7 @@ aV
 aV
 aV
 dU
-bW
+aM
 dU
 aV
 aV

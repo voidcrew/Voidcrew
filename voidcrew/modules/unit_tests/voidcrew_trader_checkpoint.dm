@@ -1,6 +1,7 @@
 /**
- * Trader outpost checkpoints: the scan chamber, weapons permits, armed trespass and sealed goods
- * (voidcrew/modules/trade/outpost_checkpoint.dm, outpost_checkpoint_guard.dm, outpost_trespass.dm).
+ * Trader outpost checkpoints: the scan chamber, weapons permits, armed trespass, sealed goods and the
+ * outpost's NPCs at the doors (voidcrew/modules/trade/outpost_checkpoint.dm, outpost_checkpoint_guard.dm,
+ * outpost_trespass.dm, outpost_checkpoint_npcs.dm).
  *
  * The trade defines are included after the tests, so states and durations are written out with a
  * comment naming their define.
@@ -14,6 +15,7 @@
 	var/obj/machinery/door/airlock/outpost/checkpoint/outer/outer
 	var/obj/machinery/door/airlock/outpost/checkpoint/inner/inner
 	var/mob/living/basic/outpost_trader/checkpoint_guard/guard
+	var/obj/machinery/outpost_checkpoint_sensor/sensor
 	/// In front of the outer door
 	var/turf/lobby
 	/// Beyond the inner door
@@ -66,8 +68,10 @@
 	inner.checkpoint_id = "test_checkpoint"
 	inner.set_machine_stat(NONE)
 	for(var/turf/tile as anything in chamber)
-		var/obj/machinery/outpost_checkpoint_scanner/arch = allocate(/obj/machinery/outpost_checkpoint_scanner, tile)
-		arch.checkpoint_id = "test_checkpoint"
+		var/obj/effect/landmark/outpost_checkpoint_chamber/marker = allocate(/obj/effect/landmark/outpost_checkpoint_chamber, tile)
+		marker.checkpoint_id = "test_checkpoint"
+	sensor = allocate(/obj/machinery/outpost_checkpoint_sensor/directional/west, chamber[1])
+	sensor.checkpoint_id = "test_checkpoint"
 	if(with_guard)
 		guard = allocate(/mob/living/basic/outpost_trader/checkpoint_guard/halcyon, locate(origin.x + 4, origin.y + 6, origin.z))
 		guard.checkpoint_id = "test_checkpoint"
@@ -76,7 +80,9 @@
 	TEST_ASSERT_NOTNULL(checkpoint, "The fixture checkpoint did not assemble")
 	TEST_ASSERT_EQUAL(checkpoint.lobby_turf, lobby, "The outer door's far side is not the lobby")
 	TEST_ASSERT_EQUAL(checkpoint.secured_turf, secured, "The inner door's far side is not the concourse")
-	TEST_ASSERT_EQUAL(length(checkpoint.chamber_turfs), 2, "The chamber is not its two arch tiles")
+	TEST_ASSERT_EQUAL(length(checkpoint.chamber_turfs), 2, "The chamber is not its two marked tiles")
+	TEST_ASSERT_EQUAL(checkpoint.sensor, sensor, "The wall scanner was not matched to the checkpoint")
+	TEST_ASSERT_EQUAL(checkpoint.sweep_dir, NORTH, "The scan does not sweep in from the outer door")
 	if(with_guard)
 		TEST_ASSERT_EQUAL(checkpoint.guard, guard, "The guard was not matched to the checkpoint")
 	return TRUE
@@ -106,7 +112,6 @@
 		checkpoint.close_door(outer)
 	sleep(2 SECONDS)
 	checkpoint.set_state("idle") // CHECKPOINT_IDLE
-	checkpoint.last_refused.Cut()
 
 // ===== THE CHAMBER =====
 
@@ -212,20 +217,44 @@
 	sleep(3 SECONDS) // OUTPOST_CHECKPOINT_SCAN_TIME
 	TEST_ASSERT_EQUAL(checkpoint.state, "passing", "The scan did not finish on its own") // CHECKPOINT_PASSING
 
-/// A gun lying on the chamber floor is refused, put back out, and the group backs out
+/// Waits up to `limit` for `door` to be shut and still
+/datum/unit_test/voidcrew_trader_checkpoint/proc/wait_shut(obj/machinery/door/door, limit = 4 SECONDS)
+	for(var/i in 1 to limit / (0.1 SECONDS))
+		if(door.density && !door.operating)
+			return TRUE
+		sleep(0.1 SECONDS)
+	return door.density && !door.operating
+
+/// A gun lying on the chamber floor is refused and stays where it is; the outer door stays open until someone carries it out
 /datum/unit_test/voidcrew_trader_checkpoint/floor_gun/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
 	var/mob/living/carbon/human/person = visitor(chamber[1])
 	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol, chamber[2])
 	TEST_ASSERT(scan_now(person), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "A gun on the floor passed") // CHECKPOINT_REJECTING
-	TEST_ASSERT_EQUAL(get_turf(gun), lobby, "Loose contraband was not put back out")
-	TEST_ASSERT(get_turf(person) in chamber, "A first refusal walked someone out")
+	TEST_ASSERT_EQUAL(sensor.look, "refused", "The wall scanner did not show the refusal")
+	TEST_ASSERT_EQUAL(get_turf(gun), chamber[2], "The checkpoint moved loose contraband")
+	TEST_ASSERT_EQUAL(get_turf(person), chamber[1], "The checkpoint moved someone it refused")
 	sleep(2 SECONDS)
 	TEST_ASSERT(inner.density, "A refused scan opened the inner door")
 	TEST_ASSERT(!outer.density, "A refused scan did not open the outer door")
+	// While the gun lies there the outer door stays open and nobody gets another scan
+	checkpoint.check_refused()
+	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "The chamber stopped refusing with the gun still on its floor") // CHECKPOINT_REJECTING
+	TEST_ASSERT(!outer.density, "The outer door shut on a chamber with a gun on its floor")
+	TEST_ASSERT(!checkpoint.request_cycle(person), "A chamber with a gun on its floor took another scan")
+	checkpoint.request_outer(person)
+	sleep(1 SECONDS)
+	TEST_ASSERT(!outer.density, "A click shut the outer door on a gun still on the floor")
+	// Carried out: the door shuts, and whoever is still inside is scanned again
+	gun.forceMove(lobby)
+	checkpoint.check_refused()
+	TEST_ASSERT(wait_shut(outer), "The outer door stayed open after the gun was carried out")
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "The person left inside was not scanned again") // CHECKPOINT_SCANNING
+	checkpoint.finish_scan()
+	TEST_ASSERT_EQUAL(checkpoint.state, "passing", "A clean person was refused once the gun had gone") // CHECKPOINT_PASSING
 
-/// A gun in a box in a backpack is found; refused twice in a row, its carrier is walked out
+/// A gun in a box in a backpack is found; its carrier is never walked out, and gets a new scan once the gun is left outside
 /datum/unit_test/voidcrew_trader_checkpoint/nested_gun/Run()
 	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
 	var/mob/living/carbon/human/person = visitor(chamber[1])
@@ -234,15 +263,37 @@
 	allocate(/obj/item/gun/energy/laser, box)
 	TEST_ASSERT(scan_now(person), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "A nested gun passed") // CHECKPOINT_REJECTING
-	TEST_ASSERT(get_turf(person) in chamber, "A first refusal walked someone out")
-	checkpoint.set_state("idle") // CHECKPOINT_IDLE
 	sleep(2 SECONDS)
-	checkpoint.close_door(outer)
-	sleep(2 SECONDS)
-	TEST_ASSERT(outer.density, "The outer door did not close on the refused group")
-	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "Closing the outer door on people did not scan again") // CHECKPOINT_SCANNING
+	checkpoint.check_refused()
+	TEST_ASSERT_EQUAL(get_turf(person), chamber[1], "Someone refused was walked out")
+	TEST_ASSERT(!outer.density, "The outer door shut on someone still armed")
+	TEST_ASSERT(!checkpoint.request_cycle(person), "Someone still armed got another scan")
+	// The bag goes into a locker in the lobby; asked again, the chamber scans
+	bag.forceMove(lobby)
+	TEST_ASSERT(checkpoint.request_cycle(person), "Someone who left their gun outside could not ask again")
+	TEST_ASSERT(wait_shut(outer), "The outer door did not shut for the new scan")
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "Asking again did not scan") // CHECKPOINT_SCANNING
 	checkpoint.finish_scan()
-	TEST_ASSERT_EQUAL(get_turf(person), lobby, "Someone refused twice in a row was not walked out")
+	TEST_ASSERT_EQUAL(checkpoint.state, "passing", "The unarmed person was refused") // CHECKPOINT_PASSING
+
+/// A door never closes on anyone in its doorway, standing or lying, and nobody is moved out of it: it waits
+/datum/unit_test/voidcrew_trader_checkpoint/doorway/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	var/mob/living/carbon/human/person = visitor()
+	TEST_ASSERT(checkpoint.request_outer(person), "The outer door did not open")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!outer.density, "The outer door did not open")
+	var/turf/doorway = get_turf(outer)
+	person.forceMove(doorway)
+	person.set_resting(TRUE, silent = TRUE, instant = TRUE)
+	checkpoint.close_door(outer)
+	sleep(3 SECONDS)
+	TEST_ASSERT(!outer.density, "The outer door closed on someone lying in the doorway")
+	TEST_ASSERT_EQUAL(get_turf(person), doorway, "Someone in the doorway was moved")
+	person.set_resting(FALSE, silent = TRUE, instant = TRUE)
+	person.forceMove(chamber[1])
+	TEST_ASSERT(wait_shut(outer), "The outer door did not close once the doorway was clear")
+	TEST_ASSERT_EQUAL(checkpoint.state, "scanning", "Closing on someone inside did not scan") // CHECKPOINT_SCANNING
 
 /// Implants and organs are part of the person: an arm-mounted gun is found while retracted
 /datum/unit_test/voidcrew_trader_checkpoint/implanted_gun/Run()
@@ -314,7 +365,8 @@
 	var/obj/item/gun/ballistic/automatic/pistol/dropped = allocate(/obj/item/gun/ballistic/automatic/pistol, chamber[2])
 	TEST_ASSERT(scan_now(holder), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "A permit covered a gun left on the floor") // CHECKPOINT_REJECTING
-	TEST_ASSERT_EQUAL(get_turf(dropped), lobby, "The loose gun was not put back out")
+	TEST_ASSERT_EQUAL(get_turf(dropped), chamber[2], "The checkpoint moved the loose gun")
+	qdel(dropped)
 	settle()
 	// Only at the outpost that issued it
 	var/obj/structure/overmap/trader_outpost/elsewhere = allocate(/obj/structure/overmap/trader_outpost/black_market)
@@ -362,9 +414,12 @@
 	burglar.forceMove(secured)
 	insider.Move(get_turf(inner), SOUTH)
 	TEST_ASSERT(!host.is_armed_trespasser(insider.mind), "Stepping into the doorway from inside was flagged")
+	// It does not shut on whoever stands in it
 	checkpoint.end_breach()
-	sleep(3 SECONDS)
-	TEST_ASSERT(inner.density, "The forced door did not shut again")
+	sleep(2 SECONDS)
+	TEST_ASSERT(!inner.density, "The forced door shut on someone in its doorway")
+	insider.forceMove(secured)
+	TEST_ASSERT(wait_shut(inner), "The forced door did not shut again")
 	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "The checkpoint did not settle after the breach") // CHECKPOINT_IDLE
 
 // ===== ARMED TRESPASS =====
@@ -537,3 +592,60 @@
 	sleep(2 SECONDS)
 	TEST_ASSERT(!inner.density, "The inner door did not open for someone leaving")
 	TEST_ASSERT(inner.CanAStarPass(get_dir(inner, secured), walker), "Pathing cannot leave through an exterior hatch")
+
+// ===== NPCS =====
+
+/// NPCs never work the doors, a refusal does not repeat while the chamber cycles, and NPC pathing keeps out of the chamber
+/datum/unit_test/voidcrew_trader_checkpoint/npc_doors/Run()
+	TEST_ASSERT(fixture(), "Could not prepare the checkpoint")
+	var/mob/living/basic/ambient_npc/outpost/customer/npc = allocate(/mob/living/basic/ambient_npc/outpost/customer, lobby)
+	// Walking into the doors again and again does nothing at all
+	for(var/i in 1 to 5)
+		outer.bumpopen(npc)
+		inner.bumpopen(npc)
+		outer.try_to_activate_door(npc)
+	TEST_ASSERT(outer.density && inner.density, "An NPC walking into the doors opened one")
+	TEST_ASSERT_EQUAL(checkpoint.state, "idle", "An NPC walking into the doors started a cycle") // CHECKPOINT_IDLE
+	TEST_ASSERT_NULL(outer.animation, "An NPC walking into the outer door flashed it")
+	TEST_ASSERT_NULL(inner.animation, "An NPC walking into the inner door flashed it")
+	// Mid-scan, a player walking into either door gets nothing at all
+	var/mob/living/carbon/human/person = visitor(chamber[1])
+	var/mob/living/carbon/human/waiting = visitor(lobby)
+	allocate(/obj/item/gun/ballistic/automatic/pistol, person)
+	TEST_ASSERT(checkpoint.request_cycle(person), "Could not start a scan")
+	TEST_ASSERT_EQUAL(sensor.look, "scanning", "The wall scanner did not show the scan")
+	for(var/i in 1 to 5)
+		inner.bumpopen(person)
+		outer.bumpopen(waiting)
+	TEST_ASSERT_NULL(inner.animation, "Walking into the inner door mid-scan flashed it")
+	TEST_ASSERT_NULL(outer.animation, "Walking into the outer door mid-scan flashed it")
+	// Refused: one flash for a walk into the shut inner door, then nothing for a while however often it is walked into
+	checkpoint.finish_scan()
+	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "The armed person was let through") // CHECKPOINT_REJECTING
+	sleep(2 SECONDS)
+	inner.bumpopen(person)
+	TEST_ASSERT_EQUAL(inner.animation, "deny", "A refused walk into the inner door showed nothing") // DOOR_DENY_ANIMATION
+	inner.set_animation(null)
+	for(var/i in 1 to 5)
+		inner.bumpopen(person)
+	TEST_ASSERT_NULL(inner.animation, "Walking into the inner door again flashed it again at once")
+	// Pathing: a shut door is a wall to NPCs, and an open one too unless they are going through by the rules
+	var/datum/can_pass_info/npc_walk = new(npc, list())
+	var/datum/can_pass_info/player_walk = new(waiting, list())
+	TEST_ASSERT(!inner.CanAStarPass(get_dir(inner, chamber[1]), npc_walk), "NPC pathing goes through a shut checkpoint door")
+	TEST_ASSERT(!outer.density, "The outer door is not open for the refusal")
+	TEST_ASSERT(!outer.CanAStarPass(get_dir(outer, lobby), npc_walk), "NPC pathing goes through an open checkpoint door")
+	TEST_ASSERT(outer.CanAStarPass(get_dir(outer, lobby), player_walk), "Player pathing cannot go through an open checkpoint door")
+	ADD_TRAIT(npc, "checkpoint_crossing", "unit_test") // TRAIT_CHECKPOINT_CROSSING
+	TEST_ASSERT(outer.CanAStarPass(get_dir(outer, lobby), npc_walk), "An NPC going through by the rules cannot path through the open door")
+	TEST_ASSERT(!inner.CanAStarPass(get_dir(inner, chamber[1]), npc_walk), "An NPC going through by the rules paths through a shut door")
+	REMOVE_TRAIT(npc, "checkpoint_crossing", "unit_test")
+	// The exit gate: out only, and for the outpost's people only when they are leaving
+	var/obj/structure/outpost_exit_gate/gate = allocate(/obj/structure/outpost_exit_gate, locate(host.template_bottom_left.x, host.template_bottom_left.y + 5, host.template_bottom_left.z))
+	gate.setDir(SOUTH)
+	TEST_ASSERT(gate.CanAStarPass(NORTH, player_walk), "Player pathing cannot go out through the gate")
+	TEST_ASSERT(!gate.CanAStarPass(NORTH, npc_walk), "An NPC who is not leaving paths out through the gate")
+	TEST_ASSERT(npc.start_activity(new /datum/ambient_activity/leave(npc)), "Could not send the NPC off")
+	TEST_ASSERT(gate.CanAStarPass(NORTH, npc_walk), "A leaving NPC cannot path out through the gate")
+	TEST_ASSERT(!gate.CanAStarPass(SOUTH, npc_walk), "A leaving NPC paths in through the gate")
+	npc.end_activity()

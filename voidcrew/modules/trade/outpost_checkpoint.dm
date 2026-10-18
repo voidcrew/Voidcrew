@@ -11,21 +11,37 @@
  *   still hides what is inside it.
  * - Clean (or carried by someone holding a weapons permit, see outpost_trespass.dm): the inner door
  *   opens for a few seconds. Not clean, or anyone in there barred by the outpost: the inner door stays
- *   shut, the guard says so, and the outer door opens to let them back out. Loose contraband is put
- *   back out at once; anyone refused twice in a row is walked out.
+ *   shut, the guard (or the wall scanner, at a hatch with no guard) says so, and the outer door opens
+ *   and stays open until whatever was refused has been carried back out. The checkpoint never moves
+ *   anyone or anything: people walk out, and a gun left on the floor fails every scan until someone
+ *   takes it away.
  * - Someone on the concourse side can walk into the inner door to cycle the chamber outward the same
  *   way (the exterior hatches need that; the lobby checkpoints have a one-way exit gate as well).
  * - The inner door can be pried open with a crowbar or jaws of life, or hacked with an emag. It takes
  *   OUTPOST_CHECKPOINT_FORCE_TIME and raises the alarm; anyone who then goes through it from the
  *   chamber is flagged as an armed trespasser (outpost_trespass.dm).
+ * - A door never closes on anyone in its doorway: it waits for them to move.
+ * - NPCs never work the doors by walking into them, and pathing never takes an NPC through a chamber.
+ *   Someone off the lift crosses by asking each door once (outpost_checkpoint_npcs.dm).
  *
- * The parts are mapped (doors, a scan arch on every chamber tile, the exit gate and lockers) and tied
- * together by checkpoint_id when the outpost links its interior (build_checkpoints()). Nothing is
- * stored on the doors between cycles: permission to open is handed to one open() call at a time.
+ * The parts are mapped (doors, a chamber marker on every chamber tile, one wall scanner, the exit gate
+ * and lockers) and tied together by checkpoint_id when the outpost links its interior
+ * (build_checkpoints()). A scan shows as a beam of light sweeping the chamber, then a green or red
+ * wash: short-lived effects, nothing kept between scans. Nothing is stored on the doors between cycles
+ * either: permission to open is handed to one open() call at a time.
  * Tiles of the chamber, its doors, the lobby and the exit gate belong to
  * /area/voidcrew/trader_outpost/checkpoint, which is outside the checkpoint as far as the outpost's
  * armed-trespass rules are concerned.
  */
+
+/// The scan beam
+#define CHECKPOINT_SWEEP_COLOR "#7fd8ff"
+/// The wash after a clean scan
+#define CHECKPOINT_PASS_COLOR "#4dff7a"
+/// The wash after a refusal, and the wall scanner's alarm light
+#define CHECKPOINT_REFUSE_COLOR "#ff3b3b"
+/// The wall scanner's light while it waits
+#define CHECKPOINT_IDLE_LIGHT "#8cff9a"
 
 /// The checkpoint lobby, scan chambers and exterior hatches: outpost ground that is not past the checkpoint
 /area/voidcrew/trader_outpost/checkpoint
@@ -34,6 +50,13 @@
 /// Where a trader concourse puts its public network pad (outpost_network.dm). The tile beside it is the arrival spot.
 /obj/effect/landmark/outpost_network_pad_spot
 	name = "outpost network pad spot"
+
+/// Marks one tile of a scan chamber. The checkpoint scans these tiles.
+/obj/effect/landmark/outpost_checkpoint_chamber
+	name = "checkpoint chamber"
+	icon_state = "x4"
+	/// Shared with the chamber's doors
+	var/checkpoint_id
 
 /// Whether `thing` is something the checkpoint stops at the door
 /proc/outpost_checkpoint_weapon(atom/movable/thing)
@@ -48,6 +71,17 @@
 		location = location.loc
 	return null
 
+/// Whether `user` works a checkpoint door by walking into it or clicking it: a player, or anyone with a mind. NPCs never do.
+/proc/outpost_checkpoint_door_user(mob/user)
+	return !!(user?.client || user?.mind)
+
+/// The NPC (a living mob with no player and no mind) that `pass_info` plans a route for, or null
+/proc/outpost_checkpoint_npc_walker(datum/can_pass_info/pass_info)
+	var/mob/living/walker = pass_info?.requester_ref?.resolve()
+	if(!istype(walker) || walker.client || walker.mind)
+		return null
+	return walker
+
 // =========================================================================
 // THE CHECKPOINT
 // =========================================================================
@@ -61,10 +95,12 @@
 	var/obj/machinery/door/airlock/outpost/checkpoint/outer/outer_door
 	/// Opens onto the concourse
 	var/obj/machinery/door/airlock/outpost/checkpoint/inner/inner_door
-	/// The chamber: every tile with a linked scan arch
+	/// The chamber: every tile with a chamber marker
 	var/list/turf/chamber_turfs = list()
-	/// The scan arches, one per chamber tile
-	var/list/obj/machinery/outpost_checkpoint_scanner/scanners = list()
+	/// The scanner on the chamber wall: it shows the checkpoint's state, and speaks where there is no guard
+	var/obj/machinery/outpost_checkpoint_sensor/sensor
+	/// The way the scan beam sweeps: from the outer door into the chamber
+	var/sweep_dir = NORTH
 	/// The tile in front of the outer door, outside the chamber
 	var/turf/lobby_turf
 	/// The tile beyond the inner door, on the concourse
@@ -75,14 +111,15 @@
 	var/state = CHECKPOINT_IDLE
 	/// The timer ending the current state
 	var/phase_timer
-	/// Whoever (or whatever) the last scan refused and has not left the chamber yet
-	var/list/datum/weakref/last_refused = list()
 	/// Someone is prying or hacking the inner door right now
 	var/forcing = FALSE
 	/// Scan as soon as the outer door has closed (someone asked to go through)
 	var/scan_when_closed = FALSE
 	/// The current cycle was asked for from the concourse side
 	var/exit_request = FALSE
+	/// The last line the checkpoint said, and when
+	var/last_line
+	var/last_line_at = 0
 	COOLDOWN_DECLARE(line_cooldown)
 
 /datum/outpost_checkpoint/New(obj/structure/overmap/trader_outpost/outpost, checkpoint_id)
@@ -100,27 +137,27 @@
 	if(inner_door?.checkpoint == src)
 		inner_door.set_breached(FALSE)
 		inner_door.checkpoint = null
-	for(var/obj/machinery/outpost_checkpoint_scanner/scanner as anything in scanners)
-		if(scanner.checkpoint == src)
-			scanner.checkpoint = null
+	if(sensor?.checkpoint == src)
+		sensor.checkpoint = null
+		sensor.set_look("idle")
 	if(guard?.checkpoint == src)
 		guard.checkpoint = null
 	outer_door = null
 	inner_door = null
+	sensor = null
 	guard = null
 	outpost = null
 	lobby_turf = null
 	secured_turf = null
-	scanners.Cut()
 	chamber_turfs.Cut()
-	last_refused.Cut()
 	return ..()
 
 /**
  * Ties the mapped parts together. Fails (and logs) unless there is exactly one outer and one inner
- * door, each touching the chamber on one side and open floor on the other.
+ * door, each touching the chamber on one side and open floor on the other. The wall scanner is
+ * optional; the first one with this id is used.
  */
-/datum/outpost_checkpoint/proc/assemble(list/doors, list/arches)
+/datum/outpost_checkpoint/proc/assemble(list/doors, list/markers, list/sensors)
 	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in doors)
 		if(istype(door, /obj/machinery/door/airlock/outpost/checkpoint/outer))
 			if(outer_door)
@@ -132,26 +169,33 @@
 			inner_door = door
 	if(!outer_door || !inner_door)
 		return fail_assembly("a missing door")
-	for(var/obj/machinery/outpost_checkpoint_scanner/scanner as anything in arches)
-		scanners += scanner
-		chamber_turfs |= get_turf(scanner)
+	for(var/obj/effect/landmark/outpost_checkpoint_chamber/marker as anything in markers)
+		var/turf/tile = get_turf(marker)
+		if(tile)
+			chamber_turfs |= tile
 	if(!length(chamber_turfs))
-		return fail_assembly("no scan arches")
+		return fail_assembly("no chamber markers")
 	lobby_turf = door_far_side(outer_door)
 	secured_turf = door_far_side(inner_door)
 	if(!isopenturf(lobby_turf) || !isopenturf(secured_turf))
 		return fail_assembly("a door that does not lead from the chamber to open floor")
+	sweep_dir = get_dir(lobby_turf, get_turf(outer_door))
 	outer_door.checkpoint = src
 	inner_door.checkpoint = src
-	for(var/obj/machinery/outpost_checkpoint_scanner/scanner as anything in scanners)
-		scanner.checkpoint = src
+	for(var/obj/machinery/outpost_checkpoint_sensor/fixture as anything in sensors)
+		if(QDELETED(fixture))
+			continue
+		sensor = fixture
+		sensor.checkpoint = src
+		break
+	update_sensor()
 	return TRUE
 
 /datum/outpost_checkpoint/proc/fail_assembly(problem)
 	log_mapping("OUTPOST CHECKPOINT: [outpost?.name] checkpoint '[checkpoint_id]' has [problem]; it is not linked.")
 	outer_door = null
 	inner_door = null
-	scanners.Cut()
+	sensor = null
 	chamber_turfs.Cut()
 	return FALSE
 
@@ -173,7 +217,7 @@
 /datum/outpost_checkpoint/proc/scannable(atom/movable/thing)
 	if(iseffect(thing) || isobserver(thing) || thing.invisibility >= INVISIBILITY_ABSTRACT)
 		return FALSE
-	return !istype(thing, /obj/machinery/outpost_checkpoint_scanner)
+	return !istype(thing, /obj/machinery/outpost_checkpoint_sensor)
 
 /// Every living thing in the chamber, including anyone inside a mech, a locker or a bag in there
 /datum/outpost_checkpoint/proc/chamber_people()
@@ -215,29 +259,73 @@
 
 // ----- speech and show -----
 
-/datum/outpost_checkpoint/proc/set_scanlines(scanline, duration)
-	for(var/obj/machinery/outpost_checkpoint_scanner/scanner as anything in scanners)
-		scanner.set_scanline(scanline, duration)
+/// The wall scanner's look follows the checkpoint
+/datum/outpost_checkpoint/proc/update_sensor()
+	if(QDELETED(sensor))
+		return
+	if(forcing || state == CHECKPOINT_FORCED)
+		sensor.set_look("alarm")
+	else if(state == CHECKPOINT_REJECTING)
+		sensor.set_look("refused")
+	else if(state == CHECKPOINT_SCANNING)
+		sensor.set_look("scanning")
+	else
+		sensor.set_look("idle")
 
-/// The checkpoint's voice: the guard if there is one, else the first scan arch
+/// The checkpoint's voice: the guard if there is one, else the wall scanner. The same line is not repeated to someone stepping back and forth.
 /datum/outpost_checkpoint/proc/announce(category, urgent = FALSE)
 	if(!urgent && !COOLDOWN_FINISHED(src, line_cooldown))
 		return
+	if(category == last_line && world.time < last_line_at + OUTPOST_CHECKPOINT_REPEAT_LINE)
+		return
 	COOLDOWN_START(src, line_cooldown, OUTPOST_CHECKPOINT_LINE_COOLDOWN)
+	last_line = category
+	last_line_at = world.time
 	if(!QDELETED(guard) && guard.shop)
 		var/line = guard.shop.get_line(category)
 		if(line)
 			INVOKE_ASYNC(guard, TYPE_PROC_REF(/atom/movable, say), line)
 		return
-	var/obj/machinery/outpost_checkpoint_scanner/scanner = length(scanners) ? scanners[1] : null
-	var/line = scanner?.machine_line(category)
+	var/line = sensor?.machine_line(category)
 	if(line)
-		INVOKE_ASYNC(scanner, TYPE_PROC_REF(/atom/movable, say), line)
+		INVOKE_ASYNC(sensor, TYPE_PROC_REF(/atom/movable, say), line)
 
 /datum/outpost_checkpoint/proc/sound_at_chamber(sound_file, volume = 40)
 	var/turf/middle = length(chamber_turfs) ? chamber_turfs[1] : null
 	if(middle)
 		playsound(middle, sound_file, volume, FALSE)
+
+/// A beam of light sweeps the chamber from the outer door to the far wall and back, for the length of a scan
+/datum/outpost_checkpoint/proc/sweep_chamber()
+	var/vertical = !!(sweep_dir & (EAST|WEST))
+	// One beam per line of tiles along the sweep, starting from its tile nearest the outer door
+	var/list/starts = list()
+	var/list/depths = list()
+	for(var/turf/tile as anything in chamber_turfs)
+		var/across = "[vertical ? tile.y : tile.x]"
+		depths[across] += 1
+		var/turf/current = starts[across]
+		if(!current || sweep_progress(tile) < sweep_progress(current))
+			starts[across] = tile
+	for(var/across in starts)
+		new /obj/effect/temp_visual/checkpoint_sweep(starts[across], sweep_dir, depths[across], 3, 240)
+		new /obj/effect/temp_visual/checkpoint_sweep(starts[across], sweep_dir, depths[across], 12, 80)
+
+/// How far along the sweep `tile` lies
+/datum/outpost_checkpoint/proc/sweep_progress(turf/tile)
+	switch(sweep_dir)
+		if(NORTH)
+			return tile.y
+		if(SOUTH)
+			return -tile.y
+		if(EAST)
+			return tile.x
+	return -tile.x
+
+/// A brief wash of `wash_color` over the chamber
+/datum/outpost_checkpoint/proc/wash_chamber(wash_color)
+	for(var/turf/tile as anything in chamber_turfs)
+		new /obj/effect/temp_visual/checkpoint_wash(tile, wash_color)
 
 // ----- doors -----
 
@@ -248,25 +336,25 @@
 	door.opening_permitted = TRUE
 	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
 
-/// Moves anyone standing (or lying) in `door`'s doorway out of it, onto the side they came from
-/datum/outpost_checkpoint/proc/clear_doorway(obj/machinery/door/airlock/outpost/checkpoint/door)
-	var/turf/push_to = (door == outer_door) ? lobby_turf : secured_turf
-	if(!push_to)
-		return
-	for(var/atom/movable/blocker in get_turf(door))
-		if(blocker == door || blocker.anchored || iseffect(blocker))
+/// Whether someone (standing or lying) or something bulky is in `door`'s doorway, so it must not close yet
+/datum/outpost_checkpoint/proc/doorway_blocked(obj/machinery/door/door)
+	for(var/atom/movable/thing in get_turf(door))
+		if(thing == door || iseffect(thing))
 			continue
-		if(isliving(blocker) || blocker.density)
-			blocker.forceMove(push_to)
+		if(isliving(thing) || thing.density)
+			return TRUE
+	return FALSE
 
-/// Closes `door`, clearing its doorway first, and keeps trying until it is shut
+/// Closes `door` once its doorway is clear, trying again until it is shut. Nobody is moved out of the way.
 /datum/outpost_checkpoint/proc/close_door(obj/machinery/door/airlock/outpost/checkpoint/door)
 	if(QDELETED(door) || QDELETED(src))
 		return
 	if(door.density)
 		on_door_closed(door)
 		return
-	clear_doorway(door)
+	if(door.operating || doorway_blocked(door))
+		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_DOORWAY_WAIT, TIMER_UNIQUE | TIMER_DELETE_ME)
+		return
 	INVOKE_ASYNC(src, PROC_REF(finish_close), door)
 
 /datum/outpost_checkpoint/proc/finish_close(obj/machinery/door/airlock/outpost/checkpoint/door)
@@ -276,7 +364,7 @@
 	if(closed && door.density)
 		on_door_closed(door)
 	else
-		addtimer(CALLBACK(src, PROC_REF(close_door), door), 1 SECONDS, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(close_door), door), OUTPOST_CHECKPOINT_DOORWAY_WAIT, TIMER_UNIQUE | TIMER_DELETE_ME)
 
 /datum/outpost_checkpoint/proc/on_door_closed(obj/machinery/door/airlock/outpost/checkpoint/door)
 	if(door == inner_door)
@@ -289,9 +377,11 @@
 		if(CHECKPOINT_FORCED)
 			return
 		if(CHECKPOINT_IDLE, CHECKPOINT_REJECTING)
-			set_state(CHECKPOINT_IDLE)
 			var/requested = scan_when_closed
+			var/leaving = exit_request
 			scan_when_closed = FALSE
+			set_state(CHECKPOINT_IDLE)
+			exit_request = requested && leaving
 			if(requested || length(chamber_people()))
 				start_scan()
 
@@ -301,7 +391,13 @@
 	phase_timer = null
 	if(new_state == CHECKPOINT_IDLE)
 		exit_request = FALSE
-		set_scanlines("passive")
+	update_sensor()
+
+/// Whether the doors are busy with a cycle, so a walk into one of them is simply ignored
+/datum/outpost_checkpoint/proc/mid_cycle()
+	if(state == CHECKPOINT_SCANNING || state == CHECKPOINT_PASSING)
+		return TRUE
+	return outer_door?.operating || inner_door?.operating
 
 // ----- what people do to it -----
 
@@ -310,8 +406,8 @@
 	if(QDELETED(outer_door) || QDELETED(inner_door) || outer_door.operating)
 		return FALSE
 	if(!outer_door.density)
-		// A click on the open door shuts it, which starts the scan if anyone is inside
-		if(state == CHECKPOINT_IDLE || state == CHECKPOINT_REJECTING)
+		// A click on the open door shuts it (starting the scan if anyone is inside), unless it is held open for something refused
+		if(state == CHECKPOINT_IDLE || (state == CHECKPOINT_REJECTING && !length(inspect_chamber())))
 			deltimer(phase_timer)
 			phase_timer = null
 			close_door(outer_door)
@@ -331,14 +427,21 @@
 
 /// Someone walks into or clicks the inner door: cycle the chamber. Returns TRUE if a scan starts.
 /datum/outpost_checkpoint/proc/request_cycle(mob/user)
-	if(QDELETED(outer_door) || QDELETED(inner_door) || forcing || state != CHECKPOINT_IDLE)
+	if(QDELETED(outer_door) || QDELETED(inner_door) || forcing)
 		return FALSE
 	if(!inner_door.density || inner_door.operating || outer_door.operating)
 		return FALSE
-	exit_request = !(get_turf(user) in chamber_turfs)
-	// A guarded checkpoint has its own way out (the exit gate); only the exterior hatches cycle outward
-	if(exit_request && guard)
+	if(state == CHECKPOINT_REJECTING)
+		// Held open for something refused: nothing more until it has been taken back out
+		if(length(inspect_chamber()))
+			return FALSE
+	else if(state != CHECKPOINT_IDLE)
 		return FALSE
+	var/leaving = !(get_turf(user) in chamber_turfs)
+	// A guarded checkpoint has its own way out (the exit gate); only the exterior hatches cycle outward
+	if(leaving && guard)
+		return FALSE
+	exit_request = leaving
 	if(!outer_door.density)
 		scan_when_closed = TRUE
 		deltimer(phase_timer)
@@ -350,7 +453,7 @@
 
 /datum/outpost_checkpoint/proc/start_scan()
 	set_state(CHECKPOINT_SCANNING)
-	set_scanlines("scanning")
+	sweep_chamber()
 	sound_at_chamber('sound/machines/scanner/scanner.ogg', 30)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(finish_scan)), OUTPOST_CHECKPOINT_SCAN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
@@ -365,63 +468,46 @@
 	var/list/refused = inspect_chamber()
 	var/list/people = chamber_people()
 	if(!length(refused))
-		last_refused.Cut()
 		if(length(people) || exit_request)
 			pass(people)
 		else
 			set_state(CHECKPOINT_IDLE)
 		return
-	var/list/refused_before = list()
-	for(var/datum/weakref/ref as anything in last_refused)
-		var/atom/movable/thing = ref.resolve()
-		if(thing)
-			refused_before += thing
-	last_refused.Cut()
 	var/barred = FALSE
 	for(var/atom/movable/thing as anything in refused)
 		if(refused[thing] == CHECKPOINT_LINE_BARRED)
 			barred = TRUE
-		var/holds_someone = isliving(thing) || length(thing.get_all_contents_type(/mob/living))
-		// Loose contraband goes straight back out; a person gets one warning first
-		if(!forcing && (!holds_someone || (thing in refused_before)))
-			eject(thing)
-		else
-			last_refused += WEAKREF(thing)
+			break
 	reject(barred, people)
-
-/// Puts `thing` back on the lobby side of the outer door
-/datum/outpost_checkpoint/proc/eject(atom/movable/thing)
-	if(!lobby_turf || QDELETED(thing))
-		return
-	thing.forceMove(lobby_turf)
-	if(isliving(thing))
-		to_chat(thing, span_warning("You are steered back out of [outer_door]."))
 
 /datum/outpost_checkpoint/proc/pass(list/people)
 	set_state(CHECKPOINT_PASSING)
-	set_scanlines("passive")
+	wash_chamber(CHECKPOINT_PASS_COLOR)
 	sound_at_chamber('sound/machines/ping.ogg', 30)
 	if(includes_player(people))
 		announce(CHECKPOINT_LINE_PASS)
 	open_door(inner_door)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(close_door), inner_door), OUTPOST_CHECKPOINT_PASS_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
+/// The inner door stays shut, the checkpoint says why, and the outer door opens for whoever it refused to walk back out
 /datum/outpost_checkpoint/proc/reject(barred, list/people)
+	var/leaving = exit_request
 	set_state(CHECKPOINT_REJECTING)
-	set_scanlines("alarm")
+	wash_chamber(CHECKPOINT_REFUSE_COLOR)
 	sound_at_chamber('sound/machines/scanner/scanbuzz.ogg', 40)
-	if(includes_player(people))
+	if(includes_player(people) || leaving)
 		announce(barred ? CHECKPOINT_LINE_BARRED : CHECKPOINT_LINE_ARMED, urgent = TRUE)
 	open_door(outer_door)
-	phase_timer = addtimer(CALLBACK(src, PROC_REF(end_reject)), OUTPOST_CHECKPOINT_REJECT_HOLD, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	phase_timer = addtimer(CALLBACK(src, PROC_REF(check_refused)), OUTPOST_CHECKPOINT_REJECT_HOLD, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/datum/outpost_checkpoint/proc/end_reject()
+/// The outer door stays open until whatever was refused is gone from the chamber, then shuts (scanning anyone still inside)
+/datum/outpost_checkpoint/proc/check_refused()
+	deltimer(phase_timer)
 	phase_timer = null
 	if(state != CHECKPOINT_REJECTING)
 		return
-	// Nobody is walked out from under someone working on the inner door
-	if(forcing)
-		phase_timer = addtimer(CALLBACK(src, PROC_REF(end_reject)), 2 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	if(length(inspect_chamber()))
+		phase_timer = addtimer(CALLBACK(src, PROC_REF(check_refused)), OUTPOST_CHECKPOINT_REJECT_RECHECK, TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return
 	close_door(outer_door)
 
@@ -432,7 +518,7 @@
 	if(forcing || state == CHECKPOINT_FORCED || QDELETED(inner_door) || !inner_door.density)
 		return FALSE
 	forcing = TRUE
-	set_scanlines("alarm")
+	update_sensor()
 	playsound(inner_door, 'sound/machines/warning-buzzer.ogg', 60, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	announce(CHECKPOINT_LINE_FORCING, urgent = TRUE)
 	log_game("OUTPOST CHECKPOINT: [key_name(user)] started forcing [inner_door] at [AREACOORD(inner_door)] with [tool].")
@@ -441,8 +527,7 @@
 		return FALSE
 	forcing = FALSE
 	if(!succeeded)
-		if(state == CHECKPOINT_IDLE)
-			set_scanlines("passive")
+		update_sensor()
 		return FALSE
 	breach(user)
 	return TRUE
@@ -454,7 +539,7 @@
 /datum/outpost_checkpoint/proc/breach(mob/living/user)
 	log_game("OUTPOST CHECKPOINT: [key_name(user)] forced [inner_door] at [AREACOORD(inner_door)].")
 	set_state(CHECKPOINT_FORCED)
-	set_scanlines("alarm", OUTPOST_CHECKPOINT_FORCED_OPEN_TIME)
+	wash_chamber(CHECKPOINT_REFUSE_COLOR)
 	playsound(inner_door, 'sound/machines/warning-buzzer.ogg', 70, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	inner_door.set_breached(TRUE)
 	open_door(inner_door)
@@ -486,19 +571,23 @@
 
 /**
  * A checkpoint door. Its ordinary opening routes (bumps, clicks, ID swipes, wires, silicons, magic,
- * prying) never open it; only its checkpoint does, one open() call at a time.
+ * prying) never open it; only its checkpoint does, one open() call at a time. Walking into it while
+ * the chamber is cycling does nothing at all, and an NPC walking into it never does anything.
  */
 /obj/machinery/door/airlock/outpost/checkpoint
 	name = "checkpoint door"
 	desc = "An armored checkpoint door."
 	move_resist = INFINITY
 	autoclose = FALSE
-	/// Shared with the chamber's scan arches and (for the lobby checkpoints) the guard
+	// Pathing would skip an open door without this, and NPCs keep out of open chambers too
+	can_astar_pass = CANASTARPASS_ALWAYS_PROC
+	/// Shared with the chamber's markers and wall scanner and (for the lobby checkpoints) the guard
 	var/checkpoint_id
 	/// The checkpoint this door belongs to (set when the outpost links its interior)
 	var/datum/outpost_checkpoint/checkpoint
 	/// Permission for the next open() call only
 	var/opening_permitted = FALSE
+	COOLDOWN_DECLARE(deny_cooldown)
 
 /obj/machinery/door/airlock/outpost/checkpoint/Initialize(mapload)
 	. = ..()
@@ -518,29 +607,52 @@
 	opening_permitted = FALSE
 	return ..(BYPASS_DOOR_CHECKS)
 
-// A body arriving in the doorway during the close is moved off it, not let back through
+// Someone got into the doorway as it shut: it opens again for them, and its checkpoint closes it once they have moved
 /obj/machinery/door/airlock/outpost/checkpoint/CheckForMobs()
-	if(checkpoint)
-		checkpoint.clear_doorway(src)
+	if(!(locate(/mob/living) in get_turf(src)))
+		return
+	opening_permitted = TRUE
+	open()
+
+// A refusal shows at most once every OUTPOST_CHECKPOINT_DENY_COOLDOWN, however often the door is walked into
+/obj/machinery/door/airlock/outpost/checkpoint/run_animation(animation, force_type = DEFAULT_DOOR_CHECKS)
+	if(animation == DOOR_DENY_ANIMATION)
+		if(!COOLDOWN_FINISHED(src, deny_cooldown))
+			return
+		COOLDOWN_START(src, deny_cooldown, OUTPOST_CHECKPOINT_DENY_COOLDOWN)
+	return ..()
 
 /obj/machinery/door/airlock/outpost/checkpoint/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
+
+// NPCs never plan a route through a checkpoint; one going through it by the rules passes a door only once it is open
+/obj/machinery/door/airlock/outpost/checkpoint/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	var/mob/living/walker = outpost_checkpoint_npc_walker(pass_info)
+	if(walker)
+		return !density && HAS_TRAIT(walker, TRAIT_CHECKPOINT_CROSSING)
+	return ..()
+
+/// A walk into or click on this door was refused: the deny light, unless the chamber is busy cycling
+/obj/machinery/door/airlock/outpost/checkpoint/proc/refuse()
+	if(checkpoint?.mid_cycle())
+		return
+	run_animation(DOOR_DENY_ANIMATION)
 
 /// The lobby (or exterior) side of a scan chamber
 /obj/machinery/door/airlock/outpost/checkpoint/outer
 
 /obj/machinery/door/airlock/outpost/checkpoint/outer/bumpopen(mob/user)
-	if(operating || !density)
+	if(operating || !density || !outpost_checkpoint_door_user(user))
 		return
 	if(!checkpoint?.request_outer(user))
-		run_animation(DOOR_DENY_ANIMATION)
+		refuse()
 
 /obj/machinery/door/airlock/outpost/checkpoint/outer/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	add_fingerprint(user)
-	if(operating)
+	if(operating || !outpost_checkpoint_door_user(user))
 		return
 	if(!checkpoint?.request_outer(user) && density)
-		run_animation(DOOR_DENY_ANIMATION)
+		refuse()
 
 /// The concourse side of a scan chamber. Walking into it asks for a scan; prying or hacking it forces it.
 /obj/machinery/door/airlock/outpost/checkpoint/inner
@@ -552,17 +664,17 @@
 	return ..()
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/bumpopen(mob/user)
-	if(operating || !density)
+	if(operating || !density || !outpost_checkpoint_door_user(user))
 		return
 	if(!checkpoint?.request_cycle(user))
-		run_animation(DOOR_DENY_ANIMATION)
+		refuse()
 
 /obj/machinery/door/airlock/outpost/checkpoint/inner/try_to_activate_door(mob/living/user, access_bypass = FALSE)
 	add_fingerprint(user)
-	if(operating || !density)
+	if(operating || !density || !outpost_checkpoint_door_user(user))
 		return
 	if(!checkpoint?.request_cycle(user))
-		run_animation(DOOR_DENY_ANIMATION)
+		refuse()
 
 // Outpost property lets a crowbar through to this one door (see /datum/element/outpost_property)
 /obj/machinery/door/airlock/outpost/checkpoint/inner/outpost_forceable()
@@ -570,7 +682,7 @@
 
 // Pathing goes in through a guarded checkpoint and out through its exit gate, never back through the chamber
 /obj/machinery/door/airlock/outpost/checkpoint/inner/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
-	if(checkpoint?.guard && !(get_step(src, to_dir) in checkpoint.chamber_turfs))
+	if(!outpost_checkpoint_npc_walker(pass_info) && checkpoint?.guard && !(get_step(src, to_dir) in checkpoint.chamber_turfs))
 		return !density
 	return ..()
 
@@ -642,68 +754,75 @@
 	return FALSE
 
 // =========================================================================
-// THE SCAN ARCH
+// THE WALL SCANNER
 // =========================================================================
 
-/// One per chamber tile. Marks the chamber and shows the scan; the checkpoint does the deciding.
-/obj/machinery/outpost_checkpoint_scanner
-	name = "scan arch"
-	desc = "A weapons scanner built into the checkpoint."
-	icon = 'icons/obj/machines/scangate.dmi'
-	icon_state = "scangate"
-	layer = ABOVE_MOB_LAYER
+/// One per chamber, on its wall. Shows the scan and speaks for a hatch with no guard; the checkpoint does the deciding.
+/obj/machinery/outpost_checkpoint_sensor
+	name = "weapons scanner"
+	desc = "A weapons scanner set into the checkpoint wall."
+	icon = 'icons/obj/machines/wallmounts.dmi'
+	icon_state = "airlock_sensor_standby"
+	base_icon_state = "airlock_sensor"
 	density = FALSE
 	anchored = TRUE
 	move_resist = INFINITY
 	use_power = NO_POWER_USE
+	processing_flags = NONE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	interaction_flags_machine = NONE
+	light_range = 1.4
+	light_power = 0.8
+	light_color = CHECKPOINT_IDLE_LIGHT
 	/// Shared with the chamber's doors
 	var/checkpoint_id
 	/// Set when the outpost links its interior
 	var/datum/outpost_checkpoint/checkpoint
-	/// The light bars
-	var/obj/effect/overlay/scanline
-	var/scanline_timer
+	/// "idle", "scanning", "refused" or "alarm"
+	var/look = "idle"
 
-/obj/machinery/outpost_checkpoint_scanner/Initialize(mapload)
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_checkpoint_sensor, 24)
+
+/obj/machinery/outpost_checkpoint_sensor/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/outpost_property)
-	set_scanline("passive")
+	update_appearance(UPDATE_ICON_STATE)
 
-/obj/machinery/outpost_checkpoint_scanner/Destroy()
-	deltimer(scanline_timer)
-	QDEL_NULL(scanline)
-	if(checkpoint)
-		checkpoint.scanners -= src
-		checkpoint = null
+/obj/machinery/outpost_checkpoint_sensor/Destroy()
+	if(checkpoint?.sensor == src)
+		checkpoint.sensor = null
+	checkpoint = null
 	return ..()
 
-/obj/machinery/outpost_checkpoint_scanner/setDir(newdir)
-	. = ..()
-	scanline?.setDir(newdir)
-
-/obj/machinery/outpost_checkpoint_scanner/emag_act(mob/user, obj/item/card/emag/emag_card)
+/obj/machinery/outpost_checkpoint_sensor/emag_act(mob/user, obj/item/card/emag/emag_card)
 	return FALSE
 
-/// "passive" (green), "scanning" (blue) or "alarm" (red); back to green after `duration` if given
-/obj/machinery/outpost_checkpoint_scanner/proc/set_scanline(scanline_type, duration)
-	if(isnull(scanline))
-		scanline = new(src)
-		scanline.icon = icon
-		scanline.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-		scanline.layer = layer
-		scanline.setDir(dir)
-	vis_contents -= scanline
-	deltimer(scanline_timer)
-	scanline_timer = null
-	scanline.icon_state = scanline_type
-	vis_contents += scanline
-	if(duration)
-		scanline_timer = addtimer(CALLBACK(src, PROC_REF(set_scanline), "passive"), duration, TIMER_STOPPABLE | TIMER_DELETE_ME)
+/obj/machinery/outpost_checkpoint_sensor/update_icon_state()
+	switch(look)
+		if("refused")
+			icon_state = "[base_icon_state]_alert"
+		if("alarm")
+			icon_state = "[base_icon_state]_cycle"
+		else
+			icon_state = "[base_icon_state]_standby"
+	return ..()
 
-/// What the arch says when there is no guard to say it
-/obj/machinery/outpost_checkpoint_scanner/proc/machine_line(category)
+/// Sets what the scanner shows: "idle", "scanning", "refused" or "alarm"
+/obj/machinery/outpost_checkpoint_sensor/proc/set_look(new_look)
+	if(look == new_look)
+		return
+	look = new_look
+	switch(look)
+		if("scanning")
+			set_light_color(CHECKPOINT_SWEEP_COLOR)
+		if("refused", "alarm")
+			set_light_color(CHECKPOINT_REFUSE_COLOR)
+		else
+			set_light_color(CHECKPOINT_IDLE_LIGHT)
+	update_appearance(UPDATE_ICON_STATE)
+
+/// What the scanner says when there is no guard to say it
+/obj/machinery/outpost_checkpoint_sensor/proc/machine_line(category)
 	switch(category)
 		if(CHECKPOINT_LINE_ARMED)
 			return "Weapon detected."
@@ -716,13 +835,71 @@
 	return null
 
 // =========================================================================
+// THE SCAN, SHOWN
+// =========================================================================
+
+/**
+ * A line of light swept across a scan chamber, from the outer door to the far wall and back over the
+ * length of a scan, across `depth` tiles in `sweep_dir`. `thickness` pixels thick; a thin bright one
+ * and a wide faint one make the beam and its glow.
+ */
+/obj/effect/temp_visual/checkpoint_sweep
+	icon = 'icons/effects/alphacolors.dmi'
+	icon_state = "white"
+	plane = ABOVE_LIGHTING_PLANE
+	randomdir = FALSE
+	duration = OUTPOST_CHECKPOINT_SCAN_TIME
+	color = CHECKPOINT_SWEEP_COLOR
+	alpha = 0
+
+/obj/effect/temp_visual/checkpoint_sweep/Initialize(mapload, sweep_dir = NORTH, depth = 1, thickness = 2, peak_alpha = 230)
+	. = ..()
+	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
+	var/vertical = !!(sweep_dir & (EAST|WEST))
+	var/scale = thickness / ICON_SIZE_ALL
+	transform = vertical ? matrix(scale, 0, 0, 0, 1, 0) : matrix(1, 0, 0, 0, scale, 0)
+	var/sign = (sweep_dir & (NORTH|EAST)) ? 1 : -1
+	var/edge = ICON_SIZE_ALL / 2 - thickness / 2
+	var/start = -edge * sign
+	var/finish = ((depth - 1) * ICON_SIZE_ALL + edge) * sign
+	var/leg = duration / 2
+	if(vertical)
+		pixel_x = start
+		animate(src, pixel_x = finish, time = leg, easing = SINE_EASING)
+		animate(pixel_x = start, time = leg, easing = SINE_EASING)
+	else
+		pixel_y = start
+		animate(src, pixel_y = finish, time = leg, easing = SINE_EASING)
+		animate(pixel_y = start, time = leg, easing = SINE_EASING)
+	animate(src, alpha = peak_alpha, time = 0.2 SECONDS, flags = ANIMATION_PARALLEL)
+	animate(alpha = peak_alpha, time = duration - 0.5 SECONDS)
+	animate(alpha = 0, time = 0.3 SECONDS)
+
+/// A brief wash of colour over one chamber tile: green for a clean scan, red for a refusal
+/obj/effect/temp_visual/checkpoint_wash
+	icon = 'icons/effects/alphacolors.dmi'
+	icon_state = "white"
+	plane = ABOVE_LIGHTING_PLANE
+	randomdir = FALSE
+	duration = 1.2 SECONDS
+	alpha = 0
+
+/obj/effect/temp_visual/checkpoint_wash/Initialize(mapload, wash_color = CHECKPOINT_PASS_COLOR)
+	. = ..()
+	SET_PLANE_IMPLICIT(src, ABOVE_LIGHTING_PLANE)
+	color = wash_color
+	animate(src, alpha = 90, time = 0.2 SECONDS, easing = SINE_EASING)
+	animate(alpha = 0, time = 1 SECONDS, easing = SINE_EASING)
+
+// =========================================================================
 // THE EXIT GATE
 // =========================================================================
 
 /**
  * A one-way light curtain. People and things go through it only in its dir (from the concourse to
  * the lobby); from the other side nothing gets in, not even a thrown gun or a pulled crate. Anyone
- * stepping into it is carried straight out the far side, so nobody stands in it to be handed things.
+ * stepping into it is walked on through to the far side, so nobody stands in it to be handed things.
+ * NPC pathing only uses it for leaving the outpost.
  */
 /obj/structure/outpost_exit_gate
 	name = "exit gate"
@@ -757,7 +934,13 @@
 	return REVERSE_DIR(border_dir) == dir
 
 /obj/structure/outpost_exit_gate/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
-	return REVERSE_DIR(to_dir) == dir
+	if(REVERSE_DIR(to_dir) != dir)
+		return FALSE
+	// The outpost's own people go out through it only when they are leaving for good
+	var/mob/living/basic/ambient_npc/townsperson = outpost_checkpoint_npc_walker(pass_info)
+	if(istype(townsperson) && !istype(townsperson.activity, /datum/ambient_activity/leave))
+		return FALSE
+	return TRUE
 
 /obj/structure/outpost_exit_gate/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	SIGNAL_HANDLER
@@ -836,3 +1019,8 @@ GLOBAL_LIST_EMPTY(outpost_checkpoint_lockers)
 	name = initial(name)
 	locked = FALSE
 	update_appearance()
+
+#undef CHECKPOINT_SWEEP_COLOR
+#undef CHECKPOINT_PASS_COLOR
+#undef CHECKPOINT_REFUSE_COLOR
+#undef CHECKPOINT_IDLE_LIGHT

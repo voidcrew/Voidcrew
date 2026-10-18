@@ -525,6 +525,24 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"be" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "undertow_door"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
+"bf" = (
+/obj/effect/turf_decal/box/red,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "undertow_door"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/west{
+	checkpoint_id = "undertow_door"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "bg" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
 	dir = 4
@@ -534,6 +552,18 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"bj" = (
+/obj/structure/sign/warning/vacuum/external/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/floor,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "undertow_bar"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/south{
+	checkpoint_id = "undertow_bar"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost/checkpoint)
 "bn" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -552,26 +582,11 @@
 /obj/effect/turf_decal/delivery/red,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
-"bq" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "undertow_door"
-	},
-/obj/effect/turf_decal/box/red,
-/obj/machinery/light/small/red/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "br" = (
 /obj/structure/table/reinforced,
 /obj/item/paper_bin,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/indestructible/dark/smooth_large,
-/area/voidcrew/trader_outpost/checkpoint)
-"bs" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "undertow_door"
-	},
-/obj/effect/turf_decal/box/red,
-/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost/checkpoint)
 "bt" = (
 /mob/living/basic/outpost_trader/checkpoint_guard/undertow{
@@ -873,16 +888,6 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/plating,
-/area/voidcrew/trader_outpost/checkpoint)
-"cb" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "undertow_bar";
-	dir = 4
-	},
-/obj/structure/sign/warning/vacuum/external/directional/north,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/floor,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost/checkpoint)
 "ci" = (
@@ -4924,8 +4929,8 @@ al
 BJ
 aa
 aa
-bq
-bs
+be
+bf
 bv
 bA
 bK
@@ -5083,7 +5088,7 @@ aa
 aa
 aa
 aa
-cb
+bj
 aa
 vn
 vn

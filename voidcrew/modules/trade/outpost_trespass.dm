@@ -49,23 +49,28 @@
 	network_pad_spot = null
 
 /**
- * Builds a scan chamber for every checkpoint_id found in the interior. `doors` and `arches` hold only
- * this concourse's parts, so ids never reach across outposts.
+ * Builds a scan chamber for every checkpoint_id found in the interior. `doors`, `markers` (chamber
+ * tiles) and `sensors` (wall scanners) hold only this concourse's parts, so ids never reach across
+ * outposts.
  */
-/obj/structure/overmap/trader_outpost/proc/build_checkpoints(list/doors, list/arches)
+/obj/structure/overmap/trader_outpost/proc/build_checkpoints(list/doors, list/markers, list/sensors)
 	var/list/doors_by_id = list()
-	var/list/arches_by_id = list()
+	var/list/markers_by_id = list()
+	var/list/sensors_by_id = list()
 	for(var/obj/machinery/door/airlock/outpost/checkpoint/door as anything in doors)
 		if(door.checkpoint_id)
 			LAZYADD(doors_by_id[door.checkpoint_id], door)
-	for(var/obj/machinery/outpost_checkpoint_scanner/arch as anything in arches)
-		if(arch.checkpoint_id)
-			LAZYADD(arches_by_id[arch.checkpoint_id], arch)
+	for(var/obj/effect/landmark/outpost_checkpoint_chamber/marker as anything in markers)
+		if(marker.checkpoint_id)
+			LAZYADD(markers_by_id[marker.checkpoint_id], marker)
+	for(var/obj/machinery/outpost_checkpoint_sensor/sensor as anything in sensors)
+		if(sensor.checkpoint_id)
+			LAZYADD(sensors_by_id[sensor.checkpoint_id], sensor)
 	for(var/checkpoint_id in doors_by_id)
 		if(checkpoints[checkpoint_id])
 			continue
 		var/datum/outpost_checkpoint/checkpoint = new(src, checkpoint_id)
-		if(!checkpoint.assemble(doors_by_id[checkpoint_id], arches_by_id[checkpoint_id]))
+		if(!checkpoint.assemble(doors_by_id[checkpoint_id], markers_by_id[checkpoint_id], sensors_by_id[checkpoint_id]))
 			qdel(checkpoint)
 			continue
 		checkpoints[checkpoint_id] = checkpoint

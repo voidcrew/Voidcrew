@@ -10,6 +10,13 @@
 	},
 /turf/open/indestructible,
 /area/voidcrew/trader_outpost)
+"ac" = (
+/obj/effect/turf_decal/box/red,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "halcyon_arrivals"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ad" = (
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 4
@@ -51,6 +58,14 @@
 "ak" = (
 /turf/closed/indestructible/reinforced/titanium/outpost,
 /area/voidcrew/trader_outpost)
+"al" = (
+/obj/effect/turf_decal/box/red,
+/obj/machinery/light/small/directional/north,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "halcyon_arrivals"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "am" = (
 /obj/structure/chair/sofa/corp/left,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -65,6 +80,16 @@
 /obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
+"an" = (
+/obj/effect/turf_decal/box/red,
+/obj/effect/landmark/outpost_checkpoint_chamber{
+	checkpoint_id = "halcyon_arrivals"
+	},
+/obj/machinery/outpost_checkpoint_sensor/directional/west{
+	checkpoint_id = "halcyon_arrivals"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost/checkpoint)
 "ao" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -290,13 +315,6 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/trader_outpost)
-"aW" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "halcyon_arrivals"
-	},
-/obj/effect/turf_decal/box/red,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "aX" = (
 /obj/machinery/griddle/outpost,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -310,14 +328,6 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/trader_outpost)
-"ba" = (
-/obj/machinery/outpost_checkpoint_scanner{
-	checkpoint_id = "halcyon_arrivals"
-	},
-/obj/effect/turf_decal/box/red,
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost/checkpoint)
 "bb" = (
 /obj/effect/spawner/random/engineering/tank,
 /obj/machinery/light/small/directional/south,
@@ -7818,8 +7828,8 @@ ef
 ef
 lU
 aP
-aW
-aW
+an
+ac
 bl
 bo
 bw
@@ -7884,8 +7894,8 @@ Oc
 ef
 JW
 ak
-ba
-aW
+al
+ac
 ak
 be
 be
