@@ -2,7 +2,7 @@
 /proc/is_ladder_combat_gun(item_type)
 	if(!ispath(item_type, /obj/item/gun))
 		return FALSE
-	// Recipe registration runs before static initializers, so build caches on demand.
+	// Build the shared classification cache on first use.
 	var/static/list/tool_guns
 	if(!tool_guns)
 		tool_guns = typecacheof(list(
@@ -23,7 +23,7 @@
 		))
 	return item_type != /obj/item/gun/syringe && !is_type_in_typecache(item_type, tool_guns)
 
-/// Weapons which cannot come from free kits, fabrication or cargo.
+/// Weapons excluded from starting equipment, cargo and unguarded floor sources.
 /proc/is_ladder_restricted_melee(item_type)
 	if(ispath(item_type, /obj/item/knife/combat/survival) || ispath(item_type, /obj/item/knife/combat/bone) || ispath(item_type, /obj/item/shovel/serrated/dull))
 		return FALSE
@@ -69,39 +69,6 @@
 		|| ispath(item_type, /obj/item/weaponcrafting/giant_wrench) \
 		|| ispath(item_type, /obj/structure/mounted_gun/pipe) \
 		|| ispath(item_type, /obj/item/disk/design_disk/liberator)
-
-/datum/crafting_recipe/proc/ladder_restricted()
-	var/list/results = islist(result) ? result : list(result)
-	for(var/item_type in results)
-		if(is_ladder_restricted_production(item_type))
-			return TRUE
-	return FALSE
-
-/datum/crafting_recipe/New()
-	. = ..()
-	if(ladder_restricted())
-		non_craftable = TRUE
-
-// Stack recipes assign their result after the base constructor returns.
-/datum/crafting_recipe/stack/New(obj/item/stack/material, datum/stack_recipe/stack_recipe)
-	. = ..()
-	if(ladder_restricted())
-		non_craftable = TRUE
-
-// Check the execution path too: learned recipes and slapcrafting bypass the menu.
-/datum/component/personal_crafting/construct_item(atom/crafter, datum/crafting_recipe/recipe)
-	if(recipe?.ladder_restricted())
-		return "Unavailable."
-	return ..()
-
-/obj/item/weaponcrafting/receiver/create_slapcraft_component()
-	return
-
-/obj/item/weaponcrafting/giant_wrench/create_slapcraft_component()
-	return
-
-/obj/item/weaponcrafting/stock/create_slapcraft_component()
-	AddElement(/datum/element/slapcrafting, slapcraft_recipes = list(/datum/crafting_recipe/smoothbore_disabler))
 
 // These are unguarded floor/maintenance sources, including nested random spawners.
 /obj/effect/spawner/random/armory/make_item(spawn_loc, type_path_to_make)

@@ -13,6 +13,10 @@ Almost every hull carries an autolathe, and that one machine is enough. Print th
 
 The disk *is* the techweb. Slot it into the server and that server hosts your research; pull it out and the research goes with it. The autolathe prints a spare disk for two sheets of glass, but a fresh disk is a fresh blank tree, not a copy.
 
+Weapon kits come out of the protolathe: tesla, ion and temperature kits from Electric Weaponry, advanced energy gun and X-ray kits from Advanced Beam Weaponry, the energy crossbow kit and rapid syringe gun from Illegal Technology, the Event Horizon kit from Unregulated Bluespace Research and the photon cannon kit from Illumination Applications. Fit a kit to the right gun from the crafting menu.
+
+Scrap guns, melee weapons and shields are crafted as usual.
+
 Everything that earns or spends points has to be told which server it belongs to. Slotting the source disk into the server **claims every scanner and operating computer aboard that has no link yet**, so build the server whenever you like and anything you made earlier falls in behind it. Everything else, R&D console, orbital survey console, protolathe, nanite chamber, destructive scanner. Is linked by hand: **multitool** the server, then the machine. One click, including to move a machine from one server to another.
 
 A scanner with no server says so when you examine it and buzzes when you try to use it, so an unlinked machine is obvious rather than silently useless.

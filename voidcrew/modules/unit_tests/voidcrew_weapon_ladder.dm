@@ -68,20 +68,40 @@
 	for(var/obj/item/item in ghost_wearer.get_all_contents())
 		TEST_ASSERT(!is_ladder_combat_gun(item.type), "A ghost-role outfit still starts with [item.type].")
 
-/// Registered recipes must agree with the ladder even before static initialization.
+/// Ordinary weapon recipes remain available, including learned and stack recipes.
 /datum/unit_test/voidcrew_ladder_recipe_registration/Run()
 	var/list/expected_recipes = list(
-		/datum/crafting_recipe/strobeshield = TRUE,
-		/datum/crafting_recipe/moonflowershield = TRUE,
-		/datum/crafting_recipe/chainsaw = TRUE,
-		/datum/crafting_recipe/boneaxe = TRUE,
-		/datum/crafting_recipe/house_edge = TRUE,
-		/datum/crafting_recipe/giant_wrench = TRUE,
-		/datum/crafting_recipe/singulo_hammer = TRUE,
-		/datum/crafting_recipe/sm_sword = TRUE,
-		/datum/crafting_recipe/boneshovel = TRUE,
-		/datum/crafting_recipe/pipegun = TRUE,
-		/datum/crafting_recipe/receiver = TRUE,
+		/datum/crafting_recipe/strobeshield = FALSE,
+		/datum/crafting_recipe/moonflowershield = FALSE,
+		/datum/crafting_recipe/chainsaw = FALSE,
+		/datum/crafting_recipe/boneaxe = FALSE,
+		/datum/crafting_recipe/house_edge = FALSE,
+		/datum/crafting_recipe/giant_wrench = FALSE,
+		/datum/crafting_recipe/singulo_hammer = FALSE,
+		/datum/crafting_recipe/sm_sword = FALSE,
+		/datum/crafting_recipe/boneshovel = FALSE,
+		/datum/crafting_recipe/pipegun = FALSE,
+		/datum/crafting_recipe/receiver = FALSE,
+		/datum/crafting_recipe/pipepistol = FALSE,
+		/datum/crafting_recipe/rebarxbow = FALSE,
+		/datum/crafting_recipe/rebarxbowforced = FALSE,
+		/datum/crafting_recipe/pipe_organ_gun = FALSE,
+		/datum/crafting_recipe/laser_musket = FALSE,
+		/datum/crafting_recipe/shortbow = FALSE,
+		/datum/crafting_recipe/pipegun_prime = FALSE,
+		/datum/crafting_recipe/laser_musket_prime = FALSE,
+		/datum/crafting_recipe/deagle_prime = FALSE,
+		/datum/crafting_recipe/sks = FALSE,
+		/datum/crafting_recipe/hellgun = FALSE,
+		/datum/crafting_recipe/advancedegun = FALSE,
+		/datum/crafting_recipe/tempgun = FALSE,
+		/datum/crafting_recipe/xraylaser = FALSE,
+		/datum/crafting_recipe/ioncarbine = FALSE,
+		/datum/crafting_recipe/teslacannon = FALSE,
+		/datum/crafting_recipe/photoncannon = FALSE,
+		/datum/crafting_recipe/ebow = FALSE,
+		/datum/crafting_recipe/beam_rifle = FALSE,
+		/datum/crafting_recipe/riflestock = FALSE,
 		/datum/crafting_recipe/spear = FALSE,
 		/datum/crafting_recipe/bonespear = FALSE,
 		/datum/crafting_recipe/bonedagger = FALSE,
@@ -89,7 +109,8 @@
 		/datum/crafting_recipe/smoothbore_disabler_prime = FALSE,
 	)
 	var/list/expected_stacks = list(
-		/obj/item/shield/buckler = TRUE,
+		/obj/item/shield/buckler = FALSE,
+		/obj/item/gun/syringe/blowgun = FALSE,
 		/obj/structure/closet/crate/coffin = FALSE,
 	)
 	for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
@@ -102,38 +123,117 @@
 	TEST_ASSERT_EQUAL(length(expected_recipes), 0, "Recipe registration missed [english_list(expected_recipes)]")
 	TEST_ASSERT_EQUAL(length(expected_stacks), 0, "Stack recipe registration missed [english_list(expected_stacks)]")
 
-/// Learned recipes, stock slapcrafting and a carried upgrade kit cannot bypass scarcity.
+/// Scrap guns, melee weapons and researched conversion kits use real ingredients and tools.
 /datum/unit_test/voidcrew_ladder_manufacture/Run()
-	var/atom/movable/crafter = allocate(__IMPLIED_TYPE__)
-	var/datum/component/personal_crafting/crafting = crafter.AddComponent(__IMPLIED_TYPE__)
-	var/blocked = 0
-	for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
-		if(!recipe.ladder_restricted())
-			continue
-		blocked++
-		TEST_ASSERT(recipe.non_craftable, "[recipe.type] remains in the crafting menu.")
-		TEST_ASSERT_EQUAL(crafting.construct_item(crafter, recipe), "Unavailable.", "[recipe.type] can still execute directly.")
-	TEST_ASSERT(blocked >= 20, "The recipe audit missed combat guns or melee recipes.")
-	var/datum/crafting_recipe/boneshovel/bone_shovel = allocate(__IMPLIED_TYPE__)
-	TEST_ASSERT(bone_shovel.ladder_restricted(), "The learned bone-shovel recipe bypasses the melee ladder.")
-	TEST_ASSERT(bone_shovel.non_craftable, "The learned bone-shovel recipe remains in the crafting menu.")
-	TEST_ASSERT_EQUAL(crafting.construct_item(crafter, bone_shovel), "Unavailable.", "The learned bone-shovel recipe can still execute directly.")
+	for(var/recipe_type in list(/datum/crafting_recipe/pipegun, /datum/crafting_recipe/chainsaw, /datum/crafting_recipe/xraylaser))
+		craft_recipe(recipe_type)
 	TEST_ASSERT(!is_ladder_restricted_production(/obj/item/shovel/serrated/dull), "The green dull bone shovel became restricted.")
-	for(var/recipe_type in list(/datum/crafting_recipe/spear, /datum/crafting_recipe/bonespear, /datum/crafting_recipe/bonedagger, /datum/crafting_recipe/smoothbore_disabler))
-		var/datum/crafting_recipe/recipe = allocate(recipe_type)
-		TEST_ASSERT(!recipe.non_craftable, "Green recipe [recipe_type] became unavailable.")
-	for(var/design_id in SSresearch.techweb_designs)
-		var/datum/design/design = SSresearch.techweb_designs[design_id]
-		if(is_ladder_restricted_production(design.build_path))
-			TEST_ASSERT_EQUAL(design.build_type, NONE, "[design.type] still fabricates [design.build_path].")
-	var/datum/design/rapidsyringe/syringe_gun = SSresearch.techweb_designs["rapidsyringe"]
-	TEST_ASSERT_EQUAL(syringe_gun.build_path, /obj/item/gun/syringe, "Syringe-tool research must produce the green tool.")
-	TEST_ASSERT(syringe_gun.build_type & PROTOLATHE, "The syringe tool lost fabrication.")
 	for(var/design_type in list(/datum/design/plasmacutter, /datum/design/plasmacutter_adv, /datum/design/flora_gun, /datum/design/gun_shell))
 		var/datum/design/design_path = design_type
 		var/datum/design/design = SSresearch.techweb_designs[initial(design_path.id)]
 		TEST_ASSERT_NOTNULL(design, "Missing green tool [design_type].")
 		TEST_ASSERT(design.build_type, "Green tool [design_type] lost fabrication.")
+
+/datum/unit_test/voidcrew_ladder_manufacture/proc/craft_recipe(recipe_type)
+	var/atom/movable/crafter = allocate(__IMPLIED_TYPE__)
+	var/datum/component/personal_crafting/crafting = crafter.AddComponent(__IMPLIED_TYPE__)
+	crafting.ignored_flags = CRAFT_IGNORE_DO_AFTER
+	var/datum/crafting_recipe/recipe = allocate(recipe_type)
+	TEST_ASSERT(!recipe.non_craftable, "[recipe_type] is absent from the crafting menu.")
+	TEST_ASSERT_EQUAL(crafting.construct_item(crafter, recipe), ", missing component.", "[recipe_type] bypassed its ingredient requirements.")
+	var/list/ingredients = list()
+	for(var/ingredient_type in recipe.reqs)
+		var/amount = recipe.reqs[ingredient_type]
+		if(ispath(ingredient_type, /obj/item/stack))
+			ingredients += allocate(ingredient_type, crafter.loc, amount, FALSE)
+		else
+			for(var/index in 1 to amount)
+				ingredients += allocate(ingredient_type)
+	var/obj/item/screwdriver/screwdriver = allocate(__IMPLIED_TYPE__)
+	var/obj/item/weldingtool/welder = allocate(__IMPLIED_TYPE__)
+	var/atom/result = crafting.construct_item(crafter, recipe)
+	TEST_ASSERT(istype(result, recipe.result), "[recipe_type] failed to craft its weapon: [result].")
+	for(var/obj/item/ingredient as anything in ingredients)
+		TEST_ASSERT(QDELETED(ingredient), "[recipe_type] did not consume [ingredient.type].")
+	TEST_ASSERT(!QDELETED(screwdriver) && !QDELETED(welder), "[recipe_type] consumed a tool.")
+	qdel(result)
+	qdel(screwdriver)
+	qdel(welder)
+
+/// The original nodes and fabrication channels still grant all ordinary weapon designs.
+/datum/unit_test/voidcrew_ladder_weapon_designs/Run()
+	var/list/node_designs = list(
+		TECHWEB_NODE_ELECTRIC_WEAPONS = list("stunrevolver", "ioncarbine", "temp_gun"),
+		TECHWEB_NODE_BEAM_WEAPONS = list("nuclear_gun", "xray_laser"),
+		TECHWEB_NODE_SYNDICATE_BASIC = list("largecrossbow", "rapidsyringe"),
+		TECHWEB_NODE_UNREGULATED_BLUESPACE = list("beamrifle", "desynchronizer"),
+		TECHWEB_NODE_LIGHT_APPS = list("photon_cannon"),
+		TECHWEB_NODE_ANOMALY_SHELLS = list("gravitygun", "wormholeprojector"),
+		TECHWEB_NODE_RIOT_SUPRESSION = list("tele_shield"),
+	)
+	for(var/node_id in node_designs)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
+		TEST_ASSERT_NOTNULL(node, "Missing weapon research node [node_id].")
+		for(var/design_id in node_designs[node_id])
+			TEST_ASSERT(design_id in node.design_ids, "[node_id] lost weapon design [design_id].")
+			var/datum/design/design = SSresearch.techweb_designs[design_id]
+			TEST_ASSERT_NOTNULL(design, "Missing weapon design [design_id].")
+			var/expected_channels = (design_id in list("wormholeprojector", "desynchronizer")) ? PROTOLATHE : (PROTOLATHE | AWAY_LATHE)
+			TEST_ASSERT_EQUAL(design.build_type, expected_channels, "[design_id] lost its original fabrication channels.")
+	for(var/design_id in list("cleric_mace", "liberator_gun"))
+		var/datum/design/design = SSresearch.techweb_designs[design_id]
+		TEST_ASSERT_NOTNULL(design, "Missing autolathe weapon design [design_id].")
+		TEST_ASSERT_EQUAL(design.build_type, AUTOLATHE, "[design_id] lost autolathe fabrication.")
+	var/datum/design/rapidsyringe/syringe_gun = SSresearch.techweb_designs["rapidsyringe"]
+	TEST_ASSERT_EQUAL(syringe_gun.name, "Rapid Syringe Gun", "The rapid syringe design has the wrong name.")
+	TEST_ASSERT_EQUAL(syringe_gun.build_path, /obj/item/gun/syringe/rapidsyringe, "Rapid syringe research must produce the rapid syringe gun.")
+	var/datum/design/xray/xray_kit = SSresearch.techweb_designs["xray_laser"]
+	TEST_ASSERT_EQUAL(xray_kit.build_path, /obj/item/weaponcrafting/gunkit/xray, "X-ray research must print its conversion kit.")
+	var/datum/design/beamrifle/beam_kit = SSresearch.techweb_designs["beamrifle"]
+	TEST_ASSERT_EQUAL(beam_kit.build_path, /obj/item/weaponcrafting/gunkit/beam_rifle, "Event Horizon research must print its kit.")
+	var/obj/machinery/rnd/production/protolathe/launch_fabrication_test/lathe = allocate(__IMPLIED_TYPE__)
+	var/datum/techweb/web = allocate(__IMPLIED_TYPE__)
+	lathe.connect_techweb(web)
+	lathe.set_machine_stat(NONE)
+	lathe.materials.set_local_size(1000 * SHEET_MATERIAL_AMOUNT)
+	for(var/node_id in list(TECHWEB_NODE_BEAM_WEAPONS, TECHWEB_NODE_SYNDICATE_BASIC))
+		TEST_ASSERT(web.research_node_id(node_id, TRUE, FALSE, FALSE), "Could not unlock [node_id] for fabrication.")
+	lathe.update_designs()
+	for(var/datum/design/design as anything in list(xray_kit, syringe_gun))
+		TEST_ASSERT(design in lathe.cached_designs, "The researched [design.id] is absent from the protolathe.")
+		var/list/stock_before = list()
+		for(var/material in design.materials)
+			lathe.materials.mat_container.insert_amount_mat(10000, material)
+			stock_before[material] = lathe.materials.mat_container.materials[material]
+		lathe.print_test_design(design, 1)
+		var/obj/item/product = locate(design.build_path) in run_loc_floor_bottom_left
+		TEST_ASSERT_NOTNULL(product, "The protolathe failed to print [design.id].")
+		TEST_ASSERT_EQUAL(product.type, design.build_path, "The protolathe printed the wrong [design.id] output.")
+		for(var/material in stock_before)
+			TEST_ASSERT(lathe.materials.mat_container.materials[material] < stock_before[material], "Printing [design.id] did not consume [material].")
+		qdel(product)
+
+/// Parts and convertible guns retain their original slapcraft recipe lists.
+/datum/unit_test/voidcrew_ladder_slapcraft/Run()
+	var/list/expected_recipes = list(
+		/obj/item/weaponcrafting/receiver = list(/datum/crafting_recipe/pipegun),
+		/obj/item/weaponcrafting/stock = list(/datum/crafting_recipe/smoothbore_disabler, /datum/crafting_recipe/laser_musket),
+		/obj/item/weaponcrafting/giant_wrench = list(/datum/crafting_recipe/giant_wrench),
+		/obj/item/gun/energy/laser = list(/datum/crafting_recipe/xraylaser, /datum/crafting_recipe/hellgun, /datum/crafting_recipe/ioncarbine),
+		/obj/item/gun/energy/e_gun = list(/datum/crafting_recipe/advancedegun, /datum/crafting_recipe/tempgun, /datum/crafting_recipe/beam_rifle),
+		/obj/item/gun/energy/recharge/kinetic_accelerator = list(/datum/crafting_recipe/ebow),
+	)
+	for(var/item_type in expected_recipes)
+		var/obj/item/item = allocate(item_type)
+		var/list/actual_recipes = list()
+		var/listeners = item._listen_lookup?[COMSIG_ATOM_ATTACKBY]
+		if(!islist(listeners))
+			listeners = list(listeners)
+		for(var/datum/element/slapcrafting/element in listeners)
+			actual_recipes |= element.slapcraft_recipes
+		var/list/expected = expected_recipes[item_type]
+		TEST_ASSERT_EQUAL(length(actual_recipes), length(expected), "[item_type] has the wrong slapcraft recipes.")
+		TEST_ASSERT_EQUAL(length(expected - actual_recipes), 0, "[item_type] lost an original slapcraft recipe.")
 
 /// Fixed spawners cannot smuggle weapons through nested contraband or maintenance rolls.
 /datum/unit_test/voidcrew_ladder_fixed_sources/Run()
