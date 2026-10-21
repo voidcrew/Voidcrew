@@ -1,28 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
-/obj/structure/window/reinforced/spawner/directional/north,
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/obj/item/folder/documents,
-/turf/open/floor/wood/mahogany,
-/area/template_noop)
 "aab" = (
 /obj/structure/displaycase/captain{
 	start_showpiece_type = /obj/item/knife/combat/survival
@@ -74,6 +50,12 @@
 /area/template_noop)
 "nXX" = (
 /turf/template_noop,
+/area/template_noop)
+"pIW" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/obj/item/folder/documents,
+/turf/open/floor/wood/mahogany,
 /area/template_noop)
 "rIk" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -140,7 +122,7 @@ kuP
 rIk
 "}
 (3,1,1) = {"
-aaa
+pIW
 kuP
 cjN
 ueZ

@@ -14,19 +14,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/bridge/c)
-"aL" = (
-/obj/machinery/light/red,
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/south,
-/obj/structure/closet/syndicate{
-	name = "weapons locker";
-	desc = "Bolted down over the old shower drain."
-	},
-/obj/item/clothing/suit/armor/vest,
-/obj/item/clothing/gloves/combat,
-/obj/item/knife/combat/survival,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/goon/medbay/c)
 "bf" = (
 /obj/structure/closet/crate{
 	name = "boarding crate";
@@ -318,6 +305,21 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"xT" = (
+/obj/machinery/light/red,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/closet/syndicate{
+	name = "weapons locker";
+	desc = "Bolted down over the old shower drain."
+	},
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/clothing/suit/armor/vest,
+/obj/item/clothing/gloves/combat,
+/obj/item/knife/combat/survival,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/medbay/c)
 "yC" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
 /turf/open/floor/plating,
@@ -724,7 +726,7 @@ IZ
 VO
 Fs
 Og
-aL
+xT
 Pm
 bq
 NQ

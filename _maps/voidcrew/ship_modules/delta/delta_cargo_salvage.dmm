@@ -128,6 +128,16 @@
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"G" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "I" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
@@ -138,15 +148,6 @@
 /area/template_noop)
 "K" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"L" = (
-/obj/effect/turf_decal/box/corners{
-	dir = 1
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/melee/baseball_bat,
-/obj/item/flashlight/seclite,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "R" = (
@@ -213,7 +214,7 @@ R
 U
 "}
 (5,1,1) = {"
-L
+G
 W
 X
 K

@@ -24,12 +24,6 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"d" = (
-/obj/machinery/vending/security/marine/solgov{
-	voucher_items = list()
-	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "h" = (
 /obj/structure/closet/bombcloset/security,
 /turf/open/floor/iron/dark,
@@ -51,19 +45,6 @@
 /area/template_noop)
 "n" = (
 /obj/machinery/firealarm/directional/south,
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"p" = (
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/box/firingpins,
-/obj/structure/closet/secure_closet{
-	name = "armory ballistics locker";
-	icon_state = "tac";
-	icon_door = "armory_shotgun";
-	req_access = list("armory")
-	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "v" = (
@@ -92,6 +73,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/structure/closet/secure_closet/armory2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"C" = (
+/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "F" = (
@@ -170,8 +159,8 @@ a
 c
 "}
 (6,1,1) = {"
-p
-d
+B
+C
 m
 z
 "}

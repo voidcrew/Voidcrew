@@ -34,7 +34,7 @@ Every hull with real rooms launches with the same core kit, wherever the mapper 
 
 That last one matters more than it looks. The R&D Kit costs 50 iron and 50 glass sheets at a basic autolathe, with no research required. Deploy its flat-packed protolathe, circuit imprinter, destructive analyzer and server with a multitool. It also contains the R&D console board, its construction materials and the server's source disk. Any ship, however cheap, can build a full research suite on day one. You start with zero research points and no income, so [Research](research.md) is worth reading before someone wastes an hour looking for the machine that generates them.
 
-Ships do not start with lethal guns, including in job kits and lockers. Security and miners get survival knives; disablers and work tools remain. See [Weapons & Gear](weapons-and-gear.md) for equipment sources.
+Starting guns and ammunition depend on your ship, rooms and job. Check the lockers and your kit before leaving. See [Weapons & Gear](weapons-and-gear.md) for equipment sources.
 
 Everything past that core kit comes from your hull's theme and modules: an engine type, a medbay or a chem lab, a mining bay, a galley, a bunkroom. Read [Ship Systems](ship-systems.md) for the parts you have to keep running.
 

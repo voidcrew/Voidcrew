@@ -1,10 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/resistance/bridge)
 "ai" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -198,13 +192,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/structure/plaque/static_plaque,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/resistance/bridge)
-"qG" = (
-/obj/item/radio/intercom{
-	pixel_y = 28
-	},
-/obj/structure/rack,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/resistance/bridge)
 "qQ" = (
@@ -532,6 +519,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/resistance/cargo)
+"IN" = (
+/obj/item/radio/intercom{
+	pixel_y = 28
+	},
+/obj/structure/rack,
+/obj/item/ammo_box/magazine/sniper_rounds,
+/obj/item/ammo_box/magazine/sniper_rounds,
+/obj/item/ammo_box/magazine/sniper_rounds/soporific,
+/obj/item/ammo_box/magazine/sniper_rounds/soporific,
+/obj/item/ammo_box/magazine/sniper_rounds/soporific,
+/obj/item/ammo_box/magazine/sniper_rounds/soporific,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/resistance/bridge)
 "KI" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -584,6 +584,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall,
 /area/shuttle/voidcrew/resistance/maintenance)
+"LA" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/automatic/sniper_rifle,
+/obj/item/gun/ballistic/automatic/sniper_rifle,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/resistance/bridge)
 "LU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1107,8 +1113,8 @@ fo
 fo
 fo
 xb
-qG
-aa
+IN
+LA
 zm
 Ex
 nN

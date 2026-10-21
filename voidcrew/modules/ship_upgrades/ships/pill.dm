@@ -35,7 +35,7 @@
 /datum/ship_upgrade_module/pill/weapons
 	id = "pill_extra_weapons"
 	name = "Weapons Bay"
-	desc = "Three baseball bats and a charging dock."
+	desc = "Three surplus retro laser guns and a charging dock."
 	slot = "pill_extra"
 	map_file = "pill/pill_extra_weapons.dmm"
 	part_cost = list(PART_CLASS_COMBAT = 4)

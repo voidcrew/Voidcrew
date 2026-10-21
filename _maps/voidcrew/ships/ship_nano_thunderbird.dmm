@@ -1,32 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/rack,
-/obj/machinery/airalarm/directional/south,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
-"ab" = (
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
-"ac" = (
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
-"ad" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/vending/security/marine/solgov{
-	voucher_items = list()
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security)
 "bi" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
@@ -307,6 +279,14 @@
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/security)
+"ra" = (
+/obj/structure/rack,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
 "sZ" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/mineral/titanium,
@@ -408,6 +388,14 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
+"xS" = (
+/obj/structure/rack,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
 "yj" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/cargo_bay)
@@ -577,6 +565,13 @@
 /obj/machinery/suit_storage_unit/ert/engineer,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/thunderbird/engineering)
+"JN" = (
+/obj/structure/rack,
+/obj/machinery/airalarm/directional/south,
+/obj/item/gun/ballistic/shotgun/riot,
+/obj/item/gun/ballistic/shotgun/riot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
 "Km" = (
 /obj/structure/rack,
 /obj/item/gun/energy/disabler,
@@ -661,10 +656,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/cargo_bay)
-"Pa" = (
-/obj/structure/rack,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/thunderbird/security/armory)
 "Pc" = (
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/hallway)
@@ -699,6 +690,12 @@
 "SG" = (
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
+"SL" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun,
+/obj/item/gun/energy/e_gun,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security/armory)
 "SQ" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/thunderbird/bridge)
@@ -816,6 +813,11 @@
 /obj/machinery/suit_storage_unit/ert/medic,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/dormitories)
+"YP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/vending/security/marine/solgov,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/thunderbird/security)
 "YX" = (
 /obj/effect/turf_decal/tile/blue,
 /obj/machinery/computer/rdconsole{
@@ -970,10 +972,10 @@ Ww
 Ww
 Xz
 Ub
-Pa
+ra
 in
 EN
-aa
+JN
 Ub
 zq
 "}
@@ -994,7 +996,7 @@ GO
 ka
 qj
 in
-ab
+xS
 Ub
 zq
 "}
@@ -1022,7 +1024,7 @@ zq
 (9,1,1) = {"
 zq
 OD
-ad
+YP
 kE
 zk
 zk
@@ -1036,7 +1038,7 @@ mt
 mt
 pR
 XM
-ac
+SL
 Ub
 zq
 "}

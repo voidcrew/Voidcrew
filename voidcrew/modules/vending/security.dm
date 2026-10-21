@@ -23,7 +23,11 @@
 		)
 	contraband = list()
 	premium = list()
-	var/voucher_items = list("Disabler" = /obj/item/gun/energy/disabler)
+	var/voucher_items = list(
+		"M-90gl Carbine" = /obj/item/gun/ballistic/automatic/m90/unrestricted,
+		"sniper rifle" = /obj/item/gun/ballistic/rifle/sniper_rifle,
+		"C-20r SMG" = /obj/item/gun/ballistic/automatic/c20r/unrestricted,
+		"Bulldog Shotgun" = /obj/item/gun/ballistic/shotgun/bulldog/unrestricted)
 
 /obj/machinery/vending/security/marine/solgov
 	icon_state = "solgov-marine"
@@ -46,7 +50,11 @@
 		/obj/item/grenade/flashbang = 5,
 		/obj/item/grenade/barrier = 10,
 		)
-	voucher_items = list("Disabler" = /obj/item/gun/energy/disabler)
+	voucher_items = list(
+		"Tactical Energy Gun" = /obj/item/gun/energy/e_gun/stun,
+		"Inferno Pistol" = /obj/item/gun/energy/laser/thermal/inferno,
+		"Cryo Pistol" = /obj/item/gun/energy/laser/thermal/cryo
+		)
 
 /obj/machinery/vending/security/marine/attackby(obj/item/item, mob/user, params)
 	if(istype(item, /obj/item/gun_voucher))

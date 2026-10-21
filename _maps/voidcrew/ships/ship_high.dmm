@@ -7,37 +7,6 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/high/cargo_bay)
-"ac" = (
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/high/bridge/captain)
-"ad" = (
-/obj/structure/table/wood,
-/obj/item/pen/blue{
-	pixel_x = 3;
-	pixel_y = 5
-	},
-/obj/item/melee/baseball_bat,
-/turf/open/floor/carpet/stellar,
-/area/shuttle/voidcrew/high/bridge/boardroom)
 "ae" = (
 /obj/machinery/power/terminal,
 /obj/structure/cable,
@@ -648,6 +617,15 @@
 	},
 /turf/open/floor/carpet/neon/simple/blue,
 /area/shuttle/voidcrew/high/bridge)
+"mH" = (
+/obj/structure/table/wood,
+/obj/item/pen/blue{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/obj/item/gun/ballistic/revolver/russian,
+/turf/open/floor/carpet/stellar,
+/area/shuttle/voidcrew/high/bridge/boardroom)
 "mJ" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/high/bridge/reception)
@@ -2457,6 +2435,10 @@
 "WT" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/high/bridge)
+"WX" = (
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/high/bridge/captain)
 "WZ" = (
 /obj/machinery/button/door{
 	id = "chwindow";
@@ -2768,7 +2750,7 @@ mB
 MF
 Zz
 zk
-ac
+WX
 lN
 pO
 fZ
@@ -2821,7 +2803,7 @@ lw
 DP
 cv
 NY
-ad
+mH
 AF
 Kq
 IE

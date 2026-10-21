@@ -1,19 +1,19 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
+"G" = (
 /obj/modular_map_connector,
 /obj/machinery/recharger{
 	pixel_x = 10;
 	pixel_y = 3
 	},
-/obj/item/melee/baseball_bat{
+/obj/item/gun/energy/laser/retro{
 	pixel_x = -9;
 	pixel_y = 6
 	},
-/obj/item/melee/baseball_bat{
+/obj/item/gun/energy/laser/retro{
 	pixel_x = -6;
 	pixel_y = -8
 	},
-/obj/item/melee/baseball_bat{
+/obj/item/gun/energy/laser/retro{
 	pixel_x = 5;
 	pixel_y = -8
 	},
@@ -21,5 +21,5 @@
 /area/template_noop)
 
 (1,1,1) = {"
-a
+G
 "}

@@ -38,58 +38,6 @@
 /obj/item/knife/combat/survival,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
-"af" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light/warm{
-	dir = 1
-	},
-/obj/item/melee/baseball_bat,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/b)
-"ag" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain{
-	start_showpiece_type = null
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/b)
-"ah" = (
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "aq" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
@@ -2190,6 +2138,20 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
+"yC" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light/warm{
+	dir = 1
+	},
+/obj/item/gun/ballistic/shotgun/doublebarrel,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/b)
 "zb" = (
 /obj/structure/chair/sofa/middle{
 	dir = 8
@@ -2518,6 +2480,14 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
+"DF" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "DJ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/effect/turf_decal/siding/wood{
@@ -3625,6 +3595,16 @@
 /obj/structure/closet/crate/freezer/blood,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
+"Qg" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "Qm" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/chapel/office/b)
@@ -5793,7 +5773,7 @@ oZ
 oZ
 oZ
 eR
-af
+yC
 di
 db
 Bf
@@ -6020,7 +6000,7 @@ oZ
 zo
 ad
 Mv
-ag
+DF
 zo
 QT
 Gz
@@ -6052,7 +6032,7 @@ oZ
 zo
 WQ
 dC
-ah
+Qg
 zo
 aa
 cL

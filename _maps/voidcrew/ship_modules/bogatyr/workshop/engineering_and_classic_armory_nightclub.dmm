@@ -1,5 +1,5 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
+"akJ" = (
 /obj/item/knife/hunting{
 	pixel_y = -1
 	},
@@ -13,7 +13,7 @@
 	anchored = 1
 	},
 /obj/item/melee/chainofcommand,
-/obj/item/melee/baseball_bat{
+/obj/item/gun/ballistic/rifle/boltaction{
 	pixel_x = -7;
 	pixel_y = 2
 	},
@@ -40,13 +40,6 @@
 	pixel_x = 2
 	},
 /turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
-"aab" = (
-/obj/structure/table/reinforced/plasmarglass,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/bag/money,
-/obj/item/reagent_containers/hypospray/medipen/methamphetamine,
-/turf/open/floor/light/colour_cycle,
 /area/template_noop)
 "bgp" = (
 /obj/machinery/power/apc/auto_name/directional/north,
@@ -84,6 +77,13 @@
 	dir = 8
 	},
 /turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"gvU" = (
+/obj/structure/table/reinforced/plasmarglass,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/storage/bag/money,
+/obj/item/reagent_containers/hypospray/medipen/methamphetamine,
+/turf/open/floor/light/colour_cycle,
 /area/template_noop)
 "hjS" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
@@ -198,7 +198,7 @@ hjS
 nif
 vux
 mlm
-aaa
+akJ
 nif
 bEX
 kxA
@@ -208,7 +208,7 @@ eEk
 (3,1,1) = {"
 qeh
 mlC
-aab
+gvU
 ubj
 xZI
 svQ

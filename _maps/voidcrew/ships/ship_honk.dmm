@@ -1,18 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/table/glass,
-/obj/item/storage/toolbox/mechanical,
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/item/pneumatic_cannon/pie/selfcharge,
-/obj/item/nullrod/clown,
-/obj/item/clothing/neck/petcollar,
-/obj/item/bikehorn/golden,
-/obj/item/melee/baseball_bat,
-/obj/item/clothing/head/chaplain/clownmitre,
-/turf/open/floor/mineral/bananium,
-/area/shuttle/voidcrew/honk)
 "aj" = (
 /obj/structure/cable,
 /obj/machinery/light,
@@ -517,6 +503,20 @@
 /obj/machinery/seed_extractor,
 /turf/open/floor/mineral/bananium,
 /area/shuttle/voidcrew/honk)
+"Tr" = (
+/obj/structure/table/glass,
+/obj/item/storage/toolbox/mechanical,
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/item/pneumatic_cannon/pie/selfcharge,
+/obj/item/nullrod/clown,
+/obj/item/clothing/neck/petcollar,
+/obj/item/bikehorn/golden,
+/obj/item/gun/ballistic/revolver/russian/soul,
+/obj/item/clothing/head/chaplain/clownmitre,
+/turf/open/floor/mineral/bananium,
+/area/shuttle/voidcrew/honk)
 "TK" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
@@ -866,7 +866,7 @@ YY
 YY
 YY
 ZT
-aa
+Tr
 Uv
 Yd
 Xn

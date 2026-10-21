@@ -6,46 +6,46 @@
 	uniform = /obj/item/clothing/under/costume/maid
 	head = /obj/item/clothing/head/costume/maid_headband
 	neck = null
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_20/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/costume/maid
 	head = /obj/item/clothing/head/costume/maid_headband
 	neck = null
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_12
 	parent_type = /datum/outfit/job/bartender
 	name = "Hiryu-class Carrier — Bartender"
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_12/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_14
 	parent_type = /datum/outfit/job/bartender
 	name = "Hiryu-class Carrier — Bartender"
 	uniform = /obj/item/clothing/under/syndicate
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_14/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	uniform = /obj/item/clothing/under/syndicate
-	suit_store = null
+	suit_store = /obj/item/gun/ballistic/shotgun/doublebarrel
 	accessory = null
-	backpack_contents = list()
+	backpack_contents = list(/obj/item/storage/box/lethalshot = 1)
 
 /datum/outfit/job/workshop_hiryu_class_carrier_job_21
 	parent_type = /datum/outfit/job/cook

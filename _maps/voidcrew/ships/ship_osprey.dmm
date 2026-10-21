@@ -36,60 +36,6 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/medbay/lobby)
-"ag" = (
-/obj/item/storage/backpack,
-/obj/item/clothing/gloves/color/white,
-/obj/item/clothing/under/rank/centcom/officer,
-/obj/machinery/airalarm/directional/south,
-/obj/item/melee/baseball_bat,
-/obj/item/dog_bone,
-/obj/item/storage/bag/garment/hop,
-/obj/item/storage/lockbox/medal/service,
-/obj/item/computer_disk/command/hop,
-/obj/item/radio/headset/heads/hop,
-/obj/item/storage/box/ids,
-/obj/item/storage/box/silver_ids,
-/obj/item/megaphone/command,
-/obj/item/assembly/flash/handheld,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/door_remote/head_of_personnel,
-/obj/item/circuitboard/machine/techfab/department/service,
-/obj/item/storage/photo_album/hop,
-/obj/item/storage/lockbox/medal/hop,
-/obj/structure/closet/secure_closet{
-	name = "head of personnel's locker";
-	icon_state = "hop";
-	req_access = list("hop")
-	},
-/turf/open/floor/carpet/blue,
-/area/shuttle/voidcrew/osprey/bridge)
-"ah" = (
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "\proper captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/obj/item/clothing/under/rank/centcom/commander,
-/obj/structure/sign/poster/official/random{
-	pixel_x = 32
-	},
-/turf/open/floor/carpet/royalblue,
-/area/shuttle/voidcrew/osprey/bridge)
 "ai" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -2551,6 +2497,16 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/hallway/port)
+"wU" = (
+/obj/structure/closet/secure_closet/captains{
+	name = "\proper captain's locker"
+	},
+/obj/item/clothing/under/rank/centcom/commander,
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/voidcrew/osprey/bridge)
 "wV" = (
 /obj/structure/cable,
 /obj/machinery/light{
@@ -4121,6 +4077,14 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/service/dormitories)
+"Ny" = (
+/obj/item/storage/backpack,
+/obj/item/clothing/gloves/color/white,
+/obj/item/clothing/under/rank/centcom/officer,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/secure_closet/hop,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/osprey/bridge)
 "Nz" = (
 /obj/structure/frame/machine,
 /obj/effect/turf_decal/siding/thinplating_new/light{
@@ -4338,9 +4302,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/starboard)
-"PU" = (
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/osprey/medbay)
 "PW" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp{
@@ -5948,7 +5909,7 @@ ke
 yZ
 hC
 zW
-ag
+Ny
 ke
 IA
 BC
@@ -6296,7 +6257,7 @@ ke
 uH
 iC
 dI
-ah
+wU
 ke
 JV
 EW

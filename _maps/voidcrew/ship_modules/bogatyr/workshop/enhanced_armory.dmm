@@ -1,16 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
-/obj/structure/table/reinforced,
-/obj/item/melee/baseball_bat,
-/obj/machinery/recharger,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "chn" = (
 /obj/structure/sign/poster/official/twelve_gauge,
 /turf/closed/wall/r_wall,
 /area/template_noop)
 "dAL" = (
 /obj/machinery/suit_storage_unit/security,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dNe" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/recharger,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "dQO" = (
@@ -83,28 +83,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"nHi" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/structure/rack,
-/obj/structure/rack,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/structure/cable,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
-"nOV" = (
-/obj/structure/table/reinforced,
-/obj/item/melee/baseball_bat{
-	pixel_x = -6;
-	pixel_y = -2
-	},
-/obj/item/knife/combat/survival{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "pom" = (
 /obj/machinery/light/small{
 	dir = 4
@@ -162,6 +140,21 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"tWi" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/structure/rack,
+/obj/item/ammo_box/c9mm{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/smgm45,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "usR" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
 	dir = 1
@@ -186,6 +179,26 @@
 "vIw" = (
 /turf/template_noop,
 /area/template_noop)
+"xQK" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 
 (1,1,1) = {"
 iRc
@@ -202,9 +215,9 @@ usR
 iRc
 dQO
 pDR
-nOV
-aaa
-nHi
+xQK
+dNe
+tWi
 kbJ
 mxD
 gJF

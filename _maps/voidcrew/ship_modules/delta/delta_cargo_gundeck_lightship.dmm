@@ -1,11 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/gun/energy/disabler,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "b" = (
 /obj/structure/closet/secure_closet/security,
 /obj/machinery/light/directional/north,
@@ -25,6 +18,13 @@
 	amount = 5
 	},
 /obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "p" = (
@@ -47,10 +47,6 @@
 	pixel_x = -5;
 	pixel_y = -5
 	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"s" = (
-/obj/structure/closet/secure_closet/armory1,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "t" = (
@@ -138,9 +134,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"Y" = (
-/turf/open/floor/iron/dark,
-/area/template_noop)
 
 (1,1,1) = {"
 b
@@ -164,7 +157,7 @@ U
 c
 "}
 (4,1,1) = {"
-a
+m
 J
 H
 U

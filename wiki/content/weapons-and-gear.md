@@ -5,11 +5,11 @@ order: 1
 blurb: Starting equipment, buying and finding weapons, making ammunition, and getting better suits.
 ---
 
-Crews launch without lethal guns. Find weapons in guarded loot, buy limited trader stock or make them through ordinary crafting and research. Dangerous zones improve your chances of finding stronger equipment.
+Starting guns and ammunition depend on your ship, rooms and job. Find more weapons in guarded loot, buy limited trader stock or make them through ordinary crafting and research. Dangerous zones improve your chances of finding stronger equipment.
 
 ## Starting equipment
 
-Ship lockers, crates and job kits do not supply lethal guns. Security and miners receive survival knives; disablers and work tools remain available. Hulls with MOD storage carry ordinary suits rather than command-grade equipment.
+Check your ship's lockers, crates and job kit for guns and spare ammunition. Marine vendors offer weapons for vouchers. Security and miners also receive survival knives. Hulls with MOD storage carry ordinary suits rather than command-grade equipment.
 
 The first chaplain of a round receives a null rod. Its starting choices exclude guns and certain high-end melee forms. Surgery kits contain their operating tools; Sawbones sells one at the Patch-Up Clinic for **750 credits**.
 
@@ -48,7 +48,7 @@ A cache makes one main weapon roll. For an armory cache the gun chance is **12% 
 
 Abandoned freight crates have an **8%, 19% or 33%** gun chance by zone and otherwise give melee. Their gun selection stops at the yellow group. Purchased mystery caches also use this restricted weapon selection.
 
-NPC weapons and drops vary by zone. The weapon an enemy uses does not guarantee that it drops. Strong melee prizes such as the hierophant club and cleaving saw are no longer guaranteed boss rewards. Unguarded ruin floors and starting lockers do not provide the strongest weapons. See [Ruins](ruins.md) and [Hostile Fauna & Elites](threats-and-elites.md).
+NPC weapons and drops vary by zone. The weapon an enemy uses does not guarantee that it drops. Strong melee prizes such as the hierophant club and cleaving saw are no longer guaranteed boss rewards. Unguarded ruin floors do not provide the strongest weapons. See [Ruins](ruins.md) and [Hostile Fauna & Elites](threats-and-elites.md).
 
 Pirate bounty weapon bundles hold one gun each. Other bundles can contain armour or security supplies instead.
 

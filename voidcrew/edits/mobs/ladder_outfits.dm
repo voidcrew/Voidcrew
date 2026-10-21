@@ -6,15 +6,11 @@
 	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/hos
-	suit_store = null
 	backpack_contents = list(
 		/obj/item/evidencebag = 1,
 		/obj/item/melee/baton/security/loaded/hos = 1,
 		/obj/item/knife/combat/survival = 1,
 	)
-
-/datum/outfit/job/bridge_assistant
-	l_pocket = null
 
 /datum/outfit/job/proc/ladder_add_survival_knife()
 	backpack_contents = backpack_contents?.Copy() || list()
@@ -45,7 +41,9 @@
 /datum/outfit/job/equip(mob/living/carbon/human/user, visuals_only = FALSE)
 	var/list/previous_contents = user.get_all_contents()
 	. = ..()
-	remove_ladder_starting_weapons(user, previous_contents)
+	for(var/obj/item/item in user.get_all_contents() - previous_contents)
+		if(is_ladder_restricted_melee(item.type))
+			qdel(item)
 	if(visuals_only)
 		return
 	// Workshop pre_equip overrides can replace their parent's entire backpack list.
