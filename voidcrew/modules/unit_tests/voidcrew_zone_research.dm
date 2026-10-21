@@ -25,6 +25,14 @@
 	web.unhide_node(node)
 	web.add_points_all(100000)
 
+/datum/unit_test/voidcrew_zone_research/proc/console_node_data(obj/machinery/computer/rdconsole/console, mob/user, node_id)
+	var/list/data = console.ui_data(user)
+	for(var/list/entry as anything in data["nodes"])
+		if(entry["id"] == node_id)
+			return entry
+	TEST_FAIL("The console omitted node [node_id]")
+	return list()
+
 /// Fresh disks on separate hulls restore knowledge, but share the crew's completion grants.
 /datum/unit_test/voidcrew_zone_research/shared_entitlement/Run()
 	var/obj/structure/overmap/ship/first = zone_ship(run_loc_floor_bottom_left)
@@ -140,15 +148,59 @@
 	for(var/permission in 0 to 1)
 		if(permission)
 			grant_permission(ship.get_crew_record(), permission)
-		var/list/data = console.ui_data(user)
-		var/list/entry
-		for(var/list/candidate as anything in data["nodes"])
-			if(candidate["id"] == node.id)
-				entry = candidate
-				break
-		TEST_ASSERT_NOTNULL(entry, "The console omitted the visible gated node")
+		var/list/entry = console_node_data(console, user, node.id)
 		TEST_ASSERT_EQUAL(entry["tier"], 1, "The fixture has unresolved research prerequisites")
 		TEST_ASSERT_EQUAL(entry["can_unlock"], permission, "Console availability did not follow live crew standing")
+		TEST_ASSERT_EQUAL(entry["zone_permission_blocked"], !permission, "The console misidentified a standing-only research block")
+
+/// Missing points, experiments, surveys or prerequisites must not report an authorization denial.
+/datum/unit_test/voidcrew_zone_research/console_blockers/Run()
+	var/obj/structure/overmap/ship/ship = zone_ship(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = make_player(run_loc_floor_bottom_left, "zoneresearchblockers")
+	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
+	var/datum/techweb/web = install_reward_disk(server, user)
+	var/obj/machinery/computer/rdconsole/console = allocate(/obj/machinery/computer/rdconsole)
+	var/obj/item/multitool/tool = allocate(/obj/item/multitool)
+	tool.buffer = web
+	TEST_ASSERT(console.multitool_act(user, tool), "Console could not link its local web")
+	var/datum/techweb_node/node = allocate(/datum/techweb_node)
+	node.id = "rndfix_console_blockers"
+	node.zone_permission = 1 // ZONE_PERMISSION_YELLOW
+	node.prereq_ids = list("specialist_ammo")
+	node.research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 100)
+	node.required_experiments = list(/datum/experiment/physical/arcade_winner)
+	node.required_surveyed_objects = list("planets" = 1)
+	SSresearch.techweb_nodes[node.id] = node
+	prepare_node(web, node)
+	web.survey_data = allocate(/datum/survey_research)
+	web.survey_data.survey_objects_by_type["planets"] = list(allocate(/datum/surveyed_celestial_object/planet))
+	var/list/entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(!entry["zone_permission_blocked"], "A missing experiment was reported as an authorization denial")
+	var/datum/experiment/experiment = allocate(/datum/experiment/physical/arcade_winner)
+	web.completed_experiments[experiment.type] = experiment
+	web.survey_data.survey_objects_by_type["planets"] = list()
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(!entry["zone_permission_blocked"], "A missing survey was reported as an authorization denial")
+	web.survey_data.survey_objects_by_type["planets"] = list(allocate(/datum/surveyed_celestial_object/planet))
+	web.unresearch_node_id("specialist_ammo")
+	web.update_node_status(node)
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(!entry["zone_permission_blocked"], "A missing prerequisite was reported as an authorization denial")
+	web.research_node_id("specialist_ammo", TRUE, FALSE, FALSE)
+	web.update_node_status(node)
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(entry["zone_permission_blocked"], "A standing-only blocker was not reported")
+	web.remove_points_all(100000)
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(!entry["zone_permission_blocked"], "Missing points and standing were reported as a standing-only block")
+	grant_permission(ship.get_crew_record(), 1)
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(!entry["can_unlock"], "A node without points became researchable")
+	TEST_ASSERT(!entry["zone_permission_blocked"], "A points-only blocker was reported as an authorization denial")
+	web.add_points_all(100)
+	entry = console_node_data(console, user, node.id)
+	TEST_ASSERT(entry["can_unlock"], "The node remained disabled after every requirement was met")
+	TEST_ASSERT(!entry["zone_permission_blocked"], "An unlockable node reported an authorization denial")
 
 /// A queued request retains knowledge only if it succeeds against the live source crew.
 /datum/unit_test/voidcrew_zone_research/queue_recheck/Run()

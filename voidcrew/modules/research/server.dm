@@ -34,11 +34,12 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 		if(istype(site, /obj/structure/overmap/ship))
 			var/obj/structure/overmap/ship/ship = site
 			var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
-			return crew?.research_reward_ledger
+			if(!QDELETED(crew))
+				return crew.research_reward_ledger
 		if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
 			var/obj/structure/overmap/dynamic/player_outpost/home = site
 			return home.research_reward_ledger
-	return null
+	return local_experiment_reward_ledger
 
 /obj/machinery/rnd/server/ship
 	desc = "A computer system with a removable research drive."

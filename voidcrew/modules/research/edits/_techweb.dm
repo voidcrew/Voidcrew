@@ -6,6 +6,8 @@
 	/// Node id -> remaining actual payment by currency and the discounts still owed to that purchase.
 	/// These receipts belong only to this web; research transfers never copy them.
 	var/list/experiment_payment_receipts = list()
+	/// Completion grants for webs without a crew or player outpost to hold their claims.
+	var/list/local_experiment_reward_ledger = list()
 
 /datum/techweb/Destroy()
 	survey_data = null
@@ -59,6 +61,12 @@
 	if(!istype(node))
 		return FALSE
 	return node.zone_permission == ZONE_PERMISSION_PUBLIC || node.zone_permission <= get_research_zone_permission()
+
+/// Authorization is the sole blocker only after prerequisites and every research requirement pass.
+/datum/techweb/proc/is_only_zone_permission_blocked(datum/techweb_node/node)
+	if(!istype(node) || have_zone_permission_for_node(node) || !available_nodes[node.id])
+		return FALSE
+	return can_afford(node.get_price(src)) && have_experiments_for_node(node) && have_surveys_for_node(node)
 
 /datum/techweb/enqueue_node(id, mob/user)
 	if(!have_zone_permission_for_node(SSresearch.techweb_node_by_id(id)))
