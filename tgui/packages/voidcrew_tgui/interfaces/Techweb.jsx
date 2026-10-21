@@ -11,11 +11,13 @@ import {
   Icon,
   Input,
   Modal,
+  ProgressBar,
   Section,
   Stack,
   Tabs,
   VirtualList,
 } from 'tgui-core/components';
+import { Experiment } from '../../tgui/interfaces/ExperimentConfigure';
 import { NtosWindow, Window } from '../../tgui/layouts';
 
 // Data reshaping / ingestion (thanks stylemistake for the help, very cool!)
@@ -139,7 +141,15 @@ export const AppTechweb = (props) => {
 
 export const TechwebContent = (props) => {
   const { act, data } = useRemappedBackend();
-  const { points, web_org, sec_protocols, t_disk, d_disk, locked } = data;
+  const {
+    points,
+    points_last_tick,
+    web_org,
+    sec_protocols,
+    t_disk,
+    d_disk,
+    locked,
+  } = data;
   const [techwebRoute, setTechwebRoute] = useLocalState('techwebRoute', null);
   const [lastPoints, setLastPoints] = useState({});
 
@@ -154,6 +164,7 @@ export const TechwebContent = (props) => {
                 {Object.keys(points).map((k) => (
                   <li key={k}>
                     <b>{k}</b>: {points[k]}
+                    {!!points_last_tick[k] && ` (+${points_last_tick[k]}/sec)`}
                   </li>
                 ))}
               </ul>
@@ -417,6 +428,9 @@ const TechNodeDetail = (props) => {
   const [techwebRoute, setTechwebRoute] = useLocalState('techwebRoute', null);
 
   const prereqNodes = nodes.filter((x) => prereq_ids.includes(x.id));
+  const complPrereq = prereq_ids.filter(
+    (x) => nodes.find((y) => y.id === x)?.tier === 0,
+  ).length;
   const unlockedNodes = nodes.filter((x) => unlock_ids.includes(x.id));
 
   return (
@@ -432,14 +446,14 @@ const TechNodeDetail = (props) => {
                 selected={tabIndex === 0}
                 onClick={() => setTabIndex(0)}
               >
-                Required
+                Required ({complPrereq}/{prereqNodes.length})
               </Tabs.Tab>
               <Tabs.Tab
                 selected={tabIndex === 1}
                 disabled={unlockedNodes.length === 0}
                 onClick={() => setTabIndex(1)}
               >
-                Unlocks
+                Unlocks ({unlockedNodes.length})
               </Tabs.Tab>
             </Tabs>
           </Flex.Item>
@@ -478,6 +492,8 @@ const TechNode = (props) => {
     node_cache,
     design_cache,
     experiments,
+    points = [],
+    nodes,
     point_types_abbreviations = [],
     surveyed_objects,
   } = data;
@@ -488,11 +504,69 @@ const TechNode = (props) => {
     description,
     costs,
     design_ids,
+    prereq_ids,
     required_experiments,
     discount_experiments,
     required_surveyed_objects,
   } = node_cache[id];
   const [techwebRoute, setTechwebRoute] = useLocalState('techwebRoute', null);
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const expcompl = required_experiments.filter(
+    (x) => experiments[x]?.completed,
+  ).length;
+  const experimentProgress = (
+    <ProgressBar
+      ranges={{
+        good: [0.5, Infinity],
+        average: [0.25, 0.5],
+        bad: [-Infinity, 0.25],
+      }}
+      value={expcompl / required_experiments.length}
+    >
+      Experiments ({expcompl}/{required_experiments.length})
+    </ProgressBar>
+  );
+
+  const techcompl = prereq_ids.filter(
+    (x) => nodes.find((y) => y.id === x)?.tier === 0,
+  ).length;
+  const techProgress = (
+    <ProgressBar
+      ranges={{
+        good: [0.5, Infinity],
+        average: [0.25, 0.5],
+        bad: [-Infinity, 0.25],
+      }}
+      value={techcompl / prereq_ids.length}
+    >
+      Tech ({techcompl}/{prereq_ids.length})
+    </ProgressBar>
+  );
+
+  let requiredCount = 0;
+  let surveyedCount = 0;
+  Object.entries(required_surveyed_objects).map((obj) => {
+    requiredCount += obj[1];
+    if (surveyed_objects) {
+      if (surveyed_objects[obj[0]]) {
+        surveyedCount += surveyed_objects[obj[0]];
+      }
+    }
+  });
+
+  const surveyProgress = (
+    <ProgressBar
+      ranges={{
+        good: [0.5, Infinity],
+        average: [0.25, 0.5],
+        bad: [-Infinity, 0.25],
+      }}
+      value={surveyedCount / requiredCount}
+    >
+      Surveys ({surveyedCount}/{requiredCount})
+    </ProgressBar>
+  );
 
   // Notice that this logic will have to be changed if we make the discounts
   // pool-specific
@@ -514,6 +588,7 @@ const TechNode = (props) => {
                 icon="tasks"
                 onClick={() => {
                   setTechwebRoute({ route: 'details', selectedNode: id });
+                  setTabIndex(0);
                 }}
               >
                 Details
@@ -538,16 +613,45 @@ const TechNode = (props) => {
       }
     >
       {tier !== 0 && (
-        <Box mb={1} color="label">
+        <Flex className="Techweb__NodeProgress">
           {costs.map((k) => {
             const reqPts = Math.max(0, k.value - nodeDiscount);
+            const nodeProg = Math.min(reqPts, points[k.type]) || 0;
             return (
-              <Box inline key={k.type} mr={1}>
-                {point_types_abbreviations[k.type]}: {reqPts}
-              </Box>
+              <Flex.Item key={k.type} grow={1} basis={0}>
+                <ProgressBar
+                  ranges={{
+                    good: [0.5, Infinity],
+                    average: [0.25, 0.5],
+                    bad: [-Infinity, 0.25],
+                  }}
+                  value={
+                    reqPts === 0
+                      ? 1
+                      : Math.min(1, (points[k.type] || 0) / reqPts)
+                  }
+                >
+                  {point_types_abbreviations[k.type]} ({nodeProg}/{reqPts})
+                </ProgressBar>
+              </Flex.Item>
             );
           })}
-        </Box>
+          {prereq_ids.length > 0 && (
+            <Flex.Item grow={1} basis={0}>
+              {techProgress}
+            </Flex.Item>
+          )}
+          {required_experiments.length > 0 && (
+            <Flex.Item grow={1} basis={0}>
+              {experimentProgress}
+            </Flex.Item>
+          )}
+          {Object.entries(required_surveyed_objects).length > 0 && (
+            <Flex.Item grow={1} basis={0}>
+              {surveyProgress}
+            </Flex.Item>
+          )}
+        </Flex>
       )}
       <Box className="Techweb__NodeDescription" mb={2}>
         {description}
@@ -582,20 +686,18 @@ const TechNode = (props) => {
             {Object.entries(required_surveyed_objects).map((obj, index) => {
               return (
                 <Stack.Item textAlign="center" width="100%" key={obj[0]}>
-                  <Box
-                    color={
-                      (surveyed_objects?.[obj[0]] ?? 0) >= obj[1]
-                        ? 'good'
-                        : 'label'
-                    }
+                  <ProgressBar
+                    ranges={{
+                      good: [1, Infinity],
+                      average: [0.5, 1],
+                      bad: [-Infinity, 0.5],
+                    }}
+                    value={(surveyed_objects?.[obj[0]] ?? 0) / obj[1]}
                   >
                     {obj[0].charAt(0).toUpperCase() +
                       obj[0].slice(1).replace('_', ' ')}{' '}
-                    —{' '}
-                    {(surveyed_objects?.[obj[0]] ?? 0) >= obj[1]
-                      ? 'Filed'
-                      : 'Awaiting survey'}
-                  </Box>
+                    ({surveyed_objects?.[obj[0]] ?? 0}/{obj[1]}){' '}
+                  </ProgressBar>
                 </Stack.Item>
               );
             })}
@@ -605,14 +707,21 @@ const TechNode = (props) => {
       {Object.keys(discount_experiments).length > 0 && (
         <Collapsible
           className="TechwebNodeExperimentsRequired"
-          title="Supporting Experiments"
+          title="Discount-Eligible Experiments"
         >
           {Object.keys(discount_experiments).map((k, index) => {
             const thisExp = experiments[k];
             if (thisExp === null || thisExp === undefined) {
               return <LockedExperiment key={index} />;
             }
-            return <NodeExperiment key={k} exp={thisExp} />;
+            return (
+              <NodeExperiment key={k} exp={thisExp}>
+                <Box className="Techweb__ExperimentDiscount">
+                  Provides a discount of {discount_experiments[k]} points to all
+                  required point pools.
+                </Box>
+              </NodeExperiment>
+            );
           })}
         </Collapsible>
       )}
@@ -620,13 +729,21 @@ const TechNode = (props) => {
   );
 };
 
+// The node view lists experiments whether or not they're done, and the card itself
+// only shows a raw progress tally - which for shared-tally experiments (fish) can even
+// read as "8/7". Say outright when one is already in the bag.
 const NodeExperiment = (props) => {
-  const { exp } = props;
+  const { exp, children } = props;
   return (
-    <Box mb={1} color={exp.completed ? 'good' : 'label'}>
-      <Icon name={exp.completed ? 'check' : 'flask'} mr={1} />
-      {exp.name} — {exp.completed ? 'Completed' : 'Awaiting results'}
-    </Box>
+    <Experiment exp={exp}>
+      {!!exp.completed && (
+        <Box color="good" bold mb={1}>
+          <Icon name="check" mr={1} />
+          Experiment completed.
+        </Box>
+      )}
+      {children}
+    </Experiment>
   );
 };
 
@@ -647,6 +764,10 @@ const LockedExperiment = (props) => {
           <Flex.Item color="rgba(0, 0, 0, 0.5)">???</Flex.Item>
         </Flex>
       </Button>
+      <Box className={'ExperimentConfigure__ExperimentContent'}>
+        This experiment has not been discovered yet, continue researching nodes
+        in the tree to discover the contents of this experiment.
+      </Box>
     </Box>
   );
 };
