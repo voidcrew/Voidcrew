@@ -2,15 +2,6 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
-"ab" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/item/melee/baseball_bat,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/engine/cult/ship,
-/area/shuttle/voidcrew/delta/bridge/c)
 "ai" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1465,6 +1456,15 @@
 /obj/machinery/light/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
+"SC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/item/gun/energy/laser/retro,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine/cult/ship,
+/area/shuttle/voidcrew/delta/bridge/c)
 "SU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1802,7 +1802,7 @@ Bf
 aR
 cF
 BN
-ab
+SC
 GD
 rV
 JD

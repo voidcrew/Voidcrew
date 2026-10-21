@@ -2,20 +2,6 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
-"ab" = (
-/obj/structure/cable,
-/obj/item/melee/baseball_bat,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/bridge/d)
 "cr" = (
 /obj/structure/plaque/static_plaque{
 	name = "Boiler Room";
@@ -170,15 +156,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
-"jL" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/portables_connector/visible,
-/obj/machinery/portable_atmospherics/canister/oxygen,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/d)
 "jQ" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -236,20 +213,6 @@
 	},
 /obj/effect/turf_decal/bot,
 /turf/open/floor/circuit,
-/area/shuttle/voidcrew/delta/engineering/d)
-"lX" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/power/port_gen/pacman{
-	anchored = 1
-	},
-/obj/item/wrench,
-/obj/structure/cable,
-/obj/machinery/airalarm/directional/west,
-/obj/effect/turf_decal/caution,
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
 "mx" = (
 /obj/structure/cable,
@@ -651,13 +614,6 @@
 "xL" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/d)
-"yc" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/d)
 "yg" = (
 /obj/structure/closet/wardrobe/mixed,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -915,16 +871,6 @@
 	},
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/airlock/port/d)
-"Dm" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/machinery/portable_atmospherics/scrubber,
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/atmospherics/pipe/bridge_pipe/orange,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/d)
 "DI" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -1012,10 +958,6 @@
 /obj/effect/turf_decal/box/red/corners,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/airlock/port/d)
-"FF" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/delta/engineering/d)
 "FT" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -1606,6 +1548,20 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
+"UO" = (
+/obj/structure/cable,
+/obj/item/gun/energy/laser/retro,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/siding/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/bridge/d)
 "UR" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/airlock/starboard/d)
@@ -1692,10 +1648,6 @@
 /obj/machinery/mission_pad,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
-"XM" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/delta/engineering/d)
 "Yb" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1924,7 +1876,7 @@ Ji
 Qc
 Ab
 Yb
-ab
+UO
 Qj
 jp
 Qc

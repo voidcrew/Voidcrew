@@ -26,16 +26,6 @@
 /obj/item/storage/photo_album/hos,
 /turf/template_noop,
 /area/template_noop)
-"aab" = (
-/obj/effect/turf_decal/siding/wood{
-	color = "#543C30";
-	dir = 5
-	},
-/obj/structure/displaycase/noalert{
-	start_showpiece_type = null
-	},
-/turf/template_noop,
-/area/template_noop)
 "aGd" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 4;
@@ -55,6 +45,16 @@
 /obj/effect/turf_decal/siding/wood{
 	color = "#543C30";
 	dir = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"hlx" = (
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 5
+	},
+/obj/structure/displaycase/noalert{
+	start_showpiece_type = /obj/item/gun/energy/e_gun/hos
 	},
 /turf/template_noop,
 /area/template_noop)
@@ -91,6 +91,6 @@ ods
 aRZ
 "}
 (3,1,1) = {"
-aab
+hlx
 qCd
 "}

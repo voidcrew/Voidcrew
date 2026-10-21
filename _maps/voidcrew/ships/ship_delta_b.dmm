@@ -2,14 +2,6 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
-"ab" = (
-/obj/structure/cable,
-/obj/item/melee/baseball_bat,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/bridge/b)
 "aw" = (
 /obj/structure/cable,
 /obj/machinery/firealarm/directional/east,
@@ -763,14 +755,6 @@
 /obj/item/clothing/mask/gas/syndicate,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/engineering/b)
-"Ec" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/clothing/mask/gas/syndicate,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/engineering/b)
 "Ef" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -845,6 +829,15 @@
 /obj/machinery/light/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/bridge/b)
+"GN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/clothing/mask/gas/syndicate,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/engineering/b)
 "HI" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/delta/hallway/central/b)
@@ -931,21 +924,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/delta/airlock/port/b)
-"JK" = (
-/obj/structure/rack,
-/obj/item/storage/belt/utility,
-/obj/item/radio/off{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/radio/off,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/machinery/airalarm/directional/north,
-/obj/structure/sign/warning/explosives/alt/directional/east,
-/obj/item/clothing/mask/gas/syndicate,
-/obj/item/clothing/mask/gas/syndicate,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "JN" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
@@ -989,6 +967,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/b)
+"LG" = (
+/obj/structure/cable,
+/obj/item/gun/energy/laser/retro,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/bridge/b)
 "LJ" = (
 /obj/structure/sign/warning/electric_shock,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1043,6 +1029,22 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/b)
+"MV" = (
+/obj/structure/rack,
+/obj/item/storage/belt/utility,
+/obj/item/radio/off{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/radio/off,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/airalarm/directional/north,
+/obj/structure/sign/warning/explosives/alt/directional/east,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/delta/airlock/starboard/b)
 "MW" = (
 /obj/effect/turf_decal/tile/red,
 /obj/machinery/mission_pad,
@@ -1627,7 +1629,7 @@ aa
 Yw
 TZ
 lt
-Ec
+GN
 Ll
 Zb
 Zb
@@ -1669,7 +1671,7 @@ cE
 IK
 GI
 lm
-ab
+LG
 lm
 xa
 kc
@@ -1863,7 +1865,7 @@ aa
 aa
 aa
 cW
-JK
+MV
 NO
 VJ
 VJ

@@ -3,24 +3,6 @@
 /obj/machinery/vending/games,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogardee_b/cargo/vault)
-"ac" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/machinery/door/window/right/directional/north,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
-"ad" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/machinery/door/window/right/directional/north,
-/obj/item/melee/baseball_bat,
-/obj/item/gun/energy/taser,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
 "as" = (
 /obj/machinery/atmospherics/components/unary/passive_vent/layer2,
 /turf/open/floor/plating/airless,
@@ -232,6 +214,40 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/bogardee_b/service/bar)
+"hJ" = (
+/obj/structure/closet/secure_closet/bar{
+	req_access = null
+	},
+/obj/item/radio/intercom{
+	pixel_y = -28
+	},
+/obj/item/storage/toolbox/mechanical,
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/clothing/under/rank/civilian/bartender,
+/obj/item/clothing/under/rank/civilian/bartender/purple,
+/obj/item/clothing/under/rank/civilian/bartender/skirt,
+/obj/item/clothing/suit/apron/purple_bartender,
+/obj/item/toy/figure/bartender,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/rubbershot,
+/obj/item/storage/box/rubbershot,
+/obj/item/card/emag,
+/obj/item/storage/belt/bandolier,
+/obj/item/gun/ballistic/shotgun/automatic,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/bogardee_b/service/bar)
+"hM" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/door/window/right/directional/north,
+/obj/item/gun/energy/laser/scatter,
+/obj/item/gun/energy/taser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
 "ie" = (
 /obj/structure/chair,
 /obj/item/radio/intercom{
@@ -499,27 +515,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/bogardee_b/service/kitchen)
-"mG" = (
-/obj/structure/closet/secure_closet/bar{
-	req_access = null
-	},
-/obj/item/radio/intercom{
-	pixel_y = -28
-	},
-/obj/item/storage/toolbox/mechanical,
-/obj/item/stack/cable_coil,
-/obj/item/stack/sheet/iron/twenty,
-/obj/item/stack/sheet/glass/fifty,
-/obj/item/clothing/under/rank/civilian/bartender,
-/obj/item/clothing/under/rank/civilian/bartender/purple,
-/obj/item/clothing/under/rank/civilian/bartender/skirt,
-/obj/item/clothing/suit/apron/purple_bartender,
-/obj/item/toy/figure/bartender,
-/obj/item/card/emag,
-/obj/item/storage/belt/bandolier,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/bogardee_b/service/bar)
 "mH" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
@@ -725,6 +720,15 @@
 /obj/structure/curtain/bounty,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogardee_b/service/quarters)
+"tH" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/item/gun/energy/laser/retro,
+/obj/item/gun/energy/laser/retro,
+/obj/item/gun/energy/laser/retro,
+/obj/machinery/door/window/right/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
 "tM" = (
 /obj/machinery/door/airlock/external,
 /turf/open/floor/iron/dark,
@@ -857,6 +861,18 @@
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bogardee_b/maintenance)
+"xo" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/item/ammo_box/c38,
+/obj/machinery/door/window/right/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/bogardee_b/armory)
 "xO" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/bogardee_b/service/bar)
@@ -1216,14 +1232,6 @@
 /obj/structure/table/wood/poker,
 /turf/open/floor/carpet/black,
 /area/shuttle/voidcrew/bogardee_b/service/bar)
-"IV" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/machinery/door/window/right/directional/north,
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/bogardee_b/armory)
 "Jh" = (
 /obj/machinery/light,
 /obj/machinery/airalarm/directional/south,
@@ -2181,7 +2189,7 @@ rr
 zw
 xO
 jL
-mG
+hJ
 Bd
 Rf
 EE
@@ -2354,7 +2362,7 @@ Eu
 Ap
 kw
 SJ
-ac
+tH
 Ap
 vZ
 "}
@@ -2375,7 +2383,7 @@ km
 Ap
 kw
 FE
-ad
+hM
 Ap
 vZ
 "}
@@ -2396,7 +2404,7 @@ Mp
 Ap
 rx
 ud
-IV
+xo
 Ap
 vZ
 "}

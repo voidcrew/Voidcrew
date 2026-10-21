@@ -24,14 +24,12 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"d" = (
-/obj/machinery/vending/security/marine/solgov{
-	voucher_items = list()
-	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "h" = (
 /obj/structure/closet/bombcloset/security,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/structure/closet/secure_closet/armory2,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "k" = (
@@ -51,6 +49,10 @@
 /area/template_noop)
 "n" = (
 /obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "r" = (
@@ -102,19 +104,6 @@
 /obj/item/reagent_containers/cup/glass/mug/tea{
 	pixel_x = 6;
 	pixel_y = 5
-	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"H" = (
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/box/firingpins,
-/obj/structure/closet/secure_closet{
-	name = "armory ballistics locker";
-	icon_state = "tac";
-	icon_door = "armory_shotgun";
-	req_access = list("armory")
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
@@ -184,8 +173,8 @@ s
 c
 "}
 (6,1,1) = {"
-H
-d
+j
+p
 m
 z
 "}

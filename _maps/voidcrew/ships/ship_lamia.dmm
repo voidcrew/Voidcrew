@@ -16,14 +16,6 @@
 /obj/machinery/computer/communications,
 /turf/open/floor/carpet/stellar,
 /area/shuttle/voidcrew/lamia/bridge)
-"ae" = (
-/obj/structure/table/wood/fancy/royalblue,
-/obj/item/melee/baseball_bat{
-	pixel_x = -2;
-	pixel_y = 2
-	},
-/turf/open/floor/carpet/stellar,
-/area/shuttle/voidcrew/lamia/bridge)
 "af" = (
 /obj/structure/chair/bronze{
 	dir = 1
@@ -687,20 +679,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/lamia/engines)
-"gS" = (
-/obj/structure/closet/cabinet,
-/obj/item/melee/baseball_bat,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/glasses/sunglasses/reagent,
-/obj/item/clothing/head/wizard/black{
-	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
-	name = "beer wizard hat"
-	},
-/obj/item/roulette_wheel_beacon,
-/obj/item/etherealballdeployer,
-/obj/item/storage/belt/bandolier,
-/turf/open/floor/carpet/purple,
-/area/shuttle/voidcrew/lamia/bar)
 "hh" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1020,6 +998,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/lamia/bar)
+"yk" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/gun/energy/e_gun/mini{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/turf/open/floor/carpet/stellar,
+/area/shuttle/voidcrew/lamia/bridge)
 "zn" = (
 /obj/machinery/processor,
 /turf/open/floor/wood,
@@ -1363,6 +1349,24 @@
 /obj/structure/bookcase/random,
 /turf/open/floor/carpet/orange,
 /area/shuttle/voidcrew/lamia/archive)
+"NO" = (
+/obj/structure/closet/cabinet,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	desc = "Despite the fact you're on a ship meant for wizards, with spells and all that, a bartender is still never far from a double-barreled twelve-gauge shotgun.";
+	sawn_desc = "Gooblamaphous's coming!"
+	},
+/obj/item/storage/box/beanbag,
+/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/clothing/glasses/sunglasses/reagent,
+/obj/item/clothing/head/wizard/black{
+	desc = "Strange-looking black hat-wear that most certainly belongs to a real bartender.";
+	name = "beer wizard hat"
+	},
+/obj/item/roulette_wheel_beacon,
+/obj/item/etherealballdeployer,
+/obj/item/storage/belt/bandolier,
+/turf/open/floor/carpet/purple,
+/area/shuttle/voidcrew/lamia/bar)
 "Ot" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bookcase/random/religion,
@@ -1815,7 +1819,7 @@ MR
 Ql
 Fu
 vJ
-gS
+NO
 aW
 MA
 NF
@@ -1871,7 +1875,7 @@ No
 "}
 (9,1,1) = {"
 ab
-ae
+yk
 io
 Mb
 ab

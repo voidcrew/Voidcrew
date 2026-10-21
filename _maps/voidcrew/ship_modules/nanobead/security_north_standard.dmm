@@ -1,32 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aab" = (
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/turf_decal/siding/thinplating_new/dark,
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 2
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
-"aac" = (
-/obj/structure/guncase/shotgun,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
-	dir = 1
-	},
-/obj/structure/extinguisher_cabinet/directional/east,
-/obj/machinery/airalarm/directional/south,
-/obj/effect/spawner/random/armory/buckshot,
-/obj/effect/spawner/random/armory/buckshot,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
 "aDU" = (
 /obj/structure/railing,
 /obj/structure/rack,
@@ -162,6 +134,16 @@
 	},
 /turf/open/floor/iron/large,
 /area/template_noop)
+"jvF" = (
+/obj/structure/closet/secure_closet/contraband/armory,
+/obj/effect/turf_decal/siding/thinplating_new/dark,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner,
+/obj/item/gun/energy/laser,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
 "jMa" = (
 /obj/structure/table/reinforced,
 /obj/machinery/recharger{
@@ -234,6 +216,24 @@
 	dir = 4
 	},
 /area/template_noop)
+"ohc" = (
+/obj/structure/guncase/shotgun,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/south,
+/obj/effect/spawner/random/armory/buckshot,
+/obj/effect/spawner/random/armory/buckshot,
+/obj/item/gun/ballistic/shotgun/riot,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
 "osL" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/armory/riot_helmet,
@@ -247,6 +247,24 @@
 	dir = 8
 	},
 /obj/machinery/camera/autoname/directional/east,
+/turf/open/floor/iron/dark/smooth_large,
+/area/template_noop)
+"pLe" = (
+/obj/structure/guncase/wt550,
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/effect/turf_decal/siding/thinplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/iron/dark/smooth_large,
 /area/template_noop)
 "pWB" = (
@@ -318,21 +336,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/template_noop)
-"tZS" = (
-/obj/structure/guncase/wt550,
-/obj/item/melee/baseball_bat,
-/obj/effect/turf_decal/siding/thinplating_new/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/red/filled/mid_joiner{
-	dir = 1
-	},
-/obj/machinery/light/directional/south,
-/turf/open/floor/iron/dark/smooth_large,
-/area/template_noop)
 "wvs" = (
 /obj/effect/turf_decal/siding/thinplating_new/corner{
 	dir = 4
@@ -393,18 +396,18 @@ jkS
 (4,1,1) = {"
 ksK
 aDU
-aab
+jvF
 ruD
 dPa
-tZS
+pLe
 "}
 (5,1,1) = {"
 ksK
 ksK
-aab
+jvF
 cJP
 bCt
-aac
+ohc
 "}
 (6,1,1) = {"
 ksK

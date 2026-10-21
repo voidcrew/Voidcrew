@@ -1,12 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/gun/energy/disabler,
-/obj/structure/sign/poster/contraband/c20r/directional/north,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "d" = (
 /obj/structure/table/reinforced,
 /obj/machinery/recharger,
@@ -22,10 +14,6 @@
 	dir = 4
 	},
 /obj/structure/sign/warning/secure_area/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
-"h" = (
-/obj/structure/closet/secure_closet/armory1,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "i" = (
@@ -74,9 +62,6 @@
 /obj/structure/sign/poster/contraband/energy_swords/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"t" = (
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "u" = (
 /obj/structure/closet/secure_closet/security,
 /obj/machinery/light/small/red/directional/west,
@@ -116,19 +101,18 @@
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"H" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 2
-	},
-/obj/structure/closet/syndicate,
-/obj/item/clothing/under/syndicate,
-/obj/item/clothing/under/syndicate,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "I" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 2
 	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"M" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
+/obj/structure/sign/poster/contraband/c20r/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "O" = (
@@ -192,7 +176,7 @@ I
 g
 "}
 (4,1,1) = {"
-a
+M
 q
 Q
 p

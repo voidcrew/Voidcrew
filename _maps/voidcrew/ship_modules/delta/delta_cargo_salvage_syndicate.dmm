@@ -129,12 +129,13 @@
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"E" = (
+"D" = (
 /obj/effect/turf_decal/box/red/corners{
 	dir = 1
 	},
 /obj/structure/closet/crate/secure/weapon,
-/obj/item/melee/baseball_bat,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/strilka310/surplus,
 /obj/item/flashlight/seclite,
 /obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/mineral/plastitanium,
@@ -255,7 +256,7 @@ G
 g
 "}
 (4,1,1) = {"
-E
+D
 A
 L
 b

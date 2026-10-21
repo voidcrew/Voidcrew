@@ -68,7 +68,7 @@ Ships carry one or more **holopads**, which do double duty: they place calls to 
 
 ## Defence
 
-Hull combat systems depend on the fitout. Personal lethal guns are absent from all starting hulls, lockers and job kits; disablers and work tools remain. See [Weapons & Gear](weapons-and-gear.md). What you can add to the hull:
+Hull combat systems depend on the fitout. Starting personal guns and ammunition depend on the ship, rooms and job kits. See [Weapons & Gear](weapons-and-gear.md). What you can add to the hull:
 - **Shield generators**, which soak damage before the hull does and draw power to regenerate.
 - **Laser turrets** and **missile launchers**, aimed from a ship combat console.
 - An **interdictor**, which pins another ship in place so it cannot undock or run.

@@ -126,7 +126,7 @@
 	for_ship = /datum/map_template/shuttle/voidcrew/squab
 	map_file = "squab/science_director.dmm"
 	is_default = TRUE
-	desc = "The science director's bedroom, with a research MODsuit, a stocked locker and a baseball bat."
+	desc = "The science director's bedroom, with a research MODsuit, a stocked locker and an experimental prototype."
 
 /datum/ship_upgrade_module/squab/medical_director
 	part_cost = list(PART_CLASS_SCIENCE = 1, PART_CLASS_MISC = 2)
@@ -148,7 +148,7 @@
 	for_ship = /datum/map_template/shuttle/voidcrew/squab
 	map_file = "squab/security_director.dmm"
 	is_default = FALSE
-	desc = "The security director's quarters, with an empty display case."
+	desc = "The security director's quarters, with a multiphase energy gun on display."
 
 /datum/ship_upgrade_module/squab/miner_gear_room
 	job_slots_add = list(list(name = "Shaft Miner", officer = FALSE, outfit = /datum/outfit/job/miner, category = "Cargo", slots = 2))

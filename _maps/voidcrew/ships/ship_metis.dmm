@@ -24,15 +24,6 @@
 /obj/machinery/porta_turret/ai/ruin,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/metis/ai_core)
-"ae" = (
-/obj/item/melee/baseball_bat,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/bridge)
-"af" = (
-/obj/item/melee/baseball_bat,
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/science)
 "ag" = (
 /obj/structure/table/reinforced,
 /obj/machinery/button/door{
@@ -513,6 +504,10 @@
 /obj/item/bodypart/arm/right/robot,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/science/robotics)
+"kg" = (
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/science)
 "kj" = (
 /obj/effect/decal/cleanable/blood,
 /obj/machinery/light/broken,
@@ -973,6 +968,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/fore)
+"sP" = (
+/obj/item/gun/energy/laser,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/bridge)
 "sQ" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/titanium/tiled,
@@ -3232,7 +3232,7 @@ Lo
 sj
 VA
 MR
-ae
+sP
 sj
 Qu
 Wi
@@ -3515,7 +3515,7 @@ hr
 lJ
 yD
 BM
-af
+kg
 fa
 sE
 eI

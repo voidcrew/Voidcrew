@@ -1,32 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/machinery/light/small/directional/south,
-/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
-	dir = 8
-	},
-/obj/structure/sign/poster/official/do_not_question/directional/south,
-/obj/machinery/airalarm/directional/west,
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office/c)
 "ab" = (
 /obj/structure/bed{
 	dir = 4
@@ -45,21 +17,6 @@
 	},
 /turf/open/floor/iron/large,
 /area/shuttle/voidcrew/scarab/dormitories/c)
-"ac" = (
-/obj/structure/table/wood,
-/obj/effect/turf_decal/tile/dark_blue/half/contrasted,
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = -4
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
-	dir = 5
-	},
-/obj/item/melee/baseball_bat{
-	pixel_y = 3;
-	pixel_x = 2
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office/c)
 "at" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/medbay/c)
@@ -170,6 +127,16 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/bridge/c)
+"dX" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/do_not_question/directional/south,
+/obj/machinery/airalarm/directional/west,
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "eE" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1313,6 +1280,21 @@
 /obj/effect/turf_decal/tile/dark_green/full,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/scarab/dormitories/c)
+"Ho" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/item/gun/energy/e_gun/mini{
+	pixel_y = 3;
+	pixel_x = 2
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "HW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -2537,7 +2519,7 @@ ga
 qj
 Iy
 HW
-aa
+dX
 MK
 gD
 gD
@@ -2559,7 +2541,7 @@ wD
 sz
 mu
 pW
-ac
+Ho
 MQ
 gD
 gD

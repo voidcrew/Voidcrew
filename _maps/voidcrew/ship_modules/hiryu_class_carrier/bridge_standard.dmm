@@ -1,5 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
+"cRv" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
+"dhW" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/structure/table/reinforced,
 /obj/item/storage/medkit/regular{
@@ -11,15 +17,9 @@
 	pixel_y = 9
 	},
 /obj/item/binoculars,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/turf/open/floor/mineral/titanium,
-/area/template_noop)
-"cRv" = (
-/obj/machinery/computer/bank_machine{
-	dir = 8
-	},
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
 "dwQ" = (
@@ -129,7 +129,7 @@ ixv
 dwQ
 njK
 njK
-aaa
+dhW
 "}
 (4,1,1) = {"
 jlZ

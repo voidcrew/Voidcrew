@@ -141,7 +141,7 @@
 /datum/ship_upgrade_module/delta/cargo_gundeck
 	id = "delta_cargo_gundeck"
 	name = "Gun Deck"
-	desc = "Security lockers, baseball bats, a disabler, a recharger and a duty desk."
+	desc = "Security lockers, an energy gun rack, a recharger and a duty desk."
 	slot = "delta_cargo"
 	map_file = "delta/delta_cargo_gundeck.dmm"
 	part_cost = list(PART_CLASS_COMBAT = 10)

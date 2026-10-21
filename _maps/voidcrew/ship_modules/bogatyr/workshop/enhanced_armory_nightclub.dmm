@@ -1,10 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
-/obj/item/melee/baseball_bat,
-/obj/machinery/recharger,
-/obj/structure/table/reinforced/plasmarglass,
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
 "bxd" = (
 /obj/structure/window/reinforced/spawner,
 /obj/machinery/power/smes,
@@ -17,6 +11,21 @@
 	pixel_y = 4
 	},
 /turf/closed/wall/r_wall,
+/area/template_noop)
+"eRh" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/structure/rack,
+/obj/item/ammo_box/c9mm{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/smgm45,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
 "fpc" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -105,16 +114,6 @@
 	},
 /turf/open/floor/light/colour_cycle,
 /area/template_noop)
-"pwT" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/structure/rack,
-/obj/structure/rack,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/structure/cable,
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
 "pyD" = (
 /obj/item/storage/toolbox/mechanical{
 	pixel_x = -1
@@ -124,18 +123,6 @@
 /obj/item/stack/cable_coil,
 /obj/item/clothing/head/utility/welding,
 /obj/structure/window/reinforced/spawner,
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
-"pQd" = (
-/obj/item/melee/baseball_bat{
-	pixel_x = -6;
-	pixel_y = -2
-	},
-/obj/item/knife/combat/survival{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/structure/table/reinforced/plasmarglass,
 /turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
 "pTu" = (
@@ -157,6 +144,26 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"srG" = (
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/obj/structure/table/reinforced/plasmarglass,
+/turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
 "sGv" = (
 /obj/machinery/door/airlock/vault{
@@ -187,6 +194,12 @@
 /obj/structure/cable,
 /turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
+"yld" = (
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/recharger,
+/obj/structure/table/reinforced/plasmarglass,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
 
 (1,1,1) = {"
 gAx
@@ -203,9 +216,9 @@ pTu
 gAx
 nHL
 wAG
-pQd
-aaa
-pwT
+srG
+yld
+eRh
 wUb
 pyD
 kde

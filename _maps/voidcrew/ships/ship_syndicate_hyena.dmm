@@ -1,36 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"ac" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/vending/security/marine{
-	voucher_items = list();
-	products = list(/obj/item/restraints/handcuffs = 3, /obj/item/assembly/flash/handheld = 2, /obj/item/flashlight/seclite = 2, /obj/item/ammo_box/magazine/m9mm = 3, /obj/item/ammo_box/magazine/m10mm = 3, /obj/item/ammo_box/magazine/smgm45 = 3, /obj/item/ammo_box/magazine/sniper_rounds = 3, /obj/item/ammo_box/magazine/m12g = 3, /obj/item/grenade/c4 = 1, /obj/item/grenade/frag = 1)
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/armory)
-"ad" = (
-/obj/effect/turf_decal/bot_white,
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/firealarm/directional/east{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/vending/security/marine{
-	voucher_items = list();
-	products = list(/obj/item/restraints/handcuffs = 3, /obj/item/assembly/flash/handheld = 2, /obj/item/flashlight/seclite = 2, /obj/item/ammo_box/magazine/m9mm = 3, /obj/item/ammo_box/magazine/m10mm = 3, /obj/item/ammo_box/magazine/smgm45 = 3, /obj/item/ammo_box/magazine/sniper_rounds = 3, /obj/item/ammo_box/magazine/m12g = 3, /obj/item/grenade/c4 = 1, /obj/item/grenade/frag = 1)
-	},
-/obj/machinery/airalarm/directional/north,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hyena/armory)
-"af" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/spider/stickyweb,
-/obj/structure/closet/crate/secure,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hyena/maintenance/fore)
 "aF" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -205,6 +173,36 @@
 	},
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/hyena/dorms)
+"dV" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/rack,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/gun/ballistic/automatic/pistol{
+	pixel_y = 2
+	},
+/obj/item/gun/ballistic/automatic/pistol{
+	pixel_y = -2
+	},
+/obj/item/ammo_box/c10mm,
+/obj/item/ammo_box/c10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/hyena/cargo_bay)
 "dY" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/hyena/hallway)
@@ -464,25 +462,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/armory)
-"kY" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/rack,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat{
-	pixel_y = 2
-	},
-/obj/item/melee/baseball_bat{
-	pixel_y = -2
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/hyena/cargo_bay)
 "le" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -974,6 +953,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/hyena/armory)
+"wK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/spider/stickyweb,
+/obj/structure/closet/crate/secure/loot,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hyena/maintenance/fore)
 "wP" = (
 /obj/effect/turf_decal/bot_white,
 /turf/open/floor/iron/dark,
@@ -1312,6 +1298,21 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
+"Ea" = (
+/obj/item/storage/backpack/security,
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/clothing/suit/armor/vest/capcarapace/syndicate,
+/obj/item/clothing/shoes/jackboots,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/glasses/thermal/eyepatch,
+/obj/item/gun/ballistic/revolver,
+/obj/item/ammo_box/a357/match,
+/obj/item/knife/combat/survival,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/secure_closet/hos,
+/obj/item/clothing/head/hats/hos/cap/syndicate,
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/hyena/bridge)
 "Eb" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters{
@@ -1633,6 +1634,11 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
+"LD" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/vending/security/marine,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hyena/armory)
 "LU" = (
 /obj/effect/turf_decal/bot_white,
 /obj/machinery/suit_storage_unit/standard_unit{
@@ -1746,27 +1752,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hyena/maintenance/starboard)
-"Ot" = (
-/obj/structure/closet/secure_closet{
-	anchored = 1;
-	icon_state = "warden";
-	name = "foreman's locker";
-	req_access = list(56)
-	},
-/obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/under/syndicate/tacticool,
-/obj/item/clothing/suit/hooded/wintercoat/engineering,
-/obj/item/clothing/gloves/combat,
-/obj/item/storage/belt/utility/chief,
-/obj/item/clothing/glasses/meson,
-/obj/item/clothing/glasses/welding,
-/obj/item/storage/toolbox/syndicate,
-/obj/item/wrench/combat,
-/obj/item/melee/baseball_bat,
-/obj/item/grenade/chem_grenade/metalfoam,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/carpet/red,
-/area/shuttle/voidcrew/hyena/bridge/foreman)
 "Oy" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -1850,6 +1835,28 @@
 /obj/structure/sign/warning/vacuum/external,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/hyena/hallway)
+"RM" = (
+/obj/structure/closet/secure_closet{
+	anchored = 1;
+	icon_state = "warden";
+	name = "foreman's locker";
+	req_access = list(56)
+	},
+/obj/item/clothing/shoes/jackboots,
+/obj/item/clothing/under/syndicate/tacticool,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/gloves/combat,
+/obj/item/storage/belt/utility/chief,
+/obj/item/clothing/glasses/meson,
+/obj/item/clothing/glasses/welding,
+/obj/item/storage/toolbox/syndicate,
+/obj/item/wrench/combat,
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/grenade/chem_grenade/metalfoam,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/carpet/red,
+/area/shuttle/voidcrew/hyena/bridge/foreman)
 "Sd" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1966,6 +1973,20 @@
 /obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/hyena/hallway)
+"UK" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/security/marine,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hyena/armory)
 "Ve" = (
 /obj/structure/curtain,
 /obj/structure/toilet,
@@ -2164,39 +2185,6 @@
 /obj/item/wrench/combat,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hyena/maintenance/port)
-"Yg" = (
-/obj/item/storage/backpack/security,
-/obj/item/clothing/under/syndicate/combat,
-/obj/item/clothing/suit/armor/vest/capcarapace/syndicate,
-/obj/item/clothing/shoes/jackboots,
-/obj/item/clothing/gloves/combat,
-/obj/item/clothing/glasses/thermal/eyepatch,
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/melee/baseball_bat,
-/obj/item/pinpointer/nuke,
-/obj/item/computer_disk/command/hos,
-/obj/item/radio/headset/heads/hos,
-/obj/item/radio/headset/heads/hos/alt,
-/obj/item/storage/bag/garment/hos,
-/obj/item/storage/lockbox/medal/sec,
-/obj/item/megaphone/sec,
-/obj/item/holosign_creator/security,
-/obj/item/storage/lockbox/loyalty,
-/obj/item/storage/box/flashbangs,
-/obj/item/knife/combat/survival,
-/obj/item/storage/belt/security/full,
-/obj/item/circuitboard/machine/techfab/department/security,
-/obj/item/storage/photo_album/hos,
-/obj/structure/closet/secure_closet{
-	name = "head of security's locker";
-	icon_state = "hos";
-	req_access = list("hos")
-	},
-/obj/item/clothing/head/hats/hos/cap/syndicate,
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/hyena/bridge)
 "Yv" = (
 /obj/machinery/nuclearbomb/beer{
 	desc = "An evidently-decommissioned nuclear warhead. Sloppy paint on the casing declares 'VICTORY OVER NANOTRASEN,' followed by a badly-smudged date of 25-something. A drink tap has been drilled directly into the metal.";
@@ -2559,7 +2547,7 @@ Sh
 Zn
 qN
 KW
-Ot
+RM
 rk
 nn
 Og
@@ -2631,17 +2619,17 @@ Ru
 px
 Pw
 jI
-ad
-ac
+UK
+LD
 jI
-kY
+dV
 jH
 Ik
 qN
 qN
 qN
 de
-af
+wK
 de
 "}
 (20,1,1) = {"
@@ -2666,7 +2654,7 @@ de
 "}
 (21,1,1) = {"
 XN
-Yg
+Ea
 tw
 Dq
 rd

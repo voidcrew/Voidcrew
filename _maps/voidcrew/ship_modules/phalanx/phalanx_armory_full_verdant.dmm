@@ -24,12 +24,6 @@
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"d" = (
-/obj/machinery/vending/security/marine/solgov{
-	voucher_items = list()
-	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "h" = (
 /obj/structure/closet/bombcloset/security,
 /turf/open/floor/iron/dark,
@@ -56,19 +50,6 @@
 "q" = (
 /obj/item/kirbyplants/organic/plant8,
 /turf/open/floor/grass,
-/area/template_noop)
-"t" = (
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/storage/box/firingpins,
-/obj/structure/closet/secure_closet{
-	name = "armory ballistics locker";
-	icon_state = "tac";
-	icon_door = "armory_shotgun";
-	req_access = list("armory")
-	},
-/turf/open/floor/iron/dark,
 /area/template_noop)
 "v" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -144,10 +125,18 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"V" = (
+/obj/machinery/vending/security/marine/solgov,
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "Y" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
 	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Z" = (
+/obj/structure/closet/secure_closet/armory2,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 
@@ -182,8 +171,8 @@ K
 c
 "}
 (6,1,1) = {"
-t
-d
+Z
+V
 m
 z
 "}

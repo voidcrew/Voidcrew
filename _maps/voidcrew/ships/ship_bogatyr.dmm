@@ -1,41 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aa" = (
-/obj/structure/table,
-/obj/item/melee/baseball_bat,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/structure/cable,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/central)
-"ab" = (
-/obj/item/melee/baseball_bat,
-/obj/item/knife/combat/survival,
-/obj/item/storage/backpack/captain,
-/obj/item/storage/backpack/satchel/cap,
-/obj/item/storage/backpack/duffelbag/captain,
-/obj/item/storage/backpack/messenger/cap,
-/obj/item/clothing/neck/petcollar,
-/obj/item/pet_carrier,
-/obj/item/storage/bag/garment/captain,
-/obj/item/computer_disk/command/captain,
-/obj/item/radio/headset/heads/captain/alt,
-/obj/item/radio/headset/heads/captain,
-/obj/item/door_remote/captain,
-/obj/item/storage/photo_album/captain,
-/obj/structure/closet/secure_closet{
-	name = "captain's locker";
-	icon_state = "cap";
-	req_access = list("captain")
-	},
-/obj/item/clothing/head/helmet/rus_ushanka,
-/obj/item/clothing/shoes/russian,
-/obj/item/clothing/under/costume/russian_officer,
-/obj/item/clothing/suit/jacket/officer/tan,
-/obj/item/reagent_containers/cup/glass/flask/gold{
-	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/bridge)
 "aB" = (
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
@@ -70,6 +33,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
+"bt" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/item/clothing/head/helmet/rus_ushanka,
+/obj/item/clothing/shoes/russian,
+/obj/item/clothing/under/costume/russian_officer,
+/obj/item/clothing/suit/jacket/officer/tan,
+/obj/item/reagent_containers/cup/glass/flask/gold{
+	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/bridge)
 "by" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -696,6 +670,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
+"TC" = (
+/obj/structure/table,
+/obj/item/gun/ballistic/revolver/russian,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/central)
 "TD" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "eva_bay"
@@ -923,7 +905,7 @@ lJ
 qo
 zf
 fA
-aa
+TC
 br
 Ho
 CP
@@ -984,7 +966,7 @@ Wv
 "}
 (8,1,1) = {"
 WR
-ab
+bt
 Kj
 qo
 xb

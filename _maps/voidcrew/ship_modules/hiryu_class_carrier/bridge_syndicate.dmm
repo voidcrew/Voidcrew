@@ -1,5 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaa" = (
+"ahM" = (
+/turf/template_noop,
+/area/template_noop)
+"iyn" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/item/storage/medkit/regular{
 	pixel_x = 0;
@@ -11,13 +14,10 @@
 	},
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/item/binoculars,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
-/obj/item/melee/baseball_bat,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
 /turf/open/floor/mineral/plastitanium,
-/area/template_noop)
-"ahM" = (
-/turf/template_noop,
 /area/template_noop)
 "jgg" = (
 /turf/open/floor/mineral/titanium/blue,
@@ -129,7 +129,7 @@ ozd
 suh
 vuO
 vuO
-aaa
+iyn
 "}
 (4,1,1) = {"
 ahM
