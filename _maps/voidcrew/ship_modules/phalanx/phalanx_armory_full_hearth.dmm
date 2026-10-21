@@ -2,6 +2,24 @@
 "a" = (
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"b" = (
+/obj/item/clothing/suit/hooded/ablative,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/structure/closet/secure_closet{
+	name = "armory armor locker";
+	icon_state = "armory";
+	req_access = list("armory")
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "c" = (
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
@@ -12,6 +30,10 @@
 /area/template_noop)
 "h" = (
 /obj/structure/closet/bombcloset/security,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "k" = (
@@ -47,10 +69,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
 	},
-/turf/open/floor/iron/dark,
-/area/template_noop)
-"w" = (
-/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "x" = (
@@ -112,10 +130,6 @@
 /obj/structure/closet/l3closet/security,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"R" = (
-/obj/structure/closet/secure_closet/armory1,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "S" = (
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/bot,
@@ -129,7 +143,7 @@
 /area/template_noop)
 
 (1,1,1) = {"
-R
+b
 h
 a
 M
@@ -160,7 +174,7 @@ c
 "}
 (6,1,1) = {"
 g
-w
+j
 m
 z
 "}

@@ -231,6 +231,10 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 /datum/checkpoint_construction/order/create_template()
 	return order.make_template()
 
+/datum/checkpoint_construction/order/captain_mind()
+	// Keyed respawns use the live character; keyless commissioning still has its buyer.
+	return ..() || (!captain_ckey ? buyer_mind_ref?.resolve() : null)
+
 /// Upgrade slots find their module and theme on the order while the copy loads.
 /datum/checkpoint_construction/order/load_copy(datum/shuttle_template_load/load_owner)
 	SSshuttle.loading_ship = null
@@ -244,6 +248,9 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 
 /// Charged once, here, immediately before the first piece. Short funds stop the job unpaid.
 /datum/checkpoint_construction/order/consume_source()
+	if(!crew_registration_valid())
+		error = "Registration cancelled. [unspent_note()]"
+		return FALSE
 	var/denial = payer_denial()
 	if(denial)
 		error = "[denial] [unspent_note()]"
@@ -333,7 +340,15 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	if(!record.setup_from_template(template, order.theme))
 		qdel(record)
 		return null
+	// Bind before commissioning signals can yield; a new crew keeps the fresh record.
+	var/datum/mind/command = captain_mind()
+	if(crew_registration_valid())
+		record.bind_reputation_crew(command, form_new_crew)
 	return record
+
+/// Orders always add a hull; only an actual checkpoint can restore one.
+/datum/checkpoint_construction/order/restores_crew_ship(datum/mind/command)
+	return FALSE
 
 /// A new ship takes its hull's name, as a spawned one does.
 /datum/checkpoint_construction/order/name_vessel()
@@ -424,12 +439,20 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	var/obj/structure/overmap/ship/paying_ship = payer[2]
 	working = TRUE
 	notice = null
-	var/accepted = confirm_order(user, "Order a [order.hull.name][order.theme ? " ([order.theme.name])" : ""] for [price] credits from [paying_ship ? "the [paying_ship.name] account" : "your personal account"]? The credits are spent when construction begins.")
+	var/accepted = confirm_order(user, "Order a [order.hull.name][order.theme ? " ([order.theme.name])" : ""] for [price] credits from [paying_ship ? "the [paying_ship.name] account" : "your personal account"]?")
+	if(QDELETED(src))
+		qdel(order)
+		return FALSE
+	if(!accepted)
+		working = FALSE
+		qdel(order)
+		return FALSE
+	var/form_new = choose_new_reputation_crew(user)
 	if(QDELETED(src))
 		qdel(order)
 		return FALSE
 	working = FALSE
-	if(!accepted)
+	if(isnull(form_new))
 		qdel(order)
 		return FALSE
 	// Anything may have changed while the prompt was open.
@@ -442,6 +465,9 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 		return FALSE
 	working = TRUE
 	var/datum/checkpoint_construction/order/job = create_order_job(user, order, payer[1], paying_ship)
+	job.form_new_crew = form_new
+	var/datum/voidcrew_crew_record/registration_crew = user.mind?.recover_reputation_crew()
+	job.registration_crew_ref = registration_crew ? WEAKREF(registration_crew) : null
 	var/started = FALSE
 	if(job.bay)
 		started = job.prepare()
@@ -453,7 +479,7 @@ GLOBAL_LIST_INIT(ship_order_refused_hulls, typecacheof(list(
 	working = FALSE
 	if(started)
 		error = null
-		notice = "Construction started. [price] cr is charged when the first piece is placed."
+		notice = "Construction started."
 		log_game("[key_name(user)] ordered a [order.hull.name] at [outpost.name] for [price] credits.")
 	else
 		error = job.error || "Construction failed. Nothing was charged."

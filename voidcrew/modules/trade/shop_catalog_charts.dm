@@ -67,7 +67,7 @@
 	is_chart = TRUE
 	// One price at every outpost, since all three now sell the same galaxy-wide
 	// tip rather than their own band's local gossip.
-	price_credits = 1500
+	price_credits = 400
 	stock_min = 2
 	stock_max = 4
 

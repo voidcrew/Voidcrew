@@ -127,6 +127,16 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/bridge/c)
+"dX" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/do_not_question/directional/south,
+/obj/machinery/airalarm/directional/west,
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "eE" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1252,16 +1262,6 @@
 	},
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
-"Fq" = (
-/obj/machinery/light/small/directional/south,
-/obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
-	dir = 8
-	},
-/obj/structure/sign/poster/official/do_not_question/directional/south,
-/obj/machinery/airalarm/directional/west,
-/obj/structure/closet/secure_closet/captains,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office/c)
 "GT" = (
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
 /turf/open/floor/iron/dark,
@@ -1280,6 +1280,21 @@
 /obj/effect/turf_decal/tile/dark_green/full,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/scarab/dormitories/c)
+"Ho" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/tile/dark_blue/half/contrasted,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/item/gun/energy/e_gun/mini{
+	pixel_y = 3;
+	pixel_x = 2
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "HW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -1849,21 +1864,6 @@
 	},
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/engines/c)
-"Wk" = (
-/obj/structure/table/wood,
-/obj/effect/turf_decal/tile/dark_blue/half/contrasted,
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = -4
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
-	dir = 5
-	},
-/obj/item/gun/energy/e_gun/mini{
-	pixel_y = 3;
-	pixel_x = 2
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office/c)
 "WB" = (
 /obj/machinery/door/airlock/command{
 	name = "Bridge"
@@ -2519,7 +2519,7 @@ ga
 qj
 Iy
 HW
-Fq
+dX
 MK
 gD
 gD
@@ -2541,7 +2541,7 @@ wD
 sz
 mu
 pW
-Wk
+Ho
 MQ
 gD
 gD

@@ -25,6 +25,21 @@
 
 /datum/loot_theme/occult
 	name = "occult"
+	gun_chance = LOOT_GUN_CHANCE_OCCULT
+	gun_pool = LOOT_GUN_POOL_PLUNDER
+	gun_extras = list(
+		LOOT_WEAPON_GREEN = list(
+			/obj/item/gun/ballistic/rifle/boltaction/surplus = 1,
+		),
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/energy/laser/retro = 1,
+		),
+	)
+	melee_extras = list(
+		LOOT_WEAPON_RED = list(
+			/obj/item/knife/bloodletter = 1,
+		),
+	)
 	guard_themes = list(
 		/obj/effect/zone_mobs/cult,
 		/obj/effect/zone_mobs/cult/boss,
@@ -41,8 +56,6 @@
 		/obj/item/reagent_containers/cup/glass/bottle/holywater = 6,
 		/obj/item/book/bible = 6,
 		/obj/item/coin/gold = 5,
-		// the grave-robber's rifle: old, ugly, still kills what walks
-		/obj/item/gun/ballistic/rifle/boltaction/surplus = 6,
 		/obj/item/toy/cards/deck/tarot = 5,
 		/obj/item/reagent_containers/cup/glass/bottle/wine = 4,
 	)
@@ -50,7 +63,6 @@
 		/obj/item/statuebust = 8,
 		/obj/item/flashlight/lantern = 7,
 		/obj/item/ectoplasm = 6,
-		/obj/item/gun/energy/laser/retro = 6,
 		/obj/item/clothing/suit/chaplainsuit/bishoprobe = 5,
 		/obj/item/clothing/head/chaplain/bishopmitre = 5,
 		/obj/item/toy/cards/deck/tarot/haunted = 4,
@@ -65,17 +77,12 @@
 		/obj/item/stack/sheet/mineral/gold/fifty = 6,
 		/obj/item/stack/sheet/mineral/silver/fifty = 6,
 		/obj/item/clothing/suit/armor/riot/knight = 5,
-		/obj/item/gun/energy/laser/hellgun = 5,
-		/obj/item/knife/bloodletter = 3,
 		/obj/item/soulstone/anybody/purified = 3,
 		// the deepest slice of the theme, previously reachable only through
 		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/book/granter/action/spell/sacredflame = 2,
-		/obj/item/gun/magic/staff/chaos = 2,
-		/obj/item/mjollnir = 2,
 		/obj/item/book/granter/action/spell/fireball = 1,
 		/obj/item/book/granter/action/spell/random = 1,
-		/obj/item/his_grace = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable
@@ -114,9 +121,6 @@
 
 /obj/effect/zone_mobs/cult/boss
 	name = "zone mob spawner (cult boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 1)
 	mobs_green = list(
 		/mob/living/basic/construct/artificer/hostile = 1,
 	)
@@ -147,9 +151,6 @@
 
 /obj/effect/zone_mobs/undead/boss
 	name = "zone mob spawner (undead boss)"
-	count_green = list(1, 1)
-	count_yellow = list(1, 1)
-	count_red = list(1, 1)
 	mobs_green = list(
 		/mob/living/basic/skeleton/templar = 1,
 	)

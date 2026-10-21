@@ -32,6 +32,8 @@ Buying anything asks for confirmation and tells you the cost. Purchases are one-
 
 Your ship is built to order (hull, theme and the module in each slot) and placed in the safe inner ring of the overmap. You spawn aboard as its captain, so you set its course and manage its crew. It then appears in every other player's join menu with its job list, so people can pick a role and spawn straight in. If you want a crew, launch early and put something useful in the ship's memo. Then read [Piloting](piloting.md), [Ship Systems](ship-systems.md) and [Ship Combat](ship-combat.md).
 
+A crew can run several ships, but only its leader can add one, by buying, requisitioning, commissioning or claiming it. The leader is whoever founded the crew. Anyone else who does it is asked whether they want to leave and start their own crew with that ship; saying no cancels it at no cost. A captain can still rebuild their own crew's ship from a checkpoint. If the leader leaves the crew, goes to cryo or respawns, the captain of the crew's oldest surviving ship takes over, or the earliest remaining member if it has no eligible captain. [Reputation and trader favor](zone-reputation.md) stay with the crew across hull losses and are shared by its ships; accounts, research and mission slots remain per ship.
+
 ## Modular hulls: slots and modules
 
 A modular hull is a fixed frame with empty pockets in it. The frame owns everything the ship cannot fly without (helm, engines, power, air, airlocks and at least one cryopod) so a bare hull with every slot on its default module is a working ship. Slots are the rooms, not the plumbing.

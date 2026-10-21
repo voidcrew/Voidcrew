@@ -7,12 +7,23 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/abandonedzoo)
+"af" = (
+/obj/structure/rack,
+/obj/item/crowbar,
+/obj/item/knife/combat/survival,
+/turf/open/floor/iron/dark/side,
+/area/ruin/space/has_grav/abandonedzoo)
 "ag" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/abandonedzoo)
 "ah" = (
 /turf/closed/mineral/random,
+/area/ruin/space/has_grav/abandonedzoo)
+"ai" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/side,
 /area/ruin/space/has_grav/abandonedzoo)
 "al" = (
 /obj/structure/flora/bush/generic/style_random,
@@ -96,13 +107,6 @@
 "aW" = (
 /obj/structure/table/reinforced,
 /obj/item/gun/syringe,
-/turf/open/floor/iron/dark/side,
-/area/ruin/space/has_grav/abandonedzoo)
-"aY" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/energy/temperature{
-	pin = /obj/item/firing_pin
-	},
 /turf/open/floor/iron/dark/side,
 /area/ruin/space/has_grav/abandonedzoo)
 "bf" = (
@@ -496,12 +500,6 @@
 /obj/effect/turf_decal/tile/green/fourcorners,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/abandonedzoo)
-"TQ" = (
-/obj/structure/rack,
-/obj/item/crowbar,
-/obj/item/shield/riot,
-/turf/open/floor/iron/dark/side,
-/area/ruin/space/has_grav/abandonedzoo)
 "Ua" = (
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/abandonedzoo)
@@ -684,7 +682,7 @@ at
 at
 at
 at
-TQ
+af
 oS
 Ni
 Bh
@@ -810,7 +808,7 @@ ac
 ac
 qX
 at
-aY
+ai
 oS
 Ni
 bk

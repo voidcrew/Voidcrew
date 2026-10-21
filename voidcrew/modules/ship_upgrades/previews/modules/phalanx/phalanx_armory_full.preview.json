@@ -8,7 +8,7 @@
    ],
    "height": 4,
    "png": "phalanx_phalanx_armory_full.png",
-   "src_md5": "6ac071c6072012fdc4df1015ac5eb640",
+   "src_md5": "84d3ad7519531da5830d7c7536c329ed",
    "themes": {
     "hearth": {
      "connector": [
@@ -17,7 +17,7 @@
      ],
      "height": 4,
      "png": "phalanx_phalanx_armory_full_hearth.png",
-     "src_md5": "63bd3e243c4fa1196a71518d12b2e2ed",
+     "src_md5": "ff8988bd3c8553f51b39a6fe3cafc6b1",
      "width": 6
     },
     "springs": {
@@ -27,7 +27,7 @@
      ],
      "height": 4,
      "png": "phalanx_phalanx_armory_full_springs.png",
-     "src_md5": "6e02f245e2aa075614967d19276d252e",
+     "src_md5": "eeb9b67f26612fea7042a27cdbd2acd1",
      "width": 6
     },
     "verdant": {
@@ -37,7 +37,7 @@
      ],
      "height": 4,
      "png": "phalanx_phalanx_armory_full_verdant.png",
-     "src_md5": "b7c3fe51e5976545a1951361c97e6ac1",
+     "src_md5": "626db21a315d3622e685c85c876562ec",
      "width": 6
     }
    },

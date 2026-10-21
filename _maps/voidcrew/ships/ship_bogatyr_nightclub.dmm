@@ -115,6 +115,18 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
+"fcF" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/item/clothing/head/helmet/rus_ushanka,
+/obj/item/clothing/shoes/russian,
+/obj/item/clothing/under/costume/russian_officer,
+/obj/item/clothing/suit/jacket/officer/tan,
+/obj/item/reagent_containers/cup/glass/flask/gold{
+	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
+	},
+/obj/effect/spawner/costume/waiter,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/bridge)
 "fhy" = (
 /obj/structure/table/reinforced/plasmarglass,
 /obj/item/reagent_containers/cup/glass/drinkingglass{
@@ -250,18 +262,6 @@
 	},
 /turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
-"iAV" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/item/clothing/head/helmet/rus_ushanka,
-/obj/item/clothing/shoes/russian,
-/obj/item/clothing/under/costume/russian_officer,
-/obj/item/clothing/suit/jacket/officer/tan,
-/obj/item/reagent_containers/cup/glass/flask/gold{
-	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
-	},
-/obj/effect/spawner/costume/waiter,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/bridge)
 "iGV" = (
 /obj/machinery/door/poddoor{
 	id = "bogatyr_windows"
@@ -903,7 +903,7 @@ jWn
 "}
 (8,1,1) = {"
 xov
-iAV
+fcF
 bZP
 fGP
 cSN

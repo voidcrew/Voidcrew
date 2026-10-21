@@ -1,0 +1,320 @@
+// Fork defines are included after upstream unit tests, so the signal and zone values
+// below are the literals behind them: COMSIG_VOIDCREW_SHIP_DOCKED is
+// "voidcrew_ship_docked" (voidcrew/_DEFINES/ship_defines.dm).
+
+/// The nine raw anomaly crates are gone from every cargo console.
+/datum/unit_test/voidcrew_anomaly_cargo_hidden/Run()
+	var/list/raw_packs = list(
+		/datum/supply_pack/science/raw_flux_anomaly,
+		/datum/supply_pack/science/raw_hallucination_anomaly,
+		/datum/supply_pack/science/raw_grav_anomaly,
+		/datum/supply_pack/science/raw_vortex_anomaly,
+		/datum/supply_pack/science/raw_ectoplasm_anomaly,
+		/datum/supply_pack/science/raw_bluespace_anomaly,
+		/datum/supply_pack/science/raw_pyro_anomaly,
+		/datum/supply_pack/science/raw_bioscrambler_anomaly,
+		/datum/supply_pack/science/raw_dimensional_anomaly,
+	)
+	for(var/pack_type in raw_packs)
+		var/datum/supply_pack/pack = allocate(pack_type)
+		TEST_ASSERT_NULL(pack.contains, "[pack_type] still has contents, so SSshuttle registers it")
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		for(var/item in pack.contains)
+			if(ispath(item, /obj/item/raw_anomaly_core))
+				TEST_FAIL("[pack.type] sells [item] over cargo")
+
+/// Boffin's core and chart rotations: every type, the right price band and stock,
+/// no discounts, and sold slots turn over instead of refilling.
+/datum/unit_test/voidcrew_anomaly_boffin_shelves/Run()
+	var/list/core_prices = list(
+		/obj/item/raw_anomaly_core/flux = 8000,
+		/obj/item/raw_anomaly_core/grav = 8000,
+		/obj/item/raw_anomaly_core/hallucination = 8000,
+		/obj/item/raw_anomaly_core/pyro = 8000,
+		/obj/item/raw_anomaly_core/bioscrambler = 10000,
+		/obj/item/raw_anomaly_core/ectoplasm = 10000,
+		/obj/item/raw_anomaly_core/dimensional = 10000,
+		/obj/item/raw_anomaly_core/bluespace = 12000,
+		/obj/item/raw_anomaly_core/vortex = 12000,
+	)
+	var/list/chart_prices = list(
+		/obj/effect/anomaly/flux = 4000,
+		/obj/effect/anomaly/grav = 4000,
+		/obj/effect/anomaly/hallucination = 4000,
+		/obj/effect/anomaly/pyro = 4000,
+		/obj/effect/anomaly/bioscrambler = 5000,
+		/obj/effect/anomaly/ectoplasm = 5000,
+		/obj/effect/anomaly/dimensional = 5000,
+		/obj/effect/anomaly/bluespace = 6000,
+		/obj/effect/anomaly/bhole = 6000,
+	)
+
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop/vendor/skunkworks, null)
+	var/datum/shop_rotation/cores
+	var/datum/shop_rotation/charts
+	for(var/datum/shop_rotation/rotation as anything in shop.live_rotations)
+		if(istype(rotation, /datum/shop_rotation/skunk_cores))
+			cores = rotation
+		else if(istype(rotation, /datum/shop_rotation/skunk_anomaly_charts))
+			charts = rotation
+	TEST_ASSERT_NOTNULL(cores, "Boffin has no raw core rotation")
+	TEST_ASSERT_NOTNULL(charts, "Boffin has no anomaly chart rotation")
+
+	TEST_ASSERT_EQUAL(cores.slots, 2, "Boffin must keep two core slots")
+	TEST_ASSERT_EQUAL(charts.slots, 4, "Boffin must stock four chart slots")
+
+	var/list/cores_seen = list()
+	for(var/datum/shop_sku/sku_type as anything in cores.pool)
+		var/item = initial(sku_type.item_path)
+		TEST_ASSERT(item in core_prices, "[sku_type] sells [item], which is not a raw anomaly core")
+		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), core_prices[item], "[sku_type] is in the wrong price band")
+		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
+		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 1, "[sku_type] does not always stock one core")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 1, "[sku_type] stocks more than one unit")
+		cores_seen[item] = cores.pool[sku_type]
+	TEST_ASSERT_EQUAL(length(cores_seen), 9, "Boffin's core rotation does not cover all nine types")
+	TEST_ASSERT(cores_seen[/obj/item/raw_anomaly_core/flux] > cores_seen[/obj/item/raw_anomaly_core/bioscrambler], "Uncommon cores are not rarer than common ones")
+	TEST_ASSERT(cores_seen[/obj/item/raw_anomaly_core/bioscrambler] > cores_seen[/obj/item/raw_anomaly_core/vortex], "Rare cores are not rarer than uncommon ones")
+
+	var/list/charts_seen = list()
+	for(var/datum/shop_sku/anomaly_chart/sku_type as anything in charts.pool)
+		var/anomaly = initial(sku_type.anomaly_type)
+		var/base_type
+		for(var/candidate in chart_prices)
+			if(ispath(anomaly, candidate))
+				base_type = candidate
+				break
+		TEST_ASSERT_NOTNULL(base_type, "[sku_type] points at [anomaly], which is not one of the nine anomaly types")
+		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), chart_prices[base_type], "[sku_type] is in the wrong price band")
+		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 2, "[sku_type] must always stock two charts")
+		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 2, "[sku_type] must stock at most two charts")
+		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
+		var/obj/effect/anomaly/anomaly_path = anomaly
+		TEST_ASSERT(initial(anomaly_path.immortal) && initial(anomaly_path.site_bound), "[sku_type] surfaces an anomaly that times out or can leave its site")
+		charts_seen[base_type] = TRUE
+	TEST_ASSERT_EQUAL(length(charts_seen), 9, "Boffin's chart rotation does not cover all nine types")
+
+	for(var/datum/shop_rotation/rotation as anything in list(cores, charts))
+		var/list/on_shelf = list()
+		for(var/datum/shop_sku/sku as anything in shop.skus)
+			if(sku.rotation == rotation)
+				on_shelf += sku
+		TEST_ASSERT_EQUAL(length(on_shelf), rotation.slots, "[rotation.type] put [length(on_shelf)] SKUs on the shelf")
+		var/datum/shop_sku/sold = on_shelf[1]
+		var/expected_stock = rotation == charts ? 2 : 1
+		for(var/datum/shop_sku/sku as anything in on_shelf)
+			TEST_ASSERT_EQUAL(sku.stock, expected_stock, "[sku.type] stocked the wrong number of units")
+		sold.discount_pct = 30
+		TEST_ASSERT_EQUAL(sold.get_credit_price(), round(sold.price_credits * 0.7, 5), "A special did not discount [sold.type]")
+		var/sold_type = sold.type
+		sold.stock = 0
+		shop.convoy_restock()
+		TEST_ASSERT(!(sold in shop.skus), "The convoy refilled a sold [sold_type] in place")
+		var/list/after = list()
+		for(var/datum/shop_sku/sku as anything in shop.skus)
+			if(sku.rotation == rotation)
+				after += sku.type
+				TEST_ASSERT_EQUAL(sku.stock, expected_stock, "The convoy changed [sku.type] stock")
+		TEST_ASSERT_EQUAL(length(after), length(on_shelf), "The convoy did not replace the sold slot")
+		TEST_ASSERT(!(sold_type in after), "The sold slot came back as the same [sold_type]")
+		TEST_ASSERT_EQUAL(length(unique_list(after)), length(after), "The rotation shelved the same SKU twice")
+
+/// Raw cores take the normal favor discount, and the better of favor or special wins.
+/datum/unit_test/voidcrew_anomaly_core_favor/Run()
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	shop.add_sku(/datum/shop_sku/skunk/anomaly_core/vortex, "rotating")
+	var/datum/shop_sku/skunk/anomaly_core/sku = shop.skus[1]
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
+	buyer.mind_initialize()
+	allocated += buyer.mind
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	team.join_member(buyer.mind)
+	sku.discount_pct = 0
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 12000, "A stranger got a discount")
+	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED, 15% off
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "A Trusted crew did not get the normal favor discount")
+	sku.discount_pct = 30
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 8400, "The better special did not win over favor")
+	sku.discount_pct = 10
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "Favor and special stacked, or the better one lost")
+	buyer.mind.ship_teams = null
+	team.ship = null
+
+/// Buying a chart takes the money and puts a sealed anomaly rumor on the ship.
+/datum/unit_test/voidcrew_anomaly_chart_purchase/Run()
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	var/datum/shop_rotation/rotation = new /datum/shop_rotation/skunk_anomaly_charts
+	shop.live_rotations += rotation
+	shop.add_rotation_sku(rotation, /datum/shop_sku/anomaly_chart/grav)
+	var/datum/shop_sku/anomaly_chart/sku = shop.skus[1]
+	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
+	buyer.mind_initialize()
+	allocated += buyer.mind
+	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	team.join_member(buyer.mind)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Anomaly chart test", null, 1, FALSE)
+	account.account_balance = 40000
+	ship.ship_account = account
+	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
+	qdel(id_card.registered_account)
+	id_card.registered_account = account
+	TEST_ASSERT(buyer.put_in_hands(id_card), "Buyer could not carry their paying ID")
+
+	TEST_ASSERT(sku.try_purchase(buyer, null), "Chart purchase failed")
+	TEST_ASSERT_EQUAL(account.account_balance, 36000, "The chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 1, "Purchase did not upload a sealed chart")
+	var/datum/rumor_chart/anomaly/chart = ship.pending_rumors[1]
+	TEST_ASSERT(istype(chart), "The sealed chart is not an anomaly chart")
+	TEST_ASSERT_EQUAL(chart.anomaly_type, /obj/effect/anomaly/grav/planetary, "The chart names the wrong anomaly")
+	TEST_ASSERT(!chart.revealed && !chart.surfaced, "A fresh chart is already revealed")
+	TEST_ASSERT_EQUAL(sku.stock, 1, "The first purchase did not leave one chart")
+	shop.convoy_restock()
+	TEST_ASSERT(sku in shop.skus, "The convoy replaced a partially sold chart slot")
+	TEST_ASSERT_EQUAL(sku.stock, 1, "The convoy refilled a partially sold chart slot")
+	sku.discount_pct = 0 // The convoy rerolls the special independently of stock.
+	TEST_ASSERT(sku.try_purchase(buyer, null), "The second chart purchase failed")
+	TEST_ASSERT_EQUAL(sku.stock, 0, "The second purchase did not exhaust the slot")
+	TEST_ASSERT_EQUAL(account.account_balance, 32000, "The second chart charged the wrong amount")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "Two purchases did not upload two charts")
+	var/datum/rumor_chart/anomaly/second_chart = ship.pending_rumors[2]
+	TEST_ASSERT(second_chart != chart, "Two purchases shared a chart datum")
+	TEST_ASSERT(!sku.try_purchase(buyer, null), "An exhausted chart slot sold a third unit")
+	TEST_ASSERT_EQUAL(account.account_balance, 32000, "A refused purchase took money")
+	TEST_ASSERT_EQUAL(length(ship.pending_rumors), 2, "A refused purchase uploaded a chart")
+	shop.convoy_restock()
+	TEST_ASSERT(!(sku in shop.skus), "The convoy did not replace the exhausted chart slot")
+	TEST_ASSERT_EQUAL(length(shop.skus), 1, "The convoy lost the exhausted chart slot")
+	var/datum/shop_sku/replacement = shop.skus[1]
+	TEST_ASSERT(replacement.type != /datum/shop_sku/anomaly_chart/grav, "The exhausted chart refilled in place")
+	TEST_ASSERT_EQUAL(replacement.stock, 2, "The replacement chart slot did not stock two units")
+
+	qdel(ship)
+	TEST_ASSERT(QDELETED(chart) && QDELETED(second_chart), "Hull loss left a sealed chart alive")
+	buyer.mind.ship_teams = null
+	team.ship = null
+
+/// Test chart that skips site generation and spawn-point search
+/datum/rumor_chart/anomaly/unit_test
+	var/obj/structure/overmap/test_site
+	var/turf/test_turf
+
+/datum/rumor_chart/anomaly/unit_test/pick_site(obj/structure/overmap/ship/ship)
+	return test_site
+
+/datum/rumor_chart/anomaly/unit_test/find_spawn_turf(obj/structure/overmap/site)
+	return test_turf
+
+/// Nothing on reveal, nothing for other ships or other sites, one anomaly when the
+/// buyer docks at the charted site, and a lost site re-seals the chart.
+/datum/unit_test/voidcrew_anomaly_chart_arrival
+	var/list/obj/effect/anomaly/spawned = list()
+
+/datum/unit_test/voidcrew_anomaly_chart_arrival/Destroy()
+	QDEL_LIST(spawned)
+	return ..()
+
+/datum/unit_test/voidcrew_anomaly_chart_arrival/Run()
+	var/obj/structure/overmap/ship/buyer = allocate(/obj/structure/overmap/ship)
+	var/obj/structure/overmap/ship/stranger = allocate(/obj/structure/overmap/ship)
+	var/obj/structure/overmap/space_ruin/site = allocate(/obj/structure/overmap/space_ruin)
+	var/obj/structure/overmap/space_ruin/elsewhere = allocate(/obj/structure/overmap/space_ruin)
+	var/turf/spot = run_loc_floor_top_right
+
+	var/datum/rumor_chart/anomaly/unit_test/chart = new
+	chart.anomaly_type = /obj/effect/anomaly/flux/planetary
+	chart.test_site = site
+	chart.test_turf = spot
+	buyer.add_pending_rumor(chart)
+
+	TEST_ASSERT_EQUAL(buyer.reveal_pending_rumor(chart), site, "Reveal did not chart the site")
+	TEST_ASSERT(!QDELETED(chart) && (chart in buyer.active_anomaly_charts), "Revealing consumed the chart before arrival")
+	TEST_ASSERT(!(chart in buyer.pending_rumors), "The revealed chart is still sealed on the helm")
+	TEST_ASSERT_NULL(locate(/obj/effect/anomaly) in spot, "Revealing the chart spawned the anomaly")
+
+	stranger.docked = site
+	SEND_SIGNAL(stranger, "voidcrew_ship_docked")
+	TEST_ASSERT_NULL(locate(/obj/effect/anomaly) in spot, "Another crew's arrival surfaced the buyer's anomaly")
+
+	buyer.docked = elsewhere
+	SEND_SIGNAL(buyer, "voidcrew_ship_docked")
+	TEST_ASSERT_NULL(locate(/obj/effect/anomaly) in spot, "Docking at a different site surfaced the anomaly")
+
+	buyer.docked = site
+	SEND_SIGNAL(buyer, "voidcrew_ship_docked")
+	var/obj/effect/anomaly/anomaly = locate(/obj/effect/anomaly) in spot
+	if(anomaly)
+		spawned += anomaly
+	TEST_ASSERT_NOTNULL(anomaly, "The buyer docked at the site and no anomaly formed")
+	TEST_ASSERT(istype(anomaly, /obj/effect/anomaly/flux/planetary), "The wrong anomaly formed")
+	TEST_ASSERT(QDELETED(chart), "The chart outlived its anomaly")
+
+	SEND_SIGNAL(buyer, "voidcrew_ship_docked")
+	var/count = 0
+	for(var/obj/effect/anomaly/extra in spot)
+		count++
+		spawned |= extra
+	TEST_ASSERT_EQUAL(count, 1, "A second arrival surfaced another anomaly")
+
+	// A site that disappears before arrival hands the chart back sealed
+	buyer.docked = null
+	stranger.docked = null
+	var/datum/rumor_chart/anomaly/unit_test/second = new
+	second.anomaly_type = /obj/effect/anomaly/flux/planetary
+	second.test_site = elsewhere
+	second.test_turf = spot
+	buyer.add_pending_rumor(second)
+	TEST_ASSERT_EQUAL(buyer.reveal_pending_rumor(second), elsewhere, "Second reveal did not chart its site")
+	qdel(elsewhere)
+	TEST_ASSERT(!QDELETED(second), "Losing the site deleted the paid chart")
+	TEST_ASSERT((second in buyer.pending_rumors) && !(second in buyer.active_anomaly_charts), "Losing the site did not re-seal the chart")
+	TEST_ASSERT(!second.revealed, "The re-sealed chart still counts as revealed")
+
+/// Every anomaly type can seed on planets, as immortal site-bound subtypes, rarer
+/// for the dangerous ones.
+/datum/unit_test/voidcrew_planet_anomaly_table/Run()
+	var/list/base_types = list(
+		/obj/effect/anomaly/flux,
+		/obj/effect/anomaly/grav,
+		/obj/effect/anomaly/hallucination,
+		/obj/effect/anomaly/pyro,
+		/obj/effect/anomaly/bioscrambler,
+		/obj/effect/anomaly/ectoplasm,
+		/obj/effect/anomaly/dimensional,
+		/obj/effect/anomaly/bluespace,
+		/obj/effect/anomaly/bhole,
+	)
+	var/list/weights = list()
+	for(var/base_type in base_types)
+		for(var/obj/effect/anomaly/entry as anything in GLOB.voidcrew_planet_anomalies)
+			if(!ispath(entry, base_type))
+				continue
+			TEST_ASSERT(initial(entry.immortal), "[entry] times out on a planet")
+			TEST_ASSERT(initial(entry.site_bound), "[entry] can wander off its planet")
+			weights[base_type] = GLOB.voidcrew_planet_anomalies[entry]
+		TEST_ASSERT(weights[base_type], "[base_type] never seeds on planets")
+	TEST_ASSERT(weights[/obj/effect/anomaly/pyro] > weights[/obj/effect/anomaly/dimensional], "Uncommon planet anomalies are not rarer than common ones")
+	TEST_ASSERT(weights[/obj/effect/anomaly/dimensional] > weights[/obj/effect/anomaly/bhole], "Rare planet anomalies are not rarer than uncommon ones")
+
+/// The planetary pyroclastic anomaly burns whoever is next to it and never touches the air.
+/datum/unit_test/voidcrew_planet_pyro_jets/Run()
+	var/obj/effect/anomaly/pyro/planetary/pyro = allocate(/obj/effect/anomaly/pyro/planetary)
+	var/turf/open/origin = get_turf(pyro)
+	var/turf/next_door = get_step(origin, NORTH)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, next_door)
+	var/datum/gas_mixture/air = origin.return_air()
+	var/moles_before = air.total_moles()
+	pyro.anomalyEffect(pyro.burst_delay)
+	TEST_ASSERT(victim.fire_stacks > 0, "Someone standing next to the burst was not set alight")
+	TEST_ASSERT(victim.getFireLoss() > 0, "Someone standing next to the burst took no burns")
+	air = origin.return_air()
+	TEST_ASSERT_EQUAL(air.total_moles(), moles_before, "The planetary pyroclastic anomaly released gas")
+	victim.extinguish_mob()

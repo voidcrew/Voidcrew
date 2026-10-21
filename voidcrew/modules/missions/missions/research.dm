@@ -85,6 +85,17 @@
 	/// The scan objective, for UI progress keys
 	var/datum/mission_objective/scan_celestial/scan
 
+	var/static/list/telemetry_asks = list(
+		list("type" = "nebulas", "name" = "nebulas", "name_singular" = "nebula", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 60, "value_max" = 100, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "asteroids", "name" = "asteroid fields", "name_singular" = "asteroid field", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 60, "value_max" = 100, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "any", "name" = "celestial objects", "name_singular" = "celestial object", "amount" = 3, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 80, "value_max" = 120, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = "planets", "name" = "planets", "name_singular" = "planet", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 100, "value_max" = 160, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "space_ruins", "name" = "space ruins", "name_singular" = "space ruin", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 100, "value_max" = 160, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "electric_storms", "name" = "electrical storms", "name_singular" = "electrical storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 100, "value_max" = 160, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = "emp_storms", "name" = "EMP storms", "name_singular" = "EMP storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 160, "value_max" = 240, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = "stars", "name" = "stars", "name_singular" = "star", "amount" = 1, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 100, "value_max" = 160, "difficulty" = MISSION_DIFFICULTY_HARD),
+	)
+
 /datum/mission/research/telemetry/Destroy()
 	scan = null
 	return ..()
@@ -96,16 +107,6 @@
 	// design: the crew is paid twice for one action, because the survey console has
 	// already banked its own points for each of these scans (250 for a nebula, 1000
 	// for a star), and this contract is the bonus on top of that.
-	var/static/list/telemetry_asks = list(
-		list("type" = "nebulas", "name" = "nebulas", "name_singular" = "nebula", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "asteroids", "name" = "asteroid fields", "name_singular" = "asteroid field", "amount" = 2, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 150, "value_max" = 250, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "any", "name" = "celestial objects", "name_singular" = "celestial object", "amount" = 3, "research" = MISSION_RESEARCH_PAY_LOW, "value_min" = 200, "value_max" = 300, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = "planets", "name" = "planets", "name_singular" = "planet", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "space_ruins", "name" = "space ruins", "name_singular" = "space ruin", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "electric_storms", "name" = "electrical storms", "name_singular" = "electrical storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_MEDIUM, "value_min" = 300, "value_max" = 450, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = "emp_storms", "name" = "EMP storms", "name_singular" = "EMP storm", "amount" = 2, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = "stars", "name" = "stars", "name_singular" = "star", "amount" = 1, "research" = MISSION_RESEARCH_PAY_HIGH, "value_min" = 450, "value_max" = 700, "difficulty" = MISSION_DIFFICULTY_HARD),
-	)
 
 	var/list/ask = pick(telemetry_asks)
 	target_type = ask["type"]
@@ -128,10 +129,7 @@
 /datum/mission/research/telemetry/update_text()
 	var/display_name = required_amount == 1 ? target_name_singular : target_name
 	name = "Telemetry Contract: [display_name]"
-	desc = "Use your ship's orbital survey console to scan [required_amount] [display_name] after accepting this contract. \
-		Nothing to bring back - the contract settles at the mission board. \
-		Pays [research_reward] research points as a data dossier, plus [value] credits in expenses. \
-		Slot the dossier into an R&D console to bank the points."
+	desc = "Survey requested: [required_amount] [display_name]."
 
 /datum/mission/research/telemetry/get_ui_data()
 	var/list/data = ..()
@@ -157,8 +155,8 @@
 	research_origin = "anomalous physics"
 	// Green band; the zone table scales both, then the anomaly's own hazard
 	// multiplier is applied to the credits on top in generate_details().
-	value_min = 500
-	value_max = 800
+	value_min = 350
+	value_max = 550
 	// The most science on the board: the only contract that puts a live anomaly in
 	// front of the crew, and the only one that gives up its core.
 	research_reward = MISSION_RESEARCH_PAY_HIGH
@@ -269,11 +267,7 @@
 
 /datum/mission/research/containment/update_text()
 	name = "Containment Contract: [anomaly_name]"
-	desc = "A [anomaly_name] has settled inside the derelict at ([target.target_x], [target.target_y]) in the [target_zone_name], and it is stable - it will still be there whenever you arrive. \
-		[hazard_brief] \
-		Neutralize it the standard way: read its field with a handheld analyzer for the frequency and code, dial those into a signaler, and trigger the signaler beside it. \
-		It sheds its core when it goes. Bring that core to the mission pad. \
-		Pays [research_reward] research points as a data dossier - slot it into an R&D console to bank them."
+	desc = "Recover a [anomaly_name] core from ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/research/containment/waypoint_label()
 	return "Containment: [anomaly_name]"
@@ -292,12 +286,13 @@
 	name = "Core Sample Contract"
 	weight = 7
 	mission_limit = 1
-	voucher_count = 1
+	voucher_count = 0
+	guarded_prize_family = "waves"
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "STRAT"
 	research_origin = "planetary geology"
-	value_min = 450
-	value_max = 700
+	value_min = 300
+	value_max = 450
 	// Green band; the zone table scales it. Middle of the ladder: a real trip and a
 	// fight for it, but the crew brings back rock rather than live physics.
 	research_reward = MISSION_RESEARCH_PAY_MEDIUM
@@ -342,11 +337,7 @@
 
 /datum/mission/research/core_sample/update_text()
 	name = "Core Sample Contract: [objective_name]"
-	desc = "We need a [objective_name] off the planet at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Our drop seeded [chain ? chain.points_total : 3] survey pylons across one stretch of the surface. Calibrate each with an empty hand, in any order. \
-		Each calibration draws a wave of hostiles, so go armed. The last pylon prints the [objective_name] core; bring that core to the mission pad. \
-		Pays [research_reward] research points as a data dossier plus [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. Slot the dossier into an R&D console to bank the points. \
-		Tap a GPS unit on the mission board to receive a beacon for every pylon still standing ([gps_tag])."
+	desc = "Sample requested from ([target.target_x], [target.target_y]) in the [target_zone_name]: [objective_name]."
 
 /datum/mission/research/core_sample/waypoint_label()
 	return "Core Sample: [objective_name]"

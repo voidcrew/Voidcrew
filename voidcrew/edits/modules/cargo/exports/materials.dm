@@ -23,3 +23,32 @@
 /datum/export/material/market/plasma
 	message = "cm3 of plasma"
 	material_id = /datum/material/plasma
+
+/datum/material/diamond
+	value_per_unit = 120 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/bluespace
+	value_per_unit = 80 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/gold
+	value_per_unit = 40 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/titanium
+	value_per_unit = 40 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/uranium
+	value_per_unit = 30 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/silver
+	value_per_unit = 15 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/iron
+	value_per_unit = 2 / SHEET_MATERIAL_AMOUNT
+	minimum_value_override = 1 / SHEET_MATERIAL_AMOUNT
+
+/datum/material/glass
+	value_per_unit = 2 / SHEET_MATERIAL_AMOUNT
+	minimum_value_override = 1 / SHEET_MATERIAL_AMOUNT
+
+/datum/stock_market_event
+	price_maximum = SHEET_MATERIAL_AMOUNT * 1.5

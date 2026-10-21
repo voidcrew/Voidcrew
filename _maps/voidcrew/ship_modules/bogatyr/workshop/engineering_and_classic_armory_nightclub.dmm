@@ -1,4 +1,46 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"akJ" = (
+/obj/item/knife/hunting{
+	pixel_y = -1
+	},
+/obj/item/knife/hunting{
+	pixel_y = 7
+	},
+/obj/item/knife/hunting{
+	pixel_y = -9
+	},
+/obj/structure/closet{
+	anchored = 1
+	},
+/obj/item/melee/chainofcommand,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -7;
+	pixel_y = 2
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = -7
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 1
+	},
+/obj/item/clothing/suit/armor/vest/russian{
+	pixel_x = 8
+	},
+/obj/effect/spawner/costume/wizard,
+/obj/effect/spawner/costume/plaguedoctor,
+/obj/effect/spawner/costume/imperium_monk,
+/obj/effect/spawner/costume/nyangirl,
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/obj/item/clothing/under/costume/soviet{
+	pixel_x = 2
+	},
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
 "bgp" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
@@ -35,6 +77,13 @@
 	dir = 8
 	},
 /turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
+"gvU" = (
+/obj/structure/table/reinforced/plasmarglass,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/storage/bag/money,
+/obj/item/reagent_containers/hypospray/medipen/methamphetamine,
+/turf/open/floor/light/colour_cycle,
 /area/template_noop)
 "hjS" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
@@ -95,13 +144,6 @@
 	},
 /turf/closed/wall/r_wall,
 /area/template_noop)
-"rGS" = (
-/obj/structure/table/reinforced/plasmarglass,
-/obj/item/gun/ballistic/automatic/pistol/m1911,
-/obj/item/storage/bag/money,
-/obj/item/reagent_containers/hypospray/medipen/methamphetamine,
-/turf/open/floor/light/colour_cycle,
-/area/template_noop)
 "smh" = (
 /obj/machinery/suit_storage_unit/security,
 /turf/open/floor/glass/reinforced/plasma,
@@ -136,48 +178,6 @@
 	},
 /turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
-"wva" = (
-/obj/item/knife/hunting{
-	pixel_y = -1
-	},
-/obj/item/knife/hunting{
-	pixel_y = 7
-	},
-/obj/item/knife/hunting{
-	pixel_y = -9
-	},
-/obj/structure/closet{
-	anchored = 1
-	},
-/obj/item/melee/chainofcommand,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -7;
-	pixel_y = 2
-	},
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = -7
-	},
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = 1
-	},
-/obj/item/clothing/suit/armor/vest/russian{
-	pixel_x = 8
-	},
-/obj/effect/spawner/costume/wizard,
-/obj/effect/spawner/costume/plaguedoctor,
-/obj/effect/spawner/costume/imperium_monk,
-/obj/effect/spawner/costume/nyangirl,
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/obj/item/clothing/under/costume/soviet{
-	pixel_x = 2
-	},
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
 "xZI" = (
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
@@ -198,7 +198,7 @@ hjS
 nif
 vux
 mlm
-wva
+akJ
 nif
 bEX
 kxA
@@ -208,7 +208,7 @@ eEk
 (3,1,1) = {"
 qeh
 mlC
-rGS
+gvU
 ubj
 xZI
 svQ

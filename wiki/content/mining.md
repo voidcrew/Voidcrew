@@ -13,11 +13,15 @@ There is no station mining outpost here and no shuttle that goes to it. Ore come
 
 **Asteroid storms.** These are the dedicated mining sites. They appear on the chart as storm hazards in three severities, and there are always at least three somewhere in the galaxy. Fly onto one and press Dock. The button reads "(mining anchorage)", and you are put inside the field, a scatter of rock blobs with hard vacuum between them.
 
-| Storm | Ore | Guarded cache |
-|---|---|---|
-| Minor | Iron, plasma, silver, titanium, a little gold | Occasionally |
-| Moderate | The above plus uranium, diamond and bluespace in the tail | Often |
-| Major | Same list, far richer, and the densest rock of the three | Usually, and often the rare kind |
+| Storm | Ore density |
+|---|---|
+| Minor | Lowest |
+| Moderate | Higher |
+| Major | Highest |
+
+Every field can contain every ordinary ore, including uranium, diamond, bluespace crystal and bananium. Each wall rolls its ore separately. The field's zone improves the odds of valuable ore and the yield per mineral wall. Guarded caches can appear too.
+
+Asteroid fields are finite. Once a field unloads, it is spent and cannot generate another interior. Returning does not reroll its ore.
 
 The toll is paid on the way in: crossing a storm tile throws a rock at your hull, and the worse the storm, the bigger the rock. Every field also carries roaming packs of hostiles, and any cache in it is guarded.
 
@@ -25,13 +29,15 @@ The toll is paid on the way in: crossing a storm tile throws a rock at your hull
 
 ## Ore vents
 
-Volcanic and frozen worlds put ore vents out in their terrain. A vent is a permanent ore supply, but it has to be taken first:
+Volcanic and frozen worlds put ore vents out in their terrain. A vent is a finite ore supply. It has to be taken first:
 
 1. Hit it with a mining scanner to survey it. That tells you which minerals it carries and pays mining points to your ID.
 2. Scan it a second time to start the excavation. A node drone attaches itself to the vent and the ground opens up: goliaths, legions, watchers, lobstrosities, brimdemons and bileworms come out and go for the drone. Keep it alive and in place until the wave ends.
-3. Win, and the vent is tapped for the rest of the round. It produces boulders; break them with a pickaxe to get the ore out.
+3. Win, and the vent produces boulders until its stock or the planet's shared reserve runs out. Break the boulders with a pickaxe to get the ore out.
 
 Lose the drone and the vent seals up. You can try again.
+
+Green vents produce at most 20 boulders each, yellow 30 and red 40. All vents on a planet share a reserve of 3,000, 6,000 or 10,000 sheets of material respectively, before refinery bonuses. An exhausted vent's remaining boulders can still be collected.
 
 !!! tip "Bring the scanner"
     A vent cannot be surveyed or tapped without a mining scanner, and it will not tell you what is inside until it is surveyed. Waystation Halcyon sells one.
@@ -55,9 +61,14 @@ A welder will smelt ore straight into sheets, one unit of welder fuel per chunk:
 Three ways out of that, cheapest first:
 
 1. **Buy sheets.** The general store's fuel counter stocks solid plasma in twenties. Raw plasma ore is also on the shelf and works out cheaper per sheet, but only buy that if you have a machine to run it through.
-2. **Sell the ore.** Traders take plasma ore on their supply contracts, so it is never worthless even if you cannot use it.
-3. **Build a redemption machine.** Any ship with an autolathe can get there. The autolathe prints a Research & Development Kit from the start with no research needed: 20 iron and 40 glass sheets, both of which a welder can make from ore you dug yourself. That box holds the circuit imprinter, which is the only machine that prints circuit boards. From there, Mining Technology is one cheap step off a free starting node, and it unlocks the redemption machine board. It is a long detour, but it is the permanent fix.
-- **Mining points** ride on your ID, and vent work pays them out directly: you are credited for surveying a vent and again for tapping it. A mining equipment order console spends them, and orders through it are delivered immediately by pod where you stand rather than riding a shuttle. Only a few hulls carry one: Delta's Mining Bay is the one you can buy.
+2. **Sell the ore through cargo.** Trader supply contracts do not ask for ore or sheets.
+3. **Build a redemption machine.** Any ship with an autolathe can get there. The autolathe prints a Research & Development Kit from the start with no research needed: 50 iron and 50 glass sheets at a basic autolathe, both of which a welder can make from ore you dug yourself. That box holds a flat-packed circuit imprinter, along with the other research machines and console materials. Deploy the flatpacks with a multitool. The circuit imprinter prints circuit boards. From there, Mining Technology is one cheap step off a free starting node, and it unlocks the redemption machine board. It is a long detour, but it is the permanent fix.
+
+## Mining points
+
+**Mining points** ride on your ID, and vent work pays them out directly: you are credited for surveying a vent and again for tapping it. A mining equipment order console spends them, and orders through it are delivered immediately by pod where you stand rather than riding a shuttle. Only a few hulls carry one: Delta's Mining Bay is one you can buy.
+
+The console sells a **500-credit bill for 2,000 mining points** and a mining MODsuit for **7,200 points**. Titanium in boulders pays the ordinary material rate. The redemption machine displays the rates it actually pays.
 
 ## Selling it
 
@@ -77,10 +88,10 @@ Traders at [outposts](trader-outposts.md) run a wanted ledger: a list of things 
 
 Each entry only takes so many sales before the trader stops wanting it, and it recovers slowly. Vouchers are deliberately reserved for things nobody can print aboard a ship, which is why hostile planet crust pays them and your lathe never will. The full picture is in [Money & Trade](money-and-trade.md).
 
-Traders also post supply contracts for ore and forage (iron, plasma, spice pods, hides, glacial cores) and the hardest of those pay in equipment that is never on the shelves, including an ore bag of holding and a jackhammer.
+Trader supply contracts ask for field goods such as spice pods, hides, glacial cores and recovered salvage. They do not ask for ore or sheets. Read each offer for its goods, credits and vouchers; routine supply work does not guarantee an exclusive tool.
 
 ## Kit worth buying
 
-Waystation Halcyon stocks the prospecting counter: pickaxe (200 cr), ore bag (200 cr), mesons (400 cr), mining scanner (450 cr), diamond pickaxe (1200 cr), and a mining drill (1800 cr) when the rare shelf has one. A pickaxe and a scanner are enough to start; the drill and the bag of holding are what turn a two-hour dig into a twenty-minute one.
+Waystation Halcyon's prospecting counter sells an ore bag for 100 credits, an advanced automatic mining scanner for 300, and a diamond pickaxe for 1,200. Stock is shared with other crews.
 
 Suits matter as much as tools. Volcanic worlds need sealed gear and internals, frozen worlds need insulation, and asteroid fields are vacuum. See [Planets](planets.md) for what each destination demands.

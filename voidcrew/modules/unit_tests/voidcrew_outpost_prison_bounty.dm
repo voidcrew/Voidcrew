@@ -798,7 +798,8 @@
 	allocated += crewman.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	crewman.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(crewman.mind)
 	var/list/choice = prison.bounty_extra_speech(caught, 100)
 	TEST_ASSERT(islist(choice) && length(choice) == 3, "With the Meridian's crewman in sight, they said nothing about it ([json_encode(choice)])")
 	TEST_ASSERT_EQUAL(choice[1], "bounty_captor_seen", "The call-out's context is [choice[1]]")

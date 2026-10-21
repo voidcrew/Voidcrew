@@ -36,26 +36,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	max_cluster_size = 5
 	chart_variant = "rock"
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
-	survey_value = 100
-	/// Notable minerals shown on the survey report. Keep in sync with ore_weights
-	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
+	survey_value = 50
+	/// Minerals available in every field; zone weights determine their relative abundance.
+	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace, /datum/material/bananium)
 
 	/// Map generator used to carve this severity's landable rock field (see AsteroidCaves.dm)
 	var/datum/map_generator/cave_generator/asteroid_field/mapgen_type = /datum/map_generator/cave_generator/asteroid_field
-	/// Weighted ore table seeded into this severity's rock (seed_asteroid_ore_block);
-	/// higher severities carry rarer minerals. Braving the worse storm pays better
-	var/list/ore_weights = list(
-		/obj/item/stack/ore/iron = 40,
-		/obj/item/stack/ore/plasma = 20,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 10,
-		/obj/item/stack/ore/uranium = 5,
-		/obj/item/stack/ore/diamond = 2,
-		/obj/item/stack/ore/bluespace_crystal = 1,
-	)
-	/// Fraction of the field's rock turfs seeded ore-bearing
-	var/ore_target_ratio = EVENT_FIELD_ORE_TARGET_RATIO
 	/// Chance (0-100) the field hides a zone-scaled expedition cache (zone_loot.dm)
 	var/crate_chance = 40
 	/// How many roaming zone-scaled mob packs guard the field: list(min, max)
@@ -85,10 +71,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/dock_index
 	/// Bottom-left turf of the field's padded generation footprint (set by load_level, cleared on unload)
 	var/turf/field_bottom_left
-	/// Whether this field's ore and caches have already been rolled once. The rock
-	/// regenerates on every dock (it is the hazard), but the payout does not - without
-	/// this, undocking for 20 seconds and re-docking re-rolled a fresh ore-seeded field.
-	var/field_mined = FALSE
+	/// Terminal once teardown starts; no caller may regenerate this field.
+	var/retiring = FALSE
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
 	. = ..()
@@ -97,6 +81,15 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 /obj/structure/overmap/event/meteor/Destroy()
 	GLOB.meteor_fields -= src
+	// The chart was previously static. Retiring a field must also open its cached route.
+	var/turf/chart = get_turf(src)
+	var/still_blocked = FALSE
+	for(var/obj/structure/overmap/event/other in chart)
+		if(other != src && !QDELETED(other) && !istype(other, /obj/structure/overmap/event/nebula))
+			still_blocked = TRUE
+			break
+	if(!still_blocked)
+		GLOB.overmap_blocked_turfs -= chart
 	field_bottom_left = null
 	field_area = null
 	// The orderly teardown (unload_level -> remove_mapzone) leaves both of these null. What
@@ -121,16 +114,6 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	max_cluster_size = 4
 	chart_severity = 1
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/minor
-	mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium)
-	// Common rock only: no uranium, diamond or bluespace this shallow
-	ore_weights = list(
-		/obj/item/stack/ore/iron = 50,
-		/obj/item/stack/ore/plasma = 22,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 4,
-	)
-	ore_target_ratio = 0.25
 	crate_chance = 20
 	mob_pack_count = list(1, 2)
 
@@ -139,21 +122,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 25
 	max_cluster_size = 7
 	chart_severity = 3
-	mineral_types = list(/datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace)
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/majour
-	// The deep-storm payout: still mostly working rock, but the precious tail
-	// is fat enough that a full strip run banks real diamond/bluespace
-	ore_weights = list(
-		/obj/item/stack/ore/iron = 18,
-		/obj/item/stack/ore/plasma = 14,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 16,
-		/obj/item/stack/ore/uranium = 14,
-		/obj/item/stack/ore/diamond = 9,
-		/obj/item/stack/ore/bluespace_crystal = 5,
-	)
-	ore_target_ratio = 0.4
 	crate_chance = 65
 	mob_pack_count = list(3, 4)
 
@@ -187,6 +156,9 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * contract: null takes the default, UI callers pass WORLDGEN_QUEUE_NO_WAIT.
  */
 /obj/structure/overmap/event/meteor/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
+	if(retiring)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
 	if(mapzone)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, is_loaded())
 		return
@@ -203,7 +175,13 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
-	// The world moved while we queued: another caller may have loaded us already.
+	// The world moved while we queued: recheck terminal teardown as well.
+	if(retiring)
+		SSovermap.worldgen_release(src)
+		loading = FALSE
+		worldgen_end(probe, "retiring")
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+		return
 	if(mapzone)
 		SSovermap.worldgen_release(src)
 		loading = FALSE
@@ -255,8 +233,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/list/field_candidates = block(field_bottom_left, field_top_right)
 
 	// Carve the rock field via the map generator framework (same architecture as
-	// planets - see AsteroidCaves.dm) then top up ore the same way asteroid space
-	// ruin signals used to, before that category was retired in favor of this field.
+	// planets - see AsteroidCaves.dm). Mineral turfs perform the only ore roll.
 	//
 	// The area is OURS, minted per load. /area/centcom/asteroid/voidcrew used to be
 	// UNIQUE_AREA, so every field alive at once shared one instance spanning all of them -
@@ -266,12 +243,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/list/field_turfs = mapgen.generate_terrain(field_candidates, field_area)
 	if(length(field_turfs))
 		mapgen.populate_terrain(field_turfs, field_area)
-		// One payout per field per round: the rock (and the meteor hazard) come back on
-		// every dock, but the ore roll and the cache extras only happen the first time.
-		if(!field_mined)
-			field_mined = TRUE
-			seed_asteroid_ore_block(field_bottom_left, field_top_right, ore_target_ratio, "hazard field '[name]'", ore_weights)
-			populate_field_extras(field_turfs)
+		populate_field_extras(field_turfs)
 	else
 		// Nothing was carved, so nothing ever entered our area instance - and
 		// reap_emptied_areas() only collects areas a teardown takes turfs AWAY from, so an
@@ -302,7 +274,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// exist, and request_site_load()'s fast path re-invokes ship_act off this answer -
 	// answering "loaded" while the slot is gone would bounce the two procs off each other
 	// in an unbroken INVOKE_ASYNC loop.
-	return loaded && mapzone && reserve_dock
+	return !retiring && loaded && mapzone && reserve_dock
 
 /// A wedged load or teardown leaves these flags latched (the watchdog force-released
 /// the queue, but nothing else ever resets them), and ships may be registered for a
@@ -334,6 +306,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	return "[name] (mining anchorage)"
 
 /obj/structure/overmap/event/meteor/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	if(retiring)
+		return
 	// dock() refuses interdicted ships only after the dock slot below is claimed -
 	// refuse up front instead
 	if(acting.is_interdicted)
@@ -467,8 +441,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	SSambient_npcs.populate_field(src, open_turfs)
 
 /**
- * Releases the field's map slot and docks when nobody's using it. Unlike space ruins,
- * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.
+ * Releases the field's map slot and docks when nobody's using it.
+ * Successful teardown also retires the event permanently.
  */
 /obj/structure/overmap/event/meteor/proc/can_release_interior()
 	return isnull(get_interior_release_blocker(log_failure = TRUE))
@@ -513,7 +487,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	return null
 
 /obj/structure/overmap/event/meteor/proc/unload_level()
-	if(concerned)
+	if(retiring || concerned)
 		return
 
 	if(!can_release_interior())
@@ -561,11 +535,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// is_loaded() must read FALSE the moment the ground stops being safe to dock into,
 	// or an arriving ship's fast path resumes an approach into turfs that are
 	// mid-recycle.
+	retiring = TRUE
 	loaded = FALSE
 	remove_docks()
 	remove_mapzone()
 	SSovermap.worldgen_release(src)
-	concerned = FALSE
+	qdel(src)
 
 /obj/structure/overmap/event/meteor/proc/remove_docks()
 	if(reserve_dock)
@@ -597,73 +572,13 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	field_area = null
 	field_bottom_left = null
 
-/**
- * Seeds ore deposits into a rectangular block of rock turfs, converting barren
- * /turf/closed/mineral rock into ore deposits until target_ratio of the mineral
- * turfs in the block are ore-bearing. Originally shared with space ruin asteroid
- * signals; those were retired in favor of landable fields, so this is now solely
- * the field ore-seeding step, called from load_level() above.
- *
- * source_desc is a human-readable label for the mapping log line only.
- * ore_weights optionally overrides the default weighted ore table, the meteor
- * severity tiers pass their own so worse storms seed richer rock.
- *
- * Mining itself needs no z-level traits: off mining levels, prox_to_vent() returns 0 and
- * the mineral turf machinery falls back to flat random yields, so this works fine inside
- * a map slot on a shared encounter z-level.
- */
-/proc/seed_asteroid_ore_block(turf/bottom_left, turf/top_right, target_ratio, source_desc, list/ore_weights)
-	if(!bottom_left || !top_right)
-		return
-
-	// Default weighted ore table - iron/plasma-heavy like planet rock, no bananium, and
-	// no gibtonite (its detonation admin-alerts are tuned for mining levels, and surprise
-	// bombs shouldn't be procedurally injected into rock the mapper made inert)
-	var/static/list/asteroid_ore_weights = list(
-		/obj/item/stack/ore/iron = 40,
-		/obj/item/stack/ore/plasma = 20,
-		/obj/item/stack/ore/silver = 12,
-		/obj/item/stack/ore/titanium = 12,
-		/obj/item/stack/ore/gold = 10,
-		/obj/item/stack/ore/uranium = 5,
-		/obj/item/stack/ore/diamond = 2,
-		/obj/item/stack/ore/bluespace_crystal = 1,
-	)
-	var/list/table = (length(ore_weights)) ? ore_weights : asteroid_ore_weights
-
-	var/mineral_turf_count = 0
-	var/ore_bearing_count = 0
-	var/list/barren_rock = list()
-	for(var/turf/closed/mineral/rock in block(bottom_left, top_right))
-		mineral_turf_count++
-		// Already has ore, a boulder, or is gibtonite (mineralType-less but very much not barren)
-		if(rock.mineralType || rock.spawned_boulder || istype(rock, /turf/closed/mineral/gibtonite))
-			ore_bearing_count++
-			continue
-		barren_rock += rock
-		// Scans a whole site block mid-round - yield (see worldgen_yield())
-		SSovermap.worldgen_yield()
-
-	var/target = CEILING(mineral_turf_count * target_ratio, 1)
-	var/to_seed = target - ore_bearing_count
-	var/seeded = 0
-	while(to_seed > 0 && length(barren_rock))
-		var/turf/closed/mineral/rock = pick_n_take(barren_rock)
-		rock.Change_Ore(pick_weight(table))
-		rock.mineralAmt = rand(ASTEROID_ORE_AMOUNT_MIN, ASTEROID_ORE_AMOUNT_MAX)
-		to_seed--
-		seeded++
-
-	if(seeded)
-		log_mapping("SPACE RUIN: Seeded [seeded] ore deposits into [source_desc] ([ore_bearing_count]/[mineral_turf_count] rock was already ore-bearing)")
-
 /obj/structure/overmap/event/emp
 	name = "ion storm (moderate)"
 	icon_state = "ion1"
 	spread_chance = 20
 	max_cluster_size = 4
 	chart_variant = "ion"
-	survey_value = 400
+	survey_value = 100
 	var/intensity = 1
 
 /obj/structure/overmap/event/emp/Initialize(mapload)
@@ -688,7 +603,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 30
 	max_cluster_size = 4
 	chart_variant = "electrical"
-	survey_value = 250
+	survey_value = 75
 	var/intensity = 1
 
 /obj/structure/overmap/event/electric/Initialize(mapload)
@@ -727,6 +642,11 @@ GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 		/datum/gas/plasma = 55,
 		/datum/gas/nitrogen = 30,
 		/datum/gas/water_vapor = 15,
+		/datum/gas/miasma = 1,
+		/datum/gas/tritium = 1,
+		/datum/gas/pluoxium = 1,
+		/datum/gas/nitrium = 1,
+		/datum/gas/hypernoblium = 1,
 	),
 	"[ZONE_YELLOW]" = list(
 		/datum/gas/plasma = 40,
@@ -746,7 +666,7 @@ GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
 ))
 
 /// Moles per second a rating-1 ram scoop pulls from a nebula of each gas.
-/// The precious stuff comes slower on top of already being red-band-only
+/// The precious stuff comes slower as well as being rarer in the safer bands.
 GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 	/datum/gas/plasma = 8,
 	/datum/gas/nitrogen = 8,
@@ -786,7 +706,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	spread_chance = 75
 	opacity = TRUE
 	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below
-	survey_value = 50
+	survey_value = 25
 	/// The /datum/gas typepath this nebula carries. Null rolls one from the
 	/// zone band's table on Init; the fixed subtypes below force a specific gas.
 	var/datum/gas/gas_type
@@ -824,7 +744,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 
 /obj/structure/overmap/event/nebula/get_hazard_note()
 	if((GLOB.nebula_gas_radioactivity[gas_type] || 0) > 0)
-		return "Radioactive nebula: irradiates the crew unless protected by an active nebula shielder."
+		return "Radioactive gas."
 	return null
 
 /// Display name of the carried gas, for survey readouts and examine

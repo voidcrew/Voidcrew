@@ -63,6 +63,7 @@
 
 /datum/unit_test/voidcrew_bounty_lair_mafia/rockets/Run()
 	var/mob/living/basic/bounty_lair_boss/mafia_mech/mech = allocate(/mob/living/basic/bounty_lair_boss/mafia_mech, spot(0, 2))
+	mech.finalize_npc_zone(allocate(/datum/npc_spawn_context, src, 3, "boss"))
 	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(4, 2))
 	TEST_ASSERT(!ispath(mech.mech_rocket_type, /obj/projectile/bullet/rocket), "The mech fires tg's rocket, which calls explosion()")
 	TEST_ASSERT(ispath(mech.mech_rocket_type, /obj/projectile/bullet/bounty_mafia_rocket), "The mech doesn't fire the club's rocket")
@@ -86,13 +87,13 @@
 	TEST_ASSERT(!istype(rocket, /obj/projectile/bullet/rocket), "The launch fired tg's rocket")
 	TEST_ASSERT_EQUAL(rocket.rocket_target, get_turf(hunter), "The rocket isn't aimed at the marker")
 
-	// It lands on the marker: 70 brute and a knockdown (BOUNTY_MECH_ROCKET_DAMAGE), once a volley
+	// The projectile and its scripted detonation share one red boss factor.
 	var/turf/marker_turf = get_turf(hunter)
 	var/list/volley = rocket.rocket_volley
 	var/list/hit = rocket.rocket_detonate(marker_turf)
 	TEST_ASSERT(hunter in hit, "The rocket missed the hunter standing on the marker")
 	var/first = hunter.getBruteLoss()
-	TEST_ASSERT_EQUAL(first, 70, "The rocket didn't do 70 brute to an unarmoured hunter") // BOUNTY_MECH_ROCKET_DAMAGE
+	TEST_ASSERT_EQUAL(first, 84, "The rocket lost or doubled its red boss damage factor") // BOUNTY_MECH_ROCKET_DAMAGE * 1.2
 	TEST_ASSERT(hunter.IsKnockdown(), "The rocket didn't knock the hunter down")
 	TEST_ASSERT(QDELETED(rocket), "The rocket outlived its burst")
 	var/obj/projectile/bullet/bounty_mafia_rocket/second = new(spot(1, 2))
@@ -285,8 +286,11 @@
 
 /datum/unit_test/voidcrew_bounty_lair_mafia/posse/Run()
 	var/mob/living/basic/bounty_lair_boss/mafia_mech/mech = allocate(/mob/living/basic/bounty_lair_boss/mafia_mech, spot(2, 2))
+	mech.finalize_npc_zone(allocate(/datum/npc_spawn_context, src, 3, "boss"))
 	TEST_ASSERT(!ispath(mech.type, /mob/living/basic/boss), "The mech is a megafauna boss")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 350, "The mech doesn't start at its one-hunter health") // BOUNTY_MECH_HEALTH_1
+	TEST_ASSERT_EQUAL(mech.npc_zone_role, "boss", "The mech must use the boss zone profile")
+	TEST_ASSERT(abs(mech.npc_zone_health_factor - 1.3) < 0.001, "The mech must retain the red boss health factor")
+	TEST_ASSERT(abs(mech.maxHealth - 455) < 0.001, "The mech doesn't start at its one-hunter health") // BOUNTY_MECH_HEALTH_1 * 1.3
 	TEST_ASSERT_EQUAL(mech.damage_coeff[BRUTE], 0.6, "The mech's brute armour is wrong") // BOUNTY_MECH_BRUTE_MOD
 	TEST_ASSERT_EQUAL(mech.damage_coeff[BURN], 0.8, "The mech's burn armour is wrong") // BOUNTY_MECH_BURN_MOD
 	TEST_ASSERT_EQUAL(mech.damage_coeff[STAMINA], 0, "The mech takes stamina damage")
@@ -296,19 +300,19 @@
 	for(var/i in 1 to 5)
 		hunters += hunter_at(spot(i - 1, 0))
 	TEST_ASSERT(mech.mech_engage(hunters[1]), "The first hunter didn't join the posse")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 350, "One hunter changed the mech's health")
+	TEST_ASSERT(abs(mech.maxHealth - 455) < 0.001, "One hunter changed the mech's health")
 	mech.adjust_health(100)
-	TEST_ASSERT_EQUAL(mech.health, 250, "The mech didn't take the damage")
+	TEST_ASSERT(abs(mech.health - 355) < 0.001, "The mech didn't take the damage")
 	TEST_ASSERT(mech.mech_engage(hunters[2]), "The second hunter didn't join the posse")
-	TEST_ASSERT_EQUAL(mech.maxHealth, 700, "Two hunters didn't raise the mech to 700") // BOUNTY_MECH_HEALTH_2
-	TEST_ASSERT_EQUAL(mech.health, 600, "The mech's damage didn't carry over when its health rose")
+	TEST_ASSERT(abs(mech.maxHealth - 910) < 0.001, "Two hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_2 * 1.3
+	TEST_ASSERT(abs(mech.health - 810) < 0.001, "The mech's damage didn't carry over when its health rose")
 	TEST_ASSERT(!mech.mech_engage(hunters[2]), "The same hunter joined twice")
 	mech.mech_engage(hunters[3])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1050, "Three hunters didn't raise the mech to 1050") // BOUNTY_MECH_HEALTH_3
+	TEST_ASSERT(abs(mech.maxHealth - 1365) < 0.001, "Three hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_3 * 1.3
 	mech.mech_engage(hunters[4])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1400, "Four hunters didn't raise the mech to 1400") // BOUNTY_MECH_HEALTH_4
+	TEST_ASSERT(abs(mech.maxHealth - 1820) < 0.001, "Four hunters lost the selected zone factor") // BOUNTY_MECH_HEALTH_4 * 1.3
 	mech.mech_engage(hunters[5])
-	TEST_ASSERT_EQUAL(mech.maxHealth, 1400, "A fifth hunter raised the mech past its 4+ health")
+	TEST_ASSERT(abs(mech.maxHealth - 1820) < 0.001, "A fifth hunter raised the mech past its 4+ health")
 
 // ===== THE EMP STALL =====
 
@@ -419,6 +423,7 @@
 	posting.record = new /datum/bounty_record
 	posting.record.name = "Viktor Sokolov"
 	var/mob/living/basic/bounty_lair_boss/mafia_mech/mech = allocate(/mob/living/basic/bounty_lair_boss/mafia_mech, spot(2, 2))
+	mech.finalize_npc_zone(allocate(/datum/npc_spawn_context, src, 3, "boss"))
 	mech.posting_ref = WEAKREF(posting)
 	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(0, 2))
 	var/turf/where = get_turf(mech)
@@ -437,7 +442,7 @@
 	TEST_ASSERT(don in ejected, "The mech didn't announce the don")
 	TEST_ASSERT_EQUAL(don.posting_ref?.resolve(), posting, "The don didn't keep the mech's posting")
 	TEST_ASSERT_EQUAL(don.name, "Viktor Sokolov", "The don isn't named for his posting")
-	TEST_ASSERT_EQUAL(don.maxHealth, 250, "The don's health is wrong") // BOUNTY_DON_HEALTH
+	TEST_ASSERT_EQUAL(don.maxHealth, 325, "The don lost the mech's selected boss profile") // BOUNTY_DON_HEALTH
 	TEST_ASSERT_EQUAL(don.don_busy, "stagger", "The don isn't dazed as he climbs out")
 	TEST_ASSERT_EQUAL(don.don_wreck_ref?.resolve(), wreck, "The don doesn't know his wreck")
 
@@ -503,7 +508,7 @@
 			TEST_ASSERT(!ispath(entry, /mob/living/basic/trooper/russian/mafia/lieutenant), "[entry] is a lieutenant, which only the gate has")
 			TEST_ASSERT(!ispath(entry, /mob/living/basic/boss), "[entry] is a megafauna")
 	for(var/list/count_range in list(probe.count_green, probe.count_yellow, probe.count_red))
-		TEST_ASSERT(count_range[1] >= 3 && count_range[2] <= 5, "A mafia marker spawns outside 3-5 goons")
+		TEST_ASSERT(count_range[1] == 1 && count_range[2] == 2, "A mafia marker spawns outside 1-2 goons")
 
 	// P11's rooms get their own crews
 	var/list/casino = bounty_mafia_room_crew("/area/ruin/space/has_grav/powered/mafia_club/casino")
@@ -516,7 +521,7 @@
 	TEST_ASSERT_NULL(bounty_mafia_room_crew("/area/ruin/space/has_grav/powered/mafia_club/garage"), "The arena gets goons")
 	TEST_ASSERT_NULL(bounty_mafia_room_crew(/area/misc/testroom), "A room outside the club gets a club crew")
 
-	// Anywhere else, the zone table: 3-5 goons, all on its own floor
+	// Anywhere else, the zone table: 1-2 goons, all on its own floor
 	probe.forceMove(spot(2, 2))
 	probe.do_spawn(2) // ZONE_YELLOW
 	var/count = 0
@@ -526,7 +531,7 @@
 		count++
 		TEST_ASSERT(!istype(goon, /mob/living/basic/trooper/russian/mafia/lieutenant), "The marker spawned a lieutenant")
 		TEST_ASSERT_EQUAL(get_area(goon), room, "A goon spawned outside the marker's room")
-	TEST_ASSERT(count >= 3 && count <= 5, "The marker spawned [count] goons, not 3-5")
+	TEST_ASSERT(count >= 1 && count <= 2, "The marker spawned [count] goons, not 1-2")
 	qdel(probe)
 
 // ===== GOONS: THE SHOUT, THE DOORWAY, THE DOWNED, NO GUNS =====
@@ -674,6 +679,7 @@
 	posting.board_gps_tag = "WANTED-[posting.record.id]"
 	GLOB.criminal_bounties += posting
 	fake_lair = allocate(/obj/structure/overmap/space_ruin/bounty_lair)
+	fake_lair.npc_spawn_context = allocate(/datum/npc_spawn_context, src, 2, "boss")
 	fake_lair.lair_bind_posting(posting)
 	var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
 	footprint.z_value = origin.z
@@ -682,6 +688,8 @@
 	fake_lair.loaded = TRUE
 	boss_mark = new(locate(origin.x + 2, origin.y + 2, origin.z))
 	boss_mark.boss_type = /mob/living/basic/bounty_lair_boss/mafia_mech
+	var/obj/effect/landmark/bounty_lair_gatekeeper/keeper_mark = allocate(/obj/effect/landmark/bounty_lair_gatekeeper, origin)
+	keeper_mark.gatekeeper_type = /mob/living/basic/npc_zone_test
 
 	// The lair spawns the mech and takes it on
 	SEND_SIGNAL(fake_lair, "voidcrew_planet_loaded", TRUE) // COMSIG_VOIDCREW_PLANET_LOADED
@@ -692,6 +700,13 @@
 	var/datum/weakref/mech_ref = fake_lair.lair_bosses[1]
 	var/mob/living/basic/bounty_lair_boss/mafia_mech/mech = mech_ref.resolve()
 	TEST_ASSERT(istype(mech), "The lair's boss isn't the don's mech")
+	TEST_ASSERT(abs(mech.maxHealth - 350 * 1.15) < 0.001, "The lair route did not finalize its boss")
+	TEST_ASSERT_EQUAL(length(fake_lair.lair_gatekeepers), 1, "Lair gatekeeper fixture did not spawn")
+	var/datum/weakref/keeper_ref = fake_lair.lair_gatekeepers[1]
+	var/mob/living/keeper = keeper_ref.resolve()
+	allocated += keeper
+	TEST_ASSERT_EQUAL(keeper.npc_zone_role, "boss", "Lair gatekeeper lost its explicit boss role")
+	TEST_ASSERT(abs(keeper.maxHealth - 115) < 0.001, "Lair gatekeeper used the ordinary profile")
 	TEST_ASSERT_EQUAL(mech.posting_ref?.resolve(), posting, "The mech isn't wanted on the lair's bounty")
 
 	// The mech breaks: the lair takes the don on as he climbs out, and the fight goes on past its grace

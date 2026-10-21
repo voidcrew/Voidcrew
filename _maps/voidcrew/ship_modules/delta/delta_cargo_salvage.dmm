@@ -95,16 +95,6 @@
 /obj/item/storage/bag/ore,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"w" = (
-/obj/effect/turf_decal/box/corners{
-	dir = 1
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
-/obj/item/flashlight/seclite,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "C" = (
 /obj/effect/turf_decal/box/corners{
 	dir = 1
@@ -136,6 +126,16 @@
 /obj/item/fulton_core,
 /obj/item/gps/mining,
 /obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "I" = (
@@ -214,7 +214,7 @@ R
 U
 "}
 (5,1,1) = {"
-w
+G
 W
 X
 K

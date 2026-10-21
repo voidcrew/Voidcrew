@@ -1133,7 +1133,12 @@
  *
  * Returns the new overmap ship, or null on failure.
  */
-/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name)
+/proc/commission_vessel(mob/user, turf/origin, list/turfs, vessel_name, form_new = null)
+	if(isnull(form_new))
+		form_new = choose_new_reputation_crew(user)
+	var/datum/voidcrew_crew_record/crew = user?.mind?.recover_reputation_crew()
+	if(isnull(form_new) || (crew && !form_new && crew.leader != user.mind))
+		return null
 	prepare_claimed_turfs(turfs)
 
 	// create_shuttle() seats the mobile port on whatever turf it is handed as the origin, and
@@ -1181,6 +1186,10 @@
 	if(!vessel.setup_from_template(new /datum/map_template/shuttle/voidcrew/commissioned()))
 		qdel(vessel)
 		return null
+	if(user?.mind?.recover_reputation_crew() != crew || !vessel.bind_reputation_crew(user?.mind, form_new))
+		qdel(vessel)
+		qdel(port, force = TRUE)
+		return null
 
 	port.current_ship = vessel
 	vessel.shuttle = port
@@ -1204,26 +1213,22 @@
 	SEND_SIGNAL(port, COMSIG_VOIDCREW_SHIP_LOADED)
 	ship_metric_spawned(vessel, creator = user, source = "commissioned")
 
-	// The builders own what they built. setup_from_template() creates the crew roster
-	// but nothing used to put anyone ON it, so a commissioned hull launched with a crew
-	// of nobody: every roster-gated console refused the people who welded it together,
-	// there was no captain to invite anyone aboard, and the only way out was an admin
-	// hand-editing team membership (round 6, 2026-08-15, ticket #1). Enlist the surveyor
-	// as commanding officer and everyone standing inside the enclosure as crew.
-	// enlist_crewmember() also clears each ckey through the join password, per the
-	// crew-adding rules in ship.dm.
+	// Enlist unaffiliated builders and the surveyor's crew; visitors keep their affiliation.
 	vessel.ship_team.name = vessel_name // not the template's "Commissioned Vessel" placeholder
+	var/datum/voidcrew_crew_record/vessel_crew = vessel.get_crew_record()
 	for(var/turf/claimed as anything in turfs)
 		for(var/mob/living/builder in claimed)
-			if(builder == user || !builder.mind || !builder.client || builder.stat == DEAD)
+			if(builder == user || !builder.mind || !GET_CLIENT(builder) || builder.stat == DEAD)
+				continue
+			var/datum/voidcrew_crew_record/builder_crew = builder.mind.recover_reputation_crew()
+			if(builder_crew && builder_crew != vessel_crew)
 				continue
 			if(vessel.enlist_crewmember(builder))
 				to_chat(builder, span_notice("You are registered as crew of [vessel_name]."))
 	if(vessel.enlist_crewmember(user))
 		vessel.claimed_captain = user.mind
 		grant_captain_management(user, vessel)
-		to_chat(user, span_notice("You are registered as the commanding officer of [vessel_name]. \
-			Use the Ship Management button to invite crew, set a memo, or set a join password."))
+		to_chat(user, span_notice("You are registered as the commanding officer of [vessel_name]."))
 
 	message_admins("[key_name(user)] commissioned a scratch-built vessel, [vessel_name], at [ADMIN_VERBOSEJMP(origin)].")
 	log_shuttle("[key_name(user)] commissioned scratch-built vessel [vessel_name] at [get_area(origin)].")
@@ -1456,8 +1461,7 @@
 			break
 
 	if(!found_helm)
-		to_chat(src, span_warning("Survey complete, but this enclosure has no helm console. \
-			Without one there is nothing to fly it."))
+		to_chat(src, span_warning("This enclosure has no helm console."))
 		return
 
 	var/vessel_name = tgui_input_text(src, "Designate the vessel:", "Commission Vessel", max_length = MAX_NAME_LEN)
@@ -1467,9 +1471,15 @@
 	if(!vessel_name)
 		to_chat(src, span_warning("That name will not do."))
 		return
+	var/form_new = choose_new_reputation_crew(src)
+	if(isnull(form_new))
+		return
+	var/datum/voidcrew_crew_record/registration_crew = mind?.recover_reputation_crew()
 
-	to_chat(src, span_notice("You begin surveying the enclosure - [length(claim.turfs)] tiles."))
+	to_chat(src, span_notice("You begin surveying the enclosure."))
 	if(!do_after(src, HULL_SURVEY_DURATION, origin))
+		return
+	if(mind?.recover_reputation_crew() != registration_crew)
 		return
 
 	var/datum/hull_claim/fresh = survey_enclosure(origin)
@@ -1481,7 +1491,7 @@
 		to_chat(src, span_warning("The helm console is no longer inside the enclosure."))
 		return
 
-	var/obj/structure/overmap/ship/vessel = commission_vessel(src, origin, fresh.turfs, vessel_name)
+	var/obj/structure/overmap/ship/vessel = commission_vessel(src, origin, fresh.turfs, vessel_name, form_new)
 	if(!vessel)
 		to_chat(src, span_warning("The survey failed to resolve into a hull."))
 		return

@@ -35,7 +35,7 @@
 
 /datum/ship_upgrade_module/workshop_bogatyr_engineering_basic
 	job_slots_add_by_theme = list("freshen_up" = list(list(name = "Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_11, category = "Engineering", slots = 1), list(name = "Enforcer", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_12, category = "Security", slots = 1)), "nightclub" = list(list(name = "Lights and Sounds Guy", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_13, category = "Engineering", slots = 1), list(name = "The Bouncer", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_14, category = "Security", slots = 1)), "trashed" = list(list(name = "Engineer", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_1, category = "Engineering", slots = 1), list(name = "Enforcer", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_3, category = "Security", slots = 1)))
-	desc = "\"Engineering\"... Pathetic. Comes with a single PACMAN generator, and a dated but stocked armory."
+	desc = "A PACMAN generator, engineering supplies and a dated but stocked armory."
 	job_slots_add = list(list(name = "Engines Guy", officer = FALSE, outfit = /datum/outfit/job/workshop_bogatyr_job_8, category = "Engineering", slots = 1))
 	id = "engineering_basic"
 	name = "Engineering And Classic Armory"
@@ -156,4 +156,4 @@
 	for_theme = list("trashed", "freshen_up", "nightclub")
 	map_file = "bogatyr/workshop/enhanced_armory.dmm"
 	is_default = FALSE
-	desc = "Tools? Materials? Who needs that when you have a 25% larger armory with 25% more armory things."
+	desc = "A cramped armory with surplus rifles, a survival knife and ammunition."

@@ -48,6 +48,15 @@
 "az" = (
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
+"aN" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/effect/turf_decal/stripes/end{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "ba" = (
 /obj/structure/table/wood,
 /obj/item/plate,
@@ -470,13 +479,6 @@
 	dir = 5
 	},
 /turf/open/floor/engine,
-/area/ruin/space/has_grav/powered/hilbertresearchfacility)
-"lL" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/obj/effect/turf_decal/stripes/end{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "lY" = (
 /obj/effect/decal/cleanable/dirt,
@@ -3088,7 +3090,7 @@ PG
 Bo
 wG
 ko
-lL
+aN
 Ej
 rE
 Gl

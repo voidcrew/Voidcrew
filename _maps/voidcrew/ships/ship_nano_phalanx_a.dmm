@@ -13,6 +13,14 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/phalanx/bridge/a)
+"ac" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/a)
 "ad" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
@@ -225,6 +233,19 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
+"ep" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/effect/spawner/random/modsuit/base_tier,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/carpet/black,
+/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "ew" = (
 /obj/item/kirbyplants/random,
 /obj/machinery/light/small{
@@ -687,16 +708,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
-"lQ" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "lT" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/firedoor,
@@ -1318,6 +1329,16 @@
 "tZ" = (
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/phalanx/chapel/a)
+"ut" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "uF" = (
 /obj/structure/chair/stool/directional/west,
 /obj/machinery/airalarm/directional/west,
@@ -1427,6 +1448,14 @@
 /obj/machinery/airalarm/directional/west,
 /turf/open/floor/carpet/executive,
 /area/shuttle/voidcrew/phalanx/bridge/a)
+"vW" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain,
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "vX" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /obj/structure/cable,
@@ -2264,6 +2293,20 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"IK" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/gun/ballistic/shotgun/doublebarrel,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/a)
 "IR" = (
 /obj/machinery/cryopod{
 	dir = 8
@@ -2312,14 +2355,6 @@
 "Ju" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/engineering/storage/a)
-"Jx" = (
-/obj/structure/window/reinforced/spawner/directional/west,
-/obj/structure/displaycase/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "JB" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
@@ -2338,11 +2373,6 @@
 /obj/effect/turf_decal/trimline/white/filled/corner,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/a)
-"JJ" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/a)
 "Ka" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "phalanx_bay_north"
@@ -2483,20 +2513,6 @@
 /obj/structure/window/reinforced/spawner/directional/east,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
-"LA" = (
-/obj/structure/window/reinforced/tinted{
-	dir = 8
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/dorms/a)
 "LB" = (
 /obj/machinery/griddle,
 /obj/machinery/airalarm/directional/north,
@@ -2779,19 +2795,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/nitrogen_output,
 /turf/open/floor/engine/n2,
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/a)
-"Os" = (
-/obj/structure/closet/secure_closet/personal/cabinet,
-/obj/item/soulstone/anybody/chaplain,
-/obj/item/mod/control/pre_equipped/responsory/inquisitory,
-/obj/item/book/granter/action/spell/smoke/lesser,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/structure/sign/poster/official/bless_this_spess{
-	pixel_y = 32
-	},
-/turf/open/floor/carpet/black,
-/area/shuttle/voidcrew/phalanx/chapel/office/a)
 "Ov" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/kitchen/a)
@@ -2875,6 +2878,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"Py" = (
+/obj/machinery/suit_storage_unit/base_tier{
+	mask_type = /obj/item/clothing/mask/gas/atmos/captain;
+	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "PA" = (
 /obj/structure/rack,
 /obj/item/pickaxe,
@@ -3177,16 +3193,6 @@
 /obj/structure/table/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
-"TS" = (
-/obj/machinery/suit_storage_unit/captain,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "TX" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 8;
@@ -3779,7 +3785,7 @@ oy
 Mo
 dj
 Gd
-JJ
+ac
 PS
 MU
 oG
@@ -4648,7 +4654,7 @@ jK
 Pd
 jK
 CO
-Os
+ep
 xU
 Gh
 CO
@@ -4985,7 +4991,7 @@ oZ
 oZ
 oZ
 iD
-LA
+IK
 Kc
 xp
 dQ
@@ -5084,7 +5090,7 @@ oZ
 YY
 LL
 Ta
-TS
+Py
 KT
 FQ
 lI
@@ -5212,7 +5218,7 @@ oZ
 KT
 vE
 kO
-Jx
+vW
 KT
 sn
 Gz
@@ -5244,7 +5250,7 @@ oZ
 KT
 mY
 KM
-lQ
+ut
 KT
 Tg
 EJ

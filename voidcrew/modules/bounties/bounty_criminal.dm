@@ -163,8 +163,11 @@
 	if(!where)
 		return null
 	var/criminal_type = bounty_criminal_type(record, posting)
-	var/mob/living/basic/bounty_criminal/criminal = new criminal_type(where)
+	var/atom/site = posting?.site_ref?.resolve()
+	var/datum/npc_spawn_context/context = new(site || where, null, "ordinary", source_turf = site ? get_turf(site) : where)
+	var/mob/living/basic/bounty_criminal/criminal = spawn_npc_in_zone(criminal_type, where, context, FALSE)
 	criminal.body_setup(record, posting)
+	context.finalize()
 	return criminal
 
 /// The criminal type for `record` wanted on `posting`: meek, normal, or the mini-boss of its kit. A mini-boss never goes to a trader outpost; a normal criminal stands in (D-A8).
@@ -275,9 +278,24 @@
 /mob/living/basic/bounty_criminal/proc/body_match(mob/living/basic/bounty_criminal/other)
 	if(QDELETED(other) || other == src)
 		return
-	maxHealth = other.maxHealth
-	setBruteLoss(other.getBruteLoss())
+	// Copy raw stats before finalizing the inherited profile, never its scaled pool.
+	var/datum/npc_spawn_context/context = npc_spawn_context
+	if(!context || context.source_id != other.npc_spawn_context?.source_id)
+		context = other.bounty_profile_context()
+	if(npc_zone_applied)
+		UnregisterSignal(src, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE)
+		melee_damage_lower = npc_zone_original_melee_lower
+		melee_damage_upper = npc_zone_original_melee_upper
+	npc_zone_applied = FALSE
+	npc_zone_health_factor = 1
+	npc_zone_damage_factor = 1
+	npc_spawn_context = context
+	maxHealth = other.npc_zone_applied ? other.npc_zone_original_max_health : other.maxHealth
+	var/health_share = other.maxHealth > 0 ? other.health / other.maxHealth : 1
+	setBruteLoss(maxHealth * (1 - health_share))
 	updatehealth()
+	context.bodies |= WEAKREF(src)
+	context.finalize()
 	set_varspeed(other.speed)
 	damage_coeff[STAMINA] = other.damage_coeff[STAMINA]
 	stamina_regen_time = other.stamina_regen_time
@@ -286,6 +304,11 @@
 		RemoveElement(/datum/element/basic_stamina_slowdown, minium_stamina_threshold = max_stamina / 3, maximum_stamina = max_stamina, maximum_slowdown = max_stamina_slowdown)
 		max_stamina_slowdown = other.max_stamina_slowdown
 		make_stamina_slowable()
+
+/// Decoys use the source's selected role before construction, including named boss bodies.
+/mob/living/basic/bounty_criminal/proc/bounty_profile_context()
+	var/role = npc_zone_role || (npc_zone_boss_type(type) ? "boss" : npc_spawn_context?.role || "ordinary")
+	return new /datum/npc_spawn_context(src, null, role)
 
 // ===== THE SITE =====
 
@@ -570,6 +593,8 @@
 /// Records its capture state in worst_state if it is as bad or worse: once downed or dead, it never gets better (spec 12.1)
 /mob/living/basic/bounty_criminal/proc/body_note_state()
 	var/state = capture_state()
+	if(state != BOUNTY_STATE_FREE)
+		posting()?.board_note_work_zone(src)
 	if(bounty_state_rank(state) <= bounty_state_rank(worst_state))
 		worst_state = state
 

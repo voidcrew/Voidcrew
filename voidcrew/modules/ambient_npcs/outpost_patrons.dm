@@ -179,6 +179,9 @@
 /proc/ambient_outpost_tile_avoided(turf/tile, datum/ambient_place/place, counter_business = FALSE)
 	if(!tile || istype(tile, /turf/open/water) || ambient_by_a_door(tile))
 		return TRUE
+	// The checkpoint lobby is for passing through (outpost_checkpoint.dm)
+	if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+		return TRUE
 	var/datum/ambient_place/outpost/outpost_place = place
 	var/obj/structure/overmap/trader_outpost/outpost = istype(outpost_place) ? outpost_place.outpost() : null
 	for(var/turf/alcove as anything in outpost?.lobby_alcove_turfs)

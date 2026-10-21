@@ -67,18 +67,18 @@
 	},
 /turf/open/floor/oldshuttle,
 /area/ruin/space/has_grav/powered)
-"n" = (
-/obj/structure/chair/old{
-	dir = 1
-	},
-/obj/item/crowbar/large/twenty_force,
-/turf/open/floor/oldshuttle,
-/area/ruin/space/has_grav/powered)
 "o" = (
 /obj/structure/chair/old{
 	dir = 1
 	},
 /mob/living/basic/spaceman,
+/turf/open/floor/oldshuttle,
+/area/ruin/space/has_grav/powered)
+"r" = (
+/obj/structure/chair/old{
+	dir = 1
+	},
+/obj/item/knife/combat/survival,
 /turf/open/floor/oldshuttle,
 /area/ruin/space/has_grav/powered)
 "t" = (
@@ -295,7 +295,7 @@ h
 i
 i
 c
-n
+r
 m
 m
 o

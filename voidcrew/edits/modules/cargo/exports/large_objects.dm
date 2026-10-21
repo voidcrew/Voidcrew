@@ -8,3 +8,7 @@
 		var/obj/structure/closet/crate/crate = exported_obj
 		if(!isnull(crate.cargo_paid_cost))
 			return max(0, min(., FLOOR(crate.cargo_paid_cost * 0.1, 1)))
+
+/datum/export/large/gas_canister/get_cost(obj/machinery/portable_atmospherics/canister/canister, apply_elastic = TRUE)
+	// Gas sells to traders and contracts, not cargo.
+	return cost

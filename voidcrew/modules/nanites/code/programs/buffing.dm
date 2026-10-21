@@ -38,20 +38,30 @@
 
 /datum/nanite_program/hardening
 	name = "Dermal Hardening"
-	desc = "The nanites form a mesh under the host's skin, protecting them from melee and bullet impacts."
+	desc = "The nanites form a mesh under the host's skin."
 	use_rate = 1.0
 	rogue_types = list(/datum/nanite_program/skin_decay)
 
 #define NANITE_ARMOR_BOOST_ADDED 30
+#define NANITE_ARMOR_COST_PER_DAMAGE 1
 
 //TODO on_hit effect that turns skin grey for a moment
 /datum/nanite_program/hardening/enable_passive_effect()
+	if(passive_enabled || !ishuman(host_mob) || nanite_armor_exhausted())
+		return
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
 		user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(MELEE = NANITE_ARMOR_BOOST_ADDED, BULLET = NANITE_ARMOR_BOOST_ADDED))
+		RegisterSignal(user, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(nanite_resolve_hit_armor))
+
+/datum/nanite_program/hardening/active_effect()
+	nanite_armor_exhausted()
 
 /datum/nanite_program/hardening/disable_passive_effect()
+	if(!passive_enabled)
+		return
+	UnregisterSignal(host_mob, COMSIG_MOB_APPLY_DAMAGE)
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
@@ -61,17 +71,26 @@
 
 /datum/nanite_program/refractive
 	name = "Dermal Refractive Surface"
-	desc = "The nanites form a membrane above the host's skin, reducing the effect of laser and energy impacts."
+	desc = "The nanites form a reflective membrane above the host's skin."
 	use_rate = 1.0
 	rogue_types = list(/datum/nanite_program/skin_decay)
 
 /datum/nanite_program/refractive/enable_passive_effect()
+	if(passive_enabled || !ishuman(host_mob) || nanite_armor_exhausted())
+		return
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
 		user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(LASER = NANITE_ARMOR_BOOST_ADDED, ENERGY = NANITE_ARMOR_BOOST_ADDED))
+		RegisterSignal(user, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(nanite_resolve_hit_armor))
+
+/datum/nanite_program/refractive/active_effect()
+	nanite_armor_exhausted()
 
 /datum/nanite_program/refractive/disable_passive_effect()
+	if(!passive_enabled)
+		return
+	UnregisterSignal(host_mob, COMSIG_MOB_APPLY_DAMAGE)
 	. = ..()
 	if(ishuman(host_mob))
 		var/mob/living/carbon/human/user = host_mob
@@ -79,6 +98,83 @@
 		if(user.physiology)
 			user.physiology.armor = user.physiology.armor.generate_new_with_modifiers(list(LASER = -NANITE_ARMOR_BOOST_ADDED, ENERGY = -NANITE_ARMOR_BOOST_ADDED))
 
+/// Both armor programs draw on the same reserve. Recovery still goes through normal upkeep.
+/datum/nanite_program/proc/nanite_armor_exhausted()
+	if(nanites && nanites.nanite_volume > nanites.safety_threshold)
+		return FALSE
+	if(nanites)
+		for(var/datum/nanite_program/program in nanites.programs)
+			if(program.passive_enabled && (istype(program, /datum/nanite_program/hardening) || istype(program, /datum/nanite_program/refractive)))
+				program.disable_passive_effect()
+	return TRUE
+
+/**
+ * Bill only the incremental armor supplied by this program, once apply_damage accepts a hit.
+ * The signal has no armor category: projectiles supply theirs, items use melee, and source-less
+ * brute/burn hits fall back to melee/laser. Unknown caller modifiers are approximated by treating
+ * the reported blocked value as the cap. Forced hits with blocked = 0 and direct limb damage
+ * are intentionally unbilled. An underfunded hit keeps its already calculated protection.
+ */
+/datum/nanite_program/proc/nanite_resolve_hit_armor(mob/living/carbon/human/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
+	SIGNAL_HANDLER
+	if(!passive_enabled || damage <= 0 || blocked <= 0 || blocked >= 100 || (damagetype != BRUTE && damagetype != BURN))
+		return
+	if(nanite_armor_exhausted())
+		return
+
+	var/armor_flag = damagetype == BRUTE ? MELEE : LASER
+	var/penetration = 0
+	var/weak_against_armor = FALSE
+	if(istype(attacking_item, /obj/projectile))
+		var/obj/projectile/projectile = attacking_item
+		armor_flag = projectile.armor_flag
+		penetration = projectile.armour_penetration
+		weak_against_armor = projectile.weak_against_armour
+	else if(isitem(attacking_item))
+		var/obj/item/weapon = attacking_item
+		armor_flag = MELEE
+		penetration = weapon.armour_penetration
+		weak_against_armor = weapon.weak_against_armour
+	if(istype(src, /datum/nanite_program/hardening))
+		if(armor_flag != MELEE && armor_flag != BULLET)
+			return
+	else if(armor_flag != LASER && armor_flag != ENERGY)
+		return
+
+	// Rebuild clothing's multiplicative remainder without temporarily changing the host's armor.
+	var/list/parts = isbodypart(def_zone) ? list(def_zone) : source.bodyparts
+	var/clothing_remainder = 0
+	for(var/obj/item/bodypart/part in parts)
+		var/part_remainder = 1
+		for(var/obj/item/clothing/clothing in source.get_clothing_on_part(part))
+			part_remainder *= (100 - min(clothing.get_armor_rating(armor_flag), 100)) / 100
+		clothing_remainder += part_remainder
+	clothing_remainder /= max(length(parts), 1)
+	var/armor_with = source.getarmor(def_zone, armor_flag)
+	var/physiology_without = source.physiology.armor.get_rating(armor_flag) - NANITE_ARMOR_BOOST_ADDED
+	var/armor_without = 100 - clothing_remainder * (100 - min(physiology_without, 100))
+	if(weak_against_armor)
+		armor_with *= ARMOR_WEAKENED_MULTIPLIER
+		armor_without *= ARMOR_WEAKENED_MULTIPLIER
+	if(armor_with > 0)
+		armor_with = max(0, PENETRATE_ARMOUR(armor_with, penetration))
+	if(armor_without > 0)
+		armor_without = max(0, PENETRATE_ARMOUR(armor_without, penetration))
+	var/armor_delta = max(0, min(blocked, armor_with) - min(blocked, armor_without))
+	var/cost = damage * armor_delta / (100 - blocked) * NANITE_ARMOR_COST_PER_DAMAGE
+	if(cost <= 0)
+		return
+
+	var/datum/component/nanites/swarm = nanites
+	var/available = max(0, swarm.nanite_volume - swarm.safety_threshold)
+	if(cost >= available)
+		// Disable before withdrawing: a zero-safety swarm deletes itself at zero volume.
+		for(var/datum/nanite_program/program in swarm.programs)
+			if(program.passive_enabled && (istype(program, /datum/nanite_program/hardening) || istype(program, /datum/nanite_program/refractive)))
+				program.disable_passive_effect()
+	swarm.adjust_nanites(null, -min(cost, available))
+
+#undef NANITE_ARMOR_COST_PER_DAMAGE
 #undef NANITE_ARMOR_BOOST_ADDED
 
 /datum/nanite_program/coagulating

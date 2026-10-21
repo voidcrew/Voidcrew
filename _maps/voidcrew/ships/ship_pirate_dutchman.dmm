@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ad" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/structure/table/wood,
+/obj/item/spear{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/spear,
+/turf/open/floor/wood/airless,
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "af" = (
 /turf/template_noop,
 /area/template_noop)
@@ -949,20 +963,6 @@
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
 	})
-"PS" = (
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
-	},
-/obj/structure/table/wood,
-/obj/item/claymore/cutlass{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/claymore/cutlass,
-/turf/open/floor/wood/airless,
-/area/shuttle/voidcrew/pirate_dutchman{
-	requires_power = 0
-	})
 "Qa" = (
 /obj/structure/railing/corner{
 	color = "#4C3117";
@@ -1126,7 +1126,7 @@
 /obj/item/gun/energy/laser,
 /obj/item/megaphone,
 /obj/item/melee/chainofcommand/tailwhip/kitty,
-/obj/item/claymore/cutlass,
+/obj/item/spear,
 /turf/open/floor/carpet/royalblack/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
@@ -1509,7 +1509,7 @@ WR
 WS
 Le
 Lt
-PS
+ad
 hV
 RO
 gS

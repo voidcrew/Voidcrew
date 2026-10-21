@@ -64,11 +64,6 @@
 /obj/effect/turf_decal/box/white,
 /turf/open/floor/mineral/titanium/purple,
 /area/ruin/powered/graveyard_shuttle)
-"bA" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/obj/effect/turf_decal/box/white,
-/turf/open/floor/mineral/titanium/purple,
-/area/ruin/powered/graveyard_shuttle)
 "bE" = (
 /obj/machinery/power/shuttle_engine/heater,
 /obj/structure/window/spawner/directional/north,
@@ -278,6 +273,13 @@
 	icon_state = "wasteland_dug"
 	},
 /area/ruin/unpowered/elephant_graveyard)
+"tC" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/effect/turf_decal/box/white,
+/turf/open/floor/mineral/titanium/purple,
+/area/ruin/powered/graveyard_shuttle)
 "uj" = (
 /obj/structure/bed,
 /obj/item/flashlight/lantern,
@@ -1619,7 +1621,7 @@ aW
 cm
 bq
 bS
-bA
+tC
 aH
 aH
 jx

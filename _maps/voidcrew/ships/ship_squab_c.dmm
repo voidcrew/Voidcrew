@@ -521,21 +521,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/cyan/visible/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/squab/engineering)
-"dHy" = (
-/obj/effect/turf_decal/box{
-	color = "#B11111"
-	},
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = 4
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/squab/office)
 "dIb" = (
 /obj/effect/turf_decal/siding/thinplating/light{
 	dir = 4
@@ -970,6 +955,20 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/squab/engineering)
+"gaM" = (
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 4;
+	layer = 2.5
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/structure/closet/secure_closet/captains,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/dark/textured_large,
+/area/shuttle/voidcrew/squab/captain_quarters)
 "gbe" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
 /area/shuttle/voidcrew/squab/dormitory)
@@ -1221,6 +1220,21 @@
 "hQF" = (
 /turf/open/floor/iron/dark/herringbone,
 /area/shuttle/voidcrew/squab/laboratory)
+"hRh" = (
+/obj/effect/turf_decal/box{
+	color = "#B11111"
+	},
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/obj/item/gun/energy/e_gun{
+	pixel_x = 0;
+	pixel_y = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/squab/office)
 "hUv" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/stripes{
@@ -1443,20 +1457,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/squab/bridge)
-"jIn" = (
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4;
-	layer = 2.5
-	},
-/obj/effect/turf_decal/siding/wideplating_new/dark{
-	dir = 8
-	},
-/obj/structure/closet/secure_closet/captains,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/turf/open/floor/iron/dark/textured_large,
-/area/shuttle/voidcrew/squab/captain_quarters)
 "jNj" = (
 /obj/structure/railing{
 	dir = 4
@@ -3630,7 +3630,7 @@ ecX
 (11,1,1) = {"
 ecX
 wZK
-dHy
+hRh
 qHQ
 rXg
 kFY
@@ -3810,7 +3810,7 @@ rYj
 cyJ
 oEd
 cED
-jIn
+gaM
 kRF
 kIW
 coU

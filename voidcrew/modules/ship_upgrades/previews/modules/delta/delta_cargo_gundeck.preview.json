@@ -8,7 +8,7 @@
    ],
    "height": 5,
    "png": "delta_delta_cargo_gundeck.png",
-   "src_md5": "43dcd176bb75c2bfe51b292ec072d87f",
+   "src_md5": "38fcc11f3255e8cb2d9572f4c2c2edd8",
    "themes": {
     "cult": {
      "connector": [
@@ -17,7 +17,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_gundeck_cult.png",
-     "src_md5": "e10fa2b6ac3041e551fe3312baef0b32",
+     "src_md5": "12a5fb61662bce0acf98131957c1769f",
      "width": 7
     },
     "lightship": {
@@ -27,7 +27,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_gundeck_lightship.png",
-     "src_md5": "d40ab03d71fe932484c6d9c7c2586ec0",
+     "src_md5": "97f57b1171f5c0de06a4d13b8cafa39d",
      "width": 7
     },
     "syndicate": {
@@ -37,7 +37,7 @@
      ],
      "height": 5,
      "png": "delta_delta_cargo_gundeck_syndicate.png",
-     "src_md5": "c8696c250e69cfaf5ea433b9737d7fbc",
+     "src_md5": "8d50cd069559aaa36df69c95cc3a59bc",
      "width": 7
     }
    },

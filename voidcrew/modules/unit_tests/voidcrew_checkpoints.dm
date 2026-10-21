@@ -35,6 +35,227 @@
 	var/obj/machinery/computer/ship_checkpoint/terminal
 	var/turf/terminal_turf
 
+/// Only clear_stock is under test; no bay, checkpoint or reconstruction job is needed.
+/datum/checkpoint_construction/stock_test/New()
+	state = "complete" // CHECKPOINT_BUILD_COMPLETE, defined after the test includes.
+
+/obj/docking_port/mobile/voidcrew/stock_test/return_turfs()
+	return list(get_turf(src))
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock
+	var/obj/docking_port/mobile/voidcrew/stock_test/source_port
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock/Destroy()
+	if(source_port)
+		qdel(source_port, force = TRUE)
+	source_port = null
+	return ..()
+
+/datum/unit_test/voidcrew_checkpoint_lazy_stock/Run()
+	source_port = new(run_loc_floor_bottom_left)
+	source_port.shuttle_areas = list()
+	source_port.shuttle_areas[get_area(run_loc_floor_bottom_left)] = TRUE
+	var/datum/checkpoint_construction/stock_test/job = allocate(/datum/checkpoint_construction/stock_test)
+	var/obj/structure/closet/crate/zone_loot/research/cache = allocate(/obj/structure/closet/crate/zone_loot/research)
+	var/obj/structure/closet/crate/secure/loot/freight = allocate(/obj/structure/closet/crate/secure/loot)
+	var/obj/machinery/suit_storage_unit/ruin_zone/unit = allocate(/obj/machinery/suit_storage_unit/ruin_zone)
+	TEST_ASSERT(!unit.stock_consumed && !unit.mod, "Test unit did not start with a deferred resolver")
+	var/obj/machinery/suit_storage_unit/base_tier/base = allocate(/obj/machinery/suit_storage_unit/base_tier)
+	TEST_ASSERT_NOTNULL(base.mod, "Base fixture has no initial stock to scrub")
+	for(var/obj/machinery/suit_storage_unit/machine as anything in list(base, unit))
+		machine.anchored = FALSE
+		TEST_ASSERT_EQUAL(machine.checkpoint_type(), /obj/machinery/suit_storage_unit, "Unbolted suit reward retained its stocked rebuild type")
+		var/rebuilt_type = machine.checkpoint_type()
+		var/obj/machinery/suit_storage_unit/rebuilt = allocate(rebuilt_type, run_loc_floor_top_right)
+		TEST_ASSERT_NULL(rebuilt.mod, "Rebuilt suit unit stocked a reward")
+	job.clear_stock(source_port)
+	TEST_ASSERT(cache.contents_initialized && freight.contents_initialized && freight.spawned_loot, "Scrubbed containers retain a lazy stock path")
+	TEST_ASSERT_NULL(freight.spawn_turf, "Scrubbed freight retained its deferred origin")
+	freight.on_freight_zone_resolved(3)
+	freight.spawn_loot()
+	TEST_ASSERT_EQUAL(length(freight.contents), 0, "A solved rebuilt freight lock regenerated stock")
+	TEST_ASSERT(unit.stock_consumed && isnull(unit.stock_spawn_turf), "Scrubbed unit retained its deferred stock claim")
+	// Reopening takes the real closet path; a solved freight lock also checks spawned_loot.
+	for(var/obj/structure/closet/container as anything in list(cache, freight))
+		container.open(force = TRUE, special_effects = FALSE)
+		container.dump_contents()
+	TEST_ASSERT_NULL(locate(/obj/item/mod/control) in base.contents, "Scrubbing retained the base suit")
+	TEST_ASSERT_NULL(base.mod, "Scrubbing retained a reference to the deleted suit")
+	var/turf/red = SSovermap.get_unused_overmap_square_in_zone_band(3) // ZONE_RED
+	TEST_ASSERT_NOTNULL(red, "No red square for the deferred stock test")
+	unit.forceMove(red)
+	// ZONE_RESOLVE_ATTEMPTS * ZONE_RESOLVE_RETRY_DELAY, plus a tick of margin.
+	sleep(61 SECONDS)
+	TEST_ASSERT_NULL(unit.mod, "Deferred resolver replenished the rebuilt machine")
+	unit.stock_for_zone(3)
+	TEST_ASSERT_NULL(unit.mod, "A repeated resolver callback replenished the rebuilt machine")
+	freight.on_freight_zone_resolved(3)
+	freight.spawn_loot()
+	TEST_ASSERT_EQUAL(length(freight.contents), 0, "A late freight resolver replenished checkpoint stock")
+	for(var/obj/structure/closet/container as anything in list(cache, freight))
+		container.dump_contents()
+	for(var/obj/item/item in run_loc_floor_bottom_left.get_all_contents())
+		if(ismachinery(item.loc))
+			var/obj/machinery/machine = item.loc
+			if((item in machine.component_parts) || item == machine.circuit)
+				continue
+		TEST_FAIL("Reopened checkpoint fixture returned stock: [item.type]")
+
+/// Delay only zone resolution so movement can happen before the first callback.
+/obj/structure/closet/crate/secure/loot/freight_zone_test/LateInitialize()
+	// Deliberately skip the resolver; these runtime fixtures have no mapped contents.
+	return
+
+/datum/unit_test/voidcrew_freight_profiles/Run()
+	var/list/expected_pools = list(
+		list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel),
+		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi),
+		list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat),
+		list(/obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/melee/baseball_bat/ablative, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre),
+		list(/obj/item/claymore, /obj/item/claymore/cutlass, /obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate),
+	)
+	var/list/pools = list(GLOB.abandoned_crate_guns_green, GLOB.abandoned_crate_guns_yellow, GLOB.abandoned_crate_melee_green, GLOB.abandoned_crate_melee_yellow, GLOB.abandoned_crate_melee_red)
+	for(var/index in 1 to length(pools))
+		var/list/pool = pools[index]
+		var/list/expected = expected_pools[index]
+		TEST_ASSERT_EQUAL(length(pool), length(expected), "Freight weapon class [index] changed size")
+		for(var/weapon in expected)
+			TEST_ASSERT(weapon in pool, "Freight class [index] lost [weapon]")
+			TEST_ASSERT_NULL(pool[weapon], "Freight class selection must be uniform")
+			if(ispath(weapon, /obj/item/gun/ballistic))
+				TEST_ASSERT(ispath(GLOB.loot_gun_spare_ammo[weapon], /obj/item), "Freight gun [weapon] has no spare reload")
+	for(var/list/pool as anything in list(GLOB.abandoned_crate_common, GLOB.abandoned_crate_uncommon, GLOB.abandoned_crate_prime))
+		for(var/entry in pool)
+			TEST_ASSERT(!(entry in pools[1]) && !(entry in pools[2]) && !(entry in pools[3]) && !(entry in pools[4]) && !(entry in pools[5]), "Freight has a second weapon draw: [entry]")
+			TEST_ASSERT(!ispath(entry, /obj/item/gun), "Freight nonweapon pool contains a gun: [entry]")
+			TEST_ASSERT(!ispath(entry, /obj/item/storage/case/cyberware) && !ispath(entry, /obj/item/cyberware_pair_case), "Freight contains weapon chrome: [entry]")
+
+	// ZONE_GREEN/YELLOW/RED are defined after test includes. Each row lists
+	// zone, gun chance, gun-green weight, then the three melee class weights.
+	for(var/list/profile as anything in list(list(1, 8, 940, 900, 99, 1), list(2, 19, 450, 350, 640, 10), list(3, 33, 150, 100, 450, 450)))
+		var/list/counts = list(0, 0, 0, 0, 0)
+		for(var/gun_roll in 1 to 100)
+			CHECK_TICK
+			for(var/class_roll in 1 to 1000)
+				var/list/pool = freight_weapon_pool(profile[1], gun_roll, class_roll)
+				var/index = pools.Find(pool)
+				TEST_ASSERT(index, "Freight selected an unknown class")
+				counts[index]++
+		TEST_ASSERT_EQUAL(counts[1] + counts[2], profile[2] * 1000, "Freight zone [profile[1]] gun chance is not exact")
+		TEST_ASSERT_EQUAL(counts[1], profile[2] * profile[3], "Freight zone [profile[1]] green gun weight changed")
+		for(var/index in 3 to 5)
+			TEST_ASSERT_EQUAL(counts[index], (100 - profile[2]) * profile[index + 1], "Freight zone [profile[1]] melee class [index] weight changed")
+	TEST_ASSERT_EQUAL(freight_weapon_pool(null, 8, 940), GLOB.abandoned_crate_guns_green, "Unresolved freight did not use the green profile")
+	TEST_ASSERT_EQUAL(freight_weapon_pool(null, 9, 1000), GLOB.abandoned_crate_melee_red, "Green freight cannot reach red melee")
+
+/datum/unit_test/voidcrew_freight_lifecycle
+	var/reentries = 0
+	var/explosions = 0
+
+/// Item initialization can call back into the same crate before new() returns.
+/datum/unit_test/voidcrew_freight_lifecycle/proc/on_loot_created(obj/structure/closet/crate/secure/loot/source)
+	SIGNAL_HANDLER
+	reentries++
+	source.spawn_loot()
+
+/// Exercise the real anti-tamper path without damaging the shared test room.
+/datum/unit_test/voidcrew_freight_lifecycle/proc/on_explosion(datum/source, list/arguments)
+	SIGNAL_HANDLER
+	explosions++
+	return COMSIG_CANCEL_EXPLOSION
+
+/datum/unit_test/voidcrew_freight_lifecycle/Run()
+	var/list/weapon_paths = GLOB.abandoned_crate_guns_green + GLOB.abandoned_crate_guns_yellow + GLOB.abandoned_crate_melee_green + GLOB.abandoned_crate_melee_yellow + GLOB.abandoned_crate_melee_red
+	var/list/manifests = list(GLOB.abandoned_crate_common, GLOB.abandoned_crate_uncommon, GLOB.abandoned_crate_prime)
+	var/list/original_manifests = list()
+	for(var/list/manifest as anything in manifests)
+		original_manifests += list(manifest.Copy())
+	var/turf/red = SSovermap.get_unused_overmap_square_in_zone_band(3)
+	TEST_ASSERT_NOTNULL(red, "No red square for freight movement")
+	for(var/zone in list(1, 2, 3))
+		var/turf/origin = SSovermap.get_unused_overmap_square_in_zone_band(zone)
+		TEST_ASSERT_NOTNULL(origin, "No test square for freight zone [zone]")
+		var/obj/structure/closet/crate/secure/loot/freight_zone_test/freight = allocate(/obj/structure/closet/crate/secure/loot/freight_zone_test, origin)
+		TEST_ASSERT_EQUAL(freight.spawn_turf, origin, "Freight did not pin its origin in Initialize")
+		TEST_ASSERT(freight.locked && freight.attempts == 10 && length(freight.code) == 4, "Freight lost its code lock")
+		TEST_ASSERT(!freight.open(special_effects = FALSE), "Unsolved freight opened without force")
+		TEST_ASSERT(!freight.spawned_loot && !length(freight.contents), "An ordinary locked open consumed or paid freight")
+		freight.forceMove(red)
+		new /datum/zone_resolver(freight.spawn_turf, CALLBACK(freight, TYPE_PROC_REF(/obj/structure/closet/crate/secure/loot, on_freight_zone_resolved)))
+		TEST_ASSERT_EQUAL(freight.loot_zone, zone, "Moving unresolved freight changed its profile")
+		TEST_ASSERT_NULL(freight.spawn_turf, "Resolved freight retained its origin reference")
+		freight.on_freight_zone_resolved(3)
+		TEST_ASSERT_EQUAL(freight.loot_zone, zone, "Repeated freight callback changed its profile")
+		freight.forceMove(run_loc_floor_bottom_left)
+		RegisterSignal(freight, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON, PROC_REF(on_loot_created))
+		freight.spawn_loot()
+		UnregisterSignal(freight, COMSIG_ATOM_AFTER_SUCCESSFUL_INITIALIZED_ON)
+		TEST_ASSERT(freight.spawned_loot, "Freight did not claim its payout")
+		var/list/first_payout = freight.contents.Copy()
+		var/weapons = 0
+		var/guns = 0
+		for(var/obj/item/item in first_payout)
+			if(item.type in weapon_paths)
+				weapons++
+			if(isgun(item))
+				guns++
+				TEST_ASSERT((item.type in GLOB.abandoned_crate_guns_green) || (item.type in GLOB.abandoned_crate_guns_yellow), "Freight paid an advanced or unlisted gun")
+				TEST_ASSERT(locate(GLOB.loot_gun_spare_ammo[item.type]) in first_payout, "Freight gun arrived without its spare reload")
+		TEST_ASSERT_EQUAL(weapons, 1, "Freight did not replace exactly one draw with a weapon")
+		TEST_ASSERT(length(first_payout) >= 5 + guns && length(first_payout) <= 7 + guns, "Freight changed its 5-7 draw budget")
+		freight.spawn_loot()
+		TEST_ASSERT_EQUAL(length(freight.contents), length(first_payout), "A second opener received another payout")
+		for(var/obj/item/item in first_payout)
+			TEST_ASSERT(item in freight.contents, "A repeated payout replaced the original loot")
+		freight.open(force = TRUE, special_effects = FALSE)
+		freight.on_freight_zone_resolved(3)
+		freight.spawn_loot()
+		TEST_ASSERT_EQUAL(length(freight.contents), 0, "Reopening emptied freight regenerated its loot")
+		for(var/obj/item/item in first_payout)
+			qdel(item)
+		qdel(freight)
+	TEST_ASSERT(reentries > 0, "No item constructor exercised a reentrant freight claim")
+	for(var/index in 1 to length(manifests))
+		var/list/manifest = manifests[index]
+		var/list/original = original_manifests[index]
+		TEST_ASSERT_EQUAL(length(manifest), length(original), "Freight consumed a shared manifest")
+		for(var/entry in original)
+			TEST_ASSERT_EQUAL(manifest[entry], original[entry], "Freight changed a shared manifest weight")
+
+	// The last synchronous attempt must also use the pinned source, then green.
+	var/obj/structure/closet/crate/secure/loot/freight_zone_test/fallback = allocate(/obj/structure/closet/crate/secure/loot/freight_zone_test)
+	fallback.forceMove(red)
+	fallback.spawn_loot()
+	TEST_ASSERT_EQUAL(fallback.loot_zone, 1, "Unresolved freight retiered at its destination")
+	qdel(fallback)
+
+	for(var/method in list("force", "break", "dump", "cut", "emag", "damage"))
+		var/obj/structure/closet/crate/secure/loot/freight = allocate(/obj/structure/closet/crate/secure/loot)
+		RegisterSignal(freight, COMSIG_ATOM_EXPLODE, PROC_REF(on_explosion))
+		var/before_explosions = explosions
+		switch(method)
+			if("force")
+				TEST_ASSERT(freight.open(force = TRUE, special_effects = FALSE), "Forced-open freight test did not open")
+			if("break")
+				freight.atom_break(MELEE)
+			if("dump")
+				freight.dump_contents()
+			if("cut")
+				freight.deconstruct(TRUE)
+			if("emag")
+				freight.emag_act(null, null)
+			if("damage")
+				freight.tamperproof = 100
+				freight.take_damage(50)
+				TEST_ASSERT_EQUAL(explosions, before_explosions + 1, "Damaging locked freight skipped anti-tamper")
+		TEST_ASSERT(freight.spawned_loot && !length(freight.contents), "Freight [method] bypass left an unclaimed or paid manifest")
+		if(!QDELETED(freight))
+			UnregisterSignal(freight, COMSIG_ATOM_EXPLODE)
+			freight.on_freight_zone_resolved(3)
+			freight.spawn_loot()
+			TEST_ASSERT_EQUAL(length(freight.contents), 0, "A later correct code paid after freight [method]")
+			qdel(freight)
+
 /// Recovery must also work after the hull and the captain's original body are gone.
 /datum/unit_test/voidcrew_checkpoints/lost
 	destroy_original = TRUE
@@ -211,6 +432,7 @@
 			break
 	var/obj/machinery/autolathe/lathe = new(fixture_turf)
 	lathe.name = "checkpoint upgrade fixture"
+	new /obj/structure/closet/crate/secure/loot(fixture_turf)
 	for(var/datum/stock_part/matter_bin/part in lathe.component_parts.Copy())
 		lathe.component_parts -= part
 		lathe.component_parts += GLOB.stock_part_datums[/datum/stock_part/matter_bin/tier4]
@@ -222,7 +444,12 @@
 		var/obj/item/disk = new disk_type(builder)
 		builder.item_interaction(captain, disk)
 	var/expected_construction_upgrades = builder.console_upgrades
-	new /obj/machinery/power/shuttle_engine/ship/liquid/oil(fixture_turf)
+	var/obj/machinery/power/shuttle_engine/ship/liquid/oil/oil_engine = new(fixture_turf)
+	// Runtime engines start unbolted. Install this fitting so the co-located freight
+	// crate cannot swallow it during the rebuilt map's LateInitialize().
+	oil_engine.set_anchored(TRUE)
+	oil_engine.engine_state = 2 // ENGINE_WELDED
+	oil_engine.connect_to_shuttle(FALSE, original.shuttle)
 	new /obj/machinery/vending/cola(fixture_turf)
 	var/obj/machinery/ore_silo/ship_silo = new(fixture_turf)
 	ship_silo.materials.insert_amount_mat(5000, /datum/material/iron)
@@ -250,6 +477,7 @@
 	TEST_ASSERT(panel.prepare_save(captain, bay), "Could not prepare a real hull: [panel.error]")
 	TEST_ASSERT(!findtext(panel.quote.tgm, "/obj/item"), "The snapshot includes items")
 	TEST_ASSERT(findtext(panel.quote.tgm, "/obj/machinery/computer/helm"), "Checkpoint omitted the helm")
+	TEST_ASSERT(findtext(panel.quote.tgm, "spawned_loot = 1"), "Checkpoint did not serialize an empty freight shell")
 	TEST_ASSERT(!findtext(panel.quote.tgm, "initial_gas_mix"), "The snapshot preserved room gases")
 	var/datum/parsed_map/parsed = new(panel.quote.tgm)
 	TEST_ASSERT_EQUAL(parsed.bounds[4], panel.quote.width, "Exported width does not parse correctly")
@@ -287,27 +515,28 @@
 	original.ship_account.account_balance = before_money
 	var/datum/ship_checkpoint_ui/registry_test/other_panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
 	TEST_ASSERT(other_panel.prepare_save(captain, bay), "Could not prepare a concurrent save")
-	TEST_ASSERT_EQUAL(panel.quoted_fee, 10000, "First checkpoint did not cost 10,000 credits")
+	TEST_ASSERT_EQUAL(panel.quoted_fee, 5000, "First checkpoint did not cost 5,000 credits")
 	TEST_ASSERT(panel.save_quote(captain), "Could not save a checkpoint without silo access: [panel.error]")
-	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 10000, "Save charged the wrong amount")
+	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 5000, "Save charged the wrong amount")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "Checkpoint fee was refunded through the outpost treasury")
 	TEST_ASSERT(!other_panel.save_quote(captain), "A stale save overwrote the paid checkpoint")
 	var/datum/ship_checkpoint/snapshot = home.checkpoints[1]
+	TEST_ASSERT(findtext(snapshot.tgm, "/obj/machinery/power/shuttle_engine/ship/liquid/oil"), "The checkpoint omitted its installed oil engine")
 	TEST_ASSERT(!panel.save_quote(captain), "A repeated save reused the paid snapshot")
-	// Updating must capture the newest design, charge 5k and preserve the old one on failure.
+	// Updating must capture the newest design, charge 2k and preserve the old one on failure.
 	lathe.name = "updated checkpoint fixture"
 	TEST_ASSERT(panel.prepare_save(captain, bay), "Could not prepare an update")
-	TEST_ASSERT_EQUAL(panel.quoted_fee, 5000, "Updating did not cost 5,000 credits")
+	TEST_ASSERT_EQUAL(panel.quoted_fee, 2000, "Updating did not cost 2,000 credits")
 	panel.accept_save = FALSE
 	TEST_ASSERT(!panel.save_quote(captain) && home.checkpoints[1] == snapshot, "Cancelled update lost the old checkpoint")
 	panel.accept_save = TRUE
-	original.ship_account.account_balance = 4999
+	original.ship_account.account_balance = 1999
 	TEST_ASSERT(!panel.save_quote(captain) && home.checkpoints[1] == snapshot, "Unaffordable update lost the old checkpoint")
-	original.ship_account.account_balance = before_money - 10000
+	original.ship_account.account_balance = before_money - 5000
 	TEST_ASSERT(panel.save_quote(captain), "Could not update a checkpoint")
 	TEST_ASSERT(QDELETED(snapshot), "Update retained the old snapshot")
 	TEST_ASSERT_EQUAL(length(home.checkpoints), 1, "Updating created a second checkpoint")
-	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 15000, "Save and update charged the wrong total")
+	TEST_ASSERT_EQUAL(before_money - original.ship_account.account_balance, 7000, "Save and update charged the wrong total")
 	TEST_ASSERT_EQUAL(home.treasury.account_balance, before_treasury, "Update fee was refunded through the outpost treasury")
 	TEST_ASSERT_EQUAL(silo.materials.get_material_amount(/datum/material/iron), before_iron, "Checkpoint consumed silo materials")
 	snapshot = home.checkpoints[1]
@@ -444,6 +673,10 @@
 		if(!(get_area(tile) in rebuilt.shuttle.shuttle_areas))
 			continue
 		for(var/obj/structure/closet/storage in tile)
+			if(istype(storage, /obj/structure/closet/crate/secure/loot))
+				var/obj/structure/closet/crate/secure/loot/freight = storage
+				TEST_ASSERT(freight.spawned_loot && isnull(freight.spawn_turf), "Rebuilt freight retained a stock claim")
+				freight.spawn_loot()
 			storage.dump_contents() // First use must not spawn fresh default stock.
 		for(var/obj/item/item in tile.get_all_contents())
 			if(ismachinery(item.loc))

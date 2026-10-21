@@ -15,6 +15,35 @@
 #define LOOT_TIER_PRIME "3"
 #define LOOT_TIER_UNIQUE "4"
 
+// Weapon classes are independent of the nonweapon quality tiers.
+#define LOOT_WEAPON_GREEN "1"
+#define LOOT_WEAPON_YELLOW "2"
+#define LOOT_WEAPON_RED "3"
+
+#define LOOT_GUN_POOL_ARMORY "armory"
+#define LOOT_GUN_POOL_SYNDICATE "syndicate"
+#define LOOT_GUN_POOL_PLUNDER "plunder"
+#define LOOT_GUN_POOL_FREIGHT "freight"
+
+// One Bernoulli roll per container, before selecting a weapon class.
+#define LOOT_GUN_CHANCE_ARMORY list(12, 32, 55)
+#define LOOT_GUN_CHANCE_SYNDICATE list(6, 18, 36)
+#define LOOT_GUN_CHANCE_PLUNDER list(6, 18, 36)
+#define LOOT_GUN_CHANCE_EXPEDITION list(4, 12, 24)
+#define LOOT_GUN_CHANCE_INDUSTRIAL list(2, 6, 12)
+#define LOOT_GUN_CHANCE_MEDICAL list(1, 4, 8)
+#define LOOT_GUN_CHANCE_RESEARCH list(2, 8, 18)
+#define LOOT_GUN_CHANCE_OCCULT list(2, 6, 12)
+#define LOOT_GUN_CHANCE_WARDROBE list(2, 6, 12)
+#define LOOT_GUN_CHANCE_FREIGHT list(8, 19, 33)
+
+#define LOOT_GUN_CLASSES_GREEN list(LOOT_WEAPON_GREEN = 940, LOOT_WEAPON_YELLOW = 59, LOOT_WEAPON_RED = 1)
+#define LOOT_GUN_CLASSES_YELLOW list(LOOT_WEAPON_GREEN = 450, LOOT_WEAPON_YELLOW = 540, LOOT_WEAPON_RED = 10)
+#define LOOT_GUN_CLASSES_RED list(LOOT_WEAPON_GREEN = 150, LOOT_WEAPON_YELLOW = 350, LOOT_WEAPON_RED = 500)
+#define LOOT_MELEE_CLASSES_GREEN list(LOOT_WEAPON_GREEN = 900, LOOT_WEAPON_YELLOW = 99, LOOT_WEAPON_RED = 1)
+#define LOOT_MELEE_CLASSES_YELLOW list(LOOT_WEAPON_GREEN = 350, LOOT_WEAPON_YELLOW = 640, LOOT_WEAPON_RED = 10)
+#define LOOT_MELEE_CLASSES_RED list(LOOT_WEAPON_GREEN = 100, LOOT_WEAPON_YELLOW = 450, LOOT_WEAPON_RED = 450)
+
 /**
  * Per-band draw counts and tier odds, the whole balance surface of the zone
  * loot system on one screen (consumed by voidcrew/modules/loot/zone_loot.dm,
@@ -49,33 +78,9 @@
 #define ZONE_LOOT_ODDS_RED list(LOOT_TIER_COMMON = 14, LOOT_TIER_UNCOMMON = 38, LOOT_TIER_PRIME = 45, LOOT_TIER_UNIQUE = 3)
 
 /**
- * # Abandoned crate (the deca-code crate)
- *
- * The OTHER loot channel, and deliberately not the zone one. Where a zone
- * cache is themed content whose payout scales with how deep in the overmap a
- * mapper put it, the abandoned crate is unclaimed freight: a mixed manifest
- * nobody came back for, worth the same everywhere because freight is freight
- * everywhere. It carries ONE flat profile, no band lookup, no zone resolver.
- *
- * What justifies the payout is the lock, not the location. Loot spawns only
- * when somebody actually cracks the 4-digit deca-code
- * (code/modules/mining/abandoned_crates.dm): ten attempts, multitool
- * bulls-and-cows hints, and an anti-tamper bomb on the tenth miss. boom()
- * dumps an empty crate, so blowing it, cutting it or emagging it pays
- * nothing at all: the puzzle is this crate's gate, the way a guarded ruin
- * and a deep band are a zone cache's.
- *
- * Ceiling is deliberately below the themed caches. This crate turns up in
- * maintenance and in ruins that may have no guards at all, so its top tier is
- * "gear a crew is glad to have" (a loaded RCD, plasteel by the fifty, a combat
- * ship part, a shotgun or a laser, a blueprint at long odds) and never a
- * payday or a one-of-a-kind. Big cash, cyberware and the authored uniques stay
- * behind guarded zone caches, where the loot audit test
- * (code/modules/unit_tests/voidcrew_loot.dm) enforces a guard marker. There is
- * no UNIQUE tier here at all, on purpose.
- *
- * Robustness comes from DRAW COUNT, not from a higher ceiling: 5-7 items of
- * ordinary usefulness reads as a full crate, which is what the crate is.
+ * Freight retains five to seven draws and its deca-code lock. One draw is
+ * replaced by the shared weapon roll; remaining draws use these nonweapon
+ * tier odds. Freight substitutes yellow guns for red-class gun outcomes.
  */
 #define ABANDONED_CRATE_DRAWS_MIN 5
 #define ABANDONED_CRATE_DRAWS_MAX 7

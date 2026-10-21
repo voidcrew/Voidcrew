@@ -1,6 +1,6 @@
 /obj/machinery/computer/nanite_cloud_controller
 	name = "nanite programmer"
-	desc = "Downloads nanite programs from the techweb servers, edits them, and stores and controls nanite cloud backups. Cloud networks are local to the ship this console is aboard: nanites can only join one by having their cloud ID set in a nanite chamber on the same ship, and cloud IDs on other ships are separate networks even if the numbers match."
+	desc = "A console for programming nanites and storing cloud backups."
 	icon = 'voidcrew/modules/nanites/icons/research.dmi'
 	icon_state = "nanite_cloud_controller"
 	circuit = /obj/item/circuitboard/computer/nanite_cloud_controller
@@ -223,6 +223,25 @@
 		data["cloud_backups"] = backup_list
 	return data
 
+/// Check the whole backup against the receiver's live research before replacing any programs.
+/obj/machinery/computer/nanite_cloud_controller/proc/can_import_backup(list/programs)
+	if(QDELETED(linked_techweb))
+		unsync_research_servers()
+		return FALSE
+	if(!validate_research_site(linked_techweb) || !islist(programs))
+		return FALSE
+	var/list/researched_program_types = list()
+	for(var/design_id in linked_techweb.researched_designs)
+		var/datum/design/nanites/design = linked_techweb.isDesignResearchedID(design_id)
+		if(!istype(design) || QDELETED(design) || !(design.build_type & NANITE_PROGRAM) || !ispath(design.program_type, /datum/nanite_program))
+			continue
+		researched_program_types[design.program_type] = TRUE
+	// Do not filter this loop: an invalid entry must reject the entire backup.
+	for(var/datum/nanite_program/program as anything in programs)
+		if(!istype(program) || QDELETED(program) || !researched_program_types[program.type])
+			return FALSE
+	return TRUE
+
 /obj/machinery/computer/nanite_cloud_controller/ui_static_data(mob/user)
 	var/list/data = list()
 	if(!validate_research_site(linked_techweb))
@@ -352,9 +371,12 @@
 						disk.backup += program.copy()
 			. = TRUE
 		if("load_backup")
-			if(disk)
+			if(!QDELETED(disk) && disk.loc == src)
 				var/datum/nanite_cloud_backup/backup = get_backup(current_view)
 				if(backup)
+					if(!can_import_backup(disk.backup))
+						to_chat(usr, span_warning("Backup refused."))
+						return TRUE
 					playsound(src, 'sound/machines/terminal/terminal_prompt.ogg', 25, FALSE)
 					var/datum/component/nanites/nanites = backup.nanites
 					QDEL_LIST(nanites.programs)

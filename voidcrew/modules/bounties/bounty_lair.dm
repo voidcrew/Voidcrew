@@ -77,6 +77,12 @@
 /datum/criminal_bounty/kill_only/board_arm()
 	return FALSE
 
+/datum/criminal_bounty/kill_only/board_reputation_family()
+	return ZONE_FAMILY_LAIR
+
+/datum/criminal_bounty/kill_only/board_reputation_difficulty()
+	return MISSION_DIFFICULTY_HARD
+
 /// Its site is fixed, so a lost site or a lost trophy ends it instead of moving it
 /datum/criminal_bounty/kill_only/relist(reason)
 	if(!is_open())
@@ -185,6 +191,7 @@
 /datum/criminal_bounty/kill_only/proc/kill_publish(obj/structure/overmap/site, zone, vouchers, lifetime)
 	placement_kind = SScriminal_bounties.board_kind_of_site(site) || BOUNTY_PLACEMENT_RUIN
 	board_zone = zone
+	record.board_work_zone = zone
 	value = SScriminal_bounties.board_value_for(record.base_value, zone)
 	board_vouchers = vouchers
 	board_posted_at = world.time
@@ -301,6 +308,13 @@
 /datum/criminal_bounty/kill_only/lair/Destroy()
 	lair_kind = null
 	return ..()
+
+/// The existing atomic claim closes the bounty before returning its successful pay.
+/datum/criminal_bounty/kill_only/lair/board_claim(obj/structure/overmap/ship/ship, obj/machinery/mission_pad/pad, atom/movable/target, state, mob/user)
+	var/prize_zone = board_zone
+	. = ..()
+	if(islist(.) && !QDELETED(ship))
+		ship.award_guarded_prize("lair", prize_zone, pad, type)
 
 /// Its clock also waits while anyone is inside the lair: a crew deep in it never loses the bounty to the clock
 /datum/criminal_bounty/kill_only/lair/board_clock_held(now = world.time)
@@ -538,7 +552,10 @@
 		if(!ispath(boss_type, /mob/living))
 			log_mapping("BOUNTY LAIR: [name] has a boss landmark with no mob type at [AREACOORD(home)]")
 			continue
-		lair_adopt_boss(new boss_type(home))
+		var/datum/npc_spawn_context/context = new(src, null, "boss")
+		var/mob/living/boss = spawn_npc_in_zone(boss_type, home, context, FALSE)
+		lair_adopt_boss(boss)
+		context.finalize()
 
 	for(var/obj/effect/landmark/bounty_lair_gatekeeper/mark as anything in keeper_marks)
 		if(QDELETED(mark))
@@ -551,7 +568,10 @@
 		if(!ispath(keeper_type, /mob/living))
 			log_mapping("BOUNTY LAIR: [name] has a gatekeeper landmark with no mob type at [AREACOORD(home)]")
 			continue
-		lair_add_gatekeeper(new keeper_type(home))
+		var/datum/npc_spawn_context/context = new(src, null, "boss")
+		var/mob/living/keeper = spawn_npc_in_zone(keeper_type, home, context, FALSE)
+		lair_add_gatekeeper(keeper)
+		context.finalize()
 
 	lair_leash_goons()
 	lair_goon_timer = addtimer(CALLBACK(src, PROC_REF(lair_leash_goons)), BOUNTY_LAIR_GOON_LEASH_DELAY, TIMER_STOPPABLE)

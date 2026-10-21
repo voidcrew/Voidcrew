@@ -800,6 +800,9 @@ SUBSYSTEM_DEF(ambient_npcs)
 	for(var/turf/tile as anything in floor)
 		if(passages[tile] || (locate(/obj/machinery/door) in tile))
 			continue
+		// Nobody stands about in the checkpoint lobby (outpost_checkpoint.dm)
+		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			continue
 		var/skip = FALSE
 		for(var/cdir in GLOB.cardinals)
 			var/turf/next = get_step(tile, cdir)
@@ -1088,6 +1091,8 @@ SUBSYSTEM_DEF(ambient_npcs)
 	npc.role = type
 	npc.set_place(place)
 	npc.fade_in()
+	// Off the lift on the lobby side of the weapons checkpoint: through it first (outpost_checkpoint_npcs.dm)
+	ambient_cross_checkpoint_on_arrival(npc, place?.outpost())
 	return npc
 
 /**

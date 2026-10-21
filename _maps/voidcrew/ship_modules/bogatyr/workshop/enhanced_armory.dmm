@@ -7,6 +7,12 @@
 /obj/machinery/suit_storage_unit/security,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"dNe" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "dQO" = (
 /obj/structure/rack,
 /obj/item/clothing/suit/armor/vest/russian{
@@ -58,26 +64,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"kZr" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -6;
-	pixel_y = -2
-	},
-/obj/item/knife/combat/survival{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/item/ammo_box/strilka310{
-	pixel_x = 7;
-	pixel_y = 10
-	},
-/obj/item/ammo_box/strilka310{
-	pixel_x = 7;
-	pixel_y = 8
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "mxD" = (
 /obj/item/storage/toolbox/mechanical{
 	pixel_x = -1
@@ -95,21 +81,6 @@
 /obj/machinery/door/airlock/vault{
 	name = "Armory"
 	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
-"mSL" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/structure/rack,
-/obj/structure/rack,
-/obj/item/ammo_box/c9mm{
-	pixel_x = 1;
-	pixel_y = 0
-	},
-/obj/item/ammo_box/magazine/smgm45,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "pom" = (
@@ -169,10 +140,19 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"sge" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/machinery/recharger,
+"tWi" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/structure/rack,
+/obj/item/ammo_box/c9mm{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/smgm45,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "usR" = (
@@ -199,6 +179,26 @@
 "vIw" = (
 /turf/template_noop,
 /area/template_noop)
+"xQK" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 
 (1,1,1) = {"
 iRc
@@ -215,9 +215,9 @@ usR
 iRc
 dQO
 pDR
-kZr
-sge
-mSL
+xQK
+dNe
+tWi
 kbJ
 mxD
 gJF

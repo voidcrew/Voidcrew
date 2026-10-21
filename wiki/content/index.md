@@ -10,3 +10,5 @@ blurb: The Voidcrew wiki front page.
 This wiki covers what's *different* about Voidcrew: flying and fighting your ship, the overmap, planets and ruins, the economy, and the threats waiting out in the dark. For base-game skills that work the same here (medicine, chemistry, botany, engineering) use the [/tg/station wiki](https://wiki.tgstation13.org/).
 
 New to the server? Start with the [New Player Guide](new-player-guide.md). Coming from /tg/station? Read [Coming from /tg/](coming-from-tg.md) first.
+
+Read [Crews & Zone Reputation](zone-reputation.md) for progression, [Weapons & Gear](weapons-and-gear.md) for equipment sources, and [Nanites & Revival](nanites-and-revival.md) for implant capacity and medical limits.

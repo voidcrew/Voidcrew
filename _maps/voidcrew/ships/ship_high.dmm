@@ -7,6 +7,15 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/high/cargo_bay)
+"ae" = (
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/obj/structure/fireaxecabinet/directional/east{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/high/engineering)
 "ar" = (
 /obj/item/storage/medkit,
 /turf/open/floor/bamboo,
@@ -129,10 +138,6 @@
 "cW" = (
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/high/bridge/reception)
-"dq" = (
-/obj/structure/closet/secure_closet/captains,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/high/bridge/captain)
 "dr" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/closet/cardboard,
@@ -612,6 +617,15 @@
 	},
 /turf/open/floor/carpet/neon/simple/blue,
 /area/shuttle/voidcrew/high/bridge)
+"mH" = (
+/obj/structure/table/wood,
+/obj/item/pen/blue{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/obj/item/gun/ballistic/revolver/russian,
+/turf/open/floor/carpet/stellar,
+/area/shuttle/voidcrew/high/bridge/boardroom)
 "mJ" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/high/bridge/reception)
@@ -903,12 +917,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/high/hallway)
-"sQ" = (
-/obj/machinery/power/terminal,
-/obj/structure/cable,
-/obj/structure/fireaxecabinet/directional/east,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/high/engineering)
 "tr" = (
 /obj/structure/table/reinforced,
 /obj/machinery/cell_charger,
@@ -1801,15 +1809,6 @@
 /obj/machinery/atmospherics/pipe/bridge_pipe/cyan/visible,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/high/engineering)
-"Kj" = (
-/obj/structure/table/wood,
-/obj/item/pen/blue{
-	pixel_x = 3;
-	pixel_y = 5
-	},
-/obj/item/gun/ballistic/revolver/russian,
-/turf/open/floor/carpet/stellar,
-/area/shuttle/voidcrew/high/bridge/boardroom)
 "Ko" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/mineral/ore_redemption,
@@ -2436,6 +2435,10 @@
 "WT" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/high/bridge)
+"WX" = (
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/high/bridge/captain)
 "WZ" = (
 /obj/machinery/button/door{
 	id = "chwindow";
@@ -2747,7 +2750,7 @@ mB
 MF
 Zz
 zk
-dq
+WX
 lN
 pO
 fZ
@@ -2800,7 +2803,7 @@ lw
 DP
 cv
 NY
-Kj
+mH
 AF
 Kq
 IE
@@ -3235,7 +3238,7 @@ jq
 sk
 Kf
 Xh
-sQ
+ae
 Ti
 Kt
 "}

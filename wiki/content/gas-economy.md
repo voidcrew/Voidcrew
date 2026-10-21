@@ -22,7 +22,7 @@ Heavier ships burn proportionally more per burn, so a big hull with a small fuel
 
 ## Nebulas
 
-Nebulas are common features on the [overmap](overmap.md), and in Voidcrew every one of them **carries a specific gas**. Which gas depends on which ring the nebula is in: the safe inner ring holds plasma, nitrogen and water vapour; the contested band adds tritium and miasma; and the lawless deep is where hypernoblium, pluoxium and nitrium pool.
+Nebulas are common features on the [overmap](overmap.md), and in Voidcrew every one of them **carries a specific gas**. Green nebulas mostly hold plasma, nitrogen and water vapour, with a small chance of miasma, tritium, hypernoblium, pluoxium or nitrium. Yellow nebulas hold plasma, tritium, nitrogen, water vapour or miasma. Red nebulas hold tritium, hypernoblium, pluoxium, nitrium, plasma or miasma. Check the chart for the gas you need; a particular cloud is not guaranteed.
 
 Your helm names each nebula after its gas and tints it on the chart, so you can pick a tritium cloud out of a bank of them without flying into each one.
 
@@ -34,7 +34,7 @@ A **nebula ram scoop** is an external intake you build on your hull and wrench o
 
 Harvested gas feeds straight into the connected pipes. Run those pipes to an engine heater in pipe mode and your engines refuel themselves; run them to a connector port instead and you can fill canisters and tanks to sell or carry.
 
-Scoop rate depends on the gas. The common fuels come in fast; the valuable ones come in slowly on top of only existing in dangerous space. Better micro-lasers in the scoop multiply the rate, a full set of top-tier lasers roughly quadruples it.
+Scoop rate depends on the gas. The common fuels come in fast; tritium and the rare gases come in more slowly. Better micro-lasers in the scoop multiply the rate, a full set of top-tier lasers roughly quadruples it.
 
 !!! danger "Scooping is loud"
     Running the scoop **cancels nebula concealment and rips away any concealment you already had**, and keeps you visible for ten seconds after the last harvest tick. You cannot refuel and hide at the same time. Every crew in the galaxy knows the fuel stop is also the ambush spot.
@@ -47,7 +47,7 @@ The **plasma sublimation chamber** is the other half of the loop, for crews who 
 
 Micro-lasers set the output rate here too. Since planets and asteroids hand out plasma ore fairly freely, a mining crew with a sublimator effectively never buys fuel again.
 
-Both machines are unlocked by the same early research node as the engine heater, so any ship that can research at all can print both boards. Waystation Halcyon also sells the **ram scoop board** over the counter for 600 credits, which is the route for crews with no research bay.
+Both machines are unlocked by the same early research node as the engine heater, so any ship that can research at all can print both boards. Waystation Halcyon also sells the **ram scoop board** over the counter for 250 credits, which is the route for crews with no research bay.
 
 ## Buying fuel
 
@@ -55,12 +55,12 @@ If you would rather just buy it, both the general waystation and the outfitter d
 
 | Item | Waystation Halcyon | Quartermain Depot |
 |---|---|---|
-| Full plasma canister | 1800 cr | 1100 cr |
+| Full plasma canister | 1100 cr | 1100 cr |
 | Welding fuel tank | 400 cr | 400 cr |
-| Full oxygen tank | 150 cr | 120 cr |
-| Nebula ram scoop board | 600 cr | - |
+| Full oxygen tank | 120 cr | 120 cr |
+| Nebula ram scoop board | 250 cr | - |
 
-Quartermain is cheaper on plasma because it sits further out; Halcyon's markup is the haul to the safe ring.
+These are base prices before standing discounts or specials.
 
 ## Selling gas
 
@@ -72,15 +72,30 @@ Exotic gas is worth real money, and there is exactly one buyer: **Vex at the Und
 | Pluoxium | 300 cr | 200 mol |
 | Nitrium | 300 cr | 200 mol |
 
-All three only pool in deep-band nebulas, and all three scoop slowly, so the payout is gated by how long you are willing to sit still in the most dangerous space in the galaxy with your position broadcast. See [Trader Outposts](trader-outposts.md) for getting to Vex.
+These gases are commonest in red nebulas, but can also appear rarely in green. All three scoop slowly, and Vex has limited demand shared by every crew. See [Trader Outposts](trader-outposts.md) for getting to Vex.
 
-**Gas Harvest contracts** on your ship's mission board are the other sink. Each asks for a tank holding a required quantity of one specific gas, and the board only ever asks for a gas that a nebula somewhere in this round's galaxy actually carries. The common gases pay 700–1200 credits for 600–900 moles; tritium pays 1500–2200 and a voucher; the deep-band exotics pay 2000–3200 and a voucher for as little as 150 moles. Any tank works, and the contract keeps the tank. See [Missions](missions.md).
+**Gas Harvest contracts** on the ship's mission board ask for one tank containing a named gas. Offers normally draw from gases present in the sector's nebulas. Gas already aboard qualifies, and the pad keeps the tank. Excess gas earns no extra pay.
+
+| Gas | Required in one tank | Base credits | Vouchers |
+|---|---|---|---|
+| Plasma | 600-900 mol | 250-350 | 0 |
+| Nitrogen or water vapour | 600-900 mol | 220-320 | 0 |
+| Miasma | 400-700 mol | 300-450 | 0 |
+| Tritium | 250-450 mol | 450-650 | 1 |
+| Pluoxium or nitrium | 200-350 mol | 650-850 | 1 |
+| Hypernoblium | 150-300 mol | 750-950 | 1 |
+
+The quote uses the posting zone: base credits in green, 1.5 times in yellow, 2.2 times in red, rounded to the nearest ten. Read the offer for the final amount. See [Missions](missions.md).
+
+Handheld tanks can leak or rupture under excessive pressure. Cool large samples before filling and transporting them.
+
+**Cargo exports pay for the canister shell only.** Gas inside adds nothing, including exotic gas. Sell to Vex or complete a gas contract instead.
 
 ## Practical advice for a new crew
 
 - **Build the scoop early.** It is one board, it costs less than three canisters, and it removes your largest recurring expense.
 - **Put the heater in pipe mode.** A heater on a tank has to be hand-fed. A heater on the pipe network refuels itself off the scoop or sublimator while you do something else.
-- **Scoop plasma in green space first.** Most nebulas in the inner ring are plasma, they scoop fast, and nobody is going to jump you there.
+- **Scoop plasma in green space first.** Plasma is the most common gas in the inner ring and scoops quickly.
 - **Don't scoop while running.** If you are being hunted, close the intake and hide. Fuel is replaceable; the ship is not.
 - **Overfill before a deep run.** Filling spare canisters while parked in a safe nebula is far better than discovering you are dry in the lawless deep.
 - **Sell the exotics, burn the common stuff.** Hypernoblium is worth 1200 credits a tank at Vex's counter and does nothing useful in a thruster. Plasma gets you home.

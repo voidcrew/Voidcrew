@@ -178,21 +178,6 @@
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/c)
-"kc" = (
-/obj/machinery/light/red,
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/south,
-/obj/structure/closet/syndicate{
-	name = "weapons locker";
-	desc = "Bolted down over the old shower drain."
-	},
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/ammo_box/magazine/m10mm,
-/obj/item/clothing/suit/armor/vest,
-/obj/item/clothing/gloves/combat,
-/obj/item/knife/combat/survival,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/goon/medbay/c)
 "lT" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
@@ -224,16 +209,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
-"om" = (
-/obj/machinery/door/airlock/hatch{
-	name = "Engine Room"
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/goon/engineering/c)
 "pz" = (
 /obj/structure/fans/tiny,
 /obj/machinery/button/door{
@@ -254,9 +229,6 @@
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 8
 	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/shuttle/voidcrew/goon/commons/c)
-"qO" = (
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
 "ri" = (
@@ -333,6 +305,21 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"xT" = (
+/obj/machinery/light/red,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/closet/syndicate{
+	name = "weapons locker";
+	desc = "Bolted down over the old shower drain."
+	},
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/clothing/suit/armor/vest,
+/obj/item/clothing/gloves/combat,
+/obj/item/knife/combat/survival,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/medbay/c)
 "yC" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
 /turf/open/floor/plating,
@@ -467,16 +454,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/goon/commons/c)
-"Lt" = (
-/obj/machinery/door/airlock/hatch{
-	name = "Port Compartment"
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/goon/medbay/c)
 "LL" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
@@ -644,15 +621,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/c)
-"Xi" = (
-/obj/machinery/door/airlock/hatch{
-	name = "Cockpit"
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/goon/bridge/c)
 "Ye" = (
 /obj/machinery/door/airlock/hatch{
 	name = "Engine Room"
@@ -758,7 +726,7 @@ IZ
 VO
 Fs
 Og
-kc
+xT
 Pm
 bq
 NQ

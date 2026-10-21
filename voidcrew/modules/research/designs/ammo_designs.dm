@@ -1,7 +1,7 @@
 /**
  * Generic ballistic ammunition designs.
  *
- * voidcrew/modules/weapons_bench/ already gives every blueprint gun (C-20r, Bulldog,
+ * voidcrew/modules/weapons_bench/ already gives each of these guns (C-20r, Bulldog,
  * WT-550, L6 SAW, anti-materiel rifle) its own ammo node and design. ammo_catalogue.dm
  * adds the remaining firearm calibers and specialty loads. What had no
  * manufacturing path at all was the plain stuff every crew is actually carrying:

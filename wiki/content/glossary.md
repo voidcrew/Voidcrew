@@ -41,11 +41,12 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Bank machine** | Holds the ship's shared account. Cargo and traders draw on it. See [Money and Trade](money-and-trade.md). |
 | **Mission board** | The console that offers and tracks contracts. See [Missions](missions.md). |
 | **Mission pad** | The pad that sits beside the board. Put mission items on it to hand them in, and rewards appear on it. |
-| **Techweb** | Your ship's research tree. It lives on the source code disk inside your own R&D server, starts empty, and is not shared with any other crew. See [Research](research.md). |
+| **Zone reputation** | Crew standing earned through varied dangerous field work. Opens contracts, trader stock and some research; survives losing a hull. See [Crews & Zone Reputation](zone-reputation.md). |
+| **Techweb** | Your ship's research tree. It lives on the source code disk in its R&D server and can be copied or shared. See [Research](research.md). |
 | **Research points** | The currency of the techweb, earned by experiments, surveys and salvaged documents rather than handed out over time. See [Research](research.md). |
-| **Research notes** | A physical document with a point value printed on it. Press it against an R&D console to bank the points, or sell it to cargo for half a credit per point. |
-| **Survey scanner** | A machine that turns power into research points while parked somewhere new. See [Research](research.md). |
-| **Orbital survey console** | The console that surveys whatever your ship is orbiting, paying points and credits and recording the object against research that requires it. |
+| **Research notes** | A physical document with a point value printed on it. Press it against an R&D console to bank the points. Loot notes, including orbital survey printouts, also export for half a credit per point. |
+| **Survey scanner** | A cell-powered machine that earns research on natural ground and exhausts that site for the round. See [Research](research.md). |
+| **Orbital survey console** | The console that surveys whatever your ship is orbiting, paying research points only and recording the object against research that requires it. |
 | **Transporter** | A pad-and-console pair that beams people and cargo between the ship and a surface. See [Transporters](transporters.md). |
 | **Transponder** | The palm-sized beacon you carry that pairs to one transporter pad, letting the ship see you and pull you home. |
 | **Drop pod** | A one-shot pod that drops you onto whatever the ship is parked over, or gets fired through an enemy hull out of an assault pod tube. See [Drop Pods](drop-pods.md). |
@@ -59,7 +60,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Extraction case** | The secure case parts must be sitting in, on your person, for them to survive the round. Request one with the **Request Extraction Case** verb. Only the first standard case counts. |
 | **Voucher** | A trade voucher: a physical chit earned from dangerous work, never bought with credits, and spent at any trader for restricted goods. Being an item, it can be stolen off you. |
 | **Chrome** | Cyberware, implantable robotic organs sold at the Chop Shop on the Undertow Exchange. See [Cyberware](cyberware.md). |
-| **Neural load** | What each piece of chrome costs against your 20-point capacity. Going over capacity browns every piece out at once. |
+| **Neural load** | The shared cost of chrome, implants, robotic organs, surgical enhancements and installed nanite programs against 20 capacity. Overload disables chrome and beneficial nanite programs. |
 | **Trader outpost** | One of three permanent markets, one per zone: general store in green, outfitter in yellow, black market in red. Turrets shoot people who keep starting fights. See [Trader Outposts](trader-outposts.md). |
 | **Player outpost** | A base a crew plants for itself using an outpost deed. See [Player Outposts](player-outposts.md). |
 | **Custom slot** | A saved spawn loadout tied to your account, swapped onto a ship's job at the cryogenic oversight console. The first is free; the second and third are bought with your persistent account credits. |

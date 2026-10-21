@@ -121,10 +121,7 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define COMSIG_BOARDING_ESCALATED "boarding_escalated"              // Fired when player aggression escalates to full combat
 
 // Boarding timing constants
-#define NPC_BOARDING_WAVE_COUNT 3                  // Number of waves before boss
-/// Yellow zone raids are a single crew-scaled wave with no boss - the pirate
-/// leaves once it's repelled. Red keeps the full gauntlet above.
-#define NPC_BOARDING_WAVE_COUNT_YELLOW 1
+#define NPC_BOARDING_WAVE_COUNT 1                  // One crew-sized wave, then a boss in red
 #define NPC_BOARDING_WAVE_COOLDOWN (30 SECONDS)    // Time between waves
 #define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
 #define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation
@@ -138,16 +135,6 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 // Ship combat boarding pod constants
 #define NPC_SHIP_COMBAT_MAX_BOARDERS 10            // Max hostile mobs during ship combat phase
 #define NPC_SHIP_COMBAT_POD_COOLDOWN (15 SECONDS)  // Cooldown between boarding pod volleys
-
-// Boarding difficulty
-/// Health multiplier for crew aboard an NPC ship and for anything it drops on you
-/// in a boarding pod. Applied at the spawn site by scale_npc_ship_pirate_health()
-/// rather than on the mob definitions, because ruin zone spawners, planet spawns
-/// and bounty missions reuse the same faction pirate types and are tuned for their
-/// own zone bands.
-#define NPC_PIRATE_CREW_HEALTH_MULT 1.8
-/// Same, for the faction boss that drops in after the last wave is repelled.
-#define NPC_PIRATE_BOSS_HEALTH_MULT 1.6
 
 // ========== NPC HULL WEALTH ==========
 // What a pirate is carrying in its own accounts, and therefore what a crew can

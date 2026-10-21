@@ -207,7 +207,8 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		// If a line ever names a crime, it names the same one for everybody
 		if(decoy_record)
 			decoy_record.crime = record.crime
-		var/mob/living/basic/bounty_criminal/decoy/decoy = new(spot)
+		var/datum/npc_spawn_context/context = fugitive.bounty_profile_context()
+		var/mob/living/basic/bounty_criminal/decoy/decoy = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/decoy, spot, context, FALSE)
 		var/atom/anchor = (length(free_stools) && prob(50)) ? pick_n_take(free_stools) : null
 		decoy.outpost_become(fugitive, decoy_record, src, outpost, display_name, display_desc, outfit, anchor)
 		decoys += WEAKREF(decoy)
@@ -330,6 +331,10 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		return list()
 	var/list/floor = bounty_outpost_public_floor(outpost)
 	floor -= outpost.lobby_alcove_turfs
+	// Nobody blends in at the checkpoint (outpost_checkpoint.dm): the hunt is past it
+	for(var/turf/checkpoint_tile as anything in floor.Copy())
+		if(istype(checkpoint_tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			floor -= checkpoint_tile
 	var/turf/near_turf = get_turf(near)
 	if(near_turf)
 		floor -= near_turf

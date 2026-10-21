@@ -73,14 +73,7 @@
 /obj/structure/window/reinforced/spawner/directional/south,
 /turf/open/floor/iron/dollhouse/checker,
 /area/template_noop)
-"tsh" = (
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/machinery/computer/communications{
-	dir = 8
-	},
-/turf/open/floor/iron/dollhouse,
-/area/template_noop)
-"usM" = (
+"swJ" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/structure/table/reinforced,
 /obj/item/storage/medkit/regular{
@@ -95,6 +88,13 @@
 /obj/item/gun/energy/laser,
 /obj/item/gun/energy/laser,
 /obj/item/gun/energy/laser,
+/turf/open/floor/iron/dollhouse,
+/area/template_noop)
+"tsh" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/communications{
+	dir = 8
+	},
 /turf/open/floor/iron/dollhouse,
 /area/template_noop)
 "wnG" = (
@@ -129,7 +129,7 @@ jVm
 msv
 nmr
 nmr
-usM
+swJ
 "}
 (4,1,1) = {"
 hdW

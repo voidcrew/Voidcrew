@@ -78,10 +78,12 @@
 	var/mob/living/carbon/human/hunter = allocate(/mob/living/carbon/human/consistent)
 	hunter.mind_initialize()
 	if(ship)
-		var/datum/team/voidcrew/team = new
+		if(!ship.ship_team)
+			ship.ship_team = new
+		var/datum/team/voidcrew/team = ship.ship_team
 		team.ship = ship
-		hunter.mind.ship_teams = list(team)
-		outpost_test_teams += team
+		team.join_member(hunter.mind)
+		outpost_test_teams |= team
 		outpost_test_minds += hunter.mind
 	return hunter
 

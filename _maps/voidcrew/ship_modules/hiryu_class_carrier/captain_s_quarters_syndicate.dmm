@@ -1,17 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"eVG" = (
-/obj/structure/window/reinforced/spawner/directional/north,
-/obj/structure/closet/secure_closet/captains,
-/obj/item/folder/syndicate/red,
-/turf/open/floor/wood/ebony,
-/area/template_noop)
-"hOd" = (
+"aab" = (
 /obj/structure/displaycase/captain{
-	start_showpiece_type = /obj/item/katana
+	start_showpiece_type = /obj/item/knife/combat/survival
 	},
 /obj/structure/plaque/static_plaque/golden/captain{
 	pixel_y = 29
 	},
+/turf/open/floor/wood/ebony,
+/area/template_noop)
+"aUy" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/obj/item/folder/syndicate/red,
 /turf/open/floor/wood/ebony,
 /area/template_noop)
 "jJe" = (
@@ -119,7 +119,7 @@ mxC
 qDi
 "}
 (3,1,1) = {"
-eVG
+aUy
 mxC
 pIl
 qKc
@@ -129,7 +129,7 @@ nTz
 "}
 (4,1,1) = {"
 oFg
-hOd
+aab
 xNq
 vEi
 pFb

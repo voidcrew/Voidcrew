@@ -36,6 +36,20 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/medbay/lobby)
+"ai" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/binary/pump/on/layer4{
+	dir = 1;
+	name = "Air to Distro"
+	},
+/obj/structure/fireaxecabinet/directional/west{
+	populate_contents = 0
+	},
+/obj/item/knife/combat/survival,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/osprey/engineering/atmospherics)
 "az" = (
 /obj/machinery/computer/rdconsole{
 	dir = 4
@@ -2483,6 +2497,16 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/hallway/port)
+"wU" = (
+/obj/structure/closet/secure_closet/captains{
+	name = "\proper captain's locker"
+	},
+/obj/item/clothing/under/rank/centcom/commander,
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/royalblue,
+/area/shuttle/voidcrew/osprey/bridge)
 "wV" = (
 /obj/structure/cable,
 /obj/machinery/light{
@@ -3844,14 +3868,6 @@
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/starboard)
-"Lh" = (
-/obj/item/storage/backpack,
-/obj/item/clothing/gloves/color/white,
-/obj/item/clothing/under/rank/centcom/officer,
-/obj/machinery/airalarm/directional/south,
-/obj/structure/closet/secure_closet/hop,
-/turf/open/floor/carpet/blue,
-/area/shuttle/voidcrew/osprey/bridge)
 "Lj" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -4061,6 +4077,14 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/service/dormitories)
+"Ny" = (
+/obj/item/storage/backpack,
+/obj/item/clothing/gloves/color/white,
+/obj/item/clothing/under/rank/centcom/officer,
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/secure_closet/hop,
+/turf/open/floor/carpet/blue,
+/area/shuttle/voidcrew/osprey/bridge)
 "Nz" = (
 /obj/structure/frame/machine,
 /obj/effect/turf_decal/siding/thinplating_new/light{
@@ -4210,7 +4234,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/warning,
 /obj/effect/turf_decal/siding/thinplating_new/light,
 /obj/structure/table/glass,
-/obj/item/storage/backpack/duffelbag/med/surgery{
+/obj/item/storage/medkit/surgery{
 	pixel_x = -3;
 	pixel_y = 13
 	},
@@ -4278,9 +4302,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/starboard)
-"PU" = (
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/osprey/medbay)
 "PW" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp{
@@ -4380,17 +4401,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/service/janitor)
-"QJ" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/binary/pump/on/layer4{
-	dir = 1;
-	name = "Air to Distro"
-	},
-/obj/structure/fireaxecabinet/directional/west,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/osprey/engineering/atmospherics)
 "QL" = (
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp,
@@ -5022,16 +5032,6 @@
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark/textured,
 /area/shuttle/voidcrew/osprey/engineering)
-"XS" = (
-/obj/structure/closet/secure_closet/captains{
-	name = "\proper captain's locker"
-	},
-/obj/item/clothing/under/rank/centcom/commander,
-/obj/structure/sign/poster/official/random{
-	pixel_x = 32
-	},
-/turf/open/floor/carpet/royalblue,
-/area/shuttle/voidcrew/osprey/bridge)
 "XU" = (
 /turf/template_noop,
 /area/template_noop)
@@ -5909,7 +5909,7 @@ ke
 yZ
 hC
 zW
-Lh
+Ny
 ke
 IA
 BC
@@ -6257,7 +6257,7 @@ ke
 uH
 iC
 dI
-XS
+wU
 ke
 JV
 EW
@@ -6726,7 +6726,7 @@ yx
 gU
 ka
 CI
-QJ
+ai
 tW
 lf
 TI

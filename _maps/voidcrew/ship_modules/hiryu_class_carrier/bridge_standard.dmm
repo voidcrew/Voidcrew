@@ -5,6 +5,23 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
+"dhW" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/item/binoculars,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/titanium,
+/area/template_noop)
 "dwQ" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -82,23 +99,6 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/template_noop)
-"wCS" = (
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/structure/table/reinforced,
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 3
-	},
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 9
-	},
-/obj/item/binoculars,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/turf/open/floor/mineral/titanium,
-/area/template_noop)
 "xnv" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /turf/open/floor/mineral/titanium/blue,
@@ -129,7 +129,7 @@ ixv
 dwQ
 njK
 njK
-wCS
+dhW
 "}
 (4,1,1) = {"
 jlZ

@@ -14,13 +14,18 @@
 	obj_damage = 60  // Can break doors/objects like blobbernauts
 	/// Guaranteed loot items dropped on death. All items in this list are spawned.
 	var/list/loot_pool
+	/// Independently rolled once at construction, never on a later death.
+	var/list/rare_loot_pool
+	var/list/rolled_rare_loot
+	var/weapon_loot_initialized = FALSE
+	var/credits_dropped = FALSE
+	/// A named mission target keeps this even after replacement or mission expiry.
+	var/datum/weakref/mission_payout_ref
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
-		/obj/item/pen/edagger,\
-		/obj/item/switchblade,\
 		/obj/item/knife/combat/survival,\
-		/obj/item/melee/baton/telescopic,\
-		/obj/item/gun/energy/e_gun/mini\
+		/obj/item/spear,\
+		/obj/item/melee/baseball_bat\
 	)
 	/// Random auxiliary loot - one item is picked at random and added to death drops.
 	var/list/random_loot_2 = list(\
@@ -39,12 +44,28 @@
 	// Drop credits as holochip on death
 	if(plunder_credits > 0)
 		RegisterSignal(src, COMSIG_LIVING_DEATH, PROC_REF(on_death_drop_credits))
-	// Build death drops from loot pool
+	get_npc_spawn_context().bodies |= WEAKREF(src)
+	rolled_rare_loot = list()
+	for(var/item_type in rare_loot_pool)
+		if(npc_ladder_red_drop())
+			rolled_rare_loot += item_type
+
+/// The source context can resolve after map initialization. Roll against it once.
+/mob/living/basic/trooper/pirate/faction/proc/initialize_weapon_loot(zone)
+	if(weapon_loot_initialized)
+		return
+	weapon_loot_initialized = TRUE
 	var/list/death_loot = list()
 	if(length(loot_pool))
 		death_loot += loot_pool
+	death_loot += rolled_rare_loot
 	if(length(random_loot))
-		death_loot += pick(random_loot)
+		death_loot += roll_ladder_weapon(zone)
+	if(istype(src, /mob/living/basic/trooper/pirate/faction/silverscale/captain) || istype(src, /mob/living/basic/trooper/pirate/faction/lustrous/captain) || istype(src, /mob/living/basic/trooper/pirate/faction/interdyne/captain))
+		if(zone == ZONE_YELLOW)
+			death_loot += /obj/item/claymore/shortsword
+		else if(zone == ZONE_RED)
+			death_loot += pick(npc_ladder_yellow_melee())
 	if(length(random_loot_2))
 		death_loot += pick(random_loot_2)
 	if(length(death_loot))
@@ -53,9 +74,33 @@
 		// that rolls the same two items.
 		AddElement(/datum/element/death_drops, string_list(death_loot))
 
+/mob/living/basic/trooper/pirate/faction/proc/roll_ladder_weapon(zone, roll = rand(1, 100))
+	switch(zone)
+		if(ZONE_YELLOW)
+			return roll <= 5 ? /obj/item/gun/energy/laser : pick(npc_ladder_yellow_melee())
+		if(ZONE_RED)
+			return roll <= 10 ? /obj/item/gun/ballistic/automatic/c20r/unrestricted : pick(npc_ladder_yellow_melee())
+	if(roll <= 50)
+		return /obj/item/knife/combat/survival
+	return roll <= 75 ? /obj/item/spear : /obj/item/melee/baseball_bat
+
+/mob/living/basic/trooper/pirate/faction/death(gibbed)
+	// An early death still resolves from the original source turf, never this body.
+	if(!weapon_loot_initialized)
+		var/datum/npc_spawn_context/context = get_npc_spawn_context()
+		initialize_weapon_loot(context.zone_type || SSovermap_zones.get_zone_type_anywhere(context.source_turf) || ZONE_GREEN)
+	return ..()
+
 /// Drops plunder_credits as a holochip on death
 /mob/living/basic/trooper/pirate/faction/proc/on_death_drop_credits(mob/living/source)
 	SIGNAL_HANDLER
+	if(credits_dropped)
+		return
+	credits_dropped = TRUE
+	if(mission_payout_ref)
+		var/datum/mission/mission = mission_payout_ref.resolve()
+		if(!mission?.claim_boss_cash())
+			return
 	new /obj/item/holochip(drop_location(), plunder_credits)
 
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
@@ -126,7 +171,6 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -193,7 +237,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	loot_pool = list(/obj/item/gun/energy/e_gun/lethal)
+	loot_pool = list(/obj/item/gun/energy/laser)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -325,7 +369,6 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -389,7 +432,6 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/claymore/cutlass)
 	random_loot = null
 	plunder_credits = 1000
 
@@ -447,7 +489,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	loot_pool = list(/obj/item/gun/energy/e_gun/lethal)
+	loot_pool = list(/obj/item/gun/energy/laser)
 	random_loot = null
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
@@ -535,9 +577,9 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	r_hand = /obj/item/fireaxe/boardingaxe
-	loot_pool = list(/obj/item/fireaxe/boardingaxe)
+	loot_pool = list(/obj/item/fireaxe)
 	random_loot = null
-	plunder_credits = 300
+	plunder_credits = 1000
 
 /mob/living/basic/trooper/pirate/faction/medieval/captain/Initialize(mapload)
 	. = ..()

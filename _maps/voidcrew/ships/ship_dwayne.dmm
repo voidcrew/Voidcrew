@@ -165,18 +165,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/dwayne/engineering)
-"gr" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/tile/yellow/anticorner{
-	dir = 4
-	},
-/obj/structure/guncase/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/gun/ballistic/shotgun,
-/obj/item/pai_card,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/dwayne/cargo_bay)
 "gs" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
@@ -316,13 +304,6 @@
 /obj/effect/turf_decal/tile/blue/half,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/bridge)
-"iO" = (
-/obj/effect/turf_decal/tile/blue/half{
-	dir = 4
-	},
-/obj/structure/closet/secure_closet/captains,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/dwayne/bridge)
 "iZ" = (
 /obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
@@ -374,7 +355,7 @@
 	},
 /obj/structure/table,
 /obj/item/book/manual/wiki/surgery,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/item/clothing/mask/surgical,
 /obj/item/clothing/suit/apron/surgical,
 /obj/item/clothing/gloves/latex/nitrile,
@@ -789,6 +770,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/dwayne/crew)
+"xm" = (
+/obj/effect/turf_decal/tile/blue/half{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/dwayne/bridge)
 "xx" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/firealarm/directional/south,
@@ -939,6 +927,18 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/crew)
+"Cl" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/yellow/anticorner{
+	dir = 4
+	},
+/obj/structure/guncase/shotgun,
+/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun,
+/obj/item/gun/ballistic/shotgun,
+/obj/item/pai_card,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/dwayne/cargo_bay)
 "Cp" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1781,7 +1781,7 @@ FP
 FP
 tX
 Pd
-gr
+Cl
 uc
 or
 bv
@@ -2032,7 +2032,7 @@ ms
 ms
 dl
 NK
-iO
+xm
 ms
 ms
 OJ

@@ -9,7 +9,6 @@ import {
   LabeledList,
   NoticeBox,
   NumberInput,
-  ProgressBar,
   Section,
   Stack,
   Tabs,
@@ -34,12 +33,8 @@ type Mission = {
   author: string;
   value: number;
   reward_items?: RewardItem[];
-  reward_item: string | null;
-  reward_item_icon: string | null;
   duration: number;
-  time_remaining: number;
   time_remaining_text: string;
-  progress: string;
   can_complete: BooleanLike;
   active: BooleanLike;
   requires_item?: BooleanLike;
@@ -48,9 +43,6 @@ type Mission = {
   target_x?: number;
   target_y?: number;
   visited?: BooleanLike;
-  difficulty: number;
-  difficulty_name: string;
-  difficulty_color: string;
   zone_name: string | null;
   zone_color: string;
 };
@@ -339,11 +331,12 @@ const MissionBoardContent = () => {
               <Button
                 icon="sync"
                 disabled={refresh_cooldown_remaining > 0}
+                tooltip={
+                  refresh_cooldown_remaining > 0 ? 'No new postings' : undefined
+                }
                 onClick={() => act('refresh')}
               >
-                {refresh_cooldown_remaining > 0
-                  ? `Refresh (${refresh_cooldown_remaining}s)`
-                  : 'Refresh'}
+                Refresh
               </Button>
             </>
           }
@@ -368,7 +361,7 @@ const MissionBoardContent = () => {
         </Section>
       </Stack.Item>
 
-      {posting && !has_created_bounty && (
+      {!!posting && !has_created_bounty && (
         <Stack.Item>
           <PlayerBountyCreator
             shipBalance={ship_balance}
@@ -395,13 +388,13 @@ const MissionBoardContent = () => {
             selected={currentTab === 'available'}
             onClick={() => setCurrentTab('available')}
           >
-            Available ({offered.length})
+            Available
           </Tabs.Tab>
           <Tabs.Tab
             selected={currentTab === 'active'}
             onClick={() => setCurrentTab('active')}
           >
-            Active ({activeCount})
+            Active
           </Tabs.Tab>
         </Tabs>
       </Stack.Item>
@@ -453,22 +446,16 @@ type MissionCardProps = {
   padContents?: PadItem[];
 };
 
-/**
- * Renders a mission's full payout: credits, each item in the reward bundle
- * (rare picks accented), research points and vouchers, as " + "-joined
- * segments. `full` spells out "credits" for the detail view; the compact form
- * says "cr".
- */
-const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
-  const { mission, full } = props;
+/** The quoted currency and named goods, without empty reward segments. */
+const RewardSummary = (props: { mission: Mission }) => {
+  const { mission } = props;
   const items = mission.reward_items ?? [];
   const segments: ReactNode[] = [];
 
   if (mission.value > 0) {
     segments.push(
       <Box as="span" bold color="good">
-        {mission.value}
-        {full ? ' credits' : ' cr'}
+        {formatMoney(mission.value)} cr
       </Box>,
     );
   }
@@ -490,25 +477,31 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
       </Box>,
     );
   }
-  if (mission.research_reward) {
+  if ((mission.research_reward ?? 0) > 0) {
     segments.push(
       <Box as="span" bold color="teal">
-        {mission.research_reward}
-        {full ? ' research points' : ' RP'}
+        research notes
       </Box>,
     );
   }
-  if (mission.voucher_count) {
+  const vouchers = mission.voucher_count ?? 0;
+  if (vouchers > 0) {
     segments.push(
       <Box as="span" bold color="gold">
-        {mission.voucher_count} trade voucher
-        {mission.voucher_count > 1 ? 's' : ''}
+        {vouchers} trade voucher{vouchers > 1 ? 's' : ''}
       </Box>,
     );
   }
 
+  if (segments.length === 0) {
+    return null;
+  }
+
   return (
-    <>
+    <Box mb={1}>
+      <Box as="span" color="label">
+        Pays:{' '}
+      </Box>
       {segments.map((segment, index) => (
         <Box as="span" key={index}>
           {index > 0 && (
@@ -519,7 +512,7 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
           {segment}
         </Box>
       ))}
-    </>
+    </Box>
   );
 };
 
@@ -531,8 +524,8 @@ const MissionCard = (props: MissionCardProps) => {
   const canAccept = !isActive && active_count < max_missions;
 
   // Format time remaining
-  const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 10);
+  const formatTime = (deciseconds: number) => {
+    const totalSeconds = Math.floor(deciseconds / 10);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -549,10 +542,6 @@ const MissionCard = (props: MissionCardProps) => {
               [{mission.zone_name}]
             </Box>
           )}
-          <Box inline color={mission.difficulty_color} mr={1}>
-            [{mission.difficulty_name}]
-          </Box>
-          <RewardSummary mission={mission} />
         </Box>
       }
     >
@@ -561,36 +550,14 @@ const MissionCard = (props: MissionCardProps) => {
       </Box>
       <Box mb={1}>{mission.desc}</Box>
 
-      {/* Rewards summary */}
-      <Box mb={1}>
-        <Box as="span" color="label">
-          Rewards:{' '}
-        </Box>
-        <RewardSummary mission={mission} full />
+      <RewardSummary mission={mission} />
+      <Box color="label" mb={1}>
+        {isActive ? 'Due in: ' : 'Time allowed: '}
+        {isActive ? mission.time_remaining_text : formatTime(mission.duration)}
       </Box>
 
       {!!isActive && (
         <>
-          <LabeledList>
-            <LabeledList.Item label="Time Remaining">
-              <ProgressBar
-                value={mission.time_remaining}
-                maxValue={mission.duration}
-                ranges={{
-                  good: [mission.duration * 0.5, Infinity],
-                  average: [mission.duration * 0.25, mission.duration * 0.5],
-                  bad: [0, mission.duration * 0.25],
-                }}
-              >
-                {mission.time_remaining_text}
-              </ProgressBar>
-            </LabeledList.Item>
-            {!!mission.progress && (
-              <LabeledList.Item label="Progress">
-                {mission.progress}
-              </LabeledList.Item>
-            )}
-          </LabeledList>
           <Divider />
           {mission.requires_item ? (
             <Button
@@ -676,11 +643,6 @@ const BountyCard = (props: BountyCardProps) => {
             mr={1}
           >
             {displayReward} cr
-            {!!bounty.has_tracking && (
-              <Box as="span" color="label" ml={1}>
-                (-{bounty.tracking_cost})
-              </Box>
-            )}
           </Box>
           <Box inline color="label">
             [{bounty.zone}]
@@ -719,9 +681,17 @@ const BountyCard = (props: BountyCardProps) => {
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
           <Box color="label">
-            <Box as="span" color={bounty.hunter_count > 0 ? 'orange' : 'gray'}>
-              ⚔ {bounty.hunter_count} crew{bounty.hunter_count !== 1 ? 's' : ''}{' '}
-              hunting
+            <Box
+              as="span"
+              color={
+                bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
+                  ? 'orange'
+                  : 'gray'
+              }
+            >
+              {bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
+                ? 'Other crews hunting'
+                : 'No other hunters'}
             </Box>
           </Box>
         </Flex.Item>
@@ -1001,7 +971,7 @@ const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
         </LabeledList.Item>
         <LabeledList.Item label="Objective">
           <TextArea
-            placeholder="Describe what needs to be done..."
+            placeholder="Objective..."
             width="100%"
             height="60px"
             maxLength={256}
@@ -1097,7 +1067,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                 color={createdBounty.contractor_count > 0 ? 'good' : 'average'}
               >
                 {createdBounty.contractor_count > 0
-                  ? `${createdBounty.contractor_count} ship${createdBounty.contractor_count !== 1 ? 's' : ''} accepted`
+                  ? 'Contract accepted'
                   : 'Waiting for contractors'}
               </Box>
             </LabeledList.Item>
@@ -1194,7 +1164,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                 color={claimedBounty.contractor_count > 1 ? 'orange' : 'good'}
               >
                 {claimedBounty.contractor_count > 1
-                  ? `${claimedBounty.contractor_count - 1} other ship${claimedBounty.contractor_count > 2 ? 's' : ''} competing`
+                  ? 'Other crews competing'
                   : 'No competition'}
               </Box>
             </LabeledList.Item>
@@ -1280,8 +1250,9 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
               as="span"
               color={bounty.contractor_count > 0 ? 'orange' : 'gray'}
             >
-              {bounty.contractor_count} contractor
-              {bounty.contractor_count !== 1 ? 's' : ''}
+              {bounty.contractor_count > 0
+                ? 'Contract accepted'
+                : 'No contractors'}
             </Box>
           </Box>
         </Flex.Item>
