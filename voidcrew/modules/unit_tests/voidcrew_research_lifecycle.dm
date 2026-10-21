@@ -289,6 +289,40 @@
 	TEST_ASSERT(web.add_scientific_paper(paper), "A later publication tier was refused")
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], points, "A later paper tier paid another completion reward")
 
+/// Regular servers retain an independent, once-per-web completion ledger.
+/datum/unit_test/voidcrew_experiment_reward_fixture/regular_server_entitlement/Run()
+	for(var/index in 1 to 2)
+		var/obj/machinery/rnd/server/server = allocate(/obj/machinery/rnd/server)
+		var/datum/techweb/web = server.stored_research
+		TEST_ASSERT_NOTNULL(web, "A regular R&D server has no techweb")
+		complete_arcade(web, get_turf(server))
+		TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 237, "A regular server lost its flat or intrinsic completion reward")
+		publish_reward_paper(web)
+		TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "A regular server lost its publication reward")
+		// Restoring local completion cannot reset the web's grant claims.
+		web.completed_experiments.Cut()
+		complete_arcade(web, get_turf(server))
+		TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "A regular server paid the same experiment twice")
+
+/// A physical source on a ship without a crew record still pays its own grants once.
+/datum/unit_test/voidcrew_experiment_reward_fixture/crewless_ship_entitlement/Run()
+	var/obj/structure/overmap/ship/ship = make_reward_ship(run_loc_floor_bottom_left)
+	QDEL_NULL(ship.ship_team)
+	TEST_ASSERT_NULL(ship.get_crew_record(), "The crewless reward fixture has a crew record")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
+	var/obj/machinery/rnd/server/ship/server = allocate(/obj/machinery/rnd/server/ship)
+	var/datum/techweb/web = install_reward_disk(server, user)
+	complete_arcade(web, get_turf(server))
+	publish_reward_paper(web)
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "A crewless source lost its flat or intrinsic rewards")
+	// The fallback belongs to the web, so moving its disk cannot reset it.
+	var/obj/item/computer_disk/ship_disk/disk = server.source_code_hdd
+	disk.forceMove(run_loc_floor_bottom_left)
+	server.attacked_by(disk, user)
+	web.completed_experiments.Cut()
+	complete_arcade(web, get_turf(server))
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 474, "A crewless source repaid an experiment after disk reinsertion")
+
 /datum/unit_test/voidcrew_experiment_reward_fixture/crew_entitlement/Run()
 	var/obj/structure/overmap/ship/first_ship = make_reward_ship(run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent)
@@ -374,9 +408,10 @@
 	complete_arcade(web, run_loc_floor_top_right)
 	publish_reward_paper(web)
 	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "Replacing an outpost server reset its shared entitlement")
-	// A disk without an installed physical owner has no completion entitlement.
+	// An uninstalled disk falls back to its own claims, never the outpost's shared ledger.
 	server.source_code_hdd.forceMove(home.arrival_turf)
-	TEST_ASSERT_NULL(web.experiment_reward_ledger(), "A removed source disk retained a reward owner")
+	TEST_ASSERT_EQUAL(web.experiment_reward_ledger(), web.local_experiment_reward_ledger, "A removed source disk did not fall back to its web-local ledger")
+	TEST_ASSERT(web.experiment_reward_ledger() != home.research_reward_ledger, "A removed source disk retained its outpost reward owner")
 
 /// Synthetic nodes isolate payment accounting while using real purchase, import and completion procs.
 /datum/unit_test/voidcrew_experiment_refunds
@@ -421,19 +456,19 @@
 	TEST_ASSERT_EQUAL(length(imported.experiment_payment_receipts), 0, "Research transfer copied another web's payment receipts")
 	finish(imported, first_type)
 	finish(imported, second_type)
-	TEST_ASSERT_EQUAL(imported.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "Imported nodes created discount refunds")
+	TEST_ASSERT_EQUAL(imported.research_points[TECHWEB_POINT_TYPE_GENERIC], 400, "Imported nodes created discount refunds beyond their completion grants")
 	var/datum/experiment/first = finish(web, first_type)
-	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 925, "One experiment did not refund both paid nodes' discounts")
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 1125, "One experiment did not pay its grant and refund both paid nodes' discounts")
 	TEST_ASSERT_EQUAL(web.research_points["receipt_test"], 990, "The discount did not refund its own point currency")
 	var/datum/experiment/second = finish(web, second_type)
-	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 935, "Several discounts exceeded the node's remaining actual payment")
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 1335, "Several discounts exceeded the node's remaining actual payment plus completion grants")
 	TEST_ASSERT_EQUAL(web.research_points["receipt_test"], 1000, "Refunds exceeded actual payment in the second currency")
 	web.complete_experiment(first)
 	web.complete_experiment(second)
 	// Even restoring completion from scratch must not refill consumed receipts.
 	web.completed_experiments -= first_type
 	finish(web, first_type)
-	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 935, "Repeated completion refunded a consumed discount")
+	TEST_ASSERT_EQUAL(web.research_points[TECHWEB_POINT_TYPE_GENERIC], 1335, "Repeated completion repaid a grant or refunded a consumed discount")
 	TEST_ASSERT_EQUAL(web.research_points["receipt_test"], 1000, "Repeated completion refilled another currency's receipt")
 	var/list/price = node.get_price(web)
 	TEST_ASSERT_EQUAL(price[TECHWEB_POINT_TYPE_GENERIC], 0, "Discounts and boosts returned a negative price")
@@ -453,7 +488,7 @@
 	TEST_ASSERT(!unpaid.research_node(failed, FALSE, TRUE, FALSE), "An unaffordable purchase succeeded")
 	TEST_ASSERT_EQUAL(length(unpaid.experiment_payment_receipts), 0, "A free, starting or failed purchase created refund entitlement")
 	finish(unpaid, first_type)
-	TEST_ASSERT_EQUAL(unpaid.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0, 0, "An unpaid node created a refund")
+	TEST_ASSERT_EQUAL(unpaid.research_points[TECHWEB_POINT_TYPE_GENERIC], 200, "An unpaid node created a refund beyond its completion grant")
 
 /// Crew reward claims must not suppress legitimate web-local refunds on replacement disks.
 /datum/unit_test/voidcrew_experiment_reward_fixture/refund_after_reward/Run()

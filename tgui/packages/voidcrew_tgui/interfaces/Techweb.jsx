@@ -498,7 +498,7 @@ const TechNode = (props) => {
     surveyed_objects,
   } = data;
   const { node, nodetails, nocontrols } = props;
-  const { id, can_unlock, tier } = node;
+  const { id, can_unlock, tier, zone_permission_blocked } = node;
   const {
     name,
     description,
@@ -599,7 +599,7 @@ const TechNode = (props) => {
                 icon="lightbulb"
                 disabled={!can_unlock || tier > 1}
                 tooltip={
-                  !can_unlock || tier > 1
+                  zone_permission_blocked
                     ? 'Authorization declined.'
                     : undefined
                 }
