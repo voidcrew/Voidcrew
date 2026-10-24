@@ -32,6 +32,7 @@
 	light_range = 2
 	light_power = 2.5
 	light_color = COLOR_SOFT_RED
+	// VOIDCREW EDIT REMOVAL - overmap ruin loot: retain the pirate corpse drop without a guaranteed duplicate energy sword
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/melee
 	r_hand = /obj/item/melee/energy/sword/pirate

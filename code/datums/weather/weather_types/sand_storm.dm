@@ -29,6 +29,7 @@
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/sand_storm/telegraph()
+	// VOIDCREW EDIT REMOVAL: Preserve independent sand storm sounds across sites (voidcrew/edits/datums/weather/weather_types/sand_storm.dm).
 	for(var/area/impacted_area as anything in impacted_areas)
 		weak_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
 		strong_sounds[impacted_area] = /datum/looping_sound/active_outside_ashstorm

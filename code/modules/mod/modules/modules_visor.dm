@@ -93,12 +93,12 @@
 
 // VOIDCREW EDIT START - PR #415: Restore built-in MOD night vision.
 /obj/item/mod/module/night/on_activation()
-	ADD_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src))
+	ADD_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src)) // VOIDCREW EDIT: Voidcrew MOD integration: add and remove the single night-vision trait through its scalar API (voidcrew/modules/clothing)
 	mod.wearer.update_sight()
 
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #415: Restore built-in MOD night vision.
 /obj/item/mod/module/night/on_deactivation(display_message = TRUE, deleting = FALSE)
-	REMOVE_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src))
+	REMOVE_TRAIT(mod.wearer, TRAIT_TRUE_NIGHT_VISION, REF(src)) // VOIDCREW EDIT: Voidcrew MOD integration: add and remove the single night-vision trait through its scalar API (voidcrew/modules/clothing)
 	mod.wearer.update_sight()
 // VOIDCREW EDIT END

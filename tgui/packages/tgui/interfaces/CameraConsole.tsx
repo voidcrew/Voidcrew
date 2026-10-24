@@ -110,6 +110,7 @@ export const CameraContent = (props) => {
 const CameraSelector = (props) => {
   const { act, data } = useBackend<Data>();
   const { searchText, setSearchText } = props;
+  // VOIDCREW EDIT: comms displays the active ship camera networks.
   const { activeCamera, networkNames = [] } = data;
   const cameras = selectCameras(data.cameras, searchText);
 

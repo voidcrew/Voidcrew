@@ -26,7 +26,6 @@
 		return FALSE
 	return TRUE
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/action/cooldown/mob_cooldown/skull_launcher/Activate(atom/target)
 	var/turf/target_turf = get_turf(target)
 
@@ -36,18 +35,20 @@
 	// The skull is thrown, so it has to be able to physically get there. Targeting only
 	// needs line of sight, and glass is transparent but solid - without this a legion
 	// stood outside a window drops brood on the far side of the hull.
+	// VOIDCREW EDIT START - Voidcrew legion reach integration: skulls must stop at solid hull obstacles (voidcrew/edits/modules/mob/living/basic/lavaland/legion/spawn_legions.dm)
 	target_turf = clamp_to_reachable_turf(target_turf)
 	if (isnull(target_turf))
 		owner.balloon_alert(owner, "no room!")
 		StartCooldown(0.5 SECONDS)
 		return
+	// VOIDCREW EDIT END
 
 	// Only a dense mob can be in the way now - clamp_to_reachable_turf() already rejected
 	// anything solid. Shuffle off it if there's a free neighbour we can also reach.
 	if (target_turf.is_blocked_turf())
 		var/list/near_turfs = RANGE_TURFS(1, target_turf) - target_turf
 		for (var/turf/check_turf as anything in near_turfs)
-			if (check_turf.is_blocked_turf() || clamp_to_reachable_turf(check_turf) != check_turf)
+			if (check_turf.is_blocked_turf() || clamp_to_reachable_turf(check_turf) != check_turf) // VOIDCREW EDIT: Voidcrew legion reach integration: skulls must stop at solid hull obstacles (voidcrew/edits/modules/mob/living/basic/lavaland/legion/spawn_legions.dm)
 				near_turfs -= check_turf
 		if (length(near_turfs))
 			target_turf = pick(near_turfs)
@@ -72,7 +73,6 @@
 	StartCooldown()
 
 /// Actually create a mob
-// VOIDCREW EDIT END
 /datum/action/cooldown/mob_cooldown/skull_launcher/proc/spawn_skull(turf/spawn_location, target)
 	var/mob/living/basic/legion_brood/brood = new spawn_type(spawn_location)
 	if (istype(brood))

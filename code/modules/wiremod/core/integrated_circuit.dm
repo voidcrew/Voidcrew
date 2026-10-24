@@ -290,10 +290,8 @@ GLOBAL_LIST_EMPTY_TYPED(integrated_circuits, /obj/item/integrated_circuit)
 		to_add.register_shell(shell)
 	return TRUE
 
-//VOIDCREW EDIT ADDITION: hard per-board component restrictions.
-//Overridden rather than driven by a list var so a module can express "no subtype of X"
-//without core having to know the module's type paths. Default is "everything allowed",
-//which is the historic behaviour for every stock board.
+// VOIDCREW EDIT: circuits provides per-board component restrictions; implementation in voidcrew/edits/modules/wiremod/core/integrated_circuit.dm.
+
 /**
  * Adds a component to the circuitboard through a manual action.
  */

@@ -100,14 +100,7 @@
 	else
 		set_light(initial(light_range), initial(light_power))
 
-/**
- * VOIDCREW EDIT ADDITION: four seams so a market that is not bolted to a station's cargo
- * department can still work. Nothing in this fork ever ships SSshuttle.shopping_list -
- * deliveries run off the per-ship cargo console's own cart (voidcrew/modules/cargo/shipping)
- * - and there is no ACCOUNT_CAR budget and no crew member holding ACCESS_CARGO, so an order
- * placed here used to be quoted against the wrong account and then filed into a list nothing
- * reads. Overridden in voidcrew/edits/materials_market.dm.
- */
+// VOIDCREW EDIT: cargo supplies market account and cart hooks; implementation in voidcrew/edits/machinery/materials_market.dm.
 
 /**
  * Find the order purchased either privately or by cargo budget
@@ -115,9 +108,8 @@
  * * [user][mob] - the user who placed this order
  * * is_ordering_private - is the player ordering privatly. If FALSE it means they are using cargo budget
  */
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/proc/find_order(mob/user, is_ordering_private)
-	for(var/datum/supply_order/order in get_order_list())
+	for(var/datum/supply_order/order in get_order_list()) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 		// Must be a Galactic Materials Market order and payed by the null account(if ordered via cargo budget) or by correct user for private purchase
 		if(order.orderer_rank == GALATIC_MATERIAL_ORDER && ( \
 			(!is_ordering_private && isnull(order.paying_account)) || \
@@ -126,7 +118,6 @@
 			return order
 	return null
 
-// VOIDCREW EDIT END
 /obj/machinery/materials_market/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!anchored)
@@ -139,19 +130,19 @@
 	. = list()
 	.["CARGO_CRATE_VALUE"] = CARGO_CRATE_VALUE
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/ui_data(mob/user)
 	. = list()
 
 	//can this player use cargo budget
+	// VOIDCREW EDIT REMOVAL: cargo routes material orders through ship accounts and validates the pooled cart.
 	var/obj/item/card/id/used_id_card
 	if(isliving(user))
 		var/mob/living/living_user = user
 		used_id_card = living_user.get_idcard(TRUE)
-	var/can_buy_via_budget = can_order_on_budget(used_id_card)
+	var/can_buy_via_budget = can_order_on_budget(used_id_card) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 
 	//if no cargo access then force private purchase
-	var/is_ordering_private = ordering_privately(used_id_card)
+	var/is_ordering_private = ordering_privately(used_id_card) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 
 	//find current order based on ordering mode & player
 	var/datum/supply_order/current_order = find_order(user, is_ordering_private)
@@ -222,7 +213,7 @@
 	// this proc uses `is_ordering_private`, so a buyer with no cargo access was quoted against
 	// the budget's balance and then charged their own. Ask the seam that ui_act() bills.
 	var/datum/bank_account/quoted_account = market_account(used_id_card, is_ordering_private)
-	var/balance = quoted_account?.account_balance || 0
+	var/balance = quoted_account?.account_balance || 0 // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 
 	//is market crashing
 	var/market_crashing = FALSE
@@ -243,8 +234,6 @@
 	.["canOrderCargo"] = can_buy_via_budget
 	.["updateTime"] = SSstock_market.next_fire - world.time
 
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/materials_market/ui_act(action, params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
@@ -256,18 +245,20 @@
 	if(isnull(used_id_card))
 		say("No ID Found")
 		return
-	var/can_buy_via_budget = can_order_on_budget(used_id_card)
+	var/can_buy_via_budget = can_order_on_budget(used_id_card) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 
 	//if multiple users open the UI some of them may not have the required access so we recheck
-	var/is_ordering_private = ordering_privately(used_id_card)
+	var/is_ordering_private = ordering_privately(used_id_card) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 
 	switch(action)
 		if("buy")
 			var/material_str = params["material"]
+			// VOIDCREW EDIT START: cargo routes material orders through ship accounts and validates the pooled cart.
 			var/quantity = isnum(params["quantity"]) ? params["quantity"] : text2num(params["quantity"])
 			if(!valid_cargo_order_quantity(quantity, MAX_STACK_SIZE * MAX_STACK_LIMIT))
 				say("Order a whole number of sheets, from 1 to [MAX_STACK_SIZE * MAX_STACK_LIMIT].")
 				return FALSE
+			// VOIDCREW EDIT END
 
 			//find material from its name
 			var/datum/material/material_bought
@@ -277,13 +268,13 @@
 					material_bought = mat
 					break
 			if(!material_bought)
-				return FALSE
+				return FALSE // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 			sheet_to_buy = initial(material_bought.sheet_type)
 			if(!sheet_to_buy)
 				CRASH("Material with no sheet type being sold on materials market!")
 
 			//get available bank account for purchasing
-			var/datum/bank_account/account_payable = market_account(used_id_card, is_ordering_private)
+			var/datum/bank_account/account_payable = market_account(used_id_card, is_ordering_private) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 			if(!account_payable)
 				say("No bank account detected!")
 				return
@@ -302,16 +293,19 @@
 			// We want to count how many stacks of all sheets we're ordering to make sure they don't exceed the limit of 10
 			// If we already have a custom order on SSshuttle, we should add the things to order to that order
 			var/datum/supply_order/current_order = find_order(living_user, is_ordering_private)
+			// VOIDCREW EDIT START: cargo routes material orders through ship accounts and validates the pooled cart.
 			var/list/proposed_contents = current_order ? current_order.pack.contains.Copy() : list()
 			proposed_contents[sheet_to_buy] += quantity
 			if(!valid_material_order_contents(proposed_contents))
 				say("One material order can contain at most [MAX_STACK_LIMIT] stacks across all materials.")
 				return FALSE
+			// VOIDCREW EDIT END
 			if(!isnull(current_order))
 				// Check if this order exceeded the market limit
 				var/prior_sheets = current_order.pack.contains[sheet_to_buy]
 				if(prior_sheets + quantity > SSstock_market.materials_quantity[material_bought] )
 					say("There aren't enough sheets on the market! Please wait for more sheets to be traded before adding more.")
+					// VOIDCREW EDIT REMOVAL: cargo routes material orders through ship accounts and validates the pooled cart.
 					playsound(usr, 'sound/machines/synth/synth_no.ogg', 35, FALSE)
 					return
 
@@ -352,11 +346,13 @@
 			// VOIDCREW EDIT CHANGE - original: `SSshuttle.shopping_list += new_order`. The seam
 			// says no by returning null, and has already told the buyer why.
 			var/list/order_list = get_order_list(announce_refusal = TRUE)
+			// VOIDCREW EDIT START: cargo routes material orders through ship accounts and validates the pooled cart.
 			if(isnull(order_list))
 				qdel(new_order)
 				return
+			// VOIDCREW EDIT END
 			say("Thank you for your purchase! It will arrive on the next cargo shuttle!")
-			order_list += new_order
+			order_list += new_order // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 			return TRUE
 
 		if("toggle_budget")
@@ -369,13 +365,14 @@
 			var/datum/supply_order/current_order = find_order(living_user, is_ordering_private)
 			if(!isnull(current_order))
 				var/list/order_list = get_order_list() // VOIDCREW EDIT CHANGE - original: `SSshuttle.shopping_list`
+				// VOIDCREW EDIT START: cargo routes material orders through ship accounts and validates the pooled cart.
 				if(isnull(order_list))
 					return
 				order_list -= current_order
+				// VOIDCREW EDIT END
 				qdel(current_order)
 				return TRUE
 
-// VOIDCREW EDIT END
 /obj/item/stock_block
 	name = "stock block"
 	desc = "A block of stock. It's worth a certain amount of money, based on a sale on the materials market. Ship it on the cargo shuttle to claim your money."
@@ -408,11 +405,10 @@
 	icon_state = "stock_block_fluid"
 	update_appearance(UPDATE_ICON_STATE)
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stock_block/proc/update_value()
 	if(!SSstock_market.materials_prices[export_mat])
 		return
-	export_value = quantity * (export_mat == /datum/material/plasma ? plasma_export_bid() : SSstock_market.materials_prices[export_mat])
+	export_value = quantity * (export_mat == /datum/material/plasma ? plasma_export_bid() : SSstock_market.materials_prices[export_mat]) // VOIDCREW EDIT: cargo routes material orders through ship accounts and validates the pooled cart.
 	icon_state = "stock_block_liquid"
 	update_appearance(UPDATE_ICON_STATE)
 	visible_message(span_warning("\The [src] becomes liquid!"))
@@ -420,4 +416,3 @@
 
 #undef MAX_STACK_LIMIT
 #undef GALATIC_MATERIAL_ORDER
-// VOIDCREW EDIT END

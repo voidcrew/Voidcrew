@@ -195,6 +195,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 	. = ..()
 
+	// VOIDCREW EDIT REMOVAL - overmap lighting: area illumination must not multiply the ambient encounter appearance (voidcrew/edits/lighting.dm)
 	reg_in_areas_in_z()
 
 	update_base_lighting()

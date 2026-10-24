@@ -240,7 +240,6 @@
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/proc/setup_weather_areas()
 	var/list/affectareas = list()
-	// VOIDCREW EDIT ADDITION START - a site-launched storm already knows its area instances, so
 	// it skips the world-wide get_areas() sweep and never picks up a co-tenant's areas.
 	//
 	// An area-scoped site that owns NOTHING impacts nothing, rather than falling through to the
@@ -253,7 +252,7 @@
 	if(isnull(candidate_areas) && !weather_site?.area_scoped)
 		candidate_areas = get_areas(area_type)
 		log_packed_level_area_sweep()
-	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/datums/weather/weather.dm).
 	for(var/area/selected_area as anything in candidate_areas)
 		affectareas += selected_area
 	for(var/area/protected_area as anything in protected_areas)
@@ -268,6 +267,7 @@
 				continue
 
 			impacted_areas |= affected_area
+			// VOIDCREW EDIT: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/datums/weather/weather.dm).
 			impacted_areas_lookup[affected_area] = TRUE
 
 			if(!(weather_flags & (WEATHER_THUNDER|WEATHER_TURFS)))
@@ -306,6 +306,7 @@
 
 	if(weather_flags & (WEATHER_TURFS))
 		weather_turfs_per_tick = total_impacted_turfs * turf_weather_chance
+		// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/datums/weather/weather.dm).
 		weather_turfs_per_tick = min(weather_turfs_per_tick, turf_act_containers_only ? MAX_CONTAINER_ONLY_TURFS_PER_TICK : MAX_TURFS_PER_TICK)
 	if(weather_flags & (WEATHER_THUNDER))
 		thunder_turfs_per_tick = total_impacted_turfs * turf_thunder_chance
@@ -396,9 +397,9 @@
 // the checks for if a mob should receive alerts, returns TRUE if can
 /datum/weather/proc/can_get_alert(mob/player)
 	var/turf/mob_turf = get_turf(player)
+	// VOIDCREW EDIT START: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/datums/weather/weather.dm).
 	if(isnull(mob_turf))
 		return FALSE
-	// VOIDCREW EDIT ADDITION START - alerts follow the impacted AREAS, not the whole z-level.
 	// clients_by_zlevel alone tells a crew standing in a cave (or, once several places share
 	// a level, on the neighbouring planet) about a surface storm that cannot reach them.
 	// Storms with no area scoping at all keep the plain on-an-impacted-z behaviour.
@@ -415,8 +416,8 @@
 	// (flat co-tenants all sit in the one global /area/space).
 	if(weather_site && !weather_site.contains_turf(mob_turf))
 		return FALSE
-	// VOIDCREW EDIT ADDITION END
 	return TRUE
+	// VOIDCREW EDIT END
 
 /**
  * Returns TRUE if the living mob can be affected by the weather
@@ -435,6 +436,7 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
+	// VOIDCREW EDIT: Use an area membership lookup for site-scoped storm eligibility (voidcrew/edits/datums/weather/weather.dm).
 	if(!impacted_areas_lookup[mob_turf.loc])
 		return
 
@@ -564,6 +566,7 @@
 		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
 	playsound(weather_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
 	weather_turf.visible_message(span_danger("A thunderbolt strikes [weather_turf]!"))
+	// VOIDCREW EDIT REMOVAL: Apply the existing direct lightning strike without a generic explosion that bypasses mob weather eligibility.
 	// A generic explosion cannot honor can_weather_act_mob() and would queue damage
 	// against ordinary fauna on this and adjacent turfs. The direct strike above and
 	// object burn retain the intended lightning effects without bypassing eligibility.
@@ -578,6 +581,7 @@
 		// VOIDCREW EDIT ADDITION - a hard-deleted area is nulled IN PLACE in this list rather
 		// than removed from it, and `as anything` skips the istype filter that would catch it.
 		if(isnull(impacted))
+			// VOIDCREW EDIT: Scope storm effects to their site and bound planetary weather work (voidcrew/edits/datums/weather/weather.dm).
 			continue
 		if(length(overlay_cache))
 			impacted.overlays -= overlay_cache

@@ -41,12 +41,14 @@
 	restore_charge_actions()
 	// VOIDCREW EDIT END
 	StartCooldown()
+	// VOIDCREW EDIT REMOVAL: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	return TRUE
 
 /datum/action/cooldown/mob_cooldown/charge/proc/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
 	do_charge(charger, target_atom, delay, past) // VOIDCREW EDIT - retain the caller's charge snapshot.
 
 /datum/action/cooldown/mob_cooldown/charge/proc/do_charge(atom/movable/charger, atom/target_atom, delay, past)
+	// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	if(QDELETED(src) || QDELETED(owner) || QDELETED(charger) || QDELETED(target_atom) || target_atom == charger)
 		return
 	var/chargeturf = get_turf(target_atom)
@@ -62,6 +64,7 @@
 		finish_charge(charger, notify_owner = FALSE) // VOIDCREW EDIT - only cancel our own loop.
 
 	var/charge_id = ++charge_serial // VOIDCREW EDIT - invalidate sleeping replaced invocations.
+	// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	charging[charger] = charge_id
 	actively_moving = FALSE
 	// VOIDCREW EDIT BEGIN - a start listener may synchronously remove or transfer us.
@@ -79,6 +82,7 @@
 	RegisterSignal(charger, COMSIG_LIVING_DEATH, PROC_REF(charge_end), override = TRUE)
 	// VOIDCREW EDIT - the owner's existing clear_ref handler invokes Remove; preserve it.
 	if(charger != owner)
+		// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 		RegisterSignal(charger, COMSIG_QDELETING, PROC_REF(charge_end), override = TRUE)
 	charger.setDir(dir)
 	do_charge_indicator(charger, target)
@@ -135,6 +139,7 @@
 	if(istype(source, /datum/move_loop))
 		var/datum/move_loop/move_loop_source = source
 		charger = move_loop_source.moving
+	// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	finish_charge(charger)
 
 /datum/action/cooldown/mob_cooldown/charge/update_status_on_signal(mob/source, new_stat, old_stat)
@@ -293,8 +298,10 @@
 /datum/action/cooldown/mob_cooldown/charge/triple_charge/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
 	for(var/i in 0 to 2)
 		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT - cancellation ends the whole sequence.
+			// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 		do_charge(charger, target_atom, charge_delay - 2 * i, charge_past)
+			// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge
 	name = "Hallucination Charge"
@@ -316,50 +323,62 @@
 		return
 	for(var/i in 0 to 2)
 		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 		hallucination_charge(target_atom, 4, 9 - 2 * i, 0, 4, TRUE)
 	for(var/i in 0 to 2)
 		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 		do_charge(charger, target_atom, charge_delay - 2 * i, charge_past)
+			// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/do_charge(atom/movable/charger, atom/target_atom, delay, past)
 	var/disposable_clone = charger != owner // VOIDCREW EDIT - owner may change while the parent sleeps.
 	. = ..()
+	// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	if(disposable_clone)
 		qdel(charger)
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/proc/hallucination_charge(atom/target_atom, clone_amount, delay, past, radius, use_self)
 	var/mob/caster = owner // VOIDCREW EDIT - a synchronous movement/start callback can change owner.
 	var/starting_angle = rand(1, 360)
+	// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 	if(!radius || QDELETED(caster) || QDELETED(target_atom))
 		return
 	var/angle_difference = 360 / clone_amount
 	var/self_placed = FALSE
 	for(var/i = 1 to clone_amount)
 		if(QDELETED(src) || QDELETED(caster) || owner != caster || QDELETED(target_atom)) // VOIDCREW EDIT
+			// VOIDCREW EDIT: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 		var/angle = (starting_angle + angle_difference * i)
 		var/turf/place = locate(target_atom.x + cos(angle) * radius, target_atom.y + sin(angle) * radius, target_atom.z)
 		if(!place)
 			continue
 		if(use_self && !self_placed)
+			// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			caster.forceMove(place)
 			if(QDELETED(src) || QDELETED(caster) || owner != caster) // VOIDCREW EDIT
 				return
+			// VOIDCREW EDIT END
 			self_placed = TRUE
 			continue
 		var/mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination/our_clone = new /mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination(place)
+		// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 		our_clone.appearance = caster.appearance
 		our_clone.name = "[caster]'s hallucination"
 		our_clone.alpha = 127.5
 		our_clone.move_through_mob = caster
+		// VOIDCREW EDIT END
 		our_clone.spawn_blood = spawn_blood
 		INVOKE_ASYNC(src, PROC_REF(do_charge), our_clone, target_atom, delay, past)
 		if(QDELETED(src) || QDELETED(caster) || owner != caster) // VOIDCREW EDIT
+			// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 	if(use_self)
 		do_charge(caster, target_atom, delay, past)
+			// VOIDCREW EDIT END
 
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/hit_target(atom/movable/source, atom/A, damage_dealt)
 	var/applied_damage = charge_damage
@@ -378,6 +397,8 @@
 /datum/action/cooldown/mob_cooldown/charge/hallucination_charge/hallucination_surround/charge_sequence(atom/movable/charger, atom/target_atom, delay, past)
 	for(var/i in 0 to 4)
 		if(QDELETED(src) || owner != charger) // VOIDCREW EDIT
+			// VOIDCREW EDIT START: Keep charge ownership and cleanup valid across cancellation and yields (voidcrew/edits/datums/actions/mobs/charge.dm).
 			return
 		hallucination_charge(target_atom, 2, 8, 2, 2, FALSE)
 		do_charge(charger, target_atom, charge_delay, charge_past)
+			// VOIDCREW EDIT END

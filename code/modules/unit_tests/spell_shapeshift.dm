@@ -30,6 +30,7 @@
 	var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 	dummy.mind_initialize()
 
+	// VOIDCREW EDIT START: antag_ruins excludes identity-copying disguises from bare-trigger tests.
 	var/list/spell_types = subtypesof(/datum/action/cooldown/spell/shapeshift)
 	// VOIDCREW EDIT: the vestige mimic disguises are identity-copying
 	// shapeshifts - the shape is built from an appearance borrowed through the
@@ -37,6 +38,7 @@
 	// borrowed correctly refuses to transform and this harness can't drive them.
 	spell_types -= typesof(/datum/action/cooldown/spell/shapeshift/vestige_mimic)
 	for(var/spell_type in spell_types)
+	// VOIDCREW EDIT END
 		// Test all shapeshifts as if they were on the mob's body
 		var/datum/action/cooldown/spell/shapeshift/bodybound_shift = new spell_type(dummy)
 		bodybound_shift.Grant(dummy)
@@ -117,11 +119,13 @@
 /datum/unit_test/shapeshift_health
 
 /datum/unit_test/shapeshift_health/Run()
+	// VOIDCREW EDIT START: antag_ruins excludes identity-copying disguises from bare-trigger tests.
 	var/list/spell_types = subtypesof(/datum/action/cooldown/spell/shapeshift)
 	// VOIDCREW EDIT: see shapeshift_spell - identity-copying vestige disguises
 	// can't be driven by a bare Trigger().
 	spell_types -= typesof(/datum/action/cooldown/spell/shapeshift/vestige_mimic)
 	for(var/spell_type in spell_types)
+	// VOIDCREW EDIT END
 		var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 		var/datum/action/cooldown/spell/shapeshift/shift_spell = new spell_type(dummy)
 		shift_spell.Grant(dummy)

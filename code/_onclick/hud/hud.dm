@@ -192,6 +192,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	// A hud can outlive its mob (and plane groups can be rebuilt while detached), and this
 	// runs at the very top of build_planes_offset() - runtiming here skips the whole
 	// offset rebuild, which is how clients end up rendering to planes that have no master.
+	// VOIDCREW EDIT: Tolerate a HUD that outlives its mob during plane offset rebuilding.
 	return should_sight_scale(mymob?.sight)
 
 // VOIDCREW EDIT END
@@ -279,6 +280,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 /datum/hud/proc/build_plane_groups(starting_offset, ending_offset)
 	for(var/group_key in master_groups)
 		var/datum/plane_master_group/group = master_groups[group_key]
+		// VOIDCREW EDIT START: Refresh newly built HUD planes after live z-level growth (voidcrew/edits/_onclick/hud).
 		var/list/atom/movable/screen/plane_master/new_planes = group.build_plane_masters(starting_offset, ending_offset)
 		if(!length(new_planes))
 			continue
@@ -287,6 +289,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 		// Match what group creation does after show_hud(), so the planes we just added get the same multiz
 		// scaling and in/out of bounds treatment a client who connected after the load would have gotten
 		group.build_planes_offset(src, current_plane_offset)
+		// VOIDCREW EDIT END
 
 /// Returns the plane master that matches the input plane from the passed in group
 /datum/hud/proc/get_plane_master(plane, group_key = PLANE_GROUP_MAIN)
@@ -812,21 +815,25 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!length(actions))
 		palette.set_expanded(FALSE)
 
+// VOIDCREW EDIT REMOVAL: Disable the upstream palette layout replaced by voidcrew/edits/_onclick/hud, preserving the existing override chain.
 ///Commenting out due to this being replaced in 'voidcrew\edits\_onclick\hud' and the return ..() requirement
 // /datum/action_group/palette/refresh_actions()
 // 	var/atom/movable/screen/button_palette/palette = owner.toggle_palette
 // 	var/atom/movable/screen/palette_scroll/scroll_down = owner.palette_down
 // 	var/atom/movable/screen/palette_scroll/scroll_up = owner.palette_up
 
+// VOIDCREW EDIT REMOVAL: Disable the upstream palette layout replaced by voidcrew/edits/_onclick/hud, preserving the existing override chain.
 // 	var/actions_above = round((owner.listed_actions.size() - 1) / owner.listed_actions.column_max)
 // 	north_offset = initial(north_offset) + actions_above
 
+// VOIDCREW EDIT REMOVAL: Disable the upstream palette layout replaced by voidcrew/edits/_onclick/hud, preserving the existing override chain.
 // 	palette.screen_loc = ui_action_palette_offset(actions_above)
 // 	var/action_count = length(owner?.mymob?.actions)
 // 	var/our_row_count = round((length(actions) - 1) / column_max)
 // 	if(!action_count)
 // 		palette.screen_loc = null
 
+// VOIDCREW EDIT REMOVAL: Disable the upstream palette layout replaced by voidcrew/edits/_onclick/hud, preserving the existing override chain.
 // 	if(palette.expanded && action_count && our_row_count >= max_rows)
 // 		scroll_down.screen_loc = ui_palette_scroll_offset(actions_above)
 // 		scroll_up.screen_loc = ui_palette_scroll_offset(actions_above)
@@ -834,6 +841,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 // 		scroll_down.screen_loc = null
 // 		scroll_up.screen_loc = null
 
+// VOIDCREW EDIT REMOVAL: Disable the upstream palette layout replaced by voidcrew/edits/_onclick/hud, preserving the existing override chain.
 // 	return ..()
 
 /datum/action_group/palette/ButtonNumberToScreenCoords(number, landing)

@@ -10,12 +10,13 @@ SUBSYSTEM_DEF(weather)
 	var/list/processing = list()
 	// VOIDCREW EDIT REMOVAL START - the four "[z]"-keyed scheduler maps (eligible_zlevels,
 	// weather_types_by_zlevel, next_hit_by_zlevel, random_weather_by_zlevel) are replaced by
-	// the /datum/weather_site registry below, so several places can share a z-level and each
+	// the registry in voidcrew/edits/controllers/subsystem/weather.dm, so several places can share a z-level and each
 	// keep its own climate, storm and cooldown. See voidcrew/datums/weather_site.dm.
 	// VOIDCREW EDIT REMOVAL END
 
 /datum/controller/subsystem/weather/fire(resumed = FALSE)
 	// process active weather
+	// VOIDCREW EDIT START: Schedule storms per site and resume bounded weather work across ticks (voidcrew/edits/controllers/subsystem/weather.dm).
 	if(!resumed)
 		currentrun = processing.Copy()
 	var/list/currentrun_cache = currentrun
@@ -24,12 +25,14 @@ SUBSYSTEM_DEF(weather)
 		if(QDELETED(weather_event) || !(weather_event in processing) || !length(weather_event.subsystem_tasks) || weather_event.stage != MAIN_STAGE)
 			currentrun_cache.len--
 			resumed = FALSE
+	// VOIDCREW EDIT END
 			continue
 
 		if(weather_event.subsystem_tasks[weather_event.task_index] == SSWEATHER_MOBS)
 			if(!resumed)
 				// Only collect mobs on the impacted z-levels, the whole world's mob list gets very large with populated planets.
 				// The z index is built once per fire cycle and shared by every storm processing this fire.
+				// VOIDCREW EDIT START: Schedule storms per site and resume bounded weather work across ticks (voidcrew/edits/controllers/subsystem/weather.dm).
 				if(mobs_by_z_cache_fire != times_fired)
 					mobs_by_z_cache = list()
 					mobs_by_z_cache_fire = times_fired
@@ -56,6 +59,7 @@ SUBSYSTEM_DEF(weather)
 					if(z_mobs)
 						eligible_mobs += z_mobs
 				weather_event.current_mobs = eligible_mobs
+				// VOIDCREW EDIT END
 			var/list/current_mobs_cache = weather_event.current_mobs // cache for performance
 			while(current_mobs_cache.len)
 				var/mob/living/target = current_mobs_cache[current_mobs_cache.len]
@@ -97,8 +101,10 @@ SUBSYSTEM_DEF(weather)
 
 		// Do not remove an event before all of its tasks complete. If MC_TICK_CHECK
 		// returns above, this remains the last entry and the next fire resumes it.
+		// VOIDCREW EDIT START: Schedule storms per site and resume bounded weather work across ticks (voidcrew/edits/controllers/subsystem/weather.dm).
 		currentrun_cache.len--
 		resumed = FALSE
+		// VOIDCREW EDIT END
 
 	// VOIDCREW EDIT REPLACEMENT START - random weather is scheduled per site, not per z-level.
 	// One storm per SITE replaces the old one-storm-per-z rule, so two sites sharing a
@@ -186,11 +192,13 @@ SUBSYSTEM_DEF(weather)
 
 	var/datum/weather/W = new weather_datum_type(z_levels, weather_data, site) // VOIDCREW EDIT - pass the scheduling site through
 	W.telegraph()
+	// VOIDCREW EDIT: Schedule storms per site and resume bounded weather work across ticks (voidcrew/edits/controllers/subsystem/weather.dm).
 	return W
 
 // VOIDCREW EDIT ADDITION START - the cooldown callback is per site now.
 /// VOIDCREW EDIT: kept for z-level-minded callers; addresses the level's own site.
 /datum/controller/subsystem/weather/proc/make_eligible(z)
+	// VOIDCREW EDIT: Schedule storms per site and resume bounded weather work across ticks (voidcrew/edits/controllers/subsystem/weather.dm).
 	make_site_eligible(get_level_weather_site(z))
 // VOIDCREW EDIT ADDITION END
 

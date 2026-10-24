@@ -1,7 +1,6 @@
 // -------------------------
 //  SmartFridge.  Much todo
 // -------------------------
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge
 	name = "smartfridge"
 	desc = "Keeps cold things cold and hot things cold."
@@ -35,7 +34,6 @@
 	var/vend_sound = 'sound/machines/machine_vend.ogg'
 	layout_prefs_used = /datum/preference/choiced/tgui_layout/smartfridge
 
-// VOIDCREW EDIT END
 /obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
 	create_reagents(100, NO_REACT)
@@ -231,7 +229,6 @@
 /obj/machinery/smartfridge/proc/visible_items()
 	return contents.len - 1 // Exclude circuitboard
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge/update_overlays()
 	. = ..()
 
@@ -247,13 +244,14 @@
 				content_level += "-3"
 		. += mutable_appearance(icon, content_level)
 
+	// VOIDCREW EDIT START: research disk storage omits the separate glass overlay.
 	if(has_glass_overlay)
 		. += mutable_appearance(icon, "[base_icon_state]-glass[(machine_stat & BROKEN) ? "-broken" : ""]")
+	// VOIDCREW EDIT END
 	if(has_emissive && powered() && !(machine_stat & BROKEN))
 		. += mutable_appearance(icon, "[base_icon_state]-powered")
 		. += emissive_appearance(icon, "[base_icon_state]-light-mask", src, alpha = src.alpha)
 
-// VOIDCREW EDIT END
 /obj/machinery/smartfridge/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
 		if(BRUTE)
@@ -798,7 +796,6 @@
 // ----------------------------
 // Disk """fridge"""
 // ----------------------------
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/smartfridge/disks
 	name = "disk compartmentalizer"
 	desc = "A machine capable of storing a variety of disks. Denoted by most as the DSU (disk storage unit)."
@@ -808,10 +805,9 @@
 	pass_flags = PASSTABLE
 	can_atmos_pass = ATMOS_PASS_YES
 	visible_contents = FALSE
-	has_glass_overlay = FALSE
+	has_glass_overlay = FALSE // VOIDCREW EDIT: research disk storage omits the separate glass overlay.
 	has_emissive = FALSE
 	base_build_path = /obj/machinery/smartfridge/disks
 
-// VOIDCREW EDIT END
 /obj/machinery/smartfridge/disks/accept_check(obj/item/weapon)
 	return istype(weapon, /obj/item/disk)

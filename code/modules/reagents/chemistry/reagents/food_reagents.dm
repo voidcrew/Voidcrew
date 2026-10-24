@@ -413,9 +413,11 @@
 		var/turf/open/exposed_open_turf = exposed_turf
 		exposed_open_turf.MakeSlippery(wet_setting=TURF_WET_ICE, min_wet_time=100, wet_time_to_add=reac_volume SECONDS) // Is less effective in high pressure/high heat capacity environments. More effective in low pressure.
 		var/datum/gas_mixture/turf_air = exposed_open_turf.return_air() // VOIDCREW EDIT: written to below; leaves the shared planetary mix
+		// VOIDCREW EDIT START - planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 		var/temperature = turf_air.temperature
 		var/heat_capacity = turf_air.heat_capacity()
 		turf_air.temperature = max(turf_air.temperature - ((temperature - TCMB) * (heat_capacity * reac_volume * specific_heat) / (heat_capacity + reac_volume * specific_heat)) / heat_capacity, TCMB) // Exchanges environment temperature with reagent. Reagent is at 2.7K with a heat capacity of 40J per unit.
+		// VOIDCREW EDIT END
 	if(reac_volume < 5)
 		return
 	for(var/mob/living/basic/slime/exposed_slime in exposed_turf)
