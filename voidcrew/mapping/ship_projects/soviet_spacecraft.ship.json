@@ -8,20 +8,128 @@
     "Prefix": "_maps/voidcrew/ships/",
     "Port": "ship",
     "Suffix": "soviet_spacecraft_soyuz",
-    "Slots": null,
+    "Slots": [
+      "solars",
+      "docking_module",
+      "living_module",
+      "engineering_module"
+    ],
     "Themes": [
       {
         "ID": "standard",
         "Name": "Soyuz",
         "Suffix": "soviet_spacecraft_soyuz",
-        "Slots": null,
+        "Slots": [
+          "solars",
+          "docking_module",
+          "living_module",
+          "engineering_module"
+        ],
         "Default": true
       }
     ],
-    "Modules": null
+    "Modules": [
+      {
+        "ID": "solars_basic",
+        "Name": "No Solars",
+        "Slot": "solars",
+        "File": "soviet_spacecraft/no_solars.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "solars_broken",
+        "Name": "Solars Broken",
+        "Slot": "solars",
+        "File": "soviet_spacecraft/solars_broken.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "solars_working",
+        "Name": "Solars Working",
+        "Slot": "solars",
+        "File": "soviet_spacecraft/solars_working.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "docking_module_basic",
+        "Name": "Docking module",
+        "Slot": "docking_module",
+        "File": "soviet_spacecraft/docking_module_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "living_module_basic",
+        "Name": "Living module",
+        "Slot": "living_module",
+        "File": "soviet_spacecraft/living_module_basic.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "engineering_module_basic",
+        "Name": "Liquid-propellant type",
+        "Slot": "engineering_module",
+        "File": "soviet_spacecraft/liquid_propellant_type.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": true
+      },
+      {
+        "ID": "another",
+        "Name": "another",
+        "Slot": "living_module",
+        "File": "soviet_spacecraft/another.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "anotheer",
+        "Name": "anotheer",
+        "Slot": "docking_module",
+        "File": "soviet_spacecraft/anotheer.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "what_the_matter",
+        "Name": "Electric propulsion type",
+        "Slot": "engineering_module",
+        "File": "soviet_spacecraft/electric_propulsion_type.dmm",
+        "Themes": [
+          "standard"
+        ],
+        "Default": false
+      }
+    ]
   },
   "Crew": 4,
   "Hidden": false,
   "Cost": 0,
+  "PartCosts": {
+    "module/anotheer": {},
+    "module/another": {},
+    "module/solars_broken": {},
+    "module/solars_working": {},
+    "module/what_the_matter": {}
+  },
   "PortDirection": 2
 }

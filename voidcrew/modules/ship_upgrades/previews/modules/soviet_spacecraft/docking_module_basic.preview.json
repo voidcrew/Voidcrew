@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/docking_module_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_docking_module_basic_standard.png",
+     "src_md5": "5cd3da698c9c2f0bec94bdc15fd7d01a",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

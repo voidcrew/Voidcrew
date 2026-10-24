@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/electric_propulsion_type.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_electric_propulsion_type_standard.png",
+     "src_md5": "9262ab408731ceb0b401cb87bc01a662",
+     "width": 12
+    }
+   },
+   "width": 12
+  }
+ },
+ "tile_px": 32
+}

@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/no_solars.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 37,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 37,
+     "png": "soviet_spacecraft_no_solars_standard.png",
+     "src_md5": "af3f37d62708ddec22f636b0f7474703",
+     "width": 28
+    }
+   },
+   "width": 28
+  }
+ },
+ "tile_px": 32
+}

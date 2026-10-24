@@ -1,0 +1,30 @@
+{
+ "hulls": {
+  "soviet_spacecraft_soyuz": {
+   "height": 37,
+   "png": "ship_soviet_spacecraft_soyuz.png",
+   "slots": {
+    "docking_module": [
+     24,
+     16
+    ],
+    "engineering_module": [
+     1,
+     15
+    ],
+    "living_module": [
+     14,
+     16
+    ],
+    "solars": [
+     5,
+     1
+    ]
+   },
+   "src_md5": "a1d203d330bcfe79d3144780e9612df3",
+   "width": 32
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

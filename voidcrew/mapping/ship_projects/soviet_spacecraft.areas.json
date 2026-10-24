@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "Ship": "/datum/map_template/shuttle/voidcrew/soviet_spacecraft",
+  "Areas": [
+    {
+      "Path": "/area/shuttle/voidcrew/soviet_spacecraft/engine_module",
+      "Name": "Engine module",
+      "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/soviet_spacecraft/docking_module",
+      "Name": "Docking module",
+      "IconState": "quart"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/soviet_spacecraft/solars_area",
+      "Name": "Solars area",
+      "IconState": "engie"
+    }
+  ]
+}

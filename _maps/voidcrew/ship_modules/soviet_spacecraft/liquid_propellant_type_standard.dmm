@@ -1,0 +1,266 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ajF" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"arZ" = (
+/obj/machinery/microwave/engineering,
+/obj/structure/table/reinforced,
+/turf/template_noop,
+/area/template_noop)
+"cyA" = (
+/obj/structure/closet/crate/engineering/electrical,
+/turf/template_noop,
+/area/template_noop)
+"cIf" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight,
+/turf/template_noop,
+/area/template_noop)
+"cOU" = (
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/template_noop,
+/area/template_noop)
+"dmN" = (
+/obj/machinery/door/poddoor{
+	id = "door_engine_lockdown"
+	},
+/turf/template_noop,
+/area/template_noop)
+"fnY" = (
+/obj/machinery/suit_storage_unit/engine,
+/turf/template_noop,
+/area/template_noop)
+"fuc" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"fNH" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"ghh" = (
+/turf/closed/wall/mineral/titanium,
+/area/template_noop)
+"gNP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/template_noop,
+/area/template_noop)
+"gPo" = (
+/obj/machinery/door/airlock/engineering,
+/turf/template_noop,
+/area/template_noop)
+"hsc" = (
+/obj/item/toy/figure/engineer,
+/obj/structure/table/reinforced,
+/turf/template_noop,
+/area/template_noop)
+"hEx" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/item/reagent_containers/cup/bucket/wooden,
+/turf/template_noop,
+/area/template_noop)
+"jAw" = (
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"loY" = (
+/obj/machinery/button/door/directional/north{
+	id = "door_engine_lockdown"
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/effect/mapping_helpers/broken_machine,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/template_noop,
+/area/template_noop)
+"lKB" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"lXq" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/item/weldingtool/largetank,
+/turf/template_noop,
+/area/template_noop)
+"mai" = (
+/obj/machinery/atmospherics/components/tank/plasma,
+/turf/template_noop,
+/area/template_noop)
+"nPj" = (
+/turf/template_noop,
+/area/template_noop)
+"nRa" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"pek" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"rpE" = (
+/obj/machinery/door/airlock/engineering,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"sMk" = (
+/obj/structure/table/reinforced,
+/obj/item/multitool,
+/obj/item/stack/cable_coil/thirty,
+/turf/template_noop,
+/area/template_noop)
+"tbu" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"uRn" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/power/shuttle_engine/heater{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"wRQ" = (
+/obj/item/clothing/accessory/armband/engine,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+lKB
+lKB
+lKB
+tbu
+jAw
+ajF
+lKB
+lKB
+nRa
+"}
+(2,1,1) = {"
+uRn
+uRn
+uRn
+ghh
+dmN
+ghh
+uRn
+uRn
+uRn
+"}
+(3,1,1) = {"
+gNP
+gNP
+gNP
+ghh
+loY
+ghh
+gNP
+gNP
+gNP
+"}
+(4,1,1) = {"
+fuc
+fuc
+nPj
+ghh
+gPo
+ghh
+nPj
+fuc
+fuc
+"}
+(5,1,1) = {"
+mai
+pek
+sMk
+ghh
+nPj
+ghh
+cOU
+pek
+mai
+"}
+(6,1,1) = {"
+lXq
+nPj
+hsc
+ghh
+nPj
+ghh
+arZ
+nPj
+hEx
+"}
+(7,1,1) = {"
+hEx
+nPj
+cIf
+ghh
+nPj
+ghh
+cyA
+nPj
+lXq
+"}
+(8,1,1) = {"
+nPj
+nPj
+fNH
+rpE
+fNH
+rpE
+fNH
+nPj
+nPj
+"}
+(9,1,1) = {"
+nPj
+nPj
+fNH
+ghh
+fNH
+ghh
+fNH
+wRQ
+nPj
+"}
+(10,1,1) = {"
+nPj
+nPj
+fNH
+ghh
+fNH
+ghh
+fNH
+nPj
+nPj
+"}
+(11,1,1) = {"
+nPj
+fNH
+fNH
+ghh
+fNH
+ghh
+fNH
+fNH
+nPj
+"}
+(12,1,1) = {"
+nPj
+fnY
+fnY
+ghh
+fNH
+ghh
+fnY
+fnY
+nPj
+"}

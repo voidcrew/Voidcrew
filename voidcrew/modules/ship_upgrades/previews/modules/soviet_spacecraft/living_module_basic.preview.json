@@ -1,0 +1,26 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/living_module_basic.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_living_module_basic_standard.png",
+     "src_md5": "6857a95d4636a064a2ea8be3231d2718",
+     "width": 9
+    }
+   },
+   "width": 9
+  }
+ },
+ "tile_px": 32
+}

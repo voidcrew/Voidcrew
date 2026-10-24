@@ -1,0 +1,156 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"amK" = (
+/obj/machinery/mineral/ore_redemption,
+/turf/template_noop,
+/area/template_noop)
+"awk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"baY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"blI" = (
+/obj/structure/ore_box,
+/turf/template_noop,
+/area/template_noop)
+"cOU" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/template_noop,
+/area/template_noop)
+"dtl" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/template_noop,
+/area/template_noop)
+"fxl" = (
+/obj/vehicle/sealed/mecha/ripley/mining,
+/turf/template_noop,
+/area/template_noop)
+"gUy" = (
+/obj/machinery/airalarm/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"hMX" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/template_noop,
+/area/template_noop)
+"kXy" = (
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/template_noop,
+/area/template_noop)
+"lTm" = (
+/turf/template_noop,
+/area/template_noop)
+"pqv" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"prH" = (
+/obj/structure/table/reinforced,
+/turf/template_noop,
+/area/template_noop)
+"rpf" = (
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/template_noop,
+/area/template_noop)
+"tDq" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+"tRV" = (
+/obj/machinery/door/poddoor/shutters/window,
+/turf/template_noop,
+/area/template_noop)
+"vzp" = (
+/turf/closed/wall/mineral/titanium,
+/area/template_noop)
+"wAz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+lTm
+lTm
+lTm
+wAz
+lTm
+lTm
+pqv
+"}
+(2,1,1) = {"
+lTm
+fxl
+tRV
+wAz
+lTm
+lTm
+lTm
+"}
+(3,1,1) = {"
+kXy
+rpf
+tRV
+wAz
+lTm
+lTm
+prH
+"}
+(4,1,1) = {"
+cOU
+rpf
+tRV
+wAz
+lTm
+lTm
+prH
+"}
+(5,1,1) = {"
+vzp
+vzp
+vzp
+tDq
+lTm
+lTm
+blI
+"}
+(6,1,1) = {"
+lTm
+gUy
+lTm
+awk
+lTm
+lTm
+blI
+"}
+(7,1,1) = {"
+lTm
+dtl
+dtl
+baY
+amK
+hMX
+lTm
+"}
+(8,1,1) = {"
+lTm
+lTm
+prH
+lTm
+prH
+lTm
+lTm
+"}

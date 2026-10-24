@@ -484,7 +484,7 @@ GLOBAL_LIST_EMPTY(imprinted_vats_by_ckey)
 		newreal_name = imprint_name,
 		newblood_type = imprint_dna.blood_type,
 		mrace = imprint_dna.species,
-		newfeatures = imprint_dna.features.Copy(),
+		newfeatures = imprint_dna.features,
 	)
 	clone.fully_replace_character_name(clone.real_name, imprint_name)
 	clone.age = imprint_age
