@@ -33,7 +33,7 @@ Talk to a main trader and choose **Contracts** to see their postings. Each board
 
 Outpost jobs include supply requests, salvage recoveries, kill contracts, and courier runs. Halcyon also posts kitchen orders and fishing requests. Quartermain's board asks for recovered MOD cores, salvaged MOD control units, and certain recovered modules. Take a control unit off before handing it over.
 
-Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen orders, fish, and bear hides are also accepted. Qualifying goods already in your hold can be delivered. Kitchen orders require player-cooked dishes, rather than factory food or meals bought from an outpost kitchen.
+Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen orders, fish, and bear hides are also accepted. Qualifying goods already in your hold can be delivered. Legion cores must still be fresh or stabilized when you hand them in. Kitchen orders require player-cooked dishes, rather than factory food or meals bought from an outpost kitchen.
 
 Contracts can pay a mix of **credits, trade vouchers, and named goods from trader stock**. Some pay entirely in currency. Listed goods are set aside when your crew accepts; if an item is unavailable then, currency replaces it. Read the pay line again after accepting.
 

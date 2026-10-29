@@ -129,7 +129,7 @@ The main trader's **Contracts** menu is a second, separate mission board. Up to 
 
 The mix is supply requests, salvage and kill contracts on ruins, and courier runs hauling a sealed freight pod to a *different* outpost. Halcyon also posts angling requests and **kitchen orders**, because it has a fishing stall and a diner. A kitchen order wants dishes cooked by an actual person at a stated recipe depth. Factory food is refused at turn-in, and so are plates bought off Roux's own counter, so somebody on your crew genuinely has to cook.
 
-Supply requests ask for fauna harvests, ruin finds, salvage, raw telecrystal or glacial cores, rather than ore or sheets. Kitchen orders, fish and hides remain. Quartermain's fitter contracts ask for recovered MOD cores, control units or modules. Stored qualifying goods can be delivered.
+Supply requests ask for fauna harvests, ruin finds, salvage, raw telecrystal or glacial cores, rather than ore or sheets. Kitchen orders, fish and hides remain. Quartermain's fitter contracts ask for recovered MOD cores, control units or modules. Stored qualifying goods can be delivered, except that Vex only takes a legion core that is still fresh or was stabilized.
 
 Check the offered reward before accepting. Higher-zone targeted work requires [zone reputation](zone-reputation.md), and rare completion prizes come from eligible guarded work rather than routine supply orders.
 

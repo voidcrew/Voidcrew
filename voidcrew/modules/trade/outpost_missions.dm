@@ -33,6 +33,17 @@
 	)
 	return item_type in eligible_types
 
+/**
+ * A monster core that has rotted. Core buyers want one that is still fresh or
+ * was stabilized in time. Always check the very object being handed over, at
+ * hand-over, since a core can rot while it sits on a pad.
+ */
+/proc/is_dead_monster_core(obj/item/item)
+	if(!istype(item, /obj/item/organ/monster_core))
+		return FALSE
+	var/obj/item/organ/monster_core/core = item
+	return core.inert
+
 /// Fail closed on unsupported types or incomplete request rows.
 /datum/outpost_shop/proc/get_procurement_requests()
 	var/list/eligible_requests = list()
@@ -70,6 +81,14 @@
 /datum/mission_objective/deliver/procurement/can_turn_in(obj/item/item)
 	if(completed || !matches_ask(item))
 		return FALSE
+	// Still the right goods (a near miss for the refusal), but no good to anyone.
+	if(is_dead_monster_core(item))
+		return FALSE
+	return ..()
+
+/datum/mission_objective/deliver/procurement/describe_turn_in_failure(obj/item/item)
+	if(is_dead_monster_core(item) && matches_ask(item))
+		return "That core's gone dead."
 	return ..()
 
 /datum/mission_objective/deliver/procurement/accept_item(obj/item/item, atom/reward_anchor)
