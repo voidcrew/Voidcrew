@@ -38,7 +38,8 @@ export const DestructiveAnalyzer = (props) => {
       <Window width={400} height={260} title="Destructive Analyzer">
         <Window.Content>
           <NoticeBox textAlign="center" danger>
-            Not connected to a server. Please sync one using a multitool.
+            {/* VOIDCREW EDIT: research - state only, no linking how-to */}
+            No research server.
           </NoticeBox>
         </Window.Content>
       </Window>
