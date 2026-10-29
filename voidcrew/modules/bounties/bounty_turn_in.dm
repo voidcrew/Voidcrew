@@ -35,6 +35,42 @@
 
 // ===== TURNING IN =====
 
+/// Bind field work before the criminal or its proof can be carried to another band.
+/datum/criminal_bounty/proc/board_note_work_zone(mob/living/basic/bounty_criminal/target)
+	if(!is_open() || !record || record.board_work_zone || target != criminal() || record.status != BOUNTY_RECORD_WANTED)
+		return
+	var/band = get_zone_type_for_player_turf(get_turf(target))
+	if(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		record.board_work_zone = band
+
+/datum/criminal_bounty/proc/board_reputation_family()
+	return ZONE_FAMILY_CRIMINAL_BOUNTY
+
+/datum/criminal_bounty/proc/board_reputation_difficulty()
+	if(record?.archetype == BOUNTY_ARCHETYPE_BOSS)
+		return MISSION_DIFFICULTY_HARD
+	switch(record?.tier)
+		if(BOUNTY_TIER_PETTY)
+			return MISSION_DIFFICULTY_EASY
+		if(BOUNTY_TIER_WANTED)
+			return MISSION_DIFFICULTY_MEDIUM
+		if(BOUNTY_TIER_MOST_WANTED)
+			return MISSION_DIFFICULTY_HARD
+	return null
+
+/// Called only by the successful paying claim, before detachment, closing signals or rewards.
+/datum/criminal_bounty/proc/board_claim_zone_work(obj/structure/overmap/ship/ship)
+	if(!record || record.board_reputation_claimed || record.status != BOUNTY_RECORD_WANTED \
+		|| !(record.board_work_zone in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return 0
+	var/difficulty = board_reputation_difficulty()
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	if(!difficulty || QDELETED(crew))
+		return 0
+	var/family = board_reputation_family()
+	record.board_reputation_claimed = TRUE
+	return crew.claim_zone_work(family, record.board_work_zone, difficulty, "bounty:[record.id]:[family]")
+
 /**
  * `ship` turns this bounty in at `pad`: the criminal (or its proof of death) on the pad's own tile,
  * the pad bolted and aboard. Returns list(credits, vouchers) paid, or why not (a short phrase).
@@ -127,6 +163,8 @@
 	// Closing lets go of the record and the hunters, so everything read from them is read now
 	var/poster_text = (live && share >= 100 && claimed?.tier >= BOUNTY_TIER_WANTED) ? board_poster_text(ship) : null
 	var/list/already_told = most_wanted ? hunter_ships() : null
+	if(pay[1] > 0 || pay[2] > 0)
+		board_claim_zone_work(ship)
 
 	// Take it: the criminal is frozen for the beam and stops being this bounty's, so closing the bounty doesn't remove it
 	if(criminal)

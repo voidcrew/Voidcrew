@@ -49,7 +49,7 @@ Pay and they disengage, and that ship leaves you alone for five minutes. Refuse,
 
 Refusal in the Lawless Zone starts a staged assault rather than a straight shootout. About five seconds after the rejection they interdict you, announce the boarding, and roughly thirty seconds later the first pod lands.
 
-It runs in **three waves** with a thirty-second breather between each, the wave sizes scaled to how many crew you had aboard when it started. Between waves the captain taunts you over comms. Repel all three and the enemy commander comes down personally by drop pod.
+There is **one boarding wave**, sized to the crew aboard when it starts. Repel it in red space and the enemy commander comes down personally by drop pod. Their health and damage follow the spawn zone; see [Hostile Fauna & Elites](threats-and-elites.md).
 
 At the same time, if they can, they will shoot: lasers while your shields hold, missiles once they drop, and boarding pods only when your shields are down. The shield wall would swat the pods out of the sky. There is a hard cap of ten hostile boarders aboard your ship at once.
 
@@ -61,9 +61,9 @@ A pirate ship becomes boardable when it is disabled, when it is interdicted, or 
 
 Two prizes are on the table.
 
-**The ship itself.** The pirate captain carries a **ship authorization key** and drops it where they die. Insert that key into the pirate ship's helm console and the vessel becomes yours to fly. If the whole crew is killed and nobody claims it in time, the ship is abandoned and drifts as a derelict. Still claimable, but you were on a clock.
+**The ship itself.** The pirate captain carries a **ship authorization key** and drops it where they die. Insert that key into the pirate ship's helm console and the vessel becomes yours to fly. Only your [crew leader](zone-reputation.md#your-crew-and-its-ships) can add it to your existing crew; another member must leave and found a new crew to claim it. If the whole crew is killed and nobody claims it in time, the ship is abandoned and drifts as a derelict. Still claimable, but you were on a clock.
 
-**The bounty.** About half the pirates out there have a bounty on them at any time, listed on your ship's [mission board](missions.md); the rest are just trouble. A bounty nobody is hunting comes down after a while and a new one goes up on another pirate, so check the board again later. Bounties are competitive: several crews can accept the same one, and the first to turn in the captain's key gets paid. Yellow-band pirates are worth 5,000 credits, Lawless-band pirates 15,000, and the heavier bounties pay out better loot crates, laser weapons, disablers, armour, batons and security supplies at the low end, premium military gear at the high end. You can also buy tracking on a bounty target, at the cost of a quarter of the reward.
+**The bounty.** About half the pirates out there have a bounty on them at any time, listed on your ship's [mission board](missions.md); the rest are just trouble. A bounty nobody is hunting comes down after a while and a new one goes up on another pirate, so check the board again later. Bounties are competitive: several crews can accept the same one, and the first to turn in the captain's key gets paid. Yellow-band pirates pay **3,200-4,800 credits**, Lawless-band pirates **9,600-14,400**, and the heavier bounties pay out better loot crates, laser weapons, disablers, armour, batons and security supplies at the low end, military supplies at the high end. Gun bundles contain **one gun each**. You can also buy tracking on a bounty target, at the cost of a quarter of the reward.
 
 You cannot have both. Turning the key in for the bounty spends it; using it to claim the ship fails the bounty.
 
@@ -73,7 +73,7 @@ While you are aboard, find their **data siphon**. Whatever they drained out of y
 
 There isn't any. Every roaming NPC ship in the galaxy is hostile by default, and there is no friendly convoy or merchant traffic to run into. Trade happens at [trader outposts](trader-outposts.md), not on the open overmap.
 
-The one exception is dispatched rather than roaming: **NTSV Vigilant**, a Nanotrasen customs enforcement corvette. It never scans for prey and never hunts at random. It is sent after one specific ship by mission code, currently the contraband-running mission, and it ignores everyone else. It opens with a hail like a pirate does, but the demand is a fixed fine or the surrender of the contraband it was sent for. Refuse and it escalates through the same interdiction, boarding waves and commander fight. Kill its commander and it spools emergency FTL and warps out: no wreck, no key, no salvage. It also chases across zone lines, which pirates will not do, and it keeps re-engaging after you dock and fly again until it eventually gives up.
+The one exception is dispatched rather than roaming: **NTSV Vigilant**, a Nanotrasen customs enforcement corvette. It never scans for prey and never hunts at random. It is sent after one specific ship by mission code, currently the contraband-running mission, and it ignores everyone else. It opens with a hail like a pirate does, but the demand is a fixed fine or the surrender of the contraband it was sent for. Refuse and it escalates through interdiction, a boarding wave and its commander fight. Kill its commander and it spools emergency FTL and warps out: no wreck, no key, no salvage. It also chases across zone lines, which pirates will not do, and it keeps re-engaging after you dock and fly again until it eventually gives up.
 
 ## Practical advice
 

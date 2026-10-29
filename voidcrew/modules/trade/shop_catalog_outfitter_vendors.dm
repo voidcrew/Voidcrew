@@ -13,6 +13,12 @@
  * - Boffin's tier-2 parts and cells offer immediate upgrades while a crew is
  *   still assembling or researching its fabrication equipment. Cargo remains
  *   cheaper in bulk, and a working laboratory rewards making parts aboard ship.
+ * - Boffin is the only store that sells raw anomaly cores (cargo no longer
+ *   carries them) and anomaly charts. Both sit on small weighted rotations of
+ *   two slots, one unit each. A sold slot turns over to a different type at
+ *   the next convoy. Both take the normal favor discounts and specials. The
+ *   400 cr core buyback is far below any core's price, so buying to resell
+ *   loses money.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
  *   slime extracts, and raw exotics out of the ground. No circuit boards.
  *   Anything a lathe spits out is a money loop waiting to happen.
@@ -50,6 +56,7 @@
 		"Gadgetry",
 		"Ship Retrofit",
 		"Power & Optics",
+		"Anomalies",
 		"Job Packs",
 	)
 	sku_types = list(
@@ -84,6 +91,10 @@
 		/datum/shop_sku/skunk/rare/deluxe_parts,
 		/datum/shop_sku/skunk/rare/hyper_cell,
 	)
+	rotations = list(
+		/datum/shop_rotation/skunk_cores,
+		/datum/shop_rotation/skunk_anomaly_charts,
+	)
 	buyback_types = list(
 		/datum/shop_buyback/skunk/anomaly_core,
 		/datum/shop_buyback/skunk/slime_extract,
@@ -107,7 +118,6 @@
 			"Bring me anomaly cores. Intact, please. INTACT. We've had incidents.",
 			"The imprinter is perfectly safe. The screaming is a licensing formality.",
 			"Slime extracts, glands, crystals: if a planet made it and it shouldn't exist, I'm buying.",
-			"A better servo saves material and print time. Check which part your machine actually needs.",
 			"The convoy escort calls this annex 'the spooky room'. The convoy escort is correct.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -126,14 +136,14 @@
 /datum/shop_sku/skunk/signaler
 	category = "Gadgetry"
 	item_path = /obj/item/assembly/signaler
-	price_credits = 150
+	price_credits = 80
 	stock_min = 3
 	stock_max = 6
 
 /datum/shop_sku/skunk/adv_analyzer
 	category = "Gadgetry"
 	item_path = /obj/item/healthanalyzer/advanced
-	price_credits = 900
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
@@ -147,9 +157,9 @@
 /datum/shop_sku/skunk/alien_sample
 	category = "Gadgetry"
 	name = "alien crowbar sample"
-	desc = "An alien tool for destructive research. Each sample is consumed to reveal one alien research field. Bring three to investigate all three fields."
+	desc = "An alien crowbar with an unfamiliar metal finish."
 	item_path = /obj/item/crowbar/abductor
-	price_credits = 1500
+	price_credits = 900
 	stock_min = 3
 	stock_max = 3
 
@@ -183,7 +193,7 @@
 /datum/shop_sku/skunk/rped
 	category = "Ship Retrofit"
 	name = "rapid part exchange device"
-	desc = "Point at machine, click, parts swap themselves. Sold empty; the parts are the shelf above."
+	desc = "An empty rapid part exchange device."
 	item_path = /obj/item/storage/part_replacer
 	price_credits = 300
 	stock_min = 1
@@ -199,12 +209,12 @@
 /datum/shop_sku/skunk/science_glasses
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/science
-	price_credits = 900
+	price_credits = 200
 
 /datum/shop_sku/skunk/diagnostic_hud
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/hud/diagnostic
-	price_credits = 1800
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -234,11 +244,12 @@
 /datum/shop_sku/skunk/rotating/foam_grenade
 	category = "Gadgetry"
 	name = "smart metal foam grenade"
-	desc = "A hull-patch grenade. Set it off near a breach and the foam finds the hole on its own."
+	desc = "A canister of expanding hull-patch foam."
 	item_path = /obj/item/grenade/chem_grenade/smart_metal_foam
-	price_credits = 500
+	price_credits = 150
 
 /datum/shop_sku/skunk/rotating/thermal_glasses
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/thermal
 	price_vouchers = 2
@@ -258,6 +269,81 @@
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/hyper
 	price_credits = 1200
+
+// ===== ANOMALIES =====
+// Raw cores still need the refinery and a bomb. Rarer types turn up less often
+// and cost more. The charts for the same types live in anomaly_charts.dm.
+
+/datum/shop_rotation/skunk_cores
+	slots = 2
+	pool = list(
+		/datum/shop_sku/skunk/anomaly_core/flux = 6,
+		/datum/shop_sku/skunk/anomaly_core/grav = 6,
+		/datum/shop_sku/skunk/anomaly_core/hallucination = 6,
+		/datum/shop_sku/skunk/anomaly_core/pyro = 6,
+		/datum/shop_sku/skunk/anomaly_core/bioscrambler = 3,
+		/datum/shop_sku/skunk/anomaly_core/ectoplasm = 3,
+		/datum/shop_sku/skunk/anomaly_core/dimensional = 3,
+		/datum/shop_sku/skunk/anomaly_core/bluespace = 1,
+		/datum/shop_sku/skunk/anomaly_core/vortex = 1,
+	)
+
+/datum/shop_rotation/skunk_anomaly_charts
+	slots = 4
+	pool = list(
+		/datum/shop_sku/anomaly_chart/flux = 6,
+		/datum/shop_sku/anomaly_chart/grav = 6,
+		/datum/shop_sku/anomaly_chart/hallucination = 6,
+		/datum/shop_sku/anomaly_chart/pyro = 6,
+		/datum/shop_sku/anomaly_chart/bioscrambler = 3,
+		/datum/shop_sku/anomaly_chart/ectoplasm = 3,
+		/datum/shop_sku/anomaly_chart/dimensional = 3,
+		/datum/shop_sku/anomaly_chart/bluespace = 1,
+		/datum/shop_sku/anomaly_chart/vortex = 1,
+	)
+
+/// Raw cores: normal favor discounts and specials apply; contracts never pay them out
+/datum/shop_sku/skunk/anomaly_core
+	category = "Anomalies"
+	stock_min = 1
+	stock_max = 1
+	contract_reward = FALSE
+
+/datum/shop_sku/skunk/anomaly_core/flux
+	item_path = /obj/item/raw_anomaly_core/flux
+	price_credits = 8000
+
+/datum/shop_sku/skunk/anomaly_core/grav
+	item_path = /obj/item/raw_anomaly_core/grav
+	price_credits = 8000
+
+/datum/shop_sku/skunk/anomaly_core/hallucination
+	item_path = /obj/item/raw_anomaly_core/hallucination
+	price_credits = 8000
+
+/datum/shop_sku/skunk/anomaly_core/pyro
+	item_path = /obj/item/raw_anomaly_core/pyro
+	price_credits = 8000
+
+/datum/shop_sku/skunk/anomaly_core/bioscrambler
+	item_path = /obj/item/raw_anomaly_core/bioscrambler
+	price_credits = 10000
+
+/datum/shop_sku/skunk/anomaly_core/ectoplasm
+	item_path = /obj/item/raw_anomaly_core/ectoplasm
+	price_credits = 10000
+
+/datum/shop_sku/skunk/anomaly_core/dimensional
+	item_path = /obj/item/raw_anomaly_core/dimensional
+	price_credits = 10000
+
+/datum/shop_sku/skunk/anomaly_core/bluespace
+	item_path = /obj/item/raw_anomaly_core/bluespace
+	price_credits = 12000
+
+/datum/shop_sku/skunk/anomaly_core/vortex
+	item_path = /obj/item/raw_anomaly_core/vortex
+	price_credits = 12000
 
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.

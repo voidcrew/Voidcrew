@@ -25,6 +25,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_12/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -32,6 +33,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_13
 	parent_type = /datum/outfit/job/engineer
@@ -61,6 +63,7 @@
 	belt = /obj/item/modular_computer/pda/clear
 	id = /obj/item/card/id/advanced/rainbow
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_14/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -70,6 +73,7 @@
 	belt = /obj/item/modular_computer/pda/clear
 	id = /obj/item/card/id/advanced/rainbow
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_1
 	parent_type = /datum/outfit/job/engineer
@@ -87,6 +91,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_3/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -94,6 +99,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_4
 	parent_type = /datum/outfit/job/engineer
@@ -111,6 +117,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_29/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -118,6 +125,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_33
 	parent_type = /datum/outfit/job/engineer
@@ -135,6 +143,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_34/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -142,6 +151,7 @@
 	head = /obj/item/clothing/head/costume/ushanka
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/eyepatch
 	suit_store = null
+	backpack_contents = list(/obj/item/evidencebag = 1, /obj/item/knife/combat/survival = 1)
 
 /datum/outfit/job/workshop_bogatyr_job_37
 	parent_type = /datum/outfit/job/engineer

@@ -102,6 +102,7 @@ SUBSYSTEM_DEF(market)
 					"path" = /obj/structure/closet/supplypod/back_to_station,
 				))
 				purchase.entry.spawn_item(spawned_pod, purchase)
+				mark_trader_goods(spawned_pod) // VOIDCREW EDIT: trade resale rule includes the completed pod bundle.
 
 				to_chat(buyer, span_notice("[purchase.uplink] flashes a message noting the order is being launched at your location. Right here, right now!"))
 				qdel(purchase)

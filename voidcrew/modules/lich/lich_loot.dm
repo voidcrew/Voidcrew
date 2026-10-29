@@ -157,6 +157,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 
 	var/list/turf/remaining = scatter.Copy()
 	for(var/hoard_type as anything in GLOB.lich_hoard_contents)
+		if(hoard_type == /obj/item/melee/verdigris_staff && (!istype(drop_near, /mob/living/basic/lich) || !drop_near:npc_red_weapon_drop))
+			continue
 		if(!length(remaining))
 			remaining = scatter.Copy()
 		new hoard_type(pick_n_take(remaining))
@@ -671,7 +673,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 		refuse_draught()
 		return
 
-	var/came_back = drinker.heal_and_revive(
+	var/came_back = drinker.heal_and_revive_from(
+		"phylactery",
 		LICH_PHYLACTERY_REVIVE_TO,
 		span_boldwarning("[drinker] jerks upright in a wash of green light, and somewhere a jar breaks."),
 	)

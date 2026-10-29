@@ -108,7 +108,7 @@
 /datum/shop_sku/colosseum/pit_satchel
 	category = "Pit Kit"
 	item_path = /obj/item/storage/medkit/pit_doctor
-	price_credits = 1500
+	price_credits = 1000
 	stock_min = 2
 	stock_max = 3
 
@@ -122,7 +122,7 @@
 /datum/shop_sku/colosseum/rotating/sandstriders
 	category = "Panoply"
 	item_path = /obj/item/clothing/shoes/sandal/sandstrider
-	price_credits = 2400
+	price_credits = 800
 
 /datum/shop_sku/colosseum/rotating/parmula
 	category = "Armaments"
@@ -151,8 +151,8 @@
 /datum/shop_sku/colosseum/rare/laurel
 	category = "Panoply"
 	item_path = /obj/item/clothing/head/costume/crown/laurel
-	price_vouchers = 2
-	price_credits = 4500
+	price_vouchers = 0
+	price_credits = 2000
 
 // =========================================================================
 // THE LANISTA

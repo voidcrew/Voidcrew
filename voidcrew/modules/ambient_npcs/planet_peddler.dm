@@ -210,7 +210,7 @@
 
 /datum/shop_sku/peddler/odd/lighter
 	item_path = /obj/item/lighter
-	price_credits = 80
+	price_credits = 50
 
 /datum/shop_sku/peddler/odd/whiskey
 	item_path = /obj/item/reagent_containers/cup/glass/bottle/whiskey
@@ -816,18 +816,7 @@
 	for(var/i in 1 to count)
 		var/turf/where = ambient_free_turf_near(landing, 2) || landing
 		var/raider_type = i == 3 ? /mob/living/basic/trooper/pirate/faction/grey/ranged : pick_weight(raiders - /mob/living/basic/trooper/pirate/faction/grey/ranged)
-		var/mob/living/raider = new raider_type(where)
-		// Not the planet's own: it comes for the caravan, and is kept near it
-		var/list/kept = list()
-		for(var/faction_token in raider.faction)
-			if(!findtext("[faction_token]", "planetary_"))
-				kept += faction_token
-		raider.faction = kept
-		raider.AddComponent(/datum/component/leash, doer, AMBIENT_AMBUSH_LEASH)
-		raider.AddElement(/datum/element/relay_attackers)
-		RegisterSignal(raider, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_pack_attacked))
-		if(bait)
-			raider.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bait)
+		var/mob/living/raider = spawn_raider(raider_type, where, bait)
 		var/datum/weakref/ref = WEAKREF(raider)
 		pack += ref
 		pack_refs += ref
@@ -836,6 +825,25 @@
 		tracker.spawned_count += count
 		SSplanet_mobs.total_managed_mobs += count
 	return count
+
+/// Ready each ambusher against the caravan site before applying its profile.
+/datum/ambient_activity/caravan_ambush/proc/spawn_raider(raider_type, turf/where, mob/living/bait)
+	var/datum/ambient_place/site/site = doer.place
+	var/datum/npc_spawn_context/context = new(site, site.band, source_turf = get_turf(doer))
+	var/mob/living/raider = spawn_npc_in_zone(raider_type, where, context, FALSE)
+	// Not the planet's own: it comes for the caravan, and is kept near it.
+	var/list/kept = list()
+	for(var/faction_token in raider.faction)
+		if(!findtext("[faction_token]", "planetary_"))
+			kept += faction_token
+	raider.faction = kept
+	raider.AddComponent(/datum/component/leash, doer, AMBIENT_AMBUSH_LEASH)
+	raider.AddElement(/datum/element/relay_attackers)
+	RegisterSignal(raider, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_pack_attacked))
+	if(bait)
+		raider.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bait)
+	context.finalize()
+	return raider
 
 /// Someone hit the pack: their crew gets the helpers' price
 /datum/ambient_activity/caravan_ambush/proc/on_pack_attacked(datum/source, atom/attacker, attack_flags)

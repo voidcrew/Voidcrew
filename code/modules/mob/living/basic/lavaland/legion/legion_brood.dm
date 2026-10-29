@@ -66,9 +66,19 @@
 /mob/living/basic/legion_brood/proc/infest(mob/living/carbon/human/target)
 	visible_message(span_warning("[name] burrows into the flesh of [target]!"))
 	var/spawn_type = get_legion_type(target)
-	var/mob/living/basic/mining/legion/new_legion = new spawn_type(loc)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: infestation retains the attacking brood's source.
+	get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(src, role = "ordinary")
+	var/mob/living/basic/mining/legion/new_legion = spawn_npc_in_zone(spawn_type, loc, context, FALSE)
+	// VOIDCREW EDIT ADDITION END
 	new_legion.consume(target)
 	new_legion.faction = faction.Copy()
+	// VOIDCREW EDIT ADDITION START - npc_scaling: a parasite left in the victim retains the same source.
+	var/obj/item/organ/legion_tumour/tumour = target.get_organ_slot(ORGAN_SLOT_PARASITE_EGG)
+	if(istype(tumour))
+		tumour.npc_spawn_context = context
+	context.finalize()
+	// VOIDCREW EDIT ADDITION END
 	qdel(src)
 
 /// Returns the kind of legion we make out of the target

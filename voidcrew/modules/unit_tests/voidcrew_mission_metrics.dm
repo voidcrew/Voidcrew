@@ -80,7 +80,8 @@
 	tally_mission_offer(posted, null, "contract_offered")
 	TEST_ASSERT_EQUAL(length(SSmetrics.tallies), 1, "Offers of one type on one board share a tally")
 	SSmetrics.fold_tallies()
-	row = SSmetrics.pending[1]
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 3, "Two quote records and one folded offer tally must be present")
+	row = SSmetrics.pending[3]
 	TEST_ASSERT_EQUAL(row["quantity"], 2, "The tally counts every offer")
 
 /datum/unit_test/voidcrew_mission_metrics/Destroy()

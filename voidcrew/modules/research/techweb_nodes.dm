@@ -263,6 +263,7 @@
 
 /datum/techweb_node/nanite_combat
 	id = "nanite_military"
+	zone_permission = ZONE_PERMISSION_ELITE
 	display_name = "Military Nanite Programming"
 	description = "Nanite programs that perform military-grade functions."
 	prereq_ids = list("nanite_harmonic", "syndicate_basic")
@@ -408,8 +409,9 @@
 
 /datum/techweb_node/automatic_ammunition
 	id = TECHWEB_NODE_AUTOMATIC_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Automatic Ammunition"
-	description = "High-capacity feed devices and specialist shells. Keeping an automatic fed costs a lot more metal than keeping a pistol fed."
+	description = "High-capacity feed devices and specialist shells."
 	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
 	design_ids = list(
 		"vc_mag_m9mm_aps",
@@ -423,6 +425,7 @@
 
 /datum/techweb_node/specialist_ammo
 	id = TECHWEB_NODE_SPECIALIST_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Specialist Ammunition"
 	description = "Precision, armor-piercing, hollow-point and incendiary loads for conventional firearms."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXOTIC_AMMO)
@@ -471,6 +474,7 @@
 
 /datum/techweb_node/experimental_ammo
 	id = TECHWEB_NODE_EXPERIMENTAL_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Experimental Ammunition"
 	description = "Guided and phasic projectiles, advanced payloads and high-energy shells."
 	prereq_ids = list(TECHWEB_NODE_SPECIALIST_AMMO, TECHWEB_NODE_APPLIED_BLUESPACE)
@@ -491,6 +495,7 @@
 
 /datum/techweb_node/explosive_ammo
 	id = TECHWEB_NODE_EXPLOSIVE_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Explosive Ammunition"
 	description = "Gyrojet cartridges, launcher grenades and 84mm rockets."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXPLOSIVES)
@@ -576,7 +581,6 @@
 	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE)
 	design_ids = list(
 		"survey_ship_docking",
-		"survey_console_rewards_upgrade_advanced",
 		"survey_console_information_upgrade_advanced",
 	)
 	required_surveyed_objects = list(planets = 1, nebulas = 3, electric_storms = 1)

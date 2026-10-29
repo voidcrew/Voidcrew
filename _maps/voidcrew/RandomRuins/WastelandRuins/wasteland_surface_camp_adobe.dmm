@@ -1,102 +1,109 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
+"aa" = (
 /turf/template_noop,
 /area/template_noop)
-"b" = (
+"ab" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"c" = (
+"ac" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"d" = (
+"ad" = (
 /obj/structure/barricade/sandbags,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"e" = (
+"ae" = (
 /obj/structure/table,
 /obj/item/ammo_box/magazine/wt550m9,
 /obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"f" = (
+"af" = (
 /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
 	faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"g" = (
+"ag" = (
 /turf/closed/wall,
 /area/overmap_encounter/planetoid/wasteland)
-"h" = (
+"ah" = (
 /obj/structure/table,
 /obj/item/gun/ballistic/rifle/boltaction,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"i" = (
+"ai" = (
 /obj/item/stack/sheet/mineral/gold,
 /obj/structure/table,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"j" = (
+"aj" = (
 /obj/structure/bonfire/prelit,
 /obj/effect/decal/cleanable/ash,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"k" = (
+"ak" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"m" = (
+"al" = (
+/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
+	dir = 4;
+	faction = list("adobe")
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"am" = (
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"n" = (
+"an" = (
 /obj/structure/table,
 /obj/item/gun/ballistic/automatic/wt550,
 /obj/item/ammo_box/magazine/m9mm,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"o" = (
+"ao" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"p" = (
+"ap" = (
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /obj/structure/table,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"q" = (
+"aq" = (
 /obj/item/trash/can{
 	pixel_y = -6
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"r" = (
+"ar" = (
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"s" = (
+"as" = (
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"t" = (
+"at" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"u" = (
+"au" = (
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"v" = (
+"av" = (
 /obj/item/stack/sheet/mineral/titanium/fifty,
 /obj/structure/table,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"w" = (
+"aw" = (
 /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
 	dir = 4;
 	faction = list("adobe")
@@ -104,24 +111,24 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"x" = (
+"ax" = (
 /mob/living/simple_animal/hostile/asteroid/hermit/survivor{
 	dir = 4;
 	faction = list("adobe")
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"y" = (
+"ay" = (
 /obj/structure/table,
 /obj/item/clothing/glasses/meson/gar,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"z" = (
+"az" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/zone_mobs/wildlife,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"A" = (
+"aA" = (
 /obj/item/cigbutt{
 	pixel_x = -3;
 	pixel_y = -1
@@ -132,10 +139,10 @@
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"B" = (
+"aB" = (
 /turf/closed/wall,
 /area/ruin/unpowered)
-"C" = (
+"aC" = (
 /obj/structure/chair/plastic,
 /mob/living/simple_animal/hostile/asteroid/hermit/survivor{
 	faction = list("adobe")
@@ -143,14 +150,14 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"D" = (
+"aD" = (
 /mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger{
 	dir = 4;
 	faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"E" = (
+"aE" = (
 /mob/living/simple_animal/hostile/asteroid/hermit/survivor{
 	dir = 1;
 	faction = list("adobe")
@@ -159,7 +166,7 @@
 /obj/structure/closet/crate/zone_loot/wardrobe,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"F" = (
+"aF" = (
 /obj/effect/decal/cleanable/blood/old{
 	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
 	icon_state = "floor5-old";
@@ -168,11 +175,11 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"G" = (
+"aG" = (
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"H" = (
+"aH" = (
 /obj/effect/decal/cleanable/blood/old{
 	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
 	icon_state = "floor3-old";
@@ -181,30 +188,30 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"I" = (
+"aI" = (
 /obj/structure/falsewall,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"J" = (
+"aJ" = (
 /obj/structure/sign/poster/contraband/communist_state,
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
-"K" = (
+"aK" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"L" = (
+"aL" = (
 /turf/closed/wall/rust,
 /area/overmap_encounter/planetoid/wasteland)
-"M" = (
+"aM" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"N" = (
+"aN" = (
 /obj/item/stack/sheet/mineral/uranium/five,
 /obj/structure/table,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"O" = (
+"aO" = (
 /obj/structure/chair/plastic{
 	dir = 4
 	},
@@ -215,15 +222,15 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"P" = (
+"aP" = (
 /obj/structure/barricade/sandbags,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"Q" = (
+"aQ" = (
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"R" = (
+"aR" = (
 /obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood/old{
 	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
@@ -232,264 +239,276 @@
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"S" = (
+"aS" = (
 /obj/machinery/door/airlock/wood/glass,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"T" = (
+"aT" = (
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"U" = (
+"aU" = (
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
-"V" = (
+"aV" = (
 /obj/structure/table,
 /obj/item/radio,
 /obj/item/radio,
 /obj/item/radio,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"W" = (
+"aW" = (
 /obj/structure/table,
 /obj/item/gun/ballistic/automatic/pistol/m1911,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"X" = (
+"aX" = (
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"Y" = (
+"aY" = (
 /obj/machinery/door/airlock/wood/glass,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"Z" = (
+"aZ" = (
 /obj/structure/table,
 /obj/item/trash/can,
 /obj/item/ammo_box/c45,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
+"qZ" = (
+/obj/structure/table,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"zr" = (
+/obj/structure/table,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 
 (1,1,1) = {"
-a
-a
-a
-a
-a
-a
-a
-a
-a
-M
-X
-X
-a
-a
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aM
+aX
+aX
+aa
+aa
 "}
 (2,1,1) = {"
-a
-a
-a
-a
-a
-a
-a
-a
-a
-M
-R
-X
-X
-a
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aM
+aR
+aX
+aX
+aa
 "}
 (3,1,1) = {"
-a
-U
-U
-U
-U
-B
-U
-U
-U
-U
-U
-U
-X
-a
+aa
+aU
+aU
+aU
+aU
+aB
+aU
+aU
+aU
+aU
+aU
+aU
+aX
+aa
 "}
 (4,1,1) = {"
-a
-B
-i
-y
-U
-V
-r
-t
-U
-r
-r
-U
-M
-a
+aa
+aB
+ai
+ay
+aU
+aV
+ar
+at
+aU
+ar
+ar
+aU
+aM
+aa
 "}
 (5,1,1) = {"
-a
-B
-p
-s
-B
-W
-z
-r
-Y
-r
-D
-B
-M
-a
+aa
+aB
+ap
+as
+aB
+zr
+az
+ar
+aY
+ar
+al
+aB
+aM
+aa
 "}
 (6,1,1) = {"
-a
-B
-N
-E
-B
-Z
-s
-o
-J
-s
-T
-B
-M
-a
+aa
+aB
+aN
+aE
+aB
+aZ
+as
+ao
+aJ
+as
+aT
+aB
+aM
+aa
 "}
 (7,1,1) = {"
-a
-U
-u
-s
-S
-s
-r
-e
-B
-w
-o
-U
-M
-a
+aa
+aU
+au
+as
+aS
+as
+ar
+ae
+aB
+aw
+ao
+aU
+aM
+aa
 "}
 (8,1,1) = {"
-a
-U
-v
-o
-U
-k
-f
-Q
-U
-G
-s
-U
-M
-a
+aa
+aU
+av
+ao
+aU
+ak
+af
+aQ
+aU
+aG
+as
+aU
+aM
+aa
 "}
 (9,1,1) = {"
-a
-U
-n
-o
-I
-c
-h
-m
-U
-o
-b
-U
-M
-a
+aa
+aU
+qZ
+ao
+aI
+ac
+zr
+am
+aU
+ao
+ab
+aU
+aM
+aa
 "}
 (10,1,1) = {"
-a
-L
-L
-L
-L
-g
-g
-g
-B
-F
-H
-U
-M
-a
+aa
+aL
+aL
+aL
+aL
+ag
+ag
+ag
+aB
+aF
+aH
+aU
+aM
+aa
 "}
 (11,1,1) = {"
-a
-a
-a
-M
-M
-K
-O
-q
-U
-U
-Y
-U
-M
-a
+aa
+aa
+aa
+aM
+aM
+aK
+aO
+aq
+aU
+aU
+aY
+aU
+aM
+aa
 "}
 (12,1,1) = {"
-a
-a
-a
-M
-M
-C
-j
-K
-M
-M
-M
-x
-M
-a
+aa
+aa
+aa
+aM
+aM
+aC
+aj
+aK
+aM
+aM
+aM
+ax
+aM
+aa
 "}
 (13,1,1) = {"
-a
-a
-a
-P
-X
-A
-K
-M
-d
-M
-M
-M
-M
-a
+aa
+aa
+aa
+aP
+aX
+aA
+aK
+aM
+ad
+aM
+aM
+aM
+aM
+aa
 "}
 (14,1,1) = {"
-a
-a
-a
-P
-X
-X
-M
-d
-d
-M
-M
-M
-M
-a
+aa
+aa
+aa
+aP
+aX
+aX
+aM
+ad
+ad
+aM
+aM
+aM
+aM
+aa
 "}

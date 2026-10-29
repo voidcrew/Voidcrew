@@ -17,6 +17,8 @@
 	var/summon_respects_prev_spawn_points = TRUE
 	/// for how long must we stay still when summoning
 	var/create_summon_timer
+	/// VOIDCREW EDIT - npc_scaling: hostile encounter spells can explicitly designate their outputs.
+	var/npc_summon_role = "auto"
 
 /datum/action/cooldown/spell/conjure/is_valid_target(atom/cast_on)
 	return isturf(cast_on.loc)
@@ -55,13 +57,18 @@
 			open_turf.replace_floor(summoned_object_type, flags = CHANGETURF_INHERIT_AIR)
 			return
 
-		var/atom/summoned_object = new summoned_object_type(spawn_place)
+		// VOIDCREW EDIT ADDITION START - npc_scaling: player-owned casters propagate exemption before construction.
+		owner.get_npc_spawn_context()
+		var/datum/npc_spawn_context/context = new(owner, role = npc_summon_role)
+		var/atom/summoned_object = spawn_npc_in_zone(summoned_object_type, spawn_place, context, FALSE)
+		// VOIDCREW EDIT ADDITION END
 
 		summoned_object.flags_1 |= ADMIN_SPAWNED_1
 		if(summon_lifespan > 0)
 			QDEL_IN(summoned_object, summon_lifespan)
 
 		post_summon(summoned_object, cast_on)
+		context.finalize() // VOIDCREW EDIT - npc_scaling: finalize after subtype faction/body setup.
 
 /// Called on atoms summoned after they are created, allows extra variable editing and such of created objects
 /datum/action/cooldown/spell/conjure/proc/post_summon(atom/summoned_object, atom/cast_on)

@@ -761,19 +761,19 @@
 //
 // CHANGED: the reload used to take a full minute and demand a table, and its
 // ammunition existed nowhere in the game. Reloading is now a flat 5 seconds
-// anywhere, and the gun arrives with a bandolier of cartridges and the
-// schematic to make more.
+// anywhere, and the gun arrives with a bandolier of craftable cartridges.
 // =========================================================================
 
 #define NO_QUARTER_RELOAD_TIME (5 SECONDS)
 #define NO_QUARTER_THROW_RANGE 6
 #define NO_QUARTER_BANDOLIER_SHELLS 12
+#define NO_QUARTER_CALIBER "heavy cartridge"
 
 /// One shot: breaches a normal wall outright, or throws a person six tiles.
 /// Five seconds to load the next cartridge.
 /obj/item/gun/ballistic/shotgun/musket/no_quarter
 	name = "\"No Quarter\""
-	desc = "A flintlock hand cannon dressed up as a boltloading musket. One shot: it punches a hole in a normal wall, or throws a person 6 tiles. Loading the next cartridge takes 5 seconds."
+	desc = "A flintlock hand cannon dressed up as a boltloading musket."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "no_quarter"
 	// base musket sets inhand_icon_state = "donk_musket", override so the
@@ -792,8 +792,8 @@
 
 /**
  * The gun is worthless without cartridges and there is nowhere else in the
- * game to get them, so it never arrives alone: a full bandolier and the
- * schematic for more land wherever the gun did (in the cache it rolled in, or
+ * game to find them, so it never arrives alone: a full bandolier
+ * lands wherever the gun did (in the cache it rolled in, or
  * on the floor next to an admin who spawned it).
  */
 /obj/item/gun/ballistic/shotgun/musket/no_quarter/Initialize(mapload)
@@ -807,11 +807,6 @@
 		kit_location = get_turf(src)
 	if(kit_location)
 		new /obj/item/storage/belt/bandolier/no_quarter(kit_location)
-		new /obj/item/blueprint/no_quarter_cartridge(kit_location)
-
-/obj/item/gun/ballistic/shotgun/musket/no_quarter/examine(mob/user)
-	. = ..()
-	. += span_notice("Loading a cartridge takes 5 seconds and can be done anywhere.")
 
 /// Slows the normal ammo-loading flow down to a five-second job, once that's
 /// done, the real (unmodified) chambering logic takes over.
@@ -834,17 +829,29 @@
 /obj/item/ammo_box/magazine/internal/shot/single/no_quarter
 	name = "\"No Quarter\" chamber"
 	ammo_type = /obj/item/ammo_casing/shotgun/no_quarter
+	caliber = NO_QUARTER_CALIBER
 
-/// "Gunpowder and a metal slug, twisted shut", the one cartridge type
-/// No Quarter feeds on. Subtypes the real shotgun slug casing (icon/caliber/
-/// materials inherited verbatim) and just swaps the projectile it fires.
+/// The hand cannon also retains its ordinary shotgun loads.
+/obj/item/ammo_box/magazine/internal/shot/single/no_quarter/give_round(obj/item/ammo_casing/new_round)
+	if(new_round?.caliber != CALIBER_SHOTGUN)
+		return ..()
+	var/obj/item/ammo_casing/current_round = get_round()
+	if(current_round?.loaded_projectile)
+		return FALSE
+	if(current_round)
+		current_round.forceMove(get_turf(src))
+	stored_ammo += new_round
+	new_round.forceMove(src)
+	return TRUE
+
+/// A paper cartridge for the hand cannon, with the ordinary slug's icon and materials.
 /obj/item/ammo_casing/shotgun/no_quarter
 	name = "heavy cartridge"
-	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut. Only \"No Quarter\" takes them."
+	desc = "A paper cartridge bulging with gunpowder and a single lead slug, twisted shut."
+	caliber = NO_QUARTER_CALIBER
 	projectile_type = /obj/projectile/bullet/shotgun_slug/no_quarter
 
-/// The bandolier the gun turns up with. Twelve cartridges, then you make
-/// your own off the schematic.
+/// The bandolier the gun turns up with. Twelve cartridges, then you craft your own.
 /obj/item/storage/belt/bandolier/no_quarter
 	name = "hand cannon bandolier"
 	desc = "A worn leather bandolier of heavy cartridges, cut wide for a hand cannon's bore."
@@ -853,15 +860,7 @@
 	for(var/i in 1 to NO_QUARTER_BANDOLIER_SHELLS)
 		new /obj/item/ammo_casing/shotgun/no_quarter(src)
 
-/// Carrying this puts the cartridge recipe in your crafting menu; an outpost
-/// neural imprinter can burn it in for the round instead.
-/obj/item/blueprint/no_quarter_cartridge
-	name = "weapon schematic (heavy cartridge)"
-	schematic_name = "heavy cartridge"
-	recipe_type = /datum/crafting_recipe/blueprint/no_quarter_cartridge
-	tier = BLUEPRINT_TIER_RED
-
-/datum/crafting_recipe/blueprint/no_quarter_cartridge
+/datum/crafting_recipe/no_quarter_cartridge
 	name = "Heavy Cartridge"
 	result = /obj/item/ammo_casing/shotgun/no_quarter
 	category = CAT_WEAPON_AMMO
@@ -899,6 +898,7 @@
 	wall_target.dismantle_wall(devastated = TRUE)
 
 #undef NO_QUARTER_BANDOLIER_SHELLS
+#undef NO_QUARTER_CALIBER
 #undef NO_QUARTER_THROW_RANGE
 #undef NO_QUARTER_RELOAD_TIME
 

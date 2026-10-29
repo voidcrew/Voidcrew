@@ -89,10 +89,6 @@
 /obj/item/storage/toolbox/electrical,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
-"w" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
 "x" = (
 /obj/machinery/computer/order_console/mining,
 /turf/open/floor/iron,
@@ -125,6 +121,12 @@
 /obj/item/stack/sheet/mineral/plasma,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
+"E" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "F" = (
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
@@ -145,6 +147,12 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
+"J" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "K" = (
 /obj/machinery/door/airlock,
 /turf/open/floor/iron,
@@ -160,6 +168,15 @@
 	},
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
+"N" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/iron,
+/area/ruin/unpowered)
 "O" = (
 /obj/effect/turf_decal/caution{
 	dir = 1
@@ -170,13 +187,6 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/open/floor/iron,
-/area/ruin/unpowered)
-"Q" = (
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/suit_storage_unit/mining/eva,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "R" = (
@@ -385,7 +395,7 @@ t
 s
 s
 l
-w
+E
 F
 "}
 (13,1,1) = {"
@@ -398,7 +408,7 @@ v
 l
 l
 t
-w
+J
 F
 "}
 (14,1,1) = {"
@@ -411,7 +421,7 @@ L
 L
 l
 l
-Q
+N
 F
 "}
 (15,1,1) = {"

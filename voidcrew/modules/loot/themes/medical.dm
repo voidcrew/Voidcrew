@@ -16,6 +16,14 @@
 
 /datum/loot_theme/medical
 	name = "medical"
+	gun_chance = LOOT_GUN_CHANCE_MEDICAL
+	gun_pool = LOOT_GUN_POOL_ARMORY
+	gun_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/gun/ballistic/shotgun/riot = 1,
+			/obj/item/gun/energy/e_gun/mini = 1,
+		),
+	)
 	guard_themes = list(/obj/effect/zone_mobs/undead, /obj/effect/zone_mobs/undead/boss)
 	theme_skus = list(
 		/datum/shop_sku/black_market/tactical_medkit,
@@ -40,9 +48,6 @@
 		/obj/item/storage/pill_bottle/multiver = 5,
 		/obj/item/healthanalyzer = 4,
 		/obj/item/reagent_containers/cup/bottle/salglu_solution = 4,
-		// the ward's own enforcement locker: a quarantine that stopped
-		// answering was a quarantine somebody had to hold by force
-		/obj/item/gun/energy/e_gun/mini = 5,
 		// cheapest thing on the parlor's shelf and the one piece of chrome a
 		// clinic would actually stock: it replaces a stomach
 		/obj/item/organ/cyberimp/cyberware/gastro = 4,
@@ -59,8 +64,6 @@
 		/obj/item/reagent_containers/cup/bottle/atropine = 5,
 		/obj/item/storage/pill_bottle/penacid = 5,
 		/obj/item/defibrillator = 4,
-		/obj/item/gun/energy/laser = 5,
-		/obj/item/gun/ballistic/shotgun/riot = 4,
 		/obj/item/healthanalyzer/advanced = 4,
 		/obj/item/storage/medkit/tactical_lite = 4,
 		/obj/item/organ/eyes/robotic/basic = 3,
@@ -76,8 +79,6 @@
 		/obj/item/reagent_containers/hypospray/medipen/atropine = 7,
 		/obj/item/reagent_containers/hypospray/medipen/penthrite = 6,
 		/obj/item/defibrillator/compact = 6,
-		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
-		/obj/item/gun/energy/laser/scatter = 4,
 		/obj/item/storage/medkit/tactical = 5,
 		/obj/item/reagent_containers/hypospray/medipen/survival = 5,
 		/obj/item/organ/heart/cybernetic = 4,

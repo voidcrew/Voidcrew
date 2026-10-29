@@ -10,7 +10,7 @@
 	head = /obj/item/clothing/head/hats/hos/beret/syndicate
 	glasses = /obj/item/clothing/glasses/thermal/eyepatch
 
-	l_pocket = /obj/item/melee/energy/sword/saber/red
+	l_pocket = /obj/item/knife/combat/survival
 	r_pocket = /obj/item/melee/baton/telescopic
 
 	id = /obj/item/card/id/advanced/black/syndicate_command/captain_id

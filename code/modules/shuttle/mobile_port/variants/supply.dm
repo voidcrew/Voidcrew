@@ -154,6 +154,7 @@ GLOBAL_LIST_INIT(blacklisted_cargo_types, typecacheof(list(
 		for(var/datum/orderable_item/item as anything in SSshuttle.chef_groceries)//every order
 			for(var/amt in 1 to SSshuttle.chef_groceries[item])//every order amount
 				new item.purchase_path(grocery_crate)
+		mark_trader_goods(grocery_crate) // VOIDCREW EDIT: trade resale rule covers cook-console deliveries.
 		SSshuttle.chef_groceries.Cut() //This lets the console know it can order another round.
 
 	if(!SSshuttle.shopping_list.len)

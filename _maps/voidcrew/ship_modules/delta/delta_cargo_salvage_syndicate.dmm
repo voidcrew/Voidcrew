@@ -58,17 +58,6 @@
 /obj/structure/sign/poster/contraband/gorlex_recruitment/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"o" = (
-/obj/effect/turf_decal/box/red/corners{
-	dir = 1
-	},
-/obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/strilka310/surplus,
-/obj/item/flashlight/seclite,
-/obj/structure/sign/warning/secure_area/directional/north,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "p" = (
 /obj/structure/table/reinforced,
 /obj/item/clipboard{
@@ -138,6 +127,17 @@
 "B" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"D" = (
+/obj/effect/turf_decal/box/red/corners{
+	dir = 1
+	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/gun/ballistic/rifle/boltaction,
+/obj/item/ammo_box/strilka310/surplus,
+/obj/item/flashlight/seclite,
+/obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "G" = (
@@ -256,7 +256,7 @@ G
 g
 "}
 (4,1,1) = {"
-o
+D
 A
 L
 b

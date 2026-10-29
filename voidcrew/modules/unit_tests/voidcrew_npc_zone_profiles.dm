@@ -1,0 +1,1409 @@
+// Voidcrew defines are included after the test harness: zones below are 1/2/3.
+/mob/living/basic/npc_zone_test
+	health = 100
+	maxHealth = 100
+	melee_damage_lower = 10
+	melee_damage_upper = 20
+	combat_mode = TRUE
+	faction = list(FACTION_HOSTILE)
+	ai_controller = /datum/ai_controller/basic_controller/simple/simple_hostile
+	unsuitable_atmos_damage = 0
+	unsuitable_cold_damage = 0
+	unsuitable_heat_damage = 0
+
+/mob/living/basic/npc_zone_test/passive
+	combat_mode = FALSE
+	ai_controller = /datum/ai_controller/basic_controller/simple
+
+/// Deterministic equivalent of the wolf/ice-demon Initialize replacement rolls.
+/mob/living/basic/npc_zone_test/replacement/Initialize(mapload)
+	. = ..()
+	new /mob/living/basic/npc_zone_test(loc)
+	return INITIALIZE_HINT_QDEL
+
+/obj/effect/spawner/random/npc_zone_test
+	loot = list()
+
+/obj/effect/spawner/random/npc_zone_test/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_NORMAL
+
+/datum/unit_test/voidcrew_npc_zone_profiles/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/list/health_factors = list(list(1, 1.35, 1.8), list(1, 1.15, 1.3))
+	var/list/damage_factors = list(list(1, 1.15, 1.35), list(1, 1.1, 1.2))
+	for(var/mob_type in list(/mob/living/basic/npc_zone_test, /mob/living/simple_animal/hostile))
+		for(var/role_index in 1 to 2)
+			for(var/zone in 1 to 3)
+				var/role = role_index == 1 ? "ordinary" : "boss"
+				var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone, role)
+				var/mob/living/body = spawn_npc_in_zone(mob_type, location, context, FALSE)
+				// Configure an existing legacy type before finalization instead of adding a subtype.
+				body.setMaxHealth(100)
+				body.melee_damage_lower = 10
+				body.melee_damage_upper = 20
+				body.setBruteLoss(40)
+				context.finalize()
+				var/health_factor = health_factors[role_index][zone]
+				var/damage_factor = damage_factors[role_index][zone]
+				TEST_ASSERT(abs(body.maxHealth - 100 * health_factor) < 0.001, "[mob_type]/[role]/[zone]: wrong max health")
+				TEST_ASSERT(abs(body.health / body.maxHealth - 0.6) < 0.001, "Finalization healed a wounded [mob_type]")
+				body.updatehealth()
+				TEST_ASSERT(abs(body.health / body.maxHealth - 0.6) < 0.001, "updatehealth lost scaled damage")
+				TEST_ASSERT(abs(body.melee_damage_upper - 20 * damage_factor) < 0.001, "Wrong melee factor")
+				context.finalize()
+				body.forceMove(run_loc_floor_top_right)
+				body.finalize_npc_zone(allocate(/datum/npc_spawn_context, src, 1, "boss"))
+				TEST_ASSERT_EQUAL(body.npc_spawn_context, context, "Movement/repeated calls replaced the pinned context")
+				TEST_ASSERT(abs(body.maxHealth - 100 * health_factor) < 0.001, "Repeated finalization stacked health")
+				body.fully_heal()
+				TEST_ASSERT_EQUAL(body.health, body.maxHealth, "Healing lost the scaled maximum")
+				body.death()
+				body.revive(ADMIN_HEAL_ALL)
+				TEST_ASSERT(abs(body.maxHealth - 100 * health_factor) < 0.001, "Revival selected a different maximum")
+				body.setBruteLoss(body.maxHealth * 0.4)
+				body.set_npc_zone_melee(30, 40)
+				body.set_npc_zone_melee(30, 40)
+				TEST_ASSERT(abs(body.melee_damage_upper - 40 * damage_factor) < 0.001, "Replacing a weapon stacked its raw force")
+				body.set_npc_zone_health(200)
+				TEST_ASSERT(abs(body.maxHealth - 200 * health_factor) < 0.001, "Raw posse/phase health lost its factor")
+				TEST_ASSERT(abs(body.health / body.maxHealth - 0.6) < 0.001, "Raw health change healed the body")
+				body.exempt_npc_zone()
+				TEST_ASSERT_EQUAL(body.maxHealth, 200, "Exemption did not restore the current raw max health")
+				TEST_ASSERT(abs(body.health / body.maxHealth - 0.6) < 0.001, "Exemption changed health fraction")
+				TEST_ASSERT_EQUAL(body.melee_damage_upper, 40, "Exemption did not restore raw weapon force")
+				context.finalize()
+				TEST_ASSERT(!body.npc_zone_applied, "Exemption was reversed by repeated finalization")
+				qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_damage/Run()
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_bottom_left, context)
+	var/obj/projectile/bullet/projectile = allocate(/obj/projectile/bullet)
+	var/raw_damage = projectile.damage
+	SEND_SIGNAL(body, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, projectile)
+	SEND_SIGNAL(body, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, projectile)
+	TEST_ASSERT(abs(projectile.damage - raw_damage * 1.35) < 0.001, "A reused projectile multiplied damage twice")
+	TEST_ASSERT_EQUAL(npc_zone_damage(10, body), 13.5, "Raw scripted ability did not scale")
+	TEST_ASSERT_EQUAL(npc_zone_damage(13.5, body, TRUE), 13.5, "Already-scaled melee input scaled twice")
+	var/delayed_factor = body.get_npc_zone_damage_factor()
+	qdel(body)
+	TEST_ASSERT_EQUAL(npc_zone_damage(10, delayed_factor), 13.5, "Delayed damage lost its numeric factor after creator deletion")
+
+/datum/unit_test/voidcrew_npc_zone_exemptions/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	// Producers for pets, recruits, guards, arenas and summons share this opt-out.
+	for(var/child_role in list("ordinary", "boss"))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "exempt")
+		var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, context)
+		TEST_ASSERT(!body.npc_zone_applied, "Explicit source exemption failed")
+		var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, body, 3, child_role)
+		var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, child_context)
+		TEST_ASSERT(!child.npc_zone_applied, "An exempt descendant lost exemption to its [child_role] role")
+		qdel(body)
+		qdel(child)
+	var/datum/npc_spawn_context/passive_context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/basic/passive = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/passive, location, passive_context, FALSE)
+	passive_context.finalize()
+	TEST_ASSERT(!passive.npc_zone_applied, "Passive ambient fauna received a hostile profile")
+	qdel(passive)
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, context)
+	body.setBruteLoss(90)
+	var/mob/living/basic/friend = allocate(/mob/living/basic/npc_zone_test, location)
+	friend.exempt_npc_zone()
+	body.befriend(friend)
+	TEST_ASSERT(!body.npc_zone_applied && body.npc_zone_exempt, "Player-owned taming did not remove the profile")
+	TEST_ASSERT(abs(body.health / body.maxHealth - 0.5) < 0.001, "Taming healed the body")
+	qdel(body)
+	for(var/ownership_signal in list(COMSIG_MOB_LOGIN, COMSIG_MOB_MIND_TRANSFERRED_INTO))
+		context = allocate(/datum/npc_spawn_context, src, 3)
+		body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, context)
+		SEND_SIGNAL(body, ownership_signal)
+		TEST_ASSERT(!body.npc_zone_applied && body.npc_zone_exempt, "Ownership signal left a profile active")
+		qdel(body)
+	context = allocate(/datum/npc_spawn_context, src, 3)
+	body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, context)
+	body.mind_initialize()
+	TEST_ASSERT(!body.npc_zone_applied && body.npc_zone_exempt, "Mind initialization left a profile active")
+	qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_bosses/Run()
+	for(var/boss_type in list(
+		/mob/living/simple_animal/hostile/megafauna,
+		/mob/living/simple_animal/hostile/asteroid/elite,
+		/mob/living/basic/boss,
+		/mob/living/basic/trooper/pirate/faction/boss,
+		/mob/living/basic/bounty_criminal/boss,
+		/mob/living/basic/bounty_criminal/kingpin,
+		/mob/living/basic/bounty_lair_boss,
+		/mob/living/basic/lich,
+		/mob/living/basic/hoarfrost_matriarch,
+		/mob/living/basic/trooper/pirate/faction/silverscale/captain,
+		/mob/living/basic/trooper/pirate/faction/skeleton/captain,
+		/mob/living/basic/trooper/pirate/faction/grey/captain,
+		/mob/living/basic/trooper/pirate/faction/lustrous/captain,
+		/mob/living/basic/trooper/pirate/faction/interdyne/captain,
+		/mob/living/basic/trooper/pirate/faction/irs/captain,
+		/mob/living/basic/trooper/pirate/faction/medieval/captain,
+		/mob/living/simple_animal/hostile/asteroid/old_demon,
+		/mob/living/basic/mining/wolf/alpha,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
+	))
+		TEST_ASSERT(npc_zone_boss_type(boss_type), "Approved boss type missing: [boss_type]")
+	TEST_ASSERT(!npc_zone_boss_type(/mob/living/basic/npc_zone_test), "An ordinary mob was classified as a boss")
+	TEST_ASSERT(!npc_zone_boss_type(/mob/living/basic/lich/mirror_image), "Disposable lich images were classified as bosses")
+	// Research's count overrides belong to W1, but its setpiece role is core policy.
+	var/obj/effect/zone_mobs/bug/boss/research_marker = allocate(/obj/effect/zone_mobs/bug/boss)
+	TEST_ASSERT_EQUAL(research_marker.npc_role, "boss", "Research marker did not select the explicit boss role")
+	qdel(research_marker)
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_bottom_left, context, FALSE)
+	body.name = "Captain Boss Kingpin"
+	body.setMaxHealth(10000)
+	body.setBruteLoss(0)
+	context.finalize()
+	TEST_ASSERT_EQUAL(body.npc_zone_role, "ordinary", "Name/health inferred boss status")
+	qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_matriarch/Run()
+	for(var/zone_type in list(1, 2, 3))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone_type)
+		var/mob/living/basic/hoarfrost_matriarch/body = spawn_npc_in_zone(/mob/living/basic/hoarfrost_matriarch, run_loc_floor_bottom_left, context)
+		var/health_factor = zone_type == 3 ? 1.3 : (zone_type == 2 ? 1.15 : 1)
+		var/damage_factor = zone_type == 3 ? 1.2 : (zone_type == 2 ? 1.1 : 1)
+		TEST_ASSERT_EQUAL(body.npc_zone_role, "boss", "The Matriarch received the ordinary profile in zone [zone_type]")
+		TEST_ASSERT(abs(body.maxHealth - 800 * health_factor) < 0.001, "Incorrect Matriarch health in zone [zone_type]")
+		TEST_ASSERT(abs(body.melee_damage_lower - 25 * damage_factor) < 0.001, "Incorrect Matriarch lower melee damage in zone [zone_type]")
+		TEST_ASSERT(abs(body.melee_damage_upper - 30 * damage_factor) < 0.001, "Incorrect Matriarch upper melee damage in zone [zone_type]")
+		qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_replacements/Run()
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 2)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, context, FALSE)
+	TEST_ASSERT(istype(body, /mob/living/basic/npc_zone_test) && !QDELETED(body), "Constructor failed to return the surviving replacement")
+	TEST_ASSERT(!body.npc_zone_applied, "Replacement finalized before caller setup")
+	body.setMaxHealth(200)
+	body.setBruteLoss(50)
+	context.finalize()
+	TEST_ASSERT_EQUAL(body.maxHealth, 270, "Replacement lost context or caller health setup")
+	TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "Replacement finalization lost existing damage")
+	TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, context.source_id, "Replacement lost source identity")
+	qdel(body)
+	// A caller may spawn while map initialization is deferred. Its finalization
+	// request must reach a replacement that did not exist when finalize() ran.
+	context = allocate(/datum/npc_spawn_context, src, 3)
+	var/old_state = SSatoms.initialized
+	SSatoms.initialized = INITIALIZATION_INSSATOMS
+	var/mob/living/pending = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, context)
+	SSatoms.initialized = old_state
+	TEST_ASSERT(!pending.npc_zone_applied, "Deferred body finalized before Initialize")
+	SSatoms.InitAtom(pending, FALSE, list(TRUE))
+	body = locate(/mob/living/basic/npc_zone_test) in run_loc_floor_bottom_left
+	TEST_ASSERT_NOTNULL(body, "Deferred constructor lost its replacement")
+	if(body)
+		TEST_ASSERT_EQUAL(body.maxHealth, 180, "Deferred replacement lost the earlier finalization request")
+		qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	// Random spawners use the same replacement-aware constructor.
+	var/obj/effect/spawner/random/npc_zone_test/random_spawner = allocate(/obj/effect/spawner/random/npc_zone_test, location)
+	random_spawner.npc_spawn_context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/body = random_spawner.make_item(location, /mob/living/basic/npc_zone_test/replacement)
+	TEST_ASSERT_EQUAL(body.maxHealth, 180, "Random spawner replacement escaped the profile")
+	qdel(body)
+	// Biome and cave generation resolve their generating turf, never a z-only band.
+	var/area/site_area = get_area(location)
+	var/old_flags = site_area.area_flags
+	site_area.area_flags |= MOB_SPAWN_ALLOWED
+	var/datum/biome/biome = allocate(/datum/biome)
+	biome.mob_spawn_list = list(/mob/living/basic/npc_zone_test = 1)
+	biome.mob_spawn_chance = 100
+	biome.generate_features(location)
+	body = locate(/mob/living/basic/npc_zone_test) in location
+	TEST_ASSERT_NOTNULL(body?.npc_spawn_context, "Biome route omitted spawn context")
+	if(body)
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_turf, location, "Biome pinned the wrong site")
+		body.npc_spawn_context.on_zone_resolved(2)
+		TEST_ASSERT_EQUAL(body.maxHealth, 135, "Biome route did not finalize after resolution")
+		qdel(body)
+	var/datum/map_generator/cave_generator/cave = allocate(/datum/map_generator/cave_generator)
+	cave.possible_biomes = null
+	cave.open_turf_types = list(location.type)
+	cave.mob_spawn_list = list(/mob/living/basic/npc_zone_test)
+	cave.mob_spawn_chance = 100
+	cave.populate_terrain(list(location), site_area)
+	body = locate(/mob/living/basic/npc_zone_test) in location
+	TEST_ASSERT_NOTNULL(body?.npc_spawn_context, "Cave/asteroid route omitted spawn context")
+	if(body)
+		body.npc_spawn_context.on_zone_resolved(3)
+		TEST_ASSERT_EQUAL(body.maxHealth, 180, "Cave route did not finalize")
+		qdel(body)
+	site_area.area_flags = old_flags
+	// All owned marker themes use 1-2, and explicit setpiece roles survive shared types.
+	for(var/marker_type in list(/obj/effect/zone_mobs/wildlife, /obj/effect/zone_mobs/asteroid, /obj/effect/zone_mobs/wildlife/boss, /obj/effect/zone_mobs/robot/boss, /obj/effect/zone_mobs/cult/boss, /obj/effect/zone_mobs/undead/boss, /obj/effect/zone_mobs/pirate/boss, /obj/effect/zone_mobs/syndicate/boss))
+		var/obj/effect/zone_mobs/marker = allocate(marker_type)
+		if(npc_zone_boss_type(marker_type))
+			TEST_ASSERT_EQUAL(marker.npc_role, "boss", "[marker_type] did not select the boss role")
+		for(var/list/counts in list(marker.count_green, marker.count_yellow, marker.count_red))
+			TEST_ASSERT_EQUAL(counts[1], 1, "[marker_type] minimum count differs")
+			TEST_ASSERT_EQUAL(counts[2], 2, "[marker_type] maximum count differs")
+		qdel(marker)
+	// Initialize in nullspace so the resolver cannot race this explicit do_spawn().
+	var/obj/effect/zone_mobs/marker = allocate(/obj/effect/zone_mobs, null, list(1, 2))
+	marker.forceMove(location)
+	marker.mobs_red = list(/mob/living/basic/npc_zone_test = 1)
+	marker.npc_role = "boss"
+	marker.do_spawn(3)
+	var/count = 0
+	for(var/mob/living/basic/npc_zone_test/guard in range(3, location))
+		count++
+		TEST_ASSERT_EQUAL(guard.npc_zone_role, "boss", "Marker setpiece role was lost")
+		TEST_ASSERT_EQUAL(guard.maxHealth, 130, "Marker output used the ordinary factor")
+		qdel(guard)
+	TEST_ASSERT(count >= 1 && count <= 2, "Marker count escaped the 1-2 budget")
+	qdel(marker)
+	for(var/band in 1 to 3)
+		TEST_ASSERT_EQUAL(SSplanet_mobs.mob_cap_for_band(band), 15, "Band [band] does not have the flat fauna cap")
+
+/datum/unit_test/voidcrew_npc_zone_skeleton_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/effect/zone_mobs/undead/marker = allocate(/obj/effect/zone_mobs/undead, null, list(1, 1))
+	marker.forceMove(location)
+	marker.scatter_radius = 0
+	marker.mobs_red = list(/mob/living/basic/skeleton/templar = 1)
+	marker.do_spawn(3)
+	var/mob/living/basic/skeleton/templar/skeleton = locate() in location
+	TEST_ASSERT_NOTNULL(skeleton, "Red undead marker did not produce its templar")
+	TEST_ASSERT(!skeleton.combat_mode, "Skeleton fixture no longer starts outside combat mode")
+	TEST_ASSERT_EQUAL(skeleton.npc_zone_role, "ordinary", "Hostile skeleton AI missed its ordinary profile")
+	TEST_ASSERT_EQUAL(skeleton.npc_spawn_context.zone_type, 3, "Skeleton route lost its red source")
+	TEST_ASSERT(abs(skeleton.maxHealth - initial(skeleton.maxHealth) * 1.8) < 0.001, "Red skeleton retained baseline health")
+	TEST_ASSERT(abs(skeleton.melee_damage_upper - initial(skeleton.melee_damage_upper) * 1.35) < 0.001, "Red skeleton retained baseline damage")
+	qdel(skeleton)
+	qdel(marker)
+
+/datum/unit_test/voidcrew_npc_zone_resolver_cleanup/Run()
+	// Nullspace leaves the resolver pending until its final fallback attempt.
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src)
+	var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_bottom_left, context)
+	context.resolve_zone()
+	var/datum/zone_resolver/pending = context.resolver
+	TEST_ASSERT_NOTNULL(pending, "Unresolved context did not retain its pending resolver")
+	pending.attempts_left = 0
+	pending.attempt()
+	TEST_ASSERT_EQUAL(context.zone_type, 1, "Resolver fallback did not finalize its context")
+	TEST_ASSERT(body.npc_zone_applied, "Resolver completion did not finalize its surviving NPC")
+	TEST_ASSERT(QDELETED(pending), "Completed resolver did not delete itself")
+	TEST_ASSERT_NULL(context.resolver, "Surviving NPC context retained a completed resolver")
+	qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_deferred/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/planet_mob_tracker/tracker = allocate(/datum/planet_mob_tracker)
+	tracker.surface_z = location.z
+	tracker.zone_band = 2
+	tracker.mob_cap = 1
+	tracker.surface_spawn_turfs[location] = /mob/living/basic/npc_zone_test/replacement
+	var/old_total = SSplanet_mobs.total_managed_mobs
+	SSplanet_mobs.total_managed_mobs = 0
+	var/spawned = SSplanet_mobs.spawn_for_tracker(tracker)
+	SSplanet_mobs.total_managed_mobs = old_total
+	TEST_ASSERT_EQUAL(spawned, 1, "Deferred fauna fixture failed to emit a mob")
+	var/mob/living/basic/npc_zone_test/body = locate() in location
+	TEST_ASSERT_NOTNULL(body, "Deferred fauna lost the replacement")
+	if(body)
+		TEST_ASSERT_EQUAL(body.maxHealth, 135, "Deferred fauna ignored the tracker band")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, REF(tracker), "Deferred fauna lost tracker identity")
+		qdel(body)
+
+/// Keep these route fixtures focused on fauna and structures, without natural anomalies.
+/datum/map_generator/planet_generator/npc_zone_test/place_budgeted_anomalies(list/turfs, budget)
+	return 0
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes
+	abstract_type = /datum/unit_test/voidcrew_npc_zone_planet_routes
+	var/turf/location
+	var/datum/biome/original_biome
+	var/original_flags
+	var/original_river
+	var/datum/biome/biome
+	var/datum/map_generator/planet_generator/npc_zone_test/generator
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/New()
+	. = ..()
+	location = run_loc_floor_bottom_left
+	original_biome = location.generating_biome
+	original_flags = location.turf_flags
+	original_river = location.planet_river
+	biome = allocate(/datum/biome)
+	biome.open_turf_types = list(location.type)
+	biome.flora_spawn_chance = 0
+	biome.feature_spawn_chance = 0
+	biome.mob_spawn_chance = 100
+	biome.dangerous_mob_spawn_list = null
+	location.generating_biome = biome
+	location.turf_flags &= ~(NO_RUINS | TURF_BLOCKS_POPULATE_TERRAIN_FLORAFEATURES)
+	location.planet_river = FALSE
+	generator = allocate(/datum/map_generator/planet_generator/npc_zone_test)
+	generator.throttled = FALSE
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/Destroy()
+	location.generating_biome = original_biome
+	location.turf_flags = original_flags
+	location.planet_river = original_river
+	return ..()
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/fallback/Run()
+	TEST_ASSERT_NULL(SSplanet_mobs.tracker_for_turf(location), "Fallback fixture unexpectedly has deferred fauna tracking")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, generator, 3, "auto", FALSE, location)
+	for(var/mob_type in list(/mob/living/basic/npc_zone_test, /mob/living/basic/npc_zone_test/replacement, /mob/living/basic/npc_zone_test/passive))
+		biome.mob_spawn_list = list((mob_type) = 1)
+		generator.populate_terrain(list(location), get_area(location), 3)
+		var/mob/living/basic/npc_zone_test/body = locate() in location
+		TEST_ASSERT_NOTNULL(body, "Planet fallback did not produce [mob_type]")
+		allocated += body
+		TEST_ASSERT_EQUAL(body.npc_spawn_context?.role, "auto", "Planet fallback bypassed the environmental hostility gate")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_turf, location, "Planet fallback pinned the wrong source turf")
+		if(mob_type == /mob/living/basic/npc_zone_test/passive)
+			TEST_ASSERT(!body.npc_zone_applied, "Passive fallback fauna received a hostile profile")
+			TEST_ASSERT_EQUAL(body.maxHealth, 100, "Passive fallback fauna health changed")
+		else
+			check_npc_zone_child(body, expected)
+		qdel(body)
+
+/datum/unit_test/voidcrew_npc_zone_planet_routes/megafauna/Run()
+	biome.mob_spawn_list = list(SPAWN_MEGAFAUNA = 1)
+	biome.megafauna_spawn_list = list(/mob/living/simple_animal/hostile/megafauna = 1)
+	generator.populate_terrain(list(location), get_area(location), 3)
+	var/mob/living/simple_animal/hostile/megafauna/boss = locate() in location
+	TEST_ASSERT_NOTNULL(boss, "Planet generator did not place its red megafauna")
+	allocated += boss
+	TEST_ASSERT_EQUAL(boss.npc_spawn_context?.role, "boss", "Planet megafauna omitted its explicit boss role")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, generator, 3, "boss", FALSE, location)
+	check_npc_zone_child(boss, expected, boss = TRUE)
+
+/// Both biome tables converge on the same budgeted structure placement route.
+/datum/unit_test/voidcrew_npc_zone_planet_routes/nests/Run()
+	for(var/from_features in list(FALSE, TRUE))
+		biome.mob_spawn_list = from_features ? null : list(/obj/structure/spawner = 1)
+		biome.feature_spawn_list = from_features ? list(/obj/structure/spawner = 1) : null
+		biome.feature_spawn_chance = from_features ? 100 : 0
+		generator.populate_terrain(list(location), get_area(location), 3)
+		var/obj/structure/spawner/nest = locate() in location
+		TEST_ASSERT_NOTNULL(nest, "Planet generator lost a budgeted nest")
+		allocated += nest
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context?.zone_type, 3, "Planet nest lost the selected band")
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context.role, "auto", "Planet nest omitted its environmental role")
+		TEST_ASSERT_EQUAL(nest.npc_spawn_context.source_id, REF(generator), "Planet nest lost its generator source")
+		var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, nest)
+		var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right, child_context)
+		allocated += child
+		check_npc_zone_child(child, nest.npc_spawn_context)
+		qdel(child)
+		qdel(nest)
+
+/// Use the real vent boss route and a yellow planet footprint on the shared test level.
+/datum/unit_test/voidcrew_npc_zone_ore_vent_route
+	parent_type = /datum/unit_test/voidcrew_npc_zone_packed
+
+/datum/unit_test/voidcrew_npc_zone_ore_vent_route/Run()
+	zones_were_active = SSovermap_zones.zones_active
+	SSovermap_zones.zones_active = TRUE
+	var/turf/base = run_loc_floor_bottom_left
+	var/original_type = base.type
+	var/turf/open/overmap/token = base.ChangeTurf(/turf/open/overmap)
+	overmap_turfs[token] = original_type
+	token.current_zone = allocate(/datum/overmap_zone, 2)
+	var/turf/location = run_loc_floor_top_right
+	var/datum/map_zone/zone = allocate(/datum/map_zone)
+	zone.z_levels = list(reservation)
+	var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
+	footprint.z_value = location.z
+	footprint.set_rect(location.x, location.y, 1, 1)
+	var/obj/structure/overmap/planet/site = allocate(/obj/structure/overmap/planet, token)
+	sites += site
+	site.mapzone = zone
+	site.footprint = footprint
+	var/obj/structure/ore_vent/boss/vent = allocate(/obj/structure/ore_vent/boss, location)
+	vent.summoned_boss = /mob/living/simple_animal/hostile/megafauna
+	vent.start_wave_defense()
+	var/mob/living/simple_animal/hostile/megafauna/boss = locate() in location
+	TEST_ASSERT_NOTNULL(boss, "Vent did not summon its boss")
+	allocated += boss
+	TEST_ASSERT_EQUAL(boss.npc_spawn_context?.role, "boss", "Vent omitted its explicit boss role")
+	var/datum/npc_spawn_context/expected = allocate(/datum/npc_spawn_context, vent, 2, "boss", FALSE, location)
+	check_npc_zone_child(boss, expected, boss = TRUE)
+	// Death still reaches the original conclusion, and its neutral drone stays baseline.
+	boss.set_health(0)
+	boss.death()
+	var/mob/living/basic/node_drone/drone = locate() in location
+	TEST_ASSERT_NOTNULL(drone, "Profiled vent boss lost its death callback")
+	allocated += drone
+	TEST_ASSERT(drone.is_npc_zone_exempt() && !drone.npc_zone_applied, "Vent node drone received a hostile profile")
+	TEST_ASSERT_EQUAL(drone.maxHealth, initial(drone.maxHealth), "Vent node drone health was scaled")
+
+/datum/unit_test/voidcrew_npc_zone_spawner
+	var/mob/living/watcher
+	var/watched_z
+
+/datum/unit_test/voidcrew_npc_zone_spawner/Destroy()
+	if(watched_z)
+		SSmobs.clients_by_zlevel[watched_z] -= watcher
+	return ..()
+
+/datum/unit_test/voidcrew_npc_zone_spawner/proc/setup_body(mob/living/body)
+	TEST_ASSERT(FACTION_HOSTILE in body.faction, "Spawner callback ran before faction assignment")
+	TEST_ASSERT(!body.npc_zone_applied, "Spawner finalized before its setup callback")
+	body.setMaxHealth(200)
+	body.setBruteLoss(50)
+
+/datum/unit_test/voidcrew_npc_zone_spawner/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	watcher = allocate(/mob/living/basic, location)
+	watched_z = location.z
+	SSmobs.clients_by_zlevel[watched_z] |= watcher
+	for(var/list/distances in list(list(1, 0), list(2, 1), list(2, 0)))
+		var/obj/structure/parent = allocate(/obj/structure, location)
+		parent.npc_spawn_context = allocate(/datum/npc_spawn_context, src, 3, "auto", FALSE, location)
+		var/datum/component/spawner/spawner = parent.AddComponent(/datum/component/spawner, \
+			spawn_types = list(/mob/living/basic/npc_zone_test/replacement), \
+			faction = list(FACTION_HOSTILE), spawn_callback = CALLBACK(src, PROC_REF(setup_body)), \
+			spawn_distance = distances[1], spawn_distance_exclude = distances[2])
+		spawner.try_spawn_mob()
+		TEST_ASSERT_EQUAL(length(spawner.spawned_things), 1, "Component branch [distances[1]]/[distances[2]] lost its output")
+		for(var/datum/weakref/body_ref as anything in spawner.spawned_things)
+			var/mob/living/body = body_ref.resolve()
+			TEST_ASSERT_EQUAL(body.maxHealth, 360, "Component finalized before callback health setup")
+			TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "Component scaling healed the output")
+			qdel(body)
+		qdel(parent)
+
+/// The map parser constructs atoms before SSatoms initializes them. Exercise that
+/// delayed path with a replacement, plus two adjacent site footprints on one z.
+/datum/unit_test/voidcrew_npc_zone_packed
+	var/list/sites = list()
+	var/list/overmap_turfs = list()
+	var/zones_were_active
+
+/datum/unit_test/voidcrew_npc_zone_packed/Destroy()
+	SSovermap_zones.zones_active = zones_were_active
+	for(var/obj/structure/overmap/planet/site as anything in sites)
+		site.mapzone = null
+		site.footprint = null
+	for(var/turf/open/overmap/tile as anything in overmap_turfs)
+		tile.current_zone = null
+		tile.ChangeTurf(overmap_turfs[tile])
+	return ..()
+
+/datum/unit_test/voidcrew_npc_zone_packed/Run()
+	zones_were_active = SSovermap_zones.zones_active
+	SSovermap_zones.zones_active = TRUE
+	var/turf/base = run_loc_floor_bottom_left
+	var/list/locations = list(get_step(base, NORTH), get_step(get_step(base, NORTH), EAST))
+	for(var/band in list(1, 3))
+		var/turf/token = band == 1 ? base : get_step(base, EAST)
+		var/old_type = token.type
+		var/turf/open/overmap/overmap_tile = token.ChangeTurf(/turf/open/overmap)
+		overmap_turfs[overmap_tile] = old_type
+		overmap_tile.current_zone = allocate(/datum/overmap_zone, band)
+		var/turf/inside = locations[band == 1 ? 1 : 2]
+		var/datum/map_zone/zone = allocate(/datum/map_zone)
+		zone.z_levels = list(reservation)
+		var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
+		footprint.z_value = inside.z
+		footprint.set_rect(inside.x, inside.y, 1, 1)
+		var/obj/structure/overmap/planet/site = allocate(/obj/structure/overmap/planet, overmap_tile)
+		sites += site
+		site.mapzone = zone
+		site.footprint = footprint
+		TEST_ASSERT_EQUAL(SSovermap_zones.get_zone_type_anywhere(inside), band, "Packed fixture resolved its neighbour's band")
+		var/old_state = SSatoms.initialized
+		SSatoms.initialized = INITIALIZATION_INSSATOMS
+		var/mob/living/basic/npc_zone_test/mapped = new /mob/living/basic/npc_zone_test/replacement(inside)
+		SSatoms.initialized = old_state
+		SSatoms.InitAtom(mapped, FALSE, list(TRUE))
+		var/mob/living/basic/npc_zone_test/body = locate() in inside
+		TEST_ASSERT_NOTNULL(body, "Mapped Initialize replacement vanished")
+		if(!body)
+			continue
+		body.npc_spawn_context.resolve_zone()
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, band, "Mapped replacement resolved a different site")
+		TEST_ASSERT_NULL(body.npc_spawn_context.resolver, "Synchronous construction retained its completed resolver")
+		TEST_ASSERT_EQUAL(body.maxHealth, band == 1 ? 100 : 180, "Mapped replacement used its neighbour's factor")
+		body.forceMove(locations[band == 1 ? 2 : 1])
+		body.finalize_npc_zone()
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, band, "Moving a mapped hostile retiered it")
+		qdel(body)
+
+/// Hull crews finalize after their key/setup, and nullspace pods use the captured raid band.
+/datum/unit_test/voidcrew_npc_zone_ship_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/structure/overmap/ship/npc/pirate/ship = allocate(/obj/structure/overmap/ship/npc/pirate)
+	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
+	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew, location)
+	port.shuttle_areas = list((get_area(location)) = TRUE)
+	ship.shuttle = port
+	ship.pool_zone_type = 2
+	ship.crew_min = 2
+	ship.crew_max = 2
+	ship.crew_types = list(/mob/living/basic/npc_zone_test)
+	ship.captain_type = /mob/living/basic/npc_zone_test
+	ship.spawn_crew()
+	TEST_ASSERT_EQUAL(length(ship.tracked_crew), 2, "Hull crew fixture did not spawn its roster")
+	for(var/mob/living/crew as anything in ship.tracked_crew)
+		var/is_captain = locate(/obj/item/ship_key) in crew
+		TEST_ASSERT_EQUAL(crew.npc_zone_role, is_captain ? "boss" : "ordinary", "Hull captain/crew role was lost")
+		TEST_ASSERT(abs(crew.maxHealth - (is_captain ? 115 : 135)) < 0.001, "Hull crew retained the flat pirate multiplier")
+		qdel(crew)
+	ship.tracked_crew.Cut()
+	ship.shuttle = null
+	port.shuttle_areas = list()
+	qdel(port, force = TRUE)
+	var/datum/ai_controller/npc_ship/boarding_docking_test/profile/controller = allocate(/datum/ai_controller/npc_ship/boarding_docking_test/profile, ship)
+	controller.test_floor = location
+	ship.boss_type = /mob/living/basic/trooper/pirate/faction/boss/silverscale
+	for(var/band in list(2, 3))
+		ship.state = "flying"
+		target.state = "flying"
+		controller.test_zone = allocate(/datum/overmap_zone, band)
+		controller.set_target(target)
+		var/mob/living/boarder = create_boarding_pod(location, target, ship, /mob/living/basic/npc_zone_test)
+		TEST_ASSERT_NOTNULL(boarder, "Ordinary pod route did not create a boarder")
+		TEST_ASSERT_EQUAL(boarder.npc_spawn_context.zone_type, band, "A nullspace pod lost the target band")
+		TEST_ASSERT(abs(boarder.maxHealth - (band == 2 ? 135 : 180)) < 0.001, "Ordinary pod used the old flat multiplier")
+		var/mob/living/boss = create_boss_boarding_pod(location, target, ship, ship.boss_type)
+		if(band == 3)
+			TEST_ASSERT_NOTNULL(boss, "Red pod route omitted its boss")
+			TEST_ASSERT_EQUAL(boss.npc_zone_role, "boss", "Boss pod lost its explicit role")
+			TEST_ASSERT(abs(boss.maxHealth - boss.npc_zone_original_max_health * 1.3) < 0.001, "Boss initialization health was scaled incorrectly")
+			TEST_ASSERT_NULL(create_boss_boarding_pod(location, target, ship, ship.boss_type), "A second boss escaped the engagement budget")
+		else
+			TEST_ASSERT_NULL(boss, "Yellow deployed a boss")
+		target.state = "idle"
+		for(var/obj/effect/pod_landingzone/boarding/landing in location)
+			landing.cancel_if_target_docked()
+		controller.clear_target()
+
+/datum/unit_test/voidcrew_npc_zone_bounty_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/bounty_record/record = allocate(/datum/bounty_record)
+	record.tier = 2 // BOUNTY_TIER_WANTED
+	record.style = "brawler"
+	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, location, null)
+	allocated += criminal
+	var/raw_health = criminal.body_tier_health()
+	criminal.npc_spawn_context.on_zone_resolved(3)
+	TEST_ASSERT(abs(criminal.maxHealth - raw_health * 1.8) < 0.001, "Criminal route finalized before body_setup")
+	criminal.setBruteLoss(criminal.maxHealth / 2)
+	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy, location)
+	decoy.body_match(criminal)
+	decoy.body_match(criminal)
+	TEST_ASSERT_EQUAL(decoy.npc_spawn_context.source_id, criminal.npc_spawn_context.source_id, "Decoy lost the fugitive source")
+	TEST_ASSERT_EQUAL(decoy.maxHealth, criminal.maxHealth, "Repeated body_match multiplied copied health")
+	TEST_ASSERT(abs(decoy.health / decoy.maxHealth - criminal.health / criminal.maxHealth) < 0.001, "Decoy copy changed health fraction")
+	var/mob/living/carbon/human/consistent/admin = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	var/datum/bounty_admin_panel/unit_test/panel = allocate(/datum/bounty_admin_panel/unit_test, admin)
+	var/mob/living/basic/bounty_criminal/decoy/admin_decoy = panel.admin_spawn_decoy(admin, criminal)
+	TEST_ASSERT_NOTNULL(admin_decoy, "Admin decoy fixture failed")
+	allocated += admin_decoy
+	TEST_ASSERT_EQUAL(admin_decoy.maxHealth, criminal.maxHealth, "Admin decoy route stacked the copied pool")
+	var/datum/bounty_real_weapon/knife = bounty_real_weapon(/obj/item/knife/combat)
+	knife.apply_melee(criminal)
+	knife.apply_melee(criminal)
+	TEST_ASSERT(abs(criminal.melee_damage_upper - knife.force_high * 1.35) < 0.001, "Bounty weapon replacement stacked or lost the profile")
+	var/mob/living/basic/bounty_criminal/kingpin/kingpin = bounty_kingpin_setup(location, list(), null)
+	allocated += kingpin
+	kingpin.npc_spawn_context.on_zone_resolved(2)
+	TEST_ASSERT_EQUAL(kingpin.npc_zone_role, "boss", "The neutral lounge kingpin missed its explicit boss profile")
+	var/mob/living/basic/bounty_kingpin_goon/goon = kingpin.kingpin_crew.spawn_goon(run_loc_floor_top_right)
+	allocated += goon
+	TEST_ASSERT_EQUAL(goon.npc_spawn_context.zone_type, 2, "Replacement goon lost its kingpin's site band")
+	TEST_ASSERT_EQUAL(goon.npc_zone_role, "ordinary", "Goon inherited the kingpin's boss role")
+	TEST_ASSERT(abs(goon.maxHealth - goon.npc_zone_original_max_health * 1.35) < 0.001, "Replacement goon did not finalize")
+	kingpin.exempt_npc_zone()
+	var/mob/living/basic/bounty_kingpin_goon/owned_goon = kingpin.kingpin_crew.spawn_goon(location)
+	allocated += owned_goon
+	TEST_ASSERT(!owned_goon.npc_zone_applied && owned_goon.npc_zone_exempt, "Player ownership did not propagate to goons")
+
+/datum/unit_test/voidcrew_npc_zone_bounty_damage/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/basic/bounty_criminal/boss/boss = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/boss/juggernaut, location, context)
+	allocated += boss
+	var/mob/living/basic/npc_zone_test/victim = allocate(/mob/living/basic/npc_zone_test, run_loc_floor_top_right)
+	boss.boss_hit(victim, 10)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 12, "Raw boss ability escaped scaling")
+	boss.boss_hit(victim, 12, already_scaled = TRUE)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 24, "Scaled melee input multiplied twice")
+	var/list/table = boss.boss_health_table()
+	boss.boss_engaged = list("first" = TRUE, "second" = TRUE)
+	boss.boss_apply_posse_health(FALSE)
+	TEST_ASSERT(abs(boss.maxHealth - table[2] * 1.3) < 0.001, "Posse health lost the boss factor")
+	var/obj/effect/bounty_boss_explosive/explosive = allocate(/obj/effect/bounty_boss_explosive, location, boss)
+	var/obj/effect/bounty_boss_fire_pool/pool = allocate(/obj/effect/bounty_boss_fire_pool, location, list(location), 5 SECONDS, boss)
+	var/factor = boss.get_npc_zone_damage_factor()
+	qdel(boss)
+	TEST_ASSERT_EQUAL(explosive.damage_factor, factor, "Delayed explosive lost its creator's factor")
+	TEST_ASSERT_EQUAL(pool.damage_factor, factor, "Delayed fire lost its creator's factor")
+	victim.setMaxHealth(1000)
+	victim.updatehealth()
+	victim.mind_initialize()
+	victim.forceMove(location)
+	var/before_blast = victim.getBruteLoss()
+	var/raw_blast = explosive.damage
+	explosive.detonate()
+	TEST_ASSERT(abs(victim.getBruteLoss() - before_blast - raw_blast * factor) < 0.001, "Orphaned explosive fallback lost or doubled its captured factor")
+	var/before_fire = victim.getBruteLoss()
+	pool.scorch(10)
+	TEST_ASSERT(abs(victim.getBruteLoss() - before_fire - 10 * factor) < 0.001, "Orphaned fire pool lost its captured factor")
+	var/datum/status_effect/bounty_boss_burning/burning = victim.apply_status_effect(/datum/status_effect/bounty_boss_burning, factor)
+	// scorch already applied the refreshable effect.
+	burning = victim.has_status_effect(/datum/status_effect/bounty_boss_burning)
+	var/before = victim.getBruteLoss()
+	burning.tick(1)
+	TEST_ASSERT(abs(victim.getBruteLoss() - before - 3 * factor) < 0.001, "Lingering fire did not retain its numeric factor") // BOUNTY_BOSS_BURNING_DAMAGE
+
+/// Exercise the mafia override in a real club room, which bypasses base marker spawning.
+/datum/unit_test/voidcrew_npc_zone_mafia_room
+	var/turf/room_floor
+	var/area/original_area
+
+/datum/unit_test/voidcrew_npc_zone_mafia_room/Destroy()
+	if(room_floor && original_area)
+		room_floor.change_area(get_area(room_floor), original_area)
+	return ..()
+
+/datum/unit_test/voidcrew_npc_zone_mafia_room/Run()
+	room_floor = run_loc_floor_bottom_left
+	original_area = get_area(room_floor)
+	var/area/ruin/space/has_grav/powered/mafia_club/casino/room = allocate(/area/ruin/space/has_grav/powered/mafia_club/casino)
+	room_floor.change_area(original_area, room)
+	var/obj/effect/zone_mobs/mafia/marker = allocate(/obj/effect/zone_mobs/mafia)
+	marker.forceMove(room_floor)
+	marker.do_spawn(3)
+	var/count = 0
+	var/list/roster = bounty_mafia_room_crew(room.type)
+	for(var/mob/living/basic/trooper/russian/mafia/goon in room_floor)
+		allocated += goon
+		count++
+		TEST_ASSERT(roster[goon.type], "Custom mafia marker escaped its existing room roster")
+		TEST_ASSERT_EQUAL(goon.npc_zone_role, "ordinary", "Custom mafia room output missed finalization")
+		TEST_ASSERT(abs(goon.maxHealth - goon.npc_zone_original_max_health * 1.8) < 0.001, "Custom mafia room output missed the selected factor")
+	TEST_ASSERT(count >= 1 && count <= 2, "Custom mafia marker escaped the 1-2 output budget")
+
+/// Field-route fixtures suppress offer generation, retaining the real spawn/tracking paths.
+/datum/mission/npc_zone_test/generate_mission_details()
+	return
+
+/datum/mission_target/npc_zone_test
+	var/band = 3
+
+/datum/mission_target/npc_zone_test/get_zone_type()
+	return band
+
+/datum/unit_test/voidcrew_npc_zone_mission_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/mission/mission = allocate(/datum/mission/npc_zone_test)
+	mission.objective_name = "Test quarry"
+	var/datum/mission_target/npc_zone_test/site = allocate(/datum/mission_target/npc_zone_test, mission)
+	mission.target = site
+	for(var/objective_type in list(/datum/mission_objective/field/kill_named, /datum/mission_objective/field/kill_named/big_game))
+		var/datum/mission_objective/field/kill_named/objective = allocate(objective_type)
+		objective.mission = mission
+		objective.target_mob_type = /mob/living/basic/npc_zone_test/replacement
+		objective.guard_types = list(/mob/living/basic/npc_zone_test/replacement)
+		var/is_hunt = istype(objective, /datum/mission_objective/field/kill_named/big_game)
+		if(is_hunt)
+			var/datum/mission_objective/field/kill_named/big_game/hunt = objective
+			hunt.health_override = 450
+		objective.spawn_field_objects(location)
+		var/mob/living/body = objective.target_mob
+		TEST_ASSERT_NOTNULL(body, "[objective_type] lost its replacement target")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, REF(site), "Mission target lost site identity")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, 3, "Mission used its spawn turf instead of its site's band")
+		TEST_ASSERT(abs(body.maxHealth - (is_hunt ? 810 : 180)) < 0.001, "Mission finalized before hunt health setup")
+		var/guards = 0
+		for(var/mob/living/basic/npc_zone_test/guard in range(3, location))
+			if(guard == body)
+				continue
+			guards++
+			TEST_ASSERT_EQUAL(guard.maxHealth, 180, "Mission guard replacement missed finalization")
+			qdel(guard)
+		TEST_ASSERT_EQUAL(guards, 1, "Mission lost an entourage output")
+		mission.forget_quest_atom(body)
+		objective.deactivate()
+		qdel(body)
+		qdel(objective)
+	// Auto role profiles hostile specimens while passive captures remain baseline.
+	for(var/specimen_type in list(/mob/living/basic/npc_zone_test/replacement, /mob/living/basic/butterfly))
+		var/datum/mission_objective/field/capture_beast/capture = allocate(/datum/mission_objective/field/capture_beast)
+		capture.mission = mission
+		capture.target_mob_type = specimen_type
+		capture.spawn_field_objects(location)
+		var/mob/living/body = capture.target_mob
+		var/hostile = specimen_type == /mob/living/basic/npc_zone_test/replacement
+		TEST_ASSERT_EQUAL(body.npc_zone_applied, hostile, "Capture route ignored the environmental hostile gate")
+		if(hostile)
+			TEST_ASSERT_EQUAL(body.maxHealth, 180, "Hostile capture lost the site band")
+		else
+			TEST_ASSERT_EQUAL(body.maxHealth, initial(body.maxHealth), "Passive specimen was scaled")
+		mission.forget_quest_atom(body)
+		capture.deactivate()
+		qdel(body)
+		qdel(capture)
+	var/datum/mission_objective/field/wipe_camp/camp = allocate(/datum/mission_objective/field/wipe_camp)
+	camp.mission = mission
+	camp.squad_types = list(/mob/living/simple_animal/hostile)
+	camp.squad_names = list("Test poacher")
+	// A hostile type makes a missing rescue exemption visible.
+	camp.critter_type = /mob/living/basic/npc_zone_test/replacement
+	camp.spawn_field_objects(location)
+	TEST_ASSERT_EQUAL(length(camp.squad), 1, "Camp did not retain its squad")
+	var/mob/living/poacher = camp.squad[1]
+	TEST_ASSERT_EQUAL(poacher.maxHealth, initial(poacher.maxHealth) * 1.8, "Poacher missed camp-band finalization")
+	var/cages = 0
+	for(var/obj/item/pet_carrier/cage in range(3, location))
+		for(var/mob/living/rescued in cage)
+			cages++
+			TEST_ASSERT(rescued.npc_zone_exempt && !rescued.npc_zone_applied, "Rescued cage replacement received a hostile profile")
+			TEST_ASSERT_EQUAL(rescued.maxHealth, 100, "Rescued animal health was scaled")
+	TEST_ASSERT(cages >= 1, "Camp fixture did not produce a rescued animal")
+	mission.forget_quest_atom(mission.quest_atom)
+	camp.deactivate()
+	qdel(poacher)
+
+/// Actual fauna replacement rolls must defer finalization until the caller finishes setup.
+/datum/unit_test/voidcrew_npc_zone_fauna_routes/Run()
+	var/list/replacement_types = list(
+		/mob/living/basic/mining/wolf/random = /mob/living/basic/mining/wolf/alpha,
+		/mob/living/basic/mining/wolf/wasteland/random = /mob/living/basic/mining/wolf/alpha/wasteland,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = /mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
+		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random = /mob/living/simple_animal/hostile/asteroid/hermit/ranged,
+	)
+	for(var/spawn_type in replacement_types)
+		var/found_replacement = FALSE
+		// Stop at the first replacement. Even the 15% rolls miss all 256 with probability < 1e-18.
+		for(var/attempt in 1 to 256)
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 2)
+			var/mob/living/body = spawn_npc_in_zone(spawn_type, run_loc_floor_bottom_left, context, FALSE)
+			TEST_ASSERT(!body.npc_zone_applied, "[spawn_type] finalized during its replacement roll")
+			found_replacement = istype(body, replacement_types[spawn_type])
+			body.setMaxHealth(200)
+			body.setBruteLoss(50)
+			context.finalize()
+			var/is_boss = npc_zone_boss_type(body.type)
+			TEST_ASSERT(abs(body.maxHealth - (is_boss ? 230 : 270)) < 0.001, "[spawn_type] lost replacement role or caller setup")
+			TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "[spawn_type] healed during finalization")
+			TEST_ASSERT_EQUAL(body.npc_spawn_context, context, "Replacement acquired a second context")
+			qdel(body)
+			if(found_replacement)
+				break
+		TEST_ASSERT(found_replacement, "[spawn_type] never exercised its replacement route")
+
+/datum/unit_test/voidcrew_npc_zone_crystal_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/structure/spawner/sea_crystal/crystal = allocate(/obj/structure/spawner/sea_crystal, location)
+	crystal.npc_spawn_context.on_zone_resolved(3)
+	var/source_id = crystal.npc_spawn_context.source_id
+	crystal.summon_count = 1
+	TEST_ASSERT(crystal.summon_minions(), "Crystal could not commit a retaliation wave")
+	qdel(crystal)
+	sleep(4 SECONDS)
+	var/mob/living/basic/mining/hivelord/beach/hivelord = locate() in range(1, location)
+	TEST_ASSERT_NOTNULL(hivelord, "Committed crystal retaliation vanished with its source")
+	TEST_ASSERT_EQUAL(hivelord.npc_spawn_context.source_id, source_id, "Delayed retaliation lost crystal identity")
+	TEST_ASSERT_EQUAL(hivelord.npc_spawn_context.zone_type, 3, "Delayed retaliation resolved against its landing turf")
+	TEST_ASSERT(abs(hivelord.maxHealth - hivelord.npc_zone_original_max_health * 1.8) < 0.001, "Delayed retaliation did not finalize")
+	allocated += hivelord
+
+/datum/unit_test/voidcrew_npc_zone_ambush_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/ambient_place/site/site = allocate(/datum/ambient_place/site, null, location)
+	site.band = 2
+	var/mob/living/basic/ambient_npc/planet/peddler/peddler = allocate(/mob/living/basic/ambient_npc/planet/peddler, location)
+	peddler.set_place(site)
+	var/mob/living/basic/bait = allocate(/mob/living/basic, run_loc_floor_top_right)
+	var/datum/ambient_activity/caravan_ambush/ambush = allocate(/datum/ambient_activity/caravan_ambush, peddler)
+	var/mob/living/raider = ambush.spawn_raider(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right, bait)
+	allocated += raider
+	// spawn_pack owns this ledger and Destroy unregisters the pack's attack signal.
+	ambush.pack += WEAKREF(raider)
+	TEST_ASSERT_EQUAL(raider.npc_spawn_context.source_id, REF(site), "Caravan ambusher lost site identity")
+	TEST_ASSERT_EQUAL(raider.maxHealth, 135, "Caravan ambusher ignored the site band")
+	TEST_ASSERT(raider.GetComponent(/datum/component/leash), "Caravan ambusher missed its setup")
+	TEST_ASSERT_EQUAL(raider.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Caravan target setup was lost")
+	for(var/faction_token in raider.faction)
+		TEST_ASSERT(!findtext("[faction_token]", "planetary_"), "Caravan ambusher kept the planet's faction")
+
+/// A hull fixture provides floor and crew, with real overmap resolution for its token.
+/obj/structure/overmap/ship/npc_zone_test
+	var/turf/test_floor
+
+/obj/structure/overmap/ship/npc_zone_test/get_random_open_ship_turf(max_tries = 20)
+	return test_floor
+
+/obj/structure/overmap/ship/npc_zone_test/is_aboard(atom/thing)
+	return get_turf(thing) == test_floor
+
+/obj/structure/overmap/ship/npc_zone_test/get_event_crew()
+	return list(1, 2, 3, 4, 5)
+
+/datum/round_event/voidcrew/vent_clog/npc_zone_test
+	var/obj/machinery/atmospherics/components/unary/vent_pump/test_vent
+
+/datum/round_event/voidcrew/vent_clog/npc_zone_test/get_vent()
+	return test_vent
+
+/datum/voidcrew_cargo_shuttle/npc_zone_test
+	var/list/test_turfs
+
+/datum/voidcrew_cargo_shuttle/npc_zone_test/get_cargo_bay_turfs()
+	return test_turfs.Copy()
+
+/datum/unit_test/voidcrew_npc_zone_event_routes
+	parent_type = /datum/unit_test/voidcrew_npc_zone_packed
+
+/datum/unit_test/voidcrew_npc_zone_event_routes/Run()
+	zones_were_active = SSovermap_zones.zones_active
+	SSovermap_zones.zones_active = TRUE
+	var/turf/base = run_loc_floor_bottom_left
+	var/original_type = base.type
+	var/turf/open/overmap/token = base.ChangeTurf(/turf/open/overmap)
+	overmap_turfs[token] = original_type
+	var/datum/overmap_zone/red = allocate(/datum/overmap_zone, 3)
+	var/datum/overmap_zone/green = allocate(/datum/overmap_zone, 1)
+	token.current_zone = red
+	var/turf/location = run_loc_floor_top_right
+	var/obj/structure/overmap/ship/npc_zone_test/ship = allocate(/obj/structure/overmap/ship/npc_zone_test, token)
+	ship.test_floor = location
+	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew, location)
+	ship.shuttle = port
+	var/datum/round_event/voidcrew/portal_storm/storm = allocate(/datum/round_event/voidcrew/portal_storm, FALSE)
+	storm.target_ship = ship
+	storm.setup()
+	storm.hostile_types = list(/mob/living/basic/npc_zone_test/replacement = 1)
+	storm.boss_types = list(/mob/living/basic/npc_zone_test/replacement = 1)
+	storm.mob_cap = 2
+	storm.spawn_slots_remaining = 2
+	storm.pulses_remaining = 1
+	storm.boss_pending = TRUE
+	token.current_zone = green
+	storm.spawn_pulse()
+	var/list/roles = list()
+	for(var/mob/living/basic/npc_zone_test/body in location)
+		roles += body.npc_zone_role
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, 3, "Portal pulse retiered after the ship moved bands")
+		TEST_ASSERT(abs(body.maxHealth - (body.npc_zone_role == "boss" ? 130 : 180)) < 0.001, "Portal slot lost its explicit role")
+		qdel(body)
+	TEST_ASSERT_EQUAL(length(roles), 2, "Portal fixture lost an output")
+	TEST_ASSERT(("ordinary" in roles) && ("boss" in roles), "Portal boss and ordinary slots used the same role")
+	storm.kill()
+	qdel(storm)
+	// Docked tokens are nested in their destination; the hull floor need not resolve at all.
+	token.current_zone = red
+	var/obj/structure/overmap/planet/site = allocate(/obj/structure/overmap/planet, token)
+	ship.forceMove(site)
+	ship.docked = site
+	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = allocate(/obj/machinery/atmospherics/components/unary/vent_pump, location)
+	var/datum/round_event/voidcrew/vent_clog/npc_zone_test/clog = allocate(/datum/round_event/voidcrew/vent_clog/npc_zone_test, FALSE)
+	clog.target_ship = ship
+	clog.test_vent = vent
+	clog.setup()
+	ship.forceMove(token)
+	ship.docked = null
+	ship.state = "transit"
+	token.current_zone = green
+	clog.spawned_mob = /mob/living/basic/npc_zone_test/replacement
+	clog.produce_mob()
+	TEST_ASSERT_EQUAL(length(clog.living_mobs), 1, "Vent fixture did not emit a hostile")
+	for(var/datum/weakref/body_ref as anything in clog.living_mobs)
+		var/mob/living/body = body_ref.resolve()
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, 3, "Vent used transit floor or the new ship band")
+		TEST_ASSERT_EQUAL(body.maxHealth, 180, "Vent replacement missed finalization")
+		qdel(body)
+	clog.life_check()
+	clog.spawned_mob = /mob/living/basic/butterfly
+	clog.produce_mob()
+	for(var/datum/weakref/body_ref as anything in clog.living_mobs)
+		var/mob/living/body = body_ref.resolve()
+		TEST_ASSERT(!body.npc_zone_applied, "Harmless vent fauna was scaled")
+		qdel(body)
+	clog.kill()
+	qdel(clog)
+	qdel(vent)
+	// Exercise each complete hostile loan roster, including optional additions.
+	var/datum/voidcrew_cargo_shuttle/npc_zone_test/cargo = allocate(/datum/voidcrew_cargo_shuttle/npc_zone_test)
+	cargo.target_ship = ship
+	cargo.test_turfs = block(get_step(token, NORTH), get_step(location, WEST))
+	for(var/loan_type in list(/datum/voidcrew_shuttle_loan/syndiehijacking, /datum/voidcrew_shuttle_loan/lots_of_bees, /datum/voidcrew_shuttle_loan/russian_party, /datum/voidcrew_shuttle_loan/spider_gift))
+		token.current_zone = red
+		var/datum/voidcrew_shuttle_loan/loan = allocate(loan_type)
+		loan.spawn_items(cargo)
+		var/hostiles = 0
+		for(var/turf/tile as anything in cargo.test_turfs)
+			for(var/mob/living/body in tile)
+				if(!isbasicmob(body) && !isanimal(body))
+					continue
+				if(!body.npc_spawn_context || body.npc_zone_exempt)
+					continue
+				hostiles++
+				TEST_ASSERT_EQUAL(body.npc_spawn_context.zone_type, 3, "[loan_type] resolved against the cargo bay")
+				TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, REF(cargo), "[loan_type] lost its delivery identity")
+				TEST_ASSERT(body.npc_zone_applied, "[loan_type] missed its explicit hostile encounter role")
+				if(body.npc_zone_applied)
+					TEST_ASSERT(abs(body.maxHealth - body.npc_zone_original_max_health * 1.8) < 0.001, "[loan_type] missed ordinary scaling")
+				qdel(body)
+		TEST_ASSERT(hostiles >= 1, "[loan_type] did not emit profiled cargo")
+		token.current_zone = green
+		var/mob/living/late = loan.spawn_hostile(/mob/living/basic/npc_zone_test, location, cargo)
+		TEST_ASSERT_EQUAL(late.maxHealth, 180, "A later loan output selected a different host band")
+		qdel(late)
+		qdel(loan)
+	ship.shuttle = null
+	qdel(port, force = TRUE)
+
+/datum/unit_test/voidcrew_npc_zone_recruit_route/Run()
+	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
+	var/mob/living/carbon/human/consistent/leader = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "ordinary")
+	var/mob/living/basic/ambient_npc/stray/stranded/stray = spawn_npc_in_zone(/mob/living/basic/ambient_npc/stray/stranded, run_loc_floor_bottom_left, context, FALSE)
+	allocated += stray
+	stray.faction = list(FACTION_HOSTILE)
+	context.finalize()
+	TEST_ASSERT(stray.npc_zone_applied, "Recruit fixture did not begin profiled")
+	stray.setBruteLoss(stray.maxHealth / 2)
+	TEST_ASSERT(stray.accept_offer(leader, ship), "Recruit fixture could not join")
+	TEST_ASSERT(stray.npc_zone_exempt && !stray.npc_zone_applied, "Recruitment retained a hostile profile")
+	TEST_ASSERT(abs(stray.health / stray.maxHealth - 0.5) < 0.001, "Recruitment healed the recruit")
+	var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, stray, 3)
+	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, child_context)
+	allocated += child
+	TEST_ASSERT(child.npc_zone_exempt && !child.npc_zone_applied, "Recruit descendants lost exemption")
+
+/// Check a real route's output against raw type stats, never against its stored originals.
+/datum/unit_test/proc/check_npc_zone_child(mob/living/child, datum/npc_spawn_context/parent_context, exempt = FALSE, boss = FALSE)
+	TEST_ASSERT_NOTNULL(child, "Child route did not produce a surviving body")
+	if(!child)
+		return
+	TEST_ASSERT_NOTNULL(child.npc_spawn_context, "[child.type] omitted its construction context")
+	if(!child.npc_spawn_context)
+		return
+	TEST_ASSERT_EQUAL(child.npc_spawn_context.source_id, parent_context.source_id, "[child.type] lost its parent's source identity")
+	TEST_ASSERT_EQUAL(child.npc_spawn_context.zone_type, parent_context.zone_type, "[child.type] resolved against its landing site")
+	TEST_ASSERT_EQUAL(child.npc_zone_applied, !exempt, "[child.type] ignored its source exemption")
+	if(exempt)
+		TEST_ASSERT(child.npc_zone_exempt, "[child.type] did not retain permanent exemption")
+		TEST_ASSERT_EQUAL(child.maxHealth, initial(child.maxHealth), "Exempt child health was scaled")
+		return
+	var/list/health_factors = boss ? list(1, 1.15, 1.3) : list(1, 1.35, 1.8)
+	var/list/damage_factors = boss ? list(1, 1.1, 1.2) : list(1, 1.15, 1.35)
+	TEST_ASSERT_EQUAL(child.npc_zone_role, boss ? "boss" : "ordinary", "Child inherited its parent's role instead of its own")
+	TEST_ASSERT(abs(child.maxHealth - initial(child.maxHealth) * health_factors[parent_context.zone_type]) < 0.001, "[child.type] did not scale its raw health exactly once")
+	TEST_ASSERT(abs(child.melee_damage_upper - initial(child.melee_damage_upper) * damage_factors[parent_context.zone_type]) < 0.001, "[child.type] did not scale its raw melee exactly once")
+	var/previous_health = child.maxHealth
+	child.npc_spawn_context.finalize()
+	TEST_ASSERT_EQUAL(child.maxHealth, previous_health, "Child finalization stacked its profile")
+
+/// Force the replacement parasite so its inheritance is deterministic.
+/mob/living/basic/mining/legion/npc_zone_test/consume(mob/living/carbon/human/consumed)
+	. = ..()
+	var/obj/item/organ/legion_tumour/tumour = new()
+	tumour.Insert(consumed, special = TRUE, movement_flags = DELETE_IF_REPLACED)
+
+/datum/unit_test/voidcrew_npc_zone_child_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/turf/landing = run_loc_floor_top_right
+	var/mob/living/basic/bait = allocate(/mob/living/basic/npc_zone_test, landing)
+	for(var/band in 1 to 3)
+		for(var/exempt in list(FALSE, TRUE))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, band, "boss", exempt)
+			var/mob/living/basic/mining/hivelord/hive = spawn_npc_in_zone(/mob/living/basic/mining/hivelord, location, context)
+			hive.forceMove(landing)
+			hive.spawn_brood.complete_spawn(location, bait)
+			var/mob/living/basic/hivelord_brood/brood = locate() in location
+			check_npc_zone_child(brood, context, exempt)
+			TEST_ASSERT_EQUAL(brood.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Hivelord attack brood lost its target setup")
+			qdel(brood)
+			hive.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bait)
+			hive.complete_spawn(location)
+			brood = locate() in location
+			check_npc_zone_child(brood, context, exempt)
+			TEST_ASSERT_EQUAL(brood.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Hivelord death brood lost its target setup")
+			qdel(brood)
+			// This callback must also finalize an Initialize replacement after setup.
+			hive.death_spawn_type = /mob/living/basic/npc_zone_test/replacement
+			hive.complete_spawn(location)
+			var/mob/living/basic/npc_zone_test/replacement = locate() in location
+			check_npc_zone_child(replacement, context, exempt)
+			qdel(replacement)
+			var/datum/action/cooldown/mob_cooldown/skull_launcher/launcher = allocate(/datum/action/cooldown/mob_cooldown/skull_launcher)
+			launcher.Grant(hive)
+			launcher.spawn_skull(location, bait)
+			var/mob/living/basic/legion_brood/skull = locate() in location
+			check_npc_zone_child(skull, context, exempt)
+			TEST_ASSERT_EQUAL(skull.created_by.resolve(), hive, "Legion skull lost creator assignment")
+			// The infected human is a victim, not the source or controller of the legion.
+			var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, location)
+			skull.infest(victim)
+			var/mob/living/basic/mining/legion/infested = locate() in location
+			check_npc_zone_child(infested, context, exempt)
+			TEST_ASSERT_EQUAL(infested.stored_mob, victim, "Infestation finalized before consuming its victim")
+			qdel(infested)
+			var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human/consistent, location)
+			var/obj/item/organ/legion_tumour/tumour = allocate(/obj/item/organ/legion_tumour)
+			tumour.npc_spawn_context = context
+			tumour.spawn_type = /mob/living/basic/mining/legion/npc_zone_test
+			tumour.Insert(host, special = TRUE)
+			skull = tumour.spawn_brood(landing)
+			check_npc_zone_child(skull, context, exempt)
+			TEST_ASSERT_EQUAL(skull.created_by.resolve(), host, "Tumour brood missed its host assignment")
+			qdel(skull)
+			tumour.infest()
+			infested = locate() in location
+			check_npc_zone_child(infested, context, exempt)
+			var/obj/item/organ/legion_tumour/replacement_tumour = host.get_organ_slot(ORGAN_SLOT_PARASITE_EGG)
+			TEST_ASSERT_EQUAL(replacement_tumour.npc_spawn_context.source_id, context.source_id, "Replacement parasite lost the original infection source")
+			TEST_ASSERT_EQUAL(replacement_tumour.npc_spawn_context.zone_type, band, "Replacement parasite retiered against its host")
+			qdel(infested)
+			qdel(launcher)
+			qdel(hive)
+
+/datum/unit_test/voidcrew_npc_zone_legion_split_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	for(var/exempt in list(FALSE, TRUE))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss", exempt)
+		var/mob/living/simple_animal/hostile/megafauna/legion/parent = spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion, location, context)
+		parent.forceMove(run_loc_floor_top_right)
+		parent.Split()
+		var/list/mediums = list()
+		for(var/mob/living/simple_animal/hostile/megafauna/legion/medium/child in run_loc_floor_top_right)
+			mediums += child
+			check_npc_zone_child(child, context, exempt, TRUE)
+		TEST_ASSERT_EQUAL(length(mediums), 3, "Large Legion did not produce three medium children")
+		var/mob/living/simple_animal/hostile/megafauna/legion/medium/medium = mediums[1]
+		medium.forceMove(location)
+		medium.Split()
+		var/small_count = 0
+		for(var/mob/living/simple_animal/hostile/megafauna/legion/small/child in location)
+			small_count++
+			check_npc_zone_child(child, context, exempt, TRUE)
+			qdel(child)
+		TEST_ASSERT_EQUAL(small_count, 3, "Medium Legion did not produce three small children")
+		QDEL_LIST(mediums)
+		qdel(parent)
+
+/datum/unit_test/voidcrew_npc_zone_legion_skull_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/turf/landing = run_loc_floor_top_right
+	var/mob/living/basic/bait = allocate(/mob/living/basic/npc_zone_test, location)
+	for(var/exempt in list(FALSE, TRUE))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss", exempt, location)
+		var/mob/living/simple_animal/hostile/megafauna/legion/parent = spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion, location, context)
+		parent.forceMove(landing)
+		parent.create_legion_skull.create(bait)
+		var/mob/living/basic/legion_brood/skull = locate() in landing
+		check_npc_zone_child(skull, context, exempt)
+		TEST_ASSERT_EQUAL(skull.npc_spawn_context.source_turf, location, "Megafauna skull repinned its source after its creator moved")
+		TEST_ASSERT_EQUAL(skull.created_by.resolve(), parent, "Megafauna skull lost its creator assignment")
+		TEST_ASSERT_EQUAL(skull.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Megafauna skull lost its attack target")
+		var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, landing)
+		skull.infest(victim)
+		var/mob/living/basic/mining/legion/infested = locate() in landing
+		check_npc_zone_child(infested, context, exempt)
+		TEST_ASSERT_EQUAL(infested.npc_spawn_context.source_turf, location, "Infestation lost the megafauna's pinned source")
+		TEST_ASSERT_EQUAL(infested.stored_mob, victim, "Megafauna skull infestation did not consume its victim")
+		qdel(infested)
+		qdel(parent)
+
+/// The post hook overrides health and faction and must run before finalization.
+/datum/action/cooldown/spell/conjure/npc_zone_test
+	summon_type = list(/mob/living/basic/npc_zone_test/replacement)
+	summon_radius = 0
+
+/datum/action/cooldown/spell/conjure/npc_zone_test/post_summon(atom/summoned_object, atom/cast_on)
+	var/mob/living/body = summoned_object
+	if(body.npc_zone_applied)
+		CRASH("Conjure finalized before post_summon setup")
+	body.faction = list(FACTION_HOSTILE)
+	body.setMaxHealth(200)
+	body.setBruteLoss(50)
+	// Basic setBruteLoss() does not update health when the previous loss was zero.
+	body.updatehealth()
+
+/datum/unit_test/voidcrew_npc_zone_conjure_route/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/caster = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_top_right, context)
+	var/datum/action/cooldown/spell/conjure/npc_zone_test/spell = allocate(/datum/action/cooldown/spell/conjure/npc_zone_test)
+	spell.Grant(caster)
+	for(var/player_owned in list(FALSE, TRUE))
+		if(player_owned)
+			caster.mind_initialize()
+		spell.cast(location)
+		var/mob/living/basic/npc_zone_test/body = locate() in location
+		TEST_ASSERT_NOTNULL(body, "Conjure lost its Initialize replacement")
+		TEST_ASSERT_EQUAL(body.maxHealth, player_owned ? 200 : 360, "Conjure lost ownership exemption or post-summon health setup")
+		TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "Conjure finalization healed its output")
+		TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, context.source_id, "Conjure lost caster source identity")
+		TEST_ASSERT_EQUAL(body.npc_zone_exempt, player_owned, "Player summons did not retain exemption")
+		var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, body)
+		var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, location, child_context)
+		check_npc_zone_child(child, context, player_owned)
+		qdel(child)
+		qdel(body)
+	qdel(caster)
+
+/datum/unit_test/voidcrew_npc_zone_lich_routes/Run()
+	var/turf/location = run_loc_floor_bottom_left
+	var/obj/structure/overmap/space_ruin/lich_lair/site = allocate(/obj/structure/overmap/space_ruin/lich_lair)
+	site.npc_spawn_context = allocate(/datum/npc_spawn_context, site, 3)
+	site.ruin_bottom_left = location
+	var/datum/map_template/ruin/template = allocate(/datum/map_template/ruin)
+	template.width = 1
+	template.height = 1
+	site.ruin_template = template
+	allocate(/obj/effect/landmark/lich/boss_spawn, location)
+	site.link_interior()
+	var/mob/living/basic/lich/lich = site.lich_ref?.resolve()
+	TEST_ASSERT_NOTNULL(lich, "Lich site's fallback spawn did not bind a boss")
+	allocated += lich
+	check_npc_zone_child(lich, site.npc_spawn_context, FALSE, TRUE)
+	// A mapped lich uses the auto role and starts with combat mode off.
+	var/datum/npc_spawn_context/auto_context = allocate(/datum/npc_spawn_context, site, 3)
+	var/mob/living/basic/lich/mapped = spawn_npc_in_zone(/mob/living/basic/lich, run_loc_floor_top_right, auto_context)
+	check_npc_zone_child(mapped, site.npc_spawn_context, FALSE, TRUE)
+	qdel(mapped)
+	var/datum/action/cooldown/spell/conjure/lich_raise_dead/raise = allocate(/datum/action/cooldown/spell/conjure/lich_raise_dead)
+	raise.Grant(lich)
+	raise.cast(lich)
+	TEST_ASSERT_EQUAL(length(lich.live_summons), 2, "Lich did not register its conjured minions")
+	for(var/mob/living/minion as anything in lich.live_summons)
+		check_npc_zone_child(minion, site.npc_spawn_context)
+		TEST_ASSERT("verdigris" in minion.faction, "Lich summon missed its faction setup") // FACTION_LICH
+	var/mob/living/basic/victim = allocate(/mob/living/basic/npc_zone_test, run_loc_floor_top_right)
+	var/datum/action/cooldown/spell/pointed/lich_mirror_images/images = allocate(/datum/action/cooldown/spell/pointed/lich_mirror_images)
+	images.Grant(lich)
+	images.cast(victim)
+	TEST_ASSERT(length(images.copies) >= 1, "Lich mirror route produced no registered copies")
+	for(var/mob/living/basic/lich/mirror_image/image as anything in images.copies)
+		check_npc_zone_child(image, site.npc_spawn_context)
+		TEST_ASSERT(image in lich.live_summons, "Mirror image bypassed the lich's cleanup registry")
+		image.on_attacked(image, victim, ATTACKER_DAMAGING_ATTACK)
+		TEST_ASSERT_EQUAL(victim.getBruteLoss(), round(20.25, DAMAGE_PRECISION), "Mirror retaliation did not use its ordinary damage factor")
+		victim.fully_heal()
+	var/datum/action/cooldown/spell/pointed/lich_grave_dirt/dirt = allocate(/datum/action/cooldown/spell/pointed/lich_grave_dirt)
+	dirt.Grant(lich)
+	dirt.cast(victim)
+	TEST_ASSERT_EQUAL(dirt.npc_damage_factor, 1.2, "Grave dirt did not capture the boss's damage factor")
+	dirt.Remove(lich)
+	qdel(lich)
+	dirt.burn_tick(list(get_turf(victim)), world.time)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 6, "Delayed grave dirt lost damage scaling after creator deletion")
+	qdel(dirt)
+
+/// Use the actual guard creation path and its record, without a second prison map load.
+/datum/unit_test/voidcrew_npc_zone_guard_route
+	parent_type = /datum/unit_test/voidcrew_outpost_management
+
+/datum/unit_test/voidcrew_npc_zone_guard_route/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("npczoneguard")
+	TEST_ASSERT_NOTNULL(home, "Guard profile fixture could not load its prison")
+	home.npc_spawn_context = allocate(/datum/npc_spawn_context, home, 3)
+	var/datum/outpost_prison/prison = test_prison(home)
+	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE)
+	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	check_npc_zone_child(guard, home.npc_spawn_context, TRUE)
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, guard)
+	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, get_turf(guard), context)
+	check_npc_zone_child(child, home.npc_spawn_context, TRUE)
+	qdel(child)
+
+/// Arena geometry is irrelevant to spawn_wave's provided turf list.
+/datum/colosseum_controller/npc_zone_test/snapshot_arena()
+	return
+
+/datum/unit_test/voidcrew_npc_zone_arena_route/Run()
+	var/datum/colosseum_controller/controller = allocate(/datum/colosseum_controller/npc_zone_test)
+	controller.state = "live" // COLOSSEUM_STATE_LIVE
+	var/datum/colosseum_modifier/beast_interlude/modifier = allocate(/datum/colosseum_modifier/beast_interlude)
+	modifier.controller = controller
+	modifier.spawn_wave(list(run_loc_floor_bottom_left), list(/mob/living/basic/mining/legion = 1))
+	TEST_ASSERT_EQUAL(length(modifier.beasts), 1, "Arena wave lost its output")
+	var/mob/living/basic/mining/legion/beast = modifier.beasts[1]
+	TEST_ASSERT(beast.npc_zone_exempt && !beast.npc_zone_applied, "Colosseum beast received an environmental profile")
+	var/datum/action/cooldown/mob_cooldown/skull_launcher/launcher = beast.ai_controller.blackboard[BB_TARGETED_ACTION]
+	launcher.spawn_skull(run_loc_floor_top_right, null)
+	var/mob/living/basic/legion_brood/skull = locate() in run_loc_floor_top_right
+	TEST_ASSERT(skull.npc_zone_exempt && !skull.npc_zone_applied, "Arena beast descendants escaped exemption")
+	qdel(skull)
+
+/// Real wave methods use their deployed objective's source, not the player's mind.
+/datum/unit_test/voidcrew_npc_zone_vestige_routes/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/keeper = allocate(/mob/living/carbon/human/consistent, center)
+	keeper.mind_initialize()
+	var/obj/item/vestige_blood_votive/votive = allocate(/obj/item/vestige_blood_votive, center)
+	votive.npc_spawn_context = allocate(/datum/npc_spawn_context, votive, 2)
+	var/datum/vestige_trial/vigil/vigil = allocate(/datum/vestige_trial/vigil, keeper.mind)
+	vigil.votive = votive
+	vigil.unfold(keeper)
+	TEST_ASSERT_EQUAL(length(vigil.clots), 3, "Cult fixture did not unfold its hostile pack")
+	for(var/mob/living/clot as anything in vigil.clots)
+		check_npc_zone_child(clot, votive.npc_spawn_context)
+	vigil.reset_rite()
+	var/obj/structure/vestige_dragon_egg/dragon = allocate(/obj/structure/vestige_dragon_egg, center)
+	dragon.npc_spawn_context = allocate(/datum/npc_spawn_context, dragon, 3)
+	dragon.assault_underway = TRUE
+	dragon.wave_pending = TRUE
+	dragon.wave_perch = pick(vestige_hunt_approaches(dragon, 4))
+	dragon.unleash_wave()
+	TEST_ASSERT_EQUAL(length(dragon.brood), 2, "Dragon trial did not emit its wave")
+	for(var/mob/living/hunter as anything in dragon.brood.Copy())
+		check_npc_zone_child(hunter, dragon.npc_spawn_context)
+		qdel(hunter)
+	var/obj/structure/vestige_comb_egg/comb = allocate(/obj/structure/vestige_comb_egg, center)
+	comb.npc_spawn_context = allocate(/datum/npc_spawn_context, comb, 2)
+	comb.assault_underway = TRUE
+	comb.squad_pending = TRUE
+	comb.squad_perch = pick(vestige_hunt_approaches(comb, 4, chew_resin = TRUE))
+	comb.land_squad()
+	TEST_ASSERT_EQUAL(length(comb.chewers), 1, "Comb trial did not emit its first squad")
+	for(var/mob/living/chewer as anything in comb.chewers.Copy())
+		check_npc_zone_child(chewer, comb.npc_spawn_context)
+		qdel(chewer)
+	var/obj/structure/vestige_tremor_line/line = allocate(/obj/structure/vestige_tremor_line, center)
+	line.npc_spawn_context = allocate(/datum/npc_spawn_context, line, 3)
+	var/datum/vestige_trial/loom_tremor/loom = allocate(/datum/vestige_trial/loom_tremor, keeper.mind)
+	loom.send_thief(line, keeper)
+	TEST_ASSERT_EQUAL(length(loom.thieves), 1, "Spider trial did not emit a thief")
+	for(var/mob/living/thief as anything in loom.thieves.Copy())
+		check_npc_zone_child(thief, line.npc_spawn_context)
+		TEST_ASSERT_EQUAL(thief.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], line, "Spider thief missed its target setup")
+		qdel(thief)
+	// Reward pets retain baseline stats even under an explicit hostile role.
+	var/datum/npc_spawn_context/pet_context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/pet = spawn_npc_in_zone(/mob/living/basic/carp/pet/vestige_hatchling, center, pet_context)
+	allocated += pet
+	TEST_ASSERT(pet.npc_zone_exempt && !pet.npc_zone_applied, "Reward dragonet received a hostile profile")
+
+/datum/unit_test/voidcrew_npc_zone_player_spell_route/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTH), EAST)
+	var/mob/living/carbon/human/caster = allocate(/mob/living/carbon/human/consistent, center)
+	caster.mind_initialize()
+	var/datum/action/cooldown/spell/grave_mirage/spell = allocate(/datum/action/cooldown/spell/grave_mirage)
+	spell.Grant(caster)
+	spell.cast(caster)
+	TEST_ASSERT(length(spell.mirages) >= 1, "Player mirage spell produced no copies")
+	for(var/mob/living/mirage as anything in spell.mirages)
+		TEST_ASSERT(mirage.npc_zone_exempt && !mirage.npc_zone_applied, "Player mirage received an environmental profile")
+		TEST_ASSERT_EQUAL(mirage.maxHealth, initial(mirage.maxHealth), "Player mirage health was scaled")
+		TEST_ASSERT_EQUAL(mirage.npc_spawn_context.source_id, REF(caster), "Player mirage lost caster identity")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, get_step(caster, EAST))
+	victim.stat = HARD_CRIT
+	var/obj/item/organ/legion_tumour/tumour = allocate(/obj/item/organ/legion_tumour)
+	TEST_ASSERT(tumour.try_apply(victim, caster), "Manual tumour fixture could not reach the infestation route")
+	// The victim starts beside the caster, and the infestation stays on the victim's tile.
+	var/mob/living/basic/mining/legion/infested = locate() in get_turf(victim)
+	TEST_ASSERT_NOTNULL(infested, "Manual tumour did not produce a legion")
+	TEST_ASSERT(infested.npc_zone_exempt && !infested.npc_zone_applied, "Player-applied infestation lost the player's exemption")
+	qdel(infested)
+
+/// Low-zone shooters use the unchanged base pistol archetype before W3 scaling.
+/datum/unit_test/voidcrew_npc_ladder_profiles/Run()
+	var/list/shooters = list(
+		/mob/living/basic/trooper/nanotrasen/ranged/smg,
+		/mob/living/basic/trooper/nanotrasen/ranged/assault,
+		/mob/living/basic/trooper/nanotrasen/ranged/elite,
+		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
+		/mob/living/basic/trooper/nanotrasen/ranged/assault/customs,
+		/mob/living/basic/trooper/syndicate/ranged/smg,
+		/mob/living/basic/trooper/syndicate/ranged/shotgun,
+		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
+	)
+	for(var/mob_type in shooters)
+		for(var/zone in 1 to 3)
+			var/is_nt = ispath(mob_type, /mob/living/basic/trooper/nanotrasen)
+			var/is_customs = mob_type == /mob/living/basic/trooper/nanotrasen/ranged/smg/customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
+			var/replaced = zone == 1 || (zone == 2 && (!is_nt || is_customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
+			var/mob/living/basic/trooper/body = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
+			var/datum/component/ranged_attacks/ranged = body.GetComponent(/datum/component/ranged_attacks)
+			TEST_ASSERT_NOTNULL(ranged, "[mob_type] lost its ranged attack")
+			if(replaced)
+				TEST_ASSERT_EQUAL(ranged.casing_type, is_nt ? /obj/item/ammo_casing/c45 : /obj/item/ammo_casing/c9mm, "[mob_type]/[zone] retained its advanced ammunition")
+				TEST_ASSERT(!ranged.burst_shots, "[mob_type]/[zone] retained its burst")
+				TEST_ASSERT_EQUAL(ranged.cooldown_time, 1 SECONDS, "Replacement changed the base pistol cadence")
+				TEST_ASSERT(abs(body.maxHealth - (zone == 2 ? 135 : 100)) < 0.001, "Replacement did not receive W3 scaling exactly once")
+			else
+				TEST_ASSERT_EQUAL(ranged.casing_type, initial(body:casingtype), "A retained higher-zone shooter changed ammunition")
+				TEST_ASSERT_EQUAL(ranged.cooldown_time, initial(body:ranged_cooldown), "A retained shooter changed cadence")
+			qdel(body)
+	for(var/mob_type in list(/mob/living/basic/trooper/syndicate/melee/sword, /mob/living/basic/trooper/syndicate/melee/sword/space/stormtrooper))
+		var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 1)
+		var/mob/living/basic/trooper/syndicate/melee/guard = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
+		TEST_ASSERT_EQUAL(guard.melee_damage_upper, 15, "Green sword guard did not become the knife archetype")
+		TEST_ASSERT_EQUAL(guard.maxHealth, 100, "Green stormtrooper kept its stormtrooper health")
+		TEST_ASSERT_EQUAL(guard.armour_penetration, 0, "Green sword guard kept its armor penetration")
+		TEST_ASSERT_EQUAL(guard.projectile_deflect_chance, 0, "Green sword guard kept its energy shield")
+		qdel(guard)
+
+/// Deferred resolution and movement cannot change a pirate's loot band or pay twice.
+/datum/unit_test/voidcrew_npc_ladder_deferred/Run()
+	var/turf/source = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, null, "ordinary", FALSE, source)
+	var/mob/living/basic/trooper/pirate/faction/medieval/melee/pirate = spawn_npc_in_zone(/mob/living/basic/trooper/pirate/faction/medieval/melee, source, context)
+	TEST_ASSERT(!pirate.weapon_loot_initialized, "Unresolved pirate rolled against a guessed zone")
+	pirate.forceMove(run_loc_floor_top_right)
+	context.on_zone_resolved(2)
+	TEST_ASSERT(pirate.weapon_loot_initialized, "Resolved source did not initialize the pirate's weapon")
+	TEST_ASSERT_EQUAL(context.source_turf, source, "Moving a pirate changed its spawn source")
+	context.on_zone_resolved(3)
+	TEST_ASSERT_EQUAL(context.zone_type, 2, "Later resolution replaced a pinned zone")
+	context.finalize()
+	TEST_ASSERT_EQUAL(pirate.maxHealth, 135, "Deferred loot setup changed or stacked the W3 profile")
+	qdel(pirate)
+
+/// A real conjure cast cannot manufacture basic-mob or legacy-simple-animal guns.
+/datum/unit_test/voidcrew_npc_ladder_summons/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3)
+	var/mob/living/caster = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, run_loc_floor_top_right, context)
+	var/datum/action/cooldown/spell/conjure/spell = allocate(/datum/action/cooldown/spell/conjure)
+	spell.summon_radius = 0
+	spell.Grant(caster)
+	for(var/mob_type in list(/mob/living/basic/trooper/russian/ranged, /mob/living/basic/trooper/pirate/faction/irs/captain, /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner))
+		spell.summon_type = list(mob_type)
+		spell.cast(floor)
+		var/mob/living/summoned = locate(mob_type) in floor
+		TEST_ASSERT_NOTNULL(summoned, "Conjure failed to produce [mob_type]")
+		TEST_ASSERT(summoned.npc_spawn_context.suppress_gun_loot, "Summoned [mob_type] lost its construction restriction")
+		var/list/before = floor.get_all_contents()
+		summoned.health = 0
+		summoned.death(TRUE)
+		TEST_ASSERT(summoned.stat == DEAD || QDELETED(summoned), "Summoned [mob_type] did not actually die")
+		for(var/obj/item/drop in floor.get_all_contents() - before)
+			TEST_ASSERT(!istype(drop, /obj/item/gun), "A conjured [mob_type] manufactured a gun")
+		for(var/atom/movable/drop in floor.contents - before)
+			qdel(drop)
+		qdel(summoned)
+	qdel(caster)
+
+/// Primordial-demon replacements remain a red encounter, with normal W3 inheritance.
+/datum/unit_test/voidcrew_npc_ladder_ice_demons/Run()
+	for(var/zone in 1 to 3)
+		var/found_elite = FALSE
+		for(var/attempt in 1 to (zone == 3 ? 256 : 16))
+			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
+			var/mob/living/body = spawn_npc_in_zone(/mob/living/basic/mining/ice_demon/random, run_loc_floor_bottom_left, context)
+			found_elite = istype(body, /mob/living/simple_animal/hostile/asteroid/old_demon)
+			TEST_ASSERT(zone == 3 || !found_elite, "A low-zone ice demon became a primordial demon")
+			TEST_ASSERT_EQUAL(body.npc_spawn_context, context, "Ice demon replacement lost its source")
+			if(found_elite)
+				TEST_ASSERT_EQUAL(body.maxHealth, 390, "Red primordial demon lost its W3 boss profile")
+			qdel(body)
+			if(found_elite)
+				break
+		if(zone == 3)
+			TEST_ASSERT(found_elite, "Red ice demons never exercised their elite replacement")

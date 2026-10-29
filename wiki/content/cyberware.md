@@ -19,15 +19,15 @@ Outside the parlor, ordinary organ-manipulation surgery at any operating table i
 
 ## Neural load
 
-Your body carries **20 points** of chrome. Every installed piece sums its load against that, and the Cradle refuses any install that would take you over, though swapping within a ladder only costs the difference, since the piece being replaced comes out first. If you somehow end up over capacity anyway, everything browns out: **every** piece of chrome on your body goes offline until the load drops back under, and getting under is always as simple as pulling a piece out.
+Your body has **20 capacity** shared by chrome, ordinary implants, cybernetic organs, surgical enhancements and installed nanite programs. Ordinary implants, robotic organs and surgical enhancements cost **1 each**; prosthetic limbs cost **0**, but implants inside them still count. Chrome uses the catalogue loads below. Nanite costs depend on the program and count even when switched off. See [Nanites & Revival](nanites-and-revival.md). Every installed upgrade sums its load against capacity, and the Cradle refuses any install that would take you over, though swapping within a ladder only costs the difference, since the piece being replaced comes out first. If you somehow end up over capacity anyway, everything browns out: **every** piece of chrome goes offline and beneficial nanite programs pause until the load drops back under, Remove enough installed load to restore capacity.
 
-Same-slot ware is mutually exclusive, one operating system, one dermal layer, one leg rig, one piece of hardware per arm, which makes most slots either a ladder (Shock Coils into Hopper Pistons, Dermal Mesh into Slabskin) or a straight choice (Cascade Lattice *or* Redline Core). Arm chrome always claims the whole arm: installing Mantis Blades evicts whatever that arm already carried. Chrome optics replace your natural eyes outright. The one piece that raises the ceiling is the Governor Delete, worth +6 capacity.
+Same-slot ware is mutually exclusive, one operating system, one dermal layer, one leg rig, one piece of hardware per arm, which makes most slots either a ladder (Shock Coils into Hopper Pistons, Dermal Mesh into Slabskin) or a straight choice (Cascade Lattice *or* Redline Core). Arm chrome always claims the whole arm: installing Mantis Blades evicts whatever that arm already carried. Chrome optics replace your natural eyes outright. The Governor Delete raises capacity by **15**, to **35**. It occupies the chest operating-system slot, so it competes with the Cascade lattice and Redline core.
 
 Much of it shows. Plated arms, leg rigs, dermal weaves and spine lattices draw on your body under your clothes, and stacking enough chrome genuinely stops you looking human.
 
 ## The catalog
 
-Prices are Splice's, stock is limited per round, and load is the neural cost. "Pair" ware is sold as a cased set and installed one organ per arm.
+Prices are Splice's, stock is limited per round, and load is the neural cost. Military and legend stock also requires elite [zone reputation](zone-reputation.md). "Pair" ware is sold as a cased set and installed one organ per arm.
 
 ### Tier 1: Street chrome (credits)
 
@@ -70,11 +70,11 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. "P
 | Atlas frame | 2 | 4 | Bones cannot break and limbs cannot come off; knockback against you is halved |
 | Gorilla Arms (pair) | 3 | 3/arm | 20-damage punches with knockback, fists that break rock, and bare-handed airlock prying |
 | Widowline monowire | 3 | 5 | A two-tile whip that ignores armor entirely and cleaves bystanders for 75% |
-| Popup Ronin housing | 3 | 5 | Deployable full-auto machine pistol in 10x24mm caseless. Reloads are parlor-only |
+| Popup Ronin housing | *loot only* | 5 | Deployable full-auto machine pistol in 10x24mm caseless. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Rigger socket | 3 | 4 | Jack into your own ship's helm from anywhere aboard and fly it from a corridor |
 | Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. Solid hits visibly spark off you. Everyone can see you are plated |
 | Mantis Blades (pair) | 4 | 3/arm | Deployable hardlight blades, plus a five-tile lunge that knocks the target down |
-| Bunker Buster housing | 4 | 5 | Two shaped micro-rockets: 60 damage, no splash, will never breach a hull. Reloads are parlor-only |
+| Bunker Buster housing | *loot only* | 5 | Two shaped micro-rockets: 60 damage, no splash, will never breach a hull. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Ghostskin weave | 4 | 5 | Ten seconds of optical camo. NPCs will not target you, and Chrome Reads scatter. Attacking, taking a hit or an EMP drops it |
 | Lazarus node | 4 | 5 | The moment you drop into crit, it charges for a second and shocks you back to your feet at 30% health. Once per six minutes |
 
@@ -82,20 +82,20 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. "P
 
 | Piece | Price | Load | What it does |
 |---|---|---|---|
-| Governor Delete | 5 | 0 | +6 neural capacity. Nothing else, and everything else on this shelf needs it |
+| Governor Delete | 5 | 0 | +15 capacity. Occupies the chest OS slot, competing with Cascade and Redline |
 | Redline core | 6 | 10 | Twelve seconds of stun immunity, 40% less brute and burn taken, +8 unarmed damage and a roar that staggers everyone nearby, then the crash |
 | Cascade lattice | 8 | 12 | The sandevistan: eight seconds at double time with halved melee cooldowns and 40% projectile dodge while moving, then the crash. An EMP mid-window ends it early and eats the cooldown |
-| Meteor Piledriver frame | *never sold* | 8 | An eight-tile leap that crushes whoever is standing on the landing tile and hurls everyone around them. The exclusive top reward from Vex's own contract board |
+| Meteor Piledriver frame | *never sold* | 8 | An eight-tile leap that crushes whoever is standing on the landing tile and hurls everyone around them. A rare guarded-mission completion prize; see [Missions](missions.md) |
 
 The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits, Buster rocket pairs at 600. Splice also buys back *removed* street chrome at about half list price; military chrome is never bought back.
 
 ## Finding chrome in the wild
 
-Most of the roster also drops from zone loot caches at the band matching its price, street chrome in common caches, military chrome in prime ones. The exceptions: Legend chrome and ammunition never drop, the Skyhook drops *only* in expedition caches, and the Meteor Piledriver comes only from Vex's hardest contracts.
+Most of the roster also appears in zone loot caches. Street and utility chrome appears among themed supplies. Weapon chrome uses the cache's weapon roll; Popup Ronin and Bunker Buster housings are plunder-cache loot rather than trader stock. Higher zones improve the odds of stronger chrome. The exceptions: Legend chrome and ammunition never drop, the Skyhook drops *only* in expedition caches, and the Meteor Piledriver comes from eligible guarded mission prizes, including hunts and lair trophies.
 
 ## Living with chrome
 
-- **EMP is the hard counter.** A pulse downs every piece you carry (nine seconds on a heavy blast, four and a half on a light one) then it reboots on its own. Gecko Grips spasm and throw whatever you are holding, Ghostskin camo collapses, and a Cascade window crashes on the spot. A Cradle tune-up cancels the reboot early.
+- **EMP is the hard counter.** A pulse downs every piece you carry (nine seconds on a heavy blast, four and a half on a light one) then it reboots on its own. Gecko Grips spasm and throw whatever you are holding, Ghostskin camo collapses, and a Cascade window crashes on the spot. A Cradle tune-up cancels the reboot early. Actions and arm weapons stay unavailable while the chrome is offline. An EMP interrupting Lazarus during its charge does not spend the revival charge.
 - **Detection cuts both ways.** Chrome optics carry the Chrome Read, a scan that names a target's ware (street optics only count it), and the subject always feels the handshake. The Cargo Cavity never resolves on any scan, and Ghostskin scatters reads entirely.
 - **Death does not keep it.** Gibbing, dusting or destroying a limb ejects every piece onto the floor, and killers absolutely loot a chromed corpse. Cloning leaves the chrome on the body.
 - **Nothing is subtle.** Slabskin sparks on every hit, the Chromatic Dermis flares whenever your chrome fires, and the heavy installs change how you look. Chromed is a fashion statement whether you want it or not.

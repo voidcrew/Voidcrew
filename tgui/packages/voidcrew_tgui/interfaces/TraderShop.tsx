@@ -2,16 +2,15 @@ import { useState } from 'react';
 import {
   Box,
   Button,
-  Icon,
+  Dropdown,
   Image,
   NoticeBox,
   Section,
   Stack,
   Tabs,
-  TimeDisplay,
   Tooltip,
 } from 'tgui-core/components';
-import { formatTime } from 'tgui-core/format';
+import { formatMoney } from 'tgui-core/format';
 import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
@@ -30,7 +29,6 @@ type CatalogSku = {
   discount_pct: number;
   price_text: string;
   barter: BooleanLike;
-  favor_required: number;
   crew_limit: number;
 };
 
@@ -45,12 +43,8 @@ type StockState = {
 };
 
 type FavorStanding = {
-  points: number;
   tier: number;
   tier_name: string;
-  discount_pct: number;
-  next_at: number;
-  trader: string;
 };
 
 type LedgerEntry = {
@@ -79,15 +73,16 @@ type Data = {
   categories: string[];
   catalog: CatalogSku[];
   ledger: LedgerEntry[];
-  restock_interval: number;
   // dynamic
-  restock_remaining: number | null;
   barred: BooleanLike;
   held_vouchers: number;
   account_credits: number | null;
+  sell_account_credits: number | null;
   stock_states: StockState[];
   ledger_states: LedgerState[];
-  favor?: FavorStanding;
+  crew_ships: { ref: string; name: string }[];
+  crew_ship_ref: string | null;
+  favor?: FavorStanding | null;
 };
 
 const SHELF_TAGS = {
@@ -96,27 +91,17 @@ const SHELF_TAGS = {
   favor: { label: 'BACK ROOM', color: 'orange' },
 } as const;
 
-const StandingHeader = (props: { favor: FavorStanding }) => {
+/** The crew's standing with this outpost, named as such */
+const ReputationLabel = (props: { favor: FavorStanding }) => {
   const { favor } = props;
   const tierColor =
     favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
   return (
     <Box inline nowrap color="label" fontSize={1} fontWeight="normal">
+      Reputation:{' '}
       <Box inline bold color={tierColor}>
         {favor.tier_name}
       </Box>
-      {favor.discount_pct > 0 && (
-        <Box inline color="good">
-          {' '}
-          −{favor.discount_pct}%
-        </Box>
-      )}
-      {favor.next_at > 0 && (
-        <Box inline color="label">
-          {' '}
-          ({favor.points}/{favor.next_at})
-        </Box>
-      )}
     </Box>
   );
 };
@@ -136,11 +121,11 @@ const WalletHeader = (props: {
       {' · '}
       {account_credits === null ? (
         <Box inline color="bad">
-          no ID account
+          no bank account
         </Box>
       ) : (
         <Box inline bold color="gold">
-          {account_credits} cr
+          {formatMoney(account_credits)} cr
         </Box>
       )}
     </Box>
@@ -178,7 +163,7 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
     <Box inline textAlign="right">
       {sku.price_vouchers > 0 && (
         <Box inline bold color="purple">
-          {sku.price_vouchers} vch
+          {sku.price_vouchers} voucher{sku.price_vouchers === 1 ? '' : 's'}
         </Box>
       )}
       {sku.price_vouchers > 0 && sku.price_credits > 0 && (
@@ -194,11 +179,11 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
               color="label"
               style={{ textDecoration: 'line-through' }}
             >
-              {sku.price_credits}
+              {formatMoney(sku.price_credits)}
             </Box>
           )}{' '}
           <Box inline bold color="gold">
-            {finalCredits} cr
+            {formatMoney(finalCredits)} cr
           </Box>
         </>
       )}
@@ -252,19 +237,9 @@ const SkuRow = (props: {
       <Stack.Item grow>
         <Box bold>
           {sku.name}{' '}
-          {sku.discount_pct > 0 && (
-            <Box inline color="good" bold>
-              −{sku.discount_pct}%
-            </Box>
-          )}{' '}
           {!!shelfTag && (
             <Box inline color={shelfTag.color} fontSize="0.8em" bold>
               {shelfTag.label}
-            </Box>
-          )}{' '}
-          {isFavor && sku.favor_required > 0 && (
-            <Box inline color="label" fontSize="0.8em">
-              needs {sku.favor_required} standing
             </Box>
           )}
         </Box>
@@ -278,14 +253,14 @@ const SkuRow = (props: {
       <Stack.Item color="label" minWidth="30px" textAlign="center">
         {isFavor ? (
           <Box color={soldOut ? 'bad' : 'label'}>
-            yours: {live?.crew_remaining ?? sku.crew_limit}
+            x{live?.crew_remaining ?? sku.crew_limit}
           </Box>
         ) : (
           <>x{stock}</>
         )}
       </Stack.Item>
       <Stack.Item>
-        {live?.denial && !barred && !soldOut ? (
+        {live?.denial && !live.can_buy && !barred && (isFavor || !soldOut) ? (
           <Tooltip content={live.denial}>{buyButton}</Tooltip>
         ) : (
           buyButton
@@ -380,7 +355,6 @@ const LedgerRow = (props: {
         <Button
           disabled={!live?.can_sell}
           icon="boxes-stacked"
-          tooltip="Sell everything you're carrying, up to demand"
           onClick={() => act('sell_all', { ref: entry.ref })}
         >
           All
@@ -459,18 +433,19 @@ const SellView = (props: { barred: BooleanLike }) => {
 };
 
 export const TraderShop = (props) => {
-  const { data } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const {
     shop_name,
     trader_name,
     barred,
     held_vouchers,
     account_credits,
+    sell_account_credits,
     catalog = [],
     ledger = [],
+    crew_ships = [],
+    crew_ship_ref,
     favor,
-    restock_interval,
-    restock_remaining = null,
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
@@ -481,39 +456,36 @@ export const TraderShop = (props) => {
     <Window title={shop_name} width={720} height={640}>
       <Window.Content>
         <Stack fill vertical>
-          {restock_remaining !== null && (
-            <Stack.Item>
-              <Box px={1}>
-                <Icon name="clock" mr={1} />
-                Next restock:{' '}
-                <Box inline bold>
-                  {restock_remaining > 0 ? (
-                    <TimeDisplay value={restock_remaining} auto="down" />
-                  ) : (
-                    'Restocking...'
-                  )}
-                </Box>
-                <Box inline color="label" ml={1}>
-                  (every {formatTime(restock_interval, 'short')})
-                </Box>
-              </Box>
-            </Stack.Item>
-          )}
           {!!barred && (
             <Stack.Item>
-              <NoticeBox danger>
-                TRADE EMBARGO IN EFFECT: service refused. Embargoes expire;
-                grudges do not.
-              </NoticeBox>
+              <NoticeBox danger>Service refused.</NoticeBox>
+            </Stack.Item>
+          )}
+          {crew_ships.length > 0 && (
+            <Stack.Item>
+              <Box inline mr={1} color="label">
+                Ship account
+              </Box>
+              <Dropdown
+                selected={crew_ship_ref ?? ''}
+                displayText={
+                  crew_ships.find((ship) => ship.ref === crew_ship_ref)?.name ??
+                  'Ship account'
+                }
+                options={crew_ships.map((ship) => ({
+                  value: ship.ref,
+                  displayText: ship.name,
+                }))}
+                disabled={!!barred}
+                onSelected={(ref) => act('select_ship', { ref })}
+              />
             </Stack.Item>
           )}
           {specials.length > 0 && tab === 'buy' && (
             <Stack.Item>
               <NoticeBox info>
                 {trader_name}&apos;s special today:{' '}
-                {specials
-                  .map((sku) => `${sku.name} (−${sku.discount_pct}%)`)
-                  .join(', ')}
+                {specials.map((sku) => sku.name).join(', ')}
               </NoticeBox>
             </Stack.Item>
           )}
@@ -546,17 +518,15 @@ export const TraderShop = (props) => {
                   </Stack.Item>
                   {!!favor && (
                     <Stack.Item>
-                      <Tooltip
-                        content={`Standing with ${favor.trader}: run their contract board to earn more. Trusted opens the back room.`}
-                      >
-                        <StandingHeader favor={favor} />
-                      </Tooltip>
+                      <ReputationLabel favor={favor} />
                     </Stack.Item>
                   )}
                   <Stack.Item>
                     <WalletHeader
                       held_vouchers={held_vouchers}
-                      account_credits={account_credits}
+                      account_credits={
+                        tab === 'sell' ? sell_account_credits : account_credits
+                      }
                     />
                   </Stack.Item>
                 </Stack>
@@ -568,12 +538,6 @@ export const TraderShop = (props) => {
                 <BuyView barred={barred} />
               )}
             </Section>
-          </Stack.Item>
-          <Stack.Item>
-            <Box color="label" fontSize="0.85em" px={1}>
-              Fixed prices, charged on the spot, vouchers from anywhere on you,
-              credits off your ID, barter goods held in hand. No refunds.
-            </Box>
           </Stack.Item>
         </Stack>
       </Window.Content>

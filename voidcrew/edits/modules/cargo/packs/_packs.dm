@@ -1,5 +1,10 @@
 // Voidcrew extensions to code/modules/cargo/packs/_packs.dm.
 
+// Capture the settled per-sheet asks once. Materials orders bypass later pack/coupon modifiers.
+/datum/supply_pack/custom/minerals/New(purchaser, cost, list/contains)
+	. = ..()
+	src.cost = material_market_buy_quote(contains)
+
 /// Cargo amounts arrive from a client; fractional, negative and unbounded orders are invalid.
 /proc/valid_cargo_order_quantity(quantity, maximum)
 	return isnum(quantity) && quantity >= 1 && quantity <= maximum && quantity == round(quantity)

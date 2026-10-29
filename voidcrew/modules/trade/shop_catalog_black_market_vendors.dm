@@ -226,7 +226,7 @@
 	name = "box of donk-pockets"
 	desc = "Six factory donk-pockets, the official cuisine of people being shot at. Microwave not included."
 	item_path = /obj/item/storage/box/donkpockets
-	price_credits = 220
+	price_credits = 200
 	stock_min = 1
 	stock_max = 3
 
@@ -391,7 +391,6 @@
 		/datum/shop_buyback/clinic/liver,
 		/datum/shop_buyback/clinic/lungs,
 		/datum/shop_buyback/clinic/monster_gland,
-		/datum/shop_buyback/clinic/used_defib,
 	)
 	trader_lines = list(
 		TRADER_LINE_SALE = list(
@@ -461,7 +460,7 @@
 	name = "O- blood pack"
 	desc = "Universal donor blood. Sawbones swears it's O negative and mostly blood."
 	item_path = /obj/item/reagent_containers/blood/o_minus
-	price_credits = 300
+	price_credits = 150
 	stock_min = 2
 	stock_max = 4
 
@@ -558,7 +557,7 @@
 	name = "pre-owned heart"
 	desc = "One careful owner. Sawbones guarantees it was beating recently."
 	item_path = /obj/item/organ/heart
-	price_credits = 450
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
 
@@ -567,7 +566,7 @@
 	name = "lightly used liver"
 	desc = "Some cosmetic wear, consistent with the previous owner drinking at the Dregs."
 	item_path = /obj/item/organ/liver
-	price_credits = 400
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -576,7 +575,7 @@
 	name = "reconditioned lungs"
 	desc = "Aired out and everything. Non-smoker, allegedly."
 	item_path = /obj/item/organ/lungs
-	price_credits = 400
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -609,7 +608,7 @@
 /datum/shop_sku/clinic/rotating/survival_pen
 	category = "Field Medicine"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
-	price_credits = 400
+	price_credits = 300
 
 /datum/shop_sku/clinic/rotating/prescription_stimulants
 	category = "Back Room"
@@ -637,8 +636,13 @@
 	price_vouchers = 0
 
 // ===== SAWBONES' INTAKE LEDGER (buybacks) =====
-// Credits only, and nothing a ship lathe can print: organs, monster glands,
-// and pre-owned defibs (the medical equivalent of Vex's gun fencing).
+// Natural donor organs and monster glands only.
+
+/datum/shop_buyback/clinic/matches(obj/item/offered)
+	if(!..() || !istype(offered, /obj/item/organ))
+		return FALSE
+	var/obj/item/organ/organ = offered
+	return (organ.organ_flags & ORGAN_ORGANIC) && !(organ.organ_flags & ORGAN_ROBOTIC) && !HAS_TRAIT(organ, TRAIT_PRINTED_ORGAN)
 
 /datum/shop_buyback/clinic/heart
 	name = "donor heart"
@@ -676,11 +680,14 @@
 	demand_min = 3
 	demand_max = 5
 
-/datum/shop_buyback/clinic/used_defib
-	name = "defibrillator (pre-owned)"
-	desc = "Sawbones buys defibs with a history. Scorch marks are fine. Scorch marks are expected."
-	category = "Equipment Intake"
-	item_path = /obj/item/defibrillator
-	pay_credits = 250
-	demand_min = 2
-	demand_max = 4
+// Fresh or stabilized only, like Vex's cores. matches() runs on the very gland
+// try_sell() consumes, at the moment of sale.
+/datum/shop_buyback/clinic/monster_gland/matches(obj/item/offered)
+	return ..() && !is_dead_monster_core(offered)
+
+/datum/shop_buyback/clinic/monster_gland/get_denial_reason(mob/living/user)
+	if(demand > 0 && count_carried_units(user) < 1)
+		for(var/obj/item/offered in user.get_all_contents())
+			if(istype(offered, item_path) && is_dead_monster_core(offered) && !is_trader_good(offered))
+				return "That core's gone dead."
+	return ..()

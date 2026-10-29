@@ -14,23 +14,21 @@
  */
 /datum/mission/prospect_stake
 	name = "Prospect Stake"
+	guarded_prize_family = "stake"
 	weight = 6
 	mission_limit = 1
 	duration = 40 MINUTES
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL // the beacon IS the contract
 	gps_tag_prefix = "CLAIM"
 	// Top of the mission pay curve - it's an announced fight
-	value_min = 2200
-	value_max = 3000
-	voucher_count = 3
+	value_min = 1400
+	value_max = 1800
+	voucher_count = 1
 
 	/// zone_mobs theme answering the claim
 	var/wave_theme
 	/// The defense objective (kit dispensing at start)
 	var/datum/mission_objective/claim_defense/defense
-	/// Whether this stake pays a ship-part prize crate instead of vouchers
-	var/pays_ship_parts = FALSE
-
 /datum/mission/prospect_stake/Destroy()
 	defense = null
 	return ..()
@@ -54,16 +52,9 @@
 /datum/mission/prospect_stake/generate_details()
 	objective_name = "notarized claim deed"
 	wave_theme = pick_weight(MISSION_WAVE_THEMES)
-	// Red-zone stakes can trade the voucher stack for a ship-part crate
-	if(difficulty == MISSION_DIFFICULTY_HARD)
-		voucher_count = 4
-		if(prob(35))
-			pays_ship_parts = TRUE
-			voucher_count = 0
-
 /datum/mission/prospect_stake/build_objectives()
 	var/datum/mission_objective/goto_coords/approach = new
-	approach.arrival_message = "On station. Deploy the claim beacon while holding these coordinates."
+	approach.arrival_message = "On station over the claim."
 	add_objective(approach)
 	defense = new
 	defense.wave_theme = wave_theme
@@ -75,22 +66,10 @@
 
 /datum/mission/prospect_stake/update_text()
 	name = "Prospect Stake: ([target.target_x], [target.target_y])"
-	desc = "File our mineral-rights claim at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		A claim beacon kit lands on your mission pad when you sign. Fly out, deploy it aboard your ship while holding at those coordinates, and keep it in one piece for [defense ? round(defense.defend_duration / (1 MINUTES)) : 8] minutes. The clock only runs while the ship holds station. \
-		The filing goes out on Wideband, so [target_zone_name == ZONE_NAME_RED ? "every pirate in red space will know exactly where you are" : "the whole lane will hear it"]. Expect boarders. \
-		The deed prints at the beacon once the claim matures; bring it to the mission pad. \
-		Pays [pays_ship_parts ? "a bonded crate of ship-grade components" : "[voucher_count] trade vouchers"] on top of the fee."
+	desc = "File our mineral-rights claim at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/prospect_stake/waypoint_label()
 	return "Prospect stake"
-
-/datum/mission/prospect_stake/distribute_rewards(atom/reward_anchor)
-	..()
-	if(pays_ship_parts)
-		var/turf/reward_turf = get_turf(reward_anchor)
-		if(reward_turf)
-			note_metric_ship_parts(spawn_ship_part_prize(reward_turf)) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
-			flash_reward_anchor(reward_anchor)
 
 /**
  * # Claim Beacon Kit
@@ -101,7 +80,7 @@
  */
 /obj/item/claim_beacon_kit
 	name = "claim beacon kit"
-	desc = "A folded prospecting claim beacon, bonded and pre-registered. Use it in hand while your ship holds at the contracted coordinates. Filings are public, so expect company."
+	desc = "A folded prospecting claim beacon, bonded and pre-registered."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "recovery_anchored"
 	w_class = WEIGHT_CLASS_BULKY
@@ -140,7 +119,7 @@
  */
 /obj/structure/mission_claim_beacon
 	name = "prospecting claim beacon"
-	desc = "A registered mineral-rights beacon, broadcasting its claim on every open channel. Keeping it in one piece is the whole job."
+	desc = "A registered mineral-rights beacon, broadcasting its claim on every open channel."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "survey_pylon"
 	anchored = TRUE
@@ -189,9 +168,9 @@
 	if(!COOLDOWN_FINISHED(src, offstation_warn_cooldown))
 		return
 	COOLDOWN_START(src, offstation_warn_cooldown, 15 SECONDS)
-	balloon_alert_to_viewers("claim clock paused - off station!")
+	balloon_alert_to_viewers("off station!")
 	var/datum/mission_objective/claim_defense/objective = objective_ref?.resolve()
-	objective?.notify_crew("Claim beacon reports the ship off station - the clock is paused.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+	objective?.notify_crew("Claim beacon reports the ship off station.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
 /// The claim matured: stop being a mission object, stay as scenery
 /obj/structure/mission_claim_beacon/proc/retire()

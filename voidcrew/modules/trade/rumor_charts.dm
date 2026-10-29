@@ -31,6 +31,11 @@
 	var/spawn_zone = ZONE_RED
 	/// One successful reveal per paid chart; failed placement remains retryable.
 	var/revealed = FALSE
+	/// What the helm calls the revealed target in its readout
+	var/reveal_noun = "rare signal"
+	/// Charts with work left after the reveal (anomaly charts wait for the crew to
+	/// arrive) manage their own lifetime instead of being deleted on reveal.
+	var/keep_after_reveal = FALSE
 
 /**
  * Spawns the chart's ruin at an unused square in the chart's zone band and
@@ -57,6 +62,8 @@
 		return null
 
 	var/obj/structure/overmap/space_ruin/ruin = new(spawn_turf)
+	if(QDELETED(ruin))
+		return null
 	ruin.set_ruin_template(template)
 	ruin.mark_rare()
 	revealed = TRUE
@@ -75,21 +82,22 @@
  */
 /obj/structure/overmap/ship/proc/add_pending_rumor(datum/rumor_chart/chart)
 	pending_rumors += chart
-	ship_notify("Encrypted rumor data received: \"[chart.name]\". Reveal it from the helm console when ready.", "HELM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship_notify("Encrypted rumor data received: \"[chart.name]\".", "HELM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
- * Reveals a pending rumor: spawns its ruin, charts the waypoint and consumes
- * the sealed entry. Returns the ruin, or null on failure (entry is kept).
+ * Reveals a pending rumor: spawns or picks its site, charts the waypoint and
+ * consumes the sealed entry. Returns the site, or null on failure (entry is kept).
  */
 /obj/structure/overmap/ship/proc/reveal_pending_rumor(datum/rumor_chart/chart)
 	if(!(chart in pending_rumors))
 		return null
-	var/obj/structure/overmap/space_ruin/ruin = chart.reveal(src)
-	if(!ruin)
+	var/obj/structure/overmap/site = chart.reveal(src)
+	if(!site)
 		return null
 	pending_rumors -= chart
-	qdel(chart)
-	return ruin
+	if(!chart.keep_after_reveal)
+		qdel(chart)
+	return site
 
 /**
  * Gets an unused overmap square in the given zone band (ZONE_RED/YELLOW/GREEN).
@@ -146,7 +154,7 @@
 		return
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
-		return "No crew registration, you need a ship to upload the rumor to."
+		return "No crew registration."
 
 /datum/shop_sku/ruin_chart/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
@@ -178,6 +186,6 @@
 	chart.spawn_zone = spawn_zone
 	ship.add_pending_rumor(chart)
 
-	to_chat(user, span_notice("The rumor data is encrypted and beamed to [ship]'s helm console. Reveal it when your crew is ready to move."))
+	to_chat(user, span_notice("Encrypted rumor data received by [ship]."))
 	metric_shop_purchase(src, user, credit_price, price_vouchers)
 	return TRUE

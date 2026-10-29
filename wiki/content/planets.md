@@ -30,7 +30,7 @@ Your ship lands at a fixed berth on the edge of the map unless someone aboard us
 Ash storms and sandstorms both roll a harmless variant sometimes, gentle embers or drifting sand instead of the real thing. The real thing announces itself first, and the warning is your cue to get under a roof or back inside the ship.
 
 !!! danger "The lava world is not a walk"
-    Lava planets have thin air as well as heat, so a gas mask and a tank are not enough on their own. They are also the only planet type where a true megafauna can appear out in the open. At most one per world, but one is plenty.
+    Lava planets have thin air as well as heat, so a gas mask and a tank are not enough on their own. They are also the only planet type where a true megafauna can appear out in the open. At most one per yellow- or red-zone world, but one is plenty.
 
 ## What is down there
 
@@ -44,12 +44,19 @@ Ash storms and sandstorms both roll a harmless variant sometimes, gentle embers 
 
 **Trade goods.** Each world grows or hides something traders want and nobody can manufacture aboard a ship: raw telecrystal in the crust of the volcanic and apocalyptic worlds, glacial cores in frozen permafrost, wild spice pods lying on jungle ground, pearl clams caught in beach shore water. None of them can be scanned for. Telecrystal and glacial veins look like ordinary rock until you swing at them. Prices are at [Trader Outposts](trader-outposts.md); the wider economy is in [Money & Trade](money-and-trade.md).
 
+## Anomalies
+
+Natural planets seed **one anomaly in green, two in yellow and three in red**, where safe ground allows. Neutralize one to recover its core. Purchased anomaly charts add a separate encounter; see [Trader Outposts](trader-outposts.md#anomaly-cores-and-charts).
+
+A planet's ice demons can drop at most **two anomaly cores in total**, shared by both demon kinds for the round. Returning after the surface unloads does not reset that allowance. Supermatter hazards do not yield recoverable cores.
+
 ## Dangerous space means a dangerous planet
 
 Each kind of world has one planet in the safe inner ring, so a new crew can try every terrain close to home. The rest are spread across the rings by area, which puts most of them out in the lawless ring. A planet's band changes how the same world plays:
 
-- Fauna spawns thicker, and a share of the rolls upgrade to the biome's meaner list: lone animals become nests.
-- Storms come around more often, give less warning before they hit, and last longer.
+- Hostile fauna gains health and damage, and a share of the rolls upgrades to the biome's meaner list. Population and nest limits stay the same across zones.
+- Storms come around more often, give less warning before they hit, and last longer. Red worlds also have radiation storms.
+- Ore walls are more likely to contain valuable minerals. Every ordinary ore remains possible in green.
 
 A planet keeps its band for the whole round. One the crew wrote off as lethal will still be lethal the next time it turns up.
 

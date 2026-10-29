@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ad" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/knife/combat/survival{
+	pixel_y = 4;
+	pixel_x = 7
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/unpowered)
 "am" = (
 /obj/structure/frame/machine,
 /obj/item/stack/cable_coil/five,
@@ -238,11 +246,6 @@
 	},
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
-"pv" = (
-/obj/effect/turf_decal/bot_red,
-/obj/machinery/suit_storage_unit/nuke_med,
-/turf/open/floor/iron/dark/airless,
-/area/ruin/space/unpowered)
 "qL" = (
 /obj/machinery/door/window/brigdoor/left/directional/west{
 	req_access = list("syndicate");
@@ -424,6 +427,11 @@
 	},
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
+"Cj" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/suit_storage_unit/ruin_zone,
+/turf/open/floor/iron/dark/airless,
+/area/ruin/space/unpowered)
 "Cv" = (
 /obj/item/ammo_casing/c357/match,
 /turf/open/floor/mineral/plastitanium/red,
@@ -479,14 +487,6 @@
 "ET" = (
 /obj/structure/closet/cardboard/metal,
 /turf/open/floor/circuit/red/airless,
-/area/ruin/space/unpowered)
-"Fn" = (
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/shield/riot{
-	pixel_y = 4;
-	pixel_x = 7
-	},
-/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/unpowered)
 "FW" = (
 /obj/effect/decal/remains/human,
@@ -942,7 +942,7 @@ la
 Da
 LP
 Nv
-pv
+Cj
 Pq
 uE
 vK
@@ -1121,7 +1121,7 @@ la
 la
 NY
 gr
-Fn
+ad
 Cv
 Cv
 Pq

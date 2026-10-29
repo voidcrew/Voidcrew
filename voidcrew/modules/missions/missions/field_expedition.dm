@@ -14,13 +14,13 @@
 	name = "Field Expedition"
 	weight = 9
 	mission_limit = 2
-	voucher_count = 1
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "XPDN"
 	// Green-band pay, a notch over plain recovery: planets mean weather,
 	// wildlife and a walk from the dock
-	value_min = 800
-	value_max = 1100
+	value_min = 500
+	value_max = 700
 
 	/// zone_mobs theme that may answer the pickup
 	var/wave_theme
@@ -69,10 +69,7 @@
 
 /datum/mission/field_expedition/update_text()
 	name = "Field Expedition: [objective_name]"
-	desc = "Our [objective_name] is down on the planet at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Land, locate the beacon-marked salvage and bring it to the mission pad. Picking it up may draw an ambush. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the salvage's beacon ([gps_tag])."
+	desc = "Recover our [objective_name] from the planet at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/field_expedition/waypoint_label()
 	return "Expedition: [objective_name]"

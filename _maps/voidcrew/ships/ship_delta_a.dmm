@@ -144,10 +144,6 @@
 "fF" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/delta/cargo/a)
-"gH" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/delta/engineering/a)
 "hv" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -276,6 +272,15 @@
 /obj/item/clothing/head/utility/welding,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
+"kX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/item/gun/energy/laser/retro,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "lf" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -586,20 +591,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/a)
-"uP" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/power/port_gen/pacman{
-	anchored = 1
-	},
-/obj/item/wrench,
-/obj/structure/cable,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "va" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -678,15 +669,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
-"wl" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/item/gun/energy/laser/retro,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/holopad,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "wx" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -809,14 +791,6 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
-"zG" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "zJ" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -909,17 +883,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/hallway/central/a)
-"De" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 1
-	},
-/obj/machinery/portable_atmospherics/scrubber,
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/atmospherics/pipe/bridge_pipe/orange,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "Di" = (
 /obj/machinery/door/airlock/medical/glass{
 	name = "Medbay"
@@ -1146,16 +1109,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/medbay/a)
-"Lv" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/components/unary/portables_connector/visible,
-/obj/machinery/portable_atmospherics/canister/oxygen,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "Lx" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -1555,10 +1508,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/a)
-"Zw" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
-/turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/delta/engineering/a)
 "Zz" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/blue/anticorner{
@@ -1720,7 +1669,7 @@ pB
 tP
 lj
 dy
-wl
+kX
 Ph
 Jn
 tP

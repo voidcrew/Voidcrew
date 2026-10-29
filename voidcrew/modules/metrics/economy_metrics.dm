@@ -59,10 +59,9 @@
 //   subject = item type, credits and vouchers = paid out, quantity = items, details: name,
 //   shop, sales.
 // * mod_bench_upgrade: subject = upgrade id, details: name.
-// * neural_imprint: subject = schematic name, details: from_cash (paid from loaded cash).
 // * chrome_cradle_service: subject = service, details: from_cash.
 // * locker_rental: subject = locker type.
-//   The four above are paid outpost services: ckey = customer, ship, zone, credits and
+//   The three above are paid outpost services: ckey = customer, ship, zone, credits and
 //   vouchers = minus the fee.
 // * outpost_advert: an outpost broadcast, paid from the outpost treasury. ckey = who bought it,
 //   subject = outpost name, credits = minus the cost. No ship.

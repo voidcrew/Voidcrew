@@ -45,13 +45,13 @@
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
-"i" = (
+"j" = (
 /obj/item/stack/rods,
 /obj/effect/turf_decal/stripes/line{
 	dir = 5
 	},
 /obj/item/clothing/head/helmet/solgov,
-/obj/item/gun/energy/laser,
+/obj/item/melee/baseball_bat,
 /obj/item/clothing/under/solgov/elite,
 /obj/effect/gibspawner/human,
 /obj/effect/zone_mobs/syndicate,
@@ -272,7 +272,7 @@ a
 D
 N
 K
-i
+j
 P
 c
 Z

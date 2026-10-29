@@ -115,17 +115,11 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"guf" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/item/clothing/head/helmet/rus_ushanka,
-/obj/item/clothing/shoes/russian,
-/obj/item/clothing/under/costume/russian_officer,
-/obj/item/clothing/suit/jacket/officer/tan,
-/obj/item/reagent_containers/cup/glass/flask/gold{
-	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
-	},
+"geI" = (
+/obj/structure/table,
+/obj/item/gun/ballistic/revolver/russian,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/bridge)
+/area/shuttle/voidcrew/bogatyr/central)
 "gyy" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -156,11 +150,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/dormitories)
-"hwj" = (
-/obj/structure/table,
-/obj/item/gun/ballistic/revolver/russian,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/central)
 "hOd" = (
 /obj/machinery/light{
 	dir = 1
@@ -182,6 +171,17 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/template_noop,
 /area/shuttle/voidcrew/bogatyr/cargo)
+"iAy" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/item/clothing/head/helmet/rus_ushanka,
+/obj/item/clothing/shoes/russian,
+/obj/item/clothing/under/costume/russian_officer,
+/obj/item/clothing/suit/jacket/officer/tan,
+/obj/item/reagent_containers/cup/glass/flask/gold{
+	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/bridge)
 "iCu" = (
 /obj/structure/bed/dogbed{
 	name = "Anastasia's bed"
@@ -808,7 +808,7 @@ lgD
 eQO
 gdc
 xob
-hwj
+geI
 kXv
 ueU
 xoj
@@ -869,7 +869,7 @@ pmd
 "}
 (8,1,1) = {"
 njs
-guf
+iAy
 qov
 eQO
 xqi

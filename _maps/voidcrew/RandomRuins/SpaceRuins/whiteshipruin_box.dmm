@@ -1,4 +1,29 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/ruin/space/has_grav/whiteship/box)
+"ac" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/ruin/space/has_grav/whiteship/box)
+"ad" = (
+/obj/item/melee/baseball_bat{
+	pixel_y = -12
+	},
+/obj/machinery/light/broken/directional/east,
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 4
+	},
+/obj/structure/rack,
+/turf/open/floor/iron/textured_edge{
+	dir = 4
+	},
+/area/ruin/space/has_grav/whiteship/box)
 "ag" = (
 /obj/machinery/power/shuttle_engine/huge{
 	dir = 8;
@@ -41,10 +66,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/extinguisher_cabinet/directional/west,
 /turf/open/floor/carpet,
-/area/ruin/space/has_grav/whiteship/box)
-"bN" = (
-/obj/machinery/suit_storage_unit/mining/eva,
-/turf/open/floor/mineral/titanium/tiled/white,
 /area/ruin/space/has_grav/whiteship/box)
 "bT" = (
 /obj/effect/turf_decal/trimline/yellow/arrow_ccw{
@@ -958,6 +979,12 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/whiteship/box)
+"Ez" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/ruin/space/has_grav/whiteship/box)
 "EA" = (
 /obj/effect/decal/cleanable/glass,
 /obj/structure/lattice,
@@ -1043,10 +1070,6 @@
 /area/ruin/space/has_grav/whiteship/box)
 "HR" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
-/area/ruin/space/has_grav/whiteship/box)
-"HT" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/turf/open/floor/mineral/titanium/tiled/white,
 /area/ruin/space/has_grav/whiteship/box)
 "HW" = (
 /obj/effect/turf_decal/tile/blue/half/contrasted{
@@ -1269,19 +1292,6 @@
 "Ov" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/titanium/white/airless,
-/area/ruin/space/has_grav/whiteship/box)
-"OJ" = (
-/obj/item/gun/energy/laser/retro{
-	pixel_y = -12
-	},
-/obj/machinery/light/broken/directional/east,
-/obj/effect/turf_decal/siding/wideplating{
-	dir = 4
-	},
-/obj/structure/rack,
-/turf/open/floor/iron/textured_edge{
-	dir = 4
-	},
 /area/ruin/space/has_grav/whiteship/box)
 "OS" = (
 /obj/effect/decal/cleanable/glass,
@@ -1971,7 +1981,7 @@ nH
 nH
 kK
 Pe
-OJ
+ad
 rp
 HR
 IA
@@ -2061,7 +2071,7 @@ HR
 Dl
 Ay
 HR
-bN
+Ez
 IA
 Ud
 kX
@@ -2083,7 +2093,7 @@ kK
 Ay
 Xk
 HR
-HT
+ab
 IA
 Qx
 Gp
@@ -2105,7 +2115,7 @@ kK
 sX
 kd
 HR
-HT
+ac
 IA
 Qx
 BG

@@ -7,7 +7,7 @@
  *
  * ALL OF THESE ARE ADMIN-ONLY. Every control below is weight 0 / max_occurrences 0, and
  * none of them roll naturally. Anomalies now generate on planet surfaces instead, see
- * voidcrew/datums/mapgen/planet_anomalies.dm and the ZONE_PLANET_ANOMALY_BUDGET_* defines.
+ * voidcrew/datums/mapgen/planet_anomalies.dm and the ZONE_PLANET_ANOMALY_CHANCE_* defines.
  *
  * The reason is that a shuttle is the worst possible venue for one. A ship has a single
  * route between compartments, so an anomaly spawned in a corridor is not a hazard the

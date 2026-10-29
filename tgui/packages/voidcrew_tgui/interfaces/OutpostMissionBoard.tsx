@@ -3,12 +3,14 @@ import type { ReactNode } from 'react';
 import {
   Box,
   Button,
+  Dropdown,
   Icon,
   NoticeBox,
   Section,
   Stack,
   Tooltip,
 } from 'tgui-core/components';
+import { formatMoney, formatTime } from 'tgui-core/format';
 import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../../tgui/backend';
@@ -28,25 +30,18 @@ type Offer = {
   value: number;
   reward_items?: RewardItem[];
   voucher_count: number;
-  difficulty_name: string;
-  difficulty_color: string;
+  research_reward?: number;
+  duration: number;
   zone_name: string | null;
   zone_color: string;
   progress: string;
-  wanted_text: string;
   archetype: string;
   time_remaining_text: string;
-  favor_reward: number;
-  favor_trader: string | null;
 };
 
 type FavorStanding = {
-  points: number;
   tier: number;
   tier_name: string;
-  discount_pct: number;
-  next_at: number;
-  trader: string;
 };
 
 type ShipMission = Offer & {
@@ -65,7 +60,9 @@ type Data = {
   ship_mission_slots_free: number;
   offers: Offer[];
   ship_missions: ShipMission[];
-  favor?: FavorStanding;
+  crew_ships: { ref: string; name: string }[];
+  crew_ship_ref: string | null;
+  favor?: FavorStanding | null;
 };
 
 const ARCHETYPE_ICONS = {
@@ -81,6 +78,21 @@ const archetypeIcon = (archetype: string) =>
   ARCHETYPE_ICONS[archetype as keyof typeof ARCHETYPE_ICONS] ??
   ARCHETYPE_ICONS.contract;
 
+/** The crew's standing with this outpost, named as such */
+const ReputationLabel = (props: { favor: FavorStanding }) => {
+  const { favor } = props;
+  const tierColor =
+    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
+  return (
+    <Box inline nowrap color="label">
+      Reputation:{' '}
+      <Box inline bold color={tierColor}>
+        {favor.tier_name}
+      </Box>
+    </Box>
+  );
+};
+
 const RewardLine = (props: { offer: Offer }) => {
   const { offer } = props;
   const items = offer.reward_items ?? [];
@@ -89,7 +101,7 @@ const RewardLine = (props: { offer: Offer }) => {
   if (offer.value > 0) {
     segments.push(
       <Box as="span" bold color="gold">
-        {offer.value} cr
+        {formatMoney(offer.value)} cr
       </Box>,
     );
   }
@@ -118,12 +130,16 @@ const RewardLine = (props: { offer: Offer }) => {
       </Box>,
     );
   }
-  if (offer.favor_reward > 0) {
+  if ((offer.research_reward ?? 0) > 0) {
     segments.push(
-      <Box as="span" bold color="orange">
-        +{offer.favor_reward} standing
+      <Box as="span" bold color="teal">
+        research notes
       </Box>,
     );
+  }
+
+  if (segments.length === 0) {
+    return null;
   }
 
   return (
@@ -131,31 +147,33 @@ const RewardLine = (props: { offer: Offer }) => {
       <Box inline color="label">
         Pays:{' '}
       </Box>
-      {segments.length === 0 ? (
-        <Box inline color="label">
-          goods
+      {segments.map((segment, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static, order-stable list
+        <Box as="span" key={index}>
+          {index > 0 && (
+            <Box as="span" color="label">
+              {' + '}
+            </Box>
+          )}
+          {segment}
         </Box>
-      ) : (
-        segments.map((segment, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static, order-stable list
-          <Box as="span" key={index}>
-            {index > 0 && <Box as="span" color="label">{' + '}</Box>}
-            {segment}
-          </Box>
-        ))
-      )}
+      ))}
     </Box>
   );
 };
 
 const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
-  const { act } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const { offer, canAccept } = props;
   return (
     <Section>
       <Stack align="center">
         <Stack.Item>
-          <Icon name={archetypeIcon(offer.archetype)} size={1.6} color="label" />
+          <Icon
+            name={archetypeIcon(offer.archetype)}
+            size={1.6}
+            color="label"
+          />
         </Stack.Item>
         <Stack.Item grow>
           <Stack vertical>
@@ -166,9 +184,6 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
                   [{offer.zone_name}]{' '}
                 </Box>
               )}
-              <Box inline color={offer.difficulty_color}>
-                [{offer.difficulty_name}]
-              </Box>
             </Stack.Item>
             <Stack.Item color="label" fontSize="0.9em">
               {offer.desc}
@@ -176,12 +191,22 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
             <Stack.Item>
               <RewardLine offer={offer} />
             </Stack.Item>
+            <Stack.Item color="label" fontSize="0.85em">
+              Time allowed: {formatTime(offer.duration, 'short')}
+            </Stack.Item>
           </Stack>
         </Stack.Item>
         <Stack.Item>
           <Button
             icon="file-signature"
             disabled={!canAccept}
+            tooltip={
+              canAccept
+                ? undefined
+                : data.ship_name && data.ship_mission_slots_free <= 0
+                  ? 'Docket full.'
+                  : 'Order declined.'
+            }
             onClick={() => act('accept', { ref: offer.ref })}
           >
             Accept
@@ -218,10 +243,16 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
       <Stack.Item grow>
         <Box bold>{mission.name}</Box>
         <Box color="label" fontSize="0.85em">
-          {mission.progress} · {mission.time_remaining_text} left
+          {mission.desc}
         </Box>
-      </Stack.Item>
-      <Stack.Item>
+        {!!mission.progress && (
+          <Box color="label" fontSize="0.85em">
+            {mission.progress}
+          </Box>
+        )}
+        <Box color="label" fontSize="0.85em">
+          Due in: {mission.time_remaining_text}
+        </Box>
         <RewardLine offer={mission} />
       </Stack.Item>
       <Stack.Item>
@@ -236,7 +267,7 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
 };
 
 export const OutpostMissionBoard = (props) => {
-  const { data } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const {
     shop_name,
     trader_name,
@@ -245,6 +276,8 @@ export const OutpostMissionBoard = (props) => {
     ship_mission_slots_free,
     offers = [],
     ship_missions = [],
+    crew_ships = [],
+    crew_ship_ref,
     favor,
   } = data;
 
@@ -254,15 +287,28 @@ export const OutpostMissionBoard = (props) => {
     <Window title={`${shop_name}, Contract Board`} width={560} height={620}>
       <Window.Content scrollable>
         {!!barred && (
-          <NoticeBox danger>
-            TRADE EMBARGO IN EFFECT: {trader_name} is not posting work for
-            you.
-          </NoticeBox>
+          <NoticeBox danger>{trader_name}: Service refused.</NoticeBox>
         )}
-        {!ship_name && (
-          <NoticeBox>
-            No crew registration found: you need a ship to take a contract.
-          </NoticeBox>
+        {!ship_name && <NoticeBox>No ship account selected.</NoticeBox>}
+        {crew_ships.length > 0 && (
+          <Section>
+            <Box inline mr={1} color="label">
+              Ship account
+            </Box>
+            <Dropdown
+              selected={crew_ship_ref ?? ''}
+              displayText={
+                crew_ships.find((ship) => ship.ref === crew_ship_ref)?.name ??
+                'Ship account'
+              }
+              options={crew_ships.map((ship) => ({
+                value: ship.ref,
+                displayText: ship.name,
+              }))}
+              disabled={!!barred}
+              onSelected={(ref) => act('select_ship', { ref })}
+            />
+          </Section>
         )}
         <Section
           title={`${trader_name}'s postings`}
@@ -270,26 +316,10 @@ export const OutpostMissionBoard = (props) => {
             ship_name ? (
               <Box inline color="label">
                 {!!favor && (
-                  <Tooltip
-                    content={`Completing ${favor.trader}'s contracts earns standing: discounts at each tier, back-room stock at Trusted.`}
-                  >
-                    <Box inline>
-                      <Box
-                        inline
-                        bold
-                        color={favor.tier >= 3 ? 'orange' : 'good'}
-                      >
-                        {favor.tier_name}
-                      </Box>
-                      {favor.next_at > 0 && (
-                        <Box inline>
-                          {' '}
-                          ({favor.points}/{favor.next_at})
-                        </Box>
-                      )}
-                      {' · '}
-                    </Box>
-                  </Tooltip>
+                  <>
+                    <ReputationLabel favor={favor} />
+                    {' · '}
+                  </>
                 )}
                 {ship_name} · {ship_mission_slots_free} slot
                 {ship_mission_slots_free === 1 ? '' : 's'} free
@@ -309,10 +339,6 @@ export const OutpostMissionBoard = (props) => {
             {ship_missions.map((mission) => (
               <ShipMissionRow key={mission.ref} mission={mission} />
             ))}
-            <Box color="label" fontSize="0.85em" mt={1}>
-              Item contracts can be turned in right here. Hold the goods in
-              hand. Courier pods only unseal at their destination outpost.
-            </Box>
           </Section>
         )}
       </Window.Content>

@@ -1,6 +1,6 @@
 /datum/design/survey_data_disk
 	name = "Survey data storage disk"
-	desc = "Unlocks the survey data storage disk."
+	desc = "A disk for celestial survey records."
 	id = "survey_data_disk"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron =SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass =SMALL_MATERIAL_AMOUNT)
@@ -22,7 +22,7 @@
 // Allows shuttle docking
 /datum/design/survey_ship_docking
 	name = "Orbital survey mapping"
-	desc = "Upgrades your survey console to allow you to view a map of the planet and control where your ship docks"
+	desc = "Orbital cartography software."
 	id = "survey_ship_docking"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
@@ -30,28 +30,28 @@
 // Sight capabilities - Can we view mobs, objects, turfs, etc
 /datum/design/survey_map_obj_sight
 	name = "Survey mapping upgrade - Visible objects"
-	desc = "Upgrades your survey console capabilities to show flora and objects when using the map"
+	desc = "Surface imaging software."
 	id = "survey_map_obj_sight"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_mob_sight
 	name = "Survey mapping upgrade - Visible lifeforms"
-	desc = "Upgrades your survey mapping system to show lifeforms when using the map"
+	desc = "Biosignature imaging software."
 	id = "survey_map_mob_sight"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_range_upg_superior
 	name = "Survey mapping upgrade - Superior view range"
-	desc = "Upgrades your survey mapping system to have a larger field of view"
+	desc = "Wide-field cartography software."
 	id = "survey_map_range_upg_superior"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_range_upg_elite
 	name = "Survey mapping upgrade - Elite view range"
-	desc = "Upgrades your survey mapping system to have a larger field of view"
+	desc = "Panoramic cartography software."
 	id = "survey_map_range_upg_elite"
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
@@ -59,28 +59,28 @@
 // Rewards upgrades
 /datum/design/survey_console_rewards_upgrade_basic
 	name = "Survey basic rewards"
-	desc = "Your survey console will produce a small amount of research points and money per survey"
+	desc = "Standard survey analysis software."
 	id = "survey_console_rewards_upgrade_basic"
 	research_icon = 'icons/obj/economy.dmi'
 	research_icon_state = "spacecash1"
 
 /datum/design/survey_console_rewards_upgrade_advanced
 	name = "Survey rewards advanced upgrade"
-	desc = "Upgrades your survey console to produce more research points and money"
+	desc = "Refined survey analysis software."
 	id = "survey_console_rewards_upgrade_advanced"
 	research_icon = 'icons/obj/economy.dmi'
 	research_icon_state = "spacecash1_2"
 
 /datum/design/survey_console_rewards_upgrade_superior
 	name = "Survey rewards superior upgrade"
-	desc = "Upgrades your survey console to produce a large amount of research points and money"
+	desc = "Precision survey analysis software."
 	id = "survey_console_rewards_upgrade_superior"
 	research_icon = 'icons/obj/economy.dmi'
 	research_icon_state = "spacecash1_3"
 
 /datum/design/survey_console_rewards_upgrade_elite
 	name = "Survey rewards elite upgrade"
-	desc = "Upgrades your survey console to produce a ton of research points and money"
+	desc = "Advanced survey analysis software."
 	id = "survey_console_rewards_upgrade_elite"
 	research_icon = 'icons/obj/economy.dmi'
 	research_icon_state = "spacecash1_4"
@@ -88,28 +88,28 @@
 // Information upgrades
 /datum/design/survey_console_information_upgrade_basic
 	name = "Survey basic information upgrade"
-	desc = "Grants you basic planetary information about a planet"
+	desc = "Planetary cataloguing software."
 	id = "survey_console_information_upgrade_basic"
 	research_icon = 'icons/obj/service/bureaucracy.dmi'
 	research_icon_state = "paperslip_words"
 
 /datum/design/survey_console_information_upgrade_advanced
 	name = "Survey advanced information upgrade"
-	desc = "Grants you access to the hostility level of a planet"
+	desc = "Planetary hazard analysis software."
 	id = "survey_console_information_upgrade_advanced"
 	research_icon = 'icons/obj/service/bureaucracy.dmi'
 	research_icon_state = "paper_stack_words"
 
 /datum/design/survey_console_information_upgrade_superior
 	name = "Survey superior information upgrade"
-	desc = "Grants you information about the life forms and structures found on a planet"
+	desc = "Planetary biosignature analysis software."
 	id = "survey_console_information_upgrade_superior"
 	research_icon = 'icons/obj/service/bureaucracy.dmi'
 	research_icon_state = "docs_part"
 
 /datum/design/survey_console_information_upgrade_elite
 	name = "Survey elite information upgrade"
-	desc = "Grants you even more information about things found on a planet"
+	desc = "Comprehensive planetary analysis software."
 	id = "survey_console_information_upgrade_elite"
 	research_icon = 'icons/obj/service/bureaucracy.dmi'
 	research_icon_state = "docs_red"

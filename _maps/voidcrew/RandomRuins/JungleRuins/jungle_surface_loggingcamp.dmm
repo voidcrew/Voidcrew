@@ -1,4 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/hatchet,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/powered)
+"ab" = (
+/obj/item/hatchet,
+/obj/machinery/light/dim,
+/obj/item/clothing/suit/space/syndicate/black{
+	name = "Lumberjack Powersuit"
+	},
+/obj/structure/safe/floor,
+/obj/item/grenade/frag,
+/obj/item/grenade/frag,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "aq" = (
 /obj/effect/decal/cleanable/blood,
 /obj/effect/mob_spawn/corpse/human/cargo_tech,
@@ -78,20 +96,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"iS" = (
-/obj/machinery/light/dim,
-/obj/item/chainsaw/doomslayer{
-	force_on = 35;
-	name = "THE GREAT TREEFELLER"
-	},
-/obj/item/clothing/suit/space/syndicate/black{
-	name = "Lumberjack Powersuit"
-	},
-/obj/structure/safe/floor,
-/obj/item/grenade/frag,
-/obj/item/grenade/frag,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "jz" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/grass/jungle,
@@ -620,13 +624,6 @@
 /obj/effect/turf_decal/stripes/line,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"VR" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/item/fireaxe,
-/turf/open/floor/carpet/royalblack,
-/area/ruin/powered)
 "VT" = (
 /obj/effect/decal/cleanable/blood/gibs/limb,
 /turf/open/floor/carpet/royalblack,
@@ -663,7 +660,6 @@
 /obj/structure/rack,
 /turf/open/floor/plating,
 /area/ruin/powered)
-
 "za" = (
 /obj/effect/decal/cleanable/blood/gibs,
 /obj/structure/chair/comfy/shuttle{
@@ -690,6 +686,7 @@
 /obj/effect/zone_mobs/wildlife,
 /turf/open/floor/plating,
 /area/ruin/powered)
+
 (1,1,1) = {"
 Cc
 Cc
@@ -983,7 +980,7 @@ gd
 UJ
 UJ
 Pb
-VR
+aa
 zu
 AR
 SJ
@@ -1077,7 +1074,7 @@ Yo
 AR
 wP
 Nr
-iS
+ab
 wP
 Ds
 Ta

@@ -386,4 +386,16 @@
 		SSshuttle.unload_preview()
 	TEST_ASSERT(checked >= 5, "only [checked] purchasable hulls were checked for port overhang")
 
+/// Replacement storage paths used by legacy hulls must spawn their supplies during initialization.
+/datum/unit_test/voidcrew_hull_storage_contents
+
+/datum/unit_test/voidcrew_hull_storage_contents/Run()
+	var/list/storage_types = list(
+		/obj/item/storage/belt/sheath/sabre,
+		/obj/item/storage/medkit/surgery,
+	)
+	for(var/storage_type in storage_types)
+		var/obj/item/storage/container = allocate(storage_type)
+		TEST_ASSERT(length(container.contents) > 0, "[storage_type] spawned without supplies")
+
 #undef SHIP_MODULE_MAP_ROOT

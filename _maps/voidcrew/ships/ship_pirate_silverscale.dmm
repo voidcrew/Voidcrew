@@ -192,6 +192,26 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
+"au" = (
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/spear{
+	pixel_y = 12
+	},
+/obj/item/spear{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/obj/item/spear{
+	pixel_x = 17
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
 "av" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 1
@@ -626,26 +646,6 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
-"xR" = (
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_y = 12
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_x = 8;
-	pixel_y = 7
-	},
-/obj/item/melee/energy/sword/saber/purple{
-	pixel_x = 17
-	},
-/obj/effect/turf_decal/bot,
-/obj/structure/cable,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_silverscale{
-	requires_power = 0
-	})
 "zB" = (
 /obj/structure/table/glass,
 /obj/machinery/chem_dispenser/drinks/beer{
@@ -828,7 +828,7 @@
 /obj/structure/guncase,
 /obj/item/gun/energy/laser/luxurypaywall{
 	projectile_damage_multiplier = 1.30;
-	desc = "A laser gun modified to cost 20 credits to fire. Someone on the station should have an ID that works with this thing."
+	desc = "A lavishly decorated laser gun."
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
@@ -1416,7 +1416,7 @@ aZ
 Is
 Yj
 RO
-xR
+au
 rB
 Fk
 QI

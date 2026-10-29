@@ -215,6 +215,7 @@
 			for(var/path in weights)
 				if(!tally[path])
 					weights[path] *= 2
+			weights = meteor_event_weights(weights, band)
 			event_type = pick_weight(weights)
 		grow_cluster(seed, event_type)
 		CHECK_TICK
@@ -239,6 +240,25 @@
 	if(!connect_clear_space())
 		return FALSE
 	return ensure_event_supply()
+
+/// Severity changes within the existing meteor budget, leaving hazard coverage intact.
+/proc/meteor_severity_weights(zone_type)
+	switch(ordinary_ore_zone(zone_type))
+		if(ZONE_YELLOW)
+			return list(/obj/structure/overmap/event/meteor/minor = 25, /obj/structure/overmap/event/meteor = 50, /obj/structure/overmap/event/meteor/majour = 25)
+		if(ZONE_RED)
+			return list(/obj/structure/overmap/event/meteor/minor = 10, /obj/structure/overmap/event/meteor = 30, /obj/structure/overmap/event/meteor/majour = 60)
+	return list(/obj/structure/overmap/event/meteor/minor = 60, /obj/structure/overmap/event/meteor = 30, /obj/structure/overmap/event/meteor/majour = 10)
+
+/proc/meteor_event_weights(list/weights, zone_type)
+	var/list/result = weights.Copy()
+	var/list/severities = meteor_severity_weights(zone_type)
+	var/total = 0
+	for(var/path in severities)
+		total += weights[path]
+	for(var/path in severities)
+		result[path] = total * severities[path] / 100
+	return result
 
 /// Repairs only remove hazards, so this converges. A cross-zone opening can expose
 /// another pocket inside one band; recheck until both guarantees hold together.
