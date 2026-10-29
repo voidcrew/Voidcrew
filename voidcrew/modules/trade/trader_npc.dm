@@ -341,6 +341,17 @@
 	var/obj/structure/overmap/ship/selected = locate(ship_ref) in get_crew_ships(user)
 	return selected && user.mind.select_crew_service_ship(selected)
 
+/// The selected crew's standing at this outpost: its tier and name, never the points behind it.
+/// Null without a crew ship, or at a stall with no outpost behind it (nothing there earns standing).
+/datum/outpost_trader_ui/proc/get_favor_data(datum/outpost_shop/shop, obj/structure/overmap/ship/crew_ship)
+	if(!shop?.outpost || !crew_ship)
+		return null
+	var/tier = shop.get_favor_tier(crew_ship)
+	return list(
+		"tier" = tier,
+		"tier_name" = shop.get_favor_tier_name(tier),
+	)
+
 /**
  * # tgui state: the trader's counter
  *
@@ -405,6 +416,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				"price_credits" = sku.price_credits,
 				"final_credits" = sku.get_credit_price(),
 				"price_vouchers" = sku.price_vouchers,
+				// Today's special only; a crew's standing discount rides final_credits in ui_data
+				"discount_pct" = sku.discount_pct,
 				"price_text" = sku.get_price_text(),
 				"barter" = istype(sku, /datum/shop_sku/barter),
 				"crew_limit" = sku.crew_limit,
@@ -440,6 +453,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	data["restock_remaining"] = isnull(restock_remaining) ? null : max(0, restock_remaining)
 
 	var/obj/structure/overmap/ship/crew_ship = add_crew_context_data(data, user)
+	// Sent as null too, so a stale standing never lingers in tgui's merged data
+	data["favor"] = get_favor_data(shop, crew_ship)
 
 	// The same selected ship account used for purchases. Vouchers remain personal.
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
@@ -592,6 +607,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	var/obj/structure/overmap/ship/ship = add_crew_context_data(data, user)
 	data["ship_name"] = ship ? ship.name : null
 	data["ship_mission_slots_free"] = ship ? (ship.max_missions - length(ship.active_missions)) : 0
+	data["favor"] = get_favor_data(shop, ship)
 
 	var/list/offers = list()
 	if(outpost)

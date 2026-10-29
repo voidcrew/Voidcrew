@@ -34,8 +34,14 @@ type Offer = {
   duration: number;
   zone_name: string | null;
   zone_color: string;
+  progress: string;
   archetype: string;
   time_remaining_text: string;
+};
+
+type FavorStanding = {
+  tier: number;
+  tier_name: string;
 };
 
 type ShipMission = Offer & {
@@ -56,6 +62,7 @@ type Data = {
   ship_missions: ShipMission[];
   crew_ships: { ref: string; name: string }[];
   crew_ship_ref: string | null;
+  favor?: FavorStanding | null;
 };
 
 const ARCHETYPE_ICONS = {
@@ -70,6 +77,21 @@ const ARCHETYPE_ICONS = {
 const archetypeIcon = (archetype: string) =>
   ARCHETYPE_ICONS[archetype as keyof typeof ARCHETYPE_ICONS] ??
   ARCHETYPE_ICONS.contract;
+
+/** The crew's standing with this outpost, named as such */
+const ReputationLabel = (props: { favor: FavorStanding }) => {
+  const { favor } = props;
+  const tierColor =
+    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
+  return (
+    <Box inline nowrap color="label">
+      Reputation:{' '}
+      <Box inline bold color={tierColor}>
+        {favor.tier_name}
+      </Box>
+    </Box>
+  );
+};
 
 const RewardLine = (props: { offer: Offer }) => {
   const { offer } = props;
@@ -223,6 +245,11 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
         <Box color="label" fontSize="0.85em">
           {mission.desc}
         </Box>
+        {!!mission.progress && (
+          <Box color="label" fontSize="0.85em">
+            {mission.progress}
+          </Box>
+        )}
         <Box color="label" fontSize="0.85em">
           Due in: {mission.time_remaining_text}
         </Box>
@@ -251,6 +278,7 @@ export const OutpostMissionBoard = (props) => {
     ship_missions = [],
     crew_ships = [],
     crew_ship_ref,
+    favor,
   } = data;
 
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
@@ -282,7 +310,23 @@ export const OutpostMissionBoard = (props) => {
             />
           </Section>
         )}
-        <Section title={`${trader_name}'s postings`}>
+        <Section
+          title={`${trader_name}'s postings`}
+          buttons={
+            ship_name ? (
+              <Box inline color="label">
+                {!!favor && (
+                  <>
+                    <ReputationLabel favor={favor} />
+                    {' · '}
+                  </>
+                )}
+                {ship_name} · {ship_mission_slots_free} slot
+                {ship_mission_slots_free === 1 ? '' : 's'} free
+              </Box>
+            ) : null
+          }
+        >
           {offers.length === 0 && (
             <Box color="label">Nothing posted right now.</Box>
           )}
