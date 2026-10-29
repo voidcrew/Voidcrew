@@ -145,7 +145,7 @@ Completing a trader's contracts earns your **crew** favor: **1 point** for easy,
 | 4 | Partner | 10% |
 | 6 | Trusted | 15% |
 
-The discount applies at every stall on that outpost. Voucher prices stay the same. A special and favor do not stack; you get the better discount. Favor is shared across the crew's ships and survives losing a hull.
+The discount applies at every stall on that outpost. Voucher prices stay the same. A special and favor do not stack; you get the better discount. Favor is shared across the crew's ships and survives losing a hull. The trade and contract windows show it as your reputation there.
 
 **Back Room** purchases require [zone reputation](zone-reputation.md), rather than Trusted favor. Barnaby's goods open after 3 green points. Sarge's fitter gauntlets open then too; his Skunkworks cell and maneuvering harness need the next unlock, after 6 yellow points. Vex's insurance implant needs the elite unlock, after 9 red points. Each crew may buy up to **three of each** per round.
 

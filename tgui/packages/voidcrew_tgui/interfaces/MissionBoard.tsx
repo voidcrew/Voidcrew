@@ -35,6 +35,7 @@ type Mission = {
   reward_items?: RewardItem[];
   duration: number;
   time_remaining_text: string;
+  progress: string;
   can_complete: BooleanLike;
   active: BooleanLike;
   requires_item?: BooleanLike;
@@ -388,13 +389,13 @@ const MissionBoardContent = () => {
             selected={currentTab === 'available'}
             onClick={() => setCurrentTab('available')}
           >
-            Available
+            Available ({offered.length})
           </Tabs.Tab>
           <Tabs.Tab
             selected={currentTab === 'active'}
             onClick={() => setCurrentTab('active')}
           >
-            Active
+            Active ({activeCount})
           </Tabs.Tab>
         </Tabs>
       </Stack.Item>
@@ -558,6 +559,13 @@ const MissionCard = (props: MissionCardProps) => {
 
       {!!isActive && (
         <>
+          <LabeledList>
+            {!!mission.progress && (
+              <LabeledList.Item label="Progress">
+                {mission.progress}
+              </LabeledList.Item>
+            )}
+          </LabeledList>
           <Divider />
           {mission.requires_item ? (
             <Button
@@ -618,6 +626,12 @@ const BountyCard = (props: BountyCardProps) => {
     return undefined;
   };
 
+  // Crews hunting it besides this one
+  const otherHunters = Math.max(
+    0,
+    bounty.hunter_count - (bounty.is_hunting ? 1 : 0),
+  );
+
   // Display effective reward if hunting (may be reduced by tracking)
   const displayReward = bounty.is_hunting
     ? (bounty.effective_reward ?? bounty.reward)
@@ -643,6 +657,11 @@ const BountyCard = (props: BountyCardProps) => {
             mr={1}
           >
             {displayReward} cr
+            {!!bounty.has_tracking && (
+              <Box as="span" color="label" ml={1}>
+                (-{bounty.tracking_cost})
+              </Box>
+            )}
           </Box>
           <Box inline color="label">
             [{bounty.zone}]
@@ -681,17 +700,9 @@ const BountyCard = (props: BountyCardProps) => {
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
           <Box color="label">
-            <Box
-              as="span"
-              color={
-                bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
-                  ? 'orange'
-                  : 'gray'
-              }
-            >
-              {bounty.hunter_count - (bounty.is_hunting ? 1 : 0) > 0
-                ? 'Other crews hunting'
-                : 'No other hunters'}
+            <Box as="span" color={otherHunters > 0 ? 'orange' : 'gray'}>
+              ⚔ {otherHunters} {bounty.is_hunting ? 'other ' : ''}crew
+              {otherHunters !== 1 ? 's' : ''} hunting
             </Box>
           </Box>
         </Flex.Item>
@@ -1067,7 +1078,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                 color={createdBounty.contractor_count > 0 ? 'good' : 'average'}
               >
                 {createdBounty.contractor_count > 0
-                  ? 'Contract accepted'
+                  ? `${createdBounty.contractor_count} ship${createdBounty.contractor_count !== 1 ? 's' : ''} accepted`
                   : 'Waiting for contractors'}
               </Box>
             </LabeledList.Item>
@@ -1164,7 +1175,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                 color={claimedBounty.contractor_count > 1 ? 'orange' : 'good'}
               >
                 {claimedBounty.contractor_count > 1
-                  ? 'Other crews competing'
+                  ? `${claimedBounty.contractor_count - 1} other ship${claimedBounty.contractor_count > 2 ? 's' : ''} competing`
                   : 'No competition'}
               </Box>
             </LabeledList.Item>
@@ -1250,9 +1261,8 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
               as="span"
               color={bounty.contractor_count > 0 ? 'orange' : 'gray'}
             >
-              {bounty.contractor_count > 0
-                ? 'Contract accepted'
-                : 'No contractors'}
+              {bounty.contractor_count} contractor
+              {bounty.contractor_count !== 1 ? 's' : ''}
             </Box>
           </Box>
         </Flex.Item>

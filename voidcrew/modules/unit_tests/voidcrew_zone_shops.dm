@@ -285,7 +285,7 @@
 	qdel(sku)
 	TEST_ASSERT(!sku.try_purchase(buyer, null), "Deleted stock remained purchasable")
 
-/// UI payloads never publish favor totals, tier labels or discount percentages.
+/// UI payloads never publish favor totals or admission numbers, and a stall with no outpost names no standing.
 /datum/unit_test/voidcrew_zone_shops/presentation/Run()
 	var/mob/living/carbon/human/buyer = make_member()
 	var/obj/structure/overmap/ship/first = make_ship()
@@ -297,7 +297,7 @@
 	npc.shop = shop
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	var/list/data = facet.ui_data(buyer)
-	TEST_ASSERT(!("favor" in data), "Storefront exposed favor standing")
+	TEST_ASSERT_NULL(data["favor"], "Storefront named a standing with no outpost or chosen ship")
 	TEST_ASSERT_EQUAL(length(data["crew_ships"]), 2, "Ship selector did not enumerate the continuing crew's hulls")
 	TEST_ASSERT_NULL(data["crew_ship_ref"], "Ambiguous fleet silently chose an account")
 	TEST_ASSERT(facet.select_service_ship(buyer, REF(second)), "Counter refused an explicit own-crew hull")
@@ -306,17 +306,64 @@
 	TEST_ASSERT(!facet.select_service_ship(buyer, REF(foreign)), "Ship selector admitted another crew's account")
 	var/list/catalog_data = facet.ui_static_data(buyer)
 	for(var/list/row as anything in catalog_data["catalog"])
-		TEST_ASSERT(!("favor_required" in row) && !("discount_pct" in row), "Catalog exposed an internal admission or discount number")
+		TEST_ASSERT(!("favor_required" in row), "Catalog exposed an internal admission number")
 	TEST_ASSERT_NULL(shop.get_back_room_line(buyer), "Public crew received back-room clearance")
 	set_permission(crew, 1)
 	TEST_ASSERT_EQUAL(shop.get_back_room_line(buyer), "I'll put a word in at the depot.", "Barnaby's clearance line changed")
 	var/list/contracts = npc.contracts_ui.ui_data(buyer)
-	TEST_ASSERT(!("favor" in contracts), "Contract counter exposed favor standing")
+	TEST_ASSERT_NULL(contracts["favor"], "Contract counter named a standing with no outpost")
 	var/datum/shop_sku/sku = shop.skus[1]
 	TEST_ASSERT(sku.can_trade(buyer, npc), "The live counter rejected its own stock")
 	npc.forceMove(run_loc_floor_top_right)
 	TEST_ASSERT(!sku.can_trade(buyer, npc), "Moving the counter left a stale live context")
 	TEST_ASSERT(!sku.try_purchase(buyer, npc), "A stale action purchased beyond counter range")
+
+/// Both outpost windows name the selected crew's standing and nothing behind it; the catalog names today's special.
+/datum/unit_test/voidcrew_zone_shops/reputation/Run()
+	var/mob/living/carbon/human/buyer = make_member()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	ship.enlist_crewmember(buyer)
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost)
+	var/datum/outpost_shop/shop = outpost.shop
+	TEST_ASSERT_NOTNULL(shop, "Outpost fixture has no main shop")
+	TEST_ASSERT(length(shop.skus), "Outpost fixture has no stock")
+	var/mob/living/basic/outpost_trader/npc = allocate(/mob/living/basic/outpost_trader, run_loc_floor_bottom_left)
+	npc.shop = shop
+	npc.outpost = outpost
+	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
+
+	var/list/data = facet.ui_data(buyer)
+	var/list/favor = data["favor"]
+	TEST_ASSERT_NOTNULL(favor, "Storefront hid the selected crew's standing")
+	TEST_ASSERT_EQUAL(favor["tier_name"], "Stranger", "A crew with no standing was not a stranger")
+
+	// Regular is 2 points (fork defines compile after the tests)
+	shop.grant_favor(ship, 2)
+	data = facet.ui_data(buyer)
+	favor = data["favor"]
+	TEST_ASSERT_EQUAL(favor["tier"], 1, "Storefront sent the wrong tier")
+	TEST_ASSERT_EQUAL(favor["tier_name"], "Regular", "Storefront did not name the crew's standing")
+	TEST_ASSERT_EQUAL(length(favor), 2, "Storefront sent more than the tier and its name")
+	var/list/contracts = npc.contracts_ui.ui_data(buyer)
+	var/list/board_favor = contracts["favor"]
+	TEST_ASSERT_NOTNULL(board_favor, "Contract board hid the selected crew's standing")
+	TEST_ASSERT_EQUAL(board_favor["tier_name"], "Regular", "Contract board named a different standing")
+	TEST_ASSERT_EQUAL(length(board_favor), 2, "Contract board sent more than the tier and its name")
+
+	var/mob/living/carbon/human/drifter = make_member()
+	TEST_ASSERT_NULL(get_crew_ship(drifter), "The drifter unexpectedly has a crew ship")
+	data = facet.ui_data(drifter)
+	TEST_ASSERT_NULL(data["favor"], "Storefront named a standing for someone with no crew ship")
+
+	var/datum/shop_sku/special = shop.skus[1]
+	special.discount_pct = 20
+	var/list/catalog_data = facet.ui_static_data(buyer)
+	var/list/special_row
+	for(var/list/row as anything in catalog_data["catalog"])
+		if(row["ref"] == REF(special))
+			special_row = row
+	TEST_ASSERT_NOTNULL(special_row, "Catalog lost a stocked item")
+	TEST_ASSERT_EQUAL(special_row["discount_pct"], 20, "Catalog did not carry today's special")
 
 /// An ID for one hull cannot redirect the selected hull's balance or payment.
 /datum/unit_test/voidcrew_zone_shops/selected_account/Run()
