@@ -74,7 +74,7 @@ The cargo console is not the only buyer. Every trader outpost keeps a **wanted l
 
 Traders and cargo won't buy back goods bought from a trader, an order console or the black market uplink, including the contents of boxes and crates and goods from contract rewards. Splitting or mixing stacks keeps that restriction. New things you cook, craft or smelt from bought supplies can still be sold.
 
-The Patch-Up Clinic buys natural donor organs and monster glands. It does not buy artificial or printed organs, or defibrillators.
+The Patch-Up Clinic buys natural donor organs and monster glands. Monster glands, including legion cores, must be fresh or stabilized, the same as at Vex's counter. It does not buy artificial or printed organs, or defibrillators.
 
 Selling at a counter differs from cargo in three ways:
 

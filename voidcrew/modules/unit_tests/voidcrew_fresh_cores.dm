@@ -1,4 +1,5 @@
-// Vex wants legion cores fresh or stabilized, on contracts and at the voucher window.
+// Vex wants legion cores fresh or stabilized, on contracts and at the voucher window,
+// and Sawbones wants every monster gland the same way.
 // Fork defines compile after tests; mission item results are literals here.
 
 /// Supply contracts refuse a rotted core, checked on the core at hand-over.
@@ -85,3 +86,41 @@
 	TEST_ASSERT(QDELETED(stabilized), "The stabilized core was not consumed")
 	TEST_ASSERT_EQUAL(ledger.demand, 3, "The stabilized sale did not use one demand")
 	TEST_ASSERT(!QDELETED(dead), "Selling the stabilized core took the rotted one")
+
+/// Sawbones' gland intake refuses any rotted monster gland and pays for a fresh or stabilized one.
+/datum/unit_test/voidcrew_fresh_cores_clinic/Run()
+	var/mob/living/carbon/human/seller = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/obj/item/card/id/id = allocate(/obj/item/card/id)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Gland test", null, 1, FALSE)
+	id.registered_account = account
+	TEST_ASSERT(seller.put_in_hands(id), "The seller could not hold their ID")
+	var/datum/shop_buyback/clinic/monster_gland/ledger = allocate(/datum/shop_buyback/clinic/monster_gland)
+	ledger.demand = 5
+	var/balance = account.account_balance
+
+	var/obj/item/organ/monster_core/rush_gland/dead = allocate(/obj/item/organ/monster_core/rush_gland, seller)
+	TEST_ASSERT(dead.go_inert(), "The fixture gland would not rot")
+	TEST_ASSERT(!ledger.matches(dead), "Sawbones matched a rotted gland")
+	TEST_ASSERT_EQUAL(ledger.count_carried_units(seller), 0, "A rotted gland counted as goods to sell")
+	TEST_ASSERT_EQUAL(ledger.get_denial_reason(seller), "That core's gone dead.", "A rotted gland had the wrong refusal")
+	TEST_ASSERT(!ledger.try_sell(seller, null), "Sawbones bought a rotted gland")
+	TEST_ASSERT_EQUAL(ledger.try_sell_bulk(seller, null), 0, "A bulk sale took a rotted gland")
+	TEST_ASSERT(!QDELETED(dead), "A refused gland was consumed")
+	TEST_ASSERT_EQUAL(ledger.demand, 5, "A refused gland used up demand")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "A rotted gland was paid for")
+
+	var/obj/item/organ/monster_core/regenerative_core/legion/fresh = allocate(/obj/item/organ/monster_core/regenerative_core/legion, seller)
+	TEST_ASSERT_NULL(ledger.get_denial_reason(seller), "A fresh core was refused")
+	TEST_ASSERT(ledger.try_sell(seller, null), "Sawbones refused a fresh core")
+	TEST_ASSERT(QDELETED(fresh), "The fresh core was not consumed")
+	TEST_ASSERT(!QDELETED(dead), "The sale took the rotted gland instead of the fresh core")
+	TEST_ASSERT_EQUAL(ledger.demand, 4, "The fresh sale did not use one demand")
+	TEST_ASSERT_EQUAL(account.account_balance, balance + 250, "The fresh core paid the wrong amount")
+
+	var/obj/item/organ/monster_core/rush_gland/stabilized = allocate(/obj/item/organ/monster_core/rush_gland, seller)
+	TEST_ASSERT(stabilized.preserve(), "The fixture gland would not stabilize")
+	TEST_ASSERT(ledger.try_sell(seller, null), "Sawbones refused a stabilized gland")
+	TEST_ASSERT(QDELETED(stabilized), "The stabilized gland was not consumed")
+	TEST_ASSERT(!QDELETED(dead), "Selling the stabilized gland took the rotted one")
+	TEST_ASSERT_EQUAL(ledger.demand, 3, "The stabilized sale did not use one demand")
+	TEST_ASSERT_EQUAL(account.account_balance, balance + 500, "The stabilized gland paid the wrong amount")
