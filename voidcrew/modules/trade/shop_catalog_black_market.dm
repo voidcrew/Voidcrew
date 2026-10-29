@@ -757,6 +757,19 @@
 	demand_min = 2
 	demand_max = 4
 
+// Fresh or stabilized only. A core rots a few minutes after the legion dies, so
+// cores can't be banked for vouchers without the stabilizer. matches() runs on
+// the very core try_sell() consumes, at the moment of sale.
+/datum/shop_buyback/black_market/legion_core/matches(obj/item/offered)
+	return ..() && !is_dead_monster_core(offered)
+
+/datum/shop_buyback/black_market/legion_core/get_denial_reason(mob/living/user)
+	if(demand > 0 && count_carried_units(user) < 1)
+		for(var/obj/item/offered in user.get_all_contents())
+			if(istype(offered, item_path) && is_dead_monster_core(offered) && !is_trader_good(offered))
+				return "That core's gone dead."
+	return ..()
+
 /datum/shop_buyback/black_market/bluespace_crystals
 	name = "natural bluespace crystals"
 	desc = "Unrefined crystal straight out of dangerous rock. Vex can tell the lab-grown ones apart by smell, apparently."

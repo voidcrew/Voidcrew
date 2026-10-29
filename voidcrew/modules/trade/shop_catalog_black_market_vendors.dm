@@ -679,3 +679,15 @@
 	pay_credits = 250
 	demand_min = 3
 	demand_max = 5
+
+// Fresh or stabilized only, like Vex's cores. matches() runs on the very gland
+// try_sell() consumes, at the moment of sale.
+/datum/shop_buyback/clinic/monster_gland/matches(obj/item/offered)
+	return ..() && !is_dead_monster_core(offered)
+
+/datum/shop_buyback/clinic/monster_gland/get_denial_reason(mob/living/user)
+	if(demand > 0 && count_carried_units(user) < 1)
+		for(var/obj/item/offered in user.get_all_contents())
+			if(istype(offered, item_path) && is_dead_monster_core(offered) && !is_trader_good(offered))
+				return "That core's gone dead."
+	return ..()
