@@ -58,12 +58,20 @@ SUBSYSTEM_DEF(overmap)
 	var/jump_request_time = 6000
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
-	/// Absolute world.time deadline, armed only once the round actually starts.
+	/// Absolute REALTIMEOFDAY deadline, armed only once the round actually starts.
+	/// Every jump timer runs on real time (TIMER_CLIENT_TIME): world.time slows under lag and
+	/// crawls while an empty server sleeps, which once stretched six-hour rounds to eight.
 	var/round_end_time
 	/// Timer requesting the existing fleet jump early enough to meet round_end_time.
 	var/round_end_request_timer
 	/// Independent completion timer so ship launches cannot push back the deadline.
 	var/round_end_timer
+	/// REALTIMEOFDAY when a called fleet jump launches. Drives the status panel countdown.
+	var/jump_launch_time
+	/// Timers for the late departure alerts of a called jump.
+	var/list/jump_alert_timers = list()
+	/// How long before launch each late departure alert plays, longest first.
+	var/static/list/jump_alert_leads = list(5 MINUTES, 1 MINUTES)
 
 	/// Ready players each roundstart hull is expected to carry. The fleet scales off
 	/// this once turnout is known - see SSticker.create_characters().
@@ -438,15 +446,19 @@ SUBSYSTEM_DEF(overmap)
  */
 
 /// Use the ticker's actual start timestamp, excluding initialization and the lobby.
+/// started_at is the world.time of roundstart; the deadline itself is kept in real time.
 /datum/controller/subsystem/overmap/proc/arm_round_end(datum/source, started_at)
 	SIGNAL_HANDLER
 	var/duration = CONFIG_GET(number/round_time_limit) MINUTES
 	if(!duration || round_end_time || jump_mode != BS_JUMP_IDLE)
 		return
-	round_end_time = started_at + duration
-	var/request_at = max(started_at, round_end_time - jump_request_time - jump_completion_time)
-	round_end_request_timer = addtimer(CALLBACK(src, PROC_REF(request_scheduled_jump)), max(0, request_at - world.time), TIMER_STOPPABLE)
-	round_end_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), max(0, round_end_time - world.time), TIMER_STOPPABLE)
+	var/now = REALTIMEOFDAY
+	var/real_start = now - (world.time - started_at)
+	round_end_time = real_start + duration
+	var/request_at = max(real_start, round_end_time - jump_request_time - jump_completion_time)
+	round_end_request_timer = addtimer(CALLBACK(src, PROC_REF(request_scheduled_jump)), max(0, request_at - now), TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	round_end_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), max(0, round_end_time - now), TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump scheduled: the round ends in [DisplayTimeText(round_end_time - now)] of real time.")
 
 /datum/controller/subsystem/overmap/proc/request_scheduled_jump()
 	round_end_request_timer = null
@@ -457,6 +469,7 @@ SUBSYSTEM_DEF(overmap)
  * ## request_jump
  *
  * Requests a bluespace jump, which, after jump_request_time deciseconds, will initiate a bluespace jump.
+ * Scheduled jumps launch jump_completion_time before round_end_time instead.
  *
  * Arguments:
  * * modifiers - (Optional) Modifies the length of the jump request time (defaults to 1)
@@ -466,10 +479,54 @@ SUBSYSTEM_DEF(overmap)
 	if(jump_mode != BS_JUMP_IDLE || (round_end_time && !scheduled))
 		return FALSE
 	jump_mode = BS_JUMP_CALLED
-	var/request_delay = scheduled ? max(0, round_end_time - world.time - jump_completion_time) : jump_request_time * modifier
-	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), request_delay, TIMER_STOPPABLE)
-	priority_announce("All ships, prepare for bluespace departure.", null, null, "Priority")
+	var/now = REALTIMEOFDAY
+	jump_launch_time = scheduled ? max(now, round_end_time - jump_completion_time) : now + jump_request_time * modifier
+	var/time_left = jump_launch_time - now
+	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), time_left, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	for(var/alert_lead in jump_alert_leads)
+		if(time_left > alert_lead)
+			jump_alert_timers += addtimer(CALLBACK(src, PROC_REF(jump_alert), alert_lead), time_left - alert_lead, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump called[scheduled ? " by the round timer" : ""]: launch in [DisplayTimeText(time_left)].")
+	// Under a minute left (a very short round, or a server that slept through the warning) there is nothing useful to say.
+	var/minutes = round(time_left / (1 MINUTES), 1)
+	if(minutes >= 1)
+		announce_jump(minutes)
 	return TRUE
+
+/// Late departure alert. Skipped when a later alert or the launch is already due, as after an empty server wakes.
+/datum/controller/subsystem/overmap/proc/jump_alert(alert_lead)
+	if(jump_mode != BS_JUMP_CALLED)
+		return
+	var/time_left = jump_launch_time - REALTIMEOFDAY
+	if(time_left <= 0)
+		return
+	for(var/later_lead in jump_alert_leads)
+		if(later_lead < alert_lead && time_left <= later_lead)
+			return
+	announce_jump(alert_lead / (1 MINUTES), alarm = TRUE)
+
+/// Fleet jump countdown announcement. The late alerts are red, with the red alert alarm.
+/datum/controller/subsystem/overmap/proc/announce_jump(minutes, alarm = FALSE)
+	var/text = minutes > 1 ? "All ships, fleet jump in [minutes] minutes. Get your crews aboard." : "All ships, fleet jump in 1 minute. Anyone not aboard will be left behind."
+	priority_announce(text, "Fleet Jump", alarm ? /datum/security_level/red::sound : null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE, color_override = alarm ? "red" : null)
+
+/// Status panel line, like the shuttle ETA: shown from the first warning until launch.
+/datum/controller/subsystem/overmap/proc/jump_countdown_text()
+	if(jump_mode != BS_JUMP_CALLED || !jump_launch_time)
+		return null
+	return "Fleet Jump: [gameTimestamp("mm:ss", max(1, jump_launch_time - REALTIMEOFDAY))]"
+
+/mob/get_status_tab_items()
+	. = ..()
+	var/countdown = SSovermap?.jump_countdown_text()
+	if(countdown)
+		. += countdown
+
+/datum/controller/subsystem/overmap/proc/clear_jump_alerts()
+	for(var/alert_timer in jump_alert_timers)
+		deltimer(alert_timer)
+	jump_alert_timers.Cut()
+	jump_launch_time = null
 
 /**
  * ##cancel_jump
@@ -489,10 +546,12 @@ SUBSYSTEM_DEF(overmap)
 	if(round_end_timer)
 		deltimer(round_end_timer)
 		round_end_timer = null
+	clear_jump_alerts()
 	round_end_time = null
 	jump_mode = BS_JUMP_IDLE
+	log_game("Fleet jump cancelled.")
 	if(announce)
-		priority_announce("Bluespace departure cancelled.", null, null, "Priority")
+		priority_announce("Fleet jump cancelled.", "Fleet Jump", null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE)
 	return TRUE
 
 /**
@@ -506,20 +565,27 @@ SUBSYSTEM_DEF(overmap)
 		return
 	jump_timer = null
 	jump_mode = BS_JUMP_INITIATED
+	clear_jump_alerts()
 	// Arm completion before moving ships: enterTransit() can yield during a launch.
 	// Scheduled rounds already have an absolute completion timer from roundstart.
 	if(!round_end_time)
-		jump_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), jump_completion_time, TIMER_STOPPABLE)
-	priority_announce("Fleet jump underway.", null, null, "Priority")
+		jump_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), jump_completion_time, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump launched.")
+	priority_announce("Fleet jump underway.", "Fleet Jump", null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE)
 	for(var/obj/docking_port/mobile/voidcrew/mobile_port as anything in SSshuttle.mobile_docking_ports)
 		mobile_port.hyperspace_sound(HYPERSPACE_WARMUP, mobile_port.shuttle_areas)
 		mobile_port.on_emergency_launch()
 
 /// Finish through the normal ticker immediately, rather than waiting for its next poll.
 /datum/controller/subsystem/overmap/proc/complete_jump()
+	// A server that slept past the launch reaches the deadline with the launch still pending.
+	if(jump_mode == BS_JUMP_CALLED && jump_timer)
+		deltimer(jump_timer)
 	jump_timer = null
 	round_end_timer = null
+	clear_jump_alerts()
 	jump_mode = BS_JUMP_COMPLETED
+	log_game("Fleet jump completed.")
 	if(SSticker.IsRoundInProgress())
 		// Cinematics must not hold a scheduled round open past its deadline.
 		if(round_end_time)
