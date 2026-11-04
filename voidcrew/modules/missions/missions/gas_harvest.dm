@@ -12,6 +12,7 @@
 /datum/mission/gas_harvest
 	name = "Gas Harvest Contract"
 	weight = 8
+	safe_work = TRUE
 
 	/// The /datum/gas typepath asked for
 	var/gas_type

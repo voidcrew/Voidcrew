@@ -78,9 +78,9 @@ SUBSYSTEM_DEF(missions)
 			qdel(mission)
 	ship.available_missions = list()
 
-	// Reserve one of the existing slots before rolling the rest of the board.
+	// Reserve existing slots before rolling the rest of the board.
 	ensure_safe_exploration_offer(ship)
-	var/reserved_vacancies = reserve_useful_family_offers(ship)
+	reserve_top_band_offers(ship)
 	var/list/eligible_zones = eligible_work_bands(ship)
 	// Asked once and reused: the lookup walks the hull for an R&D server the
 	// first time it misses, and five offers is five walks.
@@ -88,7 +88,7 @@ SUBSYSTEM_DEF(missions)
 	var/posting_zone = SSovermap_zones?.get_zone_type(get_turf(ship))
 	// Resolve failed rolls inside this scheduled batch; never retry vacancies afterward.
 	var/attempts_left = DEFAULT_AVAILABLE_MISSIONS * 10
-	while(length(ship.available_missions) + reserved_vacancies < DEFAULT_AVAILABLE_MISSIONS && attempts_left-- > 0)
+	while(length(ship.available_missions) < DEFAULT_AVAILABLE_MISSIONS && attempts_left-- > 0)
 		var/datum/mission/new_mission = generate_random_mission(roll_offer_zone_preference(unarmed), posting_zone, eligible_zones)
 		if(new_mission)
 			ship.available_missions += new_mission
@@ -103,56 +103,35 @@ SUBSYSTEM_DEF(missions)
 			bands += band
 	return bands
 
-/// Earliest unmet cumulative band; elite crews no longer need reserved work.
-/datum/controller/subsystem/missions/proc/next_work_band(datum/voidcrew_crew_record/record)
-	switch(record?.get_zone_permission())
-		if(ZONE_PERMISSION_YELLOW)
-			return ZONE_YELLOW
-		if(ZONE_PERMISSION_ADVANCED)
-			return ZONE_RED
-		if(ZONE_PERMISSION_ELITE)
-			return null
+/// The highest band this crew may work in.
+/datum/controller/subsystem/missions/proc/top_work_band(datum/voidcrew_crew_record/record)
+	if(record?.can_work_in_zone(ZONE_RED))
+		return ZONE_RED
+	if(record?.can_work_in_zone(ZONE_YELLOW))
+		return ZONE_YELLOW
 	return ZONE_GREEN
 
-/// Returns reserved vacancies, which ordinary rolls must not silently replace.
-/datum/controller/subsystem/missions/proc/reserve_useful_family_offers(obj/structure/overmap/ship/ship)
-	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
-	var/band = next_work_band(record)
-	if(isnull(band))
-		return 0
-	var/list/families = list()
-	var/list/contributions = record?.zone_families["[band]"]
-	var/cap = band == ZONE_GREEN ? ZONE_REPUTATION_GREEN_FAMILY_CAP : ZONE_REPUTATION_DANGER_FAMILY_CAP
-	for(var/mission_type in mission_types)
-		var/family = zone_reputation_family(mission_type)
-		if(!family || (contributions && contributions[family] >= cap) || !mission_type_within_limit(mission_type))
-			continue
-		LAZYINITLIST(families[family])
-		families[family] += mission_type
-	var/reserved_slots = min(3, length(families))
-	var/filled_slots = 0
-	// Exhaust the remaining useful families in this batch before leaving any reserved slot vacant.
-	while(length(families) && filled_slots < reserved_slots)
-		var/family = pick(families)
-		var/list/types = families[family]
-		families -= family
-		var/datum/mission/offer
-		var/attempts = 8
-		while(!offer && attempts-- > 0)
-			var/mission_type = pick(types)
-			if(!mission_type_within_limit(mission_type))
-				types -= mission_type
-				if(!length(types))
-					break
-				continue
-			offer = create_mission(mission_type, band, null, list(band), TRUE)
+/// Keeps part of the board on targeted work in the highest band the crew may work in.
+/datum/controller/subsystem/missions/proc/reserve_top_band_offers(obj/structure/overmap/ship/ship)
+	var/band = top_work_band(ship.get_crew_record())
+	var/filled = 0
+	var/attempts_left = MISSION_RESERVED_OFFERS * 8
+	while(filled < MISSION_RESERVED_OFFERS && attempts_left-- > 0)
+		var/mission_type = get_weighted_mission_type()
+		if(!mission_type)
+			break
+		var/datum/mission/offer = create_mission(mission_type, band, null, list(band), TRUE)
 		if(!offer)
-			log_mapping("SSmissions: ship [REF(ship)] reserved [family] in band [band] has no eligible offer after bounded retries")
+			continue
+		if(!offer.target) // Targetless work has no band to reserve.
+			qdel(offer)
 			continue
 		ship.available_missions += offer
-		filled_slots++
+		filled++
 		tally_mission_offer(offer, ship, "mission_offered")
-	return reserved_slots - filled_slots
+	if(filled < MISSION_RESERVED_OFFERS)
+		log_game("SSmissions: [ship.name] filled [filled] of [MISSION_RESERVED_OFFERS] reserved offers in band [band]")
+	return filled
 
 /**
  * The zone band the next offer should prefer, rolled per offer.

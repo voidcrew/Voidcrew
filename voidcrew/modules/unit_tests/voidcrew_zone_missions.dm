@@ -285,25 +285,28 @@
 	flags = SS_NO_INIT | SS_NO_FIRE
 	var/fail_work = FALSE
 	var/work_attempts = 0
-	var/fail_first_families = 0
-	var/list/failed_families = list()
 
 /datum/controller/subsystem/missions/zone_missions_test/New()
 	// The MC constructs every subtype. Skip singleton registration and parent PreInit.
 	return
 
 /datum/controller/subsystem/missions/zone_missions_test/create_mission(mission_type, preferred_zone, posting_zone, list/eligible_zones, create_field_contact = FALSE)
-	var/family = zone_reputation_family(mission_type)
-	if(family)
+	if(!ispath(mission_type, /datum/mission/zone_missions_test/routine))
 		work_attempts++
-		if(length(failed_families) < fail_first_families)
-			failed_families |= family
-		if(fail_work || (family in failed_families))
+		if(fail_work)
 			return null
 	return ..()
 
+/// Fixture weights are zero, so the reserved slots pick evenly from what is not held.
 /datum/controller/subsystem/missions/zone_missions_test/get_weighted_mission_type()
-	return /datum/mission/zone_missions_test/routine
+	var/list/open_types = list()
+	for(var/mission_type in mission_types)
+		if(mission_type_within_limit(mission_type))
+			open_types += mission_type
+	return length(open_types) ? pick(open_types) : null
+
+/datum/controller/subsystem/missions/zone_missions_test/generate_random_mission(preferred_zone, posting_zone, list/eligible_zones)
+	return create_mission(/datum/mission/zone_missions_test/routine, preferred_zone, posting_zone, eligible_zones)
 
 /datum/controller/subsystem/missions/zone_missions_test/ensure_safe_exploration_offer(obj/structure/overmap/ship/ship)
 	ship.available_missions += new /datum/mission/zone_missions_test(null, 1)
@@ -363,15 +366,8 @@
 		member.mind_initialize()
 		allocated += member.mind
 		ship.enlist_crewmember(member)
-	if(permission >= 1)
-		for(var/family in list("named_kill", "hunt", "capture"))
-			record.claim_zone_work(family, 1, 1, "setup_green_[family]")
-	if(permission >= 2)
-		for(var/family in list("named_kill", "hunt", "capture"))
-			record.claim_zone_work(family, 2, 2, "setup_yellow_[family]")
-	if(permission >= 3)
-		for(var/family in list("named_kill", "hunt", "capture"))
-			record.claim_zone_work(family, 3, 3, "setup_red_[family]")
+	var/list/steps = list(0, 4, 11, 22) // Public, then REPUTATION_STEP_*
+	record.reputation = steps[permission + 1]
 	return ship
 
 /// Boot and manually allocated fixtures leave the real subsystems and dependency graph intact.
@@ -412,66 +408,136 @@
 	TEST_ASSERT_EQUAL(length(boot_missions.mission_types), 0, "The MC initialized the missions fixture")
 	TEST_ASSERT_NULL(boot_overmap.overmap_centre, "The MC initialized a second overmap")
 
-/// Console and board variants all settle through the real shell, with claims before finalizers.
-/datum/unit_test/voidcrew_zone_missions/families/Run()
+/// Every kind of job, console and board, settles through the real shell, with claims before finalizers.
+/// Safe work pays one whatever its zone or difficulty; everything else pays by difficulty.
+/datum/unit_test/voidcrew_zone_missions/every_job/Run()
 	var/list/types = list(
-		/datum/mission/recovery/kill/zone_missions_test = "named_kill",
-		/datum/mission/recovery/kill/outpost/zone_missions_test = "named_kill",
-		/datum/mission/big_game_hunt/zone_missions_test = "hunt",
-		/datum/mission/live_capture/zone_missions_test = "capture",
-		/datum/mission/poacher_bust/zone_missions_test = "poachers",
-		/datum/mission/recovery/survey/zone_missions_test = "pylons",
-		/datum/mission/research/core_sample/zone_missions_test = "pylons",
-		/datum/mission/recovery/extraction/zone_missions_test = "extraction",
+		/datum/mission/recovery/kill/zone_missions_test = FALSE,
+		/datum/mission/recovery/kill/outpost/zone_missions_test = FALSE,
+		/datum/mission/big_game_hunt/zone_missions_test = FALSE,
+		/datum/mission/live_capture/zone_missions_test = FALSE,
+		/datum/mission/poacher_bust/zone_missions_test = FALSE,
+		/datum/mission/recovery/survey/zone_missions_test = FALSE,
+		/datum/mission/research/core_sample/zone_missions_test = FALSE,
+		/datum/mission/recovery/extraction/zone_missions_test = FALSE,
+		/datum/mission/prospect_stake/zone_missions_test = FALSE,
+		/datum/mission/suppression/zone_missions_test = FALSE,
+		/datum/mission/recovery/zone_missions_test = FALSE,
+		/datum/mission/rescue/zone_missions_test = FALSE,
+		/datum/mission/outpost_courier/zone_missions_test = TRUE,
+		/datum/mission/survey/zone_missions_test = TRUE,
+		/datum/mission/research/telemetry/zone_missions_test = TRUE,
+		/datum/mission/gas_harvest/zone_missions_test = TRUE,
+		/datum/mission/outpost_supply/zone_missions_test = TRUE,
+		/datum/mission/outpost_supply/cook/zone_missions_test = TRUE,
+		/datum/mission/outpost_supply/angler/zone_missions_test = TRUE,
+		/datum/mission/delivery/zone_missions_test = TRUE,
 	)
 	for(var/mission_type in types)
+		var/expected_safe = types[mission_type]
 		for(var/band in 1 to 3)
 			var/obj/structure/overmap/ship/ship = make_ship(band - 1)
 			var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+			var/before = record.reputation
+			var/expected_gain = expected_safe ? 1 : band
 			var/datum/mission/mission = allocate(mission_type, null, band)
 			var/datum/mission_work_receipt/receipt = mission.work_receipt
 			var/datum/mission_objective/zone_missions_test/finalizer = mission.objectives[1]
 			ship.available_missions += mission
-			TEST_ASSERT_EQUAL(receipt.family, types[mission_type], "Wrong family for [mission_type]")
+			TEST_ASSERT_EQUAL(receipt.band, band, "[mission_type] counted in the wrong zone")
+			TEST_ASSERT_EQUAL(mission.difficulty, band, "The safe flag changed [mission_type]'s difficulty")
+			TEST_ASSERT_EQUAL(mission.get_reputation_worth(record), expected_gain, "[mission_type] showed the wrong worth")
 			TEST_ASSERT_EQUAL(ship.accept_mission(mission), TRUE, "Eligible work was denied")
 			TEST_ASSERT_EQUAL(receipt.crew, record, "Acceptance did not bind the crew")
+			TEST_ASSERT_EQUAL(mission.get_reputation_worth(mission.accepting_crew), expected_gain, "The accepted job lost its worth")
 			TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, null), "Successful work did not settle")
-			TEST_ASSERT_EQUAL(record.zone_totals["[band]"], band, "Wrong band gain")
+			TEST_ASSERT_EQUAL(record.reputation, before + expected_gain, "[mission_type] paid the wrong reputation")
 			TEST_ASSERT(finalizer.claim_seen, "A finalizer ran before the claim")
 			TEST_ASSERT(!finalizer.reentrant_result, "A finalizer settled the mission twice")
 			TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Stale completion settled again")
+			TEST_ASSERT_EQUAL(record.reputation, before + expected_gain, "A stale completion paid twice")
 
-/// Renaming and buying difficult routine asks cannot invent guarded work.
-/datum/unit_test/voidcrew_zone_missions/exclusions/Run()
-	var/list/types = list(
-		/datum/mission/prospect_stake/zone_missions_test,
-		/datum/mission/suppression/zone_missions_test,
-		/datum/mission/recovery/zone_missions_test,
-		/datum/mission/rescue/zone_missions_test,
-		/datum/mission/outpost_courier/zone_missions_test,
-		/datum/mission/survey/zone_missions_test,
-		/datum/mission/research/telemetry/zone_missions_test,
-		/datum/mission/gas_harvest/zone_missions_test,
-		/datum/mission/outpost_supply/zone_missions_test,
-		/datum/mission/outpost_supply/cook/zone_missions_test,
-		/datum/mission/outpost_supply/angler/zone_missions_test,
-		/datum/mission/delivery/zone_missions_test,
+/// Which jobs are safe work, checked against the live types so a new job has to pick a side.
+/datum/unit_test/voidcrew_zone_missions/safe_work/Run()
+	var/list/safe_types = list(
+		/datum/mission/outpost_supply,
+		/datum/mission/outpost_supply/angler,
+		/datum/mission/outpost_supply/cook,
+		/datum/mission/outpost_courier,
+		/datum/mission/delivery,
+		/datum/mission/gas_harvest,
+		/datum/mission/research/telemetry,
+		/datum/mission/survey,
+		/datum/mission/exploration,
 	)
-	var/obj/structure/overmap/ship/ship = make_ship(2)
+	for(var/datum/mission/mission_type as anything in subtypesof(/datum/mission))
+		var/is_safe = FALSE
+		for(var/safe_type in safe_types)
+			if(ispath(mission_type, safe_type))
+				is_safe = TRUE
+				break
+		TEST_ASSERT_EQUAL(initial(mission_type.safe_work), is_safe, "[mission_type] is on the wrong side of the safe work line")
+	// A hard ask in red still pays one, and keeps its own difficulty for its pay.
+	var/obj/structure/overmap/ship/ship = make_ship()
 	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
-	for(var/mission_type in types)
-		var/datum/mission/mission = allocate(mission_type, null, 3)
-		mission.name = "Kill Contract"
-		mission.difficulty = 3
-		TEST_ASSERT_NULL(mission.work_receipt, "Excluded work obtained a receipt")
-		TEST_ASSERT(mission.start_mission(ship), "Existing nonqualifying work was denied")
-		TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, null), "Existing reward path stopped settling")
-	TEST_ASSERT_EQUAL(record.zone_totals["3"], 0, "Routine work earned red progression")
-	var/obj/structure/overmap/ship/public_ship = make_ship()
 	var/datum/mission/routine = allocate(/datum/mission/zone_missions_test/routine, null, null, 3)
+	routine.safe_work = TRUE
 	routine.difficulty = 3
-	TEST_ASSERT(routine.start_mission(public_ship), "Targetless ask was gated by the posting zone")
-	TEST_ASSERT(routine.turn_in(run_loc_floor_bottom_left, null), "Targetless routine work did not pay")
+	TEST_ASSERT(routine.start_mission(ship), "Safe work could not start")
+	TEST_ASSERT_EQUAL(routine.work_receipt.difficulty, 1, "Safe work's receipt did not pay as easy")
+	TEST_ASSERT_EQUAL(routine.difficulty, 3, "The receipt changed the job's own difficulty")
+	TEST_ASSERT(routine.turn_in(run_loc_floor_bottom_left, null), "Safe work did not settle")
+	TEST_ASSERT_EQUAL(record.reputation, 1, "A hard safe job in red did not pay one")
+	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 100, "The safe flag changed the job's pay")
+	// The ceilings still apply to it.
+	record.reputation = 4
+	var/datum/mission/capped = allocate(/datum/mission/zone_missions_test/routine, null, null, 1)
+	capped.safe_work = TRUE
+	capped.prepare_work_receipt()
+	TEST_ASSERT_EQUAL(capped.get_reputation_worth(record), 0, "Safe work in green passed the green ceiling")
+
+/// Targetless work is open to anyone and counts where it was posted, green if that is unknown.
+/datum/unit_test/voidcrew_zone_missions/targetless/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	var/datum/mission/posted = allocate(/datum/mission/zone_missions_test/routine, null, null, 3)
+	posted.difficulty = 3
+	TEST_ASSERT_EQUAL(posted.get_work_band(), 3, "A posting zone was not used")
+	TEST_ASSERT(posted.start_mission(ship), "A targetless job was gated by its posting zone")
+	TEST_ASSERT(posted.turn_in(run_loc_floor_bottom_left, null), "Targetless work did not pay")
+	TEST_ASSERT_EQUAL(record.reputation, 3, "Hard targetless work did not pay three")
+	record.reputation = 19
+	var/datum/mission/deep = allocate(/datum/mission/zone_missions_test/routine, null, null, 3)
+	deep.difficulty = 3
+	TEST_ASSERT(deep.start_mission(ship), "Repeat work was refused")
+	TEST_ASSERT(deep.turn_in(run_loc_floor_bottom_left, null), "Repeat work did not settle")
+	TEST_ASSERT_EQUAL(record.reputation, 22, "Red work met a ceiling")
+	var/datum/mission/unknown = allocate(/datum/mission/zone_missions_test/routine)
+	TEST_ASSERT_EQUAL(unknown.get_work_band(), 1, "A job with no known zone did not fall back to green")
+	unknown.difficulty = 3
+	TEST_ASSERT_EQUAL(unknown.get_reputation_worth(record), 0, "An unprepared job claimed a worth")
+	unknown.prepare_work_receipt()
+	TEST_ASSERT_EQUAL(unknown.get_reputation_worth(record), 0, "Green work paid past its ceiling")
+	TEST_ASSERT(unknown.start_mission(ship), "Worthless work could not be accepted")
+	var/before = record.reputation
+	TEST_ASSERT(unknown.turn_in(run_loc_floor_bottom_left, null), "Worthless work stopped paying its ordinary reward")
+	TEST_ASSERT_EQUAL(record.reputation, before, "Green work passed its ceiling")
+	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 300, "Reputation changed the ordinary pay")
+
+/// A failed job, an expired job and an abandoned offer pay nothing.
+/datum/unit_test/voidcrew_zone_missions/unfinished_work/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	var/datum/mission/failed_job = allocate(/datum/mission/zone_missions_test)
+	TEST_ASSERT(failed_job.start_mission(ship), "The failed fixture could not start")
+	failed_job.fail("Cancelled.")
+	var/datum/mission/expired_job = allocate(/datum/mission/zone_missions_test)
+	TEST_ASSERT(expired_job.start_mission(ship), "The expired fixture could not start")
+	expired_job.on_timeout()
+	var/datum/mission/ignored = allocate(/datum/mission/zone_missions_test)
+	qdel(ignored)
+	TEST_ASSERT_EQUAL(record.reputation, 0, "Unfinished work earned reputation")
+	TEST_ASSERT_EQUAL(length(record.settlement_claims), 0, "Unfinished work claimed a receipt")
 
 /// Aliases, capped claims and crew changes retain one encounter's original recipient.
 /datum/unit_test/voidcrew_zone_missions/receipts/Run()
@@ -489,20 +555,26 @@
 	TEST_ASSERT(alias.start_mission(ship), "Same-crew alias could not bind")
 	ship.ship_team.set_crew_record(different)
 	TEST_ASSERT(first.turn_in(run_loc_floor_bottom_left, null), "Crew change prevented the original settlement")
-	TEST_ASSERT_EQUAL(original.zone_totals["1"], 1, "Original crew did not receive its work")
-	TEST_ASSERT_EQUAL(different.zone_totals["1"], 0, "Current hull affiliation stole an accepted receipt")
-	TEST_ASSERT_EQUAL(original.trader_favor[shop.favor_key()], 1, "Board favor left the accepting crew")
-	TEST_ASSERT_EQUAL(different.trader_favor[shop.favor_key()] || 0, 0, "Current hull affiliation stole trader favor")
+	TEST_ASSERT_EQUAL(original.reputation, 1, "Original crew did not receive its work")
+	TEST_ASSERT_EQUAL(different.reputation, 0, "Current hull affiliation stole an accepted receipt")
 	TEST_ASSERT(alias.turn_in(run_loc_floor_bottom_left, null), "Alias lost its ordinary reward")
-	TEST_ASSERT_EQUAL(original.zone_totals["1"], 1, "Alias credited the encounter twice")
+	TEST_ASSERT_EQUAL(original.reputation, 1, "Alias credited the encounter twice")
 	var/datum/mission/next = allocate(/datum/mission/recovery/kill/zone_missions_test)
 	TEST_ASSERT(next.work_receipt.serial != receipt.serial, "New encounter reused an old serial")
 	ship.ship_team.set_crew_record(original)
-	TEST_ASSERT(next.start_mission(ship), "A capped family stopped ordinary work")
-	var/datum/mission_work_receipt/capped = next.work_receipt
-	TEST_ASSERT(next.turn_in(run_loc_floor_bottom_left, null), "Capped encounter did not settle")
-	TEST_ASSERT(capped.claimed && original.settlement_claims["[capped.serial]:named_kill"], "Capped work was not claimed")
-	TEST_ASSERT_EQUAL(original.zone_totals["1"], 1, "Capped encounter exceeded the family cap")
+	TEST_ASSERT(next.start_mission(ship), "A repeat of the same job was refused")
+	TEST_ASSERT(next.turn_in(run_loc_floor_bottom_left, null), "The repeat did not settle")
+	TEST_ASSERT_EQUAL(original.reputation, 2, "Repeating the same job stopped paying")
+	original.reputation = 4
+	var/datum/mission/capped = allocate(/datum/mission/recovery/kill/zone_missions_test)
+	var/datum/mission_work_receipt/capped_receipt = capped.work_receipt
+	TEST_ASSERT_EQUAL(capped.get_reputation_worth(original), 0, "A job at its zone's ceiling showed a worth")
+	var/list/card = capped.get_ui_data(original)
+	TEST_ASSERT_EQUAL(card["reputation_gain"], 0, "A job at its zone's ceiling showed a worth on its card")
+	TEST_ASSERT(capped.start_mission(ship), "Work at the ceiling was refused")
+	TEST_ASSERT(capped.turn_in(run_loc_floor_bottom_left, null), "Work at the ceiling did not settle")
+	TEST_ASSERT(capped_receipt.claimed && original.settlement_claims["[capped_receipt.serial]"], "Work at the ceiling was not claimed")
+	TEST_ASSERT_EQUAL(original.reputation, 4, "Green work passed its ceiling")
 
 /// Retargeting cannot change the work band or mint a new objective receipt.
 /datum/unit_test/voidcrew_zone_missions/retarget/Run()
@@ -583,7 +655,7 @@
 	TEST_ASSERT_EQUAL(record.favor_unique_purchases[sku.type], 0, "Cancellation lost the crew's purchase slot")
 	var/datum/mission/settlement = package_offer(sku)
 	TEST_ASSERT(settlement.start_mission(advanced_ship), "Second reservation failed")
-	record.zone_totals["1"] = 0
+	record.reputation = 0
 	TEST_ASSERT(settlement.turn_in(run_loc_floor_bottom_left, null), "Permission loss blocked currency settlement")
 	TEST_ASSERT_EQUAL(sku.stock, 2, "Denied settlement consumed the restricted goods")
 	TEST_ASSERT_EQUAL(sku.reserved_stock, 0, "Denied settlement retained its hold")
@@ -613,7 +685,7 @@
 	TEST_ASSERT_EQUAL(mission.value + mission.voucher_count * 1200, 2400, "Crew disposal changed the fixed quote")
 	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, null), "Crew disposal prevented ordinary currency settlement")
 
-/// Five slots, useful distinct families, partial supply, bounded vacancies and a fixed hull clock.
+/// Five slots, the reserved top-band offers, bounded retries and a fixed hull clock.
 /datum/unit_test/voidcrew_zone_missions/opportunities/Run()
 	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
 	controller.mission_types = list(
@@ -627,12 +699,12 @@
 	var/obj/structure/overmap/ship/ship = make_ship()
 	TEST_ASSERT(controller.refresh_ship_missions(ship), "Scheduled board generation failed")
 	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Board did not preserve five slots")
-	var/list/families = list()
+	var/reserved = 0
 	for(var/datum/mission/offer in ship.available_missions)
-		if(offer.work_receipt)
-			families |= offer.work_receipt.family
-			TEST_ASSERT_EQUAL(offer.quote_zone, 1, "New crew received higher-band useful work")
-	TEST_ASSERT_EQUAL(length(families), 3, "Reserved work did not offer three distinct families")
+		if(offer.target)
+			reserved++
+			TEST_ASSERT_EQUAL(offer.quote_zone, 1, "New crew received higher-band work")
+	TEST_ASSERT_EQUAL(reserved, 4, "The board did not hold its green travel job and three reserved offers")
 	TEST_ASSERT_EQUAL(ship.next_mission_refresh, world.time + 20 MINUTES, "Scheduled interval changed")
 	var/refresh_at = ship.next_mission_refresh
 	var/datum/mission/accepted = ship.available_missions[1]
@@ -647,28 +719,20 @@
 	controller.fail_work = TRUE
 	ship.next_mission_refresh = world.time
 	TEST_ASSERT(controller.refresh_ship_missions(ship), "Scheduled shortage did not refresh")
-	TEST_ASSERT_EQUAL(length(ship.available_missions), 2, "Failed useful slots were silently filled with unrelated work")
-	TEST_ASSERT(controller.work_attempts - attempts_before <= 48, "Shortage retries exceeded eight attempts for each of six useful families")
+	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "A shortage of targeted work left the board short")
+	TEST_ASSERT(controller.work_attempts - attempts_before <= 24, "Shortage retries were not bounded")
 	TEST_ASSERT(accepted in ship.active_missions, "Refresh removed accepted work")
-	var/obj/structure/overmap/ship/partial = make_ship()
-	var/datum/voidcrew_crew_record/record = partial.get_crew_record()
-	var/list/contributions = record.zone_families["1"]
-	for(var/family in zone_reputation_families())
-		contributions[family] = 1
-	contributions["capture"] = 0
-	contributions["poachers"] = 0
 	controller.fail_work = FALSE
-	var/missing = controller.reserve_useful_family_offers(partial)
-	TEST_ASSERT_EQUAL(missing, 0, "Available uncapped work left a vacancy")
-	TEST_ASSERT_EQUAL(length(partial.available_missions), 2, "A partial useful pool reserved unrelated families")
-	record.zone_totals["1"] = 3
-	TEST_ASSERT_EQUAL(controller.next_work_band(record), 2, "Next unmet band was not yellow")
-	record.zone_totals["2"] = 6
-	TEST_ASSERT_EQUAL(controller.next_work_band(record), 3, "Next unmet band was not red")
-	record.zone_totals["3"] = 9
-	TEST_ASSERT_NULL(controller.next_work_band(record), "Elite crew retained reserved progression work")
+	for(var/list/step as anything in list(list(0, 1), list(3, 1), list(4, 2), list(10, 2), list(11, 3), list(22, 3)))
+		var/obj/structure/overmap/ship/stepped = make_ship()
+		var/datum/voidcrew_crew_record/record = stepped.get_crew_record()
+		record.reputation = step[1]
+		TEST_ASSERT_EQUAL(controller.top_work_band(record), step[2], "Reputation [step[1]] picked the wrong top band")
+		TEST_ASSERT_EQUAL(controller.reserve_top_band_offers(stepped), 3, "The top band was not reserved")
+		for(var/datum/mission/offer in stepped.available_missions)
+			TEST_ASSERT_EQUAL(offer.quote_zone, step[2], "A reserved offer sat in the wrong band")
 
-/// Globally held families cannot reserve failed slots ahead of available work.
+/// Globally held types cannot reserve failed slots ahead of available work.
 /datum/unit_test/voidcrew_zone_missions/globally_capped_opportunities/Run()
 	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
 	var/obj/structure/overmap/ship/holder = make_ship()
@@ -684,8 +748,8 @@
 		TEST_ASSERT(mission_type_within_limit(mission_type), "An unaccepted private offer occupied global capacity")
 	controller.mission_types = capped_types
 	var/obj/structure/overmap/ship/second_crew = make_ship()
-	TEST_ASSERT_EQUAL(controller.reserve_useful_family_offers(second_crew), 0, "Private offers left useful-family vacancies for another crew")
-	TEST_ASSERT_EQUAL(length(second_crew.available_missions), 3, "Another crew could not obtain the held families")
+	TEST_ASSERT_EQUAL(controller.reserve_top_band_offers(second_crew), 3, "Private offers kept another crew from the reserved slots")
+	TEST_ASSERT_EQUAL(length(second_crew.available_missions), 3, "Another crew could not obtain the held types")
 	for(var/datum/mission/held in holder.available_missions.Copy())
 		TEST_ASSERT_EQUAL(holder.accept_mission(held), TRUE, "A private offer blocked acceptance before any mission was running")
 		TEST_ASSERT(!mission_type_within_limit(held.type), "Accepted work failed to occupy its global cap")
@@ -695,23 +759,9 @@
 	controller.work_attempts = 0
 	controller.mission_types = capped_types + list(/datum/mission/recovery/kill/zone_missions_test)
 	var/obj/structure/overmap/ship/partial = make_ship()
-	TEST_ASSERT(controller.refresh_ship_missions(partial), "Partial useful supply did not refresh")
-	TEST_ASSERT_EQUAL(length(partial.available_missions), 5, "Globally capped families consumed otherwise available board slots")
-	TEST_ASSERT_EQUAL(controller.work_attempts, 1, "Partial supply did not reserve exactly its one available family")
-
-	controller.mission_types += /datum/mission/recovery/survey/zone_missions_test
-	controller.mission_types += /datum/mission/recovery/extraction/zone_missions_test
-	var/obj/structure/overmap/ship/ship = make_ship()
-	TEST_ASSERT(controller.refresh_ship_missions(ship), "Globally capped supply did not refresh")
-	var/list/families = list()
-	for(var/datum/mission/offer in ship.available_missions)
-		if(offer.work_receipt)
-			families |= offer.work_receipt.family
-			TEST_ASSERT_EQUAL(offer.quote_zone, 1, "Zero-standing crew received higher-band work")
-	TEST_ASSERT_EQUAL(length(families), 3, "Held hunt, capture and poacher jobs hid available useful families")
-	for(var/family in list("named_kill", "pylons", "extraction"))
-		TEST_ASSERT(family in families, "Available [family] work was not reserved")
-	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Global caps left a board vacancy despite useful supply")
+	TEST_ASSERT(controller.refresh_ship_missions(partial), "Partial supply did not refresh")
+	TEST_ASSERT_EQUAL(length(partial.available_missions), 5, "Globally capped types consumed otherwise available board slots")
+	TEST_ASSERT_EQUAL(controller.work_attempts, 3, "Reserved slots rolled a type nobody can take")
 
 /// Empty, dead and abandoned rosters do not roll offers or advance the hull clock.
 /datum/unit_test/voidcrew_zone_missions/idle_hulls/Run()
@@ -732,35 +782,6 @@
 	TEST_ASSERT_EQUAL(length(ship.available_missions), 0, "An idle hull retained generated offers")
 	ship.abandoned = FALSE
 	TEST_ASSERT(controller.refresh_ship_missions(ship), "A living crew could not receive its first batch")
-
-/// Failures use bounded retries, then the remaining useful families in the same scheduled batch.
-/datum/unit_test/voidcrew_zone_missions/remaining_families/Run()
-	var/datum/controller/subsystem/missions/zone_missions_test/controller = allocate(__IMPLIED_TYPE__)
-	controller.mission_types = list(
-		/datum/mission/recovery/kill/zone_missions_test,
-		/datum/mission/big_game_hunt/zone_missions_test,
-		/datum/mission/live_capture/zone_missions_test,
-		/datum/mission/poacher_bust/zone_missions_test,
-		/datum/mission/recovery/survey/zone_missions_test,
-		/datum/mission/recovery/extraction/zone_missions_test,
-	)
-	controller.fail_first_families = 3
-	var/obj/structure/overmap/ship/ship = make_ship()
-	TEST_ASSERT(controller.refresh_ship_missions(ship), "Scheduled fallback did not refresh")
-	TEST_ASSERT_EQUAL(length(controller.failed_families), 3, "Fixture did not exhaust the first three chosen families")
-	TEST_ASSERT_EQUAL(controller.work_attempts, 27, "Fallback did not bound retries and try all remaining families")
-	var/list/families = list()
-	for(var/datum/mission/offer in ship.available_missions)
-		if(offer.work_receipt)
-			families |= offer.work_receipt.family
-			TEST_ASSERT(!(offer.work_receipt.family in controller.failed_families), "A failed family produced an offer")
-	TEST_ASSERT_EQUAL(length(families), 3, "Remaining useful families did not fill the reserved slots")
-	TEST_ASSERT_EQUAL(length(ship.available_missions), 5, "Family fallback lost a board slot")
-	var/attempts_before = controller.work_attempts
-	var/refresh_at = ship.next_mission_refresh
-	TEST_ASSERT(!controller.force_refresh_ship_missions(ship), "Family fallback allowed an immediate reroll")
-	TEST_ASSERT_EQUAL(controller.work_attempts, attempts_before, "An immediate refresh retried useful families")
-	TEST_ASSERT_EQUAL(ship.next_mission_refresh, refresh_at, "Family fallback changed the fixed refresh clock")
 
 /// Actual contact entry points fail closed at capacity and never fall back across bands.
 /datum/unit_test/voidcrew_zone_missions/capacity/Run()
@@ -850,6 +871,8 @@
 	var/obj/structure/overmap/trader_outpost/post = allocate(__IMPLIED_TYPE__, red)
 	var/datum/mission_target/outpost/courier = allocate(__IMPLIED_TYPE__, mission)
 	TEST_ASSERT(!courier.resolve(), "Courier destination fell back to a denied band")
+	var/datum/mission/posted_here = allocate(/datum/mission/zone_missions_test/routine, post.shop)
+	TEST_ASSERT_EQUAL(posted_here.get_work_band(), 3, "A trader job did not count in its outpost's zone")
 	// Keep fixture locals alive through the assertions; cleanup must not touch real sites.
 	TEST_ASSERT(red_ruin && red_planet && post, "Mixed-band fixtures disappeared")
 

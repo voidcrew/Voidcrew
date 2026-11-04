@@ -142,10 +142,10 @@ See [Ship Combat](ship-combat.md), [Ship Upgrades](ship-upgrades.md) and [Nanite
 
 [Transporters](transporters.md) cost **160, 200 and 200 points** across three nodes, with survey and technology prerequisites.
 
-### Zone reputation
+### Reputation
 
-Some research needs [zone reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need yellow; L6, Bulldog, sniper, Explosive and Experimental Ammunition need advanced; Military Nanite Programming needs elite.
+Some research needs [reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need 4; L6, Bulldog, sniper, Explosive and Experimental Ammunition need 11; Military Nanite Programming needs 22.
 
-Electric Weaponry needs yellow reputation for ion, temperature and tesla kits. Advanced Beam Weaponry needs advanced reputation for X-ray and advanced energy gun kits. Illegal Technology needs elite reputation for the energy crossbow kit and rapid syringe gun, as does Unregulated Bluespace Research for the Event Horizon kit. Each requirement covers every design on that node.
+Electric Weaponry needs 4 reputation for ion, temperature and tesla kits. Advanced Beam Weaponry needs 11 for X-ray and advanced energy gun kits. Illegal Technology needs 22 for the energy crossbow kit and rapid syringe gun, as does Unregulated Bluespace Research for the Event Horizon kit. Each requirement covers every design on that node.
 
 Imported research still works. Copying technology does not grant reputation for other purchases.

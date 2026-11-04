@@ -60,7 +60,7 @@ If you would rather just buy it, both the general waystation and the outfitter d
 | Full oxygen tank | 120 cr | 120 cr |
 | Nebula ram scoop board | 250 cr | - |
 
-These are base prices before standing discounts or specials.
+These are base prices before specials.
 
 ## Selling gas
 

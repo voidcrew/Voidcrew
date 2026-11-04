@@ -341,17 +341,6 @@
 	var/obj/structure/overmap/ship/selected = locate(ship_ref) in get_crew_ships(user)
 	return selected && user.mind.select_crew_service_ship(selected)
 
-/// The selected crew's standing at this outpost: its tier and name, never the points behind it.
-/// Null without a crew ship, or at a stall with no outpost behind it (nothing there earns standing).
-/datum/outpost_trader_ui/proc/get_favor_data(datum/outpost_shop/shop, obj/structure/overmap/ship/crew_ship)
-	if(!shop?.outpost || !crew_ship)
-		return null
-	var/tier = shop.get_favor_tier(crew_ship)
-	return list(
-		"tier" = tier,
-		"tier_name" = shop.get_favor_tier_name(tier),
-	)
-
 /**
  * # tgui state: the trader's counter
  *
@@ -416,7 +405,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				"price_credits" = sku.price_credits,
 				"final_credits" = sku.get_credit_price(),
 				"price_vouchers" = sku.price_vouchers,
-				// Today's special only; a crew's standing discount rides final_credits in ui_data
+				// Today's special; the convoy can change it, so final_credits also rides ui_data
 				"discount_pct" = sku.discount_pct,
 				"price_text" = sku.get_price_text(),
 				"barter" = istype(sku, /datum/shop_sku/barter),
@@ -453,8 +442,8 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	data["restock_remaining"] = isnull(restock_remaining) ? null : max(0, restock_remaining)
 
 	var/obj/structure/overmap/ship/crew_ship = add_crew_context_data(data, user)
-	// Sent as null too, so a stale standing never lingers in tgui's merged data
-	data["favor"] = get_favor_data(shop, crew_ship)
+	// Sent as null too, so a stale number never lingers in tgui's merged data
+	data["reputation"] = reputation_ui_data(crew_ship?.get_crew_record())
 
 	// The same selected ship account used for purchases. Vouchers remain personal.
 	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
@@ -472,13 +461,13 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 				"stock" = sku.stock,
 				"can_buy" = !data["barred"] && in_supply && isnull(denial),
 				"denial" = denial,
-				// Per-viewer price: favor discounts depend on who's asking
+				// Per-viewer price: a peddler's thanks depends on who's asking
 				"final_credits" = isliving(user) ? sku.get_credit_price(user) : sku.get_credit_price(),
-				// Favor shelf only: units this crew may still buy this round
+				// Back room only: units this crew may still buy this round
 				"crew_remaining" = (sku.shelf == SHELF_FAVOR && sku.crew_limit > 0 && shop) \
 					? max(0, sku.crew_limit - shop.get_crew_purchases(crew_ship, sku.type)) \
 					: null,
-				// TRUE when the standing gate specifically is what's refusing them
+				// TRUE when the reputation gate or crew cap is what's refusing them
 				"favor_locked" = isliving(user) && !isnull(sku.get_favor_denial(user)),
 			))
 	data["stock_states"] = stock_states
@@ -607,7 +596,7 @@ GLOBAL_DATUM_INIT(trader_counter_state, /datum/ui_state/trader_counter, new)
 	var/obj/structure/overmap/ship/ship = add_crew_context_data(data, user)
 	data["ship_name"] = ship ? ship.name : null
 	data["ship_mission_slots_free"] = ship ? (ship.max_missions - length(ship.active_missions)) : 0
-	data["favor"] = get_favor_data(shop, ship)
+	data["reputation"] = reputation_ui_data(ship?.get_crew_record())
 
 	var/list/offers = list()
 	if(outpost)

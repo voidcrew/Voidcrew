@@ -20,6 +20,7 @@ type Entry = {
   reward: number;
   vouchers?: number;
   place: string;
+  reputation_gain?: number;
 };
 
 type Data = {
@@ -85,6 +86,11 @@ const WantedCard = (props: { entry: Entry; mugshot?: string }) => {
             {entry.crime ? ` for ${entry.crime}` : ''}.
           </Box>
           <Box color="label">{entry.place}.</Box>
+          {(entry.reputation_gain ?? 0) > 0 && (
+            <Box bold color="teal">
+              Reputation +{entry.reputation_gain}
+            </Box>
+          )}
         </Stack.Item>
       </Stack>
     </Section>

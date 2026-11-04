@@ -88,7 +88,7 @@
 			TEST_ASSERT_EQUAL(mission.difficulty, request["difficulty"], "Generation changed ask difficulty")
 			var/datum/outpost_shop/reward_shop = request["reward_shop"] ? fitter : shop
 			TEST_ASSERT_EQUAL(mission.contract_reward_shop, reward_shop, "Fitter reward stock must come from Wick")
-			TEST_ASSERT_EQUAL(mission.shop, shop, "Fitter favor must remain with Sarge")
+			TEST_ASSERT_EQUAL(mission.shop, shop, "The fitter's request must stay on Sarge's board")
 			var/counter = reward_shop.get_counter_value(request["type"], request["amount"])
 			if(ispath(request["type"], /obj/item/mod/module))
 				TEST_ASSERT_EQUAL(counter, 0, "Loot-module reference value became a buyback")
@@ -103,7 +103,7 @@
 				minimum = max(CEILING(counter * 1.10, 1), min(floor(band[1] * 0.4), service))
 				maximum = max(CEILING(counter * 1.10, 1), min(floor(band[2] * 0.4), service))
 				TEST_ASSERT_EQUAL(mission.voucher_count, 0, "Routine supplies must not pay vouchers")
-				TEST_ASSERT_EQUAL(mission.get_favor_reward(), 1, "Routine supplies must pay one favor")
+				TEST_ASSERT_EQUAL(mission.work_receipt?.difficulty, 1, "Routine supplies must pay one reputation")
 			TEST_ASSERT(mission.contract_quote >= minimum && mission.contract_quote <= maximum, "[request["type"]] left its specified pay range")
 			TEST_ASSERT_EQUAL(mission.value, mission.value_min, "The shell overwrote residual credits")
 			TEST_ASSERT_EQUAL(mission.value, mission.value_max, "Residual credits must not reroll")
@@ -112,7 +112,7 @@
 	for(var/mission_type in list(/datum/mission/outpost_supply/cook, /datum/mission/outpost_supply/angler))
 		var/datum/mission/mission = allocate(mission_type, outpost.shop)
 		TEST_ASSERT_EQUAL(mission.voucher_count, 0, "The food and angler exceptions must never pay vouchers")
-		TEST_ASSERT_EQUAL(mission.get_favor_reward(), 1, "The food and angler exceptions must pay routine favor")
+		TEST_ASSERT_EQUAL(mission.work_receipt?.difficulty, 1, "The food and angler exceptions must pay one reputation")
 
 /// Target scaling precedes the board quote; only the board multiplier changes fees.
 /datum/unit_test/voidcrew_m1_field_fees/Run()
@@ -130,7 +130,7 @@
 				var/list/kill_multipliers = list(1.10, 0.95, 0.55)
 				multiplier = kill_multipliers[index]
 			TEST_ASSERT(mission.contract_quote >= floor(band[1] * multiplier) && mission.contract_quote <= floor(band[2] * multiplier), "Field fee scaled twice or used the old multiplier")
-			TEST_ASSERT_EQUAL(mission.get_favor_reward(), index == 3 ? 3 : index, "Field favor has the wrong difficulty reward")
+			TEST_ASSERT_EQUAL(zone_work_reward(mission.difficulty), index, "Field work has the wrong difficulty reward")
 	var/obj/structure/overmap/trader_outpost/origin = allocate(/obj/structure/overmap/trader_outpost, run_loc_floor_bottom_left)
 	var/obj/structure/overmap/trader_outpost/destination = allocate(/obj/structure/overmap/trader_outpost, run_loc_floor_top_right)
 	var/datum/mission/outpost_courier/mission = allocate(/datum/mission/outpost_courier/m1_board_test, origin.shop)
@@ -305,7 +305,7 @@
 	TEST_ASSERT_EQUAL(scrip.amount, vouchers, "Settlement spawned the wrong voucher count")
 	TEST_ASSERT_EQUAL(account.account_balance - balance + scrip.amount * 1200 + sku.price_credits, quote, "Physical and bank rewards do not equal the quote")
 	TEST_ASSERT_EQUAL(account.account_balance, balance + cash, "The bank did not receive the residual cash")
-	TEST_ASSERT_EQUAL(shop.get_favor(ship), 3, "Hard completion granted the wrong standing")
+	TEST_ASSERT_EQUAL(ship.get_crew_record().reputation, 3, "Hard completion granted the wrong reputation")
 
 /// Existing food checks still distinguish player cooking from the diner's own plates.
 /datum/unit_test/voidcrew_m1_cooked_goods/Run()

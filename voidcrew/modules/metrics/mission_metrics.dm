@@ -10,12 +10,17 @@
 // EVENT CATALOG
 //
 // Lifecycle details also carry the accepting crew_id and immutable work_receipt_serial,
-// work_family, work_band and work_difficulty when present. Hull changes never redirect these.
-// zone_work_claimed - one diagnostic row per settled receipt, including fully capped work.
-//     points: credited gain. details: attempted_gain, capped_gain, permission_before/after.
-// zone_permission_crossed - one diagnostic row per newly opened permission; subject: its
+// work_band and work_difficulty (what it pays reputation at; safe work is always easy) when
+// present. Hull changes never redirect these.
+// zone_work_claimed - one row per settled job, criminal, lair or pirate bounty, including work
+//     that earned nothing at its zone's ceiling. points: reputation gained. details: work_band
+//     (the band it counted in; a trader's targetless job has no row zone), attempted_gain,
+//     capped_gain (lost to the ceiling), permission_before/after, reputation_after. Bounty rows
+//     have subject = the posting or pirate ship type, and bounty_record or pirate_bounty instead
+//     of a receipt serial.
+// zone_permission_crossed - one row per step a crew reached (3, 9, 18); subject: its
 //     internal name. The row's round_seconds gives the access time across replacement hulls.
-//     These rows move no money. Use zone_work_claimed.points for progression totals; the
+//     These rows move no money. Use zone_work_claimed.points for reputation totals; the
 //     mission_completed.details.zone_gain mirror must not be added to it.
 //
 // mission_accepted - a crew takes a mission from its board, or a contract from an outpost
@@ -30,8 +35,8 @@
 //     (when someone else accepted), items (typepath -> units), ship_parts (typepath -> count,
 //     prospect stakes), item_value (outpost contracts: what the item bundle sells for at the
 //     posting shop), total_value (credits + item_value + vouchers at VOUCHER_CREDIT_VALUE;
-//     research and favor not included), favor (standing gained with the posting trader),
-//     outpost, trader, retargets (used), purity (drug runs).
+//     research not included), zone_claimed, zone_gain (reputation gained), outpost, trader,
+//     retargets (used), purity (drug runs).
 // mission_failed - the mission failed: its objective was lost, destroyed or stranded, or the
 //     contract was voided. Hook: /datum/mission/fail(). ckey: the player who accepted it.
 //     details: board, difficulty, archetype, seconds, reason.
@@ -151,7 +156,6 @@
 		details["crew_id"] = metric_crew_id || accepting_crew.crew_id
 	if(work_receipt)
 		details["work_receipt_serial"] = work_receipt.serial
-		details["work_family"] = work_receipt.family
 		details["work_band"] = metric_zone_name(work_receipt.band)
 		details["work_difficulty"] = work_receipt.difficulty
 	if(shop)
@@ -225,6 +229,27 @@
 				prices[item_path] = price
 	return prices[item_type] || 0
 
+/// zone_work_claimed and zone_permission_crossed for a criminal, lair or pirate bounty. Called once the claim has settled.
+/proc/record_zone_work_rows(obj/structure/overmap/ship/ship, subject, band, attempted_gain, gain, permission_before, permission_after, mob/user, list/details)
+	if(!SSmetrics.accepting || !ship)
+		return
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	var/list/row_details = details ? details.Copy() : list()
+	row_details["work_band"] = metric_zone_name(band)
+	row_details["attempted_gain"] = attempted_gain
+	row_details["capped_gain"] = max(0, attempted_gain - gain)
+	row_details["permission_before"] = permission_before
+	row_details["permission_after"] = permission_after
+	if(!QDELETED(crew))
+		row_details["crew_id"] = crew.crew_id
+		row_details["reputation_after"] = crew.reputation
+	var/zone_name = metric_zone_name(band)
+	record_metric(METRIC_MISSION, "zone_work_claimed", ship = ship, zone = zone_name, subject = subject, points = gain, quantity = 1, details = row_details, actor = user)
+	for(var/permission in (permission_before + 1) to permission_after)
+		var/list/crossing = row_details.Copy()
+		crossing["permission"] = permission
+		record_metric(METRIC_MISSION, "zone_permission_crossed", ship = ship, zone = zone_name, subject = voidcrew_zone_permission_name(permission), quantity = 1, details = crossing, actor = user)
+
 /// One row per actual named prize, shared by console, outpost kills and bounty lairs.
 /proc/record_guarded_prize(obj/structure/overmap/ship/ship, family, category, zone, prize_type, source_type)
 	var/list/details = list("family" = family, "prize_type" = category, "source" = source_type, "item_value" = category == "suit" ? 9000 : 3600)
@@ -270,7 +295,7 @@
  * offer. Mirrors distribute_rewards(): no ship means nothing is paid, and goods only spawn
  * where the turn-in point has a turf.
  */
-/datum/mission/proc/record_metric_completed(atom/reward_anchor, favor_gain)
+/datum/mission/proc/record_metric_completed(atom/reward_anchor)
 	if(!SSmetrics.accepting)
 		return
 	var/recorded_work = record_metric_work_receipt()
@@ -278,7 +303,6 @@
 	var/paid_credits = (servant?.ship_account && value > 0) ? value : 0
 	var/paid_vouchers = (paid_goods && voucher_count > 0) ? voucher_count : 0
 	var/paid_points = (paid_goods && research_reward > 0) ? research_reward : 0
-	var/favor = (favor_gain > 0 && servant && shop) ? favor_gain : 0
 
 	var/list/items
 	var/item_count = 0
@@ -313,15 +337,13 @@
 		item_value += prize_value
 		item_count++
 	details["total_value"] = paid_credits + item_value + paid_vouchers * VOUCHER_CREDIT_VALUE
-	if(favor)
-		details["favor"] = favor
 	var/retargets_used = MAX_MISSION_RETARGETS - retargets_left
 	if(retargets_used > 0)
 		details["retargets"] = retargets_used
 	metric_completion_details(details)
 	record_mission_metric("mission_completed", turned_in_by, paid_credits, paid_vouchers, paid_points, item_count, details)
 
-/// Consume Z2's settled diagnostics only. This never claims work or changes standing.
+/// Writes down a settled receipt. This never claims work or changes reputation.
 /datum/mission/proc/record_metric_work_receipt()
 	if(!SSmetrics.accepting || !work_receipt?.claimed || work_receipt.metric_recorded || QDELETED(accepting_crew) \
 		|| work_receipt.crew != accepting_crew || isnull(work_receipt.permission_before) || isnull(work_receipt.permission_after))
@@ -333,6 +355,7 @@
 	details["capped_gain"] = max(0, attempted_gain - work_receipt.credited)
 	details["permission_before"] = work_receipt.permission_before
 	details["permission_after"] = work_receipt.permission_after
+	details["reputation_after"] = accepting_crew.reputation
 	var/acting_ckey = metric_acting_ckey() || metric_accepted_by
 	record_mission_metric("zone_work_claimed", acting_ckey, points = work_receipt.credited, quantity = 1, details = details)
 	if(work_receipt.permission_after > work_receipt.permission_before)

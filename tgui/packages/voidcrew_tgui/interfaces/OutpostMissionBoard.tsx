@@ -37,11 +37,12 @@ type Offer = {
   progress: string;
   archetype: string;
   time_remaining_text: string;
+  reputation_gain?: number;
 };
 
-type FavorStanding = {
-  tier: number;
-  tier_name: string;
+type Reputation = {
+  total: number;
+  next: number | null;
 };
 
 type ShipMission = Offer & {
@@ -62,7 +63,7 @@ type Data = {
   ship_missions: ShipMission[];
   crew_ships: { ref: string; name: string }[];
   crew_ship_ref: string | null;
-  favor?: FavorStanding | null;
+  reputation?: Reputation | null;
 };
 
 const ARCHETYPE_ICONS = {
@@ -78,17 +79,16 @@ const archetypeIcon = (archetype: string) =>
   ARCHETYPE_ICONS[archetype as keyof typeof ARCHETYPE_ICONS] ??
   ARCHETYPE_ICONS.contract;
 
-/** The crew's standing with this outpost, named as such */
-const ReputationLabel = (props: { favor: FavorStanding }) => {
-  const { favor } = props;
-  const tierColor =
-    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
+/** The crew's one number, and the next step if there is one */
+const ReputationLabel = (props: { reputation: Reputation }) => {
+  const { reputation } = props;
   return (
     <Box inline nowrap color="label">
       Reputation:{' '}
-      <Box inline bold color={tierColor}>
-        {favor.tier_name}
+      <Box inline bold color="good">
+        {reputation.total}
       </Box>
+      {reputation.next ? ` (next at ${reputation.next})` : ''}
     </Box>
   );
 };
@@ -191,6 +191,11 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
             <Stack.Item>
               <RewardLine offer={offer} />
             </Stack.Item>
+            {(offer.reputation_gain ?? 0) > 0 && (
+              <Stack.Item bold color="teal">
+                Reputation +{offer.reputation_gain}
+              </Stack.Item>
+            )}
             <Stack.Item color="label" fontSize="0.85em">
               Time allowed: {formatTime(offer.duration, 'short')}
             </Stack.Item>
@@ -254,6 +259,11 @@ const ShipMissionRow = (props: { mission: ShipMission }) => {
           Due in: {mission.time_remaining_text}
         </Box>
         <RewardLine offer={mission} />
+        {(mission.reputation_gain ?? 0) > 0 && (
+          <Box bold color="teal">
+            Reputation +{mission.reputation_gain}
+          </Box>
+        )}
       </Stack.Item>
       <Stack.Item>
         {!canTurnIn && mission.turn_in_hint ? (
@@ -278,7 +288,7 @@ export const OutpostMissionBoard = (props) => {
     ship_missions = [],
     crew_ships = [],
     crew_ship_ref,
-    favor,
+    reputation,
   } = data;
 
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
@@ -315,9 +325,9 @@ export const OutpostMissionBoard = (props) => {
           buttons={
             ship_name ? (
               <Box inline color="label">
-                {!!favor && (
+                {!!reputation && (
                   <>
-                    <ReputationLabel favor={favor} />
+                    <ReputationLabel reputation={reputation} />
                     {' · '}
                   </>
                 )}

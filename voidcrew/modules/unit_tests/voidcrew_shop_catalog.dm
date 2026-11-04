@@ -246,6 +246,20 @@
 	TEST_ASSERT(control_mission.turn_in(run_loc_floor_bottom_left, salvaged), "An unworn pre-equipped control must be accepted")
 	TEST_ASSERT(QDELETED(salvaged), "The accepted control must be consumed")
 
+	// Goods off a shelf can't settle a request: reputation is not for sale.
+	var/datum/mission/bought_mission = allocate(/datum/mission)
+	bought_mission.requires_item = TRUE
+	bought_mission.servant = receiving_ship
+	bought_mission.active = TRUE
+	var/datum/mission_objective/deliver/procurement/bought_ask = new
+	bought_ask.required_type = /obj/item/mod/control/pre_equipped
+	bought_mission.add_objective(bought_ask)
+	var/obj/item/mod/control/pre_equipped/bought = allocate(/obj/item/mod/control/pre_equipped/standard)
+	mark_trader_goods(bought)
+	TEST_ASSERT(!bought_mission.turn_in(run_loc_floor_bottom_left, bought), "A suit bought from a trader settled a request")
+	TEST_ASSERT_EQUAL(bought_ask.describe_turn_in_failure(bought), "That came off a trader's shelf.", "The refusal did not say why")
+	TEST_ASSERT(!QDELETED(bought), "A refused bought suit must survive")
+
 	var/datum/mission_objective/deliver/procurement/exact_module = allocate(/datum/mission_objective/deliver/procurement)
 	exact_module.required_type = /obj/item/mod/module/balloon
 	var/obj/item/mod/module/balloon/advanced/descendant = allocate(/obj/item/mod/module/balloon/advanced)
@@ -460,8 +474,6 @@
 	ship.ship_team = team
 	team.join_member(user.mind)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
-	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED
-	TEST_ASSERT_EQUAL(shop.get_discount_pct(ship), 15, "Favor fixture did not reach the maximum discount")
 	var/list/restricted = list(
 		/datum/shop_sku/general/surplus_rifle, /datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/laser_gun, /datum/shop_sku/outfitter/energy_gun, /datum/shop_sku/outfitter/riot_shotgun,
@@ -476,7 +488,7 @@
 		shop.roll_special()
 		TEST_ASSERT_EQUAL(sku.discount_pct, 0, "A restricted weapon went on special")
 		sku.discount_pct = 30
-		TEST_ASSERT_EQUAL(sku.get_credit_price(user), sku.price_credits, "A special/favor combination changed a fixed price")
+		TEST_ASSERT_EQUAL(sku.get_credit_price(user), sku.price_credits, "A special changed a fixed price")
 	for(var/attempt in 1 to 20)
 		var/datum/mission/mission = allocate(/datum/mission)
 		mission.difficulty = 3 // MISSION_DIFFICULTY_HARD

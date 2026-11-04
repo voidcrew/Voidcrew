@@ -69,7 +69,7 @@
 		var/item = initial(sku_type.item_path)
 		TEST_ASSERT(item in core_prices, "[sku_type] sells [item], which is not a raw anomaly core")
 		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), core_prices[item], "[sku_type] is in the wrong price band")
-		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
+		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores specials")
 		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
 		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 1, "[sku_type] does not always stock one core")
 		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 1, "[sku_type] stocks more than one unit")
@@ -88,7 +88,7 @@
 				break
 		TEST_ASSERT_NOTNULL(base_type, "[sku_type] points at [anomaly], which is not one of the nine anomaly types")
 		TEST_ASSERT_EQUAL(initial(sku_type.price_credits), chart_prices[base_type], "[sku_type] is in the wrong price band")
-		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores favor and specials")
+		TEST_ASSERT(!initial(sku_type.fixed_price), "[sku_type] ignores specials")
 		TEST_ASSERT_EQUAL(initial(sku_type.stock_min), 2, "[sku_type] must always stock two charts")
 		TEST_ASSERT_EQUAL(initial(sku_type.stock_max), 2, "[sku_type] must stock at most two charts")
 		TEST_ASSERT(!initial(sku_type.contract_reward), "[sku_type] can be paid out by contracts")
@@ -122,8 +122,8 @@
 		TEST_ASSERT(!(sold_type in after), "The sold slot came back as the same [sold_type]")
 		TEST_ASSERT_EQUAL(length(unique_list(after)), length(after), "The rotation shelved the same SKU twice")
 
-/// Raw cores take the normal favor discount, and the better of favor or special wins.
-/datum/unit_test/voidcrew_anomaly_core_favor/Run()
+/// Raw cores take today's special and nothing else.
+/datum/unit_test/voidcrew_anomaly_core_special/Run()
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/skunk/anomaly_core/vortex, "rotating")
 	var/datum/shop_sku/skunk/anomaly_core/sku = shop.skus[1]
@@ -137,12 +137,10 @@
 	team.join_member(buyer.mind)
 	sku.discount_pct = 0
 	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 12000, "A stranger got a discount")
-	shop.grant_favor(ship, 6) // FAVOR_TIER_TRUSTED, 15% off
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "A Trusted crew did not get the normal favor discount")
+	ship.get_crew_record().reputation = 22
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 12000, "Reputation gave a discount")
 	sku.discount_pct = 30
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 8400, "The better special did not win over favor")
-	sku.discount_pct = 10
-	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 10200, "Favor and special stacked, or the better one lost")
+	TEST_ASSERT_EQUAL(sku.get_credit_price(buyer), 8400, "Today's special did not apply")
 	buyer.mind.ship_teams = null
 	team.ship = null
 

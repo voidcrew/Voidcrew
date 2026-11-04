@@ -82,6 +82,7 @@
 /datum/mission/outpost_courier
 	name = "Courier Run"
 	weight = 0
+	safe_work = TRUE
 	duration = 35 MINUTES
 	value_min = 0
 	value_max = 0

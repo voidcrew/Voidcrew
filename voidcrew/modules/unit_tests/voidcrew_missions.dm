@@ -113,6 +113,54 @@
 			TEST_ASSERT_EQUAL(bounty.complete(winner, null), 0, "A completed pirate bounty paid twice")
 			TEST_ASSERT_EQUAL(winner.ship_account.account_balance - balance_before, expected_pay, "Duplicate completion changed the ship balance")
 
+/// A pirate bounty pays reputation by its target's zone, once, to the crew that completes it.
+/datum/unit_test/voidcrew_pirate_bounty_pay/reputation
+
+/datum/unit_test/voidcrew_pirate_bounty_pay/reputation/Run()
+	original_turf_type = run_loc_floor_bottom_left.type
+	overmap_tile = run_loc_floor_bottom_left.ChangeTurf(/turf/open/overmap)
+	var/obj/structure/overmap/ship/winner = allocate(/obj/structure/overmap/ship)
+	winner.ship_account = allocate(/datum/bank_account)
+	winner.ship_team = new
+	winner.ship_team.ship = winner
+	var/datum/voidcrew_crew_record/crew = winner.get_crew_record()
+	allocated += crew
+	// Zone (ZONE_GREEN/YELLOW/RED), reputation before, the worth expected, and after.
+	var/list/cases = list(list(1, 0, 1, 1), list(1, 4, 0, 4), list(2, 4, 2, 6), list(2, 10, 1, 11), list(3, 11, 3, 14), list(3, 22, 3, 25))
+	for(var/list/rep_case as anything in cases)
+		overmap_tile.current_zone = allocate(/datum/overmap_zone, rep_case[1])
+		var/obj/structure/overmap/ship/npc/pirate = allocate(/obj/structure/overmap/ship/npc, overmap_tile)
+		pirate.spawner_resolved = TRUE // Teardown must not refill the live pirate pool.
+		var/obj/item/ship_key/key = allocate(/obj/item/ship_key, run_loc_floor_top_right, pirate)
+		key.spawner_notified = TRUE
+		var/datum/pirate_bounty/bounty = allocate(/datum/pirate_bounty, pirate, key)
+		crew.reputation = rep_case[2]
+		TEST_ASSERT_EQUAL(bounty.get_reputation_worth(winner), rep_case[3], "A pirate bounty showed the wrong worth")
+		SSbounty.active_bounties += bounty
+		var/list/card
+		for(var/list/row as anything in SSbounty.get_bounty_ui_data(winner))
+			if(row["ref"] == REF(bounty))
+				card = row
+		TEST_ASSERT_EQUAL(card?["reputation_gain"], rep_case[3], "The bounty card lost what it is worth")
+		TEST_ASSERT(bounty.add_claimant(winner), "Could not accept the pirate bounty")
+		TEST_ASSERT(bounty.complete(winner, null) > 0, "The pirate bounty did not pay")
+		TEST_ASSERT_EQUAL(crew.reputation, rep_case[4], "The pirate bounty paid the wrong reputation")
+		TEST_ASSERT_EQUAL(bounty.complete(winner, null), 0, "A completed pirate bounty paid twice")
+		TEST_ASSERT_EQUAL(crew.reputation, rep_case[4], "A completed pirate bounty paid reputation twice")
+		TEST_ASSERT_EQUAL(bounty.get_reputation_worth(winner), 0, "A completed pirate bounty still showed a worth")
+	// A bounty that fails pays nothing.
+	overmap_tile.current_zone = allocate(/datum/overmap_zone, 3)
+	var/obj/structure/overmap/ship/npc/lost_pirate = allocate(/obj/structure/overmap/ship/npc, overmap_tile)
+	lost_pirate.spawner_resolved = TRUE
+	var/obj/item/ship_key/lost_key = allocate(/obj/item/ship_key, run_loc_floor_top_right, lost_pirate)
+	lost_key.spawner_notified = TRUE
+	var/datum/pirate_bounty/lost = allocate(/datum/pirate_bounty, lost_pirate, lost_key)
+	var/before = crew.reputation
+	lost.fail("Gone.")
+	TEST_ASSERT_EQUAL(lost.complete(winner, null), 0, "A failed pirate bounty paid")
+	TEST_ASSERT_EQUAL(crew.reputation, before, "A failed pirate bounty paid reputation")
+	TEST_ASSERT_EQUAL(lost.get_reputation_worth(winner), 0, "A failed pirate bounty showed a worth")
+
 /// Steal-objective guns exist at spawn; opening any gun cache yields one gun total.
 /datum/unit_test/voidcrew_pirate_reward_guns/Run()
 	var/list/cache_guns = list(

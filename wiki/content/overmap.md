@@ -72,7 +72,7 @@ Each mineral wall rolls its own ore. Valuable ores become more likely in deeper 
 
 The markets follow the same gradient: the general store sits in the neutral ring, the outfitter in the contested lanes and the black market in the lawless deep, so the best goods are behind the worst neighbourhood. Planets are placed into a specific ring when the round is built and generated to match it, which means a jungle world in the red is a meaningfully harder jungle world. The safe ring always gets one planet of each type, so a new crew has every kind of world close to home. The rest of the planets, like the ruins, are spread by area, so most of them are out in the lawless ring.
 
-Your crew also earns [zone reputation](zone-reputation.md) from varied field work. It opens higher-zone contracts, better trader stock and some research. It does not stop you travelling before you qualify.
+Your crew also earns [reputation](zone-reputation.md) from finished jobs. It opens higher-zone contracts, better trader stock and some research. It does not stop you travelling before you qualify.
 
 ## Docking
 

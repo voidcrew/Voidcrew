@@ -49,12 +49,12 @@
 #define SHELF_ROTATING "rotating"
 /// Rolled from the shop's rare pool; single showcase unit
 #define SHELF_RARE "rare"
-/// The back-room shelf: always listed, locked behind crew standing with the
-/// trader. Supply is per-crew (FAVOR_UNIQUE_CREW_LIMIT), never shared stock.
+/// The back-room shelf: always listed, locked behind the crew's reputation.
+/// Supply is per-crew (FAVOR_UNIQUE_CREW_LIMIT), never shared stock.
 #define SHELF_FAVOR "favor"
 
-// ===== TRADER FAVOR =====
-// Favor and purchase caps live on the round-owned voidcrew_crew_record.
+// ===== CREW REPUTATION =====
+// One number per crew, on the round-owned voidcrew_crew_record.
 // Hull teams share that record; hull accounts and mission slots stay separate.
 
 // Internal service permissions, never player-facing tier labels.
@@ -63,40 +63,17 @@
 #define ZONE_PERMISSION_ADVANCED 2
 #define ZONE_PERMISSION_ELITE 3
 
-#define ZONE_REPUTATION_GREEN_REQUIRED 3
-#define ZONE_REPUTATION_YELLOW_REQUIRED 6
-#define ZONE_REPUTATION_RED_REQUIRED 9
-#define ZONE_REPUTATION_GREEN_FAMILY_CAP 1
-#define ZONE_REPUTATION_DANGER_FAMILY_CAP 5
+/// Reputation that opens each permission. Green work stops at the first and yellow work at the second.
+#define REPUTATION_STEP_YELLOW 4
+#define REPUTATION_STEP_ADVANCED 11
+#define REPUTATION_STEP_ELITE 22
 
-// Canonical progression families. Guarded prize families deliberately differ.
-#define ZONE_FAMILY_NAMED_KILL "named_kill"
-#define ZONE_FAMILY_HUNT "hunt"
-#define ZONE_FAMILY_CAPTURE "capture"
-#define ZONE_FAMILY_POACHERS "poachers"
-#define ZONE_FAMILY_PYLONS "pylons"
-#define ZONE_FAMILY_EXTRACTION "extraction"
-#define ZONE_FAMILY_CRIMINAL_BOUNTY "criminal_bounty"
-#define ZONE_FAMILY_LAIR "lair"
+// Reputation for one finished job, by difficulty
+#define REPUTATION_GAIN_EASY 1
+#define REPUTATION_GAIN_MEDIUM 2
+#define REPUTATION_GAIN_HARD 3
 
-// Tier thresholds, in favor points
-#define FAVOR_TIER_REGULAR 2
-#define FAVOR_TIER_PARTNER 4
-#define FAVOR_TIER_TRUSTED 6
-
-// Credit-price discount per tier, in percent. Voucher prices are never
-// discounted: favor is earned from contracts that PAY vouchers, so a voucher
-// discount would double-dip and break the "scrip can't be farmed" doctrine.
-#define FAVOR_DISCOUNT_REGULAR 5
-#define FAVOR_DISCOUNT_PARTNER 10
-#define FAVOR_DISCOUNT_TRUSTED 15
-
-// Favor paid per completed board contract, by difficulty band
-#define FAVOR_GAIN_EASY 1
-#define FAVOR_GAIN_MEDIUM 2
-#define FAVOR_GAIN_HARD 3
-
-/// How many of each favor-shelf unique one crew may buy per round
+/// How many of each back-room unique one crew may buy per round
 #define FAVOR_UNIQUE_CREW_LIMIT 3
 
 /// How often a trader outpost's supply convoy tops the shelves back up

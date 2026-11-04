@@ -362,8 +362,7 @@
 	chart.spawn_zone = spawn_zone
 	return chart
 
-// Three bands, the same as the raw cores, at half the core's list price. Normal
-// favor discounts and specials apply.
+// Three bands, the same as the raw cores, at half the core's list price. Specials apply.
 // The two rarest point into the lawless deep.
 
 /datum/shop_sku/anomaly_chart/flux

@@ -1511,7 +1511,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/bounty_wanted_board, 32)
 	if(signature != outpost_static_signature)
 		outpost_static_signature = signature
 		outpost_refresh_viewers()
-	return list("entries" = outpost_board_entries())
+	return list("entries" = outpost_board_entries(user))
 
 /// Sends every viewer the board's pictures again, next tick
 /obj/structure/bounty_wanted_board/proc/outpost_refresh_viewers()
@@ -1529,9 +1529,10 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/bounty_wanted_board, 32)
  * the vouchers beside the credits (BUG-13). A fugitive blending in on this very concourse is "Seen on
  * this concourse" (P11).
  */
-/obj/structure/bounty_wanted_board/proc/outpost_board_entries()
+/obj/structure/bounty_wanted_board/proc/outpost_board_entries(mob/user)
 	var/list/entries = list()
 	var/obj/structure/overmap/trader_outpost/this_outpost = get_trader_outpost_for_turf(get_turf(src))
+	var/datum/voidcrew_crew_record/viewer_crew = user?.mind?.get_reputation_crew()
 	for(var/datum/criminal_bounty/posting as anything in bounty_public_postings())
 		var/datum/bounty_record/record = posting.record
 		var/here = !!this_outpost && posting.placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST && posting.site() == this_outpost && !istype(posting, /datum/criminal_bounty/kingpin)
@@ -1545,6 +1546,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/bounty_wanted_board, 32)
 			"reward" = posting.value,
 			"vouchers" = posting.board_vouchers,
 			"place" = here ? "Seen on this concourse" : posting.board_place_text(),
+			"reputation_gain" = posting.board_reputation_worth(viewer_crew),
 		))
 	return entries
 

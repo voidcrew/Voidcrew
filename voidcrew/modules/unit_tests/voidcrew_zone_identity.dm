@@ -43,8 +43,8 @@
 	return member
 
 /datum/unit_test/voidcrew_zone_identity/proc/clear_green(datum/voidcrew_crew_record/record)
-	for(var/family in list("named_kill", "hunt", "capture"))
-		record.claim_zone_work(family, 1, 1, "green_[family]")
+	for(var/index in 1 to 4)
+		record.claim_zone_work(1, 1, "green_[index]")
 
 /// Fix the roll while exercising the production award and crew-claim transaction.
 /obj/structure/overmap/ship/zone_identity_prize_test
@@ -99,54 +99,56 @@
 	TEST_ASSERT_NULL(newcomer.mind.get_reputation_crew(), "An unaffiliated resident inherited another resident's crew")
 	TEST_ASSERT(home.is_resident(newcomer), "An unaffiliated resident was refused")
 
-/// The eight families, lifetime caps, cumulative permissions and once-only claim boundary.
+/// One number, 1/2/3 by difficulty, steps at 4/11/22, one ceiling check and a once-only claim.
 /datum/unit_test/voidcrew_zone_identity/progression/Run()
 	var/datum/voidcrew_crew_record/record = allocate(/datum/voidcrew_crew_record)
-	TEST_ASSERT_EQUAL(length(record.zone_families), 3, "Missing work bands")
-	for(var/band in record.zone_families)
-		TEST_ASSERT_EQUAL(length(record.zone_families[band]), 8, "A band does not have eight family counters")
-	var/list/qualifying = list(
-		/datum/mission/recovery/kill = "named_kill",
-		/datum/mission/recovery/kill/outpost = "named_kill",
-		/datum/mission/big_game_hunt = "hunt",
-		/datum/mission/live_capture = "capture",
-		/datum/mission/poacher_bust = "poachers",
-		/datum/mission/recovery/survey = "pylons",
-		/datum/mission/research/core_sample = "pylons",
-		/datum/mission/recovery/extraction = "extraction",
-	)
-	for(var/mission_type in subtypesof(/datum/mission))
-		var/expected
-		for(var/family_type in qualifying)
-			if(ispath(mission_type, family_type))
-				expected = qualifying[family_type]
-		TEST_ASSERT_EQUAL(zone_reputation_family(mission_type), expected, "Wrong progression family for [mission_type]")
+	TEST_ASSERT_EQUAL(record.reputation, 0, "A fresh crew has reputation")
 	TEST_ASSERT_EQUAL(record.get_zone_permission(), 0, "Fresh crew is not Public")
+	TEST_ASSERT_EQUAL(record.next_reputation_step(), 4, "The first step is not 4")
 	TEST_ASSERT(!record.can_work_in_zone(2) && !record.can_work_in_zone(3), "A new crew can accept dangerous work")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("named_kill", 99, 3, "bad_band"), 0, "Unknown band earned standing")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("waves", 1, 3, "bad_family"), 0, "Prize-family alias earned standing")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("named_kill", 1, 3, "first"), 1, "Green family exceeded its lifetime cap")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("named_kill", 1, 3, "second"), 0, "Repeated family earned more green standing")
-	TEST_ASSERT(record.settlement_claims["second"], "Capped settlement was not claimed")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("hunt", 1, 3, "first"), 0, "Duplicate receipt earned standing")
-	clear_green(record)
-	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Three green families did not open yellow")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(99, 3, "bad_band"), 0, "Unknown band earned reputation")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 99, "bad_difficulty"), 0, "Unknown difficulty earned reputation")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 1, "first"), 1, "Easy work is not worth one")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 1, "first"), 0, "Duplicate receipt earned reputation")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 1, "second"), 1, "Repeating the same work stopped paying")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 1, "third"), 1, "Repeating the same work stopped paying")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 0, "Three reputation opened yellow")
+	TEST_ASSERT_EQUAL(record.reputation_worth(1, 3), 1, "The worth ignored the green ceiling")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 3, "fourth"), 1, "Green work passed its ceiling")
+	TEST_ASSERT_EQUAL(record.reputation, 4, "Green work did not stop at four")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Four reputation did not open yellow")
 	TEST_ASSERT(record.can_work_in_zone(2) && !record.can_work_in_zone(3), "Yellow admission is wrong")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("hunt", 2, 3, "yellow1"), 3, "Hard work is not worth three")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("hunt", 2, 3, "yellow2"), 2, "Yellow family was not clamped at five")
-	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "One yellow family opened advanced")
-	TEST_ASSERT_EQUAL(record.claim_zone_work("capture", 2, 1, "yellow3"), 1, "Easy work is not worth one")
-	TEST_ASSERT_EQUAL(record.get_zone_permission(), 2, "Cumulative yellow threshold did not open advanced")
+	TEST_ASSERT_EQUAL(record.reputation_worth(1, 3), 0, "Green work showed a worth at its ceiling")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 3, "green_again"), 0, "Green work paid at its ceiling")
+	TEST_ASSERT(record.settlement_claims["green_again"], "Work at the ceiling was not claimed")
+	TEST_ASSERT_EQUAL(record.next_reputation_step(), 11, "The second step is not 11")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(2, 2, "yellow1"), 2, "Medium work is not worth two")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(2, 3, "yellow2"), 3, "Hard work is not worth three")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(2, 1, "yellow3"), 1, "Easy yellow work is not worth one")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Ten reputation opened advanced")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(2, 3, "yellow4"), 1, "Yellow work passed its ceiling")
+	TEST_ASSERT_EQUAL(record.reputation, 11, "Yellow work did not stop at eleven")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 2, "Eleven reputation did not open advanced")
 	TEST_ASSERT(record.can_work_in_zone(3), "Advanced crew cannot accept red work")
+	TEST_ASSERT_EQUAL(record.next_reputation_step(), 22, "The last step is not 22")
 	for(var/index in 1 to 3)
-		record.claim_zone_work("pylons", 3, 3, "red_pylons_[index]")
-	TEST_ASSERT_EQUAL(record.get_zone_permission(), 2, "One red family opened elite")
-	record.claim_zone_work("extraction", 3, 3, "red_extract1")
-	record.claim_zone_work("extraction", 3, 1, "red_extract2")
-	TEST_ASSERT_EQUAL(record.get_zone_permission(), 3, "Nine red standing did not open elite")
-	TEST_ASSERT_EQUAL(record.zone_totals["1"], 3, "Dangerous work leaked into green")
-	TEST_ASSERT_EQUAL(zone_work_reward(2), 2, "Medium award drifted from board favor")
+		record.claim_zone_work(3, 3, "red_[index]")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 2, "Twenty reputation opened elite")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(3, 2, "red_medium"), 2, "Medium red work is not worth two")
+	TEST_ASSERT_EQUAL(record.reputation, 22, "Red work met a ceiling")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 3, "Twenty-two reputation did not open elite")
+	TEST_ASSERT_NULL(record.next_reputation_step(), "A step remained past the last one")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(3, 1, "red_past"), 1, "Red work stopped paying past the last step")
+	TEST_ASSERT_EQUAL(record.reputation, 23, "The total did not keep counting")
+	TEST_ASSERT_EQUAL(zone_work_reward(2), 2, "Medium award drifted")
 	TEST_ASSERT(!record.has_zone_permission(4) && !record.can_work_in_zone(null), "Unknown permission/band passed")
+	TEST_ASSERT_EQUAL(zone_permission_reputation(1), 4, "Yellow goods name the wrong number")
+	TEST_ASSERT_EQUAL(zone_permission_reputation(2), 11, "Advanced goods name the wrong number")
+	TEST_ASSERT_EQUAL(zone_permission_reputation(3), 22, "Elite goods name the wrong number")
+	var/list/header = reputation_ui_data(record)
+	TEST_ASSERT_EQUAL(header["total"], 23, "The header lost the total")
+	TEST_ASSERT_NULL(header["next"], "The header named a step past the last")
+	TEST_ASSERT_NULL(reputation_ui_data(null), "A viewer with no crew got a header")
 
 /// Real pad turn-ins with ship interiors and overmap bands; no subsystem fixture is constructed.
 /datum/unit_test/voidcrew_zone_bounties
@@ -188,21 +190,22 @@
 	var/datum/bounty_record/record = posting.record
 	var/mob/living/basic/bounty_criminal/criminal = board_test_criminal(posting, field)
 	TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A criminal absent from the pad was accepted")
-	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 0, "A refused turn-in earned standing")
+	TEST_ASSERT_EQUAL(crew.reputation, 0, "A refused turn-in earned reputation")
+	var/list/card = posting.board_ui_entry(ship, pad)
+	TEST_ASSERT_EQUAL(card["reputation_gain"], 2, "The wanted card lost what it is worth")
 	criminal.body_go_down()
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Capture did not bind its actual field band")
-	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 0, "Capture earned standing before a paying turn-in")
+	TEST_ASSERT_EQUAL(crew.reputation, 0, "Capture earned reputation before a paying turn-in")
 	criminal.forceMove(deck)
 	criminal.body_state_changed()
 	TEST_ASSERT_EQUAL(record.board_work_zone, 2, "Transport overwrote the capture band")
 	TEST_ASSERT(islist(posting.turn_in(pad, ship)), "The live criminal was not paid")
-	TEST_ASSERT_EQUAL(crew.zone_families["2"]["criminal_bounty"], 2, "Wanted turn-in did not credit medium in its capture zone")
-	TEST_ASSERT_EQUAL(crew.zone_totals["1"], 0, "The posting/return zone earned the field credit")
-	TEST_ASSERT(crew.settlement_claims["bounty:[record.id]:criminal_bounty"], "Turn-in did not claim its stable receipt")
+	TEST_ASSERT_EQUAL(crew.reputation, 2, "Wanted turn-in did not credit medium")
+	TEST_ASSERT(crew.settlement_claims["bounty:[record.id]"], "Turn-in did not claim its stable receipt")
 	TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A second turn-in was accepted")
-	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 2, "A second turn-in earned more standing")
+	TEST_ASSERT_EQUAL(crew.reputation, 2, "A second turn-in earned more reputation")
 	var/obj/structure/overmap/ship/split_ship = paid_ship(get_step(deck, EAST), home, crew)
-	TEST_ASSERT_EQUAL(split_ship.get_crew_record().zone_totals["2"], 2, "A split hull lost its crew's standing")
+	TEST_ASSERT_EQUAL(split_ship.get_crew_record().reputation, 2, "A split hull lost its crew's reputation")
 	// Reposting the same record under another alias cannot award another crew.
 	var/datum/criminal_bounty/alias_posting = allocate(/datum/criminal_bounty)
 	alias_posting.record = record
@@ -216,15 +219,17 @@
 	proof.record = record
 	alias_posting.board_attach_proof(proof)
 	TEST_ASSERT(islist(alias_posting.turn_in(other_pad, other)), "The repost fixture did not reach the paying path")
-	TEST_ASSERT_EQUAL(other.get_crew_record().zone_totals["2"], 0, "A posting alias awarded a second crew")
-	TEST_ASSERT_EQUAL(crew.zone_totals["2"], 2, "A posting alias changed the original crew's credit")
+	TEST_ASSERT_EQUAL(other.get_crew_record().reputation, 0, "A posting alias awarded a second crew")
+	TEST_ASSERT_EQUAL(crew.reputation, 2, "A posting alias changed the original crew's credit")
 
-/datum/unit_test/voidcrew_zone_bounties/caps/Run()
+/// A zone's ceiling is decided by where the criminal was caught, not where they are turned in.
+/datum/unit_test/voidcrew_zone_bounties/ceilings/Run()
 	var/turf/deck = run_loc_floor_bottom_left
 	var/turf/home = make_zone_turf(get_step(deck, NORTH), 1)
 	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
 	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	var/list/totals = list(4, 11, 20) // Green and yellow stop at their ceilings; red has none.
 	for(var/band in 1 to 3)
 		var/turf/field = make_zone_turf(locate(home.x + band, home.y, home.z), band)
 		for(var/index in 1 to 3)
@@ -234,7 +239,7 @@
 			TEST_ASSERT_EQUAL(posting.record.board_work_zone, band, "Death did not bind its field band")
 			criminal.forceMove(deck)
 			TEST_ASSERT(islist(posting.turn_in(pad, ship)), "A dead criminal was not paid")
-		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["criminal_bounty"], band == 1 ? 1 : 5, "Criminal family exceeded its band cap")
+		TEST_ASSERT_EQUAL(crew.reputation, totals[band], "Criminals paid past band [band]'s ceiling")
 	var/datum/criminal_bounty/tier_posting = board_test_posting(1)
 	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 1, "Petty is not easy")
 	tier_posting.record.tier = 2
@@ -246,12 +251,12 @@
 	TEST_ASSERT_EQUAL(tier_posting.board_reputation_difficulty(), 3, "A named boss is not hard")
 	tier_posting.record.board_work_zone = 2
 	tier_posting.record.status = "escaped"
-	TEST_ASSERT_EQUAL(tier_posting.board_claim_zone_work(ship), 0, "An escaped prisoner earned standing")
+	TEST_ASSERT_EQUAL(tier_posting.board_claim_zone_work(ship), 0, "An escaped prisoner earned reputation")
 	TEST_ASSERT(!tier_posting.record.board_reputation_claimed, "An unpaid escape consumed a reputation claim")
 	var/mob/living/basic/bounty_criminal/admin_spawn = allocate(/mob/living/basic/bounty_criminal, home)
 	admin_spawn.body_go_down()
 	TEST_ASSERT_NULL(admin_spawn.posting(), "An admin spawn acquired a posting")
-	TEST_ASSERT_EQUAL(crew.zone_totals["1"], 1, "An admin spawn earned standing")
+	TEST_ASSERT_EQUAL(crew.reputation, 20, "An admin spawn earned reputation")
 
 /datum/unit_test/voidcrew_zone_bounties/surrender/Run()
 	var/turf/deck = run_loc_floor_bottom_left
@@ -265,7 +270,7 @@
 	TEST_ASSERT_EQUAL(posting.record.board_work_zone, 2, "Surrender did not bind the field band")
 	criminal.forceMove(deck)
 	TEST_ASSERT(islist(posting.turn_in(pad, ship)), "An uncuffed surrendered criminal was not paid")
-	TEST_ASSERT_EQUAL(ship.get_crew_record().zone_families["2"]["criminal_bounty"], 2, "A surrendered criminal lost its field credit")
+	TEST_ASSERT_EQUAL(ship.get_crew_record().reputation, 2, "A surrendered criminal lost its field credit")
 
 /datum/unit_test/voidcrew_zone_bounties/relist/Run()
 	var/turf/field = make_zone_turf(run_loc_floor_bottom_left, 2)
@@ -284,6 +289,7 @@
 	var/obj/structure/overmap/ship/ship = paid_ship(deck, home)
 	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
 	var/obj/machinery/mission_pad/pad = allocate(/obj/machinery/mission_pad, deck)
+	var/list/totals = list(4, 11, 20)
 	for(var/band in 1 to 3)
 		var/turf/field = make_zone_turf(locate(home.x + band, home.y, home.z), band)
 		var/obj/structure/overmap/space_ruin/site = allocate(/obj/structure/overmap/space_ruin, field)
@@ -292,16 +298,15 @@
 			posting.record = bounty_kill_record("Test Boss", "testing", MALE, 1000, "test")
 			posting.kill_publish(site, SScriminal_bounties.board_site_zone(site), 0, 60 MINUTES)
 			TEST_ASSERT_EQUAL(posting.board_reputation_difficulty(), 3, "A lair clear is not hard")
-			var/before = crew.zone_totals["[band]"]
+			var/before = crew.reputation
 			var/obj/item/bounty_proof/trophy/trophy = posting.kill_drop_trophy(deck)
 			TEST_ASSERT_NOTNULL(trophy, "The cleared lair did not drop its trophy")
-			TEST_ASSERT_EQUAL(crew.zone_totals["[band]"], before, "A lair earned standing before its paying turn-in")
+			TEST_ASSERT_EQUAL(crew.reputation, before, "A lair earned reputation before its paying turn-in")
 			TEST_ASSERT(islist(posting.turn_in(pad, ship)), "The lair trophy was not paid")
 			if(index == 1)
-				TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["lair"], band == 1 ? 1 : 3, "A lair did not credit hard in its site zone")
+				TEST_ASSERT_EQUAL(crew.reputation, before + 3, "A lair did not credit hard in its site zone")
 			TEST_ASSERT(istext(posting.turn_in(pad, ship)), "A lair trophy was accepted twice")
-		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["lair"], band == 1 ? 1 : 5, "Lair family exceeded its band cap")
-		TEST_ASSERT_EQUAL(crew.zone_families["[band]"]["criminal_bounty"], 0, "A lair also credited the criminal family")
+		TEST_ASSERT_EQUAL(crew.reputation, totals[band], "Lairs paid past band [band]'s ceiling")
 
 /// Purchases/requisitions, split hulls, abandonment, wrecks, cryo and keyed mind replacement.
 /datum/unit_test/voidcrew_zone_identity/continuation/Run()
@@ -312,15 +317,14 @@
 	TEST_ASSERT_EQUAL(record.leader, member.mind, "The founder did not become crew leader")
 	clear_green(record)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
-	shop.grant_favor(first, 6)
 	var/obj/structure/overmap/ship/second = make_ship()
 	TEST_ASSERT(second.bind_reputation_crew(member.mind), "Purchase/requisition could not continue its buyer's crew")
 	second.enlist_crewmember(member)
 	TEST_ASSERT_EQUAL(record_for(second), record, "New hull copied or reset the crew")
 	TEST_ASSERT(member.mind in first.ship_team.members, "A second hull removed same-crew membership")
-	TEST_ASSERT_EQUAL(shop.get_favor(second), 6, "New hull lost trader discounts")
+	TEST_ASSERT_EQUAL(second.get_crew_record().reputation, 4, "New hull lost the crew's reputation")
 	TEST_ASSERT(record.claim_purchase(/datum/shop_sku/favor/pike_ledger), "First cap claim failed")
-	shop.record_crew_purchase(second, /datum/shop_sku/favor/pike_ledger)
+	TEST_ASSERT(second.get_crew_record().claim_purchase(/datum/shop_sku/favor/pike_ledger), "Second cap claim failed")
 	TEST_ASSERT_EQUAL(shop.get_crew_purchases(first, /datum/shop_sku/favor/pike_ledger), 2, "Hull teams kept separate purchase histories")
 	var/obj/machinery/cryopod/pod = allocate(/obj/machinery/cryopod)
 	pod.detach_from_crews(member.mind, member.real_name)
@@ -349,7 +353,6 @@
 	fresh.enlist_crewmember(replacement)
 	var/datum/voidcrew_crew_record/new_record = record_for(fresh)
 	TEST_ASSERT(new_record != record && new_record.get_zone_permission() == 0, "Independent crew inherited standing")
-	TEST_ASSERT_EQUAL(shop.get_favor(fresh), 0, "Independent crew inherited favor")
 	TEST_ASSERT_EQUAL(shop.get_crew_purchases(fresh, /datum/shop_sku/favor/pike_ledger), 0, "Independent crew inherited purchases")
 	TEST_ASSERT(!fresh.bind_reputation_crew(replacement.mind, TRUE), "Occupied hull could reset its identity")
 
@@ -884,7 +887,7 @@
 	original.enlist_crewmember(crewmate)
 	var/datum/voidcrew_crew_record/record = original.get_crew_record()
 	crew_records += record
-	record.claim_zone_work("hunt", 1, 1, "before_build")
+	record.claim_zone_work(1, 1, "before_build")
 	var/obj/structure/overmap/ship/occupant_home = allocate(/obj/structure/overmap/ship)
 	occupant_home.ship_team = new
 	occupant_home.ship_team.ship = occupant_home
@@ -916,7 +919,7 @@
 	TEST_ASSERT_EQUAL(unaffiliated.mind.get_reputation_crew(), commissioned_crew, "An unaffiliated builder did not join the new hull's crew")
 	TEST_ASSERT(crewmate.mind in original.ship_team.members, "Commissioning removed a crewmate's original hull membership")
 	TEST_ASSERT_EQUAL((crewmate.mind in commissioned.ship_team.members), !nonleader, "Commissioning did not respect the crewmate's continuing affiliation")
-	TEST_ASSERT_EQUAL(record.zone_totals["1"], 1, "Commissioning changed standing")
+	TEST_ASSERT_EQUAL(record.reputation, 1, "Commissioning changed reputation")
 
 /datum/mission_target/zone_identity_test
 	var/band = 1
@@ -963,8 +966,8 @@
 	target.band = 3
 	mission.quote_zone = 3
 	TEST_ASSERT(ship.accept_mission(mission) != TRUE, "Yellow crew accepted red work")
-	record.claim_zone_work("hunt", 2, 3, "yellow_hunt")
-	record.claim_zone_work("capture", 2, 3, "yellow_capture")
+	for(var/index in 1 to 3)
+		record.claim_zone_work(2, 3, "yellow_[index]")
 	TEST_ASSERT_EQUAL(ship.accept_mission(mission), TRUE, "Newly permitted red work stayed denied")
 	target.band = 99
 	mission.quote_zone = 99

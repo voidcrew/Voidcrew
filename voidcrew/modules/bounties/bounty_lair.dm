@@ -77,9 +77,6 @@
 /datum/criminal_bounty/kill_only/board_arm()
 	return FALSE
 
-/datum/criminal_bounty/kill_only/board_reputation_family()
-	return ZONE_FAMILY_LAIR
-
 /datum/criminal_bounty/kill_only/board_reputation_difficulty()
 	return MISSION_DIFFICULTY_HARD
 

@@ -215,7 +215,7 @@
 /datum/outpost_shop/proc/roll_special()
 	var/list/eligible = list()
 	for(var/datum/shop_sku/sku as anything in skus)
-		// Back-room prices use only the crew's ordinary credit discount.
+		// Back-room prices never go on special.
 		if(sku.shelf == SHELF_FAVOR)
 			continue
 		if(sku.fixed_price)
@@ -395,6 +395,10 @@
 		return null
 	return pick(lines)
 
+/// A stall's own thanks to `crew_ship`, in percent off credits. Most stalls give none.
+/datum/outpost_shop/proc/get_discount_pct(obj/structure/overmap/ship/crew_ship)
+	return 0
+
 /datum/outpost_shop/proc/get_back_room_line(mob/user)
 	var/datum/voidcrew_crew_record/crew = get_crew_ship(user)?.get_crew_record()
 	if(!crew || !back_room_line)
@@ -421,11 +425,11 @@
 	var/category = "General"
 	/// Which shelf this SKU landed on (stamped by the shop; drives UI styling + supply caps)
 	var/shelf = SHELF_CORE
-	/// The shop stocking this SKU (stamped by add_sku; favor pricing/gating read it)
+	/// The shop stocking this SKU (stamped by add_sku)
 	var/datum/outpost_shop/shop
 	/// Continuing crew permission required by every occurrence of this SKU.
 	var/zone_permission = ZONE_PERMISSION_PUBLIC
-	/// Max units one crew may buy per round (0 = uncapped; favor uniques cap at
+	/// Max units one crew may buy per round (0 = uncapped; back-room uniques cap at
 	/// FAVOR_UNIQUE_CREW_LIMIT). Enforced on the continuing crew record.
 	var/crew_limit = 0
 	/// TRUE on the intel SKUs (star charts, ruin charts, rumor tips). Whenever
@@ -454,7 +458,7 @@
 	var/cached_icon
 	/// The weighted rotation that dealt this SKU, if any (see /datum/shop_rotation)
 	var/datum/shop_rotation/rotation
-	/// Ignores specials and crew favor discounts: the price on the tag is the price
+	/// Ignores specials: the price on the tag is the price
 	var/fixed_price = FALSE
 	/// Whether outpost contracts may pay this out as part of a reward bundle
 	var/contract_reward = TRUE
@@ -489,9 +493,8 @@
 
 /**
  * The credit price after discounts, rounded down to a clean 5. With a buyer,
- * their crew's favor discount competes with the special: the better of the two
- * applies (max, not stacked. Favor shouldn't turn a 30%-off special into 45%).
- * Without a buyer (catalog/static contexts) only the authored special shows.
+ * a stall's own thanks (get_discount_pct) competes with the special: the better
+ * of the two applies, not both. Without a buyer only the special shows.
  */
 /datum/shop_sku/proc/get_credit_price(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
 	if(price_credits <= 0 || fixed_price)
@@ -552,12 +555,14 @@
 		return TRUE
 	return !QDELETED(crew) && crew.has_zone_permission(zone_permission)
 
-/// Legacy proc name retained for callers; trader favor no longer admits a buyer.
+/// Why this crew may not buy it: a step it hasn't reached, or the back room's per-crew cap.
 /datum/shop_sku/proc/get_favor_denial(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
 	if(crew_ship && get_crew_ship(user, crew_ship) != crew_ship)
 		return "I can't clear that shipment."
 	var/datum/voidcrew_crew_record/crew = crew_ship?.get_crew_record()
-	if(!has_zone_permission(crew) || (crew_limit > 0 && !crew))
+	if(!has_zone_permission(crew))
+		return "Needs [zone_permission_reputation(zone_permission)] reputation."
+	if(crew_limit > 0 && !crew)
 		return "Your crew isn't cleared for that yet."
 	if(crew_limit > 0 && (crew.favor_unique_purchases[type] || 0) >= crew_limit)
 		return "I've filled that order already."

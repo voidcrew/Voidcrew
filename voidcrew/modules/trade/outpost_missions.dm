@@ -82,13 +82,15 @@
 	if(completed || !matches_ask(item))
 		return FALSE
 	// Still the right goods (a near miss for the refusal), but no good to anyone.
-	if(is_dead_monster_core(item))
+	if(is_dead_monster_core(item) || is_trader_good(item))
 		return FALSE
 	return ..()
 
 /datum/mission_objective/deliver/procurement/describe_turn_in_failure(obj/item/item)
 	if(is_dead_monster_core(item) && matches_ask(item))
 		return "That core's gone dead."
+	if(is_trader_good(item) && matches_ask(item))
+		return "That came off a trader's shelf."
 	return ..()
 
 /datum/mission_objective/deliver/procurement/accept_item(obj/item/item, atom/reward_anchor)
@@ -106,6 +108,7 @@
 /datum/mission/outpost_supply
 	name = "Supply Request"
 	weight = 0 // never rolled by the mission subsystem; outposts post these themselves
+	safe_work = TRUE
 	value_min = 0
 	value_max = 0
 	duration = 40 MINUTES
@@ -368,7 +371,7 @@
 	/// Total value, fixed at posting; null on work outside this reward channel.
 	var/contract_quote
 	var/contract_no_vouchers = FALSE
-	/// May be the fitter while shop remains the outfitter that receives favor.
+	/// May be the fitter while shop remains the outfitter that posted the job.
 	var/datum/outpost_shop/contract_reward_shop
 	/// Quoted item path -> live core SKU and its fixed value.
 	var/list/contract_stock
