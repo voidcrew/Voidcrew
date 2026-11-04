@@ -421,3 +421,5 @@
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_CARGO
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
+// VOIDCREW EDIT: research exposes ship-buildable bitrunning boards; implementation in voidcrew/edits/modules/research/designs/comp_board_designs.dm.

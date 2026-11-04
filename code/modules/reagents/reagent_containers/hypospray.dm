@@ -143,7 +143,7 @@
 
 // VOIDCREW EDIT START - PR #284: Port MonkeStation soft-crit item use.
 /obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
-	if(user.can_perform_action(src, FORBID_TELEKINESIS_REACH|ALLOW_RESTING|ALLOW_SOFT_CRIT))
+	if(user.can_perform_action(src, FORBID_TELEKINESIS_REACH|ALLOW_RESTING|ALLOW_SOFT_CRIT)) // VOIDCREW EDIT: soft crit interaction: permit selected actions while retaining other incapacitation checks (voidcrew/edits/modules/mob/mob.dm)
 		inject(user, user)
 
 // VOIDCREW EDIT END

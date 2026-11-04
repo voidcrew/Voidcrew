@@ -339,7 +339,7 @@
 
 /turf/open/TakeTemperature(temp)
 	var/datum/gas_mixture/our_air = materialize_planet_air() // VOIDCREW EDIT: shared planetary mix
-	our_air.temperature += temp
+	our_air.temperature += temp // VOIDCREW EDIT: planetary shared air: materialize a private mixture before writes (voidcrew/edits/planetary_shared_air.dm)
 	air_update_turf(FALSE, FALSE)
 
 /turf/open/proc/freeze_turf()

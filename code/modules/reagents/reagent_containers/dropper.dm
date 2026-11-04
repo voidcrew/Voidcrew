@@ -65,7 +65,7 @@
 
 		trans = round(reagents.trans_to(target, amount_per_transfer_from_this, transferred_by = user), CHEMICAL_VOLUME_ROUNDING)
 		to_chat(user, span_notice("You transfer [trans] unit\s of the solution."))
-		if(trans)
+		if(trans) // VOIDCREW EDIT: Voidcrew reagent audio: run after-pour feedback only after a successful transfer (voidcrew/modules/chemistry)
 			after_pour(trans, target, user) //VOIDCREW EDIT ADDITION: dropper sounds
 		update_appearance()
 		target.update_appearance()

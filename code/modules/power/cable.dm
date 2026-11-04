@@ -385,7 +385,6 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(
 		propagate_network(O, newPN)//... and propagates it to the other side of the cable
 
 //Makes a new network for the cable and propgates it. If we already have one, just die
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/cable/proc/propagate_if_no_network()
 	if(powernet)
 		return
@@ -397,9 +396,7 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(
 // neighbours. Only for callers about to cut EVERY cable on the net (a shuttle move):
 // the timers would rebuild nets over cables mid-transplant, and propagate_if_no_network()
 // then trusts those half-built nets after landing, leaving the grid permanently split.
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
-/obj/structure/cable/proc/cut_cable_from_powernet(remove = TRUE, rebuild_neighbor_networks = TRUE)
+/obj/structure/cable/proc/cut_cable_from_powernet(remove = TRUE, rebuild_neighbor_networks = TRUE) // VOIDCREW EDIT: shuttle power integration: defer neighbor network rebuilding until every cable has moved (voidcrew/edits/machinery/power.dm)
 	if(!powernet)
 		return
 
@@ -412,11 +409,13 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(
 		P.disconnect_from_network()
 
 	var/list/P_list = list()
+	// VOIDCREW EDIT START - shuttle power integration: defer neighbor network rebuilding until every cable has moved (voidcrew/edits/machinery/power.dm)
 	if(rebuild_neighbor_networks)
 		for(var/dir_check in GLOB.cardinals)
 			if(linked_dirs & dir_check)
 				T1 = get_step(loc, dir_check)
 				P_list += locate(/obj/structure/cable) in T1
+	// VOIDCREW EDIT END
 
 	// remove the cut cable from its turf and powernet, so that it doesn't get count in propagate_network worklist
 	if(remove)
@@ -438,7 +437,6 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(
 // Definitions
 ////////////////////////////////
 
-// VOIDCREW EDIT END
 #define CABLE_RESTRAINTS_COST 15
 
 /obj/item/stack/cable_coil

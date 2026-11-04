@@ -1,33 +1,11 @@
 GLOBAL_VAR_INIT(total_runtimes, GLOB.total_runtimes || 0)
 GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 
-/*
- * VOIDCREW ADDITION - runtime flood breaker state.
- *
- * Plain numbers on purpose. The failure these guard against (round-7, 2026-08-16) is one
- * where EVERY list operation in the world starts throwing "bad list" - a boot-time,
- * never-mutated list like the config subsystem's entries_by_type failed a plain read,
- * as did client keybinding caches, SSgarbage's queues and this handler's own static
- * error_last_seen. Anything here that touched a list or a config entry would throw on the
- * way to the breaker and hand control back to BYOND's built-in handler, which is what
- * actually wrote 337 MB of dd.log in 46 seconds. GLOB var reads are a global slot lookup
- * and kept working throughout (GLOB.total_runtimes counted the whole flood), so the
- * breaker is built out of those and nothing else.
- */
-/// world.time-derived index of the flood window we are currently counting in.
-GLOBAL_VAR_INIT(error_flood_window, 0)
-/// Runtimes handled so far in this window.
-GLOBAL_VAR_INIT(error_flood_count, 0)
-/// Runtimes dropped by the breaker in this window.
-GLOBAL_VAR_INIT(error_flood_suppressed, 0)
-/// While world.time is below this, world/Error emits one flat line per runtime and does
-/// nothing else - set when the handler itself threw. See the catch in world/Error.
-GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
-
 #ifdef USE_CUSTOM_ERROR_HANDLER
 #define ERROR_USEFUL_LEN 2
 
 /// Length of a flood-breaker window, in deciseconds.
+// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 #define ERROR_FLOOD_WINDOW 10
 /// Runtimes fully handled per ERROR_FLOOD_WINDOW before the breaker starts dropping them.
 /// Normal play sits under one runtime a second; round-7's flood ran at 81,000 log lines a
@@ -39,6 +17,7 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 /// How long world/Error stays on its flat one-line path after throwing while handling a
 /// runtime. Short, because a single unlucky exception should not blind the log for long.
 #define ERROR_HANDLER_DEGRADE_TIME 50
+// VOIDCREW EDIT END
 
 /world/Error(exception/E, datum/e_src)
 	GLOB.total_runtimes++
@@ -101,6 +80,7 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 	//
 	// Off under UNIT_TESTS: a dropped runtime never reaches GLOB.current_test.Fail(), and
 	// a test suite that silently stops failing is worse than a slow one.
+// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 #ifndef UNIT_TESTS
 	var/flood_window = round(world.time / ERROR_FLOOD_WINDOW)
 	if(flood_window != GLOB.error_flood_window)
@@ -115,6 +95,7 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 		GLOB.error_flood_suppressed++
 		return
 #endif
+// VOIDCREW EDIT END
 
 	var/static/regex/stack_workaround
 	if(isnull(stack_workaround))
@@ -128,11 +109,13 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 
 	// VOIDCREW ADDITION: the handler threw recently, so don't try the rich path again yet -
 	// just get the runtime on the record in one line. See the catch below.
+// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 #ifndef UNIT_TESTS
 	if(world.time < GLOB.error_handler_degraded_until)
 		SEND_TEXT(world.log, "\[[time2text(world.timeofday, "hh:mm:ss")]\] Runtime in [E.file],[E.line]: [E] (handler degraded)")
 		return
 #endif
+// VOIDCREW EDIT END
 
 	// VOIDCREW ADDITION: everything from here down touches lists, the config subsystem, the
 	// error cache and the structured logger, and every one of those threw in round-7. A
@@ -140,6 +123,7 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 	// handler, which prints the full call stack of the ORIGINAL error once per unwound
 	// frame - roughly a twenty-line block per runtime with no rate limit of any kind
 	// attached to it. Catch it here and fall back to a flat line instead.
+	// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 	try
 		if(stack_workaround.Find(E.name))
 			if(length(stack_workaround.group) > 0)
@@ -179,9 +163,11 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 			configured_error_limit = initial(CE.default)
 			CE = /datum/config_entry/number/error_silence_time
 			configured_error_silence_time = initial(CE.default)
+	// VOIDCREW EDIT END
 
 
 		//Each occurence of a unique error adds to its cooldown time...
+		// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 		cooldown = max(0, cooldown - (world.time - last_seen)) + configured_error_cooldown
 		// ... which is used to silence an error if it occurs too often, too fast
 		if(cooldown > configured_error_cooldown * configured_error_limit)
@@ -245,17 +231,23 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 		SEND_TEXT(world.log, main_line)
 		for(var/line in desclines)
 			SEND_TEXT(world.log, line)
+		// VOIDCREW EDIT END
 
 #ifdef UNIT_TESTS
+		// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 		if(GLOB.current_test)
 			//good day, sir
 			GLOB.current_test.Fail("[main_line]\n[desclines.Join("\n")]", file = E.file, line = E.line)
+		// VOIDCREW EDIT END
 #endif
 
+		// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 		if(Debugger?.enabled)
 			to_chat(world, span_alertwarning("[main_line]"), type = MESSAGE_TYPE_DEBUG)
+		// VOIDCREW EDIT END
 
 		// This writes the regular format (unwrapping newlines and inserting timestamps as needed).
+		// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 		log_runtime("runtime error: [E.name]\n[E.desc]")
 	catch(var/exception/handler_failure)
 		// Two flat lines and a short degrade window. Nothing in here indexes a list, calls
@@ -265,12 +257,15 @@ GLOBAL_VAR_INIT(error_handler_degraded_until, 0)
 		GLOB.error_handler_degraded_until = world.time + ERROR_HANDLER_DEGRADE_TIME
 		SEND_TEXT(world.log, "\[[time2text(world.timeofday, "hh:mm:ss")]\] Runtime in [E.file],[E.line]: [E]")
 		SEND_TEXT(world.log, "  RUNTIME HANDLER FAILED reporting the above ([handler_failure]) - flat logging for [ERROR_HANDLER_DEGRADE_TIME / 10] seconds.")
+		// VOIDCREW EDIT END
 #endif
 
 #undef ERROR_USEFUL_LEN
+// VOIDCREW EDIT START: Bound runtime flood handling and keep flat logging available if the rich handler fails.
 #undef ERROR_FLOOD_WINDOW
 #undef ERROR_FLOOD_LIMIT
 #undef ERROR_HANDLER_DEGRADE_TIME
+// VOIDCREW EDIT END
 
 /// Exists to trigger infinite recursion runtimes in testing
 /proc/recurse(times)

@@ -30,8 +30,10 @@ All ShuttleMove procs go here
 	// standing behind the one we just shoved: it is skipped here, the hull is copied on
 	// top of it in takeoff(), and it ends up sitting on the deck. Iterate a snapshot.
 	for(var/atom/movable/thing as anything in contents.Copy())
+		// VOIDCREW EDIT START: shuttle snapshots landing occupants before deleting or moving them.
 		if(QDELETED(thing) || thing.loc != src)
 			continue
+		// VOIDCREW EDIT END
 		if(thing.resistance_flags & SHUTTLE_CRUSH_PROOF)
 			continue
 		if(isliving(thing))
@@ -90,7 +92,7 @@ All ShuttleMove procs go here
 		// guard: a berth inside a site footprint or a transit/turf reservation is that
 		// owner's ground and gets swept by ITS teardown; see return_to_uninitialized_space().
 		if(isspaceturf(oldT) && !istype(oldT, /turf/open/space/basic) && isnull(map_region_for_turf(oldT)))
-			oldT.return_to_uninitialized_space()
+			oldT.return_to_uninitialized_space() // VOIDCREW EDIT: shuttle returns unclaimed departure space to an uninitialized turf.
 
 	if(rotation)
 		shuttleRotate(rotation) //see shuttle_rotate.dm
@@ -145,7 +147,7 @@ All ShuttleMove procs go here
 	return TRUE
 
 /atom/movable/proc/lateShuttleMove(turf/oldT, list/movement_force, move_dir)
-	// VOIDCREW ADDITION: sent before the anchored early-return so bolted machinery hears it.
+	// VOIDCREW EDIT ADDITION: sent before the anchored early-return so bolted machinery hears it.
 	SEND_SIGNAL(src, COMSIG_ATOM_LATE_SHUTTLE_MOVE, oldT, movement_force, move_dir)
 	if(!movement_force || anchored)
 		return
@@ -389,6 +391,7 @@ All ShuttleMove procs go here
 	// needs MOVE_CONTENTS. Any foreign cable that ends up inside the move rectangle (a
 	// co-tenant's grid on a packed z-level, ground the hull is merely parked on) is
 	// therefore killed silently and permanently by a ship taking off next to it.
+	// VOIDCREW EDIT START: shuttle preserves hull powernets and clears the landing footprint safely.
 	if(!(. & MOVE_AREA))
 		return
 	// Voidcrew: a powernet is only a set of cables and machines - nothing in it is
@@ -405,9 +408,15 @@ All ShuttleMove procs go here
 	// pinning half-built powernets onto cables that afterShuttleMove() then trusts.
 	cut_cable_from_powernet(FALSE, FALSE)
 
+	// VOIDCREW EDIT END
+
+// VOIDCREW EDIT: shuttle rotates cable direction bits with the hull; implementation in voidcrew/edits/modules/shuttle/mobile_port/shuttle_move_callbacks.dm.
+
 /obj/structure/cable/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	Connect_cable(TRUE)
+
+// VOIDCREW EDIT: shuttle rebuilds power after every cable has landed; implementation in voidcrew/edits/modules/shuttle/mobile_port/shuttle_move_callbacks.dm.
 
 /obj/machinery/power/shuttle_engine/hypotheticalShuttleMove(move_mode)
 	. = ..()

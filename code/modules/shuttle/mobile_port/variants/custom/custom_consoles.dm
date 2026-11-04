@@ -45,6 +45,7 @@
 	jump_to_ports = list("whiteship_home" = 1)
 	designate_time = 100
 	circuit = /obj/item/circuitboard/computer/shuttle/docker
+	// VOIDCREW EDIT REMOVAL: shuttle disables unsupported linked-z camera range.
 	//zlink_range = 1 // TODO: Fix zlink_range
 	var/static/list/connections = list(COMSIG_TURF_ADDED_TO_SHUTTLE = PROC_REF(on_loc_added_to_shuttle))
 

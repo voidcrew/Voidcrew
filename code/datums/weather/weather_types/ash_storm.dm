@@ -69,6 +69,7 @@
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/ash_storm/end()
 	GLOB.ash_storm_sounds -= weak_sounds
+	// VOIDCREW EDIT: Remove only this storm sounds when concurrent sites have ash storms.
 	GLOB.ash_storm_sounds -= strong_sounds
 	for(var/turf/open/misc/asteroid/basalt/basalt as anything in GLOB.dug_up_basalt)
 		if(!(basalt.loc in impacted_areas) || !(basalt.z in impacted_z_levels))

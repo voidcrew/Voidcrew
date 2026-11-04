@@ -1021,7 +1021,7 @@
 
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/structure/table/optable/make_climbable()
-	AddComponent(/datum/component/climb_walkable)
+	AddComponent(/datum/component/climb_walkable) // VOIDCREW EDIT: movable fixtures integration: make operating tables climbable (voidcrew/edits/objects/structures/movable_fixtures.dm)
 	AddElement(/datum/element/elevation, pixel_shift = 12)
 
 ///Align the mob with the table when buckled.

@@ -21,8 +21,6 @@
 	#define COMPONENT_MOVE_CONTENTS MOVE_CONTENTS
 /// From base of /atom/movable/afterShuttleMove (turf/oldT)
 #define COMSIG_ATOM_AFTER_SHUTTLE_MOVE "movable_after_shuttle_move"
-/// VOIDCREW ADDITION. From base of /atom/movable/lateShuttleMove, once every moved atom has landed and rotated: (turf/oldT, list/movement_force, move_dir)
-#define COMSIG_ATOM_LATE_SHUTTLE_MOVE "movable_late_shuttle_move"
 ///called on a movable (NOT living) when it starts pulling (atom/movable/pulled, state, force)
 #define COMSIG_ATOM_START_PULL "movable_start_pull"
 /// called on /atom when something attempts to pass through it (atom/movable/source, atom/movable/passing, dir)

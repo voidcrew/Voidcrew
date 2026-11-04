@@ -195,7 +195,7 @@
 	// (see CONNECT_TO_RND_SERVER_ROUNDSTART), so linked_web can legitimately be null; the ALWAYS_ACTIVE
 	// branch below reads linked_web.available_experiments and would runtime on it.
 	if (isnull(linked_web))
-		return FALSE
+		return FALSE // VOIDCREW EDIT: research allows experiment handlers without a linked ship techweb.
 	// Check if an experiment is selected
 	if (selected_experiment == null && !(config_flags & EXPERIMENT_CONFIG_ALWAYS_ACTIVE))
 		return FALSE

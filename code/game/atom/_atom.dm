@@ -829,15 +829,6 @@
 /atom/MouseEntered(location, control, params)
 	SSmouse_entered.hovers[usr.client] = src
 
-/atom/MouseExited(location, control, params)
-	var/client/hovering_client = usr?.client
-	if(!hovering_client)
-		return
-	// The pointer can leave before the deferred MouseEntered has been processed.
-	if(SSmouse_entered.hovers[hovering_client] == src)
-		SSmouse_entered.hovers[hovering_client] = null
-	hovering_client.mob?.hud_used?.screentip_text?.clear_hover(src)
-
 /// Fired whenever this atom is the most recent to be hovered over in the tick.
 /// Preferred over MouseEntered if you do not need information such as the position of the mouse.
 /// Especially because this is deferred over a tick, do not trust that `client` is not null.
@@ -855,10 +846,10 @@
 	if(!active_hud)
 		return
 
-	var/hover_version = active_hud.screentip_text.begin_hover(src)
+	var/hover_version = active_hud.screentip_text.begin_hover(src) // VOIDCREW EDIT: screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 	var/screentips_enabled = active_hud.screentips_enabled
 	if(screentips_enabled == SCREENTIP_PREFERENCE_DISABLED || flags_1 & NO_SCREENTIPS_1)
-		active_hud.screentip_text.set_hover_text("")
+		active_hud.screentip_text.set_hover_text("") // VOIDCREW EDIT: screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 		return
 
 	var/lmb_rmb_line = ""
@@ -939,27 +930,33 @@
 				if(extra_lines)
 					extra_context = "<br><span class='subcontext'>[lmb_rmb_line][ctrl_lmb_ctrl_rmb_line][alt_lmb_alt_rmb_line][shift_lmb_ctrl_shift_lmb_line]</span>"
 
+	// VOIDCREW EDIT START - screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 	if (extra_context == "" && (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY || !length(used_name)))
 		active_hud.screentip_text.set_hover_text("")
 		return
 	//We inline a MAPTEXT() here, because there's no good way to statically add to a string like this
 	var/new_maptext = "<span class='context' style='text-align: center; color: [active_hud.screentip_color]'>[used_name][extra_context]</span>"
+	// VOIDCREW EDIT END
 
 	if (length(used_name) * 10 > active_hud.screentip_text.maptext_width)
-		INVOKE_ASYNC(src, PROC_REF(set_hover_maptext), client, active_hud, new_maptext, hover_version)
+		INVOKE_ASYNC(src, PROC_REF(set_hover_maptext), client, active_hud, new_maptext, hover_version) // VOIDCREW EDIT: screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 		return
 
-	active_hud.screentip_text.set_hover_text(new_maptext, 10 - (extra_lines > 0 ? 11 + 9 * (extra_lines - 1): 0))
+	active_hud.screentip_text.set_hover_text(new_maptext, 10 - (extra_lines > 0 ? 11 + 9 * (extra_lines - 1): 0)) // VOIDCREW EDIT: screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 
+// VOIDCREW EDIT START - screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 /atom/proc/set_hover_maptext(client/client, datum/hud/active_hud, new_maptext, hover_version)
 	var/atom/movable/screen/screentip/screentip = active_hud?.screentip_text
 	if(!client || QDELETED(screentip) || screentip.hover_version != hover_version)
 		return
+// VOIDCREW EDIT END
 	var/map_height
+	// VOIDCREW EDIT START - screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 	WXH_TO_HEIGHT(client.MeasureText(new_maptext, null, screentip.maptext_width), map_height)
 	if(!client || QDELETED(screentip) || screentip.hover_version != hover_version)
 		return
 	screentip.set_hover_text(new_maptext, 26 - map_height)
+	// VOIDCREW EDIT END
 
 /**
  * This proc is used for telling whether something can pass by this atom in a given direction, for use by the pathfinding system.

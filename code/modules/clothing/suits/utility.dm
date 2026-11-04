@@ -175,9 +175,11 @@
 /obj/item/clothing/head/utility/radiation
 	name = "radiation hood"
 	icon_state = "rad"
+	// VOIDCREW EDIT START - Voidcrew clothing sprites: use dedicated inhand states from voidcrew/icons/mob/inhands/clothing
 	inhand_icon_state = "rad"
 	lefthand_file = 'voidcrew/icons/mob/inhands/clothing/radiation_hood_lefthand.dmi'
 	righthand_file = 'voidcrew/icons/mob/inhands/clothing/radiation_hood_righthand.dmi'
+	// VOIDCREW EDIT END
 	desc = "A hood with radiation protective properties. The label reads, 'Made with lead. Please do not consume insulation.'"
 	clothing_flags = THICKMATERIAL | SNUG_FIT
 	flags_inv = HIDEMASK|HIDEEARS|HIDEFACE|HIDEEYES|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT

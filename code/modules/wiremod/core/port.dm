@@ -123,14 +123,6 @@
  * Sends a signal whenever the output value is changed
  */
 /datum/port/output
-	//VOIDCREW EDIT ADDITION: singular outputs, for the chemistry circuits.
-	//VOIDCREW EDIT END
-
-//VOIDCREW EDIT ADDITION: an output only one input may connect to.
-//The chemistry components move a *quantity* of reagent down a wire rather than a
-//readable value, so fanning one output into two inputs would silently duplicate the
-//payload. Capping the fan-out at one makes that impossible to wire up in the first place.
-//VOIDCREW EDIT END
 
 /**
  * Disconnects a port from all other ports.
@@ -195,7 +187,7 @@
 /datum/port/input/proc/connect(datum/port/output/output)
 	if(output in connected_ports)
 		return
-	//VOIDCREW EDIT ADDITION: refuse the connection if the output is already at its fan-out cap.
+	//VOIDCREW EDIT ADDITION START: circuits - refuse the connection if the output is already at its fan-out cap.
 	if(output.connected_inputs >= output.max_inputs)
 		return
 	output.connected_inputs++

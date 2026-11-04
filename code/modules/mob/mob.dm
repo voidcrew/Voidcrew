@@ -757,9 +757,11 @@
 	if(ismecha(loc))
 		return
 
+	// VOIDCREW EDIT START - soft crit interaction: permit selected actions while retaining other incapacitation checks (voidcrew/edits/modules/mob/mob.dm)
 	if(incapacitated_except_softcrit() || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
 		return
 	if(stat == SOFT_CRIT && next_move > world.time)
+	// VOIDCREW EDIT END
 		return
 
 	var/obj/item/I = get_active_held_item()
@@ -806,6 +808,7 @@
 		return
 
 	usr.log_message("used the respawn button.", LOG_GAME)
+// VOIDCREW EDIT REMOVAL - Voidcrew mob interaction: omit the generic roleplay admonition (voidcrew/edits/mobs)
 
 	if(!client)
 		usr.log_message("respawn failed due to disconnect.", LOG_GAME)

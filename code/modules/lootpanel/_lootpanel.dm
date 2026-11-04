@@ -28,7 +28,7 @@
 	// nothing removed it - a client who alt-clicked a cluttered tile and disconnected
 	// before the backlog drained left their panel pinned there
 	SSlooting.backlog -= src
-	SSlooting.processing -= src
+	SSlooting.processing -= src // VOIDCREW EDIT: storage removes deleted loot panels from subsystem queues.
 	owner = null
 	source_turf = null
 

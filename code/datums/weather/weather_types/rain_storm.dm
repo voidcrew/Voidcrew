@@ -34,6 +34,7 @@
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/weather/rain_storm/telegraph()
+	// VOIDCREW EDIT REMOVAL: Limit planetary rain work and preserve independent storm sounds across sites.
 	for(var/area/impacted_area as anything in impacted_areas)
 		start_sounds[impacted_area] = /datum/looping_sound/rain/start
 		middle_sounds[impacted_area] = /datum/looping_sound/rain/middle
@@ -79,6 +80,7 @@
 	weather_temperature = 455 // just hot enough to apply the fried effect
 	whitelist_weather_reagents = list(/datum/reagent/consumable/nutriment/fat/oil)
 	weather_flags = (WEATHER_TURFS | WEATHER_INDOORS)
+	// VOIDCREW EDIT: Limit planetary rain work and preserve independent storm sounds across sites.
 	turf_act_containers_only = FALSE // admeme event on station z-levels, wants the full frying splash
 	probability = 0 // admeme event
 
@@ -131,6 +133,7 @@
 	whitelist_weather_reagents = list()
 	probability = 0 // shouldn't spawn normally
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_INDOORS | WEATHER_BAROMETER)
+	// VOIDCREW EDIT: Limit planetary rain work and preserve independent storm sounds across sites.
 	turf_act_containers_only = FALSE // wizard event on the station z, the chaotic reagent splashing is the whole point
 
 // VOIDCREW EDIT END

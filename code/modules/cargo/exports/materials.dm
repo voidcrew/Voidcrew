@@ -33,14 +33,16 @@
 // Materials. Static materials exist as parent types, while materials subject to the stock market have a fluid cost as determined by material/market types
 // If you're adding a new material to the stock market, make sure its export type is added here.
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
+// VOIDCREW EDIT: cargo shares the plasma resale ceiling with stock blocks; implementation in voidcrew/edits/modules/cargo/exports/materials.dm.
+
 /datum/export/material/plasma
-	cost = 10
+	cost = 10 // VOIDCREW EDIT: cargo caps plasma resale across loose and market exports.
 	k_elasticity = 0
 	material_id = /datum/material/plasma
 	message = "cm3 of plasma"
 
-// VOIDCREW EDIT END
+// VOIDCREW EDIT: cargo applies the plasma resale ceiling to loose material; implementation in voidcrew/edits/modules/cargo/exports/materials.dm.
+
 /datum/export/material/bananium
 	cost = CARGO_CRATE_VALUE * 2
 	material_id = /datum/material/bananium
@@ -172,9 +174,6 @@
 		/obj/item/stock_block,
 	) //For whatever reason, bluespace crystals are not a mineral
 
-// VOIDCREW EDIT: plasma trades on the materials market here (see basemats.dm).
-// Direct plasma is matched by the earlier datum. Blocks must obey its same
-// ceiling, including a fixed quote captured before prices or balance changed.
 /datum/export/material/market/iron
 	message = "cm3 of iron"
 	material_id = /datum/material/iron

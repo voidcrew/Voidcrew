@@ -70,8 +70,10 @@
 		return
 	atom_integrity = new_value
 	// VOIDCREW: record supported ship fixtures only when they actually lose integrity.
+	// VOIDCREW EDIT START - ship_repairs: distinguish damaged fixtures from deliberate dismantling
 	if(new_value < old_value)
 		record_ship_fixture_damage(src)
+	// VOIDCREW EDIT END
 	on_update_integrity(old_value, new_value)
 	return new_value
 

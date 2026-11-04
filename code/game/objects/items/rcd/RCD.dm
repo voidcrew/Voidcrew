@@ -287,7 +287,7 @@
 	var/obj/effect/constructing_effect/rcd_effect = new(get_turf(target), delay, rcd_results["[RCD_DESIGN_MODE]"], construction_upgrades)
 
 	//resource & structure placement sanity checks before & after delay along with beam effects
-	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user))
+	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 		qdel(rcd_effect)
 		return FALSE
 	var/beam
@@ -301,15 +301,15 @@
 		return FALSE
 	if (QDELETED(rcd_effect))
 		return FALSE
-	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user))
+	if(!check_rcd_resources(rcd_results, user) || !can_place(target, rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 		qdel(rcd_effect)
 		return FALSE
 
-	if(!use_rcd_resources(rcd_results, user))
+	if(!use_rcd_resources(rcd_results, user)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 		qdel(rcd_effect)
 		return FALSE
 	activate()
-	if(!apply_rcd_action(target, user, rcd_results))
+	if(!apply_rcd_action(target, user, rcd_results)) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 		qdel(rcd_effect)
 		return FALSE
 	playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
@@ -339,9 +339,9 @@
 	for(var/key in electronics_data)
 		data[key] = electronics_data[key]
 
-	var/list/design_tree = get_rcd_designs()
+	var/list/design_tree = get_rcd_designs() // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 	data["root_categories"] = list()
-	for(var/category in design_tree)
+	for(var/category in design_tree) // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 		data["root_categories"] += category
 	data["selected_root"] = root_category
 
@@ -390,7 +390,7 @@
 	switch(action)
 		if("root_category")
 			var/new_root = params["root_category"]
-			if(get_rcd_designs()[new_root] != null) //is a valid category
+			if(get_rcd_designs()[new_root] != null) //is a valid category // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 				root_category = new_root
 				update_static_data_for_all_viewers()
 
@@ -398,7 +398,7 @@
 			//read and validate params from UI
 			var/category_name = params["category"]
 			var/index = params["index"]
-			var/list/root = get_rcd_designs()[root_category]
+			var/list/root = get_rcd_designs()[root_category] // VOIDCREW EDIT: shuttle construction: route captured designs and remote building through construction hooks (voidcrew/edits/game/objects/items/rcd/RCD.dm)
 			if(root == null) //not a valid root
 				return TRUE
 			var/list/category = root[category_name]
