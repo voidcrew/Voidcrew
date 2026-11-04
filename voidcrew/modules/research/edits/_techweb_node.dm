@@ -30,3 +30,16 @@
 
 /datum/techweb_node/unregulated_bluespace
 	zone_permission = ZONE_PERMISSION_ELITE
+
+// Vex sells these boards at the same step; the printers shouldn't be an open back door
+/datum/techweb_node/ship_combat_shields
+	zone_permission = ZONE_PERMISSION_ADVANCED
+
+/datum/techweb_node/ship_combat_interdictor
+	zone_permission = ZONE_PERMISSION_ADVANCED
+
+/datum/techweb_node/ship_combat_siphon
+	zone_permission = ZONE_PERMISSION_ADVANCED
+
+/datum/techweb_node/ship_combat_ew
+	zone_permission = ZONE_PERMISSION_ADVANCED

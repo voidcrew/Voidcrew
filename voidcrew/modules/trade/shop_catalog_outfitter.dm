@@ -267,6 +267,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/outfitter/laser_gun
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/laser
 	price_credits = 1500
@@ -298,6 +299,7 @@
 	stock_max = 20
 
 /datum/shop_sku/outfitter/smg_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	name = "c-20r magazine"
 	desc = "A loaded .45 magazine for a C-20r."
@@ -307,6 +309,7 @@
 	stock_max = 20
 
 /datum/shop_sku/outfitter/wt550_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	name = "wt-550 magazine"
 	desc = "A loaded 4.6x30mm magazine for a WT-550. Armor-piercing, and priced accordingly."

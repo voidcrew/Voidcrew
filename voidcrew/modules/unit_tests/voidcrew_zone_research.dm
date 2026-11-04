@@ -92,6 +92,10 @@
 		/datum/techweb_node/beam_weapons = 2,
 		/datum/techweb_node/syndicate_basic = 3,
 		/datum/techweb_node/unregulated_bluespace = 3,
+		/datum/techweb_node/ship_combat_shields = 2,
+		/datum/techweb_node/ship_combat_interdictor = 2,
+		/datum/techweb_node/ship_combat_siphon = 2,
+		/datum/techweb_node/ship_combat_ew = 2,
 	)
 	var/gated = 0
 	for(var/node_id in SSresearch.techweb_nodes)
@@ -99,7 +103,7 @@
 		TEST_ASSERT_EQUAL(node.zone_permission, expected[node.type] || 0, "Unexpected standing requirement on [node_id]")
 		if(node.zone_permission)
 			gated++
-	TEST_ASSERT_EQUAL(gated, 14, "The direct-research gate must cover exactly fourteen nodes")
+	TEST_ASSERT_EQUAL(gated, 18, "The direct-research gate must cover exactly eighteen nodes")
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("nanite_military").type, /datum/techweb_node/nanite_combat, "Military nanites changed id")
 
 /datum/unit_test/voidcrew_zone_research/direct/Run()
