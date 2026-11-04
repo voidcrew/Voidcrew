@@ -42,9 +42,9 @@ type StockState = {
   favor_locked: BooleanLike;
 };
 
-type FavorStanding = {
-  tier: number;
-  tier_name: string;
+type Reputation = {
+  total: number;
+  next: number | null;
 };
 
 type LedgerEntry = {
@@ -82,7 +82,7 @@ type Data = {
   ledger_states: LedgerState[];
   crew_ships: { ref: string; name: string }[];
   crew_ship_ref: string | null;
-  favor?: FavorStanding | null;
+  reputation?: Reputation | null;
 };
 
 const SHELF_TAGS = {
@@ -91,17 +91,16 @@ const SHELF_TAGS = {
   favor: { label: 'BACK ROOM', color: 'orange' },
 } as const;
 
-/** The crew's standing with this outpost, named as such */
-const ReputationLabel = (props: { favor: FavorStanding }) => {
-  const { favor } = props;
-  const tierColor =
-    favor.tier >= 3 ? 'orange' : favor.tier >= 1 ? 'good' : 'label';
+/** The crew's one number, and the next step if there is one */
+const ReputationLabel = (props: { reputation: Reputation }) => {
+  const { reputation } = props;
   return (
     <Box inline nowrap color="label" fontSize={1} fontWeight="normal">
       Reputation:{' '}
-      <Box inline bold color={tierColor}>
-        {favor.tier_name}
+      <Box inline bold color="good">
+        {reputation.total}
       </Box>
+      {reputation.next ? ` (next at ${reputation.next})` : ''}
     </Box>
   );
 };
@@ -156,8 +155,7 @@ const PriceTag = (props: { sku: CatalogSku; finalCredits: number }) => {
       </Box>
     );
   }
-  // Struck-through whenever the buyer's real price beats the sticker,
-  // authored special or their crew's favor discount, whichever applied
+  // Struck-through whenever the buyer's real price beats the sticker
   const discounted = sku.price_credits > 0 && finalCredits < sku.price_credits;
   return (
     <Box inline textAlign="right">
@@ -445,7 +443,7 @@ export const TraderShop = (props) => {
     ledger = [],
     crew_ships = [],
     crew_ship_ref,
-    favor,
+    reputation,
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
@@ -516,9 +514,9 @@ export const TraderShop = (props) => {
                       )}
                     </Tabs>
                   </Stack.Item>
-                  {!!favor && (
+                  {!!reputation && (
                     <Stack.Item>
-                      <ReputationLabel favor={favor} />
+                      <ReputationLabel reputation={reputation} />
                     </Stack.Item>
                   )}
                   <Stack.Item>

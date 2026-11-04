@@ -773,7 +773,7 @@
 	console.board_add_wanted_data(data, ship, null)
 	TEST_ASSERT(islist(data["wanted"]), "There is no wanted list")
 	var/list/refs = list()
-	var/list/contract = list("ref", "name", "alias", "species", "sex", "tier", "terms", "crime", "place", "zone", "mugshot_id", "value", "vouchers", "time_left", "private", "hunting_by_us", "hunt_refusal", "can_turn_in", "turn_in_refusal", "photo_old")
+	var/list/contract = list("ref", "name", "alias", "species", "sex", "tier", "terms", "crime", "place", "zone", "mugshot_id", "value", "vouchers", "time_left", "private", "hunting_by_us", "hunt_refusal", "can_turn_in", "turn_in_refusal", "photo_old", "reputation_gain")
 	for(var/list/entry as anything in data["wanted"])
 		refs += entry["ref"]
 		for(var/key in contract)

@@ -138,7 +138,7 @@ To share research with a ship, build an **R&D relay** aboard it. Print the relay
 
 Any number of ship relays can share the outpost server's **tech tree and research points**, including after undocking. Research earned or purchased at one connected lab is available at the others. Each ship keeps its own bank account, separate research disk, and fabrication materials.
 
-Outpost Management lists invitations and connections. Cancel an invitation or disconnect an individual relay there; the other fleet ships keep their access. Ship crew can also click their relay empty-handed to disconnect. You cannot download a technology disk through the relay. Reputation requirements for buying new research use the crew standing of the source server. A relay or imported disk does not grant your crew shopping or contract access.
+Outpost Management lists invitations and connections. Cancel an invitation or disconnect an individual relay there; the other fleet ships keep their access. Ship crew can also click their relay empty-handed to disconnect. You cannot download a technology disk through the relay. Reputation requirements for buying new research use the reputation of the source server's crew. A relay or imported disk does not grant your crew shopping or contract access.
 
 Keep the relay and outpost server powered. After a power outage, restore power and relink equipment. Removing the source disk, replacing an endpoint, or changing the outpost owner requires a new invitation. A change of ship captain keeps the connection intact.
 

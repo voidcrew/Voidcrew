@@ -27,7 +27,7 @@ Much of it shows. Plated arms, leg rigs, dermal weaves and spine lattices draw o
 
 ## The catalog
 
-Prices are Splice's, stock is limited per round, and load is the neural cost. Military and legend stock also requires elite [zone reputation](zone-reputation.md). "Pair" ware is sold as a cased set and installed one organ per arm.
+Prices are Splice's, stock is limited per round, and load is the neural cost. Military and legend stock also requires 22 [reputation](zone-reputation.md). "Pair" ware is sold as a cased set and installed one organ per arm.
 
 ### Tier 1: Street chrome (credits)
 

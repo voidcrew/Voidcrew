@@ -603,6 +603,7 @@
 		"hunting_by_us" = is_hunting(ship),
 		"hunt_refusal" = hunt_refusal(ship),
 		"photo_old" = !!record?.old_look,
+		"reputation_gain" = board_reputation_worth(ship?.get_crew_record()),
 		"can_turn_in" = preview[1],
 		"turn_in_refusal" = board_preview_refusal(preview, ship),
 	)

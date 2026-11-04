@@ -11,4 +11,4 @@ This wiki covers what's *different* about Voidcrew: flying and fighting your shi
 
 New to the server? Start with the [New Player Guide](new-player-guide.md). Coming from /tg/station? Read [Coming from /tg/](coming-from-tg.md) first.
 
-Read [Crews & Zone Reputation](zone-reputation.md) for progression, [Weapons & Gear](weapons-and-gear.md) for equipment sources, and [Nanites & Revival](nanites-and-revival.md) for implant capacity and medical limits.
+Read [Crews & Reputation](zone-reputation.md) for progression, [Weapons & Gear](weapons-and-gear.md) for equipment sources, and [Nanites & Revival](nanites-and-revival.md) for implant capacity and medical limits.

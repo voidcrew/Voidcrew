@@ -41,7 +41,7 @@ Voidcrew adds a vocabulary that /tg/station does not have, and most of it turns 
 | **Bank machine** | Holds the ship's shared account. Cargo and traders draw on it. See [Money and Trade](money-and-trade.md). |
 | **Mission board** | The console that offers and tracks contracts. See [Missions](missions.md). |
 | **Mission pad** | The pad that sits beside the board. Put mission items on it to hand them in, and rewards appear on it. |
-| **Zone reputation** | Crew standing earned through varied dangerous field work. Opens contracts, trader stock and some research; survives losing a hull. See [Crews & Zone Reputation](zone-reputation.md). |
+| **Reputation** | One number per crew, raised by finishing jobs. Opens contracts, trader stock and some research; survives losing a hull. See [Crews & Reputation](zone-reputation.md). |
 | **Techweb** | Your ship's research tree. It lives on the source code disk in its R&D server and can be copied or shared. See [Research](research.md). |
 | **Research points** | The currency of the techweb, earned by experiments, surveys and salvaged documents rather than handed out over time. See [Research](research.md). |
 | **Research notes** | A physical document with a point value printed on it. Press it against an R&D console to bank the points. Loot notes, including orbital survey printouts, also export for half a credit per point. |

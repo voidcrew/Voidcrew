@@ -16,7 +16,7 @@
  * - Boffin is the only store that sells raw anomaly cores (cargo no longer
  *   carries them) and anomaly charts. Both sit on small weighted rotations of
  *   two slots, one unit each. A sold slot turns over to a different type at
- *   the next convoy. Both take the normal favor discounts and specials. The
+ *   the next convoy. Both take the normal specials. The
  *   400 cr core buyback is far below any core's price, so buying to resell
  *   loses money.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
@@ -302,7 +302,7 @@
 		/datum/shop_sku/anomaly_chart/vortex = 1,
 	)
 
-/// Raw cores: normal favor discounts and specials apply; contracts never pay them out
+/// Raw cores: normal specials apply; contracts never pay them out
 /datum/shop_sku/skunk/anomaly_core
 	category = "Anomalies"
 	stock_min = 1

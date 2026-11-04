@@ -46,6 +46,7 @@ type Mission = {
   visited?: BooleanLike;
   zone_name: string | null;
   zone_color: string;
+  reputation_gain?: number;
 };
 
 type PadItem = {
@@ -68,6 +69,7 @@ type Bounty = {
   target_x?: number;
   target_y?: number;
   loot_description: string;
+  reputation_gain?: number;
 };
 
 type PendingOffer = {
@@ -92,8 +94,14 @@ type PlayerBounty = {
   pending_offers?: PendingOffer[];
 };
 
+type Reputation = {
+  total: number;
+  next: number | null;
+};
+
 type Data = {
   has_ship: BooleanLike;
+  reputation?: Reputation | null;
   max_missions: number;
   active_count: number;
   has_pad: BooleanLike;
@@ -137,6 +145,7 @@ type WantedEntry = {
   hunt_refusal?: string | null;
   // The mugshot is how they looked before (a trader-outpost fugitive)
   photo_old?: BooleanLike;
+  reputation_gain?: number;
   can_turn_in?: BooleanLike;
   turn_in_refusal?: string | null;
 };
@@ -203,6 +212,7 @@ const shuffleKinds = (items: ListItem[]) => {
 const MissionBoardContent = () => {
   const { act, data } = useBackend<Data>();
   const {
+    reputation,
     has_pad,
     has_mod_gps,
     available_missions,
@@ -343,6 +353,12 @@ const MissionBoardContent = () => {
           }
         >
           <LabeledList>
+            {!!reputation && (
+              <LabeledList.Item label="Reputation">
+                {reputation.total}
+                {reputation.next ? ` (next at ${reputation.next})` : ''}
+              </LabeledList.Item>
+            )}
             <LabeledList.Item label="Mission Pad">
               <Box color={has_pad ? 'good' : 'bad'}>
                 {has_pad ? 'Connected' : 'Not Found'}
@@ -552,6 +568,11 @@ const MissionCard = (props: MissionCardProps) => {
       <Box mb={1}>{mission.desc}</Box>
 
       <RewardSummary mission={mission} />
+      {(mission.reputation_gain ?? 0) > 0 && (
+        <Box bold color="teal" mb={1}>
+          Reputation +{mission.reputation_gain}
+        </Box>
+      )}
       <Box color="label" mb={1}>
         {isActive ? 'Due in: ' : 'Time allowed: '}
         {isActive ? mission.time_remaining_text : formatTime(mission.duration)}
@@ -685,6 +706,12 @@ const BountyCard = (props: BountyCardProps) => {
           + {bounty.loot_description}
         </Box>
       </Box>
+
+      {(bounty.reputation_gain ?? 0) > 0 && (
+        <Box bold color="teal" mb={1}>
+          Reputation +{bounty.reputation_gain}
+        </Box>
+      )}
 
       {/* Show coordinates if tracking is enabled */}
       {!!bounty.has_tracking &&
@@ -889,6 +916,11 @@ const WantedCard = (props: WantedCardProps) => {
             </Box>
           </Box>
           <Box color="label">{formatWantedTime(entry.time_left ?? 0)} left</Box>
+          {(entry.reputation_gain ?? 0) > 0 && (
+            <Box bold color="teal">
+              Reputation +{entry.reputation_gain}
+            </Box>
+          )}
         </Flex.Item>
       </Flex>
 

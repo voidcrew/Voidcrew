@@ -70,6 +70,7 @@
  * table never fires and the ask table below carries pay and difficulty itself.
  */
 /datum/mission/research/telemetry
+	safe_work = TRUE
 	name = "Telemetry Contract"
 	weight = 9
 	mission_limit = 2

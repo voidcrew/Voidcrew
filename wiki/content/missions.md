@@ -11,7 +11,7 @@ Missions give your crew work across the sector: deliver supplies, chart a route,
 
 The mission board links to a nearby mission pad. Open **Available** to browse work and **Active** to see what your crew has taken on. Your ship can have **three missions active at once**, including jobs accepted from traders.
 
-The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Up to three slots are reserved for different kinds of work that can still advance your crew's [zone reputation](zone-reputation.md). Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
+The console posts a set of **five offers every 20 minutes**, including a green-zone exploration job when one is available. Up to three slots are reserved for targeted work in the highest zone your crew's [reputation](zone-reputation.md) allows. Taking or losing a job leaves a vacancy until the next set arrives. **Refresh** becomes available when the next set is due; it does not give an early replacement. Reopening or rebuilding the console keeps the ship's offers and schedule.
 
 For a starting job, look for an **Exploration Contract** in green space. Fly to its marked coordinates, then collect the listed fee at the board.
 
@@ -33,11 +33,11 @@ Talk to a main trader and choose **Contracts** to see their postings. Each board
 
 Outpost jobs include supply requests, salvage recoveries, kill contracts, and courier runs. Halcyon also posts kitchen orders and fishing requests. Quartermain's board asks for recovered MOD cores, salvaged MOD control units, and certain recovered modules. Take a control unit off before handing it over.
 
-Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen orders, fish, and bear hides are also accepted. Qualifying goods already in your hold can be delivered. Legion cores must still be fresh or stabilized when you hand them in. Kitchen orders require player-cooked dishes, rather than factory food or meals bought from an outpost kitchen.
+Supply requests mainly ask for fauna harvests, ruin finds, and salvage. Kitchen orders, fish, and bear hides are also accepted. Qualifying goods already in your hold can be delivered, but goods bought from a trader cannot. Legion cores must still be fresh or stabilized when you hand them in. Kitchen orders require player-cooked dishes, rather than factory food or meals bought from an outpost kitchen.
 
 Contracts can pay a mix of **credits, trade vouchers, and named goods from trader stock**. Some pay entirely in currency. Listed goods are set aside when your crew accepts; if an item is unavailable then, currency replaces it. Read the pay line again after accepting.
 
-Completing a trader's contracts also improves your crew's favor with that trader and can reduce credit prices. Back rooms and higher-zone contracts require [zone reputation](zone-reputation.md), earned from qualifying field work. Counter sales and board contracts are separate: selling goods over the counter does not complete an accepted contract. See [Trader Outposts](trader-outposts.md).
+Every job on either board earns [reputation](zone-reputation.md): safe jobs pay +1 and the rest pay by difficulty. Each card shows what it is worth to your crew, and the completion message says what you got. Back rooms and higher-zone contracts require it. Counter sales and board contracts are separate: selling goods over the counter does not complete an accepted contract. See [Trader Outposts](trader-outposts.md).
 
 ## Pay and rare gear
 
@@ -104,7 +104,7 @@ These prizes are separate from the offer's ordinary credits, vouchers and goods.
 | Containment Contract | Find and neutralize the named anomaly, then deliver its core. |
 | Core Sample Contract | Complete a planet's sampling work and return the sample. |
 
-The available jobs depend on the planets, ruins, and targets in the sector, and on your crew's zone reputation. Collect any supplied kit from the pad before departure.
+The available jobs depend on the planets, ruins, and targets in the sector, and on your crew's reputation. Collect any supplied kit from the pad before departure.
 
 ## Bounties
 

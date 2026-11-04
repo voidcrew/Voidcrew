@@ -8,6 +8,7 @@
 /datum/mission/exploration
 	name = "Exploration Contract"
 	weight = 10
+	safe_work = TRUE
 	// Green-band pay; apply_zone_scaling() raises it for deeper zones
 	value_min = 150
 	value_max = 250

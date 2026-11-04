@@ -7,6 +7,7 @@
 /datum/mission/survey
 	name = "Survey Contract"
 	weight = 10
+	safe_work = TRUE
 
 	/// The rolled ask (kept for UI keys)
 	var/target_type = "any"

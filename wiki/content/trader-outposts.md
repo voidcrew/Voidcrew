@@ -47,7 +47,7 @@ Combat guns bought inside the outpost, or paid out by a contract there, come in 
 
 The trader is a person standing behind a counter, not a vending machine. Click them and a menu opens with **Trade**, **Talk**, and (on the main trader) **Contracts**.
 
-The Trade window has two halves: the shop, sorted into category tabs, and the trader's **wanted ledger** of what they are buying. Each line has a base price; credit specials and favor discounts can reduce it. Some lines want credits off your ID's account, some want vouchers out of your pocket, some want both, and a few want a **barter**. Hold the asked item in your hand and swap it across.
+The Trade window has two halves: the shop, sorted into category tabs, and the trader's **wanted ledger** of what they are buying. Each line has a base price; a credit special can reduce it. Some lines want credits off your ID's account, some want vouchers out of your pocket, some want both, and a few want a **barter**. Hold the asked item in your hand and swap it across.
 
 Stock is a single pool every crew at that outpost draws from, arranged in three shelves. Reputation can restrict who may buy a line. Back-room limits are shared across all ships of a crew. **Core** stock is the same every round and restocks. **Rotating** stock is a handful of items rolled fresh each round, one or two units each. **Rare** stock is one or two showcase items, single unit, gone when somebody buys it. One credit-priced item goes on **special** each round at 15–30% off.
 
@@ -113,7 +113,7 @@ More on what is inside them is on [Ruins](ruins.md).
 
 ### Anomaly cores and charts
 
-Boffin at the Skunkworks is the only place that sells **raw anomaly cores**. Cargo does not carry them. He has two on the shelf at a time, one of each. When one sells, the next convoy brings a different type. Rare types turn up less often. Raw cores still need the refinery and a bomb. Standing discounts and specials apply to cores and charts as usual (the better of the two, never both).
+Boffin at the Skunkworks is the only place that sells **raw anomaly cores**. Cargo does not carry them. He has two on the shelf at a time, one of each. When one sells, the next convoy brings a different type. Rare types turn up less often. Raw cores still need the refinery and a bomb. Specials apply to cores and charts as usual.
 
 Boffin also sells **anomaly charts** the same way. A chart names one anomaly. It uploads to your helm sealed, like a ruin chart, and the reveal marks either a derelict or a planet in the named band. The anomaly only forms once **your own ship** docks there. Another crew that gets there first finds nothing. Neutralize it for its core. If the site vanishes before you arrive, the chart goes back on your helm sealed and you can reveal it again. The chart is lost if your ship is.
 
@@ -131,23 +131,13 @@ The mix is supply requests, salvage and kill contracts on ruins, and courier run
 
 Supply requests ask for fauna harvests, ruin finds, salvage, raw telecrystal or glacial cores, rather than ore or sheets. Kitchen orders, fish and hides remain. Quartermain's fitter contracts ask for recovered MOD cores, control units or modules. Stored qualifying goods can be delivered, except that Vex only takes a legion core that is still fresh or was stabilized.
 
-Check the offered reward before accepting. Higher-zone targeted work requires [zone reputation](zone-reputation.md), and rare completion prizes come from eligible guarded work rather than routine supply orders.
+Check the offered reward before accepting. Every contract earns [reputation](zone-reputation.md), which its card shows. Supply requests, fishing, kitchen orders and courier runs pay +1; salvage and kill contracts pay by the zone of their target. Higher-zone targeted work requires reputation, and rare completion prizes come from eligible guarded work rather than routine supply orders. Goods bought from a trader cannot settle a supply request.
 
 Turn them in at any outpost trader or at your own mission pad. Except courier runs, whose pod only opens at its destination. See [Missions](missions.md).
 
-### Trader favor
+### Back rooms
 
-Completing a trader's contracts earns your **crew** favor: **1 point** for easy, **2** for medium and **3** for hard. Kitchen orders, fishing requests and fish or bear-hide supply requests give **1** regardless of difficulty.
-
-| Favor | Standing | Credit discount |
-|---|---|---|
-| 2 | Regular | 5% |
-| 4 | Partner | 10% |
-| 6 | Trusted | 15% |
-
-The discount applies at every stall on that outpost. Voucher prices stay the same. A special and favor do not stack; you get the better discount. Favor is shared across the crew's ships and survives losing a hull. The trade and contract windows show it as your reputation there.
-
-**Back Room** purchases require [zone reputation](zone-reputation.md), rather than Trusted favor. Barnaby's goods open after 3 green points. Sarge's fitter gauntlets open then too; his Skunkworks cell and maneuvering harness need the next unlock, after 6 yellow points. Vex's insurance implant needs the elite unlock, after 9 red points. Each crew may buy up to **three of each** per round.
+**Back Room** purchases require [reputation](zone-reputation.md). Barnaby's goods open at 4. Sarge's fitter gauntlets open then too; his Skunkworks cell and maneuvering harness need 11. Vex's insurance implant needs 22. Each crew may buy up to **three of each** per round.
 
 ## Violence
 

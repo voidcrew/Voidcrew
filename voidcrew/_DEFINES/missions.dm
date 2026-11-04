@@ -14,6 +14,8 @@
 
 // Default config
 #define DEFAULT_AVAILABLE_MISSIONS 5
+/// Console offers kept in the highest zone band the crew may work in
+#define MISSION_RESERVED_OFFERS 3
 #define DEFAULT_MAX_ACTIVE_MISSIONS 3
 #define DEFAULT_MISSION_DURATION (30 MINUTES)
 /// The ship keeps one fixed set of offers until its scheduled refresh.

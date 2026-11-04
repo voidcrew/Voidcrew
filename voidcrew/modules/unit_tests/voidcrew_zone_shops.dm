@@ -7,9 +7,8 @@
 	abstract_type = /datum/unit_test/voidcrew_zone_shops
 
 /datum/unit_test/voidcrew_zone_shops/proc/set_permission(datum/voidcrew_crew_record/record, permission)
-	record.zone_totals["1"] = permission >= 1 ? 3 : 0
-	record.zone_totals["2"] = permission >= 2 ? 6 : 0
-	record.zone_totals["3"] = permission >= 3 ? 9 : 0
+	var/list/steps = list(0, 4, 11, 22) // Public, then REPUTATION_STEP_*
+	record.reputation = steps[permission + 1]
 
 /datum/unit_test/voidcrew_zone_shops/proc/fund(mob/living/carbon/human/buyer, credits = 10000, vouchers = 20)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Shop test", null, 1, FALSE)
@@ -113,8 +112,8 @@
 			TEST_ASSERT_EQUAL(sku.zone_permission, expected[sku.type] || 0, "[shop_type] lost a tag while dealing stock")
 		qdel(shop)
 
-/// Trader favor never opens stock; zone reputation never changes credit/voucher prices.
-/datum/unit_test/voidcrew_zone_shops/favor_and_prices/Run()
+/// Reputation opens stock, says what it takes, and never changes a credit or voucher price.
+/datum/unit_test/voidcrew_zone_shops/reputation_and_prices/Run()
 	var/obj/structure/overmap/ship/ship = make_ship()
 	var/datum/voidcrew_crew_record/crew = record_for(ship)
 	var/mob/living/carbon/human/buyer = make_member()
@@ -123,28 +122,31 @@
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/favor/pike_ledger, "favor")
 	var/datum/shop_sku/sku = shop.skus[1]
-	shop.grant_favor(ship, 1000)
-	TEST_ASSERT(!sku.can_afford(buyer) && !sku.try_purchase(buyer, null), "Old favor bypassed zone permission")
+	TEST_ASSERT_EQUAL(sku.get_denial_reason(buyer), "Needs 4 reputation.", "A locked back room did not say what it needs")
+	TEST_ASSERT(!sku.can_afford(buyer) && !sku.try_purchase(buyer, null), "A public crew bought from the back room")
 	TEST_ASSERT_EQUAL(account.account_balance, 10000, "Denied order took credits")
 	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 20, "Denied order took vouchers")
 	TEST_ASSERT_EQUAL(shop.get_crew_purchases(ship, sku.type), 0, "Denied order claimed the crew cap")
-	crew.trader_favor.Cut()
 	set_permission(crew, 1)
-	TEST_ASSERT_NULL(sku.get_favor_denial(buyer), "Zero trader favor blocked a qualified crew")
+	TEST_ASSERT_NULL(sku.get_favor_denial(buyer), "Reputation did not clear a qualified crew")
 	TEST_ASSERT(sku.try_purchase(buyer, null), "Zone permission did not open the back room")
 	TEST_ASSERT_EQUAL(account.account_balance, 6800, "Back-room credits changed")
 	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 18, "Back-room vouchers changed")
 
 	shop.add_sku(/datum/shop_sku/general/toolbelt, "core")
 	var/datum/shop_sku/ordinary = shop.skus[2]
-	var/list/thresholds = list(0, 2, 4, 6)
-	var/list/prices = list(500, 475, 450, 425)
-	for(var/index in 1 to 4)
-		crew.trader_favor[shop.favor_key()] = thresholds[index]
-		TEST_ASSERT_EQUAL(ordinary.get_credit_price(buyer), prices[index], "Favor discount thresholds drifted")
+	for(var/permission in 0 to 3)
+		set_permission(crew, permission)
+		TEST_ASSERT_EQUAL(ordinary.get_credit_price(buyer), 500, "Reputation changed a price")
 	ordinary.discount_pct = 20
-	TEST_ASSERT_EQUAL(ordinary.get_credit_price(buyer), 400, "Special and favor stacked")
+	TEST_ASSERT_EQUAL(ordinary.get_credit_price(buyer), 400, "Today's special stopped working")
 	TEST_ASSERT_EQUAL(sku.price_vouchers, 2, "A discount changed vouchers")
+	set_permission(crew, 1)
+	sku.zone_permission = 2
+	TEST_ASSERT_EQUAL(sku.get_favor_denial(buyer), "Needs 11 reputation.", "Advanced goods named the wrong number")
+	sku.zone_permission = 3
+	TEST_ASSERT_EQUAL(sku.get_favor_denial(buyer), "Needs 22 reputation.", "Elite goods named the wrong number")
+	sku.zone_permission = 1
 	account.siphon_lock_until = world.time + 100
 	TEST_ASSERT(!sku.try_purchase(buyer, null), "Frozen account purchased a back-room item")
 	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), 18, "Failed debit consumed vouchers")
@@ -217,7 +219,6 @@
 	sku.item_path = /obj/item/soap
 	var/obj/item/stack/sheet/iron/offered = allocate(/obj/item/stack/sheet/iron, buyer, 5)
 	buyer.put_in_hands(offered)
-	shop.grant_favor(ship, 1000)
 	var/stock = sku.stock
 	TEST_ASSERT(!sku.can_afford(buyer) && !sku.try_purchase(buyer, null), "Barter bypassed permission")
 	TEST_ASSERT_EQUAL(offered.amount, 5, "Denied barter consumed its stack")
@@ -297,7 +298,7 @@
 	npc.shop = shop
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 	var/list/data = facet.ui_data(buyer)
-	TEST_ASSERT_NULL(data["favor"], "Storefront named a standing with no outpost or chosen ship")
+	TEST_ASSERT_NULL(data["reputation"], "Storefront named a number with no chosen ship")
 	TEST_ASSERT_EQUAL(length(data["crew_ships"]), 2, "Ship selector did not enumerate the continuing crew's hulls")
 	TEST_ASSERT_NULL(data["crew_ship_ref"], "Ambiguous fleet silently chose an account")
 	TEST_ASSERT(facet.select_service_ship(buyer, REF(second)), "Counter refused an explicit own-crew hull")
@@ -311,18 +312,19 @@
 	set_permission(crew, 1)
 	TEST_ASSERT_EQUAL(shop.get_back_room_line(buyer), "I'll put a word in at the depot.", "Barnaby's clearance line changed")
 	var/list/contracts = npc.contracts_ui.ui_data(buyer)
-	TEST_ASSERT_NULL(contracts["favor"], "Contract counter named a standing with no outpost")
+	TEST_ASSERT_NOTNULL(contracts["reputation"], "Contract counter hid the number from a crew with a chosen ship")
 	var/datum/shop_sku/sku = shop.skus[1]
 	TEST_ASSERT(sku.can_trade(buyer, npc), "The live counter rejected its own stock")
 	npc.forceMove(run_loc_floor_top_right)
 	TEST_ASSERT(!sku.can_trade(buyer, npc), "Moving the counter left a stale live context")
 	TEST_ASSERT(!sku.try_purchase(buyer, npc), "A stale action purchased beyond counter range")
 
-/// Both outpost windows name the selected crew's standing and nothing behind it; the catalog names today's special.
+/// Both outpost windows show the crew's one number and its next step; the catalog names today's special.
 /datum/unit_test/voidcrew_zone_shops/reputation/Run()
 	var/mob/living/carbon/human/buyer = make_member()
 	var/obj/structure/overmap/ship/ship = make_ship()
 	ship.enlist_crewmember(buyer)
+	var/datum/voidcrew_crew_record/crew = record_for(ship)
 	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost)
 	var/datum/outpost_shop/shop = outpost.shop
 	TEST_ASSERT_NOTNULL(shop, "Outpost fixture has no main shop")
@@ -333,27 +335,32 @@
 	var/datum/outpost_trader_ui/shop/facet = npc.shop_ui
 
 	var/list/data = facet.ui_data(buyer)
-	var/list/favor = data["favor"]
-	TEST_ASSERT_NOTNULL(favor, "Storefront hid the selected crew's standing")
-	TEST_ASSERT_EQUAL(favor["tier_name"], "Stranger", "A crew with no standing was not a stranger")
+	var/list/reputation = data["reputation"]
+	TEST_ASSERT_NOTNULL(reputation, "Storefront hid the selected crew's number")
+	TEST_ASSERT_EQUAL(reputation["total"], 0, "A new crew showed reputation")
+	TEST_ASSERT_EQUAL(reputation["next"], 4, "A new crew showed the wrong next step")
 
-	// Regular is 2 points (fork defines compile after the tests)
-	shop.grant_favor(ship, 2)
+	crew.reputation = 7
 	data = facet.ui_data(buyer)
-	favor = data["favor"]
-	TEST_ASSERT_EQUAL(favor["tier"], 1, "Storefront sent the wrong tier")
-	TEST_ASSERT_EQUAL(favor["tier_name"], "Regular", "Storefront did not name the crew's standing")
-	TEST_ASSERT_EQUAL(length(favor), 2, "Storefront sent more than the tier and its name")
+	reputation = data["reputation"]
+	TEST_ASSERT_EQUAL(reputation["total"], 7, "Storefront sent the wrong total")
+	TEST_ASSERT_EQUAL(reputation["next"], 11, "Storefront sent the wrong next step")
+	TEST_ASSERT_EQUAL(length(reputation), 2, "Storefront sent more than the total and next step")
 	var/list/contracts = npc.contracts_ui.ui_data(buyer)
-	var/list/board_favor = contracts["favor"]
-	TEST_ASSERT_NOTNULL(board_favor, "Contract board hid the selected crew's standing")
-	TEST_ASSERT_EQUAL(board_favor["tier_name"], "Regular", "Contract board named a different standing")
-	TEST_ASSERT_EQUAL(length(board_favor), 2, "Contract board sent more than the tier and its name")
+	var/list/board_reputation = contracts["reputation"]
+	TEST_ASSERT_NOTNULL(board_reputation, "Contract board hid the selected crew's number")
+	TEST_ASSERT_EQUAL(board_reputation["total"], 7, "Contract board showed a different number")
+
+	crew.reputation = 23
+	data = facet.ui_data(buyer)
+	reputation = data["reputation"]
+	TEST_ASSERT_EQUAL(reputation["total"], 23, "The total stopped at the last step")
+	TEST_ASSERT_NULL(reputation["next"], "A next step showed past the last one")
 
 	var/mob/living/carbon/human/drifter = make_member()
 	TEST_ASSERT_NULL(get_crew_ship(drifter), "The drifter unexpectedly has a crew ship")
 	data = facet.ui_data(drifter)
-	TEST_ASSERT_NULL(data["favor"], "Storefront named a standing for someone with no crew ship")
+	TEST_ASSERT_NULL(data["reputation"], "Storefront showed a number to someone with no crew ship")
 
 	var/datum/shop_sku/special = shop.skus[1]
 	special.discount_pct = 20

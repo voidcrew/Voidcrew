@@ -1,11 +1,11 @@
 GLOBAL_VAR_INIT(mission_work_serial, 0)
 
-/// One generated objective encounter. Aliases retain this datum, never a proof's ref.
+/// One generated job. Aliases retain this datum, never a proof's ref.
 /// Rewinds, revival, replacement proof and same-band retargets keep this identity.
 /datum/mission_work_receipt
 	var/serial
-	var/family
 	var/band
+	/// The difficulty it pays reputation at: easy for safe work, whatever the job's own.
 	var/difficulty
 	var/datum/voidcrew_crew_record/crew
 	var/claimed = FALSE
@@ -14,10 +14,9 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	var/permission_before
 	var/permission_after
 
-/datum/mission_work_receipt/New(family, band, difficulty)
+/datum/mission_work_receipt/New(band, difficulty)
 	. = ..()
 	serial = ++GLOB.mission_work_serial
-	src.family = family
 	src.band = band
 	src.difficulty = difficulty
 
@@ -78,6 +77,8 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	var/contract_pay_mult = 1
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
+	/// Safe work pays 1 reputation whatever its difficulty or zone. Its pay and difficulty don't change.
+	var/safe_work = FALSE
 	/// If TRUE, mission completes by handing an item over at the pad/trader.
 	/// Derived from the last objective at generation; kept as a var because
 	/// the board UI and ship API read it constantly.
@@ -127,12 +128,12 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	var/boss_cash_issued = FALSE
 	/// Reward band fixed when posted, independent of ask difficulty.
 	var/quote_zone
-	/// Original service affiliation, including routine work that only earns favor.
+	/// Original service affiliation; its reputation is what this job pays into.
 	var/datum/voidcrew_crew_record/accepting_crew
 	var/datum/mission_work_receipt/work_receipt
 	/// Generation context only; shared trader offers leave this unset.
 	var/list/eligible_target_zones
-	/// Only the scheduled useful-family batch may create a field contact.
+	/// Only the scheduled top-band batch may create a field contact.
 	var/create_field_contact = FALSE
 	var/zone_scaling_applied = FALSE
 	/// Family eligible for a completion prize; null for unguarded work.
@@ -287,40 +288,55 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 /datum/mission/proc/setup_target()
 	return TRUE
 
-/// Resolve the six server-owned families once, before the offer can be accepted.
+/// The zone this job counts in: its target's, or where it was posted. Green if neither is known.
+/datum/mission/proc/get_work_band()
+	if(target)
+		return target.get_zone_type()
+	var/band = quote_zone
+	if(isnull(band) && shop?.outpost)
+		band = SSovermap_zones?.get_zone_type(get_turf(shop.outpost))
+	return (band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) ? band : ZONE_GREEN
+
+/// Fix the job's zone and difficulty once, before the offer can be accepted.
 /datum/mission/proc/prepare_work_receipt()
-	if(work_receipt || !target || !target.is_valid())
+	if(work_receipt || (target && !target.is_valid()))
 		return
-	var/family = zone_reputation_family(type)
-	var/band = target.get_zone_type()
-	if(family && band == quote_zone && band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
-		work_receipt = new(family, band, difficulty)
+	var/band = get_work_band()
+	if(target && (band != quote_zone || !(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))))
+		return
+	work_receipt = new(band, safe_work ? MISSION_DIFFICULTY_EASY : difficulty)
 
 /// Used by views and again by start_mission; ship.accept_mission also checks live bands.
 /datum/mission/proc/can_accept_work(obj/structure/overmap/ship/ship)
 	if(QDELETED(src) || generation_failed || active || failed || completed || QDELETED(ship))
 		return FALSE
-	if(!target)
-		return !work_receipt // Routine asks keep posted pay, never an admission band.
 	if(work_receipt?.crew && work_receipt.crew != ship.get_crew_record())
 		return FALSE
+	if(!target)
+		return TRUE // Targetless work is open to anyone; its zone only decides what it pays.
 	var/band = target.get_zone_type()
 	if(!target.is_valid() || band != quote_zone || !ship.get_crew_record()?.can_work_in_zone(band))
 		return FALSE
-	if(work_receipt && (work_receipt.band != band || work_receipt.family != zone_reputation_family(type)))
+	if(work_receipt && work_receipt.band != band)
 		return FALSE
 	return TRUE
 
-/// The claim and capped gain happen before finalizers or any reward spawning can yield.
+/// The claim and the gain happen before finalizers or any reward spawning can yield.
 /datum/mission/proc/claim_work_receipt()
 	if(!completed || failed || !work_receipt || work_receipt.claimed || QDELETED(accepting_crew) || work_receipt.crew != accepting_crew \
-		|| work_receipt.family != zone_reputation_family(type) || work_receipt.band != quote_zone)
+		|| (target && work_receipt.band != quote_zone))
 		return 0
 	work_receipt.claimed = TRUE
 	work_receipt.permission_before = accepting_crew.get_zone_permission()
-	work_receipt.credited = accepting_crew.claim_zone_work(work_receipt.family, work_receipt.band, work_receipt.difficulty, "[work_receipt.serial]:[work_receipt.family]")
+	work_receipt.credited = accepting_crew.claim_zone_work(work_receipt.band, work_receipt.difficulty, "[work_receipt.serial]")
 	work_receipt.permission_after = accepting_crew.get_zone_permission()
 	return work_receipt.credited
+
+/// What finishing this job would add to `crew` right now. Nothing once it has been claimed.
+/datum/mission/proc/get_reputation_worth(datum/voidcrew_crew_record/crew)
+	if(QDELETED(crew) || !work_receipt || work_receipt.claimed)
+		return 0
+	return crew.reputation_worth(work_receipt.band, work_receipt.difficulty)
 
 /// Admin/round disposal must not leave a deleted record retained by accepted missions.
 /datum/mission/proc/on_accepting_crew_deleted(datum/source)
@@ -957,8 +973,9 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		&& get_turf(reward_anchor) && all_objectives_satisfied()
 	completed = TRUE
 	active = FALSE
+	var/reputation_gain = 0
 	if(work_satisfied)
-		claim_work_receipt()
+		reputation_gain = claim_work_receipt()
 
 	if(timeout_timer)
 		deltimer(timeout_timer)
@@ -973,13 +990,7 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 	// Distribute rewards
 	distribute_rewards(reward_anchor)
 
-	// Standing with the posting trader (board contracts only; see trader_favor.dm)
-	var/favor_gain = get_favor_reward()
-	if(favor_gain > 0 && !QDELETED(accepting_crew) && shop)
-		var/key = shop.favor_key()
-		accepting_crew.trader_favor[key] = (accepting_crew.trader_favor[key] || 0) + favor_gain
-
-	record_metric_completed(reward_anchor, favor_gain) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
+	record_metric_completed(reward_anchor) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
 
 	// Notify ship
 	if(servant)
@@ -993,7 +1004,8 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		if(voucher_count > 0)
 			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
 		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
-		servant.ship_notify("[name] completed! Reward: [reward_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
+		servant.ship_notify("[name] completed! Reward: [reward_text].[reputation_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
 
 	// Remove from subsystem tracking
@@ -1348,4 +1360,5 @@ GLOBAL_VAR_INIT(mission_work_serial, 0)
 		"voucher_count" = package ? package["vouchers"] : voucher_count,
 		"research_reward" = research_reward,
 		"archetype" = get_archetype(),
+		"reputation_gain" = get_reputation_worth(active ? accepting_crew : viewing_crew),
 	)

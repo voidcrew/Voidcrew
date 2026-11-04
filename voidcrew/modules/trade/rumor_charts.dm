@@ -163,8 +163,7 @@
 	if(!ship)
 		return FALSE
 
-	// Validate the credit half before consuming any vouchers. User passed so
-	// the charge matches the favor-discounted price the UI shows them.
+	// Validate the credit half before consuming any vouchers.
 	var/credit_price = get_credit_price(user)
 	var/datum/bank_account/account
 	if(credit_price > 0)

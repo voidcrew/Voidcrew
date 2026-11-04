@@ -7,6 +7,7 @@
 /datum/mission/delivery
 	name = "Delivery Contract"
 	weight = 10
+	safe_work = TRUE
 
 	/// The rolled ask (kept for UI keys)
 	var/required_type = /obj/item/stack/spice_pods

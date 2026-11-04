@@ -44,7 +44,7 @@ Fly out, find something worth money, bring it home, spend it, go further out.
 
 In practice that means picking a contact off the helm chart and going to look at it. [Planets](planets.md) have ore, ruins and fauna; [space ruins](ruins.md) have loot and usually something guarding it; [asteroid fields](mining.md) are the reliable mining stop; [trader outposts](trader-outposts.md) buy what you dug up and sell what you cannot make. The [mission board](missions.md) hands out contracts that point you at all of the above and pays for finishing them.
 
-Completing varied dangerous work builds [crew reputation](zone-reputation.md), which opens higher-zone contracts, trader stock and some research. It stays with your crew if the ship is lost. A crew can run several ships, but only its leader can add one.
+Finishing jobs raises your [crew's reputation](zone-reputation.md), which opens higher-zone contracts, trader stock and some research. It stays with your crew if the ship is lost. A crew can run several ships, but only its leader can add one.
 
 Danger and reward both scale with how far from the star you fly. The safe inner ring around the star is where you start; the rings farther out have better ore yields, nastier wildlife and no rules about shooting each other. [The Overmap](overmap.md) explains the three zones, and it is the first page you should read after this one.
 

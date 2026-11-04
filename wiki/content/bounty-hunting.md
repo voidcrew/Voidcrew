@@ -47,7 +47,7 @@ The reward is fixed when the bounty is posted. It depends on the tier and the zo
 | Public bounty | 45 minutes. The clock stops while a crew hunts it, for up to 30 minutes of each crew's hunt. |
 | Private offer | 20 minutes to accept it, then 30 minutes to bring them in. |
 
-Successful paid criminal turn-ins earn [zone reputation](zone-reputation.md): Petty counts as easy, Wanted as medium, and Most Wanted or a boss as hard. Alive, downed and dead settlements count. The criminal's first capture or death fixes the zone; moving them to another pad does not change it. Lair and other kill-only trophies form a separate kind of reputation work.
+Successful paid criminal turn-ins earn [reputation](zone-reputation.md): Petty counts as easy, Wanted as medium, and Most Wanted or a boss as hard. Alive, downed and dead settlements count. The criminal's first capture or death fixes the zone; moving them to another pad does not change it. Lair and other kill-only trophies count as hard. The poster shows what it is worth to your crew, and the turn-in notice says what you got.
 
 ## Taking a bounty
 

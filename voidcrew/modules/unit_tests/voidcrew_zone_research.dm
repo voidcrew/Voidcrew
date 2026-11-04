@@ -16,8 +16,8 @@
 /// Use production capped awards rather than replacing the permission lookup.
 /datum/unit_test/voidcrew_zone_research/proc/grant_permission(datum/voidcrew_crew_record/record, permission)
 	for(var/band in 1 to permission)
-		for(var/family in list("named_kill", "hunt", "capture"))
-			record.claim_zone_work(family, band, band, "research_[band]_[family]")
+		for(var/index in 1 to 4)
+			record.claim_zone_work(band, band, "research_[band]_[index]")
 
 /datum/unit_test/voidcrew_zone_research/proc/prepare_node(datum/techweb/web, datum/techweb_node/node)
 	for(var/prereq in node.prereq_ids)

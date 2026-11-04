@@ -1,65 +1,72 @@
 ---
-title: Crews & Zone Reputation
+title: Crews & Reputation
 category: Economy
 order: 5
-blurb: Earn a crew reputation through varied field work to open contracts, trader stock and advanced research.
+blurb: One number per crew. Finish jobs to raise it and open contracts, trader stock and advanced research.
 ---
 
-Your crew earns **zone reputation** by completing different kinds of dangerous work. It opens contracts farther out, better trader stock, back rooms and some research. Reputation belongs to the crew for the round and survives losing a ship.
+Your crew has one **reputation** number. Finish jobs to raise it. It opens contracts farther out, better trader stock, back rooms and some research. It belongs to the crew for the round and survives losing a ship.
 
-## Work that counts
+The mission board, trader shops and contract boards all show it with the next step, like `Reputation: 7 (next at 11)`.
 
-Finish the job and turn it in. These are the eight separate kinds of work:
+## Earning it
 
-| Kind | Jobs that count |
+Every job counts. That means everything on your ship's mission board and everything on a trader's contract board. Criminal bounties, lairs and pirate ship bounties count too. Repeating the same job keeps paying.
+
+Safe jobs always pay **+1**, whatever they ask for and wherever they are:
+
+- Trader supply requests, including fishing requests and kitchen orders
+- Trader courier runs
+- Delivery, gas harvest, telemetry, orbital survey and exploration contracts on your mission board
+
+Every other job pays by its difficulty:
+
+| Job | Reputation |
 |---|---|
-| Named kills | Kill Contracts for named ruin targets |
-| Big game | Big Game Hunts |
-| Capture | Live Capture contracts |
-| Poachers | Poacher Busts |
-| Survey field work | Guarded ruin survey pylons and planetary Core Sample contracts, counted together |
-| Extraction | Guarded Extraction Contracts |
-| Criminal bounties | Paid criminal turn-ins, including private offers and the kingpin |
-| Lairs | Kill-only bounty trophy turn-ins, including the lich |
+| Easy | +1 |
+| Medium | +2 |
+| Hard | +3 |
 
-Ship-console missions and trader-board missions both count when they belong to one of these kinds. A completed job only counts once. Simply killing ordinary enemies does not earn reputation.
+Targeted jobs take their difficulty from the zone of their target: easy in green, medium in yellow, hard in red. Job cards and wanted posters show what the job is worth to your crew right now, and the completion message says what you got. If a card shows no reputation, the job would not earn any.
 
-Ordinary orbital surveys, telemetry, exploration, deliveries, gas sales, supply requests, courier runs, rescues, suppression sweeps and prospect stakes do not count. Some still pay money, trader favor or other rewards.
+A job pays once, when you finish it. Failed, expired and abandoned work pays nothing. Petty criminals count as easy, Wanted as medium, and Most Wanted or boss criminals as hard. Lair trophies count as hard. The same criminal cannot pay reputation again after a later escape or relisting. A pirate ship bounty pays by the zone its pirate is in, once, to the crew that turns in the key. Bounties posted by other players do not earn reputation.
 
-## Points and variety
+## How far each zone takes you
 
-An easy job is worth **1 point**, medium **2**, hard **3**, subject to the limit for its kind of work in that zone:
+Work only raises your crew so far in the zone it belongs to:
 
-- **Green:** at most **1 point per kind**. You need three different kinds of work to reach 3 points.
-- **Yellow and red:** at most **5 points per kind in each zone**. Points beyond that limit are lost, so change jobs to keep progressing.
+| Zone | Raises reputation up to |
+|---|---|
+| Green | 4 |
+| Yellow | 11 |
+| Red | No limit |
 
-Named field missions use the target zone. Criminal bounties use the zone where the criminal was first captured or killed, rather than the pad's zone. Petty criminals count as easy, Wanted as medium, and Most Wanted or boss criminals as hard. Lair trophies count as hard work. The same criminal cannot pay reputation again after a later escape or relisting.
+A job that would go past the limit pays only up to it. Past that it still pays its money and goods.
 
-Reputation totals are separate for green, yellow and red. Work in one does not replace the requirements in another.
+- A job with a target belongs to the target's zone.
+- A job with no target belongs to the zone it was posted in: the outpost's zone for a trader's board, or wherever your ship was when your mission board's offers came in. If that is unknown, it counts as green.
+- A criminal belongs to the zone where they were first captured or killed, not the zone your pad is in.
+- A lair belongs to the zone it is in.
 
 ## What it opens
 
-Unlock these in order:
+| Reputation | Access | What it opens |
+|---|---|---|
+| Starting crew | Public | Green contracts, ordinary research and public trader stock |
+| **4** | Yellow | Yellow contracts and stock, Barnaby's back room, fitter's gauntlets; Automatic, C-20r, WT-550 and Specialist Ammunition research; Electric Weaponry (ion, temperature and tesla kits) |
+| **11** | Advanced | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research; Advanced Beam Weaponry (X-ray and advanced energy gun kits) |
+| **22** | Elite | Elite trader stock, Vex's back room and Military Nanite Programming research; Illegal Technology (energy crossbow kit and rapid syringe gun) and Unregulated Bluespace Research (Event Horizon kit) |
 
-| Requirement | Access |
-|---|---|
-| Starting crew | Green contracts, ordinary research and public trader stock |
-| **3 green points** | Yellow contracts and stock, Barnaby's back room, fitter's gauntlets; Automatic, C-20r, WT-550 and Specialist Ammunition research; Electric Weaponry (ion, temperature and tesla kits) |
-| Then **6 yellow points** | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research; Advanced Beam Weaponry (X-ray and advanced energy gun kits) |
-| Then **9 red points** | Elite trader stock, Vex's back room and Military Nanite Programming research; Illegal Technology (energy crossbow kit and rapid syringe gun) and Unregulated Bluespace Research (Event Horizon kit) |
+Locked goods say what they need on the buy button. Reputation never changes a price. Different goods have different requirements: arriving at a red outpost does not unlock its entire shop. Back-room goods have a shared limit of **three of each item per crew per round**.
 
-You still pay the listed prices. Different goods have different requirements: arriving at a red outpost does not unlock its entire shop. Back-room goods have a shared limit of **three of each item per crew per round**.
-
-These permissions do not stop you flying into another zone. Every raw resource remains obtainable in green, and ordinary research remains available there. Imported technology still works; it does not grant reputation for contracts or shopping.
-
-Trader favor is separate. Completing a trader's contracts earns discounts at that outpost, but favor does not unlock zone access or back rooms. See [Trader Outposts](trader-outposts.md).
+Your crew can take any job with no target, and hunt any criminal or pirate ship, whatever its reputation. Targeted contracts in yellow and red space need the access above. None of this stops you flying into another zone. Every raw resource remains obtainable in green, and ordinary research remains available there. Imported technology still works; it does not raise your reputation.
 
 ## Your crew and its ships
 
-You belong to **one crew at a time**. A crew can run several ships and share reputation, trader favor and back-room purchase limits across them. Each hull keeps its own bank account, research and mission slots. Select the ship you intend to use when a service offers a choice; its account pays.
+You belong to **one crew at a time**. A crew can run several ships and share reputation and back-room purchase limits across them. Each hull keeps its own bank account, research and mission slots. Select the ship you intend to use when a service offers a choice; its account pays.
 
 Only the **crew leader** can bring a newly bought, requisitioned, commissioned or claimed ship into that crew. The founder starts as leader. Another member acquiring a ship is asked whether to leave and found a new crew; refusing cancels the acquisition without a charge. A captain can still rebuild their crew's own ship from a checkpoint.
 
 If the leader leaves, enters cryo or respawns, leadership passes to the captain of the oldest surviving crew ship, or the earliest remaining member if it has no eligible captain.
 
-Losing or abandoning a hull does not erase the crew's reputation or trader favor. Joining another crew leaves the old one; its standing does not transfer with you. Ship and crew records last for this round. [Ship parts](ship-parts.md) are the separate progression that carries between rounds.
+Losing or abandoning a hull does not erase the crew's reputation. Joining another crew leaves the old one; its reputation stays behind and you trade on the new crew's number. Ship and crew records last for this round. [Ship parts](ship-parts.md) are the separate progression that carries between rounds.

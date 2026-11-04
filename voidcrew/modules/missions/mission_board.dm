@@ -135,6 +135,8 @@
 	if(!ship)
 		return data
 
+	// Sent as null too, so a stale number never lingers in tgui's merged data
+	data["reputation"] = (ship in get_crew_ships(user)) ? reputation_ui_data(ship.get_crew_record()) : null
 	data["max_missions"] = ship.max_missions
 	data["active_count"] = length(ship.active_missions)
 	data["has_pad"] = !!linked_pad

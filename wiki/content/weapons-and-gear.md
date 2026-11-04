@@ -22,13 +22,13 @@ Cargo does not sell security equipment, individual combat guns or conversion kit
 | Surplus bolt-action rifle | Barnaby, Halcyon | 900 cr | None |
 | Disabler | Sarge, Quartermain | 400 cr | None |
 | Laser gun | Sarge, Quartermain | 1,500 cr | None |
-| Riot shotgun | Sarge, Quartermain | 1,800 cr | 3 green points |
-| Energy gun | Sarge, Quartermain | 2,400 cr | 3 green points |
-| C-20r | Vex, Undertow | 3,600 cr + 2 vouchers | 3 green points |
-| WT-550 | Vex, Undertow | 4,200 cr + 2 vouchers | 3 green points |
-| Mateba, when stocked | Vex, Undertow | 3,000 cr + 1 voucher | 3 green points |
+| Riot shotgun | Sarge, Quartermain | 1,800 cr | 4 |
+| Energy gun | Sarge, Quartermain | 2,400 cr | 4 |
+| C-20r | Vex, Undertow | 3,600 cr + 2 vouchers | 4 |
+| WT-550 | Vex, Undertow | 4,200 cr + 2 vouchers | 4 |
+| Mateba, when stocked | Vex, Undertow | 3,000 cr + 1 voucher | 4 |
 
-These gun lines restore one unit per hour up to their stock limit. Convoys do not refill them early. Most lethal lines start with one gun; Barnaby starts with two rifles. Limited showcase weapons may never restock. Check [zone reputation](zone-reputation.md) for access requirements.
+These gun lines restore one unit per hour up to their stock limit. Convoys do not refill them early. Most lethal lines start with one gun; Barnaby starts with two rifles. Limited showcase weapons may never restock. See [Crews & Reputation](zone-reputation.md).
 
 Barnaby also sells hunting and survival knives. Sarge sells combat knives, shortswords, ablative bats, fire axes and sabres. A riot shield costs **1,200 credits**.
 
@@ -56,14 +56,14 @@ Pirate bounty weapon bundles hold one gun each. Other bundles can contain armour
 
 Use the ordinary crafting menu for improvised guns, melee weapons and shields. Research unlocks printable weapons and conversion kits as usual. Fit each kit to the gun named by its recipe.
 
-Kit research needs crew [zone reputation](zone-reputation.md):
+Kit research needs crew [reputation](zone-reputation.md):
 
 | Research | Unlocks | Reputation required |
 |---|---|---|
-| Electric Weaponry | Tesla, ion and temperature kits | Yellow |
-| Advanced Beam Weaponry | Advanced energy gun and X-ray kits | Advanced |
-| Illegal Technology | Energy crossbow kit and rapid syringe gun | Elite |
-| Unregulated Bluespace Research | **Event Horizon** kit | Elite |
+| Electric Weaponry | Tesla, ion and temperature kits | 4 |
+| Advanced Beam Weaponry | Advanced energy gun and X-ray kits | 11 |
+| Illegal Technology | Energy crossbow kit and rapid syringe gun | 22 |
+| Unregulated Bluespace Research | **Event Horizon** kit | 22 |
 | Illumination Applications | Photon cannon kit | None |
 
 The requirement covers every design on each node. You still need its usual prerequisites and research points. Imported research remains usable.
@@ -74,7 +74,7 @@ The Event Horizon recharges itself and fires a long-range beam that opens a brie
 
 Traders sell ammunition, and the [research tree](research.md) unlocks magazines and specialty loads. A 50-round L6 SAW magazine costs **50 iron, 10 titanium, 10 plasma and 5 plastic sheets** before lathe discounts. Its 80-point node requires Exotic Ammunition and Automatic Ammunition. Fully upgraded lathes reduce the material cost to 40%.
 
-Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need yellow [zone reputation](zone-reputation.md) to research; L6, Bulldog, sniper and explosive ammunition need advanced.
+Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research; L6, Bulldog, sniper and explosive ammunition need 11.
 
 **No Quarter** uses heavy cartridges, which fit no other gun. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
 

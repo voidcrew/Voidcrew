@@ -9,7 +9,7 @@ Nanites are programmable swarms carried inside a body. They can monitor, heal an
 
 ## Research and backups
 
-**Basic Nanite Programming** costs **120 research points** and unlocks the basic machinery and programs. Link the machinery to your ship's R&D server with a multitool. Further branches unlock stronger healing, neural and military programs. Military Nanite Programming also requires elite [zone reputation](zone-reputation.md).
+**Basic Nanite Programming** costs **120 research points** and unlocks the basic machinery and programs. Link the machinery to your ship's R&D server with a multitool. Further branches unlock stronger healing, neural and military programs. Military Nanite Programming also requires 22 [reputation](zone-reputation.md).
 
 Nanite cloud backups belong to the local research setup. Restoring a backup requires every program in it to be researched on the receiving ship. A backup cannot supply programs that ship has not unlocked. Nanite program disks have no cargo export value.
 
