@@ -607,7 +607,7 @@
 	victim.death()
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(body_turf), cash, "A revived peddler dropped cash again")
 
-/// The weapon lines: credits only, one piece, no reputation, never on special or in a contract's pay, never cheaper than a trader's own line (1200 cr a voucher, VOUCHER_CREDIT_VALUE), and a gun comes loaded with a pin that fires anywhere
+/// The weapon lines: credits only, one piece, no reputation, never on special or in a contract's pay, cheaper than a trader's own line (1200 cr a voucher, VOUCHER_CREDIT_VALUE), and a gun comes loaded with a pin that fires anywhere
 /datum/unit_test/voidcrew_ambient_pb/peddler_weapon_lines
 
 /datum/unit_test/voidcrew_ambient_pb/peddler_weapon_lines/Run()
@@ -627,11 +627,13 @@
 			TEST_ASSERT(sku.fixed_price, "[sku_type] can go on special")
 			TEST_ASSERT(!sku.contract_reward, "[sku_type] can pay a contract")
 			TEST_ASSERT(ispath(sku.item_path, /obj/item), "[sku_type] sells [sku.item_path]")
+			var/dearest_trader = 0
 			for(var/datum/shop_sku/trader_line as anything in subtypesof(/datum/shop_sku))
 				if(ispath(trader_line, /datum/shop_sku/peddler) || initial(trader_line.item_path) != sku.item_path)
 					continue
-				var/trader_price = initial(trader_line.price_credits) + initial(trader_line.price_vouchers) * 1200 // VOUCHER_CREDIT_VALUE
-				TEST_ASSERT(sku.price_credits >= trader_price, "[sku_type] sells at [sku.price_credits] cr, under [trader_line]'s [trader_price] cr")
+				dearest_trader = max(dearest_trader, initial(trader_line.price_credits) + initial(trader_line.price_vouchers) * 1200) // VOUCHER_CREDIT_VALUE
+			if(dearest_trader)
+				TEST_ASSERT(sku.price_credits < dearest_trader, "[sku_type] sells at [sku.price_credits] cr, no cheaper than a trader's [dearest_trader] cr")
 			var/obj/item/goods = allocate(sku.item_path, room_turf(4, 4))
 			if(isgun(goods))
 				var/obj/item/gun/gun = goods

@@ -32,7 +32,7 @@ These gun lines restore one unit per hour up to their stock limit. Convoys do no
 
 Barnaby also sells hunting and survival knives. Sarge sells combat knives, shortswords, ablative bats, fire axes and sabres. A riot shield costs **1,200 credits**.
 
-A [peddler](planets.md#what-is-down-there) walking across a planet carries one gun or melee weapon from that planet's zone: green gear on green planets, yellow on yellow and red on red. It costs credits only and needs no reputation, and it is priced at least as high as a trader's own, counting a voucher as **1,200 credits**. Once it is sold, that peddler has no other.
+A [peddler](planets.md#what-is-down-there) walking across a planet carries one gun or melee weapon from that planet's zone: green gear on green planets, yellow on yellow and red on red. It costs credits only and needs no reputation, and it costs about a quarter less than a trader's own, counting a voucher as **1,200 credits**. Once it is sold, that peddler has no other.
 
 ## Finding weapons
 
