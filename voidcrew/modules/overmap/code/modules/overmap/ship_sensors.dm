@@ -816,6 +816,18 @@ GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
 	return charted
 
 /**
+ * Drops a contact that has left its tile from everything this ship knows: the chart entry,
+ * any dismissal and any scan waypoint. It has to be seen again to be known again.
+ */
+/obj/structure/overmap/ship/proc/forget_contact(obj/structure/overmap/contact)
+	var/contact_ref = REF(contact)
+	if(discovered_contacts[contact_ref])
+		discovered_contacts -= contact_ref
+		queue_charted_push()
+	dismissed_contacts -= contact_ref
+	remove_waypoint(contact_ref)
+
+/**
  * Removes contacts from the shared crew list without forgetting sensor data or
  * hiding chart markers. Only contacts this ship actually knows can be removed.
  * Accepts a batch because the list groups multi-tile hazards into a single row.

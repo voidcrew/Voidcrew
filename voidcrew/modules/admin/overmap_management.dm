@@ -571,6 +571,8 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 		return "The planet stays on the overmap and moves to another sector."
 	if(istype(src, /obj/structure/overmap/space_ruin))
 		return "The ruin moves to another sector and can be loaded again."
+	if(istype(src, /obj/structure/overmap/event/meteor))
+		return "The field moves elsewhere in its zone and can be loaded again."
 	return "The location stays on the overmap and can be loaded again."
 
 /obj/structure/overmap/proc/admin_cleanup_details()

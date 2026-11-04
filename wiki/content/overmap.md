@@ -21,7 +21,7 @@ You can also plot a course: right-click a destination and choose **Set course**.
 | --- | --- |
 | Planets | Landable worlds: lava, ice, jungle, beach and wasteland. Ore, ruins, weather and fauna. See [Planets](planets.md). |
 | Space ruins | Several dozen derelicts, stations and wrecks per round, spread across the whole chart, each a loaded interior with loot and something guarding it. See [Ruins](ruins.md). |
-| Asteroid storms | Landable rock fields, and the dependable place to mine in space. Every round has plenty of them. Flying *through* one damages the hull. See [Mining](mining.md). |
+| Asteroid storms | Landable rock fields, and the dependable place to mine in space. Every round has plenty of them, and a spent one moves elsewhere in its zone. Flying *through* one damages the hull. See [Mining](mining.md). |
 | Ion and electrical storms | Hazards. Ion storms EMP random parts of your ship. Electrical storms blow out lights and throw lightning around inside the hull, while quietly topping up your power storage. |
 | Nebulas | Harmless clouds of a specific gas that a ram scoop can harvest, and the only place a ship can hide itself. See [Gas Economy](gas-economy.md). |
 | Trader outposts | Three permanent markets, one in each ring. They broadcast sector-wide, so they are on your chart from the start. See [Trader Outposts](trader-outposts.md). |

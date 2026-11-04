@@ -2776,8 +2776,8 @@
 				// Start the cleanup grace after the departing ship has moved clear.
 				addtimer(CALLBACK(ruin_place, TYPE_PROC_REF(/obj/structure/overmap/space_ruin, check_start_despawn)), 3 SECONDS)
 
-			// Handle landable asteroid field (meteor storm) dock flags and cleanup - unlike
-			// space ruins, the event itself never respawns/relocates, only its reservation frees up
+			// Handle landable asteroid field (meteor storm) dock flags and cleanup. Once it
+			// is empty the field frees its slot and moves elsewhere in its band.
 			if(istype(old_docked_location, /obj/structure/overmap/event/meteor))
 				var/obj/structure/overmap/event/meteor/field_place = old_docked_location
 				if(dock_index == 1)

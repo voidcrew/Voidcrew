@@ -11,7 +11,7 @@ There is no station mining outpost here and no shuttle that goes to it. Ore come
 
 **Planet surfaces.** Every planet has rock pockets carved into its terrain with mineral walls inside them. This is the most available digging there is, and it comes with everything else a planet has. See [Planets](planets.md). Volcanic and apocalyptic crust also hides raw telecrystal, and frozen permafrost hides glacial cores.
 
-**Asteroid storms.** These are the dedicated mining sites. They appear on the chart as storm hazards in three severities, and there are always at least three somewhere in the galaxy. Fly onto one and press Dock. The button reads "(mining anchorage)", and you are put inside the field, a scatter of rock blobs with hard vacuum between them.
+**Asteroid storms.** These are the dedicated mining sites. They appear on the chart as storm hazards in three severities, and there are always at least eighteen somewhere in the galaxy. Fly onto one and press Dock. The button reads "(mining anchorage)", and you are put inside the field, a scatter of rock blobs with hard vacuum between them.
 
 | Storm | Ore density |
 |---|---|
@@ -21,7 +21,7 @@ There is no station mining outpost here and no shuttle that goes to it. Ore come
 
 Every field can contain every ordinary ore, including uranium, diamond, bluespace crystal and bananium. Each wall rolls its ore separately. The field's zone improves the odds of valuable ore and the yield per mineral wall. Guarded caches can appear too.
 
-Asteroid fields are finite. Once a field unloads, it is spent and cannot generate another interior. Returning does not reroll its ore.
+A field stays put while anyone is using it. Once the last ship leaves and nobody is left inside, it unloads, along with anything left behind, and moves elsewhere in its zone. Its severity stays the same and the next crew to dock finds fresh rock. Your chart loses it when it moves, so find it again by flying past it or buying a chart of the zone.
 
 The toll is paid on the way in: crossing a storm tile throws a rock at your hull, and the worse the storm, the bigger the rock. Every field also carries roaming packs of hostiles, and any cache in it is guarded.
 
