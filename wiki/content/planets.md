@@ -42,6 +42,8 @@ Ash storms and sandstorms both roll a harmless variant sometimes, gentle embers 
 
 **Tendrils.** On volcanic worlds, a corrupted tendril is a permanent nest pouring out monsters. Kill it and the ground around it cracks open. You get about five seconds to grab loot out of the collapse by hand, one crate per person, before the tile becomes a chasm. The crate is worth the fight; see [Mining & Salvage](mining.md). Other worlds have their own nests, but only the volcanic tendril pays out like this.
 
+**Peddlers.** Now and then a peddler crosses a planet with a pack pony, and in yellow and red a hired guard. They stop a few times to trade, then walk off the far side. Click one to trade or talk: they sell supplies, buy a few planetary goods, can tell you where a ruin lies, and carry [one weapon](weapons-and-gear.md#buying-weapons) from the planet's zone. Kill the peddler or the pony and the shop is gone. In yellow and red a caravan may be jumped on the road, and crews who help fight the attackers off pay less for the rest of the visit, the weapon included.
+
 **Trade goods.** Each world grows or hides something traders want and nobody can manufacture aboard a ship: raw telecrystal in the crust of the volcanic and apocalyptic worlds, glacial cores in frozen permafrost, wild spice pods lying on jungle ground, pearl clams caught in beach shore water. None of them can be scanned for. Telecrystal and glacial veins look like ordinary rock until you swing at them. Prices are at [Trader Outposts](trader-outposts.md); the wider economy is in [Money & Trade](money-and-trade.md).
 
 ## Anomalies

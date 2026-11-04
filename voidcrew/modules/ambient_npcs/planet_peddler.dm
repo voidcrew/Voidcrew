@@ -13,6 +13,10 @@
  * planetary goods, for less than the outposts pay. Anyone in the caravan can be killed. A dead pony
  * closes the shop (the stock was on its back), and so does a dead peddler.
  *
+ * The pack holds one weapon, a gun or a melee weapon of the planet's zone, picked once for the site
+ * and kept with the site's data: a caravan swept away and brought back has the same piece, or none
+ * if it sold. It is a line in the ledger, so killing the caravan never drops it.
+ *
  * In yellow and red, three walks in ten are jumped once on the road: the guard shouts, and five
  * seconds later a pack of pirates comes at the caravan from ten tiles out, kept near it and paid for
  * out of the planet's fauna budget. Crews who fight them get a better price for the rest of the
@@ -23,7 +27,7 @@
  *   spawn through site.spawn_npc(), which takes only ambient NPCs, and the routine, leash, place and
  *   budget come with it. It owns its shop and opens the TraderShop window through the same facet
  *   datum the traders use (/datum/outpost_trader_ui/shop): the facet only asks its host for
- *   `shop`, `outpost`, `name`, speak_line() and play_denial(), which the peddler has.
+ *   `shop`, `outpost`, `name`, check_menu(), speak_line() and play_denial(), which the peddler has.
  * - The ruin tip is spoken ("old walls to the northeast"), not a helm waypoint: helm waypoints are
  *   overmap coordinates, and the crew is already on the planet.
  */
@@ -65,9 +69,10 @@
 	back = /obj/item/storage/backpack/satchel/leather
 
 /**
- * What a walking trader carries: survival basics a crew forgot, one odd thing, credits only. The
- * ledger buys a few planetary goods at AMBIENT_PEDDLER_BUYBACK_RATE of an outpost's price, never
- * for vouchers. One shop per peddler, fresh each visit.
+ * What a walking trader carries: survival basics a crew forgot, one odd thing, one weapon, credits
+ * only. The ledger buys a few planetary goods at AMBIENT_PEDDLER_BUYBACK_RATE of an outpost's price,
+ * never for vouchers. One shop per peddler, fresh each visit, but for the weapon, which stays with
+ * the site (/mob/living/basic/ambient_npc/planet/peddler/proc/load_weapon()).
  */
 /datum/outpost_shop/vendor/peddler
 	outpost_name = "Peddler's pack"
@@ -75,6 +80,7 @@
 	trader_name = "Peddler"
 	trader_outfit = /datum/outfit/ambient_peddler
 	categories = list(
+		"Weapons",
 		"Supplies",
 		"Odds and Ends",
 		"Wanted",
@@ -126,6 +132,8 @@
 	)
 	/// Crews who fought off an ambush with the caravan (ship REF -> TRUE): a better price this visit
 	var/list/helpers = list()
+	/// The one weapon in the pack this visit, if it has not sold
+	var/datum/shop_sku/peddler/weapon/weapon
 
 /datum/outpost_shop/vendor/peddler/New(obj/structure/overmap/trader_outpost/outpost)
 	. = ..()
@@ -140,7 +148,17 @@
 
 /datum/outpost_shop/vendor/peddler/Destroy()
 	helpers = null
+	weapon = null
 	return ..()
+
+/// Puts `sku_type` on top of the pack, as a single piece, and says so
+/datum/outpost_shop/vendor/peddler/proc/stock_weapon(sku_type)
+	add_sku(sku_type, SHELF_RARE)
+	weapon = skus[length(skus)]
+	skus -= weapon
+	skus.Insert(1, weapon)
+	var/list/greetings = trader_lines[TRADER_LINE_GREETING]
+	greetings += "Got one good piece at the bottom of the pack, if you've the coin."
 
 // Helping fight off the pack is worth a better price
 /datum/outpost_shop/vendor/peddler/get_discount_pct(obj/structure/overmap/ship/crew_ship)
@@ -220,6 +238,176 @@
 	item_path = /obj/item/clothing/mask/bandana/red
 	price_credits = 40
 
+// ----- the weapon in the pack -----
+
+/**
+ * One piece, on its own shelf, for credits only and with no reputation asked. Where a trader sells
+ * the same weapon the price is that trader's credits plus VOUCHER_CREDIT_VALUE for each voucher;
+ * anything else matches the nearest comparable line. Guns are dispensed as a trader's are: loaded,
+ * with a working pin. Never on special and never in a contract's pay.
+ */
+/datum/shop_sku/peddler/weapon
+	category = "Weapons"
+	stock_min = 1
+	stock_max = 1
+	restock_interval = INFINITY
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+// The tag is fixed, but a crew who fought off the pack still gets their price
+/datum/shop_sku/peddler/weapon/get_credit_price(mob/living/user, obj/structure/overmap/ship/crew_ship = get_crew_ship(user))
+	var/pct = (user && shop) ? shop.get_discount_pct(crew_ship) : 0
+	if(!pct)
+		return price_credits
+	return max(5, round(price_credits * (100 - pct) / 100, 5))
+
+/// What a peddler can have in the pack on a planet in `band`: SKU types, one per weapon
+/proc/ambient_peddler_weapons(band)
+	switch(band)
+		if(ZONE_RED)
+			return subtypesof(/datum/shop_sku/peddler/weapon/red)
+		if(ZONE_YELLOW)
+			return subtypesof(/datum/shop_sku/peddler/weapon/yellow)
+	return subtypesof(/datum/shop_sku/peddler/weapon/green)
+
+// Green. Barnaby's rifle and knife at Barnaby's prices; the handguns match his rifle.
+
+/datum/shop_sku/peddler/weapon/green/surplus_rifle
+	item_path = /obj/item/gun/ballistic/rifle/boltaction/surplus
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/green/makarov
+	item_path = /obj/item/gun/ballistic/automatic/pistol
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/green/m1911
+	item_path = /obj/item/gun/ballistic/automatic/pistol/m1911
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/green/detective
+	item_path = /obj/item/gun/ballistic/revolver/c38/detective
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/green/survival_knife
+	item_path = /obj/item/knife/combat/survival
+	price_credits = 350
+
+// Hits like Sarge's combat knife but sits a tier below it, so between that and the survival knife
+/datum/shop_sku/peddler/weapon/green/javelin
+	item_path = /obj/item/spear/military
+	price_credits = 500
+
+// Yellow. Sarge's and Vex's lines; the Uzi matches the C-20r and the Thompson the WT-550.
+
+/datum/shop_sku/peddler/weapon/yellow/laser
+	item_path = /obj/item/gun/energy/laser
+	price_credits = 1500
+
+/datum/shop_sku/peddler/weapon/yellow/riot_shotgun
+	item_path = /obj/item/gun/ballistic/shotgun/riot
+	price_credits = 1800
+
+/datum/shop_sku/peddler/weapon/yellow/energy_gun
+	item_path = /obj/item/gun/energy/e_gun
+	price_credits = 2400
+
+/datum/shop_sku/peddler/weapon/yellow/mateba
+	item_path = /obj/item/gun/ballistic/revolver/mateba
+	price_credits = 4200
+
+/datum/shop_sku/peddler/weapon/yellow/uzi
+	item_path = /obj/item/gun/ballistic/automatic/mini_uzi
+	price_credits = 6000
+
+/datum/shop_sku/peddler/weapon/yellow/c20r
+	item_path = /obj/item/gun/ballistic/automatic/c20r/unrestricted
+	price_credits = 6000
+
+/datum/shop_sku/peddler/weapon/yellow/wt550
+	item_path = /obj/item/gun/ballistic/automatic/wt550
+	price_credits = 6600
+
+/datum/shop_sku/peddler/weapon/yellow/tommygun
+	item_path = /obj/item/gun/ballistic/automatic/tommygun
+	price_credits = 6600
+
+/datum/shop_sku/peddler/weapon/yellow/combat_knife
+	item_path = /obj/item/knife/combat
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/yellow/ablative_bat
+	item_path = /obj/item/melee/baseball_bat/ablative
+	price_credits = 1000
+
+/datum/shop_sku/peddler/weapon/yellow/shortsword
+	item_path = /obj/item/claymore/shortsword
+	price_credits = 1200
+
+/datum/shop_sku/peddler/weapon/yellow/fireaxe
+	item_path = /obj/item/fireaxe
+	price_credits = 1500
+
+/datum/shop_sku/peddler/weapon/yellow/sabre
+	item_path = /obj/item/melee/sabre
+	price_credits = 1800
+
+/datum/shop_sku/peddler/weapon/yellow/boarding_axe
+	item_path = /obj/item/fireaxe/boardingaxe
+	price_credits = 2400
+
+// Red. No trader sells a red gun, so they match Vex's dearest weapon, the energy sword. The L6 SAW,
+// the anti-materiel rifle, the X-ray gun and the uniques stay out of the pack: guarded work pays those.
+
+/datum/shop_sku/peddler/weapon/red/carbine
+	item_path = /obj/item/gun/energy/laser/carbine
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/laser_cannon
+	item_path = /obj/item/gun/energy/lasercannon/unrestricted
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/scatter_laser
+	item_path = /obj/item/gun/energy/laser/scatter
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/hellgun
+	item_path = /obj/item/gun/energy/laser/hellgun
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/nuclear_gun
+	item_path = /obj/item/gun/energy/e_gun/nuclear
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/combat_shotgun
+	item_path = /obj/item/gun/ballistic/shotgun/automatic/combat
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/bulldog
+	item_path = /obj/item/gun/ballistic/shotgun/bulldog/unrestricted
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/cutlass
+	item_path = /obj/item/claymore/cutlass
+	price_credits = 6600
+
+// Blocks melee only and hits a little softer than the cutlass, so it goes at the cutlass's price
+/datum/shop_sku/peddler/weapon/red/claymore
+	item_path = /obj/item/claymore
+	price_credits = 6600
+
+// Turns bullets as an energy sword does
+/datum/shop_sku/peddler/weapon/red/katana
+	item_path = /obj/item/katana
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/energy_sword
+	item_path = /obj/item/melee/energy/sword/saber
+	price_credits = 8800
+
+/datum/shop_sku/peddler/weapon/red/energy_cutlass
+	item_path = /obj/item/melee/energy/sword/pirate
+	price_credits = 8800
+
 // =========================================================================
 // THE CARAVAN
 // =========================================================================
@@ -268,8 +456,9 @@
 	return ..()
 
 /**
- * Leaves what the ledger still wants with the site, so a caravan swept away and brought back next
- * visit is not a fresh market for the same goods (load_ledger() puts it back).
+ * Leaves what the ledger still wants, and whether the weapon sold, with the site, so a caravan swept
+ * away and brought back next visit is not a fresh market for the same goods or a fresh pack (load_ledger()
+ * puts them back).
  */
 /mob/living/basic/ambient_npc/planet/peddler/proc/save_ledger()
 	var/datum/ambient_place/site/site = place
@@ -279,16 +468,29 @@
 	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
 		demand[buyback.type] = buyback.demand
 	site.data["demand"] = demand
+	if(shop.weapon)
+		site.data["weapon_left"] = shop.weapon.stock
 
-/// Takes up the ledger where the last visit's peddler left it
+/// Takes up the ledger and the pack where the last visit's peddler left them
 /mob/living/basic/ambient_npc/planet/peddler/proc/load_ledger()
 	var/datum/ambient_place/site/site = place
-	var/list/demand = istype(site) ? site.data["demand"] : null
-	if(!islist(demand) || !shop)
+	if(!istype(site) || !shop)
+		return
+	load_weapon(site)
+	var/list/demand = site.data["demand"]
+	if(!islist(demand))
 		return
 	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
 		if(!isnull(demand[buyback.type]))
 			buyback.demand = demand[buyback.type]
+
+/// The site's one weapon: picked the first time from what its zone carries, then only ever the same one, while it has not sold
+/mob/living/basic/ambient_npc/planet/peddler/proc/load_weapon(datum/ambient_place/site/site)
+	if(!site.data["weapon"])
+		site.data["weapon"] = pick(ambient_peddler_weapons(site.band))
+		site.data["weapon_left"] = 1
+	if(site.data["weapon_left"] > 0)
+		shop.stock_weapon(site.data["weapon"])
 
 /// A line from the shop's own lines (the shop window calls this, as it does on a trader)
 /mob/living/basic/ambient_npc/planet/peddler/proc/speak_line(category)
@@ -328,6 +530,10 @@
 /// Whether `user` can still do business: near, awake, in sight
 /mob/living/basic/ambient_npc/planet/peddler/proc/menu_ok(mob/living/user)
 	return istype(user) && !IS_DEAD_OR_INCAP(user) && can_act() && get_dist(src, user) <= 2 && (src in view(2, user))
+
+/// The shop window and every sale ask this of their host, as of a trader: a customer still here, and a pack to sell from
+/mob/living/basic/ambient_npc/planet/peddler/proc/check_menu(mob/living/user)
+	return !shop_closed && menu_ok(user)
 
 /// Opens the shop window for `user`, unless the stock went down with the pony
 /mob/living/basic/ambient_npc/planet/peddler/proc/open_shop(mob/living/user)
