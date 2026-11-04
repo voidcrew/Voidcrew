@@ -849,6 +849,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/cutlass
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Weapons"
 	item_path = /obj/item/claymore/cutlass
 	price_credits = 3000
