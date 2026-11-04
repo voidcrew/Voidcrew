@@ -70,4 +70,4 @@ A planet keeps its band for the whole round. One the crew wrote off as lethal wi
 
 ## Landable asteroid fields
 
-Asteroid storms are the other place to put boots on rock. They appear on the chart as hazards in three severities, at least three per round, and you dock inside them at a "mining anchorage". They are not planets (no weather, no ruins, no air) but they are the fastest way to a full ore hold. Details are in [Mining & Salvage](mining.md).
+Asteroid storms are the other place to put boots on rock. They appear on the chart as hazards in three severities, at least eighteen per round, and you dock inside them at a "mining anchorage". They are not planets (no weather, no ruins, no air) but they are the fastest way to a full ore hold. Like a planet, a spent field moves elsewhere in its zone. Details are in [Mining & Salvage](mining.md).

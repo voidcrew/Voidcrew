@@ -13,7 +13,7 @@ A ruin starts as an "unknown signal", a contact with no name and no detail. Ther
 
 To board, fly onto the signal's tile and press Dock; the button reads "(boarding)". Two berths per ruin, same as a planet. Very large hulls are turned away, if the console says the ship is too big to dock, you need a smaller ride or a shuttle.
 
-The interior loads when the first ship arrives and is torn down once everyone leaves. **Anything you leave inside a ruin is gone when it unloads**, and once a ruin has been cleared out and abandoned, a different ruin appears elsewhere in its place. The supply of ordinary space ruins does not run out. [Asteroid fields](mining.md) are different: a field is spent when it unloads.
+The interior loads when the first ship arrives and is torn down once everyone leaves. **Anything you leave inside a ruin is gone when it unloads**, and once a ruin has been cleared out and abandoned, a different ruin appears elsewhere in its place. The supply of ordinary space ruins does not run out. [Asteroid fields](mining.md) do not run out either: a spent field moves elsewhere in its zone.
 
 ## Loot caches
 

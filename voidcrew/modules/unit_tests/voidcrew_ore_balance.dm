@@ -427,21 +427,31 @@
 
 // Borrow the test room without sweeping it; exercise the real unload state machine.
 /obj/structure/overmap/event/meteor/ore_balance_probe
-	var/docks_removed_while_retiring = FALSE
+	var/docks_removed_while_unloading = FALSE
 	var/footprint_released_while_claimed = FALSE
+	var/dockable_during_sweep = FALSE
+	var/loading_during_sweep = FALSE
+	/// Stands in for a band with no free tile left
+	var/nowhere_to_go = FALSE
 
 /obj/structure/overmap/event/meteor/ore_balance_probe/remove_docks()
-	docks_removed_while_retiring = retiring && !loaded
+	docks_removed_while_unloading = unloading && !loaded
 	return ..()
 
 /obj/structure/overmap/event/meteor/ore_balance_probe/remove_mapzone()
-	footprint_released_while_claimed = retiring && SSovermap.worldgen_owner == src && !reserve_dock
+	footprint_released_while_claimed = unloading && SSovermap.worldgen_owner == src && !reserve_dock
+	// What a ship or a survey console reaching the field mid-sweep gets told.
+	dockable_during_sweep = is_loaded()
+	load_level()
+	loading_during_sweep = loading
 	mapzone = null
 	footprint = null
 
-/datum/unit_test/voidcrew_ore_balance/teardown/Run()
-	var/turf/inside = run_loc_floor_bottom_left
-	var/obj/structure/overmap/event/meteor/ore_balance_probe/field = allocate(/obj/structure/overmap/event/meteor/ore_balance_probe)
+/obj/structure/overmap/event/meteor/ore_balance_probe/find_new_home(turf/old_tile)
+	return nowhere_to_go ? null : ..()
+
+/// Gives a probe a borrowed interior: the state load_level() would have left it in.
+/datum/unit_test/voidcrew_ore_balance/proc/arm_field(obj/structure/overmap/event/meteor/ore_balance_probe/field, turf/inside)
 	var/datum/map_zone/zone = allocate(/datum/map_zone)
 	zone.z_levels = list(reservation)
 	var/datum/map_footprint/footprint = allocate(/datum/map_footprint)
@@ -451,10 +461,22 @@
 	field.footprint = footprint
 	field.loaded = TRUE
 	field.reserve_dock = allocate(/obj/docking_port/stationary, inside)
+	return footprint
+
+/datum/unit_test/voidcrew_ore_balance/teardown/Run()
+	var/turf/inside = run_loc_floor_bottom_left
+	var/turf/old_tile = SSovermap.get_unused_overmap_square_in_zone_band(2)
+	TEST_ASSERT(old_tile, "No free yellow tile to stand the field on")
+	var/obj/structure/overmap/event/meteor/ore_balance_probe/field = allocate(/obj/structure/overmap/event/meteor/ore_balance_probe, old_tile)
+	var/datum/map_footprint/footprint = arm_field(field, inside)
+	GLOB.overmap_blocked_turfs[old_tile] = TRUE
+
 	field.first_dock_taken = TRUE
 	field.unload_level()
-	TEST_ASSERT(!field.retiring && field.loaded, "An occupied berth was torn down")
+	TEST_ASSERT(!field.unloading && field.loaded, "An occupied berth was torn down")
+	TEST_ASSERT_EQUAL(get_turf(field), old_tile, "An occupied field moved")
 	field.first_dock_taken = FALSE
+
 	var/mob/living/basic/player = allocate(/mob/living/basic, inside)
 	// The teardown guard reads the connected-mob index, not GLOB.player_list.
 	var/list/players_on_level = SSmobs.clients_by_zlevel[inside.z]
@@ -465,19 +487,157 @@
 	players_on_level -= player
 	TEST_ASSERT(player_blocked, "A connected occupant did not prevent teardown")
 	TEST_ASSERT(!neighbour_blocked, "A player outside the footprint prevented teardown")
+
+	var/obj/structure/overmap/ship/visitor = allocate(/obj/structure/overmap/ship, old_tile)
+	SSovermap.simulated_ships |= visitor
+	// The token leaves ahead of the hull, and the berth flags are the last thing to clear.
+	visitor.docked = field
+	visitor.state = "undocking" // OVERMAP_SHIP_UNDOCKING
+	field.unload_level()
+	TEST_ASSERT(!field.unloading && field.loaded, "A ship mid-departure did not hold the teardown")
+	TEST_ASSERT_EQUAL(get_turf(field), old_tile, "A field moved out from under a departing ship")
+	visitor.docked = null
+	visitor.state = "flying" // OVERMAP_SHIP_FLYING
+
 	field.load_level() // The loaded field must be reused, never regenerated.
 	TEST_ASSERT_EQUAL(field.footprint, footprint, "Redocking replaced an existing field")
+
 	var/fields_before = length(GLOB.meteor_fields)
-	original_blocked[inside] = GLOB.overmap_blocked_turfs[inside]
-	GLOB.overmap_blocked_turfs[inside] = TRUE
-	field.unload_level()
-	TEST_ASSERT(field.docks_removed_while_retiring, "Docks were removed before marking the field terminal")
+	var/field_ref = REF(field)
+	visitor.sync_close_overmap_objects()
+	TEST_ASSERT(field in visitor.close_overmap_objects, "The fixture ship could not reach the field")
+	visitor.discovered_contacts[field_ref] = WEAKREF(field)
+	visitor.dismissed_contacts[field_ref] = WEAKREF(field)
+	TEST_ASSERT(field.unload_level(), "An empty field refused to unload")
+
+	TEST_ASSERT(field.docks_removed_while_unloading, "Docks were removed before marking the teardown")
 	TEST_ASSERT(field.footprint_released_while_claimed, "Footprint release lost the worldgen claim")
-	TEST_ASSERT(QDELETED(field), "Successful unloading left the event alive")
-	TEST_ASSERT_EQUAL(length(GLOB.meteor_fields), fields_before - 1, "Teardown generated a replacement field")
-	TEST_ASSERT(!GLOB.overmap_blocked_turfs[inside], "A retired field left a phantom route obstruction")
+	TEST_ASSERT(!field.dockable_during_sweep, "A field offered a dock onto ground mid-sweep")
+	TEST_ASSERT(!field.loading_during_sweep, "A field started building during its own teardown")
+	TEST_ASSERT(!QDELETED(field), "A spent field was deleted")
+	TEST_ASSERT_EQUAL(length(GLOB.meteor_fields), fields_before, "Teardown changed the number of fields")
+	TEST_ASSERT(!field.unloading && !field.concerned && !field.loaded, "Teardown left the field locked")
+	TEST_ASSERT(!field.first_dock_taken && !field.second_dock_taken, "A spent field kept a berth claim")
 	TEST_ASSERT(SSovermap.worldgen_owner != field, "Successful teardown leaked its worldgen lock")
-	var/obj/structure/overmap/event/meteor/retired = allocate(/obj/structure/overmap/event/meteor)
-	retired.retiring = TRUE
-	retired.load_level()
-	TEST_ASSERT_NULL(retired.mapzone, "Loading regenerated a retiring field")
+
+	var/turf/new_tile = get_turf(field)
+	TEST_ASSERT(new_tile != old_tile, "A spent field stayed on its tile with the chart open")
+	TEST_ASSERT(istype(new_tile, /turf/open/overmap), "A spent field left the chart")
+	TEST_ASSERT_EQUAL(SSovermap.get_zone_band_for_turf(new_tile), 2, "A spent field left its zone band")
+	TEST_ASSERT(!GLOB.overmap_blocked_turfs[old_tile], "A spent field left a phantom route obstruction")
+	TEST_ASSERT(GLOB.overmap_blocked_turfs[new_tile], "A spent field did not block its new tile")
+	var/list/danger = visitor.build_autopilot_danger_map()
+	TEST_ASSERT(danger["[new_tile.x],[new_tile.y]"] && !danger["[old_tile.x],[old_tile.y]"], "Autopilot kept the field's old position")
+	TEST_ASSERT(!in_view_ring(list(old_tile.x, old_tile.y), list(new_tile.x, new_tile.y)), "A spent field landed in sight of where it left")
+
+	// A crew that charted the old position has nothing left to act on.
+	TEST_ASSERT(!(field in visitor.close_overmap_objects), "A ship on the old tile could still dock at the field")
+	TEST_ASSERT(!(visitor in field.close_overmap_objects), "The field still counted a ship on its old tile")
+	TEST_ASSERT(!visitor.discovered_contacts[field_ref], "The chart followed a field that moved")
+	TEST_ASSERT(!visitor.dismissed_contacts[field_ref], "A dismissal outlived the contact's position")
+
+	// The same object runs the whole cycle again.
+	arm_field(field, inside)
+	TEST_ASSERT(field.unload_level(), "A field that had moved once refused to unload again")
+	TEST_ASSERT(get_turf(field) != new_tile, "A field did not move on its second unload")
+
+	// With nowhere to go it stays and regrows where it stands.
+	var/turf/last_tile = get_turf(field)
+	arm_field(field, inside)
+	field.nowhere_to_go = TRUE
+	TEST_ASSERT(field.unload_level(), "A field with nowhere to go refused to release its interior")
+	TEST_ASSERT(!QDELETED(field), "A field with nowhere to go was deleted")
+	TEST_ASSERT_EQUAL(get_turf(field), last_tile, "A field with nowhere to go moved anyway")
+	TEST_ASSERT(GLOB.overmap_blocked_turfs[last_tile], "A field that stayed lost its route obstruction")
+	TEST_ASSERT(!field.unloading && !field.mapzone && !field.footprint, "A field that stayed cannot be built again")
+
+	visitor.docked = null
+	SSovermap.simulated_ships -= visitor
+
+/// Refusals during a teardown, and what a watchdog-released teardown leaves behind.
+/datum/unit_test/voidcrew_ore_balance/teardown_flags/Run()
+	var/obj/structure/overmap/event/meteor/busy = allocate(/obj/structure/overmap/event/meteor)
+	busy.unloading = TRUE
+	busy.load_level()
+	TEST_ASSERT_NULL(busy.mapzone, "Loading started on a field mid-teardown")
+	busy.unloading = FALSE
+
+	var/obj/structure/overmap/event/meteor/ore_balance_probe/wedged = allocate(/obj/structure/overmap/event/meteor/ore_balance_probe)
+	arm_field(wedged, run_loc_floor_bottom_left)
+	wedged.unloading = TRUE
+	wedged.concerned = TRUE
+	wedged.on_worldgen_timeout()
+	TEST_ASSERT(!wedged.unloading && !wedged.concerned, "A wedged teardown stayed latched")
+	TEST_ASSERT_EQUAL(length(wedged.admin_cleanup_timers()), 1, "A wedged teardown armed no second attempt")
+
+/// The route rules on a chart small enough to read.
+/datum/unit_test/voidcrew_ore_balance/field_routes/Run()
+	var/turf/origin = SSovermap.overmap_centre
+	var/list/row = block(locate(origin.x + 3, origin.y, origin.z), locate(origin.x + 6, origin.y, origin.z))
+	var/datum/overmap_layout/corridor = allocate(/datum/overmap_layout, row)
+	var/turf/first = row[1]
+	var/turf/second = row[2]
+	TEST_ASSERT(!corridor.hazard_keeps_routes(second), "A hazard closed the only route along a corridor")
+	TEST_ASSERT(!corridor.hazards[second], "The route check left its trial hazard standing")
+	TEST_ASSERT(corridor.hazard_keeps_routes(first), "A dead end was refused as if it were a route")
+	corridor.add_hazard(first, /obj/structure/overmap/event/meteor)
+	TEST_ASSERT(!corridor.hazard_keeps_routes(second), "A neighbouring hazard lost its last clear approach")
+
+	// The way round leaves the band, so the band's own route is closed.
+	var/list/grid = block(locate(origin.x + 3, origin.y, origin.z), locate(origin.x + 5, origin.y + 1, origin.z))
+	var/datum/overmap_layout/two_bands = allocate(/datum/overmap_layout, grid)
+	for(var/turf/spot as anything in grid)
+		two_bands.tiles[spot] = spot.y == origin.y ? 1 : 2
+	var/turf/middle = locate(origin.x + 4, origin.y, origin.z)
+	two_bands.hazards[middle] = TRUE
+	TEST_ASSERT(two_bands.neighbours_still_joined(middle), "The chart-wide route was missed")
+	TEST_ASSERT(!two_bands.neighbours_still_joined(middle, 1), "A route that leaves the band counted as staying inside it")
+	two_bands.hazards -= middle
+	TEST_ASSERT(!two_bands.hazard_keeps_routes(middle), "A hazard split its own band")
+
+	var/datum/mission/job = allocate(/datum/mission)
+	var/datum/mission_target/coords/coords = allocate(/datum/mission_target/coords, job)
+	var/turf/open/overmap/pinned_tile = SSovermap.get_unused_overmap_square_in_zone_band(1)
+	coords.resolved_turf = pinned_tile
+	job.target = coords
+	var/obj/structure/overmap/ship/board = allocate(/obj/structure/overmap/ship)
+	SSovermap.simulated_ships |= board
+	board.available_missions += job
+	var/list/pinned = SSovermap.contract_pinned_tiles()
+	board.available_missions -= job
+	SSovermap.simulated_ships -= board
+	job.target = null
+	TEST_ASSERT(pinned[pinned_tile], "A contract's coordinates were left open to a field")
+
+/// The real interior, built and swept twice on one object. Nothing in a field may be one-shot.
+/datum/unit_test/voidcrew_ore_balance/field_reload
+	var/obj/structure/overmap/event/meteor/minor/field
+
+/datum/unit_test/voidcrew_ore_balance/field_reload/Destroy()
+	if(!QDELETED(field))
+		field.remove_docks()
+		field.remove_mapzone()
+	return ..()
+
+/datum/unit_test/voidcrew_ore_balance/field_reload/Run()
+	var/turf/start = SSovermap.get_unused_overmap_square_in_zone_band(1)
+	TEST_ASSERT(start, "No free green tile to stand the field on")
+	field = allocate(/obj/structure/overmap/event/meteor/minor, start)
+	var/list/footprints = list()
+	for(var/visit in 1 to 2)
+		var/turf/here = get_turf(field)
+		field.load_level()
+		TEST_ASSERT(field.is_loaded(), "Visit [visit]: the field did not load")
+		TEST_ASSERT(field.reserve_dock && field.reserve_dock_secondary, "Visit [visit]: the field built without both berths")
+		TEST_ASSERT(field.footprint.contains_turf(get_turf(field.reserve_dock)), "Visit [visit]: a berth stands outside the field's slot")
+		TEST_ASSERT(field.field_area && !QDELETED(field.field_area), "Visit [visit]: the field has no area of its own")
+		TEST_ASSERT(!(field.footprint in footprints), "Visit [visit]: the field reused a released footprint")
+		footprints += field.footprint
+		var/rock = 0
+		for(var/turf/closed/mineral/random/asteroid_field/wall in field.footprint.get_block())
+			rock++
+		TEST_ASSERT(rock > 0, "Visit [visit]: the field carved no rock")
+		TEST_ASSERT(field.unload_level(), "Visit [visit]: the empty field refused to unload")
+		TEST_ASSERT(!field.mapzone && !field.footprint && !field.reserve_dock && !field.field_area, "Visit [visit]: teardown kept interior state")
+		TEST_ASSERT(get_turf(field) != here, "Visit [visit]: the field did not move")
+		TEST_ASSERT_EQUAL(SSovermap.get_zone_band_for_turf(get_turf(field)), 1, "Visit [visit]: the field left its zone band")

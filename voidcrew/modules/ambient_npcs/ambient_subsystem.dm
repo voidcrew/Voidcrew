@@ -465,7 +465,7 @@ SUBSYSTEM_DEF(ambient_npcs)
 // =========================================================================
 
 /**
- * Called once per field per round from the field's one-time population
+ * Called each time a field builds an interior, from its population
  * (/obj/structure/overmap/event/meteor/populate_field_extras()): maybe a site on the carved rock,
  * by the kinds' `field_chance`. `open_turfs` are free open tiles of the field. Returns how many NPCs
  * it spawned. `kinds` overrides the kinds (tests).
@@ -495,13 +495,19 @@ SUBSYSTEM_DEF(ambient_npcs)
 			spawned += length(site.living_npcs())
 	return spawned
 
-/// Field sites whose NPCs are all gone (the field unloaded, or they were killed) are done: fields populate once a round
+/// Field sites whose NPCs are all gone (the field unloaded, or they were killed) are done: the next interior rolls its own
 /datum/controller/subsystem/ambient_npcs/proc/prune_field_sites()
 	for(var/datum/ambient_place/site/site as anything in field_sites.Copy())
 		if(length(site.npcs))
 			continue
 		field_sites -= site
 		qdel(site)
+
+/// Called by a field as it unloads. Its sites belong to the rock being swept, not to its next interior.
+/datum/controller/subsystem/ambient_npcs/proc/forget_field(obj/structure/overmap/field)
+	for(var/datum/ambient_place/site/site as anything in field_sites)
+		if(site.field_ref?.resolve() == field)
+			site.field_ref = null
 
 // =========================================================================
 // STORMS

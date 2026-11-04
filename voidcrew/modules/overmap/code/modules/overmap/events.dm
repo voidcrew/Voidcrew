@@ -71,8 +71,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/dock_index
 	/// Bottom-left turf of the field's padded generation footprint (set by load_level, cleared on unload)
 	var/turf/field_bottom_left
-	/// Terminal once teardown starts; no caller may regenerate this field.
-	var/retiring = FALSE
+	/// TRUE from the start of teardown until the field has moved on. Blocks docking and loading.
+	var/unloading = FALSE
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
 	. = ..()
@@ -81,15 +81,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 /obj/structure/overmap/event/meteor/Destroy()
 	GLOB.meteor_fields -= src
-	// The chart was previously static. Retiring a field must also open its cached route.
-	var/turf/chart = get_turf(src)
-	var/still_blocked = FALSE
-	for(var/obj/structure/overmap/event/other in chart)
-		if(other != src && !QDELETED(other) && !istype(other, /obj/structure/overmap/event/nebula))
-			still_blocked = TRUE
-			break
-	if(!still_blocked)
-		GLOB.overmap_blocked_turfs -= chart
+	open_chart_tile(get_turf(src))
 	field_bottom_left = null
 	field_area = null
 	// The orderly teardown (unload_level -> remove_mapzone) leaves both of these null. What
@@ -108,6 +100,21 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 /obj/structure/overmap/event/meteor/get_interior_footprint()
 	return footprint
+
+/// NPC routes read the blocked-tile cache, so it has to follow the field wherever it goes.
+/obj/structure/overmap/event/meteor/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(isturf(old_loc) && old_loc != loc)
+		open_chart_tile(old_loc)
+	if(istype(loc, /turf/open/overmap))
+		GLOB.overmap_blocked_turfs[loc] = TRUE
+
+/// Opens a tile in the blocked-tile cache, unless another storm is still standing on it.
+/obj/structure/overmap/event/meteor/proc/open_chart_tile(turf/chart)
+	for(var/obj/structure/overmap/event/other in chart)
+		if(other != src && !QDELETED(other) && !istype(other, /obj/structure/overmap/event/nebula))
+			return
+	GLOB.overmap_blocked_turfs -= chart
 
 /obj/structure/overmap/event/meteor/minor
 	name = "asteroid storm (minor)"
@@ -156,7 +163,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * contract: null takes the default, UI callers pass WORLDGEN_QUEUE_NO_WAIT.
  */
 /obj/structure/overmap/event/meteor/proc/load_level(mob/user, obj/structure/overmap/ship/waiting_ship, queue_timeout)
-	if(retiring)
+	if(unloading)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 	if(mapzone)
@@ -175,11 +182,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 
-	// The world moved while we queued: recheck terminal teardown as well.
-	if(retiring)
+	// The world moved while we queued: recheck teardown as well.
+	if(unloading)
 		SSovermap.worldgen_release(src)
 		loading = FALSE
-		worldgen_end(probe, "retiring")
+		worldgen_end(probe, "unloading")
 		SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
 		return
 	if(mapzone)
@@ -274,16 +281,22 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// exist, and request_site_load()'s fast path re-invokes ship_act off this answer -
 	// answering "loaded" while the slot is gone would bounce the two procs off each other
 	// in an unbroken INVOKE_ASYNC loop.
-	return !retiring && loaded && mapzone && reserve_dock
+	return !unloading && loaded && mapzone && reserve_dock
 
 /// A wedged load or teardown leaves these flags latched (the watchdog force-released
 /// the queue, but nothing else ever resets them), and ships may be registered for a
 /// completion signal the dead job will now never send - so send the failure here, or
 /// the site reads "survey underway" and holds its waiters for the rest of the round.
 /obj/structure/overmap/event/meteor/on_worldgen_timeout()
+	// A teardown that died left its slot half swept. It had already spent the timer that got
+	// it here, so it has to arm its own second attempt or the slot is held until roundend.
+	var/teardown_died = unloading && mapzone
 	loading = FALSE
+	unloading = FALSE
 	concerned = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SITE_LOAD_FINISHED, FALSE)
+	if(teardown_died)
+		addtimer(CALLBACK(src, PROC_REF(unload_level)), 30 SECONDS, TIMER_UNIQUE)
 
 /obj/structure/overmap/event/meteor/attack_ghost(mob/user)
 	if(reserve_dock)
@@ -306,7 +319,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	return "[name] (mining anchorage)"
 
 /obj/structure/overmap/event/meteor/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
-	if(retiring)
+	if(unloading)
 		return
 	// dock() refuses interdicted ships only after the dock slot below is claimed -
 	// refuse up front instead
@@ -440,10 +453,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// World population (voidcrew/modules/ambient_npcs): maybe someone already working the rock
 	SSambient_npcs.populate_field(src, open_turfs)
 
-/**
- * Releases the field's map slot and docks when nobody's using it.
- * Successful teardown also retires the event permanently.
- */
+/// Whether the field's map slot and docks can be released right now.
 /obj/structure/overmap/event/meteor/proc/can_release_interior()
 	return isnull(get_interior_release_blocker(log_failure = TRUE))
 
@@ -486,8 +496,13 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 
 	return null
 
+/**
+ * Releases the field's map slot and docks when nobody's using it, then sends the field
+ * elsewhere in its band. Its next visitor builds a fresh interior there. Returns TRUE when
+ * the interior was released.
+ */
 /obj/structure/overmap/event/meteor/proc/unload_level()
-	if(retiring || concerned)
+	if(unloading || concerned)
 		return
 
 	if(!can_release_interior())
@@ -535,12 +550,50 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	// is_loaded() must read FALSE the moment the ground stops being safe to dock into,
 	// or an arriving ship's fast path resumes an approach into turfs that are
 	// mid-recycle.
-	retiring = TRUE
+	unloading = TRUE
 	loaded = FALSE
+	SSambient_npcs.forget_field(src)
 	remove_docks()
 	remove_mapzone()
+	// Inside the claim, unlike a planet: each route check reads the chart as it stands, and
+	// two fields moving at once could each pass while closing a route between them.
+	relocate_field()
+	first_dock_taken = FALSE
+	second_dock_taken = FALSE
+	unloading = FALSE
+	concerned = FALSE
 	SSovermap.worldgen_release(src)
-	qdel(src)
+	return TRUE
+
+/**
+ * Sends a spent field to another tile of its band. Severity and band stay; ore is rolled when
+ * the next visitor builds the interior. With nowhere to go it keeps its tile and regrows there.
+ */
+/obj/structure/overmap/event/meteor/proc/relocate_field()
+	var/turf/old_tile = get_turf(src)
+	var/turf/new_home = find_new_home(old_tile)
+	if(QDELETED(src)) // The search can yield, and a VV delete does not wait for the queue.
+		return FALSE
+	if(!new_home)
+		log_mapping("SSovermap: asteroid field '[name]' has nowhere to go - regenerating at ([x], [y])")
+		return FALSE
+	// Charts drop it rather than follow it, so it has to be found again. The helm's dock and
+	// beam paths all test close_overmap_objects, which the move below clears on its own.
+	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
+		if(!QDELETED(ship))
+			ship.forget_contact(src)
+	forceMove(new_home)
+	// Anyone left sitting on the old tile is looking at plain space now.
+	for(var/obj/structure/overmap/ship/ship in old_tile)
+		ship.update_crew_parallax_context()
+	log_mapping("SSovermap: asteroid field '[name]' moved from ([old_tile.x], [old_tile.y]) to ([x], [y])")
+	return TRUE
+
+/// The tile a spent field moves to, or null if it should stay where it is.
+/obj/structure/overmap/event/meteor/proc/find_new_home(turf/old_tile)
+	if(!istype(old_tile, /turf/open/overmap))
+		return null
+	return SSovermap.find_field_relocation_tile(old_tile, SSovermap.get_zone_band_for_turf(old_tile))
 
 /obj/structure/overmap/event/meteor/proc/remove_docks()
 	if(reserve_dock)
