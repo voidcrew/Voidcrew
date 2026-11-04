@@ -21,7 +21,7 @@ Cargo does not sell security equipment, individual combat guns or conversion kit
 |---|---|---|---|
 | Surplus bolt-action rifle | Barnaby, Halcyon | 900 cr | None |
 | Disabler | Sarge, Quartermain | 400 cr | None |
-| Laser gun | Sarge, Quartermain | 1,500 cr | None |
+| Laser gun | Sarge, Quartermain | 1,500 cr | 4 |
 | Riot shotgun | Sarge, Quartermain | 1,800 cr | 4 |
 | Energy gun | Sarge, Quartermain | 2,400 cr | 4 |
 | C-20r | Vex, Undertow | 3,600 cr + 2 vouchers | 4 |
@@ -74,7 +74,7 @@ The Event Horizon recharges itself and fires a long-range beam that opens a brie
 
 Traders sell ammunition, and the [research tree](research.md) unlocks magazines and specialty loads. A 50-round L6 SAW magazine costs **50 iron, 10 titanium, 10 plasma and 5 plastic sheets** before lathe discounts. Its 80-point node requires Exotic Ammunition and Automatic Ammunition. Fully upgraded lathes reduce the material cost to 40%.
 
-Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research; L6, Bulldog, sniper and explosive ammunition need 11.
+Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research, and Sarge won't sell you C-20r or WT-550 magazines without it; L6, Bulldog, sniper and explosive ammunition need 11.
 
 **No Quarter** uses heavy cartridges, which fit no other gun. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
 

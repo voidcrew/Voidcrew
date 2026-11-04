@@ -54,7 +54,7 @@ A job that would go past the limit pays only up to it. Past that it still pays i
 |---|---|---|
 | Starting crew | Public | Green contracts, ordinary research and public trader stock |
 | **4** | Yellow | Yellow contracts and stock, Barnaby's back room, fitter's gauntlets; Automatic, C-20r, WT-550 and Specialist Ammunition research; Electric Weaponry (ion, temperature and tesla kits) |
-| **11** | Advanced | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research; Advanced Beam Weaponry (X-ray and advanced energy gun kits) |
+| **11** | Advanced | Red contracts, advanced trader stock, Skunkworks cell and maneuvering harness; L6, Bulldog, sniper, Explosive and Experimental Ammunition research; shield, interdiction, data siphon and electronic warfare research; Advanced Beam Weaponry (X-ray and advanced energy gun kits) |
 | **22** | Elite | Elite trader stock, Vex's back room and Military Nanite Programming research; Illegal Technology (energy crossbow kit and rapid syringe gun) and Unregulated Bluespace Research (Event Horizon kit) |
 
 Locked goods say what they need on the buy button. Reputation never changes a price. Different goods have different requirements: arriving at a red outpost does not unlock its entire shop. Back-room goods have a shared limit of **three of each item per crew per round**.
