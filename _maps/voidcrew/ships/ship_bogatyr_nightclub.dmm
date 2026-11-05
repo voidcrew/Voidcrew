@@ -708,11 +708,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/armory)
-"wBI" = (
-/obj/structure/sign/poster/random,
-/obj/effect/decal/cleanable/wrapping,
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/bogatyr/dormitories)
 "wZg" = (
 /mob/living/basic/mining/wolf{
 	faction = list("neutral");
@@ -933,7 +928,7 @@ gHC
 fmj
 tkC
 tkC
-wBI
+skG
 cSN
 opC
 opC

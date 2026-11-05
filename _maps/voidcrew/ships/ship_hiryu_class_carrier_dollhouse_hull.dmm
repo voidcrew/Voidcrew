@@ -115,10 +115,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
-"fBt" = (
-/obj/machinery/power/apc/auto_name/directional/west,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
 "fHc" = (
 /obj/machinery/door/airlock/public/glass,
 /obj/machinery/door/firedoor,
@@ -166,6 +162,11 @@
 	},
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
+"ijC" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_helm)
 "ioR" = (
 /obj/structure/cable,
@@ -1113,7 +1114,7 @@ qkk
 qkk
 asF
 uGF
-fBt
+ijC
 uoG
 oYd
 xrN

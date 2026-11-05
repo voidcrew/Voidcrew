@@ -9,6 +9,12 @@
 /obj/structure/table_frame,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
+"jVd" = (
+/obj/item/clothing/suit/toggle/labcoat/science,
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/purple,
+/area/template_noop)
 "mud" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/modular_map_connector,
@@ -67,15 +73,6 @@
 /obj/item/radio/intercom/directional/north,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
-"wTN" = (
-/obj/item/clothing/suit/toggle/labcoat/science,
-/obj/effect/decal/cleanable/blood/gibs,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium/purple,
-/area/template_noop)
 "ycs" = (
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/mineral/titanium/purple,
@@ -88,7 +85,7 @@ mud
 "}
 (2,1,1) = {"
 cTy
-wTN
+jVd
 rfb
 "}
 (3,1,1) = {"

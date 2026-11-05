@@ -56,11 +56,8 @@
 	},
 /turf/open/floor/mineral/titanium/blue,
 /area/template_noop)
-"sra" = (
+"spi" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/light/small{
-	dir = 4
-	},
 /obj/structure/closet/crate/freezer/blood,
 /turf/open/floor/mineral/titanium/blue,
 /area/template_noop)
@@ -89,6 +86,6 @@ saP
 uvE
 oAY
 pFq
-sra
+spi
 aPC
 "}

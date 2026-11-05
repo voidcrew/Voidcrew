@@ -27,6 +27,15 @@
 	},
 /turf/open/floor/plating,
 /area/template_noop)
+"dlR" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
 "dKG" = (
 /obj/machinery/power/terminal{
 	dir = 4
@@ -232,7 +241,7 @@ tZf
 (3,1,1) = {"
 bNT
 pyq
-vpf
+dlR
 qVu
 vpf
 dLu

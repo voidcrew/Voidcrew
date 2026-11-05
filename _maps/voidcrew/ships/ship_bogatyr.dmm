@@ -529,6 +529,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
+"HG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/shuttle/voidcrew/bogatyr/armory)
 "Ie" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
@@ -1042,7 +1047,7 @@ dH
 bl
 LY
 AD
-zl
+HG
 zl
 zl
 zl
