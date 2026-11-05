@@ -1636,7 +1636,7 @@
   "/obj/item/ammo_casing/energy/photon": {
    "confidence": "high",
    "group": "energy lenses built into a gun",
-   "hash": "2ae7914b56e4aba8",
+   "hash": "0d3cba5245be0f7c",
    "name": "energy weapon lens",
    "note": "A slow bright bolt that pierces mobs: every living thing it passes through takes a flash (intensity 3, silicons included) and 1.5 s of confusion, and silicons throw sparks. It loses a fifth of its speed on every tile of its 20-tile range, and where it ends it sparks and flashes every living mob within 5 tiles that can see it. The code also tries to leave a fire hotspot on 40% of tiles it crosses, but that handler is hooked to things entering the bolt itself, so it looks like it never fires (not confirmed in play).",
    "rank": 12,
@@ -1897,7 +1897,7 @@
   "/obj/item/ammo_casing/rocket/heap": {
    "confidence": "high",
    "group": "launcher rounds",
-   "hash": "39f946a6983b4cf6",
+   "hash": "7bcbe632765901b3",
    "name": "Dardo HE-AP rocket",
    "note": "Explodes on the target: against non-living things a radius-1 heavy blast with light out to 2, fire to 3 and a flash to 4; against living targets the same without the heavy ring. A living target not in hard crit has a 1% chance of being gibbed outright. Subtypes with anti-armour damage hurt mechs and silicons extra. / Explodes with a radius-1 heavy blast, light to 3, fire to 4 and a flash to 1 on any target, and deals 200 damage to a mech or 150 brute and 50 burn to a silicon. The 1% instant-gib roll still announces itself but never gibs this variant.",
    "rank": 1,
@@ -1907,7 +1907,7 @@
   "/obj/item/ammo_casing/rocket/weak": {
    "confidence": "high",
    "group": "launcher rounds",
-   "hash": "365e659e491dc300",
+   "hash": "1d1d30cd5e389c11",
    "name": "Dardo HE Low-Yield rocket",
    "note": "Explodes on the target: against non-living things a radius-1 heavy blast with light out to 2, fire to 3 and a flash to 4; against living targets the same without the heavy ring. A living target not in hard crit has a 1% chance of being gibbed outright. Subtypes with anti-armour damage hurt mechs and silicons extra. / Same blast as the standard rocket (heavy ring on non-living things, none on living targets), but its override never gibs, so the 1% roll only produces the shout.",
    "rank": 3,

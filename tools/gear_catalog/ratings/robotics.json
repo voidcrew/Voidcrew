@@ -377,7 +377,7 @@
   "/obj/item/aiupgrade/power_transfer": {
    "confidence": "medium",
    "group": "AI hardware",
-   "hash": "0dfa649b04739a80",
+   "hash": "1f8f7307eb3ae512",
    "name": "power transfer upgrade",
    "note": "Used on an AI it installs the disk's module and is consumed. The power transfer disk gives a click-an-APC ability that adds 1 MJ to the APC's cell for 50 of the AI's backup battery (it needs more than 50 left; the battery tops out at 200 and refills while powered), with no use limit, and a second copy is refused. The surveillance disk makes the AI's camera eye relay nearby speech (not radio) that is visible on camera; the lookup used for upgrade-type disks matches any AI-module ability the AI already has, in which case the disk is consumed without applying the upgrade.",
    "rank": 4,
@@ -387,7 +387,7 @@
   "/obj/item/aiupgrade/surveillance_upgrade": {
    "confidence": "medium",
    "group": "AI hardware",
-   "hash": "c6c74b7aaf6a2884",
+   "hash": "f391cd0a2daf6e26",
    "name": "surveillance software upgrade",
    "note": "Used on an AI it installs the disk's module and is consumed. The power transfer disk gives a click-an-APC ability that adds 1 MJ to the APC's cell for 50 of the AI's backup battery (it needs more than 50 left; the battery tops out at 200 and refills while powered), with no use limit, and a second copy is refused. The surveillance disk makes the AI's camera eye relay nearby speech (not radio) that is visible on camera; the lookup used for upgrade-type disks matches any AI-module ability the AI already has, in which case the disk is consumed without applying the upgrade.",
    "rank": 5,

@@ -1324,7 +1324,7 @@
   "/obj/item/gun/energy/laser/luxurypaywall": {
    "confidence": "low",
    "group": "beam weapons",
-   "hash": "e780ca397179e168",
+   "hash": "855c9b94b6afc8d2",
    "name": "luxurious laser gun",
    "note": "Meant to charge the shooter 20 cr per shot after a one-time accept prompt, with the money going to no one. By code trace its pin has no owner account, is dropped out of the gun at spawn with its gun link unset, and the accept prompt then reads the gun's name from that unset link, so it likely errors and never fires (not run in game). / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
    "rank": 12,
@@ -1451,7 +1451,7 @@
   "/obj/item/gun/energy/photon": {
    "confidence": "low",
    "group": "tasers and control",
-   "hash": "8398a71ff5531386",
+   "hash": "0727f7f2b202e85c",
    "name": "photon cannon",
    "note": "The bolt passes through mobs and flashes each living one it crosses at strength 3 (only 3 or more flash protection stops it, less only reduces the eye damage; bare eyes take 12-16), confuses it for 1.5 s and sparks silicons. At the end of its 20-tile range it flashes everyone within 5 tiles; its coded 40% chance of fire on each tile hangs on a signal the bolt never receives, so it likely never fires (untested). / A slow bright bolt that pierces mobs: every living thing it passes through takes a flash (intensity 3, silicons included) and 1.5 s of confusion, and silicons throw sparks. It loses a fifth of its speed on every tile of its 20-tile range, and where it ends it sparks and flashes every living mob within 5 tiles that can see it. The code also tries to leave a fire hotspot on 40% of tiles it crosses, but that handler is hooked to things entering the bolt itself, so it looks like it never fires (not confirmed in play).",
    "rank": 2,

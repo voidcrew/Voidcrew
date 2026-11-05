@@ -216,7 +216,7 @@
   "/obj/item/organ/cyberimp/chest/reviver": {
    "confidence": "high",
    "group": "Revive and last stand",
-   "hash": "e660131f698c6000",
+   "hash": "08c2a157be39991f",
    "name": "reviver implant",
    "note": "Whenever the wearer is not conscious (crit, knocked out, asleep or dead) it starts patching: after 3 s, then every 2 s it heals 5 oxygen, 2 brute, 2 burn and 1 toxin damage, and each heal adds to a recharge cost. If the wearer is dead, can be defibbed and is back above hard-crit health, it revives them 8 s or more after starting, which adds 10 minutes to the recharge. It shuts down when the wearer wakes and stays offline for the accumulated cost. An EMP adds 20 s to the cooldown and gives a heart attack (50% heavy, 25% light) lasting 60 s (30 s light).",
    "rank": 2,
@@ -402,7 +402,7 @@
   "/obj/item/organ/cyberimp/cyberware/lazarus": {
    "confidence": "high",
    "group": "Revive and last stand",
-   "hash": "57cea7f948b558e5",
+   "hash": "7cf1533c59986a58",
    "name": "Lazarus node",
    "note": "When the wearer drops from conscious into any non-conscious, non-dead state (crit or knocked out), it spends 1 s charging with a visible seizure, then heals them to 30% of max health (oxygen first, then brute and burn in proportion), clears stun, knockdown, immobilize, paralysis, unconsciousness and stamina damage, and stands them up. It works once per 6 minutes and does nothing if they die during the charge. It takes the heart-aid slot, so it replaces a printable reviver.",
    "rank": 1,

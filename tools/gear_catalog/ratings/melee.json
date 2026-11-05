@@ -956,7 +956,7 @@
   "/obj/item/knife/understudy": {
    "confidence": "high",
    "group": "boss weapons and uniques",
-   "hash": "23d32e6d437dfb69",
+   "hash": "d59dcbcdb44b90cc",
    "name": "\"Understudy\"",
    "note": "Hitting a human marks them for 10 seconds if the hit leaves them unconscious or worse, or if they were already dead. Using the knife in hand while the mark lasts copies that person's name, voice and look onto the user for 10 minutes, and using it in hand again drops the disguise. The look is a one-time snapshot that can revert if the user's icons are rebuilt, and the description's no-fingerprints claim has no code behind it.",
    "rank": 12,

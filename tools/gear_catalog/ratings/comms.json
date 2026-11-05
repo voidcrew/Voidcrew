@@ -536,7 +536,7 @@
   "/obj/item/radio/listening_coin": {
    "confidence": "medium",
    "group": "radio jammers and bugs",
-   "hash": "5b0fcc052e96bf6e",
+   "hash": "a5585b105cdd8782",
    "name": "worn credit chit",
    "rank": 1,
    "reason": "Authored unique from ruin caches: a bugged credit chit with a paired earpiece that hears what is said within 2 tiles of it. Small power. It is here only because it should never sit on a shelf.",

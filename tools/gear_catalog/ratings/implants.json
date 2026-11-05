@@ -61,7 +61,7 @@
   "/obj/item/implant/deathrattle": {
    "confidence": "high",
    "group": "Implants that do nothing here",
-   "hash": "720a9da00b09ca31",
+   "hash": "87f67d21e31cf353",
    "name": "deathrattle implant",
    "note": "When a host dies, every other host in the same implant group is told their name and location. An implant not registered to a group, such as one from a random spawner, does nothing; groups come from the syndicate deathrattle box (eight linked implants) and station traits.",
    "rank": 6,
@@ -120,7 +120,7 @@
   "/obj/item/implant/vex_insurance": {
    "confidence": "high",
    "group": "Last-ditch implants",
-   "hash": "f09c739b42d09928",
+   "hash": "32b126095e822dd8",
    "name": "Vex's insurance implant",
    "note": "One use: the first time the host drops into soft or hard crit (not plain unconsciousness or an instant death) it heals 40 oxygen, 10 toxin, 15 brute and 15 burn damage and injects 10u epinephrine, then 10 seconds later teleports them to their registered ship (beside a cryopod, else any open deck tile) whether or not they are still alive. With no registered ship it only stabilizes; the implant burns out either way.",
    "rank": 1,
@@ -166,7 +166,7 @@
   "/obj/item/implantcase/deathrattle": {
    "confidence": "high",
    "group": "Implants that do nothing here",
-   "hash": "d8175095678bf3a5",
+   "hash": "18ec6bc587331a6d",
    "name": "implant case - 'Deathrattle'",
    "rank": 7,
    "reason": "Holds a deathrattle implant, which reports crew deaths to its wearer.",
@@ -265,7 +265,7 @@
   "/obj/item/implanter/vex_insurance": {
    "confidence": "high",
    "group": "Last-ditch implants",
-   "hash": "f7605bc232636e78",
+   "hash": "bffb31eea0d6ec7c",
    "name": "implanter (Vex's insurance)",
    "rank": 2,
    "reason": "Holds Vex's insurance implant, a one-use escape from crit back to your ship. 3,000 cr plus 3 vouchers at reputation 22, three per crew.",

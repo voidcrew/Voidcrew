@@ -77,7 +77,7 @@
   "/obj/item/bombcore/syndicate": {
    "confidence": "high",
    "group": "big bombs and payloads",
-   "hash": "2f74ef64f5b17105",
+   "hash": "ff3857fd451db10b",
    "name": "Donk Co. Super-Stable Bomb Payload",
    "note": "A bomb core that ignores explosions entirely (its explosion handler does nothing), but its burn handler calls the parent, so it still detonates when it burns up; the shell triggers it electronically. Same blast as the plain core (3/9/17/17), and the XL version is 5/10/20/20.",
    "rank": 3,
@@ -87,7 +87,7 @@
   "/obj/item/bombcore/syndicate/large": {
    "confidence": "high",
    "group": "big bombs and payloads",
-   "hash": "ddcd2fb93408f3b9",
+   "hash": "1a16b9a606eca06a",
    "name": "Donk Co. Super-Stable Bomb Payload XL",
    "note": "A bomb core that ignores explosions entirely (its explosion handler does nothing), but its burn handler calls the parent, so it still detonates when it burns up; the shell triggers it electronically. Same blast as the plain core (3/9/17/17), and the XL version is 5/10/20/20.",
    "rank": 2,
@@ -422,6 +422,7 @@
   "/obj/item/bombcore/emp": "no route",
   "/obj/item/bombcore/large": "no route",
   "/obj/item/bombcore/miniature": "no route",
+  "/obj/item/bombcore/syndicate/voidcrew_burn_test": "no route",
   "/obj/item/bombcore/training": "no route",
   "/obj/item/grenade": "abstract",
   "/obj/item/grenade/antigravity": "no route",

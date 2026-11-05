@@ -1507,7 +1507,7 @@
   "/obj/item/nanite_remote": {
    "confidence": "medium",
    "group": "Odds and ends",
-   "hash": "66bae55541ca6ecd",
+   "hash": "a48966309a2c629d",
    "name": "nanite remote control",
    "note": "Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
    "rank": 2,
@@ -1517,7 +1517,7 @@
   "/obj/item/nanite_remote/comm": {
    "confidence": "medium",
    "group": "Odds and ends",
-   "hash": "35edc421f9e492e6",
+   "hash": "a48966309a2c629d",
    "name": "nanite communication remote",
    "note": "Same as the nanite remote but sends a typed text message along with the code, which only nanite comm-type programs act on. Its sending is also in afterattack, so by my reading it never fires while the item is NOBLUDGEON. / Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
    "rank": 3,
