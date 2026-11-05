@@ -1,19 +1,38 @@
-/// Hull pieces a saved ship always keeps, whatever they are made of. Windows and grilles stay as
-/// they are; false walls and mineral doors are saved as their plain iron versions.
-GLOBAL_LIST_INIT(ship_save_sealing_structures, typecacheof(list(
+/// Fittings a saved ship always keeps, whatever they are made of. Windows and grilles seal the hull; false
+/// walls and mineral doors are saved as their plain iron versions; a med bay needs its operating table.
+GLOBAL_LIST_INIT(ship_save_kept_structures, typecacheof(list(
 	/obj/structure/window,
 	/obj/structure/grille,
 	/obj/structure/falsewall,
 	/obj/structure/mineral_door,
+	/obj/structure/table/optable,
+)))
+
+/// Materials worth carrying into the next round by breaking a saved fitting down. Everything a ship is ordinarily
+/// furnished in stays out of this list: iron, glass, wood, plastic, titanium and the alloys.
+GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
+	/datum/material/silver,
+	/datum/material/gold,
+	/datum/material/diamond,
+	/datum/material/uranium,
+	/datum/material/plasma,
+	/datum/material/bluespace,
+	/datum/material/bananium,
+	/datum/material/runite,
+	/datum/material/adamantine,
+	/datum/material/mythril,
+	/datum/material/hot_ice,
+	/datum/material/metalhydrogen,
+	/datum/material/zaukerite,
 )))
 
 /// Build a statue of gold and save it for two parts, and you could break it down next round.
 /proc/ship_save_refuses_object(obj/object)
-	if(!isstructure(object) || is_type_in_typecache(object, GLOB.ship_save_sealing_structures))
+	if(!isstructure(object) || is_type_in_typecache(object, GLOB.ship_save_kept_structures))
 		return FALSE
 	for(var/material_key in object.custom_materials)
 		var/datum/material/material = GET_MATERIAL_REF(material_key)
-		if(!istype(material, /datum/material/iron) && !istype(material, /datum/material/glass))
+		if(is_type_in_typecache(material, GLOB.ship_save_precious_materials))
 			return TRUE
 	return FALSE
 
