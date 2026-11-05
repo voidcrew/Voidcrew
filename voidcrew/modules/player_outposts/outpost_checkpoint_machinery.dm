@@ -108,6 +108,7 @@
 			for(var/obj/item/part in machine.component_parts)
 				if(part != board)
 					checkpoint_scrub_part(part)
+			ship_save_strip_board_salvage(board)
 		machine.RefreshParts()
 	if(istype(machine, /obj/machinery/vending))
 		var/obj/machinery/vending/vendor = machine

@@ -136,6 +136,7 @@
 	check_rejected_payloads()
 	check_salvage()
 	check_second_generation()
+	check_board_salvage()
 	check_saved_vars()
 	check_prices()
 	check_part_plans()
@@ -335,6 +336,25 @@
 	dropped?.deconstruct(TRUE)
 	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/sheet/iron) in tile, "A plain assembly dropped no iron")
 	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/gold) in tile, "A plain assembly dropped gold")
+	for(var/obj/loose in tile)
+		qdel(loose)
+
+/// A saved RTG still makes power, and taking it apart hands back no uranium. An ordinary one still does.
+/datum/unit_test/voidcrew_ship_saves/proc/check_board_salvage()
+	var/turf/tile = run_loc_floor_bottom_left
+	for(var/obj/loose in tile)
+		qdel(loose)
+	var/obj/machinery/power/rtg/saved = new(tile)
+	checkpoint_restore_machine(saved, null)
+	TEST_ASSERT(saved.power_gen > 0, "A saved RTG makes no power")
+	saved.deconstruct(TRUE)
+	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/uranium) in tile, "A saved RTG handed back uranium")
+	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/cable_coil) in tile, "A saved RTG stopped handing back its ordinary stacks")
+	for(var/obj/loose in tile)
+		qdel(loose)
+	var/obj/machinery/power/rtg/ordinary = new(tile)
+	ordinary.deconstruct(TRUE)
+	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/sheet/mineral/uranium) in tile, "An ordinary RTG stopped handing back its uranium")
 	for(var/obj/loose in tile)
 		qdel(loose)
 

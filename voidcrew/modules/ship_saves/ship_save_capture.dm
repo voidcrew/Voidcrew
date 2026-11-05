@@ -26,6 +26,22 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 	/datum/material/zaukerite,
 )))
 
+/**
+ * Taking a machine apart hands back the stacks its board asks for, whether or not the machine holds any
+ * (/obj/machinery/handle_deconstruct()). This machine's own board stops asking for precious ones, so a hull full of RTGs
+ * is not a uranium store. The machine still runs: stacks are never in component_parts.
+ */
+/proc/ship_save_strip_board_salvage(obj/item/circuitboard/machine/board)
+	if(!istype(board))
+		return
+	for(var/obj/item/stack/stack_path as anything in board.req_components?.Copy())
+		if(!ispath(stack_path, /obj/item/stack))
+			continue
+		var/material_type = initial(stack_path.material_type)
+		// Boards ask for the raw crystal, which is the one precious stack with no material_type.
+		if(ispath(stack_path, /obj/item/stack/ore/bluespace_crystal) || (material_type && GLOB.ship_save_precious_materials[material_type]))
+			board.req_components -= stack_path
+
 /// Build a statue of gold and save it for two parts, and you could break it down next round.
 /proc/ship_save_refuses_object(obj/object)
 	if(!isstructure(object) || is_type_in_typecache(object, GLOB.ship_save_kept_structures))
