@@ -182,6 +182,9 @@
 		if(option["category"] != "Trader outposts")
 			continue
 		var/path = option["path"]
+		// The mission board test's fixture is a subtype too, so the catalog lists it in test builds
+		if(path == /obj/structure/overmap/trader_outpost/m1_board_test)
+			continue
 		TEST_ASSERT(path in expected, "The trader catalog contains an unexpected or duplicate variant")
 		expected -= path
 		var/obj/structure/overmap/trader_outpost/outpost = allocate(path)

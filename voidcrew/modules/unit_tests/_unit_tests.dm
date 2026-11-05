@@ -389,9 +389,9 @@
 /// Admin edits keep shared identity; resetting cannot replay spent encounters.
 /datum/unit_test/voidcrew_zone_missions/presentation/admin_record/Run()
 	var/obj/structure/overmap/ship/first = make_ship()
-	var/obj/structure/overmap/ship/second = make_ship()
+	var/obj/structure/overmap/ship/second = make_ship(crewed = FALSE)
 	var/datum/voidcrew_crew_record/record = first.get_crew_record()
-	second.ship_team.set_crew_record(record)
+	TEST_ASSERT(second.ship_team.set_crew_record(record), "An empty hull could not join the crew")
 	var/id_before = record.crew_id
 	TEST_ASSERT(!record.admin_set_reputation(-1), "Admin accepted negative reputation")
 	TEST_ASSERT(!record.admin_set_reputation(1.5), "Admin accepted fractional reputation")

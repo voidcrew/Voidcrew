@@ -219,6 +219,9 @@
 	TEST_ASSERT(!panel.place_order(buyer), "A ship the buyer does not command paid")
 	paying_ship.enlist_crewmember(buyer)
 	paying_ship.claimed_captain = buyer.mind
+	// A non-leader gets a "start your own crew?" prompt, which nobody can answer here
+	var/datum/voidcrew_crew_record/paying_crew = paying_ship.get_crew_record()
+	paying_crew.leader = buyer.mind
 	var/offered = FALSE
 	for(var/list/option as anything in panel.payer_options(buyer))
 		if(option["id"] == REF(paying_ship))
