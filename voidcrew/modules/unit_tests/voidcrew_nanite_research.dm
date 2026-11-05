@@ -239,14 +239,13 @@
 	controller.current_program = allocate(/datum/nanite_program/monitoring)
 	var/datum/ship_checkpoint/snapshot = allocate(/datum/ship_checkpoint)
 	var/machine_text = snapshot.atom_text(controller)
-	var/datum/parsed_map/parsed = allocate(/datum/parsed_map, "\"a\" = ([machine_text],/turf/template_noop,/area/template_noop)\n(1,1,1) = {\"\na\n\"}\n")
-	var/datum/map_template/template = allocate(/datum/map_template)
-	template.cached_map = parsed
-	template.width = 1
-	template.height = 1
-	TEST_ASSERT(template.load(run_loc_floor_top_right), "Could not load the checkpoint controller")
+	var/map_text = "//[DMM2TGM_MESSAGE]\n\"a\" = (\n[machine_text],\n/turf/template_noop,\n/area/template_noop)\n\n(1,1,1) = {\"\na\n\"}\n"
+	var/datum/parsed_map/parsed = allocate(/datum/parsed_map, map_text)
+	TEST_ASSERT(parsed.load(run_loc_floor_top_right.x, run_loc_floor_top_right.y, run_loc_floor_top_right.z, crop_map = TRUE), "Could not load the checkpoint controller")
 	var/obj/machinery/computer/nanite_cloud_controller/rebuilt = locate() in run_loc_floor_top_right
 	TEST_ASSERT_NOTNULL(rebuilt, "The checkpoint omitted its nanite controller")
+	allocated += rebuilt
+	SSatoms.InitializeAtoms(list(rebuilt))
 	TEST_ASSERT_EQUAL(length(rebuilt.cloud_backups), 0, "The checkpoint retained cloud backup contents")
 	TEST_ASSERT_NULL(rebuilt.disk, "The checkpoint retained its source disk")
 	TEST_ASSERT_NULL(locate(/obj/item/disk/nanite_program) in rebuilt, "The checkpoint copied a program disk into the controller")
