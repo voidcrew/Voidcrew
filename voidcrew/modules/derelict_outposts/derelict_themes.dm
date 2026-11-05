@@ -221,6 +221,10 @@
 	roamers = list(/mob/living/basic/ghost)
 	broken_light_percent = 40
 
+/datum/derelict_theme/haunted/prepare_hostile(mob/living/hostile)
+	// Ghosts are neutral by default, which keeps them out of zone scaling like passive fauna
+	hostile.faction -= FACTION_NEUTRAL
+
 /datum/derelict_theme/haunted/dress(datum/derelict_scene/scene)
 	var/turf/heart = scene.boss_anchor
 	// Bones by the door
