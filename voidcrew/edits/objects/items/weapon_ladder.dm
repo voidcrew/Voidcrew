@@ -97,6 +97,9 @@
 			qdel(item)
 
 /proc/ladder_floor_replacement(item_type)
+	// A loot entry with vars set on it, like a stack with an amount, isn't a plain path
+	if(!ispath(item_type))
+		return item_type
 	if(is_ladder_combat_gun(item_type) || ispath(item_type, /obj/item/weaponcrafting/receiver) || ispath(item_type, /obj/item/weaponcrafting/giant_wrench))
 		return /obj/item/melee/baseball_bat
 	if(!is_ladder_restricted_melee(item_type))

@@ -288,9 +288,19 @@
 		TEST_ASSERT_EQUAL(length(actual_recipes), length(expected), "[item_type] has the wrong slapcraft recipes.")
 		TEST_ASSERT_EQUAL(length(expected - actual_recipes), 0, "[item_type] lost an original slapcraft recipe.")
 
+/// Holds a loot entry with vars set on it, as the antag gear and snow gear tables do
+/obj/effect/spawner/random/exotic/voidcrew_ladder_stack_test
+	spawn_loot_chance = 0
+	loot = list(/obj/item/stack/sheet/mineral/gold{amount = 15})
+
 /// Fixed spawners cannot smuggle weapons through nested contraband or maintenance rolls.
 /datum/unit_test/voidcrew_ladder_fixed_sources/Run()
 	var/turf/destination = run_loc_floor_bottom_left
+	var/obj/effect/spawner/random/exotic/voidcrew_ladder_stack_test/stacks = allocate(/obj/effect/spawner/random/exotic/voidcrew_ladder_stack_test)
+	var/obj/item/stack/sheet/mineral/gold/gold = stacks.make_item(destination, stacks.loot[1])
+	TEST_ASSERT(istype(gold), "A loot entry with vars set on it spawned nothing.")
+	TEST_ASSERT_EQUAL(gold.amount, 15, "A loot entry with vars set on it lost them.")
+	qdel(gold)
 	for(var/source_type in list(/obj/effect/spawner/random/armory/laser_gun, /obj/effect/spawner/random/contraband/armory, /obj/effect/spawner/random/exotic/antag_gear, /obj/effect/spawner/random/maintenance))
 		var/obj/effect/spawner/random/source = allocate(source_type)
 		for(var/item_type in list(/obj/item/gun/energy/laser, /obj/item/knife/combat, /obj/item/katana, /obj/item/weaponcrafting/receiver, /obj/item/spear/grey_tide, /obj/item/shovel/serrated))
