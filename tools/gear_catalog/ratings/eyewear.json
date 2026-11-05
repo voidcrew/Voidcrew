@@ -219,7 +219,7 @@
    "locked": true,
    "name": "optical meson scanner",
    "rank": 6,
-   "reason": "Shows walls and floors through walls, and nothing that moves. Prints for about 2 cr of material after 80 research points.",
+   "reason": "Shows walls and floors through walls, and nothing that moves. Prints for about 2 cr of material after 40 research points.",
    "tier": "green"
   },
   "/obj/item/clothing/glasses/meson/engine": {

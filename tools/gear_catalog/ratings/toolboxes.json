@@ -7,6 +7,15 @@
   "Hobby boxes"
  ],
  "items": {
+  "/obj/item/storage/toolbox": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "93fcc6e78021269f",
+   "name": "toolbox",
+   "rank": 7,
+   "reason": "An empty toolbox with seven slots. 13 force, like every stock box.",
+   "tier": "none"
+  },
   "/obj/item/storage/toolbox/ammobox/strilka310": {
    "confidence": "medium",
    "group": "Ammo canisters",
@@ -112,8 +121,8 @@
    "hash": "8ea08c9b1b4155f1",
    "name": "Helios lunch pail",
    "rank": 3,
-   "reason": "Authored unique. Restocks food every hour, and finishing a sandwich or egg speeds up building for 3 minutes. A nice perk and harmless on a shelf.",
-   "tier": "green"
+   "reason": "Authored unique, so it stays off shelves. Restocks food every hour, and finishing a sandwich or egg speeds up building for 3 minutes. A nice perk.",
+   "tier": "above"
   },
   "/obj/item/storage/toolbox/mechanical": {
    "confidence": "high",
@@ -149,13 +158,12 @@
    "hash": "35d1e6f7cdf765c8",
    "name": "suspicious looking toolbox",
    "rank": 2,
-   "reason": "15 force and 18 thrown, with a full tool kit, a multitool and combat gloves inside. A very good engineer's kit, placed 11 times on hulls.",
+   "reason": "15 force and 18 thrown, with a full tool kit, a multitool and combat gloves inside. A very good engineer's kit, placed on 2 hulls and 6 ship modules.",
    "tier": "green"
   }
  },
  "method": "No formula. A toolbox full of plain tools is none whatever its 13 force. Boxes that hit harder or hold something better are weighed against melee weapons and the contents' own tiers, and ammo canisters follow their gun.",
  "unrated": {
-  "/obj/item/storage/toolbox": "abstract",
   "/obj/item/storage/toolbox/ammobox": "no route",
   "/obj/item/storage/toolbox/emergency/old/ancientbundle": "no route",
   "/obj/item/storage/toolbox/emergency/turret": "no route",

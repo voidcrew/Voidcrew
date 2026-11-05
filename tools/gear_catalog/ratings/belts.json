@@ -97,7 +97,7 @@
    "hash": "0df715078eba5d55",
    "name": "grenadier belt",
    "rank": 1,
-   "reason": "Holds 30 grenades or charges on the belt, far more than any other belt. Comes empty. One hull has it.",
+   "reason": "Holds 30 grenades or charges on the belt, far more than any other belt. Comes empty. No shop, ruin or played hull has it.",
    "tier": "green"
   },
   "/obj/item/storage/belt/holster": {
@@ -226,6 +226,15 @@
    "reason": "Explorer's webbing with a shelter capsule inside. Bought with a mining voucher.",
    "tier": "green"
   },
+  "/obj/item/storage/belt/plant": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "50f17d1c35be9705",
+   "name": "botanical belt",
+   "rank": 9,
+   "reason": "A belt for hydroponics supplies.",
+   "tier": "none"
+  },
   "/obj/item/storage/belt/security": {
    "confidence": "low",
    "group": "combat carry belts",
@@ -241,8 +250,8 @@
    "hash": "80e95540a4980ba4",
    "name": "security belt",
    "rank": 1,
-   "reason": "Stun baton, flash, flashbang, pepper spray and cuffs: a complete kit for stunning and cuffing one person up close. The baton is a close-range disabler, and this is the only way to buy one.",
-   "tier": "green"
+   "reason": "Stun baton, flash, flashbang, pepper spray and cuffs: a complete kit for stunning and cuffing one person up close. The flashbang makes it yellow, and it's the only way to buy a baton.",
+   "tier": "yellow"
   },
   "/obj/item/storage/belt/security/webbing": {
    "confidence": "medium",
@@ -268,7 +277,7 @@
    "hash": "0fc83fc7b6360fa5",
    "name": "sabre sheath",
    "rank": 2,
-   "reason": "An officer's sabre (ignores most armor, blocks half of melee, no help against bullets) in its sheath. Too little damage to be more than green. Starts in captains' lockers on 17 hulls.",
+   "reason": "An officer's sabre (ignores most armor, blocks half of melee, no help against bullets) in its sheath. Too little damage to be more than green. Starts in captains' lockers on 9 hulls.",
    "tier": "green"
   },
   "/obj/item/storage/belt/utility": {
@@ -367,7 +376,6 @@
   "/obj/item/storage/belt/military/snack/full": "no route",
   "/obj/item/storage/belt/mining/healing": "no route",
   "/obj/item/storage/belt/mining/primitive": "no route",
-  "/obj/item/storage/belt/plant": "no route",
   "/obj/item/storage/belt/sheath": "no route",
   "/obj/item/storage/belt/soulstone": "no route",
   "/obj/item/storage/belt/soulstone/full": "no route",

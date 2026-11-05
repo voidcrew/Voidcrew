@@ -35,8 +35,8 @@
    "name": "multi-dimensional payload",
    "note": "Deals no damage. When it detonates it converts the floors and walls (not space or indestructible ones) in a radius into one chosen dimension theme, or a random theme per tile if none was set, and swaps chairs, tables, airlocks and similar furniture for the theme's versions, spreading outward over time. The radius is 17 as spawned, or 13 when crafted, plus 1 per large or advanced release grenade and -2 or +4 for low or high quality gibtonite.",
    "rank": 4,
-   "reason": "No damage, but turns the floors, walls and doors within 13 tiles into another theme, hull included. Takes a dimensional anomaly core and gibtonite.",
-   "tier": "above"
+   "reason": "No damage, but turns the floors, walls and doors within 13 tiles into another material, hull included, plasma walls among them. The black market lists one for 8,000 to 10,000 cr at 15% odds, or a dimensional anomaly core and gibtonite make it.",
+   "tier": "red"
   },
   "/obj/item/bombcore/miniature/pizza": {
    "confidence": "medium",
@@ -73,6 +73,16 @@
    "rank": 3,
    "reason": "Light ship missile warhead, 1 devastation, 2 heavy, 3 light. Nearly a syndicate minibomb for under 200 cr; it just needs another blast or a fire to set it off.",
    "tier": "red"
+  },
+  "/obj/item/bombcore/syndicate": {
+   "confidence": "high",
+   "group": "big bombs and payloads",
+   "hash": "2f74ef64f5b17105",
+   "name": "Donk Co. Super-Stable Bomb Payload",
+   "note": "A bomb core that ignores explosions entirely (its explosion handler does nothing), but its burn handler calls the parent, so it still detonates when it burns up; the shell triggers it electronically. Same blast as the plain core (3/9/17/17), and the XL version is 5/10/20/20.",
+   "rank": 3,
+   "reason": "Bomb core with 3 devastation, 9 heavy, 17 light, the plain core's blast. Blasts don't set it off, only fire. Comes out of the ticking bomb on one cargo shuttle loan.",
+   "tier": "above"
   },
   "/obj/item/bombcore/syndicate/large": {
    "confidence": "high",
@@ -262,6 +272,26 @@
    "reason": "1 heavy, 3 light and 32 shards of 14 damage in a ring. Clears a room of soft targets, but will not open a hull.",
    "tier": "yellow"
   },
+  "/obj/item/grenade/gas_crystal/crystal_foam": {
+   "confidence": "high",
+   "group": "stun, smoke and cover",
+   "hash": "5c18754b40febe0b",
+   "name": "crystal foam",
+   "note": "Goes off into smart metal foam spreading through a radius of 7: space tiles it reaches become foam plating, and it hardens into foam walls only where a tile borders a different area, so hull breaches seal and the room stays open. / Base for the gas crystals: crushing one starts a 5 second fuse, it is fireproof, and the base type has no payload of its own, so the effect comes entirely from the subtype.",
+   "rank": 10,
+   "reason": "Seals hull breaches over 7 tiles with foam plating and walls, and leaves the room open. A smart metal foam grenade that comes from a crystallizer.",
+   "tier": "green"
+  },
+  "/obj/item/grenade/gas_crystal/healium_crystal": {
+   "confidence": "medium",
+   "group": "stun, smoke and cover",
+   "hash": "afdc3785b6a05ef7",
+   "name": "Healium crystal",
+   "note": "Replaces the air on every open tile within 7 tiles, walls don't block it, with normal air (22 oxygen, 82 nitrogen at 293 K). Any other gas there is gone, and vacuum tiles are filled. / Base for the gas crystals: crushing one starts a 5 second fuse, it is fireproof, and the base type has no payload of its own, so the effect comes entirely from the subtype.",
+   "rank": 11,
+   "reason": "Swaps the air within 7 tiles, walls or no walls, for clean breathable air. Fixes a gassed or airless room at once. From a crystallizer.",
+   "tier": "green"
+  },
   "/obj/item/grenade/gas_crystal/nitrous_oxide_crystal": {
    "confidence": "low",
    "group": "stun, smoke and cover",
@@ -272,14 +302,34 @@
    "reason": "A puff of sleeping gas around itself after a 5 second fuse. Internals stop it, and it thins fast in open rooms.",
    "tier": "yellow"
   },
+  "/obj/item/grenade/gas_crystal/proto_nitrate_crystal": {
+   "confidence": "medium",
+   "group": "stun, smoke and cover",
+   "hash": "f3b810719a9cf3ea",
+   "name": "Proto Nitrate crystal",
+   "note": "Adds nitrogen and oxygen at 273 K to every open tile in view within 5 tiles: 80 and 30 moles on the centre and adjacent tiles, divided by distance further out. It adds to the air already there and removes nothing. / Base for the gas crystals: crushing one starts a 5 second fuse, it is fireproof, and the base type has no payload of its own, so the effect comes entirely from the subtype.",
+   "rank": 12,
+   "reason": "Adds breathable air within 5 tiles in view, most at the centre. Refills a room that lost its air, but leaves any bad gas there. From a crystallizer.",
+   "tier": "green"
+  },
   "/obj/item/grenade/gluon": {
    "confidence": "medium",
    "group": "thrown and planted explosives",
    "hash": "3b93956123a6d13e",
    "name": "gluon frag grenade",
-   "note": "Sends a radiation pulse out 4 tiles and turns every open floor within 4 tiles into slippery permafrost for 5 minutes (galoshes don't help); anyone on those floors takes 30 stamina damage and has body temperature lowered by 230.",
+   "note": "Sends a radiation pulse out 4 tiles and turns every open floor within 4 tiles into slippery permafrost for 6 minutes (galoshes don't help); anyone on those floors takes 30 stamina damage and has body temperature lowered by 230.",
    "rank": 6,
    "reason": "Radiation and 30 stamina out to 4 tiles, freezes anyone standing there and leaves the floor slippery for minutes.",
+   "tier": "yellow"
+  },
+  "/obj/item/grenade/iedcasing": {
+   "confidence": "low",
+   "group": "thrown and planted explosives",
+   "hash": "698c747dd6e41688",
+   "name": "improvised explosive",
+   "note": "Goes off when its attached timer, proximity, signaler or similar assembly fires, with an explosion scaled by its power (the pre-built one has power 2.5: heavy 0, light 2, flame 2 to 4 and no shrapnel). Stuffed items change it: meat adds gibs, paper adds confetti, glass shards add that many shrapnel shards, and refined bluespace crystals teleport nearby mobs.",
+   "rank": 7,
+   "reason": "Hand-built pipe bomb whose blast comes from its fuel. Welding fuel gives 2 light; nitroglycerin or TATP gives 2 heavy, 7 to 9 light and a wide fire, more reach than a frag. Anyone can build the casing, so the chemist is the gate.",
    "tier": "yellow"
   },
   "/obj/item/grenade/iedcasing/spawned": {
@@ -290,6 +340,16 @@
    "note": "Goes off when its attached timer, proximity, signaler or similar assembly fires, with an explosion scaled by its power (the pre-built one has power 2.5: heavy 0, light 2, flame 2 to 4 and no shrapnel). Stuffed items change it: meat adds gibs, paper adds confetti, glass shards add that many shrapnel shards, and refined bluespace crystals teleport nearby mobs.",
    "rank": 7,
    "reason": "Pipe, welding fuel and a timer: 2 light and some fire. Anyone can build it at round start. The hand-built route with better fuels goes much higher.",
+   "tier": "green"
+  },
+  "/obj/item/grenade/mirage": {
+   "confidence": "medium",
+   "group": "stun, smoke and cover",
+   "hash": "f586a13458268631",
+   "name": "mirage grenade",
+   "note": "On a 3 second fuse, makes a copy that looks like whoever armed it at the grenade's spot, for 15 seconds, with sparks. The copy doesn't move or attack and doesn't block movement; with nobody having armed it, only the sparks happen.",
+   "rank": 13,
+   "reason": "A still copy of whoever armed it, for 15 seconds. Confuses players, wins no fights.",
    "tier": "green"
   },
   "/obj/item/grenade/smokebomb": {
@@ -315,7 +375,7 @@
   "/obj/item/grenade/stingbang": {
    "confidence": "high",
    "group": "stun, smoke and cover",
-   "hash": "093f654568c590ef",
+   "hash": "e70ed437af8999cb",
    "name": "stingbang",
    "note": "Fires 40 rubber pellets in a ring (3 brute and 8 stamina each, 55% embed, ricochets up to 4 times) and flash-bangs anyone within 1 tile: a flash that gets through paralyzes for 1 second and knocks down for 10, and on the same tile it is also a 2 second paralysis, a 20 second knockdown, a deafening bang and 10 brute plus 10 burn. If it goes off in a hand, that hand is dismembered.",
    "rank": 2,
@@ -327,7 +387,7 @@
    "group": "thrown and planted explosives",
    "hash": "16c14eac46818e89",
    "name": "syndicate minibomb",
-   "note": "A single explosion at its location with devastation 1, heavy 2, light 4 and flame 2. The HE Grenade variant is 0/2/3/3, and despite its description it has no shrapnel set.",
+   "note": "A single explosion at its location with devastation 1, heavy 2, light 4 and flame 2. The HE Grenade variant inherits the devastation of 1 and is 1/2/3/3, and despite its description it has no shrapnel set.",
    "rank": 2,
    "reason": "Thrown bomb with 1 devastation, 2 heavy, 4 light. Breaks walls and gibs whoever it lands on. The strongest grenade on sale.",
    "tier": "red"
@@ -337,7 +397,7 @@
    "group": "thrown and planted explosives",
    "hash": "093da3956103a6a5",
    "name": "HE Grenade",
-   "note": "A single explosion at its location with devastation 1, heavy 2, light 4 and flame 2. The HE Grenade variant is 0/2/3/3, and despite its description it has no shrapnel set.",
+   "note": "A single explosion at its location with devastation 1, heavy 2, light 4 and flame 2. The HE Grenade variant inherits the devastation of 1 and is 1/2/3/3, and despite its description it has no shrapnel set.",
    "rank": 3,
    "reason": "A minibomb with slightly less light blast, and more fire. No shrapnel despite the label. One ruin has it.",
    "tier": "red"
@@ -362,7 +422,6 @@
   "/obj/item/bombcore/emp": "no route",
   "/obj/item/bombcore/large": "no route",
   "/obj/item/bombcore/miniature": "no route",
-  "/obj/item/bombcore/syndicate": "no route",
   "/obj/item/bombcore/training": "no route",
   "/obj/item/grenade": "abstract",
   "/obj/item/grenade/antigravity": "no route",
@@ -399,12 +458,7 @@
   "/obj/item/grenade/flashbang/cluster": "no route",
   "/obj/item/grenade/frag/mega": "literal only",
   "/obj/item/grenade/gas_crystal": "no route",
-  "/obj/item/grenade/gas_crystal/crystal_foam": "no route",
-  "/obj/item/grenade/gas_crystal/healium_crystal": "no route",
-  "/obj/item/grenade/gas_crystal/proto_nitrate_crystal": "no route",
   "/obj/item/grenade/hypnotic": "no route",
-  "/obj/item/grenade/iedcasing": "no route",
-  "/obj/item/grenade/mirage": "no route",
   "/obj/item/grenade/primer": "no route",
   "/obj/item/grenade/primer/stingbang": "no route",
   "/obj/item/grenade/spawnergrenade": "no route",

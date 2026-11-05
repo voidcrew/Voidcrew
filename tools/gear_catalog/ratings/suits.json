@@ -253,7 +253,7 @@
    "hash": "6a959229f9543b11",
    "name": "armor vest",
    "rank": 4,
-   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only. The security locker vest, on 23 hulls.",
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only. The security locker vest, on 8 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/suit/armor/vest/blueshirt": {
@@ -469,7 +469,7 @@
    "hash": "617a762d615145f6",
    "name": "bio suit",
    "rank": 1,
-   "reason": "Bio suit with melee 25, bullet 15, laser 25 across the whole body, slowdown 0.5. Crafted from a vest and a bio suit.",
+   "reason": "Bio suit with melee 25, bullet 15, laser 25 on chest, arms and legs, slowdown 0.5. Crafted from a vest and a bio suit.",
    "tier": "green"
   },
   "/obj/item/clothing/suit/bio_suit/virology": {
@@ -587,6 +587,16 @@
    "name": "white robe",
    "rank": 5,
    "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/bear_suit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "03fe83bcbd71930c",
+   "name": "bear suit",
+   "note": "Worn with the bear pelt hat, it adds the wearer to the bear faction until either piece comes off, so bears don't count them as an enemy. It does nothing else.",
+   "rank": 3,
+   "reason": "With its pelt hat, bears won't count you as an enemy. A costume otherwise.",
    "tier": "none"
   },
   "/obj/item/clothing/suit/costume/bronze": {
@@ -1896,7 +1906,6 @@
   "/obj/item/clothing/suit/chaplainsuit/armor/studentuni": "no route",
   "/obj/item/clothing/suit/coordinator": "no route",
   "/obj/item/clothing/suit/costume": "abstract",
-  "/obj/item/clothing/suit/costume/bear_suit": "no route",
   "/obj/item/clothing/suit/costume/bunnysuit": "no route",
   "/obj/item/clothing/suit/costume/changshan_blue": "cosmetic",
   "/obj/item/clothing/suit/costume/changshan_red": "cosmetic",

@@ -926,6 +926,15 @@
    "reason": "A half-built firebot. Puts out fires. Harmless.",
    "tier": "none"
   },
+  "/obj/item/bot_assembly/hygienebot": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "397e85dfae014743",
+   "name": "incomplete hygienebot assembly",
+   "rank": 9,
+   "reason": "A half-built cleaning bot. No bearing on a fight.",
+   "tier": "none"
+  },
   "/obj/item/bot_assembly/medbot": {
    "confidence": "high",
    "group": "bot assemblies",
@@ -934,6 +943,24 @@
    "rank": 1,
    "reason": "A half-built medibot. Once finished it patches people up on its own, slowly. A few maps carry one.",
    "tier": "green"
+  },
+  "/obj/item/bot_assembly/secbot": {
+   "confidence": "medium",
+   "group": "bot assemblies",
+   "hash": "15c3e27373f20ea7",
+   "name": "incomplete securitron assembly",
+   "rank": 2,
+   "reason": "A half-built securitron, started from a security helmet. Finished with a stun baton, it stuns and cuffs anyone it reads as a threat on its own.",
+   "tier": "green"
+  },
+  "/obj/item/bot_assembly/vim": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "4ef9a21e21c56e1b",
+   "name": "incomplete vim assembly",
+   "rank": 4,
+   "reason": "A half-built Vim, a tiny walker only pets and other small creatures fit in. Harmless.",
+   "tier": "none"
   },
   "/obj/item/malf_upgrade": {
    "confidence": "low",
@@ -1005,7 +1032,7 @@
    "hash": "c4171645393f6722",
    "name": "Syndicate Man-Machine Interface",
    "rank": 4,
-   "reason": "An MMI that enforces syndicate laws, overriding an AI core's, with its radio off. Some hulls start with one in a surgery bag.",
+   "reason": "An MMI that enforces syndicate laws, overriding an AI core's, with its radio off. Comes in the syndicate surgery bag, on a few ship modules and in ruins.",
    "tier": "green"
   },
   "/obj/item/pai_card": {
@@ -1091,10 +1118,7 @@
   "/obj/item/bot_assembly": "abstract",
   "/obj/item/bot_assembly/ed209": "literal only",
   "/obj/item/bot_assembly/honkbot": "literal only",
-  "/obj/item/bot_assembly/hygienebot": "no route",
   "/obj/item/bot_assembly/repairbot": "no route",
-  "/obj/item/bot_assembly/secbot": "literal only",
-  "/obj/item/bot_assembly/vim": "no route",
   "/obj/item/mine_bot_upgrade": "no route",
   "/obj/item/mmi/posibrain/display": "no route",
   "/obj/item/robot_model": "uncreatable",

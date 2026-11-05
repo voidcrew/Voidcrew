@@ -251,7 +251,7 @@
    "hash": "9edd770ffadd4617",
    "name": "station bounced radio",
    "rank": 2,
-   "reason": "A handheld radio. Common and prints at round start.",
+   "reason": "A handheld radio. Common, and the switched-off one prints at round start.",
    "tier": "none"
   },
   "/obj/item/radio/entertainment/speakers/physical": {

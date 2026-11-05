@@ -85,7 +85,7 @@
    "hash": "5dfcb1e66ebab9ad",
    "name": "speed loader (.38)",
    "rank": 11,
-   "reason": "Plain 25 damage for a green revolver. Prints at round start and turns up everywhere.",
+   "reason": "Plain 25 damage for a green revolver. Prints at round start.",
    "tier": "none"
   },
   "/obj/item/ammo_box/c38/dumdum": {
@@ -252,7 +252,7 @@
    "hash": "b6742b2f5248476a",
    "name": "bolt action rifle internal magazine",
    "rank": 3,
-   "reason": "Built into the Sakhno-Zhihao rifle and loaded with wall-piercing rounds. The rifle is rated yellow, but these rounds are red.",
+   "reason": "Built into the Sakhno-Zhihao rifle and loaded with wall-piercing rounds. Rated with the rifle, which these rounds make red.",
    "tier": "red"
   },
   "/obj/item/ammo_box/magazine/internal/boltaction/pipegun/prime": {
@@ -540,7 +540,7 @@
    "hash": "4ac281d3826ff805",
    "name": "battle rifle magazine (.38)",
    "rank": 11,
-   "reason": "Plain 25 damage for a green revolver. Prints at round start and turns up everywhere.",
+   "reason": "Plain 25 damage for a green revolver. Prints at round start.",
    "tier": "none"
   },
   "/obj/item/ammo_box/magazine/m38/dumdum": {
@@ -1059,7 +1059,7 @@
    "hash": "beead3dae8d207e5",
    "name": "stripper clip (.310 Surplus)",
    "rank": 3,
-   "reason": "Surplus rounds, 60 on bare skin and about 24 through a vest. Every autolathe prints them from round start; they feed a green rifle.",
+   "reason": "Surplus rounds, 60 on bare skin and about 24 through a vest. Every autolathe prints the loose rounds from round start; they feed a green rifle.",
    "tier": "none"
   },
   "/obj/item/ammo_casing": {
@@ -1170,7 +1170,7 @@
    "hash": "5f8864970b7d1dc0",
    "name": "10mm armor-piercing bullet casing",
    "rank": 2,
-   "reason": "35 damage that cancels a vest, but only a Liberator or a hand-filled Condor magazine can use it. Barely exists: one hull has some loose.",
+   "reason": "35 damage that cancels a vest, but only a Liberator or a hand-filled Condor magazine can use it. No shop, ruin or played hull has it.",
    "tier": "yellow"
   },
   "/obj/item/ammo_casing/c10mm/reaper": {
@@ -1225,7 +1225,7 @@
    "hash": "46f30059a6d71fbb",
    "name": ".38 bullet casing",
    "rank": 11,
-   "reason": "Plain 25 damage for a green revolver. Prints at round start and turns up everywhere.",
+   "reason": "Plain 25 damage for a green revolver. The box prints at round start.",
    "tier": "none"
   },
   "/obj/item/ammo_casing/c45": {
@@ -1837,6 +1837,25 @@
    "reason": "50 damage that hits instantly and bounces once onto a nearby target. No paralysis.",
    "tier": "red"
   },
+  "/obj/item/ammo_casing/rebar": {
+   "confidence": "high",
+   "group": "arrows and crossbow bolts",
+   "hash": "6fc7032803ed668b",
+   "name": "Sharpened Iron Rod",
+   "rank": 9,
+   "reason": "Plain iron rod bolt for a green crossbow, sharpened from a rod. 30 damage, one at a time. The gun is the gate.",
+   "tier": "none"
+  },
+  "/obj/item/ammo_casing/rebar/healium": {
+   "confidence": "low",
+   "group": "arrows and crossbow bolts",
+   "hash": "a52840a8c2b7a626",
+   "name": "healium crystal bolt",
+   "note": "Holds 6 seconds of healing and passes what's left to the bolt when fired, so a bolt that missed keeps its remainder. Embedded in an organic target it heals 5 each of brute, burn, toxin and oxygen per second, adds drowsiness that puts them to sleep for 3 seconds at a time, then falls out and is back at 6 seconds. / Deals no damage and embeds at 100% chance up close, losing 3% per tile; it can be pulled out in 1.5 seconds. Only the first such bolt in a target can put them to sleep, and later ones only heal. The listed proc just hands the remaining heal time back to the dropped or embedded bolt.",
+   "rank": 3,
+   "reason": "No damage, but it nearly always sticks up close, past any armor, and heals 5 of each damage type a second for 6 seconds while the target falls asleep. A field heal or a sleep dart. Healium takes a crystallizer run and the crossbow is slow.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_casing/rebar/hydrogen": {
    "confidence": "low",
    "group": "arrows and crossbow bolts",
@@ -1954,7 +1973,7 @@
    "group": "shotgun shells",
    "hash": "aa8bdfa2066d2733",
    "name": "shotgun dart",
-   "note": "Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
+   "note": "Carries what its casing holds, held inert in flight: 15 units in a plain dart, 25 in an XL dart, 30 in a bioterror dart. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
    "rank": 25,
    "reason": "Dart holding 15 units of whatever you fill it with. As good as your chemist; thick suits stop it. Prints at round start.",
    "tier": "green"
@@ -1964,7 +1983,7 @@
    "group": "shotgun shells",
    "hash": "a6dfd2cf3c2916a4",
    "name": "bioterror dart",
-   "note": "Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
+   "note": "Carries what its casing holds, held inert in flight: 15 units in a plain dart, 25 in an XL dart, 30 in a bioterror dart. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
    "rank": 5,
    "reason": "Comes loaded with 30 units of nerve toxin, knockout and mute. One hit past thin clothing is usually over; thick suits stop it.",
    "tier": "red"
@@ -1974,7 +1993,7 @@
    "group": "shotgun shells",
    "hash": "4bf8ca703cbbcef1",
    "name": "XL shotgun dart",
-   "note": "Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
+   "note": "Carries what its casing holds, held inert in flight: 15 units in a plain dart, 25 in an XL dart, 30 in a bioterror dart. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact.",
    "rank": 16,
    "reason": "Dart holding 25 units of whatever you fill it with. As good as your chemist; thick suits stop it.",
    "tier": "green"
@@ -2091,8 +2110,8 @@
    "name": "heavy cartridge",
    "note": "A living target is thrown 6 tiles and knocked down for 2 seconds, armor or not. A plain wall is dismantled outright and the slug can hit turfs, but a reinforced wall only shows a 'too tough' alert and is untouched.",
    "rank": 2,
-   "reason": "Cartridge for the \"No Quarter\", an authored unique. Paper and iron make it, but it fits nothing else, so the gun is the gate.",
-   "tier": "above"
+   "reason": "Cartridge for the \"No Quarter\". Paper and iron make it on purpose, and it fits nothing else, so the gun is the gate.",
+   "tier": "none"
   },
   "/obj/item/ammo_casing/shotgun/pulseslug": {
    "confidence": "high",
@@ -2390,8 +2409,6 @@
   "/obj/item/ammo_casing/p50/penetrator": "no route",
   "/obj/item/ammo_casing/p50/surplus": "no route",
   "/obj/item/ammo_casing/pea": "no route",
-  "/obj/item/ammo_casing/rebar": "no route",
-  "/obj/item/ammo_casing/rebar/healium": "literal only",
   "/obj/item/ammo_casing/rebar/supermatter": "no route",
   "/obj/item/ammo_casing/rebar/syndie": "literal only",
   "/obj/item/ammo_casing/rocket/reverse": "no route",

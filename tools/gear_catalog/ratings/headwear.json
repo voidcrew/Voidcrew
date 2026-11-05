@@ -22,6 +22,24 @@
    "reason": "A costume. No armor.",
    "tier": "none"
   },
+  "/obj/item/clothing/head/beanie/durathread": {
+   "confidence": "high",
+   "group": "armored uniform hats",
+   "hash": "422274b8f570d9e1",
+   "name": "durathread beanie",
+   "rank": 9,
+   "reason": "Durathread cloth hat: melee 15, bullet 5, laser 15. A thin crafted hat, well under a helmet.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/head/beret/durathread": {
+   "confidence": "high",
+   "group": "armored uniform hats",
+   "hash": "5fba97e225bad5ef",
+   "name": "durathread beret",
+   "rank": 9,
+   "reason": "Durathread cloth hat: melee 15, bullet 5, laser 15. A thin crafted hat, well under a helmet.",
+   "tier": "green"
+  },
   "/obj/item/clothing/head/beret/frenchberet": {
    "confidence": "high",
    "group": "cosmetic and harmless",
@@ -621,6 +639,15 @@
    "reason": "A hat. Holds one small item, no armor.",
    "tier": "none"
   },
+  "/obj/item/clothing/head/fedora/carpskin": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "396c3177b9bfd7aa",
+   "name": "carpskin fedora",
+   "rank": 24,
+   "reason": "A hat. Holds one small item, no armor.",
+   "tier": "none"
+  },
   "/obj/item/clothing/head/fedora/curator": {
    "confidence": "high",
    "group": "cosmetic and harmless",
@@ -648,6 +675,15 @@
    "reason": "A hat. Holds one small item, no armor.",
    "tier": "none"
   },
+  "/obj/item/clothing/head/fedora/human_leather": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "1368bb1bc2345343",
+   "name": "human skin hat",
+   "rank": 24,
+   "reason": "A hat. Holds one small item, no armor.",
+   "tier": "none"
+  },
   "/obj/item/clothing/head/fedora/white": {
    "confidence": "high",
    "group": "cosmetic and harmless",
@@ -663,7 +699,7 @@
    "hash": "bdc0720e987b0157",
    "name": "captain's hat",
    "rank": 6,
-   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, in captains' lockers on most hulls.",
+   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, in captains' lockers on 9 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/head/hats/caphat/parade": {
@@ -672,7 +708,7 @@
    "hash": "bdc0720e987b0157",
    "name": "captain's parade cap",
    "rank": 6,
-   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, in captains' lockers on most hulls.",
+   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, in captains' lockers on 9 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/head/hats/centcom_cap": {
@@ -699,7 +735,7 @@
    "hash": "4214c71d30c99437",
    "name": "head of personnel's cap",
    "rank": 6,
-   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, in captains' lockers on most hulls.",
+   "reason": "Officer's hat: melee 25, bullet 15, laser 25. Standard command wear, but no shop, ruin or played hull has this one.",
    "tier": "green"
   },
   "/obj/item/clothing/head/hats/hos/beret": {
@@ -726,7 +762,7 @@
    "hash": "7a0e53caac6a8407",
    "name": "head of security cap",
    "rank": 2,
-   "reason": "Soft cap with plain helmet armor: melee 40, bullet 30, laser 25. Eyes and ears uncovered. Comes with command outfits.",
+   "reason": "Soft cap with plain helmet armor: melee 40, bullet 30, laser 25. Eyes and ears uncovered. In the security chief's garment bag, on one ship module.",
    "tier": "green"
   },
   "/obj/item/clothing/head/hats/hos/cap/syndicate": {
@@ -1020,7 +1056,7 @@
    "hash": "76c04ce7a1404932",
    "name": "helmet",
    "rank": 2,
-   "reason": "The plain helmet again, in a security pattern. On 23 hulls and in ruin caches.",
+   "reason": "The plain helmet again, in a security pattern. On 8 hulls and in ruin caches.",
    "tier": "green"
   },
   "/obj/item/clothing/head/helmet/skull": {
@@ -1720,7 +1756,7 @@
    "hash": "e9fa581bb64c483c",
    "name": "workplace-ready firefighter helmet",
    "rank": 3,
-   "reason": "Firefighter helmet with a brighter lamp. Prints after a small research node.",
+   "reason": "Firefighter helmet with a brighter lamp. Its research only comes off a random experimental disk.",
    "tier": "green"
   },
   "/obj/item/clothing/head/utility/hardhat/welding": {
@@ -1738,7 +1774,7 @@
    "hash": "5ca08a6437371b02",
    "name": "atmospheric firefighter helmet",
    "rank": 1,
-   "reason": "The best work helmet: pressure and heat proof, blocks smoke, air hookup, welding visor. Armor is a hard hat's. Goes with the atmospheric firesuit. On six hulls.",
+   "reason": "The best work helmet: pressure and heat proof, blocks smoke, air hookup, welding visor. Armor is a hard hat's. Goes with the atmospheric firesuit. On four hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/head/utility/hardhat/welding/dblue": {
@@ -1830,7 +1866,7 @@
    "hash": "8a7817c279df8b36",
    "name": "wizard hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. Two ruins.",
    "tier": "green"
   },
   "/obj/item/clothing/head/wizard/black": {
@@ -1839,7 +1875,7 @@
    "hash": "8a7817c279df8b36",
    "name": "black wizard hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. No shop, ruin or played hull has this one.",
    "tier": "green"
   },
   "/obj/item/clothing/head/wizard/magus": {
@@ -1848,7 +1884,7 @@
    "hash": "c872d870a31889ae",
    "name": "Magus helm",
    "rank": 3,
-   "reason": "Melee 50, laser 50, energy 50, bullet 30, but 10 against fire and acid and not sealed. Goes with the Magus robe, which is far weaker. One hull has it.",
+   "reason": "Melee 50, laser 50, energy 50, bullet 30, but 10 against fire and acid and not sealed. Goes with the Magus robe, which is far weaker. No shop, ruin or played hull has it.",
    "tier": "yellow"
   },
   "/obj/item/clothing/head/wizard/marisa": {
@@ -1857,7 +1893,7 @@
    "hash": "64bf9f3618b3daca",
    "name": "witch hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. One ruin.",
    "tier": "green"
   },
   "/obj/item/clothing/head/wizard/red": {
@@ -1866,7 +1902,7 @@
    "hash": "8a7817c279df8b36",
    "name": "red wizard hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. No shop, ruin or played hull has this one.",
    "tier": "green"
   },
   "/obj/item/clothing/head/wizard/santa": {
@@ -1875,7 +1911,7 @@
    "hash": "912abeaea53a17dc",
    "name": "Santa's hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. Two ruins.",
    "tier": "green"
   },
   "/obj/item/clothing/head/wizard/verdigris": {
@@ -1894,7 +1930,7 @@
    "hash": "8a7817c279df8b36",
    "name": "yellow wizard hat",
    "rank": 7,
-   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. A few hulls and ruins.",
+   "reason": "Wizard hat: melee 30, bullet 20, laser 20, proof against fire, acid and germs. Thinner than a plain helmet against guns. Goes with the matching robe. No shop, ruin or played hull has this one.",
    "tier": "green"
   }
  },
@@ -1905,14 +1941,12 @@
   "/obj/item/clothing/head/beanie/black": "cosmetic",
   "/obj/item/clothing/head/beanie/christmas": "cosmetic",
   "/obj/item/clothing/head/beanie/darkblue": "cosmetic",
-  "/obj/item/clothing/head/beanie/durathread": "no route",
   "/obj/item/clothing/head/beanie/orange": "cosmetic",
   "/obj/item/clothing/head/beanie/red": "cosmetic",
   "/obj/item/clothing/head/beanie/yellow": "cosmetic",
   "/obj/item/clothing/head/beret": "cosmetic",
   "/obj/item/clothing/head/beret/cargo": "cosmetic",
   "/obj/item/clothing/head/beret/centcom_formal": "no route",
-  "/obj/item/clothing/head/beret/durathread": "no route",
   "/obj/item/clothing/head/beret/engi": "cosmetic",
   "/obj/item/clothing/head/beret/highlander": "cosmetic",
   "/obj/item/clothing/head/beret/medical": "cosmetic",
@@ -2001,9 +2035,7 @@
   "/obj/item/clothing/head/costume/weddingveil": "cosmetic",
   "/obj/item/clothing/head/costume/whoopee": "no route",
   "/obj/item/clothing/head/costume/witchwig": "cosmetic",
-  "/obj/item/clothing/head/fedora/carpskin": "no route",
   "/obj/item/clothing/head/fedora/det_hat/minor": "no route",
-  "/obj/item/clothing/head/fedora/human_leather": "no route",
   "/obj/item/clothing/head/fedora/inspector_hat": "no route",
   "/obj/item/clothing/head/flatcap": "cosmetic",
   "/obj/item/clothing/head/hats": "abstract",
@@ -2017,7 +2049,7 @@
   "/obj/item/clothing/head/hats/warden/drill": "no route",
   "/obj/item/clothing/head/helmet/changeling": "no route",
   "/obj/item/clothing/head/helmet/changeling_hivehead": "no route",
-  "/obj/item/clothing/head/helmet/changeling_hivehead/legion": "no route",
+  "/obj/item/clothing/head/helmet/changeling_hivehead/legion": "literal only",
   "/obj/item/clothing/head/helmet/chaplain/adept": "no route",
   "/obj/item/clothing/head/helmet/chaplain/ancient": "no route",
   "/obj/item/clothing/head/helmet/chaplain/cage": "no route",

@@ -236,7 +236,7 @@
    "name": "soulstone shard",
    "note": "Used on a human who is not conscious (crit, asleep or dead; the chaplain shard needs a corpse), it dusts the body and puts that player into the stone as a shade bound to the user; a body with no player polls ghosts instead. The shade can be let out of the stone, or the stone put into a construct shell to make a juggernaut, wraith or artificer (the stone is used up). The plain shard works for any user; the chaplain shard is spent after one release; the purified shard burns a cultist user for 10 damage and strips cult status from a shade.",
    "rank": 2,
-   "reason": "Used on any downed or sleeping person it instantly dusts the body and traps them as a shade you command. No revive after that. Empty it and it can do so again. One sits on the Lamia hull.",
+   "reason": "Used on any downed or sleeping person it instantly dusts the body and traps them as a shade you command. No revive after that. Empty it and it can do so again. No shop, ruin or played hull has one.",
    "tier": "yellow"
   },
   "/obj/item/soulstone/anybody/chaplain": {

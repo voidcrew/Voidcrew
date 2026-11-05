@@ -70,6 +70,15 @@
    "reason": "Melee 5 with a little fire and acid protection. Too little to count.",
    "tier": "none"
   },
+  "/obj/item/clothing/under/misc/durathread": {
+   "confidence": "high",
+   "group": "Armored uniforms",
+   "hash": "cf99458b624e669d",
+   "name": "durathread jumpsuit",
+   "rank": 3,
+   "reason": "Melee 10 and laser 10 on chest, arms and legs, with fire and acid protection. Stacks under your armor, and barely matters. Crafted from durathread.",
+   "tier": "green"
+  },
   "/obj/item/clothing/under/misc/mailman": {
    "confidence": "high",
    "group": "Plain uniforms",
@@ -911,7 +920,6 @@
   "/obj/item/clothing/under/misc/assistantformal": "cosmetic",
   "/obj/item/clothing/under/misc/burial": "cosmetic",
   "/obj/item/clothing/under/misc/coordinator": "cosmetic",
-  "/obj/item/clothing/under/misc/durathread": "no route",
   "/obj/item/clothing/under/misc/overalls": "cosmetic",
   "/obj/item/clothing/under/misc/patriotsuit": "cosmetic",
   "/obj/item/clothing/under/misc/pj": "abstract",

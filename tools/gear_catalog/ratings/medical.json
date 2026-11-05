@@ -52,6 +52,15 @@
    "reason": "Plain surgery tool that prints at round start.",
    "tier": "none"
   },
+  "/obj/item/cautery": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "a995bf03344ef30a",
+   "name": "cautery",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/cautery/advanced": {
    "confidence": "high",
    "group": "advanced surgery",
@@ -88,6 +97,15 @@
    "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
    "tier": "green"
   },
+  "/obj/item/circular_saw": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "d62ba7956e6863b0",
+   "name": "circular saw",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/circular_saw/alien": {
    "confidence": "medium",
    "group": "advanced surgery",
@@ -115,6 +133,15 @@
    "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
    "tier": "green"
   },
+  "/obj/item/defibrillator": {
+   "confidence": "high",
+   "group": "revival",
+   "hash": "125fcc61b3c40964",
+   "name": "defibrillator",
+   "rank": 9,
+   "reason": "Revives a fresh corpse at the cost of your back slot, and thick chest clothing blocks it. Comes with no cell. Prints at round start for about 65 cr of material.",
+   "tier": "green"
+  },
   "/obj/item/defibrillator/compact": {
    "confidence": "medium",
    "group": "revival",
@@ -130,7 +157,7 @@
    "hash": "f95bc62c29c35fa8",
    "name": "combat defibrillator",
    "rank": 2,
-   "reason": "Revives through armor, never needs charging, recharges in 2.5 s. One touch of the paddles is also 60 stamina and a 7.5 s knockdown with no wind-up. Two hands, melee only. On one hull and one enemy ship.",
+   "reason": "Revives through armor, never needs charging, recharges in 2.5 s. One touch of the paddles is also 60 stamina and a 7.5 s knockdown with no wind-up. Two hands, melee only. On one enemy ship.",
    "tier": "red"
   },
   "/obj/item/defibrillator/compact/combat/loaded/nanotrasen": {
@@ -148,7 +175,7 @@
    "hash": "0cf36971711a4c08",
    "name": "compact defibrillator",
    "rank": 5,
-   "reason": "A revive that fits on the belt or in a bag, so the medic keeps the back slot. This one has its cell. A few hulls carry one.",
+   "reason": "A revive that fits on the belt or in a bag, so the medic keeps the back slot. This one has its cell. Two hulls carry one.",
    "tier": "yellow"
   },
   "/obj/item/defibrillator/loaded": {
@@ -203,6 +230,15 @@
    "name": "mining wound analyzer",
    "rank": 4,
    "reason": "The same wound analyzer, in a miner's box.",
+   "tier": "none"
+  },
+  "/obj/item/hemostat": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "83c4b7f97cb059e1",
+   "name": "hemostat",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
    "tier": "none"
   },
   "/obj/item/hemostat/alien": {
@@ -481,7 +517,7 @@
    "hash": "d38706fc9e47f702",
    "name": "blood pack",
    "rank": 5,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/a_plus": {
@@ -490,7 +526,7 @@
    "hash": "45e8179f6c80e7e4",
    "name": "blood pack",
    "rank": 4,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Cargo sells it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/b_minus": {
@@ -499,7 +535,7 @@
    "hash": "7fb951a850796660",
    "name": "blood pack",
    "rank": 7,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/b_plus": {
@@ -508,7 +544,7 @@
    "hash": "4b307ff1616c412d",
    "name": "blood pack",
    "rank": 6,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/ethereal": {
@@ -517,7 +553,7 @@
    "hash": "3312370f325ad659",
    "name": "blood pack",
    "rank": 9,
-   "reason": "Liquid electricity for an ethereal patient. Every crew stocks it and there is no power in it.",
+   "reason": "Liquid electricity for an ethereal patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/lizard": {
@@ -526,7 +562,7 @@
    "hash": "ed78a7e770fc25e3",
    "name": "blood pack",
    "rank": 8,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/o_minus": {
@@ -535,7 +571,7 @@
    "hash": "682b567b10c4a9c9",
    "name": "blood pack",
    "rank": 2,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/o_plus": {
@@ -544,7 +580,7 @@
    "hash": "c7045f7469cc1db5",
    "name": "blood pack",
    "rank": 3,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/random": {
@@ -553,7 +589,7 @@
    "hash": "4b307ff1616c412d",
    "name": "blood pack",
    "rank": 10,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/blood/universal": {
@@ -562,7 +598,7 @@
    "hash": "74ff73dd3ee0d223",
    "name": "blood pack",
    "rank": 1,
-   "reason": "Restores lost blood to a matching patient. Every crew stocks it and there is no power in it.",
+   "reason": "Restores lost blood to a matching patient. No shop, ruin or played hull has it, and there is no power in it.",
    "tier": "none"
   },
   "/obj/item/reagent_containers/chem_pack": {
@@ -580,7 +616,7 @@
    "hash": "c4716f985d60614b",
    "name": "hypospray",
    "rank": 2,
-   "reason": "Refillable instant injector holding 60 units, 5 to a jab, that starts with slow all-round healing and can't be destroyed. Thick suits stop it. Four hulls start with one.",
+   "reason": "Refillable instant injector holding 60 units, 5 to a jab, that starts with slow all-round healing and can't be destroyed. Thick suits stop it. Two hulls start with one.",
    "tier": "yellow"
   },
   "/obj/item/reagent_containers/hypospray/combat": {
@@ -589,7 +625,7 @@
    "hash": "5d040dea34d028ac",
    "name": "combat stimulant injector",
    "rank": 1,
-   "reason": "Instant jabs through any armor, nine doses of healing, and you can refill it with anything, poison included. The best injector there is. In two hulls' marine vendors and one armory room.",
+   "reason": "Instant jabs through any armor, nine doses of healing, and you can refill it with anything, poison included. The best injector there is. In the marine vendor of the Phalanx armory module, and dropped by one pirate boss.",
    "tier": "red"
   },
   "/obj/item/reagent_containers/hypospray/medipen": {
@@ -881,13 +917,22 @@
    "reason": "A syringe that repairs suffocation damage. Comes in the oxygen kit.",
    "tier": "green"
   },
+  "/obj/item/reagent_containers/syringe/crude": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "52b614405ec3f712",
+   "name": "crude syringe",
+   "rank": 9,
+   "reason": "A flimsy wooden syringe that holds very little.",
+   "tier": "none"
+  },
   "/obj/item/reagent_containers/syringe/epinephrine": {
    "confidence": "high",
    "group": "injectors and syringes",
    "hash": "05193ccfb7f83735",
    "name": "syringe (epinephrine)",
    "rank": 6,
-   "reason": "A syringe of epinephrine for someone in crit. Mapped on one hull.",
+   "reason": "A syringe of epinephrine for someone in crit. No shop, ruin or played hull has it.",
    "tier": "green"
   },
   "/obj/item/reagent_containers/syringe/lazarus_line": {
@@ -905,7 +950,7 @@
    "hash": "34d122f5aa1bfa78",
    "name": "lethal injection syringe",
    "rank": 4,
-   "reason": "Empty, and injects up to 50 units at once. With a chem lab that's a big dose of anything. Few hulls carry one.",
+   "reason": "Empty, and injects up to 50 units at once. With a chem lab that's a big dose of anything. One ruin has it.",
    "tier": "green"
   },
   "/obj/item/reagent_containers/syringe/lethal/choral": {
@@ -953,6 +998,15 @@
    "reason": "A syringe that purges toxins. Comes in the toxin kit.",
    "tier": "green"
   },
+  "/obj/item/retractor": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "44b8519c9b15a39f",
+   "name": "retractor",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/retractor/advanced": {
    "confidence": "high",
    "group": "advanced surgery",
@@ -988,6 +1042,15 @@
    "rank": 20,
    "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
    "tier": "green"
+  },
+  "/obj/item/scalpel": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "4de5e1593f3b472e",
+   "name": "scalpel",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
   },
   "/obj/item/scalpel/advanced": {
    "confidence": "high",
@@ -1191,6 +1254,15 @@
    "reason": "15 brute a stitch and better bleeding control, ten uses. Comes in combat kits; a chem lab can make it.",
    "tier": "green"
   },
+  "/obj/item/storage/medkit": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "5bcfd0726011f493",
+   "name": "medkit",
+   "rank": 16,
+   "reason": "An empty first aid kit with seven slots. A bag and nothing more.",
+   "tier": "none"
+  },
   "/obj/item/storage/medkit/advanced": {
    "confidence": "high",
    "group": "medkits",
@@ -1386,7 +1458,7 @@
    "hash": "ee43c9d136ff42f5",
    "name": "bottle of maintenance pills",
    "rank": 17,
-   "reason": "Three mystery pills with random chemicals inside. 75 cr. A gamble, not gear.",
+   "reason": "One to seven mystery pills with random chemicals inside. 75 cr. A gamble, not gear.",
    "tier": "none"
   },
   "/obj/item/storage/pill_bottle/maintenance_pill/full": {
@@ -1620,17 +1692,13 @@
   "/obj/item/blood_filter/cruel": "no route",
   "/obj/item/bonesetter/cruel": "no route",
   "/obj/item/bonesetter/cyborg": "no route",
-  "/obj/item/cautery": "abstract",
   "/obj/item/cautery/cruel": "no route",
   "/obj/item/cautery/cyborg": "no route",
   "/obj/item/cautery/prt": "no route",
-  "/obj/item/circular_saw": "abstract",
   "/obj/item/circular_saw/cruel": "no route",
   "/obj/item/circular_saw/cyborg": "no route",
-  "/obj/item/defibrillator": "abstract",
   "/obj/item/defibrillator/compact/combat": "no route",
   "/obj/item/healthanalyzer/rad_laser": "no route",
-  "/obj/item/hemostat": "abstract",
   "/obj/item/hemostat/cruel": "no route",
   "/obj/item/hemostat/cyborg": "no route",
   "/obj/item/hemostat/supermatter": "no route",
@@ -1711,7 +1779,6 @@
   "/obj/item/reagent_containers/syringe/calomel": "no route",
   "/obj/item/reagent_containers/syringe/contraband": "no route",
   "/obj/item/reagent_containers/syringe/contraband/saturnx": "no route",
-  "/obj/item/reagent_containers/syringe/crude": "no route",
   "/obj/item/reagent_containers/syringe/crude/blastoff": "no route",
   "/obj/item/reagent_containers/syringe/crude/mushroom": "no route",
   "/obj/item/reagent_containers/syringe/crude/tribal": "no route",
@@ -1724,10 +1791,8 @@
   "/obj/item/reagent_containers/syringe/salacid": "no route",
   "/obj/item/reagent_containers/syringe/spider_extract": "no route",
   "/obj/item/reagent_containers/syringe/vestige_precision": "no route",
-  "/obj/item/retractor": "abstract",
   "/obj/item/retractor/cruel": "no route",
   "/obj/item/retractor/cyborg": "no route",
-  "/obj/item/scalpel": "abstract",
   "/obj/item/scalpel/cruel": "no route",
   "/obj/item/scalpel/cyborg": "no route",
   "/obj/item/scalpel/supermatter": "no route",
@@ -1740,7 +1805,6 @@
   "/obj/item/stack/medical/aloe/fresh": "no route",
   "/obj/item/stack/medical/bruise_pack/vestige_sitter": "no route",
   "/obj/item/stack/medical/ointment/vestige_sitter": "no route",
-  "/obj/item/storage/medkit": "abstract",
   "/obj/item/storage/medkit/ancient/heirloom": "no route",
   "/obj/item/storage/medkit/tactical/premium": "no route",
   "/obj/item/storage/pill_bottle/happinesspsych": "no route",

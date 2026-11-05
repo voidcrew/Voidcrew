@@ -61,7 +61,7 @@
    "name": "mk-honk prototype shoes",
    "note": "Switched on with the action button (needs bananium inside), each step drops a synthetic banana peel behind the wearer for 10 units of bananium, and the wearer cannot slip on water or ordinary peels while it is on. A peel knocks down whoever steps on it for 4 s. The shoes switch themselves off when the bananium runs out; using them in hand takes the bananium back out, and they accept bananium sheets up to 100 sheets. / Worn, the shoes squeak every third step and make the wearer waddle (ctrl-click while holding them to switch the waddle off), and a clown wearing them gets a mood boost. They have a two-slot pocket for small items such as knives, pens, magazines and syringes. Subtypes only change the squeak sound.",
    "rank": 8,
-   "reason": "Fed bananium, they drop peels that floor whoever steps on them, and you don't slip while they're on. Slow to walk in, and bananium is rare. The clown ship and two ruins.",
+   "reason": "Fed bananium, they drop peels that floor whoever steps on them, and you don't slip while they're on. Slow to walk in, and bananium is rare. Two ruins.",
    "tier": "green"
   },
   "/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat": {
@@ -90,7 +90,7 @@
    "hash": "b7d77e40246a26d8",
    "name": "combat boots",
    "rank": 3,
-   "reason": "Anchor. 25 armor on the legs and two pocket slots at no speed cost. The best everyday boots, though legs are rarely the target. On 6 hulls and in ruins.",
+   "reason": "Anchor. 25 armor on the legs and two pocket slots at no speed cost. The best everyday boots, though legs are rarely the target. On 3 hulls and in ruins.",
    "tier": "green"
   },
   "/obj/item/clothing/shoes/combat/swat": {
@@ -289,7 +289,7 @@
    "hash": "5d7ca9aa4b3403cb",
    "name": "advanced magboots",
    "rank": 1,
-   "reason": "Magboots with no speed cost: walk in zero gravity and never slip, at full speed. Can't be destroyed. One chief engineer's suit unit on one hull has them.",
+   "reason": "Magboots with no speed cost: walk in zero gravity and never slip, at full speed. Can't be destroyed. No shop, ruin or played hull has them.",
    "tier": "yellow"
   },
   "/obj/item/clothing/shoes/mod": {

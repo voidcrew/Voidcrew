@@ -11,13 +11,22 @@
   "Job and hobby skillchips"
  ],
  "items": {
+  "/obj/item/autosurgeon": {
+   "confidence": "medium",
+   "group": "Autosurgeons",
+   "hash": "17476c4c8be51f10",
+   "name": "autosurgeon",
+   "rank": 2,
+   "reason": "Empty and reusable. Load an organ or ordinary implant and it goes in with no surgeon, at once on yourself and in 8 seconds on someone else. Cyberware refuses it. Two vouchers at a red-zone clinic.",
+   "tier": "green"
+  },
   "/obj/item/autosurgeon/medical_hud": {
    "confidence": "high",
    "group": "Autosurgeons",
    "hash": "c0d14d13391c210b",
    "name": "autosurgeon",
    "rank": 1,
-   "reason": "A one-use injector for the medical HUD implant, same green tier as the goggles. Found in the chief medical locker on five hulls.",
+   "reason": "A one-use injector for the medical HUD implant, same green tier as the goggles. Found in the chief medical locker on two hulls.",
    "tier": "green"
   },
   "/obj/item/autosurgeon/syndicate/commsagent": {
@@ -215,6 +224,15 @@
    "name": "implant case - 'Firearms Authentication'",
    "rank": 5,
    "reason": "Holds a firearms authentication implant, which unlocks guns crews don't use.",
+   "tier": "none"
+  },
+  "/obj/item/implanter": {
+   "confidence": "high",
+   "group": "Empty kit",
+   "hash": "718a6ba21ac72996",
+   "name": "implanter",
+   "rank": 3,
+   "reason": "An empty implant injector.",
    "tier": "none"
   },
   "/obj/item/implanter/explosive": {
@@ -441,7 +459,6 @@
  },
  "method": "Judged by hand against each other and against the cyberware and eyewear anchors. Cases, implanters and autosurgeons are rated as what they hold. Every implant costs 1 neural load. Skillchips are none unless they change a fight.",
  "unrated": {
-  "/obj/item/autosurgeon": "abstract",
   "/obj/item/autosurgeon/syndicate": "no route",
   "/obj/item/autosurgeon/syndicate/anti_stun": "no route",
   "/obj/item/autosurgeon/syndicate/anti_stun/single_use": "no route",
@@ -488,7 +505,6 @@
   "/obj/item/implantcase/freedom": "no route",
   "/obj/item/implantcase/krav_maga": "no route",
   "/obj/item/implantcase/spell": "no route",
-  "/obj/item/implanter": "abstract",
   "/obj/item/implanter/beacon": "no route",
   "/obj/item/implanter/emp": "no route",
   "/obj/item/implanter/exile": "no route",

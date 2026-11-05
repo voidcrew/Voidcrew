@@ -28,6 +28,15 @@
    "reason": "A peg limb. Better than a stump, worse than anything else.",
    "tier": "none"
   },
+  "/obj/item/bodypart/arm/left/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "fbe95219218a1116",
+   "name": "cyborg left arm",
+   "rank": 5,
+   "reason": "Printed robot arm: punches like flesh, takes a fifth less brute and burn, and EMP hurts it. 10 cr of iron at round start, and it also goes into a cyborg frame.",
+   "tier": "green"
+  },
   "/obj/item/bodypart/arm/left/robot/advanced": {
    "confidence": "high",
    "group": "Limbs",
@@ -72,6 +81,15 @@
    "rank": 10,
    "reason": "A peg limb. Better than a stump, worse than anything else.",
    "tier": "none"
+  },
+  "/obj/item/bodypart/arm/right/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "88a09a31672b95d3",
+   "name": "cyborg right arm",
+   "rank": 5,
+   "reason": "Printed robot arm: punches like flesh, takes a fifth less brute and burn, and EMP hurts it. 10 cr of iron at round start, and it also goes into a cyborg frame.",
+   "tier": "green"
   },
   "/obj/item/bodypart/arm/right/robot/advanced": {
    "confidence": "high",
@@ -127,6 +145,15 @@
    "reason": "A spare or found body part. Replacement only.",
    "tier": "none"
   },
+  "/obj/item/bodypart/chest/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "969d41ba6e4507d3",
+   "name": "cyborg torso",
+   "rank": 5,
+   "reason": "Torso of a printed cyborg frame, 40 cr of iron at round start. Only as useful as the cyborg it builds.",
+   "tier": "green"
+  },
   "/obj/item/bodypart/head": {
    "confidence": "high",
    "group": "Limbs",
@@ -163,6 +190,15 @@
    "reason": "A spare or found body part. Replacement only.",
    "tier": "none"
   },
+  "/obj/item/bodypart/head/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "29f3cbbcf99b9522",
+   "name": "cyborg head",
+   "rank": 5,
+   "reason": "Head of a printed cyborg frame, 5 cr of iron at round start. Only as useful as the cyborg it builds.",
+   "tier": "green"
+  },
   "/obj/item/bodypart/head/skeleton": {
    "confidence": "high",
    "group": "Limbs",
@@ -198,6 +234,15 @@
    "rank": 26,
    "reason": "A spare or found body part. Replacement only.",
    "tier": "none"
+  },
+  "/obj/item/bodypart/leg/left/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "3ba1a00523c366f2",
+   "name": "cyborg left leg",
+   "rank": 5,
+   "reason": "Printed robot leg: a fifth less brute and burn on that limb, and EMP hurts it. 10 cr of iron at round start, and it also goes into a cyborg frame.",
+   "tier": "green"
   },
   "/obj/item/bodypart/leg/left/robot/advanced": {
    "confidence": "high",
@@ -252,6 +297,15 @@
    "rank": 29,
    "reason": "A spare or found body part. Replacement only.",
    "tier": "none"
+  },
+  "/obj/item/bodypart/leg/right/robot": {
+   "confidence": "medium",
+   "group": "Limbs",
+   "hash": "ff20bfeff9b98c97",
+   "name": "cyborg right leg",
+   "rank": 5,
+   "reason": "Printed robot leg: a fifth less brute and burn on that limb, and EMP hurts it. 10 cr of iron at round start, and it also goes into a cyborg frame.",
+   "tier": "green"
   },
   "/obj/item/bodypart/leg/right/robot/advanced": {
    "confidence": "high",
@@ -1074,7 +1128,6 @@
   "/obj/item/bodypart/arm/left/mushroom": "no route",
   "/obj/item/bodypart/arm/left/plasmaman": "no route",
   "/obj/item/bodypart/arm/left/pod": "no route",
-  "/obj/item/bodypart/arm/left/robot": "abstract",
   "/obj/item/bodypart/arm/left/robot/android": "no route",
   "/obj/item/bodypart/arm/left/shadow": "no route",
   "/obj/item/bodypart/arm/left/shadow/nightmare": "no route",
@@ -1097,7 +1150,6 @@
   "/obj/item/bodypart/arm/right/mushroom": "no route",
   "/obj/item/bodypart/arm/right/plasmaman": "no route",
   "/obj/item/bodypart/arm/right/pod": "no route",
-  "/obj/item/bodypart/arm/right/robot": "abstract",
   "/obj/item/bodypart/arm/right/robot/android": "no route",
   "/obj/item/bodypart/arm/right/shadow": "no route",
   "/obj/item/bodypart/arm/right/shadow/nightmare": "no route",
@@ -1118,7 +1170,6 @@
   "/obj/item/bodypart/chest/mushroom": "no route",
   "/obj/item/bodypart/chest/plasmaman": "no route",
   "/obj/item/bodypart/chest/pod": "no route",
-  "/obj/item/bodypart/chest/robot": "abstract",
   "/obj/item/bodypart/chest/robot/android": "no route",
   "/obj/item/bodypart/chest/shadow": "no route",
   "/obj/item/bodypart/chest/skeleton": "no route",
@@ -1140,7 +1191,6 @@
   "/obj/item/bodypart/head/plasmaman": "no route",
   "/obj/item/bodypart/head/pod": "no route",
   "/obj/item/bodypart/head/psyker": "literal only",
-  "/obj/item/bodypart/head/robot": "abstract",
   "/obj/item/bodypart/head/robot/android": "no route",
   "/obj/item/bodypart/head/shadow": "no route",
   "/obj/item/bodypart/head/snail": "no route",
@@ -1161,7 +1211,6 @@
   "/obj/item/bodypart/leg/left/mushroom": "no route",
   "/obj/item/bodypart/leg/left/plasmaman": "no route",
   "/obj/item/bodypart/leg/left/pod": "no route",
-  "/obj/item/bodypart/leg/left/robot": "abstract",
   "/obj/item/bodypart/leg/left/robot/android": "no route",
   "/obj/item/bodypart/leg/left/shadow": "no route",
   "/obj/item/bodypart/leg/left/snail": "no route",
@@ -1182,7 +1231,6 @@
   "/obj/item/bodypart/leg/right/mushroom": "no route",
   "/obj/item/bodypart/leg/right/plasmaman": "no route",
   "/obj/item/bodypart/leg/right/pod": "no route",
-  "/obj/item/bodypart/leg/right/robot": "abstract",
   "/obj/item/bodypart/leg/right/robot/android": "no route",
   "/obj/item/bodypart/leg/right/shadow": "no route",
   "/obj/item/bodypart/leg/right/snail": "no route",

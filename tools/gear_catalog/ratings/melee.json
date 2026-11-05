@@ -41,7 +41,7 @@
    "hash": "225945eb333b0baa",
    "name": "cargonia banner",
    "rank": 1,
-   "reason": "Raised once a minute, it heals 15 brute and 15 burn and takes 4 s off stuns for you and same-department crew within 4 tiles. On one hull.",
+   "reason": "Raised once a minute, it heals 15 brute and 15 burn and takes 4 s off stuns for you and same-department crew within 4 tiles. No shop, ruin or played hull has one.",
    "tier": "green"
   },
   "/obj/item/banner/cargo/mundane": {
@@ -154,6 +154,16 @@
    "note": "While held it reduces the movement slowdown of missing legs to 40% for a user who still has at least one leg (no help if both are gone), and makes them waddle. It also cancels the limp from broken leg bones. / While held in a hand it cancels the limp from broken leg bones. The crutch also cuts missing-leg slowdown to 40% and makes the user waddle; the white cane only cancels the limp while extended; the shepherd's crook inherits the plain cane effect.",
    "rank": 3,
    "reason": "Medical aid for a missing or broken leg. 12 force, but no one carries it to fight.",
+   "tier": "none"
+  },
+  "/obj/item/cane/crutch/wood": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "8617e7a1234acfc6",
+   "name": "wooden crutch",
+   "note": "While held in a hand it cancels the limp from broken leg bones. The crutch also cuts missing-leg slowdown to 40% and makes the user waddle; the white cane only cancels the limp while extended; the shepherd's crook inherits the plain cane effect. / While held it reduces the movement slowdown of missing legs to 40% for a user who still has at least one leg (no help if both are gone), and makes them waddle. It also cancels the limp from broken leg bones.",
+   "rank": 9,
+   "reason": "A handmade crutch: 12 force and no reason to fight with it, same as the medical one.",
    "tier": "none"
   },
   "/obj/item/cane/shepherds_crook": {
@@ -587,7 +597,7 @@
    "name": "fire axe",
    "note": "Force 5 one-handed, 24 wielded (bone axe 23, metallic hydrogen axe 15, boarding axe 30). Wielded, a hit also destroys any non-indestructible window or grille outright, and its object-damage multiplier is 1.25 (2 on the metallic hydrogen axe, 3 on the boarding axe); unwielded it is 0.8. The metallic hydrogen axe also works as a crowbar.",
    "rank": 6,
-   "reason": "Anchor. 24 force wielded, 5 otherwise, and it smashes windows and grilles in one hit. On the wall of 7 hulls. Vested man down in about 5 s.",
+   "reason": "Anchor. 24 force wielded, 5 otherwise, and it smashes windows and grilles in one hit. On the wall of 4 hulls. Vested man down in about 5 s.",
    "tier": "green"
   },
   "/obj/item/fireaxe/boardingaxe": {
@@ -792,6 +802,15 @@
    "reason": "Serving tongs, no damage.",
    "tier": "none"
   },
+  "/obj/item/knife": {
+   "confidence": "high",
+   "group": "knives and small blades",
+   "hash": "07fbfe4bffa2d449",
+   "name": "knife",
+   "rank": 16,
+   "reason": "10 force plain knife. Nothing to earn.",
+   "tier": "none"
+  },
   "/obj/item/knife/bloodletter": {
    "confidence": "medium",
    "group": "knives and small blades",
@@ -831,6 +850,16 @@
    "reason": "Survival knife in bone, crafted from 2 bone.",
    "tier": "green"
   },
+  "/obj/item/knife/combat/cyborg": {
+   "confidence": "high",
+   "group": "knives and small blades",
+   "hash": "f699bd3acafaedd5",
+   "name": "cyborg knife",
+   "note": "A clumsy user has a 20% chance to swallow it when it is equipped in the mask slot, which starts a choke that lasts until it is vomited up or someone performs the Heimlich on them. Taking it out of the mask slot has a 20% chance of 5 brute to the head (not while choking). The bone dagger and survival knife share both.",
+   "rank": 2,
+   "reason": "A combat knife's numbers: 20 force, throws for 20 with an embed. Only from emagging an integrated toolset implant, and it stays in the arm.",
+   "tier": "green"
+  },
   "/obj/item/knife/combat/survival": {
    "confidence": "high",
    "group": "knives and small blades",
@@ -838,7 +867,7 @@
    "name": "survival knife",
    "note": "A clumsy user has a 20% chance to swallow it when it is equipped in the mask slot, which starts a choke that lasts until it is vomited up or someone performs the Heimlich on them. Taking it out of the mask slot has a 20% chance of 5 brute to the head (not while choking). The bone dagger and survival knife share both.",
    "rank": 6,
-   "reason": "Anchor. 15 force, throws for 15, on 67 job outfits and 350 cr at a green shop. What everyone already has.",
+   "reason": "Anchor. 15 force, throws for 15, on 58 job outfits and 350 cr at a green shop. What everyone already has.",
    "tier": "green"
   },
   "/obj/item/knife/envy": {
@@ -1028,7 +1057,7 @@
    "hash": "2ff420298d2b663e",
    "name": "stun baton",
    "rank": 4,
-   "reason": "Anchor. One hit knocks down for 5 s and two stun outright. The close-range disabler. On 8 job outfits and 4 hulls.",
+   "reason": "Anchor. One hit knocks down for 5 s and two stun outright. The close-range disabler. On 8 job outfits and 3 hulls.",
    "tier": "green"
   },
   "/obj/item/melee/baton/security/loaded/hos": {
@@ -1251,7 +1280,7 @@
    "name": "officer's sabre",
    "note": "Against a human whose liver has the maintenance-metabolism trait (given to assistants) it deals an extra 35% of its force, makes them scream, and needs combat mode on; other targets get nothing extra. Its block never applies against projectiles (leaps and tackles can still be blocked), and it carries a jousting component for vehicle charges.",
    "rank": 7,
-   "reason": "15 force that ignores almost all armor, 50% block against melee. In the captain's locker on 15 hulls. Too little damage to be more than green.",
+   "reason": "15 force that ignores almost all armor, 50% block against melee. In the captain's locker on 9 hulls. Too little damage to be more than green.",
    "tier": "green"
   },
   "/obj/item/melee/skateboard": {
@@ -1417,7 +1446,7 @@
    "name": "clown dagger",
    "note": "While carried it blocks magic and holy-magic effects aimed at its holder; clicking a cult, heretic or cosmic rune clears it; against spirit-type mobs it adds 25 damage whether or not combat mode is on. Used in hand, a plain rod turns into a rod form of the holder's choice until one has been picked this round (firearm choices are removed here).",
    "rank": 6,
-   "reason": "A pocket-size 18 force blade that wards off magic. On the clown ship and one ruin.",
+   "reason": "A pocket-size 18 force blade that wards off magic. In one ruin.",
    "tier": "green"
   },
   "/obj/item/nullrod/hypertool": {
@@ -1428,6 +1457,16 @@
    "note": "While carried it blocks magic and holy-magic effects aimed at its holder; clicking a cult, heretic or cosmic rune clears it; against spirit-type mobs it adds 25 damage whether or not combat mode is on. Used in hand, a plain rod turns into a rod form of the holder's choice until one has been picked this round (firearm choices are removed here).",
    "rank": 2,
    "reason": "18 force that a vest does not slow, blunt, wards off magic.",
+   "tier": "green"
+  },
+  "/obj/item/nullrod/nullblade": {
+   "confidence": "medium",
+   "group": "null rods",
+   "hash": "42937a01b0b34669",
+   "name": "nullblade",
+   "note": "Each swing's force is rolled as 1d6 plus arm strength (4 for a human arm), plus any sharpening. A target that is blind, staggered, confused, in an aggressive grab, has blocked hands or is hit from behind also takes a sneak attack of 3d6 brute through melee armor with a 30 wound bonus on exposed skin: 1d6 more if knocked out, halved if recently batoned, none on slimes or for a blind wielder. / While carried it blocks magic and holy-magic effects aimed at its holder; clicking a cult, heretic or cosmic rune clears it; against spirit-type mobs it adds 25 damage whether or not combat mode is on. Used in hand, a plain rod turns into a rod form of the holder's choice until one has been picked this round (firearm choices are removed here).",
+   "rank": 8,
+   "reason": "Swings for 5 to 10, low for a null rod, but a target that is blind, staggered, confused, grabbed, hands blocked or hit from behind takes another 3 to 18 through melee armor with a high wound chance. Made from a bound haunted sword and a bible.",
    "tier": "green"
   },
   "/obj/item/nullrod/spear": {
@@ -1752,7 +1791,6 @@
   "/obj/item/banner/engineering": "no route",
   "/obj/item/banner/medical": "no route",
   "/obj/item/banner/science": "no route",
-  "/obj/item/cane/crutch/wood": "no route",
   "/obj/item/chainsaw/doomslayer": "no route",
   "/obj/item/chair/musical": "no route",
   "/obj/item/claymore/carrot": "no route",
@@ -1772,9 +1810,7 @@
   "/obj/item/katana/cursed": "no route",
   "/obj/item/kinetic_crusher/compact": "no route",
   "/obj/item/kitchen": "abstract",
-  "/obj/item/knife": "abstract",
   "/obj/item/knife/carp": "no route",
-  "/obj/item/knife/combat/cyborg": "no route",
   "/obj/item/knife/combat/root": "no route",
   "/obj/item/knife/kitchen/silicon": "no route",
   "/obj/item/knife/rainbowknife": "no route",
@@ -1812,7 +1848,7 @@
   "/obj/item/melee/cultblade": "needs another system",
   "/obj/item/melee/cultblade/dagger": "needs another system",
   "/obj/item/melee/cultblade/ghost": "no route",
-  "/obj/item/melee/cultblade/halberd": "no route",
+  "/obj/item/melee/cultblade/halberd": "literal only",
   "/obj/item/melee/cultblade/haunted": "no route",
   "/obj/item/melee/curator_whip": "no route",
   "/obj/item/melee/energy": "abstract",
@@ -1868,7 +1904,6 @@
   "/obj/item/nullrod/godhand": "no route",
   "/obj/item/nullrod/hammer": "no route",
   "/obj/item/nullrod/non_station": "no route",
-  "/obj/item/nullrod/nullblade": "no route",
   "/obj/item/nullrod/pitchfork": "no route",
   "/obj/item/nullrod/pride_hammer": "no route",
   "/obj/item/nullrod/sord": "no route",

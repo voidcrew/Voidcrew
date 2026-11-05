@@ -62,13 +62,22 @@
    "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
    "tier": "none"
   },
+  "/obj/item/storage/bag/fishing/carpskin": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "e45d83f13c7a1662",
+   "name": "carpskin fishing bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
   "/obj/item/storage/bag/garment/captain": {
    "confidence": "medium",
    "group": "garment bags",
    "hash": "1a3664344bcb9b68",
    "name": "captain's garment bag",
    "rank": 1,
-   "reason": "The captain's carapace (beats a vest on every number) with insulated combat gloves and heavy sunglasses. Starting gear on 15 hulls.",
+   "reason": "The captain's carapace (beats a vest on every number) with insulated combat gloves and heavy sunglasses. Starting gear on 9 hulls.",
    "tier": "yellow"
   },
   "/obj/item/storage/bag/garment/chief_medical": {
@@ -86,7 +95,7 @@
    "hash": "7935e34332c1e0ff",
    "name": "head of personnel's garment bag",
    "rank": 3,
-   "reason": "A coat with vest-grade armor, plus sunglasses. One hull has it.",
+   "reason": "A coat with vest-grade armor, plus sunglasses. No shop, ruin or played hull has it.",
    "tier": "green"
   },
   "/obj/item/storage/bag/garment/hos": {
@@ -95,7 +104,7 @@
    "hash": "521d7ae55c5966ea",
    "name": "head of security's garment bag",
    "rank": 2,
-   "reason": "Armored greatcoat covering chest, arms and legs, gorilla gloves, a SWAT mask and HUD sunglasses. Only two ship maps carry it.",
+   "reason": "Armored greatcoat covering chest, arms and legs, gorilla gloves, a SWAT mask and HUD sunglasses. Only one ship module carries it.",
    "tier": "yellow"
   },
   "/obj/item/storage/bag/garment/quartermaster": {
@@ -104,7 +113,7 @@
    "hash": "9d5c6afb4987032e",
    "name": "quartermasters's garment bag",
    "rank": 4,
-   "reason": "A firefighter suit and a gas mask are the useful parts. Starting gear on four hulls.",
+   "reason": "A firefighter suit and a gas mask are the useful parts. Starting gear on two hulls.",
    "tier": "green"
   },
   "/obj/item/storage/bag/garment/research_director": {
@@ -1256,8 +1265,8 @@
    "hash": "e3213278af2d3eea",
    "name": "box",
    "rank": 5,
-   "reason": "Five throwing stars, two tactical bolas and two sharp paper planes. A good close-range opener. Random ruin loot.",
-   "tier": "green"
+   "reason": "Five throwing stars, two sharp paper planes and two tactical bolas, and the bolas are a yellow opener. Random ruin loot.",
+   "tier": "yellow"
   },
   "/obj/item/storage/box/syndie_kit/tuberculosisgrenade": {
    "confidence": "low",
@@ -1265,8 +1274,8 @@
    "hash": "d4375604e4111477",
    "name": "virus grenade kit",
    "rank": 3,
-   "reason": "A grenade of airborne fungal tuberculosis, with five cure pens for your own crew. Could wreck a crew slow to treat it. Only one NPC ship carries it.",
-   "tier": "yellow"
+   "reason": "Holds the airborne fungal tuberculosis grenade, with five cure pens for your own crew. Rated with the grenade. Only one NPC ship carries it.",
+   "tier": "red"
   },
   "/obj/item/storage/box/syringes": {
    "confidence": "high",
@@ -1961,6 +1970,15 @@
    "reason": "Portable chemical dispenser you stock with your own beakers, so a chemist can work away from the lab. Prints after early research.",
    "tier": "green"
   },
+  "/obj/item/storage/test_tube_rack": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "b1f1c29c0e35b126",
+   "name": "test tube rack",
+   "rank": 99,
+   "reason": "A wooden rack for test tubes.",
+   "tier": "none"
+  },
   "/obj/item/storage/wallet": {
    "confidence": "high",
    "group": "money and valuables",
@@ -1993,7 +2011,6 @@
  "unrated": {
   "/obj/item/storage": "abstract",
   "/obj/item/storage/bag": "abstract",
-  "/obj/item/storage/bag/fishing/carpskin": "no route",
   "/obj/item/storage/bag/garment": "no route",
   "/obj/item/storage/bag/garment/engineering_chief": "no route",
   "/obj/item/storage/bag/garment/warden": "no route",
@@ -2213,7 +2230,6 @@
   "/obj/item/storage/pod/directional/north": "no route",
   "/obj/item/storage/soft_crit_test": "no route",
   "/obj/item/storage/spooky": "no route",
-  "/obj/item/storage/test_tube_rack": "no route",
   "/obj/item/storage/test_tube_rack/full": "no route"
  }
 }

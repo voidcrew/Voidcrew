@@ -31,7 +31,7 @@
    "hash": "977ee122dbb9ef4d",
    "name": "access key ring",
    "rank": 6,
-   "reason": "Janitor's key ring that opens doors only when a department access has been granted to it. One job's gear.",
+   "reason": "Janitor's key ring that opens doors only when a department access has been granted to it.",
    "tier": "none"
   },
   "/obj/item/airlock_painter": {
@@ -67,8 +67,8 @@
    "hash": "ecdca735f1097517",
    "name": "the honest gauge",
    "rank": 8,
-   "reason": "Authored unique. Reads gas, machine parts and hidden wiring. Handy readouts, no power.",
-   "tier": "none"
+   "reason": "Authored unique, so it stays off shelves. Reads gas, machine parts and hidden wiring. Handy readouts, no power.",
+   "tier": "above"
   },
   "/obj/item/analyzer/ranged": {
    "confidence": "high",
@@ -311,7 +311,7 @@
    "name": "flux anomaly core",
    "rank": 3,
    "reason": "Common core. With a kit it makes a tesla cannon, and alone it makes tesla reactive armor. Costs only a signaler and an analyzer, so the kit is the real gate.",
-   "tier": "red"
+   "tier": "yellow"
   },
   "/obj/item/assembly/signaler/anomaly/grav": {
    "confidence": "medium",
@@ -521,7 +521,7 @@
    "hash": "9b7bdd396f0006ed",
    "name": "professional RCD",
    "rank": 3,
-   "reason": "RCD with the cooling and anti-interrupt upgrades built in. One job's starting gear.",
+   "reason": "RCD with the cooling and anti-interrupt upgrades built in. No shop, ruin or played hull has it.",
    "tier": "green"
   },
   "/obj/item/construction/rcd/combat": {
@@ -548,7 +548,7 @@
    "hash": "d76f301c6a9776ba",
    "name": "rapid-construction-device (RCD)",
    "rank": 4,
-   "reason": "Best work tool in the game: repairs hull and builds rooms fast, and takes plain walls down in 4 s and doors in 5 s. It stops at reinforced walls. In the engineer's backpack on 16 hulls.",
+   "reason": "Best work tool in the game: repairs hull and builds rooms fast, and takes plain walls down in 4 s and doors in 5 s. It stops at reinforced walls. In the backpack of 16 engineer outfits.",
    "tier": "green"
   },
   "/obj/item/construction/rld": {
@@ -647,8 +647,8 @@
    "hash": "7fe8151cb27e16d4",
    "name": "heavy crowbar",
    "rank": 7,
-   "reason": "Heavy crowbar. 20 force in one hand, the same as a combat knife, and still a crowbar. Only from ruin weapon rolls.",
-   "tier": "yellow"
+   "reason": "Heavy crowbar. 20 force in one hand, the same as the green combat knife, and still a crowbar. Only from ruin weapon rolls.",
+   "tier": "green"
   },
   "/obj/item/crowbar/power": {
    "confidence": "medium",
@@ -692,7 +692,7 @@
    "hash": "dabcd0044b68d39b",
    "name": "command door remote",
    "rank": 1,
-   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people. In 15 captain's lockers.",
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people. In the captain's locker on 9 hulls.",
    "tier": "green"
   },
   "/obj/item/door_remote/chief_medical_officer": {
@@ -856,6 +856,15 @@
    "reason": "Settles contracts wherever you stand and drops the pay at your feet. It saves the trip home on every job. 3,600 cr, 2 vouchers and rep 4.",
    "tier": "yellow"
   },
+  "/obj/item/flashlight": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "74fa1aaae0c35518",
+   "name": "flashlight",
+   "rank": 5,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
   "/obj/item/flashlight/flare": {
    "confidence": "high",
    "group": "Lights",
@@ -889,8 +898,8 @@
    "hash": "9b4b0c1944479012",
    "name": "widow's candle",
    "rank": 4,
-   "reason": "Authored unique. Lets a corpse's ghost say one last thing through the flame. Flavor, with no power.",
-   "tier": "none"
+   "reason": "Authored unique, so it stays off shelves. Lets a corpse's ghost say one last thing through the flame. Flavor, with no power.",
+   "tier": "above"
   },
   "/obj/item/flashlight/flare/torch": {
    "confidence": "high",
@@ -1459,6 +1468,15 @@
    "reason": "Self-refilling mop that hits for 12.",
    "tier": "none"
   },
+  "/obj/item/multitool": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "861040994deab83b",
+   "name": "multitool",
+   "rank": 25,
+   "reason": "Plain multitool. Prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/multitool/abductor": {
    "confidence": "medium",
    "group": "Hand tools",
@@ -1532,6 +1550,15 @@
    "name": "Chemical Analyzer",
    "rank": 13,
    "reason": "Reads chemicals in a beaker.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "971c85bf93572b1b",
+   "name": "pickaxe",
+   "rank": 14,
+   "reason": "Plain pick. Prints at round start and hits for 15, but it's heavy to carry.",
    "tier": "none"
   },
   "/obj/item/pickaxe/diamond": {
@@ -1657,7 +1684,7 @@
    "hash": "f9b74386e4c43bea",
    "name": "pinpointer",
    "rank": 20,
-   "reason": "Points at a nuclear disk. One hull starts with it, and it only matters on the rare map that has a disk and a bomb.",
+   "reason": "Points at a nuclear disk. No shop, ruin or played hull has it, and it only matters on the rare map that has a disk and a bomb.",
    "tier": "none"
   },
   "/obj/item/pinpointer/old_hands_compass": {
@@ -1828,7 +1855,7 @@
    "hash": "cf982e69bd6558ed",
    "name": "medical spray (hercuri)",
    "rank": 2,
-   "reason": "Medical spray of hercuri for burns. A useful field heal on many hulls.",
+   "reason": "Medical spray of hercuri for burns. A useful field heal found in many ship rooms and ruins.",
    "tier": "green"
   },
   "/obj/item/reagent_containers/spray/medical": {
@@ -1938,7 +1965,7 @@
    "hash": "729e31c1e40b8e98",
    "name": "handcuffs",
    "rank": 6,
-   "reason": "Holds anyone for up to a minute, and captures need them. 1 cr of material once researched, and on 28 job outfits.",
+   "reason": "Holds anyone for up to a minute, and captures need them. 1 cr of material once researched, and on 22 job outfits.",
    "tier": "green"
   },
   "/obj/item/restraints/handcuffs/alien": {
@@ -1966,6 +1993,15 @@
    "name": "cable restraints",
    "rank": 12,
    "reason": "Cable cuffs in pink. Holds for 30 s.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/cable/sinew": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "2129c77d8747008c",
+   "name": "sinew restraints",
+   "rank": 12,
+   "reason": "Crafted from sinew. Holds for 30 s.",
    "tier": "green"
   },
   "/obj/item/restraints/handcuffs/cable/zipties": {
@@ -2082,6 +2118,15 @@
    "reason": "Lays wire fast. A work tool.",
    "tier": "none"
   },
+  "/obj/item/screwdriver": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "cfce238771e18b52",
+   "name": "screwdriver",
+   "rank": 25,
+   "reason": "Plain screwdriver. Prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/screwdriver/abductor": {
    "confidence": "medium",
    "group": "Hand tools",
@@ -2145,6 +2190,15 @@
    "reason": "Handheld crew monitor showing your own crew's vitals and location. Medics want it.",
    "tier": "green"
   },
+  "/obj/item/shovel": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "a8c7ee47f9855f4e",
+   "name": "shovel",
+   "rank": 18,
+   "reason": "Plain shovel, 8 force. Prints at round start.",
+   "tier": "none"
+  },
   "/obj/item/shovel/serrated": {
    "confidence": "medium",
    "group": "Mining tools",
@@ -2152,8 +2206,8 @@
    "name": "serrated bone shovel",
    "note": "With combat mode on, each hit on an organic mob (and each thrown hit) adds a second hit equal to its own force (10; 8 for the dull version) to the same limb, and does nothing extra to robots or other non-organic mobs. Digs at tool speed 0.3 (0.8 dull).",
    "rank": 3,
-   "reason": "Each hit on an organic target lands twice, for 20 a swing, about a combat knife, and it digs fast. Needs a learned recipe or a ruin weapon roll.",
-   "tier": "yellow"
+   "reason": "Each hit on an organic target lands twice, for 20 a swing, the same as the green combat knife, and it digs fast. Needs a learned recipe or a ruin weapon roll.",
+   "tier": "green"
   },
   "/obj/item/shovel/serrated/dull": {
    "confidence": "medium",
@@ -2172,6 +2226,15 @@
    "name": "spade",
    "rank": 18,
    "reason": "Garden spade.",
+   "tier": "none"
+  },
+  "/obj/item/skeleton_key": {
+   "confidence": "medium",
+   "group": "Odds and ends",
+   "hash": "f7a1a28fe377c734",
+   "name": "skeleton key",
+   "rank": 9,
+   "reason": "Opens the old lavaland chests, but tendril chests here spawn unlocked, so it has nothing to open. Still 675 mining points on the console.",
    "tier": "none"
   },
   "/obj/item/soap": {
@@ -2243,8 +2306,8 @@
    "hash": "efe3e18de4552a33",
    "name": "static cuff",
    "rank": 1,
-   "reason": "Authored unique. For 4 minutes, cameras go to static around you and an AI can't track you. There's rarely anyone to hide from, so it's small.",
-   "tier": "green"
+   "reason": "Authored unique, so it stays off shelves. For 4 minutes, cameras go to static around you and an AI can't track you. There's rarely anyone to hide from, so it's small.",
+   "tier": "above"
   },
   "/obj/item/style_meter": {
    "confidence": "low",
@@ -2261,7 +2324,7 @@
    "hash": "6a70b7180db70fa1",
    "name": "Supply Pod Beacon",
    "rank": 6,
-   "reason": "Tells an express cargo console where to drop pods. One hull has it.",
+   "reason": "Tells an express cargo console where to drop pods. No shop, ruin or played hull has it.",
    "tier": "none"
   },
   "/obj/item/survivalcapsule": {
@@ -2553,7 +2616,7 @@
    "name": "captain's jetpack",
    "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
    "rank": 1,
-   "reason": "Fits in suit storage, so you keep your backpack, with the strongest thrust and the most gas. Beats the rep 11 harness, and it's in 12 hull lockers from the start.",
+   "reason": "Fits in suit storage, so you keep your backpack, with the strongest thrust and the most gas. Beats the rep 11 harness. No shop, ruin or played hull has one.",
    "tier": "yellow"
   },
   "/obj/item/tank/jetpack/oxygen/harness": {
@@ -2563,7 +2626,7 @@
    "name": "jet harness (oxygen)",
    "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
    "rank": 6,
-   "reason": "Smaller jetpack with about half the gas. In 14 hull lockers from the start, and it still uses the back slot.",
+   "reason": "Smaller jetpack with about half the gas. It still uses the back slot. No shop, ruin or played hull has one.",
    "tier": "green"
   },
   "/obj/item/tank/jetpack/oxygen/harness/prototype": {
@@ -2638,7 +2701,7 @@
    "hash": "28edbfee699d104f",
    "name": "backpack firefighter tank",
    "rank": 1,
-   "reason": "Firefighter backpack with foam and breach-sealing resin. Good damage control. Common on hulls.",
+   "reason": "Firefighter backpack with foam and breach-sealing resin. Good damage control. On 4 hulls.",
    "tier": "green"
   },
   "/obj/item/watertank/janitor": {
@@ -2755,8 +2818,8 @@
    "hash": "2d8edc0e68d34cf7",
    "name": "Slagmaw",
    "rank": 2,
-   "reason": "Authored unique. One 3-second pass fully repairs a window, structure or machine, and it turns scrap metal into fuel. A strong repair tool, but harmless on a shelf.",
-   "tier": "yellow"
+   "reason": "Authored unique, so it stays off shelves. One 3-second pass fully repairs a window, structure or machine, and it turns scrap metal into fuel. A strong repair tool.",
+   "tier": "above"
   },
   "/obj/item/wirebrush": {
    "confidence": "high",
@@ -2765,6 +2828,15 @@
    "name": "wirebrush",
    "rank": 33,
    "reason": "Scrapes rust off walls.",
+   "tier": "none"
+  },
+  "/obj/item/wirecutters": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "2681afd617cef9e5",
+   "name": "wirecutters",
+   "rank": 25,
+   "reason": "Plain wirecutters. Prints at round start.",
    "tier": "none"
   },
   "/obj/item/wirecutters/abductor": {
@@ -2792,6 +2864,15 @@
    "name": "powered wirecutters",
    "rank": 19,
    "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/wrench": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "531429d3c084a251",
+   "name": "wrench",
+   "rank": 25,
+   "reason": "Plain wrench. Prints at round start.",
    "tier": "none"
   },
   "/obj/item/wrench/abductor": {
@@ -2917,7 +2998,6 @@
   "/obj/item/extinguisher/mini/nozzle": "uncreatable",
   "/obj/item/extinguisher/mini/nozzle/mod": "uncreatable",
   "/obj/item/extraction_pack/syndicate": "no route",
-  "/obj/item/flashlight": "abstract",
   "/obj/item/flashlight/emp": "no route",
   "/obj/item/flashlight/emp/debug": "no route",
   "/obj/item/flashlight/eyelight": "cosmetic",
@@ -2941,12 +3021,10 @@
   "/obj/item/lightreplacer/advanced": "no route",
   "/obj/item/market_uplink": "no route",
   "/obj/item/mining_scanner/admin": "no route",
-  "/obj/item/multitool": "abstract",
   "/obj/item/multitool/ai_detect": "no route",
   "/obj/item/multitool/drone": "no route",
   "/obj/item/multitool/field_debug": "no route",
   "/obj/item/multitool/uplink": "no route",
-  "/obj/item/pickaxe": "abstract",
   "/obj/item/pickaxe/bump_mining_test": "no route",
   "/obj/item/pickaxe/drill/jackhammer/demonic": "literal only",
   "/obj/item/pinpointer": "no route",
@@ -2976,7 +3054,6 @@
   "/obj/item/restraints/handcuffs/cable/green": "no route",
   "/obj/item/restraints/handcuffs/cable/orange": "no route",
   "/obj/item/restraints/handcuffs/cable/red": "no route",
-  "/obj/item/restraints/handcuffs/cable/sinew": "no route",
   "/obj/item/restraints/handcuffs/cable/white": "no route",
   "/obj/item/restraints/handcuffs/cable/yellow": "no route",
   "/obj/item/restraints/handcuffs/cable/zipties/fake": "literal only",
@@ -2994,13 +3071,10 @@
   "/obj/item/restraints/legcuffs/beartrap/mega_arachnid": "no route",
   "/obj/item/rwd": "no route",
   "/obj/item/rwd/admin": "no route",
-  "/obj/item/screwdriver": "abstract",
   "/obj/item/screwdriver/drone": "no route",
-  "/obj/item/shovel": "abstract",
   "/obj/item/shovel/giant_wrench": "literal only",
   "/obj/item/shovel/spade/cyborg": "no route",
   "/obj/item/shuttle_remote": "needs another system",
-  "/obj/item/skeleton_key": "leftover",
   "/obj/item/soap/drone": "no route",
   "/obj/item/soap/nanotrasen/cyborg": "no route",
   "/obj/item/survivalcapsule/fishing/hacked": "no route",
@@ -3018,9 +3092,7 @@
   "/obj/item/trapdoor_remote/preloaded": "literal only",
   "/obj/item/weldingtool/drone": "no route",
   "/obj/item/weldingtool/repairbot": "no route",
-  "/obj/item/wirecutters": "abstract",
   "/obj/item/wirecutters/drone": "no route",
-  "/obj/item/wrench": "abstract",
   "/obj/item/wrench/drone": "no route"
  }
 }

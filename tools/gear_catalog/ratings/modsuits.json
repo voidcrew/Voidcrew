@@ -141,6 +141,16 @@
    "reason": "The suit frame. A few printed parts plus a core and plating make a green suit.",
    "tier": "green"
   },
+  "/obj/item/mod/control": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "626351cf1634eebf",
+   "name": "MOD control unit",
+   "note": "The plain unit a finished MOD shell becomes: armor, complexity and slowdown come from the plating's theme, power from the core fitted during assembly, and it holds only the theme's built-in modules. With no charge an active suit shuts off, and an EMP on an active suit switches off the selected module and burns the wearer for 5 divided by severity.",
+   "rank": 11,
+   "reason": "The bare suit a finished shell becomes, with no modules. Armor and speed come from the plating used: the plain plating gives melee 10, the rest 5, slowdown 0.75.",
+   "tier": "green"
+  },
   "/obj/item/mod/control/pre_equipped/advanced": {
    "confidence": "medium",
    "group": "work suits",
@@ -348,6 +358,15 @@
    "reason": "Half the charge of a normal suit's cell, but refuels from plasma. The mining suit's core.",
    "tier": "green"
   },
+  "/obj/item/mod/core/plasma/lavaland": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "b2fce71e496c45d0",
+   "name": "MOD plasma flower core",
+   "rank": 15,
+   "reason": "A plasma core with half again the charge, wired up from a plasma flower found in one ruin. While the suit runs it sheds pollen and up to three butterflies.",
+   "tier": "green"
+  },
   "/obj/item/mod/core/standard": {
    "confidence": "high",
    "group": "parts and cores",
@@ -528,8 +547,8 @@
    "name": "MOD defibrillator module",
    "note": "Extends defibrillator gauntlets that must be wielded two-handed and work without a defib unit, but refuse a patient whose chest is covered by thick clothing. Each successful shock drains suit charge and then the gauntlets recharge for 5 seconds. The combat variant ignores chest clothing, recharges in 2.5 seconds and can be used on the living: right-click zaps for 60 stamina damage and a 7.5 second knockdown, and combat mode on the chest overcharges for 50 burn damage, a heart attack and a 10 second paralysis.",
    "rank": 2,
-   "reason": "A defibrillator in the gauntlets. Refuses patients in thick clothing.",
-   "tier": "green"
+   "reason": "A defibrillator in the gauntlets, so the back slot stays free, the same advantage as a compact defibrillator. Refuses patients in thick clothing.",
+   "tier": "yellow"
   },
   "/obj/item/mod/module/defibrillator/combat": {
    "confidence": "medium",
@@ -1148,14 +1167,14 @@
    "tier": "none"
   },
   "/obj/item/mod/module/stealth": {
-   "confidence": "low",
+   "confidence": "medium",
    "group": "stealth and locks",
    "hash": "02d6d882d94d90e5",
    "name": "MOD prototype cloaking module",
    "note": "Toggled cloak that fades the wearer to alpha 50 over 1.5 seconds. It shuts off with sparks, and another charge cost, if the wearer bumps someone, attacks (unarmed on a living target or with an item), is touched or hit by an item or thrown object, takes a hostile projectile or is cuffed. Engaging costs a lump of charge and it drains continuously while on; 5 second cooldown.",
    "rank": 3,
-   "reason": "Toggled cloak that leaves you very faint, broken by touching, attacking or being hit. Costs 4 complexity and steady power. Comes down to how well players spot it.",
-   "tier": "yellow"
+   "reason": "Toggled cloak that leaves you very faint, with no time limit while the suit has power, broken by touching, attacking or being hit. About as hard to see as the reputation 22 Ghostskin implant, which only lasts 10 seconds in 30. Costs 4 complexity and steady power.",
+   "tier": "red"
   },
   "/obj/item/mod/module/stealth/wraith": {
    "confidence": "medium",
@@ -1405,7 +1424,6 @@
   "/obj/item/mod": "abstract",
   "/obj/item/mod/ai_minicard": "no route",
   "/obj/item/mod/construction": "abstract",
-  "/obj/item/mod/control": "literal only",
   "/obj/item/mod/control/pre_equipped": "no route",
   "/obj/item/mod/control/pre_equipped/administrative": "no route",
   "/obj/item/mod/control/pre_equipped/apocryphal": "no route",
@@ -1443,7 +1461,6 @@
   "/obj/item/mod/control/pre_equipped/responsory/security": "leftover",
   "/obj/item/mod/core": "no route",
   "/obj/item/mod/core/infinite": "no route",
-  "/obj/item/mod/core/plasma/lavaland": "no route",
   "/obj/item/mod/core/soul": "literal only",
   "/obj/item/mod/core/soul/wizard": "leftover",
   "/obj/item/mod/module": "leftover",

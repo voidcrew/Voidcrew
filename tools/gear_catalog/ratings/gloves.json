@@ -15,7 +15,7 @@
    "hash": "b4dd3d54d0c6ae31",
    "name": "atmospheric extrication gloves",
    "rank": 3,
-   "reason": "Firefighter's gloves: heat and pressure proof, fast carry, 70% less shock, but you can't fire normal guns. A rescue tool. On 6 hulls.",
+   "reason": "Firefighter's gloves: heat and pressure proof, fast carry, 70% less shock, but you can't fire normal guns. A rescue tool. On 4 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/botanic_leather": {
@@ -91,7 +91,7 @@
    "hash": "e9812098581a6f2f",
    "name": "captain's gloves",
    "rank": 2,
-   "reason": "Combat gloves with a little less fire protection. In the captain's locker on 15 hulls.",
+   "reason": "Combat gloves with a little less fire protection. In the captain's locker on 9 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet": {
@@ -119,7 +119,7 @@
    "hash": "1519680b1d68124e",
    "name": "black gloves",
    "rank": 1,
-   "reason": "Everyday black gloves. Half shock protection and heat protection, like most gloves here. In 33 job outfits.",
+   "reason": "Everyday black gloves. Half shock protection and heat protection, like most gloves here. In 24 job outfits.",
    "tier": "none"
   },
   "/obj/item/clothing/gloves/color/black/pallbearer": {
@@ -183,7 +183,7 @@
    "hash": "82fb1e43d70fd647",
    "name": "insulated gloves",
    "rank": 3,
-   "reason": "Anchor. Full shock protection, which is what shocked doors, grilles and live wiring call for. In electrical closets on 22 hulls and 400 cr by cargo. Everyday engineering kit.",
+   "reason": "Anchor. Full shock protection, which is what shocked doors, grilles and live wiring call for. In electrical closets on 14 hulls and 400 cr by cargo. Everyday engineering kit.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/combat": {
@@ -192,7 +192,7 @@
    "hash": "d6e679ad0a14149a",
    "name": "combat gloves",
    "rank": 1,
-   "reason": "Anchor for the top of plain gloves: full insulation, fast cuffing, heat and fire proof. Two green jobs in one pair, nothing that changes a fight. On 19 hulls and in ruins.",
+   "reason": "Anchor for the top of plain gloves: full insulation, fast cuffing, heat and fire proof. Two green jobs in one pair, nothing that changes a fight. On 5 hulls and in ruins.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/combat/floortile": {
@@ -269,7 +269,7 @@
    "name": "combat gloves plus",
    "note": "Wearing them teaches Krav Maga: harm punches and kicks deal 10 damage (15 on a downed target), and a disarm takes the target's held item into your hands 60% of the time. Three stances, each used up on the next hit: neck chop (10 head damage and 20 seconds of silence), leg sweep (5 brute and a 6 second knockdown) and lung punch (10 oxygen damage and loss of breath). They also speed up cuffing.",
    "rank": 1,
-   "reason": "Best close-quarters gloves. Disarms take the target's held item 60% of the time, plus a 6 second leg sweep and a neck chop, on top of full combat gloves. No use past arm's reach. One pair, on the Blackbeard.",
+   "reason": "Best close-quarters gloves. Disarms take the target's held item 60% of the time, plus a 6 second leg sweep and a neck chop, on top of full combat gloves. No use past arm's reach. No shop, ruin or played hull has them.",
    "tier": "yellow"
   },
   "/obj/item/clothing/gloves/latex": {
@@ -296,7 +296,7 @@
    "hash": "1cceceb42b4d3779",
    "name": "nitrile gloves",
    "rank": 1,
-   "reason": "The medic's gloves. Syringes, patches and medigel take half the time, carrying people is very fast, and shocks do 70% less. In 23 job outfits.",
+   "reason": "The medic's gloves. Syringes, patches and medigel take half the time, carrying people is very fast, and shocks do 70% less. In 22 job outfits.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/mod": {
@@ -324,7 +324,7 @@
    "name": "enhanced retrieval gloves",
    "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
    "rank": 4,
-   "reason": "Anchor. Hull-issue tackle gloves: a 4 tile lunge, lands about 4 in 7, backfires 2 in 7. Free in security lockers on 23 hulls. Only works on players; tackling an NPC is like hitting a wall.",
+   "reason": "Anchor. Hull-issue tackle gloves: a 4 tile lunge, lands about 4 in 7, backfires 2 in 7. Free in security lockers on 8 hulls. Only works on players; tackling an NPC is like hitting a wall.",
    "tier": "green"
   },
   "/obj/item/clothing/gloves/tackler/combat": {

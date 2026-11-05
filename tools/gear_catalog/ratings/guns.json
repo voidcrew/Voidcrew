@@ -648,15 +648,15 @@
    "name": "Sakhno-Zhihao Sporting Rifle",
    "note": "Right-click scopes in, extending the view to 1.5x, and shots go where the scope cursor is; zoom stops when the rifle moves or hands are swapped. The bolt must be cycled between shots and be open to load. Sawing it off sets spread to 36 and renames it 'Obrez Moderna'; accepts a bayonet.",
    "rank": 5,
-   "reason": "A precision rifle with a scope.",
-   "score": 56,
+   "reason": "A scoped bolt-action rifle that ships loaded with phasic rounds: 60 damage a shot through walls and doors, four times the X-ray gun's hit. Takes plain .310 once those are spent.",
+   "score": 131,
    "score_inputs": {
     "points": {
-     "value": 8,
-     "why": "1.5x scope."
+     "value": 83,
+     "why": "1.5x scope, plus the wall-passing rounds it ships with. You can be killed by someone you cannot shoot back at, the same reason the X-ray gun gets 75."
     }
    },
-   "tier": "yellow"
+   "tier": "red"
   },
   "/obj/item/gun/ballistic/rifle/boltaction/surplus": {
    "confidence": "medium",
@@ -724,9 +724,9 @@
    "group": "launchers and exotics",
    "hash": "7592e404c28ff4ab",
    "name": "Dardo-RE Rocket Launcher",
-   "note": "Single shot: the tube is emptied by every shot and needs a new rocket. Each shot throws a backblast behind the user (60-degree arc, light blast and fire out to 6 tiles; the user is protected), and the rocket explodes on impact with a bigger blast against walls and objects and a 1% chance to gib a living target outright. / Explodes on the target: against non-living things a radius-1 heavy blast with light out to 2, fire to 3 and a flash to 4; against living targets the same without the heavy ring. A living target not in hard crit has a 1% chance of being gibbed outright. Subtypes with anti-armour damage hurt mechs and silicons extra.",
+   "note": "Single shot: the tube is emptied by every shot and needs a new rocket. Each shot throws a backblast behind the user (60-degree arc, light blast and fire out to 6 tiles; the user is protected), and the rocket explodes on impact with a bigger blast against walls and objects and a 1% chance to gib a living target outright.",
    "rank": 4,
-   "reason": "Blows holes in ships, one rocket at a time. Only the Blackbeard hull starts with one.",
+   "reason": "Blows holes in ships, one rocket at a time. No shop, ruin or played hull has one.",
    "score": 114,
    "score_inputs": {
     "points": {
@@ -1262,7 +1262,7 @@
    "name": "antique laser gun",
    "note": "Recharges itself, and the gun and its cell are indestructible and immune to fire, acid and lava. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
    "rank": 4,
-   "reason": "Hellfire bolts in a self-charging, unbreakable gun, which beats a plain hellfire outright. Five hulls have one in a case.",
+   "reason": "Hellfire bolts in a self-charging, unbreakable gun, which beats a plain hellfire outright. Four hulls have one in a case.",
    "score": 62,
    "score_inputs": {
     "points": {
@@ -1793,6 +1793,17 @@
    },
    "tier": "green"
   },
+  "/obj/item/gun/syringe/blowgun": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "ab004732940b8869",
+   "name": "blowgun",
+   "note": "Fires the first loaded syringe. At full power the syringe is destroyed and its contents go into the dart, which takes the syringe's name, injection flags and armour penetration; at low power the whole syringe rides in the dart and, if it embeds, slowly injects, otherwise it drops where the shot lands. With no syringe loaded the dart carries nothing. / Fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Carries what its casing holds, held inert in flight: 15 units in a plain dart, 25 in an XL dart, 30 in a bioterror dart. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact. / A dart carrying the loaded syringe: its reagents are allowed to react in flight, unlike a plain dart. A syringe that did not embed drops to the floor where the shot lands or runs out.",
+   "rank": 9,
+   "reason": "Fires one syringe a short way, and each shot costs you 20 stamina and 20 oxygen. Worse than the plain syringe gun.",
+   "score": 8,
+   "tier": "green"
+  },
   "/obj/item/gun/syringe/rapidsyringe": {
    "confidence": "low",
    "group": "tools and support",
@@ -1885,7 +1896,7 @@
    "name": "pie cannon",
    "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
    "rank": 1,
-   "reason": "Not a toy. Makes a cream pie every 2 seconds, up to 20; each hit paralyzes for 2 seconds past any armor, at three times normal throw range. Only the Honk hull has one.",
+   "reason": "Not a toy. Makes a cream pie every 2 seconds, up to 20; each hit paralyzes for 2 seconds past any armor, at three times normal throw range. No shop, ruin or played hull has one.",
    "score": 115,
    "score_inputs": {
     "judged": {
@@ -2077,7 +2088,6 @@
   "/obj/item/gun/magic/wand/shrink": "admin",
   "/obj/item/gun/magic/wand/teleport": "admin",
   "/obj/item/gun/medbeam/mod": "needs another system",
-  "/obj/item/gun/syringe/blowgun": "leftover",
   "/obj/item/gun/syringe/dna": "leftover",
   "/obj/item/pneumatic_cannon/pie/selfcharge/cyborg": "no route"
  }

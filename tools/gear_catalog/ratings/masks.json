@@ -44,6 +44,15 @@
    "reason": "Hides your face. Cloth.",
    "tier": "none"
   },
+  "/obj/item/clothing/mask/bandana/durathread": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "durathread bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
   "/obj/item/clothing/mask/bandana/gold": {
    "confidence": "high",
    "group": "cosmetic and harmless",
@@ -152,6 +161,15 @@
    "reason": "Hides your face. Cloth.",
    "tier": "none"
   },
+  "/obj/item/clothing/mask/bandana/white": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "white bandana",
+   "rank": 9,
+   "reason": "A plain bandana.",
+   "tier": "none"
+  },
   "/obj/item/clothing/mask/breath": {
    "confidence": "high",
    "group": "air and germ masks",
@@ -204,7 +222,7 @@
    "name": "Lamarr",
    "note": "A live one leaps at adjacent living carbons with a head (not aliens, nor anyone whose mouth a helmet covers): it tears off their mask, deals 5 brute, knocks them down 5 seconds, heavily tints their vision, muffles speech and cannot be pulled off by hand; after 10 to 15 seconds it implants an alien embryo (organic chest) and dies. It goes idle for 20 to 40 seconds after attaching and dies to heat above 300 K or about 10 damage; the sterile Lamarr variant latches on with no damage or embryo.",
    "rank": 6,
-   "reason": "A research director's sterile pet in one hull's display case. Latches on, blinds and muffles you, does no harm.",
+   "reason": "A research director's sterile pet, and no shop, ruin or played hull has it. Latches on, blinds and muffles you, does no harm.",
    "tier": "none"
   },
   "/obj/item/clothing/mask/facescarf": {
@@ -268,6 +286,15 @@
    "name": "CentCom gas mask",
    "rank": 5,
    "reason": "Gas mask with three filter slots and a little fire and acid protection. For atmospheric work.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/carp": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "87dc660f6c34d569",
+   "name": "carp mask",
+   "rank": 10,
+   "reason": "A working gas mask with a costume look. Covers the eyes, no pepper protection. Crafted from carp hide.",
    "tier": "green"
   },
   "/obj/item/clothing/mask/gas/clown_hat": {
@@ -377,7 +404,7 @@
    "hash": "2d2ccb5fbfa5def1",
    "name": "SWAT mask",
    "rank": 3,
-   "reason": "A gas mask with a security hailer. On a dozen hulls and in ruin caches.",
+   "reason": "A gas mask with a security hailer. In ruin caches, one ruin and the security chief's garment bag.",
    "tier": "green"
   },
   "/obj/item/clothing/mask/gas/syndicate": {
@@ -386,7 +413,7 @@
    "hash": "30ec92e1bf9a1aa2",
    "name": "syndicate mask",
    "rank": 4,
-   "reason": "A gas mask with a darker look. In suit storage on many hulls.",
+   "reason": "A gas mask with a darker look. In suit storage on 2 hulls.",
    "tier": "green"
   },
   "/obj/item/clothing/mask/gas/tiki_mask": {
@@ -406,6 +433,15 @@
    "rank": 6,
    "reason": "Gas mask with a welding visor: stops flashes and arcs, fireproof, melee 10, but darkens your view. Prints after research.",
    "tier": "green"
+  },
+  "/obj/item/clothing/mask/gondola": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "a3d5447dc11f39c6",
+   "name": "gondola mask",
+   "rank": 4,
+   "reason": "A fur costume mask. Hides your face and garbles your speech.",
+   "tier": "none"
   },
   "/obj/item/clothing/mask/kitsune": {
    "confidence": "high",
@@ -501,11 +537,9 @@
   "/obj/item/clothing/mask/animal/small/raven/cursed": "no route",
   "/obj/item/clothing/mask/animal/small/tribal": "no route",
   "/obj/item/clothing/mask/animal/small/tribal/cursed": "no route",
-  "/obj/item/clothing/mask/bandana/durathread": "no route",
   "/obj/item/clothing/mask/bandana/orange": "no route",
   "/obj/item/clothing/mask/bandana/striped/black": "no route",
   "/obj/item/clothing/mask/bandana/striped/engineering": "no route",
-  "/obj/item/clothing/mask/bandana/white": "no route",
   "/obj/item/clothing/mask/chameleon/drone": "no route",
   "/obj/item/clothing/mask/chameleon/gps": "no route",
   "/obj/item/clothing/mask/changeling": "no route",
@@ -519,7 +553,6 @@
   "/obj/item/clothing/mask/gas/atmos/captain": "no route",
   "/obj/item/clothing/mask/gas/atmos/plasmaman": "no route",
   "/obj/item/clothing/mask/gas/atmosprop": "no route",
-  "/obj/item/clothing/mask/gas/carp": "no route",
   "/obj/item/clothing/mask/gas/clown_hat/plasmaman": "no route",
   "/obj/item/clothing/mask/gas/explorer/plasmaman": "no route",
   "/obj/item/clothing/mask/gas/hunter": "no route",
@@ -533,7 +566,6 @@
   "/obj/item/clothing/mask/gas/sexymime": "no route",
   "/obj/item/clothing/mask/gas/tiki_mask/yalp_elor": "no route",
   "/obj/item/clothing/mask/gas/welding/up": "no route",
-  "/obj/item/clothing/mask/gondola": "no route",
   "/obj/item/clothing/mask/joy": "no route",
   "/obj/item/clothing/mask/luchador": "no route",
   "/obj/item/clothing/mask/luchador/rudos": "no route",

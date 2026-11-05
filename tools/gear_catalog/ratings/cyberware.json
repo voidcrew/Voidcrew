@@ -240,7 +240,7 @@
    "name": "implantable thrusters set",
    "note": "A toggle that lets the wearer move under their own power in zero gravity, with a movement-speed bonus while floating and no stabilization, so they keep drifting when they stop. It draws on ambient air above 30 kPa for free, otherwise internals gas or the wearer's plasma store, and turns itself off if neither is available.",
    "rank": 5,
-   "reason": "A jetpack in your chest with no back slot used, and a speed bonus while floating. Free air when there's pressure, otherwise your tank. About 74 cr of material after 320 research points.",
+   "reason": "A jetpack in your chest with no back slot used, and a speed bonus while floating. Free air when there's pressure, otherwise your tank. About 74 cr of material after 200 research points.",
    "tier": "green"
   },
   "/obj/item/organ/cyberimp/cyberware/atlas": {
@@ -522,7 +522,7 @@
    "hash": "4beab53dff56918d",
    "name": "medical HUD implant",
    "rank": 3,
-   "reason": "A health HUD with no glasses, same job as the green goggles but the eye slot stays free. About 30 cr of material, or found on five hulls.",
+   "reason": "A health HUD with no glasses, same job as the green goggles but the eye slot stays free. About 30 cr of material, or found on two hulls.",
    "tier": "green"
   },
   "/obj/item/organ/cyberimp/eyes/hud/security": {
@@ -540,7 +540,7 @@
    "hash": "81096fd3e55913d0",
    "name": "breathing tube implant",
    "rank": 3,
-   "reason": "Use internals with no mask, which frees the mask slot, and you can't be choked. About 2 cr of material after 320 research points.",
+   "reason": "Use internals with no mask, which frees the mask slot, and you can't be choked. About 2 cr of material after 200 research points.",
    "tier": "green"
   }
  },
