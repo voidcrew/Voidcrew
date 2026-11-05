@@ -561,6 +561,24 @@ CREATE TABLE `SS13_round_metric` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Table structure for table `SS13_player_ship_saves`
+--
+DROP TABLE IF EXISTS `SS13_player_ship_saves`;
+CREATE TABLE `SS13_player_ship_saves` (
+  `ckey` VARCHAR(32) NOT NULL,
+  `slot` TINYINT(3) UNSIGNED NOT NULL,
+  `ship_name` VARCHAR(128) NOT NULL,
+  `ship_class` VARCHAR(128) NULL,
+  `tile_count` SMALLINT(5) UNSIGNED NOT NULL,
+  `format_version` SMALLINT(5) UNSIGNED NOT NULL,
+  `saved_round` INT(11) NOT NULL,
+  `saved_at` DATETIME NOT NULL,
+  `raw_bytes` INT(10) UNSIGNED NOT NULL,
+  `payload` MEDIUMBLOB NOT NULL,
+  PRIMARY KEY (`ckey`, `slot`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
 -- Table structure for table `SS13_schema_revision`
 --
 DROP TABLE IF EXISTS `SS13_schema_revision`;

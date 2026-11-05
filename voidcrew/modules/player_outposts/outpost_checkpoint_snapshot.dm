@@ -96,6 +96,12 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	var/list/machines = list()
 	var/busy = FALSE
 	var/error
+	/// Saved across rounds: stores no per-machine data and comes apart into iron (ship_save_capture.dm).
+	var/persistent = FALSE
+	/// The hull's class, shown wherever it is listed.
+	var/class_name
+	/// The crew roster as template job definitions. Null leaves the commissioned default.
+	var/list/jobs
 
 /datum/ship_checkpoint/Destroy()
 	if(outpost)
@@ -108,10 +114,13 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	tgm = null
 	rooms = null
 	machines = null
+	jobs = null
 	return ..()
 
 /// Ports are handled separately and cannot carry NPC types.
 /datum/ship_checkpoint/proc/includes_object(obj/object)
+	if(persistent && ship_save_refuses_object(object))
+		return FALSE
 	return outpost_checkpoint_saves(object)
 
 /// Preserve placement and construction settings; inventories are never serialized.
@@ -122,8 +131,10 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(ismachinery(object))
 		var/obj/machinery/machine = object
 		saved_type = machine.checkpoint_type()
-		machines += list(capture_machine(machine))
-		properties += "checkpoint_load_id = [length(machines)]"
+		// A saved ship's machines come back at default tier, so there is nothing to restore.
+		if(!persistent)
+			machines += list(capture_machine(machine))
+			properties += "checkpoint_load_id = [length(machines)]"
 		if(istype(machine, /obj/machinery/power/smes))
 			keys += list("input_level", "output_level")
 		if(istype(machine, /obj/machinery/power))
@@ -155,6 +166,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		keys += "open_ports"
 	if(istype(object, /obj/machinery/duct))
 		keys += list("duct_layer", "duct_color", "connects")
+	if(persistent)
+		saved_type = strip_salvage(object, saved_type, keys, properties)
 	for(var/key in keys)
 		var/value = object.vars[key]
 		// Always encode direction: an oriented source must survive a round trip.
@@ -162,6 +175,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 			continue
 		if(istext(value))
 			value = replacetext(value, "\\", "")
+			if(persistent)
+				value = ship_save_plain_text(value)
 		var/encoded = tgm_encode(value)
 		if(encoded)
 			properties += "[key] = [encoded]"
@@ -250,6 +265,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	source_ship = WEAKREF(ship)
 	captain_ckey = owner_ckey
 	ship_name = ship.name
+	class_name = ship.source_template?.short_name
+	jobs = ship.job_definitions?.Copy()
 	saved_at = world.time
 	return null
 
@@ -271,6 +288,10 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	height = snapshot.height
 	port_x_offset = snapshot.port_x
 	port_y_offset = snapshot.port_y
+	if(length(snapshot.jobs))
+		job_slots = snapshot.jobs
+	if(snapshot.class_name)
+		short_name = snapshot.class_name
 
 /// Restore distinct player-built rooms before machines initialize their APC links.
 /// A plain TGM load otherwise merges rooms sharing one /area type.

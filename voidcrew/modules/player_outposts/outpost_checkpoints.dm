@@ -81,6 +81,7 @@
 	user_ref = WEAKREF(user)
 	host_turf = get_turf(host)
 	RegisterSignal(home, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
+	GLOB.ship_saves.refresh(user?.ckey)
 
 /datum/ship_checkpoint_ui/Destroy()
 	SStgui.close_uis(src)
@@ -196,8 +197,8 @@
 		return "The ship account has insufficient credits."
 	return null
 
-/datum/ship_checkpoint_ui/proc/confirm_save(mob/user, prompt_text)
-	return tgui_alert(user, prompt_text, "Ship checkpoint", list("Confirm", "Cancel")) == "Confirm"
+/datum/ship_checkpoint_ui/proc/confirm_save(mob/user, prompt_text, title = "Ship checkpoint")
+	return tgui_alert(user, prompt_text, title, list("Confirm", "Cancel")) == "Confirm"
 
 /datum/ship_checkpoint_ui/proc/save_quote(mob/living/user)
 	if(working || !quote)
@@ -259,6 +260,7 @@
 		"update_cost" = OUTPOST_CHECKPOINT_UPDATE_COST,
 		"has_checkpoint" = !!outpost.checkpoint_for(user),
 		"shop" = shop_data(user),
+		"saved_ships" = saved_ships_data(user),
 	)
 
 /datum/ship_checkpoint_ui/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -282,6 +284,9 @@
 		if("rebuild")
 			var/datum/ship_checkpoint/snapshot = locate(params["ref"]) in outpost.checkpoints
 			rebuild(user, snapshot)
+		if("ship_save_store")
+			var/datum/outpost_berth/ship_bay/bay = locate(params["ref"]) in outpost.bay_berths
+			save_ship(user, bay)
 		else
 			shop_act(user, action, params)
 	return TRUE

@@ -66,6 +66,7 @@
 /datum/ship_join_menu/New(mob/dead/new_player/player)
 	. = ..()
 	user = player
+	GLOB.ship_saves.refresh(player?.ckey)
 
 /datum/ship_join_menu/Destroy()
 	user = null

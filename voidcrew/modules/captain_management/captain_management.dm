@@ -129,6 +129,7 @@
 	data["joining_allowed"] = ship.joining_allowed
 	data["join_password"] = ship.join_password || ""
 	data["can_set_password"] = ship.can_have_join_password()
+	data["password_price"] = SHIP_PASSWORD_PRICE
 	data["crew_only_airlocks"] = ship.crew_only_airlocks
 
 	// Check if user is still captain
@@ -263,8 +264,8 @@
 			return TRUE
 
 		if("set_password")
-			// set_join_password handles validation, the fleet-hull refusal, feedback, and logging
-			ship.set_join_password(params["password"], captain)
+			// buy_join_password takes the payment, and sleeps on the database doing so
+			INVOKE_ASYNC(ship, TYPE_PROC_REF(/obj/structure/overmap/ship, buy_join_password), params["password"], captain)
 			return TRUE
 
 		if("reset_join_access")
