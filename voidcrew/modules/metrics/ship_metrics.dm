@@ -50,6 +50,11 @@
 //                       target_ship_id, target_ship.
 //   ship_siphoned       A player ship's data siphon finishes a run on another player ship.
 //                       ship = the siphoning ship, credits = taken. details: target ship.
+//   ew_payload_run      An exploit cartridge's payload lands on a ship, player or NPC. ship = the
+//                       ship that ran it, ckey = operator, zone = the target's, subject = payload
+//                       type, quantity = 1. details: cartridge (item type), charges_left, mode,
+//                       target_npc, target ship. Buying a cartridge is a shop_purchase row
+//                       (economy_metrics.dm) whose subject is the cartridge type.
 //   <weapon>_hit_<shield|hull>
 //                       Weapon hits, tallied per minute. weapon is laser, missile or assault_pod.
 //                       ship = the ship that fired (player or NPC), subject = ship_id of the ship
@@ -515,6 +520,22 @@
 	if(!ship_metric_is_npc(owner) || !ship_metric_live(owner))
 		return
 	record_metric(METRIC_PIRATE, "npc_siphon_looted", ckey = metric_ckey(user), ship = owner, zone = ship_metric_zone(owner), credits = -amount, details = ship_metric_add_ship(list(), ship_metric_home_ship(user, owner)))
+
+// ========== ELECTRONIC WARFARE ==========
+
+/// A payload from `chip` landed on `target`. Call after the cartridge has spent its charge.
+/proc/ship_metric_ew_payload(obj/structure/overmap/ship/attacker, obj/structure/overmap/ship/target, obj/item/ew_exploit/chip, mode, operator_ckey)
+	if(!ship_metric_live(attacker))
+		return
+	var/list/details = list(
+		"cartridge" = "[chip.type]",
+		"charges_left" = chip.charges,
+		"target_npc" = ship_metric_is_npc(target),
+	)
+	if(mode)
+		details["mode"] = mode
+	ship_metric_add_ship(details, target, "target")
+	record_metric(METRIC_SHIP, "ew_payload_run", ckey = operator_ckey, ship = attacker, zone = ship_metric_zone(target), subject = chip.payload_type, quantity = 1, details = details)
 
 // ========== NPC SHIPS: LIFECYCLE ==========
 

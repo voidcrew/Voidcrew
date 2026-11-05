@@ -918,7 +918,7 @@
 
 /datum/shop_buyback/fitter/scrap_control
 	name = "MOD control unit (any)"
-	desc = "A whole suit, working or not, modules included. Wick strips it to the frame and asks nothing about the previous owner."
+	desc = "A whole suit with its core seated, working or not, modules included. Wick strips it to the frame and asks nothing about the previous owner."
 	category = "Suit Salvage"
 	item_path = /obj/item/mod/control
 	pay_credits = 500
@@ -929,12 +929,15 @@
  * A deployed suit is still inside the wearer's contents, so the stock
  * inventory sweep would happily sell the suit off the seller's own back.
  * Wick only takes one that's off a body.
+ *
+ * It also has to have a core. A frame and plating print for about 100 cr, so a
+ * coreless unit was a money loop: sell it, wrench the core out of the next one.
  */
 /datum/shop_buyback/fitter/scrap_control/matches(obj/item/offered)
 	if(!..())
 		return FALSE
 	var/obj/item/mod/control/suit = offered
-	return isnull(suit.wearer)
+	return isnull(suit.wearer) && !isnull(suit.core)
 
 /datum/shop_buyback/fitter/salvage_spacesuit
 	name = "space suit (salvage)"

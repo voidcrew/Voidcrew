@@ -625,7 +625,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 	if(length(cargo_turfs))
 		var/turf/victim_turf = pick_n_take(cargo_turfs)
 		new /obj/effect/decal/remains/human(victim_turf)
-		new /obj/item/clothing/shoes/jackboots/fast(victim_turf)
+		new /obj/item/clothing/shoes/jackboots(victim_turf)
 		new /obj/item/clothing/mask/balaclava(victim_turf)
 
 	// Spider webs

@@ -181,6 +181,10 @@
 		use_energy(round((cell.maxcharge / 2) / mecha_explodies_vulnerability, 1))
 
 	var/how_hard_are_we_explodies = rand(MECH_EMP_DAMAGE_LOWER, MECH_EMP_DAMAGE_UPPER)
+	// VOIDCREW EDIT ADDITION START: ablative insulation halves EMP burn, as its description promises (voidcrew gear balance)
+	if(locate(/obj/item/mecha_parts/mecha_equipment/armor/antiemp_armor_booster) in equip_by_category[MECHA_ARMOR])
+		how_hard_are_we_explodies /= 2
+	// VOIDCREW EDIT ADDITION END
 	take_damage(how_hard_are_we_explodies / mecha_explodies_vulnerability, BURN)
 
 	log_message("EMP detected", LOG_MECHA, color="red")

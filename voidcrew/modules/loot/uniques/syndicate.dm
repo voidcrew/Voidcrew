@@ -61,6 +61,8 @@
 	freerange = TRUE
 	/// Set once someone starts searching it for the bug.
 	var/being_searched = FALSE
+	/// Weakref to the earpiece this chit shipped with.
+	var/datum/weakref/paired_earpiece
 
 /obj/item/radio/listening_coin/Initialize(mapload)
 	. = ..()
@@ -69,7 +71,16 @@
 	set_listening(FALSE)
 	set_frequency(FREQ_LISTENING_COIN)
 	freqlock = RADIO_FREQENCY_LOCKED
-	new /obj/item/radio/headset/listening_coin_earpiece(loc)
+	paired_earpiece = WEAKREF(new /obj/item/radio/headset/listening_coin_earpiece(loc))
+
+/**
+ * Always transmits on whatever network its earpiece is on. Binding the chit to a ship
+ * lazily, like any other radio, tuned it to the first hull it spoke aboard: plant it on
+ * an enemy ship and it reported to that ship's network, out of the earpiece's hearing.
+ */
+/obj/item/radio/listening_coin/get_comms_net()
+	var/obj/item/radio/headset/listening_coin_earpiece/earpiece = paired_earpiece?.resolve()
+	return earpiece ? earpiece.get_comms_net() : ..()
 
 /obj/item/radio/listening_coin/examine(mob/user)
 	. = ..()
