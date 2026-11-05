@@ -27,9 +27,11 @@
 
 /obj/item/gun/energy/event_horizon/process_fire(atom/target, mob/living/user, message, params, zone_override, bonus_spread)
 
+	/* VOIDCREW EDIT REMOVAL START: this rifle has no scope (voidcrew/edits/objects/items/event_horizon_rifle.dm), so this check refused every shot
 	if(!HAS_TRAIT(user, TRAIT_USER_SCOPED))
 		balloon_alert(user, "must be scoped!")
 		return
+	VOIDCREW EDIT REMOVAL END */
 
 	. = ..()
 	message_admins("[ADMIN_LOOKUPFLW(user)] has fired an anti-existential beam at [ADMIN_VERBOSEJMP(user)].")

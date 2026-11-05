@@ -31,7 +31,7 @@
 		return
 	// VOIDCREW EDIT END
 	apply_wibbly_filters(src)
-	playsound(loc, 'sound/effects/clockcult_gateway_disrupted.ogg', vary = 200, extrarange = 3, falloff_exponent = 1, frequency = 0.33, pressure_affected = FALSE, ignore_walls = TRUE, falloff_distance = 7)
+	playsound(loc, 'sound/effects/clockcult_gateway_disrupted.ogg', 200, vary = TRUE, extrarange = 3, falloff_exponent = 1, frequency = 0.33, pressure_affected = FALSE, ignore_walls = TRUE, falloff_distance = 7) // VOIDCREW EDIT CHANGE: was vary = 200 with no volume, a runtime with no sound
 	AddComponent(
 		/datum/component/singularity, \
 		consume_range = singularity_consume_range, \
