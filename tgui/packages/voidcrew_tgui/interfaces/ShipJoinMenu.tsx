@@ -42,11 +42,20 @@ type ShipJoinMenuData = {
   }[];
   can_requisition: BooleanLike;
   wiki_url: string | null;
+  saved_ships: SavedShip[];
+};
+
+type SavedShip = {
+  slot: number;
+  name: string;
+  class: string | null;
+  denial: string | null;
 };
 
 export const ShipJoinMenu = () => {
   const { act, data } = useBackend<ShipJoinMenuData>();
   const { player_name, ships, can_requisition, wiki_url } = data;
+  const savedShips = data.saved_ships || [];
 
   return (
     <Window
@@ -70,6 +79,13 @@ export const ShipJoinMenu = () => {
           <Stack.Item>
             <PurchaseShipSection />
           </Stack.Item>
+
+          {/* Saved Ships Section */}
+          {savedShips.length > 0 && (
+            <Stack.Item>
+              <SavedShipsSection saves={savedShips} />
+            </Stack.Item>
+          )}
 
           {/* Free Hull Section */}
           <Stack.Item>
@@ -146,6 +162,49 @@ const PurchaseShipSection = () => {
             Open Shipyard
           </Button>
         </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const SavedShipsSection = (props: { saves: SavedShip[] }) => {
+  const { act } = useBackend<ShipJoinMenuData>();
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="anchor" mr={1} />
+          Saved Ships
+        </Box>
+      }
+    >
+      <Stack vertical>
+        {props.saves.map((save) => (
+          <Stack.Item key={save.slot}>
+            <Stack align="center">
+              <Stack.Item grow style={{ overflowWrap: 'anywhere' }}>
+                <Box bold>{save.name}</Box>
+                {!!save.class && (
+                  <Box fontSize="12px" color="gray">
+                    {save.class}
+                  </Box>
+                )}
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="rocket"
+                  color={save.denial ? undefined : 'good'}
+                  disabled={!!save.denial}
+                  tooltip={save.denial}
+                  onClick={() => act('launch_saved_ship', { slot: save.slot })}
+                >
+                  Launch
+                </Button>
+              </Stack.Item>
+            </Stack>
+          </Stack.Item>
+        ))}
       </Stack>
     </Section>
   );

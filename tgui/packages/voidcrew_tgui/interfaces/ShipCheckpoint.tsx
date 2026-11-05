@@ -96,9 +96,29 @@ type Data = {
   }[];
   catalog: ShopHull[];
   shop: Shop | null;
+  saved_ships: {
+    online: BooleanLike;
+    parts: number | null;
+    slots: number;
+    saves: {
+      slot: number;
+      name: string;
+      class: string | null;
+      denial: string | null;
+    }[];
+    ships: {
+      ref: string;
+      name: string;
+      price: number;
+      denial: string | null;
+    }[];
+  };
 };
 
 const credits = (amount: number) => `${amount.toLocaleString()} cr`;
+
+const shipParts = (amount: number) =>
+  `${amount} ${amount === 1 ? 'part' : 'parts'}`;
 
 export const ShipCheckpoint = () => {
   const { data } = useBackend<Data>();
@@ -136,6 +156,13 @@ export const ShipCheckpoint = () => {
             Checkpoints
           </Tabs.Tab>
           <Tabs.Tab
+            icon="anchor"
+            selected={tab === 'saved'}
+            onClick={() => setTab('saved')}
+          >
+            Saved ships
+          </Tabs.Tab>
+          <Tabs.Tab
             icon="ship"
             selected={tab === 'shop'}
             onClick={() => setTab('shop')}
@@ -143,7 +170,9 @@ export const ShipCheckpoint = () => {
             New ship
           </Tabs.Tab>
         </Tabs>
-        {tab === 'shop' ? <ShopTab /> : <CheckpointsTab />}
+        {tab === 'shop' && <ShopTab />}
+        {tab === 'saved' && <SavedShipsTab />}
+        {tab === 'checkpoints' && <CheckpointsTab />}
       </Window.Content>
     </Window>
   );
@@ -203,6 +232,79 @@ const CheckpointsTab = () => {
                   }
                 >
                   {updating ? 'Update' : 'Save'} · {credits(cost)}
+                </Button>
+              </Stack.Item>
+            </Stack>
+          );
+        })}
+      </Section>
+    </>
+  );
+};
+
+const SavedShipsTab = () => {
+  const { data, act } = useBackend<Data>();
+  const { online, parts, slots, saves, ships } = data.saved_ships;
+  if (!online) {
+    return (
+      <Section title="Saved ships">
+        <Box color="label">Shipyard records are offline.</Box>
+      </Section>
+    );
+  }
+  return (
+    <>
+      <Section
+        title="Saved ships"
+        buttons={
+          <Box color="label" mt={0.5}>
+            {parts === null ? '' : `${shipParts(parts)} · `}
+            {saves.length}/{slots}
+          </Box>
+        }
+      >
+        {saves.length === 0 && <Box color="label">None saved.</Box>}
+        {saves.map((save) => (
+          <Stack key={save.slot} align="center" mb={1}>
+            <Stack.Item grow style={{ overflowWrap: 'anywhere' }}>
+              <Box bold>{save.name}</Box>
+              {!!save.class && <Box color="label">{save.class}</Box>}
+            </Stack.Item>
+            <Stack.Item>
+              <Button
+                icon="ship"
+                disabled={!!data.working || !!save.denial}
+                tooltip={save.denial}
+                onClick={() => act('ship_save_retrieve', { slot: save.slot })}
+              >
+                Build here
+              </Button>
+            </Stack.Item>
+          </Stack>
+        ))}
+      </Section>
+      <Section title="In the bay">
+        {ships.length === 0 && (
+          <Box color="label">Dock a ship you command.</Box>
+        )}
+        {ships.map((ship) => {
+          const short =
+            parts !== null && parts < ship.price
+              ? `You have ${shipParts(parts)}.`
+              : null;
+          return (
+            <Stack key={ship.ref} align="center" mb={1}>
+              <Stack.Item grow style={{ overflowWrap: 'anywhere' }}>
+                {ship.name}
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="floppy-disk"
+                  disabled={!!data.working || !!ship.denial || !!short}
+                  tooltip={ship.denial || short}
+                  onClick={() => act('ship_save_store', { ref: ship.ref })}
+                >
+                  Save · {shipParts(ship.price)}
                 </Button>
               </Stack.Item>
             </Stack>
