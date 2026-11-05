@@ -323,8 +323,8 @@
 
 /**
  * Signal proc for [COMSIG_MOB_STATCHANGE]: fires the windup on the
- * transition INTO crit. Waking up, dying outright, or already-charging
- * states all fall through.
+ * transition INTO crit. Waking up, being knocked out or put to sleep, dying
+ * outright, or already-charging states all fall through.
  */
 /obj/item/organ/cyberimp/cyberware/lazarus/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
@@ -333,7 +333,7 @@
 	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
 	if(source != owner || !chrome?.is_running())
 		return
-	if(new_stat == CONSCIOUS || new_stat == DEAD)
+	if(new_stat != SOFT_CRIT && new_stat != HARD_CRIT)
 		return
 	if(old_stat == DEAD)
 		return

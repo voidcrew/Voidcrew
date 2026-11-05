@@ -78,20 +78,26 @@
 	/// boolean that stands for if PHYSICAL damage being patched
 	var/body_damage_patched = FALSE
 	var/need_mob_update = FALSE
+	// Patching someone who is only asleep or knocked out heals the same but runs up no recharge.
+	var/charged_heal = patient.stat != UNCONSCIOUS || patient.health <= patient.crit_threshold
 	if(patient.getOxyLoss())
 		need_mob_update += patient.adjustOxyLoss(-5, updating_health = FALSE)
-		revive_cost += 5
+		if(charged_heal)
+			revive_cost += 5
 	if(patient.getBruteLoss())
 		need_mob_update += patient.adjustBruteLoss(-2, updating_health = FALSE)
-		revive_cost += 40
+		if(charged_heal)
+			revive_cost += 40
 		body_damage_patched = TRUE
 	if(patient.getFireLoss())
 		need_mob_update += patient.adjustFireLoss(-2, updating_health = FALSE)
-		revive_cost += 40
+		if(charged_heal)
+			revive_cost += 40
 		body_damage_patched = TRUE
 	if(patient.getToxLoss())
 		need_mob_update += patient.adjustToxLoss(-1, updating_health = FALSE)
-		revive_cost += 40
+		if(charged_heal)
+			revive_cost += 40
 	if(need_mob_update)
 		patient.updatehealth()
 	if(QDELETED(src) || QDELETED(patient) || owner != patient || generation != activation_generation || !reviving)
