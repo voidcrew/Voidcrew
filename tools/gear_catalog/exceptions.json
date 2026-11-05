@@ -186,12 +186,6 @@
   "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
  },
  {
-  "path": "/obj/item/bombcore/chemical",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/chemical_payload",
-  "reason": "Open: its recipe uses up C-4, which sells with no reputation. Waiting on the C-4 gate on the Undertow Exchange."
- },
- {
   "path": "/obj/item/bombcore/dimensional",
   "rule": "below_reputation",
   "route": "/datum/market_item/weapon/dimensional_bomb",
@@ -381,7 +375,7 @@
   "path": "/obj/item/crowbar/abductor",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/skunk/alien_sample",
-  "reason": "Open: 900 cr with no reputation, and analyzing one reveals the alien research. Waiting on a reputation 11 gate on this line."
+  "reason": "Deliberate: the alien surgery it leads to doesn't need a gate. Brainwashing only hands the victim an objective."
  },
  {
   "path": "/obj/item/crowbar/power",
@@ -468,12 +462,6 @@
   "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
  },
  {
-  "path": "/obj/item/fireaxe/boardingaxe",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/boarding_axe",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/flamethrower",
   "rule": "below_reputation",
   "route": "/datum/crafting_recipe/flamethrower",
@@ -484,12 +472,6 @@
   "rule": "below_reputation",
   "route": "/datum/design/flamethrower",
   "reason": "Deliberate: a welder, an igniter and a rod. It needs a plasma tank and can burn the user."
- },
- {
-  "path": "/obj/item/grenade/c4",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/c4",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
  },
  {
   "path": "/obj/item/grenade/chem_grenade/adv_release",
@@ -510,22 +492,10 @@
   "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
  },
  {
-  "path": "/obj/item/grenade/empgrenade",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/emp_grenade",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/grenade/flashbang",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/outfitter/rotating/flashbang",
   "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/grenade/frag",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/frag_grenade",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
  },
  {
   "path": "/obj/item/grenade/frag",
@@ -548,12 +518,6 @@
  {
   "path": "/obj/item/grenade/smokebomb",
   "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/smoke_bomb",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/grenade/smokebomb",
-  "rule": "below_reputation",
   "route": "/datum/supply_pack/imports/shocktrooper",
   "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
  },
@@ -562,12 +526,6 @@
   "rule": "below_reputation",
   "route": "/datum/supply_pack/goody/stingbang",
   "reason": "Open: rated yellow, on an ordinary cargo console at 250 cr. Waiting on a higher price or a gate."
- },
- {
-  "path": "/obj/item/grenade/syndieminibomb",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/rotating/minibomb",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
  },
  {
   "path": "/obj/item/gun/energy/gravity_gun",
@@ -1029,7 +987,7 @@
   "path": "/obj/item/mod/module/surgical_processor/preloaded",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/fitter/rare/mod_surgical_processor",
-  "reason": "Open: on The Fitting Bay shelf with no reputation. Waiting on a gate on this line."
+  "reason": "Deliberate: the loaded surgeries don't need a gate. Brainwashing only hands the victim an objective."
  },
  {
   "path": "/obj/item/mod/module/visor/night",
@@ -1044,18 +1002,6 @@
   "reason": "Open: rated yellow, on an ordinary cargo console. Waiting on this crate moving to a trader at reputation 4."
  },
  {
-  "path": "/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/fixers",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/icepick",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/organ/cyberimp/brain/anti_stun",
   "rule": "below_reputation",
   "route": "/datum/design/cyberimp_antistun",
@@ -1066,60 +1012,6 @@
   "rule": "below_reputation",
   "route": "/datum/design/cyberimp_reviver",
   "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Combat Implants."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/coolant",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/coolant",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/dead_channel",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/dead_channel",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/dermal_mesh",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/dermal_mesh",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/doppler",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/doppler",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/hopper",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/hopper",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/cyberware/slipwire",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/slipwire",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/cyberware/deadeye",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/deadeye",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/cyberware/nightshade",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/nightshade",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/cyberware/prospector",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/ripperdoc/prospector",
-  "reason": "Open: on the open Chop Shop shelf with no reputation. Waiting on a gate on this line."
  },
  {
   "path": "/obj/item/organ/eyes/robotic/thermals",
@@ -1176,28 +1068,16 @@
   "reason": "Deliberate: a chem lab brews this at no reputation, so the shelf sells convenience."
  },
  {
-  "path": "/obj/item/reagent_containers/hypospray/medipen/penthrite",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/clinic/rotating/penthrite_pen",
-  "reason": "Open: on the Patch-Up Clinic shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/reagent_containers/hypospray/medipen/stimpack",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/outfitter/stimpack",
   "reason": "Deliberate: a chem lab brews this at no reputation, and it makes you drop big guns."
  },
  {
-  "path": "/obj/item/reagent_containers/hypospray/medipen/stimulants",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/stimulants",
-  "reason": "Open: on the Undertow Exchange shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/reagent_containers/hypospray/medipen/survival/luxury",
   "rule": "below_reputation",
   "route": "/datum/orderable_item/consumables/luxury_pen",
-  "reason": "Open: rated red, 750 mining points with no reputation or stock limit. Waiting on a gate on this console line."
+  "reason": "Deliberate: mining points are the gate, and it helps solo crews with no medic."
  },
  {
   "path": "/obj/item/resonator/upgraded",
