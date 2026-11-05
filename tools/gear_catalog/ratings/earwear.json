@@ -1,0 +1,22 @@
+{
+ "category": "earwear",
+ "groups": [
+  "hearing protection"
+ ],
+ "items": {
+  "/obj/item/clothing/ears/earmuffs": {
+   "confidence": "high",
+   "group": "hearing protection",
+   "hash": "f59df7f4e95326ab",
+   "name": "earmuffs",
+   "rank": 1,
+   "reason": "Stops flashbang noise and heals your ears, but you hear nothing and lose the headset slot. A bowman headset does the same job while you can still talk. Prints from round start.",
+   "tier": "green"
+  }
+ },
+ "method": "One item, placed against the headsets in the comms category that do the same job. Peers there are for the comms rater to place.",
+ "unrated": {
+  "/obj/item/clothing/ears": "abstract",
+  "/obj/item/clothing/ears/earmuffs/debug": "no route"
+ }
+}

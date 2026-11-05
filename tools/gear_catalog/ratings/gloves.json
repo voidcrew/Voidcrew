@@ -1,0 +1,449 @@
+{
+ "category": "gloves",
+ "groups": [
+  "field uniques",
+  "tackling and close combat",
+  "insulated and tactical",
+  "medical and carrying",
+  "trade gloves",
+  "plain and suit parts"
+ ],
+ "items": {
+  "/obj/item/clothing/gloves/atmos": {
+   "confidence": "high",
+   "group": "medical and carrying",
+   "hash": "b4dd3d54d0c6ae31",
+   "name": "atmospheric extrication gloves",
+   "rank": 3,
+   "reason": "Firefighter's gloves: heat and pressure proof, fast carry, 70% less shock, but you can't fire normal guns. A rescue tool. On 4 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/botanic_leather": {
+   "confidence": "high",
+   "group": "trade gloves",
+   "hash": "d1a25f3f3d971ed3",
+   "name": "botanist's leather gloves",
+   "rank": 5,
+   "reason": "Lets you handle thorny plants. 100 cr at the plant shop. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/boxing": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "d8ccf543d51325e5",
+   "name": "boxing gloves",
+   "note": "Wearing them teaches boxing: punches deal the arm's normal unarmed roll as stamina damage, grabs are refused, and you can't hit someone who is unconscious or lying in stamina crit. The athletics damage bonus (scaled 1.5x by alternating left and right hooks, 0.5x by repeating one), staggering and knockout crits, and throw-mode blocking only work against another boxer; pacifists can use it. They give chunky fingers (no normal-trigger-guard guns, batons or tablets) and +19 fishing difficulty.",
+   "rank": 7,
+   "reason": "Sport gear. Punches do only stamina, you can't grab, and you can't fire normal guns while wearing them.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/boxing/blue": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "d8ccf543d51325e5",
+   "name": "boxing gloves",
+   "note": "Wearing them teaches boxing: punches deal the arm's normal unarmed roll as stamina damage, grabs are refused, and you can't hit someone who is unconscious or lying in stamina crit. The athletics damage bonus (scaled 1.5x by alternating left and right hooks, 0.5x by repeating one), staggering and knockout crits, and throw-mode blocking only work against another boxer; pacifists can use it. They give chunky fingers (no normal-trigger-guard guns, batons or tablets) and +19 fishing difficulty.",
+   "rank": 7,
+   "reason": "Sport gear. Punches do only stamina, you can't grab, and you can't fire normal guns while wearing them.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/boxing/green": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "d8ccf543d51325e5",
+   "name": "boxing gloves",
+   "note": "Wearing them teaches boxing: punches deal the arm's normal unarmed roll as stamina damage, grabs are refused, and you can't hit someone who is unconscious or lying in stamina crit. The athletics damage bonus (scaled 1.5x by alternating left and right hooks, 0.5x by repeating one), staggering and knockout crits, and throw-mode blocking only work against another boxer; pacifists can use it. They give chunky fingers (no normal-trigger-guard guns, batons or tablets) and +19 fishing difficulty.",
+   "rank": 7,
+   "reason": "Sport gear. Punches do only stamina, you can't grab, and you can't fire normal guns while wearing them.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/boxing/yellow": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "d8ccf543d51325e5",
+   "name": "boxing gloves",
+   "note": "Wearing them teaches boxing: punches deal the arm's normal unarmed roll as stamina damage, grabs are refused, and you can't hit someone who is unconscious or lying in stamina crit. The athletics damage bonus (scaled 1.5x by alternating left and right hooks, 0.5x by repeating one), staggering and knockout crits, and throw-mode blocking only work against another boxer; pacifists can use it. They give chunky fingers (no normal-trigger-guard guns, batons or tablets) and +19 fishing difficulty.",
+   "rank": 7,
+   "reason": "Sport gear. Punches do only stamina, you can't grab, and you can't fire normal guns while wearing them.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/bracer": {
+   "confidence": "medium",
+   "group": "insulated and tactical",
+   "hash": "a8903519b00f2c2c",
+   "name": "bone bracers",
+   "rank": 4,
+   "reason": "Arm armor in the glove slot: 25 bullet, 15 melee, laser and energy, on the arms only. Crafted from bone and sinew. Arms aren't the usual target, and you give up insulation.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/butchering": {
+   "confidence": "high",
+   "group": "trade gloves",
+   "hash": "122aa119905863e6",
+   "name": "butchering gloves",
+   "rank": 3,
+   "reason": "Butchers a body in half a second by punching it. A knife does the job a little slower. Two ruins have a pair.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/captain": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "e9812098581a6f2f",
+   "name": "captain's gloves",
+   "rank": 2,
+   "reason": "Combat gloves with a little less fire protection. In the captain's locker on 9 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "dd4d6a95bebecb9b",
+   "name": "Line gauntlet",
+   "note": "In combat mode, an empty-handed hit on a machine or structure that isn't indestructible starts a 3 second tear-down (the wearer must stay put) and then deconstructs it as if taken apart properly, dropping its parts. It never works on mobs, and it has the H.A.U.L. gauntlet's pull grip and chunky fingers. / When worn on the hands, anything the wearer pulls can't be pulled by anyone else, and the wearer gets chunky fingers (no normal-trigger-guard guns, batons or tablets) and +19 fishing difficulty.",
+   "rank": 3,
+   "reason": "Authored unique. 3 seconds with an empty hand takes apart any machine or structure that isn't indestructible: turrets, consoles, doors. You can't fire normal guns in them.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/gloves/chameleon": {
+   "confidence": "medium",
+   "group": "insulated and tactical",
+   "hash": "1152cee8b8c32360",
+   "name": "insulated gloves",
+   "rank": 5,
+   "reason": "Looks like any gloves, with 10 armor on the arms and fast cuffing. Half shock only. Comes in the chameleon kit.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/color/black": {
+   "confidence": "high",
+   "group": "plain and suit parts",
+   "hash": "1519680b1d68124e",
+   "name": "black gloves",
+   "rank": 1,
+   "reason": "Everyday black gloves. Half shock protection and heat protection, like most gloves here. In 24 job outfits.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/color/black/pallbearer": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "e315502138cef8d8",
+   "name": "pallbearer's gloves",
+   "note": "Drag-pulling anything stops slowing the wearer down, and any corpse they are pulling or fireman-carrying is held out of decay (organ decay and rotting both pause) until they let go. If the held person is alive or revives, the hold ends.",
+   "rank": 5,
+   "reason": "Authored unique, and a weak one. Dragging never slows you, and a corpse you're holding doesn't rot. Lovely for a medic, wins no fight.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/gloves/color/black/security": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "fabfae6ffee19530",
+   "name": "security gloves",
+   "rank": 6,
+   "reason": "Plain gloves with fast cuffing. Only matters when you're arresting someone.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/color/black/security/blu": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "fabfae6ffee19530",
+   "name": "security gloves",
+   "rank": 6,
+   "reason": "Plain gloves with fast cuffing. Only matters when you're arresting someone.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/color/fyellow": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "1052c933b47ea053",
+   "name": "budget insulated gloves",
+   "rank": 8,
+   "reason": "Look insulated, but it's rolled when they spawn: 1 in 7 full, 4 in 7 half, 1 in 7 worse than bare hands. A gamble.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/color/fyellow/old": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "a94cdf4e60eef88a",
+   "name": "worn out insulated gloves",
+   "rank": 7,
+   "reason": "Old insulated gloves with insulation rolled when they spawn: 3 in 7 are full, the rest half or a bit less. Better odds than the new budget pair.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/color/plasmaman": {
+   "confidence": "high",
+   "group": "trade gloves",
+   "hash": "b1b877865a29535e",
+   "name": "plasma envirogloves",
+   "rank": 7,
+   "reason": "Fire and acid resistant gloves for plasmamen. No other use.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/color/yellow": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "82fb1e43d70fd647",
+   "name": "insulated gloves",
+   "rank": 3,
+   "reason": "Anchor. Full shock protection, which is what shocked doors, grilles and live wiring call for. In electrical closets on 14 hulls and 400 cr by cargo. Everyday engineering kit.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/combat": {
+   "confidence": "medium",
+   "group": "insulated and tactical",
+   "hash": "d6e679ad0a14149a",
+   "name": "combat gloves",
+   "rank": 1,
+   "reason": "Anchor for the top of plain gloves: full insulation, fast cuffing, heat and fire proof. Two green jobs in one pair, nothing that changes a fight. On 5 hulls and in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/combat/floortile": {
+   "confidence": "medium",
+   "group": "insulated and tactical",
+   "hash": "c2ad4507e9c50e18",
+   "name": "floortile camouflage gloves",
+   "rank": 1,
+   "reason": "Combat gloves in floor-tile camouflage. Same insulation and fast cuffing.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/combat/wizard": {
+   "confidence": "high",
+   "group": "insulated and tactical",
+   "hash": "c2ad4507e9c50e18",
+   "name": "enchanted gloves",
+   "rank": 1,
+   "reason": "Combat gloves with a wizard's name. Same insulation and fast cuffing. One in one ruin.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/courier": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "17a2aaf1aecfd612",
+   "name": "courier's palm",
+   "note": "Takes an item out of a target's hands or pockets instantly and with no message to them, or plants one from your hand into their free pocket; the glove then needs 30 seconds before it can do either again. It only covers hands and pockets; everything else strips the normal slow way.",
+   "rank": 4,
+   "reason": "Authored unique. Every 30 seconds, instantly and silently takes anything from a person's hands or pockets, gun included, or plants something on them.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/gloves/fingerless": {
+   "confidence": "high",
+   "group": "plain and suit parts",
+   "hash": "8476b420a80bf9a7",
+   "name": "fingerless gloves",
+   "rank": 2,
+   "reason": "Fingerless gloves. Looks only, plus they craft into improvised gripper gloves.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/fingerless/chronal_splint": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "d3674a6288765025",
+   "name": "chronal splint",
+   "note": "While worn it records the wearer's position and brute, burn, toxin, oxygen and stamina damage every 2 seconds, keeping 5 snapshots. The first time the wearer reaches hard crit or death, they are moved back to the oldest snapshot (about 8 to 10 seconds earlier), those damage types are set back to what they were (revived if dead), and the splint is destroyed. One use only.",
+   "rank": 1,
+   "reason": "Authored unique. Cheats death once: at hard crit or death it puts you back where you were about 10 seconds ago, with that moment's damage, revives you if needed, then breaks.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/gloves/fishing": {
+   "confidence": "high",
+   "group": "trade gloves",
+   "hash": "26fb7a8d063a12b1",
+   "name": "athletic fishing gloves",
+   "note": "Lets the wearer fish without a rod, using a built-in rod whose difficulty falls with their athletics skill, and -4 fishing difficulty on top. Each tick of the fishing minigame costs the wearer stamina (2 plus 2% of the challenge difficulty) and gives athletics experience; landing a large fish also damages one of their arms.",
+   "rank": 4,
+   "reason": "Lets you fish with no rod, paid for in stamina. A hobby.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/knock_knock": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "2bf285c0caf29481",
+   "name": "\"Knock-Knock\"",
+   "note": "Powered unarmed hits in combat mode, each costing 1 of 5 charges (recharge starts 5 seconds after the last punch, then 1 charge per 4 seconds): a wall is dismantled on the second punch, doors, door assemblies and girders take 170 brute, and a mob takes 12 brute that can't cause wounds and is thrown back 4 tiles. Empty, or against a pacifist's mob target, it falls back to a normal punch.",
+   "rank": 2,
+   "reason": "Authored unique. Two punches remove a wall, one nearly kills a door, and a punch throws a man 4 tiles for 12 brute. 5 charges, recharging. Walks through any ship.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/gloves/krav_maga/combatglovesplus": {
+   "confidence": "medium",
+   "group": "tackling and close combat",
+   "hash": "e70e6bd6d3127737",
+   "name": "combat gloves plus",
+   "note": "Wearing them teaches Krav Maga: harm punches and kicks deal 10 damage (15 on a downed target), and a disarm takes the target's held item into your hands 60% of the time. Three stances, each used up on the next hit: neck chop (10 head damage and 20 seconds of silence), leg sweep (5 brute and a 6 second knockdown) and lung punch (10 oxygen damage and loss of breath). They also speed up cuffing.",
+   "rank": 1,
+   "reason": "Best close-quarters gloves. Disarms take the target's held item 60% of the time, plus a 6 second leg sweep and a neck chop, on top of full combat gloves. No use past arm's reach. No shop, ruin or played hull has them.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/gloves/latex": {
+   "confidence": "medium",
+   "group": "medical and carrying",
+   "hash": "47f816d3bc9c19eb",
+   "name": "latex gloves",
+   "rank": 4,
+   "reason": "Cheap sterile gloves: quick carry and 70% less shock. The bottom of what's worth wearing.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/latex/coroner": {
+   "confidence": "high",
+   "group": "medical and carrying",
+   "hash": "1c8593499ce54424",
+   "name": "coroner's gloves",
+   "rank": 2,
+   "reason": "Same fast medical hands as nitrile with a slower carry. Two in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/latex/nitrile": {
+   "confidence": "high",
+   "group": "medical and carrying",
+   "hash": "1cceceb42b4d3779",
+   "name": "nitrile gloves",
+   "rank": 1,
+   "reason": "The medic's gloves. Syringes, patches and medigel take half the time, carrying people is very fast, and shocks do 70% less. In 22 job outfits.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/mod": {
+   "confidence": "high",
+   "group": "plain and suit parts",
+   "hash": "f24337afb0e0063a",
+   "name": "MOD gauntlets",
+   "rank": 3,
+   "reason": "Part of a MODsuit, deployed and retracted with it. No use on its own, so it's rated with the suit's control unit.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/radio": {
+   "confidence": "high",
+   "group": "trade gloves",
+   "hash": "fb3524ffc0849cb2",
+   "name": "translation gloves",
+   "rank": 6,
+   "reason": "Sends sign language over the radio. Only matters to mute characters.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/gloves/tackler": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "7cc5d5093ac49f2d",
+   "name": "enhanced retrieval gloves",
+   "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
+   "rank": 4,
+   "reason": "Anchor. Hull-issue tackle gloves: a 4 tile lunge, lands about 4 in 7, backfires 2 in 7. Free in security lockers on 8 hulls. Only works on players; tackling an NPC is like hitting a wall.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/tackler/combat": {
+   "confidence": "medium",
+   "group": "tackling and close combat",
+   "hash": "fa4e5183c60cd1f3",
+   "name": "gorilla gloves",
+   "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
+   "rank": 3,
+   "reason": "A modest step over hull-issue tackle gloves: one more tile, and about 5 in 7 tackles land instead of 4 in 7, for 30 to 40 stamina and a short knockdown. Only works on players.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/tackler/dolphin": {
+   "confidence": "medium",
+   "group": "tackling and close combat",
+   "hash": "b1e960b7575c4485",
+   "name": "dolphin gloves",
+   "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
+   "rank": 6,
+   "reason": "A cheap, quick lunge with the worst roll of the family: 5 tries in 7 backfire. Good for falling over.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/tackler/offbrand": {
+   "confidence": "high",
+   "group": "tackling and close combat",
+   "hash": "6470f2058dfcc157",
+   "name": "improvised gripper gloves",
+   "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
+   "rank": 5,
+   "reason": "Home-made tackle gloves from tape and fingerless gloves. Backfire 4 tries in 7, and leave you on the floor longer than real ones.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/tackler/rocket": {
+   "confidence": "medium",
+   "group": "tackling and close combat",
+   "hash": "e51f71b74dad7bb5",
+   "name": "rocket gloves",
+   "note": "Lets the wearer launch a tackle (throw mode, right-click a target with an empty hand): they take stamina damage and are knocked down for a short time, which doubles as the cooldown, while flying toward the target. On hitting a person a roll decides who comes off worse, from a knockdown, grab and stamina damage on the target to the tackler being floored or concussed; hitting a wall or solid object can seriously injure the wearer, more likely at higher glove speed. Variants differ in forced minimum flight (dolphin and off-brand 2 tiles, rocket 7), speed (dolphin 2, rocket 6) and roll bonus, and every variant except the improvised gripper gloves also speeds up cuffing.",
+   "rank": 2,
+   "reason": "A 10 tile tackle that almost always lands, for 40 to 60 stamina and a grab. Miss and you hit the far wall hard enough for a concussion or worse. Each try costs 50 stamina. Only works on players.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/gloves/tinkerer": {
+   "confidence": "medium",
+   "group": "trade gloves",
+   "hash": "91934043cec3722c",
+   "name": "tinker's gloves",
+   "rank": 2,
+   "reason": "Faster building, nothing else, and less shock protection than plain gloves. Its research only opens by luck.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/gloves/tinkerer/fitter": {
+   "confidence": "medium",
+   "group": "trade gloves",
+   "hash": "92747cf8b2c488fa",
+   "name": "fitter's gauntlets",
+   "rank": 1,
+   "reason": "Walls, floors and platforms go up faster and carrying is quick. Less shock protection than plain gloves. A builder's treat, not combat gear.",
+   "tier": "green"
+  }
+ },
+ "method": "No formula. Each pair is placed against the gloves a player would wear instead, then against other categories' anchors. A green feature stays green even when two are combined in one pair, the way eyewear treats sunglasses with a HUD. Authored uniques are above whatever their power, as in eyewear.",
+ "unrated": {
+  "/obj/item/clothing/gloves": "abstract",
+  "/obj/item/clothing/gloves/boxing/evil": "no route",
+  "/obj/item/clothing/gloves/boxing/golden": "no route",
+  "/obj/item/clothing/gloves/cargo_gauntlet": "no route",
+  "/obj/item/clothing/gloves/chameleon/broken": "no route",
+  "/obj/item/clothing/gloves/changeling": "no route",
+  "/obj/item/clothing/gloves/chief_engineer": "no route",
+  "/obj/item/clothing/gloves/color": "abstract",
+  "/obj/item/clothing/gloves/color/blue": "cosmetic",
+  "/obj/item/clothing/gloves/color/brown": "cosmetic",
+  "/obj/item/clothing/gloves/color/green": "cosmetic",
+  "/obj/item/clothing/gloves/color/grey": "cosmetic",
+  "/obj/item/clothing/gloves/color/grey/protects_cold": "no route",
+  "/obj/item/clothing/gloves/color/light_brown": "cosmetic",
+  "/obj/item/clothing/gloves/color/orange": "cosmetic",
+  "/obj/item/clothing/gloves/color/plasmaman/atmos": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/black": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/botanic_leather": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/cargo": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/centcom_commander": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/centcom_intern": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/centcom_official": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/chief_engineer": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/clown": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/engineer": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/explorer": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/head_of_personnel": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/janny": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/plasmanitrile": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/prototype": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/radio": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/research_director": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/robot": "no route",
+  "/obj/item/clothing/gloves/color/plasmaman/white": "no route",
+  "/obj/item/clothing/gloves/color/purple": "cosmetic",
+  "/obj/item/clothing/gloves/color/rainbow": "cosmetic",
+  "/obj/item/clothing/gloves/color/red": "cosmetic",
+  "/obj/item/clothing/gloves/color/red/insulated": "no route",
+  "/obj/item/clothing/gloves/color/white": "cosmetic",
+  "/obj/item/clothing/gloves/color/yellow/heavy": "no route",
+  "/obj/item/clothing/gloves/color/yellow/sprayon": "no route",
+  "/obj/item/clothing/gloves/cut": "no route",
+  "/obj/item/clothing/gloves/cut/heirloom": "no route",
+  "/obj/item/clothing/gloves/divine_archer": "no route",
+  "/obj/item/clothing/gloves/fingerless/punch_mitts": "literal only",
+  "/obj/item/clothing/gloves/gauntlets": "literal only",
+  "/obj/item/clothing/gloves/kim": "cosmetic",
+  "/obj/item/clothing/gloves/krav_maga": "abstract",
+  "/obj/item/clothing/gloves/krav_maga/sec": "no route",
+  "/obj/item/clothing/gloves/plate": "no route",
+  "/obj/item/clothing/gloves/plate/blue": "no route",
+  "/obj/item/clothing/gloves/plate/red": "no route",
+  "/obj/item/clothing/gloves/race": "no route",
+  "/obj/item/clothing/gloves/rapid": "no route",
+  "/obj/item/clothing/gloves/tackler/combat/insulated": "no route",
+  "/obj/item/clothing/gloves/tackler/football": "no route",
+  "/obj/item/clothing/gloves/the_sleeping_carp": "no route"
+ }
+}

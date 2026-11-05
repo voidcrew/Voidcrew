@@ -1,0 +1,510 @@
+{
+ "category": "shoes",
+ "groups": [
+  "field uniques",
+  "movement",
+  "armored boots",
+  "footing and EVA",
+  "plain footwear"
+ ],
+ "items": {
+  "/obj/item/clothing/shoes/bhop": {
+   "confidence": "high",
+   "group": "movement",
+   "hash": "5c399e9712c2bcf4",
+   "name": "jump boots",
+   "rank": 3,
+   "reason": "A 4 tile dash every 6 seconds, safe over chasms and lava, plus pockets. Gets you out of a corner and rarely hits a wall. 2,000 mining points, or good ruin loot.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/bhop/rocket": {
+   "confidence": "medium",
+   "group": "movement",
+   "hash": "684c58d66831225d",
+   "name": "rocket boots",
+   "rank": 1,
+   "reason": "A dash of about 20 tiles every 6 seconds, close to a teleport in the open. Hit a wall and you're paralysed 2 seconds with about 25 brute, so it's risky indoors. Black market only.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/chameleon": {
+   "confidence": "high",
+   "group": "armored boots",
+   "hash": "c8bf0e4b389481a8",
+   "name": "black shoes",
+   "rank": 4,
+   "reason": "Looks like any shoes, with 10 armor on the legs. Comes in the chameleon kit.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/chameleon/noslip": {
+   "confidence": "medium",
+   "group": "footing and EVA",
+   "hash": "c6b951ce2a242cd7",
+   "name": "black shoes",
+   "rank": 2,
+   "reason": "Anchor for no-slip. Stops every slip except lube, with 10 armor on the legs and a disguise. Handy, but it only wins the fights where someone threw soap.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/clown_shoes": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "9eedeae8c460870e",
+   "name": "clown shoes",
+   "note": "Worn, the shoes squeak every third step and make the wearer waddle (ctrl-click while holding them to switch the waddle off), and a clown wearing them gets a mood boost. They have a two-slot pocket for small items such as knives, pens, magazines and syringes. Subtypes only change the squeak sound.",
+   "rank": 5,
+   "reason": "Clown shoes. Slow to walk in, squeak and waddle, though the pockets are handy.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/clown_shoes/banana_shoes": {
+   "confidence": "medium",
+   "group": "footing and EVA",
+   "hash": "abc4fe620dc283d9",
+   "name": "mk-honk prototype shoes",
+   "note": "Switched on with the action button (needs bananium inside), each step drops a synthetic banana peel behind the wearer for 10 units of bananium, and the wearer cannot slip on water or ordinary peels while it is on. A peel knocks down whoever steps on it for 4 s. The shoes switch themselves off when the bananium runs out; using them in hand takes the bananium back out, and they accept bananium sheets up to 100 sheets. / Worn, the shoes squeak every third step and make the wearer waddle (ctrl-click while holding them to switch the waddle off), and a clown wearing them gets a mood boost. They have a two-slot pocket for small items such as knives, pens, magazines and syringes. Subtypes only change the squeak sound.",
+   "rank": 8,
+   "reason": "Fed bananium, they drop peels that floor whoever steps on them, and you don't slip while they're on. Slow to walk in, and bananium is rare. Two ruins.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat": {
+   "confidence": "medium",
+   "group": "armored boots",
+   "hash": "111ff648cdf24381",
+   "name": "mk-honk combat shoes",
+   "note": "Same as the prototype but the no-slip is always on, it starts with 3000 units of bananium (300 steps of peels) and refills itself at 17 units per second up to that amount. Using it in hand toggles the peels on or off. / Worn, the shoes squeak every third step and make the wearer waddle (ctrl-click while holding them to switch the waddle off), and a clown wearing them gets a mood boost. They have a two-slot pocket for small items such as knives, pens, magazines and syringes. Subtypes only change the squeak sound. / Switched on with the action button (needs bananium inside), each step drops a synthetic banana peel behind the wearer for 10 units of bananium, and the wearer cannot slip on water or ordinary peels while it is on. A peel knocks down whoever steps on it for 4 s. The shoes switch themselves off when the bananium runs out; using them in hand takes the bananium back out, and they accept bananium sheets up to 100 sheets.",
+   "rank": 2,
+   "reason": "Combat boot armor and no slipping, plus a refilling trail of peels that floors whoever steps on one for 4 seconds. Great for losing a pursuer. You squeak and waddle.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/clown_shoes/moffers": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "5d16057a7345e9bb",
+   "name": "moffers",
+   "note": "Worn, the shoes squeak every third step and make the wearer waddle (ctrl-click while holding them to switch the waddle off), and a clown wearing them gets a mood boost. They have a two-slot pocket for small items such as knives, pens, magazines and syringes. Subtypes only change the squeak sound.",
+   "rank": 5,
+   "reason": "Fluffy clown shoes. Slow to walk in, squeak and waddle.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/combat": {
+   "confidence": "medium",
+   "group": "armored boots",
+   "hash": "b7d77e40246a26d8",
+   "name": "combat boots",
+   "rank": 3,
+   "reason": "Anchor. 25 armor on the legs and two pocket slots at no speed cost. The best everyday boots, though legs are rarely the target. On 3 hulls and in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/combat/swat": {
+   "confidence": "medium",
+   "group": "armored boots",
+   "hash": "4489d51714fd836b",
+   "name": "SWAT boots",
+   "rank": 1,
+   "reason": "Best plain boots: 40 melee and 30 bullet on the legs, and no slipping. One job outfit on one hull has them, so they hardly matter.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/cowboy": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "4e7dd89fd9a7571a",
+   "name": "cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/black": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "4e7dd89fd9a7571a",
+   "name": "black cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/black/laced": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "d0aedcaaf35366dc",
+   "name": "black cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/laced": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "d0aedcaaf35366dc",
+   "name": "cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/lizard": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "e7ab1f75d97555ce",
+   "name": "lizard skin boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/lizard/masterwork": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "e7ab1f75d97555ce",
+   "name": "Hugs-The-Feet lizard skin boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Fancy lizard skin cowboy boots. Sell for about 390 cr, otherwise looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/white": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "4e7dd89fd9a7571a",
+   "name": "white cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cowboy/white/laced": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "d0aedcaaf35366dc",
+   "name": "white cowboy boots",
+   "note": "Slip-on boots with a two-slot pocket for small items such as knives and pens. About 2% of pairs spawn with a snake inside, which bites the wearer and knocks them down for 2 s when the boots are first put on; snakes, headslugs and larvae can be dragged into the boots on purpose. Slamming a table while wearing them makes the wearer shout a line.",
+   "rank": 2,
+   "reason": "Cowboy boots: two pocket slots and a small chance of a snake. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cult": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "a1748a41a2d63cc6",
+   "name": "Nar'Sian boots",
+   "rank": 3,
+   "reason": "Cultist boots. Warm. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/cult/alt": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "a1748a41a2d63cc6",
+   "name": "Nar'Sian invoker boots",
+   "rank": 3,
+   "reason": "Cultist boots. Warm. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/galoshes": {
+   "confidence": "high",
+   "group": "footing and EVA",
+   "hash": "604c4f3f56be4b84",
+   "name": "galoshes",
+   "rank": 7,
+   "reason": "No slipping for janitors, but each step takes two thirds longer. Not something you'd fight in.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/griffin": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "da2bd79a6ddbd272",
+   "name": "griffon boots",
+   "rank": 2,
+   "reason": "Costume bird-talon boots with pockets. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/jackboots": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "ff2269962d684421",
+   "name": "jackboots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/jackboots/fast": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "292ec87dc7c46d3c",
+   "name": "jackboots",
+   "rank": 1,
+   "reason": "Look like plain jackboots but give about three times normal running speed. Built for capture the flag. Nothing players can buy comes close. Almost never found.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/shoes/jackboots/floortile": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "c85eea033835ec0b",
+   "name": "floortile camouflage jackboots",
+   "rank": 1,
+   "reason": "Jackboots in floor-tile camouflage. Two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/jackboots/sec": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "ff2269962d684421",
+   "name": "jackboots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/kindle_kicks": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "a44d562d5d6f904e",
+   "name": "Kindle Kicks",
+   "note": "The action button makes the shoes glow in a randomly changing colour (light range 2) for about 8 s and then switch off. It has no other effect.",
+   "rank": 3,
+   "reason": "Light-up shoes. They glow for a few seconds and that's all.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/laceup/winters_loafers": {
+   "confidence": "high",
+   "group": "field uniques",
+   "hash": "a79cc09af3b6c10c",
+   "name": "Winter's loafers",
+   "note": "While worn, all of the wearer's movement slowdown (gear, injuries, terrain) is ignored, though speed bonuses are kept, and their footsteps make no sound.",
+   "rank": 2,
+   "reason": "Authored unique. Nothing slows you: heavy armor, wounds, terrain. Speed bonuses still count and your steps are silent. The heaviest suit in the game walks at full speed.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/shoes/magboots": {
+   "confidence": "high",
+   "group": "footing and EVA",
+   "hash": "6b2aaa25c0c1078c",
+   "name": "magboots",
+   "rank": 3,
+   "reason": "Anchor. The EVA standard: walk in zero gravity and never slip, but while on, each step takes more than twice as long. Prints after 440 research points.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/magboots/advance": {
+   "confidence": "medium",
+   "group": "footing and EVA",
+   "hash": "5d7ca9aa4b3403cb",
+   "name": "advanced magboots",
+   "rank": 1,
+   "reason": "Magboots with no speed cost: walk in zero gravity and never slip, at full speed. Can't be destroyed. No shop, ruin or played hull has them.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/mod": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "641e9751c89b3144",
+   "name": "MOD boots",
+   "rank": 6,
+   "reason": "Part of a MODsuit, deployed and retracted with it. No use on its own, so it's rated with the suit's control unit.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/russian": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "50aac63dfcadc91c",
+   "name": "russian boots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/sandal/magic": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "8537cc5c4a6b445b",
+   "name": "magical sandals",
+   "rank": 3,
+   "reason": "Fireproof sandals. Nothing about them is really magic.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/sandal/sandstrider": {
+   "confidence": "high",
+   "group": "footing and EVA",
+   "hash": "e96ae20b89c7f115",
+   "name": "sandstrider sandals",
+   "rank": 4,
+   "reason": "No-slip sandals from the arena shop. A little fire and acid protection, no armor, no pockets.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/sneakers/black": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "a9ba5a635e6eac54",
+   "name": "black shoes",
+   "rank": 4,
+   "reason": "Plain shoes. No armor, no pockets, no other use.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/sneakers/blue": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "f17ff77a2fa1e29f",
+   "name": "blue shoes",
+   "rank": 4,
+   "reason": "Plain shoes. No armor, no pockets, no other use.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/sneakers/orange": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "11ceeeac9aa2d3e1",
+   "name": "orange shoes",
+   "note": "A pair of plain handcuffs (that exact type) can be clipped to the shoes. With cuffs attached the shoes slow the wearer to a crawl (slowdown 15) and the wearer cannot take them off without help; the cuffs come back out by using the shoes in hand.",
+   "rank": 4,
+   "reason": "Prison shoes. Clip handcuffs on and a captive shuffles at a crawl. No use to the wearer.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/sneakers/white": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "3f0508bb0b312aae",
+   "name": "white shoes",
+   "rank": 4,
+   "reason": "Plain shoes. No armor, no pockets, no other use.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/wheelys": {
+   "confidence": "medium",
+   "group": "movement",
+   "hash": "0cc1d39b129a9bce",
+   "name": "Wheely-Heels",
+   "note": "The action button (shoes must be worn) pops out the wheels and seats the wearer on a rideable board that moves at a delay of 0, or 1.5 for roller skates, or 1 for ski shoes, which only roll on snow and ice; pressing it again or taking the shoes off pops them back. Hitting a dense object while riding costs 72 stamina (48 for skates and skis) and walking does not prevent it; at 100 stamina, or when the thing hit is a person, the rider is thrown, paralysed for 8 s and takes brain damage without a helmet.",
+   "rank": 2,
+   "reason": "Fastest wheels in the game, about three times running speed. You can't slow down: two bumps, or one person, throw you off and paralyse you for 8 seconds. Only one hull's two job outfits have them.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/shoes/wheelys/rollerskates": {
+   "confidence": "high",
+   "group": "movement",
+   "hash": "7fab7c776b1efab8",
+   "name": "roller skates",
+   "note": "The action button (shoes must be worn) pops out the wheels and seats the wearer on a rideable board that moves at a delay of 0, or 1.5 for roller skates, or 1 for ski shoes, which only roll on snow and ice; pressing it again or taking the shoes off pops them back. Hitting a dense object while riding costs 72 stamina (48 for skates and skis) and walking does not prevent it; at 100 stamina, or when the thing hit is a person, the rider is thrown, paralysed for 8 s and takes brain damage without a helmet.",
+   "rank": 5,
+   "reason": "Wheels out, they only match running speed. Slow to walk in, and bumps hurt. A toy.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/wheelys/skishoes": {
+   "confidence": "medium",
+   "group": "movement",
+   "hash": "8c26267ebcfaf91e",
+   "name": "ski shoes",
+   "note": "The action button (shoes must be worn) pops out the wheels and seats the wearer on a rideable board that moves at a delay of 0, or 1.5 for roller skates, or 1 for ski shoes, which only roll on snow and ice; pressing it again or taking the shoes off pops them back. Hitting a dense object while riding costs 72 stamina (48 for skates and skis) and walking does not prevent it; at 100 stamina, or when the thing hit is a person, the rider is thrown, paralysed for 8 s and takes brain damage without a helmet.",
+   "rank": 4,
+   "reason": "Faster than running, but only on snow and ice. Slow to walk in anywhere else. For one kind of planet.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/winterboots": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "8d9d5e29ce049c40",
+   "name": "winter boots",
+   "rank": 1,
+   "reason": "Warm boots with two pocket slots and no armor. Warm feet alone don't decide anything on a cold world.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/winterboots/ice_boots": {
+   "confidence": "high",
+   "group": "footing and EVA",
+   "hash": "ec6f2d5ee69f2cab",
+   "name": "ice hiking boots",
+   "rank": 6,
+   "reason": "Grip on ice, warm, with pockets. For ice worlds. 800 mining points.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/winterboots/ice_boots/eva": {
+   "confidence": "high",
+   "group": "footing and EVA",
+   "hash": "c518ba0f2c313f60",
+   "name": "Endotherm hiking boots",
+   "rank": 5,
+   "reason": "Grip on ice, warm, and thin armor with no bullet protection, at a small speed cost. Four in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/shoes/workboots": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "c2c82e4e27b324f9",
+   "name": "work boots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/workboots/black": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "c2c82e4e27b324f9",
+   "name": "tactical work boots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/shoes/workboots/mining": {
+   "confidence": "high",
+   "group": "plain footwear",
+   "hash": "2ab8b3840c15e09f",
+   "name": "mining boots",
+   "rank": 1,
+   "reason": "Everyday boots with two pocket slots and no armor.",
+   "tier": "none"
+  }
+ },
+ "method": "No formula. Each pair is placed against the shoes a player would wear instead. Speed is judged on the live numbers: running takes 1.5 tenths of a second per tile, so a slowdown of 1 makes each step two thirds longer and a bonus of 1 triples your speed. Authored uniques are above.",
+ "unrated": {
+  "/obj/item/clothing/shoes": "abstract",
+  "/obj/item/clothing/shoes/bronze": "cosmetic",
+  "/obj/item/clothing/shoes/chameleon/broken": "no route",
+  "/obj/item/clothing/shoes/chameleon/noslip/broken": "no route",
+  "/obj/item/clothing/shoes/changeling": "no route",
+  "/obj/item/clothing/shoes/clown_shoes/combat": "no route",
+  "/obj/item/clothing/shoes/clown_shoes/jester": "no route",
+  "/obj/item/clothing/shoes/clown_shoes/meown_shoes": "no route",
+  "/obj/item/clothing/shoes/combat/coldres": "no route",
+  "/obj/item/clothing/shoes/cookflops": "cosmetic",
+  "/obj/item/clothing/shoes/cowboy/black/syndicate": "no route",
+  "/obj/item/clothing/shoes/cowboy/fancy": "no route",
+  "/obj/item/clothing/shoes/cult/alt/ghost": "no route",
+  "/obj/item/clothing/shoes/discoshoes": "cosmetic",
+  "/obj/item/clothing/shoes/divine_archer": "no route",
+  "/obj/item/clothing/shoes/ducky_shoes": "no route",
+  "/obj/item/clothing/shoes/galoshes/dry": "no route",
+  "/obj/item/clothing/shoes/glow": "cosmetic",
+  "/obj/item/clothing/shoes/greaves_of_the_prophet": "no route",
+  "/obj/item/clothing/shoes/gunboots": "no route",
+  "/obj/item/clothing/shoes/gunboots/disabler": "no route",
+  "/obj/item/clothing/shoes/jackbros": "cosmetic",
+  "/obj/item/clothing/shoes/jester_shoes": "cosmetic",
+  "/obj/item/clothing/shoes/kim": "cosmetic",
+  "/obj/item/clothing/shoes/laceup": "cosmetic",
+  "/obj/item/clothing/shoes/magboots/basketball": "no route",
+  "/obj/item/clothing/shoes/magboots/syndie": "no route",
+  "/obj/item/clothing/shoes/pirate": "cosmetic",
+  "/obj/item/clothing/shoes/pirate/armored": "literal only",
+  "/obj/item/clothing/shoes/plate": "no route",
+  "/obj/item/clothing/shoes/plate/blue": "no route",
+  "/obj/item/clothing/shoes/plate/red": "no route",
+  "/obj/item/clothing/shoes/roman": "cosmetic",
+  "/obj/item/clothing/shoes/saints": "cosmetic",
+  "/obj/item/clothing/shoes/sandal": "cosmetic",
+  "/obj/item/clothing/shoes/sandal/alt": "cosmetic",
+  "/obj/item/clothing/shoes/sandal/alt/velcro": "cosmetic",
+  "/obj/item/clothing/shoes/sandal/beach": "cosmetic",
+  "/obj/item/clothing/shoes/sandal/velcro": "cosmetic",
+  "/obj/item/clothing/shoes/singerb": "cosmetic",
+  "/obj/item/clothing/shoes/singery": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/brown": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/cyborg": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/green": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/marisa": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/mime": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/purple": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/rainbow": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/random": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/red": "cosmetic",
+  "/obj/item/clothing/shoes/sneakers/yellow": "cosmetic",
+  "/obj/item/clothing/shoes/swagshoes": "cosmetic",
+  "/obj/item/clothing/shoes/winterboots/ice_boots/ice_trail": "literal only"
+ }
+}

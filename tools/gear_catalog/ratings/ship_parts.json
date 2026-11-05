@@ -1,0 +1,198 @@
+{
+ "category": "ship_parts",
+ "groups": [
+  "construction console speed disks",
+  "repair swarm",
+  "construction console automation disks",
+  "construction console tool disks",
+  "account ship parts"
+ ],
+ "items": {
+  "/obj/item/ship_construction_upgrade/area": {
+   "confidence": "high",
+   "group": "construction console automation disks",
+   "hash": "51d85997996094fa",
+   "name": "ship construction upgrade: area construction",
+   "rank": 1,
+   "reason": "Lets the console build in 2x2 and 3x3 brushes and queue the work. Big jobs get quick. Includes the job queue.",
+   "tier": "green"
+  },
+  "/obj/item/ship_construction_upgrade/decal": {
+   "confidence": "high",
+   "group": "construction console tool disks",
+   "hash": "ae9bb8ea4647ec0b",
+   "name": "ship construction upgrade: decal painter",
+   "rank": 5,
+   "reason": "Lets the console paint decals. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/ship_construction_upgrade/queue": {
+   "confidence": "high",
+   "group": "construction console automation disks",
+   "hash": "a41842908b031bb6",
+   "name": "ship construction upgrade: job queue",
+   "rank": 2,
+   "reason": "Lets the console hold up to 128 build jobs while you move around. Saves labor.",
+   "tier": "green"
+  },
+  "/obj/item/ship_construction_upgrade/repair": {
+   "confidence": "medium",
+   "group": "repair swarm",
+   "hash": "d1002d823105b96d",
+   "name": "ship construction upgrade: repair swarm",
+   "rank": 1,
+   "reason": "Lets the console record hull damage and send repair drones to rebuild it from the ship's silo. A ship that fixes itself is a clear step up, and it's the disk the drones need.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_construction_upgrade/rld": {
+   "confidence": "high",
+   "group": "construction console tool disks",
+   "hash": "cc37915249183010",
+   "name": "ship construction upgrade: rapid lighting",
+   "rank": 4,
+   "reason": "Lets the console place lights. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/ship_construction_upgrade/rpd": {
+   "confidence": "high",
+   "group": "construction console tool disks",
+   "hash": "cff361349dcb1cdb",
+   "name": "ship construction upgrade: rapid piping",
+   "rank": 2,
+   "reason": "Lets the console lay pipes. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/ship_construction_upgrade/rtd": {
+   "confidence": "high",
+   "group": "construction console tool disks",
+   "hash": "df272cbebc5a4acb",
+   "name": "ship construction upgrade: tile placer (rapid tiling)",
+   "rank": 3,
+   "reason": "Lets the console lay floor tiles. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/ship_construction_upgrade/servo": {
+   "confidence": "high",
+   "group": "construction console speed disks",
+   "hash": "3fd7dca99bd9b439",
+   "name": "ship construction upgrade: fabrication servos",
+   "rank": 4,
+   "reason": "Cuts a quarter off console build times. Saves labor.",
+   "tier": "green"
+  },
+  "/obj/item/ship_construction_upgrade/servo/mk2": {
+   "confidence": "high",
+   "group": "construction console speed disks",
+   "hash": "750ea6927f0b33ed",
+   "name": "ship construction upgrade: fabrication servos mk2",
+   "rank": 3,
+   "reason": "Halves console build times. A wall still takes a second, so it helps rebuilding more than fighting.",
+   "tier": "green"
+  },
+  "/obj/item/ship_construction_upgrade/servo/mk3": {
+   "confidence": "medium",
+   "group": "construction console speed disks",
+   "hash": "6525a10eab6bbe42",
+   "name": "ship construction upgrade: fabrication servos mk3",
+   "rank": 2,
+   "reason": "Cuts console build times by 80%, so a wall takes under half a second. Nearly all of what the next disk does.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_construction_upgrade/servo/mk4": {
+   "confidence": "medium",
+   "group": "construction console speed disks",
+   "hash": "f34f1339c2f44f7d",
+   "name": "ship construction upgrade: instant fabrication",
+   "rank": 1,
+   "reason": "Removes every build delay on the console. Walls go up the moment you ask, so one person can seal a breach or cut off boarders in the middle of a fight. 800 research points.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_construction_upgrade/tray": {
+   "confidence": "high",
+   "group": "construction console tool disks",
+   "hash": "d61a1575011a0713",
+   "name": "ship construction upgrade: T-ray scanner",
+   "rank": 1,
+   "reason": "Lets the console drone see pipes and cables under the floor. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/ship_parts/combat": {
+   "confidence": "medium",
+   "group": "account ship parts",
+   "hash": "e38116107d27a40d",
+   "name": "combat ship parts",
+   "rank": 4,
+   "reason": "No power in a round: account currency for unlocking hulls, themes and modules, banked in an extraction case. The most common class, since pirates and the arena pay in it. Green caches carry them and every player gets one free per round, so a green crew can earn them.",
+   "tier": "green"
+  },
+  "/obj/item/ship_parts/misc": {
+   "confidence": "medium",
+   "group": "account ship parts",
+   "hash": "14b96fbafbc8e01c",
+   "name": "miscellaneous ship parts",
+   "rank": 3,
+   "reason": "No power in a round: account currency for unlocking hulls, themes and modules, banked in an extraction case. Found in expedition loot and freight crates. Green caches carry them and every player gets one free per round, so a green crew can earn them.",
+   "tier": "green"
+  },
+  "/obj/item/ship_parts/science": {
+   "confidence": "medium",
+   "group": "account ship parts",
+   "hash": "bcbdb4e197a9f58f",
+   "name": "science ship parts",
+   "rank": 1,
+   "reason": "No power in a round: account currency for unlocking hulls, themes and modules, banked in an extraction case. Found in medical, research and occult loot. Green caches carry them and every player gets one free per round, so a green crew can earn them.",
+   "tier": "green"
+  },
+  "/obj/item/ship_parts/trade": {
+   "confidence": "medium",
+   "group": "account ship parts",
+   "hash": "c1501538167d7b9e",
+   "name": "trade ship parts",
+   "rank": 2,
+   "reason": "No power in a round: account currency for unlocking hulls, themes and modules, banked in an extraction case. Found in industrial and wardrobe loot. Green caches carry them and every player gets one free per round, so a green crew can earn them.",
+   "tier": "green"
+  },
+  "/obj/item/ship_repair_drone_part/arm": {
+   "confidence": "medium",
+   "group": "repair swarm",
+   "hash": "0b3f78426c191197",
+   "name": "repair drone fabricator arm",
+   "rank": 2,
+   "reason": "One of four parts that build a repair drone. Rated as the drone: up to 12 of them rebuild recorded hull tiles on their own, paid for from the silo.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_repair_drone_part/chassis": {
+   "confidence": "medium",
+   "group": "repair swarm",
+   "hash": "e3e6a7a2454c6e87",
+   "name": "ship repair drone chassis",
+   "rank": 2,
+   "reason": "One of four parts that build a repair drone. Rated as the drone: up to 12 of them rebuild recorded hull tiles on their own, paid for from the silo.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_repair_drone_part/controller": {
+   "confidence": "medium",
+   "group": "repair swarm",
+   "hash": "14d43a22580b2d9a",
+   "name": "repair drone controller board",
+   "rank": 2,
+   "reason": "One of four parts that build a repair drone. Rated as the drone: up to 12 of them rebuild recorded hull tiles on their own, paid for from the silo.",
+   "tier": "yellow"
+  },
+  "/obj/item/ship_repair_drone_part/propulsion": {
+   "confidence": "medium",
+   "group": "repair swarm",
+   "hash": "6a7cb14062b4d500",
+   "name": "repair drone propulsion unit",
+   "rank": 2,
+   "reason": "One of four parts that build a repair drone. Rated as the drone: up to 12 of them rebuild recorded hull tiles on their own, paid for from the silo.",
+   "tier": "yellow"
+  }
+ },
+ "method": "Console disks are judged on what they let a crew survive or do mid-fight rather than how much labor they save; base build times are only 1 to 4 seconds, which is what makes the top speed disks matter. Ship parts have no power in a round, so they are placed by who should be able to get them.",
+ "unrated": {
+  "/obj/item/ship_construction_upgrade": "no route",
+  "/obj/item/ship_parts": "abstract",
+  "/obj/item/ship_repair_drone_part": "abstract"
+ }
+}

@@ -1,0 +1,1827 @@
+{
+ "category": "medical",
+ "groups": [
+  "revival",
+  "medipens",
+  "combat drugs",
+  "poisons and street drugs",
+  "injectors and syringes",
+  "patches and gels",
+  "dressings",
+  "healing pills",
+  "medkits",
+  "advanced surgery",
+  "basic surgery",
+  "scanners",
+  "blood"
+ ],
+ "items": {
+  "/obj/item/autopsy_scanner": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "861ec0995fdec509",
+   "name": "autopsy scanner",
+   "rank": 7,
+   "reason": "For dissections and the research experiments that want them.",
+   "tier": "none"
+  },
+  "/obj/item/blood_filter": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "969d55a4162728d5",
+   "name": "blood filter",
+   "rank": 5,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/blood_scanner": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "57de6f82ea854547",
+   "name": "hemoanalytic scanner",
+   "rank": 6,
+   "reason": "Reads blood problems and common medicines in a patient. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/bonesetter": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "68595f0e27eb105e",
+   "name": "bonesetter",
+   "rank": 4,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/cautery": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "a995bf03344ef30a",
+   "name": "cautery",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/cautery/advanced": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "0f96c5c428b39ef3",
+   "name": "searing tool",
+   "rank": 10,
+   "reason": "Searing tool: Does the work of two surgery tools about a third faster than basic ones. 400 research points, no reputation. For doctors, not fights.",
+   "tier": "green"
+  },
+  "/obj/item/cautery/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "67f83f80a2601e2a",
+   "name": "alien cautery",
+   "rank": 4,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/cautery/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "adf3046caf69f0fa",
+   "name": "cautery",
+   "rank": 15,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/cautery/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "e9da09c657163045",
+   "name": "savage cautery",
+   "rank": 21,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/circular_saw": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "d62ba7956e6863b0",
+   "name": "circular saw",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/circular_saw/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "1c10b3d0e290cd7e",
+   "name": "alien saw",
+   "rank": 5,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/circular_saw/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "25f64de75e9c1bd9",
+   "name": "circular saw",
+   "rank": 16,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/circular_saw/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "fec3e568395870a3",
+   "name": "jagged bonesaw",
+   "rank": 22,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/defibrillator": {
+   "confidence": "high",
+   "group": "revival",
+   "hash": "125fcc61b3c40964",
+   "name": "defibrillator",
+   "rank": 9,
+   "reason": "Revives a fresh corpse at the cost of your back slot, and thick chest clothing blocks it. Comes with no cell. Prints at round start for about 65 cr of material.",
+   "tier": "green"
+  },
+  "/obj/item/defibrillator/compact": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "17facd7ef5ab034c",
+   "name": "compact defibrillator",
+   "rank": 6,
+   "reason": "A revive that fits on the belt or in a bag, so the medic keeps the back slot. Comes with no cell. Prints after 160 research points.",
+   "tier": "yellow"
+  },
+  "/obj/item/defibrillator/compact/combat/loaded": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "f95bc62c29c35fa8",
+   "name": "combat defibrillator",
+   "rank": 2,
+   "reason": "Revives through armor, never needs charging, recharges in 2.5 s. One touch of the paddles is also 60 stamina and a 7.5 s knockdown with no wind-up. Two hands, melee only. On one enemy ship.",
+   "tier": "red"
+  },
+  "/obj/item/defibrillator/compact/combat/loaded/nanotrasen": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "7e5d82be060a3a18",
+   "name": "elite Nanotrasen defibrillator",
+   "rank": 3,
+   "reason": "The combat defibrillator in Nanotrasen colors: same revive through armor, same knockdown touch. One ship room has it.",
+   "tier": "red"
+  },
+  "/obj/item/defibrillator/compact/loaded": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "0cf36971711a4c08",
+   "name": "compact defibrillator",
+   "rank": 5,
+   "reason": "A revive that fits on the belt or in a bag, so the medic keeps the back slot. This one has its cell. Two hulls carry one.",
+   "tier": "yellow"
+  },
+  "/obj/item/defibrillator/loaded": {
+   "confidence": "high",
+   "group": "revival",
+   "hash": "c56fc2fc56d44e00",
+   "name": "defibrillator",
+   "rank": 8,
+   "reason": "Anchor. Revives a fresh corpse at the cost of your back slot, and thick chest clothing blocks it. Common on hulls, and a cargo crate of two costs 1,000 cr.",
+   "tier": "green"
+  },
+  "/obj/item/healthanalyzer": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "a42afbe6944095a2",
+   "name": "health analyzer",
+   "rank": 2,
+   "reason": "Shows a patient's damage at a click. Standard doctor's tool.",
+   "tier": "none"
+  },
+  "/obj/item/healthanalyzer/advanced": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "c11587397b2b9fa7",
+   "name": "advanced health analyzer",
+   "rank": 1,
+   "reason": "Reads organs, wounds and chemicals in a patient. Better doctoring, no fight power. 400 cr in a yellow shop, or prints after 160 research points.",
+   "tier": "green"
+  },
+  "/obj/item/healthanalyzer/simple": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "b7f69cb72b0c6e9a",
+   "name": "wound analyzer",
+   "rank": 3,
+   "reason": "Reads wounds and makes the next treatment of a scanned wound work better. Comes free in kits.",
+   "tier": "none"
+  },
+  "/obj/item/healthanalyzer/simple/disease": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "bbbdbfe8e44a103a",
+   "name": "disease state analyzer",
+   "rank": 5,
+   "reason": "Reads diseases. Comes free in the toxin kit.",
+   "tier": "none"
+  },
+  "/obj/item/healthanalyzer/simple/miner": {
+   "confidence": "high",
+   "group": "scanners",
+   "hash": "b7f69cb72b0c6e9a",
+   "name": "mining wound analyzer",
+   "rank": 4,
+   "reason": "The same wound analyzer, in a miner's box.",
+   "tier": "none"
+  },
+  "/obj/item/hemostat": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "83c4b7f97cb059e1",
+   "name": "hemostat",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/hemostat/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "4dc13bbe65b2bc49",
+   "name": "alien hemostat",
+   "rank": 2,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/hemostat/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "3824dbf1bee3a40a",
+   "name": "hemostat",
+   "rank": 13,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/hemostat/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "e09e66baa4f20379",
+   "name": "cruel hemostat",
+   "rank": 19,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/patch/aiuri": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "a8a21b08f40e0726",
+   "name": "aiuri patch (burn)",
+   "rank": 4,
+   "reason": "A small burn heal in 1.5 s. Comes by the handful in kits.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/patch/libital": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "c41663ce14461dce",
+   "name": "libital patch (brute)",
+   "rank": 3,
+   "reason": "A small brute heal in 1.5 s. Comes by the handful in kits.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/patch/synthflesh": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "4eff917baf293e9a",
+   "name": "synthflesh patch",
+   "rank": 2,
+   "reason": "25 brute and 25 burn on the spot in 1.5 s, for half that in toxin. The best patch; comes in advanced kits.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/aranesp": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "5db62d6a1db52c16",
+   "name": "smooth pill",
+   "rank": 6,
+   "reason": "50 s of fast stamina recovery that blunts disablers, at the cost of some toxin and air. About 3 s to start.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/applicator/pill/cyanide": {
+   "confidence": "medium",
+   "group": "poisons and street drugs",
+   "hash": "482255ad7215d842",
+   "name": "cyanide pill",
+   "rank": 5,
+   "reason": "50 units of poison in a pill. Someone has to swallow it, so it takes a captive or a fool. Ruin find.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/epinephrine": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "c00d1e771209cf60",
+   "name": "epinephrine pill",
+   "rank": 2,
+   "reason": "Epinephrine in a pill, a little slower to act than a pen.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/happy": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "bdcde32233466ae5",
+   "name": "happy pill",
+   "rank": 11,
+   "reason": "Sugar and space drugs. A party favor.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/insulin": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "dcbff77ce9ca9cf0",
+   "name": "insulin pill",
+   "rank": 24,
+   "reason": "Lowers blood sugar. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/iron": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "64db55a62ac94486",
+   "name": "iron pill",
+   "rank": 17,
+   "reason": "Slowly restores blood.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/lsd": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "2a28ce465596c7af",
+   "name": "sunshine pill",
+   "rank": 13,
+   "reason": "Hallucinations and nothing useful.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/maintenance": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "aee25d199196b685",
+   "name": "maintenance pill",
+   "rank": 15,
+   "reason": "A mystery pill with a random chemical inside. A gamble, not gear.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/maintenance/achievement": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "2356b7dfd712663c",
+   "name": "maintenance pill",
+   "rank": 16,
+   "reason": "A mystery pill with a random chemical inside, found in maintenance junk. A gamble, not gear.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/mannitol": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "54f5c7d80cac125b",
+   "name": "mannitol pill",
+   "rank": 13,
+   "reason": "Repairs brain damage.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/morphine": {
+   "confidence": "medium",
+   "group": "poisons and street drugs",
+   "hash": "114c9d668c0c5958",
+   "name": "morphine pill",
+   "rank": 8,
+   "reason": "30 units of painkiller, enough to run while hurt and then pass out. Only useful in small doses or on someone else.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/multiver": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "344d135732473b84",
+   "name": "multiver pill",
+   "rank": 7,
+   "reason": "Purges poison and toxin damage.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/mutadone": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "048b83661a7a8687",
+   "name": "mutadone pill",
+   "rank": 19,
+   "reason": "Cures mutations.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/neurine": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "3747312518548456",
+   "name": "neurine pill",
+   "rank": 14,
+   "reason": "Treats brain traumas. Only from a random cargo crate.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/penacid": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "75d258fddba70624",
+   "name": "pentetic acid pill",
+   "rank": 9,
+   "reason": "Flushes radiation and poison.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/potassiodide": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "193d3786077f51a3",
+   "name": "potassium iodide pill",
+   "rank": 11,
+   "reason": "Clears radiation.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/prescription_stimulant": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "a00f2cb404a099f7",
+   "name": "prescription stimulant pill",
+   "rank": 13,
+   "reason": "Mild stun and sleep resistance for about 25 s. About 3 s to start.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/probital": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "e99e25da5d285bc4",
+   "name": "Probital pill",
+   "rank": 4,
+   "reason": "Heals brute at the cost of tiring you. In the brute kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/psicodine": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "a2680e21f3069f32",
+   "name": "psicodine pill",
+   "rank": 21,
+   "reason": "Calms the nerves and clears hallucinations. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/sansufentanyl": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "e9fd3e1973728c2f",
+   "name": "sansufentanyl pill",
+   "rank": 23,
+   "reason": "For one inherited illness, with confusion and dizziness as side effects. Harmful otherwise.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/applicator/pill/stimulant": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "8fce96ed933c1f9b",
+   "name": "stimulant pill",
+   "rank": 9,
+   "reason": "Ephedrine and coffee: the stimpack's speed and hand spasms, about 3 s to start. Ruin find.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/applicator/pill/tox": {
+   "confidence": "medium",
+   "group": "poisons and street drugs",
+   "hash": "3d17eb85f23ef5b7",
+   "name": "toxins pill",
+   "rank": 6,
+   "reason": "50 units of plain toxin in a pill. Same catch as any poison pill: they have to swallow it.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/applicator/pill/zoom": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "1d8adbb39b56ff75",
+   "name": "yellow pill",
+   "rank": 11,
+   "reason": "Stuns end twice as fast for 50 s, with a brief kick of speed. About 3 s to start.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/blood": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "2e2dbd1db7955abd",
+   "name": "blood pack",
+   "rank": 11,
+   "reason": "Empty blood bag.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/a_minus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "d38706fc9e47f702",
+   "name": "blood pack",
+   "rank": 5,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/a_plus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "45e8179f6c80e7e4",
+   "name": "blood pack",
+   "rank": 4,
+   "reason": "Restores lost blood to a matching patient. Cargo sells it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/b_minus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "7fb951a850796660",
+   "name": "blood pack",
+   "rank": 7,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/b_plus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "4b307ff1616c412d",
+   "name": "blood pack",
+   "rank": 6,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/ethereal": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "3312370f325ad659",
+   "name": "blood pack",
+   "rank": 9,
+   "reason": "Liquid electricity for an ethereal patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/lizard": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "ed78a7e770fc25e3",
+   "name": "blood pack",
+   "rank": 8,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/o_minus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "682b567b10c4a9c9",
+   "name": "blood pack",
+   "rank": 2,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/o_plus": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "c7045f7469cc1db5",
+   "name": "blood pack",
+   "rank": 3,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/random": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "4b307ff1616c412d",
+   "name": "blood pack",
+   "rank": 10,
+   "reason": "Restores lost blood to a matching patient. Some ships stock it and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/blood/universal": {
+   "confidence": "high",
+   "group": "blood",
+   "hash": "74ff73dd3ee0d223",
+   "name": "blood pack",
+   "rank": 1,
+   "reason": "Restores lost blood to a matching patient. No shop, ruin or played hull has it, and there is no power in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/chem_pack": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "47c21e58c3d4518b",
+   "name": "intravenous medicine bag",
+   "rank": 11,
+   "reason": "Empty IV bag for a drip stand.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/hypospray/cmo": {
+   "confidence": "medium",
+   "group": "injectors and syringes",
+   "hash": "c4716f985d60614b",
+   "name": "hypospray",
+   "rank": 2,
+   "reason": "Refillable instant injector holding 60 units, 5 to a jab, that starts with slow all-round healing and can't be destroyed. Thick suits stop it. Two hulls start with one.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/hypospray/combat": {
+   "confidence": "medium",
+   "group": "injectors and syringes",
+   "hash": "5d040dea34d028ac",
+   "name": "combat stimulant injector",
+   "rank": 1,
+   "reason": "Instant jabs through any armor, nine doses of healing, and you can refill it with anything, poison included. The best injector there is. In the marine vendor of the Phalanx armory module, and dropped by one pirate boss.",
+   "tier": "red"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "1438078fbf60fc04",
+   "name": "epinephrine medipen",
+   "rank": 7,
+   "reason": "Anchor. Stops crit from slowly killing you for over 3 minutes and slows bleeding. 150 cr in the green shop, and on nearly every hull.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/atropine": {
+   "confidence": "medium",
+   "group": "medipens",
+   "hash": "76b42a78d44c3b9c",
+   "name": "atropine autoinjector",
+   "rank": 3,
+   "reason": "Pulls a downed patient back above zero on its own, about 1 brute, burn and toxin a second, for over 3 minutes. Does nothing while you are on your feet.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/blood_loss": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "3659d4b500094785",
+   "name": "hypovolemic-response autoinjector",
+   "rank": 9,
+   "reason": "Epinephrine plus blood replacement and clotting, for someone bleeding out. Only in a cargo variety crate.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/ekit": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "14c7c64c6d7c66e8",
+   "name": "emergency first-aid autoinjector",
+   "rank": 8,
+   "reason": "An epinephrine pen with a little more in it. Comes in emergency kits and cargo's 100 cr two-pack.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/methamphetamine": {
+   "confidence": "high",
+   "group": "combat drugs",
+   "hash": "3e261b320e387652",
+   "name": "methamphetamine medipen",
+   "rank": 2,
+   "reason": "About a minute of the fastest running there is, stuns ending three times as fast, with mannitol to cover the brain damage. One voucher.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/morphine": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "48dffbf22b6fc679",
+   "name": "morphine medipen",
+   "rank": 12,
+   "reason": "Run at full speed while hurt for about a minute before drowsiness sets in. 200 cr.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/oxandrolone": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "f6f96583bd1bf5de",
+   "name": "oxandrolone medipen",
+   "rank": 6,
+   "reason": "One click heals burns quickly while you carry over 25, up to about 200 over 100 s. Not sold alone; it comes in the burn kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/penacid": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "f0dc279c85bd57ca",
+   "name": "pentetic acid medipen",
+   "rank": 11,
+   "reason": "Flushes radiation and poison. Comes in the toxin kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/penthrite": {
+   "confidence": "medium",
+   "group": "medipens",
+   "hash": "13e39fc29234dae8",
+   "name": "penthrite autoinjector",
+   "rank": 2,
+   "reason": "For 50 s you stand and fight down to about -60 health, healing while below zero. Explodes if epinephrine or atropine is in your blood, and several common pens carry epinephrine.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/pumpup": {
+   "confidence": "high",
+   "group": "combat drugs",
+   "hash": "3271c50338029d86",
+   "name": "maintenance pump-up",
+   "rank": 14,
+   "reason": "37 s of batons barely working and no pain, with jitters and some toxin. No speed. Common in maintenance junk.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/salacid": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "cb0f031bf449e196",
+   "name": "salicylic acid medipen",
+   "rank": 5,
+   "reason": "One click heals brute quickly while you carry over 25 of it, up to about 200 over 100 s. Not sold alone; it comes in the brute kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/salbutamol": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "677d3e8a5568b835",
+   "name": "salbutamol medipen",
+   "rank": 10,
+   "reason": "Clears suffocation damage, for anyone caught without air. Comes in the oxygen kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/stimpack": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "bfc7210443c09b53",
+   "name": "stimpack medipen",
+   "rank": 3,
+   "reason": "100 s of fast running and quicker stun recovery, but your hands spasm and drop anything bigger than a pistol about every 20 s. Better for running than fighting.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/stimulants": {
+   "confidence": "high",
+   "group": "combat drugs",
+   "hash": "8ceb3b8160a6724f",
+   "name": "stimulant medipen",
+   "rank": 1,
+   "reason": "Over 8 minutes of much faster running, stuns ending four times as fast, batons barely working, steady stamina recovery and healing when badly hurt. The best drug on this list, and it can't be brewed. Two vouchers.",
+   "tier": "red"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/survival": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "132bb5ca6887e3c4",
+   "name": "survival emergency medipen",
+   "rank": 4,
+   "reason": "One click heals about 60 brute and 40 burn over 40 s, with epinephrine and temperature control. The best cheap pen: 300 cr in the green shop.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/survival/luxury": {
+   "confidence": "medium",
+   "group": "medipens",
+   "hash": "942bcafc6403d94c",
+   "name": "luxury medipen",
+   "rank": 1,
+   "reason": "One click: 50 s of fighting on below zero health, then most of your brute and burn healed within about 100 s. A second life in a pocket. 750 mining points, no limit.",
+   "tier": "red"
+  },
+  "/obj/item/reagent_containers/hypospray/medipen/tuberculosiscure": {
+   "confidence": "high",
+   "group": "medipens",
+   "hash": "aeb76c2174c12f49",
+   "name": "BVAK autoinjector",
+   "rank": 13,
+   "reason": "Cures one disease and does nothing else. Part of a grenade kit on an enemy ship.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/medigel": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "14ec21b8422394f8",
+   "name": "medical gel",
+   "rank": 8,
+   "reason": "Empty spray bottle.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/medigel/aiuri": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "b35c42fea192719e",
+   "name": "medical gel (aiuri)",
+   "rank": 6,
+   "reason": "A spray bottle of six small burn heals. Only in a ruin vendor.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/medigel/libital": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "016a622ff3f0de3a",
+   "name": "medical gel (libital)",
+   "rank": 5,
+   "reason": "A spray bottle of six small brute heals. Only in a ruin vendor.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/medigel/sterilizine": {
+   "confidence": "high",
+   "group": "patches and gels",
+   "hash": "b13d426c65f0baf3",
+   "name": "sterilizer gel",
+   "rank": 7,
+   "reason": "Sterilizer spray for surgery. No healing in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/medigel/synthflesh": {
+   "confidence": "medium",
+   "group": "patches and gels",
+   "hash": "ad0061160b18c5cc",
+   "name": "medical gel (synthflesh)",
+   "note": "One application sprays the whole 60u of synthflesh (5 or 10 selectable) after a 3 s delay. Synthflesh heals 1.25 brute and 1.25 burn per unit (up to 75 each from one gel) and deals toxin equal to half of what it healed. A full gel unhusks a burn-husked body only if its burn damage was about 125 or less beforehand; the gel's own code only adds a warning when a husk's burns are over 125.",
+   "rank": 1,
+   "reason": "One 3 s spray heals up to 75 brute and 75 burn for half that in toxin, and can fix a burned-out husk. One in each drug vendor; a chem lab can brew more.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "7d8333d8c2308772",
+   "name": "syringe",
+   "rank": 10,
+   "reason": "Empty 15-unit syringe. Prints at round start for almost nothing.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/syringe/antiviral": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "d266eb6858498a0e",
+   "name": "syringe (spaceacillin)",
+   "rank": 9,
+   "reason": "Spaceacillin, which helps fend off disease. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/syringe/bluespace": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "623f712bf1c45c03",
+   "name": "bluespace syringe",
+   "rank": 4,
+   "reason": "Holds 60 units and moves 20 at a time. A big syringe for doctors, and it won't fit a syringe gun.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/bath_salts": {
+   "confidence": "low",
+   "group": "combat drugs",
+   "hash": "3ffa9ca765324818",
+   "name": "unlabeled syringe",
+   "rank": 7,
+   "reason": "75 s of total stun immunity, but you stagger at random, hallucinate and take heavy brain damage. Ruin find. Hard to judge without seeing it in a fight.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/fentanyl": {
+   "confidence": "low",
+   "group": "poisons and street drugs",
+   "hash": "86ce5e9c86431372",
+   "name": "unlabeled syringe",
+   "rank": 3,
+   "reason": "One shot from a syringe or syringe gun: brain and toxin damage, then asleep from about 36 s until it wears off two minutes later. Ruin find.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/krokodil": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "6f16592757d20bab",
+   "name": "unlabeled syringe",
+   "rank": 9,
+   "reason": "Improves the mood and little else at this dose. Ruin find.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/methamphetamine": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "9f81abc875c7923c",
+   "name": "unlabeled syringe",
+   "rank": 4,
+   "reason": "The meth pen's high for 100 s, from a slow syringe with nothing to stop the brain damage. Ruin find.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/morphine": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "a8dd8f5f3693e674",
+   "name": "unlabeled syringe",
+   "rank": 7,
+   "reason": "A shot of painkiller: run at full speed while hurt, then fall asleep after about a minute and a half. Ruin find.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/contraband/space_drugs": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "59db587aa2d7e540",
+   "name": "unlabeled syringe",
+   "rank": 10,
+   "reason": "Hallucinations and nothing useful.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/syringe/convermol": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "3c984529e1b7e780",
+   "name": "syringe (convermol)",
+   "rank": 7,
+   "reason": "A syringe that repairs suffocation damage. Comes in the oxygen kit.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/crude": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "52b614405ec3f712",
+   "name": "crude syringe",
+   "rank": 9,
+   "reason": "A flimsy wooden syringe that holds very little.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/syringe/epinephrine": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "05193ccfb7f83735",
+   "name": "syringe (epinephrine)",
+   "rank": 6,
+   "reason": "A syringe of epinephrine for someone in crit. No shop, ruin or played hull has it.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/lazarus_line": {
+   "confidence": "high",
+   "group": "revival",
+   "hash": "fbd2f45e6d9e3082",
+   "name": "Lazarus line",
+   "rank": 1,
+   "reason": "Authored unique, one use. Brings back any corpse with a working brain, however long dead or burned, fully healed. They take 10% more damage for the rest of the round.",
+   "tier": "above"
+  },
+  "/obj/item/reagent_containers/syringe/lethal": {
+   "confidence": "medium",
+   "group": "poisons and street drugs",
+   "hash": "34d122f5aa1bfa78",
+   "name": "lethal injection syringe",
+   "rank": 4,
+   "reason": "Empty, and injects up to 50 units at once. With a chem lab that's a big dose of anything. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/lethal/choral": {
+   "confidence": "medium",
+   "group": "poisons and street drugs",
+   "hash": "40a9181cbc09e25c",
+   "name": "lethal injection syringe",
+   "rank": 1,
+   "reason": "50 units of sedative injected at once: asleep in about 20 s, dead within 3 minutes unless treated. Needs 3 s on someone without a thick suit. Ruin find.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe/lethal/execution": {
+   "confidence": "low",
+   "group": "poisons and street drugs",
+   "hash": "8739298a300e58bf",
+   "name": "lethal injection syringe",
+   "rank": 2,
+   "reason": "50 units of acid and poison injected at once, enough to kill anyone not treated quickly. Needs 3 s on someone without a thick suit. A single ruin has one.",
+   "tier": "yellow"
+  },
+  "/obj/item/reagent_containers/syringe/mod": {
+   "confidence": "medium",
+   "group": "injectors and syringes",
+   "hash": "6d06da38ea7ea0b6",
+   "name": "MOD injector syringe",
+   "rank": 5,
+   "reason": "30 units injected at once through thick suits, from a MOD suit's injector module.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/piercing": {
+   "confidence": "medium",
+   "group": "injectors and syringes",
+   "hash": "ba2e6436b65ab551",
+   "name": "piercing syringe",
+   "rank": 3,
+   "reason": "10-unit syringe that goes through thick suits, which lets a syringe gun hit armored targets. 160 research points, and each costs diamond.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/syringe/syriniver": {
+   "confidence": "high",
+   "group": "injectors and syringes",
+   "hash": "b66d43c504192423",
+   "name": "syringe (syriniver)",
+   "rank": 8,
+   "reason": "A syringe that purges toxins. Comes in the toxin kit.",
+   "tier": "green"
+  },
+  "/obj/item/retractor": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "44b8519c9b15a39f",
+   "name": "retractor",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/retractor/advanced": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "b8dd96738985ab05",
+   "name": "mechanical pinches",
+   "rank": 9,
+   "reason": "Mechanical pinches: Does the work of two surgery tools about a third faster than basic ones. 400 research points, no reputation. For doctors, not fights.",
+   "tier": "green"
+  },
+  "/obj/item/retractor/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "3385e65c865ad8ff",
+   "name": "alien retractor",
+   "rank": 3,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/retractor/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "f62b38dfcb616e07",
+   "name": "retractor",
+   "rank": 14,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/retractor/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "67888fddebeeb3c6",
+   "name": "twisted retractor",
+   "rank": 20,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/scalpel": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "4de5e1593f3b472e",
+   "name": "scalpel",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/scalpel/advanced": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "d63055e32e66a097",
+   "name": "laser scalpel",
+   "rank": 8,
+   "reason": "Laser scalpel: Does the work of two surgery tools about a third faster than basic ones. 400 research points, no reputation. For doctors, not fights.",
+   "tier": "green"
+  },
+  "/obj/item/scalpel/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "986c1a05fb236ad5",
+   "name": "alien scalpel",
+   "rank": 1,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/scalpel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "5264714a5d42791f",
+   "name": "scalpel",
+   "rank": 12,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/scalpel/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "9286b043fbcc0160",
+   "name": "hungry scalpel",
+   "note": "Hits against undead-type mobs in combat mode do 10 extra damage (its force again). As a cruel tool it gives awake patients the bad-surgery mood even when the step succeeds, and cuts morbid-curiosity surgery steps by 30% for surgeons with the morbid trait; the arm-implant version has toolspeed 0.5.",
+   "rank": 18,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/shears": {
+   "confidence": "medium",
+   "group": "basic surgery",
+   "hash": "31026741e4fd8ad2",
+   "name": "amputation shears",
+   "note": "Aimed at a limb (or a tail via groin) of a carbon mob with combat mode off, it begins a 15 s amputation that does nothing if interrupted. The time is halved if the patient is unconscious, dead or incapacitated, x1.5 if they are jittering, x0.7 for morbid users. Chest cannot be amputated and limb-proof (no-dismember) targets refuse; otherwise it is a force 12 sharp hit.",
+   "rank": 2,
+   "reason": "Takes a limb off in 15 s, half that if they're out. Any interruption wastes it. A niche tool for the cruel, from a hull vendor's premium shelf.",
+   "tier": "green"
+  },
+  "/obj/item/shockpaddles/mod": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "607f8a8b57ccc2d9",
+   "name": "MOD defibrillator gauntlets",
+   "note": "Used wielded on a patient's chest. A revive takes 3 s to place and 2 s to charge, then revives a dead patient who is not husked, is under 180 brute and 180 burn, has a working heart and brain and is not blacklisted, leaving them at -50 health; on a live patient in cardiac arrest it restarts the heart. Thick chest clothing aborts it unless the unit is a combat model. The MOD gauntlets recharge 5 s (combat version 2.5 s) and drain suit power per success. Only the combat (Syndicate) gauntlets can harm: in combat mode, after 3 s, 50 burn, a heart attack and 10 s paralysis; right-click gives 60 stamina damage and a 7.5 s knockdown.",
+   "rank": 7,
+   "reason": "Revive built into a MOD suit, nothing extra to carry. Thick chest clothing blocks it. Comes in a module sold for 2,100 cr and a voucher, or printed.",
+   "tier": "yellow"
+  },
+  "/obj/item/shockpaddles/syndicate/mod": {
+   "confidence": "medium",
+   "group": "revival",
+   "hash": "2e83a6bacf807297",
+   "name": "MOD combat defibrillator gauntlets",
+   "note": "Used wielded on a patient's chest. A revive takes 3 s to place and 2 s to charge, then revives a dead patient who is not husked, is under 180 brute and 180 burn, has a working heart and brain and is not blacklisted, leaving them at -50 health; on a live patient in cardiac arrest it restarts the heart. Thick chest clothing aborts it unless the unit is a combat model. The MOD gauntlets recharge 5 s (combat version 2.5 s) and drain suit power per success. Only the combat (Syndicate) gauntlets can harm: in combat mode, after 3 s, 50 burn, a heart attack and 10 s paralysis; right-click gives 60 stamina damage and a 7.5 s knockdown.",
+   "rank": 4,
+   "reason": "Combat defibrillator paddles built into a MOD suit: revive through armor and the knockdown touch, paid from suit power. Only found on enemy ships.",
+   "tier": "red"
+  },
+  "/obj/item/stack/medical/aloe": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "eb2ccff877c64d55",
+   "name": "aloe cream",
+   "rank": 13,
+   "reason": "3 brute and 3 burn per use, 20 uses. A single ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/bandage": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "5d167fc8478e2616",
+   "name": "first aid bandage",
+   "rank": 9,
+   "reason": "One use, 25 brute. Comes in boxes of five, and a box is 150 cr from cargo.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/bandage/makeshift": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "5d167fc8478e2616",
+   "name": "makeshift bandage",
+   "rank": 10,
+   "reason": "A bandage crafted from cloth and a little brute medicine: one use, 25 brute.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/bone_gel": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "9cf5572863f9e667",
+   "name": "bone gel",
+   "rank": 7,
+   "reason": "Surgery supply for broken bones, five uses.",
+   "tier": "none"
+  },
+  "/obj/item/stack/medical/bone_gel/one": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "e37d5096744c8482",
+   "name": "bone gel",
+   "rank": 8,
+   "reason": "Surgery supply for broken bones, one use.",
+   "tier": "none"
+  },
+  "/obj/item/stack/medical/bruise_pack": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "c3931e5565fc79f5",
+   "name": "bruise pack",
+   "rank": 1,
+   "reason": "40 brute per use, six uses. The strongest brute dressing, and no shop sells it: ruin finds and a hacked vendor only.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/gauze": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "9c8b831d09865688",
+   "name": "medical gauze",
+   "rank": 7,
+   "reason": "Six wraps to stop bleeding and hold broken bones. 120 cr in the green shop, and peddlers carry it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/gauze/improvised": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "303e8d0c390a5250",
+   "name": "improvised gauze",
+   "rank": 8,
+   "reason": "Weaker gauze. A single ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/gauze/twelve": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "6c825ed139633e3d",
+   "name": "medical gauze",
+   "rank": 6,
+   "reason": "Twelve wraps to stop bleeding and hold broken bones. Doctors start with it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/mesh": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "f0cc72129ff4f2ad",
+   "name": "regenerative mesh",
+   "rank": 5,
+   "reason": "10 burn per use, one second on someone else, 15 uses. 180 cr in the green shop.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/mesh/advanced": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "0223683c60820ba4",
+   "name": "advanced regenerative mesh",
+   "rank": 3,
+   "reason": "15 burn per use and better infection control, 15 uses. Comes in combat kits; a chem lab can make it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/ointment": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "433e50855ad53381",
+   "name": "ointment",
+   "rank": 12,
+   "reason": "5 burn per use, eight uses. Weak next to mesh, but free from hull vendors.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/poultice": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "2af4cc104e486ef1",
+   "name": "mourning poultices",
+   "rank": 11,
+   "reason": "10 brute and 10 burn per use, 15 uses, at the cost of shortness of breath. Found on an enemy ship; a chem lab can make it.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/suture": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "5a3de2516bc5f879",
+   "name": "suture",
+   "rank": 4,
+   "reason": "Anchor. 10 brute a stitch, one second on someone else, ten uses. 180 cr in the green shop.",
+   "tier": "green"
+  },
+  "/obj/item/stack/medical/suture/medicated": {
+   "confidence": "high",
+   "group": "dressings",
+   "hash": "231bd64372ab3431",
+   "name": "medicated suture",
+   "rank": 2,
+   "reason": "15 brute a stitch and better bleeding control, ten uses. Comes in combat kits; a chem lab can make it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "5bcfd0726011f493",
+   "name": "medkit",
+   "rank": 16,
+   "reason": "An empty first aid kit with seven slots. A bag and nothing more.",
+   "tier": "none"
+  },
+  "/obj/item/storage/medkit/advanced": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "a981b1e035d8a147",
+   "name": "advanced first aid kit",
+   "rank": 2,
+   "reason": "Three synthflesh patches, two atropine pens, pentetic pills and gauze. The best kit per credit: 600 cr, stocked by the dozen.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/medkit/ancient": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "63dd96b1d2dbbaf5",
+   "name": "medkit",
+   "rank": 11,
+   "reason": "Three bruise packs, three ointments and gauze. A strong find for brute damage. Ruin only.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/brute": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "25d3ae785a12b064",
+   "name": "brute trauma treatment kit",
+   "rank": 7,
+   "reason": "Three brute patches, a fast brute pen, brute pills, gauze and a wound analyzer. 200 cr from cargo, 300 in a yellow shop.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/brute/outpost_prison": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "5b8b7a23dbd59c1c",
+   "name": "prison first aid kit",
+   "rank": 12,
+   "reason": "Two bruise packs, two sutures, gauze and a wound analyzer. Found in outpost prisons.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/coroner": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "6000dc4ad420d9da",
+   "name": "compact coroner's medkit",
+   "rank": 15,
+   "reason": "14 slots with body bags and embalming fluid. No healing in it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/medkit/emergency": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "6c27ee297794273a",
+   "name": "emergency medkit",
+   "rank": 14,
+   "reason": "Two emergency pens, a bandage, gauze, ointment, iron pills and a wound analyzer. On most hulls.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/fire": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "8ab411b167c70137",
+   "name": "burn treatment kit",
+   "rank": 8,
+   "reason": "Three burn patches, a fast burn pen, an epinephrine pen and a cooling spray. 200 cr from cargo, 300 in the green shop.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/o2": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "fd1607062098dc25",
+   "name": "oxygen deprivation treatment kit",
+   "rank": 10,
+   "reason": "Three convermol syringes, an airway pen, an epinephrine pen and iron pills. 200 cr from cargo, 300 in the green shop.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/pit_doctor": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "6dcbdc9b48562e82",
+   "name": "pit doctor's satchel",
+   "rank": 13,
+   "reason": "A plain medkit with bone gel in place of the analyzer. 1,000 cr at the Colosseum.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/regular": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "6ffeda67569b2e40",
+   "name": "medkit",
+   "rank": 6,
+   "reason": "Anchor. Two packs of sutures, two of mesh, gauze, an epinephrine pen and a wound analyzer. 300 cr in the green shop, 150 from cargo.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/surgery": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "e8bfb94cde8ff47a",
+   "name": "surgical medkit",
+   "rank": 5,
+   "reason": "A doctor's 12-slot bag: basic cutting tools, analyzer, pen, sutures and mesh. Doctors start with one, and only a red shop sells it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/surgery_syndie": {
+   "confidence": "medium",
+   "group": "medkits",
+   "hash": "4b9585d3e15146a6",
+   "name": "suspicous surgical medkit",
+   "rank": 4,
+   "reason": "Laser scalpel, pinches, searing tool and the rest of an operating kit, with a knockout drug, in 12 slots. All tools a doctor can print after 400 research points. Two vouchers.",
+   "tier": "green"
+  },
+  "/obj/item/storage/medkit/tactical": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "a8656475a3381240",
+   "name": "combat medical kit",
+   "rank": 1,
+   "reason": "21 slots: eight patches, two atropine pens, advanced mesh and sutures, bandages, basic surgery tools and an advanced analyzer. A field medic's whole kit in one bag. 1,500 cr and a voucher.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/medkit/tactical_lite": {
+   "confidence": "medium",
+   "group": "medkits",
+   "hash": "739cd8f44d9e6b8d",
+   "name": "combat first aid kit",
+   "rank": 3,
+   "reason": "Advanced analyzer, one atropine pen, advanced mesh, medicated sutures and gauze. A cut-down combat kit for one voucher.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/medkit/toxin": {
+   "confidence": "high",
+   "group": "medkits",
+   "hash": "74da1c760f1a446c",
+   "name": "toxin treatment kit",
+   "rank": 9,
+   "reason": "Three purging syringes, a pentetic pen, poison and radiation pills and a disease scanner. 200 cr from cargo, 300 only in a red shop.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "aeb1ee1fd08a0441",
+   "name": "pill bottle",
+   "rank": 25,
+   "reason": "Empty pill bottle.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/aranesp": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "d165287f46623fe3",
+   "name": "suspicious pill bottle",
+   "rank": 5,
+   "reason": "Five pills, each 50 s of fast stamina recovery that blunts disablers, at the cost of some toxin and air. About 3 s to start. 300 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/pill_bottle/epinephrine": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "f4143719f120236f",
+   "name": "bottle of epinephrine pills",
+   "rank": 1,
+   "reason": "Seven pills of epinephrine, a little slower to act than a pen.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/happy": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "04b5f9f96e7ca3d7",
+   "name": "suspicious pill bottle",
+   "rank": 12,
+   "reason": "Five pills of sugar and space drugs. A party favor.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/iron": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "66fc36f31926067a",
+   "name": "bottle of iron pills",
+   "rank": 16,
+   "reason": "Four pills that slowly restore blood. In most emergency kits.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/lsd": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "2d3a30c542583fce",
+   "name": "suspicious pill bottle",
+   "rank": 14,
+   "reason": "Five pills of hallucinations and nothing useful.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/maintenance_pill": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "ee43c9d136ff42f5",
+   "name": "bottle of maintenance pills",
+   "rank": 17,
+   "reason": "One to seven mystery pills with random chemicals inside. 75 cr. A gamble, not gear.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/maintenance_pill/full": {
+   "confidence": "high",
+   "group": "poisons and street drugs",
+   "hash": "3eaff84b216a9316",
+   "name": "bottle of maintenance pills",
+   "rank": 18,
+   "reason": "Seven mystery pills with random chemicals inside. A gamble, not gear.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/mannitol": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "1ba226d666fc1ca9",
+   "name": "bottle of mannitol pills",
+   "rank": 12,
+   "reason": "Seven pills that repair brain damage. 200 cr, red shop only.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/mining": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "61e8eba3215f889b",
+   "name": "bottle of patches",
+   "rank": 15,
+   "reason": "Three small brute patches in a bottle. From a random cargo crate.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/multiver": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "942b5214be069614",
+   "name": "bottle of multiver pills",
+   "rank": 5,
+   "reason": "Seven pills that purge poison and toxin damage. Ruin loot.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/multiver/less": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "cd64ef03311d2018",
+   "name": "bottle of multiver pills",
+   "rank": 6,
+   "reason": "Three pills that purge poison and toxin damage. In the toxin kit.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/mutadone": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "d544e76a91362d33",
+   "name": "bottle of mutadone pills",
+   "rank": 18,
+   "reason": "Seven pills that cure mutations. 400 cr, red shop only.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/naturalbait": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "c31ec35f2bc15737",
+   "name": "freshness jar",
+   "rank": 26,
+   "reason": "A jar of fishing bait that happens to be a pill bottle.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/penacid": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "e9f8ed7ab8148345",
+   "name": "bottle of pentetic acid pills",
+   "rank": 8,
+   "reason": "Three pills that flush radiation and poison. In the advanced kit, or 300 cr in a red shop.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/potassiodide": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "4cfadebcf2113520",
+   "name": "bottle of potassium iodide pills",
+   "rank": 10,
+   "reason": "Three pills that clear radiation. In the toxin kit.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/prescription_stimulant": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "28e870ed1a493344",
+   "name": "bottle of prescribed stimulant pills",
+   "rank": 12,
+   "reason": "Seven pills of mild stun and sleep resistance for about 25 s each. 400 cr.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/probital": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "18192b565dd784ac",
+   "name": "bottle of probital pills",
+   "rank": 3,
+   "reason": "Four pills that heal brute at the cost of tiring you. In the brute kit.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pill_bottle/psicodine": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "1aeb82cf4d76cf55",
+   "name": "bottle of psicodine pills",
+   "rank": 20,
+   "reason": "Seven pills that calm the nerves and clear hallucinations. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/sansufentanyl": {
+   "confidence": "high",
+   "group": "healing pills",
+   "hash": "1fc730dd9914eb41",
+   "name": "bottle of experimental medication",
+   "rank": 22,
+   "reason": "Six pills for one inherited illness, with confusion and dizziness as side effects. Harmful otherwise.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pill_bottle/stimulant": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "cfbbd9282a35950b",
+   "name": "bottle of stimulant pills",
+   "rank": 8,
+   "reason": "Five pills of ephedrine and coffee: five doses of the stimpack's speed and hand spasms, about 3 s to start. Ruin find.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/pill_bottle/zoom": {
+   "confidence": "medium",
+   "group": "combat drugs",
+   "hash": "33ef19729767fa73",
+   "name": "suspicious pill bottle",
+   "rank": 10,
+   "reason": "Five pills that make stuns end twice as fast for 50 s, with a brief kick of speed. About 3 s to start. 300 cr.",
+   "tier": "green"
+  },
+  "/obj/item/surgery_tray": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "6a4fb55101dfd49f",
+   "name": "surgery tray",
+   "rank": 9,
+   "reason": "Empty folding cart for tools. Two rods and a sheet of silver.",
+   "tier": "none"
+  },
+  "/obj/item/surgery_tray/deployed": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "ac1ee4f1e30547f4",
+   "name": "surgery tray",
+   "rank": 10,
+   "reason": "Empty folding cart already standing in a ruin.",
+   "tier": "none"
+  },
+  "/obj/item/surgery_tray/full": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "3a2338fc3448234a",
+   "name": "surgery tray",
+   "rank": 1,
+   "reason": "A full set of basic surgery tools on a folding cart, and it slows you while carried. 1,200 cr from cargo.",
+   "tier": "green"
+  },
+  "/obj/item/surgical_drapes": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "18a647c1be9f7470",
+   "name": "surgical drapes",
+   "rank": 6,
+   "reason": "Plain surgery supply that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/surgical_processor/mod": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "b8db0755402950f9",
+   "name": "MOD surgical processor",
+   "rank": 11,
+   "reason": "A MOD suit computer that stores surgeries you download and runs them anywhere. Comes in a printable module.",
+   "tier": "green"
+  },
+  "/obj/item/surgical_processor/mod/preloaded": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "15d7ee9285a7b869",
+   "name": "MOD surgical processor",
+   "rank": 7,
+   "reason": "A MOD suit computer already holding body upgrades, the top tend-wounds surgery and brainwashing, which research otherwise hides behind an alien find. Comes in a module sold for 2,100 cr and two vouchers.",
+   "tier": "yellow"
+  },
+  "/obj/item/surgicaldrill": {
+   "confidence": "high",
+   "group": "basic surgery",
+   "hash": "b257668fe29a39f8",
+   "name": "surgical drill",
+   "rank": 3,
+   "reason": "Plain surgery tool that prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/surgicaldrill/alien": {
+   "confidence": "medium",
+   "group": "advanced surgery",
+   "hash": "84ab6c020b374b9d",
+   "name": "alien drill",
+   "rank": 6,
+   "reason": "Alien surgery tool, five times the speed of a basic one, which turns long operations and tend-wounds healing into seconds. The research stays hidden until the crew finds an alien item, then costs 920 points in all.",
+   "tier": "yellow"
+  },
+  "/obj/item/surgicaldrill/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "aac3ddae02adcd96",
+   "name": "surgical drill",
+   "rank": 17,
+   "reason": "Part of the surgical arm implant: twice basic tool speed, always on you. Rate it with the implant.",
+   "tier": "green"
+  },
+  "/obj/item/surgicaldrill/cruel/augment": {
+   "confidence": "high",
+   "group": "advanced surgery",
+   "hash": "18d72258af0a7773",
+   "name": "tearing drill",
+   "rank": 23,
+   "reason": "Part of the morbid surgical arm implant: twice basic tool speed, and rough on awake patients. Rate it with the implant.",
+   "tier": "green"
+  }
+ },
+ "method": "Each item against what a player would pick instead, then the whole category, then the gun and eyewear anchors. Healing and drug numbers come from reading the chemicals' code (one body tick is 2 s, one pen dose lasts until metabolized); no formula, because nothing here scores like a gun.",
+ "unrated": {
+  "/obj/item/blood_filter/cruel": "no route",
+  "/obj/item/bonesetter/cruel": "no route",
+  "/obj/item/bonesetter/cyborg": "no route",
+  "/obj/item/cautery/cruel": "no route",
+  "/obj/item/cautery/cyborg": "no route",
+  "/obj/item/cautery/prt": "no route",
+  "/obj/item/circular_saw/cruel": "no route",
+  "/obj/item/circular_saw/cyborg": "no route",
+  "/obj/item/defibrillator/compact/combat": "no route",
+  "/obj/item/healthanalyzer/rad_laser": "no route",
+  "/obj/item/hemostat/cruel": "no route",
+  "/obj/item/hemostat/cyborg": "no route",
+  "/obj/item/hemostat/supermatter": "no route",
+  "/obj/item/reagent_containers/applicator": "abstract",
+  "/obj/item/reagent_containers/applicator/patch": "no route",
+  "/obj/item/reagent_containers/applicator/patch/ondansetron": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/brute": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/bruteburn": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/bruteplus": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/burn": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/burnplus": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/clown": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/colonthree": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/exclamation": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/four": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/monkey": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/omni": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/one": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/oxygen": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/oxygenplus": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/question": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/three": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/toxin": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/toxinplus": "no route",
+  "/obj/item/reagent_containers/applicator/patch/style/two": "no route",
+  "/obj/item/reagent_containers/applicator/pill": "no route",
+  "/obj/item/reagent_containers/applicator/pill/adminordrazine": "no route",
+  "/obj/item/reagent_containers/applicator/pill/gravitum": "no route",
+  "/obj/item/reagent_containers/applicator/pill/happinesspsych": "no route",
+  "/obj/item/reagent_containers/applicator/pill/lsdpsych": "no route",
+  "/obj/item/reagent_containers/applicator/pill/mannitol/braintumor": "no route",
+  "/obj/item/reagent_containers/applicator/pill/ondansetron": "no route",
+  "/obj/item/reagent_containers/applicator/pill/oxandrolone": "no route",
+  "/obj/item/reagent_containers/applicator/pill/paxpsych": "no route",
+  "/obj/item/reagent_containers/applicator/pill/salbutamol": "no route",
+  "/obj/item/reagent_containers/applicator/pill/salicylic": "no route",
+  "/obj/item/reagent_containers/applicator/pill/shadowtoxin": "no route",
+  "/obj/item/reagent_containers/applicator/pill/spaceacillin": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/blackwhite": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/bluetealflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/greenlimeflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/greenpurpleflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/greenwhite": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/happy": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/limelat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/limewhite": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/purpleflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/purplered": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/purpleyellow": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/red": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/redflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/redwhite": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/redyellowflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/teal": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/tealbrown": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/tealflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/white": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/whiteflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/whitered": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/yellowflat": "no route",
+  "/obj/item/reagent_containers/applicator/pill/style/yellowpurpleflat": "no route",
+  "/obj/item/reagent_containers/blood/podperson": "no route",
+  "/obj/item/reagent_containers/blood/snail": "no route",
+  "/obj/item/reagent_containers/blood/toxin": "no route",
+  "/obj/item/reagent_containers/hypospray": "no route",
+  "/obj/item/reagent_containers/hypospray/combat/empty": "no route",
+  "/obj/item/reagent_containers/hypospray/combat/heresypurge": "no route",
+  "/obj/item/reagent_containers/hypospray/combat/nanites": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/gore": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/invisibility": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/magillitis": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/mutadone": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/snail": "no route",
+  "/obj/item/reagent_containers/hypospray/medipen/stimpack/traitor": "no route",
+  "/obj/item/reagent_containers/syringe/bioterror": "no route",
+  "/obj/item/reagent_containers/syringe/calomel": "no route",
+  "/obj/item/reagent_containers/syringe/contraband": "no route",
+  "/obj/item/reagent_containers/syringe/contraband/saturnx": "no route",
+  "/obj/item/reagent_containers/syringe/crude/blastoff": "no route",
+  "/obj/item/reagent_containers/syringe/crude/mushroom": "no route",
+  "/obj/item/reagent_containers/syringe/crude/tribal": "no route",
+  "/obj/item/reagent_containers/syringe/gluttony": "no route",
+  "/obj/item/reagent_containers/syringe/mulligan": "no route",
+  "/obj/item/reagent_containers/syringe/multiver": "no route",
+  "/obj/item/reagent_containers/syringe/oxandrolone": "no route",
+  "/obj/item/reagent_containers/syringe/penacid": "no route",
+  "/obj/item/reagent_containers/syringe/plasma": "no route",
+  "/obj/item/reagent_containers/syringe/salacid": "no route",
+  "/obj/item/reagent_containers/syringe/spider_extract": "no route",
+  "/obj/item/reagent_containers/syringe/vestige_precision": "no route",
+  "/obj/item/retractor/cruel": "no route",
+  "/obj/item/retractor/cyborg": "no route",
+  "/obj/item/scalpel/cruel": "no route",
+  "/obj/item/scalpel/cyborg": "no route",
+  "/obj/item/scalpel/supermatter": "no route",
+  "/obj/item/shockpaddles": "uncreatable",
+  "/obj/item/shockpaddles/cyborg": "no route",
+  "/obj/item/shockpaddles/syndicate": "uncreatable",
+  "/obj/item/shockpaddles/syndicate/cyborg": "no route",
+  "/obj/item/shockpaddles/syndicate/nanotrasen": "uncreatable",
+  "/obj/item/stack/medical": "abstract",
+  "/obj/item/stack/medical/aloe/fresh": "no route",
+  "/obj/item/stack/medical/bruise_pack/vestige_sitter": "no route",
+  "/obj/item/stack/medical/ointment/vestige_sitter": "no route",
+  "/obj/item/storage/medkit/ancient/heirloom": "no route",
+  "/obj/item/storage/medkit/tactical/premium": "no route",
+  "/obj/item/storage/pill_bottle/happinesspsych": "no route",
+  "/obj/item/storage/pill_bottle/immunodeficiency": "no route",
+  "/obj/item/storage/pill_bottle/lsdpsych": "no route",
+  "/obj/item/storage/pill_bottle/mannitol/braintumor": "no route",
+  "/obj/item/storage/pill_bottle/neurine": "no route",
+  "/obj/item/storage/pill_bottle/ondansetron": "no route",
+  "/obj/item/storage/pill_bottle/paxpsych": "no route",
+  "/obj/item/surgery_tray/full/advanced": "no route",
+  "/obj/item/surgery_tray/full/deployed": "no route",
+  "/obj/item/surgery_tray/full/morgue": "no route",
+  "/obj/item/surgery_tray/full/morgue/deployed": "no route",
+  "/obj/item/surgical_drapes/cyborg": "no route",
+  "/obj/item/surgical_processor": "no route",
+  "/obj/item/surgical_processor/mod/emergency": "no route",
+  "/obj/item/surgicaldrill/cruel": "no route",
+  "/obj/item/surgicaldrill/cyborg": "no route"
+ }
+}
