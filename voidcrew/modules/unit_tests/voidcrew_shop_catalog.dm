@@ -573,6 +573,7 @@
 			/datum/shop_sku/general/penacid_bottle,
 			/datum/shop_sku/general/magboots,
 			/datum/shop_sku/general/pepper_spray,
+			/datum/shop_sku/general/sunglasses,
 			/datum/shop_sku/general/shock_coils,
 			/datum/shop_sku/general/second_wind,
 			/datum/shop_sku/general/syndie_soap,

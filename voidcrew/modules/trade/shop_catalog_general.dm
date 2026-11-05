@@ -87,6 +87,7 @@
 		/datum/shop_sku/general/combat_knife,
 		/datum/shop_sku/general/shortsword,
 		/datum/shop_sku/general/pepper_spray,
+		/datum/shop_sku/general/sunglasses,
 		/datum/shop_sku/general/armor_vest,
 		/datum/shop_sku/general/helmet,
 		// Fuel & Gas
@@ -831,6 +832,13 @@
 	price_credits = 450
 	stock_min = 2
 	stock_max = 4
+
+/datum/shop_sku/general/sunglasses
+	category = "Survival & EVA"
+	item_path = /obj/item/clothing/glasses/sunglasses
+	price_credits = 150
+	stock_min = 3
+	stock_max = 5
 
 /datum/shop_sku/general/armor_vest
 	category = "Arms"
