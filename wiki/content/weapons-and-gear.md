@@ -62,9 +62,10 @@ Kit research needs crew [reputation](zone-reputation.md):
 
 | Research | Unlocks | Reputation required |
 |---|---|---|
-| Electric Weaponry | Tesla, ion and temperature kits | 4 |
-| Advanced Beam Weaponry | Advanced energy gun and X-ray kits | 11 |
-| Illegal Technology | Energy crossbow kit and rapid syringe gun | 22 |
+| Electric Weaponry | Advanced energy gun, ion and temperature kits | 4 |
+| Advanced Beam Weaponry | Tesla and X-ray kits | 11 |
+| Restricted Technology | Energy crossbow kit | 11 |
+| Illegal Technology | Rapid syringe gun | 22 |
 | Unregulated Bluespace Research | **Event Horizon** kit | 22 |
 | Illumination Applications | Photon cannon kit | None |
 
@@ -76,11 +77,11 @@ The Event Horizon recharges itself and fires a long-range beam that opens a brie
 
 Traders sell ammunition, and the [research tree](research.md) unlocks magazines and specialty loads. A 50-round L6 SAW magazine costs **50 iron, 10 titanium, 10 plasma and 5 plastic sheets** before lathe discounts. Its 80-point node requires Exotic Ammunition and Automatic Ammunition. Fully upgraded lathes reduce the material cost to 40%.
 
-Pistol, revolver, shotgun shell and rifle-clip ammunition needs no reputation. Magazines for SMGs, rifles and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research, and Sarge won't sell you C-20r or WT-550 magazines without it; L6, Bulldog, sniper and explosive ammunition need 11.
+Pistol, revolver and shotgun shell ammunition needs no reputation. Rifle clips and magazines for SMGs and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research, and Sarge won't sell you C-20r or WT-550 magazines without it; L6, Bulldog, sniper, .223, Thompson drum and explosive ammunition need 11.
 
 **No Quarter** uses heavy cartridges, which fit no other gun. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
 
-Sarge sells ordinary **firing pins for 250 credits**. Fit one to a gun that lacks a pin. Removing a fitted pin destroys it. **Riot Supression** research also unlocks the printable **Test-Range Firing Pin**, which only allows firing near a test range.
+Sarge sells ordinary **firing pins for 250 credits**. Fit one to a gun that lacks a pin. Removing a fitted pin destroys it.
 
 ## Suits and rare prizes
 

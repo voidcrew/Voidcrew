@@ -96,6 +96,32 @@
 		/datum/techweb_node/ship_combat_interdictor = 2,
 		/datum/techweb_node/ship_combat_siphon = 2,
 		/datum/techweb_node/ship_combat_ew = 2,
+		/datum/techweb_node/mech_combat = 1,
+		/datum/techweb_node/mech_assault = 2,
+		/datum/techweb_node/mech_infiltrator = 2,
+		/datum/techweb_node/night_vision = 1,
+		/datum/techweb_node/riot_supression = 1,
+		/datum/techweb_node/cyber/combat_implants = 2,
+		/datum/techweb_node/ship_repair_swarm = 1,
+		/datum/techweb_node/ship_fabrication_mk3 = 1,
+		/datum/techweb_node/ship_fabrication_mk4 = 2,
+		/datum/techweb_node/tech_shells = 2,
+		/datum/techweb_node/thermal_rounds = 1,
+		/datum/techweb_node/heavy_shells = 2,
+		/datum/techweb_node/heavy_magazines = 2,
+		/datum/techweb_node/grenade_casings = 1,
+		/datum/techweb_node/mech_honker = 2,
+		/datum/techweb_node/mod_recon = 1,
+		/datum/techweb_node/mod_covert = 2,
+		/datum/techweb_node/anomaly_combat = 2,
+		/datum/techweb_node/bluespace_bags = 1,
+		/datum/techweb_node/cyber/xray_eyes = 2,
+		/datum/techweb_node/breaching_tools = 1,
+		/datum/techweb_node/quantum_swapper = 1,
+		/datum/techweb_node/resonance_mining = 1,
+		/datum/techweb_node/crew_tracking = 1,
+		/datum/techweb_node/restricted_tech = 2,
+		/datum/techweb_node/desynchronization = 2,
 	)
 	var/gated = 0
 	for(var/node_id in SSresearch.techweb_nodes)
@@ -103,8 +129,87 @@
 		TEST_ASSERT_EQUAL(node.zone_permission, expected[node.type] || 0, "Unexpected standing requirement on [node_id]")
 		if(node.zone_permission)
 			gated++
-	TEST_ASSERT_EQUAL(gated, 18, "The direct-research gate must cover exactly eighteen nodes")
+	TEST_ASSERT_EQUAL(gated, length(expected), "The direct-research gate covers the wrong number of nodes")
+	TEST_ASSERT_EQUAL(gated, 44, "The direct-research gate must cover exactly forty-four nodes")
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("nanite_military").type, /datum/techweb_node/nanite_combat, "Military nanites changed id")
+
+/// Gated gear left the open nodes it used to share, and only sits on its new node.
+/datum/unit_test/voidcrew_research_gate_moves/Run()
+	var/list/moved = list(
+		"tech_shells" = list("techshotshell"),
+		"thermal_rounds" = list("c38_hotshot", "c38_hotshot_mag", "c38_iceblox", "c38_iceblox_mag"),
+		"heavy_shells" = list("vc_ammo_shotgun_stun", "vc_ammo_shotgun_meteor"),
+		"heavy_magazines" = list("vc_ammo_m223", "vc_ammo_tommygun"),
+		"grenade_casings" = list("large_grenade", "adv_grenade"),
+		"mech_honker_research" = list("mech_honker"),
+		"mod_recon" = list("mod_sonar"),
+		"mod_covert" = list("mod_stealth", "mod_projectile_dampener"),
+		"anomaly_combat" = list("perceptomatrix", "cybernetic_heart_anomalock"),
+		"bluespace_bags" = list("bag_holding"),
+		"xray_eyes" = list("ci-xray", "ci-xray-moth"),
+		"breaching_tools" = list("jawsoflife", "mech_rcd"),
+		"quantum_swapper" = list("swapper"),
+		"resonance_mining" = list("superresonator"),
+		"crew_tracking" = list("crewpinpointer"),
+		"restricted_tech" = list("largecrossbow", "borg_syndicate_module"),
+		"desynchronization" = list("desynchronizer"),
+		"automatic_ammo" = list("vc_strilka310_clip", "suppressor"),
+		"specialist_ammo" = list("sec_Islug", "vc_ammo_smartgun", "c38_flare", "c38_flare_mag"),
+		TECHWEB_NODE_ELECTRIC_WEAPONS = list("nuclear_gun"),
+		TECHWEB_NODE_BEAM_WEAPONS = list("stunrevolver"),
+	)
+	for(var/node_id in moved)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
+		TEST_ASSERT_NOTNULL(node, "Missing research node [node_id]")
+		for(var/design_id in moved[node_id])
+			TEST_ASSERT(design_id in node.design_ids, "[node_id] lost [design_id]")
+			var/datum/design/design = SSresearch.techweb_designs[design_id]
+			TEST_ASSERT_NOTNULL(design, "Missing design [design_id]")
+			TEST_ASSERT_EQUAL(length(design.unlocked_by), 1, "[design_id] is also on another node, which goes around [node_id]")
+	// Every node a gated node leads to is gated with it, so this gear has to stay on an open branch.
+	var/list/still_public = list(
+		"handcuffs_s", "bola_energy", "clown_firing_pin", "pin_loyalty", "pyro_grenade",
+		"c38_trac", "c38_trac_mag", "c38_true_strike", "c38_true_strike_mag", "flechetteshell",
+		"mech_ccw_armor", "mech_emp_armor", "mech_disabler", "mech_repair_droid",
+		"mech_banana_mortar", "mech_mousetrap_mortar",
+		"mod_mirage_grenade", "mod_mag_harness", "mod_pathfinder", "mod_holster",
+		"ci-antidrop", "ci-toolset", "ci-surgery", "ci-nutrimentplus",
+		"magboots", "rcd_loaded", "bolter_wrench", "drill", "drill_diamond", "jackhammer",
+		"gravitygun", "wormholeprojector", "polymorph_belt", "ai_power_upgrade", "ai_cam_upgrade",
+	)
+	for(var/design_id in still_public)
+		var/datum/design/design = SSresearch.techweb_designs[design_id]
+		TEST_ASSERT_NOTNULL(design, "Missing design [design_id]")
+		var/open = FALSE
+		for(var/node_id in design.unlocked_by)
+			if(public_route(SSresearch.techweb_nodes[node_id]))
+				open = TRUE
+				break
+		TEST_ASSERT(open, "[design_id] needs standing or a hidden node to research")
+	// Nothing fires these, or takes these, so nothing prints them.
+	for(var/design_id in list("pin_testing", "pin_explorer"))
+		var/datum/design/design = SSresearch.techweb_designs[design_id]
+		TEST_ASSERT_EQUAL(length(design.unlocked_by), 0, "[design_id] came back on a research node")
+	for(var/design_id in list("vc_ammo_harpoon", "vc_ammo_gyrojet", "vc_ammo_m10mm_ap", "vc_ammo_m10mm_hp", "vc_ammo_m10mm_fire"))
+		TEST_ASSERT_NULL(SSresearch.techweb_designs[design_id], "[design_id] came back")
+	var/datum/design/incendiary = SSresearch.techweb_designs["incendiary_slug"]
+	TEST_ASSERT(!(RND_CATEGORY_HACKED in incendiary.category), "A hacked autolathe goes around Specialist Ammunition for incendiary slugs")
+	var/datum/design/surveillance = SSresearch.techweb_designs["ai_cam_upgrade"]
+	for(var/material in surveillance.materials)
+		TEST_ASSERT(!istype(material, /datum/material/diamond), "The surveillance upgrade still needs diamond")
+	var/datum/techweb_node/firearms = SSresearch.techweb_nodes[TECHWEB_NODE_MECH_FIREARMS]
+	TEST_ASSERT_EQUAL(firearms.research_costs[TECHWEB_POINT_TYPE_GENERIC], TECHWEB_TIER_4_POINTS, "Exosuit Firearms changed price")
+
+/// Whether a node and everything it requires can be researched with no standing, by points alone.
+/datum/unit_test/voidcrew_research_gate_moves/proc/public_route(datum/techweb_node/node)
+	if(node.zone_permission || node.hidden)
+		return FALSE
+	if(node.starting_node)
+		return TRUE
+	for(var/prereq_id in node.prereq_ids)
+		if(!public_route(SSresearch.techweb_nodes[prereq_id]))
+			return FALSE
+	return TRUE
 
 /datum/unit_test/voidcrew_zone_research/direct/Run()
 	var/obj/structure/overmap/ship/ship = zone_ship(run_loc_floor_bottom_left)

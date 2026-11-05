@@ -146,6 +146,8 @@ See [Ship Combat](ship-combat.md), [Ship Upgrades](ship-upgrades.md) and [Nanite
 
 Some research needs [reputation](zone-reputation.md) before you can unlock it: Automatic Ammunition, C-20r and WT-550 ammunition and Specialist Ammunition need 4; L6, Bulldog, sniper, Explosive and Experimental Ammunition need 11; Military Nanite Programming needs 22.
 
-Shuttle Shield Systems, Interdiction Systems, Ship Data Siphon and Electronic Warfare Systems need 11. Electric Weaponry needs 4 reputation for ion, temperature and tesla kits. Advanced Beam Weaponry needs 11 for X-ray and advanced energy gun kits. Illegal Technology needs 22 for the energy crossbow kit and rapid syringe gun, as does Unregulated Bluespace Research for the Event Horizon kit. Each requirement covers every design on that node.
+Shuttle Shield Systems, Interdiction Systems, Ship Data Siphon and Electronic Warfare Systems need 11. Electric Weaponry needs 4 reputation for ion, temperature and advanced energy gun kits. Advanced Beam Weaponry needs 11 for X-ray and tesla kits, and Restricted Technology needs 11 for the energy crossbow kit. Illegal Technology needs 22 for the rapid syringe gun, as does Unregulated Bluespace Research for the Event Horizon kit.
+
+Riot Supression, Combat Exosuits, Night Vision Technology, Shuttle Repair Swarm and Precision Shuttle Fabrication need 4. Assault Exosuits, Infiltration Exosuits, Combat Implants and Instant Shuttle Fabrication need 11. Each requirement covers every design on that node.
 
 Imported research still works. Copying technology does not grant reputation for other purchases.
