@@ -389,7 +389,7 @@
 	var/obj/item/organ/cyberimp/arm/toolkit/gun/laser/implant = allocate(/obj/item/organ/cyberimp/arm/toolkit/gun/laser)
 	implant.Insert(person)
 	TEST_ASSERT(implant.owner == person, "The arm implant did not go in")
-	TEST_ASSERT(!length(person.held_items - null), "The implanted gun started out in hand")
+	TEST_ASSERT(!person.get_active_held_item() && !person.get_inactive_held_item(), "The implanted gun started out in hand")
 	TEST_ASSERT(scan_now(person), "Could not start a scan")
 	TEST_ASSERT_EQUAL(checkpoint.state, "rejecting", "An implanted gun passed") // CHECKPOINT_REJECTING
 
@@ -598,6 +598,8 @@
 	outpost_seal_goods(crate)
 	TEST_ASSERT(!crate.open(buyer), "A sealed crate opened past the checkpoint")
 	crate.forceMove(lobby)
+	// A crate won't open with someone standing on its tile
+	buyer.forceMove(secured)
 	TEST_ASSERT(crate.open(buyer), "A sealed crate did not open in the lobby")
 
 /// The exit gate lets people and things out of the concourse and nothing back in
