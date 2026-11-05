@@ -133,6 +133,10 @@
 	data["outposts"] = homes
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)
+	var/list/saved_ships = list()
+	for(var/list/row as anything in GLOB.ship_saves.saves_for(user.ckey))
+		saved_ships += list(list("slot" = row["slot"], "name" = row["ship_name"], "class" = row["ship_class"], "denial" = GLOB.ship_saves.retrieve_denial(user.ckey, row["slot"])))
+	data["saved_ships"] = saved_ships
 	return data
 
 /// Both the requester and the receiving ship must be ready for another ping.
@@ -213,6 +217,13 @@
 			var/datum/callback/cb = CALLBACK(user, TYPE_PROC_REF(/mob/dead/new_player, on_upgrades_confirmed))
 			var/datum/ship_upgrade_selector/selector = new(user, null, cb)
 			selector.ui_interact(user)
+
+		if("launch_saved_ship")
+			if(user != ui.user)
+				return FALSE
+			// Reading the save sleeps, and so does the shipyard's queue.
+			ui.close()
+			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, launch_saved_ship), text2num(params["slot"]))
 
 		if("requisition_hull")
 			// Re-checked in requisition_free_hull() too - the UI is never the authority

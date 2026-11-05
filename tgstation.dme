@@ -7582,6 +7582,8 @@
 #include "voidcrew\modules\ship_purchase\transaction_helpers.dm"
 #include "voidcrew\modules\ship_saves\ship_save_capture.dm"
 #include "voidcrew\modules\ship_saves\ship_save_console.dm"
+#include "voidcrew\modules\ship_saves\ship_save_construction.dm"
+#include "voidcrew\modules\ship_saves\ship_save_lobby.dm"
 #include "voidcrew\modules\ship_saves\ship_save_store.dm"
 #include "voidcrew\modules\ship_saves\ship_saves.dm"
 #include "voidcrew\modules\ship_upgrades\_ship_upgrades.dm"

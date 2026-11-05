@@ -9,6 +9,11 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/list/cache = list()
 	/// ckey -> number of the newest load, so a slow read can't undo a save made after it started.
 	var/list/load_tickets = list()
+	/// slot_key() -> TRUE for each save being retrieved, from the lobby or any console.
+	var/list/retrievals = list()
+	/// slot_key() -> TRUE for each used save whose row hasn't been deleted yet. Reads leave these out,
+	/// so a slow or failed delete can't let one save be used twice.
+	var/list/spent_rows = list()
 
 /// The player's cached rows, or null if they aren't loaded. This is the only read ui_data may use.
 /datum/ship_saves/proc/saves_for(ckey)
@@ -25,6 +30,9 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/list/rows = GLOB.ship_save_store.read_meta(ckey)
 	// A failed read leaves what we had, and never reads as "no saves".
 	if(rows && load_tickets[ckey] == ticket)
+		for(var/list/row as anything in rows.Copy())
+			if(spent_rows[slot_key(ckey, row["slot"])])
+				rows -= list(row)
 		cache[ckey] = rows
 	GLOB.ship_economy_db.get_parts(ckey)
 	var/client/player = GLOB.directory[ckey]
@@ -83,6 +91,8 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		GLOB.ship_economy_db.refund_parts(ckey, plan)
 		return "Shipyard records are offline."
 	row["slot"] = slot
+	// The insert worked, so nothing older is left in this slot.
+	spent_rows -= slot_key(ckey, slot)
 	new_load_ticket(ckey)
 	var/list/rows = cache[ckey] || list()
 	rows += list(row)
@@ -91,3 +101,85 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	record_metric(METRIC_SHIP, "ship_saved", ckey = ckey, ship = ship, zone = ship_metric_zone(ship), subject = class, quantity = price, details = list("tiles" = tiles, "raw_bytes" = raw_bytes))
 	refresh(ckey)
 	return null
+
+/datum/ship_saves/proc/slot_key(ckey, slot)
+	return "[ckey(ckey)]:[slot]"
+
+/// One cached row, or null.
+/datum/ship_saves/proc/saved_row(ckey, slot)
+	SHOULD_NOT_SLEEP(TRUE)
+	for(var/list/row as anything in saves_for(ckey))
+		if(row["slot"] == slot)
+			return row
+	return null
+
+/**
+ * Why a save can't be retrieved now, or null. Only reads caches, so ui_data can use it.
+ * allow_busy: the caller holds this save's lock and is checking again after a wait.
+ */
+/datum/ship_saves/proc/retrieve_denial(ckey, slot, allow_busy = FALSE)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!GLOB.ship_save_store.online())
+		return "Shipyard records are offline."
+	var/list/row = saved_row(ckey, slot)
+	if(!row)
+		return "No such record."
+	if(row["format_version"] != SHIP_SAVE_FORMAT)
+		return "This record can't be read."
+	if(row["saved_round"] == text2num(GLOB.round_id))
+		return "Ready next round."
+	if(!allow_busy && retrievals[slot_key(ckey, slot)])
+		return "Already under way."
+	return null
+
+/// Claims a save for one retrieval, across the lobby and every console. FALSE if it is already claimed.
+/datum/ship_saves/proc/begin_retrieval(ckey, slot)
+	var/key = slot_key(ckey, slot)
+	if(retrievals[key])
+		return FALSE
+	retrievals[key] = TRUE
+	return TRUE
+
+/// The retrieval stopped before the save was used. It stays where it is.
+/datum/ship_saves/proc/cancel_retrieval(ckey, slot)
+	retrievals -= slot_key(ckey, slot)
+
+/**
+ * Reads a save out of the table. Sleeps. Returns a snapshot, which the caller owns and must delete,
+ * or an error for the player. Nothing is spent either way.
+ */
+/datum/ship_saves/proc/read_save(ckey, slot)
+	ckey = ckey(ckey)
+	var/payload = GLOB.ship_save_store.read_payload(ckey, slot)
+	if(!payload)
+		return "Shipyard records are offline."
+	var/datum/ship_checkpoint/snapshot = decode(payload)
+	if(!snapshot)
+		return "This record can't be read."
+	snapshot.captain_ckey = ckey
+	return snapshot
+
+/// The save has been used. It leaves the cache now and the table in the background, because a console
+/// build calls this mid-placement and must not sleep.
+/datum/ship_saves/proc/spend(ckey, slot)
+	SHOULD_NOT_SLEEP(TRUE)
+	ckey = ckey(ckey)
+	var/key = slot_key(ckey, slot)
+	retrievals -= key
+	spent_rows[key] = TRUE
+	new_load_ticket(ckey)
+	var/list/row = saved_row(ckey, slot)
+	if(row)
+		var/list/rows = cache[ckey]
+		rows -= list(row)
+	record_metric(METRIC_SHIP, "ship_retrieved", ckey = ckey, subject = row?["ship_class"], quantity = row?["tile_count"])
+	INVOKE_ASYNC(src, PROC_REF(delete_spent), ckey, slot)
+
+/datum/ship_saves/proc/delete_spent(ckey, slot)
+	if(GLOB.ship_save_store.remove(ckey, slot))
+		spent_rows -= slot_key(ckey, slot)
+	else
+		// It stays out of reads this round. Next round it would be back, so an admin should delete the row.
+		log_game("Used ship save [ckey] slot [slot] could not be deleted from the table.")
+		message_admins("Used ship save [ckey] slot [slot] could not be deleted from the table.")
+	refresh(ckey)

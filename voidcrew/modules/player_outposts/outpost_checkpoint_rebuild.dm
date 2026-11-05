@@ -62,16 +62,20 @@ GLOBAL_LIST_INIT(outpost_checkpoint_restocked, typecacheof(list(
 )))
 
 /datum/checkpoint_construction/proc/clear_stock(obj/docking_port/mobile/voidcrew/source_port)
+	checkpoint_clear_stock(source_port, snapshot?.persistent ? ship_save_restocked() : GLOB.outpost_checkpoint_restocked)
+
+/// Empties a loaded copy of everything but its fittings. Types in `restocked_types` keep what they loaded with.
+/proc/checkpoint_clear_stock(obj/docking_port/mobile/voidcrew/source_port, list/restocked_types)
 	for(var/turf/tile as anything in source_port.return_turfs())
 		if(!(get_area(tile) in source_port.shuttle_areas))
 			continue
 		for(var/atom/movable/object as anything in tile.get_all_contents())
 			if(QDELETED(object))
 				continue
-			var/restocked = is_type_in_typecache(object, GLOB.outpost_checkpoint_restocked)
+			var/restocked = is_type_in_typecache(object, restocked_types)
 			if(!restocked)
 				object.reagents?.clear_reagents()
-			if(isitem(object) && is_machine_fitting(object))
+			if(isitem(object) && checkpoint_is_machine_fitting(object))
 				continue
 			if(isitem(object) || ismob(object) || istype(object, /obj/structure/disposalholder))
 				qdel(object)

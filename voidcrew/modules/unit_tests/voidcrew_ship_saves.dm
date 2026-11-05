@@ -3,6 +3,9 @@
 #define SHIP_SAVE_TEST_PRICE_MIN 2 // SHIP_SAVE_PRICE_MIN
 #define SHIP_SAVE_TEST_PRICE_MAX 15 // SHIP_SAVE_PRICE_MAX
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
+#define SHIP_SAVE_TEST_FORMAT 1 // SHIP_SAVE_FORMAT
+/// GLOB.round_id for the length of these tests. It is null on a world with no database.
+#define SHIP_SAVE_TEST_ROUND 777
 /// One more than RESERVE_DOCK_MAX_SIZE_LONG.
 #define SHIP_SAVE_TEST_TOO_LONG 57
 
@@ -11,9 +14,12 @@
 	/// "ckey|slot" -> list("meta", "payload")
 	var/list/saved = list()
 	var/fail_writes = FALSE
+	var/fail_reads = FALSE
+	var/fail_removes = FALSE
+	var/offline = FALSE
 
 /datum/ship_save_store/fake/online()
-	return TRUE
+	return !offline
 
 /datum/ship_save_store/fake/read_meta(ckey)
 	var/list/rows = list()
@@ -27,6 +33,8 @@
 	return rows
 
 /datum/ship_save_store/fake/read_payload(ckey, slot)
+	if(fail_reads)
+		return null
 	var/list/entry = saved["[ckey]|[slot]"]
 	return entry?["payload"]
 
@@ -37,7 +45,7 @@
 	return TRUE
 
 /datum/ship_save_store/fake/remove(ckey, slot)
-	if(!saved["[ckey]|[slot]"])
+	if(fail_removes || !saved["[ckey]|[slot]"])
 		return FALSE
 	saved -= "[ckey]|[slot]"
 	return TRUE
@@ -77,9 +85,12 @@
 	var/datum/ship_economy_db/old_economy
 	var/datum/ship_save_store/fake/store
 	var/datum/ship_economy_db/fake/economy
+	var/old_round_id
 
 /datum/unit_test/voidcrew_ship_saves/New()
 	. = ..()
+	old_round_id = GLOB.round_id
+	GLOB.round_id = "[SHIP_SAVE_TEST_ROUND]"
 	old_store = GLOB.ship_save_store
 	old_saves = GLOB.ship_saves
 	old_economy = GLOB.ship_economy_db
@@ -90,6 +101,7 @@
 	GLOB.ship_economy_db = economy
 
 /datum/unit_test/voidcrew_ship_saves/Destroy()
+	GLOB.round_id = old_round_id
 	GLOB.ship_save_store = old_store
 	GLOB.ship_saves = old_saves
 	GLOB.ship_economy_db = old_economy
@@ -125,6 +137,7 @@
 	check_prices()
 	check_part_plans()
 	check_commit()
+	check_retrieval_rules()
 
 /datum/unit_test/voidcrew_ship_saves/proc/check_round_trip()
 	var/datum/ship_checkpoint/snapshot = make_snapshot()
@@ -191,6 +204,14 @@
 	TEST_ASSERT(saved.includes_object(window), "A plasma window was refused: it seals the hull")
 	var/obj/structure/grille/grille = allocate(/obj/structure/grille)
 	TEST_ASSERT(saved.includes_object(grille), "A grille was refused")
+
+	// What a ship is ordinarily furnished in stays, and a med bay keeps its table whatever it is made of.
+	var/obj/structure/table/wood/wood_table = allocate(/obj/structure/table/wood)
+	TEST_ASSERT(saved.includes_object(wood_table), "A wood table was refused")
+	var/obj/structure/chair/comfy/shuttle/shuttle_chair = allocate(/obj/structure/chair/comfy/shuttle)
+	TEST_ASSERT(saved.includes_object(shuttle_chair), "A titanium shuttle chair was refused")
+	var/obj/structure/table/optable/operating_table = allocate(/obj/structure/table/optable)
+	TEST_ASSERT(saved.includes_object(operating_table), "A silver operating table was refused")
 
 	// False walls and mineral doors stay, as plain iron.
 	var/obj/structure/falsewall/gold/fake_wall = allocate(/obj/structure/falsewall/gold)
@@ -336,6 +357,90 @@
 	saves.cache[player_ckey] = list()
 	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(275), null), "A taken slot was overwritten")
 	TEST_ASSERT_EQUAL(economy.total(), parts_before, "A duplicate key kept the payment")
+
+/// Puts a row in the table, as if saved in an earlier round unless told otherwise.
+/datum/unit_test/voidcrew_ship_saves/proc/add_stored_save(player_ckey, slot, saved_round = SHIP_SAVE_TEST_ROUND - 1, format = SHIP_SAVE_TEST_FORMAT)
+	store.saved["[player_ckey]|[slot]"] = list(
+		"meta" = list("ship_name" = "Test Hull", "ship_class" = "Test Class", "tile_count" = 10, "format_version" = format, "saved_round" = saved_round, "raw_bytes" = 1),
+		"payload" = GLOB.ship_saves.encode(make_snapshot()),
+	)
+
+/datum/unit_test/voidcrew_ship_saves/proc/check_retrieval_rules()
+	var/player_ckey = "retrievetester"
+	var/datum/ship_saves/saves = GLOB.ship_saves
+	add_stored_save(player_ckey, 1)
+	add_stored_save(player_ckey, 2, saved_round = SHIP_SAVE_TEST_ROUND)
+	add_stored_save(player_ckey, 3, format = SHIP_SAVE_TEST_FORMAT + 1)
+	saves.refresh(player_ckey)
+
+	// Every denial.
+	TEST_ASSERT_NULL(saves.retrieve_denial(player_ckey, 1), "A save from an earlier round was refused")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 2), "Ready next round.", "A save made this round was offered")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 3), "This record can't be read.", "An unknown format was offered")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, SHIP_SAVE_TEST_SLOTS + 1), "No such record.", "An empty slot was offered")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial("nobodyatall", 1), "No such record.", "An unloaded player was offered a save")
+	store.offline = TRUE
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 1), "Shipyard records are offline.", "A save was offered with the records down")
+	store.offline = FALSE
+
+	// One retrieval at a time, whoever asks.
+	TEST_ASSERT(saves.begin_retrieval(player_ckey, 1), "A free save could not be claimed")
+	TEST_ASSERT(!saves.begin_retrieval(player_ckey, 1), "One save was claimed twice")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 1), "Already under way.", "A claimed save was offered")
+	TEST_ASSERT_NULL(saves.retrieve_denial(player_ckey, 1, allow_busy = TRUE), "The holder of a claim was refused by it")
+	TEST_ASSERT(saves.begin_retrieval(player_ckey, 2), "A claim on one slot blocked another")
+	saves.cancel_retrieval(player_ckey, 2)
+	saves.cancel_retrieval(player_ckey, 1)
+	TEST_ASSERT_NULL(saves.retrieve_denial(player_ckey, 1), "A cancelled retrieval kept its claim")
+
+	// A read that can't be used costs nothing and says why.
+	store.fail_reads = TRUE
+	TEST_ASSERT_EQUAL(saves.read_save(player_ckey, 1), "Shipyard records are offline.", "A failed read was not reported")
+	store.fail_reads = FALSE
+	var/list/entry = store.saved["[player_ckey]|1"]
+	var/good_payload = entry["payload"]
+	entry["payload"] = "not json"
+	TEST_ASSERT_EQUAL(saves.read_save(player_ckey, 1), "This record can't be read.", "A junk payload was not reported")
+	entry["payload"] = good_payload
+	var/datum/ship_checkpoint/read_back = saves.read_save(player_ckey, 1)
+	TEST_ASSERT(istype(read_back), "A good payload did not read: [read_back]")
+	TEST_ASSERT_EQUAL(read_back.captain_ckey, player_ckey, "A read save does not know its owner")
+	qdel(read_back)
+	TEST_ASSERT_NOTNULL(store.saved["[player_ckey]|1"], "Reading a save spent it")
+
+	// Spending clears the row, the cache and the claim, and frees the slot.
+	TEST_ASSERT(saves.begin_retrieval(player_ckey, 1), "A free save could not be claimed")
+	saves.spend(player_ckey, 1)
+	TEST_ASSERT_NULL(saves.saved_row(player_ckey, 1), "A spent save stayed in the cache")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|1"], "A spent save stayed in the table")
+	TEST_ASSERT_EQUAL(saves.free_slot(player_ckey), 1, "A spent save did not free its slot")
+	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 1), "No such record.", "A spent save was still offered")
+	TEST_ASSERT(saves.begin_retrieval(player_ckey, 1), "Spending kept the claim")
+	saves.cancel_retrieval(player_ckey, 1)
+
+	// A delete that fails must not hand the save back on the next read.
+	store.fail_removes = TRUE
+	saves.spend(player_ckey, 2)
+	store.fail_removes = FALSE
+	TEST_ASSERT_NOTNULL(store.saved["[player_ckey]|2"], "The failed delete removed the row anyway")
+	saves.refresh(player_ckey)
+	TEST_ASSERT_NULL(saves.saved_row(player_ckey, 2), "A later read gave back a spent save")
+
+/// A lobby player with nobody connected: joining a ship needs a real client, so seating only records.
+/mob/dead/new_player/ship_save_test
+	var/obj/structure/overmap/ship/seated_on
+	var/datum/job/seated_as
+
+/mob/dead/new_player/ship_save_test/select_ship()
+	return
+
+/mob/dead/new_player/ship_save_test/AttemptSpawnOnShip(datum/job/job, obj/structure/overmap/ship/joined_ship)
+	seated_on = joined_ship
+	seated_as = job
+	return TRUE
+
+/datum/ship_checkpoint_ui/registry_test/create_retrieval_job(mob/living/user, datum/ship_checkpoint/snapshot, slot)
+	return new /datum/checkpoint_construction/saved(src, snapshot, user, slot, manual_jobs)
 
 /// The panel and the password, on a real hull in a real bay.
 /datum/unit_test/voidcrew_ship_saves_hull
@@ -498,6 +603,227 @@
 	TEST_ASSERT(test_ship.set_join_password("direct", captain), "The free setter was refused")
 	TEST_ASSERT_EQUAL(parts_held(), 10, "The free setter charged")
 
+/// Getting a saved ship back: built by drones in a bay, and loaded whole from the lobby.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval
+	var/old_round_id
+	var/old_ticker_state
+	var/list/obj/structure/overmap/ship/retrieved_ships = list()
+	var/saved_name
+	var/saved_class
+	var/saved_jobs
+
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/New()
+	. = ..()
+	old_round_id = GLOB.round_id
+	GLOB.round_id = "[SHIP_SAVE_TEST_ROUND]"
+	old_ticker_state = SSticker.current_state
+
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/Destroy()
+	GLOB.round_id = old_round_id
+	SSticker.current_state = old_ticker_state
+	for(var/obj/structure/overmap/ship/ship as anything in retrieved_ships)
+		if(!QDELETED(ship))
+			qdel(ship)
+	return ..()
+
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/registry_test/home = allocate(__IMPLIED_TYPE__)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
+	home.founder_ckey = "savecaptain"
+	TEST_ASSERT(home.load_level(), "The outpost did not load")
+	TEST_ASSERT_NULL(home.enable_ship_bays(), "The ship bay did not load")
+	var/obj/machinery/computer/ship_checkpoint/terminal = outpost_bay_shipyard_console(LAZYACCESS(home.bay_berths, 1))
+	TEST_ASSERT_NOTNULL(terminal, "The ship bay has no shipyard console")
+	var/mob/living/carbon/human/captain = make_player(get_turf(terminal), "savecaptain")
+	test_ship = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
+	TEST_ASSERT_NOTNULL(test_ship, "Could not create the hull")
+	test_ship.enlist_crewmember(captain)
+	test_ship.claimed_captain = captain.mind
+	fit_source(test_ship.shuttle)
+	var/datum/ship_checkpoint_ui/registry_test/panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
+	var/datum/outpost_berth/ship_bay/bay = home.allocate_ship_bay(test_ship)
+	TEST_ASSERT_NOTNULL(bay, "The hull was not given a bay")
+	adjust_reserve_dock_to_shuttle(bay.dock, test_ship.shuttle)
+	test_ship.shuttle.mode = SHUTTLE_PREARRIVAL
+	test_ship.shuttle.initiate_docking(bay.dock)
+	test_ship.shuttle.mode = SHUTTLE_IDLE
+	test_ship.docked = home
+	test_ship.forceMove(home)
+	test_ship.state = "idle"
+	bay.on_ship_docked(test_ship)
+
+	// A save made this round waits for the next one.
+	set_parts(40)
+	TEST_ASSERT(panel.save_ship(captain, bay), "Saving failed: [panel.error]")
+	saved_name = test_ship.name
+	saved_class = test_ship.source_template.short_name
+	saved_jobs = length(test_ship.job_definitions)
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "Ready next round.", "A ship was offered in the round it was saved")
+
+	// The same save as made last round, in every slot here and in a lobby player's first.
+	var/list/first = store.saved["savecaptain|1"]
+	var/list/first_meta = first["meta"]
+	first_meta["saved_round"] = SHIP_SAVE_TEST_ROUND - 1
+	for(var/slot in 2 to SHIP_SAVE_TEST_SLOTS)
+		store.saved["savecaptain|[slot]"] = list("meta" = first_meta.Copy(), "payload" = first["payload"])
+	store.saved["savelobby|1"] = list("meta" = first_meta.Copy(), "payload" = first["payload"])
+	GLOB.ship_saves.refresh("savecaptain")
+	GLOB.ship_saves.refresh("savelobby")
+
+	// The source is still in the bay.
+	var/list/panel_data = panel.saved_ships_data(captain)
+	var/list/listed_saves = panel_data["saves"]
+	var/list/first_listed = listed_saves[1]
+	TEST_ASSERT_EQUAL(first_listed["denial"], "The ship bay is occupied.", "The panel offered a save with the bay full")
+	TEST_ASSERT(!panel.retrieve_ship(captain, 1), "A save was built with the bay full")
+	TEST_ASSERT_EQUAL(panel.error, "The ship bay is occupied.", "A full bay gave the wrong refusal")
+	vacate_bay(home)
+	TEST_ASSERT_NULL(panel.saved_ship_retrieve_denial(captain, 1), "The panel refused a save with the bay empty")
+
+	// Stopped before the first piece: the save is untouched and can be tried again.
+	TEST_ASSERT(panel.retrieve_ship(captain, 1), "Could not start building a save: [panel.error]")
+	TEST_ASSERT_EQUAL(panel.notice, "Construction started.", "Starting a build said nothing")
+	TEST_ASSERT(!panel.working, "The panel stayed busy after starting a build")
+	var/datum/checkpoint_construction/saved/job = home.checkpoint_jobs[1]
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "Already under way.", "A save was offered while it was being built")
+	TEST_ASSERT(!panel.retrieve_ship(captain, 1), "A second click started another build")
+	TEST_ASSERT_NOTNULL(store.saved["savecaptain|1"], "The save was spent before the first piece")
+	job.abort("Stopped for the test.")
+	TEST_ASSERT(QDELETED(job), "A stopped build kept running")
+	TEST_ASSERT_NOTNULL(store.saved["savecaptain|1"], "A build stopped before its first piece spent the save")
+	TEST_ASSERT_NOTNULL(GLOB.ship_saves.saved_row("savecaptain", 1), "A build stopped before its first piece lost the cached save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "A stopped build kept its claim on the save")
+	TEST_ASSERT(bay.is_available(), "A stopped build kept the bay")
+
+	// Past the first piece the save is gone, and stopping the build does not bring it back.
+	TEST_ASSERT(panel.retrieve_ship(captain, 2), "Could not start building a save: [panel.error]")
+	job = home.checkpoint_jobs[1]
+	job.fast_forward(1)
+	TEST_ASSERT(job.committed, "The first piece did not commit the build")
+	TEST_ASSERT_NULL(store.saved["savecaptain|2"], "The first piece did not spend the save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savecaptain", 2), "The first piece left the save in the cache")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.free_slot("savecaptain"), 2, "The first piece did not free the slot")
+	job.abort("Stopped for the test.")
+	TEST_ASSERT_NULL(store.saved["savecaptain|2"], "Stopping a build gave back a spent save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savecaptain", 2), "Stopping a build put a spent save back in the cache")
+	var/deadline = world.time + 30 SECONDS
+	UNTIL(bay.is_available() || world.time > deadline)
+	TEST_ASSERT(bay.is_available(), "A terminated build never gave the bay back")
+
+	// A whole build.
+	TEST_ASSERT(panel.retrieve_ship(captain, 1), "Could not start building a save: [panel.error]")
+	job = home.checkpoint_jobs[1]
+	job.fast_forward()
+	TEST_ASSERT(QDELETED(job), "The build did not finish")
+	TEST_ASSERT_NULL(store.saved["savecaptain|1"], "A finished build left its save in the table")
+	var/obj/structure/overmap/ship/rebuilt = bay.ship
+	TEST_ASSERT_NOTNULL(rebuilt, "The finished build is not in the bay")
+	retrieved_ships += rebuilt
+	TEST_ASSERT(rebuilt.is_ship_captain(captain), "The saving captain does not command the finished ship")
+	check_retrieved(rebuilt, "Console")
+
+	// The lobby: a read that fails costs nothing.
+	SSticker.current_state = GAME_STATE_PLAYING
+	var/mob/dead/new_player/ship_save_test/lobby = allocate(__IMPLIED_TYPE__)
+	lobby.key = "savelobby"
+	store.fail_reads = TRUE
+	lobby.launch_saved_ship(1)
+	store.fail_reads = FALSE
+	TEST_ASSERT_NULL(lobby.seated_on, "A failed read seated the player on something")
+	TEST_ASSERT(!lobby.spawning_ship, "A failed read left the player stuck preparing a ship")
+	TEST_ASSERT_NOTNULL(store.saved["savelobby|1"], "A failed read spent the save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial("savelobby", 1), "A failed read kept its claim on the save")
+
+	// The lobby: the ship loads, the save goes, and the player is seated as the first job.
+	lobby.launch_saved_ship(1)
+	var/obj/structure/overmap/ship/launched = lobby.seated_on
+	TEST_ASSERT_NOTNULL(launched, "The lobby did not seat the player on the saved ship")
+	retrieved_ships += launched
+	TEST_ASSERT_EQUAL(lobby.seated_as, launched.job_slots[1], "The player was not seated in the ship's first job")
+	TEST_ASSERT(launched.password_cleared_ckeys["savelobby"], "The player is not cleared to board their own ship")
+	TEST_ASSERT_NULL(store.saved["savelobby|1"], "The lobby did not spend the save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savelobby", 1), "The lobby left the save in the cache")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.free_slot("savelobby"), 1, "The lobby did not free the slot")
+	check_retrieved(launched, "Lobby")
+
+/// What a player could try to carry between rounds: an upgraded machine, a tank of plasma beside a tank of air.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/fit_source(obj/docking_port/mobile/voidcrew/port)
+	var/list/fittings = list(/obj/machinery/autolathe, /obj/machinery/atmospherics/components/tank/plasma, /obj/machinery/atmospherics/components/tank/air)
+	for(var/turf/open/floor/tile in port.return_turfs())
+		if(!length(fittings))
+			break
+		if(!(get_area(tile) in port.shuttle_areas) || tile.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		var/fitting_type = fittings[1]
+		fittings.Cut(1, 2)
+		var/obj/machinery/fitting = new fitting_type(tile)
+		if(istype(fitting, /obj/machinery/autolathe))
+			var/datum/stock_part/old_bin = locate(/datum/stock_part/matter_bin) in fitting.component_parts
+			TEST_ASSERT_NOTNULL(old_bin, "A new autolathe has no matter bin to upgrade")
+			fitting.component_parts -= old_bin
+			fitting.component_parts += GLOB.stock_part_datums[/datum/stock_part/matter_bin/tier4]
+			fitting.RefreshParts()
+	TEST_ASSERT(!length(fittings), "The test hull had no room for [length(fittings)] fittings")
+
+/// As lose_original() does for the checkpoint tests: flies the source away and deletes it.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/vacate_bay(obj/structure/overmap/dynamic/player_outpost/home)
+	var/obj/docking_port/stationary/transit/transit = test_ship.shuttle.assigned_transit || SSshuttle.generate_transit_dock(test_ship.shuttle)
+	test_ship.shuttle.mode = SHUTTLE_PREARRIVAL
+	test_ship.shuttle.initiate_docking(transit)
+	test_ship.shuttle.mode = SHUTTLE_IDLE
+	test_ship.docked = null
+	test_ship.forceMove(get_turf(home))
+	test_ship.state = "flying"
+	home.on_ship_undock_complete(test_ship)
+	test_ship.shuttle.admin_delete_shuttle()
+
+/// Everything a retrieved ship must be, however it got here.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/check_retrieved(obj/structure/overmap/ship/ship, where)
+	TEST_ASSERT_EQUAL(ship.name, saved_name, "[where]: the ship lost its name")
+	TEST_ASSERT_EQUAL(ship.source_template.short_name, saved_class, "[where]: the ship lost its class")
+	TEST_ASSERT_EQUAL(length(ship.job_definitions), saved_jobs, "[where]: the ship lost its roster")
+	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 0, "[where]: the ship came with money")
+	TEST_ASSERT(length(ship.shuttle.spawn_points), "[where]: nobody can spawn on the ship")
+	var/lathes = 0
+	var/plasma_tanks = 0
+	var/air_tanks = 0
+	var/obj/docking_port/mobile/voidcrew/port = ship.shuttle
+	for(var/turf/tile as anything in port.return_turfs())
+		if(!(get_area(tile) in port.shuttle_areas))
+			continue
+		for(var/obj/item/loose in tile)
+			TEST_FAIL("[where]: the ship came with a loose [loose.type]")
+		for(var/obj/machinery/machine in tile)
+			if(istype(machine, /obj/machinery/autolathe))
+				lathes++
+				TEST_ASSERT_NULL(locate(/datum/stock_part/matter_bin/tier4) in machine.component_parts, "[where]: an upgraded part came back")
+			if(istype(machine, /obj/machinery/atmospherics/components/tank/plasma))
+				plasma_tanks++
+				var/obj/machinery/atmospherics/components/tank/plasma_tank = machine
+				TEST_ASSERT_EQUAL(plasma_tank.air_contents.total_moles(), 0, "[where]: a plasma tank came back with gas in it")
+			if(istype(machine, /obj/machinery/atmospherics/components/tank/air))
+				air_tanks++
+				var/obj/machinery/atmospherics/components/tank/air_tank = machine
+				TEST_ASSERT(air_tank.air_contents.total_moles() > 0, "[where]: an air tank came back empty")
+			if(istype(machine, /obj/machinery/power/apc))
+				var/obj/machinery/power/apc/controller = machine
+				TEST_ASSERT(controller.cell?.charge > 0, "[where]: an APC came back with no charged cell")
+			if(istype(machine, /obj/machinery/vending))
+				var/obj/machinery/vending/vendor = machine
+				for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
+					TEST_ASSERT_EQUAL(product.amount, 0, "[where]: a vending machine came back stocked")
+			if(istype(machine, /obj/machinery/door))
+				var/obj/machinery/door/door = machine
+				TEST_ASSERT(!length(door.req_access) && !length(door.req_one_access), "[where]: a door kept its access")
+			if(istype(machine, /obj/machinery/atmospherics/components/unary/shuttle/heater))
+				var/obj/machinery/atmospherics/components/unary/shuttle/heater/heater = machine
+				TEST_ASSERT(heater.fuel_tank?.air_contents.total_moles() > 0, "[where]: an engine heater came back with no fuel")
+	TEST_ASSERT(lathes, "[where]: the upgraded autolathe did not come back")
+	TEST_ASSERT(plasma_tanks, "[where]: the plasma tank did not come back")
+	TEST_ASSERT(air_tanks, "[where]: the air tank did not come back")
+
+#undef SHIP_SAVE_TEST_ROUND
+#undef SHIP_SAVE_TEST_FORMAT
 #undef SHIP_SAVE_TEST_GONE_PATH
 #undef SHIP_SAVE_TEST_SLOTS
 #undef SHIP_SAVE_TEST_PRICE_MIN

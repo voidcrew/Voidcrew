@@ -58,37 +58,56 @@
 
 /// Restore parts before RefreshParts calculates capacity, speed and efficiency.
 /datum/checkpoint_construction/proc/restore_machine(obj/machinery/machine, mob/living/operator)
+	if(snapshot.persistent)
+		checkpoint_restore_machine(machine, null, operator)
+		return
 	if(!machine.checkpoint_load_id || machine.checkpoint_load_id > length(snapshot.machines))
 		return
 	var/list/data = snapshot.machines[machine.checkpoint_load_id]
 	machine.checkpoint_load_id = 0
+	checkpoint_restore_machine(machine, data, operator)
+
+/// Empties a construction part of whatever it came with and fills its battery.
+/proc/checkpoint_scrub_part(obj/item/part)
+	part.reagents?.clear_reagents()
+	if(istype(part, /obj/item/tank))
+		var/obj/item/tank/tank = part
+		tank.air_contents.gases.Cut()
+	if(istype(part, /obj/item/stock_parts/power_store))
+		var/obj/item/stock_parts/power_store/battery = part
+		battery.charge = battery.maxcharge
+	if(istype(part, /obj/item/vending_refill))
+		var/obj/item/vending_refill/refill = part
+		refill.products = list()
+		refill.product_categories = list()
+		refill.contraband = list()
+		refill.premium = list()
+
+/**
+ * Puts a loaded machine's parts and supplies right. `data` is what capture_machine() kept for it.
+ * A saved ship keeps nothing per machine, so its machines stay at the default tier they initialized with.
+ */
+/proc/checkpoint_restore_machine(obj/machinery/machine, list/data, mob/living/operator)
 	if(machine.circuit)
 		// Retain the newly initialized circuit and its machine-specific configuration.
 		var/obj/item/circuitboard/board = machine.circuit
-		var/list/old_parts = machine.component_parts?.Copy() || list()
-		machine.component_parts = list(board)
-		for(var/obj/item/part in old_parts)
-			if(part != board)
-				qdel(part)
-		for(var/part_type in data["parts"])
-			if(ispath(part_type, /datum/stock_part))
-				machine.component_parts += GLOB.stock_part_datums[part_type]
-			else
-				var/obj/item/part = new part_type(machine)
-				machine.component_parts += part
-				part.reagents?.clear_reagents()
-				if(istype(part, /obj/item/tank))
-					var/obj/item/tank/tank = part
-					tank.air_contents.gases.Cut()
-				if(istype(part, /obj/item/stock_parts/power_store))
-					var/obj/item/stock_parts/power_store/battery = part
-					battery.charge = battery.maxcharge
-				if(istype(part, /obj/item/vending_refill))
-					var/obj/item/vending_refill/refill = part
-					refill.products = list()
-					refill.product_categories = list()
-					refill.contraband = list()
-					refill.premium = list()
+		if(data)
+			var/list/old_parts = machine.component_parts?.Copy() || list()
+			machine.component_parts = list(board)
+			for(var/obj/item/part in old_parts)
+				if(part != board)
+					qdel(part)
+			for(var/part_type in data["parts"])
+				if(ispath(part_type, /datum/stock_part))
+					machine.component_parts += GLOB.stock_part_datums[part_type]
+				else
+					var/obj/item/part = new part_type(machine)
+					machine.component_parts += part
+					checkpoint_scrub_part(part)
+		else
+			for(var/obj/item/part in machine.component_parts)
+				if(part != board)
+					checkpoint_scrub_part(part)
 		machine.RefreshParts()
 	if(istype(machine, /obj/machinery/vending))
 		var/obj/machinery/vending/vendor = machine
@@ -97,13 +116,13 @@
 	if(istype(machine, /obj/machinery/power/apc))
 		var/obj/machinery/power/apc/controller = machine
 		QDEL_NULL(controller.cell)
-		var/cell_type = data["cell"]
+		var/cell_type = data?["cell"] || controller.cell_type || /obj/item/stock_parts/power_store/battery/upgraded
 		controller.cell = new cell_type(controller)
 		controller.cell.charge = controller.cell.maxcharge
 		controller.update()
 	if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship))
 		var/obj/machinery/computer/camera_advanced/base_construction/ship/builder = machine
-		for(var/upgrade_type in data["construction_upgrades"])
+		for(var/upgrade_type in data?["construction_upgrades"])
 			if(!ispath(upgrade_type, /obj/item/ship_construction_upgrade) && !ispath(upgrade_type, /obj/item/rcd_upgrade) && !ispath(upgrade_type, /obj/item/rpd_upgrade))
 				continue
 			var/obj/item/disk = new upgrade_type(builder)
@@ -121,7 +140,7 @@
 
 /// Construction components and built-in radios are fittings, not cargo. Their
 /// contents are still visited separately, so a component cannot smuggle stock.
-/datum/checkpoint_construction/proc/is_machine_fitting(obj/item/item)
+/proc/checkpoint_is_machine_fitting(obj/item/item)
 	if(ismachinery(item.loc))
 		var/obj/machinery/machine = item.loc
 		if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship))
@@ -133,6 +152,10 @@
 
 /// Top off as each machine is placed; the hidden copy may have drawn power while it waited.
 /datum/checkpoint_construction/proc/provision_machine(obj/machinery/machine)
+	checkpoint_provision_machine(machine)
+
+/// Charged batteries and engine fuel, whatever the machine started with.
+/proc/checkpoint_provision_machine(obj/machinery/machine)
 	for(var/obj/item/stock_parts/power_store/battery in machine.component_parts)
 		battery.charge = battery.maxcharge
 	if(istype(machine, /obj/machinery/power/apc))

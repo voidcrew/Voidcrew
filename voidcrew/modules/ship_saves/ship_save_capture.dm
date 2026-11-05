@@ -36,6 +36,14 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 			return TRUE
 	return FALSE
 
+/// What a saved ship keeps as it loads: a rebuild's basics without plasma tanks, or a hull full of
+/// them would be gas to sell next round. Its engines run on the heater reserve instead.
+/proc/ship_save_restocked()
+	var/static/list/restocked
+	if(!restocked)
+		restocked = GLOB.outpost_checkpoint_restocked - typecacheof(/obj/machinery/atmospherics/components/tank/plasma)
+	return restocked
+
 /// Text macros are raw bytes the database connection would mangle. A saved name goes without them.
 /proc/ship_save_plain_text(text)
 	return replacetext(replacetext(text, "\improper", ""), "\proper", "")
