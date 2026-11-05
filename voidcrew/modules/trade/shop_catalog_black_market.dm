@@ -247,6 +247,7 @@
 // ===== EXPLOSIVES =====
 
 /datum/shop_sku/black_market/c4
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Explosives"
 	item_path = /obj/item/grenade/c4
 	price_vouchers = 1
@@ -255,6 +256,7 @@
 	stock_max = 4
 
 /datum/shop_sku/black_market/emp_grenade
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Explosives"
 	item_path = /obj/item/grenade/empgrenade
 	price_vouchers = 1
@@ -262,6 +264,7 @@
 	stock_max = 4
 
 /datum/shop_sku/black_market/frag_grenade
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Explosives"
 	item_path = /obj/item/grenade/frag
 	price_vouchers = 2
@@ -269,6 +272,7 @@
 	stock_max = 2
 
 /datum/shop_sku/black_market/smoke_bomb
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Explosives"
 	item_path = /obj/item/grenade/smokebomb
 	price_credits = 900
@@ -601,6 +605,7 @@
 	stock_max = 3
 
 /datum/shop_sku/black_market/stimulants
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Combat Medical"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/stimulants
 	price_vouchers = 2
@@ -678,6 +683,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/black_market/rotating/minibomb
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Explosives"
 	item_path = /obj/item/grenade/syndieminibomb
 	price_vouchers = 3
@@ -841,6 +847,7 @@
 // ===== COUNTER ARMS =====
 
 /datum/shop_sku/black_market/boarding_axe
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	item_path = /obj/item/fireaxe/boardingaxe
 	price_credits = 2400

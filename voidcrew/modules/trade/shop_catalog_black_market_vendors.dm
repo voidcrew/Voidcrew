@@ -601,6 +601,7 @@
 	price_credits = 450
 
 /datum/shop_sku/clinic/rotating/penthrite_pen
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pharmacy"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/penthrite
 	price_credits = 500

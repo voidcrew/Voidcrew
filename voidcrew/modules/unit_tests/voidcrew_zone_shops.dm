@@ -43,6 +43,24 @@
 		/datum/shop_sku/favor/field_contract_pad = 1,
 		/datum/shop_sku/favor/freight_beacon = 1,
 		/datum/shop_sku/favor/fitter_gauntlets = 1,
+		/datum/shop_sku/ripperdoc/nightshade = 1,
+		/datum/shop_sku/ripperdoc/fixers = 1,
+		/datum/shop_sku/ripperdoc/dermal_mesh = 1,
+		/datum/shop_sku/ripperdoc/hopper = 1,
+		/datum/shop_sku/ripperdoc/icepick = 1,
+		/datum/shop_sku/ripperdoc/doppler = 1,
+		/datum/shop_sku/ripperdoc/deadeye = 1,
+		/datum/shop_sku/ripperdoc/slipwire = 1,
+		/datum/shop_sku/ripperdoc/prospector = 1,
+		/datum/shop_sku/black_market/c4 = 1,
+		/datum/shop_sku/black_market/emp_grenade = 1,
+		/datum/shop_sku/black_market/frag_grenade = 1,
+		/datum/shop_sku/black_market/smoke_bomb = 1,
+		/datum/shop_sku/black_market/boarding_axe = 1,
+		/datum/shop_sku/clinic/rotating/penthrite_pen = 1,
+		/datum/shop_sku/outfitter/laser_gun = 1,
+		/datum/shop_sku/outfitter/smg_mag = 1,
+		/datum/shop_sku/outfitter/wt550_mag = 1,
 		/datum/shop_sku/fitter/rare/suit_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_jetpack_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_jump_jet = 2,
@@ -57,6 +75,11 @@
 		/datum/shop_sku/black_market/ew_suite_board = 2,
 		/datum/shop_sku/favor/skunkworks_cell = 2,
 		/datum/shop_sku/favor/maneuvering_harness = 2,
+		/datum/shop_sku/ripperdoc/coolant = 2,
+		/datum/shop_sku/ripperdoc/dead_channel = 2,
+		/datum/shop_sku/black_market/stimulants = 2,
+		/datum/shop_sku/black_market/rotating/minibomb = 2,
+		/datum/shop_sku/black_market/cutlass = 2,
 		/datum/shop_sku/black_market/mod_chassis_elite = 3,
 		/datum/shop_sku/black_market/mod_infiltrator = 3,
 		/datum/shop_sku/black_market/mod_traitor = 3,
@@ -87,7 +110,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 57, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 80, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0

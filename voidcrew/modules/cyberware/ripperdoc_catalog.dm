@@ -189,6 +189,7 @@
 	stock_max = 3
 
 /datum/shop_sku/ripperdoc/nightshade
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Street Chrome"
 	desc = "A pair of chrome low-light optics."
 	item_path = /obj/item/organ/eyes/robotic/cyberware/nightshade
@@ -235,6 +236,7 @@
 	stock_max = 2
 
 /datum/shop_sku/ripperdoc/fixers
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Street Chrome"
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	price_credits = 1800
@@ -242,6 +244,7 @@
 	stock_max = 2
 
 /datum/shop_sku/ripperdoc/dermal_mesh
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Street Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/dermal_mesh
 	price_credits = 2000
@@ -268,22 +271,26 @@
 	price_credits = 2800
 
 /datum/shop_sku/ripperdoc/hopper
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/hopper
 	price_credits = 3600
 
 /datum/shop_sku/ripperdoc/coolant
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/coolant
 	price_credits = 3600
 
 /datum/shop_sku/ripperdoc/icepick
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	desc = "A chrome forearm with a retractable data spike."
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
 	price_vouchers = 1
 
 /datum/shop_sku/ripperdoc/doppler
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/doppler
 	price_vouchers = 1
@@ -294,21 +301,25 @@
 	price_vouchers = 1
 
 /datum/shop_sku/ripperdoc/deadeye
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/eyes/robotic/cyberware/deadeye
 	price_vouchers = 2
 
 /datum/shop_sku/ripperdoc/slipwire
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/slipwire
 	price_vouchers = 2
 
 /datum/shop_sku/ripperdoc/dead_channel
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/dead_channel
 	price_vouchers = 2
 
 /datum/shop_sku/ripperdoc/prospector
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/eyes/robotic/cyberware/prospector
 	price_vouchers = 2
