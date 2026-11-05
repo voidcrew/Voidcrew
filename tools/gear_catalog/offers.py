@@ -97,6 +97,7 @@ def catalog(dm,ctx):
             elif shelf=='back room': restock='no refill; crew purchase cap for round'
             elif 'peddler' in shop: restock=event
             elif dm.is_a(sku,'/datum/shop_sku/ruin_chart'): restock=f'{event}: refill to stock_max; fresh encounter per purchase'
+            elif shelf=='core' and (dm.val(sku,'convoys_per_unit') or 1)>1: restock=f"+1 every {dm.val(sku,'convoys_per_unit')} convoys, capped at stock_max minus reservations"
             elif shelf=='core': restock=f'{event}: +max(1,round(stock_max/2)), capped at stock_max minus reservations'
             elif shelf=='weighted rotation': restock=f'{event}: every sold-out slot swaps to a different weighted pool type'
             elif dm.val(sku,'is_chart'): restock=f'{event}: no refill or replacement for this non-ruin chart'
@@ -198,7 +199,7 @@ def extra_catalog(dm,rows):
         row.update(kw); rows.append(row)
     for upgrade in dm.paths('/datum/mod_upgrade'):
         if not dm.val(upgrade,'id'): continue
-        add('MOD fitting bench',dm.val(upgrade,'name'),dm.loc(upgrade),dm.val(upgrade,'price_credits'),dm.val(upgrade,'price_vouchers'),sku_type=upgrade,outpost='Quartermain Depot; constructible bench',seller_npc='Wick / MOD fitting bench',notes='Requires '+str(dm.val(upgrade,'requires') or 'none')+'; '+str(dm.val(upgrade,'desc')),field_sources=f_sources(dm,upgrade,['price_credits','price_vouchers','requires','id']))
+        add('MOD fitting bench',dm.val(upgrade,'name'),dm.loc(upgrade),dm.val(upgrade,'price_credits'),dm.val(upgrade,'price_vouchers'),sku_type=upgrade,zone_permission=dm.val(upgrade,'zone_permission'),outpost='Quartermain Depot; constructible bench',seller_npc='Wick / MOD fitting bench',notes='Requires '+str(dm.val(upgrade,'requires') or 'none')+'; '+str(dm.val(upgrade,'desc')),field_sources=f_sources(dm,upgrade,['price_credits','price_vouchers','requires','id']))
     file='voidcrew/modules/cyberware/chrome_cradle.dm'
     add('Chrome cradle','chrome tune-up',dm.cite(file,'if(!charge_fee(patient, CYBERWARE_TUNEUP_FEE'),dm.eval('CYBERWARE_TUNEUP_FEE'),outpost='Undertow Exchange; constructible chrome cradle',seller_npc='Splice / Chrome Cradle',notes='Repair installed chrome and clear EMP scramble; charged each use')
     file='voidcrew/modules/trade/outpost_amenities.dm'

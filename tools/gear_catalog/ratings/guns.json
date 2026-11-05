@@ -1328,7 +1328,7 @@
    "name": "luxurious laser gun",
    "note": "Meant to charge the shooter 20 cr per shot after a one-time accept prompt, with the money going to no one. By code trace its pin has no owner account, is dropped out of the gun at spawn with its gun link unset, and the accept prompt then reads the gun's name from that unset link, so it likely errors and never fires (not run in game). / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
    "rank": 12,
-   "reason": "If its pin works it is a laser at 20 cr a shot. The code suggests it never fires, which needs a test.",
+   "reason": "A laser at 20 cr a shot, paid through its pin. Read from the code; nobody has fired one.",
    "score": 44,
    "tier": "yellow"
   },
@@ -1455,7 +1455,7 @@
    "name": "photon cannon",
    "note": "The bolt passes through mobs and flashes each living one it crosses at strength 3 (only 3 or more flash protection stops it, less only reduces the eye damage; bare eyes take 12-16), confuses it for 1.5 s and sparks silicons. At the end of its 20-tile range it flashes everyone within 5 tiles; its coded 40% chance of fire on each tile hangs on a signal the bolt never receives, so it likely never fires (untested). / A slow bright bolt that pierces mobs: every living thing it passes through takes a flash (intensity 3, silicons included) and 1.5 s of confusion, and silicons throw sparks. It loses a fifth of its speed on every tile of its 20-tile range, and where it ends it sparks and flashes every living mob within 5 tiles that can see it. The code also tries to leave a fire hotspot on 40% of tiles it crosses, but that handler is hooked to things entering the bolt itself, so it looks like it never fires (not confirmed in play).",
    "rank": 2,
-   "reason": "Fires a flash that beats sunglasses and welding goggles, along a line and at its end. No damage.",
+   "reason": "Fires a flash that beats sunglasses and welding goggles, along a line and at its end. The bolt passes through people and leaves a patchy trail of fire that can light them.",
    "score": 55,
    "score_inputs": {
     "judged": {

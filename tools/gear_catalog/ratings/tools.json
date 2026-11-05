@@ -1511,8 +1511,8 @@
    "name": "nanite remote control",
    "note": "Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
    "rank": 2,
-   "reason": "Should send codes to nanites, but as coded it never fires because the item can't reach its own trigger. Worth nothing until that's fixed.",
-   "tier": "none"
+   "reason": "Sends a code to the nanites of one person or everyone in view, with no cooldown. Sets off any program waiting on that code, and a kill code wipes a program. Prints for 20 cr of material.",
+   "tier": "yellow"
   },
   "/obj/item/nanite_remote/comm": {
    "confidence": "medium",
@@ -1521,8 +1521,8 @@
    "name": "nanite communication remote",
    "note": "Same as the nanite remote but sends a typed text message along with the code, which only nanite comm-type programs act on. Its sending is also in afterattack, so by my reading it never fires while the item is NOBLUDGEON. / Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
    "rank": 3,
-   "reason": "Should send messages to nanites, but has the same fault: as coded it never fires.",
-   "tier": "none"
+   "reason": "Sends text to matching nanite programs in one person or everyone in view, with no cooldown. Prints for little material.",
+   "tier": "yellow"
   },
   "/obj/item/nanite_scanner": {
    "confidence": "high",
@@ -1667,7 +1667,7 @@
    "name": "crew pinpointer",
    "rank": 1,
    "reason": "Tracks anyone with full suit sensors on, by name, enemy crews included. Prints for 25 cr of material. A real hunting tool against the careless.",
-   "tier": "green"
+   "tier": "yellow"
   },
   "/obj/item/pinpointer/material_sniffer": {
    "confidence": "medium",

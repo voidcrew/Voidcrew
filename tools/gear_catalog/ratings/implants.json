@@ -65,8 +65,8 @@
    "name": "deathrattle implant",
    "note": "When a host dies, every other host in the same implant group is told their name and location. An implant not registered to a group, such as one from a random spawner, does nothing; groups come from the syndicate deathrattle box (eight linked implants) and station traits.",
    "rank": 6,
-   "reason": "Tells linked hosts when one dies, but found ones aren't linked to anyone, so it does nothing.",
-   "tier": "none"
+   "reason": "Tells its wearer when a crewmate dies, and where. Crewmates don't need one.",
+   "tier": "green"
   },
   "/obj/item/implant/explosive": {
    "confidence": "medium",
@@ -124,7 +124,7 @@
    "name": "Vex's insurance implant",
    "note": "One use: the first time the host drops into soft or hard crit (not plain unconsciousness or an instant death) it heals 40 oxygen, 10 toxin, 15 brute and 15 burn damage and injects 10u epinephrine, then 10 seconds later teleports them to their registered ship (beside a cryopod, else any open deck tile) whether or not they are still alive. With no registered ship it only stabilizes; the implant burns out either way.",
    "rank": 1,
-   "reason": "One use: when you drop into crit it heals a little, then 10 s later teleports you to your ship, alive or not. A guaranteed way out of a lost fight unless the ship is in another zone, where it burns out for nothing.",
+   "reason": "One use: when you drop into crit it heals a little, then 10 s later teleports you to your ship, alive or not. A guaranteed way out of a lost fight. If the ship is in another zone it stays unspent and tries again next time.",
    "tier": "red"
   },
   "/obj/item/implant/weapons_auth": {
@@ -169,8 +169,8 @@
    "hash": "d8175095678bf3a5",
    "name": "implant case - 'Deathrattle'",
    "rank": 7,
-   "reason": "Holds an unlinked deathrattle implant, which does nothing.",
-   "tier": "none"
+   "reason": "Holds a deathrattle implant, which reports crew deaths to its wearer.",
+   "tier": "green"
   },
   "/obj/item/implantcase/exile": {
    "confidence": "medium",

@@ -496,8 +496,8 @@
    "hash": "d5b445e6265e05f4",
    "name": "armor",
    "rank": 1,
-   "reason": "Can look like any other suit, but it covers no body part, so its armor never applies.",
-   "tier": "none"
+   "reason": "Can look like any other suit, with light armor on the chest.",
+   "tier": "green"
   },
   "/obj/item/clothing/suit/chaplainsuit/armor/templar": {
    "confidence": "medium",

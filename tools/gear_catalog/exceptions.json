@@ -12,18 +12,6 @@
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
  },
  {
-  "path": "/obj/item/ammo_box/c38/hotshot",
-  "rule": "below_reputation",
-  "route": "/datum/design/c38_hotshot",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression, which comes before this research."
- },
- {
-  "path": "/obj/item/ammo_box/c38/iceblox",
-  "rule": "below_reputation",
-  "route": "/datum/design/c38_iceblox",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression, which comes before this research."
- },
- {
   "path": "/obj/item/ammo_box/c9mm",
   "rule": "below_reputation",
   "route": "/datum/design/c9mm",
@@ -34,24 +22,6 @@
   "rule": "below_reputation",
   "route": "/datum/design/c9mm/lathe",
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
- },
- {
-  "path": "/obj/item/ammo_box/magazine/m223",
-  "rule": "below_reputation",
-  "route": "/datum/design/vc_ammo/m223",
-  "reason": "Deliberate: the guns it feeds come from loot, which may bypass reputation, so a gate here only decides how long a found gun stays fed."
- },
- {
-  "path": "/obj/item/ammo_box/magazine/m38/hotshot",
-  "rule": "below_reputation",
-  "route": "/datum/design/c38_hotshot_mag",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression, which comes before this research."
- },
- {
-  "path": "/obj/item/ammo_box/magazine/m38/iceblox",
-  "rule": "below_reputation",
-  "route": "/datum/design/c38_iceblox_mag",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression, which comes before this research."
  },
  {
   "path": "/obj/item/ammo_box/magazine/m50",
@@ -70,12 +40,6 @@
   "rule": "below_reputation",
   "route": "/datum/shop_sku/black_market/pistol_mag",
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
- },
- {
-  "path": "/obj/item/ammo_box/magazine/tommygunm45",
-  "rule": "below_reputation",
-  "route": "/datum/design/vc_ammo/tommygun",
-  "reason": "Deliberate: the guns it feeds come from loot, which may bypass reputation, so a gate here only decides how long a found gun stays fed."
  },
  {
   "path": "/obj/item/ammo_box/magazine/wt550m9",
@@ -102,18 +66,6 @@
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
  },
  {
-  "path": "/obj/item/ammo_box/strilka310",
-  "rule": "below_reputation",
-  "route": "/datum/design/vc_strilka310_clip",
-  "reason": "Open: rated yellow, sold and printed with no reputation. Waiting on a reputation 4 gate for the real .310 clip, which makes the surplus rifle a yellow gun."
- },
- {
-  "path": "/obj/item/ammo_box/strilka310",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/rifle_clip",
-  "reason": "Open: rated yellow, sold and printed with no reputation. Waiting on a reputation 4 gate for the real .310 clip, which makes the surplus rifle a yellow gun."
- },
- {
   "path": "/obj/item/ammo_casing/c357",
   "rule": "below_reputation",
   "route": "/datum/design/a357",
@@ -124,66 +76,6 @@
   "rule": "below_reputation",
   "route": "/datum/design/a357/lathe",
   "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/dragonsbreath",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/dragonsbreath",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/frag12",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/frag12",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/incendiary",
-  "rule": "below_reputation",
-  "route": "/datum/design/incendiary_slug",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on this design moving to Specialist Ammunition."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/incendiary",
-  "rule": "below_reputation",
-  "route": "/datum/design/incendiary_slug/sec",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on this design moving to Specialist Ammunition."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/ion",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/ionslug",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/meteorslug",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/meteorslug",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/meteorslug",
-  "rule": "below_reputation",
-  "route": "/datum/design/vc_ammo/shotgun_meteor",
-  "reason": "Open: rated red, prints at reputation 4. Waiting on a reputation 11 gate for these designs, or a shorter stun."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/pulseslug",
-  "rule": "below_reputation",
-  "route": "/datum/crafting_recipe/pulseslug",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/stunslug",
-  "rule": "below_reputation",
-  "route": "/datum/design/vc_ammo/shotgun_stun",
-  "reason": "Open: rated red, prints at reputation 4. Waiting on a reputation 11 gate for these designs, or a shorter stun."
- },
- {
-  "path": "/obj/item/ammo_casing/shotgun/techshell",
-  "rule": "below_reputation",
-  "route": "/datum/design/techshell",
-  "reason": "Open: an unloaded shell prints with no reputation and these recipes build on it. Waiting on a reputation 11 gate for the blank shell."
  },
  {
   "path": "/obj/item/bombcore/dimensional",
@@ -276,66 +168,6 @@
   "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
  },
  {
-  "path": "/obj/item/clothing/glasses/hud/diagnostic/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/diagnostic_hud_night",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/hud/health/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/health_hud_night",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/hud/security/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/security_hud_night",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/meson/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/nvgmesons",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/night_vision_goggles",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/night",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/skunk/night_vision",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/glasses/science/night",
-  "rule": "below_reputation",
-  "route": "/datum/design/nv_sci_goggles",
-  "reason": "Open: rated yellow, on sale or printed with no reputation. Waiting on a reputation 4 gate for Night Vision Technology and this shelf line."
- },
- {
-  "path": "/obj/item/clothing/gloves/tinkerer/fitter",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/favor/fitter_gauntlets",
-  "reason": "Open: 6,000 cr at the voucher rate for builder's gloves. Waiting on a lower price, about 1,000 cr."
- },
- {
-  "path": "/obj/item/clothing/head/helmet/gladiator/galea",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/colosseum/rare/galea",
-  "reason": "Deliberate: the arena's prize piece, priced as a trophy more than as a helmet."
- },
- {
-  "path": "/obj/item/clothing/head/helmet/perceptomatrix",
-  "rule": "below_reputation",
-  "route": "/datum/design/perceptomatrix",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for this design, split out of Advanced Anomaly Shells."
- },
- {
   "path": "/obj/item/clothing/mask/chameleon",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/black_market/chameleon_mask",
@@ -354,34 +186,10 @@
   "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
  },
  {
-  "path": "/obj/item/clothing/suit/armor/bulletproof",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/bulletproof_vest",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/clothing/suit/armor/riot",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/outfitter/rotating/riot_suit",
-  "reason": "Open: 4,500 cr for melee armor that does little against guns. Waiting on a lower price, about 1,200 cr."
- },
- {
-  "path": "/obj/item/clothing/suit/armor/spaulder",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/colosseum/rare/spaulder",
-  "reason": "Deliberate: an arena trophy at the Colosseum stall, priced as a souvenir more than as armor."
- },
- {
   "path": "/obj/item/crowbar/abductor",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/skunk/alien_sample",
   "reason": "Deliberate: the alien surgery it leads to doesn't need a gate. Brainwashing only hands the victim an objective."
- },
- {
-  "path": "/obj/item/crowbar/power",
-  "rule": "below_reputation",
-  "route": "/datum/design/jawsoflife",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for this design, split out of Experimental Tools."
  },
  {
   "path": "/obj/item/defibrillator/compact",
@@ -396,10 +204,10 @@
   "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
  },
  {
-  "path": "/obj/item/ew_exploit/breaker_trip",
+  "path": "/obj/item/defibrillator/compact",
   "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/ew_breaker_trip",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+  "route": "/datum/shop_sku/outfitter/rare/compact_defib",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
  },
  {
   "path": "/obj/item/ew_exploit/comms_blackout",
@@ -414,39 +222,9 @@
   "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
  },
  {
-  "path": "/obj/item/ew_exploit/drive_lockout",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/ew_drive_lockout",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
- },
- {
-  "path": "/obj/item/ew_exploit/fire_control_freeze",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/ew_fire_control_freeze",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
- },
- {
-  "path": "/obj/item/ew_exploit/helm_poltergeist",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/rotating/ew_helm_poltergeist",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
- },
- {
   "path": "/obj/item/ew_exploit/overvolt_doors",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/black_market/ew_overvolt_doors",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
- },
- {
-  "path": "/obj/item/ew_exploit/runaway_burn",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/rotating/ew_runaway_burn",
-  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
- },
- {
-  "path": "/obj/item/ew_exploit/shield_collapse",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/black_market/ew_shield_collapse",
   "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
  },
  {
@@ -474,34 +252,10 @@
   "reason": "Deliberate: a welder, an igniter and a rod. It needs a plasma tank and can burn the user."
  },
  {
-  "path": "/obj/item/grenade/chem_grenade/adv_release",
-  "rule": "below_reputation",
-  "route": "/datum/design/adv_grenade",
-  "reason": "Deliberate: only as strong as the chemist who fills it, and the research is the same as any other casing."
- },
- {
-  "path": "/obj/item/grenade/chem_grenade/large",
-  "rule": "below_reputation",
-  "route": "/datum/design/large_grenade",
-  "reason": "Deliberate: only as strong as the chemist who fills it, and the research is the same as any other casing."
- },
- {
   "path": "/obj/item/grenade/empgrenade",
   "rule": "below_reputation",
   "route": "/datum/market_item/weapon/emp_grenade",
   "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
- },
- {
-  "path": "/obj/item/grenade/flashbang",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/rotating/flashbang",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/grenade/frag",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/rotating/frag_grenade",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
  },
  {
   "path": "/obj/item/grenade/frag",
@@ -516,6 +270,12 @@
   "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
  },
  {
+  "path": "/obj/item/grenade/iedcasing",
+  "rule": "below_reputation",
+  "route": "/obj/item/sliced_pipe",
+  "reason": "Deliberate: the casing is iron and parts, so the chemist is the gate."
+ },
+ {
   "path": "/obj/item/grenade/smokebomb",
   "rule": "below_reputation",
   "route": "/datum/supply_pack/imports/shocktrooper",
@@ -523,9 +283,9 @@
  },
  {
   "path": "/obj/item/grenade/stingbang",
-  "rule": "below_reputation",
-  "route": "/datum/supply_pack/goody/stingbang",
-  "reason": "Open: rated yellow, on an ordinary cargo console at 250 cr. Waiting on a higher price or a gate."
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/outfitter/stingbang",
+  "reason": "Deliberate: reputation 4 is the gate, so it kept its old cargo price."
  },
  {
   "path": "/obj/item/gun/energy/gravity_gun",
@@ -558,208 +318,16 @@
   "reason": "Open: craftable with no reputation, and it opens a shop anywhere. Waiting on a gate for the recipe or a smaller stock list."
  },
  {
-  "path": "/obj/item/mecha_ammo/clusterbang",
-  "rule": "below_reputation",
-  "route": "/datum/design/clusterbang_launcher_ammo",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_ammo/flashbang",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_grenade_launcher_ammo",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_ammo/missiles_pep",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_missile_rack_ammo",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/chassis/durand",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_chassis",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/chassis/gygax",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_chassis",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
   "path": "/obj/item/mecha_parts/chassis/honker",
   "rule": "below_reputation",
   "route": "/datum/design/honk_chassis",
   "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
  },
  {
-  "path": "/obj/item/mecha_parts/chassis/phazon",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_chassis",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/chassis/savannah_ivanov",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_chassis",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/armor/antiproj_armor_booster",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_proj_armor",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/gravcatapult",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_gravcatapult",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits, which comes before this research."
- },
- {
   "path": "/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun",
   "rule": "below_reputation",
   "route": "/datum/design/mech_syringe_gun",
   "reason": "Deliberate: Odysseus only, needs each chemical scanned first, and thick suits stop its darts."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/rcd",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_rcd",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for this design, split out of Experimental Tools."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/ripleyupgrade/paddy",
-  "rule": "below_reputation",
-  "route": "/datum/design/paddyupgrade",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/teleporter",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_teleporter",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_grenade_launcher",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/clusterbang",
-  "rule": "below_reputation",
-  "route": "/datum/design/clusterbang_launcher",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/breaching",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_missile_rack",
-  "reason": "Open: prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/weapon/honker",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_honker",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a decision about the horn's 6 second paralysis."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/weapon/paddy_claw",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_hydraulic_claw",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/mecha_equipment/wormhole_generator",
-  "rule": "below_reputation",
-  "route": "/datum/design/mech_wormhole_gen",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits, which comes before this research."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_armor",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_armor",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_head",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_head",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_left_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_left_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_left_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_left_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_right_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_right_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_right_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_right_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/durand_torso",
-  "rule": "below_reputation",
-  "route": "/datum/design/durand_torso",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_armor",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_armor",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_head",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_head",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_left_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_left_arm",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_left_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_left_leg",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_right_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_right_arm",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_right_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_right_leg",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/gygax_torso",
-  "rule": "below_reputation",
-  "route": "/datum/design/gygax_torso",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Combat Exosuits."
  },
  {
   "path": "/obj/item/mecha_parts/part/honker_head",
@@ -798,112 +366,16 @@
   "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
  },
  {
-  "path": "/obj/item/mecha_parts/part/phazon_armor",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_armor",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_head",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_head",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_left_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_left_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_left_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_left_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_right_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_right_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_right_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_right_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/phazon_torso",
-  "rule": "below_reputation",
-  "route": "/datum/design/phazon_torso",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Infiltration Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_armor",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_armor",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_head",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_head",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_left_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_left_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_left_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_left_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_right_arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_right_arm",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_right_leg",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_right_leg",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/mecha_parts/part/savannah_ivanov_torso",
-  "rule": "below_reputation",
-  "route": "/datum/design/savannah_ivanov_torso",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Assault Exosuits."
- },
- {
-  "path": "/obj/item/melee/baseball_bat/ablative",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/ablative_bat",
-  "reason": "Open: reflects every laser for 1,000 cr at no reputation. Waiting on a decision to gate it or make it reflect half the time."
- },
- {
   "path": "/obj/item/melee/baseball_bat/ablative",
   "rule": "price_out_of_band",
   "route": "/datum/shop_sku/outfitter/ablative_bat",
-  "reason": "Open: 1,000 cr for gear that reflects every laser. Waiting on a decision to gate it or make it reflect half the time."
+  "reason": "Deliberate: reputation 11 is the gate, so the price stays."
  },
  {
   "path": "/obj/item/melee/baton/security/cattleprod/teleprod",
   "rule": "below_reputation",
   "route": "/datum/crafting_recipe/teleprod",
   "reason": "Deliberate: the bluespace crystal in it is the cost."
- },
- {
-  "path": "/obj/item/mod/control/pre_equipped/advanced",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/fitter/rare/suit_advanced",
-  "reason": "Open: 8,400 cr at the voucher rate for a work suit with weak armor. Waiting on a lower price, about 4,800 cr."
  },
  {
   "path": "/obj/item/mod/control/pre_equipped/mining",
@@ -916,12 +388,6 @@
   "rule": "below_reputation",
   "route": "/datum/shop_sku/fitter/rotating/suit_mining",
   "reason": "Deliberate: a planet specialist, weak on a ship, and its price is mining points or 3,600 cr."
- },
- {
-  "path": "/obj/item/mod/module/active_sonar",
-  "rule": "below_reputation",
-  "route": "/datum/design/module/mod_sonar",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for this design, split out of Security Modular Suits."
  },
  {
   "path": "/obj/item/mod/module/anomaly_locked/antigrav/prebuilt/locked",
@@ -954,94 +420,10 @@
   "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
  },
  {
-  "path": "/obj/item/mod/module/jetpack/advanced",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/fitter/rare/mod_jetpack_advanced",
-  "reason": "Open: 5,100 cr at the voucher rate against 750 cr for the plain module. Waiting on a lower price."
- },
- {
-  "path": "/obj/item/mod/module/jump_jet",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/fitter/rare/mod_jump_jet",
-  "reason": "Open: 5,400 cr at the voucher rate for one level up and 5 seconds of float. Waiting on a lower price."
- },
- {
-  "path": "/obj/item/mod/module/projectile_dampener",
-  "rule": "below_reputation",
-  "route": "/datum/design/module/projectile_dampener",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for this design, split out of Security Modular Suits."
- },
- {
-  "path": "/obj/item/mod/module/stealth",
-  "rule": "below_reputation",
-  "route": "/datum/design/module/mod_stealth",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for this design, split out of Security Modular Suits."
- },
- {
-  "path": "/obj/item/mod/module/storage/bluespace",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/fitter/rare/mod_storage_bluespace",
-  "reason": "Open: on The Fitting Bay shelf with no reputation. Waiting on a gate on this line."
- },
- {
   "path": "/obj/item/mod/module/surgical_processor/preloaded",
   "rule": "below_reputation",
   "route": "/datum/shop_sku/fitter/rare/mod_surgical_processor",
   "reason": "Deliberate: the loaded surgeries don't need a gate. Brainwashing only hands the victim an objective."
- },
- {
-  "path": "/obj/item/mod/module/visor/night",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/fitter/rotating/mod_visor_night",
-  "reason": "Open: on The Fitting Bay shelf with no reputation. Waiting on a gate on this line."
- },
- {
-  "path": "/obj/item/organ/cyberimp/arm/strongarm",
-  "rule": "below_reputation",
-  "route": "/datum/supply_pack/medical/arm_implants",
-  "reason": "Open: rated yellow, on an ordinary cargo console. Waiting on this crate moving to a trader at reputation 4."
- },
- {
-  "path": "/obj/item/organ/cyberimp/brain/anti_stun",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_antistun",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 11 gate for Combat Implants."
- },
- {
-  "path": "/obj/item/organ/cyberimp/chest/reviver",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_reviver",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Combat Implants."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/thermals",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_thermals",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Night Vision Technology, which comes before this research."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/thermals/moth",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_thermals/moth",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Night Vision Technology, which comes before this research."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/xray",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_xray",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Advanced Cybernetic Organs."
- },
- {
-  "path": "/obj/item/organ/eyes/robotic/xray/moth",
-  "rule": "below_reputation",
-  "route": "/datum/design/cyberimp_xray/moth",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for Advanced Cybernetic Organs."
- },
- {
-  "path": "/obj/item/organ/heart/cybernetic/anomalock",
-  "rule": "below_reputation",
-  "route": "/datum/design/cybernetic_heart/anomalock",
-  "reason": "Open: rated red, prints with no reputation. Waiting on a reputation 11 gate for this design, split out of Advanced Anomaly Shells."
  },
  {
   "path": "/obj/item/polymorph_belt",
@@ -1082,104 +464,14 @@
  {
   "path": "/obj/item/resonator/upgraded",
   "rule": "below_reputation",
-  "route": "/datum/design/superresonator",
-  "reason": "Open: rated yellow, prints and sells with no reputation. Waiting on a decision about its armor-free damage to people."
- },
- {
-  "path": "/obj/item/resonator/upgraded",
-  "rule": "below_reputation",
   "route": "/datum/orderable_item/mining/resonator_advanced",
-  "reason": "Open: rated yellow, prints and sells with no reputation. Waiting on a decision about its armor-free damage to people."
- },
- {
-  "path": "/obj/item/restraints/legcuffs/bola/retiarius",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/colosseum/retiarius_net",
-  "reason": "Open: on the Colosseum stall with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/shield/ballistic",
-  "rule": "below_reputation",
-  "route": "/datum/design/ballistic_shield",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression."
- },
- {
-  "path": "/obj/item/shield/buckler/parmula",
-  "rule": "price_out_of_band",
-  "route": "/datum/shop_sku/colosseum/rotating/parmula",
-  "reason": "Open: 2,700 cr for a 35% block, when the riot shield is 1,200. Waiting on a lower price, about 900 cr."
- },
- {
-  "path": "/obj/item/shield/riot",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/barter/plasteel_for_shield",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/shield/riot",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/riot_shield",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
- },
- {
-  "path": "/obj/item/shield/riot/tele",
-  "rule": "below_reputation",
-  "route": "/datum/design/tele_shield",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Riot Supression."
- },
- {
-  "path": "/obj/item/ship_construction_upgrade/repair",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_construction_upgrade_repair",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Shuttle Repair Swarm."
- },
- {
-  "path": "/obj/item/ship_construction_upgrade/servo/mk3",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_construction_upgrade_servo_mk3",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Precision Shuttle Fabrication."
- },
- {
-  "path": "/obj/item/ship_construction_upgrade/servo/mk4",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_construction_upgrade_servo_mk4",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Precision Shuttle Fabrication."
- },
- {
-  "path": "/obj/item/ship_repair_drone_part/arm",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_repair_drone_arm",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Shuttle Repair Swarm."
- },
- {
-  "path": "/obj/item/ship_repair_drone_part/chassis",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_repair_drone_chassis",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Shuttle Repair Swarm."
- },
- {
-  "path": "/obj/item/ship_repair_drone_part/controller",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_repair_drone_controller",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Shuttle Repair Swarm."
- },
- {
-  "path": "/obj/item/ship_repair_drone_part/propulsion",
-  "rule": "below_reputation",
-  "route": "/datum/design/ship_repair_drone_propulsion",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for Shuttle Repair Swarm."
+  "reason": "Deliberate: mining points are the gate here, and the console has no reputation check."
  },
  {
   "path": "/obj/item/skillchip/matrix_taunt",
   "rule": "below_reputation",
   "route": "/datum/orderable_item/bitrunning_tech/flip_skillchip",
   "reason": "Deliberate: costs 1,500 bitrunning points from a console few crews run."
- },
- {
-  "path": "/obj/item/storage/belt/security/full",
-  "rule": "below_reputation",
-  "route": "/datum/shop_sku/outfitter/security_belt",
-  "reason": "Open: on the Quartermain Depot shelf with no reputation. Waiting on a reputation 4 gate on this line."
  },
  {
   "path": "/obj/item/storage/box/collar_bomb",
@@ -1230,12 +522,6 @@
   "reason": "Deliberate: a chem lab brews this at no reputation, so the shelf sells convenience."
  },
  {
-  "path": "/obj/item/swapper",
-  "rule": "below_reputation",
-  "route": "/datum/design/swapper",
-  "reason": "Open: rated yellow, prints with no reputation. Waiting on a reputation 4 gate for this design, split out of Bluespace Travel."
- },
- {
   "path": "/obj/item/transfer_valve",
   "rule": "above_on_route",
   "route": "/datum/supply_pack/science/transfer_valves",
@@ -1251,12 +537,6 @@
   "path": "/obj/item/weaponcrafting/gunkit/beam_rifle",
   "rule": "above_on_route",
   "route": "/datum/design/beamrifle",
-  "reason": "Open: authored power at reputation 22 and six anomaly cores. Waiting on a decision about keeping the Event Horizon craftable."
- },
- {
-  "path": "/obj/item/weaponcrafting/gunkit/tesla",
-  "rule": "below_reputation",
-  "route": "/datum/design/stunrevolver",
-  "reason": "Open: rated red, prints at reputation 4. Waiting on this design moving to Advanced Beam Weaponry at reputation 11."
+  "reason": "Deliberate: reputation 22 and six anomaly cores are a real gate, so the Event Horizon stays craftable."
  }
 ]

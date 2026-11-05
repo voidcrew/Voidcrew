@@ -81,7 +81,7 @@
    "name": "Donk Co. Super-Stable Bomb Payload",
    "note": "A bomb core that ignores explosions entirely (its explosion handler does nothing), but its burn handler calls the parent, so it still detonates when it burns up; the shell triggers it electronically. Same blast as the plain core (3/9/17/17), and the XL version is 5/10/20/20.",
    "rank": 3,
-   "reason": "Bomb core with 3 devastation, 9 heavy, 17 light, the plain core's blast. Blasts don't set it off, only fire. Comes out of the ticking bomb on one cargo shuttle loan.",
+   "reason": "Bomb core with 3 devastation, 9 heavy, 17 light, the plain core's blast. Blasts and fire don't set it off. Comes out of the ticking bomb on one cargo shuttle loan.",
    "tier": "above"
   },
   "/obj/item/bombcore/syndicate/large": {

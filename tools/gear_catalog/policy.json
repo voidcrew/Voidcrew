@@ -5,7 +5,8 @@
   "order_consoles",
   "other_sellers",
   "printing",
-  "crafting"
+  "crafting",
+  "made_by_use"
  ],
  "min_reputation": {
   "green": "public",
@@ -131,7 +132,7 @@
     800
    ],
    "yellow": [
-    2500,
+    2000,
     8000
    ]
   },
@@ -185,7 +186,7 @@
     10000
    ],
    "yellow": [
-    1500,
+    1000,
     6000
    ]
   },
