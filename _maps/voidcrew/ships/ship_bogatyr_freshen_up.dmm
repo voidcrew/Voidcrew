@@ -161,12 +161,6 @@
 /obj/item/gun/ballistic/revolver/russian,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"hOd" = (
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/template_noop,
-/area/shuttle/voidcrew/bogatyr/laboratory)
 "ivi" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/maintenance)
@@ -944,7 +938,7 @@ fVY
 (12,1,1) = {"
 oOj
 alP
-hOd
+wlQ
 wgB
 vTY
 alP
