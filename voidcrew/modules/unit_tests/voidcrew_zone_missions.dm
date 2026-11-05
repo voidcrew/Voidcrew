@@ -605,8 +605,9 @@
 	var/obj/structure/overmap/ship/advanced_ship = make_ship(2)
 	var/datum/mission/offer = allocate(/datum/mission/zone_missions_test, outpost.shop, 3)
 	outpost.shop_offers += offer
-	TEST_ASSERT_EQUAL(length(outpost.get_contract_offers_for(public_ship)), 0, "Public crew saw denied work")
-	TEST_ASSERT_EQUAL(length(outpost.get_contract_offers_for(advanced_ship)), 1, "Eligible crew lost the shared offer")
+	// A new outpost posts its own open jobs, so these look for this one.
+	TEST_ASSERT(!(offer in outpost.get_contract_offers_for(public_ship)), "Public crew saw denied work")
+	TEST_ASSERT(offer in outpost.get_contract_offers_for(advanced_ship), "Eligible crew lost the shared offer")
 	TEST_ASSERT(offer in outpost.shop_offers, "Filtering deleted a shared offer")
 	public_ship.available_missions += offer
 	TEST_ASSERT(public_ship.accept_mission(offer) != TRUE, "Stale action bypassed authoritative admission")

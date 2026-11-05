@@ -131,7 +131,7 @@
 		if(node.zone_permission)
 			gated++
 	TEST_ASSERT_EQUAL(gated, length(expected), "The direct-research gate covers the wrong number of nodes")
-	TEST_ASSERT_EQUAL(gated, 44, "The direct-research gate must cover exactly forty-four nodes")
+	TEST_ASSERT_EQUAL(gated, 45, "The direct-research gate must cover exactly forty-five nodes")
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("nanite_military").type, /datum/techweb_node/nanite_combat, "Military nanites changed id")
 
 /// Gated gear left the open nodes it used to share, and only sits on its new node.
