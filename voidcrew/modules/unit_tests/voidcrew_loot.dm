@@ -447,7 +447,7 @@
 	moved.PopulateContents()
 	TEST_ASSERT_EQUAL(moved.loot_zone, 1, "Moving a cache upgraded its spawn band")
 
-/// All three bought caches must be stamped before their first opening.
+/// All three bought caches are stocked over the counter, so nothing in them can be sold back.
 /datum/unit_test/voidcrew_purchased_cache_weapons/Run()
 	var/mob/living/carbon/human/buyer = allocate(/mob/living/carbon/human/consistent)
 	for(var/sku_path in list(/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare))
@@ -455,7 +455,9 @@
 		var/obj/structure/closet/crate/zone_loot/cache = sku.dispense(buyer, null)
 		allocated += cache
 		TEST_ASSERT(cache.freight_weapons, "[sku_path] dispensed guarded weapon odds over the counter")
-		TEST_ASSERT(!cache.loot_consumed && !cache.contents_initialized, "Bought cache populated before freight rules were applied")
+		TEST_ASSERT(cache.contents_initialized && length(cache.contents), "[sku_path] wasn't stocked when it was handed over")
+		for(var/atom/movable/inside as anything in cache.contents)
+			TEST_ASSERT(is_trader_good(inside), "[inside.type] from [sku_path] can be sold back")
 		TEST_ASSERT_EQUAL(cache.theme, /datum/loot_theme/syndicate, "Bought cache lost its themed nonweapon supplies")
 		TEST_ASSERT_EQUAL(cache.bonus_draws, sku_path == /datum/shop_sku/black_market/mystery_cache_rare ? 2 : 0, "Bought cache lost its bonus draws")
 

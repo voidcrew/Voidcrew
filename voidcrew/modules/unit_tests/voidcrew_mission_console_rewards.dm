@@ -473,7 +473,7 @@
 	TEST_ASSERT_EQUAL(length(run_loc_floor_top_right.get_all_contents_type(/obj/item/holochip)), 1, "Rewind or revival issued another boss chip")
 	var/before = ship.ship_account.account_balance
 	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, mission.quest_atom), "Recovered proof did not settle")
-	TEST_ASSERT(receipt.claimed && receipt.credited == 1, "Recovered proof did not claim exactly one green contribution")
+	TEST_ASSERT(receipt.claimed && receipt.credited == 2, "Recovered proof did not claim a medium job's reputation")
 	TEST_ASSERT_EQUAL(ship.ship_account.account_balance - before, 600, "Recovered proof paid the wrong fee")
 	TEST_ASSERT_EQUAL(ship.prize_rolls, 1, "Recovered proof must make exactly one completion roll")
 	TEST_ASSERT(!mission.turn_in(run_loc_floor_bottom_left, null, TRUE), "Repeated proof settlement succeeded")

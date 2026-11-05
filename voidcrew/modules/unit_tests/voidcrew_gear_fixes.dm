@@ -71,7 +71,8 @@
 	TEST_ASSERT_EQUAL(sleeper.getBruteLoss(), 8, "The implant stopped healing someone who is asleep")
 	TEST_ASSERT_EQUAL(implant.revive_cost, 0, "Healing someone who is only asleep ran up the recharge")
 
-	sleeper.setBruteLoss(120)
+	// Limbs only count for three quarters of their damage, so this comes to about 117 against 100 health.
+	sleeper.setBruteLoss(140)
 	TEST_ASSERT_EQUAL(sleeper.stat, UNCONSCIOUS, "The fixture woke or fell past soft crit")
 	TEST_ASSERT(sleeper.health <= sleeper.crit_threshold, "The fixture isn't in crit")
 	implant.try_heal()
