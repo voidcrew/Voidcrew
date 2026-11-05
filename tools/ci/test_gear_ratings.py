@@ -340,6 +340,19 @@ class CraftingTest(Fixture):
         self.assertEqual(self.rules({GUN: dict(crafting=[made])}, {GUN: rated('above')}), [], 'the game empties it as it makes it')
         self.assertEqual(self.rules({GUN: dict(crafting=[dict(made, made_empty=False)])}, {GUN: rated('above')}), [('above_on_route', GUN, 'stack recipe: bang box')])
 
+    def test_made_by_use_counts_when_the_policy_lists_it(self):
+        used = dict(from_item='/obj/item/kit', source='a.dm:1')
+        kit = dict(cargo=[dict(pack='/datum/supply_pack/x', source='a.dm:2')])
+        ratings = {GUN: rated('above'), '/obj/item/kit': rated('green')}
+        routes = {GUN: dict(made_by_use=[used]), '/obj/item/kit': kit}
+        checked = dict(POLICY, checked_routes=POLICY['checked_routes'] + ['made_by_use'])
+        self.assertEqual(self.rules(routes, ratings), [], 'not on the list')
+        self.assertEqual(self.rules(routes, ratings, policy=checked), [('above_on_route', GUN, '/obj/item/kit')])
+        self.assertEqual(self.rules({GUN: dict(made_by_use=[used])}, {GUN: rated('above')}, policy=checked), [], 'nobody can get the item used')
+        self.assertEqual(self.rules({GUN: dict(made_by_use=[used]), '/obj/item/kit/good': kit}, {GUN: rated('above'), '/obj/item/kit/good': rated('green')}, policy=checked), [('above_on_route', GUN, '/obj/item/kit')], 'a subtype inherits the proc')
+        chained = {GUN: dict(crafting=[recipe('/obj/item/kit')]), '/obj/item/kit': dict(made_by_use=[dict(from_item='/obj/item/kit/good', source='a.dm:3')]), '/obj/item/kit/good': kit}
+        self.assertEqual(self.rules(chained, {GUN: rated('above'), '/obj/item/kit': rated('green'), '/obj/item/kit/good': rated('green')}, policy=checked), [('above_on_route', GUN, '/datum/crafting_recipe/test')], 'a recipe can use what it makes')
+
     def test_a_stack_recipe_needs_its_stack(self):
         made = dict(stack_recipe='ancient armor', input_stacks=['/obj/item/stack/sheet/iron'], source='a.dm:1')
         routes = {GUN: dict(crafting=[made])}

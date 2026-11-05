@@ -30,7 +30,7 @@ TIERS = ('green', 'yellow', 'red', 'above', 'none')
 CONFIDENCE = ('high', 'medium', 'low')
 MECHANICAL_WORDS = ('abstract', 'cosmetic', 'uncreatable', 'no route', 'literal only')
 RATER_WORDS = ('toy', 'admin', 'leftover', 'needs another system')
-ROUTE_KINDS = ('shops', 'cargo', 'order_consoles', 'other_sellers', 'printing', 'crafting')
+ROUTE_KINDS = ('shops', 'cargo', 'order_consoles', 'other_sellers', 'printing', 'crafting', 'made_by_use')
 RULES = ('unrated', 'below_reputation', 'above_on_route', 'price_out_of_band')
 
 REQUIRED_ITEM_FIELDS = ('name', 'group', 'tier', 'rank', 'reason', 'confidence', 'hash')

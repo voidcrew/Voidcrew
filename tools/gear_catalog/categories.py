@@ -395,6 +395,8 @@ LOOK_PARTS = {
     '/datum/element/update_icon_blocker', '/datum/element/point_of_interest', '/datum/component/overlay_lighting', '/datum/element/wearable_client_colour',
     '/datum/component/pinnable_accessory', '/datum/element/skill_reward/veteran', '/datum/element/atmos_sensitive',
 }
+# Only a look, though the cosmetic rule can't see it: a tag's procs add a line to an examine, and a pocket protector holds pens. Subtypes count too.
+LOOK_ONLY_FAMILIES = ('/obj/item/clothing/accessory/dogtag', '/obj/item/clothing/accessory/pocketprotector')
 # Parts the numbers already cover, or that only mount a light or a blade. They count as behaviour for `cosmetic`, not for a note.
 NUMBER_PARTS = {
     '/datum/component/automatic_fire', '/datum/component/seclite_attachable', '/datum/component/bayonet_attachable', '/datum/element/delete_on_drop',

@@ -10,10 +10,12 @@ import json
 import math
 import re
 
-from .dm_reader import DM, assoc, balance, clean_comments, decode, number, paths, proc_chain, rounded, split_top
+from .dm_reader import DM, assoc, balance, clean_comments, decode, enclosing_lines, number, paths, proc_chain, rounded, split_top
 from .offers import PEDDLER_SHOP, load_offers
 
 PERMISSION = {0: 'public', 1: 'yellow', 2: 'advanced', 3: 'elite'}
+# Procs a player runs by using a thing. What one makes with new is something that item turns into, or gives you.
+USE_PROCS = re.compile(r'/(attackby|attackby_secondary|item_interaction|item_interaction_secondary|attack_self|attack_self_secondary|\w+_act|\w+_act_secondary|tool_act|click_alt|interact_with_atom\w*)$')
 # /datum/stack_recipe/New's arguments, in order.
 STACK_RECIPE_ARGS = ['title', 'result_type', 'req_amount', 'res_amount', 'max_res_amount', 'time', 'crafting_flags', 'placement_checks', 'trait_booster', 'trait_modifier', 'category']
 
@@ -27,6 +29,12 @@ def pack_counts(contained):
         else:
             counts.update(paths(entry))
     return counts
+
+
+def handed_back(code, path, offset):
+    """Whether a proc takes this item in and gives it back under a tool: a screwdriver opens a securitron assembly and the sword that went in drops out."""
+    takes_it = re.search(r'istype\(\s*\w+\s*,\s*' + re.escape(path) + r'\s*\)', code)
+    return bool(takes_it) and any('tool_behaviour' in line for line in enclosing_lines(code, offset))
 
 
 def closing_paren(text, start):
@@ -88,6 +96,7 @@ class StaticSources:
         self.build_design_disks()
         self.build_sources()
         self.build_route_indexes()
+        self.build_made_by_use()
 
     def cite(self, file, text):
         return self.dm.cite(file, text)
@@ -266,6 +275,7 @@ class StaticSources:
                                 learned_from=self.teachers.get(p, []),
                                 tool_paths=paths(dm.val(p, 'tool_paths')), machinery=[x for x in paths(dm.val(p, 'machinery')) if x.startswith('/obj/')],
                                 structures=[x for x in paths(dm.val(p, 'structures')) if x.startswith('/obj/')],
+                                uses_up=self.used_up_fixtures(p),
                                 made_empty=bool(dm.val(p, 'delete_contents')) and self.filled_storage(item),
                                 time_deciseconds=dm.val(p, 'time'),
                                 always_available=not self.must_be_learned(p), material_base_value=value,
@@ -316,6 +326,22 @@ class StaticSources:
             return False
         storage = self.is_a(item, '/obj/item/storage') or self.dm.val(item, 'storage_type') or any('create_storage(' in code for _, code in proc_chain(self.dm, item, 'Initialize'))
         return bool(storage and self.contents(item))
+
+    def build_made_by_use(self):
+        """Item -> the items that turn into it when used: a sliced pipe into a pipe bomb, a helmet into a securitron. It only counts once the item used has a route."""
+        self.made_by_use = collections.defaultdict(list)
+        for key, bodies in self.dm.procs.items():
+            if not key.startswith('/obj/item/') or not USE_PROCS.search(key):
+                continue
+            owner = key.rsplit('/', 1)[0]
+            for source, code in bodies:
+                made = set()
+                for match in re.finditer(r'\bnew\s+(/obj/item/[\w/]+)\s*\(|\bvar/(obj/item/[\w/]+)/\w+\s*=\s*new\s*\(', code):
+                    path = match[1] or '/' + match[2]
+                    if path != owner and not handed_back(code, path, match.start()):
+                        made.add(path)
+                for path in sorted(made):
+                    self.made_by_use[path].append(dict(from_item=owner, source=source))
 
     def build_design_disks(self):
         """Design type -> the design disks that carry it. A disk fills blueprints in Initialize from a literal type, a var holding one, or a list var."""
@@ -385,6 +411,11 @@ class StaticSources:
                     self.add_source(m[1], 'chemical item reaction', reaction=p,
                                     required_reagents=dm.val(p, 'required_reagents'), required_catalysts=dm.val(p, 'required_catalysts'),
                                     required_temp=dm.val(p, 'required_temp'), source=source)
+
+    def used_up_fixtures(self, recipe):
+        """The machines and structures a recipe eats. Each maps to CRAFTING_MACHINERY_CONSUME or CRAFTING_MACHINERY_USE, which is 0 (crafting.dm)."""
+        found = [path for field in ('machinery', 'structures') for path, amount in assoc(self.dm.val(recipe, field)).items() if amount]
+        return sorted(path for path in found if isinstance(path, str))
 
     def must_be_learned(self, recipe):
         """crafting_flags with CRAFT_MUST_BE_LEARNED: a player can't make this until something teaches it."""
@@ -706,7 +737,7 @@ class StaticSources:
 
     def routed_types(self):
         """Every path with a shop, seller, console, cargo, printing or crafting row, including types with no block of their own."""
-        return set(self.shops) | set(self.others) | set(self.indexed)
+        return set(self.shops) | set(self.others) | set(self.indexed) | set(self.made_by_use)
 
     def gate_with_prereqs(self, node_id):
         """The lowest reputation step that opens a node: the highest anywhere in its prerequisite closure, and for a hidden node that plain research opens, whatever opens it too."""
@@ -753,7 +784,7 @@ class StaticSources:
 
         consoles, others = [], []
         for produced, r in self.others.get(key, []):
-            entry = dict(where=r['shop'], offer=r['sku_type'], credits=r['price_credits'], other_currency=decode(r['other_currency']) or None,
+            entry = dict(where=r['shop'], shop_type=r['shop_type'], offer=r['sku_type'], credits=r['price_credits'], other_currency=decode(r['other_currency']) or None,
                          stock=r['stock'], notes=(r['notes'] or '')[:300] or None, produced=produced if produced != path else None, source=r['source'])
             (consoles if r['shop_type'].startswith('/obj/machinery/computer/order_console') else others).append(entry)
         if consoles:
@@ -777,7 +808,7 @@ class StaticSources:
                                      material_value=r['material_base_value'], unlock=r['unlock'], roundstart=r['unlock'] == 'roundstart', nodes=nodes, disks=r['disks'],
                                      produced=produced if produced != path else None, source=r['source']))
             elif kind == 'crafting':
-                crafting.append(dict(recipe=r['recipe'], ingredients=r['requirements'], tools=r['tools'], tool_paths=r['tool_paths'], machinery=r['machinery'], structures=r['structures'],
+                crafting.append(dict(recipe=r['recipe'], ingredients=r['requirements'], tools=r['tools'], tool_paths=r['tool_paths'], machinery=r['machinery'], structures=r['structures'], uses_up=r['uses_up'],
                                      made_empty=r['made_empty'], time_ds=r['time_deciseconds'], always_available=r['always_available'], learned_from=r['learned_from'],
                                      non_craftable=self.dm.val(r['recipe'], 'non_craftable'),
                                      produced=produced if produced != path else None, source=r['source']))
@@ -795,6 +826,9 @@ class StaticSources:
             out['crafting'] = crafting
         if misc:
             out['other_routes'] = misc
+        used = self.made_by_use.get(path)
+        if used:
+            out['made_by_use'] = [dict(row) for row in used]
         return out
 
     def fixtures_for(self, needed):

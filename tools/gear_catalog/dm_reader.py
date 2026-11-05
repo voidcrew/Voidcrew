@@ -315,6 +315,19 @@ def proc_chain(dm,path,method):
     return result
 
 
+def enclosing_lines(code, offset):
+    """The lines of a proc's source that the line at this offset is nested under, innermost first."""
+    lines = code[:offset].split('\n')
+    depth = len(lines[-1]) - len(lines[-1].lstrip('\t'))
+    found = []
+    for prior in reversed(lines[:-1]):
+        tabs = len(prior) - len(prior.lstrip('\t'))
+        if prior.strip() and tabs < depth:
+            depth = tabs
+            found.append(prior.strip())
+    return found
+
+
 def inherited_proc(dm,path,method):
     seen=set()
     while path and path not in seen:

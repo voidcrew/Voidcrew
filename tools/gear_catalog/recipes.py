@@ -15,6 +15,11 @@ def item_needs(entry):
     return sorted(need for need in needs if need.startswith('/obj/item'))
 
 
+def use_recipe(use):
+    """Using one item to get another reads as a recipe with one ingredient. Other parts the step asks for aren't in the row."""
+    return dict(recipe=use['from_item'], ingredients={use['from_item']: 1}, source=use.get('source'))
+
+
 def fixture_needs(entry):
     """The machines and structures a recipe has to be made beside."""
     return sorted({*(entry.get('machinery') or []), *(entry.get('structures') or [])})

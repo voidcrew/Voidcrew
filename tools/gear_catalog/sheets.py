@@ -34,7 +34,9 @@ LEGEND = {
 }
 WORN_LEGEND = 'A=armor m,b,l,e,x=bomb,f,a,w; sum of m+b+l+e; cov=armored zones of 6 (head, chest, arms, legs; groin, hands and feet add no armor); slow; temp: c=cold h=heat; flags; hides; covers'
 AVAIL_LEGEND = ('how: $=shop (credits, +vouchers, zones, rep), ped=peddler, print=rs, research rep, hack=hacked autolathe, hid=hidden research node (disk, experiment or emag), disk or other; '
-                'craft, craft:empty=the game empties it as it makes it, use=made by using another item, cargo, loot channels, start=on the crew\'s own ship (start:if only under a condition), '
+                'craft, @machine=made beside it (!=uses it up), craft:empty=the game empties it as it makes it, use:item=made by using that item, cargo, cargo:emag, :contraband or :special=only once a console is unlocked, '
+                'console:mining, golem, cook or bitrunning=that order console, blackmarket=uplink, voucher=mining voucher, drone=exploration drone barter, prison=prison vendor, playershop=a player outpost\'s shop, '
+                'loot channels, start=on the crew\'s own ship (start:if only under a condition), '
                 'vend=vending machine out in the field, map h/m/r/o/n=placements on hulls, modules, ruins, outposts, NPC ships, rnd=placements by random spawner, in=held in a container with a route')
 EFFECT_SHORT = [('stun', 'stun'), ('paralyze', 'para'), ('knockdown', 'kd'), ('immobilize', 'immob'), ('unconscious', 'uncon')]
 KIND_LETTER = {'hull': 'h', 'module': 'm', 'ruin': 'r', 'outpost': 'o', 'npc_ship': 'n', 'event': 'e', 'planet': 'p', 'shuttle': 's'}
@@ -77,6 +79,17 @@ def effect_tokens(source):
     return [f'{short}{fmt(source[name] / 10)}s' for name, short in EFFECT_SHORT if source.get(name)]
 
 
+def names(paths, limit=2):
+    shown = ','.join(short(path) for path in paths[:limit])
+    return shown + (f',+{len(paths) - limit}' if len(paths) > limit else '')
+
+
+def beside_text(a):
+    """The machines a recipe is made beside, and which it uses up."""
+    uses_up = a.get('crafted_uses_up') or []
+    return ''.join(f"@{path.replace('/obj/machinery/', '').replace('/obj/structure/', '')}{'!' if path in uses_up else ''}" for path in a.get('crafted_beside') or [])
+
+
 def availability_text(entry):
     a = entry['availability']
     sources = entry['sources']
@@ -107,17 +120,18 @@ def availability_text(entry):
     if ways:
         tokens.append('print:' + ','.join(ways))
     if a['crafted']:
-        tokens.append('craft' + ('(book)' if a['learned_from'] else ''))
+        tokens.append('craft' + ('(book)' if a['learned_from'] else '') + beside_text(a))
     elif a['crafted_kit_missing']:
-        tokens.append('craft:nokit')
+        tokens.append('craft:nokit' + beside_text(a))
     elif a['crafted_empty']:
         tokens.append('craft:empty')
     if a['made_by_use']:
-        tokens.append('use')
-    if a['cargo_packs']:
-        tokens.append('cargo')
-    if sources.get('order_consoles') or sources.get('other_sellers'):
-        tokens.append('console')
+        tokens.append('use:' + names(a.get('used_from') or []))
+    cargo = a.get('cargo_words') or []
+    tokens += ['cargo'] * ('plain' in cargo) + [f'cargo:{word}' for word in cargo if word != 'plain']
+    if a.get('console_words'):
+        tokens.append('console:' + ','.join(a['console_words']))
+    tokens += a.get('seller_words') or []
     channels = sorted({row.get('channel') for row in sources.get('loot') or [] if not row.get('literal')})
     if channels:
         tokens.append('loot:' + ','.join(str(c) for c in channels))
@@ -355,7 +369,8 @@ def generic_text(entry):
         tokens.append(f"cell{fmt(entry['cell'].get('maxcharge') or 0)}")
     if entry.get('slowdown'):
         tokens.append(f"slow{entry['slowdown']}")
-    numbers = [f'{name}={fmt(value)}' for name, value in (entry.get('other_vars') or {}).items() if isinstance(value, (int, float)) and name not in GENERIC_SKIP]
+    # A rolled var's number is one roll in the dump. randomised_text says what it really rolls.
+    numbers = [f'{name}={fmt(value)}' for name, value in (entry.get('other_vars') or {}).items() if isinstance(value, (int, float)) and name not in GENERIC_SKIP and name not in (entry.get('randomised') or {})]
     if numbers:
         tokens.append(clip(' '.join(numbers[:5]), 70))
     if entry.get('melee'):

@@ -76,10 +76,6 @@ PLAYER_SHIP_KINDS = ('hull', 'module')
 HULL_BASE = '/datum/map_template/shuttle/voidcrew'
 
 
-# Procs a player runs by using a thing. What one makes with new is something that item turns into, or gives you.
-USE_PROCS = re.compile(r'/(attackby|attackby_secondary|item_interaction|item_interaction_secondary|attack_self|attack_self_secondary|\w+_act|\w+_act_secondary|tool_act|click_alt|interact_with_atom\w*)$')
-
-
 def under_condition(code, offset):
     """Whether the line at this offset of a proc's source only runs sometimes: inside an if, an else or a switch."""
     lines = code[:offset].split('\n')
@@ -150,7 +146,6 @@ class Sources(StaticSources):
         self.build_mob_drops()
         self.build_mob_code_drops()
         self.build_outfits()
-        self.build_made_by_use()
         self.starting = self.starting_index()
         self.vendors = self.vendor_index()
         self.loadouts = self.loadout_index()
@@ -570,7 +565,10 @@ class Sources(StaticSources):
                         self.add_loot(target, channel='event', label='shuttle loan', loan=loan, via=list(via), count=count, source=f'{file}:{int(first) + line - 1}')
 
     def build_biome_features(self):
-        """What a planet's ground can spawn: the feature and flora tables of every biome a planet's overworld or caves use."""
+        """What a planet's ground can spawn: the feature and flora tables of every biome a planet's overworld or caves use, and what a crate in those tables holds.
+
+        A random spawner in a table is left out. The one there is the maintenance pool, which map placements already count, and it would put this channel on hundreds of rows.
+        """
         dm = self.dm
         used = set()
         for planet in dm.paths('/datum/planet'):
@@ -581,7 +579,7 @@ class Sources(StaticSources):
                 table = assoc(dm.val(biome, field))
                 total = sum(weight for weight in table.values() if isinstance(weight, (int, float)))
                 for item, weight in table.items():
-                    if not isinstance(item, str) or not item.startswith('/obj/item'):
+                    if not isinstance(item, str) or not item.startswith(('/obj/item', '/obj/structure/closet')):
                         continue
                     for target, count, _, via in [(item, 1, 'direct', ())] + self.expand_container(item):
                         self.add_loot(target, channel='biome', label='planet ground', biome=biome, weight=weight, pool_weight=total, chance_per_turf=dm.val(biome, chance),
@@ -641,19 +639,6 @@ class Sources(StaticSources):
                         self.add_loot(target, channel='npc', label='mob code', mob=mob, literal=True, via=list(via), count=count,
                                       map_placements=self.mob_placements[mob], reachable=self.mob_placements[mob] > 0 or mob in self.voidcrew_mentions,
                                       source=f'{file}:{int(first) + offset - 1}')
-
-    def build_made_by_use(self):
-        """Item -> the items that turn into it when used: a sliced pipe into a pipe bomb, a helmet into a securitron. It only counts once the item used has a route (close_routes)."""
-        self.made_by_use = collections.defaultdict(list)
-        for key, bodies in self.dm.procs.items():
-            if not key.startswith('/obj/item/') or not USE_PROCS.search(key):
-                continue
-            owner = key.rsplit('/', 1)[0]
-            for source, code in bodies:
-                made = re.findall(r'\bnew\s+(/obj/item/[\w/]+)\s*\(', code) + ['/' + name for name in re.findall(r'\bvar/(obj/item/[\w/]+)/\w+\s*=\s*new\s*\(', code)]
-                for path in sorted(set(made)):
-                    if path != owner:
-                        self.made_by_use[path].append(dict(from_item=owner, source=source))
 
     def build_outfits(self):
         dm = self.dm
@@ -764,9 +749,6 @@ class Sources(StaticSources):
                     starting.append(dict(kind='locker', container=container, placed=dict(kinds)))
         if starting:
             out['starting'] = starting
-        used = self.made_by_use.get(path)
-        if used:
-            out['made_by_use'] = [dict(row) for row in used]
         unused = self.unused_outfits.get(path)
         if unused:
             out['unused_outfits'] = unused

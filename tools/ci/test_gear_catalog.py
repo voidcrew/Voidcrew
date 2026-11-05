@@ -215,6 +215,16 @@ class GearCatalogTest(unittest.TestCase):
         self.assertFalse(rows['/obj/item/knife/reskin']['cosmetic'], 'a reskinned knife still cuts')
         self.assertFalse(rows['/obj/item/clothing/head/blasting']['cosmetic'], 'has a proc that does something')
 
+    def test_cosmetic_rulings_the_rule_cannot_see(self):
+        rows, _ = self.built({
+            '/obj/item/clothing/accessory/dogtag/borg_ready': dump_row('/obj/item/clothing/accessory/dogtag/borg_ready', vars=dict(display='x')),
+            '/obj/item/clothing/accessory/pocketprotector/full': dump_row('/obj/item/clothing/accessory/pocketprotector/full', storage=dict(max_slots=3), contents={'/obj/item/pen': 3}),
+            '/obj/item/clothing/accessory/pandora_hope': dump_row('/obj/item/clothing/accessory/pandora_hope', vars=dict(mood=6)),
+        })
+        self.assertTrue(rows['/obj/item/clothing/accessory/dogtag/borg_ready']['cosmetic'], 'only a line on an examine')
+        self.assertTrue(rows['/obj/item/clothing/accessory/pocketprotector/full']['cosmetic'], 'pockets for pens')
+        self.assertFalse(rows['/obj/item/clothing/accessory/pandora_hope']['cosmetic'], 'Hope does something')
+
     def test_note_rule(self):
         route = dict(loot=[dict(channel='ruin')])
         routes = {'/obj/item/clothing/head/blasting': route, '/obj/item/sword/rusty': route, '/obj/item/stock_parts/thing': route}
@@ -330,7 +340,14 @@ class GearCatalogTest(unittest.TestCase):
         self.assertEqual(rows['/obj/item/grenade/ied']['firm_sources'], [], 'nobody can get the pipe')
         rows, entries = self.built(dump_rows, {'/obj/item/grenade/ied': dict(made_by_use=[use]), '/obj/item/pipe': dict(loot=[dict(channel='ruin')])})
         self.assertEqual(rows['/obj/item/grenade/ied']['firm_sources'], ['made_by_use'])
-        self.assertIn('use', availability_text(entries['explosives']['/obj/item/grenade/ied']).split())
+        self.assertIn('use:pipe', availability_text(entries['explosives']['/obj/item/grenade/ied']).split())
+
+    def test_made_by_use_counts_a_subtype_of_the_item_used(self):
+        use = dict(from_item='/obj/item/pipe', source='a.dm:1')
+        dump_rows = {path: dump_row(path) for path in ['/obj/item/sliced_pipe', '/obj/item/pipe', '/obj/item/pipe/binary']}
+        rows, _ = self.built(dump_rows, {'/obj/item/sliced_pipe': dict(made_by_use=[use]), '/obj/item/pipe/binary': dict(loot=[dict(channel='ruin')])})
+        self.assertEqual(rows['/obj/item/sliced_pipe']['firm_sources'], ['made_by_use'], 'a subtype inherits the proc that makes it')
+        self.assertTrue(rows['/obj/item/sliced_pipe']['sources']['made_by_use'][0]['routable'])
 
     def test_sheet_says_how_it_prints(self):
         def text(*designs, **sources):
@@ -348,6 +365,37 @@ class GearCatalogTest(unittest.TestCase):
         self.assertEqual(text(design('hacked autolathe')), 'print:hack')
         self.assertEqual(text(design('design disk', disks=['/obj/item/disk'])), 'print:disk')
         self.assertEqual(text(design('no active research node')), 'print:other')
+
+    def test_sheet_says_what_a_recipe_is_made_beside(self):
+        def text(*crafting):
+            sources = dict(crafting=list(crafting))
+            return availability_text(dict(availability=availability(sources), sources=sources))
+        eaten = dict(recipe='/r', machinery=['/obj/machinery/power/crystal'], uses_up=['/obj/machinery/power/crystal'], routable=True, kit_routes=[])
+        cooked = dict(recipe='/r', machinery=['/obj/machinery/oven'], uses_up=[], routable=True, kit_routes=[])
+        plain = dict(recipe='/r', machinery=[], uses_up=[], routable=True, kit_routes=[])
+        missing = dict(eaten, routable=False, kit_routes=[dict(path='/obj/machinery/power/crystal', has_route=False)])
+        self.assertEqual(text(eaten), 'craft@power/crystal!', 'it eats the crystal')
+        self.assertEqual(text(cooked), 'craft@oven', 'the oven stays')
+        self.assertEqual(text(cooked, plain), 'craft', 'another recipe needs no machine')
+        self.assertEqual(text(missing), 'craft:nokit@power/crystal!')
+        self.assertEqual(text(missing, cooked), 'craft@oven', 'only the recipe that works')
+
+    def test_sheet_names_the_condition_on_a_sale(self):
+        def text(**sources):
+            return availability_text(dict(availability=availability(sources), sources=sources))
+        self.assertEqual(text(cargo=[dict(availability='ordinary console')]), 'cargo')
+        self.assertEqual(text(cargo=[dict(availability='emagged console')]), 'cargo:emag', 'not plain cargo')
+        self.assertEqual(text(cargo=[dict(availability='contraband enabled')]), 'cargo:contraband')
+        self.assertEqual(text(cargo=[dict(availability='special_enabled (runtime unlock)')]), 'cargo:special')
+        self.assertEqual(text(cargo=[dict(availability='special_enabled by default')]), 'cargo', 'on by default needs nothing')
+        self.assertEqual(text(cargo=[dict(availability='emagged console; contraband enabled')]), 'cargo:emag+contraband')
+        self.assertEqual(text(cargo=[dict(availability='ordinary console'), dict(availability='emagged console')]), 'cargo cargo:emag')
+        console = lambda kind: dict(where='x', offer='/datum/orderable_item/x', shop_type=f'/obj/machinery/computer/order_console/{kind}')
+        self.assertEqual(text(order_consoles=[console('mining'), console('mining/golem')]), 'console:golem,mining', 'not the same as a black market')
+        self.assertEqual(text(other_sellers=[dict(offer='/datum/market_item/clothing/floortileset')]), 'blackmarket')
+        self.assertEqual(text(other_sellers=[dict(offer='/datum/voucher_set/mining/crusher_kit')]), 'voucher')
+        self.assertEqual(text(other_sellers=[dict(offer='/datum/exploration_event/simple/trader/fish')]), 'drone')
+        self.assertEqual(text(other_sellers=[dict(offer='/datum/something_new')]), 'seller')
 
     def test_sheet_splits_where_it_comes_from(self):
         def text(**sources):
@@ -400,6 +448,53 @@ class GearCatalogTest(unittest.TestCase):
         text = sheet_text('gloves', dict(items={entry['path']: entry}), {})
         self.assertIn('rolls:siemens_coefficient=pick(0,1)', text)
         self.assertNotIn('insul', text.splitlines()[3], 'the dump happened to roll zero')
+
+    def test_a_roll_the_type_rules_out_is_no_roll(self):
+        (self.root / 'code' / 'late.dm').write_text("""
+/obj/item/bottle
+	var/count
+	var/shiny = TRUE
+	var/plain
+	var/kept = 0
+
+/obj/item/bottle/Initialize(mapload)
+	if(!count)
+		count = rand(1, 7)
+	if(shiny)
+		kept = rand(1, 2)
+	if(isnull(plain))
+		plain = rand(1, 3)
+	if(mapload)
+		kept = rand(3, 4)
+	. = ..()
+
+/obj/item/bottle/full
+	count = 7
+
+/obj/item/bottle/dull
+	shiny = FALSE
+
+/obj/item/bottle/set_zero
+	plain = 0
+
+/obj/item/bottle/runtime
+	count = pick(1, 2)
+""", encoding='utf-8')
+        dm = DM(self.root)
+        raw = dict(vars=dict(count=3, kept=1, plain=2))
+        self.assertEqual(randomised_vars(dm, '/obj/item/bottle', raw), dict(count='rand(1, 7)', kept='rand(1, 2)', plain='rand(1, 3)'))
+        self.assertNotIn('count', randomised_vars(dm, '/obj/item/bottle/full', raw), 'it sets 7, so the roll never runs')
+        self.assertEqual(randomised_vars(dm, '/obj/item/bottle/dull', raw)['kept'], 'rand(3, 4)', 'if(shiny) is off, and if(mapload) is an argument: it could run')
+        self.assertNotIn('plain', randomised_vars(dm, '/obj/item/bottle/set_zero', raw), 'zero is not null')
+        self.assertIn('count', randomised_vars(dm, '/obj/item/bottle/runtime', raw), 'the value is itself decided at runtime')
+
+    def test_a_rolled_number_is_not_shown_as_a_fact(self):
+        entry = dict(path='/obj/item/storage/pill_bottle/x', name='x', status='ok', abstract=False, cosmetic=False, known_sources=['loot'], firm_sources=['loot'], sources={}, availability=availability({}),
+                     other_vars=dict(spawn_count=3, other=4), randomised=dict(spawn_count='rand(1,7)'))
+        row = sheet_text('medical', dict(items={entry['path']: entry}), {}).splitlines()[3]
+        self.assertIn('rolls:spawn_count=rand(1,7)', row)
+        self.assertNotIn('spawn_count=3', row)
+        self.assertIn('other=4', row)
 
     def test_upgrades_print_on_their_sheet(self):
         text = sheet_text('modsuits', dict(items={}, upgrades=['MOD fitting bench, any suit, Plating: adds melee+15']), {})
@@ -534,6 +629,91 @@ class ResearchTest(ReaderFixture):
         text = '/obj/item/foo/bar()' + chr(10) + chr(9) + 'to_chat(user, "[b ? "it' + chr(39) + 's" : "no"]")' + chr(10) + '/obj/item/thing // a comment' + chr(10) + chr(9) + 'name = "x"' + chr(10)
         self.assertEqual(clean_comments(text).splitlines()[2].strip(), '/obj/item/thing')
         self.assertIn('/obj/item/thing', self.reader(text).headers)
+
+
+class MadeByUseTest(ReaderFixture):
+    def rows(self, text):
+        static = self.static(text)
+        static.build_made_by_use()
+        return {path: [row['from_item'] for row in rows] for path, rows in static.made_by_use.items()}
+
+    def test_what_a_use_proc_makes(self):
+        self.assertEqual(self.rows("""
+/obj/item/pipe/welder_act(mob/living/user, obj/item/welder)
+	new /obj/item/sliced_pipe(drop_location())
+	qdel(src)
+
+/obj/item/sliced_pipe/attackby(obj/item/item, mob/user)
+	var/obj/item/grenade/ied/bomb = new(drop_location())
+	new /obj/item/sliced_pipe(src)
+
+/obj/item/pipe/proc/not_a_use()
+	new /obj/item/nothing(src)
+"""), {'/obj/item/sliced_pipe': ['/obj/item/pipe'], '/obj/item/grenade/ied': ['/obj/item/sliced_pipe']})
+
+    def test_handing_back_what_went_in_makes_nothing(self):
+        self.assertEqual(self.rows("""
+/obj/item/assembly/attackby(obj/item/I, mob/user)
+	if(istype(I, /obj/item/saber))
+		swords++
+	if(I.tool_behaviour == TOOL_SCREWDRIVER)
+		new /obj/item/saber(drop_location())
+		new /obj/item/helmet(drop_location())
+"""), {'/obj/item/helmet': ['/obj/item/assembly']})
+
+    def test_taking_one_in_to_make_another_still_counts(self):
+        self.assertEqual(self.rows("""
+/obj/item/card/attackby(obj/item/I, mob/user)
+	if(istype(I, /obj/item/deck))
+		new /obj/item/deck(drop_location())
+"""), {'/obj/item/deck': ['/obj/item/card']})
+
+
+class RecipeMachineryTest(ReaderFixture):
+    def test_what_a_recipe_uses_up(self):
+        static = self.static("""
+#define CRAFTING_MACHINERY_CONSUME 1
+#define CRAFTING_MACHINERY_USE 0
+#define CRAFTING_STRUCTURE_CONSUME 1
+
+/datum/crafting_recipe/sword
+	machinery = list(/obj/machinery/crystal = CRAFTING_MACHINERY_CONSUME, /obj/machinery/oven = CRAFTING_MACHINERY_USE)
+	structures = list(/obj/structure/toilet = CRAFTING_STRUCTURE_CONSUME)
+""")
+        self.assertEqual(static.used_up_fixtures('/datum/crafting_recipe/sword'), ['/obj/machinery/crystal', '/obj/structure/toilet'])
+
+
+class BiomeTest(ReaderFixture):
+    def test_biome_features_are_a_loot_source(self):
+        sources = self.static("""
+/datum/planet/snow
+	overworld_biomes = list("cold" = list("wet" = /datum/biome/xmas, "dry" = /datum/biome/xmas))
+	cave_biomes = list("cold" = list("wet" = /datum/biome/rubble))
+
+/datum/biome/xmas
+	feature_spawn_chance = 10
+	feature_spawn_list = list(/obj/item/gift = 50, /obj/item/storage/santabag = 1)
+	flora_spawn_list = list(/obj/structure/flora/tree = 500)
+
+/datum/biome/rubble
+	feature_spawn_chance = 1
+	feature_spawn_list = list(/obj/effect/spawner/random/maintenance = 1, /obj/structure/closet/crate/grave = 2)
+
+/datum/biome/unused
+	feature_spawn_list = list(/obj/item/never = 1)
+
+/obj/structure/closet/crate/grave/PopulateContents()
+	new /obj/item/shovel(src)
+""", Sources)
+        sources.dump = {}
+        sources.loot = collections.defaultdict(list)
+        sources.build_biome_features()
+        bag = sources.loot['/obj/item/storage/santabag'][0]
+        self.assertEqual((bag['channel'], bag['biome'], bag['weight'], bag['pool_weight'], bag['chance_per_turf']), ('biome', '/datum/biome/xmas', 1, 51, 10))
+        self.assertEqual(sources.loot['/obj/item/shovel'][0]['via'], ['/obj/structure/closet/crate/grave'], 'what a crate on the ground holds')
+        self.assertNotIn('/obj/item/never', sources.loot, 'no planet uses that biome')
+        self.assertNotIn('/obj/effect/spawner/random/maintenance', sources.loot, 'map placements count the maintenance pool')
+        self.assertNotIn('/obj/structure/flora/tree', sources.loot)
 
 
 class StackRecipeTest(ReaderFixture):

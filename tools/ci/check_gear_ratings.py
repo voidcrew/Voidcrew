@@ -6,6 +6,7 @@ Reads the game's source through load_static and the tracked files in tools/gear_
 Crew reputation gates what crews buy, research and get offered; exploration and looting may bypass it on purpose. So only the routes in
 tools/gear_catalog/policy.json count, and a recipe with an ingredient none of them sells must be found in the field, so it's exempt, unless the
 policy calls that ingredient ordinary. A design only a hidden research node grants is a find too.
+Items made by using parts count when the policy lists made_by_use. That route is read from `new` in use procs, so it only sees the item used, not any other part a step asks for.
 Errors fail the check:
     unrated             gear with a checked route and no entry in items or unrated, or with a word in unrated that says it has no route
     below_reputation    a checked route lets a crew get it below its tier's reputation
@@ -24,7 +25,7 @@ import time
 
 from tools.gear_catalog.categories import REP_ORDER, category_of, is_gear
 from tools.gear_catalog.ratings import EXCEPTIONS_FILE, POLICY_FILE, RATINGS_FOLDER, exception_problems, load_docs, policy_problems
-from tools.gear_catalog.recipes import covering_types, fixture_needs, is_ordinary, item_needs, recipe_step, settle
+from tools.gear_catalog.recipes import covering_types, fixture_needs, is_ordinary, item_needs, recipe_step, settle, use_recipe
 from tools.gear_catalog.static_sources import load_static
 
 
@@ -99,6 +100,17 @@ def crafted_offers(routes, steps, covers):
     return offers
 
 
+def used_offers(routes, steps, covers):
+    """Every item a crew can get that turns into this one when used."""
+    offers = []
+    for row in routes.get("made_by_use") or []:
+        step = recipe_step(use_recipe(row), steps, covers)
+        if step is not None:
+            offers.append(dict(kind="made_by_use", route=row["from_item"], step=step, row=row, source=row.get("source"), how=f"made at {rep_words(step)} by using {row['from_item']}",
+                               fix="Raise the reputation of what it's made from"))
+    return offers
+
+
 def reachable(static, paths, checked, ordinary=()):
     """The lowest step that reaches each item through checked routes, and which paths count as each recipe ingredient.
 
@@ -110,8 +122,11 @@ def reachable(static, paths, checked, ordinary=()):
         offers = bought_offers(routes, checked)
         if offers:
             start[path] = min(offer["step"] for offer in offers)
-        if "crafting" in checked and routes.get("crafting"):
-            recipes[path] = routes["crafting"]
+        found = list(routes.get("crafting") or []) if "crafting" in checked else []
+        if "made_by_use" in checked:
+            found += [use_recipe(row) for row in routes.get("made_by_use") or []]
+        if found:
+            recipes[path] = found
 
     for path in paths:
         read(path, static.routes(path))
@@ -228,7 +243,7 @@ def find_problems(static, docs, policy, exceptions, exceptions_text=""):
         if not is_gear(category):
             continue
         routes = static.routes(path)
-        offers = bought_offers(routes, checked) + (crafted_offers(routes, steps, covers) if "crafting" in checked else [])
+        offers = bought_offers(routes, checked) + (crafted_offers(routes, steps, covers) if "crafting" in checked else []) + (used_offers(routes, steps, covers) if "made_by_use" in checked else [])
         # A stack counts as whatever it merges into, so a rating of the 1-stack covers the 50-stack.
         entry = entries.get(path) or entries.get(static.merge_key(path))
         if entry:
