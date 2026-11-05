@@ -126,10 +126,11 @@
 
 	var/datum/outpost_shop/vendor/suit_fitter/fitter = allocate(/datum/outpost_shop/vendor/suit_fitter)
 	TEST_ASSERT_EQUAL(length(fitter.mission_requests), 6, "The fitter must supply all six salvage requests")
+	// Ship deliveries ask for goods from the field, never ore.
 	var/datum/mission/delivery/delivery = allocate(/datum/mission/delivery)
-	TEST_ASSERT_EQUAL(delivery.weight, 0, "Ore-only ship deliveries must not roll")
-	TEST_ASSERT(delivery.generation_failed, "Explicit generation must also refuse suspended ship deliveries")
-	TEST_ASSERT_EQUAL(length(delivery.objectives), 0, "Suspended deliveries must not build an ore objective")
+	TEST_ASSERT(!delivery.generation_failed, "Ship deliveries stopped generating")
+	for(var/list/ask as anything in delivery.delivery_asks)
+		TEST_ASSERT(!ispath(ask["type"], /obj/item/stack/ore), "A ship delivery asks for [ask["type"]]")
 
 /// Unsupported and malformed rows never enter the ordinary supply pool.
 /datum/unit_test/voidcrew_procurement_filter/Run()
@@ -187,11 +188,15 @@
 		TEST_ASSERT_EQUAL(length(outpost.shop_offers), 4, "Supply eligibility stalled the outpost board")
 		TEST_ASSERT_EQUAL(outpost.has_posted_offer_type(/datum/mission/outpost_supply), length(pool) && is_outpost_procurement_type(pool[1]["type"]), "Only eligible pools should force a plain supply request")
 
+/// Never rolls, so a test can read the loot list. initial() can't read a list from a type.
+/obj/effect/spawner/random/mod/maint/voidcrew_loot_test
+	spawn_loot_chance = 0
+
 /// Exact loot-module eligibility must not silently expand with printable designs.
 /datum/unit_test/voidcrew_procurement_module_sources/Run()
 	var/list/loot_modules = list(/obj/item/mod/module/springlock, /obj/item/mod/module/visor/rave, /obj/item/mod/module/balloon, /obj/item/mod/module/stamp)
-	var/obj/effect/spawner/random/mod/maint/spawner_type = /obj/effect/spawner/random/mod/maint
-	var/list/loot = initial(spawner_type.loot)
+	var/obj/effect/spawner/random/mod/maint/voidcrew_loot_test/spawner = allocate(/obj/effect/spawner/random/mod/maint/voidcrew_loot_test)
+	var/list/loot = spawner.loot
 	for(var/module_type in loot_modules)
 		TEST_ASSERT(module_type in loot, "Eligible [module_type] lost its loot source")
 		TEST_ASSERT(is_outpost_procurement_type(module_type), "The loot module [module_type] must be supported")

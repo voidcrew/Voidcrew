@@ -624,6 +624,7 @@
 	TEST_ASSERT(!sku.has_zone_permission(crew), "A package SKU lost its permission")
 	set_permission(crew, 1)
 	TEST_ASSERT(sku.has_zone_permission(crew), "Qualified package was denied")
+	mission.accepting_crew = crew
 	mission.reserve_contract_stock()
 	TEST_ASSERT_EQUAL(sku.reserved_stock, 1, "Package did not reserve its tagged SKU")
 	TEST_ASSERT_EQUAL(sku.zone_permission, 1, "Reservation discarded the SKU permission")
