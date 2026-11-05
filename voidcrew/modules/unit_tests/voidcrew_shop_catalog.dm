@@ -528,7 +528,7 @@
 /datum/unit_test/voidcrew_ladder_bought_caches/Run()
 	var/list/gun_pools = list(
 		list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel),
-		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi),
+		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/mini_uzi),
 	)
 	var/list/gun_weights = list(list(940, 59, 1), list(45, 54, 1), list(15, 35, 50))
 	var/list/melee_weights = list(list(900, 99, 1), list(35, 64, 1), list(10, 45, 45))

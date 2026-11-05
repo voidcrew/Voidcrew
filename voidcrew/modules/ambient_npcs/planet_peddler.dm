@@ -292,12 +292,28 @@
 	item_path = /obj/item/knife/combat/survival
 	price_credits = 250
 
-// Hits like Sarge's combat knife but sits a tier below it, so between that and the survival knife
+// Hits like Sarge's combat knife, and priced between that and the survival knife
 /datum/shop_sku/peddler/weapon/green/javelin
 	item_path = /obj/item/spear/military
 	price_credits = 375
 
-// Yellow. Sarge's and Vex's lines; the Uzi matches the C-20r and the Thompson the WT-550.
+/datum/shop_sku/peddler/weapon/green/combat_knife
+	item_path = /obj/item/knife/combat
+	price_credits = 675
+
+/datum/shop_sku/peddler/weapon/green/shortsword
+	item_path = /obj/item/claymore/shortsword
+	price_credits = 900
+
+/datum/shop_sku/peddler/weapon/green/fireaxe
+	item_path = /obj/item/fireaxe
+	price_credits = 450
+
+/datum/shop_sku/peddler/weapon/green/sabre
+	item_path = /obj/item/melee/sabre
+	price_credits = 600
+
+// Yellow. Sarge's and Vex's lines; the Uzi matches the C-20r.
 
 /datum/shop_sku/peddler/weapon/yellow/laser
 	item_path = /obj/item/gun/energy/laser
@@ -327,33 +343,22 @@
 	item_path = /obj/item/gun/ballistic/automatic/wt550
 	price_credits = 4950
 
-/datum/shop_sku/peddler/weapon/yellow/tommygun
-	item_path = /obj/item/gun/ballistic/automatic/tommygun
-	price_credits = 4950
-
-/datum/shop_sku/peddler/weapon/yellow/combat_knife
-	item_path = /obj/item/knife/combat
-	price_credits = 675
-
 /datum/shop_sku/peddler/weapon/yellow/ablative_bat
 	item_path = /obj/item/melee/baseball_bat/ablative
 	price_credits = 750
 
-/datum/shop_sku/peddler/weapon/yellow/shortsword
-	item_path = /obj/item/claymore/shortsword
-	price_credits = 900
-
-/datum/shop_sku/peddler/weapon/yellow/fireaxe
-	item_path = /obj/item/fireaxe
-	price_credits = 1125
-
-/datum/shop_sku/peddler/weapon/yellow/sabre
-	item_path = /obj/item/melee/sabre
-	price_credits = 1350
-
 /datum/shop_sku/peddler/weapon/yellow/boarding_axe
 	item_path = /obj/item/fireaxe/boardingaxe
 	price_credits = 1800
+
+/datum/shop_sku/peddler/weapon/yellow/cutlass
+	item_path = /obj/item/claymore/cutlass
+	price_credits = 2250
+
+// Blocks melee only and hits a little softer than the cutlass, so it goes at the cutlass's price
+/datum/shop_sku/peddler/weapon/yellow/claymore
+	item_path = /obj/item/claymore
+	price_credits = 2250
 
 // Red. No trader sells a red gun, so they match Vex's dearest weapon, the energy sword. The L6 SAW,
 // the anti-materiel rifle, the X-ray gun and the uniques stay out of the pack: guarded work pays those.
@@ -386,13 +391,9 @@
 	item_path = /obj/item/gun/ballistic/shotgun/bulldog/unrestricted
 	price_credits = 6600
 
-/datum/shop_sku/peddler/weapon/red/cutlass
-	item_path = /obj/item/claymore/cutlass
-	price_credits = 4950
-
-// Blocks melee only and hits a little softer than the cutlass, so it goes at the cutlass's price
-/datum/shop_sku/peddler/weapon/red/claymore
-	item_path = /obj/item/claymore
+// Came over from yellow at the price it had there, the WT-550's
+/datum/shop_sku/peddler/weapon/red/tommygun
+	item_path = /obj/item/gun/ballistic/automatic/tommygun
 	price_credits = 4950
 
 // Turns bullets as an energy sword does

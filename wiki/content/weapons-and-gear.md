@@ -40,9 +40,9 @@ Loot weapons follow three broad groups:
 
 | Group | Examples |
 |---|---|
-| Green | Surplus rifles, pistols, detective revolvers, double-barrelled shotguns; survival knives, spears, hatchets and bats |
-| Yellow | Laser and energy guns, WT-550s, C-20rs, Uzis and Tommy guns; combat knives, shortswords, fire axes and sabres |
-| Red | Carbines, laser cannons, L6 SAWs, X-ray guns, sniper rifles, combat shotguns and Bulldogs; claymores, katanas and energy swords |
+| Green | Surplus rifles, pistols, detective revolvers, double-barrelled shotguns; survival and combat knives, spears, hatchets, bats, shortswords, fire axes, sabres and maces |
+| Yellow | Laser and energy guns, WT-550s, C-20rs and Uzis; metal bats, boarding axes, claymores and cutlasses |
+| Red | Carbines, laser cannons, L6 SAWs, X-ray guns, sniper rifles, combat shotguns, Bulldogs and Tommy guns; katanas and energy swords |
 
 These are loot groups, not restrictions on what you may carry. Green loot can rarely roll stronger equipment. Yellow and red improve the odds.
 

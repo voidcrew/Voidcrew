@@ -109,10 +109,10 @@
 /datum/unit_test/voidcrew_freight_profiles/Run()
 	var/list/expected_pools = list(
 		list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel),
-		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi),
-		list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat),
-		list(/obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/melee/baseball_bat/ablative, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre),
-		list(/obj/item/claymore, /obj/item/claymore/cutlass, /obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate),
+		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/mini_uzi),
+		list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat, /obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre),
+		list(/obj/item/melee/baseball_bat/ablative, /obj/item/claymore, /obj/item/claymore/cutlass, /obj/item/fireaxe/boardingaxe, /obj/item/claymore/cutlass/old, /obj/item/claymore/weak),
+		list(/obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate),
 	)
 	var/list/pools = list(GLOB.abandoned_crate_guns_green, GLOB.abandoned_crate_guns_yellow, GLOB.abandoned_crate_melee_green, GLOB.abandoned_crate_melee_yellow, GLOB.abandoned_crate_melee_red)
 	for(var/index in 1 to length(pools))

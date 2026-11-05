@@ -2,7 +2,7 @@
 // ARMORY THEME: military/security hardware for ruins with a garrison story
 // (weapons labs, chokepoints, fortresses, crashed patrol ships, the
 // Bastion-6 chart ruin). Common is mall-cop kit, uncommon is line infantry,
-// prime is the riot line's back room. Guarded by whatever outlived the garrison:
+// prime is the marines' back room. Guarded by whatever outlived the garrison:
 // asset-denial automation (robot markers) or the holdouts themselves
 // (syndicate markers).
 // Cyberware: chrome a garrison would have issued rather than bought, light
@@ -81,11 +81,9 @@
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/chainsaw = 1,
-			/obj/item/claymore/cutlass/old = 1,
-			/obj/item/claymore/weak = 1,
 			/obj/item/crowbar/large/twenty_force = 1,
-			/obj/item/fireaxe/boardingaxe = 1,
 			/obj/item/fireaxe/boneaxe = 1,
+			/obj/item/melee/greykingsword = 1,
 			/obj/item/melee/parsnip_sabre = 1,
 			/obj/item/nullrod/claymore = 1,
 			/obj/item/nullrod/claymore/chainsaw_sword = 1,
@@ -110,7 +108,9 @@
 			/obj/item/shield/roman = 1,
 			/obj/item/shovel/serrated = 1,
 			/obj/item/spear/grey_tide = 1,
+			/obj/item/storage/toolbox/mechanical/old/clean = 1,
 			/obj/item/switchblade = 1,
+			/obj/item/veilrender/vealrender = 1,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/clothing/gloves/knock_knock = 1,
@@ -120,11 +120,8 @@
 			/obj/item/melee/energy/sword/saber/blue = 1,
 			/obj/item/melee/energy/sword/saber/purple = 1,
 			/obj/item/melee/energy/sword/saber/red = 1,
-			/obj/item/melee/greykingsword = 1,
 			/obj/item/shield/energy = 1,
-			/obj/item/storage/toolbox/mechanical/old/clean = 1,
 			/obj/item/veilrender = 1,
-			/obj/item/veilrender/vealrender = 1,
 		),
 	)
 	guard_themes = list(
@@ -156,7 +153,7 @@
 	loot_uncommon = list(
 		/obj/item/clothing/suit/armor/bulletproof = 10,
 		/obj/item/ammo_box/magazine/m45 = 8,
-		/obj/item/clothing/suit/armor/vest/marine = 5,
+		/obj/item/clothing/suit/armor/riot = 5,
 		/obj/item/clothing/gloves/combat = 5,
 		/obj/item/clothing/shoes/combat = 5,
 		/obj/item/clothing/under/syndicate/tacticool = 3,
@@ -165,7 +162,7 @@
 		/obj/item/organ/cyberimp/cyberware/dermal_mesh = 4,
 	)
 	loot_prime = list(
-		/obj/item/clothing/suit/armor/riot = 9,
+		/obj/item/clothing/suit/armor/vest/marine = 9,
 		/obj/item/clothing/head/helmet/toggleable/riot = 8,
 		/obj/item/clothing/suit/armor/laserproof = 6,
 		/obj/item/clothing/head/helmet/marine = 6,

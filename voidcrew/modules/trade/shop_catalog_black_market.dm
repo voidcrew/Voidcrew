@@ -974,14 +974,14 @@
 		if(weapon_class == "green")
 			return list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel)
 		// Freight substitutes ordinary guns even when the advanced class wins.
-		return list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi)
+		return list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/mini_uzi)
 	switch(weapon_class)
 		if("green")
-			return list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat)
+			return list(/obj/item/knife/combat/survival, /obj/item/spear, /obj/item/hatchet, /obj/item/melee/baseball_bat, /obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre)
 		if("yellow")
-			return list(/obj/item/knife/combat, /obj/item/claymore/shortsword, /obj/item/melee/baseball_bat/ablative, /obj/item/fireaxe, /obj/item/melee/cleric_mace, /obj/item/melee/sabre)
+			return GLOB.abandoned_crate_melee_yellow.Copy()
 		if("red")
-			return list(/obj/item/claymore, /obj/item/claymore/cutlass, /obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate)
+			return list(/obj/item/katana, /obj/item/mjollnir, /obj/item/melee/energy/sword/saber, /obj/item/melee/energy/sword/pirate)
 
 /obj/structure/closet/crate/zone_loot/syndicate/trader/proc/roll_weapon()
 	var/gun = prob(get_gun_chance())

@@ -106,7 +106,7 @@
 						weapons++
 						var/expected_gun = zone == 2 ? /obj/item/gun/energy/laser : /obj/item/gun/ballistic/automatic/c20r/unrestricted
 						TEST_ASSERT(zone != 1 && drop.type == expected_gun, "[mob_type]/[zone] emitted a gun outside its spawn-zone pool")
-					TEST_ASSERT(!istype(drop, /obj/item/claymore/cutlass) && !istype(drop, /obj/item/melee/energy/sword) && !istype(drop, /obj/item/switchblade) && !istype(drop, /obj/item/pen/edagger), "[mob_type] emitted a former weapon or corpse duplicate")
+					TEST_ASSERT(!istype(drop, /obj/item/melee/energy/sword) && !istype(drop, /obj/item/switchblade) && !istype(drop, /obj/item/pen/edagger), "[mob_type] emitted a former weapon or corpse duplicate")
 				TEST_ASSERT_EQUAL(weapons, 1, "[mob_type]/[zone] must pay exactly one weapon including corpse equipment")
 				TEST_ASSERT_EQUAL(corpses, 1, "[mob_type] must leave exactly one corpse")
 				var/list/after = run_loc_floor_bottom_left.get_all_contents()

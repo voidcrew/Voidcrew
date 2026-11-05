@@ -36,7 +36,7 @@
 		),
 	)
 	melee_extras = list(
-		LOOT_WEAPON_RED = list(
+		LOOT_WEAPON_YELLOW = list(
 			/obj/item/knife/bloodletter = 1,
 		),
 	)
