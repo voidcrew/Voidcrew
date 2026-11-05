@@ -797,7 +797,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
  * eligibility gate in full (conscious only, never the undead, never someone already
  * possessed, never through mind-affecting antimagic, never someone inside the per-victim
  * lockout), the green wash everyone in the room can see, thralls never targeting each
- * other, and the effect ending on cuffs, stuns, crit or death.
+ * other, cuffs and stuns stopping the puppet from acting without ending the possession, and
+ * the effect ending when the victim is knocked out, crits or dies, or when the wielder dies.
  */
 /obj/item/verdigris_bridle
 	name = "verdigris bridle"

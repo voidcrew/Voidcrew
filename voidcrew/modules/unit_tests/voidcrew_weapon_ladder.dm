@@ -12,6 +12,10 @@
 		/datum/techweb_node/weapon_ammo_bulldog = 2,
 		/datum/techweb_node/weapon_ammo_sniper_rifle = 2,
 		/datum/techweb_node/experimental_ammo = 2,
+		/datum/techweb_node/tech_shells = 2,
+		/datum/techweb_node/thermal_rounds = 1,
+		/datum/techweb_node/heavy_shells = 2,
+		/datum/techweb_node/heavy_magazines = 2,
 	)
 	for(var/datum/techweb_node/node_type as anything in permissions)
 		var/datum/techweb_node/node = SSresearch.techweb_nodes[initial(node_type.id)]
@@ -210,10 +214,12 @@
 /// The original nodes and fabrication channels still grant all ordinary weapon designs.
 /datum/unit_test/voidcrew_ladder_weapon_designs/Run()
 	var/list/node_designs = list(
-		TECHWEB_NODE_ELECTRIC_WEAPONS = list("stunrevolver", "ioncarbine", "temp_gun"),
-		TECHWEB_NODE_BEAM_WEAPONS = list("nuclear_gun", "xray_laser"),
-		TECHWEB_NODE_SYNDICATE_BASIC = list("largecrossbow", "rapidsyringe"),
-		TECHWEB_NODE_UNREGULATED_BLUESPACE = list("beamrifle", "desynchronizer"),
+		TECHWEB_NODE_ELECTRIC_WEAPONS = list("nuclear_gun", "ioncarbine", "temp_gun"),
+		TECHWEB_NODE_BEAM_WEAPONS = list("stunrevolver", "xray_laser"),
+		TECHWEB_NODE_SYNDICATE_BASIC = list("rapidsyringe"),
+		"restricted_tech" = list("largecrossbow"),
+		TECHWEB_NODE_UNREGULATED_BLUESPACE = list("beamrifle"),
+		"desynchronization" = list("desynchronizer"),
 		TECHWEB_NODE_LIGHT_APPS = list("photon_cannon"),
 		TECHWEB_NODE_ANOMALY_SHELLS = list("gravitygun", "wormholeprojector"),
 		TECHWEB_NODE_RIOT_SUPRESSION = list("tele_shield"),

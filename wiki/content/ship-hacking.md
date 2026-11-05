@@ -17,7 +17,7 @@ The suite draws about 2 kW while an exploit is warming up or live, and losing po
 
 Exploits come on physical **cartridges**, inserted into the suite by hand and fired from the console's **Exploits** tab. Each cartridge holds a few charges and burns one per execution; at zero it is a burned-out cartridge, and there are no refills. After any execution, that exploit goes on a 60-second recompile cooldown, and the suite runs one execution at a time.
 
-Research only ever prints the three tier-1 cartridges. Tier 2 and up are sold nowhere but Vex's **Exploit Software** shelf: tier 3 stock is zero-to-one per round, and the tier-4 exotics sit on the rotating shelf and take vouchers only. A cartridge's examine text names its exploit, tier, target subsystem and remaining charges, so looted or traded software is never a mystery.
+Research only ever prints the three tier-1 cartridges. Tier 2 and up are sold nowhere but Vex's **Exploit Software** shelf: tier 3 stock is zero-to-one per round, and the tier-4 exotics sit on the rotating shelf and take vouchers only. Tier 3 and tier 4 cartridges need 11 [reputation](zone-reputation.md). A cartridge's examine text names its exploit, tier, target subsystem and remaining charges, so looted or traded software is never a mystery.
 
 ## Running a hack
 

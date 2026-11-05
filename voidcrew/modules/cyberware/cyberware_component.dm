@@ -256,6 +256,7 @@
 /// All non-chrome costs. Ordinary anatomy is free; chrome retains its component's cost.
 GLOBAL_LIST_INIT(installed_capacity_costs, list(
 	"implant" = 1,
+	"mindshield_implant" = 0,
 	"robotic_organ" = 1,
 	"bioware" = 1,
 	"prosthetic_limb" = 0,
@@ -270,6 +271,8 @@ GLOBAL_LIST_INIT(installed_capacity_costs, list(
 		if(chrome)
 			return chrome.chrome_load
 		return (IS_ROBOTIC_ORGAN(organ) || istype(organ, /obj/item/organ/cyberimp)) ? GLOB.installed_capacity_costs["robotic_organ"] : 0
+	if(istype(installed, /obj/item/implant/mindshield))
+		return GLOB.installed_capacity_costs["mindshield_implant"]
 	if(istype(installed, /obj/item/implant))
 		return GLOB.installed_capacity_costs["implant"]
 	if(istype(installed, /datum/status_effect/bioware))

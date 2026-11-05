@@ -581,9 +581,8 @@
  * The enabler: a neural governor with its limiter firmware deleted, worth
  * fifteen points of capacity and nothing else. Deliberately built on the
  * generic chrome base rather than tg's brain-implant subtype, the brain
- * base answers EMP with a 200/severity stun, which on a PvP server would
- * turn a one-voucher grenade into an execution button. Here it browns out
- * and reboots like every other piece of chrome.
+ * base answers EMP with a stun. Here it browns out and reboots like every
+ * other piece of chrome.
  */
 /obj/item/organ/cyberimp/cyberware/governor_delete
 	name = "\improper Governor Delete"

@@ -34,6 +34,7 @@
 		"Survival & EVA",
 		"Tools & Repair",
 		"Medical",
+		"Street Chrome",
 		"Prospecting",
 		"Arms",
 		"Fuel & Gas",
@@ -56,16 +57,25 @@
 		/datum/shop_sku/general/survival_medipen,
 		/datum/shop_sku/general/oxygen_canister,
 		/datum/shop_sku/general/jetpack,
+		/datum/shop_sku/general/magboots,
 		// Tools & Repair
 		/datum/shop_sku/general/welding_fuel,
+		/datum/shop_sku/general/insulated_gloves,
 		// Medical
 		/datum/shop_sku/general/medkit,
+		/datum/shop_sku/general/brute_kit,
 		/datum/shop_sku/general/burn_kit,
 		/datum/shop_sku/general/o2_kit,
+		/datum/shop_sku/general/toxin_kit,
+		/datum/shop_sku/general/mannitol_bottle,
+		/datum/shop_sku/general/penacid_bottle,
 		/datum/shop_sku/general/epipen,
 		/datum/shop_sku/general/gauze,
 		/datum/shop_sku/general/suture,
 		/datum/shop_sku/general/regen_mesh,
+		// Street Chrome
+		/datum/shop_sku/general/shock_coils,
+		/datum/shop_sku/general/second_wind,
 		// Prospecting
 		/datum/shop_sku/general/ore_bag,
 		/datum/shop_sku/general/adv_mining_scanner,
@@ -74,6 +84,11 @@
 		/datum/shop_sku/general/hunting_knife,
 		/datum/shop_sku/general/survival_knife,
 		/datum/shop_sku/general/surplus_rifle,
+		/datum/shop_sku/general/combat_knife,
+		/datum/shop_sku/general/shortsword,
+		/datum/shop_sku/general/pepper_spray,
+		/datum/shop_sku/general/armor_vest,
+		/datum/shop_sku/general/helmet,
 		// Fuel & Gas
 		/datum/shop_sku/general/plasma_canister,
 		/datum/shop_sku/general/plasma_sheets,
@@ -94,6 +109,7 @@
 		/datum/shop_sku/general/glass_sheets,
 		/datum/shop_sku/general/plasteel,
 		/datum/shop_sku/general/soap,
+		/datum/shop_sku/general/syndie_soap,
 		/datum/shop_sku/general/autolathe_board,
 		/datum/shop_sku/general/basic_parts,
 		/datum/shop_sku/general/supply_console_board,
@@ -232,14 +248,14 @@
 /datum/shop_sku/general/eva_suit
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/suit/space/eva
-	price_credits = 600
+	price_credits = 400
 	stock_min = 10
 	stock_max = 20
 
 /datum/shop_sku/general/eva_helmet
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/head/helmet/space/eva
-	price_credits = 450
+	price_credits = 300
 	stock_min = 10
 	stock_max = 20
 
@@ -282,6 +298,13 @@
 	stock_min = 1
 	stock_max = 2
 
+/datum/shop_sku/general/magboots
+	category = "Survival & EVA"
+	item_path = /obj/item/clothing/shoes/magboots
+	price_credits = 500
+	stock_min = 2
+	stock_max = 4
+
 // ===== TOOLS & REPAIR =====
 
 // Retained for the ordinary-shelf unit-test fixture; not sold at an outpost.
@@ -300,6 +323,13 @@
 	stock_min = 2
 	stock_max = 4
 
+/datum/shop_sku/general/insulated_gloves
+	category = "Tools & Repair"
+	item_path = /obj/item/clothing/gloves/color/yellow
+	price_credits = 400
+	stock_min = 1
+	stock_max = 3
+
 // ===== MEDICAL =====
 
 /datum/shop_sku/general/medkit
@@ -307,26 +337,54 @@
 	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/regular
-	price_credits = 300
+	price_credits = 150
+
+/datum/shop_sku/general/brute_kit
+	stock_max = 20
+	stock_min = 10
+	category = "Medical"
+	item_path = /obj/item/storage/medkit/brute
+	price_credits = 200
 
 /datum/shop_sku/general/burn_kit
 	stock_max = 20
 	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/fire
-	price_credits = 300
+	price_credits = 200
 
 /datum/shop_sku/general/o2_kit
 	stock_max = 20
 	stock_min = 10
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
+	price_credits = 200
+
+/datum/shop_sku/general/toxin_kit
+	stock_max = 20
+	stock_min = 10
+	category = "Medical"
+	item_path = /obj/item/storage/medkit/toxin
+	price_credits = 200
+
+/datum/shop_sku/general/mannitol_bottle
+	category = "Medical"
+	item_path = /obj/item/storage/pill_bottle/mannitol
+	price_credits = 200
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/general/penacid_bottle
+	category = "Medical"
+	item_path = /obj/item/storage/pill_bottle/penacid
 	price_credits = 300
+	stock_min = 1
+	stock_max = 3
 
 /datum/shop_sku/general/epipen
 	category = "Medical"
 	item_path = /obj/item/reagent_containers/hypospray/medipen
-	price_credits = 150
+	price_credits = 50
 	stock_min = 4
 	stock_max = 8
 
@@ -356,6 +414,22 @@
 	price_credits = 180
 	stock_min = 10
 	stock_max = 20
+
+// ===== STREET CHROME =====
+
+/datum/shop_sku/general/shock_coils
+	category = "Street Chrome"
+	item_path = /obj/item/organ/cyberimp/cyberware/shock_coils
+	price_credits = 500
+	stock_min = 2
+	stock_max = 3
+
+/datum/shop_sku/general/second_wind
+	category = "Street Chrome"
+	item_path = /obj/item/organ/cyberimp/cyberware/second_wind
+	price_credits = 900
+	stock_min = 1
+	stock_max = 3
 
 // ===== PROSPECTING =====
 
@@ -519,6 +593,11 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/soap
 	price_credits = 60
+
+/datum/shop_sku/general/syndie_soap
+	category = "Ship Sundries"
+	item_path = /obj/item/soap/syndie
+	price_credits = 80
 
 // Bootstrap insurance. An autolathe board only prints at a circuit imprinter,
 // and the imprinter kit only prints at an autolathe - a crew that loses its
@@ -729,3 +808,40 @@
 	restock_interval = 1 HOURS
 	fixed_price = TRUE
 	contract_reward = FALSE
+
+/datum/shop_sku/general/combat_knife
+	category = "Arms"
+	item_path = /obj/item/knife/combat
+	price_credits = 900
+	price_vouchers = 0
+	stock_min = 3
+	stock_max = 3
+
+/datum/shop_sku/general/shortsword
+	category = "Arms"
+	item_path = /obj/item/claymore/shortsword
+	price_credits = 1200
+	price_vouchers = 0
+	stock_min = 2
+	stock_max = 2
+
+/datum/shop_sku/general/pepper_spray
+	category = "Arms"
+	item_path = /obj/item/reagent_containers/spray/pepper
+	price_credits = 450
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/general/armor_vest
+	category = "Arms"
+	item_path = /obj/item/clothing/suit/armor/vest
+	price_credits = 450
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/general/helmet
+	category = "Arms"
+	item_path = /obj/item/clothing/head/helmet
+	price_credits = 300
+	stock_min = 2
+	stock_max = 4

@@ -61,6 +61,8 @@
 	freerange = TRUE
 	/// Set once someone starts searching it for the bug.
 	var/being_searched = FALSE
+	/// Weakref to the earpiece this chit shipped with.
+	var/datum/weakref/paired_earpiece
 
 /obj/item/radio/listening_coin/Initialize(mapload)
 	. = ..()
@@ -69,7 +71,16 @@
 	set_listening(FALSE)
 	set_frequency(FREQ_LISTENING_COIN)
 	freqlock = RADIO_FREQENCY_LOCKED
-	new /obj/item/radio/headset/listening_coin_earpiece(loc)
+	paired_earpiece = WEAKREF(new /obj/item/radio/headset/listening_coin_earpiece(loc))
+
+/**
+ * Always transmits on whatever network its earpiece is on. Binding the chit to a ship
+ * lazily, like any other radio, tuned it to the first hull it spoke aboard: plant it on
+ * an enemy ship and it reported to that ship's network, out of the earpiece's hearing.
+ */
+/obj/item/radio/listening_coin/get_comms_net()
+	var/obj/item/radio/headset/listening_coin_earpiece/earpiece = paired_earpiece?.resolve()
+	return earpiece ? earpiece.get_comms_net() : ..()
 
 /obj/item/radio/listening_coin/examine(mob/user)
 	. = ..()
@@ -586,7 +597,7 @@
 
 /obj/item/clothing/suit/hooded/cloak/second_shadow
 	name = "Second Shadow"
-	desc = "A heavy dark cloak that seems to move half a second after you do. With the hood up, a hit that would put you down leaves a decoy standing there instead. 3 minute cooldown between saves."
+	desc = "A heavy dark cloak that seems to move half a second after you do. With the hood up, it pulls you clear of whatever would have knocked you down and leaves a shape standing there instead. You still feel the hit."
 	// Custom folded-cloak obj icon. The worn sprite borrows the goliath cloak,
 	// darkened to match the flavor, copied into uniques_worn.dmi: the hood
 	// component (toggle_attached_clothing) overwrites worn_icon_state with
@@ -631,7 +642,7 @@
 /obj/item/clothing/suit/hooded/cloak/second_shadow/examine(mob/user)
 	. = ..()
 	if(COOLDOWN_FINISHED(src, decoy_cooldown))
-		. += span_notice("It's ready. Put the hood up and it'll take the next hit that would put you down.")
+		. += span_notice("It's ready.")
 	else
 		. += span_notice("It's recharging. [DisplayTimeText(COOLDOWN_TIMELEFT(src, decoy_cooldown))] left.")
 
@@ -774,6 +785,10 @@
 /obj/item/knife/understudy/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/// The finish doesn't take prints. Admins keep their hidden trail.
+/obj/item/knife/understudy/add_fingerprint(mob/suspect, ignoregloves = FALSE)
+	return add_hiddenprint(suspect)
 
 /obj/item/knife/understudy/Destroy()
 	deltimer(mark_timer_id)

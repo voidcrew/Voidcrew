@@ -19,7 +19,7 @@ Outside the parlor, ordinary organ-manipulation surgery at any operating table i
 
 ## Neural load
 
-Your body has **20 capacity** shared by chrome, ordinary implants, cybernetic organs, surgical enhancements and installed nanite programs. Ordinary implants, robotic organs and surgical enhancements cost **1 each**; prosthetic limbs cost **0**, but implants inside them still count. Chrome uses the catalogue loads below. Nanite costs depend on the program and count even when switched off. See [Nanites & Revival](nanites-and-revival.md). Every installed upgrade sums its load against capacity, and the Cradle refuses any install that would take you over, though swapping within a ladder only costs the difference, since the piece being replaced comes out first. If you somehow end up over capacity anyway, everything browns out: **every** piece of chrome goes offline and beneficial nanite programs pause until the load drops back under, Remove enough installed load to restore capacity.
+Your body has **20 capacity** shared by chrome, ordinary implants, cybernetic organs, surgical enhancements and installed nanite programs. Ordinary implants, robotic organs and surgical enhancements cost **1 each**. Mindshield implants cost **0**. Prosthetic limbs cost **0**, but implants inside them still count. Chrome uses the catalogue loads below. Nanite costs depend on the program and count even when switched off. See [Nanites & Revival](nanites-and-revival.md). Every installed upgrade sums its load against capacity, and the Cradle refuses any install that would take you over, though swapping within a ladder only costs the difference, since the piece being replaced comes out first. If you somehow end up over capacity anyway, everything browns out: **every** piece of chrome goes offline and beneficial nanite programs pause until the load drops back under, Remove enough installed load to restore capacity.
 
 Same-slot ware is mutually exclusive, one operating system, one dermal layer, one leg rig, one piece of hardware per arm, which makes most slots either a ladder (Shock Coils into Hopper Pistons, Dermal Mesh into Slabskin) or a straight choice (Cascade Lattice *or* Redline Core). Arm chrome always claims the whole arm: installing Mantis Blades evicts whatever that arm already carried. Chrome optics replace your natural eyes outright. The Governor Delete raises capacity by **15**, to **35**. It occupies the chest operating-system slot, so it competes with the Cascade lattice and Redline core.
 
@@ -27,7 +27,7 @@ Much of it shows. Plated arms, leg rigs, dermal weaves and spine lattices draw o
 
 ## The catalog
 
-Prices are Splice's, stock is limited per round, and load is the neural cost. Nightshade optics, Fixer's Fingers, Dermal Mesh, Hopper pistons, Icepick Jack, Heartbeat Doppler, Deadeye link, Slipwire and Prospector Suite need 4 [reputation](zone-reputation.md). Coolant Loop and Dead Channel need 11. Military and legend stock needs 22. "Pair" ware is sold as a cased set and installed one organ per arm.
+Prices are Splice's, stock is limited per round, and load is the neural cost. Nightshade optics, Fixer's Fingers, Dermal Mesh, Hopper pistons, Icepick Jack, Heartbeat Doppler, Deadeye link, Slipwire and Prospector Suite need 4 [reputation](zone-reputation.md). Coolant Loop, Dead Channel, Atlas frame, Gorilla Arms and Rigger socket need 11. The rest of the military and legend stock needs 22. Barnaby at Waystation Halcyon also sells Shock Coils and Second Wind at these prices. "Pair" ware is sold as a cased set and installed one organ per arm.
 
 ### Tier 1: Street chrome (credits)
 
@@ -49,9 +49,9 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. Ni
 
 | Piece | Price | Load | What it does |
 |---|---|---|---|
-| Harpoon Spool | 2,800 cr | 2 | Reel loose items and small creatures to you from six tiles; anything heavier drags you to it |
-| Hemoglass filter | 2,800 cr | 2 | Continuous blood scrub of toxins, drugs and radiation. Toggleable party mode keeps the booze |
-| Registry uplink | 2,800 cr | 2 | Manage your authorized outposts from anywhere through the Outpost Management action. Sold by Splice |
+| Harpoon Spool | 1,200 cr | 2 | Reel loose items and small creatures to you from six tiles; anything heavier drags you to it |
+| Hemoglass filter | 1,200 cr | 2 | Continuous blood scrub of toxins, drugs and radiation. Toggleable party mode keeps the booze |
+| Registry uplink | 1,200 cr | 2 | Manage your authorized outposts from anywhere through the Outpost Management action. Sold by Splice |
 | Hopper piston calves | 3,600 cr | 3 | A targeted leap up to four tiles, clearing tables and gaps. Evicts Shock Coils |
 | Coolant Loop lattice | 3,600 cr | 3 | No heat-exposure damage, half burn damage, actively sheds fire stacks |
 | Icepick Jack | 1 voucher | 3 | Data spike: suppress a hostile turret for 15s or flip its IFF to you for 10s, and force bolted doors. Spiking a player ship's turrets alarms its crew |
@@ -60,7 +60,7 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. Ni
 | Deadeye link | 2 vouchers | 3 | Tag a target: your next three shots hard-track it. Carries the itemized Chrome Read |
 | Slipwire reflex shunt | 2 vouchers | 4 | 15% chance to dodge projectiles while moving, plus a small always-on speed boost |
 | Dead Channel pain editor | 2 vouchers | 4 | No pain, no soft crit, half stamina damage, no damage slowdown, but your own health readouts go dark while it runs |
-| Prospector Suite optics | 2 vouchers | 2 | Pulse that lights ore veins through rock out to nine tiles. Carries the itemized Chrome Read |
+| Prospector Suite optics | 1 voucher | 2 | Pulse that lights ore veins through rock out to nine tiles. Carries the itemized Chrome Read |
 | Skyhook wrist winch | *not sold* | 3 | Grapple to a wall or structure up to seven tiles away. Expedition-cache loot only |
 
 ### Tier 3: Military chrome (vouchers)
@@ -87,7 +87,7 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. Ni
 | Cascade lattice | 8 | 12 | The sandevistan: eight seconds at double time with halved melee cooldowns and 40% projectile dodge while moving, then the crash. An EMP mid-window ends it early and eats the cooldown |
 | Meteor Piledriver frame | *never sold* | 8 | An eight-tile leap that crushes whoever is standing on the landing tile and hurls everyone around them. A rare guarded-mission completion prize; see [Missions](missions.md) |
 
-The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits, Buster rocket pairs at 600. Splice also buys back *removed* street chrome at about half list price; military chrome is never bought back.
+The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits and Buster rocket pairs at 300, both at 4 [reputation](zone-reputation.md). Splice also buys back *removed* street chrome at about half list price; military chrome is never bought back.
 
 ## Finding chrome in the wild
 

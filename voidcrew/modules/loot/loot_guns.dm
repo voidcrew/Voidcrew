@@ -82,11 +82,11 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,
-			/obj/item/gun/ballistic/automatic/tommygun = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,
 			/obj/item/gun/energy/laser/hellgun = 10,
+			/obj/item/gun/ballistic/automatic/tommygun = 10,
 		),
 	),
 	LOOT_GUN_POOL_FREIGHT = list(
@@ -98,30 +98,34 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/shotgun/riot = 10,
-			/obj/item/gun/ballistic/automatic/tommygun = 10,
 			/obj/item/gun/ballistic/automatic/mini_uzi = 10,
 		),
 	),
 ))
 
+// Yellow stays six weapons at equal weight, so the metal bat stays 1 in 6. The class still totals 60,
+// which keeps each theme's weight-one extras at their old odds.
 GLOBAL_LIST_INIT(loot_melee_pools, list(
 	LOOT_WEAPON_GREEN = list(
 		/obj/item/knife/combat/survival = 10,
 		/obj/item/spear = 10,
 		/obj/item/hatchet = 10,
 		/obj/item/melee/baseball_bat = 10,
-	),
-	LOOT_WEAPON_YELLOW = list(
 		/obj/item/knife/combat = 10,
 		/obj/item/claymore/shortsword = 10,
-		/obj/item/melee/baseball_bat/ablative = 10,
 		/obj/item/fireaxe = 10,
 		/obj/item/melee/cleric_mace = 10,
 		/obj/item/melee/sabre = 10,
 	),
-	LOOT_WEAPON_RED = list(
+	LOOT_WEAPON_YELLOW = list(
+		/obj/item/melee/baseball_bat/ablative = 10,
 		/obj/item/claymore = 10,
 		/obj/item/claymore/cutlass = 10,
+		/obj/item/fireaxe/boardingaxe = 10,
+		/obj/item/claymore/cutlass/old = 10,
+		/obj/item/claymore/weak = 10,
+	),
+	LOOT_WEAPON_RED = list(
 		/obj/item/katana = 10,
 		/obj/item/mjollnir = 10,
 		/obj/item/melee/energy/sword/saber = 10,

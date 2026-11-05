@@ -1089,6 +1089,9 @@
 	var/obj/item/organ/cyberimp/cyberware/lazarus/node = allocate(/obj/item/organ/cyberimp/cyberware/lazarus)
 	node.Insert(patient, TRUE)
 	var/datum/component/cyberware/chrome = node.GetComponent(/datum/component/cyberware)
+	patient.stat = UNCONSCIOUS
+	node.on_stat_change(patient, UNCONSCIOUS, CONSCIOUS)
+	TEST_ASSERT(!node.jolting, "Being knocked out wound Lazarus up")
 	patient.stat = SOFT_CRIT
 	node.on_stat_change(patient, SOFT_CRIT, CONSCIOUS)
 	var/first_generation = node.jolt_generation

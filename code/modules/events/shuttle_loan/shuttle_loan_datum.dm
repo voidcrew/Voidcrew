@@ -207,7 +207,7 @@
 	var/turf/victim_turf = pick_n_take(empty_shuttle_turfs)
 
 	new /obj/effect/decal/remains/human(victim_turf)
-	new /obj/item/clothing/shoes/jackboots/fast(victim_turf)
+	new /obj/item/clothing/shoes/jackboots(victim_turf) // VOIDCREW EDIT CHANGE: was jackboots/fast, a free speed item if this event is ever enabled (voidcrew gear balance)
 	new /obj/item/clothing/mask/balaclava(victim_turf)
 
 	for(var/i in 1 to 5)

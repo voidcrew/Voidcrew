@@ -258,17 +258,17 @@
 /datum/shop_sku/ripperdoc/angler
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
-	price_credits = 2800
+	price_credits = 1200
 
 /datum/shop_sku/ripperdoc/hemoglass
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/hemoglass
-	price_credits = 2800
+	price_credits = 1200
 
 /datum/shop_sku/ripperdoc/registry_uplink
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/registry_uplink
-	price_credits = 2800
+	price_credits = 1200
 
 /datum/shop_sku/ripperdoc/hopper
 	zone_permission = ZONE_PERMISSION_YELLOW
@@ -322,20 +322,20 @@
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Pro Chrome"
 	item_path = /obj/item/organ/eyes/robotic/cyberware/prospector
-	price_vouchers = 2
+	price_vouchers = 1
 
 // =========================================================================
 // MILITARY CHROME: vouchers
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/atlas
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Military Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/atlas
 	price_vouchers = 2
 
 /datum/shop_sku/ripperdoc/gorilla
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Military Chrome"
 	name = "Gorilla Arms (pair)"
 	desc = "A cased pair of heavy chrome forearms."
@@ -343,7 +343,7 @@
 	price_vouchers = 3
 	stock_min = 1
 	stock_max = 1
-	restock_interval = INFINITY
+	convoys_per_unit = 3
 	fixed_price = TRUE
 	contract_reward = FALSE
 
@@ -354,7 +354,7 @@
 	price_vouchers = 3
 	stock_min = 1
 	stock_max = 1
-	restock_interval = INFINITY
+	convoys_per_unit = 3
 	fixed_price = TRUE
 	contract_reward = FALSE
 
@@ -371,7 +371,7 @@
 	contract_reward = FALSE
 
 /datum/shop_sku/ripperdoc/rigger
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Military Chrome"
 	desc = "A skull jack with a ship's control interface."
 	item_path = /obj/item/organ/cyberimp/cyberware/rigger
@@ -392,7 +392,7 @@
 	price_vouchers = 4
 	stock_min = 1
 	stock_max = 1
-	restock_interval = INFINITY
+	convoys_per_unit = 3
 	fixed_price = TRUE
 	contract_reward = FALSE
 
@@ -455,7 +455,7 @@
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/ronin_mag
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Ammunition"
 	name = "Ronin magazine"
 	desc = "Proprietary caliber for the Popup Ronin. Nowhere else stocks it, which is the point."
@@ -465,12 +465,12 @@
 	stock_max = 6
 
 /datum/shop_sku/ripperdoc/buster_rockets
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Ammunition"
 	name = "Bunker Buster rockets"
 	desc = "A matched pair of shaped micro-rockets for the Bunker Buster pod. Handle them carefully. They're meant to go off at the far end."
 	item_path = /obj/item/ammo_box/cyberware_buster_rockets
-	price_credits = 600
+	price_credits = 300
 	stock_min = 2
 	stock_max = 4
 

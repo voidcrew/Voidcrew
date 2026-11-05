@@ -317,20 +317,22 @@
 			list(/datum/shop_sku/general/hunting_knife, /obj/item/knife/hunting, 4, 200, 0),
 			list(/datum/shop_sku/general/survival_knife, /obj/item/knife/combat/survival, 4, 350, 0),
 			list(/datum/shop_sku/general/surplus_rifle, /obj/item/gun/ballistic/rifle/boltaction/surplus, 2, 900, 0),
+			list(/datum/shop_sku/general/combat_knife, /obj/item/knife/combat, 3, 900, 0),
+			list(/datum/shop_sku/general/shortsword, /obj/item/claymore/shortsword, 2, 1200, 0),
 		),
 		/datum/outpost_shop/outfitter = list(
 			list(/datum/shop_sku/outfitter/combat_knife, /obj/item/knife/combat, 3, 900, 0),
 			list(/datum/shop_sku/outfitter/shortsword, /obj/item/claymore/shortsword, 2, 1200, 0),
 			list(/datum/shop_sku/outfitter/ablative_bat, /obj/item/melee/baseball_bat/ablative, 2, 1000, 0),
-			list(/datum/shop_sku/outfitter/fireaxe, /obj/item/fireaxe, 2, 1500, 0),
-			list(/datum/shop_sku/outfitter/sabre, /obj/item/melee/sabre, 1, 1800, 0),
+			list(/datum/shop_sku/outfitter/fireaxe, /obj/item/fireaxe, 2, 600, 0),
+			list(/datum/shop_sku/outfitter/sabre, /obj/item/melee/sabre, 1, 800, 0),
 			list(/datum/shop_sku/outfitter/laser_gun, /obj/item/gun/energy/laser, 1, 1500, 0),
 			list(/datum/shop_sku/outfitter/riot_shotgun, /obj/item/gun/ballistic/shotgun/riot, 1, 1800, 0),
 			list(/datum/shop_sku/outfitter/energy_gun, /obj/item/gun/energy/e_gun, 1, 2400, 0),
 		),
 		/datum/outpost_shop/black_market = list(
 			list(/datum/shop_sku/black_market/boarding_axe, /obj/item/fireaxe/boardingaxe, 1, 2400, 0),
-			list(/datum/shop_sku/black_market/cutlass, /obj/item/claymore/cutlass, 1, 3000, 3),
+			list(/datum/shop_sku/black_market/cutlass, /obj/item/claymore/cutlass, 1, 1800, 1),
 			list(/datum/shop_sku/black_market/rare/energy_sword, /obj/item/melee/energy/sword/saber, 1, 4000, 4),
 			list(/datum/shop_sku/black_market/c20r, /obj/item/gun/ballistic/automatic/c20r/unrestricted, 1, 3600, 2),
 			list(/datum/shop_sku/black_market/wt550, /obj/item/gun/ballistic/automatic/wt550, 1, 4200, 2),
@@ -363,6 +365,10 @@
 				TEST_ASSERT(row[1] in shop.sku_types, "A gun must stay on its core shelf")
 				TEST_ASSERT_EQUAL(sku.restock_interval, 1 HOURS, "Gun replenishment must be hourly")
 				TEST_ASSERT_EQUAL(timeleft(sku.restock_timer), 1 HOURS, "The hourly delivery is not scheduled")
+			else if(shop_type == /datum/outpost_shop/vendor/ripperdoc)
+				TEST_ASSERT_EQUAL(sku.restock_interval, 0, "Arm chrome must come back with the convoys")
+				TEST_ASSERT(sku.convoys_per_unit > 1, "Arm chrome must come back slowly")
+				TEST_ASSERT_NULL(sku.restock_timer, "Arm chrome acquired a refill timer")
 			else if(row[5])
 				TEST_ASSERT_EQUAL(sku.restock_interval, INFINITY, "Red melee/chrome must remain finite")
 				TEST_ASSERT_NULL(sku.restock_timer, "Finite melee acquired a refill timer")
@@ -387,8 +393,8 @@
 		/obj/item/lightreplacer, /obj/item/holosign_creator/atmos, /obj/item/construction/rcd/loaded,
 		/obj/item/healthanalyzer, /obj/item/pickaxe, /obj/item/pickaxe/drill, /obj/item/clothing/glasses/meson,
 		/obj/item/t_scanner/adv_mining_scanner/lesser, /obj/item/bodybag/bluespace, /obj/item/clothing/glasses/welding,
-		/obj/item/flashlight/seclite, /obj/item/assembly/flash/handheld, /obj/item/clothing/shoes/magboots,
-		/obj/item/crowbar/power, /obj/item/defibrillator/compact, /obj/item/suppressor, /obj/item/mod/module/active_sonar,
+		/obj/item/flashlight/seclite, /obj/item/assembly/flash/handheld,
+		/obj/item/crowbar/power, /obj/item/suppressor, /obj/item/mod/module/active_sonar,
 		/obj/item/cultivator, /obj/item/shovel/spade, /obj/item/hatchet, /obj/item/secateurs,
 		/obj/item/reagent_containers/cup/watering_can, /obj/item/plant_analyzer, /obj/item/fishing_rod/tech,
 	)
@@ -454,6 +460,24 @@
 				TEST_ASSERT_EQUAL(length(rotating.skus), 1, "A rotation duplicated restricted stock")
 				TEST_ASSERT_EQUAL(rotating.skus[1], finite, "A rotation replaced the exhausted SKU and its clock")
 				TEST_ASSERT_EQUAL(finite.stock, 0, "A rotation refilled restricted stock")
+
+	// Arm chrome takes one unit every few convoys, and a full shelf banks nothing toward the next.
+	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/gorilla))
+		var/datum/outpost_shop/chrome_shop = allocate(/datum/outpost_shop)
+		chrome_shop.add_sku(sku_type, "core")
+		var/datum/shop_sku/chrome = chrome_shop.skus[1]
+		for(var/convoy in 1 to 4)
+			chrome_shop.convoy_restock()
+		TEST_ASSERT_EQUAL(chrome.stock, 1, "Arm chrome grew past its one unit")
+		TEST_ASSERT_EQUAL(chrome.convoys_waited, 0, "A full shelf banked convoys toward the next delivery")
+		chrome.stock = 0
+		for(var/convoy in 1 to chrome.convoys_per_unit - 1)
+			chrome_shop.convoy_restock()
+			TEST_ASSERT_EQUAL(chrome.stock, 0, "Arm chrome came back on an early convoy")
+		chrome_shop.convoy_restock()
+		TEST_ASSERT_EQUAL(chrome.stock, 1, "Arm chrome did not come back with the convoys")
+		chrome_shop.convoy_restock()
+		TEST_ASSERT_EQUAL(chrome.stock, 1, "Arm chrome grew past its one unit")
 
 	for(var/sku_type in list(/datum/shop_sku/general/hunting_knife, /datum/shop_sku/outfitter/fireaxe, /datum/shop_sku/black_market/boarding_axe))
 		var/datum/outpost_shop/melee_shop = allocate(/datum/outpost_shop)
@@ -524,11 +548,48 @@
 	user.mind.ship_teams = list()
 	team.ship = null
 
+/// Gear that left cargo and the mining console: the packs are gone and the counters carry them.
+/datum/unit_test/voidcrew_gear_moved_shelves/Run()
+	for(var/pack_type in list(/datum/supply_pack/medical/arm_implants, /datum/supply_pack/goody/stingbang))
+		TEST_ASSERT_NULL(SSshuttle.supply_packs[pack_type], "[pack_type] is still on the cargo console")
+	var/datum/orderable_item/key_line = /datum/orderable_item/mining/skeleton_key
+	TEST_ASSERT_NULL(initial(key_line.purchase_path), "The skeleton key is still on the mining console")
+	var/list/counters = list(
+		/datum/outpost_shop/vendor/skunkworks = list(/datum/shop_sku/skunk/strongarm),
+		/datum/outpost_shop/outfitter = list(
+			/datum/shop_sku/outfitter/stingbang,
+			/datum/shop_sku/outfitter/surgery_kit,
+			/datum/shop_sku/outfitter/rare/compact_defib,
+			/datum/shop_sku/outfitter/noslip_shoes,
+			/datum/shop_sku/outfitter/bulletproof_helmet,
+		),
+		/datum/outpost_shop/general = list(
+			/datum/shop_sku/general/armor_vest,
+			/datum/shop_sku/general/helmet,
+			/datum/shop_sku/general/insulated_gloves,
+			/datum/shop_sku/general/brute_kit,
+			/datum/shop_sku/general/toxin_kit,
+			/datum/shop_sku/general/mannitol_bottle,
+			/datum/shop_sku/general/penacid_bottle,
+			/datum/shop_sku/general/magboots,
+			/datum/shop_sku/general/pepper_spray,
+			/datum/shop_sku/general/shock_coils,
+			/datum/shop_sku/general/second_wind,
+			/datum/shop_sku/general/syndie_soap,
+		),
+	)
+	for(var/shop_type in counters)
+		var/datum/outpost_shop/shop = allocate(shop_type)
+		for(var/sku_type in counters[shop_type])
+			TEST_ASSERT(sku_type in shop.sku_types, "[shop_type] does not stock [sku_type] on its core shelf")
+	var/datum/outpost_shop/outfitter = allocate(/datum/outpost_shop/outfitter)
+	TEST_ASSERT(/datum/shop_sku/outfitter/rare/ablative_hood in outfitter.rare_pool, "The laser helmet left the vest's shelf")
+
 /// Bought and premium crates have exact freight odds and no extra weapon draws.
 /datum/unit_test/voidcrew_ladder_bought_caches/Run()
 	var/list/gun_pools = list(
 		list(/obj/item/gun/ballistic/rifle/boltaction/surplus, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/revolver/c38/detective, /obj/item/gun/ballistic/shotgun/doublebarrel),
-		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/tommygun, /obj/item/gun/ballistic/automatic/mini_uzi),
+		list(/obj/item/gun/ballistic/shotgun/riot, /obj/item/gun/ballistic/automatic/mini_uzi),
 	)
 	var/list/gun_weights = list(list(940, 59, 1), list(45, 54, 1), list(15, 35, 50))
 	var/list/melee_weights = list(list(900, 99, 1), list(35, 64, 1), list(10, 45, 45))

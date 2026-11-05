@@ -113,6 +113,7 @@
 	stock_max = 3
 
 /datum/shop_sku/colosseum/retiarius_net
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armaments"
 	item_path = /obj/item/restraints/legcuffs/bola/retiarius
 	price_credits = 1800
@@ -127,26 +128,24 @@
 /datum/shop_sku/colosseum/rotating/parmula
 	category = "Armaments"
 	item_path = /obj/item/shield/buckler/parmula
-	price_credits = 2700
+	price_credits = 900
 
 /datum/shop_sku/colosseum/rotating/bestiarius_pike
 	category = "Armaments"
 	item_path = /obj/item/spear/bestiarius
-	price_credits = 3300
+	price_credits = 1200
 
 // ===== RARE: THE SHOWCASE =====
 
 /datum/shop_sku/colosseum/rare/galea
 	category = "Panoply"
 	item_path = /obj/item/clothing/head/helmet/gladiator/galea
-	price_vouchers = 1
-	price_credits = 2400
+	price_credits = 600
 
 /datum/shop_sku/colosseum/rare/spaulder
 	category = "Panoply"
 	item_path = /obj/item/clothing/suit/armor/spaulder
-	price_vouchers = 1
-	price_credits = 3000
+	price_credits = 900
 
 /datum/shop_sku/colosseum/rare/laurel
 	category = "Panoply"

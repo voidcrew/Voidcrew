@@ -24,7 +24,7 @@
 		),
 	)
 	melee_extras = list(
-		LOOT_WEAPON_RED = list(
+		LOOT_WEAPON_YELLOW = list(
 			/obj/item/veilrender/honkrender = 1,
 		),
 	)

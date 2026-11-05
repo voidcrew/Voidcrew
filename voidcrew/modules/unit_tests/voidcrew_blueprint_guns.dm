@@ -84,8 +84,10 @@
 	TEST_ASSERT_EQUAL(pin.build_type, PROTOLATHE | AWAY_LATHE, "Test-range pins lost their lathe channels.")
 	var/datum/techweb_node/riot_supression/riot = SSresearch.techweb_nodes[TECHWEB_NODE_RIOT_SUPRESSION]
 	TEST_ASSERT_NOTNULL(riot, "Riot Suppression must remain available.")
-	TEST_ASSERT("pin_testing" in riot.design_ids, "Riot Suppression must unlock test-range pins.")
-	TEST_ASSERT("clown_firing_pin" in riot.design_ids, "Riot Suppression lost another firing pin design.")
+	TEST_ASSERT(!("pin_testing" in riot.design_ids), "Test-range pins print again, but no ship has a firing range.")
+	var/datum/techweb_node/sec_equip/security = SSresearch.techweb_nodes[TECHWEB_NODE_SEC_EQUIP]
+	TEST_ASSERT("clown_firing_pin" in security.design_ids, "Security Equipment lost a firing pin design.")
+	TEST_ASSERT("pin_loyalty" in security.design_ids, "Security Equipment lost a firing pin design.")
 
 /// No Quarter's heavy cartridges are ordinary crafting recipes with the original cost.
 /datum/unit_test/voidcrew_no_quarter_cartridge/Run()

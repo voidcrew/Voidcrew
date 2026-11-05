@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 2, 2), "freight" = list(4, 3))
+	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 1, 3), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -301,7 +301,7 @@
 			TEST_ASSERT_EQUAL(length(pool), counts[text2num(class)], "Main gun class changed size")
 			for(var/entry in pool)
 				TEST_ASSERT_EQUAL(pool[entry], 10, "Main gun class is not uniform")
-	var/list/melee_counts = list(4, 6, 6)
+	var/list/melee_counts = list(9, 6, 4)
 	for(var/class in GLOB.loot_melee_pools)
 		var/list/pool = GLOB.loot_melee_pools[class]
 		TEST_ASSERT_EQUAL(length(pool), melee_counts[text2num(class)], "Main melee class changed size")
@@ -330,10 +330,65 @@
 					TEST_ASSERT(!ispath(entry, /obj/item/organ) && !ispath(entry, /obj/item/cyberware_pair_case), "Freight paid weapon chrome")
 	var/list/yellow = get_cache_weapon_pool(TRUE, "2", "freight")
 	var/list/red = get_cache_weapon_pool(TRUE, "3", "freight")
-	TEST_ASSERT_EQUAL(length(yellow), 3, "Freight ordinary gun pool changed")
+	TEST_ASSERT_EQUAL(length(yellow), 2, "Freight ordinary gun pool changed")
 	TEST_ASSERT_EQUAL(length(red), length(yellow), "Freight did not substitute ordinary guns for advanced guns")
 	for(var/entry in yellow)
 		TEST_ASSERT_EQUAL(red[entry], yellow[entry], "Freight advanced-class substitution changed [entry]")
+
+/// Every copy of the weapon groups files a moved weapon the same way, and the metal bat stays 1 in 6.
+/datum/unit_test/voidcrew_weapon_groups_agree/Run()
+	var/bat = /obj/item/melee/baseball_bat/ablative
+	var/list/yellow_group = GLOB.loot_melee_pools["2"]
+	var/group_total = 0
+	for(var/entry in yellow_group)
+		group_total += yellow_group[entry]
+	TEST_ASSERT_EQUAL(yellow_group[bat] * 6, group_total, "The metal bat left 1 in 6 of the yellow melee group")
+	var/obj/structure/closet/crate/zone_loot/syndicate/trader/bought = allocate(/obj/structure/closet/crate/zone_loot/syndicate/trader, run_loc_floor_bottom_left)
+	for(var/list/shelf as anything in list(GLOB.abandoned_crate_melee_yellow, npc_ladder_yellow_melee(), bought.get_weapon_pool(FALSE, "yellow")))
+		TEST_ASSERT_EQUAL(length(shelf), length(yellow_group), "A yellow melee shelf is a different size from the yellow group")
+		for(var/entry in yellow_group)
+			TEST_ASSERT(entry in shelf, "A yellow melee shelf lost [entry]")
+	for(var/entry in GLOB.abandoned_crate_melee_green)
+		TEST_ASSERT(entry in GLOB.loot_melee_pools["1"], "Freight green melee [entry] is outside the green group")
+		TEST_ASSERT(entry in bought.get_weapon_pool(FALSE, "green"), "Bought crates lost green melee [entry]")
+	for(var/entry in GLOB.abandoned_crate_melee_red)
+		TEST_ASSERT(entry in GLOB.loot_melee_pools["3"], "Freight red melee [entry] is outside the red group")
+		TEST_ASSERT(entry in bought.get_weapon_pool(FALSE, "red"), "Bought crates lost red melee [entry]")
+
+	// The Thompson is a red find: no freight, no bought crate, no yellow list
+	var/thompson = /obj/item/gun/ballistic/automatic/tommygun
+	TEST_ASSERT(!(thompson in GLOB.abandoned_crate_guns_yellow), "Freight still pays a Thompson")
+	TEST_ASSERT(!(thompson in bought.get_weapon_pool(TRUE, "yellow")), "Bought crates still pay a Thompson")
+	TEST_ASSERT(!(thompson in GLOB.loot_gun_pools["freight"]["2"]), "The freight gun pool still pays a Thompson")
+	TEST_ASSERT(!(thompson in GLOB.loot_gun_pools["plunder"]["2"]), "The Thompson is still a yellow plunder gun")
+	TEST_ASSERT_EQUAL(GLOB.loot_gun_pools["plunder"]["3"][thompson], 10, "The Thompson is not a red plunder gun at its neighbours' weight")
+
+	// Peddler lines: where each moved weapon sits, and its price
+	var/list/peddler_lines = list(
+		/obj/item/knife/combat = list(1, 675),
+		/obj/item/claymore/shortsword = list(1, 900),
+		/obj/item/fireaxe = list(1, 450),
+		/obj/item/melee/sabre = list(1, 600),
+		/obj/item/melee/baseball_bat/ablative = list(2, 750),
+		/obj/item/claymore = list(2, 2250),
+		/obj/item/claymore/cutlass = list(2, 2250),
+		/obj/item/gun/ballistic/automatic/tommygun = list(3, 4950),
+	)
+	var/list/found = list()
+	for(var/band in 1 to 3)
+		for(var/datum/shop_sku/sku_path as anything in ambient_peddler_weapons(band))
+			var/list/line = peddler_lines[initial(sku_path.item_path)]
+			if(!line)
+				continue
+			found += initial(sku_path.item_path)
+			TEST_ASSERT_EQUAL(band, line[1], "[sku_path] is in the wrong band's pack")
+			TEST_ASSERT_EQUAL(initial(sku_path.price_credits), line[2], "[sku_path] has the wrong price")
+	TEST_ASSERT_EQUAL(length(found), length(peddler_lines), "A moved weapon lost its peddler line, or gained a second one")
+
+	// The armory's better armor is the rarer draw
+	var/datum/loot_theme/armory/armory = GLOB.loot_themes[/datum/loot_theme/armory]
+	TEST_ASSERT(armory.loot_prime[/obj/item/clothing/suit/armor/vest/marine], "The tactical armor vest left the armory's prime tier")
+	TEST_ASSERT(armory.loot_uncommon[/obj/item/clothing/suit/armor/riot], "The riot suit left the armory's uncommon tier")
 
 /datum/unit_test/voidcrew_cache_weapon_population
 	var/datum/loot_theme/saved_theme
@@ -631,6 +686,8 @@
 	var/list/expected = list(
 		"1" = list(
 			/obj/item/bambostaff,
+			/obj/item/claymore/shortsword,
+			/obj/item/fireaxe,
 			/obj/item/gun/ballistic/automatic/pistol,
 			/obj/item/gun/ballistic/automatic/pistol/m1911,
 			/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
@@ -653,11 +710,14 @@
 			/obj/item/gun/ballistic/shotgun/toy,
 			/obj/item/gun/ballistic/shotgun/toy/crossbow,
 			/obj/item/hatchet,
+			/obj/item/knife/combat,
 			/obj/item/knife/combat/bone,
 			/obj/item/knife/combat/survival,
 			/obj/item/knife/envy,
 			/obj/item/lead_pipe,
 			/obj/item/melee/baseball_bat,
+			/obj/item/melee/cleric_mace,
+			/obj/item/melee/sabre,
 			/obj/item/spear,
 			/obj/item/spear/bamboospear,
 			/obj/item/spear/bonespear,
@@ -667,11 +727,11 @@
 		),
 		"2" = list(
 			/obj/item/chainsaw,
+			/obj/item/claymore,
+			/obj/item/claymore/cutlass,
 			/obj/item/claymore/cutlass/old,
-			/obj/item/claymore/shortsword,
 			/obj/item/claymore/weak,
 			/obj/item/crowbar/large/twenty_force,
-			/obj/item/fireaxe,
 			/obj/item/fireaxe/boardingaxe,
 			/obj/item/fireaxe/boneaxe,
 			/obj/item/gun/ballistic/automatic/ar,
@@ -683,7 +743,6 @@
 			/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
 			/obj/item/gun/ballistic/automatic/proto/unrestricted,
 			/obj/item/gun/ballistic/automatic/smartgun,
-			/obj/item/gun/ballistic/automatic/tommygun,
 			/obj/item/gun/ballistic/automatic/wt550,
 			/obj/item/gun/ballistic/revolver,
 			/obj/item/gun/ballistic/revolver/c38/housecall,
@@ -712,11 +771,10 @@
 			/obj/item/gun/syringe/rapidsyringe,
 			/obj/item/gun/syringe/syndicate,
 			/obj/item/kinetic_crusher,
-			/obj/item/knife/combat,
+			/obj/item/knife/bloodletter,
 			/obj/item/melee/baseball_bat/ablative,
-			/obj/item/melee/cleric_mace,
+			/obj/item/melee/greykingsword,
 			/obj/item/melee/parsnip_sabre,
-			/obj/item/melee/sabre,
 			/obj/item/nullrod/claymore,
 			/obj/item/nullrod/claymore/chainsaw_sword,
 			/obj/item/nullrod/claymore/darkblade,
@@ -740,11 +798,12 @@
 			/obj/item/shield/roman,
 			/obj/item/shovel/serrated,
 			/obj/item/spear/grey_tide,
+			/obj/item/storage/toolbox/mechanical/old/clean,
 			/obj/item/switchblade,
+			/obj/item/veilrender/honkrender,
+			/obj/item/veilrender/vealrender,
 		),
 		"3" = list(
-			/obj/item/claymore,
-			/obj/item/claymore/cutlass,
 			/obj/item/claymore/cutlass/parley,
 			/obj/item/clothing/gloves/knock_knock,
 			/obj/item/cursed_katana,
@@ -753,6 +812,7 @@
 			/obj/item/energy_katana,
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
 			/obj/item/gun/ballistic/automatic/m90/unrestricted,
+			/obj/item/gun/ballistic/automatic/tommygun,
 			/obj/item/gun/ballistic/rifle/sniper_rifle,
 			/obj/item/gun/ballistic/shotgun/automatic/combat,
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
@@ -770,24 +830,19 @@
 			/obj/item/heave_ho,
 			/obj/item/house_edge,
 			/obj/item/katana,
-			/obj/item/knife/bloodletter,
 			/obj/item/knife/understudy,
 			/obj/item/melee/energy/sword/pirate,
 			/obj/item/melee/energy/sword/saber,
 			/obj/item/melee/energy/sword/saber/blue,
 			/obj/item/melee/energy/sword/saber/purple,
 			/obj/item/melee/energy/sword/saber/red,
-			/obj/item/melee/greykingsword,
 			/obj/item/mjollnir,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin,
 			/obj/item/shield/energy,
 			/obj/item/singularityhammer,
-			/obj/item/storage/toolbox/mechanical/old/clean,
 			/obj/item/veilrender,
-			/obj/item/veilrender/honkrender,
-			/obj/item/veilrender/vealrender,
 		),
 	)
 	var/list/all_weapons = list()

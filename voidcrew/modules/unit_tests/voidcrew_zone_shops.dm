@@ -33,7 +33,6 @@
 		/datum/shop_sku/black_market/rotating/mateba = 1,
 		/datum/shop_sku/black_market/c20r = 1,
 		/datum/shop_sku/black_market/wt550 = 1,
-		/datum/shop_sku/outfitter/rotating/riot_suit = 1,
 		/datum/shop_sku/outfitter/rare/ablative_vest = 1,
 		/datum/shop_sku/skunk/rotating/thermal_glasses = 1,
 		/datum/shop_sku/black_market/thermals = 1,
@@ -61,9 +60,39 @@
 		/datum/shop_sku/outfitter/laser_gun = 1,
 		/datum/shop_sku/outfitter/smg_mag = 1,
 		/datum/shop_sku/outfitter/wt550_mag = 1,
-		/datum/shop_sku/fitter/rare/suit_advanced = 2,
-		/datum/shop_sku/fitter/rare/mod_jetpack_advanced = 2,
-		/datum/shop_sku/fitter/rare/mod_jump_jet = 2,
+		/datum/shop_sku/outfitter/rifle_clip = 1,
+		/datum/shop_sku/outfitter/bulletproof_vest = 1,
+		/datum/shop_sku/outfitter/bulletproof_helmet = 1,
+		/datum/shop_sku/outfitter/rare/ablative_hood = 1,
+		/datum/shop_sku/outfitter/riot_shield = 1,
+		/datum/shop_sku/barter/plasteel_for_shield = 1,
+		/datum/shop_sku/outfitter/rotating/flashbang = 1,
+		/datum/shop_sku/outfitter/rotating/frag_grenade = 1,
+		/datum/shop_sku/outfitter/stingbang = 1,
+		/datum/shop_sku/outfitter/security_belt = 1,
+		/datum/shop_sku/fitter/rare/mod_storage_bluespace = 1,
+		/datum/shop_sku/fitter/rotating/mod_visor_night = 1,
+		/datum/shop_sku/fitter/rare/suit_advanced = 1,
+		/datum/shop_sku/fitter/rare/mod_jetpack_advanced = 1,
+		/datum/shop_sku/skunk/night_vision = 1,
+		/datum/shop_sku/skunk/strongarm = 1,
+		/datum/shop_sku/colosseum/retiarius_net = 1,
+		/datum/shop_sku/black_market/mod_storage = 1,
+		/datum/shop_sku/black_market/rotating/mod_flamethrower = 1,
+		/datum/shop_sku/black_market/cutlass = 1,
+		/datum/shop_sku/favor/maneuvering_harness = 1,
+		/datum/shop_sku/ripperdoc/ronin_mag = 1,
+		/datum/shop_sku/ripperdoc/buster_rockets = 1,
+		/datum/shop_sku/outfitter/ablative_bat = 2,
+		/datum/shop_sku/black_market/ew_drive_lockout = 2,
+		/datum/shop_sku/black_market/ew_fire_control_freeze = 2,
+		/datum/shop_sku/black_market/ew_shield_collapse = 2,
+		/datum/shop_sku/black_market/ew_breaker_trip = 2,
+		/datum/shop_sku/black_market/rotating/ew_runaway_burn = 2,
+		/datum/shop_sku/black_market/rotating/ew_helm_poltergeist = 2,
+		/datum/shop_sku/ripperdoc/atlas = 2,
+		/datum/shop_sku/ripperdoc/gorilla = 2,
+		/datum/shop_sku/ripperdoc/rigger = 2,
 		/datum/shop_sku/fitter/rare/mod_emp_shield_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener = 2,
 		/datum/shop_sku/black_market/mod_chassis_syndicate = 2,
@@ -74,28 +103,19 @@
 		/datum/shop_sku/black_market/data_siphon_board = 2,
 		/datum/shop_sku/black_market/ew_suite_board = 2,
 		/datum/shop_sku/favor/skunkworks_cell = 2,
-		/datum/shop_sku/favor/maneuvering_harness = 2,
 		/datum/shop_sku/ripperdoc/coolant = 2,
 		/datum/shop_sku/ripperdoc/dead_channel = 2,
 		/datum/shop_sku/black_market/stimulants = 2,
 		/datum/shop_sku/black_market/rotating/minibomb = 2,
-		/datum/shop_sku/black_market/cutlass = 2,
 		/datum/shop_sku/black_market/mod_chassis_elite = 3,
 		/datum/shop_sku/black_market/mod_infiltrator = 3,
 		/datum/shop_sku/black_market/mod_traitor = 3,
-		/datum/shop_sku/black_market/mod_storage = 3,
-		/datum/shop_sku/black_market/mod_plate_compression = 3,
 		/datum/shop_sku/black_market/mod_wraith_cloak = 3,
-		/datum/shop_sku/black_market/rotating/mod_flamethrower = 3,
-		/datum/shop_sku/black_market/rotating/mod_chameleon = 3,
 		/datum/shop_sku/black_market/rare/mod_adrenaline = 3,
 		/datum/shop_sku/black_market/rare/energy_sword = 3,
 		/datum/shop_sku/favor/vex_insurance = 3,
-		/datum/shop_sku/ripperdoc/atlas = 3,
-		/datum/shop_sku/ripperdoc/gorilla = 3,
 		/datum/shop_sku/ripperdoc/monowire = 3,
 		/datum/shop_sku/ripperdoc/ronin = 3,
-		/datum/shop_sku/ripperdoc/rigger = 3,
 		/datum/shop_sku/ripperdoc/slabskin = 3,
 		/datum/shop_sku/ripperdoc/mantis = 3,
 		/datum/shop_sku/ripperdoc/bunker_buster = 3,
@@ -104,13 +124,11 @@
 		/datum/shop_sku/ripperdoc/governor_delete = 3,
 		/datum/shop_sku/ripperdoc/redline = 3,
 		/datum/shop_sku/ripperdoc/cascade = 3,
-		/datum/shop_sku/ripperdoc/ronin_mag = 3,
-		/datum/shop_sku/ripperdoc/buster_rockets = 3,
 	)
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 80, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 98, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
@@ -260,15 +278,16 @@
 	ship.enlist_crewmember(buyer)
 	fund(buyer)
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
-	for(var/sku_type in list(/datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis))
+	var/list/case_permissions = list(/datum/shop_sku/ripperdoc/gorilla = 2, /datum/shop_sku/ripperdoc/mantis = 3)
+	for(var/sku_type in case_permissions)
 		shop.add_sku(sku_type, "core")
 		var/datum/shop_sku/sku = shop.skus[length(shop.skus)]
-		set_permission(crew, 2)
+		set_permission(crew, case_permissions[sku_type] - 1)
 		var/before = count_trade_vouchers(buyer)
-		TEST_ASSERT(!sku.try_purchase(buyer, null), "Advanced crew bought military chrome through a case")
+		TEST_ASSERT(!sku.try_purchase(buyer, null), "A crew below the gate bought military chrome through a case")
 		TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), before, "Denied case consumed vouchers")
-		set_permission(crew, 3)
-		TEST_ASSERT(sku.try_purchase(buyer, null), "Elite crew could not buy its military case")
+		set_permission(crew, case_permissions[sku_type])
+		TEST_ASSERT(sku.try_purchase(buyer, null), "A qualified crew could not buy its military case")
 		var/turf/buyer_turf = get_turf(buyer)
 		var/obj/item/cyberware_pair_case/case = locate(sku.item_path) in (buyer.contents + buyer_turf.contents)
 		TEST_ASSERT_NOTNULL(case, "The military pair case was not dispensed")
@@ -276,6 +295,64 @@
 		TEST_ASSERT_EQUAL(length(case.contents), 2, "A military case changed its pair of implants")
 		for(var/ware_type in case.ware_types)
 			TEST_ASSERT(locate(ware_type) in case, "A military case lost an implant")
+
+/// One sale hands over both Strong-Arm implants, the way the cargo crate did.
+/datum/unit_test/voidcrew_zone_shops/strongarm_pair/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/crew = record_for(ship)
+	var/mob/living/carbon/human/buyer = make_member()
+	ship.enlist_crewmember(buyer)
+	var/datum/bank_account/account = fund(buyer)
+	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
+	shop.add_sku(/datum/shop_sku/skunk/strongarm, "core")
+	var/datum/shop_sku/sku = shop.skus[1]
+	var/stock = sku.stock
+	TEST_ASSERT(!sku.try_purchase(buyer, null), "A public crew bought Strong-Arm implants")
+	set_permission(crew, 1)
+	TEST_ASSERT(sku.try_purchase(buyer, null), "A qualified crew could not buy Strong-Arm implants")
+	TEST_ASSERT_EQUAL(account.account_balance, 8800, "The pair stopped costing what the crate did")
+	TEST_ASSERT_EQUAL(sku.stock, stock - 1, "One pair used more than one unit of stock")
+	var/delivered = 0
+	var/turf/buyer_turf = get_turf(buyer)
+	for(var/obj/item/organ/cyberimp/arm/strongarm/implant in buyer.contents + buyer_turf.contents)
+		delivered++
+		allocated += implant
+	TEST_ASSERT_EQUAL(delivered, 2, "One sale did not hand over the pair")
+
+/// The bench's upper plating rungs ask for the same crew reputation a shop counter does.
+/datum/unit_test/voidcrew_zone_shops/bench_plating/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/crew = record_for(ship)
+	var/mob/living/carbon/human/buyer = make_member()
+	ship.enlist_crewmember(buyer)
+	var/datum/bank_account/account = fund(buyer)
+	var/datum/mod_upgrade/bottom = GLOB.modsuit_bench_upgrades["plating_ablative"]
+	var/datum/mod_upgrade/middle = GLOB.modsuit_bench_upgrades["plating_reinforced"]
+	var/datum/mod_upgrade/top = GLOB.modsuit_bench_upgrades["plating_composite"]
+	TEST_ASSERT_NULL(bottom.get_reputation_denial(buyer), "The bottom rung asked for reputation")
+	TEST_ASSERT_EQUAL(middle.get_reputation_denial(buyer), "Needs 4 reputation.", "The middle rung named the wrong number")
+	TEST_ASSERT_EQUAL(top.get_reputation_denial(buyer), "Needs 11 reputation.", "The top rung named the wrong number")
+	var/mob/living/carbon/human/drifter = make_member()
+	TEST_ASSERT_NOTNULL(middle.get_reputation_denial(drifter), "Someone with no crew passed the gate")
+
+	var/obj/machinery/modsuit_bench/bench = allocate(/obj/machinery/modsuit_bench, run_loc_floor_bottom_left)
+	bench.set_occupant(buyer)
+	var/obj/item/mod/control/pre_equipped/standard/suit = allocate(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(bench.try_buy_upgrade(buyer, suit, bottom), "A public crew could not fit the bottom rung")
+	TEST_ASSERT_EQUAL(account.account_balance, 9700, "The bottom rung changed price")
+	TEST_ASSERT(!bench.try_buy_upgrade(buyer, suit, middle), "A public crew fitted the middle rung")
+	TEST_ASSERT_EQUAL(account.account_balance, 9700, "A refused rung took credits")
+	set_permission(crew, 1)
+	TEST_ASSERT(bench.try_buy_upgrade(buyer, suit, middle), "A qualified crew could not fit the middle rung")
+	TEST_ASSERT_EQUAL(account.account_balance, 8900, "The middle rung changed price")
+	var/vouchers = count_trade_vouchers(buyer)
+	TEST_ASSERT(!bench.try_buy_upgrade(buyer, suit, top), "A crew short of the top gate fitted the top rung")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), vouchers, "A refused rung took vouchers")
+	set_permission(crew, 2)
+	TEST_ASSERT(bench.try_buy_upgrade(buyer, suit, top), "A qualified crew could not fit the top rung")
+	TEST_ASSERT_EQUAL(account.account_balance, 8000, "The top rung changed its credit price")
+	TEST_ASSERT_EQUAL(count_trade_vouchers(buyer), vouchers - 1, "The top rung changed its voucher price")
+	bench.set_occupant(null)
 
 /// Re-querying after a crew switch, withdrawal, retirement or embargo refuses stale orders.
 /datum/unit_test/voidcrew_zone_shops/stale_context/Run()

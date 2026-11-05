@@ -61,18 +61,6 @@
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 	autolathe_exportable = FALSE
 
-/datum/design/vc_strilka310_clip
-	name = "Stripper Clip (.310 Strilka) (Lethal)"
-	desc = "Five rounds of .310 Strilka on a stripper clip, for bolt-action rifles."
-	id = "vc_strilka310_clip"
-	build_type = PROTOLATHE | AWAY_LATHE
-	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3)
-	build_path = /obj/item/ammo_box/strilka310
-	category = list(
-		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
-	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
-
 /datum/design/vc_n762
 	name = "Ammo Box (7.62x38mmR) (Lethal)"
 	desc = "A box of 7.62x38mmR rounds for Nagant revolvers."
@@ -133,6 +121,18 @@
 //
 // Automatic Ammunition - high-capacity feed devices and specialist shells.
 //
+
+/datum/design/vc_strilka310_clip
+	name = "Stripper Clip (.310 Strilka) (Lethal)"
+	desc = "Five rounds of .310 Strilka on a stripper clip, for bolt-action rifles."
+	id = "vc_strilka310_clip"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3)
+	build_path = /obj/item/ammo_box/strilka310
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
 /datum/design/vc_mag_m9mm_aps
 	name = "Machine Pistol Magazine (9mm) (Lethal)"

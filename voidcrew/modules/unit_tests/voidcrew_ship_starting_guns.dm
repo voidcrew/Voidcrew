@@ -14,7 +14,7 @@
 		outfit.equip(wearer)
 		TEST_ASSERT(istype(wearer.s_store, suit_guns[outfit_type]), "[outfit_type] lost its starting gun after equip.")
 		if(outfit_type == /datum/outfit/job/assistant/syndicate)
-			TEST_ASSERT(istype(wearer.l_store, /obj/item/ammo_box/magazine/m10mm), "The syndicate crew member lost their spare magazine.")
+			TEST_ASSERT(istype(wearer.l_store, /obj/item/ammo_box/magazine/m9mm), "The syndicate crew member lost their spare magazine.")
 		if(ispath(outfit_type, /datum/outfit/job/workshop_hiryu_class_carrier_job_20) || ispath(outfit_type, /datum/outfit/job/workshop_hiryu_class_carrier_job_12) || ispath(outfit_type, /datum/outfit/job/workshop_hiryu_class_carrier_job_14))
 			TEST_ASSERT(locate(/obj/item/storage/box/lethalshot) in wearer.get_all_contents(), "[outfit_type] lost its shotgun ammunition.")
 	var/datum/outfit/job/bridge_assistant/bridge_outfit = allocate(__IMPLIED_TYPE__)
@@ -52,7 +52,8 @@
 	TEST_ASSERT_EQUAL(length(syndicate.voucher_items), length(syndicate_choices), "The syndicate vendor has the wrong voucher options.")
 	for(var/choice in syndicate_choices)
 		TEST_ASSERT_EQUAL(syndicate.voucher_items[choice], syndicate_choices[choice], "The syndicate vendor lost [choice].")
-	for(var/magazine in list(/obj/item/ammo_box/magazine/m9mm, /obj/item/ammo_box/magazine/m10mm, /obj/item/ammo_box/magazine/smgm45, /obj/item/ammo_box/magazine/sniper_rounds, /obj/item/ammo_box/magazine/m12g))
+	TEST_ASSERT_EQUAL(syndicate.products[/obj/item/ammo_box/magazine/m9mm], 6, "The syndicate vendor lost spare 9mm magazines.")
+	for(var/magazine in list(/obj/item/ammo_box/magazine/smgm45, /obj/item/ammo_box/magazine/sniper_rounds, /obj/item/ammo_box/magazine/m12g))
 		TEST_ASSERT_EQUAL(syndicate.products[magazine], 3, "The syndicate vendor lost spare [magazine].")
 	var/obj/machinery/vending/security/marine/solgov/solgov = allocate(__IMPLIED_TYPE__)
 	var/list/solgov_choices = list(

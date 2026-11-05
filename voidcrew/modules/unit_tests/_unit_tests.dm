@@ -84,6 +84,8 @@
 #include "voidcrew_event_horizon.dm"
 #include "voidcrew_fleet_waypoints.dm"
 #include "voidcrew_fresh_cores.dm"
+#include "voidcrew_gear_behaviour.dm"
+#include "voidcrew_gear_fixes.dm"
 #include "voidcrew_helm_access.dm"
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"

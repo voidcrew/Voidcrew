@@ -74,7 +74,6 @@ GLOBAL_LIST_INIT(abandoned_crate_guns_green, list(
 
 GLOBAL_LIST_INIT(abandoned_crate_guns_yellow, list(
 	/obj/item/gun/ballistic/shotgun/riot,
-	/obj/item/gun/ballistic/automatic/tommygun,
 	/obj/item/gun/ballistic/automatic/mini_uzi,
 ))
 
@@ -83,20 +82,24 @@ GLOBAL_LIST_INIT(abandoned_crate_melee_green, list(
 	/obj/item/spear,
 	/obj/item/hatchet,
 	/obj/item/melee/baseball_bat,
-))
-
-GLOBAL_LIST_INIT(abandoned_crate_melee_yellow, list(
 	/obj/item/knife/combat,
 	/obj/item/claymore/shortsword,
-	/obj/item/melee/baseball_bat/ablative,
 	/obj/item/fireaxe,
 	/obj/item/melee/cleric_mace,
 	/obj/item/melee/sabre,
 ))
 
-GLOBAL_LIST_INIT(abandoned_crate_melee_red, list(
+/// Also drawn by bought crates and by pirates. Matches the yellow group in GLOB.loot_melee_pools.
+GLOBAL_LIST_INIT(abandoned_crate_melee_yellow, list(
+	/obj/item/melee/baseball_bat/ablative,
 	/obj/item/claymore,
 	/obj/item/claymore/cutlass,
+	/obj/item/fireaxe/boardingaxe,
+	/obj/item/claymore/cutlass/old,
+	/obj/item/claymore/weak,
+))
+
+GLOBAL_LIST_INIT(abandoned_crate_melee_red, list(
 	/obj/item/katana,
 	/obj/item/mjollnir,
 	/obj/item/melee/energy/sword/saber,

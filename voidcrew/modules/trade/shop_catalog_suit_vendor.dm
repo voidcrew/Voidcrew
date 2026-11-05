@@ -471,7 +471,7 @@
 	category = "Environment Gear"
 	desc = "A heavy old voidsuit. Slower than an EVA rig and far harder to tear, which is the trade the salvage crews keep making."
 	item_path = /obj/item/clothing/suit/space/nasavoid
-	price_credits = 750
+	price_credits = 350
 	stock_min = 1
 	stock_max = 3
 
@@ -746,6 +746,7 @@
 	price_credits = 750
 
 /datum/shop_sku/fitter/rotating/mod_visor_night
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/night
 	price_credits = 2100
@@ -823,34 +824,31 @@
 
 // =========================================================================
 // RARE RACK
-// Three showcase units a round, one of each. Vouchers on everything.
+// Three showcase units a round, one of each.
 // =========================================================================
 
 /datum/shop_sku/fitter/rare/suit_advanced
-	zone_permission = ZONE_PERMISSION_ADVANCED
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "MOD Chassis"
 	name = "advanced MODsuit"
 	desc = "A sealed industrial MODsuit with reinforced plating and a fitted jetpack."
 	item_path = /obj/item/mod/control/pre_equipped/advanced
 	icon_state_override = "advanced-control"
-	price_vouchers = 2
-	price_credits = 6000
+	price_credits = 4800
 
 /datum/shop_sku/fitter/rare/mod_jetpack_advanced
-	zone_permission = ZONE_PERMISSION_ADVANCED
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jetpack/advanced
-	price_vouchers = 2
-	price_credits = 2700
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rare/mod_jump_jet
-	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jump_jet
-	price_vouchers = 2
-	price_credits = 3000
+	price_credits = 800
 
 /datum/shop_sku/fitter/rare/mod_storage_bluespace
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage/bluespace
 	price_vouchers = 2
@@ -897,8 +895,7 @@
 	category = "Environment Gear"
 	desc = "Full blast plate for handling live ordnance. Heavy enough that you won't run anywhere in it, which is the point."
 	item_path = /obj/item/clothing/suit/utility/bomb_suit
-	price_vouchers = 1
-	price_credits = 1200
+	price_credits = 500
 
 // =========================================================================
 // WICK'S SALVAGE BENCH (buybacks)
@@ -918,7 +915,7 @@
 
 /datum/shop_buyback/fitter/scrap_control
 	name = "MOD control unit (any)"
-	desc = "A whole suit, working or not, modules included. Wick strips it to the frame and asks nothing about the previous owner."
+	desc = "A whole suit with its core seated, working or not, modules included. Wick strips it to the frame and asks nothing about the previous owner."
 	category = "Suit Salvage"
 	item_path = /obj/item/mod/control
 	pay_credits = 500
@@ -929,12 +926,15 @@
  * A deployed suit is still inside the wearer's contents, so the stock
  * inventory sweep would happily sell the suit off the seller's own back.
  * Wick only takes one that's off a body.
+ *
+ * It also has to have a core. A frame and plating print for about 100 cr, so a
+ * coreless unit was a money loop: sell it, wrench the core out of the next one.
  */
 /datum/shop_buyback/fitter/scrap_control/matches(obj/item/offered)
 	if(!..())
 		return FALSE
 	var/obj/item/mod/control/suit = offered
-	return isnull(suit.wearer)
+	return isnull(suit.wearer) && !isnull(suit.core)
 
 /datum/shop_buyback/fitter/salvage_spacesuit
 	name = "space suit (salvage)"

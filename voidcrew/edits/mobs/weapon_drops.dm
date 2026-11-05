@@ -1,14 +1,6 @@
 /// The ordinary yellow melee shelf, also used by faction pirates.
 /proc/npc_ladder_yellow_melee()
-	var/static/list/weapons = list(
-		/obj/item/knife/combat,
-		/obj/item/claymore/shortsword,
-		/obj/item/melee/baseball_bat/ablative,
-		/obj/item/fireaxe,
-		/obj/item/melee/cleric_mace,
-		/obj/item/melee/sabre,
-	)
-	return weapons
+	return GLOB.abandoned_crate_melee_yellow
 
 /// A probability, never an associative death-loot quantity.
 /proc/npc_ladder_red_drop(roll = rand(1, 100))
