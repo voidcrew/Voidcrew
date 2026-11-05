@@ -386,7 +386,7 @@
    "tier": "green"
   }
  },
- "method": "No formula. Each pair is placed against the gloves a player would wear instead, then against other categories' anchors. A green feature stays green even when two are combined in one pair, the way the eyewear pilot treated sunglasses with a HUD. Authored uniques are above whatever their power, as in eyewear.",
+ "method": "No formula. Each pair is placed against the gloves a player would wear instead, then against other categories' anchors. A green feature stays green even when two are combined in one pair, the way eyewear treats sunglasses with a HUD. Authored uniques are above whatever their power, as in eyewear.",
  "unrated": {
   "/obj/item/clothing/gloves": "abstract",
   "/obj/item/clothing/gloves/boxing/evil": "no route",

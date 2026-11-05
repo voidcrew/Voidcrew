@@ -225,7 +225,7 @@
    "tier": "green"
   }
  },
- "method": "A kit rates as the gun it builds, using the pilot's gun ratings; the materials and anomaly core it needs are noted, not scored. Pins only restrict a gun, so they are none; other parts rate as what they make or how much they change a fight.",
+ "method": "A kit rates as the gun it builds, using the gun ratings; the materials and anomaly core it needs are noted, not scored. Pins only restrict a gun, so they are none; other parts rate as what they make or how much they change a fight.",
  "unrated": {
   "/obj/item/firing_pin/abductor": "no route",
   "/obj/item/firing_pin/clown/ultra": "no route",

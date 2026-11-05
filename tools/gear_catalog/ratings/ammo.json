@@ -2215,7 +2215,7 @@
    "tier": "green"
   }
  },
- "method": "A round takes the tier of the guns that fire it, using the pilot's gun ratings; a box or loose round that fits several guns takes the lowest real one, so a crew holding that gun can feed it. It moves up only where the round itself is the power (walls, one-hit stuns, fire, blast), plain common rounds for green guns are none, and lenses and built-in magazines copy their gun.",
+ "method": "A round takes the tier of the guns that fire it, using the gun ratings; a box or loose round that fits several guns takes the lowest real one, so a crew holding that gun can feed it. It moves up only where the round itself is the power (walls, one-hit stuns, fire, blast), plain common rounds for green guns are none, and lenses and built-in magazines copy their gun.",
  "unrated": {
   "/obj/item/ammo_box": "abstract",
   "/obj/item/ammo_box/a40mm/rubber": "no route",

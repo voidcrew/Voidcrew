@@ -1079,7 +1079,7 @@
    "tier": "red"
   }
  },
- "method": "Chassis and parts rate as the finished mech, measured as how many vested men it takes to match its health and armor. Mech guns use the pilot gun formula against a vested man at 5 tiles, then get read as a pair, since a mech has two arms but two copies of one gun share a cooldown.",
+ "method": "Chassis and parts rate as the finished mech, measured as how many vested men it takes to match its health and armor. Mech guns use the gun formula against a vested man at 5 tiles, then get read as a pair, since a mech has two arms but two copies of one gun share a cooldown.",
  "unrated": {
   "/obj/item/mecha_ammo": "abstract",
   "/obj/item/mecha_ammo/missiles_srm": "no route",
