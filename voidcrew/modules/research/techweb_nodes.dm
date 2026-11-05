@@ -138,8 +138,6 @@
 	prereq_ids = list(TECHWEB_NODE_CYBERNETICS)
 	design_ids = list(
 		"nanite_disk",
-		"nanite_remote",
-		"nanite_comm_remote",
 		"nanite_scanner",
 		"nanite_chamber",
 		"public_nanite_chamber",
@@ -1027,6 +1025,18 @@
 /datum/techweb_node/medbay_equip_adv/New()
 	. = ..()
 	design_ids -= "crewpinpointer"
+
+/datum/techweb_node/nanite_remotes
+	id = TECHWEB_NODE_NANITE_REMOTES
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Nanite Remotes"
+	description = "Handheld transmitters that send codes and messages to nanites at range."
+	prereq_ids = list(TECHWEB_NODE_NANITE_BASIC)
+	design_ids = list(
+		"nanite_remote",
+		"nanite_comm_remote",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
 
 /datum/techweb_node/crew_tracking
 	id = TECHWEB_NODE_CREW_TRACKING
