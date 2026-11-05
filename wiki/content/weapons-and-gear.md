@@ -30,7 +30,7 @@ Cargo does not sell security equipment, individual combat guns or conversion kit
 
 These gun lines restore one unit per hour up to their stock limit. Convoys do not refill them early. Most lethal lines start with one gun; Barnaby starts with two rifles. Limited showcase weapons may never restock. See [Crews & Reputation](zone-reputation.md).
 
-Barnaby also sells hunting and survival knives. Sarge sells combat knives, shortswords, ablative bats, fire axes and sabres. A riot shield costs **1,200 credits**.
+Barnaby also sells hunting, survival and combat knives and shortswords. Sarge sells combat knives, shortswords, ablative bats, fire axes and sabres. The ablative bat needs 11 reputation. A riot shield costs **1,200 credits** and needs 4.
 
 A [peddler](planets.md#what-is-down-there) walking across a planet carries one gun or melee weapon from that planet's zone: green gear on green planets, yellow on yellow and red on red. It costs credits only and needs no reputation, and it costs about a quarter less than a trader's own, counting a voucher as **1,200 credits**. Once it is sold, that peddler has no other.
 
@@ -77,7 +77,7 @@ The Event Horizon recharges itself and fires a long-range beam that opens a brie
 
 Traders sell ammunition, and the [research tree](research.md) unlocks magazines and specialty loads. A 50-round L6 SAW magazine costs **50 iron, 10 titanium, 10 plasma and 5 plastic sheets** before lathe discounts. Its 80-point node requires Exotic Ammunition and Automatic Ammunition. Fully upgraded lathes reduce the material cost to 40%.
 
-Pistol, revolver and shotgun shell ammunition needs no reputation. Rifle clips and magazines for SMGs and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research, and Sarge won't sell you C-20r or WT-550 magazines without it; L6, Bulldog, sniper, .223, Thompson drum and explosive ammunition need 11.
+Pistol, revolver and shotgun shell ammunition needs no reputation. Rifle clips and magazines for SMGs and the C-20r and WT-550 need 4 [reputation](zone-reputation.md) to research, and Sarge won't sell you C-20r or WT-550 magazines or real .310 clips without it; L6, Bulldog, sniper, .223, Thompson drum and explosive ammunition need 11.
 
 **No Quarter** uses heavy cartridges, which fit no other gun. Anyone can craft one from **two iron sheets and one paper** in three seconds, with batch crafting available. Reloading takes five seconds. The gun arrives with twelve cartridges in its bandolier.
 

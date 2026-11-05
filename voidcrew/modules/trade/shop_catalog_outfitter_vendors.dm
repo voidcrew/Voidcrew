@@ -65,6 +65,7 @@
 		/datum/shop_sku/skunk/adv_analyzer,
 		/datum/shop_sku/skunk/science_gps,
 		/datum/shop_sku/skunk/alien_sample,
+		/datum/shop_sku/skunk/strongarm,
 		// Ship Retrofit: tier-2 parts to tune up a ship's machines
 		/datum/shop_sku/skunk/capacitor,
 		/datum/shop_sku/skunk/servo,
@@ -150,7 +151,7 @@
 /datum/shop_sku/skunk/science_gps
 	category = "Gadgetry"
 	item_path = /obj/item/gps/science
-	price_credits = 400
+	price_credits = 50
 	stock_min = 1
 	stock_max = 3
 
@@ -162,6 +163,22 @@
 	price_credits = 900
 	stock_min = 3
 	stock_max = 3
+
+/datum/shop_sku/skunk/strongarm
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Gadgetry"
+	name = "Strong-Arm implants (pair)"
+	desc = "A matched pair of arm muscle implants, one per arm."
+	item_path = /obj/item/organ/cyberimp/arm/strongarm
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 2
+	contract_reward = FALSE
+
+/// One sale, both implants.
+/datum/shop_sku/skunk/strongarm/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	. = ..()
+	..()
 
 // ===== SHIP RETROFIT =====
 
@@ -219,9 +236,10 @@
 	stock_max = 3
 
 /datum/shop_sku/skunk/night_vision
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/night
-	price_credits = 5400
+	price_credits = 2100
 	stock_min = 1
 	stock_max = 2
 
@@ -253,7 +271,7 @@
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/thermal
 	price_vouchers = 2
-	price_credits = 4800
+	price_credits = 2100
 
 // ===== RARE SHOWCASE =====
 
@@ -262,8 +280,7 @@
 	name = "deluxe stock part crate"
 	desc = "A boxed set of top-shelf components, straight off a convoy that Boffin refuses to name."
 	item_path = /obj/item/storage/box/stockparts/deluxe
-	price_vouchers = 1
-	price_credits = 3000
+	price_credits = 1500
 
 /datum/shop_sku/skunk/rare/hyper_cell
 	category = "Power & Optics"

@@ -497,7 +497,7 @@
 /datum/shop_sku/bait/tackle_box
 	category = "Bait & Tackle"
 	item_path = /obj/item/storage/toolbox/fishing
-	price_credits = 250
+	price_credits = 100
 	stock_min = 1
 	stock_max = 2
 

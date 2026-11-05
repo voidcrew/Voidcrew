@@ -66,7 +66,6 @@
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
-		/datum/shop_sku/black_market/quiet_word_mag,
 		// Explosives
 		/datum/shop_sku/black_market/c4,
 		/datum/shop_sku/black_market/emp_grenade,
@@ -236,14 +235,6 @@
 	stock_min = 2
 	stock_max = 5
 
-// Reloads for salvaged 10mm pistols.
-/datum/shop_sku/black_market/quiet_word_mag
-	category = "Weapons"
-	item_path = /obj/item/ammo_box/magazine/m10mm/quiet_word
-	price_credits = 250// PROVISIONAL BALANCE. A shade over the 9mm mag; 10mm hits harder
-	stock_min = 3
-	stock_max = 6
-
 // ===== EXPLOSIVES =====
 
 /datum/shop_sku/black_market/c4
@@ -282,7 +273,7 @@
 // ===== MODSUITS =====
 // The illegal half of the suit market. Quartermain's fitter stocks civilian
 // through advanced; everything here is a control unit or module that shop will
-// not carry, and all of it is voucher-gated.
+// not carry.
 //
 // Two rules shape the ladder:
 // - Nothing with a req_access list. /pre_equipped/elite and /nuclear spawn
@@ -347,7 +338,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/mod_storage
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "MODsuits"
 	desc = "A Cybersun compression storage module."
 	item_path = /obj/item/mod/module/storage/syndicate
@@ -356,12 +347,10 @@
 	stock_max = 3
 
 /datum/shop_sku/black_market/mod_plate_compression
-	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	desc = "A compact plate-compression assembly for a MODsuit."
 	item_path = /obj/item/mod/module/plate_compression
-	price_vouchers = 1
-	price_credits = 1800
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
 
@@ -511,6 +500,7 @@
 	stock_max = 2
 
 /datum/shop_sku/black_market/ew_drive_lockout
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Drive Lockout exploit cartridge"
 	desc = "Cuts the target's engine burn and holds it cut until the payload expires."
@@ -520,6 +510,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/ew_fire_control_freeze
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Fire-Control Freeze exploit cartridge"
 	desc = "Locks the target's launchers and turrets out of firing while it runs."
@@ -529,6 +520,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/ew_shield_collapse
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Shield Collapse exploit cartridge"
 	desc = "Forces the target's shields down and blocks a restart for the duration."
@@ -538,6 +530,7 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/ew_breaker_trip
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Breaker Trip exploit cartridge"
 	desc = "Trips the equipment and lighting breakers on every APC aboard the target."
@@ -689,20 +682,20 @@
 	price_vouchers = 3
 
 /datum/shop_sku/black_market/rotating/mod_flamethrower
-	zone_permission = ZONE_PERMISSION_ELITE
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "MODsuits"
 	desc = "A suit-mounted flamethrower."
 	item_path = /obj/item/mod/module/flamethrower
-	price_vouchers = 3
+	price_credits = 1200
 
 /datum/shop_sku/black_market/rotating/mod_chameleon
-	zone_permission = ZONE_PERMISSION_ELITE
 	category = "MODsuits"
 	desc = "Disguises the whole stowed suit as some other object. Useful for walking a MODsuit past people who would object to a MODsuit."
 	item_path = /obj/item/mod/module/chameleon
-	price_vouchers = 2
+	price_credits = 300
 
 /datum/shop_sku/black_market/rotating/ew_runaway_burn
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Runaway Burn exploit cartridge"
 	desc = "Pins the target's throttle at full burn on its current heading, and nobody aboard can pull it back."
@@ -710,6 +703,7 @@
 	price_vouchers = 3
 
 /datum/shop_sku/black_market/rotating/ew_helm_poltergeist
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Exploit Software"
 	name = "Poltergeist exploit cartridge"
 	desc = "An encrypted helm-control exploit cartridge."
@@ -856,11 +850,11 @@
 	stock_max = 1
 
 /datum/shop_sku/black_market/cutlass
-	zone_permission = ZONE_PERMISSION_ADVANCED
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	item_path = /obj/item/claymore/cutlass
-	price_credits = 3000
-	price_vouchers = 3
+	price_credits = 1800
+	price_vouchers = 1
 	stock_min = 1
 	stock_max = 1
 	restock_interval = INFINITY

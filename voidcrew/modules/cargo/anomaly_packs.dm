@@ -12,6 +12,9 @@
  * list default is built at New() time, after the null has been applied, so the
  * pack comes back with its contents. Clearing it in New() drops each crate from
  * every console without touching the upstream definitions.
+ *
+ * Strong-Arm implants and the stingbang single-pack moved to trader counters the
+ * same way, at reputation 4: Boffin and Sarge sell them now.
  */
 GLOBAL_LIST_INIT(voidcrew_removed_supply_packs, typecacheof(list(
 	/datum/supply_pack/science/raw_flux_anomaly,
@@ -23,6 +26,8 @@ GLOBAL_LIST_INIT(voidcrew_removed_supply_packs, typecacheof(list(
 	/datum/supply_pack/science/raw_pyro_anomaly,
 	/datum/supply_pack/science/raw_bioscrambler_anomaly,
 	/datum/supply_pack/science/raw_dimensional_anomaly,
+	/datum/supply_pack/medical/arm_implants,
+	/datum/supply_pack/goody/stingbang,
 )))
 
 // Chains onto the upstream New.

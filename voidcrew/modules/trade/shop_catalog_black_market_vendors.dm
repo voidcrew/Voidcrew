@@ -444,14 +444,14 @@
 /datum/shop_sku/clinic/o2_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/o2
-	price_credits = 300
+	price_credits = 200
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/clinic/toxin_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/toxin
-	price_credits = 300
+	price_credits = 200
 	stock_min = 2
 	stock_max = 3
 
@@ -598,7 +598,7 @@
 /datum/shop_sku/clinic/rotating/atropine_pen
 	category = "Pharmacy"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/atropine
-	price_credits = 450
+	price_credits = 225
 
 /datum/shop_sku/clinic/rotating/penthrite_pen
 	zone_permission = ZONE_PERMISSION_YELLOW
@@ -628,10 +628,10 @@
 /datum/shop_sku/clinic/rare/syndie_surgery_kit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/surgery_syndie
-	price_vouchers = 2
+	price_credits = 1000
 
 /datum/shop_sku/clinic/rare/compact_defib
-	price_credits = 2400
+	price_credits = 900
 	category = "Field Medicine"
 	item_path = /obj/item/defibrillator/compact
 	price_vouchers = 0

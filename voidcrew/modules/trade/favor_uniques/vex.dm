@@ -233,10 +233,9 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /**
- * The Quiet Word's magazine. Its own typepath so it can sit on a shelf as its
- * own SKU, but it stays inside the stock 10mm family: it feeds anything that
- * accepts /obj/item/ammo_box/magazine/m10mm, and the Quiet Word happily takes
- * plain Ansem magazines back.
+ * The Quiet Word's magazine. It has its own typepath but stays inside the stock
+ * 10mm family: it feeds anything that accepts /obj/item/ammo_box/magazine/m10mm,
+ * and the Quiet Word happily takes plain Ansem magazines back.
  */
 /obj/item/ammo_box/magazine/m10mm/quiet_word
 	name = "Quiet Word magazine (10mm)"

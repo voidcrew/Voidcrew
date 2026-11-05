@@ -57,6 +57,7 @@
 		/datum/shop_sku/outfitter/helmet,
 		/datum/shop_sku/outfitter/riot_helmet,
 		/datum/shop_sku/outfitter/bulletproof_vest,
+		/datum/shop_sku/outfitter/bulletproof_helmet,
 		// Firearms & Ammo
 		/datum/shop_sku/outfitter/disabler,
 		/datum/shop_sku/outfitter/energy_gun,
@@ -90,9 +91,12 @@
 		/datum/shop_sku/outfitter/pepper_spray,
 		/datum/shop_sku/outfitter/riot_shield,
 		/datum/shop_sku/outfitter/barrier_grenade,
+		/datum/shop_sku/outfitter/stingbang,
 		// Combat Medical
 		/datum/shop_sku/outfitter/brute_kit,
 		/datum/shop_sku/outfitter/advanced_medkit,
+		/datum/shop_sku/outfitter/surgery_kit,
+		/datum/shop_sku/outfitter/rare/compact_defib,
 		/datum/shop_sku/outfitter/stimpack,
 		/datum/shop_sku/outfitter/suture,
 		// Mess Tin
@@ -102,6 +106,7 @@
 		/datum/shop_sku/outfitter/hot_sauce,
 		// Utility
 		/datum/shop_sku/outfitter/gas_mask,
+		/datum/shop_sku/outfitter/noslip_shoes,
 		// Hull Stock
 		/datum/shop_sku/outfitter/plasteel_stock,
 		/datum/shop_sku/outfitter/iron_stock,
@@ -146,8 +151,10 @@
 	)
 	rare_pool = list(
 		/datum/shop_sku/outfitter/rare/ablative_vest,
+		/datum/shop_sku/outfitter/rare/ablative_hood,
 		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
+	rare_picks_max = 3
 	// The back room: Crew-reputation uniques, per-crew supply (trader_favor.dm)
 	favor_sku_types = list(
 		/datum/shop_sku/favor/skunkworks_cell,
@@ -236,9 +243,18 @@
 	stock_max = 3
 
 /datum/shop_sku/outfitter/bulletproof_vest
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/bulletproof
 	price_credits = 900
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/outfitter/bulletproof_helmet
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Armor"
+	item_path = /obj/item/clothing/head/helmet/alt
+	price_credits = 450
 	stock_min = 1
 	stock_max = 2
 
@@ -292,6 +308,7 @@
 	stock_max = 20
 
 /datum/shop_sku/outfitter/rifle_clip
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	item_path = /obj/item/ammo_box/strilka310
 	price_credits = 150
@@ -312,9 +329,9 @@
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Firearms & Ammo"
 	name = "wt-550 magazine"
-	desc = "A loaded 4.6x30mm magazine for a WT-550. Armor-piercing, and priced accordingly."
+	desc = "A loaded 4.6x30mm magazine for a WT-550."
 	item_path = /obj/item/ammo_box/magazine/wt550m9
-	price_credits = 300
+	price_credits = 150
 	stock_min = 10
 	stock_max = 20
 
@@ -417,9 +434,10 @@
 // ===== SECURITY GEAR =====
 
 /datum/shop_sku/outfitter/security_belt
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Security Gear"
 	item_path = /obj/item/storage/belt/security/full
-	price_credits = 2700
+	price_credits = 1500
 	stock_min = 1
 	stock_max = 1
 
@@ -429,6 +447,7 @@
 	price_credits = 450
 
 /datum/shop_sku/outfitter/riot_shield
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Security Gear"
 	item_path = /obj/item/shield/riot
 	price_credits = 1200
@@ -442,6 +461,14 @@
 	stock_min = 2
 	stock_max = 4
 
+/datum/shop_sku/outfitter/stingbang
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Security Gear"
+	item_path = /obj/item/grenade/stingbang
+	price_credits = 250
+	stock_min = 2
+	stock_max = 4
+
 // ===== COMBAT MEDICAL =====
 
 /datum/shop_sku/outfitter/brute_kit
@@ -449,7 +476,7 @@
 	stock_min = 10
 	category = "Combat Medical"
 	item_path = /obj/item/storage/medkit/brute
-	price_credits = 300
+	price_credits = 200
 
 /datum/shop_sku/outfitter/advanced_medkit
 	category = "Combat Medical"
@@ -458,10 +485,17 @@
 	stock_min = 10
 	stock_max = 20
 
+/datum/shop_sku/outfitter/surgery_kit
+	category = "Combat Medical"
+	item_path = /obj/item/storage/medkit/surgery
+	price_credits = 750
+	stock_min = 1
+	stock_max = 2
+
 /datum/shop_sku/outfitter/stimpack
 	category = "Combat Medical"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/stimpack
-	price_credits = 1200
+	price_credits = 700
 	stock_min = 2
 	stock_max = 4
 
@@ -516,7 +550,14 @@
 /datum/shop_sku/outfitter/gas_mask
 	category = "Utility"
 	item_path = /obj/item/clothing/mask/gas
-	price_credits = 200
+	price_credits = 100
+
+/datum/shop_sku/outfitter/noslip_shoes
+	category = "Utility"
+	item_path = /obj/item/clothing/shoes/chameleon/noslip
+	price_credits = 1000
+	stock_min = 1
+	stock_max = 2
 
 // ===== HULL STOCK =====
 // Bulk repair material for crews who can't mine or can't wait. Sold by the
@@ -586,27 +627,28 @@
 // ===== ROTATING SHELF =====
 
 /datum/shop_sku/outfitter/rotating/riot_suit
-	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/riot
-	price_credits = 4500
+	price_credits = 1200
 
 /datum/shop_sku/outfitter/rotating/telescopic_baton
 	category = "Security Gear"
 	item_path = /obj/item/melee/baton/telescopic
-	price_credits = 2400
+	price_credits = 800
 
 /datum/shop_sku/outfitter/rotating/tackler_gloves
 	category = "Security Gear"
 	item_path = /obj/item/clothing/gloves/tackler
-	price_credits = 1200
+	price_credits = 400
 
 /datum/shop_sku/outfitter/rotating/flashbang
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Security Gear"
 	item_path = /obj/item/grenade/flashbang
 	price_credits = 900
 
 /datum/shop_sku/outfitter/rotating/frag_grenade
+	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Security Gear"
 	item_path = /obj/item/grenade/frag
 	price_vouchers = 1
@@ -635,10 +677,22 @@
 	price_vouchers = 1
 	price_credits = 3600
 
+// Half the vest's value, as the bulletproof helmet is half its vest's.
+/datum/shop_sku/outfitter/rare/ablative_hood
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Armor"
+	desc = "A laser-reflective hood with a visor, sold without its coat."
+	item_path = /obj/item/clothing/head/hooded/ablative
+	price_vouchers = 1
+	price_credits = 1200
+
+// Stands on the core shelf, the way Vex's mateba does.
 /datum/shop_sku/outfitter/rare/compact_defib
 	category = "Combat Medical"
 	item_path = /obj/item/defibrillator/compact
-	price_credits = 2400
+	price_credits = 900
+	stock_min = 1
+	stock_max = 2
 
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
@@ -702,6 +756,7 @@
 
 // Barter: the depot always needs hull stock
 /datum/shop_sku/barter/plasteel_for_shield
+	zone_permission = ZONE_PERMISSION_YELLOW
 	name = "riot shield (plasteel trade)"
 	item_path = /obj/item/shield/riot
 	barter_path = /obj/item/stack/sheet/plasteel
@@ -711,8 +766,8 @@
 
 // ===== BACK ROOM =====
 // Sarge's favor uniques: Crew reputation only, up to FAVOR_UNIQUE_CREW_LIMIT
-// per crew per round. Priced above the rare shelf on purpose, standing opens
-// the door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
+// per crew per round. Mostly priced above the rare shelf, standing opens the
+// door, it doesn't pay the bill. All prices PROVISIONAL BALANCE.
 
 /datum/shop_sku/favor/skunkworks_cell
 	zone_permission = ZONE_PERMISSION_ADVANCED
@@ -723,11 +778,10 @@
 /datum/shop_sku/favor/fitter_gauntlets
 	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/clothing/gloves/tinkerer/fitter
-	price_credits = 3600
-	price_vouchers = 2
+	price_credits = 1000
 
 /datum/shop_sku/favor/maneuvering_harness
-	zone_permission = ZONE_PERMISSION_ADVANCED
+	zone_permission = ZONE_PERMISSION_YELLOW
 	item_path = /obj/item/tank/jetpack/oxygen/harness/prototype
 	price_credits = 3800
 	price_vouchers = 2
@@ -762,6 +816,7 @@
 	stock_max = 2
 
 /datum/shop_sku/outfitter/ablative_bat
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	category = "Melee"
 	item_path = /obj/item/melee/baseball_bat/ablative
 	price_credits = 1000
@@ -772,7 +827,7 @@
 /datum/shop_sku/outfitter/fireaxe
 	category = "Melee"
 	item_path = /obj/item/fireaxe
-	price_credits = 1500
+	price_credits = 600
 	price_vouchers = 0
 	stock_min = 2
 	stock_max = 2
@@ -780,7 +835,7 @@
 /datum/shop_sku/outfitter/sabre
 	category = "Melee"
 	item_path = /obj/item/melee/sabre
-	price_credits = 1800
+	price_credits = 800
 	price_vouchers = 0
 	stock_min = 1
 	stock_max = 1

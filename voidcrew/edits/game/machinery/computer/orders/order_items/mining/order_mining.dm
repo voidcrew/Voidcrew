@@ -18,5 +18,10 @@
 /datum/orderable_item/mining/resonator_advanced
 	cost_per_order = 1200
 
+// Tendril chests fill and open themselves here, so the key has nothing to open.
+// The console skips any line with no purchase path.
+/datum/orderable_item/mining/skeleton_key
+	purchase_path = null
+
 /datum/orderable_item/mining/ventpointer
 	cost_per_order = 800

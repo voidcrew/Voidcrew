@@ -29,7 +29,7 @@ An outpost fits on one level, with the habitat you build in the middle. A dark b
 
 Use the **outpost management console** to rename the outpost, set a public memo, manage docking and residents, grant permissions, or transfer ownership.
 
-A **Registry uplink** implant adds an **Outpost Management** action that works from anywhere, including other ships and sectors. Splice sells it for **2,800 credits**; it uses **2 neural load**. Choose any outpost you own or have management permission for. The implant grants no additional permissions, and removal or chrome failure disconnects remote access. Without it, use the physical console.
+A **Registry uplink** implant adds an **Outpost Management** action that works from anywhere, including other ships and sectors. Splice sells it for **1,200 credits**; it uses **2 neural load**. Choose any outpost you own or have management permission for. The implant grants no additional permissions, and removal or chrome failure disconnects remote access. Without it, use the physical console.
 
 You can delegate management (steward), bank withdrawals (treasurer), service prices (pricer) and construction (builder) separately, from the **People** tab. Your founding ship's crew automatically become residents with construction permission. Other residents need construction permission granted separately. When the console refuses something, it says why in chat.
 

@@ -11,7 +11,7 @@ Three trader outposts sit permanently on the [overmap](overmap.md), one per zone
 
 | Outpost | Zone | Trader | Sells |
 |---|---|---|---|
-| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and sundries. Back-room goods also cost vouchers. |
+| Waystation Halcyon | Neutral ring (green) | Barnaby | Survival kit, tools, medical, prospecting gear, basic arms and armour, street chrome and sundries. Back-room goods also cost vouchers. |
 | Quartermain Depot | Contested lanes (yellow) | Sarge | Armour, firearms, thruster and turret boards, ordnance, hull stock. |
 | Undertow Exchange | Lawless deep (red) | Vex | Syndicate hardware, MODsuit control units, ship shield, interdiction and electronic-warfare boards, exploit software, sealed mystery cargo. |
 
@@ -62,7 +62,7 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 | Halcyon | The Potting Shed | Fern | Seeds, growing supplies, the botany starter pack |
 | Halcyon | Pike's Bait & Tackle | Pike | Rods, bait and tackle, beside an indoor pond |
 | Halcyon | The Chowder Pot | Roux | The diner. Hot meals in tiers, galley staples, buys home cooking |
-| Quartermain | The Skunkworks | Boffin | Research and fabrication gear, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
+| Quartermain | The Skunkworks | Boffin | Research and fabrication gear, Strong-Arm implants, robotics and xenobiology starter packs, raw anomaly cores and anomaly charts |
 | Quartermain | The Fitting Bay | Wick | Civilian through advanced MODsuits |
 | The Undertow | The Dregs | Dram | The cantina |
 | The Undertow | Patch-Up Clinic | Sawbones | Medical supplies, the genetics starter pack |
@@ -70,7 +70,7 @@ Each outpost's concourse has its own side vendors, each with their own shopkeep 
 
 **The Chowder Pot** at Halcyon is the waystation diner, and the menu is a quality ladder with real teeth. *Counter grub* is cheap factory food. It fills you up and does nothing else. The *blue plate specials* and the *chef's table* come off Roux's own pass, and a meal an actual cook made gives a genuine mood lift that scales with the depth of the recipe, so the expensive plate really does eat better than the hot dog. The *pantry* shelf stocks the raw staples a ship galley cannot print, flour, rice, milk, eggs, butter, enzyme, meat, even monkey cubes, which makes Halcyon the place to provision a working kitchen. Roux also **buys** home-cooked dishes, hand-made pies and whole cakes over the counter. She pays for real cooking only: vending-machine food is refused, and so are her own plates coming back around.
 
-**The Fitting Bay** at Quartermain has a **MOD fitting bench**, a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. It will not convert a suit from one theme to another. For the tier Wick won't touch, syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules. Go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
+**The Fitting Bay** at Quartermain has a **MOD fitting bench**, a powered frame you back into while still wearing your suit. It swaps modules for free with no screwdriver work, sells permanent upgrades (plating, module capacity, actuator tuning, power regulation, cell swaps) and per-visit servicing, gives away paint and engraving, and trickle-charges your cell while the frame is shut. Reinforced plating needs 4 [reputation](zone-reputation.md) and composite plating needs 11. It will not convert a suit from one theme to another. For the tier Wick won't touch, syndicate and elite chassis, Interdyne and infiltrator control units, the antag modules. Go to **Vex**: 3600 credits plus 2 vouchers for a syndicate chassis, 5400 plus 3 for an elite, 5 vouchers for a fully equipped syndicate suit.
 
 **The Chop Shop** at the Undertow is the galaxy's only cyberware parlor, a neon annex off the Dregs. Splice sells chrome implants off four shelves, street chrome for credits, pro chrome for credits or vouchers, military and legend chrome for vouchers only, and the **Chrome Cradle** in the middle of the room does the installing: you lie on the slab, pick a piece off the rack, and the rig does the surgery in seconds. Removals, repairs and ink re-keying run on the same console, an ammunition shelf keeps implanted weapons fed, and Splice buys back pulled street chrome at about half price. The full catalog is on [Cyberware](cyberware.md).
 
@@ -137,7 +137,7 @@ Turn them in at any outpost trader or at your own mission pad. Except courier ru
 
 ### Back rooms
 
-**Back Room** purchases require [reputation](zone-reputation.md). Barnaby's goods open at 4. Sarge's fitter gauntlets open then too; his Skunkworks cell and maneuvering harness need 11. Vex's insurance implant needs 22. Each crew may buy up to **three of each** per round.
+**Back Room** purchases require [reputation](zone-reputation.md). Barnaby's goods open at 4. Sarge's fitter gauntlets and maneuvering harness open then too; his Skunkworks cell needs 11. Vex's insurance implant needs 22. Each crew may buy up to **three of each** per round.
 
 ## Violence
 

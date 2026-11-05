@@ -239,6 +239,10 @@
 		if(sku.restock_interval)
 			continue
 		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max - sku.reserved_stock)
+			// Slow lines count convoys only while short, so nothing banks up on a full shelf.
+			if(++sku.convoys_waited < sku.convoys_per_unit)
+				continue
+			sku.convoys_waited = 0
 			sku.stock = min(sku.stock_max - sku.reserved_stock, sku.stock + max(1, round(sku.stock_max / 2)))
 		// A new paid chart creates a fresh ruin, so named tips can be sold again.
 		else if(istype(sku, /datum/shop_sku/ruin_chart) && sku.stock < sku.stock_max)
@@ -466,6 +470,10 @@
 	var/restock_interval = 0
 	/// Independent of convoy arrivals, visits, specials and crew ownership.
 	var/restock_timer
+	/// Convoys a short core line waits for each delivery. 1 refills on every convoy.
+	var/convoys_per_unit = 1
+	/// Convoys that have passed since this line last took a delivery while short.
+	var/convoys_waited = 0
 
 /datum/shop_sku/New()
 	..()
