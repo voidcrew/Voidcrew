@@ -6,6 +6,7 @@
 #include "blood_jaunt_destinations.dm"
 #include "drift_vectors.dm"
 #include "gas_connector_lifecycle.dm"
+#include "gear_catalog_dump.dm"
 #include "glass_floor_baseturfs.dm"
 #include "hyperspace_jetpack.dm"
 #include "late_initialization_reentry.dm"
