@@ -374,14 +374,6 @@
 /obj/structure/sign/poster/official/wtf_is_co2,
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/bogatyr/maintenance)
-"nHX" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/turf/template_noop,
-/area/shuttle/voidcrew/bogatyr/armory)
 "nJO" = (
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
@@ -594,12 +586,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"vob" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/template_noop,
-/area/shuttle/voidcrew/bogatyr/armory)
 "vpr" = (
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
@@ -946,9 +932,9 @@ xvh
 wdR
 pSp
 amC
-amC
-nHX
-vob
+xPQ
+xPQ
+xPQ
 fVY
 fVY
 fVY

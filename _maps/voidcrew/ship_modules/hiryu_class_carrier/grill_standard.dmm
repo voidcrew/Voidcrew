@@ -90,13 +90,13 @@
 /obj/item/holosign_creator/robot_seat/restaurant,
 /turf/open/floor/asphalt,
 /area/template_noop)
+"uks" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass,
+/area/template_noop)
 "uSH" = (
 /obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/asphalt,
-/area/template_noop)
-"wTu" = (
-/obj/machinery/hydroponics,
-/turf/open/floor/grass,
 /area/template_noop)
 "xnU" = (
 /obj/structure/tank_dispenser/oxygen,
@@ -164,7 +164,7 @@ gWN
 "}
 (12,1,1) = {"
 nmy
-wTu
+uks
 pIO
 "}
 (13,1,1) = {"

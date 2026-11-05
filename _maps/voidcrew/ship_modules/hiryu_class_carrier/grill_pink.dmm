@@ -29,10 +29,6 @@
 /obj/item/holosign_creator/robot_seat/restaurant,
 /turf/open/floor/asphalt,
 /area/template_noop)
-"dpq" = (
-/obj/machinery/hydroponics,
-/turf/open/floor/grass/dollhouse,
-/area/template_noop)
 "dCa" = (
 /obj/modular_map_connector,
 /obj/structure/closet/secure_closet/freezer/fridge/all_access,
@@ -103,6 +99,10 @@
 "pZe" = (
 /turf/template_noop,
 /area/template_noop)
+"ryW" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass/dollhouse,
+/area/template_noop)
 "uTX" = (
 /obj/structure/flora/ausbushes/ppflowers,
 /obj/machinery/vending/hydronutrients,
@@ -170,7 +170,7 @@ fHW
 "}
 (12,1,1) = {"
 pZe
-dpq
+ryW
 aak
 "}
 (13,1,1) = {"

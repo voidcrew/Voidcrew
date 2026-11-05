@@ -179,6 +179,7 @@
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_respawn_timer.dm"
+#include "voidcrew_restaurant_portal.dm"
 #include "voidcrew_rnd_kit.dm"
 #include "voidcrew_round_metrics.dm"
 #include "voidcrew_ruin_bounds.dm"

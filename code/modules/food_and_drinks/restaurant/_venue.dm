@@ -197,7 +197,9 @@
 
 /obj/machinery/restaurant_portal/Destroy()
 	turned_on_portal = null
-	linked_venue.restaurant_portals -= src
+	// VOIDCREW EDIT: Initialize() allows a portal with no venue, so this can't assume one.
+	if(linked_venue)
+		linked_venue.restaurant_portals -= src
 	linked_venue = null
 	return ..()
 
