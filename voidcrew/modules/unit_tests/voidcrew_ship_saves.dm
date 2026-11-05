@@ -326,7 +326,9 @@
 	TEST_ASSERT(!findtext(saved.atom_text(allocate(/obj/machinery/door/airlock)), "assemblytype"), "A plain airlock was given another assembly")
 	TEST_ASSERT(ship_save_refuses_object(allocate(/obj/structure/door_assembly/door_assembly_gold)), "A gold airlock assembly was saved")
 	TEST_ASSERT(!ship_save_refuses_object(allocate(/obj/structure/door_assembly)), "A plain airlock assembly was refused")
-	// The plain assembly it falls back to comes apart into iron alone.
+	// The plain assembly it falls back to comes apart into iron alone. The assemblies above share this tile.
+	for(var/obj/structure/door_assembly/leftover in tile)
+		qdel(leftover)
 	var/obj/machinery/door/airlock/gold/breaking = new(tile)
 	breaking.assemblytype = /obj/structure/door_assembly
 	breaking.deconstruct(TRUE)
@@ -336,27 +338,35 @@
 	dropped?.deconstruct(TRUE)
 	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/sheet/iron) in tile, "A plain assembly dropped no iron")
 	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/gold) in tile, "A plain assembly dropped gold")
+	// Not effects: the test room's own marker is on this tile, and every later test finds the room by it.
 	for(var/obj/loose in tile)
-		qdel(loose)
+		if(!iseffect(loose))
+			qdel(loose)
 
 /// A saved RTG still makes power, and taking it apart hands back no uranium. An ordinary one still does.
 /datum/unit_test/voidcrew_ship_saves/proc/check_board_salvage()
 	var/turf/tile = run_loc_floor_bottom_left
+	// Not effects: the test room's own marker is on this tile, and every later test finds the room by it.
 	for(var/obj/loose in tile)
-		qdel(loose)
+		if(!iseffect(loose))
+			qdel(loose)
 	var/obj/machinery/power/rtg/saved = new(tile)
 	checkpoint_restore_machine(saved, null)
 	TEST_ASSERT(saved.power_gen > 0, "A saved RTG makes no power")
 	saved.deconstruct(TRUE)
 	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/uranium) in tile, "A saved RTG handed back uranium")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/cable_coil) in tile, "A saved RTG stopped handing back its ordinary stacks")
+	// Not effects: the test room's own marker is on this tile, and every later test finds the room by it.
 	for(var/obj/loose in tile)
-		qdel(loose)
+		if(!iseffect(loose))
+			qdel(loose)
 	var/obj/machinery/power/rtg/ordinary = new(tile)
 	ordinary.deconstruct(TRUE)
 	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/sheet/mineral/uranium) in tile, "An ordinary RTG stopped handing back its uranium")
+	// Not effects: the test room's own marker is on this tile, and every later test finds the room by it.
 	for(var/obj/loose in tile)
-		qdel(loose)
+		if(!iseffect(loose))
+			qdel(loose)
 
 /// Loading a map with a var its type doesn't have throws, so each one a save writes must exist.
 /datum/unit_test/voidcrew_ship_saves/proc/check_saved_vars()

@@ -227,7 +227,8 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 			snapshot.tgm = gone_port_room.Replace(snapshot.tgm, "$1" + SHIP_SAVE_FALLBACK_AREA + "$2")
 		else if(findtext(path_text, "/turf/") == 1)
 			// What it was saved with belongs to the old type, and plating may not have it.
-			var/regex/gone_turf = new(@"^" + path_text + @"(\{[^}]*\})?([^\w/{]|$)", "gm")
+			// The block runs over several lines, and a negated class alone does not cross them here.
+			var/regex/gone_turf = new(@"^" + path_text + @"(\{(?:[^}]|\n)*\})?([^\w/{]|$)", "gm")
 			snapshot.tgm = gone_turf.Replace(snapshot.tgm, SHIP_SAVE_FALLBACK_TURF + "$2")
 		CHECK_TICK
 
