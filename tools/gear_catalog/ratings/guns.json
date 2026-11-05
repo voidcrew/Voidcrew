@@ -1166,7 +1166,7 @@
   "/obj/item/gun/energy/event_horizon": {
    "confidence": "high",
    "group": "launchers and exotics",
-   "hash": "85f2df22ea253a22",
+   "hash": "3e11c1212dbb8f5d",
    "name": "Event Horizon anti-existential beam rifle",
    "note": "Fires without needing to scope (Voidcrew removes the scope). The hitscan beam opens a tear in reality for 2 seconds wherever it lands, pulling in things within 3 tiles and consuming everything within 2 (people are gibbed, objects deleted); the tear is deleted on creation inside trader outposts and outpost service rooms. The cell holds one shot and refills within about 8 seconds. / On any hit (armor does not matter) it spawns a temporary reality tear on the target's tile: for about 2 seconds it pulls objects within 3 tiles and consumes everything within 2 tiles, gibbing people, then vanishes without leaving a singularity. The tear is deleted at once if it forms in a protected trader outpost.",
    "rank": 1,
