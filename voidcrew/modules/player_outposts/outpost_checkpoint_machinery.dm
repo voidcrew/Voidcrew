@@ -15,6 +15,13 @@
 /obj/machinery/computer/helm/viewscreen/checkpoint_type()
 	return type
 
+/// A portal's board builds the plain portal, which has no venue until it's configured by hand.
+/// Come back as the portal for the venue this one serves.
+/obj/machinery/restaurant_portal/checkpoint_type()
+	. = ..()
+	if(. == /obj/machinery/restaurant_portal)
+		return istype(linked_venue, /datum/venue/bar) ? /obj/machinery/restaurant_portal/bar : /obj/machinery/restaurant_portal/restaurant
+
 /// The bare unary type only exists as a machine's own pipe connector (see
 /// /datum/gas_machine_connector). Its machine makes a new one, so it is never a fitting itself.
 /obj/machinery/atmospherics/components/unary/checkpoint_type()

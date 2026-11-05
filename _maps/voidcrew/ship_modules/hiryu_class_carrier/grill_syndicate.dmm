@@ -28,8 +28,8 @@
 /obj/machinery/vending/hydroseeds,
 /turf/open/floor/grass/fairy,
 /area/template_noop)
-"nsZ" = (
-/obj/machinery/hydroponics,
+"mIs" = (
+/obj/machinery/hydroponics/constructable,
 /turf/open/floor/grass/fairy,
 /area/template_noop)
 "nxf" = (
@@ -172,7 +172,7 @@ qLm
 "}
 (12,1,1) = {"
 gKI
-nsZ
+mIs
 nQa
 "}
 (13,1,1) = {"
