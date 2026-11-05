@@ -168,6 +168,13 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		keys += list("duct_layer", "duct_color", "connects")
 	if(persistent)
 		saved_type = strip_salvage(object, saved_type, keys, properties)
+	else
+		// A wall or floor a saved ship brought in holds iron where its type holds more; keep it
+		// through an in-round checkpoint. Equal to the type's own value, it is left out as usual.
+		if(istype(object, /turf/closed/wall))
+			keys += "sheet_type"
+		if(istype(object, /turf/open/floor))
+			keys += "floor_tile"
 	for(var/key in keys)
 		var/value = object.vars[key]
 		// Always encode direction: an oriented source must survive a round trip.

@@ -69,7 +69,10 @@ GLOBAL_DATUM_INIT(ship_save_store, /datum/ship_save_store, new)
 			"payload" = payload,
 		)
 	)
-	var/success = query.Execute()
+	// A failed insert would log all its arguments, and one of them is the whole map.
+	var/success = query.Execute(log_error = FALSE)
+	if(!success)
+		log_game("Ship save [ckey] slot [slot] could not be written: [copytext(query.ErrorMsg(), 1, 300)]")
 	qdel(query)
 	return success
 

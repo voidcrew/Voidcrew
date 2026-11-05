@@ -223,7 +223,7 @@
 				return FALSE
 			// Reading the save sleeps, and so does the shipyard's queue.
 			ui.close()
-			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, launch_saved_ship), text2num(params["slot"]))
+			INVOKE_ASYNC(GLOB.ship_saves, TYPE_PROC_REF(/datum/ship_saves, launch), user, text2num(params["slot"]))
 
 		if("requisition_hull")
 			// Re-checked in requisition_free_hull() too - the UI is never the authority

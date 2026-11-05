@@ -4,6 +4,7 @@
 #define SHIP_SAVE_TEST_PRICE_MAX 15 // SHIP_SAVE_PRICE_MAX
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
 #define SHIP_SAVE_TEST_FORMAT 1 // SHIP_SAVE_FORMAT
+#define SHIP_SAVE_TEST_TILE_IRON 100 // SHIP_RTD_TILE_IRON
 /// GLOB.round_id for the length of these tests. It is null on a world with no database.
 #define SHIP_SAVE_TEST_ROUND 777
 /// One more than RESERVE_DOCK_MAX_SIZE_LONG.
@@ -131,8 +132,10 @@
 /datum/unit_test/voidcrew_ship_saves/Run()
 	check_round_trip()
 	check_stale_types()
+	check_stale_map()
 	check_rejected_payloads()
 	check_salvage()
+	check_second_generation()
 	check_saved_vars()
 	check_prices()
 	check_part_plans()
@@ -173,6 +176,17 @@
 	snapshot.jobs = list(list("name" = "Ghost", "outfit" = SHIP_SAVE_TEST_GONE_PATH, "category" = "Assistant", "slots" = 1))
 	decoded = GLOB.ship_saves.decode(GLOB.ship_saves.encode(snapshot))
 	TEST_ASSERT_NULL(decoded.jobs, "With no jobs left the commissioned default should apply")
+	qdel(decoded)
+
+/// A removed area or turf on a tile would lose the tile, so decoding swaps in plain ones, whole paths only.
+/datum/unit_test/voidcrew_ship_saves/proc/check_stale_map()
+	var/datum/ship_checkpoint/snapshot = make_snapshot()
+	// "plati" is a turf path that is missing, and the start of one that isn't.
+	snapshot.tgm = "//[DMM2TGM_MESSAGE]\n\"aaa\" = (\n/obj/docking_port/mobile/voidcrew{\n\tarea_type = /area/shuttle/voidcrew/this_was_removed_long_ago;\n\tdir = 1\n\t},\n/turf/open/floor/plati{\n\tdir = 2;\n\tsheet_type = /obj/item/stack/sheet/iron\n\t},\n/area/shuttle/voidcrew/this_was_removed_long_ago)\n\"aab\" = (\n/turf/open/floor/plating,\n/area/shuttle/voidcrew)\n\n(1,1,1) = {\"\naaa\naab\n\"}"
+	var/datum/ship_checkpoint/decoded = GLOB.ship_saves.decode(GLOB.ship_saves.encode(snapshot))
+	TEST_ASSERT_NOTNULL(decoded, "A map with removed types did not decode")
+	var/expected = "//[DMM2TGM_MESSAGE]\n\"aaa\" = (\n/obj/docking_port/mobile/voidcrew{\n\tarea_type = /area/shuttle/voidcrew;\n\tdir = 1\n\t},\n/turf/open/floor/plating,\n/area/shuttle/voidcrew)\n\"aab\" = (\n/turf/open/floor/plating,\n/area/shuttle/voidcrew)\n\n(1,1,1) = {\"\naaa\naab\n\"}"
+	TEST_ASSERT(decoded.tgm == expected, "Removed types were not replaced in the map text: [decoded.tgm]")
 	qdel(decoded)
 
 /datum/unit_test/voidcrew_ship_saves/proc/check_rejected_payloads()
@@ -259,6 +273,70 @@
 	TEST_ASSERT_EQUAL(moved_floor.floor_tile, /obj/item/stack/tile/iron, "A shuttle move gave a saved floor its tile back")
 	wall_tile.ChangeTurf(wall_tile_type)
 	copy_tile.ChangeTurf(copy_tile_type)
+
+/// A hull that was saved once, loaded and saved again must not get its salvage back, nor an in-round checkpoint of it.
+/datum/unit_test/voidcrew_ship_saves/proc/check_second_generation()
+	var/datum/ship_checkpoint/saved = make_snapshot()
+	var/datum/ship_checkpoint/in_round = allocate(/datum/ship_checkpoint)
+	var/turf/tile = run_loc_floor_bottom_left
+	var/tile_type = tile.type
+	var/obj/item/construction/rcd/internal/ship/rcd = allocate(/obj/item/construction/rcd/internal/ship)
+
+	tile.ChangeTurf(/turf/closed/wall/mineral/diamond)
+	var/turf/closed/wall/wall = tile
+	wall.sheet_type = /obj/item/stack/sheet/iron
+	TEST_ASSERT(findtext(saved.atom_text(wall), "sheet_type = /obj/item/stack/sheet/iron"), "A wall saved a second time got its salvage back")
+	TEST_ASSERT(findtext(in_round.atom_text(wall), "sheet_type = /obj/item/stack/sheet/iron"), "An in-round checkpoint gave a stripped wall its salvage back")
+	// A drone refunds a stripped wall as the iron wall it comes apart into, and a real mineral wall as before.
+	var/list/refund = rcd.get_deconstruction_materials(wall)
+	TEST_ASSERT_EQUAL(refund[/datum/material/iron], 200, "A stripped diamond wall was not refunded as an iron wall")
+	TEST_ASSERT_EQUAL(length(refund), 1, "A stripped diamond wall was refunded more than iron")
+	tile.ChangeTurf(/turf/closed/wall/mineral/plastitanium)
+	refund = rcd.get_deconstruction_materials(tile)
+	TEST_ASSERT_EQUAL(refund[/datum/material/plasma], 100, "A real plastitanium wall stopped refunding plasma")
+	wall = tile
+	wall.sheet_type = /obj/item/stack/sheet/iron
+	refund = rcd.get_deconstruction_materials(tile)
+	TEST_ASSERT_EQUAL(refund[/datum/material/iron], 200, "A stripped plastitanium wall was not refunded as an iron wall")
+	TEST_ASSERT_NULL(refund[/datum/material/plasma], "A stripped plastitanium wall was refunded plasma")
+	tile.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT_EQUAL(rcd.get_deconstruction_materials(tile)[/datum/material/iron], 200, "A real iron wall stopped refunding iron")
+
+	tile.ChangeTurf(/turf/open/floor/mineral/plastitanium)
+	var/turf/open/floor/floor = tile
+	refund = rcd.get_deconstruction_materials(tile)
+	TEST_ASSERT_EQUAL(refund[/datum/material/plasma], 25, "A real plastitanium floor stopped refunding plasma")
+	floor.floor_tile = /obj/item/stack/tile/iron
+	TEST_ASSERT(findtext(saved.atom_text(floor), "floor_tile = /obj/item/stack/tile/iron"), "A floor saved a second time got its tile back")
+	TEST_ASSERT(findtext(in_round.atom_text(floor), "floor_tile = /obj/item/stack/tile/iron"), "An in-round checkpoint gave a stripped floor its tile back")
+	refund = rcd.get_deconstruction_materials(tile)
+	TEST_ASSERT_EQUAL(refund[/datum/material/iron], SHIP_SAVE_TEST_TILE_IRON, "A stripped plastitanium floor was not refunded as an iron tile")
+	TEST_ASSERT_NULL(refund[/datum/material/plasma], "A stripped plastitanium floor was refunded plasma")
+	tile.ChangeTurf(/turf/open/floor/iron)
+	TEST_ASSERT_EQUAL(rcd.get_deconstruction_materials(tile)[/datum/material/iron], SHIP_SAVE_TEST_TILE_IRON, "A real iron floor stopped refunding iron")
+	tile.ChangeTurf(tile_type)
+
+	// A mineral airlock keeps its look, and an unfinished one is refused.
+	var/obj/machinery/door/airlock/gold/gold_airlock = allocate(/obj/machinery/door/airlock/gold)
+	var/airlock_text = saved.atom_text(gold_airlock)
+	TEST_ASSERT(findtext(airlock_text, "assemblytype = /obj/structure/door_assembly;") || findtext(airlock_text, "assemblytype = /obj/structure/door_assembly\n"), "A gold airlock kept its gold assembly: [airlock_text]")
+	TEST_ASSERT(!findtext(airlock_text, "door_assembly_gold"), "A gold airlock was saved with a gold assembly: [airlock_text]")
+	TEST_ASSERT(!findtext(in_round.atom_text(gold_airlock), "assemblytype"), "An in-round checkpoint changed an airlock's assembly")
+	TEST_ASSERT(!findtext(saved.atom_text(allocate(/obj/machinery/door/airlock)), "assemblytype"), "A plain airlock was given another assembly")
+	TEST_ASSERT(ship_save_refuses_object(allocate(/obj/structure/door_assembly/door_assembly_gold)), "A gold airlock assembly was saved")
+	TEST_ASSERT(!ship_save_refuses_object(allocate(/obj/structure/door_assembly)), "A plain airlock assembly was refused")
+	// The plain assembly it falls back to comes apart into iron alone.
+	var/obj/machinery/door/airlock/gold/breaking = new(tile)
+	breaking.assemblytype = /obj/structure/door_assembly
+	breaking.deconstruct(TRUE)
+	var/obj/structure/door_assembly/dropped = locate() in tile
+	TEST_ASSERT_NOTNULL(dropped, "A gold airlock with a plain assembly left nothing behind")
+	TEST_ASSERT_EQUAL(dropped?.type, /obj/structure/door_assembly, "The airlock did not fall back to a plain assembly")
+	dropped?.deconstruct(TRUE)
+	TEST_ASSERT_NOTNULL(locate(/obj/item/stack/sheet/iron) in tile, "A plain assembly dropped no iron")
+	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/gold) in tile, "A plain assembly dropped gold")
+	for(var/obj/loose in tile)
+		qdel(loose)
 
 /// Loading a map with a var its type doesn't have throws, so each one a save writes must exist.
 /datum/unit_test/voidcrew_ship_saves/proc/check_saved_vars()
@@ -350,7 +428,7 @@
 
 	// Slots full: refused before any charge.
 	var/parts_before = economy.total()
-	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null), "All three slots are full.", "A fourth save was not refused")
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null), "All slots are full.", "A fourth save was not refused")
 	TEST_ASSERT_EQUAL(economy.total(), parts_before, "A refused save was charged")
 
 	// A paid save is never overwritten: a write to a taken slot fails, and refunds.
@@ -551,7 +629,7 @@
 	var/list/rows = GLOB.ship_saves.saves_for(captain.ckey)
 	for(var/slot in 2 to SHIP_SAVE_TEST_SLOTS)
 		rows += list(list("slot" = slot, "ship_name" = "Filler", "ship_class" = null))
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "All three slots are full.", "Full slots were not refused")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "All slots are full.", "Full slots were not refused")
 	GLOB.ship_saves.cache -= captain.ckey
 	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "Shipyard records are offline.", "An unloaded player read as having slots")
 
@@ -727,7 +805,7 @@
 	var/mob/dead/new_player/ship_save_test/lobby = allocate(__IMPLIED_TYPE__)
 	lobby.key = "savelobby"
 	store.fail_reads = TRUE
-	lobby.launch_saved_ship(1)
+	GLOB.ship_saves.launch(lobby, 1)
 	store.fail_reads = FALSE
 	TEST_ASSERT_NULL(lobby.seated_on, "A failed read seated the player on something")
 	TEST_ASSERT(!lobby.spawning_ship, "A failed read left the player stuck preparing a ship")
@@ -735,7 +813,7 @@
 	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial("savelobby", 1), "A failed read kept its claim on the save")
 
 	// The lobby: the ship loads, the save goes, and the player is seated as the first job.
-	lobby.launch_saved_ship(1)
+	GLOB.ship_saves.launch(lobby, 1)
 	var/obj/structure/overmap/ship/launched = lobby.seated_on
 	TEST_ASSERT_NOTNULL(launched, "The lobby did not seat the player on the saved ship")
 	retrieved_ships += launched
@@ -745,6 +823,27 @@
 	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savelobby", 1), "The lobby left the save in the cache")
 	TEST_ASSERT_EQUAL(GLOB.ship_saves.free_slot("savelobby"), 1, "The lobby did not free the slot")
 	check_retrieved(launched, "Lobby")
+
+	// The same save after its room and floor types were removed from the code still loads whole.
+	var/list/stale_data = json_decode(first["payload"])
+	var/stale_tgm = stale_data["tgm"]
+	var/regex/floor_path = new(@"^/turf/open/floor/[\w/]*", "gm")
+	TEST_ASSERT(floor_path.Find(stale_tgm), "The saved hull has no floor to remove")
+	var/gone_floor = floor_path.match
+	var/regex/room_path = new(@"^/area/shuttle/voidcrew[\w/]*", "gm")
+	TEST_ASSERT(room_path.Find(stale_tgm), "The saved hull has no room to remove")
+	var/gone_room = room_path.match
+	stale_data["tgm"] = replacetext(replacetext(stale_tgm, gone_floor, "/turf/this_was_removed_long_ago"), gone_room, "/area/shuttle/voidcrew/this_was_removed_long_ago")
+	store.saved["savestale|1"] = list("meta" = first_meta.Copy(), "payload" = json_encode(stale_data))
+	GLOB.ship_saves.refresh("savestale")
+	var/mob/dead/new_player/ship_save_test/stale_lobby = allocate(__IMPLIED_TYPE__)
+	stale_lobby.key = "savestale"
+	GLOB.ship_saves.launch(stale_lobby, 1)
+	var/obj/structure/overmap/ship/stale_ship = stale_lobby.seated_on
+	TEST_ASSERT_NOTNULL(stale_ship, "A save with removed types did not load")
+	retrieved_ships += stale_ship
+	TEST_ASSERT_NULL(store.saved["savestale|1"], "A save with removed types was not spent")
+	TEST_ASSERT_EQUAL(hull_owned_tile_count(stale_ship.shuttle), first_meta["tile_count"], "A save with removed types lost tiles")
 
 /// What a player could try to carry between rounds: an upgraded machine, a tank of plasma beside a tank of air.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/fit_source(obj/docking_port/mobile/voidcrew/port)
@@ -822,6 +921,103 @@
 	TEST_ASSERT(plasma_tanks, "[where]: the plasma tank did not come back")
 	TEST_ASSERT(air_tanks, "[where]: the air tank did not come back")
 
+/**
+ * The real table, through the real store and the game's database connection. Skipped with no database.
+ * Everything it writes belongs to one test ckey, and is deleted before and after.
+ */
+/datum/unit_test/voidcrew_ship_saves_sql
+	var/test_ckey = "shipsavesqltest"
+	var/obj/structure/overmap/ship/test_ship
+
+/datum/unit_test/voidcrew_ship_saves_sql/Destroy()
+	if(!QDELETED(test_ship))
+		qdel(test_ship)
+	if(SSdbcore.IsConnected())
+		wipe()
+	return ..()
+
+/// Deletes every row the test ckey owns.
+/datum/unit_test/voidcrew_ship_saves_sql/proc/wipe()
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"DELETE FROM [format_table_name("player_ship_saves")] WHERE ckey = :ckey",
+		list("ckey" = test_ckey)
+	)
+	query.Execute()
+	qdel(query)
+
+/// The size the database holds a row's map at, or null.
+/datum/unit_test/voidcrew_ship_saves_sql/proc/stored_size(slot)
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT LENGTH(payload) FROM [format_table_name("player_ship_saves")] WHERE ckey = :ckey AND slot = :slot",
+		list("ckey" = test_ckey, "slot" = slot)
+	)
+	var/size
+	if(query.Execute() && query.NextRow())
+		size = text2num(query.item[1])
+	qdel(query)
+	return size
+
+/datum/unit_test/voidcrew_ship_saves_sql/Run()
+	if(!SSdbcore.IsConnected())
+		log_test("Ship saves SQL test skipped: no database connection.")
+		return
+	wipe()
+	var/datum/ship_save_store/store = new
+	test_ship = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
+	TEST_ASSERT_NOTNULL(test_ship, "Could not create the hull")
+	var/datum/ship_checkpoint/snapshot = allocate(/datum/ship_checkpoint)
+	snapshot.persistent = TRUE
+	var/denial = snapshot.capture_hull(test_ship, test_ckey)
+	TEST_ASSERT_NULL(denial, "The fixture hull was not captured: [denial]")
+	var/payload = GLOB.ship_saves.encode(snapshot)
+	var/list/meta = list(
+		"ship_name" = snapshot.ship_name,
+		"ship_class" = snapshot.class_name,
+		"tile_count" = snapshot.owned_tile_count(),
+		"format_version" = SHIP_SAVE_TEST_FORMAT,
+		"saved_round" = SHIP_SAVE_TEST_ROUND,
+		"raw_bytes" = length(payload),
+	)
+
+	// A real save comes back exactly, and decodes.
+	TEST_ASSERT(store.write(test_ckey, 1, meta, payload), "A save was not written")
+	var/read_back = store.read_payload(test_ckey, 1)
+	TEST_ASSERT(read_back == payload, "A saved hull did not read back the same: [length(read_back)] bytes against [length(payload)]")
+	var/datum/ship_checkpoint/decoded = GLOB.ship_saves.decode(read_back)
+	TEST_ASSERT_NOTNULL(decoded, "A saved hull read back from the table did not decode")
+	TEST_ASSERT_EQUAL(decoded.ship_name, snapshot.ship_name, "The read back hull lost its name")
+	TEST_ASSERT_EQUAL(decoded.width, snapshot.width, "The read back hull lost its width")
+	TEST_ASSERT_EQUAL(decoded.height, snapshot.height, "The read back hull lost its height")
+	qdel(decoded)
+	var/stored = stored_size(1)
+	log_test("Ship saves SQL: the fixture hull is [meta["raw_bytes"]] bytes of text, stored as [stored] bytes in the table.")
+
+	// Quotes, backslashes and text that is not ASCII survive the round trip.
+	var/awkward = "it's a \"quoted\" back\\slash, 'single' and \\\" both, [ascii2text(228)][ascii2text(26085)] and 100% done; DROP TABLE x;"
+	TEST_ASSERT(store.write(test_ckey, 2, list("ship_name" = "Awkward", "ship_class" = null, "tile_count" = 1, "format_version" = SHIP_SAVE_TEST_FORMAT, "saved_round" = SHIP_SAVE_TEST_ROUND, "raw_bytes" = length(awkward)), awkward), "An awkward save was not written")
+	TEST_ASSERT(store.read_payload(test_ckey, 2) == awkward, "Quotes, backslashes or non-ASCII text changed in the table")
+
+	// The row is there, a second write to the slot fails and leaves the first.
+	var/list/rows = store.read_meta(test_ckey)
+	TEST_ASSERT_EQUAL(length(rows), 2, "The table does not hold both saves")
+	var/list/first_row = rows[1]
+	TEST_ASSERT_EQUAL(first_row["slot"], 1, "The first row is not slot 1")
+	TEST_ASSERT_EQUAL(first_row["ship_name"], snapshot.ship_name, "The row has the wrong name")
+	TEST_ASSERT_EQUAL(first_row["tile_count"], meta["tile_count"], "The row has the wrong tile count")
+	TEST_ASSERT_EQUAL(first_row["format_version"], SHIP_SAVE_TEST_FORMAT, "The row has the wrong format")
+	TEST_ASSERT_EQUAL(first_row["saved_round"], SHIP_SAVE_TEST_ROUND, "The row has the wrong round")
+	TEST_ASSERT_EQUAL(first_row["raw_bytes"], meta["raw_bytes"], "The row has the wrong size")
+	TEST_ASSERT(!store.write(test_ckey, 1, meta, "another hull"), "A taken slot was overwritten")
+	TEST_ASSERT(store.read_payload(test_ckey, 1) == payload, "A refused write changed the saved hull")
+
+	// Using a save removes it once.
+	TEST_ASSERT(store.remove(test_ckey, 1), "A save was not removed")
+	TEST_ASSERT(!store.remove(test_ckey, 1), "A save was removed twice")
+	TEST_ASSERT_NULL(store.read_payload(test_ckey, 1), "A removed save still read back")
+	TEST_ASSERT(store.remove(test_ckey, 2), "The awkward save was not removed")
+	TEST_ASSERT_EQUAL(length(store.read_meta(test_ckey)), 0, "Rows were left behind")
+	qdel(store)
+
 #undef SHIP_SAVE_TEST_ROUND
 #undef SHIP_SAVE_TEST_FORMAT
 #undef SHIP_SAVE_TEST_GONE_PATH
@@ -830,3 +1026,4 @@
 #undef SHIP_SAVE_TEST_PRICE_MAX
 #undef SHIP_SAVE_TEST_PASSWORD_PRICE
 #undef SHIP_SAVE_TEST_TOO_LONG
+#undef SHIP_SAVE_TEST_TILE_IRON

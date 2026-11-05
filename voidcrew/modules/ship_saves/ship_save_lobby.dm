@@ -31,61 +31,73 @@
 	blueprint = null
 
 /**
- * Loads a saved ship and seats the player on it, the way buying a hull does. The save is spent once
- * the ship has loaded. Sleeps at the read and in the shipyard's queue; the player can leave during either.
+ * Loads a saved ship and seats the player on it, the way buying a hull does. The save is spent once the
+ * ship has loaded. Sleeps at the read and in the shipyard's queue, and the player can leave during either:
+ * this runs here rather than on their mob, which a logout deletes, so nothing stops it before the spend.
  */
-/mob/dead/new_player/proc/launch_saved_ship(slot)
+/datum/ship_saves/proc/launch(mob/dead/new_player/player, slot)
+	if(QDELETED(player) || !player.ckey)
+		return
 	if(!SSticker?.IsRoundInProgress())
-		to_chat(src, span_danger("The round is either not ready, or has already finished..."))
+		to_chat(player, span_danger("The round is either not ready, or has already finished..."))
+		return
+	if(SSlag_switch.measures[DISABLE_NON_OBSJOBS])
+		alert(player, "An administrator has disabled late join spawning.")
+		if(!QDELETED(player))
+			player.select_ship()
 		return
 	// Prevent double-click spawning
-	if(spawning_ship)
-		to_chat(src, span_warning("Your ship is already being prepared. Please wait..."))
+	if(player.spawning_ship)
+		to_chat(player, span_warning("Your ship is already being prepared. Please wait..."))
 		return
-	var/player_ckey = ckey
-	var/denial = GLOB.ship_saves.retrieve_denial(player_ckey, slot)
+	var/player_ckey = player.ckey
+	var/denial = retrieve_denial(player_ckey, slot)
 	if(denial)
-		to_chat(src, span_warning(denial))
-		return select_ship()
-	if(!GLOB.ship_saves.begin_retrieval(player_ckey, slot))
-		to_chat(src, span_warning("Already under way."))
-		return select_ship()
-	spawning_ship = TRUE
+		to_chat(player, span_warning(denial))
+		return player.select_ship()
+	if(!begin_retrieval(player_ckey, slot))
+		to_chat(player, span_warning("Already under way."))
+		return player.select_ship()
+	player.spawning_ship = TRUE
 
-	var/datum/ship_checkpoint/snapshot = GLOB.ship_saves.read_save(player_ckey, slot)
-	if(istext(snapshot) || QDELETED(src))
-		GLOB.ship_saves.cancel_retrieval(player_ckey, slot)
-		if(QDELETED(src))
+	var/datum/ship_checkpoint/snapshot = read_save(player_ckey, slot)
+	if(istext(snapshot) || QDELETED(player))
+		cancel_retrieval(player_ckey, slot)
+		if(QDELETED(player))
 			if(!istext(snapshot))
 				qdel(snapshot)
 			return
-		spawning_ship = FALSE
-		to_chat(src, span_warning(snapshot))
-		return select_ship()
+		player.spawning_ship = FALSE
+		to_chat(player, span_warning(snapshot))
+		return player.select_ship()
 
-	to_chat(src, span_notice("[snapshot.ship_name] is being prepared. Please be patient!"))
+	to_chat(player, span_notice("[snapshot.ship_name] is being prepared. Please be patient!"))
 	var/datum/map_template/shuttle/voidcrew/commissioned/checkpoint/template = new(snapshot)
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
 	qdel(snapshot)
 	if(!istype(target))
 		qdel(template)
-		GLOB.ship_saves.cancel_retrieval(player_ckey, slot)
-		if(QDELETED(src))
+		cancel_retrieval(player_ckey, slot)
+		if(QDELETED(player))
 			return
-		spawning_ship = FALSE
+		player.spawning_ship = FALSE
 		// A refusal at the map-volume ceiling is transient, as in spawn_ship_with_upgrades().
 		if(SSmapping.at_z_level_ceiling())
-			to_chat(src, span_warning("The shipyard is congested right now - hull assembly space frees up as ships move. Try again in a minute."))
+			to_chat(player, span_warning("The shipyard is congested right now - hull assembly space frees up as ships move. Try again in a minute."))
 		else
-			to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
-		return select_ship()
+			to_chat(player, span_danger("There was an error loading the ship. Please contact admins!"))
+		return player.select_ship()
 
-	// The ship exists now, whether or not its captain stayed to board it.
-	GLOB.ship_saves.spend(player_ckey, slot)
+	// The ship exists now, whether or not its captain stayed to board it. Left, they can join it from the menu.
+	spend(player_ckey, slot)
 	log_game("[player_ckey] launched [target.name] from ship save slot [slot].")
 	target.password_cleared_ckeys[player_ckey] = TRUE
-	if(QDELETED(src))
+	if(QDELETED(player))
 		return
-	ship_metric_purchased(target, src)
-	if(!AttemptSpawnOnShip(target.job_slots[1], target))
-		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+	ship_metric_purchased(target, player)
+	if(!player.AttemptSpawnOnShip(target.job_slots[1], target))
+		if(QDELETED(player))
+			return
+		to_chat(player, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+		player.spawning_ship = FALSE
+		player.select_ship()

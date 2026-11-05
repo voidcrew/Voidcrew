@@ -68,7 +68,7 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	ckey = ckey(ckey)
 	var/slot = free_slot(ckey)
 	if(!slot)
-		return "All three slots are full."
+		return "All slots are full."
 	var/tiles = snapshot.owned_tile_count()
 	var/price = price_for(tiles)
 	var/name = snapshot.ship_name

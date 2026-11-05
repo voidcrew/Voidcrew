@@ -15,7 +15,7 @@
 	if(!GLOB.ship_save_store.online() || isnull(GLOB.ship_saves.saves_for(user.ckey)))
 		return "Shipyard records are offline."
 	if(!GLOB.ship_saves.free_slot(user.ckey))
-		return "All three slots are full."
+		return "All slots are full."
 	return null
 
 /// The denial, plus whether the ship we captured is still the one in the bay.
