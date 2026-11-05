@@ -23,28 +23,45 @@ class Decl:
 class Expr(str):
     pass
 
+COMMENT_OR_QUOTE = re.compile(r'/\*|//|["\']')
+BLOCK_EDGE = re.compile(r'/\*|\*/')
+NOT_NEWLINE = re.compile(r'[^\n]')
+STRING_END = {'"': re.compile(r'\\|"'), "'": re.compile(r"\\|'")}
+
 @functools.lru_cache(None)
 def clean_comments(text):
     # Preserve offsets/newlines, quoted strings, and nested block comments.
-    out = []; i = 0; block = 0; quote = None
-    while i < len(text):
-        c = text[i]; pair = text[i:i+2]
-        if block:
-            if pair == '/*': block += 1; out.extend('  '); i += 2; continue
-            if pair == '*/': block -= 1; out.extend('  '); i += 2; continue
-            out.append('\n' if c == '\n' else ' '); i += 1; continue
-        if quote:
-            out.append(c)
-            if c == '\\' and i+1 < len(text): out.append(text[i+1]); i += 2; continue
-            if c == quote: quote = None
-            i += 1; continue
-        if pair == '/*': block = 1; out.extend('  '); i += 2; continue
-        if pair == '//':
-            j = text.find('\n', i)
-            if j < 0: j = len(text)
-            out.extend(' ' * (j-i)); i = j; continue
-        if c in '\"\'': quote = c
-        out.append(c); i += 1
+    out = []; i = 0; size = len(text)
+    while i < size:
+        found = COMMENT_OR_QUOTE.search(text, i)
+        if not found:
+            out.append(text[i:]); break
+        out.append(text[i:found.start()]); i = found.start(); token = found[0]
+        if token == '//':
+            end = text.find('\n', i)
+            if end < 0: end = size
+            out.append(' ' * (end-i)); i = end
+        elif token == '/*':
+            depth = 1; out.append('  '); i += 2
+            while depth and i < size:
+                edge = BLOCK_EDGE.search(text, i)
+                end = edge.start() if edge else size
+                out.append(NOT_NEWLINE.sub(' ', text[i:end])); i = end
+                if edge:
+                    depth += 1 if edge[0] == '/*' else -1
+                    out.append('  '); i += 2
+        else:
+            # A string runs to its closing quote; a backslash keeps the next character out of that.
+            start = i; i += 1
+            while i < size:
+                edge = STRING_END[token].search(text, i)
+                if not edge:
+                    i = size; break
+                i = edge.end()
+                if edge[0] != '\\':
+                    break
+                i = min(i + 1, size)
+            out.append(text[start:i])
     return ''.join(out)
 
 def split_top(s, sep=','):
@@ -80,26 +97,41 @@ class DM:
         self.node_ops = collections.defaultdict(list)  # research node design_ids updates, replayed by node_designs
         self.types = collections.defaultdict(dict)
         self.headers = collections.defaultdict(list)
+        self.testing_only = set()  # types declared only inside #ifdef TESTING, which no real build has
         self.procs = collections.defaultdict(list)
         self.defines = {'TRUE':'1','FALSE':'0','INFINITY':'1e31','SECONDS':'10','MINUTES':'600','HOURS':'36000'}
-        self.texts = {}; self.files = []; self._cache = {}
+        self.texts = {}; self.files = []; self._cache = {}; self._known = None
         self.scan_includes(self.root / 'tgstation.dme', set())
 
+    def on_disk(self, path):
+        """The file an #include names. The compiler ignores case in these and Linux doesn't, so a wrong-case path is matched part by part."""
+        if path.exists(): return path
+        found = self.root
+        for part in path.relative_to(self.root).parts:
+            exact = found / part
+            if not exact.exists():
+                matches = [child for child in found.iterdir() if child.name.casefold() == part.casefold()] if found.is_dir() else []
+                if not matches: return path
+                exact = matches[0]
+            found = exact
+        return found
+
     def scan_includes(self, path, seen):
+        path = self.on_disk(path)
         if not path.exists() or path in seen: return
         seen.add(path)
         text = path.read_text(encoding='utf-8-sig', errors='replace')
         rel = path.relative_to(self.root).as_posix()
         self.texts[rel] = text
-        if path.suffix == '.dm':
+        if path.suffix.lower() == '.dm':
             self.files.append(rel); self.parse(rel, text); self.parse_node_ops(rel, text)
         for m in re.finditer(r'^\s*#include\s+"([^"]+)"', text, re.M):
             child = path.parent / m[1].replace('\\','/')
-            if child.suffix in ('.dm','.dme'): self.scan_includes(child.resolve(), seen)
+            if child.suffix.lower() in ('.dm','.dme'): self.scan_includes(child.resolve(), seen)
 
     def parse(self, file, text):
         lines = clean_comments(text).splitlines()
-        context = []; proc = None; proc_lines = []; proc_source = None
+        context = []; proc = None; proc_lines = []; proc_source = None; conditions = []
         def save_proc():
             if proc: self.procs[proc].append((proc_source, '\n'.join(proc_lines)))
         i = 0
@@ -110,6 +142,9 @@ class DM:
             if stripped.startswith('#'):
                 m = re.match(r'#define\s+(\w+)\s+(.+)', stripped)
                 if m: self.defines[m[1]] = m[2].strip()
+                if re.match(r'#\s*if', stripped): conditions.append(bool(re.fullmatch(r'#\s*ifdef\s+TESTING', stripped)))
+                elif re.match(r'#\s*el', stripped) and conditions: conditions[-1] = False
+                elif re.match(r'#\s*endif', stripped) and conditions: conditions.pop()
                 continue
             indent = len(line) - len(line.lstrip('\t')) if line.startswith('\t') else (len(line)-len(line.lstrip()))//4
             if proc and (indent > 0 or not stripped.startswith('/')):
@@ -141,6 +176,8 @@ class DM:
                 if stripped.startswith('/'): path = stripped.rstrip('/')
                 elif context: path = context[-1][1] + '/' + stripped
                 else: continue
+                if not any(conditions): self.testing_only.discard(path)
+                elif path not in self.headers: self.testing_only.add(path)
                 context.append((indent,path)); self.headers[path].append(f'{file}:{number}')
         save_proc()
 
@@ -195,6 +232,22 @@ class DM:
 
     def paths(self,base,fixtures=False):
         return sorted(p for p in self.headers if self.is_a(p,base) and (fixtures or '/unit_tests/' not in self.loc(p)))
+
+    def compiled_types(self, base):
+        """Subtypes of base a real build has: no test fixtures, no #ifdef TESTING, none of the macro lines (VAR_PRIVATE) this reader takes for type blocks."""
+        return [p for p in self.paths(base) if p not in self.testing_only and not any(part.isupper() for part in p.split('/'))]
+
+    def known_type(self, path):
+        """Whether anything declares this type: a block, a var or proc on it, or a subtype, which makes the game create it with no block of its own.
+        MAPPING_DIRECTIONAL_HELPERS writes its subtypes in a macro this reader doesn't expand, so those count when their base does."""
+        if self._known is None:
+            self._known = set()
+            for declared in [*self.headers, *self.types, *(key.rsplit('/', 1)[0] for key in self.procs)]:
+                while declared and declared not in self._known:
+                    self._known.add(declared)
+                    declared = declared.rsplit('/', 1)[0]
+        return re.sub(r'/directional(/(north|south|east|west))?$', '', path) in self._known
+
     def loc(self,path): return self.headers.get(path,[''])[0]
     def cite(self,file,needle):
         lines = self.texts.get(file)

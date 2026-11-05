@@ -28,6 +28,7 @@ from .categories import (CATEGORIES, REP_ORDER, CHAIN_BASES, CHAIN_SETUP_PROCS, 
                          category_of, is_gear)
 from .combat import ARMOR_MAX_BLOCK, ARMOR_WEAKENED_MULTIPLIER, CLICK_CD_MELEE, MELEE_FORMULAS, num
 from .dm_reader import balance, clean_comments
+from .recipes import covering_types, is_basic_material, item_needs, recipe_step, settle
 from .sections import FORMULAS, category_stats, decode_flags
 
 ARMOR_VEST = '/obj/item/clothing/suit/armor/vest'
@@ -309,58 +310,25 @@ def close_routes(rows, dump_rows, dm):
     needed = set()
     for row in rows.values():
         for entry in row['sources'].get('crafting') or []:
-            needed.update(p for p in (entry.get('ingredients') or {}) if p.startswith('/obj/'))
-    covers = collections.defaultdict(list)  # a recipe takes a subtype of what it names
-    for path in rows:
-        walker, seen = path, set()
-        while walker and walker not in seen:
-            seen.add(walker)
-            if walker in needed:
-                covers[walker].append(path)
-            walker = dm.parent(walker)
+            needed.update(item_needs(entry))
+    covers = covering_types(rows, needed, dm.parent)
 
     def direct(row):
         return [k for k in firm_kinds(row['sources']) if k not in ('crafting', 'in_containers')]
 
-    routed = {path for path, row in rows.items() if direct(row)}
-
-    def learnable(entry):
-        if entry.get('always_available', True):
-            return True
-        return any(book in routed for book in entry.get('learned_from') or [])
-
-    def recipe_ok(entry):
-        if 'recipe' not in entry:
-            return True  # a stack recipe: the sheets in hand are the only input
-        if entry.get('non_craftable') or not learnable(entry):
-            return False
-        for need in entry.get('ingredients') or {}:
-            if need.startswith('/obj/item') and not any(path in routed for path in covers.get(need, [])):
-                return False
-        return True
-
-    changed = True
-    while changed:
-        changed = False
-        for path, row in rows.items():
-            if path in routed:
-                continue
-            if any(container in routed for container in held_in.get(path, ())) or any(recipe_ok(entry) for entry in row['sources'].get('crafting') or []):
-                routed.add(path)
-                changed = True
+    routed = settle({path: 0 for path, row in rows.items() if direct(row)},
+                    {path: row['sources'].get('crafting') or [] for path, row in rows.items()}, covers, held_in)
 
     for path, row in rows.items():
         sources = row['sources']
         for entry in sources.get('crafting') or []:
-            entry['routable'] = recipe_ok(entry)
+            entry['routable'] = recipe_step(entry, routed, covers) is not None
             if 'recipe' not in entry:
                 continue
             kits = []
-            for need in sorted(entry.get('ingredients') or {}):
-                if not need.startswith('/obj/item'):
-                    continue
+            for need in item_needs(entry):
                 route_rows = [rows[p] for p in covers.get(need, []) if p in routed]
-                if need.startswith('/obj/item/stack') and route_rows:
+                if is_basic_material(need) and route_rows:
                     continue  # basic material with a route of its own
                 kinds = sorted({k for r in route_rows for k in direct(r)})
                 lowest, free = None, False

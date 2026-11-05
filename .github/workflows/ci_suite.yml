@@ -54,6 +54,12 @@ jobs:
       - name: Check ship previews match their maps
         run: python -m tools.ci.check_ship_previews --github
 
+      - name: Test gear rating check
+        run: python -m unittest tools.ci.test_gear_ratings
+
+      - name: Check gear ratings
+        run: python -m tools.ci.check_gear_ratings --github
+
       - name: Setup Bun
         uses: ./.github/actions/setup_bun
 

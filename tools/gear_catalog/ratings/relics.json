@@ -1,0 +1,22 @@
+{
+ "category": "relics",
+ "groups": [],
+ "items": {},
+ "method": "",
+ "unrated": {
+  "/obj/item/guardian_creator": "no route",
+  "/obj/item/guardian_creator/miner": "literal only",
+  "/obj/item/guardian_creator/tech": "no route",
+  "/obj/item/guardian_creator/wizard": "no route",
+  "/obj/item/hot_potato": "no route",
+  "/obj/item/hot_potato/harmless": "no route",
+  "/obj/item/hot_potato/syndicate": "no route",
+  "/obj/item/shadowcloak/weaker": "no route",
+  "/obj/item/soulstone": "no route",
+  "/obj/item/soulstone/anybody/chaplain/sparring": "no route",
+  "/obj/item/soulstone/anybody/mining": "literal only",
+  "/obj/item/soulstone/anybody/revolver": "no route",
+  "/obj/item/soulstone/mystic": "no route",
+  "/obj/item/upgradescroll/unlimited": "no route"
+ }
+}

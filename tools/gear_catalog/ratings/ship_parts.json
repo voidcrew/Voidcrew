@@ -1,0 +1,11 @@
+{
+ "category": "ship_parts",
+ "groups": [],
+ "items": {},
+ "method": "",
+ "unrated": {
+  "/obj/item/ship_construction_upgrade": "no route",
+  "/obj/item/ship_parts": "abstract",
+  "/obj/item/ship_repair_drone_part": "abstract"
+ }
+}

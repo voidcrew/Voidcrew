@@ -1,0 +1,10 @@
+{
+ "category": "earwear",
+ "groups": [],
+ "items": {},
+ "method": "",
+ "unrated": {
+  "/obj/item/clothing/ears": "abstract",
+  "/obj/item/clothing/ears/earmuffs/debug": "no route"
+ }
+}

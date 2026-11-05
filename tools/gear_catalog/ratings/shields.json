@@ -1,0 +1,16 @@
+{
+ "category": "shields",
+ "groups": [],
+ "items": {},
+ "method": "",
+ "unrated": {
+  "/obj/item/shield": "abstract",
+  "/obj/item/shield/adamantineshield": "no route",
+  "/obj/item/shield/changeling": "literal only",
+  "/obj/item/shield/energy/advanced": "no route",
+  "/obj/item/shield/energy/bananium": "no route",
+  "/obj/item/shield/mirror": "no route",
+  "/obj/item/shield/riot/flash": "literal only",
+  "/obj/item/shield/roman/fake": "no route"
+ }
+}

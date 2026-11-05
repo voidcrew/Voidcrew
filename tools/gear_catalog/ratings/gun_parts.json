@@ -1,0 +1,22 @@
+{
+ "category": "gun_parts",
+ "groups": [],
+ "items": {},
+ "method": "",
+ "unrated": {
+  "/obj/item/firing_pin/abductor": "no route",
+  "/obj/item/firing_pin/clown/ultra": "no route",
+  "/obj/item/firing_pin/clown/ultra/selfdestruct": "no route",
+  "/obj/item/firing_pin/dna": "no route",
+  "/obj/item/firing_pin/dna/dredd": "no route",
+  "/obj/item/firing_pin/implant": "no route",
+  "/obj/item/firing_pin/monkey": "no route",
+  "/obj/item/firing_pin/paywall": "no route",
+  "/obj/item/firing_pin/tag": "no route",
+  "/obj/item/weaponcrafting": "abstract",
+  "/obj/item/weaponcrafting/giant_wrench": "no route",
+  "/obj/item/weaponcrafting/gunkit": "no route",
+  "/obj/item/weaponcrafting/gunkit/hellgun": "no route",
+  "/obj/item/weaponcrafting/gunkit/sks": "no route"
+ }
+}

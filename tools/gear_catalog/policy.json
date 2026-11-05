@@ -1,0 +1,31 @@
+{
+ "checked_routes": [
+  "shops",
+  "cargo",
+  "order_consoles",
+  "other_sellers",
+  "printing",
+  "crafting"
+ ],
+ "min_reputation": {
+  "green": "public",
+  "red": "advanced",
+  "yellow": "yellow"
+ },
+ "price_bands": {
+  "guns": {
+   "green": [
+    0,
+    2500
+   ],
+   "red": [
+    3000,
+    15000
+   ],
+   "yellow": [
+    1000,
+    8000
+   ]
+  }
+ }
+}

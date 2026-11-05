@@ -577,6 +577,10 @@ class StaticSources:
         for recipe in self.dm.paths('/datum/crafting_recipe'):
             self.ingredients.update(p for p in paths(self.dm.val(recipe, 'reqs')) if p.startswith('/obj/item'))
 
+    def routed_types(self):
+        """Every path with a shop, seller, console, cargo, printing or crafting row, including types with no block of their own."""
+        return set(self.shops) | set(self.others) | set(self.indexed)
+
     def gate_with_prereqs(self, node_id):
         """Highest reputation step anywhere in a node's prerequisite closure."""
         if node_id in self.gates:

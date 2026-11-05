@@ -3,7 +3,7 @@
 One row per obtainable, non-abstract, non-cosmetic item, sorted by path so families sit together: short path, name, the stats that matter for the
 category, how players get it, and any note. A second list names what was left out and why. Reads items/<category>.json and notes/, writes sheets/<category>.txt.
 
-Notes are any .json or .jsonl file under notes/: rows of {"path": ..., "note": ...}, where path is the item or the type that owns the behaviour.
+Notes are any .json or .jsonl file under notes/ but the batch-*.json work lists: rows of {"path": ..., "note": ...}, where path is the item or the type that owns the behaviour.
 """
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 
 from .categories import WORN_CATEGORIES
+from .notes import load_notes
+from .scoring import score_gun, tier_line
 
 ZONE_LETTER = {'green': 'G', 'yellow': 'Y', 'red': 'R'}
 REP_SHORT = {'public': 'pub', 'yellow': 'yel', 'advanced': 'adv', 'elite': 'eli'}
@@ -19,7 +21,7 @@ PASS_SHORT = {'PASSTABLE': 'table', 'PASSGLASS': 'glass', 'PASSGRILLE': 'grille'
 COVER_SHORT = {'HEADCOVERSEYES': 'eyes', 'MASKCOVERSEYES': 'eyes', 'GLASSESCOVERSEYES': 'eyes', 'HEADCOVERSMOUTH': 'mouth', 'MASKCOVERSMOUTH': 'mouth', 'PEPPERPROOF': 'pepper', 'EARS_COVERED': 'ears'}
 CLOTHING_SHORT = {'STOPSPRESSUREDAMAGE': 'press', 'THICKMATERIAL': 'thick', 'BLOCK_GAS_SMOKE_EFFECT': 'smoke', 'MASKINTERNALS': 'internals', 'HEADINTERNALS': 'internals', 'PLASMAMAN_PREVENT_IGNITION': 'plasmasafe', 'LAVAPROTECT': 'lava', 'GAS_FILTERING': 'filter'}
 LEGEND = {
-    'guns': 'mode: dmg/shot, /s, dps bare > dps vest; st=stamina dps; ap; cap; passes. spread, recoil, w=weight class',
+    'guns': 'mode: dmg/shot, /s, dps bare > dps vest; st=stamina dps; ap; cap; passes. spread, recoil, w=weight class. score: s=power on a vest and the tier that number alone gives, bare=with no armor',
     'melee': 'state force; as=attack speed (ds); dps bare > dps at 30 armor; ap; sharp E/P; wb=wound bonus; bl=block; th=throw; w=weight class; r=reach',
     'shields': 'bl=block chance; int=integrity; state force; dps bare > dps at 30 armor',
     'ammo': 'cal, cap, dmg per round, ap, flag, price per round, how many guns take it',
@@ -334,24 +336,16 @@ def stats_text(category, entry):
     }.get(category, generic_text)(entry)
 
 
-def load_notes(out):
-    """Path to note, from every file under notes/. Later files win, in name order, so a fix can be dropped in beside a batch."""
-    notes = {}
-    folder = Path(out) / 'notes'
-    if not folder.exists():
-        return notes
-    for file in sorted(folder.rglob('*.json*')):
-        text = file.read_text(encoding='utf-8')
-        try:
-            rows = json.loads(text) if file.suffix == '.json' else [json.loads(line) for line in text.splitlines() if line.strip()]
-        except ValueError:
-            continue
-        if isinstance(rows, dict):
-            rows = rows.get('notes') or rows.get('items') or []
-        for row in rows:
-            if isinstance(row, dict) and row.get('path') and row.get('note'):
-                notes[row['path']] = row['note']
-    return notes
+def score_cell(entry, rating):
+    """A gun's score on the vest, the tier that number alone gives, and its bare number. A tier set by rule has no score to show."""
+    rating = rating or {}
+    if rating.get('tier') in ('above', 'none') and 'score' not in rating:
+        return ''
+    scored = score_gun(entry, rating.get('score_inputs'))
+    if not scored:
+        return ''
+    head = f"s{round(scored['score'])} {tier_line(scored['score'])}"
+    return f'{head} judged' if scored['bare'] is None else f"{head} bare{round(scored['bare'])}"
 
 
 def note_for(entry, notes):
@@ -388,8 +382,9 @@ def known_categories(out):
     return sorted(file.stem for file in (Path(out) / 'items').glob('*.json'))
 
 
-def sheet_text(category, document, notes):
+def sheet_text(category, document, notes, ratings=None):
     items = document['items']
+    rated = (ratings or {}).get('items') or {}
     rows, left = [], {}
     previous_note = None
     for path in sorted(items):
@@ -399,11 +394,13 @@ def sheet_text(category, document, notes):
             left.setdefault(reason, []).append(short(path))
             continue
         note = note_for(entry, notes)
-        row = ' | '.join(part for part in [short(path), clip(entry.get('name') or '', 34), stats_text(category, entry), availability_text(entry), note_cell(note, previous_note)] if part)
+        score = score_cell(entry, rated.get(path)) if category == 'guns' else ''
+        row = ' | '.join(part for part in [short(path), clip(entry.get('name') or '', 34), stats_text(category, entry), score, availability_text(entry), note_cell(note, previous_note)] if part)
         previous_note = note
         rows.append(row)
     legend = LEGEND.get(category, WORN_LEGEND if category in WORN_CATEGORIES else 'w=weight class; tool x speed; slots; contents; cell')
-    lines = [f'# {category}: {len(rows)} items. path | name | stats | how players get it | note', f'# {legend}', f'# {AVAIL_LEGEND}']
+    columns = 'path | name | stats | score | how players get it | note' if category == 'guns' else 'path | name | stats | how players get it | note'
+    lines = [f'# {category}: {len(rows)} items. {columns}', f'# {legend}', f'# {AVAIL_LEGEND}']
     lines += rows
     lines.append('')
     lines.append(f'# left out: {sum(len(v) for v in left.values())}')
@@ -412,7 +409,7 @@ def sheet_text(category, document, notes):
     return '\n'.join(lines) + '\n'
 
 
-def write_sheet(out, category):
+def write_sheet(out, category, ratings=None):
     out = Path(out)
     source = out / 'items' / f'{category}.json'
     if not source.exists():
@@ -420,5 +417,5 @@ def write_sheet(out, category):
     document = json.loads(source.read_text(encoding='utf-8'))
     target = out / 'sheets' / f'{category}.txt'
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(sheet_text(category, document, load_notes(out)), encoding='utf-8', newline='\n')
+    target.write_text(sheet_text(category, document, load_notes(out), ratings), encoding='utf-8', newline='\n')
     return target
