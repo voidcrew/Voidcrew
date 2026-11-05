@@ -12,6 +12,57 @@
   "toys and novelties"
  ],
  "items": {
+  "/obj/item/flamethrower": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "3895e381c5344ce0",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 8,
+   "reason": "Same flamethrower, crafted from a welder, an igniter and a rod. Anyone can build one; it needs a plasma tank fitted and lit.",
+   "score": 62,
+   "score_inputs": {
+    "judged": {
+     "value": 62,
+     "why": "a line of fire, needs an igniter secured and a plasma tank"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/flamethrower/full": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "70376873ffdbe5d2",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 7,
+   "reason": "Same flamethrower with its igniter fitted; bring a plasma tank. A hacked autolathe prints it for almost nothing.",
+   "score": 66,
+   "score_inputs": {
+    "judged": {
+     "value": 66,
+     "why": "a line of fire, needs a plasma tank fitted"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/flamethrower/full/tank": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "b9602de55dab5bbb",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 6,
+   "reason": "Ready-loaded flamethrower with a plasma tank. Sprays a line of fire at everyone without a fire suit, and may catch you too. A hit can rupture the tank in your hands.",
+   "score": 70,
+   "score_inputs": {
+    "judged": {
+     "value": 70,
+     "why": "a line of fire; burn damage and spread through a ship depend on the room, so no stat speaks for it"
+    }
+   },
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/automatic/ar": {
    "confidence": "high",
    "group": "rifles",
@@ -51,6 +102,16 @@
    "rank": 4,
    "reason": "Puts a vested man down in about a second, with 24 rounds, from one hand.",
    "score": 79,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/cyberware_ronin": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "bb032c110b509c59",
+   "name": "Popup Ronin machine-pistol",
+   "rank": 6,
+   "reason": "20 damage at 3.3 a second, WT-550 numbers with some spread. Lives in the arm, so it can't be disarmed, and reloads are hard to get.",
+   "score": 47,
    "tier": "yellow"
   },
   "/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted": {
@@ -391,6 +452,23 @@
    "reason": "A unique gun that mutes, staggers, confuses and drowses on hit, and fires silently.",
    "tier": "above"
   },
+  "/obj/item/gun/ballistic/revolver/cyberware_buster": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "2f6cedbe9e78be36",
+   "name": "Bunker Buster micro-rocket pod",
+   "note": "Two-rocket pod that reloads from loose rockets or the two-rocket bracket. The rocket has no explosion, only a visual blast, and knocks a living target down for 1 s. The pod is normally deployed from the Bunker Buster forearm implant. / The blast is only a visual and a sound at the impact point; it damages nothing in a radius. Damage to objects is multiplied by 8 (demolition_mod), and a living target is knocked down for 1 second.",
+   "rank": 10,
+   "reason": "Two 60 damage rockets from the arm: a knockdown, eight times the damage to doors and machines, and no blast to hurt your own hull. Reloads are costly.",
+   "score": 50,
+   "score_inputs": {
+    "points": {
+     "value": 40,
+     "why": "eight times damage to doors and machines, a 1 second knockdown, not disarmable while deployed"
+    }
+   },
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/revolver/golden": {
    "confidence": "medium",
    "group": "sidearms",
@@ -403,6 +481,27 @@
     "points": {
      "value": -10,
      "why": "Recoil 8 throws the aim off."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "3cc91d28275e04d4",
+   "name": "grenade launcher",
+   "note": "Single-shot break-open launcher loaded by hand with 40mm shells. Each HE shell also explodes on impact: a small blast (radius 2) with fire out to 3 tiles and a flash. / On hit it explodes at the target: light-severity blast out to 2 tiles, fire out to 3 and a flash at 1, with no heavy or devastating ring. It affects everything in range, the shooter included.",
+   "rank": 9,
+   "reason": "The M-90's underbarrel launcher, never on its own. One 40mm shell at a time: 60 damage and a light blast with fire, too weak to open a hull.",
+   "score": 60,
+   "score_inputs": {
+    "points": {
+     "value": 55,
+     "why": "blast radius 2 with fire on every shell, but no heavy ring"
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "one shell, loaded by hand each shot"
     }
    },
    "tier": "yellow"
@@ -1607,6 +1706,23 @@
    },
    "tier": "yellow"
   },
+  "/obj/item/gun/magic/hook/bounty": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "74514fdfe36eb8f1",
+   "name": "hook",
+   "note": "A hit on a loose (unanchored) target drags it to the shooter's tile and knocks it down for 0.5 s; the shooter cannot move or use windows while the pull lasts, is held still for 0.25 s after every shot, and cannot fire again during a pull. Anchored targets are not pulled, and the hook needs no firing pin. / Snags the first thing it hits and drags it tile by tile to where the shooter was standing, knocking a mob down for 0.5 s; anchored things are only hit, and the same shooter can't re-hook someone already being dragged. Firing roots the shooter for 0.25 s (kept for as long as a drag runs), and during a drag the shooter can't move or use windows. The bounty hook uses the same pull.",
+   "rank": 10,
+   "reason": "Hook on the hook shotgun, back every 8 seconds. Drags a target to your tile and knocks them down, 40 stamina through armor. Never on its own.",
+   "score": 42,
+   "score_inputs": {
+    "judged": {
+     "value": 42,
+     "why": "drags the target in, every 8 seconds; the listed rate ignores the recharge"
+    }
+   },
+   "tier": "yellow"
+  },
   "/obj/item/gun/magic/hook/marlinspike": {
    "confidence": "medium",
    "group": "launchers and exotics",
@@ -1639,6 +1755,23 @@
     "judged": {
      "value": 25,
      "why": "Heals 4 brute and 4 burn per 2 s at 8 tiles."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/medbeam/mech": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "575faa9a889fcb36",
+   "name": "Medical Beamgun",
+   "note": "Inherits the Medical Beamgun: clicking a living mob within 8 tiles latches a beam that heals it every 2 s (4 brute, 4 burn, 1 toxin, 1 oxygen, dead mobs included) until sight breaks, the target leaves range, or the gun is dropped or re-equipped. Crossing another medbeam's beam causes an explosion at the crossing (heavy radius 3). It is the exosuit-mounted copy, run by the mech's equipment, which drops the target when weapons safety is on. / Clicking a living mob within 8 tiles latches a beam that heals it every 2 s (4 brute, 4 burn, 1 toxin, 1 oxygen, dead mobs included) until sight breaks, the target leaves range, or the gun is dropped or re-equipped. Crossing another medbeam's beam causes an explosion at the crossing (heavy radius 3).",
+   "rank": 5,
+   "reason": "The Medical Beamgun on an exosuit: heals 4 brute and 4 burn per 2 seconds at 8 tiles. Part of a printed mech tool, never on its own.",
+   "score": 25,
+   "score_inputs": {
+    "judged": {
+     "value": 25,
+     "why": "same beam as the handheld Medical Beamgun"
     }
    },
    "tier": "green"
@@ -1693,9 +1826,77 @@
     }
    },
    "tier": "yellow"
+  },
+  "/obj/item/pneumatic_cannon": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "be38293ced130e5b",
+   "name": "pneumatic cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 11,
+   "reason": "Bulky air cannon that throws whatever is loaded. Damage comes from the thing thrown, and the top setting paralyzes the shooter for 6 seconds. Can launch primed grenades.",
+   "score": 25,
+   "score_inputs": {
+    "judged": {
+     "value": 25,
+     "why": "throws what you load; as strong as the load"
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/pneumatic_cannon/ghetto": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "4738bf333aedf472",
+   "name": "improvised pneumatic cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 12,
+   "reason": "Improvised air cannon from pipes, iron and wrap: half the capacity, more gas per shot, same idea. Anyone can build it.",
+   "score": 20,
+   "score_inputs": {
+    "judged": {
+     "value": 20,
+     "why": "throws what you load, with half the capacity"
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/pneumatic_cannon/pie": {
+   "confidence": "low",
+   "group": "toys and novelties",
+   "hash": "a96992d3c5d6de5f",
+   "name": "pie cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 2,
+   "reason": "Takes up to 50 pies, needs no gas and throws three times as far. Cream pies paralyze for 2 seconds past any armor, but you have to bake them yourself.",
+   "score": 55,
+   "score_inputs": {
+    "judged": {
+     "value": 55,
+     "why": "2 second paralysis per cream pie, limited by baking 50 of them"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/pneumatic_cannon/pie/selfcharge": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "ce2fec95fbc6a8b6",
+   "name": "pie cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 1,
+   "reason": "Not a toy. Makes a cream pie every 2 seconds, up to 20; each hit paralyzes for 2 seconds past any armor, at three times normal throw range. Only the Honk hull has one.",
+   "score": 115,
+   "score_inputs": {
+    "judged": {
+     "value": 115,
+     "why": "endless 2 second paralysis on a hit, past any armor"
+    }
+   },
+   "tier": "red"
   }
  },
- "method": "Each gun gets a power score against a man in a plain armor vest at 5 tiles: damage and stamina through armor, times rate, hit chance and how much of a load lands (tools/gear_catalog/scoring.py). Green is under 40, yellow under 110 and red from there; where no stat can speak the score is set by hand against peers, and unique guns and round-warpers are above whatever their numbers say.",
+ "method": "Placed against the pilot's gun ratings with the same score: the formula where a gun has stats, and a judged score where its power is not in the stats. Bands are the pilot's: green under 40, yellow 40 to 109, red 110 and up.",
  "unrated": {
   "/obj/item/gun": "abstract",
   "/obj/item/gun/ballistic": "abstract",
