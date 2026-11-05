@@ -4,7 +4,8 @@ Run: python -m tools.ci.check_gear_ratings [--github] [--json]
 Reads the game's source through load_static and the tracked files in tools/gear_catalog. It needs no dump and no generated files.
 
 Crew reputation gates what crews buy, research and get offered; exploration and looting may bypass it on purpose. So only the routes in
-tools/gear_catalog/policy.json count, and a recipe with an ingredient none of them sells must be found in the field, so it's exempt.
+tools/gear_catalog/policy.json count, and a recipe with an ingredient none of them sells must be found in the field, so it's exempt, unless the
+policy calls that ingredient ordinary. A design only a hidden research node grants is a find too.
 Errors fail the check:
     unrated             gear with a checked route and no entry in items or unrated, or with a word in unrated that says it has no route
     below_reputation    a checked route lets a crew get it below its tier's reputation
@@ -15,6 +16,7 @@ Warnings don't: unrated gear with no checked route, and a rating for a path that
 """
 
 import argparse
+import collections
 import json
 from pathlib import Path
 import re
@@ -22,7 +24,7 @@ import time
 
 from tools.gear_catalog.categories import REP_ORDER, category_of, is_gear
 from tools.gear_catalog.ratings import EXCEPTIONS_FILE, POLICY_FILE, RATINGS_FOLDER, exception_problems, load_docs, policy_problems
-from tools.gear_catalog.recipes import covering_types, item_needs, recipe_step, settle
+from tools.gear_catalog.recipes import covering_types, fixture_needs, is_ordinary, item_needs, recipe_step, settle
 from tools.gear_catalog.static_sources import load_static
 
 
@@ -44,12 +46,12 @@ def rep_words(step):
 
 
 def design_offer(design):
-    """How a design is printed, as (step, how), or None when nothing in the source unlocks it: it comes from a disk or some other find."""
+    """How a design is printed, as (step, how), or None when points can't unlock it: it comes from a disk, an experiment, an emag or some other find. A hidden node is one of those."""
     if design.get("roundstart"):
         return PUBLIC, "at round start"
     if design.get("unlock") == "hacked autolathe":
         return PUBLIC, "on a hacked autolathe"
-    nodes = [node for node in design.get("nodes") or [] if node.get("rep_step_with_prereqs") in REP_ORDER]
+    nodes = [node for node in design.get("nodes") or [] if node.get("rep_step_with_prereqs") in REP_ORDER and not node.get("hidden_with_prereqs", node.get("hidden"))]
     if not nodes:
         return None
     node = min(nodes, key=lambda found: step_index(found["rep_step_with_prereqs"]))
@@ -97,18 +99,36 @@ def crafted_offers(routes, steps, covers):
     return offers
 
 
-def reachable(static, paths, checked):
-    """The lowest step that reaches each item through checked routes, and which paths count as each recipe ingredient."""
+def reachable(static, paths, checked, ordinary=()):
+    """The lowest step that reaches each item through checked routes, and which paths count as each recipe ingredient.
+
+    Ordinary ingredients count as public: any crew can pick them up, so a recipe's gate comes from the rest of what it asks for. A machine a recipe needs is reached like any item.
+    """
     start, recipes = {}, {}
-    for path in paths:
-        routes = static.routes(path)
+
+    def read(path, routes):
         offers = bought_offers(routes, checked)
         if offers:
             start[path] = min(offer["step"] for offer in offers)
         if "crafting" in checked and routes.get("crafting"):
             recipes[path] = routes["crafting"]
-    needed = {need for entries in recipes.values() for entry in entries for need in item_needs(entry)}
-    covers = covering_types(paths, needed, static.dm.parent)
+
+    for path in paths:
+        read(path, static.routes(path))
+    for path in paths:
+        if is_ordinary(path, ordinary):
+            start[path] = PUBLIC
+    fixtures = {}
+    while True:  # A machine's own recipe can ask for another machine.
+        found = static.fixtures_for({need for entries in recipes.values() for entry in entries for need in fixture_needs(entry)})
+        fresh = {fixture: routes for fixture, routes in found.items() if fixture not in fixtures}
+        if not fresh:
+            break
+        fixtures.update(fresh)
+        for fixture, routes in fresh.items():
+            read(fixture, routes)
+    needed = {need for entries in recipes.values() for entry in entries for need in item_needs(entry) + fixture_needs(entry)}
+    covers = covering_types([*paths, *fixtures], needed, static.dm.parent)
     return settle(start, recipes, covers), covers
 
 
@@ -193,7 +213,8 @@ def find_problems(static, docs, policy, exceptions, exceptions_text=""):
     if not isinstance(voucher_value, (int, float)):
         raise ValueError(f"VOUCHER_CREDIT_VALUE should be a plain number, not {voucher_value!r}")
     paths = sorted({*dm.compiled_types("/obj/item"), *(path for path in static.routed_types() if path.startswith("/obj/item"))})
-    steps, covers = reachable(static, paths, checked)
+    ordinary = [row["path"] for row in policy.get("ordinary_ingredients") or []]
+    steps, covers = reachable(static, paths, checked, ordinary)
     entries = {}
     for category, doc in docs.items():
         for path, item in doc["items"].items():
@@ -225,6 +246,10 @@ def find_problems(static, docs, policy, exceptions, exceptions_text=""):
             if not dm.known_type(path):
                 warnings.append(dict(rule="missing_type", path=path, file=rating_file(category), line=None,
                                      message=f"{path} no longer exists but {rating_file(category)} still lists it. Remove it from that file."))
+    for path in ordinary:
+        if not dm.known_type(path):
+            warnings.append(dict(rule="missing_type", path=path, file=POLICY_FILE, line=None,
+                                 message=f"{path} no longer exists but ordinary_ingredients in {POLICY_FILE} still lists it. Remove it from that file."))
 
     found = apply_exceptions(found, exceptions, dm.known_type, exceptions_text)
     key = lambda row: (row["rule"], row["path"], str(row.get("route")))
@@ -281,7 +306,9 @@ def report(errors, warnings, args, seconds):
         print(annotation("warning", row) if args.github else plain_line("warning", row))
     for row in errors:
         print(annotation("error", row) if args.github else plain_line("error", row))
-    print(f"Gear ratings: {len(errors)} errors, {len(warnings)} warnings, {seconds:.1f}s.")
+    counts = collections.Counter(row["rule"] for row in errors)
+    detail = f" ({', '.join(f'{count} {rule}' for rule, count in sorted(counts.items()))})" if counts else ""
+    print(f"Gear ratings: {len(errors)} errors{detail}, {len(warnings)} warnings, {seconds:.1f}s.")
 
 
 def main(argv=None):

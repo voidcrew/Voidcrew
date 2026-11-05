@@ -10,6 +10,11 @@ catalog.jsonl fields: path, parent, name, desc, category, gear, status, abstract
 known_sources, firm_sources, overrides, facts_hash. status is ok, uncreatable (never built, no facts), self_deleted (a spawner or a part that
 needs a parent; facts.spawned says what it left) or error (a runtime during creation).
 
+A map's kind says whether it can appear in a round. hull is a hull players can buy or roll, npc_ship a pirate or patrol hull, hull_unused a fixed hull only an admin can
+spawn; only the kinds in PLACED_KINDS are routes. sources.starting is what a crew finds on its own ship: outfits, loadout, and vendors and lockers on hull and module maps.
+A vendor elsewhere is in field_vendors, an outfit only used by unused hulls in unused_outfits. A printing row's unlock is roundstart, hacked autolathe, research,
+hidden research (only nodes that points can't open), design disk, or no active research node.
+
 Stats in facts come from a real instance, so inheritance and Initialize() are already applied, but a fresh item is all the dump sees: fantasy
 prefixes, modkits, MOD upgrades and fire select still move numbers at runtime. Spawn rates, literal loot odds, corpse outfits and paths chosen by
 pick(subtypesof()) aren't in static data; literal rows carry a citation and no odds, and a path only named in code is a code_mention, never a route.
@@ -24,15 +29,15 @@ import re
 from pathlib import Path
 
 from .categories import (CATEGORIES, REP_ORDER, CHAIN_BASES, CHAIN_SETUP_PROCS, FAMILY_BASES, FIGHT_ONLY_CATEGORIES, FIGHT_PROCS, GEAR_CATEGORIES, ITEM, LOOK_CLOTHING_FLAGS, LOOK_INV_FLAGS, LOOK_PARTS,
-                         LOOK_VARS, MELEE_FORCE_MIN, NO_NOTE_FAMILIES, NUMBER_PARTS, PLUMBING_PROCS, PRESENTATION_VARS, SETUP_PROCS, SHAPE_BASES, UNARMORED_WORN_VARS, USED_CATEGORIES, WORN_CATEGORIES,
+                         LOOK_VARS, MELEE_FORCE_MIN, NO_NOTE_FAMILIES, NUMBER_PARTS, PLACED_KINDS, PLUMBING_PROCS, PRESENTATION_VARS, SETUP_PROCS, SHAPE_BASES, UNARMORED_WORN_VARS, USED_CATEGORIES, WORN_CATEGORIES,
                          category_of, is_gear)
 from .combat import ARMOR_MAX_BLOCK, ARMOR_WEAKENED_MULTIPLIER, CLICK_CD_MELEE, MELEE_FORMULAS, num
-from .dm_reader import balance, clean_comments
-from .recipes import covering_types, is_basic_material, item_needs, recipe_step, settle
+from .dm_reader import assoc, balance, clean_comments, proc_chain
+from .recipes import covering_types, fixture_needs, is_basic_material, is_ordinary, item_needs, recipe_step, settle
 from .sections import FORMULAS, category_stats, decode_flags
 
 ARMOR_VEST = '/obj/item/clothing/suit/armor/vest'
-CATEGORY_BASES = {base for _, _, base in CATEGORIES}
+ARMOR_RATINGS = ['melee', 'bullet', 'laser', 'energy', 'bomb', 'bio', 'fire', 'acid', 'wound', 'consume']
 FIGHT_ARMOR = ['melee', 'bullet', 'laser', 'energy', 'bomb']
 
 # Values that read the world clock or a timer id. Two dumps of one checkout differ only in these.
@@ -43,8 +48,9 @@ FACT_SECTIONS = ['vars', 'refs', 'components', 'elements', 'traits', 'actions', 
                  'cell', 'mod_theme', 'mech_projectile', 'gun', 'ammo_box', 'casing', 'clothing', 'runtimes', 'delete_runtimes', 'section_errors', 'icon', 'icon_state']
 # Sections that make a thing more than a look, whatever its vars say.
 WORKING_SECTIONS = ['gun', 'ammo_box', 'casing', 'storage', 'actions', 'cell', 'embed', 'mod_theme', 'mech_projectile']
-ROUTE_KINDS = ['shops', 'peddler', 'cargo', 'order_consoles', 'other_sellers', 'printing', 'crafting', 'other_routes', 'loot', 'starting', 'in_containers']
-PLACED_KINDS = ['hull', 'module', 'ruin', 'outpost', 'npc_ship', 'event', 'planet', 'shuttle']
+ROUTE_KINDS = ['shops', 'peddler', 'cargo', 'order_consoles', 'other_sellers', 'printing', 'crafting', 'made_by_use', 'other_routes', 'loot', 'starting', 'field_vendors', 'in_containers']
+# Routes that hand out exactly this path, so a type with no sprite of its own can't be only a family base.
+HANDED_OUT_KINDS = {'shops', 'cargo', 'printing'}
 
 
 def dumps(value):
@@ -236,22 +242,24 @@ def firm_kinds(sources):
     kinds = known_kinds(sources)
     if 'loot' in kinds and all(row.get('literal') for row in sources['loot']):
         kinds.remove('loot')
-    if 'crafting' in kinds and not any(row.get('routable', True) for row in sources['crafting']):
-        kinds.remove('crafting')
+    for kind in ('crafting', 'made_by_use'):
+        if kind in kinds and not any(row.get('routable', True) for row in sources[kind]):
+            kinds.remove(kind)
     return kinds
 
 
 def rep_steps(sources):
-    """Lowest reputation step of the shop and research routes, and whether any route asks for no reputation at all."""
+    """Lowest reputation step of the shop and research routes, and whether any route asks for no reputation at all. A hidden node isn't opened by reputation."""
     steps = []
     free = False
     for shop in sources.get('shops') or []:
         steps.append(shop.get('rep_step'))
     for design in sources.get('printing') or []:
-        if design.get('roundstart'):
+        if design.get('roundstart') or design.get('unlock') == 'hacked autolathe':
             free = True
         for node in design.get('nodes') or []:
-            steps.append(node.get('rep_step_with_prereqs'))
+            if not node.get('hidden_with_prereqs'):
+                steps.append(node.get('rep_step_with_prereqs'))
     steps = [step for step in steps if step in REP_ORDER]
     return min(steps, key=REP_ORDER.index) if steps else None, free
 
@@ -267,6 +275,14 @@ def availability(sources):
 
     def placed(kind):
         return sum(v for k, v in by_kind.get(kind, {}).items() if k in ('direct', 'container'))
+
+    def research_nodes(hidden):
+        return any(bool(node.get('hidden_with_prereqs')) == hidden for p in printing for node in p['nodes'])
+
+    def routable(kind):
+        return any(row.get('routable', True) for row in sources.get(kind) or [])
+
+    starting = sources.get('starting') or []
     return dict(
         cheapest_credits=min((s['credits'] for s in credit_shops), default=None),
         cheapest_credits_with_vouchers=min((s.get('vouchers') or 0 for s in credit_shops), default=None),
@@ -277,67 +293,98 @@ def availability(sources):
         peddler_zones=sorted({z for s in peddler for z in str(s['zone']).split('|')}),
         peddler_cheapest_credits=min((s['credits'] for s in peddler if isinstance(s['credits'], (int, float)) and s['credits'] > 0), default=None),
         printable_roundstart=any(p['roundstart'] for p in printing),
-        printable_by_research=any(p['nodes'] for p in printing),
+        printable_by_research=research_nodes(False),
+        printable_hidden=research_nodes(True),
+        printable_hacked=any(p['unlock'] == 'hacked autolathe' for p in printing),
+        printable_from_disk=sorted({disk for p in printing for disk in p.get('disks') or []}),
         lowest_print_material_value=min((p['material_value'] for p in printing if isinstance(p['material_value'], (int, float))), default=None),
         cargo_packs=len(sources.get('cargo') or []),
-        crafted=any(row.get('routable', True) for row in crafting),
+        crafted=routable('crafting'),
+        made_by_use=routable('made_by_use'),
+        crafted_empty=any(row.get('made_empty') for row in crafting),
         crafted_kit_missing=sorted({kit['path'] for row in crafting for kit in row.get('kit_routes') or [] if not kit['has_route']}),
         learned_from=sorted({book for row in crafting for book in row.get('learned_from') or []}),
         loot_rows=len(sources.get('loot') or []),
-        starting_outfits=len([x for x in sources.get('starting') or [] if x.get('kind') == 'outfit']),
-        starting_vendors=len([x for x in sources.get('starting') or [] if x.get('kind') == 'vendor']),
-        character_loadout=any(x.get('kind') == 'loadout' for x in sources.get('starting') or []),
+        starting_outfits=len([x for x in starting if x.get('kind') == 'outfit' and not x.get('conditional')]),
+        starting_conditional=len([x for x in starting if x.get('conditional')]),
+        starting_vendors=len([x for x in starting if x.get('kind') == 'vendor']),
+        character_loadout=any(x.get('kind') == 'loadout' for x in starting),
+        field_vendor_kinds=sorted({kind for row in sources.get('field_vendors') or [] for kind in row['placed'] if kind in PLACED_KINDS}),
         placed_on_hulls=placed('hull'),
+        placed_on_unused_hulls=placed('hull_unused'),
+        hull_maps=((sources.get('maps') or {}).get('distinct_by_kind') or {}).get('hull', 0),
         placed_on_modules=placed('module'),
         placed_in_ruins=placed('ruin'),
         placed_at_outposts=placed('outpost'),
         placed_on_npc_ships=placed('npc_ship'),
+        spawner_placements={kind: modes['spawner'] for kind, modes in sorted(by_kind.items()) if modes.get('spawner') and kind in PLACED_KINDS},
         distinct_maps=(sources.get('maps') or {}).get('distinct_maps', 0),
     )
 
 
-def close_routes(rows, dump_rows, dm):
+def close_routes(rows, dump_rows, sources_reader):
     """Routes that lean on another item: what a container holds, and what a recipe makes. Fills in_containers, kit_routes and firm_sources.
 
     Starts from items with a route of their own and grows until nothing changes, so a kit nobody can get never makes its gun look obtainable.
+    A machine a recipe needs counts when it's on a map that can appear in a round, or a checked route reaches it. An ordinary ingredient has a route by definition.
     """
+    dm = sources_reader.dm
+    ordinary = sources_reader.ordinary
     held_in = collections.defaultdict(dict)
     for path, raw in dump_rows.items():
         for child, count in (raw.get('contents') or {}).items():
             if child != path:
                 held_in[child][path] = count
 
-    needed = set()
-    for row in rows.values():
-        for entry in row['sources'].get('crafting') or []:
-            needed.update(item_needs(entry))
-    covers = covering_types(rows, needed, dm.parent)
+    # Using one item to get another reads as a recipe with one ingredient.
+    def use_recipes(row):
+        return [dict(recipe=use['from_item'], ingredients={use['from_item']: 1}) for use in row['sources'].get('made_by_use') or []]
+
+    recipes = {path: (row['sources'].get('crafting') or []) + use_recipes(row) for path, row in rows.items()}
+    start = {}
+    fixtures = {}
+    while True:  # A machine's own recipe can ask for another machine.
+        found = sources_reader.fixtures_for({need for entries in recipes.values() for entry in entries for need in fixture_needs(entry)})
+        fresh = {fixture: routes for fixture, routes in found.items() if fixture not in fixtures}
+        if not fresh:
+            break
+        fixtures.update(fresh)
+        for fixture, routes in fresh.items():
+            recipes[fixture] = routes.get('crafting') or []
+            if sources_reader.fixture_in_round(fixture) or any(routes.get(kind) for kind in ('shops', 'cargo', 'order_consoles', 'other_sellers', 'other_routes')):
+                start[fixture] = 0
+
+    needed = {need for entries in recipes.values() for entry in entries for need in item_needs(entry) + fixture_needs(entry)}
+    covers = covering_types([*rows, *fixtures], needed, dm.parent)
 
     def direct(row):
-        return [k for k in firm_kinds(row['sources']) if k not in ('crafting', 'in_containers')]
+        return [k for k in firm_kinds(row['sources']) if k not in ('crafting', 'made_by_use', 'in_containers')]
 
-    routed = settle({path: 0 for path, row in rows.items() if direct(row)},
-                    {path: row['sources'].get('crafting') or [] for path, row in rows.items()}, covers, held_in)
+    start.update({path: 0 for path, row in rows.items() if direct(row) or is_ordinary(path, ordinary)})
+    routed = settle(start, recipes, covers, held_in)
 
     for path, row in rows.items():
         sources = row['sources']
+        for use in sources.get('made_by_use') or []:
+            use['routable'] = use['from_item'] in routed
         for entry in sources.get('crafting') or []:
             entry['routable'] = recipe_step(entry, routed, covers) is not None
             if 'recipe' not in entry:
                 continue
             kits = []
-            for need in item_needs(entry):
-                route_rows = [rows[p] for p in covers.get(need, []) if p in routed]
-                if is_basic_material(need) and route_rows:
+            for need in item_needs(entry) + fixture_needs(entry):
+                covered = [p for p in covers.get(need, []) if p in routed]
+                route_rows = [rows[p] for p in covered if p in rows]
+                if is_basic_material(need) and covered:
                     continue  # basic material with a route of its own
                 kinds = sorted({k for r in route_rows for k in direct(r)})
-                lowest, free = None, False
+                lowest, free = None, any(is_ordinary(p, ordinary) for p in covered)
                 for route_row in route_rows:
                     step, roundstart = rep_steps(route_row['sources'])
                     if step and (lowest is None or REP_ORDER.index(step) < REP_ORDER.index(lowest)):
                         lowest = step
                     free = free or roundstart or any(k not in ('shops', 'printing') for k in direct(route_row))
-                kits.append(dict(path=need, has_route=bool(route_rows), routes=kinds, lowest_rep_step=lowest, needs_no_rep=free))
+                kits.append(dict(path=need, has_route=bool(covered), routes=kinds, lowest_rep_step=lowest, needs_no_rep=free))
             entry['kit_routes'] = kits
     for path, row in rows.items():
         routes = [dict(container=c, count=n) for c, n in sorted(held_in.get(path, {}).items()) if c in routed]
@@ -352,20 +399,23 @@ def close_routes(rows, dump_rows, dm):
 
 # ---------------------------------------------------------------------------------------- what an item is
 
-def real_name(path, name):
-    """A name a player would read, not the generic one a category's base carries: a shotgun can be called shotgun, the base gun type can't be called gun."""
-    if not name or name in ('item', 'object'):
-        return False
-    return not (path in CATEGORY_BASES and name.lower().replace(' ', '_') == path.rsplit('/', 1)[-1].lower())
+def real_name(name):
+    """A name a player would read. The category bases call themselves things like wrench too, so a name alone can't say what's abstract: a route has to."""
+    return bool(name) and name not in ('item', 'object')
 
 
 def is_abstract(path, raw, has_subtypes, known):
-    """A family base with nothing of its own. A type with its own sprite and a real name that's in any source or map is a real item."""
+    """A family base with nothing of its own. A type with its own sprite and a real name that's in any source or map is a real item.
+
+    So is one with no sprite of its own that a shop, a pack or a printer hands out by name: a cyborg arm draws itself at runtime.
+    """
     if not has_subtypes:
         return False
     if not (raw.get('no_sprite') or path in SHAPE_BASES):
         return False
-    return not (not raw.get('no_sprite') and real_name(path, raw.get('name')) and bool(known))
+    if not real_name(raw.get('name')):
+        return True
+    return not (set(known) & HANDED_OUT_KINDS if raw.get('no_sprite') else known)
 
 
 def protects(raw, base_armor):
@@ -537,6 +587,43 @@ class Context:
                                 projectile=(((gun.get('modes') or [{}])[0]).get('projectile') or {}).get('type'))
         return {k: v for k, v in facts.items() if v is not None}
 
+    def upgrades_for(self, category, items):
+        """What can change a rated item's armor after it's made: a suit bench's plating, and armor plates an item takes. Sorted lines of plain text, for the category's sheet."""
+        lines = []
+        if category == 'modsuits':
+            lines += self.bench_lines()
+        plates = collections.Counter()
+        for path in items:
+            for component in (self.dump_rows[path].get('components') or []):
+                if component['type'] == '/datum/component/armor_plate':
+                    values = component.get('vars') or {}
+                    plates[(values.get('upgrade_name'), values.get('maxamount'), values.get('armor_mod'))] += 1
+        for (name, amount, armor_mod), count in sorted(plates.items(), key=lambda kv: str(kv[0])):
+            ratings = {rating: self.dm.val(armor_mod, rating) for rating in ARMOR_RATINGS}
+            bonus = ' '.join(f'{rating}+{value}' for rating, value in ratings.items() if isinstance(value, (int, float)) and value)
+            lines.append(f'{count} items here take {amount} {name}, each {bonus}')
+        return lines
+
+    def bench_lines(self):
+        """The MOD fitting bench, on one line: each upgrade family with what all of it costs and adds to armor."""
+        families = collections.defaultdict(list)
+        for upgrade in self.dm.paths('/datum/mod_upgrade'):
+            if self.dm.val(upgrade, 'id'):
+                families[self.dm.val(upgrade, 'category')].append(upgrade)
+        parts = []
+        for family, upgrades in sorted(families.items()):
+            added = collections.Counter()
+            credits = vouchers = 0
+            for upgrade in upgrades:
+                credits += self.dm.val(upgrade, 'price_credits') or 0
+                vouchers += self.dm.val(upgrade, 'price_vouchers') or 0
+                for rating, value in assoc(self.dm.val(upgrade, 'armor_modifiers')).items():
+                    added[str(rating)] += value
+            armor = ' '.join(f'{rating}+{value}' for rating, value in sorted(added.items()))
+            price = f'{credits} cr' + (f' {vouchers}v' if vouchers else '')
+            parts.append(f'{family} ({price})' + (f' {armor}' if armor else ''))
+        return ['MOD fitting bench, on any suit, for all of a family: ' + '; '.join(parts)] if parts else []
+
     def guns_for_ammo(self, path, box, casing):
         if path.startswith('/obj/item/ammo_box/magazine'):
             guns = self.by_magazine.get(path, [])
@@ -586,7 +673,7 @@ def assemble(dump_rows, meta, sources, procs):
         overrides[path] = dict(base=base, own=over['own'], inherited=over['inherited'], behaviour=[f'{t}/{p}' for t, p in behaviour])
         judged[path] = dict(behaviour=notable_behaviour(behaviour, category), chain=chain, parts=note_parts)
 
-    close_routes(rows, dump_rows, dm)
+    close_routes(rows, dump_rows, sources)
 
     for path, row in rows.items():
         raw = dump_rows[path]
@@ -616,6 +703,9 @@ def assemble(dump_rows, meta, sources, procs):
         info = judged[path]
         entry = dict(path=path, name=row['name'], desc=row['desc'], status=row['status'], abstract=row['abstract'], has_subtypes=row['has_subtypes'], cosmetic=row['cosmetic'], gear=row['gear'])
         entry.update(category_stats(row, dump_rows[path], ctx))
+        randomised = randomised_vars(dm, path, dump_rows[path])
+        if randomised:
+            entry['randomised'] = randomised
         entry['other_vars'] = other_vars(dump_rows[path], base_vars.get(category_of(path)[1], {}), entry)
         entry.update(
             behaviour_procs=[f'{owner}/{name}' for owner, name in info['behaviour']],
@@ -632,6 +722,24 @@ def assemble(dump_rows, meta, sources, procs):
             entry['chain_behaviour_procs'] = [f'{owner}/{proc}' for owner, proc in info['chain']]
         entries[row['category']][path] = entry
     return rows, entries, overrides, judged, ctx
+
+
+def randomised_vars(dm, path, raw):
+    """Vars that do something and that Initialize or New set from a dice roll, as name -> the roll as written. The dump saw one result, so the row's value for these is only an example."""
+    found = {}
+    values = raw.get('vars') or {}
+    for method in ('Initialize', 'New'):
+        for _, code in proc_chain(dm, path, method):
+            for match in re.finditer(r'^\s*(?:src\.)?(\w+)\s*=\s*((?:pick|pick_weight|rand|prob|roll)\(.*)$', code, re.M):
+                name = match[1]
+                if name in LOOK_VARS or name in PRESENTATION_VARS or not (name in values or dm.field(path, name).source):
+                    continue
+                value = values.get(name, dm.val(path, name))
+                # A word: a colour, a sprite, a flavour line. A number or a type path is what changes a fight.
+                if isinstance(value, str) and not value.startswith('/'):
+                    continue
+                found.setdefault(name, match[2].strip())
+    return found
 
 
 def other_vars(raw, base_values, entry):
@@ -690,6 +798,9 @@ def write_outputs(out, rows, entries, overrides, judged, ctx, meta, map_notes):
             formulas['melee block'] = MELEE_FORMULAS
         if formulas:
             document['formulas'] = formulas
+        upgrades = ctx.upgrades_for(category, items)
+        if upgrades:
+            document['upgrades'] = upgrades
         if category == 'guns':
             document.update(click_cooldown_ds=click_cd, weapon_weight=meta.get('weapon_weight'), bolt_type=meta.get('bolt_type'), target=dict(vest=ctx.vest, vest_type=ARMOR_VEST))
         if category in ('melee', 'shields'):

@@ -156,6 +156,12 @@ def policy_problems(policy):
         for tier, band in bands.items():
             if tier not in TIERS or not isinstance(band, list) or len(band) != 2 or not all(is_number(value) for value in band) or band[0] > band[1]:
                 problems.append(f'price_bands.{category}.{tier}: needs a tier and [low, high]')
+    ordinary = policy.get('ordinary_ingredients', [])
+    if not isinstance(ordinary, list):
+        return problems + ['ordinary_ingredients must be a list']
+    for row in ordinary:
+        if not isinstance(row, dict) or set(row) != {'path', 'reason'} or not is_text(row['reason']) or not str(row['path']).startswith('/obj/'):
+            problems.append(f'ordinary_ingredients: {row!r} needs exactly a path under /obj/ and a reason')
     return problems
 
 

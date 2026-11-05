@@ -26,7 +26,7 @@ class Expr(str):
 COMMENT_OR_QUOTE = re.compile(r'/\*|//|["\']')
 BLOCK_EDGE = re.compile(r'/\*|\*/')
 NOT_NEWLINE = re.compile(r'[^\n]')
-STRING_END = {'"': re.compile(r'\\|"'), "'": re.compile(r"\\|'")}
+STRING_END = {'"': re.compile(r'\\|"|\n'), "'": re.compile(r"\\|'|\n")}
 
 @functools.lru_cache(None)
 def clean_comments(text):
@@ -51,12 +51,15 @@ def clean_comments(text):
                     depth += 1 if edge[0] == '/*' else -1
                     out.append('  '); i += 2
         else:
-            # A string runs to its closing quote; a backslash keeps the next character out of that.
+            # A string runs to its closing quote or the end of its line; a backslash keeps the next character out of that.
+            # A quote nested in a [] expression can end one early, and whatever that leaves open mustn't swallow the rest of the file.
             start = i; i += 1
             while i < size:
                 edge = STRING_END[token].search(text, i)
                 if not edge:
                     i = size; break
+                if edge[0] == '\n':
+                    i = edge.start(); break
                 i = edge.end()
                 if edge[0] != '\\':
                     break
@@ -209,9 +212,10 @@ class DM:
         if s.startswith('"') and s.endswith('"'):
             return re.sub(r'\\(improper |proper )','',s[1:-1]).replace('\\"','"').replace('\\n','\n')
         if re.fullmatch(r'/[\w/]+',s): return s
-        if s.startswith('list(') and s.endswith(')'):
+        opening = re.match(r'list\s*\(', s)
+        if opening and s.endswith(')'):
             out = []
-            for part in split_top(s[5:-1]):
+            for part in split_top(s[opening.end():-1]):
                 sides = split_top(part,'=')
                 if len(sides)==2: out.append((self.eval(sides[0],seen),self.eval(sides[1],seen)))
                 else: out.append(self.eval(part,seen))
@@ -258,7 +262,10 @@ class DM:
     def proc(self,path): return '\n'.join(t for _,t in self.procs.get(path.replace('/proc/','/'),[]))
 
     def parse_node_ops(self, file, text):
-        """List updates to design_ids, which research node patches rely on."""
+        """List updates to design_ids, which research node patches rely on.
+
+        A removal nested under an if is decided at runtime (a station trait, a config flag), so it doesn't take the design away here. A nested addition stays: the design can be had.
+        """
         if '/datum/techweb_node' not in text:
             return
         lines = clean_comments(text).splitlines()
@@ -273,14 +280,16 @@ class DM:
                 owner = m[1] if m else None
             if not owner:
                 continue
-            m = re.match(r'\s+design_ids\s*(\+=|-=|\|=|=)\s*(.+)', line)
+            m = re.match(r'(\s+)design_ids\s*(\+=|-=|\|=|=)\s*(.+)', line)
             if not m:
                 continue
-            raw = m[2]
+            raw = m[3]
             while balance(raw) and i < len(lines):
                 raw += '\n' + lines[i].strip()
                 i += 1
-            self.node_ops[owner].append((m[1], raw, f'{file}:{line_no}'))
+            if m[2] == '-=' and len(m[1].expandtabs(4)) > 4:
+                continue
+            self.node_ops[owner].append((m[2], raw, f'{file}:{line_no}'))
 
     @functools.lru_cache(None)
     def node_designs(self, path):

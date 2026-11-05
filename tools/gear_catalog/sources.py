@@ -11,6 +11,7 @@ import fnmatch
 import functools
 import re
 
+from .categories import PLACED_KINDS
 from .dm_reader import assoc, clean_comments, paths, proc_chain, rounded, split_top
 from .offers import ladder_restricted, paths_in
 from .static_sources import StaticSources
@@ -70,6 +71,32 @@ OUTFIT_FIELDS = ['uniform', 'suit', 'back', 'belt', 'gloves', 'shoes', 'head', '
                  'belt_contents', 'implants', 'pda_slot']
 
 
+# Map kinds a ship's crew starts on. Everywhere else a vending machine or locker is something to go and find.
+PLAYER_SHIP_KINDS = ('hull', 'module')
+HULL_BASE = '/datum/map_template/shuttle/voidcrew'
+
+
+# Procs a player runs by using a thing. What one makes with new is something that item turns into, or gives you.
+USE_PROCS = re.compile(r'/(attackby|attackby_secondary|item_interaction|item_interaction_secondary|attack_self|attack_self_secondary|\w+_act|\w+_act_secondary|tool_act|click_alt|interact_with_atom\w*)$')
+
+
+def under_condition(code, offset):
+    """Whether the line at this offset of a proc's source only runs sometimes: inside an if, an else or a switch."""
+    lines = code[:offset].split('\n')
+    tabs = lambda line: len(line) - len(line.lstrip('\t'))
+    conditional = ('if(', 'if (', 'else', 'switch(', 'switch (')
+    if lines[-1].strip().startswith(conditional):
+        return True
+    depth = tabs(lines[-1])
+    for prior in reversed(lines[:-1]):
+        if not prior.strip() or tabs(prior) >= depth:
+            continue
+        depth = tabs(prior)
+        if prior.strip().startswith(conditional):
+            return True
+    return False
+
+
 def item_literals(text):
     """/obj and /obj/item path literals outside type headers, with line numbers."""
     for number_, line in enumerate(text.splitlines(), 1):
@@ -123,6 +150,7 @@ class Sources(StaticSources):
         self.build_mob_drops()
         self.build_mob_code_drops()
         self.build_outfits()
+        self.build_made_by_use()
         self.starting = self.starting_index()
         self.vendors = self.vendor_index()
         self.loadouts = self.loadout_index()
@@ -237,6 +265,20 @@ class Sources(StaticSources):
 
     # ------------------------------------------------------------------ maps
 
+    def played_hulls(self):
+        """Hull templates that can be a player's ship: is_player_purchasable_ship() is the shelf, and is_roundstart_eligible_hull_type() rolls the fleet from what's on it.
+
+        Every other template only spawns by admin verb, or for the NPC ships named by their shuttle_template.
+        """
+        dm = self.dm
+        found = set()
+        for template in dm.paths(HULL_BASE):
+            if dm.val(template, 'abstract') == template or dm.val(template, 'player_hidden'):
+                continue
+            if dm.val(template, 'force_purchasable') or (dm.val(template, 'has_upgrade_slots') and (dm.val(template, 'upgrade_slot_ids') or dm.val(template, 'available_themes'))):
+                found.add(template)
+        return found
+
     def classify_maps(self):
         dm = self.dm
         npc_templates = set()
@@ -244,27 +286,28 @@ class Sources(StaticSources):
             template = dm.val(ship, 'shuttle_template')
             if isinstance(template, str):
                 npc_templates.add(template)
-        hulls, npc_hulls = set(), set()
-        for template in dm.paths('/datum/map_template/shuttle/voidcrew'):
+        played = self.played_hulls()
+        hulls, npc_hulls, unused_hulls = set(), set(), set()
+        for template in dm.paths(HULL_BASE):
             suffix = dm.val(template, 'suffix')
             if suffix:
-                (npc_hulls if template in npc_templates else hulls).add(f'ship_{suffix}.dmm')
+                (hulls if template in played else npc_hulls if template in npc_templates else unused_hulls).add(f'ship_{suffix}.dmm')
         for theme in dm.paths('/datum/ship_theme'):
             suffix = dm.val(theme, 'template_suffix')
             if suffix:
-                hulls.add(f'ship_{suffix}.dmm')
+                (hulls if dm.val(theme, 'for_ship') in played else unused_hulls).add(f'ship_{suffix}.dmm')
         # The loader tries <base>_<theme>.dmm before <base>.dmm, so a themed file belongs to its base module.
-        modules = set()
+        modules, unused_modules = set(), set()
         for module in dm.paths('/datum/ship_upgrade_module'):
             value = dm.val(module, 'map_file')
             if isinstance(value, str):
-                modules.add(value.replace('\\', '/').rsplit('.', 1)[0])
+                (modules if dm.val(module, 'for_ship') in played else unused_modules).add(value.replace('\\', '/').rsplit('.', 1)[0])
         ruins = set()
         for ruin in dm.paths('/datum/map_template/ruin'):
             prefix, suffix = dm.val(ruin, 'prefix'), dm.val(ruin, 'suffix')
             if isinstance(prefix, str) and isinstance(suffix, str):
                 ruins.add((prefix + suffix).replace('\\', '/'))
-        self.classified = dict(hulls=hulls, npc_hulls=npc_hulls, modules=modules, ruins=ruins)
+        self.classified = dict(played=played, hulls=hulls, npc_hulls=npc_hulls, unused_hulls=unused_hulls, modules=modules, unused_modules=unused_modules, ruins=ruins)
 
     def map_kind(self, rel):
         c = self.classified
@@ -272,13 +315,16 @@ class Sources(StaticSources):
         if '/unit_tests/' in rel or '/backup/' in rel or '/test_modular/' in rel:
             return None
         if '/ships/' in rel:
-            if name in c['npc_hulls'] and name not in c['hulls']:
+            if name in c['hulls']:
+                return 'hull'
+            if name in c['npc_hulls']:
                 return 'npc_ship'
-            return 'hull' if name in c['hulls'] else 'hull_unreferenced'
+            return 'hull_unused' if name in c['unused_hulls'] else 'hull_unreferenced'
         if '/ship_modules/' in rel:
             stem = rel.split('/ship_modules/', 1)[1].rsplit('.', 1)[0]
-            referenced = stem in c['modules'] or any(stem.startswith(base + '_') for base in c['modules'])
-            return 'module' if referenced else 'module_unreferenced'
+            if stem in c['modules'] or any(stem.startswith(base + '_') for base in c['modules']):
+                return 'module'
+            return 'module_unused' if stem in c['unused_modules'] or any(stem.startswith(base + '_') for base in c['unused_modules']) else 'module_unreferenced'
         if '/RandomRuins/' in rel:
             return 'ruin' if rel in c['ruins'] else 'ruin_unreferenced'
         if '/outposts/' in rel:
@@ -338,9 +384,14 @@ class Sources(StaticSources):
         for atom, placed in totals.items():
             self.place(atom, kind, rel, placed)
 
+    def fixture_in_round(self, fixture):
+        """Whether a machine or structure stands on a map that can appear in a round."""
+        return any(kind in PLACED_KINDS for kind in self.placements.get(fixture, {}))
+
     def place(self, atom, kind, rel, count):
         if atom.startswith('/mob/'):
-            self.mob_placements[atom] += count
+            if kind in PLACED_KINDS:
+                self.mob_placements[atom] += count
             return
         self.placements[atom][kind]['direct'] += count
         self.placement_maps[atom][rel] += count
@@ -415,6 +466,8 @@ class Sources(StaticSources):
         self.build_mission_prizes()
         self.build_lich_hoard()
         self.build_suit_storage()
+        self.build_shuttle_loans()
+        self.build_biome_features()
         seen = set()
         for file in self.dm.files:
             for pattern, channel, label in LOOT_FILES:
@@ -502,6 +555,38 @@ class Sources(StaticSources):
             self.add_loot(item, channel='ruin', label='ruin suit storage', odds=odds, odds_note='per unit, stocked by zone',
                           source=self.dm.procs['/obj/machinery/suit_storage_unit/ruin_zone/stock_for_zone'][0][0])
 
+    def build_shuttle_loans(self):
+        """What a shuttle loan can bring. Each offer's spawn_items names its goods, in lists or directly, and can hand over a whole supply pack."""
+        dm = self.dm
+        table, _ = self.global_list('voidcrew_shuttle_loans')
+        for loan in paths(table):
+            for source, code in dm.procs.get(f'{loan}/spawn_items', []):
+                file, first = source.rsplit(':', 1)
+                goods = list(item_literals(code))
+                for pack in re.findall(r'/datum/supply_pack/[\w/]+', code):
+                    goods += [(item, code[:code.index(pack)].count('\n') + 1) for item in paths(dm.val(pack, 'contains'))]
+                for path, line in goods:
+                    for target, count, _, via in [(path, 1, 'direct', ())] + self.expand_container(path):
+                        self.add_loot(target, channel='event', label='shuttle loan', loan=loan, via=list(via), count=count, source=f'{file}:{int(first) + line - 1}')
+
+    def build_biome_features(self):
+        """What a planet's ground can spawn: the feature and flora tables of every biome a planet's overworld or caves use."""
+        dm = self.dm
+        used = set()
+        for planet in dm.paths('/datum/planet'):
+            for field in ('overworld_biomes', 'cave_biomes'):
+                used.update(path for path in paths(dm.val(planet, field)) if path.startswith('/datum/biome'))
+        for biome in sorted(used):
+            for field, chance in (('feature_spawn_list', 'feature_spawn_chance'), ('flora_spawn_list', 'flora_spawn_chance')):
+                table = assoc(dm.val(biome, field))
+                total = sum(weight for weight in table.values() if isinstance(weight, (int, float)))
+                for item, weight in table.items():
+                    if not isinstance(item, str) or not item.startswith('/obj/item'):
+                        continue
+                    for target, count, _, via in [(item, 1, 'direct', ())] + self.expand_container(item):
+                        self.add_loot(target, channel='biome', label='planet ground', biome=biome, weight=weight, pool_weight=total, chance_per_turf=dm.val(biome, chance),
+                                      via=list(via), count=count, source=dm.field(biome, field).source)
+
     def build_mob_drops(self):
         dm = self.dm
         for mob in dm.paths('/mob/living'):
@@ -557,6 +642,19 @@ class Sources(StaticSources):
                                       map_placements=self.mob_placements[mob], reachable=self.mob_placements[mob] > 0 or mob in self.voidcrew_mentions,
                                       source=f'{file}:{int(first) + offset - 1}')
 
+    def build_made_by_use(self):
+        """Item -> the items that turn into it when used: a sliced pipe into a pipe bomb, a helmet into a securitron. It only counts once the item used has a route (close_routes)."""
+        self.made_by_use = collections.defaultdict(list)
+        for key, bodies in self.dm.procs.items():
+            if not key.startswith('/obj/item/') or not USE_PROCS.search(key):
+                continue
+            owner = key.rsplit('/', 1)[0]
+            for source, code in bodies:
+                made = re.findall(r'\bnew\s+(/obj/item/[\w/]+)\s*\(', code) + ['/' + name for name in re.findall(r'\bvar/(obj/item/[\w/]+)/\w+\s*=\s*new\s*\(', code)]
+                for path in sorted(set(made)):
+                    if path != owner:
+                        self.made_by_use[path].append(dict(from_item=owner, source=source))
+
     def build_outfits(self):
         dm = self.dm
         for base, field in [('/datum/ship_theme', 'job_slots'), ('/datum/ship_upgrade_module', 'job_slots_add'), ('/datum/map_template/shuttle/voidcrew', 'job_slots')]:
@@ -578,30 +676,35 @@ class Sources(StaticSources):
 
     @functools.lru_cache(None)
     def outfit_items(self, outfit):
-        """Items an outfit hands out, from its fields and from literal paths in its equip procs."""
+        """Items an outfit hands out, from its fields and from literal paths in its equip procs, as (item, field, source, whether it only happens sometimes)."""
         dm = self.dm
         found = []
         for field in OUTFIT_FIELDS:
             declared = dm.field(outfit, field)
             for item in paths(dm.val(outfit, field)):
                 if item.startswith('/obj/'):
-                    found.append((item, field, declared.source))
+                    found.append((item, field, declared.source, False))
         for method in ['pre_equip', 'post_equip']:
             for source, code in proc_chain(dm, outfit, method):
-                for path in re.findall(r'/obj/item/[\w/]+', code):
-                    found.append((path, method, source))
+                for match in re.finditer(r'/obj/item/[\w/]+', code):
+                    found.append((match[0], method, source, under_condition(code, match.start())))
         return tuple(dict.fromkeys(found))
 
     def starting_index(self):
-        """item -> outfit rows. Built once, because many jobs share an outfit."""
+        """item -> outfit rows, for the jobs on hulls that can be a player's ship. Built once, because many jobs share an outfit. An outfit only on other hulls goes in unused_outfits."""
         index = collections.defaultdict(list)
+        self.unused_outfits = collections.defaultdict(list)
         for outfit, uses in self.outfit_uses.items():
-            hulls = sorted({str(u['hull']) for u in uses})
-            jobs = sorted({str(u['job']) for u in uses})
-            for item, field, source in self.outfit_items(outfit):
+            played = [use for use in uses if use['hull'] in self.classified['played']]
+            table = index if played else self.unused_outfits
+            hulls = sorted({str(u['hull']) for u in played or uses})
+            jobs = sorted({str(u['job']) for u in played or uses})
+            for item, field, source, conditional in self.outfit_items(outfit):
                 for target, count, _, via in [(item, 1, 'direct', ())] + self.expand_container(item):
-                    index[target].append(dict(kind='outfit', outfit=outfit, field=field, hulls=len(hulls), hull_sample=hulls[:6],
-                                              jobs=jobs[:6], via=list(via), count=count, source=source))
+                    row = dict(kind='outfit', outfit=outfit, field=field, hulls=len(hulls), hull_sample=hulls[:6], jobs=jobs[:6], via=list(via), count=count, source=source)
+                    if conditional:
+                        row['conditional'] = True
+                    table[target].append(row)
         return index
 
     def vendor_index(self):
@@ -644,22 +747,35 @@ class Sources(StaticSources):
         if loot:
             out['loot'] = loot
 
+        # Starting gear is what a crew finds on its own ship. A ruin's vending machine or an enemy ship's locker is a find.
         vendors = list(self.vendors.get(path, []))
-        starting = list(self.starting.get(path, [])) + list(self.loadouts.get(path, [])) + [v for v in vendors if v['placed']]
-        unplaced = [v for v in vendors if not v['placed']]
+        ship_vendors = [v for v in vendors if any(kind in PLAYER_SHIP_KINDS for kind in v['placed'])]
+        field_vendors = [v for v in vendors if v not in ship_vendors and any(kind in PLACED_KINDS for kind in v['placed'])]
+        unplaced = [v for v in vendors if v not in ship_vendors and v not in field_vendors]
+        starting = list(self.starting.get(path, [])) + list(self.loadouts.get(path, [])) + ship_vendors
         if unplaced:
             out['unplaced_vendors'] = unplaced
+        if field_vendors:
+            out['field_vendors'] = field_vendors
         lockers = self.closet_hits.get(path)
         if lockers:
             for container, kinds in lockers.items():
-                if kinds.get('hull') or kinds.get('module') or kinds.get('npc_ship'):
+                if any(kinds.get(kind) for kind in PLAYER_SHIP_KINDS):
                     starting.append(dict(kind='locker', container=container, placed=dict(kinds)))
         if starting:
             out['starting'] = starting
+        used = self.made_by_use.get(path)
+        if used:
+            out['made_by_use'] = [dict(row) for row in used]
+        unused = self.unused_outfits.get(path)
+        if unused:
+            out['unused_outfits'] = unused
 
         placed = self.placements.get(path)
         if placed:
             maps = self.placement_maps.get(path, {})
+            by_kind = collections.Counter(self.map_kinds[m] for m in maps)
+            maps = {m: count for m, count in maps.items() if self.map_kinds[m] in PLACED_KINDS}
             top = sorted(maps.items(), key=lambda kv: (-kv[1], kv[0]))
             kinds_summary = {}
             for kind, modes in placed.items():
@@ -667,7 +783,7 @@ class Sources(StaticSources):
                 expected = self.placement_expected.get(path, {}).get(kind)
                 if expected:
                     kinds_summary[kind]['spawner_expected'] = rounded(float(expected))
-            out['maps'] = dict(by_kind=kinds_summary, distinct_maps=len(maps), top_maps=[dict(map=m, count=c) for m, c in top[:8]])
+            out['maps'] = dict(by_kind=kinds_summary, distinct_maps=len(maps), distinct_by_kind=dict(sorted(by_kind.items())), top_maps=[dict(map=m, count=c) for m, c in top[:8]])
 
         units = 1
         if self.is_a(path, '/obj/item/stack'):

@@ -55,7 +55,7 @@ jobs:
         run: python -m tools.ci.check_ship_previews --github
 
       - name: Test gear rating check
-        run: python -m unittest tools.ci.test_gear_ratings
+        run: python -m unittest tools.ci.test_gear_ratings tools.ci.test_gear_catalog
 
       - name: Check gear ratings
         run: python -m tools.ci.check_gear_ratings --github

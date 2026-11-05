@@ -24,7 +24,7 @@ LEGEND = {
     'guns': 'mode: dmg/shot, /s, dps bare > dps vest; st=stamina dps; ap; cap; passes. spread, recoil, w=weight class. score: s=power on a vest and the tier that number alone gives, bare=with no armor',
     'melee': 'state force; as=attack speed (ds); dps bare > dps at 30 armor; ap; sharp E/P; wb=wound bonus; bl=block; th=throw; w=weight class; r=reach',
     'shields': 'bl=block chance; int=integrity; state force; dps bare > dps at 30 armor',
-    'ammo': 'cal, cap, dmg per round, ap, flag, price per round, how many guns take it',
+    'ammo': 'cal, cap, dmg per round, ap, flag, stun/para/kd/immob/uncon in seconds, thru=passes through, price per round, how many guns take it',
     'mech': 'cd=cooldown (ds), drain, dps',
     'modsuits': 'control: armor sum, complexity used/max, drain, slowdown, modules, cell charge. module: cx=complexity, idle/active/use power, cd, type',
     'implants': 'uses, activated, what a case or autosurgeon holds',
@@ -32,8 +32,12 @@ LEGEND = {
     'organs': 'zone, slot, fitted items with force, surgery reachable',
     'explosives': 'det=fuse (ds), ex=dev/heavy/light/flame, shrapnel, reagents inside',
 }
-WORN_LEGEND = 'A=armor m,b,l,e,x=bomb,f,a,w; sum of m+b+l+e; cov=body parts covered; slow; temp: c=cold h=heat; flags; hides; covers'
-AVAIL_LEGEND = 'how: $=shop (credits, +vouchers, zones, rep), ped=peddler, print=rs or research rep, craft, cargo, loot channels, start, map h/m/r/o/n, in=held in a container with a route'
+WORN_LEGEND = 'A=armor m,b,l,e,x=bomb,f,a,w; sum of m+b+l+e; cov=armored zones of 6 (head, chest, arms, legs; groin, hands and feet add no armor); slow; temp: c=cold h=heat; flags; hides; covers'
+AVAIL_LEGEND = ('how: $=shop (credits, +vouchers, zones, rep), ped=peddler, print=rs, research rep, hack=hacked autolathe, hid=hidden research node (disk, experiment or emag), disk or other; '
+                'craft, craft:empty=the game empties it as it makes it, use=made by using another item, cargo, loot channels, start=on the crew\'s own ship (start:if only under a condition), '
+                'vend=vending machine out in the field, map h/m/r/o/n=placements on hulls, modules, ruins, outposts, NPC ships, rnd=placements by random spawner, in=held in a container with a route')
+EFFECT_SHORT = [('stun', 'stun'), ('paralyze', 'para'), ('knockdown', 'kd'), ('immobilize', 'immob'), ('unconscious', 'uncon')]
+KIND_LETTER = {'hull': 'h', 'module': 'm', 'ruin': 'r', 'outpost': 'o', 'npc_ship': 'n', 'event': 'e', 'planet': 'p', 'shuttle': 's'}
 
 
 # How much of a note a row shows, so the whole category still fits in view.
@@ -62,6 +66,17 @@ def join(*tokens):
     return ' '.join(str(t) for t in tokens if t not in (None, '', [], {}))
 
 
+def passes_token(flags):
+    """What a shot goes through, past the tables nearly all of them pass."""
+    through = sorted({PASS_SHORT[flag] for flag in flags if flag in PASS_SHORT} - {'table'})
+    return 'thru:' + ','.join(through) if through else None
+
+
+def effect_tokens(source):
+    """Seconds of what a hit does besides damage. The dump keeps them in deciseconds."""
+    return [f'{short}{fmt(source[name] / 10)}s' for name, short in EFFECT_SHORT if source.get(name)]
+
+
 def availability_text(entry):
     a = entry['availability']
     sources = entry['sources']
@@ -73,17 +88,32 @@ def availability_text(entry):
         tokens.append(f"${price}{vouchers} {zones} {REP_SHORT.get(a['lowest_rep_step'], '')}".strip())
     if a['peddler_zones']:
         tokens.append(f"ped {''.join(ZONE_LETTER.get(z, '?') for z in a['peddler_zones'])} {a['peddler_cheapest_credits']}cr")
+    ways = []
     if a['printable_roundstart']:
-        tokens.append('print:rs')
+        ways.append('rs')
     elif a['printable_by_research']:
-        steps = [node.get('rep_step_with_prereqs') for design in sources.get('printing') or [] for node in design.get('nodes') or []]
+        steps = [node.get('rep_step_with_prereqs') for design in sources.get('printing') or [] for node in design.get('nodes') or [] if not node.get('hidden_with_prereqs')]
         steps = [s for s in steps if s in REP_SHORT]
         lowest = min(steps, key=list(REP_SHORT).index) if steps else None
-        tokens.append(f'print:{REP_SHORT.get(lowest, "res")}')
+        ways.append(REP_SHORT.get(lowest, 'res'))
+    if a['printable_hacked']:
+        ways.append('hack')
+    if a['printable_hidden']:
+        ways.append('hid')
+    if a['printable_from_disk']:
+        ways.append('disk')
+    if sources.get('printing') and not ways:
+        ways.append('other')
+    if ways:
+        tokens.append('print:' + ','.join(ways))
     if a['crafted']:
         tokens.append('craft' + ('(book)' if a['learned_from'] else ''))
     elif a['crafted_kit_missing']:
         tokens.append('craft:nokit')
+    elif a['crafted_empty']:
+        tokens.append('craft:empty')
+    if a['made_by_use']:
+        tokens.append('use')
     if a['cargo_packs']:
         tokens.append('cargo')
     if sources.get('order_consoles') or sources.get('other_sellers'):
@@ -92,11 +122,19 @@ def availability_text(entry):
     if channels:
         tokens.append('loot:' + ','.join(str(c) for c in channels))
     if sources.get('starting'):
-        tokens.append(f"start:{a['starting_outfits']}o{a['starting_vendors']}v" if a['starting_outfits'] or a['starting_vendors'] else 'start')
+        if a['starting_outfits'] or a['starting_vendors']:
+            tokens.append(f"start:{a['starting_outfits']}o{a['starting_vendors']}v")
+        else:
+            tokens.append('start:if' if a['starting_conditional'] else 'start')
+    if a['field_vendor_kinds']:
+        tokens.append('vend:' + ''.join(KIND_LETTER[kind] for kind in a['field_vendor_kinds']))
     placed = [('h', a['placed_on_hulls']), ('m', a['placed_on_modules']), ('r', a['placed_in_ruins']), ('o', a['placed_at_outposts']), ('n', a['placed_on_npc_ships'])]
     placed = ''.join(f'{letter}{count}' for letter, count in placed if count)
     if placed:
         tokens.append('map:' + placed)
+    spawned = ''.join(f'{KIND_LETTER[kind]}{count}' for kind, count in a['spawner_placements'].items())
+    if spawned:
+        tokens.append('rnd:' + spawned)
     if sources.get('in_containers'):
         tokens.append(f"in:{len(sources['in_containers'])}")
     return ' '.join(tokens)
@@ -141,7 +179,7 @@ def worn_text(entry):
     traits = [str(t).replace('TRAIT_', '').lower() for t in entry.get('clothing_traits') or []]
     if traits:
         tokens.append('tr:' + ','.join(clip(t, 14) for t in traits[:3]))
-    if entry.get('siemens_coefficient') == 0:
+    if entry.get('siemens_coefficient') == 0 and 'siemens_coefficient' not in (entry.get('randomised') or {}):
         tokens.append('insul')
     return ' '.join(tokens)
 
@@ -167,6 +205,7 @@ def mode_text(mode):
     tokens.append(f"{fmt(mode['dps'] or 0)}>{fmt(target.get('dps') or 0)}")
     if mode.get('stamina_dps'):
         tokens.append(f"st{fmt(mode['stamina_dps'])}")
+    tokens += effect_tokens(projectile)
     if projectile.get('armour_penetration'):
         tokens.append(f"ap{projectile['armour_penetration']}")
     if projectile.get('weak_against_armour'):
@@ -175,9 +214,9 @@ def mode_text(mode):
         tokens.append(projectile['armor_flag'][:3])
     if mode.get('capacity'):
         tokens.append(f"cap{mode['capacity']}")
-    through = sorted({PASS_SHORT[f] for name in ('pass_flags_decoded', 'projectile_phasing_decoded') for f in projectile.get(name) or [] if f in PASS_SHORT} - {'table'})
+    through = passes_token([flag for name in ('pass_flags_decoded', 'projectile_phasing_decoded') for flag in projectile.get(name) or []])
     if through:
-        tokens.append('thru:' + ','.join(through))
+        tokens.append(through)
     return ' '.join(tokens)
 
 
@@ -251,8 +290,9 @@ def shield_text(entry):
 def ammo_text(entry):
     return join(entry.get('caliber'), f"cap{entry['capacity']}" if entry.get('capacity') else None,
                 f"{fmt(entry.get('damage_per_round') or 0)}dmg", f"({entry['pellets']}p)" if entry.get('pellets', 1) > 1 else None,
-                f"st{entry['stamina']}" if entry.get('stamina') else None, f"ap{entry['armour_penetration']}" if entry.get('armour_penetration') else None,
+                f"st{entry['stamina']}" if entry.get('stamina') else None, *effect_tokens(entry), f"ap{entry['armour_penetration']}" if entry.get('armour_penetration') else None,
                 'weakAP' if entry.get('weak_against_armour') else None, (entry.get('armor_flag') or '')[:3] if entry.get('armor_flag') != 'bullet' else None,
+                passes_token(entry.get('passes') or []),
                 f"{fmt(entry['price_per_round'])}cr/rd" if entry.get('price_per_round') is not None else None, f"guns{entry.get('accepted_by_count', 0)}")
 
 
@@ -321,6 +361,11 @@ def generic_text(entry):
     if entry.get('melee'):
         tokens.append(melee_text(entry['melee']))
     return join(*tokens)
+
+
+def randomised_text(entry):
+    """A var the game rolls when the item is made: the row's number is one roll, so say what it rolls."""
+    return ' '.join(f'rolls:{name}={clip(roll, 40)}' for name, roll in sorted((entry.get('randomised') or {}).items()))
 
 
 def stats_text(category, entry):
@@ -395,12 +440,13 @@ def sheet_text(category, document, notes, ratings=None):
             continue
         note = note_for(entry, notes)
         score = score_cell(entry, rated.get(path)) if category == 'guns' else ''
-        row = ' | '.join(part for part in [short(path), clip(entry.get('name') or '', 34), stats_text(category, entry), score, availability_text(entry), note_cell(note, previous_note)] if part)
+        row = ' | '.join(part for part in [short(path), clip(entry.get('name') or '', 34), join(stats_text(category, entry), randomised_text(entry)), score, availability_text(entry), note_cell(note, previous_note)] if part)
         previous_note = note
         rows.append(row)
     legend = LEGEND.get(category, WORN_LEGEND if category in WORN_CATEGORIES else 'w=weight class; tool x speed; slots; contents; cell')
     columns = 'path | name | stats | score | how players get it | note' if category == 'guns' else 'path | name | stats | how players get it | note'
     lines = [f'# {category}: {len(rows)} items. {columns}', f'# {legend}', f'# {AVAIL_LEGEND}']
+    lines += [f'# upgrade: {line}' for line in document.get('upgrades') or []]
     lines += rows
     lines.append('')
     lines.append(f'# left out: {sum(len(v) for v in left.values())}')

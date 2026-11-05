@@ -4,6 +4,8 @@ from __future__ import annotations
 ITEM = '/obj/item'
 # Reputation steps, lowest first.
 REP_ORDER = ['public', 'yellow', 'advanced', 'elite']
+# Where a map can appear in a round. A fixed hull nothing spawns is hull_unused, a module for one is module_unused: neither is a route.
+PLACED_KINDS = ('hull', 'module', 'ruin', 'outpost', 'npc_ship', 'event', 'planet', 'shuttle')
 
 # First matching prefix wins, so narrow prefixes come first. The second value is the category, the third the base type
 # stats and proc overrides are measured below. A one-off family uses the plain item as its base, so its own procs count.
@@ -349,12 +351,12 @@ LOOK_VARS = {
     'soft_type', 'soft_suffix', 'dirt_state', 'visor_dirt', 'hat_type', 'hairstyle', 'icon_angle', 'light_range', 'light_power', 'light_on',
     'hood_up_affix', 'hood_down_overlay_suffix', 'toggle_noun', 'lace_time', 'fastening_type', 'tie_timer', 'is_tied', 'clip_on',
     'dream_messages', 'bedsheet_type', 'poster_type', 'stack_amount', 'exclude_from_random', 'quirk_poster_department', 'beauty',
-    'sprite_height', 'sprite_width', 'pixel_shift', 'luminosity', 'medaltype',
+    'sprite_height', 'sprite_width', 'pixel_shift', 'luminosity', 'medaltype', 'insignia_desc', 'attachment_slot', 'associated_skill_path', 'element_type',
 }
 # On clothing with no armor these say nothing a fight would notice. On armor they matter, and armor is never cosmetic anyway.
 UNARMORED_WORN_VARS = {'body_parts_covered', 'max_integrity', 'resistance_flags', 'force_string'}
 # Hiding only these changes a sprite, not what anyone can see about the wearer.
-LOOK_INV_FLAGS = {'HIDEHAIR', 'HIDEFACIALHAIR', 'HIDESNOUT', 'HIDEANTENNAE', 'HIDEMUTWINGS'}
+LOOK_INV_FLAGS = {'HIDEHAIR', 'HIDEFACIALHAIR', 'HIDESNOUT', 'HIDEANTENNAE', 'HIDEMUTWINGS', 'HIDESUITSTORAGE'}
 # Clothing flags with no effect on the wearer's survival or kit.
 LOOK_CLOTHING_FLAGS = {'ANTI_TINFOIL_MANEUVER', 'CASTING_CLOTHES', 'INEDIBLE_CLOTHING', 'INTERNALS_ADJUST_EXEMPT', 'LARGE_WORN_ICON', 'SNUG_FIT', 'STACKABLE_HELMET_EXEMPT', 'VOICEBOX_DISABLED', 'VOICEBOX_TOGGLABLE'}
 
@@ -391,7 +393,7 @@ LOOK_PARTS = {
     '/datum/component/toggle_icon', '/datum/component/simple_rotation', '/datum/component/clothing_dirt', '/datum/component/hat_stabilizer',
     '/datum/component/item_equipped_movement_rustle', '/datum/element/tool_renaming', '/datum/component/surgery_initiator', '/datum/component/tactical',
     '/datum/element/update_icon_blocker', '/datum/element/point_of_interest', '/datum/component/overlay_lighting', '/datum/element/wearable_client_colour',
-    '/datum/component/pinnable_accessory',
+    '/datum/component/pinnable_accessory', '/datum/element/skill_reward/veteran', '/datum/element/atmos_sensitive',
 }
 # Parts the numbers already cover, or that only mount a light or a blade. They count as behaviour for `cosmetic`, not for a note.
 NUMBER_PARTS = {
@@ -402,13 +404,13 @@ NUMBER_PARTS = {
     '/datum/element/reagents_exposed_on_fire', '/datum/component/edible', '/datum/component/alternative_sharpness', '/datum/component/toggle_attached_clothing', '/datum/element/eyestab',
     '/datum/component/container_item/tank_holder', '/datum/component/atmos_reaction_recorder', '/datum/component/germ_sensitive', '/datum/component/dart_insert', '/datum/element/caseless',
     '/datum/element/openspace_item_click_handler', '/datum/element/fish_safe_storage', '/datum/component/speechmod', '/datum/element/muffles_speech', '/datum/component/gps/item',
-    '/datum/element/atmos_sensitive', '/datum/component/material_container', '/datum/element/noticable_organ', '/datum/element/above_mob_drop', '/datum/element/envenomable_casing',
+    '/datum/component/material_container', '/datum/element/noticable_organ', '/datum/element/above_mob_drop', '/datum/element/envenomable_casing',
     '/datum/element/easily_fragmented', '/datum/component/shell', '/datum/element/undertile', '/datum/component/bakeable', '/datum/element/noisy_movement', '/datum/component/item_killsound',
     '/datum/element/prosthetic_icon', '/datum/component/subtype_picker', '/datum/component/bloody_spreader', '/datum/component/callouts', '/datum/component/knockoff',
     '/datum/component/anti_magic', '/datum/component/effect_remover', '/datum/element/tool_flash', '/datum/component/cleaner', '/datum/element/kneejerk', '/datum/element/gravedigger',
     '/datum/component/profound_fisher', '/datum/component/weather_announcer', '/datum/component/butchering/wearable', '/datum/component/butchering/mecha', '/datum/element/cuffsnapping', '/datum/component/cult_ritual_item',
     '/datum/component/slippery', '/datum/component/caltrop', '/datum/component/jousting', '/datum/component/construction/ship_repair_drone', '/datum/component/lockable_storage',
-    '/datum/component/remote_materials', '/datum/component/experiment_handler', '/datum/element/skill_reward/veteran', '/datum/element/wall_engraver', '/datum/component/spirit_holding',
+    '/datum/component/remote_materials', '/datum/component/experiment_handler', '/datum/element/wall_engraver', '/datum/component/spirit_holding',
     '/datum/element/earhealing', '/datum/element/organ_set_bonus', '/datum/element/disarm_attack',
 }
 # Procs that set an item up or describe it. Setup that adds behaviour shows up in the dump as a component or element.

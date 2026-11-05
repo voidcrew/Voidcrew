@@ -39,6 +39,7 @@ def parser():
 
     sheet = commands.add_parser('sheet', parents=[shared], help='write a compact table of one category for a reader',
                                 description='One row per obtainable, non-abstract, non-cosmetic item, similar items together, then a short list of what was left out and why. '
+                                            'A category with a known upgrade, like the MOD fitting bench or armor plates, has a line for it at the top. '
                                             'Guns also show their power score, using the score_inputs in their rating. Notes come from any .json or .jsonl file under notes/ in the '
                                             'output folder, with rows of {"path": ..., "note": ...}; batch-*.json files are work lists and are skipped.')
     sheet.add_argument('category', help='a category name, or "all"')

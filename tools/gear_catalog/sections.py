@@ -6,8 +6,11 @@ import json
 from .categories import MELEE_FORCE_MIN, WORN_CATEGORIES
 from .combat import GUN_FORMULAS, MELEE_FORMULAS, clean, gun_modes, melee_state, num, reload_facts
 
+# check_armor (human_defense.dm) asks whether a worn item covers the hit bodypart's body_part, and a bodypart is one of these. Groin, hands, feet and neck never match.
+ARMOR_ZONES = {'HEAD', 'CHEST', 'ARM_LEFT', 'ARM_RIGHT', 'LEG_LEFT', 'LEG_RIGHT'}
 WORN_FORMULAS = {
-    'coverage': 'how many body parts body_parts_covered names, counting each arm, hand, leg and foot on its own, out of 12',
+    'coverage': 'how many of the six zones armor can apply to body_parts_covered names: head, chest, each arm and each leg, out of 6. Groin, hands, feet and neck add no armor',
+    'parts_covered': 'every body part body_parts_covered names, counting each arm, hand, leg and foot on its own, out of 12',
     'armor_sum': 'melee + bullet + laser + energy: the plain sum of the four ratings a fight tests',
     'armor_sum_all': 'every rating added together, including bomb, bio, fire, acid, wound and consume',
 }
@@ -175,7 +178,7 @@ def worn_stats(view, ctx):
     storage = view.raw.get('storage') or {}
     return dict(
         armor=armor['armor'], armor_type=armor['armor_type'], armor_sum=armor['armor_sum'], armor_sum_all=armor['armor_sum_all'],
-        body_parts_covered=covered, coverage=len(covered),
+        body_parts_covered=covered, coverage=len(ARMOR_ZONES.intersection(covered)), parts_covered=len(covered),
         cold_protection=decode_flags(clothing.get('cold_protection'), meta.get('body_parts')),
         heat_protection=decode_flags(clothing.get('heat_protection'), meta.get('body_parts')),
         min_cold_protection_temperature=clothing.get('min_cold_protection_temperature'),
@@ -354,11 +357,14 @@ def ammo_stats(row, view, ctx):
     rounds = num((box or {}).get('max_ammo')) or 1
     guns = ctx.guns_for_ammo(row['path'], box, casing)
     credits = [s['credits'] for s in row['sources'].get('shops') or [] if isinstance(s.get('credits'), (int, float)) and s['credits'] > 0]
+    passes = sorted({flag for name in ('pass_flags', 'projectile_phasing') for flag in (ctx.decode_pass(projectile.get(name)) if ctx.decode_pass else [])})
     return dict(
         caliber=(box or {}).get('caliber') or casing.get('caliber'), capacity=(box or {}).get('max_ammo'), round_type=(box or {}).get('ammo_type') or casing.get('type'),
         start_empty=(box or {}).get('start_empty'), multiload=(box or {}).get('multiload'), pellets=pellets, projectile=projectile.get('type'),
         damage=projectile.get('damage'), damage_type=projectile.get('damage_type'), stamina=projectile.get('stamina'), armor_flag=projectile.get('armor_flag'),
         armour_penetration=projectile.get('armour_penetration'), weak_against_armour=projectile.get('weak_against_armour'), wound_bonus=projectile.get('wound_bonus'),
+        stun=projectile.get('stun'), knockdown=projectile.get('knockdown'), paralyze=projectile.get('paralyze'), immobilize=projectile.get('immobilize'), unconscious=projectile.get('unconscious'),
+        passes=passes, through_walls='PASSCLOSEDTURF' in passes,
         damage_per_round=clean(pellets * (num(projectile.get('damage')) or 0)), accepted_by_count=len(guns), accepted_by=guns[:12],
         price_per_round=clean(min(credits) / rounds) if credits else None,
     )

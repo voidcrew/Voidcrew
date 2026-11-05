@@ -84,6 +84,9 @@ class StubStatic:
     def routed_types(self):
         return set(self.table)
 
+    def fixtures_for(self, needed):
+        return {path: routes for path, routes in self.table.items() if path.startswith(('/obj/machinery', '/obj/structure')) and any(path == need or path.startswith(need + '/') for need in needed)}
+
     def merge_key(self, path):
         merged = self.dm.val(path, 'merge_type')
         return merged if isinstance(merged, str) else path
@@ -185,6 +188,22 @@ class RuleTest(Fixture):
         self.assertEqual(self.rules({GUN: dict(printing=[design(unlock='no active research node / disk or special unlock required')])}, rating), [], 'a disk is a find')
         lowest = dict(design='/datum/design/test', roundstart=False, unlock='research', source='a.dm:1', nodes=[dict(id='a', rep_step_with_prereqs='advanced'), dict(id='b', rep_step_with_prereqs='public')])
         self.assertEqual(self.rules({GUN: dict(printing=[lowest])}, rating), [('below_reputation', GUN, '/datum/design/test')], 'the easiest node counts')
+
+    def test_a_hidden_node_is_not_a_checked_route(self):
+        def printed(*nodes):
+            return {GUN: dict(printing=[dict(design='/datum/design/test', roundstart=False, unlock='research', source='a.dm:1', nodes=list(nodes))])}
+        shut = dict(id='a', rep_step_with_prereqs='public', hidden=1, hidden_with_prereqs=True)
+        behind = dict(id='b', rep_step_with_prereqs='public', hidden=0, hidden_with_prereqs=True)
+        open_node = dict(id='c', rep_step_with_prereqs='yellow', hidden=0, hidden_with_prereqs=False)
+        opened = dict(id='d', rep_step_with_prereqs='advanced', hidden=1, hidden_with_prereqs=False, opened_by=['c'])
+        rating = {GUN: rated('red')}
+        self.assertEqual(self.rules(printed(shut), rating), [], 'it comes from a disk, an experiment or an emag')
+        self.assertEqual(self.rules(printed(behind), rating), [], 'behind a hidden node is the same')
+        self.assertEqual(self.rules(printed(shut), {GUN: rated('above')}), [], 'not for above either')
+        self.assertEqual(self.rules(printed(shut, open_node), rating), [('below_reputation', GUN, '/datum/design/test')], 'a plain node as well still counts')
+        self.assertEqual(self.rules(printed(opened), rating), [], 'research that opens it counts at its own step')
+        self.assertEqual(self.rules(printed(dict(opened, rep_step_with_prereqs='public')), rating), [('below_reputation', GUN, '/datum/design/test')])
+        self.assertEqual(self.rules(printed(dict(id='old', rep_step_with_prereqs='public', hidden=1)), rating), [], 'a row with only the node\'s own flag')
 
     def test_below_reputation_on_cargo_consoles_and_sellers(self):
         rating = {GUN: rated('yellow')}
@@ -289,6 +308,67 @@ class CraftingTest(Fixture):
         self.assertEqual(self.rules(routes, {'/obj/item/gun/made_of_made': rated('yellow'), '/obj/item/gun/kit_made': rated('yellow')}), [])
         found = self.rules(routes, {'/obj/item/gun/made_of_made': rated('red'), '/obj/item/gun/kit_made': rated('yellow')})
         self.assertEqual(found, [('below_reputation', '/obj/item/gun/made_of_made', '/datum/crafting_recipe/outer')])
+
+    def test_ordinary_ingredients_count_as_public(self):
+        routes = {
+            '/obj/item/gun/core_made': dict(crafting=[recipe('/obj/item/core', '/obj/item/kit')]),
+            '/obj/item/kit': dict(printing=[design('yellow', name='/datum/design/kit')]),
+        }
+        rating = {'/obj/item/gun/core_made': rated('red')}
+        self.assertEqual(self.rules(routes, rating), [], 'nobody sells the core, so it is a find')
+        ordinary = dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/core', reason='Lying around.')])
+        self.assertEqual(self.rules(routes, rating, policy=ordinary), [('below_reputation', '/obj/item/gun/core_made', '/datum/crafting_recipe/test')], 'now the kit at yellow is the gate')
+        self.assertEqual(self.rules(routes, {'/obj/item/gun/core_made': rated('yellow')}, policy=ordinary), [], 'and yellow is what it asks')
+        self.assertEqual(self.rules({'/obj/item/core': dict(loot=[dict(channel='ruin')])}, {'/obj/item/core': rated('above')}, policy=ordinary, category='misc'), [], 'it is not an offer of the thing itself')
+
+    def test_an_ordinary_prefix_covers_subtypes_and_what_is_above_it_stays(self):
+        routes = {'/obj/item/gun/kit_made': dict(crafting=[recipe('/obj/item/kit')])}
+        rating = {'/obj/item/gun/kit_made': rated('red')}
+        by_prefix = dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/kit', reason='x')])
+        self.assertEqual(self.rules(routes, rating, policy=by_prefix), [('below_reputation', '/obj/item/gun/kit_made', '/datum/crafting_recipe/test')])
+        by_subtype = dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/kit/fancy', reason='x')])
+        self.assertEqual(self.rules(routes, rating, policy=by_subtype), [('below_reputation', '/obj/item/gun/kit_made', '/datum/crafting_recipe/test')], 'a recipe takes a subtype')
+        self.assertEqual(self.rules(routes, rating, policy=dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/kitchen', reason='x')])), [], 'a prefix only matches whole path parts')
+
+    def test_a_gone_ordinary_ingredient_warns(self):
+        policy = dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/gone', reason='x')])
+        _, warnings = self.problems({}, policy=policy)
+        self.assertIn(('missing_type', '/obj/item/gone', 'tools/gear_catalog/policy.json'), [(row['rule'], row['path'], row['file']) for row in warnings])
+
+    def test_a_filled_box_is_not_an_offer(self):
+        made = dict(stack_recipe='bang box', input_stacks=[], made_empty=True, source='a.dm:1')
+        self.assertEqual(self.rules({GUN: dict(crafting=[made])}, {GUN: rated('above')}), [], 'the game empties it as it makes it')
+        self.assertEqual(self.rules({GUN: dict(crafting=[dict(made, made_empty=False)])}, {GUN: rated('above')}), [('above_on_route', GUN, 'stack recipe: bang box')])
+
+    def test_a_stack_recipe_needs_its_stack(self):
+        made = dict(stack_recipe='ancient armor', input_stacks=['/obj/item/stack/sheet/iron'], source='a.dm:1')
+        routes = {GUN: dict(crafting=[made])}
+        self.assertEqual(self.rules(routes, {GUN: rated('red')}), [], 'nothing checked sells the sheet: found in the field')
+        routes['/obj/item/stack/sheet/iron'] = dict(shops=[shop(step='advanced', sku='/datum/shop_sku/iron')])
+        self.assertEqual(self.rules(routes, {GUN: rated('red'), '/obj/item/stack/sheet/iron': rated('red')}, category='guns'), [('below_reputation', GUN, 'stack recipe: ancient armor')], 'a sheet is no step, as in any recipe')
+
+    def test_a_recipe_needs_its_machine(self):
+        crystal = '/obj/machinery/crystal'
+        kit = dict(shops=[shop(step='yellow', sku='/datum/shop_sku/kit', price=2000)])
+        made = recipe('/obj/item/kit', machinery=[crystal])
+        rating = {GUN: rated('red')}
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit}, rating), [], 'nothing checked makes the machine')
+        cargo = dict(cargo=[dict(pack='/datum/supply_pack/crystal', source='a.dm:1')])
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit, crystal: cargo}, rating), [('below_reputation', GUN, '/datum/crafting_recipe/test')], 'a pack sells it')
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit, crystal + '/shard': cargo}, rating), [('below_reputation', GUN, '/datum/crafting_recipe/test')], 'a subtype counts')
+        board = dict(crafting=[recipe('/obj/item/core', name='/obj/item/core')])
+        board_sold = dict(printing=[design('advanced', name='/datum/design/board')])
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit, crystal: board, '/obj/item/core': board_sold}, rating), [], 'built from a board at advanced: that sets the gate')
+        chain = {GUN: dict(crafting=[made]), '/obj/item/kit': kit, crystal: dict(crafting=[recipe('/obj/item/kit', machinery=['/obj/structure/forge'], name='/datum/crafting_recipe/crystal')])}
+        self.assertEqual(self.rules(chain, rating), [], 'its own recipe needs a forge nothing makes')
+        chain['/obj/structure/forge'] = cargo
+        self.assertEqual(self.rules(chain, rating), [('below_reputation', GUN, '/datum/crafting_recipe/test')], 'machines chain')
+
+    def test_a_recipe_needs_its_tool(self):
+        kit = dict(shops=[shop(step='yellow', sku='/datum/shop_sku/kit', price=2000)])
+        made = recipe('/obj/item/kit', tool_paths=['/obj/item/core'])
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit}, {GUN: rated('red')}), [])
+        self.assertEqual(self.rules({GUN: dict(crafting=[made]), '/obj/item/kit': kit, '/obj/item/core': dict(shops=[shop(sku='/datum/shop_sku/core')])}, {GUN: rated('red')}, category='guns')[0][0], 'below_reputation')
 
     def test_recipes_that_cannot_be_made_are_exempt(self):
         taught = recipe('/obj/item/kit', always_available=False, learned_from=['/obj/item/book'])
@@ -443,6 +523,9 @@ class ValidationTest(unittest.TestCase):
         self.assertTrue(policy_problems(dict(POLICY, min_reputation=dict(red='famous'))))
         self.assertTrue(policy_problems(dict(POLICY, checked_routes=['loot'])))
         self.assertTrue(policy_problems(dict(POLICY, price_bands=dict(guns=dict(red=[9, 1])))))
+        self.assertEqual(policy_problems(dict(POLICY, ordinary_ingredients=[dict(path='/obj/item/shard', reason='Break a window.')])), [])
+        for bad in ('shard', [dict(path='/obj/item/shard')], [dict(path='/obj/item/shard', reason=' ')], [dict(path='shard', reason='x')], [dict(path='/obj/item/shard', reason='x', extra=1)]):
+            self.assertTrue(policy_problems(dict(POLICY, ordinary_ingredients=bad)), bad)
 
     def test_tracked_files_are_valid(self):
         root = Path(__file__).resolve().parents[2]
@@ -741,7 +824,8 @@ class ScoringTest(unittest.TestCase):
         self.assertEqual(score_cell(LASER, dict(tier='none')), '')
         entry = dict(THOMPSON, path='/obj/item/gun/t', name='Thompson', status='ok', abstract=False, cosmetic=False, known_sources=['loot'], firm_sources=['loot'], sources={}, w_class=3, availability=dict(
             cheapest_credits=None, cheapest_credits_with_vouchers=None, voucher_only_shops=0, shop_zones=[], lowest_rep_step=None, peddler_zones=[], peddler_cheapest_credits=None, printable_roundstart=False, printable_by_research=False,
-            crafted=False, crafted_kit_missing=[], learned_from=[], cargo_packs=0, starting_outfits=0, starting_vendors=0, placed_on_hulls=0, placed_on_modules=0, placed_in_ruins=0, placed_at_outposts=0, placed_on_npc_ships=0))
+            printable_hidden=False, printable_hacked=False, printable_from_disk=[], crafted=False, crafted_empty=False, made_by_use=False, crafted_kit_missing=[], learned_from=[], cargo_packs=0, starting_outfits=0, starting_conditional=0,
+            starting_vendors=0, field_vendor_kinds=[], placed_on_hulls=0, placed_on_modules=0, placed_in_ruins=0, placed_at_outposts=0, placed_on_npc_ships=0, spawner_placements={}))
         entry['modes'] = [dict(entry['modes'][0], target=dict(vest=dict(dps=210)), dps=300, stamina_dps=0)]
         text = sheet_text('guns', dict(items={'/obj/item/gun/t': entry}), {}, dict(items={}))
         self.assertIn('s262 red bare375', text)

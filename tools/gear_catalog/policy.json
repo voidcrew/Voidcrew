@@ -12,6 +12,76 @@
   "red": "advanced",
   "yellow": "yellow"
  },
+ "ordinary_ingredients": [
+  {
+   "path": "/obj/item/clothing/head/fedora/beige",
+   "reason": "Clothing vendors stock it."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/captain",
+   "reason": "A captain's own uniform: worn at the start or hanging in the locker."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/cargo/tech",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/engineering/engineer",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/medical/doctor",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/rnd/scientist",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/security/officer",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/food/deadmouse",
+   "reason": "Vermin. Ruins and ships have mice."
+  },
+  {
+   "path": "/obj/item/food/donkpocket",
+   "reason": "A snack from any vending machine or galley."
+  },
+  {
+   "path": "/obj/item/food/grown/grass",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/poppy",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/rose",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/sunflower",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/wheat",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/pillow",
+   "reason": "Bunks have them, and cloth makes them."
+  },
+  {
+   "path": "/obj/item/shard",
+   "reason": "Break a window."
+  },
+  {
+   "path": "/obj/item/toy/crayon",
+   "reason": "A box of crayons, from the games vendor or a crew locker."
+  }
+ ],
  "price_bands": {
   "guns": {
    "green": [

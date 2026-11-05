@@ -14,6 +14,59 @@ from .dm_reader import DM, assoc, balance, clean_comments, decode, number, paths
 from .offers import PEDDLER_SHOP, load_offers
 
 PERMISSION = {0: 'public', 1: 'yellow', 2: 'advanced', 3: 'elite'}
+# /datum/stack_recipe/New's arguments, in order.
+STACK_RECIPE_ARGS = ['title', 'result_type', 'req_amount', 'res_amount', 'max_res_amount', 'time', 'crafting_flags', 'placement_checks', 'trait_booster', 'trait_modifier', 'category']
+
+
+def pack_counts(contained):
+    """How many of each type a supply pack ships. contains is a plain list, which may repeat a type, or an assoc list of type = count (fill() in _packs.dm)."""
+    counts = collections.Counter()
+    for entry in contained if isinstance(contained, list) else []:
+        if isinstance(entry, list) and len(entry) == 2 and isinstance(entry[0], str) and isinstance(entry[1], (int, float)):
+            counts[entry[0]] += entry[1]
+        else:
+            counts.update(paths(entry))
+    return counts
+
+
+def closing_paren(text, start):
+    """The offset just past the bracket that closes one opened right before start. Quotes hide brackets, up to the end of their line."""
+    end, depth, quote, escaped = start, 1, None, False
+    while end < len(text) and depth:
+        c = text[end]
+        if quote:
+            if escaped: escaped = False
+            elif c == '\\': escaped = True
+            elif c == quote or c == '\n': quote = None
+        elif c in '\"\'': quote = c
+        elif c == '(': depth += 1
+        elif c == ')': depth -= 1
+        end += 1
+    return end
+
+
+def global_list_spans(text):
+    """(name, start, end) of each GLOBAL_LIST_INIT in a file's comment-free text."""
+    for m in re.finditer(r'GLOBAL_(?:LIST|ALIST)_INIT\(\s*(\w+)\s*,', text):
+        yield m[1], m.start(), closing_paren(text, m.end())
+
+
+def stack_recipe_args(args):
+    """A stack recipe's arguments by name, whether written in order or as name = value."""
+    named = {}
+    for position, arg in enumerate(args):
+        key, sep, value = arg.partition('=')
+        if sep and re.fullmatch(r'\s*\w+\s*', key) and not value.startswith('='):
+            named[key.strip()] = value.strip()
+        elif position < len(STACK_RECIPE_ARGS):
+            named[STACK_RECIPE_ARGS[position]] = arg
+    return named
+
+
+def stack_owner_before(text, offset):
+    """The stack whose proc body holds a recipe written outside any GLOB list."""
+    heads = re.findall(r'^(/obj/item/stack[\w/]*)/\w+\(', text[:offset], re.M)
+    return heads[-1:]
 
 
 class StaticSources:
@@ -28,8 +81,11 @@ class StaticSources:
         # Plasma isn't on the market list; its actual export bid has a separate cap.
         self.market['/datum/material/plasma'] = self.dm.val('/datum/material/plasma', 'value_per_unit') * self.sheet
         self.source_index = collections.defaultdict(list)
+        policy = self.root / 'tools/gear_catalog/policy.json'
+        self.ordinary = [row['path'] for row in json.loads(policy.read_text(encoding='utf-8')).get('ordinary_ingredients') or []] if policy.exists() else []
         self.build_nodes()
         self.build_teachers()
+        self.build_design_disks()
         self.build_sources()
         self.build_route_indexes()
 
@@ -86,6 +142,39 @@ class StaticSources:
             required = [self.node_details[x] for x in sorted(closure) if not self.node_details[x]['starting_node']]
             node['total_prerequisite_points_including_self'] = sum(sum(x for x in n['point_cost'].values() if isinstance(x,(int,float))) for n in required)
             node['early_without_extra_gates'] = all((n['tier'] or 99) <= 2 and not n['surveys'] and not n['experiments'] and not n['hidden'] and not n['experimental'] for n in required) and node['total_prerequisite_points_including_self'] <= 400
+        self.settle_research()
+
+    def settle_research(self):
+        """Which nodes a crew can open by spending points, each with the lowest reputation step that gets there.
+
+        A hidden node stays shut until a disk, an experiment or an emag opens it, and so does everything behind it. The one way in by plain research: learning a design
+        takes every other node that grants it out of hidden_nodes (add_design(), _techweb.dm), so a hidden node sharing a design with an open one opens with it.
+        """
+        sharing = collections.defaultdict(set)
+        for owners in self.nodes.values():
+            for node in owners:
+                sharing[node['id']].update(other['id'] for other in owners if other['id'] != node['id'])
+        self.research_steps = {}
+        changed = True
+        while changed:
+            changed = False
+            for ident, node in self.node_details.items():
+                prereqs = [] if node['starting_node'] else [p for p in node['prereqs'] or [] if p in self.node_details]
+                if any(p not in self.research_steps for p in prereqs):
+                    continue
+                permission = node.get('zone_permission')
+                step = max([permission if isinstance(permission, (int, float)) else 0] + [self.research_steps[p] for p in prereqs])
+                if node['hidden'] and not node['starting_node']:
+                    openers = [self.research_steps[other] for other in sharing[ident] if other in self.research_steps]
+                    if not openers:
+                        continue
+                    step = max(step, min(openers))
+                if self.research_steps.get(ident, step + 1) > step:
+                    self.research_steps[ident] = step
+                    changed = True
+        for ident, node in self.node_details.items():
+            node['hidden_with_prereqs'] = ident not in self.research_steps
+            node['opened_by'] = sorted(other for other in sharing[ident] if other in self.research_steps) if node['hidden'] and ident in self.research_steps else []
 
     def mat_value(self, materials):
         """Value materials at the market rates above; retain unpriced materials explicitly."""
@@ -136,7 +225,19 @@ class StaticSources:
             initial = (dm.eval('RND_CATEGORY_INITIAL') in cats and any(x in ms for x in ['AUTOLATHE','SMELTER','BIOGENERATOR','LIMBGROWER'])) or ident in extra
             hacked = dm.eval('RND_CATEGORY_HACKED') in cats
             nodes = self.nodes.get(ident, [])
-            unlock = 'roundstart' if initial or any(n['starting_node'] for n in nodes) else ('hacked autolathe' if hacked and 'AUTOLATHE' in ms else ('research' if nodes else 'no active research node / disk or special unlock required'))
+            disks = self.design_disks.get(p, [])
+            if initial or any(n['starting_node'] for n in nodes):
+                unlock = 'roundstart'
+            elif hacked and 'AUTOLATHE' in ms:
+                unlock = 'hacked autolathe'
+            elif any(not n['hidden_with_prereqs'] for n in nodes):
+                unlock = 'research'
+            elif nodes:
+                unlock = 'hidden research'
+            elif disks:
+                unlock = 'design disk'
+            else:
+                unlock = 'no active research node / disk or special unlock required'
             mats = assoc(dm.val(p, 'materials'))
             value, unpriced = self.mat_value(mats)
             auto = 'AUTOLATHE' in ms
@@ -144,7 +245,7 @@ class StaticSources:
             self.add_source(item, 'design', design=p, id=ident, machines=ms, material_cost_cm3=mats,
                             material_base_value=value, unpriced_materials=unpriced,
                             initial_machine_coefficient=coeff, initial_machine_material_value=rounded(value * coeff),
-                            unlock=unlock, nodes=nodes, reagents=dm.val(p, 'reagents_list'),
+                            unlock=unlock, nodes=nodes, disks=disks, reagents=dm.val(p, 'reagents_list'),
                             source=dm.loc(p), cost_source=dm.field(p, 'materials').source,
                             coefficient_source=self.cite('code/game/machinery/autolathe.dm', 'var/creation_efficiency = 1.6') if auto else self.cite('code/modules/research/machinery/_production.dm', 'var/efficiency_coeff = 1'))
         for p in dm.paths('/datum/crafting_recipe'):
@@ -163,47 +264,15 @@ class StaticSources:
                 value, unpriced = self.mat_value(material_cost)
                 self.add_source(item, 'crafting', recipe=p, requirements=reqs, tools=dm.val(p, 'tool_behaviors'),
                                 learned_from=self.teachers.get(p, []),
-                                tool_paths=dm.val(p, 'tools'), time_deciseconds=dm.val(p, 'time'),
+                                tool_paths=paths(dm.val(p, 'tool_paths')), machinery=[x for x in paths(dm.val(p, 'machinery')) if x.startswith('/obj/')],
+                                structures=[x for x in paths(dm.val(p, 'structures')) if x.startswith('/obj/')],
+                                made_empty=bool(dm.val(p, 'delete_contents')) and self.filled_storage(item),
+                                time_deciseconds=dm.val(p, 'time'),
                                 always_available=not self.must_be_learned(p), material_base_value=value,
                                 unpriced_inputs={**unknown, **unpriced}, source=dm.loc(p))
-        # Stack construction recipes are inline new /datum/stack_recipe(...).
-        for file in dm.files:
-            if '/unit_tests/' in file:
-                continue
-            text = clean_comments(dm.texts[file])
-            for m in re.finditer(r'new\s+/datum/stack_recipe(?:/[\w/]+)?\(', text):
-                start = m.end()
-                end = start
-                depth = 1
-                quote = None
-                escaped = False
-                while end < len(text) and depth:
-                    c = text[end]
-                    if quote:
-                        if escaped: escaped = False
-                        elif c == '\\': escaped = True
-                        elif c == quote: quote = None
-                    elif c in '\"\'': quote = c
-                    elif c == '(': depth += 1
-                    elif c == ')': depth -= 1
-                    end += 1
-                args = split_top(text[start:end-1])
-                if len(args) < 3:
-                    continue
-                item = dm.eval(args[1])
-                # Input stack is implied by the list assignment; preserve it as source context.
-                before = text[:m.start()]
-                heads = list(re.finditer(r'^(/[^\n(=]+)', before, re.M))
-                owner = heads[-1][1].strip() if heads else ''
-                self.add_source(item, 'stack crafting', name=dm.eval(args[0]), req_amount=dm.eval(args[2]),
-                                result_amount=dm.eval(args[3]) if len(args) > 3 else 1,
-                                input_context=owner, arguments=args[2:],
-                                source=f'{file}:{text.count(chr(10),0,m.start())+1}')
+        self.build_stack_recipes()
         for pack in self.packs:
-            contained = decode(pack['contains'])
-            count = collections.Counter()
-            for item in paths(contained):
-                count[item] += 1
+            count = pack_counts(decode(pack['contains']))
             cost = number(pack['cost'])
             dynamic = 'fill' in pack['notes'].lower() or 'random' in pack['notes'].lower()
             for item, n in count.items():
@@ -215,6 +284,53 @@ class StaticSources:
                                 source=pack['source'])
         self.build_loot()
         self.build_misc_sources()
+
+    def build_stack_recipes(self):
+        """Recipes made from a stack in hand: inline new /datum/stack_recipe(...), nearly all in a GLOB list that a stack's get_main_recipes() adds to its own."""
+        dm = self.dm
+        owners = collections.defaultdict(list)
+        for key, bodies in dm.procs.items():
+            if key.endswith('/get_main_recipes'):
+                for _, code in bodies:
+                    for name in re.findall(r'GLOB\.(\w+)', code):
+                        owners[name].append(key.rsplit('/', 1)[0])
+        for file in dm.files:
+            if '/unit_tests/' in file:
+                continue
+            text = clean_comments(dm.texts[file])
+            if 'stack_recipe' not in text:
+                continue
+            spans = list(global_list_spans(text))
+            for m in re.finditer(r'new\s*/datum/stack_recipe(?:/[\w/]+)?\(', text):
+                args = stack_recipe_args(split_top(text[m.end():closing_paren(text, m.end()) - 1]))
+                item = dm.eval(args.get('result_type', ''))
+                name = next((name for name, start, end in spans if start <= m.start() < end), None)
+                stacks = sorted(set(owners.get(name, []))) if name else stack_owner_before(text, m.start())
+                self.add_source(item, 'stack crafting', name=dm.eval(args.get('title', '')), req_amount=dm.eval(args.get('req_amount', '1')), result_amount=dm.eval(args.get('res_amount', '1')),
+                                input_context=stacks[0] if stacks else '', input_stacks=stacks, made_empty=self.is_a(item, '/obj/item/storage') and self.filled_storage(item),
+                                source=f'{file}:{text.count(chr(10),0,m.start())+1}')
+
+    def filled_storage(self, item):
+        """Whether this type starts with something in it and is storage. The game empties storage it has just crafted: produce_recipe() for a stack's, delete_contents for a recipe's."""
+        if not isinstance(item, str) or not item.startswith('/obj/item'):
+            return False
+        storage = self.is_a(item, '/obj/item/storage') or self.dm.val(item, 'storage_type') or any('create_storage(' in code for _, code in proc_chain(self.dm, item, 'Initialize'))
+        return bool(storage and self.contents(item))
+
+    def build_design_disks(self):
+        """Design type -> the design disks that carry it. A disk fills blueprints in Initialize from a literal type, a var holding one, or a list var."""
+        dm = self.dm
+        self.design_disks = collections.defaultdict(list)
+        for disk in dm.paths('/obj/item/disk/design_disk'):
+            found = set()
+            for _, code in proc_chain(dm, disk, 'Initialize'):
+                for written in re.findall(r'blueprints\s*\+=\s*new\s+([\w/]+)', code):
+                    found.update(paths(written) if written.startswith('/') else paths(dm.val(disk, written)))
+                for name in re.findall(r'\bfor\s*\(\s*var/\w+\s+in\s+(\w+)\s*\)', code):
+                    found.update(paths(dm.val(disk, name)))
+            for design in found:
+                if self.is_a(design, '/datum/design'):
+                    self.design_disks[design].append(disk)
 
     def build_misc_sources(self):
         dm = self.dm
@@ -260,6 +376,9 @@ class StaticSources:
                             parts=['/obj/structure/ship_missile','/obj/item/stack/cable_coil','/obj/item/electronics/ship_missile_tracking',warhead],
                             source=self.cite('voidcrew/modules/ship_combat/missile_item.dm', '/obj/structure/ship_missile/armed'),
                             note='wire frame, fit tracking and appropriate warhead; assembled base frame changes state rather than subtype; functional equivalent')
+        for p in dm.paths('/datum/gas_recipe'):
+            for product in paths(dm.val(p, 'products')):
+                self.add_source(product, 'gas recipe', recipe=p, machine=dm.val(p, 'machine_type'), source=dm.field(p, 'products').source)
         for p in dm.paths('/datum/chemical_reaction'):
             for source, code in proc_chain(dm, p, 'on_reaction'):
                 for m in re.finditer(r'\bnew\s+(/obj/[\w/]+)', code):
@@ -361,7 +480,9 @@ class StaticSources:
         result = []
         for method in ['PopulateContents', 'populate_contents_immediate', 'Initialize']:
             for source, code in proc_chain(self.dm, owner, method):
-                if method=='PopulateContents' and self.dm.val(owner,'empty') and re.search(r'if\(empty\)\s*\n\s*return',code):
+                # A guard var on the type can leave it empty: if(empty) or if(crafted), then return.
+                guard = re.search(r'if\((\w+)\)\s*\n\s*return', code) if method == 'PopulateContents' else None
+                if guard and self.dm.val(owner, guard[1]) == 1:
                     break
                 if source.startswith(('code/game/objects/items/storage/storage.dm:', 'code/game/objects/items/_items.dm:', 'code/game/objects/structures/closets/closet.dm:')):
                     continue
@@ -576,13 +697,21 @@ class StaticSources:
         self.ingredients = set()
         for recipe in self.dm.paths('/datum/crafting_recipe'):
             self.ingredients.update(p for p in paths(self.dm.val(recipe, 'reqs')) if p.startswith('/obj/item'))
+        self.fixture_types = sorted(p for p in self.dm.headers if p.startswith(('/obj/machinery', '/obj/structure')))
+        self.boards = collections.defaultdict(list)
+        for board in self.dm.paths('/obj/item/circuitboard'):
+            built = self.dm.val(board, 'build_path')
+            if isinstance(built, str):
+                self.boards[built].append(board)
 
     def routed_types(self):
         """Every path with a shop, seller, console, cargo, printing or crafting row, including types with no block of their own."""
         return set(self.shops) | set(self.others) | set(self.indexed)
 
     def gate_with_prereqs(self, node_id):
-        """Highest reputation step anywhere in a node's prerequisite closure."""
+        """The lowest reputation step that opens a node: the highest anywhere in its prerequisite closure, and for a hidden node that plain research opens, whatever opens it too."""
+        if node_id in self.research_steps:
+            return self.research_steps[node_id]
         if node_id in self.gates:
             return self.gates[node_id]
         details = self.node_details
@@ -642,22 +771,22 @@ class StaticSources:
             elif kind == 'design':
                 nodes = [dict(id=n['id'], name=n['name'], point_cost=n['point_cost'], rep_step=PERMISSION.get(n.get('zone_permission'), n.get('zone_permission')),
                               rep_step_with_prereqs=PERMISSION.get(self.gate_with_prereqs(n['id'])), starting_node=n['starting_node'],
-                              hidden=n['hidden'], experimental=n['experimental'], surveys=n['surveys'], experiments=n['experiments'],
+                              hidden=n['hidden'], hidden_with_prereqs=n['hidden_with_prereqs'], opened_by=n['opened_by'], experimental=n['experimental'], surveys=n['surveys'], experiments=n['experiments'],
                               total_prereq_points=n['total_prerequisite_points_including_self'], source=n['source']) for n in r['nodes']]
                 printing.append(dict(design=r['design'], id=r['id'], machines=r['machines'], materials=r['material_cost_cm3'],
-                                     material_value=r['material_base_value'], unlock=r['unlock'], roundstart=r['unlock'] == 'roundstart', nodes=nodes,
+                                     material_value=r['material_base_value'], unlock=r['unlock'], roundstart=r['unlock'] == 'roundstart', nodes=nodes, disks=r['disks'],
                                      produced=produced if produced != path else None, source=r['source']))
             elif kind == 'crafting':
-                crafting.append(dict(recipe=r['recipe'], ingredients=r['requirements'], tools=r['tools'], tool_paths=r['tool_paths'],
-                                     time_ds=r['time_deciseconds'], always_available=r['always_available'], learned_from=r['learned_from'],
+                crafting.append(dict(recipe=r['recipe'], ingredients=r['requirements'], tools=r['tools'], tool_paths=r['tool_paths'], machinery=r['machinery'], structures=r['structures'],
+                                     made_empty=r['made_empty'], time_ds=r['time_deciseconds'], always_available=r['always_available'], learned_from=r['learned_from'],
                                      non_craftable=self.dm.val(r['recipe'], 'non_craftable'),
                                      produced=produced if produced != path else None, source=r['source']))
             elif kind == 'stack crafting':
-                crafting.append(dict(stack_recipe=r['name'], input_stack=r['input_context'], req_amount=r['req_amount'], result_amount=r['result_amount'],
+                crafting.append(dict(stack_recipe=r['name'], input_stack=r['input_context'], input_stacks=r['input_stacks'], made_empty=r['made_empty'], req_amount=r['req_amount'], result_amount=r['result_amount'],
                                      produced=produced if produced != path else None, source=r['source']))
             elif kind in ('hydroponics', 'seed mutation', 'food processing', 'anomaly neutralization', 'random raw anomaly core',
-                          'beekeeping', 'chemical item reaction', 'MOD assembly alternative', 'missile assembly alternative'):
-                misc.append({k: v for k, v in r.items() if k in ('kind', 'seed', 'parent_seed', 'input', 'action', 'anomaly', 'reaction', 'from_item', 'eventual_probability', 'note', 'source')})
+                          'beekeeping', 'chemical item reaction', 'gas recipe', 'MOD assembly alternative', 'missile assembly alternative'):
+                misc.append({k: v for k, v in r.items() if k in ('kind', 'seed', 'parent_seed', 'input', 'action', 'anomaly', 'reaction', 'recipe', 'machine', 'from_item', 'eventual_probability', 'note', 'source')})
         if cargo:
             out['cargo'] = cargo
         if printing:
@@ -667,6 +796,22 @@ class StaticSources:
         if misc:
             out['other_routes'] = misc
         return out
+
+    def fixtures_for(self, needed):
+        """Every machine or structure type that satisfies the ones recipes ask for, with its own routes. The game takes a subtype of what a recipe names (ispath, crafting.dm).
+
+        A machine's circuit board reads as a recipe: get the board and you can build it, parts being ordinary stock. Returns type -> routes, in the shape routes() gives.
+        """
+        found = {}
+        for fixture in self.fixture_types:
+            if not any(self.is_a(fixture, need) for need in needed):
+                continue
+            routes = self.routes(fixture)
+            boards = [dict(recipe=board, ingredients={board: 1}, always_available=True, learned_from=[], source=self.dm.loc(board)) for board in self.boards.get(fixture, [])]
+            if boards:
+                routes['crafting'] = routes.get('crafting', []) + boards
+            found[fixture] = routes
+        return found
 
     def surgery_by_zone(self):
         """Body zone -> the organ surgeries that reach it. Read from possible_locs; a zone with none can't be fitted by surgery."""
