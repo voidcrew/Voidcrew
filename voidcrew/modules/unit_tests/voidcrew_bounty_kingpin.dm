@@ -303,9 +303,11 @@
 
 	// Someone is already running a Drug Run: one at a time (its mission_limit 1)
 	var/datum/mission/drug_run/running = allocate(/datum/mission/drug_run)
+	running.active = TRUE
 	SSmissions.all_active_missions += running
 	TEST_ASSERT_EQUAL(kingpin.kingpin_work_refusal(asker), "no_work_taken", "He had work while someone was running his job")
 	SSmissions.all_active_missions -= running
+	running.active = FALSE
 
 	// No crew, no work; nor for a crew that fought his people, not even the crewmate who stayed back
 	var/datum/mission/job = kingpin_test_job(kingpin)
