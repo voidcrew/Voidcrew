@@ -80,5 +80,6 @@
 #define TECHWEB_NODE_MECH_HONKER "mech_honker_research"
 #define TECHWEB_NODE_RESONANCE_MINING "resonance_mining"
 #define TECHWEB_NODE_CREW_TRACKING "crew_tracking"
+#define TECHWEB_NODE_NANITE_REMOTES "nanite_remotes"
 #define TECHWEB_NODE_RESTRICTED_TECH "restricted_tech"
 #define TECHWEB_NODE_DESYNCHRONIZATION "desynchronization"

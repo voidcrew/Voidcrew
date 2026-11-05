@@ -120,6 +120,7 @@
 		/datum/techweb_node/quantum_swapper = 1,
 		/datum/techweb_node/resonance_mining = 1,
 		/datum/techweb_node/crew_tracking = 1,
+		/datum/techweb_node/nanite_remotes = 1,
 		/datum/techweb_node/restricted_tech = 2,
 		/datum/techweb_node/desynchronization = 2,
 	)
@@ -151,6 +152,7 @@
 		"quantum_swapper" = list("swapper"),
 		"resonance_mining" = list("superresonator"),
 		"crew_tracking" = list("crewpinpointer"),
+		"nanite_remotes" = list("nanite_remote", "nanite_comm_remote"),
 		"restricted_tech" = list("largecrossbow", "borg_syndicate_module"),
 		"desynchronization" = list("desynchronizer"),
 		"automatic_ammo" = list("vc_strilka310_clip", "suppressor"),
