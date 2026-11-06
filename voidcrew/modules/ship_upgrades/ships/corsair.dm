@@ -16,6 +16,10 @@
 // wall and (11,10) on the east wall (module (1,4) and (5,1)). Every module MUST ship its
 // own APC, air alarm, vent and scrubber, and use /area/template_noop throughout.
 //
+// WALL MOUNTS - the south wall (y9) carries the keel's sign, bulb and APC on
+// its far side, so mount nothing on module row 1 facing south. The west (x6), north (y14)
+// and east (x12) walls are free apart from the two hull bulbs above.
+//
 // The only door is the hull's "Hold" hatch at (9,9), just below module (3,1). That door
 // tile carries the boundary stub: cable + supply (layer 4) + scrubbers (layer 2). Land
 // the module's cable and pipes on module (3,1); a vent and scrubber there facing south

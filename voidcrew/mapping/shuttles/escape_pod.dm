@@ -1,6 +1,12 @@
 /// Backgrounds: owned by M3. See data/backgrounds/spec.md.
 
-// Placeholder hull: everything but the slots, themes and modules, which arrive with the real map.
+/**
+ * Penitentiary Escape Pod
+ *
+ * * The convict background's hull: fixed, no themes or slots, never on the shelf
+ * * Nose north, hatch and docking port aft (south)
+ * * Runs on one charged SMES with no generator; it never recharges
+ */
 /datum/map_template/shuttle/voidcrew/escape_pod
 	name = "Penitentiary Escape Pod"
 	short_name = "Pod"

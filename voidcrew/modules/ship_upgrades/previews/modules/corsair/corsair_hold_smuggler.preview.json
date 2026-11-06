@@ -1,0 +1,16 @@
+{
+ "hulls": {},
+ "modules": {
+  "corsair/corsair_hold_smuggler.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "corsair_corsair_hold_smuggler.png",
+   "src_md5": "72d88f078511c34f6e64d56939df2884",
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

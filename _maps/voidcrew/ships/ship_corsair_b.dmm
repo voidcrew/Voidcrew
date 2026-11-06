@@ -22,13 +22,13 @@
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "ad" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bed{
 	dir = 4
 	},
 /obj/item/bedsheet/blue{
 	dir = 4
 	},
+/obj/structure/sign/poster/contraband/random/directional/south,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "ae" = (
@@ -38,26 +38,28 @@
 /area/shuttle/voidcrew/corsair/engineering/b)
 "af" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/spawner/random/trash/food_packaging,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "ag" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small/directional/south,
+/obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "ah" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/spawner/random/trash/food_packaging,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "ai" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line{
 	dir = 2
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "aj" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/loading_area{
 	dir = 4
 	},
@@ -65,7 +67,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "ak" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/plating,
@@ -97,16 +98,8 @@
 "aq" = (
 /turf/closed/wall/rust,
 /area/shuttle/voidcrew/corsair/bridge/b)
-"ar" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/corsair/gunnery/b)
 "as" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/structure/sink/kitchen/directional/west,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
@@ -135,7 +128,6 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "ax" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/item/trash/can{
 	pixel_x = 9;
 	pixel_y = 3
@@ -202,11 +194,12 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "aI" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/chips{
 	pixel_x = -6;
 	pixel_y = 4
 	},
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/spawner/random/trash/food_packaging,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "aJ" = (
@@ -230,6 +223,7 @@
 /obj/item/bedsheet/brown{
 	dir = 4
 	},
+/obj/structure/extinguisher_cabinet/directional/south,
 /obj/item/newspaper{
 	pixel_x = 3;
 	pixel_y = 2
@@ -237,6 +231,7 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "aM" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/griddle,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
@@ -252,7 +247,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "aP" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt{
 	pixel_x = 4;
 	pixel_y = -6
@@ -264,6 +259,7 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "aQ" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/door/airlock/external/ruin{
 	name = "Ventral Hatch"
 	},
@@ -334,6 +330,7 @@
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "aZ" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/box,
 /obj/structure/rack,
 /turf/open/floor/plating,
@@ -343,14 +340,14 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hold/b)
 "ca" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "dO" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
@@ -385,24 +382,22 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "ga" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/stripes/box,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
-"gf" = (
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/corsair/bridge/b)
 "gv" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "hi" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/sign/poster/contraband/random/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "hx" = (
@@ -414,9 +409,6 @@
 /area/shuttle/voidcrew/corsair/engineering/b)
 "hE" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/chair/wood{
-	dir = 8
-	},
 /obj/item/cigbutt{
 	pixel_x = -7;
 	pixel_y = 9
@@ -447,6 +439,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "lZ" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
@@ -469,6 +462,7 @@
 "nA" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
+/obj/machinery/airalarm/directional/east,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "nG" = (
@@ -476,6 +470,17 @@
 /obj/machinery/atmospherics/components/binary/pump/on/layer4{
 	dir = 4
 	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"nP" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/sign/poster/contraband/random/directional/north,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "oe" = (
@@ -487,11 +492,12 @@
 /area/shuttle/voidcrew/corsair/bridge/b)
 "on" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/north,
 /obj/structure/reagent_dispensers/beerkeg,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "pP" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
@@ -518,7 +524,24 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
+"ql" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"qx" = (
+/obj/effect/decal/cleanable/ash,
+/obj/item/cigbutt/cigarbutt{
+	pixel_x = 6;
+	pixel_y = -5
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
 "qI" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
@@ -528,7 +551,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "rv" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/door/airlock/external/ruin{
 	name = "Boarding Hatch"
 	},
@@ -543,13 +566,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/obj/machinery/firealarm/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "sD" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/sign/flag/nanotrasen/directional/east,
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "sF" = (
@@ -567,6 +588,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "tu" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
@@ -584,11 +606,11 @@
 /area/shuttle/voidcrew/corsair/bridge/b)
 "vJ" = (
 /obj/structure/cable,
-/obj/structure/sign/poster/contraband/random/directional/east,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "wd" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/north,
 /obj/structure/rack,
 /obj/item/tank/internals/emergency_oxygen{
 	pixel_x = -6
@@ -610,7 +632,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "xp" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/door/airlock/external/ruin{
 	name = "Boarding Hatch"
 	},
@@ -624,14 +646,14 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "xy" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/firealarm/directional/west,
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "yy" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/spawner/random/trash/mess,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/cigbutt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "yG" = (
@@ -723,13 +745,13 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "CM" = (
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bed{
 	dir = 4
 	},
 /obj/item/bedsheet/black{
 	dir = 4
 	},
-/obj/structure/sign/poster/contraband/random/directional/north,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "Di" = (
@@ -746,6 +768,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
+/obj/structure/extinguisher_cabinet/directional/west,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "DV" = (
@@ -758,7 +781,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "Ee" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/item/cigbutt{
@@ -768,6 +791,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "Ez" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
@@ -775,6 +799,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "ER" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small/directional/north,
 /obj/structure/rack,
 /obj/item/clothing/mask/breath{
@@ -788,21 +813,18 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "Fs" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/box,
 /obj/machinery/ship_combat/interdictor/corsair,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "Fy" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/obj/structure/sign/poster/contraband/random/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "GT" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/bed{
@@ -814,7 +836,6 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "Hh" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood,
 /obj/item/storage/medkit/regular{
 	pixel_x = -3;
@@ -828,14 +849,12 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "HD" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/chair/wood{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "Io" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/directional/south,
 /obj/machinery/firealarm/directional/west,
 /turf/open/floor/iron/dark,
@@ -850,10 +869,10 @@
 /area/shuttle/voidcrew/corsair/engineering/b)
 "Ji" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "KM" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
 	},
@@ -887,7 +906,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hold/b)
 "Nt" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
@@ -895,7 +914,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "Nu" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/computer/mission_board/criminal{
 	dir = 8
 	},
@@ -911,13 +930,6 @@
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
-"Pe" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/obj/effect/spawner/random/trash/cigbutt,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/corsair/gunnery/b)
 "Ps" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/tank/air/layer4{
@@ -933,7 +945,6 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "PR" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood,
 /obj/item/folder/red{
 	pixel_x = -2;
@@ -956,11 +967,6 @@
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "QM" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/airalarm/directional/east,
-/obj/structure/chair/wood{
-	dir = 8
-	},
 /obj/item/trash/can{
 	pixel_x = 6;
 	pixel_y = 10
@@ -982,12 +988,11 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "Sf" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/airalarm/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "Sk" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/computer/bank_machine{
 	dir = 8
 	},
@@ -1002,11 +1007,10 @@
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "Sy" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/spawner/random/trash/food_packaging,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/hallway/b)
 "SU" = (
@@ -1021,7 +1025,6 @@
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "TU" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood,
 /obj/item/storage/box/donkpockets{
 	pixel_x = -4;
@@ -1035,7 +1038,6 @@
 	pixel_x = 2;
 	pixel_y = -2
 	},
-/obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/corsair/crew/b)
 "Uk" = (
@@ -1046,7 +1048,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "Um" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood,
 /obj/item/storage/fancy/cigarettes/cigars{
 	pixel_x = -3;
@@ -1063,7 +1065,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "Ur" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /obj/machinery/microwave{
 	pixel_y = 5
@@ -1081,18 +1083,16 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/cable,
-/obj/machinery/airalarm/directional/east,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/corsair/engineering/b)
 "VU" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
-/obj/machinery/firealarm/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "Ws" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
 /turf/open/floor/plating,
@@ -1104,14 +1104,8 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
-"WR" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/obj/structure/extinguisher_cabinet/directional/south,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/corsair/hallway/b)
 "WX" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/structure/table/wood/poker,
 /obj/item/reagent_containers/cup/glass/bottle/rum{
 	pixel_x = -7;
@@ -1135,14 +1129,12 @@
 /turf/closed/wall/rust,
 /area/shuttle/voidcrew/corsair/hold/b)
 "Xu" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/corsair/bridge/b)
 "XL" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
@@ -1151,6 +1143,7 @@
 "XM" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/box,
+/obj/machinery/airalarm/directional/east,
 /obj/machinery/shuttle_scrambler/ship_siphon/corsair,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
@@ -1161,10 +1154,6 @@
 	id = "corsair_bridge";
 	name = "Blast Shutters"
 	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/corsair/gunnery/b)
-"YX" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/corsair/gunnery/b)
 "Zl" = (
@@ -1241,7 +1230,7 @@ aF
 aF
 aF
 ab
-ac
+nP
 ac
 nG
 IW
@@ -1350,9 +1339,9 @@ aF
 aF
 Xk
 As
-As
 bk
 As
+bk
 Xk
 hi
 aT
@@ -1368,8 +1357,8 @@ aF
 aF
 Xk
 bk
-bk
 As
+bk
 bk
 Xk
 sg
@@ -1426,7 +1415,7 @@ pZ
 KM
 Bb
 Ee
-WR
+sg
 aT
 TU
 ax
@@ -1444,7 +1433,7 @@ Nu
 Sk
 sF
 sD
-zs
+ql
 aT
 dU
 aw
@@ -1491,10 +1480,10 @@ aG
 "}
 (18,1,1) = {"
 lp
-aR
+ws
 ws
 CK
-YX
+aO
 ca
 WX
 Bn
@@ -1504,7 +1493,7 @@ lZ
 ap
 aO
 aR
-ar
+ws
 at
 "}
 (19,1,1) = {"
@@ -1516,9 +1505,9 @@ XM
 Nt
 QM
 hE
-Pe
+Ez
 VU
-aJ
+aO
 aZ
 aj
 aG
@@ -1550,7 +1539,7 @@ aF
 aF
 aq
 Zl
-gf
+qe
 gv
 ti
 Pt
@@ -1588,7 +1577,7 @@ Mt
 Um
 Uk
 ZD
-qe
+qx
 yy
 fD
 aa
