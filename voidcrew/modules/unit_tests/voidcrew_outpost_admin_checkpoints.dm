@@ -137,13 +137,14 @@
 			sleep(2)
 	TEST_ASSERT(!drones_left, "Drones did not go home after the build")
 
-	// An original still in service is left alone: the rebuild is an extra copy.
+	// A snapshot with no source, as a load from an earlier round has, leaves other ships alone.
 	rebuilt.abandoned = FALSE
 	rebuilt.ship_account.account_balance = 777
 	var/datum/ship_checkpoint/copy_source = capture_copy(home, rebuilt, "copyowner")
 	TEST_ASSERT_NOTNULL(copy_source, "Could not capture the rebuilt ship")
+	copy_source.source_ship = null
 	send_to_transit(home, rebuilt)
-	job = new(null, copy_source, operator, FALSE, TRUE)
+	job = new(null, copy_source, operator)
 	TEST_ASSERT(job.prepare(), "The copy rebuild did not start: [job.error]")
 	TEST_ASSERT_NULL(job.original_ref, "A copy rebuild took over the ship in service")
 	job.rush()
@@ -160,7 +161,8 @@
 	// Stop before the first piece: the bay is freed and nothing is left behind.
 	var/datum/ship_checkpoint/stop_source = capture_copy(home, rebuilt, "copyowner")
 	TEST_ASSERT_NOTNULL(stop_source, "Could not capture the ship to test Stop")
-	job = new(null, stop_source, operator, FALSE, TRUE)
+	stop_source.source_ship = null
+	job = new(null, stop_source, operator)
 	TEST_ASSERT(job.prepare(), "The rebuild to stop did not start: [job.error]")
 	TEST_ASSERT(!job.committed, "The rebuild placed a piece before it could be stopped")
 	panel.manage_outpost(home, operator, "rebuild_stop", list("ref" = REF(job)))
