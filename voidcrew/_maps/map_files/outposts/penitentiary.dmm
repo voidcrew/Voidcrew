@@ -132,7 +132,13 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "be" = (
-/obj/machinery/light/cold/directional/south,
+/obj/structure/table,
+/obj/item/bodybag{
+	pixel_y = 4
+	},
+/obj/item/clipboard{
+	pixel_x = 6
+	},
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "bh" = (
@@ -274,7 +280,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "ck" = (
-/obj/item/kirbyplants/fern,
+/obj/machinery/light/small/directional/west,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "cl" = (
@@ -301,7 +307,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "co" = (
-/obj/structure/chair/sofa/corp/right{
+/obj/structure/chair/sofa/corp/left{
 	dir = 4
 	},
 /turf/open/indestructible/wood,
@@ -368,11 +374,16 @@
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "cH" = (
-/obj/machinery/iv_drip,
+/obj/structure/bed/medical/anchored{
+	dir = 8
+	},
+/obj/item/bedsheet/medical{
+	dir = 8
+	},
 /turf/open/indestructible/white/small,
 /area/voidcrew/penitentiary/infirmary)
 "cL" = (
-/obj/structure/sign/poster/official/twenty_four_seven/directional/east,
+/obj/structure/mirror/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "cP" = (
@@ -392,7 +403,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "cS" = (
-/obj/machinery/light/directional/west,
+/obj/machinery/light/directional/north,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "cV" = (
@@ -418,7 +429,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/evidence)
 "cZ" = (
-/obj/structure/table/optable,
+/obj/machinery/light/cold/directional/south,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "db" = (
@@ -439,7 +450,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "dg" = (
-/obj/effect/landmark/penitentiary/morgue,
+/obj/structure/table/optable,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "dh" = (
@@ -456,10 +467,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "dj" = (
-/obj/structure/rack,
-/obj/item/storage/box{
-	pixel_y = 4
-	},
+/obj/machinery/light/cold/directional/south,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "dq" = (
@@ -477,7 +485,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "dD" = (
-/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "dE" = (
@@ -495,13 +503,15 @@
 /area/voidcrew/penitentiary/armory)
 "dK" = (
 /obj/structure/table/wood,
-/obj/item/folder/red{
+/obj/item/paper_bin{
 	pixel_x = -2;
-	pixel_y = 2
+	pixel_y = 6
 	},
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = 6;
-	pixel_y = 8
+/obj/item/pen{
+	pixel_x = 6
+	},
+/obj/item/stamp/denied{
+	pixel_x = -8
 	},
 /turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
@@ -624,7 +634,6 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
 "eD" = (
-/obj/structure/closet/crate/medical,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "eH" = (
@@ -672,18 +681,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
-"eV" = (
-/obj/structure/table/reinforced,
-/obj/item/folder/red{
-	pixel_x = -2;
-	pixel_y = 2
-	},
-/obj/item/clipboard{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/evidence)
 "eZ" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -805,7 +802,10 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "gH" = (
-/obj/structure/filingcabinet,
+/obj/structure/table/wood,
+/obj/item/book/random{
+	pixel_y = 4
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "gK" = (
@@ -865,16 +865,20 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/evidence)
 "gW" = (
-/obj/structure/chair{
-	dir = 2
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/stamp/denied{
+	pixel_x = 6;
+	pixel_y = 10
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
 "gX" = (
-/obj/structure/closet/secure_closet{
-	name = "medical cabinet"
-	},
-/turf/open/indestructible/white/textured,
+/obj/structure/curtain,
+/turf/open/indestructible/white/small,
 /area/voidcrew/penitentiary/infirmary)
 "gY" = (
 /obj/effect/turf_decal/tile/red/fourcorners{
@@ -1007,9 +1011,8 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "ih" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 4
-	},
+/obj/structure/table,
+/obj/structure/bedsheetbin/basket,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "ik" = (
@@ -1101,10 +1104,10 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/capture_wing)
 "jb" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
+/obj/structure/railing{
+	dir = 2
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "jd" = (
 /obj/structure/table,
@@ -1222,6 +1225,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "kp" = (
+/obj/structure/closet/crate,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "kr" = (
@@ -1233,7 +1237,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "kw" = (
-/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/north,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/armory)
 "kx" = (
@@ -1249,15 +1253,11 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "kL" = (
-/obj/machinery/computer/penitentiary_launch{
+/obj/effect/turf_decal/loading_area{
 	dir = 4
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
-"kM" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/indestructible/dark/small,
-/area/voidcrew/penitentiary/evidence)
 "kN" = (
 /obj/effect/decal/cleanable/cobweb,
 /obj/machinery/light/directional/north,
@@ -1274,9 +1274,13 @@
 /area/voidcrew/player_outpost/prison/penitentiary)
 "kX" = (
 /obj/structure/table/reinforced,
-/obj/structure/desk_bell{
-	pixel_x = -6;
-	pixel_y = 6
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/stamp{
+	pixel_x = 6;
+	pixel_y = 8
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/evidence)
@@ -1285,7 +1289,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
 "lb" = (
-/obj/structure/rack,
+/obj/structure/chair/office{
+	dir = 4
+	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "le" = (
@@ -1362,12 +1368,6 @@
 "lz" = (
 /turf/open/indestructible/dark/diagonal,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"lC" = (
-/obj/structure/chair/office{
-	dir = 2
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/evidence)
 "lH" = (
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
@@ -1413,7 +1413,14 @@
 /turf/open/indestructible/dark/diagonal,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "lX" = (
-/obj/structure/sign/poster/official/help_others/directional/west,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = 5
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "lZ" = (
@@ -1453,10 +1460,7 @@
 /turf/open/indestructible/white,
 /area/voidcrew/penitentiary/infirmary)
 "mt" = (
-/obj/structure/rack,
-/obj/item/storage/box/bodybags{
-	pixel_y = 4
-	},
+/obj/structure/closet/crate/coffin,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "mu" = (
@@ -1475,20 +1479,15 @@
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "my" = (
-/obj/structure/bed/medical/emergency{
-	dir = 4
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -3
 	},
-/obj/item/bodybag{
-	pixel_y = 2
+/obj/item/pen{
+	pixel_x = 5
 	},
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
-"mB" = (
-/obj/structure/chair/office{
-	dir = 4
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/staff)
 "mJ" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
@@ -1537,19 +1536,15 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/armory)
 "mY" = (
-/obj/machinery/light/directional/north,
+/obj/item/kirbyplants/photosynthetic,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "mZ" = (
-/obj/structure/chair/sofa/bench/right{
+/obj/structure/chair/sofa/bench{
 	dir = 4
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
-"nb" = (
-/obj/machinery/light/floor,
-/turf/open/indestructible/plating,
-/area/voidcrew/penitentiary/podbay)
 "nh" = (
 /obj/structure/table/reinforced,
 /obj/item/flashlight/lamp{
@@ -1576,7 +1571,8 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
 "ns" = (
-/turf/open/indestructible/white/small,
+/obj/structure/closet/crate/medical,
+/turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "nu" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
@@ -1595,9 +1591,11 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "nA" = (
-/obj/item/kirbyplants/photosynthetic,
-/turf/open/indestructible/wood,
-/area/voidcrew/penitentiary/warden)
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/penitentiary/staff)
 "nC" = (
 /obj/machinery/light/directional/east,
 /turf/open/indestructible/cafeteria,
@@ -1620,12 +1618,8 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "nK" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
-	pixel_x = -6;
-	pixel_y = 10
-	},
-/turf/open/indestructible/carpet/red,
+/obj/structure/sign/clock/directional/north,
+/turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "nM" = (
 /obj/structure/table/reinforced,
@@ -1644,8 +1638,12 @@
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "nQ" = (
-/obj/structure/chair/office{
-	dir = 1
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 7
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
@@ -1667,12 +1665,6 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
-"nV" = (
-/obj/structure/chair/pew/right{
-	dir = 1
-	},
-/turf/open/indestructible/wood/parquet,
-/area/voidcrew/penitentiary/morgue)
 "nX" = (
 /obj/structure/table,
 /turf/open/indestructible/dark/textured,
@@ -1697,11 +1689,11 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "ou" = (
-/obj/structure/closet/crate,
+/obj/machinery/light/directional/west,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "oy" = (
-/obj/machinery/light/small/directional/west,
+/obj/structure/rack,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "oA" = (
@@ -1732,7 +1724,7 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/capture_wing)
 "oP" = (
-/obj/structure/mirror/directional/west,
+/obj/structure/sign/poster/official/work_for_a_future/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "oQ" = (
@@ -1762,11 +1754,8 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "oZ" = (
-/obj/structure/chair/office{
-	dir = 8
-	},
-/mob/living/basic/ambient_npc/penitentiary/warden,
-/turf/open/indestructible/carpet/red,
+/obj/machinery/light/directional/north,
+/turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "pf" = (
 /obj/item/kirbyplants/fern,
@@ -1780,8 +1769,16 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/lobby)
 "pi" = (
-/obj/structure/bookcase/random,
-/turf/open/indestructible/wood,
+/obj/structure/table/wood,
+/obj/item/folder/red{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
 "pj" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1789,18 +1786,6 @@
 	},
 /turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/morgue)
-"pk" = (
-/obj/structure/table/reinforced,
-/obj/item/paper_bin{
-	pixel_x = -4;
-	pixel_y = 6
-	},
-/obj/item/stamp/denied{
-	pixel_x = 6;
-	pixel_y = 10
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/penitentiary/podbay)
 "pl" = (
 /obj/structure/chair/comfy/brown{
 	dir = 1
@@ -1833,10 +1818,10 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "pt" = (
-/obj/structure/chair{
-	dir = 4
+/obj/structure/closet/secure_closet{
+	name = "medical cabinet"
 	},
-/turf/open/indestructible/white/small,
+/turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "pv" = (
 /obj/item/kirbyplants/photosynthetic,
@@ -1861,7 +1846,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "pG" = (
-/obj/machinery/light/small/directional/north,
+/obj/structure/chair/pew{
+	dir = 1
+	},
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "pJ" = (
@@ -1906,8 +1893,8 @@
 /turf/open/indestructible/dark/diagonal,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "pS" = (
-/obj/machinery/light/small/directional/east,
-/turf/open/indestructible/wood/parquet,
+/obj/structure/closet/crate/bin,
+/turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "pT" = (
 /obj/machinery/shower/directional/south,
@@ -1928,9 +1915,8 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "qi" = (
-/obj/structure/table/wood,
-/obj/item/book/bible{
-	pixel_y = 4
+/obj/structure/sign/departments/holy/directional/north{
+	name = "Chapel of Rest"
 	},
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
@@ -1972,8 +1958,19 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"qu" = (
+/obj/structure/table,
+/obj/item/folder/white{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/clipboard{
+	pixel_x = 6
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/penitentiary/infirmary)
 "qw" = (
-/obj/machinery/light/cold/directional/north,
+/obj/machinery/light/cold/directional/east,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "qA" = (
@@ -2083,12 +2080,8 @@
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "rk" = (
-/obj/structure/table/reinforced,
-/obj/item/clipboard{
-	pixel_y = 4
-	},
-/obj/item/pen{
-	pixel_x = 7
+/obj/structure/chair{
+	dir = 2
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
@@ -2155,7 +2148,7 @@
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "rL" = (
-/obj/structure/chair/sofa/bench/left{
+/obj/structure/chair/sofa/bench{
 	dir = 8
 	},
 /turf/open/indestructible/dark,
@@ -2170,12 +2163,10 @@
 	},
 /turf/open/indestructible/kitchen,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"rU" = (
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/evidence)
 "rX" = (
-/obj/structure/closet/crate/internals,
-/turf/open/indestructible/dark/textured,
+/obj/effect/landmark/penitentiary/pod_cradle,
+/obj/effect/turf_decal/box/red,
+/turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
 "rY" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -2187,6 +2178,14 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
+"rZ" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/evidence)
 "sb" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 2
@@ -2229,13 +2228,8 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "sD" = (
-/obj/structure/bed/medical/anchored{
-	dir = 8
-	},
-/obj/item/bedsheet/medical{
-	dir = 8
-	},
-/turf/open/indestructible/white/small,
+/obj/structure/closet/crate/bin,
+/turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "sE" = (
 /obj/structure/sign/poster/contraband/punch_shit/directional/north,
@@ -2275,9 +2269,7 @@
 /turf/open/indestructible/freezer,
 /area/voidcrew/penitentiary/staff)
 "sR" = (
-/obj/structure/chair/pew/left{
-	dir = 1
-	},
+/obj/machinery/light/small/directional/north,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "sT" = (
@@ -2295,8 +2287,9 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "tg" = (
-/obj/structure/chair{
-	dir = 1
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_y = 4
 	},
 /turf/open/indestructible/white,
 /area/voidcrew/penitentiary/infirmary)
@@ -2330,9 +2323,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "ts" = (
-/obj/structure/chair/sofa/corp/left{
-	dir = 4
-	},
+/obj/structure/sign/poster/official/help_others/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "tv" = (
@@ -2421,6 +2412,9 @@
 	},
 /turf/open/indestructible/herringbone,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"tR" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/podbay)
 "tS" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 2
@@ -2442,8 +2436,11 @@
 	},
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"ud" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/evidence)
 "ue" = (
-/obj/structure/sign/clock/directional/north,
+/obj/structure/sign/poster/official/report_crimes/directional/south,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "uh" = (
@@ -2504,21 +2501,9 @@
 /obj/structure/sign/poster/official/do_not_question/directional/west,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
-"uv" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 8
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/penitentiary/podbay)
 "ux" = (
-/obj/structure/table/wood,
-/obj/item/food/grown/poppy{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/food/grown/harebell{
-	pixel_x = 5;
-	pixel_y = 2
+/obj/structure/chair/pew/right{
+	dir = 1
 	},
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
@@ -2553,21 +2538,11 @@
 /turf/open/indestructible/textured/large,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "uJ" = (
-/obj/structure/table/reinforced,
-/obj/item/paper_bin{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/stamp{
-	pixel_x = 6;
-	pixel_y = 8
+/obj/structure/chair/office{
+	dir = 2
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/evidence)
-"uO" = (
-/obj/structure/sign/poster/official/cleanliness/directional/east,
-/turf/open/indestructible/white/textured,
-/area/voidcrew/penitentiary/infirmary)
 "uT" = (
 /obj/effect/turf_decal/tile/red/fourcorners{
 	dir = 1
@@ -2584,7 +2559,7 @@
 /turf/open/indestructible/dark/herringbone,
 /area/voidcrew/penitentiary/lobby)
 "vd" = (
-/obj/machinery/light/directional/west,
+/obj/structure/filingcabinet,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "vh" = (
@@ -2650,10 +2625,8 @@
 /turf/open/indestructible/freezer,
 /area/voidcrew/penitentiary/staff)
 "vL" = (
-/obj/structure/chair{
-	dir = 4
-	},
-/turf/open/indestructible/carpet/red,
+/obj/structure/bookcase/random,
+/turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "vN" = (
 /obj/structure/chair/sofa/bench/right{
@@ -2786,14 +2759,11 @@
 /obj/structure/sink/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
+"wV" = (
+/turf/open/indestructible/white/small,
+/area/voidcrew/penitentiary/infirmary)
 "wX" = (
-/obj/structure/table,
-/obj/item/bodybag{
-	pixel_y = 4
-	},
-/obj/item/clipboard{
-	pixel_x = 6
-	},
+/obj/machinery/light/cold/directional/north,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "wZ" = (
@@ -2821,10 +2791,7 @@
 /turf/open/indestructible/cafeteria,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "xe" = (
-/obj/structure/rack,
-/obj/item/storage/box{
-	pixel_y = 4
-	},
+/obj/machinery/light/directional/east,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "xo" = (
@@ -2886,7 +2853,7 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/penitentiary/lobby)
 "xO" = (
-/obj/structure/closet/crate/bin,
+/obj/structure/sign/poster/official/cleanliness/directional/east,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "xQ" = (
@@ -2964,6 +2931,13 @@
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
+"yn" = (
+/obj/structure/rack,
+/obj/item/storage/box{
+	pixel_y = 4
+	},
+/turf/open/indestructible/white/textured,
+/area/voidcrew/penitentiary/infirmary)
 "yu" = (
 /obj/structure/sign/clock/directional/north,
 /turf/open/indestructible/dark,
@@ -2972,10 +2946,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/armory)
-"yw" = (
-/obj/structure/sign/poster/official/safety_report/directional/east,
-/turf/open/indestructible/dark,
-/area/voidcrew/penitentiary/staff)
 "yz" = (
 /obj/structure/table,
 /obj/item/reagent_containers/condiment/flour{
@@ -2993,8 +2963,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "yD" = (
-/obj/machinery/light/small/directional/south,
-/turf/open/indestructible/wood/parquet,
+/turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/morgue)
 "yN" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -3007,9 +2976,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "yP" = (
-/obj/effect/turf_decal/loading_area{
-	dir = 4
-	},
+/obj/structure/closet/crate/internals,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "yS" = (
@@ -3020,7 +2987,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "yV" = (
-/obj/structure/closet/crate/bin,
+/obj/machinery/light/cold/directional/west,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "yY" = (
@@ -3066,7 +3033,7 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/capture_wing)
 "zj" = (
-/obj/structure/filingcabinet/chestdrawer,
+/obj/machinery/light/directional/south,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "zm" = (
@@ -3098,7 +3065,7 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "zr" = (
-/obj/machinery/light/directional/south,
+/obj/machinery/light/directional/north,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "zz" = (
@@ -3118,6 +3085,21 @@
 /obj/structure/sink/directional/north,
 /turf/open/indestructible/white,
 /area/voidcrew/penitentiary/infirmary)
+"zK" = (
+/obj/structure/table/reinforced,
+/obj/item/folder/red{
+	pixel_x = -4
+	},
+/obj/item/folder{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/obj/item/stamp{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/penitentiary/podbay)
 "zO" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 2
@@ -3132,7 +3114,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/lobby)
 "zT" = (
-/obj/structure/chair/sofa/bench{
+/obj/structure/chair/sofa/bench/right{
 	dir = 8
 	},
 /turf/open/indestructible/dark,
@@ -3151,8 +3133,11 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
 "zX" = (
-/obj/structure/sign/poster/official/report_crimes/directional/south,
-/turf/open/indestructible/wood,
+/obj/structure/chair/office{
+	dir = 8
+	},
+/mob/living/basic/ambient_npc/penitentiary/warden,
+/turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
 "Ab" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -3178,7 +3163,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "Ap" = (
-/obj/machinery/light/directional/north,
+/obj/structure/rack,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Aq" = (
@@ -3206,15 +3191,9 @@
 /area/voidcrew/penitentiary/capture_wing)
 "Av" = (
 /obj/structure/table/wood,
-/obj/item/paper_bin{
-	pixel_x = -2;
-	pixel_y = 6
-	},
-/obj/item/pen{
-	pixel_x = 6
-	},
-/obj/item/stamp/denied{
-	pixel_x = -8
+/obj/item/flashlight/lamp/green{
+	pixel_x = -6;
+	pixel_y = 10
 	},
 /turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
@@ -3283,23 +3262,16 @@
 /area/voidcrew/penitentiary/staff)
 "Bo" = (
 /obj/structure/rack,
-/obj/item/evidencebag{
-	pixel_x = -4;
+/obj/item/storage/box{
 	pixel_y = 4
 	},
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Bp" = (
-/obj/structure/table/wood,
-/obj/item/book/random{
-	pixel_y = 4
-	},
-/turf/open/indestructible/wood,
+/turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
 "Bv" = (
-/obj/structure/chair/sofa/corp/left{
-	dir = 4
-	},
+/obj/machinery/light/directional/west,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "Bw" = (
@@ -3317,7 +3289,9 @@
 /turf/open/indestructible/cafeteria,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "BH" = (
-/obj/effect/landmark/penitentiary/massacre_body,
+/obj/structure/chair/office{
+	dir = 1
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
 "BI" = (
@@ -3359,7 +3333,7 @@
 /area/voidcrew/penitentiary/escape_wing)
 "BP" = (
 /obj/effect/turf_decal/stripes/line{
-	dir = 2
+	dir = 1
 	},
 /turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
@@ -3453,15 +3427,8 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "CG" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/indestructible/white/textured,
-/area/voidcrew/penitentiary/morgue)
-"CI" = (
-/obj/structure/chair/office{
-	dir = 1
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/staff)
+/turf/open/indestructible/dark,
+/area/voidcrew/penitentiary/podbay)
 "CK" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 4
@@ -3523,7 +3490,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
 "Di" = (
-/obj/structure/curtain,
+/obj/machinery/iv_drip,
 /turf/open/indestructible/white/small,
 /area/voidcrew/penitentiary/infirmary)
 "Dk" = (
@@ -3538,7 +3505,8 @@
 /turf/open/indestructible/cafeteria,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "Dy" = (
-/turf/open/indestructible/carpet/red,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "DB" = (
 /obj/structure/bed{
@@ -3614,10 +3582,10 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"Eq" = (
-/obj/machinery/light/cold/directional/south,
-/turf/open/indestructible/white/textured,
-/area/voidcrew/penitentiary/infirmary)
+"Et" = (
+/obj/item/kirbyplants/fern,
+/turf/open/indestructible/wood,
+/area/voidcrew/penitentiary/warden)
 "Eu" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 2
@@ -3714,7 +3682,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "Fk" = (
-/obj/structure/chair/sofa/bench{
+/obj/structure/chair/sofa/bench/right{
 	dir = 8
 	},
 /turf/open/indestructible/dark,
@@ -3740,7 +3708,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "FB" = (
-/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "FH" = (
@@ -3755,8 +3723,20 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
+"FM" = (
+/obj/structure/table/reinforced,
+/obj/item/folder/red{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/evidence)
 "FS" = (
-/obj/structure/closet/secure_closet/penitentiary_evidence,
+/obj/structure/closet/crate,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Gd" = (
@@ -3787,16 +3767,14 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/intake)
 "Gu" = (
-/obj/structure/sign/departments/holy/directional/north{
-	name = "Chapel of Rest"
-	},
+/obj/machinery/light/small/directional/east,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "Gw" = (
 /turf/open/indestructible/dark/herringbone,
 /area/voidcrew/penitentiary/staff)
 "Gx" = (
-/obj/machinery/light/cold/directional/east,
+/obj/structure/sink/directional/west,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "Gy" = (
@@ -3824,8 +3802,10 @@
 /turf/open/indestructible/white/small,
 /area/voidcrew/penitentiary/infirmary)
 "GB" = (
-/obj/structure/sink/directional/north,
-/turf/open/indestructible/white/textured,
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/indestructible/white/small,
 /area/voidcrew/penitentiary/infirmary)
 "GD" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -3868,8 +3848,11 @@
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "GK" = (
-/obj/structure/bodycontainer/morgue{
-	dir = 2
+/obj/structure/bed/medical/emergency{
+	dir = 4
+	},
+/obj/item/bodybag{
+	pixel_y = 2
 	},
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
@@ -3905,10 +3888,8 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/capture_wing)
 "GV" = (
-/obj/structure/railing{
-	dir = 2
-	},
-/turf/open/indestructible/dark/textured,
+/obj/machinery/light/floor,
+/turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
 "GW" = (
 /obj/effect/turf_decal/tile/blue/opposingcorners{
@@ -3916,6 +3897,12 @@
 	},
 /turf/open/indestructible/cafeteria,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"GX" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/staff)
 "Hc" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 1
@@ -3944,14 +3931,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "Hg" = (
-/obj/structure/table,
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = -5;
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = 5
-	},
+/obj/structure/sign/poster/official/twenty_four_seven/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "Hh" = (
@@ -3966,7 +3946,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "Ho" = (
-/obj/item/kirbyplants/fern,
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "Hq" = (
@@ -3993,6 +3972,7 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "Hw" = (
+/obj/machinery/light/directional/west,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Hx" = (
@@ -4054,9 +4034,10 @@
 /turf/open/indestructible/kitchen,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "HY" = (
-/obj/effect/landmark/penitentiary/pod_cradle,
-/obj/effect/turf_decal/box/red,
-/turf/open/indestructible/plating,
+/obj/structure/railing{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "HZ" = (
 /obj/effect/turf_decal/trimline/neutral/filled/line{
@@ -4146,6 +4127,16 @@
 /obj/item/kirbyplants/photosynthetic,
 /turf/open/indestructible/dark/herringbone,
 /area/voidcrew/penitentiary/lobby)
+"IR" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/staff)
 "IS" = (
 /obj/structure/table,
 /turf/open/indestructible/dark/herringbone,
@@ -4259,7 +4250,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "JB" = (
-/obj/machinery/light/directional/north,
+/obj/structure/rack,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "JJ" = (
@@ -4278,9 +4269,8 @@
 /turf/open/indestructible/white,
 /area/voidcrew/penitentiary/infirmary)
 "JQ" = (
-/obj/structure/table/reinforced,
-/obj/item/clipboard{
-	pixel_y = 4
+/obj/machinery/computer/penitentiary_launch{
+	dir = 4
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
@@ -4293,6 +4283,9 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"Ke" = (
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/penitentiary/morgue)
 "Kf" = (
 /obj/effect/decal/cleanable/cobweb,
 /obj/machinery/light/cold/directional/north,
@@ -4309,10 +4302,6 @@
 /obj/machinery/door/airlock/security/prison_staff,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"Km" = (
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/armory)
 "Ko" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark/textured,
@@ -4507,10 +4496,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
-"LV" = (
-/obj/structure/table/reinforced,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/penitentiary/staff)
 "LW" = (
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 8
@@ -4536,13 +4521,8 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
 "Ma" = (
-/obj/structure/table,
-/obj/item/folder/white{
-	pixel_x = -6;
-	pixel_y = 4
-	},
-/obj/item/clipboard{
-	pixel_x = 6
+/obj/structure/chair/office/light{
+	dir = 2
 	},
 /turf/open/indestructible/white,
 /area/voidcrew/penitentiary/infirmary)
@@ -4585,7 +4565,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "Ms" = (
-/obj/machinery/light/directional/west,
+/obj/machinery/light/directional/south,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "Mt" = (
@@ -4727,7 +4707,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "Ni" = (
-/obj/machinery/light/cold/directional/west,
+/obj/structure/filingcabinet/chestdrawer,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "Nj" = (
@@ -4902,21 +4882,10 @@
 /obj/machinery/light/directional/south,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/evidence)
-"OO" = (
-/obj/structure/table/reinforced,
-/obj/item/folder/red{
-	pixel_x = -4
-	},
-/obj/item/folder{
-	pixel_x = 2;
-	pixel_y = 4
-	},
-/obj/item/stamp{
-	pixel_x = 8;
-	pixel_y = 10
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/penitentiary/podbay)
+"OK" = (
+/obj/structure/sink/directional/north,
+/turf/open/indestructible/white/textured,
+/area/voidcrew/penitentiary/infirmary)
 "OP" = (
 /obj/effect/turf_decal/trimline/neutral/line{
 	dir = 2
@@ -4934,10 +4903,10 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "OR" = (
-/obj/structure/railing{
-	dir = 1
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
 	},
-/turf/open/indestructible/dark/textured,
+/turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
 "OS" = (
 /obj/structure/table,
@@ -4985,6 +4954,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
 "Pi" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 4
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/penitentiary/warden)
 "Pj" = (
@@ -5007,15 +4979,10 @@
 /area/voidcrew/penitentiary/lobby)
 "Pq" = (
 /obj/structure/table/reinforced,
-/obj/item/paper_bin{
-	pixel_y = 4
-	},
-/obj/item/pen{
-	pixel_x = 5
-	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/staff)
 "Pw" = (
+/obj/item/kirbyplants/fern,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "Px" = (
@@ -5059,18 +5026,26 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/escape_wing)
 "PD" = (
-/obj/structure/chair/sofa/bench/left{
+/obj/structure/chair/sofa/bench{
 	dir = 8
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "PE" = (
-/obj/structure/closet/crate/coffin,
+/obj/structure/chair/pew/left{
+	dir = 1
+	},
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "PF" = (
-/obj/structure/chair/pew{
-	dir = 1
+/obj/structure/table/wood,
+/obj/item/food/grown/poppy{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/harebell{
+	pixel_x = 5;
+	pixel_y = 2
 	},
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
@@ -5197,17 +5172,10 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
-"Qz" = (
-/obj/structure/table,
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = -4;
-	pixel_y = 6
-	},
-/turf/open/indestructible/white/small,
-/area/voidcrew/penitentiary/infirmary)
 "QA" = (
-/obj/structure/chair/office{
-	dir = 4
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_y = 4
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
@@ -5230,6 +5198,10 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
+"QY" = (
+/obj/effect/landmark/penitentiary/massacre_body,
+/turf/open/indestructible/dark,
+/area/voidcrew/penitentiary/podbay)
 "Ra" = (
 /obj/effect/turf_decal/tile/red/fourcorners{
 	dir = 1
@@ -5262,7 +5234,11 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
 "Rf" = (
-/obj/machinery/light/directional/south,
+/obj/structure/rack,
+/obj/item/evidencebag{
+	pixel_x = -4;
+	pixel_y = 4
+	},
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Rj" = (
@@ -5295,8 +5271,10 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
 "Ry" = (
-/obj/machinery/light/directional/south,
-/turf/open/indestructible/wood,
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/indestructible/carpet/red,
 /area/voidcrew/penitentiary/warden)
 "Rz" = (
 /obj/structure/closet/secure_closet{
@@ -5316,14 +5294,11 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "RJ" = (
-/obj/structure/chair/sofa/bench{
+/obj/structure/chair/sofa/bench/left{
 	dir = 4
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
-"RM" = (
-/turf/open/indestructible/dark,
-/area/voidcrew/penitentiary/podbay)
 "RN" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 8
@@ -5492,6 +5467,14 @@
 /obj/machinery/griddle,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
+"SD" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/indestructible/white/small,
+/area/voidcrew/penitentiary/infirmary)
 "SE" = (
 /obj/structure/sign/clock/directional/south,
 /turf/open/indestructible,
@@ -5500,21 +5483,10 @@
 /obj/structure/sign/poster/official/space_cops/directional/west,
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"SG" = (
-/obj/structure/table,
-/obj/item/paper_bin{
-	pixel_y = 4
-	},
-/turf/open/indestructible/white,
-/area/voidcrew/penitentiary/infirmary)
 "SH" = (
 /obj/structure/sign/poster/contraband/dream/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"SJ" = (
-/obj/structure/rack,
-/turf/open/indestructible/white/textured,
-/area/voidcrew/penitentiary/infirmary)
 "SQ" = (
 /obj/structure/chair/sofa/bench/right{
 	dir = 2
@@ -5548,6 +5520,7 @@
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/penitentiary/lobby)
 "Tl" = (
+/obj/machinery/light/small/directional/west,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/infirmary)
 "Tp" = (
@@ -5576,7 +5549,7 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/penitentiary/podbay)
 "Tu" = (
-/obj/structure/rack,
+/obj/structure/closet/secure_closet/penitentiary_evidence,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "Tv" = (
@@ -5672,12 +5645,6 @@
 /obj/machinery/plate_press,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
-"Uc" = (
-/obj/structure/chair/office/light{
-	dir = 2
-	},
-/turf/open/indestructible/white,
-/area/voidcrew/penitentiary/infirmary)
 "Ug" = (
 /obj/structure/dresser,
 /turf/open/indestructible/dark,
@@ -5692,6 +5659,18 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"Un" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle{
+	pixel_x = -8;
+	pixel_y = 10
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/turf/open/indestructible/wood/parquet,
+/area/voidcrew/penitentiary/morgue)
 "Ur" = (
 /obj/machinery/light/floor,
 /turf/open/indestructible,
@@ -5718,12 +5697,18 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/capture_wing)
+"UL" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/penitentiary/infirmary)
 "UM" = (
-/obj/structure/closet/crate,
+/obj/machinery/light/directional/south,
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/evidence)
 "UO" = (
-/obj/machinery/light/small/directional/west,
+/obj/structure/closet/crate/coffin,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "UR" = (
@@ -5756,13 +5741,8 @@
 /turf/open/indestructible/freezer,
 /area/voidcrew/penitentiary/staff)
 "UZ" = (
-/obj/structure/table/reinforced,
-/obj/item/folder{
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/item/paper{
-	pixel_x = 4
+/obj/structure/chair/sofa/bench/left{
+	dir = 8
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/podbay)
@@ -5797,6 +5777,10 @@
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/service)
+"Vm" = (
+/obj/structure/table/optable,
+/turf/open/indestructible/white,
+/area/voidcrew/penitentiary/infirmary)
 "Vn" = (
 /obj/machinery/light/directional/west,
 /turf/open/indestructible/kitchen,
@@ -5834,7 +5818,9 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/penitentiary/podbay)
 "VH" = (
-/obj/structure/sign/poster/official/work_for_a_future/directional/west,
+/obj/structure/chair/sofa/bench/left{
+	dir = 8
+	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "VL" = (
@@ -5844,10 +5830,6 @@
 "VO" = (
 /turf/open/indestructible/dark/herringbone,
 /area/voidcrew/penitentiary/escape_wing)
-"VR" = (
-/obj/structure/table/optable,
-/turf/open/indestructible/white,
-/area/voidcrew/penitentiary/infirmary)
 "VT" = (
 /obj/structure/table,
 /obj/item/toy/cards/deck{
@@ -5891,6 +5873,12 @@
 	},
 /turf/open/indestructible/dark/small,
 /area/voidcrew/player_outpost/prison/penitentiary)
+"Wm" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/penitentiary/staff)
 "Wq" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/internals,
@@ -5937,7 +5925,10 @@
 /turf/open/indestructible/kitchen,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "Wy" = (
-/obj/structure/sink/directional/west,
+/obj/structure/rack,
+/obj/item/storage/box/bodybags{
+	pixel_y = 4
+	},
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "WB" = (
@@ -5945,13 +5936,7 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/escape_wing)
 "WD" = (
-/obj/structure/table,
-/obj/item/paper{
-	pixel_x = -3
-	},
-/obj/item/pen{
-	pixel_x = 5
-	},
+/obj/effect/landmark/penitentiary/morgue,
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "WF" = (
@@ -5968,12 +5953,15 @@
 /turf/open/indestructible,
 /area/voidcrew/player_outpost/prison/penitentiary)
 "WJ" = (
-/obj/structure/table,
-/obj/structure/bedsheetbin/basket,
+/obj/structure/sign/poster/official/safety_report/directional/east,
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "WK" = (
-/turf/open/indestructible/carpet/red,
+/obj/structure/table/wood,
+/obj/item/book/bible{
+	pixel_y = 4
+	},
+/turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "WL" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -6097,6 +6085,9 @@
 /obj/structure/sign/poster/official/space_cops/directional/west,
 /turf/open/indestructible/dark/smooth_large,
 /area/voidcrew/penitentiary/lobby)
+"Yc" = (
+/turf/open/indestructible/dark/small,
+/area/voidcrew/penitentiary/evidence)
 "Ye" = (
 /obj/effect/turf_decal/tile/red/fourcorners{
 	dir = 1
@@ -6111,19 +6102,11 @@
 /turf/open/indestructible/dark/small,
 /area/voidcrew/penitentiary/escape_wing)
 "Yj" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/flare/candle{
-	pixel_x = -8;
-	pixel_y = 10
-	},
-/obj/item/flashlight/flare/candle{
-	pixel_x = 8;
-	pixel_y = 10
-	},
+/obj/machinery/light/small/directional/south,
 /turf/open/indestructible/wood/parquet,
 /area/voidcrew/penitentiary/morgue)
 "Yk" = (
-/obj/structure/chair/sofa/corp{
+/obj/structure/chair/sofa/corp/left{
 	dir = 4
 	},
 /turf/open/indestructible/dark,
@@ -6152,7 +6135,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/escape_wing)
 "Yq" = (
-/obj/structure/filingcabinet/chestdrawer,
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
 /turf/open/indestructible/white/textured,
 /area/voidcrew/penitentiary/morgue)
 "Yv" = (
@@ -6171,7 +6156,7 @@
 /area/voidcrew/player_outpost/prison/penitentiary)
 "YD" = (
 /obj/structure/chair/sofa/bench/right{
-	dir = 8
+	dir = 4
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
@@ -6203,11 +6188,22 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
 "YR" = (
-/obj/structure/chair/sofa/corp/right{
+/obj/structure/chair/sofa/corp{
 	dir = 4
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/penitentiary/staff)
+"YS" = (
+/obj/structure/table/reinforced,
+/obj/item/folder{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 4
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/penitentiary/podbay)
 "YT" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 8
@@ -6488,25 +6484,25 @@ aE
 de
 aj
 aj
-oP
-aj
-VH
+cL
 aj
 oP
+aj
+cL
 aj
 aj
 de
 an
 YP
-lX
-aj
-aj
-aj
-aj
-aj
 ts
+aj
+aj
+aj
+aj
+aj
 Yk
 YR
+nA
 Fx
 aj
 at
@@ -6637,9 +6633,9 @@ de
 aj
 aj
 aj
-YD
 Fk
 PD
+VH
 aj
 aj
 aj
@@ -6649,7 +6645,7 @@ tH
 aj
 aj
 YF
-Hg
+lX
 aj
 aj
 aj
@@ -6661,7 +6657,7 @@ at
 Gy
 aI
 aI
-kw
+aI
 aI
 aI
 dI
@@ -6711,9 +6707,9 @@ de
 aj
 aj
 aj
-ih
 RJ
 mZ
+YD
 aj
 aj
 aj
@@ -6735,7 +6731,7 @@ at
 aI
 aI
 aI
-kw
+aI
 aI
 aI
 aI
@@ -6806,7 +6802,7 @@ aj
 aj
 aj
 at
-Km
+kw
 aI
 yv
 aI
@@ -6931,7 +6927,7 @@ rx
 aE
 aj
 aj
-yw
+WJ
 aj
 aj
 aj
@@ -6939,12 +6935,12 @@ aj
 aj
 hc
 aj
-WJ
+ih
 an
 Am
 hc
 aj
-cL
+Hg
 aj
 aj
 oI
@@ -7309,18 +7305,18 @@ pB
 pB
 za
 ak
-gH
-Pi
-Pi
 vd
-Pi
-Pi
-Pi
-Pi
+Ho
+Ho
 Bv
+Ho
+Ho
+Ho
+Ho
 co
 Pi
 Ho
+Et
 ak
 AD
 pB
@@ -7383,21 +7379,21 @@ lH
 lH
 JJ
 ak
+vd
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
 gH
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Bp
-Pi
-Pi
+Ho
+Ho
 ak
 nv
-CI
+GX
 lH
 lH
 lH
@@ -7457,18 +7453,18 @@ lH
 lH
 Ct
 ak
-zj
-Pi
-Pi
 Dy
-Dy
-Dy
-Dy
-Dy
-Pi
-Pi
-Pi
-Pi
+Ho
+Ho
+Bp
+Bp
+Bp
+Bp
+Bp
+Ho
+Ho
+Ho
+Ho
 ak
 hU
 lH
@@ -7531,18 +7527,18 @@ lH
 lH
 sb
 ak
-pi
-Pi
-Pi
-Dy
-Dy
 vL
-Dy
-Dy
-Pi
-Pi
-Pi
+Ho
+Ho
+Bp
+Bp
 Ry
+Bp
+Bp
+Ho
+Ho
+Ho
+zj
 ak
 cn
 lH
@@ -7605,18 +7601,18 @@ lH
 lH
 OB
 ak
-ue
-Pi
-Pi
-Dy
 nK
+Ho
+Ho
+Bp
 Av
 dK
-Dy
-Pi
-Pi
-Pi
-Pi
+pi
+Bp
+Ho
+Ho
+Ho
+Ho
 ak
 Ie
 lH
@@ -7679,18 +7675,18 @@ lH
 lH
 sb
 ak
-mY
-Pi
-Pi
-Dy
-Dy
 oZ
-Dy
-Dy
-Pi
-Pi
-Pi
+Ho
+Ho
+Bp
+Bp
 zX
+Bp
+Bp
+Ho
+Ho
+Ho
+ue
 ak
 gg
 lH
@@ -7746,32 +7742,32 @@ aE
 gg
 lH
 lH
-LV
 Pq
+IR
 cE
 lH
 lH
 Ct
 ak
-pi
-Pi
-Pi
-Dy
-Dy
-Dy
-Dy
-Dy
-Pi
-Pi
-Pi
-Pi
+vL
+Ho
+Ho
+Bp
+Bp
+Bp
+Bp
+Bp
+Ho
+Ho
+Ho
+Ho
 ak
 gg
 lH
 lH
 lH
-mB
-mB
+Wm
+Wm
 lH
 lH
 sb
@@ -7827,18 +7823,18 @@ dT
 dT
 cf
 ak
-pi
-nA
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-Pi
-nA
+vL
+mY
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+Ho
+mY
 ak
 GD
 dT
@@ -10371,20 +10367,20 @@ au
 hv
 aY
 Qk
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-BH
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+QY
+CG
+CG
+CG
+CG
+CG
 IA
 aY
 aq
@@ -10445,20 +10441,20 @@ au
 mL
 aY
 jD
-RM
-RM
-RM
+CG
+CG
+CG
 ZR
-pk
-nQ
-RM
-RM
 gW
+BH
+CG
+CG
 rk
 nQ
-RM
+BH
+CG
 XK
-RM
+CG
 IA
 aY
 aq
@@ -10519,20 +10515,20 @@ au
 mL
 aY
 Qk
-RM
-RM
-RM
-RM
-OO
-BH
-RM
-RM
-RM
-pk
-RM
+CG
+CG
+CG
+CG
+zK
+QY
+CG
+CG
+CG
+gW
+CG
 Sf
-BH
-RM
+QY
+CG
 iu
 aY
 aq
@@ -10593,20 +10589,20 @@ au
 mL
 aY
 nu
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 Sf
-RM
+CG
 IA
 aY
 aq
@@ -10667,19 +10663,19 @@ au
 mL
 aY
 nu
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 Sf
 wB
 aY
@@ -10740,21 +10736,21 @@ zW
 au
 ry
 nm
-RM
+CG
 dE
 ST
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 Sf
-RM
-RM
+CG
+CG
 NA
 aY
 aq
@@ -10815,20 +10811,20 @@ au
 rA
 aY
 gp
-RM
-RM
-RM
-BH
-RM
-RM
-RM
+CG
+CG
+CG
+QY
+CG
+CG
+CG
 Sf
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
 wB
 aY
 aq
@@ -10889,20 +10885,20 @@ au
 SU
 aY
 nu
-RM
-RM
-RM
-RM
-RM
-RM
-BH
-RM
-RM
-RM
-RM
-RM
-RM
-BH
+CG
+CG
+CG
+CG
+CG
+CG
+QY
+CG
+CG
+CG
+CG
+CG
+CG
+QY
 IA
 aY
 aq
@@ -10963,20 +10959,20 @@ au
 mL
 aY
 nu
-RM
+CG
 Sf
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 Eu
 aY
 aq
@@ -11037,20 +11033,20 @@ au
 SU
 aY
 nu
-RM
-RM
-RM
-gW
+CG
+CG
+CG
 rk
 nQ
+BH
 Sf
-RM
-gW
-OO
-nQ
-RM
-RM
-RM
+CG
+rk
+zK
+BH
+CG
+CG
+CG
 IA
 aY
 aq
@@ -11111,20 +11107,20 @@ au
 SU
 aY
 nu
-RM
-RM
-RM
-RM
-UZ
-RM
-RM
-RM
-RM
-UZ
-BH
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+YS
+CG
+CG
+CG
+CG
+YS
+QY
+CG
+CG
+CG
 IA
 aY
 aq
@@ -11185,20 +11181,20 @@ ce
 AS
 aY
 Qk
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 iu
 aY
 aq
@@ -11259,20 +11255,20 @@ aO
 aO
 aO
 Qk
-uv
 zT
 rL
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+UZ
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 IA
 aY
 aq
@@ -11296,18 +11292,18 @@ VO
 VO
 aF
 ic
-PE
-Pw
-Pw
 UO
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
+Ke
+Ke
 ck
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
 Pw
+Ke
 aX
 cr
 tU
@@ -11327,26 +11323,26 @@ Ji
 Oi
 Vt
 tm
-rU
+ud
 tm
 tm
 eH
 aO
 Qk
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
-RM
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
+CG
 IA
 aY
 aq
@@ -11369,24 +11365,24 @@ VO
 VO
 GS
 aF
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
 aX
 dQ
 af
-Uc
 Ma
+qu
 af
 af
 af
@@ -11398,12 +11394,12 @@ af
 ms
 aT
 zo
-rU
-rU
-rU
-rU
-rU
-rU
+ud
+ud
+ud
+ud
+ud
+ud
 cX
 aO
 uh
@@ -11413,8 +11409,8 @@ Mt
 zd
 Mt
 zd
-RM
-RM
+CG
+CG
 zd
 zd
 Mt
@@ -11443,25 +11439,25 @@ VO
 VO
 hd
 aF
-pG
-Pw
-Pw
-Pw
 sR
-Pw
-sR
-Pw
-sR
-Pw
-sR
-Pw
-Pw
+Ke
+Ke
+Ke
+PE
+Ke
+PE
+Ke
+PE
+Ke
+PE
+Ke
+Ke
 aX
 JL
 af
 af
-SG
 tg
+UL
 af
 af
 af
@@ -11472,12 +11468,12 @@ af
 QI
 aT
 Ij
-rU
-rU
-rU
-rU
-rU
-rU
+ud
+ud
+ud
+ud
+ud
+ud
 NW
 aO
 aY
@@ -11487,8 +11483,8 @@ aY
 aY
 aY
 aY
-kp
-kp
+tR
+tR
 aY
 aY
 aY
@@ -11517,19 +11513,19 @@ VO
 VO
 Lc
 aF
-Pw
-ux
+Ke
+PF
 HL
-Pw
-PF
-Pw
-PF
-Pw
-PF
-Pw
-PF
-Pw
-Pw
+Ke
+pG
+Ke
+pG
+Ke
+pG
+Ke
+pG
+Ke
+Ke
 aX
 dQ
 af
@@ -11546,29 +11542,29 @@ af
 ms
 aT
 Pl
-rU
-rU
-kX
-rU
-rU
-rU
+ud
+ud
+rZ
+ud
+ud
+ud
 cX
 aO
 iE
-kp
-kp
-Ms
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-Ms
+tR
+tR
+ou
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+ou
 LL
-kp
+tR
 VD
 aY
 aq
@@ -11591,19 +11587,19 @@ VO
 VO
 hP
 aF
-Pw
-Yj
+Ke
+Un
 Ym
-Pw
-nV
-Pw
-nV
-Pw
-nV
-Pw
-nV
-Pw
-Pw
+Ke
+ux
+Ke
+ux
+Ke
+ux
+Ke
+ux
+Ke
+Ke
 aX
 dQ
 af
@@ -11620,30 +11616,30 @@ af
 ms
 aT
 cY
-rU
-lC
+ud
 uJ
-rU
-rU
-rU
+kX
+ud
+ud
+ud
 cX
 aO
-kp
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+tR
 LL
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
 aY
 aq
 "}
@@ -11665,19 +11661,19 @@ VO
 VO
 VO
 aF
-Gu
 qi
+WK
 pj
-WK
-WK
-WK
-WK
-WK
-WK
-WK
-WK
-WK
 yD
+yD
+yD
+yD
+yD
+yD
+yD
+yD
+yD
+Yj
 aX
 mJ
 af
@@ -11694,30 +11690,30 @@ af
 ms
 aT
 WP
-rU
-rU
-eV
-rU
-rU
-rU
+ud
+ud
+FM
+ud
+ud
+ud
 Lo
 aO
-ou
 kp
+tR
 LL
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-zr
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+Ms
 aY
 aq
 "}
@@ -11739,24 +11735,24 @@ hD
 mp
 gC
 aF
-Pw
-Yj
+Ke
+Un
 HL
-Pw
-sR
-Pw
-sR
-Pw
-sR
-Pw
-sR
-Pw
-Pw
+Ke
+PE
+Ke
+PE
+Ke
+PE
+Ke
+PE
+Ke
+Ke
 aX
 dQ
 af
 af
-VR
+Vm
 af
 af
 af
@@ -11768,30 +11764,30 @@ af
 ms
 aT
 Qe
-rU
-rU
-rU
-rU
-rU
-rU
+ud
+ud
+ud
+ud
+ud
+ud
 Lo
 aO
-JB
-kp
-kp
+zr
+tR
+tR
 Rb
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
 aY
 aq
 "}
@@ -11813,19 +11809,19 @@ hD
 Lc
 VO
 aF
-Pw
-ux
+Ke
+PF
 HL
-Pw
-PF
-Pw
-PF
-Pw
-PF
-Pw
-PF
-Pw
-Pw
+Ke
+pG
+Ke
+pG
+Ke
+pG
+Ke
+pG
+Ke
+Ke
 aX
 PO
 af
@@ -11842,30 +11838,30 @@ af
 ms
 aT
 Qe
-rU
-rU
-rU
-rU
-rU
-rU
+ud
+ud
+ud
+ud
+ud
+ud
 gN
 aO
-kp
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+tR
 Rb
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
+tR
 aY
 aq
 "}
@@ -11887,19 +11883,19 @@ VO
 WF
 VO
 aF
-pG
-Pw
-Pw
-Pw
-nV
-Pw
-nV
-Pw
-nV
-Pw
-nV
-Pw
-Pw
+sR
+Ke
+Ke
+Ke
+ux
+Ke
+ux
+Ke
+ux
+Ke
+ux
+Ke
+Ke
 aX
 JL
 af
@@ -11916,29 +11912,29 @@ af
 QI
 aT
 gV
-rU
-rU
-rU
-rU
-rU
-rU
+ud
+ud
+ud
+ud
+ud
+ud
 cX
 aO
+JB
+tR
+tR
+QA
 lb
-kp
-kp
-JQ
+tR
+tR
+tR
+tR
+tR
 QA
-kp
-kp
-kp
-kp
-kp
-JQ
-QA
-kp
-kp
-kp
+lb
+tR
+tR
+tR
 xX
 aD
 aq
@@ -11961,19 +11957,19 @@ VO
 VO
 xD
 aF
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-Pw
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
 aX
 Sg
 ZK
@@ -11992,28 +11988,28 @@ aT
 EL
 KR
 KR
-rU
+ud
 KR
 KR
 KR
 OJ
 aO
-kp
-kp
-kp
-kp
-kL
-kp
-kp
-kp
-kp
-kp
-kp
-kL
-kp
-kp
-kp
-lb
+tR
+tR
+tR
+tR
+JQ
+tR
+tR
+tR
+tR
+tR
+tR
+JQ
+tR
+tR
+tR
+JB
 aD
 aq
 "}
@@ -12036,18 +12032,18 @@ VO
 xD
 aF
 GJ
-PE
+UO
+Ke
+Ke
+Ke
+Ke
+Ke
+Ke
+Gu
+Ke
+Ke
 Pw
-Pw
-Pw
-Pw
-Pw
-Pw
-pS
-Pw
-Pw
-ck
-Pw
+Ke
 aX
 aT
 aT
@@ -12055,7 +12051,7 @@ aT
 aT
 aT
 aT
-ns
+wV
 aT
 aT
 aT
@@ -12066,28 +12062,28 @@ aT
 aO
 aO
 aO
-Hw
+Yc
 aO
 aO
 aO
 aO
 aO
-kp
-kp
-kp
-kp
-yP
-kp
-kp
-kp
-kp
-kp
-kp
-yP
-kp
-kp
-kp
-kp
+tR
+tR
+tR
+tR
+kL
+tR
+tR
+tR
+tR
+tR
+tR
+kL
+tR
+tR
+tR
+tR
 aD
 aq
 "}
@@ -12115,7 +12111,7 @@ aX
 aX
 aX
 aX
-Pw
+Ke
 aX
 aX
 aX
@@ -12131,36 +12127,36 @@ MR
 Ik
 jh
 aT
-SJ
-Tl
 oy
+eD
 Tl
 eD
+ns
 aT
 kN
-Hw
-Hw
+Yc
+Yc
 PI
+Yc
 Hw
-cS
-Hw
-Hw
+Yc
+Yc
 aO
 mP
-kp
-kp
-kp
-HY
-kp
-kp
-kp
+tR
+tR
+tR
+rX
+tR
+tR
+tR
 Rb
-kp
-kp
-HY
-kp
-kp
-kp
+tR
+tR
+rX
+tR
+tR
+tR
 Wq
 aD
 aq
@@ -12187,55 +12183,55 @@ vY
 aU
 aU
 aU
-Ni
-aU
-aU
-aU
-aU
-aU
-aU
-aU
 yV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+pS
 aX
 Cf
-ns
-Uc
-SG
-ns
-ns
+wV
+Ma
+tg
+wV
+wV
 jh
 aT
-SJ
-Tl
-Tl
-Tl
-Tl
+oy
+eD
+eD
+eD
+eD
 aT
-FS
-Hw
-Hw
-Hw
-PI
-Hw
-Hw
 Tu
+Yc
+Yc
+Yc
+PI
+Yc
+Yc
+Ap
 aO
-JB
-kp
-GV
-jb
-Fv
-BP
-Xn
-kp
-kp
-GV
-jb
-az
-BP
-OR
-kp
 zr
+tR
+jb
+BP
+Fv
+OR
+Xn
+tR
+tR
+jb
+BP
+az
+OR
+HY
+tR
+Ms
 aD
 aq
 "}
@@ -12257,59 +12253,59 @@ km
 km
 aM
 aF
-GK
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
 Yq
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+Ni
 aX
 Cf
-ns
-ns
-Ma
-ns
-ns
+wV
+wV
+qu
+wV
+wV
 jh
 aT
-dj
-Tl
-Tl
-Tl
-Tl
+yn
+eD
+eD
+eD
+eD
 aT
-FS
-Hw
-Hw
-Hw
-Hw
-Hw
-Hw
 Tu
+Yc
+Yc
+Yc
+Yc
+Yc
+Yc
+Ap
 aO
 oY
-kp
-GV
+tR
 jb
+BP
 az
 We
-OR
-kp
-kp
+HY
+tR
+tR
 hV
-jb
-az
 BP
+az
+OR
 qC
-kp
-kp
+tR
+tR
 aY
 aq
 "}
@@ -12331,59 +12327,59 @@ FK
 aM
 bm
 aF
+Yq
+aU
+aU
+aU
+aU
 GK
-aU
-aU
-aU
-aU
-my
 aU
 aU
 aU
 aU
 aU
 nP
-Yq
+Ni
 aX
 Cy
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-SJ
-Tl
-Tl
-Tl
-Eq
+oy
+eD
+eD
+eD
+dj
 aT
-FS
-Hw
-Hw
-Hw
 Tu
-Hw
-Hw
-UM
+Yc
+Yc
+Yc
+Ap
+Yc
+Yc
+FS
 aO
-ou
 kp
-GV
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
+HY
+tR
 kp
-ou
 aY
 aq
 "}
@@ -12405,7 +12401,7 @@ DH
 DH
 DH
 aF
-GK
+Yq
 aU
 aU
 aU
@@ -12420,44 +12416,44 @@ aU
 aU
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
-FS
-Hw
-Hw
-Hw
 Tu
-Hw
-Hw
-Hw
+Yc
+Yc
+Yc
+Ap
+Yc
+Yc
+Yc
 aO
-ou
 kp
+tR
+jb
+BP
 GV
-jb
-nb
-BP
 OR
+HY
 Rb
-kp
+tR
 hV
-jb
-nb
 BP
+GV
 OR
+HY
+tR
 kp
-ou
 aY
 aq
 "}
@@ -12482,56 +12478,56 @@ aF
 AO
 aU
 aU
-cZ
-aU
-aU
-aU
 dg
 aU
 aU
 aU
-aU
 WD
+aU
+aU
+aU
+aU
+my
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
-FS
-Hw
-Hw
-Hw
-Bo
-Hw
-PI
+Tu
+Yc
+Yc
+Yc
 Rf
+Yc
+PI
+UM
 aO
-kp
-kp
-GV
+tR
+tR
 jb
+BP
 az
 Gf
-OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
+HY
+tR
+tR
 aY
 aq
 "}
@@ -12565,47 +12561,47 @@ aU
 aU
 aU
 aU
-be
+cZ
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 dL
 aT
-Tl
-Tl
-Qz
-Tl
-Tl
+eD
+eD
+SD
+eD
+eD
 aT
-FS
-Hw
-PI
-Hw
 Tu
-Hw
-Hw
-Hw
+Yc
+PI
+Yc
+Ap
+Yc
+Yc
+Yc
 aO
-JB
-kp
-GV
+zr
+tR
 jb
+BP
 uj
 Gf
-OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
+HY
+tR
+tR
 aY
 aq
 "}
@@ -12627,10 +12623,10 @@ FK
 aM
 bm
 aF
-qw
-aU
-aU
 wX
+aU
+aU
+be
 aU
 aU
 aU
@@ -12642,44 +12638,44 @@ aU
 aU
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
-ns
-Tl
-Tl
-Tl
-Qz
-Tl
-GB
+wV
+wV
+wV
+wV
+wV
+wV
+eD
+eD
+eD
+SD
+eD
+OK
 aT
-FS
+Tu
 PI
-Hw
-Hw
+Yc
+Yc
 oX
 PI
-Hw
-Tu
+Yc
+Ap
 aO
-kp
-kp
-GV
+tR
+tR
+jb
 Ts
 az
-BP
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
+HY
+tR
+tR
 aY
 aq
 "}
@@ -12706,9 +12702,9 @@ aU
 aU
 aU
 aU
-Wy
-aU
 Gx
+aU
+qw
 aU
 aU
 aU
@@ -12716,44 +12712,44 @@ aU
 aU
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
-FS
-Hw
-Hw
-PI
-Hw
-Hw
-Hw
 Tu
+Yc
+Yc
+PI
+Yc
+Yc
+Yc
+Ap
 aO
-lb
-kp
-GV
+JB
+tR
 jb
-nb
 BP
-qC
-kp
-kp
 GV
-jb
-nb
-BP
 OR
+qC
+tR
+tR
+jb
+BP
+GV
+OR
+HY
 LL
-kp
+tR
 aD
 aq
 "}
@@ -12790,44 +12786,44 @@ aX
 aX
 aX
 Cy
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
-Hw
-Hw
-Hw
-Hw
-Hw
-Hw
-Hw
-Hw
+Yc
+Yc
+Yc
+Yc
+Yc
+Yc
+Yc
+Yc
 aO
-lb
-kp
-GV
+JB
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
+HY
+tR
+tR
 aD
 aq
 "}
@@ -12857,51 +12853,51 @@ aU
 aU
 aU
 nP
-Ni
+yV
 aU
 aU
 aU
 aU
 aX
 Cf
-ns
-ns
-ns
-ns
-ns
+wV
+wV
+wV
+wV
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
+cS
+Yc
+Yc
+Yc
 Ap
-Hw
-Hw
-Hw
-Tu
-Hw
-Hw
-UM
+Yc
+Yc
+FS
 aO
-kp
-kp
+tR
+tR
 cq
-jb
-az
 BP
-OR
-kp
-kp
-GV
-jb
 az
-BP
 OR
-kp
-kp
+HY
+tR
+tR
+jb
+BP
+az
+OR
+HY
+tR
+tR
 aD
 aq
 "}
@@ -12924,58 +12920,58 @@ aM
 bm
 aF
 aU
-my
+GK
 aU
 aU
-my
+GK
 aU
 aU
-my
+GK
 aU
 aU
 aU
 aU
-mt
+Wy
 aX
 Cf
-pt
-ns
-ns
-pt
-ns
+GB
+wV
+wV
+GB
+wV
 jh
 aT
-Tl
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
+eD
+eD
 aT
 PI
-Hw
-Hw
-Hw
-xe
-Hw
-Hw
-UM
+Yc
+Yc
+Yc
+Bo
+Yc
+Yc
+FS
 aO
-JB
-kp
-GV
+zr
+tR
 jb
+BP
 az
 CW
-OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-zr
+HY
+tR
+Ms
 aD
 aq
 "}
@@ -13009,47 +13005,47 @@ aU
 aU
 aU
 aU
-mt
+Wy
 aX
 Cf
-ns
-ns
-Di
-ns
-ns
+wV
+wV
+gX
+wV
+wV
 jh
 aT
-gX
-Tl
-Tl
-Tl
-Eq
+pt
+eD
+eD
+eD
+dj
 aT
-Hw
-Hw
-Hw
-Hw
-Tu
-Hw
-Hw
-Hw
+Yc
+Yc
+Yc
+Yc
+Ap
+Yc
+Yc
+Yc
 aO
-kp
-kp
+tR
+tR
 cq
-jb
-nb
 BP
-OR
-kp
-kp
 GV
-jb
-nb
-BP
 OR
-kp
-lb
+HY
+tR
+tR
+jb
+BP
+GV
+OR
+HY
+tR
+JB
 aD
 aq
 "}
@@ -13072,58 +13068,58 @@ aM
 Wk
 aF
 aU
-my
+GK
 aU
 aU
-my
+GK
 aU
 aU
-my
+GK
 aU
 aU
 aU
 aU
-dD
+mt
 aX
 uo
-ns
-ns
+wV
+wV
+gX
+wV
 Di
-ns
-cH
 jh
 aT
-gX
-Tl
-Tl
-Tl
-Tl
+pt
+eD
+eD
+eD
+eD
 aT
-Hw
-Hw
-Hw
-Hw
-Tu
+Yc
+Yc
+Yc
+Yc
+Ap
 PI
-Hw
-Rf
+Yc
+UM
 aO
-rX
-kp
-GV
+yP
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-lb
+HY
+tR
+JB
 aY
 aq
 "}
@@ -13157,47 +13153,47 @@ aU
 aU
 aU
 aU
-dD
+mt
 aX
 Cf
-sD
-ns
-Di
-sD
-ns
+cH
+wV
+gX
+cH
+wV
 jh
 aT
+ns
 eD
-Tl
-Tl
-Tl
-Tl
+eD
+eD
+eD
 aT
-Hw
-Hw
-Hw
-Hw
-UM
-Hw
-Hw
-Hw
+Yc
+Yc
+Yc
+Yc
+FS
+Yc
+Yc
+Yc
 aO
-ou
 kp
-GV
+tR
 jb
+BP
 Fv
-BP
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
+HY
+tR
+tR
 aY
 aq
 "}
@@ -13219,19 +13215,19 @@ FK
 aM
 bm
 aF
-CG
-aU
-aU
-aU
-aU
-aU
-Gx
-aU
-aU
-aU
-aU
-aU
 dD
+aU
+aU
+aU
+aU
+aU
+qw
+aU
+aU
+aU
+aU
+aU
+mt
 aX
 Ww
 Yv
@@ -13241,37 +13237,37 @@ Nr
 qa
 GA
 aT
+ns
 eD
-Tl
-uO
-Tl
 xO
+eD
+sD
 aT
-kM
-Hw
-Hw
 FB
-Hw
-Hw
-Hw
-Tu
+Yc
+Yc
+xe
+Yc
+Yc
+Yc
+Ap
 aO
-kp
-kp
-GV
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-kp
-GV
+HY
+tR
+tR
 jb
-az
 BP
+az
 OR
-kp
-zr
+HY
+tR
+Ms
 aY
 aq
 "}
