@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 /area/voidcrew/homestead
 	name = "\improper Homestead"

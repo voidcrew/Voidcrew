@@ -1,4 +1,4 @@
-/// Backgrounds: owned by M3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by M3.
 
 // ========== CORSAIR MODULES ==========
 

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P3.
 
 /**
  * # Warrant console

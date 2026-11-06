@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P0 (frozen). See data/backgrounds/spec.md.
+/// Backgrounds: owned by P0 (frozen).
 
 // Shared helpers for the backgrounds tests. Unit tests compile before voidcrew defines: use literals.
 

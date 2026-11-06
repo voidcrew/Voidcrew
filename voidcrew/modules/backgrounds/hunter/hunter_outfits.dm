@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P3.
 
 /**
  * The Marshal-class crew: a posse in dusters and bounty hats, sec HUDs over the eyes, cuffs on the belt.

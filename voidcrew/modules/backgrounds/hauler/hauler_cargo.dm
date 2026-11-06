@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P5. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P5.
 
 /*
  * What a Mule-class hauler carries and who crews it (ECO-7, ECO-8, TAK-1): the markers its hull

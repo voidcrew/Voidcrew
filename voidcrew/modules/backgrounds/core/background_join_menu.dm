@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /**
  * The join menu's "Other starts" entries (spec 5.2): every start the round can offer right now,

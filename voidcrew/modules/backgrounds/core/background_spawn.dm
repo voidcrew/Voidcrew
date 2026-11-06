@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /// ckeys whose arrival background_site_arrival() is announcing right now. The join handler leaves them alone.
 GLOBAL_LIST_EMPTY(background_site_arrivals)

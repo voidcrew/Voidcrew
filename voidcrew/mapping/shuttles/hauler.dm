@@ -1,4 +1,4 @@
-/// Backgrounds: owned by M4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by M4.
 
 // Fixed NPC freighter: no slots, themes or cryopods. SSnpc_ships loads it for P5's haulers, and
 // unit tests load it as a crewless player hull. The crew spawns on /obj/effect/landmark/hauler/crew.

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 /// How close a homesteader comes before the family greets them
 #define HOMESTEAD_GREET_RANGE 7

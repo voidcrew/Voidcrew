@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 /datum/background/pirate
 	parent_type = /datum/background/hull_start

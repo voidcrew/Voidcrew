@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P5. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P5.
 
 /*
  * The Mule-class hauler (decision 6, D7; ECO-7, ECO-8, Q8): an unarmed NPC freighter patrolling

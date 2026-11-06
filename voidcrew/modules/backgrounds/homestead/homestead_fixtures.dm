@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 /// Most eggs the nesting box holds
 #define HOMESTEAD_COOP_EGGS_MAX 12

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 // The green cordon (MP-5): a pirate hull is turned back at the edge of green, on the step that
 // would cross (start_zone_transition(), reached from tick_move() and manual burns). No patrol,

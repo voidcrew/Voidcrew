@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P3.
 
 // ===== RECOGNITION [MP-1, MP-2, MP-3] =====
 // Who a person is, for the counters and the warrant trade: the mind when the face shows, the ID's name

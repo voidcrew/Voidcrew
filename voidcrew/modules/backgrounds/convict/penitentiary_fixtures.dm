@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P2. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P2.
 
 /**
  * # The Penitentiary's fittings

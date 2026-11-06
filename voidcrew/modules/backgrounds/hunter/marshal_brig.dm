@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P3.
 
 /**
  * Whether `user` is on the roster of `ship`. The Marshal's brig gear opens for nobody else: every

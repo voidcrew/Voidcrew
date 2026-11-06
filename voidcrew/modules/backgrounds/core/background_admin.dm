@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 // The main menu, in the order it shows (spec 5.4)
 #define BACKGROUND_ADMIN_MENU_LIST "List players"

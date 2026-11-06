@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P3. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P3.
 
 /**
  * The bounty hunter: a crew on a Marshal-class hull, with the warrant console, a brig and a goal of

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 /// Random darts thrown at the surface before giving up on more entrances
 #define FRONTIER_LADDER_DARTS 400

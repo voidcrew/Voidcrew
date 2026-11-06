@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 /**
  * The Black Ledger: a mission board on a smugglers' network. It lists the hull's own offers (the

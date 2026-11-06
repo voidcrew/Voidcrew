@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P5. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P5.
 
 /*
  * The hauler's brain: the stock NPC ship controller and movement subtree, with no combat

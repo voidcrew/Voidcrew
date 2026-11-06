@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P5. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P5.
 
 /*
  * Keeps BACKGROUND_HAULER_COUNT haulers flying, one in yellow and one in red (ECO-7, ECO-8). It

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /// The background this mind is playing, if any
 /datum/mind/var/datum/background_state/background_state

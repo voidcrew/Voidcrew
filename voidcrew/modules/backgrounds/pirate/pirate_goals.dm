@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 // The pirate goal: credits taken off other ships. Counted from COMSIG_BACKGROUND_CREDITS_TAKEN,
 // which the siphon sends when a run ends (pirate_siphon.dm) and a hauler sends when it

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 /// Two of these are mapped on every Corsair (never in an outfit): a face and a forged card for the counters
 /obj/item/storage/box/disguise_kit

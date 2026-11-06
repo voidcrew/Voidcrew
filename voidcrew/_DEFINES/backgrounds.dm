@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P0 (frozen). See data/backgrounds/spec.md.
+/// Backgrounds: owned by P0 (frozen).
 
 // Keys (savefile values: never rename)
 #define BACKGROUND_SPACEFARER "spacefarer"

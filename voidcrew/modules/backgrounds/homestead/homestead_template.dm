@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 /// Never in a random ruin pool: it has no id. frontier_before_ruins() stamps it at the surface centre.
 /datum/map_template/ruin/frontier_homestead

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /// Every background with a key, by key. One instance of each.
 GLOBAL_LIST_INIT(backgrounds, init_backgrounds())

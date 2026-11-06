@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 // Unit tests compile before the voidcrew defines: every BACKGROUND_* value below is a literal with
 // its define named beside it.

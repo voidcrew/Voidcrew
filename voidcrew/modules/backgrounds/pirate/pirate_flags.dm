@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 /obj/structure/overmap/ship
 	/// Flagged as a pirate hull: kept out of green, refused at green and yellow outposts and by freight lines

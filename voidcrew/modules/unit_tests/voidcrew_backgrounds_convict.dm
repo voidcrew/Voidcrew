@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P2. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P2.
 
 // Tests for the convict background and the Meridian Penitentiary. Unit tests compile before the
 // voidcrew defines, so values are literals with the define named beside them:

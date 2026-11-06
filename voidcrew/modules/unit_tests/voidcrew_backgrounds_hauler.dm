@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P5. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P5.
 
 // NPC haulers (spec section 6 P5). Unit tests compile before the voidcrew defines, so the
 // literals below carry the name of the define they stand for.

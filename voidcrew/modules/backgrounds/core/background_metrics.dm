@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /*
  * EVENT CATALOG (category METRIC_BACKGROUND). Every row passes `ship` itself, null for a shipless

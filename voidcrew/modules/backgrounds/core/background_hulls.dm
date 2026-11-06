@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P1. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P1.
 
 /datum/map_template/shuttle/voidcrew
 	/// The background this hull is the start of (a BACKGROUND_* key). Keeps it off the shelf and out of the roundstart roll.

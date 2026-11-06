@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 // The Frontier: the one permanent planet, built at boot on the preloaded path (frontier_world.dm).
 // Wasteland ground and weather, prairie-heavy tables, no fallout, no mines and no portals on the

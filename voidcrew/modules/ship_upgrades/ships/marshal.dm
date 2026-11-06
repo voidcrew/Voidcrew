@@ -1,4 +1,4 @@
-/// Backgrounds: owned by M2. See data/backgrounds/spec.md.
+/// Backgrounds: owned by M2.
 
 // ========== MARSHAL MODULES ==========
 

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 // Halcyon (green) and Quartermain (yellow) check faces and papers at every counter, the
 // imprinter, the MOD bench, the chrome cradle, Pike and the network pad (all through

@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P4. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P4.
 
 // Unit tests compile before the voidcrew defines, so these use literals with the define named
 // beside them: "pirate" is BACKGROUND_PIRATE, "background_credits_taken" is

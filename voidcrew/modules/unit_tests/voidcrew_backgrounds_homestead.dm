@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 // Homesteader, the Frontier and the family. Unit tests compile before voidcrew defines: literals,
 // each named. The homestead's own tick is stopped while a test runs; tests drive it by hand on a

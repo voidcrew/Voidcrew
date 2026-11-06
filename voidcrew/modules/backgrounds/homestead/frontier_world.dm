@@ -1,4 +1,4 @@
-/// Backgrounds: owned by P6. See data/backgrounds/spec.md.
+/// Backgrounds: owned by P6.
 
 // Boot hooks for the Frontier, the one permanent planet. It loads in SSmapping.loadWorld() as a
 // LoadGroup pair (cave below, surface above) on the dormant preloaded path; these procs close that
