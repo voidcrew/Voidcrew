@@ -13,7 +13,7 @@
 /datum/planet/frontier
 	terrain_generator = /datum/map_generator/planet_generator/lava
 	environment = /datum/planet_environment/frontier
-	ruin_settings = /datum/planet_ruins/wasteland
+	ruin_settings = /datum/planet_ruins/frontier
 	// The wasteland's table, with prairie in its fallout and junkyard cells
 	overworld_biomes = list(
 		BIOME_COLDEST = list(
@@ -89,6 +89,20 @@
 			BIOME_HIGH_HUMIDITY = /datum/biome/cave/mossy_stone,
 			BIOME_HIGHEST_HUMIDITY = /datum/biome/cave/rubble
 		)
+	)
+
+/// The wasteland's frontier ruins: camps, farms, a saloon, a store
+/datum/planet_ruins/frontier
+	theme = ZTRAIT_WASTELAND_RUINS
+	templates = list(
+		/datum/map_template/ruin/wasteland/survivors/adobe,
+		/datum/map_template/ruin/wasteland/survivors/farm,
+		/datum/map_template/ruin/wasteland/survivors/saloon,
+		/datum/map_template/ruin/wasteland/survivors/drugstore,
+		/datum/map_template/ruin/wasteland/hermit,
+		/datum/map_template/ruin/wasteland/house,
+		/datum/map_template/ruin/wasteland/seed_vault,
+		/datum/map_template/ruin/wasteland/conveniencestore,
 	)
 
 /**

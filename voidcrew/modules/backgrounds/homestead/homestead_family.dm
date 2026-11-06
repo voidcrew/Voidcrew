@@ -154,7 +154,10 @@
 	. = ..(mapload)
 	ADD_TRAIT(src, TRAIT_HOMESTEAD_RESIDENT, BACKGROUND_TRAIT)
 	transform = standing_transform()
-	var/datum/homestead/home_place = new_homestead || GLOB.homestead
+	// Family of the homestead that made them, or of the one they were put down on
+	var/datum/homestead/home_place = new_homestead
+	if(!home_place && GLOB.homestead?.contains(src))
+		home_place = GLOB.homestead
 	home_place?.add_member(src)
 
 /mob/living/basic/ambient_npc/homestead/Destroy()
@@ -201,6 +204,8 @@
 
 /// Greets `settler` by name, with a line for `context` ("greet" coming home, "welcome" on arrival)
 /mob/living/basic/ambient_npc/homestead/proc/greet(mob/living/settler, context = "greet")
+	if(!can_greet())
+		return
 	var/datum/ambient_activity/homestead_greet/greeting = new(src, settler)
 	greeting.context = context
 	start_activity(greeting)
@@ -229,7 +234,6 @@
 	return_home()
 
 /mob/living/basic/ambient_npc/homestead/on_attacked(datum/source, atom/attacker, attack_flags)
-	SIGNAL_HANDLER
 	if(ismob(attacker) && (attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK)))
 		var/mob/living/hitter = attacker
 		if(hitter.ckey)
@@ -310,10 +314,16 @@
 
 // Three quarters of a grown-up, feet still on the floor
 /mob/living/basic/ambient_npc/homestead/child/standing_transform()
-	return matrix().Scale(0.75).Translate(0, -4)
+	var/matrix/shape = matrix()
+	shape.Scale(0.75)
+	shape.Translate(0, -4)
+	return shape
 
 /mob/living/basic/ambient_npc/homestead/child/lying_transform()
-	return matrix().Scale(0.75).Turn(90)
+	var/matrix/shape = matrix()
+	shape.Scale(0.75)
+	shape.Turn(90)
+	return shape
 
 #undef HOMESTEAD_GREET_RANGE
 #undef HOMESTEAD_GREET_COOLDOWN

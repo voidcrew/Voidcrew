@@ -5,7 +5,8 @@
 // path's gaps (survey D 2.4) in boot order:
 // 1. frontier_before_ruins() from setup_ruins(): the band, the two fauna trackers, the dock strip,
 //    the homestead stamp and its keep-out ring, the homestead controller.
-// 2. frontier_after_terrain() from setup_rivers(), after terrain and before population: the ladders.
+// 2. frontier_after_terrain() from setup_rivers(), after terrain and before population: the ladders,
+//    then the ruins.
 // 3. frontier_attach_cave() from SSovermap.setup_planets(): the cave footprint, the trackers'
 //    footprints, then homestead_after_atoms().
 
@@ -91,7 +92,12 @@
 		reserved.turf_flags |= NO_RUINS
 	CHECK_TICK
 
-/// Places the cave ladders once the ground is generated
+/**
+ * Once the ground is generated: the cave ladders, then the ruins. The Frontier seeds its ruins here,
+ * after terrain, as a dynamic planet does, and not before it as the other preloaded planets do:
+ * seeded first, every ruin tile mapped in a planet area (a ruin's yard, a cave around it) is
+ * generated over afterwards, burying what the ruin put there.
+ */
 /proc/frontier_after_terrain(list/record)
 	if(!islist(record) || record["type"] != /datum/overmap/planet/frontier)
 		return
@@ -99,6 +105,7 @@
 	var/turf/house = GLOB.homestead?.centre || locate(round(world.maxx / 2) + 1, round(world.maxy / 2) + 1, surface_z)
 	var/placed = spawn_frontier_cave_ladders(surface_z, surface_z - 1, house)
 	log_mapping("Frontier: [placed] cave entrance\s")
+	generate_planet_ruins(/datum/planet/frontier, list(surface_z, surface_z - 1), list(/area/overmap_encounter/planetoid/frontier))
 
 /// Gives the planet its cave footprint and trackers
 /proc/frontier_attach_cave(obj/structure/overmap/planet/planet, datum/map_zone/mapzone, list/record)

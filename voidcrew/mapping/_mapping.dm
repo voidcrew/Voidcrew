@@ -425,8 +425,10 @@
 			continue
 		var/datum/overmap/planet/planet_info = new overmap_type
 		var/planet_z = record["z"]
-		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: the homestead and its keep-out rings first (voidcrew/modules/backgrounds/homestead)
+		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: the homestead and its rings now; its ruins after terrain, in frontier_after_terrain() (voidcrew/modules/backgrounds/homestead)
 			frontier_before_ruins(record)
+			qdel(planet_info)
+			continue
 		generate_planet_ruins(planet_info.planet_template, list(planet_z, planet_z - 1), list(planet_info.surface_area))
 		qdel(planet_info)
 
@@ -444,7 +446,7 @@
 		// Existing roundstart templates have two levels. Both previously received rivers.
 		generate_planet_rivers(planet_type, planet_z, whitelist_areas)
 		generate_planet_rivers(planet_type, planet_z - 1, whitelist_areas)
-		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: cave ladders, after terrain and before population (voidcrew/modules/backgrounds/homestead)
+		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: cave ladders and ruins, after terrain and before population (voidcrew/modules/backgrounds/homestead)
 			frontier_after_terrain(record)
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()

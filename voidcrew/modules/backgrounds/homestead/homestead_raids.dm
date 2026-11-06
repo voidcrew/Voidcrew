@@ -32,15 +32,19 @@
 	if(!next_raid_at)
 		next_raid_at = world.time + BACKGROUND_RAID_INTERVAL
 		return
-	if(world.time >= next_raid_at)
+	// A new party only rides on someone who is actually there to meet it
+	if(world.time >= next_raid_at && homesteader_on_frontier(TRUE))
 		start_raid()
 
-/// Whether a homesteader is alive on either of the Frontier's levels
-/datum/homestead/proc/homesteader_on_frontier()
+/// Whether a homesteader is alive on either of the Frontier's levels (and connected, if `connected`)
+/datum/homestead/proc/homesteader_on_frontier(connected = FALSE)
 	for(var/datum/mind/mind as anything in background_active_minds(BACKGROUND_HOMESTEADER))
 		var/mob/living/settler = mind.current
-		if(!QDELETED(settler) && settler.stat != DEAD && on_frontier(settler))
-			return TRUE
+		if(QDELETED(settler) || settler.stat == DEAD || !on_frontier(settler))
+			continue
+		if(connected && !settler.client)
+			continue
+		return TRUE
 	return FALSE
 
 /// The party's riders who are still alive and on the surface

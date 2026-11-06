@@ -240,11 +240,8 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 		if(istype(get_area(table), /area/voidcrew/homestead/house))
 			table_refs += WEAKREF(table)
 
-/// Kinds of fixture the routines look for, found in one sweep of the homestead and kept as weakrefs
-#define HOMESTEAD_FIXTURE_TYPES list( 	/obj/machinery/oven/range, 	/obj/machinery/hydroponics, 	/obj/structure/water_source/homestead_well, 	/obj/structure/homestead_coop, 	/obj/structure/ore_container/food_trough, 	/obj/structure/bed, 	/obj/structure/closet, 	/obj/structure/chair, 	/obj/structure/table, )
-
 /**
- * Every live fixture of `fixture_type` (one of HOMESTEAD_FIXTURE_TYPES, or a subtype) on the
+ * Every live fixture of `fixture_type` (a kind sweep_fixtures() looks for, or a subtype) on the
  * homestead. Routines ask when they start (MOD-3): a fixture that was taken away is gone from the
  * answer, and when none is left the homestead is swept again, at most once a minute.
  */
@@ -274,7 +271,18 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 	fixture_cache = list()
 	if(length(bounds) < 5)
 		return
-	var/static/list/kinds = HOMESTEAD_FIXTURE_TYPES
+	// What the routines look for
+	var/static/list/kinds = list(
+		/obj/machinery/oven/range,
+		/obj/machinery/hydroponics,
+		/obj/structure/water_source/homestead_well,
+		/obj/structure/homestead_coop,
+		/obj/structure/ore_container/food_trough,
+		/obj/structure/bed,
+		/obj/structure/closet,
+		/obj/structure/chair,
+		/obj/structure/table,
+	)
 	for(var/turf/tile as anything in block(locate(bounds[1], bounds[2], bounds[5]), locate(bounds[3], bounds[4], bounds[5])))
 		for(var/obj/thing in tile)
 			for(var/kind in kinds)
@@ -293,8 +301,6 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 			best = candidate
 			best_distance = distance
 	return best
-
-#undef HOMESTEAD_FIXTURE_TYPES
 
 /// Puts the middle of the house at the middle of its rooms, rather than of the whole yard
 /datum/homestead/proc/find_house_centre()
