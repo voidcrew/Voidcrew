@@ -1,49 +1,30 @@
 /// Backgrounds: owned by M2. See data/backgrounds/spec.md.
 
-// Placeholder hull: everything but the slots, themes and modules, which arrive with the real map.
 /datum/map_template/shuttle/voidcrew/marshal
 	name = "Marshal-class Prisoner Transport"
 	short_name = "Marshal-class"
-	suffix = "marshal_a"
+	suffix = "marshal_a" // Default suffix, overridden by selected theme
 	catalog_desc = "A licensed bounty hunter's cutter: a two-cell brig, a warrant console and room for six."
 	part_requirements = list()
+	has_upgrade_slots = TRUE
+	upgrade_slot_ids = list("marshal_bay")
+	available_themes = list("lawman", "bondsman")
 	background_start = BACKGROUND_BOUNTY_HUNTER
-
-	job_slots = list(
-		list(
-			name = "Marshal",
-			officer = TRUE,
-			outfit = /datum/outfit/job/captain/bounty_hunter,
-			category = JOB_CAT_COMMAND,
-			slots = 1,
-		),
-		list(
-			name = "Deputy",
-			outfit = /datum/outfit/job/security/bounty_hunter,
-			category = JOB_CAT_SECURITY,
-			slots = 3,
-		),
-		list(
-			name = "Mechanic",
-			outfit = /datum/outfit/job/engineer/bounty_hunter,
-			category = JOB_CAT_ENGINEERING,
-			slots = 1,
-		),
-		list(
-			name = "Tracker",
-			outfit = /datum/outfit/job/assistant/bounty_hunter,
-			category = JOB_CAT_ASSISTANT,
-			slots = 1,
-		),
-	)
+	// job_slots come from the selected theme (voidcrew/modules/ship_upgrades/ships/marshal.dm)
 
 /// DOCKING PORT ///
 
 /obj/docking_port/mobile/voidcrew/marshal
 	name = "Marshal-class Prisoner Transport"
 	area_type = /area/shuttle/voidcrew/marshal
-	port_direction = 1
-	preferred_direction = 1 // must match the aspect-ratio guess in adjust_reserve_dock_to_shuttle or the ship spins every dock
+	// The port is mapped on the Boarding Hatch at (12,14), on the port beam of an east-facing hull,
+	// aimed inboard (dir 2), so a hard dock mates the hatch between the two cells. WEST, like goon
+	// and kilo.
+	port_direction = 8
+	// The hull is 22x14 and the port faces south, so the shuttle measures 22 fore to aft against 14
+	// abeam and the aspect-ratio guess in adjust_reserve_dock_to_shuttle comes out EAST. This must
+	// match it or the ship spins 90 degrees on every dock.
+	preferred_direction = 4
 
 /obj/docking_port/mobile/voidcrew/marshal/a
 	name = "Marshal-class Prisoner Transport A"
@@ -90,7 +71,7 @@
 /area/shuttle/voidcrew/marshal/engineering/b
 
 /area/shuttle/voidcrew/marshal/bay
-	name = "Bay"
+	name = "Ready Room"
 	icon_state = "cargo_bay"
 
 /area/shuttle/voidcrew/marshal/bay/a

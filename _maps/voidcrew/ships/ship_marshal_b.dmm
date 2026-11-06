@@ -1,0 +1,1140 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"ab" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "marshal_windows";
+	name = "Exterior Window Shutter"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"ac" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"ad" = (
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"ae" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"af" = (
+/obj/machinery/door/airlock/external{
+	name = "Boarding Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/marshal/b{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"ag" = (
+/turf/template_noop,
+/area/template_noop)
+"ah" = (
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"ai" = (
+/obj/machinery/door/airlock/security/glass{
+	name = "Brig"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/tile/red/fourcorners{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"aj" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"ak" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"al" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"am" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"an" = (
+/obj/machinery/door/airlock/security{
+	name = "Ready Room"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/tile/red/fourcorners{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/bay/b)
+"ao" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"ap" = (
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"aq" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"ar" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/crew/b)
+"as" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/bay/b)
+"at" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/sign/poster/official/report_crimes/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"au" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"av" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aw" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"ax" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/brig/b)
+"ay" = (
+/obj/structure/table,
+/obj/item/storage/box/rndboards/all{
+	pixel_y = 4
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = -4
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"az" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/bay/b)
+"aA" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"aB" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aC" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aD" = (
+/obj/structure/closet/firecloset,
+/obj/effect/turf_decal/bot_white,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aE" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engine Room"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/effect/turf_decal/tile/yellow/fourcorners{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aF" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/crew/b)
+"aG" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/bay/b)
+"aH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "marshal_windows";
+	name = "Exterior Window Shutter"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/marshal/crew/b)
+"aJ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/departments/security/directional/north,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"aK" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/brig/b)
+"aL" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aM" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aO" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"aP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aQ" = (
+/obj/machinery/door/airlock/shuttle{
+	name = "Quarters"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"aR" = (
+/obj/structure/cable,
+/obj/machinery/light/directional/north,
+/obj/structure/sign/departments/engineering/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"aS" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aT" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/hallway/b)
+"aU" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aV" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aW" = (
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/obj/machinery/door/window/left/directional/east{
+	name = "Thruster Bank"
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aX" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"aZ" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"da" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"es" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"gk" = (
+/obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"gn" = (
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"hp" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"hB" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/grey{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"iD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"iX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"kk" = (
+/obj/machinery/flasher/directional/north{
+	id = "marshal_brig_2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"kz" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"kR" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"lg" = (
+/obj/machinery/button/flasher{
+	id = "marshal_brig_1";
+	name = "Cell 1 Flash";
+	pixel_y = 24
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"lq" = (
+/obj/structure/closet/secure_closet{
+	name = "Marshal's Locker"
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"mb" = (
+/obj/machinery/computer/mission_board/bounty{
+	dir = 8
+	},
+/obj/structure/noticeboard/directional/north,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"ml" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"nl" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/bay/b)
+"nK" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"nW" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"pl" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"pm" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"rq" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"sv" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/item/stack/cable_coil{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/wrench{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"sF" = (
+/obj/structure/chair/office/light{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"sI" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"tc" = (
+/obj/machinery/door/airlock/security/glass/marshal_brig{
+	name = "Cell 2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"tm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"tZ" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"ub" = (
+/obj/machinery/atmospherics/components/tank/air/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"wL" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"xY" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"yr" = (
+/obj/machinery/button/flasher{
+	id = "marshal_brig_2";
+	name = "Cell 2 Flash";
+	pixel_y = 24
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"zE" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"zV" = (
+/obj/machinery/door/airlock/external{
+	name = "Boarding Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Aa" = (
+/obj/structure/table/reinforced,
+/obj/machinery/microwave{
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Al" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"AH" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"CE" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"CH" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"Dp" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Ex" = (
+/obj/structure/closet/secure_closet/freezer/fridge,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Fc" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Fl" = (
+/obj/structure/closet/secure_closet/personal,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Gc" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"HC" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"IN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"Ja" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"JC" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Kq" = (
+/obj/machinery/door/airlock/command/glass{
+	name = "Bridge"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/effect/turf_decal/tile/blue/fourcorners{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"KZ" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/obj/item/folder/blue{
+	pixel_x = -4
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"LI" = (
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"Mo" = (
+/obj/machinery/flasher/directional/north{
+	id = "marshal_brig_1"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"MB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"MW" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"Nv" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Of" = (
+/obj/machinery/button/door/directional/east{
+	id = "marshal_windows";
+	name = "Window Shutters"
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"Oo" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"Ph" = (
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/engineering/b)
+"PG" = (
+/obj/machinery/mission_pad,
+/obj/machinery/firealarm/directional/south,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Qz" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "marshal_bay"
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/bay/b)
+"SG" = (
+/obj/machinery/computer/cryopod{
+	dir = 4
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Tn" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"TP" = (
+/obj/structure/closet/emcloset,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Uz" = (
+/obj/structure/closet/secure_closet/brig{
+	name = "Brig Locker"
+	},
+/obj/item/restraints/handcuffs,
+/obj/item/restraints/handcuffs,
+/obj/item/restraints/handcuffs,
+/obj/item/restraints/handcuffs,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"Wf" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"XA" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"XR" = (
+/obj/machinery/holopad,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"Ya" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Yh" = (
+/obj/machinery/door/airlock/security/glass/marshal_brig{
+	name = "Cell 1"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/marshal/brig/b)
+"YF" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+"YN" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Zk" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/marshal/bridge/b)
+
+(1,1,1) = {"
+ag
+ag
+ag
+ae
+ao
+ag
+ag
+aV
+ag
+ao
+ae
+ag
+ag
+ag
+"}
+(2,1,1) = {"
+ag
+ag
+av
+au
+aW
+av
+av
+aH
+av
+aW
+au
+av
+ag
+ag
+"}
+(3,1,1) = {"
+ag
+ag
+av
+aq
+aZ
+ak
+ak
+aN
+aN
+aZ
+aq
+av
+ag
+ag
+"}
+(4,1,1) = {"
+ag
+ag
+av
+al
+aX
+aD
+aC
+aB
+aU
+aw
+ay
+av
+ag
+ag
+"}
+(5,1,1) = {"
+ag
+ag
+av
+aM
+aX
+aX
+aX
+aX
+aL
+aX
+aa
+av
+ag
+ag
+"}
+(6,1,1) = {"
+ag
+ag
+av
+Ph
+aX
+sv
+aY
+aX
+aU
+aB
+aS
+av
+ag
+ag
+"}
+(7,1,1) = {"
+ag
+ag
+av
+gn
+aX
+CH
+iD
+hp
+ml
+IN
+ub
+av
+ag
+ag
+"}
+(8,1,1) = {"
+ax
+ax
+av
+av
+av
+av
+aP
+aE
+aH
+av
+av
+av
+as
+as
+"}
+(9,1,1) = {"
+ax
+AH
+pl
+ax
+lg
+TP
+aK
+aR
+az
+aG
+aG
+aG
+Qz
+as
+"}
+(10,1,1) = {"
+ax
+Mo
+pl
+Yh
+Al
+Fc
+aK
+aj
+az
+aG
+aG
+aG
+aG
+as
+"}
+(11,1,1) = {"
+ax
+ax
+ax
+ax
+HC
+JC
+aK
+aJ
+an
+nl
+aG
+aG
+aG
+as
+"}
+(12,1,1) = {"
+af
+nW
+zV
+pl
+Al
+Dp
+ai
+aA
+az
+aG
+aG
+aG
+aG
+as
+"}
+(13,1,1) = {"
+ax
+ax
+ax
+ax
+gk
+kz
+aK
+at
+az
+as
+as
+as
+as
+as
+"}
+(14,1,1) = {"
+ax
+kk
+pl
+tc
+Al
+PG
+aK
+am
+ar
+Fl
+SG
+rq
+CE
+aF
+"}
+(15,1,1) = {"
+ax
+Ja
+pl
+ax
+yr
+xY
+aK
+aT
+aQ
+kR
+YN
+ap
+ap
+aF
+"}
+(16,1,1) = {"
+ax
+ax
+ax
+ax
+mb
+Uz
+aK
+ac
+ar
+tZ
+ap
+ap
+nK
+aF
+"}
+(17,1,1) = {"
+ag
+aO
+lq
+YF
+Tn
+Tn
+iX
+Kq
+ar
+wL
+sF
+Nv
+sI
+aI
+"}
+(18,1,1) = {"
+ag
+aO
+MW
+ad
+ad
+ad
+tm
+Zk
+ar
+ap
+sF
+Gc
+sI
+aI
+"}
+(19,1,1) = {"
+ag
+ab
+Wf
+ad
+ad
+XR
+MB
+zE
+aF
+Aa
+ap
+ap
+ap
+aF
+"}
+(20,1,1) = {"
+ag
+ab
+KZ
+pm
+XA
+ad
+ad
+es
+aF
+Ex
+ap
+ap
+Ya
+aF
+"}
+(21,1,1) = {"
+ag
+aO
+Oo
+ad
+LI
+ad
+da
+Of
+aF
+Fl
+hB
+hB
+hB
+aF
+"}
+(22,1,1) = {"
+ag
+aO
+aO
+ab
+ab
+ab
+ab
+aO
+aF
+aF
+aF
+aF
+aF
+aF
+"}
