@@ -83,6 +83,8 @@
 		var/datum/map_template/shuttle/voidcrew/template_path = template_type
 		if(initial(template_path.abstract) == template_type || ispath(template_type, /datum/map_template/shuttle/voidcrew/commissioned))
 			continue
+		if(initial(template_path.background_start)) // Backgrounds: these hulls can never be saved (voidcrew/modules/backgrounds)
+			continue
 		log_world("CHECKPOINT_LOAD class [template_type]")
 		report += "[template_type]: [compare_class(home, captain, template_type)]"
 	log_test("Spread against stock checkpoint loads:\n[report.Join("\n")]")
@@ -307,6 +309,8 @@
 		var/datum/map_template/shuttle/voidcrew/template_path = template_type
 		if(initial(template_path.abstract) == template_type || ispath(template_type, /datum/map_template/shuttle/voidcrew/commissioned))
 			continue
+		if(initial(template_path.background_start)) // Backgrounds: these hulls can never be saved (voidcrew/modules/backgrounds)
+			continue
 		var/datum/map_template/shuttle/voidcrew/measured = new template_type()
 		sizes[template_type] = measured.width * measured.height
 		qdel(measured)
@@ -446,6 +450,8 @@
 		var/template_type = SSmapping.ship_purchase_list[label]
 		var/datum/map_template/shuttle/voidcrew/template_path = template_type
 		if(initial(template_path.abstract) == template_type || ispath(template_type, /datum/map_template/shuttle/voidcrew/commissioned))
+			continue
+		if(initial(template_path.background_start)) // Backgrounds: these hulls can never be saved (voidcrew/modules/backgrounds)
 			continue
 		var/datum/map_template/shuttle/voidcrew/measured = new template_type()
 		if(measured.width * measured.height < smallest_size)
