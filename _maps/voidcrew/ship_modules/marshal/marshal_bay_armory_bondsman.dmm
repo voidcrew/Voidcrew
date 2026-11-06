@@ -1,0 +1,94 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/structure/rack,
+/obj/item/storage/box/evidence{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/template_noop,
+/area/template_noop)
+"f" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"j" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"o" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"w" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"B" = (
+/obj/structure/cable,
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/turf/template_noop,
+/area/template_noop)
+"L" = (
+/turf/template_noop,
+/area/template_noop)
+"N" = (
+/obj/structure/closet/secure_closet{
+	name = "security locker";
+	icon_state = "sec";
+	base_icon_state = "sec"
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/template_noop,
+/area/template_noop)
+"Q" = (
+/obj/machinery/firealarm/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"W" = (
+/obj/modular_map_connector,
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"Z" = (
+/obj/structure/closet/secure_closet{
+	name = "security locker";
+	icon_state = "sec";
+	base_icon_state = "sec"
+	},
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light/directional/south,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+j
+B
+f
+W
+"}
+(2,1,1) = {"
+o
+L
+L
+N
+"}
+(3,1,1) = {"
+L
+L
+L
+Z
+"}
+(4,1,1) = {"
+w
+b
+L
+Q
+"}
