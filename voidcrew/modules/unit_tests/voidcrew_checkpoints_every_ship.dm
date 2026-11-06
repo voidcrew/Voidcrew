@@ -143,6 +143,9 @@
 		if(!(get_area(tile) in port.shuttle_areas))
 			continue
 		for(var/obj/item/item in tile.get_all_contents())
+			// A stocked fixture comes back with what a new one holds.
+			if(checkpoint_held_by_restocked(item, ship_save_restocked()))
+				continue
 			if(ismachinery(item.loc))
 				var/obj/machinery/machine = item.loc
 				if((item in machine.component_parts) || item == machine.circuit || istype(item, /obj/item/radio))
@@ -171,7 +174,7 @@
 				var/obj/machinery/atmospherics/components/tank/stored = object
 				if(stored.air_contents?.total_moles())
 					. += "[object.type] holds [stored.air_contents.total_moles()] moles"
-			if(istype(object, /obj/machinery/vending))
+			if(istype(object, /obj/machinery/vending) && !is_type_in_typecache(object, GLOB.ship_save_stocked_fixtures))
 				var/obj/machinery/vending/vendor = object
 				for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
 					if(product.amount)

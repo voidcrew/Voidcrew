@@ -241,9 +241,28 @@
 	TEST_ASSERT(findtext(door_text, "/obj/structure/mineral_door/iron{"), "A gold door was not saved as an iron one: [door_text]")
 	TEST_ASSERT(!findtext(door_text, "gold"), "A gold door kept its name or look: [door_text]")
 
-	// An emergency closet saves as a plain closet but keeps its look: only false walls and doors go plain.
+	// An emergency closet saves as one that can't delete itself, keeping its look.
 	var/obj/structure/closet/emcloset/closet = allocate(/obj/structure/closet/emcloset)
-	TEST_ASSERT(findtext(saved.atom_text(closet), "name = "), "An emergency closet lost its name")
+	var/closet_text = saved.atom_text(closet)
+	TEST_ASSERT(findtext(closet_text, "name = "), "An emergency closet lost its name")
+	TEST_ASSERT(findtext(closet_text, "/obj/structure/closet/ship_emergency{"), "An emergency closet can still delete itself as it loads: [closet_text]")
+	TEST_ASSERT(!findtext(closet_text, "contents_initialized"), "An emergency closet comes back empty")
+
+	// Lockers on the list fill themselves on first opening, and the rest never do.
+	var/obj/structure/closet/firecloset/fire_locker = allocate(/obj/structure/closet/firecloset)
+	TEST_ASSERT(!findtext(saved.atom_text(fire_locker), "contents_initialized"), "A fire closet comes back empty")
+	var/obj/structure/closet/secure_closet/security/security_locker = allocate(/obj/structure/closet/secure_closet/security)
+	TEST_ASSERT(findtext(saved.atom_text(security_locker), "contents_initialized"), "A security locker comes back full of armor")
+	var/obj/structure/closet/secure_closet/captains/captains_locker = allocate(/obj/structure/closet/secure_closet/captains)
+	TEST_ASSERT(findtext(saved.atom_text(captains_locker), "contents_initialized"), "A captain's locker comes back full")
+
+	// A stocked machine keeps its type. Any other goes back to what its board builds, which is empty.
+	var/obj/machinery/suit_storage_unit/engine/engine_unit = allocate(/obj/machinery/suit_storage_unit/engine)
+	TEST_ASSERT_EQUAL(engine_unit.checkpoint_type(), /obj/machinery/suit_storage_unit/engine, "An engineering suit unit comes back empty")
+	var/obj/machinery/suit_storage_unit/security/security_unit = allocate(/obj/machinery/suit_storage_unit/security)
+	TEST_ASSERT_EQUAL(security_unit.checkpoint_type(), /obj/machinery/suit_storage_unit, "A security suit unit comes back with its armor")
+	var/obj/machinery/suit_storage_unit/syndicate/syndicate_unit = allocate(/obj/machinery/suit_storage_unit/syndicate)
+	TEST_ASSERT_EQUAL(syndicate_unit.checkpoint_type(), /obj/machinery/suit_storage_unit, "A syndicate suit unit comes back with its armor")
 
 	// A mineral wall and floor keep their look but come apart into iron, even after a shuttle move.
 	var/turf/wall_tile = run_loc_floor_bottom_left
@@ -1568,6 +1587,69 @@
 	TEST_ASSERT(store.remove(test_ckey, 2), "The awkward save was not removed")
 	TEST_ASSERT_EQUAL(length(store.read_meta(test_ckey)), 0, "Rows were left behind")
 	qdel(store)
+
+/// What a loaded hull's fixtures hold after its stock is cleared, on and off the stocked list.
+/datum/unit_test/voidcrew_ship_saves_stock
+	var/obj/structure/overmap/ship/test_ship
+
+/datum/unit_test/voidcrew_ship_saves_stock/Destroy()
+	if(!QDELETED(test_ship))
+		qdel(test_ship)
+	return ..()
+
+/datum/unit_test/voidcrew_ship_saves_stock/Run()
+	test_ship = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
+	TEST_ASSERT_NOTNULL(test_ship, "Could not create the hull")
+	var/obj/docking_port/mobile/voidcrew/port = test_ship.shuttle
+	var/turf/open/tile
+	for(var/turf/open/floor/candidate in port.return_turfs())
+		if((get_area(candidate) in port.shuttle_areas) && !candidate.is_blocked_turf(exclude_mobs = TRUE))
+			tile = candidate
+			break
+	TEST_ASSERT_NOTNULL(tile, "The hull has no clear floor")
+
+	var/obj/machinery/suit_storage_unit/engine/kept_unit = allocate(/obj/machinery/suit_storage_unit/engine, tile)
+	TEST_ASSERT_NOTNULL(kept_unit.mod, "The fixture started without its modsuit")
+	var/obj/item/mod/control/kept_suit = kept_unit.mod
+	var/obj/machinery/suit_storage_unit/security/scrubbed_unit = allocate(/obj/machinery/suit_storage_unit/security, tile)
+	var/obj/item/mod/control/scrubbed_suit = scrubbed_unit.mod
+	var/obj/structure/extinguisher_cabinet/cabinet = allocate(/obj/structure/extinguisher_cabinet, tile)
+	var/obj/item/extinguisher/kept_extinguisher = cabinet.stored_extinguisher
+	var/fresh_foam = kept_extinguisher.reagents.total_volume
+	var/obj/structure/tank_dispenser/dispenser = allocate(/obj/structure/tank_dispenser, tile)
+	var/obj/machinery/vending/coffee/kept_vendor = allocate(/obj/machinery/vending/coffee, tile)
+	var/obj/machinery/vending/cola/scrubbed_vendor = allocate(/obj/machinery/vending/cola, tile)
+	// Loot stashed anywhere, including in a locker off the list, doesn't survive.
+	var/obj/structure/closet/plain_locker = allocate(/obj/structure/closet, tile)
+	var/obj/item/wrench/stashed = allocate(/obj/item/wrench, plain_locker)
+	var/obj/item/wrench/loose = allocate(/obj/item/wrench, tile)
+
+	checkpoint_clear_stock(port, ship_save_restocked())
+	checkpoint_restore_machine(kept_unit)
+	checkpoint_restore_machine(scrubbed_unit)
+	checkpoint_restore_machine(kept_vendor)
+	checkpoint_restore_machine(scrubbed_vendor)
+
+	TEST_ASSERT(!QDELETED(kept_suit) && kept_unit.mod == kept_suit, "An engineering suit unit lost its modsuit")
+	TEST_ASSERT(QDELETED(scrubbed_suit), "A security suit unit kept its modsuit")
+	TEST_ASSERT(!QDELETED(kept_extinguisher), "An extinguisher cabinet lost its extinguisher")
+	TEST_ASSERT_EQUAL(kept_extinguisher.reagents.total_volume, fresh_foam, "An extinguisher came back empty")
+	TEST_ASSERT(dispenser.oxygentanks > 0, "A tank dispenser lost its oxygen tanks")
+	TEST_ASSERT_EQUAL(dispenser.plasmatanks, 0, "A tank dispenser kept plasma tanks to sell")
+	var/kept_stock = 0
+	for(var/datum/data/vending_product/product as anything in kept_vendor.product_records)
+		kept_stock += product.amount
+	TEST_ASSERT(kept_stock > 0, "A coffee machine came back empty")
+	for(var/datum/data/vending_product/product as anything in scrubbed_vendor.product_records + scrubbed_vendor.hidden_records + scrubbed_vendor.coin_records)
+		TEST_ASSERT_EQUAL(product.amount, 0, "A vendor off the list came back stocked")
+	TEST_ASSERT(QDELETED(stashed), "Loot in a plain locker survived")
+	TEST_ASSERT(QDELETED(loose), "Loose loot survived")
+
+	// The saved emergency closet holds its fixed stock, and an opened fixture really has it.
+	var/obj/structure/closet/ship_emergency/emergency = allocate(/obj/structure/closet/ship_emergency, tile)
+	emergency.PopulateContents()
+	TEST_ASSERT(locate(/obj/item/tank/internals/emergency_oxygen) in emergency, "The emergency closet holds no oxygen")
+	TEST_ASSERT(locate(/obj/item/clothing/mask/breath) in emergency, "The emergency closet holds no masks")
 
 #undef SHIP_SAVE_TEST_ROUND
 #undef SHIP_SAVE_TEST_FORMAT

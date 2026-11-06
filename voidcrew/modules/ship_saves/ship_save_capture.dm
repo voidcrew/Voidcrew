@@ -61,9 +61,74 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 /proc/ship_save_keeps_object(obj/object)
 	return !ship_save_refuses_object(object) && outpost_checkpoint_saves(object)
 
-/// Basics a saved ship keeps as they load, full: breathable air tanks, welding fuel and water tanks, and
-/// plumbing water. Every other supply is scrubbed. Not plasma tanks, or a hull full of them would be gas
-/// to sell next round: its engines run on the heater reserve instead.
+/**
+ * Fixtures a loaded ship gets back full, as a new one of that type comes. What they hold is their own fresh stock:
+ * a save stores no items, so nothing the crew put in them carries over. Weapons, armor and command gear stay off
+ * this list, and everything off it comes back empty. A machine here keeps its type rather than its board's product.
+ */
+GLOBAL_LIST_INIT(ship_save_stocked_fixtures, ship_save_build_stocked_fixtures())
+
+/proc/ship_save_build_stocked_fixtures()
+	var/list/stocked = typecacheof(list(
+		/obj/structure/tank_dispenser,
+		/obj/structure/extinguisher_cabinet,
+		/obj/structure/closet/ship_emergency,
+		/obj/structure/closet/firecloset,
+		/obj/structure/closet/radiation,
+		/obj/structure/closet/toolcloset,
+		/obj/structure/closet/l3closet,
+		/obj/structure/closet/wardrobe,
+		/obj/structure/closet/athletic_mixed,
+		/obj/structure/closet/crate/freezer/blood,
+		/obj/structure/closet/secure_closet/engineering_electrical,
+		/obj/structure/closet/secure_closet/engineering_welding,
+		/obj/structure/closet/secure_closet/engineering_personal,
+		/obj/structure/closet/secure_closet/atmospherics,
+		/obj/structure/closet/secure_closet/medical1,
+		/obj/structure/closet/secure_closet/medical2,
+		/obj/structure/closet/secure_closet/medical3,
+		/obj/structure/closet/secure_closet/chemical,
+		/obj/structure/closet/secure_closet/personal,
+		/obj/structure/closet/secure_closet/freezer/fridge,
+		/obj/structure/closet/secure_closet/freezer/kitchen,
+		/obj/machinery/suit_storage_unit/standard_unit,
+		/obj/machinery/suit_storage_unit/engine,
+		/obj/machinery/suit_storage_unit/atmos,
+		/obj/machinery/suit_storage_unit/medical,
+		/obj/machinery/suit_storage_unit/mining,
+		/obj/machinery/smartfridge/chemistry/preloaded,
+		/obj/machinery/vending/coffee,
+		/obj/machinery/vending/snack,
+		/obj/machinery/vending/cigarette,
+		/obj/machinery/vending/hydroseeds,
+		/obj/machinery/vending/hydronutrients,
+		/obj/machinery/vending/clothing,
+		/obj/machinery/vending/medical,
+		/obj/machinery/vending/wallmed,
+	))
+	stocked -= typecacheof(/obj/machinery/vending/medical/syndicate)
+	return stocked
+
+/**
+ * An emergency closet, as a saved ship has it. The map's own type can delete or replace itself as it
+ * initializes, and may hold nothing at all.
+ */
+/obj/structure/closet/ship_emergency
+	name = "emergency closet"
+	desc = "It's a storage unit for emergency breath masks and O2 tanks."
+	icon_state = "emergency"
+
+/obj/structure/closet/ship_emergency/PopulateContents()
+	..()
+	new /obj/item/storage/toolbox/emergency(src)
+	new /obj/item/storage/medkit/emergency(src)
+	for(var/i in 1 to 2)
+		new /obj/item/tank/internals/emergency_oxygen(src)
+		new /obj/item/clothing/mask/breath(src)
+
+/// What a saved ship keeps as it loads, full: breathable air tanks, welding fuel and water tanks, plumbing
+/// water and the stocked fixtures. Every other supply is scrubbed. Not plasma tanks, or a hull full of them
+/// would be gas to sell next round: its engines run on the heater reserve instead.
 /proc/ship_save_restocked()
 	var/static/list/restocked
 	if(!restocked)
@@ -76,7 +141,18 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 			/obj/machinery/shower,
 			/obj/structure/sink,
 		))
+		for(var/fixture_type in GLOB.ship_save_stocked_fixtures)
+			restocked[fixture_type] = TRUE
 	return restocked
+
+/// Whether this item is the stock of a fixture that keeps what it loads with.
+/proc/checkpoint_held_by_restocked(obj/item/item, list/restocked_types)
+	var/atom/holder = item.loc
+	while(holder && !isturf(holder))
+		if(is_type_in_typecache(holder, restocked_types))
+			return TRUE
+		holder = holder.loc
+	return FALSE
 
 /// Text macros are raw bytes the database connection would mangle. A saved name goes without them.
 /proc/ship_save_plain_text(text)

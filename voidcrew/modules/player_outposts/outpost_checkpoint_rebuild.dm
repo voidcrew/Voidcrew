@@ -9,6 +9,8 @@
 		for(var/atom/movable/object as anything in tile.get_all_contents())
 			if(QDELETED(object))
 				continue
+			if(isitem(object) && checkpoint_held_by_restocked(object, restocked_types))
+				continue
 			var/restocked = is_type_in_typecache(object, restocked_types)
 			if(!restocked)
 				object.reagents?.clear_reagents()
@@ -40,7 +42,8 @@
 				QDEL_NULL(crate.tank)
 			if(istype(object, /obj/structure/tank_dispenser))
 				var/obj/structure/tank_dispenser/dispenser = object
-				dispenser.oxygentanks = 0
+				if(!restocked)
+					dispenser.oxygentanks = 0
 				dispenser.plasmatanks = 0
 				dispenser.update_appearance()
 			if(istype(object, /obj/machinery/power/port_gen/pacman))

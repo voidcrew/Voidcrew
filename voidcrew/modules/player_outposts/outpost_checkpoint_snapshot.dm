@@ -128,16 +128,16 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		if(istype(machine, /obj/machinery/power))
 			keys += "cable_layer"
 	if(istype(object, /obj/structure/closet))
-		// Closets keep their own type, so they look the same; their stock is never generated
-		// (below) and anything they spawn is scrubbed on load. Emergency closets are the
-		// exception: they can delete or replace themselves as they initialize.
+		// Closets keep their own type, so they look the same. Emergency closets are the exception:
+		// they can delete or replace themselves as they initialize.
 		if(istype(object, /obj/structure/closet/emcloset))
-			saved_type = /obj/structure/closet
+			saved_type = /obj/structure/closet/ship_emergency
 		if(istype(object, /obj/structure/closet/crate))
 			keys += list("lid_icon", "lid_icon_state")
 		keys += list("icon", "icon_door", "base_icon_state", "enable_door_overlay", "has_opened_overlay", "has_closed_overlay", "wall_mounted", "horizontal", "locked", "req_one_access")
-		// Closet stock is otherwise generated lazily on first opening.
-		properties += "contents_initialized = 1"
+		// Closet stock is generated lazily on first opening. Only a stocked fixture's ever is.
+		if(!GLOB.ship_save_stocked_fixtures[saved_type])
+			properties += "contents_initialized = 1"
 	if(istype(object, /obj/machinery/light))
 		// Lights otherwise materialize a charged mock battery after map loading.
 		properties += "start_with_cell = 0"

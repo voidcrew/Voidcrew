@@ -179,10 +179,11 @@ You can load a save in the same round you made it once the ship it came from is 
 
 | Comes back | Stays behind |
 |---|---|
-| Hull and rooms | Cargo and supplies |
+| Hull and rooms | Everything the crew put aboard |
 | Machines, with standard parts | Upgraded parts |
 | Crew jobs | Credits |
 | Charged batteries and engine fuel | Statues and other fittings of precious materials |
+| A fresh fill in emergency, fire, tool, engineering, medical and clothing lockers, EVA and work suit units, oxygen dispensers, extinguisher cabinets and everyday vendors | Security, armory and command lockers and suit units stay empty, and so does any plain locker |
 
 Walls and floors of precious materials keep their look, but only give iron when taken apart.
 

@@ -432,8 +432,12 @@
 		if(!(get_area(tile) in rebuilt.shuttle.shuttle_areas))
 			continue
 		for(var/obj/structure/closet/storage in tile)
-			storage.dump_contents() // First use must not spawn fresh default stock.
+			// First use must not spawn fresh default stock, unless it is a stocked fixture.
+			if(!is_type_in_typecache(storage, GLOB.ship_save_stocked_fixtures))
+				storage.dump_contents()
 		for(var/obj/item/item in tile.get_all_contents())
+			if(checkpoint_held_by_restocked(item, ship_save_restocked()))
+				continue
 			if(ismachinery(item.loc))
 				var/obj/machinery/machine = item.loc
 				if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship) && (istype(item, /obj/item/construction) || istype(item, /obj/item/pipe_dispenser) || istype(item, /obj/item/airlock_painter)))
@@ -481,6 +485,8 @@
 		for(var/obj/structure/bedsheetbin/bin in tile)
 			TEST_ASSERT_EQUAL(bin.amount, 0, "Recovery restocked a bedsheet bin")
 		for(var/obj/machinery/vending/vendor in tile)
+			if(is_type_in_typecache(vendor, GLOB.ship_save_stocked_fixtures))
+				continue
 			for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
 				TEST_ASSERT_EQUAL(product.amount, 0, "Recovery restocked a vendor")
 		for(var/obj/machinery/atmospherics/machine in tile)

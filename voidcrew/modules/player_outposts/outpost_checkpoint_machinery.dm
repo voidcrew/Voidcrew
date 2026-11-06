@@ -4,6 +4,9 @@
 /obj/machinery/proc/checkpoint_type()
 	if(is_type_in_typecache(src, GLOB.outpost_checkpoint_excluded))
 		return null
+	// Its stock comes from its type, and a board's product is the plain, empty version.
+	if(is_type_in_typecache(src, GLOB.ship_save_stocked_fixtures))
+		return type
 	if(anchored && istype(circuit) && ispath(circuit.build_path, /obj/machinery))
 		return circuit.build_path
 	return type
@@ -47,15 +50,18 @@
  * at the default tier it initialized with.
  */
 /proc/checkpoint_restore_machine(obj/machinery/machine)
+	// Scrubbing its refill and rereading its parts would empty a vendor that comes back stocked.
+	var/stocked_vendor = istype(machine, /obj/machinery/vending) && is_type_in_typecache(machine, GLOB.ship_save_stocked_fixtures)
 	if(machine.circuit)
 		// Retain the newly initialized circuit and its machine-specific configuration.
 		var/obj/item/circuitboard/board = machine.circuit
-		for(var/obj/item/part in machine.component_parts)
-			if(part != board)
-				checkpoint_scrub_part(part)
 		ship_save_strip_board_salvage(board)
-		machine.RefreshParts()
-	if(istype(machine, /obj/machinery/vending))
+		if(!stocked_vendor)
+			for(var/obj/item/part in machine.component_parts)
+				if(part != board)
+					checkpoint_scrub_part(part)
+			machine.RefreshParts()
+	if(istype(machine, /obj/machinery/vending) && !stocked_vendor)
 		var/obj/machinery/vending/vendor = machine
 		for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
 			product.amount = 0
