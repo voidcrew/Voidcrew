@@ -3,31 +3,23 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "ab" = (
-/obj/structure/toilet{
-	dir = 2
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
+/obj/structure/bonfire,
+/obj/effect/decal/cleanable/ash,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
 "ac" = (
 /obj/structure/mineral_door/wood,
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "ad" = (
-/obj/structure/railing/wooden_fence{
-	dir = 8
-	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "ae" = (
-/obj/structure/chair/wood{
-	dir = 4
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
+/turf/closed/indestructible/wood,
+/area/voidcrew/homestead/house)
 "af" = (
-/obj/structure/fermenting_barrel,
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/homestead/cellar)
 "ag" = (
 /obj/structure/railing/wooden_fence{
 	dir = 2
@@ -43,33 +35,42 @@
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "ai" = (
-/obj/structure/flora/cactus{
-	dir = 2
-	},
+/obj/structure/flora/ausbushes/sparsegrass/hell,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aj" = (
-/obj/effect/spawner/structure/window,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
+/obj/item/toy/beach_ball,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
 "ak" = (
-/obj/effect/spawner/structure/window,
-/turf/open/floor/wood,
+/turf/closed/indestructible/wood,
 /area/voidcrew/homestead/barn)
 "al" = (
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
+/obj/item/reagent_containers/cup/bucket/wooden,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
 "am" = (
-/obj/structure/chair/wood{
-	dir = 2
-	},
+/obj/structure/fermenting_barrel,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "an" = (
-/obj/structure/ore_container/food_trough/raptor_trough,
+/obj/structure/ore_container/food_trough/homestead,
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "ao" = (
+/obj/structure/flora/tree/stump,
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"ap" = (
+/obj/structure/water_source/homestead_well{
+	dir = 2
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"aq" = (
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"ar" = (
 /obj/item/grown/log{
 	pixel_x = -6;
 	pixel_y = -2
@@ -83,36 +84,20 @@
 	},
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
-"ap" = (
-/obj/item/reagent_containers/cup/bucket/wooden,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"aq" = (
-/turf/closed/indestructible/wood,
-/area/voidcrew/homestead/barn)
-"ar" = (
-/obj/structure/bonfire,
-/obj/effect/decal/cleanable/ash,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
 "as" = (
 /mob/living/basic/cow/homestead,
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "at" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/glass/mug/coco{
-	pixel_x = -6;
-	pixel_y = 6
-	},
-/obj/item/flashlight/lantern{
-	pixel_x = 6;
-	pixel_y = 4
+/obj/structure/chair/wood{
+	dir = 2
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "au" = (
-/obj/structure/fermenting_barrel,
+/obj/structure/railing/wooden_fence{
+	dir = 8
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "av" = (
@@ -123,12 +108,12 @@
 /area/voidcrew/homestead/yard)
 "aw" = (
 /obj/structure/chair/wood{
-	dir = 1
+	dir = 8
 	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "ax" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/fermenting_barrel,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "ay" = (
@@ -144,10 +129,8 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aA" = (
-/obj/effect/spawner/structure/window,
-/obj/structure/barricade/wooden/crude,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
 "aB" = (
 /obj/structure/railing/wooden_fence{
 	dir = 9
@@ -155,28 +138,36 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aC" = (
-/obj/structure/railing/wooden_fence{
-	dir = 9
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
+/obj/effect/spawner/structure/window,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
 "aD" = (
-/obj/machinery/light/warm/directional/north,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug/coco{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = 6;
+	pixel_y = 4
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "aE" = (
-/obj/structure/flora/tree/dead/tall,
+/obj/structure/flora/rock/pile,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aF" = (
 /obj/structure/chair/wood{
-	dir = 8
+	dir = 4
 	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "aG" = (
-/turf/closed/indestructible/sandstone,
-/area/voidcrew/homestead/cellar)
+/obj/machinery/door/airlock/wood,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
 "aH" = (
 /obj/structure/railing/wooden_fence{
 	dir = 2
@@ -188,7 +179,7 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aI" = (
-/obj/machinery/door/airlock/wood,
+/obj/machinery/light/small/directional/west,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "aJ" = (
@@ -198,62 +189,71 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aK" = (
-/obj/structure/flora/rock/pile,
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
-"aL" = (
-/obj/structure/water_source/homestead_well{
-	dir = 2
+/obj/structure/railing/wooden_fence{
+	dir = 8
 	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
+"aL" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
 "aM" = (
-/obj/machinery/light/small/directional/west,
+/obj/structure/toilet{
+	dir = 2
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "aN" = (
+/obj/effect/spawner/structure/window,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "aO" = (
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
 "aP" = (
-/obj/structure/flora/ausbushes/sparsegrass/hell,
+/obj/structure/flora/tree/dead/tall,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aQ" = (
-/turf/closed/indestructible/wood,
-/area/voidcrew/homestead/house)
-"aR" = (
-/obj/item/toy/beach_ball,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"aS" = (
-/obj/machinery/door/airlock/wood,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"aT" = (
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"aU" = (
 /obj/structure/railing/wooden_fence{
 	dir = 4
 	},
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
-"aV" = (
-/obj/structure/railing/wooden_fence{
-	dir = 8
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"aW" = (
+"aR" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"aS" = (
 /obj/structure/closet/crate/wooden,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
-"aX" = (
-/obj/structure/flora/tree/stump,
+"aT" = (
+/obj/structure/railing/wooden_fence{
+	dir = 9
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"aU" = (
+/obj/structure/flora/cactus{
+	dir = 2
+	},
 /turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"aV" = (
+/obj/structure/water_source/puddle,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"aW" = (
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"aX" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "aY" = (
 /obj/structure/railing/wooden_fence{
@@ -262,10 +262,181 @@
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "aZ" = (
-/obj/structure/water_source/puddle,
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = 4;
+	pixel_y = 2
+	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "cp" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"db" = (
+/obj/structure/chair/sofa/bench{
+	dir = 4
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"dO" = (
+/obj/structure/closet/crate/wooden/toy,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"eb" = (
+/obj/structure/dresser,
+/obj/item/plate{
+	pixel_x = -4;
+	pixel_y = 12
+	},
+/obj/item/plate{
+	pixel_x = -4;
+	pixel_y = 14
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 12
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"eJ" = (
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"eL" = (
+/obj/structure/railing/wooden_fence{
+	dir = 8
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 8;
+	pixel_y = 3
+	},
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"fA" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"fV" = (
+/obj/structure/bed/dogbed,
+/mob/living/basic/pet/dog/corgi/homestead,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"gh" = (
+/obj/item/bedsheet/brown{
+	dir = 4;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"gk" = (
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"gN" = (
+/obj/machinery/light/small/dim/directional/north,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"hG" = (
+/obj/machinery/hydroponics/soil{
+	self_sustaining = 1
+	},
+/obj/effect/mapping_helpers/homestead_crop{
+	crop = /obj/item/seeds/carrot
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"hJ" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"hK" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 4
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"hQ" = (
+/obj/structure/railing/wooden_fence{
+	dir = 4
+	},
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"ii" = (
+/obj/item/toy/beach_ball,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"ik" = (
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"iC" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"iV" = (
+/obj/item/food/grown/wheat{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"jd" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"jF" = (
+/obj/machinery/hydroponics/soil{
+	self_sustaining = 1
+	},
+/obj/effect/mapping_helpers/homestead_crop{
+	crop = /obj/item/seeds/corn
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"kd" = (
+/obj/machinery/seed_extractor,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"ky" = (
 /obj/structure/table/wood,
 /obj/item/plate{
 	pixel_x = -4;
@@ -277,17 +448,76 @@
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"db" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 4
+"kA" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"kQ" = (
+/obj/structure/mineral_door/wood,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"lw" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"lP" = (
+/obj/structure/table/wood,
+/obj/item/plate{
+	pixel_x = 4;
+	pixel_y = 2
 	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"dO" = (
-/obj/structure/closet/crate/wooden/toy,
+/obj/item/reagent_containers/cup/bowl{
+	pixel_x = -7;
+	pixel_y = 8
+	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"eb" = (
+"lZ" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"md" = (
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"mi" = (
+/obj/structure/rack,
+/obj/item/food/canned/beans{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/obj/item/food/canned/beans{
+	pixel_y = 6
+	},
+/obj/item/food/canned/peaches{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"mF" = (
+/obj/structure/fireplace{
+	dir = 2
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"mR" = (
+/obj/structure/railing/wooden_fence{
+	dir = 10
+	},
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"mX" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/obj/item/instrument/banjo{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"nH" = (
 /obj/structure/rack,
 /obj/item/reagent_containers/condiment/rice{
 	pixel_x = -7;
@@ -311,210 +541,15 @@
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"eJ" = (
-/obj/structure/railing/wooden_fence{
-	dir = 6
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"eL" = (
-/mob/living/basic/pony/syndicate/homestead,
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"fA" = (
+"pT" = (
 /obj/structure/table/wood,
-/obj/structure/sign/calendar/directional/north,
-/obj/item/storage/medkit/regular{
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = 9;
-	pixel_y = -4
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"fV" = (
-/obj/effect/landmark/homestead/spouse,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"gh" = (
-/obj/structure/reagent_dispensers/watertank,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"gk" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"gN" = (
-/obj/item/bedsheet/brown{
-	dir = 4;
-	pixel_y = -3
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"hG" = (
-/obj/machinery/hydroponics/soil{
-	self_sustaining = 1
-	},
-/obj/effect/mapping_helpers/homestead_crop{
-	crop = /obj/item/seeds/wheat
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"hJ" = (
-/obj/structure/table/wood,
-/obj/item/toy/cards/deck{
-	pixel_x = -6;
-	pixel_y = 2
-	},
-/obj/item/flashlight/lantern{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"hK" = (
-/obj/structure/chair/sofa/bench{
-	dir = 4
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"hQ" = (
-/obj/structure/mineral_door/wood,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"ii" = (
-/obj/structure/chair/stool{
-	dir = 2
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"ik" = (
-/obj/structure/railing/wooden_fence{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"iC" = (
-/obj/structure/railing/wooden_fence{
-	dir = 4
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"iV" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/watering_can/wood{
-	pixel_x = -5
-	},
-/obj/item/reagent_containers/cup/bucket/wooden{
-	pixel_x = 6
-	},
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"jd" = (
-/obj/machinery/light/warm/dim/directional/north,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"jF" = (
-/obj/structure/mannequin/wood{
-	dir = 2;
-	starting_items = list(/obj/item/clothing/head/costume/scarecrow_hat,/obj/item/clothing/under/costume/scarecrow,/obj/item/clothing/mask/scarecrow)
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"kd" = (
-/obj/structure/railing/wooden_fence{
-	dir = 4
-	},
-/mob/living/basic/chicken/homestead,
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"ky" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/bowl{
-	pixel_x = -6;
+/obj/item/kitchen/rollingpin{
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/condiment/milk{
-	pixel_x = 7;
-	pixel_y = 6
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"kQ" = (
-/obj/structure/railing/wooden_fence{
-	dir = 8
-	},
-/obj/item/food/grown/wheat{
-	pixel_x = 4;
-	pixel_y = -3
-	},
-/obj/item/food/grown/wheat{
-	pixel_x = 8;
-	pixel_y = 3
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"lw" = (
-/obj/structure/fermenting_barrel,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"lP" = (
-/obj/structure/sink/kitchen/directional/south,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"lZ" = (
-/obj/structure/chair/sofa/right/brown{
-	dir = 4
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"md" = (
-/obj/structure/railing/wooden_fence{
-	dir = 4
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"mi" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"mF" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/lantern{
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -8;
 	pixel_y = 8
 	},
-/obj/item/reagent_containers/condiment/saltshaker{
-	pixel_x = -8;
-	pixel_y = -2
-	},
-/obj/item/reagent_containers/condiment/peppermill{
-	pixel_x = 8;
-	pixel_y = -2
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"mR" = (
-/obj/structure/railing/wooden_fence{
-	dir = 2
-	},
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
-"mX" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 2
-	},
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"nH" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"pT" = (
-/obj/structure/bed/dogbed,
-/mob/living/basic/pet/dog/corgi/homestead,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "qz" = (
@@ -533,65 +568,97 @@
 /area/voidcrew/homestead/house)
 "qI" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/condiment/flour{
-	pixel_x = -5;
-	pixel_y = 7
+/obj/item/flashlight/lantern{
+	pixel_y = 8
 	},
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = 7;
+/obj/item/reagent_containers/condiment/saltshaker{
+	pixel_x = -8;
+	pixel_y = -2
+	},
+/obj/item/reagent_containers/condiment/peppermill{
+	pixel_x = 8;
 	pixel_y = -2
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "rr" = (
-/mob/living/basic/goat/homestead,
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
+/obj/structure/railing/wooden_fence{
+	dir = 6
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
 "so" = (
-/mob/living/basic/chicken/homestead,
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
+/obj/structure/closet/crate/wooden,
+/obj/item/bedsheet/brown{
+	dir = 2
+	},
+/obj/item/bedsheet/blue{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
 "sF" = (
-/obj/structure/bookcase/random,
+/obj/machinery/smartfridge,
+/obj/structure/sign/clock/directional/north,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "tE" = (
-/turf/open/indestructible/carpet,
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/brown{
+	dir = 4
+	},
+/obj/effect/landmark/homestead/settler,
+/turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "tN" = (
-/obj/structure/closet/crate/hydroponics,
-/turf/open/floor/wood,
+/obj/structure/railing/wooden_fence{
+	dir = 8
+	},
+/turf/open/floor/hay,
 /area/voidcrew/homestead/barn)
 "uB" = (
-/obj/machinery/hydroponics/soil{
-	self_sustaining = 1
-	},
-/obj/effect/mapping_helpers/homestead_crop{
-	crop = /obj/item/seeds/potato
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
 "uG" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 2
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/seeds/carrot{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/obj/item/seeds/potato{
+	pixel_x = 8;
+	pixel_y = 1
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "uP" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
 /turf/open/floor/wood,
 /area/voidcrew/homestead/barn)
 "vF" = (
-/obj/effect/decal/cleanable/ash,
+/mob/living/basic/goat/homestead,
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
 "vK" = (
-/obj/machinery/light/warm/directional/east,
+/obj/structure/bookcase/random,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "wq" = (
-/obj/structure/reagent_dispensers/watertank,
-/turf/open/misc/dust,
+/obj/structure/mannequin/wood{
+	dir = 2;
+	starting_items = list(/obj/item/clothing/head/costume/scarecrow_hat,/obj/item/clothing/under/costume/scarecrow,/obj/item/clothing/mask/scarecrow)
+	},
+/turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
 "xd" = (
 /obj/structure/dresser,
@@ -611,70 +678,43 @@
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "yD" = (
-/obj/item/food/grown/wheat{
-	pixel_x = -5;
-	pixel_y = -2
-	},
-/obj/item/food/grown/wheat{
-	pixel_x = 4;
-	pixel_y = 3
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"zA" = (
-/obj/structure/fireplace{
-	dir = 2
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"zB" = (
-/obj/structure/homestead_coop,
-/obj/structure/railing/wooden_fence{
-	dir = 2
+/obj/structure/chair/stool{
+	dir = 1
 	},
 /turf/open/floor/wood,
 /area/voidcrew/homestead/barn)
+"zA" = (
+/obj/machinery/griddle,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"zB" = (
+/mob/living/basic/chicken/homestead,
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
 "Aq" = (
-/obj/structure/chair/comfy/brown{
-	dir = 8
-	},
+/obj/structure/sink/kitchen/directional/south,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "AH" = (
-/obj/item/cultivator/rake{
-	pixel_x = -4;
-	pixel_y = 3
-	},
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
-"AP" = (
 /obj/machinery/hydroponics/soil{
 	self_sustaining = 1
 	},
 /obj/effect/mapping_helpers/homestead_crop{
-	crop = /obj/item/seeds/carrot
+	crop = /obj/item/seeds/wheat
 	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/yard)
+"AP" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
 "AS" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/bucket/wooden{
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/item/seeds/carrot{
-	pixel_x = 7;
-	pixel_y = 7
-	},
-/obj/item/seeds/potato{
-	pixel_x = 8;
-	pixel_y = 1
-	},
+/obj/machinery/vending/custom/unbreakable/homestead,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "AT" = (
 /obj/structure/railing/wooden_fence{
-	dir = 6
+	dir = 2
 	},
 /turf/open/misc/dust,
 /area/voidcrew/homestead/yard)
@@ -685,209 +725,10 @@
 /obj/item/bedsheet/brown{
 	dir = 4
 	},
-/obj/effect/landmark/homestead/settler,
+/obj/effect/landmark/homestead/settler/rancher,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
 "DP" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 4
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"Ed" = (
-/obj/item/reagent_containers/cup/glass/waterbottle/large{
-	pixel_x = -6;
-	pixel_y = 4
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"Er" = (
-/obj/structure/bed{
-	dir = 4
-	},
-/obj/item/bedsheet/blue{
-	dir = 4
-	},
-/obj/item/toy/plush/horse{
-	pixel_x = 6;
-	pixel_y = 2
-	},
-/obj/effect/landmark/homestead/child,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Gv" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/cup/glass/mug/tea{
-	pixel_x = -5;
-	pixel_y = 2
-	},
-/obj/item/flashlight/lamp{
-	pixel_x = 5;
-	pixel_y = 8
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"GG" = (
-/obj/structure/railing/wooden_fence{
-	dir = 8
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"GV" = (
-/obj/structure/railing/wooden_fence{
-	dir = 10
-	},
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
-"Hj" = (
-/obj/machinery/smartfridge,
-/obj/structure/sign/clock/directional/north,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"HD" = (
-/obj/machinery/seed_extractor,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"HV" = (
-/obj/machinery/biogenerator,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"Im" = (
-/obj/item/flashlight/lantern,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"It" = (
-/obj/machinery/hydroponics/soil{
-	self_sustaining = 1
-	},
-/obj/effect/mapping_helpers/homestead_crop{
-	crop = /obj/item/seeds/corn
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"Ko" = (
-/obj/structure/chair/stool{
-	dir = 2
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"KM" = (
-/obj/structure/closet/crate/wooden,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/obj/item/food/grown/wheat,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"KW" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"KY" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Nq" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"NR" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"NY" = (
-/obj/machinery/griddle,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Of" = (
-/obj/structure/ore_container/food_trough/raptor_trough,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"OB" = (
-/obj/machinery/hydroponics/soil{
-	self_sustaining = 1
-	},
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"OM" = (
-/obj/structure/closet/crate/wooden,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Pd" = (
-/obj/item/reagent_containers/cup/bucket/wooden{
-	pixel_x = 4;
-	pixel_y = 3
-	},
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"Pk" = (
-/obj/item/food/grown/wheat{
-	pixel_x = -6;
-	pixel_y = 2
-	},
-/obj/item/food/grown/wheat{
-	pixel_x = 3;
-	pixel_y = -2
-	},
-/obj/item/food/grown/wheat{
-	pixel_x = 7;
-	pixel_y = 5
-	},
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"Pl" = (
-/obj/structure/rack,
-/obj/item/flashlight/lantern,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"Po" = (
-/obj/structure/railing/wooden_fence{
-	dir = 2
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"PE" = (
-/obj/structure/closet/cabinet,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"PL" = (
-/obj/item/grown/log{
-	pixel_x = -6;
-	pixel_y = -2
-	},
-/obj/item/grown/log{
-	pixel_y = 6
-	},
-/obj/item/grown/log{
-	pixel_x = 5;
-	pixel_y = -5
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Qy" = (
-/obj/item/toy/beach_ball,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Rh" = (
-/obj/structure/rack,
-/obj/item/reagent_containers/cup/watering_can/wood{
-	pixel_y = 4
-	},
-/turf/open/misc/dust,
-/area/voidcrew/homestead/yard)
-"Ro" = (
-/obj/machinery/light/warm/directional/north,
-/turf/open/floor/wood,
-/area/voidcrew/homestead/barn)
-"RT" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/soup_pot{
 	pixel_y = 7
@@ -906,36 +747,7 @@
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"So" = (
-/obj/structure/chair/wood{
-	dir = 8
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Su" = (
-/obj/structure/dresser,
-/obj/item/plate{
-	pixel_x = -4;
-	pixel_y = 12
-	},
-/obj/item/plate{
-	pixel_x = -4;
-	pixel_y = 14
-	},
-/obj/item/reagent_containers/cup/glass/mug{
-	pixel_x = 8;
-	pixel_y = 12
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"SU" = (
-/turf/closed/indestructible/sandstone,
-/area/voidcrew/homestead/house)
-"Td" = (
-/obj/machinery/light/small/dim/directional/north,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"Tq" = (
+"Ed" = (
 /obj/structure/rack,
 /obj/item/food/canned/tomatoes{
 	pixel_x = -8;
@@ -953,11 +765,116 @@
 	},
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/cellar)
-"TN" = (
-/obj/machinery/light/warm/dim/directional/south,
+"Er" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/blue{
+	dir = 4
+	},
+/obj/item/toy/plush/horse{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/obj/effect/landmark/homestead/child,
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"Vm" = (
+"Ff" = (
+/obj/structure/railing/wooden_fence{
+	dir = 6
+	},
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"Gv" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"GG" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"GV" = (
+/obj/structure/flora/tree/dead/tall,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"Hj" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/obj/item/flashlight/lamp{
+	pixel_x = 5;
+	pixel_y = 8
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"HD" = (
+/obj/item/storage/basket{
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"HV" = (
+/obj/structure/railing/wooden_fence{
+	dir = 4
+	},
+/mob/living/basic/chicken/homestead,
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"Im" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"It" = (
+/obj/structure/rack,
+/obj/item/flashlight/lantern,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"Ko" = (
+/obj/structure/fermenting_barrel,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"KE" = (
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"KM" = (
+/obj/item/food/grown/wheat{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 7;
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"KW" = (
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/homestead/house)
+"KY" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Nq" = (
+/obj/structure/closet/crate/hydroponics,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"NR" = (
 /obj/structure/table/wood,
 /obj/item/paper{
 	pixel_x = -4;
@@ -973,80 +890,19 @@
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"Vp" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"Vx" = (
-/obj/machinery/vending/custom/unbreakable,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"VZ" = (
-/obj/structure/chair/sofa/left/brown{
-	dir = 4
-	},
-/obj/item/clothing/head/cowboy/brown{
-	pixel_x = 3;
-	pixel_y = 7
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Wm" = (
-/obj/item/reagent_containers/cup/bucket/wooden{
-	pixel_x = -3;
-	pixel_y = 2
-	},
-/turf/open/floor/hay,
-/area/voidcrew/homestead/barn)
-"WT" = (
-/obj/structure/dresser,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"WW" = (
+"NY" = (
 /obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
+/obj/item/reagent_containers/cup/bowl{
+	pixel_x = -6;
 	pixel_y = 4
 	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"WY" = (
-/obj/structure/railing/wooden_fence{
-	dir = 10
+/obj/item/reagent_containers/condiment/milk{
+	pixel_x = 7;
+	pixel_y = 6
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
-"Xb" = (
-/obj/structure/closet/crate/wooden,
-/obj/item/bedsheet/brown{
-	dir = 2
-	},
-/obj/item/bedsheet/blue{
-	dir = 2
-	},
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/cellar)
-"Xo" = (
-/obj/structure/flora/tree/dead/tall,
-/turf/open/misc/dirt/dry,
-/area/voidcrew/homestead/yard)
-"Xq" = (
-/obj/structure/table/wood,
-/obj/item/plate{
-	pixel_x = 4;
-	pixel_y = 2
-	},
-/obj/item/reagent_containers/cup/bowl{
-	pixel_x = -7;
-	pixel_y = 8
-	},
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Xt" = (
-/obj/machinery/oven/range,
-/turf/open/indestructible/wood,
-/area/voidcrew/homestead/house)
-"Yv" = (
+"Of" = (
 /obj/structure/table/wood,
 /obj/item/cultivator{
 	pixel_x = -6
@@ -1059,36 +915,223 @@
 	},
 /turf/open/floor/wood,
 /area/voidcrew/homestead/barn)
-"YW" = (
-/obj/structure/table/wood,
-/obj/item/kitchen/rollingpin{
-	pixel_y = 4
+"OB" = (
+/obj/machinery/hydroponics/soil{
+	self_sustaining = 1
 	},
-/obj/item/reagent_containers/condiment/flour{
-	pixel_x = -8;
-	pixel_y = 8
+/obj/effect/mapping_helpers/homestead_crop{
+	crop = /obj/item/seeds/potato
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"OM" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_y = 4
 	},
 /turf/open/indestructible/wood,
 /area/voidcrew/homestead/house)
+"Pd" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/obj/item/food/grown/wheat,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"Pk" = (
+/obj/structure/ore_container/food_trough/homestead,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"Pl" = (
+/mob/living/basic/pony/syndicate/homestead,
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"Po" = (
+/obj/structure/railing/wooden_fence{
+	dir = 10
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"PE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"PL" = (
+/obj/structure/chair/comfy/brown{
+	dir = 8
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Qy" = (
+/obj/structure/dresser,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Rh" = (
+/obj/machinery/hydroponics/soil{
+	self_sustaining = 1
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/yard)
+"Ro" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/watering_can/wood{
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/cup/bucket/wooden{
+	pixel_x = 6
+	},
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"RT" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"So" = (
+/obj/item/grown/log{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/grown/log{
+	pixel_y = 6
+	},
+/obj/item/grown/log{
+	pixel_x = 5;
+	pixel_y = -5
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Su" = (
+/obj/structure/chair/sofa/left/brown{
+	dir = 4
+	},
+/obj/item/clothing/head/cowboy/brown{
+	pixel_x = 3;
+	pixel_y = 7
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"SU" = (
+/obj/machinery/oven/range,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Td" = (
+/obj/item/reagent_containers/cup/glass/waterbottle/large{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"Tq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"TN" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Vd" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/watering_can/wood{
+	pixel_y = 4
+	},
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"Vm" = (
+/obj/structure/closet/cabinet,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Vp" = (
+/obj/machinery/biogenerator,
+/turf/open/floor/wood,
+/area/voidcrew/homestead/barn)
+"Vx" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"VZ" = (
+/obj/structure/chair/sofa/right/brown{
+	dir = 4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Wm" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"WT" = (
+/obj/machinery/light/warm/dim/directional/south,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"WW" = (
+/turf/open/indestructible/carpet,
+/area/voidcrew/homestead/house)
+"WY" = (
+/obj/structure/railing/wooden_fence{
+	dir = 4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Xb" = (
+/obj/item/flashlight/lantern,
+/turf/open/misc/dirt/dry,
+/area/voidcrew/homestead/cellar)
+"Xo" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
+"Xq" = (
+/obj/structure/table/wood,
+/obj/structure/sign/calendar/directional/north,
+/obj/item/storage/medkit/regular{
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 9;
+	pixel_y = -4
+	},
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Xt" = (
+/obj/effect/landmark/homestead/spouse,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
+"Yv" = (
+/obj/structure/chair/stool{
+	dir = 2
+	},
+/turf/open/floor/hay,
+/area/voidcrew/homestead/barn)
+"YW" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/wood,
+/area/voidcrew/homestead/house)
 "Zn" = (
+/obj/structure/homestead_coop,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
 /turf/open/floor/wood,
 /area/voidcrew/homestead/barn)
 "ZL" = (
-/obj/structure/rack,
-/obj/item/food/canned/beans{
-	pixel_x = -8;
-	pixel_y = 6
+/obj/structure/chair/sofa/bench/left{
+	dir = 4
 	},
-/obj/item/food/canned/beans{
-	pixel_y = 6
-	},
-/obj/item/food/canned/peaches{
-	pixel_x = 8;
-	pixel_y = 6
-	},
-/obj/effect/decal/cleanable/cobweb,
 /turf/open/misc/dirt/dry,
 /area/voidcrew/homestead/cellar)
+"ZN" = (
+/obj/item/cultivator/rake{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/turf/open/misc/dust,
+/area/voidcrew/homestead/yard)
 
 (1,1,1) = {"
 aB
@@ -1120,30 +1163,30 @@ av
 av
 av
 av
-GV
+mR
 "}
 (2,1,1) = {"
 aY
 aa
-aP
+ai
 aa
 aa
 aa
 aa
 aa
 aa
-aP
+ai
 aa
 aa
 aa
 aa
 aa
-aP
+ai
 aa
 aa
-aX
 ao
-ao
+ar
+ar
 aa
 aa
 aa
@@ -1152,295 +1195,295 @@ aa
 aa
 aa
 ay
-mR
+AT
 "}
 (3,1,1) = {"
 aY
 aa
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-ao
-aQ
-aQ
-aj
-aQ
-aQ
-aQ
-aj
-aQ
-aQ
-aQ
-aj
-aQ
-aQ
-aV
-WY
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ar
+ae
+ae
+aN
+ae
+ae
+ae
+aN
+ae
+ae
+ae
+aN
+ae
+ae
+au
+Po
 aa
 aa
-mR
+AT
 "}
 (4,1,1) = {"
 aY
 aa
-aT
+ad
+AH
+ad
+jF
+ad
+OB
+ad
 hG
-aT
-It
-aT
-uB
-aT
-AP
-aT
-ao
-aQ
-CY
-aN
+ad
+ar
+ae
+tE
+aA
 xd
-aQ
+ae
 Er
 qz
 dO
-aQ
+ae
 CY
 xC
-aN
-aQ
-au
-Po
-aP
+aA
+ae
+am
+eJ
+ai
 aa
-mR
+AT
 "}
 (5,1,1) = {"
 aY
 aa
-aT
+ad
+AH
+ad
+jF
+ad
+OB
+ad
 hG
-aT
-It
-aT
-uB
-aT
-AP
-aT
+ad
 aa
-aj
 aN
+aA
+jd
 hJ
-OM
-aQ
-aN
-tE
-aN
-aQ
+ae
+aA
 WW
-tE
+aA
+ae
+OM
+WW
+aA
 aN
-aj
-am
-Po
+at
+eJ
 aa
 aa
-mR
+AT
 "}
 (6,1,1) = {"
 aY
 aa
-aT
+ad
+AH
+ad
+jF
+ad
+OB
+ad
 hG
-aT
-It
-aT
-uB
-aT
-AP
-aT
+ad
 aa
-aQ
-CY
-aN
-TN
-aQ
-aN
+ae
 tE
+aA
+WT
+ae
+aA
+WW
+WT
+ae
 TN
-aQ
-jd
-tE
-aN
-aQ
-at
-Po
+WW
+aA
+ae
+aD
+eJ
 aa
 ay
-mR
+AT
 "}
 (7,1,1) = {"
 aY
 aa
-aT
-OB
-aT
-OB
-aT
-OB
-aT
-OB
-aT
+ad
+Rh
+ad
+Rh
+ad
+Rh
+ad
+Rh
+ad
 aa
-aj
 aN
-aN
-OM
-aQ
+aA
+aA
+hJ
+ae
+KY
+WW
 ii
-tE
+ae
 Qy
-aQ
-WT
-tE
+WW
+aA
 aN
-aj
-am
-Po
+at
+eJ
 aa
-aK
-mR
+aE
+AT
 "}
 (8,1,1) = {"
 aY
 aa
-aT
-OB
-jF
-OB
-aT
-OB
-aT
-OB
-aT
+ad
+Rh
+wq
+Rh
+ad
+Rh
+ad
+Rh
+ad
 aa
-aQ
-CY
-KY
-aN
-aQ
-Vm
-KY
-aN
-aQ
+ae
+tE
 PE
-aN
-KY
-aQ
-aN
-Po
+aA
+ae
+NR
+PE
+aA
+ae
+Vm
+aA
+PE
+ae
+aA
+eJ
 aa
 aa
-mR
+AT
 "}
 (9,1,1) = {"
 aY
 aa
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
 aa
-aQ
-aQ
-aI
-aQ
-aQ
-aQ
-aI
-aQ
-aQ
-aQ
-aQ
-aI
-aQ
-aD
-Po
+ae
+ae
+aG
+ae
+ae
+ae
+aG
+ae
+ae
+ae
+ae
+aG
+ae
+Vx
+eJ
 aa
-aP
-mR
+ai
+AT
 "}
 (10,1,1) = {"
 aY
 aa
 aa
 aa
-wq
+kA
 aa
-Rh
+Vd
 aa
-AH
+ZN
 aa
 aa
-af
-aQ
+KE
+ae
+pT
+aA
 YW
-aN
 nH
+aA
+aA
 eb
-aN
-aN
+aA
 Su
-aN
 VZ
 lZ
-NR
-aQ
-aN
-Po
+ae
+aA
+eJ
 aa
 aa
-mR
+AT
 "}
 (11,1,1) = {"
 aY
 aa
 aa
-aP
+ai
 aa
 aa
-af
+ax
 aa
-ao
+ar
 aa
-af
+ax
 aa
-aQ
+ae
+SU
 Xt
+aA
+aA
+aA
+aA
+aA
 fV
+aA
+aA
+aA
 aN
-aN
-aN
-aN
-aN
-pT
-aN
-aN
-aN
-aj
-aN
-Po
+aA
+eJ
 aa
 aa
-mR
+AT
 "}
 (12,1,1) = {"
 aY
@@ -1449,30 +1492,30 @@ ay
 aa
 aa
 aa
-aG
-aG
-aG
-aG
-aG
-aG
-aQ
+af
+af
+af
+af
+af
+af
+ae
+zA
+aA
 NY
-aN
+at
 ky
-am
 cp
 KW
-SU
-aN
-tE
-tE
-aN
-aQ
-aN
-Po
+aA
+WW
+WW
+aA
+ae
+aA
+eJ
 aa
-vF
-mR
+Xo
+AT
 "}
 (13,1,1) = {"
 aY
@@ -1480,28 +1523,28 @@ ay
 ay
 aa
 aa
-ao
-aG
+ar
+af
+mi
 ZL
 db
 hK
-DP
-aO
-aQ
+aq
+ae
+Xq
+aA
 fA
-aN
+aA
 qI
-aN
+aA
+KW
 mF
-aN
-SU
-zA
-tE
-tE
-KY
-aI
-aN
-aN
+WW
+WW
+PE
+aG
+aA
+aA
 ah
 ah
 ac
@@ -1512,31 +1555,31 @@ ay
 aa
 aa
 aa
-ao
-aG
+ar
+af
+Ed
+aq
+aq
 Tq
-aO
-aO
-mi
-aO
-aQ
+aq
+ae
+Aq
+aA
+aA
+at
 lP
-aN
-aN
-am
-Xq
+cp
 KW
-SU
-aN
-tE
-tE
-aN
-aQ
-Vx
-Po
-vF
+aA
+WW
+WW
+aA
+ae
+AS
+eJ
+Xo
 aa
-mR
+AT
 "}
 (15,1,1) = {"
 aY
@@ -1544,31 +1587,31 @@ ay
 aa
 aa
 aa
-aX
-aG
+ao
+af
+gN
 Td
-Ed
-aO
-aO
-aO
-aI
-aN
-aN
-aN
-aN
+aq
+aq
+aq
+aG
+aA
+aA
+aA
+aA
+Gv
+aA
+aA
 So
-aN
-aN
 PL
-Aq
-aN
-aN
-aQ
-AS
-Po
+aA
+aA
+ae
+uG
+eJ
 aa
 aa
-mR
+AT
 "}
 (16,1,1) = {"
 aY
@@ -1577,30 +1620,30 @@ aa
 aa
 aa
 aa
-aG
+af
+Im
+aq
+Tq
 gh
-aO
-mi
-gN
-aO
-aQ
+aq
+ae
+sF
+aA
+PE
+aA
+aA
+aA
+aA
+aA
 Hj
+aA
+aA
 aN
-KY
-aN
-aN
-aN
-aN
-aN
-Gv
-aN
-aN
-aj
-uG
-Po
+mX
+eJ
 aa
 aa
-mR
+AT
 "}
 (17,1,1) = {"
 aY
@@ -1609,30 +1652,30 @@ aa
 aa
 aa
 aa
-aG
+af
+so
 Xb
-Im
-aO
-aO
-aO
-aQ
+aq
+aq
+aq
+ae
+DP
+aA
+PE
 RT
-aN
-KY
+aA
+RT
+aA
+aA
+RT
+aA
 vK
-aN
-vK
-aN
-aN
-vK
-aN
-sF
-aQ
-mX
-Po
-aP
+ae
+iC
+eJ
+ai
 aa
-mR
+AT
 "}
 (18,1,1) = {"
 aY
@@ -1641,30 +1684,30 @@ aa
 aa
 aa
 aa
+af
+af
+af
+af
+af
+af
+ae
+ae
+ae
 aG
-aG
-aG
-aG
-aG
-aG
-aQ
-aQ
-aQ
-aI
-aQ
-aQ
-aQ
-aQ
-aj
-aQ
-aj
-aQ
-aQ
-iC
-eJ
+ae
+ae
+ae
+ae
+aN
+ae
+aN
+ae
+ae
+WY
+rr
 aa
 aa
-mR
+AT
 "}
 (19,1,1) = {"
 aY
@@ -1673,14 +1716,14 @@ aa
 aa
 aa
 aa
-af
+ax
 aa
-ao
+ar
 aa
-aW
+aS
 aa
 aa
-af
+ax
 ay
 ah
 ay
@@ -1690,13 +1733,13 @@ aa
 aa
 aa
 ay
-aP
+ai
 aa
 aa
 aa
 aa
 ay
-mR
+AT
 "}
 (20,1,1) = {"
 ac
@@ -1728,7 +1771,7 @@ aa
 aa
 aa
 aa
-mR
+AT
 "}
 (21,1,1) = {"
 aY
@@ -1737,10 +1780,10 @@ aa
 aa
 aa
 aa
-ax
+aO
 aa
 aa
-aL
+ap
 aa
 aa
 aa
@@ -1748,40 +1791,40 @@ aa
 ay
 aa
 aa
-aP
+ai
 ay
 ay
 az
 aa
 aa
+ai
+ay
+ay
+ay
+aE
 aa
-ay
-ay
-ay
-aK
-aa
-mR
+AT
 "}
 (22,1,1) = {"
 aY
 aa
-aP
+ai
 aa
 aa
 aa
-ax
+aO
 aa
 aa
-ap
+al
 aa
-aR
+aj
 aa
 aa
 ay
 aa
 aa
 aa
-aa
+ai
 aa
 aH
 aa
@@ -1792,20 +1835,16 @@ ay
 ay
 aa
 aa
-mR
+AT
 "}
 (23,1,1) = {"
 aY
+ai
 aa
 aa
+ai
 aa
-aP
-aa
-ax
-aa
-aa
-aa
-aa
+aO
 aa
 aa
 aa
@@ -1818,22 +1857,26 @@ aa
 aa
 aa
 aa
+aa
+aa
+aa
+aZ
 ay
 ay
 ay
 aa
 aa
 aa
-mR
+AT
 "}
 (24,1,1) = {"
 aY
 aa
 aa
+ar
+ao
 aa
-aa
-aa
-ax
+aO
 aa
 aa
 aa
@@ -1845,18 +1888,18 @@ ay
 ay
 ay
 aa
-aC
-ad
-ad
+aT
+aK
+aK
 an
-ad
-ad
+aK
+aK
 ac
-ad
-ad
-ad
-ad
-GV
+aK
+aK
+aK
+aK
+mR
 "}
 (25,1,1) = {"
 aY
@@ -1865,126 +1908,126 @@ aa
 aa
 aa
 aa
-ax
+aO
 aa
-aq
-aq
-aS
-aq
-aq
-aq
-aA
-aq
-aq
-aq
-ax
-aT
-aT
-aT
-ax
-ax
-ax
-ax
-ax
-ax
-ax
-mR
+ak
+ak
+aR
+ak
+ak
+ak
+aC
+ak
+ak
+ak
+aO
+ad
+ad
+ad
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+AT
 "}
 (26,1,1) = {"
-aY
-aa
-aa
-ae
-aa
-aa
-ax
-aa
-aq
-HD
-Zn
-Zn
-zB
-al
-so
-al
-so
-aq
-ax
-aT
-aT
-aT
-aT
-ax
-ax
-ax
-ax
-aP
-aT
-mR
-"}
-(27,1,1) = {"
-aY
-aa
-aa
-ar
-aw
-aa
-ax
-aa
-aq
-HV
-Zn
-Zn
-hQ
-md
-md
-kd
-md
-aq
-aT
-aT
-aT
-aT
-aT
-aT
-ax
-ax
-aT
-aT
-aT
-mR
-"}
-(28,1,1) = {"
 aY
 aa
 aa
 aF
 aa
 aa
-ax
+aO
 aa
 ak
+kd
+md
+HD
 Zn
+aW
+zB
+aW
+zB
+ak
+aO
+ad
+ad
+ad
+ad
+aO
+aO
+aO
+aO
+ai
+ad
+AT
+"}
+(27,1,1) = {"
+aY
+aE
+aa
+ab
+aX
+aa
+aO
+aa
+ak
+Vp
+md
+md
+aR
+hQ
+hQ
+HV
+hQ
+ak
+ad
+ad
+ad
+ad
+ad
+ad
+aO
+aO
+ad
+ad
+ad
+AT
+"}
+(28,1,1) = {"
+aY
+aa
+aa
+aw
+aa
+aa
+aO
+aa
+aL
+Ko
+lw
 lw
 uP
+aW
 ik
-al
+aW
 Wm
-al
-Vp
-aq
-aT
-aK
-aT
-aT
-aT
+ak
+ad
+aE
+ad
+ad
+ad
 as
-aT
-aT
-aT
-aT
-aT
-mR
+ad
+ad
+ad
+ad
+ad
+AT
 "}
 (29,1,1) = {"
 aY
@@ -1993,252 +2036,252 @@ aa
 aa
 aa
 aa
-ax
+aO
 aa
-aq
+ak
+Of
+yD
+md
+uP
+aW
 Yv
-Zn
-Zn
-ik
-al
-Ko
-al
-al
-al
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-aT
-mR
+aW
+aW
+aW
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+ad
+AT
 "}
 (30,1,1) = {"
 aY
-ai
+aU
 aa
 aa
 aa
 aa
-ax
+aO
 aa
-aq
+ak
+Ro
+md
+md
+Pk
+aW
+aW
+aW
 iV
-Zn
-Zn
-Of
-al
-al
-al
-yD
-al
-aT
-aT
-ax
-aT
-aT
-aT
-aZ
-aT
-aT
-aT
-aT
-mR
+aW
+ad
+ad
+aO
+ad
+ad
+ad
+aV
+ad
+ad
+ad
+ad
+AT
 "}
 (31,1,1) = {"
 aY
 aa
 aa
-aP
+ai
 aa
 aa
-ax
+aO
 aa
-aq
-Ro
+ak
+GG
+lw
+KM
 uP
-Pk
-ik
-al
-al
-yD
-al
-al
-aT
-ax
+aW
+aW
+iV
+aW
+aW
+ad
+aO
 as
-ax
-ax
-aT
-aT
-aT
-aT
-aT
-aT
-mR
+aO
+aO
+ad
+ad
+ad
+ad
+ad
+ad
+AT
 "}
 (32,1,1) = {"
 aY
 aa
-aQ
-aQ
-aQ
-aQ
-ax
+ae
+ae
+ae
+ae
+aO
 aa
+aL
+Pd
+md
+md
+kQ
+aW
+aW
+aW
+aW
 ak
-KM
-Zn
-Zn
-hQ
-al
-al
-al
-al
-aq
-aT
-ax
-ax
-ax
-ax
-aT
-aT
-aT
-aT
-aT
-ax
-mR
+ad
+aO
+aO
+aO
+aO
+ad
+ad
+ad
+ad
+ad
+aO
+AT
 "}
 (33,1,1) = {"
 aY
 aa
-aQ
-ab
+ae
 aM
 aI
-ax
+aG
+aO
 aa
-aq
-tN
-Pd
+ak
+Nq
+gk
+lw
 uP
-ik
-GG
-GG
-kQ
-GG
-aq
-ax
-ax
-ax
-aP
-ax
-aT
-aT
-aT
-rr
-ax
-ax
-mR
+tN
+tN
+eL
+tN
+ak
+aO
+aO
+aO
+ai
+aO
+ad
+ad
+ad
+vF
+aO
+aO
+AT
 "}
 (34,1,1) = {"
 aY
 aa
-aQ
-aQ
-aQ
-aQ
+ae
+ae
+ae
+ae
 aa
 ay
-aq
+ak
+It
+uB
+md
+kQ
+aW
+AP
 Pl
-Nq
-Zn
-hQ
-al
-gk
-eL
-Wm
-aq
-aT
-ax
-ax
-ax
-ax
-aT
-aT
-aT
-ax
-ax
-ax
-mR
+ik
+ak
+ad
+aO
+aO
+aO
+aO
+ad
+ad
+ad
+aO
+aO
+aO
+AT
 "}
 (35,1,1) = {"
 aY
-aE
+aP
 aa
 aa
 aa
 aa
 ay
-aP
-aq
-aq
-aq
+ai
 ak
-aq
-aq
-aq
-aq
-aq
-aq
-aT
-ax
-ax
-ax
-ax
-ax
-aT
-ax
-ax
-ax
-Xo
-mR
+ak
+ak
+aL
+ak
+ak
+ak
+ak
+ak
+ak
+ad
+aO
+aO
+aO
+aO
+aO
+ad
+aO
+aO
+aO
+GV
+AT
 "}
 (36,1,1) = {"
 aJ
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
 aJ
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-AT
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+Ff
 "}

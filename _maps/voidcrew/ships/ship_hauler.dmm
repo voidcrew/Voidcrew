@@ -2,32 +2,28 @@
 "aa" = (
 /obj/machinery/power/smes/full,
 /obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "ab" = (
-/obj/machinery/door/airlock,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/trimline/neutral/warning{
-	dir = 4
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
-"ac" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 2
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
-"ad" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/turf_decal/arrows{
 	dir = 4
 	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"ac" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/hauler/bridge)
+"ad" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "ae" = (
@@ -48,52 +44,41 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
 "ag" = (
-/obj/structure/table,
-/obj/item/clipboard{
-	pixel_x = -6;
-	pixel_y = 4
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
 	},
-/obj/item/paper_bin{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/pen{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/stamp{
-	pixel_x = -4;
-	pixel_y = -6
-	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
 "ah" = (
 /obj/machinery/light/small/directional/north,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "ai" = (
-/obj/structure/closet/crate/large,
-/obj/effect/turf_decal/box,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
-"aj" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
+/obj/structure/rack,
+/obj/item/wrench,
+/obj/item/crowbar,
+/obj/item/flashlight,
+/obj/structure/extinguisher_cabinet/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
+"aj" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
 "ak" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/hauler/engineering)
 "al" = (
-/obj/machinery/light/small/directional/east,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hauler/engineering)
+/obj/machinery/holopad,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
 "am" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
 	dir = 2
@@ -104,7 +89,7 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "ao" = (
@@ -115,12 +100,15 @@
 	dir = 2
 	},
 /obj/structure/curtain/cloth,
+/obj/machinery/light/small/dim/directional/north,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
 "ap" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plating,
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 4
+	},
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/hauler/engineering)
 "aq" = (
 /obj/machinery/power/apc/auto_name/directional/north,
@@ -128,25 +116,30 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hauler/bridge)
 "ar" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/machinery/door/poddoor/shutters/preopen{
-	dir = 4;
-	id = "hauler_bow"
+/obj/machinery/computer/helm{
+	dir = 8
 	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hauler/bridge)
-"as" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/effect/landmark/hauler/crew,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hauler/bridge)
+"as" = (
+/obj/structure/chair{
+	dir = 2
+	},
+/obj/item/cigbutt{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/hauler/bridge)
 "at" = (
-/obj/effect/landmark/hauler/crew,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hauler/engineering)
 "au" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/hauler/bridge)
@@ -158,42 +151,49 @@
 /obj/effect/turf_decal/trimline/neutral/warning{
 	dir = 4
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
 "aw" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
-	dir = 4
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "hauler_bow"
 	},
-/obj/structure/window/reinforced/spawner/directional/east,
-/turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/hauler/engineering)
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hauler/bridge)
 "ax" = (
+/obj/machinery/door/airlock/engineering,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
+/obj/effect/turf_decal/trimline/neutral/warning{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hauler/engineering)
 "ay" = (
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "az" = (
-/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/landmark/hauler/crew,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "aA" = (
 /obj/effect/turf_decal/box,
 /obj/effect/landmark/hauler/cargo,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "aB" = (
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hauler/engineering)
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/effect/landmark/hauler/crew,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
 "aC" = (
 /obj/machinery/power/port_gen/pacman{
 	anchored = 1
@@ -211,11 +211,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hauler/bridge)
 "aE" = (
-/obj/structure/rack,
-/obj/item/wrench,
-/obj/item/crowbar,
-/obj/item/flashlight,
-/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/airalarm/directional/west,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "aF" = (
@@ -225,21 +221,21 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
+/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
 "aH" = (
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hauler/engineering)
 "aI" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/hauler/hold)
 "aJ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "aK" = (
@@ -260,13 +256,17 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/plastitanium,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
 "aN" = (
 /obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hauler/engineering)
 "aO" = (
 /obj/machinery/power/shuttle_engine/ship/electric{
 	dir = 4
@@ -276,10 +276,25 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/hauler/engineering)
 "aP" = (
-/obj/machinery/power/apc/auto_name/directional/south,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hauler/engineering)
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/paper_bin{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/stamp{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
 "aQ" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
@@ -287,29 +302,28 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "aR" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/hauler/bridge)
+"aS" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
 	},
+/obj/machinery/light/small/directional/west,
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 2
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hauler/bridge)
-"aS" = (
-/obj/machinery/computer/helm{
-	dir = 8
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/hauler/bridge)
 "aT" = (
-/obj/machinery/door/airlock/engineering,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/trimline/neutral/warning{
-	dir = 4
-	},
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hauler/engineering)
 "aU" = (
@@ -322,30 +336,53 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 "aW" = (
-/obj/structure/chair{
-	dir = 2
-	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
-"aX" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"aX" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
 "aY" = (
-/obj/structure/closet/cabinet,
-/turf/open/floor/wood,
-/area/shuttle/voidcrew/hauler/bridge)
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
 "aZ" = (
-/obj/machinery/holopad,
+/obj/machinery/door/airlock,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/trimline/neutral/warning{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/hauler/bridge)
 "bk" = (
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"cd" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"qN" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
+"xt" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/coffeepot{
 	pixel_x = -5;
 	pixel_y = 6
+	},
+/obj/item/food/canned/beans{
+	pixel_x = 8;
+	pixel_y = 8
 	},
 /obj/item/reagent_containers/cup/glass/mug{
 	pixel_x = 8;
@@ -357,28 +394,21 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
-"cd" = (
-/obj/machinery/airalarm/directional/south,
+"yu" = (
 /obj/structure/closet/crate/large,
 /obj/effect/turf_decal/box,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
-"qN" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
-"xt" = (
-/obj/machinery/airalarm/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/hauler/bridge)
-"yu" = (
-/obj/machinery/light/small/directional/south,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
 "zN" = (
+/obj/machinery/door/airlock/external{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"BI" = (
 /obj/machinery/door/airlock/external{
 	name = "External Airlock"
 	},
@@ -391,7 +421,20 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
+"Cv" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
 "EK" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet/crate/large,
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"TN" = (
 /obj/structure/table,
 /obj/machinery/microwave{
 	pixel_y = 5
@@ -399,28 +442,21 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/hauler/bridge)
-"TN" = (
-/obj/machinery/light/small/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/hauler/bridge)
 "WK" = (
-/obj/structure/closet/crate,
-/obj/effect/turf_decal/box,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
-"Xo" = (
-/obj/machinery/door/airlock/external{
-	name = "External Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 2
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/hauler/hold)
-"Ze" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 2
 	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/hauler/hold)
+"Xo" = (
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/hauler/bridge)
+"Ze" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/hauler/hold)
 
@@ -428,7 +464,7 @@
 ak
 ak
 aO
-aw
+ap
 aO
 ak
 ak
@@ -439,9 +475,9 @@ aF
 ak
 aa
 aU
-ap
+ay
 aU
-aB
+aE
 ak
 aF
 aF
@@ -450,9 +486,9 @@ aF
 ak
 aK
 aQ
-ay
-aj
-aP
+an
+aN
+aH
 ak
 aF
 aF
@@ -461,9 +497,9 @@ aF
 ak
 aC
 am
-an
-al
-aE
+aT
+at
+ai
 ak
 aF
 aF
@@ -472,7 +508,7 @@ aF
 ak
 ak
 ak
-aT
+ax
 ak
 ak
 ak
@@ -483,9 +519,9 @@ aF
 aI
 aA
 aV
-ax
-aN
-aH
+ad
+aJ
+Ze
 aI
 aF
 aF
@@ -494,9 +530,9 @@ aF
 aI
 aA
 aL
-ad
-at
-ai
+ab
+az
+yu
 aI
 aI
 aI
@@ -505,20 +541,20 @@ aI
 aI
 ah
 aV
-ax
+ad
 aV
-Ze
-Xo
-qN
+WK
 zN
+Cv
+BI
 "}
 (9,1,1) = {"
 aI
 aA
 aL
-ax
-aJ
-yu
+aG
+aW
+cd
 aI
 aI
 aI
@@ -527,9 +563,9 @@ aI
 aI
 aA
 ae
-ad
-at
-WK
+ab
+az
+bk
 aI
 aF
 aF
@@ -537,10 +573,10 @@ aF
 (11,1,1) = {"
 aI
 aA
-aV
-ax
-az
-cd
+aY
+ad
+aX
+EK
 aI
 aF
 aF
@@ -549,7 +585,7 @@ aF
 aI
 aI
 aI
-ab
+av
 aI
 aI
 aI
@@ -559,10 +595,10 @@ aF
 (13,1,1) = {"
 au
 ao
-aY
-aG
-aW
-bk
+ac
+aM
+as
+xt
 au
 aF
 aF
@@ -570,10 +606,10 @@ aF
 (14,1,1) = {"
 au
 af
-ac
-aG
-aX
-EK
+aR
+aM
+ag
+TN
 au
 aF
 aF
@@ -582,7 +618,7 @@ aF
 au
 au
 au
-av
+aZ
 au
 au
 au
@@ -592,10 +628,10 @@ aF
 (16,1,1) = {"
 au
 aq
-aR
-aM
-as
-xt
+aS
+aj
+aB
+Xo
 au
 aF
 aF
@@ -603,10 +639,10 @@ aF
 (17,1,1) = {"
 au
 aD
-aS
-aZ
-ag
-TN
+ar
+al
+aP
+qN
 au
 aF
 aF
@@ -614,9 +650,9 @@ aF
 (18,1,1) = {"
 aF
 au
-ar
-ar
-ar
+aw
+aw
+aw
 au
 aF
 aF
