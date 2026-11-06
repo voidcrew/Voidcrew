@@ -26,8 +26,3 @@
 	display_names[BACKGROUND_PIRATE] = "Pirate"
 	data[CHOICED_PREFERENCE_DISPLAY_NAMES] = display_names
 	return data
-
-// P0 stub: kept out of character setup until its dropdown exists (U1). Delete this override then.
-/datum/preference/choiced/background/is_accessible(datum/preferences/preferences)
-	. = ..()
-	return FALSE
