@@ -168,7 +168,9 @@ GLOBAL_LIST_EMPTY(homestead_farm_stands)
 
 /**
  * Plants `crop` in the soil tray on its tile the way a player planting it does
- * (/obj/machinery/hydroponics/attackby() with seeds), already grown to harvest, then goes.
+ * (/obj/machinery/hydroponics/attackby() with seeds), half grown so the field reads as a field and has
+ * most of its life ahead of it, then goes. On the Frontier's homestead the crop joins the seed stock
+ * the family sows that plot from again (/datum/homestead/proc/sow_plot()).
  */
 /obj/effect/mapping_helpers/homestead_crop
 	name = "homestead crop"
@@ -189,15 +191,16 @@ GLOBAL_LIST_EMPTY(homestead_farm_stands)
 	var/obj/machinery/hydroponics/tray = locate() in loc
 	if(!tray || tray.myseed)
 		return FALSE
+	if(GLOB.homestead?.contains(src))
+		GLOB.homestead.plot_crops[get_turf(src)] = crop
 	var/obj/item/seeds/seed = new crop(tray)
 	SEND_SIGNAL(seed, COMSIG_SEED_ON_PLANTED, tray)
 	tray.set_seed(seed)
 	tray.set_plant_health(seed.endurance)
 	tray.lastcycle = world.time
-	// Ripe: past production, and nothing harvested since
-	tray.age = max(seed.maturation, seed.production) + 1
-	tray.lastproduce = 0
-	tray.set_plant_status(HYDROTRAY_PLANT_HARVESTABLE)
+	// Half grown: ripe within a few cycles of the round starting, far from old age
+	tray.age = round(seed.maturation / 2)
+	tray.lastproduce = tray.age
 	tray.update_appearance()
 	return TRUE
 

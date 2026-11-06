@@ -83,11 +83,27 @@
 				if(istype(thing, /obj/machinery/door/airlock))
 					var/obj/machinery/door/airlock/door = thing
 					door.aiControlDisabled = AI_WIRE_DISABLED
+			// Every door the family uses, the coop's included: not for the animals, and the cellar's barred in a raid
+			if(istype(thing, /obj/machinery/door/airlock))
+				homestead.watch_door(thing, homestead_door_to_cellar(thing))
 		CHECK_TICK
 	homestead.find_house_centre()
 	homestead.stock_larder()
 	homestead.ensure_family()
 	homestead.start()
+
+/// Whether `door` opens into the storm cellar
+/proc/homestead_door_to_cellar(obj/machinery/door/door)
+	var/turf/here = get_turf(door)
+	if(!here)
+		return FALSE
+	if(istype(here.loc, /area/voidcrew/homestead/cellar))
+		return TRUE
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbour = get_step(here, direction)
+		if(neighbour && istype(neighbour.loc, /area/voidcrew/homestead/cellar))
+			return TRUE
+	return FALSE
 
 /// Whether the stamp sweep makes `thing` the homestead's indestructible property
 /proc/homestead_fixture_protected(atom/movable/thing, indoors)

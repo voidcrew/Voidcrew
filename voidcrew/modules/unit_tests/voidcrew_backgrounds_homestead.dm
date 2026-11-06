@@ -294,11 +294,102 @@
 	TEST_ASSERT(QDELETED(helper), "The crop helper stayed")
 	TEST_ASSERT_NOTNULL(soil.myseed, "Nothing was planted")
 	TEST_ASSERT(istype(soil.myseed, /obj/item/seeds/wheat), "The wrong crop was planted")
-	TEST_ASSERT_EQUAL(soil.plant_status, "harvestable", "The crop is not ripe") // HYDROTRAY_PLANT_HARVESTABLE
+	TEST_ASSERT_EQUAL(soil.plant_status, "growing", "The crop is not growing") // HYDROTRAY_PLANT_GROWING
+	TEST_ASSERT_EQUAL(soil.age, round(soil.myseed.maturation / 2), "The crop is not half grown")
+	TEST_ASSERT(soil.age < soil.myseed.lifespan, "The crop starts old")
 	var/obj/structure/homestead_coop/coop = allocate(/obj/structure/homestead_coop, run_loc_floor_top_right)
 	var/obj/item/food/egg/egg = allocate(/obj/item/food/egg)
 	TEST_ASSERT(coop.add_egg(egg), "The nesting box refused an egg")
 	TEST_ASSERT_EQUAL(coop.egg_count(), 1, "The egg is not in the nesting box")
+
+/// The field is worked without a player: a ripe plot is harvested and sown again, a dead one cleared and sown
+/datum/unit_test/voidcrew_homestead/field_tending/Run()
+	make_homestead()
+	var/mob/living/basic/ambient_npc/homestead/spouse/spouse = allocate(/mob/living/basic/ambient_npc/homestead/spouse, run_loc_floor_bottom_left, homestead)
+	var/obj/machinery/hydroponics/soil/soil = allocate(/obj/machinery/hydroponics/soil, run_loc_floor_top_right)
+	soil.waterlevel = soil.maxwater
+	homestead.plot_crops[get_turf(soil)] = /obj/item/seeds/wheat
+	homestead.sow_plot(soil, /obj/item/seeds/wheat)
+	TEST_ASSERT(istype(soil.myseed, /obj/item/seeds/wheat), "Sowing planted nothing")
+	TEST_ASSERT(soil.self_sustaining, "A homestead plot was sown without its upkeep")
+	TEST_ASSERT_NULL(homestead.next_field_job(spouse), "A growing, watered plot needs work")
+	// Ripe: harvested, and sown again at once
+	soil.set_plant_status("harvestable") // HYDROTRAY_PLANT_HARVESTABLE
+	var/list/work = homestead.next_field_job(spouse)
+	TEST_ASSERT_EQUAL(length(work), 2, "The ripe plot was not found")
+	TEST_ASSERT_EQUAL(work[1], soil, "The wrong plot was found")
+	TEST_ASSERT_EQUAL(work[2], "harvest", "The ripe plot was not due a harvest")
+	var/list/harvest = homestead.tend_plot(soil, spouse)
+	TEST_ASSERT(length(harvest), "The harvest gave nothing")
+	TEST_ASSERT(istype(harvest[1], /obj/item/food/grown/wheat), "The harvest was not wheat")
+	TEST_ASSERT(istype(soil.myseed, /obj/item/seeds/wheat), "The plot was not sown again")
+	TEST_ASSERT_EQUAL(soil.plant_status, "growing", "The new crop is not growing") // HYDROTRAY_PLANT_GROWING
+	TEST_ASSERT(soil.self_sustaining, "The harvest left the plot without its upkeep")
+	// Dead: cleared and sown again
+	soil.plantdies()
+	TEST_ASSERT_EQUAL(homestead.plot_job(soil), "replant", "A dead plot is not due sowing")
+	homestead.tend_plot(soil, spouse)
+	TEST_ASSERT_EQUAL(soil.plant_status, "growing", "The dead plot was not sown again") // HYDROTRAY_PLANT_GROWING
+	// Emptied by a player: sown from the stock
+	soil.set_seed(null)
+	homestead.tend_plot(soil, spouse)
+	TEST_ASSERT(istype(soil.myseed, /obj/item/seeds/wheat), "An emptied plot was not sown from the stock")
+	// The harvest goes in the fridge
+	var/obj/machinery/smartfridge/fridge = allocate(/obj/machinery/smartfridge, run_loc_floor_top_right)
+	var/obj/structure/table/table = allocate(/obj/structure/table, run_loc_floor_top_right)
+	homestead.fridge_ref = WEAKREF(fridge)
+	homestead.table_refs = list(WEAKREF(table))
+	homestead.store_harvest(harvest)
+	var/stored = 0
+	for(var/obj/item/food/grown/wheat/sheaf in fridge.contents)
+		stored++
+	TEST_ASSERT_EQUAL(stored, length(harvest), "The harvest did not go in the fridge")
+
+/// Animals cannot open the homestead's doors, the family and bandits can; the cellar is barred in a raid
+/datum/unit_test/voidcrew_homestead/doors/Run()
+	make_homestead()
+	var/obj/machinery/door/airlock/wood/house_door = allocate(/obj/machinery/door/airlock/wood, run_loc_floor_bottom_left)
+	var/obj/machinery/door/airlock/wood/cellar_door = allocate(/obj/machinery/door/airlock/wood, run_loc_floor_top_right)
+	homestead.watch_door(house_door)
+	homestead.watch_door(cellar_door, TRUE)
+	var/mob/living/basic/chicken/homestead/hen = allocate(/mob/living/basic/chicken/homestead)
+	var/mob/living/basic/ambient_npc/homestead/child/child = allocate(/mob/living/basic/ambient_npc/homestead/child, run_loc_floor_bottom_left, homestead)
+	var/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger/raider = allocate(/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger)
+	raider.toggle_ai(AI_OFF)
+	var/mob/living/carbon/human/visitor = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/settler = bg_test_human(run_loc_floor_bottom_left)
+	bg_test_state(settler, "homesteader") // BACKGROUND_HOMESTEADER
+	TEST_ASSERT(!house_door.allowed(hen), "A hen opens the house door")
+	TEST_ASSERT(house_door.allowed(child), "The family cannot open the house door")
+	TEST_ASSERT(house_door.allowed(raider), "Bandits cannot open the house door")
+	TEST_ASSERT(house_door.allowed(visitor), "A visitor cannot open the house door")
+	homestead.safe = TRUE
+	homestead.safe_since = 0
+	TEST_ASSERT(cellar_door.allowed(visitor), "The cellar is barred with nothing near")
+	homestead.safe = FALSE
+	TEST_ASSERT(!cellar_door.allowed(raider), "Raiders open the barred cellar")
+	TEST_ASSERT(!cellar_door.allowed(visitor), "A stranger opens the barred cellar")
+	TEST_ASSERT(cellar_door.allowed(child), "The family is barred out of its own cellar")
+	TEST_ASSERT(cellar_door.allowed(settler), "A homesteader is barred out of the cellar")
+	TEST_ASSERT(homestead.bar_cellar(), "Nobody barred the cellar")
+	TEST_ASSERT(!homestead.bar_cellar(), "The cellar was barred twice in one raid")
+
+/// Raiders at the kitchen take food, one thing each
+/datum/unit_test/voidcrew_homestead/raiders_take_food/Run()
+	make_homestead()
+	var/obj/machinery/smartfridge/fridge = allocate(/obj/machinery/smartfridge, run_loc_floor_top_right)
+	var/obj/structure/table/table = allocate(/obj/structure/table, run_loc_floor_top_right)
+	homestead.fridge_ref = WEAKREF(fridge)
+	homestead.table_refs = list(WEAKREF(table))
+	var/obj/item/food/grown/potato/first = allocate(/obj/item/food/grown/potato, fridge)
+	var/obj/item/food/grown/potato/second = allocate(/obj/item/food/grown/potato, fridge)
+	var/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger/raider = allocate(/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger, run_loc_floor_top_right)
+	raider.toggle_ai(AI_OFF)
+	homestead.raiders = list(WEAKREF(raider))
+	homestead.raiders_loot()
+	TEST_ASSERT(QDELETED(first) != QDELETED(second), "The raider did not take exactly one thing")
+	homestead.raiders_loot()
+	TEST_ASSERT(QDELETED(first) != QDELETED(second), "The raider took a second thing")
 
 // =========================================================================
 // THE MAP (map-contracts.md M4)

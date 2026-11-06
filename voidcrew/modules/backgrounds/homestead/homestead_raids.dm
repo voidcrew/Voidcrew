@@ -28,6 +28,7 @@
 		return
 	if(length(raiders))
 		steer_raiders()
+		raiders_loot()
 		return
 	if(!next_raid_at)
 		next_raid_at = world.time + BACKGROUND_RAID_INTERVAL
@@ -75,6 +76,7 @@
 		return FALSE
 	raid_spot = spot
 	raid_arrives_at = world.time + BACKGROUND_RAID_TELEGRAPH
+	raiders_looted = list()
 	for(var/turf/puff as anything in RANGE_TURFS(1, spot))
 		new /obj/effect/temp_visual/mook_dust(puff)
 	var/mob/living/basic/ambient_npc/homestead/lookout = family_speaker(/mob/living/basic/ambient_npc/homestead/child)
@@ -120,14 +122,47 @@
 		var/rider_type = party[index]
 		var/mob/living/simple_animal/hostile/raider = new rider_type(pick(ground))
 		raiders += WEAKREF(raider)
-		GLOB.move_manager.move_to(raider, centre, 1, raider.move_to_delay)
+		GLOB.move_manager.move_to(raider, raid_target(), 1, raider.move_to_delay)
 
-/// Riders with nobody in their sights keep walking for the house
+/// Where the riders head: the kitchen, or the middle of the house
+/datum/homestead/proc/raid_target()
+	var/obj/machinery/smartfridge/fridge = house_fridge()
+	return fridge ? get_turf(fridge) : centre
+
+/// Riders with nobody in their sights keep walking for the kitchen
 /datum/homestead/proc/steer_raiders()
+	var/turf/target = raid_target()
 	for(var/mob/living/simple_animal/hostile/raider in living_raiders())
-		if(raider.target || raider.move_packet || get_dist(raider, centre) <= 3)
+		if(raider.target || raider.move_packet || get_dist(raider, target) <= 1)
 			continue
-		GLOB.move_manager.move_to(raider, centre, 1, raider.move_to_delay)
+		GLOB.move_manager.move_to(raider, target, 1, raider.move_to_delay)
+
+/**
+ * Riders who reach the kitchen take food: one thing each, from the table or the fridge. With the
+ * family down in the cellar, a raid costs the larder rather than lives.
+ */
+/datum/homestead/proc/raiders_loot()
+	refresh_fixtures()
+	var/obj/machinery/smartfridge/fridge = house_fridge()
+	for(var/mob/living/raider as anything in living_raiders())
+		var/key = REF(raider)
+		if(raiders_looted[key])
+			continue
+		var/at_kitchen = fridge && get_dist(raider, fridge) <= 1
+		if(!at_kitchen)
+			for(var/datum/weakref/table_ref as anything in table_refs)
+				var/obj/structure/table/table = table_ref.resolve()
+				if(!QDELETED(table) && get_dist(raider, table) <= 1)
+					at_kitchen = TRUE
+					break
+		if(!at_kitchen)
+			continue
+		var/obj/item/food/meal = find_food()
+		if(!meal)
+			continue
+		raiders_looted[key] = TRUE
+		raider.visible_message(span_warning("[raider] grabs [meal]!"))
+		qdel(meal)
 
 /// Calls the raid off: the dust settles and the riders go
 /datum/homestead/proc/end_raid()
@@ -135,5 +170,6 @@
 	for(var/mob/living/raider as anything in living_raiders())
 		qdel(raider)
 	raiders = list()
+	raiders_looted = list()
 
 #undef HOMESTEAD_RAID_CALL_RANGE

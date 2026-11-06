@@ -5,13 +5,14 @@
  *
  * Activities on the ambient runner (voidcrew/modules/ambient_npcs/ambient_activity.dm). Each one
  * looks up what it uses when it starts and gives up if it is gone (MOD-3). By day the spouse cooks,
- * waters the field and feeds the animals; the children play tag, pet the dog and gather eggs. At
+ * works the field (harvest, sow, water) and feeds the animals; the children play tag, pet the dog and gather eggs. At
  * nightfall everyone eats supper at the table, then sleeps in their own bed until sunrise. While the
- * house is not safe they wait it out in the storm cellar. Unfed, nobody does field or animal work.
+ * house is not safe they wait it out in the storm cellar. Unfed, nobody does animal work; the field is
+ * worked regardless, since its harvest is what fills the fridge.
  */
 
-/// The yard and animal work the family skips while the house is unfed
-#define HOMESTEAD_CHORES list(/datum/ambient_activity/homestead_water, /datum/ambient_activity/homestead_feed, /datum/ambient_activity/homestead_eggs)
+/// The animal work the family skips while the house is unfed (the field is worked regardless: it fills the fridge)
+#define HOMESTEAD_CHORES list(/datum/ambient_activity/homestead_feed, /datum/ambient_activity/homestead_eggs)
 /// The dish the cook sets out
 #define HOMESTEAD_DISH /obj/item/food/butterbiscuit
 /// Every this many times at the stove, a dish comes out
@@ -39,6 +40,9 @@
 					return activity
 			if(start_activity(new /datum/ambient_activity/homestead_sleep(src)))
 				return activity
+	// Field work that is due comes first, most of the time
+	if(homestead && field_worker && prob(65) && homestead.next_field_job(src) && start_activity(new /datum/ambient_activity/homestead_tend(src)))
+		return activity
 	var/list/weights = routine?.Copy()
 	if(homestead && !homestead.fed)
 		weights -= HOMESTEAD_CHORES
@@ -212,80 +216,279 @@
 // THE FIELD (spouse)
 // =========================================================================
 
-/// A bucket from the well, poured on the driest bed of the field
-/datum/ambient_activity/homestead_water
-	name = "watering the field"
-	var/datum/weakref/target_ref
-	/// At the well, before the field
-	var/filling = TRUE
+/// Most food the house fridge is filled to from the field; the rest of a harvest goes on the compost
+#define HOMESTEAD_LARDER_MAX 15
+/// Plots worked in one trip out to the field
+#define HOMESTEAD_PLOTS_PER_TRIP 4
+/// Nutrient put back into a plot each time it is sown
+#define HOMESTEAD_PLOT_NUTRIENT 5
+
+/**
+ * Working the field, one plot at a time, up to HOMESTEAD_PLOTS_PER_TRIP plots a trip: a dead or
+ * empty plot is cleared and sown again from the homestead's seed stock, a ripe one is harvested and
+ * sown again, a dry one is watered from the well. The harvest is carried to the kitchen fridge.
+ * Each plot's work is /datum/homestead/proc/tend_plot(), so it can be driven without a walk.
+ */
+/datum/ambient_activity/homestead_tend
+	name = "working the field"
+	/// The plot being worked
+	var/datum/weakref/plot_ref
+	/// "harvest", "replant" or "water"
+	var/job
+	/// "well", "plot" or "kitchen"
+	var/stage = "plot"
+	/// Plots still to work this trip
+	var/plots_left = HOMESTEAD_PLOTS_PER_TRIP
+	/// A bucket drawn from the well
+	var/has_water = FALSE
+	/// Weakrefs to the harvest they carry
+	var/list/datum/weakref/carried = list()
 	var/done_at = 0
 
-/datum/ambient_activity/homestead_water/setup()
-	var/datum/homestead/homestead = homestead_of(doer)
-	var/obj/structure/water_source/homestead_well/well = homestead?.find_fixture(/obj/structure/water_source/homestead_well, doer)
-	if(!well)
-		return FALSE
-	var/turf/stand = doer.free_tile_beside(well, 1, failed_spots)
-	if(!stand)
-		return FALSE
-	target_ref = WEAKREF(well)
-	go_to(stand)
-	return TRUE
+/datum/ambient_activity/homestead_tend/setup()
+	return next_plot()
 
-/datum/ambient_activity/homestead_water/arrive()
-	var/atom/target = target_ref?.resolve()
-	if(target)
-		doer.face_atom(target)
-	done_at = world.time + rand(3 SECONDS, 5 SECONDS)
-	if(filling)
-		doer.manual_emote("draws a bucket from the well.")
-		doer.set_held(/obj/item/reagent_containers/cup/bucket/wooden)
-	playsound(doer, 'sound/effects/slosh.ogg', 25, TRUE, -3)
-
-/datum/ambient_activity/homestead_water/act(seconds)
-	if(world.time < done_at)
-		return AMBIENT_STEP_CONTINUE
-	if(filling)
-		var/obj/machinery/hydroponics/tray = driest_bed()
-		var/turf/stand = tray && doer.free_tile_beside(tray, 1, failed_spots)
-		if(!stand)
-			return AMBIENT_STEP_DONE
-		filling = FALSE
-		target_ref = WEAKREF(tray)
-		go_to(stand)
-		return AMBIENT_STEP_MOVE
-	var/obj/machinery/hydroponics/tray = target_ref?.resolve()
-	if(!QDELETED(tray) && doer.Adjacent(tray))
-		tray.adjust_waterlevel(40)
-		tray.update_appearance()
-		playsound(tray, 'sound/effects/slosh.ogg', 25, TRUE, -3)
-		if(prob(30))
-			chatter("water", 0, 0)
-	doer.set_held(null)
-	return AMBIENT_STEP_DONE
-
-/// The planted bed of the field with the least water
-/datum/ambient_activity/homestead_water/proc/driest_bed()
-	var/datum/homestead/homestead = homestead_of(doer)
-	var/obj/machinery/hydroponics/best
-	var/best_water = INFINITY
-	for(var/obj/machinery/hydroponics/tray as anything in homestead?.fixtures_of(/obj/machinery/hydroponics))
-		if(!tray.myseed || LAZYACCESS(failed_spots, get_turf(tray)))
-			continue
-		var/water = tray.waterlevel + rand(0, 5)
-		if(water < best_water)
-			best = tray
-			best_water = water
-	return best
-
-/datum/ambient_activity/homestead_water/finish()
-	if(!QDELETED(doer))
-		doer.set_held(null)
+/datum/ambient_activity/homestead_tend/Destroy()
+	plot_ref = null
+	carried = null
 	return ..()
 
-/datum/ambient_activity/homestead_water/shift_times(delay)
+/// Sets off for the next plot that needs work, or for the kitchen with what they carry. FALSE when there is nothing to do.
+/datum/ambient_activity/homestead_tend/proc/next_plot()
+	var/datum/homestead/homestead = homestead_of(doer)
+	var/list/work = plots_left > 0 ? homestead?.next_field_job(doer, failed_spots) : null
+	if(length(work) == 2)
+		var/obj/machinery/hydroponics/plot = work[1]
+		var/turf/stand = doer.free_tile_beside(plot, 1, failed_spots)
+		if(stand)
+			plot_ref = WEAKREF(plot)
+			job = work[2]
+			if(job == "water" && !has_water)
+				var/obj/structure/water_source/homestead_well/well = homestead.find_fixture(/obj/structure/water_source/homestead_well, doer)
+				var/turf/well_stand = well ? doer.free_tile_beside(well, 1, failed_spots) : null
+				if(well_stand)
+					stage = "well"
+					go_to(well_stand)
+					return TRUE
+				job = null
+			if(job)
+				stage = "plot"
+				go_to(stand)
+				return TRUE
+	if(!length(carried))
+		return FALSE
+	var/obj/machinery/smartfridge/fridge = homestead?.house_fridge()
+	var/turf/kitchen_stand = fridge ? doer.free_tile_beside(fridge, 1, failed_spots) : null
+	if(!kitchen_stand)
+		return FALSE
+	stage = "kitchen"
+	go_to(kitchen_stand)
+	return TRUE
+
+/datum/ambient_activity/homestead_tend/arrive()
+	done_at = world.time + rand(3 SECONDS, 5 SECONDS)
+	switch(stage)
+		if("well")
+			var/obj/structure/water_source/homestead_well/well = locate() in range(1, doer)
+			if(well)
+				doer.face_atom(well)
+			doer.manual_emote("draws a bucket from the well.")
+			doer.set_held(/obj/item/reagent_containers/cup/bucket/wooden)
+			playsound(doer, 'sound/effects/slosh.ogg', 25, TRUE, -3)
+			has_water = TRUE
+		if("plot")
+			var/obj/machinery/hydroponics/plot = plot_ref?.resolve()
+			if(plot)
+				doer.face_atom(plot)
+
+/datum/ambient_activity/homestead_tend/act(seconds)
+	if(world.time < done_at)
+		return AMBIENT_STEP_CONTINUE
+	var/datum/homestead/homestead = homestead_of(doer)
+	if(!homestead)
+		return AMBIENT_STEP_DONE
+	switch(stage)
+		if("well")
+			var/obj/machinery/hydroponics/plot = plot_ref?.resolve()
+			var/turf/stand = plot ? doer.free_tile_beside(plot, 1, failed_spots) : null
+			if(!stand)
+				return next_plot() ? AMBIENT_STEP_MOVE : AMBIENT_STEP_DONE
+			stage = "plot"
+			go_to(stand)
+			return AMBIENT_STEP_MOVE
+		if("plot")
+			var/obj/machinery/hydroponics/plot = plot_ref?.resolve()
+			plots_left--
+			if(!QDELETED(plot) && doer.Adjacent(plot))
+				work_plot(homestead, plot)
+			return next_plot() ? AMBIENT_STEP_MOVE : AMBIENT_STEP_DONE
+		if("kitchen")
+			var/obj/machinery/smartfridge/fridge = homestead.house_fridge()
+			if(fridge && doer.Adjacent(fridge))
+				doer.face_atom(fridge)
+				var/list/harvest = list()
+				for(var/datum/weakref/item_ref as anything in carried)
+					var/obj/item/food/item = item_ref.resolve()
+					if(!QDELETED(item) && item.loc == doer)
+						harvest += item
+				carried = list()
+				doer.set_held(null)
+				homestead.store_harvest(harvest)
+				doer.manual_emote("puts the harvest away.")
+			return AMBIENT_STEP_DONE
+	return AMBIENT_STEP_DONE
+
+/// The work at the plot they stand by, and what they do about it out loud
+/datum/ambient_activity/homestead_tend/proc/work_plot(datum/homestead/homestead, obj/machinery/hydroponics/plot)
+	var/plant_name = plot.myseed?.plantname
+	var/list/harvest = homestead.tend_plot(plot, doer, job)
+	switch(job)
+		if("harvest")
+			doer.manual_emote("harvests the [LOWER_TEXT(plant_name || "crop")].")
+			for(var/obj/item/food/item in harvest)
+				item.forceMove(doer)
+				carried += WEAKREF(item)
+			if(length(carried))
+				var/datum/weakref/first_ref = carried[1]
+				doer.set_held(first_ref.resolve())
+			if(prob(30))
+				doer.speak_context("water")
+		if("replant")
+			doer.manual_emote("turns the soil and sows a new row.")
+		if("water")
+			doer.manual_emote("waters the field.")
+			playsound(plot, 'sound/effects/slosh.ogg', 25, TRUE, -3)
+			has_water = FALSE
+			if(!length(carried))
+				doer.set_held(null)
+
+/datum/ambient_activity/homestead_tend/finish()
+	// Called away: whatever they carry goes down where they stand
+	if(!QDELETED(doer))
+		var/turf/here = doer.drop_location()
+		for(var/datum/weakref/item_ref as anything in carried)
+			var/obj/item/item = item_ref.resolve()
+			if(!QDELETED(item) && item.loc == doer)
+				item.forceMove(here)
+		doer.set_held(null)
+	carried = list()
+	return ..()
+
+/datum/ambient_activity/homestead_tend/spot_unreachable()
+	. = ..()
+	plot_ref = null
+	if(stage != "kitchen")
+		plots_left--
+
+/datum/ambient_activity/homestead_tend/shift_times(delay)
 	. = ..()
 	done_at = ambient_shifted(done_at, delay)
+
+/// The house fridge, or null
+/datum/homestead/proc/house_fridge()
+	refresh_fixtures()
+	var/obj/machinery/smartfridge/fridge = fridge_ref?.resolve()
+	return QDELETED(fridge) ? null : fridge
+
+/// What `plot` needs: "replant" (dead, or empty where a crop was sown), "harvest", "water" (dry), or null
+/datum/homestead/proc/plot_job(obj/machinery/hydroponics/plot)
+	if(plot.plant_status == HYDROTRAY_PLANT_DEAD)
+		return "replant"
+	if(plot.plant_status == HYDROTRAY_PLANT_HARVESTABLE)
+		return "harvest"
+	if(!plot.myseed)
+		return plot_crops[get_turf(plot)] ? "replant" : null
+	if(plot.waterlevel < plot.maxwater / 2)
+		return "water"
+	return null
+
+/**
+ * The plot on the homestead that most needs work, nearest `near` among equals: list(plot, job), or
+ * null. Sowing and harvesting come before watering. Plots in `avoid` (unreachable) are skipped.
+ */
+/datum/homestead/proc/next_field_job(atom/near, list/avoid)
+	var/obj/machinery/hydroponics/best
+	var/best_job
+	var/best_rank = 0
+	var/best_distance = INFINITY
+	for(var/obj/machinery/hydroponics/plot as anything in fixtures_of(/obj/machinery/hydroponics))
+		if(LAZYACCESS(avoid, get_turf(plot)))
+			continue
+		var/job = plot_job(plot)
+		if(!job)
+			continue
+		var/rank = (job == "water") ? 1 : 2
+		var/distance = near ? get_dist(plot, near) : 0
+		if(rank > best_rank || (rank == best_rank && distance < best_distance))
+			best = plot
+			best_job = job
+			best_rank = rank
+			best_distance = distance
+	return best ? list(best, best_job) : null
+
+/**
+ * Does `job` (by default what the plot needs) at `plot` for `tender`, at once, the way a player
+ * would: a harvest (the seed's own harvest()) drops by the tender and is returned; a cleared or
+ * harvested plot is sown again with a fresh seed of its crop from the seed stock.
+ */
+/datum/homestead/proc/tend_plot(obj/machinery/hydroponics/plot, mob/living/tender, job)
+	. = list()
+	if(QDELETED(plot))
+		return
+	job = job || plot_job(plot)
+	var/seed_type = plot_crops[get_turf(plot)] || plot.myseed?.type
+	switch(job)
+		if("harvest")
+			if(plot.plant_status != HYDROTRAY_PLANT_HARVESTABLE || !plot.myseed)
+				return
+			for(var/obj/item/food/item in plot.myseed.harvest(tender))
+				. += item
+			if(!plot.myseed)
+				sow_plot(plot, seed_type)
+		if("replant")
+			if(plot.myseed)
+				plot.set_seed(null)
+			sow_plot(plot, seed_type)
+		if("water")
+			plot.adjust_waterlevel(40)
+	plot.update_appearance()
+
+/// Sows a fresh `seed_type` in `plot` as a player planting it does, fed and kept up like the mapped field
+/datum/homestead/proc/sow_plot(obj/machinery/hydroponics/plot, seed_type)
+	if(!ispath(seed_type, /obj/item/seeds) || plot.myseed)
+		return FALSE
+	var/obj/item/seeds/seed = new seed_type(plot)
+	SEND_SIGNAL(seed, COMSIG_SEED_ON_PLANTED, plot)
+	plot.set_seed(seed)
+	plot.set_plant_health(seed.endurance)
+	plot.lastcycle = world.time
+	plot.reagents?.add_reagent(/datum/reagent/plantnutriment/eznutriment, HOMESTEAD_PLOT_NUTRIENT)
+	// A harvest switches self-sustaining off (update_tray()); the homestead's own plots keep it, set as the map sets it
+	if(plot_crops[get_turf(plot)])
+		plot.self_sustaining = TRUE
+	plot.update_appearance()
+	return TRUE
+
+/// Puts a harvest in the house fridge, up to HOMESTEAD_LARDER_MAX food in it; the rest goes on the compost
+/datum/homestead/proc/store_harvest(list/harvest)
+	var/obj/machinery/smartfridge/fridge = house_fridge()
+	var/stored = 0
+	if(fridge)
+		for(var/obj/item/food/meal in fridge.contents)
+			stored++
+	for(var/obj/item/food/item as anything in harvest)
+		if(QDELETED(item))
+			continue
+		if(fridge && stored < HOMESTEAD_LARDER_MAX)
+			item.forceMove(fridge)
+			stored++
+		else
+			qdel(item)
+	fridge?.update_appearance()
+
+#undef HOMESTEAD_LARDER_MAX
+#undef HOMESTEAD_PLOTS_PER_TRIP
+#undef HOMESTEAD_PLOT_NUTRIENT
 
 // =========================================================================
 // THE ANIMALS (spouse)
@@ -872,6 +1075,10 @@
 
 /datum/ambient_activity/homestead_hide/arrive()
 	doer.crouch()
+	// The first one down bars the door behind them
+	var/datum/homestead/homestead = homestead_of(doer)
+	if(homestead && istype(get_area(doer), /area/voidcrew/homestead/cellar) && homestead.bar_cellar())
+		doer.manual_emote("bars the cellar door.")
 
 /datum/ambient_activity/homestead_hide/act(seconds)
 	var/datum/homestead/homestead = homestead_of(doer)
@@ -883,6 +1090,13 @@
 	. = ..()
 	var/datum/homestead/homestead = homestead_of(doer)
 	go_to(homestead?.shelter_tile(doer, failed_spots))
+
+/// Notes the cellar barred from inside for this raid. TRUE the first time.
+/datum/homestead/proc/bar_cellar()
+	if(!safe && cellar_barred_at > safe_since)
+		return FALSE
+	cellar_barred_at = world.time
+	return TRUE
 
 /// A free tile in the storm cellar for `member`, else indoors, else null (they stay where they are)
 /datum/homestead/proc/shelter_tile(mob/living/basic/ambient_npc/homestead/member, list/avoid)

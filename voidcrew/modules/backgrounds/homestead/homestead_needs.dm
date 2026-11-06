@@ -50,6 +50,8 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 	var/list/datum/weakref/table_refs = list()
 	/// world.time the fridge and tables may be looked for again
 	var/next_fixture_search = 0
+	/// Plot turf -> the seed type sown there: the seed stock the crop helpers leave
+	var/list/plot_crops = list()
 	/// Fixture kind -> weakrefs to those on the homestead (fixtures_of())
 	var/list/fixture_cache
 	/// world.time the homestead may be swept for fixtures again
@@ -69,6 +71,12 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 	var/raid_arrives_at = 0
 	/// Weakrefs to the party's riders
 	var/list/datum/weakref/raiders = list()
+	/// REF(rider) -> TRUE for riders who already took something from the kitchen
+	var/list/raiders_looted = list()
+	/// REF(door) -> TRUE for the doors into the storm cellar, barred while the family hides
+	var/list/cellar_doors = list()
+	/// world.time the cellar was last barred from inside
+	var/cellar_barred_at = 0
 
 /datum/homestead/New(list/new_bounds, new_surface_z, new_cave_z)
 	. = ..()

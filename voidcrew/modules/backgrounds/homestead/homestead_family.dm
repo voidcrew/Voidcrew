@@ -122,6 +122,46 @@
 	log_game("[key_name(killer)] killed [member.real_name], one of the homestead family, at [AREACOORD(member)].")
 
 // =========================================================================
+// THE DOORS
+// =========================================================================
+
+/// Watches one of the homestead's airlocks: no animal but the family opens it, and a cellar door is barred while the family hides
+/datum/homestead/proc/watch_door(obj/machinery/door/door, cellar = FALSE)
+	RegisterSignal(door, COMSIG_OBJ_ALLOWED, PROC_REF(door_allowed), override = TRUE)
+	if(cellar)
+		cellar_doors[REF(door)] = TRUE
+
+/// Whether the cellar is barred: while anything hostile is near the house, and until it has been quiet a while
+/datum/homestead/proc/cellar_barred()
+	return !safe || world.time < safe_since + 30 SECONDS
+
+/// Whether `person` is one of the homesteaders
+/proc/is_homesteader(mob/person)
+	var/datum/background_state/state = person?.mind?.background_state
+	return state && !state.ended && state.key == BACKGROUND_HOMESTEADER
+
+/**
+ * Who opens a homestead door. The family, always. Into a barred cellar, the family and the
+ * homesteaders only. Otherwise anyone with hands: players, and bandits, who work a door fine; but
+ * no livestock, dog or wild animal without a player in it.
+ */
+/datum/homestead/proc/door_allowed(obj/machinery/door/source, mob/accessor)
+	SIGNAL_HANDLER
+	if(!ismob(accessor) || istype(accessor, /mob/living/basic/ambient_npc/homestead))
+		return NONE
+	if(cellar_doors[REF(source)] && cellar_barred())
+		return is_homesteader(accessor) ? NONE : COMPONENT_OBJ_DISALLOW
+	if(accessor.client || istype(accessor, /mob/living/simple_animal/hostile/asteroid/hermit))
+		return NONE
+	if(!isanimal_or_basicmob(accessor))
+		return NONE
+	// A ridden horse goes where its rider opens the door
+	for(var/mob/rider as anything in accessor.buckled_mobs)
+		if(rider.client)
+			return NONE
+	return COMPONENT_OBJ_DISALLOW
+
+// =========================================================================
 // THE FAMILY
 // =========================================================================
 
@@ -148,6 +188,8 @@
 	var/last_attacked_at = 0
 	/// Weakref to the bed they sleep in
 	var/datum/weakref/bed_ref
+	/// Works the field when it needs it
+	var/field_worker = FALSE
 
 /mob/living/basic/ambient_npc/homestead/Initialize(mapload, datum/homestead/new_homestead)
 	pick_family_name(new_homestead || GLOB.homestead)
@@ -263,13 +305,14 @@
 /mob/living/basic/ambient_npc/homestead/spouse
 	desc = "Lives and works on the homestead. Usually by the stove."
 	dialogue_section = "spouse"
+	field_worker = TRUE
 	outfit_choices = list(
 		/datum/outfit/job/botanist,
 		/datum/outfit/job/cook,
 	)
 	routine = list(
 		/datum/ambient_activity/homestead_cook = 5,
-		/datum/ambient_activity/homestead_water = 3,
+		/datum/ambient_activity/homestead_tend = 3,
 		/datum/ambient_activity/homestead_feed = 2,
 		/datum/ambient_activity/sit = 1,
 		/datum/ambient_activity/chat = 1,
