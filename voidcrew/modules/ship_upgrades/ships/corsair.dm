@@ -45,6 +45,7 @@
 	desc = "One cell behind a brig door."
 	slot = "corsair_hold"
 	map_file = "corsair/corsair_hold_lockup.dmm"
+	part_cost = list(PART_CLASS_COMBAT = 3)
 
 // ========== CORSAIR THEMES ==========
 
@@ -101,4 +102,5 @@
 	id = "privateer"
 	name = "Privateer"
 	desc = "Rust, bare plating and whatever light still works."
+	part_cost = list(PART_CLASS_COMBAT = 4)
 	template_suffix = "corsair_b"
