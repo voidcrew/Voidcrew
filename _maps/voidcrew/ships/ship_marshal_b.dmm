@@ -69,6 +69,8 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/marshal/engineering/b)
 "al" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/turf_decal/bot,
 /obj/machinery/light/directional/north,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/marshal/engineering/b)
@@ -336,12 +338,7 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/marshal/engineering/b)
 "hB" = (
-/obj/structure/bed{
-	dir = 4
-	},
-/obj/item/bedsheet/grey{
-	dir = 4
-	},
+/obj/machinery/light/directional/south,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "iD" = (
@@ -386,9 +383,7 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/brig/b)
 "lq" = (
-/obj/structure/closet/secure_closet{
-	name = "Marshal's Locker"
-	},
+/obj/structure/closet/secure_closet/marshal_arms,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/marshal/bridge/b)
 "mb" = (
@@ -407,11 +402,9 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/marshal/engineering/b)
 "nl" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/marshal/bay/b)
+/obj/item/kirbyplants/random/fullysynthetic,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
 "nK" = (
 /obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/mineral/titanium,
@@ -431,10 +424,17 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/marshal/bridge/b)
+"qa" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/marshal/bay/b)
 "rq" = (
 /obj/machinery/cryopod{
 	dir = 4
 	},
+/obj/machinery/light/directional/west,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "sv" = (
@@ -527,10 +527,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/marshal/brig/b)
 "Aa" = (
-/obj/structure/table/reinforced,
-/obj/machinery/microwave{
-	pixel_y = 6
-	},
+/obj/structure/closet/secure_closet/freezer/fridge,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "Al" = (
@@ -567,7 +564,10 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/brig/b)
 "Ex" = (
-/obj/structure/closet/secure_closet/freezer/fridge,
+/obj/structure/table/reinforced,
+/obj/machinery/microwave{
+	pixel_y = 6
+	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "Fc" = (
@@ -697,6 +697,15 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/brig/b)
 "Qz" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/grey{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/marshal/crew/b)
+"Sr" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "marshal_bay"
 	},
@@ -704,9 +713,8 @@
 /area/shuttle/voidcrew/marshal/bay/b)
 "SG" = (
 /obj/machinery/computer/cryopod{
-	dir = 4
+	pixel_x = -32
 	},
-/obj/machinery/light/directional/west,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "Tn" = (
@@ -760,7 +768,7 @@
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/marshal/bridge/b)
 "Ya" = (
-/obj/machinery/light/directional/south,
+/obj/structure/sign/clock/directional/south,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/marshal/crew/b)
 "Yh" = (
@@ -927,7 +935,7 @@ az
 aG
 aG
 aG
-Qz
+Sr
 as
 "}
 (10,1,1) = {"
@@ -956,7 +964,7 @@ JC
 aK
 aJ
 an
-nl
+qa
 aG
 aG
 aG
@@ -1068,7 +1076,7 @@ ad
 tm
 Zk
 ar
-ap
+Aa
 sF
 Gc
 sI
@@ -1084,10 +1092,10 @@ XR
 MB
 zE
 aF
-Aa
+Ex
 ap
 ap
-ap
+Ya
 aF
 "}
 (20,1,1) = {"
@@ -1100,10 +1108,10 @@ ad
 ad
 es
 aF
-Ex
+Fl
 ap
 ap
-Ya
+hB
 aF
 "}
 (21,1,1) = {"
@@ -1116,10 +1124,10 @@ ad
 da
 Of
 aF
-Fl
-hB
-hB
-hB
+nl
+Qz
+Qz
+Qz
 aF
 "}
 (22,1,1) = {"

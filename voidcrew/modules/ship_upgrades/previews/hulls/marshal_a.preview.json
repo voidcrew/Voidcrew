@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "marshal_a": {
+   "height": 14,
+   "png": "ship_marshal_a.png",
+   "slots": {
+    "marshal_bay": [
+     9,
+     2
+    ]
+   },
+   "src_md5": "aacc3ece073ab8daea37ccf5b31303a6",
+   "width": 22
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}

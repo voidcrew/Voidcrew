@@ -207,6 +207,8 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/marshal/brig/a)
 "aL" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/turf_decal/bot,
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/marshal/engineering/a)
@@ -301,7 +303,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/marshal/engineering/a)
 "bo" = (
-/obj/structure/closet/secure_closet/freezer/fridge,
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "da" = (
@@ -326,9 +328,9 @@
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/marshal/bridge/a)
 "gh" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/modular_map_root/ship_upgrade{
+	key = "marshal_bay"
+	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/marshal/bay/a)
 "gk" = (
@@ -337,6 +339,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/wood/parquet,
 /area/shuttle/voidcrew/marshal/brig/a)
+"gm" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/marshal/bay/a)
 "gn" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -349,7 +357,8 @@
 /obj/item/bedsheet/brown{
 	dir = 4
 	},
-/obj/structure/curtain/bounty/start_closed,
+/obj/structure/curtain/bounty,
+/obj/machinery/light/small/directional/east,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "hp" = (
@@ -417,14 +426,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/marshal/engineering/a)
 "mO" = (
-/obj/structure/table/wood,
-/obj/machinery/microwave{
-	pixel_y = 6
-	},
-/obj/item/food/canned/beans{
-	pixel_x = -9;
-	pixel_y = 2
-	},
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "nl" = (
@@ -466,7 +468,7 @@
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/marshal/bridge/a)
 "qa" = (
-/obj/effect/mapping_helpers/broken_floor,
+/obj/structure/sign/poster/contraband/random/directional/south,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "rq" = (
@@ -502,7 +504,7 @@
 /area/shuttle/voidcrew/marshal/crew/a)
 "sI" = (
 /obj/machinery/computer/cryopod{
-	dir = 4
+	pixel_x = -32
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
@@ -586,13 +588,11 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/marshal/engineering/a)
 "BM" = (
-/obj/structure/bed{
-	dir = 4
-	},
-/obj/item/bedsheet/brown{
-	dir = 4
-	},
-/obj/structure/curtain/bounty,
+/obj/structure/closet/cabinet,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/head/cowboy/brown,
+/obj/item/clothing/shoes/cowboy,
+/obj/item/clothing/shoes/cowboy,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "CE" = (
@@ -647,7 +647,6 @@
 	dir = 4
 	},
 /obj/structure/curtain/bounty,
-/obj/machinery/light/small/directional/east,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "IN" = (
@@ -667,7 +666,6 @@
 "Ja" = (
 /obj/machinery/mission_pad,
 /obj/machinery/firealarm/directional/south,
-/obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/wood/parquet,
 /area/shuttle/voidcrew/marshal/brig/a)
 "JC" = (
@@ -682,11 +680,13 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/marshal/brig/a)
 "KS" = (
-/obj/structure/closet/cabinet,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/head/cowboy/brown,
-/obj/item/clothing/shoes/cowboy,
-/obj/item/clothing/shoes/cowboy,
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/brown{
+	dir = 4
+	},
+/obj/structure/curtain/bounty/start_closed,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "KZ" = (
@@ -734,11 +734,19 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/marshal/engineering/a)
 "Pj" = (
-/obj/machinery/light/small/directional/south,
+/obj/structure/table/wood,
+/obj/machinery/microwave{
+	pixel_y = 6
+	},
+/obj/item/food/canned/beans{
+	pixel_x = -9;
+	pixel_y = 2
+	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "PG" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/drip,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/marshal/brig/a)
 "Qz" = (
@@ -746,7 +754,7 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "Sr" = (
-/obj/structure/sign/poster/contraband/random/directional/south,
+/obj/structure/closet/secure_closet/freezer/fridge,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/marshal/crew/a)
 "SG" = (
@@ -787,17 +795,13 @@
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/marshal/bridge/a)
 "XR" = (
-/obj/structure/closet/secure_closet{
-	name = "Marshal's Locker"
-	},
+/obj/structure/closet/secure_closet/marshal_arms,
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/marshal/bridge/a)
 "XS" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "marshal_bay"
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/marshal/bay/a)
+/obj/item/kirbyplants/random/dead,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/marshal/crew/a)
 "Ya" = (
 /obj/structure/chair/wood{
 	dir = 1
@@ -969,7 +973,7 @@ az
 aG
 aG
 aG
-XS
+gh
 as
 "}
 (10,1,1) = {"
@@ -998,7 +1002,7 @@ nW
 aK
 aJ
 an
-gh
+gm
 aG
 aG
 aG
@@ -1110,7 +1114,7 @@ ad
 es
 Wf
 ar
-ap
+Sr
 hB
 nl
 Ya
@@ -1126,10 +1130,10 @@ Of
 KZ
 pm
 aF
+Pj
 mO
-qa
 ap
-Sr
+qa
 aF
 "}
 (20,1,1) = {"
@@ -1142,10 +1146,10 @@ ad
 ad
 LI
 aF
+BM
+ap
+ap
 bo
-ap
-ap
-Pj
 aF
 "}
 (21,1,1) = {"
@@ -1158,10 +1162,10 @@ ad
 Fl
 SG
 aF
+XS
 KS
 gy
 Iw
-BM
 aF
 "}
 (22,1,1) = {"
