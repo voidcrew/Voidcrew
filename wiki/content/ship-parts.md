@@ -80,3 +80,7 @@ Give the item to the recipient so they can put it in their case and extract it. 
 Open the **Shipyard** from the join menu to see your balance and the prices of hulls, themes and modules. Purchases use your banked parts; you do not carry physical parts into the shipyard. Free options need no parts.
 
 Unlocks are permanent. Buying a theme or module lets you select it for future launches of that hull without paying again, and losing a ship does not erase your purchases. See [Buying & Upgrading Ships](ship-upgrades.md) for choosing a loadout and [Ship Catalog](ship-catalog.md) for the available hulls.
+
+[Saving a ship](player-outposts.md) in a ship bay also costs parts, in the classes that match what is aboard: combat parts for weapons, science parts for research and chemistry machines, trade parts for cargo and mining machines, and misc parts for the hull and everything else. Every save costs at least 5 parts in total.
+
+A ship's join password can be paid for with parts of any class. Setting or changing it costs **3 parts**; clearing it is free.

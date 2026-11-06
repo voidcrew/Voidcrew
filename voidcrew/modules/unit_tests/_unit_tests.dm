@@ -195,6 +195,7 @@
 #include "voidcrew_ship_integrity.dm"
 #include "voidcrew_ship_modules.dm"
 #include "voidcrew_ship_orders.dm"
+#include "voidcrew_ship_saves.dm"
 #include "voidcrew_ship_silicons.dm"
 #include "voidcrew_ship_turret_targeting.dm"
 #include "voidcrew_shop_catalog.dm"

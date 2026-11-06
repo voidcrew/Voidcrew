@@ -25,6 +25,10 @@
 	var/obj/docking_port/mobile/voidcrew/shuttle
 	///The map template the shuttle was spawned from, if it was indeed created from a template. CAN BE NULL (ex. custom-built ships).
 	var/datum/map_template/shuttle/voidcrew/source_template
+	/// The crew roster this hull was set up with, as job definitions. Ship saves keep it.
+	var/list/job_definitions
+	/// A password is being paid for, so a double click can't charge twice.
+	var/buying_join_password = FALSE
 
 	/**
 	 * Ship states and deletion.
@@ -721,6 +725,7 @@
 		var/list/slot_ids = selected_theme?.upgrade_slot_ids || source_template.upgrade_slot_ids
 		job_slot_definitions += get_module_job_definitions(source_template.type, upgrade_selections, slot_ids, selected_theme?.id)
 
+	job_definitions = job_slot_definitions
 	job_slots = assemble_job_slots_from_list(job_slot_definitions)
 	for(var/datum/job/crew_job as anything in job_slots)
 		crew_job.crew_ship_ref = WEAKREF(src)
@@ -1312,6 +1317,29 @@
 	return TRUE
 
 /**
+ * What the captain's panel calls. A new password costs ship parts; clearing it or entering the
+ * current one again is free. set_join_password() itself stays free. Sleeps on the database.
+ */
+/obj/structure/overmap/ship/proc/buy_join_password(new_password, mob/user)
+	new_password = trim("[new_password || ""]", SHIP_JOIN_PASSWORD_MAX_LEN + 1)
+	// A fleet hull is refused in there, before anything is charged.
+	if(!length(new_password) || !can_have_join_password() || (join_password && check_join_password(new_password)))
+		return set_join_password(new_password, user)
+	var/player_ckey = user?.ckey
+	if(!player_ckey || buying_join_password)
+		return FALSE
+	buying_join_password = TRUE
+	var/list/plan = GLOB.ship_economy_db.spend_any_parts(player_ckey, SHIP_PASSWORD_PRICE)
+	buying_join_password = FALSE
+	if(!plan)
+		to_chat(user, span_warning("You need [SHIP_PASSWORD_PRICE] ship parts."))
+		return FALSE
+	if(QDELETED(src) || !is_ship_captain(user) || !set_join_password(new_password, user))
+		GLOB.ship_economy_db.refund_parts(player_ckey, plan)
+		return FALSE
+	return TRUE
+
+/**
  * Revokes remembered passwords, invitations, and application approvals without
  * removing anyone from the crew roster. Authorization is the caller's responsibility.
  */
@@ -1383,7 +1411,7 @@
  */
 /obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer)
 	if(retired_by_checkpoint || checkpoint_rebuilding)
-		to_chat(claimer, span_warning("This ship is retired or being rebuilt from a checkpoint."))
+		to_chat(claimer, span_warning("This ship is retired or being rebuilt."))
 		return FALSE
 	if(!abandoned)
 		return FALSE

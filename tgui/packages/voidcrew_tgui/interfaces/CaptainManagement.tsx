@@ -52,6 +52,7 @@ type Data = {
   joining_allowed: BooleanLike;
   join_password: string;
   can_set_password: BooleanLike;
+  password_price: number;
   crew_only_airlocks: BooleanLike;
   is_captain: BooleanLike;
   crew: CrewMember[];
@@ -361,12 +362,18 @@ const SettingsTab = () => {
     joining_allowed,
     join_password,
     can_set_password,
+    password_price,
     crew_only_airlocks,
     can_rename,
   } = data;
   const [newName, setNewName] = useState(ship_name ?? '');
   const [newMemo, setNewMemo] = useState(memo ?? '');
   const [newPassword, setNewPassword] = useState(join_password ?? '');
+  // Same comparison as check_join_password(): trimmed, any case.
+  const enteredPassword = newPassword.trim().toLowerCase();
+  const passwordCosts =
+    !!enteredPassword &&
+    enteredPassword !== (join_password ?? '').trim().toLowerCase();
 
   return (
     <Stack vertical fill>
@@ -449,7 +456,11 @@ const SettingsTab = () => {
                       act('set_password', { password: newPassword })
                     }
                   >
-                    {newPassword ? 'Set Password' : 'Clear'}
+                    {passwordCosts
+                      ? `Set Password · ${password_price} parts`
+                      : newPassword
+                        ? 'Set Password'
+                        : 'Clear'}
                   </Button>
                 </Stack.Item>
               </Stack>

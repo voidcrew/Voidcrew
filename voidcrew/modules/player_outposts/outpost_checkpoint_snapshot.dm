@@ -49,7 +49,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 )))
 
 /**
- * Hull terrain a checkpoint cannot rebuild. Any other turf is saved as it is, so ship features
+ * Hull terrain a capture cannot rebuild. Any other turf is saved as it is, so ship features
  * such as pools, hot springs and dirt planters need no entry anywhere.
  * - Mineable rock and asteroid ground hand out ore or sand on every rebuild.
  * - Planetary atmosphere regenerates air forever wherever it is placed.
@@ -71,7 +71,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		return open_tile.planetary_atmos
 	return FALSE
 
-/// Whether a checkpoint keeps this object. Machinery also needs a type to rebuild as.
+/// Whether a capture keeps this object. Machinery also needs a type to rebuild as.
 /proc/outpost_checkpoint_saves(obj/object)
 	if(object.flags_1 & HOLOGRAM_1 || is_type_in_typecache(object, GLOB.outpost_checkpoint_excluded))
 		return FALSE
@@ -80,7 +80,12 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		return !!machine.checkpoint_type()
 	return isstructure(object)
 
+/**
+ * A captured hull: its map text and rooms. It stores no per-machine data, so machines come back at
+ * default tier, and it only ever comes apart into iron (ship_save_capture.dm).
+ */
 /datum/ship_checkpoint
+	/// The outpost a construction job builds this in.
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/datum/weakref/source_ship
 	var/captain_ckey
@@ -92,27 +97,23 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	var/port_x
 	var/port_y
 	var/list/rooms = list()
-	/// Construction parts only; no live references or saved inventories.
-	var/list/machines = list()
-	var/busy = FALSE
 	var/error
+	/// The hull's class, shown wherever it is listed.
+	var/class_name
+	/// The crew roster as template job definitions. Null leaves the commissioned default.
+	var/list/jobs
 
 /datum/ship_checkpoint/Destroy()
-	if(outpost)
-		outpost.checkpoints -= src
-	var/obj/structure/overmap/ship/original = source_ship?.resolve()
-	if(original?.checkpoint_ref?.resolve() == src)
-		original.checkpoint_ref = null
 	outpost = null
 	source_ship = null
 	tgm = null
 	rooms = null
-	machines = null
+	jobs = null
 	return ..()
 
 /// Ports are handled separately and cannot carry NPC types.
 /datum/ship_checkpoint/proc/includes_object(obj/object)
-	return outpost_checkpoint_saves(object)
+	return ship_save_keeps_object(object)
 
 /// Preserve placement and construction settings; inventories are never serialized.
 /datum/ship_checkpoint/proc/atom_text(atom/object)
@@ -122,23 +123,21 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(ismachinery(object))
 		var/obj/machinery/machine = object
 		saved_type = machine.checkpoint_type()
-		machines += list(capture_machine(machine))
-		properties += "checkpoint_load_id = [length(machines)]"
 		if(istype(machine, /obj/machinery/power/smes))
 			keys += list("input_level", "output_level")
 		if(istype(machine, /obj/machinery/power))
 			keys += "cable_layer"
 	if(istype(object, /obj/structure/closet))
-		// Closets keep their own type, so they look the same; their stock is never generated
-		// (below) and anything they spawn is scrubbed on load. Emergency closets are the
-		// exception: they can delete or replace themselves as they initialize.
+		// Closets keep their own type, so they look the same. Emergency closets are the exception:
+		// they can delete or replace themselves as they initialize.
 		if(istype(object, /obj/structure/closet/emcloset))
-			saved_type = /obj/structure/closet
+			saved_type = /obj/structure/closet/ship_emergency
 		if(istype(object, /obj/structure/closet/crate))
 			keys += list("lid_icon", "lid_icon_state")
 		keys += list("icon", "icon_door", "base_icon_state", "enable_door_overlay", "has_opened_overlay", "has_closed_overlay", "wall_mounted", "horizontal", "locked", "req_one_access")
-		// Closet stock is otherwise generated lazily on first opening.
-		properties += "contents_initialized = 1"
+		// Closet stock is generated lazily on first opening. Only a stocked fixture's ever is.
+		if(!GLOB.ship_save_stocked_fixtures[saved_type])
+			properties += "contents_initialized = 1"
 	if(istype(object, /obj/machinery/light))
 		// Lights otherwise materialize a charged mock battery after map loading.
 		properties += "start_with_cell = 0"
@@ -155,13 +154,14 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		keys += "open_ports"
 	if(istype(object, /obj/machinery/duct))
 		keys += list("duct_layer", "duct_color", "connects")
+	saved_type = strip_salvage(object, saved_type, keys, properties)
 	for(var/key in keys)
 		var/value = object.vars[key]
 		// Always encode direction: an oriented source must survive a round trip.
 		if(saved_type == object.type && key != "dir" && value == initial(object.vars[key]))
 			continue
 		if(istext(value))
-			value = replacetext(value, "\\", "")
+			value = ship_save_plain_text(replacetext(value, "\\", ""))
 		var/encoded = tgm_encode(value)
 		if(encoded)
 			properties += "[key] = [encoded]"
@@ -170,17 +170,17 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 /// A captain saves their own ship.
 /datum/ship_checkpoint/proc/capture(obj/structure/overmap/ship/ship, mob/living/captain)
 	if(QDELETED(ship?.shuttle) || !ship.is_ship_captain(captain) || !captain.ckey)
-		return "Only the ship's captain can save a checkpoint."
+		return "Only the ship's captain can save it."
 	return capture_hull(ship, captain.ckey)
 
 /// Capture only this port's owned tiles, including its docking tile and hull holes. The
-/// caller decides who may save the ship and who owns the checkpoint.
+/// caller decides who may save the ship and who owns the snapshot.
 /datum/ship_checkpoint/proc/capture_hull(obj/structure/overmap/ship/ship, owner_ckey)
 	var/obj/docking_port/mobile/voidcrew/port = ship?.shuttle
 	if(QDELETED(port) || !owner_ckey)
 		return "The source hull is no longer available."
 	if(port.z_levels_above || port.z_levels_below)
-		return "Checkpoints currently support single-level ships only."
+		return "Only single-level ships can be saved."
 	var/list/bounds = port.return_coords()
 	var/min_x = min(bounds[1], bounds[3])
 	var/min_y = min(bounds[2], bounds[4])
@@ -207,7 +207,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 				atoms = list("/turf/template_noop", "/area/template_noop")
 			else
 				if(checkpoint_refuses_terrain(tile))
-					return "Replace the hull's [tile.name] terrain with constructed flooring before saving a checkpoint."
+					return "Replace the hull's [tile.name] terrain with constructed flooring before saving."
 				var/room_id = area_ids[room]
 				if(!room_id)
 					rooms += list(list("name" = room.name, "type" = room.type, "tiles" = list()))
@@ -241,7 +241,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		return "The source hull is no longer available."
 	tgm = "//[DMM2TGM_MESSAGE]\n[headers.Join()][columns.Join()]"
 	if(length(tgm) > OUTPOST_CHECKPOINT_MAX_TEXT)
-		return "The hull design exceeds checkpoint capacity."
+		return "The hull design is too large to save."
 	var/datum/parsed_map/validated = new(tgm)
 	var/valid = validated.bounds?[MAP_MAXX] == width && validated.bounds?[MAP_MAXY] == height
 	qdel(validated)
@@ -250,6 +250,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	source_ship = WEAKREF(ship)
 	captain_ckey = owner_ckey
 	ship_name = ship.name
+	class_name = ship.source_template?.short_name
+	jobs = ship.job_definitions?.Copy()
 	saved_at = world.time
 	return null
 
@@ -271,6 +273,10 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	height = snapshot.height
 	port_x_offset = snapshot.port_x
 	port_y_offset = snapshot.port_y
+	if(length(snapshot.jobs))
+		job_slots = snapshot.jobs
+	if(snapshot.class_name)
+		short_name = snapshot.class_name
 
 /// Restore distinct player-built rooms before machines initialize their APC links.
 /// A plain TGM load otherwise merges rooms sharing one /area type.

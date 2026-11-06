@@ -37,11 +37,8 @@
 #define OUTPOST_SHIP_BAY_COST 10000
 #define OUTPOST_DOCK_VARIANT_BAY "ship_bay"
 
-/// Round-local, prepaid hull recovery. A ship has at most one current registration.
-#define OUTPOST_MAX_CHECKPOINTS 12
+/// The most map text a captured hull may hold.
 #define OUTPOST_CHECKPOINT_MAX_TEXT (1024 * 1024)
-#define OUTPOST_CHECKPOINT_SAVE_COST 10000
-#define OUTPOST_CHECKPOINT_UPDATE_COST 5000
 
 /// New ships built to order in the ship bay (outpost_ship_orders.dm). Credits replace parts:
 /// every part a hull, theme or module would cost in the lobby shipyard is this many credits.
