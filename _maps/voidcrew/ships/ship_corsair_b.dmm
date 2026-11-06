@@ -1,0 +1,1617 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 2;
+	id = "corsair_bridge";
+	name = "Blast Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"ab" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"ac" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"ad" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/blue{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ae" = (
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ag" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ah" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ai" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aj" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"ak" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/box,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/crew/b)
+"al" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/power/smes/ship,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"am" = (
+/obj/structure/closet/secure_closet/personal,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"an" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/machinery/power/smes/ship,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"ao" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ap" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aq" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"ar" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"as" = (
+/obj/structure/sink/kitchen/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"at" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 2
+	},
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"au" = (
+/obj/structure/cable,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"av" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil/cut{
+	pixel_x = 4;
+	pixel_y = -5
+	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ax" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"ay" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"az" = (
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 4
+	},
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aB" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/structure/sign/poster/contraband/random/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/external/ruin{
+	name = "Ventral Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aE" = (
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aF" = (
+/turf/template_noop,
+/area/template_noop)
+"aG" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aH" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aI" = (
+/obj/item/trash/chips{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cabinet{
+	name = "slop chest"
+	},
+/obj/item/storage/box/disguise_kit,
+/obj/item/storage/box/disguise_kit,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/brown{
+	dir = 4
+	},
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aM" = (
+/obj/machinery/griddle,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aN" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/light/small/directional/south,
+/obj/structure/bed/medical/anchored{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aO" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt{
+	pixel_x = 4;
+	pixel_y = -6
+	},
+/obj/item/trash/can{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aQ" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Ventral Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aT" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aU" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/hatch{
+	name = "Galley"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"aW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"aX" = (
+/obj/structure/cable,
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"aZ" = (
+/obj/effect/turf_decal/box,
+/obj/structure/rack,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"bk" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hold/b)
+"ca" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"dO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"dU" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/secure_closet/freezer/kitchen/maintenance{
+	name = "galley fridge"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"eY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/holopad,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"fg" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/airlock/hatch{
+	name = "Hold"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"fD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cabinet{
+	name = "captain's locker"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"ga" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/box,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"gf" = (
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"gv" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"hi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"hx" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/machinery/power/smes/ship,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"hE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/item/cigbutt{
+	pixel_x = -7;
+	pixel_y = 9
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"hM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"jr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"lp" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
+	},
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"lz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"lZ" = (
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"mF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"nf" = (
+/obj/effect/turf_decal/box,
+/obj/structure/cable,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"nA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"nG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/binary/pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"oe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"on" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/reagent_dispensers/beerkeg,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"pP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/item/trash/can{
+	pixel_x = -8;
+	pixel_y = 9
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"pZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"qb" = (
+/obj/structure/cable,
+/obj/machinery/power/smes/ship,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"qe" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"qI" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/hatch{
+	name = "Gun Deck"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"rv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/external/ruin{
+	name = "Boarding Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"sg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"sD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/flag/nanotrasen/directional/east,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"sF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mission_pad,
+/obj/structure/sign/flag/ssc/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"ti" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"tu" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/hatch{
+	name = "Bridge"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"tv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"vJ" = (
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/random/directional/east,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"wd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -6
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"ws" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"xp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/airlock/external/ruin{
+	name = "Boarding Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/corsair/b{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"xy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/west,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"yy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/mess,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"yG" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/airlock/hatch{
+	name = "Bunks"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"yW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/paper/crumpled{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"zs" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"zG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/structure/sign/departments/engineering/directional/north,
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Ac" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"As" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hold/b)
+"Av" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/airlock/hatch{
+	name = "Engineering"
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"AF" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"AN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hold/b)
+"Bb" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Bn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/cigarettes/cigpack_shadyjims{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/obj/item/storage/box/matches{
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"CK" = (
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"CM" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/black{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/random/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"Di" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/item/cigbutt{
+	pixel_x = 6;
+	pixel_y = -8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"DN" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"DV" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "corsair_bridge";
+	name = "Blast Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"Ee" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/cigbutt{
+	pixel_x = 9;
+	pixel_y = -4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Ez" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"ER" = (
+/obj/machinery/light/small/directional/north,
+/obj/structure/rack,
+/obj/item/clothing/mask/breath{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Fs" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/box,
+/obj/machinery/ship_combat/interdictor/corsair,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Fy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/random/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"GT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/red{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"Hh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/storage/medkit/regular{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/brute{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/structure/sign/departments/med/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"HD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Io" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/south,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"IW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Ji" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"KM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"LR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Mf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Mt" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 1;
+	id = "corsair_bridge";
+	name = "Blast Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"MX" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "corsair_hold"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hold/b)
+"Nt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/sign/poster/contraband/random/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Nu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/mission_board/criminal{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"NT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hold/b)
+"OF" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Pe" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Ps" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/tank/air/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Pt" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"PR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/folder/red{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -7;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"Qe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"QM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/airalarm/directional/east,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/item/trash/can{
+	pixel_x = 6;
+	pixel_y = 10
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Ry" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"RD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Sf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Sk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/obj/structure/sign/flag/terragov/directional/east,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"Sm" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Sy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"SU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"TU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/storage/box/donkpockets{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/condiment/ketchup{
+	pixel_x = 7;
+	pixel_y = 4
+	},
+/obj/item/food/canned/beans{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"Uk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/camera_advanced/ship_combat{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"Um" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/storage/fancy/cigarettes/cigars{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = 8;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"Ur" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/machinery/microwave{
+	pixel_y = 5
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/corsair/crew/b)
+"UU" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"Vf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plating/rust,
+/area/shuttle/voidcrew/corsair/engineering/b)
+"VU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Ws" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Wv" = (
+/obj/item/cigbutt{
+	pixel_x = -8;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"WR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/hallway/b)
+"WX" = (
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = -7;
+	pixel_y = 9
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 8;
+	pixel_y = -1
+	},
+/obj/item/dice/d6{
+	pixel_x = -3;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Xk" = (
+/turf/closed/wall/rust,
+/area/shuttle/voidcrew/corsair/hold/b)
+"Xu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"XL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"XM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/box,
+/obj/machinery/shuttle_scrambler/ship_siphon/corsair,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Yc" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "corsair_bridge";
+	name = "Blast Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"YX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/corsair/gunnery/b)
+"Zl" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/button/door/directional/north{
+	id = "corsair_bridge";
+	name = "Blast Shutters"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+"ZD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/corsair/bridge/b)
+
+(1,1,1) = {"
+aF
+aF
+aF
+aH
+aH
+aF
+aF
+aF
+UU
+aF
+aF
+aH
+aH
+aF
+aF
+aF
+"}
+(2,1,1) = {"
+aF
+aF
+ab
+aX
+aX
+ab
+ab
+ab
+hM
+ab
+ab
+aX
+aX
+ab
+aF
+aF
+"}
+(3,1,1) = {"
+aF
+aF
+ab
+hx
+qb
+Ps
+nf
+qb
+mF
+DN
+aE
+an
+al
+ab
+aF
+aF
+"}
+(4,1,1) = {"
+aF
+aF
+ab
+ac
+ac
+nG
+IW
+SU
+yW
+OF
+av
+ac
+aY
+ab
+aF
+aF
+"}
+(5,1,1) = {"
+aF
+aF
+ab
+Qe
+vJ
+Vf
+Sm
+Ry
+LR
+nA
+aA
+ae
+au
+ab
+aF
+aF
+"}
+(6,1,1) = {"
+aF
+aF
+ab
+ab
+ab
+ab
+ab
+ab
+Av
+ab
+ab
+ab
+ab
+ab
+aF
+aF
+"}
+(7,1,1) = {"
+aF
+aF
+Xk
+NT
+AN
+AN
+MX
+Xk
+zG
+aT
+aU
+ao
+aK
+aT
+aF
+aF
+"}
+(8,1,1) = {"
+aF
+aF
+Xk
+AN
+bk
+AN
+AN
+Xk
+lz
+aT
+aD
+af
+am
+aT
+aF
+aF
+"}
+(9,1,1) = {"
+aF
+aF
+Xk
+As
+bk
+bk
+AN
+fg
+zs
+yG
+ay
+aW
+aB
+aT
+aF
+aF
+"}
+(10,1,1) = {"
+aF
+aF
+Xk
+As
+As
+bk
+As
+Xk
+hi
+aT
+Ac
+aS
+aL
+aT
+aF
+aF
+"}
+(11,1,1) = {"
+aF
+aF
+Xk
+bk
+bk
+As
+bk
+Xk
+sg
+aT
+GT
+aI
+ad
+aT
+aF
+aF
+"}
+(12,1,1) = {"
+aF
+aF
+Xk
+Xk
+Xk
+Xk
+Xk
+Xk
+Sy
+aT
+CM
+aP
+ag
+aT
+aF
+aF
+"}
+(13,1,1) = {"
+AF
+AF
+AF
+ER
+Ji
+Sf
+RD
+xy
+Fy
+aT
+Ur
+ah
+aM
+aT
+aT
+aT
+"}
+(14,1,1) = {"
+xp
+ga
+rv
+dO
+pZ
+KM
+Bb
+Ee
+WR
+aT
+TU
+ax
+ai
+aQ
+ak
+aC
+"}
+(15,1,1) = {"
+AF
+AF
+AF
+wd
+Nu
+Sk
+sF
+sD
+zs
+aT
+dU
+aw
+as
+aT
+aT
+aT
+"}
+(16,1,1) = {"
+aF
+aF
+AF
+AF
+AF
+AF
+AF
+AF
+qI
+aG
+aG
+aV
+aG
+aG
+aF
+aF
+"}
+(17,1,1) = {"
+aG
+aG
+aG
+Mf
+Fs
+jr
+Di
+HD
+Ez
+Ws
+Hh
+aJ
+aN
+aG
+aG
+aG
+"}
+(18,1,1) = {"
+lp
+aR
+ws
+CK
+YX
+ca
+WX
+Bn
+pP
+XL
+lZ
+ap
+aO
+aR
+ar
+at
+"}
+(19,1,1) = {"
+aG
+aG
+aG
+on
+XM
+Nt
+QM
+hE
+Pe
+VU
+aJ
+aZ
+aj
+aG
+aG
+aG
+"}
+(20,1,1) = {"
+aF
+aF
+aG
+Yc
+aG
+aG
+aG
+aG
+tu
+aG
+aG
+aG
+az
+aG
+aF
+aF
+"}
+(21,1,1) = {"
+aF
+aF
+aF
+aF
+aq
+Zl
+gf
+gv
+ti
+Pt
+Io
+aq
+aF
+aF
+aF
+aF
+"}
+(22,1,1) = {"
+aF
+aF
+aF
+aF
+Mt
+eY
+oe
+Xu
+tv
+Wv
+PR
+aa
+aF
+aF
+aF
+aF
+"}
+(23,1,1) = {"
+aF
+aF
+aF
+aF
+Mt
+Um
+Uk
+ZD
+qe
+yy
+fD
+aa
+aF
+aF
+aF
+aF
+"}
+(24,1,1) = {"
+aF
+aF
+aF
+aF
+aq
+DV
+DV
+DV
+DV
+DV
+DV
+aq
+aF
+aF
+aF
+aF
+"}

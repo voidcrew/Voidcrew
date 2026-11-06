@@ -1,53 +1,26 @@
 /// Backgrounds: owned by M3. See data/backgrounds/spec.md.
 
-// Placeholder hull: everything but the slots, themes and modules, which arrive with the real map.
+/**
+ * Corsair-class Raider
+ *
+ * * The pirate background's hull: never on the shelf, never in the Spacefarer roll
+ * * Nose east, engines aft (west), boarding hatch and docking port on the north face
+ * * One upgrade slot: corsair_hold (5x4 enclosed room, see ships/corsair.dm)
+ * * 2 themes: Rogue (dark plastitanium, default) and Privateer (rust and plating)
+ * * The bare hull flies as spawned: helm, power, cryopods and the combat kit are all
+ *   on the hull; the gun deck's APC powers the turrets, launcher, interdictor and siphon
+ */
 /datum/map_template/shuttle/voidcrew/corsair
 	name = "Corsair-class Raider"
 	short_name = "Corsair-class"
-	suffix = "corsair_a"
+	suffix = "corsair_a" // Default suffix, overridden by selected theme
 	catalog_desc = "A fast raider with teeth: lasers, a missile tube, an interdictor and a siphon rig."
 	part_requirements = list()
+	has_upgrade_slots = TRUE
+	upgrade_slot_ids = list("corsair_hold")
+	available_themes = list("rogue", "privateer")
 	background_start = BACKGROUND_PIRATE
-
-	job_slots = list(
-		list(
-			name = "Captain",
-			officer = TRUE,
-			outfit = /datum/outfit/job/captain/pirate,
-			category = JOB_CAT_COMMAND,
-			slots = 1,
-		),
-		list(
-			name = "First Mate",
-			outfit = /datum/outfit/job/hop/pirate,
-			category = JOB_CAT_COMMAND,
-			slots = 1,
-		),
-		list(
-			name = "Buccaneer",
-			outfit = /datum/outfit/job/security/pirate,
-			category = JOB_CAT_SECURITY,
-			slots = 2,
-		),
-		list(
-			name = "Motorman",
-			outfit = /datum/outfit/job/engineer/pirate,
-			category = JOB_CAT_ENGINEERING,
-			slots = 1,
-		),
-		list(
-			name = "Sawbones",
-			outfit = /datum/outfit/job/doctor/pirate,
-			category = JOB_CAT_MEDICAL,
-			slots = 1,
-		),
-		list(
-			name = "Deckhand",
-			outfit = /datum/outfit/job/assistant/pirate,
-			category = JOB_CAT_ASSISTANT,
-			slots = 2,
-		),
-	)
+	// job_slots come from the selected theme, not defined here
 
 /// DOCKING PORT ///
 
