@@ -17,7 +17,7 @@
 	if (!..(preferences))
 		return FALSE
 
-	return istype(preferences.get_highest_priority_job(), /datum/job/prisoner)
+	return istype(preferences.get_highest_priority_job(), /datum/job/prisoner) || preferences.read_preference(/datum/preference/choiced/background) == "convict" // VOIDCREW EDIT: Backgrounds convict crime (voidcrew/modules/backgrounds); "convict" is BACKGROUND_CONVICT, which is defined after this file
 
 /// Types of Crimes Prisoners will have on their record roundstart.
 /// (They also can choose Random, which picks from these options... randomly!)

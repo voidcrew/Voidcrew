@@ -30,6 +30,7 @@
 	var/jungle_planet_count = 0
 	var/beach_planet_count = 0
 	var/wasteland_planet_count = 0
+	var/frontier_planet_count = 0 // Backgrounds: the permanent Frontier planet (voidcrew/modules/backgrounds)
 
 	var/list/planets = list()
 

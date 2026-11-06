@@ -362,6 +362,8 @@
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 	if(!ship)
 		return "Not on a registered ship"
+	if(ship.pirate_crew) // Backgrounds: freight lines refuse pirate hulls (voidcrew/modules/backgrounds/pirate)
+		return "No freight line will deal with you"
 	// Check location first - more meaningful error when in hyperspace
 	if(!istype(ship.docked, /obj/structure/overmap/planet/empty))
 		return "Must be docked in space"

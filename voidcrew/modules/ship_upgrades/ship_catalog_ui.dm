@@ -64,6 +64,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		return FALSE
 	if(template.player_hidden)
 		return FALSE
+	if(template.background_start) // Backgrounds: background hulls are never on the shelf (voidcrew/modules/backgrounds)
+		return FALSE
 	if(template.force_purchasable)
 		return TRUE
 	if(!template.has_upgrade_slots)
@@ -99,6 +101,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	if(!ispath(hull_type, /datum/map_template/shuttle/voidcrew))
 		return FALSE
 	if(initial(hull_type.player_hidden))
+		return FALSE
+	if(initial(hull_type.background_start)) // Backgrounds: background hulls never join the Spacefarer roll (voidcrew/modules/backgrounds)
 		return FALSE
 	// Curated back onto the shelf by hand, so it never earned a place on the starting line
 	if(initial(hull_type.force_purchasable))

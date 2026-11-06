@@ -87,6 +87,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_planets()
 	setup_space_ruins()
 	setup_trader_outposts()
+	setup_penitentiary() // Backgrounds: the Penitentiary (voidcrew/modules/backgrounds/convict)
 	setup_dangers()
 #ifndef UNIT_TESTS
 	spawn_derelict_outpost() // this round's derelict outpost: on the chart, built when a ship docks (voidcrew/modules/derelict_outposts)

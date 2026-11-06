@@ -1,0 +1,18 @@
+"a" = (/turf/closed/indestructible/wood,/area/voidcrew/homestead/house)
+"b" = (/turf/open/floor/wood,/area/voidcrew/homestead/house)
+"c" = (/obj/structure/bed,/obj/effect/landmark/homestead/settler,/turf/open/floor/wood,/area/voidcrew/homestead/house)
+"d" = (/obj/effect/landmark/homestead/spouse,/turf/open/floor/wood,/area/voidcrew/homestead/house)
+"e" = (/obj/effect/landmark/homestead/child,/turf/open/floor/wood,/area/voidcrew/homestead/house)
+
+(1,1,1) = {"
+aaaaaaaaaaaa
+abbbbbbbbbba
+abcbbbbbdbba
+abbbbbbbbbba
+abbbbbbbbbba
+abbbbbbbbbba
+abbebbbbebba
+abbbbbbbbbba
+abbbbbbbbbba
+aaaaaaaaaaaa
+"}

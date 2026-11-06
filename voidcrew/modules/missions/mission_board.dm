@@ -353,6 +353,7 @@
 			qdel(key)
 			if(reward > 0)
 				record_pirate_bounty_metric("pirate_bounty_completed", bounty, ship, usr, reward) // round metrics, voidcrew/modules/metrics/mission_metrics.dm
+				SEND_SIGNAL(ship, COMSIG_BACKGROUND_BOUNTY_PAID, "pirate_ship") // Backgrounds: the hunter goal (voidcrew/modules/backgrounds/hunter)
 				balloon_alert(usr, "[reward] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
 			else

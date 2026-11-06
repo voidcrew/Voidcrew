@@ -30,6 +30,8 @@
 		var/obj/structure/overmap/ship/npc/npc_ship = candidate
 		if(istype(npc_ship) && !npc_ship.player_controlled)
 			continue
+		if(candidate.background_key()) // Backgrounds: background hulls are joined from Other starts (voidcrew/modules/backgrounds)
+			continue
 		joinable += candidate
 	return joinable
 
@@ -132,6 +134,7 @@
 	data["outposts"] = homes
 	data["ships"] = ships
 	data["can_requisition"] = can_requisition_hull(user)
+	data["starts"] = background_starts_data(user) // Backgrounds: Other starts (voidcrew/modules/backgrounds)
 	return data
 
 /// Both the requester and the receiving ship must be ready for another ping.
@@ -166,6 +169,8 @@
 
 /datum/ship_join_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
+		return TRUE
+	if(background_join_act(action, params)) // Backgrounds: Other starts (voidcrew/modules/backgrounds)
 		return TRUE
 
 	. = TRUE
@@ -241,6 +246,9 @@
 			if(istype(npc_ship) && !npc_ship.player_controlled)
 				to_chat(user, span_warning("That ship is not accepting new crew members."))
 				return FALSE
+			if(ship.background_key()) // Backgrounds: joined from Other starts only (voidcrew/modules/backgrounds)
+				to_chat(user, span_warning("That ship is not accepting new crew members."))
+				return FALSE
 
 			if(length(ship.shuttle?.spawn_points) <= 0)
 				to_chat(user, span_warning("That ship has no spawn points available."))
@@ -265,6 +273,9 @@
 			var/obj/structure/overmap/ship/target = locate(apply_ref)
 			if(!istype(target))
 				to_chat(user, span_warning("That ship is no longer available."))
+				return FALSE
+			if(target.background_key()) // Backgrounds: joined from Other starts only (voidcrew/modules/backgrounds)
+				to_chat(user, span_warning("That ship is not accepting new crew members."))
 				return FALSE
 			// The message prompt sleeps. The menu stays open behind it, so the wait
 			// cannot sit on the TGUI call or every other button in the menu queues

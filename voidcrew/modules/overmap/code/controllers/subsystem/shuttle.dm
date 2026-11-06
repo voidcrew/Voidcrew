@@ -92,11 +92,12 @@
 	// wait two minutes then clear a different ship's active load as the old path did.
 	port.load_roundstart()
 
-/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme)
+/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme, turf/spawn_turf)
 	RETURN_TYPE(/obj/structure/overmap/ship)
-	return run_template_load(CALLBACK(src, PROC_REF(create_ship_impl), ship_template_to_spawn, upgrade_selections, selected_theme))
+	// Backgrounds: spawn_turf places a background start's hull (voidcrew/modules/backgrounds)
+	return run_template_load(CALLBACK(src, PROC_REF(create_ship_impl), ship_template_to_spawn, upgrade_selections, selected_theme, spawn_turf))
 
-/datum/controller/subsystem/shuttle/proc/create_ship_impl(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme, datum/shuttle_template_load/load_owner)
+/datum/controller/subsystem/shuttle/proc/create_ship_impl(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme, turf/spawn_turf, datum/shuttle_template_load/load_owner)
 
 	// Handle both type paths and already-instantiated templates
 	var/datum/map_template/shuttle/voidcrew/template_instance
@@ -120,7 +121,7 @@
 
 	// Create ship and set template directly as a workaround for Initialize arg passing
 	// Ships spawn in the green zone (inner ring) for safety
-	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
+	var/turf/spawn_loc = spawn_turf || SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY) // Backgrounds: caller's turf first (voidcrew/modules/backgrounds)
 	var/obj/structure/overmap/ship/ship_to_spawn = new(spawn_loc)
 
 	if(!ship_to_spawn || QDELETED(ship_to_spawn))

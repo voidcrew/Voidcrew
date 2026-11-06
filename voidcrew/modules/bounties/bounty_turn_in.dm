@@ -161,6 +161,7 @@
 		if(bounty_pool_add(claimed) && claimed.status == BOUNTY_RECORD_WANTED)
 			claimed.status = BOUNTY_RECORD_POOLED
 	bounty_pay_ship(ship, pad, pay[1], pay[2])
+	SEND_SIGNAL(ship, COMSIG_BACKGROUND_BOUNTY_PAID, "criminal") // Backgrounds: the hunter goal (voidcrew/modules/backgrounds/hunter)
 	if(poster_text)
 		bounty_print_captured_poster(get_turf(pad), poster_text, wanted_name)
 
@@ -273,6 +274,8 @@
 	else if(istype(arrived, /obj/item/bounty_proof))
 		var/obj/item/bounty_proof/proof = arrived
 		posting = proof.posting_ref?.resolve()
+	else if(ishuman(arrived)) // Backgrounds: a warrant target (voidcrew/modules/backgrounds/convict)
+		posting = background_warrant_for_body(arrived)
 	if(QDELETED(posting) || !posting.is_open() || posting.board_target_on_pad(src) != arrived)
 		return null
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)

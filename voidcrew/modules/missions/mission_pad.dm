@@ -181,7 +181,7 @@
 	if(arrived.loc != loc)
 		return
 	// A wanted criminal or its proof of death: the pad says what Turn In would pay (voidcrew/modules/bounties/bounty_turn_in.dm)
-	if(istype(arrived, /mob/living/basic/bounty_criminal) || istype(arrived, /obj/item/bounty_proof))
+	if(istype(arrived, /mob/living/basic/bounty_criminal) || istype(arrived, /obj/item/bounty_proof) || (ishuman(arrived) && background_warrant_for_body(arrived))) // Backgrounds: warrant targets (voidcrew/modules/backgrounds/convict)
 		INVOKE_ASYNC(src, PROC_REF(bounty_pad_announce), arrived)
 	if(!isitem(arrived))
 		return

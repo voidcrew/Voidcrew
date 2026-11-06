@@ -230,6 +230,9 @@ SUBSYSTEM_DEF(overmap_zones)
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(reservation_contains_turf(outpost.reservation, T))
 			return outpost
+	// Backgrounds: the Penitentiary, same reservation pattern (voidcrew/modules/backgrounds/convict)
+	if(GLOB.penitentiary && reservation_contains_turf(GLOB.penitentiary.reservation, T))
+		return GLOB.penitentiary
 	// Planets and flat encounters: a footprint rectangle inside a map zone's level. This
 	// is the highest-blast-radius lookup in the codebase - it feeds loot tiering, ore
 	// yields, fauna difficulty, mission kill grading and off-ship parallax - and a bare
