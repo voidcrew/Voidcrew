@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P1.
-
 /// Every background with a key, by key. One instance of each.
 GLOBAL_LIST_INIT(backgrounds, init_backgrounds())
 
@@ -40,7 +38,7 @@ GLOBAL_LIST_INIT(backgrounds, init_backgrounds())
 /datum/background/proc/roundstart(list/mob/dead/new_player/players)
 	return players
 
-/// The join menu entries this background offers right now (spec 5.2)
+/// The join menu entries this background offers right now
 /datum/background/proc/latejoin_options(mob/dead/new_player/player)
 	return list()
 
@@ -122,12 +120,12 @@ GLOBAL_LIST_INIT(backgrounds, init_backgrounds())
 /**
  * Whether "new ship" is only offered while no hull of this start has a seat the player can take.
  * Hunters regroup onto an open Marshal the way Spacefarers regroup before a requisition; pirates
- * may always found a crew of their own, up to the minted cap (spec 5.2).
+ * may always found a crew of their own, up to the minted cap.
  */
 /datum/background/hull_start/proc/new_hull_needs_full_fleet()
 	return key == BACKGROUND_BOUNTY_HUNTER
 
-/// The join menu's name for founding a new hull of this start (spec 5.2)
+/// The join menu's name for founding a new hull of this start
 /datum/background/hull_start/proc/new_hull_name()
 	switch(key)
 		if(BACKGROUND_BOUNTY_HUNTER)

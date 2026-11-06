@@ -1,18 +1,16 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Warrants
  *
  * A hunter-only posting on a player: a convict, or a pirate. A /datum/criminal_bounty subtype for
  * the card, the printed warrant and the turn-in, but held in GLOB.background_warrants alone, never
  * in GLOB.criminal_bounties: nothing ticks it, no public cap counts it and the concourse board
- * never lists it [BUG-3]. It never spawns anything, never touches a body on closing and never
+ * never lists it. It never spawns anything, never touches a body on closing and never
  * enters the prisoner pool.
  *
  * Value grows with time at large, from a quarter at posting to the full value after
- * BACKGROUND_WARRANT_FULL_TIME, in the zone fixed at posting; the crime moves it a tenth either way
- * [ECO-1]. Each new life of a convict or pirate opens a new warrant, closing the old, until someone
- * has been paid for that ckey this round [ECO-3]. Pay never reads wanted_status [MP-3].
+ * BACKGROUND_WARRANT_FULL_TIME, in the zone fixed at posting; the crime moves it a tenth either way.
+ * Each new life of a convict or pirate opens a new warrant, closing the old, until someone
+ * has been paid for that ckey this round. Pay never reads wanted_status.
  */
 
 /// Every warrant this round. Never in GLOB.criminal_bounties.
@@ -60,7 +58,7 @@ GLOBAL_LIST_EMPTY(background_warrants)
 /datum/criminal_bounty/warrant/proc/target()
 	return target_mind?.resolve()
 
-/// The value it pays at full share right now [ECO-1]
+/// The value it pays at full share right now
 /datum/criminal_bounty/warrant/proc/current_value()
 	var/elapsed = max(0, world.time - posted_at)
 	var/time_share = BACKGROUND_WARRANT_FRESH_SHARE + (1 - BACKGROUND_WARRANT_FRESH_SHARE) * min(1, elapsed / BACKGROUND_WARRANT_FULL_TIME)
@@ -180,7 +178,7 @@ GLOBAL_LIST_EMPTY(background_warrants)
 	var/mob/living/carbon/human/body = target_body()
 	return (body && body.loc == pad.loc) ? body : null
 
-/// Why `ship`'s crew may not turn this one in: the target is one of them, or ever was [ECO-2]
+/// Why `ship`'s crew may not turn this one in: the target is one of them, or ever was
 /datum/criminal_bounty/warrant/proc/warrant_crew_refusal(obj/structure/overmap/ship/ship)
 	if(!ship)
 		return null
@@ -192,7 +190,7 @@ GLOBAL_LIST_EMPTY(background_warrants)
 	return null
 
 /**
- * The capture state a body pays on: dead, or without a player behind it, the dead share [ECO-4];
+ * The capture state a body pays on: dead, or without a player behind it, the dead share;
  * in crit or knocked out by their wounds, downed; cuffed, stunned, knocked down, out of breath or
  * asleep, the full share; otherwise standing free.
  */

@@ -1,13 +1,11 @@
-/// Backgrounds: owned by P6.
-
 /**
  * # Homesteader
  *
  * Up to BACKGROUND_MAX_HOMESTEADERS players live on the Frontier homestead: one Rancher and three
  * Hands, waking in its beds. The goal is to stay. It fails only when a homesteader leaves the
- * Frontier of their own accord (MOV-2): checked on a timer from where they are, never from undock
+ * Frontier of their own accord: checked on a timer from where they are, never from undock
  * events, so being carried, cuffed, dragged or knocked out and taken away leaves it open, with a
- * nudge to get home. Teleports off the Frontier do not take them (TEL-1). At round end a standing
+ * nudge to get home. Teleports off the Frontier do not take them. At round end a standing
  * goal is settled by how many of the family are alive.
  */
 /datum/background/homesteader
@@ -141,7 +139,7 @@
 		UnregisterSignal(mind.current, COMSIG_MOVABLE_TELEPORTING)
 
 /**
- * A teleport that would take a homesteader off the Frontier does not (TEL-1): beam-ups, a hostile
+ * A teleport that would take a homesteader off the Frontier does not: beam-ups, a hostile
  * hand teleporter, a bluespace shove. Moves that keep them on the Frontier go ahead. Forced ones too:
  * the signal is sent for them.
  */
@@ -171,7 +169,7 @@
 	else
 		state.complete("Stayed on Frontier. None of the family made it.")
 
-/// Points every farm stand's till at `rancher`'s account (ECO-13, OWN-5)
+/// Points every farm stand's till at `rancher`'s account
 /proc/homestead_link_farm_stands(mob/living/rancher)
 	var/obj/item/card/id/card = rancher?.get_idcard(FALSE)
 	var/datum/bank_account/account = card?.registered_account
@@ -207,7 +205,7 @@
 // =========================================================================
 
 /**
- * Where each homesteader is. On the Frontier: whether they could leave of their own accord (MOV-2),
+ * Where each homesteader is. On the Frontier: whether they could leave of their own accord,
  * and their time watched and fed. Off it, every BACKGROUND_HOMESTEAD_LEAVE_CHECK: if they were free
  * when last seen on the Frontier and are free now, they left; otherwise they were taken, and are
  * told once to get home.

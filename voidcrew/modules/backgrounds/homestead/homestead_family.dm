@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 /// How close a homesteader comes before the family greets them
 #define HOMESTEAD_GREET_RANGE 7
 /// How long before the same homesteader is greeted again
@@ -67,7 +65,7 @@
 
 /**
  * The family on the tick: anyone off the Frontier, or somewhere they cannot walk back from, is put
- * home (MOV-1); anyone off the leash walks home; and a homesteader coming home is greeted.
+ * home; anyone off the leash walks home; and a homesteader coming home is greeted.
  */
 /datum/homestead/proc/tend_family()
 	var/list/living = living_members()
@@ -108,7 +106,7 @@
 		greeted[key] = world.time
 		greeter.greet(settler)
 
-/// A player killed one of the family: logged, and admins told once per killer (MP-11)
+/// A player killed one of the family: logged, and admins told once per killer
 /datum/homestead/proc/member_killed(mob/living/basic/ambient_npc/homestead/member, mob/living/killer)
 	var/killer_ckey = killer?.ckey
 	record_metric(METRIC_BACKGROUND, "family_death", other_ckey = killer_ckey, subject = "[member.type]", location = member)
@@ -168,8 +166,8 @@
 /**
  * One of the homestead's family. Made at a landmark by code, never mapped. Never despawned
  * (TRAIT_HOMESTEAD_RESIDENT), never allied with the planet's wildlife, never teleported (the base
- * NPC refuses every teleport it is put through, TEL-1), kept home by a leash (MOV-1). A death is
- * for the round; a revived member simply carries on (TAK-2).
+ * NPC refuses every teleport it is put through), kept home by a leash. A death is
+ * for the round; a revived member simply carries on.
  */
 /mob/living/basic/ambient_npc/homestead
 	name = "settler"

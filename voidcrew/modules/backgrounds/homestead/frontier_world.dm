@@ -1,8 +1,6 @@
-/// Backgrounds: owned by P6.
-
 // Boot hooks for the Frontier, the one permanent planet. It loads in SSmapping.loadWorld() as a
 // LoadGroup pair (cave below, surface above) on the dormant preloaded path; these procs close that
-// path's gaps (survey D 2.4) in boot order:
+// path's gaps in boot order:
 // 1. frontier_before_ruins() from setup_ruins(): the band, the two fauna trackers, the dock strip,
 //    the homestead stamp and its keep-out ring, the homestead controller.
 // 2. frontier_after_terrain() from setup_rivers(), after terrain and before population: the ladders,

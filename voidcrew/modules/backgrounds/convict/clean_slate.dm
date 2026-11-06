@@ -1,10 +1,8 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Clean Slate
  *
  * Vex's back-room service at the Undertow: a convict's or a pirate's own open warrant closed, for
- * BACKGROUND_CLEAN_SLATE_COST. Vex deals face to face [ECO-15]: the buyer must be recognised as
+ * BACKGROUND_CLEAN_SLATE_COST. Vex deals face to face: the buyer must be recognised as
  * themselves, and must have a file to close. It completes the Fraud convict's goal. A credit sink
  * for stolen money; the receipt is paper and worth nothing.
  */
@@ -25,7 +23,7 @@
 		return "I deal with faces, not masks."
 	return ..()
 
-/// Whether Vex sees `user` as the convict or pirate they are: their own mind, by face or by name [MP-2]
+/// Whether Vex sees `user` as the convict or pirate they are: their own mind, by face or by name
 /datum/shop_sku/black_market/clean_slate/proc/clean_slate_recognised(mob/living/user)
 	var/mob/living/carbon/human/person = user
 	if(!ishuman(person) || !person.mind)

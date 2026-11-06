@@ -1,5 +1,3 @@
-/// Backgrounds: owned by M2.
-
 // ========== MARSHAL MODULES ==========
 
 /datum/ship_upgrade_module/marshal

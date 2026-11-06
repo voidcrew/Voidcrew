@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 /area/voidcrew/homestead
 	name = "\improper Homestead"
 	icon_state = "away"

@@ -72,7 +72,7 @@ SUBSYSTEM_DEF(bounty)
 /datum/controller/subsystem/bounty/proc/pirate_ship_crewed(obj/structure/overmap/ship/npc/ship)
 	if(QDELETED(ship) || ship.player_controlled || ship.abandoned)
 		return FALSE
-	if(!is_type_in_list(ship, SSnpc_ships.all_factions)) // Backgrounds: never haulers or the NT patrol, ECO-11 (voidcrew/modules/backgrounds/hauler)
+	if(!is_type_in_list(ship, SSnpc_ships.all_factions)) // Backgrounds: never haulers or the NT patrol (voidcrew/modules/backgrounds/hauler)
 		return FALSE
 	return length(ship.tracked_crew) > 0
 

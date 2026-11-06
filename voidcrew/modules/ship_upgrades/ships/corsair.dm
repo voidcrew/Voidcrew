@@ -1,5 +1,3 @@
-/// Backgrounds: owned by M3.
-
 // ========== CORSAIR MODULES ==========
 
 /datum/ship_upgrade_module/corsair

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P1.
-
 // Unit tests compile before the voidcrew defines: every BACKGROUND_* value below is a literal with
 // its define named beside it.
 
@@ -95,12 +93,12 @@
 		if(choices[player] == "spacefarer")
 			TEST_ASSERT(!started, "A Spacefarer was handed to the pirate start")
 
-	// Ruling R1: one ready player may always try a share-capped start
+	// One ready player may always try a share-capped start
 	var/datum/background/bg_core_test/hunter = pin_background("bounty_hunter") // BACKGROUND_BOUNTY_HUNTER
 	var/mob/dead/new_player/lone = lobby_player()
 	var/mob/dead/new_player/other = lobby_player()
 	left = SSticker.run_background_starts(list(lone, other), list((lone) = "bounty_hunter", (other) = "spacefarer"))
-	TEST_ASSERT_EQUAL(length(hunter.recorded), 1, "A lone hunter among 2 ready players should still start (ruling R1)")
+	TEST_ASSERT_EQUAL(length(hunter.recorded), 1, "A lone hunter among 2 ready players should still start")
 	TEST_ASSERT_EQUAL(length(left), 1, "Only the Spacefarer should be left to ship out with a crew")
 
 	// No background chosen: everyone is handed straight back

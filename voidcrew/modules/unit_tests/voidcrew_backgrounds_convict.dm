@@ -1,10 +1,8 @@
-/// Backgrounds: owned by P2.
-
 // Tests for the convict background and the Meridian Penitentiary. Unit tests compile before the
 // voidcrew defines, so values are literals with the define named beside them:
 // "convict" BACKGROUND_CONVICT, "pirate" BACKGROUND_PIRATE, 2 ZONE_YELLOW, "dead" BOUNTY_STATE_DEAD,
 // "background_convict" TRAIT_BACKGROUND_CONVICT, "background" BACKGROUND_TRAIT.
-// The map tests skip with a notice while P0's placeholder map (fewer than 12 NPC cells) is in.
+// The map tests skip with a notice while the placeholder map (fewer than 12 NPC cells) is in.
 
 /datum/unit_test/voidcrew_bg_convict
 	abstract_type = /datum/unit_test/voidcrew_bg_convict
@@ -41,7 +39,7 @@
 		return null
 	return site
 
-// ===== THE MAP (map-contracts.md M1) =====
+// ===== THE MAP =====
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_penitentiary_map
 
@@ -50,7 +48,7 @@
 	TEST_ASSERT_NOTNULL(site, "No Meridian Penitentiary was placed at SSovermap init")
 	TEST_ASSERT(site.loaded, "The Penitentiary's interior did not load")
 	if(!full_site())
-		TEST_NOTICE(src, "Skipped: the Penitentiary map is still P0's placeholder (fewer than 12 NPC cells). Runs once M1 lands.")
+		TEST_NOTICE(src, "Skipped: the Penitentiary map is still a placeholder (fewer than 12 NPC cells). Runs once the real map lands.")
 		return
 	TEST_ASSERT_EQUAL(length(site.lobby_alcove_turfs), 9, "The Visitor Hall needs exactly 9 lift alcove tiles")
 	var/min_x = INFINITY
@@ -147,7 +145,7 @@
 /datum/unit_test/voidcrew_bg_convict/voidcrew_penitentiary_routes/Run()
 	site = full_site()
 	if(!site)
-		TEST_NOTICE(src, "Skipped: the Penitentiary map is still P0's placeholder. Runs once M1 lands.")
+		TEST_NOTICE(src, "Skipped: the Penitentiary map is still a placeholder. Runs once the real map lands.")
 		return
 	TEST_ASSERT_NOTNULL(site.arrival_turf, "No arrival landmark in the Visitor Hall")
 	for(var/number in site.escape_cells)
@@ -212,7 +210,7 @@
 	prison.trouble_tick(600)
 	prison.intake_tick(600)
 	START_PROCESSING(SSprocessing, prison)
-	TEST_ASSERT_EQUAL(spy.messes, 0, "The Penitentiary's process() made a mess (PERF-1)")
+	TEST_ASSERT_EQUAL(spy.messes, 0, "The Penitentiary's process() made a mess")
 	TEST_ASSERT_EQUAL(prison.stage, stage_before, "trouble_tick() moved the wing's stage")
 	TEST_ASSERT(!prison.riot_active, "A riot started in the Penitentiary")
 	TEST_ASSERT(length(prison.prisoners) <= inmates_before, "intake_tick() admitted someone")
@@ -232,7 +230,7 @@
 	var/mob/living/carbon/human/convict = test_human(open_tile)
 	ADD_TRAIT(convict, "background_convict", "background") // TRAIT_BACKGROUND_CONVICT, BACKGROUND_TRAIT
 	TEST_ASSERT(prison.convict_loose_target(convict), "A convict loose in the wing is not a guard's target")
-	// The same tile, made his own cell: guards leave him be (MP-10)
+	// The same tile, made his own cell: guards leave him be
 	var/datum/penitentiary_cell/own_cell = new(99, "escape", open_tile)
 	own_cell.turf_set[open_tile] = TRUE
 	own_cell.owner_ref = WEAKREF(convict.mind)
@@ -240,7 +238,7 @@
 	var/in_cell = prison.convict_loose_target(convict)
 	site.escape_cells -= "99"
 	qdel(own_cell)
-	TEST_ASSERT(!in_cell, "Guards would go after a convict inside his own cell (MP-10)")
+	TEST_ASSERT(!in_cell, "Guards would go after a convict inside his own cell")
 	REMOVE_TRAIT(convict, "background_convict", "background")
 	TEST_ASSERT(!prison.convict_loose_target(convict), "A human who is no convict is a guard's target")
 
@@ -253,7 +251,7 @@
 	var/datum/criminal_bounty/warrant/warrant = background_mint_warrant(convict.mind, "convict") // BACKGROUND_CONVICT
 	TEST_ASSERT_NOTNULL(warrant, "No warrant was minted")
 	TEST_ASSERT(warrant in GLOB.background_warrants, "The warrant is not in GLOB.background_warrants")
-	TEST_ASSERT(!(warrant in GLOB.criminal_bounties), "The warrant leaked into GLOB.criminal_bounties (BUG-3)")
+	TEST_ASSERT(!(warrant in GLOB.criminal_bounties), "The warrant leaked into GLOB.criminal_bounties")
 	TEST_ASSERT(!warrant.board_visible_to(null), "A warrant shows on ordinary boards")
 	warrant.posted_zone = 2 // ZONE_YELLOW
 	warrant.tier = 2
@@ -266,7 +264,7 @@
 	TEST_ASSERT_EQUAL(warrant.current_value(), 1700, "A warrant keeps growing past full value")
 	warrant.tier = 3
 	TEST_ASSERT_EQUAL(warrant.current_value(), 1870, "Most wanted is not a tenth above the full value")
-	// A second warrant on the same mind closes the first (ECO-3)
+	// A second warrant on the same mind closes the first
 	var/datum/criminal_bounty/warrant/second = background_mint_warrant(convict.mind, "convict")
 	TEST_ASSERT_NOTNULL(second, "A new life's warrant was not minted")
 	TEST_ASSERT(QDELETED(warrant) || !warrant.is_open(), "The old warrant stayed open beside the new one")
@@ -279,12 +277,12 @@
 	var/mob/living/carbon/human/convict = test_human()
 	var/datum/criminal_bounty/warrant/warrant = background_mint_warrant(convict.mind, "convict")
 	TEST_ASSERT_NOTNULL(warrant, "No warrant was minted")
-	// No player behind the body: the dead share (ECO-4)
+	// No player behind the body: the dead share
 	var/state = warrant.warrant_capture_state(convict)
 	TEST_ASSERT_EQUAL(state, "dead", "A target with no client does not pay the dead share") // BOUNTY_STATE_DEAD
 	var/obj/structure/overmap/ship/ship = bg_test_ship(/datum/map_template/shuttle/voidcrew/escape_pod)
 	TEST_ASSERT_NOTNULL(ship, "The test hull did not spawn")
-	// Anyone who was ever aboard the hunters' hull is refused (ECO-2)
+	// Anyone who was ever aboard the hunters' hull is refused
 	var/list/saved_crew = ship.background_ever_crew
 	ship.background_ever_crew = list(warrant.target_ckey)
 	TEST_ASSERT_EQUAL(warrant.warrant_crew_refusal(ship), "they're one of your crew", "A target on the hull's ever-crew list was not refused")
@@ -295,7 +293,7 @@
 		// The placeholder has no Secure Holding: the claim must refuse rather than pay
 		var/refused = warrant.claim_body(convict, ship, null, state, null)
 		TEST_ASSERT(istext(refused), "A claim paid with nowhere to hold the captive")
-		TEST_NOTICE(src, "Capture-cell half skipped: the Penitentiary map is still P0's placeholder.")
+		TEST_NOTICE(src, "Capture-cell half skipped: the Penitentiary map is still a placeholder.")
 	else
 		var/expected = round(warrant.update_value() * 25 / 100) // BOUNTY_SHARE_DEAD
 		var/list/result = warrant.claim_body(convict, ship, null, state, null)
@@ -304,7 +302,7 @@
 		TEST_ASSERT(!QDELETED(convict), "The claim deleted the body")
 		TEST_ASSERT_NOTNULL(site.capture_cell_holding(convict), "The captive is not in a capture cell")
 		TEST_ASSERT(!warrant.is_open(), "The warrant is still open after it was paid")
-	// One payout per ckey per round: no new warrant after a paid claim (ECO-1, ECO-3)
+	// One payout per ckey per round: no new warrant after a paid claim
 	var/list/ledger = convict_ledger(ckey(convict.mind.key))
 	ledger["paid"] = TRUE
 	TEST_ASSERT_NULL(background_mint_warrant(convict.mind, "convict"), "A warrant was minted for a ckey already paid for this round")
@@ -316,7 +314,7 @@
 /datum/unit_test/voidcrew_bg_convict/voidcrew_pod_launch_refusals/Run()
 	var/obj/machinery/computer/penitentiary_launch/console = allocate(/obj/machinery/computer/penitentiary_launch, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/stranger = test_human(run_loc_floor_bottom_left)
-	TEST_ASSERT(console.launch_refusal(stranger), "The launch console works for someone who is no convict (MP-8)")
+	TEST_ASSERT(console.launch_refusal(stranger), "The launch console works for someone who is no convict")
 	var/mob/living/carbon/human/convict = test_human(run_loc_floor_bottom_left)
 	var/datum/background_state/state = bg_test_state(convict, "convict") // BACKGROUND_CONVICT
 	TEST_ASSERT_NOTNULL(state, "No convict state")
@@ -325,17 +323,17 @@
 	ledger["pods"] = 1
 	var/datum/stand_in_pod = allocate(/datum)
 	GLOB.penitentiary_last_pods[state.ckey] = WEAKREF(stand_in_pod)
-	TEST_ASSERT_EQUAL(console.launch_refusal(convict), "pod still out", "A second pod launched while the first is out (SPA-1)")
+	TEST_ASSERT_EQUAL(console.launch_refusal(convict), "pod still out", "A second pod launched while the first is out")
 	GLOB.penitentiary_last_pods -= state.ckey
 	ledger["pods"] = 2 // BACKGROUND_PODS_PER_CKEY
-	TEST_ASSERT_EQUAL(console.launch_refusal(convict), "no pods left", "A third pod launched for one ckey (SPA-1)")
+	TEST_ASSERT_EQUAL(console.launch_refusal(convict), "no pods left", "A third pod launched for one ckey")
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_clean_slate_refusals
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_clean_slate_refusals/Run()
 	var/datum/shop_sku/black_market/clean_slate/sku = allocate(/datum/shop_sku/black_market/clean_slate)
 	var/mob/living/carbon/human/buyer = test_human(run_loc_floor_bottom_left)
-	TEST_ASSERT_EQUAL(sku.get_denial_reason(buyer), "Your file's already closed.", "Clean Slate sold with no open warrant (ECO-15)")
+	TEST_ASSERT_EQUAL(sku.get_denial_reason(buyer), "Your file's already closed.", "Clean Slate sold with no open warrant")
 	TEST_ASSERT_NOTNULL(background_mint_warrant(buyer.mind, "convict"), "No warrant was minted")
 	buyer.equip_to_slot_or_del(new /obj/item/clothing/mask/gas(buyer), ITEM_SLOT_MASK)
 	TEST_ASSERT_EQUAL(sku.get_denial_reason(buyer), "I deal with faces, not masks.", "Clean Slate sold to a masked buyer with no papers")
@@ -347,38 +345,38 @@
 	var/mob/living/carbon/human/visitor = test_human(run_loc_floor_bottom_left)
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	var/obj/machinery/door/airlock/outpost/penitentiary/secure = allocate(/obj/machinery/door/airlock/outpost/penitentiary, spot)
-	TEST_ASSERT(!secure.emag_act(visitor, null), "A secure door took an emag (MP-8)")
-	TEST_ASSERT(!secure.allowed(visitor), "A secure door opens for a visitor (MP-8)")
+	TEST_ASSERT(!secure.emag_act(visitor, null), "A secure door took an emag")
+	TEST_ASSERT(!secure.allowed(visitor), "A secure door opens for a visitor")
 	// "outpost_property" is TRAIT_OUTPOST_PROPERTY
 	TEST_ASSERT(HAS_TRAIT(secure, "outpost_property"), "A secure door can be taken apart with tools")
 	var/obj/machinery/door/airlock/outpost/penitentiary/capture/capture = allocate(/obj/machinery/door/airlock/outpost/penitentiary/capture, locate(spot.x + 1, spot.y, spot.z))
-	TEST_ASSERT(!capture.emag_act(visitor, null), "A capture cell door took an emag (TIM-2)")
+	TEST_ASSERT(!capture.emag_act(visitor, null), "A capture cell door took an emag")
 	var/obj/machinery/door/window/brigdoor/penitentiary/counter = allocate(/obj/machinery/door/window/brigdoor/penitentiary, locate(spot.x + 2, spot.y, spot.z))
 	TEST_ASSERT(!counter.emag_act(visitor, null), "The intake counter took an emag")
 	var/obj/structure/closet/secure_closet/penitentiary_evidence/locker = allocate(/obj/structure/closet/secure_closet/penitentiary_evidence, locate(spot.x + 3, spot.y, spot.z))
-	TEST_ASSERT(!locker.emag_act(visitor, null), "An evidence locker took an emag (MP-8)")
+	TEST_ASSERT(!locker.emag_act(visitor, null), "An evidence locker took an emag")
 	TEST_ASSERT(locker.locked, "An emag unlocked an evidence locker")
 	TEST_ASSERT(!locker.allowed(visitor), "A free evidence locker opens for anyone")
 	var/mob/living/carbon/human/owner = test_human(run_loc_floor_bottom_left)
 	locker.assign_to(owner.mind)
 	TEST_ASSERT(locker.allowed(owner), "An evidence locker does not open for its owner")
-	TEST_ASSERT(!locker.allowed(visitor), "An evidence locker opens for someone else's mind (MP-8)")
+	TEST_ASSERT(!locker.allowed(visitor), "An evidence locker opens for someone else's mind")
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_penitentiary_docking
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_penitentiary_docking/Run()
 	var/obj/structure/overmap/penitentiary/site = GLOB.penitentiary
 	TEST_ASSERT_NOTNULL(site, "No Penitentiary")
-	TEST_ASSERT(!istype(site, /obj/structure/overmap/trader_outpost) && !(site in GLOB.trader_outposts), "The Penitentiary is a trader outpost (MP-7)")
+	TEST_ASSERT(!istype(site, /obj/structure/overmap/trader_outpost) && !(site in GLOB.trader_outposts), "The Penitentiary is a trader outpost")
 	var/obj/structure/overmap/ship/pod = bg_test_ship(/datum/map_template/shuttle/voidcrew/escape_pod)
 	TEST_ASSERT_NOTNULL(pod, "The pod did not spawn")
-	TEST_ASSERT_EQUAL(site.penitentiary_docking_refusal(pod), "Meridian traffic control: that pod is not cleared to dock.", "An escape pod may dock at the Penitentiary (MP-13)")
+	TEST_ASSERT_EQUAL(site.penitentiary_docking_refusal(pod), "Meridian traffic control: that pod is not cleared to dock.", "An escape pod may dock at the Penitentiary")
 	var/mob/living/carbon/human/pilot = test_human(run_loc_floor_bottom_left)
 	var/state_before = pod.state
 	site.ship_act(pilot, pod)
 	TEST_ASSERT_EQUAL(pod.state, state_before, "ship_act() went on to dock a refused pod")
 	pod.pirate_crew = TRUE
-	TEST_ASSERT_EQUAL(site.penitentiary_docking_refusal(pod), "Meridian traffic control: your transponder is flagged. Docking denied.", "A pirate hull may dock at the Penitentiary (MP-13)")
+	TEST_ASSERT_EQUAL(site.penitentiary_docking_refusal(pod), "Meridian traffic control: your transponder is flagged. Docking denied.", "A pirate hull may dock at the Penitentiary")
 	pod.pirate_crew = FALSE
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_penitentiary_zone_lookup
@@ -388,11 +386,11 @@
 	TEST_ASSERT(site?.loaded, "No loaded Penitentiary")
 	var/turf/inside = site.template_bottom_left
 	TEST_ASSERT_NOTNULL(inside, "The Penitentiary has no interior")
-	TEST_ASSERT_EQUAL(SSovermap_zones.get_overmap_object_for_turf(inside), site, "A Penitentiary turf does not resolve to the site (TEL-2)")
+	TEST_ASSERT_EQUAL(SSovermap_zones.get_overmap_object_for_turf(inside), site, "A Penitentiary turf does not resolve to the site")
 	TEST_ASSERT(is_penitentiary_turf(inside), "is_penitentiary_turf() is FALSE inside the site")
 	TEST_ASSERT(!is_penitentiary_turf(run_loc_floor_bottom_left), "is_penitentiary_turf() is TRUE outside the site")
 
-// ===== THE POD HULL (map-contracts.md M3) =====
+// ===== THE POD HULL =====
 
 /datum/unit_test/voidcrew_bg_convict/voidcrew_escape_pod_hull
 
@@ -402,7 +400,7 @@
 	var/list/turf/hull = pod.shuttle.return_turfs()
 	for(var/turf/tile as anything in hull)
 		if(locate(/obj/machinery/power/port_gen) in tile)
-			TEST_NOTICE(src, "Skipped: the escape pod is still P0's placeholder (it carries a generator). Runs once M3 lands.")
+			TEST_NOTICE(src, "Skipped: the escape pod is still a placeholder (it carries a generator). Runs once the real hull lands.")
 			return
 	TEST_ASSERT_EQUAL(length(pod.shuttle.spawn_points), 1, "The pod needs exactly one cryopod")
 	var/ports = 0

@@ -1,6 +1,4 @@
-/// Backgrounds: owned by P1.
-
-// The main menu, in the order it shows (spec 5.4)
+// The main menu, in the order it shows
 #define BACKGROUND_ADMIN_MENU_LIST "List players"
 #define BACKGROUND_ADMIN_MENU_START "Start a ghost as..."
 #define BACKGROUND_ADMIN_MENU_JUMP "Jump to"

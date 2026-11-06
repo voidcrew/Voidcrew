@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P1.
-
 /// Where and how the character starts the round
 /datum/preference/choiced/background
 	savefile_identifier = PREFERENCE_CHARACTER

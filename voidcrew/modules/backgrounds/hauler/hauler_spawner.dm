@@ -1,11 +1,9 @@
-/// Backgrounds: owned by P5.
-
 /*
- * Keeps BACKGROUND_HAULER_COUNT haulers flying, one in yellow and one in red (ECO-7, ECO-8). It
+ * Keeps BACKGROUND_HAULER_COUNT haulers flying, one in yellow and one in red. It
  * counts its own slots, never the pirate pool, the way the NT patrol keeps its own director.
  * A slot whose hauler leaves, is destroyed or is deleted refills BACKGROUND_HAULER_RESPAWN later,
  * never at once. It starts with the round and loads at most one hull per tick.
- * Also here: the embargo on crews that rob a hauler (Q8).
+ * Also here: the embargo on crews that rob a hauler.
  */
 
 /// How often the director looks over its slots
@@ -173,7 +171,7 @@ GLOBAL_DATUM_INIT(hauler_director, /datum/hauler_director, new)
 /**
  * `robber` took `amount` off a hauler (`how`: "surrender" or "siphon"). The take is logged for
  * every robber; a player crew that is not flagged pirate is embargoed at every trader outpost but
- * the Undertow, through the outposts' own embargo (Q8). Pirates are refused there already.
+ * the Undertow, through the outposts' own embargo. Pirates are refused there already.
  */
 /proc/hauler_embargo_robber(obj/structure/overmap/ship/robber, amount, how, obj/structure/overmap/ship/npc/hauler/hauler)
 	if(!hauler_player_hull(robber) || amount <= 0)

@@ -1,11 +1,9 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Crimes
  *
  * tg's prisoner crimes, each given a convict goal and a warrant tier. The Crime dropdown shows the
  * setting's five plus Random; Random is resolved by the prisoner job over every crime, so every
- * crime carries a goal. Brawling is not one of them (BUG-2).
+ * crime carries a goal. Brawling is not one of them.
  */
 
 /datum/prisoner_crime

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P3.
-
 /**
  * Whether `user` is on the roster of `ship`. The Marshal's brig gear opens for nobody else: every
  * req_access lock on a crewed hull opens for anyone (voidcrew/edits/ship_access.dm), prisoners
@@ -30,7 +28,7 @@
 /obj/machinery/door/airlock/security/glass/marshal_brig/check_access_list(list/access_list)
 	return FALSE
 
-// ===== MARSHAL'S LOCKER [ECO-12] =====
+// ===== MARSHAL'S LOCKER =====
 
 /// The hull's weapons: stocked once, opened by its crew only. Checkpoint rebuilds never restock a closet (outpost_checkpoint_snapshot.dm).
 /obj/structure/closet/secure_closet/marshal_arms

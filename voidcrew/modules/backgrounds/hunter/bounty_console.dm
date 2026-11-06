@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P3.
-
 /**
  * # Warrant console
  *
@@ -9,7 +7,7 @@
  * player-posted bounties are unchanged. Anyone at the console may use it: a looted console works for
  * any crew, and the pad and the warrant's own checks decide a turn-in.
  *
- * No /datum/design builds its board and nothing converts a plain board into it [MP-12].
+ * No /datum/design builds its board and nothing converts a plain board into it.
  */
 /obj/machinery/computer/mission_board/bounty
 	name = "warrant console"

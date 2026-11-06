@@ -1,15 +1,13 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # The Penitentiary's people
  *
  * The warden and the intake clerk: mapped ambient NPCs who keep to their own rooms, sit, chat
  * and do desk work there, and talk from penitentiary_staff.json. Humanoid sentience and the
- * parent's polymorph and teleport refusals are kept [TAK-1]. The inmates and guards come from the
+ * parent's polymorph and teleport refusals are kept. The inmates and guards come from the
  * NPC wing (penitentiary_prison.dm).
  *
  * The dead officers of scenario 2 are code-spawned once per round (dress_massacre()), each with a
- * card that opens the pod bay and nothing else [ECO-5].
+ * card that opens the pod bay and nothing else.
  */
 
 /mob/living/basic/ambient_npc/penitentiary
@@ -56,7 +54,7 @@
 		return FALSE
 	if(home_area && tile.loc != home_area)
 		return FALSE
-	// Never onto a doorway: a secure door opened for them would let a visitor through behind them [MP-8]
+	// Never onto a doorway: a secure door opened for them would let a visitor through behind them
 	if(locate(/obj/machinery/door) in tile)
 		return FALSE
 	return ..()

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 /// Most eggs the nesting box holds
 #define HOMESTEAD_COOP_EGGS_MAX 12
 
@@ -143,7 +141,7 @@
 // =========================================================================
 
 /**
- * The porch stand: an unbreakable custom vendor (ECO-13) that pays the homestead's Rancher. Linked
+ * The porch stand: an unbreakable custom vendor that pays the homestead's Rancher. Linked
  * to each new Rancher when they start (homestead_background.dm), so it is never left for a passer-by
  * to claim with the first card swiped.
  */

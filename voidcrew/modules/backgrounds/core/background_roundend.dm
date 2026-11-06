@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P1.
-
 /// TRUE once every standing goal has been judged for the round-end report
 GLOBAL_VAR_INIT(backgrounds_judged, FALSE)
 

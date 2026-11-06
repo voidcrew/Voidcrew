@@ -1,13 +1,11 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Convict goal things
  *
  * The Theft convict's haul in his evidence locker, the Smuggler's stash somewhere in the yellow
  * band, the Murderer's witness at a yellow site, and Vex's counter for the stash. Each is made once
- * per ckey per round [ECO-5] and is worth nothing to anyone else: no contents, no export value, no
+ * per ckey per round and is worth nothing to anyone else: no contents, no export value, no
  * buyback but the owner's own delivery. A stash or a witness waits for its site to load; no goal
- * ever starts a load [SPA-2]. A site that unloads takes them with it, and they are back the next
+ * ever starts a load. A site that unloads takes them with it, and they are back the next
  * time it loads, until the goal is done.
  */
 

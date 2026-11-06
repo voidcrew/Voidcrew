@@ -1,8 +1,6 @@
-/// Backgrounds: owned by P3.
-
 /**
  * Bounty hunter tests (voidcrew/modules/backgrounds/hunter). Voidcrew defines are not visible here: literals
- * carry a comment naming the define. Other packages' inputs are pinned by hand: background states are made
+ * carry a comment naming the define. Other backgrounds' inputs are pinned by hand: background states are made
  * directly (not through background_begin()), and a warrant is a plain posting placed in
  * GLOB.background_warrants, which is all the warrant console reads.
  */
@@ -178,7 +176,7 @@
 
 // ===== THE WARRANT CONSOLE =====
 
-/// The console lists every open warrant beside the board's own postings; a plain board never does [BUG-3]
+/// The console lists every open warrant beside the board's own postings; a plain board never does
 /datum/unit_test/voidcrew_backgrounds_hunter/console/lists_warrants
 
 /datum/unit_test/voidcrew_backgrounds_hunter/console/lists_warrants/Run()
@@ -250,14 +248,14 @@
 	var/obj/item/circuitboard/computer/mission_board/bounty/board = allocate(/obj/item/circuitboard/computer/mission_board/bounty)
 	TEST_ASSERT_EQUAL(board.build_path, /obj/machinery/computer/mission_board/bounty, "The warrant console's board builds something else")
 
-	// MP-12: no design prints the board
+	// No design prints the board
 	for(var/datum/design/design as anything in subtypesof(/datum/design))
 		if(ispath(initial(design.build_path), /obj/item/circuitboard/computer/mission_board/bounty))
 			TEST_FAIL("[design] prints the warrant console's board")
 
 // ===== RECOGNITION =====
 
-/// A visible face is the person's own mind whatever the card says; a hidden face is whoever the ID names; no face and no ID is no papers [MP-1, MP-2]
+/// A visible face is the person's own mind whatever the card says; a hidden face is whoever the ID names; no face and no ID is no papers
 /datum/unit_test/voidcrew_backgrounds_hunter/recognition
 
 /datum/unit_test/voidcrew_backgrounds_hunter/recognition/Run()
@@ -292,7 +290,7 @@
 	state.ended = TRUE
 	TEST_ASSERT_NULL(background_recognised_mind(namesake, "pirate"), "A finished background was still recognised")
 
-/// Pay and recognition never read a crew record's wanted status [MP-3]; the watch marks only the target's own record
+/// Pay and recognition never read a crew record's wanted status; the watch marks only the target's own record
 /datum/unit_test/voidcrew_backgrounds_hunter/records
 
 /datum/unit_test/voidcrew_backgrounds_hunter/records/Run()
@@ -333,7 +331,7 @@
 	watch.reassert_records(list())
 	TEST_ASSERT_EQUAL(own_record.wanted_status, WANTED_PRISONER, "Closing the warrant undid a capture's record")
 
-// ===== LAST SEEN [PERF-3] =====
+// ===== LAST SEEN =====
 
 /// A reading needs a hunter hull's sensors on the target's place, and comes at most once every 30 s
 /datum/unit_test/voidcrew_backgrounds_hunter/last_seen
@@ -368,7 +366,7 @@
 	state.update_last_seen(list(watcher))
 	TEST_ASSERT_EQUAL(state.last_seen_text(), "Last seen at Elsewhere", "A place out of reach was read")
 
-// ===== EVER-CREW [ECO-2] =====
+// ===== EVER-CREW =====
 
 /// Rosters go on the hull's list by ckey; "free" means conscious, uncuffed and not stunned
 /datum/unit_test/voidcrew_backgrounds_hunter/ever_crew
@@ -439,7 +437,7 @@
 	var/obj/machinery/door/airlock/security/glass/marshal_brig/loose = allocate(/obj/machinery/door/airlock/security/glass/marshal_brig)
 	TEST_ASSERT(!loose.allowed(deputy), "A cell door off any hull opened")
 
-/// The marshal's locker holds the hull's weapons and opens for its crew only [ECO-12]
+/// The marshal's locker holds the hull's weapons and opens for its crew only
 /datum/unit_test/voidcrew_backgrounds_hunter/marshal_locker
 
 /datum/unit_test/voidcrew_backgrounds_hunter/marshal_locker/Run()
@@ -464,7 +462,7 @@
 	TEST_ASSERT_EQUAL(flashes, 2, "The marshal's locker doesn't hold two flashes")
 	TEST_ASSERT_EQUAL(bolas, 4, "The marshal's locker doesn't hold four bolas")
 
-/// The hunter outfits carry no weapons [ECO-12] and cuff their wearer's belt
+/// The hunter outfits carry no weapons and cuff their wearer's belt
 /datum/unit_test/voidcrew_backgrounds_hunter/outfits
 
 /datum/unit_test/voidcrew_backgrounds_hunter/outfits/Run()
@@ -490,7 +488,7 @@
 		TEST_ASSERT_EQUAL(cuffs, 2, "[outfit_type] doesn't carry two pairs of cuffs")
 		qdel(outfit)
 
-// ===== THE HULL (map-contracts.md M2) =====
+// ===== THE HULL =====
 
 /// Both Marshal themes carry the contract's kit: one port with a steady dock, two cryopods, the warrant console with a bolted pad beside it, the standard machines, two cell doors, the marshal's locker, and nothing forbidden
 /datum/unit_test/voidcrew_marshal_hull
@@ -618,7 +616,7 @@
 			return TRUE
 	return FALSE
 
-/// No weapons, armor or ammo on the map (the marshal's locker stocks itself), no tracking implants [TEL-3], no combat kit
+/// No weapons, armor or ammo on the map (the marshal's locker stocks itself), no tracking implants, no combat kit
 /datum/unit_test/voidcrew_marshal_hull/proc/check_forbidden(datum/vc_test_dmm/map)
 	var/static/list/forbidden = list(
 		"/obj/item/gun",

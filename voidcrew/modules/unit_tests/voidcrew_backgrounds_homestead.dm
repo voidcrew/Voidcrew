@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 // Homesteader, the Frontier and the family. Unit tests compile before voidcrew defines: literals,
 // each named. The homestead's own tick is stopped while a test runs; tests drive it by hand on a
 // homestead of their own over the test room, and never wait for an NPC to walk anywhere.
@@ -147,7 +145,7 @@
 	child.look_alive()
 	TEST_ASSERT_EQUAL(child.transform.a, 0.75, "Getting up made the child full size")
 
-/// The family refuses teleports, forced ones too (TEL-1)
+/// The family refuses teleports, forced ones too
 /datum/unit_test/voidcrew_homestead/family_teleport/Run()
 	make_homestead()
 	var/mob/living/basic/ambient_npc/homestead/spouse/spouse = allocate(/mob/living/basic/ambient_npc/homestead/spouse, run_loc_floor_bottom_left, homestead)
@@ -155,7 +153,7 @@
 	do_teleport(spouse, run_loc_floor_top_right, channel = TELEPORT_CHANNEL_BLUESPACE, forced = TRUE)
 	TEST_ASSERT_EQUAL(get_turf(spouse), start, "A forced teleport took the spouse")
 
-/// Carried off the Frontier, a family member is put back home on the next tick (MOV-1)
+/// Carried off the Frontier, a family member is put back home on the next tick
 /datum/unit_test/voidcrew_homestead/family_leash/Run()
 	make_homestead()
 	var/mob/living/basic/ambient_npc/homestead/child/child = allocate(/mob/living/basic/ambient_npc/homestead/child, run_loc_floor_bottom_left, homestead)
@@ -217,7 +215,7 @@
 // THE HOMESTEADER
 // =========================================================================
 
-/// Taken off the Frontier in cuffs, the goal stays open; walking off it, it fails (MOV-2)
+/// Taken off the Frontier in cuffs, the goal stays open; walking off it, it fails
 /datum/unit_test/voidcrew_homestead/departure/Run()
 	make_homestead()
 	var/mob/living/carbon/human/settler = bg_test_human(run_loc_floor_bottom_left)
@@ -241,7 +239,7 @@
 	homestead.tend_homesteaders()
 	TEST_ASSERT_EQUAL(state.outcome, "failed", "Leaving on their own did not fail the goal") // BACKGROUND_OUTCOME_FAILED
 
-/// A homesteader refuses a teleport off the Frontier, and takes one on it (TEL-1)
+/// A homesteader refuses a teleport off the Frontier, and takes one on it
 /datum/unit_test/voidcrew_homestead/settler_teleport/Run()
 	var/surface_z = frontier_surface_z()
 	if(!surface_z)
@@ -258,7 +256,7 @@
 	do_teleport(settler, nearby, channel = TELEPORT_CHANNEL_BLUESPACE, forced = TRUE)
 	TEST_ASSERT_EQUAL(get_turf(settler), nearby, "A teleport across the Frontier was refused")
 
-/// With no homesteader on the Frontier, no raid sets out (ECO-14)
+/// With no homesteader on the Frontier, no raid sets out
 /datum/unit_test/voidcrew_homestead/no_raid_alone/Run()
 	make_homestead()
 	homestead.next_raid_at = 1
@@ -396,10 +394,10 @@
 	TEST_ASSERT(QDELETED(first) != QDELETED(second), "The raider took a second thing")
 
 // =========================================================================
-// THE MAP (map-contracts.md M4)
+// THE MAP
 // =========================================================================
 
-/// The homestead template carries what the code relies on. Skipped on P0's placeholder.
+/// The homestead template carries what the code relies on. Skipped on the placeholder map.
 /datum/unit_test/voidcrew_homestead_map
 	/// The block the homestead is loaded into
 	var/datum/turf_reservation/reserve
@@ -411,7 +409,7 @@
 /datum/unit_test/voidcrew_homestead_map/Run()
 	var/datum/map_template/ruin/frontier_homestead/template = new
 	if(template.width < 36 || template.height < 30)
-		TEST_NOTICE(src, "The homestead map is P0's [template.width]x[template.height] placeholder: the map contract was not tested")
+		TEST_NOTICE(src, "The homestead map is a [template.width]x[template.height] placeholder: the map contract was not tested")
 		return
 	reserve = SSmapping.request_turf_block_reservation(template.width + 2, template.height + 2, 1)
 	TEST_ASSERT_NOTNULL(reserve, "Could not reserve a block for the homestead")

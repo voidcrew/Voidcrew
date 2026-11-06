@@ -1,12 +1,10 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # The Penitentiary's fittings
  *
- * Two families of door (map-contracts.md M1):
+ * Two families of door:
  * - secure: outpost airlocks that open for the Penitentiary's own staff mobs only. No card opens
  *   them, emags do nothing, and the link sweep (and their own Initialize) makes them outpost
- *   property, so no tool gets a panel open [MP-8];
+ *   property, so no tool gets a panel open;
  * - the escape line: ordinary tg airlocks a screwdriver, a multitool and wirecutters get through.
  *   The link sweep leaves them alone on purpose.
  * Plus the intake counter's windoor, the warden's console (locked), the evidence lockers (one
@@ -136,7 +134,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/penitentiary, 0)
 
 /**
  * One convict's confiscated gear, and a Theft convict's haul. Opens for its owner's mind only,
- * relocks itself on closing, and cannot be broken, emagged or taken apart [MP-8, OWN-3].
+ * relocks itself on closing, and cannot be broken, emagged or taken apart.
  */
 /obj/structure/closet/secure_closet/penitentiary_evidence
 	name = "evidence locker"
@@ -181,7 +179,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/penitentiary, 0)
 		locked = TRUE
 	update_appearance()
 
-/// Frees the locker: whatever it held goes, and its name with it [OWN-3]
+/// Frees the locker: whatever it held goes, and its name with it
 /obj/structure/closet/secure_closet/penitentiary_evidence/proc/release()
 	owner_mind = null
 	name = initial(name)

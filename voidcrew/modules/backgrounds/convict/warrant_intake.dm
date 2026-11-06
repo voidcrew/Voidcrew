@@ -1,17 +1,15 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Capture intake
  *
  * A warrant target handed in (at a hunter's pad, or the Meridian's own intake pad) is beamed to
  * the Meridian: stripped like the gulag teleporter strips a prisoner, gear into their evidence
  * locker, dressed in orange and put on a capture-cell bed, with the door sealed behind them. A
- * capture cell holds [TIM-2]: no tools, no hackable door. Respawn is the way out. The dead go to the
+ * capture cell holds: no tools, no hackable door. Respawn is the way out. The dead go to the
  * morgue. Never through do_teleport(), so a teleport block cannot leave a captive on the pad.
  *
  * Every minute a capture-cell body nobody is playing any more, whose player started another life
  * BACKGROUND_CAPTURE_BODY_GRACE ago, and any body that died in a cell, goes to the morgue and
- * frees its bed [OWN-1].
+ * frees its bed.
  */
 
 /// What a plasmaman keeps on through intake: their suit and air
@@ -117,7 +115,7 @@ GLOBAL_LIST_INIT(penitentiary_plasmaman_keeps, typecacheof(list(
 		return FALSE
 	return world.time - latest.started_at >= BACKGROUND_CAPTURE_BODY_GRACE
 
-/// The minute's sweep of Secure Holding: the dead and the abandoned go to the morgue and free their beds [OWN-1]
+/// The minute's sweep of Secure Holding: the dead and the abandoned go to the morgue and free their beds
 /obj/structure/overmap/penitentiary/proc/capture_sweep()
 	for(var/number in capture_cells)
 		var/datum/penitentiary_cell/cell = capture_cells[number]
@@ -130,7 +128,7 @@ GLOBAL_LIST_INIT(penitentiary_plasmaman_keeps, typecacheof(list(
 					cell.occupants -= ref
 			log_game("BACKGROUNDS: [key_name(body)]'s body was moved from Meridian capture cell [cell.number] to the morgue")
 
-/// Whether `person` stands in a cell of their own: their escape cell, or any capture cell [MP-10]
+/// Whether `person` stands in a cell of their own: their escape cell, or any capture cell
 /obj/structure/overmap/penitentiary/proc/in_own_cell(mob/living/person)
 	if(!person)
 		return FALSE

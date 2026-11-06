@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P3.
-
 /**
  * The bounty hunter: a crew on a Marshal-class hull, with the warrant console, a brig and a goal of
  * paid captures. Every paid capture the hull makes counts (criminal records, warrants, pirate-ship
@@ -63,13 +61,13 @@
 		return words[count + 1]
 	return "[count]"
 
-// ===== EVER-CREW [ECO-2] =====
+// ===== EVER-CREW =====
 // The collusion guard for warrants: ckeys of everyone ever on a hull's roster this round, and of every
-// convict or pirate who stood on the hull while free. P2's warrant claim and P4's siphon goal read it;
+// convict or pirate who stood on the hull while free. The warrant claim and the siphon goal read it;
 // the background watch in hunter_recognition.dm fills it.
 
 /obj/structure/overmap/ship
-	/// ckeys of everyone who has been aboard this hull while free. P3 fills it; P2 and P4 read it.
+	/// ckeys of everyone who has been aboard this hull while free. The hunter background fills it; the warrant claim and the siphon goal read it.
 	var/list/background_ever_crew
 
 /// Puts a player's ckey on this hull's ever-crew list

@@ -1,10 +1,8 @@
-/// Backgrounds: owned by P6.
-
 /**
  * # The family's day
  *
  * Activities on the ambient runner (voidcrew/modules/ambient_npcs/ambient_activity.dm). Each one
- * looks up what it uses when it starts and gives up if it is gone (MOD-3). By day the spouse cooks,
+ * looks up what it uses when it starts and gives up if it is gone. By day the spouse cooks,
  * works the field (harvest, sow, water) and feeds the animals; the children play tag, pet the dog and gather eggs. At
  * nightfall everyone eats supper at the table, then sleeps in their own bed until sunrise. While the
  * house is not safe they wait it out in the storm cellar. Unfed, nobody does animal work; the field is

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Convict
  *
@@ -9,7 +7,7 @@
  * - Massacre: the pod bay's processing room, its officers dead around them (dressed once a round);
  * - Adrift: already out in a launched pod, two to a pod.
  * Each falls back to the next when it runs out of room: Massacre once dressed and Adrift out of
- * pods fall to Cell, Cell overflows onto the massacre spots, then the start fails [SPA-1, ECO-5].
+ * pods fall to Cell, Cell overflows onto the massacre spots, then the start fails.
  *
  * The goal comes from the crime (convict_crimes.dm); the warrant, the haul, the stash and the
  * witness are made when the background starts.
@@ -249,7 +247,7 @@
 		if(cell.owner() == mind)
 			cell.owner_ref = null
 
-/// The 30-second check: a Mutiny convict who captains any ship but a pod has done it [BUG-1]
+/// The 30-second check: a Mutiny convict who captains any ship but a pod has done it
 /datum/background/convict/proc/convict_tick()
 	for(var/datum/mind/mind as anything in background_active_minds(BACKGROUND_CONVICT))
 		var/datum/background_state/state = mind?.background_state

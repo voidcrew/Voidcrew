@@ -1,13 +1,11 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Meridian Penitentiary
  *
  * A permanent walled prison in the yellow band, placed and loaded during SSovermap's init like
  * the trader outposts, but a sibling of them, never one: no shop, no GLOB.trader_outposts, no
- * strike ladder [MP-7]. Visitors berth in generated hangars and ride the lift to the Visitor
- * Hall. The interior is one turf reservation read only through its landmarks (map-contracts.md
- * M1); load_level() never wraps the template load in try/catch.
+ * strike ladder. Visitors berth in generated hangars and ride the lift to the Visitor
+ * Hall. The interior is one turf reservation read only through its landmarks;
+ * load_level() never wraps the template load in try/catch.
  */
 
 /// An escape-wing cell
@@ -43,7 +41,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 	/// Where scenario-2 convicts come to, and how many of them are taken this round
 	var/list/turf/massacre_spots = list()
 	var/massacre_spots_used = 0
-	/// The processing room is dressed once per round [ECO-5]
+	/// The processing room is dressed once per round
 	var/massacre_dressed = FALSE
 	/// The launch bay's cradles, by the console they belong to (nearest first)
 	var/list/turf/pod_cradles = list()
@@ -222,7 +220,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 				evidence_lockers += thing
 			else if(istype(thing, /obj/structure/bodycontainer/morgue))
 				morgue_trays += thing
-		// Everything the template placed is property [DST-1, MP-8], except the escape line (made
+		// Everything the template placed is property, except the escape line (made
 		// to be hacked), the wing's staff doors, and the furniture people sit, lie and lean on.
 		for(var/obj/fixture in interior_turf)
 			if(!ismachinery(fixture) && !isstructure(fixture))
@@ -282,7 +280,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 
 /**
  * The trader outposts' berth branch (outpost.dm ship_act()), without the shop's greeting. Flagged
- * pirate hulls and carriers, and escape pods, are turned away first [MP-13].
+ * pirate hulls and carriers, and escape pods, are turned away first.
  */
 /obj/structure/overmap/penitentiary/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	var/refusal = penitentiary_docking_refusal(acting)
@@ -348,7 +346,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 	if(optional_partner)
 		ship_act(user, optional_partner)
 
-/// Why traffic control turns `acting` away, or null [MP-13]
+/// Why traffic control turns `acting` away, or null
 /obj/structure/overmap/penitentiary/proc/penitentiary_docking_refusal(obj/structure/overmap/ship/acting)
 	if(!acting)
 		return null
@@ -363,7 +361,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 /**
  * One player cell: its number, door, room and who it is for. An escape cell has one owner, the
  * fresh scenario-1 convict it was given to; a capture cell holds up to two captives in beds and
- * any overflow on the floor [OWN-2].
+ * any overflow on the floor.
  */
 /datum/penitentiary_cell
 	var/number = 0
@@ -521,7 +519,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 	massacre_spots_used++
 	return massacre_spots[massacre_spots_used]
 
-/// The capture cell the next captive goes to: the lowest-numbered one with a free bed, else the emptiest [OWN-2]
+/// The capture cell the next captive goes to: the lowest-numbered one with a free bed, else the emptiest
 /obj/structure/overmap/penitentiary/proc/capture_cell_for_next()
 	var/datum/penitentiary_cell/emptiest
 	var/emptiest_count = INFINITY
@@ -576,7 +574,7 @@ GLOBAL_DATUM(penitentiary, /obj/structure/overmap/penitentiary)
 	return null
 
 /**
- * Dresses the processing room as a massacre, once per round [ECO-5]: an officer's body at each
+ * Dresses the processing room as a massacre, once per round: an officer's body at each
  * body mark and blood about them.
  */
 /obj/structure/overmap/penitentiary/proc/dress_massacre()

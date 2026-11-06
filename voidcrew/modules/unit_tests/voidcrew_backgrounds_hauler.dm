@@ -1,6 +1,4 @@
-/// Backgrounds: owned by P5.
-
-// NPC haulers (spec section 6 P5). Unit tests compile before the voidcrew defines, so the
+// NPC haulers. Unit tests compile before the voidcrew defines, so the
 // literals below carry the name of the define they stand for.
 
 /// Loads a hauler on the overmap, in yellow when it can. Null if the load failed.
@@ -36,7 +34,7 @@
 		outpost.embargoed_ships -= ship
 
 // =========================================================================
-// THE HULL (map-contracts.md M4). Fails on P0's placeholder map until M4's lands.
+// THE HULL. Fails on the placeholder map until the real one lands.
 // =========================================================================
 
 /datum/unit_test/voidcrew_hauler_hull
@@ -92,7 +90,7 @@
 	TEST_ASSERT(!length(forbidden), "The hauler carries what it must not: [english_list(forbidden)]")
 
 // =========================================================================
-// SPAWNING: no key, not in the pool, never on SSbounty, nobody claims it (ECO-8, ECO-11)
+// SPAWNING: no key, not in the pool, never on SSbounty, nobody claims it
 // =========================================================================
 
 /datum/unit_test/voidcrew_hauler_spawn
@@ -145,7 +143,7 @@
 	TEST_ASSERT_NULL(test_slot.hauler_ref, "The director kept the slot of a hauler that left")
 
 // =========================================================================
-// GIVING UP (ECO-7, Q8)
+// GIVING UP
 // =========================================================================
 
 /datum/unit_test/voidcrew_hauler_surrender
@@ -226,7 +224,7 @@
 	TEST_ASSERT_NULL(taken_args, "A second surrender paid out again")
 
 // =========================================================================
-// THE EMBARGO (Q8)
+// THE EMBARGO
 // =========================================================================
 
 /datum/unit_test/voidcrew_hauler_embargo
@@ -260,7 +258,7 @@
 	TEST_ASSERT(!undertow.is_ship_embargoed(spacer), "The Undertow embargoed a hauler robber")
 
 // =========================================================================
-// THE FENCE (ECO-7)
+// THE FENCE
 // =========================================================================
 
 /datum/unit_test/voidcrew_hauler_fence
@@ -297,7 +295,7 @@
 	TEST_ASSERT_EQUAL(account.account_balance, 1200, "The fence paid past its demand")
 
 // =========================================================================
-// THE DIRECTOR (ECO-7, ECO-8): its own slots, and a lost slot refills only after the delay
+// THE DIRECTOR: its own slots, and a lost slot refills only after the delay
 // =========================================================================
 
 /// The real director with the hull load swapped for a note of which slot asked

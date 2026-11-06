@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P4.
-
 /obj/structure/overmap/ship
 	/// Flagged as a pirate hull: kept out of green, refused at green and yellow outposts and by freight lines
 	var/pirate_crew = FALSE
@@ -35,7 +33,7 @@
 	flag_timer = addtimer(CALLBACK(src, PROC_REF(flag_follow_tick)), BACKGROUND_PIRATE_FLAG_INTERVAL, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /**
- * The flag follows the pirate (MP-4, Q5): every hull a playing pirate captains, holds an
+ * The flag follows the pirate: every hull a playing pirate captains, holds an
  * explicit claim on or commands as acting captain is flagged. Signing on as ordinary crew
  * flags nothing. A hull that only carried the flag for its pirate commander loses it once no
  * pirate commands it, so a pirate passing through as acting captain cannot brand a crew for

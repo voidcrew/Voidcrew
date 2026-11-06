@@ -1,6 +1,4 @@
-/// Backgrounds: owned by P4.
-
-// The green cordon (MP-5): a pirate hull is turned back at the edge of green, on the step that
+// The green cordon: a pirate hull is turned back at the edge of green, on the step that
 // would cross (start_zone_transition(), reached from tick_move() and manual burns). No patrol,
 // no waiver. Hulls already inside green are left alone; they cannot dock at Halcyon.
 
@@ -15,7 +13,7 @@
 	if(background_pirate_flag_check(src))
 		background_turn_back()
 		return TRUE
-	// MP-6: a flagged rider that force-docked onto us is cast off and we go through;
+	// A flagged rider that force-docked onto us is cast off and we go through;
 	// one we took aboard willingly keeps us out
 	var/carrying_flagged = FALSE
 	for(var/obj/structure/overmap/ship/rider in contents)

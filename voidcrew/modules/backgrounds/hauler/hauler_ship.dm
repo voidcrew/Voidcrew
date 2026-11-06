@@ -1,13 +1,11 @@
-/// Backgrounds: owned by P5.
-
 /*
- * The Mule-class hauler (decision 6, D7; ECO-7, ECO-8, Q8): an unarmed NPC freighter patrolling
+ * The Mule-class hauler: an unarmed NPC freighter patrolling
  * yellow or red space, the honest target for a crew that wants to rob someone. It runs from a
  * ship that locks on (hauler_ai.dm); when a player hull interdicts it, it gives up once: a hail,
  * a full stop, and the whole hold in a strongbox aboard. It carries a few freight cases the
  * Undertow fences. Nobody can claim it (no key, no abandonment), and once it has nothing left
  * aboard, or nobody left to fly it, it jumps out. GLOB.hauler_director keeps two flying.
- * It is never in the pirate pool or SSnpc_ships.active_ships, and never on SSbounty (ECO-11).
+ * It is never in the pirate pool or SSnpc_ships.active_ships, and never on SSbounty.
  */
 
 /// How often a hauler asks itself whether it is done here
@@ -93,7 +91,7 @@
 
 /**
  * Two or three hands on the hull's crew markers (open floor if the map has none). No captain and
- * no ship key [ECO-8], and no pirate health scaling: they are not fighters.
+ * no ship key, and no pirate health scaling: they are not fighters.
  * Deliberately does not call the parent, which spawns a key-carrying captain on random floor.
  */
 /obj/structure/overmap/ship/npc/hauler/spawn_crew()
@@ -223,7 +221,7 @@
 	can_board = !departing
 
 // =========================================================================
-// GIVING UP (ECO-7)
+// GIVING UP
 // =========================================================================
 
 /// Whether `ship` is a player crew's hull: anything but an NPC's, or an NPC hull a crew claimed
@@ -295,13 +293,13 @@
 	var/list/floor = open_floor()
 	return length(floor) ? pick(floor) : null
 
-/// Robbed of `amount` (a surrender or a siphon run): the robber answers for it at the outposts (Q8)
+/// Robbed of `amount` (a surrender or a siphon run): the robber answers for it at the outposts
 /obj/structure/overmap/ship/npc/hauler/proc/on_robbed(datum/source, obj/structure/overmap/ship/taker, amount, how)
 	SIGNAL_HANDLER
 	hauler_embargo_robber(taker, amount, how, src)
 
 // =========================================================================
-// LEAVING (ECO-8)
+// LEAVING
 // =========================================================================
 
 /// Picked clean: the account under the siphon's floor, and no strongbox or freight left aboard

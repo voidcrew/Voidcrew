@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 /// Never in a random ruin pool: it has no id. frontier_before_ruins() stamps it at the surface centre.
 /datum/map_template/ruin/frontier_homestead
 	name = "Frontier homestead"
@@ -61,8 +59,8 @@
 
 /**
  * After every atom on the stamped homestead has initialized (called from frontier_attach_cave(),
- * during SSovermap's init): the family's fixtures become indestructible and tool-proof (DST-2, and
- * the accepted M4 deviations: every door in the house, barn and cellar, the barn shell's contents
+ * during SSovermap's init): the family's fixtures become indestructible and tool-proof (along with
+ * every door in the house, barn and cellar, and the barn shell's contents
  * the family uses), every mob on the template is a resident, the larder gets its first stock, any
  * family member a landmark failed to make is made, and the homestead starts ticking.
  */

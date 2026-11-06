@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P1.
-
 /// ckeys whose arrival background_site_arrival() is announcing right now. The join handler leaves them alone.
 GLOBAL_LIST_EMPTY(background_site_arrivals)
 
@@ -15,8 +13,8 @@ GLOBAL_DATUM_INIT(background_arrivals, /datum/background_arrivals, new)
 	return choice
 
 /**
- * How many of `ready_count` ready players may start as `key` at roundstart (ruling Q13).
- * The pirate and hunter shares floor at one, so one player can always try either start (ruling R1).
+ * How many of `ready_count` ready players may start as `key` at roundstart.
+ * The pirate and hunter shares floor at one, so one player can always try either start.
  */
 /proc/background_roundstart_cap(key, ready_count)
 	switch(key)

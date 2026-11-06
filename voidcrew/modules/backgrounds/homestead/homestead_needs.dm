@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P6.
-
 /**
  * # The homestead
  *
@@ -8,10 +6,10 @@
  * Each tick:
  * - the needs (this file): fed is food in the house fridge and on the kitchen tables, counted up to
  *   BACKGROUND_HOMESTEAD_FOOD_MIN and no further; safe is no hostile creature within
- *   BACKGROUND_HOMESTEAD_SAFE_RANGE of the house, from the spatial grid, never a turf scan (PERF-2).
+ *   BACKGROUND_HOMESTEAD_SAFE_RANGE of the house, from the spatial grid, never a turf scan.
  *   A change is said once, out loud, by one of the family;
  * - the family (homestead_family.dm): the leash, greetings, hiding;
- * - the homesteaders (homestead_background.dm): where they are, for the departure rule (MOV-2);
+ * - the homesteaders (homestead_background.dm): where they are, for the departure rule;
  * - the raids (homestead_raids.dm).
  *
  * Tests make their own homestead over a test room and call these procs directly with `paused` set.
@@ -250,7 +248,7 @@ GLOBAL_DATUM(homestead, /datum/homestead)
 
 /**
  * Every live fixture of `fixture_type` (a kind sweep_fixtures() looks for, or a subtype) on the
- * homestead. Routines ask when they start (MOD-3): a fixture that was taken away is gone from the
+ * homestead. Routines ask when they start: a fixture that was taken away is gone from the
  * answer, and when none is left the homestead is swept again, at most once a minute.
  */
 /datum/homestead/proc/fixtures_of(fixture_type)

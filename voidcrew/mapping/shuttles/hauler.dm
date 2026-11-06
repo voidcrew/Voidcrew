@@ -1,6 +1,4 @@
-/// Backgrounds: owned by M4.
-
-// Fixed NPC freighter: no slots, themes or cryopods. SSnpc_ships loads it for P5's haulers, and
+// Fixed NPC freighter: no slots, themes or cryopods. SSnpc_ships loads it for the haulers, and
 // unit tests load it as a crewless player hull. The crew spawns on /obj/effect/landmark/hauler/crew.
 /datum/map_template/shuttle/voidcrew/hauler
 	name = "Mule-class Freighter"

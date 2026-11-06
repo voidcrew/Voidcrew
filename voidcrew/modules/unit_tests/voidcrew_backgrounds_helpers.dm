@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P0 (frozen).
-
 // Shared helpers for the backgrounds tests. Unit tests compile before voidcrew defines: use literals.
 
 /// A human with a mind and a fake ckey, deleted with the running test

@@ -1,11 +1,9 @@
-/// Backgrounds: owned by P4.
-
 // Unit tests compile before the voidcrew defines, so these use literals with the define named
 // beside them: "pirate" is BACKGROUND_PIRATE, "background_credits_taken" is
 // COMSIG_BACKGROUND_CREDITS_TAKEN, zones 1/2/3 are ZONE_GREEN/YELLOW/RED, 25000 is
-// BACKGROUND_PIRATE_GOAL and 3 is BACKGROUND_CRIMINAL_OFFERS. Recognition (P3) and the hauler
-// cases (P5) are called through their API procs; these tests set up the bodies and minds those
-// procs read rather than any package's internals.
+// BACKGROUND_PIRATE_GOAL and 3 is BACKGROUND_CRIMINAL_OFFERS. Recognition and the hauler
+// cases are called through their API procs; these tests set up the bodies and minds those
+// procs read rather than any other background's internals.
 
 /// A bare hull with a crew roster, deleted with the running test
 /proc/bg_pirate_test_hull(datum/unit_test/test, type = /obj/structure/overmap/ship)
@@ -34,7 +32,7 @@
 	person.equip_to_slot_or_del(card, ITEM_SLOT_ID)
 	return card
 
-// ===== THE HULL (map-contracts.md M3) =====
+// ===== THE HULL =====
 
 /// The Corsair carries its kit and nothing it must not: no cargo console, no magical SMES, no turrets, only the hull-bound rigs
 /datum/unit_test/voidcrew_corsair_hull
@@ -117,7 +115,7 @@
 	hull.pirate_crew = TRUE
 	TEST_ASSERT_EQUAL(console.get_shuttle_error_message(), "No freight line will deal with you", "Freight dealt with a pirate hull")
 
-// ===== THE COUNTERS (MP-1, MP-2) =====
+// ===== THE COUNTERS =====
 
 /// Halcyon and Quartermain check faces and papers, the Undertow serves anyone, and the turrets never fire on a refusal
 /datum/unit_test/voidcrew_pirate_counters
@@ -171,7 +169,7 @@
 	var/mob/living/carbon/human/namesake = bg_pirate_test_person(floor, "Ash Vane")
 	TEST_ASSERT(!halcyon.background_service_refused(namesake), "Halcyon refused the pirate's namesake showing his own face")
 
-// ===== THE BERTHS (MP-4) =====
+// ===== THE BERTHS =====
 
 /// Halcyon and Quartermain turn pirate hulls and carriers of pirate hulls away; the Undertow berths them
 /datum/unit_test/voidcrew_pirate_docking
@@ -209,7 +207,7 @@
 	TEST_ASSERT_NULL(undertow.background_docking_refusal(carrier), "The Undertow refused a carrier with a pirate hull aboard")
 	raider.forceMove(run_loc_floor_bottom_left)
 
-// ===== THE CORDON (MP-5, MP-6) =====
+// ===== THE CORDON =====
 
 /// A pirate hull is turned back at the edge of green; an ordinary hull crosses; a force-docked victim is let through
 /datum/unit_test/voidcrew_pirate_green_cordon
@@ -274,12 +272,12 @@
 	TEST_ASSERT_EQUAL(static_data["board_flavour"], "criminal", "The Black Ledger did not send its flavour")
 	var/obj/item/circuitboard/board = ledger.circuit
 	TEST_ASSERT_EQUAL(board?.build_path, /obj/machinery/computer/mission_board/criminal, "The Black Ledger's board builds something else")
-	// MP-12: nothing prints the board
+	// Nothing prints the board
 	for(var/datum/design/design as anything in subtypesof(/datum/design))
 		if(ispath(initial(design.build_path), /obj/item/circuitboard/computer/mission_board/criminal))
 			TEST_FAIL("[design] prints the Black Ledger's board")
 
-// ===== SHAKEDOWN (ECO-9) =====
+// ===== SHAKEDOWN =====
 
 /// Takes off player hulls complete a Shakedown but pay nothing; only takes off NPC hulls pay
 /datum/unit_test/voidcrew_pirate_shakedown_pay
@@ -335,7 +333,7 @@
 	TEST_ASSERT_EQUAL(raider.accept_mission(second), TRUE, "A hull could not take a Shakedown after the last one ended")
 	qdel(second)
 
-// ===== THE FLAG AND THE GOAL (MP-4, ECO-10) =====
+// ===== THE FLAG AND THE GOAL =====
 
 /// The flag follows a pirate onto a hull he commands, never onto one he only crews, never onto an NPC hull
 /datum/unit_test/voidcrew_pirate_flag_follow
@@ -459,7 +457,7 @@
 	if(spot && SSovermap.overmap_centre)
 		TEST_ASSERT(!SSovermap.is_turf_in_green_zone(spot), "A pirate hull would spawn in green")
 
-// ===== HULL-BOUND RIGS (ECO-6) =====
+// ===== HULL-BOUND RIGS =====
 
 /// The Corsair's interdictor and siphon come apart into two iron sheets, never a board or parts
 /datum/unit_test/voidcrew_pirate_hull_bound

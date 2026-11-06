@@ -1,5 +1,3 @@
-/// Backgrounds: owned by M2.
-
 /datum/map_template/shuttle/voidcrew/marshal
 	name = "Marshal-class Prisoner Transport"
 	short_name = "Marshal-class"

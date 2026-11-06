@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P5.
-
 /*
  * The hauler's brain: the stock NPC ship controller and movement subtree, with no combat
  * subtree and no target. A hauler never fights. A ship that starts a lock on it makes it run

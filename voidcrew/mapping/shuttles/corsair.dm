@@ -1,5 +1,3 @@
-/// Backgrounds: owned by M3.
-
 /**
  * Corsair-class Raider
  *

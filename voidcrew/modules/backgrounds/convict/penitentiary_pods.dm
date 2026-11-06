@@ -1,18 +1,16 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # Escape pods
  *
  * A pod is the hidden two-seat escape_pod hull, spawned on demand 10 to 20 overmap tiles from the
- * Penitentiary on a random bearing, on a square with nothing on it [MP-9]: by a launch console in
- * the pod bay, or for the Adrift start. Never docked in a berth, never allowed back [MP-13]. A
- * convict gets one pod out at a time and two a round [SPA-1]; a pod nobody living has been aboard
+ * Penitentiary on a random bearing, on a square with nothing on it: by a launch console in
+ * the pod bay, or for the Adrift start. Never docked in a berth, never allowed back. A
+ * convict gets one pod out at a time and two a round; a pod nobody living has been aboard
  * for BACKGROUND_POD_SCUTTLE_TIME goes, through the derelict teardown so a site it is docked at is
  * let go. Pods are never seated through AttemptSpawnOnShip(), so they grant no Ship Management,
- * and the Mutiny goal never counts them [BUG-1].
+ * and the Mutiny goal never counts them.
  */
 
-/// The pod's battery at launch: a quarter of a ship SMES. M3 maps it as the SMES's charge var-edit.
+/// The pod's battery at launch: a quarter of a ship SMES. The pod map sets it as the SMES's charge var-edit.
 #define PENITENTIARY_POD_CHARGE (5 * STANDARD_BATTERY_CHARGE)
 
 /// ckey -> weakref to the last pod that convict took out
@@ -20,7 +18,7 @@ GLOBAL_LIST_EMPTY(penitentiary_last_pods)
 /// Weakref to every live pod -> world.time it was first seen with nobody living aboard (0 while someone is)
 GLOBAL_LIST_EMPTY(penitentiary_pods)
 
-/// A random overmap square BACKGROUND_POD_DISTANCE_MIN to _MAX tiles from the Penitentiary with no overmap object on it [MP-9], or null
+/// A random overmap square BACKGROUND_POD_DISTANCE_MIN to _MAX tiles from the Penitentiary with no overmap object on it, or null
 /proc/penitentiary_pod_turf()
 	var/turf/center = get_turf(GLOB.penitentiary)
 	if(!center)
@@ -51,7 +49,7 @@ GLOBAL_LIST_EMPTY(penitentiary_pods)
 	var/obj/structure/overmap/ship/pod = ref?.resolve()
 	return QDELETED(pod) ? null : pod
 
-/// Why this ckey may not take a pod out now, or null [SPA-1]
+/// Why this ckey may not take a pod out now, or null
 /proc/penitentiary_pod_refusal(ckey)
 	if(penitentiary_last_pod(ckey))
 		return "pod still out"
@@ -104,7 +102,7 @@ GLOBAL_LIST_EMPTY(penitentiary_pods)
 				return TRUE
 	return FALSE
 
-/// The minute's check on every pod: one nobody living has been aboard for BACKGROUND_POD_SCUTTLE_TIME goes [SPA-1]
+/// The minute's check on every pod: one nobody living has been aboard for BACKGROUND_POD_SCUTTLE_TIME goes
 /obj/structure/overmap/penitentiary/proc/pods_tick()
 	for(var/datum/weakref/pod_ref as anything in GLOB.penitentiary_pods.Copy())
 		var/obj/structure/overmap/ship/pod = pod_ref?.resolve()
@@ -160,7 +158,7 @@ GLOBAL_LIST_EMPTY(penitentiary_pods)
 		return
 	INVOKE_ASYNC(src, PROC_REF(launch), convict)
 
-/// Why `convict` cannot launch a pod from here now, or null [MP-8, SPA-1]
+/// Why `convict` cannot launch a pod from here now, or null
 /obj/machinery/computer/penitentiary_launch/proc/launch_refusal(mob/living/carbon/human/convict, launching_now = FALSE)
 	if(!ishuman(convict) || convict.stat != CONSCIOUS || !convict.mind)
 		return "no response"

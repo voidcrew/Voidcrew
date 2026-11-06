@@ -1,9 +1,7 @@
-/// Backgrounds: owned by P4.
-
 /**
  * The Black Ledger: a mission board on a smugglers' network. It lists the hull's own offers (the
  * criminal pool while the hull is a pirate hull) and the NPC pirate and player bounties, never the
- * wanted criminals. No design prints its board and nothing converts a plain one (MP-12); a board
+ * wanted criminals. No design prints its board and nothing converts a plain one; a board
  * pried out of a Corsair and rebuilt elsewhere is loot, and works.
  */
 /obj/machinery/computer/mission_board/criminal

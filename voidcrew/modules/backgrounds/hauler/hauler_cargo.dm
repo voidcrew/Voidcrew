@@ -1,7 +1,5 @@
-/// Backgrounds: owned by P5.
-
 /*
- * What a Mule-class hauler carries and who crews it (ECO-7, ECO-8, TAK-1): the markers its hull
+ * What a Mule-class hauler carries and who crews it: the markers its hull
  * map carries, the freight cases the Undertow fences, the marked case a Hijack contract wants,
  * the strongbox a crew hands over when it gives up, and the two or three freighter hands aboard.
  */
@@ -19,7 +17,7 @@
 	return length(lines) ? pick(lines) : null
 
 // =========================================================================
-// MAP MARKERS (map-contracts.md M4: five cargo, three crew)
+// MAP MARKERS (five cargo, three crew)
 // =========================================================================
 
 /obj/effect/landmark/hauler
@@ -79,7 +77,7 @@
 /**
  * Swaps one plain case still sitting aboard a live hauler for a marked one, made for `mission`,
  * and returns it; null when no hauler has one. A case already in someone's hands or bags is
- * never swapped. The case is the mission's to bind and track (P4).
+ * never swapped. The case is the mission's to bind and track.
  */
 /proc/hauler_mark_case(datum/mission/criminal/hijack/mission)
 	var/list/candidates = list()
@@ -103,7 +101,7 @@
 // THE UNDERTOW'S WINDOW
 // =========================================================================
 
-/// Vex fences hauler freight, a few cases a round, for credits only (ECO-7)
+/// Vex fences hauler freight, a few cases a round, for credits only
 /datum/shop_buyback/black_market/hauler_cargo
 	item_path = /obj/item/hauler_cargo
 	match_subtypes = FALSE
@@ -135,7 +133,7 @@
 		/datum/outfit/ambient_stranded,
 		/datum/outfit/job/cargo_tech,
 	)
-	// TAK-1: kept from the base, restated so a later base change cannot drop them here
+	// Kept from the base, restated so a later base change cannot drop them here
 	sentience_type = SENTIENCE_HUMANOID
 	// A breached hold must not kill them in forty seconds (basic mob defaults do)
 	unsuitable_atmos_damage = 0

@@ -1,8 +1,6 @@
-/// Backgrounds: owned by P3.
-
 /**
  * The Marshal-class crew: a posse in dusters and bounty hats, sec HUDs over the eyes, cuffs on the belt.
- * No weapons [ECO-12]: the disablers, flashes and bolas are the hull's, in the marshal's locker
+ * No weapons: the disablers, flashes and bolas are the hull's, in the marshal's locker
  * (marshal_brig.dm), stocked once per hull. A green-zone death respawns a hunter for free, so whatever
  * the outfit carries is minted again every life.
  *

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P4.
-
 /// Two of these are mapped on every Corsair (never in an outfit): a face and a forged card for the counters
 /obj/item/storage/box/disguise_kit
 	name = "disguise kit"
@@ -9,7 +7,7 @@
 	new /obj/item/clothing/mask/chameleon(src)
 	new /obj/item/card/id/advanced/chameleon(src)
 
-// Hull-bound rigs (ECO-6, Q6): the Corsair starts with an interdictor and a siphon, and taking
+// Hull-bound rigs: the Corsair starts with an interdictor and a siphon, and taking
 // either apart gives scrap, never a board or parts to sell or rebuild elsewhere.
 
 /obj/machinery/ship_combat/interdictor/corsair

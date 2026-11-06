@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P4.
-
 // The pirate goal: credits taken off other ships. Counted from COMSIG_BACKGROUND_CREDITS_TAKEN,
 // which the siphon sends when a run ends (pirate_siphon.dm) and a hauler sends when it
 // surrenders its hold. pirate_flag_hull() registers this on every flagged hull.
@@ -23,7 +21,7 @@
 		record_metric(METRIC_BACKGROUND, "siphon_goal", ckey = state.ckey, ship = hull, subject = BACKGROUND_PIRATE, credits = amount, quantity = state.progress)
 
 /**
- * ECO-10: a take counts unless it came off another pirate hull, or off a hull that shares a
+ * A take counts unless it came off another pirate hull, or off a hull that shares a
  * player with this one (a friend lending his balance). NPC hulls always count. A mark that was
  * gone before the link closed still counts: the money left a real account.
  */

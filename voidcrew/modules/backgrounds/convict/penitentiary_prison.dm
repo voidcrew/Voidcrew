@@ -1,19 +1,17 @@
-/// Backgrounds: owned by P2.
-
 /**
  * # The Penitentiary's NPC wing
  *
  * The player-outpost prison run without an outpost: the inmates' routines, social life, pastimes
  * and the yard's feel, and the NPC guards, all reused as they are. What needs an outpost or makes
- * work is off [TIM-1]: no treasury, pay, fines, intake from the transfer pool, experiments, riots,
- * fights or breakouts, and no random mess [PERF-1]. Sentences are for life. Members of the wing
+ * work is off: no treasury, pay, fines, intake from the transfer pool, experiments, riots,
+ * fights or breakouts, and no random mess. Sentences are for life. Members of the wing
  * are its own staff mobs; presence is any player inside the Penitentiary.
  *
  * Eight inmates are admitted into NPC cells 1-8 and six guards hired free when it starts; a cell
  * emptied by a death takes a new inmate PENITENTIARY_REFILL_TIME later while someone is there.
  *
  * Player convicts are never prisoners of this wing. A guard on duty goes after one loose in the
- * wing (never one in his own cell [MP-10]) and batons him like an inmate on the run.
+ * wing (never one in his own cell) and batons him like an inmate on the run.
  */
 
 /// How long an emptied NPC cell waits for a new inmate, and how long a dead inmate lies before the morgue takes them
@@ -100,7 +98,7 @@
 
 // ===== TIME =====
 
-// The parent's process() less make_mess() [PERF-1], plus the site's slow checks
+// The parent's process() less make_mess(), plus the site's slow checks
 /datum/outpost_prison/penitentiary/process(seconds_per_tick)
 	if(QDELETED(site) || !wing)
 		return
@@ -155,7 +153,7 @@
 		fresh?.beam_in()
 
 /datum/outpost_prison/penitentiary/extras_tick(seconds)
-	// The extras that reach an outpost or start incidents stay off [TIM-1]
+	// The extras that reach an outpost or start incidents stay off
 	guards_tick(seconds)
 	ambience_tick(seconds)
 	social_tick(seconds)
@@ -241,7 +239,7 @@
 
 /**
  * Whether a guard should go after `person`: a player convict, awake, on his feet and free, in the
- * NPC wing, and not in a cell of his own [MP-10].
+ * NPC wing, and not in a cell of his own.
  */
 /datum/outpost_prison/penitentiary/proc/convict_loose_target(mob/living/carbon/human/person)
 	if(!istype(person) || QDELETED(person) || person.stat != CONSCIOUS)

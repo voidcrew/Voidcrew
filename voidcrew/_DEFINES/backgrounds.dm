@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P0 (frozen).
-
 // Keys (savefile values: never rename)
 #define BACKGROUND_SPACEFARER "spacefarer"
 #define BACKGROUND_CONVICT "convict"
@@ -27,7 +25,7 @@
 #define CONVICT_GOAL_STASH "stash"
 #define CONVICT_GOAL_WITNESS "witness"
 
-// Roundstart shares (ruling Q13) and hull caps (ECO-6)
+// Roundstart shares and hull caps
 #define BACKGROUND_SHARE_PIRATE 0.25
 #define BACKGROUND_SHARE_HUNTER 0.2
 #define BACKGROUND_MAX_HOMESTEADERS 4
@@ -39,7 +37,7 @@
 #define BACKGROUND_PEN_ESCAPE_CELLS 8          // also the roundstart convict cap
 #define BACKGROUND_PEN_CAPTURE_CELLS 6
 #define BACKGROUND_PEN_CAPTURE_PER_CELL 2
-#define BACKGROUND_CAPTURE_BODY_GRACE (10 MINUTES)  // OWN-1
+#define BACKGROUND_CAPTURE_BODY_GRACE (10 MINUTES)
 #define BACKGROUND_POD_SEATS 2
 #define BACKGROUND_ADRIFT_MAX_PODS 2           // roundstart
 #define BACKGROUND_PODS_PER_CKEY 2             // per round
@@ -53,7 +51,7 @@
 #define TRAIT_BACKGROUND_CONVICT "background_convict"
 #define BACKGROUND_TRAIT "background"            // trait source
 
-// Warrants (ECO-1)
+// Warrants
 #define BACKGROUND_WARRANT_BASE 1000            // green value at full time, before the zone multiplier
 #define BACKGROUND_WARRANT_FRESH_SHARE 0.25
 #define BACKGROUND_WARRANT_FULL_TIME (45 MINUTES)
@@ -73,7 +71,7 @@
 #define BACKGROUND_SHAKEDOWN_TARGET_MIN 1500
 #define BACKGROUND_SHAKEDOWN_TARGET_MAX 3000
 
-// Haulers (ECO-7, ECO-8)
+// Haulers
 #define BACKGROUND_HAULER_COUNT 2
 #define BACKGROUND_HAULER_RESPAWN (20 MINUTES)
 #define BACKGROUND_HAULER_HOLD_MIN 800

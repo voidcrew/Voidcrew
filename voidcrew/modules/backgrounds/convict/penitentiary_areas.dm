@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P2.
-
 /area/voidcrew/penitentiary
 	name = "\improper Meridian Penitentiary"
 	icon_state = "away"

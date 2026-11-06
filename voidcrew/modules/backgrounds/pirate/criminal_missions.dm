@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P4.
-
 /// Black Ledger missions. Abstract; weight stays 0 so the ordinary pool never rolls them.
 /datum/mission/criminal
 	name = "Job"
@@ -14,7 +12,7 @@
  * # Shakedown
  *
  * Take N credits off other ships. Any take completes it, but only what came off NPC hulls is
- * paid for (ECO-9): robbing a friend and handing the chips back must not mint a reward.
+ * paid for: robbing a friend and handing the chips back must not mint a reward.
  */
 /datum/mission/criminal/shakedown
 	name = "Shakedown"
@@ -47,7 +45,7 @@
 /**
  * # Hijack
  *
- * A hauler carries a case marked for this job (hauler_mark_case(), the hauler package). Bring
+ * A hauler carries a case marked for this job (hauler_mark_case()). Bring
  * that case to the pad. Honest work for a pirate: normal pay, scaled by the hauler's band.
  */
 /datum/mission/criminal/hijack
@@ -133,7 +131,7 @@
 /datum/mission_objective/background_take/get_progress_string()
 	return "Taken [pirate_credits_text(min(npc_taken + player_taken, target_amount))] of [pirate_credits_text(target_amount)] cr"
 
-/// ECO-9: the pay is the share of the take that came off NPC hulls
+/// The pay is the share of the take that came off NPC hulls
 /datum/mission_objective/background_take/on_turn_in_finalized(atom/reward_anchor)
 	if(!mission || target_amount <= 0)
 		return

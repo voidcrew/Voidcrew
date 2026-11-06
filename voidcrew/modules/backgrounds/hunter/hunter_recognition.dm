@@ -1,6 +1,4 @@
-/// Backgrounds: owned by P3.
-
-// ===== RECOGNITION [MP-1, MP-2, MP-3] =====
+// ===== RECOGNITION =====
 // Who a person is, for the counters and the warrant trade: the mind when the face shows, the ID's name
 // only when the face is hidden. Never a crew record and never its wanted status (the HUD can lie).
 
@@ -39,7 +37,7 @@
 			return candidate
 	return null
 
-// ===== LAST SEEN [PERF-3] =====
+// ===== LAST SEEN =====
 // A warrant target counts as seen when a Marshal hull's sensors reach the place the target is in:
 // its ship, or the planet, ruin or outpost whose interior holds it. Sensors buy reach, not sight, and
 // the card keeps the last reading when nothing reaches.
@@ -116,7 +114,7 @@
 	var/dy = overmap_wrapped_delta(holder_turf.y - watcher_turf.y, OVERMAP_SIZE - 2)
 	return dx * dx + dy * dy <= reach * reach
 
-// ===== RECORDS [MP-3] =====
+// ===== RECORDS =====
 // The sec HUD shows a warrant target as wanted. Advisory only: anyone with a records console can
 // change it, so pay and recognition never read it; the watch just puts it back.
 

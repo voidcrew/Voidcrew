@@ -1,10 +1,8 @@
-/// Backgrounds: owned by P6.
-
 /**
  * # Raids
  *
  * A party of hermit gunslingers rides on the homestead every BACKGROUND_RAID_INTERVAL, only while a
- * homesteader is alive on the Frontier and the last party is dead or gone (ECO-14). Their dust shows
+ * homesteader is alive on the Frontier and the last party is dead or gone. Their dust shows
  * BACKGROUND_RAID_TELEGRAPH before they come, and a child calls it out to the yard; then they walk
  * in from BACKGROUND_RAID_SPAWN_DIST out until their own eyes find someone to shoot. With no
  * homesteader left on the planet they go.

@@ -1,5 +1,3 @@
-/// Backgrounds: owned by P4.
-
 // Halcyon (green) and Quartermain (yellow) check faces and papers at every counter, the
 // imprinter, the MOD bench, the chrome cradle, Pike and the network pad (all through
 // is_user_barred()) and at the hangar lift, and turn pirate hulls away at the berths.
@@ -14,10 +12,10 @@
 	if(!ishuman(user) || !background_checks_papers())
 		return FALSE
 	var/mob/living/carbon/human/person = user
-	// MP-1: a hidden face with no readable card is refused, whoever it is
+	// A hidden face with no readable card is refused, whoever it is
 	if(background_no_papers(person))
 		return TRUE
-	// MP-2: the mind when the face shows, the card's name when it is hidden
+	// The mind when the face shows, the card's name when it is hidden
 	return !isnull(background_recognised_mind(person, BACKGROUND_PIRATE))
 
 /// What the trader says when refusing this user, or null

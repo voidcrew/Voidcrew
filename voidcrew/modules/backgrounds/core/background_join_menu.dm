@@ -1,7 +1,5 @@
-/// Backgrounds: owned by P1.
-
 /**
- * The join menu's "Other starts" entries (spec 5.2): every start the round can offer right now,
+ * The join menu's "Other starts" entries: every start the round can offer right now,
  * whatever this player's lobby preference. Each background builds its own entries.
  */
 /datum/ship_join_menu/proc/background_starts_data(mob/dead/new_player/user)
