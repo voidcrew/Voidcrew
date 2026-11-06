@@ -8,13 +8,14 @@
 /proc/background_face_hidden(mob/living/carbon/human/person)
 	if(!ishuman(person))
 		return FALSE
-	return isnull(person.get_face_name(null))
+	// "", not null: a null argument takes the proc's default, "Unknown"
+	return !length(person.get_face_name(""))
 
 /// Whether this person shows neither a face nor an ID name: "no face, no papers"
 /proc/background_no_papers(mob/living/carbon/human/person)
 	if(!background_face_hidden(person))
 		return FALSE
-	return !length(person.get_id_name(null))
+	return !length(person.get_id_name(""))
 
 /**
  * The active mind of background `key` (any background when null) that this person is recognised as,
@@ -30,7 +31,7 @@
 		if(!state || state.ended || (key && state.key != key))
 			return null
 		return mind
-	var/id_name = person.get_id_name(null)
+	var/id_name = person.get_id_name("")
 	if(!length(id_name))
 		return null
 	for(var/datum/mind/candidate in background_active_minds(key))
