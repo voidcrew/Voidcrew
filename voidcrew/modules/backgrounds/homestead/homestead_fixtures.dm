@@ -113,7 +113,7 @@
  */
 /obj/structure/ore_container/food_trough/homestead
 	name = "feed trough"
-	desc = "A wooden trough. Hay and grain go in here."
+	desc = "A wooden feed trough, worn smooth by the cattle."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "raptor_trough"
 	x_offsets = list(-5, 5)
