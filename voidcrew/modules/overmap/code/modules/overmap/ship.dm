@@ -25,7 +25,7 @@
 	var/obj/docking_port/mobile/voidcrew/shuttle
 	///The map template the shuttle was spawned from, if it was indeed created from a template. CAN BE NULL (ex. custom-built ships).
 	var/datum/map_template/shuttle/voidcrew/source_template
-	/// The crew roster this hull was set up with, as job definitions. Ship saves and checkpoints keep it.
+	/// The crew roster this hull was set up with, as job definitions. Ship saves keep it.
 	var/list/job_definitions
 	/// A password is being paid for, so a double click can't charge twice.
 	var/buying_join_password = FALSE
@@ -1411,7 +1411,7 @@
  */
 /obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer)
 	if(retired_by_checkpoint || checkpoint_rebuilding)
-		to_chat(claimer, span_warning("This ship is retired or being rebuilt from a checkpoint."))
+		to_chat(claimer, span_warning("This ship is retired or being rebuilt."))
 		return FALSE
 	if(!abandoned)
 		return FALSE

@@ -114,7 +114,6 @@
 /// A snapshot that needs no hull, with one room of the given size.
 /datum/unit_test/voidcrew_ship_saves/proc/make_snapshot(tiles = 10)
 	var/datum/ship_checkpoint/snapshot = allocate(/datum/ship_checkpoint)
-	snapshot.persistent = TRUE
 	snapshot.ship_name = "Test Hull"
 	snapshot.class_name = "Test Class"
 	snapshot.width = 3
@@ -147,7 +146,6 @@
 	var/datum/ship_checkpoint/snapshot = make_snapshot()
 	var/datum/ship_checkpoint/decoded = GLOB.ship_saves.decode(GLOB.ship_saves.encode(snapshot))
 	TEST_ASSERT_NOTNULL(decoded, "A fresh payload did not decode")
-	TEST_ASSERT(decoded.persistent, "A decoded save is not marked persistent")
 	TEST_ASSERT_EQUAL(decoded.ship_name, snapshot.ship_name, "Decoding lost the ship's name")
 	TEST_ASSERT_EQUAL(decoded.class_name, snapshot.class_name, "Decoding lost the ship's class")
 	TEST_ASSERT_EQUAL(decoded.width, snapshot.width, "Decoding lost the width")
@@ -203,18 +201,10 @@
 
 /datum/unit_test/voidcrew_ship_saves/proc/check_salvage()
 	var/datum/ship_checkpoint/saved = make_snapshot()
-	var/datum/ship_checkpoint/in_round = allocate(/datum/ship_checkpoint)
-
-	// Machines carry nothing per machine, and the in-round kind is untouched.
-	var/obj/machinery/autolathe/lathe = allocate(/obj/machinery/autolathe)
-	TEST_ASSERT(!findtext(saved.atom_text(lathe), "checkpoint_load_id"), "A saved machine stored a load id")
-	TEST_ASSERT_EQUAL(length(saved.machines), 0, "A saved machine stored its parts")
-	TEST_ASSERT(findtext(in_round.atom_text(lathe), "checkpoint_load_id"), "An in-round checkpoint lost its load id")
 
 	// Valuable structures stay behind unless they seal the hull.
 	var/obj/structure/statue/gold/hos/statue = allocate(/obj/structure/statue/gold/hos)
 	TEST_ASSERT(!saved.includes_object(statue), "A gold statue was saved")
-	TEST_ASSERT(in_round.includes_object(statue), "An in-round checkpoint stopped keeping statues")
 	var/obj/structure/window/plasma/window = allocate(/obj/structure/window/plasma)
 	TEST_ASSERT(saved.includes_object(window), "A plasma window was refused: it seals the hull")
 	var/obj/structure/grille/grille = allocate(/obj/structure/grille)
@@ -252,7 +242,6 @@
 	wall_tile.ChangeTurf(/turf/closed/wall/mineral/diamond)
 	var/turf/closed/wall/mineral/diamond/diamond_wall = wall_tile
 	TEST_ASSERT(findtext(saved.atom_text(diamond_wall), "sheet_type = /obj/item/stack/sheet/iron"), "A diamond wall was saved with its own salvage")
-	TEST_ASSERT(!findtext(in_round.atom_text(diamond_wall), "sheet_type"), "An in-round checkpoint changed a wall's salvage")
 	diamond_wall.sheet_type = /obj/item/stack/sheet/iron
 	diamond_wall.copyTurf(copy_tile)
 	var/turf/closed/wall/moved_wall = copy_tile
@@ -267,7 +256,6 @@
 	wall_tile.ChangeTurf(/turf/open/floor/mineral/gold)
 	var/turf/open/floor/mineral/gold/gold_floor = wall_tile
 	TEST_ASSERT(findtext(saved.atom_text(gold_floor), "floor_tile = /obj/item/stack/tile/iron"), "A gold floor was saved with its own tile")
-	TEST_ASSERT(!findtext(in_round.atom_text(gold_floor), "floor_tile"), "An in-round checkpoint changed a floor's tile")
 	gold_floor.floor_tile = /obj/item/stack/tile/iron
 	gold_floor.copyTurf(copy_tile)
 	var/turf/open/floor/moved_floor = copy_tile
@@ -275,10 +263,9 @@
 	wall_tile.ChangeTurf(wall_tile_type)
 	copy_tile.ChangeTurf(copy_tile_type)
 
-/// A hull that was saved once, loaded and saved again must not get its salvage back, nor an in-round checkpoint of it.
+/// A hull that was saved once, loaded and saved again must not get its salvage back.
 /datum/unit_test/voidcrew_ship_saves/proc/check_second_generation()
 	var/datum/ship_checkpoint/saved = make_snapshot()
-	var/datum/ship_checkpoint/in_round = allocate(/datum/ship_checkpoint)
 	var/turf/tile = run_loc_floor_bottom_left
 	var/tile_type = tile.type
 	var/obj/item/construction/rcd/internal/ship/rcd = allocate(/obj/item/construction/rcd/internal/ship)
@@ -287,7 +274,6 @@
 	var/turf/closed/wall/wall = tile
 	wall.sheet_type = /obj/item/stack/sheet/iron
 	TEST_ASSERT(findtext(saved.atom_text(wall), "sheet_type = /obj/item/stack/sheet/iron"), "A wall saved a second time got its salvage back")
-	TEST_ASSERT(findtext(in_round.atom_text(wall), "sheet_type = /obj/item/stack/sheet/iron"), "An in-round checkpoint gave a stripped wall its salvage back")
 	// A drone refunds a stripped wall as the iron wall it comes apart into, and a real mineral wall as before.
 	var/list/refund = rcd.get_deconstruction_materials(wall)
 	TEST_ASSERT_EQUAL(refund[/datum/material/iron], 200, "A stripped diamond wall was not refunded as an iron wall")
@@ -309,7 +295,6 @@
 	TEST_ASSERT_EQUAL(refund[/datum/material/plasma], 25, "A real plastitanium floor stopped refunding plasma")
 	floor.floor_tile = /obj/item/stack/tile/iron
 	TEST_ASSERT(findtext(saved.atom_text(floor), "floor_tile = /obj/item/stack/tile/iron"), "A floor saved a second time got its tile back")
-	TEST_ASSERT(findtext(in_round.atom_text(floor), "floor_tile = /obj/item/stack/tile/iron"), "An in-round checkpoint gave a stripped floor its tile back")
 	refund = rcd.get_deconstruction_materials(tile)
 	TEST_ASSERT_EQUAL(refund[/datum/material/iron], SHIP_SAVE_TEST_TILE_IRON, "A stripped plastitanium floor was not refunded as an iron tile")
 	TEST_ASSERT_NULL(refund[/datum/material/plasma], "A stripped plastitanium floor was refunded plasma")
@@ -322,7 +307,6 @@
 	var/airlock_text = saved.atom_text(gold_airlock)
 	TEST_ASSERT(findtext(airlock_text, "assemblytype = /obj/structure/door_assembly;") || findtext(airlock_text, "assemblytype = /obj/structure/door_assembly\n"), "A gold airlock kept its gold assembly: [airlock_text]")
 	TEST_ASSERT(!findtext(airlock_text, "door_assembly_gold"), "A gold airlock was saved with a gold assembly: [airlock_text]")
-	TEST_ASSERT(!findtext(in_round.atom_text(gold_airlock), "assemblytype"), "An in-round checkpoint changed an airlock's assembly")
 	TEST_ASSERT(!findtext(saved.atom_text(allocate(/obj/machinery/door/airlock)), "assemblytype"), "A plain airlock was given another assembly")
 	TEST_ASSERT(ship_save_refuses_object(allocate(/obj/structure/door_assembly/door_assembly_gold)), "A gold airlock assembly was saved")
 	TEST_ASSERT(!ship_save_refuses_object(allocate(/obj/structure/door_assembly)), "A plain airlock assembly was refused")
@@ -351,7 +335,7 @@
 		if(!iseffect(loose))
 			qdel(loose)
 	var/obj/machinery/power/rtg/saved = new(tile)
-	checkpoint_restore_machine(saved, null)
+	checkpoint_restore_machine(saved)
 	TEST_ASSERT(saved.power_gen > 0, "A saved RTG makes no power")
 	saved.deconstruct(TRUE)
 	TEST_ASSERT_NULL(locate(/obj/item/stack/sheet/mineral/uranium) in tile, "A saved RTG handed back uranium")
@@ -642,8 +626,6 @@
 	TEST_ASSERT_NOTNULL(decoded, "The stored hull did not decode")
 	TEST_ASSERT_EQUAL(parts_held(), 40 - GLOB.ship_saves.price_for(decoded.owned_tile_count()), "The hull was charged the wrong price")
 	TEST_ASSERT_EQUAL(hull_owned_tile_count(test_ship.shuttle), decoded.owned_tile_count(), "The price on the screen would differ from the price charged")
-	TEST_ASSERT(!findtext(decoded.tgm, "checkpoint_load_id"), "A stored hull has a machine load id")
-	TEST_ASSERT_EQUAL(length(decoded.machines), 0, "A stored hull has per-machine data")
 	TEST_ASSERT_EQUAL(decoded.class_name, test_ship.source_template.short_name, "The stored hull lost its class")
 	TEST_ASSERT_EQUAL(length(decoded.jobs), length(test_ship.job_definitions), "The stored hull lost its roster")
 	var/datum/parsed_map/parsed = new(decoded.tgm)
@@ -996,7 +978,6 @@
 	test_ship = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
 	TEST_ASSERT_NOTNULL(test_ship, "Could not create the hull")
 	var/datum/ship_checkpoint/snapshot = allocate(/datum/ship_checkpoint)
-	snapshot.persistent = TRUE
 	var/denial = snapshot.capture_hull(test_ship, test_ckey)
 	TEST_ASSERT_NULL(denial, "The fixture hull was not captured: [denial]")
 	var/payload = GLOB.ship_saves.encode(snapshot)

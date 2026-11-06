@@ -39,7 +39,6 @@
 	var/ship_name = ship.name
 	var/player_ckey = user.ckey
 	var/datum/ship_checkpoint/snapshot = new
-	snapshot.persistent = TRUE
 	var/failure = snapshot.capture(ship, user) || saved_ship_changed_denial(user, bay, ship)
 	if(!failure)
 		var/price = GLOB.ship_saves.price_for(snapshot.owned_tile_count())

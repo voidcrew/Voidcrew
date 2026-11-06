@@ -1,4 +1,4 @@
-/// Drones build a saved ship in a ship bay. Everything but the source is the checkpoint rebuild's.
+/// Drones build a saved ship in a ship bay. Everything but the source is the base construction's.
 /datum/checkpoint_construction/saved
 	status_verb = "Building"
 	build_noun = "Construction"
@@ -10,15 +10,6 @@
 	blueprint.outpost = terminal.outpost
 	// There is no hull to retire: this one was saved rounds ago.
 	..(terminal, blueprint, user, manual_drive, TRUE)
-
-/// The snapshot is this job's own decoded copy. The save itself is in the table.
-/datum/checkpoint_construction/saved/Destroy(force)
-	var/datum/ship_checkpoint/transient = snapshot
-	. = ..()
-	if(. == QDEL_HINT_LETMELIVE)
-		return
-	if(transient)
-		qdel(transient)
 
 /datum/checkpoint_construction/saved/source_denial()
 	if(QDELETED(snapshot))

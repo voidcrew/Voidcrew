@@ -162,9 +162,8 @@ A hull defense turret bolted to the outpost answers only to its owner, stewards,
 
 The **Rooms** tab sells a permanent **ship bay** for 10,000 credits, 100 iron and 50 glass from the outpost silo; it needs a working hangar elevator. Ships reach it through the **Ship Bay** option at the helm, and people by elevator. When a ship in the bay asks to use the outpost silo, the request appears on its bay row. An evicted ship has three minutes to undock, and gets its docking fee back if it paid in the last 30 minutes.
 
-The bay's own **shipyard console**, found only in the bay itself, has three tabs:
+The bay's own **shipyard console**, found only in the bay itself, has two tabs:
 
-- **Checkpoints** saves a captain's docked ship: **10,000 credits** the first time, **5,000 credits** to update it later. If that ship is ever lost or its hull abandoned, the same captain can pay to have it rebuilt from the saved checkpoint. The delivery drones do the rebuilding in one visible pass, then the ship launches into the bay.
 - **Saved ships** keeps a ship you command for a later round.
 - **New ship** orders a new ship, built at the bay by your delivery drones and stocked with its usual starting supplies, paid from the outpost bank or your own account.
 

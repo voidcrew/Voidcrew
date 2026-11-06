@@ -1,7 +1,3 @@
-/// Used only while loading an isolated registry preview; cleared before delivery.
-/obj/machinery
-	var/checkpoint_load_id = 0
-
 /// Construct the ordinary machine, not a stocked/map/event subtype. Infrastructure
 /// without a circuit retains its existing, explicitly supported hull representation.
 /// What this machine is rebuilt as: its board's product when it has one, else itself.
@@ -30,43 +26,6 @@
 	var/obj/machinery/atmospherics/connector = internal_connector?.gas_connector
 	return connector ? list(connector) : list()
 
-/// Keep parts as construction types, never mutable datums belonging to the source.
-/datum/ship_checkpoint/proc/capture_machine(obj/machinery/machine)
-	var/list/parts = list()
-	var/has_battery = FALSE
-	for(var/datum/part as anything in machine.component_parts)
-		if(istype(part, /datum/stock_part))
-			var/datum/stock_part/stock = part
-			parts += stock.type
-		else if(isitem(part) && part != machine.circuit)
-			var/datum/stock_part/stock = GLOB.stock_part_datums_per_object[part.type]
-			parts += stock ? stock.type : part.type
-			if(istype(part, /obj/item/stock_parts/power_store))
-				has_battery = TRUE
-	if(istype(machine, /obj/machinery/power/smes) && !istype(machine, /obj/machinery/power/smes/connector) && !has_battery)
-		for(var/i in 1 to 5)
-			parts += /obj/item/stock_parts/power_store/battery/high
-	var/list/data = list("parts" = parts)
-	if(istype(machine, /obj/machinery/power/apc))
-		var/obj/machinery/power/apc/controller = machine
-		var/cell_type = controller.cell?.type || /obj/item/stock_parts/power_store/battery/upgraded
-		data["cell"] = cell_type
-	if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship))
-		var/obj/machinery/computer/camera_advanced/base_construction/ship/builder = machine
-		data["construction_upgrades"] = builder.installed_upgrade_types.Copy()
-	return data
-
-/// Restore parts before RefreshParts calculates capacity, speed and efficiency.
-/datum/checkpoint_construction/proc/restore_machine(obj/machinery/machine, mob/living/operator)
-	if(snapshot.persistent)
-		checkpoint_restore_machine(machine, null, operator)
-		return
-	if(!machine.checkpoint_load_id || machine.checkpoint_load_id > length(snapshot.machines))
-		return
-	var/list/data = snapshot.machines[machine.checkpoint_load_id]
-	machine.checkpoint_load_id = 0
-	checkpoint_restore_machine(machine, data, operator)
-
 /// Empties a construction part of whatever it came with and fills its battery.
 /proc/checkpoint_scrub_part(obj/item/part)
 	part.reagents?.clear_reagents()
@@ -84,31 +43,17 @@
 		refill.premium = list()
 
 /**
- * Puts a loaded machine's parts and supplies right. `data` is what capture_machine() kept for it.
- * A saved ship keeps nothing per machine, so its machines stay at the default tier they initialized with.
+ * Puts a loaded machine's parts and supplies right. A capture keeps nothing per machine, so it stays
+ * at the default tier it initialized with.
  */
-/proc/checkpoint_restore_machine(obj/machinery/machine, list/data, mob/living/operator)
+/proc/checkpoint_restore_machine(obj/machinery/machine)
 	if(machine.circuit)
 		// Retain the newly initialized circuit and its machine-specific configuration.
 		var/obj/item/circuitboard/board = machine.circuit
-		if(data)
-			var/list/old_parts = machine.component_parts?.Copy() || list()
-			machine.component_parts = list(board)
-			for(var/obj/item/part in old_parts)
-				if(part != board)
-					qdel(part)
-			for(var/part_type in data["parts"])
-				if(ispath(part_type, /datum/stock_part))
-					machine.component_parts += GLOB.stock_part_datums[part_type]
-				else
-					var/obj/item/part = new part_type(machine)
-					machine.component_parts += part
-					checkpoint_scrub_part(part)
-		else
-			for(var/obj/item/part in machine.component_parts)
-				if(part != board)
-					checkpoint_scrub_part(part)
-			ship_save_strip_board_salvage(board)
+		for(var/obj/item/part in machine.component_parts)
+			if(part != board)
+				checkpoint_scrub_part(part)
+		ship_save_strip_board_salvage(board)
 		machine.RefreshParts()
 	if(istype(machine, /obj/machinery/vending))
 		var/obj/machinery/vending/vendor = machine
@@ -117,19 +62,12 @@
 	if(istype(machine, /obj/machinery/power/apc))
 		var/obj/machinery/power/apc/controller = machine
 		QDEL_NULL(controller.cell)
-		var/cell_type = data?["cell"] || controller.cell_type || /obj/item/stock_parts/power_store/battery/upgraded
+		var/cell_type = controller.cell_type || /obj/item/stock_parts/power_store/battery/upgraded
 		controller.cell = new cell_type(controller)
 		controller.cell.charge = controller.cell.maxcharge
 		controller.update()
 	if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship))
 		var/obj/machinery/computer/camera_advanced/base_construction/ship/builder = machine
-		for(var/upgrade_type in data?["construction_upgrades"])
-			if(!ispath(upgrade_type, /obj/item/ship_construction_upgrade) && !ispath(upgrade_type, /obj/item/rcd_upgrade) && !ispath(upgrade_type, /obj/item/rpd_upgrade))
-				continue
-			var/obj/item/disk = new upgrade_type(builder)
-			builder.item_interaction(operator, disk)
-			if(!QDELETED(disk))
-				qdel(disk)
 		if(builder.internal_painter)
 			QDEL_NULL(builder.internal_painter.ink)
 		builder.internal_rcd.matter = 0

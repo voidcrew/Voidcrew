@@ -57,12 +57,21 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 			return TRUE
 	return FALSE
 
-/// What a saved ship keeps as it loads: a rebuild's basics without plasma tanks, or a hull full of
-/// them would be gas to sell next round. Its engines run on the heater reserve instead.
+/// Basics a saved ship keeps as they load, full: breathable air tanks, welding fuel and water tanks, and
+/// plumbing water. Every other supply is scrubbed. Not plasma tanks, or a hull full of them would be gas
+/// to sell next round: its engines run on the heater reserve instead.
 /proc/ship_save_restocked()
 	var/static/list/restocked
 	if(!restocked)
-		restocked = GLOB.outpost_checkpoint_restocked - typecacheof(/obj/machinery/atmospherics/components/tank/plasma)
+		restocked = typecacheof(list(
+			/obj/machinery/atmospherics/components/tank/air,
+			/obj/machinery/atmospherics/components/tank/oxygen,
+			/obj/machinery/atmospherics/components/tank/nitrogen,
+			/obj/structure/reagent_dispensers/fueltank,
+			/obj/structure/reagent_dispensers/watertank,
+			/obj/machinery/shower,
+			/obj/structure/sink,
+		))
 	return restocked
 
 /// Text macros are raw bytes the database connection would mangle. A saved name goes without them.
@@ -168,7 +177,6 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 	if(!istext(data["tgm"]) || !isnum(data["port_x"]) || !isnum(data["port_y"]) || !islist(data["rooms"]))
 		return null
 	var/datum/ship_checkpoint/snapshot = new
-	snapshot.persistent = TRUE
 	snapshot.ship_name = data["name"]
 	snapshot.class_name = data["class"]
 	snapshot.width = width
