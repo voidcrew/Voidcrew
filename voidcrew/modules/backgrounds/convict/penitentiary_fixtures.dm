@@ -140,6 +140,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/door/window/brigdoor/penitentiary, 0)
  */
 /obj/structure/closet/secure_closet/penitentiary_evidence
 	name = "evidence locker"
+	// Bolted down: outpost property stops tools, not a pull out of the vault
+	anchored = TRUE
 	/// The mind whose gear this holds, or null while it is free
 	var/datum/weakref/owner_mind
 
