@@ -234,6 +234,9 @@ GLOBAL_DATUM_INIT(background_hunter_watch, /datum/background_hunter_watch, new)
 			continue
 		still_wanted[record] = TRUE
 		background_mark_record(record, WANTED_ARREST)
+		var/datum/criminal_bounty/warrant/warrant = background_warrant_for_mind(mind)
+		if(warrant)
+			RegisterSignal(warrant, COMSIG_BOUNTY_POSTING_CLOSED, PROC_REF(on_warrant_closed), override = TRUE)
 		var/datum/weakref/record_ref = WEAKREF(record)
 		if(!(record_ref in marked_records))
 			marked_records += record_ref
@@ -245,3 +248,9 @@ GLOBAL_DATUM_INIT(background_hunter_watch, /datum/background_hunter_watch, new)
 		// Captured (Incarcerated) or edited by hand: not ours to touch
 		if(record?.wanted_status == WANTED_ARREST)
 			background_mark_record(record, WANTED_NONE)
+
+/// A warrant closed: clear its target's record on the next tick instead of waiting out the re-assert interval
+/datum/background_hunter_watch/proc/on_warrant_closed(datum/criminal_bounty/warrant/source, reason, winner)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_BOUNTY_POSTING_CLOSED)
+	COOLDOWN_RESET(src, record_cooldown)
