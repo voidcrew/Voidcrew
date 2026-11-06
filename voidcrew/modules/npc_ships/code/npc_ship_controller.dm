@@ -100,7 +100,8 @@
 		GLOB.ai_controllers_by_status[ai_status] -= src
 	our_cells = null
 	set_movement_target(type, null)
-	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
+	// The parent still reads ai_movement.moving_controllers: give it a movement type this controller was never registered with
+	ai_movement = SSai_movement.movement_types[/datum/ai_movement/dumb]
 	return ..()
 
 /**
