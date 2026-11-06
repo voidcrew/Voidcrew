@@ -8,7 +8,7 @@
 	/// Set when the hull is abandoned: it stops being a background hull and is ordinary salvage
 	var/background_cleared = FALSE
 
-/// Background key -> background hulls minted this round, destroyed ones included
+/// Background key -> background hulls minted this round, destroyed ones included (ECO-6)
 GLOBAL_LIST_EMPTY(background_hulls_minted)
 
 /// The background this hull starts, or null
@@ -17,4 +17,6 @@ GLOBAL_LIST_EMPTY(background_hulls_minted)
 
 /// Whether another hull of this background may be minted this round
 /proc/background_hull_available(key)
-	return TRUE
+	if(!key)
+		return FALSE
+	return (GLOB.background_hulls_minted[key] || 0) < BACKGROUND_MAX_HULLS_PER_KIND
