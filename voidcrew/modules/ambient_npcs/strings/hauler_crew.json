@@ -1,0 +1,41 @@
+{
+	"_owner": "Backgrounds haulers: the crew of a Mule-class freighter.",
+	"hauler": {
+		"idle": [
+			"Four more jumps and we're home.",
+			"Hold's rattling again.",
+			"Coffee's gone cold.",
+			"Quiet out here. Too quiet."
+		],
+		"talk": [
+			"Just hauling freight, friend.",
+			"We don't want trouble.",
+			"Long haul. Long, long haul."
+		],
+		"chat": [
+			"You think they pay us extra for this?",
+			"Next port, I'm buying a real meal.",
+			"Engine's making that noise again."
+		],
+		"reply": [
+			"Yeah.",
+			"Don't jinx it.",
+			"Tell me about it."
+		],
+		"attacked": [
+			"Stop! We're not armed!",
+			"We don't want trouble!",
+			"Please! Just take it!"
+		],
+		"hail": [
+			"Easy! The strongbox is yours. Leave the crew be.",
+			"Don't shoot! We're unarmed. Take the strongbox.",
+			"All right, all right. The strongbox is yours. Just leave us be."
+		],
+		"surrender": [
+			"Take it. It's not ours anyway.",
+			"We don't want trouble.",
+			"Easy. Nobody needs to get hurt."
+		]
+	}
+}

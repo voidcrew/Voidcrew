@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "corsair/corsair_hold_lockup.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "corsair_corsair_hold_lockup.png",
+   "src_md5": "a4ea186a2b304670754d32ec1bb10f54",
+   "themes": {
+    "privateer": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "corsair_corsair_hold_lockup_privateer.png",
+     "src_md5": "f104566b2a05bed3ba1eac840d1f8529",
+     "width": 5
+    }
+   },
+   "width": 5
+  }
+ },
+ "tile_px": 32
+}

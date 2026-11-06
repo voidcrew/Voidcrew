@@ -87,6 +87,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_planets()
 	setup_space_ruins()
 	setup_trader_outposts()
+	setup_penitentiary() // Backgrounds: the Penitentiary (voidcrew/modules/backgrounds/convict)
 	setup_dangers()
 #ifndef UNIT_TESTS
 	spawn_derelict_outpost() // this round's derelict outpost: on the chart, built when a ship docks (voidcrew/modules/derelict_outposts)
@@ -738,6 +739,7 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.footprint = footprint
 		planet_to_spawn.loaded = TRUE
+		frontier_attach_cave(planet_to_spawn, mapzone, planets[planet]) // Backgrounds: the Frontier's cave level, trackers and family (voidcrew/modules/backgrounds/homestead)
 
 	// Dynamic contacts fill bands in proportion to their actual area, counting the
 	// preloaded planets too. Nearby contacts reduce placement weight, without prescribing their positions.

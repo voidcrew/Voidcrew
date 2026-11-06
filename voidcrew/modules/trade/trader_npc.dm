@@ -174,7 +174,12 @@
 	if(!shop)
 		return
 	if(outpost?.is_user_barred(user))
-		speak_line(TRADER_LINE_REFUSAL)
+		// Backgrounds: a counter refusal has its own line (voidcrew/modules/backgrounds/pirate)
+		var/line = outpost.background_refusal_line(user)
+		if(line)
+			say(line)
+		else
+			speak_line(TRADER_LINE_REFUSAL)
 		return
 	var/list/options = list(
 		TRADER_NPC_OPTION_TRADE = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buy"),

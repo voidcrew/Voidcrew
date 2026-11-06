@@ -303,6 +303,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(acting.is_interdicted)
 		to_chat(user, span_warning("Cannot dock while interdicted!"))
 		return
+	// Backgrounds: flagged hulls are refused a berth (voidcrew/modules/backgrounds/pirate)
+	var/refusal = background_docking_refusal(acting)
+	if(refusal)
+		to_chat(user, span_warning(refusal))
+		return
 	if(concerned || admin_operation || loading)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
 		return
@@ -500,10 +505,17 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return TRUE
 
 /**
- * Whether this user is refused service: personally marked as an aggressor,
- * or crew of an embargoed ship.
+ * Whether this user is refused service: barred for violence (is_violence_barred()),
+ * or refused at the counter by the background rules.
  */
 /obj/structure/overmap/trader_outpost/proc/is_user_barred(mob/user)
+	return is_violence_barred(user) || background_service_refused(user) // Backgrounds: counter refusals (voidcrew/modules/backgrounds/pirate)
+
+/**
+ * Whether this user is barred for violence: personally marked as an aggressor,
+ * or crew of an embargoed ship. The turrets read this, never a counter refusal.
+ */
+/obj/structure/overmap/trader_outpost/proc/is_violence_barred(mob/user)
 	if(!user?.mind)
 		return FALSE
 	if(is_marked_aggressor(user.mind))
@@ -520,7 +532,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
  * their own on-sight rules (xenos, hostile wildlife) on top in valid_target().
  */
 /obj/structure/overmap/trader_outpost/proc/is_turret_target(mob/living/target)
-	return istype(target) && is_user_barred(target)
+	return istype(target) && is_violence_barred(target) // Backgrounds: turrets never fire on a counter refusal (voidcrew/modules/backgrounds/pirate)
 
 /**
  * Resolves which trader outpost protects a turf by checking its concourse and

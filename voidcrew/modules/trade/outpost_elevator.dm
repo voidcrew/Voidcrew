@@ -171,6 +171,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 
 /// Whether this rider may send the car to the floor. Only a standard berth's own crew may go down to it.
 /obj/machinery/outpost_elevator/proc/may_ride_to(floor_id, mob/rider)
+	// Backgrounds: floor 0 is the concourse, refused like its counters (voidcrew/modules/backgrounds/pirate)
+	if(floor_id == 0 && istype(outpost, /obj/structure/overmap/trader_outpost))
+		var/obj/structure/overmap/trader_outpost/market = outpost
+		if(market.background_service_refused(rider))
+			return FALSE
 	var/datum/outpost_berth/destination_berth = outpost?.get_floor_berth(floor_id)
 	return !destination_berth || destination_berth.allows_entry(rider)
 

@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "marshal/marshal_bay_armory.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "marshal_marshal_bay_armory.png",
+   "src_md5": "5c27b95c5418033ac2185130bf10ffae",
+   "themes": {
+    "bondsman": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "marshal_marshal_bay_armory_bondsman.png",
+     "src_md5": "6e0fc4d5aa8185d8ebe0707b9158fb92",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

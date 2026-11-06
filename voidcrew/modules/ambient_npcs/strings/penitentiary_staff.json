@@ -1,0 +1,140 @@
+{
+	"_owner": "Backgrounds convict: the Meridian Penitentiary's warden, intake clerk and the wing guards' lines at a loose convict. Placeholders: {name}, {other}.",
+	"warden": {
+		"idle": [
+			"Count's at eight. Keep it that way.",
+			"Visitors stay in the hall.",
+			"Somebody tell D block the lights go out at ten.",
+			"Third form this week with the wrong stamp.",
+			"Nobody leaves the Meridian on my watch.",
+			"The yard was quiet today. I don't trust quiet.",
+			"Coffee's cold again.",
+			"If the pod bay logs are short one more time, heads roll.",
+			"Twenty-two years. Not one walked out of here.",
+			"Keep the service doors shut. I mean it."
+		],
+		"talk": [
+			"Visitors stay in the hall.",
+			"You're standing in my office.",
+			"If you're here about a transfer, see the clerk.",
+			"I've got a block to run.",
+			"Make it quick."
+		],
+		"work": [
+			"Sign here, sign there.",
+			"Another incident report.",
+			"Who wrote this? It's illegible."
+		],
+		"chat": [
+			"How's the count downstairs?",
+			"Heard anything from intake?",
+			"Keep an eye on cell three."
+		],
+		"reply": [
+			"Noted.",
+			"Keep me posted.",
+			"Fine."
+		],
+		"attacked": [
+			"That's assault on an officer.",
+			"You'll regret that."
+		],
+		"violence": [
+			"Not in my station.",
+			"Break it up!"
+		],
+		"conversations": [
+			{
+				"opener": "Count's at eight. Keep it that way.",
+				"replies": [
+					"Yes, Warden.",
+					"Eight it is."
+				]
+			},
+			{
+				"opener": "Any trouble at intake?",
+				"replies": [
+					"Quiet so far.",
+					"Nothing I can't stamp."
+				]
+			}
+		]
+	},
+	"clerk": {
+		"idle": [
+			"Name and ship.",
+			"Transfers go through me.",
+			"Next.",
+			"Form twelve, in triplicate.",
+			"Wait behind the line.",
+			"No, I can't tell you who's inside.",
+			"The stamp's out of ink again.",
+			"Visiting hours are over. They're always over.",
+			"Keep your hands where I can see them.",
+			"Take a number. There are no numbers. Wait anyway."
+		],
+		"talk": [
+			"Name and ship.",
+			"Transfers go through me.",
+			"Next.",
+			"Wait behind the line.",
+			"Speak up. The glass is thick."
+		],
+		"work": [
+			"Stamp. Stamp. File.",
+			"That's the wrong form.",
+			"Signed and sealed."
+		],
+		"intake": [
+			"Next.",
+			"Signed in. Next.",
+			"Booked. Payment's gone through.",
+			"Another one for holding."
+		],
+		"chat": [
+			"Busy day at the counter.",
+			"Somebody tried to hand in a mannequin again."
+		],
+		"reply": [
+			"Sure.",
+			"If you say so.",
+			"I'll make a note."
+		],
+		"attacked": [
+			"That's going in the report!",
+			"Guards!"
+		],
+		"violence": [
+			"Not at my counter!",
+			"Somebody call the warden."
+		],
+		"conversations": [
+			{
+				"opener": "Got the transfer list?",
+				"replies": [
+					"On your desk.",
+					"Somewhere under the forms."
+				]
+			}
+		]
+	},
+	"guard": {
+		"convict_loose": [
+			"Back to your cell!",
+			"Stop right there!",
+			"On the floor!",
+			"Hands where I can see them!",
+			"You're not supposed to be out here!"
+		]
+	},
+	"any": {
+		"idle": [
+			"Quiet shift.",
+			"Another day on the Meridian."
+		],
+		"talk": [
+			"Move along.",
+			"Visitors stay in the hall."
+		]
+	}
+}

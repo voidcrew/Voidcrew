@@ -478,6 +478,7 @@ SUBSYSTEM_DEF(criminal_bounties)
 	var/obj/structure/overmap/ship/ship = get_ship()
 	board_static_sent = board_static_signature(ship)
 	data["wanted_mugshots"] = board_wanted_mugshots(ship)
+	data["board_flavour"] = "standard" // Backgrounds: the warrant console and Black Ledger send their own (voidcrew/modules/backgrounds)
 	return data
 
 /**

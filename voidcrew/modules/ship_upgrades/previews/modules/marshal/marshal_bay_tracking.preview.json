@@ -1,0 +1,28 @@
+{
+ "hulls": {},
+ "modules": {
+  "marshal/marshal_bay_tracking.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "png": "marshal_marshal_bay_tracking.png",
+   "src_md5": "93f2662ee5f0672f711a9d46cbc8e77a",
+   "themes": {
+    "bondsman": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "marshal_marshal_bay_tracking_bondsman.png",
+     "src_md5": "d34ea4e401df997caf783be3cd3044fb",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}

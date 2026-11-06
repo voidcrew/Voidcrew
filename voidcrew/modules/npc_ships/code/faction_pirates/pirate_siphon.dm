@@ -318,6 +318,11 @@
 		owner?.ship_notify("Siphon link lost. Total credits acquired: [run_take].", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 25)
 	if(was_active)
 		siphon_metric_run_ended(owner, target, get_run_take())
+		// Backgrounds: the siphon goal, Shakedown and the hauler embargo listen for these (voidcrew/modules/backgrounds)
+		if(owner)
+			SEND_SIGNAL(owner, COMSIG_BACKGROUND_CREDITS_TAKEN, target, get_run_take(), "siphon")
+		if(target)
+			SEND_SIGNAL(target, COMSIG_BACKGROUND_CREDITS_LOST, owner, get_run_take(), "siphon")
 
 	target_ship_ref = null
 	STOP_PROCESSING(SSobj, src)

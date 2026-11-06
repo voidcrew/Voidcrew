@@ -54,6 +54,8 @@ SUBSYSTEM_DEF(missions)
 	// NPC ships never read their board; don't generate (and churn ruin refs) for them
 	if(istype(ship, /obj/structure/overmap/ship/npc))
 		return
+	if(ship.pirate_crew && refresh_criminal_missions(ship)) // Backgrounds: the criminal pool (voidcrew/modules/backgrounds/pirate)
+		return
 
 	// Remove deleted missions and rotate out offers that sat unaccepted too long
 	for(var/datum/mission/mission as anything in ship.available_missions)

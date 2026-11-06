@@ -29,7 +29,7 @@
 
 /// Engine hazards transported into a market, or into a player outpost's service room, must stop before processing damage.
 /proc/neutralize_trader_outpost_hazard(atom/movable/hazard)
-	if(!is_trader_outpost_protected(hazard) && !is_outpost_service_tile(hazard))
+	if(!is_trader_outpost_protected(hazard) && !is_outpost_service_tile(hazard) && !is_penitentiary_turf(hazard)) // Backgrounds: the Penitentiary (voidcrew/modules/backgrounds/convict)
 		return FALSE
 	log_game("OUTPOST PROTECTION: Neutralized [hazard] ([hazard.type]) at [AREACOORD(hazard)].")
 	qdel(hazard)

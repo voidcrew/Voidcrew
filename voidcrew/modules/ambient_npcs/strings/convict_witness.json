@@ -1,0 +1,38 @@
+{
+	"_owner": "Backgrounds convict: the witness a convict is after. Placeholders: {name}, {other}.",
+	"witness": {
+		"idle": [
+			"I don't want any trouble.",
+			"I told them what I saw. That's all.",
+			"Is somebody following me?",
+			"They said I'd be safe out here.",
+			"I keep hearing footsteps.",
+			"Just keep walking. Nobody knows you.",
+			"I should have kept my mouth shut.",
+			"Every ship that docks, I check the faces."
+		],
+		"talk": [
+			"I don't want any trouble.",
+			"Do I know you?",
+			"I didn't see anything. Not anymore.",
+			"Please, just leave me alone.",
+			"Who sent you?"
+		],
+		"attacked": [
+			"No! Please!",
+			"I knew it. I knew you'd come.",
+			"Help! Somebody!"
+		],
+		"violence": [
+			"Not again.",
+			"I'm getting out of here."
+		],
+		"chat": [
+			"Have you seen anyone new around?"
+		],
+		"reply": [
+			"I guess.",
+			"Keep your voice down."
+		]
+	}
+}

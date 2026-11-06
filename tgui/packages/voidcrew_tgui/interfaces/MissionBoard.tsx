@@ -119,6 +119,8 @@ type Data = {
   wanted?: WantedEntry[];
   // Static data: record id -> base64 mugshot, never sent in the live data
   wanted_mugshots?: Record<string, string>;
+  // Static data: "standard", "bounty" (warrant console) or "criminal" (Black Ledger)
+  board_flavour?: string;
 };
 
 /** One wanted criminal on the board: a public bounty or this ship's private offer. */
@@ -146,6 +148,8 @@ type WantedEntry = {
   photo_old?: BooleanLike;
   can_turn_in?: BooleanLike;
   turn_in_refusal?: string | null;
+  // A player's warrant (voidcrew/modules/backgrounds): never expires
+  warrant?: BooleanLike;
 };
 
 export const MissionBoard = () => {
@@ -224,7 +228,15 @@ const MissionBoardContent = () => {
     refresh_cooldown_remaining,
     wanted = [],
     wanted_mugshots = {},
+    board_flavour = 'standard',
   } = data;
+
+  // The warrant console lists no missions; the Black Ledger lists no wanted posters
+  const showMissions = board_flavour !== 'bounty';
+  const showWanted = board_flavour !== 'criminal';
+  const shownMissions = showMissions ? available_missions : [];
+  const shownActiveMissions = showMissions ? active_missions : [];
+  const shownWanted = showWanted ? wanted : [];
 
   const [currentTab, setCurrentTab] = useState<'available' | 'active'>(
     'available',
@@ -236,11 +248,11 @@ const MissionBoardContent = () => {
 
   // Everything on offer in one list, every kind mixed together
   const offered: ListItem[] = shuffleKinds([
-    ...available_missions.map((mission) => ({
+    ...shownMissions.map((mission) => ({
       key: `mission-${mission.ref}`,
       node: <MissionCard mission={mission} isActive={false} />,
     })),
-    ...wanted
+    ...shownWanted
       .filter((entry) => !entry.hunting_by_us)
       .map((entry) => ({
         key: `wanted-${entry.ref}`,
@@ -285,13 +297,13 @@ const MissionBoardContent = () => {
 
   // Everything taken on
   const taken: ListItem[] = [
-    ...active_missions.map((mission) => ({
+    ...shownActiveMissions.map((mission) => ({
       key: `mission-${mission.ref}`,
       node: (
         <MissionCard mission={mission} isActive padContents={pad_contents} />
       ),
     })),
-    ...wanted
+    ...shownWanted
       .filter((entry) => !!entry.hunting_by_us)
       .map((entry) => ({
         key: `wanted-${entry.ref}`,
@@ -336,15 +348,17 @@ const MissionBoardContent = () => {
                   Post Bounty
                 </Button>
               )}
-              <Button
-                icon="sync"
-                disabled={refresh_cooldown_remaining > 0}
-                onClick={() => act('refresh')}
-              >
-                {refresh_cooldown_remaining > 0
-                  ? `Refresh (${refresh_cooldown_remaining}s)`
-                  : 'Refresh'}
-              </Button>
+              {showMissions ? (
+                <Button
+                  icon="sync"
+                  disabled={refresh_cooldown_remaining > 0}
+                  onClick={() => act('refresh')}
+                >
+                  {refresh_cooldown_remaining > 0
+                    ? `Refresh (${refresh_cooldown_remaining}s)`
+                    : 'Refresh'}
+                </Button>
+              ) : null}
             </>
           }
         >
@@ -556,9 +570,11 @@ const MissionCard = (props: MissionCardProps) => {
         </Box>
       }
     >
-      <Box italic color="label" mb={1}>
-        From: {mission.author}
-      </Box>
+      {mission.author ? (
+        <Box italic color="label" mb={1}>
+          From: {mission.author}
+        </Box>
+      ) : null}
       <Box mb={1}>{mission.desc}</Box>
 
       {/* Rewards summary */}
@@ -818,6 +834,7 @@ type WantedCardProps = {
 const WantedCard = (props: WantedCardProps) => {
   const { act } = useBackend<Data>();
   const { entry, mugshot, hasPad } = props;
+  const isWarrant = !!entry.warrant;
 
   const tierColor = WANTED_TIER_COLORS[entry.tier ?? 1] ?? 'label';
   const vouchers = entry.vouchers ?? 0;
@@ -907,7 +924,11 @@ const WantedCard = (props: WantedCardProps) => {
               [{entry.zone || 'Unknown Zone'}]
             </Box>
           </Box>
-          <Box color="label">{formatWantedTime(entry.time_left ?? 0)} left</Box>
+          {isWarrant ? null : (
+            <Box color="label">
+              {formatWantedTime(entry.time_left ?? 0)} left
+            </Box>
+          )}
         </Flex.Item>
       </Flex>
 

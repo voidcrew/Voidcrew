@@ -42,7 +42,30 @@ type ShipJoinMenuData = {
   }[];
   can_requisition: BooleanLike;
   wiki_url: string | null;
+  // Other starts (voidcrew/modules/backgrounds/core/background_join_menu.dm)
+  starts?: StartEntry[];
 };
+
+/** One background start the round can offer right now */
+type StartEntry = {
+  id: string;
+  kind: string;
+  name: string;
+  detail?: string | null;
+  crew?: number | null;
+  refusal?: string | null;
+};
+
+const START_KIND_LABELS: Record<string, string> = {
+  convict: 'Convict',
+  homesteader: 'Homesteader',
+  bounty_hunter: 'Bounty Hunter',
+  pirate: 'Pirate',
+};
+
+const startKindLabel = (kind: string) =>
+  START_KIND_LABELS[kind] ??
+  kind.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 export const ShipJoinMenu = () => {
   const { act, data } = useBackend<ShipJoinMenuData>();
@@ -105,13 +128,69 @@ export const ShipJoinMenu = () => {
             </Section>
           </Stack.Item>
 
-          {/* Join Existing Ship Section */}
-          <Stack.Item grow>
+          {(data.starts || []).length > 0 && (
+            <Stack.Item>
+              <OtherStartsSection starts={data.starts || []} />
+            </Stack.Item>
+          )}
+
+          {/* Join Existing Ship Section: keeps its height and lets the window scroll when the sections above grow */}
+          <Stack.Item grow minHeight="260px">
             <JoinShipSection ships={ships} />
           </Stack.Item>
         </Stack>
       </Window.Content>
     </Window>
+  );
+};
+
+/** The class and crew of a ship start, when the server sends them */
+const startFacts = (start: StartEntry) =>
+  [
+    start.detail || null,
+    start.crew !== null && start.crew !== undefined
+      ? `Crew: ${start.crew}`
+      : null,
+  ].filter(Boolean) as string[];
+
+const OtherStartsSection = (props: { starts: StartEntry[] }) => {
+  const { act } = useBackend<ShipJoinMenuData>();
+  const { starts } = props;
+
+  return (
+    <Section title="Other Starts">
+      {starts.map((start) => {
+        const facts = startFacts(start);
+        return (
+          <Stack key={start.id} align="center" className="candystripe" p={0.5}>
+            <Stack.Item width="100px" color="label">
+              {startKindLabel(start.kind)}
+            </Stack.Item>
+            <Stack.Item grow>
+              <Box as="span" bold>
+                {start.name}
+              </Box>
+              {facts.length > 0 ? (
+                <Box as="span" color="label" ml={1}>
+                  {facts.join(' | ')}
+                </Box>
+              ) : null}
+            </Stack.Item>
+            <Stack.Item width="90px">
+              <Button
+                fluid
+                icon={start.refusal ? undefined : 'sign-in-alt'}
+                color={start.refusal ? undefined : 'blue'}
+                disabled={!!start.refusal}
+                onClick={() => act('join_start', { id: start.id })}
+              >
+                {start.refusal || 'Join'}
+              </Button>
+            </Stack.Item>
+          </Stack>
+        );
+      })}
+    </Section>
   );
 };
 

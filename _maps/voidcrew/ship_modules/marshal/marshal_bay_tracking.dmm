@@ -1,0 +1,108 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/template_noop,
+/area/template_noop)
+"g" = (
+/obj/machinery/firealarm/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"i" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"p" = (
+/obj/machinery/computer/prisoner/management{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"q" = (
+/obj/structure/cable,
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 10
+	},
+/obj/item/folder/red{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/turf/template_noop,
+/area/template_noop)
+"z" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"H" = (
+/turf/template_noop,
+/area/template_noop)
+"I" = (
+/obj/machinery/light/small/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/template_noop,
+/area/template_noop)
+"O" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/template_noop,
+/area/template_noop)
+"R" = (
+/obj/modular_map_connector,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/template_noop,
+/area/template_noop)
+"T" = (
+/obj/machinery/computer/crew{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"V" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"Z" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/east,
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+V
+q
+O
+R
+"}
+(2,1,1) = {"
+d
+i
+H
+z
+"}
+(3,1,1) = {"
+H
+H
+J
+I
+"}
+(4,1,1) = {"
+Z
+T
+p
+g
+"}

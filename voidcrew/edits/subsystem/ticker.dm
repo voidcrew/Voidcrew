@@ -28,6 +28,9 @@
 		if(player.ready == PLAYER_READY_TO_PLAY && player.mind)
 			ready_players += player
 
+	// Backgrounds: players who picked another start go there first (voidcrew/modules/backgrounds)
+	ready_players = start_background_players(ready_players)
+
 	if(!length(ready_players))
 		return
 

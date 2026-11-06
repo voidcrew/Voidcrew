@@ -30,6 +30,7 @@
 	var/jungle_planet_count = 0
 	var/beach_planet_count = 0
 	var/wasteland_planet_count = 0
+	var/frontier_planet_count = 1 // Backgrounds: the permanent Frontier planet (voidcrew/modules/backgrounds)
 
 	var/list/planets = list()
 
@@ -316,6 +317,7 @@
 		list("jungle", jungle_planet_count, /datum/overmap/planet/jungle),
 		list("beach", beach_planet_count, /datum/overmap/planet/beach),
 		list("wasteland", wasteland_planet_count, /datum/overmap/planet/wasteland),
+		list("frontier", frontier_planet_count, /datum/overmap/planet/frontier), // Backgrounds: the Frontier (voidcrew/modules/backgrounds/homestead)
 	)
 	for(var/list/entry as anything in preloaded)
 		var/planet_name = entry[1]
@@ -332,12 +334,15 @@
 			var/list/upper_traits = environment.level_traits()
 			lower_traits[ZTRAIT_UP] = 1
 			upper_traits[ZTRAIT_DOWN] = 1
+			if(environment.weather_trait) // Backgrounds: caves are indoors, so no storm site on the lower level (voidcrew/modules/backgrounds/homestead)
+				lower_traits -= environment.weather_trait
 			if(registration.ruin_type)
 				lower_traits[registration.ruin_type] = TRUE
 				upper_traits[registration.ruin_type] = TRUE
 			LoadGroup(FailedZs, "Planet [planet_name] [i]", "voidcrew/planets", "[planet_name].dmm", list(lower_traits, upper_traits))
 			z_count += 2
-			planets["[planet_name] [i]"] = list("type" = overmap_type, "z" = z_count, "zone_band" = next_planet_zone_band())
+			// Backgrounds: the real surface z (z_count assumed CentCom was the only level before us) and the Frontier's fixed band (voidcrew/modules/backgrounds/homestead)
+			planets["[planet_name] [i]"] = list("type" = overmap_type, "z" = world.maxz, "zone_band" = (overmap_type == /datum/overmap/planet/frontier) ? ZONE_GREEN : next_planet_zone_band())
 		qdel(environment)
 		qdel(definition)
 		qdel(registration)
@@ -420,6 +425,10 @@
 			continue
 		var/datum/overmap/planet/planet_info = new overmap_type
 		var/planet_z = record["z"]
+		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: the homestead and its rings now; its ruins after terrain, in frontier_after_terrain() (voidcrew/modules/backgrounds/homestead)
+			frontier_before_ruins(record)
+			qdel(planet_info)
+			continue
 		generate_planet_ruins(planet_info.planet_template, list(planet_z, planet_z - 1), list(planet_info.surface_area))
 		qdel(planet_info)
 
@@ -437,6 +446,8 @@
 		// Existing roundstart templates have two levels. Both previously received rivers.
 		generate_planet_rivers(planet_type, planet_z, whitelist_areas)
 		generate_planet_rivers(planet_type, planet_z - 1, whitelist_areas)
+		if(overmap_type == /datum/overmap/planet/frontier) // Backgrounds: cave ladders and ruins, after terrain and before population (voidcrew/modules/backgrounds/homestead)
+			frontier_after_terrain(record)
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)

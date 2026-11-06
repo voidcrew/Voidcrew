@@ -16,6 +16,8 @@
 		var/datum/map_template/shuttle/voidcrew/template_path = template_type
 		if(initial(template_path.abstract) == template_type || ispath(template_type, /datum/map_template/shuttle/voidcrew/commissioned))
 			continue
+		if(initial(template_path.background_start)) // Backgrounds: these hulls can never be saved (voidcrew/modules/backgrounds)
+			continue
 		if(!voidcrew_test_shard_takes(++position))
 			continue
 		log_world("EVERY_SHIP begin [template_type]")
@@ -281,6 +283,8 @@
 		var/template_type = SSmapping.ship_purchase_list[label]
 		var/datum/map_template/shuttle/voidcrew/template_path = template_type
 		if(initial(template_path.abstract) == template_type || ispath(template_type, /datum/map_template/shuttle/voidcrew/commissioned))
+			continue
+		if(initial(template_path.background_start)) // Backgrounds: these hulls can never be saved (voidcrew/modules/backgrounds)
 			continue
 		var/list/themes = get_themes_for_ship(template_type)
 		// A hull with modules but no themes still gets its modules covered, themeless.

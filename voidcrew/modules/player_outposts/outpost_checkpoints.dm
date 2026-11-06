@@ -137,6 +137,8 @@
 	var/obj/structure/overmap/ship/ship = bay.ship
 	if(!ship.is_ship_captain(user) || ship.abandoned || ship.retired_by_checkpoint)
 		return "Only the ship's current captain can save it."
+	if(ship.source_template?.background_start) // Backgrounds: background hulls cannot be saved (voidcrew/modules/backgrounds)
+		return "This hull isn't on the yard's register."
 	if(ship.checkpoint_rebuilding)
 		return "Recovery is already in progress."
 	var/datum/ship_checkpoint/previous = outpost.checkpoint_for(user)

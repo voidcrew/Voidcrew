@@ -1,0 +1,140 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/escape_pod)
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/terminal{
+	dir = 2
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"j" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/escape_pod)
+"k" = (
+/obj/machinery/atmospherics/components/tank/air{
+	dir = 2
+	},
+/obj/machinery/status_display/evac/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"m" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Pod Hatch"
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/escape_pod{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"o" = (
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"v" = (
+/obj/machinery/computer/helm{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"z" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/escape_pod)
+"A" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"B" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/escape_pod)
+"F" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"G" = (
+/obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	charge = 5e+006
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"U" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+"X" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/structure/closet/wall/directional/east{
+	name = "emergency wall locker";
+	icon_state = "emergency"
+	},
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/storage/medkit/emergency,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/escape_pod)
+
+(1,1,1) = {"
+z
+j
+j
+j
+z
+"}
+(2,1,1) = {"
+j
+o
+c
+G
+a
+"}
+(3,1,1) = {"
+B
+v
+A
+F
+m
+"}
+(4,1,1) = {"
+j
+k
+X
+U
+a
+"}
+(5,1,1) = {"
+z
+j
+j
+j
+z
+"}

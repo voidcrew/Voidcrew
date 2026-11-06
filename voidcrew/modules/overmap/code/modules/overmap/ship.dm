@@ -1064,6 +1064,8 @@
 	ship_metric_abandoned(src)
 
 	abandoned = TRUE
+	background_cleared = TRUE // Backgrounds: an abandoned background hull is ordinary salvage (voidcrew/modules/backgrounds)
+	pirate_crew = FALSE // Backgrounds: and carries no pirate flag (voidcrew/modules/backgrounds)
 	abandoned_at = world.time // starts the derelict-despawn clock (SSovermap.sweep_derelicts)
 	joining_allowed = FALSE // Disable cryopod spawning until claimed
 	// A derelict is public salvage - the old crew's lock dies with their tenure
@@ -3354,6 +3356,8 @@
   */
 /obj/structure/overmap/ship/proc/start_zone_transition(turf/target, datum/overmap_zone/target_zone)
 	if(zone_transitioning)
+		return
+	if(background_zone_refusal(target_zone)) // Backgrounds: the green cordon (voidcrew/modules/backgrounds)
 		return
 
 	if(autopilot_engaged && !autopilot_can_enter(target))
