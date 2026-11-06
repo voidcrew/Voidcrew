@@ -50,12 +50,12 @@
 		return BACKGROUND_CONVICT_SCENARIO_MASSACRE
 	return BACKGROUND_CONVICT_SCENARIO_ADRIFT
 
-/**
- * The scenario an admin forced for this lobby player, if any, cleared as it is read.
- * INTEGRATION: reads P1's /mob/dead/new_player/var/background_forced_scenario once merged.
- */
+/// The scenario an admin forced for this lobby player, if any, cleared as it is read
 /datum/background/convict/proc/take_forced_scenario(mob/dead/new_player/player)
-	return null
+	if(QDELETED(player))
+		return null
+	. = player.background_forced_scenario
+	player.background_forced_scenario = null
 
 // ===== STARTS =====
 
