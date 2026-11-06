@@ -739,6 +739,7 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.footprint = footprint
 		planet_to_spawn.loaded = TRUE
+		frontier_attach_cave(planet_to_spawn, mapzone, planets[planet]) // Backgrounds: the Frontier's cave level, trackers and family (voidcrew/modules/backgrounds/homestead)
 
 	// Dynamic contacts fill bands in proportion to their actual area, counting the
 	// preloaded planets too. Nearby contacts reduce placement weight, without prescribing their positions.

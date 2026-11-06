@@ -1,0 +1,177 @@
+{
+	"_owner": "The Frontier homestead family (voidcrew/modules/backgrounds/homestead). Placeholders: {name}, {other}, {place}.",
+	"any": {
+		"greet": [
+			"There you are, {other}."
+		],
+		"welcome": [
+			"Morning, {other}. Coffee's on.",
+			"{other}! Boots off at the door.",
+			"There you are, {other}. Plenty to do today."
+		],
+		"going_home": [
+			"I'm going home."
+		],
+		"hungry": [
+			"Pantry's bare. We need something to eat."
+		],
+		"fed": [
+			"Supper's on."
+		],
+		"unsafe": [
+			"Riders! Get inside!"
+		],
+		"safe": [
+			"They're gone."
+		],
+		"riders": [
+			"Dust on the ridge. Riders."
+		],
+		"storm": [
+			"Dust storm coming. Shutters!",
+			"Wind's picking up. Everybody in."
+		],
+		"cover": [
+			"Down! Stay down!"
+		],
+		"violence": [
+			"Not here. Not in front of the kids."
+		],
+		"leave": [
+			"I'm going home."
+		]
+	},
+	"spouse": {
+		"idle": [
+			"Roof needs patching before the next storm.",
+			"Fence on the north side's leaning again.",
+			"Quiet day. I'll take it.",
+			"That cow's been eyeing the corn all week.",
+			"Ten years on this dirt. Still here."
+		],
+		"talk": [
+			"Wipe your feet.",
+			"Help yourself to water from the well.",
+			"Stand's on the porch if you're buying.",
+			"Don't mind the dog. He's all bark.",
+			"Long way out here. What brings you?"
+		],
+		"attacked": [
+			"Get off my land!",
+			"Not in my house!",
+			"You'll answer for that."
+		],
+		"chat": [
+			"Corn's coming in nice.",
+			"Hens are laying again.",
+			"Saw tracks by the gate this morning.",
+			"We'll need more feed before long.",
+			"You eat today?"
+		],
+		"reply": [
+			"Mm-hm.",
+			"That's the truth.",
+			"We'll see.",
+			"Don't you worry about it."
+		],
+		"cook": [
+			"Almost ready.",
+			"Who's been at the salt?",
+			"Smells right.",
+			"Hands off, it's not done."
+		],
+		"water": [
+			"Drink up.",
+			"Dry as a bone.",
+			"There you go."
+		],
+		"supper": [
+			"Elbows off the table.",
+			"Eat your greens.",
+			"Pass the biscuits.",
+			"Good day's work, everybody."
+		],
+		"conversations": [
+			{
+				"opener": "You do your chores?",
+				"replies": [
+					"Most of them.",
+					"Yes!",
+					"I fed the hens!"
+				]
+			},
+			{
+				"opener": "Wash up. Supper soon.",
+				"replies": [
+					"Five more minutes?",
+					"Okay!",
+					"What are we having?"
+				]
+			}
+		]
+	},
+	"child": {
+		"idle": [
+			"I'm bored.",
+			"Found a beetle!",
+			"When I grow up I'm getting a ship.",
+			"The pony likes me best."
+		],
+		"talk": [
+			"Are you a spacer?",
+			"Did you come from the sky?",
+			"Wanna see the chickens?",
+			"I'm not supposed to talk to strangers."
+		],
+		"attacked": [
+			"Ow! Stop it!",
+			"I'm telling!",
+			"Leave me alone!"
+		],
+		"chat": [
+			"Race you to the well.",
+			"I saw a lizard this big.",
+			"Can we ride the pony?",
+			"I'm not sleepy."
+		],
+		"reply": [
+			"Nuh-uh.",
+			"Yeah!",
+			"Okay.",
+			"Says who?"
+		],
+		"play": [
+			"Bet you can't catch me!",
+			"Tag! No, wait, not yet.",
+			"You're it!"
+		],
+		"tag": [
+			"Gotcha!",
+			"You're it!",
+			"Tag!"
+		],
+		"supper": [
+			"I'm starving.",
+			"Can I have seconds?",
+			"Do I have to eat the carrots?"
+		],
+		"conversations": [
+			{
+				"opener": "Did you hear something by the barn?",
+				"replies": [
+					"It's just the cow.",
+					"Let's go look!",
+					"You're scared of everything."
+				]
+			},
+			{
+				"opener": "I'm gonna be a cowboy.",
+				"replies": [
+					"You can't even lasso.",
+					"Me too!",
+					"Cowboys need a horse."
+				]
+			}
+		]
+	}
+}

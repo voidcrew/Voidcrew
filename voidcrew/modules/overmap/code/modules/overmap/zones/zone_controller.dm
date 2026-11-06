@@ -241,6 +241,8 @@ SUBSYSTEM_DEF(overmap_zones)
 	for(var/obj/structure/overmap/planet/planet as anything in GLOB.overmap_planets)
 		if(!planet.mapzone)
 			continue
+		if(planet.cave_footprint?.contains_turf(T)) // Backgrounds: the Frontier's cave level (voidcrew/modules/backgrounds/homestead)
+			return planet
 		if(planet.footprint)
 			if(planet.footprint.contains_turf(T))
 				return planet
