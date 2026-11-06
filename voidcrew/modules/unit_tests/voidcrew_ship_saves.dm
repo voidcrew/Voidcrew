@@ -1283,12 +1283,16 @@
 	var/lathes = 0
 	var/plasma_tanks = 0
 	var/air_tanks = 0
+	var/stocked_vendors = 0
 	var/obj/docking_port/mobile/voidcrew/port = ship.shuttle
 	for(var/turf/tile as anything in port.return_turfs())
 		if(!(get_area(tile) in port.shuttle_areas))
 			continue
 		for(var/obj/item/loose in tile)
 			TEST_FAIL("[where]: the ship came with a loose [loose.type]")
+		// A locker on the list fills itself on first opening. Any other never does.
+		for(var/obj/structure/closet/locker in tile)
+			TEST_ASSERT_EQUAL(!!locker.contents_initialized, !is_type_in_typecache(locker, GLOB.ship_save_stocked_fixtures), "[where]: [locker.type] has the wrong stock")
 		for(var/obj/machinery/machine in tile)
 			if(istype(machine, /obj/machinery/autolathe))
 				lathes++
@@ -1306,8 +1310,14 @@
 				TEST_ASSERT(controller.cell?.charge > 0, "[where]: an APC came back with no charged cell")
 			if(istype(machine, /obj/machinery/vending))
 				var/obj/machinery/vending/vendor = machine
+				var/vendor_stock = 0
 				for(var/datum/data/vending_product/product as anything in vendor.product_records + vendor.hidden_records + vendor.coin_records)
-					TEST_ASSERT_EQUAL(product.amount, 0, "[where]: a vending machine came back stocked")
+					vendor_stock += product.amount
+				if(is_type_in_typecache(vendor, GLOB.ship_save_stocked_fixtures))
+					stocked_vendors++
+					TEST_ASSERT(vendor_stock > 0, "[where]: [vendor.type] should come back stocked")
+				else
+					TEST_ASSERT_EQUAL(vendor_stock, 0, "[where]: [vendor.type] should come back empty")
 			if(istype(machine, /obj/machinery/door))
 				var/obj/machinery/door/door = machine
 				TEST_ASSERT(!length(door.req_access) && !length(door.req_one_access), "[where]: a door kept its access")
@@ -1317,6 +1327,7 @@
 	TEST_ASSERT(lathes, "[where]: the upgraded autolathe did not come back")
 	TEST_ASSERT(plasma_tanks, "[where]: the plasma tank did not come back")
 	TEST_ASSERT(air_tanks, "[where]: the air tank did not come back")
+	TEST_ASSERT(stocked_vendors, "[where]: the hull's stocked vendor did not come back")
 
 /// A save loaded in the round it was made: only once the old hull is out of service, and it then replaces it.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/same_round
