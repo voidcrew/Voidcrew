@@ -103,7 +103,7 @@
 		if(near_family[key])
 			continue
 		near_family[key] = TRUE
-		if(!greeter || greeted[key] + HOMESTEAD_GREET_COOLDOWN > world.time)
+		if(!greeter || (greeted[key] && greeted[key] + HOMESTEAD_GREET_COOLDOWN > world.time))
 			continue
 		greeted[key] = world.time
 		greeter.greet(settler)
