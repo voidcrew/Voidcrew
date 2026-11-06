@@ -2,5 +2,7 @@
 // These get imported by the main tgui features index
 
 export * from './autotranslate';
+export * from './background';
 export * from './bark_voice';
 export * from './intents';
+export * from './prisoner_crime';
