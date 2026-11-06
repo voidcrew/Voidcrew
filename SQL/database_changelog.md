@@ -20,7 +20,7 @@ In any query remember to add a prefix to the table names if you use one.
 
 Version 5.35, 5 November 2026, by Jackriip
 Adds the `player_ship_saves` table for Voidcrew ship saving: one row per used save slot, with the ship's
-map stored through `COMPRESS()`.
+map stored through `COMPRESS()` and what the save holds and cost as JSON in `summary`.
 
 ```sql
 CREATE TABLE `player_ship_saves` (
@@ -33,6 +33,7 @@ CREATE TABLE `player_ship_saves` (
   `saved_round` INT(11) NOT NULL,
   `saved_at` DATETIME NOT NULL,
   `raw_bytes` INT(10) UNSIGNED NOT NULL,
+  `summary` TEXT NULL,
   `payload` MEDIUMBLOB NOT NULL,
   PRIMARY KEY (`ckey`, `slot`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

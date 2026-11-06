@@ -574,6 +574,7 @@ CREATE TABLE `SS13_player_ship_saves` (
   `saved_round` INT(11) NOT NULL,
   `saved_at` DATETIME NOT NULL,
   `raw_bytes` INT(10) UNSIGNED NOT NULL,
+  `summary` TEXT NULL,
   `payload` MEDIUMBLOB NOT NULL,
   PRIMARY KEY (`ckey`, `slot`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

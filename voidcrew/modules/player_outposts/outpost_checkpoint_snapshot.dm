@@ -113,9 +113,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 
 /// Ports are handled separately and cannot carry NPC types.
 /datum/ship_checkpoint/proc/includes_object(obj/object)
-	if(ship_save_refuses_object(object))
-		return FALSE
-	return outpost_checkpoint_saves(object)
+	return ship_save_keeps_object(object)
 
 /// Preserve placement and construction settings; inventories are never serialized.
 /datum/ship_checkpoint/proc/atom_text(atom/object)

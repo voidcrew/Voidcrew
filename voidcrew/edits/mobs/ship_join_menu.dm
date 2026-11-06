@@ -135,7 +135,7 @@
 	data["can_requisition"] = can_requisition_hull(user)
 	var/list/saved_ships = list()
 	for(var/list/row as anything in GLOB.ship_saves.saves_for(user.ckey))
-		saved_ships += list(list("slot" = row["slot"], "name" = row["ship_name"], "class" = row["ship_class"], "denial" = GLOB.ship_saves.retrieve_denial(user.ckey, row["slot"])))
+		saved_ships += list(GLOB.ship_saves.saved_ship_entry(user.ckey, row, GLOB.ship_saves.retrieve_denial(user.ckey, row["slot"])))
 	data["saved_ships"] = saved_ships
 	return data
 

@@ -13,7 +13,7 @@ GLOBAL_DATUM_INIT(ship_save_store, /datum/ship_save_store, new)
 /// The player's saves without their maps. An empty list means none; null means the query failed.
 /datum/ship_save_store/proc/read_meta(ckey)
 	var/datum/db_query/query = SSdbcore.NewQuery(
-		"SELECT slot, ship_name, ship_class, tile_count, format_version, saved_round, saved_at, raw_bytes \
+		"SELECT slot, ship_name, ship_class, tile_count, format_version, saved_round, saved_at, raw_bytes, summary \
 		FROM [format_table_name("player_ship_saves")] WHERE ckey = :ckey ORDER BY slot",
 		list("ckey" = ckey)
 	)
@@ -31,6 +31,7 @@ GLOBAL_DATUM_INIT(ship_save_store, /datum/ship_save_store, new)
 			"saved_round" = text2num(query.item[6]),
 			"saved_at" = query.item[7],
 			"raw_bytes" = text2num(query.item[8]),
+			"survey" = ship_save_read_summary(query.item[9]),
 		))
 	qdel(query)
 	return rows
@@ -51,12 +52,16 @@ GLOBAL_DATUM_INIT(ship_save_store, /datum/ship_save_store, new)
 	qdel(query)
 	return payload
 
-/// A plain INSERT: a duplicate key fails rather than overwriting a save someone paid for.
-/datum/ship_save_store/proc/write(ckey, slot, list/meta, payload)
+/**
+ * Writes one save. A plain INSERT, so a duplicate key fails rather than overwriting a save someone paid
+ * for, unless overwrite is set, which replaces the row whole.
+ */
+/datum/ship_save_store/proc/write(ckey, slot, list/meta, payload, overwrite = FALSE)
 	var/datum/db_query/query = SSdbcore.NewQuery(
 		"INSERT INTO [format_table_name("player_ship_saves")] \
-		(ckey, slot, ship_name, ship_class, tile_count, format_version, saved_round, saved_at, raw_bytes, payload) \
-		VALUES (:ckey, :slot, :ship_name, :ship_class, :tile_count, :format_version, :saved_round, NOW(), :raw_bytes, COMPRESS(:payload))",
+		(ckey, slot, ship_name, ship_class, tile_count, format_version, saved_round, saved_at, raw_bytes, summary, payload) \
+		VALUES (:ckey, :slot, :ship_name, :ship_class, :tile_count, :format_version, :saved_round, NOW(), :raw_bytes, :summary, COMPRESS(:payload))\
+		[overwrite ? " ON DUPLICATE KEY UPDATE ship_name = VALUES(ship_name), ship_class = VALUES(ship_class), tile_count = VALUES(tile_count), format_version = VALUES(format_version), saved_round = VALUES(saved_round), saved_at = VALUES(saved_at), raw_bytes = VALUES(raw_bytes), summary = VALUES(summary), payload = VALUES(payload)" : ""]",
 		list(
 			"ckey" = ckey,
 			"slot" = slot,
@@ -66,10 +71,11 @@ GLOBAL_DATUM_INIT(ship_save_store, /datum/ship_save_store, new)
 			"format_version" = meta["format_version"],
 			"saved_round" = meta["saved_round"],
 			"raw_bytes" = meta["raw_bytes"],
+			"summary" = meta["summary"],
 			"payload" = payload,
 		)
 	)
-	// A failed insert would log all its arguments, and one of them is the whole map.
+	// A failed write would log all its arguments, and one of them is the whole map.
 	var/success = query.Execute(log_error = FALSE)
 	if(!success)
 		log_game("Ship save [ckey] slot [slot] could not be written: [copytext(query.ErrorMsg(), 1, 300)]")

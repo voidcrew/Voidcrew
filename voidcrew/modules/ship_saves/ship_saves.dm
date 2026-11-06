@@ -9,11 +9,14 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/list/cache = list()
 	/// ckey -> number of the newest load, so a slow read can't undo a save made after it started.
 	var/list/load_tickets = list()
-	/// slot_key() -> TRUE for each save being retrieved, from the lobby or any console.
+	/// slot_key() -> TRUE for each slot being retrieved, deleted or written, from the lobby or any console.
 	var/list/retrievals = list()
 	/// slot_key() -> TRUE for each used save whose row hasn't been deleted yet. Reads leave these out,
 	/// so a slow or failed delete can't let one save be used twice.
 	var/list/spent_rows = list()
+	/// slot_key() -> weakref to the ship a save made this round came from. In memory only, so a save from
+	/// an earlier round has none. It can't be loaded while that ship is still in service.
+	var/list/live_sources = list()
 
 /// The player's cached rows, or null if they aren't loaded. This is the only read ui_data may use.
 /datum/ship_saves/proc/saves_for(ckey)
@@ -43,42 +46,48 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	load_tickets[ckey] = (load_tickets[ckey] || 0) + 1
 	return load_tickets[ckey]
 
-/// The lowest empty slot number. Null if they are all taken or the player isn't loaded.
-/datum/ship_saves/proc/free_slot(ckey)
-	var/list/rows = saves_for(ckey)
-	if(!rows)
-		return null
-	var/list/taken = list()
-	for(var/list/row as anything in rows)
-		taken += row["slot"]
-	for(var/slot in 1 to SHIP_SAVE_SLOTS)
-		if(!(slot in taken))
-			return slot
+/// Why a ship can't be written to this slot now, or null.
+/datum/ship_saves/proc/slot_denial(ckey, slot)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!isnum(slot) || slot < 1 || slot > SHIP_SAVE_SLOTS || slot != round(slot))
+		return "No such slot."
+	if(retrievals[slot_key(ckey, slot)])
+		return "Already under way."
 	return null
 
-/// What a save costs in ship parts: the hull price curve, scaled so the biggest hull costs the most.
-/datum/ship_saves/proc/price_for(tiles)
-	return clamp(floor(6 * ((tiles / 200) ** 1.6) / 4), SHIP_SAVE_PRICE_MIN, SHIP_SAVE_PRICE_MAX)
-
 /**
- * Takes payment and writes a captured ship to the player's lowest free slot. Sleeps.
- * The payment goes back if the write fails. Returns an error for the player, or null on success.
+ * Takes payment and writes a captured ship to the player's chosen slot, replacing whatever is there. Sleeps.
+ * The payment goes back if the write fails, and the old row stays. Returns an error for the player, or null
+ * on success. The slot stays locked throughout, so nothing can use or delete the old save under it.
  */
-/datum/ship_saves/proc/commit_save(ckey, datum/ship_checkpoint/snapshot, mob/user)
+/datum/ship_saves/proc/commit_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey)
 	ckey = ckey(ckey)
-	var/slot = free_slot(ckey)
-	if(!slot)
-		return "All slots are full."
+	if(!begin_retrieval(ckey, slot))
+		return "Already under way."
+	. = write_claimed_save(ckey, snapshot, user, slot, survey)
+	cancel_retrieval(ckey, slot)
+
+/datum/ship_saves/proc/write_claimed_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey)
+	PRIVATE_PROC(TRUE)
+	// A runtime below ends this proc with this answer, not with a null that reads as success.
+	. = "Shipyard records are offline."
+	var/key = slot_key(ckey, slot)
+	var/list/old_row = saved_row(ckey, slot)
+	var/old_name = old_row?["ship_name"]
+	// A failed delete leaves a row the cache doesn't show, and would otherwise block the slot for good.
+	var/overwrite = !!old_row || !!spent_rows[key]
 	var/tiles = snapshot.owned_tile_count()
-	var/price = price_for(tiles)
 	var/name = snapshot.ship_name
 	var/class = snapshot.class_name
-	var/obj/structure/overmap/ship/ship = snapshot.source_ship?.resolve()
+	var/datum/weakref/source = snapshot.source_ship
+	var/obj/structure/overmap/ship/ship = source?.resolve()
 	var/payload = encode(snapshot)
-	var/list/plan = GLOB.ship_economy_db.spend_any_parts(ckey, price)
-	if(!plan)
-		return "You need [price] ship parts."
+	var/list/cost = survey["cost"]
+	GLOB.ship_economy_db.invalidate_cache(ckey, "parts")
+	if(!GLOB.ship_economy_db.spend_parts(ckey, cost))
+		return "You need [ship_save_cost_text(cost)]."
 	var/raw_bytes = length(payload)
+	var/list/summary = ship_save_add_survey(list(), survey)
 	var/list/row = list(
 		"ship_name" = name,
 		"ship_class" = class,
@@ -86,19 +95,30 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		"format_version" = SHIP_SAVE_FORMAT,
 		"saved_round" = text2num(GLOB.round_id),
 		"raw_bytes" = raw_bytes,
+		"summary" = json_encode(summary),
 	)
-	if(!GLOB.ship_save_store.write(ckey, slot, row, payload))
-		GLOB.ship_economy_db.refund_parts(ckey, plan)
-		return "Shipyard records are offline."
+	if(!GLOB.ship_save_store.write(ckey, slot, row, payload, overwrite))
+		GLOB.ship_economy_db.refund_parts(ckey, cost)
+		return
+	row -= "summary"
+	row["survey"] = summary
 	row["slot"] = slot
-	// The insert worked, so nothing older is left in this slot.
-	spent_rows -= slot_key(ckey, slot)
+	// The write worked, so nothing older is left in this slot.
+	spent_rows -= key
+	if(source)
+		live_sources[key] = source
+	else
+		live_sources -= key
 	new_load_ticket(ckey)
 	var/list/rows = cache[ckey] || list()
+	// Looked up again: a refresh may have replaced the rows during the write.
+	var/list/replaced = saved_row(ckey, slot)
+	if(replaced)
+		rows -= list(replaced)
 	rows += list(row)
 	cache[ckey] = rows
-	log_game("[key_name(user)] saved [name] to ship save slot [slot] for [price] ship parts, [raw_bytes] bytes.")
-	record_metric(METRIC_SHIP, "ship_saved", ckey = ckey, ship = ship, zone = ship_metric_zone(ship), subject = class, quantity = price, details = list("tiles" = tiles, "raw_bytes" = raw_bytes))
+	log_game("[key_name(user)] saved [name] to ship save slot [slot] for [ship_save_cost_text(cost)], [raw_bytes] bytes[old_name ? ", replacing [old_name]" : ""].")
+	record_metric(METRIC_SHIP, "ship_saved", ckey = ckey, ship = ship, zone = ship_metric_zone(ship), subject = class, quantity = survey["total"], details = list("tiles" = tiles, "raw_bytes" = raw_bytes, "cost" = cost, "overwrote" = old_name))
 	refresh(ckey)
 	return null
 
@@ -113,6 +133,18 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 			return row
 	return null
 
+/// What a screen shows of one saved ship, given why it can't be retrieved from there. Only reads caches.
+/datum/ship_saves/proc/saved_ship_entry(ckey, list/row, denial)
+	SHOULD_NOT_SLEEP(TRUE)
+	var/slot = row["slot"]
+	return ship_save_add_survey(list(
+		"slot" = slot,
+		"name" = row["ship_name"],
+		"class" = row["ship_class"],
+		"denial" = denial,
+		"locked" = retrievals[slot_key(ckey, slot)] ? 1 : 0,
+	), row["survey"])
+
 /**
  * Why a save can't be retrieved now, or null. Only reads caches, so ui_data can use it.
  * allow_busy: the caller holds this save's lock and is checking again after a wait.
@@ -126,10 +158,18 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		return "No such record."
 	if(row["format_version"] != SHIP_SAVE_FORMAT)
 		return "This record can't be read."
-	if(row["saved_round"] == text2num(GLOB.round_id))
-		return "Ready next round."
-	if(!allow_busy && retrievals[slot_key(ckey, slot)])
+	var/key = slot_key(ckey, slot)
+	if(!allow_busy && retrievals[key])
 		return "Already under way."
+	var/datum/weakref/source = live_sources[key]
+	var/obj/structure/overmap/ship/original = source?.resolve()
+	if(original)
+		if(original.retired_by_checkpoint)
+			return "The original hull has already been replaced."
+		if(!allow_busy && original.checkpoint_rebuilding)
+			return "Already under way."
+		if(!QDELETED(original.shuttle) && !original.abandoned)
+			return "The original hull is still in service."
 	return null
 
 /// Claims a save for one retrieval, across the lobby and every console. FALSE if it is already claimed.
@@ -157,16 +197,19 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	if(!snapshot)
 		return "This record can't be read."
 	snapshot.captain_ckey = ckey
+	snapshot.source_ship = live_sources[slot_key(ckey, slot)]
 	return snapshot
 
 /// The save has been used. It leaves the cache now and the table in the background, because a console
-/// build calls this mid-placement and must not sleep.
+/// build calls this mid-placement and must not sleep. The slot stays locked until the delete is done,
+/// so a new save to it can't be overtaken by the delete of the old one.
 /datum/ship_saves/proc/spend(ckey, slot)
 	SHOULD_NOT_SLEEP(TRUE)
 	ckey = ckey(ckey)
 	var/key = slot_key(ckey, slot)
-	retrievals -= key
+	retrievals[key] = TRUE
 	spent_rows[key] = TRUE
+	live_sources -= key
 	new_load_ticket(ckey)
 	var/list/row = saved_row(ckey, slot)
 	if(row)
@@ -176,10 +219,12 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	INVOKE_ASYNC(src, PROC_REF(delete_spent), ckey, slot)
 
 /datum/ship_saves/proc/delete_spent(ckey, slot)
+	var/key = slot_key(ckey, slot)
 	if(GLOB.ship_save_store.remove(ckey, slot))
-		spent_rows -= slot_key(ckey, slot)
+		spent_rows -= key
 	else
 		// It stays out of reads this round. Next round it would be back, so an admin should delete the row.
 		log_game("Used ship save [ckey] slot [slot] could not be deleted from the table.")
 		message_admins("Used ship save [ckey] slot [slot] could not be deleted from the table.")
+	retrievals -= key
 	refresh(ckey)

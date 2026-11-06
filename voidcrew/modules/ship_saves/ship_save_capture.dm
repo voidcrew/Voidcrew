@@ -42,7 +42,7 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 		if(ispath(stack_path, /obj/item/stack/ore/bluespace_crystal) || (material_type && GLOB.ship_save_precious_materials[material_type]))
 			board.req_components -= stack_path
 
-/// Build a statue of gold and save it for two parts, and you could break it down next round.
+/// Build a statue of gold and save it, and you could break it down next round.
 /proc/ship_save_refuses_object(obj/object)
 	if(!isstructure(object) || is_type_in_typecache(object, GLOB.ship_save_kept_structures))
 		return FALSE
@@ -56,6 +56,10 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 		if(is_type_in_typecache(material, GLOB.ship_save_precious_materials))
 			return TRUE
 	return FALSE
+
+/// Whether a save keeps this object: what a capture writes down, and what the survey prices.
+/proc/ship_save_keeps_object(obj/object)
+	return !ship_save_refuses_object(object) && outpost_checkpoint_saves(object)
 
 /// Basics a saved ship keeps as they load, full: breathable air tanks, welding fuel and water tanks, and
 /// plumbing water. Every other supply is scrubbed. Not plasma tanks, or a hull full of them would be gas
@@ -77,14 +81,6 @@ GLOBAL_LIST_INIT(ship_save_precious_materials, typecacheof(list(
 /// Text macros are raw bytes the database connection would mangle. A saved name goes without them.
 /proc/ship_save_plain_text(text)
 	return replacetext(replacetext(text, "\improper", ""), "\proper", "")
-
-/// Tiles in the rooms this hull owns, which is what a save is priced on.
-/proc/hull_owned_tile_count(obj/docking_port/mobile/port)
-	. = 0
-	if(QDELETED(port) || !port.z)
-		return
-	for(var/area/room as anything in hull_owned_areas(port))
-		. += length(room.get_turfs_by_zlevel(port.z))
 
 /datum/ship_checkpoint/proc/owned_tile_count()
 	. = 0

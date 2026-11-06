@@ -32,7 +32,8 @@
 
 /**
  * Loads a saved ship and seats the player on it, the way buying a hull does. The save is spent once the
- * ship has loaded. Sleeps at the read and in the shipyard's queue, and the player can leave during either:
+ * ship has loaded, which also retires the hull it was saved from, if that is still about, and moves its
+ * balance across. Sleeps at the read and in the shipyard's queue, and the player can leave during either:
  * this runs here rather than on their mob, which a logout deletes, so nothing stops it before the spend.
  */
 /datum/ship_saves/proc/launch(mob/dead/new_player/player, slot)
@@ -71,11 +72,30 @@
 		to_chat(player, span_warning(snapshot))
 		return player.select_ship()
 
+	// The read slept, so the hull this was saved from may be back in service or replaced by now.
+	var/datum/weakref/source = snapshot.source_ship
+	var/obj/structure/overmap/ship/original = source?.resolve()
+	denial = retrieve_denial(player_ckey, slot, allow_busy = TRUE) || (original?.checkpoint_rebuilding ? "Already under way." : null)
+	if(denial)
+		qdel(snapshot)
+		cancel_retrieval(player_ckey, slot)
+		player.spawning_ship = FALSE
+		to_chat(player, span_warning(denial))
+		return player.select_ship()
+	// Nobody claims the old hull while its replacement loads.
+	if(original)
+		original.checkpoint_rebuilding = TRUE
+
 	to_chat(player, span_notice("[snapshot.ship_name] is being prepared. Please be patient!"))
 	var/datum/map_template/shuttle/voidcrew/commissioned/checkpoint/template = new(snapshot)
+	// Not holding the old hull while this waits: it can be deleted in the meantime.
+	original = null
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
 	qdel(snapshot)
+	original = source?.resolve()
 	if(!istype(target))
+		if(original)
+			original.checkpoint_rebuilding = FALSE
 		qdel(template)
 		cancel_retrieval(player_ckey, slot)
 		if(QDELETED(player))
@@ -91,6 +111,11 @@
 	// The ship exists now, whether or not its captain stayed to board it. Left, they can join it from the menu.
 	spend(player_ckey, slot)
 	log_game("[player_ckey] launched [target.name] from ship save slot [slot].")
+	// The old hull is replaced now, and its money comes across.
+	if(original)
+		var/balance = original.retire_replaced_hull()
+		if(balance > 0)
+			target.ship_account.adjust_money(balance, "Recovered ship account")
 	target.password_cleared_ckeys[player_ckey] = TRUE
 	if(QDELETED(player))
 		return

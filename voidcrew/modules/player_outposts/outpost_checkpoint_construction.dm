@@ -106,16 +106,15 @@
 	var/status_verb = "Rebuilding"
 	var/build_noun = "Reconstruction"
 
-/// leave_original: a copy of a hull that may still be in service. It is not retired and keeps
-/// its money; the snapshot is still consumed. The job owns the snapshot from here on.
-/datum/checkpoint_construction/New(datum/ship_checkpoint_ui/terminal, datum/ship_checkpoint/blueprint, mob/living/user, manual_drive = FALSE, leave_original = FALSE)
+/// The job owns the snapshot from here on.
+/datum/checkpoint_construction/New(datum/ship_checkpoint_ui/terminal, datum/ship_checkpoint/blueprint, mob/living/user, manual_drive = FALSE)
 	panel_ref = terminal ? WEAKREF(terminal) : null
 	snapshot = blueprint
 	home = blueprint.outpost
 	captain_ckey = blueprint.captain_ckey
 	ship_name = blueprint.ship_name
 	manual = manual_drive
-	var/obj/structure/overmap/ship/original = leave_original ? null : blueprint.source_ship?.resolve()
+	var/obj/structure/overmap/ship/original = blueprint.source_ship?.resolve()
 	if(original)
 		original_ref = WEAKREF(original)
 	// Refunds follow the snapshot's owner, who is the operator unless an admin started it.

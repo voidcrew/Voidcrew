@@ -2,9 +2,15 @@
 #define SHIP_SAVE_FORMAT 1
 /// How many ships one player can have saved at once.
 #define SHIP_SAVE_SLOTS 3
-/// The least a save can cost, in ship parts.
-#define SHIP_SAVE_PRICE_MIN 2
-/// The most a save can cost, in ship parts.
-#define SHIP_SAVE_PRICE_MAX 15
+/// The least a save can cost, in ship parts of every class together.
+#define SHIP_SAVE_PRICE_MIN 5
+/// A hull costs one misc part per this much mass, rounded up.
+#define SHIP_SAVE_MASS_PER_PART 150
+/// Machines the price table doesn't name cost one misc part per this many, rounded up.
+#define SHIP_SAVE_MACHINES_PER_PART 15
+/// How long a hull's survey is good for while a window is open on it.
+#define SHIP_SAVE_SURVEY_LIFE (10 SECONDS)
+/// A hull plan longer than this isn't sent to the screen or kept.
+#define SHIP_SAVE_PLAN_MAX_LENGTH 8000
 /// What setting a new ship join password costs, in ship parts.
 #define SHIP_PASSWORD_PRICE 3

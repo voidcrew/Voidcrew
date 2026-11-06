@@ -344,14 +344,10 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 			log_game("SHIP_ECONOMY: [ckey] LOST [plan[part_class]] [part_class] parts: the refund failed")
 			. = FALSE
 
-/// Total parts held, from the cache alone so it never sleeps. Null until something has loaded them.
-/datum/ship_economy_db/proc/cached_parts_total(ckey)
+/// Parts held by class, from the cache alone so it never sleeps. Null until something has loaded them.
+/datum/ship_economy_db/proc/cached_parts(ckey)
 	var/list/parts = ckey ? parts_cache[ckey(ckey)] : null
-	if(!parts)
-		return null
-	. = 0
-	for(var/part_class in parts)
-		. += parts[part_class]
+	return parts?.Copy()
 
 /**
  * Check if a ship template is unlocked for a player

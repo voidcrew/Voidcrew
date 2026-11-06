@@ -7585,6 +7585,7 @@
 #include "voidcrew\modules\ship_saves\ship_save_construction.dm"
 #include "voidcrew\modules\ship_saves\ship_save_lobby.dm"
 #include "voidcrew\modules\ship_saves\ship_save_store.dm"
+#include "voidcrew\modules\ship_saves\ship_save_survey.dm"
 #include "voidcrew\modules\ship_saves\ship_saves.dm"
 #include "voidcrew\modules\ship_upgrades\_ship_upgrades.dm"
 #include "voidcrew\modules\ship_upgrades\admin_verbs.dm"

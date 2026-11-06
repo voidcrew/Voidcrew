@@ -152,7 +152,7 @@
 	switch(action)
 		if("ship_save_store")
 			var/datum/outpost_berth/ship_bay/bay = locate(params["ref"]) in outpost.bay_berths
-			save_ship(user, bay)
+			save_ship(user, bay, text2num(params["slot"]))
 		if("ship_save_retrieve")
 			retrieve_ship(user, text2num(params["slot"]))
 		else

@@ -1,7 +1,9 @@
 // Voidcrew defines load after the unit tests, so these mirror them.
 #define SHIP_SAVE_TEST_SLOTS 3 // SHIP_SAVE_SLOTS
-#define SHIP_SAVE_TEST_PRICE_MIN 2 // SHIP_SAVE_PRICE_MIN
-#define SHIP_SAVE_TEST_PRICE_MAX 15 // SHIP_SAVE_PRICE_MAX
+#define SHIP_SAVE_TEST_PRICE_MIN 5 // SHIP_SAVE_PRICE_MIN
+#define SHIP_SAVE_TEST_MASS_PER_PART 150 // SHIP_SAVE_MASS_PER_PART
+#define SHIP_SAVE_TEST_MACHINES_PER_PART 15 // SHIP_SAVE_MACHINES_PER_PART
+#define SHIP_SAVE_TEST_PLAN_MAX 8000 // SHIP_SAVE_PLAN_MAX_LENGTH
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
 #define SHIP_SAVE_TEST_FORMAT 1 // SHIP_SAVE_FORMAT
 #define SHIP_SAVE_TEST_TILE_IRON 100 // SHIP_RTD_TILE_IRON
@@ -18,6 +20,8 @@
 	var/fail_reads = FALSE
 	var/fail_removes = FALSE
 	var/offline = FALSE
+	/// Whether the slot was locked when the last remove() ran.
+	var/locked_during_remove = FALSE
 
 /datum/ship_save_store/fake/online()
 	return !offline
@@ -30,6 +34,8 @@
 			var/list/row = entry["meta"]
 			row = row.Copy()
 			row["slot"] = slot
+			row["survey"] = ship_save_read_summary(row["summary"])
+			row -= "summary"
 			rows += list(row)
 	return rows
 
@@ -39,13 +45,14 @@
 	var/list/entry = saved["[ckey]|[slot]"]
 	return entry?["payload"]
 
-/datum/ship_save_store/fake/write(ckey, slot, list/meta, payload)
-	if(fail_writes || saved["[ckey]|[slot]"])
+/datum/ship_save_store/fake/write(ckey, slot, list/meta, payload, overwrite = FALSE)
+	if(fail_writes || (!overwrite && saved["[ckey]|[slot]"]))
 		return FALSE
 	saved["[ckey]|[slot]"] = list("meta" = meta.Copy(), "payload" = payload)
 	return TRUE
 
 /datum/ship_save_store/fake/remove(ckey, slot)
+	locked_during_remove = !!GLOB.ship_saves.retrievals[GLOB.ship_saves.slot_key(ckey, slot)]
 	if(fail_removes || !saved["[ckey]|[slot]"])
 		return FALSE
 	saved -= "[ckey]|[slot]"
@@ -137,9 +144,13 @@
 	check_second_generation()
 	check_board_salvage()
 	check_saved_vars()
-	check_prices()
+	check_survey()
+	check_bill_rounding()
+	check_plan()
+	check_summary()
 	check_part_plans()
 	check_commit()
+	check_overwrite()
 	check_retrieval_rules()
 
 /datum/unit_test/voidcrew_ship_saves/proc/check_round_trip()
@@ -377,15 +388,206 @@
 	var/turf/open/floor/mineral/gold/floor_vars = /turf/open/floor/mineral/gold
 	TEST_ASSERT_NOTNULL(initial(floor_vars.floor_tile), "A floor's floor_tile has moved")
 
-/datum/unit_test/voidcrew_ship_saves/proc/check_prices()
-	var/datum/ship_saves/saves = GLOB.ship_saves
-	TEST_ASSERT_EQUAL(saves.price_for(275), 2, "Wrong price for a Goon-size hull")
-	TEST_ASSERT_EQUAL(saves.price_for(340), 3, "Wrong price for a Kilo-size hull")
-	TEST_ASSERT_EQUAL(saves.price_for(500), 6, "Wrong price for a Delta-size hull")
-	TEST_ASSERT_EQUAL(saves.price_for(630), 9, "Wrong price for a Scarab-size hull")
-	TEST_ASSERT_EQUAL(saves.price_for(850), 15, "Wrong price for a Phalanx-size hull")
-	TEST_ASSERT_EQUAL(saves.price_for(1), SHIP_SAVE_TEST_PRICE_MIN, "The smallest hull went under the lowest price")
-	TEST_ASSERT_EQUAL(saves.price_for(3000), SHIP_SAVE_TEST_PRICE_MAX, "The biggest hull went over the highest price")
+/// One class's entry on a bill, or null.
+/datum/unit_test/voidcrew_ship_saves/proc/bill_class(list/survey, part_class)
+	for(var/list/entry as anything in survey["bill"])
+		if(entry["class"] == part_class)
+			return entry
+	return null
+
+/// One line of one class's entry, or null.
+/datum/unit_test/voidcrew_ship_saves/proc/bill_line(list/survey, part_class, line_name)
+	var/list/entry = bill_class(survey, part_class)
+	for(var/list/item as anything in entry?["items"])
+		if(item["name"] == line_name)
+			return item
+	return null
+
+/// A hull of a few known machines, in the test room.
+/datum/unit_test/voidcrew_ship_saves/proc/check_survey()
+	var/turf/tile = run_loc_floor_bottom_left
+	// Earlier checks leave what they allocated here. Not effects: the test room's own marker is on this tile.
+	for(var/obj/loose in tile)
+		if(!iseffect(loose))
+			qdel(loose)
+	var/list/rooms = list()
+	rooms[tile.loc] = TRUE
+	var/obj/machinery/ship_combat/laser_turret/laser = allocate(/obj/machinery/ship_combat/laser_turret, tile)
+	// The bill never uses a name a player gave it.
+	laser.name = "Big Bertha"
+	for(var/i in 1 to 3)
+		allocate(/obj/machinery/porta_turret/ship_defense, tile)
+	allocate(/obj/machinery/chem_dispenser, tile)
+	allocate(/obj/machinery/chem_dispenser/drinks, tile)
+	allocate(/obj/machinery/computer/voidcrew_cargo, tile)
+	// Infrastructure, and things a save refuses, cost nothing and aren't counted.
+	allocate(/obj/machinery/door/airlock, tile)
+	allocate(/obj/machinery/portable_atmospherics/canister, tile)
+	var/obj/machinery/ship_combat/laser_turret/hologram = allocate(/obj/machinery/ship_combat/laser_turret, tile)
+	hologram.flags_1 |= HOLOGRAM_1
+	var/list/jobs = list(list("name" = "Captain", "slots" = 2), list("name" = "Deckhand"))
+	var/list/survey = ship_save_survey_block(tile, 1, 1, rooms, jobs)
+
+	TEST_ASSERT_EQUAL(survey["crew"], 3, "Crew is not the total slots in the job definitions")
+	TEST_ASSERT_EQUAL(survey["mass"], 0, "A tile that isn't hull has mass")
+	var/list/classes = list()
+	for(var/list/entry as anything in survey["bill"])
+		classes += entry["class"]
+	TEST_ASSERT_EQUAL(classes.Join(","), "combat,science,trade,misc", "The bill's classes are in the wrong order")
+	TEST_ASSERT_EQUAL(bill_class(survey, "combat")["parts"], 3, "Wrong combat total")
+	var/list/combat_items = bill_class(survey, "combat")["items"]
+	var/list/first_combat = combat_items[1]
+	TEST_ASSERT_EQUAL(first_combat["name"], "Defense turret", "The biggest line is not first")
+	TEST_ASSERT_EQUAL(first_combat["count"], 3, "Wrong count of defense turrets")
+	TEST_ASSERT_EQUAL(first_combat["parts"], 2, "Three defense turrets at 1 per 2 did not round up to 2")
+	var/list/laser_line = bill_line(survey, "combat", "Laser turret")
+	TEST_ASSERT_NOTNULL(laser_line, "The laser turret has no line under its own name")
+	TEST_ASSERT_EQUAL(laser_line["count"], 1, "A hologram counted as a laser turret")
+	TEST_ASSERT_EQUAL(bill_line(survey, "science", "Chem dispenser")?["parts"], 1, "A chem dispenser did not cost 1 science")
+	TEST_ASSERT_EQUAL(bill_class(survey, "science")["parts"], 1, "A drink dispenser counted as a chem dispenser")
+	TEST_ASSERT_EQUAL(bill_line(survey, "trade", "Cargo console")?["parts"], 1, "A cargo console did not cost 1 trade")
+	var/list/others = bill_line(survey, "misc", "Other machines")
+	TEST_ASSERT_EQUAL(others?["count"], 1, "Only the drink dispenser should be an other machine")
+	TEST_ASSERT_EQUAL(others?["parts"], 1, "One other machine did not round up to a part")
+	TEST_ASSERT_NULL(bill_line(survey, "misc", "Yard minimum"), "A hull over the minimum paid it")
+	TEST_ASSERT_EQUAL(survey["total"], 6, "Wrong total")
+	TEST_ASSERT_EQUAL(survey["cost"]["combat"], 3, "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(survey["cost"]["science"], 1, "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(survey["cost"]["trade"], 1, "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(survey["cost"]["misc"], 1, "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(ship_save_cost_text(survey["cost"]), "3 combat, 1 science, 1 trade and 1 misc parts", "Wrong words for the price")
+
+	// A label wins, a subtype inherits, and a name with no label comes from the type.
+	var/list/price = GLOB.ship_save_priced_machines[/obj/machinery/rnd/production/protolathe/department/science]
+	TEST_ASSERT_EQUAL(price?["class"], "science", "A subtype did not inherit its price")
+	TEST_ASSERT_NULL(GLOB.ship_save_priced_machines[/obj/machinery/chem_dispenser/drinks/beer], "A beer dispenser is on the price table")
+	TEST_ASSERT_NULL(GLOB.ship_save_priced_machines[/obj/machinery/chem_master/condimaster], "A CondiMaster is on the price table")
+	TEST_ASSERT_EQUAL(ship_save_machine_line_name(GLOB.ship_save_priced_machines[/obj/machinery/dna_scannernew], /obj/machinery/dna_scannernew), "DNA scanner", "A name from its type kept a text macro")
+
+	for(var/obj/thing in tile)
+		if(!iseffect(thing))
+			qdel(thing)
+
+/// The misc lines and the minimum, with nothing but numbers.
+/datum/unit_test/voidcrew_ship_saves/proc/check_bill_rounding()
+	var/list/kitted = ship_save_price_bill(list(), 650, 25)
+	var/list/hull_line = bill_line(kitted, "misc", "Hull, 650 t")
+	TEST_ASSERT_EQUAL(hull_line?["parts"], 5, "650 t did not round up to 5 parts")
+	TEST_ASSERT_NULL(hull_line?["count"], "The hull line has a count")
+	var/list/other_line = bill_line(kitted, "misc", "Other machines")
+	TEST_ASSERT_EQUAL(other_line?["parts"], 2, "25 machines did not round up to 2 parts")
+	TEST_ASSERT_EQUAL(other_line?["count"], 25, "The other machines line lost its count")
+	TEST_ASSERT_EQUAL(kitted["total"], 7, "Wrong total for a kitted hull")
+	var/list/exact = ship_save_price_bill(list(), SHIP_SAVE_TEST_MASS_PER_PART * 5, SHIP_SAVE_TEST_MACHINES_PER_PART)
+	TEST_ASSERT_EQUAL(exact["total"], 6, "An exact multiple was rounded up again")
+
+	// A tiny hull pays the minimum exactly, and the bill says why.
+	var/list/tiny = ship_save_price_bill(list(), 150, 1)
+	TEST_ASSERT_EQUAL(tiny["total"], SHIP_SAVE_TEST_PRICE_MIN, "A tiny hull did not pay exactly the minimum")
+	TEST_ASSERT_EQUAL(tiny["cost"]["misc"], SHIP_SAVE_TEST_PRICE_MIN, "The minimum isn't paid in misc parts")
+	TEST_ASSERT_EQUAL(bill_line(tiny, "misc", "Yard minimum")?["parts"], SHIP_SAVE_TEST_PRICE_MIN - 2, "The minimum line doesn't make up the difference")
+	TEST_ASSERT_NULL(bill_line(tiny, "misc", "Yard minimum")?["count"], "The minimum line has a count")
+	var/list/nothing = ship_save_price_bill(list(), 0, 0)
+	TEST_ASSERT_EQUAL(length(bill_class(nothing, "misc")["items"]), 1, "An empty hull billed lines for nothing")
+	TEST_ASSERT_EQUAL(nothing["total"], SHIP_SAVE_TEST_PRICE_MIN, "An empty hull did not pay the minimum")
+	var/list/lines = list("Defense turret" = list("class" = "combat", "each" = 0.5, "count" = 6))
+	TEST_ASSERT_EQUAL(bill_line(ship_save_price_bill(lines, 0, 0), "combat", "Defense turret")?["parts"], 3, "Six turrets at 1 per 2 are not one line of 3")
+
+	set_parts(misc = SHIP_SAVE_TEST_PRICE_MIN)
+	GLOB.ship_saves.refresh("tinyhull")
+	TEST_ASSERT_NULL(GLOB.ship_saves.commit_save("tinyhull", make_snapshot(), null, 1, tiny), "A tiny hull could not pay the minimum")
+	TEST_ASSERT_EQUAL(economy.total(), 0, "A tiny hull did not pay exactly the minimum")
+
+/// Encodes rows given as text, one mark per character.
+/datum/unit_test/voidcrew_ship_saves/proc/encode_rows(...)
+	var/list/rows = list()
+	for(var/text in args)
+		var/list/row = list()
+		for(var/i in 1 to length(text))
+			row += copytext(text, i, i + 1)
+		rows += list(row)
+	return ship_save_encode_plan(rows)
+
+/datum/unit_test/voidcrew_ship_saves/proc/check_plan()
+	TEST_ASSERT_EQUAL(encode_rows(".....###oo"), "5.3#2o", "Runs are wrong")
+	TEST_ASSERT_EQUAL(encode_rows("....", "..##", "....", "oo..", "...."), "2.2#//2o", "Empty rows and trailing empties were not trimmed")
+	TEST_ASSERT_NULL(encode_rows("....", "...."), "An empty plan was not null")
+	var/too_long = ""
+	for(var/i in 1 to (SHIP_SAVE_TEST_PLAN_MAX / 10 + 1))
+		too_long += "wswswswsws"
+	TEST_ASSERT_NULL(encode_rows(too_long), "An oversized plan was sent")
+
+	// A small known hull: priority on a shared tile, then walls, windows and plain floor.
+	var/turf/corner = run_loc_floor_bottom_left
+	var/turf/up_one = get_step(corner, NORTH)
+	var/turf/wall_tile = get_step(up_one, EAST)
+	var/turf/engine_tile = get_step(wall_tile, EAST)
+	var/wall_tile_type = wall_tile.type
+	var/list/rooms = list()
+	rooms[corner.loc] = TRUE
+	var/turf/second = get_step(corner, EAST)
+	var/turf/third = get_step(second, EAST)
+	var/turf/fourth = get_step(third, EAST)
+	allocate(/obj/machinery/ship_combat/laser_turret, corner)
+	allocate(/obj/machinery/chem_dispenser, corner)
+	allocate(/obj/machinery/computer/voidcrew_cargo, corner)
+	allocate(/obj/machinery/chem_dispenser, second)
+	allocate(/obj/machinery/computer/voidcrew_cargo, second)
+	allocate(/obj/structure/grille, second)
+	allocate(/obj/machinery/computer/voidcrew_cargo, third)
+	allocate(/obj/structure/grille, third)
+	allocate(/obj/structure/grille, fourth)
+	// A refused object draws nothing.
+	allocate(/obj/structure/statue/gold/hos, up_one)
+	allocate(/obj/machinery/power/shuttle_engine/ship, engine_tile)
+	wall_tile.ChangeTurf(/turf/closed/wall)
+	allocate(/obj/structure/grille, wall_tile)
+	var/list/survey = ship_save_survey_block(corner, 4, 2, rooms, null)
+	TEST_ASSERT_EQUAL(survey["plan"], "o#eo/wstg", "A small hull's plan is wrong")
+	// Outside the owned rooms is empty, and an empty top row is trimmed.
+	survey = ship_save_survey_block(corner, 4, 2, list(), null)
+	TEST_ASSERT_NULL(survey["plan"], "A hull with no rooms has a plan")
+	for(var/turf/tile as anything in list(corner, second, third, fourth, up_one, wall_tile, engine_tile))
+		for(var/obj/thing in tile)
+			if(!iseffect(thing))
+				qdel(thing)
+	wall_tile.ChangeTurf(wall_tile_type)
+
+/datum/unit_test/voidcrew_ship_saves/proc/check_summary()
+	TEST_ASSERT_NULL(ship_save_read_summary(null), "A row with no summary has a survey")
+	var/bad_json = "{not json"
+	TEST_ASSERT_NULL(ship_save_read_summary(bad_json), "Bad JSON has a survey")
+	TEST_ASSERT_NULL(ship_save_read_summary("5"), "A number has a survey")
+	TEST_ASSERT_NULL(ship_save_read_summary(json_encode(list(1, 2))), "A list has a survey")
+	TEST_ASSERT_NULL(ship_save_read_summary(json_encode(list("mass" = "heavy", "crew" = 1, "total" = 1, "bill" = list()))), "A text mass has a survey")
+	var/list/good = ship_save_read_summary(json_encode(make_survey(list("misc" = 5))))
+	TEST_ASSERT_EQUAL(good?["mass"], 650, "A good summary lost its mass")
+	TEST_ASSERT_EQUAL(good?["plan"], "2#/2o", "A good summary lost its plan")
+	TEST_ASSERT(!("cost" in good), "A read summary can charge something")
+
+	// Through the table: the row still lists, without a survey, and the screens get no survey keys.
+	var/player_ckey = "summarytester"
+	add_stored_save(player_ckey, 1)
+	var/list/entry = store.saved["[player_ckey]|1"]
+	var/list/meta = entry["meta"]
+	meta["summary"] = "{not json"
+	GLOB.ship_saves.refresh(player_ckey)
+	var/list/row = GLOB.ship_saves.saved_row(player_ckey, 1)
+	TEST_ASSERT_NOTNULL(row, "Bad JSON lost the row")
+	TEST_ASSERT_NULL(row["survey"], "Bad JSON came back as a survey")
+	var/list/listed = GLOB.ship_saves.saved_ship_entry(player_ckey, row, null)
+	TEST_ASSERT_EQUAL(listed["slot"], 1, "An old row did not list")
+	TEST_ASSERT(!("mass" in listed), "A row with no survey sent survey keys")
+	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial(player_ckey, 1), "A row with no survey can't be retrieved")
+
+/// What commit_save() is told a hull costs.
+/datum/unit_test/voidcrew_ship_saves/proc/make_survey(list/cost)
+	var/total = 0
+	var/list/bill = list()
+	for(var/part_class in cost)
+		total += cost[part_class]
+		bill += list(list("class" = part_class, "parts" = cost[part_class], "items" = list()))
+	return list("mass" = 650, "crew" = 3, "plan" = "2#/2o", "bill" = bill, "total" = total, "cost" = cost)
 
 /datum/unit_test/voidcrew_ship_saves/proc/check_part_plans()
 	set_parts(combat = 2, science = 9, trade = 4)
@@ -403,52 +605,124 @@
 /datum/unit_test/voidcrew_ship_saves/proc/check_commit()
 	var/player_ckey = "savetester"
 	var/datum/ship_saves/saves = GLOB.ship_saves
+	var/list/price = make_survey(list("combat" = 1, "science" = 2, "misc" = 3))
 	saves.refresh(player_ckey)
 	TEST_ASSERT_EQUAL(length(saves.saves_for(player_ckey)), 0, "A new player was not loaded with no saves")
-	TEST_ASSERT_EQUAL(saves.free_slot(player_ckey), 1, "The first free slot is not 1")
 
 	// Not enough parts: nothing is written.
 	set_parts()
-	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(275), null), "A save with no parts went through")
-	TEST_ASSERT_EQUAL(length(store.saved), 0, "A save nobody paid for reached the table")
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price), "You need 1 combat, 2 science and 3 misc parts.", "A save with no parts went through")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|2"], "A save nobody paid for reached the table")
+
+	// Short of one class: plenty of the rest doesn't help, and nothing is taken.
+	set_parts(combat = 50, science = 1, trade = 50, misc = 50)
+	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price), "A save short of one class went through")
+	TEST_ASSERT_EQUAL(economy.total(), 151, "A refused save took parts")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|2"], "A save short of one class reached the table")
 
 	// A failed write takes nothing.
-	set_parts(combat = 20)
+	set_parts(combat = 5, science = 5, trade = 5, misc = 5)
 	store.fail_writes = TRUE
-	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(275), null), "A failed write reported success")
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price), "Shipyard records are offline.", "A failed write reported success")
 	TEST_ASSERT_EQUAL(economy.total(), 20, "A failed write kept the payment")
 	TEST_ASSERT_EQUAL(length(saves.saves_for(player_ckey)), 0, "A failed write reached the cache")
 	store.fail_writes = FALSE
+	TEST_ASSERT(!saves.retrievals[saves.slot_key(player_ckey, 2)], "A failed write kept the slot locked")
 
 	// A failed read is not "no saves".
 	var/list/loaded = saves.saves_for(player_ckey)
 	TEST_ASSERT_NOTNULL(loaded, "The cache was lost")
 	TEST_ASSERT_NULL(saves.saves_for("nobodyatall"), "An unloaded player reads as having no saves")
-	TEST_ASSERT_NULL(saves.free_slot("nobodyatall"), "An unloaded player has a free slot")
 
-	// Three saves fill the slots in order, charging each one.
-	for(var/slot in 1 to SHIP_SAVE_TEST_SLOTS)
-		TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(275), null), "Save [slot] failed")
-		TEST_ASSERT_NOTNULL(store.saved["[player_ckey]|[slot]"], "Save [slot] went to the wrong slot")
-		TEST_ASSERT_EQUAL(economy.total(), 20 - 2 * slot, "Save [slot] charged the wrong amount")
-	var/list/entry = store.saved["[player_ckey]|1"]
+	// The chosen slot is used, and the matching classes pay.
+	TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price), "A paid save failed")
+	TEST_ASSERT_NOTNULL(store.saved["[player_ckey]|2"], "The save did not go to the chosen slot")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|1"], "The save went to the lowest slot instead")
+	TEST_ASSERT_EQUAL(economy.held["combat"], 4, "Combat parts were charged wrong")
+	TEST_ASSERT_EQUAL(economy.held["science"], 3, "Science parts were charged wrong")
+	TEST_ASSERT_EQUAL(economy.held["trade"], 5, "A class the hull doesn't need was charged")
+	TEST_ASSERT_EQUAL(economy.held["misc"], 2, "Misc parts were charged wrong")
+	TEST_ASSERT(!saves.retrievals[saves.slot_key(player_ckey, 2)], "A finished save kept the slot locked")
+	var/list/entry = store.saved["[player_ckey]|2"]
 	var/list/meta = entry["meta"]
 	TEST_ASSERT_EQUAL(meta["tile_count"], 275, "The row has the wrong tile count")
 	TEST_ASSERT_EQUAL(meta["ship_name"], "Test Hull", "The row has the wrong name")
 	var/list/stored = json_decode(entry["payload"])
 	TEST_ASSERT_EQUAL(meta["format_version"], stored["format"], "The row has the wrong format")
 	TEST_ASSERT_EQUAL(meta["raw_bytes"], length(entry["payload"]), "The row has the wrong size")
-	TEST_ASSERT_NULL(saves.free_slot(player_ckey), "Three saves left a slot free")
+	var/list/stored_summary = json_decode(meta["summary"])
+	TEST_ASSERT_EQUAL(stored_summary["total"], 6, "The row's summary lost its total")
+	TEST_ASSERT(!("cost" in stored_summary), "The row's summary kept the charge")
+	var/list/row = saves.saved_row(player_ckey, 2)
+	TEST_ASSERT_EQUAL(row?["survey"]["total"], 6, "The cached row lost its survey")
 
-	// Slots full: refused before any charge.
+	// A locked slot takes no save and no parts, and neither does a slot that isn't one.
 	var/parts_before = economy.total()
-	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null), "All slots are full.", "A fourth save was not refused")
-	TEST_ASSERT_EQUAL(economy.total(), parts_before, "A refused save was charged")
+	TEST_ASSERT(saves.begin_retrieval(player_ckey, 3), "A free slot could not be locked")
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 3, price), "Already under way.", "A save went to a locked slot")
+	TEST_ASSERT_EQUAL(saves.slot_denial(player_ckey, 3), "Already under way.", "A locked slot was offered")
+	saves.cancel_retrieval(player_ckey, 3)
+	TEST_ASSERT_EQUAL(economy.total(), parts_before, "A save to a locked slot was charged")
+	TEST_ASSERT_NULL(saves.slot_denial(player_ckey, 3), "A free slot was refused")
+	for(var/bad_slot in list(0, SHIP_SAVE_TEST_SLOTS + 1, 1.5, "text", null))
+		TEST_ASSERT_EQUAL(saves.slot_denial(player_ckey, bad_slot), "No such slot.", "Slot [bad_slot] was accepted")
 
-	// A paid save is never overwritten: a write to a taken slot fails, and refunds.
+/// Saving over a used slot: a new charge, one row, and nothing lost if it fails.
+/datum/unit_test/voidcrew_ship_saves/proc/check_overwrite()
+	var/player_ckey = "overwritetester"
+	var/datum/ship_saves/saves = GLOB.ship_saves
+	var/list/price = make_survey(list("misc" = 5))
+	saves.refresh(player_ckey)
+	set_parts(misc = 20)
+	TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(10), null, 1, price), "The first save failed")
+	var/key = saves.slot_key(player_ckey, 1)
+	// The old row's source, as if saved from a real hull.
+	var/datum/weakref/old_source = WEAKREF(allocate(/datum/ship_checkpoint))
+	saves.live_sources[key] = old_source
+
+	// A write that fails refunds and keeps everything about the old row.
+	store.fail_writes = TRUE
+	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(99), null, 1, price), "A failed overwrite reported success")
+	store.fail_writes = FALSE
+	TEST_ASSERT_EQUAL(economy.total(), 15, "A failed overwrite kept the payment")
+	TEST_ASSERT_EQUAL(saves.saved_row(player_ckey, 1)?["tile_count"], 10, "A failed overwrite changed the cached row")
+	var/list/entry = store.saved["[player_ckey]|1"]
+	TEST_ASSERT_EQUAL(entry["meta"]["tile_count"], 10, "A failed overwrite changed the stored row")
+	TEST_ASSERT_EQUAL(saves.live_sources[key], old_source, "A failed overwrite lost the old row's source")
+
+	// An overwrite replaces the row, charges again and forgets the old row's source.
+	TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(99), null, 1, price), "An overwrite failed")
+	TEST_ASSERT_EQUAL(economy.total(), 10, "An overwrite was not charged")
+	entry = store.saved["[player_ckey]|1"]
+	TEST_ASSERT_EQUAL(entry["meta"]["tile_count"], 99, "An overwrite did not replace the stored row")
+	var/list/rows = saves.saves_for(player_ckey)
+	TEST_ASSERT_EQUAL(length(rows), 1, "An overwrite appended a second row")
+	TEST_ASSERT_EQUAL(saves.saved_row(player_ckey, 1)?["tile_count"], 99, "An overwrite did not replace the cached row")
+	TEST_ASSERT(!saves.live_sources[key], "An overwrite kept the old row's source")
+
+	// Overwrite only goes through what the cache knows: a row it can't see is not overwritten.
 	saves.cache[player_ckey] = list()
-	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(275), null), "A taken slot was overwritten")
-	TEST_ASSERT_EQUAL(economy.total(), parts_before, "A duplicate key kept the payment")
+	TEST_ASSERT_NOTNULL(saves.commit_save(player_ckey, make_snapshot(5), null, 1, price), "A row the cache didn't show was overwritten")
+	TEST_ASSERT_EQUAL(economy.total(), 10, "A refused write kept the payment")
+	saves.refresh(player_ckey)
+
+	// A used save stays locked until its row is gone, and a failed delete doesn't block the slot for good.
+	saves.spend(player_ckey, 1)
+	TEST_ASSERT(store.locked_during_remove, "The slot wasn't locked while its row was being deleted")
+	TEST_ASSERT(!saves.retrievals[key], "A finished delete kept the slot locked")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|1"], "A used save stayed in the table")
+	saves.refresh(player_ckey)
+	TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(7), null, 1, price), "A freed slot could not be saved to")
+	store.fail_removes = TRUE
+	saves.spend(player_ckey, 1)
+	store.fail_removes = FALSE
+	TEST_ASSERT(!saves.retrievals[key], "A failed delete kept the slot locked")
+	TEST_ASSERT_NOTNULL(store.saved["[player_ckey]|1"], "The failed delete removed the row anyway")
+	TEST_ASSERT_NULL(saves.saved_row(player_ckey, 1), "A spent save stayed in the cache")
+	TEST_ASSERT_NULL(saves.commit_save(player_ckey, make_snapshot(8), null, 1, price), "A failed delete blocked the slot")
+	TEST_ASSERT(!saves.spent_rows[key], "A new save left the slot marked as spent")
+	entry = store.saved["[player_ckey]|1"]
+	TEST_ASSERT_EQUAL(entry["meta"]["tile_count"], 8, "A failed delete's row was not replaced")
 
 /// Puts a row in the table, as if saved in an earlier round unless told otherwise.
 /datum/unit_test/voidcrew_ship_saves/proc/add_stored_save(player_ckey, slot, saved_round = SHIP_SAVE_TEST_ROUND - 1, format = SHIP_SAVE_TEST_FORMAT)
@@ -467,7 +741,7 @@
 
 	// Every denial.
 	TEST_ASSERT_NULL(saves.retrieve_denial(player_ckey, 1), "A save from an earlier round was refused")
-	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 2), "Ready next round.", "A save made this round was offered")
+	TEST_ASSERT_NULL(saves.retrieve_denial(player_ckey, 2), "A save from this round with no ship behind it was refused")
 	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 3), "This record can't be read.", "An unknown format was offered")
 	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, SHIP_SAVE_TEST_SLOTS + 1), "No such record.", "An empty slot was offered")
 	TEST_ASSERT_EQUAL(saves.retrieve_denial("nobodyatall", 1), "No such record.", "An unloaded player was offered a save")
@@ -505,7 +779,6 @@
 	saves.spend(player_ckey, 1)
 	TEST_ASSERT_NULL(saves.saved_row(player_ckey, 1), "A spent save stayed in the cache")
 	TEST_ASSERT_NULL(store.saved["[player_ckey]|1"], "A spent save stayed in the table")
-	TEST_ASSERT_EQUAL(saves.free_slot(player_ckey), 1, "A spent save did not free its slot")
 	TEST_ASSERT_EQUAL(saves.retrieve_denial(player_ckey, 1), "No such record.", "A spent save was still offered")
 	TEST_ASSERT(saves.begin_retrieval(player_ckey, 1), "Spending kept the claim")
 	saves.cancel_retrieval(player_ckey, 1)
@@ -533,6 +806,20 @@
 
 /datum/ship_checkpoint_ui/registry_test/create_retrieval_job(mob/living/user, datum/ship_checkpoint/snapshot, slot)
 	return new /datum/checkpoint_construction/saved(src, snapshot, user, slot, manual_jobs)
+
+/// Sees the question, and can change things while the box is open.
+/datum/ship_checkpoint_ui/registry_test/save_prompt
+	var/last_prompt
+	var/datum/callback/while_open
+
+/datum/ship_checkpoint_ui/registry_test/save_prompt/Destroy()
+	while_open = null
+	return ..()
+
+/datum/ship_checkpoint_ui/registry_test/save_prompt/confirm_save(mob/user, prompt_text, title = "Shipyard")
+	last_prompt = prompt_text
+	while_open?.Invoke()
+	return ..()
 
 /// The panel and the password, on a real hull in a real bay.
 /datum/unit_test/voidcrew_ship_saves_hull
@@ -579,7 +866,7 @@
 	test_ship.enlist_crewmember(captain)
 	test_ship.claimed_captain = captain.mind
 	test_ship.enlist_crewmember(deckhand)
-	var/datum/ship_checkpoint_ui/registry_test/panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
+	var/datum/ship_checkpoint_ui/registry_test/save_prompt/panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
 	var/datum/ship_checkpoint_ui/registry_test/deckhand_panel = allocate(__IMPLIED_TYPE__, home, terminal, deckhand)
 	TEST_ASSERT_NOTNULL(GLOB.ship_saves.saves_for(captain.ckey), "Opening the panel did not load the captain's saves")
 
@@ -598,34 +885,57 @@
 	bay.on_ship_docked(test_ship)
 	TEST_ASSERT(bay.is_ship_present(), "The hull did not land in the bay")
 
-	TEST_ASSERT_NULL(panel.saved_ship_denial(captain, bay), "The captain could not save a docked ship")
-	TEST_ASSERT_EQUAL(deckhand_panel.saved_ship_denial(deckhand, bay), "Only the ship's current captain can save it.", "A deckhand could save the ship")
+	TEST_ASSERT_NULL(panel.saved_ship_denial(captain, bay, 1), "The captain could not save a docked ship")
+	TEST_ASSERT_EQUAL(deckhand_panel.saved_ship_denial(deckhand, bay, 1), "Only the ship's current captain can save it.", "A deckhand could save the ship")
 
 	// No cryopods, no way to spawn on it later.
 	var/list/spawn_points = test_ship.shuttle.spawn_points
 	test_ship.shuttle.spawn_points = list()
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "This hull has no cryopods.", "A hull without cryopods could be saved")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay, 1), "This hull has no cryopods.", "A hull without cryopods could be saved")
 	test_ship.shuttle.spawn_points = spawn_points
 
-	// Declining costs nothing; accepting charges once and saves the real hull.
-	set_parts(40)
+	// The survey of a real hull.
+	var/list/survey = test_ship.save_survey(fresh = TRUE)
+	TEST_ASSERT_NOTNULL(survey, "A docked hull has no survey")
+	TEST_ASSERT_EQUAL(survey["mass"], test_ship.calculate_mass(), "The survey's mass isn't the hull's")
+	TEST_ASSERT(survey["total"] >= SHIP_SAVE_TEST_PRICE_MIN, "A real hull is priced under the minimum")
+	var/plan = survey["plan"]
+	TEST_ASSERT(istext(plan) && length(plan), "A real hull has no plan")
+	TEST_ASSERT(!findtext(plan, "./") && copytext(plan, -1) != "." && copytext(plan, -1) != "/" && copytext(plan, 1, 2) != "/", "The plan was not trimmed: [plan]")
+	TEST_ASSERT(survey == test_ship.save_survey(), "An open window rescanned the hull inside its cache time")
+
+	// A slot is a whole number from 1 to 3.
+	set_each_part(40)
+	for(var/bad_slot in list(0, SHIP_SAVE_TEST_SLOTS + 1, 1.5, "text", null))
+		TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay, bad_slot), "No such slot.", "Slot [bad_slot] was accepted")
+		TEST_ASSERT(!panel.save_ship(captain, bay, bad_slot), "A ship was saved to slot [bad_slot]")
+		TEST_ASSERT_EQUAL(panel.error, "No such slot.", "Slot [bad_slot] was refused with the wrong words")
+	TEST_ASSERT_EQUAL(length(store.saved), 0, "A bad slot reached the table")
+
+	// Declining costs nothing; accepting charges once and saves the real hull to the chosen slot.
 	panel.accept_save = FALSE
-	TEST_ASSERT(!panel.save_ship(captain, bay), "Declining still saved the ship")
+	TEST_ASSERT(!panel.save_ship(captain, bay, 2), "Declining still saved the ship")
 	TEST_ASSERT_EQUAL(length(store.saved), 0, "Declining reached the table")
-	TEST_ASSERT_EQUAL(parts_held(), 40, "Declining was charged")
+	TEST_ASSERT_EQUAL(parts_held(), 160, "Declining was charged")
+	TEST_ASSERT_EQUAL(panel.last_prompt, "Save [test_ship.name] to slot 2 for [ship_save_cost_text(survey["cost"])]?", "Wrong question for a new slot")
 	panel.accept_save = TRUE
-	TEST_ASSERT(panel.save_ship(captain, bay), "Saving failed: [panel.error]")
+	TEST_ASSERT(panel.save_ship(captain, bay, 2), "Saving failed: [panel.error]")
 	TEST_ASSERT_NULL(panel.error, "A successful save left an error")
 	TEST_ASSERT_EQUAL(panel.notice, "[test_ship.name] saved.", "A successful save said nothing")
 	TEST_ASSERT(!panel.working, "The panel stayed busy after saving")
-	var/list/entry = store.saved["savecaptain|1"]
-	TEST_ASSERT_NOTNULL(entry, "The save did not reach slot 1")
+	var/list/entry = store.saved["savecaptain|2"]
+	TEST_ASSERT_NOTNULL(entry, "The save did not reach slot 2")
+	TEST_ASSERT_NULL(store.saved["savecaptain|1"], "The save ignored the chosen slot")
+	TEST_ASSERT_EQUAL(parts_held(), 160 - survey["total"], "The hull was charged the wrong price")
+	for(var/list/billed as anything in survey["bill"])
+		TEST_ASSERT_EQUAL(economy.held[billed["class"]], 40 - billed["parts"], "Wrong charge in [billed["class"]] parts")
+	var/datum/weakref/live_source = GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savecaptain", 2)]
+	TEST_ASSERT_EQUAL(live_source?.resolve(), test_ship, "The save does not remember the hull it came from")
 
 	// What was stored is a usable copy with nothing per machine in it.
 	var/datum/ship_checkpoint/decoded = GLOB.ship_saves.decode(entry["payload"])
 	TEST_ASSERT_NOTNULL(decoded, "The stored hull did not decode")
-	TEST_ASSERT_EQUAL(parts_held(), 40 - GLOB.ship_saves.price_for(decoded.owned_tile_count()), "The hull was charged the wrong price")
-	TEST_ASSERT_EQUAL(hull_owned_tile_count(test_ship.shuttle), decoded.owned_tile_count(), "The price on the screen would differ from the price charged")
+	TEST_ASSERT_EQUAL(owned_tiles(test_ship.shuttle), decoded.owned_tile_count(), "The stored hull lost tiles")
 	TEST_ASSERT_EQUAL(decoded.class_name, test_ship.source_template.short_name, "The stored hull lost its class")
 	TEST_ASSERT_EQUAL(length(decoded.jobs), length(test_ship.job_definitions), "The stored hull lost its roster")
 	var/datum/parsed_map/parsed = new(decoded.tgm)
@@ -637,21 +947,61 @@
 	qdel(template)
 	qdel(decoded)
 
-	// Slots full, and records offline, are refused by name.
+	// A full set of slots is no refusal: any of them can be overwritten. Records offline still are.
 	var/list/rows = GLOB.ship_saves.saves_for(captain.ckey)
-	for(var/slot in 2 to SHIP_SAVE_TEST_SLOTS)
-		rows += list(list("slot" = slot, "ship_name" = "Filler", "ship_class" = null))
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "All slots are full.", "Full slots were not refused")
+	for(var/slot in list(1, 3))
+		rows += list(list("slot" = slot, "ship_name" = "Filler", "ship_class" = null, "saved_round" = 1))
+	TEST_ASSERT_NULL(panel.saved_ship_denial(captain, bay, 1), "Full slots were refused")
+	TEST_ASSERT(panel.save_ship(captain, bay, 1), "A used slot could not be overwritten: [panel.error]")
+	TEST_ASSERT_EQUAL(panel.last_prompt, "Overwrite Filler with [test_ship.name] for [ship_save_cost_text(survey["cost"])]?", "Wrong question for a used slot")
+	TEST_ASSERT_EQUAL(parts_held(), 160 - survey["total"] * 2, "An overwrite was not charged again")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.saved_row(captain.ckey, 1)["ship_name"], test_ship.name, "An overwrite left the old row in the cache")
+	TEST_ASSERT_EQUAL(length(store.saved), 2, "An overwrite left the wrong rows in the table")
+
+	// A locked slot is refused, and so is one that changes while the box is open.
+	GLOB.ship_saves.refresh(captain.ckey)
+	var/parts_before = parts_held()
+	TEST_ASSERT(GLOB.ship_saves.begin_retrieval(captain.ckey, 1), "A free slot could not be locked")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay, 1), "Already under way.", "A locked slot could be overwritten")
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "A locked slot was overwritten")
+	GLOB.ship_saves.cancel_retrieval(captain.ckey, 1)
+	panel.while_open = CALLBACK(src, PROC_REF(change_slot), captain.ckey, 3)
+	TEST_ASSERT(!panel.save_ship(captain, bay, 3), "A slot that changed under the box was written")
+	TEST_ASSERT_EQUAL(panel.error, "That slot changed. Try again.", "A changed slot gave the wrong refusal")
+	TEST_ASSERT(!panel.working, "A refused save left the panel busy")
+	panel.while_open = null
+	TEST_ASSERT_EQUAL(parts_held(), parts_before, "A refused save was charged")
+	TEST_ASSERT_NULL(store.saved["savecaptain|3"], "A refused save reached the table")
+	GLOB.ship_saves.refresh(captain.ckey)
+	TEST_ASSERT_EQUAL(panel.saved_ship_changed_denial(captain, bay, null, 1), "The docked ship changed. Try again.", "A ship swapped under the box was saved")
+
 	GLOB.ship_saves.cache -= captain.ckey
-	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay), "Shipyard records are offline.", "An unloaded player read as having slots")
+	TEST_ASSERT_EQUAL(panel.saved_ship_denial(captain, bay, 1), "Shipyard records are offline.", "An unloaded player read as having slots")
 
 	// The panel's data never needs the database, and matches what the screen is promised.
 	GLOB.ship_saves.refresh(captain.ckey)
+	economy.parts_cache[captain.ckey] = list("combat" = 1, "science" = 2, "trade" = 3, "misc" = 4)
 	var/list/saved_ships = panel.saved_ships_data(captain)
 	TEST_ASSERT_EQUAL(saved_ships["slots"], SHIP_SAVE_TEST_SLOTS, "The panel has the wrong slot count")
-	TEST_ASSERT_EQUAL(length(saved_ships["saves"]), 1, "The panel did not list the save")
+	TEST_ASSERT_EQUAL(saved_ships["parts"]["trade"], 3, "The panel does not show parts by class")
+	TEST_ASSERT_EQUAL(length(saved_ships["saves"]), 2, "The panel did not list the saves")
+	var/list/listed_save = saved_ships["saves"][1]
+	TEST_ASSERT_EQUAL(listed_save["slot"], 1, "The first listed save is not in slot 1")
+	TEST_ASSERT_EQUAL(listed_save["name"], test_ship.name, "A listed save lost its name")
+	TEST_ASSERT_EQUAL(listed_save["mass"], survey["mass"], "A listed save lost its mass")
+	TEST_ASSERT_EQUAL(listed_save["locked"], 0, "A free save is listed as locked")
+	TEST_ASSERT(!("cost" in listed_save), "A listed save carries the charge")
 	var/list/listed_ships = saved_ships["ships"]
 	TEST_ASSERT_EQUAL(length(listed_ships), 1, "The panel did not list the docked ship")
+	var/list/listed_ship = listed_ships[1]
+	TEST_ASSERT_EQUAL(listed_ship["total"], survey["total"], "The price on the screen differs from the price charged")
+	TEST_ASSERT_EQUAL(listed_ship["class"], test_ship.source_template.short_name, "The docked ship lost its class")
+	TEST_ASSERT(!("cost" in listed_ship), "The docked ship carries the charge")
+	TEST_ASSERT(GLOB.ship_saves.begin_retrieval(captain.ckey, 1), "A free save could not be locked")
+	var/list/locked_view = panel.saved_ships_data(captain)
+	var/list/locked_save = locked_view["saves"][1]
+	TEST_ASSERT_EQUAL(locked_save["locked"], 1, "A locked save is not listed as locked")
+	GLOB.ship_saves.cancel_retrieval(captain.ckey, 1)
 	var/list/deckhand_view = panel.saved_ships_data(deckhand)
 	TEST_ASSERT_EQUAL(length(deckhand_view["ships"]), 0, "The panel offered a deckhand the ship")
 
@@ -659,6 +1009,20 @@
 
 /datum/unit_test/voidcrew_ship_saves_hull/proc/set_parts(misc)
 	economy.held = list("combat" = 0, "science" = 0, "trade" = 0, "misc" = misc)
+
+/datum/unit_test/voidcrew_ship_saves_hull/proc/set_each_part(amount)
+	economy.held = list("combat" = amount, "science" = amount, "trade" = amount, "misc" = amount)
+
+/// Tiles in the rooms this hull owns.
+/datum/unit_test/voidcrew_ship_saves_hull/proc/owned_tiles(obj/docking_port/mobile/port)
+	. = 0
+	for(var/area/room as anything in hull_owned_areas(port))
+		. += length(room.get_turfs_by_zlevel(port.z))
+
+/// Something else writes to the slot while the confirm box is open.
+/datum/unit_test/voidcrew_ship_saves_hull/proc/change_slot(player_ckey, slot)
+	var/list/rows = GLOB.ship_saves.saves_for(player_ckey)
+	rows += list(list("slot" = slot, "ship_name" = "Interloper", "ship_class" = null, "saved_round" = 1))
 
 /datum/unit_test/voidcrew_ship_saves_hull/proc/parts_held()
 	return economy.total()
@@ -742,15 +1106,16 @@
 	test_ship.state = "idle"
 	bay.on_ship_docked(test_ship)
 
-	// A save made this round waits for the next one.
-	set_parts(40)
-	TEST_ASSERT(panel.save_ship(captain, bay), "Saving failed: [panel.error]")
+	// A save made this round waits for the ship it came from.
+	set_each_part(40)
+	TEST_ASSERT(panel.save_ship(captain, bay, 1), "Saving failed: [panel.error]")
 	saved_name = test_ship.name
 	saved_class = test_ship.source_template.short_name
 	saved_jobs = length(test_ship.job_definitions)
-	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "Ready next round.", "A ship was offered in the round it was saved")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "The original hull is still in service.", "A ship was offered while the one it came from is in service")
 
-	// The same save as made last round, in every slot here and in a lobby player's first.
+	// The same save as made last round, so with no ship behind it, in the other slots here and in a lobby
+	// player's first. Slot 1 keeps its source, and is free once that hull is lost.
 	var/list/first = store.saved["savecaptain|1"]
 	var/list/first_meta = first["meta"]
 	first_meta["saved_round"] = SHIP_SAVE_TEST_ROUND - 1
@@ -763,12 +1128,12 @@
 	// The source is still in the bay.
 	var/list/panel_data = panel.saved_ships_data(captain)
 	var/list/listed_saves = panel_data["saves"]
-	var/list/first_listed = listed_saves[1]
-	TEST_ASSERT_EQUAL(first_listed["denial"], "The ship bay is occupied.", "The panel offered a save with the bay full")
-	TEST_ASSERT(!panel.retrieve_ship(captain, 1), "A save was built with the bay full")
+	var/list/second_listed = listed_saves[2]
+	TEST_ASSERT_EQUAL(second_listed["denial"], "The ship bay is occupied.", "The panel offered a save with the bay full")
+	TEST_ASSERT(!panel.retrieve_ship(captain, 2), "A save was built with the bay full")
 	TEST_ASSERT_EQUAL(panel.error, "The ship bay is occupied.", "A full bay gave the wrong refusal")
 	vacate_bay(home)
-	TEST_ASSERT_NULL(panel.saved_ship_retrieve_denial(captain, 1), "The panel refused a save with the bay empty")
+	TEST_ASSERT_NULL(panel.saved_ship_retrieve_denial(captain, 1), "The panel refused a save whose hull was lost, with the bay empty")
 
 	// Stopped before the first piece: the save is untouched and can be tried again.
 	TEST_ASSERT(panel.retrieve_ship(captain, 1), "Could not start building a save: [panel.error]")
@@ -792,7 +1157,6 @@
 	TEST_ASSERT(job.committed, "The first piece did not commit the build")
 	TEST_ASSERT_NULL(store.saved["savecaptain|2"], "The first piece did not spend the save")
 	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savecaptain", 2), "The first piece left the save in the cache")
-	TEST_ASSERT_EQUAL(GLOB.ship_saves.free_slot("savecaptain"), 2, "The first piece did not free the slot")
 	job.abort("Stopped for the test.")
 	TEST_ASSERT_NULL(store.saved["savecaptain|2"], "Stopping a build gave back a spent save")
 	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savecaptain", 2), "Stopping a build put a spent save back in the cache")
@@ -833,7 +1197,6 @@
 	TEST_ASSERT(launched.password_cleared_ckeys["savelobby"], "The player is not cleared to board their own ship")
 	TEST_ASSERT_NULL(store.saved["savelobby|1"], "The lobby did not spend the save")
 	TEST_ASSERT_NULL(GLOB.ship_saves.saved_row("savelobby", 1), "The lobby left the save in the cache")
-	TEST_ASSERT_EQUAL(GLOB.ship_saves.free_slot("savelobby"), 1, "The lobby did not free the slot")
 	check_retrieved(launched, "Lobby")
 
 	// The same save after its room and floor types were removed from the code still loads whole.
@@ -855,7 +1218,7 @@
 	TEST_ASSERT_NOTNULL(stale_ship, "A save with removed types did not load")
 	retrieved_ships += stale_ship
 	TEST_ASSERT_NULL(store.saved["savestale|1"], "A save with removed types was not spent")
-	TEST_ASSERT_EQUAL(hull_owned_tile_count(stale_ship.shuttle), first_meta["tile_count"], "A save with removed types lost tiles")
+	TEST_ASSERT_EQUAL(owned_tiles(stale_ship.shuttle), first_meta["tile_count"], "A save with removed types lost tiles")
 
 /// What a player could try to carry between rounds: an upgraded machine, a tank of plasma beside a tank of air.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/fit_source(obj/docking_port/mobile/voidcrew/port)
@@ -878,6 +1241,10 @@
 
 /// As lose_original() does for the checkpoint tests: flies the source away and deletes it.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/vacate_bay(obj/structure/overmap/dynamic/player_outpost/home)
+	undock_source(home)
+	test_ship.shuttle.admin_delete_shuttle()
+
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/undock_source(obj/structure/overmap/dynamic/player_outpost/home)
 	var/obj/docking_port/stationary/transit/transit = test_ship.shuttle.assigned_transit || SSshuttle.generate_transit_dock(test_ship.shuttle)
 	test_ship.shuttle.mode = SHUTTLE_PREARRIVAL
 	test_ship.shuttle.initiate_docking(transit)
@@ -886,7 +1253,6 @@
 	test_ship.forceMove(get_turf(home))
 	test_ship.state = "flying"
 	home.on_ship_undock_complete(test_ship)
-	test_ship.shuttle.admin_delete_shuttle()
 
 /// Everything a retrieved ship must be, however it got here.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/check_retrieved(obj/structure/overmap/ship/ship, where)
@@ -932,6 +1298,146 @@
 	TEST_ASSERT(lathes, "[where]: the upgraded autolathe did not come back")
 	TEST_ASSERT(plasma_tanks, "[where]: the plasma tank did not come back")
 	TEST_ASSERT(air_tanks, "[where]: the air tank did not come back")
+
+/// A save loaded in the round it was made: only once the old hull is out of service, and it then replaces it.
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/same_round
+
+/datum/unit_test/voidcrew_ship_saves_hull/retrieval/same_round/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/registry_test/home = allocate(__IMPLIED_TYPE__)
+	home.shell_template = allocate(/datum/map_template/player_outpost/test_fixture)
+	home.founder_ckey = "savecaptain"
+	TEST_ASSERT(home.load_level(), "The outpost did not load")
+	TEST_ASSERT_NULL(home.enable_ship_bays(), "The ship bay did not load")
+	var/obj/machinery/computer/ship_checkpoint/terminal = outpost_bay_shipyard_console(LAZYACCESS(home.bay_berths, 1))
+	TEST_ASSERT_NOTNULL(terminal, "The ship bay has no shipyard console")
+	var/mob/living/carbon/human/captain = make_player(get_turf(terminal), "savecaptain")
+	test_ship = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
+	TEST_ASSERT_NOTNULL(test_ship, "Could not create the hull")
+	test_ship.enlist_crewmember(captain)
+	test_ship.claimed_captain = captain.mind
+	var/datum/ship_checkpoint_ui/registry_test/panel = allocate(__IMPLIED_TYPE__, home, terminal, captain)
+	var/datum/outpost_berth/ship_bay/bay = home.allocate_ship_bay(test_ship)
+	TEST_ASSERT_NOTNULL(bay, "The hull was not given a bay")
+	adjust_reserve_dock_to_shuttle(bay.dock, test_ship.shuttle)
+	test_ship.shuttle.mode = SHUTTLE_PREARRIVAL
+	test_ship.shuttle.initiate_docking(bay.dock)
+	test_ship.shuttle.mode = SHUTTLE_IDLE
+	test_ship.docked = home
+	test_ship.forceMove(home)
+	test_ship.state = "idle"
+	bay.on_ship_docked(test_ship)
+	test_ship.ship_account.account_balance = 500
+
+	// Two saves of one hull.
+	set_each_part(100)
+	TEST_ASSERT(panel.save_ship(captain, bay, 1), "The first save failed: [panel.error]")
+	TEST_ASSERT(panel.save_ship(captain, bay, 2), "The second save failed: [panel.error]")
+
+	// In service, in the bay or out of it, nothing loads.
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "The original hull is still in service.", "A save was offered while its hull is in service")
+	undock_source(home)
+	TEST_ASSERT(!panel.retrieve_ship(captain, 1), "A save was built while its hull is in service")
+	TEST_ASSERT_EQUAL(panel.error, "The original hull is still in service.", "An in-service hull gave the wrong refusal")
+	TEST_ASSERT_NOTNULL(store.saved["savecaptain|1"], "A refused retrieval spent the save")
+	TEST_ASSERT(!test_ship.checkpoint_rebuilding, "A refused retrieval locked the hull")
+
+	// A job given a save of a crewed hull won't build it either, and lets go when it stops.
+	var/datum/ship_checkpoint/in_service_copy = GLOB.ship_saves.read_save("savecaptain", 1)
+	TEST_ASSERT(istype(in_service_copy), "A save would not read: [in_service_copy]")
+	TEST_ASSERT(GLOB.ship_saves.begin_retrieval("savecaptain", 1), "A free save could not be claimed")
+	var/datum/checkpoint_construction/saved/in_service = panel.create_retrieval_job(captain, in_service_copy, 1)
+	TEST_ASSERT_NOTNULL(in_service.bay, "A job could not reserve the empty bay")
+	TEST_ASSERT_NOTNULL(in_service.source_denial(), "A crewed original permitted a second hull")
+	TEST_ASSERT(test_ship.checkpoint_rebuilding, "A job did not lock its original hull")
+	qdel(in_service)
+	TEST_ASSERT(!test_ship.checkpoint_rebuilding, "A cancelled job kept a lock on the original")
+	TEST_ASSERT(!GLOB.ship_saves.retrievals[GLOB.ship_saves.slot_key("savecaptain", 1)], "A cancelled job kept its claim on the save")
+	TEST_ASSERT(bay.is_available(), "A cancelled job kept the bay")
+
+	// Abandoned, it can load.
+	test_ship.abandon_ship(crash = FALSE)
+	TEST_ASSERT_NULL(panel.saved_ship_retrieve_denial(captain, 1), "An abandoned hull blocks its save")
+
+	// One build at a time from one hull, across its saves.
+	TEST_ASSERT(panel.retrieve_ship(captain, 2), "Could not start building a save: [panel.error]")
+	var/datum/checkpoint_construction/saved/job = home.checkpoint_jobs[1]
+	TEST_ASSERT(test_ship.checkpoint_rebuilding, "A build did not lock the hull it replaces")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 1), "Already under way.", "A second save of a hull being replaced was offered")
+
+	// Another build got to its first piece before this one did: refused there, with nothing spent.
+	test_ship.retired_by_checkpoint = TRUE
+	job.fast_forward(1)
+	TEST_ASSERT(QDELETED(job), "A build of a replaced hull kept running")
+	TEST_ASSERT(!job.committed, "A build of a replaced hull placed a piece")
+	TEST_ASSERT_EQUAL(panel.error, "The original hull has already been replaced. Your saved ship is safe.", "The late refusal gave the wrong words")
+	TEST_ASSERT_NOTNULL(store.saved["savecaptain|2"], "The late refusal spent the save")
+	TEST_ASSERT_NOTNULL(GLOB.ship_saves.saved_row("savecaptain", 2), "The late refusal lost the cached save")
+	TEST_ASSERT(!GLOB.ship_saves.retrievals[GLOB.ship_saves.slot_key("savecaptain", 2)], "The late refusal kept its claim on the save")
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 500, "The late refusal moved the balance")
+	test_ship.retired_by_checkpoint = FALSE
+	var/deadline = world.time + 30 SECONDS
+	UNTIL(bay.is_available() || world.time > deadline)
+	TEST_ASSERT(bay.is_available(), "The late refusal kept the bay")
+
+	// A whole build retires the old hull at the first piece and pays its balance to the new one.
+	TEST_ASSERT(panel.retrieve_ship(captain, 1), "Could not start building a save: [panel.error]")
+	job = home.checkpoint_jobs[1]
+	job.fast_forward(1)
+	TEST_ASSERT(job.committed, "The first piece did not commit the build")
+	TEST_ASSERT(test_ship.retired_by_checkpoint, "The first piece did not retire the old hull")
+	TEST_ASSERT(!test_ship.checkpoint_rebuilding, "A retired hull kept its lock")
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 0, "The old hull kept its balance")
+	TEST_ASSERT_EQUAL(job.held_balance, 500, "The build isn't holding the old hull's balance")
+	TEST_ASSERT_NULL(GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savecaptain", 1)], "A spent save kept its source")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has already been replaced.", "A second save of a replaced hull was offered")
+	job.fast_forward()
+	TEST_ASSERT(QDELETED(job), "The build did not finish")
+	var/obj/structure/overmap/ship/rebuilt = bay.ship
+	TEST_ASSERT_NOTNULL(rebuilt, "The finished build is not in the bay")
+	retrieved_ships += rebuilt
+	TEST_ASSERT_EQUAL(rebuilt.ship_account.account_balance, 500, "The new ship did not get the old hull's balance")
+
+	// With the hull gone, the retired record still refuses. An unretired one wouldn't.
+	var/obj/docking_port/mobile/old_port = test_ship.detach_shuttle()
+	old_port.jumpToNullSpace()
+	TEST_ASSERT(!QDELETED(test_ship) && !test_ship.shuttle, "The fixture still has a hull")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "The original hull has already been replaced.", "A retired hull-less record was bypassed")
+	test_ship.retired_by_checkpoint = FALSE
+	TEST_ASSERT_NULL(GLOB.ship_saves.retrieve_denial("savecaptain", 2), "A hull-less record blocks its save")
+
+	// The lobby, with no job to do any of this for it.
+	var/obj/structure/overmap/ship/lobby_source = SSshuttle.create_ship(/datum/map_template/shuttle/voidcrew/box)
+	TEST_ASSERT_NOTNULL(lobby_source, "Could not create the lobby's hull")
+	retrieved_ships += lobby_source
+	lobby_source.ship_account.account_balance = 300
+	var/datum/ship_checkpoint/lobby_copy = new
+	var/capture_denial = lobby_copy.capture_hull(lobby_source, "savelobby")
+	TEST_ASSERT_NULL(capture_denial, "The lobby's hull was not captured: [capture_denial]")
+	GLOB.ship_saves.refresh("savelobby")
+	var/commit_error = GLOB.ship_saves.commit_save("savelobby", lobby_copy, null, 1, lobby_source.save_survey(fresh = TRUE))
+	qdel(lobby_copy)
+	TEST_ASSERT_NULL(commit_error, "The lobby's save failed: [commit_error]")
+
+	SSticker.current_state = GAME_STATE_PLAYING
+	var/mob/dead/new_player/ship_save_test/lobby = allocate(__IMPLIED_TYPE__)
+	lobby.key = "savelobby"
+	GLOB.ship_saves.launch(lobby, 1)
+	TEST_ASSERT_NULL(lobby.seated_on, "The lobby loaded a save while its hull is in service")
+	TEST_ASSERT_NOTNULL(store.saved["savelobby|1"], "A refused launch spent the save")
+	TEST_ASSERT(!lobby_source.checkpoint_rebuilding, "A refused launch locked the hull")
+	TEST_ASSERT(!lobby.spawning_ship, "A refused launch left the player stuck preparing a ship")
+
+	lobby_source.abandon_ship(crash = FALSE)
+	GLOB.ship_saves.launch(lobby, 1)
+	var/obj/structure/overmap/ship/launched = lobby.seated_on
+	TEST_ASSERT_NOTNULL(launched, "The lobby did not load a save whose hull was abandoned")
+	retrieved_ships += launched
+	TEST_ASSERT(lobby_source.retired_by_checkpoint, "The lobby did not retire the old hull")
+	TEST_ASSERT(!lobby_source.checkpoint_rebuilding, "The lobby left the old hull locked")
+	TEST_ASSERT_EQUAL(lobby_source.ship_account.account_balance, 0, "The old hull kept its balance")
+	TEST_ASSERT_EQUAL(launched.ship_account.account_balance, 300, "The new ship did not get the old hull's balance")
+	TEST_ASSERT_NULL(store.saved["savelobby|1"], "The lobby did not spend the save")
+	TEST_ASSERT_NULL(GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savelobby", 1)], "A spent save kept its source")
 
 /**
  * The real table, through the real store and the game's database connection. Skipped with no database.
@@ -1020,6 +1526,40 @@
 	TEST_ASSERT_EQUAL(first_row["raw_bytes"], meta["raw_bytes"], "The row has the wrong size")
 	TEST_ASSERT(!store.write(test_ckey, 1, meta, "another hull"), "A taken slot was overwritten")
 	TEST_ASSERT(store.read_payload(test_ckey, 1) == payload, "A refused write changed the saved hull")
+	TEST_ASSERT_NULL(first_row["survey"], "A row with no summary has a survey")
+
+	// An overwrite replaces every column and keeps one row, and the summary comes back.
+	var/list/replacement = meta.Copy()
+	replacement["ship_name"] = "Replacement"
+	replacement["tile_count"] = 7
+	replacement["raw_bytes"] = 12
+	replacement["summary"] = json_encode(list("mass" = 650, "crew" = 3, "plan" = "2#/2o", "bill" = list(list("class" = "misc", "parts" = 5, "items" = list(list("name" = "Hull, 650 t", "count" = null, "parts" = 5)))), "total" = 5))
+	TEST_ASSERT(store.write(test_ckey, 1, replacement, "another hull", overwrite = TRUE), "An overwrite was not written")
+	rows = store.read_meta(test_ckey)
+	TEST_ASSERT_EQUAL(length(rows), 2, "An overwrite did not keep one row per slot")
+	first_row = rows[1]
+	TEST_ASSERT_EQUAL(first_row["ship_name"], "Replacement", "An overwrite did not replace the name")
+	TEST_ASSERT_EQUAL(first_row["tile_count"], 7, "An overwrite did not replace the tile count")
+	TEST_ASSERT_EQUAL(first_row["raw_bytes"], 12, "An overwrite did not replace the size")
+	TEST_ASSERT(store.read_payload(test_ckey, 1) == "another hull", "An overwrite did not replace the map")
+	var/list/survey = first_row["survey"]
+	TEST_ASSERT_EQUAL(survey?["mass"], 650, "The summary did not come back from the table")
+	TEST_ASSERT_EQUAL(survey?["plan"], "2#/2o", "The plan did not come back from the table")
+	var/list/bill_entry = survey?["bill"][1]
+	TEST_ASSERT_EQUAL(bill_entry?["class"], "misc", "The bill did not come back from the table")
+
+	// An overwrite of an empty slot is an ordinary write, and bad JSON in the column reads as no survey.
+	replacement["summary"] = "{not json"
+	TEST_ASSERT(store.write(test_ckey, 3, replacement, "a third hull", overwrite = TRUE), "An overwrite of an empty slot failed")
+	rows = store.read_meta(test_ckey)
+	var/list/third_row = rows[3]
+	TEST_ASSERT_EQUAL(third_row["slot"], 3, "The third row is not slot 3")
+	TEST_ASSERT_NULL(third_row["survey"], "Bad JSON in the column came back as a survey")
+	TEST_ASSERT(store.remove(test_ckey, 3), "The third save was not removed")
+
+	// A plain write to a used slot still fails, whatever overwrite did before it.
+	TEST_ASSERT(!store.write(test_ckey, 1, meta, payload), "A plain write replaced a used slot")
+	TEST_ASSERT(store.read_payload(test_ckey, 1) == "another hull", "A refused plain write changed the saved hull")
 
 	// Using a save removes it once.
 	TEST_ASSERT(store.remove(test_ckey, 1), "A save was not removed")
@@ -1034,7 +1574,9 @@
 #undef SHIP_SAVE_TEST_GONE_PATH
 #undef SHIP_SAVE_TEST_SLOTS
 #undef SHIP_SAVE_TEST_PRICE_MIN
-#undef SHIP_SAVE_TEST_PRICE_MAX
+#undef SHIP_SAVE_TEST_MASS_PER_PART
+#undef SHIP_SAVE_TEST_MACHINES_PER_PART
+#undef SHIP_SAVE_TEST_PLAN_MAX
 #undef SHIP_SAVE_TEST_PASSWORD_PRICE
 #undef SHIP_SAVE_TEST_TOO_LONG
 #undef SHIP_SAVE_TEST_TILE_IRON
