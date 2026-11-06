@@ -31,7 +31,7 @@ GLOBAL_LIST_EMPTY(background_states)
 	var/started_at
 	var/ended = FALSE
 	var/datum/weakref/warrant_ref
-	/// Per-background keys, each with a prefix of its own ("p6_fed")
+	/// Per-background keys, each with a prefix of its own ("homestead_fed")
 	var/list/extra = list()
 	var/last_seen_site_name
 	var/last_seen_zone_value

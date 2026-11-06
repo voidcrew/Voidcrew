@@ -123,14 +123,14 @@
 
 /datum/background/homesteader/on_started(datum/mind/mind, datum/background_state/state)
 	var/mob/living/body = mind?.current
-	state.extra["p6_fed"] = 0
-	state.extra["p6_watched"] = 0
-	state.extra["p6_free"] = FALSE
-	state.extra["p6_role"] = mind?.assigned_role?.title
+	state.extra["homestead_fed"] = 0
+	state.extra["homestead_watched"] = 0
+	state.extra["homestead_free"] = FALSE
+	state.extra["homestead_role"] = mind?.assigned_role?.title
 	if(!isliving(body))
 		return
 	RegisterSignal(body, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport), override = TRUE)
-	if(state.extra["p6_role"] == "Rancher")
+	if(state.extra["homestead_role"] == "Rancher")
 		homestead_link_farm_stands(body)
 	GLOB.homestead?.welcome(body)
 
@@ -221,12 +221,12 @@
 		if(!state || QDELETED(settler))
 			continue
 		if(on_frontier(settler))
-			state.extra["p6_free"] = homestead_free_to_leave(settler)
-			state.extra["p6_told_home"] = FALSE
+			state.extra["homestead_free"] = homestead_free_to_leave(settler)
+			state.extra["homestead_told_home"] = FALSE
 			if(settler.stat != DEAD)
-				state.extra["p6_watched"] = (state.extra["p6_watched"] || 0) + seconds
+				state.extra["homestead_watched"] = (state.extra["homestead_watched"] || 0) + seconds
 				if(fed)
-					state.extra["p6_fed"] = (state.extra["p6_fed"] || 0) + seconds
+					state.extra["homestead_fed"] = (state.extra["homestead_fed"] || 0) + seconds
 			continue
 		if(check_departures)
 			check_departure(state, settler)
@@ -235,11 +235,11 @@
 /datum/homestead/proc/check_departure(datum/background_state/state, mob/living/settler)
 	if(state.outcome != BACKGROUND_OUTCOME_ONGOING)
 		return
-	if(state.extra["p6_free"] && homestead_free_to_leave(settler))
+	if(state.extra["homestead_free"] && homestead_free_to_leave(settler))
 		state.fail("Left Frontier.")
 		return
-	if(!state.extra["p6_told_home"] && settler.stat == CONSCIOUS)
-		state.extra["p6_told_home"] = TRUE
+	if(!state.extra["homestead_told_home"] && settler.stat == CONSCIOUS)
+		state.extra["homestead_told_home"] = TRUE
 		to_chat(settler, span_warning("Get home."))
 
 /// A homesteader starting their life here: one of the family says hello, and the coming-home greeting waits

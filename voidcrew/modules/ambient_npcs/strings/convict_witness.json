@@ -1,5 +1,5 @@
 {
-	"_owner": "P2 (Backgrounds convict): the witness a convict is after. Placeholders: {name}, {other}.",
+	"_owner": "Backgrounds convict: the witness a convict is after. Placeholders: {name}, {other}.",
 	"witness": {
 		"idle": [
 			"I don't want any trouble.",

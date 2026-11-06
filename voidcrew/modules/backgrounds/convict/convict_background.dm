@@ -222,7 +222,7 @@
 		if(CONVICT_GOAL_STASH, CONVICT_GOAL_WITNESS)
 			var/datum/convict_lead/lead = convict_lead_for(state.ckey, state.goal)
 			if(lead?.host_name)
-				state.extra["p2_lead"] = "[state.ckey]:[state.goal]"
+				state.extra["convict_lead"] = "[state.ckey]:[state.goal]"
 			else
 				// Nowhere in the sector to hide one: Vex's counter will do
 				state.goal = CONVICT_GOAL_CLEAN_SLATE
@@ -275,10 +275,10 @@
 		if(CONVICT_GOAL_CLEAN_SLATE)
 			return "Vex at the Undertow can make my file disappear. For a price."
 		if(CONVICT_GOAL_STASH)
-			var/datum/convict_lead/lead = GLOB.convict_leads[state.extra["p2_lead"]]
+			var/datum/convict_lead/lead = GLOB.convict_leads[state.extra["convict_lead"]]
 			return "My stash is hidden at [lead?.host_name || "a wreck out past the Meridian"]. Vex at the Undertow is waiting for it."
 		if(CONVICT_GOAL_WITNESS)
-			var/datum/convict_lead/lead = GLOB.convict_leads[state.extra["p2_lead"]]
+			var/datum/convict_lead/lead = GLOB.convict_leads[state.extra["convict_lead"]]
 			return "[lead?.witness_name || "Somebody"] put me in here. Last I heard, they were at [lead?.host_name || "a wreck out past the Meridian"]."
 	return null
 

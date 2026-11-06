@@ -353,7 +353,7 @@
 	TEST_ASSERT(!state.update_last_seen(list(watcher)), "A second reading came inside 30 s") // BACKGROUND_LAST_SEEN_INTERVAL
 	TEST_ASSERT_EQUAL(state.last_seen_text(), "Last seen at Wanderer", "A refused reading changed the card")
 
-	state.extra["p3_last_check"] = world.time - 31 SECONDS
+	state.extra["hunter_last_check"] = world.time - 31 SECONDS
 	TEST_ASSERT(state.update_last_seen(list(watcher)), "No reading after 30 s")
 	TEST_ASSERT_EQUAL(state.last_seen_text(), "Last seen at Elsewhere", "The new reading didn't replace the old")
 
@@ -361,7 +361,7 @@
 	var/obj/structure/overmap/ship/far = allocate(/obj/structure/overmap/ship, run_loc_floor_top_right)
 	far.name = "Far Away"
 	state.test_holder = far
-	state.extra["p3_last_check"] = world.time - 31 SECONDS
+	state.extra["hunter_last_check"] = world.time - 31 SECONDS
 	TEST_ASSERT(!background_sensors_reach(watcher, far), "Sensors with a reach of one tile saw across the room")
 	state.update_last_seen(list(watcher))
 	TEST_ASSERT_EQUAL(state.last_seen_text(), "Last seen at Elsewhere", "A place out of reach was read")
@@ -402,7 +402,7 @@
 	watch.note_aboard(convict.mind, other_hull)
 	TEST_ASSERT(convict_ckey in other_hull.background_ever_crew, "A convict standing free on a hull wasn't counted")
 	watch.note_aboard(convict.mind, null)
-	TEST_ASSERT_NULL(state.extra["p3_held_by"], "Leaving the hull didn't end its hold")
+	TEST_ASSERT_NULL(state.extra["hunter_held_by"], "Leaving the hull didn't end its hold")
 	watch.note_aboard(convict.mind, hull)
 	TEST_ASSERT(convict_ckey in hull.background_ever_crew, "A convict who left and walked back aboard free wasn't counted")
 

@@ -57,10 +57,10 @@
  * `watchers` are the hulls looking (every live Marshal hull when null). Returns TRUE if it looked.
  */
 /datum/background_state/proc/update_last_seen(list/watchers)
-	var/last_check = extra["p3_last_check"]
+	var/last_check = extra["hunter_last_check"]
 	if(!isnull(last_check) && world.time - last_check < BACKGROUND_LAST_SEEN_INTERVAL)
 		return FALSE
-	extra["p3_last_check"] = world.time
+	extra["hunter_last_check"] = world.time
 	var/datum/mind/mind = mind_ref?.resolve()
 	var/obj/structure/overmap/holder = last_seen_holder(mind?.current)
 	if(!holder)
@@ -214,12 +214,12 @@ GLOBAL_DATUM_INIT(background_hunter_watch, /datum/background_hunter_watch, new)
 	if(!state)
 		return
 	if(QDELETED(aboard))
-		state.extra -= "p3_held_by"
+		state.extra -= "hunter_held_by"
 		return
 	if(!background_is_free(mind.current))
-		state.extra["p3_held_by"] = WEAKREF(aboard)
+		state.extra["hunter_held_by"] = WEAKREF(aboard)
 		return
-	var/datum/weakref/held_by = state.extra["p3_held_by"]
+	var/datum/weakref/held_by = state.extra["hunter_held_by"]
 	if(held_by?.resolve() == aboard)
 		return
 	background_note_ever_crew(aboard, mind.key)
