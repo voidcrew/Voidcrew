@@ -87,7 +87,11 @@ const GRID: CSSProperties = {
 };
 
 /** The hull from above, as the yard's drawing of it. */
-export const HullPlan = (props: { plan?: string | null; height: number }) => {
+export const HullPlan = (props: {
+  plan?: string | null;
+  height: number;
+  missingText?: string;
+}) => {
   const { plan, height } = props;
   const drawing = useMemo(() => (plan ? readPlan(plan) : null), [plan]);
   return (
@@ -123,6 +127,9 @@ export const HullPlan = (props: { plan?: string | null; height: number }) => {
               ),
           )}
         </svg>
+      )}
+      {!drawing && !!props.missingText && (
+        <span style={{ color: '#7f8e9a' }}>{props.missingText}</span>
       )}
     </div>
   );
@@ -239,7 +246,11 @@ export const SlotCard = (props: {
       {save ? (
         <div style={FRAME}>
           <div style={SLOT_LABEL}>Slot {slot}</div>
-          <HullPlan plan={save.plan} height={planHeight} />
+          <HullPlan
+            plan={save.plan}
+            height={planHeight}
+            missingText="No drawing on file"
+          />
           <div style={{ padding: '8px', flex: 1 }}>
             <div
               style={{
