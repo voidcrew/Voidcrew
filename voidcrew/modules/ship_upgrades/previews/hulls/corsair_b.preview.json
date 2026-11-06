@@ -1,0 +1,18 @@
+{
+ "hulls": {
+  "corsair_b": {
+   "height": 16,
+   "png": "ship_corsair_b.png",
+   "slots": {
+    "corsair_hold": [
+     7,
+     10
+    ]
+   },
+   "src_md5": "34a8679774b2ec4538bab4267db9feef",
+   "width": 24
+  }
+ },
+ "modules": {},
+ "tile_px": 32
+}
