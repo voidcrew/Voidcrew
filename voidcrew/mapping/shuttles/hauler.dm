@@ -1,6 +1,7 @@
 /// Backgrounds: owned by M4. See data/backgrounds/spec.md.
 
-// Placeholder hull: everything but the slots, themes and modules, which arrive with the real map.
+// Fixed NPC freighter: no slots, themes or cryopods. SSnpc_ships loads it for P5's haulers, and
+// unit tests load it as a crewless player hull. The crew spawns on /obj/effect/landmark/hauler/crew.
 /datum/map_template/shuttle/voidcrew/hauler
 	name = "Mule-class Freighter"
 	short_name = "Mule-class"
@@ -23,8 +24,10 @@
 /obj/docking_port/mobile/voidcrew/hauler
 	name = "Mule-class Freighter"
 	area_type = /area/shuttle/voidcrew/hauler
-	port_direction = 1
-	preferred_direction = 1 // must match the aspect-ratio guess in adjust_reserve_dock_to_shuttle or the ship spins every dock
+	// Bow east, port mapped dir NORTH on the south face (like the Kilo turned around): the hull is
+	// longer fore-to-aft than abeam, so adjust_reserve_dock_to_shuttle() guesses EAST.
+	port_direction = 8
+	preferred_direction = 4 // must match the aspect-ratio guess in adjust_reserve_dock_to_shuttle or the ship spins every dock
 
 /// AREAS ///
 
