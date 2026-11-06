@@ -208,6 +208,10 @@
 	TEST_ASSERT_EQUAL(mugshots[warrant.record.id], "picture", "The warrant's mugshot isn't in the console's static data")
 	TEST_ASSERT(!(warrant.record.id in plain.board_wanted_mugshots(ship)), "A plain board carries a warrant's mugshot")
 	TEST_ASSERT(findtext(console.board_static_signature(ship), "[warrant.record.id]:"), "The console's static signature ignores warrants")
+	// Every other posting's picture is made too (looking at a board also makes this ship's private offers), so the check is about the warrant's alone
+	for(var/datum/criminal_bounty/listed as anything in console.listed_postings(ship))
+		if(listed != warrant && listed.record && !listed.record.mugshot)
+			listed.record.mugshot = "picture"
 	TEST_ASSERT(!console.board_mugshots_pending(ship), "The console waits on a picture that is already made")
 
 	warrant.close("admin") // BOUNTY_CLOSE_ADMIN
@@ -271,7 +275,8 @@
 	TEST_ASSERT_NULL(background_recognised_mind(namesake, "pirate"), "A bare face carrying the pirate's card was taken for the pirate")
 
 	hunter_test_mask(namesake)
-	TEST_ASSERT(background_face_hidden(namesake), "A balaclava doesn't hide the face")
+	TEST_ASSERT(istype(namesake.wear_mask, /obj/item/clothing/mask/balaclava), "The balaclava did not go on ([namesake.wear_mask?.type])")
+	TEST_ASSERT(background_face_hidden(namesake), "A balaclava doesn't hide the face (face name [namesake.get_face_name("")])")
 	TEST_ASSERT_EQUAL(background_recognised_mind(namesake, "pirate"), pirate.mind, "A masked face carrying the pirate's card wasn't taken for the pirate")
 	TEST_ASSERT(!background_no_papers(namesake), "A masked face with a card has no papers")
 

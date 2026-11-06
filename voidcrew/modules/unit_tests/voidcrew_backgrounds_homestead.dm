@@ -88,7 +88,11 @@
 	TEST_ASSERT(SSmapping.level_trait(surface_z, "Down"), "The surface does not link down") // ZTRAIT_DOWN
 	TEST_ASSERT(SSmapping.level_trait(surface_z - 1, "Up"), "The cave does not link up") // ZTRAIT_UP
 	TEST_ASSERT(!SSmapping.level_trait(surface_z - 1, "Weather_Sandstorm"), "The cave has a sandstorm") // ZTRAIT_SANDSTORM
-	TEST_ASSERT(istype(get_area(locate(1, 1, surface_z)), /area/overmap_encounter/planetoid/frontier), "The surface is not Frontier ground")
+	// Any tile: generated rock formations take the generic cave area, so no fixed corner is safe
+	var/frontier_tiles = 0
+	for(var/area/overmap_encounter/planetoid/frontier/ground in GLOB.areas)
+		frontier_tiles += length(ground.get_turfs_by_zlevel(surface_z))
+	TEST_ASSERT(frontier_tiles > 0, "The surface is not Frontier ground")
 
 /// The cave belongs to the Frontier's marker, and both levels have fauna trackers
 /datum/unit_test/voidcrew_frontier_cave/Run()

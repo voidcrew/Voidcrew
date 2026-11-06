@@ -426,7 +426,8 @@
 			TEST_ASSERT(!is_type_in_typecache(thing, forbidden), "The pod carries [thing.type], which the contract forbids")
 	TEST_ASSERT_EQUAL(ports, 1, "The pod needs exactly one mobile docking port")
 	TEST_ASSERT_NOTNULL(battery, "The pod has no battery")
-	TEST_ASSERT(battery.charge > 0, "The pod's battery starts empty")
+	// Initialize() moves a mapped charge into the cells and zeroes the var
+	TEST_ASSERT(battery.total_charge() > 0, "The pod's battery starts empty")
 
 // ===== CRIMES =====
 

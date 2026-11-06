@@ -18,6 +18,8 @@
 /proc/bg_pirate_test_person(turf/where, real_name)
 	var/mob/living/carbon/human/person = bg_test_human(where)
 	person.fully_replace_character_name(person.real_name, real_name)
+	// An ID card needs a jumpsuit to clip onto
+	person.equip_to_slot_or_del(new /obj/item/clothing/under/color/grey(person), ITEM_SLOT_ICLOTHING)
 	return person
 
 /// Puts a face-hiding mask on this person
@@ -134,6 +136,8 @@
 	// No face and no papers: refused at Halcyon and Quartermain, whoever it is
 	var/mob/living/carbon/human/stranger = bg_pirate_test_person(floor, "Odile Varga")
 	bg_pirate_test_mask(stranger)
+	TEST_ASSERT_NOTNULL(stranger.wear_mask, "The mask did not go on")
+	TEST_ASSERT(background_no_papers(stranger), "A masked stranger with no card has papers (face [stranger.get_face_name("")], card [stranger.get_id_name("")])")
 	TEST_ASSERT(halcyon.background_service_refused(stranger), "Halcyon served a masked stranger with no card")
 	TEST_ASSERT(quartermain.background_service_refused(stranger), "Quartermain served a masked stranger with no card")
 	TEST_ASSERT(halcyon.is_user_barred(stranger), "Halcyon's counters served a masked stranger with no card")
