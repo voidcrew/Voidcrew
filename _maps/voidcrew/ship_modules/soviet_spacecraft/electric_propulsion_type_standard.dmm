@@ -3,6 +3,7 @@
 /obj/machinery/power/shuttle_engine/ship/electric{
 	dir = 4
 	},
+/obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
 "aoQ" = (
@@ -73,8 +74,6 @@
 /area/template_noop)
 "gxb" = (
 /obj/structure/window/reinforced/spawner/directional/west,
-/obj/machinery/power/smes/engineering,
-/obj/structure/cable,
 /turf/open/floor/plating,
 /area/template_noop)
 "gNW" = (
@@ -113,11 +112,11 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/template_noop)
 "jrx" = (
-/obj/machinery/power/supermatter_crystal/shard/engine,
 /obj/structure/closet/crate/radiation,
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/door/window/brigdoor,
+/obj/machinery/power/supermatter_crystal/shard/engine,
 /turf/template_noop,
 /area/template_noop)
 "mrY" = (
@@ -137,6 +136,10 @@
 /obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
+"oue" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/template_noop,
+/area/template_noop)
 "oUe" = (
 /obj/machinery/airalarm/directional/east,
 /turf/template_noop,
@@ -146,6 +149,7 @@
 /obj/machinery/power/shuttle_engine/ship/electric{
 	dir = 4
 	},
+/obj/structure/cable,
 /turf/template_noop,
 /area/template_noop)
 "qqg" = (
@@ -215,6 +219,7 @@
 /obj/machinery/power/shuttle_engine/ship/electric{
 	dir = 4
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/template_noop)
 "xXT" = (
@@ -241,7 +246,7 @@ gnt
 gnt
 gnt
 gxb
-gnt
+oue
 gxb
 gnt
 gnt
@@ -251,9 +256,9 @@ gnt
 fcM
 fcM
 fcM
-fcM
-fcM
-fcM
+nBi
+nBi
+nBi
 fcM
 fcM
 fcM
