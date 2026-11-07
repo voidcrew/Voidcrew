@@ -65,8 +65,14 @@ among other potential differences. This granularity is helpful for things like t
 	dismemberment = 100
 	anti_armour_damage = 200
 
-/obj/projectile/bullet/rocket/heap/do_boom(atom/target, blocked=0)
+/obj/projectile/bullet/rocket/heap/do_boom(atom/target, random_crit_gib = FALSE) // VOIDCREW EDIT: this arg was an unused "blocked", so the random crit never gibbed
 	explosion(target, devastation_range = -1, heavy_impact_range = 1, light_impact_range = 3, flame_range = 4, flash_range = 1, adminlog = FALSE)
+	// VOIDCREW EDIT ADDITION START
+	if(random_crit_gib)
+		var/mob/living/gibbed_dude = target
+		new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
+		gibbed_dude.gib(DROP_ALL_REMAINS)
+	// VOIDCREW EDIT ADDITION END
 
 /// PM9 weak rocket - just kind of a failure
 /obj/projectile/bullet/rocket/weak
@@ -75,11 +81,17 @@ among other potential differences. This granularity is helpful for things like t
 	icon_state = "low_yield_rocket"
 	damage = 30
 
-/obj/projectile/bullet/rocket/weak/do_boom(atom/target, blocked=0)
+/obj/projectile/bullet/rocket/weak/do_boom(atom/target, random_crit_gib = FALSE) // VOIDCREW EDIT: this arg was an unused "blocked", so the random crit never gibbed
 	if(!isliving(target)) //if the target isn't alive, so is a wall or something
 		explosion(target, heavy_impact_range = 1, light_impact_range = 2, flame_range = 3, flash_range = 4, explosion_cause = src)
 	else
 		explosion(target, light_impact_range = 2, flame_range = 3, flash_range = 4, explosion_cause = src)
+		// VOIDCREW EDIT ADDITION START
+		if(random_crit_gib)
+			var/mob/living/gibbed_dude = target
+			new /obj/effect/temp_visual/crit(get_turf(gibbed_dude))
+			gibbed_dude.gib(DROP_ALL_REMAINS)
+		// VOIDCREW EDIT ADDITION END
 
 /** SRM-8 Missile - Used by the SRM-8 Exosuit missile rack.
 * Employed by Nuclear Operatives Maulers and Nanotrasen Marauders and Seraphs to kill everything and anyone.

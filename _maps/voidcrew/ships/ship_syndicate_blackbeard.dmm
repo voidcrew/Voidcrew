@@ -32,14 +32,6 @@
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/blackbeard/bridge)
-"aT" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/rocketlauncher/unrestricted,
-/obj/structure/railing{
-	dir = 10
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "bl" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
@@ -229,6 +221,24 @@
 "lw" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/blackbeard/engineering)
+"lX" = (
+/obj/structure/table/reinforced,
+/obj/structure/railing{
+	dir = 9
+	},
+/obj/item/gun/ballistic/automatic/proto/unrestricted{
+	desc = "A prototype full auto 9mm submachine gun, designated 'SABR'. Has a threaded barrel for suppressors and a folding stock, this one has a crudely scratched S overtop the Nanotrasen Logo."
+	},
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/ammo_box/magazine/smgm9mm/ap,
+/obj/item/ammo_box/magazine/smgm9mm/fire,
+/obj/item/ammo_box/magazine/smgm9mm,
+/obj/item/gun/ballistic/automatic/ar{
+	desc = "A robust assault rifle used by Nanotrasen fighting forces, this one has has a crudely scratched in S over the Nanotrasen Logo."
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
 "lZ" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
@@ -481,6 +491,10 @@
 "yC" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/blackbeard/hallway/fore)
+"AV" = (
+/obj/machinery/vending/security/marine,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/equipment)
 "Bw" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -537,19 +551,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
-"DZ" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/pistol/aps,
-/obj/item/gun/ballistic/automatic/pistol/aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/item/ammo_box/magazine/m9mm_aps,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/equipment)
 "Ed" = (
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor,
@@ -642,6 +643,18 @@
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/equipment)
+"Jk" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/duffelbag/syndie/c4,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/item/gun/ballistic/shotgun/automatic/dual_tube,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/rubbershot,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
 "Jm" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -707,18 +720,6 @@
 /obj/machinery/light,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
-"ND" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/syndie/c4,
-/obj/structure/railing{
-	dir = 8
-	},
-/obj/item/gun/ballistic/shotgun/automatic/dual_tube,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/rubbershot,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "Oa" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
@@ -763,24 +764,6 @@
 /obj/machinery/ship_combat/missile_launcher,
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/fore)
-"Rp" = (
-/obj/structure/table/reinforced,
-/obj/structure/railing{
-	dir = 9
-	},
-/obj/item/gun/ballistic/automatic/proto/unrestricted{
-	desc = "A prototype full auto 9mm submachine gun, designated 'SABR'. Has a threaded barrel for suppressors and a folding stock, this one has a crudely scratched S overtop the Nanotrasen Logo."
-	},
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/ammo_box/magazine/smgm9mm/ap,
-/obj/item/ammo_box/magazine/smgm9mm/fire,
-/obj/item/ammo_box/magazine/smgm9mm,
-/obj/item/gun/ballistic/automatic/ar{
-	desc = "A robust assault rifle used by Nanotrasen fighting forces, this one has has a crudely scratched in S over the Nanotrasen Logo."
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/cargo)
 "Rt" = (
 /obj/structure/window/reinforced/plasma/spawner,
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -804,6 +787,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
+"Tm" = (
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rocketlauncher/unrestricted,
+/obj/structure/railing{
+	dir = 10
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/cargo)
 "Tp" = (
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
@@ -867,6 +858,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
+"Ve" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/automatic/pistol/aps,
+/obj/item/gun/ballistic/automatic/pistol/aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/item/ammo_box/magazine/m9mm_aps,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/blackbeard/equipment)
 "Vl" = (
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/mineral/plastitanium,
@@ -937,10 +941,6 @@
 /obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/bridge)
-"ZO" = (
-/obj/machinery/vending/security/marine,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/equipment)
 
 (1,1,1) = {"
 TQ
@@ -1235,7 +1235,7 @@ Pi
 qW
 et
 dx
-ZO
+AV
 qW
 Pi
 yC
@@ -1250,7 +1250,7 @@ av
 qW
 et
 Jb
-ZO
+AV
 qW
 av
 Kj
@@ -1265,7 +1265,7 @@ av
 qW
 WT
 Gc
-DZ
+Ve
 qW
 dy
 Kj
@@ -1413,9 +1413,9 @@ TQ
 im
 Wp
 yl
-Rp
-ND
-aT
+lX
+Jk
+Tm
 XD
 Wp
 im

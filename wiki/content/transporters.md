@@ -5,7 +5,7 @@ order: 4
 blurb: Beam crew down to a planet and back without ever landing the ship.
 ---
 
-A **transporter** puts people on a surface and pulls them back while the ship stays in orbit. It is the late-game answer to the drop pod: instead of a one-way crate fired at a planet, you get a two-way lift you can use over and over. It costs a lot of research and a lot of bluespace crystal to get there.
+A **transporter** puts people on a surface and pulls them back while the ship stays in orbit. It is the late-game answer to the drop pod: instead of a one-way crate fired at a planet, you get a two-way lift you can use over and over. It needs survey research and bluespace crystal.
 
 ## Researching it
 
@@ -13,9 +13,9 @@ Three nodes, in order. Each needs surveys from your [orbital survey console](shi
 
 | Node | Points | Also requires | What it gives you |
 | --- | --- | --- | --- |
-| Molecular Transporter | 12,000 | 3 planets surveyed | The pad, console and transponder designs. Beam down to open ground the computer picks; beam up transponder carriers standing in the open. |
-| Transporter Pattern Targeting | 20,000 | 5 planets, 2 asteroids surveyed | The targeting scanner: pick the exact tile at either end, beam through a roof, and pull up anything standing on the coordinates. |
-| Transporter Biofilter Matrix | 30,000 | - | Stops passengers taking damage in transit, cuts 20 seconds off the pad's recharge, and lets the console detect a sabotaged pad. |
+| Molecular Transporter | 160 | 3 planets surveyed | The pad, console and transponder designs. Beam down to open ground the computer picks; beam up transponder carriers standing in the open. |
+| Transporter Pattern Targeting | 200 | 5 planets, 2 asteroids surveyed | The targeting scanner: pick the exact tile at either end, beam through a roof, and pull up anything standing on the coordinates. |
+| Transporter Biofilter Matrix | 200 | - | Stops passengers taking damage in transit, cuts 20 seconds off the pad's recharge, and lets the console detect a sabotaged pad. |
 
 ## Building it
 

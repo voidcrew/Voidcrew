@@ -16,10 +16,6 @@
 /obj/structure/sign/warning/secure_area/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"h" = (
-/obj/structure/closet/secure_closet/armory1,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "i" = (
 /obj/structure/closet/secure_closet/security,
 /turf/open/floor/mineral/plastitanium,
@@ -39,14 +35,6 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
-"o" = (
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/gun/energy/e_gun/mini,
-/obj/item/gun/energy/disabler,
-/obj/structure/sign/poster/contraband/c20r/directional/north,
-/turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "p" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -72,9 +60,6 @@
 	pixel_y = -2
 	},
 /obj/structure/sign/poster/contraband/energy_swords/directional/south,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
-"t" = (
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "u" = (
@@ -116,19 +101,18 @@
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
-"H" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 2
-	},
-/obj/structure/closet/syndicate,
-/obj/item/clothing/under/syndicate,
-/obj/item/clothing/under/syndicate,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
 "I" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 2
 	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"M" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
+/obj/structure/sign/poster/contraband/c20r/directional/north,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "O" = (
@@ -192,7 +176,7 @@ I
 g
 "}
 (4,1,1) = {"
-o
+M
 q
 Q
 p

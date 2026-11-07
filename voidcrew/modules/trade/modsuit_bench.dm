@@ -100,6 +100,8 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	/// A service rather than a modification: charged every time, never recorded
 	/// on the suit, never shows as installed.
 	var/repeatable = FALSE
+	/// Crew permission this rung asks for, the same scale a shop SKU uses.
+	var/zone_permission = ZONE_PERMISSION_PUBLIC
 
 /**
  * Human-readable price tag, e.g. "1 voucher + 900 cr".
@@ -135,6 +137,21 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 		if(prerequisite && !prerequisite.is_installed(mod))
 			return "Needs [prerequisite.name] first."
 	return null
+
+/**
+ * What the buyer's crew still has to earn for this rung, or null if nothing.
+ * Every hull get_crew_ships() lists shares one crew record, and the frame has no
+ * ship picker, so no hull needs choosing here.
+ */
+/datum/mod_upgrade/proc/get_reputation_denial(mob/living/user)
+	if(zone_permission == ZONE_PERMISSION_PUBLIC)
+		return null
+	var/list/ships = get_crew_ships(user)
+	var/obj/structure/overmap/ship/crew_ship = length(ships) ? ships[1] : null
+	var/datum/voidcrew_crew_record/crew = crew_ship?.get_crew_record()
+	if(crew?.has_zone_permission(zone_permission))
+		return null
+	return "Needs [zone_permission_reputation(zone_permission)] reputation."
 
 /**
  * Whether the buyer can cover the price right now. Does not charge.
@@ -189,6 +206,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	desc = "A second layer with a blast liner under it. Another 5 to the four combat ratings, plus 10 bomb."
 	price_credits = 800
 	requires = "plating_ablative"
+	zone_permission = ZONE_PERMISSION_YELLOW
 	armor_modifiers = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 10)
 
 /datum/mod_upgrade/plating/composite
@@ -198,6 +216,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 	price_credits = 900
 	price_vouchers = 1
 	requires = "plating_reinforced"
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	armor_modifiers = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 5, WOUND = 5)
 
 // --- Module capacity ----------------------------------------------------
@@ -634,7 +653,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
  * vouchers are consumed, so a half-paid purchase can't happen.
  */
 /obj/machinery/modsuit_bench/proc/try_buy_upgrade(mob/living/carbon/human/user, obj/item/mod/control/mod, datum/mod_upgrade/upgrade)
-	var/denial = upgrade.get_denial(mod)
+	var/denial = upgrade.get_denial(mod) || upgrade.get_reputation_denial(user)
 	if(denial)
 		balloon_alert(user, "unavailable!")
 		to_chat(user, span_warning("[denial]"))
@@ -764,7 +783,7 @@ GLOBAL_LIST_INIT(modsuit_bench_upgrades, build_modsuit_bench_upgrades())
 			"price_vouchers" = upgrade.price_vouchers,
 			"repeatable" = upgrade.repeatable ? TRUE : FALSE,
 			"installed" = upgrade.is_installed(mod) ? TRUE : FALSE,
-			"denial" = upgrade.get_denial(mod),
+			"denial" = upgrade.get_denial(mod) || upgrade.get_reputation_denial(human_occupant),
 			"affordable" = upgrade.can_afford(human_occupant, account) ? TRUE : FALSE,
 		))
 	data["upgrades"] = upgrades

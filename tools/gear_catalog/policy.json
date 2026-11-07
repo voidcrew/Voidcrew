@@ -1,0 +1,214 @@
+{
+ "checked_routes": [
+  "shops",
+  "cargo",
+  "order_consoles",
+  "other_sellers",
+  "printing",
+  "crafting",
+  "made_by_use"
+ ],
+ "min_reputation": {
+  "green": "public",
+  "red": "advanced",
+  "yellow": "yellow"
+ },
+ "ordinary_ingredients": [
+  {
+   "path": "/obj/item/clothing/head/fedora/beige",
+   "reason": "Clothing vendors stock it."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/captain",
+   "reason": "A captain's own uniform: worn at the start or hanging in the locker."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/cargo/tech",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/engineering/engineer",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/medical/doctor",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/rnd/scientist",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/clothing/under/rank/security/officer",
+   "reason": "Job uniform, worn from the start."
+  },
+  {
+   "path": "/obj/item/food/deadmouse",
+   "reason": "Vermin. Ruins and ships have mice."
+  },
+  {
+   "path": "/obj/item/food/donkpocket",
+   "reason": "A snack from any vending machine or galley."
+  },
+  {
+   "path": "/obj/item/food/grown/grass",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/poppy",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/rose",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/sunflower",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/food/grown/wheat",
+   "reason": "The seed vendor sells it and any tray grows it."
+  },
+  {
+   "path": "/obj/item/pillow",
+   "reason": "Bunks have them, and cloth makes them."
+  },
+  {
+   "path": "/obj/item/shard",
+   "reason": "Break a window."
+  },
+  {
+   "path": "/obj/item/toy/crayon",
+   "reason": "A box of crayons, from the games vendor or a crew locker."
+  }
+ ],
+ "price_bands": {
+  "comms": {
+   "green": [
+    300,
+    1200
+   ],
+   "red": [
+    1500,
+    4000
+   ],
+   "yellow": [
+    500,
+    2000
+   ]
+  },
+  "cyberware": {
+   "green": [
+    300,
+    3000
+   ],
+   "red": [
+    2000,
+    10000
+   ],
+   "yellow": [
+    1000,
+    4000
+   ]
+  },
+  "explosives": {
+   "green": [
+    100,
+    1500
+   ],
+   "red": [
+    3000,
+    8000
+   ],
+   "yellow": [
+    700,
+    3000
+   ]
+  },
+  "eyewear": {
+   "green": [
+    100,
+    800
+   ],
+   "yellow": [
+    2000,
+    8000
+   ]
+  },
+  "gloves": {
+   "green": [
+    100,
+    1500
+   ]
+  },
+  "guns": {
+   "green": [
+    0,
+    2500
+   ],
+   "red": [
+    3000,
+    15000
+   ],
+   "yellow": [
+    1000,
+    8000
+   ]
+  },
+  "headwear": {
+   "green": [
+    200,
+    1200
+   ]
+  },
+  "melee": {
+   "green": [
+    200,
+    3500
+   ],
+   "red": [
+    3000,
+    10000
+   ],
+   "yellow": [
+    1500,
+    7000
+   ]
+  },
+  "modsuits": {
+   "green": [
+    100,
+    4500
+   ],
+   "red": [
+    3500,
+    10000
+   ],
+   "yellow": [
+    1000,
+    6000
+   ]
+  },
+  "shields": {
+   "green": [
+    200,
+    1500
+   ],
+   "yellow": [
+    800,
+    5000
+   ]
+  },
+  "suits": {
+   "green": [
+    300,
+    3000
+   ],
+   "yellow": [
+    700,
+    6000
+   ]
+  }
+ }
+}

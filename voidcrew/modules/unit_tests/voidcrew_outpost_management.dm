@@ -83,7 +83,7 @@
 	TEST_ASSERT_NULL(home.current_advert, "An unfunded broadcast went live")
 	var/list/broadcast_data = console_panel.ui_data(owner)
 	TEST_ASSERT_EQUAL(broadcast_data["advert_denial"], "Insufficient outpost funds", "An unfunded broadcast gave no visible rejection reason")
-	home.treasury.adjust_money(2500, "Broadcast fixture") // OUTPOST_ADVERT_COST; fork defines follow test includes.
+	home.treasury.adjust_money(500, "Broadcast fixture") // OUTPOST_ADVERT_COST; fork defines follow test includes.
 	TEST_ASSERT_NULL(console_panel.advert_denial(owner), "Funding the treasury left stale broadcast rejection feedback")
 	TEST_ASSERT_EQUAL(console_panel.advert_denial(resident), "Not authorized", "Missing treasury authority gave no broadcast rejection reason")
 	act(console_panel, owner, "buy_advert", null)

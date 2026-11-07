@@ -420,6 +420,7 @@ GLOBAL_LIST_EMPTY(ambient_ship_places)
 		stray_state = STRAY_WILD
 		REMOVE_TRAIT(src, TRAIT_SPACEWALK, STRAY_TRAIT)
 		return FALSE
+	exempt_npc_zone()
 	on_joined(ship)
 	speak_context("accepted", leader, force = TRUE)
 	log_game("AMBIENT: [src] agreed to join the [ship.name], asked by [key_name(leader)] at [AREACOORD(src)]")

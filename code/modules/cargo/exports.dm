@@ -82,6 +82,8 @@ Then the player gets the profit from selling his own wasted time.
 
 /// The main bit responsible for selling the item. Shared by export_single_item() and export_item_and_contents()
 /proc/_export_loop(atom/movable/exported_atom, apply_elastic = TRUE, dry_run = FALSE, datum/export_report/external_report, export_market)
+	if(is_trader_good(exported_atom)) // VOIDCREW EDIT: trade resale rule also covers exporters that bypass parent applies_to().
+		return EXPORT_NOT_SOLD // VOIDCREW EDIT
 	var/sold = EXPORT_NOT_SOLD
 	for(var/datum/export/export as anything in GLOB.exports_list)
 		if(export.applies_to(exported_atom, apply_elastic, export_market))

@@ -619,28 +619,15 @@
 					user.visible_message(span_warning("[req_defib ? "[defib]" : "[src]"] buzzes: Resuscitation failed - [fail_reason]"))
 					playsound(src, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
 				else
-					var/total_brute = H.getBruteLoss()
-					var/total_burn = H.getFireLoss()
-
-					var/need_mob_update = FALSE
-					//If the body has been fixed so that they would not be in crit when defibbed, give them oxyloss to put them back into crit
-					if (H.health > HALFWAYCRITDEATH)
-						need_mob_update += H.adjustOxyLoss(H.health - HALFWAYCRITDEATH, updating_health = FALSE)
-					else
-						var/overall_damage = total_brute + total_burn + H.getToxLoss() + H.getOxyLoss()
-						var/mobhealth = H.health
-						need_mob_update += H.adjustOxyLoss((mobhealth - HALFWAYCRITDEATH) * (H.getOxyLoss() / overall_damage), updating_health = FALSE)
-						need_mob_update += H.adjustToxLoss((mobhealth - HALFWAYCRITDEATH) * (H.getToxLoss() / overall_damage), updating_health = FALSE, forced = TRUE) // force tox heal for toxin lovers too
-						need_mob_update += H.adjustFireLoss((mobhealth - HALFWAYCRITDEATH) * (total_burn / overall_damage), updating_health = FALSE)
-						need_mob_update += H.adjustBruteLoss((mobhealth - HALFWAYCRITDEATH) * (total_brute / overall_damage), updating_health = FALSE)
-					if(need_mob_update)
-						H.updatehealth() // Previous "adjust" procs don't update health, so we do it manually.
+					// VOIDCREW EDIT ADDITION START: shared defib healing and explicit combat metrics attribution.
+					if(!revive_patient(H, defib_result))
+						playsound(src, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
+						do_success() // The shock still consumes a charge and recharges the paddles.
+						return
+					// VOIDCREW EDIT ADDITION END
 					user.visible_message(span_notice("[req_defib ? "[defib]" : "[src]"] pings: Resuscitation successful."))
 					playsound(src, 'sound/machines/defib/defib_success.ogg', 50, FALSE)
-					H.set_heartattack(FALSE)
-					if(defib_result == DEFIB_POSSIBLE)
-						H.grab_ghost()
-					H.revive()
+					// VOIDCREW EDIT: revival happens in revive_patient(), before any success effects.
 					H.emote("gasp")
 					H.set_jitter_if_lower(200 SECONDS)
 					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
@@ -671,6 +658,17 @@
 				user.visible_message(span_warning("[req_defib ? "[defib]" : "[src]"] buzzes: Patient is not in a valid state. Operation aborted."))
 				playsound(src, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
 	do_cancel()
+
+// VOIDCREW EDIT ADDITION START: shared defib healing and explicit combat metrics attribution.
+/obj/item/shockpaddles/proc/revive_patient(mob/living/carbon/patient, defib_result)
+	if(defib_result != DEFIB_POSSIBLE && defib_result != DEFIB_NOGRAB_AGHOST)
+		return FALSE
+	patient.heal_for_defib()
+	patient.set_heartattack(FALSE)
+	if(defib_result == DEFIB_POSSIBLE)
+		patient.grab_ghost()
+	return patient.revive_from("defibrillator")
+// VOIDCREW EDIT ADDITION END
 
 /obj/item/shockpaddles/proc/is_wielded()
 	return HAS_TRAIT(src, TRAIT_WIELDED)

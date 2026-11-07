@@ -7,6 +7,12 @@ import { type BooleanLike, classes } from 'tgui-core/react';
 import { resolveAsset } from '../../tgui/assets';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
+import {
+  BROWNOUT_COLOR,
+  type LoadSegment,
+  segmentColor,
+  tierColor,
+} from './common/NeuralLoad';
 
 // ---------------------------------------------------------------- geometry
 
@@ -118,6 +124,7 @@ type Data = {
   load: number;
   capacity: number;
   brownout: BooleanLike;
+  load_segments: LoadSegment[];
   tuneup_denial: string | null;
   selected: string | null;
   projection: Projection | null;
@@ -126,22 +133,12 @@ type Data = {
   tray_count: number;
 };
 
-// Mirrors the CYBERWARE_COLOR_TIER_* defines.
-const TIER_COLORS: Record<number, string> = {
-  1: '#ffb347',
-  2: '#4dd8e6',
-  3: '#ff2079',
-  4: '#aaff3c',
-};
-
 const TIER_NAMES: Record<number, string> = {
   1: 'STREET',
   2: 'PRO',
   3: 'MILITARY',
   4: 'LEGEND',
 };
-
-const tierColor = (tier: number) => TIER_COLORS[tier] || TIER_COLORS[1];
 
 /** The parlor's price tag, or null when Splice doesn't stock the piece. */
 function priceLabel(ware: Ware): string | null {
@@ -293,16 +290,8 @@ const Ident = () => {
  */
 const LoadRail = () => {
   const { data } = useBackend<Data>();
-  const { load, capacity, brownout, groups, projection } = data;
-
-  // One segment per seated piece, so a stacked card still spends its budget
-  // once per copy rather than drawing a single fat cell.
-  const installed = groups
-    .flatMap((group) => group.ware)
-    .filter((ware) => !!ware.installed && ware.load > 0)
-    .flatMap((ware) =>
-      Array.from({ length: ware.count }, (_unused, copy) => ({ ware, copy })),
-    );
+  const { load, capacity, brownout, projection, load_segments } = data;
+  const segments = load_segments || [];
   const projected = projection ? projection.load : null;
   const scale = Math.max(capacity, load, projected ?? 0, 1);
 
@@ -310,15 +299,20 @@ const LoadRail = () => {
     <div className="Cradle__loadRail">
       <span className="Cradle__loadTag">NEURAL LOAD</span>
       <div className="Cradle__loadTrack">
-        {installed.map(({ ware, copy }) => (
-          <div
-            key={`${ware.ref}-${copy}`}
-            className="Cradle__loadCell"
-            style={{
-              width: `${(ware.load / scale) * 100}%`,
-              backgroundColor: brownout ? '#8c2030' : tierColor(ware.tier),
-            }}
-          />
+        {segments.map((segment, index) => (
+          <Tooltip
+            key={`${segment.name}-${index}`}
+            content={`${segment.name}: ${segment.load}`}
+            position="bottom"
+          >
+            <div
+              className="Cradle__loadCell"
+              style={{
+                width: `${(segment.load / scale) * 100}%`,
+                backgroundColor: brownout ? BROWNOUT_COLOR : segmentColor(segment),
+              }}
+            />
+          </Tooltip>
         ))}
         <div
           className="Cradle__loadCap"

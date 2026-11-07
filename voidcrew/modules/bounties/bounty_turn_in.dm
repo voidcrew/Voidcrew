@@ -35,6 +35,53 @@
 
 // ===== TURNING IN =====
 
+/// Bind field work before the criminal or its proof can be carried to another band.
+/datum/criminal_bounty/proc/board_note_work_zone(mob/living/basic/bounty_criminal/target)
+	if(!is_open() || !record || record.board_work_zone || target != criminal() || record.status != BOUNTY_RECORD_WANTED)
+		return
+	var/band = get_zone_type_for_player_turf(get_turf(target))
+	if(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+		record.board_work_zone = band
+
+/datum/criminal_bounty/proc/board_reputation_difficulty()
+	if(record?.archetype == BOUNTY_ARCHETYPE_BOSS)
+		return MISSION_DIFFICULTY_HARD
+	switch(record?.tier)
+		if(BOUNTY_TIER_PETTY)
+			return MISSION_DIFFICULTY_EASY
+		if(BOUNTY_TIER_WANTED)
+			return MISSION_DIFFICULTY_MEDIUM
+		if(BOUNTY_TIER_MOST_WANTED)
+			return MISSION_DIFFICULTY_HARD
+	return null
+
+/// The zone this bounty counts in: where it was first caught, or until then where it is posted.
+/datum/criminal_bounty/proc/board_reputation_band()
+	return record?.board_work_zone || board_zone
+
+/// What turning this in would add to `crew` right now. Nothing once it has been claimed.
+/datum/criminal_bounty/proc/board_reputation_worth(datum/voidcrew_crew_record/crew)
+	var/difficulty = board_reputation_difficulty()
+	if(QDELETED(crew) || !difficulty || !record || record.board_reputation_claimed || record.status != BOUNTY_RECORD_WANTED)
+		return 0
+	return crew.reputation_worth(board_reputation_band(), difficulty)
+
+/// Called only by the successful paying claim, before detachment, closing signals or rewards.
+/datum/criminal_bounty/proc/board_claim_zone_work(obj/structure/overmap/ship/ship)
+	var/band = board_reputation_band()
+	if(!record || record.board_reputation_claimed || record.status != BOUNTY_RECORD_WANTED \
+		|| !(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return 0
+	var/difficulty = board_reputation_difficulty()
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	if(!difficulty || QDELETED(crew))
+		return 0
+	record.board_reputation_claimed = TRUE
+	var/permission_before = crew.get_zone_permission()
+	var/gain = crew.claim_zone_work(band, difficulty, "bounty:[record.id]")
+	record_zone_work_rows(ship, type, band, zone_work_reward(difficulty), gain, permission_before, crew.get_zone_permission(), usr, list("bounty_record" = record.id))
+	return gain
+
 /**
  * `ship` turns this bounty in at `pad`: the criminal (or its proof of death) on the pad's own tile,
  * the pad bolted and aboard. Returns list(credits, vouchers) paid, or why not (a short phrase).
@@ -127,6 +174,7 @@
 	// Closing lets go of the record and the hunters, so everything read from them is read now
 	var/poster_text = (live && share >= 100 && claimed?.tier >= BOUNTY_TIER_WANTED) ? board_poster_text(ship) : null
 	var/list/already_told = most_wanted ? hunter_ships() : null
+	var/reputation_gain = (pay[1] > 0 || pay[2] > 0) ? board_claim_zone_work(ship) : 0
 
 	// Take it: the criminal is frozen for the beam and stops being this bounty's, so closing the bounty doesn't remove it
 	if(criminal)
@@ -170,7 +218,8 @@
 	var/how = proof ? "confirmed dead" : bounty_state_words(state)
 	// Only the crew's own prison is named: the transfer pool is the corrections service's business
 	var/after = (live && prison) ? " They're headed for your prison at [prison.outpost?.name || "your outpost"]." : ""
-	ship.ship_notify("BOUNTY: [wanted_name] turned in, [how]. Paid [english_list(paid)].[after]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
+	ship.ship_notify("BOUNTY: [wanted_name] turned in, [how]. Paid [english_list(paid)].[reputation_text][after]", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	// A Most Wanted catch is news for every other crew (the hunters already heard from close())
 	if(most_wanted)
 		var/news = live ? "BOUNTY: the crew of the [ship.name] brought in [wanted_name], Most Wanted." : "BOUNTY: the crew of the [ship.name] took down [wanted_name], Most Wanted."

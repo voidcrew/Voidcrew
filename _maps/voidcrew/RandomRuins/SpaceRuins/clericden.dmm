@@ -63,11 +63,6 @@
 /obj/item/reagent_containers/cup/glass/bottle/holywater,
 /turf/open/floor/carpet/airless,
 /area/ruin/space)
-"p" = (
-/obj/structure/table/wood/fancy,
-/obj/item/melee/cleric_mace,
-/turf/open/floor/carpet/airless,
-/area/ruin/space)
 "q" = (
 /obj/effect/zone_mobs/cult/boss,
 /obj/effect/decal/cleanable/shreds,
@@ -207,6 +202,11 @@
 /obj/effect/decal/remains/human,
 /obj/item/paper/fluff/ruins/clericsden/warning,
 /turf/open/misc/asteroid/airless,
+/area/ruin/space)
+"V" = (
+/obj/structure/table/wood/fancy,
+/obj/item/knife/combat/survival,
+/turf/open/floor/carpet/airless,
 /area/ruin/space)
 
 (1,1,1) = {"
@@ -374,7 +374,7 @@ a
 b
 g
 m
-p
+V
 r
 v
 y

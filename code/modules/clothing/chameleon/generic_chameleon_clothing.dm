@@ -59,6 +59,7 @@ do { \
 	blood_overlay_type = "armor"
 	resistance_flags = NONE
 	armor_type = /datum/armor/suit_chameleon
+	body_parts_covered = CHEST // VOIDCREW EDIT ADDITION: a vest that covers nothing never applies its armor (voidcrew gear balance)
 	actions_types = list(/datum/action/item_action/chameleon/change/suit)
 	action_slots = ALL
 

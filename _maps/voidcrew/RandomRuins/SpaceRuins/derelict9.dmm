@@ -12,6 +12,11 @@
 /obj/effect/spawner/random/maintenance/three,
 /turf/open/floor/plating/airless,
 /area/ruin/space)
+"g" = (
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/blood,
+/turf/open/misc/asteroid/airless,
+/area/ruin/space)
 "h" = (
 /obj/structure/closet/crate,
 /obj/item/weldingtool,
@@ -87,11 +92,6 @@
 "I" = (
 /obj/machinery/porta_turret/syndicate/pod,
 /turf/closed/wall/r_wall,
-/area/ruin/space)
-"J" = (
-/obj/item/gun/energy/laser/musket,
-/obj/effect/decal/cleanable/blood,
-/turf/open/misc/asteroid/airless,
 /area/ruin/space)
 "K" = (
 /obj/effect/decal/cleanable/dirt,
@@ -359,7 +359,7 @@ a
 a
 a
 a
-J
+g
 a
 a
 a

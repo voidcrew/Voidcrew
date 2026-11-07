@@ -359,11 +359,11 @@
  * Hailing behavior - pirate is demanding tribute, waiting for player response.
  * During this phase:
  * - Pirate follows target but doesn't attack
- * - Player can answer via holopad → NEGOTIATING
+ * - Player can answer via holopad â†’ NEGOTIATING
  * - Player can escape (moving is OK during hailing)
- * - Player locks weapons → immediate COMBAT
- * - Player fires on pirate → immediate COMBAT
- * - 20 seconds pass without answer → escalation
+ * - Player locks weapons â†’ immediate COMBAT
+ * - Player fires on pirate â†’ immediate COMBAT
+ * - 20 seconds pass without answer â†’ escalation
  *
  * What "escalation" means depends on the hail: red opens fire, a broke target
  * gets boarded, and a yellow-band shakedown gets its accounts drained by the
@@ -692,16 +692,7 @@
 	if(target_has_shields)
 		return AI_BEHAVIOR_DELAY
 
-	// Check if we've hit the max boarder cap (10 mobs max during ship combat)
-	var/current_boarders = count_hostile_mobs_on_ship(target)
-	if(current_boarders >= NPC_SHIP_COMBAT_MAX_BOARDERS)
-		return AI_BEHAVIOR_DELAY
-
-	// Calculate number of pods to launch (don't exceed the cap)
 	var/pod_count = rand(ship.boarding_pods_min, ship.boarding_pods_max)
-	pod_count = min(pod_count, NPC_SHIP_COMBAT_MAX_BOARDERS - current_boarders)
-	if(pod_count <= 0)
-		return AI_BEHAVIOR_DELAY
 
 	// Fire the boarding pods!
 	if(combat.fire_boarding_pods(target, pod_count))
@@ -1089,7 +1080,7 @@
 	// Check 3: Target has moved within same zone (trying to escape but still in range)
 	var/list/initial_pos = controller.blackboard[BB_NPC_BOARDING_TARGET_POS]
 	if(initial_pos && length(initial_pos) >= 2)
-		if(target.x != initial_pos[1] || target.y != initial_pos[2])
+		if(target.x != initial_pos["x"] || target.y != initial_pos["y"])
 			ship.ship_notify("Target is trying to escape! Weapons free!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
 			target.ship_notify("[ship.name]: \"Running won't save you! All guns, fire!\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 			controller.escalate_boarding_to_combat("movement")

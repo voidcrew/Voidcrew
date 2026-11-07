@@ -9,6 +9,17 @@
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
 	})
+"ac" = (
+/obj/structure/closet/cabinet,
+/obj/item/spear,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/machinery/power/terminal,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
 "af" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/effect/decal/cleanable/dirt,
@@ -237,17 +248,6 @@
 	})
 "aP" = (
 /obj/effect/decal/cleanable/glass,
-/turf/open/floor/stone,
-/area/shuttle/voidcrew/pirate_medieval{
-	requires_power = 0
-	})
-"aQ" = (
-/obj/structure/closet/cabinet,
-/obj/item/claymore,
-/obj/item/shield/kite,
-/obj/item/shield/kite,
-/obj/item/shield/kite,
-/obj/machinery/power/terminal,
 /turf/open/floor/stone,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
@@ -647,7 +647,7 @@ aR
 aX
 bd
 aC
-aQ
+ac
 dL
 Nz
 "}

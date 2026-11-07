@@ -1,7 +1,7 @@
 /**
  * # Zone-Aware Loot Cache
  *
- * One generic container that rolls its contents when it spawns. Every cache
+ * One generic container that rolls its contents on first opening or break. Every cache
  * of a theme draws from the SAME four-tier pool no matter where it sits; the
  * overmap zone decides only how many draws it gets and how the odds lean
  * across those tiers. A green cache can pay the top of its theme, it just
@@ -29,8 +29,8 @@
  * (themes/<theme>.dm) that owns the four tier tables, the guard-marker
  * pairing and the shop-SKU cross-references.
  *
- * Contents roll WITHOUT replacement within one cache: a single cache can
- * never pay the same prize twice. Uniqueness is per-cache only, there is
+ * One draw pays a weapon; remaining nonweapon draws roll WITHOUT
+ * replacement within one cache. Uniqueness is per-cache only, there is
  * deliberately no global already-dropped registry, so a long round can hand
  * two crews the same one-of-a-kind item.
  *
@@ -96,6 +96,14 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/// prize rather than scenery (a bought premium cache, a jackpot drop).
 	/// Scales AMOUNT only, a bonus cache reaches no content a plain one can't.
 	var/bonus_draws = 0
+	/// Purchased caches keep themed supplies but use the freight weapon profile.
+	var/freight_weapons = FALSE
+	/// Claim before spawning anything, including on direct population calls.
+	var/loot_consumed = FALSE
+
+/obj/structure/closet/crate/zone_loot/Initialize(mapload)
+	spawn_turf = get_turf(src)
+	return ..()
 
 /obj/structure/closet/crate/zone_loot/Destroy()
 	spawn_turf = null
@@ -103,7 +111,8 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 
 /obj/structure/closet/crate/zone_loot/LateInitialize()
 	. = ..()
-	spawn_turf = get_turf(src)
+	if(loot_consumed)
+		return
 	new /datum/zone_resolver(spawn_turf, CALLBACK(src, PROC_REF(on_zone_resolved)))
 
 /**
@@ -117,6 +126,9 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	spawn_turf = null
 
 /obj/structure/closet/crate/zone_loot/PopulateContents()
+	if(loot_consumed)
+		return
+	loot_consumed = TRUE
 	. = ..()
 	// Last chance: resolve against the spawn point (NOT the current
 	// position, moving the cache must never change its value), else it
@@ -154,7 +166,8 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 			draws_max = ZONE_LOOT_DRAWS_MAX_YELLOW
 			tier_odds = ZONE_LOOT_ODDS_YELLOW
 
-	roll_loot_draws(src, pools, rand(draws_min, draws_max) + bonus_draws, tier_odds)
+	roll_cache_weapon(src, loot_zone, loot_theme, freight_weapons)
+	roll_loot_draws(src, pools, rand(draws_min, draws_max) - 1 + bonus_draws, tier_odds)
 
 /**
  * Rolls `draws` prizes out of `pools` and spawns them inside `destination`.
@@ -172,12 +185,97 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 		var/loot_path = draw_loot_from_tier(pools, pick_weight(tier_odds))
 		if(!loot_path)
 			return
-		new loot_path(destination)
-		// a looted ballistic brings one spare reload with it; energy guns
-		// aren't in the map and need nothing
-		var/spare_ammo = GLOB.loot_gun_spare_ammo[loot_path]
-		if(spare_ammo)
-			new spare_ammo(destination)
+		spawn_loot_prize(destination, loot_path)
+
+/// Shared by themed caches and freight. The caller replaces one existing draw.
+/proc/roll_cache_weapon(atom/destination, zone, datum/loot_theme/theme, freight = FALSE)
+	var/loot_path = select_cache_weapon(zone, theme, freight)
+	spawn_loot_prize(destination, loot_path)
+	return loot_path
+
+/// The two independent rolls are exposed so tests can enumerate every outcome.
+/proc/select_cache_weapon(zone, datum/loot_theme/theme, freight = FALSE, gun_roll = rand(1, 100), class_roll = rand(1, 1000))
+	var/gun = gun_roll <= get_cache_gun_chance(zone, theme, freight)
+	var/weapon_class = get_cache_weapon_class(zone, gun, class_roll)
+	var/list/pool = theme ? theme.get_weapon_pool(gun, weapon_class, freight) : get_cache_weapon_pool(gun, weapon_class, LOOT_GUN_POOL_FREIGHT)
+	return pick_weight(pool)
+
+/proc/get_cache_gun_chance(zone, datum/loot_theme/theme, freight = FALSE)
+	if(zone != ZONE_YELLOW && zone != ZONE_RED)
+		zone = ZONE_GREEN
+	var/list/chances = freight || !theme ? LOOT_GUN_CHANCE_FREIGHT : theme.gun_chance
+	return chances[zone]
+
+/// Normalize every class distribution to 1000 integer outcomes.
+/proc/get_cache_weapon_class(zone, gun, roll = rand(1, 1000))
+	var/list/odds
+	switch(zone)
+		if(ZONE_YELLOW)
+			odds = gun ? LOOT_GUN_CLASSES_YELLOW : LOOT_MELEE_CLASSES_YELLOW
+		if(ZONE_RED)
+			odds = gun ? LOOT_GUN_CLASSES_RED : LOOT_MELEE_CLASSES_RED
+		else
+			odds = gun ? LOOT_GUN_CLASSES_GREEN : LOOT_MELEE_CLASSES_GREEN
+	var/cumulative = 0
+	for(var/weapon_class in odds)
+		cumulative += odds[weapon_class]
+		if(roll <= cumulative)
+			return weapon_class
+
+/proc/get_cache_weapon_pool(gun, weapon_class, family, list/extras)
+	if(gun && family == LOOT_GUN_POOL_FREIGHT && weapon_class == LOOT_WEAPON_RED)
+		weapon_class = LOOT_WEAPON_YELLOW
+	var/list/main_pools = gun ? GLOB.loot_gun_pools[family] : GLOB.loot_melee_pools
+	var/list/pool = main_pools[weapon_class]
+	pool = pool.Copy()
+	var/list/extra_pool = extras?[weapon_class]
+	for(var/entry in extra_pool)
+		// A main entry always keeps its weight, even if an extra repeats it.
+		if(!(entry in pool))
+			pool[entry] = extra_pool[entry]
+	return pool
+
+/// One prize plus one matching ballistic reload; reloads never consume a draw.
+/proc/spawn_loot_prize(atom/destination, loot_path)
+	if(!loot_path)
+		return
+	var/atom/movable/prize = new loot_path(destination)
+	. = prize
+	var/spare_ammo = GLOB.loot_gun_spare_ammo[loot_path]
+	if(spare_ammo)
+		new spare_ammo(destination)
+		return
+	if(!istype(prize, /obj/item/gun/ballistic))
+		return
+	var/obj/item/gun/ballistic/gun = prize
+	// These authored kits already create their own matching reloads.
+	if(istype(gun, /obj/item/gun/ballistic/revolver/c38/housecall) || istype(gun, /obj/item/gun/ballistic/shotgun/musket/no_quarter))
+		return
+	if(!gun.internal_magazine)
+		var/magazine_path = gun.accepted_magazine_type
+		new magazine_path(destination)
+		return
+	// Retained specialist weapons may have no boxed ammunition. Give one
+	// cylinder/tube of their actual rounds, rather than an incompatible box.
+	var/round_path = gun.magazine.ammo_type
+	for(var/round in 1 to gun.magazine.max_ammo)
+		new round_path(destination)
+
+// Stamp purchased caches before they can be opened, even when dispensed aboard a ship.
+/datum/shop_sku/general/rotating/freight_crate/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	. = ..()
+	var/obj/structure/closet/crate/zone_loot/cache = .
+	cache.freight_weapons = TRUE
+
+/datum/shop_sku/black_market/mystery_cache/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	. = ..()
+	var/obj/structure/closet/crate/zone_loot/cache = .
+	cache.freight_weapons = TRUE
+
+/datum/shop_sku/black_market/mystery_cache_rare/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	. = ..()
+	var/obj/structure/closet/crate/zone_loot/cache = .
+	cache.freight_weapons = TRUE
 
 /**
  * Pulls one entry out of `pools` at the requested tier, removing it so the

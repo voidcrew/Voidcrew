@@ -248,6 +248,32 @@
 "aZ" = (
 /turf/closed/wall,
 /area/ruin/space/has_grav/powered)
+"ba" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "torn share-slip";
+	default_raw_text = "Harrow counts the take. Harrow keeps the book. Harrow says the split is fair. The book says the vault holds forty crews of plunder and we counted eleven crews at dock. Vote was called. Vote was guns."
+	},
+/obj/item/melee/baseball_bat{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = -5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"bb" = (
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat{
+	pixel_y = 5
+	},
+/obj/item/storage/box/lethalshot{
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
 "bs" = (
 /obj/machinery/light/small/red/directional/west,
 /turf/open/floor/plating,
@@ -469,16 +495,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
-"zx" = (
-/obj/structure/table/wood,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	pixel_y = 5
-	},
-/obj/item/storage/box/lethalshot{
-	pixel_y = -3
-	},
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
 "zD" = (
 /obj/structure/closet/crate/wooden,
 /obj/effect/spawner/random/entertainment/money_small,
@@ -500,22 +516,6 @@
 "Bq" = (
 /obj/structure/table/wood,
 /obj/effect/spawner/random/food_or_drink/booze,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/powered)
-"Bt" = (
-/obj/effect/decal/remains/human,
-/obj/effect/decal/cleanable/blood/old,
-/obj/item/paper/crumpled/bloody{
-	name = "torn share-slip";
-	default_raw_text = "Harrow counts the take. Harrow keeps the book. Harrow says the split is fair. The book says the vault holds forty crews of plunder and we counted eleven crews at dock. Vote was called. Vote was guns."
-	},
-/obj/item/gun/ballistic/revolver{
-	pixel_x = 6;
-	pixel_y = -3
-	},
-/obj/item/ammo_casing/spent{
-	pixel_x = -5
-	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "DK" = (
@@ -1080,7 +1080,7 @@ av
 hg
 ay
 he
-Bt
+ba
 nD
 av
 aV
@@ -1563,7 +1563,7 @@ aV
 aH
 mX
 aQ
-zx
+bb
 VA
 aH
 aV

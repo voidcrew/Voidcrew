@@ -54,6 +54,13 @@
 	GLOB.overmap_blocked_turfs -= target_tile
 
 	var/obj/structure/overmap/ship/ship = allocate(/obj/structure/overmap/ship)
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	allocated += ship.get_crew_record()
+	var/mob/living/carbon/human/member = allocate(/mob/living/carbon/human/consistent)
+	member.mind_initialize()
+	allocated += member.mind
+	ship.enlist_crewmember(member)
 	for(var/index in 1 to 5)
 		ship.available_missions += allocate(/datum/mission)
 	SSmissions.refresh_ship_missions(ship)
@@ -61,11 +68,14 @@
 	var/datum/mission/exploration/safe_offer = locate() in ship.available_missions
 	TEST_ASSERT_NOTNULL(safe_offer, "Full unsafe board did not reserve an exploration slot")
 	TEST_ASSERT_EQUAL(safe_offer.target.get_zone_type(), 1, "Reserved job is outside green space")
-	TEST_ASSERT(safe_offer.value >= 400 && safe_offer.value <= 700, "Reserved job changed the existing green payout")
+	TEST_ASSERT(safe_offer.value >= 150 && safe_offer.value <= 250, "Reserved job left the green payout band")
 	SSmissions.refresh_ship_missions(ship)
 	TEST_ASSERT(safe_offer in ship.available_missions, "Refresh replaced an existing valid safe offer")
+	TEST_ASSERT(!SSmissions.force_refresh_ship_missions(ship), "Manual refresh bypassed the fixed offer timer")
+	TEST_ASSERT(safe_offer in ship.available_missions, "Early refresh replaced the green offer")
+	ship.next_mission_refresh = world.time
 	SSmissions.force_refresh_ship_missions(ship)
-	TEST_ASSERT(QDELETED(safe_offer), "Reroll retained the old offer")
+	TEST_ASSERT(QDELETED(safe_offer), "Scheduled refresh retained the old offer")
 	safe_offer = locate() in ship.available_missions
 	TEST_ASSERT_NOTNULL(safe_offer, "Reroll omitted the reserved exploration offer")
 	TEST_ASSERT_EQUAL(safe_offer.target.get_zone_type(), 1, "Reroll's first exploration job is not green")

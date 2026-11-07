@@ -12,27 +12,7 @@
 	},
 /turf/closed/wall/r_wall,
 /area/template_noop)
-"cAP" = (
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -6;
-	pixel_y = -2
-	},
-/obj/item/knife/combat/survival{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/item/ammo_box/strilka310{
-	pixel_x = 7;
-	pixel_y = 10
-	},
-/obj/item/ammo_box/strilka310{
-	pixel_x = 7;
-	pixel_y = 8
-	},
-/obj/structure/table/reinforced/plasmarglass,
-/turf/open/floor/glass/reinforced/plasma,
-/area/template_noop)
-"elB" = (
+"eRh" = (
 /obj/machinery/light/small{
 	dir = 8
 	},
@@ -165,18 +145,32 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"srG" = (
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/ammo_box/strilka310{
+	pixel_x = 7;
+	pixel_y = 8
+	},
+/obj/structure/table/reinforced/plasmarglass,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
 "sGv" = (
 /obj/machinery/door/airlock/vault{
 	name = "Armory"
 	},
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
-"sWY" = (
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/machinery/recharger,
-/obj/structure/table/reinforced/plasmarglass,
-/turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
 "vpz" = (
 /obj/structure/closet/secure_closet/security,
@@ -200,6 +194,12 @@
 /obj/structure/cable,
 /turf/open/floor/glass/reinforced/plasma,
 /area/template_noop)
+"yld" = (
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/recharger,
+/obj/structure/table/reinforced/plasmarglass,
+/turf/open/floor/glass/reinforced/plasma,
+/area/template_noop)
 
 (1,1,1) = {"
 gAx
@@ -216,9 +216,9 @@ pTu
 gAx
 nHL
 wAG
-cAP
-sWY
-elB
+srG
+yld
+eRh
 wUb
 pyD
 kde

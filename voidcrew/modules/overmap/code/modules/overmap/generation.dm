@@ -119,12 +119,55 @@
 	return max(0, largest_gap - max_destination_gap * max_destination_gap) + max(0, uncovered - length(tiles) * (1 - min_destination_coverage))
 
 /datum/overmap_layout/proc/can_place_hazard(turf/spot)
-	if(!tiles[spot] || obstacles[spot] || destinations[spot] || hazards[spot])
-		return FALSE
-	if(get_dist(spot, SSovermap.overmap_centre) < 2)
+	if(!hazard_site_open(spot))
 		return FALSE
 	var/key = "[tiles[spot]]"
 	return hazard_counts[key] < hazard_targets[key]
+
+/// Whether a hazard may stand here at all, whatever the generation budget says.
+/datum/overmap_layout/proc/hazard_site_open(turf/spot)
+	if(!tiles[spot] || obstacles[spot] || destinations[spot] || hazards[spot])
+		return FALSE
+	return get_dist(spot, SSovermap.overmap_centre) >= 2
+
+/// Whether a clear tile sits beside this one, to approach it from without crossing a hazard.
+/datum/overmap_layout/proc/has_clear_approach(turf/spot)
+	for(var/turf/adjacent as anything in neighbors[spot])
+		if(!obstacles[adjacent] && !hazards[adjacent])
+			return TRUE
+	return FALSE
+
+/**
+ * Whether the clear tiles beside `spot` can all reach each other without passing through it.
+ * If they can, nothing that used to route through `spot` has lost its way. Asked of the tile's
+ * neighbours rather than of the whole chart so a pocket already cut off somewhere else
+ * cannot veto an unrelated tile.
+ */
+/datum/overmap_layout/proc/neighbours_still_joined(turf/spot, band = null)
+	var/list/reached
+	for(var/turf/adjacent as anything in neighbors[spot])
+		if(obstacles[adjacent] || hazards[adjacent] || (!isnull(band) && tiles[adjacent] != band))
+			continue
+		if(!reached)
+			reached = flood(adjacent, band)
+		else if(!reached[adjacent])
+			return FALSE
+	return TRUE
+
+/**
+ * Whether a hazard added at `spot` keeps the guarantees generate_hazards() made: clear space
+ * stays joined across the chart and inside the band, and this hazard and its neighbours can
+ * all still be approached from a clear tile.
+ */
+/datum/overmap_layout/proc/hazard_keeps_routes(turf/spot)
+	hazards[spot] = TRUE
+	. = has_clear_approach(spot) && neighbours_still_joined(spot) && neighbours_still_joined(spot, tiles[spot])
+	if(.)
+		for(var/turf/adjacent as anything in neighbors[spot])
+			if(hazards[adjacent] && !has_clear_approach(adjacent))
+				. = FALSE
+				break
+	hazards -= spot
 
 /datum/overmap_layout/proc/add_hazard(turf/spot, event_type)
 	hazards[spot] = event_type
@@ -215,6 +258,7 @@
 			for(var/path in weights)
 				if(!tally[path])
 					weights[path] *= 2
+			weights = meteor_event_weights(weights, band)
 			event_type = pick_weight(weights)
 		grow_cluster(seed, event_type)
 		CHECK_TICK
@@ -239,6 +283,25 @@
 	if(!connect_clear_space())
 		return FALSE
 	return ensure_event_supply()
+
+/// Severity changes within the existing meteor budget, leaving hazard coverage intact.
+/proc/meteor_severity_weights(zone_type)
+	switch(ordinary_ore_zone(zone_type))
+		if(ZONE_YELLOW)
+			return list(/obj/structure/overmap/event/meteor/minor = 25, /obj/structure/overmap/event/meteor = 50, /obj/structure/overmap/event/meteor/majour = 25)
+		if(ZONE_RED)
+			return list(/obj/structure/overmap/event/meteor/minor = 10, /obj/structure/overmap/event/meteor = 30, /obj/structure/overmap/event/meteor/majour = 60)
+	return list(/obj/structure/overmap/event/meteor/minor = 60, /obj/structure/overmap/event/meteor = 30, /obj/structure/overmap/event/meteor/majour = 10)
+
+/proc/meteor_event_weights(list/weights, zone_type)
+	var/list/result = weights.Copy()
+	var/list/severities = meteor_severity_weights(zone_type)
+	var/total = 0
+	for(var/path in severities)
+		total += weights[path]
+	for(var/path in severities)
+		result[path] = total * severities[path] / 100
+	return result
 
 /// Repairs only remove hazards, so this converges. A cross-zone opening can expose
 /// another pocket inside one band; recheck until both guarantees hold together.
@@ -360,7 +423,12 @@
 			connection = parents[connection]
 		CHECK_TICK
 
-/datum/controller/subsystem/overmap/proc/get_overmap_layout(read_objects = TRUE)
+/**
+ * * read_objects - fill the layout in from what stands on the chart now.
+ * * measure_destinations - keep the destination spacing data. Pass FALSE mid-round when only
+ *   the tiles matter: it costs every destination a walk of the whole chart.
+ */
+/datum/controller/subsystem/overmap/proc/get_overmap_layout(read_objects = TRUE, measure_destinations = TRUE)
 	var/list/chart_turfs = list()
 	for(var/turf/open/overmap/spot in block(locate(OVERMAP_LEFT_SIDE_COORD + 1, OVERMAP_SOUTH_SIDE_COORD + 1, OVERMAP_Z_LEVEL), locate(OVERMAP_RIGHT_SIDE_COORD - 1, OVERMAP_NORTH_SIDE_COORD - 1, OVERMAP_Z_LEVEL)))
 		chart_turfs += spot
@@ -374,8 +442,83 @@
 				else if(istype(contact, /obj/structure/overmap/event))
 					layout.add_hazard(spot, contact.type)
 				else if(!istype(contact, /obj/structure/overmap/ship))
-					layout.record_destination(spot, "[contact.type]")
+					if(measure_destinations)
+						layout.record_destination(spot, "[contact.type]")
+					else
+						layout.destinations[spot] = "[contact.type]"
 	return layout
+
+/// Most tiles one field move runs the route checks on. A flood costs a walk of the chart.
+#define FIELD_RELOCATION_ROUTE_CHECKS 30
+
+/**
+ * Where a spent asteroid field lands: a tile of `band` with nothing on it and no contract
+ * pinned to it, that keeps every route open and is out of sight of the tile it left. Out of
+ * sight of every other ship too, when the band has a tile like that.
+ *
+ * Null when nothing qualifies. Nothing yields between the last check on the returned tile and
+ * the return, so the caller's forceMove() lands where this looked.
+ */
+/datum/controller/subsystem/overmap/proc/find_field_relocation_tile(turf/old_tile, band)
+	var/datum/overmap_layout/layout = get_overmap_layout(measure_destinations = FALSE)
+	var/hazards_on_old_tile = 0
+	for(var/obj/structure/overmap/event/hazard in old_tile)
+		hazards_on_old_tile++
+	if(hazards_on_old_tile <= 1)
+		layout.remove_hazard(old_tile)
+
+	var/list/old_position = list(old_tile.x, old_tile.y)
+	var/list/watchers = list()
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+		var/turf/ship_tile = get_turf(ship)
+		if(ship_tile?.z == OVERMAP_Z_LEVEL)
+			watchers += list(list(ship_tile.x, ship_tile.y))
+	var/list/pinned = contract_pinned_tiles()
+
+	var/turf/chosen
+	var/turf/in_sight
+	var/route_checks = 0
+	for(var/turf/spot as anything in shuffle(layout.free_tiles(band)))
+		CHECK_TICK
+		if(!layout.hazard_site_open(spot) || pinned[spot] || (locate(/obj/structure/overmap) in spot))
+			continue
+		var/list/position = list(spot.x, spot.y)
+		if(in_view_ring(old_position, position))
+			continue
+		var/seen = FALSE
+		for(var/list/watcher as anything in watchers)
+			if(in_view_ring(watcher, position))
+				seen = TRUE
+				break
+		if(seen && in_sight)
+			continue
+		if(++route_checks > FIELD_RELOCATION_ROUTE_CHECKS)
+			break
+		if(!layout.hazard_keeps_routes(spot))
+			continue
+		if(seen)
+			in_sight = spot
+			continue
+		chosen = spot
+		break
+	qdel(layout)
+	if(chosen)
+		return chosen
+	// A ship may have flown onto this one while the search went on looking for better.
+	return (in_sight && !(locate(/obj/structure/overmap) in in_sight)) ? in_sight : null
+
+#undef FIELD_RELOCATION_ROUTE_CHECKS
+
+/// Tiles a live or offered contract is flying to. A hazard landing on one voids the offer.
+/datum/controller/subsystem/overmap/proc/contract_pinned_tiles()
+	. = list()
+	var/list/contracts = SSmissions.all_active_missions.Copy()
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+		contracts += ship.available_missions
+	for(var/datum/mission/contract as anything in contracts)
+		var/datum/mission_target/coords/coords = contract?.target
+		if(istype(coords) && coords.resolved_turf)
+			.[coords.resolved_turf] = TRUE
 
 /// Prefer the least occupied fraction, so the larger outer band receives its share.
 /datum/controller/subsystem/overmap/proc/least_dense_band(list/bands, list/counts, list/sizes)

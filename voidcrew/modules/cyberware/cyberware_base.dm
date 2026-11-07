@@ -74,7 +74,6 @@
 
 /obj/item/organ/cyberimp/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>[chrome_capacity_bonus ? ", grants +[chrome_capacity_bonus] chrome capacity" : ""]. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 	. += cyberware_emp_examine_line()
 
 /obj/item/organ/cyberimp/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
@@ -151,8 +150,6 @@
 
 /obj/item/organ/eyes/robotic/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
-	. += span_notice("Diagnostic bus: [chrome_scan_resolution >= CYBERWARE_SCAN_ITEMIZED ? "reads a body's chrome piece by piece" : "counts a body's chrome signatures, but can't name them"].")
 	. += cyberware_emp_examine_line()
 
 /obj/item/organ/eyes/robotic/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
@@ -223,7 +220,6 @@
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/examine(mob/user)
 	. = ..()
-	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome, install at a Chrome Cradle or through organ-manipulation surgery.")
 	. += cyberware_emp_examine_line()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
@@ -250,6 +246,9 @@
 // (Fixer's Fingers picking a tool off the radial, the Rockjaw drill, blades,
 // launchers) lights the bearer up on the way out and on the way back in.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Extend(obj/item/augment)
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(!chrome?.is_running())
+		return
 	. = ..()
 	// The parent assigns active_item before it knows whether a hand is free
 	// (augments_arms.dm), so "did it deploy" is "did it leave us", not "is it set".
@@ -297,24 +296,10 @@
 /proc/cyberware_insert_check(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE, mob/feedback_to)
 	if(!iscarbon(target))
 		return FALSE
-	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-	if(!chrome)
+	if(installed_capacity_check(target, list(ware), ware.cyberware_get_incumbents(target), silent))
 		return TRUE
-	var/projected_load = get_chrome_load(target) + chrome.chrome_load
-	var/projected_capacity = get_chrome_capacity(target) + chrome.capacity_bonus
-	for(var/obj/item/organ/incumbent in ware.cyberware_get_incumbents(target))
-		var/datum/component/cyberware/incumbent_chrome = incumbent.GetComponent(/datum/component/cyberware)
-		if(!incumbent_chrome)
-			continue
-		projected_load -= incumbent_chrome.chrome_load
-		projected_capacity -= incumbent_chrome.capacity_bonus
-	if(projected_load <= projected_capacity)
-		return TRUE
-	if(!silent)
-		target.balloon_alert(target, "no neural headroom!")
-		to_chat(target, span_warning("Your nervous system is already maxed out. [ware] needs [projected_load - projected_capacity] more chrome capacity."))
-		if(feedback_to && feedback_to != target)
-			to_chat(feedback_to, span_warning("[target]'s nervous system can't take [ware], [projected_load - projected_capacity] over capacity."))
+	if(!silent && feedback_to && feedback_to != target)
+		feedback_to.balloon_alert(feedback_to, "no neural headroom!")
 	return FALSE
 
 /**
@@ -381,7 +366,7 @@
 /// weakness was always in the design and never legible on the item itself;
 /// now that it actually bites (BAL-4), it says so where people read it.
 /proc/cyberware_emp_examine_line()
-	return span_notice("Electromagnetic pulses scramble chrome. An EMP knocks this offline for up to [DisplayTimeText(CYBERWARE_EMP_DOWNTIME)] and everything it was doing for you stops until it reboots; a Chrome Cradle tune-up clears it early.")
+	return span_notice("The shielding is thin and worn.")
 
 // ---- Ink bus -----------------------------------------------------------
 
@@ -458,11 +443,10 @@
 	. = ..()
 	if(!.)
 		return
-	if(!organ?.owner)
-		return FALSE
-	if(organ.organ_flags & ORGAN_FAILING)
+	var/datum/component/cyberware/chrome = organ?.GetComponent(/datum/component/cyberware)
+	if(!chrome?.is_running())
 		if(feedback)
-			organ.owner.balloon_alert(organ.owner, "chrome offline!")
+			organ?.owner?.balloon_alert(organ.owner, "chrome offline!")
 		return FALSE
 	return TRUE
 

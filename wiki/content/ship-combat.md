@@ -30,7 +30,7 @@ Every weapon is a separate machine that has to be linked to a **weapons system**
 
 The console also only answers to your own crew, and it refuses to acquire a lock while you are docked.
 
-Everything here comes off the research tree. **Shuttle Warfare Systems** unlocks the console; missiles, shields, lasers, cloaking, interdiction and the data siphon all branch off it, with standard and heavy warheads behind two further nodes. Cargo sells missile parts and a launcher kit if you would rather buy than print. See [ship systems](ship-systems.md) for the machines themselves.
+Everything here comes off the research tree. **Shuttle Warfare Systems** unlocks the console; missiles, shields, lasers, cloaking, interdiction and the data siphon all branch off it, with standard and heavy warheads behind two further nodes. Shields, interdiction, the data siphon and electronic warfare need 11 [reputation](zone-reputation.md). Cargo sells missile parts and a launcher kit if you would rather buy than print. See [ship systems](ship-systems.md) for the machines themselves.
 
 ## Missiles
 

@@ -498,7 +498,7 @@ const TechNode = (props) => {
     surveyed_objects,
   } = data;
   const { node, nodetails, nocontrols } = props;
-  const { id, can_unlock, tier } = node;
+  const { id, can_unlock, tier, zone_permission_blocked } = node;
   const {
     name,
     description,
@@ -598,6 +598,11 @@ const TechNode = (props) => {
               <Button
                 icon="lightbulb"
                 disabled={!can_unlock || tier > 1}
+                tooltip={
+                  zone_permission_blocked
+                    ? 'Authorization declined.'
+                    : undefined
+                }
                 onClick={() => act('researchNode', { node_id: id })}
               >
                 Research
@@ -687,11 +692,11 @@ const TechNode = (props) => {
                       average: [0.5, 1],
                       bad: [-Infinity, 0.5],
                     }}
-                    value={surveyed_objects[obj[0]] / obj[1]}
+                    value={(surveyed_objects?.[obj[0]] ?? 0) / obj[1]}
                   >
                     {obj[0].charAt(0).toUpperCase() +
                       obj[0].slice(1).replace('_', ' ')}{' '}
-                    ({surveyed_objects[obj[0]]}/{obj[1]}){' '}
+                    ({surveyed_objects?.[obj[0]] ?? 0}/{obj[1]}){' '}
                   </ProgressBar>
                 </Stack.Item>
               );

@@ -11,7 +11,8 @@
 	if(!isAI(target))
 		return ..()
 	var/mob/living/silicon/ai/AI = target
-	var/datum/action/innate/ai/action = locate(to_gift.power_type) in AI.actions
+	// VOIDCREW EDIT: upgrades grant no action. Their default power_type matches every AI ability, so any AI that already had one skipped the upgrade and still used up the disk.
+	var/datum/action/innate/ai/action = to_gift.upgrade ? null : (locate(to_gift.power_type) in AI.actions)
 	var/datum/ai_module/gifted_ability = new to_gift
 	if(!to_gift.upgrade)
 		if(!action)

@@ -307,22 +307,12 @@
 	available_experiments -= completed_experiment
 	completed_experiments[completed_experiment.type] = completed_experiment
 
-	var/result_text = "[completed_experiment] has been completed"
-	var/refund = skipped_experiment_types[completed_experiment.type] || 0
-	if(refund > 0)
-		add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = refund))
-		result_text += ", refunding [refund] points"
-		// Nothing more to gain here, but we keep it in the list to prevent double dipping
-		skipped_experiment_types[completed_experiment.type] = -1
-	var/points_rewarded
-	if(completed_experiment.points_reward)
-		add_point_list(completed_experiment.points_reward)
-		points_rewarded = ",[refund > 0 ? " and" : ""] rewarding [completed_experiment.get_points_reward_text()]"
-		result_text += points_rewarded
-	result_text += "!"
-
-	log_research("[completed_experiment.name] ([completed_experiment.type]) has been completed on techweb [id]/[organization][refund ? ", refunding [refund] points" : ""][points_rewarded].")
-	return result_text
+	// VOIDCREW EDIT ADDITION START - research: paid-discount receipts and owner-scoped completion rewards.
+	var/list/refunded_points = refund_experiment_discounts(completed_experiment)
+	var/list/rewarded_points = award_experiment_completion(completed_experiment)
+	log_research("[completed_experiment.name] ([completed_experiment.type]) has been completed on techweb [id]/[organization], refunding [json_encode(refunded_points)] and rewarding [json_encode(rewarded_points)].")
+	return "[completed_experiment] has been completed!"
+	// VOIDCREW EDIT ADDITION END
 
 /datum/techweb/proc/printout_points()
 	return techweb_point_display_generic(research_points)
@@ -374,17 +364,15 @@
 	var/log_message = "[id]/[organization] researched node [node.id]"
 	if(auto_adjust_cost)
 		var/list/node_cost = node.get_price(src)
+		var/list/points_before = research_points.Copy() // VOIDCREW EDIT - research: capture the actual debit.
 		remove_point_list(node_cost)
+		record_node_payment(node, points_before) // VOIDCREW EDIT - research: only paid nodes earn discount refunds.
 		log_message += " at the cost of [json_encode(node_cost)]"
 
 	//Add to our researched list
 	researched_nodes[node.id] = TRUE
 
-	// Track any experiments we skipped relating to this
-	for(var/missed_experiment in node.discount_experiments)
-		if(completed_experiments[missed_experiment] || skipped_experiment_types[missed_experiment])
-			continue
-		skipped_experiment_types[missed_experiment] = node.discount_experiments[missed_experiment]
+	// VOIDCREW EDIT - research: skipped discounts are recorded only with their payment above.
 
 	// Gain the experiments from the new node
 	for(var/id in node.unlock_ids)

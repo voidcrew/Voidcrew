@@ -78,10 +78,12 @@
 	var/mob/living/carbon/human/hunter = allocate(/mob/living/carbon/human/consistent)
 	hunter.mind_initialize()
 	if(ship)
-		var/datum/team/voidcrew/team = new
+		if(!ship.ship_team)
+			ship.ship_team = new
+		var/datum/team/voidcrew/team = ship.ship_team
 		team.ship = ship
-		hunter.mind.ship_teams = list(team)
-		outpost_test_teams += team
+		team.join_member(hunter.mind)
+		outpost_test_teams |= team
 		outpost_test_minds += hunter.mind
 	return hunter
 
@@ -611,6 +613,13 @@
 	// A poster, not the rules: no clock, no kill-only flag (2026-09-26)
 	for(var/key in list("time_left", "kill_only", "here", "tier"))
 		TEST_ASSERT(!(key in listed), "The board still sends [key]")
+	TEST_ASSERT_EQUAL(listed["reputation_gain"], 0, "The board showed a worth with no crew viewing it")
+	var/mob/living/carbon/human/viewer = make_hunter(allocate(/obj/structure/overmap/ship))
+	var/expected_worth = public_posting.board_reputation_worth(viewer.mind.get_reputation_crew())
+	TEST_ASSERT(expected_worth > 0, "The fixture's posting is worth nothing to a new crew")
+	for(var/list/entry as anything in board.outpost_board_entries(viewer))
+		if(entry["id"] == public_posting.record.id)
+			TEST_ASSERT_EQUAL(entry["reputation_gain"], expected_worth, "The board did not show what the posting is worth to the viewer's crew")
 	TEST_ASSERT_EQUAL(listed["place"], "Seen on this concourse", "The board does not say where they were seen: [listed["place"]]")
 	TEST_ASSERT(!ids[private_posting.record.id], "The board lists a private offer")
 	TEST_ASSERT(!ids[closed_posting.record.id], "The board lists a closed posting")

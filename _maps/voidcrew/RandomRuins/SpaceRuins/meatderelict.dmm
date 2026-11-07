@@ -29,6 +29,15 @@
 /obj/effect/spawner/structure/window/reinforced/shuttle/indestructible,
 /turf/open/indestructible/plating,
 /area/ruin/space/has_grav/powered/biooutpost)
+"ag" = (
+/obj/effect/turf_decal/tile/neutral/opposingcorners,
+/obj/effect/turf_decal/stripes/end{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/turf/open/indestructible/dark,
+/area/ruin/space/has_grav/powered/biooutpost)
 "aj" = (
 /obj/effect/turf_decal/siding/blue,
 /obj/structure/table,
@@ -356,6 +365,14 @@
 /obj/structure/sign/warning,
 /turf/closed/indestructible/reinforced,
 /area/ruin/space/has_grav/powered/biooutpost/vault)
+"hS" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath;
+	storage_type = /obj/item/tank/internals/oxygen
+	},
+/obj/machinery/light/small/dim/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/biooutpost)
 "hW" = (
 /obj/effect/turf_decal/siding/purple,
 /obj/effect/decal/cleanable/blood/splatter,
@@ -1083,11 +1100,6 @@
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/biooutpost)
-"us" = (
-/obj/machinery/suit_storage_unit/spaceruin,
-/obj/machinery/light/small/dim/directional/south,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered/biooutpost)
 "uC" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/indestructible/white,
@@ -1200,17 +1212,6 @@
 "wy" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/indestructible/meat,
-/area/ruin/space/has_grav/powered/biooutpost)
-"wH" = (
-/obj/effect/turf_decal/tile/neutral/opposingcorners,
-/obj/effect/turf_decal/stripes/end{
-	dir = 1
-	},
-/obj/structure/rack,
-/obj/item/gun/ballistic/automatic/wt550{
-	pin = /obj/item/firing_pin
-	},
-/turf/open/indestructible/dark,
 /area/ruin/space/has_grav/powered/biooutpost)
 "wJ" = (
 /obj/structure/grille/broken,
@@ -3550,7 +3551,7 @@ YD
 lm
 mU
 Jh
-us
+hS
 ij
 cQ
 tS
@@ -3623,7 +3624,7 @@ EN
 TU
 Yc
 UX
-wH
+ag
 jU
 ZG
 gK

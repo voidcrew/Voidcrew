@@ -61,6 +61,7 @@
 
 /obj/structure/spawner/sea_crystal/Initialize(mapload)
 	. = ..()
+	get_npc_spawn_context()
 	for(var/turf/adjacent in RANGE_TURFS(1, src))
 		if(ismineralturf(adjacent))
 			var/turf/closed/mineral/mineral = adjacent
@@ -135,28 +136,25 @@
 		return FALSE
 
 	COOLDOWN_START(src, summon_cooldown, cooldown_time)
+	// Retain a separate construction context per landing before the source can die.
+	var/datum/npc_spawn_context/source_context = get_npc_spawn_context()
+	var/list/summon_contexts = list()
+	for(var/turf/summon_turf as anything in summon_turfs)
+		summon_contexts[summon_turf] = new /datum/npc_spawn_context(src, source_context.zone_type)
 	crystal_power()
-	// Both legs are scheduled HERE, while the crystal is certainly alive, rather
-	// than the telegraph chaining the landing. addtimer() stack_traces when the
-	// callback's object is already qdeleting, and the whole point of the change
-	// below is that the landing has to survive the crystal dying mid-windup.
-	addtimer(CALLBACK(src, PROC_REF(summon_telegraph), summon_turfs, center), 2.5 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(summon_hivelords), summon_turfs), 3.5 SECONDS)
+	// Datum destruction cancels its own timers. Independent callbacks retain the
+	// committed landing contexts, with only a weak reference back to the crystal.
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sea_crystal_summon_telegraph), summon_turfs, center), 2.5 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sea_crystal_summon_hivelords), summon_turfs, summon_contexts, WEAKREF(src)), 3.5 SECONDS)
 	return TRUE
 
 /**
  * Sparks and camera shake, one second before the hivelords actually land.
  *
- * Deliberately NOT guarded on QDELETED(src), and neither is summon_hivelords():
- * a committed wave lands even if the crystal is broken during its own three and
- * a half second windup. Both used to bail there, which meant the harder a crew
- * hit the crystal the less it answered with, and a fast kill produced no
- * hivelords whatsoever - the one case the answer exists for. The landing spots
- * were picked when the wave was committed, so nothing here needs the crystal to
- * still be standing; `origin` is carried through because a broken spawner has
- * been moved to nullspace and its own loc is no longer a turf.
+ * The independent timer survives the crystal's destruction. Landing spots,
+ * origin and spawn contexts were all pinned when the wave was committed.
  */
-/obj/structure/spawner/sea_crystal/proc/summon_telegraph(list/summon_turfs, turf/origin)
+/proc/sea_crystal_summon_telegraph(list/summon_turfs, turf/origin)
 	if(!length(summon_turfs) || isnull(origin))
 		return
 	for(var/mob/mob in range(10, origin))
@@ -167,19 +165,24 @@
 		new /obj/effect/temp_visual/seacrystal/sparks(summon_turf)
 		new /obj/effect/temp_visual/seacrystal/arrival(summon_turf)
 
-/obj/structure/spawner/sea_crystal/proc/summon_hivelords(list/summon_turfs)
-	var/still_standing = !QDELETED(src)
+/proc/sea_crystal_summon_hivelords(list/summon_turfs, list/summon_contexts, datum/weakref/crystal_ref)
+	var/obj/structure/spawner/sea_crystal/crystal = crystal_ref.resolve()
 	for(var/turf/summon_turf as anything in summon_turfs)
-		var/mob/living/basic/mining/hivelord/beach/hivelord = new(summon_turf)
+		var/datum/npc_spawn_context/context = summon_contexts[summon_turf]
+		var/mob/living/basic/mining/hivelord/beach/hivelord = spawn_npc_in_zone(/mob/living/basic/mining/hivelord/beach, summon_turf, context)
 		// A broken crystal keeps no ledger: it will never summon again, and
 		// registering on the hivelord would hold the dead spawner alive through
 		// the signal until the mob died.
-		if(!still_standing)
+		if(QDELETED(crystal))
 			continue
-		live_hivelords += hivelord
-		RegisterSignals(hivelord, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_hivelord_gone))
-	if(still_standing)
-		crystal_depower()
+		crystal.track_hivelord(hivelord)
+	if(!QDELETED(crystal))
+		crystal.crystal_depower()
+
+/// A surviving crystal tracks its own wave until the hivelords die or disappear.
+/obj/structure/spawner/sea_crystal/proc/track_hivelord(mob/living/hivelord)
+	live_hivelords += hivelord
+	RegisterSignals(hivelord, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_hivelord_gone))
 
 /// Free the slot on death rather than on deletion - a corpse is not a threat.
 /obj/structure/spawner/sea_crystal/proc/on_hivelord_gone(datum/source)

@@ -31,6 +31,8 @@
 
 	// Iterate a copy: paid orders leave checkout_list inside the loop.
 	for(var/datum/supply_order/spawning_order as anything in checkout_list.Copy())
+		if(!can_order_pack(spawning_order.pack))
+			continue
 		// The cart quote is also the debit. Material stock is checked in full before
 		// payment and consumed only after payment, never partially at a pooled price.
 		if(!spawning_order.settle_ship_order(bank_account_holder.synced_bank_account))

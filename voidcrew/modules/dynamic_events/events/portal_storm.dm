@@ -81,6 +81,9 @@
 	var/next_pulse = 0
 	/// Whether the final pulse may spend one spawn slot on a boss.
 	var/boss_pending = FALSE
+	/// Pinned when the event is set up, before later pulses or ship movement.
+	var/npc_spawn_zone
+	var/turf/npc_source_turf
 
 /// Builds plane-correct portal appearances without resolving or retaining turfs.
 /datum/round_event/voidcrew/portal_storm/setup()
@@ -88,6 +91,8 @@
 		kill()
 		return
 
+	npc_source_turf = get_turf(target_ship)
+	npc_spawn_zone = SSovermap_zones.get_zone_type_anywhere(npc_source_turf) || ZONE_GREEN
 	storm_appearances = list()
 	for(var/offset in 0 to SSmapping.max_plane_offset)
 		var/mutable_appearance/storm = mutable_appearance('icons/obj/machines/engine/energy_ball.dmi', "energy_ball_fast", FLY_LAYER)
@@ -159,10 +164,12 @@
 		spawn_slots_remaining--
 
 		var/mob_type
+		var/role = "ordinary"
 		if(boss_pending && pulses_remaining == 1)
 			boss_pending = FALSE
 			if(length(target_ship.get_event_crew()) >= 5)
 				mob_type = pick_weight(boss_types)
+				role = "boss"
 		else
 			mob_type = pick_weight(hostile_types)
 		if(!mob_type)
@@ -171,7 +178,8 @@
 		var/turf/open/floor/spawn_turf = target_ship.get_random_open_ship_turf()
 		if(!spawn_turf || !target_ship.is_aboard(spawn_turf))
 			continue
-		var/mob/living/new_hostile = new mob_type(spawn_turf)
+		var/datum/npc_spawn_context/context = new(target_ship, npc_spawn_zone, role, source_turf = npc_source_turf)
+		var/mob/living/new_hostile = spawn_npc_in_zone(mob_type, spawn_turf, context)
 		if(QDELETED(new_hostile))
 			continue
 		spawned_mobs++

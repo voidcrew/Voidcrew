@@ -55,6 +55,7 @@ type Data = {
   crew_only_airlocks: BooleanLike;
   is_captain: BooleanLike;
   crew: CrewMember[];
+  crew_leader: string;
   available_players: AvailablePlayer[];
   pending_invites: PendingInvite[];
   applications: CrewApplication[];
@@ -141,10 +142,11 @@ export const CaptainManagement = () => {
 
 const CrewTab = () => {
   const { act, data } = useBackend<Data>();
-  const { crew, command_offer_pending } = data;
+  const { crew, crew_leader, command_offer_pending } = data;
 
   return (
     <Section title="Crew Roster">
+      <Box mb={1}>Crew leader: {crew_leader}</Box>
       {crew.length === 0 ? (
         <NoticeBox info>No crew members found.</NoticeBox>
       ) : (
@@ -196,7 +198,7 @@ const CrewTab = () => {
                         command_offer_pending
                           ? 'An offer of command is already waiting on an answer'
                           : member.can_take_command
-                            ? 'Offer them command of the ship. They get 30 seconds to accept, and you stop being captain if they do.'
+                            ? 'Offer command'
                             : 'They must be alive and online to take command'
                       }
                     >

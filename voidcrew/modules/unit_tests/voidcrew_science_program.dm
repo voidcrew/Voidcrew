@@ -28,7 +28,7 @@
 	var/datum/techweb_node/candidate
 	for(var/node_id in web.available_nodes)
 		var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
-		if(!length(node.required_experiments) && !length(node.required_surveyed_objects) && length(node.research_costs))
+		if(!node.zone_permission && !length(node.required_experiments) && !length(node.required_surveyed_objects) && length(node.research_costs))
 			candidate = node
 			break
 	TEST_ASSERT_NOTNULL(candidate, "No ordinary available node exists for real research testing")

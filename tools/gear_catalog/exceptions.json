@@ -1,0 +1,542 @@
+[
+ {
+  "path": "/obj/item/ammo_box/a357",
+  "rule": "below_reputation",
+  "route": "/datum/design/vc_ammo/a357",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/a357",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/speedloader",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/c9mm",
+  "rule": "below_reputation",
+  "route": "/datum/design/c9mm",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/c9mm",
+  "rule": "below_reputation",
+  "route": "/datum/design/c9mm/lathe",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/m50",
+  "rule": "below_reputation",
+  "route": "/datum/design/vc_ammo/m50",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/m9mm",
+  "rule": "below_reputation",
+  "route": "/datum/design/vc_mag_m9mm",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/m9mm",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/pistol_mag",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/wt550m9",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/wt550ammo",
+  "reason": "Deliberate: a smuggled crate that needs an emagged console, and the gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/wt550m9/wtap",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/wt550ammo",
+  "reason": "Deliberate: a smuggled crate that needs an emagged console, and the gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/magazine/wt550m9/wtic",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/wt550ammo",
+  "reason": "Deliberate: a smuggled crate that needs an emagged console, and the gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_box/n762",
+  "rule": "below_reputation",
+  "route": "/datum/design/vc_n762",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_casing/c357",
+  "rule": "below_reputation",
+  "route": "/datum/design/a357",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/ammo_casing/c357",
+  "rule": "below_reputation",
+  "route": "/datum/design/a357/lathe",
+  "reason": "Deliberate: plain reloads for a yellow gun. The gun is the gate."
+ },
+ {
+  "path": "/obj/item/bombcore/dimensional",
+  "rule": "below_reputation",
+  "route": "/datum/market_item/weapon/dimensional_bomb",
+  "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/design/ship_missile_warhead",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/outfitter/warhead_standard",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/combat_starter",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/launcher_kit",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/missiles_kit",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/warhead_standard",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/outfitter/warhead_standard",
+  "reason": "Open: priced as ship ammunition, rated as a loose bomb. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/heavy",
+  "rule": "below_reputation",
+  "route": "/datum/design/ship_missile_warhead/heavy",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/heavy",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/outfitter/rotating/warhead_heavy",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/heavy",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/warhead_heavy",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/heavy",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/outfitter/rotating/warhead_heavy",
+  "reason": "Open: priced as ship ammunition, rated as a loose bomb. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/light",
+  "rule": "below_reputation",
+  "route": "/datum/design/ship_missile_warhead/light",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/light",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/combat_starter",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/bombcore/missile/light",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/ship_combat/warhead_light",
+  "reason": "Open: rated red as a loose bomb, on sale and printed with no reputation. Waiting on a decision to make a loose warhead inert."
+ },
+ {
+  "path": "/obj/item/clothing/mask/chameleon",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/chameleon_mask",
+  "reason": "Deliberate: wins by trickery and adds almost no armor, and a disguise matters most where this red zone shelf is."
+ },
+ {
+  "path": "/obj/item/clothing/shoes/bhop",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/mining/bhop",
+  "reason": "Deliberate: 2,000 mining points, earned by mining, is a real price."
+ },
+ {
+  "path": "/obj/item/clothing/shoes/bhop/rocket",
+  "rule": "below_reputation",
+  "route": "/datum/market_item/clothing/rocket_boots",
+  "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
+ },
+ {
+  "path": "/obj/item/crowbar/abductor",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/skunk/alien_sample",
+  "reason": "Deliberate: the alien surgery it leads to doesn't need a gate. Brainwashing only hands the victim an objective."
+ },
+ {
+  "path": "/obj/item/defibrillator/compact",
+  "rule": "below_reputation",
+  "route": "/datum/design/defibrillator_compact",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
+ },
+ {
+  "path": "/obj/item/defibrillator/compact",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/rare/compact_defib",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
+ },
+ {
+  "path": "/obj/item/defibrillator/compact",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/outfitter/rare/compact_defib",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
+ },
+ {
+  "path": "/obj/item/ew_exploit/comms_blackout",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/ew_comms_blackout",
+  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+ },
+ {
+  "path": "/obj/item/ew_exploit/door_seize",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/ew_door_seize",
+  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+ },
+ {
+  "path": "/obj/item/ew_exploit/overvolt_doors",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/ew_overvolt_doors",
+  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+ },
+ {
+  "path": "/obj/item/ew_exploit/system_scramble",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/ew_system_scramble",
+  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+ },
+ {
+  "path": "/obj/item/ew_exploit/vent_purge",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/ew_vent_purge",
+  "reason": "Deliberate: useless without an electronic warfare suite, whose board needs reputation 11."
+ },
+ {
+  "path": "/obj/item/flamethrower",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/flamethrower",
+  "reason": "Deliberate: a welder, an igniter and a rod. It needs a plasma tank and can burn the user."
+ },
+ {
+  "path": "/obj/item/flamethrower/full",
+  "rule": "below_reputation",
+  "route": "/datum/design/flamethrower",
+  "reason": "Deliberate: a welder, an igniter and a rod. It needs a plasma tank and can burn the user."
+ },
+ {
+  "path": "/obj/item/grenade/empgrenade",
+  "rule": "below_reputation",
+  "route": "/datum/market_item/weapon/emp_grenade",
+  "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
+ },
+ {
+  "path": "/obj/item/grenade/frag",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/shocktrooper",
+  "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
+ },
+ {
+  "path": "/obj/item/grenade/gluon",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/shocktrooper",
+  "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
+ },
+ {
+  "path": "/obj/item/grenade/iedcasing",
+  "rule": "below_reputation",
+  "route": "/obj/item/sliced_pipe",
+  "reason": "Deliberate: the casing is iron and parts, so the chemist is the gate."
+ },
+ {
+  "path": "/obj/item/grenade/smokebomb",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/shocktrooper",
+  "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
+ },
+ {
+  "path": "/obj/item/grenade/stingbang",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/outfitter/stingbang",
+  "reason": "Deliberate: reputation 4 is the gate, so it kept its old cargo price."
+ },
+ {
+  "path": "/obj/item/gun/energy/gravity_gun",
+  "rule": "below_reputation",
+  "route": "/datum/design/gravitygun",
+  "reason": "Deliberate: needs an anomaly core to do anything."
+ },
+ {
+  "path": "/obj/item/gun/energy/wormhole_projector",
+  "rule": "below_reputation",
+  "route": "/datum/design/wormhole_projector",
+  "reason": "Deliberate: needs an anomaly core to do anything."
+ },
+ {
+  "path": "/obj/item/house_edge",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/house_edge",
+  "reason": "Open: its V8 engine comes from the black market. Waiting on the uplink decision."
+ },
+ {
+  "path": "/obj/item/kinetic_crusher",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/mining/crusher",
+  "reason": "Deliberate: it can't mark people, so it kills fauna, not crews, and it costs mining points."
+ },
+ {
+  "path": "/obj/item/market_uplink/blackmarket",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/blackmarket_uplink",
+  "reason": "Open: craftable with no reputation, and it opens a shop anywhere. Waiting on a gate for the recipe or a smaller stock list."
+ },
+ {
+  "path": "/obj/item/mecha_parts/chassis/honker",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_chassis",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun",
+  "rule": "below_reputation",
+  "route": "/datum/design/mech_syringe_gun",
+  "reason": "Deliberate: Odysseus only, needs each chemical scanned first, and thick suits stop its darts."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_head",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_head",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_left_arm",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_left_arm",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_left_leg",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_left_leg",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_right_arm",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_right_arm",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_right_leg",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_right_leg",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/mecha_parts/part/honker_torso",
+  "rule": "below_reputation",
+  "route": "/datum/design/honk_torso",
+  "reason": "Deliberate: 17.5 sheets of bananium are the gate on the mech. The horn is what needs a decision."
+ },
+ {
+  "path": "/obj/item/melee/baseball_bat/ablative",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/outfitter/ablative_bat",
+  "reason": "Deliberate: reputation 11 is the gate, so the price stays."
+ },
+ {
+  "path": "/obj/item/melee/baton/security/cattleprod/teleprod",
+  "rule": "below_reputation",
+  "route": "/datum/crafting_recipe/teleprod",
+  "reason": "Deliberate: the bluespace crystal in it is the cost."
+ },
+ {
+  "path": "/obj/item/mod/control/pre_equipped/mining",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/mining/mining_modsuit",
+  "reason": "Deliberate: a planet specialist, weak on a ship, and its price is mining points or 3,600 cr."
+ },
+ {
+  "path": "/obj/item/mod/control/pre_equipped/mining",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/fitter/rotating/suit_mining",
+  "reason": "Deliberate: a planet specialist, weak on a ship, and its price is mining points or 3,600 cr."
+ },
+ {
+  "path": "/obj/item/mod/module/anomaly_locked/antigrav/prebuilt/locked",
+  "rule": "price_out_of_band",
+  "route": "/datum/shop_sku/fitter/rare/mod_antigrav",
+  "reason": "Deliberate: ships with its anomaly core built in, so the core sets the price."
+ },
+ {
+  "path": "/obj/item/mod/module/anomaly_locked/kinesis",
+  "rule": "below_reputation",
+  "route": "/datum/design/module/mod_kinesis",
+  "reason": "Deliberate: needs an anomaly core to do anything."
+ },
+ {
+  "path": "/obj/item/mod/module/anomaly_locked/teleporter",
+  "rule": "below_reputation",
+  "route": "/datum/design/module/mod_teleporter",
+  "reason": "Deliberate: needs an anomaly core to do anything."
+ },
+ {
+  "path": "/obj/item/mod/module/defibrillator",
+  "rule": "below_reputation",
+  "route": "/datum/design/module/defibrillator",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
+ },
+ {
+  "path": "/obj/item/mod/module/defibrillator",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/fitter/rotating/mod_defibrillator",
+  "reason": "Deliberate: a plain defibrillator is 500 cr by cargo, so this only frees the back slot."
+ },
+ {
+  "path": "/obj/item/mod/module/surgical_processor/preloaded",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/fitter/rare/mod_surgical_processor",
+  "reason": "Deliberate: the loaded surgeries don't need a gate. Brainwashing only hands the victim an objective."
+ },
+ {
+  "path": "/obj/item/polymorph_belt",
+  "rule": "below_reputation",
+  "route": "/datum/design/polymorph_belt",
+  "reason": "Deliberate: needs a bioscrambler anomaly core to do anything."
+ },
+ {
+  "path": "/obj/item/reactive_armor_shell",
+  "rule": "below_reputation",
+  "route": "/datum/design/reactive_armour",
+  "reason": "Deliberate: an empty shell until an anomaly core goes in."
+ },
+ {
+  "path": "/obj/item/reagent_containers/hypospray/medipen/atropine",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/rotating/atropine_pen",
+  "reason": "Deliberate: a chem lab brews this at no reputation, so the shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/reagent_containers/hypospray/medipen/methamphetamine",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/rotating/meth_pen",
+  "reason": "Deliberate: a chem lab brews this at no reputation, so the shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/reagent_containers/hypospray/medipen/stimpack",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/outfitter/stimpack",
+  "reason": "Deliberate: a chem lab brews this at no reputation, and it makes you drop big guns."
+ },
+ {
+  "path": "/obj/item/reagent_containers/hypospray/medipen/survival/luxury",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/consumables/luxury_pen",
+  "reason": "Deliberate: mining points are the gate, and it helps solo crews with no medic."
+ },
+ {
+  "path": "/obj/item/resonator/upgraded",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/mining/resonator_advanced",
+  "reason": "Deliberate: mining points are the gate here, and the console has no reputation check."
+ },
+ {
+  "path": "/obj/item/skillchip/matrix_taunt",
+  "rule": "below_reputation",
+  "route": "/datum/orderable_item/bitrunning_tech/flip_skillchip",
+  "reason": "Deliberate: costs 1,500 bitrunning points from a console few crews run."
+ },
+ {
+  "path": "/obj/item/storage/box/collar_bomb",
+  "rule": "below_reputation",
+  "route": "/datum/market_item/clothing/collar_bomb",
+  "reason": "Open: on the black market with no reputation. Waiting on a gate for the uplink recipe or this line coming off the market."
+ },
+ {
+  "path": "/obj/item/storage/box/emps",
+  "rule": "below_reputation",
+  "route": "/datum/supply_pack/imports/shocktrooper",
+  "reason": "Open: an emagged cargo console sells this crate at no reputation. Waiting on a decision about emag crates."
+ },
+ {
+  "path": "/obj/item/storage/box/stockparts/deluxe",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/skunk/rare/deluxe_parts",
+  "reason": "Deliberate: the same parts print after research at no reputation, so this only skips the research."
+ },
+ {
+  "path": "/obj/item/storage/medkit/advanced",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/advanced_medkit",
+  "reason": "Deliberate: a chem lab brews most of this at no reputation, so the shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/storage/medkit/advanced",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/outfitter/advanced_medkit",
+  "reason": "Deliberate: a chem lab brews most of this at no reputation, so the shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/storage/medkit/tactical",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/black_market/tactical_medkit",
+  "reason": "Deliberate: healing supplies a chem lab and printing can match. The shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/storage/medkit/tactical_lite",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/rotating/tactical_lite_medkit",
+  "reason": "Deliberate: healing supplies a chem lab and printing can match. The shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/storage/pill_bottle/aranesp",
+  "rule": "below_reputation",
+  "route": "/datum/shop_sku/clinic/aranesp_pills",
+  "reason": "Deliberate: a chem lab brews this at no reputation, so the shelf sells convenience."
+ },
+ {
+  "path": "/obj/item/transfer_valve",
+  "rule": "above_on_route",
+  "route": "/datum/supply_pack/science/transfer_valves",
+  "reason": "Open: on an ordinary cargo console. Waiting on the crate coming off cargo."
+ },
+ {
+  "path": "/obj/item/transporter_transponder",
+  "rule": "below_reputation",
+  "route": "/datum/design/transporter_transponder",
+  "reason": "Deliberate: useless without a transporter pad, and the pad takes bluespace."
+ },
+ {
+  "path": "/obj/item/weaponcrafting/gunkit/beam_rifle",
+  "rule": "above_on_route",
+  "route": "/datum/design/beamrifle",
+  "reason": "Deliberate: reputation 22 and six anomaly cores are a real gate, so the Event Horizon stays craftable."
+ }
+]

@@ -2,12 +2,26 @@
 "a" = (
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"c" = (
-/obj/machinery/airalarm/directional/south,
+"b" = (
+/obj/item/clothing/suit/hooded/ablative,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/structure/closet/secure_closet{
+	name = "armory armor locker";
+	icon_state = "armory";
+	req_access = list("armory")
+	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"g" = (
-/obj/structure/closet/secure_closet/armory2,
+"c" = (
+/obj/machinery/airalarm/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "h" = (
@@ -39,10 +53,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"w" = (
-/obj/machinery/vending/security/marine/solgov,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "x" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes{
@@ -63,6 +73,14 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/structure/closet/secure_closet/armory2,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"C" = (
+/obj/machinery/vending/security/marine/solgov,
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "F" = (
@@ -98,10 +116,6 @@
 /obj/structure/closet/l3closet/security,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"R" = (
-/obj/structure/closet/secure_closet/armory1,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "S" = (
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/bot,
@@ -115,7 +129,7 @@
 /area/template_noop)
 
 (1,1,1) = {"
-R
+b
 h
 a
 M
@@ -145,8 +159,8 @@ a
 c
 "}
 (6,1,1) = {"
-g
-w
+B
+C
 m
 z
 "}

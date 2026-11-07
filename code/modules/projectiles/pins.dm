@@ -247,7 +247,7 @@
 		. += span_notice("This firing pin is currently authorized to pay into the account of [pin_owner.account_holder].")
 
 /obj/item/firing_pin/paywall/gun_insert(mob/living/user, obj/item/gun/new_gun)
-	if(!pin_owner)
+	if(!pin_owner && !owned) // VOIDCREW EDIT: factory-fitted pins (owned, no account) stay in their gun; they used to drop out at spawn, which bricked the luxury laser
 		if(isnull(user))
 			forceMove(new_gun.drop_location())
 		else
@@ -310,6 +310,10 @@
 		return FALSE
 	if(active_prompt_user == user)
 		return FALSE
+	// VOIDCREW EDIT ADDITION START - the prompt names the gun; a runtime on a null gun left the lock below set for good
+	if(isnull(gun))
+		return FALSE
+	// VOIDCREW EDIT ADDITION END
 	active_prompt_user = user
 	var/license_request = tgui_alert(user, "Do you wish to pay [payment_amount] credit[( payment_amount > 1 ) ? "s" : ""] for [( multi_payment ) ? "each shot of [gun.name]" : "usage license of [gun.name]"]?", "Weapon Purchase", list("Yes", "No"), 15 SECONDS)
 	if(!user.can_perform_action(src))

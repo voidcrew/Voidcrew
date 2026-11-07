@@ -1022,7 +1022,7 @@
 		setFireLoss(round(fire_loss - fire_healing, DAMAGE_PRECISION), updating_health=TRUE, forced=TRUE)
 		healing_amount = max(0, healing_amount - fire_healing)
 
-	revive(NONE, excess_healing=max(healing_amount, 0), force_grab_ghost=FALSE) // and any excess healing is passed along
+	revive_from("strange_reagent", NONE, excess_healing=max(healing_amount, 0), force_grab_ghost=FALSE) // VOIDCREW EDIT: explicit combat metrics attribution; pass excess healing along.
 
 /// Checks if we are actually able to ressuscitate this mob.
 /// (We don't want to revive then to have them instantly die again)

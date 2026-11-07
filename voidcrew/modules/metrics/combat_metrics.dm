@@ -49,8 +49,8 @@
 //   revived             A dead player's body came back to life. ckey, ship, zone, quantity = 1,
 //                       points = seconds dead, subject = method: defibrillator,
 //                       reviver_implant, nanites, legion_core, strange_reagent, surgery,
-//                       reagent, admin, cloning_vat or other. details: via = the proc that
-//                       called revive(), read off the call stack.
+//                       reagent, admin, phylactery, meridian_heart, lazarus_line,
+//                       temporal_rewind, cloning_vat or other. Methods are explicit at the call site.
 //   revived_repeat      Tallied in place of revived for revive loops, same limit as deaths.
 //                       ckey, zone, subject = method, quantity = revivals,
 //                       points = seconds dead summed.
@@ -72,6 +72,9 @@ GLOBAL_DATUM_INIT(combat_metrics, /datum/combat_metrics, new)
 // Per-mob state. Only numbers, text and typepaths, never references, so nothing here can hold
 // a deleted atom. Unset vars cost no memory per mob.
 /mob/living
+	/// Scoped to synchronous revival calls; never inferred from callers.
+	var/metric_revival_method
+	var/metric_revive_was_dead = FALSE
 	/// ckey of the player who last hit this mob. Null when the last hit came from an NPC.
 	var/metric_hit_ckey
 	/// Type of the mob that last hit this mob.
@@ -243,45 +246,40 @@ GLOBAL_DATUM_INIT(combat_metrics, /datum/combat_metrics, new)
 		return "toxin"
 	return "brute"
 
-/**
- * Finds what called revive(), by walking up the call stack from a COMSIG_LIVING_REVIVE handler
- * to the first proc above revive() and heal_and_revive(). Returns list(that proc's src, its name,
- * its path), or null. Only runs when a dead player comes back, so the walk is cheap enough.
- */
-/proc/metric_revive_site()
-	var/callee/frame = caller
-	var/seen_revive = FALSE
-	for(var/depth in 1 to 16)
-		if(isnull(frame))
-			return null
-		var/path = "[frame.proc]"
-		var/proc_name = copytext(path, findlasttext(path, "/") + 1)
-		if(proc_name == "revive" || proc_name == "heal_and_revive")
-			seen_revive = TRUE
-		else if(seen_revive)
-			return list(frame.src, proc_name, path)
-		frame = frame.caller
-	return null
+/// Retain the state from before revive() sends its signal, including unclassified calls.
+/mob/living/revive(full_heal_flags = NONE, excess_healing = 0, force_grab_ghost = FALSE)
+	var/previous_was_dead = metric_revive_was_dead
+	metric_revive_was_dead = stat == DEAD
+	try
+		. = ..()
+	catch(var/exception/error)
+		metric_revive_was_dead = previous_was_dead
+		throw error
+	metric_revive_was_dead = previous_was_dead
 
-/// Names the revival method from metric_revive_site()'s src and proc name.
-/proc/metric_revive_method(datum/site_src, proc_name)
-	if(proc_name == "do_strange_reagent_revival")
-		return "strange_reagent"
-	if(istype(site_src, /obj/item/shockpaddles))
-		return "defibrillator"
-	if(istype(site_src, /obj/item/organ/cyberimp/chest/reviver))
-		return "reviver_implant"
-	if(istype(site_src, /datum/nanite_program))
-		return "nanites"
-	if(istype(site_src, /obj/item/organ/monster_core/regenerative_core))
-		return "legion_core"
-	if(istype(site_src, /datum/surgery_step))
-		return "surgery"
-	if(istype(site_src, /datum/reagent))
-		return "reagent"
-	if(istype(site_src, /datum/admins) || istype(site_src, /datum/admin_verb) || istype(site_src, /datum/secrets_menu))
-		return "admin"
-	return "other"
+/// Attribute only this body's synchronous revival, restoring any enclosing scope even on failure.
+/mob/living/proc/revive_from(method, full_heal_flags = NONE, excess_healing = 0, force_grab_ghost = FALSE)
+	var/previous_method = metric_revival_method
+	metric_revival_method = method
+	try
+		. = revive(full_heal_flags, excess_healing, force_grab_ghost)
+	catch(var/exception/error)
+		metric_revival_method = previous_method
+		throw error
+	metric_revival_method = previous_method
+
+/mob/living/proc/heal_and_revive_from(method, heal_to = 50, revive_message)
+	var/previous_method = metric_revival_method
+	metric_revival_method = method
+	try
+		if(args.len < 2)
+			. = heal_and_revive() // Preserve subtype defaults when the caller omitted heal_to.
+		else
+			. = heal_and_revive(heal_to, revive_message)
+	catch(var/exception/error)
+		metric_revival_method = previous_method
+		throw error
+	metric_revival_method = previous_method
 
 /// A cloning vat woke a dead player up in a fresh body. Called from /obj/machinery/cloning_vat/proc/claim().
 /proc/metric_clone_revival(mob/living/clone, mob/old_body)
@@ -448,7 +446,7 @@ GLOBAL_DATUM_INIT(combat_metrics, /datum/combat_metrics, new)
 /// Registered on a dead player's body. revive() sends this for every heal, dead or not.
 /datum/combat_metrics/proc/on_revive(mob/living/source, full_heal_flags)
 	SIGNAL_HANDLER
-	if(source.stat == DEAD)
+	if(source.stat == DEAD || !source.metric_revive_was_dead)
 		return
 	UnregisterSignal(source, COMSIG_LIVING_REVIVE)
 	// A new life starts without the old killer.
@@ -462,18 +460,16 @@ GLOBAL_DATUM_INIT(combat_metrics, /datum/combat_metrics, new)
 	var/player_ckey = metric_ckey(source)
 	if(!player_ckey)
 		return
-	var/list/site = metric_revive_site()
-	var/method = metric_revive_method(site?[1], site?[2])
-	record_revival(source, player_ckey, method, world.time - source.timeofdeath, site?[3])
+	record_revival(source, player_ckey, source.metric_revival_method || "other", world.time - source.timeofdeath)
 
 /// Writes a revival, or tallies it when this body keeps coming back.
-/datum/combat_metrics/proc/record_revival(mob/living/body, player_ckey, method, deciseconds_dead, via)
+/datum/combat_metrics/proc/record_revival(mob/living/body, player_ckey, method, deciseconds_dead)
 	last_death_by_ckey -= player_ckey
 	var/seconds_dead = max(0, round(deciseconds_dead / 10))
 	if(over_burst_limit(body, revival = TRUE))
 		tally_metric(METRIC_DEATH, "revived_repeat", ckey = player_ckey, zone = metric_cached_zone(body), subject = method, points = seconds_dead)
 		return
-	record_metric(METRIC_DEATH, "revived", ckey = player_ckey, subject = method, points = seconds_dead, quantity = 1, details = via ? list("via" = via) : null, actor = body)
+	record_metric(METRIC_DEATH, "revived", ckey = player_ckey, subject = method, points = seconds_dead, quantity = 1, actor = body)
 
 /// A player joined a crew. If they died and were never revived, that's a respawn.
 /datum/combat_metrics/proc/on_crewmember_joined(datum/source, mob/living/character, rank)

@@ -277,6 +277,20 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"ba" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
+"bb" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "bo" = (
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/iron/dark,
@@ -628,6 +642,13 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"KR" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate;
+	storage_type = /obj/item/tank/jetpack/oxygen/harness
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered)
 "KV" = (
 /obj/effect/spawner/random/maintenance,
 /turf/open/floor/plating,
@@ -701,10 +722,6 @@
 	pixel_x = 4
 	},
 /turf/open/floor/carpet,
-/area/ruin/space/has_grav/powered)
-"ST" = (
-/obj/machinery/suit_storage_unit/syndicate,
-/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "TB" = (
 /obj/structure/rack,
@@ -1107,7 +1124,7 @@ aE
 aP
 aF
 aE
-ST
+KR
 Bc
 FE
 ov
@@ -1135,7 +1152,7 @@ ag
 ax
 ae
 aE
-ST
+ba
 Bc
 cy
 ap
@@ -1478,7 +1495,7 @@ aS
 ap
 BR
 ap
-ST
+bb
 ap
 ah
 aC

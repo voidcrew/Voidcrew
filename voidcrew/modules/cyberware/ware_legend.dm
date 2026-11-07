@@ -24,6 +24,8 @@
 #define CYBERWARE_CASCADE_DODGE_CHANCE 40
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
+/// Degrees the afterimage hue moves per step of the trail.
+#define CYBERWARE_CASCADE_HUE_STEP 25
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -108,8 +110,11 @@
 	duration = CYBERWARE_CASCADE_WINDOW
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = /atom/movable/screen/alert/status_effect/cyberware_cascade
+	/// Hue of the next afterimage, in degrees. Starts random so no two surges match.
+	var/trail_hue = 0
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
+	trail_hue = rand(0, 359)
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)))
@@ -143,11 +148,40 @@
 	return CYBERWARE_CASCADE_DODGE_CHANCE
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
-/// telegraph everyone in the fight can read.
+/// telegraph everyone in the fight can read. Each step shifts the hue, so the
+/// trail reads as one rolling colour gradient.
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
-	if(isturf(old_loc))
-		new /obj/effect/temp_visual/decoy/fading/halfsecond(old_loc, owner)
+	if(!isturf(old_loc))
+		return
+	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue)
+	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
+
+/// One afterimage in the Cascade trail, washed in a single hue.
+/obj/effect/temp_visual/decoy/fading/cascade
+	duration = 8
+
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0)
+	. = ..()
+	alpha = 200
+	color = cascade_tint_matrix(hue)
+	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
+
+/// Colour matrix that flattens the copy to luminance and paints it one hue,
+/// with a lift so dark clothes still glow instead of going black.
+/obj/effect/temp_visual/decoy/fading/cascade/proc/cascade_tint_matrix(hue)
+	var/list/tint = rgb2num(rgb(hue, 100, 100, space = COLORSPACE_HSV))
+	var/red = tint[1] / 255
+	var/green = tint[2] / 255
+	var/blue = tint[3] / 255
+	var/gain = 0.8
+	var/lift = 0.6
+	return list(
+		0.3 * gain * red, 0.3 * gain * green, 0.3 * gain * blue,
+		0.59 * gain * red, 0.59 * gain * green, 0.59 * gain * blue,
+		0.11 * gain * red, 0.11 * gain * green, 0.11 * gain * blue,
+		lift * red, lift * green, lift * blue,
+	)
 
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
@@ -576,24 +610,23 @@
 // =========================================================================
 
 /**
- * # Governor Delete (T4, head, governor slot, load 0, +6 capacity)
+ * # Governor Delete (T4, chest OS, load 0, +15 capacity)
  *
  * The enabler: a neural governor with its limiter firmware deleted, worth
- * six points of chrome capacity and nothing else. Deliberately built on the
+ * fifteen points of capacity and nothing else. Deliberately built on the
  * generic chrome base rather than tg's brain-implant subtype, the brain
- * base answers EMP with a 200/severity stun, which on a PvP server would
- * turn a one-voucher grenade into an execution button. Here it browns out
- * and reboots like every other piece of chrome.
+ * base answers EMP with a stun. Here it browns out and reboots like every
+ * other piece of chrome.
  */
 /obj/item/organ/cyberimp/cyberware/governor_delete
 	name = "\improper Governor Delete"
-	desc = "A factory neural governor with the governing part surgically removed. It tells your nervous system it has six more points of headroom than it really does, and your nervous system believes it."
+	desc = "A factory neural governor with its limiter firmware stripped out."
 	icon_state = "governor_delete"
-	zone = BODY_ZONE_HEAD
-	slot = ORGAN_SLOT_CYBERWARE_GOVERNOR
+	zone = BODY_ZONE_CHEST
+	slot = ORGAN_SLOT_CYBERWARE_OS
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 0
-	chrome_capacity_bonus = 6
+	chrome_capacity_bonus = 15
 	tier = CYBERWARE_TIER_4
 
 // =========================================================================
@@ -818,14 +851,13 @@
 /datum/action/cooldown/cyberware/piledriver_leap/proc/crush_victim(mob/living/jumper, mob/living/victim)
 	if(QDELETED(victim) || QDELETED(jumper))
 		return
-	var/blocked = victim.run_armor_check(attack_flag = MELEE)
 	if(iscarbon(victim))
 		var/mob/living/carbon/carbon_victim = victim
-		if(prob(CYBERWARE_PILEDRIVER_CRUSH_SPREAD_CHANCE))
+		if(should_spread_crush_damage())
 			carbon_victim.apply_damage(
 				CYBERWARE_PILEDRIVER_CRUSH_DAMAGE,
 				BRUTE,
-				blocked = blocked,
+				blocked = 0, // Forced damage bypasses armor, including nanite armor accounting.
 				forced = TRUE,
 				spread_damage = TRUE,
 				attack_direction = jumper.dir,
@@ -839,7 +871,7 @@
 		victim.apply_damage(
 			CYBERWARE_PILEDRIVER_CRUSH_DAMAGE,
 			BRUTE,
-			blocked = blocked,
+			blocked = 0,
 			forced = TRUE,
 			attack_direction = jumper.dir,
 		)
@@ -853,10 +885,14 @@
 	)
 	log_combat(jumper, victim, "crushed with a Meteor Piledriver landing")
 
+/datum/action/cooldown/cyberware/piledriver_leap/proc/should_spread_crush_damage()
+	return prob(CYBERWARE_PILEDRIVER_CRUSH_SPREAD_CHANCE)
+
 #undef CYBERWARE_CASCADE_WINDOW
 #undef CYBERWARE_CASCADE_CRASH
 #undef CYBERWARE_CASCADE_DODGE_CHANCE
 #undef CYBERWARE_CASCADE_CRASH_STAMINA
+#undef CYBERWARE_CASCADE_HUE_STEP
 #undef CYBERWARE_REDLINE_WINDOW
 #undef CYBERWARE_REDLINE_DAMAGE_MULT
 #undef CYBERWARE_REDLINE_MELEE_BONUS

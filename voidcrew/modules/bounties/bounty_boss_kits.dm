@@ -673,6 +673,7 @@
 	/// Who it catches, and how hard
 	var/radius = BOUNTY_DEMOLITIONIST_GRENADE_RADIUS
 	var/damage = BOUNTY_DEMOLITIONIST_GRENADE_DAMAGE
+	var/damage_factor = 1
 	var/knockdown = BOUNTY_DEMOLITIONIST_GRENADE_KNOCKDOWN
 	/// What it breaks, and how hard
 	var/object_radius = BOUNTY_DEMOLITIONIST_GRENADE_OBJECT_RADIUS
@@ -688,6 +689,7 @@
 		return INITIALIZE_HINT_QDEL
 	GLOB.bounty_boss_explosives += src
 	boss_ref = boss ? WEAKREF(boss) : null
+	damage_factor = boss ? boss.get_npc_zone_damage_factor() : 1
 	structure_tally = list(BOUNTY_BOSS_ABILITY_STRUCTURE_CAP)
 	ring = new(get_turf(src), fuse, COLOR_RED, "target_circle")
 	ring.transform = matrix() * (radius * 2 + 1)
@@ -729,12 +731,12 @@
 		if(!(isliving(victim) || ismecha(victim)) || !may_hit(victim, boss) || !bounty_boss_clear_line(here, get_turf(victim)))
 			continue
 		if(boss)
-			boss.boss_hit(victim, damage, BRUTE, BOMB, knockdown)
+			boss.boss_hit(victim, npc_zone_damage(damage, damage_factor), BRUTE, BOMB, knockdown, already_scaled = TRUE)
 		else if(ismecha(victim))
-			victim.take_damage(damage, BRUTE, BOMB, FALSE)
+			victim.take_damage(npc_zone_damage(damage, damage_factor), BRUTE, BOMB, FALSE)
 		else
 			var/mob/living/person = victim
-			person.apply_damage(damage, BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, BOMB, silent = TRUE))
+			person.apply_damage(npc_zone_damage(damage, damage_factor), BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, BOMB, silent = TRUE))
 			if(knockdown)
 				person.Knockdown(knockdown)
 	qdel(src)
@@ -841,7 +843,7 @@
 /mob/living/basic/bounty_criminal/boss/ghost/proc/boss_cut(mob/living/victim)
 	if(QDELETED(victim) || victim.stat == DEAD)
 		return
-	victim.apply_status_effect(/datum/status_effect/bounty_boss_bleed)
+	victim.apply_status_effect(/datum/status_effect/bounty_boss_bleed, get_npc_zone_damage_factor())
 	boss_cuts++
 	if(boss_cuts >= BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF)
 		boss_cuts = 0
@@ -1022,7 +1024,7 @@
 		boss.boss_hit(victim, BOUNTY_GHOST_DASH_DAMAGE, BRUTE, MELEE, 0, BOUNTY_GHOST_DASH_AP)
 		return
 	var/mob/living/person = victim
-	person.apply_damage(BOUNTY_GHOST_DASH_DAMAGE, BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = BOUNTY_GHOST_DASH_AP, silent = TRUE), sharpness = SHARP_EDGED)
+	person.apply_damage(npc_zone_damage(BOUNTY_GHOST_DASH_DAMAGE, boss), BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = BOUNTY_GHOST_DASH_AP, silent = TRUE), sharpness = SHARP_EDGED)
 	boss.boss_cut(person)
 
 /// Cloak: the air around it shimmers, then it fades to a faint distortion that half of all hits miss
@@ -1060,11 +1062,17 @@
 	alert_type = null
 	/// Cuts bleeding
 	var/cuts = 1
+	var/damage_factor = 1
+
+/datum/status_effect/bounty_boss_bleed/on_creation(mob/living/new_owner, factor = 1)
+	damage_factor = factor
+	return ..()
 
 /datum/status_effect/bounty_boss_bleed/on_apply()
 	return owner.stat == CONSCIOUS
 
-/datum/status_effect/bounty_boss_bleed/refresh(effect, ...)
+/datum/status_effect/bounty_boss_bleed/refresh(mob/living/new_owner, factor = 1)
+	damage_factor = factor
 	. = ..()
 	cuts++
 
@@ -1073,7 +1081,7 @@
 		qdel(src)
 		return
 	var/rate = min(cuts * BOUNTY_GHOST_BLEED_PER_CUT, BOUNTY_GHOST_BLEED_CAP)
-	owner.apply_damage(rate, BRUTE, spread_damage = TRUE)
+	owner.apply_damage(npc_zone_damage(rate, damage_factor), BRUTE, spread_damage = TRUE)
 	owner.bleed(rate)
 
 // ===== HEAVY =====

@@ -1,4 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/structure/cable,
+/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms/space{
+	dir = 4;
+	outfit_override = list("r_pocket" = null, "r_hand" = /obj/item/spear)
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/listeningstation)
+"ac" = (
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/knife/combat/survival,
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = 10;
+	pixel_y = 16
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/listeningstation)
 "ad" = (
 /obj/machinery/airalarm/directional/west,
 /obj/structure/closet/crate/secure/freezer/commsagent,
@@ -783,13 +801,6 @@
 /obj/item/paper/fluff/ruins/listeningstation/reports/august,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/listeningstation)
-"Oo" = (
-/obj/structure/cable,
-/obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms/space{
-	dir = 4
-	},
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/listeningstation)
 "Or" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/decal/cleanable/dirt,
@@ -903,16 +914,6 @@
 	},
 /turf/template_noop,
 /area/ruin/space)
-"VH" = (
-/obj/structure/table,
-/obj/item/paper_bin,
-/obj/item/pen/edagger,
-/obj/item/reagent_containers/cup/glass/waterbottle{
-	pixel_x = 10;
-	pixel_y = 16
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/listeningstation)
 "VK" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/freezer,
@@ -1154,7 +1155,7 @@ vI
 JB
 gJ
 bC
-Oo
+ab
 JB
 vI
 AV
@@ -1426,7 +1427,7 @@ rG
 MA
 wm
 Sz
-VH
+ac
 FV
 DC
 CU

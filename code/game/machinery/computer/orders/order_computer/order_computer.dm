@@ -191,11 +191,12 @@ GLOBAL_LIST_EMPTY(order_console_products)
 					continue
 				for(var/amt in 1 to grocery_list[item])//every order amount
 					ordered_paths += item.purchase_path
-			podspawn(list(
+			var/obj/structure/closet/supplypod/delivery = podspawn(list( // VOIDCREW EDIT: trade stamps the completed order bundle.
 				"target" = get_turf(living_user),
 				"style" = /datum/pod_style/advanced,
 				"spawn" = ordered_paths,
 			))
+			mark_trader_goods(delivery) // VOIDCREW EDIT: trade resale rule.
 			grocery_list.Cut()
 	return TRUE
 

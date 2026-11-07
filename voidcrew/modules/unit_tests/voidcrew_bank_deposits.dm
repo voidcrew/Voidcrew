@@ -70,7 +70,8 @@
 	TEST_ASSERT_EQUAL(card.registered_account, first_account, "A visitor linked their ID to another ship's account.")
 	TEST_ASSERT(!(card in second_account.bank_cards), "A refused ID was registered on the destination account.")
 
-	// The membership granted by claiming or joining another crew permits a manual switch.
+	// Commissioning another hull for the same crew permits a manual account switch.
+	second_ship.bind_reputation_crew(user.mind)
 	second_ship.enlist_crewmember(user)
 	second_bank.machine_stat |= NOPOWER
 	second_bank.attackby(card, user)
@@ -82,7 +83,7 @@
 	user.stat = CONSCIOUS
 
 	second_bank.attackby(card, user)
-	TEST_ASSERT_EQUAL(card.registered_account, second_account, "A member of both crews could not select the second ship's account.")
+	TEST_ASSERT_EQUAL(card.registered_account, second_account, "A member of the shared crew could not select the second ship's account.")
 	TEST_ASSERT(!(card in first_account.bank_cards), "The old account retained the switched card.")
 	TEST_ASSERT(card in second_account.bank_cards, "The new account did not register the switched card.")
 	TEST_ASSERT_EQUAL(other_card.registered_account, first_account, "Switching one card redirected another crew member's card.")
@@ -99,7 +100,7 @@
 	TEST_ASSERT_EQUAL(second_account.account_balance, 2000, "Switching accounts changed the second ship's balance.")
 	TEST_ASSERT(!QDELETED(first_account) && !QDELETED(second_account), "Switching deleted a ship account.")
 
-	second_ship.ship_team.remove_member(user.mind)
+	user.mind.leave_reputation_crew()
 	second_bank.attackby(card, user)
 	TEST_ASSERT_EQUAL(card.registered_account, first_account, "A former crew member could link an ID after leaving the roster.")
 	second_ship.enlist_crewmember(user)

@@ -51,6 +51,19 @@
 /obj/item/food/chococoin,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
+"ah" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/broken_floor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/obj/effect/spawner/random/maintenance/eight,
+/obj/item/knife/combat/survival,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_grey)
 "am" = (
 /obj/structure/cable,
 /turf/closed/wall/rust,
@@ -504,10 +517,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
-"qE" = (
-/obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
 "qU" = (
 /obj/effect/turf_decal/bot,
 /obj/effect/spawner/random/structure/closet_empty/crate,
@@ -958,19 +967,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"Ci" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/broken_floor,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/tile/neutral/half/contrasted{
-	dir = 1
-	},
-/obj/effect/spawner/random/maintenance/eight,
-/obj/item/knife/combat,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
 "CF" = (
 /obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
@@ -1037,9 +1033,6 @@
 /obj/effect/spawner/random/trash/graffiti,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
-"EA" = (
-/turf/closed/wall/r_wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "EC" = (
 /obj/effect/spawner/structure/window,
@@ -1323,9 +1316,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"Pn" = (
-/turf/closed/wall,
-/area/shuttle/voidcrew/pirate_grey)
 "PM" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/random/trash/grille_or_waste,
@@ -1378,10 +1368,6 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "RU" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
-"RX" = (
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
@@ -1680,7 +1666,7 @@ TV
 "}
 (5,1,1) = {"
 zB
-qE
+fj
 Su
 Si
 Wy
@@ -1789,7 +1775,7 @@ Yj
 rV
 Tq
 uE
-Pn
+yN
 HD
 "}
 (11,1,1) = {"
@@ -1808,7 +1794,7 @@ wX
 Oa
 Tq
 Lo
-Pn
+yN
 ei
 "}
 (12,1,1) = {"
@@ -1817,7 +1803,7 @@ sB
 GE
 Yj
 Nu
-Pn
+yN
 am
 Eq
 yN
@@ -1834,7 +1820,7 @@ HD
 HD
 XX
 vJ
-Pn
+yN
 SB
 Nm
 Vw
@@ -1846,14 +1832,14 @@ Sh
 gQ
 dd
 xy
-Pn
+yN
 HD
 "}
 (14,1,1) = {"
 pk
 pS
 pU
-Pn
+yN
 AL
 Ac
 Wc
@@ -1869,10 +1855,10 @@ Sh
 zB
 "}
 (15,1,1) = {"
-Pn
+yN
 dI
 Sv
-Pn
+yN
 Bu
 xO
 yf
@@ -1891,7 +1877,7 @@ zB
 zB
 vM
 lO
-Pn
+yN
 tJ
 xO
 ax
@@ -1942,7 +1928,7 @@ Bh
 Uf
 DP
 zB
-Pn
+yN
 "}
 (19,1,1) = {"
 je
@@ -1955,17 +1941,17 @@ sm
 CY
 fj
 DG
-Pn
-Ci
+yN
+ah
 Sh
 Gb
 xm
-Pn
+yN
 je
 "}
 (20,1,1) = {"
 je
-Pn
+yN
 ia
 NI
 yU
@@ -1974,18 +1960,18 @@ bv
 aD
 cJ
 tU
-Pn
+yN
 xl
 Sh
 AR
 lO
-Pn
+yN
 je
 "}
 (21,1,1) = {"
 je
 mr
-Pn
+yN
 xm
 yU
 OG
@@ -1993,30 +1979,30 @@ qo
 pT
 De
 sh
-Pn
+yN
 Zc
-Pn
+yN
 pB
-Pn
+yN
 Bk
 je
 "}
 (22,1,1) = {"
 je
 je
-Pn
-EA
+yN
+pk
 ll
 FI
 Hh
-Pn
-Pn
+yN
+yN
 Hh
-Pn
+yN
 gz
-Pn
-RX
-Pn
+yN
+RU
+yN
 je
 je
 "}
@@ -2033,8 +2019,8 @@ ti
 Yf
 FI
 aV
-Pn
-Pn
+yN
+yN
 je
 je
 je
@@ -2052,7 +2038,7 @@ Am
 FT
 pk
 pk
-Pn
+yN
 je
 je
 je
@@ -2065,8 +2051,8 @@ je
 je
 pk
 zB
-Pn
-Pn
+yN
+yN
 zB
 pk
 pk

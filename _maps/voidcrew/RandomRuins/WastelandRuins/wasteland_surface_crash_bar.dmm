@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
+	desc = "One of the few survivors on the planet with working weaponry. Doesn't seem as friendly as the bartenders you're used to.";
+	faction = list("saloon")
+	},
+/turf/open/floor/wood{
+	broken = 1
+	},
+/area/ruin/unpowered)
 "ab" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/zone_loot/plunder,
@@ -25,6 +34,44 @@
 "ae" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"af" = (
+/obj/structure/closet/secure_closet/bar{
+	req_access = null
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/lethalshot,
+/turf/open/floor/wood{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"ag" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
+	dir = 10
+	},
+/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
+	faction = list("saloon")
+	},
+/turf/open/floor/plating{
+	burnt = 1
+	},
+/area/ruin/unpowered)
+"ah" = (
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/c45,
+/obj/item/ammo_box/magazine/m45,
+/obj/structure/table/wood/poker,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"ai" = (
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/structure/table/wood/poker,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "aL" = (
@@ -248,13 +295,6 @@
 	broken = 1
 	},
 /area/ruin/unpowered)
-"lI" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911,
-/obj/item/ammo_box/c45,
-/obj/item/ammo_box/magazine/m45,
-/obj/structure/table/wood/poker,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "mp" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/food/flour,
@@ -274,15 +314,6 @@
 	icon_state = "floor7"
 	},
 /turf/open/floor/carpet/executive,
-/area/ruin/unpowered)
-"oV" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger{
-	desc = "One of the few survivors on the planet with working weaponry. Doesn't seem as friendly as the bartenders you're used to.";
-	faction = list("saloon")
-	},
-/turf/open/floor/wood{
-	broken = 1
-	},
 /area/ruin/unpowered)
 "pa" = (
 /obj/item/toy/cards/deck/kotahi,
@@ -331,15 +362,6 @@
 /turf/open/floor/wood{
 	broken = 1
 	},
-/area/ruin/unpowered)
-"rY" = (
-/obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/structure/table/wood/poker,
-/turf/open/floor/plating,
 /area/ruin/unpowered)
 "sn" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
@@ -425,17 +447,6 @@
 	faction = list("saloon")
 	},
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"xh" = (
-/obj/structure/closet/secure_closet/bar{
-	req_access = null
-	},
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/item/storage/box/lethalshot,
-/obj/item/storage/box/lethalshot,
-/turf/open/floor/wood{
-	broken = 1
-	},
 /area/ruin/unpowered)
 "xX" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer2,
@@ -577,17 +588,6 @@
 "FI" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating{
-	burnt = 1
-	},
-/area/ruin/unpowered)
-"FV" = (
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
-	dir = 10
-	},
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger{
-	faction = list("saloon")
-	},
 /turf/open/floor/plating{
 	burnt = 1
 	},
@@ -1225,7 +1225,7 @@ sN
 Ka
 dl
 JT
-oV
+aa
 Eg
 ad
 OY
@@ -1245,7 +1245,7 @@ OK
 iu
 uD
 MO
-xh
+af
 XT
 Np
 Wv
@@ -1310,7 +1310,7 @@ Hc
 Bn
 Ko
 ae
-FV
+ag
 qW
 ud
 wy
@@ -1324,7 +1324,7 @@ Wv
 Np
 Ar
 OZ
-lI
+ah
 mp
 tV
 cP
@@ -1360,7 +1360,7 @@ Ar
 OZ
 OZ
 PG
-rY
+ai
 wy
 Nr
 OZ

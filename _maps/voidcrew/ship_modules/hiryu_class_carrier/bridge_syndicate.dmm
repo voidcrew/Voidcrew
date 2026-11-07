@@ -2,6 +2,23 @@
 "ahM" = (
 /turf/template_noop,
 /area/template_noop)
+"iyn" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 3
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/binoculars,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
 "jgg" = (
 /turf/open/floor/mineral/titanium/blue,
 /area/template_noop)
@@ -46,23 +63,6 @@
 	},
 /obj/item/storage/toolbox/syndicate,
 /obj/structure/table/reinforced/plastitaniumglass,
-/turf/open/floor/mineral/plastitanium,
-/area/template_noop)
-"nFH" = (
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 3
-	},
-/obj/item/storage/medkit/regular{
-	pixel_x = 0;
-	pixel_y = 9
-	},
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/binoculars,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
 /turf/open/floor/mineral/plastitanium,
 /area/template_noop)
 "ozd" = (
@@ -129,7 +129,7 @@ ozd
 suh
 vuO
 vuO
-nFH
+iyn
 "}
 (4,1,1) = {"
 ahM

@@ -1,0 +1,2023 @@
+{
+ "category": "suits",
+ "groups": [
+  "Armor vests and short armored jackets",
+  "Long armored coats",
+  "Chest specialists",
+  "Full-body combat armor",
+  "Melee plate",
+  "Robes and light full-body armor",
+  "Exploration and fauna armor",
+  "Space suits",
+  "Hazard suits",
+  "Reactive armor",
+  "Uniques",
+  "Work coats and aprons",
+  "Coats and jackets",
+  "Costumes and joke gear"
+ ],
+ "items": {
+  "/obj/item/clothing/suit/apron": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "bc5adf56582edb7d",
+   "name": "apron",
+   "rank": 4,
+   "reason": "An apron with a pocket for garden tools.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/apron/chef": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "4d4e2a908df216c5",
+   "name": "cook's apron",
+   "rank": 4,
+   "reason": "A cook's apron.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/apron/overalls": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "b3a971b0da025bc7",
+   "name": "coveralls",
+   "rank": 4,
+   "reason": "Coveralls for garden work.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/apron/surgical": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "98b76b889485783f",
+   "name": "surgical apron",
+   "rank": 4,
+   "reason": "A surgeon's apron with a pocket for tools.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/armor/balloon_vest": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "a1bb1cdd6d4e8f0d",
+   "name": "balloon vest",
+   "note": "Destroyed (pops) when it is hit by any sharp item or by any bullet-type projectile, whether or not the hit would have been blocked. Its shock coefficient is zero, so electric shocks do nothing through it.",
+   "rank": 2,
+   "reason": "A vest made of balloons. Blocks shocks until any bullet or blade pops it.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/armor/bone": {
+   "confidence": "high",
+   "group": "Exploration and fauna armor",
+   "hash": "ad3fe2f2771605da",
+   "name": "bone armor",
+   "rank": 8,
+   "reason": "Explorer suit armor made from hides and bone, without a hood. Takes goliath plates too.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/bulletproof": {
+   "confidence": "high",
+   "group": "Chest specialists",
+   "hash": "42a33d4a2ac20958",
+   "name": "bulletproof armor",
+   "rank": 5,
+   "reason": "Bullet 60 on the chest, but melee 15 and laser 10. Takes a bullet far better than a vest and a laser far worse.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/centcom_formal": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "0ae68978ec98948e",
+   "name": "CentCom formal coat",
+   "rank": 2,
+   "reason": "Melee 35, bullet 40, laser 40 on chest and arms. Beats a vest on every number. One hull's commander starts in it.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/elder_atmosian": {
+   "confidence": "medium",
+   "group": "Robes and light full-body armor",
+   "hash": "aa7fe3b33c88cca5",
+   "name": "Elder Atmosian Armor",
+   "rank": 1,
+   "reason": "Melee 25, bullet 20, laser 30 on chest, arms and legs, plus bomb 85. Takes five sheets of metal hydrogen from a crystallizer, which is a lot of work for about a wizard robe.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/heavy": {
+   "confidence": "high",
+   "group": "Full-body combat armor",
+   "hash": "333afbc44fa6e8d3",
+   "name": "heavy armor",
+   "rank": 1,
+   "reason": "Melee 80, bullet 80, laser 50 on chest, arms and legs, with slowdown 3. Takes a fifth of bullet damage, but you can't chase or run and no helmet comes with it. Best for holding a door.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/armor/hos": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "c68a9c969cb4eac5",
+   "name": "armored greatcoat",
+   "rank": 4,
+   "reason": "Melee 30, bullet 30, laser 30 on chest, arms and legs with no slowdown. A clear step up from a chest-only vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/hos/hos_formal": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "b1ab3a93da0fe002",
+   "name": "Head of Security's parade jacket",
+   "rank": 3,
+   "reason": "Just under vest numbers, on chest and arms.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/hos/trenchcoat": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "b5ea5486161ac303",
+   "name": "armored trenchcoat",
+   "rank": 4,
+   "reason": "Melee 30, bullet 30, laser 30 on chest, arms and legs with no slowdown. A clear step up from a chest-only vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "48347d12e6e4474c",
+   "name": "the heirloom coat",
+   "note": "Starts with no armor at all and gains a tier after every 20 minutes of unbroken wear (three tiers, ending at melee 50, bullet 35, laser 25, energy 20, bomb 30, fire 60, acid 60); taking it off drops it straight back to no armor and restarts the clock. A tier only counts if the same wearer still has it on in the suit slot when the timer fires.",
+   "rank": 5,
+   "reason": "Authored unique. Starts with no armor and after an hour of unbroken wear reaches melee 50, bullet 35, laser 25. Taking it off resets it.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/armor/hos/trenchcoat/winter": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "f9f2aae8c1bf6d91",
+   "name": "head of security's winter trenchcoat",
+   "rank": 4,
+   "reason": "Melee 30, bullet 30, laser 30 on chest, arms and legs with no slowdown. A clear step up from a chest-only vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/laserproof": {
+   "confidence": "medium",
+   "group": "Chest specialists",
+   "hash": "8aecb0412951e6ab",
+   "name": "reflector vest",
+   "note": "Reflectable projectiles (lasers and most other beams) that hit the chest, groin or arms have a 50% chance to be reflected instead of landing: they turn 120 to 240 degrees and count as fired by the wearer. Bullets cannot be reflected. The vest itself cannot be destroyed.",
+   "rank": 2,
+   "reason": "Half of all laser and beam shots bounce back and laser 60 takes most of the rest, so a laser does about a fifth of its damage. Bullet 10 and melee 10 leave you bare to anything else, so it follows the matchup. Can't be destroyed.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/reactive/table": {
+   "confidence": "medium",
+   "group": "Reactive armor",
+   "hash": "8c795f4e50725b7b",
+   "name": "reactive table armor",
+   "note": "When it fires it blocks the hit and throws the wearer up to 10 tiles away onto a newly built table: 3 s knockdown, 10 brute and 40 stamina damage, and a mood hit. While EMPed it still blocks the hit but drops the wearer on a glass table that shatters, paralysing them for 10 s and throwing a shard at them. / Using it in hand turns it on; while on, each hit on the wearer has a 50% chance to fire the suit's reaction, which blocks that attack. After firing, subtypes sit on a 10 s cooldown during which a triggering hit is not blocked. An EMP on a switched-on suit makes its reaction work against the wearer for 30 s. The base type's reaction is only a message.",
+   "rank": 2,
+   "reason": "No armor. Half of hits are blocked, but you're thrown onto a new table and knocked down for 3 seconds, which usually costs more than the hit did. Only from a very rare random spawn.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/reactive/teleport": {
+   "confidence": "medium",
+   "group": "Reactive armor",
+   "hash": "24941bc256889dd9",
+   "name": "reactive teleport armor",
+   "note": "When it fires it blocks the hit and teleports the wearer to a random spot within 6 tiles, and the 10 s cooldown starts even if the teleport itself is refused (for example at a zone boundary). While EMPed the armor instead falls off and teleports itself away, and the hit is not blocked. / Using it in hand turns it on; while on, each hit on the wearer has a 50% chance to fire the suit's reaction, which blocks that attack. After firing, subtypes sit on a 10 s cooldown during which a triggering hit is not blocked. An EMP on a switched-on suit makes its reaction work against the wearer for 30 s. The base type's reaction is only a message.",
+   "rank": 1,
+   "reason": "No armor. Half of hits are blocked and teleport you up to 6 tiles away, with a 10 second cooldown. Saves you from a melee pile, does little against steady gunfire, and an EMP makes it throw itself off you.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/riot": {
+   "confidence": "medium",
+   "group": "Melee plate",
+   "hash": "8ab75eb4be9e5b18",
+   "name": "riot suit",
+   "rank": 1,
+   "reason": "Melee 50 on chest, arms and legs and it resists shoves, but bullet 10 and laser 10. Worse than a vest in a gunfight, and an explorer suit with three goliath plates matches it against melee.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/riot/knight": {
+   "confidence": "medium",
+   "group": "Melee plate",
+   "hash": "af78318737f8767b",
+   "name": "plate armour",
+   "rank": 1,
+   "reason": "Melee 50 on chest, arms and legs, but bullet 10 and laser 10. Same numbers as a riot suit, made of plate, and it holds no guns.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/riot/knight/blue": {
+   "confidence": "medium",
+   "group": "Melee plate",
+   "hash": "af78318737f8767b",
+   "name": "plate armour",
+   "rank": 1,
+   "reason": "Melee 50 on chest, arms and legs, but bullet 10 and laser 10. Same numbers as a riot suit, made of plate, and it holds no guns.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/riot/knight/greyscale": {
+   "confidence": "high",
+   "group": "Melee plate",
+   "hash": "cc2896d173983cef",
+   "name": "knight armour",
+   "rank": 3,
+   "reason": "Melee 35 plate, bullet 10, laser 10. A weaker riot suit.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/spaulder": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "5329eb86d6803fba",
+   "name": "pit champion's spaulder",
+   "rank": 6,
+   "reason": "Melee 35, but bullet 25, laser 25, energy 20 on chest and arms, and its straps hold no guns. Worse than a 450 credit vest against gunfire.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "6a959229f9543b11",
+   "name": "armor vest",
+   "rank": 4,
+   "reason": "Anchor (owner). Melee 35, bullet 30, laser 30 on the chest only. The basic armor a crew should have from the start.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/alt": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "6a959229f9543b11",
+   "name": "armor vest",
+   "rank": 4,
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/alt/sec": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "6a959229f9543b11",
+   "name": "armor vest",
+   "rank": 4,
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only. The security locker vest, on 8 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/blueshirt": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "35c119562fda56d0",
+   "name": "large armor vest",
+   "rank": 4,
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/capcarapace": {
+   "confidence": "high",
+   "group": "Chest specialists",
+   "hash": "c747fb22c9befd63",
+   "name": "captain's carapace",
+   "rank": 4,
+   "reason": "Melee 50, bullet 40, laser 50 on the chest only. Every number beats a vest. Most captains start in it.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/vest/capcarapace/captains_formal": {
+   "confidence": "high",
+   "group": "Chest specialists",
+   "hash": "132966a225582a1c",
+   "name": "captain's parade coat",
+   "rank": 3,
+   "reason": "Melee 50, bullet 40, laser 50 on chest and arms. Every number beats a vest. Lives in the captain's garment bag.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/vest/capcarapace/syndicate": {
+   "confidence": "high",
+   "group": "Chest specialists",
+   "hash": "c747fb22c9befd63",
+   "name": "syndicate captain's vest",
+   "rank": 4,
+   "reason": "Same armor as the captain's carapace: melee 50, bullet 40, laser 50 on the chest. Syndicate hull captains start in it.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/vest/durathread": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "4712ccdb9b5b4251",
+   "name": "durathread vest",
+   "rank": 8,
+   "reason": "Homemade vest: laser 30, but melee 20 and bullet 10, chest only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/hop": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "ecbe459084d8c235",
+   "name": "head of personnel's coat",
+   "rank": 1,
+   "reason": "Armor vest numbers on chest and arms, in a coat. Better than a vest, but not a new stage of armor.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/leather": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "5dcf05069811530e",
+   "name": "security overcoat",
+   "rank": 3,
+   "reason": "Armor vest numbers on chest, arms and legs with no slowdown. A vest that also guards the limbs.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/vest/marine": {
+   "confidence": "high",
+   "group": "Full-body combat armor",
+   "hash": "9134bd883aededef",
+   "name": "tactical armor vest",
+   "rank": 3,
+   "reason": "Melee 50, bullet 50, laser 30 on chest, arms and legs with no slowdown, and it seals against space with a sealed helmet. A fighter who never needs to change for a spacewalk.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/armor/vest/marine/pmc": {
+   "confidence": "high",
+   "group": "Full-body combat armor",
+   "hash": "a5ac3ca401756f5a",
+   "name": "tactical armor vest",
+   "rank": 2,
+   "reason": "Melee 40, bullet 50, laser 60 on chest, arms and legs with no slowdown. The best all-round armor without a slowdown, but not sealed against space.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/armor/vest/marine/security": {
+   "confidence": "high",
+   "group": "Full-body combat armor",
+   "hash": "9134bd883aededef",
+   "name": "large tactical armor vest",
+   "rank": 3,
+   "reason": "Melee 50, bullet 50, laser 30 on chest, arms and legs with no slowdown, and it seals against space with a sealed helmet. A fighter who never needs to change for a spacewalk. Same armor as the tactical armor vest.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/armor/vest/marine/sulaco": {
+   "confidence": "low",
+   "group": "Full-body combat armor",
+   "hash": "8eb62d3403adb132",
+   "name": "damaged tactical armor vest",
+   "rank": 5,
+   "reason": "Battered tactical vest: melee 20, bullet 20, no laser. Its worth is sealing against space with no slowdown. One ruin.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/armor/vest/military": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "cb057b7447a4b209",
+   "name": "Crude chestplate",
+   "rank": 7,
+   "reason": "Crude chestplate: melee 45, but bullet and laser only 25, chest only, and it holds few things.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/old": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "3253b542b1408c7f",
+   "name": "degrading armor vest",
+   "rank": 12,
+   "reason": "Armor vest numbers with slowdown 1. Strictly worse than a plain vest.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/press": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "6a959229f9543b11",
+   "name": "press armor vest",
+   "rank": 4,
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only. Crafted from a vest, with PRESS on it.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/russian": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "4833cb2078205049",
+   "name": "russian vest",
+   "rank": 10,
+   "reason": "Melee 25, bullet 30, no laser protection, chest only. Sits in many ship armories.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/secjacket": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "137d59d72d870f44",
+   "name": "security jacket",
+   "rank": 5,
+   "reason": "Melee 25, bullet 25, laser 25 on chest and arms. A lighter vest with sleeves.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/solgov": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "e214aac77bffe623",
+   "name": "SolGov armor vest",
+   "rank": 4,
+   "reason": "Same armor as the plain armor vest: melee 35, bullet 30, laser 30 on the chest only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/armor/vest/warden/alt": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "c76f2cb11a4f5fd8",
+   "name": "warden's armored jacket",
+   "rank": 1,
+   "reason": "Armor vest numbers on chest and arms, in a jacket. Better than a vest, but not a new stage of armor.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/atmos_overalls": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "75fd433b98818be7",
+   "name": "atmospherics overalls",
+   "rank": 3,
+   "reason": "Fire and acid protection on the body. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/bio_suit/cmo": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "18df179d051141aa",
+   "name": "bio suit",
+   "rank": 5,
+   "reason": "Full disease and acid protection, slowdown 0.5, and syringes can't get through it. No combat armor. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/bio_suit/general": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "73c97c09a947dd80",
+   "name": "bio suit",
+   "rank": 5,
+   "reason": "Full disease and acid protection, slowdown 0.5, and syringes can't get through it. No combat armor. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/bio_suit/janitor": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "961071d6a215aa35",
+   "name": "bio suit",
+   "rank": 5,
+   "reason": "Full disease and acid protection, slowdown 0.5, and syringes can't get through it. No combat armor. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/bio_suit/scientist": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "73c97c09a947dd80",
+   "name": "bio suit",
+   "rank": 5,
+   "reason": "Full disease and acid protection, slowdown 0.5, and syringes can't get through it. No combat armor. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/bio_suit/security": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "617a762d615145f6",
+   "name": "bio suit",
+   "rank": 1,
+   "reason": "Bio suit with melee 25, bullet 15, laser 25 on chest, arms and legs, slowdown 0.5. Crafted from a vest and a bio suit.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/bio_suit/virology": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "73c97c09a947dd80",
+   "name": "bio suit",
+   "rank": 5,
+   "reason": "Full disease and acid protection, slowdown 0.5, and syringes can't get through it. No combat armor. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/caution": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "adfdf7c46366268f",
+   "name": "wet floor sign",
+   "rank": 2,
+   "reason": "A wet floor sign you can wear.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chameleon": {
+   "confidence": "medium",
+   "group": "Costumes and joke gear",
+   "hash": "4223d2471a571e26",
+   "name": "armor",
+   "rank": 1,
+   "reason": "Can look like any other suit, with light armor on the chest.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/armor/templar": {
+   "confidence": "medium",
+   "group": "Melee plate",
+   "hash": "0b0c3c0c82b09ae5",
+   "name": "crusader armour",
+   "rank": 2,
+   "reason": "Melee 50 on chest, arms and legs, but bullet 10 and laser 10. Riot suit numbers, dropped by skeleton templars.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/armor/witchhunter": {
+   "confidence": "medium",
+   "group": "Melee plate",
+   "hash": "fe29de42b1299de8",
+   "name": "witchunter garb",
+   "rank": 2,
+   "reason": "Melee 50 on chest, arms and legs, but bullet 10 and laser 10. Riot suit numbers, from one ruin.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/bishoprobe": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd0518f6ae18712e",
+   "name": "bishop's robes",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/clownpriest": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd0518f6ae18712e",
+   "name": "Robes of the Honkmother",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/habit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "8114380b37fe76c5",
+   "name": "religious tunic",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/holidaypriest": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd0518f6ae18712e",
+   "name": "holiday priest",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/monkrobeeast": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd36eabc2c171714",
+   "name": "eastern monk's robes",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/nun": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "8114380b37fe76c5",
+   "name": "nun robe",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/shrinehand": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd0518f6ae18712e",
+   "name": "shrinehand robe",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/chaplainsuit/whiterobe": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "fd0518f6ae18712e",
+   "name": "white robe",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/bear_suit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "03fe83bcbd71930c",
+   "name": "bear suit",
+   "note": "Worn with the bear pelt hat, it adds the wearer to the bear faction until either piece comes off, so bears don't count them as an enemy. It does nothing else.",
+   "rank": 3,
+   "reason": "With its pelt hat, bears won't count you as an enemy. A costume otherwise.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/bronze": {
+   "confidence": "medium",
+   "group": "Costumes and joke gear",
+   "hash": "0c5c61564b28c49e",
+   "name": "bronze suit",
+   "rank": 3,
+   "reason": "A bronze suit that covers no body part, so its small armor never applies.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/cardborg": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "55d1299e49e85bc0",
+   "name": "cardborg suit",
+   "note": "Worn together with a cardborg helmet, the wearer appears as a cyborg to silicons. The code gives it no other effect.",
+   "rank": 3,
+   "reason": "With its helmet, silicons see you as a cyborg. Cardboard otherwise.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/chickensuit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "dd378a4df2521f7b",
+   "name": "chicken suit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/ghost_sheet": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "c4a2a1972b605aa6",
+   "name": "ghost sheet",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/gothcoat": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "35ff26647846681f",
+   "name": "gothic coat",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/judgerobe": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "c6d03a57548494e3",
+   "name": "judge's robe",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/monkeysuit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "f941b53fc476a225",
+   "name": "monkey suit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/pirate": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "406114c6ff781892",
+   "name": "pirate coat",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/pirate/armored": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "21ffae9a62140cb9",
+   "name": "pirate coat",
+   "rank": 2,
+   "reason": "Bullet 50, laser 30, melee 30 on chest and arms with no slowdown. Stops guns much better than a vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/costume/pirate/captain/armored": {
+   "confidence": "high",
+   "group": "Long armored coats",
+   "hash": "21ffae9a62140cb9",
+   "name": "pirate captain coat",
+   "rank": 2,
+   "reason": "Bullet 50, laser 30, melee 30 on chest and arms with no slowdown. Stops guns much better than a vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/costume/poncho": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "2f31f05381d1b242",
+   "name": "poncho",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/shrine_maiden": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "6373984e8a040332",
+   "name": "shrine maiden's outfit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/snowman": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "d39dfa17f2826837",
+   "name": "snowman outfit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/whitedress": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "7d08183cd809e264",
+   "name": "white dress",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/costume/xenos": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "e432549292556303",
+   "name": "xenos suit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hazardvest": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "116453ceb7c39a4d",
+   "name": "hazard vest",
+   "rank": 4,
+   "reason": "A high-visibility vest with a tool pocket. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hazardvest/press": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "116453ceb7c39a4d",
+   "name": "press hazard vest",
+   "rank": 4,
+   "reason": "A hazard vest with PRESS on it.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/ablative": {
+   "confidence": "medium",
+   "group": "Chest specialists",
+   "hash": "dcb15a27cadbf662",
+   "name": "ablative trenchcoat",
+   "note": "Reflectable projectiles (lasers and most beams) that hit the chest, groin, arms or legs have a 50% chance to be reflected, and the hood, while up and worn, does the same for head hits. Raising the hood also turns on the wearer's security HUD.",
+   "rank": 1,
+   "reason": "Half of all laser and beam shots bounce off chest, arms, legs and hood, and laser 60 takes most of the rest. Bullets and melee barely notice it. Hood adds a security HUD. Armory module of one hull only.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/hooded/bee_costume": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "d90e1bf5393c686c",
+   "name": "bee costume",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/berserker": {
+   "confidence": "medium",
+   "group": "Exploration and fauna armor",
+   "hash": "e5035854ad701f75",
+   "name": "berserker armor",
+   "rank": 2,
+   "reason": "Melee 30, bullet 30 on the whole body with its hood. Taking damage charges a 20 second rage: half brute, four times melee speed, faster movement and reflected beams, but no guns.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/hooded/bloated_human": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "0dd3923364e30aa2",
+   "name": "bloated human suit",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/carp_costume": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "54dfd0fd96a0d724",
+   "name": "carp costume",
+   "rank": 4,
+   "reason": "A costume. No armor. The hood stops space carp attacking you.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/carp_costume/spaceproof/old": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "bd8dd22d81816bb0",
+   "name": "battered carp space suit",
+   "rank": 4,
+   "reason": "Sealed space suit, slowdown 1, whose hood stops space carp attacking you. Melee minus 20, so blows hit harder.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/chaplain_hoodie": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "638b272b6e90d318",
+   "name": "follower hoodie",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/chaplain_hoodie/leader": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "153e239086d116c7",
+   "name": "leader hoodie",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/chaplainsuit/monkhabit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "83fcf80fde202393",
+   "name": "monk's habit",
+   "rank": 5,
+   "reason": "Religious robes. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/cloak/drake": {
+   "confidence": "medium",
+   "group": "Exploration and fauna armor",
+   "hash": "0f38a171a3a3ea74",
+   "name": "drake armour",
+   "rank": 3,
+   "reason": "Melee 65, laser 40 on the whole body with its hood, heat safe to 35,000 degrees, no slowdown. Bullet 15 is the hole.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/hooded/cloak/godslayer": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "fb2818a77da9bd27",
+   "name": "godslayer armour",
+   "note": "While worn, the first time the wearer drops into soft crit, unconscious or hard crit (not straight to death) it heals up to 500 damage across brute, then burn, then oxygen, and then sits on a 10 minute cooldown.",
+   "rank": 1,
+   "reason": "The first time you drop into crit it heals up to 500 damage, once per 10 minutes, on top of full-body armor with a sealed hood. Takes three boss drops to make.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/hooded/cloak/goliath": {
+   "confidence": "high",
+   "group": "Exploration and fauna armor",
+   "hash": "288420af4c1b0221",
+   "name": "goliath cloak",
+   "rank": 6,
+   "reason": "Melee 60, bullet 10, laser 10 on chest, arms and legs, crafted from nine goliath hides. A plated explorer suit gets the same melee.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/cloak/second_shadow": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "f82eb845fc3f0a87",
+   "name": "Second Shadow",
+   "note": "With the hood up, the first stun, knockdown, paralysis, immobilize or incapacitate that would land on the wearer is cancelled instead: the wearer turns invisible for 3 s and steps to a random open adjacent tile, leaving a harmless copy where they stood, then the cloak recharges for 3 min. It cancels only those status effects, not the damage, and ignores effects applied with the 'ignore stun immunity' flag.",
+   "rank": 2,
+   "reason": "Authored unique. With the hood up it cancels the first stun that lands, turns you invisible for 3 seconds and leaves a decoy. Recharges in 3 minutes.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/hooded/cultrobes": {
+   "confidence": "medium",
+   "group": "Long armored coats",
+   "hash": "2b17ea65fcf1703e",
+   "name": "ancient cultist robes",
+   "rank": 1,
+   "reason": "Melee 40, bullet 30, laser 40 on chest, arms and legs, a hood with the same armor, no slowdown. Best cloth armor, weak only to fire and acid.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/hooded/cultrobes/alt": {
+   "confidence": "medium",
+   "group": "Long armored coats",
+   "hash": "300377e79fd1bc93",
+   "name": "cultist robes",
+   "rank": 1,
+   "reason": "Melee 40, bullet 30, laser 40 on chest, arms and legs, a hood with the same armor, no slowdown. Best cloth armor, weak only to fire and acid.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/hooded/ethereal_raincoat": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "0e9f193ffcaa451e",
+   "name": "ethereal raincoat",
+   "rank": 4,
+   "reason": "A raincoat. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/explorer": {
+   "confidence": "high",
+   "group": "Exploration and fauna armor",
+   "hash": "fbdcaaa004ea121d",
+   "name": "explorer suit",
+   "rank": 7,
+   "reason": "Anchor for planet work. Melee 30 but bullet 10 and laser 10, a hood, heat safe to 1,500 degrees, mining tool storage. Three goliath plates take melee to 60.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/explorer/second_season_duster": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "db9dfd174c5c72da",
+   "name": "\"Second Season\"",
+   "note": "While worn, the wearer is immune to ash, snow, sand, rain and radiation storm weather, and the terrain slowdown from rough ground is stripped on every step; gear and injury slowdown are left alone.",
+   "rank": 7,
+   "reason": "Authored unique. An explorer suit that ignores all weather and the slowdown from rough ground.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/hooded/explorer/survivor": {
+   "confidence": "medium",
+   "group": "Exploration and fauna armor",
+   "hash": "1249a8cc686b3de6",
+   "name": "survivor suit",
+   "rank": 4,
+   "reason": "Weak armor, melee 15, bullet 10, but the only suit here that makes you faster. A small speed gain, and one ruin has it.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/hooded/explorer/syndicate": {
+   "confidence": "high",
+   "group": "Exploration and fauna armor",
+   "hash": "8b68147ae4d92c1b",
+   "name": "syndicate explorer suit",
+   "rank": 5,
+   "reason": "Explorer suit with better gun numbers: melee 30, bullet 15, laser 25, takes goliath plates. Ruin finds only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/flashsuit": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "57f71acb88d83ca7",
+   "name": "flashy costume",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/hostile_environment": {
+   "confidence": "high",
+   "group": "Exploration and fauna armor",
+   "hash": "20daeb1dae85e219",
+   "name": "H.E.C.K. suit",
+   "note": "Counts as radiation-protective clothing: the wearer is not irradiated only if every body part is covered by such clothing, which the matching hood supplies for the head. Its process() would send ominous messages and an occasional Bubblegum charge hallucination to the wearer, but nothing ever starts it processing, so that never runs. The matching hood lets the wearer butcher corpses bare-handed in 0.5 s, healing brute, burn and toxin by 10% of the corpse's max health.",
+   "rank": 1,
+   "reason": "Melee 70, bullet 40 on the whole body with its hood, immune to radiation and heat, no slowdown, and the hood heals you for butchering corpses. Laser 10 is the one hole. Dropped by Bubblegum.",
+   "tier": "red"
+  },
+  "/obj/item/clothing/suit/hooded/ian_costume": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "da0d9d35c2792c94",
+   "name": "corgi costume",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/shark_costume": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "d74adc285ecaa3ea",
+   "name": "Shark costume",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/shork_costume": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "f18142afd9062abc",
+   "name": "shork costume",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/techpriest": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "4aa1874b72621787",
+   "name": "techpriest robes",
+   "rank": 4,
+   "reason": "A costume. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "8d42784998890b4c",
+   "name": "winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/captain": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "372bbc7f29bc8ff0",
+   "name": "captain's winter coat",
+   "rank": 2,
+   "reason": "Melee 25, bullet 30, laser 30 on chest and arms, and a hood with the same armor saves the helmet slot. Lives in the captain's garment bag.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/cargo": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "5ff6b52e39562950",
+   "name": "cargo winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/cargo/qm": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "7a7a893d89dc29d4",
+   "name": "quartermaster's winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/custom": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "c920c83d6c1fd418",
+   "name": "tailored winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/engineering": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "3e5525e3dbd6a041",
+   "name": "engineering winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/eva": {
+   "confidence": "medium",
+   "group": "Coats and jackets",
+   "hash": "f073cd707b7dd05f",
+   "name": "Endotherm winter coat",
+   "rank": 1,
+   "reason": "Cold-proof coat with slowdown 0.8 and melee 10, but not sealed, so space still kills you.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/hop": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "d1ff3bfcca0039e3",
+   "name": "head of personnel's winter coat",
+   "rank": 11,
+   "reason": "A winter coat with a little armor: melee 10, bullet 15, laser 15.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/hydro": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "b3beb4410b774c6f",
+   "name": "hydroponics winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/janitor": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "38fd6bf1539edbb6",
+   "name": "janitors winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/medical": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "533adba4ce362db8",
+   "name": "medical winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/medical/cmo": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "e8ea4b6b9fa617e7",
+   "name": "chief medical officer's winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/medical/paramedic": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "a2fa34ac3c234cbf",
+   "name": "paramedic winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/miner": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "529f4e3f6c64b577",
+   "name": "mining winter coat",
+   "rank": 2,
+   "reason": "Winter coat with melee 10. No other armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/science": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "07e1051f8d4ebe32",
+   "name": "science winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/science/rd": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "7d7e23a4d2ae6067",
+   "name": "research director's winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/science/robotics": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "2f5772d3526d5cfe",
+   "name": "robotics winter coat",
+   "rank": 3,
+   "reason": "Keeps the cold out, with a hood. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/hooded/wintercoat/security": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "dc7ba1188a6abf39",
+   "name": "security winter jacket",
+   "rank": 5,
+   "reason": "Melee 25, bullet 15, laser 30 on chest and arms, with a matching hood. Weak to bullets.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/jacket/blazer": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "ba1bea5350560a8a",
+   "name": "blazer jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/bomber": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "54ba203b59e553ed",
+   "name": "bomber jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/capjacket": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "52f4ea8063c7576f",
+   "name": "captain's parade jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/curator": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "fffad9e741caf206",
+   "name": "treasure hunter's coat",
+   "rank": 9,
+   "reason": "Light coat armor: melee 25, laser 25, bullet only 10, on chest and arms.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/jacket/det_suit": {
+   "confidence": "high",
+   "group": "Armor vests and short armored jackets",
+   "hash": "57ca86c8b0acef7d",
+   "name": "brown blazer jacket",
+   "rank": 9,
+   "reason": "Light jacket armor: melee 25, laser 25, bullet only 10, on chest and arms.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/jacket/fancy": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "fd413b1f2aa133cb",
+   "name": "fancy fur coat",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/hos/blue": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "681a84ed824ffa80",
+   "name": "head of security's jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/leather": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d0b69e82dcce9475",
+   "name": "leather jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/leather/biker": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d0b69e82dcce9475",
+   "name": "biker jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/leather_trenchcoat": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "3652e5bb8e8194c7",
+   "name": "leather trenchcoat",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/letterman": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "f919585be78b20c2",
+   "name": "letterman jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/letterman_nanotrasen": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "f919585be78b20c2",
+   "name": "blue letterman jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/letterman_red": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "f919585be78b20c2",
+   "name": "red letterman jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/letterman_syndie": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d519a22cee4e6375",
+   "name": "blood-red letterman jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/miljacket": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d519a22cee4e6375",
+   "name": "military jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/officer/blue": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "681a84ed824ffa80",
+   "name": "security officer's jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/officer/tan": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "681a84ed824ffa80",
+   "name": "security officer's jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/oversized": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "ba1bea5350560a8a",
+   "name": "oversized jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/puffer": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d82a9c6146e91f0c",
+   "name": "puffer jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/puffer/vest": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "1802560d13e334fc",
+   "name": "puffer vest",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/quartermaster": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "d767a073cbc99fb9",
+   "name": "quartermaster's overcoat",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/straight_jacket": {
+   "confidence": "medium",
+   "group": "Costumes and joke gear",
+   "hash": "e21a2ce4b309dc39",
+   "name": "straight jacket",
+   "rank": 1,
+   "reason": "Holds whoever is put in it for up to five minutes. A restraint, not armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/jacket/warden/blue": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "681a84ed824ffa80",
+   "name": "warden's jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/mothcoat": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "ed205d3e6b67dfe0",
+   "name": "mothic flightsuit",
+   "rank": 4,
+   "reason": "A moth flightsuit. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/mothcoat/winter": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "78544aff209aaa22",
+   "name": "mothic mantella",
+   "rank": 4,
+   "reason": "A warm moth mantle. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/pillow_suit": {
+   "confidence": "medium",
+   "group": "Costumes and joke gear",
+   "hash": "3b4bb4db0b975d9c",
+   "name": "pillow suit",
+   "note": "Worn, walking into any mob automatically hits it with a pillow hidden in the suit (stamina damage, once per 0.8 s), and each of those hits also costs the wearer 5 stamina.",
+   "rank": 2,
+   "reason": "Bump into people to hit them with a pillow: 5 stamina to them, 5 stamina to you.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/space": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "b507839ba0a76ae3",
+   "name": "space suit",
+   "rank": 3,
+   "reason": "Same as an EVA suit with a bit more fire protection. Slowdown 1, no armor.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/space/eva": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "98b7ca7eadc869ef",
+   "name": "EVA suit",
+   "rank": 3,
+   "reason": "Anchor. The plain space suit, slowdown 1, no armor. Sold in the green zone and in lockers on most ships.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/space/eva/plasmaman": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "7356b842610daedd",
+   "name": "EVA plasma envirosuit",
+   "note": "While the wearer is on fire it puts them out automatically, once per 10 s, using one of its 10 charges; it only works with the chest, hands and head sealed (gloves on and a sealed helmet). A refill cartridge sets the charge count to 5, which lowers a suit holding more than that and is refused at exactly 5.",
+   "rank": 2,
+   "reason": "Space suit with full fire protection and a self-extinguisher with 10 charges. Slowdown 1.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/space/nasavoid": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "c85ab5b1152c36c5",
+   "name": "NASA Voidsuit",
+   "rank": 3,
+   "reason": "Same as an EVA suit with a bit more fire protection. Slowdown 1, no armor.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/space/orange": {
+   "confidence": "high",
+   "group": "Space suits",
+   "hash": "1d5e94c665edc075",
+   "name": "emergency space suit",
+   "rank": 5,
+   "reason": "Emergency suit with slowdown 3. Keeps you alive in a breach and does little else.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/space/santa": {
+   "confidence": "low",
+   "group": "Space suits",
+   "hash": "4bd5a9edf521b125",
+   "name": "Santa's suit",
+   "rank": 1,
+   "reason": "Seals against space with no slowdown, and its pocket takes anything. No armor, needs its own sealed helmet, and one ruin has it.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/space/syndicate": {
+   "confidence": "medium",
+   "group": "Full-body combat armor",
+   "hash": "89c4abb467e286d1",
+   "name": "red space suit",
+   "rank": 4,
+   "reason": "Melee 40, bullet 50, laser 30 on chest, arms and legs, sealed for space with its helmet, slowdown 1. A real armored space suit, but no modules and slower than a security MODsuit.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/space/syndicate/black": {
+   "confidence": "medium",
+   "group": "Full-body combat armor",
+   "hash": "1bea5e976efaf166",
+   "name": "black space suit",
+   "rank": 4,
+   "reason": "Melee 40, bullet 50, laser 30 on chest, arms and legs, sealed for space with its helmet, slowdown 1. A real armored space suit, but no modules and slower than a security MODsuit.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/space/syndicate/black/engie": {
+   "confidence": "medium",
+   "group": "Full-body combat armor",
+   "hash": "767fe6b83e96c084",
+   "name": "black engineering space suit",
+   "rank": 4,
+   "reason": "Melee 40, bullet 50, laser 30 on chest, arms and legs, sealed for space with its helmet, slowdown 1. A real armored space suit, but no modules and slower than a security MODsuit.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/space/syndicate/orange": {
+   "confidence": "medium",
+   "group": "Full-body combat armor",
+   "hash": "3ae80842154cf14a",
+   "name": "orange space suit",
+   "rank": 4,
+   "reason": "Melee 40, bullet 50, laser 30 on chest, arms and legs, sealed for space with its helmet, slowdown 1. A real armored space suit, but no modules and slower than a security MODsuit.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/suit/syndicatefake": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "3214593f102f503e",
+   "name": "black and red space suit replica",
+   "rank": 4,
+   "reason": "Looks like a Syndicate space suit. It isn't one.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/the_occasion": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "8577fd5bcb225941",
+   "name": "\"the occasion\"",
+   "note": "While clean and worn, all of the wearer's movement slowdown is ignored, including the suit's own. Blood on it, or a touch or vapour splash of blood, gibs, slime jelly, oil, ash or carbon, ruins it until washed (soap, shower, cleaner grenade or washing machine): armor drops to almost nothing and the slowdown returns. It rechecks itself every 10 s while worn, and the garment bag also holds a matching top hat.",
+   "rank": 3,
+   "reason": "Authored unique. While clean it ignores every slowdown on you, from gear or injury, with melee 50 armor. Blood ruins it until washed.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/toggle/cargo_tech": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "592ec9544942e87a",
+   "name": "cargo gorka",
+   "rank": 4,
+   "reason": "A cargo jacket with a pocket.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/chef": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "7dfb0dd4a2746adc",
+   "name": "chef's apron",
+   "rank": 4,
+   "reason": "A chef's apron.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/jacket/sweater": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "66606cc30277febe",
+   "name": "sweater jacket",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/jacket/trenchcoat": {
+   "confidence": "high",
+   "group": "Coats and jackets",
+   "hash": "8b8afd9b9ffe2139",
+   "name": "trenchcoat",
+   "rank": 4,
+   "reason": "A jacket that keeps the cold out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "c85b818b5cfdc92b",
+   "name": "labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/chemist": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "a8dfc042955592b5",
+   "name": "chemist labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/cmo": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "0d97ba99aae756d7",
+   "name": "chief medical officer's labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/eventide_courier": {
+   "confidence": "high",
+   "group": "Uniques",
+   "hash": "5b2ac70b90956e80",
+   "name": "Eventide courier coat",
+   "note": "Has one inside pocket that takes a single object of any size, or an unconscious or dead creature, that is not anchored. It takes 3 s to work something in (dragging it onto the coat) and 2 s to take it back out with an empty hand while holding or wearing the coat; the contents add no weight, and they drop to the floor if the coat is destroyed.",
+   "rank": 6,
+   "reason": "Authored unique. An inside pocket holds any single object, or an unconscious or dead body, and adds no weight. A plain lab coat otherwise.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/genetics": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "b640bd7990f3b3d6",
+   "name": "geneticist labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/interdyne": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "c85b818b5cfdc92b",
+   "name": "interdyne labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/paramedic": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "bc5cab1aa8dc8f6b",
+   "name": "paramedic's jacket",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/research_director": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "351cc47fab3b308b",
+   "name": "research director's coat",
+   "rank": 1,
+   "reason": "Lab coat with slightly more bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/roboticist": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "c85b818b5cfdc92b",
+   "name": "roboticist labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/labcoat/science": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "0cc9f18732fcd6ae",
+   "name": "scientist labcoat",
+   "rank": 2,
+   "reason": "Lab coat with some bio, fire and acid protection. No combat armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/toggle/owlwings/griffinwings": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "848d5891aad0c901",
+   "name": "griffon cloak",
+   "rank": 3,
+   "reason": "A griffon cloak. It holds a lot in its pocket, and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/utility/beekeeper_suit": {
+   "confidence": "high",
+   "group": "Work coats and aprons",
+   "hash": "6498150a58ec6efe",
+   "name": "beekeeper suit",
+   "rank": 4,
+   "reason": "Keeps bees and syringes out. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/utility/bomb_suit": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "9c8e418e24fecfc4",
+   "name": "bomb suit",
+   "rank": 3,
+   "reason": "Bomb 100 with melee 20, laser 20, slowdown 2. For disarming and surviving blasts, and little else.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/bomb_suit/security": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "1fdde71b6824c640",
+   "name": "bomb suit",
+   "rank": 3,
+   "reason": "Bomb 100 with melee 20, laser 20, slowdown 2. For disarming and surviving blasts, and little else.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/fire": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "c84313a51a59e980",
+   "name": "emergency firesuit",
+   "rank": 3,
+   "reason": "Walks through fire: heat safe to 30,000 degrees, melee 15, laser 20, slowdown 1. A hazard tool that keeps a crew alive through a burning deck.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/fire/atmos": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "09ebe81f3fb965c9",
+   "name": "atmospheric firesuit",
+   "rank": 2,
+   "reason": "Walks through fire: heat safe to 35,000 degrees, melee 15, laser 20, slowdown 1. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/fire/firefighter": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "0e51ced7ff96d366",
+   "name": "emergency firesuit",
+   "rank": 3,
+   "reason": "Walks through fire: heat safe to 30,000 degrees, melee 15, laser 20, slowdown 1. A hazard tool that keeps a crew alive through a burning deck.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/fire/heavy": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "a70129e501ce003a",
+   "name": "heavy firesuit",
+   "rank": 4,
+   "reason": "A firesuit with more slowdown (1.5) and nothing added.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/utility/radiation": {
+   "confidence": "high",
+   "group": "Hazard suits",
+   "hash": "9e94fd864ee83fba",
+   "name": "radiation suit",
+   "note": "Counts as radiation-protective clothing: the wearer is not irradiated only if every body part is covered by such clothing. The suit covers everything below the head, so a radiation-protective hood or helmet is needed as well.",
+   "rank": 2,
+   "reason": "With its hood it makes you immune to radiation, slowdown 1.5. Opens irradiated ground to a crew, and it's cheap and common.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "wizard robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/black": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "black wizard robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "durathread robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread/earth": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "geomancer robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread/electric": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "electromancer robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread/fire": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "pyromancer robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread/ice": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "pyromancer robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/durathread/necro": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "2bfd73b8c865693f",
+   "name": "necromancer robe",
+   "rank": 2,
+   "reason": "Thin homemade cloth armor: melee 15, bullet 5, laser 25 on chest, arms and legs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/fake": {
+   "confidence": "high",
+   "group": "Costumes and joke gear",
+   "hash": "cedfdfe0bef46886",
+   "name": "wizard robe",
+   "rank": 4,
+   "reason": "Looks like a wizard robe. No armor.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/suit/wizrobe/magusblue": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "Magus robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/marisa": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "witch robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/red": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "red wizard robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/suit/wizrobe/verdigris": {
+   "confidence": "medium",
+   "group": "Uniques",
+   "hash": "d1f203eff92964ec",
+   "name": "verdigris robe",
+   "rank": 4,
+   "reason": "Dropped once per round by the lich. Seals against space with no slowdown, heat safe to 30,000 degrees, melee 30, bullet 25, laser 25.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/suit/wizrobe/yellow": {
+   "confidence": "high",
+   "group": "Robes and light full-body armor",
+   "hash": "c2fdc6a6796d9d86",
+   "name": "yellow wizard robe",
+   "rank": 1,
+   "reason": "Melee 30, bullet 20, laser 20 on chest, arms and legs with no slowdown. Below a vest on the chest, better on the limbs.",
+   "tier": "green"
+  }
+ },
+ "method": "No single number. Each suit is placed by what it does on the chest, then the arms and legs, against guns and melee; then slowdown, sealing against space, and what it does beyond armor. Groin, hand and foot coverage is ignored because the game only checks armor on chest, head, arms and legs. Second opinion: MODsuit armor totals as shops sell them (120 at reputation 4, 150 at reputation 11).",
+ "unrated": {
+  "/obj/item/clothing/suit": "abstract",
+  "/obj/item/clothing/suit/apron/waders": "no route",
+  "/obj/item/clothing/suit/armor": "abstract",
+  "/obj/item/clothing/suit/armor/abductor": "abstract",
+  "/obj/item/clothing/suit/armor/abductor/vest": "no route",
+  "/obj/item/clothing/suit/armor/changeling": "no route",
+  "/obj/item/clothing/suit/armor/dragoon": "no route",
+  "/obj/item/clothing/suit/armor/durability": "abstract",
+  "/obj/item/clothing/suit/armor/durability/barrelmelon": "literal only",
+  "/obj/item/clothing/suit/armor/durability/barrelmelon/fire_resist": "literal only",
+  "/obj/item/clothing/suit/armor/durability/holymelon": "literal only",
+  "/obj/item/clothing/suit/armor/durability/holymelon/fire_resist": "literal only",
+  "/obj/item/clothing/suit/armor/durability/watermelon": "literal only",
+  "/obj/item/clothing/suit/armor/durability/watermelon/fire_resist": "literal only",
+  "/obj/item/clothing/suit/armor/heavy/adamantine": "no route",
+  "/obj/item/clothing/suit/armor/militia": "no route",
+  "/obj/item/clothing/suit/armor/reactive": "no route",
+  "/obj/item/clothing/suit/armor/reactive/barricade": "no route",
+  "/obj/item/clothing/suit/armor/reactive/bioscrambling": "no route",
+  "/obj/item/clothing/suit/armor/reactive/ectoplasm": "no route",
+  "/obj/item/clothing/suit/armor/reactive/fire": "no route",
+  "/obj/item/clothing/suit/armor/reactive/hallucinating": "no route",
+  "/obj/item/clothing/suit/armor/reactive/psykerboost": "no route",
+  "/obj/item/clothing/suit/armor/reactive/repulse": "no route",
+  "/obj/item/clothing/suit/armor/reactive/stealth": "no route",
+  "/obj/item/clothing/suit/armor/reactive/tesla": "no route",
+  "/obj/item/clothing/suit/armor/riot/knight/red": "no route",
+  "/obj/item/clothing/suit/armor/riot/knight/warlord": "literal only",
+  "/obj/item/clothing/suit/armor/riot/knight/yellow": "no route",
+  "/obj/item/clothing/suit/armor/swat": "literal only",
+  "/obj/item/clothing/suit/armor/tdome": "abstract",
+  "/obj/item/clothing/suit/armor/tdome/green": "no route",
+  "/obj/item/clothing/suit/armor/tdome/holosuit": "abstract",
+  "/obj/item/clothing/suit/armor/tdome/holosuit/green": "no route",
+  "/obj/item/clothing/suit/armor/tdome/holosuit/red": "no route",
+  "/obj/item/clothing/suit/armor/tdome/red": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/blue": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/green": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/light": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/light/blue": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/light/green": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/light/red": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/light/yellow": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/red": "no route",
+  "/obj/item/clothing/suit/armor/vest/ctf/yellow": "no route",
+  "/obj/item/clothing/suit/armor/vest/cuirass": "no route",
+  "/obj/item/clothing/suit/armor/vest/det_suit": "no route",
+  "/obj/item/clothing/suit/armor/vest/marine/engineer": "no route",
+  "/obj/item/clothing/suit/armor/vest/marine/medic": "no route",
+  "/obj/item/clothing/suit/armor/vest/russian_coat": "no route",
+  "/obj/item/clothing/suit/armor/vest/solgov/rep": "no route",
+  "/obj/item/clothing/suit/armor/vest/warden": "no route",
+  "/obj/item/clothing/suit/bio_suit": "no route",
+  "/obj/item/clothing/suit/bio_suit/plaguedoctorsuit": "no route",
+  "/obj/item/clothing/suit/bluetag": "toy",
+  "/obj/item/clothing/suit/chameleon/broken": "no route",
+  "/obj/item/clothing/suit/changeling": "no route",
+  "/obj/item/clothing/suit/chaplainsuit": "abstract",
+  "/obj/item/clothing/suit/chaplainsuit/armor": "abstract",
+  "/obj/item/clothing/suit/chaplainsuit/armor/adept": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/ancient": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/clock": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/crusader": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/crusader/blue": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/crusader/red": "no route",
+  "/obj/item/clothing/suit/chaplainsuit/armor/studentuni": "no route",
+  "/obj/item/clothing/suit/coordinator": "no route",
+  "/obj/item/clothing/suit/costume": "abstract",
+  "/obj/item/clothing/suit/costume/bunnysuit": "no route",
+  "/obj/item/clothing/suit/costume/changshan_blue": "cosmetic",
+  "/obj/item/clothing/suit/costume/changshan_red": "cosmetic",
+  "/obj/item/clothing/suit/costume/cheongsam_blue": "cosmetic",
+  "/obj/item/clothing/suit/costume/cheongsam_red": "cosmetic",
+  "/obj/item/clothing/suit/costume/cyborg_suit": "no route",
+  "/obj/item/clothing/suit/costume/deckers": "cosmetic",
+  "/obj/item/clothing/suit/costume/dracula": "cosmetic",
+  "/obj/item/clothing/suit/costume/drfreeze_coat": "cosmetic",
+  "/obj/item/clothing/suit/costume/football_armor": "cosmetic",
+  "/obj/item/clothing/suit/costume/hastur": "no route",
+  "/obj/item/clothing/suit/costume/hawaiian": "cosmetic",
+  "/obj/item/clothing/suit/costume/imperium_monk": "no route",
+  "/obj/item/clothing/suit/costume/irs": "cosmetic",
+  "/obj/item/clothing/suit/costume/joker": "cosmetic",
+  "/obj/item/clothing/suit/costume/justice": "no route",
+  "/obj/item/clothing/suit/costume/nemes": "cosmetic",
+  "/obj/item/clothing/suit/costume/pg": "cosmetic",
+  "/obj/item/clothing/suit/costume/pirate/captain": "no route",
+  "/obj/item/clothing/suit/costume/poncho/green": "no route",
+  "/obj/item/clothing/suit/costume/poncho/ponchoshame": "no route",
+  "/obj/item/clothing/suit/costume/poncho/red": "no route",
+  "/obj/item/clothing/suit/costume/soviet": "cosmetic",
+  "/obj/item/clothing/suit/costume/striped_sweater": "cosmetic",
+  "/obj/item/clothing/suit/costume/tmc": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/graphic": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/graphic/ian": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/messy": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/messy/graphic": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/messy/graphic/gamer": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/messy/graphic/ian": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/skub": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/skub/anti": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/wornout": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/wornout/graphic": "cosmetic",
+  "/obj/item/clothing/suit/costume/wellworn_shirt/wornout/graphic/ian": "cosmetic",
+  "/obj/item/clothing/suit/costume/yuri": "cosmetic",
+  "/obj/item/clothing/suit/hooded": "abstract",
+  "/obj/item/clothing/suit/hooded/carp_costume/spaceproof": "no route",
+  "/obj/item/clothing/suit/hooded/chaplain_hoodie/divine_archer": "no route",
+  "/obj/item/clothing/suit/hooded/chaplainsuit": "abstract",
+  "/obj/item/clothing/suit/hooded/cloak": "abstract",
+  "/obj/item/clothing/suit/hooded/cloak/rimeward": "literal only",
+  "/obj/item/clothing/suit/hooded/cultrobes/alt/ghost": "no route",
+  "/obj/item/clothing/suit/hooded/cultrobes/cult_shield": "no route",
+  "/obj/item/clothing/suit/hooded/cultrobes/eldritch": "no route",
+  "/obj/item/clothing/suit/hooded/cultrobes/hardened": "no route",
+  "/obj/item/clothing/suit/hooded/cultrobes/void": "no route",
+  "/obj/item/clothing/suit/hooded/ethereal_raincoat/trailwarden": "literal only",
+  "/obj/item/clothing/suit/hooded/mysticrobe": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/centcom": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/engineering/atmos": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/engineering/ce": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/medical/chemistry": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/medical/coroner": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/medical/viro": "no route",
+  "/obj/item/clothing/suit/hooded/wintercoat/science/genetics": "no route",
+  "/obj/item/clothing/suit/jacket": "abstract",
+  "/obj/item/clothing/suit/jacket/det_suit/disco": "no route",
+  "/obj/item/clothing/suit/jacket/det_suit/kim": "no route",
+  "/obj/item/clothing/suit/jacket/det_suit/noir": "no route",
+  "/obj/item/clothing/suit/jacket/hos": "abstract",
+  "/obj/item/clothing/suit/jacket/hos/tan": "no route",
+  "/obj/item/clothing/suit/jacket/officer": "abstract",
+  "/obj/item/clothing/suit/jacket/warden": "abstract",
+  "/obj/item/clothing/suit/jacket/warden/tan": "no route",
+  "/obj/item/clothing/suit/magusred": "no route",
+  "/obj/item/clothing/suit/mod": "leftover",
+  "/obj/item/clothing/suit/mothcoat/original": "no route",
+  "/obj/item/clothing/suit/nanite_accounting_test": "no route",
+  "/obj/item/clothing/suit/nanite_infection_test": "no route",
+  "/obj/item/clothing/suit/redtag": "toy",
+  "/obj/item/clothing/suit/space/basketball": "no route",
+  "/obj/item/clothing/suit/space/fragile": "no route",
+  "/obj/item/clothing/suit/space/freedom": "no route",
+  "/obj/item/clothing/suit/space/hunter": "no route",
+  "/obj/item/clothing/suit/space/nasavoid/old": "no route",
+  "/obj/item/clothing/suit/space/officer": "no route",
+  "/obj/item/clothing/suit/space/pirate": "no route",
+  "/obj/item/clothing/suit/space/pirate/silverscale": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/blue": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/green": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/med": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/orange": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/red": "no route",
+  "/obj/item/clothing/suit/space/syndicate/black/white": "no route",
+  "/obj/item/clothing/suit/space/syndicate/blue": "no route",
+  "/obj/item/clothing/suit/space/syndicate/contract": "no route",
+  "/obj/item/clothing/suit/space/syndicate/green": "no route",
+  "/obj/item/clothing/suit/space/syndicate/green/dark": "no route",
+  "/obj/item/clothing/suit/spooky_ghost_sheet": "no route",
+  "/obj/item/clothing/suit/toggle": "abstract",
+  "/obj/item/clothing/suit/toggle/jacket": "abstract",
+  "/obj/item/clothing/suit/toggle/jacket/det_trench": "no route",
+  "/obj/item/clothing/suit/toggle/jacket/det_trench/noir": "no route",
+  "/obj/item/clothing/suit/toggle/labcoat/coroner": "no route",
+  "/obj/item/clothing/suit/toggle/labcoat/mad": "no route",
+  "/obj/item/clothing/suit/toggle/labcoat/virologist": "no route",
+  "/obj/item/clothing/suit/toggle/lawyer": "cosmetic",
+  "/obj/item/clothing/suit/toggle/lawyer/black": "cosmetic",
+  "/obj/item/clothing/suit/toggle/lawyer/greyscale": "cosmetic",
+  "/obj/item/clothing/suit/toggle/lawyer/purple": "cosmetic",
+  "/obj/item/clothing/suit/toggle/owlwings": "no route",
+  "/obj/item/clothing/suit/toggle/suspenders": "cosmetic",
+  "/obj/item/clothing/suit/utility": "abstract",
+  "/obj/item/clothing/suit/utility/bomb_suit/white": "no route",
+  "/obj/item/clothing/suit/wizrobe/magusred": "no route",
+  "/obj/item/clothing/suit/wizrobe/marisa/fake": "no route",
+  "/obj/item/clothing/suit/wizrobe/paper": "no route",
+  "/obj/item/clothing/suit/wizrobe/santa": "no route",
+  "/obj/item/clothing/suit/wizrobe/tape": "no route",
+  "/obj/item/clothing/suit/wizrobe/tape/fake": "no route"
+ }
+}

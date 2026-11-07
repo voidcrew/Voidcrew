@@ -108,8 +108,10 @@
 		if(QDELETED(spot))
 			continue
 		var/beast_type = pick_weight(beast_weights)
-		var/mob/living/beast = new beast_type(spot)
+		var/datum/npc_spawn_context/context = new(controller.site, role = "exempt")
+		var/mob/living/beast = spawn_npc_in_zone(beast_type, spot, context, FALSE)
 		beast.faction = list("colosseum") // beasts side with beasts, and nobody else
+		context.finalize()
 		beasts += beast
 		RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_beast_death))
 		RegisterSignal(beast, COMSIG_QDELETING, PROC_REF(on_beast_gone))

@@ -122,6 +122,7 @@
 		data["nodes"] += list(list(
 			"id" = n.id,
 			"can_unlock" = stored_research.can_unlock_node(n),
+			"zone_permission_blocked" = stored_research.is_only_zone_permission_blocked(n),
 			"tier" = stored_research.tiers[n.id],
 		))
 

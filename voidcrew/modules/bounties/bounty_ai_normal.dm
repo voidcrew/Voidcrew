@@ -349,6 +349,7 @@
 	if(HAS_TRAIT(src, TRAIT_BOUNTY_SURRENDERED) || stat == DEAD)
 		return
 	ADD_TRAIT(src, TRAIT_BOUNTY_SURRENDERED, BOUNTY_TRAIT)
+	body_note_state()
 	ai_stop_aiming()
 	ai_suspend_activity()
 	ai_set_mode(BOUNTY_AI_CALM)

@@ -1310,6 +1310,9 @@
 		return entry[2]
 	var/list/floor = list()
 	for(var/turf/tile as anything in bounty_outpost_public_floor(outpost))
+		// Not the weapons checkpoint's lobby or chambers (outpost_checkpoint.dm): they blend in past it
+		if(istype(tile.loc, /area/voidcrew/trader_outpost/checkpoint))
+			continue
 		floor[tile] = TRUE
 	if(!length(floor))
 		floor = null

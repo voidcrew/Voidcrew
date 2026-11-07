@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/alien/weeds,
+/obj/structure/bed/nest,
+/obj/item/clothing/head/helmet/toggleable/riot,
+/obj/item/knife/combat/survival,
+/turf/open/misc/dirt/jungle,
+/area/ruin/powered)
 "aH" = (
 /obj/structure/alien/weeds,
 /obj/structure/table/wood/fancy,
@@ -236,13 +243,6 @@
 "AC" = (
 /obj/structure/alien/weeds,
 /obj/structure/barricade/wooden/crude,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"AE" = (
-/obj/structure/alien/weeds,
-/obj/structure/bed/nest,
-/obj/item/clothing/head/helmet/toggleable/riot,
-/obj/item/shield/riot,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "AI" = (
@@ -526,7 +526,7 @@ yF
 Hh
 yF
 Gk
-AE
+aa
 zy
 mW
 oB
