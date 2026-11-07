@@ -7037,6 +7037,7 @@
 #include "voidcrew\modules\ambient_npcs\outpost_dancer.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_patrons.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_regulars.dm"
+#include "voidcrew\modules\ambient_npcs\outpost_staff_door.dm"
 #include "voidcrew\modules\ambient_npcs\outpost_workers.dm"
 #include "voidcrew\modules\ambient_npcs\planet_fishers.dm"
 #include "voidcrew\modules\ambient_npcs\planet_jungle.dm"
