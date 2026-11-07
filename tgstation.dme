@@ -7389,6 +7389,8 @@
 #include "voidcrew\modules\npc_ships\code\npc_ship_controller.dm"
 #include "voidcrew\modules\npc_ships\code\outpost_patrol.dm"
 #include "voidcrew\modules\npc_ships\code\overmap_pathfinding.dm"
+#include "voidcrew\modules\npc_ships\code\pirate_crew.dm"
+#include "voidcrew\modules\npc_ships\code\pirate_crew_ai.dm"
 #include "voidcrew\modules\npc_ships\code\ship_key.dm"
 #include "voidcrew\modules\npc_ships\code\spawner_subsystem.dm"
 #include "voidcrew\modules\npc_ships\code\behaviors\ship_combat_behaviors.dm"

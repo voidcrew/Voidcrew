@@ -48,7 +48,7 @@ GLOBAL_LIST_INIT(npc_pirate_factions, list(
 	),
 ))
 
-ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC pirate mob with patrol AI.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC pirate mob, optionally as a boarder hunting the crew of the ship you stand on.", ADMIN_CATEGORY_DEBUG)
 	var/mob/admin_mob = user.mob
 	if(!admin_mob)
 		to_chat(user, span_warning("You need a mob to spawn pirates."))
@@ -87,8 +87,8 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 		to_chat(user, span_warning("Invalid pirate type selected."))
 		return
 
-	// Step 3: Ask about patrol AI setup
-	var/setup_patrol = tgui_alert(user, "Set up door-to-door patrol AI? (Requires being on a ship)", "Patrol AI", list("Yes", "No"))
+	// Step 3: Ask whether it boards the ship we're standing on
+	var/setup_raid = tgui_alert(user, "Send it after the crew of the ship you're standing on, as a boarder?", "Boarder AI", list("Yes", "No"))
 
 	// Spawn the pirate
 	var/datum/npc_spawn_context/context = new(spawn_turf, null, "ordinary")
@@ -97,51 +97,26 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 		to_chat(user, span_warning("Failed to spawn pirate."))
 		return
 
-	// Set up patrol AI if requested
-	if(setup_patrol == "Yes")
-		// Find the ship we're on
-		var/area/current_area = get_area(spawn_turf)
-		var/obj/structure/overmap/ship/found_ship = null
-
-		if(current_area)
-			for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-				if(!S.shuttle?.shuttle_areas)
-					continue
-				if(current_area in S.shuttle.shuttle_areas)
-					found_ship = S
+	// Enlist it in the raid on this ship, exactly as a pod boarder would be (pirate_crew.dm)
+	if(setup_raid == "Yes")
+		var/obj/structure/overmap/ship/found_ship = pirate_crew_ship_at(spawn_turf)
+		if(!found_ship)
+			var/area/current_area = get_area(spawn_turf)
+			for(var/obj/structure/overmap/ship/candidate in SSovermap.simulated_ships)
+				var/list/candidate_areas = candidate.shuttle?.shuttle_areas
+				if(candidate_areas && candidate_areas[current_area])
+					found_ship = candidate
 					break
 
 		if(found_ship)
-			// Swap to patrolling AI controller
-			var/is_ranged = istype(spawned_pirate.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged)
-			var/is_boss = istype(spawned_pirate, /mob/living/basic/trooper/pirate/faction/boss)
-
-			var/new_controller_type
-			if(is_boss)
-				if(is_ranged)
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
-				else
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
+			if(pirate_crew_enlist_raider(spawned_pirate, found_ship))
+				to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) as a boarder on [found_ship.name]."))
 			else
-				if(is_ranged)
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
-				else
-					new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
-
-			// Replace the AI controller
-			if(spawned_pirate.ai_controller)
-				QDEL_NULL(spawned_pirate.ai_controller)
-			spawned_pirate.ai_controller = new new_controller_type(spawned_pirate)
-
-			// Assign patrol path
-			if(assign_mob_to_patrol(spawned_pirate, found_ship))
-				to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) with patrol AI on [found_ship.name]."))
-			else
-				to_chat(user, span_warning("Spawned [spawned_pirate.name] but failed to assign patrol path. Ship may not have enough doors."))
+				to_chat(user, span_warning("Spawned [spawned_pirate.name] but it could not join a raid on [found_ship.name]."))
 		else
-			to_chat(user, span_warning("Spawned [spawned_pirate.name] but could not find a ship to patrol. Standing on a ship area is required for patrol AI."))
+			to_chat(user, span_warning("Spawned [spawned_pirate.name] but could not find a ship here. Stand on a ship to spawn a boarder."))
 	else
-		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) without patrol AI."))
+		to_chat(user, span_notice("Spawned [spawned_pirate.name] ([selected_faction] - [selected_type]) with its own AI."))
 
 	context.finalize()
 	message_admins("[key_name_admin(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
