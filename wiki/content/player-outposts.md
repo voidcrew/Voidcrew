@@ -169,9 +169,9 @@ The bay's own **shipyard console**, found only in the bay itself, has two tabs:
 
 ### Saved ships
 
-You have three save slots. Dock a ship you command in a ship bay, choose a slot and pay [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
+You have three save slots. Dock a ship you command in a ship bay, choose a slot and pay with [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
 
-The price depends on what is aboard, and the console lists it before you pay. Weapons and defenses cost combat parts, research and chemistry machines cost science parts, cargo and mining machines cost trade parts, and the hull costs misc parts. Every save costs at least 5 parts in total. You need enough of each class. Whatever you take off the ship before saving is not charged for, and is not in the save.
+The price depends on what is aboard, and the console lists it before you pay. Weapons and defenses cost combat parts, research and chemistry machines cost science parts, cargo and mining machines cost trade parts, and the hull costs misc parts. Every save costs at least 5 parts in total. Misc parts can be paid for in credits instead, at 2,500 credits each from the ship's account. Combat, science and trade parts have to be parts. Whatever you take off the ship before saving is not charged for, and is not in the save.
 
 Get a saved ship back for free, either from **Saved Ships** in the lobby's join menu, which launches it with you aboard, or from the **Saved ships** tab of a shipyard console in any ship bay, where the delivery drones build it. Each save works once: using it uses it up and frees the slot.
 
@@ -180,12 +180,17 @@ You can load a save in the same round you made it once the ship it came from is 
 | Comes back | Stays behind |
 |---|---|
 | Hull and rooms | Everything the crew put aboard |
-| Machines, with standard parts | Upgraded parts |
-| Crew jobs | Credits |
+| Weapons, lab and cargo machines, with the parts you upgraded them with | Upgraded parts in every other machine, which comes back with standard parts |
+| Research from the R&D server aboard, with its disk | Research points not spent yet, and survey data |
+| Crew jobs | Credits, unless you carry them |
 | Charged batteries and engine fuel | Statues and other fittings of precious materials |
 | A fresh fill in emergency, fire, tool, engineering, medical and clothing lockers, EVA and work suit units, oxygen dispensers, extinguisher cabinets and everyday vendors | Security, armory and command lockers and suit units stay empty, and so does any plain locker |
 
 Walls and floors of precious materials keep their look, but only give iron when taken apart.
+
+**Research.** A save keeps the nodes and finished experiments of the R&D server aboard, on a new disk in that server. It costs **1 science part per 20 nodes** on top of the machines. Take the disk out before saving if you don't want to pay for it. Finished experiments don't pay out a second time.
+
+**Funds.** The **Carry funds** buttons spend **1 trade part per 5,000 credits**. The credits leave the ship's account when you save and arrive in the new ship's account when the save is loaded. Overwriting a save loses whatever it holds.
 
 ## Advertising
 

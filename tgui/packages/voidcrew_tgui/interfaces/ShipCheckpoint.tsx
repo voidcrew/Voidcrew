@@ -91,6 +91,8 @@ type Data = {
   saved_ships: {
     online: BooleanLike;
     parts: Record<PartClass, number> | null;
+    part_credits: number;
+    funds_per_part: number;
     slots: number;
     saves: SavedShip[];
     ships: DockedShip[];
@@ -102,6 +104,7 @@ type DockedShip = ShipSurvey & {
   name: string;
   class: string | null;
   denial: string | null;
+  balance: number;
 };
 
 const credits = (amount: number) => `${amount.toLocaleString()} cr`;
@@ -111,7 +114,7 @@ export const ShipCheckpoint = () => {
   const [tab, setTab] = useState('saved');
   const rebuilds = data.rebuilds || [];
   return (
-    <Window width={720} height={860} title={`${data.outpost} Shipyard`}>
+    <Window width={720} height={660} title={`${data.outpost} Shipyard`}>
       <Window.Content scrollable>
         {!!data.error && <NoticeBox danger>{data.error}</NoticeBox>}
         {!!data.notice && <NoticeBox success>{data.notice}</NoticeBox>}
@@ -160,6 +163,7 @@ export const ShipCheckpoint = () => {
 const PriceBill = (props: {
   bill: BillClass[];
   parts: Record<PartClass, number> | null;
+  miscCredits: number;
 }) => (
   <div
     style={{
@@ -172,7 +176,8 @@ const PriceBill = (props: {
       const entry = props.bill.find((line) => line.class === id);
       const need = entry?.parts || 0;
       const held = props.parts ? props.parts[id] : null;
-      const short = held !== null && need > held;
+      // Misc parts can be made up in credits, which the save button checks.
+      const short = held !== null && need > held && id !== 'misc';
       return (
         <div
           key={id}
@@ -208,6 +213,11 @@ const PriceBill = (props: {
               you have {held}
             </div>
           )}
+          {id === 'misc' && props.miscCredits > 0 && (
+            <div style={{ fontSize: '11px', color: '#7f8e9a' }}>
+              or {credits(props.miscCredits)}
+            </div>
+          )}
           <div style={{ marginTop: '6px' }}>
             {(entry?.items || []).map((item) => (
               <div
@@ -239,8 +249,16 @@ const PriceBill = (props: {
 const DockedPanel = (props: {
   ship: DockedShip;
   parts: Record<PartClass, number> | null;
+  bill: BillClass[];
+  total: number;
+  partCredits: number;
+  fundsParts: number;
+  fundsPerPart: number;
+  maxFundsParts: number;
+  setFundsParts: (amount: number) => void;
 }) => {
-  const { ship, parts } = props;
+  const { ship, parts, bill, total, partCredits, fundsParts } = props;
+  const miscParts = bill.find((entry) => entry.class === 'misc')?.parts || 0;
   return (
     <div
       style={{
@@ -279,36 +297,115 @@ const DockedPanel = (props: {
               color: '#eef4f8',
             }}
           >
-            {ship.total || 0}
+            {total}
           </div>
           <Box color="label">parts to save</Box>
         </div>
       </div>
       <div style={{ padding: '8px' }}>
-        <PriceBill bill={ship.bill || []} parts={parts} />
+        <PriceBill
+          bill={bill}
+          parts={parts}
+          miscCredits={miscParts * partCredits}
+        />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            marginTop: '8px',
+          }}
+        >
+          <Box color="label">Ship's account</Box>
+          <Box bold>{credits(ship.balance)}</Box>
+          <div style={{ flex: 1 }} />
+          <Box color="label">Carry funds</Box>
+          <Button
+            icon="minus"
+            disabled={fundsParts <= 0}
+            onClick={() => props.setFundsParts(fundsParts - 1)}
+          />
+          <Box bold width="72px" textAlign="center">
+            {credits(fundsParts * props.fundsPerPart)}
+          </Box>
+          <Button
+            icon="plus"
+            disabled={fundsParts >= props.maxFundsParts}
+            onClick={() => props.setFundsParts(fundsParts + 1)}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
-/** Why this captain can't afford the save, or null. */
+/** The bill with the funds on it, as ship_save_add_funds() prices it. */
+const billWithFunds = (
+  bill: BillClass[],
+  fundsParts: number,
+  fundsPerPart: number,
+): BillClass[] => {
+  if (fundsParts <= 0) {
+    return bill;
+  }
+  const line = {
+    name: `Funds, ${credits(fundsParts * fundsPerPart)}`,
+    count: null,
+    parts: fundsParts,
+    carry: 1,
+  };
+  const trade = bill.find((entry) => entry.class === 'trade');
+  if (trade) {
+    return bill.map((entry) =>
+      entry === trade
+        ? {
+            ...entry,
+            parts: entry.parts + fundsParts,
+            items: [...entry.items, line],
+          }
+        : entry,
+    );
+  }
+  return [...bill, { class: 'trade', parts: fundsParts, items: [line] }];
+};
+
+/** Parts of a class the bill wants beyond what's held. */
+const missingParts = (
+  bill: BillClass[],
+  parts: Record<PartClass, number>,
+  id: PartClass,
+) => {
+  const need = bill.find((entry) => entry.class === id)?.parts || 0;
+  return Math.max(need - parts[id], 0);
+};
+
+/** Why this captain can't afford the save, or null. Only misc parts can be had for credits. */
 const shortOfParts = (
   bill: BillClass[],
   parts: Record<PartClass, number> | null,
+  balance: number,
+  partCredits: number,
 ) => {
   if (!parts) {
     return null;
   }
-  const missing = bill
-    .filter((entry) => entry.parts > parts[entry.class])
-    .map((entry) => `${entry.parts - parts[entry.class]} ${entry.class}`);
-  return missing.length ? `Short ${missing.join(', ')}.` : null;
+  const missing = PART_CLASSES.filter(({ id }) => id !== 'misc')
+    .map(({ id }) => ({ id, short: missingParts(bill, parts, id) }))
+    .filter(({ short }) => short > 0)
+    .map(({ id, short }) => `${short} ${id}`);
+  if (missing.length) {
+    return `Short ${missing.join(', ')}.`;
+  }
+  const short = missingParts(bill, parts, 'misc') * partCredits - balance;
+  return short > 0 ? `Short ${credits(short)}.` : null;
 };
 
 const SavedShipsTab = () => {
   const { data, act } = useBackend<Data>();
-  const { online, parts, slots, saves, ships } = data.saved_ships;
+  const { online, parts, part_credits, funds_per_part, slots, saves, ships } =
+    data.saved_ships;
   const [shipRef, setShipRef] = useState<string | null>(null);
+  const [wantedFunds, setFundsParts] = useState(0);
   if (!online) {
     return (
       <Section title="Saved ships">
@@ -317,9 +414,31 @@ const SavedShipsTab = () => {
     );
   }
   const ship = ships.find((entry) => entry.ref === shipRef) || ships[0];
+  const baseBill = ship?.bill || [];
+  // What the ship's account and trade parts can spare once the rest of the bill is paid.
+  const tradeSpare = parts
+    ? parts.trade -
+      (baseBill.find((entry) => entry.class === 'trade')?.parts || 0)
+    : 0;
+  const miscCredits = parts
+    ? missingParts(baseBill, parts, 'misc') * part_credits
+    : 0;
+  const maxFundsParts = ship
+    ? Math.max(
+        Math.min(
+          tradeSpare,
+          Math.floor((ship.balance - miscCredits) / funds_per_part),
+        ),
+        0,
+      )
+    : 0;
+  const fundsParts = Math.min(wantedFunds, maxFundsParts);
+  const fundsCredits = fundsParts * funds_per_part;
+  const bill = billWithFunds(baseBill, fundsParts, funds_per_part);
   const saveDenial = !ship
     ? 'Dock a ship you command.'
-    : ship.denial || shortOfParts(ship.bill || [], parts);
+    : ship.denial ||
+      shortOfParts(bill, parts, ship.balance - fundsCredits, part_credits);
   return (
     <>
       <Section
@@ -342,7 +461,17 @@ const SavedShipsTab = () => {
         }
       >
         {ship ? (
-          <DockedPanel ship={ship} parts={parts} />
+          <DockedPanel
+            ship={ship}
+            parts={parts}
+            bill={bill}
+            total={(ship.total || 0) + fundsParts}
+            partCredits={part_credits}
+            fundsParts={fundsParts}
+            fundsPerPart={funds_per_part}
+            maxFundsParts={maxFundsParts}
+            setFundsParts={setFundsParts}
+          />
         ) : (
           <Box color="label">Dock a ship you command.</Box>
         )}
@@ -400,7 +529,11 @@ const SavedShipsTab = () => {
                         (save?.locked ? 'Already under way.' : undefined)
                       }
                       onClick={() =>
-                        act('ship_save_store', { ref: ship?.ref, slot })
+                        act('ship_save_store', {
+                          ref: ship?.ref,
+                          slot,
+                          funds_parts: fundsParts,
+                        })
                       }
                     >
                       {save ? 'Overwrite' : 'Save'}

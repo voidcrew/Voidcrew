@@ -76,6 +76,7 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	var/static/list/plan_rank = list("w" = 1, "s" = 2, "t" = 3, "e" = 4, "#" = 5, "g" = 6, "o" = 7)
 	var/static/list/class_mark = list(PART_CLASS_COMBAT = "w", PART_CLASS_SCIENCE = "s", PART_CLASS_TRADE = "t")
 	var/mass = 0
+	var/research_nodes = 0
 	/// Line name -> list("class", "each", "count")
 	var/list/lines = list()
 	var/list/plan_rows = list()
@@ -109,6 +110,9 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 						object_mark = class_mark[price["class"]]
 					else if(istype(machine, /obj/machinery/power/shuttle_engine))
 						object_mark = "e"
+					if(istype(machine, /obj/machinery/rnd/server/ship))
+						var/obj/machinery/rnd/server/ship/server = machine
+						research_nodes = max(research_nodes, server.saved_research_count())
 				if(object_mark && plan_rank[object_mark] < plan_rank[mark])
 					mark = object_mark
 			plan_row += mark
@@ -116,14 +120,15 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	var/crew = 0
 	for(var/list/definition in job_definitions)
 		crew += definition["slots"] || 1
-	var/list/survey = ship_save_price_bill(lines, mass)
+	var/list/survey = ship_save_price_bill(lines, mass, research_nodes)
+	survey["research"] = research_nodes
 	survey["mass"] = mass
 	survey["crew"] = crew
 	survey["plan"] = ship_save_encode_plan(plan_rows)
 	return survey
 
 /// Rounds each line up and adds them into bill, total and cost.
-/proc/ship_save_price_bill(list/lines, mass)
+/proc/ship_save_price_bill(list/lines, mass, research_nodes = 0)
 	SHOULD_NOT_SLEEP(TRUE)
 	var/list/items_by_class = list()
 	var/total = 0
@@ -134,6 +139,10 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 		var/parts = CEILING(line["count"] * line["each"], 1)
 		items_by_class[line["class"]] += list(list("name" = line_name, "count" = line["count"], "parts" = parts))
 		total += parts
+	if(research_nodes > 0)
+		var/research_parts = CEILING(research_nodes / SHIP_SAVE_NODES_PER_PART, 1)
+		items_by_class[PART_CLASS_SCIENCE] += list(list("name" = "Research, [research_nodes] nodes", "count" = null, "parts" = research_parts, "carry" = 1))
+		total += research_parts
 	var/list/misc_items = items_by_class[PART_CLASS_MISC]
 	var/hull_parts = CEILING(mass / SHIP_SAVE_MASS_PER_PART, 1)
 	if(hull_parts)
@@ -210,7 +219,7 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	if(!islist(survey) || !isnum(survey["mass"]) || !isnum(survey["crew"]) || !isnum(survey["total"]) || !islist(survey["bill"]))
 		return null
 	var/plan = survey["plan"]
-	return list("mass" = survey["mass"], "crew" = survey["crew"], "plan" = istext(plan) ? plan : null, "bill" = survey["bill"], "total" = survey["total"])
+	return list("mass" = survey["mass"], "crew" = survey["crew"], "plan" = istext(plan) ? plan : null, "bill" = survey["bill"], "total" = survey["total"], "research" = isnum(survey["research"]) ? survey["research"] : 0, "funds" = isnum(survey["funds"]) ? survey["funds"] : 0)
 
 /// "3 combat, 4 science and 7 misc parts"
 /proc/ship_save_cost_text(list/cost)
@@ -218,6 +227,104 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	for(var/part_class in cost)
 		amounts += "[cost[part_class]] [part_class]"
 	return "[english_list(amounts)] parts"
+
+/// One way to pay for a save: list("parts" = class -> parts, "credits" = credits, "short" = class -> parts
+/// missing). Only misc parts can be paid in credits. Uses the misc parts held first, or all_credits uses none.
+/proc/ship_save_payment(list/cost, list/held, all_credits = FALSE)
+	var/list/parts = list()
+	var/list/short = list()
+	var/credits = 0
+	for(var/part_class in cost)
+		var/due = cost[part_class]
+		var/used = min(due, held?[part_class] || 0)
+		if(part_class == PART_CLASS_MISC)
+			if(all_credits)
+				used = 0
+			credits += (due - used) * SHIP_SAVE_CREDITS_PER_PART
+		else if(due > used)
+			short[part_class] = due - used
+		if(used)
+			parts[part_class] = used
+	return list("parts" = parts, "credits" = credits, "short" = short)
+
+/**
+ * The ways a captain can afford to pay for a save, as button label -> payment, parts first. Empty if there
+ * are none. Only the hull's misc parts ever have a choice, so with none on the bill there is only one way.
+ */
+/proc/ship_save_payment_options(list/cost, list/held, balance)
+	var/list/options = list()
+	var/list/first = ship_save_payment(cost, held)
+	if(length(first["short"]))
+		return options
+	if(balance >= first["credits"])
+		options[ship_save_payment_label(first)] = first
+	var/list/second = ship_save_payment(cost, held, all_credits = TRUE)
+	if(second["credits"] != first["credits"] && balance >= second["credits"])
+		var/label = ship_save_payment_label(second)
+		// Both can use parts and credits, when the misc parts held only cover some of the hull.
+		options[options[label] ? "Hull in credits" : label] = second
+	return options
+
+/proc/ship_save_payment_label(list/payment)
+	if(!payment["credits"])
+		return "Parts"
+	return length(payment["parts"]) ? "Parts and credits" : "Credits"
+
+/// Why nothing in ship_save_payment_options() can be paid.
+/proc/ship_save_payment_denial(list/cost, list/held)
+	var/list/payment = ship_save_payment(cost, held)
+	if(length(payment["short"]))
+		return "You need [ship_save_cost_text(payment["short"])]."
+	return "You need [ship_save_credits_text(payment["credits"])]."
+
+/// "1 combat and 2 misc parts and 7,500 cr"
+/proc/ship_save_payment_text(list/payment)
+	var/list/amounts = list()
+	if(length(payment["parts"]))
+		amounts += ship_save_cost_text(payment["parts"])
+	if(payment["credits"])
+		amounts += ship_save_credits_text(payment["credits"])
+	return amounts.Join(" and ")
+
+/// "15,000 cr"
+/proc/ship_save_credits_text(credits)
+	var/digits = num2text(credits, 12)
+	var/list/groups = list()
+	while(length(digits) > 3)
+		groups.Insert(1, copytext(digits, -3))
+		digits = copytext(digits, 1, -3)
+	groups.Insert(1, digits)
+	return "[groups.Join(",")] cr"
+
+/// A copy of a survey with funds on its bill, which the screen adds the same way. The survey itself is cached.
+/proc/ship_save_add_funds(list/survey, funds_parts)
+	if(funds_parts <= 0)
+		return survey
+	var/funds = funds_parts * SHIP_SAVE_FUNDS_PER_TRADE_PART
+	var/list/line = list("name" = "Funds, [ship_save_credits_text(funds)]", "count" = null, "parts" = funds_parts, "carry" = 1)
+	var/list/old_bill = survey["bill"]
+	var/list/entries = list()
+	for(var/list/entry as anything in old_bill)
+		entries[entry["class"]] = entry
+	var/list/trade_entry = entries[PART_CLASS_TRADE]
+	var/list/trade_items = trade_entry ? trade_entry["items"] : list()
+	trade_items = trade_items.Copy()
+	trade_items += list(line)
+	sortTim(trade_items, GLOBAL_PROC_REF(cmp_ship_save_bill_line))
+	entries[PART_CLASS_TRADE] = list("class" = PART_CLASS_TRADE, "parts" = (trade_entry?["parts"] || 0) + funds_parts, "items" = trade_items)
+	var/list/bill = list()
+	for(var/part_class in GLOB.ship_part_classes)
+		if(entries[part_class])
+			bill += list(entries[part_class])
+	var/list/cost = survey["cost"]
+	cost = cost.Copy()
+	cost[PART_CLASS_TRADE] += funds_parts
+	var/list/priced = survey.Copy()
+	priced["bill"] = bill
+	priced["cost"] = cost
+	priced["total"] = survey["total"] + funds_parts
+	priced["funds"] = funds
+	return priced
 
 /obj/structure/overmap/ship
 	/// This hull's last ship_save_survey(), so an open window doesn't rescan it every tick.

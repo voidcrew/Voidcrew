@@ -59,17 +59,19 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 
 /**
  * Takes payment and writes a captured ship to the player's chosen slot, replacing whatever is there. Sleeps.
+ * With no payment (see ship_save_payment()) the whole price is paid in parts. Credits and carried funds
+ * come out of account, and the funds go into the save.
  * The payment goes back if the write fails, and the old row stays. Returns an error for the player, or null
  * on success. The slot stays locked throughout, so nothing can use or delete the old save under it.
  */
-/datum/ship_saves/proc/commit_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey)
+/datum/ship_saves/proc/commit_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey, list/payment, datum/bank_account/account)
 	ckey = ckey(ckey)
 	if(!begin_retrieval(ckey, slot))
 		return "Already under way."
-	. = write_claimed_save(ckey, snapshot, user, slot, survey)
+	. = write_claimed_save(ckey, snapshot, user, slot, survey, payment, account)
 	cancel_retrieval(ckey, slot)
 
-/datum/ship_saves/proc/write_claimed_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey)
+/datum/ship_saves/proc/write_claimed_save(ckey, datum/ship_checkpoint/snapshot, mob/user, slot, list/survey, list/payment, datum/bank_account/account)
 	PRIVATE_PROC(TRUE)
 	// A runtime below ends this proc with this answer, not with a null that reads as success.
 	. = "Shipyard records are offline."
@@ -84,11 +86,19 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/datum/weakref/source = snapshot.source_ship
 	var/datum/weakref/crew_ref = snapshot.crew_record_ref
 	var/obj/structure/overmap/ship/ship = source?.resolve()
+	var/funds_due = payment?["funds"] || 0
+	snapshot.carried_funds = funds_due
 	var/payload = encode(snapshot)
 	var/list/cost = survey["cost"]
+	var/list/parts_due = payment ? payment["parts"] : cost
+	var/credits_due = (payment?["credits"] || 0) + funds_due
 	GLOB.ship_economy_db.invalidate_cache(ckey, "parts")
-	if(!GLOB.ship_economy_db.spend_parts(ckey, cost))
-		return "You need [ship_save_cost_text(cost)]."
+	if(length(parts_due) && !GLOB.ship_economy_db.spend_parts(ckey, parts_due))
+		return "You need [ship_save_cost_text(parts_due)]."
+	// Last, because the parts sleep: the balance can't change between checking it and taking it.
+	if(credits_due && (QDELETED(account) || !account.adjust_money(-credits_due, "Shipyard: saved [name]")))
+		GLOB.ship_economy_db.refund_parts(ckey, parts_due)
+		return "You need [ship_save_credits_text(credits_due)]."
 	var/raw_bytes = length(payload)
 	var/list/summary = ship_save_add_survey(list(), survey)
 	var/list/row = list(
@@ -101,7 +111,12 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		"summary" = json_encode(summary),
 	)
 	if(!GLOB.ship_save_store.write(ckey, slot, row, payload, overwrite))
-		GLOB.ship_economy_db.refund_parts(ckey, cost)
+		GLOB.ship_economy_db.refund_parts(ckey, parts_due)
+		if(credits_due)
+			if(QDELETED(account))
+				log_game("[ckey] lost [credits_due] credits on a failed ship save: the ship's account is gone.")
+			else
+				account.adjust_money(credits_due, "Shipyard: refund")
 		return
 	row -= "summary"
 	row["survey"] = summary
@@ -124,8 +139,8 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		rows -= list(replaced)
 	rows += list(row)
 	cache[ckey] = rows
-	log_game("[key_name(user)] saved [name] to ship save slot [slot] for [ship_save_cost_text(cost)], [raw_bytes] bytes[old_name ? ", replacing [old_name]" : ""].")
-	record_metric(METRIC_SHIP, "ship_saved", ckey = ckey, ship = ship, zone = ship_metric_zone(ship), subject = class, quantity = survey["total"], details = list("tiles" = tiles, "raw_bytes" = raw_bytes, "cost" = cost, "overwrote" = old_name))
+	log_game("[key_name(user)] saved [name] to ship save slot [slot] for [payment ? ship_save_payment_text(payment) : ship_save_cost_text(cost)][funds_due ? ", holding [funds_due] cr" : ""], [raw_bytes] bytes[old_name ? ", replacing [old_name]" : ""].")
+	record_metric(METRIC_SHIP, "ship_saved", ckey = ckey, ship = ship, zone = ship_metric_zone(ship), subject = class, quantity = survey["total"], details = list("tiles" = tiles, "raw_bytes" = raw_bytes, "cost" = cost, "credits" = credits_due - funds_due, "funds" = funds_due, "overwrote" = old_name))
 	refresh(ckey)
 	return null
 

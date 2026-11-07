@@ -28,6 +28,7 @@
 				var/obj/machinery/door/door = machine
 				door.req_access = null
 				door.req_one_access = null
+	blueprint.restore_progress(loaded)
 	blueprint = null
 
 /**
@@ -106,6 +107,7 @@
 	var/datum/map_template/shuttle/voidcrew/commissioned/checkpoint/template = new(snapshot)
 	// Not holding the old hull while this waits: it can be deleted in the meantime.
 	original = null
+	var/carried_funds = snapshot.carried_funds
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
 	qdel(snapshot)
 	original = source?.resolve()
@@ -149,6 +151,9 @@
 		var/balance = original.retire_replaced_hull()
 		if(balance > 0)
 			target.ship_account.adjust_money(balance, "Recovered ship account")
+	if(carried_funds > 0)
+		target.ship_account.adjust_money(carried_funds, "Saved funds")
+	target.settle_saved_research()
 	target.password_cleared_ckeys[player_ckey] = TRUE
 	if(QDELETED(player))
 		return

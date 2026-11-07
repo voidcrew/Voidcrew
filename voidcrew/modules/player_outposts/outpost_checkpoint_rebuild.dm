@@ -37,13 +37,13 @@
 					for(var/datum/gas_mixture/mix as anything in stored)
 						mix?.gases.Cut()
 			// Stock kept outside contents or in counters rather than as items.
-			if(istype(object, /obj/structure/closet))
+			if(!restocked && istype(object, /obj/structure/closet))
 				var/obj/structure/closet/closet = object
 				closet.contents_initialized = TRUE
 			if(istype(object, /obj/structure/closet/crate/secure/loot))
 				var/obj/structure/closet/crate/secure/loot/freight = object
 				freight.consume_freight_loot()
-			if(istype(object, /obj/machinery/suit_storage_unit))
+			if(!restocked && istype(object, /obj/machinery/suit_storage_unit))
 				var/obj/machinery/suit_storage_unit/unit = object
 				unit.suit = null
 				unit.helmet = null
@@ -85,8 +85,10 @@
 				var/obj/machinery/atmospherics/components/unary/shuttle/heater/heater = object
 				heater.fuel_tank = null
 
-/// Mapped suit rewards are fittings only when rebuilt, even if unbolted at save time.
+/// Mapped suit rewards are fittings only when rebuilt, even if unbolted at save time. A stocked fixture keeps its type.
 /obj/machinery/suit_storage_unit/checkpoint_type()
 	if(!..())
 		return null
+	if(is_type_in_typecache(src, GLOB.ship_save_stocked_fixtures))
+		return type
 	return /obj/machinery/suit_storage_unit

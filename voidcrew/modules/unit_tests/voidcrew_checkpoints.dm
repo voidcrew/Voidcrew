@@ -4,8 +4,8 @@
 	/// Most cases place visits directly; one lets the real drones work.
 	var/manual_jobs = TRUE
 
-/datum/ship_checkpoint_ui/registry_test/confirm_save(mob/user, prompt_text)
-	return accept_save
+/datum/ship_checkpoint_ui/registry_test/choose_save_payment(mob/user, prompt_text, list/options)
+	return accept_save ? options[1] : null
 
 /// Refuse the bay reservation to exercise a rebuild refused before anything loads.
 /obj/structure/overmap/dynamic/player_outpost/registry_test

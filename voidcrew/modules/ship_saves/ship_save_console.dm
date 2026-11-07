@@ -31,9 +31,12 @@
 
 /// Captures the ship, asks the captain, and charges them for what it holds. Sleeps at every step, so
 /// everything is checked again afterwards.
-/datum/ship_checkpoint_ui/proc/save_ship(mob/living/user, datum/outpost_berth/ship_bay/bay, slot)
+/datum/ship_checkpoint_ui/proc/save_ship(mob/living/user, datum/outpost_berth/ship_bay/bay, slot, funds_parts = 0)
 	error = saved_ship_denial(user, bay, slot)
 	if(error)
+		return FALSE
+	if(!isnum(funds_parts) || funds_parts < 0 || funds_parts != round(funds_parts) || funds_parts > SHIP_SAVE_MAX_FUNDS_PARTS)
+		error = "That's not an amount."
 		return FALSE
 	working = TRUE
 	notice = null
@@ -43,27 +46,63 @@
 	var/datum/ship_checkpoint/snapshot = new
 	var/failure = snapshot.capture(ship, user) || saved_ship_changed_denial(user, bay, ship, slot)
 	var/list/survey
+	var/list/payment
+	var/datum/bank_account/account = ship.ship_account
 	if(!failure)
 		survey = ship.save_survey(fresh = TRUE)
 		if(!survey)
 			failure = "The source hull is no longer available."
+		else
+			// The price the screen shows, with whatever the captain asked to carry on top.
+			survey = ship_save_add_funds(survey, funds_parts)
+	var/list/old_row
+	var/old_name
+	var/old_round
+	var/list/options
 	if(!failure)
-		var/list/old_row = GLOB.ship_saves.saved_row(player_ckey, slot)
-		var/old_name = old_row?["ship_name"]
-		var/old_round = old_row?["saved_round"]
-		var/cost_text = ship_save_cost_text(survey["cost"])
-		var/question = old_row ? "Overwrite [old_name] with [ship_name] for [cost_text]?" : "Save [ship_name] to slot [slot] for [cost_text]?"
-		if(!confirm_save(user, question, "Shipyard"))
+		old_row = GLOB.ship_saves.saved_row(player_ckey, slot)
+		old_name = old_row?["ship_name"]
+		old_round = old_row?["saved_round"]
+		GLOB.ship_economy_db.invalidate_cache(player_ckey, "parts")
+		var/list/held = GLOB.ship_economy_db.get_parts(player_ckey)
+		var/funds = funds_parts * SHIP_SAVE_FUNDS_PER_TRADE_PART
+		var/balance_left = (account?.account_balance || 0) - funds
+		options = balance_left >= 0 ? ship_save_payment_options(survey["cost"], held, balance_left) : list()
+		if(!held)
+			failure = "Shipyard records are offline."
+		else if(balance_left < 0)
+			failure = "You need [ship_save_credits_text(funds)]."
+		else if(!length(options))
+			failure = ship_save_payment_denial(survey["cost"], held)
+		else
+			for(var/label in options)
+				var/list/option = options[label]
+				option["funds"] = funds
+	if(!failure)
+		var/list/prices = list()
+		for(var/label in options)
+			prices += ship_save_payment_text(options[label])
+		var/price_text = english_list(prices, and_text = " or ")
+		var/question = old_row ? "Overwrite [old_name] with [ship_name] for [price_text]?" : "Save [ship_name] to slot [slot] for [price_text]?"
+		var/list/old_survey = old_row?["survey"]
+		if(old_survey?["funds"] > 0)
+			question += " The [ship_save_credits_text(old_survey["funds"])] held with [old_name] will be lost."
+		var/choice = choose_save_payment(user, question, options)
+		if(!choice)
 			qdel(snapshot)
 			working = FALSE
 			return FALSE
+		payment = options[choice]
 		failure = saved_ship_changed_denial(user, bay, ship, slot)
+		// Parts pulled or research done while the box was open would be saved as it was, and priced as it was.
+		if(!failure && snapshot.progress_changed(ship.shuttle))
+			failure = "The ship changed. Try again."
 		if(!failure)
 			var/list/new_row = GLOB.ship_saves.saved_row(player_ckey, slot)
 			if(new_row?["ship_name"] != old_name || new_row?["saved_round"] != old_round)
 				failure = "That slot changed. Try again."
 	if(!failure)
-		failure = GLOB.ship_saves.commit_save(player_ckey, snapshot, user, slot, survey)
+		failure = GLOB.ship_saves.commit_save(player_ckey, snapshot, user, slot, survey, payment, account)
 	qdel(snapshot)
 	if(QDELETED(src))
 		return !failure
@@ -154,10 +193,13 @@
 			"name" = ship.name,
 			"class" = ship.source_template?.short_name,
 			"denial" = saved_ship_bay_denial(user, bay),
+			"balance" = ship.ship_account?.account_balance || 0,
 		), ship.save_survey()))
 	return list(
 		"online" = !!GLOB.ship_save_store.online(),
 		"parts" = GLOB.ship_economy_db.cached_parts(user.ckey),
+		"part_credits" = SHIP_SAVE_CREDITS_PER_PART,
+		"funds_per_part" = SHIP_SAVE_FUNDS_PER_TRADE_PART,
 		"slots" = SHIP_SAVE_SLOTS,
 		"saves" = saves,
 		"ships" = ships,

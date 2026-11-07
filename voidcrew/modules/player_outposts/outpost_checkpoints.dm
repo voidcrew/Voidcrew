@@ -122,8 +122,13 @@
 /datum/ship_checkpoint_ui/ui_static_data(mob/user)
 	return shop_static_data()
 
-/datum/ship_checkpoint_ui/proc/confirm_save(mob/user, prompt_text, title = "Shipyard")
-	return tgui_alert(user, prompt_text, title, list("Confirm", "Cancel")) == "Confirm"
+/// Which of the options (label -> payment) the captain picked, or null if they backed out.
+/datum/ship_checkpoint_ui/proc/choose_save_payment(mob/user, prompt_text, list/options)
+	var/list/buttons = list()
+	for(var/label in options)
+		buttons += label
+	var/choice = tgui_alert(user, prompt_text, "Shipyard", buttons + "Cancel")
+	return options[choice] ? choice : null
 
 /datum/ship_checkpoint_ui/ui_data(mob/user)
 	var/list/rebuilds = list()
@@ -152,7 +157,7 @@
 	switch(action)
 		if("ship_save_store")
 			var/datum/outpost_berth/ship_bay/bay = locate(params["ref"]) in outpost.bay_berths
-			save_ship(user, bay, text2num(params["slot"]))
+			save_ship(user, bay, text2num(params["slot"]), params["funds_parts"] ? text2num(params["funds_parts"]) : 0)
 		if("ship_save_retrieve")
 			retrieve_ship(user, text2num(params["slot"]))
 		else

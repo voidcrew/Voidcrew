@@ -229,6 +229,9 @@ GLOBAL_LIST_INIT(ship_save_stocked_fixtures, ship_save_build_stocked_fixtures())
 		"rooms" = rooms,
 		"jobs" = jobs,
 		"tgm" = snapshot.tgm,
+		"machine_parts" = snapshot.machine_parts,
+		"research" = snapshot.research,
+		"funds" = snapshot.carried_funds,
 	))
 
 /**
@@ -256,6 +259,12 @@ GLOBAL_LIST_INIT(ship_save_stocked_fixtures, ship_save_build_stocked_fixtures())
 	snapshot.port_x = data["port_x"]
 	snapshot.port_y = data["port_y"]
 	snapshot.tgm = data["tgm"]
+	if(islist(data["machine_parts"]))
+		snapshot.machine_parts = data["machine_parts"]
+	if(islist(data["research"]))
+		snapshot.research = data["research"]
+	if(isnum(data["funds"]) && data["funds"] > 0)
+		snapshot.carried_funds = data["funds"]
 	for(var/list/room in data["rooms"])
 		var/room_type = text2path(room["type"])
 		if(!ispath(room_type, /area))

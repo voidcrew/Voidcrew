@@ -9,6 +9,7 @@ export type BillLine = {
   name: string;
   count: number | null;
   parts: number;
+  carry?: BooleanLike;
 };
 
 export type BillClass = {
@@ -24,6 +25,8 @@ export type ShipSurvey = {
   plan?: string | null;
   bill?: BillClass[];
   total?: number;
+  research?: number;
+  funds?: number;
 };
 
 export type SavedShip = ShipSurvey & {
@@ -180,10 +183,9 @@ const FitLine = (props: {
 );
 
 const machineCount = (bill: BillClass[], id: PartClass) =>
-  (bill.find((line) => line.class === id)?.items || []).reduce(
-    (total, item) => total + (item.count || 1),
-    0,
-  );
+  (bill.find((line) => line.class === id)?.items || [])
+    .filter((item) => !item.carry)
+    .reduce((total, item) => total + (item.count || 1), 0);
 
 /** Weapons by name, then how much lab and cargo gear it carries. */
 const Fit = (props: { bill: BillClass[] }) => {
@@ -275,6 +277,18 @@ export const SlotCard = (props: {
               </div>
             )}
             {!!save.bill && <Fit bill={save.bill} />}
+            {!!save.research && (
+              <FitLine
+                color={partColor('science')}
+                name={`Research, ${save.research} nodes`}
+              />
+            )}
+            {!!save.funds && (
+              <FitLine
+                color={partColor('trade')}
+                name={`Holds ${save.funds.toLocaleString()} cr`}
+              />
+            )}
           </div>
         </div>
       ) : (

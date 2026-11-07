@@ -83,8 +83,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	return isstructure(object)
 
 /**
- * A captured hull: its map text and rooms. It stores no per-machine data, so machines come back at
- * default tier, and it only ever comes apart into iron (ship_save_capture.dm).
+ * A captured hull: its map text and rooms. Machines come back at default tier unless they are on the
+ * price table (ship_save_progress.dm), and it only ever comes apart into iron (ship_save_capture.dm).
  */
 /datum/ship_checkpoint
 	/// The outpost a construction job builds this in.
@@ -106,6 +106,14 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	var/class_name
 	/// The crew roster as template job definitions. Null leaves the commissioned default.
 	var/list/jobs
+	/// machine_key() -> one list of stock part paths per priced machine standing there.
+	var/list/machine_parts
+	/// One R&D server's research, from ship_save_read_research(). Null with none aboard.
+	var/list/research
+	/// What capture_progress() saw, to tell whether it changed while the captain decided.
+	var/progress_print
+	/// Credits this save holds for the ship it loads as.
+	var/carried_funds = 0
 
 /datum/ship_checkpoint/Destroy()
 	outpost = null
@@ -114,6 +122,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	tgm = null
 	rooms = null
 	jobs = null
+	machine_parts = null
+	research = null
 	return ..()
 
 /// Ports are handled separately and cannot carry NPC types.
@@ -262,6 +272,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	ship_name = ship.name
 	class_name = ship.source_template?.short_name
 	jobs = ship.job_definitions?.Copy()
+	capture_progress(port)
 	saved_at = world.time
 	return null
 

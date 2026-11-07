@@ -53,8 +53,8 @@
 		refill.premium = list()
 
 /**
- * Puts a loaded machine's parts and supplies right. A capture keeps nothing per machine, so it stays
- * at the default tier it initialized with.
+ * Puts a loaded machine's parts and supplies right. It stays at the default tier it initialized with,
+ * until restore_progress() gives a machine on the price table its saved parts.
  */
 /proc/checkpoint_restore_machine(obj/machinery/machine)
 	// Scrubbing its refill and rereading its parts would empty a vendor that comes back stocked.

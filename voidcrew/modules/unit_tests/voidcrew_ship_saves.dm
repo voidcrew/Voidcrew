@@ -2,9 +2,12 @@
 #define SHIP_SAVE_TEST_SLOTS 3 // SHIP_SAVE_SLOTS
 #define SHIP_SAVE_TEST_PRICE_MIN 5 // SHIP_SAVE_PRICE_MIN
 #define SHIP_SAVE_TEST_MASS_PER_PART 150 // SHIP_SAVE_MASS_PER_PART
+#define SHIP_SAVE_TEST_CREDITS_PER_PART 2500 // SHIP_SAVE_CREDITS_PER_PART
+#define SHIP_SAVE_TEST_NODES_PER_PART 20 // SHIP_SAVE_NODES_PER_PART
+#define SHIP_SAVE_TEST_FUNDS_PER_PART 5000 // SHIP_SAVE_FUNDS_PER_TRADE_PART
 #define SHIP_SAVE_TEST_PLAN_MAX 8000 // SHIP_SAVE_PLAN_MAX_LENGTH
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
-#define SHIP_SAVE_TEST_FORMAT 1 // SHIP_SAVE_FORMAT
+#define SHIP_SAVE_TEST_FORMAT 2 // SHIP_SAVE_FORMAT
 #define SHIP_SAVE_TEST_TILE_IRON 100 // SHIP_RTD_TILE_IRON
 /// GLOB.round_id for the length of these tests. It is null on a world with no database.
 #define SHIP_SAVE_TEST_ROUND 777
@@ -485,6 +488,71 @@
 
 /// The hull line and the minimum, with nothing but numbers.
 /datum/unit_test/voidcrew_ship_saves/proc/check_bill_rounding()
+	// Credits stand in for misc parts only, and only for the misc parts the captain doesn't spend.
+	var/list/cost = list("combat" = 2, "misc" = 3)
+	var/rate = SHIP_SAVE_TEST_CREDITS_PER_PART
+	var/list/mixed = ship_save_payment_options(cost, list("combat" = 5, "misc" = 1), 1000000)
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(mixed), ","), "Parts and credits,Hull in credits", "Wrong choices when short of misc parts")
+	TEST_ASSERT_EQUAL(mixed["Parts and credits"]["credits"], 2 * rate, "Wrong credits for the misc parts missing")
+	TEST_ASSERT_EQUAL(mixed["Parts and credits"]["parts"]["combat"], 2, "A mixed payment took the wrong parts")
+	TEST_ASSERT_EQUAL(mixed["Parts and credits"]["parts"]["misc"], 1, "A mixed payment took the wrong parts")
+	TEST_ASSERT_EQUAL(mixed["Hull in credits"]["credits"], 3 * rate, "Wrong credits for the whole hull")
+	TEST_ASSERT_EQUAL(mixed["Hull in credits"]["parts"]["combat"], 2, "Credits paid for a weapon")
+	TEST_ASSERT_NULL(mixed["Hull in credits"]["parts"]["misc"], "An all-credit hull took misc parts")
+	var/list/held_all = list("combat" = 2, "misc" = 3)
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(ship_save_payment_options(cost, held_all, 1000000)), ","), "Parts,Parts and credits", "Wrong choices when holding every part")
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(ship_save_payment_options(cost, held_all, 0)), ","), "Parts", "Offered credits nobody has")
+	// A combat part short: no amount of credits helps, and the refusal names it.
+	TEST_ASSERT_EQUAL(length(ship_save_payment_options(cost, list("combat" = 1, "misc" = 3), 1000000)), 0, "Credits paid for a missing weapon part")
+	TEST_ASSERT_EQUAL(ship_save_payment_denial(cost, list("combat" = 1, "misc" = 3)), "You need 1 combat parts.", "The refusal doesn't name the missing part")
+	// A bare hull with no parts at all.
+	var/list/hull_cost = list("misc" = 5)
+	TEST_ASSERT_EQUAL(length(ship_save_payment_options(hull_cost, list(), 5 * rate - 1)), 0, "Offered a payment nobody can make")
+	TEST_ASSERT_EQUAL(ship_save_payment_denial(hull_cost, list()), "You need 12,500 cr.", "Wrong refusal for a hull nobody can pay for")
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(ship_save_payment_options(hull_cost, list(), 5 * rate)), ","), "Credits", "An exact balance could not pay")
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(ship_save_payment_options(hull_cost, list("misc" = 2), 5 * rate)), ","), "Parts and credits,Credits", "Wrong choices for a part-paid hull")
+	// With nothing in misc there is one way to pay.
+	TEST_ASSERT_EQUAL(jointext(assoc_to_keys(ship_save_payment_options(list("science" = 1), list("science" = 1), 1000000)), ","), "Parts", "Offered a choice with no misc on the bill")
+	TEST_ASSERT_EQUAL(ship_save_credits_text(1234567), "1,234,567 cr", "Credits are written wrong")
+	TEST_ASSERT_EQUAL(ship_save_credits_text(500), "500 cr", "Credits are written wrong")
+
+	// Sizes SHIP_SAVE_NODES_PER_PART against the real tree.
+	log_test("Research nodes: [length(SSresearch.techweb_nodes)] total, [length(SSresearch.techweb_nodes_starting)] starting, [length(SSresearch.techweb_nodes_hidden)] hidden.")
+	// Research is a line of its own, by the node, and carries no machine count.
+	var/list/researched = ship_save_price_bill(list(), 0, SHIP_SAVE_TEST_NODES_PER_PART * 2 + 1)
+	var/list/research_line = bill_line(researched, "science", "Research, [SHIP_SAVE_TEST_NODES_PER_PART * 2 + 1] nodes")
+	TEST_ASSERT_EQUAL(research_line?["parts"], 3, "Research did not round up")
+	TEST_ASSERT_NULL(research_line?["count"], "The research line has a count")
+	TEST_ASSERT_EQUAL(researched["cost"]["science"], 3, "Research isn't paid in science parts")
+	TEST_ASSERT_EQUAL(researched["total"], SHIP_SAVE_TEST_PRICE_MIN, "Research doesn't count towards the minimum")
+
+	// Funds are a trade line on a copy: the survey itself is cached.
+	var/list/unfunded = ship_save_price_bill(list(), 650)
+	var/list/funded = ship_save_add_funds(unfunded, 2)
+	TEST_ASSERT(funded != unfunded, "Funds wrote on the cached survey")
+	TEST_ASSERT_NULL(unfunded["cost"]["trade"], "Funds changed the cached survey's price")
+	TEST_ASSERT_EQUAL(ship_save_add_funds(unfunded, 0), unfunded, "Carrying nothing made a copy")
+	TEST_ASSERT_EQUAL(funded["cost"]["trade"], 2, "Funds aren't paid in trade parts")
+	TEST_ASSERT_EQUAL(funded["total"], 7, "Funds weren't added to the total")
+	TEST_ASSERT_EQUAL(funded["funds"], 2 * SHIP_SAVE_TEST_FUNDS_PER_PART, "Wrong funds for the parts")
+	TEST_ASSERT_EQUAL(bill_line(funded, "trade", "Funds, 10,000 cr")?["parts"], 2, "The funds line is wrong")
+	var/list/funded_classes = list()
+	for(var/list/funded_entry as anything in funded["bill"])
+		funded_classes += funded_entry["class"]
+	TEST_ASSERT_EQUAL(funded_classes.Join(","), "trade,misc", "Funds put the bill's classes out of order")
+
+	// Everything a save carries survives the table, and nothing about it is required.
+	var/datum/ship_checkpoint/carried = make_snapshot()
+	carried.carried_funds = 15000
+	carried.machine_parts = list("3,4,/obj/machinery/rnd/production/protolathe" = list(list("/datum/stock_part/matter_bin/tier4")))
+	carried.research = list("x" = 3, "y" = 5, "nodes" = list("some_node"), "experiments" = list("/datum/experiment/physical/arcade_winner"))
+	var/datum/ship_checkpoint/carried_back = GLOB.ship_saves.decode(GLOB.ship_saves.encode(carried))
+	TEST_ASSERT_EQUAL(carried_back?.carried_funds, 15000, "The funds did not survive the table")
+	TEST_ASSERT_EQUAL(carried_back?.machine_parts?["3,4,/obj/machinery/rnd/production/protolathe"][1][1], "/datum/stock_part/matter_bin/tier4", "The machine parts did not survive the table")
+	TEST_ASSERT_EQUAL(carried_back?.research?["nodes"][1], "some_node", "The research did not survive the table")
+	qdel(carried)
+	qdel(carried_back)
+
 	var/list/hull_only = ship_save_price_bill(list(), 650)
 	var/list/hull_line = bill_line(hull_only, "misc", "Hull, 650 t")
 	TEST_ASSERT_EQUAL(hull_line?["parts"], 5, "650 t did not round up to 5 parts")
@@ -638,8 +706,20 @@
 	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price), "Shipyard records are offline.", "A failed write reported success")
 	TEST_ASSERT_EQUAL(economy.total(), 20, "A failed write kept the payment")
 	TEST_ASSERT_EQUAL(length(saves.saves_for(player_ckey)), 0, "A failed write reached the cache")
+	// Credits come back from a failed write too.
+	var/datum/bank_account/fund = allocate(/datum/bank_account, "save fund", null, 1, FALSE)
+	fund.account_balance = 5000
+	var/list/part_paid = list("parts" = list("combat" = 1), "credits" = 2500, "funds" = 2500)
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price, part_paid, fund), "Shipyard records are offline.", "A failed write reported success")
+	TEST_ASSERT_EQUAL(fund.account_balance, 5000, "A failed write kept the credits")
+	TEST_ASSERT_EQUAL(economy.total(), 20, "A failed write kept the parts of a mixed payment")
 	store.fail_writes = FALSE
 	TEST_ASSERT(!saves.retrievals[saves.slot_key(player_ckey, 2)], "A failed write kept the slot locked")
+	// Short of credits: the parts of a mixed payment go back.
+	fund.account_balance = 4999
+	TEST_ASSERT_EQUAL(saves.commit_save(player_ckey, make_snapshot(275), null, 2, price, part_paid, fund), "You need 5,000 cr.", "A save short of credits went through")
+	TEST_ASSERT_EQUAL(economy.total(), 20, "A save short of credits took parts")
+	TEST_ASSERT_NULL(store.saved["[player_ckey]|2"], "A save short of credits reached the table")
 
 	// A failed read is not "no saves".
 	var/list/loaded = saves.saves_for(player_ckey)
@@ -823,15 +903,19 @@
 /datum/ship_checkpoint_ui/registry_test/save_prompt
 	var/last_prompt
 	var/datum/callback/while_open
+	/// The button to press, if not the first.
+	var/pick
 
 /datum/ship_checkpoint_ui/registry_test/save_prompt/Destroy()
 	while_open = null
 	return ..()
 
-/datum/ship_checkpoint_ui/registry_test/save_prompt/confirm_save(mob/user, prompt_text, title = "Shipyard")
+/datum/ship_checkpoint_ui/registry_test/save_prompt/choose_save_payment(mob/user, prompt_text, list/options)
 	last_prompt = prompt_text
 	while_open?.Invoke()
-	return ..()
+	. = ..()
+	if(. && pick)
+		return pick
 
 /// The panel and the password, on a real hull in a real bay.
 /datum/unit_test/voidcrew_ship_saves_hull
@@ -842,6 +926,8 @@
 	var/datum/ship_save_store/fake/store
 	var/datum/ship_economy_db/fake/economy
 	var/obj/structure/overmap/ship/test_ship
+	/// Machines change_progress() placed.
+	var/list/progress_added = list()
 
 /datum/unit_test/voidcrew_ship_saves_hull/New()
 	. = ..()
@@ -924,6 +1010,8 @@
 		TEST_ASSERT_EQUAL(panel.error, "No such slot.", "Slot [bad_slot] was refused with the wrong words")
 	TEST_ASSERT_EQUAL(length(store.saved), 0, "A bad slot reached the table")
 
+	// With nothing in the ship's account, parts are the only way to pay.
+	test_ship.ship_account.account_balance = 0
 	// Declining costs nothing; accepting charges once and saves the real hull to the chosen slot.
 	panel.accept_save = FALSE
 	TEST_ASSERT(!panel.save_ship(captain, bay, 2), "Declining still saved the ship")
@@ -944,7 +1032,7 @@
 	var/datum/weakref/live_source = GLOB.ship_saves.live_sources[GLOB.ship_saves.slot_key("savecaptain", 2)]
 	TEST_ASSERT_EQUAL(live_source?.resolve(), test_ship, "The save does not remember the hull it came from")
 
-	// What was stored is a usable copy with nothing per machine in it.
+	// What was stored is a usable copy.
 	var/datum/ship_checkpoint/decoded = GLOB.ship_saves.decode(entry["payload"])
 	TEST_ASSERT_NOTNULL(decoded, "The stored hull did not decode")
 	TEST_ASSERT_EQUAL(owned_tiles(test_ship.shuttle), decoded.owned_tile_count(), "The stored hull lost tiles")
@@ -969,6 +1057,77 @@
 	TEST_ASSERT_EQUAL(parts_held(), 160 - survey["total"] * 2, "An overwrite was not charged again")
 	TEST_ASSERT_EQUAL(GLOB.ship_saves.saved_row(captain.ckey, 1)["ship_name"], test_ship.name, "An overwrite left the old row in the cache")
 	TEST_ASSERT_EQUAL(length(store.saved), 2, "An overwrite left the wrong rows in the table")
+
+	// Credits can pay for the hull, from the ship's account. Everything else still takes parts.
+	var/misc_price = survey["cost"]["misc"] * SHIP_SAVE_TEST_CREDITS_PER_PART
+	var/parts_kept = parts_held()
+	test_ship.ship_account.account_balance = misc_price
+	panel.pick = "Parts and credits"
+	TEST_ASSERT(panel.save_ship(captain, bay, 1), "Saving the hull for credits failed: [panel.error]")
+	panel.pick = null
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 0, "Saving the hull for credits charged the wrong amount")
+	TEST_ASSERT_EQUAL(parts_held(), parts_kept - (survey["total"] - survey["cost"]["misc"]), "Saving the hull for credits took the wrong parts")
+	// No misc parts and not quite enough credits: refused, and nothing is taken.
+	var/list/parts_aside = economy.held.Copy()
+	economy.held["misc"] = 0
+	test_ship.ship_account.account_balance = misc_price - 1
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "A save nobody could pay for went through")
+	TEST_ASSERT_EQUAL(panel.error, "You need [ship_save_credits_text(misc_price)].", "Wrong refusal for a save nobody could pay for")
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, misc_price - 1, "A refused save took credits")
+	economy.held["misc"] = parts_aside["misc"]
+
+	// A request for funds has to be a real one.
+	test_ship.ship_account.account_balance = 3 * SHIP_SAVE_TEST_FUNDS_PER_PART
+	for(var/bad_funds in list(-1, 1.5, "text", 1000000))
+		TEST_ASSERT(!panel.save_ship(captain, bay, 1, bad_funds), "Funds of [bad_funds] were accepted")
+		TEST_ASSERT_EQUAL(panel.error, "That's not an amount.", "Funds of [bad_funds] were refused with the wrong words")
+	// More than the account holds, and more trade parts than are held.
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1, 4), "Funds the ship doesn't have were carried")
+	TEST_ASSERT_EQUAL(panel.error, "You need 20,000 cr.", "Funds the ship doesn't have got the wrong refusal")
+	economy.held["trade"] = survey["cost"]["trade"] || 0
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1, 1), "Funds were carried with no trade part to pay for them")
+	TEST_ASSERT_EQUAL(panel.error, "You need 1 trade parts.", "Funds with no trade part got the wrong refusal")
+	economy.held["trade"] = parts_aside["trade"]
+
+	// Funds leave the account, go into the save, and show on its card.
+	var/trade_before = economy.held["trade"]
+	TEST_ASSERT(panel.save_ship(captain, bay, 1, 3), "Saving with funds failed: [panel.error]")
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, 0, "Funds stayed in the account as well")
+	TEST_ASSERT_EQUAL(economy.held["trade"], trade_before - (survey["cost"]["trade"] || 0) - 3, "Funds took the wrong trade parts")
+	var/datum/ship_checkpoint/funded_save = GLOB.ship_saves.decode(store.saved["savecaptain|1"]["payload"])
+	TEST_ASSERT_EQUAL(funded_save?.carried_funds, 3 * SHIP_SAVE_TEST_FUNDS_PER_PART, "The funds did not go into the save")
+	qdel(funded_save)
+	var/list/funded_row = GLOB.ship_saves.saved_row(captain.ckey, 1)
+	TEST_ASSERT_EQUAL(funded_row?["survey"]["funds"], 3 * SHIP_SAVE_TEST_FUNDS_PER_PART, "The save's card doesn't know its funds")
+	TEST_ASSERT_NULL(survey["funds"], "Funds wrote on the hull's cached survey")
+
+	// Overwriting one says what goes with it.
+	panel.accept_save = FALSE
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "Declining an overwrite saved the ship")
+	TEST_ASSERT(findtext(panel.last_prompt, "The 15,000 cr held with [test_ship.name] will be lost."), "The question hid the funds it loses: [panel.last_prompt]")
+	panel.accept_save = TRUE
+
+	// A failed write gives the funds and the parts back, and keeps the old save.
+	test_ship.ship_account.account_balance = SHIP_SAVE_TEST_FUNDS_PER_PART
+	var/parts_before_failure = parts_held()
+	store.fail_writes = TRUE
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1, 1), "A failed write reported success")
+	store.fail_writes = FALSE
+	TEST_ASSERT_EQUAL(test_ship.ship_account.account_balance, SHIP_SAVE_TEST_FUNDS_PER_PART, "A failed write kept the funds")
+	TEST_ASSERT_EQUAL(parts_held(), parts_before_failure, "A failed write kept the parts")
+	TEST_ASSERT_EQUAL(GLOB.ship_saves.saved_row(captain.ckey, 1)?["survey"]["funds"], 3 * SHIP_SAVE_TEST_FUNDS_PER_PART, "A failed write lost the old save's funds")
+
+	// Parts swapped or research done while the box is open aren't what was priced.
+	panel.while_open = CALLBACK(src, PROC_REF(change_progress))
+	TEST_ASSERT(!panel.save_ship(captain, bay, 1), "A ship that changed under the box was saved")
+	TEST_ASSERT_EQUAL(panel.error, "The ship changed. Try again.", "A changed ship gave the wrong refusal")
+	panel.while_open = null
+	TEST_ASSERT_EQUAL(parts_held(), parts_before_failure, "A refused save was charged")
+	for(var/obj/machinery/rnd/production/protolathe/added as anything in progress_added)
+		qdel(added)
+	progress_added.Cut()
+	test_ship.ship_account.account_balance = 0
+	panel.error = null
 
 	// A locked slot is refused, and so is one that changes while the box is open.
 	GLOB.ship_saves.refresh(captain.ckey)
@@ -1032,6 +1191,13 @@
 		. += length(room.get_turfs_by_zlevel(port.z))
 
 /// Something else writes to the slot while the confirm box is open.
+/// A priced machine appears aboard while the captain is deciding.
+/datum/unit_test/voidcrew_ship_saves_hull/proc/change_progress()
+	for(var/turf/open/floor/tile in test_ship.shuttle.return_turfs())
+		if((get_area(tile) in test_ship.shuttle.shuttle_areas) && !tile.is_blocked_turf(exclude_mobs = TRUE))
+			progress_added += new /obj/machinery/rnd/production/protolathe(tile)
+			return
+
 /datum/unit_test/voidcrew_ship_saves_hull/proc/change_slot(player_ckey, slot)
 	var/list/rows = GLOB.ship_saves.saves_for(player_ckey)
 	rows += list(list("slot" = slot, "ship_name" = "Interloper", "ship_class" = null, "saved_round" = 1))
@@ -1077,6 +1243,8 @@
 	var/saved_name
 	var/saved_class
 	var/saved_jobs
+	/// The research fit_source() did.
+	var/list/saved_nodes = list()
 
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/New()
 	. = ..()
@@ -1133,7 +1301,12 @@
 	first_meta["saved_round"] = SHIP_SAVE_TEST_ROUND - 1
 	for(var/slot in 2 to SHIP_SAVE_TEST_SLOTS)
 		store.saved["savecaptain|[slot]"] = list("meta" = first_meta.Copy(), "payload" = first["payload"])
-	store.saved["savelobby|1"] = list("meta" = first_meta.Copy(), "payload" = first["payload"])
+	// The two that get loaded whole hold funds, as if the captain had paid to carry them.
+	var/list/funded_data = json_decode(first["payload"])
+	funded_data["funds"] = SHIP_SAVE_TEST_FUNDS_PER_PART * 3
+	var/funded_payload = json_encode(funded_data)
+	store.saved["savelobby|1"] = list("meta" = first_meta.Copy(), "payload" = funded_payload)
+	first["payload"] = funded_payload
 	GLOB.ship_saves.refresh("savecaptain")
 	GLOB.ship_saves.refresh("savelobby")
 
@@ -1234,7 +1407,14 @@
 
 /// What a player could try to carry between rounds: an upgraded machine, a tank of plasma beside a tank of air.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/fit_source(obj/docking_port/mobile/voidcrew/port)
-	var/list/fittings = list(/obj/machinery/autolathe, /obj/machinery/atmospherics/components/tank/plasma, /obj/machinery/atmospherics/components/tank/air)
+	var/list/fittings = list(
+		/obj/machinery/autolathe,
+		/obj/machinery/atmospherics/components/tank/plasma,
+		/obj/machinery/atmospherics/components/tank/air,
+		/obj/machinery/rnd/production/protolathe,
+		/obj/machinery/ship_combat/laser_turret,
+		/obj/machinery/rnd/server/ship,
+	)
 	for(var/turf/open/floor/tile in port.return_turfs())
 		if(!length(fittings))
 			break
@@ -1249,6 +1429,37 @@
 			fitting.component_parts -= old_bin
 			fitting.component_parts += GLOB.stock_part_datums[/datum/stock_part/matter_bin/tier4]
 			fitting.RefreshParts()
+		if(istype(fitting, /obj/machinery/rnd/production/protolathe))
+			var/datum/stock_part/old_bin = locate(/datum/stock_part/matter_bin) in fitting.component_parts
+			TEST_ASSERT_NOTNULL(old_bin, "A new protolathe has no matter bin to upgrade")
+			fitting.component_parts -= old_bin
+			fitting.component_parts += GLOB.stock_part_datums[/datum/stock_part/matter_bin/tier4]
+			fitting.RefreshParts()
+		if(istype(fitting, /obj/machinery/ship_combat/laser_turret))
+			var/datum/stock_part/old_laser = locate(/datum/stock_part/micro_laser) in fitting.component_parts
+			TEST_ASSERT_NOTNULL(old_laser, "A new laser turret has no micro laser to upgrade")
+			fitting.component_parts -= old_laser
+			fitting.component_parts += GLOB.stock_part_datums[/datum/stock_part/micro_laser/tier4]
+			var/obj/item/stock_parts/power_store/cell/old_cell = locate(/obj/item/stock_parts/power_store/cell) in fitting.component_parts
+			TEST_ASSERT_NOTNULL(old_cell, "A new laser turret has no cell to upgrade")
+			fitting.component_parts -= old_cell
+			qdel(old_cell)
+			fitting.component_parts += new /obj/item/stock_parts/power_store/cell/hyper(fitting)
+			fitting.RefreshParts()
+		if(istype(fitting, /obj/machinery/rnd/server/ship))
+			var/obj/machinery/rnd/server/ship/server = fitting
+			server.adopt_source_disk(new /obj/item/computer_disk/ship_disk(server))
+			var/datum/techweb/web = server.stored_research
+			for(var/node_id in SSresearch.techweb_nodes)
+				if(SSresearch.techweb_nodes_starting[node_id] || SSresearch.techweb_nodes_hidden[node_id])
+					continue
+				web.research_node_id(node_id, TRUE, FALSE, FALSE)
+				saved_nodes += node_id
+				if(length(saved_nodes) >= 5)
+					break
+			var/datum/experiment/physical/arcade_winner/finished = allocate(/datum/experiment/physical/arcade_winner)
+			web.available_experiments |= finished
+			web.complete_experiment(finished)
 	TEST_ASSERT(!length(fittings), "The test hull had no room for [length(fittings)] fittings")
 
 /// As lose_original() does for the checkpoint tests: flies the source away and deletes it.
@@ -1268,10 +1479,13 @@
 
 /// Everything a retrieved ship must be, however it got here.
 /datum/unit_test/voidcrew_ship_saves_hull/retrieval/proc/check_retrieved(obj/structure/overmap/ship/ship, where)
+	var/servers = 0
+	var/protolathes = 0
+	var/turrets = 0
 	TEST_ASSERT_EQUAL(ship.name, saved_name, "[where]: the ship lost its name")
 	TEST_ASSERT_EQUAL(ship.source_template.short_name, saved_class, "[where]: the ship lost its class")
 	TEST_ASSERT_EQUAL(length(ship.job_definitions), saved_jobs, "[where]: the ship lost its roster")
-	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, 0, "[where]: the ship came with money")
+	TEST_ASSERT_EQUAL(ship.ship_account.account_balance, SHIP_SAVE_TEST_FUNDS_PER_PART * 3, "[where]: the ship didn't come with exactly the funds its save held")
 	TEST_ASSERT(length(ship.shuttle.spawn_points), "[where]: nobody can spawn on the ship")
 	var/lathes = 0
 	var/plasma_tanks = 0
@@ -1289,7 +1503,37 @@
 		for(var/obj/machinery/machine in tile)
 			if(istype(machine, /obj/machinery/autolathe))
 				lathes++
-				TEST_ASSERT_NULL(locate(/datum/stock_part/matter_bin/tier4) in machine.component_parts, "[where]: an upgraded part came back")
+				TEST_ASSERT_NULL(locate(/datum/stock_part/matter_bin/tier4) in machine.component_parts, "[where]: an upgraded part came back on a machine off the price table")
+			if(istype(machine, /obj/machinery/rnd/production/protolathe))
+				protolathes++
+				TEST_ASSERT_NOTNULL(locate(/datum/stock_part/matter_bin/tier4) in machine.component_parts, "[where]: a priced machine lost its upgraded part")
+				var/obj/machinery/rnd/production/protolathe/protolathe = machine
+				TEST_ASSERT_NOTNULL(protolathe.stored_research, "[where]: the lab machine came back unlinked")
+			if(istype(machine, /obj/machinery/ship_combat/laser_turret))
+				turrets++
+				var/obj/machinery/ship_combat/laser_turret/turret = machine
+				TEST_ASSERT_NOTNULL(locate(/datum/stock_part/micro_laser/tier4) in turret.component_parts, "[where]: the turret lost its upgraded laser")
+				TEST_ASSERT(istype(turret.cell, /obj/item/stock_parts/power_store/cell/hyper), "[where]: the turret lost its upgraded cell")
+				var/obj/machinery/ship_combat/laser_turret/fresh_turret = allocate(/obj/machinery/ship_combat/laser_turret, run_loc_floor_bottom_left)
+				TEST_ASSERT_EQUAL(length(turret.component_parts), length(fresh_turret.component_parts), "[where]: the turret parts were added instead of swapped")
+				TEST_ASSERT(turret.cell.charge > 0, "[where]: the turret's cell came back flat")
+			if(istype(machine, /obj/machinery/rnd/server/ship))
+				servers++
+				var/obj/machinery/rnd/server/ship/server = machine
+				TEST_ASSERT_NOTNULL(server.source_code_hdd, "[where]: the server came back with no disk")
+				TEST_ASSERT_EQUAL(server.source_code_hdd.loc, server, "[where]: the disk isn't in the server")
+				var/datum/techweb/web = server.stored_research
+				TEST_ASSERT_NOTNULL(web, "[where]: the server came back with no research")
+				TEST_ASSERT_EQUAL(ship.find_research_web(), web, "[where]: the ship can't find its research")
+				for(var/node_id in saved_nodes)
+					TEST_ASSERT(web.researched_nodes[node_id], "[where]: the research lost [node_id]")
+				var/datum/experiment/done = web.completed_experiments[/datum/experiment/physical/arcade_winner]
+				TEST_ASSERT_NOTNULL(done, "[where]: the research lost a completed experiment")
+				TEST_ASSERT(!(done in web.available_experiments), "[where]: a completed experiment is on offer again")
+				// Already paid, for this crew, whichever disk reports it.
+				var/list/repaid = web.award_experiment_completion(done)
+				TEST_ASSERT(!length(repaid), "[where]: the experiment paid out again")
+				TEST_ASSERT(ship.get_crew_record().research_reward_ledger[/datum/experiment/physical/arcade_winner], "[where]: the crew can be paid for it through a new disk")
 			if(istype(machine, /obj/machinery/atmospherics/components/tank/plasma))
 				plasma_tanks++
 				var/obj/machinery/atmospherics/components/tank/plasma_tank = machine
@@ -1318,6 +1562,9 @@
 				var/obj/machinery/atmospherics/components/unary/shuttle/heater/heater = machine
 				TEST_ASSERT(heater.fuel_tank?.air_contents.total_moles() > 0, "[where]: an engine heater came back with no fuel")
 	TEST_ASSERT(lathes, "[where]: the upgraded autolathe did not come back")
+	TEST_ASSERT(protolathes, "[where]: the upgraded protolathe did not come back")
+	TEST_ASSERT(turrets, "[where]: the upgraded turret did not come back")
+	TEST_ASSERT(servers, "[where]: the research server did not come back")
 	TEST_ASSERT(plasma_tanks, "[where]: the plasma tank did not come back")
 	TEST_ASSERT(air_tanks, "[where]: the air tank did not come back")
 	TEST_ASSERT(stocked_vendors, "[where]: the hull's stocked vendor did not come back")
@@ -1661,6 +1908,9 @@
 #undef SHIP_SAVE_TEST_SLOTS
 #undef SHIP_SAVE_TEST_PRICE_MIN
 #undef SHIP_SAVE_TEST_MASS_PER_PART
+#undef SHIP_SAVE_TEST_CREDITS_PER_PART
+#undef SHIP_SAVE_TEST_NODES_PER_PART
+#undef SHIP_SAVE_TEST_FUNDS_PER_PART
 #undef SHIP_SAVE_TEST_PLAN_MAX
 #undef SHIP_SAVE_TEST_PASSWORD_PRICE
 #undef SHIP_SAVE_TEST_TOO_LONG

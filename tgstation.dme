@@ -7613,6 +7613,7 @@
 #include "voidcrew\modules\ship_saves\ship_save_console.dm"
 #include "voidcrew\modules\ship_saves\ship_save_construction.dm"
 #include "voidcrew\modules\ship_saves\ship_save_lobby.dm"
+#include "voidcrew\modules\ship_saves\ship_save_progress.dm"
 #include "voidcrew\modules\ship_saves\ship_save_store.dm"
 #include "voidcrew\modules\ship_saves\ship_save_survey.dm"
 #include "voidcrew\modules\ship_saves\ship_saves.dm"
