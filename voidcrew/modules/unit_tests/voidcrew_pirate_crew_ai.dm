@@ -186,3 +186,24 @@
 	TEST_ASSERT(!raid.holds_post(trooper), "A boarder holds a post")
 	TEST_ASSERT(!trooper.ai_controller.can_idle && !gunner.ai_controller.can_idle, "Boarders can idle")
 	qdel(raid)
+
+// ===== LOOKS =====
+
+/// A gunner's look keeps the gun in its hand; a body dressed by the same kind of spawner still gets no free gun
+/datum/unit_test/voidcrew_pirate_crew/held_gun_look
+
+/datum/unit_test/voidcrew_pirate_crew/held_gun_look/Run()
+	// equip() turns a spawner's outfit path into an instance, so each body needs its own spawner
+	var/obj/effect/mob_spawn/corpse/human/pirate/faction/grey/ranged/look_spawner = new(null, TRUE)
+	look_spawner.outfit_override = list("r_hand" = /obj/item/gun/energy/laser)
+	var/mob/living/carbon/human/dummy/consistent/dummy = allocate(/mob/living/carbon/human/dummy/consistent)
+	look_spawner.equip(dummy)
+	TEST_ASSERT(locate(/obj/item/gun/energy/laser) in dummy.held_items, "An NPC's appearance dummy lost the gun its spawner put in its hand")
+	qdel(look_spawner)
+
+	var/obj/effect/mob_spawn/corpse/human/pirate/faction/grey/ranged/body_spawner = new(null, TRUE)
+	body_spawner.outfit_override = list("r_hand" = /obj/item/gun/energy/laser)
+	var/mob/living/carbon/human/consistent/body = allocate(/mob/living/carbon/human/consistent)
+	body_spawner.equip(body)
+	TEST_ASSERT(!(locate(/obj/item/gun/energy/laser) in body.get_all_contents()), "A spawner left a free gun on a real body")
+	qdel(body_spawner)
