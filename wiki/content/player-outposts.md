@@ -171,7 +171,7 @@ The bay's own **shipyard console**, found only in the bay itself, has two tabs:
 
 You have three save slots. Dock a ship you command in a ship bay, choose a slot and pay [ship parts](ship-parts.md) to save it there. The hull needs at least one cryopod. Saving to a slot that already holds a ship overwrites that save, and you pay again.
 
-The price depends on what is aboard, and the console lists it before you pay. Weapons and defenses cost combat parts, research and chemistry machines cost science parts, cargo and mining machines cost trade parts, and the hull and everything else cost misc parts. Every save costs at least 5 parts in total. You need enough of each class. Whatever you take off the ship before saving is not charged for, and is not in the save.
+The price depends on what is aboard, and the console lists it before you pay. Weapons and defenses cost combat parts, research and chemistry machines cost science parts, cargo and mining machines cost trade parts, and the hull costs misc parts. Every save costs at least 5 parts in total. You need enough of each class. Whatever you take off the ship before saving is not charged for, and is not in the save.
 
 Get a saved ship back for free, either from **Saved Ships** in the lobby's join menu, which launches it with you aboard, or from the **Saved ships** tab of a shipyard console in any ship bay, where the delivery drones build it. Each save works once: using it uses it up and frees the slot.
 

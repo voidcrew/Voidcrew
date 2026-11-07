@@ -6,8 +6,6 @@
 #define SHIP_SAVE_PRICE_MIN 5
 /// A hull costs one misc part per this much mass, rounded up.
 #define SHIP_SAVE_MASS_PER_PART 150
-/// Machines the price table doesn't name cost one misc part per this many, rounded up.
-#define SHIP_SAVE_MACHINES_PER_PART 15
 /// How long a hull's survey is good for while a window is open on it.
 #define SHIP_SAVE_SURVEY_LIFE (10 SECONDS)
 /// A hull plan longer than this isn't sent to the screen or kept.

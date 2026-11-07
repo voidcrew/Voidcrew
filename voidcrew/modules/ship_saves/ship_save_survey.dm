@@ -3,8 +3,8 @@
 #define SHIP_SAVE_PRICE(part_class, each_machine, label_text) list("class" = part_class, "each" = each_machine, "label" = label_text)
 
 /**
- * What the machines a save keeps cost. Subtypes inherit, and a later, more specific entry wins: a null
- * takes a subtype back off the table, so it counts among the other machines.
+ * What the machines a save keeps cost. Machines not on this table are free. Subtypes inherit, and a later,
+ * more specific entry wins: a null takes a subtype back off the table.
  */
 GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	/obj/machinery/ship_combat/laser_turret = SHIP_SAVE_PRICE(PART_CLASS_COMBAT, 1, null),
@@ -76,7 +76,6 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	var/static/list/plan_rank = list("w" = 1, "s" = 2, "t" = 3, "e" = 4, "#" = 5, "g" = 6, "o" = 7)
 	var/static/list/class_mark = list(PART_CLASS_COMBAT = "w", PART_CLASS_SCIENCE = "s", PART_CLASS_TRADE = "t")
 	var/mass = 0
-	var/other_machines = 0
 	/// Line name -> list("class", "each", "count")
 	var/list/lines = list()
 	var/list/plan_rows = list()
@@ -110,8 +109,6 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 						object_mark = class_mark[price["class"]]
 					else if(istype(machine, /obj/machinery/power/shuttle_engine))
 						object_mark = "e"
-					else if(!is_type_in_typecache(machine, GLOB.outpost_checkpoint_infrastructure))
-						other_machines++
 				if(object_mark && plan_rank[object_mark] < plan_rank[mark])
 					mark = object_mark
 			plan_row += mark
@@ -119,14 +116,14 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	var/crew = 0
 	for(var/list/definition in job_definitions)
 		crew += definition["slots"] || 1
-	var/list/survey = ship_save_price_bill(lines, mass, other_machines)
+	var/list/survey = ship_save_price_bill(lines, mass)
 	survey["mass"] = mass
 	survey["crew"] = crew
 	survey["plan"] = ship_save_encode_plan(plan_rows)
 	return survey
 
 /// Rounds each line up and adds them into bill, total and cost.
-/proc/ship_save_price_bill(list/lines, mass, other_machines)
+/proc/ship_save_price_bill(list/lines, mass)
 	SHOULD_NOT_SLEEP(TRUE)
 	var/list/items_by_class = list()
 	var/total = 0
@@ -142,10 +139,6 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 	if(hull_parts)
 		misc_items += list(list("name" = "Hull, [mass] t", "count" = null, "parts" = hull_parts))
 		total += hull_parts
-	var/other_parts = CEILING(other_machines / SHIP_SAVE_MACHINES_PER_PART, 1)
-	if(other_parts)
-		misc_items += list(list("name" = "Other machines", "count" = other_machines, "parts" = other_parts))
-		total += other_parts
 	if(total < SHIP_SAVE_PRICE_MIN)
 		misc_items += list(list("name" = "Yard minimum", "count" = null, "parts" = SHIP_SAVE_PRICE_MIN - total))
 		total = SHIP_SAVE_PRICE_MIN

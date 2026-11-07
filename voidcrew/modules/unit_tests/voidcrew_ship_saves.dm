@@ -2,7 +2,6 @@
 #define SHIP_SAVE_TEST_SLOTS 3 // SHIP_SAVE_SLOTS
 #define SHIP_SAVE_TEST_PRICE_MIN 5 // SHIP_SAVE_PRICE_MIN
 #define SHIP_SAVE_TEST_MASS_PER_PART 150 // SHIP_SAVE_MASS_PER_PART
-#define SHIP_SAVE_TEST_MACHINES_PER_PART 15 // SHIP_SAVE_MACHINES_PER_PART
 #define SHIP_SAVE_TEST_PLAN_MAX 8000 // SHIP_SAVE_PLAN_MAX_LENGTH
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
 #define SHIP_SAVE_TEST_FORMAT 1 // SHIP_SAVE_FORMAT
@@ -452,7 +451,7 @@
 	var/list/classes = list()
 	for(var/list/entry as anything in survey["bill"])
 		classes += entry["class"]
-	TEST_ASSERT_EQUAL(classes.Join(","), "combat,science,trade,misc", "The bill's classes are in the wrong order")
+	TEST_ASSERT_EQUAL(classes.Join(","), "combat,science,trade", "The bill's classes are in the wrong order")
 	TEST_ASSERT_EQUAL(bill_class(survey, "combat")["parts"], 3, "Wrong combat total")
 	var/list/combat_items = bill_class(survey, "combat")["items"]
 	var/list/first_combat = combat_items[1]
@@ -465,16 +464,13 @@
 	TEST_ASSERT_EQUAL(bill_line(survey, "science", "Chem dispenser")?["parts"], 1, "A chem dispenser did not cost 1 science")
 	TEST_ASSERT_EQUAL(bill_class(survey, "science")["parts"], 1, "A drink dispenser counted as a chem dispenser")
 	TEST_ASSERT_EQUAL(bill_line(survey, "trade", "Cargo console")?["parts"], 1, "A cargo console did not cost 1 trade")
-	var/list/others = bill_line(survey, "misc", "Other machines")
-	TEST_ASSERT_EQUAL(others?["count"], 1, "Only the drink dispenser should be an other machine")
-	TEST_ASSERT_EQUAL(others?["parts"], 1, "One other machine did not round up to a part")
-	TEST_ASSERT_NULL(bill_line(survey, "misc", "Yard minimum"), "A hull over the minimum paid it")
-	TEST_ASSERT_EQUAL(survey["total"], 6, "Wrong total")
+	TEST_ASSERT_NULL(bill_class(survey, "misc"), "Machines off the price table were charged in misc")
+	TEST_ASSERT_EQUAL(survey["total"], 5, "Wrong total")
 	TEST_ASSERT_EQUAL(survey["cost"]["combat"], 3, "The charge disagrees with the bill")
 	TEST_ASSERT_EQUAL(survey["cost"]["science"], 1, "The charge disagrees with the bill")
 	TEST_ASSERT_EQUAL(survey["cost"]["trade"], 1, "The charge disagrees with the bill")
-	TEST_ASSERT_EQUAL(survey["cost"]["misc"], 1, "The charge disagrees with the bill")
-	TEST_ASSERT_EQUAL(ship_save_cost_text(survey["cost"]), "3 combat, 1 science, 1 trade and 1 misc parts", "Wrong words for the price")
+	TEST_ASSERT_NULL(survey["cost"]["misc"], "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(ship_save_cost_text(survey["cost"]), "3 combat, 1 science and 1 trade parts", "Wrong words for the price")
 
 	// A label wins, a subtype inherits, and a name with no label comes from the type.
 	var/list/price = GLOB.ship_save_priced_machines[/obj/machinery/rnd/production/protolathe/department/science]
@@ -487,30 +483,27 @@
 		if(!iseffect(thing))
 			qdel(thing)
 
-/// The misc lines and the minimum, with nothing but numbers.
+/// The hull line and the minimum, with nothing but numbers.
 /datum/unit_test/voidcrew_ship_saves/proc/check_bill_rounding()
-	var/list/kitted = ship_save_price_bill(list(), 650, 25)
-	var/list/hull_line = bill_line(kitted, "misc", "Hull, 650 t")
+	var/list/hull_only = ship_save_price_bill(list(), 650)
+	var/list/hull_line = bill_line(hull_only, "misc", "Hull, 650 t")
 	TEST_ASSERT_EQUAL(hull_line?["parts"], 5, "650 t did not round up to 5 parts")
 	TEST_ASSERT_NULL(hull_line?["count"], "The hull line has a count")
-	var/list/other_line = bill_line(kitted, "misc", "Other machines")
-	TEST_ASSERT_EQUAL(other_line?["parts"], 2, "25 machines did not round up to 2 parts")
-	TEST_ASSERT_EQUAL(other_line?["count"], 25, "The other machines line lost its count")
-	TEST_ASSERT_EQUAL(kitted["total"], 7, "Wrong total for a kitted hull")
-	var/list/exact = ship_save_price_bill(list(), SHIP_SAVE_TEST_MASS_PER_PART * 5, SHIP_SAVE_TEST_MACHINES_PER_PART)
+	TEST_ASSERT_EQUAL(hull_only["total"], 5, "Wrong total for a bare hull")
+	var/list/exact = ship_save_price_bill(list(), SHIP_SAVE_TEST_MASS_PER_PART * 6)
 	TEST_ASSERT_EQUAL(exact["total"], 6, "An exact multiple was rounded up again")
 
 	// A tiny hull pays the minimum exactly, and the bill says why.
-	var/list/tiny = ship_save_price_bill(list(), 150, 1)
+	var/list/tiny = ship_save_price_bill(list(), 150)
 	TEST_ASSERT_EQUAL(tiny["total"], SHIP_SAVE_TEST_PRICE_MIN, "A tiny hull did not pay exactly the minimum")
 	TEST_ASSERT_EQUAL(tiny["cost"]["misc"], SHIP_SAVE_TEST_PRICE_MIN, "The minimum isn't paid in misc parts")
-	TEST_ASSERT_EQUAL(bill_line(tiny, "misc", "Yard minimum")?["parts"], SHIP_SAVE_TEST_PRICE_MIN - 2, "The minimum line doesn't make up the difference")
+	TEST_ASSERT_EQUAL(bill_line(tiny, "misc", "Yard minimum")?["parts"], SHIP_SAVE_TEST_PRICE_MIN - 1, "The minimum line doesn't make up the difference")
 	TEST_ASSERT_NULL(bill_line(tiny, "misc", "Yard minimum")?["count"], "The minimum line has a count")
-	var/list/nothing = ship_save_price_bill(list(), 0, 0)
+	var/list/nothing = ship_save_price_bill(list(), 0)
 	TEST_ASSERT_EQUAL(length(bill_class(nothing, "misc")["items"]), 1, "An empty hull billed lines for nothing")
 	TEST_ASSERT_EQUAL(nothing["total"], SHIP_SAVE_TEST_PRICE_MIN, "An empty hull did not pay the minimum")
 	var/list/lines = list("Defense turret" = list("class" = "combat", "each" = 0.5, "count" = 6))
-	TEST_ASSERT_EQUAL(bill_line(ship_save_price_bill(lines, 0, 0), "combat", "Defense turret")?["parts"], 3, "Six turrets at 1 per 2 are not one line of 3")
+	TEST_ASSERT_EQUAL(bill_line(ship_save_price_bill(lines, 0), "combat", "Defense turret")?["parts"], 3, "Six turrets at 1 per 2 are not one line of 3")
 
 	set_parts(misc = SHIP_SAVE_TEST_PRICE_MIN)
 	GLOB.ship_saves.refresh("tinyhull")
@@ -1668,7 +1661,6 @@
 #undef SHIP_SAVE_TEST_SLOTS
 #undef SHIP_SAVE_TEST_PRICE_MIN
 #undef SHIP_SAVE_TEST_MASS_PER_PART
-#undef SHIP_SAVE_TEST_MACHINES_PER_PART
 #undef SHIP_SAVE_TEST_PLAN_MAX
 #undef SHIP_SAVE_TEST_PASSWORD_PRICE
 #undef SHIP_SAVE_TEST_TOO_LONG
