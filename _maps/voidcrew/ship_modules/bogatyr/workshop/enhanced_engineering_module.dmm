@@ -196,6 +196,15 @@
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
 /turf/open/floor/glass/reinforced,
 /area/template_noop)
+"uVR" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/template_noop)
 "wmg" = (
 /obj/machinery/power/smes,
 /obj/structure/cable,
@@ -234,7 +243,7 @@ glz
 (3,1,1) = {"
 qja
 aNf
-coL
+uVR
 qlv
 coL
 mZU
