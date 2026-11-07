@@ -79,7 +79,7 @@ export const NaniteChamberControlContent = (props, context) => {
               />
             }>
             <Flex>
-              <Flex.Item>
+              <Flex.Item mr={3}>
                 <LabeledList>
                   <LabeledList.Item label="Nanite Volume">
                     {nanite_volume}
