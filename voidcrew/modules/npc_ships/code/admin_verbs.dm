@@ -162,7 +162,20 @@ ADMIN_VERB(force_dock_npc_pirate, R_DEBUG, "Force Dock NPC Pirate", "Force-dock 
 		to_chat(user, span_warning("One of the ships stopped flying. Try again."))
 		return
 
-	pirate.forceMove(get_turf(our_ship))
+	// Each overmap tile has one ship-to-ship meeting point. A pirate from an earlier dock stays
+	// berthed there after we undock (NPC hulls only leave after a few minutes), so move to
+	// clear space nearby rather than fail.
+	var/turf/spot = get_turf(our_ship)
+	if(!pirate_dock_spot_free(spot))
+		spot = find_free_pirate_dock_spot(our_ship)
+		if(!spot)
+			to_chat(user, span_warning("The meeting point here is taken and there's no clear space within 5 tiles. Fly somewhere emptier and try again."))
+			return
+		our_ship.forceMove(spot)
+		our_ship.update_screen()
+		our_ship.push_helm_frame()
+		to_chat(user, span_notice("The meeting point here was taken, so [our_ship.name] moved to clear space nearby."))
+	pirate.forceMove(spot)
 	var/result = our_ship.dock_ships_directly(pirate, null, TRUE)
 	// The meeting point loads its level on first use; give it a few seconds
 	for(var/attempt in 1 to 10)
@@ -185,6 +198,33 @@ ADMIN_VERB(force_dock_npc_pirate, R_DEBUG, "Force Dock NPC Pirate", "Force-dock 
 	message_admins("[key_name_admin(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]. [ADMIN_COORDJMP(pirate)]")
 	log_admin("[key_name(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]")
 	BLACKBOX_LOG_ADMIN_VERB("Force Dock NPC Pirate")
+
+/// Whether the ship-to-ship meeting point on overmap tile `spot`, if it has one, has both berths free
+/proc/pirate_dock_spot_free(turf/spot)
+	var/obj/structure/overmap/planet/empty/meeting = locate() in spot
+	if(!meeting)
+		return TRUE
+	if(meeting.first_dock_taken || meeting.second_dock_taken || meeting.loading)
+		return FALSE
+	if(meeting.reserve_dock?.get_docked() || meeting.reserve_dock_secondary?.get_docked())
+		return FALSE
+	return TRUE
+
+/// The nearest empty overmap tile within 5 of `ship`, on the same side of any zone line
+/proc/find_free_pirate_dock_spot(obj/structure/overmap/ship/ship)
+	var/turf/origin = get_turf(ship)
+	if(!origin)
+		return null
+	for(var/radius in 1 to 5)
+		for(var/turf/open/overmap/candidate in orange(radius, origin))
+			if(get_dist(candidate, origin) != radius)
+				continue
+			if(locate(/obj/structure/overmap) in candidate)
+				continue
+			if(ship.zone_crossing(origin, candidate))
+				continue
+			return candidate
+	return null
 
 /// Global list of dummy mobs keeping z-levels active for debugging
 GLOBAL_LIST_EMPTY(z_level_activator_dummies)
