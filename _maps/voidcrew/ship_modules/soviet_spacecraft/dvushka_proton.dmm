@@ -1,0 +1,276 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bqm" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/template_noop)
+"bFq" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"bKy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"cgi" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"cvO" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"cLA" = (
+/obj/structure/table/wood,
+/obj/item/binoculars,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dWs" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"fLG" = (
+/obj/structure/table/wood,
+/obj/item/storage/toolbox/mechanical/old,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"gJl" = (
+/obj/effect/spawner/surgery_tray/full/deployed,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"gOi" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hID" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/survival_pod/glass,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"hYv" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/structure/sign/poster/contraband/kss13/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ikB" = (
+/obj/machinery/computer/operating,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"lsC" = (
+/obj/machinery/vending/sovietsoda,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mit" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"mCd" = (
+/turf/template_noop,
+/area/template_noop)
+"nxj" = (
+/obj/machinery/door/window/brigdoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"nNo" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"oLb" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"oPW" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/template_noop)
+"pJz" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qmX" = (
+/obj/structure/rack,
+/obj/item/storage/medkit/fire,
+/obj/item/storage/medkit/o2{
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/brute{
+	pixel_y = 10
+	},
+/obj/item/storage/medkit/toxin{
+	pixel_y = 15
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qWc" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/dresser,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"rGb" = (
+/obj/structure/cable,
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"rYL" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/structure/toilet{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sOl" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sRC" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/kirbyplants/organic/plant11,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"twM" = (
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vAi" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vVM" = (
+/obj/structure/table/optable,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"wiP" = (
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"xFO" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+hYv
+rYL
+oPW
+mit
+oPW
+gJl
+twM
+"}
+(2,1,1) = {"
+fLG
+nNo
+oPW
+rGb
+oPW
+vVM
+oLb
+"}
+(3,1,1) = {"
+cLA
+bKy
+oPW
+dWs
+oPW
+ikB
+bKy
+"}
+(4,1,1) = {"
+oPW
+hID
+bqm
+mit
+oPW
+oPW
+hID
+"}
+(5,1,1) = {"
+sRC
+bKy
+nxj
+mit
+oPW
+qmX
+bKy
+"}
+(6,1,1) = {"
+gOi
+pJz
+bFq
+mit
+hID
+bKy
+bKy
+"}
+(7,1,1) = {"
+sOl
+wiP
+xFO
+mit
+oPW
+cvO
+vAi
+"}
+(8,1,1) = {"
+oPW
+bqm
+lsC
+cgi
+oPW
+qWc
+mCd
+"}
+(9,1,1) = {"
+mCd
+mCd
+mCd
+mit
+oPW
+mCd
+mCd
+"}

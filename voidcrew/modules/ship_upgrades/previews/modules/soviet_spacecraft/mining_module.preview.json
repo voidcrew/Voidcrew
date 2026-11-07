@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/mining_module.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 7,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_mining_module_proton.png",
+     "src_md5": "659b3717e9801979dad60fbe74730efa",
+     "width": 8
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 7,
+     "png": "soviet_spacecraft_mining_module_standard.png",
+     "src_md5": "139bc51c48ddb99bda6735e316bc4588",
+     "width": 8
+    }
+   },
+   "width": 8
+  }
+ },
+ "tile_px": 32
+}

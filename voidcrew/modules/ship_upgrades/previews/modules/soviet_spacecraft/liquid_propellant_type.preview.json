@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/liquid_propellant_type.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_liquid_propellant_type_proton.png",
+     "src_md5": "ec9448713c1b27c186f450884a307c4f",
+     "width": 12
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_liquid_propellant_type_standard.png",
+     "src_md5": "5ca1781cb2f65f65bb7f010b4353e4f0",
+     "width": 12
+    }
+   },
+   "width": 12
+  }
+ },
+ "tile_px": 32
+}

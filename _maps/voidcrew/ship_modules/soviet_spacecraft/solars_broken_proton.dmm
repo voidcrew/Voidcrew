@@ -1,0 +1,489 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"acm" = (
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"aXs" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"aZV" = (
+/obj/effect/spawner/random/trash,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"brN" = (
+/obj/machinery/power/solar_control,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"bZB" = (
+/obj/item/stack/cable_coil/cut,
+/obj/effect/spawner/random/trash,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"cBU" = (
+/obj/item/shard,
+/obj/effect/spawner/random/trash,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"ebi" = (
+/obj/structure/cable,
+/obj/structure/frame/machine/secured,
+/turf/template_noop,
+/area/template_noop)
+"eOe" = (
+/turf/closed/mineral/volcanic/airless,
+/area/template_noop)
+"fjR" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/item/stack/sheet/iron/fifty,
+/turf/template_noop,
+/area/template_noop)
+"fmI" = (
+/turf/template_noop,
+/area/template_noop)
+"fZK" = (
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/template_noop,
+/area/template_noop)
+"gpP" = (
+/obj/structure/cable,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"gSE" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/item/stack/sheet/glass/fifty,
+/turf/template_noop,
+/area/template_noop)
+"gUF" = (
+/obj/structure/cable,
+/obj/machinery/power/solar,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"huN" = (
+/obj/item/stack/cable_coil/thirty,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"iHV" = (
+/obj/structure/cable,
+/obj/item/shard,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"iLZ" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"loJ" = (
+/obj/machinery/power/solar_control,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/template_noop,
+/area/template_noop)
+"ltQ" = (
+/obj/structure/cable,
+/obj/machinery/power/solar,
+/obj/effect/mapping_helpers/broken_machine,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"lNT" = (
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"nBP" = (
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"nLy" = (
+/obj/effect/spawner/random/exotic,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"oKK" = (
+/obj/modular_map_connector,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"oLX" = (
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"pRE" = (
+/obj/structure/cable,
+/obj/item/shard,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"qbo" = (
+/turf/closed/mineral/telecrystal/volcanic,
+/area/template_noop)
+"qPG" = (
+/obj/item/stack/cable_coil/cut,
+/turf/template_noop,
+/area/template_noop)
+"rwW" = (
+/obj/structure/cable,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"tlP" = (
+/obj/structure/fans/tiny,
+/obj/structure/barricade/wooden,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"tvn" = (
+/obj/item/shard,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"ujC" = (
+/obj/structure/cable,
+/obj/effect/spawner/random/medical,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"uqA" = (
+/obj/structure/cable,
+/obj/structure/cable,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"vbI" = (
+/obj/structure/cable,
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/catwalk_floor/airless,
+/area/template_noop)
+"vhP" = (
+/turf/closed/mineral/bananium/volcanic,
+/area/template_noop)
+"vub" = (
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/welded,
+/obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"xhl" = (
+/obj/structure/cable,
+/obj/item/shard,
+/obj/effect/spawner/random/structure/crate_loot,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+"xNk" = (
+/obj/structure/cable,
+/obj/machinery/power/solar,
+/turf/open/floor/iron/solarpanel/airless,
+/area/template_noop)
+
+(1,1,1) = {"
+tvn
+tvn
+fmI
+fmI
+bZB
+lNT
+lNT
+fmI
+fmI
+fmI
+lNT
+lNT
+lNT
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+nLy
+aZV
+tvn
+fmI
+fmI
+fmI
+lNT
+lNT
+lNT
+lNT
+lNT
+lNT
+oKK
+"}
+(2,1,1) = {"
+gpP
+pRE
+fmI
+fmI
+gpP
+xNk
+gUF
+fmI
+fmI
+fmI
+gUF
+xNk
+xNk
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+xNk
+xNk
+gUF
+fmI
+fmI
+gUF
+gpP
+gpP
+pRE
+pRE
+pRE
+gUF
+eOe
+"}
+(3,1,1) = {"
+gUF
+pRE
+gpP
+fmI
+xNk
+xNk
+xNk
+gUF
+gpP
+pRE
+xNk
+xNk
+xNk
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+xNk
+xNk
+xNk
+gUF
+fmI
+pRE
+xNk
+gUF
+gUF
+gpP
+xhl
+eOe
+vhP
+"}
+(4,1,1) = {"
+eOe
+rwW
+iLZ
+acm
+rwW
+rwW
+acm
+vbI
+rwW
+rwW
+uqA
+nBP
+nBP
+tlP
+qPG
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+oLX
+vub
+rwW
+rwW
+rwW
+rwW
+iHV
+iHV
+rwW
+rwW
+eOe
+eOe
+eOe
+fmI
+fmI
+"}
+(5,1,1) = {"
+eOe
+qbo
+gUF
+gUF
+xNk
+xNk
+xNk
+gUF
+ltQ
+gUF
+xNk
+xNk
+xNk
+fmI
+brN
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+loJ
+fmI
+xNk
+xNk
+xNk
+xNk
+pRE
+pRE
+gUF
+eOe
+eOe
+fmI
+fmI
+fmI
+fmI
+"}
+(6,1,1) = {"
+fmI
+eOe
+eOe
+ujC
+gUF
+xNk
+xNk
+pRE
+pRE
+eOe
+gUF
+xNk
+xNk
+fmI
+fjR
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+gSE
+fmI
+xNk
+xNk
+xNk
+xNk
+xNk
+gUF
+gUF
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+"}
+(7,1,1) = {"
+fmI
+fmI
+fmI
+fmI
+eOe
+lNT
+aXs
+lNT
+fmI
+fmI
+fmI
+lNT
+huN
+fmI
+ebi
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fZK
+fmI
+gpP
+lNT
+eOe
+lNT
+cBU
+eOe
+eOe
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+"}
+(8,1,1) = {"
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+fmI
+"}

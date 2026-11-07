@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "soviet_spacecraft/electric_propulsion_type.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 9,
+   "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_electric_propulsion_type_proton.png",
+     "src_md5": "ba695b2ab3ce6b9f8f444da7710ce911",
+     "width": 12
+    },
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_electric_propulsion_type_standard.png",
+     "src_md5": "8dc45d1b1fdb58c09431e327eb5815e3",
+     "width": 12
+    }
+   },
+   "width": 12
+  }
+ },
+ "tile_px": 32
+}

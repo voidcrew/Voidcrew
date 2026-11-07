@@ -1,0 +1,174 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"amK" = (
+/obj/item/storage/bag/ore,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/pickaxe/rusted,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"awk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"baY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"bcb" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"blI" = (
+/obj/structure/ore_box,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"cEu" = (
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"cOU" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/template_noop,
+/area/template_noop)
+"dtl" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"fxl" = (
+/obj/vehicle/sealed/mecha/ripley/mining,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"gUy" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"hMX" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"kJc" = (
+/obj/machinery/light/directional/south,
+/obj/structure/reagent_dispensers/fueltank/large,
+/turf/template_noop,
+/area/template_noop)
+"kXy" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/mineral/ore_redemption,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"lTm" = (
+/turf/template_noop,
+/area/template_noop)
+"nFG" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"pqv" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"qCc" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"rpf" = (
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/rusted,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"tRV" = (
+/obj/machinery/door/poddoor/shutters/window,
+/turf/open/floor/mineral/titanium/tiled,
+/area/template_noop)
+"vzp" = (
+/obj/machinery/airalarm/directional/east,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/table/reinforced,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+"wAz" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/white,
+/area/template_noop)
+
+(1,1,1) = {"
+lTm
+lTm
+lTm
+wAz
+lTm
+lTm
+pqv
+"}
+(2,1,1) = {"
+lTm
+hMX
+blI
+wAz
+tRV
+fxl
+lTm
+"}
+(3,1,1) = {"
+kXy
+cEu
+cEu
+wAz
+tRV
+rpf
+kJc
+"}
+(4,1,1) = {"
+cEu
+cEu
+cEu
+wAz
+tRV
+amK
+cOU
+"}
+(5,1,1) = {"
+cEu
+cEu
+cEu
+wAz
+gUy
+gUy
+qCc
+"}
+(6,1,1) = {"
+cEu
+cEu
+cEu
+awk
+nFG
+nFG
+vzp
+"}
+(7,1,1) = {"
+lTm
+cEu
+cEu
+baY
+cEu
+bcb
+lTm
+"}
+(8,1,1) = {"
+lTm
+lTm
+dtl
+dtl
+bcb
+lTm
+lTm
+"}

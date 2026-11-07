@@ -1,0 +1,238 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ahG" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/light/directional/north,
+/obj/structure/closet/crate/critter{
+	name = "Bear"
+	},
+/mob/living/basic/mothroach,
+/turf/open/floor/grass,
+/area/template_noop)
+"aHn" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/grass,
+/area/template_noop)
+"aNC" = (
+/obj/item/pickaxe/rusted,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"bfl" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/effect/spawner/random/food_or_drink/seed,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"bqF" = (
+/obj/machinery/door/airlock/hydroponics/glass,
+/turf/template_noop,
+/area/template_noop)
+"bwX" = (
+/obj/structure/flora/bush/grassy/style_4,
+/turf/open/floor/grass,
+/area/template_noop)
+"caA" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"cIx" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"cUE" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/mob/living/basic/ant,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"ded" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"dsu" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/decal/cleanable/ants,
+/obj/machinery/light/directional/south,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"eSv" = (
+/obj/machinery/suit_storage_unit/void_old/jetpack,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"hpX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"maD" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/grass,
+/area/template_noop)
+"mIH" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"nao" = (
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"nTM" = (
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"obK" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 6
+	},
+/turf/template_noop,
+/area/template_noop)
+"pod" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"pwS" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"qaH" = (
+/mob/living/basic/ant,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"qwu" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"qMR" = (
+/turf/template_noop,
+/area/template_noop)
+"rAh" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 5
+	},
+/turf/template_noop,
+/area/template_noop)
+"rUD" = (
+/obj/machinery/hydroponics/soil,
+/obj/effect/spawner/random/food_or_drink/seed_rare,
+/turf/open/floor/grass/lavaland,
+/area/template_noop)
+"sQT" = (
+/obj/structure/closet/crate/critter{
+	name = "Mothroach"
+	},
+/mob/living/basic/bear/russian,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/grass,
+/area/template_noop)
+"trd" = (
+/obj/structure/table/reinforced/rglass,
+/obj/item/food/meat/steak,
+/obj/item/food/meat/steak{
+	pixel_y = 4
+	},
+/obj/item/food/meat/steak{
+	pixel_y = 8;
+	pixel_x = 1
+	},
+/turf/template_noop,
+/area/template_noop)
+"ucs" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"vQj" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/wood/maple,
+/area/template_noop)
+"wai" = (
+/obj/structure/table/reinforced/rglass,
+/obj/item/food/semki/healthy,
+/obj/effect/spawner/random/food_or_drink/seed_rare,
+/obj/item/reagent_containers/cup/bottle/diethylamine{
+	pixel_x = 12
+	},
+/turf/template_noop,
+/area/template_noop)
+"wOU" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/wood/maple,
+/area/template_noop)
+
+(1,1,1) = {"
+qMR
+qMR
+qMR
+ucs
+qMR
+qMR
+pwS
+"}
+(2,1,1) = {"
+qMR
+bqF
+nao
+ucs
+nao
+bqF
+qMR
+"}
+(3,1,1) = {"
+maD
+qwu
+ded
+ucs
+aNC
+bfl
+mIH
+"}
+(4,1,1) = {"
+sQT
+aHn
+nao
+hpX
+nao
+pod
+qaH
+"}
+(5,1,1) = {"
+bwX
+aHn
+nao
+hpX
+nao
+cUE
+rUD
+"}
+(6,1,1) = {"
+ahG
+caA
+nao
+hpX
+wOU
+cIx
+dsu
+"}
+(7,1,1) = {"
+qMR
+trd
+nao
+nao
+nTM
+wai
+qMR
+"}
+(8,1,1) = {"
+rAh
+qMR
+vQj
+nao
+eSv
+qMR
+obK
+"}

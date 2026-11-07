@@ -1,0 +1,201 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bAu" = (
+/turf/template_noop,
+/area/template_noop)
+"bRy" = (
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"bTh" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"ccG" = (
+/obj/structure/closet/secure_closet/chemical/heisenberg,
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"cOp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod,
+/area/template_noop)
+"dYv" = (
+/obj/structure/table/reinforced,
+/obj/structure/microscope,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_y = 2;
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/cup/beaker/large,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"iSq" = (
+/obj/machinery/light/directional/south,
+/obj/structure/frame/machine/secured,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"jNr" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"kMP" = (
+/obj/machinery/light/directional/north,
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"lIo" = (
+/obj/machinery/chem_dispenser,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"lWQ" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"mjb" = (
+/turf/open/floor/pod,
+/area/template_noop)
+"ofD" = (
+/obj/machinery/light/directional/south,
+/obj/structure/table/reinforced,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"oER" = (
+/obj/machinery/chem_master,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"peI" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"qFh" = (
+/obj/structure/frame/machine/secured,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"qXu" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/bag/ore,
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/obj/item/pickaxe/rusted,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"rxY" = (
+/obj/item/reagent_containers/dropper,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"rFF" = (
+/obj/machinery/smartfridge/chemistry/preloaded,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"rOq" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/suit_storage_unit/void_old/jetpack,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"tfy" = (
+/obj/structure/cable,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"uvT" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"uzE" = (
+/obj/structure/closet/crate/science,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"vqv" = (
+/obj/structure/closet/crate/science/robo,
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+"vFy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/pod,
+/area/template_noop)
+"wdl" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/pod,
+/area/template_noop)
+"xjB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/oldshuttle,
+/area/template_noop)
+
+(1,1,1) = {"
+bAu
+bAu
+bAu
+cOp
+bAu
+bAu
+lWQ
+"}
+(2,1,1) = {"
+bAu
+jNr
+tfy
+cOp
+uvT
+uzE
+bAu
+"}
+(3,1,1) = {"
+kMP
+bRy
+bTh
+wdl
+bRy
+bRy
+iSq
+"}
+(4,1,1) = {"
+mjb
+mjb
+mjb
+vFy
+bRy
+bRy
+qFh
+"}
+(5,1,1) = {"
+qXu
+bRy
+bRy
+peI
+bRy
+bRy
+rFF
+"}
+(6,1,1) = {"
+rOq
+bRy
+bRy
+peI
+xjB
+bRy
+ofD
+"}
+(7,1,1) = {"
+bAu
+ccG
+bRy
+bRy
+rxY
+vqv
+bAu
+"}
+(8,1,1) = {"
+bAu
+bAu
+lIo
+oER
+dYv
+bAu
+bAu
+"}
