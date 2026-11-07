@@ -1183,7 +1183,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
-/obj/machinery/door/airlock/centcom{
+/obj/machinery/door/airlock/centcom/outpost_staff{
 	name = "Chrome Access"
 	},
 /turf/open/indestructible/dark/smooth_large,
