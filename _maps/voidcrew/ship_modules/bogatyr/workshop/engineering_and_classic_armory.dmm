@@ -67,6 +67,14 @@
 /obj/item/melee/chainofcommand,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
+"hSb" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	name = "\improper TOZ-1"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "icz" = (
 /obj/machinery/door/airlock/vault{
 	name = "Armory"
@@ -135,6 +143,15 @@
 	},
 /turf/closed/wall/r_wall,
 /area/template_noop)
+"mqQ" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -7;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "oOM" = (
 /obj/structure/sign/poster/random,
 /turf/closed/wall/r_wall,
@@ -161,14 +178,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"ssG" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	name = "\improper TOZ-1"
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "sTI" = (
 /obj/machinery/power/port_gen/pacman/pre_loaded,
 /obj/effect/turf_decal/box,
@@ -190,15 +199,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
-"wKM" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -7;
-	pixel_y = 2
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 
 (1,1,1) = {"
 imp
@@ -213,8 +213,8 @@ jNA
 "}
 (2,1,1) = {"
 imp
-ssG
-wKM
+hSb
+mqQ
 jOk
 imp
 lxr

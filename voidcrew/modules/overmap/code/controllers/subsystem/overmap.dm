@@ -58,6 +58,20 @@ SUBSYSTEM_DEF(overmap)
 	var/jump_request_time = 6000
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
+	/// Absolute REALTIMEOFDAY deadline, armed only once the round actually starts.
+	/// Every jump timer runs on real time (TIMER_CLIENT_TIME): world.time slows under lag and
+	/// crawls while an empty server sleeps, which once stretched six-hour rounds to eight.
+	var/round_end_time
+	/// Timer requesting the existing fleet jump early enough to meet round_end_time.
+	var/round_end_request_timer
+	/// Independent completion timer so ship launches cannot push back the deadline.
+	var/round_end_timer
+	/// REALTIMEOFDAY when a called fleet jump launches. Drives the status panel countdown.
+	var/jump_launch_time
+	/// Timers for the late departure alerts of a called jump.
+	var/list/jump_alert_timers = list()
+	/// How long before launch each late departure alert plays, longest first.
+	var/static/list/jump_alert_leads = list(5 MINUTES, 1 MINUTES)
 
 	/// Ready players each roundstart hull is expected to carry. The fleet scales off
 	/// this once turnout is known - see SSticker.create_characters().
@@ -80,8 +94,15 @@ SUBSYSTEM_DEF(overmap)
 	/// contact with no interior until a ship actually goes there, so raising this adds
 	/// places to go without adding anything to the round-start wait.
 	var/dynamic_planets_per_type = 6
+	/// Ordinary combat ruins approved for repeat mission contacts, independently of natural seeding's duplicate limit.
+	var/static/list/mission_ruin_templates = list(
+		/datum/map_template/ruin/space/derelict_sulaco,
+		/datum/map_template/ruin/space/listeningstation,
+		/datum/map_template/ruin/space/turreted_outpost,
+	)
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(arm_round_end))
 	create_map()
 	setup_sun()
 	setup_planets()
@@ -424,31 +445,114 @@ SUBSYSTEM_DEF(overmap)
  * Bluespace jump procs
  */
 
+/// Use the ticker's actual start timestamp, excluding initialization and the lobby.
+/// started_at is the world.time of roundstart; the deadline itself is kept in real time.
+/datum/controller/subsystem/overmap/proc/arm_round_end(datum/source, started_at)
+	SIGNAL_HANDLER
+	var/duration = CONFIG_GET(number/round_time_limit) MINUTES
+	if(!duration || round_end_time || jump_mode != BS_JUMP_IDLE)
+		return
+	var/now = REALTIMEOFDAY
+	var/real_start = now - (world.time - started_at)
+	round_end_time = real_start + duration
+	var/request_at = max(real_start, round_end_time - jump_request_time - jump_completion_time)
+	round_end_request_timer = addtimer(CALLBACK(src, PROC_REF(request_scheduled_jump)), max(0, request_at - now), TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	round_end_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), max(0, round_end_time - now), TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump scheduled: the round ends in [DisplayTimeText(round_end_time - now)] of real time.")
+
+/datum/controller/subsystem/overmap/proc/request_scheduled_jump()
+	round_end_request_timer = null
+	if(round_end_time)
+		request_jump(scheduled = TRUE)
+
 /**
  * ## request_jump
  *
  * Requests a bluespace jump, which, after jump_request_time deciseconds, will initiate a bluespace jump.
+ * Scheduled jumps launch jump_completion_time before round_end_time instead.
  *
  * Arguments:
  * * modifiers - (Optional) Modifies the length of the jump request time (defaults to 1)
  */
-/datum/controller/subsystem/overmap/proc/request_jump(modifier = 1)
+/datum/controller/subsystem/overmap/proc/request_jump(modifier = 1, scheduled = FALSE)
+	// A vote cannot bring forward or restart the scheduled fleet departure.
+	if(jump_mode != BS_JUMP_IDLE || (round_end_time && !scheduled))
+		return FALSE
 	jump_mode = BS_JUMP_CALLED
-	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), jump_request_time * modifier, TIMER_STOPPABLE)
-	priority_announce("Preparing for jump. ETD: [jump_request_time * modifier / 600] minutes.", null, null, "Priority")
+	var/now = REALTIMEOFDAY
+	jump_launch_time = scheduled ? max(now, round_end_time - jump_completion_time) : now + jump_request_time * modifier
+	var/time_left = jump_launch_time - now
+	jump_timer = addtimer(CALLBACK(src, PROC_REF(initiate_jump)), time_left, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	for(var/alert_lead in jump_alert_leads)
+		if(time_left > alert_lead)
+			jump_alert_timers += addtimer(CALLBACK(src, PROC_REF(jump_alert), alert_lead), time_left - alert_lead, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump called[scheduled ? " by the round timer" : ""]: launch in [DisplayTimeText(time_left)].")
+	// Under a minute left (a very short round, or a server that slept through the warning) there is nothing useful to say.
+	var/minutes = round(time_left / (1 MINUTES), 1)
+	if(minutes >= 1)
+		announce_jump(minutes)
+	return TRUE
+
+/// Late departure alert. Skipped when a later alert or the launch is already due, as after an empty server wakes.
+/datum/controller/subsystem/overmap/proc/jump_alert(alert_lead)
+	if(jump_mode != BS_JUMP_CALLED)
+		return
+	var/time_left = jump_launch_time - REALTIMEOFDAY
+	if(time_left <= 0)
+		return
+	for(var/later_lead in jump_alert_leads)
+		if(later_lead < alert_lead && time_left <= later_lead)
+			return
+	announce_jump(alert_lead / (1 MINUTES), alarm = TRUE)
+
+/// Fleet jump countdown announcement. The late alerts are red, with the red alert alarm.
+/datum/controller/subsystem/overmap/proc/announce_jump(minutes, alarm = FALSE)
+	var/text = minutes > 1 ? "All ships, fleet jump in [minutes] minutes. Get your crews aboard." : "All ships, fleet jump in 1 minute. Anyone not aboard will be left behind."
+	priority_announce(text, "Fleet Jump", alarm ? /datum/security_level/red::sound : null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE, color_override = alarm ? "red" : null)
+
+/// Status panel line, like the shuttle ETA: shown from the first warning until launch.
+/datum/controller/subsystem/overmap/proc/jump_countdown_text()
+	if(jump_mode != BS_JUMP_CALLED || !jump_launch_time)
+		return null
+	return "Fleet Jump: [gameTimestamp("mm:ss", max(1, jump_launch_time - REALTIMEOFDAY))]"
+
+/mob/get_status_tab_items()
+	. = ..()
+	var/countdown = SSovermap?.jump_countdown_text()
+	if(countdown)
+		. += countdown
+
+/datum/controller/subsystem/overmap/proc/clear_jump_alerts()
+	for(var/alert_timer in jump_alert_timers)
+		deltimer(alert_timer)
+	jump_alert_timers.Cut()
+	jump_launch_time = null
 
 /**
  * ##cancel_jump
  *
  * Cancels a currently requested bluespace jump.
- * Can only be done after the jump has been requested, but before the jump has actually begun.
+ * Also cancels an automatic departure before its first announcement, but never after launch.
  */
-/datum/controller/subsystem/overmap/proc/cancel_jump()
-	if(jump_mode != BS_JUMP_CALLED)
-		return
-	deltimer(jump_timer)
+/datum/controller/subsystem/overmap/proc/cancel_jump(announce = TRUE)
+	if(jump_mode >= BS_JUMP_INITIATED || (!round_end_time && jump_mode != BS_JUMP_CALLED))
+		return FALSE
+	if(jump_timer)
+		deltimer(jump_timer)
+		jump_timer = null
+	if(round_end_request_timer)
+		deltimer(round_end_request_timer)
+		round_end_request_timer = null
+	if(round_end_timer)
+		deltimer(round_end_timer)
+		round_end_timer = null
+	clear_jump_alerts()
+	round_end_time = null
 	jump_mode = BS_JUMP_IDLE
-	priority_announce("Bluespace jump cancelled.", null, null, "Priority")
+	log_game("Fleet jump cancelled.")
+	if(announce)
+		priority_announce("Fleet jump cancelled.", "Fleet Jump", null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE)
+	return TRUE
 
 /**
  * ##initiate_jump
@@ -457,13 +561,36 @@ SUBSYSTEM_DEF(overmap)
  * This cannot be interrupted by conventional means.
  */
 /datum/controller/subsystem/overmap/proc/initiate_jump()
+	if(jump_mode != BS_JUMP_CALLED)
+		return
+	jump_timer = null
 	jump_mode = BS_JUMP_INITIATED
+	clear_jump_alerts()
+	// Arm completion before moving ships: enterTransit() can yield during a launch.
+	// Scheduled rounds already have an absolute completion timer from roundstart.
+	if(!round_end_time)
+		jump_timer = addtimer(CALLBACK(src, PROC_REF(complete_jump)), jump_completion_time, TIMER_STOPPABLE | TIMER_CLIENT_TIME)
+	log_game("Fleet jump launched.")
+	priority_announce("Fleet jump underway.", "Fleet Jump", null, ANNOUNCEMENT_TYPE_PRIORITY, has_important_message = TRUE)
 	for(var/obj/docking_port/mobile/voidcrew/mobile_port as anything in SSshuttle.mobile_docking_ports)
 		mobile_port.hyperspace_sound(HYPERSPACE_WARMUP, mobile_port.shuttle_areas)
 		mobile_port.on_emergency_launch()
 
-	priority_announce("Jump initiated. ETA: [jump_completion_time / 600] minutes.", null, null, "Priority")
-	jump_timer = addtimer(VARSET_CALLBACK(src, jump_mode, BS_JUMP_COMPLETED), jump_completion_time)
+/// Finish through the normal ticker immediately, rather than waiting for its next poll.
+/datum/controller/subsystem/overmap/proc/complete_jump()
+	// A server that slept past the launch reaches the deadline with the launch still pending.
+	if(jump_mode == BS_JUMP_CALLED && jump_timer)
+		deltimer(jump_timer)
+	jump_timer = null
+	round_end_timer = null
+	clear_jump_alerts()
+	jump_mode = BS_JUMP_COMPLETED
+	log_game("Fleet jump completed.")
+	if(SSticker.IsRoundInProgress())
+		// Cinematics must not hold a scheduled round open past its deadline.
+		if(round_end_time)
+			SSticker.roundend_check_paused = FALSE
+		SSticker.fire()
 
 /datum/controller/subsystem/overmap/proc/create_map()
 	// creates the overmap area and sets it up
@@ -783,11 +910,11 @@ SUBSYSTEM_DEF(overmap)
  * * pass - which round of one-per-type this is. Pass 1 is generated during the lobby;
  *   later passes are numbered in the contact's name and build on first visit.
  */
-/datum/controller/subsystem/overmap/proc/spawn_dynamic_planet(obj/structure/overmap/planet/marker_type, pass = 1, wanted_band = null, datum/overmap_layout/layout)
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_planet(obj/structure/overmap/planet/marker_type, pass = 1, wanted_band = null, datum/overmap_layout/layout, strict_band = FALSE)
 	if(isnull(wanted_band))
 		wanted_band = SSmapping.next_planet_zone_band()
 	var/turf/turf_for_planet = layout ? layout.pick_destination(wanted_band) : get_unused_overmap_square_in_zone_band(wanted_band, tries = 80)
-	if(!turf_for_planet && layout)
+	if(!turf_for_planet && (layout || strict_band))
 		return null // The caller can try another band without mismatching planet difficulty.
 	if(!turf_for_planet)
 		log_mapping("SSovermap: Failed to place dynamic planet [marker_type] in zone band [wanted_band], falling back to any free square")
@@ -817,6 +944,60 @@ SUBSYSTEM_DEF(overmap)
 	layout?.record_destination(turf_for_planet, "planet")
 	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
 	return planet_to_spawn
+
+/// Contact creation stays unloaded; actual docking still claims ground through the capacity gate.
+/datum/controller/subsystem/overmap/proc/mission_contact_capacity(tenant_class)
+	return length(find_free_slot(tenant_class)) || !SSmapping.at_z_level_ceiling()
+
+/// Only ordinary terrain biomes can supply scheduled field work.
+/datum/controller/subsystem/overmap/proc/spawn_mission_planet(band, wanted_planet)
+	if(!(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) || !mission_contact_capacity(MAP_TENANT_CLASS_PLANET))
+		log_mapping("SSmissions: planet contact unavailable for band [band]: invalid band or world capacity")
+		return null
+	var/list/markers = list(
+		/obj/structure/overmap/planet/lava,
+		/obj/structure/overmap/planet/ice,
+		/obj/structure/overmap/planet/jungle,
+		/obj/structure/overmap/planet/beach,
+		/obj/structure/overmap/planet/wasteland,
+	)
+	for(var/obj/structure/overmap/planet/marker as anything in markers.Copy())
+		if(wanted_planet && initial(marker.planet) != wanted_planet)
+			markers -= marker
+	if(!length(markers))
+		log_mapping("SSmissions: no repeatable planet biome for [wanted_planet]")
+		return null
+	var/obj/structure/overmap/planet/contact = spawn_dynamic_planet(pick(markers), 1, band, null, TRUE)
+	if(!contact)
+		log_mapping("SSmissions: no free overmap square for planet contact in band [band]")
+	return contact
+
+/// Scheduled shortages may add an ordinary repeatable signal, never a chart or unique ruin.
+/datum/controller/subsystem/overmap/proc/spawn_mission_ruin(band)
+	if(!(band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)))
+		return null
+	var/list/templates = list()
+	for(var/key in SSmapping.space_ruins_templates)
+		var/datum/map_template/ruin/space/template = SSmapping.space_ruins_templates[key]
+		if(!istype(template) || !(template.type in mission_ruin_templates) || template.unpickable || !ruin_fits_in_level(template))
+			continue
+		var/tenant_class = ruin_fits_in_slot(template) ? MAP_TENANT_CLASS_FLAT : MAP_TENANT_CLASS_SOLO
+		if(mission_contact_capacity(tenant_class))
+			templates[template] = template.placement_weight || 1
+	if(!length(templates))
+		log_mapping("SSmissions: no repeatable ruin contact available in band [band]: templates or world capacity")
+		return null
+	var/turf/destination = get_unused_overmap_square_in_zone_band(band, tries = 80)
+	if(!destination)
+		log_mapping("SSmissions: no free overmap square for ruin contact in band [band]")
+		return null
+	return place_space_ruin_contact(pick_weight(templates), destination)
+
+/// Shared with natural seeding; no interior is loaded during offer generation.
+/datum/controller/subsystem/overmap/proc/place_space_ruin_contact(datum/map_template/ruin/space/template, turf/destination)
+	var/obj/structure/overmap/space_ruin/contact = new(destination)
+	contact.set_ruin_template(template)
+	return contact
 
 /// Roman numeral for a planet's place in its type, so the chart reads "Lava Planet II"
 /// rather than a second "Lava Planet".
@@ -891,8 +1072,7 @@ SUBSYSTEM_DEF(overmap)
 	for(var/i in 1 to length(positions))
 		var/turf/turf_for_ruin = positions[i]
 		var/datum/map_template/ruin/space/selected_ruin = used_ruins[i]
-		var/obj/structure/overmap/space_ruin/new_ruin = new(turf_for_ruin)
-		new_ruin.set_ruin_template(selected_ruin)
+		place_space_ruin_contact(selected_ruin, turf_for_ruin)
 		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at ([turf_for_ruin.x], [turf_for_ruin.y])")
 
 	// Asteroid mining no longer has a guarantee here - space ruin signals retired the

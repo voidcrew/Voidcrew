@@ -12,12 +12,12 @@
 	name = "Recovery Contract"
 	weight = 10
 	mission_limit = 3
-	voucher_count = 1
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "RCVRY"
 	// Green-band pay; the zone table scales it up
-	value_min = 700
-	value_max = 1000
+	value_min = 450
+	value_max = 650
 
 /datum/mission/recovery/setup_target()
 	var/datum/mission_target/space_ruin/ruin_target = new(src)
@@ -43,9 +43,7 @@
 
 /datum/mission/recovery/update_text()
 	name = "Recovery Contract: [objective_name]"
-	desc = "Recover the [objective_name] from the signal at ([target.target_x], [target.target_y]) in the [target_zone_name], and return it to the mission pad. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the objective's beacon ([gps_tag])."
+	desc = "Recover the [objective_name] from ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/recovery/waypoint_label()
 	return "Recovery: [objective_name]"
@@ -65,6 +63,9 @@
  */
 /datum/mission/recovery/kill
 	name = "Kill Contract"
+	value_min = 500
+	value_max = 700
+	guarded_prize_family = "kill"
 	weight = 8
 	mission_limit = 2
 	gps_tag_prefix = "HUNT"
@@ -125,10 +126,7 @@
 
 /datum/mission/recovery/kill/update_text()
 	name = "Kill Contract: [objective_name]"
-	desc = "Hunt down [objective_name], holed up at the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Return their identification tag to the mission pad. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the target's transponder beacon ([gps_tag])."
+	desc = "Wanted dead: [objective_name]. Last seen at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/recovery/kill/waypoint_label()
 	return "Hunt: [objective_name]"
@@ -142,7 +140,7 @@
  */
 /obj/item/mission_recovery
 	name = "recovery objective"
-	desc = "Salvage flagged for recovery under a standing contract. The mission pad will accept it."
+	desc = "Salvage flagged for recovery under a standing contract."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "recovery"
 	inhand_icon_state = "recovery"
@@ -163,13 +161,13 @@
 		// Sites get shared, so somebody else's objective can end up in your hands.
 		// Say whose it is rather than letting the pad refuse it with no explanation.
 		if(mission.servant)
-			. += span_notice("Filed to the [mission.servant.name]. Only that vessel's pad will take it.")
+			. += span_notice("Filed to the [mission.servant.name].")
 	else
 		. += span_warning("The contract this was tagged for has expired.")
 
 /obj/item/mission_recovery/proof
 	name = "identification tag"
-	desc = "Proof that somebody's career ended violently. The mission pad will accept it."
+	desc = "Proof that somebody's career ended violently."
 	icon_state = "recovery_proof"
 	inhand_icon_state = null
 	w_class = WEIGHT_CLASS_TINY

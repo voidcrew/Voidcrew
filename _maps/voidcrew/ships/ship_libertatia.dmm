@@ -69,35 +69,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/stairs,
 /area/shuttle/voidcrew/libertatia/bridge)
-"bG" = (
-/obj/structure/table/reinforced,
-/obj/item/areaeditor/shuttle{
-	pixel_y = 10
-	},
-/obj/item/megaphone/command{
-	pixel_x = 10;
-	pixel_y = 10
-	},
-/obj/item/storage/fancy/cigarettes/cigars{
-	pixel_y = 10
-	},
-/obj/machinery/button/massdriver{
-	id = "pirate_porttube";
-	name = "port launch tube button";
-	pixel_x = -5;
-	pixel_y = -5
-	},
-/obj/machinery/button/massdriver{
-	id = "pirate_stbdtube";
-	name = "starboard launch tube button";
-	pixel_x = 5;
-	pixel_y = -5
-	},
-/obj/item/storage/belt/sabre,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/gun/ballistic/revolver/c38,
-/turf/open/floor/pod/light,
-/area/shuttle/voidcrew/libertatia/bridge)
 "ci" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/libertatia/armory)
@@ -127,25 +98,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/airalarm/directional/west,
-/turf/open/floor/pod/light,
-/area/shuttle/voidcrew/libertatia/bridge)
-"fp" = (
-/obj/structure/chair/comfy/shuttle{
-	dir = 1
-	},
-/obj/effect/landmark/start/head_of_personnel,
-/obj/machinery/power/apc/auto_name/directional/east,
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/status_display/shuttle{
-	pixel_y = -32
-	},
-/obj/item/gun/energy/e_gun/mini{
-	name = "first mate's derringer"
-	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "fq" = (
@@ -474,6 +426,35 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/libertatia/armory)
+"tk" = (
+/obj/structure/table/reinforced,
+/obj/item/areaeditor/shuttle{
+	pixel_y = 10
+	},
+/obj/item/megaphone/command{
+	pixel_x = 10;
+	pixel_y = 10
+	},
+/obj/item/storage/fancy/cigarettes/cigars{
+	pixel_y = 10
+	},
+/obj/machinery/button/massdriver{
+	id = "pirate_porttube";
+	name = "port launch tube button";
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/machinery/button/massdriver{
+	id = "pirate_stbdtube";
+	name = "starboard launch tube button";
+	pixel_x = 5;
+	pixel_y = -5
+	},
+/obj/item/storage/belt/sheath/sabre,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/gun/ballistic/revolver/c38,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/libertatia/bridge)
 "tT" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
@@ -529,6 +510,25 @@
 	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
+"vn" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/effect/landmark/start/head_of_personnel,
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/status_display/shuttle{
+	pixel_y = -32
+	},
+/obj/item/gun/energy/e_gun/mini{
+	name = "first mate's derringer"
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/libertatia/bridge)
 "vo" = (
 /obj/machinery/door/airlock/hatch,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -632,7 +632,7 @@
 /obj/machinery/vending/wallmed{
 	pixel_y = 30
 	},
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/medkit/surgery,
 /obj/item/clothing/mask/surgical,
 /obj/item/clothing/suit/apron/surgical,
 /obj/structure/sign/departments/medbay/alt/directional/west,
@@ -1697,8 +1697,8 @@ fd
 DP
 az
 bb
-bG
-fp
+tk
+vn
 gm
 nv
 pH

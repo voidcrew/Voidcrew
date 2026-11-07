@@ -42,6 +42,11 @@
 	if(!ishuman(spawned))
 		return
 	var/mob/living/carbon/human/human_spawned = spawned
+	// VOIDCREW EDIT ADDITION START: Equip the first chaplain's holy weapon too.
+	var/nrt = GLOB.holy_weapon_type || /obj/item/nullrod
+	var/obj/item/nullrod/nullrod = new nrt(human_spawned)
+	human_spawned.put_in_hands(nullrod)
+	// VOIDCREW EDIT ADDITION END
 	var/obj/item/book/bible/booze/holy_bible = new
 	if(GLOB.religion)
 		if(human_spawned.mind)
@@ -55,9 +60,7 @@
 			holy_bible.inhand_icon_state = GLOB.bible_inhand_icon_state
 		to_chat(human_spawned, span_boldnotice("There is already an established religion onboard the station. You are an acolyte of [GLOB.deity]. Defer to the Chaplain."))
 		human_spawned.equip_to_storage(holy_bible, ITEM_SLOT_BACK, indirect_action = TRUE, del_on_fail = TRUE)
-		var/nrt = GLOB.holy_weapon_type || /obj/item/nullrod
-		var/obj/item/nullrod/nullrod = new nrt(human_spawned)
-		human_spawned.put_in_hands(nullrod)
+		// VOIDCREW EDIT: Holy weapon creation moved before the religion branch.
 		if(GLOB.religious_sect)
 			GLOB.religious_sect.on_conversion(human_spawned)
 		return

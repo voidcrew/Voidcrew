@@ -2,6 +2,10 @@
 
 ALLOW_VOTE_TRANSFER
 
+## Round duration in minutes, read at roundstart. Defaults to 360 without a config entry.
+## 0 disables the automatic fleet jump and restores early round ends and transfer votes.
+#ROUND_TIME_LIMIT 360
+
 ## Makes all ship hulls, themes, and modules free: everything shows as unlocked
 ## in the shipyard and no ship parts are ever charged. Set to 1 to enable.
 

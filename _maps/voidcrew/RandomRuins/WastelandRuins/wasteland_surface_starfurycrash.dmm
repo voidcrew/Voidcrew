@@ -26,6 +26,29 @@
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"ag" = (
+/mob/living/basic/trooper/syndicate/ranged/space,
+/turf/open/floor/iron/dark,
+/area/ruin/unpowered)
+"ah" = (
+/obj/structure/safe/floor,
+/obj/item/melee/baseball_bat,
+/obj/item/implantcase/weapons_auth,
+/obj/item/implanter,
+/obj/item/ammo_box/magazine/smgm45,
+/obj/item/ammo_box/magazine/smgm45,
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/plating{
+	},
+/area/ruin/unpowered)
+"ai" = (
+/mob/living/basic/trooper/syndicate/ranged/space,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
+"aj" = (
+/obj/item/melee/baseball_bat,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "bl" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -39,20 +62,10 @@
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"dX" = (
-/obj/item/gun/ballistic/automatic/pistol{
-	spawnwithmagazine = 0
-	},
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "eO" = (
 /obj/item/clothing/gloves/combat,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"eS" = (
-/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
-/turf/open/floor/iron/dark,
-/area/ruin/unpowered)
 "fw" = (
 /obj/structure/frame/machine,
 /turf/open/floor/mineral/plastitanium/red,
@@ -120,22 +133,11 @@
 "oT" = (
 /turf/open/misc/dust/lit,
 /area/ruin/unpowered)
-"pL" = (
-/mob/living/basic/trooper/syndicate/ranged/shotgun/space,
-/turf/open/misc/dust/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "qe" = (
 /obj/machinery/atmospherics/components/binary/circulator{
 	dir = 4
 	},
 /turf/open/floor/engine,
-/area/ruin/unpowered)
-"rp" = (
-/obj/machinery/suit_storage_unit{
-	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/space/syndicate
-	},
-/turf/open/floor/plating,
 /area/ruin/unpowered)
 "rE" = (
 /obj/machinery/power/smes,
@@ -157,6 +159,12 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"xD" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate
+	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
 "yj" = (
 /obj/machinery/door/airlock/hatch,
@@ -185,10 +193,6 @@
 "CW" = (
 /mob/living/basic/trooper/syndicate/ranged/space,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"CX" = (
-/mob/living/basic/trooper/syndicate/ranged/smg/space,
-/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Dz" = (
 /obj/machinery/atmospherics/components/binary/circulator/cold{
@@ -231,7 +235,6 @@
 "IY" = (
 /obj/machinery/power/smes,
 /turf/open/floor/plating{
-	
 	})
 "Jn" = (
 /turf/open/floor/pod/dark,
@@ -240,18 +243,6 @@
 /obj/item/storage/medkit/tactical,
 /obj/item/storage/medkit/advanced,
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
-"KT" = (
-/obj/structure/safe/floor,
-/obj/item/gun/ballistic/automatic/c20r/unrestricted,
-/obj/item/implantcase/weapons_auth,
-/obj/item/implanter,
-/obj/item/ammo_box/magazine/smgm45,
-/obj/item/ammo_box/magazine/smgm45,
-/obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	
-	},
 /area/ruin/unpowered)
 "NA" = (
 /obj/structure/frame/machine,
@@ -286,6 +277,12 @@
 /area/ruin/unpowered)
 "Sx" = (
 /turf/open/misc/wasteland/lit,
+/area/ruin/unpowered)
+"SQ" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/gas/syndicate
+	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ts" = (
 /obj/effect/decal/cleanable/ash,
@@ -336,14 +333,6 @@
 /obj/machinery/portable_atmospherics/scrubber,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"ZX" = (
-/obj/machinery/suit_storage_unit{
-	helmet_type = /obj/item/clothing/head/helmet/space/syndicate;
-	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/armor/vest
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 RJ
@@ -623,7 +612,7 @@ Wh
 kZ
 CM
 kZ
-eS
+ag
 CM
 Eu
 Eu
@@ -652,7 +641,7 @@ CM
 BW
 BW
 CM
-KT
+ah
 AB
 CM
 CM
@@ -705,8 +694,8 @@ RJ
 RJ
 af
 kZ
-ZX
-rp
+xD
+SQ
 fw
 CM
 CM
@@ -769,7 +758,7 @@ Sx
 kZ
 WX
 kZ
-CX
+ag
 cS
 kZ
 kZ
@@ -811,9 +800,9 @@ RJ
 RJ
 RJ
 bl
-dX
+aj
 gK
-pL
+ai
 bl
 bl
 RJ

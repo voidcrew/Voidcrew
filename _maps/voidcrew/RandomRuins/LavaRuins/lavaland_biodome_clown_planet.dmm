@@ -7,6 +7,11 @@
 /obj/effect/mapping_helpers/no_lava,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/powered/clownplanet)
+"af" = (
+/obj/structure/table/glass,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/carpet,
+/area/ruin/powered/clownplanet)
 "aj" = (
 /obj/structure/disposalpipe/segment{
 	dir = 6
@@ -323,11 +328,6 @@
 /area/ruin/powered/clownplanet)
 "bU" = (
 /obj/item/bikehorn/airhorn,
-/turf/open/floor/carpet,
-/area/ruin/powered/clownplanet)
-"bV" = (
-/obj/structure/table/glass,
-/obj/item/gun/magic/staff/honk,
 /turf/open/floor/carpet,
 /area/ruin/powered/clownplanet)
 "bW" = (
@@ -1301,7 +1301,7 @@ th
 cc
 bM
 bR
-bV
+af
 bM
 cc
 bB

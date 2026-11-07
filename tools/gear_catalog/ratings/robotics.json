@@ -1,0 +1,1138 @@
+{
+ "category": "robotics",
+ "groups": [
+  "AI laws that change who silicons may hurt",
+  "other AI lawsets",
+  "AI hardware",
+  "brains and cyborg frames",
+  "cyborg combat and survival upgrades",
+  "medical cyborg upgrades",
+  "engineering and mining cyborg upgrades",
+  "janitor and service cyborg upgrades",
+  "kinetic accelerator mods",
+  "minebot gear",
+  "bot assemblies"
+ ],
+ "items": {
+  "/obj/item/ai_module/core/freeformcore": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "0349aa0846f2e624",
+   "name": "'Freeform' Core AI Module",
+   "rank": 2,
+   "reason": "Writes any core law you like. The cleanest way to say only your crew counts as human.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/antimov": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "0229190ac6dfe6f8",
+   "name": "'Antimov' Core AI Module",
+   "rank": 6,
+   "reason": "Turns a silicon against all humans, crew included. Only useful on someone else's silicon.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/asimov": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "8dcb60334f066544",
+   "name": "'Asimov' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/asimovpp": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "72a123ecd17439d5",
+   "name": "'Asimov++' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/balance": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "42e0ae67fc31494a",
+   "name": "'Guardian of Balance' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/corp": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "68aaba64d145a5ef",
+   "name": "'Corporate' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/custom": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "2c717316535dba0e",
+   "name": "Default Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/cybersun": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "5bb2d651b1ce21d9",
+   "name": "'Cybersun' Core AI Module",
+   "rank": 7,
+   "reason": "A lawset loyal to Cybersun rather than to every human. Found in two ruins only.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/damaged": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "6b87faa98809b49c",
+   "name": "damaged Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/drone": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "316b488abf307881",
+   "name": "'Mother Drone' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/dungeon_master": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "017c0d9f68e7744a",
+   "name": "'Dungeon Master' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/hippocratic": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "c3881a14ba281055",
+   "name": "'Robodoctor' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/hulkamania": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "236bb6f85c0a54e7",
+   "name": "'H.O.G.A.N.' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/liveandletlive": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "c32ac100d96a1003",
+   "name": "'Live And Let Live' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/maintain": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "371b7de379a1f423",
+   "name": "'Station Efficiency' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/nutimov": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "e38cb80ced238433",
+   "name": "'Nutimov' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/overlord": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "472bf6d774cba990",
+   "name": "'Overlord' Core AI Module",
+   "rank": 8,
+   "reason": "Makes humans answer to silicons, who deal severely with anyone who disobeys.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/painter": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "fae14a1a0fb2a6f0",
+   "name": "'Painter' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/paladin": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "489353f65391b15d",
+   "name": "'P.A.L.A.D.I.N. version 3.5e' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/paladin_devotion": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "a66d427ab6dc1c2f",
+   "name": "'P.A.L.A.D.I.N. version 5e' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/peacekeeper": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "8a607abbfd9aff40",
+   "name": "'Peacekeeper' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/reporter": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "ca351a1a8055cbde",
+   "name": "'Reportertron' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/robocop": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "40c70be38fa4eb22",
+   "name": "'Robo-Officer' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/ten_commandments": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "370e3d95848c8e72",
+   "name": "'10 Commandments' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/thermurderdynamic": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "3715b702624f80c3",
+   "name": "'Thermodynamic' Core AI Module",
+   "rank": 10,
+   "reason": "Reads as an instruction to reduce the living crew to zero. A joke with teeth.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/thinkermov": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "9c49d2e222c36803",
+   "name": "Sentience Preservation Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/core/full/tyrant": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "4da7e51d7ceb6850",
+   "name": "'T.Y.R.A.N.T.' Core AI Module",
+   "rank": 9,
+   "reason": "Has silicons serve whoever is strongest and punish anyone who challenges them.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/core/full/yesman": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "954ff20f5a9ca334",
+   "name": "'Y.E.S.M.A.N.' Core AI Module",
+   "rank": 2,
+   "reason": "A lawset that changes how a silicon behaves but not what your crew can do. Printing it does nothing without a silicon and an upload console.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/remove": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "2ff50ab766d7ae14",
+   "name": "'Remove Law' AI module",
+   "rank": 5,
+   "reason": "Deletes one law. Cheaper in effect than a purge and just as good if one law is the problem.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/reset": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "624d8920e546d858",
+   "name": "'Reset' AI module",
+   "rank": 1,
+   "reason": "Clears added laws and keeps the core set. Housekeeping.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/reset/purge": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "624d8920e546d858",
+   "name": "'Purge' AI Module",
+   "rank": 1,
+   "reason": "Wipes a silicon's laws. Default laws won't let a cyborg hurt a human, so this frees your crew's silicons to fight.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/supplied/freeform": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "ea519d40e8ae3ad9",
+   "name": "'Freeform' AI Module",
+   "rank": 3,
+   "reason": "Adds one law of your choice at low priority. Handy, but a higher law can still block it.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/supplied/oxygen": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "9e6c47fdf8264668",
+   "name": "'OxygenIsToxicToHumans' AI Module",
+   "rank": 11,
+   "reason": "Tells a silicon that oxygen is toxic to humans. Only a weapon if you reach the victim's upload.",
+   "tier": "green"
+  },
+  "/obj/item/ai_module/supplied/protect_station": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "2454a2edd22bdc76",
+   "name": "'ProtectStation' AI Module",
+   "rank": 3,
+   "reason": "Adds a law about protecting the ship. Flavor.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/supplied/quarantine": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "79b3ecb2a0477c3c",
+   "name": "'Quarantine' AI Module",
+   "rank": 4,
+   "reason": "Adds a law about keeping people inside. Flavor unless your AI runs the doors.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/supplied/safeguard": {
+   "confidence": "high",
+   "group": "other AI lawsets",
+   "hash": "a04e8e9ed526203f",
+   "name": "'Safeguard' AI Module",
+   "rank": 5,
+   "reason": "Adds a law protecting one person. Flavor.",
+   "tier": "none"
+  },
+  "/obj/item/ai_module/zeroth/onehuman": {
+   "confidence": "medium",
+   "group": "AI laws that change who silicons may hurt",
+   "hash": "b20c6799befbbb1f",
+   "name": "'OneHuman' AI Module",
+   "rank": 4,
+   "reason": "Makes one person the only human. Frees a silicon to hurt everyone else, your own crew included.",
+   "tier": "green"
+  },
+  "/obj/item/aicard": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "c7fd010076d62e89",
+   "name": "intelliCard",
+   "rank": 2,
+   "reason": "Carries an AI in your pocket so it survives losing its core. Cheap, and worth having if you have an AI.",
+   "tier": "green"
+  },
+  "/obj/item/aicard/aispook": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "c7fd010076d62e89",
+   "name": "intelliLantern",
+   "rank": 6,
+   "reason": "An intelliCard in a lantern. Same function.",
+   "tier": "green"
+  },
+  "/obj/item/aicard/aitater": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "c7fd010076d62e89",
+   "name": "intelliTater",
+   "rank": 7,
+   "reason": "An intelliCard in a potato. Same function.",
+   "tier": "green"
+  },
+  "/obj/item/aiupgrade/power_transfer": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "1f8f7307eb3ae512",
+   "name": "power transfer upgrade",
+   "note": "Used on an AI it installs the disk's module and is consumed. The power transfer disk gives a click-an-APC ability that adds 1 MJ to the APC's cell for 50 of the AI's backup battery (it needs more than 50 left; the battery tops out at 200 and refills while powered), with no use limit, and a second copy is refused. The surveillance disk makes the AI's camera eye relay nearby speech (not radio) that is visible on camera; the lookup used for upgrade-type disks matches any AI-module ability the AI already has, in which case the disk is consumed without applying the upgrade.",
+   "rank": 4,
+   "reason": "Lets an AI top up any APC with 1 MJ for 50 battery, as often as it recharges. Keeps a damaged ship lit.",
+   "tier": "green"
+  },
+  "/obj/item/aiupgrade/surveillance_upgrade": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "f391cd0a2daf6e26",
+   "name": "surveillance software upgrade",
+   "note": "Used on an AI it installs the disk's module and is consumed. The power transfer disk gives a click-an-APC ability that adds 1 MJ to the APC's cell for 50 of the AI's backup battery (it needs more than 50 left; the battery tops out at 200 and refills while powered), with no use limit, and a second copy is refused. The surveillance disk makes the AI's camera eye relay nearby speech (not radio) that is visible on camera; the lookup used for upgrade-type disks matches any AI-module ability the AI already has, in which case the disk is consumed without applying the upgrade.",
+   "rank": 5,
+   "reason": "Lets an AI hear speech it can see on camera. Small, and only on cameras it already has.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/ai": {
+   "confidence": "medium",
+   "group": "AI hardware",
+   "hash": "f7a1a28fe377c734",
+   "name": "B.O.R.I.S. module",
+   "rank": 3,
+   "reason": "Lets an AI drive a cyborg body from its core. One extra body for one player.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/amop": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "6f98facf21197d23",
+   "name": "janitor cyborg advanced mop",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/beaker_app": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "50737f40e67ecf69",
+   "name": "beaker storage apparatus",
+   "rank": 7,
+   "reason": "Lets a medical cyborg hold a beaker. Handy.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/botany_upgrade": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "c8d13a4cb893daa7",
+   "name": "Service Cyborg Botany Tools",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/broomer": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "b46bd596a6d684bf",
+   "name": "experimental push broom",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/circuit_app": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "0c974eb40df8177a",
+   "name": "circuit manipulation apparatus",
+   "rank": 5,
+   "reason": "Lets an engineering cyborg handle circuits. A job helper.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/condiment_synthesizer": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "9975cb3fef721c4d",
+   "name": "Service Cyborg Condiment Synthesiser",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/defib": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "f7697a05eaecc740",
+   "name": "medical cyborg defibrillator",
+   "rank": 3,
+   "reason": "A built-in defibrillator for a medical cyborg. On par with a defib unit anyone can carry.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/diamond_drill": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "65cdffdb303753d6",
+   "name": "mining cyborg diamond drill",
+   "rank": 6,
+   "reason": "A faster drill for a mining cyborg.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/disablercooler": {
+   "confidence": "medium",
+   "group": "cyborg combat and survival upgrades",
+   "hash": "427dffc570b8adbc",
+   "name": "cyborg rapid disabler cooling module",
+   "rank": 2,
+   "reason": "Security cyborg only. Speeds up its disabler's recharge and stacks twice. A disabler firing longer is still a green weapon.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/drink_app": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "b4341c6df35abeae",
+   "name": "glass storage apparatus",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/engineering_omnitool": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "b40b782f00fb8b98",
+   "name": "cyborg engineering omni-tool upgrade",
+   "rank": 2,
+   "reason": "Better tools in one slot for an engineering cyborg.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/expand": {
+   "confidence": "medium",
+   "group": "cyborg combat and survival upgrades",
+   "hash": "f7a1a28fe377c734",
+   "name": "borg expander",
+   "rank": 5,
+   "reason": "Makes a cyborg huge and costs 100 sheets of iron. A joke.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/high_capacity_light_replacer": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "3fa18047bcbd69b4",
+   "name": "janitor cyborg high capacity replacer",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/hypospray/expanded": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "0c6339298b62a88b",
+   "name": "medical cyborg expanded hypospray",
+   "rank": 2,
+   "reason": "More drugs for a medical cyborg's hypospray. A good medic, not a new kind of one.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/inducer": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "a0bd911bdbb351c5",
+   "name": "engineering integrated power inducer",
+   "rank": 3,
+   "reason": "Lets an engineering cyborg recharge machines by hand. A job helper.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/lavaproof": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "a2eeb46a550562c2",
+   "name": "mining cyborg lavaproof chassis",
+   "rank": 8,
+   "reason": "Lets a mining cyborg walk on lava. Opens some ground, wins no fight.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/aoe": {
+   "confidence": "medium",
+   "group": "kinetic accelerator mods",
+   "hash": "14cb54cea6ff628e",
+   "name": "kinetic accelerator modification kit",
+   "rank": 10,
+   "reason": "The bare explosion mod. Alone it hits neither people nor rock.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/modkit/aoe/mobs": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "57978d5b701df0d6",
+   "name": "offensive explosion",
+   "rank": 4,
+   "reason": "Splashes damage onto everything near the hit. Strong against fauna packs, same air penalty against people.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/aoe/mobs/andturfs": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "eafd15403a46c5fb",
+   "name": "offensive mining explosion",
+   "rank": 5,
+   "reason": "Splashes damage and breaks rock around the hit. The best mining mod, from a rare chest disk.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/aoe/turfs": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "dd44d103ed7043f8",
+   "name": "mining explosion",
+   "rank": 9,
+   "reason": "Breaks rock around the hit. Mining speed and nothing else.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/bounty": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "43b04b6a8f7427fc",
+   "name": "death syphon",
+   "rank": 6,
+   "reason": "Stacks extra damage against kinds of creature you've already killed with it. Grows on a fauna hunt. From a rare chest disk.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/chassis_mod": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "80145a6011dd3238",
+   "name": "super chassis",
+   "rank": 18,
+   "reason": "Changes the gun's color. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/modkit/chassis_mod/orange": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "cf239df2a18925f6",
+   "name": "hyper chassis",
+   "rank": 19,
+   "reason": "Changes the gun's color. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/modkit/cooldown": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "d9aecaa81f06fae5",
+   "name": "cooldown decrease",
+   "rank": 7,
+   "reason": "A faster reload for the kinetic accelerator. A plain upgrade.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/cooldown/minebot": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "fa7128fc9524efa9",
+   "name": "minebot cooldown decrease",
+   "rank": 12,
+   "reason": "A faster reload for a minebot's gun. Mining only.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/cooldown/repeater": {
+   "confidence": "medium",
+   "group": "kinetic accelerator mods",
+   "hash": "44afbbf62c0bfb25",
+   "name": "rapid repeater",
+   "rank": 2,
+   "reason": "Drops the reload to 0.75 s after a hit and raises it to 3 s after a miss. Great on fauna. It comes from a rare chest disk.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/damage": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "c50c3a190f3a8c30",
+   "name": "damage increase",
+   "rank": 3,
+   "reason": "Adds 10 damage, and up to three fit. The mod every miner buys first. Still weak in air.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/human_passthrough": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "1c856f15cfbc7b74",
+   "name": "human passthrough",
+   "rank": 13,
+   "reason": "Shots pass through people. Lets miners fire past each other, no more.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/indoors": {
+   "confidence": "medium",
+   "group": "kinetic accelerator mods",
+   "hash": "22b4d20557dc8626",
+   "name": "decrease pressure penalty",
+   "rank": 1,
+   "reason": "Doubles what survives air pressure, and two remove the penalty, so a fauna gun does full damage indoors. Still 3 tiles and a slow shot. Found only on a few enemy ships.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/minebot_passthrough": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "dcf5c0a76d7960ef",
+   "name": "minebot passthrough",
+   "rank": 14,
+   "reason": "Shots pass through minebots. Lets a miner fire past their own drone.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/range": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "20e70553c6bd41b3",
+   "name": "range increase",
+   "rank": 8,
+   "reason": "One more tile of reach. A plain upgrade.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/resonator_blasts": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "b795ff0c746a0f39",
+   "name": "resonator blast",
+   "rank": 11,
+   "reason": "Sets off resonator fields for bonus damage. A fauna trick, from a rare chest disk.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/modkit/tracer": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "2170f7c4e29d1a1b",
+   "name": "white tracer bolts",
+   "rank": 16,
+   "reason": "Changes the bolt's color. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/modkit/tracer/adjustable": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "2170f7c4e29d1a1b",
+   "name": "adjustable tracer bolts",
+   "rank": 17,
+   "reason": "Changes the bolt's color to one you pick. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/modkit/trigger_guard": {
+   "confidence": "high",
+   "group": "kinetic accelerator mods",
+   "hash": "82682a323ce8dd6d",
+   "name": "modified trigger guard",
+   "rank": 15,
+   "reason": "Lets creatures without proper hands fire the gun. No use for almost anyone.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/piercing_hypospray": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "f7a1a28fe377c734",
+   "name": "cyborg piercing hypospray",
+   "rank": 1,
+   "reason": "Lets a medical cyborg inject through thick suits. Matters in any hardsuit crew.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/pinpointer": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "2ebdf9a00ddaf393",
+   "name": "medical cyborg crew pinpointer",
+   "rank": 6,
+   "reason": "A crew pinpointer built into a medical cyborg. Handy.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/plunger": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "a7e6cd9ba652bb16",
+   "name": "janitor cyborg plunging tool",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/processor": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "98e29e88874d3f55",
+   "name": "medical cyborg surgical processor",
+   "rank": 5,
+   "reason": "Lets a medical cyborg load surgery disks. Saves time.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/prt": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "1a9137305b290727",
+   "name": "janitor cyborg plating repair tool",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/rename": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "2102266f3701023a",
+   "name": "cyborg reclassification board",
+   "rank": 4,
+   "reason": "Renames a cyborg. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/rolling_table": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "2131e0825f862555",
+   "name": "Service Cyborg Rolling Table Dock",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/rped": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "1551349ffb87b606",
+   "name": "engineering cyborg RPED",
+   "rank": 4,
+   "reason": "A parts exchanger for an engineering cyborg. A job helper.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/selfrepair": {
+   "confidence": "high",
+   "group": "cyborg combat and survival upgrades",
+   "hash": "393c71a346f4717f",
+   "name": "self-repair module",
+   "rank": 3,
+   "reason": "Lets a cyborg slowly heal itself for power. Saves a welder between fights.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/service_apparatus": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "67539b6d2533f65f",
+   "name": "Service Cyborg Service Apparatus",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/service_cookbook": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "aee640d20103393c",
+   "name": "Service Cyborg Cookbook",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/shuttle_blueprints": {
+   "confidence": "medium",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "3340b34daa1caf93",
+   "name": "Engineering Cyborg Shuttle Blueprint Database",
+   "rank": 1,
+   "reason": "Lets an engineering cyborg build shuttle parts. A job helper.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/silicon_knife": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "61649ba05f4a2e5e",
+   "name": "Service Cyborg Kitchen Toolset",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/soh": {
+   "confidence": "high",
+   "group": "engineering and mining cyborg upgrades",
+   "hash": "8c6cc13f5015ad55",
+   "name": "mining cyborg satchel of holding",
+   "rank": 7,
+   "reason": "A far larger ore satchel for a mining cyborg.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/surgery_omnitool": {
+   "confidence": "high",
+   "group": "medical cyborg upgrades",
+   "hash": "960d413de94b8798",
+   "name": "cyborg surgical omni-tool upgrade",
+   "rank": 4,
+   "reason": "Faster surgery tools in one slot for a medical cyborg.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/syndicate": {
+   "confidence": "medium",
+   "group": "cyborg combat and survival upgrades",
+   "hash": "446474a02d57a9d7",
+   "name": "illegal equipment module",
+   "rank": 1,
+   "reason": "Gives one cyborg its hidden kit: a laser on a security model, a stun arm on mining and engineering. That is what an emag does to a cyborg for 2 vouchers, so the module adds little.",
+   "tier": "yellow"
+  },
+  "/obj/item/borg/upgrade/tboh": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "f23115f0f6fd6df7",
+   "name": "janitor cyborg trash bag of holding",
+   "rank": 3,
+   "reason": "A janitor or service cyborg's tool. Makes a chore quicker and has no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/thrusters": {
+   "confidence": "high",
+   "group": "cyborg combat and survival upgrades",
+   "hash": "f7a1a28fe377c734",
+   "name": "ion thruster upgrade",
+   "rank": 4,
+   "reason": "Free movement in space for a cyborg. Useful, wins no fight.",
+   "tier": "green"
+  },
+  "/obj/item/borg/upgrade/transform": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "f7a1a28fe377c734",
+   "name": "borg model picker (Standard)",
+   "rank": 1,
+   "reason": "Resets a cyborg to the standard model. One ruin has it, and a cyborg can already pick a model.",
+   "tier": "none"
+  },
+  "/obj/item/borg/upgrade/transform/clown": {
+   "confidence": "high",
+   "group": "janitor and service cyborg upgrades",
+   "hash": "ca45d150325f6ad3",
+   "name": "borg model picker (Clown)",
+   "rank": 2,
+   "reason": "Turns a cyborg into a clown cyborg. A joke.",
+   "tier": "none"
+  },
+  "/obj/item/borg_restart_board": {
+   "confidence": "high",
+   "group": "brains and cyborg frames",
+   "hash": "53c53ad5f2d606fe",
+   "name": "cyborg emergency reboot module",
+   "note": "Reusable. Used on a dead cyborg whose panel is open and whose health is not below zero, it revives the cyborg (pulling its player back in) and logs the reboot to the cyborg; it refuses a living cyborg, a closed panel or a cyborg still too damaged.",
+   "rank": 7,
+   "reason": "Reusable. Revives a dead cyborg once its chassis is repaired. The cyborg's version of a defibrillator.",
+   "tier": "green"
+  },
+  "/obj/item/bot_assembly/cleanbot": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "6e2b01b77ca18c80",
+   "name": "incomplete cleanbot assembly",
+   "rank": 3,
+   "reason": "A half-built cleanbot. Mops floors. Harmless.",
+   "tier": "none"
+  },
+  "/obj/item/bot_assembly/firebot": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "1327a8e47460e7cc",
+   "name": "incomplete firebot assembly",
+   "rank": 2,
+   "reason": "A half-built firebot. Puts out fires. Harmless.",
+   "tier": "none"
+  },
+  "/obj/item/bot_assembly/hygienebot": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "397e85dfae014743",
+   "name": "incomplete hygienebot assembly",
+   "rank": 9,
+   "reason": "A half-built cleaning bot. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/bot_assembly/medbot": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "7d002ff4356f206e",
+   "name": "incomplete medibot assembly",
+   "rank": 1,
+   "reason": "A half-built medibot. Once finished it patches people up on its own, slowly. A few maps carry one.",
+   "tier": "green"
+  },
+  "/obj/item/bot_assembly/secbot": {
+   "confidence": "medium",
+   "group": "bot assemblies",
+   "hash": "15c3e27373f20ea7",
+   "name": "incomplete securitron assembly",
+   "rank": 2,
+   "reason": "A half-built securitron, started from a security helmet. Finished with a stun baton, it stuns and cuffs anyone it reads as a threat on its own.",
+   "tier": "green"
+  },
+  "/obj/item/bot_assembly/vim": {
+   "confidence": "high",
+   "group": "bot assemblies",
+   "hash": "4ef9a21e21c56e1b",
+   "name": "incomplete vim assembly",
+   "rank": 4,
+   "reason": "A half-built Vim, a tiny walker only pets and other small creatures fit in. Harmless.",
+   "tier": "none"
+  },
+  "/obj/item/malf_upgrade": {
+   "confidence": "low",
+   "group": "AI hardware",
+   "hash": "840cccb49cdb6b38",
+   "name": "combat software upgrade",
+   "note": "Used on an AI it gives the malfunction module menu with 50 points to spend and lets the AI hack APCs and use hacking actions on cyborg consoles, turrets and telecomms, without changing its laws or making it an antagonist; an AI that already has the menu gets 50 more points instead. Consumed; admins are notified, and the disk is flagged contraband.",
+   "rank": 1,
+   "reason": "Gives a ship's AI 50 points of malfunction powers: overload machines, take them over, black out a ship or hack turrets, with no laws changed. One ruin has it. Only matters with an AI aboard.",
+   "tier": "red"
+  },
+  "/obj/item/mine_bot_upgrade/health": {
+   "confidence": "high",
+   "group": "minebot gear",
+   "hash": "876310d2e1d307ff",
+   "name": "minebot armor upgrade",
+   "rank": 1,
+   "reason": "A sturdier minebot. Mining only.",
+   "tier": "green"
+  },
+  "/obj/item/mine_bot_upgrade/regnerative_shield": {
+   "confidence": "high",
+   "group": "minebot gear",
+   "hash": "876310d2e1d307ff",
+   "name": "regenerative shield",
+   "rank": 2,
+   "reason": "A recharging shield for a minebot. Mining only.",
+   "tier": "green"
+  },
+  "/obj/item/minebot_remote_control": {
+   "confidence": "high",
+   "group": "minebot gear",
+   "hash": "876310d2e1d307ff",
+   "name": "Remote Control",
+   "rank": 3,
+   "reason": "A remote for ordering minebots about. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mmi": {
+   "confidence": "high",
+   "group": "brains and cyborg frames",
+   "hash": "a6a7a793cf4becf8",
+   "name": "Man-Machine Interface",
+   "rank": 5,
+   "reason": "Keeps a dead crewmate in play as a cyborg or mech pilot. Cheap and useful.",
+   "tier": "green"
+  },
+  "/obj/item/mmi/posibrain": {
+   "confidence": "medium",
+   "group": "brains and cyborg frames",
+   "hash": "f586d42fd8457faa",
+   "name": "positronic brain",
+   "rank": 3,
+   "reason": "Brings a ghost aboard as a brain for a cyborg or mech. An extra crewmate for 40 research points, if anyone answers.",
+   "tier": "green"
+  },
+  "/obj/item/mmi/posibrain/sphere": {
+   "confidence": "medium",
+   "group": "brains and cyborg frames",
+   "hash": "bc128a219fbacfe8",
+   "name": "positronic sphere",
+   "rank": 6,
+   "reason": "A cheaper positronic brain that can roll around. The research behind it is hidden, so few crews get it.",
+   "tier": "green"
+  },
+  "/obj/item/mmi/syndie": {
+   "confidence": "medium",
+   "group": "brains and cyborg frames",
+   "hash": "c4171645393f6722",
+   "name": "Syndicate Man-Machine Interface",
+   "rank": 4,
+   "reason": "An MMI that enforces syndicate laws, overriding an AI core's, with its radio off. Comes in the syndicate surgery bag, on a few ship modules and in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/pai_card": {
+   "confidence": "high",
+   "group": "brains and cyborg frames",
+   "hash": "76083f3988b4ebcb",
+   "name": "personal AI device",
+   "rank": 8,
+   "reason": "A small AI friend who can read out scans and fiddle with doors. Wins nothing and prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/robot_suit": {
+   "confidence": "medium",
+   "group": "brains and cyborg frames",
+   "hash": "bb31ed4c3174d29e",
+   "name": "cyborg endoskeleton",
+   "rank": 1,
+   "reason": "A cyborg frame, printed from round start. The best result is a security cyborg with a baton and a self-charging disabler, but it needs a brain and a player willing to be one.",
+   "tier": "green"
+  },
+  "/obj/item/robot_suit/prebuilt": {
+   "confidence": "high",
+   "group": "brains and cyborg frames",
+   "hash": "cfb25d3896b4ed6a",
+   "name": "cyborg endoskeleton",
+   "rank": 2,
+   "reason": "A ready-made cyborg frame from one ruin. Saves some printing.",
+   "tier": "green"
+  }
+ },
+ "method": "No number: each item is placed against its group, asking whether it changes what a crew can do or only makes a job quicker, and most silicon gear only matters if a player is a silicon. Kinetic mods are read against the kinetic accelerator's score of 9 on the gun scale; it is a fauna gun, so they stay green unless they make it a people gun.",
+ "unrated": {
+  "/obj/item/ai_module": "abstract",
+  "/obj/item/ai_module/core": "no route",
+  "/obj/item/ai_module/core/full": "no route",
+  "/obj/item/ai_module/core/round_default_fallback": "no route",
+  "/obj/item/ai_module/malf": "no route",
+  "/obj/item/ai_module/supplied": "no route",
+  "/obj/item/ai_module/syndicate": "no route",
+  "/obj/item/ai_module/toy_ai": "no route",
+  "/obj/item/ai_module/zeroth": "no route",
+  "/obj/item/aicard/syndie": "no route",
+  "/obj/item/aicard/syndie/loaded": "no route",
+  "/obj/item/aiupgrade": "no route",
+  "/obj/item/borg": "abstract",
+  "/obj/item/borg/apparatus": "no route",
+  "/obj/item/borg/apparatus/beaker": "no route",
+  "/obj/item/borg/apparatus/beaker/drink": "no route",
+  "/obj/item/borg/apparatus/beaker/extra": "no route",
+  "/obj/item/borg/apparatus/beaker/service": "no route",
+  "/obj/item/borg/apparatus/beaker/service2": "no route",
+  "/obj/item/borg/apparatus/circuit": "no route",
+  "/obj/item/borg/apparatus/organ_storage": "no route",
+  "/obj/item/borg/apparatus/service": "no route",
+  "/obj/item/borg/apparatus/sheet_manipulator": "no route",
+  "/obj/item/borg/charger": "no route",
+  "/obj/item/borg/cookbook": "no route",
+  "/obj/item/borg/cyborg_omnitool": "no route",
+  "/obj/item/borg/cyborg_omnitool/botany": "no route",
+  "/obj/item/borg/cyborg_omnitool/engineering": "no route",
+  "/obj/item/borg/cyborg_omnitool/medical": "no route",
+  "/obj/item/borg/cyborghug": "no route",
+  "/obj/item/borg/cyborghug/medical": "no route",
+  "/obj/item/borg/cyborghug/peacekeeper": "no route",
+  "/obj/item/borg/lollipop": "no route",
+  "/obj/item/borg/lollipop/ice_cream": "no route",
+  "/obj/item/borg/projectile_dampen": "no route",
+  "/obj/item/borg/projectile_dampen/debug": "no route",
+  "/obj/item/borg/sight": "abstract",
+  "/obj/item/borg/sight/hud": "abstract",
+  "/obj/item/borg/sight/hud/med": "no route",
+  "/obj/item/borg/sight/hud/sec": "no route",
+  "/obj/item/borg/sight/material": "no route",
+  "/obj/item/borg/sight/meson": "leftover",
+  "/obj/item/borg/sight/thermal": "no route",
+  "/obj/item/borg/sight/xray": "no route",
+  "/obj/item/borg/stun": "no route",
+  "/obj/item/borg/upgrade": "no route",
+  "/obj/item/borg/upgrade/defib/backpack": "literal only",
+  "/obj/item/borg/upgrade/hypospray": "no route",
+  "/obj/item/borg/upgrade/modkit": "no route",
+  "/obj/item/borg/upgrade/modkit/lifesteal": "literal only",
+  "/obj/item/bot_assembly": "abstract",
+  "/obj/item/bot_assembly/ed209": "literal only",
+  "/obj/item/bot_assembly/honkbot": "literal only",
+  "/obj/item/bot_assembly/repairbot": "no route",
+  "/obj/item/mine_bot_upgrade": "no route",
+  "/obj/item/mmi/posibrain/display": "no route",
+  "/obj/item/robot_model": "uncreatable",
+  "/obj/item/robot_model/clown": "uncreatable",
+  "/obj/item/robot_model/engineering": "uncreatable",
+  "/obj/item/robot_model/janitor": "uncreatable",
+  "/obj/item/robot_model/medical": "uncreatable",
+  "/obj/item/robot_model/miner": "uncreatable",
+  "/obj/item/robot_model/peacekeeper": "uncreatable",
+  "/obj/item/robot_model/saboteur": "uncreatable",
+  "/obj/item/robot_model/security": "uncreatable",
+  "/obj/item/robot_model/service": "uncreatable",
+  "/obj/item/robot_model/syndicate": "uncreatable",
+  "/obj/item/robot_model/syndicate/kiltborg": "uncreatable",
+  "/obj/item/robot_model/syndicate_medical": "uncreatable"
+ }
+}

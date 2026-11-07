@@ -15,8 +15,8 @@ Selection is not uniform. Every ship in play is checked against the event's own 
 
 The requirements are where most of the safety lives:
 
-- **Zone.** Most dangerous events refuse to fire outside the Contested and Lawless bands. A handful: the meteor storm, the immovable rod, pyroclastic and vortex anomalies, the advanced disease: are Lawless-only. See [the overmap](overmap.md) for the bands.
-- **Hull size.** Destructive events set a minimum ship size. A three-tile hull with no airlock and no medbay does not get a vortex anomaly or a portal storm dropped on it, because that is not an event, it is the end of the round for everyone aboard.
+- **Zone.** Most dangerous events refuse to fire outside the Contested and Lawless bands. A handful: the meteor storm, the immovable rod and the advanced disease: are Lawless-only. See [the overmap](overmap.md) for the bands.
+- **Hull size.** Destructive events set a minimum ship size. A three-tile hull with no airlock and no medbay does not get a portal storm dropped on it, because that is not an event, it is the end of the round for everyone aboard.
 - **Crew count.** Some events need two or three people aboard to make any sense.
 - **Flying.** The meteor family and the carp migration only fire at ships out on the overmap. A landed ship shares its ground with whatever it landed on, and cratering a ruin because one crew rolled a meteor wave is not the intent.
 - **Safe harbour.** Ships docked at a [trader outpost](trader-outposts.md) are skipped entirely.
@@ -44,9 +44,9 @@ A sample of the roster, roughly from routine to serious:
 | Immovable rod | A rod passes clean through the ship. |
 | Portal storm | Syndicate shocktroops pour out of portals on your deck. |
 
-There are anomalies too (gravitational, bluespace, dimensional, hallucination, pyroclastic, vortex) and a long tail of small stuff: mice, a cow that tells you wise things, a random animal becoming sentient, spontaneous brain trauma, a fake virus, a market crash that raises vending prices sector-wide.
+Anomalies form on [planets](planets.md#anomalies) rather than appearing as ordinary ship events. There is also a long tail of small stuff: mice, a cow that tells you wise things, a random animal becoming sentient, spontaneous brain trauma, a fake virus, a market crash that raises vending prices sector-wide.
 
-Not everything is bad. The stray cargo pod, at least, is a gift.
+Portal-storm attackers use the health and damage profile of the zone where they appear. See [Hostile Fauna & Elites](threats-and-elites.md).
 
 ## Reducing your exposure
 

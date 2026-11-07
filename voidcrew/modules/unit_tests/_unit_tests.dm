@@ -6,6 +6,7 @@
 #include "blood_jaunt_destinations.dm"
 #include "drift_vectors.dm"
 #include "gas_connector_lifecycle.dm"
+#include "gear_catalog_dump.dm"
 #include "glass_floor_baseturfs.dm"
 #include "hyperspace_jetpack.dm"
 #include "late_initialization_reentry.dm"
@@ -29,6 +30,8 @@
 #include "voidcrew_ambient_recruiters.dm"
 #include "voidcrew_ambient_strays.dm"
 #include "voidcrew_ammo_box_materials.dm"
+#include "voidcrew_anomaly_rewards.dm"
+#include "voidcrew_anomaly_trade.dm"
 #include "voidcrew_assault_pod.dm"
 #include "voidcrew_autopilot_course.dm"
 #include "voidcrew_autotranslate_morph.dm"
@@ -72,12 +75,17 @@
 #include "voidcrew_derelict_leash.dm"
 #include "voidcrew_derelict_outpost.dm"
 #include "voidcrew_derelict_themes.dm"
+#include "voidcrew_destructive_analyzer.dm"
 #include "voidcrew_dissection_tiers.dm"
 #include "voidcrew_drug_lab.dm"
 #include "voidcrew_drug_recipe.dm"
 #include "voidcrew_dynamic_events.dm"
 #include "voidcrew_economy_metrics.dm"
+#include "voidcrew_event_horizon.dm"
 #include "voidcrew_fleet_waypoints.dm"
+#include "voidcrew_fresh_cores.dm"
+#include "voidcrew_gear_behaviour.dm"
+#include "voidcrew_gear_fixes.dm"
 #include "voidcrew_helm_access.dm"
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"
@@ -96,12 +104,16 @@
 #include "voidcrew_megafauna_aggro.dm"
 #include "voidcrew_mining_input.dm"
 #include "voidcrew_mining_qol.dm"
+#include "voidcrew_mission_board_rewards.dm"
+#include "voidcrew_mission_console_rewards.dm"
 #include "voidcrew_mission_gps.dm"
 #include "voidcrew_mission_metrics.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_nanite_research.dm"
 #include "voidcrew_npc_boarding_docking.dm"
 #include "voidcrew_npc_disarm.dm"
+#include "voidcrew_npc_zone_profiles.dm"
+#include "voidcrew_ore_balance.dm"
 #include "voidcrew_outpost_admin.dm"
 #include "voidcrew_outpost_admin_bays.dm"
 #include "voidcrew_outpost_admin_checkpoints.dm"
@@ -168,6 +180,7 @@
 #include "voidcrew_outpost_yard_droids.dm"
 #include "voidcrew_overmap_management.dm"
 #include "voidcrew_pandora_links.dm"
+#include "voidcrew_planet_anomalies.dm"
 #include "voidcrew_planet_cleanup.dm"
 #include "voidcrew_planet_definitions.dm"
 #include "voidcrew_planet_shared_air.dm"
@@ -176,15 +189,18 @@
 #include "voidcrew_plumbing_shuttle_move.dm"
 #include "voidcrew_puzzle_containment.dm"
 #include "voidcrew_repair_robotics.dm"
+#include "voidcrew_resale.dm"
 #include "voidcrew_research_lifecycle.dm"
 #include "voidcrew_research_movement.dm"
 #include "voidcrew_respawn_timer.dm"
 #include "voidcrew_restaurant_portal.dm"
 #include "voidcrew_rnd_kit.dm"
+#include "voidcrew_round_end.dm"
 #include "voidcrew_round_metrics.dm"
 #include "voidcrew_ruin_bounds.dm"
 #include "voidcrew_ruin_cleanup.dm"
 #include "voidcrew_ruin_reservation.dm"
+#include "voidcrew_ruin_turrets.dm"
 #include "voidcrew_science_program.dm"
 #include "voidcrew_ship_abandonment.dm"
 #include "voidcrew_ship_access.dm"
@@ -196,6 +212,7 @@
 #include "voidcrew_ship_modules.dm"
 #include "voidcrew_ship_orders.dm"
 #include "voidcrew_ship_silicons.dm"
+#include "voidcrew_ship_starting_guns.dm"
 #include "voidcrew_ship_turret_targeting.dm"
 #include "voidcrew_shop_catalog.dm"
 #include "voidcrew_silicon_ship_systems.dm"
@@ -206,6 +223,7 @@
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_survey_identity.dm"
 #include "voidcrew_survey_research_links.dm"
+#include "voidcrew_trader_checkpoint.dm"
 #include "voidcrew_trader_rental_locker.dm"
 #include "voidcrew_vestige.dm"
 #include "voidcrew_vestige_abductor.dm"
@@ -224,9 +242,177 @@
 #include "voidcrew_vestige_status.dm"
 #include "voidcrew_vestige_visuals.dm"
 #include "voidcrew_wall_break_atmos.dm"
+#include "voidcrew_weapon_ladder.dm"
 #include "voidcrew_weather_sites.dm"
 #include "voidcrew_windoor_survey.dm"
+#include "voidcrew_zone_identity.dm"
 #include "voidcrew_zone_logging.dm"
+#include "voidcrew_zone_missions.dm"
+#include "voidcrew_zone_research.dm"
+#include "voidcrew_zone_shops.dm"
 #include "voidcrew_zone_teleport.dm"
 #include "weather_mob_targeting.dm"
 // END_INCLUDE
+
+// Z5 integration checks use the included Z2 fixtures and the real settlement pipeline.
+// Fork defines follow this harness, so bands and permissions below use their literal values.
+/datum/unit_test/voidcrew_zone_missions/presentation
+	abstract_type = /datum/unit_test/voidcrew_zone_missions/presentation
+	var/list/presentation_old_pending
+
+/datum/unit_test/voidcrew_zone_missions/presentation/New()
+	. = ..()
+	presentation_old_pending = SSmetrics.pending
+	SSmetrics.pending = list()
+	SSmetrics.accepting = TRUE
+
+/datum/unit_test/voidcrew_zone_missions/presentation/Destroy()
+	var/restore_accepting = old_metrics
+	old_metrics = FALSE
+	SSmetrics.accepting = FALSE
+	. = ..()
+	SSmetrics.accepting = restore_accepting
+	SSmetrics.pending = presentation_old_pending
+
+/// One receipt, its accepting crew and a single crossing survive aliases and a hull crew change.
+/datum/unit_test/voidcrew_zone_missions/presentation/receipts/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	for(var/index in 1 to 3)
+		record.claim_zone_work(1, 1, "metric_setup_[index]")
+	var/datum/mission/mission = allocate(/datum/mission/recovery/kill/zone_missions_test)
+	var/datum/mission/alias = allocate(/datum/mission/recovery/kill/outpost/zone_missions_test)
+	alias.work_receipt = mission.work_receipt
+	SSmetrics.pending = list()
+	TEST_ASSERT(mission.start_mission(ship), "Metric fixture did not accept work")
+	TEST_ASSERT(alias.start_mission(ship), "Metric fixture did not accept its encounter alias")
+	var/list/row = SSmetrics.pending[1]
+	var/list/details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(details["crew_id"], record.crew_id, "Acceptance omitted its continuing crew")
+	TEST_ASSERT_EQUAL(details["work_receipt_serial"], mission.work_receipt.serial, "Acceptance omitted the receipt serial")
+	TEST_ASSERT_EQUAL(details["work_band"], "green", "Acceptance omitted its pinned work band")
+	var/obj/structure/overmap/ship/other = make_ship()
+	var/datum/voidcrew_crew_record/different = other.get_crew_record()
+	ship.ship_team.set_crew_record(different)
+	SSmetrics.pending = list()
+	TEST_ASSERT(mission.turn_in(run_loc_floor_bottom_left, null), "Metric fixture did not settle")
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 3, "A new permission needs one claim, one crossing and one ordinary payout row")
+	row = SSmetrics.pending[1]
+	details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["event"], "zone_work_claimed", "Claim diagnostics were not logged")
+	TEST_ASSERT_EQUAL(row["points"], 1, "Metric gain differs from the capped award")
+	TEST_ASSERT_EQUAL(row["credits"], 0, "A claim diagnostic duplicated mission money")
+	TEST_ASSERT_EQUAL(details["crew_id"], record.crew_id, "A hull crew change redirected metric attribution")
+	TEST_ASSERT_EQUAL(details["attempted_gain"], 1, "Claim diagnostics omitted the attempted award")
+	TEST_ASSERT_EQUAL(details["capped_gain"], 0, "An uncapped award was reported as clamped")
+	TEST_ASSERT_EQUAL(details["permission_before"], 0, "Wrong permission before settlement")
+	TEST_ASSERT_EQUAL(details["permission_after"], 1, "Wrong permission after settlement")
+	row = SSmetrics.pending[2]
+	TEST_ASSERT_EQUAL(row["event"], "zone_permission_crossed", "The permission crossing was not logged")
+	TEST_ASSERT_EQUAL(row["subject"], "Yellow", "The crossing named the wrong permission")
+	TEST_ASSERT_EQUAL(row["round_seconds"], metric_round_seconds(), "The access timestamp differs from the settlement time")
+	row = SSmetrics.pending[3]
+	details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["event"], "mission_completed", "Ordinary reward metrics disappeared")
+	TEST_ASSERT_EQUAL(row["credits"], 100, "Progression logging changed the existing payout")
+	TEST_ASSERT_EQUAL(details["zone_gain"], 1, "The payout row omitted its credited gain")
+	SSmetrics.pending = list()
+	TEST_ASSERT(alias.turn_in(run_loc_floor_bottom_left, null), "The alias lost its ordinary reward")
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 1, "An alias duplicated claim or permission metrics")
+	row = SSmetrics.pending[1]
+	details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(details["zone_gain"], 0, "The alias payout counted the original gain again")
+	ship.ship_team.set_crew_record(record)
+	var/datum/mission/capped = allocate(/datum/mission/recovery/kill/zone_missions_test)
+	TEST_ASSERT(capped.start_mission(ship), "The ceiling prevented ordinary acceptance")
+	SSmetrics.pending = list()
+	TEST_ASSERT(capped.turn_in(run_loc_floor_bottom_left, null), "The ceiling prevented ordinary settlement")
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 2, "Work at the ceiling needs a claim and payout, without another crossing")
+	row = SSmetrics.pending[1]
+	details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["points"], 0, "Capped work metrics invented a gain")
+	TEST_ASSERT_EQUAL(details["capped_gain"], 1, "Work at the ceiling was not reported")
+	TEST_ASSERT_EQUAL(details["reputation_after"], 4, "The claim row lost the crew's number")
+	TEST_ASSERT_EQUAL(record.reputation, 4, "Metrics changed the crew ledger")
+
+/// Higher permissions and a job cut short by the yellow ceiling report the same gains as the real ledger.
+/datum/unit_test/voidcrew_zone_missions/presentation/higher_permissions/Run()
+	var/obj/structure/overmap/ship/ship = make_ship(1)
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	record.reputation = 10
+	var/datum/mission/yellow = allocate(/datum/mission/big_game_hunt/zone_missions_test, null, 2)
+	TEST_ASSERT(yellow.start_mission(ship), "Eligible yellow work was refused")
+	SSmetrics.pending = list()
+	TEST_ASSERT(yellow.turn_in(run_loc_floor_bottom_left, null), "Yellow work did not settle")
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 3, "Advanced permission crossing was not logged once")
+	var/list/row = SSmetrics.pending[1]
+	var/list/details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["points"], 1, "The cut-short yellow gain was not recorded")
+	TEST_ASSERT_EQUAL(details["attempted_gain"], 2, "Medium work has the wrong attempted gain")
+	TEST_ASSERT_EQUAL(details["capped_gain"], 1, "The amount lost to the ceiling was not recorded")
+	row = SSmetrics.pending[2]
+	TEST_ASSERT_EQUAL(row["subject"], "Advanced", "Yellow work logged the wrong new permission")
+	record.reputation = 19
+	var/datum/mission/red = allocate(/datum/mission/big_game_hunt/zone_missions_test, null, 3)
+	TEST_ASSERT(red.start_mission(ship), "Eligible red work was refused")
+	SSmetrics.pending = list()
+	TEST_ASSERT(red.turn_in(run_loc_floor_bottom_left, null), "Red work did not settle")
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 3, "Elite permission crossing was not logged once")
+	row = SSmetrics.pending[1]
+	TEST_ASSERT_EQUAL(row["points"], 3, "Red work metrics changed the hard-work gain")
+	row = SSmetrics.pending[2]
+	TEST_ASSERT_EQUAL(row["subject"], "Elite", "Red work logged the wrong new permission")
+
+/// A bounty's claim writes the same rows as a mission's, against its own crew.
+/datum/unit_test/voidcrew_zone_missions/presentation/bounty_rows/Run()
+	var/obj/structure/overmap/ship/ship = make_ship()
+	var/datum/voidcrew_crew_record/record = ship.get_crew_record()
+	SSmetrics.pending = list()
+	record_zone_work_rows(ship, /datum/criminal_bounty, 2, 3, 3, 0, 1, null, list("bounty_record" = "7"))
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 2, "A crossing bounty needs one claim and one crossing row")
+	var/list/row = SSmetrics.pending[1]
+	var/list/details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["event"], "zone_work_claimed", "The bounty's claim was not logged")
+	TEST_ASSERT_EQUAL(row["points"], 3, "The bounty's gain was not recorded")
+	TEST_ASSERT_EQUAL(row["zone"], "yellow", "The bounty's zone was not recorded")
+	TEST_ASSERT_EQUAL(details["crew_id"], record.crew_id, "The bounty's crew was not recorded")
+	TEST_ASSERT_EQUAL(details["bounty_record"], "7", "The bounty's own detail was lost")
+	row = SSmetrics.pending[2]
+	TEST_ASSERT_EQUAL(row["event"], "zone_permission_crossed", "The bounty's step was not logged")
+	TEST_ASSERT_EQUAL(row["subject"], "Yellow", "The bounty's step named the wrong permission")
+	SSmetrics.pending = list()
+	record_zone_work_rows(ship, /datum/criminal_bounty, 1, 3, 0, 1, 1, null)
+	TEST_ASSERT_EQUAL(length(SSmetrics.pending), 1, "Work at the ceiling logged a crossing")
+	row = SSmetrics.pending[1]
+	details = json_decode(row["details"])
+	TEST_ASSERT_EQUAL(row["points"], 0, "Work at the ceiling invented a gain")
+	TEST_ASSERT_EQUAL(details["capped_gain"], 3, "Work at the ceiling was not reported")
+
+/// Admin edits keep shared identity; resetting cannot replay spent encounters.
+/datum/unit_test/voidcrew_zone_missions/presentation/admin_record/Run()
+	var/obj/structure/overmap/ship/first = make_ship()
+	var/obj/structure/overmap/ship/second = make_ship(crewed = FALSE)
+	var/datum/voidcrew_crew_record/record = first.get_crew_record()
+	TEST_ASSERT(second.ship_team.set_crew_record(record), "An empty hull could not join the crew")
+	var/id_before = record.crew_id
+	TEST_ASSERT(!record.admin_set_reputation(-1), "Admin accepted negative reputation")
+	TEST_ASSERT(!record.admin_set_reputation(1.5), "Admin accepted fractional reputation")
+	TEST_ASSERT(!record.admin_set_reputation("9"), "Admin accepted text")
+	TEST_ASSERT(record.admin_set_reputation(4), "Admin could not set the first step")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 1, "Admin reputation did not derive the correct permission")
+	TEST_ASSERT(record.admin_set_reputation(11), "Admin could not set the second step")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 2, "Admin reputation did not open advanced access")
+	TEST_ASSERT(record.admin_set_reputation(40), "Admin could not go past the last step")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 3, "Admin reputation did not open elite access")
+	TEST_ASSERT(record.admin_set_reputation(2), "Admin could not lower reputation")
+	TEST_ASSERT_EQUAL(record.get_zone_permission(), 0, "Lowering reputation left access open")
+	record.claim_zone_work(1, 1, "spent_before_reset")
+	record.claim_purchase(/datum/shop_sku/favor)
+	TEST_ASSERT(record.admin_reset_zone_record(), "Admin could not reset the record")
+	TEST_ASSERT_EQUAL(record.reputation, 0, "Reset left reputation behind")
+	TEST_ASSERT_EQUAL(record.crew_id, id_before, "Reset replaced the continuing crew identity")
+	TEST_ASSERT_EQUAL(first.get_crew_record(), record, "Reset detached the first hull")
+	TEST_ASSERT_EQUAL(second.get_crew_record(), record, "Reset detached the second hull")
+	TEST_ASSERT_EQUAL(length(record.favor_unique_purchases), 0, "Reset left purchase history behind")
+	TEST_ASSERT(record.settlement_claims["spent_before_reset"], "Reset forgot a spent encounter")
+	TEST_ASSERT_EQUAL(record.claim_zone_work(1, 1, "spent_before_reset"), 0, "Reset enabled a spent encounter replay")

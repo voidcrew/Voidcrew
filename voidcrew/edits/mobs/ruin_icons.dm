@@ -1,6 +1,14 @@
 // Static/editor fallbacks for dynamically assembled basic mobs used by legacy
 // Voidcrew ruins. These states are sourced from Voidcrew-LRP's simple_human.dmi.
 
+/mob/living/basic/skeleton/templar
+	loot = list(
+		/obj/effect/decal/remains/human,
+		/obj/item/clothing/suit/chaplainsuit/armor/templar,
+		/obj/item/clothing/head/helmet/chaplain,
+		/obj/item/hatchet,
+	)
+
 /mob/living/basic/skeleton/plasmaminer
 	icon = 'voidcrew/icons/mob/legacy_ruin_mobs.dmi'
 

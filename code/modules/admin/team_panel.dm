@@ -106,24 +106,39 @@
 	log_admin("[key_name(usr)] removed objective \"[O.explanation_text]\" from [name]")
 	//qdel maybe
 
-/datum/team/proc/admin_add_member(mob/user)
+/datum/team/proc/admin_add_member(mob/user, datum/mind/selected_member) // VOIDCREW EDIT - testable crew enrollment
 	var/list/minds = list()
 	for(var/mob/M in GLOB.mob_list)
 		if(M.mind)
 			minds |= M.mind
-	var/datum/mind/value = input("Select new member:", "New team member", null) as null|anything in sort_names(minds)
+	// VOIDCREW EDIT ADDITION START - explicit enrollment target for crew regressions
+	var/datum/mind/value = selected_member
+	if(!value)
+		value = input("Select new member:", "New team member", null) as null|anything in sort_names(minds)
+	// VOIDCREW EDIT ADDITION END
 	if (!value)
 		return
 
 	message_admins("[key_name_admin(usr)] added [key_name_admin(value)] as a member of [name] team")
 	log_admin("[key_name(usr)] added [key_name(value)] as a member of [name] team")
 
-	add_member(value)
+	// VOIDCREW EDIT ADDITION START - authoritative affiliation, voidcrew/modules/teams
+	if(istype(src, /datum/team/voidcrew))
+		var/datum/team/voidcrew/crew = src
+		crew.join_member(value)
+	else
+		add_member(value)
+	// VOIDCREW EDIT ADDITION END
 
 /datum/team/proc/admin_remove_member(mob/user,datum/mind/M)
 	message_admins("[key_name_admin(usr)] removed [key_name_admin(M)] from [name] team")
 	log_admin("[key_name(usr)] removed [key_name(M)] from [name] team")
-	remove_member(M)
+	// VOIDCREW EDIT ADDITION START - explicit crew departure, voidcrew/modules/teams
+	if(istype(src, /datum/team/voidcrew))
+		M.leave_reputation_crew()
+	else
+		remove_member(M)
+	// VOIDCREW EDIT ADDITION END
 
 //After a bit of consideration i block team deletion if there's any members left until unified objective handling is in.
 /datum/team/proc/admin_delete(mob/user)

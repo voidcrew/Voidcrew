@@ -185,7 +185,7 @@ ADMIN_VERB(manage_ship_crews, R_ADMIN, "Manage Ship Crews", "View and manage eve
 	// team.remove_member() already retires their Ship Management button for this hull
 	if(ship.claimed_captain == target)
 		ship.claimed_captain = null
-	ship.ship_team?.remove_member(target)
+	target.leave_reputation_crew()
 	ship.manifest -= kicked_name
 
 	if(target.current)

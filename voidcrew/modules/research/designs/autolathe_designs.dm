@@ -32,8 +32,8 @@
  * calibers on every autolathe from the start.
  *
  * Kept to the workhorse rounds looted guns actually chamber (9mm, 10mm, .45,
- * .310 surplus). The .357 casing, incendiary slugs and chemical darts stay
- * behind the hacked list on purpose.
+ * .310 surplus). The .357 casing and chemical darts stay behind the hacked list
+ * on purpose. Incendiary slugs print from Specialist Ammunition instead.
  */
 /datum/techweb/autounlocking/autolathe/New()
 	. = ..()

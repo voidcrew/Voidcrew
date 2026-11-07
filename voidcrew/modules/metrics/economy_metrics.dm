@@ -52,17 +52,16 @@
 // * shop_purchase: a trader SKU bought over the counter (the ripperdoc and the Colosseum stall
 //   included) or through a Halcyon freight beacon. ckey = buyer, ship = buyer's crew, zone,
 //   subject = item type (SKU type when it hands over no item), credits and vouchers = minus the
-//   price paid, quantity = units, details: sku, name, shelf, shop, favor_tier, and when a
-//   discount applied list_price, discount_pct and discount ("special" or "favor"); barter and
-//   barter_amount for barter deals; via.
+//   price paid, quantity = units, details: sku, name, shelf, shop, and when a discount applied
+//   list_price, discount_pct and discount ("special" or "stall", a stall's own thanks); barter
+//   and barter_amount for barter deals; via.
 // * shop_buyback: goods sold to a trader's wanted ledger. ckey = seller, ship, zone,
 //   subject = item type, credits and vouchers = paid out, quantity = items, details: name,
 //   shop, sales.
 // * mod_bench_upgrade: subject = upgrade id, details: name.
-// * neural_imprint: subject = schematic name, details: from_cash (paid from loaded cash).
 // * chrome_cradle_service: subject = service, details: from_cash.
 // * locker_rental: subject = locker type.
-//   The four above are paid outpost services: ckey = customer, ship, zone, credits and
+//   The three above are paid outpost services: ckey = customer, ship, zone, credits and
 //   vouchers = minus the fee.
 // * outpost_advert: an outpost broadcast, paid from the outpost treasury. ckey = who bought it,
 //   subject = outpost name, credits = minus the cost. No ship.
@@ -464,14 +463,12 @@
 	var/datum/outpost_shop/shop = sku.shop
 	if(shop)
 		details["shop"] = "[shop.type]"
-		var/obj/structure/overmap/ship/crew_ship = get_crew_ship(user)
-		details["favor_tier"] = shop.get_favor_tier(crew_ship)
-		var/favor_pct = shop.get_discount_pct(crew_ship)
-		var/applied_pct = max(sku.discount_pct, favor_pct)
+		var/stall_pct = shop.get_discount_pct(get_crew_ship(user))
+		var/applied_pct = max(sku.discount_pct, stall_pct)
 		if(credits_paid > 0 && applied_pct)
 			details["list_price"] = sku.price_credits
 			details["discount_pct"] = applied_pct
-			details["discount"] = favor_pct > sku.discount_pct ? "favor" : "special"
+			details["discount"] = stall_pct > sku.discount_pct ? "stall" : "special"
 	var/datum/shop_sku/barter/barter = sku
 	if(istype(barter))
 		details["barter"] = "[barter.barter_path]"

@@ -33,6 +33,45 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/syndibiodome)
+"ad" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 10
+	},
+/obj/structure/closet/syndicate,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/belt/security/webbing,
+/obj/item/storage/toolbox/syndicate,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/syndibiodome)
+"ae" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 9
+	},
+/obj/structure/closet/syndicate,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/warm/directional/east,
+/obj/item/storage/belt/security/webbing,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/syndibiodome)
+"af" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/structure/closet/syndicate,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/machinery/light/small/dim/directional/west,
+/obj/item/polymorph_belt/functioning,
+/obj/item/knife/combat/survival,
+/obj/item/clothing/under/costume/seifuku/red,
+/obj/structure/sign/poster/contraband/communist_state/directional/west,
+/turf/open/floor/carpet/green,
+/area/ruin/syndibiodome)
 "ag" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 9
@@ -2271,19 +2310,6 @@
 	},
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
-"AV" = (
-/obj/effect/turf_decal/siding/wideplating/dark{
-	dir = 10
-	},
-/obj/structure/closet/syndicate,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/storage/belt/security/webbing,
-/obj/item/storage/toolbox/syndicate,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/m9mm,
-/obj/item/ammo_box/magazine/m9mm,
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/syndibiodome)
 "Ba" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 6
@@ -3079,19 +3105,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/syndibiodome)
-"Lg" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 9
-	},
-/obj/structure/closet/syndicate,
-/obj/item/clothing/mask/gas/syndicate,
-/obj/machinery/light/small/dim/directional/west,
-/obj/item/polymorph_belt/functioning,
-/obj/item/pen/edagger,
-/obj/item/clothing/under/costume/seifuku/red,
-/obj/structure/sign/poster/contraband/communist_state/directional/west,
-/turf/open/floor/carpet/green,
-/area/ruin/syndibiodome)
 "Lm" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 5
@@ -3444,19 +3457,6 @@
 /obj/machinery/light/small/dim/directional/south,
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood,
-/area/ruin/syndibiodome)
-"OL" = (
-/obj/effect/turf_decal/siding/wideplating/dark{
-	dir = 9
-	},
-/obj/structure/closet/syndicate,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/warm/directional/east,
-/obj/item/storage/belt/security/webbing,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/m9mm,
-/obj/item/ammo_box/magazine/m9mm,
-/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/syndibiodome)
 "OM" = (
 /obj/effect/turf_decal/trimline/dark_blue/line{
@@ -5107,8 +5107,8 @@ Tx
 vO
 qN
 zM
-OL
-AV
+ae
+ad
 zM
 zM
 ys
@@ -5981,7 +5981,7 @@ mZ
 ys
 ys
 zM
-Lg
+af
 xZ
 yt
 zM

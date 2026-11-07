@@ -148,7 +148,11 @@
 	var/mob/living/living_target = target
 	switch(living_target.stat)
 		if(UNCONSCIOUS, HARD_CRIT)
-			var/mob/living/basic/legion_brood/legion = new(loc)
+			// VOIDCREW EDIT ADDITION START - npc_scaling: infestation uses the boss's source with the child type's role.
+			get_npc_spawn_context()
+			var/datum/npc_spawn_context/context = new(src, role = "ordinary")
+			var/mob/living/basic/legion_brood/legion = spawn_npc_in_zone(/mob/living/basic/legion_brood, loc, context)
+			// VOIDCREW EDIT ADDITION END
 			legion.infest(living_target)
 
 ///Special snowflake death() here. Can only die if size is 1 or lower and HP is 0 or below.
@@ -176,14 +180,17 @@
 ///Splits legion into smaller skulls.
 /mob/living/simple_animal/hostile/megafauna/legion/proc/Split()
 	size--
+	get_npc_spawn_context() // VOIDCREW EDIT - npc_scaling: pin the split source before constructing children.
 	switch(size)
 		if (LEGION_SMALL)
 			for (var/i in 0 to 2)
-				new /mob/living/simple_animal/hostile/megafauna/legion/small(loc)
+				spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion/small, loc, new /datum/npc_spawn_context(src)) // VOIDCREW EDIT - npc_scaling
 		if (LEGION_MEDIUM)
-			new /mob/living/simple_animal/hostile/megafauna/legion/medium/left(loc)
-			new /mob/living/simple_animal/hostile/megafauna/legion/medium/right(loc)
-			new /mob/living/simple_animal/hostile/megafauna/legion/medium/eye(loc)
+			// VOIDCREW EDIT ADDITION START - npc_scaling: each split is a fresh, once-finalized boss body.
+			spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion/medium/left, loc, new /datum/npc_spawn_context(src))
+			spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion/medium/right, loc, new /datum/npc_spawn_context(src))
+			spawn_npc_in_zone(/mob/living/simple_animal/hostile/megafauna/legion/medium/eye, loc, new /datum/npc_spawn_context(src))
+			// VOIDCREW EDIT ADDITION END
 
 #undef LEGION_LARGE
 #undef LEGION_MEDIUM

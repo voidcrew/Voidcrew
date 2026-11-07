@@ -9,18 +9,19 @@
 	console.data = new
 	console.test_candidates = list(star)
 	console.survey_research_tiers = list("basic")
+	var/list/quote = console.get_survey_value(star)
+	TEST_ASSERT_EQUAL(quote["cash"], 0, "Survey reward results must contain zero cash for metrics")
 	console.survey_celestial_object(user, ref(star))
 	TEST_ASSERT(console.survey_in_progress, "A fresh in-range star must be surveyable")
 	// Advance only this timer, not the world's economy or restock clocks.
 	deltimer(console.survey_timer)
 	console.complete_survey(star)
-	var/first_cash = console.banked_cash
 	var/first_points = console.banked_points
-	TEST_ASSERT(first_cash > 0 && first_points > 0, "The first survey must pay cash and research")
+	TEST_ASSERT_EQUAL(first_points, 250, "The first survey must pay only the base research, without a first-surveyor bonus")
+	TEST_ASSERT_EQUAL(first_points, quote["points"], "The research quote must match the award")
 	TEST_ASSERT(console.is_object_surveyed(star), "Completion must record the target")
-	TEST_ASSERT(star.surveyed, "The first-surveyor premium must be consumed globally")
+	TEST_ASSERT(star.surveyed, "Completion must preserve the global surveyed marker")
 	console.complete_survey(star)
-	TEST_ASSERT_EQUAL(console.banked_cash, first_cash, "A repeated completion must not pay cash again")
 	TEST_ASSERT_EQUAL(console.banked_points, first_points, "A repeated completion must not pay research again")
 	console.survey_celestial_object(user, ref(star))
 	TEST_ASSERT(!console.survey_in_progress, "A forged survey action must not restart a completed target")
@@ -31,16 +32,17 @@
 	second.survey_celestial_object(user, ref(star))
 	deltimer(second.survey_timer)
 	second.complete_survey(star)
-	TEST_ASSERT_EQUAL(second.banked_cash, star.survey_value, "Another crew's first scan earns the ordinary reward")
+	TEST_ASSERT_EQUAL(second.banked_points, first_points, "First and subsequent crews must earn equal research")
 	var/obj/structure/overmap/star/other_star = allocate(/obj/structure/overmap/star)
 	second.test_candidates = list(other_star)
 	second.survey_celestial_object(user, ref(other_star))
 	second.complete_survey(star)
 	TEST_ASSERT(second.survey_in_progress, "An old callback must not cancel a newer scan")
+	TEST_ASSERT_EQUAL(second.banked_points, first_points, "An old callback must not award research")
 	deltimer(second.survey_timer)
 	second.test_candidates.Cut()
 	second.complete_survey(other_star)
-	TEST_ASSERT_EQUAL(second.banked_cash, star.survey_value, "An out-of-range completion must not pay")
+	TEST_ASSERT_EQUAL(second.banked_points, first_points, "An out-of-range completion must not pay")
 	TEST_ASSERT(!second.is_object_surveyed(other_star), "An out-of-range completion must not unlock research")
 	second.test_candidates = list(other_star)
 	second.update_survey_data()
@@ -50,11 +52,20 @@
 	console.data.update_survey_data(other_star)
 	console.transfer_survey_data(console.data, second.data)
 	second.complete_survey(other_star)
-	TEST_ASSERT_EQUAL(second.banked_cash, star.survey_value, "Importing a target during its scan must prevent duplicate payment")
+	TEST_ASSERT_EQUAL(second.banked_points, first_points, "Importing a target during its scan must prevent duplicate payment")
 	second.survey_celestial_object(user, ref(other_star))
 	TEST_ASSERT(!second.survey_in_progress, "An imported record must not start another paid scan")
 	console.transfer_survey_data(second.data, console.data)
 	QDEL_NULL(second.data)
+	var/turf/output = get_turf(console)
+	var/list/currency_before = list()
+	for(var/obj/item/stack/spacecash/currency in output)
+		currency_before += currency
+	var/datum/tgui/ui = allocate(/datum/tgui, user, console, "SurveyComputer")
+	TEST_ASSERT(!console.ui_act("cashOut", list(), ui), "A stale cash-out action must be explicitly rejected")
+	TEST_ASSERT_EQUAL(console.banked_points, first_points, "A cash-out action must not consume research")
+	for(var/obj/item/stack/spacecash/currency in output)
+		TEST_ASSERT(currency in currency_before, "A forged cash-out action spawned currency")
 	// Clean up the timer even on the unfixed baseline.
 	if(console.survey_timer)
 		deltimer(console.survey_timer)
@@ -174,16 +185,16 @@
 	TEST_ASSERT_EQUAL(length(first.deal_chart_picks()), 1, "First shop could not deal its chart")
 	TEST_ASSERT_EQUAL(length(second.deal_chart_picks()), 1, "First shop reserved the second shop's chart")
 
-/// A sparse reward pool must meet the actual ask premium within600cr tolerance.
+/// A sparse reward pool must settle its fixed quote exactly.
 /datum/unit_test/voidcrew_launch_thin_contract/Run()
 	var/datum/outpost_shop/shop = allocate(/datum/outpost_shop)
 	shop.add_sku(/datum/shop_sku/general/beans, "core")
-	var/datum/mission/mission = allocate(/datum/mission)
+	var/datum/mission/outpost_supply/mission = allocate(/datum/mission/outpost_supply)
 	mission.difficulty = 1
 	TEST_ASSERT(shop.roll_contract_reward(mission, 12000), "A thin priced catalog must still fund its contract")
 	var/datum/shop_sku/sku = shop.skus[1]
-	var/value = shop.get_sku_value(sku) + mission.voucher_count * 1200
-	TEST_ASSERT(value >= 12000 * 1.6 - 600, "Sparse rewards fell below the actual ask premium after voucher rounding")
+	var/value = shop.get_sku_value(sku) + mission.voucher_count * 1200 + mission.value
+	TEST_ASSERT_EQUAL(value, 13800, "Sparse rewards must settle the 1.15 ask premium exactly")
 	TEST_ASSERT_EQUAL(length(mission.mission_rewards), 1, "Thin reward generation duplicated the same item")
 
 /// Repeated purchases use real payment, stock and crew lookup, even with a sealed copy.
@@ -197,9 +208,11 @@
 	allocated += buyer.mind
 	var/datum/team/voidcrew/team = allocate(/datum/team/voidcrew)
 	team.ship = ship
-	buyer.mind.ship_teams = list(team)
+	ship.ship_team = team
+	team.join_member(buyer.mind)
 	var/datum/bank_account/account = allocate(/datum/bank_account, "Chart purchase test", null, 1, FALSE)
 	account.account_balance = 20000
+	ship.ship_account = account
 	var/obj/item/card/id/advanced/id_card = allocate(/obj/item/card/id/advanced)
 	qdel(id_card.registered_account)
 	id_card.registered_account = account
@@ -239,7 +252,8 @@
 					TEST_FAIL("[shop_type] cannot fund a [difficulty] contract")
 					qdel(mission)
 					continue
-				var/value = mission.voucher_count * 1200
+				var/value = mission.voucher_count * 1200 + mission.value
+				TEST_ASSERT_EQUAL(length(mission.mission_rewards), 0, "Depleted shelves must pay currency")
 				for(var/item_type in mission.mission_rewards)
 					if(item_type in mission.rare_reward_types)
 						value += 3600
@@ -251,12 +265,13 @@
 						if(sku.dispense_amount > 1 && mission.reward_amounts?[item_type] != sku.dispense_amount)
 							TEST_FAIL("[shop_type] awards the wrong quantity of [item_type]")
 						break
-				var/minimum = 1400
+				var/minimum = 600
 				if(difficulty == 2)
-					minimum = 2600
+					minimum = 1300
 				else if(difficulty == 3)
-					minimum = 5500
-				if(value < minimum - 600)
-					TEST_FAIL("[shop_type] pays [value] against minimum [minimum] with tolerance [600]")
+					minimum = 2400
+				if(value < minimum)
+					TEST_FAIL("[shop_type] pays [value] against minimum [minimum]")
+				TEST_ASSERT_EQUAL(value, mission.contract_quote, "Currency must exactly meet the quote")
 				qdel(mission)
 		qdel(shop)

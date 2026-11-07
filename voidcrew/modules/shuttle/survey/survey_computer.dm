@@ -5,7 +5,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	name = "Orbital survey console"
-	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void. Surveys only need the ship parked on the same overmap tile as the target, not docked or landed; storms can also be scanned from a few tiles away at reduced yield. On outpost ground, it imports and exports completed survey records for local research."
+	desc = "An orbital cartography and survey terminal."
 	view_range = 10
 	x_offset = 0
 	y_offset = -5
@@ -37,8 +37,6 @@
 	var/range_survey_distance = 3
 	var/survey_timer
 	var/banked_points = 0
-	var/banked_cash = 0
-	var/list/banking = list()
 	var/datum/techweb/linked_techweb
 	var/theme
 	var/attached_to_ship = FALSE
@@ -231,8 +229,7 @@
 	if(linked_techweb)
 		. += span_notice("It is feeding survey data to the R&D server network of [linked_techweb.organization].")
 		return
-	. += span_warning("It is not linked to an R&D server, so surveys will not unlock survey-gated research.")
-	. += span_notice("Build an R&D server on this ship, or copy a techweb from one with a [EXAMINE_HINT("multitool")] and use it on this.")
+	. += span_warning("It is not linked to an R&D server.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
 	sync_research_surveys()
@@ -371,12 +368,9 @@
 	tgui_data["archiveMode"] = !attached_to_ship
 	tgui_data["researchLinked"] = !!linked_techweb
 	tgui_data["bankedPoints"] = banked_points
-	tgui_data["bankedCash"] = banked_cash
-	tgui_data["surveyValue"] = get_survey_value(celestial_object)
+	var/list/quote = get_survey_value(celestial_object)
+	tgui_data["surveyValue"] = list("points" = quote ? quote["points"] : 0)
 	tgui_data["surveyAtRange"] = is_survey_at_range(celestial_object)
-	// So the UI can state the range rule with the real numbers instead of folklore
-	tgui_data["rangeSurveyDistance"] = range_survey_distance
-	tgui_data["rangeSurveyPercent"] = round(range_survey_value_mult * 100)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = validate_survey_disk()
 	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
@@ -394,8 +388,6 @@
 			"atRange" = at_range,
 			"dist" = (at_range && ship_turf) ? get_dist(ship_turf, get_turf(candidate)) : 0,
 			"points" = values ? values["points"] : 0,
-			"cash" = values ? values["cash"] : 0,
-			"holdSeconds" = get_interior_hold_seconds(candidate),
 			"mappable" = (istype(candidate, /obj/structure/overmap/planet) || istype(candidate, /obj/structure/overmap/space_ruin) || istype(candidate, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE,
 		))
 	tgui_data["surveyTargets"] = targets
@@ -408,6 +400,9 @@
 	.["surveyData"] = data?.tgui_serialize()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, list/params, datum/tgui/ui)
+	// Old windows and forged actions cannot redeem survey currency.
+	if(action == "cashOut")
+		return FALSE
 	if(!validate_ship_binding())
 		if(!get_outpost_from_atom(src) || !(action in list("saveData", "downloadData", "eject", "setTheme", "refresh", "error")))
 			return TRUE
@@ -422,8 +417,6 @@
 			activate_survey_map(ui.user)
 		if("printResearch")
 			print_survey_notes(ui.user)
-		if("cashOut")
-			cash_out(ui.user)
 		if("setTheme")
 			theme = params["theme"]
 		if("saveData")
@@ -438,22 +431,6 @@
 			playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 
 	return TRUE
-
-/**
- * Seconds this target's charted surface stays generated, or null when nothing is
- * counting down.
- *
- * A charted planet nobody has landed on is on a cleanup countdown - it is a whole
- * z-level slot, and the round cannot afford to keep every surveyed surface resident.
- * The crew paid for the chart, so they get to see the clock rather than fly back to a
- * planet that quietly moved sectors. Docking stops it (/obj/structure/overmap/planet/Entered).
- */
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_interior_hold_seconds(obj/structure/overmap/object)
-	var/obj/structure/overmap/planet/planet = astype(object, /obj/structure/overmap/planet)
-	if(isnull(planet))
-		return null
-	var/remaining = planet.get_interior_hold_remaining()
-	return isnull(remaining) ? null : round(remaining / 10)
 
 /// Overmap types the console refuses to treat as survey targets
 /// Callers must treat the returned list as READ-ONLY - both are shared statics.
@@ -594,7 +571,6 @@
 				has_empty_space = TRUE
 		if(has_ship_contact)
 			balloon_alert(user, "can't survey ships")
-			to_chat(user, span_warning("Vessels are not valid survey targets. The console only surveys celestial objects: planets, signals, storms, and stars."))
 		else if(has_empty_space)
 			balloon_alert(user, "empty space, nothing to survey")
 		else
@@ -644,21 +620,17 @@
 	var/list/values = get_survey_value(object)
 	if(values)
 		banked_points += values["points"]
-		banked_cash += values["cash"]
 	record_metric_survey(object, values) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	data.update_survey_data(object)
 	sync_research_surveys()
 	object.surveyed = TRUE
 	update_static_data_for_all_viewers()
 
-	// A surface charted from orbit is on a cleanup clock the crew has no other way to
-	// see: nothing docked, so no arrival and no departure ever told them the planet is
-	// only held for a while. Say it once, with the real number.
 	var/obj/structure/overmap/planet/charted = astype(object, /obj/structure/overmap/planet)
 	var/hold_remaining = charted?.get_interior_hold_remaining()
 	if(hold_remaining && ship_port?.current_ship)
 		ship_port.current_ship.ship_notify(
-			"Surface chart of [charted.display_name || charted.name] holds for [DisplayTimeText(hold_remaining)]. Land within that window or the planet drifts and has to be charted again.",
+			"Surface chart of [charted.display_name || charted.name] recorded.",
 			"SURVEY",
 			SHIP_NOTIFY_NOTICE,
 			'voidcrew/sound/notify.ogg',
@@ -674,41 +646,35 @@
 	if(!object)
 		return
 
-	var/point_list = list()
+	// Refresh the physical research link for quotes and completion alike.
+	survey_research_tiers = get_survey_research_tiers()
+	var/point_list = list("cash" = 0, "points" = 0)
 
 	// The payout lives on the overmap object (survey_value, see _overmap.dm) rather than
 	// in a table keyed by type name here - almost nothing spawns as its family's base
 	// type, so storm severities, planet terrains, fixed-gas nebulas and star classes all
 	// used to fall through to nothing. 0 is anything that isn't a celestial body.
 	var/points = object.survey_value
-	var/cash = object.survey_value
 
 	if(!points)
-		point_list["cash"] = 0
-		point_list["points"] = 0
 		return point_list
 
-	// Extra rewards for being the first to survey an object
-	if (!object.surveyed)
-		cash *= 1.2
-		points *= 1.2
-
 	if("elite" in survey_research_tiers)
-		cash *= 2
-		points *= 2
+		points *= 1.25
 	else if("superior" in survey_research_tiers)
-		cash *= 1.5
-		points *= 1.5
-	else if("advanced" in survey_research_tiers)
-		cash *= 1.2
-		points *= 1.2
+		points *= 1.1
+
+	// A remote storm can be across a zone boundary from the ship.
+	switch(SSovermap_zones.get_zone_type(get_turf(object)))
+		if(ZONE_YELLOW)
+			points *= 1.25
+		if(ZONE_RED)
+			points *= 1.5
 
 	// Scanning a storm from a neighbouring tile is safe, so it pays less
 	if(is_survey_at_range(object))
-		cash *= range_survey_value_mult
 		points *= range_survey_value_mult
 
-	point_list["cash"] = cash
 	point_list["points"] = points
 	return point_list
 
@@ -817,35 +783,6 @@
 	new /obj/item/research_notes/loot/custom(src.loc, banked_points, "survey results")
 	record_metric_notes_printed(user, banked_points) // round metrics, voidcrew/modules/metrics/research_metrics.dm
 	banked_points = 0
-
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cash_out(mob/user)
-	if(banked_cash <= 0)
-		return
-
-	var/remaining_amount = banked_cash
-	banked_cash = 0
-	record_metric_cash_out(user, remaining_amount) // round metrics, voidcrew/modules/metrics/research_metrics.dm
-
-	var/static/list/bill_denominations = list(
-		/obj/item/stack/spacecash/c10000 = 10000,
-		/obj/item/stack/spacecash/c1000 = 1000,
-		/obj/item/stack/spacecash/c500 = 500,
-		/obj/item/stack/spacecash/c200 = 200,
-		/obj/item/stack/spacecash/c100 = 100,
-		/obj/item/stack/spacecash/c50 = 50,
-		/obj/item/stack/spacecash/c20 = 20,
-		/obj/item/stack/spacecash/c10 = 10,
-		/obj/item/stack/spacecash/c1 = 1,
-	)
-
-	playsound(src, 'sound/items/taperecorder/taperecorder_print.ogg', 60)
-	playsound(src, 'sound/items/handling/paper_drop.ogg', 60)
-
-	for(var/bill_type in bill_denominations)
-		var/bill_value = bill_denominations[bill_type]
-		while(remaining_amount >= bill_value)
-			remaining_amount -= bill_value
-			new bill_type(loc)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()

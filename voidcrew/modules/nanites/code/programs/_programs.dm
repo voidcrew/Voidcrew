@@ -1,3 +1,36 @@
+// Exact types are resolved before category defaults, independently of table order.
+GLOBAL_LIST_INIT(nanite_program_capacity_costs, list(
+	/datum/nanite_program/regenerative_advanced = 6,
+	/datum/nanite_program/defib = 6,
+	/datum/nanite_program/regenerative = 3,
+	/datum/nanite_program/repairing = 3,
+	/datum/nanite_program/hardening = 3,
+	/datum/nanite_program/refractive = 3,
+	/datum/nanite_program/nervous = 3,
+	/datum/nanite_program/adrenaline = 3,
+	/datum/nanite_program/purging = 2,
+	/datum/nanite_program/purging_advanced = 2,
+	/datum/nanite_program/brain_heal_advanced = 2,
+	/datum/nanite_program/coagulating = 2,
+	/datum/nanite_program/access = 2,
+	/datum/nanite_program/viral = 2,
+	/datum/nanite_program/emp = 2,
+	/datum/nanite_program/spreading = 2,
+	/datum/nanite_program/brain_heal = 1,
+	/datum/nanite_program/blood_restoring = 1,
+	/datum/nanite_program/temperature = 1,
+	/datum/nanite_program/conductive = 1,
+	/datum/nanite_program/mindshield = 1,
+	/datum/nanite_program/self_scan = 1,
+	/datum/nanite_program/stealth = 1,
+	/datum/nanite_program/metabolic_synthesis = 1,
+	/datum/nanite_program/mitosis = 1,
+	/datum/nanite_program/nanite_sting = 1,
+	/datum/nanite_program/protocol = 1,
+	/datum/nanite_program/sensor = 0,
+	/datum/nanite_program = 0,
+))
+
 /datum/nanite_program
 	var/name = "Generic Nanite Program"
 	var/desc = "Warn a coder if you can read this."
@@ -82,7 +115,26 @@
 		on_mob_remove()
 	if(nanites)
 		nanites.programs -= src
+		nanites.capacity_changed()
+	nanites = null
+	host_mob = null
 	return ..()
+
+/datum/nanite_program/proc/capacity_cost()
+	// Walk the type tree, so a specific zero also overrides a costed category.
+	var/program_type = type
+	while(ispath(program_type, /datum/nanite_program))
+		if(program_type in GLOB.nanite_program_capacity_costs)
+			return GLOB.nanite_program_capacity_costs[program_type]
+		program_type = type2parent(program_type)
+	return 0
+
+/// Paid support programs pause on overload. Hostile payloads retain their effects.
+/datum/nanite_program/proc/capacity_beneficial()
+	return capacity_cost() > 0 && !istype(src, /datum/nanite_program/viral) && !istype(src, /datum/nanite_program/emp) && !istype(src, /datum/nanite_program/spreading) && !istype(src, /datum/nanite_program/nanite_sting)
+
+/datum/nanite_program/proc/capacity_blocked()
+	return capacity_beneficial() && iscarbon(host_mob) && get_chrome_load(host_mob) > get_chrome_capacity(host_mob)
 
 /datum/nanite_program/proc/copy()
 	var/datum/nanite_program/new_program = new type()
@@ -213,6 +265,10 @@
 		timer_restart_next = world.time + timer_restart
 
 /datum/nanite_program/proc/on_process()
+	if(capacity_blocked())
+		if(passive_enabled)
+			disable_passive_effect()
+		return
 	if(!activated)
 		if(timer_restart_next && world.time > timer_restart_next)
 			activate()
@@ -269,6 +325,8 @@
 
 //Checks conditions then fires the nanite trigger effect
 /datum/nanite_program/proc/trigger(delayed = FALSE, comm_message)
+	if(capacity_blocked())
+		return
 	if(!can_trigger)
 		return
 	if(!activated || force_disabled)

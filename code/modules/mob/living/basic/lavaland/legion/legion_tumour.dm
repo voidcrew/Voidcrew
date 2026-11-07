@@ -58,6 +58,9 @@
 
 /obj/item/organ/legion_tumour/on_mob_insert(mob/living/carbon/organ_owner, special, movement_flags)
 	. = ..()
+	// VOIDCREW EDIT ADDITION START - npc_scaling: retain infection context, including constructor-created parasites.
+	npc_spawn_context ||= GLOB.npc_zone_construction_context || new /datum/npc_spawn_context(organ_owner)
+	// VOIDCREW EDIT ADDITION END
 	owner.log_message("has received [src] which will eventually turn them into a Legion.", LOG_VICTIM)
 
 /obj/item/organ/legion_tumour/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
@@ -86,7 +89,10 @@
 
 	log_combat(user, target, "used a Legion Tumour on", src, "as they are in crit, this will turn them into a Legion.")
 	target.visible_message(span_boldwarning("[user] splatters [target] with [src]... and it springs into horrible life!"))
-	var/mob/living/basic/legion_brood/skull = new(target.loc)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: manually applied tumours inherit the user's ownership exemption.
+	var/datum/npc_spawn_context/context = new(user, role = "ordinary")
+	var/mob/living/basic/legion_brood/skull = spawn_npc_in_zone(/mob/living/basic/legion_brood, target.loc, context)
+	// VOIDCREW EDIT ADDITION END
 	skull.melee_attack(target)
 	return TRUE
 
@@ -125,8 +131,7 @@
 				if (prob(50))
 					var/turf/check_turf = get_step(owner.loc, owner.dir)
 					var/atom/land_turf = (check_turf.is_blocked_turf()) ? owner.loc : check_turf
-					var/mob/living/basic/legion_brood/child = new(land_turf)
-					child.assign_creator(owner, copy_full_faction = FALSE)
+					spawn_brood(land_turf) // VOIDCREW EDIT - npc_scaling: finalize after creator assignment.
 
 			if(SPT_PROB(3, seconds_per_tick))
 				to_chat(owner, span_danger("Your muscles ache."))
@@ -145,14 +150,35 @@
 	if (stage == 5)
 		to_chat(owner, span_bolddanger("Something is moving under your skin!"))
 
+// VOIDCREW EDIT ADDITION START - npc_scaling: parasite children retain the infection source.
+/obj/item/organ/legion_tumour/proc/spawn_brood(atom/location)
+	get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(src, role = "ordinary")
+	var/mob/living/basic/legion_brood/child = spawn_npc_in_zone(/mob/living/basic/legion_brood, location, context, FALSE)
+	child.assign_creator(owner, copy_full_faction = FALSE)
+	context.finalize()
+	return child
+// VOIDCREW EDIT ADDITION END
+
 /// Consume our host
 /obj/item/organ/legion_tumour/proc/infest()
 	if (QDELETED(src) || QDELETED(owner))
 		return
 	owner.log_message("has been turned into a Legion by their tumour.", LOG_VICTIM)
 	owner.visible_message(span_boldwarning("Black tendrils burst from [owner]'s flesh, covering them in amorphous flesh!"))
-	var/mob/living/basic/mining/legion/new_legion = new spawn_type(owner.loc)
-	new_legion.consume(owner)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: finalize the transformed body after consumption.
+	get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(src, role = "ordinary")
+	var/mob/living/basic/mining/legion/new_legion = spawn_npc_in_zone(spawn_type, owner.loc, context, FALSE)
+	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT ADDITION START - npc_scaling: consume may replace this tumour; preserve the next infection too.
+	var/mob/living/carbon/human/host = owner
+	new_legion.consume(host)
+	var/obj/item/organ/legion_tumour/tumour = host.get_organ_slot(ORGAN_SLOT_PARASITE_EGG)
+	if(istype(tumour))
+		tumour.npc_spawn_context = context
+	// VOIDCREW EDIT ADDITION END
+	context.finalize() // VOIDCREW EDIT - npc_scaling
 	qdel(src)
 
 /obj/item/organ/legion_tumour/on_find(mob/living/finder)

@@ -18,8 +18,8 @@ GLOBAL_LIST_EMPTY(overmap_objects)
 	///List of other overmap objects in the same tile
 	var/list/close_overmap_objects
 	var/surveyed = FALSE
-	/// Research points (and credits) an orbital survey of this object banks, before the
-	/// first-survey bonus and console tier multipliers (see survey_computer.dm
+	/// Research points an orbital survey of this object banks, before console tier,
+	/// target zone and remote-storm multipliers (see survey_computer.dm
 	/// get_survey_value). Set it on the family's base type and every subtype inherits it,
 	/// so storm severities, planet terrains and star classes are all worth what their
 	/// family is worth. 0 is "nothing to learn here" - the default for everything that

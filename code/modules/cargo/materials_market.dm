@@ -198,7 +198,7 @@
 
 		material_data += list(list(
 			"name" = initial(traded_mat.name),
-			"price" = SSstock_market.materials_prices[traded_mat],
+			"price" = material_market_buy_price(traded_mat), // VOIDCREW EDIT: trade uses a settled buy floor; the live sale bid is unchanged.
 			"rarity" = initial(traded_mat.value_per_unit),
 			"threshold" = minimum_value_threshold,
 			"quantity" = SSstock_market.materials_quantity[traded_mat],
@@ -284,7 +284,7 @@
 				say("Not enough materials on the market to purchase!")
 				return
 
-			var/cost = SSstock_market.materials_prices[material_bought] * quantity
+			var/cost = material_market_buy_price(material_bought) * quantity // VOIDCREW EDIT: trade applies per-sheet buy floors to the quote.
 
 			var/list/things_to_order = list()
 			things_to_order += (sheet_to_buy)

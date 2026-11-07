@@ -19,20 +19,22 @@
 	CONFIG_SET(flag/allow_vote_transfer, !CONFIG_GET(flag/allow_vote_transfer))
 	return TRUE
 
+/// Include the lobby so a pending vote cannot launch the fleet before the timer is armed.
+/datum/vote/transfer_vote/proc/departure_scheduled()
+	return SSovermap.round_end_time || (!SSticker.HasRoundStarted() && CONFIG_GET(number/round_time_limit))
+
 /datum/vote/transfer_vote/is_config_enabled()
-	return CONFIG_GET(flag/allow_vote_transfer)
+	return CONFIG_GET(flag/allow_vote_transfer) && !departure_scheduled()
 
-/datum/vote/transfer_vote/can_be_initiated(mob/by_who, forced)
+/datum/vote/transfer_vote/can_be_initiated(forced = FALSE)
 	. = ..()
-	if(!.)
-		return FALSE
+	if(. != VOTE_AVAILABLE)
+		return .
 
-	if(!forced && !CONFIG_GET(flag/allow_vote_transfer))
-		default_message = "Transfer voting is disabled by server configuration settings."
-		return FALSE
+	if(departure_scheduled())
+		return "Fleet departure is already scheduled."
 
-	default_message = initial(default_message)
-	return TRUE
+	return VOTE_AVAILABLE
 
 /datum/vote/transfer_vote/get_vote_result(list/non_voters)
 	if(!CONFIG_GET(flag/default_no_vote))

@@ -28,18 +28,27 @@
 
 /datum/nanite_program/monitoring
 	name = "Monitoring"
-	desc = "The nanites monitor the host's vitals and location, sending them to the suit sensor network."
+	desc = "A quiet pulse follows the host's heartbeat."
 	rogue_types = list(/datum/nanite_program/toxic)
 
 /datum/nanite_program/monitoring/enable_passive_effect()
 	. = ..()
 	SSnanites.nanite_monitored_mobs |= host_mob
+	GLOB.crewmonitor.data_by_scope.Cut()
+	GLOB.crewmonitor.last_update.Cut()
 	host_mob.hud_set_nanite_indicator()
 
 /datum/nanite_program/monitoring/disable_passive_effect()
 	. = ..()
 	SSnanites.nanite_monitored_mobs -= host_mob
+	GLOB.crewmonitor.data_by_scope.Cut()
+	GLOB.crewmonitor.last_update.Cut()
 	host_mob.hud_set_nanite_indicator()
+
+/datum/nanite_program/monitoring/on_mob_remove()
+	. = ..()
+	if(host_mob in SSnanites.nanite_monitored_mobs)
+		disable_passive_effect()
 
 /datum/nanite_program/self_scan
 	name = "Host Scan"
@@ -181,19 +190,18 @@
 
 /datum/nanite_program/spreading
 	name = "Infective Exo-Locomotion"
-	desc = "The nanites gain the ability to survive for brief periods outside of the human body, as well as the ability to start new colonies without an integration process; \
-			resulting in an extremely infective strain of nanites."
+	desc = "A restless swarm that drifts between nearby bodies."
 	use_rate = 1.50
 	rogue_types = list(/datum/nanite_program/aggressive_replication, /datum/nanite_program/necrotic)
 	var/spread_cooldown = 0
 
 /datum/nanite_program/spreading/active_effect()
-	if(spread_cooldown < world.time)
+	if(world.time < spread_cooldown)
 		return
-	spread_cooldown = world.time + 50
+	spread_cooldown = world.time + 5 SECONDS
 	var/list/mob/living/carbon/human/target_hosts = list()
 	for(var/mob/living/carbon/human/L in oview(5, host_mob))
-		if(!prob(25))
+		if(!roll_infection_chance(25))
 			continue
 		if(!(L.mob_biotypes & (MOB_ORGANIC|MOB_UNDEAD)))
 			continue
@@ -201,7 +209,8 @@
 	if(!target_hosts.len)
 		return
 	var/mob/living/carbon/human/infectee = pick(target_hosts)
-	if(prob(100 - infectee.wear_suit.get_armor_rating(BIO)))
+	var/bio_protection = infectee.wear_suit ? infectee.wear_suit.get_armor_rating(BIO) : 0
+	if(roll_infection_chance(100 - bio_protection))
 		//this will potentially take over existing nanites!
 		infectee.AddComponent(/datum/component/nanites, null, 10)
 		SEND_SIGNAL(infectee, COMSIG_NANITE_SYNC, nanites)
@@ -209,10 +218,10 @@
 
 /datum/nanite_program/nanite_sting
 	name = "Nanite Sting"
-	desc = "When triggered, projects a nearly invisible spike of nanites that attempts to infect a nearby non-host with a copy of the host's nanites cluster."
+	desc = "The swarm forms a fine needle beneath the skin."
 	can_trigger = TRUE
 	trigger_cost = 5
-	trigger_cooldown = 100
+	trigger_cooldown = 10 SECONDS
 	rogue_types = list(/datum/nanite_program/glitch, /datum/nanite_program/toxic)
 
 /datum/nanite_program/nanite_sting/on_trigger(comm_message)
@@ -225,12 +234,17 @@
 		consume_nanites(-5)
 		return
 	var/mob/living/carbon/human/infectee = pick(target_hosts)
-	if(prob(100 - infectee.wear_suit.get_armor_rating(BIO)))
+	var/bio_protection = infectee.wear_suit ? infectee.wear_suit.get_armor_rating(BIO) : 0
+	if(roll_infection_chance(100 - bio_protection))
 		//unlike with Infective Exo-Locomotion, this can't take over existing nanites, because Nanite Sting only targets non-hosts.
 		infectee.AddComponent(/datum/component/nanites, null, 5)
 		SEND_SIGNAL(infectee, COMSIG_NANITE_SYNC, nanites)
 		log_game("[infectee] was infected by a nanite cluster by [key_name(host_mob)] at [AREACOORD(infectee)].")
 		to_chat(infectee, span_warning("You feel a tiny prick."))
+
+/// Chance gate for infection candidates and their suit protection.
+/datum/nanite_program/proc/roll_infection_chance(chance)
+	return prob(chance)
 
 /datum/nanite_program/mitosis
 	name = "Mitosis"

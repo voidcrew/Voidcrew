@@ -93,7 +93,7 @@
 // ========== NANITE TECHNOLOGY ==========
 
 /datum/export/nanite_disk
-	cost = 200
+	cost = 0
 	unit_name = "nanite program disk"
 	export_types = list(/obj/item/disk/nanite_program)
 

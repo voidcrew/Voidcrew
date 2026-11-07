@@ -13,3 +13,8 @@
 /datum/orderable_item/consumables/rescue_hook
 	category_index = CATEGORY_MINING
 	cost_per_order = 350
+
+/datum/orderable_item/consumables/space_cash
+	purchase_path = /obj/item/stack/spacecash/c500
+	desc = "A 500-credit bill."
+	cost_per_order = 2000

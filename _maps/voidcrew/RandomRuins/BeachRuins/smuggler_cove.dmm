@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat{
+	pixel_w = 1;
+	pixel_z = 11
+	},
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "au" = (
 /obj/structure/fake_stairs/wood/directional/south,
 /obj/structure/railing{
@@ -918,14 +926,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"Oa" = (
-/obj/structure/table/wood,
-/obj/item/gun/ballistic/automatic/pistol/no_mag{
-	pixel_w = 1;
-	pixel_z = 11
-	},
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 "OS" = (
 /obj/structure/flora/bush/sparsegrass/style_random{
 	pixel_w = -2;
@@ -1538,7 +1538,7 @@ dk
 gN
 VB
 jD
-Oa
+aa
 NU
 NU
 tG

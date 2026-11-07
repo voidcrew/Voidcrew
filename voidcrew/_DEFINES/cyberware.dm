@@ -40,8 +40,6 @@
 #define ORGAN_SLOT_CYBERWARE_LEGS "cyberware_legs"
 /// Vocal hardware, mouth. Currently unused (Voicebox Mimic cut in roster v2).
 #define ORGAN_SLOT_CYBERWARE_LARYNX "cyberware_larynx"
-/// Capacity governor, head. Governor Delete (+6 capacity).
-#define ORGAN_SLOT_CYBERWARE_GOVERNOR "cyberware_governor"
 /// Hand augmentation, arms. Gecko Grips vs Fixer's Fingers.
 #define ORGAN_SLOT_CYBERWARE_HANDS "cyberware_hands"
 /// Emissive circuit tattoos, chest. Chromatic Dermis.

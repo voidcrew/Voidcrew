@@ -200,6 +200,12 @@
 /obj/structure/flora/tree/pine/xmas,
 /turf/open/misc/asteroid/snow/atmosphere,
 /area/ruin/powered/snow_biodome)
+"aU" = (
+/obj/item/knife/combat/survival,
+/obj/structure/closet,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/pod/dark,
+/area/ruin/powered/snow_biodome)
 "bl" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -394,12 +400,6 @@
 "JZ" = (
 /obj/structure/table,
 /obj/machinery/microwave,
-/turf/open/floor/pod/dark,
-/area/ruin/powered/snow_biodome)
-"KS" = (
-/obj/item/chainsaw,
-/obj/structure/closet,
-/obj/machinery/light/small/directional/east,
 /turf/open/floor/pod/dark,
 /area/ruin/powered/snow_biodome)
 "Mp" = (
@@ -1391,7 +1391,7 @@ eb
 gz
 Oj
 JZ
-KS
+aU
 Ef
 Wg
 Wg

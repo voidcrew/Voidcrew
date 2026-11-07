@@ -75,7 +75,7 @@ For five minutes after the match the vault and its chamber answer only to the wi
 
 ## Around the venue
 
-**The Lanista's Rack** is a gear stall on the concourse selling nine bespoke pieces of arena kit: gladiator armour, pit weapons and corner-man tools. The stock restocks after every settled match. The gear cannot be duplicated; the only source is the venue.
+**The Lanista's Rack** is a gear stall on the concourse selling nine bespoke pieces of arena kit: gladiator armour, pit weapons and corner-man tools. The stock restocks after every settled match. The gear cannot be duplicated; the only source is the venue. The pit doctor's satchel costs **1,000 credits**, sandstrider sandals **800**, and the laurel crown **2,000 credits with no voucher charge**, when stocked.
 
 **The bookmaker's console** in the wagering hall takes bets on contestants. Bets are cash in (hard-light holochips only) and pay out as physical betting slips, which means they can be stolen, traded and held to ransom like any other object. The book opens when the roster locks and closes when the gates open. Winning bets return the stake plus a share of the losing pool, minus a ten percent house rake taken from the losing side only, so a won bet never pays less than it cost. In team modes, a bet on any member of the winning side pays. Draws and cancelled matches refund at face value, and settled slips stay redeemable for the rest of the round.
 

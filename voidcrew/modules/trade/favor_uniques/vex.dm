@@ -45,8 +45,11 @@
  * or not by then; retrieval is the product. Is do_teleport()ed to the crew's
  * ship, cryopod-side if the hull has pods, any open deck tile otherwise.
  *
- * No registered crew ship at trigger time = stabilization only, with an
- * apology. Either way the implant burns out after one claim.
+ * The implant burns out only once a recall actually lands. When the recall
+ * can't happen (no registered crew ship, or a refused teleport, such as the
+ * ship being in another zone) the claim stays open and the next drop into crit
+ * tries again. The stabilizer is a one-time payout either way, so an open claim
+ * can't be farmed for free heals.
  */
 /obj/item/implant/vex_insurance
 	name = "Vex's insurance implant"
@@ -55,9 +58,12 @@
 	implant_color = "b"
 	actions_types = null // entirely passive, no activate button
 	uses = 1
-	/// One-shot guard: TRUE once the policy has paid out. Stat can keep changing
-	/// under us (SOFT_CRIT to HARD_CRIT and back), so this must latch immediately.
+	/// TRUE while a recall is in flight. Stat can keep changing under us (SOFT_CRIT
+	/// to HARD_CRIT and back), so this must latch immediately. A recall that can't
+	/// happen clears it again.
 	var/triggered = FALSE
+	/// TRUE once the stabilizer has been delivered. It only ever pays out once.
+	var/stabilized = FALSE
 
 /obj/item/implant/vex_insurance/Initialize(mapload)
 	. = ..()
@@ -99,17 +105,19 @@
 		return
 	triggered = TRUE
 
-	stabilize(source)
-	source.visible_message(
-		span_warning("Something under [source]'s skin whirs and hisses."),
-		span_boldnotice("Your insurance implant snaps awake and floods your bloodstream with stabilizer."),
-	)
-	playsound(source, 'sound/machines/chime.ogg', 30, TRUE)
+	if(!stabilized)
+		stabilized = TRUE
+		stabilize(source)
+		source.visible_message(
+			span_warning("Something under [source]'s skin whirs and hisses."),
+			span_boldnotice("Your insurance implant snaps awake and floods your bloodstream with stabilizer."),
+		)
+		playsound(source, 'sound/machines/chime.ogg', 30, TRUE)
 
 	var/obj/structure/overmap/ship/home = get_crew_ship(source)
 	if(!home)
-		to_chat(source, span_warning("A flat recorded voice plays from inside your chest: \"No registered vessel on file. Coverage limited to on-site stabilization. Vex thanks you for your business.\""))
-		burn_out()
+		to_chat(source, span_warning("A flat recorded voice plays from inside your chest: \"No registered vessel on file. Claim held open. Vex thanks you for your business.\""))
+		triggered = FALSE
 		return
 
 	to_chat(source, span_notice("A flat recorded voice plays from inside your chest: \"Policy conditions met. Recall to [home.display_name || home.name] in [DisplayTimeText(VEX_INSURANCE_RECALL_DELAY)].\""))
@@ -134,10 +142,14 @@
  * The delayed half of the claim: haul the body home. Runs off a timer, so
  * everything gets re-checked. The implant may have been cut out, the ship
  * may have been lost. Fires whether or not the wearer survived the wait;
- * bringing the body back to the crew is half the point of the policy.
+ * bringing the body back to the crew is half the point of the policy. Only a
+ * recall that lands spends the implant.
  */
 /obj/item/implant/vex_insurance/proc/recall_home()
-	if(QDELETED(src) || !imp_in)
+	if(QDELETED(src))
+		return
+	triggered = FALSE
+	if(!imp_in)
 		return
 	var/mob/living/body = imp_in
 
@@ -153,16 +165,15 @@
 
 	if(!destination)
 		to_chat(body, span_warning("The implant pings twice and falls silent. No registered vessel answered the recall."))
-		burn_out()
 		return
 
-	if(do_teleport(body, destination, 0, channel = TELEPORT_CHANNEL_BLUESPACE, asoundin = 'sound/effects/phasein.ogg', asoundout = 'sound/effects/phasein.ogg'))
-		body.visible_message(
-			span_warning("[body] materializes in a flare of blue light!"),
-			span_notice("Cold blue light folds around you, and you're back aboard your ship."),
-		)
-	else
+	if(!do_teleport(body, destination, 0, channel = TELEPORT_CHANNEL_BLUESPACE, asoundin = 'sound/effects/phasein.ogg', asoundout = 'sound/effects/phasein.ogg'))
 		to_chat(body, span_warning("The implant strains against something blocking the recall, then gives up."))
+		return
+	body.visible_message(
+		span_warning("[body] materializes in a flare of blue light!"),
+		span_notice("Cold blue light folds around you, and you're back aboard your ship."),
+	)
 	burn_out()
 
 /// One claim, then the hardware is spent. Mirrors the freedom implant's
@@ -222,10 +233,9 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /**
- * The Quiet Word's magazine. Its own typepath so it can sit on a shelf as its
- * own SKU, but it stays inside the stock 10mm family: it feeds anything that
- * accepts /obj/item/ammo_box/magazine/m10mm, and the Quiet Word happily takes
- * plain Ansem magazines back.
+ * The Quiet Word's magazine. It has its own typepath but stays inside the stock
+ * 10mm family: it feeds anything that accepts /obj/item/ammo_box/magazine/m10mm,
+ * and the Quiet Word happily takes plain Ansem magazines back.
  */
 /obj/item/ammo_box/magazine/m10mm/quiet_word
 	name = "Quiet Word magazine (10mm)"

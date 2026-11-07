@@ -122,3 +122,35 @@
 		TEST_ASSERT(fixture.on, "A light stayed off in a relit berth (status [fixture.status])")
 
 	qdel(berth)
+
+/// Shared mob types must use the designated boss role after theme-specific setup.
+/datum/derelict_theme/npc_zone_test
+	id = "npc_zone_test"
+
+/datum/derelict_theme/npc_zone_test/prepare_hostile(mob/living/hostile)
+	hostile.setMaxHealth(200)
+	hostile.setBruteLoss(50)
+	hostile.melee_damage_lower = 30
+	hostile.melee_damage_upper = 40
+
+/datum/unit_test/voidcrew_derelict_zone_profiles/Run()
+	var/obj/structure/overmap/dynamic/player_outpost/derelict/site = allocate(/obj/structure/overmap/dynamic/player_outpost/derelict)
+	var/datum/derelict_scene/scene = allocate(/datum/derelict_scene, site)
+	var/datum/derelict_theme/theme = allocate(/datum/derelict_theme/npc_zone_test)
+	for(var/band in 1 to 3)
+		site.derelict_band = band
+		for(var/role in list("ordinary", "boss"))
+			var/list/mob/living/spawned = list()
+			var/mob/living/body = scene.add_hostile(theme, /mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, role, spawned)
+			TEST_ASSERT_NOTNULL(body, "Derelict route lost its replacement")
+			TEST_ASSERT_EQUAL(length(spawned), 1, "Derelict registered a discarded precursor")
+			TEST_ASSERT_EQUAL(body.npc_spawn_context.source_id, REF(site), "Derelict hostile lost site identity")
+			TEST_ASSERT_EQUAL(body.npc_zone_role, role, "Designated derelict boss was treated as its ordinary shared type")
+			var/health_factor = band == 1 ? 1 : (role == "boss" ? (band == 2 ? 1.15 : 1.3) : (band == 2 ? 1.35 : 1.8))
+			var/damage_factor = band == 1 ? 1 : (role == "boss" ? (band == 2 ? 1.1 : 1.2) : (band == 2 ? 1.15 : 1.35))
+			TEST_ASSERT(abs(body.maxHealth - 200 * health_factor) < 0.001, "Derelict finalized before theme health setup")
+			TEST_ASSERT(abs(body.health / body.maxHealth - 0.75) < 0.001, "Derelict profile healed theme damage")
+			TEST_ASSERT(abs(body.melee_damage_upper - 40 * damage_factor) < 0.001, "Derelict theme melee missed the selected factor")
+			body.npc_spawn_context.finalize()
+			TEST_ASSERT(abs(body.maxHealth - 200 * health_factor) < 0.001, "Derelict retained a stacking multiplier")
+			qdel(body)

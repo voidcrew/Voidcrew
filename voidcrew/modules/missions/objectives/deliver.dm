@@ -26,15 +26,9 @@
 /datum/mission_objective/deliver/proc/describe_ask()
 	return required_amount > 1 ? "[required_amount] [required_name]" : required_name
 
-/// Shared contract text for the item forms and stack sizes accepted at turn-in.
+/// Kept for callers that used to append delivery instructions.
 /datum/mission_objective/deliver/proc/get_delivery_instructions()
-	. = ""
-	if(ispath(required_type, /obj/item/stack) && required_amount > 1)
-		. += " Bring the full quantity in one stack; only the requested amount will be taken."
-	if(ispath(required_type, /obj/item/stack/ore/bluespace_crystal))
-		. += " Natural, refined, or artificial individual bluespace crystals are accepted. Split bluespace polycrystals into individual crystals before delivery."
-	else if(ispath(required_type, /obj/item/stack/ore))
-		. += " Keep the material unrefined; smelted sheets do not count."
+	return ""
 
 /datum/mission_objective/deliver/get_progress_string()
 	if(required_amount > 1 && delivered_count > 0)
@@ -65,6 +59,8 @@
 	return ..()
 
 /datum/mission_objective/deliver/accept_item(obj/item/item, atom/reward_anchor)
+	if(completed || QDELETED(item) || !can_turn_in(item))
+		return MISSION_ITEM_REFUSED
 	// The delivered item is often the mission's tracked quest atom; stop the
 	// destruction watch before consuming it, or qdel fires it synchronously and
 	// handle_quest_loss() voids the contract mid-turn-in (outpost_quests.dm
@@ -82,6 +78,17 @@
 		return MISSION_ITEM_COMPLETE
 	notify_crew("[mission.name]: [delivered_count]/[required_amount] [required_name] received.")
 	return MISSION_ITEM_PROGRESS
+
+/// Salvage stays exact; original Syndicate intelligence comes in several variants.
+/datum/mission_objective/deliver/console/matches_ask(obj/item/item)
+	if(QDELETED(item))
+		return FALSE
+	if(required_type == /obj/item/documents/syndicate)
+		return istype(item, /obj/item/documents/syndicate)
+	return item.type == required_type
+
+/datum/mission_objective/deliver/console/can_turn_in(obj/item/item)
+	return !completed && matches_ask(item) && ..()
 
 // =========================================================================
 // BOUND ITEM: a specific quest item this mission spawned

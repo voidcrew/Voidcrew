@@ -30,13 +30,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/template_noop)
-"cES" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/doublebarrel{
-	name = "\improper TOZ-1"
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/template_noop)
 "eaq" = (
 /obj/machinery/light/small{
 	dir = 1
@@ -73,6 +66,13 @@
 	name = "Armory"
 	},
 /obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pbw" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	name = "\improper TOZ-1"
+	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "pcJ" = (
@@ -140,6 +140,14 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/template_noop)
+"tsB" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/rifle/boltaction{
+	pixel_x = -7;
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
 "tzo" = (
 /turf/template_noop,
 /area/template_noop)
@@ -156,14 +164,6 @@
 "vHg" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall/r_wall,
-/area/template_noop)
-"vXz" = (
-/obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction{
-	pixel_x = -7;
-	pixel_y = 2
-	},
-/turf/open/floor/mineral/plastitanium/red,
 /area/template_noop)
 "xbn" = (
 /obj/structure/cable,
@@ -195,8 +195,8 @@ aNK
 "}
 (2,1,1) = {"
 tVN
-cES
-vXz
+pbw
+tsB
 pju
 tVN
 toY

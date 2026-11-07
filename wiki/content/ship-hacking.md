@@ -9,7 +9,7 @@ Ship hacking is the quiet half of [ship combat](ship-combat.md). Instead of punc
 
 ## The suite
 
-The **Electronic Warfare Systems** research node (160 points, behind Shuttle Warfare Systems) unlocks the machine board and the three tier-1 cartridges. If your crew does not do research, Vex at the [Undertow Exchange](trader-outposts.md) sells the board for 3,200 credits or 3 vouchers, one per round. Build it with two capacitors, a micro-laser and a servo, wrench it down anywhere on your ship, and link it to your weapons system console with a multitool, a freshly built suite also links itself to a free console automatically. One suite per console.
+The **Electronic Warfare Systems** research node (160 points, behind Shuttle Warfare Systems) unlocks the machine board and the three tier-1 cartridges. If your crew does not do research, Vex at the [Undertow Exchange](trader-outposts.md) sells the board for **3,200 credits plus 3 vouchers**, one unit in stock. Buying it requires 11 [reputation](zone-reputation.md). Build it with two capacitors, a micro-laser and a servo, wrench it down anywhere on your ship, and link it to your weapons system console with a multitool, a freshly built suite also links itself to a free console automatically. One suite per console.
 
 The suite draws about 2 kW while an exploit is warming up or live, and losing power aborts whatever it was doing. Better parts matter: capacitors cut the signature each execution costs (down to a quarter of base), micro-lasers cut the power draw, and servos cut warmup time. Examining the suite shows its current signature, its loaded cartridges and all three reductions.
 
@@ -17,7 +17,7 @@ The suite draws about 2 kW while an exploit is warming up or live, and losing po
 
 Exploits come on physical **cartridges**, inserted into the suite by hand and fired from the console's **Exploits** tab. Each cartridge holds a few charges and burns one per execution; at zero it is a burned-out cartridge, and there are no refills. After any execution, that exploit goes on a 60-second recompile cooldown, and the suite runs one execution at a time.
 
-Research only ever prints the three tier-1 cartridges. Tier 2 and up are sold nowhere but Vex's **Exploit Software** shelf: tier 3 stock is zero-to-one per round, and the tier-4 exotics sit on the rotating shelf and take vouchers only. A cartridge's examine text names its exploit, tier, target subsystem and remaining charges, so looted or traded software is never a mystery.
+Research only ever prints the three tier-1 cartridges. Tier 2 and up are sold nowhere but Vex's **Exploit Software** shelf: tier 3 stock is zero-to-one per round, and the tier-4 exotics sit on the rotating shelf and take vouchers only. Tier 3 and tier 4 cartridges need 11 [reputation](zone-reputation.md). A cartridge's examine text names its exploit, tier, target subsystem and remaining charges, so looted or traded software is never a mystery.
 
 ## Running a hack
 

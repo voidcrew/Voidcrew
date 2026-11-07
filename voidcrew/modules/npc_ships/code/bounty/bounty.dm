@@ -57,11 +57,19 @@
 	/// world.time it comes down if nobody is hunting it (set by SSbounty; 0 = never)
 	var/expires_at = 0
 
+	/// This bounty's one reputation claim. A REF could be reused by a later datum.
+	var/work_serial
+	/// The zone its pirate was in when posted, for when it is somewhere with no zone at the end.
+	var/posted_zone
+
 /datum/pirate_bounty/New(obj/structure/overmap/ship/npc/target_ship, obj/item/ship_key/captain_key)
 	. = ..()
 	if(!target_ship || !captain_key)
 		qdel(src)
 		return
+
+	work_serial = ++GLOB.mission_work_serial
+	posted_zone = SSovermap_zones?.get_zone_type(get_turf(target_ship))
 
 	// Store references
 	target_ship_ref = WEAKREF(target_ship)
@@ -114,7 +122,7 @@
  * Note: Ships are confined to their spawn zone (BB_NPC_SPAWN_ZONE),
  * so the zone at spawn time is the zone for the ship's lifetime.
  */
-/datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship)
+/datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship, reward_roll = rand(80, 120))
 	// Base reward - yellow zone pirates
 	var/base_reward = 5000
 
@@ -125,8 +133,8 @@
 		base_reward = 15000
 		is_heavy_bounty = TRUE
 
-	// Add some variance (80-120%)
-	return round(base_reward * rand(80, 120) / 100)
+	// Reduce pirate bounty cash to 80%, retaining the usual 80-120% variance.
+	return round(base_reward * 0.8 * reward_roll / 100)
 
 /**
  * Checks if the bounty is still valid (target exists and not resolved).
@@ -340,6 +348,31 @@
 
 	return TRUE
 
+/// The zone its pirate is in now, which is also its difficulty, as for any targeted job.
+/datum/pirate_bounty/proc/get_reputation_band()
+	var/obj/structure/overmap/ship/npc/ship = get_target_ship()
+	var/band = (ship ? SSovermap_zones?.get_zone_type(get_turf(ship)) : null) || posted_zone
+	return (band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) ? band : null
+
+/// What completing it would add to `ship`'s crew right now.
+/datum/pirate_bounty/proc/get_reputation_worth(obj/structure/overmap/ship/ship)
+	var/datum/voidcrew_crew_record/crew = ship?.get_crew_record()
+	var/band = get_reputation_band()
+	if(completed || failed || QDELETED(crew) || !band)
+		return 0
+	return crew.reputation_worth(band, band)
+
+/// The bounty's one claim, against the zone its pirate is in. Called once, before anything can yield.
+/datum/pirate_bounty/proc/claim_reputation(obj/structure/overmap/ship/winner)
+	var/datum/voidcrew_crew_record/crew = winner?.get_crew_record()
+	var/band = get_reputation_band()
+	if(QDELETED(crew) || !band)
+		return 0
+	var/permission_before = crew.get_zone_permission()
+	var/gain = crew.claim_zone_work(band, band, "pirate:[work_serial]")
+	record_zone_work_rows(winner, ship_type_path, band, zone_work_reward(band), gain, permission_before, crew.get_zone_permission(), usr, list("pirate_bounty" = name))
+	return gain
+
 /**
  * Completes the bounty, awarding the winner.
  * @param winner The ship that turned in the key
@@ -351,6 +384,7 @@
 		return 0
 
 	completed = TRUE
+	var/reputation_gain = claim_reputation(winner)
 	clear_tracking_waypoints()
 
 	// Award credits to winning ship (reduced if they used tracking)
@@ -372,7 +406,8 @@
 		reward_text += " + [english_list(item_rewards)]"
 
 	if(winner)
-		winner.ship_notify("BOUNTY COMPLETE: [name] - [reward_text] awarded!", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		var/reputation_text = reputation_gain > 0 ? " Reputation +[reputation_gain]." : ""
+		winner.ship_notify("BOUNTY COMPLETE: [name] - [reward_text] awarded![reputation_text]", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	npc_metric_bounty_paid(src, winner, winner ? actual_reward : 0, item_rewards)
 
 	// Notify other claimants of failure

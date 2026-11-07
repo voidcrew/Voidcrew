@@ -2,15 +2,23 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
-"d" = (
+"b" = (
 /obj/structure/closet/secure_closet{
 	base_icon_state = "sec";
 	icon_state = "sec"
 	},
-/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/melee/baseball_bat,
 /obj/item/ammo_box/magazine/m9mm,
 /obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"c" = (
+/obj/structure/closet/cabinet,
+/obj/item/clothing/head/helmet/knight/blue,
+/obj/item/clothing/suit/armor/riot/knight/blue,
+/obj/item/spear,
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "e" = (
 /obj/structure/sign/poster/official/here_for_your_safety,
@@ -61,14 +69,6 @@
 /area/ruin/unpowered)
 "q" = (
 /obj/effect/zone_mobs/syndicate,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"r" = (
-/obj/structure/closet/cabinet,
-/obj/item/clothing/head/helmet/knight/blue,
-/obj/item/clothing/suit/armor/riot/knight/blue,
-/obj/item/spear,
-/obj/item/shield/buckler,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "u" = (
@@ -277,8 +277,8 @@ U
 v
 U
 e
-r
-d
+c
+b
 I
 a
 a

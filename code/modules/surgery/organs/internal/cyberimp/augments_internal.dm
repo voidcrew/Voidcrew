@@ -88,7 +88,7 @@
 	. = ..()
 	if(!owner || . & EMP_PROTECT_SELF)
 		return
-	var/stun_amount = 200/severity
+	var/stun_amount = 50/severity // VOIDCREW EDIT CHANGE: was 200/severity, an execution button on a PvP server; chrome reboots instead of stunning (voidcrew/modules/cyberware)
 	owner.Stun(stun_amount)
 	to_chat(owner, span_warning("Your body seizes up!"))
 

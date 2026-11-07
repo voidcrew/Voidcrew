@@ -92,8 +92,12 @@
 					M.Change_Ore(mineralType)
 
 /turf/closed/mineral/proc/Change_Ore(ore_type, random = 0)
-	if(random)
+	// VOIDCREW EDIT ADDITION START - ordinary ore ranges also apply to vein spreading.
+	if(is_ordinary_ore(ore_type))
+		mineralAmt = ordinary_ore_amount(ore_type)
+	else if(random)
 		mineralAmt = rand(1, 5)
+	// VOIDCREW EDIT ADDITION END
 	if(ispath(ore_type, /obj/item/stack/ore)) //If it has a scan_state, switch to it
 		var/obj/item/stack/ore/the_ore = ore_type
 		scan_state = initial(the_ore.scan_state) // I SAID. SWITCH. TO. IT.
@@ -230,7 +234,6 @@
 	if(istype(user))
 		SEND_SIGNAL(user, COMSIG_MOB_MINED, src, exp_multiplier)
 	if(mineralType && (mineralAmt > 0))
-		mineralAmt = zone_scaled_ore_amount(mineralAmt) // VOIDCREW EDIT: deeper-zone planets yield more ore per wall (see voidcrew/turfs/closed/minerals.dm)
 		new mineralType(src, mineralAmt)
 		SSblackbox.record_feedback("tally", "ore_mined", mineralAmt, mineralType)
 	if(spawned_boulder)
@@ -315,17 +318,12 @@
 	)
 
 /turf/closed/mineral/random/Initialize(mapload)
-	var/static/list/mineral_chances_by_type = list()
-
+	// VOIDCREW EDIT REMOVAL: ore choices come from zone profiles below, not a per-type cache.
 	. = ..()
-	var/dynamic_prob = mineralChance
-	if(proximity_based)
-		dynamic_prob = proximity_ore_chance() // We assign the chance of ore spawning based on probability.
-	if (prob(dynamic_prob))
-		var/list/spawn_chance_list = mineral_chances_by_type[type]
-		if (isnull(spawn_chance_list))
-			mineral_chances_by_type[type] = expand_weights(mineral_chances())
-			spawn_chance_list = mineral_chances_by_type[type]
+	// VOIDCREW EDIT ADDITION START - zone profiles, independent of vent proximity (mining/ore_profiles.dm).
+	if (ore_initial_roll())
+		var/list/spawn_chance_list = ore_spawn_choices()
+		// VOIDCREW EDIT ADDITION END
 		var/path = pick(spawn_chance_list)
 		if(ispath(path, /turf))
 			var/stored_flags = 0
@@ -337,7 +335,7 @@
 			if(ismineralturf(T))
 				var/turf/closed/mineral/M = T
 				M.turf_type = src.turf_type
-				M.mineralAmt = scale_ore_to_vent()
+				// VOIDCREW EDIT: special veins retain their authored quantity and gibtonite bookkeeping.
 				GLOB.post_ore_random["[M.mineralAmt]"] += 1
 				src = M
 				M.levelupdate()
@@ -348,7 +346,7 @@
 		else
 			Change_Ore(path, FALSE)
 			Spread_Vein(path)
-			mineralAmt = scale_ore_to_vent()
+			// VOIDCREW EDIT: Change_Ore() assigns ordinary ore quantities, including spread walls.
 			GLOB.post_ore_manual["[mineralAmt]"] += 1
 
 /turf/closed/mineral/random/high_chance

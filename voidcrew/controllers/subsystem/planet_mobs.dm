@@ -25,8 +25,7 @@ SUBSYSTEM_DEF(planet_mobs)
 
 	/// Max managed mobs across ALL planets
 	var/global_mob_cap = 150
-	/// Base cap on managed mobs for any one planet, before the zone-band scaling in
-	/// mob_cap_for_band(). Per PLANET, not per z-level: a packed level can hold several
+	/// Cap on managed mobs for any one planet. Per PLANET, not per z-level: a packed level can hold several
 	/// tenants and each of them gets its own budget, exactly as it would have on a level
 	/// of its own.
 	var/per_planet_mob_cap = 15
@@ -136,19 +135,8 @@ SUBSYSTEM_DEF(planet_mobs)
 	trackers_here |= tracker
 	return tracker
 
-/**
- * A planet's share of the mob budget for its zone band.
- *
- * A flat cap muted the density half of danger scaling: deeper bands roll more spawns, then
- * the cap threw the surplus away. Scale it modestly instead. The global cap still bounds
- * the whole galaxy.
- */
+/// Every band has the same fauna budget; profiles supply the zone's stat scaling.
 /datum/controller/subsystem/planet_mobs/proc/mob_cap_for_band(zone_band)
-	switch(zone_band)
-		if(ZONE_YELLOW)
-			return round(per_planet_mob_cap * 1.2) // 18 at the default 15
-		if(ZONE_RED)
-			return round(per_planet_mob_cap * 1.5) // 22 at the default 15
 	return per_planet_mob_cap
 
 /**
@@ -307,7 +295,7 @@ SUBSYSTEM_DEF(planet_mobs)
 		return TRUE
 	return FALSE
 
-/// Spawns up to this planet's own zone-scaled cap from its candidate turfs, less `already_spawned`
+/// Spawns up to this planet's own cap from its candidate turfs, less `already_spawned`
 /// (the planet's people, spawned first out of the same cap). Returns how many mobs it actually spawned.
 /datum/controller/subsystem/planet_mobs/proc/spawn_for_tracker(datum/planet_mob_tracker/tracker, already_spawned = 0)
 	var/list/spawn_turfs = tracker.surface_spawn_turfs
@@ -362,7 +350,8 @@ SUBSYSTEM_DEF(planet_mobs)
 		if(!mob_type)
 			continue
 
-		new mob_type(candidate)
+		var/datum/npc_spawn_context/context = new(tracker, tracker.zone_band, source_turf = candidate)
+		spawn_npc_in_zone(mob_type, candidate, context)
 		spawned++
 		total_managed_mobs++
 

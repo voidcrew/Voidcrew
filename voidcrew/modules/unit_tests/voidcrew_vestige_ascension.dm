@@ -313,11 +313,12 @@
 	for(var/boss_type in boss_loot)
 		var/loot_type = boss_loot[boss_type]
 		var/mob/living/basic/boss = allocate(boss_type, floor)
+		var/expected_drops = istype(boss, /mob/living/basic/vestige_warframe) ? boss.npc_red_weapon_drop : 1
 		var/before = length(floor.get_all_contents_type(loot_type))
 		TEST_ASSERT(boss.death(), "[boss_type]'s first death failed")
-		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "[boss_type]'s legitimate kill did not provide its guaranteed loot")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + expected_drops, "[boss_type]'s legitimate kill did not provide its rolled loot")
 		TEST_ASSERT(!boss.death(), "[boss_type] reported another death after already dying")
-		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "Applying death again to [boss_type] paid another loot roll")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + expected_drops, "Applying death again to [boss_type] paid another loot roll")
 		qdel(boss)
 
 /// The defeated specimen cannot start another attack from an unfinished telegraph.
@@ -521,7 +522,8 @@
 	ship.shuttle = port
 	var/datum/team/voidcrew/crew = allocate(/datum/team/voidcrew)
 	crew.ship = ship
-	user.mind.ship_teams = list(crew)
+	ship.ship_team = crew
+	crew.join_member(user.mind)
 	TEST_ASSERT(!get_ship_from_atom(user), "The keeper must start off the ship for the crew fallback regression")
 	var/datum/vestige_ascension/offer = allocate(/datum/vestige_ascension/oracle)
 	var/datum/vestige_ascension_run/unit_test_disappearance/run = allocate(/datum/vestige_ascension_run/unit_test_disappearance, offer, user)
@@ -1091,14 +1093,15 @@
 	for(var/boss_type in boss_loot)
 		var/loot_type = boss_loot[boss_type]
 		var/mob/living/basic/boss = allocate(boss_type, floor)
+		var/expected_drops = istype(boss, /mob/living/basic/vestige_warframe) ? boss.npc_red_weapon_drop : 1
 		var/before = length(floor.get_all_contents_type(loot_type))
 		TEST_ASSERT(boss.death(), "[boss_type] could not die normally")
-		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "The first defeated [boss_type] did not pay its ordinary loot")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + expected_drops, "The first defeated [boss_type] did not pay its rolled loot")
 		var/obj/projectile/magic/resurrection/bolt = allocate(/obj/projectile/magic/resurrection, floor)
 		bolt.on_hit(boss)
 		TEST_ASSERT(boss.stat != DEAD, "The real resurrection projectile must still revive [boss_type]")
 		TEST_ASSERT(boss.death(), "The revived [boss_type] could not die a second time")
-		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + 1, "Reviving and killing [boss_type] again printed another equipment payment")
+		TEST_ASSERT_EQUAL(length(floor.get_all_contents_type(loot_type)), before + expected_drops, "Reviving and killing [boss_type] again printed another equipment payment")
 		qdel(boss)
 
 /// The actual bridle may temporarily possess a boss, but cannot permanently strip its attack rotation.

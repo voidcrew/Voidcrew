@@ -18,6 +18,11 @@
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
+"f" = (
+/obj/structure/table/reinforced,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "i" = (
 /obj/effect/gibspawner,
 /turf/open/floor/plating/rust,
@@ -57,11 +62,6 @@
 /obj/effect/mine/shrapnel,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"q" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/ballistic/automatic/wt550,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
 "r" = (
 /obj/item/stack/sheet/mineral/uranium/five,
 /turf/open/floor/plating/rust,
@@ -89,11 +89,6 @@
 "x" = (
 /obj/item/stack/sheet/mineral/uranium/five,
 /obj/structure/radioactive,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"y" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/energy/e_gun/nuclear,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "z" = (
@@ -269,7 +264,7 @@ a
 (5,1,1) = {"
 F
 F
-y
+f
 n
 p
 b
@@ -288,7 +283,7 @@ a
 (6,1,1) = {"
 F
 B
-q
+f
 A
 u
 b

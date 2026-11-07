@@ -482,16 +482,26 @@
 	if(!spawn_types || !length(spawn_types))
 		return FALSE
 
+	var/datum/ai_controller/npc_ship/controller = owner_ship.ai_controller
+	if(!istype(controller) || controller.get_target() != target_ship)
+		return FALSE
+	pod_count = controller.reserve_boarders(target_ship, pod_count)
+	if(!pod_count)
+		return controller.deploy_combat_boss(target_ship)
+
 	// Set up patrol distribution for this wave
 	GLOB.boarding_spawn_index = 0
 	GLOB.boarding_spawn_total = pod_count
 
 	var/pods_launched = 0
+	controller.boarding_pending += pod_count
 
 	// Launch pods at different locations on the target ship
 	for(var/i in 1 to pod_count)
 		var/turf/target_turf = get_random_target_turf(target_ship)
 		if(!target_turf)
+			controller.boarding_pending--
+			controller.boarding_committed--
 			continue
 
 		// Pick a random mob type for this pod
@@ -500,7 +510,7 @@
 		// Create the boarding pod with a slight delay between launches
 		// Uses supplypod system - pod falls from above, lands, opens to reveal mob
 		var/launch_delay = (i - 1) * 0.5 SECONDS
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_boarding_pod), target_turf, target_ship, owner_ship, mob_type), launch_delay)
+		controller.boarding_timers += addtimer(CALLBACK(controller, TYPE_PROC_REF(/datum/ai_controller/npc_ship, deploy_combat_boarder), target_turf, target_ship, mob_type, controller.boarding_context), launch_delay, TIMER_STOPPABLE)
 		pods_launched++
 
 	if(pods_launched > 0)

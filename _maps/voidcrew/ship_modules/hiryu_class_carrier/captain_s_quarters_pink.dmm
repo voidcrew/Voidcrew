@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aab" = (
+/obj/structure/displaycase/captain{
+	start_showpiece_type = /obj/item/knife/combat/survival
+	},
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_y = 29
+	},
+/turf/open/floor/wood/mahogany,
+/area/template_noop)
 "buH" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/machinery/computer/bank_machine{
@@ -6,12 +15,6 @@
 	},
 /obj/effect/turf_decal/siding/purple,
 /turf/open/floor/carpet/purple,
-/area/template_noop)
-"bUj" = (
-/obj/structure/window/reinforced/spawner/directional/north,
-/obj/structure/closet/secure_closet/captains,
-/obj/item/folder/documents,
-/turf/open/floor/wood/mahogany,
 /area/template_noop)
 "cjN" = (
 /obj/machinery/mission_pad,
@@ -47,6 +50,12 @@
 /area/template_noop)
 "nXX" = (
 /turf/template_noop,
+/area/template_noop)
+"pIW" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/closet/secure_closet/captains,
+/obj/item/folder/documents,
+/turf/open/floor/wood/mahogany,
 /area/template_noop)
 "rIk" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -93,15 +102,6 @@
 /obj/modular_map_connector,
 /turf/open/floor/iron/dollhouse,
 /area/template_noop)
-"xfu" = (
-/obj/structure/displaycase/captain{
-	start_showpiece_type = /obj/item/katana
-	},
-/obj/structure/plaque/static_plaque/golden/captain{
-	pixel_y = 29
-	},
-/turf/open/floor/wood/mahogany,
-/area/template_noop)
 
 (1,1,1) = {"
 sJk
@@ -122,7 +122,7 @@ kuP
 rIk
 "}
 (3,1,1) = {"
-bUj
+pIW
 kuP
 cjN
 ueZ
@@ -132,7 +132,7 @@ uhQ
 "}
 (4,1,1) = {"
 nXX
-xfu
+aab
 vTp
 ssU
 buH

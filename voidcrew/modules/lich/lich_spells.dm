@@ -439,11 +439,14 @@
 	var/list/mob/living/basic/verdigris_mirage/fresh_copies = list()
 	while(length(fresh_copies) < VERDIGRIS_MIRAGE_COUNT && length(free_steps) > 1)
 		var/turf/mirage_turf = pick_n_take(free_steps)
-		var/mob/living/basic/verdigris_mirage/mirage = new(mirage_turf, caster)
+		caster.get_npc_spawn_context()
+		var/datum/npc_spawn_context/context = new(caster)
+		var/mob/living/basic/verdigris_mirage/mirage = spawn_npc_in_zone(/mob/living/basic/verdigris_mirage, mirage_turf, context, FALSE, list(caster))
 		mirages += mirage
 		fresh_copies += mirage
 		RegisterSignals(mirage, list(COMSIG_QDELETING, COMSIG_LIVING_DEATH), PROC_REF(on_mirage_lost))
 		QDEL_IN(mirage, VERDIGRIS_MIRAGE_LIFESPAN)
+		context.finalize()
 
 	if(!length(fresh_copies))
 		to_chat(caster, span_warning("The grave-light gathers, but there's no room for it."))
@@ -633,7 +636,7 @@
 		return
 
 	stung = TRUE
-	attacker.adjustBruteLoss(VERDIGRIS_MIRAGE_STING)
+	attacker.adjustBruteLoss(npc_zone_damage(VERDIGRIS_MIRAGE_STING, src))
 	to_chat(attacker, span_userdanger("The mirage bursts, spraying green light through your arm!"))
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	QDEL_IN(src, 0)

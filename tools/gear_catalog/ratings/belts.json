@@ -1,0 +1,390 @@
+{
+ "category": "belts",
+ "groups": [
+  "loaded combat belts",
+  "holsters",
+  "combat carry belts",
+  "mining belts",
+  "tool belts",
+  "medical and janitor belts",
+  "fashion belts"
+ ],
+ "items": {
+  "/obj/item/storage/belt/bandolier": {
+   "confidence": "medium",
+   "group": "combat carry belts",
+   "hash": "96fccacf5a07b934",
+   "name": "bandolier",
+   "rank": 2,
+   "reason": "Holds 24 shotgun or heavy revolver rounds on the belt. A shotgun user's best friend, and empty when you get it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/chameleon": {
+   "confidence": "medium",
+   "group": "fashion belts",
+   "hash": "405b2a355bc2b8ae",
+   "name": "toolbelt",
+   "rank": 4,
+   "reason": "Looks like another belt and holds what a toolbelt holds. A disguise piece.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/champion": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "55b57f8873f67f9a",
+   "name": "championship belt",
+   "rank": 3,
+   "reason": "A trophy belt that holds one luchador mask.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "fannypack",
+   "rank": 1,
+   "reason": "Three small slots and a dorky look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack/black": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "black fannypack",
+   "rank": 1,
+   "reason": "Three small slots and a dorky look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack/blue": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "blue fannypack",
+   "rank": 1,
+   "reason": "Three small slots and a dorky look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack/cummerbund": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "cummerbund",
+   "rank": 2,
+   "reason": "A formal sash with three small slots.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack/green": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "green fannypack",
+   "rank": 1,
+   "reason": "Three small slots and a dorky look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/fannypack/red": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "3f6660275a756054",
+   "name": "red fannypack",
+   "rank": 1,
+   "reason": "Three small slots and a dorky look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/grenade": {
+   "confidence": "medium",
+   "group": "combat carry belts",
+   "hash": "0df715078eba5d55",
+   "name": "grenadier belt",
+   "rank": 1,
+   "reason": "Holds 30 grenades or charges on the belt, far more than any other belt. Comes empty. No shop, ruin or played hull has it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/holster": {
+   "confidence": "medium",
+   "group": "holsters",
+   "hash": "069f8d8533b528a8",
+   "name": "shoulder holster",
+   "rank": 4,
+   "reason": "Holds one pistol on the belt. A pistol fits in a bag anyway.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/holster/detective": {
+   "confidence": "medium",
+   "group": "holsters",
+   "hash": "9b6141c3c5053920",
+   "name": "detective's holster",
+   "rank": 2,
+   "reason": "Holds three pistols, revolvers or their magazines on the belt. A tidy sidearm rig, no more. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/holster/energy": {
+   "confidence": "low",
+   "group": "holsters",
+   "hash": "f85195f31f659916",
+   "name": "energy shoulder holsters",
+   "rank": 3,
+   "reason": "Holds two energy pistols on the belt. Nice for a disabler and a sidearm.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/holster/nukie": {
+   "confidence": "low",
+   "group": "holsters",
+   "hash": "a21e7d77846cba7b",
+   "name": "operative holster",
+   "rank": 1,
+   "reason": "Holds any two guns on the belt, rifles included, or a gun and a magazine. Swapping to a full second gun beats reloading. One ruin has it.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/belt/janitor": {
+   "confidence": "high",
+   "group": "medical and janitor belts",
+   "hash": "1a60b0d387d2d79b",
+   "name": "janibelt",
+   "rank": 4,
+   "reason": "An empty belt for cleaning gear.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/janitor/full": {
+   "confidence": "high",
+   "group": "medical and janitor belts",
+   "hash": "ce7fc7d87e6ed0a0",
+   "name": "janibelt",
+   "rank": 3,
+   "reason": "Cleaning gear on a belt.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/medical": {
+   "confidence": "high",
+   "group": "medical and janitor belts",
+   "hash": "fa2c2843424e7093",
+   "name": "medical belt",
+   "rank": 2,
+   "reason": "An empty belt for medical gear.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/medical/paramedic": {
+   "confidence": "low",
+   "group": "medical and janitor belts",
+   "hash": "a6576294bc186110",
+   "name": "EMT belt",
+   "rank": 1,
+   "reason": "Field starter kit: crew sensor, gauze, bone gel, surgical tape, a syringe and two bottles.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/military": {
+   "confidence": "medium",
+   "group": "combat carry belts",
+   "hash": "6dc815c0ef1e790d",
+   "name": "chest rig",
+   "rank": 3,
+   "reason": "Seven slots for any small item: magazines, grenades, medipens. More open than a security belt.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/military/assault": {
+   "confidence": "medium",
+   "group": "combat carry belts",
+   "hash": "6ec06be8f4d71ff9",
+   "name": "assault belt",
+   "rank": 4,
+   "reason": "Six slots for any small item. A chest rig with one slot fewer.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/military/snack": {
+   "confidence": "high",
+   "group": "combat carry belts",
+   "hash": "b11d2417484686bf",
+   "name": "tactical snack rig",
+   "rank": 7,
+   "reason": "Six slots for snacks and drinks.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/mining": {
+   "confidence": "high",
+   "group": "mining belts",
+   "hash": "f98da5a638bce8c1",
+   "name": "explorer's webbing",
+   "rank": 2,
+   "reason": "Six slots that take almost anything an away team carries: pickaxe, medical stacks, pills, scanners, tools.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/mining/alt": {
+   "confidence": "high",
+   "group": "mining belts",
+   "hash": "f98da5a638bce8c1",
+   "name": "explorer's webbing",
+   "rank": 2,
+   "reason": "Six slots that take almost anything an away team carries: pickaxe, medical stacks, pills, scanners, tools.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/mining/vendor": {
+   "confidence": "high",
+   "group": "mining belts",
+   "hash": "1343b640e6276690",
+   "name": "explorer's webbing",
+   "rank": 1,
+   "reason": "Explorer's webbing with a shelter capsule inside. Bought with a mining voucher.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/plant": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "50f17d1c35be9705",
+   "name": "botanical belt",
+   "rank": 9,
+   "reason": "A belt for hydroponics supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/security": {
+   "confidence": "low",
+   "group": "combat carry belts",
+   "hash": "ec33b0739b19c01a",
+   "name": "security belt",
+   "rank": 6,
+   "reason": "Five slots for ammo, grenades, batons and cuffs. Comes empty.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/security/full": {
+   "confidence": "medium",
+   "group": "loaded combat belts",
+   "hash": "80e95540a4980ba4",
+   "name": "security belt",
+   "rank": 1,
+   "reason": "Stun baton, flash, flashbang, pepper spray and cuffs: a complete kit for stunning and cuffing one person up close. The flashbang makes it yellow, and it's the only way to buy a baton.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/belt/security/webbing": {
+   "confidence": "medium",
+   "group": "combat carry belts",
+   "hash": "67c91460382208b2",
+   "name": "security webbing",
+   "rank": 5,
+   "reason": "Six slots for ammo, grenades, batons and cuffs. A security belt with one more slot.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/sheath/grass_sabre": {
+   "confidence": "high",
+   "group": "fashion belts",
+   "hash": "b6dc50bb9756d384",
+   "name": "sabre sheath",
+   "rank": 5,
+   "reason": "A grass sheath for one parsnip sabre, empty when crafted.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/sheath/sabre": {
+   "confidence": "medium",
+   "group": "loaded combat belts",
+   "hash": "0fc83fc7b6360fa5",
+   "name": "sabre sheath",
+   "rank": 2,
+   "reason": "An officer's sabre (ignores most armor, blocks half of melee, no help against bullets) in its sheath. Too little damage to be more than green. Starts in captains' lockers on 9 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/utility": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "05b9d84fe2ebcb6f",
+   "name": "toolbelt",
+   "rank": 4,
+   "reason": "An empty toolbelt.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/utility/atmostech": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "2817689ba353f898",
+   "name": "toolbelt",
+   "rank": 3,
+   "reason": "Plain hand tools on a belt. Every engineer starts with one.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/utility/chief": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "05b9d84fe2ebcb6f",
+   "name": "chief engineer's toolbelt",
+   "rank": 4,
+   "reason": "An empty toolbelt.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/utility/chief/full": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "d23246addf7b98d7",
+   "name": "chief engineer's toolbelt",
+   "rank": 1,
+   "reason": "Power tools, an experimental welder and a multitool. The best work belt, and still only a work belt.",
+   "tier": "green"
+  },
+  "/obj/item/storage/belt/utility/full": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "6beaf1e00d9c22af",
+   "name": "toolbelt",
+   "rank": 3,
+   "reason": "Plain hand tools on a belt. Every engineer starts with one.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/utility/full/engi": {
+   "confidence": "high",
+   "group": "tool belts",
+   "hash": "fb34986de25b00f0",
+   "name": "toolbelt",
+   "rank": 3,
+   "reason": "Plain hand tools on a belt. Every engineer starts with one.",
+   "tier": "none"
+  },
+  "/obj/item/storage/belt/utility/full/inducer": {
+   "confidence": "medium",
+   "group": "tool belts",
+   "hash": "379f6c1632169bc1",
+   "name": "toolbelt",
+   "rank": 2,
+   "reason": "Plain tools plus an inducer, which recharges a dead APC or cell by hand. Handy after a power loss.",
+   "tier": "green"
+  }
+ },
+ "method": "A filled belt rates as its contents. An empty belt is none unless its slots change what you can carry into a fight, such as grenades, spare guns or magazines. No formula.",
+ "unrated": {
+  "/obj/item/storage/belt": "leftover",
+  "/obj/item/storage/belt/bandolier/no_quarter": "no route",
+  "/obj/item/storage/belt/chameleon/broken": "no route",
+  "/obj/item/storage/belt/champion/wrestling": "no route",
+  "/obj/item/storage/belt/fannypack/black/rogue": "no route",
+  "/obj/item/storage/belt/fannypack/cyan": "no route",
+  "/obj/item/storage/belt/fannypack/orange": "no route",
+  "/obj/item/storage/belt/fannypack/pink": "no route",
+  "/obj/item/storage/belt/fannypack/purple": "no route",
+  "/obj/item/storage/belt/fannypack/white": "no route",
+  "/obj/item/storage/belt/fannypack/yellow": "no route",
+  "/obj/item/storage/belt/fannypack/yellow/bee_terrorist": "no route",
+  "/obj/item/storage/belt/grenade/full": "no route",
+  "/obj/item/storage/belt/holster/chameleon": "no route",
+  "/obj/item/storage/belt/holster/detective/full": "no route",
+  "/obj/item/storage/belt/holster/detective/full/ert": "no route",
+  "/obj/item/storage/belt/holster/energy/disabler": "no route",
+  "/obj/item/storage/belt/holster/energy/smoothbore": "no route",
+  "/obj/item/storage/belt/holster/energy/thermal": "no route",
+  "/obj/item/storage/belt/holster/nukie/cowboy": "no route",
+  "/obj/item/storage/belt/holster/nukie/cowboy/full": "no route",
+  "/obj/item/storage/belt/medical/ert": "no route",
+  "/obj/item/storage/belt/military/abductor": "no route",
+  "/obj/item/storage/belt/military/abductor/full": "no route",
+  "/obj/item/storage/belt/military/army": "no route",
+  "/obj/item/storage/belt/military/assault/fisher": "no route",
+  "/obj/item/storage/belt/military/assault/full": "no route",
+  "/obj/item/storage/belt/military/snack/full": "no route",
+  "/obj/item/storage/belt/mining/healing": "no route",
+  "/obj/item/storage/belt/mining/primitive": "no route",
+  "/obj/item/storage/belt/sheath": "no route",
+  "/obj/item/storage/belt/soulstone": "no route",
+  "/obj/item/storage/belt/soulstone/full": "no route",
+  "/obj/item/storage/belt/soulstone/full/chappy": "no route",
+  "/obj/item/storage/belt/unfathomable_curio": "no route",
+  "/obj/item/storage/belt/utility/full/powertools": "no route",
+  "/obj/item/storage/belt/utility/full/powertools/rcd": "no route",
+  "/obj/item/storage/belt/utility/syndicate": "no route",
+  "/obj/item/storage/belt/wands": "no route",
+  "/obj/item/storage/belt/wands/full": "no route"
+ }
+}

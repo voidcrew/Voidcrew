@@ -1,0 +1,1116 @@
+{
+ "category": "mech",
+ "groups": [
+  "combat exosuits",
+  "working and medical exosuits",
+  "exosuit guns",
+  "exosuit launchers and special arms",
+  "exosuit ammo",
+  "exosuit armor plates",
+  "exosuit movement gear",
+  "exosuit work tools",
+  "exosuit medical gear",
+  "exosuit support gear"
+ ],
+ "items": {
+  "/obj/item/mecha_ammo/clusterbang": {
+   "confidence": "medium",
+   "group": "exosuit ammo",
+   "hash": "312353dbe648e8f4",
+   "name": "launchable flashbang clusters",
+   "rank": 2,
+   "reason": "Three more clusterbangs for the SOB-3 launcher. Follows its launcher.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_ammo/flashbang": {
+   "confidence": "medium",
+   "group": "exosuit ammo",
+   "hash": "487695a53731142a",
+   "name": "launchable flashbangs",
+   "rank": 6,
+   "reason": "Six more flashbangs for the SGL-6 launcher. Follows its launcher.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_ammo/incendiary": {
+   "confidence": "high",
+   "group": "exosuit ammo",
+   "hash": "c565e6fa13e42c66",
+   "name": "incendiary ammo box",
+   "rank": 4,
+   "reason": "Reload for the Hades carbine. The fire comes from these rounds, but the gun is yellow anyway.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_ammo/lmg": {
+   "confidence": "high",
+   "group": "exosuit ammo",
+   "hash": "1cf95726dae706dc",
+   "name": "machine gun ammo box",
+   "rank": 3,
+   "reason": "Reload for the Ultra AC 2. Plain rounds, so it follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_ammo/missiles_pep": {
+   "confidence": "medium",
+   "group": "exosuit ammo",
+   "hash": "11e70e717da4517e",
+   "name": "precision explosive missiles",
+   "rank": 1,
+   "reason": "Six more wall-breaching missiles for the PEP-6 rack, and cheap to print. Follows its launcher.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_ammo/scattershot": {
+   "confidence": "high",
+   "group": "exosuit ammo",
+   "hash": "e344d3c53767ea63",
+   "name": "scattershot ammo box",
+   "rank": 5,
+   "reason": "Reload for the Scattershot. Plain pellets, so it follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/camera_kit": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "c104f0a0759aa3a1",
+   "name": "exosuit-mounted camera",
+   "rank": 7,
+   "reason": "A camera on the mech. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/chassis/clarke": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "c691cf47a0e3b723",
+   "name": "Clarke chassis",
+   "rank": 1,
+   "reason": "Part of a Clarke, a mining mech: 250 health, the fastest mech there is, immune to lava, with a built-in ore box. Only 10 bullet armor, and the only guns it takes are mining ones.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/chassis/durand": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "6fde35a2066a8af5",
+   "name": "Durand chassis",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/chassis/gygax": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "1672678e36806375",
+   "name": "Gygax chassis",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/chassis/honker": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "65d003b14faf4de5",
+   "name": "H.O.N.K chassis",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/chassis/justice": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "9f00c075554e56d4",
+   "name": "Justice chassis",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/chassis/odysseus": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "6b35c3294f030f58",
+   "name": "Odysseus chassis",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/chassis/phazon": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "fa7fd2fdf27379e5",
+   "name": "Phazon chassis",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/chassis/ripley": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "2ddc6f22fd647b3d",
+   "name": "Ripley chassis",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/chassis/savannah_ivanov": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "40aaacd6616a46f1",
+   "name": "Savannah-Ivanov chassis",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/air_tank": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "ab7f7883984cc71c",
+   "name": "mounted air tank",
+   "rank": 5,
+   "reason": "Spare air for the cabin. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/armor/anticcw_armor_booster": {
+   "confidence": "high",
+   "group": "exosuit armor plates",
+   "hash": "3b39376c85668708",
+   "name": "exosuit impact cushion plates",
+   "rank": 2,
+   "reason": "Adds 20 melee armor in the one armor slot. Mechs mostly get shot, so this loses to the projectile plate.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/armor/antiemp_armor_booster": {
+   "confidence": "high",
+   "group": "exosuit armor plates",
+   "hash": "1872a0601e2a826e",
+   "name": "exosuit ablative insulation",
+   "rank": 3,
+   "reason": "Adds 15 energy armor, costs 10 bullet and 5 melee, and halves EMP burn damage. The slot's answer to a mech's main weakness.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/armor/antiproj_armor_booster": {
+   "confidence": "high",
+   "group": "exosuit armor plates",
+   "hash": "750371e58e986d61",
+   "name": "exosuit projectile shielding",
+   "rank": 1,
+   "reason": "Adds 15 bullet and laser armor in the mech's one armor slot, about a fifth less damage from guns, with no downside. The plate everyone picks.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/drill": {
+   "confidence": "high",
+   "group": "exosuit work tools",
+   "hash": "f3dd12cba31c98b6",
+   "name": "exosuit drill",
+   "rank": 3,
+   "reason": "Mines rock from inside a mech. The mech's first useful tool.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/drill/diamonddrill": {
+   "confidence": "high",
+   "group": "exosuit work tools",
+   "hash": "0007037af2551e13",
+   "name": "diamond-tipped exosuit drill",
+   "rank": 2,
+   "reason": "Mines faster than the plain drill. A mining upgrade.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/extinguisher": {
+   "confidence": "high",
+   "group": "exosuit work tools",
+   "hash": "2cea411b6b562343",
+   "name": "exosuit extinguisher",
+   "rank": 6,
+   "reason": "Puts out fires from a mech. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/generator": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "c1c5f096e0729ba0",
+   "name": "plasma engine",
+   "rank": 2,
+   "reason": "Burns plasma sheets to recharge the cell slowly. Lets a mech stay out away from a charger.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/gravcatapult": {
+   "confidence": "low",
+   "group": "exosuit movement gear",
+   "hash": "6645913e5aba362d",
+   "name": "mounted gravitational catapult",
+   "note": "Sling mode: one click locks onto an unanchored object or mob, and a second click on something else while the locked target is in view throws it there (range 14). Push mode shoves everything unanchored within 3 tiles of the clicked spot away from it; each use costs 100 energy with a 1 second cooldown.",
+   "rank": 3,
+   "reason": "Throws a person or object up to 14 tiles, or shoves everything within 3 tiles away, once a second. Good for keeping men off a mech or throwing them out of an airlock.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp": {
+   "confidence": "high",
+   "group": "exosuit work tools",
+   "hash": "42c36c454e04745c",
+   "name": "hydraulic clamp",
+   "note": "Ripley-only. With combat mode off it shoves a living target aside; with combat mode on it squeezes for 20 brute (a third of the target's melee armor counts, the target can block it, and aliens take triple). It also lifts unanchored objects such as crates and ore boxes into the cargo hold (15 slots, 1.5 s each), refills other mechs' ammo from boxes in the hold, and forces open airlocks and firelocks.",
+   "rank": 4,
+   "reason": "Ripley only. Lifts crates and ore boxes into the cargo hold, forces doors and squeezes people for 20 brute. Prints from round start.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam": {
+   "confidence": "high",
+   "group": "exosuit medical gear",
+   "hash": "3a469aead9af0a16",
+   "name": "exosuit medical beamgun",
+   "note": "Clicking a living mob within 8 tiles opens a tether that heals it 4 brute, 4 burn, 1 toxin and 1 oxygen every 2 seconds for as long as line of sight holds. It never actually draws mech power despite its energy_drain value, and the tether drops while the mech's weapon safety is on. Two medical beams that cross explode (heavy 3, light 5, flash 8).",
+   "rank": 2,
+   "reason": "Odysseus only. The same heal as the hand medical beam, 4 brute and 4 burn per 2 s at 8 tiles, and it never draws power. Two crossed beams explode.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun": {
+   "confidence": "low",
+   "group": "exosuit medical gear",
+   "hash": "eda99aadcbee1b2b",
+   "name": "exosuit syringe gun",
+   "note": "Fires loaded syringes (10 max) as darts that do 6 damage and inject their contents on hit; thick armor deflects the injection and pacifists cannot fire it. The contents come from a 75u internal pool, made at 2.5u/s split across the toggled reagents (10 power per reagent per second) and starting with only epinephrine and multiver; scanning other containers teaches more. Loading a syringe pours its contents into the pool.",
+   "rank": 1,
+   "reason": "Odysseus only. Makes any reagent it has scanned at 2.5 units a second and fires up to 10 syringes. An endless chem source for 120 research points, but thick armor stops the darts.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/mining_scanner": {
+   "confidence": "high",
+   "group": "exosuit work tools",
+   "hash": "ee4b0504e7f1c84e",
+   "name": "exosuit mining scanner",
+   "rank": 5,
+   "reason": "Shows ore around the mech. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/radio": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "a4e5bca3f6eebb3d",
+   "name": "mounted radio",
+   "rank": 6,
+   "reason": "A radio for the mech. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/rcd": {
+   "confidence": "medium",
+   "group": "exosuit work tools",
+   "hash": "ac0e1c0ac3fffd20",
+   "name": "mounted RCD",
+   "note": "Builds and deconstructs like a hand RCD on targets within 3 tiles in view, at half the build time and able to work reinforced walls and floors. It has no matter limit: every matter unit is paid from the mech's cell at 160 J (or from a linked silo once the silo upgrade is installed). Takes RCD upgrade disks; has a deconstruct toggle and a scan.",
+   "rank": 1,
+   "reason": "Builds and tears down from 3 tiles at half a hand RCD's time, works reinforced walls and floors, and draws from the mech's cell with no matter limit. Takes a hull apart fast, but costs real metals.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/repair_droid": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "e6c07c905e12149c",
+   "name": "exosuit repair droid",
+   "rank": 1,
+   "reason": "Mends half a point of health a second for steady power. Saves a trip between fights and changes nothing during one.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/ripleyupgrade": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "d3c2382948f08e72",
+   "name": "Ripley MK-II Conversion Kit",
+   "rank": 2,
+   "reason": "Seals a Ripley's cabin and gives it 250 health and 30 bullet and laser armor, at about half the speed. Still takes only work gear.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/ripleyupgrade/paddy": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "a74ad7759f6755c8",
+   "name": "Paddy Conversion Kit",
+   "rank": 6,
+   "reason": "Turns a Ripley into a 250 health mech, much faster than a Gygax, that takes any combat gun. The cage stays open, so shots at the chest or head hit the pilot.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/sleeper/medical": {
+   "confidence": "high",
+   "group": "exosuit medical gear",
+   "hash": "d4fd94ba7f72d22a",
+   "name": "mounted sleeper",
+   "note": "Loads one carbon patient inside the mech (2 s; the patient must not be buckled and can resist out at once). While loaded it heals 2 oxygen damage per second, shortens stun, knockdown, paralysis, immobilize and unconscious time by 4 s per second, injects 5u epinephrine into a patient in crit or dead, and 3u formaldehyde into a dead one. The medical version can also inject 10u of a syringe-gun reagent on command (up to 20u of each per patient).",
+   "rank": 3,
+   "reason": "Odysseus only. Carries one patient, stabilizes them and wakes them from stuns. A field ambulance.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/teleporter": {
+   "confidence": "medium",
+   "group": "exosuit movement gear",
+   "hash": "593f591fd046554f",
+   "name": "mounted teleporter",
+   "note": "Teleports the mech to a clicked tile within 7 tiles on the same level, landing up to 4 tiles off target. 15 second cooldown and 10 kJ per jump (a default mech cell holds 100 kJ). Refused where teleporting is blocked.",
+   "rank": 1,
+   "reason": "Jumps up to 7 tiles through anything and lands up to 4 off target, every 15 s, for a tenth of a basic cell. Gets a mech past a wall or out of trouble.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/thrusters/gas": {
+   "confidence": "high",
+   "group": "exosuit movement gear",
+   "hash": "fedc7d5ada6a1401",
+   "name": "RCS thruster package",
+   "rank": 5,
+   "reason": "Movement in space paid for from a gas tank. Useful, wins no fight.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/thrusters/ion": {
+   "confidence": "high",
+   "group": "exosuit movement gear",
+   "hash": "3abf1e0a45bc34ea",
+   "name": "Ion thruster package",
+   "rank": 4,
+   "reason": "Free movement in space on the mech's own power. Found on one module only.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "9e5b3e7d1869f4e8",
+   "name": "FNX-99 \"Hades\" Carbine",
+   "note": "Adds fire stacks to any carbon it hits and ignites them, whatever their armor; the amount varies by calibre (4 by default, 1 to 3 on the pistol, SMG and 7mm kinds). In flight it drops a hotspot on every tile it crosses (except the no-trail slug), which can light gas and flammables along its path.",
+   "rank": 8,
+   "reason": "20 damage a second with 24 rounds loaded and 96 spare, but every hit sets a person alight through any armor. The fire is the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "807bd83823a4bf82",
+   "name": "banana mortar",
+   "rank": 7,
+   "reason": "H.O.N.K only. Lobs banana peels that slip people. A nuisance that can still win a corridor.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "8c89ccd149c1d7fd",
+   "name": "SGL-6 grenade launcher",
+   "rank": 4,
+   "reason": "Six flashbangs, one every 6 s, thrown from inside a sealed cabin. Sunglasses and ear protection blunt it, and plenty of crews have both.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/clusterbang": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "b4b78e06c20cdfcc",
+   "name": "SOB-3 grenade launcher",
+   "rank": 3,
+   "reason": "Three clusterbangs that each burst into several flashbangs, thrown from inside a sealed cabin. Flattens a boarding party without flash and ear protection.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "7034e2cb161698c9",
+   "name": "mousetrap mortar",
+   "rank": 8,
+   "reason": "H.O.N.K only. Lobs armed mousetraps. A nuisance, mostly.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "17dbee807bd3edbe",
+   "name": "Oingo Boingo Punch-face",
+   "note": "Throws a boxing glove up to 5 tiles (10 in the magazine, 999 in reserve; 2 s cooldown, 250 J). Set to lethal it hits for 35 and knocks the target back 7 tiles; set to cuddles it does 0 damage and knocks back 2. A target who catches the glove takes no knockback. Pacifists cannot use it while it is set to lethal.",
+   "rank": 6,
+   "reason": "H.O.N.K only. 35 damage and 7 tiles of knockback every 2 s, unless the target catches it. Costs bananium and needs the clown mech.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "5fdddaa309ab98ba",
+   "name": "Ultra AC 2",
+   "rank": 1,
+   "reason": "Best plain mech gun: 60 damage a second from one arm with 300 rounds, about 42 on the gun scale. Paired with a laser it roughly matches a C-20r, which is as hard as a mech hits. Two of the same gun share a cooldown.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/breaching": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "4dabb680f91f9b4d",
+   "name": "PEP-6 missile rack",
+   "note": "Explodes on the target: against non-living things a radius-1 heavy blast with light out to 2, fire to 3 and a flash to 4; against living targets the same without the heavy ring. A living target not in hard crit has a 1% chance of being gibbed outright. Subtypes with anti-armour damage hurt mechs and silicons extra. / Does 30 on a direct hit but only blasts when it strikes a structure, machine, vehicle (mechs included), wall or silicon: a dense one gets a heavy 1 / light 1 explosion, a non-dense one light 1, a cyborg light 1. Hitting any other mob, item or object leaves a harmless broken missile with no blast. It also deals 80 extra to mechs, and 80 split 75/25 brute/burn to silicons.",
+   "rank": 2,
+   "reason": "Six missiles, one every 6 s. Each one blows open an ordinary wall and does up to 110 to a mech or cyborg, but only 30 to a man. Breaks hulls and kills mechs.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "0c387cea896307f0",
+   "name": "LBX AC 10 \"Scattershot\"",
+   "rank": 9,
+   "reason": "Four 24 damage pellets every 2 s across a wide cone: 96 at arm's length, about a quarter of that at 5 tiles. A corridor gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/disabler": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "e5e4273c56a7c83f",
+   "name": "CH-DS \"Peacemaker\" disabler",
+   "rank": 11,
+   "reason": "Five weak disabler beams every 1.5 s in a wide cone: 75 stamina point blank, far less at range. Worse than a hand disabler past a couple of tiles.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/ion": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "2f3adb540fa9dc19",
+   "name": "MKIV ion heavy cannon",
+   "note": "Does no damage; on any hit it sets off an EMP at the impact tile. That tile takes a heavy EMP and each tile one step out takes a heavy or light one (50/50), reaching everything on them including the shooter if close. The reduced-radius variant (HoS ion casing, ion shell) has radius 0, so only the impact tile is hit, heavy or light 50/50.",
+   "rank": 2,
+   "reason": "No damage, but each hit is an EMP. A heavy EMP does 100 to 180 to a mech with a basic capacitor, so it kills a Gygax in two or three shots and does nothing to a bare man.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "72ac0ebcbf0709e8",
+   "name": "CH-PS \"Immolator\" laser",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 3,
+   "reason": "Half a laser gun's fire rate at the same 25 damage, about 27 on the gun scale, but it can't be disarmed, the mech's cell barely notices it, and it pairs with a second gun on the other arm.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "0e9e2e4ca7f2712a",
+   "name": "CH-LC \"Solaris\" laser cannon",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 7,
+   "reason": "40 damage every 1.5 s. Hits harder per shot than the Immolator but does less damage a second, so the choice is close.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/mecha_kineticgun": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "ccebdd6ebd90beb8",
+   "name": "Exosuit Proto-kinetic Accelerator",
+   "note": "Drills the rock at the tile where it hits or runs out (when the shooter is a person that also shortens their reload, scaled by mining skill) and triggers each installed modkit's strike effect there. Damage is cut to a quarter if that spot is above 50 kPa. A mob with the mining-parry trait can parry the shot to speed it up and add 15% damage (50% if the shooter parries it). The exosuit version also drills rock within 2 tiles of the impact and damages mining mobs near it. / 50 brute (bomb armor), range 5; damage is quartered unless the target tile is at or below 50 kPa. On impact it drills every mineral turf within 2 tiles and deals the same damage to mining fauna within 2 tiles (not the target or the pilot), and a mineral hit drills that rock.",
+   "rank": 10,
+   "reason": "50 a shot on airless ground, a quarter of that in air, 5 tile reach, and it clears rock. A miner's gun that fits working mechs too.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma": {
+   "confidence": "high",
+   "group": "exosuit guns",
+   "hash": "c7cb5ad9ff640b9d",
+   "name": "217-D Heavy Plasma Cutter",
+   "note": "Cuts through rock: each mineral wall it hits is drilled out and the bolt carries on through it, and the first 3 walls (5 on the advanced bolt, 3 on the exosuit bolt) each add a tile of range back. On a mob or anything else it acts as a normal hit.",
+   "rank": 12,
+   "reason": "10 damage a second and it cuts through rock. A mining tool.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/tesla": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "be494d500ee2f5ab",
+   "name": "MKI Tesla Cannon",
+   "note": "The mech cannon version does 15 burn on hit (10 for the base bolt), then arcs lightning at something within 5 tiles (preferring tesla coils and grounding rods, then living mobs, then machinery, then structures), and keeps arcing every projectile tick while in flight. A living mob is shocked for about 33 (power 20,000 / 600, plus or minus 5; half that for the base bolt) with no stun, and the arc chains onward with power cut by a third per mob hopped; machinery and structures take about 5 burn, machines also 40% EMP. No faction check, so allies in range are hit.",
+   "rank": 4,
+   "reason": "15 burn plus a chain shock of about 33 every 3.5 s, no stun, and it hits friends too. Well short of the hand tesla cannon, and insulated gloves stop the shock.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/cryo": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "b17b08a0c1af5162",
+   "name": "Prototype I 'Cryo Thermal Cannon'",
+   "note": "20 brute (sharp, 10 armor penetration, checked against energy armor). A human already above their heat-damage limit plus 300 K (about 640 K) is also knocked down for 10 s and takes 20 more burn, then drops to normal body temperature; heat-immune targets are unaffected. A mech carrying both thermal cannons cuts both cooldowns from 2 s to 0.8 s.",
+   "rank": 6,
+   "reason": "20 brute every 2 s through most armor. Fit with its pyro twin both fire every 0.8 s, for 50 damage a second. Only on one carrier's hangar module.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal/inferno": {
+   "confidence": "medium",
+   "group": "exosuit guns",
+   "hash": "0bd84b115338a773",
+   "name": "Prototype II 'Pyro Thermal Cannon'",
+   "note": "20 burn (10 armor penetration, checked against energy armor). A human colder than their cold-damage limit minus 150 K (about 120 K) triggers a flame explosion (light radius 2, fire radius 3) on them, then body temperature resets to normal; cold-immune targets are unaffected. A mech carrying both thermal cannons cuts both cooldowns from 2 s to 0.8 s.",
+   "rank": 5,
+   "reason": "20 burn every 2 s through most armor. Fit with its cryo twin both fire every 0.8 s, for 50 damage a second. Only on one carrier's hangar module.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/honker": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "e151e29528e96d67",
+   "name": "HoNkER BlAsT 5000",
+   "note": "Honks everyone who can hear within 6 tiles (friend or foe, carbon mobs only): wakes them, stutters 40 s, deafens, paralyzes 6 s, then a 30% chance of a further 20 s stun plus 8 s unconscious, otherwise jitter. 15 second cooldown, 200 J. Not flagged harmful, so pacifist pilots can use it.",
+   "rank": 1,
+   "reason": "H.O.N.K only. Everyone who can hear within 6 tiles, friend or foe, is paralyzed for 6 s, and 3 in 10 also get a 20 s stun and 8 s out cold. Every 15 s, and armor doesn't help. Only being deaf does.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/weapon/paddy_claw": {
+   "confidence": "medium",
+   "group": "exosuit launchers and special arms",
+   "hash": "067f9dc4fc92d227",
+   "name": "hydraulic claw",
+   "note": "Paddy-only. Clicking any living mob except megafauna-class ones with maximum move resistance (dead bodies included) takes 1.5 s, then loads it into a 4-slot holding cell, zip-tying carbon targets by default (toggleable). Prisoners can break out in 1 minute if the mech stays still (6 s for large mobs) and cannot remove cuffs while inside. It also forces open doors.",
+   "rank": 5,
+   "reason": "Paddy only. Grabs a living target in 1.5 s, zip-ties them and locks them in a cell that holds four. A moving Paddy keeps them in. Takes people off a fight and off the map.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_equipment/wormhole_generator": {
+   "confidence": "medium",
+   "group": "exosuit movement gear",
+   "hash": "7e386a2b3e86dd5d",
+   "name": "mounted wormhole generator",
+   "note": "Opens a two-way wormhole under the mech to a random spot near a dense object in a random area within 100 tiles on the same level; the clicked target is ignored apart from a teleport-allowed check. Mechs fit through it. The portals last 15 to 30 seconds; 5 second cooldown, 300 J.",
+   "rank": 2,
+   "reason": "Opens a two-way portal to a random spot within 100 tiles, every 5 s, for 15 to 30 s. Mechs fit. An escape with no aim, and your crew can follow you through it.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/mecha_tracking": {
+   "confidence": "high",
+   "group": "exosuit support gear",
+   "hash": "b598e51cce3a0cb3",
+   "name": "exosuit tracking beacon",
+   "rank": 4,
+   "reason": "Lets a console see where the mech is. A plain tool.",
+   "tier": "none"
+  },
+  "/obj/item/mecha_parts/mecha_tracking/ai_control": {
+   "confidence": "medium",
+   "group": "exosuit support gear",
+   "hash": "c6bc2a70e757db67",
+   "name": "exosuit AI control beacon",
+   "rank": 3,
+   "reason": "Lets a ship's AI take over the mech and drive it. Only matters with an AI aboard.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/clarke_head": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Clarke head",
+   "rank": 1,
+   "reason": "Part of a Clarke, a mining mech: 250 health, the fastest mech there is, immune to lava, with a built-in ore box. Only 10 bullet armor, and the only guns it takes are mining ones.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/clarke_left_arm": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Clarke left arm",
+   "rank": 1,
+   "reason": "Part of a Clarke, a mining mech: 250 health, the fastest mech there is, immune to lava, with a built-in ore box. Only 10 bullet armor, and the only guns it takes are mining ones.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/clarke_right_arm": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Clarke right arm",
+   "rank": 1,
+   "reason": "Part of a Clarke, a mining mech: 250 health, the fastest mech there is, immune to lava, with a built-in ore box. Only 10 bullet armor, and the only guns it takes are mining ones.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/clarke_torso": {
+   "confidence": "medium",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Clarke torso",
+   "rank": 1,
+   "reason": "Part of a Clarke, a mining mech: 250 health, the fastest mech there is, immune to lava, with a built-in ore box. Only 10 bullet armor, and the only guns it takes are mining ones.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/durand_armor": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand armor plates",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_head": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand head",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_left_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand left arm",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_left_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand left leg",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_right_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand right arm",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_right_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand right leg",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/durand_torso": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Durand torso",
+   "rank": 3,
+   "reason": "Part of a Durand: 400 health, 35 bullet armor and a shield mode that blocks the front. Takes four times what a vested man takes from the side and eight times from the front, and punches for 40.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/gygax_armor": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax armor plates",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_head": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax head",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_left_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax left arm",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_left_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax left leg",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_right_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax right arm",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_right_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax right leg",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/gygax_torso": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Gygax torso",
+   "rank": 5,
+   "reason": "Part of a Gygax, the entry combat mech: 250 health, 20 bullet and 30 laser armor, with an overclock for speed. Takes twice what a vested man takes from the side and four times from the front.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_head": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K head",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_left_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K left arm",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_left_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K left leg",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_right_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K right arm",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_right_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K right leg",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/honker_torso": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "H.O.N.K torso",
+   "rank": 7,
+   "reason": "Part of a H.O.N.K: 140 health, no armor and weak to melee. It can carry any combat gun, but its reason to exist is the Honker. The real cost is 17.5 sheets of bananium, which is rare.",
+   "tier": "yellow"
+  },
+  "/obj/item/mecha_parts/part/justice_armor": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice armor",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/justice_left_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice left arm",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/justice_left_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice left leg",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/justice_right_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice right arm",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/justice_right_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice right leg",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/justice_torso": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Justice torso",
+   "rank": 1,
+   "reason": "Reflects every shot back at the shooter while its shields are up, and only melee, thrown objects or EMPs wear them down. Cloaks, charges 7 tiles and beheads anyone downed. Needs an emagged fabricator, a robotics skill chip and 8 telecrystals.",
+   "tier": "above"
+  },
+  "/obj/item/mecha_parts/part/odysseus_head": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus head",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/odysseus_left_arm": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus left arm",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/odysseus_left_leg": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus left leg",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/odysseus_right_arm": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus right arm",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/odysseus_right_leg": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus right leg",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/odysseus_torso": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Odysseus torso",
+   "rank": 4,
+   "reason": "Part of an Odysseus, a medical mech: 120 health, no armor, a medical HUD and quick legs. Carries healing gear and no guns.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/phazon_armor": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon armor",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_head": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon head",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_left_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon left arm",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_left_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon left leg",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_right_arm": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon right arm",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_right_leg": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon right leg",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/phazon_torso": {
+   "confidence": "medium",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Phazon torso",
+   "rank": 4,
+   "reason": "Part of a Phazon: walks through walls for about 50 tiles on a basic cell, with 200 health and 30 armor all round. Two heavy EMPs kill one with a basic capacitor. A bluespace anomaly core is the real gate.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/ripley_left_arm": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Ripley left arm",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/ripley_left_leg": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Ripley left leg",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/ripley_right_arm": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Ripley right arm",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/ripley_right_leg": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Ripley right leg",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/ripley_torso": {
+   "confidence": "high",
+   "group": "working and medical exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Ripley torso",
+   "rank": 3,
+   "reason": "Part of a Ripley, the basic work mech: 200 health, fast, hauls crates and drills rock, with an open cage that lets shots reach the pilot. Prints from round start and rightly so.",
+   "tier": "green"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_armor": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov armor",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_head": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov head",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_left_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov left arm",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_left_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov left leg",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_right_arm": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov right arm",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_right_leg": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov right leg",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  },
+  "/obj/item/mecha_parts/part/savannah_ivanov_torso": {
+   "confidence": "high",
+   "group": "combat exosuits",
+   "hash": "d136916ee6836ed7",
+   "name": "Savannah-Ivanov torso",
+   "rank": 2,
+   "reason": "Part of the toughest mech: 450 health, 40 bullet armor, half damage from the front. It leaps, flattens walls and gibs anyone downed where it lands, and calls a missile strike. Needs two players to use fully.",
+   "tier": "red"
+  }
+ },
+ "method": "Chassis and parts rate as the finished mech, measured as how many vested men it takes to match its health and armor. Mech guns use the gun formula against a vested man at 5 tiles, then get read as a pair, since a mech has two arms but two copies of one gun share a cooldown.",
+ "unrated": {
+  "/obj/item/mecha_ammo": "abstract",
+  "/obj/item/mecha_ammo/missiles_srm": "no route",
+  "/obj/item/mecha_parts": "abstract",
+  "/obj/item/mecha_parts/chassis": "no route",
+  "/obj/item/mecha_parts/mecha_equipment": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/air_tank/full": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/armor": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/armor/antiemp_armor_booster/clandestine": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/armor/armor_plate": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/concealed_weapon_bay": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/ejector": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/ejector/seccage": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill/fake": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/medical": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/orebox_manager": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/sleeper": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/sleeper/clarke": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/thrusters": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/bombanana": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/silenced": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/pulse": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/taser": "no route",
+  "/obj/item/mecha_parts/mecha_equipment/weapon/energy/thermal": "no route",
+  "/obj/item/mecha_parts/part": "no route"
+ }
+}
