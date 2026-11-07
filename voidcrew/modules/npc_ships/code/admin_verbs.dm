@@ -123,6 +123,69 @@ ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC 
 	log_admin("[key_name(user)] spawned NPC pirate: [spawned_pirate.name] ([selected_faction] - [selected_type]) at [AREACOORD(spawn_turf)]")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn NPC Pirate")
 
+/**
+ * Force-docks the ship the admin stands on to a live NPC pirate, wherever it is on the overmap:
+ * the pirate is moved onto our tile and docked exactly as an interdictor's force dock would
+ * (exit-to-exit, reserve berths if that fails), with the same undock lockout on the pirate.
+ * For testing boarding fights without the chase and the interdiction.
+ */
+ADMIN_VERB(force_dock_npc_pirate, R_DEBUG, "Force Dock NPC Pirate", "Force-dock the ship you're standing on to an NPC pirate, ignoring distance.", ADMIN_CATEGORY_DEBUG)
+	var/turf/here = get_turf(user.mob)
+	var/obj/structure/overmap/ship/our_ship = here && pirate_crew_ship_at(here)
+	if(!our_ship)
+		to_chat(user, span_warning("Stand on a ship first."))
+		return
+	if(istype(our_ship, /obj/structure/overmap/ship/npc) && our_ship.ai_controller)
+		to_chat(user, span_warning("[our_ship.name] is an NPC ship. Stand on a player ship."))
+		return
+	if(our_ship.state != OVERMAP_SHIP_FLYING)
+		to_chat(user, span_warning("[our_ship.name] has to be flying, not docked or in transit."))
+		return
+
+	var/list/choices = list()
+	for(var/obj/structure/overmap/ship/npc/pirate as anything in SSnpc_ships.active_ships)
+		if(QDELETED(pirate) || pirate == our_ship || pirate.player_controlled || !pirate.ai_controller)
+			continue
+		if(pirate.state != OVERMAP_SHIP_FLYING || pirate.count_live_crew_aboard() <= 0)
+			continue
+		choices["[pirate.name] ([length(pirate.tracked_crew)] crew)"] = pirate
+	if(!length(choices))
+		to_chat(user, span_warning("No flying NPC pirate with a live crew to dock with."))
+		return
+	var/list/options = list("Random") + choices
+	var/picked = tgui_input_list(user, "Which pirate?", "Force Dock NPC Pirate", options, "Random")
+	if(!picked)
+		return
+	var/obj/structure/overmap/ship/npc/pirate = picked == "Random" ? choices[pick(choices)] : choices[picked]
+	// Everything can change while the list was open
+	if(QDELETED(pirate) || QDELETED(our_ship) || pirate.state != OVERMAP_SHIP_FLYING || our_ship.state != OVERMAP_SHIP_FLYING)
+		to_chat(user, span_warning("One of the ships stopped flying. Try again."))
+		return
+
+	pirate.forceMove(get_turf(our_ship))
+	var/result = our_ship.dock_ships_directly(pirate, null, TRUE)
+	// The meeting point loads its level on first use; give it a few seconds
+	for(var/attempt in 1 to 10)
+		if(!result || !findtext(result, "loading"))
+			break
+		sleep(1 SECONDS)
+		if(QDELETED(pirate) || QDELETED(our_ship))
+			return
+		result = our_ship.dock_ships_directly(pirate, null, TRUE)
+	if(result)
+		var/fallback = our_ship.dock_ships_to_reserve_ports(pirate, null, TRUE)
+		if(fallback)
+			to_chat(user, span_warning("Docking failed: [result] Reserve berths: [fallback]"))
+			return
+		to_chat(user, span_notice("Docked [our_ship.name] to [pirate.name] at separate berths (the airlocks don't touch)."))
+	else
+		to_chat(user, span_notice("Docked [our_ship.name] to [pirate.name], airlock to airlock."))
+	COOLDOWN_START(pirate, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
+	our_ship.ship_notify("Forced docking with [pirate.display_name].", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	message_admins("[key_name_admin(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]. [ADMIN_COORDJMP(pirate)]")
+	log_admin("[key_name(user)] force-docked [our_ship.name] to NPC pirate [pirate.name]")
+	BLACKBOX_LOG_ADMIN_VERB("Force Dock NPC Pirate")
+
 /// Global list of dummy mobs keeping z-levels active for debugging
 GLOBAL_LIST_EMPTY(z_level_activator_dummies)
 
