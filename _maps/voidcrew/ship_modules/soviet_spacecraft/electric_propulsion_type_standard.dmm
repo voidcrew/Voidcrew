@@ -19,11 +19,6 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"btx" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/turf/template_noop,
-/area/template_noop)
 "bIe" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -35,11 +30,8 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/template_noop,
 /area/template_noop)
-"dUV" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
+"cJp" = (
+/obj/machinery/atmospherics/components/tank/air/layer4,
 /turf/template_noop,
 /area/template_noop)
 "ehc" = (
@@ -56,6 +48,10 @@
 "fuV" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"fyw" = (
+/obj/machinery/light/small/directional/east,
 /turf/template_noop,
 /area/template_noop)
 "fBt" = (
@@ -98,8 +94,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
 /turf/template_noop,
 /area/template_noop)
+"hTQ" = (
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/power/directional/north,
+/obj/machinery/light/dim/directional/north,
+/turf/template_noop,
+/area/template_noop)
 "iPV" = (
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer,
+/obj/machinery/light/dim/directional/east,
+/turf/template_noop,
+/area/template_noop)
+"iTv" = (
+/obj/machinery/light/dim/directional/south,
 /turf/template_noop,
 /area/template_noop)
 "joI" = (
@@ -108,12 +115,22 @@
 "jrx" = (
 /obj/machinery/power/supermatter_crystal/shard/engine,
 /obj/structure/closet/crate/radiation,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/door/window/brigdoor,
 /turf/template_noop,
 /area/template_noop)
 "mrY" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
 /obj/structure/cable,
+/turf/template_noop,
+/area/template_noop)
+"mvu" = (
+/obj/machinery/power/emitter/welded{
+	dir = 1
+	},
+/obj/machinery/light/dim/directional/east,
 /turf/template_noop,
 /area/template_noop)
 "nBi" = (
@@ -247,7 +264,7 @@ wyO
 nBi
 oUe
 wyO
-wyO
+fyw
 nBi
 wyO
 wyO
@@ -260,7 +277,7 @@ joI
 ehc
 joI
 mrY
-wyO
+gNW
 wyO
 "}
 (6,1,1) = {"
@@ -271,19 +288,19 @@ tyg
 tLo
 fKC
 aoQ
-wyO
-wyO
+hzE
+cJp
 "}
 (7,1,1) = {"
-nBi
+hTQ
 gNW
 xXT
 tyg
 tLo
 fKC
 uie
-gNW
-wyO
+hzE
+iTv
 "}
 (8,1,1) = {"
 wyO
@@ -322,9 +339,9 @@ wyO
 wyO
 nBi
 nBi
-btx
+nBi
 xee
-dUV
+nBi
 nBi
 nBi
 wyO
@@ -337,6 +354,6 @@ rIo
 xee
 wyO
 qqg
-qqg
+mvu
 wyO
 "}

@@ -8,6 +8,16 @@
    ],
    "height": 9,
    "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 9,
+     "png": "soviet_spacecraft_electric_propulsion_type_proton.png",
+     "src_md5": "ba695b2ab3ce6b9f8f444da7710ce911",
+     "width": 12
+    },
     "standard": {
      "connector": [
       1,
@@ -15,7 +25,7 @@
      ],
      "height": 9,
      "png": "soviet_spacecraft_electric_propulsion_type_standard.png",
-     "src_md5": "9262ab408731ceb0b401cb87bc01a662",
+     "src_md5": "169408b75c60247681fd47f230cb8934",
      "width": 12
     }
    },

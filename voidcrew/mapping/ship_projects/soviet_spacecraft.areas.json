@@ -16,6 +16,11 @@
       "Path": "/area/shuttle/voidcrew/soviet_spacecraft/solars_area",
       "Name": "Solars area",
       "IconState": "engie"
+    },
+    {
+      "Path": "/area/shuttle/voidcrew/soviet_spacecraft/living_module",
+      "Name": "living_module",
+      "IconState": "bridge"
     }
   ]
 }

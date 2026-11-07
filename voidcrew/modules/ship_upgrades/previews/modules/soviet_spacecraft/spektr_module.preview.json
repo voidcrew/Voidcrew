@@ -1,7 +1,7 @@
 {
  "hulls": {},
  "modules": {
-  "soviet_spacecraft/another.dmm": {
+  "soviet_spacecraft/spektr_module.dmm": {
    "connector": [
     1,
     1
@@ -14,12 +14,12 @@
       1
      ],
      "height": 7,
-     "png": "soviet_spacecraft_another_standard.png",
-     "src_md5": "d7ef1193ec22cb39cd4db50dcf4095da",
-     "width": 9
+     "png": "soviet_spacecraft_spektr_module_standard.png",
+     "src_md5": "43651335fd84abc23e6c91f29b0fac1a",
+     "width": 8
     }
    },
-   "width": 9
+   "width": 8
   }
  },
  "tile_px": 32

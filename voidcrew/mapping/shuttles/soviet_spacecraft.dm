@@ -11,7 +11,7 @@
 		list(name = "Captain", officer = TRUE, outfit = /datum/outfit/job/captain, category = JOB_CAT_COMMAND, slots = 1),
 		list(name = "Crew", outfit = /datum/outfit/job/assistant, category = JOB_CAT_ASSISTANT, slots = 3),
 	)
-	available_themes = list("standard")
+	available_themes = list("standard", "proton")
 
 /obj/docking_port/mobile/voidcrew/soviet_spacecraft
 	name = "Soviet spacecraft"

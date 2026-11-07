@@ -8,6 +8,16 @@
    ],
    "height": 37,
    "themes": {
+    "proton": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 37,
+     "png": "soviet_spacecraft_solars_broken_proton.png",
+     "src_md5": "5f1c7ef5362b5ff7aae97d5066c94818",
+     "width": 8
+    },
     "standard": {
      "connector": [
       1,
@@ -15,11 +25,11 @@
      ],
      "height": 37,
      "png": "soviet_spacecraft_solars_broken_standard.png",
-     "src_md5": "faf9e5de5871b61750723cc6d1aba488",
-     "width": 28
+     "src_md5": "14da5d4aa7bcfe65cd8d95317effaec7",
+     "width": 8
     }
    },
-   "width": 28
+   "width": 8
   }
  },
  "tile_px": 32

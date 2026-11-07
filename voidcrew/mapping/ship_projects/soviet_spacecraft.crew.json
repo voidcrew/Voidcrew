@@ -1,5 +1,68 @@
 {
   "Rosters": {
+    "theme/proton": [
+      {
+        "ID": "job_4",
+        "Name": "Commander",
+        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_4",
+        "BaseOutfit": "/datum/outfit/job/assistant",
+        "Category": "Command",
+        "Slots": 1,
+        "Officer": false,
+        "Equipment": {
+          "belt": "/obj/item/modular_computer/pda/heads/captain",
+          "box": "",
+          "ears": "/obj/item/radio/headset/headset_com",
+          "glasses": "/obj/item/clothing/glasses/sunglasses",
+          "gloves": "/obj/item/clothing/gloves/color/grey/protects_cold",
+          "head": "/obj/item/clothing/head/helmet/rus_ushanka",
+          "id": "/obj/item/card/id/advanced/gold",
+          "l_hand": "/obj/item/clipboard",
+          "l_pocket": "/obj/item/reagent_containers/hypospray/medipen/survival",
+          "mask": "",
+          "r_pocket": "/obj/item/reagent_containers/hypospray/medipen/salbutamol",
+          "shoes": "/obj/item/clothing/shoes/russian",
+          "suit": "",
+          "uniform": "/obj/item/clothing/under/costume/russian_officer"
+        },
+        "Backpack": {
+          "/obj/item/ammo_box/magazine/m9mm": 2,
+          "/obj/item/gun/ballistic/automatic/pistol/no_mag": 1
+        },
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_5",
+        "Name": "Flight Engineer",
+        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_5",
+        "BaseOutfit": "/datum/outfit/job/assistant",
+        "Category": "Engineering",
+        "Slots": 2,
+        "Officer": false,
+        "Equipment": {
+          "uniform": "/obj/item/clothing/under/color/green"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      },
+      {
+        "ID": "job_6",
+        "Name": "Spaceflight Participant",
+        "Outfit": "/datum/outfit/job/workshop_soviet_spacecraft_job_6",
+        "BaseOutfit": "/datum/outfit/job/assistant",
+        "Category": "Assistant",
+        "Slots": 3,
+        "Officer": false,
+        "Equipment": {
+          "uniform": "/obj/item/clothing/under/color/brown"
+        },
+        "Backpack": null,
+        "Belt": null,
+        "Extra": null
+      }
+    ],
     "theme/standard": [
       {
         "ID": "job_1",

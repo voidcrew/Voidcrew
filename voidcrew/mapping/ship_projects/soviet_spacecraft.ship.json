@@ -26,6 +26,18 @@
           "engineering_module"
         ],
         "Default": true
+      },
+      {
+        "ID": "proton",
+        "Name": "Progress",
+        "Suffix": "soviet_spacecraft_progress",
+        "Slots": [
+          "solars",
+          "docking_module",
+          "living_module",
+          "engineering_module"
+        ],
+        "Default": false
       }
     ],
     "Modules": [
@@ -34,18 +46,22 @@
         "Name": "No Solars",
         "Slot": "solars",
         "File": "soviet_spacecraft/no_solars.dmm",
+        "Description": "The panels have been replaced by battery arrays with an emergency power source. Standard Progress spacecraft configuration.",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
-        "Default": true
+        "Default": false
       },
       {
         "ID": "solars_broken",
         "Name": "Solars Broken",
         "Slot": "solars",
         "File": "soviet_spacecraft/solars_broken.dmm",
+        "Description": "Solar panel modules damaged by space debris and small asteroids.",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": false
       },
@@ -54,28 +70,34 @@
         "Name": "Solars Working",
         "Slot": "solars",
         "File": "soviet_spacecraft/solars_working.dmm",
+        "Description": "Standard solar panels for the Soyuz spacecraft series",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
-        "Default": false
+        "Default": true
       },
       {
         "ID": "docking_module_basic",
-        "Name": "Docking module",
+        "Name": "Mining module",
         "Slot": "docking_module",
-        "File": "soviet_spacecraft/docking_module_basic.dmm",
+        "File": "soviet_spacecraft/mining_module.dmm",
+        "Description": "Module for the crew to conduct geological research on a planetoid",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": true
       },
       {
         "ID": "living_module_basic",
-        "Name": "Living module",
+        "Name": "Dvushka",
         "Slot": "living_module",
-        "File": "soviet_spacecraft/living_module_basic.dmm",
+        "File": "soviet_spacecraft/dvushka.dmm",
+        "Description": "A two-room module for two, or at a stretch, three people.",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": true
       },
@@ -84,28 +106,34 @@
         "Name": "Liquid-propellant type",
         "Slot": "engineering_module",
         "File": "soviet_spacecraft/liquid_propellant_type.dmm",
+        "Description": "Basic engines used on Soyuz rockets",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": true
       },
       {
         "ID": "another",
-        "Name": "another",
+        "Name": "Nachalnik office",
         "Slot": "living_module",
-        "File": "soviet_spacecraft/another.dmm",
+        "File": "soviet_spacecraft/nachalnik_office.dmm",
+        "Description": "A module for one big, fat ass",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": false
       },
       {
         "ID": "anotheer",
-        "Name": "anotheer",
+        "Name": "Priroda module",
         "Slot": "docking_module",
-        "File": "soviet_spacecraft/anotheer.dmm",
+        "File": "soviet_spacecraft/priroda_module.dmm",
+        "Description": "A module containing living organisms for conducting zero-gravity experiments",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
         ],
         "Default": false
       },
@@ -114,8 +142,22 @@
         "Name": "Electric propulsion type",
         "Slot": "engineering_module",
         "File": "soviet_spacecraft/electric_propulsion_type.dmm",
+        "Description": "They gonna blow it again...",
         "Themes": [
-          "standard"
+          "standard",
+          "proton"
+        ],
+        "Default": false
+      },
+      {
+        "ID": "spektr_module",
+        "Name": "Spektr module",
+        "Slot": "docking_module",
+        "File": "soviet_spacecraft/spektr_module.dmm",
+        "Description": "Laboratory equipment module",
+        "Themes": [
+          "standard",
+          "proton"
         ],
         "Default": false
       }
@@ -129,7 +171,9 @@
     "module/another": {},
     "module/solars_broken": {},
     "module/solars_working": {},
-    "module/what_the_matter": {}
+    "module/spektr_module": {},
+    "module/what_the_matter": {},
+    "theme/proton": {}
   },
   "PortDirection": 2
 }

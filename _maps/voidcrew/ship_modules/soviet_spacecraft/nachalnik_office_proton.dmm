@@ -1,0 +1,290 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"asG" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ddQ" = (
+/obj/structure/dresser,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dLy" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"dMH" = (
+/turf/template_noop,
+/area/template_noop)
+"epK" = (
+/obj/machinery/door/poddoor/shutters/window{
+	id = "vodka"
+	},
+/turf/open/floor/mineral/plastitanium/airless,
+/area/template_noop)
+"fQu" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/template_noop)
+"fYz" = (
+/obj/machinery/computer/mission_board{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"gaE" = (
+/obj/structure/bookcase,
+/obj/effect/spawner/random/exotic,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"geI" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ivV" = (
+/obj/structure/closet,
+/obj/item/clothing/under/costume/soviet,
+/obj/item/clothing/shoes/russian{
+	pixel_x = 8;
+	pixel_y = -3
+	},
+/obj/item/clothing/mask/russian_balaclava{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"ixm" = (
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -5;
+	pixel_y = 17
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = 1;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/cup/glass/bottle/vodka{
+	pixel_x = -10;
+	pixel_y = 9
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 9;
+	pixel_y = 9
+	},
+/turf/open/floor/mineral/plastitanium/airless,
+/area/template_noop)
+"iUA" = (
+/obj/machinery/light/directional/north,
+/obj/structure/chair/sofa/middle,
+/obj/item/binoculars,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"jbU" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/armory/buckshot,
+/obj/effect/spawner/random/bedsheet,
+/obj/effect/spawner/random/clothing,
+/obj/effect/spawner/random/contraband/plus,
+/obj/effect/spawner/random/exotic,
+/turf/open/floor/mineral/plastitanium/airless,
+/area/template_noop)
+"jqU" = (
+/obj/structure/table/wood,
+/obj/structure/sign/poster/contraband/soviet_propaganda/directional/north,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kgA" = (
+/obj/structure/chair/sofa/right,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"kDL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/effect/decal/hammerandsickle,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"lXP" = (
+/obj/structure/closet/firecloset/full,
+/obj/effect/spawner/random/engineering/tool,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"nev" = (
+/obj/modular_map_connector,
+/obj/structure/closet/crate/freezer/food,
+/obj/item/reagent_containers/condiment/milk,
+/obj/item/food/energybar,
+/obj/item/food/grown/cucumber,
+/obj/item/food/takoyaki/russian,
+/obj/effect/spawner/random/medical/memeorgans,
+/turf/open/floor/mineral/plastitanium/airless,
+/area/template_noop)
+"ocm" = (
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"pXh" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/medical/medkit,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qdP" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"qVd" = (
+/obj/effect/decal/cleanable/blood/gibs/xeno,
+/obj/machinery/button/door/directional/west{
+	id = "vodka"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"rDr" = (
+/obj/structure/chair/sofa/left,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"rSk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sds" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"sgr" = (
+/obj/machinery/computer/helm{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"spL" = (
+/obj/structure/table/wood,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/obj/machinery/recharger,
+/obj/item/storage/fancy/cigarettes/cigars/havana{
+	pixel_y = 14;
+	pixel_x = -12
+	},
+/obj/effect/spawner/random/special_lighter{
+	pixel_x = -11;
+	pixel_y = -6
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tFM" = (
+/obj/machinery/airalarm/directional/west,
+/obj/item/kirbyplants/organic/plant6,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"tGo" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"uML" = (
+/obj/effect/decal/cleanable/blood/gibs,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"vBv" = (
+/obj/item/storage/wallet/money,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"xwE" = (
+/obj/effect/spawner/random/decoration/statue,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+"xFc" = (
+/obj/machinery/vending/sovietsoda,
+/turf/open/floor/mineral/plastitanium/red,
+/area/template_noop)
+
+(1,1,1) = {"
+jqU
+ivV
+vBv
+rSk
+qVd
+epK
+nev
+"}
+(2,1,1) = {"
+geI
+geI
+geI
+rSk
+tGo
+epK
+ixm
+"}
+(3,1,1) = {"
+kgA
+fYz
+asG
+rSk
+sds
+epK
+jbU
+"}
+(4,1,1) = {"
+iUA
+sgr
+asG
+kDL
+qdP
+fQu
+fQu
+"}
+(5,1,1) = {"
+rDr
+ocm
+asG
+rSk
+geI
+geI
+tFM
+"}
+(6,1,1) = {"
+spL
+pXh
+dLy
+rSk
+uML
+asG
+geI
+"}
+(7,1,1) = {"
+lXP
+geI
+geI
+rSk
+geI
+asG
+geI
+"}
+(8,1,1) = {"
+fQu
+gaE
+xFc
+rSk
+xwE
+ddQ
+dMH
+"}
+(9,1,1) = {"
+dMH
+dMH
+dMH
+rSk
+fQu
+dMH
+dMH
+"}
