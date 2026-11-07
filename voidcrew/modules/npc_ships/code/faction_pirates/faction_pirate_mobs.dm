@@ -270,7 +270,7 @@
 	)
 	crew_spot_lines = list(
 		"Get 'em!",
-		"That one! Him!",
+		"That one, there!",
 		"Over here!",
 	)
 
