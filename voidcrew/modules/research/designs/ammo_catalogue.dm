@@ -70,14 +70,6 @@
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
 	)
 
-/datum/design/vc_ammo/harpoon
-	name = "Harpoon"
-	id = "vc_ammo_harpoon"
-	build_path = /obj/item/ammo_casing/harpoon
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2,
-	)
-
 /datum/design/vc_ammo/foam_smg
 	name = "Foam Force SMG Magazine (Foam Darts)"
 	id = "vc_ammo_foam_smg"
@@ -168,35 +160,6 @@
 	name = "Handgun Magazine (9mm Incendiary)"
 	id = "vc_ammo_m9mm_fire"
 	build_path = /obj/item/ammo_box/magazine/m9mm/fire
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
-		/datum/material/plastic = SHEET_MATERIAL_AMOUNT,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 2,
-	)
-
-/datum/design/vc_ammo/m10mm_ap
-	name = "Handgun Magazine (10mm AP)"
-	id = "vc_ammo_m10mm_ap"
-	build_path = /obj/item/ammo_box/magazine/m10mm/ap
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
-		/datum/material/plastic = SHEET_MATERIAL_AMOUNT,
-		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 2,
-	)
-
-/datum/design/vc_ammo/m10mm_hp
-	name = "Handgun Magazine (10mm HP)"
-	id = "vc_ammo_m10mm_hp"
-	build_path = /obj/item/ammo_box/magazine/m10mm/hp
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 5,
-		/datum/material/plastic = SHEET_MATERIAL_AMOUNT,
-	)
-
-/datum/design/vc_ammo/m10mm_fire
-	name = "Handgun Magazine (10mm Incendiary)"
-	id = "vc_ammo_m10mm_fire"
-	build_path = /obj/item/ammo_box/magazine/m10mm/fire
 	materials = list(
 		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
 		/datum/material/plastic = SHEET_MATERIAL_AMOUNT,
@@ -591,16 +554,6 @@
 	)
 
 // Explosive ammunition.
-
-/datum/design/vc_ammo/gyrojet
-	name = "Gyrojet Magazine (.75)"
-	id = "vc_ammo_gyrojet"
-	build_path = /obj/item/ammo_box/magazine/m75
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 12,
-		/datum/material/plastic = SHEET_MATERIAL_AMOUNT * 2,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 8,
-	)
 
 /datum/design/vc_ammo/grenade_he
 	name = "40mm HE Grenade"

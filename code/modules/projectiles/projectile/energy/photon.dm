@@ -19,7 +19,7 @@
 /obj/projectile/energy/photon/Initialize(mapload)
 	. = ..()
 	RegisterSignals(src, list(COMSIG_MOVABLE_CROSS, COMSIG_MOVABLE_CROSS_OVER), PROC_REF(blast_touched))
-	RegisterSignal(src, COMSIG_ATOM_ENTERED, PROC_REF(scorch_earth))
+	RegisterSignal(src, COMSIG_PROJECTILE_MOVE_PROCESS_STEP, PROC_REF(scorch_earth)) // VOIDCREW EDIT: was COMSIG_ATOM_ENTERED, which only fires when something enters the bolt itself, so the trail never lit
 	set_light_on(TRUE)
 
 /**
@@ -38,10 +38,12 @@
 /**
  * When traveling to a new turf, throws a probability to generate a hotspot across its path.
  */
-/obj/projectile/energy/photon/proc/scorch_earth(turf/open/floor/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+// VOIDCREW EDIT START: runs on the bolt's own step now, so the hotspot goes on the turf it reached
+/obj/projectile/energy/photon/proc/scorch_earth(datum/source)
 	SIGNAL_HANDLER
-	if(prob(40))
-		new /obj/effect/hotspot(arrived)
+	if(prob(40) && isopenturf(loc))
+		new /obj/effect/hotspot(loc)
+// VOIDCREW EDIT END
 
 /obj/projectile/energy/photon/reduce_range()
 	. = ..()

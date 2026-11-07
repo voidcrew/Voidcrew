@@ -50,7 +50,7 @@ SUBSYSTEM_DEF(stock_market)
 	var/price_minimum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 0.5)
 	if(!isnull(mat.minimum_value_override))
 		price_minimum = round(mat.minimum_value_override * SHEET_MATERIAL_AMOUNT)
-	var/price_maximum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 3)
+	var/price_maximum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 1.5) // VOIDCREW EDIT: cargo materials market ceiling.
 
 	//clamp it down
 	new_price = round(clamp(new_price, price_minimum, price_maximum))
@@ -83,7 +83,7 @@ SUBSYSTEM_DEF(stock_market)
 	var/price_minimum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 0.5)
 	if(!isnull(mat.minimum_value_override))
 		price_minimum = round(mat.minimum_value_override * SHEET_MATERIAL_AMOUNT)
-	var/price_maximum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 3)
+	var/price_maximum = round(mat.value_per_unit * SHEET_MATERIAL_AMOUNT * 1.5) // VOIDCREW EDIT: cargo materials market ceiling.
 	var/price_baseline = mat.value_per_unit * SHEET_MATERIAL_AMOUNT
 	var/quantity_baseline = mat.tradable_base_quantity
 

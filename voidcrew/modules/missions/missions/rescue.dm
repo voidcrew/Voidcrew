@@ -1,8 +1,7 @@
 /**
  * # Rescue & Repatriation
  *
- * "A survivor's beacon is still pinging inside that wreck. Bring them back
- * breathing - the fee doubles if they can still walk."
+ * "A survivor's beacon is still pinging inside that wreck. Bring them home alive."
  *
  * Recovery variant where the objective breathes: a survivor NPC spawns in
  * the target ruin, follows whoever asks (or rides a fireman carry), and the
@@ -14,15 +13,15 @@
 	name = "Rescue Contract"
 	weight = 8
 	mission_limit = 2
-	voucher_count = 1
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_RETARGET
 	gps_tag_prefix = "RESQ"
 	// The survivor cannot defend themselves, so this contract does not share a
 	// wreck with a bounty's entourage or anybody else's spawns
 	exclusive_site = TRUE
-	// Green-band pay; the unharmed bonus doubles credits at turn-in
-	value_min = 800
-	value_max = 1100
+	// Green-band base pay
+	value_min = 650
+	value_max = 850
 
 /datum/mission/rescue/setup_target()
 	var/datum/mission_target/space_ruin/ruin_target = new(src)
@@ -46,15 +45,8 @@
 	add_objective(new /datum/mission_objective/field/escort)
 
 /datum/mission/rescue/update_text()
-	var/datum/mission_objective/field/escort/escort = objectives[1]
 	name = "Rescue Contract: [objective_name]"
-	desc = "A [objective_name]'s survival beacon is still pinging inside the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Bring them back alive, on or beside your ship's mission pad, then turn in at the mission board. \
-		The credit fee doubles if they arrive with at least [escort.unharmed_threshold * 100]% health and have not needed revival. \
-		They'll follow whoever offers a hand, or ride a fireman carry. \
-		If their vitals stop, revive them within [DisplayTimeText(escort.revival_grace)] to save the contract, minus the bonus. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to receive the survivor's beacon ([gps_tag])."
+	desc = "Bring [objective_name] home. Last signal at ([target.target_x], [target.target_y]) in the [target_zone_name]."
 
 /datum/mission/rescue/waypoint_label()
 	return "Rescue: [objective_name]"
@@ -105,9 +97,9 @@
 	. = ..()
 	var/mob/following = following_ref?.resolve()
 	if(following)
-		. += span_notice("They're sticking close to [following]. An empty hand tells them to stay put.")
+		. += span_notice("They're sticking close to [following].")
 	else
-		. += span_notice("Offer them an empty hand and they'll follow you.")
+		. += span_notice("They look lost.")
 
 /mob/living/basic/mission_survivor/attack_hand(mob/living/user, list/modifiers)
 	. = ..()

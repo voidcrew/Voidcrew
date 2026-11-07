@@ -4,6 +4,20 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bead/maintenance/starboard)
+"ac" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot_red,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/clothing/suit/armor/riot,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/knife/combat/survival,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/obj/item/clothing/mask/gas/sechailer/swat,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/armory)
 "an" = (
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 1
@@ -146,6 +160,11 @@
 /obj/structure/cable,
 /turf/open/floor/iron/diagonal,
 /area/shuttle/voidcrew/bead/bridge)
+"hk" = (
+/obj/machinery/vending/security/marine/solgov,
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/armory)
 "hT" = (
 /obj/structure/table/reinforced,
 /obj/machinery/fax{
@@ -294,20 +313,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/hallway)
-"nD" = (
-/obj/structure/rack,
-/obj/effect/turf_decal/bot_red,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/clothing/suit/armor/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/obj/item/clothing/mask/gas/sechailer/swat,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/armory)
 "nJ" = (
 /obj/machinery/door/airlock/security,
 /obj/structure/cable,
@@ -409,6 +414,20 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bead/maintenance/starboard)
+"qJ" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 8
+	},
+/obj/item/ammo_box/a357,
+/obj/item/ammo_box/a357,
+/obj/item/gun/ballistic/revolver/mateba,
+/obj/item/areaeditor/shuttle,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/bead/bridge)
 "rb" = (
 /obj/effect/turf_decal/tile/dark_red{
 	dir = 4
@@ -811,11 +830,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/brig)
-"Ih" = (
-/obj/machinery/vending/security/marine/solgov,
-/obj/effect/turf_decal/bot_red,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/armory)
 "It" = (
 /obj/structure/rack,
 /obj/item/storage/bag/ore,
@@ -932,20 +946,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/bead/maintenance/port)
-"PG" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/structure/railing{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating_new{
-	dir = 8
-	},
-/obj/item/ammo_box/a357,
-/obj/item/ammo_box/a357,
-/obj/item/gun/ballistic/revolver/mateba,
-/obj/item/areaeditor/shuttle,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/bead/bridge)
 "PZ" = (
 /obj/machinery/door/airlock/engineering/glass,
 /obj/structure/cable,
@@ -979,7 +979,7 @@
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/table/reinforced/rglass,
-/obj/item/storage/backpack/duffelbag/med/surgery{
+/obj/item/storage/medkit/surgery{
 	pixel_y = 14
 	},
 /obj/item/storage/medkit{
@@ -1337,7 +1337,7 @@ ku
 pC
 FP
 kB
-Ih
+hk
 ku
 lX
 QT
@@ -1379,7 +1379,7 @@ ku
 wm
 Kg
 gk
-nD
+ac
 ku
 rb
 ss
@@ -1590,7 +1590,7 @@ IQ
 IQ
 GX
 jM
-PG
+qJ
 Yb
 pB
 Yb

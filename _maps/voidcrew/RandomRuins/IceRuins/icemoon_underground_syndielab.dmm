@@ -17,6 +17,30 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/syndielab)
+"ae" = (
+/mob/living/basic/trooper/syndicate/ranged,
+/obj/structure/cable/layer1,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/syndielab)
+"af" = (
+/obj/structure/chair/sofa/corp/right,
+/mob/living/basic/trooper/syndicate/ranged,
+/obj/machinery/light/warm/directional/north,
+/obj/structure/cable/layer1,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/syndielab)
+"ag" = (
+/obj/structure/table/wood,
+/obj/item/ammo_casing/shotgun/flechette/donk{
+	pixel_y = 6
+	},
+/obj/item/ammo_casing/shotgun/flechette/donk{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat,
+/turf/open/floor/carpet/red,
+/area/ruin/syndielab)
 "aP" = (
 /obj/item/reagent_containers/condiment/milk,
 /obj/item/reagent_containers/cup/soda_cans/beer{
@@ -93,11 +117,6 @@
 /obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/dark/hidden,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/structure/cable/layer1,
-/turf/open/floor/iron/dark/textured,
-/area/ruin/syndielab)
-"cM" = (
-/mob/living/basic/trooper/syndicate/ranged/shotgun,
 /obj/structure/cable/layer1,
 /turf/open/floor/iron/dark/textured,
 /area/ruin/syndielab)
@@ -822,18 +841,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/syndielab)
-"Wo" = (
-/obj/structure/table/wood,
-/obj/item/ammo_casing/shotgun/flechette/donk{
-	pixel_y = 6
-	},
-/obj/item/ammo_casing/shotgun/flechette/donk{
-	pixel_x = 8;
-	pixel_y = 6
-	},
-/obj/item/gun/ballistic/shotgun/musket,
-/turf/open/floor/carpet/red,
-/area/ruin/syndielab)
 "WO" = (
 /obj/item/trash/boritos/red{
 	pixel_y = -9;
@@ -901,13 +908,6 @@
 	},
 /obj/structure/cable/layer1,
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/syndielab)
-"ZW" = (
-/obj/structure/chair/sofa/corp/right,
-/mob/living/basic/trooper/syndicate/ranged/shotgun,
-/obj/machinery/light/warm/directional/north,
-/obj/structure/cable/layer1,
-/turf/open/floor/iron/dark/textured,
 /area/ruin/syndielab)
 
 (1,1,1) = {"
@@ -1066,7 +1066,7 @@ ex
 qC
 el
 Sq
-cM
+ae
 Hs
 AR
 AR
@@ -1154,7 +1154,7 @@ qC
 qC
 qC
 AR
-ZW
+af
 uT
 yW
 Vu
@@ -1173,7 +1173,7 @@ dD
 Co
 AR
 cd
-Wo
+ag
 yW
 Dd
 AR

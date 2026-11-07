@@ -11,24 +11,31 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 
 /// Global proc to create a boarding pod drop at a target location
 /// Returns the boarder mob so the caller can register signals (e.g. death tracking)
-/proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
+/proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type, datum/npc_spawn_context/encounter, budget_reserved = FALSE)
 	if(!target_turf || !mob_type)
 		return null
 	// Combat volleys call this on a timer; the target may have docked since firing.
 	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING)
 		return null
 
+	var/datum/ai_controller/npc_ship/controller = source_ship.ai_controller
+	if(!istype(controller) || controller.get_target() != target_ship)
+		return null
+	controller.capture_boarding_encounter(target_ship)
+	if(encounter && encounter != controller.boarding_context)
+		return null
+	if(!budget_reserved && !controller.reserve_boarders(target_ship, 1))
+		return null
+	var/datum/npc_spawn_context/context = new(target_ship, controller.boarding_context.zone_type, "ordinary", source_turf = controller.boarding_context.source_turf)
+
 	// Create the boarding pod with the mob inside
 	var/obj/structure/closet/supplypod/boarding/pod = new()
 
 	// Create the boarder mob and put it in the pod
-	var/mob/living/boarder = new mob_type(pod)
+	var/mob/living/boarder = spawn_npc_in_zone(mob_type, pod, context)
 	if(!boarder)
 		qdel(pod)
 		return null
-
-	// Boarders are tougher than the same mob type is out in a ruin
-	scale_npc_ship_pirate_health(boarder)
 
 	// Store references for the pod
 	pod.target_ship = target_ship
@@ -210,21 +217,27 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	if(QDELETED(target_ship) || QDELETED(source_ship) || target_ship.state != OVERMAP_SHIP_FLYING || source_ship.state != OVERMAP_SHIP_FLYING)
 		return null
 
+	var/datum/ai_controller/npc_ship/controller = source_ship.ai_controller
+	if(!istype(controller) || controller.get_target() != target_ship)
+		return null
+	controller.capture_boarding_encounter(target_ship)
+	if(!controller.is_red_zone_raid() || controller.boarding_boss_sent)
+		return null
+	controller.boarding_boss_sent = TRUE
+	var/datum/npc_spawn_context/context = new(target_ship, controller.boarding_context.zone_type, "boss", source_turf = controller.boarding_context.source_turf)
+
 	// Create the boss boarding pod
 	var/obj/structure/closet/supplypod/boarding/boss/pod = new()
 
 	// Create the boss mob and put it in the pod
-	var/mob/living/basic/trooper/pirate/faction/boss/boss = new mob_type(pod)
+	var/mob/living/basic/trooper/pirate/faction/boss/boss = spawn_npc_in_zone(mob_type, pod, context, FALSE)
 	if(!boss)
 		qdel(pod)
 		return null
 
-	// Scaled after Initialize() so bosses that set their health there (silverscale)
-	// are multiplied off their real pool, not the var default
-	scale_npc_ship_pirate_health(boss, NPC_PIRATE_BOSS_HEALTH_MULT)
-
 	// Set up boss-specific properties
 	boss.parent_ship = source_ship
+	context.finalize()
 
 	// Store references for the pod
 	pod.target_ship = target_ship

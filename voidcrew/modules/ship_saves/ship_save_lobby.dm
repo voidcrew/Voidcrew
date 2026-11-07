@@ -72,6 +72,22 @@
 		to_chat(player, span_warning(snapshot))
 		return player.select_ship()
 
+	// A save made this round goes back to its own crew. Any other load registers like a new hull.
+	var/datum/mind/commander = player.mind
+	var/datum/voidcrew_crew_record/saved_crew = snapshot.crew_record_ref?.resolve()
+	var/restoring_crew = saved_crew && (commander?.recover_reputation_crew() || GLOB.voidcrew_crew_roster[player_ckey]) == saved_crew
+	var/form_new = FALSE
+	if(!restoring_crew)
+		form_new = choose_new_reputation_crew(player)
+		if(isnull(form_new) || QDELETED(player))
+			qdel(snapshot)
+			cancel_retrieval(player_ckey, slot)
+			if(!QDELETED(player))
+				player.spawning_ship = FALSE
+				player.select_ship()
+			return
+	var/datum/voidcrew_crew_record/registration_crew = commander?.recover_reputation_crew()
+
 	// The read slept, so the hull this was saved from may be back in service or replaced by now.
 	var/datum/weakref/source = snapshot.source_ship
 	var/obj/structure/overmap/ship/original = source?.resolve()
@@ -106,6 +122,23 @@
 			to_chat(player, span_warning("The shipyard is congested right now - hull assembly space frees up as ships move. Try again in a minute."))
 		else
 			to_chat(player, span_danger("There was an error loading the ship. Please contact admins!"))
+		return player.select_ship()
+
+	var/registered = FALSE
+	if(restoring_crew)
+		registered = target.ship_team.set_crew_record(saved_crew)
+		if(registered)
+			commander?.join_reputation_crew(saved_crew)
+	else if(commander?.recover_reputation_crew() == registration_crew)
+		registered = target.bind_reputation_crew(commander, form_new)
+	if(!registered)
+		qdel(target)
+		if(original)
+			original.checkpoint_rebuilding = FALSE
+		cancel_retrieval(player_ckey, slot)
+		if(QDELETED(player))
+			return
+		player.spawning_ship = FALSE
 		return player.select_ship()
 
 	// The ship exists now, whether or not its captain stayed to board it. Left, they can join it from the menu.

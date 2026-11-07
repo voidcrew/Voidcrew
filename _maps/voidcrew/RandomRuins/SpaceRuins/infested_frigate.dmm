@@ -6,6 +6,37 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/infested_frigate)
+"ac" = (
+/obj/item/grenade/smokebomb{
+	pixel_x = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 5
+	},
+/obj/item/suppressor,
+/obj/item/melee/baseball_bat,
+/obj/structure/closet/crate/secure/weapon{
+	req_access = list("syndicate")
+	},
+/obj/item/grenade/c4,
+/obj/effect/turf_decal{
+	icon_state = "warningline_white";
+	dir = 1
+	},
+/obj/effect/spawner/random/exotic/antag_gear,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/infested_frigate)
+"ad" = (
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood{
+	icon_state = "floor5-old"
+	},
+/obj/item/ammo_casing/spent,
+/obj/item/melee/baseball_bat,
+/obj/effect/mob_spawn/corpse/human/syndicatepilot,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/infested_frigate)
 "af" = (
 /obj/structure/door_assembly/door_assembly_hatch{
 	anchored = 1
@@ -849,17 +880,6 @@
 	desc = "The resin is thick and it keeps collapsing on itself."
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/infested_frigate)
-"nU" = (
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood{
-	icon_state = "floor5-old"
-	},
-/obj/item/ammo_casing/spent,
-/obj/item/gun/ballistic/automatic/smartgun,
-/obj/effect/mob_spawn/corpse/human/syndicatepilot,
-/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/infested_frigate)
 "oj" = (
 /obj/structure/fans/tiny,
@@ -2433,26 +2453,6 @@
 /obj/machinery/light/small/red/dim/directional/east,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/infested_frigate)
-"ML" = (
-/obj/item/grenade/smokebomb{
-	pixel_x = 5
-	},
-/obj/item/grenade/smokebomb{
-	pixel_x = 5
-	},
-/obj/item/suppressor,
-/obj/item/gun/energy/e_gun/mini,
-/obj/structure/closet/crate/secure/weapon{
-	req_access = list("syndicate")
-	},
-/obj/item/grenade/c4,
-/obj/effect/turf_decal{
-	icon_state = "warningline_white";
-	dir = 1
-	},
-/obj/effect/spawner/random/exotic/antag_gear,
-/turf/open/floor/pod/dark,
-/area/ruin/space/has_grav/infested_frigate)
 "MW" = (
 /obj/effect/turf_decal{
 	icon_state = "arrows_red";
@@ -3868,8 +3868,8 @@ bM
 Ne
 wP
 bE
-nU
-ML
+ad
+ac
 wP
 UX
 Sr

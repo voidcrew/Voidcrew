@@ -23,19 +23,7 @@
 	var/ore_multiplier = 1
 	/// Increases the amount of points the miners gain
 	var/point_upgrade = 1
-	/// Details how many credits each smelted ore is worth
-	var/static/list/ore_values = list(
-		/datum/material/iron = 1,
-		/datum/material/glass = 1,
-		/datum/material/plasma = 15,
-		/datum/material/silver = 16,
-		/datum/material/gold = 18,
-		/datum/material/titanium = 30,
-		/datum/material/uranium = 30,
-		/datum/material/diamond = 50,
-		/datum/material/bluespace = 50,
-		/datum/material/bananium = 60,
-	)
+	// VOIDCREW EDIT - ore_values removed; voidcrew/modules/mining/ore_redemption.dm quotes the actual ore payout.
 	/// Variable that holds a timer which is used for callbacks to `send_console_message()`. Used for preventing multiple calls to this proc while the ORM is eating a stack of ores.
 	var/console_notify_timer
 	/// References the alloys the smelter can create
@@ -267,7 +255,7 @@
 				"id" = REF(material),
 				"amount" = sheet_amount,
 				"category" = "material",
-				"value" = ore_values[material.type],
+				"value" = get_ore_points(material), // VOIDCREW EDIT - use the actual raw ore rate and point upgrade.
 				"icon" = sheet_type::icon,
 				"icon_state" = sheet_type::icon_state,
 			))

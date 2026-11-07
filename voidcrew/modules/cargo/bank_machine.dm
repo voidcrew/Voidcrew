@@ -84,7 +84,7 @@
 		balloon_alert(user, "no ship account connected")
 		return FALSE
 	// Join-password clearance also covers former lives; banking requires the current mind.
-	if(!user.mind || !(user.mind in ship.ship_team?.members))
+	if(!ship.is_ship_crew(user))
 		balloon_alert(user, "ship crew only")
 		return FALSE
 	if(card.registered_account == synced_bank_account)

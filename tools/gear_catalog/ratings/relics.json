@@ -1,0 +1,360 @@
+{
+ "category": "relics",
+ "groups": [
+  "escape and movement",
+  "capture and control",
+  "shape and pets",
+  "parts and upgrades",
+  "boss drops and uniques",
+  "harmless"
+ ],
+ "items": {
+  "/obj/item/book_of_babel": {
+   "confidence": "high",
+   "group": "harmless",
+   "hash": "f7a1a28fe377c734",
+   "name": "Book of Babel",
+   "rank": 1,
+   "reason": "Teaches every language, then crumbles. Handy for talk, nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/borrowed_name": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "a9f6a5fc807319a7",
+   "name": "borrowed name",
+   "rank": 12,
+   "reason": "Arena boss drop. Stands in the floor for 30 s and pulls mindless creatures within 6 tiles to it. Does nothing to people.",
+   "tier": "above"
+  },
+  "/obj/item/desynchronizer": {
+   "confidence": "medium",
+   "group": "escape and movement",
+   "hash": "cf39e9dac9b66d90",
+   "name": "desynchronizer",
+   "note": "Takes the user out of the world for a set time (default 30 seconds, adjustable up to 300): they can see their surroundings but cannot move, and using it again ends it early. The recharge time equals the time spent desynchronized.",
+   "rank": 3,
+   "reason": "Press to step out of the world for up to 5 minutes, untouchable, then come back where you stood. Stalls a fight rather than wins it. Recharge equals time spent.",
+   "tier": "yellow"
+  },
+  "/obj/item/displacer_fork": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "c9ad2b2ac06df6ea",
+   "name": "displacer fork",
+   "note": "Swaps places with the first non-anchored creature or object within 5 tiles in the direction the user faces, ignoring walls and line of sight; both ends get dizzy for 3 seconds. 20 second cooldown.",
+   "rank": 9,
+   "reason": "Authored unique. Swaps you with the first creature or loose object within 5 tiles ahead, through walls, every 20 s.",
+   "tier": "above"
+  },
+  "/obj/item/dragnet_beacon": {
+   "confidence": "high",
+   "group": "parts and upgrades",
+   "hash": "15f9674ef4c95eb9",
+   "name": "DRAGnet beacon",
+   "rank": 5,
+   "reason": "Only sets where a DRAGnet sends what it snares. No use without that yellow gun, and that gun holds the power.",
+   "tier": "green"
+  },
+  "/obj/item/dragons_blood": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "15f9674ef4c95eb9",
+   "name": "bottle of dragons blood",
+   "rank": 3,
+   "reason": "Ash drake drop. One drink: a 1 in 4 chance each of turning lizard, turning skeleton, immunity to lava, or changing into a dragon at will.",
+   "tier": "above"
+  },
+  "/obj/item/eyesnatcher": {
+   "confidence": "high",
+   "group": "capture and control",
+   "hash": "50ab0083d96c87ec",
+   "name": "portable eyeball extractor",
+   "note": "Needs the target's eyes uncovered and three uninterrupted 5 second steps (3.5 seconds for a morbid user). The second step does 20 brute to the head with a boosted chance of a severe wound and destroys the eyes, and the third removes them and blinds the target. Single use.",
+   "rank": 4,
+   "reason": "Takes 15 uninterrupted seconds on a held target to rip their eyes out. Single use. Cruel, but you had already won that fight.",
+   "tier": "green"
+  },
+  "/obj/item/freeze_cube": {
+   "confidence": "medium",
+   "group": "capture and control",
+   "hash": "e9e8f8e8d2942f6c",
+   "name": "freeze cube",
+   "note": "Thrown, it does 10 burn damage on hit, freezes an object, or locks a living target in ice (unable to move) for 3 seconds, then flies back to the thrower unless caught. The freeze has a 5 second cooldown.",
+   "rank": 1,
+   "reason": "Thrown, it does 10 burn and locks a person in ice for 3 s, then flies back, every 5 s. A reusable ranged snare. One placed in a single ruin.",
+   "tier": "yellow"
+  },
+  "/obj/item/fugu_gland": {
+   "confidence": "medium",
+   "group": "shape and pets",
+   "hash": "2f914ceeaaa277b9",
+   "name": "wumborian fugu gland",
+   "note": "Used on a living simple or basic mob (not a holoparasite, and not twice) it multiplies max health by 1.5, doubles melee damage (minimum 10), doubles its size and lets it tear down walls. Single use.",
+   "rank": 2,
+   "reason": "One use on a pet: half again the health, double the bite, double the size, and it can tear down walls. Only as good as the pet.",
+   "tier": "green"
+  },
+  "/obj/item/guardian_creator/carp": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "339431414965bf11",
+   "name": "holocarp fishsticks",
+   "note": "Using it polls ghosts for 10 seconds; if one accepts, a player-controlled holoparasite appears bound to the user, otherwise it can be tried again. The subtype sets how the type is chosen and how many a user may hold: the holocarp fishsticks offer every non-dextrous type and allow several, while the base item allows one guardian.",
+   "rank": 1,
+   "reason": "Binds a player-controlled holoparasite to you if a ghost answers, more than one if you find more. A second fighter that shares your fate. In the fishing hut ruin.",
+   "tier": "above"
+  },
+  "/obj/item/hand_tele": {
+   "confidence": "medium",
+   "group": "escape and movement",
+   "hash": "4f5027f8d9a1027d",
+   "name": "hand tele",
+   "note": "Opens a pair of portals lasting 30 seconds at the user (3 pairs at most), the far end being a powered teleporter console's target or a random spot within 10 tiles ('None (Dangerous)'). The other button reopens the last destination, using it on one of its portals closes it, and it won't work in no-teleport areas or away levels.",
+   "rank": 1,
+   "reason": "Anchor. Opens up to 3 portal pairs to a teleporter console's target, so a whole crew can leave a fight together. One placed in a single ruin.",
+   "tier": "red"
+  },
+  "/obj/item/matriarchs_heart": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "13c4358d5634b8f8",
+   "name": "Matriarch's Heart",
+   "note": "Squeezing it paints a ring at the user's feet; 1.5 seconds later a field goes live for 5 seconds in which everything more than 2 tiles from that point (out to 14 tiles) takes 16 burn per second, loses body heat and is chilled. The user is not exempt unless inside the safe ring or cold-resistant, and the cooldown is 35 seconds.",
+   "rank": 7,
+   "reason": "Boss drop. Every 35 s, 16 burn a second for 5 s to everything between 2 and 14 tiles of you. Stand in the ring or take it too.",
+   "tier": "above"
+  },
+  "/obj/item/mayhem": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "15f9674ef4c95eb9",
+   "name": "mayhem in a bottle",
+   "rank": 4,
+   "reason": "Boss drop. Everyone within 7 tiles, you included, drops everything and goes berserk for 2 minutes with a chainsaw and heavy healing. Ends fights and crews.",
+   "tier": "above"
+  },
+  "/obj/item/mining_stabilizer": {
+   "confidence": "high",
+   "group": "parts and upgrades",
+   "hash": "c4e33ad9400699fe",
+   "name": "stabilizing serum",
+   "note": "Used on a monster core organ it stops that core's 4 minute decay timer; it fails on one that has already decayed. Single use.",
+   "rank": 6,
+   "reason": "Stops a monster core rotting, so a healing core can be saved for later. 320 mining points.",
+   "tier": "green"
+  },
+  "/obj/item/oracle_slate": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "d80894bd9e6855d7",
+   "name": "Oracle's slate",
+   "rank": 11,
+   "reason": "Arena boss drop. Every 25 s, burns 20 along four lines out to 4 tiles after a short warning. 12 force.",
+   "tier": "above"
+  },
+  "/obj/item/polymorph_belt": {
+   "confidence": "low",
+   "group": "shape and pets",
+   "hash": "354ca5066b726d3f",
+   "name": "polymorphic field inverter",
+   "note": "Needs a bioscrambler anomaly core (3 seconds to fit). It scans one simple animal at a time (5 seconds; ordinary organic animals only, not humanoid, robotic, undead, spirit or intelligent ones), after which the wearer can change into that animal and back with a 3 second channel and 30 second cooldown.",
+   "rank": 1,
+   "reason": "Turns you into an animal you scanned and back, on a 30 s cooldown. A goliath form has 300 health. Needs a bioscrambler anomaly core, which is the real gate.",
+   "tier": "yellow"
+  },
+  "/obj/item/polymorph_belt/functioning": {
+   "confidence": "low",
+   "group": "shape and pets",
+   "hash": "103d0e18404f998a",
+   "name": "polymorphic field inverter",
+   "note": "Needs a bioscrambler anomaly core (3 seconds to fit). It scans one simple animal at a time (5 seconds; ordinary organic animals only, not humanoid, robotic, undead, spirit or intelligent ones), after which the wearer can change into that animal and back with a 3 second channel and 30 second cooldown.",
+   "rank": 1,
+   "reason": "A polymorph belt with its core already in: turns you into an animal you scanned and back, on a 30 s cooldown. One placed in a single ruin.",
+   "tier": "yellow"
+  },
+  "/obj/item/reactive_armor_shell": {
+   "confidence": "medium",
+   "group": "parts and upgrades",
+   "hash": "8faf3702b01d2186",
+   "name": "reactive armor shell",
+   "rank": 2,
+   "reason": "Rates as what it makes: an anomaly core turns it into a reactive suit. The suits have no armor, but their reaction blocks about half of hits on a cooldown.",
+   "tier": "yellow"
+  },
+  "/obj/item/relic": {
+   "confidence": "low",
+   "group": "parts and upgrades",
+   "hash": "5dfb5681e69e8797",
+   "name": "strange object",
+   "note": "Does nothing until an experimentor scan reveals it; after that each use (random 6 to 30 second cooldown) runs one fixed random power: corgi cannon, cleaning foam, flashbang, 1 to 25 summoned animals (60% destroys it), self-teleport within 8 tiles, delayed explosion, duplicate swarm, free drink, organ scramble within 2 tiles (33% destroys it), cell recharge with a 15 damage shock, group hug, 3x3 dimension change, or costume swap.",
+   "rank": 4,
+   "reason": "Does nothing until a machine reveals it, then it has one random power on a cooldown: a flashbang, a short teleport, summoned animals, a costume. A lottery ticket.",
+   "tier": "green"
+  },
+  "/obj/item/relic/lavaland": {
+   "confidence": "low",
+   "group": "parts and upgrades",
+   "hash": "55fc6520cd62e34c",
+   "name": "strange relic",
+   "note": "Does nothing until an experimentor scan reveals it; after that each use (random 6 to 30 second cooldown) runs one fixed random power: corgi cannon, cleaning foam, flashbang, 1 to 25 summoned animals (60% destroys it), self-teleport within 8 tiles, delayed explosion, duplicate swarm, free drink, organ scramble within 2 tiles (33% destroys it), cell recharge with a 15 damage shock, group hug, 3x3 dimension change, or costume swap.",
+   "rank": 4,
+   "reason": "A strange object from a ruin: one random power after a machine reveals it. A lottery ticket.",
+   "tier": "green"
+  },
+  "/obj/item/rimebreath_horn": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "f980d4188ce0fe73",
+   "name": "rimebreath horn",
+   "rank": 10,
+   "reason": "Boss drop. A 4 tile cone of frost every 18 s: 15 burn and a hard slow for 3 s.",
+   "tier": "above"
+  },
+  "/obj/item/shadowcloak": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "bd8978009d523329",
+   "name": "cloaker belt",
+   "rank": 2,
+   "reason": "Belt that makes you invisible: 20 s in the light, and in the dark it never runs out, even while you fight. Almost never spawns, and should stay that way.",
+   "tier": "above"
+  },
+  "/obj/item/ship_in_a_bottle": {
+   "confidence": "medium",
+   "group": "escape and movement",
+   "hash": "15f9674ef4c95eb9",
+   "name": "ship in a bottle",
+   "rank": 5,
+   "reason": "Breaks into a boat that crosses lava with no oar. Handy on lava planets, nothing elsewhere.",
+   "tier": "green"
+  },
+  "/obj/item/soulstone/anybody": {
+   "confidence": "medium",
+   "group": "capture and control",
+   "hash": "df7ed45fdd1a86aa",
+   "name": "soulstone shard",
+   "note": "Used on a human who is not conscious (crit, asleep or dead; the chaplain shard needs a corpse), it dusts the body and puts that player into the stone as a shade bound to the user; a body with no player polls ghosts instead. The shade can be let out of the stone, or the stone put into a construct shell to make a juggernaut, wraith or artificer (the stone is used up). The plain shard works for any user; the chaplain shard is spent after one release; the purified shard burns a cultist user for 10 damage and strips cult status from a shade.",
+   "rank": 2,
+   "reason": "Used on any downed or sleeping person it instantly dusts the body and traps them as a shade you command. No revive after that. Empty it and it can do so again. No shop, ruin or played hull has one.",
+   "tier": "yellow"
+  },
+  "/obj/item/soulstone/anybody/chaplain": {
+   "confidence": "medium",
+   "group": "capture and control",
+   "hash": "a5cd3573027aa31a",
+   "name": "mysterious old shard",
+   "note": "Used on a human who is not conscious (crit, asleep or dead; the chaplain shard needs a corpse), it dusts the body and puts that player into the stone as a shade bound to the user; a body with no player polls ghosts instead. The shade can be let out of the stone, or the stone put into a construct shell to make a juggernaut, wraith or artificer (the stone is used up). The plain shard works for any user; the chaplain shard is spent after one release; the purified shard burns a cultist user for 10 damage and strips cult status from a shade.",
+   "rank": 3,
+   "reason": "Traps a corpse as a shade and dusts the body, one use only. A weaker soulstone. On the Phalanx hull.",
+   "tier": "yellow"
+  },
+  "/obj/item/soulstone/anybody/purified": {
+   "confidence": "medium",
+   "group": "capture and control",
+   "hash": "6ab3887c624b92ae",
+   "name": "soulstone shard",
+   "note": "Used on a human who is not conscious (crit, asleep or dead; the chaplain shard needs a corpse), it dusts the body and puts that player into the stone as a shade bound to the user; a body with no player polls ghosts instead. The shade can be let out of the stone, or the stone put into a construct shell to make a juggernaut, wraith or artificer (the stone is used up). The plain shard works for any user; the chaplain shard is spent after one release; the purified shard burns a cultist user for 10 damage and strips cult status from a shade.",
+   "rank": 2,
+   "reason": "Used on any downed or sleeping person it instantly dusts the body and traps them as a shade you command. No revive after that. Empty it and it can do so again. Ruin cache find.",
+   "tier": "yellow"
+  },
+  "/obj/item/swapper": {
+   "confidence": "medium",
+   "group": "escape and movement",
+   "hash": "1984560abff271c1",
+   "name": "quantum spin inverter",
+   "note": "Two inverters linked to each other swap places 2.5 s after one is activated: whatever carries each device (the holder, or the unanchored crate or locker it sits in) trades places with the other. Only the activated one goes on a 30 s cooldown, and the holder of the other gets a 'starts buzzing' message. A swap that would cross an overmap zone boundary is refused.",
+   "rank": 2,
+   "reason": "Anchor. A pair that swaps its carriers on a 30 s cooldown, anywhere in the same zone: a recall button home, a free way aboard, and a crate mover. Prints with no reputation.",
+   "tier": "yellow"
+  },
+  "/obj/item/third_hand_kit": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "522e4e8ac3472814",
+   "name": "third hand sewing kit",
+   "note": "Used on one garment it pins that garment as the pattern; used on a second garment worn in the same slot, after 3 s the second garment permanently takes the pattern's look (icon, worn sprite, greyscale colours) and the pattern is destroyed. Armor, pockets and name stay as they were, and garments marked unique (no-replicate) cannot be the pattern. Using the kit in hand unpins.",
+   "rank": 13,
+   "reason": "Authored unique, kept off shelves on that rule alone. It only copies one garment's look onto another, with no power at all.",
+   "tier": "above"
+  },
+  "/obj/item/upgradescroll": {
+   "confidence": "medium",
+   "group": "parts and upgrades",
+   "hash": "7f14546ebb50507c",
+   "name": "item fortification scroll",
+   "note": "Used on an item in combat mode, it adds +1 fantasy quality and is consumed: the item gains +1 force, throwforce and wound bonus, faster tool speed, +1 to every armor rating on clothing (less slowdown on shoes and armor suits), shorter fire delay and a little more damage on guns, plus a random affix and a +N name. Quality stacks over repeated scrolls, and once the total reaches +10 each application has a (quality - 9) x 10% chance to burn the item up.",
+   "rank": 3,
+   "reason": "One use: gives any item +1 quality and a random extra trait. Small, and one placed in a single ruin.",
+   "tier": "green"
+  },
+  "/obj/item/verdigris_bridle": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "acbdc2a863e2cdc1",
+   "name": "verdigris bridle",
+   "note": "Held in a hand it lends a spell: a conscious, non-undead target within 7 tiles is taken over for 5 s, losing control while their body attacks the nearest living creature within 7 tiles (players first) with whatever they hold, which is often the user. Three charges, 60 s between uses, each victim immune for 90 s afterwards, and mind-affecting protection blocks it (costing the cooldown but no charge); the victim and the room are told who did it. A stun or cuffs stop the victim acting, crit or the user's death ends it, and after the third charge the strap goes inert.",
+   "rank": 6,
+   "reason": "Lich drop. Three charges of taking over someone's body for 5 s so they attack whoever is nearest.",
+   "tier": "above"
+  },
+  "/obj/item/verdigris_phylactery": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "ac9bbfd660edbe09",
+   "name": "spent phylactery",
+   "note": "Carried in a hand, pocket, belt or suit storage slot (not inside a bag), it revives the carrier once: 8 s after they die it heals brute, burn, oxygen and toxin damage down to 30 each and brings them back, paralysed for 15 s, then shatters. It does nothing for a gibbed body, and if the revival fails the charge is kept.",
+   "rank": 5,
+   "reason": "Lich drop. Revives the carrier once, 8 s after death, then shatters.",
+   "tier": "above"
+  },
+  "/obj/item/wendigo_blood": {
+   "confidence": "high",
+   "group": "boss drops and uniques",
+   "hash": "15f9674ef4c95eb9",
+   "name": "bottle of wendigo blood",
+   "rank": 8,
+   "reason": "Wendigo drop. One drink and you can change into a polar bear at will for good.",
+   "tier": "above"
+  },
+  "/obj/item/wisp_lantern": {
+   "confidence": "high",
+   "group": "parts and upgrades",
+   "hash": "00179327d63ddc3b",
+   "name": "spooky lantern",
+   "rank": 1,
+   "reason": "A wisp orbits you, giving the same sight of every living thing through walls as thermals, plus dark sight and a light, without using your eye slot. Boss chest or one ruin.",
+   "tier": "yellow"
+  },
+  "/obj/item/wormhole_jaunter": {
+   "confidence": "high",
+   "group": "escape and movement",
+   "hash": "4f4ec01425dc644f",
+   "name": "wormhole jaunter",
+   "note": "Single use. Activated, it opens a tunnel beside the user for 10 s that the user must walk into, landing them within 6 tiles of a random teleport beacon on a ship level in the same overmap zone; a carbon traveller is paralysed for 6 s and a human vomits 2 s later. Worn on the belt it triggers by itself when the wearer would fall into a chasm; an EMP also sets it off and sends the holder through directly (always for a heavy EMP, 50% for a light one). It does nothing without a beacon in the zone or on a CentCom or reserved level.",
+   "rank": 4,
+   "reason": "Anchor. Single-use escape to a random ship beacon in your zone, with 6 s of paralysis on landing. Also saves you from a chasm. 650 mining points.",
+   "tier": "green"
+  }
+ },
+ "method": "A mixed bag, judged by hand: what it lets a crew do that it otherwise could not, and how often. Parts rate as what they make, escape tools are measured against each other, and authored uniques and boss drops stay off shelves.",
+ "unrated": {
+  "/obj/item/cult_shift": "needs another system",
+  "/obj/item/guardian_creator": "no route",
+  "/obj/item/guardian_creator/miner": "literal only",
+  "/obj/item/guardian_creator/tech": "no route",
+  "/obj/item/guardian_creator/wizard": "no route",
+  "/obj/item/hot_potato": "no route",
+  "/obj/item/hot_potato/harmless": "no route",
+  "/obj/item/hot_potato/harmless/toy": "toy",
+  "/obj/item/hot_potato/syndicate": "no route",
+  "/obj/item/shadowcloak/weaker": "no route",
+  "/obj/item/soulstone": "no route",
+  "/obj/item/soulstone/anybody/chaplain/sparring": "no route",
+  "/obj/item/soulstone/anybody/mining": "literal only",
+  "/obj/item/soulstone/anybody/revolver": "no route",
+  "/obj/item/soulstone/mystic": "no route",
+  "/obj/item/upgradescroll/unlimited": "no route"
+ }
+}

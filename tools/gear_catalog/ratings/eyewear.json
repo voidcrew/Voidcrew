@@ -1,0 +1,589 @@
+{
+ "category": "eyewear",
+ "groups": [
+  "vision through walls",
+  "night vision",
+  "HUDs",
+  "protection",
+  "utility",
+  "uniques",
+  "cosmetic and harmless"
+ ],
+ "items": {
+  "/obj/item/clothing/glasses/blindfold": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "2522f3c5191f2be1",
+   "name": "blindfold",
+   "rank": 2,
+   "reason": "Blinds you.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/chameleon": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "c2b7dfe23f273354",
+   "name": "Optical Meson Scanner",
+   "rank": 1,
+   "reason": "Disguises itself as other glasses but gives nothing they would.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/cold": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "71897e08f6031b5a",
+   "name": "cold goggles",
+   "rank": 5,
+   "reason": "Only changes how you look.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/eyepatch": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "31c587b9b79d28aa",
+   "name": "eyepatch",
+   "note": "Flip (action button, alt-click or use in hand) swaps which eye the patch is on, sprite only. When worn, if the wearer has a scar on the eye it leaves uncovered (left-eye scar when unflipped, right-eye scar when flipped) its tint goes to maximum and the wearer is fully blinded until it is flipped or removed; otherwise no vision effect.",
+   "rank": 3,
+   "reason": "An eyepatch. It does nothing for sight or protection.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/eyepatch/fences_eye": {
+   "confidence": "high",
+   "group": "uniques",
+   "hash": "e36df5ea42d67b73",
+   "name": "fence's eye",
+   "note": "Worn on the eyes, looking closer at an item adds what a trader or cargo would pay for it, or that nobody is buying. Its action button (also works in hand) squints once every 2 minutes, even on a miss: it lists the three most valuable items in view within 9 tiles, including inside closets, crates and other containers (unopened lockers are filled first), and outlines each, or its outermost container, in gold for 8 seconds; using it in hand still flips it like an eyepatch, scar blinding included. / Flip (action button, alt-click or use in hand) swaps which eye the patch is on, sprite only. When worn, if the wearer has a scar on the eye it leaves uncovered (left-eye scar when unflipped, right-eye scar when flipped) its tint goes to maximum and the wearer is fully blinded until it is flipped or removed; otherwise no vision effect.",
+   "rank": 1,
+   "reason": "A unique pair that prices anything you examine and outlines the three most valuable things in view, through crates.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/glasses/eyepatch/medical": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "31c587b9b79d28aa",
+   "name": "medical eyepatch",
+   "note": "Inherits the eyepatch's behaviour unchanged (different sprite and description only). Flip (action button, alt-click or use in hand) swaps which eye the patch is on, sprite only. When worn, if the wearer has a scar on the eye it leaves uncovered (left-eye scar when unflipped, right-eye scar when flipped) its tint goes to maximum and the wearer is fully blinded until it is flipped or removed; otherwise no vision effect. / Flip (action button, alt-click or use in hand) swaps which eye the patch is on, sprite only. When worn, if the wearer has a scar on the eye it leaves uncovered (left-eye scar when unflipped, right-eye scar when flipped) its tint goes to maximum and the wearer is fully blinded until it is flipped or removed; otherwise no vision effect.",
+   "rank": 4,
+   "reason": "An eyepatch. It does nothing for sight or protection.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/heat": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "71897e08f6031b5a",
+   "name": "heat goggles",
+   "rank": 6,
+   "reason": "Only changes how you look.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/hud/diagnostic": {
+   "confidence": "high",
+   "group": "HUDs",
+   "hash": "6e361f70ab5a7875",
+   "name": "diagnostic HUD",
+   "rank": 10,
+   "reason": "Shows machine and robot health. For engineers.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/diagnostic/night": {
+   "confidence": "medium",
+   "group": "night vision",
+   "hash": "30b85eb3b0959b0c",
+   "name": "night vision diagnostic HUD",
+   "rank": 5,
+   "reason": "Night vision with a diagnostic HUD.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/hud/diagnostic/sunglasses": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "5930b340f7794e75",
+   "name": "diagnostic sunglasses",
+   "rank": 9,
+   "reason": "A diagnostic HUD with flash protection.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/health": {
+   "confidence": "high",
+   "group": "HUDs",
+   "hash": "d31a735fb5e99aef",
+   "name": "health scanner HUD",
+   "rank": 2,
+   "reason": "Shows everyone's health, your enemy's included.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/health/night": {
+   "confidence": "medium",
+   "group": "night vision",
+   "hash": "aa2682b29aa83717",
+   "name": "night vision health scanner HUD",
+   "rank": 4,
+   "reason": "Night vision with a health HUD.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/hud/health/night/cultblind": {
+   "confidence": "low",
+   "group": "night vision",
+   "hash": "fe7fbb85d71f8ffb",
+   "name": "zealot's blindfold",
+   "note": "A non-cultist wearing it takes 1 eye damage every second (eyes are nearsighted from 20 damage and blind at 50), with a 3% per second chat message about it burning; cultists take none. It has no action buttons, so the HUD and night vision cannot be toggled off.",
+   "rank": 8,
+   "reason": "Night vision and a health HUD that burn your eyes 1 per second. Blind inside a minute.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/health/sunglasses": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "6f0742ac815bc812",
+   "name": "medical HUDSunglasses",
+   "rank": 3,
+   "reason": "A health HUD with flash protection.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/medsechud": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "c7106d394b78b5c0",
+   "name": "health scanner security HUD",
+   "rank": 1,
+   "reason": "A health and security HUD in one pair.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/security": {
+   "confidence": "high",
+   "group": "HUDs",
+   "hash": "bb7ce69a86a2fd0f",
+   "name": "security HUD",
+   "rank": 8,
+   "reason": "Shows names and wanted status at a glance.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/security/night": {
+   "confidence": "medium",
+   "group": "night vision",
+   "hash": "d9d523dd06ed9c02",
+   "name": "night vision security HUD",
+   "rank": 3,
+   "reason": "Night vision with a security HUD.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/hud/security/sunglasses": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "fb6b05a4ffb5ba8c",
+   "name": "security HUDSunglasses",
+   "rank": 4,
+   "reason": "A security HUD with flash protection. Common on hulls.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/security/sunglasses/eyepatch": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "d0f0276ef8493974",
+   "name": "eyepatch HUD",
+   "rank": 5,
+   "reason": "A security HUD with flash protection, on one eye.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/security/sunglasses/gars": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "2dba38e414548715",
+   "name": "HUD gar glasses",
+   "rank": 7,
+   "reason": "A security HUD with flash protection and a 10 force edge.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/hud/security/sunglasses/gars/giga": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "58906a14a4227565",
+   "name": "giga HUD gar glasses",
+   "rank": 6,
+   "reason": "A security HUD with flash protection and a 12 force edge.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/material/mining/gar": {
+   "confidence": "low",
+   "group": "vision through walls",
+   "hash": "645a0fcbe5c43c2b",
+   "name": "gar material scanner",
+   "rank": 4,
+   "reason": "Shows objects through walls, which is good for spotting caches and turrets. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/meson": {
+   "confidence": "high",
+   "group": "vision through walls",
+   "hash": "68fb4b3c87dc713f",
+   "locked": true,
+   "name": "optical meson scanner",
+   "rank": 6,
+   "reason": "Shows walls and floors through walls, and nothing that moves. Prints for about 2 cr of material after 40 research points.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/meson/engine": {
+   "confidence": "high",
+   "group": "vision through walls",
+   "hash": "097d198c2c3bb6d7",
+   "name": "engineering scanner goggles",
+   "note": "Starts switched off; using it cycles off, meson (turf sight through walls with a slight low-light boost), t-ray, off. In t-ray mode, every 2 seconds while worn by a player it briefly highlights under-floor cables and pipes within 1 tile of the wearer.",
+   "rank": 7,
+   "reason": "Has a meson mode and a t-ray mode. A work tool.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/meson/engine/atmos_imaging": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "97c521544ffd54a8",
+   "name": "atmospheric thermal imaging goggles",
+   "note": "Starts switched off; using it toggles a temperature overlay. While on and worn by a player, every 2 seconds it paints each open floor tile in view within 5 tiles of the wearer, blue below freezing through green and yellow to red at 500 K and above, by that tile's gas temperature. It has no meson or t-ray mode. / Starts switched off; using it cycles off, meson (turf sight through walls with a slight low-light boost), t-ray, off. In t-ray mode, every 2 seconds while worn by a player it briefly highlights under-floor cables and pipes within 1 tile of the wearer.",
+   "rank": 2,
+   "reason": "Shows gas temperature on the floor. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/meson/engine/tray": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "be54642ac3007936",
+   "name": "optical t-ray scanner",
+   "note": "Starts switched off; using it cycles off, t-ray (highlights hidden under-floor cables and pipes within 2 tiles), smart-pipe connection arrows within 2 tiles, the same temperature overlay as the atmospheric imaging goggles (open tiles in view within 5 tiles), off, refreshed every 2 seconds while worn by a player. It has no meson mode, so no sight through walls. / Starts switched off; using it cycles off, meson (turf sight through walls with a slight low-light boost), t-ray, off. In t-ray mode, every 2 seconds while worn by a player it briefly highlights under-floor cables and pipes within 1 tile of the wearer.",
+   "rank": 1,
+   "reason": "Shows pipes and cables under the floor. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/meson/gar": {
+   "confidence": "medium",
+   "group": "vision through walls",
+   "hash": "c600000effcc3df3",
+   "name": "gar mesons",
+   "rank": 5,
+   "reason": "Mesons with a 10 force edge.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/meson/night": {
+   "confidence": "medium",
+   "group": "night vision",
+   "hash": "0bbcd6bf4a94b270",
+   "name": "night vision meson scanner",
+   "rank": 2,
+   "reason": "Night vision plus mesons. It beats plain goggles at the same print cost, so plain goggles at a shop look silly.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/monocle": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "da92ec69bccf74ed",
+   "name": "monocle",
+   "rank": 8,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/night": {
+   "confidence": "high",
+   "group": "night vision",
+   "hash": "08151ea6c3be9711",
+   "name": "night vision goggles",
+   "rank": 7,
+   "reason": "Lets you see in the dark without a light, but makes you flash-sensitive. Prints from the same node as every better variant.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/nightmare_vision": {
+   "confidence": "low",
+   "group": "night vision",
+   "hash": "74e884908e971eca",
+   "name": "nightmare vision goggles",
+   "note": "Each time it is put on the eyes there is a 5% chance of a lasting delusion for the wearer alone, ending when the goggles come off, in which every human, the wearer included, looks like a horse-headed 'mare'. It also adds +13 to the wearer's fishing minigame difficulty, and its screen tint is forced on, so the wearer cannot toggle it off the way other lens tints can be.",
+   "rank": 1,
+   "reason": "Full-bright darkness with no flash penalty, the best dark sight in the game, from rare floor spawns only. 5% chance of seeing horses.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/orange": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "61dc2186ac177e6f",
+   "name": "orange glasses",
+   "rank": 7,
+   "reason": "Tinted glass.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/osi": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "71897e08f6031b5a",
+   "name": "O.S.I. Sunglasses",
+   "rank": 9,
+   "reason": "Only changes how you look.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/phantom": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "71897e08f6031b5a",
+   "name": "Phantom Thief Mask",
+   "rank": 10,
+   "reason": "Only changes how you look.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/red": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "92e537528a1b7fa9",
+   "name": "red glasses",
+   "rank": 8,
+   "reason": "Tinted glass.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/regular": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "26a5f28d1dcd9248",
+   "name": "prescription glasses",
+   "note": "Loose on the floor, each step from a non-walking mob that is touching the ground does 100 damage to it (200 integrity); once destroyed it is shredded, cannot be worn and stops correcting nearsightedness until a lit welder repairs it. Worn, it has a 25% chance to be knocked off when the wearer is shoved while the shover targets the eyes, and a 25% chance whenever the wearer is knocked down.",
+   "rank": 3,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/regular/circle": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "26a5f28d1dcd9248",
+   "name": "circle glasses",
+   "note": "Inherits the prescription glasses' behaviour unchanged. Loose on the floor, each step from a non-walking mob that is touching the ground does 100 damage to it (200 integrity); once destroyed it is shredded, cannot be worn and stops correcting nearsightedness until a lit welder repairs it. Worn, it has a 25% chance to be knocked off when the wearer is shoved while the shover targets the eyes, and a 25% chance whenever the wearer is knocked down.",
+   "rank": 4,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/regular/hipster": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "26a5f28d1dcd9248",
+   "name": "prescription glasses",
+   "note": "Inherits the prescription glasses' behaviour unchanged. Loose on the floor, each step from a non-walking mob that is touching the ground does 100 damage to it (200 integrity); once destroyed it is shredded, cannot be worn and stops correcting nearsightedness until a lit welder repairs it. Worn, it has a 25% chance to be knocked off when the wearer is shoved while the shover targets the eyes, and a 25% chance whenever the wearer is knocked down.",
+   "rank": 5,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/regular/jamjar": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "26a5f28d1dcd9248",
+   "name": "jamjar glasses",
+   "note": "Inherits the prescription glasses' behaviour unchanged. Loose on the floor, each step from a non-walking mob that is touching the ground does 100 damage to it (200 integrity); once destroyed it is shredded, cannot be worn and stops correcting nearsightedness until a lit welder repairs it. Worn, it has a 25% chance to be knocked off when the wearer is shoved while the shover targets the eyes, and a 25% chance whenever the wearer is knocked down.",
+   "rank": 6,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/regular/kim": {
+   "confidence": "high",
+   "group": "utility",
+   "hash": "26a5f28d1dcd9248",
+   "name": "binoclard lenses",
+   "note": "Inherits the prescription glasses' behaviour unchanged. Loose on the floor, each step from a non-walking mob that is touching the ground does 100 damage to it (200 integrity); once destroyed it is shredded, cannot be worn and stops correcting nearsightedness until a lit welder repairs it. Worn, it has a 25% chance to be knocked off when the wearer is shoved while the shover targets the eyes, and a 25% chance whenever the wearer is knocked down.",
+   "rank": 7,
+   "reason": "Fixes nearsightedness.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/salesman": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "25c92a3eac7ae8da",
+   "name": "colored glasses",
+   "rank": 11,
+   "reason": "Only changes how you look.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/glasses/science": {
+   "confidence": "high",
+   "group": "HUDs",
+   "hash": "cc0d6635d3a6d193",
+   "name": "science goggles",
+   "rank": 12,
+   "reason": "A reagent and research scanner, acid-proof. For chemists.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/science/calibration_prism": {
+   "confidence": "high",
+   "group": "uniques",
+   "hash": "b4016b870c112d8f",
+   "name": "calibration prism",
+   "note": "Its action button (also works in hand) sends a pulse every 45 seconds that, for 12 seconds, forces every other living mob in view within 7 tiles and every non-effect object there that is faded to 120 alpha or less (alpha-based cloaks such as stealth modules) back to full opacity with a cyan outline; revealed mobs are reset to full opacity every second for the duration, and objects return to their old alpha afterwards. The wearer is told how many things lit up, or that nothing is hiding.",
+   "rank": 3,
+   "reason": "A unique pair that reveals cloaked things within 7 tiles for 12 s.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/glasses/science/night": {
+   "confidence": "medium",
+   "group": "night vision",
+   "hash": "5919a49b63a7f77f",
+   "name": "night vision science goggles",
+   "rank": 6,
+   "reason": "Night vision with science scanners.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/sunglasses": {
+   "confidence": "high",
+   "group": "protection",
+   "hash": "296b8102d3fe452b",
+   "name": "sunglasses",
+   "rank": 1,
+   "reason": "Stops flashes and welding arcs with light tint, beating welding goggles at their own job.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/big": {
+   "confidence": "high",
+   "group": "protection",
+   "hash": "296b8102d3fe452b",
+   "name": "sunglasses",
+   "rank": 2,
+   "reason": "Sunglasses that stop flashes and welding arcs, in a bigger frame.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/chemical": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "8c6e2756643a8037",
+   "name": "science glasses",
+   "rank": 11,
+   "reason": "Science scanners with flash protection.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/gar": {
+   "confidence": "medium",
+   "group": "protection",
+   "hash": "2b62ba87e8e69ea1",
+   "name": "black gar glasses",
+   "rank": 5,
+   "reason": "Sunglasses with a 10 force edge.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/gar/giga": {
+   "confidence": "medium",
+   "group": "protection",
+   "hash": "6af0930f59d0c289",
+   "name": "black giga gar glasses",
+   "rank": 4,
+   "reason": "Sunglasses with a 12 force edge. One in every captain's locker.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/gar/orange": {
+   "confidence": "medium",
+   "group": "protection",
+   "hash": "badf1e1a16f6eb5c",
+   "name": "gar glasses",
+   "rank": 6,
+   "reason": "Sunglasses with a 10 force edge.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/marksmans_cant": {
+   "confidence": "high",
+   "group": "uniques",
+   "hash": "1079e475a4ef1b9f",
+   "name": "marksman's cant",
+   "note": "Standing still for 2 seconds settles it: the next trigger pull has its added spread (dual wielding, soft crit, drunkenness and similar) zeroed, though the gun's own spread still applies, and the first projectile fired afterwards loses its range accuracy falloff (the aimed body zone is hit at any range) and knocks down a living target for 1.5 seconds unless fully blocked. Firing spends the settle and starts a 30 second cooldown; any movement un-settles it and restarts the 2 second wait.",
+   "rank": 2,
+   "reason": "A unique pair: stand still 2 s for a perfect shot that knocks down, every 30 s.",
+   "tier": "above"
+  },
+  "/obj/item/clothing/glasses/sunglasses/oval": {
+   "confidence": "high",
+   "group": "protection",
+   "hash": "296b8102d3fe452b",
+   "name": "oval sunglasses",
+   "rank": 3,
+   "reason": "Sunglasses that stop flashes and welding arcs, in an oval frame.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/sunglasses/reagent": {
+   "confidence": "medium",
+   "group": "HUDs",
+   "hash": "2123fec20334a030",
+   "name": "beer goggles",
+   "rank": 13,
+   "reason": "Beer goggles: a reagent scan and flash protection.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/thermal": {
+   "confidence": "medium",
+   "group": "vision through walls",
+   "hash": "aa5845e49c7eae9e",
+   "name": "optical thermal scanner",
+   "note": "If an EMP hits it while it is worn on the eyes and the wearer is not already blind, the wearer is flashed, blinded for 6 seconds, eye-blurred for 10 seconds and takes 5 eye damage; an EMP-protected item skips this.",
+   "rank": 2,
+   "reason": "Shows every living thing through walls, the best eyewear players can buy. Flash-sensitive, and an EMP blinds you.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/thermal/eyepatch": {
+   "confidence": "medium",
+   "group": "vision through walls",
+   "hash": "bf6a06ceab0fa056",
+   "name": "optical thermal eyepatch",
+   "note": "Flip only changes the sprite; the thermal sight does not depend on which side it is on. If an EMP hits it while it is worn on the eyes and the wearer is not already blind, the wearer is flashed, blinded for 6 seconds, eye-blurred for 10 seconds and takes 5 eye damage; an EMP-protected item skips this.",
+   "rank": 3,
+   "reason": "Thermals as an eyepatch: every living thing through walls, flash-sensitive, and an EMP blinds you.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/thermal/syndi": {
+   "confidence": "medium",
+   "group": "vision through walls",
+   "hash": "949ea1986e9ad211",
+   "name": "chameleon thermals",
+   "note": "Its action lets the wearer change its name, description and sprite to look like other glasses; vision and stats do not change. If an EMP hits it while it is worn on the eyes and the wearer is not already blind, the wearer is flashed, blinded for 6 seconds, eye-blurred for 10 seconds and takes 5 eye damage; an EMP-protected item skips this.",
+   "rank": 1,
+   "reason": "Shows every living thing through walls, and it can pass as plain glasses. Flash-sensitive, and an EMP blinds you.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/glasses/welding": {
+   "confidence": "high",
+   "group": "protection",
+   "hash": "1e61e98719246f8e",
+   "name": "welding goggles",
+   "note": "Using it in hand lowers or raises the visor; raised, it loses its flash protection and its tint, and the +8 fishing-difficulty penalty it carries while lowered is removed. Nothing else special.",
+   "rank": 7,
+   "reason": "The same flash protection as sunglasses but at tint 2. The printable fallback.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/glasses/welding/up": {
+   "confidence": "high",
+   "group": "protection",
+   "hash": "93847e906d63d8d0",
+   "name": "welding goggles",
+   "note": "Same as welding goggles, but it starts with the visor raised (no flash protection or tint until lowered). Using it in hand lowers or raises the visor; raised, it loses its flash protection and its tint, and the +8 fishing-difficulty penalty it carries while lowered is removed. Nothing else special.",
+   "rank": 8,
+   "reason": "Welding goggles that start with the visor up.",
+   "tier": "green"
+  }
+ },
+ "method": "There is no number: each item is placed against its group and then the whole category, by whether it changes who wins a fight or only what you notice, what else could fill the eye slot, and what it costs you in flash weakness, tint or EMP risk. Availability decides how much a tier matters, not what the tier is.",
+ "unrated": {
+  "/obj/item/clothing/glasses": "abstract",
+  "/obj/item/clothing/glasses/blindfold/white": "leftover",
+  "/obj/item/clothing/glasses/chameleon/broken": "leftover",
+  "/obj/item/clothing/glasses/changeling": "needs another system",
+  "/obj/item/clothing/glasses/debug": "admin",
+  "/obj/item/clothing/glasses/eyepatch/medical/chuuni": "leftover",
+  "/obj/item/clothing/glasses/geist_gazers": "literal only",
+  "/obj/item/clothing/glasses/godeye": "literal only",
+  "/obj/item/clothing/glasses/hud": "abstract",
+  "/obj/item/clothing/glasses/hud/health/night/meson": "no route",
+  "/obj/item/clothing/glasses/hud/health/night/science": "no route",
+  "/obj/item/clothing/glasses/hud/security/chameleon": "no route",
+  "/obj/item/clothing/glasses/hud/spacecop": "leftover",
+  "/obj/item/clothing/glasses/hud/spacecop/hidden": "leftover",
+  "/obj/item/clothing/glasses/hud/toggle": "abstract",
+  "/obj/item/clothing/glasses/hud/toggle/thermal": "no route",
+  "/obj/item/clothing/glasses/material": "no route",
+  "/obj/item/clothing/glasses/material/mining": "no route",
+  "/obj/item/clothing/glasses/meson/engine/shuttle": "leftover",
+  "/obj/item/clothing/glasses/overwatch": "admin",
+  "/obj/item/clothing/glasses/prism_glasses": "leftover",
+  "/obj/item/clothing/glasses/psych": "literal only",
+  "/obj/item/clothing/glasses/regular/thin": "literal only",
+  "/obj/item/clothing/glasses/sunglasses/gar/giga/red": "leftover",
+  "/obj/item/clothing/glasses/sunglasses/noir": "no route",
+  "/obj/item/clothing/glasses/sunglasses/spy": "no route",
+  "/obj/item/clothing/glasses/thermal/monocle": "no route",
+  "/obj/item/clothing/glasses/thermal/xray": "admin",
+  "/obj/item/clothing/glasses/trickblindfold": "leftover"
+ }
+}

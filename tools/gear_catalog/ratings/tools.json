@@ -1,0 +1,3098 @@
+{
+ "category": "tools",
+ "groups": [
+  "Hand tools",
+  "Welders",
+  "Construction devices",
+  "Mining tools",
+  "Expedition gear",
+  "Anomaly gear",
+  "Restraints and traps",
+  "Stuns and chemical sprays",
+  "Work sprays and water tanks",
+  "Fire extinguishers",
+  "Jetpacks",
+  "Internals tanks",
+  "Lights",
+  "Scanners and trackers",
+  "Barriers and door seals",
+  "Door control",
+  "Logistics and remote services",
+  "Power",
+  "Janitorial",
+  "Bodies and beds",
+  "Assembly parts and controllers",
+  "Odds and ends"
+ ],
+ "items": {
+  "/obj/item/access_key": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "977ee122dbb9ef4d",
+   "name": "access key ring",
+   "rank": 6,
+   "reason": "Janitor's key ring that opens doors only when a department access has been granted to it.",
+   "tier": "none"
+  },
+  "/obj/item/airlock_painter": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "f2bb4f10f45275cd",
+   "name": "airlock painter",
+   "rank": 22,
+   "reason": "Paints airlocks. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/airlock_painter/decal": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "8daa2f6396845123",
+   "name": "decal painter",
+   "rank": 23,
+   "reason": "Paints floor decals. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/analyzer": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "74ce1834081fd401",
+   "name": "gas analyzer",
+   "rank": 10,
+   "reason": "Reads gas. Also reads an anomaly's code, which is how you claim its core.",
+   "tier": "none"
+  },
+  "/obj/item/analyzer/honest_gauge": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "ecdca735f1097517",
+   "name": "the honest gauge",
+   "rank": 8,
+   "reason": "Authored unique, so it stays off shelves. Reads gas, machine parts and hidden wiring. Handy readouts, no power.",
+   "tier": "above"
+  },
+  "/obj/item/analyzer/ranged": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "55d7ab63e5a17bcd",
+   "name": "long-range gas analyzer",
+   "rank": 9,
+   "reason": "Reads gas from a distance.",
+   "tier": "none"
+  },
+  "/obj/item/anomaly_neutralizer": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "33b37f3a5eb3a318",
+   "name": "anomaly neutralizer",
+   "rank": 11,
+   "reason": "One use, ends an anomaly on contact and drops its core. A signaler and analyzer do the same for free once you read the code. This is the quick way.",
+   "tier": "green"
+  },
+  "/obj/item/anomaly_releaser": {
+   "confidence": "low",
+   "group": "Anomaly gear",
+   "hash": "d698e4c86534283e",
+   "name": "anomaly releaser",
+   "rank": 10,
+   "reason": "Turns a finished core back into a live anomaly that never fades, wherever you stand. A nasty trap to leave on someone's ship. Ruins only.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/control": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dddd45fc8183acd2",
+   "name": "blast door controller",
+   "rank": 13,
+   "reason": "Wall button circuit for blast doors.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/control/crematorium": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dddd45fc8183acd2",
+   "name": "crematorium controller",
+   "rank": 14,
+   "reason": "Wall button circuit for a crematorium.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/control/flasher": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dddd45fc8183acd2",
+   "name": "flasher controller",
+   "rank": 15,
+   "reason": "Wall button circuit for wall flashers.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/control/igniter": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dddd45fc8183acd2",
+   "name": "ignition controller",
+   "rank": 16,
+   "reason": "Wall button circuit for igniters.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/control/massdriver": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dddd45fc8183acd2",
+   "name": "mass driver controller",
+   "rank": 17,
+   "reason": "Wall button circuit for mass drivers.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/control/transport/call_button": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "b0eec5f7931ec6e9",
+   "name": "tram call button",
+   "rank": 18,
+   "reason": "Calls the tram in the one ruin that has one.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/flash": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "9ec63047f2867e6d",
+   "name": "flash",
+   "rank": 4,
+   "reason": "Point blank, it drops anyone facing you with no eye protection: 80 to 120 stamina and a knockdown. It can burn out if spammed. Any flash-proof eyewear stops it. Found on robotics modules.",
+   "tier": "green"
+  },
+  "/obj/item/assembly/flash/cyborg": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "bb6e102265c3546f",
+   "name": "flash",
+   "rank": 5,
+   "reason": "Point blank, it drops anyone facing you with no eye protection: 80 to 120 stamina and a knockdown. It can burn out if spammed. Any flash-proof eyewear stops it. A cyborg version found in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/assembly/flash/handheld": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "cdb4391aafeec054",
+   "name": "flash",
+   "rank": 3,
+   "reason": "Point blank, it drops anyone facing you with no eye protection: 80 to 120 stamina and a knockdown. It can burn out if spammed. Any flash-proof eyewear stops it. Common on job outfits and prints for 3 cr of material at a mech fabricator.",
+   "tier": "green"
+  },
+  "/obj/item/assembly/flash/memorizer": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "d4cbbb01e58771a0",
+   "name": "memorizer",
+   "rank": 6,
+   "reason": "A flash with a different look. Point blank, it drops anyone facing you with no eye protection: 80 to 120 stamina and a knockdown. It can burn out if spammed. Any flash-proof eyewear stops it. Rare maintenance spawn.",
+   "tier": "green"
+  },
+  "/obj/item/assembly/health": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "8abe837afcc254f9",
+   "name": "health sensor",
+   "rank": 9,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/igniter": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "dce2f7e691bd6788",
+   "name": "igniter",
+   "rank": 5,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/igniter/condenser": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "0224da857a4bb31f",
+   "name": "condenser",
+   "rank": 6,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/infra": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "d5fdfed5f528ebc1",
+   "name": "infrared emitter",
+   "rank": 7,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/mousetrap": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "21db4623981290b6",
+   "name": "mousetrap",
+   "rank": 10,
+   "reason": "Snaps on whoever steps on it, for little damage.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/mousetrap/armed": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "7ea51ed8369c91e7",
+   "name": "mousetrap",
+   "rank": 11,
+   "reason": "Mousetrap, already set.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/prox_sensor": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "f6c47ed5b7b52277",
+   "name": "proximity sensor",
+   "rank": 4,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/shock_kit": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "e2491b2eae7c31ba",
+   "name": "electrohelmet assembly",
+   "rank": 12,
+   "reason": "Half-built electric chair part. One ruin.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/signaler": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "c4fe0b13e010d29a",
+   "name": "remote signaling device",
+   "rank": 1,
+   "reason": "Remote signal part. Also how you pop an anomaly for its core. 1 cr of material.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/signaler/anomaly/bioscrambler": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "3c58020344be5a1d",
+   "name": "bioscrambler anomaly core",
+   "rank": 9,
+   "reason": "Uncommon core. Makes limb-swapping reactive armor or powers a polymorph belt.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/bluespace": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "84b6ae4b104463f9",
+   "name": "bluespace anomaly core",
+   "rank": 1,
+   "reason": "Rare core. Makes a bag of holding or teleporting reactive armor and is needed for a Phazon. Each of those is a big step up on its own.",
+   "tier": "red"
+  },
+  "/obj/item/assembly/signaler/anomaly/dimensional": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "2aa2fa68c3519fb2",
+   "name": "dimensional anomaly core",
+   "rank": 5,
+   "reason": "Uncommon core. Makes barricade reactive armor or a terrain-warping bomb core.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/ectoplasm": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "cb78082441e8bd53",
+   "name": "ectoplasm anomaly core",
+   "rank": 7,
+   "reason": "Uncommon core. Makes ectoplasm reactive armor. Otherwise research points or 400 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/flux": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "7b0e5525010f0ed0",
+   "name": "flux anomaly core",
+   "rank": 3,
+   "reason": "Common core. With a kit it makes a tesla cannon, and alone it makes tesla reactive armor. Costs only a signaler and an analyzer, so the kit is the real gate.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/grav": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "9e21d67f57b03bbe",
+   "name": "gravitational anomaly core",
+   "rank": 4,
+   "reason": "Common core. Makes repulse reactive armor or a MOD gravity module. One part of an Event Horizon.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/hallucination": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "99074ff137d67eb9",
+   "name": "hallucination anomaly core",
+   "rank": 8,
+   "reason": "Common core. Makes hallucinating reactive armor or powers a psychic helmet.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/pyro": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "5c8821668dc21f79",
+   "name": "pyroclastic anomaly core",
+   "rank": 6,
+   "reason": "Common core. Makes stealth reactive armor. Otherwise research points or 400 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/assembly/signaler/anomaly/vortex": {
+   "confidence": "medium",
+   "group": "Anomaly gear",
+   "hash": "578b38e3df5024c8",
+   "name": "vortex anomaly core",
+   "rank": 2,
+   "reason": "Rare core. Two go into a supermatter sword or an Event Horizon, though one alone makes only stealth reactive armor.",
+   "tier": "red"
+  },
+  "/obj/item/assembly/signaler/cyborg": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "c4fe0b13e010d29a",
+   "name": "remote signaling device",
+   "rank": 2,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/timer": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "6c54faefe0289196",
+   "name": "timer",
+   "rank": 3,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/trapdoor": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "38193ad78430bbb7",
+   "name": "trapdoor controller",
+   "rank": 19,
+   "reason": "Controls trapdoors you build yourself.",
+   "tier": "none"
+  },
+  "/obj/item/assembly/voice": {
+   "confidence": "high",
+   "group": "Assembly parts and controllers",
+   "hash": "18ffa91ab45450e1",
+   "name": "voice analyzer",
+   "rank": 8,
+   "reason": "A part for gadgets and traps. Whatever it ends up in gets rated, not the part.",
+   "tier": "none"
+  },
+  "/obj/item/beacon": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "39b5b2cd6c7fa744",
+   "name": "tracking beacon",
+   "rank": 19,
+   "reason": "Marks a spot for a teleporter to aim at.",
+   "tier": "none"
+  },
+  "/obj/item/binoculars": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "2b9d7e528a5dc7d7",
+   "name": "binoculars",
+   "note": "Wielding it with both hands zooms the view out toward the cursor (4 times the normal view range), and lowering it, swapping hands or moving it out of the hands ends the zoom. While wielded the user is slowed (+1.5).",
+   "rank": 3,
+   "reason": "Zooms your view out to 4 times normal while wielded, and slows you. Good for spotting from a ridge.",
+   "tier": "green"
+  },
+  "/obj/item/bodybag": {
+   "confidence": "high",
+   "group": "Bodies and beds",
+   "hash": "9d2943ec1d12f985",
+   "name": "body bag",
+   "rank": 3,
+   "reason": "Body bag.",
+   "tier": "none"
+  },
+  "/obj/item/bodybag/bluespace": {
+   "confidence": "medium",
+   "group": "Bodies and beds",
+   "hash": "a737c85acd1315eb",
+   "name": "bluespace body bag",
+   "rank": 1,
+   "reason": "Folds up with bodies inside, so one person can carry the fallen home in a pocket. 123 cr of material.",
+   "tier": "green"
+  },
+  "/obj/item/bodybag/environmental": {
+   "confidence": "high",
+   "group": "Bodies and beds",
+   "hash": "664ba3beb1e36098",
+   "name": "environmental protection bag",
+   "rank": 2,
+   "reason": "Body bag that seals out fire and vacuum.",
+   "tier": "none"
+  },
+  "/obj/item/boxcutter": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "5e8dea4346df2e0d",
+   "name": "boxcutter",
+   "rank": 31,
+   "reason": "Folding blade at 10 force. Weak, cheap and easily replaced by a real knife.",
+   "tier": "none"
+  },
+  "/obj/item/camera": {
+   "confidence": "high",
+   "group": "Odds and ends",
+   "hash": "dd01e7ad1d2304f6",
+   "name": "camera",
+   "note": "Clicking something in view takes a photo of a square of tiles around it (3 wide by default, up to 7) with a flash; 10 shots per film roll, 6.4 seconds between shots, and film can only be loaded once the camera is empty. Hitting a mob with it does nothing. The camera obscura variant also shows ghosts in photos and deals 10-15 damage to spirit-type mobs it photographs, revealing and paralyzing a revenant for 2 seconds.",
+   "rank": 5,
+   "reason": "Takes photos.",
+   "tier": "none"
+  },
+  "/obj/item/camera/spooky": {
+   "confidence": "high",
+   "group": "Odds and ends",
+   "hash": "b54ddcc30e66a8b8",
+   "name": "camera obscura",
+   "note": "Clicking something in view takes a photo of a square of tiles around it (3 wide by default, up to 7) with a flash; 10 shots per film roll, 6.4 seconds between shots, and film can only be loaded once the camera is empty. Hitting a mob with it does nothing. The camera obscura variant also shows ghosts in photos and deals 10-15 damage to spirit-type mobs it photographs, revealing and paralyzing a revenant for 2 seconds.",
+   "rank": 4,
+   "reason": "Camera that shows ghosts in photos and stings spirit mobs. Niche.",
+   "tier": "none"
+  },
+  "/obj/item/chisel": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "9723480629b6c5bc",
+   "name": "chisel",
+   "note": "On a carving block it sculpts a statue of a chosen target or preset over 30 seconds, cancelled if the user moves or drops it; right-click on a wall engraves one of the user's memories (5 seconds). With combat mode on it does 200 extra damage to statue mobs, and aimed at the eyes it stabs for 7 brute and damages the eyes, which with repeat hits causes blur, dropped items and paralysis. It also scrapes rust, taking triple the normal time.",
+   "rank": 32,
+   "reason": "For carving statues and scraping rust. Its eye stab does 7.",
+   "tier": "none"
+  },
+  "/obj/item/climbing_hook": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "8f6b0cebd9d449b4",
+   "name": "climbing hook",
+   "rank": 13,
+   "reason": "Climbs up one level. Most places have one level.",
+   "tier": "none"
+  },
+  "/obj/item/climbing_hook/syndicate": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "21fb54e34bb8a141",
+   "name": "suspicious climbing hook",
+   "rank": 12,
+   "reason": "Climbs up one level in under a second. Most places have one level.",
+   "tier": "none"
+  },
+  "/obj/item/construction/plumbing": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "df94954ade33c5ae",
+   "name": "Plumbing Constructor",
+   "rank": 12,
+   "reason": "Builds chem factories out of piping. A chemist's force multiplier, with no direct fight power.",
+   "tier": "green"
+  },
+  "/obj/item/construction/plumbing/service": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "f1969657ab9c87d6",
+   "name": "service plumbing constructor",
+   "rank": 13,
+   "reason": "Plumbing constructor for kitchens and bars.",
+   "tier": "green"
+  },
+  "/obj/item/construction/rcd": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "aa564698e4aa51b9",
+   "name": "rapid-construction-device (RCD)",
+   "rank": 5,
+   "reason": "The same RCD with an empty tank. It reloads on iron, glass or cartridges.",
+   "tier": "green"
+  },
+  "/obj/item/construction/rcd/ce": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "9b7bdd396f0006ed",
+   "name": "professional RCD",
+   "rank": 3,
+   "reason": "RCD with the cooling and anti-interrupt upgrades built in. No shop, ruin or played hull has it.",
+   "tier": "green"
+  },
+  "/obj/item/construction/rcd/combat": {
+   "confidence": "medium",
+   "group": "Construction devices",
+   "hash": "dea7f5fb03d91104",
+   "name": "industrial RCD",
+   "rank": 1,
+   "reason": "Industrial RCD: 500 matter, every upgrade and it cuts reinforced walls. That makes it a real breaching tool. One ruin has it.",
+   "tier": "yellow"
+  },
+  "/obj/item/construction/rcd/exosuit": {
+   "confidence": "medium",
+   "group": "Construction devices",
+   "hash": "deec5309f1547f38",
+   "name": "mounted RCD",
+   "rank": 2,
+   "reason": "Mech-mounted RCD. Works from 3 tiles in half the time and cuts reinforced walls, but it needs a mech.",
+   "tier": "yellow"
+  },
+  "/obj/item/construction/rcd/loaded": {
+   "confidence": "medium",
+   "group": "Construction devices",
+   "hash": "d76f301c6a9776ba",
+   "name": "rapid-construction-device (RCD)",
+   "rank": 4,
+   "reason": "Best work tool in the game: repairs hull and builds rooms fast, and takes plain walls down in 4 s and doors in 5 s. It stops at reinforced walls. In the backpack of 16 engineer outfits.",
+   "tier": "green"
+  },
+  "/obj/item/construction/rld": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "866b4523c3dd1e17",
+   "name": "Rapid Lighting Device",
+   "rank": 17,
+   "reason": "Places lights fast.",
+   "tier": "none"
+  },
+  "/obj/item/construction/rld/mini": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "9b6dd37f735a8a23",
+   "name": "mini-rapid-light-device",
+   "rank": 18,
+   "reason": "Places lights fast, with a smaller tank.",
+   "tier": "none"
+  },
+  "/obj/item/construction/rtd/loaded": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "fd925d5800f48c37",
+   "name": "rapid-tiling-device (RTD)",
+   "rank": 19,
+   "reason": "Lays floor tiles fast.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "a1acffe48fec1773",
+   "name": "pocket crowbar",
+   "rank": 25,
+   "reason": "Plain crowbar.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/abductor": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "1e569a66f0a1b0cb",
+   "name": "alien crowbar",
+   "rank": 2,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself. Sold for 900 cr, and it's also the sample that opens alien research.",
+   "tier": "yellow"
+  },
+  "/obj/item/crowbar/cyborg": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "3952ba751df8a7ef",
+   "name": "hydraulic crowbar",
+   "rank": 16,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/hammer": {
+   "confidence": "low",
+   "group": "Hand tools",
+   "hash": "5d8b104c245cfdfb",
+   "name": "claw hammer",
+   "rank": 13,
+   "reason": "Claw hammer. Bad at prying, but 11 force with a large wound bonus breaks bones. A cheap ruin club.",
+   "tier": "green"
+  },
+  "/obj/item/crowbar/large": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "09dafdee97b4593d",
+   "name": "large crowbar",
+   "rank": 21,
+   "reason": "Large crowbar. 12 force, about a baseball bat, and slightly faster than a pocket crowbar.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/large/emergency": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "ecb234d83d0be236",
+   "name": "emergency crowbar",
+   "rank": 23,
+   "reason": "Large crowbar too bulky for a bag. 12 force. Found in emergency lockers.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/large/old": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "0fad6e1e4eddd8f5",
+   "name": "old crowbar",
+   "rank": 22,
+   "reason": "Large crowbar. 12 force, about a baseball bat, and slightly faster than a pocket crowbar.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/large/twenty_force": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "7fe8151cb27e16d4",
+   "name": "heavy crowbar",
+   "rank": 7,
+   "reason": "Heavy crowbar. 20 force in one hand, the same as the green combat knife, and still a crowbar. Only from ruin weapon rolls.",
+   "tier": "green"
+  },
+  "/obj/item/crowbar/power": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "7d1667aa05624e99",
+   "name": "jaws of life",
+   "rank": 1,
+   "reason": "Jaws of life. Pries any powered door that isn't bolted, snaps cuffs at once and hits for 15. It takes a boarding party through doors without hacking, for 93 cr of material and no reputation.",
+   "tier": "yellow"
+  },
+  "/obj/item/crowbar/red": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "03671c8e3dcefd3b",
+   "name": "pocket crowbar",
+   "rank": 26,
+   "reason": "Plain crowbar in red.",
+   "tier": "none"
+  },
+  "/obj/item/crowbar/red/caravan": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "0e4bfa7b44d8f7f5",
+   "name": "experimental crowbar",
+   "rank": 9,
+   "reason": "Experimental tool at about a third of the normal time. Faster work and nothing else.",
+   "tier": "green"
+  },
+  "/obj/item/detective_scanner": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "8917b5706f09378e",
+   "name": "forensic scanner",
+   "rank": 15,
+   "reason": "Reads fingerprints and fibers.",
+   "tier": "none"
+  },
+  "/obj/item/door_remote/captain": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "dabcd0044b68d39b",
+   "name": "command door remote",
+   "rank": 1,
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people. In the captain's locker on 9 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/door_remote/chief_medical_officer": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "968a293a73e551de",
+   "name": "medical door remote",
+   "rank": 2,
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people.",
+   "tier": "green"
+  },
+  "/obj/item/door_remote/head_of_personnel": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "9f9292e1a37ecc10",
+   "name": "service door remote",
+   "rank": 5,
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people.",
+   "tier": "green"
+  },
+  "/obj/item/door_remote/quartermaster": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "434aa8feb98c77e9",
+   "name": "cargo door remote",
+   "rank": 3,
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people.",
+   "tier": "green"
+  },
+  "/obj/item/door_remote/research_director": {
+   "confidence": "medium",
+   "group": "Door control",
+   "hash": "d1844d873c8b1ed3",
+   "name": "research door remote",
+   "rank": 4,
+   "reason": "Opens or bolts any powered door it has access to, from across a room. A crew convenience that also traps people.",
+   "tier": "green"
+  },
+  "/obj/item/door_seal": {
+   "confidence": "medium",
+   "group": "Barriers and door seals",
+   "hash": "d8dd9bf5c6fe0d30",
+   "name": "pneumatic airlock seal",
+   "rank": 6,
+   "reason": "Braces an airlock shut in 3 s, and takes 2 s to undo. It slows people down without stopping them.",
+   "tier": "green"
+  },
+  "/obj/item/emergency_bed": {
+   "confidence": "high",
+   "group": "Bodies and beds",
+   "hash": "15f9674ef4c95eb9",
+   "name": "roller bed",
+   "rank": 4,
+   "reason": "Wheels a patient along. Faster than dragging.",
+   "tier": "none"
+  },
+  "/obj/item/experi_scanner": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "c4e0ab3f3471e1b9",
+   "name": "Experi-Scanner",
+   "rank": 14,
+   "reason": "Scans things for research experiments. Worth research points, not power.",
+   "tier": "none"
+  },
+  "/obj/item/extendohand": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "c86f5b7e089a2fac",
+   "name": "extendo-hand",
+   "note": "Reach 2: used on a living target exactly two tiles away it performs the wielder's bare-hand interaction on them (hug, punch and so on, per intent) instead of a weapon hit. Used on a closer target it only says they are too close, and the item itself has no melee force.",
+   "rank": 18,
+   "reason": "Boxing glove on a stick. It hugs or punches from 2 tiles and has no force of its own.",
+   "tier": "none"
+  },
+  "/obj/item/extinguisher": {
+   "confidence": "medium",
+   "group": "Fire extinguishers",
+   "hash": "2dbcf513b0453dd6",
+   "name": "fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 1,
+   "reason": "Puts out fires. Also has a right-click head bash: 2 s wind-up, 39 brute and a severe wound. That's brutal on anyone stunned or cuffed, and it's in every cabinet.",
+   "tier": "green"
+  },
+  "/obj/item/extinguisher/advanced": {
+   "confidence": "high",
+   "group": "Fire extinguishers",
+   "hash": "9b4fcec19c565c10",
+   "name": "advanced fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 3,
+   "reason": "Foam, a wider spray and twice the capacity. No head bash. The fire tool of choice.",
+   "tier": "green"
+  },
+  "/obj/item/extinguisher/advanced/empty": {
+   "confidence": "high",
+   "group": "Fire extinguishers",
+   "hash": "e7c61f3291402771",
+   "name": "advanced fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 4,
+   "reason": "Advanced extinguisher, printed empty.",
+   "tier": "green"
+  },
+  "/obj/item/extinguisher/crafted": {
+   "confidence": "high",
+   "group": "Fire extinguishers",
+   "hash": "e5b009a0e9432e88",
+   "name": "Improvised cooling spray",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 7,
+   "reason": "Crafted from a spray can. 30 units and short reach.",
+   "tier": "none"
+  },
+  "/obj/item/extinguisher/empty": {
+   "confidence": "medium",
+   "group": "Fire extinguishers",
+   "hash": "71dbd6e3eb7f801c",
+   "name": "fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 2,
+   "reason": "The same extinguisher and head bash, printed empty. 1 cr of material.",
+   "tier": "green"
+  },
+  "/obj/item/extinguisher/mini": {
+   "confidence": "high",
+   "group": "Fire extinguishers",
+   "hash": "1e3088b6cc0ffd23",
+   "name": "pocket fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 5,
+   "reason": "Pocket extinguisher, weak and small.",
+   "tier": "none"
+  },
+  "/obj/item/extinguisher/mini/empty": {
+   "confidence": "high",
+   "group": "Fire extinguishers",
+   "hash": "3a14aff80275bfe6",
+   "name": "pocket fire extinguisher",
+   "note": "Safety starts on; with it off, clicking sprays 5 particles (5 units) in a 3-tile-wide fan out to 5 tiles, once per 1.2 seconds, putting out fires on mobs, objects and hotspots; the user is pushed back in zero-g and a buckled unanchored chair is driven away. The standard bulky one also has a right-click head bash on carbons (2 second windup, 39 brute with a strong blunt wound bonus); advanced uses foam, a 5-wide fan with no repeated tiles and holds 100 units, and the crafted spray holds 30 and reaches 3 tiles.",
+   "rank": 6,
+   "reason": "Pocket extinguisher, printed empty.",
+   "tier": "none"
+  },
+  "/obj/item/extraction_pack": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "348115e0be063e42",
+   "name": "fulton extraction pack",
+   "rank": 7,
+   "reason": "Balloon sends anything unbolted, people included, to your own beacon. Outdoors only, 5 s to attach, 3 uses. Good for hauling loot and fallen crew home.",
+   "tier": "green"
+  },
+  "/obj/item/field_contract_pad": {
+   "confidence": "high",
+   "group": "Logistics and remote services",
+   "hash": "101e614e52e46312",
+   "name": "field contract pad",
+   "rank": 3,
+   "reason": "Settles contracts wherever you stand and drops the pay at your feet. It saves the trip home on every job. 3,600 cr, 2 vouchers and rep 4.",
+   "tier": "yellow"
+  },
+  "/obj/item/flashlight": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "74fa1aaae0c35518",
+   "name": "flashlight",
+   "rank": 5,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flare": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "5f4b0d393c80a1fa",
+   "name": "flare",
+   "rank": 5,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flare/candle": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "a36f67ee4d998d81",
+   "name": "red candle",
+   "rank": 6,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flare/candle/infinite": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "d52b586f4d343378",
+   "name": "eternal candle",
+   "rank": 7,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flare/candle/widows": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "9b4b0c1944479012",
+   "name": "widow's candle",
+   "rank": 4,
+   "reason": "Authored unique, so it stays off shelves. Lets a corpse's ghost say one last thing through the flame. Flavor, with no power.",
+   "tier": "above"
+  },
+  "/obj/item/flashlight/flare/torch": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "69e1f04a0aee610f",
+   "name": "torch",
+   "rank": 8,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flare/torch/everburning": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "c3cd35afe8158e07",
+   "name": "everburning torch",
+   "rank": 2,
+   "reason": "Torch that never goes out and hits for 10. A light with a dull edge.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/flashdark": {
+   "confidence": "medium",
+   "group": "Lights",
+   "hash": "c8fbaf9360cee6ab",
+   "name": "flashdark",
+   "rank": 3,
+   "reason": "Throws a small bubble of darkness instead of light. A trick, not an edge.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "5ea6e8ff375d3181",
+   "name": "glowstick",
+   "rank": 9,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/blue": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "9b8bb04775c47d2a",
+   "name": "blue glowstick",
+   "rank": 10,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/cyan": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "1bbd952661ad9bbe",
+   "name": "cyan glowstick",
+   "rank": 11,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/orange": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "5e4c9ebaef9af477",
+   "name": "orange glowstick",
+   "rank": 12,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/pink": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "6e991a9019e8a257",
+   "name": "pink glowstick",
+   "rank": 13,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/red": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "eb23c1e56592ef90",
+   "name": "red glowstick",
+   "rank": 14,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/glowstick/yellow": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "7f1ead08311d9251",
+   "name": "yellow glowstick",
+   "rank": 15,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lamp": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "249ea822bce35e26",
+   "name": "desk lamp",
+   "rank": 16,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lamp/bananalamp": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "249ea822bce35e26",
+   "name": "banana lamp",
+   "rank": 17,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lamp/green": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "249ea822bce35e26",
+   "name": "desk lamp",
+   "rank": 18,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lantern": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "9141dfcba75c3874",
+   "name": "lantern",
+   "rank": 19,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lantern/censer_quiet_parish": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "91a42db6116010b3",
+   "name": "censer of the quiet parish",
+   "rank": 2,
+   "reason": "Authored unique. Lit on the belt, the local wildlife leaves you alone, short of megafauna. It removes most of what makes a planet dangerous.",
+   "tier": "above"
+  },
+  "/obj/item/flashlight/lantern/jade": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "ec43bf33a318311a",
+   "name": "jade lantern",
+   "rank": 20,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lantern/jade/on": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "7904a0cae595e79b",
+   "name": "jade lantern",
+   "rank": 21,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lantern/on": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "5e553b98120465ab",
+   "name": "lantern",
+   "rank": 22,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/lantern/syndicate": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "c21c86fb12a7c236",
+   "name": "suspicious lantern",
+   "rank": 23,
+   "reason": "A light. No bearing on power or progress.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/pen": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "314864b2565468a5",
+   "name": "penlight",
+   "rank": 24,
+   "reason": "Penlight for checking eyes.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/pen/paramedic": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "4bb2e414c73c0b01",
+   "name": "paramedic penlight",
+   "rank": 25,
+   "reason": "Penlight with a short UV burst, for medics.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/seclite": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "e9df2ec7b6e68d62",
+   "name": "seclite",
+   "rank": 1,
+   "reason": "Flashlight that hits for 9. A light first and a poor club second.",
+   "tier": "none"
+  },
+  "/obj/item/flashlight/slime": {
+   "confidence": "high",
+   "group": "Lights",
+   "hash": "4f5464aee62a999d",
+   "name": "glowing slime extract",
+   "rank": 26,
+   "reason": "A glowing slime extract used as a light.",
+   "tier": "none"
+  },
+  "/obj/item/forcefield_projector": {
+   "confidence": "low",
+   "group": "Barriers and door seals",
+   "hash": "8a77a0ccee608fe7",
+   "name": "forcefield projector",
+   "rank": 1,
+   "reason": "Up to 3 forcefields at 7 tiles that stop people, bullets and air, though lasers pass through. Damage drains a shared 250 charge rather than breaking a field. 4 cr of material after 120 research points.",
+   "tier": "green"
+  },
+  "/obj/item/freight_beacon": {
+   "confidence": "high",
+   "group": "Logistics and remote services",
+   "hash": "4f1ca51b45c2863b",
+   "name": "freight beacon",
+   "rank": 4,
+   "reason": "Buys off the waystation's core shelf and pods it to you anywhere. Three drops. Rep 4.",
+   "tier": "yellow"
+  },
+  "/obj/item/fulton_core": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "15f9674ef4c95eb9",
+   "name": "extraction beacon assembly kit",
+   "rank": 8,
+   "reason": "The beacon that fulton packs fly to. No use without packs.",
+   "tier": "green"
+  },
+  "/obj/item/geiger_counter": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "17d34f4944f6f156",
+   "name": "Geiger counter",
+   "rank": 12,
+   "reason": "Reads radiation.",
+   "tier": "none"
+  },
+  "/obj/item/gps": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "79116e60cd331739",
+   "name": "global positioning system",
+   "rank": 4,
+   "reason": "Shows where other GPS units are, so a crew can find each other on a planet. Cheap and common.",
+   "tier": "green"
+  },
+  "/obj/item/gps/computer": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "86194cab68788c77",
+   "name": "pod computer",
+   "rank": 21,
+   "reason": "Bolted-down pod computer in a few ruins, working as a GPS.",
+   "tier": "none"
+  },
+  "/obj/item/gps/mining": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "f0a353b675fb7645",
+   "name": "global positioning system",
+   "rank": 5,
+   "reason": "Shows where other GPS units are, so a crew can find each other on a planet. Cheap and common.",
+   "tier": "green"
+  },
+  "/obj/item/gps/science": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "b4f34af21c8874d5",
+   "name": "global positioning system",
+   "rank": 6,
+   "reason": "Shows where other GPS units are, so a crew can find each other on a planet. Cheap and common. The shop sells it for 400 cr, though a plain one prints for 2.",
+   "tier": "green"
+  },
+  "/obj/item/gps/spaceruin": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "1e47851ef0279d9e",
+   "name": "global positioning system",
+   "rank": 7,
+   "reason": "Shows where other GPS units are, so a crew can find each other on a planet. Cheap and common. Left around in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/grapple_gun": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "f84256e65c1d1c29",
+   "name": "grapple gun",
+   "rank": 10,
+   "reason": "Zips you 9 tiles to a target in low pressure only. Handy on rock, dear at 3,000 mining points.",
+   "tier": "green"
+  },
+  "/obj/item/holosign_creator": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "fae2ba36dffc12eb",
+   "name": "holographic sign projector",
+   "rank": 8,
+   "reason": "Projects hologram signs.",
+   "tier": "none"
+  },
+  "/obj/item/holosign_creator/atmos": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "128d113a4c448ec0",
+   "name": "ATMOS holofan projector",
+   "rank": 2,
+   "reason": "Six holofans that stop air loss while people walk through. The right fix for a breach.",
+   "tier": "green"
+  },
+  "/obj/item/holosign_creator/engineering": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "1b6b38279a475fea",
+   "name": "engineering holobarrier projector",
+   "rank": 3,
+   "reason": "Twelve one-hit barriers that stop people running into a hazard. Walk and you pass through.",
+   "tier": "green"
+  },
+  "/obj/item/holosign_creator/janibarrier": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "95e1ff156b9e4a33",
+   "name": "custodial holobarrier projector",
+   "rank": 7,
+   "reason": "Wet floor barriers.",
+   "tier": "none"
+  },
+  "/obj/item/holosign_creator/medical": {
+   "confidence": "medium",
+   "group": "Barriers and door seals",
+   "hash": "84e82354f66bdcea",
+   "name": "PENLITE barrier projector",
+   "rank": 5,
+   "reason": "Hard-light barrier projector. Blocks people or air for a little while, and any real hit breaks it. Six at a time, and it stops the sick.",
+   "tier": "green"
+  },
+  "/obj/item/holosign_creator/robot_seat/bar": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "a190bc22d3902926",
+   "name": "bar seating indicator placer",
+   "rank": 9,
+   "reason": "Marks bar seats for serving robots.",
+   "tier": "none"
+  },
+  "/obj/item/holosign_creator/robot_seat/restaurant": {
+   "confidence": "high",
+   "group": "Barriers and door seals",
+   "hash": "aeea70f9d35544fa",
+   "name": "restaurant seating indicator placer",
+   "rank": 10,
+   "reason": "Marks restaurant seats for serving robots.",
+   "tier": "none"
+  },
+  "/obj/item/holosign_creator/security": {
+   "confidence": "medium",
+   "group": "Barriers and door seals",
+   "hash": "ff29528e831ead07",
+   "name": "security holobarrier projector",
+   "rank": 4,
+   "reason": "Hard-light barrier projector. Blocks people or air for a little while, and any real hit breaks it. Six at a time.",
+   "tier": "green"
+  },
+  "/obj/item/inducer": {
+   "confidence": "medium",
+   "group": "Power",
+   "hash": "5769ea3c67a7dff9",
+   "name": "inducer",
+   "rank": 2,
+   "reason": "Charges cells from its own battery: APCs, mechs and machines, away from any charger. It refuses energy guns, so it's a repair tool and not an ammo supply.",
+   "tier": "green"
+  },
+  "/obj/item/inducer/empty": {
+   "confidence": "high",
+   "group": "Power",
+   "hash": "9ba92d265639b3bf",
+   "name": "inducer",
+   "rank": 4,
+   "reason": "Inducer with no battery. Prints for 4 cr of material after 40 research points.",
+   "tier": "green"
+  },
+  "/obj/item/inducer/orderable": {
+   "confidence": "high",
+   "group": "Power",
+   "hash": "5db4007e5bc7ea06",
+   "name": "inducer",
+   "rank": 3,
+   "reason": "Inducer with a quarter of the battery. Comes in a cargo crate.",
+   "tier": "green"
+  },
+  "/obj/item/inducer/sci": {
+   "confidence": "high",
+   "group": "Power",
+   "hash": "9ba92d265639b3bf",
+   "name": "inducer",
+   "rank": 5,
+   "reason": "Inducer with no battery, in science colors.",
+   "tier": "green"
+  },
+  "/obj/item/inducer/syndicate": {
+   "confidence": "medium",
+   "group": "Power",
+   "hash": "e6f7fe2f974aad74",
+   "name": "inducer",
+   "rank": 1,
+   "reason": "Inducer with twice the battery and twice the speed. Found on two ship modules.",
+   "tier": "green"
+  },
+  "/obj/item/inspector": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "ab183eb44acfe457",
+   "name": "N-spect scanner",
+   "rank": 17,
+   "reason": "Prints inspection reports for cargo bounties.",
+   "tier": "none"
+  },
+  "/obj/item/kheiral_cuffs": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "c41033e5a8253037",
+   "name": "Kheiral cuffs",
+   "rank": 14,
+   "reason": "Worn on the wrists, it keeps your suit sensors reporting from away and turns on a GPS. It takes the glove slot.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "a8a2be40cdfab71f",
+   "name": "laser pointer",
+   "rank": 13,
+   "reason": "Can dazzle a target's eyes at range. A nuisance, not a stun.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer/blue": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "6171ea6a7e342745",
+   "name": "laser pointer",
+   "rank": 14,
+   "reason": "Laser pointer in blue.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer/green": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "c9ff745fbcd00c78",
+   "name": "laser pointer",
+   "rank": 15,
+   "reason": "Laser pointer in green.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer/purple": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "a8a2be40cdfab71f",
+   "name": "laser pointer",
+   "rank": 16,
+   "reason": "Laser pointer in purple.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer/red": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "cad00db2d146c223",
+   "name": "laser pointer",
+   "rank": 17,
+   "reason": "Laser pointer in red.",
+   "tier": "none"
+  },
+  "/obj/item/laser_pointer/upgraded": {
+   "confidence": "high",
+   "group": "Stuns and chemical sprays",
+   "hash": "2df06ac5eb02ee99",
+   "name": "laser pointer",
+   "rank": 12,
+   "reason": "Can dazzle a target's eyes with a better diode. A nuisance, not a stun.",
+   "tier": "none"
+  },
+  "/obj/item/lazarus_injector": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "8e3d776d98f9788c",
+   "name": "lazarus injector",
+   "rank": 9,
+   "reason": "Brings a dead animal back as your pet, bosses excepted. A decent bodyguard for 1,000 mining points.",
+   "tier": "green"
+  },
+  "/obj/item/lightreplacer": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "588e056f9dcff5aa",
+   "name": "light replacer",
+   "rank": 11,
+   "reason": "Replaces lights.",
+   "tier": "none"
+  },
+  "/obj/item/lightreplacer/blue": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "487094615f17adcb",
+   "name": "bluespace light replacer",
+   "rank": 10,
+   "reason": "Replaces lights from a distance.",
+   "tier": "none"
+  },
+  "/obj/item/locator": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "da17e418ca944e63",
+   "name": "bluespace locator",
+   "rank": 18,
+   "reason": "Tracks tracking implants within 35 tiles. Only useful with implants already placed.",
+   "tier": "none"
+  },
+  "/obj/item/longwalk_rig": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "66810c1de873ba5e",
+   "name": "longwalk rig",
+   "rank": 1,
+   "reason": "Authored unique. Permanent speed boost worn on the belt, plus a 4-tile dash over lava and chasms every 8 s. Nothing buyable moves like it.",
+   "tier": "above"
+  },
+  "/obj/item/market_uplink/blackmarket": {
+   "confidence": "medium",
+   "group": "Logistics and remote services",
+   "hash": "a3bed8b9ab854ce4",
+   "name": "Black Market Uplink",
+   "rank": 1,
+   "reason": "Crafted from five cheap parts with no reputation. It opens a rotating shop you can use anywhere, selling EMP grenades, rocket boots, collar bombs and more.",
+   "tier": "yellow"
+  },
+  "/obj/item/mining_scanner": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "16ae32694e632739",
+   "name": "manual mining scanner",
+   "rank": 19,
+   "reason": "Manual ore scanner. Click for a look at nearby ore. Common on hulls.",
+   "tier": "none"
+  },
+  "/obj/item/mop": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "a868656bff740cf3",
+   "name": "mop",
+   "rank": 8,
+   "reason": "Mop.",
+   "tier": "none"
+  },
+  "/obj/item/mop/advanced": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "303b2cdb05cc1ca6",
+   "name": "advanced mop",
+   "rank": 7,
+   "reason": "Self-refilling mop that hits for 12.",
+   "tier": "none"
+  },
+  "/obj/item/multitool": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "861040994deab83b",
+   "name": "multitool",
+   "rank": 25,
+   "reason": "Plain multitool. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/multitool/abductor": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "c48ccd778ebe37ed",
+   "name": "alien multitool",
+   "rank": 3,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself.",
+   "tier": "yellow"
+  },
+  "/obj/item/multitool/circuit": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "facd441252eae082",
+   "name": "circuit multitool",
+   "rank": 28,
+   "reason": "Multitool for circuit work. No faster than a plain one.",
+   "tier": "none"
+  },
+  "/obj/item/multitool/cyborg": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "2475aa7272684fc3",
+   "name": "electronic multitool",
+   "rank": 17,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/nanite_remote": {
+   "confidence": "medium",
+   "group": "Odds and ends",
+   "hash": "a48966309a2c629d",
+   "name": "nanite remote control",
+   "note": "Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
+   "rank": 2,
+   "reason": "Sends a code to the nanites of one person or everyone in view, with no cooldown. Sets off any program waiting on that code, and a kill code wipes a program. Prints for 20 cr of material.",
+   "tier": "yellow"
+  },
+  "/obj/item/nanite_remote/comm": {
+   "confidence": "medium",
+   "group": "Odds and ends",
+   "hash": "a48966309a2c629d",
+   "name": "nanite communication remote",
+   "note": "Same as the nanite remote but sends a typed text message along with the code, which only nanite comm-type programs act on. Its sending is also in afterattack, so by my reading it never fires while the item is NOBLUDGEON. / Holds a 0-9999 signal code, a relay code and a mode (off, self, target within 7, everyone in view within 7, relay) set through a UI that can be locked to research access. The signal sending is in afterattack, which the attack code only reaches for items without NOBLUDGEON, and the remote has NOBLUDGEON, so by my reading of the code it never sends anything.",
+   "rank": 3,
+   "reason": "Sends text to matching nanite programs in one person or everyone in view, with no cooldown. Prints for little material.",
+   "tier": "yellow"
+  },
+  "/obj/item/nanite_scanner": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "13fca6b6a53a69ed",
+   "name": "nanite scanner",
+   "note": "Hitting a living mob reads its nanites: saturation, safety threshold, cloud ID and sync state, and each program as active, inactive or crashed (the program list is replaced by a diagnostics-disabled notice if the host has turned that off). Stealth does not hide them; it reports no nanites if there are none.",
+   "rank": 16,
+   "reason": "Reads a person's nanites.",
+   "tier": "none"
+  },
+  "/obj/item/ore_sensor": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "c2024f595b1ac958",
+   "name": "ore sensor",
+   "rank": 20,
+   "reason": "Crafted bone ore sensor. Small range and it needs brimdust to make.",
+   "tier": "none"
+  },
+  "/obj/item/ph_meter": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "9203d477ef80400f",
+   "name": "Chemical Analyzer",
+   "rank": 13,
+   "reason": "Reads chemicals in a beaker.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "971c85bf93572b1b",
+   "name": "pickaxe",
+   "rank": 14,
+   "reason": "Plain pick. Prints at round start and hits for 15, but it's heavy to carry.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe/diamond": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "b938dac87ca2790e",
+   "name": "diamond-tipped pickaxe",
+   "rank": 7,
+   "reason": "Digs in about a third of the normal time. 1,200 cr at the green waystation, a fair first upgrade.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/divining": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "11cea5636b8042c0",
+   "name": "divining pick",
+   "rank": 1,
+   "reason": "Authored unique. Each rock you break can crack up to 24 more around it. Nothing else clears ground like it.",
+   "tier": "above"
+  },
+  "/obj/item/pickaxe/drill": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "a8467bba7110047c",
+   "name": "mining drill",
+   "rank": 10,
+   "reason": "Digs at a little over half the normal time. Cheap and printable after 40 research points. The usual first upgrade.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/drill/cyberware": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "093655e5e5394734",
+   "name": "rockjaw drill",
+   "rank": 8,
+   "reason": "Implant drill. Half-time digging with your hands free. The implant is the real purchase.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/drill/diamonddrill": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "10e1ac568566a6bb",
+   "name": "diamond-tipped mining drill",
+   "rank": 6,
+   "reason": "Digs in a fifth of the normal time. The same research node as the jackhammer, at a third of the material.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/drill/jackhammer": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "053c7c10ef4608ee",
+   "name": "sonic jackhammer",
+   "rank": 5,
+   "reason": "Fastest digger: a tenth of the normal time. It speeds up ore income but opens nothing new.",
+   "tier": "green"
+  },
+  "/obj/item/pickaxe/emergency": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "971c85bf93572b1b",
+   "name": "emergency disembarkation tool",
+   "rank": 15,
+   "reason": "Plain-speed pick from emergency kits. Hits for 15, but it's heavy to carry.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe/improvised": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "e44656dab7dcaa9d",
+   "name": "improvised pickaxe",
+   "rank": 17,
+   "reason": "Taped-together pick at a third of the normal speed. Better than bare hands.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe/mini": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "f0d10d8ea21ed503",
+   "name": "compact pickaxe",
+   "rank": 14,
+   "reason": "Plain-speed pick in a smaller size.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe/rusted": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "0dc2d79772498eca",
+   "name": "rusty pickaxe",
+   "rank": 16,
+   "reason": "Plain-speed pick from a scrap crate.",
+   "tier": "none"
+  },
+  "/obj/item/pickaxe/silver": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "d955462ef7f3820e",
+   "name": "silver-plated pickaxe",
+   "rank": 9,
+   "reason": "Half-time digging for 1,000 mining points.",
+   "tier": "green"
+  },
+  "/obj/item/pinpointer/crew": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "16497c32d7e38080",
+   "name": "crew pinpointer",
+   "rank": 1,
+   "reason": "Tracks anyone with full suit sensors on, by name, enemy crews included. Prints for 25 cr of material. A real hunting tool against the careless.",
+   "tier": "yellow"
+  },
+  "/obj/item/pinpointer/material_sniffer": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "dab2a22ec6f7f472",
+   "name": "material sniffer",
+   "rank": 22,
+   "reason": "Crafted from an analyzer and some cable. Points at loose sheets of iron and glass. Minor.",
+   "tier": "none"
+  },
+  "/obj/item/pinpointer/nuke": {
+   "confidence": "medium",
+   "group": "Scanners and trackers",
+   "hash": "f9b74386e4c43bea",
+   "name": "pinpointer",
+   "rank": 20,
+   "reason": "Points at a nuclear disk. No shop, ruin or played hull has it, and it only matters on the rare map that has a disk and a bomb.",
+   "tier": "none"
+  },
+  "/obj/item/pinpointer/old_hands_compass": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "a207dacfd7e4922c",
+   "name": "old hand's compass",
+   "rank": 3,
+   "reason": "Authored unique. Points at the nearest space ruin nobody has docked at, so it takes the search out of exploring.",
+   "tier": "above"
+  },
+  "/obj/item/pinpointer/vent": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "adad44b7c8924f21",
+   "name": "ventpointer",
+   "rank": 21,
+   "reason": "Points at nearby ore vents. 800 mining points for a shortcut you can walk.",
+   "tier": "none"
+  },
+  "/obj/item/pipe_dispenser": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "963ee656dafdec2f",
+   "name": "rapid pipe dispenser",
+   "rank": 14,
+   "reason": "Lays pipes and disposals fast. Ship upkeep, and common on hulls from the start.",
+   "tier": "none"
+  },
+  "/obj/item/pushbroom": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "2818213a9f00eb2c",
+   "name": "push broom",
+   "rank": 9,
+   "reason": "Sweeps floors.",
+   "tier": "none"
+  },
+  "/obj/item/rcd_ammo": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "a21dea474f60c65c",
+   "name": "RCD matter cartridge",
+   "rank": 15,
+   "reason": "Matter cartridge. An RCD also reloads on iron and glass, so this gates nothing.",
+   "tier": "none"
+  },
+  "/obj/item/rcd_upgrade/anti_interrupt": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "1763eb3bf3a48afe",
+   "name": "RCD advanced upgrade: anti disruption",
+   "rank": 6,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcd_upgrade/cooling": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "73fa0c763cccbf5f",
+   "name": "RCD advanced upgrade: enhanced cooling",
+   "rank": 7,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcd_upgrade/frames": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "df981c83056e30a5",
+   "name": "RCD advanced upgrade: frames",
+   "rank": 8,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcd_upgrade/furnishing": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "8c830b361931c8a6",
+   "name": "RCD advanced upgrade: furnishings",
+   "rank": 11,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcd_upgrade/silo_link": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "67494abfaad6e1e2",
+   "name": "RCD advanced upgrade: silo link",
+   "rank": 10,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcd_upgrade/simple_circuits": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "9645041e97b7263c",
+   "name": "RCD advanced upgrade: simple circuits",
+   "rank": 9,
+   "reason": "Adds a build option or quality-of-life trick to an RCD. It makes construction nicer, not a crew stronger.",
+   "tier": "green"
+  },
+  "/obj/item/rcl": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "1679d041ce38ef08",
+   "name": "rapid pipe cleaner layer",
+   "rank": 20,
+   "reason": "Lays pipe cleaners, which are art supplies.",
+   "tier": "none"
+  },
+  "/obj/item/rcl/ghetto": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "5f55853e2251fef6",
+   "name": "makeshift rapid pipe cleaner layer",
+   "rank": 21,
+   "reason": "Homemade pipe cleaner layer.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "34324ba3198306d9",
+   "name": "spray bottle",
+   "rank": 4,
+   "reason": "Empty spray bottle.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/chemsprayer/bioterror": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "47b038ab6f74905d",
+   "name": "chem sprayer",
+   "rank": 1,
+   "reason": "Sprays a mix of six toxins, venom and pepper out to 7 tiles with no aim roll. Lethal to anyone not sealed up, and refillable. Only on one pirate hull.",
+   "tier": "red"
+  },
+  "/obj/item/reagent_containers/spray/cleaner": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "6c8b35481dd808b5",
+   "name": "space cleaner",
+   "rank": 5,
+   "reason": "Space cleaner.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/cyborg_drying": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "ffc51e6db632e414",
+   "name": "drying agent spray",
+   "rank": 6,
+   "reason": "Dries wet floors.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/cyborg_lube": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "0960dea7b3781e30",
+   "name": "lube spray",
+   "rank": 9,
+   "reason": "250 units of lube. Lays a slipping floor that stops a chase. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/hercuri": {
+   "confidence": "low",
+   "group": "Work sprays and water tanks",
+   "hash": "cf982e69bd6558ed",
+   "name": "medical spray (hercuri)",
+   "rank": 2,
+   "reason": "Medical spray of hercuri for burns. A useful field heal found in many ship rooms and ruins.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/medical": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "89215df64c9cb2ee",
+   "name": "medical spray bottle",
+   "rank": 3,
+   "reason": "Empty medical spray. As good as what you put in it.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/pepper": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "691407be5c4a2ace",
+   "name": "pepperspray",
+   "rank": 7,
+   "reason": "Knocks down for 3 s and blinds for 6 from up to 4 tiles, unless eyes and mouth are covered. 10 sprays. Cheap, and any sealed helmet stops it.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/pepper/empty": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "5984a27466aafefb",
+   "name": "pepperspray",
+   "rank": 8,
+   "reason": "The same pepper spray sold empty, so it needs capsaicin before it does anything.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/pestspray": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "f180e734ffb98ec1",
+   "name": "pest spray",
+   "rank": 7,
+   "reason": "For garden pests.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/plantbgone": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "3acbc29d25c1f201",
+   "name": "Plant-B-Gone",
+   "rank": 8,
+   "reason": "For killing plants.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/waterflower": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "8fda08fa519ab17e",
+   "name": "water flower",
+   "rank": 10,
+   "reason": "Squirts a little water.",
+   "tier": "none"
+  },
+  "/obj/item/reagent_containers/spray/waterflower/lube": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "85c69ef8d0c19b09",
+   "name": "water flower",
+   "rank": 11,
+   "reason": "Thirty units of lube in a flower. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/waterflower/superlube": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "23f45eabf1b9bc2a",
+   "name": "clown flower",
+   "rank": 10,
+   "reason": "Thirty units of a lube that even no-slip shoes don't beat. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/reagent_containers/spray/weedspray": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "1d3f03521a3089b2",
+   "name": "weed spray",
+   "rank": 9,
+   "reason": "For garden weeds.",
+   "tier": "none"
+  },
+  "/obj/item/resonator": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "ef8e3fd4e203010d",
+   "name": "resonator",
+   "note": "Clicking a tile places a field that bursts after 2 seconds (auto) or when hit again (manual, toggled in hand), dealing 20 brute to everything on the tile, tripled at pressure 50 or below, and slowing them for 10 seconds. A burst also drills mineral on its tile, sets off fields on adjacent tiles, and spreads fields onto adjacent rock with a falling chance. Max 4 fields, and hitting a field to pop it early does 80% damage; the upgraded version holds 6, pops at full damage and adds a matrix mode that bursts when anything walks onto the tile. Fields hurt the user and allies too.",
+   "rank": 4,
+   "reason": "Mining field that bursts on a 2 s fuse or a second click. 20 brute through armor, 60 in low pressure, with a slow. Good on rock, tricky on anyone who keeps moving.",
+   "tier": "green"
+  },
+  "/obj/item/resonator/upgraded": {
+   "confidence": "low",
+   "group": "Mining tools",
+   "hash": "ef223cc529711e10",
+   "name": "upgraded resonator",
+   "note": "Clicking a tile places a field that bursts after 2 seconds (auto) or when hit again (manual, toggled in hand), dealing 20 brute to everything on the tile, tripled at pressure 50 or below, and slowing them for 10 seconds. A burst also drills mineral on its tile, sets off fields on adjacent tiles, and spreads fields onto adjacent rock with a falling chance. Max 4 fields, and hitting a field to pop it early does 80% damage; the upgraded version holds 6, pops at full damage and adds a matrix mode that bursts when anything walks onto the tile. Fields hurt the user and allies too.",
+   "rank": 2,
+   "reason": "Mining tool that also hurts people. A field does 20 brute through any armor, 60 in low pressure, and slows for 10 s. It pops on a second click at full damage or lies as a trap. Prints for 28 cr of material.",
+   "tier": "yellow"
+  },
+  "/obj/item/restraints/handcuffs": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "729e31c1e40b8e98",
+   "name": "handcuffs",
+   "rank": 6,
+   "reason": "Holds anyone for up to a minute, and captures need them. 1 cr of material once researched, and on 22 job outfits.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/alien": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "729e31c1e40b8e98",
+   "name": "handcuffs",
+   "rank": 7,
+   "reason": "Handcuffs with alien looks. Holds anyone for up to a minute, and captures need them.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/cable": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "3deb05f629820fb9",
+   "name": "cable restraints",
+   "rank": 11,
+   "reason": "Crafted from cable. Holds for 30 s.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/cable/pink": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "0a3f5e8976d293de",
+   "name": "cable restraints",
+   "rank": 12,
+   "reason": "Cable cuffs in pink. Holds for 30 s.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/cable/sinew": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "2129c77d8747008c",
+   "name": "sinew restraints",
+   "rank": 12,
+   "reason": "Crafted from sinew. Holds for 30 s.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/handcuffs/cable/zipties": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "f8b55008b34ce1aa",
+   "name": "zipties",
+   "rank": 8,
+   "reason": "Holds for 45 s. Cheap to print. One use.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/legcuffs/beartrap": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "79150050ff23f2b8",
+   "name": "bear trap",
+   "rank": 4,
+   "reason": "Printable trap: 20 damage and 30 s to get out. Strong in a doorway, useless once seen.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/legcuffs/beartrap/prearmed": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "b50e867ff02d1e6e",
+   "name": "bear trap",
+   "rank": 5,
+   "reason": "Bear trap, already set. Found in ruins.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/legcuffs/bola": {
+   "confidence": "high",
+   "group": "Restraints and traps",
+   "hash": "36d2252c2ea8d15f",
+   "name": "bola",
+   "note": "Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 10,
+   "reason": "Crafted from iron and cable. Ties the legs for 3.5 s from one throw. No knockdown.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/legcuffs/bola/cult": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "4abd274bc87e4997",
+   "name": "Nar'Sien bola",
+   "note": "A bola that wraps legs with a 6 second breakout and a 3 second knockdown, and passes harmlessly through cultists. A non-cultist who picks it up is ensnared by it, or paralyzed for 6 seconds and made to drop it if already legcuffed or missing legs. / Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 13,
+   "reason": "Traps any non-cultist who picks it up, so nobody can use it. One ruin.",
+   "tier": "none"
+  },
+  "/obj/item/restraints/legcuffs/bola/energy": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "3fb56d01312809c5",
+   "name": "energy bola",
+   "note": "Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 9,
+   "reason": "Printable snare that also works on prone or flying targets, and can't be caught. Short 2 s breakout.",
+   "tier": "green"
+  },
+  "/obj/item/restraints/legcuffs/bola/gonbola": {
+   "confidence": "low",
+   "group": "Restraints and traps",
+   "hash": "0d28ae77a3d1f029",
+   "name": "gonbola",
+   "note": "A bola with a 30 second breakout and no movement slowdown that also makes anyone it hits pacifist and mute until the bola is next dropped or removed. The pacify effect is applied on any carbon hit, even when the legs were not actually wrapped. / Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 1,
+   "reason": "One thrown hit makes the target a mute pacifist until it comes off, with a 30 s breakout. It stops a gunfighter cold, but it needs a gondola hide, which is hard to find.",
+   "tier": "yellow"
+  },
+  "/obj/item/restraints/legcuffs/bola/retiarius": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "644d109c6ce9919f",
+   "name": "retiarius' weighted net",
+   "note": "Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 3,
+   "reason": "Weighted net: 3 s knockdown and a 6 s breakout from one throw. 1,800 cr at the Colosseum. A fair price for a real opener.",
+   "tier": "yellow"
+  },
+  "/obj/item/restraints/legcuffs/bola/tactical": {
+   "confidence": "medium",
+   "group": "Restraints and traps",
+   "hash": "880260da39997523",
+   "name": "reinforced bola",
+   "note": "Thrown at a carbon it lands and wraps their legs (breakout 3.5 seconds, leg-cuff movement slowdown of 7) unless they already wear leg restraints or lack two legs; it does not knock down. The energy bola instead turns into an uncatchable energy snare that works on prone or flying targets, with a 2 second breakout and slowdown 3; the retiarius net knocks down for 3 seconds with a 6 second breakout.",
+   "rank": 2,
+   "reason": "Reinforced bola: 3.5 s knockdown and a 7 s breakout from one throw. Found only on NPC ships.",
+   "tier": "yellow"
+  },
+  "/obj/item/rpd_upgrade": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "15f9674ef4c95eb9",
+   "name": "RPD advanced design disk",
+   "rank": 25,
+   "reason": "Blank pipe dispenser disk. It adds nothing.",
+   "tier": "none"
+  },
+  "/obj/item/rpd_upgrade/unwrench": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "cd3e5681bb503e96",
+   "name": "RPD advanced upgrade: wrench mode",
+   "rank": 24,
+   "reason": "Lets the pipe dispenser unwrench pipes. A small convenience.",
+   "tier": "none"
+  },
+  "/obj/item/rwd/loaded": {
+   "confidence": "high",
+   "group": "Construction devices",
+   "hash": "518f7ff8fe5a45cb",
+   "name": "rapid wiring device",
+   "rank": 16,
+   "reason": "Lays wire fast. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/screwdriver": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "cfce238771e18b52",
+   "name": "screwdriver",
+   "rank": 25,
+   "reason": "Plain screwdriver. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/screwdriver/abductor": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "5d1df37f081d4c2e",
+   "name": "alien screwdriver",
+   "rank": 5,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself.",
+   "tier": "yellow"
+  },
+  "/obj/item/screwdriver/caravan": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "66a785e8e55efdb7",
+   "name": "experimental screwdriver",
+   "rank": 10,
+   "reason": "Experimental tool at about a third of the normal time. Faster work and nothing else.",
+   "tier": "green"
+  },
+  "/obj/item/screwdriver/cyborg": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "8bc8fde8f251331b",
+   "name": "automated screwdriver",
+   "rank": 18,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/screwdriver/nuke": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "8bc8fde8f251331b",
+   "name": "screwdriver",
+   "rank": 15,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/screwdriver/power": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "2c51629fbb809f65",
+   "name": "hand drill",
+   "rank": 14,
+   "reason": "Hand drill. A screwdriver and a wrench in one, a little faster. It saves a slot.",
+   "tier": "none"
+  },
+  "/obj/item/screwdriver/red": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "200b033735c58bb6",
+   "name": "screwdriver",
+   "rank": 27,
+   "reason": "Plain screwdriver.",
+   "tier": "none"
+  },
+  "/obj/item/sensor_device": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "a1d0ac7e4feba33a",
+   "name": "handheld crew monitor",
+   "rank": 2,
+   "reason": "Handheld crew monitor showing your own crew's vitals and location. Medics want it.",
+   "tier": "green"
+  },
+  "/obj/item/shovel": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "a8c7ee47f9855f4e",
+   "name": "shovel",
+   "rank": 18,
+   "reason": "Plain shovel, 8 force. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/shovel/serrated": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "f5bd47d5bab78a90",
+   "name": "serrated bone shovel",
+   "note": "With combat mode on, each hit on an organic mob (and each thrown hit) adds a second hit equal to its own force (10; 8 for the dull version) to the same limb, and does nothing extra to robots or other non-organic mobs. Digs at tool speed 0.3 (0.8 dull).",
+   "rank": 3,
+   "reason": "Each hit on an organic target lands twice, for 20 a swing, the same as the green combat knife, and it digs fast. Needs a learned recipe or a ruin weapon roll.",
+   "tier": "green"
+  },
+  "/obj/item/shovel/serrated/dull": {
+   "confidence": "medium",
+   "group": "Mining tools",
+   "hash": "39a661a6f4799dbe",
+   "name": "dull bone shovel",
+   "note": "With combat mode on, each hit on an organic mob (and each thrown hit) adds a second hit equal to its own force (10; 8 for the dull version) to the same limb, and does nothing extra to robots or other non-organic mobs. Digs at tool speed 0.3 (0.8 dull).",
+   "rank": 11,
+   "reason": "Dull bone shovel: each hit on an organic lands twice for 16. Slower dig. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/shovel/spade": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "6d36ec3489795240",
+   "name": "spade",
+   "rank": 18,
+   "reason": "Garden spade.",
+   "tier": "none"
+  },
+  "/obj/item/skeleton_key": {
+   "confidence": "medium",
+   "group": "Odds and ends",
+   "hash": "f7a1a28fe377c734",
+   "name": "skeleton key",
+   "rank": 9,
+   "reason": "Opens the old lavaland chests, but tendril chests here spawn unlocked, so it has nothing to open. Still 675 mining points on the console.",
+   "tier": "none"
+  },
+  "/obj/item/soap": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "5a6dae6ebfc324c6",
+   "name": "soap",
+   "rank": 6,
+   "reason": "Plain bar, 60 cr. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/soap/deluxe": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "f8e723128c7721e3",
+   "name": "soap",
+   "rank": 3,
+   "reason": "Cleans well. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/soap/homemade": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "919214981fcf8278",
+   "name": "soap",
+   "rank": 5,
+   "reason": "Homemade bar. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/soap/nanotrasen": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "d2d95ecb08b7e349",
+   "name": "soap",
+   "rank": 4,
+   "reason": "Long-lasting bar. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/soap/omega": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "0e58641ed24d6183",
+   "name": "Omega soap",
+   "rank": 1,
+   "reason": "Cleans almost instantly and lasts forever. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/soap/syndie": {
+   "confidence": "high",
+   "group": "Janitorial",
+   "hash": "979f19c31d4af8af",
+   "name": "soap",
+   "rank": 2,
+   "reason": "Cleans fast. A bar on the floor also drops anyone who steps on it for 8 seconds. No-slip shoes beat it.",
+   "tier": "green"
+  },
+  "/obj/item/spess_knife": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "cf7dd1cc96ea5502",
+   "name": "spess knife",
+   "rank": 24,
+   "reason": "Pocket multi-tool: knife, screwdriver and cutters in the smallest size, and it sometimes picks the wrong tool. A convenience.",
+   "tier": "none"
+  },
+  "/obj/item/static_cuff": {
+   "confidence": "low",
+   "group": "Odds and ends",
+   "hash": "efe3e18de4552a33",
+   "name": "static cuff",
+   "rank": 1,
+   "reason": "Authored unique, so it stays off shelves. For 4 minutes, cameras go to static around you and an AI can't track you. There's rarely anyone to hide from, so it's small.",
+   "tier": "above"
+  },
+  "/obj/item/style_meter": {
+   "confidence": "low",
+   "group": "Expedition gear",
+   "hash": "93ccff5c74a07793",
+   "name": "style meter attachment",
+   "rank": 11,
+   "reason": "Clips to glasses. A hot streak mines better and swaps items faster. Fun for miners, and small.",
+   "tier": "green"
+  },
+  "/obj/item/supplypod_beacon": {
+   "confidence": "medium",
+   "group": "Logistics and remote services",
+   "hash": "6a70b7180db70fa1",
+   "name": "Supply Pod Beacon",
+   "rank": 6,
+   "reason": "Tells an express cargo console where to drop pods. No shop, ruin or played hull has it.",
+   "tier": "none"
+  },
+  "/obj/item/survivalcapsule": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "fcef7fa586657ce8",
+   "name": "bluespace shelter capsule",
+   "rank": 6,
+   "reason": "Instant sealed shelter. 350 mining points. A way to survive a bad planet, not a way to win.",
+   "tier": "green"
+  },
+  "/obj/item/survivalcapsule/bathroom": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "dbec6f6e3f5fb9be",
+   "name": "emergency relief capsule",
+   "rank": 15,
+   "reason": "Instant bathroom.",
+   "tier": "none"
+  },
+  "/obj/item/survivalcapsule/fishing": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "700d5d2076f31b7c",
+   "name": "fishing spot capsule",
+   "rank": 16,
+   "reason": "Instant fishing spot.",
+   "tier": "none"
+  },
+  "/obj/item/survivalcapsule/luxury": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "3f49f43e9dca72ef",
+   "name": "luxury bluespace shelter capsule",
+   "rank": 5,
+   "reason": "Instant sealed room with better furnishing. 2,300 mining points. A portable safe spot.",
+   "tier": "green"
+  },
+  "/obj/item/survivalcapsule/luxuryelite": {
+   "confidence": "medium",
+   "group": "Expedition gear",
+   "hash": "971728829d5d1b4f",
+   "name": "luxury elite bar capsule",
+   "rank": 4,
+   "reason": "Instant sealed bar with supplies, anywhere with room for it. 7,000 mining points for a safe room you can drop mid-trip.",
+   "tier": "green"
+  },
+  "/obj/item/t_scanner": {
+   "confidence": "high",
+   "group": "Scanners and trackers",
+   "hash": "d07839ce25a7811d",
+   "name": "T-ray scanner",
+   "rank": 11,
+   "reason": "Shows wires and pipes under the floor. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/t_scanner/adv_mining_scanner": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "949739cf35df0bb0",
+   "name": "advanced automatic mining scanner",
+   "rank": 12,
+   "reason": "Shows ore within 7 tiles on its own. 300 cr at the green waystation. Right price, right place.",
+   "tier": "green"
+  },
+  "/obj/item/t_scanner/adv_mining_scanner/lesser": {
+   "confidence": "high",
+   "group": "Mining tools",
+   "hash": "7c5b6654d9cb653b",
+   "name": "automatic mining scanner",
+   "rank": 13,
+   "reason": "Shows ore within 4 tiles on its own, more slowly. Common on hulls.",
+   "tier": "green"
+  },
+  "/obj/item/tank/internals/anesthetic": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "fd2bd42ab7a6435c",
+   "name": "anesthetic tank",
+   "rank": 18,
+   "reason": "Medical sleeping gas for surgery.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/anesthetic/pure": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "fd2bd42ab7a6435c",
+   "name": "anesthetic tank",
+   "rank": 19,
+   "reason": "Medical sleeping gas for surgery.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "45cb151157d70725",
+   "name": "emergency oxygen tank",
+   "rank": 10,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. Small pocket tank.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/double": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "23669b2ec6d132a5",
+   "name": "double emergency oxygen tank",
+   "rank": 6,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. Twice the small tank.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/double/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "23669b2ec6d132a5",
+   "name": "double emergency oxygen tank",
+   "rank": 7,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. Twice the small tank, sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "45cb151157d70725",
+   "name": "emergency oxygen tank",
+   "rank": 11,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. Small pocket tank, sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/engi": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "6befca44bb80f553",
+   "name": "extended-capacity emergency oxygen tank",
+   "rank": 8,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. A larger pocket tank.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/engi/clown/bz": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "aec3eac2753cae80",
+   "name": "funny emergency oxygen tank",
+   "rank": 20,
+   "reason": "A joke tank of odd gas in a clown's kit.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/emergency_oxygen/engi/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "6befca44bb80f553",
+   "name": "extended-capacity emergency oxygen tank",
+   "rank": 9,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. A larger pocket tank, sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/generic": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "1f1d28f6ae6d2044",
+   "name": "gas tank",
+   "rank": 5,
+   "reason": "Empty gas tank.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/oxygen": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "5cd4093c73213bf9",
+   "name": "oxygen tank",
+   "rank": 1,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/oxygen/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "5cd4093c73213bf9",
+   "name": "oxygen tank",
+   "rank": 2,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it. Sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/oxygen/red": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "cb1fdecdc4b80872",
+   "name": "oxygen tank",
+   "rank": 3,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/oxygen/yellow": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "b86eac32208106a5",
+   "name": "oxygen tank",
+   "rank": 4,
+   "reason": "Breathing gas. Every crew needs it and nobody should have to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasma": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "64b1f430ec0217ea",
+   "name": "plasma tank",
+   "rank": 16,
+   "reason": "Plasma tank. Fuel for flamethrowers and bombs, which are rated on their own.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasma/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "64b1f430ec0217ea",
+   "name": "plasma tank",
+   "rank": 17,
+   "reason": "Plasma tank, sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasma/full": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "64b1f430ec0217ea",
+   "name": "plasma tank",
+   "rank": 15,
+   "reason": "Full plasma tank. Fuel for flamethrowers and bombs, which are rated on their own.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasmaman/belt/empty": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "f8f80eb2eb6cdae3",
+   "name": "plasma internals tank",
+   "rank": 14,
+   "reason": "Belt-sized plasma tank, sold empty.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasmaman/belt/full": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "f8f80eb2eb6cdae3",
+   "name": "plasma internals tank",
+   "rank": 13,
+   "reason": "Belt-sized breathing plasma for plasmamen.",
+   "tier": "none"
+  },
+  "/obj/item/tank/internals/plasmaman/full": {
+   "confidence": "high",
+   "group": "Internals tanks",
+   "hash": "19ce2d2d6986baa6",
+   "name": "plasma internals tank",
+   "rank": 12,
+   "reason": "Breathing plasma for plasmamen.",
+   "tier": "none"
+  },
+  "/obj/item/tank/jetpack/carbondioxide": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "4a61a616a7c89b03",
+   "name": "jetpack (carbon dioxide)",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 7,
+   "reason": "Lets you steer in space and adds a bit of speed. Takes the back slot, so no backpack. It can't double as internals.",
+   "tier": "green"
+  },
+  "/obj/item/tank/jetpack/improvised": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "c4229740511be2d8",
+   "name": "improvised jetpack",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 8,
+   "reason": "Crafted from two tanks and an extinguisher. Weak thrust, no speed boost, and it sometimes cuts out. Enough to get home.",
+   "tier": "green"
+  },
+  "/obj/item/tank/jetpack/oxygen": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "8e5db7c4d1820c48",
+   "name": "jetpack (oxygen)",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 3,
+   "reason": "Lets you steer in space and adds a bit of speed. Takes the back slot, so no backpack. 2,100 cr at the green waystation, so a green crew can have them.",
+   "tier": "green"
+  },
+  "/obj/item/tank/jetpack/oxygen/captain": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "f467d298dd9b536d",
+   "name": "captain's jetpack",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 1,
+   "reason": "Fits in suit storage, so you keep your backpack, with the strongest thrust and the most gas. Beats the rep 11 harness. No shop, ruin or played hull has one.",
+   "tier": "yellow"
+  },
+  "/obj/item/tank/jetpack/oxygen/harness": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "79e8b8eb1c8f90eb",
+   "name": "jet harness (oxygen)",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 6,
+   "reason": "Smaller jetpack with about half the gas. It still uses the back slot. No shop, ruin or played hull has one.",
+   "tier": "green"
+  },
+  "/obj/item/tank/jetpack/oxygen/harness/prototype": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "3b5f21cbc207ce66",
+   "name": "prototype maneuvering harness",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 2,
+   "reason": "Fits in suit storage, with strong thrust and more than double the gas of a plain harness. Rep 11, 3,800 cr and 2 vouchers, and still a shade under the captain's jetpack.",
+   "tier": "yellow"
+  },
+  "/obj/item/tank/jetpack/oxygen/security": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "8e5db7c4d1820c48",
+   "name": "security jetpack (oxygen)",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 5,
+   "reason": "Lets you steer in space and adds a bit of speed. Takes the back slot, so no backpack. Same as a standard jetpack.",
+   "tier": "green"
+  },
+  "/obj/item/tank/jetpack/void": {
+   "confidence": "high",
+   "group": "Jetpacks",
+   "hash": "8e5db7c4d1820c48",
+   "name": "void jetpack (oxygen)",
+   "note": "Worn on the back and toggled on, it gives thrust in zero-g and space: each move input burns 0.01 mol from the tank onto the turf, it shuts off when the tank runs dry, and it keeps drifting unless stabilization is switched on. Most types also give a small speed boost while floating; an EMP switches it off for 4 seconds, and in a hyperspace corridor a working jetpack frees the wearer from hyperspace's pull. Oxygen types start at 6 atm and double as internals (the CO2 one cannot); the improvised one starts empty, holds 20 L, thrusts weaker, has no speed boost and has a 1 in 251 chance per thrust to cut out.",
+   "rank": 4,
+   "reason": "Lets you steer in space and adds a bit of speed. Takes the back slot, so no backpack. Same as a standard jetpack.",
+   "tier": "green"
+  },
+  "/obj/item/tether_anchor": {
+   "confidence": "high",
+   "group": "Expedition gear",
+   "hash": "0bd15472e7cba8a3",
+   "name": "tether anchor",
+   "rank": 17,
+   "reason": "Crafted anchor for a safety line in zero gravity.",
+   "tier": "none"
+  },
+  "/obj/item/transporter_transponder": {
+   "confidence": "low",
+   "group": "Logistics and remote services",
+   "hash": "8b548a3240317894",
+   "name": "site-to-ship transponder",
+   "rank": 2,
+   "reason": "Squeeze it and your ship's transporter pad pulls you home, with nobody at the console. An escape button, but useless without the pad, which costs bluespace.",
+   "tier": "yellow"
+  },
+  "/obj/item/universal_scanner": {
+   "confidence": "high",
+   "group": "Logistics and remote services",
+   "hash": "1094b7c83dd01163",
+   "name": "universal scanner",
+   "rank": 5,
+   "reason": "Reads export prices and prints price tags.",
+   "tier": "none"
+  },
+  "/obj/item/watertank": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "7fd19ba5c169ff78",
+   "name": "backpack water tank",
+   "rank": 11,
+   "reason": "Backpack of water for plants. Slows you.",
+   "tier": "none"
+  },
+  "/obj/item/watertank/atmos": {
+   "confidence": "medium",
+   "group": "Work sprays and water tanks",
+   "hash": "28edbfee699d104f",
+   "name": "backpack firefighter tank",
+   "rank": 1,
+   "reason": "Firefighter backpack with foam and breach-sealing resin. Good damage control. On 4 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/watertank/janitor": {
+   "confidence": "high",
+   "group": "Work sprays and water tanks",
+   "hash": "e3a3c229a27616d7",
+   "name": "backpack cleaner tank",
+   "rank": 12,
+   "reason": "Backpack of space cleaner. Slows you.",
+   "tier": "none"
+  },
+  "/obj/item/watertank/pepperspray": {
+   "confidence": "medium",
+   "group": "Stuns and chemical sprays",
+   "hash": "c85b2b464f4d070b",
+   "name": "ANTI-TIDER-2500 suppression backpack",
+   "rank": 2,
+   "reason": "1,000 units of pepper with a 6-tile nozzle. It knocks down and blinds a corridor of anyone without eye and mouth cover. Takes the back slot and slows you.",
+   "tier": "yellow"
+  },
+  "/obj/item/weldingtool": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "3ee13c9ffa0d8a06",
+   "name": "welding tool",
+   "rank": 8,
+   "reason": "Plain welder.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/abductor": {
+   "confidence": "medium",
+   "group": "Welders",
+   "hash": "8792f88c37fbab61",
+   "name": "alien welding tool",
+   "rank": 1,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself. This one also refills its own fuel.",
+   "tier": "yellow"
+  },
+  "/obj/item/weldingtool/empty": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "80659e511b69a58b",
+   "name": "welding tool",
+   "rank": 9,
+   "reason": "Plain welder, sold dry.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/experimental": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "8bea31793c8c0702",
+   "name": "experimental welding tool",
+   "rank": 3,
+   "reason": "Refills itself, works in half the time and is kinder to the eyes. The best welder a crew can print or buy.",
+   "tier": "green"
+  },
+  "/obj/item/weldingtool/hugetank": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "c3df029cca0e950f",
+   "name": "upgraded industrial welding tool",
+   "rank": 5,
+   "reason": "Holds 80 fuel. Fewer trips to the tank.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/largetank": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "a918b7533cc37882",
+   "name": "industrial welding tool",
+   "rank": 6,
+   "reason": "Holds 40 fuel. Fewer trips to the tank.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/largetank/cyborg": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "cdcaec7cec9d7a40",
+   "name": "integrated welding tool",
+   "rank": 4,
+   "reason": "Double fuel at half the normal time. Slightly faster work.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/largetank/empty": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "7428c0ba5bec6be2",
+   "name": "industrial welding tool",
+   "rank": 7,
+   "reason": "Holds 40 fuel, sold dry. Fewer trips to the tank.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/mini": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "2ce2d633344bb472",
+   "name": "emergency welding tool",
+   "rank": 10,
+   "reason": "Pocket welder with little fuel.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/mini/empty": {
+   "confidence": "high",
+   "group": "Welders",
+   "hash": "483179d035fd2100",
+   "name": "emergency welding tool",
+   "rank": 11,
+   "reason": "Pocket welder, sold dry.",
+   "tier": "none"
+  },
+  "/obj/item/weldingtool/slagmaw": {
+   "confidence": "medium",
+   "group": "Welders",
+   "hash": "2d8edc0e68d34cf7",
+   "name": "Slagmaw",
+   "rank": 2,
+   "reason": "Authored unique, so it stays off shelves. One 3-second pass fully repairs a window, structure or machine, and it turns scrap metal into fuel. A strong repair tool.",
+   "tier": "above"
+  },
+  "/obj/item/wirebrush": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "39157f8120c1364d",
+   "name": "wirebrush",
+   "rank": 33,
+   "reason": "Scrapes rust off walls.",
+   "tier": "none"
+  },
+  "/obj/item/wirecutters": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "2681afd617cef9e5",
+   "name": "wirecutters",
+   "rank": 25,
+   "reason": "Plain wirecutters. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/wirecutters/abductor": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "c7d61614907d118d",
+   "name": "alien wirecutters",
+   "rank": 6,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself.",
+   "tier": "yellow"
+  },
+  "/obj/item/wirecutters/caravan": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "da62b3d2023d2285",
+   "name": "experimental wirecutters",
+   "rank": 11,
+   "reason": "Experimental tool at about a third of the normal time. Faster work and nothing else.",
+   "tier": "green"
+  },
+  "/obj/item/wirecutters/cyborg": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "06c9c2d9ad193d01",
+   "name": "powered wirecutters",
+   "rank": 19,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/wrench": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "531429d3c084a251",
+   "name": "wrench",
+   "rank": 25,
+   "reason": "Plain wrench. Prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/wrench/abductor": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "dd92d613d5b1edd4",
+   "name": "alien wrench",
+   "rank": 4,
+   "reason": "Alien tool that works in a tenth of the normal time. A full set takes a reinforced wall apart in seconds, which helps boarding and repair but wins no fight by itself.",
+   "tier": "yellow"
+  },
+  "/obj/item/wrench/bolter": {
+   "confidence": "medium",
+   "group": "Hand tools",
+   "hash": "1d49acacf83d4efb",
+   "name": "bolter wrench",
+   "rank": 8,
+   "reason": "With the panel open, raises the bolts on an unreinforced airlock in 5 seconds, power or no power. Boarders want one, and door bolts stop being a full answer.",
+   "tier": "green"
+  },
+  "/obj/item/wrench/caravan": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "b585892362eaf1f8",
+   "name": "experimental wrench",
+   "rank": 12,
+   "reason": "Experimental tool at about a third of the normal time. Faster work and nothing else.",
+   "tier": "green"
+  },
+  "/obj/item/wrench/combat": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "b95ff64d8f4741b8",
+   "name": "combat wrench",
+   "rank": 29,
+   "reason": "Works as a wrench only when switched on, and hits for 6. All style.",
+   "tier": "none"
+  },
+  "/obj/item/wrench/cyborg": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "6c5f4de423d10b0a",
+   "name": "hydraulic wrench",
+   "rank": 20,
+   "reason": "Tool at half the normal time. Slightly faster work and nothing else.",
+   "tier": "none"
+  },
+  "/obj/item/wrench/medical": {
+   "confidence": "high",
+   "group": "Hand tools",
+   "hash": "57077da9f05591e3",
+   "name": "medical wrench",
+   "rank": 30,
+   "reason": "Plain wrench with a joke attached.",
+   "tier": "none"
+  }
+ },
+ "method": "No formula. Each tool is judged by what it lets a crew do that a plain tool doesn't, in plain groups, then against the disabler, laser gun and mesons. Authored uniques go above only if they'd warp a round on a shelf; harmless ones rate as what they do. Anomaly cores rate as what they make.",
+ "unrated": {
+  "/obj/item/airlock_painter/decal/debug": "no route",
+  "/obj/item/airlock_painter/decal/ship": "no route",
+  "/obj/item/analyzer/drone": "no route",
+  "/obj/item/analyzer/hilbertsanalyzer": "no route",
+  "/obj/item/assembly": "abstract",
+  "/obj/item/assembly/control/airlock": "no route",
+  "/obj/item/assembly/control/curtain": "no route",
+  "/obj/item/assembly/control/elevator": "no route",
+  "/obj/item/assembly/control/photobooth_control": "no route",
+  "/obj/item/assembly/control/showtime": "no route",
+  "/obj/item/assembly/control/ticket_machine": "no route",
+  "/obj/item/assembly/control/transport": "no route",
+  "/obj/item/assembly/control/transport/remote": "no route",
+  "/obj/item/assembly/flash/armimplant": "no route",
+  "/obj/item/assembly/flash/hypnotic": "no route",
+  "/obj/item/assembly/signaler/anomaly": "leftover",
+  "/obj/item/assembly/signaler/internal": "no route",
+  "/obj/item/assembly/signaler/low_range": "no route",
+  "/obj/item/assembly/wiremod": "no route",
+  "/obj/item/bodybag/environmental/nanotrasen": "no route",
+  "/obj/item/bodybag/environmental/prisoner": "no route",
+  "/obj/item/bodybag/environmental/prisoner/pressurized": "no route",
+  "/obj/item/bodybag/environmental/prisoner/syndicate": "no route",
+  "/obj/item/bodybag/lost_crew": "no route",
+  "/obj/item/boxcutter/extended": "no route",
+  "/obj/item/camera/app": "no route",
+  "/obj/item/camera/detective": "no route",
+  "/obj/item/camera/rewind": "no route",
+  "/obj/item/camera/siliconcam": "no route",
+  "/obj/item/camera/siliconcam/ai_camera": "literal only",
+  "/obj/item/camera/siliconcam/pai_camera": "literal only",
+  "/obj/item/camera/siliconcam/robot_camera": "literal only",
+  "/obj/item/camera/spooky/badmin": "no route",
+  "/obj/item/camera/timefreeze": "no route",
+  "/obj/item/climbing_hook/emergency": "no route",
+  "/obj/item/climbing_hook/infinite": "no route",
+  "/obj/item/construction": "abstract",
+  "/obj/item/construction/rcd/arcd": "no route",
+  "/obj/item/construction/rcd/borg": "no route",
+  "/obj/item/construction/rcd/borg/syndicate": "no route",
+  "/obj/item/construction/rcd/combat/admin": "no route",
+  "/obj/item/construction/rcd/internal": "no route",
+  "/obj/item/construction/rcd/internal/ship": "no route",
+  "/obj/item/construction/rcd/internal/ship/queue_worker": "no route",
+  "/obj/item/construction/rcd/internal/ship/refund_test": "no route",
+  "/obj/item/construction/rcd/loaded/upgraded": "no route",
+  "/obj/item/construction/rcd/repairbot": "no route",
+  "/obj/item/construction/rld/internal": "no route",
+  "/obj/item/construction/rtd": "no route",
+  "/obj/item/construction/rtd/admin": "no route",
+  "/obj/item/construction/rtd/borg": "no route",
+  "/obj/item/construction/rtd/internal": "no route",
+  "/obj/item/crowbar/drone": "no route",
+  "/obj/item/crowbar/mechremoval": "no route",
+  "/obj/item/crowbar/power/syndicate": "no route",
+  "/obj/item/crowbar/ruin_turret_test": "no route",
+  "/obj/item/door_remote": "no route",
+  "/obj/item/door_remote/chief_engineer": "no route",
+  "/obj/item/door_remote/head_of_security": "no route",
+  "/obj/item/door_remote/omni": "no route",
+  "/obj/item/emergency_bed/silicon": "no route",
+  "/obj/item/extendohand/acme": "no route",
+  "/obj/item/extinguisher/anti": "no route",
+  "/obj/item/extinguisher/mini/nozzle": "uncreatable",
+  "/obj/item/extinguisher/mini/nozzle/mod": "uncreatable",
+  "/obj/item/extraction_pack/syndicate": "no route",
+  "/obj/item/flashlight/emp": "no route",
+  "/obj/item/flashlight/emp/debug": "no route",
+  "/obj/item/flashlight/eyelight": "cosmetic",
+  "/obj/item/flashlight/eyelight/glow": "cosmetic",
+  "/obj/item/flashlight/flare/torch/on": "no route",
+  "/obj/item/flashlight/flare/torch/red": "no route",
+  "/obj/item/flashlight/flare/torch/red/on": "no route",
+  "/obj/item/flashlight/lantern/heirloom_moth": "no route",
+  "/obj/item/flashlight/spotlight": "no route",
+  "/obj/item/gps/cyborg": "no route",
+  "/obj/item/gps/engineering": "no route",
+  "/obj/item/gps/mining/internal": "no route",
+  "/obj/item/gps/pai": "no route",
+  "/obj/item/gps/visible_debug": "no route",
+  "/obj/item/holosign_creator/cyborg": "no route",
+  "/obj/item/holosign_creator/robot_seat": "no route",
+  "/obj/item/inducer/cyborg": "no route",
+  "/obj/item/inspector/clown": "toy",
+  "/obj/item/inspector/clown/bananium": "toy",
+  "/obj/item/laser_pointer/infinite_range": "no route",
+  "/obj/item/lightreplacer/advanced": "no route",
+  "/obj/item/market_uplink": "no route",
+  "/obj/item/mining_scanner/admin": "no route",
+  "/obj/item/multitool/ai_detect": "no route",
+  "/obj/item/multitool/drone": "no route",
+  "/obj/item/multitool/field_debug": "no route",
+  "/obj/item/multitool/uplink": "no route",
+  "/obj/item/pickaxe/bump_mining_test": "no route",
+  "/obj/item/pickaxe/drill/jackhammer/demonic": "literal only",
+  "/obj/item/pinpointer": "no route",
+  "/obj/item/pinpointer/crew/contractor": "no route",
+  "/obj/item/pinpointer/nuke/syndicate": "no route",
+  "/obj/item/pinpointer/pair": "no route",
+  "/obj/item/pinpointer/shuttle": "uncreatable",
+  "/obj/item/pinpointer/syndicate_cyborg": "no route",
+  "/obj/item/pipe_dispenser/drone": "no route",
+  "/obj/item/pipe_dispenser/internal": "no route",
+  "/obj/item/rcd_ammo/large": "no route",
+  "/obj/item/rcd_upgrade": "no route",
+  "/obj/item/rcl/pre_loaded": "no route",
+  "/obj/item/reagent_containers/spray/chemsprayer": "no route",
+  "/obj/item/reagent_containers/spray/chemsprayer/janitor": "no route",
+  "/obj/item/reagent_containers/spray/chemsprayer/party": "toy",
+  "/obj/item/reagent_containers/spray/mister": "uncreatable",
+  "/obj/item/reagent_containers/spray/mister/janitor": "uncreatable",
+  "/obj/item/reagent_containers/spray/mister/pepperspray": "uncreatable",
+  "/obj/item/reagent_containers/spray/spraytan": "no route",
+  "/obj/item/reagent_containers/spray/syndicate": "no route",
+  "/obj/item/reagent_containers/spray/waterflower/cyborg": "no route",
+  "/obj/item/reagent_containers/spray/waterflower/cyborg/hacked": "no route",
+  "/obj/item/restraints": "abstract",
+  "/obj/item/restraints/handcuffs/cable/blue": "no route",
+  "/obj/item/restraints/handcuffs/cable/cyan": "no route",
+  "/obj/item/restraints/handcuffs/cable/green": "no route",
+  "/obj/item/restraints/handcuffs/cable/orange": "no route",
+  "/obj/item/restraints/handcuffs/cable/red": "no route",
+  "/obj/item/restraints/handcuffs/cable/white": "no route",
+  "/obj/item/restraints/handcuffs/cable/yellow": "no route",
+  "/obj/item/restraints/handcuffs/cable/zipties/fake": "literal only",
+  "/obj/item/restraints/handcuffs/cable/zipties/fake/used": "literal only",
+  "/obj/item/restraints/handcuffs/cable/zipties/used": "leftover",
+  "/obj/item/restraints/handcuffs/energy": "no route",
+  "/obj/item/restraints/handcuffs/energy/cult": "no route",
+  "/obj/item/restraints/handcuffs/energy/cult/used": "no route",
+  "/obj/item/restraints/handcuffs/energy/used": "no route",
+  "/obj/item/restraints/handcuffs/energy/void": "no route",
+  "/obj/item/restraints/handcuffs/fake": "no route",
+  "/obj/item/restraints/legcuffs": "no route",
+  "/obj/item/restraints/legcuffs/beartrap/energy": "no route",
+  "/obj/item/restraints/legcuffs/beartrap/energy/cyborg": "no route",
+  "/obj/item/restraints/legcuffs/beartrap/mega_arachnid": "no route",
+  "/obj/item/rwd": "no route",
+  "/obj/item/rwd/admin": "no route",
+  "/obj/item/screwdriver/drone": "no route",
+  "/obj/item/shovel/giant_wrench": "literal only",
+  "/obj/item/shovel/spade/cyborg": "no route",
+  "/obj/item/shuttle_remote": "needs another system",
+  "/obj/item/soap/drone": "no route",
+  "/obj/item/soap/nanotrasen/cyborg": "no route",
+  "/obj/item/survivalcapsule/fishing/hacked": "no route",
+  "/obj/item/t_scanner/adv_mining_scanner/cyborg": "no route",
+  "/obj/item/t_scanner/drone": "no route",
+  "/obj/item/tank": "abstract",
+  "/obj/item/tank/internals": "no route",
+  "/obj/item/tank/internals/emergency_oxygen/engi/clown": "no route",
+  "/obj/item/tank/internals/emergency_oxygen/engi/clown/helium": "no route",
+  "/obj/item/tank/internals/emergency_oxygen/engi/clown/n2o": "no route",
+  "/obj/item/tank/internals/plasmaman": "no route",
+  "/obj/item/tank/internals/plasmaman/belt": "no route",
+  "/obj/item/tank/jetpack": "no route",
+  "/obj/item/trapdoor_remote": "no route",
+  "/obj/item/trapdoor_remote/preloaded": "literal only",
+  "/obj/item/weldingtool/drone": "no route",
+  "/obj/item/weldingtool/repairbot": "no route",
+  "/obj/item/wirecutters/drone": "no route",
+  "/obj/item/wrench/drone": "no route"
+ }
+}

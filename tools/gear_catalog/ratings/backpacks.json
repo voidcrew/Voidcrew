@@ -1,0 +1,587 @@
+{
+ "category": "backpacks",
+ "groups": [
+  "explosive duffels",
+  "special bags",
+  "gear duffels",
+  "plain duffels",
+  "plain backpacks"
+ ],
+ "items": {
+  "/obj/item/storage/backpack": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/botany": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "botany backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/captain": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "captain's backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/chameleon": {
+   "confidence": "medium",
+   "group": "plain backpacks",
+   "hash": "394dc43acdc7ab74",
+   "name": "backpack",
+   "rank": 6,
+   "reason": "Looks like any other backpack. A disguise piece.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/chemistry": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "chemistry backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/clown": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "Giggles von Honkerton",
+   "rank": 5,
+   "reason": "A joke or costume backpack with normal room inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/cultpack": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "trophy rack",
+   "rank": 5,
+   "reason": "A joke or costume backpack with normal room inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/captain": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "captain's duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/chemistry": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "chemistry duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/engineering": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "dacad79a7fb54c8b",
+   "name": "industrial duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/explorer": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "explorer duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/genetics": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "geneticist's duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/hydroponics": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "hydroponic's duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/med": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "medical duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/mining_conscript": {
+   "confidence": "high",
+   "group": "gear duffels",
+   "hash": "12ff6492170dc6db",
+   "name": "mining conscription kit",
+   "rank": 2,
+   "reason": "Full starter kit for a miner: kinetic accelerator, explorer suit, mesons, satchel, scanner and an ID, for 800 credits.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/duffelbag/science": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "scientist's duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/sec": {
+   "confidence": "high",
+   "group": "plain duffels",
+   "hash": "7ca6e00d0657a6e5",
+   "name": "security duffel bag",
+   "rank": 1,
+   "reason": "Holds about 40% more than a backpack but slows you while it is open. Most job outfits offer one; the department versions differ only in color.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/duffelbag/sec/surgery": {
+   "confidence": "high",
+   "group": "gear duffels",
+   "hash": "5a986edcafb7fe08",
+   "name": "surgical duffel bag",
+   "rank": 4,
+   "reason": "Basic surgery tools in a duffel. Portable, ordinary.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/duffelbag/syndie": {
+   "confidence": "medium",
+   "group": "gear duffels",
+   "hash": "21ba0e3af0289439",
+   "name": "suspicious looking duffel bag",
+   "rank": 3,
+   "reason": "Fastest duffel: opens quickly, barely slows you when open, and carries two oversized items such as bulky guns. Comes empty.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/duffelbag/syndie/c4": {
+   "confidence": "medium",
+   "group": "explosive duffels",
+   "hash": "dce469cce774af98",
+   "name": "suspicious looking duffel bag",
+   "rank": 2,
+   "reason": "Ten C-4 charges, each worth 750 credits and a voucher on a shelf. Enough to breach anywhere a boarding party likes. No shop, ruin or played hull has one.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/backpack/duffelbag/syndie/surgery": {
+   "confidence": "high",
+   "group": "gear duffels",
+   "hash": "3bed80d7f44d3461",
+   "name": "surgery duffel bag",
+   "rank": 1,
+   "reason": "Laser surgery tools, a roller bed, tape and gel in one bag: field surgery with no medbay. Also holds a syndicate brain interface and a straitjacket.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/duffelbag/syndie/x4": {
+   "confidence": "medium",
+   "group": "explosive duffels",
+   "hash": "2482d3d86badd011",
+   "name": "suspicious looking duffel bag",
+   "rank": 1,
+   "reason": "Ten X-4 shaped charges, each a large directional blast that opens a ship's hull. Only one NPC ship carries it.",
+   "tier": "red"
+  },
+  "/obj/item/storage/backpack/ert/medical": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "fbe48f8e0165c176",
+   "name": "emergency response team medical backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/explorer": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "explorer bag",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/floortile": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "floortile backpack",
+   "rank": 5,
+   "reason": "A joke or costume backpack with normal room inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/genetics": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "genetics backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/holding": {
+   "confidence": "high",
+   "group": "special bags",
+   "hash": "7ae8b716e74f1246",
+   "name": "bag of holding",
+   "rank": 1,
+   "reason": "Holds 35 weight of anything, bulky guns included, so one crewman hauls what used to take two. Needs a bluespace anomaly core from the field. Two of them together can tear a ship apart.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/backpack/industrial": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "fbe48f8e0165c176",
+   "name": "industrial backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/meat": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "d7f27cba6f528c20",
+   "name": "MEAT",
+   "note": "An edible, squeaking backpack made of 15 sheets of meat. Because of the meat material it leaves a blood smear on 35% of the tiles it moves across for about its first 22 smears, but only when it moves on the floor itself (thrown or dragged, not carried or worn), and it smears meat blood on the hands, clothes and items of whoever handles or wears it. Cosmetic only.",
+   "rank": 5,
+   "reason": "A joke or costume backpack with normal room inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/medic": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "medical backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/cap": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "captain's messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/chem": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "chemist messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/eng": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "fbe48f8e0165c176",
+   "name": "industrial messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/explorer": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "explorer messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/gen": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "geneticist messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/hyd": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "botanist messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/med": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "medical messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/science": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "scientist messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/messenger/sec": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "security messenger bag",
+   "rank": 2,
+   "reason": "A messenger bag. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/mime": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "Parcel Parceaux",
+   "rank": 5,
+   "reason": "A joke or costume backpack with normal room inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/santabag": {
+   "confidence": "medium",
+   "group": "special bags",
+   "hash": "01999e80993759e5",
+   "name": "Santa's Gift Bag",
+   "rank": 2,
+   "reason": "Holds 20 normal items where a backpack holds 7, more than a bag of holding, but nothing bulky. Found on snow planets and in one ruin.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/backpack/satchel": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/cap": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "captain's satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/chem": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "chemist satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/eng": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "fbe48f8e0165c176",
+   "name": "industrial satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/explorer": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "explorer satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/flat": {
+   "confidence": "medium",
+   "group": "special bags",
+   "hash": "a5505ca8e1661527",
+   "name": "smuggler's satchel",
+   "rank": 3,
+   "reason": "Slim 15-capacity bag that hides under floor tiles and from contraband scanners. Good for stashing loot, smaller than a backpack. Comes with four random bits of contraband.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/satchel/flat/empty": {
+   "confidence": "medium",
+   "group": "special bags",
+   "hash": "33ae8a296012e9b1",
+   "name": "smuggler's satchel",
+   "rank": 4,
+   "reason": "The same slim hiding bag, empty. Sold on the black market.",
+   "tier": "green"
+  },
+  "/obj/item/storage/backpack/satchel/gen": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "geneticist satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/hyd": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "botanist satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/leather": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "leather satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/leather/withwallet": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "9e005f6b4006d747",
+   "name": "leather satchel",
+   "rank": 4,
+   "reason": "A leather satchel with a wallet inside. The wallet holds pocket change.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/med": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "medical satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/science": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "scientist satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/satchel/sec": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "security satchel",
+   "rank": 3,
+   "reason": "A satchel. Same room as a backpack, different look.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/science": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "science backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  },
+  "/obj/item/storage/backpack/security": {
+   "confidence": "high",
+   "group": "plain backpacks",
+   "hash": "606ab2c35aeb8efd",
+   "name": "security backpack",
+   "rank": 1,
+   "reason": "A 21-capacity back slot bag. Everyone starts with one like it, and the colors don't change anything.",
+   "tier": "none"
+  }
+ },
+ "method": "Bags with the same room rate together, and color doesn't count. Rated above none only for extra capacity, contents or a real trick. No formula: capacity was counted in normal-size items, 7 for a backpack.",
+ "unrated": {
+  "/obj/item/storage/backpack/bannerpack": "no route",
+  "/obj/item/storage/backpack/bannerpack/blue": "no route",
+  "/obj/item/storage/backpack/bannerpack/red": "no route",
+  "/obj/item/storage/backpack/chameleon/broken": "no route",
+  "/obj/item/storage/backpack/coroner": "no route",
+  "/obj/item/storage/backpack/duffelbag/clown": "no route",
+  "/obj/item/storage/backpack/duffelbag/clown/cream_pie": "toy",
+  "/obj/item/storage/backpack/duffelbag/clown/syndie": "no route",
+  "/obj/item/storage/backpack/duffelbag/cops": "no route",
+  "/obj/item/storage/backpack/duffelbag/coroner": "no route",
+  "/obj/item/storage/backpack/duffelbag/cursed": "no route",
+  "/obj/item/storage/backpack/duffelbag/drone": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/ammo": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/ammo/darkgygax": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/ammo/mauler": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/firestarter": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/hitman": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/med": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/med/bioterrorbundle": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/med/medicalbundle": "no route",
+  "/obj/item/storage/backpack/duffelbag/syndie/sabotage": "no route",
+  "/obj/item/storage/backpack/duffelbag/virology": "no route",
+  "/obj/item/storage/backpack/ert": "no route",
+  "/obj/item/storage/backpack/ert/clown": "no route",
+  "/obj/item/storage/backpack/ert/engineer": "no route",
+  "/obj/item/storage/backpack/ert/janitor": "no route",
+  "/obj/item/storage/backpack/ert/security": "no route",
+  "/obj/item/storage/backpack/fireproof": "no route",
+  "/obj/item/storage/backpack/henchmen": "no route",
+  "/obj/item/storage/backpack/messenger/clown": "no route",
+  "/obj/item/storage/backpack/messenger/coroner": "no route",
+  "/obj/item/storage/backpack/messenger/vir": "no route",
+  "/obj/item/storage/backpack/saddlepack": "no route",
+  "/obj/item/storage/backpack/satchel/bunnysatchel": "no route",
+  "/obj/item/storage/backpack/satchel/coroner": "no route",
+  "/obj/item/storage/backpack/satchel/fireproof": "no route",
+  "/obj/item/storage/backpack/satchel/flat/with_tools": "no route",
+  "/obj/item/storage/backpack/satchel/vir": "no route",
+  "/obj/item/storage/backpack/snail": "no route",
+  "/obj/item/storage/backpack/virology": "no route"
+ }
+}

@@ -31,6 +31,18 @@ The decrypted cache pays in ore: iron and glass at every tier, then silver and t
 
 Rewards scale up with the number of runners connected, with a randomly-selected domain instead of a chosen one, and with the number of hostile intrusions the server threw at you on the way.
 
+## Buying supplies
+
+The **bitrunning supplies order console** spends the bitrunning points on your ID account, separate from the quantum server's domain points. Orders arrive by pod at the buyer.
+
+| Supply | Points |
+|---|---|
+| Corn chips or Space Mountain Wind | 50 |
+| Grey Bull or Pwr Game | 100 |
+| Jackboots, brute kit or burn kit | 200 |
+| Trenchcoat | 300 |
+| Oval sunglasses | 400 |
+
 ## Dying
 
 This is the part that catches people.

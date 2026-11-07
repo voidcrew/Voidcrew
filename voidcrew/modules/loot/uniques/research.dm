@@ -640,7 +640,7 @@
 	user.setOxyLoss(snap["oxy"])
 	user.setStaminaLoss(snap["stamina"])
 	if(user.stat == DEAD)
-		user.revive(NONE)
+		user.revive_from("temporal_rewind", NONE)
 
 	user.visible_message(span_warning("[user]'s wrist brace flares and cracks in half, and suddenly [user.p_theyre()] standing somewhere else!"), \
 		span_userdanger("The last ten seconds unwind. You're back where you were, and the splint is scrap."))

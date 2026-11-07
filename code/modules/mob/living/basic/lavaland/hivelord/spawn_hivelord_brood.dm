@@ -70,6 +70,7 @@
 		return FALSE
 
 	var/turf/land_turf = pick(target_turfs)
+	owner.get_npc_spawn_context() // VOIDCREW EDIT - npc_scaling: pin the parent before the delayed emission.
 	var/obj/effect/temp_visual/hivebrood_spawn/forecast = new(land_turf)
 	forecast.create_from(spawn_type, get_turf(owner), CALLBACK(src, PROC_REF(complete_spawn), land_turf, ai_target))
 	StartCooldown()
@@ -78,10 +79,15 @@
 
 /// Actually create a mob
 /datum/action/cooldown/mob_cooldown/hivelord_spawn/proc/complete_spawn(turf/spawn_turf, target)
-	var/mob/living/brood = new spawn_type(spawn_turf)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: children inherit the source, not the parent's role.
+	owner.get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(owner, role = "ordinary")
+	var/mob/living/brood = spawn_npc_in_zone(spawn_type, spawn_turf, context, FALSE)
+	// VOIDCREW EDIT ADDITION END
 	brood.faction = owner.faction
 	brood.ai_controller?.set_blackboard_key(ai_target_key, target)
 	brood.dir = get_dir(owner, spawn_turf)
+	context.finalize() // VOIDCREW EDIT - npc_scaling: faction and targeting setup is complete.
 
 #define BROOD_ARC_Y_OFFSET 8
 #define BROOD_ARC_ROTATION 45

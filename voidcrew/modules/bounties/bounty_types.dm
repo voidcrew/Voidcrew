@@ -86,6 +86,10 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/status = BOUNTY_RECORD_WANTED
 	/// world.time the record was made
 	var/created_at = 0
+	/// First capture/death band (or fixed lair band), retained across body/proof changes.
+	var/board_work_zone
+	/// Shared by every posting/body alias, including after a prison escape.
+	var/board_reputation_claimed = FALSE
 	/// Their mugshot, a base64 PNG built once and cached here (bounty_record_mugshot())
 	var/mugshot
 	/// How they looked when the mugshot was taken, if that differs from how they look now (a trader-outpost fugitive has changed their hair or clothes). P1 fills it (make_old_look()); the mugshot uses it when set.

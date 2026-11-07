@@ -25,6 +25,18 @@
 "h" = (
 /turf/open/misc/grass/jungle,
 /area/overmap_encounter/planet_ruin)
+"i" = (
+/obj/structure/table/wood,
+/obj/item/spear{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/obj/item/flashlight/lamp/bananalamp{
+	pixel_x = 3;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "j" = (
 /obj/structure/table/wood,
 /obj/item/storage/toolbox/mechanical{
@@ -116,18 +128,6 @@
 	},
 /obj/item/reagent_containers/cup/glass/bottle/beer{
 	pixel_x = -6
-	},
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"I" = (
-/obj/structure/table/wood,
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = 2;
-	pixel_y = 3
-	},
-/obj/item/flashlight/lamp/bananalamp{
-	pixel_x = 3;
-	pixel_y = 9
 	},
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -251,7 +251,7 @@ E
 l
 l
 U
-I
+i
 l
 l
 M

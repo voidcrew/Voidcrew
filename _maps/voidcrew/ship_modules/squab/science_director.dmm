@@ -15,15 +15,7 @@
 	},
 /turf/template_noop,
 /area/template_noop)
-"iRu" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/turf_decal/siding/wood{
-	color = "#543C30";
-	dir = 10
-	},
-/turf/template_noop,
-/area/template_noop)
-"jNm" = (
+"iFe" = (
 /obj/structure/table/reinforced{
 	color = "#8A9397"
 	},
@@ -43,6 +35,14 @@
 /obj/item/gun/energy/e_gun/nuclear{
 	pixel_x = 0;
 	pixel_y = 7
+	},
+/turf/template_noop,
+/area/template_noop)
+"iRu" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	color = "#543C30";
+	dir = 10
 	},
 /turf/template_noop,
 /area/template_noop)
@@ -88,6 +88,6 @@ oyT
 iRu
 "}
 (3,1,1) = {"
-jNm
+iFe
 gqD
 "}

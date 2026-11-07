@@ -1,0 +1,666 @@
+{
+ "category": "comms",
+ "groups": [
+  "ship hacking cartridges",
+  "radio jammers and bugs",
+  "encryption keys",
+  "headsets with ear protection",
+  "plain and department headsets",
+  "hand radios",
+  "wall intercoms",
+  "megaphones"
+ ],
+ "items": {
+  "/obj/item/encryptionkey/headset_cargo": {
+   "confidence": "high",
+   "group": "encryption keys",
+   "hash": "62dc024fee7ee878",
+   "name": "supply radio encryption key",
+   "rank": 2,
+   "reason": "Adds one more channel for talking to your own ship. Crews can already talk freely.",
+   "tier": "none"
+  },
+  "/obj/item/encryptionkey/headset_com": {
+   "confidence": "high",
+   "group": "encryption keys",
+   "hash": "df851c5a643f3989",
+   "name": "command radio encryption key",
+   "rank": 2,
+   "reason": "Adds one more channel for talking to your own ship. Crews can already talk freely.",
+   "tier": "none"
+  },
+  "/obj/item/encryptionkey/headset_mining": {
+   "confidence": "high",
+   "group": "encryption keys",
+   "hash": "4b70f3acc4644f7d",
+   "name": "mining radio encryption key",
+   "rank": 2,
+   "reason": "Adds one more channel for talking to your own ship. Crews can already talk freely.",
+   "tier": "none"
+  },
+  "/obj/item/encryptionkey/headset_sci": {
+   "confidence": "high",
+   "group": "encryption keys",
+   "hash": "c693cf3d807cdd0e",
+   "name": "science radio encryption key",
+   "rank": 2,
+   "reason": "Adds one more channel for talking to your own ship. Crews can already talk freely.",
+   "tier": "none"
+  },
+  "/obj/item/encryptionkey/headset_service": {
+   "confidence": "high",
+   "group": "encryption keys",
+   "hash": "1a5e4b74b252bb18",
+   "name": "service radio encryption key",
+   "rank": 2,
+   "reason": "Adds one more channel for talking to your own ship. Crews can already talk freely.",
+   "tier": "none"
+  },
+  "/obj/item/encryptionkey/syndicate": {
+   "confidence": "medium",
+   "group": "encryption keys",
+   "hash": "c0248ec93b3c7239",
+   "name": "syndicate encryption key",
+   "rank": 1,
+   "reason": "Adds a galaxy-wide channel only other syndicate keys hear, and jamming fields don't stop it. Good for allied crews. It can't overhear anyone else. Ruins only.",
+   "tier": "green"
+  },
+  "/obj/item/ew_exploit/breaker_trip": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "fb1df47264d4070b",
+   "name": "exploit cartridge (Breaker Trip)",
+   "rank": 5,
+   "reason": "Turns off equipment and lights on every APC aboard the enemy ship for 30 seconds. Crew can flip them back by hand, one at a time. Three uses, needs a suite.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/comms_blackout": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "50739894477b045b",
+   "name": "exploit cartridge (Comms Blackout)",
+   "rank": 11,
+   "reason": "Jams the enemy crew's internal radio for 60 seconds; wideband still works. Hurts a crew that relies on callouts, does nothing to NPC ships. Four uses, needs a suite.",
+   "tier": "yellow"
+  },
+  "/obj/item/ew_exploit/door_seize": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "8f51c0a0b3f5cca7",
+   "name": "exploit cartridge (Bolt Override)",
+   "rank": 8,
+   "reason": "Bolts every enemy airlock for 30 seconds, or unbolts them all for your boarders. The cartridge a boarding party wants. Five uses, needs a suite.",
+   "tier": "yellow"
+  },
+  "/obj/item/ew_exploit/drive_lockout": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "0a534abc35542d03",
+   "name": "exploit cartridge (Drive Lockout)",
+   "rank": 3,
+   "reason": "Enemy ship can't thrust for 25 seconds, so it can't run or dodge. Stops NPC ships too. Three uses, needs a suite.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/fire_control_freeze": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "5827ed4759f94744",
+   "name": "exploit cartridge (Fire-Control Freeze)",
+   "rank": 2,
+   "reason": "Enemy missiles and lasers can't fire for 20 seconds. Three uses, needs a suite. A quick purge from the target's weapons console ends it early.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/helm_poltergeist": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "d49f4c7c3cc98056",
+   "name": "exploit cartridge (Poltergeist)",
+   "rank": 4,
+   "reason": "Throws an enemy ship onto a random heading every 3 seconds for 20 seconds and breaks its autopilot. Two uses, sold only for vouchers, needs a suite.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/lights_out": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "7aedba88c05c992d",
+   "name": "exploit cartridge (Blackout)",
+   "rank": 14,
+   "reason": "Turns off the enemy ship's lights for 45 seconds. An annoyance, and a real edge only if your boarders have night vision. Five uses, needs a suite.",
+   "tier": "green"
+  },
+  "/obj/item/ew_exploit/overvolt_doors": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "05bda5dc3f5d5e19",
+   "name": "exploit cartridge (Overvolt)",
+   "rank": 10,
+   "reason": "Electrifies every enemy airlock for 30 seconds. Slows a crew moving between rooms and hurts anyone without insulated gloves. Four uses, needs a suite.",
+   "tier": "yellow"
+  },
+  "/obj/item/ew_exploit/phantom_klaxons": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "a4465a997930bbc8",
+   "name": "exploit cartridge (Phantom Klaxons)",
+   "rank": 13,
+   "reason": "Drops every firelock on the enemy ship and sounds the alarms for 30 seconds. An annoyance a crowbar answers. Five uses, needs a suite.",
+   "tier": "green"
+  },
+  "/obj/item/ew_exploit/runaway_burn": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "167a9c8efaee6919",
+   "name": "exploit cartridge (Runaway Burn)",
+   "rank": 6,
+   "reason": "Pins the enemy throttle at full burn for 15 seconds with the helm dead. Nasty against a ship at speed, weak against a parked one. Two uses, vouchers only, needs a suite.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/sensor_ghosts": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "a21a1054a003063a",
+   "name": "exploit cartridge (Ghost Contacts)",
+   "rank": 12,
+   "reason": "Paints three fake ships on the enemy helm for 2 minutes. Confusing the first time, then crews learn the tell. Does nothing to NPC ships. Four uses, needs a suite.",
+   "tier": "green"
+  },
+  "/obj/item/ew_exploit/shield_collapse": {
+   "confidence": "medium",
+   "group": "ship hacking cartridges",
+   "hash": "ded5412f73d00694",
+   "name": "exploit cartridge (Shield Collapse)",
+   "rank": 1,
+   "reason": "Hacks an enemy ship's shields down for 30 seconds from range, and even a fast purge only brings them back at half charge. Three uses, needs an electronic warfare suite. The strongest cartridge.",
+   "tier": "red"
+  },
+  "/obj/item/ew_exploit/system_scramble": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "a7b2527ce7f86b38",
+   "name": "exploit cartridge (Scrambler)",
+   "rank": 9,
+   "reason": "Knocks an enemy ship's interdictor and cloak offline and keeps them down for 45 seconds. Useless against a ship with neither. Four uses, needs a suite.",
+   "tier": "yellow"
+  },
+  "/obj/item/ew_exploit/vent_purge": {
+   "confidence": "low",
+   "group": "ship hacking cartridges",
+   "hash": "e59403bceb7ddc04",
+   "name": "exploit cartridge (Vent Purge)",
+   "rank": 7,
+   "reason": "Every air alarm on the enemy ship starts siphoning the air for 45 seconds. The only cartridge that can kill crew, but it warns them loudly and anyone on internals shrugs it off. Four uses, needs a suite.",
+   "tier": "yellow"
+  },
+  "/obj/item/jammer/makeshift": {
+   "confidence": "medium",
+   "group": "radio jammers and bugs",
+   "hash": "a89d6f907a50dce9",
+   "name": "makeshift radio jammer",
+   "rank": 2,
+   "reason": "Crafted from a key, cable and a scanner. Jams radios within 5 tiles and can knock headsets 3 tiles away off the air. Useful on a boarding, does no damage.",
+   "tier": "green"
+  },
+  "/obj/item/megaphone": {
+   "confidence": "high",
+   "group": "megaphones",
+   "hash": "4fead30afe90320e",
+   "name": "megaphone",
+   "rank": 1,
+   "reason": "Makes your voice loud. No bearing on anything else.",
+   "tier": "none"
+  },
+  "/obj/item/megaphone/cargo": {
+   "confidence": "high",
+   "group": "megaphones",
+   "hash": "4fead30afe90320e",
+   "name": "supply megaphone",
+   "rank": 1,
+   "reason": "Makes your voice loud. No bearing on anything else.",
+   "tier": "none"
+  },
+  "/obj/item/megaphone/clown": {
+   "confidence": "high",
+   "group": "megaphones",
+   "hash": "172e6b84ea058efa",
+   "name": "clown's megaphone",
+   "rank": 2,
+   "reason": "Makes your voice loud and silly.",
+   "tier": "none"
+  },
+  "/obj/item/megaphone/command": {
+   "confidence": "high",
+   "group": "megaphones",
+   "hash": "4fead30afe90320e",
+   "name": "command megaphone",
+   "rank": 1,
+   "reason": "Makes your voice loud. No bearing on anything else.",
+   "tier": "none"
+  },
+  "/obj/item/megaphone/sec": {
+   "confidence": "high",
+   "group": "megaphones",
+   "hash": "4fead30afe90320e",
+   "name": "security megaphone",
+   "rank": 1,
+   "reason": "Makes your voice loud. No bearing on anything else.",
+   "tier": "none"
+  },
+  "/obj/item/radio": {
+   "confidence": "high",
+   "group": "hand radios",
+   "hash": "9edd770ffadd4617",
+   "name": "station bounced radio",
+   "rank": 2,
+   "reason": "A handheld radio. Common, and the switched-off one prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/radio/entertainment/speakers/physical": {
+   "confidence": "high",
+   "group": "hand radios",
+   "hash": "bc640ef74c89f3bb",
+   "name": "entertainment radio",
+   "rank": 3,
+   "reason": "A one-way radio stuck on the entertainment channel.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "81338cc376820ce5",
+   "name": "radio headset",
+   "rank": 4,
+   "reason": "The plain headset. Prints at round start for almost nothing.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/chameleon": {
+   "confidence": "medium",
+   "group": "plain and department headsets",
+   "hash": "04bfdd1383f797a2",
+   "name": "radio headset",
+   "rank": 5,
+   "reason": "Looks like any other headset. A disguise piece with nothing extra in it.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/captain": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "74d35b0efa2f8894",
+   "name": "the captain's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/captain/alt": {
+   "confidence": "high",
+   "group": "headsets with ear protection",
+   "hash": "139b44f13f6c4898",
+   "name": "the captain's bowman headset",
+   "rank": 3,
+   "reason": "Blocks the flashbang bang and carries every channel a ship has. Most captains start with one.",
+   "tier": "green"
+  },
+  "/obj/item/radio/headset/heads/ce": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "5c40c12fdb43611f",
+   "name": "the chief engineer's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/cmo": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "5b0b3b3b1897d507",
+   "name": "the chief medical officer's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/hop": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "5589f310b31d26a9",
+   "name": "the head of personnel's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/hos": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "f783b0692f5f624a",
+   "name": "the head of security's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/hos/alt": {
+   "confidence": "high",
+   "group": "headsets with ear protection",
+   "hash": "d3bdc412b2cee467",
+   "name": "the head of security's bowman headset",
+   "rank": 4,
+   "reason": "Blocks the flashbang bang, with the command and security channels.",
+   "tier": "green"
+  },
+  "/obj/item/radio/headset/heads/qm": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "c291c894c19ad852",
+   "name": "the quartermaster's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/heads/rd": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "2b241834a7cfc5c9",
+   "name": "the research director's headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_cargo": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "d81ae191642a11cc",
+   "name": "supply radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_cargo/mining": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "7ea62a6f45bd32a9",
+   "name": "mining radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_com": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "c5576074de08bc25",
+   "name": "command radio headset",
+   "rank": 2,
+   "reason": "A command headset: extra channels on your own ship and a loud voice. Talk, not power.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_eng": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "6cba7d2299f0bbff",
+   "name": "engineering radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_med": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "65632eb1b84deef5",
+   "name": "medical radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_sci": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "fda0ae0993bbb106",
+   "name": "science radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_sec": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "2cd2b4f12f588c41",
+   "name": "security radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_sec/alt": {
+   "confidence": "high",
+   "group": "headsets with ear protection",
+   "hash": "fe26e5e7c77ff62d",
+   "name": "security bowman headset",
+   "rank": 2,
+   "reason": "Blocks the flashbang bang. Ordinary issue for security crews on many hulls.",
+   "tier": "green"
+  },
+  "/obj/item/radio/headset/headset_srv": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "3ac37d75a242fe90",
+   "name": "service radio headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/headset_srvent": {
+   "confidence": "high",
+   "group": "plain and department headsets",
+   "hash": "f4a812548a81a81c",
+   "name": "press headset",
+   "rank": 3,
+   "reason": "A department headset. Talks to your own ship and on wideband.",
+   "tier": "none"
+  },
+  "/obj/item/radio/headset/syndicate": {
+   "confidence": "medium",
+   "group": "plain and department headsets",
+   "hash": "759eadbcdffd89ce",
+   "name": "radio headset",
+   "rank": 1,
+   "reason": "Carries the galaxy-wide syndicate channel, which jamming fields don't stop. No ear protection. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/radio/headset/syndicate/alt": {
+   "confidence": "medium",
+   "group": "headsets with ear protection",
+   "hash": "230889acae060c14",
+   "name": "syndicate headset",
+   "rank": 1,
+   "reason": "Blocks the flashbang bang and carries the galaxy-wide syndicate channel, which jamming fields don't stop. Ruins only.",
+   "tier": "green"
+  },
+  "/obj/item/radio/intercom": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "255edacd45edd1c5",
+   "name": "station intercom",
+   "rank": 1,
+   "reason": "Wall fixture for talking on a ship channel. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/command/directional/north": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "3f97e01867314650",
+   "name": "command intercom",
+   "rank": 2,
+   "reason": "Wall fixture that tunes to any channel on its own ship. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/command/directional/south": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "3f97e01867314650",
+   "name": "command intercom",
+   "rank": 2,
+   "reason": "Wall fixture that tunes to any channel on its own ship. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/directional/east": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "255edacd45edd1c5",
+   "name": "station intercom",
+   "rank": 1,
+   "reason": "Wall fixture for talking on a ship channel. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/directional/north": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "255edacd45edd1c5",
+   "name": "station intercom",
+   "rank": 1,
+   "reason": "Wall fixture for talking on a ship channel. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/directional/south": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "255edacd45edd1c5",
+   "name": "station intercom",
+   "rank": 1,
+   "reason": "Wall fixture for talking on a ship channel. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/intercom/directional/west": {
+   "confidence": "high",
+   "group": "wall intercoms",
+   "hash": "255edacd45edd1c5",
+   "name": "station intercom",
+   "rank": 1,
+   "reason": "Wall fixture for talking on a ship channel. Not gear.",
+   "tier": "none"
+  },
+  "/obj/item/radio/listening_coin": {
+   "confidence": "medium",
+   "group": "radio jammers and bugs",
+   "hash": "a5585b105cdd8782",
+   "name": "worn credit chit",
+   "rank": 1,
+   "reason": "Authored unique from ruin caches: a bugged credit chit with a paired earpiece that hears what is said within 2 tiles of it. Small power. It is here only because it should never sit on a shelf.",
+   "tier": "above"
+  },
+  "/obj/item/radio/mech": {
+   "confidence": "high",
+   "group": "hand radios",
+   "hash": "8cf09645c56f71aa",
+   "name": "station bounced radio",
+   "rank": 4,
+   "reason": "The radio built into a mech's radio module. Not something a player carries around.",
+   "tier": "none"
+  },
+  "/obj/item/radio/off": {
+   "confidence": "high",
+   "group": "hand radios",
+   "hash": "b6f9a8097106e5ea",
+   "name": "station bounced radio",
+   "rank": 2,
+   "reason": "A handheld radio. Common and prints at round start.",
+   "tier": "none"
+  },
+  "/obj/item/radio/weather_monitor": {
+   "confidence": "low",
+   "group": "hand radios",
+   "hash": "9c01667ddb89ab66",
+   "name": "mining weather radio",
+   "rank": 1,
+   "reason": "Warns of storms before they hit a planet. Saves a careless away team; a careful one watches the sky. Costs mining points.",
+   "tier": "green"
+  }
+ },
+ "method": "Radios rate by what they add beyond talking to your own ship, which everyone can already do. Hacking cartridges rate by what one use does to an enemy ship, assuming the crew owns the rep 11 suite they need. No formula, and no play data on hacking.",
+ "unrated": {
+  "/obj/item/encryptionkey": "abstract",
+  "/obj/item/encryptionkey/ai": "no route",
+  "/obj/item/encryptionkey/ai/evil": "no route",
+  "/obj/item/encryptionkey/ai_with_binary": "no route",
+  "/obj/item/encryptionkey/binary": "no route",
+  "/obj/item/encryptionkey/heads": "cosmetic",
+  "/obj/item/encryptionkey/heads/captain": "literal only",
+  "/obj/item/encryptionkey/heads/ce": "no route",
+  "/obj/item/encryptionkey/heads/cmo": "no route",
+  "/obj/item/encryptionkey/heads/hop": "no route",
+  "/obj/item/encryptionkey/heads/hos": "no route",
+  "/obj/item/encryptionkey/heads/qm": "no route",
+  "/obj/item/encryptionkey/heads/rd": "no route",
+  "/obj/item/encryptionkey/headset_cent": "no route",
+  "/obj/item/encryptionkey/headset_eng": "no route",
+  "/obj/item/encryptionkey/headset_med": "no route",
+  "/obj/item/encryptionkey/headset_medsci": "no route",
+  "/obj/item/encryptionkey/headset_rob": "no route",
+  "/obj/item/encryptionkey/headset_sec": "no route",
+  "/obj/item/encryptionkey/headset_srvent": "no route",
+  "/obj/item/encryptionkey/headset_srvmed": "no route",
+  "/obj/item/encryptionkey/headset_srvsec": "no route",
+  "/obj/item/encryptionkey/secbot": "no route",
+  "/obj/item/ew_exploit": "no route",
+  "/obj/item/jammer": "no route",
+  "/obj/item/jammer/machine_communion": "literal only",
+  "/obj/item/radio/borg": "no route",
+  "/obj/item/radio/borg/syndicate": "no route",
+  "/obj/item/radio/entertainment": "no route",
+  "/obj/item/radio/entertainment/microphone": "no route",
+  "/obj/item/radio/entertainment/microphone/physical": "no route",
+  "/obj/item/radio/entertainment/speakers": "no route",
+  "/obj/item/radio/headset/abductor": "no route",
+  "/obj/item/radio/headset/binary": "no route",
+  "/obj/item/radio/headset/chameleon/broken": "no route",
+  "/obj/item/radio/headset/heads": "no route",
+  "/obj/item/radio/headset/heads/hos/advisor": "no route",
+  "/obj/item/radio/headset/headset_cent": "no route",
+  "/obj/item/radio/headset/headset_cent/alt": "no route",
+  "/obj/item/radio/headset/headset_cent/alt/leader": "no route",
+  "/obj/item/radio/headset/headset_cent/commander": "no route",
+  "/obj/item/radio/headset/headset_cent/empty": "no route",
+  "/obj/item/radio/headset/headset_medsci": "no route",
+  "/obj/item/radio/headset/headset_rob": "no route",
+  "/obj/item/radio/headset/headset_sec/alt/department": "no route",
+  "/obj/item/radio/headset/headset_sec/alt/department/engi": "no route",
+  "/obj/item/radio/headset/headset_sec/alt/department/med": "no route",
+  "/obj/item/radio/headset/headset_sec/alt/department/sci": "no route",
+  "/obj/item/radio/headset/headset_sec/alt/department/supply": "no route",
+  "/obj/item/radio/headset/headset_srvmed": "no route",
+  "/obj/item/radio/headset/headset_srvsec": "no route",
+  "/obj/item/radio/headset/listening_coin_earpiece": "no route",
+  "/obj/item/radio/headset/psyker": "no route",
+  "/obj/item/radio/headset/silicon": "no route",
+  "/obj/item/radio/headset/silicon/ai": "no route",
+  "/obj/item/radio/headset/silicon/ai/evil": "no route",
+  "/obj/item/radio/headset/silicon/human_ai": "no route",
+  "/obj/item/radio/headset/silicon/pai": "no route",
+  "/obj/item/radio/headset/syndicate/alt/leader": "no route",
+  "/obj/item/radio/intercom/chapel": "no route",
+  "/obj/item/radio/intercom/chapel/directional": "no route",
+  "/obj/item/radio/intercom/chapel/directional/east": "no route",
+  "/obj/item/radio/intercom/chapel/directional/north": "no route",
+  "/obj/item/radio/intercom/chapel/directional/south": "no route",
+  "/obj/item/radio/intercom/chapel/directional/west": "no route",
+  "/obj/item/radio/intercom/command": "no route",
+  "/obj/item/radio/intercom/command/directional": "no route",
+  "/obj/item/radio/intercom/command/directional/east": "no route",
+  "/obj/item/radio/intercom/command/directional/west": "no route",
+  "/obj/item/radio/intercom/directional": "no route",
+  "/obj/item/radio/intercom/prison": "no route",
+  "/obj/item/radio/intercom/prison/directional": "no route",
+  "/obj/item/radio/intercom/prison/directional/east": "no route",
+  "/obj/item/radio/intercom/prison/directional/north": "no route",
+  "/obj/item/radio/intercom/prison/directional/south": "no route",
+  "/obj/item/radio/intercom/prison/directional/west": "no route",
+  "/obj/item/radio/intercom/syndicate": "no route",
+  "/obj/item/radio/intercom/syndicate/directional": "no route",
+  "/obj/item/radio/intercom/syndicate/directional/east": "no route",
+  "/obj/item/radio/intercom/syndicate/directional/north": "no route",
+  "/obj/item/radio/intercom/syndicate/directional/south": "no route",
+  "/obj/item/radio/intercom/syndicate/directional/west": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange/directional": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange/directional/east": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange/directional/north": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange/directional/south": "no route",
+  "/obj/item/radio/intercom/syndicate/freerange/directional/west": "no route",
+  "/obj/item/radio/intercom/unscrewed": "no route",
+  "/obj/item/radio/toy": "no route"
+ }
+}

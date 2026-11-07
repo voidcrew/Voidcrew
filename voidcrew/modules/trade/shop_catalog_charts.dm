@@ -67,7 +67,7 @@
 	is_chart = TRUE
 	// One price at every outpost, since all three now sell the same galaxy-wide
 	// tip rather than their own band's local gossip.
-	price_credits = 1500
+	price_credits = 400
 	stock_min = 2
 	stock_max = 4
 
@@ -123,8 +123,7 @@
 		to_chat(user, span_warning("The lanes are quiet, no fresh rumors this shift."))
 		return FALSE
 
-	// Validate the credit half before consuming any vouchers. User passed so
-	// the charge matches the favor-discounted price the UI shows them.
+	// Validate the credit half before consuming any vouchers.
 	var/credit_price = get_credit_price(user)
 	var/datum/bank_account/account
 	if(credit_price > 0)

@@ -23,17 +23,18 @@
 
 /datum/mission/big_game_hunt
 	name = "Big Game Hunt"
+	guarded_prize_family = "hunt"
 	weight = 7
 	mission_limit = 1
 	duration = 40 MINUTES
-	voucher_count = 2
+	voucher_count = 0
 	quest_lost_policy = MISSION_QUEST_LOST_FAIL
 	gps_tag_prefix = "TROPHY"
 	// Green-band pay a notch over field_expedition: staking a lure and killing
 	// an apex beast beats pulling a probe core. The zone table makes a
 	// Lawless-zone hunt a serious payday.
-	value_min = 1000
-	value_max = 1400
+	value_min = 650
+	value_max = 850
 
 	/// Per-planet hunt tables, keyed by /datum/overmap/planet typepath:
 	/// the apex beast, its entourage pool, its possible names, the trophy the
@@ -114,16 +115,7 @@
 	return "bounty"
 
 /datum/mission/big_game_hunt/setup_target()
-	// Only offer hunts for planet types actually on the overmap this round
-	var/list/present_types = list()
-	for(var/obj/structure/overmap/planet/candidate as anything in GLOB.overmap_planets)
-		if(QDELETED(candidate))
-			continue
-		if(!istype(get_turf(candidate), /turf/open/overmap))
-			continue
-		if(!candidate.planet || !hunt_tables[candidate.planet])
-			continue
-		present_types |= candidate.planet
+	var/list/present_types = get_work_biomes(hunt_tables)
 	if(!length(present_types))
 		return FALSE
 	hunt_planet_type = pick(present_types)
@@ -163,7 +155,7 @@
 
 /datum/mission/big_game_hunt/build_objectives()
 	var/datum/mission_objective/goto_coords/approach = new
-	approach.arrival_message = "On station over the hunting ground. Take the lure down to the surface and stake it in open ground."
+	approach.arrival_message = "On station over the hunting ground."
 	add_objective(approach)
 
 	lure = new
@@ -197,12 +189,7 @@
 	var/datum/mission_target/planet/planet_target = target
 	var/planet_name = istype(planet_target) ? (planet_target.planet?.name || "the planet") : "the planet"
 	name = "Big Game Hunt: [objective_name]"
-	desc = "[flavor_line] \
-		[objective_name] holds the [hunt_row["ground"]] of the [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		A hunting lure lands on your mission pad when you accept. Fly out, use the lure in hand to stake it in open ground on the surface, and kill [objective_name] when it arrives. \
-		The guild pays on the [trophy_part] - bring it back to the mission pad. \
-		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
-		Tap a GPS unit on the mission board to follow the hunt's beacon ([gps_tag])."
+	desc = "Hunt [objective_name] on [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. The guild wants its [trophy_part]."
 
 /datum/mission/big_game_hunt/waypoint_label()
 	return "Hunt: [objective_name]"
@@ -251,7 +238,7 @@
 	kit.objective_ref = WEAKREF(src)
 	// Losing the lure voids the hunt (and points the GPS chain at it meanwhile)
 	mission.register_quest_atom(kit)
-	notify_crew("Hunting lure delivered to your mission pad. Stake it in open ground on the hunt planet's surface.")
+	notify_crew("Hunting lure delivered.")
 	return TRUE
 
 /// The lure was staked: record the spot for the kill step and advance
@@ -284,6 +271,7 @@
  * entourage of lesser fauna. Death drops the mission-bound trophy.
  */
 /datum/mission_objective/field/kill_named/big_game
+	proof_type = /obj/item/mission_recovery/trophy
 	/// Where the lure was staked; the beast breaks cover next to it
 	var/turf/lure_turf
 	/// The trophy the beast drops ("tendril-crowned skull"), set by the mission
@@ -298,49 +286,35 @@
 
 /// The beast answers the lure, not a random spawn point
 /datum/mission_objective/field/kill_named/big_game/do_field_spawn()
+	if(spawned)
+		return
 	if(!lure_turf)
 		return ..()
 	spawned = TRUE
 	spawn_field_objects(get_nearby_open_turf(lure_turf, 4))
 
 /datum/mission_objective/field/kill_named/big_game/spawn_field_objects(turf/spawn_turf)
-	var/mob/living/beast = new target_mob_type(spawn_turf)
+	if(mission.named_kill_completed)
+		return ..()
+	var/mob/living/beast = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	beast.name = mission.objective_name
 	beast.desc += " This one is old, scarred, and much too big. The guild wants it as a wall piece."
 	if(health_override > beast.maxHealth)
 		beast.maxHealth = health_override
 		beast.health = health_override
-	target_mob = beast
-	protect_field_mob(beast)
-	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
-	mission.register_quest_atom(beast)
+	beast.npc_spawn_context.finalize()
+	track_target(beast)
 	// The entourage: lesser fauna drawn in by the blood on the wind. Killing
 	// them pays nothing - the contract is the name on the trophy.
 	for(var/guard_type in guard_types)
-		var/mob/living/guard = new guard_type(get_nearby_open_turf(spawn_turf))
+		var/mob/living/guard = spawn_field_npc(guard_type, get_nearby_open_turf(spawn_turf), finalize = FALSE)
 		guard.desc += " It followed something much bigger here."
+		guard.npc_spawn_context.finalize()
 	beast.visible_message(span_boldwarning("[beast] comes crashing in and goes straight for the lure!"))
 	notify_crew("The lure's been taken. [mission.objective_name] is out in the open - good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
-/**
- * The beast died: drop the bound trophy, track it instead, and advance.
- * Full override of kill_named's proof drop - same signal, hunt flavor.
- */
-/datum/mission_objective/field/kill_named/big_game/on_target_death(mob/living/source, gibbed)
-	SIGNAL_HANDLER
-	if(target_killed || !mission || mission.failed || mission.completed)
-		return
-	target_killed = TRUE
-	UnregisterSignal(source, COMSIG_LIVING_DEATH)
-	target_mob = null
-
-	var/obj/item/mission_recovery/trophy/trophy = new(source.drop_location())
-	trophy.name = "[mission.objective_name]'s [trophy_part]"
-	mission.bind_item(trophy)
-	mission.register_quest_atom(trophy)
-
-	notify_crew("[mission.objective_name] is down. Recover the [trophy_part] and return it to the mission pad.")
-	complete()
+/datum/mission_objective/field/kill_named/big_game/get_proof_name()
+	return "[mission.objective_name]'s [trophy_part]"
 
 /datum/mission_objective/field/kill_named/big_game/get_progress_string()
 	if(!spawned)
@@ -366,8 +340,7 @@
  */
 /obj/item/hunting_lure
 	name = "apex hunting lure"
-	desc = "A folding guild lure rig: chum reservoir, pheromone wicks and a seismic thumper. \
-		Use it in hand to stake it in open ground on the contracted planet, then get somewhere defensible."
+	desc = "A folding guild lure rig with a chum reservoir, pheromone wicks and a seismic thumper."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "recovery_anchored"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -411,7 +384,7 @@
  */
 /obj/item/mission_recovery/trophy
 	name = "hunting trophy"
-	desc = "A field-dressed piece of something enormous, tagged and sealed for the guild's assayer. The mission pad will accept it."
+	desc = "A field-dressed piece of something enormous, tagged for the guild's assayer."
 	icon_state = "recovery"
 	w_class = WEIGHT_CLASS_BULKY
 

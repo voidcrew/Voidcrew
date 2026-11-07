@@ -362,7 +362,8 @@ SUBSYSTEM_DEF(overmap_zones)
 
 /**
  * Caches all blocked overmap turfs for O(1) pathfinding lookups.
- * Called once at initialization since the overmap is static.
+ * Called once at initialization. Storms stay put, except asteroid fields, which keep
+ * their own entry up to date when they move (see events.dm).
  */
 /datum/controller/subsystem/overmap_zones/proc/cache_blocked_turfs()
 	var/blocked_count = 0

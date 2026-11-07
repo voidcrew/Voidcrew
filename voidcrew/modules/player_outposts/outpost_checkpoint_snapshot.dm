@@ -27,6 +27,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_infrastructure, typecacheof(list(
 GLOBAL_LIST_INIT(outpost_checkpoint_excluded, typecacheof(list(
 	/obj/machinery/portable_atmospherics,
 	/obj/machinery/computer/ship_checkpoint,
+	// Internal vending stock is not scrubbed by clear_stock().
+	/obj/machinery/vending/security/marine/solgov,
 	// Made by its turret.
 	/obj/machinery/porta_turret_cover,
 	// Never rebuilt: user decision, 2026-09-24.
@@ -88,6 +90,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	/// The outpost a construction job builds this in.
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 	var/datum/weakref/source_ship
+	/// Live round identity and entitlements; only the round registry owns record lifetime.
+	var/datum/weakref/crew_record_ref
 	var/captain_ckey
 	var/ship_name
 	var/saved_at
@@ -106,6 +110,7 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 /datum/ship_checkpoint/Destroy()
 	outpost = null
 	source_ship = null
+	crew_record_ref = null
 	tgm = null
 	rooms = null
 	jobs = null
@@ -138,6 +143,9 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 		// Closet stock is generated lazily on first opening. Only a stocked fixture's ever is.
 		if(!GLOB.ship_save_stocked_fixtures[saved_type])
 			properties += "contents_initialized = 1"
+		if(istype(object, /obj/structure/closet/crate/secure/loot))
+			// A saved freight shell never receives a fresh code-lock payout.
+			properties += "spawned_loot = 1"
 	if(istype(object, /obj/machinery/light))
 		// Lights otherwise materialize a charged mock battery after map loading.
 		properties += "start_with_cell = 0"
@@ -248,6 +256,8 @@ GLOBAL_LIST_INIT(outpost_checkpoint_refused_terrain, typecacheof(list(
 	if(!valid)
 		return "The hull design could not be read back. No payment was taken."
 	source_ship = WEAKREF(ship)
+	var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+	crew_record_ref = crew ? WEAKREF(crew) : null
 	captain_ckey = owner_ckey
 	ship_name = ship.name
 	class_name = ship.source_template?.short_name

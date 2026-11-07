@@ -24,14 +24,14 @@
 	feature_spawn_chance = 3
 	mob_spawn_chance = 7
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 5,
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 5,
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 10,
 		/mob/living/basic/spider/giant/wasteland = 1,
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
 		/mob/living/basic/mining/legion/wasteland = 3
 	)
 	// Meaner tier for dangerous-zone planets (see dangerous_mob_spawn_list)
 	dangerous_mob_spawn_list = list(
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 5,
 		/mob/living/basic/mining/legion/wasteland = 3,
 		/mob/living/basic/spider/giant/tarantula/wasteland = 2,
 		/mob/living/basic/spider/giant/wasteland = 2,
@@ -92,13 +92,13 @@
 	flora_spawn_list = list(/obj/structure/flora/rock/wasteland = 30, /obj/effect/decal/cleanable/greenglow = 30, /obj/structure/elite_tumor = 1)
 	mob_spawn_chance = 20
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 10,
-		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 7,
-		/mob/living/basic/hivebot/rapid/wasteland = 5,
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 17,
+		/mob/living/basic/hivebot/range = 5,
 		/mob/living/basic/spider/giant/wasteland = 1,
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1
 	)
 	dangerous_mob_spawn_list = list(
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 7,
 		/mob/living/basic/hivebot/rapid/wasteland = 3,
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
 	)
@@ -166,7 +166,7 @@
 		/obj/structure/closet/crate/grave/filled/lead_researcher = 20,
 		/obj/item/pickaxe/rusted = 40,
 		/obj/item/pickaxe/diamond = 1,
-		/obj/item/shovel/serrated = 30,
+		/obj/item/shovel/serrated/dull = 30,
 		/obj/structure/radioactive = 30,
 		/obj/structure/radioactive/stack = 50,
 		/obj/structure/radioactive/waste = 50,

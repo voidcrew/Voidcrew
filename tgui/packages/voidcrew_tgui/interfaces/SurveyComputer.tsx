@@ -67,26 +67,12 @@ interface SurveyTarget {
   atRange: number;
   dist: number;
   points: number;
-  cash: number;
   mappable: number;
-  /** Seconds the charted surface stays generated, or null when it is not counting down. */
-  holdSeconds: number | null;
-}
-
-/** "14m 20s" / "45s" - short enough to sit inline in a target row. */
-function formatHold(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  if (minutes <= 0) {
-    return `${rest}s`;
-  }
-  return rest > 0 ? `${minutes}m ${rest}s` : `${minutes}m`;
 }
 
 interface Data {
   archiveMode: number;
   researchLinked: number;
-  bankedCash: number;
   bankedPoints: number;
   currentCelestialRef: string;
   currentCelestialType: string;
@@ -94,11 +80,9 @@ interface Data {
   mappingEnabled?: number;
   shipMoving: number;
   surveyAtRange?: number;
-  rangeSurveyDistance?: number;
-  rangeSurveyPercent?: number;
   surveyStatus?: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
   surveyTargets?: SurveyTarget[];
-  surveyValue: { cash: number; points: number };
+  surveyValue: { points: number };
   surveyDataDisk: number;
   theme?: string;
 }
@@ -218,18 +202,6 @@ export const SurveyComputer = () => {
                         }}
                       >
                         Surveying
-                      </Tabs.Tab>
-                      <Tabs.Tab
-                        icon="dollar-sign"
-                        mt={1}
-                        mb={1}
-                        selected={tab === 8}
-                        key={8}
-                        onClick={() => {
-                          setTab(8);
-                        }}
-                      >
-                        Banking
                       </Tabs.Tab>
                       <Tabs.Tab
                         icon="flask"
@@ -395,8 +367,6 @@ export const SurveyComputer = () => {
                 <Asteroids />
               ) : tab === 7 ? (
                 <Stars />
-              ) : tab === 8 ? (
-                <Banking />
               ) : tab === 9 ? (
                 <Research />
               ) : (
@@ -423,8 +393,8 @@ const SurveyArchive = () => {
       <Window.Content scrollable>
         <NoticeBox>
           {data.researchLinked
-            ? 'Completed records are synchronized with the linked local research server.'
-            : 'Link a local research server with a multitool to use completed survey records for research.'}
+            ? 'Research server connected.'
+            : 'No research server connected.'}
         </NoticeBox>
         <Section title="Disk and display settings">
           <Settings />
@@ -464,15 +434,7 @@ const SurveyArchive = () => {
 
 const Surveying = () => {
   const { act, data } = useBackend<Data>();
-  const {
-    bankedCash,
-    theme,
-    bankedPoints,
-    shipMoving,
-    surveyTargets = [],
-    rangeSurveyDistance = 3,
-    rangeSurveyPercent = 60,
-  } = data;
+  const { theme, bankedPoints, shipMoving, surveyTargets = [] } = data;
 
   interface Option {
     content: string;
@@ -509,40 +471,16 @@ const Surveying = () => {
         : {
             content: 'Start survey',
             action: 'survey',
-            tooltip:
-              selectedTarget.points && selectedTarget.cash
-                ? `Value: ${selectedTarget.points} points | ${selectedTarget.cash} credits`
-                : undefined,
           };
 
   const notices: string[] = [];
 
   if (shipMoving === 0) {
-    notices.push('Ship is currently moving, surveying disabled');
-  }
-
-  if (
-    selectedTarget &&
-    selectedTarget.atRange === 1 &&
-    selectedTarget.status === 'unsurveyed'
-  ) {
-    notices.push('Storm targeted at range: reduced survey yield');
-  }
-
-  if (selectedTarget && selectedTarget.holdSeconds !== null) {
-    notices.push(
-      `Charted surface of ${selectedTarget.name} holds for ${formatHold(
-        selectedTarget.holdSeconds,
-      )} — land within that window or it drifts to another sector`,
-    );
+    notices.push('Ship in motion');
   }
 
   if (bankedPoints && bankedPoints !== 0) {
-    notices.push(`You have ${bankedPoints} research points to print`);
-  }
-
-  if (bankedCash && bankedCash !== 0) {
-    notices.push(`You have ${bankedCash} credits to cash out`);
+    notices.push(`Research awaiting print: ${bankedPoints}`);
   }
 
   const currentThemeColors = theme ? getThemeColors(theme) : undefined;
@@ -578,12 +516,6 @@ const Surveying = () => {
       </Stack.Item>
       <Stack.Item grow>
         <Section title="Targets" fill scrollable>
-          <Box color="label" mb={1}>
-            Surveying needs the ship stationary on the same overmap tile as the
-            target — no docking or landing required. Electric and EMP storms can
-            also be scanned from up to {rangeSurveyDistance} tiles away at{' '}
-            {rangeSurveyPercent}% yield.
-          </Box>
           {surveyTargets.length > 0 ? (
             <Tabs vertical>
               {surveyTargets.map((target) => {
@@ -598,9 +530,6 @@ const Surveying = () => {
                     {target.name}
                     {target.atRange ? ` (${target.dist} tiles out)` : ''}
                     {target.status === 'complete' ? ' — surveyed' : ''}
-                    {target.holdSeconds !== null
-                      ? ` — holds ${formatHold(target.holdSeconds)}`
-                      : ''}
                   </Tabs.Tab>
                 );
               })}
@@ -616,6 +545,9 @@ const Surveying = () => {
         </Section>
       </Stack.Item>
       <Stack.Item>
+        {selectedTarget?.status === 'unsurveyed' ? (
+          <Box mb={1}>Research: {selectedTarget.points}</Box>
+        ) : null}
         <Button
           lineHeight={3}
           backgroundColor={currentThemeColors?.button}
@@ -1373,47 +1305,6 @@ const Stars = () => {
   );
 };
 
-const Banking = () => {
-  const { act, data } = useBackend<Data>();
-  const { bankedCash, theme } = data;
-  const currentThemeColors = theme ? getThemeColors(theme) : undefined;
-
-  return (
-    <Stack vertical>
-      <Stack.Item>
-        <Button
-          lineHeight={3}
-          backgroundColor={currentThemeColors?.button}
-          textColor={currentThemeColors?.buttonText}
-          ml="10%"
-          textAlign="center"
-          mr="10%"
-          fluid
-          mt="10%"
-          mb="10%"
-          icon="dollar-sign"
-          fontSize={3}
-          disabled={!bankedCash || bankedCash === 0 ? true : false}
-          onClick={() => {
-            act('cashOut');
-          }}
-        >
-          Withdrawal
-        </Button>
-      </Stack.Item>
-      <Stack.Item>
-        <NoticeBox
-          textAlign="center"
-          backgroundColor={currentThemeColors?.notice}
-          textColor={currentThemeColors?.noticeText}
-        >
-          You currently have ${bankedCash} to withdrawal
-        </NoticeBox>
-      </Stack.Item>
-    </Stack>
-  );
-};
-
 const Research = () => {
   const { act, data } = useBackend<Data>();
   const { bankedPoints, surveyStatus, theme } = data;
@@ -1449,7 +1340,7 @@ const Research = () => {
           textColor={currentThemeColors?.noticeText}
           textAlign="center"
         >
-          You currently have {bankedPoints} research points to print
+          Research awaiting print: {bankedPoints}
         </NoticeBox>
       </Stack.Item>
     </Stack>

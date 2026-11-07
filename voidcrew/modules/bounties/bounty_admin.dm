@@ -868,7 +868,8 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/datum/criminal_bounty/posting = wanted.posting()
 	if(posting && (posting.placement_kind != BOUNTY_PLACEMENT_TRADER_OUTPOST || posting.outpost_site?.resolve() != outpost))
 		posting = null
-	var/mob/living/basic/bounty_criminal/decoy/decoy = new(decoy_spot(center))
+	var/datum/npc_spawn_context/context = wanted.bounty_profile_context()
+	var/mob/living/basic/bounty_criminal/decoy/decoy = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/decoy, decoy_spot(center), context, FALSE)
 	decoy.outpost_become(wanted, decoy_record, posting, outpost, bounty_outpost_display_name(outpost), bounty_outpost_display_desc(outpost), bounty_outpost_outfit(outpost))
 	if(posting)
 		posting.decoys += WEAKREF(decoy)

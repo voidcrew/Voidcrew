@@ -65,6 +65,35 @@
 /obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
+"ai" = (
+/obj/structure/table/wood/poker,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"aj" = (
+/obj/structure/closet,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"ak" = (
+/obj/item/melee/baseball_bat,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
+"al" = (
+/obj/structure/table/wood,
+/obj/item/knife/combat/survival{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/coin/antagtoken{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
 "am" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/maintenance/three,
@@ -79,6 +108,47 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
+"an" = (
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ao" = (
+/obj/structure/table,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ap" = (
+/obj/structure/table,
+/obj/item/ammo_box/c9mm{
+	pixel_y = 6
+	},
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"aq" = (
+/obj/item/knife/combat/survival,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/generic,
+/obj/effect/spawner/random/maintenance,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ar" = (
+/obj/structure/table,
+/obj/item/spear,
+/obj/item/clothing/head/costume/delinquent,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "as" = (
 /obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
@@ -90,6 +160,13 @@
 	dir = 1
 	},
 /obj/structure/cable,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"at" = (
+/obj/structure/table,
+/obj/item/clothing/mask/gas,
+/obj/item/clothing/under/color/grey/ancient,
+/obj/item/knife/combat/survival,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "av" = (
@@ -202,11 +279,6 @@
 "bC" = (
 /obj/structure/sign/poster/contraband/clown,
 /turf/closed/wall/r_wall/rust,
-/area/ruin/powered)
-"bF" = (
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/plating,
 /area/ruin/powered)
 "bG" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1145,11 +1217,6 @@
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"ls" = (
-/obj/structure/table,
-/obj/item/gun/energy/laser/retro,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "lv" = (
 /obj/item/flashlight/lamp/bananalamp,
 /turf/open/floor/plating,
@@ -1631,17 +1698,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"pY" = (
-/obj/structure/table,
-/obj/item/ammo_box/c9mm{
-	pixel_y = 6
-	},
-/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
-/obj/item/ammo_box/magazine/m9mm,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "qi" = (
 /obj/structure/closet/body_bag,
 /obj/item/clothing/under/costume/pirate,
@@ -2017,19 +2073,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"uB" = (
-/obj/structure/table/wood,
-/obj/item/switchblade{
-	pixel_x = -3;
-	pixel_y = 4
-	},
-/obj/item/coin/antagtoken{
-	pixel_x = 4;
-	pixel_y = -2
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "uD" = (
 /obj/structure/rack,
 /obj/effect/mob_spawn/ghost_role/drone,
@@ -2339,20 +2382,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"yb" = (
-/obj/item/nullrod/hypertool,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/generic,
-/obj/effect/spawner/random/maintenance,
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
-	dir = 1
-	},
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "yd" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2508,10 +2537,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"zG" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911,
-/turf/open/misc/dust/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "zK" = (
 /turf/closed/indestructible/reinforced,
 /area/ruin/powered)
@@ -3312,11 +3337,6 @@
 /obj/effect/decal/cleanable/ash,
 /turf/closed/wall/rust,
 /area/ruin/powered)
-"Ib" = (
-/obj/structure/table/wood/poker,
-/obj/item/gun/ballistic/revolver/russian,
-/turf/open/floor/wood,
-/area/ruin/powered)
 "Ie" = (
 /obj/structure/closet/cardboard,
 /mob/living/basic/snake,
@@ -3436,13 +3456,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
-/area/ruin/powered)
-"IV" = (
-/obj/structure/table,
-/obj/item/clothing/mask/gas,
-/obj/item/clothing/under/color/grey/ancient,
-/obj/item/spear/grey_tide,
-/turf/open/floor/plating/rust,
 /area/ruin/powered)
 "IY" = (
 /mob/living/basic/mouse/rat,
@@ -4011,13 +4024,6 @@
 	dir = 4
 	},
 /obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"OO" = (
-/obj/structure/closet,
-/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
-/obj/item/ammo_box/magazine/m9mm,
-/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "OQ" = (
@@ -4762,12 +4768,6 @@
 /obj/structure/cable,
 /obj/structure/grille,
 /turf/open/floor/plating/rust,
-/area/ruin/powered)
-"Wv" = (
-/obj/structure/table,
-/obj/item/melee/greykingsword,
-/obj/item/clothing/head/costume/delinquent,
-/turf/open/floor/plating,
 /area/ruin/powered)
 "WD" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -5892,7 +5892,7 @@ KN
 qF
 tf
 mx
-Ib
+ai
 xx
 in
 in
@@ -5979,7 +5979,7 @@ jy
 XF
 bb
 Pe
-Ib
+ai
 ET
 fi
 in
@@ -6099,7 +6099,7 @@ av
 nN
 Re
 RX
-OO
+aj
 xx
 CF
 xx
@@ -6154,7 +6154,7 @@ BP
 BU
 FH
 xx
-zG
+ak
 Ml
 in
 in
@@ -6306,7 +6306,7 @@ fi
 vD
 dI
 av
-uB
+al
 Ta
 xx
 zV
@@ -6369,7 +6369,7 @@ sU
 rJ
 mh
 pR
-bF
+an
 et
 Gw
 WL
@@ -6715,7 +6715,7 @@ iR
 av
 wb
 nH
-ls
+ao
 Xe
 Hp
 Zo
@@ -6785,7 +6785,7 @@ qI
 pR
 Gt
 qr
-pY
+ap
 XF
 av
 xx
@@ -6959,11 +6959,11 @@ zK
 xx
 fw
 ah
-IV
+at
 av
 XS
 OQ
-Wv
+ar
 bG
 zK
 xx
@@ -6974,7 +6974,7 @@ xx
 cm
 Oo
 Wt
-yb
+aq
 YT
 Wt
 as

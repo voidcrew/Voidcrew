@@ -2,6 +2,16 @@
 "aa" = (
 /turf/open/floor/carpet/neon/simple/violet/nodots,
 /area/ruin/powered)
+"ab" = (
+/obj/structure/table/wood,
+/obj/item/melee/baseball_bat,
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
+"ac" = (
+/obj/item/melee/baseball_bat,
+/turf/open/floor/light/colour_cycle/dancefloor_a,
+/area/ruin/powered)
 "ai" = (
 /obj/machinery/door/airlock/wood,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -1173,12 +1183,6 @@
 	},
 /turf/open/misc/asteroid/sand/beach,
 /area/overmap_encounter/planetoid/beach)
-"Ti" = (
-/obj/structure/table/wood,
-/obj/item/gun/ballistic/revolver/golden,
-/obj/machinery/light/floor,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "Ty" = (
 /obj/item/kirbyplants/organic/plant22,
 /turf/open/floor/iron/dark,
@@ -1321,10 +1325,6 @@
 	dir = 4
 	},
 /turf/open/floor/carpet/neon/simple/violet,
-/area/ruin/powered)
-"Xs" = (
-/obj/item/gun/ballistic/automatic/pistol/deagle,
-/turf/open/floor/light/colour_cycle/dancefloor_a,
 /area/ruin/powered)
 "XC" = (
 /obj/structure/flora/deadgrass/tall,
@@ -1653,7 +1653,7 @@ hh
 VO
 RJ
 Eb
-Ti
+ab
 Ld
 RS
 Io
@@ -1786,7 +1786,7 @@ hh
 ie
 Zo
 WU
-Xs
+ac
 aA
 hh
 RS

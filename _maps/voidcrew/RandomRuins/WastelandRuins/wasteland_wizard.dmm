@@ -2,6 +2,11 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
+"b" = (
+/obj/structure/table/wood,
+/obj/item/spear,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/unpowered)
 "c" = (
 /obj/structure/window/reinforced/tinted{
 	dir = 8
@@ -81,11 +86,6 @@
 /area/ruin/unpowered)
 "A" = (
 /obj/structure/closet/crate/zone_loot/occult,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/unpowered)
-"B" = (
-/obj/structure/table/wood,
-/obj/item/knife/bloodletter,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/unpowered)
 "C" = (
@@ -222,7 +222,7 @@ a
 "}
 (4,1,1) = {"
 r
-B
+b
 s
 T
 D

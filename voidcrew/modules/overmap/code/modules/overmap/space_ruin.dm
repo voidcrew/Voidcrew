@@ -16,7 +16,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	icon_state = "strange_event"
 	sensor_detectable = TRUE
 	sensor_category = "Ruins"
-	survey_value = 300
+	survey_value = 75
 
 	/// The ruin template this object will spawn
 	var/datum/map_template/ruin/space/ruin_template
@@ -56,6 +56,9 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	/// Rare ruins come from rumor charts, not natural seeding: tinted gold on
 	/// the map, and cleaning one out never spawns a replacement.
 	var/rare = FALSE
+	/// Spawned for one purpose (an anomaly chart's site): cleaning it out does not seed
+	/// a replacement, so the sector's ruin count stays where natural seeding left it.
+	var/no_replacement = FALSE
 	/// Live missions currently pointed at this ruin; target picks prefer unclaimed ruins
 	var/mission_claims = 0
 	/// A mission owns this ruin's lifecycle: the empty-ruin cleanup in
@@ -761,7 +764,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	// Spawn a new ruin somewhere else on the overmap BEFORE we delete ourselves.
 	// Rare rumor ruins are one-shots: clearing one doesn't seed anything new.
-	if(!rare)
+	if(!rare && !no_replacement)
 		spawn_replacement_ruin(old_template)
 
 	// Delete this overmap object

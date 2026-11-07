@@ -853,11 +853,11 @@
 		return
 	var/static/list/weapon_weights = list(
 		/obj/item/spear = 25,
-		/obj/item/knife/combat = 20,
+		/obj/item/knife/combat/survival = 20,
 		/obj/item/melee/baseball_bat = 20,
 		/obj/item/shield/riot = 10,
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
-		/obj/item/gun/energy/laser = 10,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 10,
 		/obj/item/restraints/legcuffs/beartrap = 5,
 	)
 	var/obj/structure/closet/crate/weapon_crate = new()

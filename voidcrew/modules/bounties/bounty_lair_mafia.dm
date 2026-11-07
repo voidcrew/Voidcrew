@@ -573,7 +573,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	for(var/mob/living/pilot in suit.occupants)
 		if(rocket_volley)
 			rocket_volley[REF(pilot)] = TRUE
-	return suit.take_damage(BOUNTY_MECH_ROCKET_EXOSUIT_DAMAGE, BRUTE, BULLET, TRUE, get_dir(suit, src))
+	return suit.take_damage(npc_zone_damage(BOUNTY_MECH_ROCKET_EXOSUIT_DAMAGE, npc_zone_damage_factor), BRUTE, BULLET, TRUE, get_dir(suit, src))
 
 /obj/projectile/bullet/bounty_mafia_rocket/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
@@ -614,7 +614,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		if(rocket_volley)
 			rocket_volley[key] = TRUE
 		var/blocked = victim.run_armor_check(BODY_ZONE_CHEST, BULLET, silent = TRUE)
-		victim.apply_damage(damage, BRUTE, BODY_ZONE_CHEST, blocked)
+		victim.apply_damage(npc_zone_damage(damage, npc_zone_damage_factor, npc_zone_damage_scaled), BRUTE, BODY_ZONE_CHEST, blocked)
 		victim.Knockdown(BOUNTY_MECH_ROCKET_KNOCKDOWN)
 		to_chat(victim, span_userdanger("A rocket bursts right at your feet!"))
 		. += victim
@@ -1112,14 +1112,11 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 
 /**
  * The club's goons. On P11's map every room has one of these; its room (the marker's area) fixes the crew
- * (bounty_mafia_room_crew()). Anywhere else it rolls 3-5 from the zone table like any other theme. Goons
+ * (bounty_mafia_room_crew()). Each marker rolls 1-2 from its room's weighted roster. Goons
  * only spawn on tiles of the marker's own room.
  */
 /obj/effect/zone_mobs/mafia
 	name = "zone mob spawner (mafia)"
-	count_green = list(3, 4)
-	count_yellow = list(3, 5)
-	count_red = list(4, 5)
 	scatter_radius = 3
 	mobs_green = list(
 		/mob/living/basic/trooper/russian/mafia = 4,
@@ -1143,10 +1140,11 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	if(!crew)
 		return ..()
 	var/list/open_turfs = get_scatter_turfs()
-	for(var/mob_path in crew)
-		for(var/i in 1 to crew[mob_path])
-			var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
-			new mob_path(spot)
+	for(var/i in 1 to rand(1, 2))
+		var/mob_path = pick_weight(crew)
+		var/turf/spot = length(open_turfs) ? pick_n_take(open_turfs) : get_turf(src)
+		var/datum/npc_spawn_context/context = new(src, zone_type, "ordinary")
+		spawn_npc_in_zone(mob_path, spot, context)
 
 /obj/effect/zone_mobs/mafia/get_scatter_turfs()
 	var/area/room = get_area(src)
@@ -1516,8 +1514,11 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		return FALSE
 	var/list/table = mech_health_table()
 	var/wanted = table[clamp(count, 1, length(table))]
+	var/raw_health = wanted
+	wanted *= npc_zone_health_factor
 	if(wanted <= maxHealth)
 		return FALSE
+	npc_zone_original_max_health = raw_health
 	setMaxHealth(wanted)
 	updatehealth()
 	if(announce && count > 1)
@@ -1595,8 +1596,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	mech_engaged = list()
 	mech_grudge = list()
 	adjust_health(-getBruteLoss())
-	setMaxHealth(BOUNTY_MECH_HEALTH_1)
-	updatehealth()
+	set_npc_zone_health(BOUNTY_MECH_HEALTH_1)
 	ai_controller?.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	visible_message(span_notice("[src] vents steam as its repair arms fold away. It looks as good as new."))
 
@@ -1877,7 +1877,8 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	var/obj/structure/bounty_mafia_wreck/wreck = new(spot)
 	wreck.setDir(dir)
 	var/turf/exit = mech_exit_turf(spot)
-	var/mob/living/basic/bounty_lair_boss/mafia_don/don = new(exit || spot)
+	var/datum/npc_spawn_context/context = new(src, null, "boss")
+	var/mob/living/basic/bounty_lair_boss/mafia_don/don = spawn_npc_in_zone(/mob/living/basic/bounty_lair_boss/mafia_don, exit || spot, context, FALSE)
 	don.posting_ref = posting_ref
 	don.don_wreck_ref = WEAKREF(wreck)
 	// Whoever broke his machine, he knows
@@ -1891,6 +1892,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		don.real_name = posting.record.name
 	SEND_SIGNAL(src, COMSIG_BOUNTY_MAFIA_DON_EJECTED, don)
 	don.don_on_eject()
+	context.finalize()
 	return don
 
 /// The open tile beside `wreck_spot`, in its arena, farthest from the hunters

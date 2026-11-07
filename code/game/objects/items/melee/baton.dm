@@ -303,6 +303,7 @@
 	user.apply_damage(2 * force, BRUTE, BODY_ZONE_HEAD, attacking_item = src)
 	log_combat(user, user, "accidentally stun attacked [user.p_them()]self due to their clumsiness", src)
 	user.do_attack_animation(user)
+	return TRUE // VOIDCREW EDIT: returned null, so the charge was never spent, the prod teleports never ran and the swing carried on to the target
 
 /// Handles the penetration value of our baton, called during baton_effect()
 /obj/item/melee/baton/proc/get_stun_penetration_value()

@@ -40,6 +40,8 @@
 	var/datum/weakref/executing_chip
 	/// Mode string the current execution was started with
 	var/execute_mode
+	/// Ckey of whoever started the current execution, for round metrics
+	var/executing_operator_ckey
 	/// Target the current execution was aimed at when warmup began (weakref)
 	var/datum/weakref/executing_target_ref
 	/// world.time when the current warmup started
@@ -373,6 +375,7 @@
 	executing_chip = WEAKREF(chip)
 	executing_target_ref = WEAKREF(target)
 	execute_mode = mode
+	executing_operator_ckey = metric_ckey(user)
 	warmup_total = max(1, proto.warmup * warmup_mult)
 	warmup_start_time = world.time
 	warmup_timer_id = addtimer(CALLBACK(src, PROC_REF(on_warmup_complete)), warmup_total, TIMER_STOPPABLE)
@@ -437,6 +440,7 @@
 	// Launch - the payload applies itself to the target in New()
 	var/datum/ew_payload/payload = new chip.payload_type(target, owner, mode)
 	chip.use_charge()
+	ship_metric_ew_payload(owner, target, chip, mode, executing_operator_ckey)
 	payload_cooldowns[chip.payload_type] = world.time + proto.cooldown
 	launched_payloads += WEAKREF(payload)
 	last_target_ref = WEAKREF(target)
@@ -476,6 +480,7 @@
 	executing_chip = null
 	executing_target_ref = null
 	execute_mode = null
+	executing_operator_ckey = null
 	warmup_start_time = 0
 	warmup_total = 0
 	update_power_draw()

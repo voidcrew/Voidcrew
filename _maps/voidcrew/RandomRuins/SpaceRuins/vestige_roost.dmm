@@ -244,17 +244,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/roost)
-"aP" = (
-/obj/item/gun/ballistic/automatic/pistol/no_mag{
-	pixel_x = 5;
-	pixel_y = -3
-	},
-/obj/item/ammo_casing/spent{
-	pixel_x = -4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/vestige/roost)
 "aQ" = (
 /obj/machinery/door/airlock/wood{
 	name = "Master's Cabin"
@@ -305,6 +294,17 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/roost)
 "aZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ba" = (
+/obj/item/melee/baseball_bat{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = -4
+	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/vestige/roost)
@@ -1265,7 +1265,7 @@ aU
 aU
 ab
 ad
-aP
+ba
 ai
 aF
 BQ

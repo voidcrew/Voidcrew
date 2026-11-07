@@ -39,5 +39,5 @@
 /mob/living/simple_animal/hostile/asteroid/polarbear/random/Initialize()
 	. = ..()
 	if(prob(15))
-		new /mob/living/simple_animal/hostile/asteroid/polarbear/warrior(loc)
+		spawn_npc_in_zone(/mob/living/simple_animal/hostile/asteroid/polarbear/warrior, loc, get_npc_spawn_context(), FALSE)
 		return INITIALIZE_HINT_QDEL

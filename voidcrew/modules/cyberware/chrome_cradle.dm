@@ -236,10 +236,14 @@
  */
 /obj/machinery/chrome_cradle/proc/begin_install(obj/item/organ/ware)
 	var/mob/living/carbon/patient = occupant
+	if(!istype(patient) || QDELETED(ware))
+		return
+	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+	if(!chrome || !cyberware_insert_check(ware, patient))
+		return
 	if(ware.loc != src && !patient.transferItemToLoc(ware, src))
 		balloon_alert(patient, "[ware.name] is stuck to you!")
 		return
-	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 	busy = TRUE
 	busy_action = "install"
 	busy_ware = ware
@@ -282,8 +286,18 @@
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 	if(!chrome)
 		return
+	// Recheck the final set after the sequence delay, while every incumbent is
+	// still installed. An intervening install or lost Governor must not evict it.
+	if(!cyberware_insert_check(ware, patient))
+		tray |= ware
+		balloon_alert(patient, "install refused!")
+		playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 40, TRUE)
+		wake_patient(patient)
+		SStgui.update_uis(src)
+		return
 	// Same-slot incumbents come out into the tray first, never the floor.
-	for(var/obj/item/organ/incumbent in ware.cyberware_get_incumbents(patient))
+	var/list/incumbents = ware.cyberware_get_incumbents(patient)
+	for(var/obj/item/organ/incumbent in incumbents)
 		incumbent.Remove(patient, special = TRUE)
 		incumbent.forceMove(src)
 		tray += incumbent
@@ -291,10 +305,16 @@
 	tray -= ware
 	chrome.grant_install_context(patient)
 	if(!ware.Insert(patient))
-		tray += ware
+		chrome.clear_install_context()
+		// Preserve the old installation even if a later insertion gate refuses.
+		for(var/obj/item/organ/incumbent in incumbents)
+			if(!QDELETED(incumbent) && incumbent.Insert(patient, special = TRUE))
+				tray -= incumbent
+		tray |= ware
 		balloon_alert(patient, "install refused!")
 		playsound(src, 'sound/machines/scanner/scanbuzz.ogg', 40, TRUE)
 		wake_patient(patient)
+		SStgui.update_uis(src)
 		return
 	do_sparks(3, FALSE, src)
 	patient.flash_act(visual = 1)
@@ -644,11 +664,9 @@
 		projected_capacity += chrome.capacity_bonus
 		for(var/obj/item/organ/incumbent in selected_ware.cyberware_get_incumbents(patient))
 			evicts += incumbent.name
+			projected_load -= get_installed_capacity_cost(incumbent)
 			var/datum/component/cyberware/incumbent_chrome = incumbent.GetComponent(/datum/component/cyberware)
-			if(!incumbent_chrome)
-				continue
-			projected_load -= incumbent_chrome.chrome_load
-			projected_capacity -= incumbent_chrome.capacity_bonus
+			projected_capacity -= incumbent_chrome?.capacity_bonus
 	return list(
 		"load" = projected_load,
 		"capacity" = projected_capacity,

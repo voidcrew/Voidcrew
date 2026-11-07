@@ -17,6 +17,8 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	/// slot_key() -> weakref to the ship a save made this round came from. In memory only, so a save from
 	/// an earlier round has none. It can't be loaded while that ship is still in service.
 	var/list/live_sources = list()
+	/// slot_key() -> weakref to the crew record of the ship a save made this round came from, so loading it restores that crew.
+	var/list/live_crews = list()
 
 /// The player's cached rows, or null if they aren't loaded. This is the only read ui_data may use.
 /datum/ship_saves/proc/saves_for(ckey)
@@ -80,6 +82,7 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	var/name = snapshot.ship_name
 	var/class = snapshot.class_name
 	var/datum/weakref/source = snapshot.source_ship
+	var/datum/weakref/crew_ref = snapshot.crew_record_ref
 	var/obj/structure/overmap/ship/ship = source?.resolve()
 	var/payload = encode(snapshot)
 	var/list/cost = survey["cost"]
@@ -109,6 +112,10 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		live_sources[key] = source
 	else
 		live_sources -= key
+	if(crew_ref)
+		live_crews[key] = crew_ref
+	else
+		live_crews -= key
 	new_load_ticket(ckey)
 	var/list/rows = cache[ckey] || list()
 	// Looked up again: a refresh may have replaced the rows during the write.
@@ -198,6 +205,7 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 		return "This record can't be read."
 	snapshot.captain_ckey = ckey
 	snapshot.source_ship = live_sources[slot_key(ckey, slot)]
+	snapshot.crew_record_ref = live_crews[slot_key(ckey, slot)]
 	return snapshot
 
 /// The save has been used. It leaves the cache now and the table in the background, because a console
@@ -210,6 +218,7 @@ GLOBAL_DATUM_INIT(ship_saves, /datum/ship_saves, new)
 	retrievals[key] = TRUE
 	spent_rows[key] = TRUE
 	live_sources -= key
+	live_crews -= key
 	new_load_ticket(ckey)
 	var/list/row = saved_row(ckey, slot)
 	if(row)

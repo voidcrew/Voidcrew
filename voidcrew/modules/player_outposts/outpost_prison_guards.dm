@@ -910,8 +910,10 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/turf/spot = guard_office_spot()
 	if(!spot)
 		return null
-	var/mob/living/basic/outpost_prison_guard/guard = new record.guard_type(spot)
+	var/datum/npc_spawn_context/context = new(outpost, role = "exempt")
+	var/mob/living/basic/outpost_prison_guard/guard = spawn_npc_in_zone(record.guard_type, spot, context, FALSE)
 	guard.join(src, record)
+	context.finalize()
 	record.away_left = 0
 	guard.beam_in()
 	if(isnull(guard_rounds_left))

@@ -282,16 +282,6 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/engine/air,
 /area/ruin/space/has_grav/atmosasteroid)
-"rg" = (
-/obj/machinery/suit_storage_unit/standard_unit,
-/obj/effect/turf_decal/tile/yellow/anticorner{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/turf/open/floor/iron/co2_pressurized,
-/area/ruin/space/has_grav/atmosasteroid)
 "rp" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon{
 	dir = 8
@@ -675,6 +665,18 @@
 /obj/machinery/light/small/broken/directional/east,
 /turf/open/floor/engine/co2/equalized_with_regular_air,
 /area/ruin/space/has_grav/atmosasteroid)
+"SS" = (
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/effect/turf_decal/tile/yellow/anticorner{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/co2_pressurized,
+/area/ruin/space/has_grav/atmosasteroid)
 "TP" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon{
 	dir = 8
@@ -856,7 +858,7 @@ pU
 hN
 fm
 gG
-rg
+SS
 gU
 kJ
 Uz

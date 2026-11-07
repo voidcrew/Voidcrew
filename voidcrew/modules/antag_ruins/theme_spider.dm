@@ -1125,7 +1125,9 @@
 		next_send_at = world.time + VESTIGE_TREMOR_RESPITE
 		return
 	next_send_at = world.time + VESTIGE_TREMOR_RESPITE // floor, so an instant kill can't machine-gun the night
-	var/mob/living/basic/vestige_silk_thief/filcher = new(pick(perches))
+	line.get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(line)
+	var/mob/living/basic/vestige_silk_thief/filcher = spawn_npc_in_zone(/mob/living/basic/vestige_silk_thief, pick(perches), context, FALSE)
 	thieves[filcher] = line
 	line.pinged = FALSE // every new thief must announce its own first bite
 	register_loan(filcher)
@@ -1134,6 +1136,7 @@
 	// The lifespan rides the THIEF, not the trial. Orphans always clean themselves up
 	addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, dissolve)), VESTIGE_TREMOR_THIEF_LIFESPAN)
 	filcher.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, line)
+	context.finalize()
 	if(isliving(keeper))
 		to_chat(keeper, span_warning("The web shivers. Something small is moving near your line to the [dir2text(get_dir(keeper, line)) || "very spot you stand on"]."))
 		playsound(keeper, 'sound/effects/snap.ogg', 25, TRUE)

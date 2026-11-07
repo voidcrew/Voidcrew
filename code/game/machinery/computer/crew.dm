@@ -204,7 +204,8 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 // VOIDCREW EDIT END
 
 	var/list/results = list()
-	for(var/tracked_mob in GLOB.suit_sensors_list)
+	// VOIDCREW EDIT: nanite Monitoring shares the same scoped sensor feed (voidcrew/modules/nanites).
+	for(var/tracked_mob in (GLOB.suit_sensors_list | SSnanites.nanite_monitored_mobs))
 		if(!tracked_mob)
 			stack_trace("Null entry in suit sensors list.")
 			continue
@@ -225,25 +226,26 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 		if(!voidcrew_crew_sensor_in_scope(tracked_living_mob, pos, hull, z, source_turf)) // VOIDCREW EDIT: crew sensor integration: scope and cache readings by the requesting device (voidcrew/edits/machinery/crew_monitor.dm)
 			continue
 
-		var/mob/living/carbon/human/tracked_human = tracked_living_mob
+		// VOIDCREW EDIT CHANGE START - nanites: Monitoring reports without a uniform (voidcrew/modules/nanites).
+		var/monitored = (tracked_living_mob in SSnanites.nanite_monitored_mobs)
+		var/obj/item/clothing/under/uniform
+		var/sensor_mode = SENSOR_COORDS
+		if(!monitored)
+			var/mob/living/carbon/human/tracked_human = tracked_living_mob
+			if(!ishuman(tracked_human))
+				stack_trace("Non-human mob is in suit_sensors_list: [tracked_living_mob] ([tracked_living_mob.type])")
+				continue
 
-		// Check their humanity.
-		if(!ishuman(tracked_human))
-			stack_trace("Non-human mob is in suit_sensors_list: [tracked_living_mob] ([tracked_living_mob.type])")
-			continue
+			uniform = tracked_human.w_uniform
+			if(!istype(uniform))
+				stack_trace("Human without a suit sensors compatible uniform is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform?.type])")
+				continue
 
-		// Check they have a uniform
-		var/obj/item/clothing/under/uniform = tracked_human.w_uniform
-		if (!istype(uniform))
-			stack_trace("Human without a suit sensors compatible uniform is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform?.type])")
-			continue
-
-		// Check if their uniform is in a compatible mode.
-		if((uniform.has_sensor == NO_SENSORS) || !uniform.sensor_mode)
-			stack_trace("Human without active suit sensors is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
-			continue
-
-		var/sensor_mode = uniform.sensor_mode
+			if((uniform.has_sensor == NO_SENSORS) || !uniform.sensor_mode)
+				stack_trace("Human without active suit sensors is in suit_sensors_list: [tracked_human] ([tracked_human.type]) ([uniform.type])")
+				continue
+			sensor_mode = uniform.sensor_mode
+		// VOIDCREW EDIT CHANGE END
 
 		// The entry for this human
 		var/list/entry = list(
@@ -262,7 +264,7 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 				entry["ijob"] = jobs[trim_assignment]
 
 		// Broken sensors show garbage data
-		if (uniform.has_sensor == BROKEN_SENSORS)
+		if (!monitored && uniform.has_sensor == BROKEN_SENSORS) // VOIDCREW EDIT: nanite Monitoring has no uniform.
 			entry["life_status"] = rand(0,1)
 			entry["area"] = pick_list (ION_FILE, "ionarea")
 			entry["oxydam"] = rand(0,175)

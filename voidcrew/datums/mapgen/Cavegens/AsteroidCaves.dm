@@ -63,9 +63,7 @@
  * Same recipe as /datum/map_generator/cave_generator/asteroid above (cellular-automata
  * rock/sand mix, mining mob/geyser spawn tables, /area/centcom/asteroid/voidcrew ground)
  * but scattered as several independent blobs instead of one solid field, with real vacuum
- * left between and around them - "an asteroid field", not a single asteroid. Ore seeding
- * itself is handled separately by seed_asteroid_ore_block() (events.dm) after generation,
- * the way space ruin asteroid signals used to be seeded before that category was retired.
+ * left between and around them - "an asteroid field", not a single asteroid. Ore profiles are selected before the mineral turfs initialize; there is no second ore pass.
  *
  * Unlike /datum/map_generator/cave_generator/asteroid, weighted_* vars are used (not the
  * expanded open_turf_types/closed_turf_types/mob_spawn_list/feature_spawn_list directly) -
@@ -75,7 +73,7 @@
 /datum/map_generator/cave_generator/asteroid_field
 	name = "Asteroid Field Generator"
 	weighted_open_turf_types = list(/turf/open/misc/asteroid/airless = 1)
-	weighted_closed_turf_types = list(/turf/closed/mineral/random = 1)
+	weighted_closed_turf_types = list(/turf/closed/mineral/random/asteroid_field = 1)
 
 	feature_spawn_chance = 1
 	weighted_feature_spawn_list = list(/obj/structure/geyser/random = 1)
@@ -100,12 +98,14 @@
 	var/blob_radius_max = EVENT_FIELD_BLOB_RADIUS_MAX
 
 /datum/map_generator/cave_generator/asteroid_field/minor
+	weighted_closed_turf_types = list(/turf/closed/mineral/random/asteroid_field/minor = 1)
 	blob_count_min = 22
 	blob_count_max = 28
 	blob_radius_min = 4
 	blob_radius_max = 7
 
 /datum/map_generator/cave_generator/asteroid_field/majour
+	weighted_closed_turf_types = list(/turf/closed/mineral/random/asteroid_field/majour = 1)
 	blob_count_min = 46
 	blob_count_max = 58
 	blob_radius_min = 6

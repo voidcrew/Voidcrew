@@ -1,0 +1,149 @@
+{
+ "category": "accessories",
+ "groups": [
+  "pins and trophies",
+  "medals and tags",
+  "pockets and tribal wear"
+ ],
+ "items": {
+  "/obj/item/clothing/accessory/anti_sec_pin": {
+   "confidence": "medium",
+   "group": "pins and trophies",
+   "hash": "50509d63cab531ef",
+   "name": "subversive pin",
+   "note": "While worn on a uniform, the wearer is permanently flagged wanted: a wanted icon on security HUDs and the maximum threat score (10) from anything that assesses threat, such as secbots and turrets. Hitting another person in a uniform with it pins it on them after a 5 second silent do_after.",
+   "rank": 2,
+   "reason": "Marks the wearer as wanted on every scanner, and can be pinned on someone else in 5 quiet seconds. A prank that at worst draws fire from a secbot. Black market only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/dogtag/borg_ready": {
+   "confidence": "high",
+   "group": "medals and tags",
+   "hash": "a07f3e0ac543b1b5",
+   "name": "Pre-Approved Cyborg Candidate dogtag",
+   "rank": 2,
+   "reason": "A dogtag that adds a line of text when people examine you. Nothing reads it.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/medal/plasma/nobel_science": {
+   "confidence": "high",
+   "group": "medals and tags",
+   "hash": "eaf843ea06b64d45",
+   "name": "nobel sciences award",
+   "rank": 1,
+   "reason": "A medal. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/medal/silver/emergency_services/medical": {
+   "confidence": "high",
+   "group": "medals and tags",
+   "hash": "4ecf532c87a3e4bb",
+   "name": "emergency services award",
+   "rank": 1,
+   "reason": "A medal. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/pandora_hope": {
+   "confidence": "high",
+   "group": "pins and trophies",
+   "hash": "8a083db8e03b9329",
+   "name": "Hope",
+   "note": "While attached to a worn uniform, gives the wearer a permanent +6 mood event that is cleared when the uniform is taken off or the pin removed. Nothing else; the pin itself is fireproof.",
+   "rank": 1,
+   "reason": "A trophy from a boosted pandora. A permanent +6 mood and nothing else. Fine to brag with.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/pocketprotector": {
+   "confidence": "high",
+   "group": "pockets and tribal wear",
+   "hash": "5d3bf9fc80541aa4",
+   "name": "pocket protector",
+   "rank": 1,
+   "reason": "Holds three pens or similar tiny things on your uniform. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/pocketprotector/cosmetology": {
+   "confidence": "medium",
+   "group": "pockets and tribal wear",
+   "hash": "bfec2620f1e9cd82",
+   "name": "pocket protector",
+   "rank": 1,
+   "reason": "Holds three pens or similar tiny things on your uniform, and comes with lipstick. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/pocketprotector/full": {
+   "confidence": "medium",
+   "group": "pockets and tribal wear",
+   "hash": "091cb0060148a35a",
+   "name": "pocket protector",
+   "rank": 1,
+   "reason": "Holds three pens or similar tiny things on your uniform, and comes with three pens. Looks only.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/skilt": {
+   "confidence": "high",
+   "group": "pockets and tribal wear",
+   "hash": "3fffab3f7cce5a9d",
+   "name": "sinew skirt",
+   "rank": 2,
+   "reason": "A skirt of bone and sinew. No armor, despite the look. Survives fire and lava.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/accessory/skullcodpiece": {
+   "confidence": "high",
+   "group": "pockets and tribal wear",
+   "hash": "0d8454024e55e718",
+   "name": "skull codpiece",
+   "rank": 2,
+   "reason": "A skull ornament of bone and goliath hide. No armor, despite the look. Survives fire and lava.",
+   "tier": "none"
+  }
+ },
+ "method": "No formula. Checked each one for real effects in the code. Nothing here gives armor or changes a fight, so everything is none.",
+ "unrated": {
+  "/obj/item/clothing/accessory": "abstract",
+  "/obj/item/clothing/accessory/armband": "cosmetic",
+  "/obj/item/clothing/accessory/armband/cargo": "cosmetic",
+  "/obj/item/clothing/accessory/armband/deputy": "cosmetic",
+  "/obj/item/clothing/accessory/armband/engine": "cosmetic",
+  "/obj/item/clothing/accessory/armband/hydro": "cosmetic",
+  "/obj/item/clothing/accessory/armband/med": "cosmetic",
+  "/obj/item/clothing/accessory/armband/medblue": "cosmetic",
+  "/obj/item/clothing/accessory/armband/science": "cosmetic",
+  "/obj/item/clothing/accessory/clown_enjoyer_pin": "no route",
+  "/obj/item/clothing/accessory/deaf_pin": "cosmetic",
+  "/obj/item/clothing/accessory/debt_payer_pin": "cosmetic",
+  "/obj/item/clothing/accessory/dogtag": "cosmetic",
+  "/obj/item/clothing/accessory/dogtag/allergy": "cosmetic",
+  "/obj/item/clothing/accessory/lawyers_badge": "no route",
+  "/obj/item/clothing/accessory/maidapron": "cosmetic",
+  "/obj/item/clothing/accessory/medal": "cosmetic",
+  "/obj/item/clothing/accessory/medal/bronze_heart": "cosmetic",
+  "/obj/item/clothing/accessory/medal/conduct": "cosmetic",
+  "/obj/item/clothing/accessory/medal/gold": "cosmetic",
+  "/obj/item/clothing/accessory/medal/gold/captain": "cosmetic",
+  "/obj/item/clothing/accessory/medal/gold/heroism": "cosmetic",
+  "/obj/item/clothing/accessory/medal/gold/ordom": "cosmetic",
+  "/obj/item/clothing/accessory/medal/med_medal": "cosmetic",
+  "/obj/item/clothing/accessory/medal/med_medal2": "cosmetic",
+  "/obj/item/clothing/accessory/medal/plasma": "cosmetic",
+  "/obj/item/clothing/accessory/medal/ribbon": "cosmetic",
+  "/obj/item/clothing/accessory/medal/ribbon/cargo": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/bureaucracy": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/elder_atmosian": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/emergency_services": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/emergency_services/engineering": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/excellence": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/security": "cosmetic",
+  "/obj/item/clothing/accessory/medal/silver/valor": "cosmetic",
+  "/obj/item/clothing/accessory/mime_fan_pin": "no route",
+  "/obj/item/clothing/accessory/press_badge": "no route",
+  "/obj/item/clothing/accessory/pride": "cosmetic",
+  "/obj/item/clothing/accessory/spy_bug": "no route",
+  "/obj/item/clothing/accessory/talisman": "cosmetic",
+  "/obj/item/clothing/accessory/vest_sheriff": "cosmetic",
+  "/obj/item/clothing/accessory/waistcoat": "cosmetic",
+  "/obj/item/clothing/accessory/waistcoat/solgov": "cosmetic"
+ }
+}

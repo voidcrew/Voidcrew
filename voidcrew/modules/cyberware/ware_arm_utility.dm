@@ -160,7 +160,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	name = "\improper Fixer's Fingers"
-	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles, and the servo tendons behind them run any tool job about a quarter faster than bare hands."
+	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles, and the servo tendons behind them make everything you do with your hands quicker."
 	icon_state = "fixers"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1

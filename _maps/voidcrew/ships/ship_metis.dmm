@@ -19,6 +19,11 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/science/xenobiology)
+"ad" = (
+/obj/structure/cable,
+/obj/machinery/porta_turret/ai/ruin,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/metis/ai_core)
 "ag" = (
 /obj/structure/table/reinforced,
 /obj/machinery/button/door{
@@ -499,6 +504,10 @@
 /obj/item/bodypart/arm/right/robot,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/science/robotics)
+"kg" = (
+/obj/item/gun/energy/laser,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/science)
 "kj" = (
 /obj/effect/decal/cleanable/blood,
 /obj/machinery/light/broken,
@@ -527,11 +536,6 @@
 "kD" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/metis/maintenance)
-"kN" = (
-/obj/item/gun/energy/laser,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/bridge)
 "kZ" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -964,6 +968,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/fore)
+"sP" = (
+/obj/item/gun/energy/laser,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/bridge)
 "sQ" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/titanium/tiled,
@@ -1391,11 +1400,6 @@
 /obj/machinery/airalarm/directional/north,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/aft)
-"Cn" = (
-/obj/structure/cable,
-/obj/machinery/porta_turret/ai,
-/turf/open/floor/mineral/titanium/tiled/purple,
-/area/shuttle/voidcrew/metis/ai_core)
 "Co" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
@@ -1473,10 +1477,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/aft)
-"Dx" = (
-/obj/item/gun/energy/laser,
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/metis/science)
 "DM" = (
 /obj/structure/sink/directional/north,
 /obj/effect/decal/cleanable/dirt,
@@ -3187,7 +3187,7 @@ ND
 Sd
 lk
 nr
-Cn
+ad
 SA
 nr
 fo
@@ -3232,7 +3232,7 @@ Lo
 sj
 VA
 MR
-kN
+sP
 sj
 Qu
 Wi
@@ -3355,7 +3355,7 @@ NW
 TH
 lk
 nr
-Cn
+ad
 QT
 nr
 fo
@@ -3515,7 +3515,7 @@ hr
 lJ
 yD
 BM
-Dx
+kg
 fa
 sE
 eI

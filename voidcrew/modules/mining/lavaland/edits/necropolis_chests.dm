@@ -56,3 +56,19 @@
 	if(!contents.len)
 		CRASH("Failed to generate loot. loot number: [loot][mod ? "subloot: [mod]" : null]")
 	spawned_loot = TRUE
+
+/obj/structure/closet/crate/necropolis/colossus
+	/// Replaced with the original Colossus's roll when it creates this chest.
+	var/ladder_weapon_drop
+
+/obj/structure/closet/crate/necropolis/colossus/Initialize(mapload)
+	. = ..()
+	ladder_weapon_drop = npc_ladder_red_drop()
+
+/obj/structure/closet/crate/necropolis/colossus/PopulateContents()
+	// Replace upstream's unconditional weapon constructor; do not spawn then delete it.
+	var/crystal_type = pick(subtypesof(/obj/machinery/anomalous_crystal))
+	new crystal_type(src)
+	new /obj/item/organ/vocal_cords/colossus(src)
+	if(ladder_weapon_drop)
+		new /obj/item/cain_and_abel(src)

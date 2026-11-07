@@ -237,7 +237,7 @@
  *
  * Remote purchase with pod delivery. Used in hand, it lists Halcyon's core
  * shelf (credit-priced lines only, no voucher stock, no intel, no barter)
- * and sells at the counter's own price, favor discount included. The goods
+ * and sells at the counter's own price. The goods
  * arrive by supply pod on the beacon's position after a short flight instead
  * of over the counter, stock decrements like any sale, and the beacon burns
  * out after three drops. Works anywhere with a floor: ship decks, planets,
@@ -352,7 +352,6 @@
 
 	// Charge exactly like the counter (try_purchase minus the over-the-counter
 	// dispense): validate the account, take the money, decrement shared stock.
-	// Favor discounts apply through get_credit_price(user), same as the shelf.
 	var/credit_price = sku.get_credit_price(user)
 	var/datum/bank_account/account
 	if(credit_price > 0)

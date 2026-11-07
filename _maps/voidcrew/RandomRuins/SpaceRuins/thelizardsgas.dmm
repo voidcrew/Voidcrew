@@ -399,14 +399,6 @@
 "LA" = (
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/thelizardsgas)
-"LT" = (
-/obj/structure/sign/warning/electric_shock/directional/north,
-/obj/machinery/suit_storage_unit/standard_unit,
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/thelizardsgas)
 "MB" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/smart/simple/yellow/hidden{
@@ -510,6 +502,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/thelizardsgas)
+"VL" = (
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/machinery/suit_storage_unit/ruin_zone{
+	mask_type = /obj/item/clothing/mask/breath
+	},
+/obj/machinery/power/terminal{
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/thelizardsgas)
@@ -948,7 +950,7 @@ CA
 CA
 Qg
 mR
-LT
+VL
 xy
 Kw
 mR

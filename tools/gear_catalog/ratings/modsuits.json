@@ -1,0 +1,1511 @@
+{
+ "category": "modsuits",
+ "groups": [
+  "combat suits",
+  "work suits",
+  "defence modules",
+  "weapons and fight modules",
+  "stealth and locks",
+  "sight and scanners",
+  "mobility modules",
+  "storage and hauling",
+  "medical modules",
+  "work tools",
+  "novelties",
+  "parts and cores"
+ ],
+ "items": {
+  "/obj/item/mod/construction/boots": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "15f9674ef4c95eb9",
+   "name": "MOD boots",
+   "rank": 12,
+   "reason": "A suit part. Prints at round start, sells for a little.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/broken_core": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "15f9674ef4c95eb9",
+   "name": "broken MOD core",
+   "rank": 16,
+   "reason": "A dead core that a screwdriver repairs. Found in one ruin.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/chestplate": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "15f9674ef4c95eb9",
+   "name": "MOD chestplate",
+   "rank": 9,
+   "reason": "A suit part. Prints at round start, sells for a little.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/gauntlets": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "15f9674ef4c95eb9",
+   "name": "MOD gauntlets",
+   "rank": 11,
+   "reason": "A suit part. Prints at round start, sells for a little.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/helmet": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "15f9674ef4c95eb9",
+   "name": "MOD helmet",
+   "rank": 10,
+   "reason": "A suit part. Prints at round start, sells for a little.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/lavalandcore": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "c9462fb6b82b0830",
+   "name": "plasma flower",
+   "rank": 17,
+   "reason": "Wires turn it into a plasma core. Found in one ruin.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "b72665327cce231d",
+   "name": "MOD external plating",
+   "rank": 6,
+   "reason": "Makes the plain base suit from an empty frame. Prints at round start.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/atmospheric": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "29e5d8d715ae44d3",
+   "name": "MOD external plating",
+   "rank": 2,
+   "reason": "Makes an atmospherics suit from an empty frame.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/civilian": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "b9150c715c5405f8",
+   "name": "MOD external plating",
+   "rank": 5,
+   "reason": "Makes a civilian suit from an empty frame. Prints at round start.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/cosmohonk": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "a86827a561629de7",
+   "name": "MOD external plating",
+   "rank": 7,
+   "reason": "Makes a clown suit with laser and energy 20 and slowdown 1.25 from an empty frame.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/engineering": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "39c264872d9eb2af",
+   "name": "MOD external plating",
+   "rank": 3,
+   "reason": "Makes an engineering suit from an empty frame.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/medical": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "74fb339dddced662",
+   "name": "MOD external plating",
+   "rank": 4,
+   "reason": "Makes a medical suit from an empty frame.",
+   "tier": "green"
+  },
+  "/obj/item/mod/construction/plating/security": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "82a972303c58113b",
+   "name": "MOD external plating",
+   "rank": 1,
+   "reason": "Makes a security suit, the yellow armor baseline, from an empty frame.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/construction/shell": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "d2dc57bd3ea277de",
+   "name": "MOD shell",
+   "rank": 8,
+   "reason": "The suit frame. A few printed parts plus a core and plating make a green suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "626351cf1634eebf",
+   "name": "MOD control unit",
+   "note": "The plain unit a finished MOD shell becomes: armor, complexity and slowdown come from the plating's theme, power from the core fitted during assembly, and it holds only the theme's built-in modules. With no charge an active suit shuts off, and an EMP on an active suit switches off the selected module and burns the wearer for 5 divided by severity.",
+   "rank": 11,
+   "reason": "The bare suit a finished shell becomes, with no modules. Armor and speed come from the plating used: the plain plating gives melee 10, the rest 5, slowdown 0.75.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/advanced": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "6884e9f4a18c1ec3",
+   "name": "MOD control unit",
+   "rank": 2,
+   "reason": "Best work suit: magboots with no slowdown, jetpack, large storage, bomb 50, slowdown 0.5. Melee 15, bullet 5, laser 20, energy 15 is far below a vest.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/control/pre_equipped/atmospheric": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "792016e293f96303",
+   "name": "MOD control unit",
+   "rank": 6,
+   "reason": "Engineering suit with a resin mister and t-ray. Combat ratings 15 at best, slowdown 1.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/civilian": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "d2d95ffd66dcf889",
+   "name": "MOD control unit",
+   "rank": 9,
+   "reason": "Anchor. Cheapest sealed suit with no slowdown. Every combat rating 5, capacity 12, three basic modules.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/empty/elite": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "3b853fd46b009493",
+   "name": "MOD control unit",
+   "rank": 3,
+   "reason": "Anchor. Best armor on any shelf: melee 60, bullet 60, laser 50, energy 50 head to toe, no slowdown, 19 capacity free. Heavy armor gets 80 melee and bullet at slowdown 3.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/empty/ninja": {
+   "confidence": "medium",
+   "group": "combat suits",
+   "hash": "36ab071c83e7ad20",
+   "name": "MOD control unit",
+   "rank": 1,
+   "reason": "Mission prize. Hacks doors on touch, drains any power source, knocks people down on touch, nets a target at 9 tiles and breaks stuns, all built in. Melee only: it can't fire guns.",
+   "tier": "above"
+  },
+  "/obj/item/mod/control/pre_equipped/empty/syndicate": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "8b093fa48438c930",
+   "name": "MOD control unit",
+   "rank": 10,
+   "reason": "Anchor. The red baseline: melee 40, bullet 50, laser 30, energy 30 head to toe, no slowdown, 20 capacity, night vision built in.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/engineering": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "1b1013653a1d9e02",
+   "name": "MOD control unit",
+   "rank": 5,
+   "reason": "Ship engineer's suit: magboots, tether, weld and radiation protection, laser 20 at best, slowdown 1.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/infiltrator": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "279ae3aa66db98a5",
+   "name": "MOD control unit",
+   "rank": 5,
+   "reason": "Melee 50, bullet 50, laser 40, energy 50, no slowdown. The wearer shows as Unknown, walks silently, is flash-proof and has night vision. 9 capacity free.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/interdyne": {
+   "confidence": "medium",
+   "group": "combat suits",
+   "hash": "6a2c46bdf82db9ff",
+   "name": "MOD control unit",
+   "rank": 8,
+   "reason": "All four combat ratings 30, and the only suit that makes you faster than bare legs. Ships with a combat defibrillator that paralyses on touch. Burns power twice as fast.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/loader": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "a5be4f86d7e526f5",
+   "name": "MOD control unit",
+   "rank": 7,
+   "reason": "No slowdown, a launch dash, a crate clamp and crate magnet. Melee 15, everything else 5, and only 10 capacity.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/magnate": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "b9762fb9cd75cc6b",
+   "name": "MOD control unit",
+   "rank": 4,
+   "reason": "Melee 40, bullet 50, laser 50, energy 60, slowdown 0.25, advanced jetpack, recall implant, 10 capacity free. Mission prize.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/medical": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "9c64320554290cce",
+   "name": "MOD control unit",
+   "rank": 8,
+   "reason": "Doctor's suit: health analyzer and quick carry, every combat rating 5, slowdown 0.5.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/mining": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "fc78888697918026",
+   "name": "MOD control unit",
+   "rank": 1,
+   "reason": "Planet specialist. Weak on a ship, but ten steps on sand or ash give melee 60, bullet 15, laser 25, energy 25 and more speed, plus instant drilling and a lava-proof ball mode.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/control/pre_equipped/nuclear/unrestricted": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "a6df756f60b330db",
+   "name": "MOD control unit",
+   "rank": 6,
+   "reason": "Syndicate suit fully fitted: melee 40, bullet 50, laser 30, energy 30, no slowdown, advanced jetpack, jump jet, night vision, EMP shield. From red-zone ruin storage.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/rescue": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "b6582d8e06c1ec03",
+   "name": "MOD control unit",
+   "rank": 3,
+   "reason": "Medic's light suit: slowdown 0.25, fastest carry, injector, large storage. No combat rating over 10.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/research": {
+   "confidence": "medium",
+   "group": "work suits",
+   "hash": "cf3459aec36dffd4",
+   "name": "MOD control unit",
+   "rank": 4,
+   "reason": "Most room of any public suit (20 capacity, 8 used) and bomb 100, but the worst slowdown at 1.25 and armor well under a vest.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/safeguard": {
+   "confidence": "medium",
+   "group": "combat suits",
+   "hash": "285988c7914aa399",
+   "name": "MOD control unit",
+   "rank": 9,
+   "reason": "Melee 45, bullet 25, laser 30, energy 40, slowdown 0.25, projectile dampener, shove-proofing and jetpack. No spare capacity. Mission prize.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/security": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "c646e3fb6b7650d5",
+   "name": "MOD control unit",
+   "rank": 11,
+   "reason": "Anchor. The yellow baseline: a vest's melee, laser and energy on the whole body but half its bullet armor, slowdown 0.5, jetpack, gun harness, prisoner bag.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/control/pre_equipped/standard": {
+   "confidence": "high",
+   "group": "work suits",
+   "hash": "7faaddc731046e8b",
+   "name": "MOD control unit",
+   "rank": 10,
+   "reason": "Plain base suit: melee 10, the rest 5, slowdown 0.75. Slower than the civilian suit and not sold.",
+   "tier": "green"
+  },
+  "/obj/item/mod/control/pre_equipped/traitor": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "4a6b0e8ca0788049",
+   "name": "MOD control unit",
+   "rank": 7,
+   "reason": "Syndicate armor with the fittings in: jetpack, Syndicate storage, night vision, EMP shield, gun harness, recall implant, DNA lock. 7 capacity free.",
+   "tier": "red"
+  },
+  "/obj/item/mod/control/pre_equipped/traitor_elite": {
+   "confidence": "high",
+   "group": "combat suits",
+   "hash": "35e8c68dfd2840e6",
+   "name": "MOD control unit",
+   "rank": 2,
+   "reason": "The best suit players can get: melee 60, bullet 60, laser 50, energy 50, no slowdown, advanced jetpack, night vision and a double-size cell. Mission prize.",
+   "tier": "red"
+  },
+  "/obj/item/mod/core/ethereal": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "ad228dff46e2e0f4",
+   "name": "MOD ethereal core",
+   "rank": 13,
+   "reason": "Runs a suit on the wearer's own charge at a tenth of the usual draw. Crafted, and only helps ethereals.",
+   "tier": "green"
+  },
+  "/obj/item/mod/core/plasma": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "ee8c14d444d6a1b8",
+   "name": "MOD plasma core",
+   "rank": 14,
+   "reason": "Half the charge of a normal suit's cell, but refuels from plasma. The mining suit's core.",
+   "tier": "green"
+  },
+  "/obj/item/mod/core/plasma/lavaland": {
+   "confidence": "medium",
+   "group": "parts and cores",
+   "hash": "b2fce71e496c45d0",
+   "name": "MOD plasma flower core",
+   "rank": 15,
+   "reason": "A plasma core with half again the charge, wired up from a plasma flower found in one ruin. While the suit runs it sheds pollen and up to three butterflies.",
+   "tier": "green"
+  },
+  "/obj/item/mod/core/standard": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "880961e3f76c73ab",
+   "name": "MOD standard core",
+   "rank": 15,
+   "reason": "The suit's power core. Every suit has one; needed to build your own.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/active_sonar": {
+   "confidence": "medium",
+   "group": "sight and scanners",
+   "hash": "24bc19e6a684de28",
+   "name": "MOD active sonar",
+   "note": "Using it takes a 1.1 second wind-up, then marks every living creature within view range, through walls, on the wearer's screen for 3 seconds and plays a loud ping others can hear; 15 second cooldown. While the suit is on and the use cooldown is over it also sweeps one of eight 45-degree sectors every 0.5 seconds with small brief pings. Only the wearer sees the markers.",
+   "rank": 2,
+   "reason": "A loud ping marks every living thing in view range through walls for 3 seconds, every 15 seconds. Poor man's thermals that tell everyone nearby.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/adrenaline_boost": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "eb4f7e32fd73d50c",
+   "name": "MOD adrenaline boost module",
+   "note": "Works while stunned or paralysed. Using it clears all stun and immobility, restores 200 stamina, removes stutter and injects 5 units of stimulants; it burns 15 of its 20 units of radium and 7 seconds later injects the remaining 5 into the wearer. 12 second cooldown, and it cannot fire again until refilled to 20 units of radium from an open container used on the suit. Cannot be removed.",
+   "rank": 2,
+   "reason": "Clears every stun, restores 200 stamina and injects stimulants even while paralysed. Needs a refill of 20 radium between uses. Can't be removed.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/anomaly_locked/antigrav": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "a0a3dddef61c4290",
+   "name": "MOD anti-gravity module",
+   "rank": 11,
+   "reason": "Turn your own gravity off. Needs a gravitational core to do anything.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/anomaly_locked/antigrav/prebuilt/locked": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "07dae34f874c5628",
+   "name": "MOD anti-gravity module",
+   "rank": 10,
+   "reason": "Turn your own gravity off, with the core sealed inside. Handy on rough ground, little else.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/anomaly_locked/kinesis": {
+   "confidence": "medium",
+   "group": "storage and hauling",
+   "hash": "6e5bf78a0ab0bf2e",
+   "name": "MOD kinesis module",
+   "note": "Does nothing without a gravitational anomaly core installed. Lets the wearer hold any unanchored item, structure or machine (or a dead body) within 8 tiles in view, drag it around with the cursor, then fling it up to 8 tiles; charge drains on grabbing and continuously while holding. A thrown dense structure or machine deals 15 damage to what it hits (a non-dense one deals 8 and damages itself); a held item that reaches the wearer's tile goes into their hand, and a held item pushed into something swings at it with the wearer's melee attack once per second.",
+   "rank": 2,
+   "reason": "With a gravitational core, grab any loose thing within 8 tiles and fling it for 15 damage or pull it to your hand. Great for looting, a sideshow in a fight.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/anomaly_locked/teleporter": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "d8df3a5a766634f1",
+   "name": "MOD teleporter module",
+   "rank": 1,
+   "reason": "With a bluespace core worth about 12,000 cr, blink 9 tiles in one second every 4 seconds, across windows and grilles. Does nothing without the core.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/ash_accretion": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "d5306510d567092f",
+   "name": "MOD ash accretion module",
+   "note": "Each step onto sand, asteroid, ash or dirt adds a layer of ash armor to every suit part (up to 10 layers; per layer +4 melee, +1 bullet, +2 laser, +2 energy, +4 bomb), and at 10 layers the wearer moves faster. Each step onto any other floor except grass, snow, ice, ironsand, lava and water removes a layer. Also grants immunity to ash and snow storms; cannot be removed.",
+   "rank": 4,
+   "reason": "Each step on sand or ash adds armor up to melee +40, bullet +10, laser +20, energy +20, bomb +40, then a speed boost. Lost on normal floors. Built into the mining suit.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/atrocinator": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "e020d86113c74663",
+   "name": "MOD atrocinator module",
+   "note": "While on, the wearer falls upward (inverted gravity), has the normal footstep sounds replaced, passes over tables and speaks upside-down. Moving under an open-space tile lifts them a level; on a planetary-atmosphere turf with no level above (a planet surface) the wearer is stunned and deleted after 5 seconds, and from then on the suit cannot be switched off. Cannot be fitted with magboots or an anti-gravity module.",
+   "rank": 13,
+   "reason": "You fall upward and pass over tables as a joke. Using it on a planet surface erases you.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/balloon": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "3a81ca6a8ac27662",
+   "name": "MOD balloon blower module",
+   "rank": 9,
+   "reason": "Blows up balloons.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/bikehorn": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "9df156b2d9810385",
+   "name": "MOD bike horn module",
+   "rank": 10,
+   "reason": "Honk.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/chameleon": {
+   "confidence": "high",
+   "group": "stealth and locks",
+   "hash": "460ea22791f4b9d6",
+   "name": "MOD chameleon module",
+   "note": "Changes the control unit's name, description and sprite to any backpack-type item while the suit is unpowered; the disguise drops when the suit is activated or the module is used again. Appearance only, nothing else changes.",
+   "rank": 7,
+   "reason": "Makes an unpowered suit look like a backpack. Appearance only.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/circuit": {
+   "confidence": "low",
+   "group": "work tools",
+   "hash": "a12c427f0b3a61d7",
+   "name": "MOD circuit adapter module",
+   "note": "A shell that holds an integrated circuit: the circuit can read the wearer and suit state and toggle suit deployment, activation and module selection, and its actions can be pinned to the wearer's buttons. The circuit's power draw is paid from the suit cell; what it does depends entirely on the circuit installed.",
+   "rank": 7,
+   "reason": "Holds an integrated circuit that can read and control the suit. Worth whatever you build.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/clamp": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "d29559f0132e6c59",
+   "name": "MOD hydraulic clamp module",
+   "note": "Loads an adjacent crate or large delivery box in 3 seconds (up to 3 at a time) and sets one back down on a clear tile in 3 seconds; each load or unload costs charge. A crate containing a human-sized or larger mob is refused, and stored crates drop out when the suit powers down. The loader variant takes 1 second per crate, carries 5 and cannot be removed.",
+   "rank": 8,
+   "reason": "Carries 3 crates at a time, 3 seconds each way.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/clamp/loader": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "9c704c3f5af08494",
+   "name": "MOD loader hydraulic clamp module",
+   "note": "Loads an adjacent crate or large delivery box in 3 seconds (up to 3 at a time) and sets one back down on a clear tile in 3 seconds; each load or unload costs charge. A crate containing a human-sized or larger mob is refused, and stored crates drop out when the suit powers down. The loader variant takes 1 second per crate, carries 5 and cannot be removed.",
+   "rank": 7,
+   "reason": "Crate clamp with room for 5 and a one second load. Built into the loader suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/constructor": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "f5829a0c5c446778",
+   "name": "MOD constructor module",
+   "rank": 3,
+   "reason": "Scans construction holograms and builds walls faster. For engineers.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/criminalcapture": {
+   "confidence": "high",
+   "group": "weapons and fight modules",
+   "hash": "81c5f39ad1411c05",
+   "name": "MOD criminal capture module",
+   "note": "After a 2.5 second channel it makes a breathable hardlight bag on the adjacent target tile, pulling in everything there (one living occupant at most); one bag at a time, and it drains extra charge while the bag exists. The prisoner bag can be strapped shut (10 second sinch, 4 minute breakout) and vanishes if the wearer gets more than 9 tiles away, the suit powers down, or the wearer packs it up (1 second). The patient transport subtype channels in 1.5 seconds, packs up in 0.5 and its bag has no straps.",
+   "rank": 6,
+   "reason": "Zips one adjacent person into a holographic bag after a 2.5 second channel. For hauling prisoners, not catching them.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/criminalcapture/patienttransport": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "e8773b895129743d",
+   "name": "MOD patient transport module",
+   "note": "After a 2.5 second channel it makes a breathable hardlight bag on the adjacent target tile, pulling in everything there (one living occupant at most); one bag at a time, and it drains extra charge while the bag exists. The prisoner bag can be strapped shut (10 second sinch, 4 minute breakout) and vanishes if the wearer gets more than 9 tiles away, the suit powers down, or the wearer packs it up (1 second). The patient transport subtype channels in 1.5 seconds, packs up in 0.5 and its bag has no straps.",
+   "rank": 6,
+   "reason": "Zips a patient into a breathable bag in 1.5 seconds for moving them through bad air.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/defibrillator": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "d8bd869413483f28",
+   "name": "MOD defibrillator module",
+   "note": "Extends defibrillator gauntlets that must be wielded two-handed and work without a defib unit, but refuse a patient whose chest is covered by thick clothing. Each successful shock drains suit charge and then the gauntlets recharge for 5 seconds. The combat variant ignores chest clothing, recharges in 2.5 seconds and can be used on the living: right-click zaps for 60 stamina damage and a 7.5 second knockdown, and combat mode on the chest overcharges for 50 burn damage, a heart attack and a 10 second paralysis.",
+   "rank": 2,
+   "reason": "A defibrillator in the gauntlets, so the back slot stays free, the same advantage as a compact defibrillator. Refuses patients in thick clothing.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/defibrillator/combat": {
+   "confidence": "medium",
+   "group": "weapons and fight modules",
+   "hash": "64d409275d7b2e23",
+   "name": "MOD combat defibrillator module",
+   "note": "Extends defibrillator gauntlets that must be wielded two-handed and work without a defib unit, but refuse a patient whose chest is covered by thick clothing. Each successful shock drains suit charge and then the gauntlets recharge for 5 seconds. The combat variant ignores chest clothing, recharges in 2.5 seconds and can be used on the living: right-click zaps for 60 stamina damage and a 7.5 second knockdown, and combat mode on the chest overcharges for 50 burn damage, a heart attack and a 10 second paralysis.",
+   "rank": 1,
+   "reason": "Two-handed stun gloves: one touch drains 60 stamina and knocks down for 7.5 seconds. A 3 second chest shock adds 50 burn, a heart attack and 10 seconds' paralysis. Recharges in 2.5 seconds.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/dispenser": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "8226291a8f20edc4",
+   "name": "MOD burger dispenser module",
+   "rank": 5,
+   "reason": "Makes a free burger.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/dispenser/mirage": {
+   "confidence": "medium",
+   "group": "weapons and fight modules",
+   "hash": "4b9cb9ef0d7410d0",
+   "name": "MOD mirage grenade dispenser module",
+   "rank": 8,
+   "reason": "A free decoy grenade every 20 seconds. Confuses players, wins no fights.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/disposal_connector": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "1be5bef5da1f1ad4",
+   "name": "MOD disposal selector module",
+   "note": "While the suit is on, a wearer flushed into a disposal bin is routed to the module's chosen destination tag (random at spawn, changeable in the suit panel) instead of the default sort.",
+   "rank": 17,
+   "reason": "Routes you to a chosen place when flushed down a disposal bin.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/dna_lock": {
+   "confidence": "high",
+   "group": "stealth and locks",
+   "hash": "9ad4d18617a5815c",
+   "name": "MOD DNA lock module",
+   "note": "Locks the suit to one person's DNA, set by using the module: anyone else who tries to power the suit up or remove a module is refused. Until a DNA is set it locks nothing, and an EMP or emag wipes the stored DNA so the suit is open to anyone again.",
+   "rank": 5,
+   "reason": "Stops anyone else powering the suit until an EMP or emag wipes it. An anti-theft tool.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/drill": {
+   "confidence": "medium",
+   "group": "work tools",
+   "hash": "2e0a19d592a34a94",
+   "name": "MOD drill module",
+   "note": "While active, walking into rock (or clicking adjacent rock or sand with the module) drills it instantly with no mining delay, spending charge per tile. Bumping an untouched gibtonite vein sets it ticking; after that, bumping any struck gibtonite switches the drill off instead of drilling.",
+   "rank": 1,
+   "reason": "Walk into rock and it's gone at once, for a little power. Better than a jackhammer, still just mining.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/emp_shield": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "08f0a7d9f64c6de9",
+   "name": "MOD EMP shield module",
+   "rank": 9,
+   "reason": "Keeps the suit itself working through EMPs. Cheap insurance, doesn't cover the wearer.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/emp_shield/advanced": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "40e0c05ec5768b29",
+   "name": "MOD advanced EMP shield module",
+   "rank": 5,
+   "reason": "Stops EMPs hitting the suit, the wearer's gear and their implants. A real answer to ion weapons for anyone with cyberware.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/energy_net": {
+   "confidence": "medium",
+   "group": "weapons and fight modules",
+   "hash": "c2f9aa858e04ad4c",
+   "name": "MOD energy net module",
+   "note": "Fires a net projectile (range 9, no damage) that on hitting a living mob plants a 60-integrity net on its tile and buckles the target into it, unbuckling them from anything else. Nobody can unbuckle from it; only destroying the net frees the target, and all of the module's nets vanish when the suit powers down. One net per tile, 5 second cooldown, costs charge per throw; cannot be removed.",
+   "rank": 3,
+   "reason": "Fires a net to 9 tiles every 5 seconds. The target stays pinned until someone breaks the net. Built into the ninja suit.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/energy_shield": {
+   "confidence": "low",
+   "group": "defence modules",
+   "hash": "7ce4885061cc632a",
+   "name": "MOD energy shield module",
+   "note": "Gives the wearer a one-charge shield that blocks any attack that reaches the block check: a hit of 3 or more damage is blocked and uses the charge, while a hit under 3 damage is blocked for free. Each block drains suit charge, and any attack on the shield (even with no charge left) restarts a 10 second wait before the charge returns. The battlemage variant holds 5 charges, costs no suit charge and needs no particular suit parts.",
+   "rank": 3,
+   "reason": "Blocks one hit, then needs 10 seconds without being attacked to come back. Wins an ambush, does little under steady fire.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/fishing_glove": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "24767512c16b4b5f",
+   "name": "MOD fishing glove module",
+   "rank": 15,
+   "reason": "A fishing rod in the glove.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/flamethrower": {
+   "confidence": "low",
+   "group": "weapons and fight modules",
+   "hash": "5fbb47bff7cc4941",
+   "name": "MOD flamethrower module",
+   "rank": 4,
+   "reason": "No ammo, but only 15 burn every 2.5 seconds to 6 tiles, plus setting the target alight. Weak next to any real gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/flashlight": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "5c6d7148ab5c263d",
+   "name": "MOD flashlight module",
+   "rank": 10,
+   "reason": "A flashlight.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/gps": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "55a85ecc4c239a22",
+   "name": "MOD internal GPS module",
+   "rank": 9,
+   "reason": "A GPS in the suit.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/hacker": {
+   "confidence": "medium",
+   "group": "stealth and locks",
+   "hash": "90a52e238df22242",
+   "name": "MOD hacker module",
+   "note": "Right-clicking an adjacent target with an empty hand runs a hack on it: drains APCs, SMES units, cells, cables, mechs and energy guns into the suit; emags airlocks (opens and bolts them with power cut), windoors and buttons; opens firelocks; EMPs unshielded cameras; makes bots explode and vending machines fling their stock; takes over a cyborg after 6 seconds; and has long sabotage channels on research servers, security records, comms consoles and the tram. On a person it spends charge to shock them for a 3 second knockdown and the normal disarm still happens. Cannot be removed.",
+   "rank": 1,
+   "reason": "Touch to hack doors, drain power from any machine into the suit, take over cyborgs and knock people down. Ship raids look nothing alike with it. Built into the ninja suit.",
+   "tier": "above"
+  },
+  "/obj/item/mod/module/hat_stabilizer": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "c9c1790234f8b322",
+   "name": "MOD hat stabilizer module",
+   "rank": 1,
+   "reason": "Wear a hat over the helmet. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/hat_stabilizer/syndicate": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "645d5bffd673cbbd",
+   "name": "MOD elite hat stabilizer module",
+   "rank": 2,
+   "reason": "Wear a hat over the helmet. Cosmetic.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/headprotector": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "cdf2c11aec781260",
+   "name": "MOD safety-first head protection module",
+   "rank": 15,
+   "reason": "The helmet counts as a hard hat against head knocks.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/health_analyzer": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "13404730b80fabf0",
+   "name": "MOD health analyzer module",
+   "rank": 7,
+   "reason": "A health scanner in the glove.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/hearing_protection": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "1bc884e9333ada4d",
+   "name": "MOD hearing protection module",
+   "rank": 16,
+   "reason": "Protects the ears from flashbangs and loud noise. Built into most combat suits, no complexity.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/holster": {
+   "confidence": "high",
+   "group": "weapons and fight modules",
+   "hash": "d2949c7c966f4657",
+   "name": "MOD holster module",
+   "rank": 9,
+   "reason": "Stores one gun on the suit for a quick draw.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/hydraulic": {
+   "confidence": "low",
+   "group": "mobility modules",
+   "hash": "6ba61417e5f1b1d1",
+   "name": "MOD loader hydraulic arms module",
+   "note": "Charges for 2 seconds, then throws the wearer in a straight line at the target, up to about 20 tiles at full charge (cutting the charge short shortens the launch). The throw is not cushioned: hitting a wall hurts and paralyses the wearer for 2 seconds, and hitting a person hurts and paralyses both of them. Costs charge; 4 second cooldown; cannot be removed.",
+   "rank": 5,
+   "reason": "After 2 seconds' charge, throws you up to 20 tiles in a line. Hitting a wall or person stuns and hurts you. No complexity, can't be removed.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/infiltrator": {
+   "confidence": "medium",
+   "group": "stealth and locks",
+   "hash": "cfce42f5d4140767",
+   "name": "MOD infiltration core programs module",
+   "note": "While the suit is on the wearer shows as 'Unknown', makes no footstep noise, is protected from head-injury effects (like a hard hat), has speech modifications blocked, and the helmet gets the highest flash protection level. The suit itself is skipped when the wearer is examined, and the module cannot be removed or fitted alongside welding or head-protector modules.",
+   "rank": 4,
+   "reason": "You show as Unknown, walk silently and get flash and head protection. Built into the infiltrator suit.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/injector": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "d5f24bab1222c802",
+   "name": "MOD injector module",
+   "rank": 4,
+   "reason": "A 30-unit suit syringe that goes through thick clothing.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/jetpack": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "678a82d9765dca0b",
+   "name": "MOD ion jetpack module",
+   "note": "While on, the wearer thrusts in zero gravity: each thrust drains suit charge and stops when it runs out. Stabilizers (on by default, togglable in the suit panel) brake the wearer to a stop when not moving, and with them off the wearer keeps drifting. It also gives a movement speed boost while on, and the advanced version has stronger thrust and braking.",
+   "rank": 3,
+   "reason": "Anchor. Space flight with stabilizers and a speed boost in zero gravity, run off the suit's cell. Beats buying a tank jetpack.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/jetpack/advanced": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "2a9b63464f3c7089",
+   "name": "MOD advanced ion jetpack module",
+   "note": "While on, the wearer thrusts in zero gravity: each thrust drains suit charge and stops when it runs out. Stabilizers (on by default, togglable in the suit panel) brake the wearer to a stop when not moving, and with them off the wearer keeps drifting. It also gives a movement speed boost while on, and the advanced version has stronger thrust and braking.",
+   "rank": 4,
+   "reason": "The same jetpack with a third more thrust and better braking.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/joint_torsion": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "ddd2ab6b86f092e6",
+   "name": "MOD joint torsion ratchet module",
+   "note": "Each step the wearer walks adds a little charge to the suit cell (about 0.15% of a standard cell per step). It does nothing in zero gravity or while flying, lying down, buckled, thrown or being moved by something else.",
+   "rank": 8,
+   "reason": "Recharges the suit a tiny amount per step.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/jump_jet": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "c2887077070ca11f",
+   "name": "MOD ionic jump jet module",
+   "rank": 9,
+   "reason": "Rockets you up one level, then 5 seconds of floating, every 30 seconds. Most ships and planets have one level.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/longfall": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "5c1fedfbbc7f4e88",
+   "name": "MOD longfall module",
+   "note": "When the wearer falls between z-levels with the suit boots on, the fall damage is cancelled and charge is drained per level fallen instead; a fall of two or more levels also staggers them for a few seconds. With too little charge they take the fall normally.",
+   "rank": 12,
+   "reason": "Cancels damage from falling between levels. Rarely comes up.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/magboot": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "1fb8a14efa2386f1",
+   "name": "MOD magnetic stability module",
+   "note": "While toggled on the wearer cannot slip on water, ice or slides and counts as having gravity in zero-g, so they walk normally on floors; it costs charge while on and the basic version slows the wearer (the advanced version does not). Cannot share a suit with the atrocinator.",
+   "rank": 7,
+   "reason": "Walk normally in zero gravity and don't slip, at a small speed cost.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/magboot/advanced": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "73519c12a45a3dac",
+   "name": "MOD advanced magnetic stability module",
+   "note": "While toggled on the wearer cannot slip on water, ice or slides and counts as having gravity in zero-g, so they walk normally on floors; it costs charge while on and the basic version slows the wearer (the advanced version does not). Cannot share a suit with the atrocinator.",
+   "rank": 6,
+   "reason": "Magboots with no slowdown. Built into the advanced suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/magnet": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "85682e7c96a6e6f1",
+   "name": "MOD loader hydraulic magnet module",
+   "note": "Pulls a closet or crate in view toward the wearer and grabs it when it arrives (refused if the target is anchored or too heavy to move). If the wearer is already pulling a closet or crate, the same action throws it at the target instead. Costs charge; 1.5 second cooldown; cannot be removed.",
+   "rank": 9,
+   "reason": "Pulls a crate in view to you, or throws the one you're pulling. For cargo.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/magnetic_harness": {
+   "confidence": "high",
+   "group": "weapons and fight modules",
+   "hash": "08a73b7f701f234c",
+   "name": "MOD magnetic harness module",
+   "note": "A gun the wearer drops onto their own tile (ballistic, energy, grenade launcher, chem or syringe gun) is pulled back into the suit storage slot 0.8 seconds later, if that slot is free and the gun is still adjacent, for a small charge. It also lets those gun types be stored in suit storage.",
+   "rank": 5,
+   "reason": "A dropped gun snaps back to the suit slot, and any gun fits there. Hard to disarm for 2 complexity.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/megaphone": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "2df5e150c759f04a",
+   "name": "MOD megaphone module",
+   "note": "While toggled on, everything the wearer says is shown in the loud command style (bold, enlarged text), and each message drains a little suit charge.",
+   "rank": 3,
+   "reason": "Makes your speech loud.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/microwave_beam": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "86c6cd7976865eb5",
+   "name": "MOD microwave beam module",
+   "rank": 4,
+   "reason": "Cooks food at a distance.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/mister/atmos": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "427bb7a5af9d201f",
+   "name": "MOD resin mister module",
+   "rank": 4,
+   "reason": "A resin foam sprayer for sealing breaches and fires.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/mister/cleaner": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "bcb672b2b54c8dab",
+   "name": "MOD janitorial mister module",
+   "rank": 11,
+   "reason": "A space cleaner sprayer.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/mouthhole": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "814c467174f9ac7b",
+   "name": "MOD eating apparatus module",
+   "rank": 16,
+   "reason": "Lets you eat with the helmet on.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/night": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "6859486336fe3b75",
+   "name": "MOD night vision module",
+   "rank": 3,
+   "reason": "Night vision built into Syndicate suits at no complexity. Works alongside another visor.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/orebag": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "f3ee738a85b0652a",
+   "name": "MOD ore bag module",
+   "note": "Whenever the wearer steps onto ore it is swept into the suit's bag automatically, without charge cost and with no capacity limit in the code, even with the suit powered down. Using the module dumps everything stored at the wearer's feet for a small charge.",
+   "rank": 2,
+   "reason": "Sweeps ore into the suit as you walk, no capacity limit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/organizer": {
+   "confidence": "medium",
+   "group": "medical modules",
+   "hash": "76571062ef894b85",
+   "name": "MOD organizer module",
+   "rank": 5,
+   "reason": "Swaps organs into a patient from range without opening them up. A surgeon's time saver.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/paper_dispenser": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "fc25bbeb63f6630c",
+   "name": "MOD paper dispenser module",
+   "rank": 6,
+   "reason": "Makes paper.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/pathfinder": {
+   "confidence": "high",
+   "group": "stealth and locks",
+   "hash": "dbd05da675e3ed9f",
+   "name": "MOD pathfinder module",
+   "note": "Holds a one-use implant that is injected into a human, either the wearer (using the module) or someone else (1.5 second channel). The implanted person can then recall the suit from up to 200 tiles away on the same z-level: it flies and paths to them, equips itself onto them (dropping whatever is in the suit's slot) and deploys every part, draining charge. Recall has a 15 second cooldown and fails if the cover is open, the suit is already worn, or it is too far.",
+   "rank": 6,
+   "reason": "A one-use implant that calls the suit to you from up to 200 tiles on the same level.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/pepper_shoulders": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "c988a42ffaf66a8b",
+   "name": "MOD pepper shoulders module",
+   "note": "Whenever anyone attacks the wearer (any melee, unarmed, thrown or ranged hit check) and the module is off its 5 second cooldown, it releases a small cloud of condensed capsaicin (10 units) around the wearer and drains suit charge. It does not block the attack.",
+   "rank": 10,
+   "reason": "Puffs pepper gas when you're hit, at most every 5 seconds. Doesn't stop the hit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/plasma_stabilizer": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "377117f5ae881a5c",
+   "name": "MOD plasma stabilizer module",
+   "rank": 13,
+   "reason": "Lets plasmamen take the helmet off safely.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/plate_compression": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "21cfd6e931842552",
+   "name": "MOD plate compression module",
+   "rank": 12,
+   "reason": "Shrinks the control unit enough to fit in a bag, and bars storage modules. Convenience with a cost.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/projectile_dampener": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "32c796c8fdc7b952",
+   "name": "MOD projectile dampener module",
+   "rank": 1,
+   "reason": "Anchor. For 3 complexity, every bullet and beam within 2 tiles does 25% less damage and 34% less stun and flies far slower. Protects crewmates beside you too.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/quick_carry": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "f0f0aaf3de4ca841",
+   "name": "MOD quick carry module",
+   "rank": 11,
+   "reason": "Faster fireman carry.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/quick_carry/advanced": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "9b396c2c626fb6af",
+   "name": "MOD advanced quick carry module",
+   "rank": 10,
+   "reason": "The fastest fireman carry. No complexity, can't be removed.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/quick_cuff": {
+   "confidence": "high",
+   "group": "weapons and fight modules",
+   "hash": "deeda25bf3b3217b",
+   "name": "MOD restraint assist module",
+   "rank": 7,
+   "reason": "Faster handcuffing. No complexity, can't be removed.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/rad_protection": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "443b9a9107dd36fc",
+   "name": "MOD radiation protection module",
+   "note": "With the suit on, every suit part counts as radiation-protected clothing, so the wearer cannot be irradiated while the suit covers every body part. It also adds a geiger counter sound and a radiation readout in the suit panel.",
+   "rank": 11,
+   "reason": "Radiation-proofs the suit and adds a geiger counter. A hazard tool.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/reagent_scanner": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "3d44e524bec0c55e",
+   "name": "MOD reagent scanner module",
+   "rank": 10,
+   "reason": "Reagent and research scanner for chemists.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/reagent_scanner/advanced": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "b4f3cd5ef792aa8b",
+   "name": "MOD advanced reagent scanner module",
+   "note": "While toggled on, the wearer sees the reagent contents of containers when examining them, sees research prospects when examining items and the component parts of machines, and gets a chat message with the epicenter, outer and shock ranges of any explosion within 21 tiles. Cannot be removed.",
+   "rank": 9,
+   "reason": "Reagent and research scanner that also reports nearby explosions. Built into the research suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/recycler": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "a2bfe178fe2470d5",
+   "name": "MOD recycler module",
+   "note": "While active it eats trash on the wearer's tile and any that lands there (litter, shards, light tubes, broken bottles, ammo casings of any kind including live rounds, cigarette butts) into an internal store of up to 50 sheets of the usual silo materials; using it on an open floor tile or a storage item dumps all stored material as sheets. It stops checking a tile at the first item that isn't trash, and trash with no material value is deleted.",
+   "rank": 5,
+   "reason": "Eats trash and casings into building sheets as you walk.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/recycler/donk": {
+   "confidence": "medium",
+   "group": "work tools",
+   "hash": "973f3b1fca280f96",
+   "name": "MOD riot foam dart recycler module",
+   "note": "Eats the same trash as the recycler but stores only iron at 70% efficiency (other trash is deleted for nothing), and it produces a mini box of riot foam darts for 12.5 sheets of iron instead of dumping sheets. The foam dart recycler subtype takes only foam dart casings at full efficiency and makes a mini box of ordinary foam darts for a quarter sheet of iron. / While active it eats trash on the wearer's tile and any that lands there (litter, shards, light tubes, broken bottles, ammo casings of any kind including live rounds, cigarette butts) into an internal store of up to 50 sheets of the usual silo materials; using it on an open floor tile or a storage item dumps all stored material as sheets. It stops checking a tile at the first item that isn't trash, and trash with no material value is deleted.",
+   "rank": 6,
+   "reason": "Eats trash and turns it into boxes of riot foam darts. Small use without a donksoft gun.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/recycler/donk/safe": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "bec72d7f9c1c5bec",
+   "name": "MOD foam dart recycler module",
+   "note": "While active it eats trash on the wearer's tile and any that lands there (litter, shards, light tubes, broken bottles, ammo casings of any kind including live rounds, cigarette butts) into an internal store of up to 50 sheets of the usual silo materials; using it on an open floor tile or a storage item dumps all stored material as sheets. It stops checking a tile at the first item that isn't trash, and trash with no material value is deleted. / Eats the same trash as the recycler but stores only iron at 70% efficiency (other trash is deleted for nothing), and it produces a mini box of riot foam darts for 12.5 sheets of iron instead of dumping sheets. The foam dart recycler subtype takes only foam dart casings at full efficiency and makes a mini box of ordinary foam darts for a quarter sheet of iron.",
+   "rank": 12,
+   "reason": "Turns foam dart casings into more foam darts. A toy.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/shock_absorber": {
+   "confidence": "low",
+   "group": "defence modules",
+   "hash": "30851a4d3cead206",
+   "name": "MOD shock absorption module",
+   "note": "Removes the knockdown from stun batons: the baton's stamina damage, confusion and stutter still land, but the wearer is not knocked down. Each baton hit also drains suit charge and throws sparks that can ignite flammable gas.",
+   "rank": 6,
+   "reason": "Stun batons no longer knock you down, though their stamina damage still lands. One complexity, and only about batons.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/shooting_assistant": {
+   "confidence": "medium",
+   "group": "weapons and fight modules",
+   "hash": "0819538a3e3bf8e1",
+   "name": "MOD shooting assistant module",
+   "note": "Gloves module with two modes chosen in the suit panel; both stop the wearer firing guns akimbo, and it switches itself off if the suit runs out of charge. Stormtrooper halves the wearer's gun fire delay and click cooldown but adds 15 to 25 extra spread; Sharpshooter removes 10 to 20 spread, gives shots one extra guaranteed ricochet at any angle with no body-part aim loss over distance and a better ricochet chance, and slows the wearer.",
+   "rank": 2,
+   "reason": "One mode doubles every gun's fire rate at the cost of heavy spread, the other cuts spread and adds a ricochet but slows you. Only from a rare research disk.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/shove_blocker": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "61a7b3d44b1dc705",
+   "name": "MOD bulwark module",
+   "rank": 7,
+   "reason": "Stops shoves, staggers and being pushed by thrown hits. Three complexity for a melee-only edge.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/shove_blocker/locked": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "89978daf026a7989",
+   "name": "superglued MOD bulwark module",
+   "rank": 8,
+   "reason": "The same shove-proofing with no complexity, glued into the Safeguard suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/signlang_radio": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "7f92e0bea1e799d6",
+   "name": "MOD glove translator module",
+   "rank": 18,
+   "reason": "Lets sign language users talk on the radio.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/sphere_transform": {
+   "confidence": "medium",
+   "group": "mobility modules",
+   "hash": "dd931d1dab8287b8",
+   "name": "MOD sphere transform module",
+   "note": "Turns the wearer into a fast rolling ball: hands blocked, cannot be knocked down or slip, immune to lava, ignores damage slowdown. It needs gravity and switches off in zero-g or when the wearer goes unconscious or into crit; it drains charge while on. Clicking a target fires a mining bomb (6 tiles, only at low pressure) that blows 1.5 seconds after landing, drilling rock within 2 tiles and hitting every mob and object within 1 tile for 12 damage (4 times that against mining fauna), the wearer included if close; cannot be removed.",
+   "rank": 2,
+   "reason": "Turns you into a fast ball that crosses lava, can't be knocked down and throws mining bombs, but you have no hands. Built into the mining suit.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/springlock": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "edbf23b2b6e8ecf9",
+   "name": "MOD springlock module",
+   "note": "Halves the suit's part-by-part activation time. If the wearer is touched by any reagent (touch, vapor or patch) or stands in air with 5 or more moles of water vapor while at least one suit part is sealed, the suit clicks, locks out activation and retraction for 3 to 5 seconds, then snaps shut: 200 damage to the chest, 100 to every body part under a sealed piece, and death unless the wearer cannot die.",
+   "rank": 12,
+   "reason": "Faster seals, but any liquid touching you kills you. A trap, not gear.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/stamp": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "68ca661cb50bf7bc",
+   "name": "MOD stamper module",
+   "rank": 7,
+   "reason": "A stamp in the glove.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/status_readout": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "bcb941b1c88497ba",
+   "name": "MOD status readout module",
+   "note": "Shows the wearer's vitals, nutrition and any diseases in the suit screen, plus DNA and round time if switched on. Plays a flatline sound (volume 50) when the wearer dies while the suit is active.",
+   "rank": 12,
+   "reason": "Shows your own vitals on the suit panel and plays a sound when you die.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/stealth": {
+   "confidence": "medium",
+   "group": "stealth and locks",
+   "hash": "02d6d882d94d90e5",
+   "name": "MOD prototype cloaking module",
+   "note": "Toggled cloak that fades the wearer to alpha 50 over 1.5 seconds. It shuts off with sparks, and another charge cost, if the wearer bumps someone, attacks (unarmed on a living target or with an item), is touched or hit by an item or thrown object, takes a hostile projectile or is cuffed. Engaging costs a lump of charge and it drains continuously while on; 5 second cooldown.",
+   "rank": 3,
+   "reason": "Toggled cloak that leaves you very faint, with no time limit while the suit has power, broken by touching, attacking or being hit. About as hard to see as the reputation 22 Ghostskin implant, which only lasts 10 seconds in 30. Costs 4 complexity and steady power.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/stealth/wraith": {
+   "confidence": "medium",
+   "group": "stealth and locks",
+   "hash": "e1f6a449621b7da6",
+   "name": "MOD Wraith Cloaking Module",
+   "note": "Passive cloak (alpha 30) that is on whenever the suit is fully sealed, with no toggle; it breaks on bumping or being bumped, firing a gun, attacking, or being touched or hit, costs charge, and returns after 20 seconds. Selecting it lets the wearer click a target within 6 tiles (not an APC) to disrupt it and all its gear for 1 minute, and each thing disrupted refills the suit by 1.25 standard cells of charge. It cannot be fitted with the normal cloak or the Syndicate welding module. / Toggled cloak that fades the wearer to alpha 50 over 1.5 seconds. It shuts off with sparks, and another charge cost, if the wearer bumps someone, attacks (unarmed on a living target or with an item), is touched or hit by an item or thrown object, takes a hostile projectile or is cuffed. Engaging costs a lump of charge and it drains continuously while on; 5 second cooldown.",
+   "rank": 2,
+   "reason": "Nearly invisible whenever the suit is sealed, back 20 seconds after you fire. Also shuts off a target's radio, baton and lights at 6 tiles for a minute.",
+   "tier": "red"
+  },
+  "/obj/item/mod/module/storage": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "c83c90901b033300",
+   "name": "MOD storage module",
+   "note": "Gives the suit a backpack-style storage (capacity depends on the variant). When the suit's outer-clothing piece comes off, whatever is in the suit-storage slot is stowed in the module, or an alert shows if it doesn't fit.",
+   "rank": 6,
+   "reason": "Holds 15 worth of normal-size items for 3 complexity. A backpack holds 21.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/storage/belt": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "3cf4b0257f0db8de",
+   "name": "MOD case storage module",
+   "note": "Gives the suit a backpack-style storage (capacity depends on the variant). When the suit's outer-clothing piece comes off, whatever is in the suit-storage slot is stowed in the module, or an alert shows if it doesn't fit.",
+   "rank": 5,
+   "reason": "Slim case: 7 small items, no complexity. Built into the infiltrator suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/storage/bluespace": {
+   "confidence": "medium",
+   "group": "storage and hauling",
+   "hash": "3a9b588c1d51a40b",
+   "name": "MOD bluespace storage module",
+   "note": "Gives the suit a backpack-style storage (capacity depends on the variant). When the suit's outer-clothing piece comes off, whatever is in the suit-storage slot is stowed in the module, or an alert shows if it doesn't fit.",
+   "rank": 1,
+   "reason": "Holds 60 worth of anything up to the largest items, 21 at most. A bag of holding holds 35.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/storage/large_capacity": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "c62538b3d5d227d1",
+   "name": "MOD expanded storage module",
+   "note": "Gives the suit a backpack-style storage (capacity depends on the variant). When the suit's outer-clothing piece comes off, whatever is in the suit-storage slot is stowed in the module, or an alert shows if it doesn't fit.",
+   "rank": 4,
+   "reason": "Holds 21 worth of normal-size items, a full backpack.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/storage/syndicate": {
+   "confidence": "high",
+   "group": "storage and hauling",
+   "hash": "690116205ad49047",
+   "name": "MOD syndicate storage module",
+   "note": "Gives the suit a backpack-style storage (capacity depends on the variant). When the suit's outer-clothing piece comes off, whatever is in the suit-storage slot is stowed in the module, or an alert shows if it doesn't fit.",
+   "rank": 3,
+   "reason": "Holds 30 worth of normal-size items, a backpack and a half.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/surgical_processor": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "77be2d8adcfe6c87",
+   "name": "MOD surgical processor module",
+   "rank": 3,
+   "reason": "Carries surgeries you've downloaded, for operating anywhere.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/surgical_processor/preloaded": {
+   "confidence": "medium",
+   "group": "medical modules",
+   "hash": "4f154ad4f26b1d0a",
+   "name": "MOD surgical processor module",
+   "rank": 1,
+   "reason": "Field surgery with brainwashing, pacification, top-grade healing and every body upgrade already loaded. No research needed.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/t_ray": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "5e8bdfbebc6fdb76",
+   "name": "MOD t-ray scan module",
+   "rank": 11,
+   "reason": "Shows pipes and cables under the floor. A work tool.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/tanner": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "b64fb4c73661903a",
+   "name": "MOD tanning module",
+   "rank": 8,
+   "reason": "Tans the wearer.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/tether": {
+   "confidence": "high",
+   "group": "mobility modules",
+   "hash": "1f8e47ec017e2e92",
+   "name": "MOD emergency tether module",
+   "rank": 8,
+   "reason": "A grappling line that hauls you along in zero gravity.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/thermal_regulator": {
+   "confidence": "high",
+   "group": "work tools",
+   "hash": "0097686393d21a4d",
+   "name": "MOD thermal regulator module",
+   "rank": 14,
+   "reason": "Keeps body temperature comfortable.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/thread_ripper": {
+   "confidence": "high",
+   "group": "medical modules",
+   "hash": "6f93d20953cfba43",
+   "name": "MOD thread ripper module",
+   "rank": 8,
+   "reason": "Opens a patient's clothes for surgery without stripping them.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/visor/diaghud": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "5ad494912b245d26",
+   "name": "MOD diagnostic visor module",
+   "rank": 8,
+   "reason": "Diagnostic HUD on the visor. For engineers.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/visor/medhud": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "15e67a4e5a0ab95f",
+   "name": "MOD medical visor module",
+   "rank": 6,
+   "reason": "Health HUD on the visor. Shows everyone's health, your enemy's included.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/visor/meson": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "673272533b157f40",
+   "name": "MOD meson visor module",
+   "rank": 5,
+   "reason": "Mesons on the visor.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/visor/night": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "58217112fde3de13",
+   "name": "MOD night visor module",
+   "rank": 4,
+   "reason": "Night vision on the visor, the same as goggles without the flash weakness.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/visor/rave": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "856914e74e1d8183",
+   "name": "MOD rave visor module",
+   "rank": 13,
+   "reason": "Coloured lights and music.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/visor/sechud": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "9f37eb041e77946c",
+   "name": "MOD security visor module",
+   "rank": 7,
+   "reason": "Security HUD on the visor.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/visor/thermal": {
+   "confidence": "high",
+   "group": "sight and scanners",
+   "hash": "05a52b9e8a3eb617",
+   "name": "MOD thermal visor module",
+   "rank": 1,
+   "reason": "Anchor. Every living thing through walls, the same as thermal goggles, without their flash weakness or EMP blinding. Needs a sealed helmet.",
+   "tier": "yellow"
+  },
+  "/obj/item/mod/module/waddle": {
+   "confidence": "high",
+   "group": "novelties",
+   "hash": "3b3c7eb99f6729c3",
+   "name": "MOD waddle module",
+   "rank": 11,
+   "reason": "Makes you waddle.",
+   "tier": "none"
+  },
+  "/obj/item/mod/module/weapon_recall": {
+   "confidence": "low",
+   "group": "weapons and fight modules",
+   "hash": "f2c88ceb390d2ef9",
+   "name": "MOD weapon recall module",
+   "note": "Links to an energy katana held in hand. Using it pulls the linked katana back: one in view flies to the wearer and is caught, one out of view teleports to a hand (else belt, else the floor) for charge that scales with distance. While the suit is active the wearer cannot fire guns (thrown guns hit harder); the module can't be removed.",
+   "rank": 10,
+   "reason": "Pulls a linked energy katana back to your hand. Stops you firing guns, so it's as much a burden as a gift.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/welding": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "5d57f53c13939fc1",
+   "name": "MOD welding protection module",
+   "rank": 12,
+   "reason": "Flash and weld protection for the helmet. Same job as sunglasses.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/welding/camera_vision": {
+   "confidence": "medium",
+   "group": "defence modules",
+   "hash": "e0ea285d3bd353d8",
+   "name": "MOD camera vision module",
+   "note": "Gives the helmet full flash and welding protection (the highest level) and makes the wearer untrackable by AI and camera tracking. It cannot be removed from the suit.",
+   "rank": 14,
+   "reason": "Full flash protection and hides the wearer from AI and camera tracking. Built into the ninja suit.",
+   "tier": "green"
+  },
+  "/obj/item/mod/module/welding/syndicate": {
+   "confidence": "high",
+   "group": "defence modules",
+   "hash": "4845372dc42f3da0",
+   "name": "MOD welding protection module",
+   "rank": 13,
+   "reason": "Weld-grade flash protection built into Syndicate suits, no complexity. Blocks the Wraith cloak from fitting.",
+   "tier": "green"
+  },
+  "/obj/item/mod/paint": {
+   "confidence": "high",
+   "group": "parts and cores",
+   "hash": "a1947413be0d8f73",
+   "name": "MOD paint kit",
+   "rank": 18,
+   "reason": "Repaints the suit.",
+   "tier": "none"
+  }
+ },
+ "method": "Suits are rated as they ship, against each other, the armor vest and the armor and eyewear anchors: armor on every body part, slowdown, capacity and fitted modules, leaving out paid upgrades at the fitting bench. Modules are rated for what they add per complexity point and power, and against the same effect elsewhere in the game. Fixed hulls that nothing spawns do not count as a route.",
+ "unrated": {
+  "/obj/item/mod": "abstract",
+  "/obj/item/mod/ai_minicard": "no route",
+  "/obj/item/mod/construction": "abstract",
+  "/obj/item/mod/control/pre_equipped": "no route",
+  "/obj/item/mod/control/pre_equipped/administrative": "no route",
+  "/obj/item/mod/control/pre_equipped/apocryphal": "no route",
+  "/obj/item/mod/control/pre_equipped/apocryphal/officer": "no route",
+  "/obj/item/mod/control/pre_equipped/chrono": "no route",
+  "/obj/item/mod/control/pre_equipped/corporate": "no route",
+  "/obj/item/mod/control/pre_equipped/cosmohonk": "leftover",
+  "/obj/item/mod/control/pre_equipped/debug": "no route",
+  "/obj/item/mod/control/pre_equipped/elite": "no route",
+  "/obj/item/mod/control/pre_equipped/elite/flamethrower": "no route",
+  "/obj/item/mod/control/pre_equipped/emergency_medical": "no route",
+  "/obj/item/mod/control/pre_equipped/emergency_medical/corpsman": "no route",
+  "/obj/item/mod/control/pre_equipped/empty": "no route",
+  "/obj/item/mod/control/pre_equipped/empty/syndicate/honkerative": "no route",
+  "/obj/item/mod/control/pre_equipped/enchanted": "leftover",
+  "/obj/item/mod/control/pre_equipped/glitch": "no route",
+  "/obj/item/mod/control/pre_equipped/ninja": "no route",
+  "/obj/item/mod/control/pre_equipped/nuclear": "leftover",
+  "/obj/item/mod/control/pre_equipped/nuclear/no_jetpack": "no route",
+  "/obj/item/mod/control/pre_equipped/nuclear/plasmaman": "no route",
+  "/obj/item/mod/control/pre_equipped/prototype": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory": "literal only",
+  "/obj/item/mod/control/pre_equipped/responsory/chaplain": "literal only",
+  "/obj/item/mod/control/pre_equipped/responsory/clown": "literal only",
+  "/obj/item/mod/control/pre_equipped/responsory/commander": "leftover",
+  "/obj/item/mod/control/pre_equipped/responsory/engineer": "leftover",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory/chaplain": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory/commander": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory/medic": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory/security": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/inquisitory/syndie": "no route",
+  "/obj/item/mod/control/pre_equipped/responsory/janitor": "literal only",
+  "/obj/item/mod/control/pre_equipped/responsory/medic": "leftover",
+  "/obj/item/mod/control/pre_equipped/responsory/security": "leftover",
+  "/obj/item/mod/core": "no route",
+  "/obj/item/mod/core/infinite": "no route",
+  "/obj/item/mod/core/soul": "literal only",
+  "/obj/item/mod/core/soul/wizard": "leftover",
+  "/obj/item/mod/module": "leftover",
+  "/obj/item/mod/module/anomaly_locked": "no route",
+  "/obj/item/mod/module/anomaly_locked/antigrav/prebuilt": "no route",
+  "/obj/item/mod/module/anomaly_locked/kinesis/admin": "no route",
+  "/obj/item/mod/module/anomaly_locked/kinesis/plus": "no route",
+  "/obj/item/mod/module/anomaly_locked/kinesis/prebuilt": "no route",
+  "/obj/item/mod/module/anomaly_locked/kinesis/prebuilt/locked": "no route",
+  "/obj/item/mod/module/anomaly_locked/kinesis/prototype": "no route",
+  "/obj/item/mod/module/anomaly_locked/teleporter/prebuilt": "no route",
+  "/obj/item/mod/module/anomaly_locked/teleporter/prebuilt/locked": "no route",
+  "/obj/item/mod/module/anti_magic": "no route",
+  "/obj/item/mod/module/anti_magic/wizard": "leftover",
+  "/obj/item/mod/module/balloon/advanced": "leftover",
+  "/obj/item/mod/module/demoralizer": "no route",
+  "/obj/item/mod/module/dispenser/ninja": "no route",
+  "/obj/item/mod/module/dna_lock/reinforced": "no route",
+  "/obj/item/mod/module/emp_shield/pulse": "no route",
+  "/obj/item/mod/module/energy_shield/wizard": "leftover",
+  "/obj/item/mod/module/eradication_lock": "leftover",
+  "/obj/item/mod/module/flashlight/darkness": "no route",
+  "/obj/item/mod/module/insignia": "literal only",
+  "/obj/item/mod/module/insignia/chaplain": "literal only",
+  "/obj/item/mod/module/insignia/clown": "literal only",
+  "/obj/item/mod/module/insignia/commander": "leftover",
+  "/obj/item/mod/module/insignia/engineer": "leftover",
+  "/obj/item/mod/module/insignia/janitor": "literal only",
+  "/obj/item/mod/module/insignia/medic": "leftover",
+  "/obj/item/mod/module/insignia/security": "leftover",
+  "/obj/item/mod/module/insignia/syndie": "no route",
+  "/obj/item/mod/module/medbeam": "no route",
+  "/obj/item/mod/module/mister": "no route",
+  "/obj/item/mod/module/noslip": "leftover",
+  "/obj/item/mod/module/power_kick": "leftover",
+  "/obj/item/mod/module/rewinder": "no route",
+  "/obj/item/mod/module/springlock/bite_of_87": "no route",
+  "/obj/item/mod/module/status_readout/ninja": "no route",
+  "/obj/item/mod/module/stealth/ninja": "no route",
+  "/obj/item/mod/module/surgical_processor/emergency": "no route",
+  "/obj/item/mod/module/tem": "no route",
+  "/obj/item/mod/module/timeline_jumper": "no route",
+  "/obj/item/mod/module/timestopper": "no route",
+  "/obj/item/mod/module/visor": "no route",
+  "/obj/item/mod/skin_applier": "no route",
+  "/obj/item/mod/skin_applier/honkerative": "no route"
+ }
+}

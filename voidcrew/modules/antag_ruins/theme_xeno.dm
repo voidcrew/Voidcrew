@@ -402,6 +402,7 @@
 
 /// Begins the season: the shell warms and the first work-gang is heralded
 /obj/structure/vestige_comb_egg/proc/begin_season(mob/living/user)
+	get_npc_spawn_context()
 	assault_underway = TRUE
 	START_PROCESSING(SSobj, src)
 	color = "#e0c47f" // the warmth takes
@@ -436,12 +437,15 @@
 		visible_message(span_warning("The approach has closed. Clear it and touch the shell to call the gang again."))
 		return
 	squad_lost = FALSE
+	get_npc_spawn_context()
 	var/list/gang_sizes = list(1, 2, 2, 3)
 	var/squad_size = gang_sizes[squads_landed + 1]
 	for(var/i in 1 to squad_size)
-		var/mob/living/basic/hivebot/vestige_comb_chewer/vermin = new(squad_perch)
+		var/datum/npc_spawn_context/context = new(src)
+		var/mob/living/basic/hivebot/vestige_comb_chewer/vermin = spawn_npc_in_zone(/mob/living/basic/hivebot/vestige_comb_chewer, squad_perch, context, FALSE)
 		do_sparks(3, TRUE, vermin)
 		enlist(vermin, egg_bound = TRUE)
+		context.finalize()
 	squads_landed++
 	visible_message(span_boldwarning("The salvage gang clatters from the announced approach, cutters spinning!"))
 	var/datum/vestige_trial/warm_season/trial = get_bound_trial()

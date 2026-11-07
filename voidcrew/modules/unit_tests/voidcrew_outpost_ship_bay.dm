@@ -31,9 +31,9 @@
 	TEST_ASSERT_EQUAL(home.ship_bay_silo(), home_silo, "Selected storage was ignored")
 	qdel(second_silo)
 	TEST_ASSERT_NOTNULL(home.install_ship_bay(owner), "Unfunded installation succeeded")
-	home.treasury.adjust_money(10000, "Ship bay test") // Fork defines follow the test includes.
+	home.treasury.adjust_money(6000, "Ship bay test") // Fork defines follow the test includes.
 	TEST_ASSERT_NOTNULL(home.install_ship_bay(owner), "Installation without materials succeeded")
-	TEST_ASSERT_EQUAL(home.treasury.account_balance, 10000, "Missing materials still charged the treasury")
+	TEST_ASSERT_EQUAL(home.treasury.account_balance, 6000, "Missing materials still charged the treasury")
 	var/list/cost = home.ship_bay_material_cost()
 	for(var/material in cost)
 		home_silo.materials.insert_amount_mat(cost[material], material)

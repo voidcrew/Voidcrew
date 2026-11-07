@@ -2,6 +2,11 @@
 "a" = (
 /turf/closed/mineral/strong/wasteland,
 /area/lavaland/surface/outdoors)
+"e" = (
+/obj/effect/mob_spawn/corpse/human/skeleton,
+/obj/item/knife/combat/survival,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "f" = (
 /obj/effect/mob_spawn/corpse/human/skeleton,
 /obj/item/clothing/head/costume/crown{
@@ -14,11 +19,6 @@
 /area/lavaland/surface/outdoors)
 "g" = (
 /obj/structure/water_source/puddle,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
-"h" = (
-/obj/effect/mob_spawn/corpse/human/skeleton,
-/obj/item/shield/buckler,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "j" = (
@@ -372,7 +372,7 @@ j
 j
 j
 q
-h
+e
 G
 d
 G

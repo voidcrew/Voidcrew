@@ -59,11 +59,13 @@
 	if (!istype(tool, /obj/item/extinguisher_refill))
 		return
 
-	if (extinguishes_left == 5)
+	// VOIDCREW EDIT START: refill to what the suit starts with (10), not the jumpsuit's 5
+	if (extinguishes_left >= initial(extinguishes_left))
 		to_chat(user, span_notice("The inbuilt extinguisher is full."))
 		return ITEM_INTERACT_BLOCKING
 
-	extinguishes_left = 5
+	extinguishes_left = initial(extinguishes_left)
+	// VOIDCREW EDIT END
 	to_chat(user, span_notice("You refill the suit's built-in extinguisher, using up the cartridge."))
 	check_fire_state()
 	qdel(tool)

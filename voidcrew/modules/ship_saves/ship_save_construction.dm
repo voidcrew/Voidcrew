@@ -23,6 +23,8 @@
 /// from, if it is still about, holding its balance for the new ship.
 /datum/checkpoint_construction/saved/consume_source()
 	. = ..()
+	if(!.)
+		return
 	GLOB.ship_saves.spend(captain_ckey, save_slot)
 	log_game("[captain_ckey] spent ship save slot [save_slot] on [ship_name] at [home.name].")
 

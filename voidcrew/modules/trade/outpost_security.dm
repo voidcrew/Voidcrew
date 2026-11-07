@@ -71,6 +71,7 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 	RegisterSignal(living_mob, COMSIG_ATOM_PREHITBY, PROC_REF(on_outpost_pvp_thrown_item))
 	RegisterSignal(living_mob, COMSIG_ATOM_HULK_ATTACK, PROC_REF(on_outpost_pvp_hulk_attack))
 	RegisterSignal(living_mob, COMSIG_ATOM_ATTACK_MECH, PROC_REF(on_outpost_pvp_mech_attack))
+	RegisterSignal(living_mob, COMSIG_MOB_FIRED_GUN, PROC_REF(on_outpost_gun_fired))
 
 /**
  * Checks personal self-defense before applying strikes and embargoes. Both
@@ -119,6 +120,17 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /datum/outpost_pvp_enforcement/proc/on_outpost_pvp_mech_attack(mob/living/victim, obj/vehicle/sealed/mecha/mecha_attacker, mob/living/pilot)
 	SIGNAL_HANDLER
 	register_pvp_aggression(victim, pilot)
+
+/// Firing a gun past a trader outpost's checkpoint without a permit marks the shooter as an armed trespasser (outpost_trespass.dm)
+/datum/outpost_pvp_enforcement/proc/on_outpost_gun_fired(mob/living/shooter, obj/item/gun/gun, atom/target)
+	SIGNAL_HANDLER
+	if(!outpost_checkpoint_weapon(gun))
+		return
+	var/turf/where = get_turf(shooter)
+	var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(where)
+	if(!outpost?.is_secured_turf(where) || !shooter.mind || outpost.has_weapons_permit(shooter, OUTPOST_WEAPONS_PERMIT_GRACE))
+		return
+	outpost.flag_trespasser(shooter)
 
 /obj/machinery/porta_turret/outpost
 	name = "outpost defense turret"
@@ -451,6 +463,9 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 
 /datum/element/outpost_property/proc/block_tool(obj/source, mob/living/user, obj/item/tool)
 	SIGNAL_HANDLER
+	// A checkpoint's inner door can be forced (outpost_checkpoint.dm)
+	if(tool?.tool_behaviour == TOOL_CROWBAR && source.outpost_forceable())
+		return NONE
 	source.balloon_alert(user, "outpost property!")
 	return ITEM_INTERACT_BLOCKING
 

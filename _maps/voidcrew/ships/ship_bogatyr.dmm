@@ -33,6 +33,17 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
+"bt" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/item/clothing/head/helmet/rus_ushanka,
+/obj/item/clothing/shoes/russian,
+/obj/item/clothing/under/costume/russian_officer,
+/obj/item/clothing/suit/jacket/officer/tan,
+/obj/item/reagent_containers/cup/glass/flask/gold{
+	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/bridge)
 "by" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -148,17 +159,6 @@
 /obj/item/storage/backpack/satchel/flat,
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/voidcrew/bogatyr/central)
-"ol" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/item/clothing/head/helmet/rus_ushanka,
-/obj/item/clothing/shoes/russian,
-/obj/item/clothing/under/costume/russian_officer,
-/obj/item/clothing/suit/jacket/officer/tan,
-/obj/item/reagent_containers/cup/glass/flask/gold{
-	list_reagents = list(/datum/reagent/consumable/ethanol/sbiten=30)
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/bridge)
 "oq" = (
 /obj/machinery/door/airlock/medical{
 	name = "Infirmary"
@@ -415,14 +415,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
-"CY" = (
-/obj/structure/table,
-/obj/item/gun/ballistic/revolver/russian,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/structure/cable,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/bogatyr/central)
 "Do" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -529,6 +521,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/central)
+"HG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/template_noop,
+/area/shuttle/voidcrew/bogatyr/armory)
 "Ie" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium/red,
@@ -678,6 +675,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
+"TC" = (
+/obj/structure/table,
+/obj/item/gun/ballistic/revolver/russian,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/bogatyr/central)
 "TD" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "eva_bay"
@@ -905,7 +910,7 @@ lJ
 qo
 zf
 fA
-CY
+TC
 br
 Ho
 CP
@@ -966,7 +971,7 @@ Wv
 "}
 (8,1,1) = {"
 WR
-ol
+bt
 Kj
 qo
 xb
@@ -1042,7 +1047,7 @@ dH
 bl
 LY
 AD
-zl
+HG
 zl
 zl
 zl
