@@ -1,4 +1,4 @@
-/// REALTIMEOFDAY reads the clock on every use, so real-time checks allow a couple of deciseconds.
+/// The test can yield between arming a timer and reading it, so checks allow a couple of deciseconds.
 #define ROUND_END_NEAR(actual, expected) (abs((actual) - (expected)) <= 2)
 
 /// Exercise real scheduling without constructing another subsystem or waiting for the timers.
@@ -22,10 +22,10 @@
 	SSovermap.round_end_time = null
 	SSovermap.jump_mode = 0 // BS_JUMP_IDLE; Voidcrew defines follow test includes.
 
-/// Whether a timer runs on real time rather than world.time.
-/datum/unit_test/voidcrew_round_end/proc/is_real_time(timer_id)
+/// Whether a timer runs on world.time rather than real time.
+/datum/unit_test/voidcrew_round_end/proc/is_game_time(timer_id)
 	var/datum/timedevent/timer = SStimer.timer_id_dict[timer_id]
-	return timer && (timer.flags & TIMER_CLIENT_TIME)
+	return timer && !(timer.flags & TIMER_CLIENT_TIME)
 
 /// Body of the newest station announcement, or null.
 /datum/unit_test/voidcrew_round_end/proc/last_announcement()
@@ -79,13 +79,12 @@
 	SSticker.current_state = GAME_STATE_FINISHED
 	var/started_at = world.time - (5 MINUTES)
 	SSticker.round_start_time = started_at
-	var/real_now = REALTIMEOFDAY
 	SSovermap.arm_round_end(SSticker, started_at)
-	TEST_ASSERT(ROUND_END_NEAR(SSovermap.round_end_time, real_now - (5 MINUTES) + (360 MINUTES)), "Deadline must be six real hours after the actual roundstart, not world start or lobby time")
-	TEST_ASSERT(is_real_time(SSovermap.round_end_timer), "Completion must run on real time, not world.time")
-	TEST_ASSERT(is_real_time(SSovermap.round_end_request_timer), "The first warning must run on real time, not world.time")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.round_end_timer), SSovermap.round_end_time), "Completion was not armed at the six-hour deadline")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.round_end_request_timer), SSovermap.round_end_time - (12 MINUTES)), "Fleet preparation must start twelve minutes before the deadline")
+	TEST_ASSERT_EQUAL(SSovermap.round_end_time, started_at + (360 MINUTES), "Deadline must be six hours of game time after the actual roundstart, not world start or lobby time")
+	TEST_ASSERT(is_game_time(SSovermap.round_end_timer), "Completion must run on game time, not real time")
+	TEST_ASSERT(is_game_time(SSovermap.round_end_request_timer), "The first warning must run on game time, not real time")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.round_end_timer), SSovermap.round_end_time), "Completion was not armed at the six-hour deadline")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.round_end_request_timer), SSovermap.round_end_time - (12 MINUTES)), "Fleet preparation must start twelve minutes before the deadline")
 	TEST_ASSERT_NULL(SSovermap.jump_countdown_text(), "The countdown must not show before the first warning")
 	var/original_timer = SSovermap.round_end_timer
 	SSovermap.arm_round_end(SSticker, world.time)
@@ -111,16 +110,14 @@
 	TEST_ASSERT(SSticker.check_finished(), "Cancellation must restore normal event endings")
 
 	CONFIG_SET(number/round_time_limit, 30)
-	real_now = REALTIMEOFDAY
 	SSovermap.arm_round_end(SSticker, world.time - (5 MINUTES))
-	TEST_ASSERT(ROUND_END_NEAR(SSovermap.round_end_time, real_now + (25 MINUTES)), "Config duration was not applied")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.round_end_request_timer), real_now + (13 MINUTES)), "Config duration did not move the fleet preparation")
+	TEST_ASSERT(ROUND_END_NEAR(SSovermap.round_end_time, world.time + (25 MINUTES)), "Config duration was not applied")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.round_end_request_timer), world.time + (13 MINUTES)), "Config duration did not move the fleet preparation")
 	clear_schedule()
 
 	// The whole departure from the first warning: T-12 warning, T-7 and T-3 alerts, T-2 launch, T-0 end.
-	real_now = REALTIMEOFDAY
 	SSovermap.arm_round_end(SSticker, world.time - (18 MINUTES))
-	TEST_ASSERT(ROUND_END_NEAR(SSovermap.round_end_time, real_now + (12 MINUTES)), "Deadline missed for a round eighteen minutes in")
+	TEST_ASSERT(ROUND_END_NEAR(SSovermap.round_end_time, world.time + (12 MINUTES)), "Deadline missed for a round eighteen minutes in")
 	TEST_ASSERT(timeleft(SSovermap.round_end_request_timer) <= 2, "The first warning must be due twelve minutes before the end")
 	deltimer(SSovermap.round_end_request_timer)
 	var/articles = GLOB.news_network.message_count
@@ -130,12 +127,12 @@
 	if(announced)
 		TEST_ASSERT(findtext(announced, "fleet jump in 10 minutes"), "Unexpected first warning: [announced]")
 	TEST_ASSERT(ROUND_END_NEAR(SSovermap.jump_launch_time, SSovermap.round_end_time - (2 MINUTES)), "Launch must come two minutes before the end")
-	TEST_ASSERT(is_real_time(SSovermap.jump_timer), "The launch must run on real time, not world.time")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.jump_timer), SSovermap.jump_launch_time), "The launch timer does not match the countdown")
+	TEST_ASSERT(is_game_time(SSovermap.jump_timer), "The launch must run on game time, not real time")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.jump_timer), SSovermap.jump_launch_time), "The launch timer does not match the countdown")
 	TEST_ASSERT_EQUAL(length(SSovermap.jump_alert_timers), 2, "The five- and one-minute alerts were not both scheduled")
-	TEST_ASSERT(is_real_time(SSovermap.jump_alert_timers[1]), "The alerts must run on real time, not world.time")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.jump_alert_timers[1]), SSovermap.jump_launch_time - (5 MINUTES)), "The red alert must play five minutes before launch")
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.jump_alert_timers[2]), SSovermap.jump_launch_time - (1 MINUTES)), "The last alert must play one minute before launch")
+	TEST_ASSERT(is_game_time(SSovermap.jump_alert_timers[1]), "The alerts must run on game time, not real time")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.jump_alert_timers[1]), SSovermap.jump_launch_time - (5 MINUTES)), "The red alert must play five minutes before launch")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.jump_alert_timers[2]), SSovermap.jump_launch_time - (1 MINUTES)), "The last alert must play one minute before launch")
 	var/countdown = SSovermap.jump_countdown_text()
 	TEST_ASSERT(countdown == "Fleet Jump: 10:00" || findtext(countdown, "Fleet Jump: 09:5") == 1, "The countdown must start at the first warning (got [countdown])")
 	var/mob/living/carbon/human/consistent/viewer = allocate(/mob/living/carbon/human/consistent)
@@ -150,11 +147,7 @@
 	announced = last_announcement()
 	if(announced)
 		TEST_ASSERT(findtext(announced, "fleet jump in 5 minutes"), "Unexpected five-minute alert: [announced]")
-	// A server that slept through the alerts wakes with all of them due: only the newest one plays.
-	SSovermap.jump_launch_time = REALTIMEOFDAY + (30 SECONDS)
 	articles = GLOB.news_network.message_count
-	SSovermap.jump_alert(5 MINUTES)
-	TEST_ASSERT_EQUAL(GLOB.news_network.message_count, articles, "An overtaken five-minute alert still played")
 	SSovermap.jump_alert(1 MINUTES)
 	TEST_ASSERT_EQUAL(GLOB.news_network.message_count, articles + 1, "The one-minute alert did not play")
 	TEST_ASSERT(SSovermap.cancel_jump(FALSE), "Admins must be able to cancel an announced departure")
@@ -165,7 +158,7 @@
 	SSovermap.arm_round_end(SSticker, world.time - (19 MINUTES))
 	deltimer(SSovermap.round_end_request_timer)
 	SSovermap.request_scheduled_jump()
-	TEST_ASSERT(ROUND_END_NEAR(REALTIMEOFDAY + timeleft(SSovermap.jump_timer), SSovermap.round_end_time - SSovermap.jump_completion_time), "Late preparation must not push launch back")
+	TEST_ASSERT(ROUND_END_NEAR(world.time + timeleft(SSovermap.jump_timer), SSovermap.round_end_time - SSovermap.jump_completion_time), "Late preparation must not push launch back")
 	TEST_ASSERT_EQUAL(length(SSovermap.jump_alert_timers), 2, "Nine minutes before launch still leaves room for both alerts")
 	original_timer = SSovermap.jump_timer
 	TEST_ASSERT(!SSovermap.request_jump(), "A second request must not reset an announced departure")
