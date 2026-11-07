@@ -333,6 +333,40 @@ GLOBAL_LIST_INIT(installed_capacity_costs, list(
 	for(var/datum/item in get_installed_capacity_items(target))
 		. += get_installed_capacity_cost(item)
 
+/**
+ * One entry per thing spending the target's neural load, for the load bars on
+ * the chrome cradle and the nanite chamber console. `kind` is chrome, nanite,
+ * implant, bioware or organ; chrome also carries its tier for the bar colour.
+ */
+/proc/get_neural_load_segments(mob/living/carbon/target)
+	var/list/segments = list()
+	if(!iscarbon(target))
+		return segments
+	for(var/datum/item in get_installed_capacity_items(target))
+		var/cost = get_installed_capacity_cost(item)
+		if(cost <= 0)
+			continue
+		var/name = "[item]"
+		var/kind = "organ"
+		var/tier = 0
+		if(isorgan(item))
+			var/datum/component/cyberware/chrome = item.GetComponent(/datum/component/cyberware)
+			if(chrome)
+				kind = "chrome"
+				tier = chrome.tier
+		else if(istype(item, /datum/nanite_program))
+			var/datum/nanite_program/program = item
+			kind = "nanite"
+			name = program.name
+		else if(istype(item, /obj/item/implant))
+			kind = "implant"
+		else if(istype(item, /datum/status_effect/bioware))
+			var/datum/status_effect/bioware/enhancement = item
+			kind = "bioware"
+			name = "[capitalize(replacetext(enhancement.id, "_", " "))] bioware"
+		segments += list(list("name" = name, "load" = cost, "kind" = kind, "tier" = tier))
+	return segments
+
 /// The target's chrome capacity: the body's baseline plus every installed
 /// ware's capacity bonus (the Governor hook).
 /proc/get_chrome_capacity(mob/living/carbon/target)

@@ -121,8 +121,11 @@ GLOBAL_LIST_INIT(nanite_program_capacity_costs, list(
 	return ..()
 
 /datum/nanite_program/proc/capacity_cost()
+	return nanite_program_type_capacity_cost(type)
+
+/// Neural load of a program type, for catalogs that list programs nobody is running yet.
+/proc/nanite_program_type_capacity_cost(program_type)
 	// Walk the type tree, so a specific zero also overrides a costed category.
-	var/program_type = type
 	while(ispath(program_type, /datum/nanite_program))
 		if(program_type in GLOB.nanite_program_capacity_costs)
 			return GLOB.nanite_program_capacity_costs[program_type]
