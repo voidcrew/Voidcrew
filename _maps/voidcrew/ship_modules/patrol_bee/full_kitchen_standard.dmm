@@ -1,0 +1,199 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bwK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/thinplating/dark,
+/turf/template_noop,
+/area/template_noop)
+"cuH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/button/door/directional/north{
+	id = "cafe_counter"
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"dAq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/machinery/microwave{
+	pixel_y = 3
+	},
+/obj/item/storage/box/donkpockets,
+/turf/open/floor/iron/cafeteria,
+/area/template_noop)
+"dIJ" = (
+/turf/template_noop,
+/area/template_noop)
+"eMx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/door/window/left/directional/west,
+/obj/structure/table,
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = -1
+	},
+/obj/item/plate{
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"lEW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/random/directional/north,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/machinery/oven/range,
+/turf/open/floor/iron,
+/area/template_noop)
+"nvm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/deepfryer,
+/turf/open/floor/iron/cafeteria,
+/area/template_noop)
+"oAB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "cafe_counter";
+	name = "Kitchen Counter Shutters";
+	dir = 8
+	},
+/obj/machinery/griddle,
+/turf/open/floor/iron,
+/area/template_noop)
+"pBi" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/template_noop)
+"pPn" = (
+/obj/modular_map_connector,
+/turf/template_noop,
+/area/template_noop)
+"qWq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/turf/open/floor/iron,
+/area/template_noop)
+"rIy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/freezer/fridge/open,
+/obj/item/reagent_containers/condiment/enzyme,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/condiment/milk,
+/obj/item/food/meat/slab,
+/obj/item/food/meat/slab,
+/obj/item/food/meat/slab,
+/obj/item/reagent_containers/condiment/sugar,
+/turf/open/floor/iron/cafeteria,
+/area/template_noop)
+"rTE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/machinery/door/airlock{
+	name = "Kitchen"
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"sPc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/structure/table,
+/obj/machinery/processor{
+	pixel_y = 16;
+	layer = 3;
+	pixel_x = 7
+	},
+/obj/machinery/reagentgrinder{
+	pixel_x = -9;
+	pixel_y = 18;
+	layer = 4
+	},
+/obj/item/knife/kitchen{
+	pixel_x = -8;
+	layer = 5
+	},
+/obj/item/kitchen/rollingpin{
+	pixel_x = -1
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"umu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sink/kitchen/directional/west,
+/obj/machinery/computer/order_console/cook{
+	dir = 8
+	},
+/turf/open/floor/iron/cafeteria,
+/area/template_noop)
+"uyG" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"wyc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/decal/cleanable/food/tomato_smudge,
+/obj/item/reagent_containers/cup/glass/bottle/juice/tomatojuice{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+eMx
+oAB
+rTE
+dIJ
+dIJ
+dIJ
+pPn
+"}
+(2,1,1) = {"
+cuH
+qWq
+qWq
+bwK
+pBi
+pBi
+rIy
+"}
+(3,1,1) = {"
+lEW
+wyc
+sPc
+uyG
+nvm
+umu
+dAq
+"}
