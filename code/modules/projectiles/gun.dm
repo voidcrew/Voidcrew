@@ -208,8 +208,10 @@
 		playsound(src, fire_sound, fire_sound_volume, vary_fire_sound)
 
 /obj/item/gun/proc/shoot_live_shot(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = TRUE)
-	if(recoil && !tk_firing(user))
-		shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL START - gun_feel: voidcrew/modules/gun_feel kicks the camera away from the shot instead of shaking it at random
+	// if(recoil && !tk_firing(user))
+	// 	shake_camera(user, recoil + 1, recoil)
+	// VOIDCREW EDIT REMOVAL END
 	fire_sounds()
 	if(suppressed || !message)
 		return FALSE
