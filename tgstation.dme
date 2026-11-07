@@ -7025,6 +7025,7 @@
 #include "voidcrew\mapping\spawners\nanites.dm"
 #include "voidcrew\modules\admin\feature_testing.dm"
 #include "voidcrew\modules\admin\overmap_management.dm"
+#include "voidcrew\modules\admin\overmap_management_bans.dm"
 #include "voidcrew\modules\admin\shuttle_deletion.dm"
 #include "voidcrew\modules\ambient_npcs\_ambient_types.dm"
 #include "voidcrew\modules\ambient_npcs\ambient_activity.dm"

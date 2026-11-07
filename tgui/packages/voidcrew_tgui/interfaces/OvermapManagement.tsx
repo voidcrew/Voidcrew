@@ -7,6 +7,7 @@ import {
   Input,
   LabeledList,
   NoticeBox,
+  NumberInput,
   Section,
   Stack,
 } from 'tgui-core/components';
@@ -78,7 +79,27 @@ type SpawnOption = {
   description: string | null;
 };
 
+type BanEntry = {
+  id: string;
+  outpost_ref: string;
+  outpost: string;
+  kind: string;
+  target_ref: string;
+  name: string;
+  label: string;
+  seconds: number | null;
+};
+
+type Bans = {
+  entries: BanEntry[];
+  outposts: { ref: string; name: string; trader: BooleanLike }[];
+  ships: { ref: string; name: string }[];
+  people: { ref: string; name: string }[];
+  max_minutes: number;
+};
+
 type Data = {
+  bans: Bans | null;
   objects: Contact[];
   selected: Details | null;
   return_name: string | null;
@@ -109,6 +130,12 @@ export const OvermapManagement = () => {
   const [activity, setActivity] = useState('All');
   const [showSpawn, setShowSpawn] = useState(false);
   const { objects, selected } = data;
+  const showBans = !!data.bans;
+  const closeBans = () => {
+    if (showBans) {
+      act('ban_view', { open: 0 });
+    }
+  };
   useEffect(() => {
     if (data.spawn_serial > 0) {
       setShowSpawn(false);
@@ -144,10 +171,25 @@ export const OvermapManagement = () => {
               </Stack.Item>
               <Stack.Item>
                 <Button
+                  icon="ban"
+                  selected={showBans}
+                  onClick={() => {
+                    setShowSpawn(false);
+                    act('ban_view', { open: showBans ? 0 : 1 });
+                  }}
+                >
+                  Outpost bans
+                </Button>
+              </Stack.Item>
+              <Stack.Item>
+                <Button
                   icon="plus"
                   color="good"
                   selected={showSpawn}
-                  onClick={() => setShowSpawn(!showSpawn)}
+                  onClick={() => {
+                    closeBans();
+                    setShowSpawn(!showSpawn);
+                  }}
                 >
                   Spawn new
                 </Button>
@@ -241,9 +283,14 @@ export const OvermapManagement = () => {
                           fluid
                           mb={0.5}
                           py={0.75}
-                          selected={!showSpawn && selected?.ref === contact.ref}
+                          selected={
+                            !showSpawn &&
+                            !showBans &&
+                            selected?.ref === contact.ref
+                          }
                           onClick={() => {
                             setShowSpawn(false);
+                            closeBans();
                             act('select', { ref: contact.ref });
                           }}
                         >
@@ -262,7 +309,9 @@ export const OvermapManagement = () => {
                 </Section>
               </Stack.Item>
               <Stack.Item grow style={{ minWidth: 0 }}>
-                {showSpawn ? (
+                {data.bans ? (
+                  <OutpostBans bans={data.bans} />
+                ) : showSpawn ? (
                   <SpawnContact onCancel={() => setShowSpawn(false)} />
                 ) : selected ? (
                   <ContactDetails key={selected.ref} contact={selected} />
@@ -645,6 +694,215 @@ const ContactDetails = ({ contact }: { contact: Details }) => {
           </Box>
         ))}
       </Collapsible>
+    </Section>
+  );
+};
+
+const BAN_KINDS = {
+  trader: [
+    { value: 'embargo', displayText: 'Trade embargo (ship)' },
+    { value: 'aggressor', displayText: 'Marked for violence (person)' },
+    { value: 'trespass', displayText: 'Refused service (person)' },
+  ],
+  player: [{ value: 'ship_ban', displayText: 'Denied docking (ship)' }],
+};
+
+const SHIP_KINDS = ['embargo', 'ship_ban'];
+
+const OutpostBans = ({ bans }: { bans: Bans }) => {
+  const { act } = useBackend<Data>();
+  const [search, setSearch] = useState('');
+  const [outpostFilter, setOutpostFilter] = useState('');
+  const [outpostRef, setOutpostRef] = useState<string | null>(null);
+  const [kind, setKind] = useState<string | null>(null);
+  const [targetRef, setTargetRef] = useState<string | null>(null);
+  const [minutes, setMinutes] = useState(15);
+
+  const query = search.trim().toLowerCase();
+  const entries = bans.entries
+    .filter(
+      (entry) =>
+        (!outpostFilter || entry.outpost_ref === outpostFilter) &&
+        `${entry.name} ${entry.outpost} ${entry.label}`
+          .toLowerCase()
+          .includes(query),
+    )
+    .sort(
+      (a, b) =>
+        a.outpost.localeCompare(b.outpost) || a.name.localeCompare(b.name),
+    );
+  const outposts = [...bans.outposts].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
+  const outpost = outposts.find((option) => option.ref === outpostRef);
+  const kinds = outpost
+    ? outpost.trader
+      ? BAN_KINDS.trader
+      : BAN_KINDS.player
+    : [];
+  const kindOption = kinds.find((option) => option.value === kind);
+  const shipTarget = !!kind && SHIP_KINDS.includes(kind);
+  const targets = (shipTarget ? bans.ships : bans.people)
+    .map((option) => ({ value: option.ref, displayText: option.name }))
+    .sort((a, b) => a.displayText.localeCompare(b.displayText));
+  const target = targets.find((option) => option.value === targetRef);
+  const outpostName = (ref: string) =>
+    outposts.find((option) => option.ref === ref)?.name || 'All outposts';
+
+  return (
+    <Section fill>
+      <Stack vertical fill>
+        <Stack.Item>
+          <Box bold fontSize="18px">
+            Outpost bans
+          </Box>
+          <Box color="label">
+            {bans.entries.length} active across {outposts.length} outposts
+          </Box>
+        </Stack.Item>
+        <Stack.Item>
+          <Stack>
+            <Stack.Item grow>
+              <Input
+                fluid
+                placeholder="Search names or outposts"
+                value={search}
+                onChange={setSearch}
+              />
+            </Stack.Item>
+            <Stack.Item basis="40%">
+              <Dropdown
+                width="100%"
+                selected={outpostFilter}
+                displayText={outpostName(outpostFilter)}
+                options={[
+                  { value: '', displayText: 'All outposts' },
+                  ...outposts.map((option) => ({
+                    value: option.ref,
+                    displayText: option.name,
+                  })),
+                ]}
+                onSelected={setOutpostFilter}
+              />
+            </Stack.Item>
+          </Stack>
+        </Stack.Item>
+        <Stack.Item grow style={{ overflowY: 'auto', minHeight: 0 }}>
+          {entries.length === 0 && (
+            <NoticeBox info>
+              {bans.entries.length > 0 ? 'No matching bans.' : 'Nobody is banned.'}
+            </NoticeBox>
+          )}
+          {entries.map((entry) => (
+            <Box key={entry.id} mb={1}>
+              <Stack align="center">
+                <Stack.Item grow style={{ minWidth: 0 }}>
+                  <Box bold style={wrapping}>
+                    {entry.name}
+                  </Box>
+                  <Box color="label" style={wrapping}>
+                    {entry.label} · {entry.outpost}
+                    {entry.seconds !== null
+                      ? ` · ${duration(entry.seconds)} left`
+                      : ' · Until lifted'}
+                  </Box>
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="unlock"
+                    onClick={() =>
+                      act('ban_lift', {
+                        outpost: entry.outpost_ref,
+                        kind: entry.kind,
+                        target: entry.target_ref,
+                      })
+                    }
+                  >
+                    Lift
+                  </Button>
+                </Stack.Item>
+              </Stack>
+            </Box>
+          ))}
+        </Stack.Item>
+        <Stack.Item>
+          <Section title="Add a ban">
+            <LabeledList>
+              <LabeledList.Item label="Outpost">
+                <Dropdown
+                  width="100%"
+                  selected={outpostRef}
+                  displayText={outpost?.name}
+                  placeholder="Choose an outpost"
+                  options={outposts.map((option) => ({
+                    value: option.ref,
+                    displayText: option.name,
+                  }))}
+                  onSelected={(value) => {
+                    setOutpostRef(value);
+                    setKind(null);
+                    setTargetRef(null);
+                  }}
+                />
+              </LabeledList.Item>
+              <LabeledList.Item label="Ban">
+                <Dropdown
+                  width="100%"
+                  disabled={!outpost}
+                  selected={kind}
+                  displayText={kindOption?.displayText}
+                  placeholder="Choose a ban"
+                  options={kinds}
+                  onSelected={(value) => {
+                    setKind(value);
+                    setTargetRef(null);
+                    setMinutes(value === 'trespass' ? 30 : 15);
+                  }}
+                />
+              </LabeledList.Item>
+              <LabeledList.Item label={shipTarget ? 'Ship' : 'Person'}>
+                <Dropdown
+                  width="100%"
+                  disabled={!kind}
+                  selected={targetRef}
+                  displayText={target?.displayText}
+                  placeholder={shipTarget ? 'Choose a ship' : 'Choose a person'}
+                  options={targets}
+                  onSelected={setTargetRef}
+                />
+              </LabeledList.Item>
+              {!!kind && kind !== 'ship_ban' && (
+                <LabeledList.Item label="Minutes">
+                  <NumberInput
+                    width="60px"
+                    minValue={1}
+                    maxValue={bans.max_minutes}
+                    step={1}
+                    value={minutes}
+                    onChange={setMinutes}
+                  />
+                </LabeledList.Item>
+              )}
+            </LabeledList>
+            <Button
+              mt={1}
+              icon="ban"
+              color="bad"
+              disabled={!outpost || !kind || !target}
+              onClick={() =>
+                act('ban_add', {
+                  outpost: outpostRef,
+                  kind,
+                  target: targetRef,
+                  minutes,
+                })
+              }
+            >
+              Add ban
+            </Button>
+          </Section>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };
