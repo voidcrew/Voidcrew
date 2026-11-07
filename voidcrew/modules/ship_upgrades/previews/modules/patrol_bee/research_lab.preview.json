@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/research_lab.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 4,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_research_lab_standard.png",
+     "src_md5": "23069f7c6529f2b02081150b85eddd6c",
+     "width": 3
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 4,
+     "png": "patrol_bee_research_lab_syndicate_black.png",
+     "src_md5": "0a4b0c9889ed9c5d2ce60cdf30c20685",
+     "width": 3
+    }
+   },
+   "width": 3
+  }
+ },
+ "tile_px": 32
+}

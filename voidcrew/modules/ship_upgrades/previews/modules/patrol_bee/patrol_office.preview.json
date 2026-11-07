@@ -1,0 +1,36 @@
+{
+ "hulls": {},
+ "modules": {
+  "patrol_bee/patrol_office.dmm": {
+   "connector": [
+    1,
+    1
+   ],
+   "height": 3,
+   "themes": {
+    "standard": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "patrol_bee_patrol_office_standard.png",
+     "src_md5": "8551fbb44f7a6cd74cd07568deb2f12a",
+     "width": 4
+    },
+    "syndicate_black": {
+     "connector": [
+      1,
+      1
+     ],
+     "height": 3,
+     "png": "patrol_bee_patrol_office_syndicate_black.png",
+     "src_md5": "231f6f70f3a9e203a9b92dddec0ad454",
+     "width": 4
+    }
+   },
+   "width": 4
+  }
+ },
+ "tile_px": 32
+}
