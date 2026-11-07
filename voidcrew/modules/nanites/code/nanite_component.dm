@@ -544,6 +544,7 @@
 		mob_program["name"] = P.name
 		mob_program["desc"] = P.desc
 		mob_program["id"] = id
+		mob_program["load"] = P.capacity_cost()
 
 		if(scan_level >= 2)
 			mob_program["activated"] = P.activated

@@ -290,6 +290,7 @@ export const NaniteProgrammerContent = (props, context) => {
     name,
     desc,
     use_rate,
+    load,
     can_trigger,
     trigger_cost,
     trigger_cooldown,
@@ -312,6 +313,7 @@ export const NaniteProgrammerContent = (props, context) => {
           <Flex.Item size={0.7}>
             <LabeledList>
               <LabeledList.Item label="Use Rate">{use_rate}</LabeledList.Item>
+              <LabeledList.Item label="Neural Load">{load}</LabeledList.Item>
               {!!can_trigger && (
                 <>
                   <LabeledList.Item label="Trigger Cost">
@@ -339,7 +341,7 @@ export const NaniteProgrammerContent = (props, context) => {
             onClick={() => act('toggle_active')}
           />
         }>
-        <Flex>
+        <Flex wrap="wrap">
           <Flex.Item>
             <NaniteCodes program={data} />
           </Flex.Item>
@@ -370,6 +372,7 @@ export const NaniteInfoBox = (props, context) => {
     desc,
     activated,
     use_rate,
+    load,
     can_trigger,
     trigger_cost,
     trigger_cooldown,
@@ -399,6 +402,7 @@ export const NaniteInfoBox = (props, context) => {
         <Flex.Item size={0.5}>
           <LabeledList>
             <LabeledList.Item label="Use Rate">{use_rate}</LabeledList.Item>
+            <LabeledList.Item label="Neural Load">{load}</LabeledList.Item>
             {!!can_trigger && (
               <>
                 <LabeledList.Item label="Trigger Cost">
@@ -572,12 +576,12 @@ export const NaniteProgramHub = (props, context) => {
         <>
           <Button
             icon={detail_view ? 'info' : 'list'}
-            content={detail_view ? 'Detailed' : 'Compact'}
+            tooltip={detail_view ? 'Detailed' : 'Compact'}
             onClick={() => act('toggle_details')}
           />
           <Button
             icon="sync"
-            content="Sync Research"
+            tooltip="Sync research"
             onClick={() => act('refresh')}
           />
         </>
@@ -590,7 +594,7 @@ export const NaniteProgramHub = (props, context) => {
         </NoticeBox>
       ) : programs !== null ? (
         <Flex>
-          <Flex.Item minWidth="110px">
+          <Flex.Item basis="88px" shrink={0} mr={2}>
             <Tabs vertical>
               {map(programs, (cat_contents, category) => {
                 // Categories arrive as RND paths ("/Nanites/Utility Nanites");
@@ -611,49 +615,39 @@ export const NaniteProgramHub = (props, context) => {
               })}
             </Tabs>
           </Flex.Item>
-          <Flex.Item grow={1} basis={0}>
-            {detail_view ? (
-              programsInCategory.map((program) => (
-                <Section
-                  key={program.id}
-                  title={program.name}
-                  level={2}
-                  buttons={
+          <Flex.Item
+            grow={1}
+            basis={0}
+            pl={1.5}
+            style={{ borderLeft: '1px solid rgba(255, 255, 255, 0.1)' }}
+          >
+            {programsInCategory.map((program) => (
+              <Box
+                key={program.id}
+                mb={1}
+                pb={1}
+                style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}
+              >
+                <Flex align="center">
+                  <Flex.Item grow={1} basis={0} bold>
+                    {program.name}
+                  </Flex.Item>
+                  <Flex.Item shrink={0} ml={1}>
                     <Button
                       icon="download"
-                      content="Download"
+                      tooltip="Download"
                       onClick={() =>
                         act('download', {
                           program_id: program.id,
                         })
                       }
                     />
-                  }
-                >
-                  {program.desc}
-                </Section>
-              ))
-            ) : (
-              <LabeledList>
-                {programsInCategory.map((program) => (
-                  <LabeledList.Item
-                    key={program.id}
-                    label={program.name}
-                    buttons={
-                      <Button
-                        icon="download"
-                        content="Download"
-                        onClick={() =>
-                          act('download', {
-                            program_id: program.id,
-                          })
-                        }
-                      />
-                    }
-                  />
-                ))}
-              </LabeledList>
-            )}
+                  </Flex.Item>
+                </Flex>
+                <Box color="label">Neural load {program.load}</Box>
+                {!!detail_view && <Box mt={0.5}>{program.desc}</Box>}
+              </Box>
+            ))}
           </Flex.Item>
         </Flex>
       ) : (
@@ -729,7 +723,6 @@ export const NaniteCloudControl = (props, context) => {
                       />
                     ) : (
                       <>
-                        {'New Backup: '}
                         <NumberInput
                           value={new_backup_id}
                           minValue={1}
@@ -745,6 +738,7 @@ export const NaniteCloudControl = (props, context) => {
                         />
                         <Button
                           icon="plus"
+                          tooltip="New backup"
                           onClick={() => act('create_backup')}
                         />
                       </>
