@@ -35,7 +35,7 @@ GLOBAL_LIST_EMPTY(default_lighting_underlays_by_z)
 	for(var/turf/open/space/space_tile in RANGE_TURFS(1, affected_turf))
 		space_tile.enable_starlight()
 
-	// VOIDCREW EDIT: ambient bleed, the same wake-up the loop above does for starlight,
+	// VOIDCREW EDIT START: ambient bleed, the same wake-up the loop above does for starlight,
 	// generalised to any area that paints its light on the area instead of on its turfs
 	// (ambient_lighting - planet surfaces). Those turfs carry no lighting objects and emit
 	// nothing, so this brand new statically lit tile would render as a hard black edge
@@ -125,7 +125,7 @@ GLOBAL_LIST_EMPTY(default_lighting_underlays_by_z)
 	// Of note. Most of the cost in this proc is here, I think because color matrix'd underlays DO NOT cache well, which is what adding to underlays does
 	// We use underlays because objects on each tile would fuck with maptick. if that ever changes, use an object for this instead
 	affected_turf.underlays += current_underlay
-	// VOIDCREW EDIT: an area with active base lighting is lit by a BLEND_ADD overlay on
+	// VOIDCREW EDIT START: an area with active base lighting is lit by a BLEND_ADD overlay on
 	// the area, not by light sources on its turfs, so every corner here reads dark and
 	// set_luminosity comes out 0. BYOND culls the contents of a luminosity 0 tile out of
 	// clients' view, which on a base-lit planet surface would leave the ground looking

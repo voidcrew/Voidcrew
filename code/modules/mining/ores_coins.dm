@@ -49,7 +49,7 @@
 	if(!refined_type)
 		return TRUE
 
-	if(I.use_tool(src, user, 0, volume=50, amount=1)) //one fuel per chunk, otherwise a self-refuelling welder smelts for free
+	if(I.use_tool(src, user, 0, volume=50, amount=1)) //one fuel per chunk, otherwise a self-refuelling welder smelts for free // VOIDCREW EDIT: mining consumes welder fuel and identifies the plasma smelting machine.
 		new refined_type(drop_location())
 		use(1)
 
@@ -161,7 +161,7 @@ GLOBAL_LIST_INIT(sand_recipes, list(\
 
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/item/stack/ore/plasma/welder_act(mob/living/user, obj/item/I)
-	to_chat(user, span_warning("You can't hit a high enough temperature to smelt [src] properly! It needs an ore redemption machine."))
+	to_chat(user, span_warning("You can't hit a high enough temperature to smelt [src] properly! It needs an ore redemption machine.")) // VOIDCREW EDIT: mining consumes welder fuel and identifies the plasma smelting machine.
 	return TRUE
 
 // VOIDCREW EDIT END

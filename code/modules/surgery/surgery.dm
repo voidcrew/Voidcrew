@@ -134,7 +134,7 @@
 	var/step_handled = surgery_step.try_op(user, target, user.zone_selected, tool, src, try_to_fail)
 	qdel(surgery_step)
 	// VOIDCREW EDIT END
-	if(step_handled)
+	if(step_handled) // VOIDCREW EDIT: surgery owns each sleeping step invocation until completion.
 		return TRUE
 	if(!tool)
 		return FALSE

@@ -1,0 +1,122 @@
+{
+ "category": "shields",
+ "groups": [
+  "full shields",
+  "bucklers",
+  "uniques"
+ ],
+ "items": {
+  "/obj/item/shield/ballistic": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "d16320d12bbbd8f2",
+   "name": "ballistic shield",
+   "rank": 2,
+   "reason": "Anchor. Blocks about 40% of bullets and lasers, and shrugs off what it blocks: about 25 pistol rounds to break, and one titanium sheet repairs it. Prints for pennies after early research.",
+   "tier": "yellow"
+  },
+  "/obj/item/shield/buckler": {
+   "confidence": "high",
+   "group": "bucklers",
+   "hash": "8456a1fcff890d75",
+   "name": "wooden buckler",
+   "rank": 3,
+   "reason": "30% block, fits in a bag. Rare ruin find.",
+   "tier": "green"
+  },
+  "/obj/item/shield/buckler/moonflower": {
+   "confidence": "medium",
+   "group": "bucklers",
+   "hash": "18382736dbbdc807",
+   "name": "moonflower buckler",
+   "rank": 2,
+   "reason": "40% block but only 40 integrity. Needs mutated plants from hydroponics.",
+   "tier": "green"
+  },
+  "/obj/item/shield/buckler/parmula": {
+   "confidence": "high",
+   "group": "bucklers",
+   "hash": "ea433574580938e0",
+   "name": "parmula of the pit",
+   "rank": 1,
+   "reason": "35% block, tough, and fits in a bag. Good for arena duels, thin against guns once big hits lower its odds.",
+   "tier": "green"
+  },
+  "/obj/item/shield/energy": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "9af9a2d78183abb9",
+   "name": "combat energy shield",
+   "rank": 1,
+   "reason": "Anchor. 50% block that never wears out, bounces half of lasers back, and folds to pocket size. The best a shield gets without being a unique. Ruin find only.",
+   "tier": "red"
+  },
+  "/obj/item/shield/improvised": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "7b08f6ab33a51b33",
+   "name": "improvised shield",
+   "rank": 7,
+   "reason": "Anchor. Iron and tape make a 50% block at round start, but it falls apart after 2 or 3 bullets. A disposable first shield.",
+   "tier": "green"
+  },
+  "/obj/item/shield/kite": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "b1a967c7826ebc0e",
+   "name": "kite shield",
+   "rank": 6,
+   "reason": "50% block against everything, and takes about 6 pistol rounds to break. No repair. From pirate bosses and ruins.",
+   "tier": "yellow"
+  },
+  "/obj/item/shield/riot": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "9a39939308f26916",
+   "name": "riot shield",
+   "rank": 4,
+   "reason": "Very tough against melee, weak against guns: lasers pass through, and bullets break it in about 5 blocks. One titanium sheet repairs it.",
+   "tier": "yellow"
+  },
+  "/obj/item/shield/riot/phalanx_buckler": {
+   "confidence": "high",
+   "group": "uniques",
+   "hash": "b18334b2fcee7bc6",
+   "name": "Phalanx buckler",
+   "note": "Used in the active hand it raises or lowers: raised, the user is slowed (+0.6) and every projectile, beams included, that came from the half of the map the user is facing (diagonals count) is stopped outright for the user and for one living mob standing directly behind them. Who is covered is re-picked only when the user moves or turns, and lowering happens on drop. Otherwise it behaves as a riot shield.",
+   "rank": 1,
+   "reason": "Authored unique. Raised, it stops every shot from the half of the map you face, for you and one person behind you, at a small speed cost. Lowered, it is a riot shield.",
+   "tier": "above"
+  },
+  "/obj/item/shield/riot/tele": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "748544688b2600d6",
+   "name": "telescopic shield",
+   "note": "Blocks only while extended; collapsed it blocks nothing and cannot shove, and extending also lets it be carried on the back. Extended it is a riot shield: blocked brute and burn hits damage it until it breaks, and beams pass through it.",
+   "rank": 3,
+   "reason": "A riot shield that folds into a bag. Blocks bullets and melee, but lasers go straight through and bullets break it in about 5 blocks. Prints for pennies after early research.",
+   "tier": "yellow"
+  },
+  "/obj/item/shield/roman": {
+   "confidence": "high",
+   "group": "full shields",
+   "hash": "77762d27687453e5",
+   "name": "Roman shield",
+   "rank": 5,
+   "reason": "50% block against everything, and takes about 6 pistol rounds to break. No repair. Ruin find only.",
+   "tier": "yellow"
+  }
+ },
+ "method": "Judged by hand on three things: whether it blocks bullets and lasers or only some of them, how many hits it survives, and what it costs to carry. Every held block falls by a third of the incoming damage, so the real chance against a pistol round is about 43%, not 50%. The off hand is the price, so it is measured against armor and guns.",
+ "unrated": {
+  "/obj/item/shield": "abstract",
+  "/obj/item/shield/adamantineshield": "no route",
+  "/obj/item/shield/changeling": "literal only",
+  "/obj/item/shield/energy/advanced": "no route",
+  "/obj/item/shield/energy/bananium": "no route",
+  "/obj/item/shield/mirror": "no route",
+  "/obj/item/shield/riot/flash": "literal only",
+  "/obj/item/shield/roman/fake": "no route"
+ }
+}

@@ -315,8 +315,10 @@
 	// VOIDCREW EDIT: degrade to an empty result rather than throwing. Every caller reads
 	// the result as "the atoms this operation applies to", so an empty list is the no-op.
 	if(!islist(atoms) || !islist(typecache))
+		// VOIDCREW EDIT START: Reject malformed typecache inputs without unsafe mass deletion; diagnostics live in voidcrew/edits/__HELPERS/_lists.dm.
 		warn_bad_typecache_filter("typecache_filter_list", atoms, typecache)
 		return
+		// VOIDCREW EDIT END
 	for(var/atom/atom_checked as anything in atoms)
 		if (typecache[atom_checked.type])
 			. += atom_checked
@@ -329,8 +331,10 @@
 	// everything this returns, so a missing typecache must never be read as "nothing is
 	// excluded". Empty means nothing gets deleted, which is the recoverable direction.
 	if(!islist(atoms) || !islist(typecache))
+		// VOIDCREW EDIT START: Reject malformed typecache inputs without unsafe mass deletion; diagnostics live in voidcrew/edits/__HELPERS/_lists.dm.
 		warn_bad_typecache_filter("typecache_filter_list_reverse", atoms, typecache)
 		return
+		// VOIDCREW EDIT END
 	for(var/atom/atom_checked as anything in atoms)
 		if(!typecache[atom_checked.type])
 			. += atom_checked
@@ -340,8 +344,10 @@
 	. = list()
 	// VOIDCREW EDIT: as above.
 	if(!islist(atoms) || !islist(typecache_include) || !islist(typecache_exclude))
+		// VOIDCREW EDIT START: Reject malformed typecache inputs without unsafe mass deletion; diagnostics live in voidcrew/edits/__HELPERS/_lists.dm.
 		warn_bad_typecache_filter("typecache_filter_multi_list_exclusion", atoms, typecache_include)
 		return
+		// VOIDCREW EDIT END
 	for(var/atom/atom_checked as anything in atoms)
 		if(typecache_include[atom_checked.type] && !typecache_exclude[atom_checked.type])
 			. += atom_checked

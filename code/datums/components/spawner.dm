@@ -19,12 +19,6 @@
 	var/spawn_distance
 	/// Distance from the spawner to exclude mobs from spawning
 	var/spawn_distance_exclude
-	// VOIDCREW EDIT ADDITION: cached map-tenant footprint for the presence gate in
-	// try_spawn_mob(). Resolved lazily on the first tick that has anyone on our z-level and
-	// re-resolved if the parent ever moves (structures do not, but components ride mobs and
-	// items too). Null means "this level is not shared", which is the common case and the
-	// one that keeps the plain z-level gate.
-	// VOIDCREW EDIT ADDITION END
 	COOLDOWN_DECLARE(spawn_delay)
 
 /datum/component/spawner/Initialize(spawn_types = list(), spawn_time = 30 SECONDS, max_spawned = 5, max_spawn_per_attempt = 1 , faction = list(FACTION_MINING), spawn_text = null, datum/callback/spawn_callback = null, spawn_distance = 1, spawn_distance_exclude = 0, initial_spawn_delay = 0 SECONDS)
@@ -39,6 +33,10 @@
 	src.max_spawn_per_attempt = max_spawn_per_attempt
 	src.spawn_distance = spawn_distance
 	src.spawn_distance_exclude = spawn_distance_exclude
+	// VOIDCREW EDIT ADDITION START: npc_scaling pins the environmental source now.
+	var/atom/spawner = parent
+	spawner.get_npc_spawn_context()
+	// VOIDCREW EDIT ADDITION END
 	// If set, doesn't instantly spawn a creature when the spawner component is applied.
 	if(initial_spawn_delay)
 		COOLDOWN_START(src, spawn_delay, spawn_time)
@@ -65,7 +63,6 @@
 	if(!COOLDOWN_FINISHED(src, spawn_delay))
 		return
 
-	// VOIDCREW EDIT START - don't spawn where nobody is standing.
 	// Spawned mobs die unattended out there (vacuum, weather, each other) and
 	// validate_references() frees the slot the instant one is DEAD, so a bone pit or
 	// monster den on a loaded-but-unvisited level emits a fresh corpse every spawn_time
@@ -101,7 +98,6 @@
 		cached_footprint = map_footprint_at_turf(spawner_turf)
 	if(cached_footprint && !footprint_holds_any_client(cached_footprint, clients_here))
 		return
-	// END VOIDCREW EDIT
 
 	validate_references()
 	var/spawned_total = length(spawned_things)
@@ -117,19 +113,26 @@
 	for(var/i in 1 to adjusted_spawn_count)
 		var/atom/created
 		var/turf/picked_spot
+		// VOIDCREW EDIT: a fresh construction context inherits the parent's pinned site.
+		var/datum/npc_spawn_context/context = new(spawner)
 
 		if(spawn_distance == 1)
-			created = new chosen_mob_type(spawner.loc)
+			created = spawn_npc_in_zone(chosen_mob_type, spawner.loc, context, FALSE) // VOIDCREW EDIT: npc_scaling
 		else if(spawn_distance >= 1 && spawn_distance_exclude >= 1)
 			picked_spot = pick(turf_peel(spawn_distance, spawn_distance_exclude, spawner.loc, view_based = TRUE))
 			if(!picked_spot)
 				picked_spot = pick(circle_range_turfs(spawner.loc, spawn_distance))
 			if(picked_spot == spawner.loc)
 				SEND_SIGNAL(spawner, COMSIG_SPAWNER_SPAWNED_DEFAULT)
-			created = new chosen_mob_type(picked_spot)
+			created = spawn_npc_in_zone(chosen_mob_type, picked_spot, context, FALSE) // VOIDCREW EDIT: npc_scaling
 		else if (spawn_distance >= 1)
 			picked_spot = pick(circle_range_turfs(spawner.loc, spawn_distance))
-			created = new chosen_mob_type(picked_spot)
+			created = spawn_npc_in_zone(chosen_mob_type, picked_spot, context, FALSE) // VOIDCREW EDIT: npc_scaling
+
+		// VOIDCREW EDIT ADDITION START
+		if(QDELETED(created))
+			continue
+		// VOIDCREW EDIT ADDITION END
 
 		created.flags_1 |= (spawner.flags_1 & ADMIN_SPAWNED_1)
 		spawned_things += WEAKREF(created)
@@ -139,17 +142,18 @@
 			created_mob.faction = src.faction
 			// The assignment above deliberately replaces the mob's initialized faction list,
 			// so restore any native-planet token it received during Initialize().
+			// VOIDCREW EDIT: Spawn only near players in the same footprint and preserve native planetary factions (voidcrew/edits/datums/components/spawner.dm).
 			inherit_planetary_faction(created_mob)
 			RegisterSignal(created, COMSIG_MOB_STATCHANGE, PROC_REF(mob_stat_changed))
 
 		SEND_SIGNAL(src, COMSIG_SPAWNER_SPAWNED, created)
 		RegisterSignal(created, COMSIG_QDELETING, PROC_REF(on_deleted))
 		spawn_callback?.Invoke(created)
+		context.finalize() // VOIDCREW EDIT: npc_scaling runs after faction and callback setup.
 
 
 	if (spawn_text)
 		spawner.visible_message(span_danger("A creature [spawn_text] [spawner]."))
-
 
 
 /// Remove weakrefs to atoms which have been killed or deleted without us picking it up somehow

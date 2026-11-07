@@ -43,6 +43,7 @@
 		// these are pulled out of their upstream nodes in
 		// voidcrew/modules/research/techweb_nodes.dm. The designs stay behind for the
 		// consoles that are already mapped in; nothing researches them.
+		// VOIDCREW EDIT START: unit_tests permits deliberately unresearchable research and depot designs.
 		/datum/design/board/cargorequest,
 		/datum/design/board/accounting_console,
 		/datum/design/cargo_express,
@@ -67,6 +68,13 @@
 		/datum/design/nanites/nerve_decay,
 		/datum/design/nanites/brain_decay,
 		/datum/design/nanites/heart_stop,
+		// Voidcrew: incendiary slugs print from Specialist Ammunition through their /sec design, so
+		// the base autolathe design left the hacked list. Test-range and outback pins can't fire
+		// on a ship, so they came out of their nodes in voidcrew/modules/research/techweb_nodes.dm.
+		/datum/design/incendiary_slug,
+		/datum/design/pin_testing,
+		/datum/design/pin_explorer,
+		// VOIDCREW EDIT END
 	)
 
 	for (var/datum/design/design as anything in subtypesof(/datum/design))

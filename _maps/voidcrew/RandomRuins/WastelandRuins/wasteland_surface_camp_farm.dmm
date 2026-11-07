@@ -45,13 +45,6 @@
 /obj/machinery/hydroponics/soil,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"h" = (
-/obj/structure/closet/secure_closet/hydroponics,
-/obj/item/circuitboard/machine/seed_extractor,
-/obj/item/gun/ballistic/rifle/sniper_rifle,
-/obj/item/ammo_box/magazine/sniper_rounds/marksman,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 "i" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/misc/dirt/dry/lit,
@@ -127,6 +120,13 @@
 /area/ruin/unpowered)
 "s" = (
 /obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"t" = (
+/obj/structure/closet/secure_closet/hydroponics,
+/obj/item/circuitboard/machine/seed_extractor,
+/obj/item/melee/baseball_bat,
+/obj/item/ammo_box/magazine/sniper_rounds/marksman,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "u" = (
@@ -454,7 +454,7 @@ U
 "}
 (9,1,1) = {"
 L
-h
+t
 r
 C
 s

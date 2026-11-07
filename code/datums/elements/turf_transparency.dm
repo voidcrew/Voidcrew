@@ -262,7 +262,7 @@ GLOBAL_LIST_EMPTY(pillars_by_z)
 
 ///Called when there is no real turf below this turf
 /datum/element/turf_z_transparency/proc/get_baseturf_underlay(turf/our_turf)
-	// VOIDCREW EDIT: the map FOOTPRINT under the turf answers before the z-level, the same
+	// VOIDCREW EDIT START: the map FOOTPRINT under the turf answers before the z-level, the same
 	// order /turf/ChangeTurf uses (voidcrew/edits/turf.dm). A level holds up to four planets
 	// of different biomes and ZTRAIT_BASETURF is one value per level; without this the
 	// open-space underlay drawn under a hole on one packed planet is painted with the
@@ -278,6 +278,7 @@ GLOBAL_LIST_EMPTY(pillars_by_z)
 	// VOIDCREW EDIT: PLANE_SPACE is multiplied by parallax. Planetary ground must
 	// render with the floors, below glass and plating, or the sky shows through it.
 	var/is_space = ispath(path, /turf/open/space)
+	// VOIDCREW EDIT START: Use the tenant baseturf and render planetary underlays on the floor plane (voidcrew/datums/map_footprint.dm).
 	var/mutable_appearance/underlay_appearance = mutable_appearance(
 		initial(path.icon),
 		initial(path.icon_state),
@@ -285,6 +286,7 @@ GLOBAL_LIST_EMPTY(pillars_by_z)
 		offset_spokesman = our_turf,
 		plane = is_space ? PLANE_SPACE : FLOOR_PLANE,
 	)
+	// VOIDCREW EDIT END
 	underlay_appearance.appearance_flags = RESET_ALPHA | RESET_COLOR
 	return underlay_appearance
 

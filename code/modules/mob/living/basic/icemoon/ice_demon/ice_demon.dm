@@ -44,8 +44,7 @@
 	AddElement(/datum/element/simple_flying)
 
 /mob/living/basic/mining/ice_demon/death(gibbed)
-	if(prob(5))
-		new /obj/item/raw_anomaly_core/bluespace(loc)
+	// VOIDCREW EDIT: Core rolls use the spawn-bound allowance in voidcrew/modules/anomalies/core_rewards.dm.
 	return ..()
 
 /mob/living/basic/mining/demon_afterimage

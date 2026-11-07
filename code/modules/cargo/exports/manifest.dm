@@ -2,15 +2,15 @@
 
 // Approved manifest.
 // At most20 credits or10% of payment: cheap goodies and flash coupons cannot subsidize themselves.
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/manifest_correct
-	cost = CARGO_CRATE_VALUE * 0.1
+	cost = CARGO_CRATE_VALUE * 0.1 // VOIDCREW EDIT: cargo caps manifest resale against shipment payment.
 	k_elasticity = 0
 	unit_name = "approved manifest"
 	export_types = list(/obj/item/paper/fluff/jobs/cargo/manifest)
 	scannable = FALSE
 
-// VOIDCREW EDIT END
+// VOIDCREW EDIT: cargo caps manifest refunds against the paid order; implementation in voidcrew/edits/modules/cargo/exports/manifest.dm.
+
 /datum/export/manifest_correct/applies_to(obj/O)
 	if(!..())
 		return FALSE

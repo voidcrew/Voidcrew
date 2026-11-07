@@ -557,13 +557,6 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/bridge)
-"rC" = (
-/obj/structure/closet/secure_closet/captains,
-/obj/effect/turf_decal/tile/blue{
-	dir = 5
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/midway/bridge)
 "rJ" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/midway/cargo)
@@ -1496,6 +1489,13 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/midway/medbay)
+"Vs" = (
+/obj/structure/closet/secure_closet/captains,
+/obj/effect/turf_decal/tile/blue{
+	dir = 5
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/midway/bridge)
 "Vv" = (
 /obj/structure/sink/directional/south,
 /obj/effect/turf_decal/tile/green{
@@ -2243,7 +2243,7 @@ Zn
 Zn
 Zn
 kH
-rC
+Vs
 Ch
 vF
 Kr

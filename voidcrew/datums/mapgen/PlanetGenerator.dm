@@ -551,7 +551,8 @@
 					break
 
 				if(can_spawn)
-					new picked_mob(target_turf)
+					var/datum/npc_spawn_context/context = new(src, zone_band, "auto", source_turf = target_turf)
+					spawn_npc_in_zone(picked_mob, target_turf, context)
 					spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See
@@ -560,8 +561,8 @@
 		// forward-progress floor than the default, to keep its tick overshoot in line.
 		SSovermap.worldgen_yield(throttled, min_iterations = 8)
 
-	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
-	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
+	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget, zone_band)
+	var/megafauna_placed = place_planet_megafauna(megafauna_candidates, zone_band)
 	var/anomalies_placed = place_budgeted_anomalies(turfs, anomaly_budget)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \
@@ -577,7 +578,7 @@
  * row-major, so taking the first N would put every tendril on the planet in the same
  * corner. Returns how many were placed.
  */
-/datum/map_generator/planet_generator/proc/place_budgeted_spawners(list/candidates, budget)
+/datum/map_generator/planet_generator/proc/place_budgeted_spawners(list/candidates, budget, zone_band)
 	if(!length(candidates) || budget <= 0)
 		return 0
 
@@ -599,7 +600,8 @@
 			continue
 
 		var/spawner_type = candidates[candidate]
-		new spawner_type(candidate)
+		var/datum/npc_spawn_context/context = new(src, zone_band, "auto", source_turf = candidate)
+		spawn_npc_in_zone(spawner_type, candidate, context)
 		placed_at += candidate
 		placed++
 		CHECK_TICK
@@ -616,29 +618,28 @@
  * instead: pick() is O(1), where walking the list in order would put every anomaly in the
  * low corner of the map, get_block() handing out turfs row-major.
  *
- * The draw is attempt-bounded rather than exhaustive. A planet whose open ground is
- * nearly all spoken for seeds fewer anomalies than its budget, which is the right way to
- * fail: this is optional scenery, not something worth stalling a build over.
+ * If random sampling misses safe ground, scan the supplied planet turfs to fill the
+ * remainder. Both passes yield to the worldgen budget and use the same safety checks.
  *
  * The landing strip is off limits, the same as it is to spawners and megafauna. A rejected
- * draw costs one of PLANET_ANOMALY_PLACEMENT_ATTEMPTS attempts and the budget is re-spent
- * on the next roll, so this moves anomalies off the berths rather than losing any. The
- * strip is the bottom 54 rows of a 123-row planet, so a bit under half the draws land in it
- * - against 400 attempts for a budget of at most three, which is not close to tight.
+ * draw is re-spent on another tile. If the geometry cannot fit the budget safely, report
+ * the shortfall rather than relaxing the spacing or putting a hazard on reserved ground.
  */
 /datum/map_generator/planet_generator/proc/place_budgeted_anomalies(list/turfs, budget)
-	if(!length(turfs) || budget <= 0)
+	if(budget <= 0)
 		return 0
 
 	var/list/placed_at = list()
 	var/placed = 0
 
-	for(var/attempt in 1 to PLANET_ANOMALY_PLACEMENT_ATTEMPTS)
+	var/random_attempts = length(turfs) ? PLANET_ANOMALY_PLACEMENT_ATTEMPTS : 0
+	for(var/attempt in 1 to random_attempts + length(turfs))
 		if(placed >= budget)
 			break
+		SSovermap.worldgen_yield(throttled)
 
-		var/turf/candidate = pick(turfs)
-		if(!isturf(candidate) || candidate.density)
+		var/turf/candidate = attempt <= random_attempts ? pick_anomaly_turf(turfs) : turfs[attempt - random_attempts]
+		if(!isturf(candidate) || candidate.density || candidate.planet_river)
 			continue
 
 		// Reserved ground: the planet's landing strip (reserve_dock_strip() flags the berth
@@ -671,13 +672,18 @@
 		new anomaly_type(candidate)
 		placed_at += candidate
 		placed++
-		CHECK_TICK
 
+	if(placed < budget)
+		log_world("[name] anomaly placement shortfall: [placed]/[budget] safe sites.")
 	return placed
+
+/// Samples the planet's supplied turf list before the exhaustive placement pass.
+/datum/map_generator/planet_generator/proc/pick_anomaly_turf(list/turfs)
+	return pick(turfs)
 
 /// Places a single megafauna from the banked candidates. One per planet, and only where
 /// the zone band allows them at all - see megafauna_allowed in populate_terrain().
-/datum/map_generator/planet_generator/proc/place_planet_megafauna(list/candidates)
+/datum/map_generator/planet_generator/proc/place_planet_megafauna(list/candidates, zone_band)
 	if(!length(candidates))
 		return 0
 
@@ -687,7 +693,8 @@
 		if(!isturf(candidate) || candidate.density)
 			continue
 		var/megafauna_type = candidates[candidate]
-		new megafauna_type(candidate)
+		var/datum/npc_spawn_context/context = new(src, zone_band, "boss", source_turf = candidate)
+		spawn_npc_in_zone(megafauna_type, candidate, context)
 		return 1
 
 	return 0

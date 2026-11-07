@@ -1,0 +1,2094 @@
+{
+ "category": "guns",
+ "groups": [
+  "sidearms",
+  "smgs",
+  "rifles",
+  "shotguns",
+  "beam weapons",
+  "tasers and control",
+  "launchers and exotics",
+  "tools and support",
+  "toys and novelties"
+ ],
+ "items": {
+  "/obj/item/flamethrower": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "3895e381c5344ce0",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 8,
+   "reason": "Same flamethrower, crafted from a welder, an igniter and a rod. Anyone can build one; it needs a plasma tank fitted and lit.",
+   "score": 62,
+   "score_inputs": {
+    "judged": {
+     "value": 62,
+     "why": "a line of fire, needs an igniter secured and a plasma tank"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/flamethrower/full": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "70376873ffdbe5d2",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 7,
+   "reason": "Same flamethrower with its igniter fitted; bring a plasma tank. A hacked autolathe prints it for almost nothing.",
+   "score": 66,
+   "score_inputs": {
+    "judged": {
+     "value": 66,
+     "why": "a line of fire, needs a plasma tank fitted"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/flamethrower/full/tank": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "b9602de55dab5bbb",
+   "name": "flamethrower",
+   "note": "Needs a secured igniter and a plasma tank, and has to be lit; it then sprays a line of fire toward the target, putting 5% of the tank onto each tile (plasma counted 5 times) with a hotspot, and stopping at the first tile not open to air. A lit one keeps a small hotspot on its holder's tile. A held one hit by a non-stamina projectile has a 15% chance to rupture, dumping the whole tank as fire on the holder; pacifists can't fire it.",
+   "rank": 6,
+   "reason": "Ready-loaded flamethrower with a plasma tank. Sprays a line of fire at everyone without a fire suit, and may catch you too. A hit can rupture the tank in your hands.",
+   "score": 70,
+   "score_inputs": {
+    "judged": {
+     "value": 70,
+     "why": "a line of fire; burn damage and spread through a ship depend on the room, so no stat speaks for it"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/ar": {
+   "confidence": "high",
+   "group": "rifles",
+   "hash": "def04c23ccd7c276",
+   "name": "NT-ARG 'Boarder'",
+   "rank": 1,
+   "reason": "AP 30 rounds cancel a vest outright, fired in fast bursts with no spread. It beats the M-90's rifle and is one size smaller.",
+   "score": 219,
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/automatic/c20r/toy/unrestricted": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "fa0c916056db00c2",
+   "name": "donksoft SMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. Accepts a bayonet.",
+   "rank": 11,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/automatic/c20r/toy/unrestricted/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "6ebcceb54025e017",
+   "name": "donksoft SMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. Accepts a bayonet. Same as the plain C-20r toy; only the starting magazine differs (riot darts).",
+   "rank": 2,
+   "reason": "Fires 25 stamina darts at 3.75 a second with 10 tile reach, so it isn't really a toy.",
+   "score": 39,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/c20r/unrestricted": {
+   "confidence": "high",
+   "group": "smgs",
+   "hash": "d9b40f6fa856925a",
+   "name": "C-20r SMG",
+   "rank": 4,
+   "reason": "Puts a vested man down in about a second, with 24 rounds, from one hand.",
+   "score": 79,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/cyberware_ronin": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "bb032c110b509c59",
+   "name": "Popup Ronin machine-pistol",
+   "rank": 6,
+   "reason": "20 damage at 3.3 a second, WT-550 numbers with some spread. Lives in the arm, so it can't be disarmed, and reloads are hard to get.",
+   "score": 47,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "4ba07b98ce152ea6",
+   "name": "donksoft LMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. As on the L6 SAW, the dust cover must be closed to fire and open to load or remove the magazine.",
+   "rank": 10,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "c9f4fae0ff56128b",
+   "name": "donksoft LMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. As on the L6 SAW, the dust cover must be closed to fire and open to load or remove the magazine. Same as the plain L6 toy; only the starting magazine differs (riot darts).",
+   "rank": 1,
+   "reason": "Fires 25 stamina darts at 5 a second with 50 in the box, which out-stuns a disabler at short range.",
+   "score": 45,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/l6_saw/unrestricted": {
+   "confidence": "high",
+   "group": "rifles",
+   "hash": "b4f56a108d676be5",
+   "name": "L6 SAW",
+   "note": "The dust cover must be closed to fire and open to insert or remove the magazine; with it shut, an empty hand will not take the magazine out and a new magazine is refused. No other special behaviour beyond full-auto fire.",
+   "rank": 4,
+   "reason": "Holds 50 rounds so reloads rarely matter, but it takes two hands and is slow to reload.",
+   "score": 117,
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/automatic/m90/unrestricted": {
+   "confidence": "high",
+   "group": "rifles",
+   "hash": "3cce57f7244a083c",
+   "name": "M-90gl Carbine",
+   "note": "A right-click shot fires the attached underbarrel 40mm grenade launcher (one HE shell, loaded at spawn) instead of the carbine; the carbine itself refuses loose casings and only a 40mm shell can be fed to the launcher. On this unrestricted version the launcher is a separate standard-pin unit that does not follow the carbine's firing pin.",
+   "rank": 2,
+   "reason": "AP 30 rounds cancel a vest, and it carries a grenade launcher.",
+   "score": 189,
+   "score_inputs": {
+    "points": {
+     "value": 25,
+     "why": "Underbarrel 40mm: blast radius 2 and fire."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/automatic/mini_uzi": {
+   "confidence": "high",
+   "group": "smgs",
+   "hash": "57d5080462a9a158",
+   "name": "Type U3 Uzi",
+   "rank": 5,
+   "reason": "Fires the C-20r's bullet at a lower rate, with 32 rounds. Solid, not dangerous.",
+   "score": 70,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "dc518916bb509d96",
+   "name": "Makarov pistol",
+   "rank": 10,
+   "reason": "A pocket pistol about level with a laser gun: 30 damage, 12 rounds, printable ammo.",
+   "score": 42,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/aps": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "517391feb1e23558",
+   "name": "Stechkin APS machine pistol",
+   "rank": 3,
+   "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
+   "score": 105,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/deagle": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "1828beac78ffd9d6",
+   "name": "Desert Eagle",
+   "rank": 4,
+   "reason": "Does 60 damage from a small gun that fits a pocket.",
+   "score": 84,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/deagle/camo": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "1828beac78ffd9d6",
+   "name": "Desert Eagle",
+   "rank": 5,
+   "reason": "A Desert Eagle in camo: 60 damage from a small gun that fits a pocket.",
+   "score": 84,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/deagle/gold": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "1828beac78ffd9d6",
+   "name": "Desert Eagle",
+   "rank": 6,
+   "reason": "A Desert Eagle in gold: 60 damage from a small gun that fits a pocket.",
+   "score": 84,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/deagle/regal": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "5824d43e7ec81b38",
+   "name": "Regal Condor",
+   "rank": 2,
+   "reason": "Fires two-round hitscan bursts of 62 that ignore a vest, the best sidearm by far. Its recipe book costs 20,000 cr on an emagged console.",
+   "score": 260,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "Hitscan."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/doorhickey": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "4f9a01f4056d7085",
+   "name": "Liberator",
+   "note": "Single-shot barrel that takes a 2 s do-after to unscrew or screw back on. Every shot knocks 70-140 off its 100 integrity: on a fresh gun the first shot shatters it about 58% of the time (hurting the firing hand for up to 20 and sometimes embedding shrapnel), otherwise the next shot always does; point-blank doubles the shot's damage and aiming at someone held at gunpoint adds x1.5.",
+   "rank": 17,
+   "reason": "Holds one round, and the barrel usually shatters within two shots. Its design disk is rare.",
+   "score": 0,
+   "score_inputs": {
+    "points": {
+     "value": -2,
+     "why": "The barrel usually shatters within two shots."
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "One round, 2 s barrel swap."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/m1911": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "ed8c5fd09e92dcda",
+   "name": "M1911",
+   "rank": 12,
+   "reason": "Fires a Makarov's bullet with 8 rounds, one vested man per magazine at best.",
+   "score": 35,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "58fd32966ac76c57",
+   "name": "M1911",
+   "rank": 13,
+   "reason": "An M1911 that starts without its magazine, and the same gun once loaded.",
+   "score": 35,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/no_mag": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "cfb7e46635e265f8",
+   "name": "Makarov pistol",
+   "rank": 11,
+   "reason": "A Makarov that starts without its magazine, and the same gun once loaded.",
+   "score": 42,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/toy": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "f5f632b94898ce6b",
+   "name": "foam force pistol",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed.",
+   "rank": 14,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/toy/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "e4abc15f5954e635",
+   "name": "foam force pistol",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. Same as the plain foam force pistol; only the starting magazine differs (riot darts).",
+   "rank": 5,
+   "reason": "Fires 25 stamina darts at pistol speed.",
+   "score": 13,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/proto/unrestricted": {
+   "confidence": "high",
+   "group": "smgs",
+   "hash": "3a82e5bc193f1d07",
+   "name": "Nanotrasen Saber SMG",
+   "rank": 2,
+   "reason": "A hard-hitting automatic with 21 rounds that empties in 4 s.",
+   "score": 105,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/smartgun": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "df8d939590e38d5f",
+   "name": "Abielle Smart-SMG",
+   "rank": 7,
+   "reason": "Fires 10 damage homing rounds. Its spread of 40 is the drawback the homing fixes. Upstream tg prices it as junk.",
+   "score": 32,
+   "score_inputs": {
+    "hit": {
+     "value": 0.8,
+     "why": "Homing rounds fix the spread they're built around."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/tommygun": {
+   "confidence": "high",
+   "group": "smgs",
+   "hash": "c8196dfe3a32ffa2",
+   "name": "Thompson SMG",
+   "rank": 1,
+   "reason": "Twice the L6's damage per second from one light gun: 50 rounds gone in 5 s with no spread. Puts a vested man down in under half a second.",
+   "score": 262,
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/automatic/toy": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "b7a00289322f2cb1",
+   "name": "foam force SMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed.",
+   "rank": 12,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/automatic/toy/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "3ddddaf7bae1b0ce",
+   "name": "foam force SMG",
+   "note": "Fires foam darts that can stick in the target and cause no pain; the plain dart does no damage and pacifists can fire it. A screwdriver pops a dart's safety cap, and a pen or syringe inserted into a capped-off dart gives it brute damage (at least 5 for a pen, 6 for a syringe) and that item's embed. Same as the plain foam force SMG; only the starting magazine differs (riot darts).",
+   "rank": 3,
+   "reason": "Fires 25 stamina darts at 3.75 a second with 10 tile reach, so it isn't really a toy.",
+   "score": 39,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/wt550": {
+   "confidence": "high",
+   "group": "smgs",
+   "hash": "2ea01a015382d859",
+   "name": "WT-550 Autorifle",
+   "rank": 6,
+   "reason": "Fires 20 damage bullets at 3.3 a second, about what a laser gun does, yet it's sold as a top yellow gun.",
+   "score": 47,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/bow": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "9b6b11da9005d066",
+   "name": "bow",
+   "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
+   "rank": 10,
+   "reason": "Does 50 damage per arrow, drawn by hand.",
+   "score": 7,
+   "score_inputs": {
+    "rate": {
+     "value": 0.5,
+     "why": "Nock and draw by hand between shots."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/bow/shortbow": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "4231c1aae8664849",
+   "name": "shortbow",
+   "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands. Same as the bow; only the damage multiplier differs. / Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
+   "rank": 14,
+   "reason": "Does 18 damage per arrow. Its recipe book comes in a 1,000 cr cargo kit.",
+   "score": 3,
+   "score_inputs": {
+    "rate": {
+     "value": 0.5,
+     "why": "Nock and draw by hand between shots."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/revolver": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "0a09cf71d16bf351",
+   "name": ".357 revolver",
+   "rank": 3,
+   "reason": "Does 60 damage, so three hits through a vest, with seven shots and a speed loader to help.",
+   "score": 84,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/c38": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "b18390c40543a655",
+   "name": ".38 revolver",
+   "rank": 14,
+   "reason": "Does 25 damage and weak wounds, with six shots then a slow reload.",
+   "score": 18,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/revolver/c38/detective": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "616fe18d05a3ece6",
+   "name": "Colt Detective Special",
+   "rank": 15,
+   "reason": "A .38 revolver by another name: 25 damage and six shots.",
+   "score": 18,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/revolver/c38/housecall": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "8dc9fec933f4d6aa",
+   "name": "\"Housecall\"",
+   "note": "Integrally suppressed. A hit on a living target also mutes it for 15 s, staggers it for 8 s (stacking to 16 s), adds 6 s of confusion and 10 s of drowsiness (capped at 30 s). Spawns with six extra casings on the floor beside it, and duplicators refuse to copy it. / A living, non-dead target is muted for 15 seconds, staggered for 8, confused for 6 and made drowsy for 10 more (capped at 30 total), whatever its armor. Drowsy targets get blurred vision and a small chance each tick of falling asleep for 10 seconds.",
+   "rank": 1,
+   "reason": "A unique gun that mutes, staggers, confuses and drowses on hit, and fires silently.",
+   "tier": "above"
+  },
+  "/obj/item/gun/ballistic/revolver/cyberware_buster": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "2f6cedbe9e78be36",
+   "name": "Bunker Buster micro-rocket pod",
+   "note": "Two-rocket pod that reloads from loose rockets or the two-rocket bracket. The rocket has no explosion, only a visual blast, and knocks a living target down for 1 s. The pod is normally deployed from the Bunker Buster forearm implant. / The blast is only a visual and a sound at the impact point; it damages nothing in a radius. Damage to objects is multiplied by 8 (demolition_mod), and a living target is knocked down for 1 second.",
+   "rank": 10,
+   "reason": "Two 60 damage rockets from the arm: a knockdown, eight times the damage to doors and machines, and no blast to hurt your own hull. Reloads are costly.",
+   "score": 50,
+   "score_inputs": {
+    "points": {
+     "value": 40,
+     "why": "eight times damage to doors and machines, a 1 second knockdown, not disarmable while deployed"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/golden": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "dad27a77159418a2",
+   "name": "Golden revolver",
+   "rank": 8,
+   "reason": "A .357 revolver with heavy recoil that throws the aim off.",
+   "score": 74,
+   "score_inputs": {
+    "points": {
+     "value": -10,
+     "why": "Recoil 8 throws the aim off."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/grenadelauncher/unrestricted": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "3cc91d28275e04d4",
+   "name": "grenade launcher",
+   "note": "Single-shot break-open launcher loaded by hand with 40mm shells. Each HE shell also explodes on impact: a small blast (radius 2) with fire out to 3 tiles and a flash. / On hit it explodes at the target: light-severity blast out to 2 tiles, fire out to 3 and a flash at 1, with no heavy or devastating ring. It affects everything in range, the shooter included.",
+   "rank": 9,
+   "reason": "The M-90's underbarrel launcher, never on its own. One 40mm shell at a time: 60 damage and a light blast with fire, too weak to open a hull.",
+   "score": 60,
+   "score_inputs": {
+    "points": {
+     "value": 55,
+     "why": "blast radius 2 with fire on every shell, but no heavy ring"
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "one shell, loaded by hand each shot"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/mateba": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "0a09cf71d16bf351",
+   "name": "Unica 6 auto-revolver",
+   "rank": 7,
+   "reason": "A .357 revolver with the usual numbers, sold at 3,000 cr and a voucher.",
+   "score": 84,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/nagant": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "ec68e1079afa7154",
+   "name": "Nagant revolver",
+   "rank": 9,
+   "reason": "Does 60 damage with seven shots, yet sits in the green loot pool beside 25 damage .38s. Its slow reload is the only thing holding it back.",
+   "score": 69,
+   "score_inputs": {
+    "points": {
+     "value": -15,
+     "why": "No speed loader; rounds go in one at a time."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/revolver/peashooter": {
+   "confidence": "low",
+   "group": "toys and novelties",
+   "hash": "04714be95cb897c9",
+   "name": "peashooter",
+   "note": "Normally comes from a gatfruit; the peas carry the fruit's chemicals and its potency sets each pea's damage. On a carbon target a pea that can inject (thick suits block it) also injects its chemicals, and one that can't is 'deflected' and does nothing. / Against a carbon it injects the pea casing's reagents (gatfruit chemicals) if the hit zone can be injected, otherwise it is deflected for no damage. Zombies take 15 extra brute, and the pea ricochets up to 3 times.",
+   "rank": 4,
+   "reason": "Fires 15 damage peas that carry a plant's chemicals, and they're weak against armor.",
+   "score": 15,
+   "score_inputs": {
+    "judged": {
+     "value": 15,
+     "why": "15 damage peas that carry a plant's chemicals; weak against armor."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/revolver/russian": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "3d58c6046ba226c4",
+   "name": "Russian revolver",
+   "note": "Fires only at its own user: the cylinder holds one live round among five spent casings, and the chamber must be spun before every pull, followed by a 4 s pause (adjustable 0-10 s; 0 skips it). Aimed at anyone else it just clicks and loses the spin; the shot lands on the zone the user has selected, 300 damage with a heavy wound bonus for the head and 80 elsewhere.",
+   "rank": 8,
+   "reason": "Only ever fires at its own user.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/revolver/russian/soul": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "3d58c6046ba226c4",
+   "name": "cursed Russian revolver",
+   "note": "Same as the Russian revolver. Fires only at its own user: the cylinder holds one live round among five spent casings, and the chamber must be spun before every pull, followed by a 4 s pause (adjustable 0-10 s; 0 skips it). Aimed at anyone else it just clicks and loses the spin; the shot lands on the zone the user has selected, 300 damage with a heavy wound bonus for the head and 80 elsewhere. A head shot also stores the shooter's soul in a one-use soulstone and dusts the body, and a shot to any other zone dusts the shooter for 'cheating'. / Fires only at its own user: the cylinder holds one live round among five spent casings, and the chamber must be spun before every pull, followed by a 4 s pause (adjustable 0-10 s; 0 skips it). Aimed at anyone else it just clicks and loses the spin; the shot lands on the zone the user has selected, 300 damage with a heavy wound bonus for the head and 80 elsewhere.",
+   "rank": 9,
+   "reason": "Only ever fires at its own user, then dusts them.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction": {
+   "confidence": "high",
+   "group": "rifles",
+   "hash": "a0e09364d4321fcb",
+   "name": "Sakhno Precision Rifle",
+   "rank": 6,
+   "reason": "A surplus rifle with real rounds: AP 10 keeps its 60 damage useful through armor.",
+   "score": 48,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/donkrifle": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "07e5a8b46b6618fc",
+   "name": "Donk Co. Jezail",
+   "note": "The bolt must be cycled between shots and be open to load. Sawing it off (needs a saw; a live round in the gun goes off in the user's face) makes it belt-sized, cuts damage by a quarter and sets spread to 50. Accepts a bayonet.",
+   "rank": 7,
+   "reason": "A precision rifle with 4 rounds in a huge frame.",
+   "score": 44,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/pipegun": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "09224ff4494cd405",
+   "name": "pipegun",
+   "note": "Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
+   "rank": 12,
+   "reason": "Fires one hand-loaded round at a time.",
+   "score": 5,
+   "score_inputs": {
+    "rate": {
+     "value": 0.4,
+     "why": "One round, hand loaded."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "f1fd463d783a4af9",
+   "name": "pipe pistol",
+   "note": "Self-loading; one trigger pull empties its whole magazine in a rapid burst. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
+   "rank": 16,
+   "reason": "Fires three weak rounds in a burst, then needs a hand reload.",
+   "score": 3,
+   "score_inputs": {
+    "rate": {
+     "value": 0.75,
+     "why": "Dumps 3 rounds, then hand load."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/pipegun/prime": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "6a105958c2af93f0",
+   "name": "regal pipegun",
+   "note": "Bolt action loaded with reaper rounds, which are hitscan (instant) junk rounds. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
+   "rank": 8,
+   "reason": "Fires hitscan shots of 60 with 4 rounds. Crafting it needs a one-use book.",
+   "score": 41,
+   "score_inputs": {
+    "points": {
+     "value": 5,
+     "why": "Hitscan."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/prime": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "4dce3248da9fb57d",
+   "name": "Sakhno-Zhihao Sporting Rifle",
+   "note": "Right-click scopes in, extending the view to 1.5x, and shots go where the scope cursor is; zoom stops when the rifle moves or hands are swapped. The bolt must be cycled between shots and be open to load. Sawing it off sets spread to 36 and renames it 'Obrez Moderna'; accepts a bayonet.",
+   "rank": 5,
+   "reason": "A scoped bolt-action rifle that ships loaded with phasic rounds: 60 damage a shot through walls and doors, four times the X-ray gun's hit. Takes plain .310 once those are spent.",
+   "score": 131,
+   "score_inputs": {
+    "points": {
+     "value": 83,
+     "why": "1.5x scope, plus the wall-passing rounds it ships with. You can be killed by someone you cannot shoot back at, the same reason the X-ray gun gets 75."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/rifle/boltaction/surplus": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "7673980e5008c01b",
+   "name": "Sakhno M2442 Army",
+   "rank": 9,
+   "reason": "Does 60 damage on bare targets and about 24 through a vest, with five shots and a bolt to work.",
+   "score": 15,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/rebarxbow": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "2ed82f9db0fc22be",
+   "name": "heated rebar crossbow",
+   "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
+   "rank": 13,
+   "reason": "Does 30 damage then needs a 3 s draw. Better ammo exists, which the score doesn't cover.",
+   "score": 3,
+   "score_inputs": {
+    "rate": {
+     "value": 0.33,
+     "why": "3 s string draw between shots."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/rebarxbow/forced": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "04bae29a51921f7d",
+   "name": "stressed rebar crossbow",
+   "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target. Here the redraw time is 1.5 ticks (about 0.15 s) because the value lacks SECONDS, and 25% of shots aimed at someone else misfire into the shooter. / Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
+   "rank": 11,
+   "reason": "Redraws almost instantly at the cost of shooting yourself one time in four.",
+   "score": 7,
+   "score_inputs": {
+    "points": {
+     "value": -5,
+     "why": "A quarter of shots hit the shooter."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/sniper_rifle": {
+   "confidence": "high",
+   "group": "rifles",
+   "hash": "c189dc28a630c225",
+   "name": "anti-materiel sniper rifle",
+   "note": "Right-click scopes in at 4x view range, and shots go where the scope cursor is; zoom stops when the rifle moves or hands are swapped. Standard rounds paralyze the target, do 80 extra damage to any object hit, and can dismember a limb already near its damage cap (the full damage then also lands on the chest); the bolt takes a second to cycle and a suppressor can be fitted. Its fire-cooldown override only plays a sound (no player-visible effect). / A hit on an object (not fully blocked) deals 80 extra brute, plus 10 more on mechs, on top of the bullet's own damage. Variants set their own object damage: marksman keeps 80, penetrator 0, incendiary 30, disruptor 0.",
+   "rank": 3,
+   "reason": "One hit paralyzes for 10 s, and the score is mostly that.",
+   "score": 121,
+   "score_inputs": {
+    "points": {
+     "value": 85,
+     "why": "10 s paralysis on hit, 4x scope, 80 extra to objects, can take a limb."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/rocketlauncher/unrestricted": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "7592e404c28ff4ab",
+   "name": "Dardo-RE Rocket Launcher",
+   "note": "Single shot: the tube is emptied by every shot and needs a new rocket. Each shot throws a backblast behind the user (60-degree arc, light blast and fire out to 6 tiles; the user is protected), and the rocket explodes on impact with a bigger blast against walls and objects and a 1% chance to gib a living target outright.",
+   "rank": 4,
+   "reason": "Blows holes in ships, one rocket at a time. No shop, ruin or played hull has one.",
+   "score": 114,
+   "score_inputs": {
+    "points": {
+     "value": 110,
+     "why": "Blast on impact, backblast, 1% gib, breaks walls."
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "One rocket, reload by hand."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/shotgun": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "8f3e8cf98b213a9b",
+   "name": "shotgun",
+   "rank": 9,
+   "reason": "A pump shotgun loaded with beanbags. Lethal shells print with Ballistic Ammunition.",
+   "score": 20,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 30.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/automatic": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "8f3e8cf98b213a9b",
+   "name": "shotgun",
+   "rank": 7,
+   "reason": "A self-racking pump shotgun, with beanbags as issued.",
+   "score": 33,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 30.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    },
+    "rate": {
+     "listed": true,
+     "why": "Racks itself, so the listed rate is already the true rate."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/automatic/combat": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "73690cb458b24281",
+   "name": "combat shotgun",
+   "note": "Semi-automatic, re-chambering itself after every shot, and a point-blank shot throws the target back 2 tiles. Its rubber pellets can bounce off walls up to 4 times, with the odds falling the farther they have travelled; takes a seclight.",
+   "rank": 3,
+   "reason": "Rubber is its best load: 90 stamina a shot with no rack. Strong, but not as strong as an L6.",
+   "score": 80,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 45.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    },
+    "rate": {
+     "listed": true,
+     "why": "Racks itself, so the listed rate is already the true rate."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/shotgun/automatic/dual_tube": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "1b3025a0b66de123",
+   "name": "cycler shotgun",
+   "note": "Racks itself after every shot, so it never needs pumping. Has two 4-shell tubes, both rubber shot by default (pellets ricochet off walls, losing 4 points of ricochet chance per tile travelled); using it in hand switches the active tube (or racks, if the chamber is empty), and the shell already chambered still fires first. A point-blank shot throws the target back 2 tiles.",
+   "rank": 4,
+   "reason": "A self-racking shotgun with two tubes, loaded with rubber.",
+   "score": 54,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 30.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    },
+    "points": {
+     "value": 5,
+     "why": "Second 4-shell tube the catalog capacity leaves out."
+    },
+    "rate": {
+     "listed": true,
+     "why": "Racks itself, so the listed rate is already the true rate."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/shotgun/bulldog/unrestricted": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "1948d5fdd80b337a",
+   "name": "Bulldog Shotgun",
+   "note": "Fires 2-round bursts (a selector switches to single shots) and carries a second 8-shell drum that swaps in on right-click or automatically when the active drum empties. Spawns with two drums of milspec buckshot and a plain firing pin, where the base Bulldog's syndicate pin works only for people with the syndicate weapons implant. A point-blank shot throws the target back 2 tiles.",
+   "rank": 2,
+   "reason": "Fires two-round bursts of 54 with a second drum, and takes one and a half hands. The top shotgun.",
+   "score": 113,
+   "tier": "red"
+  },
+  "/obj/item/gun/ballistic/shotgun/doublebarrel": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "0c9baf65ab7c8e64",
+   "name": "double-barreled shotgun",
+   "note": "Holds two shells with no pumping between shots, and a point-blank shot throws the target back 3 tiles. A saw-type tool (3 seconds) can shorten it; sawing with a shell chambered fires it at the sawer, and the sawn-off gun fits a belt instead of the back, gains recoil and takes a 25 spread penalty.",
+   "rank": 6,
+   "reason": "Two shots then a reload, with beanbags as issued. It takes lethal shells.",
+   "score": 36,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 30.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    },
+    "points": {
+     "value": 3,
+     "why": "Point-blank throw of 3 tiles; two barrels fire without a rack."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "0a407fc564167813",
+   "name": "breaching shotgun",
+   "note": "Double-barrel (3-tile point-blank throw, can be sawn off) chambered for breaching shells, which do 5 damage to creatures but carry a 200x demolition modifier. The code comment says one shell breaks a window or grille and two breach an airlock door.",
+   "rank": 11,
+   "reason": "Loaded to open doors: a door key, not a weapon.",
+   "score": 14,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "One shell breaks a window, two an airlock."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/doublebarrel/slugs": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "0a9911c1c6748c4a",
+   "name": "hunting shotgun",
+   "note": "Double-barrel (3-tile point-blank throw, can be sawn off) loaded with 12g slugs; nothing else differs from the plain double-barrel.",
+   "rank": 8,
+   "reason": "Holds two slugs of 25. AP 30 helps, but two shots is the problem.",
+   "score": 28,
+   "score_inputs": {
+    "points": {
+     "value": 3,
+     "why": "Point-blank throw of 3 tiles; two barrels fire without a rack."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/hook": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "d9f220632d6f2013",
+   "name": "hook modified sawn-off shotgun",
+   "note": "Right-click fires an attached hook (1 charge, back in about 8 seconds) that drags the first unanchored thing it hits to the shooter's tile, knocking a creature down for half a second and freezing the shooter's movement until it arrives; the hook deals stamina damage and no brute damage. Left-click fires the shotgun, and the barrel hook gives it a sharp melee attack that can butcher corpses; a point-blank shot throws the target back 2 tiles.",
+   "rank": 5,
+   "reason": "A sawn-off shotgun loaded with rubber, plus a hook that drags the target in.",
+   "score": 49,
+   "score_inputs": {
+    "points": {
+     "value": 15,
+     "why": "Right click hooks and drags the target in."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/shotgun/lethal": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "bdd1ea5bf292ed3f",
+   "name": "shotgun",
+   "rank": 12,
+   "reason": "A pump shotgun loaded with four buckshot shells.",
+   "score": 8,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/musket": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "b60ba70b55c1b7d5",
+   "name": "Donk Co. Musket",
+   "rank": 13,
+   "reason": "Fires one shell, loaded by hand.",
+   "score": 0,
+   "score_inputs": {
+    "rate": {
+     "value": 0.2,
+     "why": "One shell, hand loaded."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/musket/no_quarter": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "52e1cec0c3298cf9",
+   "name": "\"No Quarter\"",
+   "note": "Single shot: each heavy cartridge takes a 5-second reload and the gun then has to be racked before it fires again. The slug throws a creature 6 tiles and knocks it down for 2 seconds, breaks an ordinary wall outright (reinforced walls are untouched), and the gun spawns with a 12-cartridge bandolier beside it (more are craftable from 2 iron sheets and a paper) and also takes ordinary 12g shells. / A living target is thrown 6 tiles and knocked down for 2 seconds, armor or not. A plain wall is dismantled outright and the slug can hit turfs, but a reinforced wall only shows a 'too tough' alert and is untouched.",
+   "rank": 1,
+   "reason": "A unique gun that throws 6 tiles, knocks down for 2 s and breaks plain walls.",
+   "tier": "above"
+  },
+  "/obj/item/gun/ballistic/shotgun/riot": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "b2de977a12875c5b",
+   "name": "riot shotgun",
+   "note": "Pump-action shotgun loaded with rubber shot, whose pellets ricochet off walls (ricochet chance falls 4 points per tile travelled); a point-blank shot throws the target back 2 tiles. A saw-type tool (3 seconds) can shorten it; sawing with a shell chambered fires it at the sawer, and the sawn-off gun fits a belt instead of the back, gains recoil and takes a 25 spread penalty.",
+   "rank": 10,
+   "reason": "Weaker against a vest than a 400 cr disabler: a slow pump loaded with rubber. It takes lethal shells.",
+   "score": 19,
+   "score_inputs": {
+    "extra_mode": {
+     "armour_penetration": 0,
+     "damage": 30.0,
+     "label": "buckshot",
+     "pellets": 6,
+     "weak": 0,
+     "why": "Takes lethal shells as well as what it ships with."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/toy": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "ca29cbdff87fc157",
+   "name": "foam force shotgun",
+   "note": "Takes only foam darts, which do no damage and either embed in the target or drop to the floor as reusable darts; it needs no permit. A screwdriver pops a dart's safety cap, and a pen inserted in that dart makes it do at least 5 damage and carry the pen's embedding.",
+   "rank": 15,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/shotgun/toy/crossbow": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "0ef7298d40fdf6d4",
+   "name": "foam force crossbow",
+   "note": "Same as the foam force shotgun (foam darts that do no damage, screwdriver-and-pen dart modification, no permit needed) but a belt-sized crossbow holding 5 darts. / Takes only foam darts, which do no damage and either embed in the target or drop to the floor as reusable darts; it needs no permit. A screwdriver pops a dart's safety cap, and a pen inserted in that dart makes it do at least 5 damage and carry the pen's embedding.",
+   "rank": 13,
+   "reason": "Fires foam darts that do no damage.",
+   "tier": "none"
+  },
+  "/obj/item/gun/ballistic/shotgun/toy/crossbow/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "40fdb1ccef84716f",
+   "name": "foam force crossbow",
+   "note": "Same as the foam force crossbow, but loaded with riot foam darts, which deal 25 stamina damage and embed in the target. / Takes only foam darts, which do no damage and either embed in the target or drop to the floor as reusable darts; it needs no permit. A screwdriver pops a dart's safety cap, and a pen inserted in that dart makes it do at least 5 damage and carry the pen's embedding.",
+   "rank": 6,
+   "reason": "Fires 25 stamina darts, slowly.",
+   "score": 6,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/toy/riot": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "546c62ae4b94f6a0",
+   "name": "foam force shotgun",
+   "note": "Same as the foam force shotgun, but loaded with riot foam darts, which deal 25 stamina damage and embed in the target. / Takes only foam darts, which do no damage and either embed in the target or drop to the floor as reusable darts; it needs no permit. A screwdriver pops a dart's safety cap, and a pen inserted in that dart makes it do at least 5 damage and carry the pen's embedding.",
+   "rank": 7,
+   "reason": "Fires 25 stamina darts, slowly.",
+   "score": 6,
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/disabler": {
+   "confidence": "high",
+   "group": "tasers and control",
+   "hash": "d5a8829c7f63dc27",
+   "name": "disabler",
+   "rank": 11,
+   "reason": "Puts a vested man down in about 2 s and does no lasting harm.",
+   "score": 32,
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/disabler/smg": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "f18578b1efac3462",
+   "name": "disabler smg",
+   "rank": 3,
+   "reason": "A disabler with less per shot and more shots, worth more than a green control gun.",
+   "score": 53,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/disabler/smoothbore": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "66d726797babf4f3",
+   "name": "smoothbore disabler",
+   "note": "Has no self-recharge but a hand crank: using it in hand takes 2 seconds (the user may keep moving) and adds one standard cell charge, which pays for one shot. The unfocused beam gets double the effect of the target's armour.",
+   "rank": 12,
+   "reason": "A hand-cranked disabler that fires one wild shot per 2 s.",
+   "score": 1,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "rate": {
+     "value": 0.5,
+     "why": "One shot per 2 s crank."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/e_gun": {
+   "confidence": "high",
+   "group": "beam weapons",
+   "hash": "8ddfa1bf31be8862",
+   "name": "energy gun",
+   "note": "Disable and kill modes. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. Only the plain energy gun (not its subtypes) can be converted into the advanced energy gun with a nuclear gunkit. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 10,
+   "reason": "A laser gun's kill beam with fewer shots, plus a stun mode on the same trigger.",
+   "score": 50,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/e_gun/dragnet": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "68250c5b394ee40f",
+   "name": "DRAGnet translocation shotgun",
+   "note": "Snare mode staggers the creature it hits and drops a teleport field on every open tile of the 3x3 around it; 3 seconds later each field teleports every living thing standing on it, friend or foe, to a synced DRAGnet beacon, or to a random spot up to 15 tiles away if none is linked. Cross-zone teleports are refused with a bluespace disruption message. / A hit on a living target staggers it for 1.5 s and drops a teleport field on every open tile of the 3x3 around it. After 3 s each field teleports every living mob standing on it, shooter and bystanders included, to the gun's linked DRAGnet beacon, or to a random spot up to 15 tiles away if none is linked. A shot that hits a wall or object drops no fields.",
+   "rank": 1,
+   "reason": "Fires a teleport snare and a stamina scatter.",
+   "score": 67,
+   "score_inputs": {
+    "points": {
+     "value": 20,
+     "why": "Snare teleports the target and anyone beside them."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/e_gun/hos": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "c4290739c42bf34c",
+   "name": "X-01 MultiPhase Energy Gun",
+   "note": "Third mode fires an ion shot that deals no damage and sends an EMP to the single tile it hits (50% heavy, 50% light). The gun and its cell are indestructible and immune to fire, acid and lava, and it never recharges by itself. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect. / Does no damage; on any hit it sets off an EMP at the impact tile. That tile takes a heavy EMP and each tile one step out takes a heavy or light one (50/50), reaching everything on them including the shooter if close. The reduced-radius variant (HoS ion casing, ion shell) has radius 0, so only the impact tile is hit, heavy or light 50/50.",
+   "rank": 6,
+   "reason": "An energy gun with 10 kill shots and an EMP mode.",
+   "score": 60,
+   "score_inputs": {
+    "points": {
+     "value": 15,
+     "why": "Adds a one-tile EMP mode, indestructible."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/e_gun/mini": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "2e05c9ede725be40",
+   "name": "miniature energy gun",
+   "note": "Has a flashlight built in that cannot be removed. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 15,
+   "reason": "A pocket energy gun with 7 kill shots. Good backup, not a main gun.",
+   "score": 37,
+   "score_inputs": {
+    "points": {
+     "value": 5,
+     "why": "Fits a pocket, built-in light."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/e_gun/nuclear": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "f645eee1943b2226",
+   "name": "advanced energy gun",
+   "note": "Charges its own cell and cannot be put in a recharger. Every EMP it takes permanently adds to a per-shot failure chance (15 for a heavy EMP, about half that for a light one, capped at 100); a failure while held burns the holder for 3 and builds heat, and enough heat overloads the reactor (10 burn, self-charging stops for good, and later failures burn for 10 each). / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 7,
+   "reason": "An energy gun that charges itself. A convenience, not more killing power.",
+   "score": 60,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "Charges itself, never visits a recharger."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/e_gun/old": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "5776c5ce7cd90315",
+   "name": "prototype energy gun",
+   "note": "Second mode fires a tethered electrode: a hit holds a tase on the target (60 stamina per second, target and shooter both slowed) that drains the gun's cell by 500 charge per second and stops the gun firing. It ends when the gun is dropped, sight within 5 tiles is lost, someone crosses the tether, the target spends 5 seconds pulling it out, or the cell runs out; silicons, bots and drones cannot be tased, and a full cell pays for the shot plus roughly 6 seconds of tase. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect. / Not an instant stun: the electrodes tether the target, who takes 60 stamina damage per second for as long as the gun keeps charge and stays in sight within 5 tiles; the shooter is slowed and cannot fire the gun meanwhile. The target can tear the electrodes off (5 seconds), anyone crossing the line gets tangled (90 stamina and a 5 second knockdown), and silicons, bots, drones and pierce-immune targets are unaffected.",
+   "rank": 9,
+   "reason": "A laser with a tether stun, one shot of tether per cell.",
+   "score": 54,
+   "score_inputs": {
+    "extra_mode": {
+     "armorless_stamina": 60,
+     "label": "tether",
+     "rate": 1.0,
+     "why": "The tether drains stamina past armor."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/event_horizon": {
+   "confidence": "high",
+   "group": "launchers and exotics",
+   "hash": "3e11c1212dbb8f5d",
+   "name": "Event Horizon anti-existential beam rifle",
+   "note": "Fires without needing to scope (Voidcrew removes the scope). The hitscan beam opens a tear in reality for 2 seconds wherever it lands, pulling in things within 3 tiles and consuming everything within 2 (people are gibbed, objects deleted); the tear is deleted on creation inside trader outposts and outpost service rooms. The cell holds one shot and refills within about 8 seconds. / On any hit (armor does not matter) it spawns a temporary reality tear on the target's tile: for about 2 seconds it pulls objects within 3 tiles and consumes everything within 2 tiles, gibbing people, then vanishes without leaving a singularity. The tear is deleted at once if it forms in a protected trader outpost.",
+   "rank": 1,
+   "reason": "Warps a whole round: hitscan at 150 tiles that deletes everything within 2 tiles of the hit, every 8 s.",
+   "tier": "above"
+  },
+  "/obj/item/gun/energy/floragun": {
+   "confidence": "high",
+   "group": "tools and support",
+   "hash": "36c620c29f0da2a4",
+   "name": "floral somatoray",
+   "note": "Does nothing to non-plant creatures. On planted hydroponics trays, mutation mode mutates the plant, yield mode raises its yield (the odds fall as yield rises) and revolution mode can change its species; against plant-type creatures, mutation mode burns 5-15 (85%) or deals 3-6 toxin, 10 seconds of paralysis and a random DNA mutation (15%), yield mode adds 30 nutrition and revolution mode leaves them dizzy for 30 seconds. It recharges itself. / Does nothing to mobs that aren't plant-type (the hit is blocked). On plant mobs the mutation beam burns for 5-15 (85%) or else deals 3-6 toxin, paralyzes 10 s and mutates the target's DNA; the yield beam adds 30 nutrition up to the full mark; the revolution beam gives 30 s of dizziness and forces a flip and spin. On a planted hydroponics tray, mutation mutates the plant, yield adds +1 yield (times tray rating) at 1/yield^2 odds, and revolution halves instability and switches the plant's species.",
+   "rank": 8,
+   "reason": "Only affects plants.",
+   "tier": "none"
+  },
+  "/obj/item/gun/energy/gravity_gun": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "d489a85220e51f2b",
+   "name": "one-point gravitational manipulator",
+   "note": "Does nothing until a gravitational anomaly core is inserted (the core is used up). Its bolt deals no damage and costs no charge; on hitting anything it throws every unanchored object and creature within 4 tiles of the impact, up to 5 tiles, skipping the shooter and anything that negates gravity: repulse pushes them away, attract pulls them onto the impact tile, chaos sends each in a random cardinal direction. / Does no damage. When it hits anything it throws every unanchored thing within 4 tiles of the impact (not the shooter, not mobs that ignore gravity) 5 tiles toward the impact point. The radius is the gun's power setting (4, capped at 15); the gun does nothing without a gravity anomaly core and waits 5 s between shots. / Does no damage. When it hits anything it throws every unanchored thing within 4 tiles of the impact (not the shooter, not mobs that ignore gravity) 5 tiles, each in a random cardinal direction. The radius is the gun's power setting (4, capped at 15); the gun does nothing without a gravity anomaly core and waits 5 s between shots. / Does no damage. When it hits anything it throws every unanchored thing within 4 tiles of the impact (not the shooter, not mobs that ignore gravity) 5 tiles directly away from the impact point. The radius is the gun's power setting (4, capped at 15); the gun does nothing without a gravity anomaly core and waits 5 s between shots.",
+   "rank": 7,
+   "reason": "Throws everyone within 4 tiles up to 5 tiles away. Needs a gravitational core.",
+   "score": 60,
+   "score_inputs": {
+    "judged": {
+     "value": 60,
+     "why": "Throws everyone in 4 tiles, up to 5 tiles; needs a gravitational core."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/ionrifle": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "66b5ae61e5d66c63",
+   "name": "ion rifle",
+   "note": "The ion bolt deals no damage but sets off an EMP centred on the tile it hits: a heavy EMP on that tile and a 50% heavy / 50% light EMP on the tiles around it, affecting friend and foe alike (a heavy EMP knocks a cyborg out for 16 seconds and burns it for 20, a light one 6 seconds and 10). The gun is immune to EMP. / Does no damage; on any hit it sets off an EMP at the impact tile. That tile takes a heavy EMP and each tile one step out takes a heavy or light one (50/50), reaching everything on them including the shooter if close. The reduced-radius variant (HoS ion casing, ion shell) has radius 0, so only the impact tile is hit, heavy or light 50/50.",
+   "rank": 6,
+   "reason": "EMP on impact: decisive on silicons, suits and energy gear, nothing to a bare man.",
+   "score": 50,
+   "score_inputs": {
+    "judged": {
+     "value": 50,
+     "why": "EMP on impact: decisive on silicons, suits and energy gear, nothing to a bare man."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/ionrifle/carbine": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "5c9872fa22127097",
+   "name": "ion carbine",
+   "note": "Same as the ion rifle. The ion bolt deals no damage but sets off an EMP centred on the tile it hits: a heavy EMP on that tile and a 50% heavy / 50% light EMP on the tiles around it, affecting friend and foe alike (a heavy EMP knocks a cyborg out for 16 seconds and burns it for 20, a light one 6 seconds and 10). The gun is immune to EMP. / Does no damage; on any hit it sets off an EMP at the impact tile. That tile takes a heavy EMP and each tile one step out takes a heavy or light one (50/50), reaching everything on them including the shooter if close. The reduced-radius variant (HoS ion casing, ion shell) has radius 0, so only the impact tile is hit, heavy or light 50/50.",
+   "rank": 5,
+   "reason": "EMP on impact: decisive on silicons, suits and energy gear, nothing to a bare man.",
+   "score": 50,
+   "score_inputs": {
+    "judged": {
+     "value": 50,
+     "why": "EMP on impact: decisive on silicons, suits and energy gear, nothing to a bare man."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser": {
+   "confidence": "high",
+   "group": "beam weapons",
+   "hash": "a53103d94ec4af2a",
+   "name": "laser gun",
+   "note": "Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. Only the plain laser gun (not its subtypes) can be converted with a gunkit into an X-ray laser, a hellfire laser or an ion carbine. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 11,
+   "reason": "Takes six hits through a vest, with 16 shots and no ammo bill.",
+   "score": 44,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/bluetag": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "1e60ac1aabf00be4",
+   "name": "laser tag gun",
+   "note": "Its pin lets it fire only while the user wears a blue laser tag vest. The beam does no damage and drains 34 stamina only from a human wearing a red tag vest; the gun recharges itself, and mounted in a laser tag turret it targets the red team (red vests and red tag guns). / Does no damage. A human wearing the opposing team's laser tag vest takes 34 stamina damage; anyone else takes nothing.",
+   "rank": 17,
+   "reason": "Laser tag: it only fires in a tag vest.",
+   "tier": "none"
+  },
+  "/obj/item/gun/energy/laser/captain": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "cf6ad742c3ef35f7",
+   "name": "antique laser gun",
+   "note": "Recharges itself, and the gun and its cell are indestructible and immune to fire, acid and lava. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 4,
+   "reason": "Hellfire bolts in a self-charging, unbreakable gun, which beats a plain hellfire outright. Four hulls have one in a case.",
+   "score": 62,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "Charges itself, indestructible."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/carbine": {
+   "confidence": "high",
+   "group": "beam weapons",
+   "hash": "91b3f541e0309f6c",
+   "name": "laser carbine",
+   "note": "Holding the trigger fires repeatedly, and the off-hand gun is not fired along with it. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 8,
+   "reason": "Gives the same 400 total damage and damage per second as a laser gun, delivered with the trigger held, so it doesn't earn a higher tier.",
+   "score": 58,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/carbine/cybersun/unrestricted": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "60e4b50b546816b0",
+   "name": "Cybersun S-120",
+   "note": "Same hold-to-fire plasma beams as the laser carbine, with a plain firing pin where the base Cybersun S-120 needs the syndicate weapons implant. Its kill beam passes through windows, grilles and tables unless aimed at them, and ignites a carbon target only if that target already has fire stacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 14,
+   "reason": "Fires weaker bolts than the laser carbine with a spread of 14, so other beam guns beat it.",
+   "score": 43,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/chameleon": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "23985100bdf7b3a8",
+   "name": "laser gun",
+   "note": "Its action button disguises it as any other gun, copying that gun's look, fire sound, burst size and fire delay. Its shots are a harmless projectile with no damage that costs no charge, and the gun resists EMP.",
+   "rank": 16,
+   "reason": "A disguise toy whose shots do nothing.",
+   "tier": "none"
+  },
+  "/obj/item/gun/energy/laser/hellgun": {
+   "confidence": "low",
+   "group": "beam weapons",
+   "hash": "09ad06eb5df92cac",
+   "name": "hellfire laser gun",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 5,
+   "reason": "Only 20% more damage per second than a laser gun, with 10 shots against 16. Wounds are the real difference.",
+   "score": 62,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "Bolt is faster and wounds far more easily than a laser's."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/luxurypaywall": {
+   "confidence": "low",
+   "group": "beam weapons",
+   "hash": "855c9b94b6afc8d2",
+   "name": "luxurious laser gun",
+   "note": "Meant to charge the shooter 20 cr per shot after a one-time accept prompt, with the money going to no one. By code trace its pin has no owner account, is dropped out of the gun at spawn with its gun link unset, and the accept prompt then reads the gun's name from that unset link, so it likely errors and never fires (not run in game). / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 12,
+   "reason": "A laser at 20 cr a shot, paid through its pin. Read from the code; nobody has fired one.",
+   "score": 44,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/musket": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "6a7ffd730dc70b71",
+   "name": "laser musket",
+   "note": "Its single shot uses the whole cell; activating it in hand cranks in half a charge per 2 s crank (two cranks per shot), and cranking works while walking. Its bolt counts the target's armor as doubled. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 18,
+   "reason": "Takes two cranks per shot, and its bolts are weak against armor.",
+   "score": 2,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "Two 2 s cranks per shot."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/laser/musket/prime": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "e40fa9096adee4e7",
+   "name": "heroic laser musket",
+   "note": "Same hand crank as the laser musket (half a charge per 2 s crank, two cranks per shot, usable while walking), but its bolts do not double the target's armor. / Its single shot uses the whole cell; activating it in hand cranks in half a charge per 2 s crank (two cranks per shot), and cranking works while walking. Its bolt counts the target's armor as doubled. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 16,
+   "reason": "Fires one big shot then needs 4 s of cranking. Its recipe book is one-use and rare.",
+   "score": 22,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "points": {
+     "value": 15,
+     "why": "135 total in one shot; several carried fire as a volley."
+    },
+    "rate": {
+     "value": 0.25,
+     "why": "Two 2 s cranks per shot."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/laser/redtag": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "7eb531c64e975364",
+   "name": "laser tag gun",
+   "note": "Fires only if the user is wearing a red laser tag suit. Its bolts do no damage, except that a human in a blue laser tag suit loses 34 stamina per hit. / Does no damage. A human wearing the opposing team's laser tag vest takes 34 stamina damage; anyone else takes nothing.",
+   "rank": 18,
+   "reason": "Laser tag: it only fires in a tag vest.",
+   "tier": "none"
+  },
+  "/obj/item/gun/energy/laser/retro": {
+   "confidence": "high",
+   "group": "beam weapons",
+   "hash": "111a650d41e6dee8",
+   "name": "retro laser gun",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 13,
+   "reason": "A laser gun with the usual numbers.",
+   "score": 44,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/laser/retro/old": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "0610ce77dfc29eec",
+   "name": "laser gun",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 17,
+   "reason": "Holds five shots. Its description says it recharges itself, but nothing in the code does that.",
+   "score": 22,
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/laser/scatter": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "86c346eafd042b49",
+   "name": "scatter laser gun",
+   "note": "Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 3,
+   "reason": "The best beam up close, but worse than a laser gun past 5 tiles.",
+   "score": 63,
+   "score_inputs": {
+    "points": {
+     "value": 5,
+     "why": "Point blank every pellet lands."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/lasercannon/unrestricted": {
+   "confidence": "medium",
+   "group": "beam weapons",
+   "hash": "8bb0fdaf6f682701",
+   "name": "accelerator laser cannon",
+   "note": "The bolt's damage grows by 7 for every tile it travels, with no cap inside its 255-tile range, and the sprite grows up to 4x; it also carries the laser ignite on already-flammable carbons. It carries a standard firing pin, which the base cannon lacks. / Ignites a carbon target only if it already has fire stacks; the beam adds none. Hitting a wall only changes the impact effect.",
+   "rank": 1,
+   "reason": "Weak next to you and lethal across a screen: 55 damage at 7 tiles, 111 at 15.",
+   "score": 121,
+   "score_inputs": {
+    "damage": {
+     "value": 55,
+     "why": "6 damage plus 7 per tile flown; scored at 7 tiles. 111 at 15 tiles, no cap."
+    },
+    "points": {
+     "value": 25,
+     "why": "The farther the shot the harder it hits; outranges everything but the sniper."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/energy/photon": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "0727f7f2b202e85c",
+   "name": "photon cannon",
+   "note": "The bolt passes through mobs and flashes each living one it crosses at strength 3 (only 3 or more flash protection stops it, less only reduces the eye damage; bare eyes take 12-16), confuses it for 1.5 s and sparks silicons. At the end of its 20-tile range it flashes everyone within 5 tiles; its coded 40% chance of fire on each tile hangs on a signal the bolt never receives, so it likely never fires (untested). / A slow bright bolt that pierces mobs: every living thing it passes through takes a flash (intensity 3, silicons included) and 1.5 s of confusion, and silicons throw sparks. It loses a fifth of its speed on every tile of its 20-tile range, and where it ends it sparks and flashes every living mob within 5 tiles that can see it. The code also tries to leave a fire hotspot on 40% of tiles it crosses, but that handler is hooked to things entering the bolt itself, so it looks like it never fires (not confirmed in play).",
+   "rank": 2,
+   "reason": "Fires a flash that beats sunglasses and welding goggles, along a line and at its end. The bolt passes through people and leaves a patchy trail of fire that can light them.",
+   "score": 55,
+   "score_inputs": {
+    "judged": {
+     "value": 55,
+     "why": "Flash that beats sunglasses and welding goggles, in a line and at its end, no damage."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/plasmacutter": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "fa8436454d808fcf",
+   "name": "plasma cutter",
+   "note": "Works as a welder (faster than a standard one) that spends cell charge instead of fuel and flashes the user's eyes like a welder; a plasma sheet refills the cell fully and plasma ore half. Its bolt drills each mineral rock it hits and carries on (+1 range per rock, for up to 3 rocks), clicking an adjacent rock fires instead of swinging, and an EMP sets the holder on fire. / Cuts through rock: each mineral wall it hits is drilled out and the bolt carries on through it, and the first 3 walls (5 on the advanced bolt, 3 on the exosuit bolt) each add a tile of range back. On a mob or anything else it acts as a normal hit.",
+   "rank": 6,
+   "reason": "A mining and welding tool that does 5 damage over 4 tiles.",
+   "score": 15,
+   "score_inputs": {
+    "judged": {
+     "value": 15,
+     "why": "Mining and welding tool; 5 damage over 4 tiles."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/plasmacutter/adv": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "4ab4f1fd4a7d1117",
+   "name": "advanced plasma cutter",
+   "note": "Inherits the plasma cutter (welder powered by the cell, refilled by plasma sheet or ore, adjacent rock fires, EMP sets the holder on fire); its bolt carries on through up to 5 rocks instead of 3. / Works as a welder (faster than a standard one) that spends cell charge instead of fuel and flashes the user's eyes like a welder; a plasma sheet refills the cell fully and plasma ore half. Its bolt drills each mineral rock it hits and carries on (+1 range per rock, for up to 3 rocks), clicking an adjacent rock fires instead of swinging, and an EMP sets the holder on fire. / Cuts through rock: each mineral wall it hits is drilled out and the bolt carries on through it, and the first 3 walls (5 on the advanced bolt, 3 on the exosuit bolt) each add a tile of range back. On a mob or anything else it acts as a normal hit.",
+   "rank": 5,
+   "reason": "A mining and welding tool that does 7 damage over 5 tiles.",
+   "score": 20,
+   "score_inputs": {
+    "judged": {
+     "value": 20,
+     "why": "Mining and welding tool; 7 damage over 5 tiles."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/recharge/ebow": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "8faa95d2ed9d649f",
+   "name": "mini energy crossbow",
+   "note": "Holds a single shot and refills itself 2 s after firing, or after being picked up empty; it keeps its charge when dropped and is EMP-proof, and carrying several does not slow the refill.",
+   "rank": 7,
+   "reason": "Two bolts put a man in stamina crit, each knocks down, and it never needs ammo. Upstream tg charges 10 TC for it, more than a Makarov and less than a revolver.",
+   "score": 49,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "points": {
+     "value": 40,
+     "why": "Knocks down on hit, adds toxin, no ammo, silent, pocket sized."
+    },
+    "rate": {
+     "value": 0.5,
+     "why": "One shot, refills in 2 s."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/recharge/ebow/large": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "0961e7930b759650",
+   "name": "energy crossbow",
+   "note": "Inherits the mini energy crossbow: holds a single shot and refills itself 2 s after firing, or after being picked up empty; it keeps its charge when dropped and is EMP-proof, and carrying several does not slow the refill.",
+   "rank": 4,
+   "reason": "Two bolts put a man in stamina crit, each knocks down, and it never needs ammo. Bigger than the mini crossbow, with 5 more toxin.",
+   "score": 50,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "points": {
+     "value": 40,
+     "why": "Knocks down on hit, adds toxin, no ammo, silent."
+    },
+    "rate": {
+     "value": 0.5,
+     "why": "One shot, refills in 2 s."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/recharge/fisher": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "d3be9fadbdc8545f",
+   "name": "SC/FISHER disruptor",
+   "note": "Its shots do no damage; a hit disrupts the clicked thing, and the gear a hit mob carries, for 15 s (25 s in melee or thrown): lights break, cameras and turrets go offline, APCs lose power, and flashlights, cyborg headlamps, radio mics and stun batons switch off. The hitscan bolt phases through tables, mobs, machines and structures, so only the clicked target is hit. / Hitscan, no damage, and passes through tables, mobs, machines and structures unless aimed straight at them. The thing hit, and everything a hit mob wears or carries, is disrupted for 15 seconds: lights and flashlights switch off or break, radios stop broadcasting, powered batons turn off, cameras (30 seconds), turrets and APCs shut down, pAIs are muted.",
+   "rank": 8,
+   "reason": "Knocks out lights, cameras, turrets and APCs for 15 s. No damage.",
+   "score": 30,
+   "score_inputs": {
+    "judged": {
+     "value": 30,
+     "why": "Knocks out lights, cameras, turrets and APCs for 15 s; no damage."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/recharge/kinetic_accelerator": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "6c85f5c76b818b0e",
+   "name": "proto-kinetic accelerator",
+   "note": "A bolt does a quarter of its damage when the target's tile is above 50 kPa. Each bolt drills the rock it strikes (the firer's mining skill can then shorten the reload); the gun empties when put down or bagged, refills 1.6 s after firing or being picked up, refills slower for each extra one carried, and takes modkits up to 100% capacity. / Drills the rock at the tile where it hits or runs out (when the shooter is a person that also shortens their reload, scaled by mining skill) and triggers each installed modkit's strike effect there. Damage is cut to a quarter if that spot is above 50 kPa. A mob with the mining-parry trait can parry the shot to speed it up and add 15% damage (50% if the shooter parries it). The exosuit version also drills rock within 2 tiles of the impact and damages mining mobs near it.",
+   "rank": 7,
+   "reason": "Strong on airless planets, a quarter of that in air, with 3 tile reach. The right gun for fauna, the wrong one for people.",
+   "score": 9,
+   "score_inputs": {
+    "cell_fed": {
+     "value": false,
+     "why": "Refills by itself or by hand, so the cell never limits it."
+    },
+    "rate": {
+     "value": 0.625,
+     "why": "One shot, refills 1.6 s after firing."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/energy/taser": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "8e8dd07a3c4d711d",
+   "name": "taser gun",
+   "note": "A hit tethers the target to the gun instead of stunning outright: while connected they take 60 stamina damage a second, both sides are slowed, the cell drains 500 a second and the gun cannot fire. It ends if the cell dies, the gun is dropped or re-equipped, sight breaks past 5 tiles, the shooter clicks the target, the target spends 5 s pulling it out, or someone crosses the line (they take 90 stamina and a knockdown); silicons, bots and drones cannot be tethered. / Not an instant stun: the electrodes tether the target, who takes 60 stamina damage per second for as long as the gun keeps charge and stays in sight within 5 tiles; the shooter is slowed and cannot fire the gun meanwhile. The target can tear the electrodes off (5 seconds), anyone crossing the line gets tangled (90 stamina and a 5 second knockdown), and silicons, bots, drones and pierce-immune targets are unaffected.",
+   "rank": 10,
+   "reason": "Its tether does 60 stamina a second past armor, but ties up the gun and needs line of sight.",
+   "score": 40,
+   "score_inputs": {
+    "armorless_stamina": {
+     "rate": 1.0,
+     "value": 60,
+     "why": "Tether drains 60 stamina a second past armor; catalog shows 0."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/temperature": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "45870006bc972689",
+   "name": "temperature gun",
+   "note": "Shots do no damage: freeze lowers and bake raises a hit carbon's body temperature (50 K colder or 100 K hotter, doubled when it has no insulation), and bake also dries the target; reagents in a hit object are heated or cooled too. / Lowers a hit carbon's body temperature by 50, or by up to 100 the less insulation it has (the insulation term is added rather than subtracted, so bare skin takes the double). Other living mobs take the plain 50. Reagents in a hit container are nudged about 2% toward the beam's value read as an absolute temperature, so room-temperature reagents get colder. / Raises a hit carbon's body temperature by 100, or by up to 200 the less insulation it has (same insulation quirk as the freeze beam), and strips 10 wet stacks from any living target. It doesn't ignite anything itself; container reagents are handled as for the freeze beam.",
+   "rank": 8,
+   "reason": "Freezes or bakes on hit and slows hard, with no damage.",
+   "score": 45,
+   "score_inputs": {
+    "judged": {
+     "value": 45,
+     "why": "Freezes or bakes on hit, slows hard; no damage."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/temperature/unrestricted": {
+   "confidence": "low",
+   "group": "tasers and control",
+   "hash": "bcb64ce2e28a1949",
+   "name": "temperature gun",
+   "note": "Inherits the temperature gun: shots do no damage: freeze lowers and bake raises a hit carbon's body temperature (50 K colder or 100 K hotter, doubled when it has no insulation), and bake also dries the target; reagents in a hit object are heated or cooled too. Comes with a standard firing pin. / Lowers a hit carbon's body temperature by 50, or by up to 100 the less insulation it has (the insulation term is added rather than subtracted, so bare skin takes the double). Other living mobs take the plain 50. Reagents in a hit container are nudged about 2% toward the beam's value read as an absolute temperature, so room-temperature reagents get colder. / Raises a hit carbon's body temperature by 100, or by up to 200 the less insulation it has (same insulation quirk as the freeze beam), and strips 10 wet stacks from any living target. It doesn't ignite anything itself; container reagents are handled as for the freeze beam.",
+   "rank": 9,
+   "reason": "Freezes or bakes on hit and slows hard, with no damage.",
+   "score": 45,
+   "score_inputs": {
+    "judged": {
+     "value": 45,
+     "why": "Freezes or bakes on hit, slows hard; no damage."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/tesla_cannon": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "2ddce73d326b5636",
+   "name": "tesla cannon",
+   "note": "Each hitscan bolt also shocks a living target for 10 burn damage with no stun (only jitter and stutter); on a human, insulating gloves halve the shock and an insulating suit cuts it to 5%, and both cancel it. The shock also passes at 75% to a carbon pulling or being pulled by the victim. / Hitscan bolt; every living target it hits also takes a 10-point electric shock (burn) that doesn't stun but jitters carbons for 20 s and stutters their speech for 4 s. Insulated gloves or an insulated suit block the shock entirely, and shock-immune mobs ignore it.",
+   "rank": 3,
+   "reason": "The stats say 50 damage a second, but with the shock it's about 135 and hitscan. Insulated gloves are the counter.",
+   "score": 143,
+   "score_inputs": {
+    "armorless_damage": {
+     "value": 10,
+     "why": "Each bolt also shocks for 10, past armor. Insulated gloves halve it; gloves and an insulated suit cancel it."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/energy/wormhole_projector": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "b5ab6dc22522da25",
+   "name": "bluespace wormhole projector",
+   "note": "Needs a bluespace anomaly core inserted (consumed) before it fires at all, after which shots cost no charge. Left-click fires a blue portal and right-click an orange one where the beam stops (it passes glass, tables, grilles and mobs); the pair link to each other, last 30 s, and a new shot replaces the old portal of that colour. / Hitscan, no damage. Where it lands it opens a portal that lasts 30 seconds; the projector keeps one blue and one orange at a time, a new one replacing the old of that colour, and a lone portal does nothing. Mobs and objects that bump or touch one, and projectiles that hit one, come out at the other.",
+   "rank": 6,
+   "reason": "Makes paired portals for 30 s. Needs a bluespace core.",
+   "score": 60,
+   "score_inputs": {
+    "judged": {
+     "value": 60,
+     "why": "Paired portals for 30 s; needs a bluespace core."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/energy/xray": {
+   "confidence": "low",
+   "group": "beam weapons",
+   "hash": "59f90244c3483191",
+   "name": "X-ray laser gun",
+   "rank": 2,
+   "reason": "Shoots through walls. Low damage, but no armor and no cover help.",
+   "score": 112,
+   "score_inputs": {
+    "points": {
+     "value": 75,
+     "why": "The beam passes walls, doors and machines. You can be killed by someone you cannot shoot back at."
+    }
+   },
+   "tier": "red"
+  },
+  "/obj/item/gun/grenadelauncher": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "dbebae2b1736f578",
+   "name": "grenade launcher",
+   "note": "Starts empty; loads up to 3 grenades of any kind except C4 and fires the one loaded first, throwing it up to 30 tiles. The grenade is armed on launch and goes off 1.5 s later wherever it is, whatever its own fuse.",
+   "rank": 5,
+   "reason": "Holds 3 grenades of any kind and fires them 30 tiles with a 1.5 s fuse, so it's as strong as what you load.",
+   "score": 90,
+   "score_inputs": {
+    "judged": {
+     "value": 90,
+     "why": "3 grenades of any kind, 30 tiles, 1.5 s fuse: as strong as what you load."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/magic/hook/bounty": {
+   "confidence": "medium",
+   "group": "tasers and control",
+   "hash": "74514fdfe36eb8f1",
+   "name": "hook",
+   "note": "A hit on a loose (unanchored) target drags it to the shooter's tile and knocks it down for 0.5 s; the shooter cannot move or use windows while the pull lasts, is held still for 0.25 s after every shot, and cannot fire again during a pull. Anchored targets are not pulled, and the hook needs no firing pin. / Snags the first thing it hits and drags it tile by tile to where the shooter was standing, knocking a mob down for 0.5 s; anchored things are only hit, and the same shooter can't re-hook someone already being dragged. Firing roots the shooter for 0.25 s (kept for as long as a drag runs), and during a drag the shooter can't move or use windows. The bounty hook uses the same pull.",
+   "rank": 10,
+   "reason": "Hook on the hook shotgun, back every 8 seconds. Drags a target to your tile and knocks them down, 40 stamina through armor. Never on its own.",
+   "score": 42,
+   "score_inputs": {
+    "judged": {
+     "value": 42,
+     "why": "drags the target in, every 8 seconds; the listed rate ignores the recharge"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/magic/hook/marlinspike": {
+   "confidence": "medium",
+   "group": "launchers and exotics",
+   "hash": "0d2ea043a8f874fd",
+   "name": "marlinspike",
+   "note": "Refuses to fire at anything more than 4 tiles away. A loose target is yanked to the shooter and knocked down for 0.5 s, while hooking a wall, a clicked floor tile or anything anchored hauls the shooter to the tile beside it instead (if there is room); the shooter cannot move during the pull. / Snags the first thing it hits and drags it tile by tile to where the shooter was standing, knocking a mob down for 0.5 s; anchored things are only hit, and the same shooter can't re-hook someone already being dragged. Firing roots the shooter for 0.25 s (kept for as long as a drag runs), and during a drag the shooter can't move or use windows. The bounty hook uses the same pull. / The meat hook's drag with three differences: the gun refuses to fire at targets more than 4 tiles away, the hook can latch onto floor tiles, and if it hits a wall, a floor tile or anything anchored it hauls the shooter to the open tile next to it instead (the shooter is knocked down 0.5 s as the haul starts), or fails with a message if there is no room to land.",
+   "rank": 2,
+   "reason": "A unique gun: grapple to yank a target or haul yourself across a gap.",
+   "tier": "above"
+  },
+  "/obj/item/gun/magic/wand/nothing": {
+   "confidence": "high",
+   "group": "toys and novelties",
+   "hash": "6cab7831e1bebc09",
+   "name": "wand of nothing",
+   "rank": 19,
+   "reason": "Does nothing.",
+   "tier": "none"
+  },
+  "/obj/item/gun/medbeam": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "6682c1cbc8b65535",
+   "name": "Medical Beamgun",
+   "note": "Clicking a living mob within 8 tiles latches a beam that heals it every 2 s (4 brute, 4 burn, 1 toxin, 1 oxygen, dead mobs included) until sight breaks, the target leaves range, or the gun is dropped or re-equipped. Crossing another medbeam's beam causes an explosion at the crossing (heavy radius 3).",
+   "rank": 4,
+   "reason": "Heals 4 brute and 4 burn per 2 s at 8 tiles.",
+   "score": 25,
+   "score_inputs": {
+    "judged": {
+     "value": 25,
+     "why": "Heals 4 brute and 4 burn per 2 s at 8 tiles."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/medbeam/mech": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "575faa9a889fcb36",
+   "name": "Medical Beamgun",
+   "note": "Inherits the Medical Beamgun: clicking a living mob within 8 tiles latches a beam that heals it every 2 s (4 brute, 4 burn, 1 toxin, 1 oxygen, dead mobs included) until sight breaks, the target leaves range, or the gun is dropped or re-equipped. Crossing another medbeam's beam causes an explosion at the crossing (heavy radius 3). It is the exosuit-mounted copy, run by the mech's equipment, which drops the target when weapons safety is on. / Clicking a living mob within 8 tiles latches a beam that heals it every 2 s (4 brute, 4 burn, 1 toxin, 1 oxygen, dead mobs included) until sight breaks, the target leaves range, or the gun is dropped or re-equipped. Crossing another medbeam's beam causes an explosion at the crossing (heavy radius 3).",
+   "rank": 5,
+   "reason": "The Medical Beamgun on an exosuit: heals 4 brute and 4 burn per 2 seconds at 8 tiles. Part of a printed mech tool, never on its own.",
+   "score": 25,
+   "score_inputs": {
+    "judged": {
+     "value": 25,
+     "why": "same beam as the handheld Medical Beamgun"
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/syringe": {
+   "confidence": "low",
+   "group": "tools and support",
+   "hash": "3920e55259d9a828",
+   "name": "medical syringe gun",
+   "note": "Fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Fires the first loaded syringe. At full power the syringe is destroyed and its contents go into the dart, which takes the syringe's name, injection flags and armour penetration; at low power the whole syringe rides in the dart and, if it embeds, slowly injects, otherwise it drops where the shot lands. With no syringe loaded the dart carries nothing. / Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact. / A dart carrying the loaded syringe: its reagents are allowed to react in flight, unlike a plain dart. A syringe that did not embed drops to the floor where the shot lands or runs out.",
+   "rank": 3,
+   "reason": "Does 6 damage plus a whole syringe of anything. Thick suits stop it.",
+   "score": 30,
+   "score_inputs": {
+    "judged": {
+     "value": 30,
+     "why": "6 damage plus a whole syringe of anything; thick suits stop it."
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/gun/syringe/blowgun": {
+   "confidence": "medium",
+   "group": "tools and support",
+   "hash": "ab004732940b8869",
+   "name": "blowgun",
+   "note": "Fires the first loaded syringe. At full power the syringe is destroyed and its contents go into the dart, which takes the syringe's name, injection flags and armour penetration; at low power the whole syringe rides in the dart and, if it embeds, slowly injects, otherwise it drops where the shot lands. With no syringe loaded the dart carries nothing. / Fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Carries what its casing holds, held inert in flight: 15 units in a plain dart, 25 in an XL dart, 30 in a bioterror dart. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact. / A dart carrying the loaded syringe: its reagents are allowed to react in flight, unlike a plain dart. A syringe that did not embed drops to the floor where the shot lands or runs out.",
+   "rank": 9,
+   "reason": "Fires one syringe a short way, and each shot costs you 20 stamina and 20 oxygen. Worse than the plain syringe gun.",
+   "score": 8,
+   "tier": "green"
+  },
+  "/obj/item/gun/syringe/rapidsyringe": {
+   "confidence": "low",
+   "group": "tools and support",
+   "hash": "61cd7a2c5ac909fc",
+   "name": "compact rapid syringe gun",
+   "note": "Inherits the medical syringe gun: fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Fires the first loaded syringe. At full power the syringe is destroyed and its contents go into the dart, which takes the syringe's name, injection flags and armour penetration; at low power the whole syringe rides in the dart and, if it embeds, slowly injects, otherwise it drops where the shot lands. With no syringe loaded the dart carries nothing. / Fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact. / A dart carrying the loaded syringe: its reagents are allowed to react in flight, unlike a plain dart. A syringe that did not embed drops to the floor where the shot lands or runs out.",
+   "rank": 1,
+   "reason": "A compact syringe gun that holds six.",
+   "score": 45,
+   "score_inputs": {
+    "judged": {
+     "value": 45,
+     "why": "Syringe gun holding six, compact."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/gun/syringe/syndicate": {
+   "confidence": "low",
+   "group": "tools and support",
+   "hash": "47f22149fa17e3b4",
+   "name": "dart pistol",
+   "note": "Inherits the medical syringe gun: fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. It starts with one empty syringe loaded. / Fires the first loaded syringe. At full power the syringe is destroyed and its contents go into the dart, which takes the syringe's name, injection flags and armour penetration; at low power the whole syringe rides in the dart and, if it embeds, slowly injects, otherwise it drops where the shot lands. With no syringe loaded the dart carries nothing. / Fires a loaded syringe: on a hit the whole contents are injected at once and the syringe is destroyed, unless thick clothing deflects the dart. Right-clicking the gun in hand switches it so the syringe instead embeds and drips its contents; bluespace syringes will not fit. / Carries up to 50 units of reagents, held inert in flight. A hit on a carbon whose hit zone can be injected (thick suits block it unless the dart pierces) injects all of it; otherwise the dart is deflected for no damage and the chems react inside it. On a non-carbon target the chems simply react at impact. / A dart carrying the loaded syringe: its reagents are allowed to react in flight, unlike a plain dart. A syringe that did not embed drops to the floor where the shot lands or runs out.",
+   "rank": 2,
+   "reason": "A pocket-sized syringe gun with one syringe.",
+   "score": 40,
+   "score_inputs": {
+    "judged": {
+     "value": 40,
+     "why": "Pocket-sized syringe gun, one syringe."
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/pneumatic_cannon": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "be38293ced130e5b",
+   "name": "pneumatic cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 11,
+   "reason": "Bulky air cannon that throws whatever is loaded. Damage comes from the thing thrown, and the top setting paralyzes the shooter for 6 seconds. Can launch primed grenades.",
+   "score": 25,
+   "score_inputs": {
+    "judged": {
+     "value": 25,
+     "why": "throws what you load; as strong as the load"
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/pneumatic_cannon/ghetto": {
+   "confidence": "low",
+   "group": "launchers and exotics",
+   "hash": "4738bf333aedf472",
+   "name": "improvised pneumatic cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 12,
+   "reason": "Improvised air cannon from pipes, iron and wrap: half the capacity, more gas per shot, same idea. Anyone can build it.",
+   "score": 20,
+   "score_inputs": {
+    "judged": {
+     "value": 20,
+     "why": "throws what you load, with half the capacity"
+    }
+   },
+   "tier": "green"
+  },
+  "/obj/item/pneumatic_cannon/pie": {
+   "confidence": "low",
+   "group": "toys and novelties",
+   "hash": "a96992d3c5d6de5f",
+   "name": "pie cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 2,
+   "reason": "Takes up to 50 pies, needs no gas and throws three times as far. Cream pies paralyze for 2 seconds past any armor, but you have to bake them yourself.",
+   "score": 55,
+   "score_inputs": {
+    "judged": {
+     "value": 55,
+     "why": "2 second paralysis per cream pie, limited by baking 50 of them"
+    }
+   },
+   "tier": "yellow"
+  },
+  "/obj/item/pneumatic_cannon/pie/selfcharge": {
+   "confidence": "medium",
+   "group": "toys and novelties",
+   "hash": "ce2fec95fbc6a8b6",
+   "name": "pie cannon",
+   "note": "Throws any loaded item (up to 20 total weight, first in first out, one per shot) at range 10 times the pressure setting, spending 3 moles of gas per pressure level from a mounted internals tank; at the highest pressure the shooter is knocked down for 6 seconds. The thrown item does its own throw damage and effects. The improvised one holds 10 weight and uses 5 gas per level; the pie cannon takes only pies, needs no gas, throws 3 times as far and holds 50 pies, and the self-charging one adds cream pies and fires automatically.",
+   "rank": 1,
+   "reason": "Not a toy. Makes a cream pie every 2 seconds, up to 20; each hit paralyzes for 2 seconds past any armor, at three times normal throw range. No shop, ruin or played hull has one.",
+   "score": 115,
+   "score_inputs": {
+    "judged": {
+     "value": 115,
+     "why": "endless 2 second paralysis on a hit, past any armor"
+    }
+   },
+   "tier": "red"
+  }
+ },
+ "method": "Placed against the pilot's gun ratings with the same score: the formula where a gun has stats, and a judged score where its power is not in the stats. Bands: green under 40, yellow 40 to 109, red 110 and up.",
+ "unrated": {
+  "/obj/item/gun": "abstract",
+  "/obj/item/gun/ballistic": "abstract",
+  "/obj/item/gun/ballistic/automatic": "abstract",
+  "/obj/item/gun/ballistic/automatic/battle_rifle": "no route",
+  "/obj/item/gun/ballistic/automatic/c20r": "needs another system",
+  "/obj/item/gun/ballistic/automatic/c20r/sc_c20r": "needs another system",
+  "/obj/item/gun/ballistic/automatic/c20r/toy": "toy",
+  "/obj/item/gun/ballistic/automatic/gyropistol": "leftover",
+  "/obj/item/gun/ballistic/automatic/l6_saw": "needs another system",
+  "/obj/item/gun/ballistic/automatic/l6_saw/toy": "toy",
+  "/obj/item/gun/ballistic/automatic/laser": "leftover",
+  "/obj/item/gun/ballistic/automatic/laser/ctf": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/blue": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/green": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/marksman": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/marksman/blue": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/marksman/green": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/marksman/red": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/marksman/yellow": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/red": "admin",
+  "/obj/item/gun/ballistic/automatic/laser/ctf/yellow": "admin",
+  "/obj/item/gun/ballistic/automatic/m90": "needs another system",
+  "/obj/item/gun/ballistic/automatic/mini_uzi/chimpgun": "needs another system",
+  "/obj/item/gun/ballistic/automatic/pistol/clandestine": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/clandestine/quiet_word": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/contraband": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/deagle/contraband": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/deagle/ctf": "admin",
+  "/obj/item/gun/ballistic/automatic/pistol/fire_mag": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/m1911/chimpgun": "needs another system",
+  "/obj/item/gun/ballistic/automatic/pistol/riot": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/stickman": "literal only",
+  "/obj/item/gun/ballistic/automatic/pistol/suppressed": "leftover",
+  "/obj/item/gun/ballistic/automatic/pistol/toy/riot/clandestine": "toy",
+  "/obj/item/gun/ballistic/automatic/proto": "leftover",
+  "/obj/item/gun/ballistic/automatic/tommygun/chimpgun": "needs another system",
+  "/obj/item/gun/ballistic/bow/divine": "leftover",
+  "/obj/item/gun/ballistic/bow/divine/with_quiver": "leftover",
+  "/obj/item/gun/ballistic/bow/longbow": "leftover",
+  "/obj/item/gun/ballistic/revolver/badass": "leftover",
+  "/obj/item/gun/ballistic/revolver/badass/nuclear": "needs another system",
+  "/obj/item/gun/ballistic/revolver/chaplain": "leftover",
+  "/obj/item/gun/ballistic/revolver/cowboy": "leftover",
+  "/obj/item/gun/ballistic/revolver/cowboy/nuclear": "needs another system",
+  "/obj/item/gun/ballistic/revolver/grenadelauncher": "needs another system",
+  "/obj/item/gun/ballistic/revolver/grenadelauncher/cyborg": "needs another system",
+  "/obj/item/gun/ballistic/revolver/grenadelauncher/underbarrel": "needs another system",
+  "/obj/item/gun/ballistic/revolver/reverse": "leftover",
+  "/obj/item/gun/ballistic/revolver/reverse/mateba": "leftover",
+  "/obj/item/gun/ballistic/rifle": "abstract",
+  "/obj/item/gun/ballistic/rifle/boltaction/harpoon": "leftover",
+  "/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol/prime": "leftover",
+  "/obj/item/gun/ballistic/rifle/enchanted": "leftover",
+  "/obj/item/gun/ballistic/rifle/lionhunter": "leftover",
+  "/obj/item/gun/ballistic/rifle/rebarxbow/syndie": "leftover",
+  "/obj/item/gun/ballistic/rifle/sks": "leftover",
+  "/obj/item/gun/ballistic/rifle/sks/chekhov": "leftover",
+  "/obj/item/gun/ballistic/rifle/sks/empty": "literal only",
+  "/obj/item/gun/ballistic/rifle/sniper_rifle/syndicate": "needs another system",
+  "/obj/item/gun/ballistic/rocketlauncher": "needs another system",
+  "/obj/item/gun/ballistic/rocketlauncher/nobackblast": "needs another system",
+  "/obj/item/gun/ballistic/rocketlauncher/unrestricted/nanotrasen": "leftover",
+  "/obj/item/gun/ballistic/shotgun/automatic/combat/compact": "leftover",
+  "/obj/item/gun/ballistic/shotgun/automatic/dual_tube/bounty": "leftover",
+  "/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly": "leftover",
+  "/obj/item/gun/ballistic/shotgun/bulldog": "needs another system",
+  "/obj/item/gun/ballistic/shotgun/ctf": "admin",
+  "/obj/item/gun/ballistic/shotgun/ctf/blue": "admin",
+  "/obj/item/gun/ballistic/shotgun/ctf/green": "admin",
+  "/obj/item/gun/ballistic/shotgun/ctf/red": "admin",
+  "/obj/item/gun/ballistic/shotgun/ctf/yellow": "admin",
+  "/obj/item/gun/ballistic/shotgun/monkey": "needs another system",
+  "/obj/item/gun/ballistic/shotgun/sc_pump": "leftover",
+  "/obj/item/gun/blastcannon": "leftover",
+  "/obj/item/gun/chem": "leftover",
+  "/obj/item/gun/energy": "abstract",
+  "/obj/item/gun/energy/alien": "needs another system",
+  "/obj/item/gun/energy/disabler/cyborg": "needs another system",
+  "/obj/item/gun/energy/disabler/smoothbore/prime": "literal only",
+  "/obj/item/gun/energy/dueling": "toy",
+  "/obj/item/gun/energy/e_gun/advtaser": "needs another system",
+  "/obj/item/gun/energy/e_gun/advtaser/cyborg": "needs another system",
+  "/obj/item/gun/energy/e_gun/advtaser/mounted": "needs another system",
+  "/obj/item/gun/energy/e_gun/lethal": "literal only",
+  "/obj/item/gun/energy/e_gun/mini/practice_phaser": "toy",
+  "/obj/item/gun/energy/e_gun/stun": "no route",
+  "/obj/item/gun/energy/e_gun/turret": "needs another system",
+  "/obj/item/gun/energy/laser/bluetag/hitscan": "leftover",
+  "/obj/item/gun/energy/laser/captain/scattershot": "leftover",
+  "/obj/item/gun/energy/laser/carbine/cybersun": "needs another system",
+  "/obj/item/gun/energy/laser/carbine/practice": "toy",
+  "/obj/item/gun/energy/laser/chameleon/ballistic_only": "leftover",
+  "/obj/item/gun/energy/laser/cyborg": "needs another system",
+  "/obj/item/gun/energy/laser/instakill": "admin",
+  "/obj/item/gun/energy/laser/instakill/ctf": "admin",
+  "/obj/item/gun/energy/laser/instakill/ctf/blue": "admin",
+  "/obj/item/gun/energy/laser/instakill/ctf/green": "admin",
+  "/obj/item/gun/energy/laser/instakill/ctf/red": "admin",
+  "/obj/item/gun/energy/laser/instakill/ctf/yellow": "admin",
+  "/obj/item/gun/energy/laser/mounted": "needs another system",
+  "/obj/item/gun/energy/laser/mounted/augment": "needs another system",
+  "/obj/item/gun/energy/laser/practice": "toy",
+  "/obj/item/gun/energy/laser/practice/sc_laser": "toy",
+  "/obj/item/gun/energy/laser/redtag/hitscan": "leftover",
+  "/obj/item/gun/energy/laser/retro/sc_retro": "leftover",
+  "/obj/item/gun/energy/laser/scatter/shotty": "needs another system",
+  "/obj/item/gun/energy/laser/thermal": "leftover",
+  "/obj/item/gun/energy/laser/thermal/cryo": "no route",
+  "/obj/item/gun/energy/laser/thermal/inferno": "no route",
+  "/obj/item/gun/energy/lasercannon": "leftover",
+  "/obj/item/gun/energy/marksman_revolver": "leftover",
+  "/obj/item/gun/energy/meteorgun": "admin",
+  "/obj/item/gun/energy/meteorgun/pen": "admin",
+  "/obj/item/gun/energy/mindflayer": "admin",
+  "/obj/item/gun/energy/minigun": "needs another system",
+  "/obj/item/gun/energy/printer": "needs another system",
+  "/obj/item/gun/energy/pulse": "admin",
+  "/obj/item/gun/energy/pulse/carbine": "admin",
+  "/obj/item/gun/energy/pulse/carbine/lethal": "admin",
+  "/obj/item/gun/energy/pulse/carbine/loyalpin": "needs another system",
+  "/obj/item/gun/energy/pulse/carbine/taserless": "admin",
+  "/obj/item/gun/energy/pulse/destroyer": "admin",
+  "/obj/item/gun/energy/pulse/loyalpin": "needs another system",
+  "/obj/item/gun/energy/pulse/pistol": "admin",
+  "/obj/item/gun/energy/pulse/pistol/loyalpin": "needs another system",
+  "/obj/item/gun/energy/pulse/pistol/m1911": "admin",
+  "/obj/item/gun/energy/pulse/pistol/taserless": "admin",
+  "/obj/item/gun/energy/pulse/prize": "admin",
+  "/obj/item/gun/energy/recharge": "leftover",
+  "/obj/item/gun/energy/recharge/ebow/halloween": "leftover",
+  "/obj/item/gun/energy/recharge/kinetic_accelerator/cyborg": "needs another system",
+  "/obj/item/gun/energy/recharge/kinetic_accelerator/minebot": "needs another system",
+  "/obj/item/gun/energy/shrink_ray": "needs another system",
+  "/obj/item/gun/energy/temperature/freeze": "leftover",
+  "/obj/item/gun/energy/temperature/security": "leftover",
+  "/obj/item/gun/energy/wiremod_gun": "leftover",
+  "/obj/item/gun/energy/wormhole_projector/core_inserted": "needs another system",
+  "/obj/item/gun/magic": "abstract",
+  "/obj/item/gun/magic/bloodchill": "admin",
+  "/obj/item/gun/magic/hook": "admin",
+  "/obj/item/gun/magic/hook/debug": "admin",
+  "/obj/item/gun/magic/midas_hand": "admin",
+  "/obj/item/gun/magic/staff": "abstract",
+  "/obj/item/gun/magic/staff/animate": "admin",
+  "/obj/item/gun/magic/staff/babel": "admin",
+  "/obj/item/gun/magic/staff/change": "admin",
+  "/obj/item/gun/magic/staff/change/unrestricted": "admin",
+  "/obj/item/gun/magic/staff/chaos": "admin",
+  "/obj/item/gun/magic/staff/chaos/true_wabbajack": "admin",
+  "/obj/item/gun/magic/staff/chaos/unrestricted": "admin",
+  "/obj/item/gun/magic/staff/door": "admin",
+  "/obj/item/gun/magic/staff/flying": "admin",
+  "/obj/item/gun/magic/staff/healing": "admin",
+  "/obj/item/gun/magic/staff/healing/unrestricted": "admin",
+  "/obj/item/gun/magic/staff/honk": "admin",
+  "/obj/item/gun/magic/staff/locker": "admin",
+  "/obj/item/gun/magic/staff/necropotence": "admin",
+  "/obj/item/gun/magic/staff/shrink": "admin",
+  "/obj/item/gun/magic/staff/spellblade": "admin",
+  "/obj/item/gun/magic/staff/wipe": "admin",
+  "/obj/item/gun/magic/tentacle": "admin",
+  "/obj/item/gun/magic/wand": "abstract",
+  "/obj/item/gun/magic/wand/arcane_barrage": "admin",
+  "/obj/item/gun/magic/wand/arcane_barrage/blood": "admin",
+  "/obj/item/gun/magic/wand/death": "admin",
+  "/obj/item/gun/magic/wand/death/debug": "admin",
+  "/obj/item/gun/magic/wand/door": "admin",
+  "/obj/item/gun/magic/wand/fireball": "admin",
+  "/obj/item/gun/magic/wand/fireball/inert": "admin",
+  "/obj/item/gun/magic/wand/polymorph": "admin",
+  "/obj/item/gun/magic/wand/resurrection": "admin",
+  "/obj/item/gun/magic/wand/resurrection/debug": "admin",
+  "/obj/item/gun/magic/wand/resurrection/inert": "admin",
+  "/obj/item/gun/magic/wand/safety": "admin",
+  "/obj/item/gun/magic/wand/safety/debug": "admin",
+  "/obj/item/gun/magic/wand/shrink": "admin",
+  "/obj/item/gun/magic/wand/teleport": "admin",
+  "/obj/item/gun/medbeam/mod": "needs another system",
+  "/obj/item/gun/syringe/dna": "leftover",
+  "/obj/item/pneumatic_cannon/pie/selfcharge/cyborg": "no route"
+ }
+}

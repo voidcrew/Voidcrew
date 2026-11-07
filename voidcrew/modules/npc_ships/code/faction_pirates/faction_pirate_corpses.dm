@@ -104,7 +104,7 @@
 	name = "Skeleton Captain Corpse"
 	head = /obj/item/clothing/head/costume/crown
 	suit = /obj/item/clothing/suit/costume/pirate/armored
-	belt = /obj/item/gun/magic/midas_hand
+	belt = null
 	glasses = /obj/item/clothing/glasses/eyepatch
 	l_pocket = /obj/item/coin/gold/doubloon
 
@@ -112,7 +112,7 @@
 	name = "Davy Jones Corpse"
 	head = /obj/item/clothing/head/costume/pirate/armored
 	suit = /obj/item/clothing/suit/costume/pirate/captain/armored
-	belt = /obj/item/gun/magic/midas_hand
+	belt = null
 	glasses = /obj/item/clothing/glasses/eyepatch
 	l_pocket = /obj/item/coin/gold/doubloon
 
@@ -302,7 +302,7 @@
 	neck = /obj/item/clothing/neck/tie/red/tied
 	suit = null
 	head = null
-	belt = /obj/item/storage/belt/holster/detective/full/ert
+	belt = null
 
 /datum/outfit/piratecorpse/faction/irs/chief
 	name = "IRS Head Auditor Corpse"
@@ -310,7 +310,7 @@
 	neck = /obj/item/clothing/neck/tie/red/tied
 	suit = null
 	head = /obj/item/clothing/head/costume/constable
-	belt = /obj/item/storage/belt/holster/detective/full/ert
+	belt = null
 
 // ==================== MEDIEVAL (Space Warmongers) ====================
 
@@ -346,7 +346,7 @@
 
 /datum/outfit/piratecorpse/faction/medieval/melee
 	name = "Medieval Footsoldier Corpse"
-	belt = /obj/item/claymore/shortsword
+	belt = null
 
 /datum/outfit/piratecorpse/faction/medieval/ranged
 	name = "Medieval Crossbowman Corpse"
@@ -359,7 +359,7 @@
 	head = /obj/item/clothing/head/helmet/knight/warlord
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
-	back = /obj/item/fireaxe/boardingaxe
+	back = null
 
 /datum/outfit/piratecorpse/faction/medieval/blackknight
 	name = "The Black Knight Corpse"
@@ -369,4 +369,4 @@
 	head = /obj/item/clothing/head/hooded/cloakhood/godslayer
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
-	back = /obj/item/fireaxe/boardingaxe
+	back = null

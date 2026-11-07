@@ -786,6 +786,7 @@ ADMIN_VERB(cmd_admin_pm_panel, R_NONE, "Admin PM", "Show a list of clients to PM
 	var/datum/translated_speech/translation = try_begin_adminhelp_translation(raw_message, sender)
 	var/display_message = translation ? translation.wrapped_adminhelp_text(message) : message
 	// VOIDCREW EDIT ADDITION END
+	// VOIDCREW EDIT START: autotranslate displays the translated administrator message.
 	to_chat(
 		src,
 		type = MESSAGE_TYPE_ADMINPM,
@@ -797,6 +798,7 @@ ADMIN_VERB(cmd_admin_pm_panel, R_NONE, "Admin PM", "Show a list of clients to PM
 			"boxed_message red_box"),
 		confidential = TRUE
 	)
+	// VOIDCREW EDIT END
 	// VOIDCREW EDIT ADDITION BEGIN - AUTOTRANSLATE
 	translation?.begin()
 	// VOIDCREW EDIT ADDITION END

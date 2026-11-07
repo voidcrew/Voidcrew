@@ -41,7 +41,6 @@
 /obj/item/paper/fluff/jobs/cargo/manifest/proc/is_denied()
 	return LAZYLEN(stamp_cache) && ("stamp-deny" in stamp_cache)
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order
 	var/id
 	var/cost_type
@@ -62,7 +61,6 @@
 	///Boolean on whether the manifest can be cancelled through cargo consoles.
 	var/can_be_cancelled = TRUE
 
-// VOIDCREW EDIT END
 /datum/supply_order/New(
 	datum/supply_pack/pack,
 	orderer,
@@ -103,6 +101,8 @@
 	if(paying_account && !pack.goody) //privately purchased and not a goody means 1.1x the cost
 		cost *= 1.1
 	return round(cost)
+
+// VOIDCREW EDIT: cargo settles ship orders before goods are generated; implementation in voidcrew/edits/modules/cargo/order.dm.
 
 /datum/supply_order/proc/generateRequisition(turf/T)
 	var/obj/item/paper/requisition/requisition_paper = new(T)
@@ -184,7 +184,6 @@
 
 	return manifest_paper
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order/proc/generate(atom/A)
 	var/account_holder
 	if(paying_account)
@@ -197,11 +196,12 @@
 			ADD_TRAIT(item_within, TRAIT_CONTRABAND, INNATE_TRAIT)
 	if(department_destination)
 		crate.AddElement(/datum/element/deliver_first, department_destination, pack.cost)
+	// VOIDCREW EDIT START: cargo tracks the settled ship payment on crates and manifests.
 	crate.cargo_paid_cost = ship_paid_cost
 	generateManifest(crate, account_holder, pack, isnull(ship_paid_cost) ? pack.cost : ship_paid_cost)
+	// VOIDCREW EDIT END
 	return crate
 
-// VOIDCREW EDIT END
 /datum/supply_order/proc/generateCombo(miscbox, misc_own, misc_contents, misc_cost)
 	for (var/I in misc_contents)
 		new I(miscbox)
@@ -223,14 +223,12 @@
 	return ..()
 
 /// Custom material order to append cargo crate value to the final order cost
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/supply_order/disposable/materials/get_final_cost()
 	// The material quote is captured when ordered. It is not an ordinary pack
 	// price, and must not receive a station-trait modifier or a coupon a second time.
-	return round(pack.cost) + CARGO_CRATE_VALUE
+	return round(pack.cost) + CARGO_CRATE_VALUE // VOIDCREW EDIT: cargo tracks the settled ship payment on crates and manifests.
 
 #undef MANIFEST_ERROR_CHANCE
 #undef MANIFEST_ERROR_NAME
 #undef MANIFEST_ERROR_CONTENTS
 #undef MANIFEST_ERROR_ITEM
-// VOIDCREW EDIT END

@@ -145,7 +145,7 @@
 		if(human_owner.stat != DEAD && prob(50 / severity) && human_owner.can_heartattack())
 			human_owner.set_heartattack(TRUE)
 			to_chat(human_owner, span_userdanger("You feel a horrible agony in your chest!"))
-			addtimer(CALLBACK(src, PROC_REF(undo_heart_attack)), 600 / severity)
+			addtimer(CALLBACK(src, PROC_REF(undo_heart_attack), WEAKREF(human_owner), implantation_generation), 600 / severity) // VOIDCREW EDIT: scope EMP recovery (edits/surgery/reviver.dm).
 
 /obj/item/organ/cyberimp/chest/reviver/proc/undo_heart_attack()
 	var/mob/living/carbon/human/human_owner = owner

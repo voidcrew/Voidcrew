@@ -69,7 +69,7 @@
 /mob/living/basic/mining/wolf/random/Initialize()
 	. = ..()
 	if(prob(15))
-		new /mob/living/basic/mining/wolf/alpha(loc)
+		spawn_npc_in_zone(/mob/living/basic/mining/wolf/alpha, loc, get_npc_spawn_context(), FALSE)
 		return INITIALIZE_HINT_QDEL
 
 /mob/living/basic/mining/wolf/wasteland
@@ -81,5 +81,5 @@
 /mob/living/basic/mining/wolf/wasteland/random/Initialize()
 	. = ..()
 	if(prob(15))
-		new /mob/living/basic/mining/wolf/alpha/wasteland(loc)
+		spawn_npc_in_zone(/mob/living/basic/mining/wolf/alpha/wasteland, loc, get_npc_spawn_context(), FALSE)
 		return INITIALIZE_HINT_QDEL

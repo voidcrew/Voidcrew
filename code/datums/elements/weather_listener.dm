@@ -15,6 +15,7 @@
 	. = ..()
 	if(!weather_type)
 		weather_type = w_type
+		// VOIDCREW EDIT: Give each weather listener its own signal list for concurrent site storms.
 		sound_change_signals = list()
 		for(var/type in typesof(weather_type))
 			sound_change_signals += list(

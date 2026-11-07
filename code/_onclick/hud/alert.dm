@@ -131,6 +131,7 @@
 
 
 /atom/movable/screen/alert/MouseExited()
+	// VOIDCREW EDIT: Run parent screen initialization for Voidcrew HUD extensions in voidcrew/edits/_onclick/hud.
 	. = ..()
 	closeToolTip(usr)
 

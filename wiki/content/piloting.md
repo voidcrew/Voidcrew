@@ -67,9 +67,9 @@ Your **sensor range** is how far an **active scan** reaches, and it is what rada
 | Research node | Cost | Scan range | Also gives you |
 | --- | --- | --- | --- |
 | *(none)* | - | 4 tiles | |
-| Radar Array | 1000 | 6 tiles | |
-| Radar Array: Signal Analysis | 2500 | 8 tiles | Names space ruins on the chart instead of "unknown signal" |
-| Radar Array: Vessel Tracking | 5000 | 10 tiles | Plots and names other crews' ships out to full sensor range |
+| Radar Array | 80 | 6 tiles | |
+| Radar Array: Signal Analysis | 120 | 8 tiles | Names space ruins on the chart instead of "unknown signal" |
+| Radar Array: Vessel Tracking | 160 | 10 tiles | Plots and names other crews' ships out to full sensor range |
 
 Vessels are the exception. They move, so they are never recorded. A ship is a live contact or nothing. Without the top radar tier you only see ships inside your view ring, and they read as **unknown contact** until a Ships scan resolves them. An unidentified blip hides whether it is a trader or a pirate, which is the point.
 

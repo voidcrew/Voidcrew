@@ -387,7 +387,7 @@
 	return FALSE
 
 /obj/item/bombcore/syndicate/burn()
-	return ..()
+	deconstruct(FALSE) // VOIDCREW EDIT: burns away quietly, as the comment above says; the parent's burn() detonates
 
 /obj/item/bombcore/syndicate/large
 	name = "Donk Co. Super-Stable Bomb Payload XL"

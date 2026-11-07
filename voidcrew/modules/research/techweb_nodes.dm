@@ -138,8 +138,6 @@
 	prereq_ids = list(TECHWEB_NODE_CYBERNETICS)
 	design_ids = list(
 		"nanite_disk",
-		"nanite_remote",
-		"nanite_comm_remote",
 		"nanite_scanner",
 		"nanite_chamber",
 		"public_nanite_chamber",
@@ -263,6 +261,7 @@
 
 /datum/techweb_node/nanite_combat
 	id = "nanite_military"
+	zone_permission = ZONE_PERMISSION_ELITE
 	display_name = "Military Nanite Programming"
 	description = "Nanite programs that perform military-grade functions."
 	prereq_ids = list("nanite_harmonic", "syndicate_basic")
@@ -325,6 +324,7 @@
 	. = ..()
 	design_ids -= list(
 		"cargoexpress",
+		"superresonator", // Resonance Mining
 	)
 
 /datum/techweb_node/consoles/New()
@@ -337,7 +337,8 @@
 /datum/techweb_node/bluespace_travel/New()
 	. = ..()
 	design_ids -= list(
-		"bluespace_pod"
+		"bluespace_pod",
+		"swapper", // Quantum Spin Inversion
 	)
 
 // Explosives gated itself behind the Low-Yield Explosives ordnance experiment, which is
@@ -350,6 +351,11 @@
 /datum/techweb_node/explosives/New()
 	. = ..()
 	required_experiments -= /datum/experiment/ordnance/explosive/lowyieldbomb
+	// Advanced Grenade Casings
+	design_ids -= list(
+		"large_grenade",
+		"adv_grenade",
+	)
 
 // The extra dissection tiers hang off the surgery ladder that gates the surgeries
 // beneath them. Same orphaned-parent story as above: these were on /adv_surgery and
@@ -388,14 +394,12 @@
 		"vc_shotgun_slug",
 		"vc_shotgun_buckshot",
 		"vc_a357_lathe",
-		"vc_strilka310_clip",
 		"vc_n762",
 		"vc_mag_m9mm",
 		"vc_mag_m10mm",
 		"vc_mag_m45",
 		"vc_ammo_m50",
 		"vc_ammo_a357",
-		"vc_ammo_harpoon",
 		"vc_ammo_foam_smg",
 		"vc_ammo_foam_pistol",
 		"vc_ammo_foam_smgm45",
@@ -408,21 +412,23 @@
 
 /datum/techweb_node/automatic_ammunition
 	id = TECHWEB_NODE_AUTOMATIC_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Automatic Ammunition"
-	description = "High-capacity feed devices and specialist shells. Keeping an automatic fed costs a lot more metal than keeping a pistol fed."
+	description = "High-capacity feed devices, rifle clips, suppressors and specialist shells."
 	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
 	design_ids = list(
 		"vc_mag_m9mm_aps",
 		"vc_mag_smgm9mm",
 		"vc_shotgun_dragonsbreath",
 		"vc_ammo_uzi",
-		"vc_ammo_tommygun",
-		"vc_ammo_m223",
+		"vc_strilka310_clip",
+		"suppressor",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/specialist_ammo
 	id = TECHWEB_NODE_SPECIALIST_AMMO
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Specialist Ammunition"
 	description = "Precision, armor-piercing, hollow-point and incendiary loads for conventional firearms."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXOTIC_AMMO)
@@ -430,9 +436,6 @@
 		"vc_ammo_m9mm_ap",
 		"vc_ammo_m9mm_hp",
 		"vc_ammo_m9mm_fire",
-		"vc_ammo_m10mm_ap",
-		"vc_ammo_m10mm_hp",
-		"vc_ammo_m10mm_fire",
 		"vc_ammo_aps_ap",
 		"vc_ammo_aps_hp",
 		"vc_ammo_aps_fire",
@@ -445,15 +448,16 @@
 		"vc_ammo_m38_match",
 		"vc_ammo_c38_dumdum",
 		"vc_ammo_m38_dumdum",
+		"c38_flare",
+		"c38_flare_mag",
 		"vc_ammo_a357_match",
 		"vc_ammo_grenade_rubber",
-		"vc_ammo_shotgun_stun",
 		"vc_ammo_shotgun_milspec_slug",
 		"vc_ammo_shotgun_milspec_buckshot",
 		"vc_ammo_shotgun_executioner",
 		"vc_ammo_shotgun_pulverizer",
+		"sec_Islug",
 		"vc_ammo_shotgun_incendiary_precision",
-		"vc_ammo_shotgun_meteor",
 		"vc_ammo_shotgun_incapacitating",
 		"vc_ammo_shotgun_ion",
 		"vc_ammo_shotgun_dart_large",
@@ -466,16 +470,17 @@
 		"mag_autorifle_ic",
 		"donkshell",
 		"vc_riot_darts_lathe",
+		"vc_ammo_smartgun",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/experimental_ammo
 	id = TECHWEB_NODE_EXPERIMENTAL_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Experimental Ammunition"
 	description = "Guided and phasic projectiles, advanced payloads and high-energy shells."
 	prereq_ids = list(TECHWEB_NODE_SPECIALIST_AMMO, TECHWEB_NODE_APPLIED_BLUESPACE)
 	design_ids = list(
-		"vc_ammo_smartgun",
 		"vc_ammo_reaper",
 		"vc_ammo_a357_phasic",
 		"vc_ammo_a357_heartseeker",
@@ -491,11 +496,11 @@
 
 /datum/techweb_node/explosive_ammo
 	id = TECHWEB_NODE_EXPLOSIVE_AMMO
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Explosive Ammunition"
-	description = "Gyrojet cartridges, launcher grenades and 84mm rockets."
+	description = "Launcher grenades, FRAG-12 shells and 84mm rockets."
 	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXPLOSIVES)
 	design_ids = list(
-		"vc_ammo_gyrojet",
 		"vc_ammo_grenade_he",
 		"vc_ammo_rocket_he",
 		"vc_ammo_rocket_low_yield",
@@ -576,7 +581,6 @@
 	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE)
 	design_ids = list(
 		"survey_ship_docking",
-		"survey_console_rewards_upgrade_advanced",
 		"survey_console_information_upgrade_advanced",
 	)
 	required_surveyed_objects = list(planets = 1, nebulas = 3, electric_storms = 1)
@@ -700,6 +704,7 @@
 
 /datum/techweb_node/ship_repair_swarm
 	id = TECHWEB_NODE_SHIP_REPAIR_SWARM
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Shuttle Repair Swarm"
 	description = "Record flight damage and assemble autonomous repair drones in Robotics."
 	prereq_ids = list(TECHWEB_NODE_SHIP_AUTOMATION, TECHWEB_NODE_ROBOTICS, TECHWEB_NODE_MECH_ASSEMBLY)
@@ -708,6 +713,7 @@
 
 /datum/techweb_node/ship_fabrication_mk3
 	id = TECHWEB_NODE_SHIP_FABRICATION_MK3
+	zone_permission = ZONE_PERMISSION_YELLOW
 	display_name = "Precision Shuttle Fabrication"
 	description = "Reduce fabrication delays by 80%."
 	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION_ADV)
@@ -716,8 +722,380 @@
 
 /datum/techweb_node/ship_fabrication_mk4
 	id = TECHWEB_NODE_SHIP_FABRICATION_MK4
+	zone_permission = ZONE_PERMISSION_ADVANCED
 	display_name = "Instant Shuttle Fabrication"
 	description = "Complete matter assembly without fabrication delays."
 	prereq_ids = list(TECHWEB_NODE_SHIP_FABRICATION_MK3)
 	design_ids = list("ship_construction_upgrade_servo_mk4")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/**
+ * Design moves for reputation.
+ *
+ * A node's zone_permission covers every design on it, so strong gear on an otherwise open node
+ * moves to a small node of its own. Each new node keeps the prerequisites and research cost of the
+ * node it came from, so a crew reaches the design for the same points once it has the standing.
+ * Resonance Mining is the exception: it sits beside Advanced Mining on purpose.
+ * Gates on tg nodes live in edits/_techweb_node.dm.
+ */
+
+/datum/techweb_node/basic_arms/New()
+	. = ..()
+	design_ids -= "sec_Islug" // Specialist Ammunition
+
+// Riot Supression is gated. Restraints and firing pins stay open: guns need pins.
+/datum/techweb_node/sec_equip/New()
+	. = ..()
+	design_ids += list(
+		"handcuffs_s",
+		"bola_energy",
+		"clown_firing_pin",
+		"pin_loyalty",
+	)
+
+/datum/techweb_node/riot_supression/New()
+	. = ..()
+	design_ids -= list(
+		"handcuffs_s",
+		"bola_energy",
+		"clown_firing_pin",
+		"pin_loyalty",
+		"pin_testing", // no ship has the firing range it checks for
+	)
+
+/datum/techweb_node/aus_security/New()
+	. = ..()
+	design_ids -= "pin_explorer" // every ship level counts as a station, so it won't fire aboard
+
+/datum/techweb_node/exotic_ammo/New()
+	. = ..()
+	design_ids -= list(
+		"techshotshell",
+		"c38_hotshot",
+		"c38_hotshot_mag",
+		"c38_iceblox",
+		"c38_iceblox_mag",
+	)
+
+/datum/techweb_node/tech_shells
+	id = TECHWEB_NODE_TECH_SHELLS
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Blank Tech Shells"
+	description = "Empty 12 gauge shells, ready to be packed with whatever is on the bench."
+	prereq_ids = list(TECHWEB_NODE_EXPLOSIVES)
+	design_ids = list(
+		"techshotshell",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/thermal_rounds
+	id = TECHWEB_NODE_THERMAL_ROUNDS
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = ".38 Thermal Rounds"
+	description = "Hot Shot and Iceblox loads for .38 speed loaders and magazines."
+	prereq_ids = list(TECHWEB_NODE_EXPLOSIVES)
+	design_ids = list(
+		"c38_hotshot",
+		"c38_hotshot_mag",
+		"c38_iceblox",
+		"c38_iceblox_mag",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/heavy_shells
+	id = TECHWEB_NODE_HEAVY_SHELLS
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Heavy Shell Loads"
+	description = "Taser and meteor slugs, for people and bulkheads that won't take a hint."
+	prereq_ids = list(TECHWEB_NODE_AUTOMATIC_AMMO, TECHWEB_NODE_EXOTIC_AMMO)
+	design_ids = list(
+		"vc_ammo_shotgun_stun",
+		"vc_ammo_shotgun_meteor",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/heavy_magazines
+	id = TECHWEB_NODE_HEAVY_MAGAZINES
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Heavy Magazines"
+	description = ".223 toploaders and Thompson drums."
+	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
+	design_ids = list(
+		"vc_ammo_m223",
+		"vc_ammo_tommygun",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/grenade_casings
+	id = TECHWEB_NODE_GRENADE_CASINGS
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Advanced Grenade Casings"
+	description = "Larger payloads and timed release for chemical grenades."
+	prereq_ids = list(TECHWEB_NODE_RIOT_SUPRESSION)
+	design_ids = list(
+		"large_grenade",
+		"adv_grenade",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+// Incendiary slugs print from Specialist Ammunition through their /sec design. This takes them off
+// the hacked autolathe list so that isn't a way around it.
+/datum/design/incendiary_slug
+	category = list(
+		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO,
+	)
+
+/datum/techweb_node/electric_weapons/New()
+	. = ..()
+	design_ids -= "stunrevolver"
+	design_ids += "nuclear_gun"
+
+/datum/techweb_node/beam_weapons/New()
+	. = ..()
+	design_ids -= list(
+		"nuclear_gun",
+		"c38_flare",
+		"c38_flare_mag",
+	)
+	design_ids += "stunrevolver"
+
+/datum/techweb_node/mech_equipment/New()
+	. = ..()
+	design_ids += list(
+		"mech_ccw_armor",
+		"mech_emp_armor",
+		"mech_disabler",
+		"mech_repair_droid",
+	)
+
+/datum/techweb_node/mech_combat/New()
+	. = ..()
+	design_ids -= list(
+		"mech_ccw_armor",
+		"mech_emp_armor",
+		"mech_disabler",
+		"mech_repair_droid",
+	)
+
+/datum/techweb_node/mech_clown/New()
+	. = ..()
+	design_ids -= "mech_honker"
+
+/datum/techweb_node/mech_honker
+	id = TECHWEB_NODE_MECH_HONKER
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "H.O.N.K. Sound Systems"
+	description = "A horn big enough to hurt."
+	prereq_ids = list(TECHWEB_NODE_MECH_ASSEMBLY)
+	design_ids = list(
+		"mech_honker",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+
+/datum/techweb_node/mod_security/New()
+	. = ..()
+	design_ids -= list(
+		"mod_sonar",
+		"mod_stealth",
+		"mod_projectile_dampener",
+	)
+
+/datum/techweb_node/mod_recon
+	id = TECHWEB_NODE_MOD_RECON
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Reconnaissance Modules"
+	description = "Active sonar for modular suits."
+	prereq_ids = list(TECHWEB_NODE_MOD_EQUIP)
+	design_ids = list(
+		"mod_sonar",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/mod_covert
+	id = TECHWEB_NODE_MOD_COVERT
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Covert Suit Modules"
+	description = "A prototype cloak and a projectile dampener for modular suits."
+	prereq_ids = list(TECHWEB_NODE_MOD_EQUIP)
+	design_ids = list(
+		"mod_stealth",
+		"mod_projectile_dampener",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/anomaly_shells/New()
+	. = ..()
+	design_ids -= list(
+		"bag_holding",
+		"cybernetic_heart_anomalock",
+		"perceptomatrix",
+	)
+
+/datum/techweb_node/anomaly_combat
+	id = TECHWEB_NODE_ANOMALY_COMBAT
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Anomaly Combat Shells"
+	description = "A helmet and a cybernetic heart built around live anomaly cores."
+	prereq_ids = list(TECHWEB_NODE_ANOMALY_RESEARCH)
+	design_ids = list(
+		"perceptomatrix",
+		"cybernetic_heart_anomalock",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/bluespace_bags
+	id = TECHWEB_NODE_BLUESPACE_BAGS
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Bluespace Storage"
+	description = "An inert bag of holding. It stays a heavy bag until it gets a core."
+	prereq_ids = list(TECHWEB_NODE_ANOMALY_RESEARCH)
+	design_ids = list(
+		"bag_holding",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/cyber/cyber_implants/New()
+	. = ..()
+	design_ids += "ci-antidrop"
+
+/datum/techweb_node/cyber/combat_implants/New()
+	. = ..()
+	design_ids -= "ci-antidrop"
+
+/datum/techweb_node/cyber/cyber_organs_adv/New()
+	. = ..()
+	design_ids -= list(
+		"ci-xray",
+		"ci-xray-moth",
+	)
+
+/datum/techweb_node/cyber/xray_eyes
+	id = TECHWEB_NODE_XRAY_EYES
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "X-Ray Eyes"
+	description = "Cybernetic eyes that see through bulkheads."
+	prereq_ids = list(TECHWEB_NODE_CYBER_ORGANS_UPGRADED, TECHWEB_NODE_NIGHT_VISION)
+	design_ids = list(
+		"ci-xray",
+		"ci-xray-moth",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/exp_tools/New()
+	. = ..()
+	design_ids -= list(
+		"jawsoflife",
+		"mech_rcd",
+	)
+
+/datum/techweb_node/breaching_tools
+	id = TECHWEB_NODE_BREACHING_TOOLS
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Breaching Tools"
+	description = "Powered jaws for forcing doors, and a construction arm for exosuits."
+	prereq_ids = list(TECHWEB_NODE_FUSION)
+	design_ids = list(
+		"jawsoflife",
+		"mech_rcd",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
+
+/datum/techweb_node/quantum_swapper
+	id = TECHWEB_NODE_QUANTUM_SWAPPER
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Quantum Spin Inversion"
+	description = "Paired devices that trade places with each other."
+	prereq_ids = list(TECHWEB_NODE_APPLIED_BLUESPACE)
+	design_ids = list(
+		"swapper",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/resonance_mining
+	id = TECHWEB_NODE_RESONANCE_MINING
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Resonance Mining"
+	description = "A resonator that holds more fields and can set them as traps."
+	prereq_ids = list(TECHWEB_NODE_PLASMA_MINING)
+	design_ids = list(
+		"superresonator",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
+
+/datum/techweb_node/medbay_equip_adv/New()
+	. = ..()
+	design_ids -= "crewpinpointer"
+
+/datum/techweb_node/nanite_remotes
+	id = TECHWEB_NODE_NANITE_REMOTES
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Nanite Remotes"
+	description = "Handheld transmitters that send codes and messages to nanites at range."
+	prereq_ids = list(TECHWEB_NODE_NANITE_BASIC)
+	design_ids = list(
+		"nanite_remote",
+		"nanite_comm_remote",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+
+/datum/techweb_node/crew_tracking
+	id = TECHWEB_NODE_CREW_TRACKING
+	zone_permission = ZONE_PERMISSION_YELLOW
+	display_name = "Crew Tracking"
+	description = "A handheld pinpointer that follows suit sensors."
+	prereq_ids = list(TECHWEB_NODE_CHEM_SYNTHESIS)
+	design_ids = list(
+		"crewpinpointer",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+// Illegal Technology stays hidden, so these get an open node on the same branch. The WT-550 magazines
+// it shares with Specialist Ammunition still reveal it. Suppressors went to Automatic Ammunition.
+/datum/techweb_node/syndicate_basic/New()
+	. = ..()
+	design_ids -= list(
+		"ai_cam_upgrade",
+		"borg_syndicate_module",
+		"largecrossbow",
+		"suppressor",
+	)
+
+/datum/techweb_node/restricted_tech
+	id = TECHWEB_NODE_RESTRICTED_TECH
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Restricted Technology"
+	description = "Equipment that isn't quite illegal, as long as nobody asks to see the paperwork."
+	prereq_ids = list(TECHWEB_NODE_EXP_TOOLS, TECHWEB_NODE_EXOTIC_AMMO)
+	design_ids = list(
+		"largecrossbow",
+		"borg_syndicate_module",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
+/datum/techweb_node/unregulated_bluespace/New()
+	. = ..()
+	design_ids -= "desynchronizer"
+
+/datum/techweb_node/desynchronization
+	id = TECHWEB_NODE_DESYNCHRONIZATION
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	display_name = "Bluespace Desynchronization"
+	description = "A handheld device that takes its user out of phase for a little while."
+	prereq_ids = list(TECHWEB_NODE_PARTS_BLUESPACE, TECHWEB_NODE_RESTRICTED_TECH)
+	design_ids = list(
+		"desynchronizer",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+
+/datum/techweb_node/ai_laws/New()
+	. = ..()
+	design_ids += "ai_cam_upgrade"
+
+/datum/design/ai_cam_upgrade
+	materials = list(
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2.5,
+		/datum/material/glass = SHEET_MATERIAL_AMOUNT * 2.5,
+		/datum/material/gold = SHEET_MATERIAL_AMOUNT * 7.5,
+		/datum/material/silver = SHEET_MATERIAL_AMOUNT * 7.5,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 5,
+	)

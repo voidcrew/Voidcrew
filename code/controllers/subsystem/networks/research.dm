@@ -94,6 +94,7 @@ SUBSYSTEM_DEF(research)
 		// console's enqueue buttons were live but the nodes were silently never researched.
 		// Income generation stays gated exactly as before; the queue now runs for every web.
 		if(techweb_list.should_generate_points)
+			// VOIDCREW EDIT START: Process ship techweb research queues even when passive point generation is disabled (voidcrew/modules/research).
 			var/list/bitcoins = list()
 			for(var/obj/machinery/rnd/server/miner as anything in techweb_list.techweb_servers)
 				if(miner.working)
@@ -108,6 +109,7 @@ SUBSYSTEM_DEF(research)
 				techweb_list.add_point_list(bitcoins)
 
 			techweb_list.last_income = world.time
+			// VOIDCREW EDIT END
 
 		if(length(techweb_list.research_queue_nodes))
 			techweb_list.research_node_id(techweb_list.research_queue_nodes[1]) // Attempt to research the first node in queue if possible

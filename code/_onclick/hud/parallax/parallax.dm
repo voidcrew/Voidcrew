@@ -177,6 +177,7 @@
 		return
 	C.parallax_animate_timers -= layer
 	if(!layer.scroll_loops) // VOIDCREW EDIT ADDITION - see set_parallax_movedir()
+		// VOIDCREW EDIT: Do not reschedule parallax animation after its scroll loop has been disabled (voidcrew/edits/_onclick/hud).
 		return
 
 	// If we are moving in a direction, we used the QUAD_EASING function with EASE_IN

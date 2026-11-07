@@ -25,7 +25,7 @@
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | HIDDEN_AREA | UNLIMITED_FISHING
 	default_gravity = STANDARD_GRAVITY
 	requires_power = FALSE
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 // VOIDCREW EDIT END
 /area/virtual_domain/fullbright
@@ -41,7 +41,7 @@
 	icon_state = "bit_safe"
 	requires_power = FALSE
 	sound_environment = SOUND_ENVIRONMENT_ROOM
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 /// Custom subtypes
 
@@ -51,7 +51,7 @@
 	name = "Virtual Domain Lava Ruins"
 	icon_state = "bit_ruin"
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | HIDDEN_AREA | UNLIMITED_FISHING
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
@@ -59,7 +59,7 @@
 	name = "Virtual Domain Ice Ruins"
 	icon_state = "bit_ice"
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | HIDDEN_AREA | UNLIMITED_FISHING
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
@@ -68,7 +68,7 @@
 	icon = 'icons/area/areas_station.dmi'
 	icon_state = "bit_ruin"
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | HIDDEN_AREA | UNLIMITED_FISHING
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 // VOIDCREW EDIT END
 // VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
@@ -77,7 +77,7 @@
 	icon = 'icons/area/areas_station.dmi'
 	icon_state = "bit_space"
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | HIDDEN_AREA | UNLIMITED_FISHING
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 ///Areas that virtual entities should not be in
 
@@ -87,7 +87,7 @@
 	name = "Virtual Domain Safe Zone"
 	area_flags = UNIQUE_AREA | LOCAL_TELEPORT | EVENT_PROTECTED | VIRTUAL_SAFE_AREA | UNLIMITED_FISHING
 	icon_state = "bit_safe"
-	allow_shuttle_docking = FALSE
+	allow_shuttle_docking = FALSE // VOIDCREW EDIT: research forbids shuttle entry into virtual domains.
 
 // VOIDCREW EDIT END
 /area/virtual_domain/protected_space/fullbright

@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/item/melee/baseball_bat,
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern,
+/turf/open/floor/wood,
+/area/ruin/powered/hermit)
+"ac" = (
+/obj/item/pickaxe/improvised,
+/obj/structure/table/wood,
+/obj/item/knife/combat/survival,
+/turf/open/floor/grass/fairy,
+/area/ruin/powered/hermit)
 "aM" = (
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
@@ -72,18 +84,6 @@
 "vy" = (
 /obj/item/cultivator/rake,
 /obj/item/cultivator,
-/turf/open/floor/grass/fairy,
-/area/ruin/powered/hermit)
-"wf" = (
-/obj/item/gun/energy/laser/musket/prime,
-/obj/structure/table/wood,
-/obj/item/flashlight/lantern,
-/turf/open/floor/wood,
-/area/ruin/powered/hermit)
-"zd" = (
-/obj/item/pickaxe/improvised,
-/obj/structure/table/wood,
-/obj/item/knife/combat,
 /turf/open/floor/grass/fairy,
 /area/ruin/powered/hermit)
 "CR" = (
@@ -304,7 +304,7 @@ dY
 JI
 JI
 sC
-wf
+ab
 TL
 aM
 aM
@@ -353,7 +353,7 @@ ph
 ph
 ph
 ph
-zd
+ac
 io
 jG
 ph

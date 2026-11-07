@@ -23,6 +23,14 @@
 /obj/item/book/codex_gigas,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
+"h" = (
+/obj/item/clothing/suit/chaplainsuit/armor/witchhunter,
+/obj/item/clothing/head/helmet/chaplain/witchunter_hat,
+/obj/item/knife/combat/survival,
+/obj/item/bodypart/head,
+/obj/effect/decal/cleanable/blood/gibs/bubblegum,
+/turf/open/water/jungle,
+/area/ruin/unpowered)
 "l" = (
 /obj/structure/table/wood,
 /obj/item/slimepotion/lovepotion,
@@ -98,14 +106,6 @@
 /area/ruin/unpowered)
 "L" = (
 /obj/structure/flora/junglebush,
-/turf/open/water/jungle,
-/area/ruin/unpowered)
-"M" = (
-/obj/item/clothing/suit/chaplainsuit/armor/witchhunter,
-/obj/item/clothing/head/helmet/chaplain/witchunter_hat,
-/obj/item/claymore/weak,
-/obj/item/bodypart/head,
-/obj/effect/decal/cleanable/blood/gibs/bubblegum,
 /turf/open/water/jungle,
 /area/ruin/unpowered)
 "N" = (
@@ -262,7 +262,7 @@ S
 A
 f
 f
-M
+h
 o
 a
 f

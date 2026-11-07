@@ -1,6 +1,5 @@
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/large/crate
-	cost = CARGO_CRATE_VALUE * 0.25
+	cost = CARGO_CRATE_VALUE * 0.25 // VOIDCREW EDIT: cargo tunes salvage refunds to ship shipment prices.
 	k_elasticity = 0
 	unit_name = "crate"
 	export_types = list(/obj/structure/closet/crate)
@@ -11,11 +10,12 @@
 		/obj/structure/closet/crate/wooden,
 		)
 
-// VOIDCREW EDIT END
 /datum/export/large/crate/total_printout(datum/export_report/ex, notes = TRUE) // That's why a goddamn metal crate costs that much.
 	. = ..()
 	if(. && notes)
 		. += " Thanks for participating in Nanotrasen Crates Recycling Program."
+
+// VOIDCREW EDIT: cargo caps crate resale against the settled shipment; implementation in voidcrew/edits/modules/cargo/exports/large_objects.dm.
 
 /datum/export/large/crate/wooden
 	cost = CARGO_CRATE_VALUE/5
@@ -47,20 +47,16 @@
 
 	return ..() + round(contents_cost * ratio)
 
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/large/reagent_dispenser/water
 	unit_name = "watertank"
 	export_types = list(/obj/structure/reagent_dispensers/watertank)
-	contents_cost = CARGO_CRATE_VALUE * 0.25
+	contents_cost = CARGO_CRATE_VALUE * 0.25 // VOIDCREW EDIT: cargo tunes salvage refunds to ship shipment prices.
 
-// VOIDCREW EDIT END
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /datum/export/large/reagent_dispenser/fuel
 	unit_name = "fueltank"
 	export_types = list(/obj/structure/reagent_dispensers/fueltank)
-	contents_cost = CARGO_CRATE_VALUE * 0.55
+	contents_cost = CARGO_CRATE_VALUE * 0.55 // VOIDCREW EDIT: cargo tunes salvage refunds to ship shipment prices.
 
-// VOIDCREW EDIT END
 /datum/export/large/reagent_dispenser/beer
 	unit_name = "beer keg"
 	contents_cost = CARGO_CRATE_VALUE * 3.5

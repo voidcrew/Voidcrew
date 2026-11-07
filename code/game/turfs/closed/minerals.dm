@@ -67,6 +67,7 @@
 		return
 
 	var/obj/item/held_item = bumping.get_active_held_item()
+	// VOIDCREW EDIT START - Voidcrew mining integration: use and monitor a held mining tool without changing the active hand (voidcrew/edits)
 	var/obj/item/mining_tool = held_item
 	// Prefer the selected tool, then a mining tool held in another hand. Do not
 	// switch hands or send a click with the active item, which might be a weapon.
@@ -75,7 +76,9 @@
 	if(mining_tool)
 		attackby(mining_tool, bumping)
 	else if(!held_item) // Preserve empty-hand bump digging for snow and mining arms.
+	// VOIDCREW EDIT END
 		INVOKE_ASYNC(bumping, TYPE_PROC_REF(/mob, ClickOn), src)
+// VOIDCREW EDIT REMOVAL - Voidcrew mining integration: use and monitor a held mining tool without changing the active hand (voidcrew/edits)
 
 // VOIDCREW EDIT END
 /turf/closed/mineral/proc/Spread_Vein()
@@ -89,8 +92,12 @@
 					M.Change_Ore(mineralType)
 
 /turf/closed/mineral/proc/Change_Ore(ore_type, random = 0)
-	if(random)
+	// VOIDCREW EDIT ADDITION START - ordinary ore ranges also apply to vein spreading.
+	if(is_ordinary_ore(ore_type))
+		mineralAmt = ordinary_ore_amount(ore_type)
+	else if(random)
 		mineralAmt = rand(1, 5)
+	// VOIDCREW EDIT ADDITION END
 	if(ispath(ore_type, /obj/item/stack/ore)) //If it has a scan_state, switch to it
 		var/obj/item/stack/ore/the_ore = ore_type
 		scan_state = initial(the_ore.scan_state) // I SAID. SWITCH. TO. IT.
@@ -187,10 +194,12 @@
 
 	// do_after already watches the active hand. An off-hand tool needs its own
 	// check so dropping or stowing it also interrupts mining.
+	// VOIDCREW EDIT START - Voidcrew mining integration: use and monitor a held mining tool without changing the active hand (voidcrew/edits)
 	var/datum/callback/held_tool_check
 	if(I != user.get_active_held_item() && user.is_holding(I))
 		held_tool_check = CALLBACK(user, TYPE_PROC_REF(/mob, is_holding), I)
 	if(!I.use_tool(src, user, tool_mine_speed, volume=50, extra_checks=held_tool_check))
+	// VOIDCREW EDIT END
 		TIMER_COOLDOWN_END(src, REF(user)) //if we fail we can start again immediately
 		return
 	if(ismineralturf(src))
@@ -225,7 +234,6 @@
 	if(istype(user))
 		SEND_SIGNAL(user, COMSIG_MOB_MINED, src, exp_multiplier)
 	if(mineralType && (mineralAmt > 0))
-		mineralAmt = zone_scaled_ore_amount(mineralAmt) // VOIDCREW EDIT: deeper-zone planets yield more ore per wall (see voidcrew/turfs/closed/minerals.dm)
 		new mineralType(src, mineralAmt)
 		SSblackbox.record_feedback("tally", "ore_mined", mineralAmt, mineralType)
 	if(spawned_boulder)
@@ -310,17 +318,12 @@
 	)
 
 /turf/closed/mineral/random/Initialize(mapload)
-	var/static/list/mineral_chances_by_type = list()
-
+	// VOIDCREW EDIT REMOVAL: ore choices come from zone profiles below, not a per-type cache.
 	. = ..()
-	var/dynamic_prob = mineralChance
-	if(proximity_based)
-		dynamic_prob = proximity_ore_chance() // We assign the chance of ore spawning based on probability.
-	if (prob(dynamic_prob))
-		var/list/spawn_chance_list = mineral_chances_by_type[type]
-		if (isnull(spawn_chance_list))
-			mineral_chances_by_type[type] = expand_weights(mineral_chances())
-			spawn_chance_list = mineral_chances_by_type[type]
+	// VOIDCREW EDIT ADDITION START - zone profiles, independent of vent proximity (mining/ore_profiles.dm).
+	if (ore_initial_roll())
+		var/list/spawn_chance_list = ore_spawn_choices()
+		// VOIDCREW EDIT ADDITION END
 		var/path = pick(spawn_chance_list)
 		if(ispath(path, /turf))
 			var/stored_flags = 0
@@ -332,7 +335,7 @@
 			if(ismineralturf(T))
 				var/turf/closed/mineral/M = T
 				M.turf_type = src.turf_type
-				M.mineralAmt = scale_ore_to_vent()
+				// VOIDCREW EDIT: special veins retain their authored quantity and gibtonite bookkeeping.
 				GLOB.post_ore_random["[M.mineralAmt]"] += 1
 				src = M
 				M.levelupdate()
@@ -343,7 +346,7 @@
 		else
 			Change_Ore(path, FALSE)
 			Spread_Vein(path)
-			mineralAmt = scale_ore_to_vent()
+			// VOIDCREW EDIT: Change_Ore() assigns ordinary ore quantities, including spread walls.
 			GLOB.post_ore_manual["[mineralAmt]"] += 1
 
 /turf/closed/mineral/random/high_chance
@@ -445,8 +448,10 @@
 	// VOIDCREW EDIT: mined walls must yield the FROZEN breathable floor, the upstream icemoon
 	// turfs are planetary ICEMOON, and every dug tile on a FROZEN planet churns atmos forever
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
+	// VOIDCREW EDIT START - overmap planets: mined snow walls retain the breathable frozen atmosphere
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
+	// VOIDCREW EDIT END
 	weak_turf = TRUE
 	proximity_based = TRUE
 
@@ -542,8 +547,10 @@
 	canSmoothWith = SMOOTH_GROUP_CLOSED_TURFS
 	defer_change = TRUE
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable // VOIDCREW EDIT (see random/snow)
+	// VOIDCREW EDIT START - overmap planets: mined snow walls retain the breathable frozen atmosphere
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
+	// VOIDCREW EDIT END
 	defer_change = TRUE
 
 /turf/closed/mineral/random/labormineral/ice/mineral_chances()
@@ -731,14 +738,16 @@
 /turf/closed/mineral/snowmountain/icemoon
 	// VOIDCREW EDIT: dig into FROZEN breathable floor, not planetary-ICEMOON (churns vs FROZEN planets)
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
+	// VOIDCREW EDIT START - overmap planets: mined snow walls retain the breathable frozen atmosphere
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
+	// VOIDCREW EDIT END
 
 /// This snowy mountain will never be scraped away for any reason what so ever.
 /turf/closed/mineral/snowmountain/icemoon/unscrapeable
 	turf_flags = IS_SOLID | NO_CLEARING
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable // VOIDCREW EDIT (see parent)
-	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
+	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable // VOIDCREW EDIT: overmap planets: mined snow walls retain the breathable frozen atmosphere
 
 /turf/closed/mineral/snowmountain/cavern
 	name = "ice cavern rock"
@@ -752,8 +761,10 @@
 /turf/closed/mineral/snowmountain/cavern/icemoon
 	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON, dig into FROZEN breathable instead
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
+	// VOIDCREW EDIT START - overmap planets: mined snow walls retain the breathable frozen atmosphere
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
+	// VOIDCREW EDIT END
 
 //For when you want genuine, real snowy mountainside in your kitchen's cold room.
 /turf/closed/mineral/snowmountain/coldroom
@@ -912,8 +923,10 @@
 /turf/closed/mineral/gibtonite/ice/icemoon
 	// VOIDCREW EDIT: snow/ice/icemoon is planetary ICEMOON, dig into FROZEN breathable instead
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
+	// VOIDCREW EDIT START - overmap planets: mined snow walls retain the breathable frozen atmosphere
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
+	// VOIDCREW EDIT END
 
 /turf/closed/mineral/strong
 	name = "Very strong rock"

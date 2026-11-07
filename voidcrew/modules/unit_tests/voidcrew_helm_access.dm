@@ -90,9 +90,26 @@
 		TEST_ASSERT(helm.test_item_interaction(user, tool, ranged = TRUE) & ITEM_INTERACT_BLOCKING, "An enemy's ranged [item_type] must also stop.")
 		TEST_ASSERT(!QDELETED(tool), "Rejected items must not be consumed.")
 
-	// Membership in another team is fine if this hull has also enlisted the user.
+	// Low-level HUD enrollment cannot put one player in two different crews.
 	ship.ship_team.add_member(user.mind)
-	TEST_ASSERT(helm.is_crew_member(user), "A member of both crews must have access.")
+	TEST_ASSERT(!helm.is_crew_member(user), "HUD enrollment must not bypass the user's current crew.")
+	TEST_ASSERT(user.mind in enemy_ship.ship_team.members, "Rejected HUD enrollment removed the user's current crew.")
+	TEST_ASSERT(ship.enlist_crewmember(user), "An explicit enlistment must switch the user's crew.")
+	TEST_ASSERT(!(user.mind in enemy_ship.ship_team.members), "Joining another crew must revoke the old hull's membership.")
+	TEST_ASSERT_EQUAL(user.mind.get_reputation_crew(), ship.get_crew_record(), "Enlistment must bind the new crew.")
+	TEST_ASSERT(helm.is_crew_member(user), "The enlisted crewmember must have access.")
+	// One continuing crew may enroll the same member on several hulls.
+	var/obj/structure/overmap/ship/allied_ship = allocate(/obj/structure/overmap/ship)
+	allied_ship.ship_team = new /datum/team/voidcrew()
+	allied_ship.ship_team.ship = allied_ship
+	TEST_ASSERT(allied_ship.bind_reputation_crew(user.mind), "A second hull could not continue the crew.")
+	TEST_ASSERT(allied_ship.enlist_crewmember(user), "The same crew could not enroll its member on a second hull.")
+	var/obj/machinery/computer/helm/allied_helm = allocate(/obj/machinery/computer/helm)
+	allied_helm.set_current_ship(allied_ship)
+	TEST_ASSERT(helm.is_crew_member(user) && allied_helm.is_crew_member(user), "One crew's member must retain access on both enrolled hulls.")
+	var/obj/machinery/computer/helm/enemy_helm = allocate(/obj/machinery/computer/helm)
+	enemy_helm.set_current_ship(enemy_ship)
+	TEST_ASSERT(!enemy_helm.is_crew_member(user), "Switching crews must lock the former crew's helm.")
 	TEST_ASSERT(helm.can_interact(user), "Crew must retain normal helm interaction.")
 	TEST_ASSERT_EQUAL(helm.ui_status(user, GLOB.default_state), UI_INTERACTIVE, "Crew must retain an interactive UI.")
 	ui_data = helm.ui_data(user)
@@ -102,6 +119,7 @@
 	helm.test_mouse_drop(user)
 	TEST_ASSERT_NOTNULL(helm.GetComponent(/datum/component/leanable/helm), "Crew must be able to make the helm leanable.")
 	ship.ship_team.remove_member(user.mind)
+	TEST_ASSERT(allied_helm.is_crew_member(user), "Leaving one hull must retain access on the same crew's other hull.")
 	TEST_ASSERT_EQUAL(helm.ui_status(user, GLOB.default_state), UI_INTERACTIVE, "Removing a crewmember must leave the locked UI visible.")
 	ui_data = helm.ui_data(user)
 	TEST_ASSERT(ui_data["isNotCrew"], "Removing a crewmember must lock an already open UI on its next update.")
@@ -144,6 +162,7 @@
 	TEST_ASSERT(QDELETED(helm), "A crewmember must still be able to dismantle the console.")
 	TEST_ASSERT_NOTNULL(locate(/obj/structure/frame/computer) in user.loc, "Crew deconstruction must leave a computer frame.")
 	ship.ship_team.remove_member(user.mind)
+	allied_ship.ship_team.remove_member(user.mind)
 	enemy_ship.ship_team.remove_member(user.mind)
 
 /// NPC authorization keys may establish ownership, but may not steal a crewed hull.
@@ -160,6 +179,9 @@
 	key.set_ship(ship)
 	TEST_ASSERT(!helm.is_crew_member(claimer), "An unclaimed NPC hull must still reject ordinary helm use.")
 	key.melee_attack_chain(claimer, helm, list())
+	TEST_ASSERT(!QDELETED(key) && !ship.player_controlled, "A key outside the claimer's hands must not claim the ship.")
+	TEST_ASSERT(claimer.put_in_hands(key), "The claimer could not hold the key.")
+	key.melee_attack_chain(claimer, helm, list())
 	TEST_ASSERT(QDELETED(key), "A valid NPC claim must consume the key.")
 	TEST_ASSERT(ship.player_controlled && helm.is_crew_member(claimer), "Claiming must grant the new crew access.")
 
@@ -167,11 +189,14 @@
 	boarder.mind_initialize()
 	var/obj/item/ship_key/spare_key = allocate(/obj/item/ship_key)
 	spare_key.set_ship(ship)
+	TEST_ASSERT(boarder.put_in_hands(spare_key), "The boarder could not hold the spare key.")
 	spare_key.melee_attack_chain(boarder, helm, list())
 	TEST_ASSERT(!QDELETED(spare_key), "A rejected spare key must not be consumed.")
 	TEST_ASSERT(!helm.is_crew_member(boarder), "An old key must not steal a disabled player-owned ship.")
 	TEST_ASSERT_EQUAL(ship.claimed_captain, claimer.mind, "An old key must not replace the captain.")
 
+	// Real abandonment clears the hull roster before it becomes claimable.
+	ship.ship_team.remove_member(claimer.mind)
 	ship.abandoned = TRUE
 	spare_key.melee_attack_chain(boarder, helm, list())
 	TEST_ASSERT(QDELETED(spare_key), "An abandoned hull must remain claimable by key.")

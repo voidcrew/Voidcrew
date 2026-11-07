@@ -45,7 +45,7 @@
 		transform = translation
 		icon = smooth_icon
 
-	// VOIDCREW EDIT CHANGE: never register ALLOCATOR-DEALT ground - original was
+	// VOIDCREW EDIT CHANGE START: never register ALLOCATOR-DEALT ground - original was - overmap: contain observers and effects within their packed encounter
 	// `if(is_station_level(z))`. See the matching comment on /turf/closed/wall/Initialize().
 	// Grass is the worst offender of the three: it is planet ground, it is dealt out and
 	// recycled on every planet build, and it had no Destroy() removal at all.

@@ -2,6 +2,13 @@
 "a" = (
 /turf/open/floor/wood,
 /area/ruin/powered)
+"b" = (
+/obj/item/clothing/suit/space/orange,
+/obj/item/clothing/head/helmet/space/orange,
+/obj/structure/rack,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "e" = (
 /obj/machinery/door/airlock/wood/glass,
 /turf/open/misc/wasteland/lit,
@@ -108,13 +115,6 @@
 /area/ruin/powered)
 "J" = (
 /obj/item/shovel,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"K" = (
-/obj/item/clothing/suit/space/orange,
-/obj/item/clothing/head/helmet/space/orange,
-/obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "L" = (
@@ -324,7 +324,7 @@ S
 M
 M
 v
-K
+b
 M
 S
 S

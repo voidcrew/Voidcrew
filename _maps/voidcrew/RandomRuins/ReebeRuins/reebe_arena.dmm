@@ -11,6 +11,10 @@
 /obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
+"ad" = (
+/obj/item/melee/baseball_bat,
+/turf/open/floor/bronze/reebe,
+/area/ruin/reebe)
 "ai" = (
 /obj/structure/lattice/catwalk/clockwork,
 /turf/template_noop,
@@ -124,10 +128,6 @@
 /area/ruin/reebe)
 "Eg" = (
 /obj/effect/decal/remains/human,
-/turf/open/floor/bronze/reebe,
-/area/ruin/reebe)
-"Em" = (
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 /turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Ep" = (
@@ -600,7 +600,7 @@ vP
 pm
 pm
 XX
-Em
+ad
 pm
 pm
 pm
@@ -1096,7 +1096,7 @@ IC
 De
 De
 pm
-Em
+ad
 pm
 De
 De
@@ -2731,7 +2731,7 @@ pm
 aa
 AT
 pm
-Em
+ad
 XX
 pm
 pm
@@ -3896,7 +3896,7 @@ Ij
 pm
 pm
 pm
-Em
+ad
 pm
 pm
 Cj
@@ -4879,7 +4879,7 @@ pm
 pm
 pm
 DY
-Em
+ad
 pm
 pm
 FK

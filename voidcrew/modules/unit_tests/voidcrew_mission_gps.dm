@@ -65,9 +65,16 @@
 /datum/mission_target/mission_gps_test/get_spawn_turf()
 	return spawn_turf
 
+/datum/mission_target/mission_gps_test/get_zone_type()
+	return 1 // ZONE_GREEN: the fixture is a known travel destination.
+
 /datum/unit_test/voidcrew_mission_coasting_gps/Run()
 	var/obj/structure/overmap/ship/ship = allocate(__IMPLIED_TYPE__)
+	ship.ship_team = allocate(/datum/team/voidcrew)
+	ship.ship_team.ship = ship
+	allocated += ship.get_crew_record()
 	var/datum/mission/mission = allocate(__IMPLIED_TYPE__)
+	mission.quote_zone = 1 // ZONE_GREEN
 	mission.gps_tag = "Coasting Objective"
 	mission.objective_name = "coasting test objective"
 	var/datum/mission_target/mission_gps_test/target = allocate(__IMPLIED_TYPE__, mission)

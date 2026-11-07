@@ -585,7 +585,7 @@
 			to_chat(usr, "This can only be used on instances of type /mob/living.", confidential = TRUE)
 			return
 
-		L.revive(ADMIN_HEAL_ALL)
+		L.revive_from("admin", ADMIN_HEAL_ALL) // VOIDCREW EDIT: explicit combat metrics attribution.
 		message_admins(span_danger("Admin [key_name_admin(usr)] healed / revived [key_name_admin(L)]!"))
 		log_admin("[key_name(usr)] healed / Revived [key_name(L)].")
 

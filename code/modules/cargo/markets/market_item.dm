@@ -76,6 +76,7 @@
 	SEND_SIGNAL(src, COMSIG_MARKET_ITEM_SPAWNED, purchase.uplink, purchase.method, loc)
 	if(ismovable(item))
 		var/atom/movable/return_item = item
+		mark_trader_goods(return_item) // VOIDCREW EDIT: trade stamps stock before moving it can merge stacks.
 		UnregisterSignal(item, COMSIG_QDELETING)
 		item.visible_message(span_notice("[item] vanishes..."))
 		do_sparks(8, FALSE, item)
@@ -86,7 +87,7 @@
 		item = null
 		return return_item
 	if(ispath(item))
-		return new item(loc)
+		return create_trader_goods(item, loc) // VOIDCREW EDIT: trade stamps every created stack before automatic merges.
 	CRASH("Invalid item type for market item [item || "null"]")
 
 /**

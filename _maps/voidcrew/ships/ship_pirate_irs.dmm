@@ -9,6 +9,55 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
+"ae" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/tinted/spawner/directional/east,
+/obj/item/knife/combat/survival{
+	pixel_x = -1
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = 4
+	},
+/obj/item/spess_knife{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"af" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/rack{
+	desc = "someones got a friend in Syria!"
+	},
+/obj/item/knife/combat/survival{
+	pixel_x = 2
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = -3
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = 2
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 10
+	},
+/obj/item/lead_pipe,
+/obj/item/flamethrower{
+	name = "Fallujah firehose";
+	desc = "Someone's got a friend in Syria!"
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
 "az" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 4
@@ -843,23 +892,6 @@
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
-"uk" = (
-/obj/structure/rack,
-/obj/structure/window/reinforced/tinted/spawner/directional/east,
-/obj/item/knife/combat{
-	pixel_x = -1
-	},
-/obj/item/knife/combat{
-	pixel_x = 4
-	},
-/obj/item/spess_knife{
-	pixel_x = 2;
-	pixel_y = -4
-	},
-/turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
 "ur" = (
 /obj/machinery/atmospherics/components/tank/air{
 	dir = 1
@@ -1406,40 +1438,6 @@
 	dir = 4
 	},
 /turf/open/floor/glass,
-/area/shuttle/voidcrew/pirate_irs{
-	requires_power = 0
-	})
-"HG" = (
-/obj/effect/turf_decal/tile/dark/full,
-/obj/structure/rack{
-	desc = "someones got a friend in Syria!"
-	},
-/obj/item/melee/baseball_bat/ablative{
-	name = "kneecap buster";
-	desc = "This bat is made of highly reflective, highly armored material, It seems to be made specifically for busting one's kneecap";
-	pixel_x = 2
-	},
-/obj/item/restraints/handcuffs{
-	pixel_y = -5;
-	pixel_x = -3
-	},
-/obj/item/restraints/handcuffs{
-	pixel_y = -5;
-	pixel_x = 2
-	},
-/obj/effect/turf_decal/stripes/white{
-	dir = 5
-	},
-/obj/effect/turf_decal/stripes/red/line{
-	dir = 10
-	},
-/obj/item/lead_pipe,
-/obj/item/flamethrower{
-	name = "Fallujah firehose";
-	desc = "Someone's got a friend in Syria!"
-	},
-/obj/structure/cable,
-/turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0
 	})
@@ -2797,7 +2795,7 @@ XI
 UF
 cO
 hK
-uk
+ae
 kK
 BG
 Tg
@@ -2860,7 +2858,7 @@ IE
 hK
 iZ
 nI
-HG
+af
 Yu
 FU
 LM

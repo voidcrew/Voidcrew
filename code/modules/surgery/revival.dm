@@ -115,7 +115,7 @@
 	if(iscarbon(target))
 		var/mob/living/carbon/carbon_target = target
 		carbon_target.set_heartattack(FALSE)
-	if(target.revive())
+	if(target.revive_from("surgery")) // VOIDCREW EDIT: explicit combat metrics attribution.
 		on_revived(user, target)
 		return TRUE
 

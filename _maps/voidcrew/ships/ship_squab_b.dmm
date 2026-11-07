@@ -290,6 +290,21 @@
 /obj/structure/cable,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/squab/cargo_entrance)
+"bDg" = (
+/obj/effect/turf_decal/box{
+	color = "#B11111"
+	},
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun{
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/obj/item/gun/energy/e_gun{
+	pixel_x = 0;
+	pixel_y = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/squab/office)
 "bEJ" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood{
@@ -1579,21 +1594,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/squab/bridge)
-"jHb" = (
-/obj/effect/turf_decal/box{
-	color = "#B11111"
-	},
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = -3
-	},
-/obj/item/gun/energy/e_gun{
-	pixel_x = 0;
-	pixel_y = 4
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/squab/office)
 "jHU" = (
 /turf/closed/wall,
 /area/shuttle/voidcrew/squab/bathroom)
@@ -3646,7 +3646,7 @@ bpX
 (11,1,1) = {"
 bpX
 mwE
-jHb
+bDg
 vMW
 guF
 tsR

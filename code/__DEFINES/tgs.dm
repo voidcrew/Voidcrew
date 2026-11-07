@@ -1,6 +1,7 @@
 // tgstation-server DMAPI
 // The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in IETF RFC 2119.
 
+// VOIDCREW EDIT: Match the vendored TGS DMAPI 7.4.0 version and deployment entry point in code/modules/tgs.
 #define TGS_DMAPI_VERSION "7.4.0"
 
 // All functions and datums outside this document are subject to change with any version and should not be relied on.
@@ -587,9 +588,11 @@
 	
 
 /// Trigger a TGS deployment for the current instance. The current state of the repository will not be changed.
+// VOIDCREW EDIT START: Match the vendored TGS DMAPI 7.4.0 version and deployment entry point in code/modules/tgs.
 /world/proc/TgsTriggerDeployment()
 	CAN_BE_REDEFINED(TRUE)
 	return
+// VOIDCREW EDIT END
 
 /*
 The MIT License

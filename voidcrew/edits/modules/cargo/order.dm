@@ -1,5 +1,8 @@
 // Voidcrew extensions to code/modules/cargo/order.dm.
 
+/datum/supply_order/disposable/materials/append_order(list/new_contents, cost_increase)
+	return ..(new_contents, material_market_buy_quote(new_contents))
+
 /// Settle a ship order atomically before generating any goods or changing market stock.
 /datum/supply_order/proc/settle_ship_order(datum/bank_account/account)
 	ship_settlement_error = null

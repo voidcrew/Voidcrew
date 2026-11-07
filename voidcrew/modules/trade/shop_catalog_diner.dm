@@ -239,35 +239,35 @@
 /datum/shop_sku/diner/plated/carbonara
 	category = "Chef's Table"
 	item_path = /obj/item/food/spaghetti/carbonara
-	price_credits = 220
+	price_credits = 150
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/diner/plated/bibimbap
 	category = "Chef's Table"
 	item_path = /obj/item/food/salad/bibimbap
-	price_credits = 240
+	price_credits = 160
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/diner/plated/katsu_curry
 	category = "Chef's Table"
 	item_path = /obj/item/food/salad/katsu_curry
-	price_credits = 260
+	price_credits = 180
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/diner/plated/tonkotsu_ramen
 	category = "Chef's Table"
 	item_path = /obj/item/food/spaghetti/shoyu_tonkotsu_ramen
-	price_credits = 260
+	price_credits = 180
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/diner/plated/big_blue
 	category = "Chef's Table"
 	item_path = /obj/item/food/burger/big_blue
-	price_credits = 280
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -277,7 +277,7 @@
 	category = "Chef's Table"
 	name = "meat-lover's pizza (whole)"
 	item_path = /obj/item/food/pizza/meat
-	price_credits = 320
+	price_credits = 280
 	stock_min = 1
 	stock_max = 2
 
@@ -285,7 +285,7 @@
 	category = "Chef's Table"
 	name = "chocolate cake (whole)"
 	item_path = /obj/item/food/cake/chocolate
-	price_credits = 330
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
 
@@ -293,7 +293,7 @@
 	category = "Chef's Table"
 	name = "actually grilled cheese"
 	item_path = /obj/item/food/grilled_cheese
-	price_credits = 240
+	price_credits = 130
 	stock_min = 1
 	stock_max = 2
 
@@ -382,27 +382,27 @@
 	category = "Blue Plate Specials"
 	desc = "The chowder pot's southern cousin. Roux insists they are different pots and refuses to elaborate."
 	item_path = /obj/item/food/salad/gumbo
-	price_credits = 180
+	price_credits = 150
 
 /datum/shop_sku/diner/plated/rotating/risotto
 	category = "Blue Plate Specials"
 	item_path = /obj/item/food/salad/risotto
-	price_credits = 180
+	price_credits = 150
 
 /datum/shop_sku/diner/plated/rotating/pho
 	category = "Chef's Table"
 	item_path = /obj/item/food/spaghetti/pho
-	price_credits = 220
+	price_credits = 180
 
 /datum/shop_sku/diner/plated/rotating/pad_thai
 	category = "Chef's Table"
 	item_path = /obj/item/food/spaghetti/pad_thai
-	price_credits = 220
+	price_credits = 180
 
 /datum/shop_sku/diner/plated/rotating/kitsune_udon
 	category = "Chef's Table"
 	item_path = /obj/item/food/spaghetti/kitsune_udon
-	price_credits = 200
+	price_credits = 160
 
 // The one rotating slot that isn't a plate: a sealed ingredient crate off the
 // convoy manifest. Factory goods, so no /plated parent.
@@ -421,19 +421,19 @@
 	category = "Chef's Table"
 	desc = "The recipe is a guarded secret among cafe owners across human space, and Roux will not say what she traded for it. Eating it is said to replenish the soul. The pot has opinions about that claim."
 	item_path = /obj/item/food/salad/setagaya_curry
-	price_credits = 600
+	price_credits = 400
 
 /datum/shop_sku/diner/plated/rare/birthday_cake
 	category = "Chef's Table"
 	name = "birthday cake"
 	desc = "Somebody on your crew has a birthday coming. Statistically."
 	item_path = /obj/item/food/cake/birthday
-	price_credits = 400
+	price_credits = 350
 
 /datum/shop_sku/diner/plated/rare/berry_clafoutis
 	category = "Chef's Table"
 	item_path = /obj/item/food/pie/berryclafoutis
-	price_credits = 300
+	price_credits = 240
 
 // ===== ROUX'S ORDER WHEEL (buybacks) =====
 // She pays for real cooking only: TRAIT_FOOD_CHEF_MADE from any source except

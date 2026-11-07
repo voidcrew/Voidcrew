@@ -11,9 +11,21 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
+"d" = (
+/obj/structure/table,
+/obj/item/knife/combat/survival,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "e" = (
 /obj/structure/sign/poster/contraband/revolver,
 /turf/closed/wall,
+/area/ruin/powered)
+"f" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/syndicate,
+/obj/item/stack/sheet/mineral/plasma,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/plating,
 /area/ruin/powered)
 "g" = (
 /obj/structure/punji_sticks,
@@ -27,18 +39,6 @@
 /obj/effect/decal/remains/human,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"i" = (
-/obj/structure/table,
-/obj/item/knife/combat,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"j" = (
-/obj/structure/rack,
-/obj/item/storage/toolbox/syndicate,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/gun/ballistic/automatic/pistol,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "k" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -223,7 +223,7 @@ I
 c
 k
 F
-i
+d
 M
 b
 a
@@ -231,7 +231,7 @@ a
 (4,1,1) = {"
 W
 b
-j
+f
 l
 V
 p

@@ -74,8 +74,10 @@
 		// SSmapping.fire()'s reservation drain already guards a dead area explicitly
 		// (the isnull(old_area.turfs_to_uncontain_by_zlevel) branch).
 		if(!QDELETED(assigned_area))
+			// VOIDCREW EDIT START: shuttle releases transit areas after reservation cleanup.
 			qdel(assigned_area)
 		assigned_area = null
+			// VOIDCREW EDIT END
 	return ..()
 
 /obj/docking_port/stationary/picked
@@ -111,4 +113,3 @@
 		"whiteship_obelisk",
 		"whiteship_birdshot",
 	)
-

@@ -36,11 +36,12 @@
 	// Capture the ship reference NOW, before parent's INVOKE_ASYNC schedules load_map
 	cached_ship = SSshuttle.loading_ship
 	cached_order = cached_ship ? null : SSshuttle.loading_order
-	// Markers initialize immediately, while the map reader is still placing the hull. An
-	// uninitialized turf under us means that read is in progress and its template will
-	// initialize everything, us included - it waits for this marker before it does.
+	// Markers initialize immediately, while the map reader is still placing the hull. That
+	// read's template will initialize everything, us included - it waits for this marker before
+	// it does. The turf under us doesn't always show a read is in progress: a marker on
+	// /turf/template_noop stands on whatever was already there, which is initialized.
 	var/turf/home = get_turf(src)
-	defer_to_hull = home && !(home.flags_1 & INITIALIZED_1)
+	defer_to_hull = home && (Master.map_loading || !(home.flags_1 & INITIALIZED_1))
 	return ..()
 
 /**

@@ -17,15 +17,48 @@
  */
 GLOBAL_LIST_EMPTY(ship_research_servers)
 
+/obj/structure/overmap/dynamic/player_outpost
+	/// Site research retains its entitlement across server replacements and ownership changes.
+	var/list/research_reward_ledger = list()
+
 /datum/techweb
 	/// Physical disk webs must not become unscoped fallback webs when uninstalled.
 	var/requires_physical_server = FALSE
 
+/// Relays expose the physical source web, so only its installed server determines who earns rewards.
+/datum/techweb/proc/experiment_reward_ledger()
+	for(var/obj/machinery/rnd/server/ship/server in techweb_servers)
+		if(QDELETED(server) || server.stored_research != src || !server.source_code_hdd || server.source_code_hdd.loc != server || server.source_code_hdd.stored_research != src)
+			continue
+		var/obj/structure/overmap/site = get_research_service_site(server)
+		if(istype(site, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/ship = site
+			var/datum/voidcrew_crew_record/crew = ship.get_crew_record()
+			if(!QDELETED(crew))
+				return crew.research_reward_ledger
+		if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
+			var/obj/structure/overmap/dynamic/player_outpost/home = site
+			return home.research_reward_ledger
+	return local_experiment_reward_ledger
+
 /obj/machinery/rnd/server/ship
-	desc = "A computer system that hosts a physical R&D source disk and shares its research with linked machinery on the same ship or outpost. Use a multitool to connect local research equipment."
+	desc = "A computer system with a removable research drive."
 	circuit = /obj/item/circuitboard/machine/rdserver/ship
 	///Installed source code files that hosts our research.
 	var/obj/item/computer_disk/ship_disk/source_code_hdd
+
+/// Resolve the source server's current site, never a consumer's crew or a disk snapshot.
+/obj/machinery/rnd/server/ship/proc/get_research_crew_record()
+	var/obj/structure/overmap/site = get_research_service_site(src)
+	if(istype(site, /obj/structure/overmap/ship))
+		var/obj/structure/overmap/ship/ship = site
+		return ship.get_crew_record()
+	if(istype(site, /obj/structure/overmap/dynamic/player_outpost))
+		var/obj/structure/overmap/dynamic/player_outpost/home = site
+		// The round roster survives cryo/mind replacement and changes on explicit departure.
+		if(home.founder_ckey)
+			return GLOB.voidcrew_crew_roster[ckey(home.founder_ckey)]
+	return null
 
 /obj/machinery/rnd/server/ship/Initialize(mapload)
 	. = ..()
@@ -233,7 +266,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
 	victim_web.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = stolen))
 	new /obj/item/research_notes(loc, stolen, "thievery")
 	record_research_stolen(thief, stolen) // round metrics, voidcrew/modules/metrics/research_metrics.dm
-	balloon_alert(thief, "siphoned [stolen] points!")
+	balloon_alert(thief, "research siphoned!")
 
 #undef RESEARCH_STOLEN_PER_THEFT
 
@@ -243,7 +276,7 @@ GLOBAL_LIST_EMPTY(ship_research_servers)
  */
 /obj/item/computer_disk/ship_disk
 	name = "R&D server source code"
-	desc = "This drive stores research for a ship or outpost. Insert it into an R&D server, then use a multitool to link local research equipment."
+	desc = "A hard drive containing research records."
 
 	///The techweb we create on initialize and store everything to.
 	var/datum/techweb/stored_research

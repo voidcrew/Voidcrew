@@ -255,6 +255,7 @@ SUBSYSTEM_DEF(bounty)
 			bounty_data["has_tracking"] = bounty.has_tracking(for_ship)
 			// Calculate reward this ship would get (accounting for tracking)
 			bounty_data["effective_reward"] = bounty.get_reward_for_ship(for_ship)
+			bounty_data["reputation_gain"] = bounty.get_reputation_worth(for_ship)
 
 		// Add target location hint (zone)
 		var/obj/structure/overmap/ship/npc/target = bounty.get_target_ship()

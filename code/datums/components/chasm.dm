@@ -303,8 +303,10 @@ GLOBAL_LIST_EMPTY(chasm_fallen_mobs)
 	// Keyed by REF rather than by the region datum: GLOB.chasm_fallen_mobs holds these
 	// forever, and a datum key would be a hard-delete blocker on every torn-down site.
 	var/datum/region = map_region_for_turf(turf)
+	// VOIDCREW EDIT START: Keep chasm victims grouped by site when several encounters share a z-level (voidcrew/datums/map_footprint.dm).
 	if(region)
 		return "site-[REF(region)]-[z_level]"
+	// VOIDCREW EDIT END
 
 	if(is_away_level(z_level))
 		return ZTRAIT_AWAY

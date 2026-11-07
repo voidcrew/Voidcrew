@@ -32,7 +32,7 @@ SUBSYSTEM_DEF(lighting)
 
 /datum/controller/subsystem/lighting/proc/create_all_lighting_objects()
 	for(var/area/area as anything in GLOB.areas)
-		// VOIDCREW EDIT: ambient-lit ground (a planet surface, static_lighting FALSE) carries
+		// VOIDCREW EDIT START: ambient-lit ground (a planet surface, static_lighting FALSE) carries
 		// no lighting objects at all - that is where the memory saving comes from - EXCEPT
 		// turfs that light themselves, like the fallout zone's hazard green. Those need an
 		// object apiece or their own light has nothing to render on, and roundstart planets
@@ -47,7 +47,7 @@ SUBSYSTEM_DEF(lighting)
 			for(var/turf/area_turf as anything in zlevel_turfs)
 				if(area_turf.space_lit)
 					continue
-				// VOIDCREW EDIT: see above
+				// VOIDCREW EDIT START: see above
 				if(ambient_lit_area && area_turf.skips_lighting_object())
 					continue
 				// END VOIDCREW EDIT
@@ -67,6 +67,7 @@ SUBSYSTEM_DEF(lighting)
 		// with needs_update set but in no queue, so EFFECT_UPDATE refuses to requeue
 		// them and they stay dark forever. Salvage the remainder instead of leaking it.
 		if(length(current_sources))
+			// VOIDCREW EDIT: Handle planetary ambient lighting and interrupted source drains (voidcrew/edits/lighting.dm).
 			sources_queue = current_sources + sources_queue
 		current_sources = sources_queue
 		sources_queue = list()

@@ -563,7 +563,7 @@ BLIND     // can't see anything
 	if(visor_vars_to_toggle & VISOR_TINT)
 		carbon_user.update_tint()
 	if((visor_flags & (MASKINTERNALS|HEADINTERNALS)) && carbon_user.invalid_internals())
-		carbon_user.cutoff_internals("visor adjusted on [type], up=[up]")
+		carbon_user.cutoff_internals("visor adjusted on [type], up=[up]") // VOIDCREW EDIT: shuttle internals diagnostics: identify the disconnect call site (voidcrew/edits/modules/mob/living/carbon/inventory.dm)
 	return TRUE
 
 // VOIDCREW EDIT END

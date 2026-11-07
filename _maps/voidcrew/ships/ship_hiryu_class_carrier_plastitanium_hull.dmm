@@ -260,14 +260,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_engines)
-"lEY" = (
-/obj/machinery/cryopod,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/flashlight/lantern/syndicate,
-/obj/item/crowbar/large/emergency,
-/obj/machinery/light/floor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/hiryu_class_carrier)
 "lZv" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
@@ -472,6 +464,13 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hiryu_class_carrier/hiryu_class_medbay)
+"qZJ" = (
+/obj/machinery/cryopod,
+/obj/item/flashlight/lantern/syndicate,
+/obj/item/crowbar/large/emergency,
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/hiryu_class_carrier)
 "rut" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating,
@@ -1065,7 +1064,7 @@ mJc
 skb
 aEK
 pLw
-lEY
+qZJ
 ksJ
 dlO
 tnK

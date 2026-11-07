@@ -1,0 +1,197 @@
+{
+ "category": "toolboxes",
+ "groups": [
+  "Toolboxes worth swinging",
+  "Ammo canisters",
+  "Stock toolboxes",
+  "Hobby boxes"
+ ],
+ "items": {
+  "/obj/item/storage/toolbox": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "93fcc6e78021269f",
+   "name": "toolbox",
+   "rank": 7,
+   "reason": "An empty toolbox with seven slots. 13 force, like every stock box.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/ammobox/strilka310": {
+   "confidence": "medium",
+   "group": "Ammo canisters",
+   "hash": "27f7190a72ab0d5c",
+   "name": ".310 Strilka ammo box (Surplus?)",
+   "rank": 2,
+   "reason": "Six clips of 60 damage rifle rounds, 30 shots, for the Sakhno. A full reload set for a yellow rifle, from ruins.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/toolbox/ammobox/strilka310/surplus": {
+   "confidence": "medium",
+   "group": "Ammo canisters",
+   "hash": "47f4d908bb8a7c50",
+   "name": ".310 Strilka ammo box (Surplus?)",
+   "rank": 4,
+   "reason": "Six clips of surplus rifle rounds with weak armor piercing. Fits the green surplus rifle. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/storage/toolbox/ammobox/wt550m9": {
+   "confidence": "medium",
+   "group": "Ammo canisters",
+   "hash": "ac2a5bd295672cf1",
+   "name": "4.6x30mm ammo box",
+   "rank": 3,
+   "reason": "Six WT-550 magazines, worth 1,800 cr at shop prices. Follows a yellow gun. NPC ships only.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/toolbox/ammobox/wt550m9ap": {
+   "confidence": "medium",
+   "group": "Ammo canisters",
+   "hash": "d8f59685bd6a33e3",
+   "name": "4.6x30mm AP ammo box",
+   "rank": 1,
+   "reason": "Six WT-550 armor-piercing magazines, which no shop sells. Follows a yellow gun, and the rounds beat armor. NPC ships only.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/toolbox/artistic": {
+   "confidence": "high",
+   "group": "Hobby boxes",
+   "hash": "45a9467018a88544",
+   "name": "artistic toolbox",
+   "rank": 3,
+   "reason": "Larger box of crayons, spray cans and paint.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/crafter": {
+   "confidence": "high",
+   "group": "Hobby boxes",
+   "hash": "19637f9192c6f1ab",
+   "name": "crafter toolbox",
+   "rank": 2,
+   "reason": "Larger box of crayons, a camera, a chisel and craft supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/drone": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "89f16628f10e76ce",
+   "name": "mechanical toolbox",
+   "rank": 1,
+   "reason": "Stock toolbox with a multitool and full cable coil. A touch better stocked. Ruins only.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/electrical": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "29666f32faab4476",
+   "name": "electrical toolbox",
+   "rank": 3,
+   "reason": "Stock toolbox for wiring work. Common on hulls.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/emergency": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "6c4f5ecb59f31452",
+   "name": "emergency toolbox",
+   "rank": 5,
+   "reason": "Stock red box: crowbar, small welder, small extinguisher, a light and a radio.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/emergency/old": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "290e11d7267af74c",
+   "name": "rusty red toolbox",
+   "rank": 6,
+   "reason": "Rusty red box with the same emergency kit.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/fishing": {
+   "confidence": "high",
+   "group": "Hobby boxes",
+   "hash": "d6ea9648580d4cf5",
+   "name": "fishing toolbox",
+   "rank": 1,
+   "reason": "Fishing rod, hook, line and bait in a box. A way to pass time or earn a little.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/helios_lunch_pail": {
+   "confidence": "medium",
+   "group": "Toolboxes worth swinging",
+   "hash": "8ea08c9b1b4155f1",
+   "name": "Helios lunch pail",
+   "rank": 3,
+   "reason": "Authored unique, so it stays off shelves. Restocks food every hour, and finishing a sandwich or egg speeds up building for 3 minutes. A nice perk.",
+   "tier": "above"
+  },
+  "/obj/item/storage/toolbox/mechanical": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "f1c076d75a6f64e5",
+   "name": "mechanical toolbox",
+   "rank": 2,
+   "reason": "Stock toolbox with the six basic tools. Common on hulls.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/mechanical/old": {
+   "confidence": "high",
+   "group": "Stock toolboxes",
+   "hash": "44b1559a2bd5921d",
+   "name": "rusty blue toolbox",
+   "rank": 4,
+   "reason": "Rusty stock toolbox with the same six basic tools and 13 force.",
+   "tier": "none"
+  },
+  "/obj/item/storage/toolbox/mechanical/old/clean": {
+   "confidence": "medium",
+   "group": "Toolboxes worth swinging",
+   "hash": "4aa6c42807cc57c1",
+   "name": "toolbox",
+   "note": "Adds 1 force and 1 throwforce for each telecrystal stored anywhere inside it (nested containers included), recounted at every swing and throw.",
+   "rank": 1,
+   "reason": "19 force in one hand, about a combat knife, plus a full tool kit and insulated gloves. Each telecrystal inside adds 1 force, so a pirate hunter can push it toward red melee numbers late on.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/toolbox/syndicate": {
+   "confidence": "medium",
+   "group": "Toolboxes worth swinging",
+   "hash": "35d1e6f7cdf765c8",
+   "name": "suspicious looking toolbox",
+   "rank": 2,
+   "reason": "15 force and 18 thrown, with a full tool kit, a multitool and combat gloves inside. A very good engineer's kit, placed on 2 hulls and 6 ship modules.",
+   "tier": "green"
+  }
+ },
+ "method": "No formula. A toolbox full of plain tools is none whatever its 13 force. Boxes that hit harder or hold something better are weighed against melee weapons and the contents' own tiers, and ammo canisters follow their gun.",
+ "unrated": {
+  "/obj/item/storage/toolbox/ammobox": "no route",
+  "/obj/item/storage/toolbox/emergency/old/ancientbundle": "no route",
+  "/obj/item/storage/toolbox/emergency/turret": "no route",
+  "/obj/item/storage/toolbox/emergency/turret/nukie": "no route",
+  "/obj/item/storage/toolbox/fishing/master": "no route",
+  "/obj/item/storage/toolbox/fishing/small": "no route",
+  "/obj/item/storage/toolbox/guncase": "no route",
+  "/obj/item/storage/toolbox/guncase/bulldog": "no route",
+  "/obj/item/storage/toolbox/guncase/c20r": "no route",
+  "/obj/item/storage/toolbox/guncase/clandestine": "no route",
+  "/obj/item/storage/toolbox/guncase/cqc": "no route",
+  "/obj/item/storage/toolbox/guncase/doublesword": "no route",
+  "/obj/item/storage/toolbox/guncase/m90gl": "no route",
+  "/obj/item/storage/toolbox/guncase/monkeycase": "no route",
+  "/obj/item/storage/toolbox/guncase/revolver": "no route",
+  "/obj/item/storage/toolbox/guncase/rocketlauncher": "no route",
+  "/obj/item/storage/toolbox/guncase/smartgun": "no route",
+  "/obj/item/storage/toolbox/guncase/soviet": "no route",
+  "/obj/item/storage/toolbox/guncase/sword_and_board": "no route",
+  "/obj/item/storage/toolbox/guncase/traitor": "no route",
+  "/obj/item/storage/toolbox/guncase/traitor/ammunition": "no route",
+  "/obj/item/storage/toolbox/guncase/traitor/ammunition/donksoft": "no route",
+  "/obj/item/storage/toolbox/guncase/traitor/donksoft": "no route",
+  "/obj/item/storage/toolbox/haunted": "no route",
+  "/obj/item/storage/toolbox/mechanical/old/cleaner": "no route",
+  "/obj/item/storage/toolbox/mechanical/old/heirloom": "no route",
+  "/obj/item/storage/toolbox/medical": "no route",
+  "/obj/item/storage/toolbox/medical/coroner": "no route",
+  "/obj/item/storage/toolbox/medical/full": "no route"
+ }
+}

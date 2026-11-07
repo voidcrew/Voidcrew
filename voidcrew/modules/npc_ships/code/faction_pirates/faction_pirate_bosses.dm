@@ -58,7 +58,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/highlord
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/highlord
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/claymore/cutlass, /obj/item/clothing/suit/hooded/cloak/drake, /obj/item/clothing/head/hooded/cloakhood/drake)
+	loot_pool = list(/obj/item/clothing/suit/hooded/cloak/drake, /obj/item/clothing/head/hooded/cloakhood/drake)
 	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/silverscale/Initialize(mapload)
@@ -87,7 +87,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/davyjones
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/davyjones
 	r_hand = /obj/item/claymore/cutlass
-	loot_pool = list(/obj/item/claymore/cutlass, /obj/item/gun/ballistic/shotgun/hook)
+	loot_pool = list(/obj/item/gun/ballistic/shotgun/hook)
 	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/skeleton/Initialize(mapload)
@@ -113,7 +113,8 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/robust
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/robust
 	r_hand = /obj/item/storage/toolbox/mechanical/old/clean
-	loot_pool = list(/obj/item/storage/toolbox/mechanical/old/clean, /obj/item/stack/telecrystal/five)
+	loot_pool = list(/obj/item/stack/telecrystal/five)
+	rare_loot_pool = list(/obj/item/storage/toolbox/mechanical/old/clean)
 	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/grey/Initialize(mapload)
@@ -141,7 +142,8 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/radiant
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/radiant
 	r_hand = /obj/item/melee/energy/sword/pirate
-	loot_pool = list(/obj/item/grenade/gas_crystal/nitrous_oxide_crystal, /obj/item/cain_and_abel)
+	loot_pool = list(/obj/item/grenade/gas_crystal/nitrous_oxide_crystal)
+	rare_loot_pool = list(/obj/item/cain_and_abel)
 	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/lustrous/Initialize(mapload)
@@ -202,7 +204,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	loot_pool = list(/obj/item/gun/energy/e_gun/nuclear, /obj/item/storage/bag/money/dutchmen)
+	loot_pool = list(/obj/item/gun/energy/laser, /obj/item/storage/bag/money/dutchmen)
 	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
@@ -237,7 +239,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/blackknight
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/blackknight
 	r_hand = /obj/item/claymore
-	loot_pool = list(/obj/item/claymore/weak, /obj/item/shield/kite)
+	loot_pool = list(/obj/item/claymore/shortsword, /obj/item/shield/kite)
 	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/medieval/Initialize(mapload)
@@ -247,5 +249,4 @@
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
 	// Visual gigantism
 	transform = transform.Scale(1.3, 1.3)
-
 

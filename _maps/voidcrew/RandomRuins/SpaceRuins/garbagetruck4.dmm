@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/item/stack/spacecash/c500,
+/obj/item/coin/plastic,
+/obj/structure/safe,
+/obj/structure/spider/stickyweb,
+/obj/item/tank/jetpack/oxygen{
+	desc = "A tank of compressed oxygen for use as propulsion in zero-gravity areas. It's blue, and has a triangle chiselled into the paint."
+	},
+/obj/item/knife/combat/survival,
+/obj/item/survivalcapsule/bathroom,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/toystore)
 "aj" = (
 /obj/machinery/power/smes,
 /obj/structure/cable,
@@ -748,18 +760,6 @@
 /obj/effect/spawner/random/entertainment/toy,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/toystore)
-"Rb" = (
-/obj/item/stack/spacecash/c500,
-/obj/item/coin/plastic,
-/obj/structure/safe,
-/obj/structure/spider/stickyweb,
-/obj/item/tank/jetpack/oxygen{
-	desc = "A tank of compressed oxygen for use as propulsion in zero-gravity areas. It's blue, and has a triangle chiselled into the paint."
-	},
-/obj/item/switchblade,
-/obj/item/survivalcapsule/bathroom,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/toystore)
 "Rl" = (
 /obj/item/paper/crumpled,
 /obj/item/stock_parts/power_store/cell/hyper,
@@ -1042,7 +1042,7 @@ ld
 IS
 ld
 Sb
-Rb
+ab
 IQ
 Yz
 PJ

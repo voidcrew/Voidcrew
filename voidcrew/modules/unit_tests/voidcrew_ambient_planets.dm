@@ -606,3 +606,206 @@
 	victim.revive(ADMIN_HEAL_ALL)
 	victim.death()
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(body_turf), cash, "A revived peddler dropped cash again")
+
+/// The weapon lines: credits only, one piece, no reputation, never on special or in a contract's pay, cheaper than a trader's own line (1200 cr a voucher, VOUCHER_CREDIT_VALUE), and a gun comes loaded with a pin that fires anywhere
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon_lines
+
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon_lines/Run()
+	var/lines = 0
+	for(var/band in 1 to 3) // ZONE_GREEN, ZONE_YELLOW, ZONE_RED
+		var/list/pool = ambient_peddler_weapons(band)
+		TEST_ASSERT(length(pool) >= 6, "Band [band] has only [length(pool)] weapons to carry")
+		for(var/sku_type in pool)
+			lines++
+			var/datum/shop_sku/peddler/weapon/sku = allocate(sku_type)
+			TEST_ASSERT(sku.price_credits > 0, "[sku_type] has no price")
+			TEST_ASSERT(!sku.price_vouchers, "[sku_type] asks for vouchers")
+			TEST_ASSERT_EQUAL(sku.stock, 1, "[sku_type] is not a single piece")
+			TEST_ASSERT_EQUAL(sku.zone_permission, 0, "[sku_type] asks for reputation") // ZONE_PERMISSION_PUBLIC
+			TEST_ASSERT_EQUAL(sku.restock_interval, INFINITY, "[sku_type] can restock")
+			TEST_ASSERT_NULL(sku.restock_timer, "[sku_type] has a restock clock")
+			TEST_ASSERT(sku.fixed_price, "[sku_type] can go on special")
+			TEST_ASSERT(!sku.contract_reward, "[sku_type] can pay a contract")
+			TEST_ASSERT(ispath(sku.item_path, /obj/item), "[sku_type] sells [sku.item_path]")
+			var/dearest_trader = 0
+			for(var/datum/shop_sku/trader_line as anything in subtypesof(/datum/shop_sku))
+				if(ispath(trader_line, /datum/shop_sku/peddler) || initial(trader_line.item_path) != sku.item_path)
+					continue
+				dearest_trader = max(dearest_trader, initial(trader_line.price_credits) + initial(trader_line.price_vouchers) * 1200) // VOUCHER_CREDIT_VALUE
+			if(dearest_trader)
+				TEST_ASSERT(sku.price_credits < dearest_trader, "[sku_type] sells at [sku.price_credits] cr, no cheaper than a trader's [dearest_trader] cr")
+			var/obj/item/goods = allocate(sku.item_path, room_turf(4, 4))
+			if(isgun(goods))
+				var/obj/item/gun/gun = goods
+				TEST_ASSERT(gun.can_shoot(), "[sku_type] arrives with nothing to fire")
+				TEST_ASSERT_EQUAL(gun.pin?.type, /obj/item/firing_pin, "[sku_type] arrives with the wrong pin")
+			qdel(goods)
+	// Every weapon line is in one band's pool (the + 3 is the three band parents themselves)
+	TEST_ASSERT_EQUAL(length(subtypesof(/datum/shop_sku/peddler/weapon)), lines + 3, "A weapon line is outside the three bands' pools")
+
+/// A peddler carries exactly one weapon of their planet's tier. Sweeping the caravan away and bringing it back keeps that weapon; a sold one stays sold. A sale is marked as trader goods and nobody buys it back. A crew who fought the pack pays less. Killing the caravan drops nothing from the pack.
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon
+	/// The buyer's crew, cut loose at the end so nothing keeps the fixtures alive
+	var/datum/team/voidcrew/team
+	var/mob/living/carbon/human/consistent/buyer
+	var/obj/structure/overmap/ship/ship
+	var/datum/bank_account/account
+
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/Destroy()
+	if(buyer?.mind)
+		buyer.mind.ship_teams = list()
+	if(team)
+		team.ship = null
+	team = null
+	buyer = null
+	ship = null
+	account = null
+	return ..()
+
+/// Brings a caravan of `band` out on a new site, and returns the site
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/new_caravan(datum/ambient_site_kind/planet/peddler/kind, band)
+	var/datum/ambient_place/site/site = allocate(/datum/ambient_place/site, kind, room_turf(2, 2), null)
+	site.band = band
+	site.npc_total = kind.npc_count(band)
+	if(!kind.realize(site))
+		TEST_FAIL("The caravan did not come out in band [band]")
+	return site
+
+/// The planet sweep takes the caravan away, and the next visit brings it back. Returns the peddler.
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/next_visit(datum/ambient_site_kind/planet/peddler/kind, datum/ambient_place/site/site)
+	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+		qdel(member)
+	if(!kind.realize(site))
+		TEST_FAIL("The caravan did not come back for the next visit")
+	return locate(/mob/living/basic/ambient_npc/planet/peddler) in site.living_npcs()
+
+/// The weapon lines in `peddler`'s shop
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/weapons_on(mob/living/basic/ambient_npc/planet/peddler/peddler)
+	. = list()
+	for(var/datum/shop_sku/sku as anything in peddler?.shop?.skus)
+		if(istype(sku, /datum/shop_sku/peddler/weapon))
+			. += sku
+
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/Run()
+	var/datum/ambient_site_kind/planet/peddler/kind = allocate(/datum/ambient_site_kind/planet/peddler)
+
+	// One weapon of the planet's tier, on the top shelf, and the same one on every later visit
+	for(var/band in 1 to 3) // ZONE_GREEN, ZONE_YELLOW, ZONE_RED
+		var/datum/ambient_place/site/site = new_caravan(kind, band)
+		var/mob/living/basic/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
+		var/list/weapons = weapons_on(peddler)
+		TEST_ASSERT_EQUAL(length(weapons), 1, "A band [band] peddler carries [length(weapons)] weapons")
+		var/datum/shop_sku/peddler/weapon/weapon = weapons[1]
+		var/rolled = weapon.type
+		TEST_ASSERT(rolled in ambient_peddler_weapons(band), "A band [band] peddler carries [rolled]")
+		TEST_ASSERT_EQUAL(peddler.shop.skus[1], weapon, "The weapon is not on top of the pack")
+		TEST_ASSERT_EQUAL(weapon.shelf, "rare", "The weapon is not on its own shelf") // SHELF_RARE
+		TEST_ASSERT_EQUAL(weapon.stock, 1, "The weapon is not a single piece")
+		TEST_ASSERT(!weapon.price_vouchers, "The weapon asks for vouchers")
+		TEST_ASSERT(weapon.category in peddler.shop.categories, "The window would not list the weapon's category")
+		for(var/visit in 1 to 6)
+			peddler = next_visit(kind, site)
+			weapons = weapons_on(peddler)
+			TEST_ASSERT_EQUAL(length(weapons), 1, "Visit [visit] brought [length(weapons)] weapons")
+			weapon = weapons[1]
+			TEST_ASSERT_EQUAL(weapon.type, rolled, "Visit [visit] rerolled [rolled] into [weapon.type]")
+			TEST_ASSERT_EQUAL(weapon.stock, 1, "Visit [visit] changed the weapon's stock")
+		for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+			qdel(member)
+
+	// A customer with a crew and money
+	buyer = allocate(/mob/living/carbon/human/consistent, room_turf(1, 2))
+	buyer.mind_initialize()
+	allocated += buyer.mind
+	ship = allocate(/obj/structure/overmap/ship)
+	team = allocate(/datum/team/voidcrew)
+	team.ship = ship
+	ship.ship_team = team
+	team.join_member(buyer.mind)
+	account = allocate(/datum/bank_account, "Peddler test", null, 1, FALSE)
+	account.account_balance = 20000
+	ship.ship_account = account
+
+	var/datum/ambient_place/site/site = new_caravan(kind, 2) // ZONE_YELLOW
+	var/mob/living/basic/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
+	var/datum/shop_sku/peddler/weapon/weapon = peddler.shop.weapon
+	var/rolled = weapon.type
+	var/price = weapon.price_credits
+
+	// Never on special, never in a contract's pay
+	for(var/attempt in 1 to 30)
+		peddler.shop.roll_special()
+		TEST_ASSERT_EQUAL(weapon.discount_pct, 0, "The weapon went on special")
+	TEST_ASSERT_EQUAL(weapon.get_credit_price(buyer), price, "A stranger did not pay the tag")
+	for(var/attempt in 1 to 10)
+		var/datum/mission/mission = allocate(/datum/mission)
+		mission.difficulty = 3 // MISSION_DIFFICULTY_HARD
+		mission.contract_pay_mult = 100 // Every price fits, so price cannot hide a leak
+		TEST_ASSERT(peddler.shop.roll_contract_reward(mission), "The pack could not quote a contract")
+		TEST_ASSERT(!(weapon.item_path in mission.get_reward_types()), "A contract paid the weapon")
+		TEST_ASSERT(!(weapon.item_path in mission.contract_stock), "A contract reserved the weapon")
+		qdel(mission)
+
+	// A crew who fought the pack: their price, the weapon included
+	peddler.shop.helpers[REF(ship)] = TRUE
+	var/helper_price = max(5, round(price * 80 / 100, 5)) // AMBIENT_AMBUSH_DISCOUNT
+	TEST_ASSERT_EQUAL(weapon.get_credit_price(buyer), helper_price, "A crew who fought the pack paid the full tag")
+	TEST_ASSERT_EQUAL(weapon.get_credit_price(), price, "The tag itself changed")
+
+	// A real sale: the same path as any trader's, marked as trader goods
+	TEST_ASSERT(weapon.try_purchase(buyer, peddler), "The peddler would not sell the weapon")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - helper_price, "The sale took the wrong money")
+	TEST_ASSERT_EQUAL(weapon.stock, 0, "The weapon is still in the pack")
+	TEST_ASSERT(!weapon.try_purchase(buyer, peddler), "The peddler sold a second one")
+	TEST_ASSERT_EQUAL(account.account_balance, 20000 - helper_price, "A refused sale took money")
+	var/obj/item/goods = locate(weapon.item_path) in buyer.held_items
+	TEST_ASSERT_NOTNULL(goods, "The buyer was not handed the weapon")
+	TEST_ASSERT(is_trader_good(goods), "A bought weapon is not marked as trader goods")
+	for(var/atom/movable/inside as anything in goods.contents)
+		TEST_ASSERT(is_trader_good(inside), "[inside] in a bought weapon is not marked as trader goods")
+
+	// Nobody buys it back: the peddler's ledger, any ledger, or the cargo shuttle
+	for(var/datum/shop_buyback/buyback as anything in peddler.shop.buybacks)
+		TEST_ASSERT(!buyback.matches(goods), "[buyback.name] takes a bought weapon")
+	var/datum/shop_buyback/any_ledger = allocate(/datum/shop_buyback)
+	any_ledger.item_path = goods.type
+	TEST_ASSERT(!any_ledger.matches(goods), "A ledger for this very weapon takes a bought one")
+	var/datum/export/export = allocate(/datum/export)
+	export.export_types = typecacheof(list(goods.type))
+	TEST_ASSERT(!export.applies_to(goods), "Cargo would export a bought weapon")
+
+	// Sold stays sold, whatever the sweep does, and nothing else takes its place
+	for(var/visit in 1 to 6)
+		peddler = next_visit(kind, site)
+		TEST_ASSERT_EQUAL(length(weapons_on(peddler)), 0, "Visit [visit] restocked a sold weapon")
+		TEST_ASSERT_NULL(peddler.shop.weapon, "Visit [visit] left a sold weapon on the shop")
+		TEST_ASSERT_EQUAL(site.data["weapon"], rolled, "Visit [visit] forgot what was rolled")
+	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+		qdel(member)
+
+	// A dead pony shuts the pack: the weapon cannot be bought, and it is still shut next visit
+	site = new_caravan(kind, 1) // ZONE_GREEN
+	peddler = locate() in site.living_npcs()
+	var/mob/living/basic/ambient_npc/planet/pack_pony/pony = locate() in site.living_npcs()
+	weapon = peddler.shop.weapon
+	pony.death()
+	var/balance = account.account_balance
+	TEST_ASSERT(!weapon.try_purchase(buyer, peddler), "The peddler sold a weapon with the pony dead")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "A shut pack took money")
+	peddler = next_visit(kind, site)
+	TEST_ASSERT(peddler.shop_closed, "The pack opened again with no pony")
+	TEST_ASSERT(!peddler.shop.weapon.try_purchase(buyer, peddler), "A shut pack sold a weapon next visit")
+	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+		qdel(member)
+
+	// Killing the whole caravan drops nothing from the pack, and it is spent
+	site = new_caravan(kind, 3) // ZONE_RED
+	TEST_ASSERT_EQUAL(length(site.living_npcs()), 3, "A red caravan came out with [length(site.living_npcs())] people")
+	for(var/mob/living/basic/ambient_npc/member as anything in site.living_npcs())
+		member.death()
+	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku/peddler/weapon))
+		var/item_path = initial(sku_type.item_path)
+		if(item_path)
+			TEST_ASSERT_EQUAL(count_in_room(item_path), 0, "Killing the caravan dropped [item_path]")
+	TEST_ASSERT_EQUAL(site.state, "spent", "A dead caravan's site was not spent") // AMBIENT_SITE_SPENT
+	TEST_ASSERT(!kind.realize(site), "A dead caravan came back")

@@ -164,7 +164,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/auxiliary_base, 32)
 			var/list/all_mining_turfs = list()
 			for(var/z_level in SSmapping.levels_by_trait(ZTRAIT_MINING))
 				all_mining_turfs += Z_TURFS(z_level)
-			// VOIDCREW EDIT ADDITION: every lattice encounter level and every planet level
+			// VOIDCREW EDIT ADDITION START: overmap - every lattice encounter level and every planet level
 			// publishes ZTRAIT_MINING in this fork, so a blind drop picked uniformly over
 			// the gutter, unclaimed slots and LIVE co-tenant sites - dropping a shuttle into
 			// another crew's ruin. Allocator-dealt ground is not a blind-drop target.

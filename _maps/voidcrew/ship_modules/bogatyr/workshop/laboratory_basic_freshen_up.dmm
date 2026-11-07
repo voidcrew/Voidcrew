@@ -3,9 +3,9 @@
 /obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
-"jGf" = (
+"iRh" = (
 /obj/item/radio/intercom/directional/north,
-/obj/machinery/light/broken{
+/obj/machinery/light{
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/purple,
@@ -45,7 +45,7 @@ qkj
 qkj
 "}
 (3,1,1) = {"
-jGf
+iRh
 qkj
 qkj
 "}

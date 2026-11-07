@@ -21,7 +21,7 @@ You can also plot a course: right-click a destination and choose **Set course**.
 | --- | --- |
 | Planets | Landable worlds: lava, ice, jungle, beach and wasteland. Ore, ruins, weather and fauna. See [Planets](planets.md). |
 | Space ruins | Several dozen derelicts, stations and wrecks per round, spread across the whole chart, each a loaded interior with loot and something guarding it. See [Ruins](ruins.md). |
-| Asteroid storms | Landable rock fields, and the dependable place to mine in space. Every round has plenty of them. Flying *through* one damages the hull. See [Mining](mining.md). |
+| Asteroid storms | Landable rock fields, and the dependable place to mine in space. Every round has plenty of them, and a spent one moves elsewhere in its zone. Flying *through* one damages the hull. See [Mining](mining.md). |
 | Ion and electrical storms | Hazards. Ion storms EMP random parts of your ship. Electrical storms blow out lights and throw lightning around inside the hull, while quietly topping up your power storage. |
 | Nebulas | Harmless clouds of a specific gas that a ram scoop can harvest, and the only place a ship can hide itself. See [Gas Economy](gas-economy.md). |
 | Trader outposts | Three permanent markets, one in each ring. They broadcast sector-wide, so they are on your chart from the start. See [Trader Outposts](trader-outposts.md). |
@@ -66,11 +66,13 @@ Crossing a boundary is a deliberate act. Thrusting at a tile in a different zone
 
 ## Why anyone flies further out
 
-Everything worth having is farther from the star, because the rings scale rewards as well as danger.
+The rings scale rewards as well as danger. Every raw resource is still available in green.
 
-Rock on planets yields half again as much ore in the Contested Zone and double in the Lawless Zone. Planet wildlife spawns thirty percent denser in yellow and sixty percent denser in red, and each spawn has a twenty or forty percent chance of upgrading to the biome's genuinely dangerous list instead of its ordinary one. Weather comes more often, gives less warning and lasts longer the farther out you go. Loot caches roll from a per-ring table and lock in their contents where they spawned, so a cache found in the deep is a better cache.
+Each mineral wall rolls its own ore. Valuable ores become more likely in deeper zones, and asteroid mineral walls yield more there. Every ordinary ore remains possible in green. Hostile NPCs gain health and damage in yellow and red; wildlife and nest limits stay the same. Some fauna rolls upgrade to a more dangerous creature. Weather comes more often, gives less warning and lasts longer the farther out you go. Loot caches roll from a per-ring table and lock in their contents where they spawned, so a cache found in the deep is a better cache.
 
 The markets follow the same gradient: the general store sits in the neutral ring, the outfitter in the contested lanes and the black market in the lawless deep, so the best goods are behind the worst neighbourhood. Planets are placed into a specific ring when the round is built and generated to match it, which means a jungle world in the red is a meaningfully harder jungle world. The safe ring always gets one planet of each type, so a new crew has every kind of world close to home. The rest of the planets, like the ruins, are spread by area, so most of them are out in the lawless ring.
+
+Your crew also earns [reputation](zone-reputation.md) from finished jobs. It opens higher-zone contracts, better trader stock and some research. It does not stop you travelling before you qualify.
 
 ## Docking
 

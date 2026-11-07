@@ -1,4 +1,10 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ad" = (
+/obj/machinery/vending/games{
+	contraband = list(/obj/item/dice/fudge = 9, /obj/item/clothing/shoes/wheelys/skishoes = 4, /obj/item/instrument/musicalmoth = 1, /obj/item/melee/baseball_bat = 1, /obj/item/skillchip/acrobatics = 1)
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/ruin/powered/golem_ship)
 "am" = (
 /obj/structure/table,
 /obj/item/tape{
@@ -480,10 +486,6 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/powered/golem_ship)
-"zN" = (
-/obj/machinery/vending/games,
-/turf/open/floor/mineral/titanium/purple,
 /area/ruin/powered/golem_ship)
 "At" = (
 /obj/effect/mob_spawn/ghost_role/human/golem/adamantine,
@@ -979,7 +981,7 @@ wN
 wN
 wN
 lF
-zN
+ad
 ed
 sS
 sS

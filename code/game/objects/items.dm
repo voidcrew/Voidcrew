@@ -1198,7 +1198,7 @@
 	remove_filter(HOVER_OUTLINE_FILTER) //get rid of the hover effect in case the mouse exit isn't called if someone drags and drops an item and somthing goes wrong
 
 /obj/item/MouseExited()
-	. = ..()
+	. = ..() // VOIDCREW EDIT: screentip hover integration: clear departed hovers and reject stale deferred text (voidcrew/edits/screentip_hover.dm)
 	deltimer(tip_timer) //delete any in-progress timer if the mouse is moved off the item before it finishes
 	closeToolTip(usr)
 	remove_filter(HOVER_OUTLINE_FILTER)

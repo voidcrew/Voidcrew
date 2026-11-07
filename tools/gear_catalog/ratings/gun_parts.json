@@ -1,0 +1,245 @@
+{
+ "category": "gun_parts",
+ "groups": [
+  "gun conversion kits",
+  "gunsmith parts",
+  "upkeep and reloading",
+  "suppressors",
+  "firing pins"
+ ],
+ "items": {
+  "/obj/item/firing_pin": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "d900e2774d99ab32",
+   "name": "electronic firing pin",
+   "rank": 1,
+   "reason": "The standard pin. Most guns already have one; you only need a spare for a gun without.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/clown": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "76690434e6ef3b18",
+   "name": "hilarious firing pin",
+   "rank": 6,
+   "reason": "Makes the gun honk instead of firing, and can be forced into a gun lying around. A prank that costs bananium.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/explorer": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "9ebf84b9b59a0f53",
+   "name": "outback firing pin",
+   "rank": 4,
+   "reason": "Refuses to fire on a ship, and every ship counts. Only useful for making a gun worthless at home.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/implant/mindshield": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "6ee5eb0eb5cc7fb3",
+   "name": "mindshield firing pin",
+   "rank": 2,
+   "reason": "Limits the gun to mindshielded users. A lock, not a weapon upgrade.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/implant/pindicate": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "f6215d882534e8e0",
+   "name": "syndicate firing pin",
+   "rank": 3,
+   "reason": "Limits the gun to users with a syndicate implant. A lock, not a weapon upgrade.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/magic": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "d900e2774d99ab32",
+   "name": "magic crystal shard",
+   "rank": 7,
+   "reason": "Lets a wand fire. Every wand already comes with one.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/paywall/luxury": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "6a5c1b4fcf9378f1",
+   "name": "paywall firing pin",
+   "rank": 8,
+   "reason": "Charges the shooter per shot on a gun that was already fine. One pirate ship has it.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/tag/blue": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "e9ffaecbfcbe1306",
+   "name": "blue laser tag firing pin",
+   "rank": 9,
+   "reason": "Laser tag pin. Only fires in a tag vest.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/tag/red": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "0e33fcf3d6c1c472",
+   "name": "red laser tag firing pin",
+   "rank": 9,
+   "reason": "Laser tag pin. Only fires in a tag vest.",
+   "tier": "none"
+  },
+  "/obj/item/firing_pin/test_range": {
+   "confidence": "high",
+   "group": "firing pins",
+   "hash": "e46251547eae28a5",
+   "name": "test-range firing pin",
+   "rank": 5,
+   "reason": "Fires only in a firing range. No use outside one.",
+   "tier": "none"
+  },
+  "/obj/item/gun_maintenance_supplies": {
+   "confidence": "high",
+   "group": "upkeep and reloading",
+   "hash": "a7dcd5382c617bd9",
+   "name": "gun maintenance kit",
+   "rank": 2,
+   "reason": "Three uses of restoring a damaged gun and clearing jams and misfires. Worth having on long trips; most guns rarely need it.",
+   "tier": "green"
+  },
+  "/obj/item/gun_maintenance_supplies/makeshift": {
+   "confidence": "high",
+   "group": "upkeep and reloading",
+   "hash": "ed9d84d9035cf288",
+   "name": "makeshift gun maintenance kit",
+   "rank": 3,
+   "reason": "One use of the same repair, crafted from pipe, cloth and iron.",
+   "tier": "green"
+  },
+  "/obj/item/handloaders_vise": {
+   "confidence": "medium",
+   "group": "upkeep and reloading",
+   "hash": "0b1745b016b35d01",
+   "name": "handloader's vise",
+   "rank": 1,
+   "reason": "Authored unique from armory caches. Packs spent casings of any caliber back into live rounds, one every 8 seconds, for a sheet of iron each.",
+   "tier": "above"
+  },
+  "/obj/item/suppressor": {
+   "confidence": "medium",
+   "group": "suppressors",
+   "hash": "c0f742c49f8fc644",
+   "name": "suppressor",
+   "rank": 1,
+   "reason": "Quiets a small gun. It changes who hears the fight, not who wins it, and it takes rep 22 to print.",
+   "tier": "green"
+  },
+  "/obj/item/weaponcrafting/gunkit/beam_rifle": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "Event Horizon anti-existential beam rifle part kit (DOOMSDAY DEVICE, DO NOT CONSTRUCT)",
+   "rank": 1,
+   "reason": "Builds the Event Horizon, which deletes everything near the hit at 150 tiles. Six anomaly cores are the real gate.",
+   "tier": "above"
+  },
+  "/obj/item/weaponcrafting/gunkit/ebow": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "energy crossbow part kit (less lethal)",
+   "rank": 7,
+   "reason": "Turns a proto-kinetic accelerator and some radium into the energy crossbow: two bolts stun, and it never needs ammo.",
+   "tier": "yellow"
+  },
+  "/obj/item/weaponcrafting/gunkit/ion": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "ion carbine parts kit (nonlethal/highly destructive/very lethal (silicons))",
+   "rank": 5,
+   "reason": "Turns a laser gun into the ion carbine. Decisive on borgs, suits and energy gear, nothing to a bare man.",
+   "tier": "yellow"
+  },
+  "/obj/item/weaponcrafting/gunkit/nuclear": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "advanced energy gun parts kit (lethal/nonlethal)",
+   "rank": 4,
+   "reason": "Turns an energy gun into the advanced energy gun, which charges itself. A convenience, not more killing power.",
+   "tier": "yellow"
+  },
+  "/obj/item/weaponcrafting/gunkit/photon": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "photon cannon parts kit (nonlethal)",
+   "rank": 6,
+   "reason": "Builds the photon cannon around one flux anomaly core: a flash that beats sunglasses, in a line and at its end.",
+   "tier": "yellow"
+  },
+  "/obj/item/weaponcrafting/gunkit/temperature": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "temperature gun parts kit (less lethal/very lethal (lizardpeople))",
+   "rank": 8,
+   "reason": "Turns a disabler into the temperature gun, which freezes or bakes on hit and slows hard. No damage.",
+   "tier": "yellow"
+  },
+  "/obj/item/weaponcrafting/gunkit/tesla": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "tesla cannon parts kit (lethal)",
+   "rank": 2,
+   "reason": "Builds the tesla cannon around one flux anomaly core: hitscan shocks worth about 135 a second, stopped by insulated gloves.",
+   "tier": "red"
+  },
+  "/obj/item/weaponcrafting/gunkit/xray": {
+   "confidence": "high",
+   "group": "gun conversion kits",
+   "hash": "15f9674ef4c95eb9",
+   "name": "x-ray laser gun parts kit (lethal)",
+   "rank": 3,
+   "reason": "Turns a laser gun into the X-ray gun, which shoots through walls and ignores armor.",
+   "tier": "red"
+  },
+  "/obj/item/weaponcrafting/receiver": {
+   "confidence": "high",
+   "group": "gunsmith parts",
+   "hash": "16f0b42ff5252609",
+   "name": "modular receiver",
+   "rank": 1,
+   "reason": "Goes into the pipegun and pipe pistol, both weak green guns. Crafts from a mousetrap, screwdriver and tape.",
+   "tier": "green"
+  },
+  "/obj/item/weaponcrafting/stock": {
+   "confidence": "high",
+   "group": "gunsmith parts",
+   "hash": "4a1e2cacdc6a16f0",
+   "name": "rifle stock",
+   "rank": 2,
+   "reason": "Goes into the pipegun, laser musket and smoothbore disabler, all weak green guns. Crafts from wood and tape.",
+   "tier": "green"
+  }
+ },
+ "method": "A kit rates as the gun it builds, using the gun ratings; the materials and anomaly core it needs are noted, not scored. Pins only restrict a gun, so they are none; other parts rate as what they make or how much they change a fight.",
+ "unrated": {
+  "/obj/item/firing_pin/abductor": "no route",
+  "/obj/item/firing_pin/clown/ultra": "no route",
+  "/obj/item/firing_pin/clown/ultra/selfdestruct": "no route",
+  "/obj/item/firing_pin/dna": "no route",
+  "/obj/item/firing_pin/dna/dredd": "no route",
+  "/obj/item/firing_pin/implant": "no route",
+  "/obj/item/firing_pin/monkey": "no route",
+  "/obj/item/firing_pin/paywall": "no route",
+  "/obj/item/firing_pin/tag": "no route",
+  "/obj/item/weaponcrafting": "abstract",
+  "/obj/item/weaponcrafting/giant_wrench": "no route",
+  "/obj/item/weaponcrafting/gunkit": "no route",
+  "/obj/item/weaponcrafting/gunkit/hellgun": "no route",
+  "/obj/item/weaponcrafting/gunkit/sks": "no route"
+ }
+}

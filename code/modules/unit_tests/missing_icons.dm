@@ -11,11 +11,14 @@
 	if(!directory_path)
 		directory_path = "icons/obj/"
 	for(var/file_path in flist(directory_path))
+		// VOIDCREW EDIT START: unit_tests recurses only into icon directories.
 		if(copytext(file_path, -1) == "/") // only directories end in "/"; anything else is a loose file (.png smoothing sources etc.) we must not descend into
 			generate_possible_icon_states_list("[directory_path][file_path]")
 		else if(copytext(file_path, -4) == ".dmi")
+		// VOIDCREW EDIT END
 			for(var/sprite_icon in icon_states("[directory_path][file_path]", 1)) //2nd arg = 1 enables 64x64+ icon support, otherwise you'll end up with "sword0_1" instead of "sword"
 				possible_icon_states[sprite_icon] += list("[directory_path][file_path]")
+// VOIDCREW EDIT REMOVAL: unit_tests recurses only into icon directories.
 
 // VOIDCREW EDIT END
 /datum/unit_test/missing_icons/Run()

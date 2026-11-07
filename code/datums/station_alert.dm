@@ -19,7 +19,7 @@
 	src.title = title
 	src.camera_view = camera_view
 	listener = new(alarm_types, listener_z_level, listener_areas)
-	// VOIDCREW EDIT ADDITION: packed-level containment for the Z-SCOPED listeners only.
+	// VOIDCREW EDIT ADDITION START: packed-level containment for the Z-SCOPED listeners only.
 	// "Same z-level" is up to four unrelated crews' sites once encounters pack onto the
 	// slot lattice, and every alarm carries its area NAME plus that area's camera refs -
 	// so a local alert console listed the neighbouring crew's rooms and handed an AI or

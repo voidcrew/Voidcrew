@@ -1,0 +1,585 @@
+{
+ "category": "masks",
+ "groups": [
+  "disguise masks",
+  "smoke-proof masks",
+  "air and germ masks",
+  "uniques",
+  "cosmetic and harmless"
+ ],
+ "items": {
+  "/obj/item/clothing/mask/balaclava": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "5dfd5c672aad6e32",
+   "name": "balaclava",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "75844e40afefb90f",
+   "name": "bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/black": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "c61e7a478296522b",
+   "name": "black bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/blue": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "blue bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/durathread": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "durathread bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/gold": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "gold bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/green": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "green bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/purple": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "purple bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/red": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "red bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/skull": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "f1f5716de6c1a8b7",
+   "name": "skull bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/skull/black": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "35077964ef60ee49",
+   "name": "skull bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "f1f5716de6c1a8b7",
+   "name": "striped bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped/botany": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "832674a0125bb323",
+   "name": "striped botany bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped/cargo": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "832674a0125bb323",
+   "name": "striped cargo bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped/medical": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "832674a0125bb323",
+   "name": "striped medical bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped/science": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "832674a0125bb323",
+   "name": "striped science bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/striped/security": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "832674a0125bb323",
+   "name": "striped security bandana",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/bandana/white": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "32da8150bf8b8a6e",
+   "name": "white bandana",
+   "rank": 9,
+   "reason": "A plain bandana.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/breath": {
+   "confidence": "high",
+   "group": "air and germ masks",
+   "hash": "7a0d4919d2c496b7",
+   "name": "breath mask",
+   "rank": 1,
+   "reason": "Air hookup and nothing else. Standard job kit, 80 cr in the green zone.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/breath/medical": {
+   "confidence": "high",
+   "group": "air and germ masks",
+   "hash": "14006f0df4d7419d",
+   "name": "medical mask",
+   "rank": 2,
+   "reason": "Air hookup and germ protection. A doctor's mask.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/breath/muzzle": {
+   "confidence": "high",
+   "group": "air and germ masks",
+   "hash": "59bcfeff114af260",
+   "name": "surgery mask",
+   "rank": 2,
+   "reason": "Air hookup and germ protection. A doctor's mask.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/chameleon": {
+   "confidence": "low",
+   "group": "disguise masks",
+   "hash": "ad6dc22004cb8d6c",
+   "name": "gas mask",
+   "rank": 1,
+   "reason": "Gas mask that can look like any mask and makes you speak with the name on your ID card. The only real disguise in the slot. It wins by trickery and adds almost no armor. 1,500 cr and a voucher, red zone.",
+   "tier": "yellow"
+  },
+  "/obj/item/clothing/mask/chameleon/broken": {
+   "confidence": "low",
+   "group": "disguise masks",
+   "hash": "4a0d22212d3aad86",
+   "name": "gas mask",
+   "rank": 2,
+   "reason": "A chameleon mask with its look stuck. The voice trick still works. One ruin.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/facehugger/lamarr": {
+   "confidence": "medium",
+   "group": "cosmetic and harmless",
+   "hash": "8b1195ac1bd44911",
+   "name": "Lamarr",
+   "note": "A live one leaps at adjacent living carbons with a head (not aliens, nor anyone whose mouth a helmet covers): it tears off their mask, deals 5 brute, knocks them down 5 seconds, heavily tints their vision, muffles speech and cannot be pulled off by hand; after 10 to 15 seconds it implants an alien embryo (organic chest) and dies. It goes idle for 20 to 40 seconds after attaching and dies to heat above 300 K or about 10 damage; the sterile Lamarr variant latches on with no damage or embryo.",
+   "rank": 6,
+   "reason": "A research director's sterile pet, and no shop, ruin or played hull has it. Latches on, blinds and muffles you, does no harm.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/facescarf": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "a59b8e2e211cf5b6",
+   "name": "facescarf",
+   "rank": 11,
+   "reason": "Cloth scarf that stops smoke and takes an air hookup. Covers the mouth, not the eyes.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/fakemoustache/italian": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "f1ca8db90ee97776",
+   "name": "italian moustache",
+   "rank": 4,
+   "reason": "A costume.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/fakemoustache/sticky": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "4d1720f17f3693c1",
+   "name": "fake moustache",
+   "rank": 4,
+   "reason": "A costume.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/floortilebalaclava": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "ccb4cf7af38ca01a",
+   "name": "floortile balaclava",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "463f7ec317aef8f7",
+   "name": "gas mask",
+   "rank": 2,
+   "reason": "Anchor. Stops smoke and pepper spray, covers eyes and mouth, filters bad air, takes an air hookup. Decides a smoke or chemical fight and nothing else. 200 cr in the yellow zone or three in a 400 cr cargo crate.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/atmos": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "ff9a3dc06f24f034",
+   "name": "atmospheric gas mask",
+   "rank": 5,
+   "reason": "Gas mask with three filter slots and a little fire and acid protection. For atmospheric work.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/atmos/centcom": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "59682349f4f15644",
+   "name": "CentCom gas mask",
+   "rank": 5,
+   "reason": "Gas mask with three filter slots and a little fire and acid protection. For atmospheric work.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/carp": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "87dc660f6c34d569",
+   "name": "carp mask",
+   "rank": 10,
+   "reason": "A working gas mask with a costume look. Covers the eyes, no pepper protection. Crafted from carp hide.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/clown_hat": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "08e151139df1be91",
+   "name": "clown wig and mask",
+   "rank": 2,
+   "reason": "A costume mask with an air hookup. Doesn't stop smoke.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas/cyborg": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "29a81a8cece6c8b9",
+   "name": "cyborg visor",
+   "rank": 10,
+   "reason": "A working gas mask with a costume look. Covers the eyes, no pepper protection. One ruin each.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/driscoll": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "f99002e4ae6f8351",
+   "name": "driscoll mask",
+   "rank": 9,
+   "reason": "A working mouth-only gas mask for 35 cr at any ClothesMate. Stops smoke and filters air, leaves the eyes open.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/explorer": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "cc84019ad4d1d34c",
+   "name": "explorer gas mask",
+   "note": "Pushing the visor up removes its smoke blocking and internals connection, stops it covering the mouth, and shrinks it from normal to small size so it fits in boxes; pulling it back down restores those.",
+   "rank": 1,
+   "reason": "Gas mask with a little armor (melee 10, bullet 5) that adds to your helmet's, and it folds down small. 400 cr in the yellow zone; miners start with one. The best ordinary mask.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/explorer/folded": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "1f9046d0a10f9e3d",
+   "name": "explorer gas mask",
+   "note": "Pushing the visor up removes its smoke blocking and internals connection, stops it covering the mouth, and shrinks it from normal to small size so it fits in boxes; pulling it back down restores those.",
+   "rank": 1,
+   "reason": "Gas mask with a little armor (melee 10, bullet 5) that adds to your helmet's, and it folds down small. 400 cr in the yellow zone; miners start with one. The best ordinary mask.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/jonkler": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "80fe74b23e248301",
+   "name": "gamer's wig and mask",
+   "rank": 2,
+   "reason": "A costume mask with an air hookup. Doesn't stop smoke.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas/mime": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "8b27821055c13e13",
+   "name": "mime mask",
+   "rank": 2,
+   "reason": "A costume mask with an air hookup. Doesn't stop smoke.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas/monkeymask": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "2707f36dd68c28c5",
+   "name": "monkey mask",
+   "rank": 2,
+   "reason": "A costume mask with an air hookup. Doesn't stop smoke.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas/ninja": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "56b18448b8a3f1e8",
+   "name": "ninja mask",
+   "rank": 8,
+   "reason": "Covers the mouth, stops smoke and pepper spray. Black market only.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/prop": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "1fc07f2fea5707aa",
+   "name": "prop gas mask",
+   "rank": 3,
+   "reason": "A prop gas mask that doesn't work as one.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/gas/sechailer": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "058671d2730ff8f3",
+   "name": "security gas mask",
+   "rank": 7,
+   "reason": "Stops smoke and filters air but leaves the eyes open, so no pepper protection. Security job gear.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/sechailer/swat": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "2d2ccb5fbfa5def1",
+   "name": "SWAT mask",
+   "rank": 3,
+   "reason": "A gas mask with a security hailer. In ruin caches, one ruin and the security chief's garment bag.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/syndicate": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "30ec92e1bf9a1aa2",
+   "name": "syndicate mask",
+   "rank": 4,
+   "reason": "A gas mask with a darker look. In suit storage on 2 hulls.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/tiki_mask": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "e5a1907e07432bd6",
+   "name": "tiki mask",
+   "rank": 10,
+   "reason": "A working gas mask with a costume look. Covers the eyes, no pepper protection. One ruin each.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gas/welding": {
+   "confidence": "high",
+   "group": "smoke-proof masks",
+   "hash": "0428e07f303131cd",
+   "name": "welding mask",
+   "rank": 6,
+   "reason": "Gas mask with a welding visor: stops flashes and arcs, fireproof, melee 10, but darkens your view. Prints after research.",
+   "tier": "green"
+  },
+  "/obj/item/clothing/mask/gondola": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "a3d5447dc11f39c6",
+   "name": "gondola mask",
+   "rank": 4,
+   "reason": "A fur costume mask. Hides your face and garbles your speech.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/kitsune": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "2896fe09167a208a",
+   "name": "kitsune mask",
+   "rank": 4,
+   "reason": "A costume.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/mummy": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "74120431626625f3",
+   "name": "mummy mask",
+   "rank": 4,
+   "reason": "A costume.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/muzzle": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "8fd12ab6a926425a",
+   "name": "muzzle",
+   "rank": 5,
+   "reason": "Gags whoever wears it. A restraint.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/rebellion": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "a932c374105ec061",
+   "name": "rebellion mask",
+   "rank": 4,
+   "reason": "A costume.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/russian_balaclava": {
+   "confidence": "high",
+   "group": "cosmetic and harmless",
+   "hash": "a1ce39b159902649",
+   "name": "russian balaclava",
+   "rank": 1,
+   "reason": "Hides your face. Cloth.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/surgical": {
+   "confidence": "high",
+   "group": "air and germ masks",
+   "hash": "5112d0b43bb48de5",
+   "name": "sterile mask",
+   "rank": 3,
+   "reason": "Stops germs. No air hookup.",
+   "tier": "none"
+  },
+  "/obj/item/clothing/mask/whistle/sergeants": {
+   "confidence": "high",
+   "group": "uniques",
+   "hash": "3ad4e690f56a4e96",
+   "name": "sergeant's whistle",
+   "note": "Blowing it removes half of the remaining stun and knockdown time of every living creature that hears it within 7 tiles, allies and enemies alike, and gives them a 4 second speed boost. 60 second cooldown.",
+   "rank": 1,
+   "reason": "Authored one-off from an armory cache. Blowing it halves the remaining stun and knockdown of everyone within 7 tiles, enemies too, with a 4 second speed boost. Every 60 seconds.",
+   "tier": "above"
+  }
+ },
+ "method": "No number. The slot's job is air, smoke and pepper spray, and any of the working gas masks does that job, so they all sit at green with rank set by what they add. Mask armor is small and adds to the helmet's. Only the disguise mask and the one authored whistle rate above green.",
+ "unrated": {
+  "/obj/item/clothing/mask": "abstract",
+  "/obj/item/clothing/mask/animal": "abstract",
+  "/obj/item/clothing/mask/animal/cowmask": "no route",
+  "/obj/item/clothing/mask/animal/cowmask/cursed": "no route",
+  "/obj/item/clothing/mask/animal/frog": "no route",
+  "/obj/item/clothing/mask/animal/frog/cursed": "no route",
+  "/obj/item/clothing/mask/animal/horsehead": "no route",
+  "/obj/item/clothing/mask/animal/horsehead/cursed": "no route",
+  "/obj/item/clothing/mask/animal/pig": "no route",
+  "/obj/item/clothing/mask/animal/pig/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small": "abstract",
+  "/obj/item/clothing/mask/animal/small/bat": "no route",
+  "/obj/item/clothing/mask/animal/small/bat/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/bear": "no route",
+  "/obj/item/clothing/mask/animal/small/bear/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/bee": "no route",
+  "/obj/item/clothing/mask/animal/small/bee/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/fox": "no route",
+  "/obj/item/clothing/mask/animal/small/fox/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/jackal": "no route",
+  "/obj/item/clothing/mask/animal/small/jackal/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/rat": "no route",
+  "/obj/item/clothing/mask/animal/small/rat/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/raven": "no route",
+  "/obj/item/clothing/mask/animal/small/raven/cursed": "no route",
+  "/obj/item/clothing/mask/animal/small/tribal": "no route",
+  "/obj/item/clothing/mask/animal/small/tribal/cursed": "no route",
+  "/obj/item/clothing/mask/bandana/orange": "no route",
+  "/obj/item/clothing/mask/bandana/striped/black": "no route",
+  "/obj/item/clothing/mask/bandana/striped/engineering": "no route",
+  "/obj/item/clothing/mask/chameleon/drone": "no route",
+  "/obj/item/clothing/mask/chameleon/gps": "no route",
+  "/obj/item/clothing/mask/changeling": "no route",
+  "/obj/item/clothing/mask/facehugger": "no route",
+  "/obj/item/clothing/mask/facehugger/dead": "leftover",
+  "/obj/item/clothing/mask/facehugger/impregnated": "leftover",
+  "/obj/item/clothing/mask/facehugger/toy": "toy",
+  "/obj/item/clothing/mask/facehugger/vestige_comb_heir": "no route",
+  "/obj/item/clothing/mask/facescarf/rogue": "no route",
+  "/obj/item/clothing/mask/fakemoustache": "no route",
+  "/obj/item/clothing/mask/gas/atmos/captain": "no route",
+  "/obj/item/clothing/mask/gas/atmos/plasmaman": "no route",
+  "/obj/item/clothing/mask/gas/atmosprop": "no route",
+  "/obj/item/clothing/mask/gas/clown_hat/plasmaman": "no route",
+  "/obj/item/clothing/mask/gas/explorer/plasmaman": "no route",
+  "/obj/item/clothing/mask/gas/hunter": "no route",
+  "/obj/item/clothing/mask/gas/mime/plasmaman": "no route",
+  "/obj/item/clothing/mask/gas/owl_mask": "no route",
+  "/obj/item/clothing/mask/gas/plaguedoctor": "no route",
+  "/obj/item/clothing/mask/gas/sechailer/cyborg": "no route",
+  "/obj/item/clothing/mask/gas/sechailer/plasmaman": "no route",
+  "/obj/item/clothing/mask/gas/sechailer/swat/spacepol": "no route",
+  "/obj/item/clothing/mask/gas/sexyclown": "no route",
+  "/obj/item/clothing/mask/gas/sexymime": "no route",
+  "/obj/item/clothing/mask/gas/tiki_mask/yalp_elor": "no route",
+  "/obj/item/clothing/mask/gas/welding/up": "no route",
+  "/obj/item/clothing/mask/joy": "no route",
+  "/obj/item/clothing/mask/luchador": "no route",
+  "/obj/item/clothing/mask/luchador/rudos": "no route",
+  "/obj/item/clothing/mask/luchador/tecnicos": "no route",
+  "/obj/item/clothing/mask/madness_mask": "no route",
+  "/obj/item/clothing/mask/muzzle/tape": "no route",
+  "/obj/item/clothing/mask/muzzle/tape/pointy": "no route",
+  "/obj/item/clothing/mask/muzzle/tape/pointy/super": "no route",
+  "/obj/item/clothing/mask/muzzle/tape/super": "no route",
+  "/obj/item/clothing/mask/muzzle/tape/surgical": "no route",
+  "/obj/item/clothing/mask/nobreath": "no route",
+  "/obj/item/clothing/mask/party_horn": "no route",
+  "/obj/item/clothing/mask/scarecrow": "no route",
+  "/obj/item/clothing/mask/whistle": "no route",
+  "/obj/item/clothing/mask/whistle/minigame": "no route"
+ }
+}

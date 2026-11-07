@@ -50,6 +50,7 @@
 			safe_turfs -= check_turf
 
 	var/turf/our_turf = get_turf(src)
+	get_npc_spawn_context() // VOIDCREW EDIT - npc_scaling: pin the death burst's source before its delay.
 	for (var/i in 1 to 3)
 		if (!length(safe_turfs))
 			return
@@ -59,10 +60,15 @@
 
 /// Spawns a worm on the specified turf
 /mob/living/basic/mining/hivelord/proc/complete_spawn(turf/spawn_turf)
-	var/mob/living/brood = new death_spawn_type(spawn_turf)
+	// VOIDCREW EDIT ADDITION START - npc_scaling: carry the environmental source into death brood.
+	get_npc_spawn_context()
+	var/datum/npc_spawn_context/context = new(src, role = "ordinary")
+	var/mob/living/brood = spawn_npc_in_zone(death_spawn_type, spawn_turf, context, FALSE)
+	// VOIDCREW EDIT ADDITION END
 	brood.faction = faction
-	brood.ai_controller?.set_blackboard_key(ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+	brood.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]) // VOIDCREW EDIT - npc_scaling: retain the death brood's target during setup.
 	brood.dir = get_dir(src, spawn_turf)
+	context.finalize() // VOIDCREW EDIT - npc_scaling: finalize after faction setup.
 
 /mob/living/basic/mining/hivelord/RangedAttack(atom/atom_target, modifiers)
 	spawn_brood?.Trigger(target = atom_target)

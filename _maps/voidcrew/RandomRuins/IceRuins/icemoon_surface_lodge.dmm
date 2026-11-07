@@ -1,7 +1,107 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/item/ammo_casing/c45{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/blood/trail_holder{
+	dir = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/huntinglodge)
+"ab" = (
+/obj/structure/noticeboard/directional/north,
+/obj/item/melee/baseball_bat{
+	pixel_x = 1;
+	pixel_y = 27
+	},
+/obj/effect/turf_decal/siding/wood/end{
+	dir = 8
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = -1;
+	pixel_y = 5
+	},
+/turf/open/floor/stone,
+/area/ruin/huntinglodge)
 "ac" = (
 /turf/open/floor/stone/icemoon,
 /area/icemoon/surface/outdoors/nospawn)
+"ad" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/item/ammo_casing/shotgun/buckshot/spent{
+	pixel_x = -3;
+	pixel_y = -8
+	},
+/obj/item/melee/baseball_bat,
+/turf/open/floor/carpet/green,
+/area/ruin/huntinglodge)
+"ae" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/iron/dark/herringbone,
+/area/ruin/huntinglodge)
+"af" = (
+/obj/item/ammo_casing/c45{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/obj/item/ammo_casing/c45{
+	pixel_x = 3;
+	pixel_y = -4
+	},
+/obj/item/ammo_casing/c45{
+	pixel_x = -5;
+	pixel_y = 0
+	},
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/item/melee/baseball_bat,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
+/area/icemoon/surface/outdoors/nospawn)
+"ag" = (
+/obj/item/ammo_casing/shotgun/buckshot/spent,
+/obj/effect/decal/cleanable/blood/trail_holder{
+	dir = 10
+	},
+/obj/item/melee/baseball_bat,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/huntinglodge)
+"ah" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/stool/directional/north,
+/obj/item/melee/baseball_bat,
+/turf/open/floor/wood/tile,
+/area/ruin/huntinglodge)
+"ai" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/knife/butcher,
+/obj/item/knife/combat/survival{
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/obj/item/knife,
+/turf/open/floor/iron/checker,
+/area/ruin/huntinglodge)
 "aE" = (
 /obj/item/shovel,
 /obj/structure/rack,
@@ -254,20 +354,6 @@
 /obj/machinery/light/small/dim/directional/north,
 /turf/open/floor/wood,
 /area/ruin/huntinglodge)
-"eH" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 5
-	},
-/obj/item/ammo_casing/c45{
-	pixel_x = 2;
-	pixel_y = -4
-	},
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/obj/effect/decal/cleanable/blood/trail_holder{
-	dir = 5
-	},
-/turf/open/floor/carpet/red,
-/area/ruin/huntinglodge)
 "eQ" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -431,22 +517,6 @@
 /obj/effect/mob_spawn/corpse/human/skeleton/cultist,
 /obj/effect/decal/cleanable/blood/gibs/core,
 /turf/open/floor/carpet/lone/star,
-/area/ruin/huntinglodge)
-"hl" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/ash,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/item/ammo_casing/shotgun/buckshot/spent{
-	pixel_x = -3;
-	pixel_y = -8
-	},
-/obj/item/gun/ballistic/shotgun/riot,
-/turf/open/floor/carpet/green,
 /area/ruin/huntinglodge)
 "hm" = (
 /turf/open/floor/iron/stairs/right{
@@ -819,14 +889,6 @@
 "mA" = (
 /obj/machinery/light/small/dim/directional/south,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
-/area/ruin/huntinglodge)
-"mG" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/structure/chair/stool/directional/north,
-/obj/item/gun/ballistic/shotgun/riot,
-/turf/open/floor/wood/tile,
 /area/ruin/huntinglodge)
 "mW" = (
 /obj/effect/decal/cleanable/blood/footprints{
@@ -1340,22 +1402,6 @@
 	dir = 8
 	},
 /turf/open/floor/carpet/lone/star,
-/area/ruin/huntinglodge)
-"wI" = (
-/obj/structure/noticeboard/directional/north,
-/obj/item/gun/ballistic/shotgun/riot{
-	pixel_x = 1;
-	pixel_y = 27
-	},
-/obj/effect/turf_decal/siding/wood/end{
-	dir = 8
-	},
-/obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
-	pixel_x = -1;
-	pixel_y = 5
-	},
-/turf/open/floor/stone,
 /area/ruin/huntinglodge)
 "wO" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -2150,23 +2196,6 @@
 	},
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
-"GN" = (
-/obj/item/ammo_casing/c45{
-	pixel_x = 2;
-	pixel_y = 4
-	},
-/obj/item/ammo_casing/c45{
-	pixel_x = 3;
-	pixel_y = -4
-	},
-/obj/item/ammo_casing/c45{
-	pixel_x = -5;
-	pixel_y = 0
-	},
-/obj/effect/decal/cleanable/blood/splatter,
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/turf/open/misc/asteroid/snow/icemoon/breathable,
-/area/icemoon/surface/outdoors/nospawn)
 "GU" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 8
@@ -2921,15 +2950,6 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/huntinglodge)
-"TI" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/gun/ballistic/shotgun/doublebarrel,
-/turf/open/floor/iron/dark/herringbone,
-/area/ruin/huntinglodge)
 "TN" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
@@ -2952,17 +2972,6 @@
 	dir = 6
 	},
 /turf/open/floor/carpet/green,
-/area/ruin/huntinglodge)
-"Ux" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/obj/item/knife/butcher,
-/obj/item/chainsaw{
-	pixel_x = 1;
-	pixel_y = 2
-	},
-/obj/item/knife,
-/turf/open/floor/iron/checker,
 /area/ruin/huntinglodge)
 "UB" = (
 /obj/structure/bed{
@@ -3059,15 +3068,6 @@
 /turf/open/floor/iron/stairs/left{
 	color = "#5d341f"
 	},
-/area/ruin/huntinglodge)
-"VF" = (
-/obj/item/ammo_casing/shotgun/buckshot/spent,
-/obj/effect/decal/cleanable/blood/trail_holder{
-	dir = 10
-	},
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
 /area/ruin/huntinglodge)
 "VO" = (
 /obj/effect/turf_decal/weather/snow/corner,
@@ -3536,7 +3536,7 @@ fK
 mA
 Jb
 mX
-eH
+aa
 KB
 oF
 Jb
@@ -3718,7 +3718,7 @@ EJ
 EJ
 mA
 Jb
-wI
+ab
 Ei
 yt
 wC
@@ -3841,7 +3841,7 @@ Jb
 Jb
 Jb
 qp
-hl
+ad
 WX
 Pi
 Jb
@@ -3986,7 +3986,7 @@ PS
 Oz
 US
 xE
-TI
+ae
 Gp
 Hw
 JV
@@ -4066,7 +4066,7 @@ Xk
 mW
 kl
 hV
-GN
+af
 Zk
 UH
 Vx
@@ -4328,7 +4328,7 @@ mw
 pr
 hK
 CD
-VF
+ag
 Nj
 iq
 ic
@@ -4398,7 +4398,7 @@ Eq
 cC
 gu
 ZT
-mG
+ah
 eh
 Jb
 Jb
@@ -4549,7 +4549,7 @@ Gp
 Gp
 Jb
 Jb
-Ux
+ai
 jQ
 Ws
 Jb

@@ -42,7 +42,7 @@ GLOBAL_LIST_INIT(biblestates, list(
 	"gurugranthsahib",
 	"kojiki",
 ))
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
+// VOIDCREW EDIT START: clothing uses existing bible inhand states.
 GLOBAL_LIST_INIT(bibleitemstates, list(
 	"bible",
 	"koran",
@@ -64,8 +64,8 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 	"bible",
 	"kojiki",
 ))
-
 // VOIDCREW EDIT END
+
 /obj/item/book/bible
 	name = "bible"
 	desc = "Apply to head repeatedly."

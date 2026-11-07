@@ -76,6 +76,7 @@
 	smoothing = _smoothing
 
 	RegisterSignal(target, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(apply_overlay), TRUE)
+	// VOIDCREW EDIT: Expose attached decals while preserving remaining decal rotation listeners (voidcrew/edits/datums/elements/decals/_decal.dm).
 	RegisterSignal(target, COMSIG_ATOM_GET_DECALS, PROC_REF(collect_decals), TRUE)
 	if(target.flags_1 & INITIALIZED_1)
 		target.update_appearance(UPDATE_OVERLAYS) //could use some queuing here now maybe.

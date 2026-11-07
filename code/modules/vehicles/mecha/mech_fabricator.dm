@@ -1,4 +1,3 @@
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/mecha_part_fabricator
 	icon = 'icons/obj/machines/robotics.dmi'
 	icon_state = "fab-idle"
@@ -60,7 +59,6 @@
 	/// Direction the produced items will drop (0 means on top of us)
 	var/drop_direction = SOUTH
 
-// VOIDCREW EDIT END
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	print_sound = new(src,  FALSE)
 	rmat = AddComponent(/datum/component/remote_materials, mapload && link_on_init)
@@ -250,7 +248,6 @@
  * * verbose - Whether the machine should use say() procs. Set to FALSE to disable the machine saying reasons for failure to build.
  * * user_data - ID_DATA(user), see the proc on SSid_access
  */
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/mecha_part_fabricator/proc/build_part(datum/design/D, verbose = TRUE, alist/user_data)
 	if(!D || length(D.reagents_list))
 		return FALSE
@@ -267,6 +264,7 @@
 			say("Not enough resources. Processing stopped.")
 		return FALSE
 
+	// VOIDCREW EDIT START: research retains paid fabrication materials and permits local designs without a disk.
 	var/list/materials_before = materials.materials.Copy()
 	if(!rmat.use_materials(D.materials, component_coeff, 1, "built", "[D.name]", user_data))
 		return FALSE
@@ -275,6 +273,7 @@
 		var/consumed = materials_before[material] - materials.materials[material]
 		if(consumed > 0)
 			being_built_materials[material] = consumed
+	// VOIDCREW EDIT END
 	being_built = D
 	build_finish = world.time + get_construction_time_w_coeff(initial(D.construction_time))
 	build_start = world.time
@@ -282,7 +281,6 @@
 
 	return TRUE
 
-// VOIDCREW EDIT END
 /obj/machinery/mecha_part_fabricator/process()
 	// If there's a stored part to dispense due to an obstruction, try to dispense it.
 	if(stored_part)
@@ -318,11 +316,12 @@
  * Return TRUE if the part was successfully dispensed.
  * * dispensed_design - Design datum to attempt to dispense.
  */
-// VOIDCREW EDIT START - PR #123: ship systems and overmap integration.
 /obj/machinery/mecha_part_fabricator/proc/dispense_built_part(datum/design/dispensed_design)
 	var/obj/item/built_part = new dispensed_design.build_path(src)
+	// VOIDCREW EDIT START: research retains paid fabrication materials and permits local designs without a disk.
 	apply_fabrication_materials(built_part, being_built_materials)
 	being_built_materials = null
+	// VOIDCREW EDIT END
 	SSblackbox.record_feedback("nested tally", "lathe_printed_items", 1, list("[type]", "[built_part.type]"))
 
 	being_built = null
@@ -341,6 +340,8 @@
 
 	return TRUE
 
+// VOIDCREW EDIT: research allocates only the paid fabrication materials; implementation in voidcrew/edits/modules/vehicles/mecha/mech_fabricator.dm.
+
 /**
  * Adds a datum design to the build queue.
  *
@@ -348,7 +349,6 @@
  * * D - Datum design to add to the queue.
  * user_data - user data in the form rendered by ID_DATA(user), see the proc on SSidaccess
  */
-// VOIDCREW EDIT END
 /obj/machinery/mecha_part_fabricator/proc/add_to_queue(datum/design/D, alist/user_data)
 	if(!istype(queue))
 		queue = list()
@@ -473,10 +473,11 @@
 				if(!istext(design_id))
 					continue
 
-				var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
+				var/datum/design/design = SSresearch.techweb_design_by_id(design_id) // VOIDCREW EDIT: research retains paid fabrication materials and permits local designs without a disk.
 				// VOIDCREW EDIT: independent local designs still work with the server disk removed.
 				if(!((stored_research && stored_research.researched_designs.Find(design_id)) || (design in illegal_local_designs)))
 					continue
+// VOIDCREW EDIT REMOVAL: research retains paid fabrication materials and permits local designs without a disk.
 
 				if(!(design.build_type & MECHFAB) || design.id != design_id)
 					continue

@@ -82,24 +82,19 @@
 /datum/mission_target/proc/refresh_coords()
 	return
 
-/**
- * Narrows a resolved candidate list down to the objects sitting in
- * preferred_zone, if a preference was asked for and anything matches.
- *
- * This is a preference and never a filter that can fail: with no preference set,
- * no live zone controller, or nothing in the wanted band, the full list comes
- * back untouched. A board offer would rather point somewhere dangerous than not
- * exist, and the shallow-band bias is there to shape what a new crew usually
- * sees, not to guarantee it.
- */
+/// Unknown bands and unavailable requested bands never fall back to another zone.
+/datum/mission_target/proc/zone_is_eligible(band)
+	return (band in list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED)) \
+		&& (isnull(preferred_zone) || band == preferred_zone) \
+		&& (isnull(mission?.eligible_target_zones) || (band in mission.eligible_target_zones))
+
+/// Apply before occupancy preferences, so an ineligible cold site cannot hide an eligible one.
 /datum/mission_target/proc/filter_by_preferred_zone(list/candidates)
-	if(isnull(preferred_zone) || !length(candidates) || !SSovermap_zones?.zones_active)
-		return candidates
 	var/list/matching = list()
-	for(var/atom/movable/candidate as anything in candidates)
-		if(SSovermap_zones.get_zone_type(get_turf(candidate)) == preferred_zone)
+	for(var/atom/movable/candidate in candidates)
+		if(!QDELETED(candidate) && zone_is_eligible(SSovermap_zones?.get_zone_type(get_turf(candidate))))
 			matching += candidate
-	return length(matching) ? matching : candidates
+	return matching
 
 /// Helper: relative overmap coords of an overmap object
 /datum/mission_target/proc/cache_coords_from(atom/movable/object)
@@ -146,6 +141,10 @@
 			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
+		if(!zone_is_eligible(SSovermap_zones?.get_zone_type(get_turf(candidate))))
+			continue
+		if(mission?.create_field_contact && (candidate.loaded || candidate.loading || candidate.mission_claims > 0))
+			continue
 		candidates += candidate
 		// A ruin is only ever loaded because somebody is there or has just left.
 		// Picking one spawns the objective into the deck the accepting crew is
@@ -157,6 +156,12 @@
 		cold += candidate
 		if(candidate.mission_claims <= 0)
 			cold_unclaimed += candidate
+	if(!length(candidates) && mission?.create_field_contact)
+		var/obj/structure/overmap/space_ruin/contact = SSovermap.spawn_mission_ruin(preferred_zone)
+		if(contact)
+			candidates += contact
+			cold += contact
+			cold_unclaimed += contact
 	if(!length(candidates))
 		return FALSE
 	var/list/pool = candidates
@@ -174,9 +179,6 @@
 		if(!length(cold_unclaimed))
 			return FALSE
 		pool = cold_unclaimed
-	// Applied last, to the pool the occupancy tiers already settled on: a cold
-	// unclaimed ruin in the wrong band still beats a hot one in the right band.
-	pool = filter_by_preferred_zone(pool)
 	ruin = pick(pool)
 	ruin.mission_claims++
 	if(exclusive)
@@ -261,6 +263,11 @@
 // PLANET: the same interface pointed at a planet surface
 // =========================================================================
 
+// Planet work uses the same site bookkeeping as space-ruin work.
+/obj/structure/overmap/planet
+	var/mission_claims = 0
+	var/mission_exclusive = FALSE
+
 /datum/mission_target/planet
 	/// The planet this mission targets
 	var/obj/structure/overmap/planet/planet
@@ -271,6 +278,7 @@
 	/// runs more than one planet of that type (SSovermap.dynamic_planets_per_type).
 	/// Filtered missions should still use the FAIL loss policy.
 	var/wanted_planet
+	var/holds_exclusive = FALSE
 
 /datum/mission_target/planet/resolve()
 	var/obj/structure/overmap/planet/previous = planet
@@ -285,10 +293,22 @@
 			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
+		if(!zone_is_eligible(SSovermap_zones?.get_zone_type(get_turf(candidate))) || candidate.mission_exclusive)
+			continue
+		if((mission?.exclusive_site || mission?.create_field_contact) && (candidate.loaded || candidate.loading || candidate.mission_claims > 0))
+			continue
 		candidates += candidate
+	if(!length(candidates) && mission?.create_field_contact)
+		var/obj/structure/overmap/planet/contact = SSovermap.spawn_mission_planet(preferred_zone, wanted_planet)
+		if(contact)
+			candidates += contact
 	if(!length(candidates))
 		return FALSE
-	planet = pick(filter_by_preferred_zone(candidates))
+	planet = pick(candidates)
+	planet.mission_claims++
+	if(mission?.exclusive_site)
+		planet.mission_exclusive = TRUE
+		holds_exclusive = TRUE
 	cache_coords_from(planet)
 	RegisterSignal(planet, COMSIG_QDELETING, PROC_REF(on_planet_deleted))
 	// Planets never delete on unload - they relocate. Track the move so the
@@ -301,8 +321,12 @@
 
 /datum/mission_target/planet/unhook()
 	if(planet)
+		planet.mission_claims = max(0, planet.mission_claims - 1)
+		if(holds_exclusive)
+			planet.mission_exclusive = FALSE
 		UnregisterSignal(planet, list(COMSIG_QDELETING, COMSIG_MOVABLE_MOVED, COMSIG_VOIDCREW_PLANET_LOADED))
 		planet = null
+	holds_exclusive = FALSE
 
 /datum/mission_target/planet/get_zone_type()
 	if(!planet)
@@ -465,6 +489,8 @@
 	if(!SSovermap_zones)
 		return FALSE
 	zone_type = pick_zone_band()
+	if(!zone_is_eligible(zone_type))
+		return FALSE
 	var/datum/overmap_zone/zone = SSovermap_zones.get_zone_datum(zone_type)
 	if(!zone || !length(zone.turfs))
 		return FALSE
@@ -500,18 +526,13 @@
 /datum/mission_target/coords/is_valid()
 	return valid_coordinates(resolved_turf)
 
-/**
- * The band this contract points at. A coordinate target has no object to filter,
- * so the preference is applied to the roll instead: take the preferred band
- * outright when the type's own table lists it, otherwise roll the table as
- * normal. Types that deliberately never offer a band (a deep-space survey with
- * no Neutral entry) keep that shape - the preference can only pick from what the
- * type already advertises.
- */
+/// Coordinate rolls use only advertised bands allowed by this offer's context.
 /datum/mission_target/coords/proc/pick_zone_band()
-	if(!isnull(preferred_zone) && zone_weights["[preferred_zone]"] > 0)
-		return preferred_zone
-	return text2num(pick_weight(zone_weights)) || ZONE_GREEN
+	var/list/eligible_weights = list()
+	for(var/band in zone_weights)
+		if(zone_is_eligible(text2num(band)) && zone_weights[band] > 0)
+			eligible_weights[band] = zone_weights[band]
+	return length(eligible_weights) ? text2num(pick_weight(eligible_weights)) : null
 
 /datum/mission_target/coords/get_zone_type()
 	return zone_type
@@ -534,9 +555,10 @@
 			continue
 		candidates += candidate
 	outpost = null
+	candidates = filter_by_preferred_zone(candidates)
 	if(!length(candidates))
 		return FALSE
-	outpost = pick(filter_by_preferred_zone(candidates))
+	outpost = pick(candidates)
 	cache_coords_from(outpost)
 	RegisterSignal(outpost, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
 	return TRUE

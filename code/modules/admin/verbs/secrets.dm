@@ -684,7 +684,7 @@ ADMIN_VERB(secrets, R_NONE, "Secrets", "Abuse harder than you ever have before w
 				ghost.reenter_corpse()
 
 			for(var/mob/living/player in GLOB.player_list)
-				player.revive(ADMIN_HEAL_ALL, force_grab_ghost = TRUE)
+				player.revive_from("admin", ADMIN_HEAL_ALL, force_grab_ghost = TRUE) // VOIDCREW EDIT: explicit combat metrics attribution.
 
 			sound_to_playing_players('sound/effects/pray_chaplain.ogg')
 			message_admins("[key_name_admin(holder)] healed everyone.")

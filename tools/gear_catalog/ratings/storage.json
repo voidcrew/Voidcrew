@@ -1,0 +1,2235 @@
+{
+ "category": "storage",
+ "groups": [
+  "machine parts and research kits",
+  "grenades and restraints",
+  "field and syndicate kits",
+  "shotgun shell boxes",
+  "medical boxes",
+  "survival boxes",
+  "work bags",
+  "garment bags",
+  "cyberware cases",
+  "fishing",
+  "smokes and gum",
+  "food and drink",
+  "money and valuables",
+  "office and keepsakes"
+ ],
+ "items": {
+  "/obj/item/storage/bag/bio": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "b13627f24a62d6fb",
+   "name": "bio bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/books": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "9da41438df1eb406",
+   "name": "book bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/chemistry": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "0af18978af8a88cb",
+   "name": "chemistry bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/construction": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "42de2e17ed659333",
+   "name": "construction bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/fishing": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "9d5577156e86eae4",
+   "name": "fishing bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/fishing/carpskin": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "e45d83f13c7a1662",
+   "name": "carpskin fishing bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/garment/captain": {
+   "confidence": "medium",
+   "group": "garment bags",
+   "hash": "1a3664344bcb9b68",
+   "name": "captain's garment bag",
+   "rank": 1,
+   "reason": "The captain's carapace (beats a vest on every number) with insulated combat gloves and heavy sunglasses. Starting gear on 9 hulls.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/bag/garment/chief_medical": {
+   "confidence": "high",
+   "group": "garment bags",
+   "hash": "049d0be4ce4e2829",
+   "name": "chief medical officer's garment bag",
+   "rank": 5,
+   "reason": "Uniforms and a coat for one job. Nothing here helps a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/garment/hop": {
+   "confidence": "high",
+   "group": "garment bags",
+   "hash": "7935e34332c1e0ff",
+   "name": "head of personnel's garment bag",
+   "rank": 3,
+   "reason": "A coat with vest-grade armor, plus sunglasses. No shop, ruin or played hull has it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/bag/garment/hos": {
+   "confidence": "medium",
+   "group": "garment bags",
+   "hash": "521d7ae55c5966ea",
+   "name": "head of security's garment bag",
+   "rank": 2,
+   "reason": "Armored greatcoat covering chest, arms and legs, gorilla gloves, a SWAT mask and HUD sunglasses. Only one ship module carries it.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/bag/garment/quartermaster": {
+   "confidence": "medium",
+   "group": "garment bags",
+   "hash": "9d5c6afb4987032e",
+   "name": "quartermasters's garment bag",
+   "rank": 4,
+   "reason": "A firefighter suit and a gas mask are the useful parts. Starting gear on two hulls.",
+   "tier": "green"
+  },
+  "/obj/item/storage/bag/garment/research_director": {
+   "confidence": "high",
+   "group": "garment bags",
+   "hash": "954d238597952013",
+   "name": "research director's garment bag",
+   "rank": 5,
+   "reason": "Uniforms and a coat for one job. Nothing here helps a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/mail": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "f5babe4be32d2129",
+   "name": "mail bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/money": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "7fe0c49957f237d8",
+   "name": "money bag",
+   "rank": 2,
+   "reason": "A bag for coins.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/money/dutchmen": {
+   "confidence": "medium",
+   "group": "money and valuables",
+   "hash": "63385cdce92cdf00",
+   "name": "money bag",
+   "rank": 1,
+   "reason": "A bag of coins from a ruin or a pirate ship. Cash, no power.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/money/vault": {
+   "confidence": "medium",
+   "group": "money and valuables",
+   "hash": "7fce599102da9b35",
+   "name": "money bag",
+   "rank": 1,
+   "reason": "A bag of coins from a ruin or a pirate ship. Cash, no power.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/ore": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "d02c1232daaec1e1",
+   "name": "mining satchel",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/ore/holding": {
+   "confidence": "medium",
+   "group": "work bags",
+   "hash": "df16598675539833",
+   "name": "mining satchel of holding",
+   "rank": 2,
+   "reason": "Ore satchel with no limit, so a miner stops walking back to empty it. Prints after early research with no reputation.",
+   "tier": "green"
+  },
+  "/obj/item/storage/bag/plants": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "9fdfa6c0ad96675b",
+   "name": "plant bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/plants/portaseeder": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "f241e7fb38cf40a7",
+   "name": "portable seed extractor",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/quiver/lesser": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "e5ab1cf052a6fb19",
+   "name": "quiver",
+   "rank": 5,
+   "reason": "An empty quiver for arrows or rebar.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/rebar_quiver": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "ef09e307fc04bebc",
+   "name": "rebar quiver",
+   "rank": 5,
+   "reason": "An empty quiver for arrows or rebar.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/trash": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "0c549bf17bf7453b",
+   "name": "trash bag",
+   "rank": 4,
+   "reason": "A trash bag. The bluespace one holds more trash.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/trash/bluespace": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "bbd36962ccdd1873",
+   "name": "trash bag of holding",
+   "rank": 4,
+   "reason": "A trash bag. The bluespace one holds more trash.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/trash/filled": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "107d10711cd10cbf",
+   "name": "trash bag",
+   "rank": 4,
+   "reason": "A trash bag. The bluespace one holds more trash.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/tray": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "110be3631d6772f5",
+   "name": "serving tray",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/tray/cafeteria": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "110be3631d6772f5",
+   "name": "cafeteria tray",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bag/xeno": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "06cc2b1c89aebde7",
+   "name": "science bag",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/basket": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "c823b6e63069631f",
+   "name": "basket",
+   "rank": 3,
+   "reason": "A bag for one kind of work item. Helps with the job, not with a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bottles/sandblast": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "0545a5e4ac0d5d2d",
+   "name": "sarsaparilla bottle crate",
+   "rank": 1,
+   "reason": "Six bottles of slow healing soda that also keeps your temperature right. Worth a lot to a crew in no hurry. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "8df7ee96d738465a",
+   "name": "box",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/alienhandcuffs": {
+   "confidence": "high",
+   "group": "grenades and restraints",
+   "hash": "471c8eea84d9a646",
+   "name": "box of spare handcuffs",
+   "rank": 7,
+   "reason": "Seven pairs of handcuffs. Every bounty and prisoner needs them. Each pair prints with early research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/aquarium_props": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "9785ad8e836326b4",
+   "name": "aquarium props box",
+   "rank": 4,
+   "reason": "Decorations for an aquarium.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/bandages": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "c52ed064c5590e06",
+   "name": "box of bandages",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/beakers": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "0f2d1bc7ecd311af",
+   "name": "box of beakers",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/beakers/big": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "d612651b47077e32",
+   "name": "box of big beakers",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/beakers/bluespace": {
+   "confidence": "medium",
+   "group": "medical boxes",
+   "hash": "cf470c61c6d3621c",
+   "name": "box of bluespace beakers",
+   "rank": 3,
+   "reason": "Seven bluespace beakers that hold 300 units each. Each prints with research. One ruin has the box.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/beakers/variety": {
+   "confidence": "medium",
+   "group": "medical boxes",
+   "hash": "4f4f391d48a716da",
+   "name": "beaker variety box",
+   "rank": 4,
+   "reason": "One of each beaker, including bluespace and cryostasis. Handy for a chemist.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/beanbag": {
+   "confidence": "high",
+   "group": "shotgun shell boxes",
+   "hash": "0fa65e5afe4898b7",
+   "name": "box of shotgun shells (Less Lethal - Beanbag)",
+   "rank": 6,
+   "reason": "Six beanbag shells. Common and weak.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/bodybags": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "bc7be770df902f62",
+   "name": "body bags",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/breacherslug": {
+   "confidence": "medium",
+   "group": "shotgun shell boxes",
+   "hash": "e128c719270811ef",
+   "name": "box of breaching shotgun shells",
+   "rank": 4,
+   "reason": "Seven breaching shells. Opens doors, barely hurts people.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/clown": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "41bb84009b3530f1",
+   "name": "clown box",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/coffeepack": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "1a447b87760f4ffd",
+   "name": "arabica beans",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/coffeepack/robusta": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "dd42d651b3865ea9",
+   "name": "robusta beans",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/collar_bomb": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "61f5a1591e54bf8a",
+   "name": "collar bomb box",
+   "rank": 1,
+   "reason": "Collar that can't be taken off, plus a button that takes the wearer's head off 5 seconds later. A hostage tool, no help in a fight. Black market.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/cups": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "191a4026ef8cc70a",
+   "name": "box of paper cups",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/dishdrive": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "9a75d8b866433937",
+   "name": "DIY Dish Drive Kit",
+   "rank": 10,
+   "reason": "Parts for one small job: plumbing or a dish drive.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/disks": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "033c3ddb5ac33a8b",
+   "name": "diskette box",
+   "rank": 11,
+   "reason": "Blank data or nanite disks and a pair of roboticist skillchips. Work supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/disks_nanite": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "0962222c98d6e8b1",
+   "name": "nanite program disks box",
+   "rank": 11,
+   "reason": "Blank data or nanite disks and a pair of roboticist skillchips. Work supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "9e017b13d721d148",
+   "name": "box of donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketberry": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "ea72d03f5bff3770",
+   "name": "box of berry-flavoured donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketgondola": {
+   "confidence": "medium",
+   "group": "food and drink",
+   "hash": "996ee1bf0bec1825",
+   "name": "box of gondola-flavoured donk-pockets",
+   "rank": 2,
+   "reason": "Donk-pockets that slowly turn the eater into a gondola. A prank, usually on yourself.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpockethonk": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "60a022ec7cd97b18",
+   "name": "box of banana-flavoured donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketpizza": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "15a7b67ebd239a0a",
+   "name": "box of pizza-flavoured donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketshell": {
+   "confidence": "medium",
+   "group": "shotgun shell boxes",
+   "hash": "eaabe3039548c8ac",
+   "name": "box of Donk Co. 'Donk Spike' flechette shells",
+   "rank": 7,
+   "reason": "Six weak flechette shells in a donk-pocket box. Random loot.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketspicy": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "e610fecce6148c36",
+   "name": "box of spicy-flavoured donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/donkpockets/donkpocketteriyaki": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "7c45c26b1e1107b2",
+   "name": "box of teriyaki-flavoured donk-pockets",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/drinkingglasses": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "c818c63480d313d7",
+   "name": "box of drinking glasses",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/emergencytank": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "abc7c6f71a73c886",
+   "name": "emergency oxygen tank box",
+   "rank": 3,
+   "reason": "Empty emergency tanks by the box. A crafted box comes empty.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/emps": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "d0f81361648d1a65",
+   "name": "box of emp grenades",
+   "rank": 1,
+   "reason": "Five large EMP grenades: drains energy guns, cripples silicons and suits, disrupts ship machinery. No damage to a bare man.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/emptysandbags": {
+   "confidence": "high",
+   "group": "grenades and restraints",
+   "hash": "d94fd7c0bfc7ca9b",
+   "name": "box of empty sandbags",
+   "rank": 9,
+   "reason": "Seven empty sandbags. Cover if you fill them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/engitank": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "79ebf0e34eaae442",
+   "name": "extended-capacity emergency oxygen tank box",
+   "rank": 3,
+   "reason": "Empty emergency tanks by the box. A crafted box comes empty.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/evidence": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "3a321ae359373c6a",
+   "name": "evidence bag box",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/firingpins": {
+   "confidence": "low",
+   "group": "field and syndicate kits",
+   "hash": "9e9840567ff3fcc0",
+   "name": "box of standard firing pins",
+   "rank": 9,
+   "reason": "Five spare firing pins, for guns found without one. Sold singly for 250 credits.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/firingpins/syndicate": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "713a9f86445310bf",
+   "name": "box of syndicate firing pins",
+   "rank": 10,
+   "reason": "Five pins that only fire for someone with a firearms implant only one ruin has. Mostly a way to ruin a gun.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/fish_revival_kit": {
+   "confidence": "medium",
+   "group": "fishing",
+   "hash": "ca4352112e65ae23",
+   "name": "fish revival kit",
+   "rank": 1,
+   "reason": "A Lazarus injector (brings a dead animal back friendly), fish revival fluid and two fish cases, for 350 credits in the green zone.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/fishing_hooks": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "c1cfa62f561fc079",
+   "name": "fishing hook set",
+   "rank": 2,
+   "reason": "Fishing gear. Better catches, no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/fishing_lines": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "6d2661888ded7769",
+   "name": "fishing line set",
+   "rank": 2,
+   "reason": "Fishing gear. Better catches, no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/fishing_lures": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "3af654d716172801",
+   "name": "fishing lures set",
+   "rank": 2,
+   "reason": "Fishing gear. Better catches, no bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/flashbangs": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "f08808a05aa93978",
+   "name": "box of flashbangs (WARNING)",
+   "rank": 2,
+   "reason": "Seven flashbangs, each 900 credits on a shelf. Stuns a room that lacks ear and eye protection.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/flashes": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "ac24c30aa0ffa48c",
+   "name": "box of flashbulbs",
+   "rank": 6,
+   "reason": "Six handheld flashes. Each drops one person up close who has no eye protection, and each prints at round start.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/floor_camo": {
+   "confidence": "low",
+   "group": "field and syndicate kits",
+   "hash": "8d5f14f14f1a4229",
+   "name": "floor tile camo box",
+   "rank": 7,
+   "reason": "Floor-tile camouflage with combat gloves, boots and balaclava. The gloves are the useful part.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/fountainpens": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "ee7123a944291766",
+   "name": "box of fountain pens",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gloves": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "a2ec7c5cc0cce863",
+   "name": "box of latex gloves",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gum": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "b399a50087f6e811",
+   "name": "bubblegum packet",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gum/bubblegum": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "aa4a6ad530de5e68",
+   "name": "bubblegum gum packet",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gum/happiness": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "2cfeedf361d2ba8b",
+   "name": "HP+ gum packet",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gum/nicotine": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "ea5c4a3786067150",
+   "name": "nicotine gum packet",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/gum/wake_up": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "6d0345a73cf2b4fc",
+   "name": "Activin 12 Hour medicated gum packet",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/handcuffs": {
+   "confidence": "high",
+   "group": "grenades and restraints",
+   "hash": "d26843293af990ca",
+   "name": "box of spare handcuffs",
+   "rank": 7,
+   "reason": "Seven pairs of handcuffs. Every bounty and prisoner needs them. Each pair prints with early research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/holy/follower": {
+   "confidence": "high",
+   "group": "field and syndicate kits",
+   "hash": "2f42fea1a3c77160",
+   "name": "Followers of the Chaplain Kit",
+   "rank": 12,
+   "reason": "Chaplain hoodies for a small cult. Clothes.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/hug": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "d1cbcdd54ba9bfd7",
+   "name": "box of hugs",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/hug/medical": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "c7f71c5c27b7c0b2",
+   "name": "box of hugs",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ids": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "7e46938fc0db916b",
+   "name": "box of spare IDs",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ingredients/american": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "a634c206e9f8f864",
+   "name": "ingredients box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ingredients/carnivore": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "35fc20a39f375f65",
+   "name": "ingredients box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ingredients/delights": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "bdd6fe7d6d7ed5d9",
+   "name": "ingredients box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ingredients/exotic": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "ce7b5af6f72ada8c",
+   "name": "ingredients box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/ingredients/wildcard": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "41fdc09bcbbdc82f",
+   "name": "ingredients box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/injectors": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "027d882adf811b3b",
+   "name": "box of DNA injectors",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/large_dart": {
+   "confidence": "low",
+   "group": "shotgun shell boxes",
+   "hash": "c509d527c02a3017",
+   "name": "A box full of shotgun darts with increased chemical storage capacity.",
+   "rank": 5,
+   "reason": "Seven extra-large darts that carry more chemicals. Only as strong as what you load in them.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/lethalshot": {
+   "confidence": "high",
+   "group": "shotgun shell boxes",
+   "hash": "2a62da2792032807",
+   "name": "box of shotgun shells (Lethal)",
+   "rank": 1,
+   "reason": "Seven buckshot shells. The plain lethal load for a green shotgun, and each shell prints with research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/lights/bulbs": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "ac1aa3dbabf81970",
+   "name": "box of replacement bulbs",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/lights/mixed": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "51aab79ef347c69a",
+   "name": "box of replacement lights",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/lights/tubes": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "eda2dd381806795e",
+   "name": "box of replacement tubes",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/masks": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "1aced691edeb9e0b",
+   "name": "box of sterile masks",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/matches": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "1a2a5fa9d1289526",
+   "name": "matchbox",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/medigels": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "28b91031ca1a71b0",
+   "name": "box of medical gels",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/medipens": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "4a3c6a864061a193",
+   "name": "box of medipens",
+   "rank": 2,
+   "reason": "Seven emergency medipens. Keep a downed crewman alive. Each sells for 150 credits in the green zone.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/metalfoam": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "f90ac01bb0190599",
+   "name": "box of metal foam grenades",
+   "rank": 4,
+   "reason": "Seven metal foam grenades: seals a hull breach in seconds. Sold in the green zone.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/minertracker": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "be444c6cc9f90033",
+   "name": "boxed tracking implant kit",
+   "rank": 6,
+   "reason": "Two tracking implants, two beacon implants and a locator, for keeping tabs on a crewmate or a captive. Costs mining points.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/monkeycubes": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "55e2c63bc8c2c9a9",
+   "name": "monkey cube box",
+   "rank": 4,
+   "reason": "Five monkey cubes. Lab animals and spare meat.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/monkeycubes/syndicate": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "31e27dd0575fea68",
+   "name": "monkey cube box",
+   "rank": 4,
+   "reason": "Five monkey cubes. Lab animals and spare meat.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/mothic_cans_sauces": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "ce1de596d22a46d2",
+   "name": "Mothic Pantry Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/mothic_goods": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "ec394c4b0b61e2d0",
+   "name": "Mothic Farm-Fresh Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/mothic_rations": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "a79c9d5290778420",
+   "name": "Mothic Rations Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/mousetraps": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "8a814acbf3e52681",
+   "name": "box of Pest-B-Gon mousetraps",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/papersack": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "9a5fd1cbb5bb9677",
+   "name": "paper sack",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/papersack/meat": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "79921660b038b6f9",
+   "name": "paper sack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/pdas": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "f7f7b0bf78682969",
+   "name": "spare PDAs",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/petridish": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "16f2c1143bcd579b",
+   "name": "box of petri dishes",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/pillbottles": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "e961e01830e278f4",
+   "name": "box of pill bottles",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/plastic": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "5b22853fe5187087",
+   "name": "plastic box",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/plumbing": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "eb10506d41a1e223",
+   "name": "box of plumbing supplies",
+   "rank": 10,
+   "reason": "Parts for one small job: plumbing or a dish drive.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/rndboards": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "e03642b87c504204",
+   "name": "the liberator's legacy",
+   "rank": 5,
+   "reason": "Boards for a research console, lathe, imprinter and analyzer. An older, smaller way into research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/rndboards/all": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "7ff2caa2bd4fc548",
+   "name": "the Research & Development Kit",
+   "rank": 4,
+   "reason": "The whole research setup in a box: console, lab machines as flatpacks and a ship disk. Prints from a round-start autolathe on purpose, so any crew can start research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/rubbershot": {
+   "confidence": "high",
+   "group": "shotgun shell boxes",
+   "hash": "d7833fc27a6ad10a",
+   "name": "box of shotgun shells (Less Lethal - Rubber Shot)",
+   "rank": 2,
+   "reason": "Seven rubber shells. Each prints at round start. The best load in a combat shotgun, ordinary in a pump.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/rxglasses": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "277a8260ab492335",
+   "name": "box of prescription glasses",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/shipping": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "cc3ed3f4b227158e",
+   "name": "box of shipping supplies",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/silver_ids": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "37442c3fa68b740d",
+   "name": "box of spare silver IDs",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/skillchips/science": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "6a8db843466f8652",
+   "name": "box of science job skillchips",
+   "rank": 11,
+   "reason": "Blank data or nanite disks and a pair of roboticist skillchips. Work supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/slugs": {
+   "confidence": "medium",
+   "group": "shotgun shell boxes",
+   "hash": "247dbd0b27dd0a79",
+   "name": "box of shotgun shells (Lethal - Slugs)",
+   "rank": 3,
+   "reason": "Seven slugs. Armor-piercing, single target.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/smart_metal_foam": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "dfb00052afd09139",
+   "name": "box of smart metal foam grenades",
+   "rank": 5,
+   "reason": "Seven smart foam grenades that seal breaches without trapping the crew. A repair tool.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/stockparts/basic": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "a58c5dc5f7872bad",
+   "name": "box of stock parts",
+   "rank": 8,
+   "reason": "Fifteen basic machine parts. Spares.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/stockparts/deluxe": {
+   "confidence": "low",
+   "group": "machine parts and research kits",
+   "hash": "ed6a0c9bbe144f2b",
+   "name": "box of deluxe stock parts",
+   "rank": 3,
+   "reason": "Fifteen top-grade machine parts. Real upgrades, but a crew can print the same parts with research.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/survival": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "d8517ab91e5e6fc9",
+   "name": "survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/crafted": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "2876af855ee145c6",
+   "name": "survival box",
+   "rank": 2,
+   "reason": "An empty crafted survival box.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/engineer": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "09d99e5e5c5b4bf6",
+   "name": "extended-capacity survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/engineer/crafted": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "f085d65d36b59c09",
+   "name": "extended-capacity survival box",
+   "rank": 2,
+   "reason": "An empty crafted survival box.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/hug": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "21b571f6aeaa8fbd",
+   "name": "box of hugs",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/hug/black": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "fb307a53e30a437b",
+   "name": "box of hugs",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/medical": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "e159a8bfda9974ac",
+   "name": "survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/mining": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "210136e09a4b5d70",
+   "name": "survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/prisoner": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "fcf1d351ade49a58",
+   "name": "survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/survival/security": {
+   "confidence": "high",
+   "group": "survival boxes",
+   "hash": "2871d77531fb84f0",
+   "name": "survival box",
+   "rank": 1,
+   "reason": "Mask, emergency tank and a medipen, the kit every crewman starts with.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/swab": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "6f45a1b560c4d403",
+   "name": "box of microbiological swabs",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/syndie_kit/chameleon": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "287bca6c3e22ddfb",
+   "name": "chameleon kit",
+   "rank": 4,
+   "reason": "A full disguise set, including the mask that speaks with the name on your ID, which sells alone for 1,500 credits and a voucher. Wins by trickery, adds almost no armor, and its gun is harmless.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/syndie_kit/chemical": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "d7629b9a330c4e96",
+   "name": "chemical kit",
+   "rank": 2,
+   "reason": "Fourteen bottles of serious poison and a syringe. Kills slowly and quietly if you can get it into someone. Only one NPC ship carries it.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/syndie_kit/throwing_weapons": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "e3213278af2d3eea",
+   "name": "box",
+   "rank": 5,
+   "reason": "Five throwing stars, two sharp paper planes and two tactical bolas, and the bolas are a yellow opener. Random ruin loot.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/syndie_kit/tuberculosisgrenade": {
+   "confidence": "low",
+   "group": "field and syndicate kits",
+   "hash": "d4375604e4111477",
+   "name": "virus grenade kit",
+   "rank": 3,
+   "reason": "Holds the airborne fungal tuberculosis grenade, with five cure pens for your own crew. Rated with the grenade. Only one NPC ship carries it.",
+   "tier": "red"
+  },
+  "/obj/item/storage/box/syringes": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "9fb746b367ee4ac9",
+   "name": "box of syringes",
+   "rank": 6,
+   "reason": "Basic medical or lab supplies. Common, cheap, nobody earns them.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/syringes/variety": {
+   "confidence": "medium",
+   "group": "medical boxes",
+   "hash": "9cf02f763ae494da",
+   "name": "syringe variety box",
+   "rank": 5,
+   "reason": "A bluespace, a piercing and a lethal-injection syringe in one box. Useful to a chemist.",
+   "tier": "green"
+  },
+  "/obj/item/storage/box/teargas": {
+   "confidence": "medium",
+   "group": "grenades and restraints",
+   "hash": "48255328c4ead904",
+   "name": "box of tear gas grenades (WARNING)",
+   "rank": 3,
+   "reason": "Seven tear gas grenades. Clears a room of anyone without a sealed mask.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/box/tiziran_cans": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "67e3091312ae7f7f",
+   "name": "Tiziran Canned Goods Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/tiziran_goods": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "43fc3b24a221604f",
+   "name": "Tiziran Farm-Fresh Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/tiziran_meats": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "4564711fa5708002",
+   "name": "Tiziran Meatmarket Pack",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/box/zipties": {
+   "confidence": "high",
+   "group": "grenades and restraints",
+   "hash": "93ad60efbf85dfd8",
+   "name": "box of spare zipties",
+   "rank": 8,
+   "reason": "Seven zipties. Cuffs that break after one use.",
+   "tier": "green"
+  },
+  "/obj/item/storage/briefcase": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "3122fe4f48e3b923",
+   "name": "briefcase",
+   "rank": 4,
+   "reason": "A briefcase. Holds a folder and a pen, makes a poor club.",
+   "tier": "none"
+  },
+  "/obj/item/storage/briefcase/secure": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "4c187862a4242a43",
+   "name": "secure briefcase",
+   "rank": 4,
+   "reason": "A briefcase. Holds a folder and a pen, makes a poor club.",
+   "tier": "none"
+  },
+  "/obj/item/storage/bubblegum_wrapper": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "e24f6371209c87e3",
+   "name": "bubblegum wrapper",
+   "rank": 4,
+   "reason": "Chewing gum, with sugar, nicotine, blood or a little stimulant in it. No real effect in a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/cans": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "50baa88aaf26dfd5",
+   "name": "can ring",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/cans/sixbeer": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "db382525e80bda3e",
+   "name": "beer can ring",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/cans/sixgamerdrink": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "eef815a8a1d643d5",
+   "name": "gamer drink bottle ring",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/cans/sixsoda": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "a5adf3bd7ce78f66",
+   "name": "soda bottle ring",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/case/cyberware/scrapper": {
+   "confidence": "high",
+   "group": "cyberware cases",
+   "hash": "8fac229a25205059",
+   "name": "Scrapper's Knuckles case",
+   "rank": 1,
+   "reason": "A pair of arm implants: punches do 4 more damage, double against machines. A cheap brawler's first step; both still need surgery.",
+   "tier": "green"
+  },
+  "/obj/item/storage/crayons": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "2914a6c61d936413",
+   "name": "box of crayons",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/candle_box": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "24755f04fd8d7ebf",
+   "name": "candle pack",
+   "rank": 3,
+   "reason": "A plain box, sack or a box of office and cleaning supplies. A crew doesn't need to earn it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "9d2b6beb392f5477",
+   "name": "Space Cigarettes packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigars": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "556b6b3f82006d6d",
+   "name": "premium cigar case",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigars/cohiba": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "4e9407fea80bb810",
+   "name": "Cohiba Robusto cigar case",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigars/havana": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "a121d277a9a25416",
+   "name": "premium Havanian cigar case",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_candy": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "313de03d47223ebf",
+   "name": "Timmy's First Candy Smokes packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_cannabis": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "9724b3a5852af4a6",
+   "name": "Freak Brothers' Special packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_carp": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "fe9cf5eba6b542b7",
+   "name": "Carp Classic packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_greytide": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "f75c8b57d27e5b9c",
+   "name": "Mainthol Grey packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_midori": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "40780fe4dcc73410",
+   "name": "Midori Tabako packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_mindbreaker": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "edc4a0b2456a4832",
+   "name": "Leary's Delight packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_robust": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "648da737b47f3b6b",
+   "name": "Robust packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_robustgold": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "908f776d41458f8b",
+   "name": "Robust Gold packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_shadyjims": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "ee270e1d63a4b752",
+   "name": "Shady Jim's Super Slims packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_syndicate": {
+   "confidence": "medium",
+   "group": "smokes and gum",
+   "hash": "e39553922ba85b8f",
+   "name": "cigarette packet",
+   "rank": 1,
+   "reason": "Six cigarettes with 15 units of omnizine each. Slow healing you can keep up while walking, for 80 credits.",
+   "tier": "green"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_uplift": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "1928f3ae7d693f86",
+   "name": "Uplift Smooth packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/cigarettes/cigpack_xeno": {
+   "confidence": "low",
+   "group": "smokes and gum",
+   "hash": "223f834310822691",
+   "name": "Xeno Filtered packet",
+   "rank": 2,
+   "reason": "Six cigarettes with regenerative jelly in them. A slow heal. One ruin has them.",
+   "tier": "green"
+  },
+  "/obj/item/storage/fancy/cigarettes/dromedaryco": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "eec1e206b2051997",
+   "name": "DromedaryCo packet",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/coffee_cart_rack": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "15d25998c50a1283",
+   "name": "coffeemaker cartridge rack",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/coffee_condi_display": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "0f2fa31ee189886d",
+   "name": "coffee condiments display",
+   "rank": 3,
+   "reason": "Drinks, cups and coffee supplies.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/donut_box": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "9bcc3f3b2ea0ae3c",
+   "name": "donut box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/egg_box": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "5eb9ab8cccff8e53",
+   "name": "egg box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/heart_box": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "06b889058095970b",
+   "name": "heart-shaped box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/nugget_box": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "0251471afb40cb84",
+   "name": "nugget box",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/pickles_jar": {
+   "confidence": "high",
+   "group": "food and drink",
+   "hash": "cf8ee6a615781050",
+   "name": "pickles",
+   "rank": 1,
+   "reason": "Food. Common, and any crew with a kitchen makes better.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fancy/rollingpapers": {
+   "confidence": "high",
+   "group": "smokes and gum",
+   "hash": "d227bfbbc0e562b6",
+   "name": "rolling paper pack",
+   "rank": 3,
+   "reason": "Tobacco, candy or drugs for a mood bump. No bearing on a fight.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "310a8608125f17af",
+   "name": "stasis fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/blackmarket": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "cad0167056b05130",
+   "name": "ominous fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/bluespace": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "84d5ae3d596795e4",
+   "name": "bluespace fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/random": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "26b1512ad08faa27",
+   "name": "stasis fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/random/freshwater": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "4b76795371ade9f4",
+   "name": "stasis fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/random/saltwater": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "74d6439f94f50665",
+   "name": "stasis fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/fish_case/tiziran": {
+   "confidence": "high",
+   "group": "fishing",
+   "hash": "3a7d6938f3e9853b",
+   "name": "imported fish case",
+   "rank": 3,
+   "reason": "A case that keeps one fish alive, some with a fish inside.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox": {
+   "confidence": "high",
+   "group": "field and syndicate kits",
+   "hash": "b8e1d69b73958aa5",
+   "name": "lockbox",
+   "rank": 13,
+   "reason": "An empty lockbox.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/loyalty": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "072f8dd47e6d407a",
+   "name": "lockbox of mindshield implants",
+   "rank": 11,
+   "reason": "Three mindshield implants. With no antagonists there is nothing for them to stop.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/cargo": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "6039f6f540fe8004",
+   "name": "cargo award box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/hop": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "c878d1a4dc2b8b84",
+   "name": "Head of Personnel medal box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/med": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "242c2c1610d66833",
+   "name": "medical medal box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/sci": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "7da4a4ec14222f8e",
+   "name": "science medal box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/sec": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "861f46fc639137c4",
+   "name": "security medal box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/lockbox/medal/service": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "3d37c5f21004384c",
+   "name": "service award box",
+   "rank": 1,
+   "reason": "A locked box of medals. Decoration.",
+   "tier": "none"
+  },
+  "/obj/item/storage/organbox": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "878b4fad23ad062c",
+   "name": "organ transport box",
+   "rank": 7,
+   "reason": "A box for carrying organs.",
+   "tier": "none"
+  },
+  "/obj/item/storage/organbox/preloaded": {
+   "confidence": "high",
+   "group": "medical boxes",
+   "hash": "71bb1943a28d6b77",
+   "name": "organ transport box",
+   "rank": 7,
+   "reason": "A box for carrying organs.",
+   "tier": "none"
+  },
+  "/obj/item/storage/part_replacer": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "0b679c0ec6dcf117",
+   "name": "rapid part exchange device",
+   "rank": 9,
+   "reason": "Part exchanger with basic parts or none. A time saver for engineers.",
+   "tier": "none"
+  },
+  "/obj/item/storage/part_replacer/bluespace": {
+   "confidence": "medium",
+   "group": "machine parts and research kits",
+   "hash": "f609d2d00554d662",
+   "name": "bluespace rapid part exchange device",
+   "rank": 7,
+   "reason": "Part exchanger that holds 400 parts. Saves time on upgrades, gives no parts of its own. Prints after early research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/part_replacer/bluespace/tier2": {
+   "confidence": "medium",
+   "group": "machine parts and research kits",
+   "hash": "1ff2adc8a9f95432",
+   "name": "bluespace rapid part exchange device",
+   "rank": 6,
+   "reason": "Fifty second-grade parts and ten super cells in a bluespace part exchanger. One ruin has it.",
+   "tier": "green"
+  },
+  "/obj/item/storage/part_replacer/bluespace/tier3": {
+   "confidence": "medium",
+   "group": "machine parts and research kits",
+   "hash": "31808760a1b7a744",
+   "name": "bluespace rapid part exchange device",
+   "rank": 2,
+   "reason": "Fifty third-grade machine parts and ten hyper cells in a bluespace part exchanger. A big jump for any crew. A rare freight crate prize.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/part_replacer/bluespace/tier4": {
+   "confidence": "medium",
+   "group": "machine parts and research kits",
+   "hash": "3bde1dcb3df494ca",
+   "name": "bluespace rapid part exchange device",
+   "rank": 1,
+   "reason": "Fifty top-grade machine parts and ten bluespace cells in a bluespace part exchanger. Upgrades a whole ship in one trip. One ruin has it.",
+   "tier": "yellow"
+  },
+  "/obj/item/storage/part_replacer/cargo": {
+   "confidence": "high",
+   "group": "machine parts and research kits",
+   "hash": "8c237d87ee45341e",
+   "name": "rapid part exchange device",
+   "rank": 9,
+   "reason": "Part exchanger with basic parts or none. A time saver for engineers.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "706a27256eb951a9",
+   "name": "photo album",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/captain": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "6fb1acde86dda0aa",
+   "name": "photo album (Captain)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/cmo": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "c50bc3c1e316e169",
+   "name": "photo album (Chief Medical Officer)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/hop": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "67557d1d1bfbe836",
+   "name": "photo album (Head of Personnel)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/hos": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "3eac44ab583fc292",
+   "name": "photo album (Head of Security)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/icemoonlisteningstation": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "5ed4c0f0df90b6ba",
+   "name": "photo album (Icemoon Outpost)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/listeningstation": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "ca34c0d88057f26f",
+   "name": "photo album (Listening Station)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/qm": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "eda6f9b748934c61",
+   "name": "photo album (Quartermaster)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/photo_album/rd": {
+   "confidence": "high",
+   "group": "office and keepsakes",
+   "hash": "593161487177d482",
+   "name": "photo album (Research Director)",
+   "rank": 2,
+   "reason": "A photo album.",
+   "tier": "none"
+  },
+  "/obj/item/storage/pod/directional/south": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "50d9821f50f1e319",
+   "name": "emergency space suits",
+   "rank": 8,
+   "reason": "Two orange space suits, masks, oxygen, pickaxes and a shelter capsule in a wall cabinet. Two ruins have one.",
+   "tier": "green"
+  },
+  "/obj/item/storage/pod/directional/west": {
+   "confidence": "medium",
+   "group": "field and syndicate kits",
+   "hash": "50d9821f50f1e319",
+   "name": "emergency space suits",
+   "rank": 8,
+   "reason": "Two orange space suits, masks, oxygen, pickaxes and a shelter capsule in a wall cabinet. Two ruins have one.",
+   "tier": "green"
+  },
+  "/obj/item/storage/portable_chem_mixer": {
+   "confidence": "medium",
+   "group": "work bags",
+   "hash": "2e3385b7ae47203b",
+   "name": "portable chemical mixer",
+   "rank": 1,
+   "reason": "Portable chemical dispenser you stock with your own beakers, so a chemist can work away from the lab. Prints after early research.",
+   "tier": "green"
+  },
+  "/obj/item/storage/test_tube_rack": {
+   "confidence": "high",
+   "group": "work bags",
+   "hash": "b1f1c29c0e35b126",
+   "name": "test tube rack",
+   "rank": 99,
+   "reason": "A wooden rack for test tubes.",
+   "tier": "none"
+  },
+  "/obj/item/storage/wallet": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "54086ec401365870",
+   "name": "wallet",
+   "rank": 3,
+   "reason": "A wallet with pocket change or nothing in it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/wallet/money": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "07cb3148dd6f0450",
+   "name": "wallet",
+   "rank": 3,
+   "reason": "A wallet with pocket change or nothing in it.",
+   "tier": "none"
+  },
+  "/obj/item/storage/wallet/random": {
+   "confidence": "high",
+   "group": "money and valuables",
+   "hash": "cc8169ee6b0ede0e",
+   "name": "wallet",
+   "rank": 3,
+   "reason": "A wallet with pocket change or nothing in it.",
+   "tier": "none"
+  }
+ },
+ "method": "Boxes and bags rate as what's inside when they come filled; an empty or generic one is none. No formula: each group was compared within itself, then against the guns, armor and eyewear anchors.",
+ "unrated": {
+  "/obj/item/storage": "abstract",
+  "/obj/item/storage/bag": "abstract",
+  "/obj/item/storage/bag/garment": "no route",
+  "/obj/item/storage/bag/garment/engineering_chief": "no route",
+  "/obj/item/storage/bag/garment/warden": "no route",
+  "/obj/item/storage/bag/harpoon_quiver": "no route",
+  "/obj/item/storage/bag/ore/cyborg": "no route",
+  "/obj/item/storage/bag/plants/cyborg": "no route",
+  "/obj/item/storage/bag/quiver": "no route",
+  "/obj/item/storage/bag/quiver/endless": "no route",
+  "/obj/item/storage/bag/quiver/full": "no route",
+  "/obj/item/storage/bag/quiver/holy": "no route",
+  "/obj/item/storage/bag/rebar_quiver/syndicate": "no route",
+  "/obj/item/storage/bag/sheetsnatcher": "no route",
+  "/obj/item/storage/bag/sheetsnatcher/borg": "no route",
+  "/obj/item/storage/bag/sheetsnatcher/debug": "no route",
+  "/obj/item/storage/bag/trash/bluespace/cyborg": "no route",
+  "/obj/item/storage/basket/easter": "no route",
+  "/obj/item/storage/bottles": "no route",
+  "/obj/item/storage/box/actionfigure": "no route",
+  "/obj/item/storage/box/alchemist_basic_chems": "no route",
+  "/obj/item/storage/box/alchemist_chemistry_kit": "no route",
+  "/obj/item/storage/box/alchemist_random_chems": "no route",
+  "/obj/item/storage/box/balloons": "toy",
+  "/obj/item/storage/box/beaconimp": "no route",
+  "/obj/item/storage/box/chemimp": "no route",
+  "/obj/item/storage/box/condimentbottles": "no route",
+  "/obj/item/storage/box/contractor": "no route",
+  "/obj/item/storage/box/contractor/fulton_extraction": "no route",
+  "/obj/item/storage/box/cyber_implants": "no route",
+  "/obj/item/storage/box/debugtools": "no route",
+  "/obj/item/storage/box/deputy": "no route",
+  "/obj/item/storage/box/evilmeds": "no route",
+  "/obj/item/storage/box/exileimp": "no route",
+  "/obj/item/storage/box/fakesyndiesuit": "toy",
+  "/obj/item/storage/box/firecrackers": "toy",
+  "/obj/item/storage/box/fireworks": "no route",
+  "/obj/item/storage/box/fireworks/dangerous": "no route",
+  "/obj/item/storage/box/firingpins/paywall": "no route",
+  "/obj/item/storage/box/fishing_hooks/master": "no route",
+  "/obj/item/storage/box/fishing_lines/master": "no route",
+  "/obj/item/storage/box/flat": "no route",
+  "/obj/item/storage/box/gorillacubes": "no route",
+  "/obj/item/storage/box/heretic_box": "no route",
+  "/obj/item/storage/box/hero": "no route",
+  "/obj/item/storage/box/hero/astronaut": "no route",
+  "/obj/item/storage/box/hero/carphunter": "no route",
+  "/obj/item/storage/box/hero/etherealwarden": "no route",
+  "/obj/item/storage/box/hero/journalist": "no route",
+  "/obj/item/storage/box/hero/mothpioneer": "no route",
+  "/obj/item/storage/box/hero/scottish": "no route",
+  "/obj/item/storage/box/holy": "no route",
+  "/obj/item/storage/box/holy/adept": "no route",
+  "/obj/item/storage/box/holy/clock": "no route",
+  "/obj/item/storage/box/holy/divine_archer": "no route",
+  "/obj/item/storage/box/holy/sentinel": "no route",
+  "/obj/item/storage/box/holy/student": "no route",
+  "/obj/item/storage/box/holy/witchhunter": "no route",
+  "/obj/item/storage/box/holy_grenades": "no route",
+  "/obj/item/storage/box/hug/black": "no route",
+  "/obj/item/storage/box/hug/plushes": "no route",
+  "/obj/item/storage/box/hug/reverse_revolver": "no route",
+  "/obj/item/storage/box/ingredients": "no route",
+  "/obj/item/storage/box/ingredients/fiesta": "no route",
+  "/obj/item/storage/box/ingredients/fruity": "no route",
+  "/obj/item/storage/box/ingredients/grains": "no route",
+  "/obj/item/storage/box/ingredients/italian": "no route",
+  "/obj/item/storage/box/ingredients/random": "uncreatable",
+  "/obj/item/storage/box/ingredients/salads": "no route",
+  "/obj/item/storage/box/ingredients/seafood": "no route",
+  "/obj/item/storage/box/ingredients/sweets": "no route",
+  "/obj/item/storage/box/ingredients/vegetarian": "no route",
+  "/obj/item/storage/box/itemset": "no route",
+  "/obj/item/storage/box/itemset/crusader": "no route",
+  "/obj/item/storage/box/itemset/crusader/blue": "no route",
+  "/obj/item/storage/box/itemset/crusader/red": "no route",
+  "/obj/item/storage/box/lasertagpins": "toy",
+  "/obj/item/storage/box/launch_fabrication_package": "no route",
+  "/obj/item/storage/box/lethalshot/old": "no route",
+  "/obj/item/storage/box/lights": "no route",
+  "/obj/item/storage/box/mechabeacons": "no route",
+  "/obj/item/storage/box/medipens/utility": "no route",
+  "/obj/item/storage/box/mime": "no route",
+  "/obj/item/storage/box/miner_modkits": "no route",
+  "/obj/item/storage/box/papersack/wheat": "no route",
+  "/obj/item/storage/box/party_poppers": "toy",
+  "/obj/item/storage/box/pinpointer_pairs": "no route",
+  "/obj/item/storage/box/posterbox": "no route",
+  "/obj/item/storage/box/prisoner": "no route",
+  "/obj/item/storage/box/rxglasses/spyglasskit": "no route",
+  "/obj/item/storage/box/seccarts": "no route",
+  "/obj/item/storage/box/skillchips": "no route",
+  "/obj/item/storage/box/skillchips/engineering": "no route",
+  "/obj/item/storage/box/snappops": "no route",
+  "/obj/item/storage/box/sparklers": "no route",
+  "/obj/item/storage/box/stabilized": "no route",
+  "/obj/item/storage/box/stickers": "no route",
+  "/obj/item/storage/box/stickers/anti_skub": "no route",
+  "/obj/item/storage/box/stickers/chief_engineer": "no route",
+  "/obj/item/storage/box/stickers/googly": "no route",
+  "/obj/item/storage/box/stickers/skub": "no route",
+  "/obj/item/storage/box/stickers/syndie_kit": "no route",
+  "/obj/item/storage/box/stingbangs": "no route",
+  "/obj/item/storage/box/stockparts": "no route",
+  "/obj/item/storage/box/survival/centcom": "no route",
+  "/obj/item/storage/box/survival/engineer/radio": "no route",
+  "/obj/item/storage/box/survival/mining/bonus": "no route",
+  "/obj/item/storage/box/survival/radio": "no route",
+  "/obj/item/storage/box/survival/security/radio": "no route",
+  "/obj/item/storage/box/survival/syndie": "no route",
+  "/obj/item/storage/box/syndicate": "no route",
+  "/obj/item/storage/box/syndicate/bundle_a": "no route",
+  "/obj/item/storage/box/syndicate/bundle_b": "no route",
+  "/obj/item/storage/box/syndicate/contract_kit": "no route",
+  "/obj/item/storage/box/syndicate/contractor_loadout": "no route",
+  "/obj/item/storage/box/syndicate/horse_box": "no route",
+  "/obj/item/storage/box/syndie_kit": "no route",
+  "/obj/item/storage/box/syndie_kit/battle_royale": "no route",
+  "/obj/item/storage/box/syndie_kit/bee_grenades": "no route",
+  "/obj/item/storage/box/syndie_kit/bioterror": "no route",
+  "/obj/item/storage/box/syndie_kit/centcom_costume": "no route",
+  "/obj/item/storage/box/syndie_kit/chameleon/broken": "no route",
+  "/obj/item/storage/box/syndie_kit/clownpins": "no route",
+  "/obj/item/storage/box/syndie_kit/combat_baking": "no route",
+  "/obj/item/storage/box/syndie_kit/core_gear": "no route",
+  "/obj/item/storage/box/syndie_kit/cowboy": "no route",
+  "/obj/item/storage/box/syndie_kit/cutouts": "no route",
+  "/obj/item/storage/box/syndie_kit/demoman": "no route",
+  "/obj/item/storage/box/syndie_kit/emp": "no route",
+  "/obj/item/storage/box/syndie_kit/ez_clean": "no route",
+  "/obj/item/storage/box/syndie_kit/feral_cat_grenades": "no route",
+  "/obj/item/storage/box/syndie_kit/forensics_spoofer": "no route",
+  "/obj/item/storage/box/syndie_kit/frag_grenades": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_deathrattle": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_deniability": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_freedom": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_macrobomb": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_microbomb": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_radio": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_stealth": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_storage": "no route",
+  "/obj/item/storage/box/syndie_kit/imp_uplink": "no route",
+  "/obj/item/storage/box/syndie_kit/induction_kit": "no route",
+  "/obj/item/storage/box/syndie_kit/mail_counterfeit": "no route",
+  "/obj/item/storage/box/syndie_kit/manhack_grenades": "no route",
+  "/obj/item/storage/box/syndie_kit/mimery": "no route",
+  "/obj/item/storage/box/syndie_kit/moltobeso": "no route",
+  "/obj/item/storage/box/syndie_kit/mulligan": "no route",
+  "/obj/item/storage/box/syndie_kit/nuke": "no route",
+  "/obj/item/storage/box/syndie_kit/origami_bundle": "no route",
+  "/obj/item/storage/box/syndie_kit/pinata": "no route",
+  "/obj/item/storage/box/syndie_kit/poster_box": "no route",
+  "/obj/item/storage/box/syndie_kit/rebarxbowsyndie": "no route",
+  "/obj/item/storage/box/syndie_kit/romerol": "no route",
+  "/obj/item/storage/box/syndie_kit/shotgun_surplus": "no route",
+  "/obj/item/storage/box/syndie_kit/signaler": "no route",
+  "/obj/item/storage/box/syndie_kit/sleepytime": "no route",
+  "/obj/item/storage/box/syndie_kit/smoke": "no route",
+  "/obj/item/storage/box/syndie_kit/sniper_surplus": "no route",
+  "/obj/item/storage/box/syndie_kit/space": "no route",
+  "/obj/item/storage/box/syndie_kit/supermatter": "no route",
+  "/obj/item/storage/box/syndie_kit/syndicate_teleporter": "no route",
+  "/obj/item/storage/box/tail_pin": "toy",
+  "/obj/item/storage/box/tape_wizard": "no route",
+  "/obj/item/storage/box/teleport_blocker": "no route",
+  "/obj/item/storage/box/trackimp": "no route",
+  "/obj/item/storage/box/vestige_ritual": "no route",
+  "/obj/item/storage/box/wall_flash": "no route",
+  "/obj/item/storage/box/wizard_kit": "no route",
+  "/obj/item/storage/box/wizard_kit/black": "no route",
+  "/obj/item/storage/box/wizard_kit/magusblue": "no route",
+  "/obj/item/storage/box/wizard_kit/magusred": "no route",
+  "/obj/item/storage/box/wizard_kit/red": "no route",
+  "/obj/item/storage/box/wizard_kit/yellow": "no route",
+  "/obj/item/storage/briefcase/hitchiker": "no route",
+  "/obj/item/storage/briefcase/launchpad": "no route",
+  "/obj/item/storage/briefcase/lawyer": "no route",
+  "/obj/item/storage/briefcase/secure/digital_storage": "no route",
+  "/obj/item/storage/briefcase/secure/extraction": "literal only",
+  "/obj/item/storage/briefcase/secure/extraction/tournament": "literal only",
+  "/obj/item/storage/briefcase/secure/riches": "no route",
+  "/obj/item/storage/briefcase/secure/syndie": "no route",
+  "/obj/item/storage/briefcase/sniper": "no route",
+  "/obj/item/storage/cans/sixenergydrink": "no route",
+  "/obj/item/storage/card_binder": "toy",
+  "/obj/item/storage/case": "abstract",
+  "/obj/item/storage/case/cyberware": "no route",
+  "/obj/item/storage/dice": "toy",
+  "/obj/item/storage/dice/hazard": "toy",
+  "/obj/item/storage/drone_tools": "no route",
+  "/obj/item/storage/fancy": "abstract",
+  "/obj/item/storage/fancy/egg_box/fertile": "no route",
+  "/obj/item/storage/fish_case/syndicate": "literal only",
+  "/obj/item/storage/lockbox/bitrunning": "no route",
+  "/obj/item/storage/lockbox/bitrunning/decrypted": "uncreatable",
+  "/obj/item/storage/lockbox/bitrunning/encrypted": "no route",
+  "/obj/item/storage/lockbox/clusterbang": "no route",
+  "/obj/item/storage/lockbox/dueling": "no route",
+  "/obj/item/storage/lockbox/medal": "no route",
+  "/obj/item/storage/lockbox/medal/engineering": "no route",
+  "/obj/item/storage/lockbox/mind": "no route",
+  "/obj/item/storage/lockbox/order": "no route",
+  "/obj/item/storage/mail_counterfeit_device": "no route",
+  "/obj/item/storage/mail_counterfeit_device/advanced": "no route",
+  "/obj/item/storage/mail_counterfeit_device/bluespace": "no route",
+  "/obj/item/storage/part_replacer/bluespace/tier1": "no route",
+  "/obj/item/storage/part_replacer/cyborg": "no route",
+  "/obj/item/storage/photo_album/bar": "no route",
+  "/obj/item/storage/photo_album/ce": "no route",
+  "/obj/item/storage/photo_album/chapel": "no route",
+  "/obj/item/storage/photo_album/hall_of_fame": "no route",
+  "/obj/item/storage/photo_album/library": "no route",
+  "/obj/item/storage/photo_album/personal": "no route",
+  "/obj/item/storage/photo_album/prison": "no route",
+  "/obj/item/storage/photo_album/syndicate": "no route",
+  "/obj/item/storage/pod": "no route",
+  "/obj/item/storage/pod/directional": "no route",
+  "/obj/item/storage/pod/directional/east": "no route",
+  "/obj/item/storage/pod/directional/north": "no route",
+  "/obj/item/storage/soft_crit_test": "no route",
+  "/obj/item/storage/spooky": "no route",
+  "/obj/item/storage/test_tube_rack/full": "no route"
+ }
+}
