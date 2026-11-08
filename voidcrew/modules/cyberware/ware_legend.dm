@@ -913,7 +913,7 @@
 		return FALSE
 	// The landing crushes whoever is under it, so it is not for a pacifist.
 	if(HAS_TRAIT(jumper, TRAIT_PACIFISM))
-		jumper.balloon_alert(jumper, "can't bring yourself to!")
+		to_chat(jumper, span_warning("You don't want to harm other living beings!"))
 		return FALSE
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't launch from here!")

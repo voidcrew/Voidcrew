@@ -86,6 +86,10 @@
 	// chain before the late one is ever sent.
 	RegisterSignals(wearer, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK), PROC_REF(on_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
+	RegisterSignal(wearer, COMSIG_LIVING_ELECTROCUTE_ACT, PROC_REF(on_shocked))
+	// Being mauled by an animal, a mob, a mech or a xeno is being hit too: the
+	// field is what keeps those mobs off you (cyberware_stealth.dm), so a bite at
+	// point-blank range has to drop it.
 	RegisterSignals(wearer, list(
 		COMSIG_MOB_ITEM_ATTACK,
 		COMSIG_ATOM_ATTACKBY,
@@ -93,6 +97,10 @@
 		COMSIG_ATOM_HITBY,
 		COMSIG_ATOM_HULK_ATTACK,
 		COMSIG_ATOM_ATTACK_PAW,
+		COMSIG_ATOM_ATTACK_ANIMAL,
+		COMSIG_ATOM_ATTACK_BASIC_MOB,
+		COMSIG_ATOM_ATTACK_MECH,
+		COMSIG_MOB_ATTACK_ALIEN,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
 		COMSIG_MOB_THROW,
@@ -136,6 +144,11 @@
 		COMSIG_ATOM_HITBY,
 		COMSIG_ATOM_HULK_ATTACK,
 		COMSIG_ATOM_ATTACK_PAW,
+		COMSIG_ATOM_ATTACK_ANIMAL,
+		COMSIG_ATOM_ATTACK_BASIC_MOB,
+		COMSIG_ATOM_ATTACK_MECH,
+		COMSIG_MOB_ATTACK_ALIEN,
+		COMSIG_LIVING_ELECTROCUTE_ACT,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
 		COMSIG_MOB_THROW,
@@ -163,6 +176,15 @@
 	if(!isliving(target))
 		return
 	break_camo(owner, reason = "field contact")
+
+/// Signal proc for [COMSIG_LIVING_ELECTROCUTE_ACT]: a real jolt (a live door,
+/// a deck's Feedback Surge or Arc Flash) drops the field. Hallucinated shocks and
+/// ones the gloves fully insulate don't.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_shocked(datum/source, shock_damage, shock_source, siemens_coeff, flags)
+	SIGNAL_HANDLER
+	if((flags & SHOCK_ILLUSION) || shock_damage <= 0 || siemens_coeff <= 0)
+		return
+	break_camo(owner, reason = "field shorted")
 
 /// Signal proc for [COMSIG_ATOM_BULLET_ACT]: hostile rounds pop the field.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_bullet_act(datum/source, obj/projectile/projectile)

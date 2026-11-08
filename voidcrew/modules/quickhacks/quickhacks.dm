@@ -51,6 +51,9 @@
 	var/radial_icon_state = "overload_machine"
 	/// Cooldown this hack puts on the whole ability.
 	var/cooldown = 20 SECONDS
+	/// Hurts the person it lands on. A cyberdeck won't run it for a pacifist
+	/// (cyberware/ware_line_deck.dm).
+	var/hurts_people = FALSE
 
 /// Can this hack be run on this target at all? Decides whether the slice is even shown.
 /datum/machine_quickhack/proc/valid_for(atom/target, mob/living/user)
@@ -334,6 +337,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	radial_icon = 'icons/obj/weapons/baton.dmi'
 	radial_icon_state = "stunbaton_active"
 	cooldown = 60 SECONDS
+	hurts_people = TRUE
 
 /datum/machine_quickhack/feedback_surge/valid_for(atom/target, mob/living/user)
 	if(!isliving(target) || target == user)
@@ -372,6 +376,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	radial_icon = 'icons/obj/weapons/baton.dmi'
 	radial_icon_state = "stunbaton_nocell"
 	cooldown = 35 SECONDS
+	hurts_people = TRUE
 
 /datum/machine_quickhack/cutout/valid_for(atom/target, mob/living/user)
 	if(!isliving(target) || target == user)

@@ -554,8 +554,12 @@
  *
  * Circulating coolant woven through the torso: heat exposure damage is
  * trait-gated off, burns hit at half strength, and open flame on you gets
- * starved down fast. Deliberately NOT fireproof, enough flamer fuel still
- * wins, which keeps the buyable MOD flamethrower an honest counter. Sits
+ * starved down fast. In practice that makes a human bearer fireproof: fire
+ * stacks only hurt a human through body heat (fire_stacks.dm harm_human()),
+ * and TRAIT_RESISTHEAT gates that damage off (_species.dm), so a burning
+ * bearer loses clothes, not skin. The cheap Heat-sink lining
+ * (ware_models_b.dm) carries the same trait. Burn damage dealt outright
+ * (a laser, say) still lands, halved here. Sits
  * on the seal ladder above Second Wind: pick your climate.
  */
 /obj/item/organ/cyberimp/cyberware/coolant

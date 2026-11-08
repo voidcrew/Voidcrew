@@ -347,7 +347,7 @@
 			list(/datum/shop_sku/ripperdoc/monowire, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire, 1, 0, 3),
 			list(/datum/shop_sku/ripperdoc/monowire_live, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live, 1, 0, 5),
 			list(/datum/shop_sku/ripperdoc/mantis, /obj/item/cyberware_pair_case/mantis_blades, 1, 0, 4),
-			list(/datum/shop_sku/ripperdoc/mantis_scorch, /obj/item/cyberware_pair_case/mantis_scorch, 1, 0, 5),
+			list(/datum/shop_sku/ripperdoc/mantis_scorch, /obj/item/cyberware_pair_case/mantis_scorch, 1, 0, 4),
 			list(/datum/shop_sku/ripperdoc/gorilla, /obj/item/cyberware_pair_case/gorilla_arms, 1, 0, 3),
 		),
 	)

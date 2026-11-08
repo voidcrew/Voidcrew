@@ -15,7 +15,8 @@
  * exists, so a parallel set of street-doc SKU types would need its own
  * entries there for no gain.
  *
- * His intake ledger takes the same street rungs as Splice's at the same pay
+ * His intake ledger takes everything Splice's does at the same pay, even the
+ * credit chrome only Splice sells
  * (subtypes of Splice's buybacks, with his own wording). Like Splice's, and
  * unlike every other ledger, it takes chrome bought at a counter and pulled
  * again (buys_shop_stock on /datum/shop_buyback/ripperdoc, ripperdoc_catalog.dm).
@@ -141,6 +142,19 @@
 		/datum/shop_buyback/ripperdoc/hardweave/street_doc,
 		/datum/shop_buyback/ripperdoc/deck_street/street_doc,
 		// CYBERWARE LINES: T2 BUYBACKS END
+		// The rest of Splice's credit shelf, which Ratchet buys back even where he
+		// doesn't sell it (owner D7).
+		/datum/shop_buyback/ripperdoc/hopper/street_doc,
+		/datum/shop_buyback/ripperdoc/coolant/street_doc,
+		/datum/shop_buyback/ripperdoc/fixers/street_doc,
+		/datum/shop_buyback/ripperdoc/rockjaw/street_doc,
+		/datum/shop_buyback/ripperdoc/gecko/street_doc,
+		/datum/shop_buyback/ripperdoc/hemoglass/street_doc,
+		/datum/shop_buyback/ripperdoc/angler/street_doc,
+		/datum/shop_buyback/ripperdoc/registry_uplink/street_doc,
+		/datum/shop_buyback/ripperdoc/cargo_cavity/street_doc,
+		/datum/shop_buyback/ripperdoc/gastro/street_doc,
+		/datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -220,6 +234,39 @@
 
 /datum/shop_buyback/ripperdoc/cascade_street/street_doc
 	desc = "A used spinal rig, held together with tape."
+
+/datum/shop_buyback/ripperdoc/hopper/street_doc
+	desc = "Used piston calves."
+
+/datum/shop_buyback/ripperdoc/coolant/street_doc
+	desc = "A coolant lattice, drained."
+
+/datum/shop_buyback/ripperdoc/fixers/street_doc
+	desc = "Used fingertip tools."
+
+/datum/shop_buyback/ripperdoc/rockjaw/street_doc
+	desc = "A used drill fist."
+
+/datum/shop_buyback/ripperdoc/gecko/street_doc
+	desc = "Worn palm pads."
+
+/datum/shop_buyback/ripperdoc/hemoglass/street_doc
+	desc = "A used blood filter."
+
+/datum/shop_buyback/ripperdoc/angler/street_doc
+	desc = "A wrist harpoon, line and all."
+
+/datum/shop_buyback/ripperdoc/registry_uplink/street_doc
+	desc = "A used registry uplink."
+
+/datum/shop_buyback/ripperdoc/cargo_cavity/street_doc
+	desc = "An empty rib pocket."
+
+/datum/shop_buyback/ripperdoc/gastro/street_doc
+	desc = "A stomach liner, scrubbed. Mostly."
+
+/datum/shop_buyback/ripperdoc/chromatic_dermis/street_doc
+	desc = "Old circuit ink."
 
 // =========================================================================
 // THE NPC

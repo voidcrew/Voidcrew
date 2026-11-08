@@ -106,7 +106,7 @@
    "name": "Scorch Blade housing (right)",
    "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
    "rank": 3,
-   "reason": "Half of a pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight. Load 8 the pair, 5 vouchers at reputation 22, one on the shelf per round.",
+   "reason": "Half of a pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight. Load 8 the pair, 4 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch/left": {
@@ -409,7 +409,7 @@
    "group": "Armor and frame",
    "hash": "4ceed965097294a4",
    "name": "Coolant Loop lattice",
-   "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature), takes half burn damage (humans only), and loses 1 fire stack per second. It does not stop fire: a burning wearer is still burned at half strength. All three drop during an EMP reboot or over-capacity brownout.",
+   "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature), takes half burn damage (humans only), and loses 1 fire stack per second. Fire on a human only does harm through body heat, which the ware blocks, so a burning wearer loses clothes but takes no burn from the flames; burn dealt outright (lasers) lands at half. All three drop during an EMP reboot or over-capacity brownout.",
    "rank": 2,
    "reason": "Halves all burn damage on top of armor, lasers included, plus no heat damage and fire burns off fast. Half of every beam in the game for load 3. Bullets and blades ignore it. 3,600 cr with no reputation.",
    "tier": "red"
@@ -419,9 +419,9 @@
    "group": "Armor and frame",
    "hash": "",
    "name": "Heat-sink lining",
-   "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature) and loses 1 fire stack per second. It does not reduce burn damage and does not stop fire: a burning wearer is burned at full strength. Both drop during an EMP reboot or over-capacity brownout.",
+   "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature) and loses 1 fire stack per second. It does not reduce burn damage dealt outright (lasers land at full strength), but fire on a human only does harm through body heat, which the ware blocks, so a burning wearer loses clothes and takes no burn from the flames. Both drop during an EMP reboot or over-capacity brownout.",
    "rank": 9,
-   "reason": "No heat damage from hot air or lava country, and fire burns off fast, but burns from lasers and flames land at full strength. The heat half of the Coolant Loops for load 1, 1,500 cr.",
+   "reason": "No heat damage from hot air or lava country, and being set alight burns only your clothes, but laser burns land at full strength. The heat half of the Coolant Loops for load 1, 1,500 cr.",
    "tier": "green"
   },
   "/obj/item/organ/cyberimp/cyberware/cuffer_wrists": {
@@ -459,7 +459,7 @@
    "hash": "",
    "name": "Breacher deck",
    "rank": 2,
-   "reason": "People from 7 tiles after a 1 s upload: Feedback Surge for up to 60 burn, a knockdown and dropped hands; Overload a machine into a small explosion; Glitch one piece of a target's chrome into a 9 s reboot. Plus the Street deck's hacks. One shared cooldown, 45 to 60 s on the big ones. Load 6, 4 vouchers at reputation 11.",
+   "reason": "People from 7 tiles after a 1 s upload: Feedback Surge for up to 60 burn, a knockdown and dropped hands; Overload a machine into a small explosion; Glitch one piece of a target's chrome into a 9 s reboot, heavier pieces likelier. Plus the Street deck's hacks. One shared cooldown, 45 to 60 s on the big ones. Load 6, 4 vouchers at reputation 11.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/deck/control": {
@@ -486,7 +486,7 @@
    "hash": "",
    "name": "Street deck",
    "rank": 7,
-   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power: flip an APC's breaker and the whole area goes dark and unpowered. No hack that touches a person. Load 4, 3,500 cr at yellow reputation; buys back at 1,750.",
+   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power: flip an APC's breaker and the whole area goes dark and unpowered. No hack that touches a person. Load 3, 2,400 cr at yellow reputation; buys back at 1,200.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh": {
@@ -564,7 +564,7 @@
    "group": "Mobility and stealth",
    "hash": "d87709dff38cd54e",
    "name": "Ghostskin weave",
-   "note": "A button turns on 10 s of optical camo (a faint outline that brightens when they move) with a 30 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked, hostile bullets, being cuffed, death or an EMP. Basic-mob AI won't target the wearer from more than 2 tiles away while it is up.",
+   "note": "A button turns on 10 s of optical camo (a faint outline that brightens when they move) with a 30 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked (an animal's bite, a mech or a xeno included), hostile bullets, a real electric shock, being cuffed, death or an EMP. Basic-mob AI won't target the wearer from more than 2 tiles away while it is up.",
    "rank": 2,
    "reason": "Ten seconds of near-invisibility every 30, and mobs farther than 2 tiles lose you. Attacking or being hit ends it. A free escape or free first shot in most fights, and it walks you through ruins. Load 5, 4 vouchers at reputation 22.",
    "tier": "red"
@@ -574,9 +574,9 @@
    "group": "Mobility and stealth",
    "hash": "",
    "name": "Flickerskin weave",
-   "note": "A button turns on 5 s of optical camo (a half-faded outline that brightens when they move) with a 45 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked, hostile bullets, being cuffed, death or an EMP. It does not grant the mob-hiding camo trait, so NPC AI still targets the wearer at any range and Chrome Read still resolves them.",
+   "note": "A button turns on 7 s of optical camo (a faded outline at about a quarter opacity that brightens when they move) with a 45 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked (an animal's bite, a mech or a xeno included), hostile bullets, a real electric shock, being cuffed, death or an EMP. It does not grant the mob-hiding camo trait, so NPC AI still targets the wearer at any range and Chrome Read still resolves them.",
    "rank": 6,
-   "reason": "Five seconds of half-faded camo every 45: people lose you in a crowd, mobs and turrets still see you, and any swing or hit ends it. A cheap way to break line of sight from players. Load 3, 2,400 cr at yellow reputation.",
+   "reason": "Seven seconds of mostly faded camo every 45: people lose you in a crowd or a dim room, mobs and turrets still see you, and any swing or hit ends it. A cheap way to break line of sight from players. Load 2, 2,400 cr at yellow reputation.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms": {
@@ -605,7 +605,7 @@
    "hash": "",
    "name": "Brawler myomers (right)",
    "rank": 15,
-   "reason": "Half of a pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 2,400 cr at reputation 4. Splice takes a pulled arm back for 600 cr.",
+   "reason": "Half of a pair: a flat 14 damage punch every 5 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 1,600 cr at reputation 4. Either ripperdoc takes a pulled arm back for 400 cr.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
@@ -614,7 +614,7 @@
    "hash": "",
    "name": "Brawler myomers (left)",
    "rank": 16,
-   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
+   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 5 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {
@@ -744,7 +744,7 @@
    "hash": "",
    "name": "Hothead core",
    "rank": 8,
-   "reason": "Eight seconds in every 120: 20% less brute and burn and 3 more on punches, with no stun immunity and no roar. Then 100 stamina and slow legs. Load 5, 3,000 cr at reputation 4.",
+   "reason": "Eight seconds in every 90: 20% less brute and burn and 3 more on punches, with no stun immunity and no roar. Then 100 stamina and slow legs. Load 4, 3,000 cr at reputation 4.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/registry_uplink": {

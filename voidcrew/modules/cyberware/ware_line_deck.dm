@@ -13,7 +13,7 @@
  *
  * Model       tier  load  range  upload  cooldowns  adds
  * Junker       T1     2     5     2 s      x1.5     Bolts, Burst the Lights, Ping
- * Street       T2     4     6     1.5 s    x1.5     Kill the Power
+ * Street       T2     3     6     1.5 s    x1.5     Kill the Power
  * Facilities   T3     6     7     1 s      x1       Cutout, Electrify, Silence, Reboot Turret
  * Breacher     T3     6     7     1 s      x1       Overload, Feedback Surge, Glitch
  * Blackbox     T4     9     8     0.5 s    x1       both T3 sets, and Arc Flash
@@ -34,10 +34,16 @@
  *   shows it.
  * - Outpost property and outpost prison doors (cells and staff doors) refuse
  *   every hack outright, and so do a prison wing's APC and lights (Kill the
- *   Power, Burst the Lights), so a deck never springs a prisoner. Overload refuses any
+ *   Power, Burst the Lights), and no room hack runs inside a prison wing at all,
+ *   so a deck never springs a prisoner. Overload refuses any
  *   machine on an outpost, trader or player (owner, D12: decks never blow up
  *   outpost machines). A person hacked at a trader outpost counts as an attack
  *   on them there, the same as a punch, and Arc Flash does not run there at all.
+ *   Silence jamming the concourse, or Electrify running a docked ship's door live,
+ *   is a strike against the hacker there too. Reboot Turret leaves a player
+ *   outpost's prison turrets alone.
+ * - A pacifist won't run a hack that hurts a person (hurts_people on the hack:
+ *   Feedback Surge, Cutout, Glitch, Arc Flash).
  *
  * Activation (owner, 11-08): using the deck, from its button, its chrome
  * wheel slice or Use chrome, arms targeting. The next click picks the target,
@@ -108,7 +114,7 @@
 	name = "\improper Street deck"
 	desc = "A cortex deck in a scuffed polymer shell, flashed with somebody else's maintenance codes."
 	icon_state = "deck_street"
-	chrome_load = 4
+	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	quickhacks = list(
 		/datum/machine_quickhack/bolts,
@@ -214,6 +220,11 @@
 	click_to_activate = TRUE
 	/// Set while a menu or an upload is open, so neither can stack.
 	var/busy = FALSE
+	/// When a busy flag stops counting. Cleared on removal too, so a runtime
+	/// partway through a hack can't leave the deck busy for the rest of the round.
+	var/busy_until = 0
+	/// How long a busy flag holds at most. Longer than any menu plus upload.
+	var/busy_timeout = 1 MINUTES
 	/// The trace line drawn while an upload runs.
 	var/datum/beam/trace
 
@@ -230,7 +241,19 @@
 	if(removed_from)
 		UnregisterSignal(removed_from, COMSIG_CYBERWARE_ZOOM_CLICK)
 	QDEL_NULL(trace)
+	busy = FALSE
+	busy_until = 0
 	return ..()
+
+/// Marks a menu or upload as open.
+/datum/action/cooldown/cyberware/deck/proc/mark_busy()
+	busy = TRUE
+	busy_until = world.time + busy_timeout
+
+/// Whether a menu or upload is still open. A flag older than busy_timeout is
+/// stale (its call chain died) and no longer counts.
+/datum/action/cooldown/cyberware/deck/proc/is_busy()
+	return busy && world.time < busy_until
 
 /// The deck this button belongs to, or null.
 /datum/action/cooldown/cyberware/deck/proc/get_deck()
@@ -246,7 +269,7 @@
 	// its real target through on_zoom_click() instead.
 	if(istype(target, /atom/movable/screen))
 		return FALSE
-	if(busy)
+	if(is_busy())
 		bearer.balloon_alert(bearer, "deck busy!")
 		return FALSE
 	if(target == bearer)
@@ -257,7 +280,7 @@
 	if(!length(available))
 		target.balloon_alert(bearer, "nothing to talk to!")
 		return FALSE
-	busy = TRUE
+	mark_busy()
 	INVOKE_ASYNC(src, PROC_REF(run_quickhack), bearer, target, available)
 	return TRUE
 
@@ -267,6 +290,9 @@
 	if(bearer.is_blind())
 		bearer.balloon_alert(bearer, "can't see!")
 		return FALSE
+	if(is_outpost_prison_area(get_area(bearer)))
+		bearer.balloon_alert(bearer, "hardened firmware!")
+		return FALSE
 	var/list/available = list()
 	for(var/datum/machine_masshack/hack as anything in deck.kit.applicable_masshacks(bearer, get_turf(bearer)))
 		if(deck_allows_room(hack, bearer))
@@ -274,7 +300,7 @@
 	if(!length(available))
 		bearer.balloon_alert(bearer, "nothing here answers!")
 		return FALSE
-	busy = TRUE
+	mark_busy()
 	INVOKE_ASYNC(src, PROC_REF(run_room_hack), bearer, available)
 	return TRUE
 
@@ -326,14 +352,31 @@
 		return !get_outpost_from_atom(target) && !is_trader_outpost_protected(target)
 	return TRUE
 
-/// The same for room hacks: inside a trader outpost's protected ground, docked
-/// ships included, a deck runs nothing that hurts the people around it. Arc
-/// Flash's shocks come out of the machines and would never count as an attack
-/// there, so it simply does not answer.
+/// The same for room hacks: nothing runs inside a player outpost's prison wing
+/// (no prison break by deck), and inside a trader outpost's protected ground,
+/// docked ships included, a deck runs nothing that hurts the people around it.
+/// Arc Flash's shocks come out of the machines and would never count as an
+/// attack there, so it simply does not answer.
 /datum/action/cooldown/cyberware/deck/proc/deck_allows_room(datum/machine_masshack/hack, mob/living/carbon/bearer)
+	if(is_outpost_prison_area(get_area(bearer)))
+		return FALSE
 	if(istype(hack, /datum/machine_masshack/ping))
 		return TRUE
 	return !is_trader_outpost_protected(bearer)
+
+/// A pacifist won't run a hack that hurts a person, and gets tg's own line for
+/// it. Checked when the hack is picked and again when the upload lands.
+/datum/action/cooldown/cyberware/deck/proc/pacifist_refuses(mob/living/carbon/bearer, hurts_people)
+	if(!hurts_people || !HAS_TRAIT(bearer, TRAIT_PACIFISM))
+		return FALSE
+	to_chat(bearer, span_warning("You don't want to harm other living beings!"))
+	return TRUE
+
+/// Hacks that are a strike at a trader outpost even with no person as the target:
+/// Silence jams everyone's radios around a floor tile, Electrify runs a docked
+/// ship's door live. Outpost property itself never answers a deck at all.
+/datum/action/cooldown/cyberware/deck/proc/strikes_at_trader_outpost(datum/machine_quickhack/hack)
+	return istype(hack, /datum/machine_quickhack/silence) || istype(hack, /datum/machine_quickhack/electrify)
 
 /// The deck is still in this body, still this body's button, and usable.
 /datum/action/cooldown/cyberware/deck/proc/still_linked(mob/living/carbon/bearer)
@@ -375,6 +418,8 @@
 	if(!chosen?.valid_for(target, bearer) || !deck_allows(chosen, target))
 		target.balloon_alert(bearer, "it stopped answering!")
 		return null
+	if(pacifist_refuses(bearer, chosen.hurts_people))
+		return null
 	return chosen
 
 /// Keep the sleeping input separate from the checks around it.
@@ -407,6 +452,8 @@
 	if(!hack.valid_for(target, bearer) || !deck_allows(hack, target))
 		target.balloon_alert(bearer, "it stopped answering!")
 		return FALSE
+	if(pacifist_refuses(bearer, hack.hurts_people))
+		return FALSE
 	if(!hack.execute(target, bearer))
 		return FALSE
 	if(isliving(target))
@@ -418,6 +465,9 @@
 		drop_bearer_camo(bearer)
 	else
 		bearer.log_message("used the [hack.name] quickhack on [target] ([target.type]) with [deck].", LOG_ATTACK)
+		if(strikes_at_trader_outpost(hack) && is_trader_outpost_protected(target))
+			var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(get_turf(target))
+			outpost?.register_aggression(bearer)
 	cyberware_ink_pulse(bearer, CYBERWARE_INK_HARD)
 	StartCooldown(kit.hack_cooldown(hack))
 	return TRUE
@@ -451,7 +501,10 @@
 	var/choice = choose_room_hack(bearer, options)
 	if(!choice || !room_holds(bearer))
 		return null
-	return by_name[choice]
+	var/datum/machine_masshack/chosen = by_name[choice]
+	if(pacifist_refuses(bearer, chosen?.hurts_people))
+		return null
+	return chosen
 
 /datum/action/cooldown/cyberware/deck/proc/choose_room_hack(mob/living/carbon/bearer, list/options)
 	return show_radial_menu(bearer, bearer, options, custom_check = CALLBACK(src, PROC_REF(room_holds), bearer), tooltips = TRUE, autopick_single_option = FALSE)
@@ -474,6 +527,8 @@
 	var/turf/here = get_turf(bearer)
 	if(isnull(here) || !hack.available(bearer, here) || !deck_allows_room(hack, bearer))
 		bearer.balloon_alert(bearer, "nothing here answers!")
+		return FALSE
+	if(pacifist_refuses(bearer, hack.hurts_people))
 		return FALSE
 	if(!hack.execute(bearer, here))
 		return FALSE
@@ -559,8 +614,9 @@
  * seconds, then lets it come back as it was. The Icepick Jack's suppress is
  * the stronger, contact-range version of this; it stays that way.
  *
- * Same refusals as the Icepick: outpost security firmware never answers. A
- * turret on a player's ship trips that crew's intrusion alarm.
+ * Same refusals as the Icepick: outpost security firmware never answers, and
+ * neither does a turret in a player outpost's prison wing. A turret on a
+ * player's ship trips that crew's intrusion alarm.
  */
 /datum/machine_quickhack/reboot_turret
 	name = "Reboot Turret"
@@ -581,7 +637,8 @@
 /datum/machine_quickhack/reboot_turret/valid_for(atom/target, mob/living/user)
 	var/atom/turret = resolve_turret(target)
 	if(istype(turret, /obj/machinery/porta_turret))
-		if(istype(turret, /obj/machinery/porta_turret/outpost))
+		// Trader outpost turrets, and a player outpost's prison turrets: no prison break by deck.
+		if(istype(turret, /obj/machinery/porta_turret/outpost) || is_outpost_prison_area(get_area(turret)))
 			return FALSE
 		var/obj/machinery/porta_turret/porta = turret
 		return porta.on && !(porta.machine_stat & BROKEN)
@@ -605,9 +662,13 @@
 	return TRUE
 
 /**
- * Glitch: one piece of the target's running chrome, picked at random, takes
- * the ordinary cyberware EMP reboot. Chrome is balanced around EMP, so this is
- * the hacker's answer to a chromed-up fighter, one piece at a time.
+ * Glitch: one piece of the target's running chrome takes the ordinary cyberware
+ * EMP reboot. Chrome is balanced around EMP, so this is the hacker's answer to a
+ * chromed-up fighter, one piece at a time. The pick is weighted by how much each
+ * piece weighs on the nervous system, its load plus any capacity it adds (a
+ * Governor carries no load but holds the whole build up), so the heavy hardware
+ * is what usually goes down. Chrome that weighs nothing, like Chromatic Dermis
+ * ink, is never picked, so it can't be stacked as decoys.
  */
 /datum/machine_quickhack/glitch
 	name = "Glitch"
@@ -615,15 +676,18 @@
 	radial_icon = 'icons/mob/actions/actions_spells.dmi'
 	radial_icon_state = "emp"
 	cooldown = 60 SECONDS
+	hurts_people = TRUE
 
-/// The target's chrome that is up and running right now.
+/// The target's chrome that is up and running right now, each weighted for
+/// pick_weight() by its load plus the capacity it adds. Weightless chrome is left out.
 /datum/machine_quickhack/glitch/proc/running_chrome(mob/living/carbon/victim)
 	RETURN_TYPE(/list)
 	. = list()
 	for(var/obj/item/organ/ware as anything in get_installed_cyberware(victim))
 		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
-		if(chrome?.is_running())
-			. += ware
+		var/weight = chrome ? chrome.chrome_load + chrome.capacity_bonus : 0
+		if(weight > 0 && chrome.is_running())
+			.[ware] = weight
 
 /datum/machine_quickhack/glitch/valid_for(atom/target, mob/living/user)
 	if(!iscarbon(target) || target == user)
@@ -636,7 +700,7 @@
 	var/list/running = running_chrome(victim)
 	if(!length(running))
 		return FALSE
-	var/obj/item/organ/ware = pick(running)
+	var/obj/item/organ/ware = pick_weight(running)
 	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
 	chrome.start_emp_reboot(EMP_HEAVY)
 	victim.balloon_alert(victim, "[ware.name] glitches out!")
@@ -660,7 +724,7 @@
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Street Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/deck/street
-	price_credits = 3500
+	price_credits = 2400
 
 /datum/shop_sku/ripperdoc/deck_control
 	zone_permission = ZONE_PERMISSION_ADVANCED
@@ -703,7 +767,7 @@
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/deck/street
 	match_subtypes = FALSE
-	pay_credits = 1750
+	pay_credits = 1200
 	demand_min = 1
 	demand_max = 2
 

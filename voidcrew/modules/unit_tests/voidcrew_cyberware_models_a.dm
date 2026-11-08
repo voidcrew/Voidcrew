@@ -325,7 +325,7 @@
 	var/list/shelf = list(
 		list(/datum/shop_sku/ripperdoc/hopper_street, /obj/item/organ/cyberimp/cyberware/hopper/street, 1800, 0, 1, 1),
 		list(/datum/shop_sku/ripperdoc/hopper_milspec, /obj/item/organ/cyberimp/cyberware/hopper/milspec, 0, 3, 2, 1),
-		list(/datum/shop_sku/ripperdoc/gorilla_street, /obj/item/cyberware_pair_case/gorilla_arms/street, 2400, 0, 1, 2),
+		list(/datum/shop_sku/ripperdoc/gorilla_street, /obj/item/cyberware_pair_case/gorilla_arms/street, 1600, 0, 1, 2),
 		list(/datum/shop_sku/ripperdoc/fixers_street, /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street, 700, 0, 0, 1),
 		list(/datum/shop_sku/ripperdoc/rockjaw_deepcore, /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore, 2400, 0, 0, 1),
 		list(/datum/shop_sku/ripperdoc/ronin_holdout, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, 2400, 0, 1, 1),
@@ -349,14 +349,14 @@
 	TEST_ASSERT(quote && quote["vouchers"] == 3 && !quote["credits"], "Vaulter pistons quote the wrong price")
 	for(var/pair_half in list(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left))
 		quote = GLOB.cyberware_price_index[pair_half]
-		TEST_ASSERT(quote && quote["credits"] == 2400 && quote["paired"], "[pair_half] doesn't quote the pair's price")
+		TEST_ASSERT(quote && quote["credits"] == 1600 && quote["paired"], "[pair_half] doesn't quote the pair's price")
 	quote = GLOB.cyberware_price_index[/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout]
 	TEST_ASSERT(quote && quote["credits"] == 2400, "The Holdout quotes the wrong price")
 
 	// Ledger: half the shelf price of one piece, credits only, either side of a pair.
 	var/list/ledgers = list(
 		list(/datum/shop_buyback/ripperdoc/hopper_street, /datum/shop_buyback/ripperdoc/hopper_street/street_doc, /obj/item/organ/cyberimp/cyberware/hopper/street, 900),
-		list(/datum/shop_buyback/ripperdoc/gorilla_street, /datum/shop_buyback/ripperdoc/gorilla_street/street_doc, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street, 600),
+		list(/datum/shop_buyback/ripperdoc/gorilla_street, /datum/shop_buyback/ripperdoc/gorilla_street/street_doc, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street, 400),
 		list(/datum/shop_buyback/ripperdoc/fixers_street, /datum/shop_buyback/ripperdoc/fixers_street/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street, 350),
 		list(/datum/shop_buyback/ripperdoc/ronin_holdout, /datum/shop_buyback/ripperdoc/ronin_holdout/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, 1200),
 		list(/datum/shop_buyback/ripperdoc/rockjaw_deepcore, /datum/shop_buyback/ripperdoc/rockjaw_deepcore/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore, 1200),

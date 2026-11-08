@@ -239,13 +239,13 @@
 	if(!self_read)
 		// The tell: anyone close enough sees the readout scroll across the eyes.
 		// The subject only sits that message out when they're getting the
-		// louder one below instead.
+		// louder one below instead. The reader never gets it: it's their eyes.
 		chrome_read_eye_glint(bearer)
 		var/subject_feels_it = report["count"]
 		bearer.visible_message(
 			span_notice("[bearer]'s irises flicker with a scrolling readout."),
 			vision_distance = 3,
-			ignored_mobs = subject_feels_it ? list(subject) : null,
+			ignored_mobs = subject_feels_it ? list(subject, bearer) : list(bearer),
 		)
 		// The subject's own hardware reports the unauthorized handshake: it
 		// flinches on their screen, and their chat names the reader.

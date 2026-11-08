@@ -11,7 +11,9 @@
 // would carry (cloak weave, wire, reflex shunt) sit at the bottom of prime.
 // The camo and reflex lines follow the same split: the street weave and the
 // taped reflex rig at uncommon, the service lattice in prime, and the live
-// wire beside the plain one in the red melee extras.
+// wire beside the plain one in the red melee extras. The chrome added with the
+// cyberware lines sits at about half the weight of the older entries, so the
+// syndicate tables stay mostly guns, gear and contraband.
 // =========================================================================
 
 /datum/loot_theme/syndicate
@@ -69,7 +71,7 @@
 		/obj/item/grenade/empgrenade = 5,
 		/obj/item/storage/medkit/tactical = 4,
 		// a throat mic nobody nearby hears
-		/obj/item/organ/cyberimp/cyberware/subvocal_mic = 4,
+		/obj/item/organ/cyberimp/cyberware/subvocal_mic = 2,
 	)
 	loot_uncommon = list(
 		/obj/item/grenade/c4 = 6,
@@ -83,13 +85,13 @@
 		/obj/item/organ/cyberimp/cyberware/cargo_cavity = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick = 3,
 		// knockoff operative chrome: a patchy camo weave and a taped reflex rig
-		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 3,
-		/obj/item/organ/cyberimp/cyberware/cascade/street = 2,
+		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 2,
+		/obj/item/organ/cyberimp/cyberware/cascade/street = 1,
 		// street operative chrome: a twitchy reflex shunt, an adrenal pump and
 		// a deck flashed with somebody else's codes
-		/obj/item/organ/cyberimp/cyberware/slipwire/street = 3,
-		/obj/item/organ/cyberimp/cyberware/adrenal_pump = 3,
-		/obj/item/organ/cyberimp/cyberware/deck/street = 2,
+		/obj/item/organ/cyberimp/cyberware/slipwire/street = 2,
+		/obj/item/organ/cyberimp/cyberware/adrenal_pump = 2,
+		/obj/item/organ/cyberimp/cyberware/deck/street = 1,
 	)
 	loot_prime = list(
 		/obj/item/pen/sleepy = 4,
@@ -98,10 +100,10 @@
 		// Operative chrome: the reflex shunt and refraction weave.
 		/obj/item/organ/cyberimp/cyberware/slipwire = 3,
 		/obj/item/organ/cyberimp/cyberware/ghostskin = 2,
-		/obj/item/organ/cyberimp/cyberware/cascade/milspec = 2,
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec = 1,
 		// the boarding team's shunt and deck
-		/obj/item/organ/cyberimp/cyberware/slipwire/milspec = 2,
-		/obj/item/organ/cyberimp/cyberware/deck/assault = 2,
+		/obj/item/organ/cyberimp/cyberware/slipwire/milspec = 1,
+		/obj/item/organ/cyberimp/cyberware/deck/assault = 1,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

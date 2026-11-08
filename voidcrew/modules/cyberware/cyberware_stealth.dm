@@ -42,10 +42,12 @@
 #define CYBERWARE_CAMO_SPOT_RANGE 2
 
 /// Mobs that see straight through optical camo, whatever it is: megafauna,
-/// mining elites and the bosses and mini bosses of the ruins, bounties, lairs
-/// and outposts. A typecache, so subtypes count.
+/// mining elites and the bosses and mini bosses of the ruins, bounties, lairs,
+/// outposts and NPC ships (every faction's pirate boss, the NT patrol's
+/// included). A typecache, so subtypes count.
 GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 	/mob/living/simple_animal/hostile/megafauna,
+	/mob/living/basic/trooper/pirate/faction/boss,
 	/mob/living/simple_animal/hostile/asteroid/elite,
 	/mob/living/basic/boss,
 	/mob/living/basic/lich,

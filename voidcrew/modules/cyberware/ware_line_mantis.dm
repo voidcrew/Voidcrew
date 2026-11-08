@@ -58,6 +58,10 @@
 	light_color = LIGHT_COLOR_FIRE
 	/// Fire stacks each landed cut puts on its target.
 	var/fire_stacks_per_hit = 2
+	/// Set by afterattack() during attack()'s parent call, which only a swing that
+	/// connected reaches. attack()'s own FALSE can't tell a cut from a pacifist's
+	/// pulled swing or a signal-skipped one. The Widowline does the same.
+	var/swing_landed = FALSE
 
 // The glow is only for a blade that is out. Stowed inside the housing it is dark.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/equipped(mob/user, slot, initial = FALSE)
@@ -69,13 +73,20 @@
 	set_light_on(FALSE)
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	swing_landed = FALSE
 	. = ..()
-	// A truthy return means the swing was blocked or cancelled outright, no cut
-	// landed, so nothing burns. Never the wielder, whoever is in the way.
-	if(. || QDELETED(target) || target == user)
+	var/landed = swing_landed
+	swing_landed = FALSE
+	// Only a cut that landed burns: not a blocked or cancelled swing, not a pulled
+	// one. Never the wielder, whoever is in the way.
+	if(. || !landed || QDELETED(target) || target == user)
 		return
 	if(cyberware_scorch_target(target, fire_stacks_per_hit))
 		log_combat(user, target, "set alight", src, "(scorch blade)")
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	swing_landed = TRUE
 
 // ---- Shiv Blades (street) ------------------------------------------------
 
@@ -163,7 +174,7 @@
 	name = "Scorch Blades (pair)"
 	desc = "A cased pair of forearm blades with heat sinks on the emitter rails."
 	item_path = /obj/item/cyberware_pair_case/mantis_scorch
-	price_vouchers = 5
+	price_vouchers = 4
 	stock_min = 1
 	stock_max = 1
 	convoys_per_unit = 3

@@ -9,7 +9,7 @@
  *   model               parent           tier  load       price               where
  *   Spring calves       Hopper pistons   T1    2          1,800 cr            yellow
  *   Vaulter pistons     Hopper pistons   T3    4          3 vouchers          advanced
- *   Brawler myomers     Gorilla Arms     T2    2 per arm  2,400 cr the pair   yellow
+ *   Brawler myomers     Gorilla Arms     T2    2 per arm  1,600 cr the pair   yellow
  *   Tinker's fingers    Fixer's Fingers  T1    1          700 cr              public
  *   Deepcore drill fist Rockjaw          T2    3          2,400 cr            public
  *   Holdout housing     Popup Ronin      T2    3          2,400 cr            yellow
@@ -112,7 +112,7 @@
 	aug_overlay = "gorilla_street_right"
 	punch_damage = 14
 	structure_damage = 20
-	punch_cooldown_time = 6 SECONDS
+	punch_cooldown_time = 5 SECONDS
 	smash_cooldown_time = 1.5 SECONDS
 	hurl_range = 0
 	pries_doors = FALSE
@@ -284,7 +284,7 @@
 	name = "Brawler Myomers (pair)"
 	desc = "A cased pair of cheap myomer forearms."
 	item_path = /obj/item/cyberware_pair_case/gorilla_arms/street
-	price_credits = 2400
+	price_credits = 1600
 	stock_min = 1
 	stock_max = 2
 	fixed_price = TRUE
@@ -336,7 +336,7 @@
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/gorilla_arms/street
 	match_subtypes = TRUE
-	pay_credits = 600
+	pay_credits = 400
 	demand_min = 2
 	demand_max = 4
 

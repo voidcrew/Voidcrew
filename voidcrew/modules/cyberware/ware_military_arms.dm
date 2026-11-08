@@ -435,7 +435,7 @@
 		return FALSE
 	var/mob/living/lunger = owner
 	if(HAS_TRAIT(lunger, TRAIT_PACIFISM))
-		lunger.balloon_alert(lunger, "can't bring yourself to!")
+		to_chat(lunger, span_warning("You don't want to harm other living beings!"))
 		return FALSE
 	if(!housing.blade_extended())
 		lunger.balloon_alert(lunger, "extend the blade first!")

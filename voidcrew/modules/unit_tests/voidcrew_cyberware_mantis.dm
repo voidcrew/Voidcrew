@@ -64,6 +64,14 @@
 	TEST_ASSERT(victim.on_fire, "A scorch cut didn't light the target")
 	TEST_ASSERT(!wielder.on_fire && wielder.fire_stacks <= 0, "A scorch cut put fire on the wielder")
 
+	// A swing that never lands burns nothing: a pacifist's pulled swing returns
+	// the same FALSE as a cut, so only a cut that reached afterattack() counts.
+	var/mob/living/carbon/human/spared = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(wielder, TRAIT_PACIFISM, TRAIT_SOURCE_UNIT_TESTS)
+	blade.attack(spared, wielder, list(), list())
+	REMOVE_TRAIT(wielder, TRAIT_PACIFISM, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!spared.on_fire && spared.fire_stacks <= 0, "A pacifist's pulled scorch swing set the target alight")
+
 	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human/consistent)
 	corpse.stat = DEAD
 	TEST_ASSERT(!cyberware_scorch_target(corpse, 4), "A corpse was set alight")

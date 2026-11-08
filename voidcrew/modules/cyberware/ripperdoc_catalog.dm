@@ -8,10 +8,10 @@
  *
  * Balance shape mirrors Vex's counter: credits buy the street and pro-utility
  * ware, vouchers gate everything that changes how you fight. Splice's intake
- * ledger buys back ONLY the ladder-base rungs, the street chrome a customer
- * outgrows, at half list, credits only, so climbing a slot ladder feels like
- * climbing and never becomes an arbitrage loop (you can't refund vouchers, and
- * a removed piece resold at 50% is always a loss).
+ * ledger buys back every piece he sells for credits (owner D7), at half list,
+ * credits only, so climbing a slot ladder feels like climbing and never becomes
+ * an arbitrage loop (voucher chrome is never bought back, and a removed piece
+ * resold at 50% is always a loss).
  *
  * Splice is not the only source any more. The roster also rides the zone loot
  * tables (modules/loot/themes/) at the tier that matches what he charges for
@@ -145,7 +145,7 @@
 		/datum/shop_sku/ripperdoc/buster_rockets,
 	)
 	buyback_types = list(
-		// The trade-in ladder: only the street rungs a customer outgrows.
+		// The trade-in ladder: every piece on the shelf priced in credits.
 		/datum/shop_buyback/ripperdoc/nightshade,
 		/datum/shop_buyback/ripperdoc/shock_coils,
 		/datum/shop_buyback/ripperdoc/second_wind,
@@ -181,6 +181,18 @@
 		/datum/shop_buyback/ripperdoc/longsight,
 		/datum/shop_buyback/ripperdoc/hardweave,
 		/datum/shop_buyback/ripperdoc/deck_street,
+		// The rest of the credit shelf (owner D7).
+		/datum/shop_buyback/ripperdoc/hopper,
+		/datum/shop_buyback/ripperdoc/coolant,
+		/datum/shop_buyback/ripperdoc/fixers,
+		/datum/shop_buyback/ripperdoc/rockjaw,
+		/datum/shop_buyback/ripperdoc/gecko,
+		/datum/shop_buyback/ripperdoc/hemoglass,
+		/datum/shop_buyback/ripperdoc/angler,
+		/datum/shop_buyback/ripperdoc/registry_uplink,
+		/datum/shop_buyback/ripperdoc/cargo_cavity,
+		/datum/shop_buyback/ripperdoc/gastro,
+		/datum/shop_buyback/ripperdoc/chromatic_dermis,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -547,7 +559,7 @@
 
 // =========================================================================
 // SPLICE'S INTAKE LEDGER: the trade-in ladder
-// Half list, credits only, street rungs only. Removed chrome resold here is
+// Half list, credits only, credit-priced chrome only. Removed chrome resold here is
 // always a loss (you can't refund vouchers, and 50% never beats buying up the
 // ladder), so this reads as "trade up" and never as an arbitrage loop.
 //
@@ -611,3 +623,120 @@
 	pay_credits = 200
 	demand_min = 2
 	demand_max = 4
+
+// =========================================================================
+// THE REST OF THE CREDIT SHELF (owner D7): every piece he sells for credits
+// comes back at half list, credits only. Exact types, so a ladder rung above
+// or below (Spring calves, Vaulter, Tinker's, Deepcore, Heat-sink) keeps its
+// own entry or none. Ratchet's subtypes carry his wording.
+// =========================================================================
+
+/datum/shop_buyback/ripperdoc/hopper
+	name = "Hopper piston calves (pulled)"
+	desc = "Piston calves, still sprung."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/hopper
+	match_subtypes = FALSE
+	pay_credits = 1800
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/coolant
+	name = "Coolant Loop lattice (pulled)"
+	desc = "A drained coolant lattice."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/coolant
+	match_subtypes = FALSE
+	pay_credits = 1800
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/fixers
+	name = "Fixer's Fingers (pulled)"
+	desc = "A fingertip tool suite, pulled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
+	match_subtypes = FALSE
+	pay_credits = 900
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/rockjaw
+	name = "Rockjaw drill fist (pulled)"
+	desc = "A drill fist with plenty of bit left."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/gecko
+	name = "Gecko Grip palm pads (pulled)"
+	desc = "Palm pads, a bit worn."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/gecko
+	match_subtypes = FALSE
+	pay_credits = 450
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/hemoglass
+	name = "Hemoglass filter (pulled)"
+	desc = "A blood filter, flushed."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/hemoglass
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/angler
+	name = "Harpoon Spool (pulled)"
+	desc = "A wrist spool and its line."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/registry_uplink
+	name = "Registry uplink (pulled)"
+	desc = "A registry uplink, pulled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/registry_uplink
+	match_subtypes = FALSE
+	pay_credits = 600
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/cargo_cavity
+	name = "Cargo Cavity (pulled)"
+	desc = "An empty rib compartment."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/cargo_cavity
+	match_subtypes = FALSE
+	pay_credits = 500
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/gastro
+	name = "Gastro Reactor (pulled)"
+	desc = "A used stomach liner."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/gastro
+	match_subtypes = FALSE
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/ripperdoc/chromatic_dermis
+	name = "Chromatic Dermis ink suite (pulled)"
+	desc = "A sheet of circuit ink, peeled."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/cyberware/chromatic_dermis
+	match_subtypes = FALSE
+	pay_credits = 200
+	demand_min = 2
+	demand_max = 3

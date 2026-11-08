@@ -395,21 +395,21 @@
 /// cyber_camo trait (NPC targeting and chrome reads key on it, so it fools
 /// players only), while the full Ghostskin keeps both. They share the skin
 /// slot, so the upgrade evicts the street weave and drops its field.
-/// Literals: trait is TRAIT_CYBER_CAMO ("cyber_camo"), alphas are 110 street
-/// and 40 full, times are in deciseconds (50 = 5 s), tier 2 = CYBERWARE_TIER_2.
+/// Literals: trait is TRAIT_CYBER_CAMO ("cyber_camo"), alphas are 60 street
+/// and 40 full, times are in deciseconds (70 = 7 s), tier 2 = CYBERWARE_TIER_2.
 /datum/unit_test/voidcrew_cyberware_camo_line
 
 /datum/unit_test/voidcrew_cyberware_camo_line/Run()
 	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/organ/cyberimp/cyberware/ghostskin/street/street = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin/street)
-	TEST_ASSERT_EQUAL(street.chrome_load, 3, "The street camo weave's load drifted")
+	TEST_ASSERT_EQUAL(street.chrome_load, 2, "The street camo weave's load drifted")
 	TEST_ASSERT_EQUAL(street.tier, 2, "The street camo weave left tier 2")
-	TEST_ASSERT_EQUAL(street.field_duration, 50, "The street camo weave's field duration drifted")
+	TEST_ASSERT_EQUAL(street.field_duration, 70, "The street camo weave's field duration drifted")
 	TEST_ASSERT(!street.hides_from_mobs, "The street camo weave hides its bearer from mobs")
 	TEST_ASSERT(street.Insert(lab_rat, special = TRUE), "Street weave staging insert was refused")
 	street.engage_camo(lab_rat)
 	TEST_ASSERT(street.camo_active, "The street weave's field never came up")
-	TEST_ASSERT_EQUAL(lab_rat.alpha, 110, "The street weave faded its bearer to the wrong alpha")
+	TEST_ASSERT_EQUAL(lab_rat.alpha, 60, "The street weave faded its bearer to the wrong alpha")
 	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "The street weave granted the mob-hiding camo trait")
 
 	// The full weave is unchanged: trait, alpha 40, ten seconds.
@@ -1358,7 +1358,8 @@
 		TEST_ASSERT_EQUAL(model.slot, core.slot, "[model_type] doesn't share the Redline's OS slot")
 		TEST_ASSERT(model.chrome_load < core.chrome_load, "[model_type] doesn't cost less load than the Redline core")
 		TEST_ASSERT(model.tier < core.tier, "[model_type] isn't a lower tier than the Redline core")
-		TEST_ASSERT(model.burn_window < core.burn_window && model.burn_cooldown > core.burn_cooldown, "[model_type] isn't a shorter, slower burn than the Redline core")
+		// The street core cycles as fast as the Redline (final balance pass); no model cycles faster.
+		TEST_ASSERT(model.burn_window < core.burn_window && model.burn_cooldown >= core.burn_cooldown, "[model_type] isn't a shorter burn, no faster, than the Redline core")
 		TEST_ASSERT(model.icon_state != core.icon_state && model.aug_overlay != core.aug_overlay, "[model_type] reuses the Redline core's sprite states")
 	var/obj/item/organ/cyberimp/cyberware/redline/street/street = allocate(/obj/item/organ/cyberimp/cyberware/redline/street)
 	var/obj/item/organ/cyberimp/cyberware/redline/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/redline/milspec)

@@ -74,6 +74,7 @@
 #include "voidcrew_cyberware_anim.dm"
 #include "voidcrew_cyberware_camo.dm"
 #include "voidcrew_cyberware_deck.dm"
+#include "voidcrew_cyberware_final.dm"
 #include "voidcrew_cyberware_kit.dm"
 #include "voidcrew_cyberware_mantis.dm"
 #include "voidcrew_cyberware_matrix.dm"

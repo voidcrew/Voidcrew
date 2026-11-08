@@ -430,6 +430,11 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /// Whether an ability is "on" right now: a toggled arm with its hardware out,
 /// or a click-to-target ability armed and waiting for the click.
 /proc/chrome_wheel_ability_active(datum/action/ability, mob/living/carbon/bearer)
+	// The zoom is a toggle, not a click-to-target: it is on while the optics are zoomed.
+	if(istype(ability, /datum/action/cooldown/cyberware/optics_zoom))
+		var/datum/action/cooldown/cyberware/optics_zoom/zoom = ability
+		var/obj/item/organ/eyes/robotic/cyberware/optics = zoom.organ
+		return istype(optics) && optics.is_zoomed()
 	if(istype(ability, /datum/action/cooldown))
 		return bearer.click_intercept == ability
 	var/obj/item/organ/cyberimp/arm/toolkit/arm = ability.target
@@ -717,21 +722,24 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	if(old_owner == parent)
 		deselect()
 
+/// Picks the ability on [chip] while it is still chrome in this body. Returns
+/// whether it did: a ware cut out while the wheel was held open drops out here,
+/// so its chip can't be picked and the pick can't follow it into someone else.
 /datum/component/chrome_wheel/proc/select_chip(atom/movable/screen/chrome_wheel/chip/chip, quiet = FALSE)
 	var/datum/action/ability = chip?.ability_ref?.resolve()
-	if(!ability)
-		return
+	if(!ability || !(ability in get_chrome_wheel_actions(parent)))
+		return FALSE
 	select(ability)
 	if(!quiet)
 		var/mob/living/carbon/bearer = parent
 		bearer.balloon_alert(bearer, lowertext(chip.name))
+	return TRUE
 
 /// Pick [chip] (or nothing, for null) and close the wheel. The pick lands at
 /// once; the wheel stays up a moment longer for the lock and the fade.
 /datum/component/chrome_wheel/proc/choose(atom/movable/screen/chrome_wheel/chip/chip)
-	if(chip)
-		select_chip(chip)
-	close_wheel(linger = TRUE, chosen = chip?.ability_ref?.resolve() ? chip : null)
+	var/picked = chip && select_chip(chip)
+	close_wheel(linger = TRUE, chosen = picked ? chip : null)
 
 // ---- Opening and closing -----------------------------------------------
 

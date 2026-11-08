@@ -69,6 +69,9 @@
 	var/radial_icon_state = "overload_machine"
 	/// Cooldown this hack puts on the ability.
 	var/cooldown = 2 MINUTES
+	/// Hurts the people in the room. A cyberdeck won't run it for a pacifist
+	/// (cyberware/ware_line_deck.dm).
+	var/hurts_people = FALSE
 
 /// Is there anything in this room for this hack to do? Decides whether the slice is shown.
 /datum/machine_masshack/proc/available(mob/living/user, turf/center)
@@ -216,6 +219,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 	radial_icon = 'icons/mob/actions/actions_spells.dmi'
 	radial_icon_state = "lightning"
 	cooldown = 2 MINUTES
+	hurts_people = TRUE
 
 /datum/machine_masshack/arc_flash/available(mob/living/user, turf/center)
 	if(!length(communion_arc_sources(center)))

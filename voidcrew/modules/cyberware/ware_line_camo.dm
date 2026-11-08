@@ -21,13 +21,14 @@
 	name = "\improper Flickerskin weave"
 	desc = "A budget subdermal weave of refraction cells, mostly salvage. Switched on, you go blurry at the edges, which is not the same as gone."
 	icon_state = "ghostskin_street"
-	chrome_load = 3
+	chrome_load = 2
 	tier = CYBERWARE_TIER_2
 	actions_types = list(/datum/action/cooldown/cyberware/ghostskin_cloak/street)
-	// Roughly half faded, never a heat-shimmer. Moving flares it well above that.
-	field_alpha = 110
+	// Mostly faded, but never the full weave's heat-shimmer. Moving flares it
+	// well above that.
+	field_alpha = 60
 	ripple_alpha = 170
-	field_duration = 5 SECONDS
+	field_duration = 7 SECONDS
 	hides_from_mobs = FALSE
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/street/engage_feedback(mob/living/carbon/wearer)
@@ -38,7 +39,7 @@
 	)
 
 /datum/action/cooldown/cyberware/ghostskin_cloak/street
-	desc = "Five seconds of patchy optical camo."
+	desc = "Seven seconds of patchy optical camo."
 	cooldown_time = 45 SECONDS
 
 // =========================================================================
