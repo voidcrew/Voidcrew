@@ -49,15 +49,34 @@
 	TEST_ASSERT(examine_has(criminal, criminal, "ribs hums"), "A ready Lazarus doesn't hum on examine")
 	knock_down(criminal)
 	TEST_ASSERT(piece.charging, "Going down didn't start the charge")
-	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_lazarus_charge"), "The charge has no glow") // BOUNTY_LAZARUS_FILTER
+	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_lazarus_charge"), "The charge has no outline") // BOUNTY_LAZARUS_FILTER
+	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_lazarus_halo"), "The charge has no halo") // BOUNTY_LAZARUS_HALO
+	TEST_ASSERT(length(piece.charge_overlays), "No lightning crawls over them while it charges")
 	TEST_ASSERT_NOTNULL(piece.charge_light, "The charge gives off no light")
+	TEST_ASSERT_NOTNULL(piece.arc_timer, "No bolts are coming off them")
+	// A round of bolts: they land around them, crackling red, and the next round is on its way
+	piece.arc_round(piece.charge_serial)
+	TEST_ASSERT_EQUAL(piece.arc_rounds, 1, "The round of bolts didn't count")
+	TEST_ASSERT_NOTNULL(piece.arc_timer, "The bolts stopped after one round")
+	var/crackled = FALSE
+	for(var/obj/effect/temp_visual/electricity/crackle in range(3, criminal)) // BOUNTY_LAZARUS_ARC_RANGE
+		if(islist(crackle.color))
+			crackled = TRUE
+	TEST_ASSERT(crackled, "No bolt landed around them")
+	TEST_ASSERT(criminal.health > 0 && criminal.stat != DEAD, "The bolts hurt their own fighter")
 	TEST_ASSERT(piece.discharge(piece.charge_serial), "The full charge didn't jolt them")
 	TEST_ASSERT(!criminal.downed, "The jolt didn't stand them up")
 	TEST_ASSERT(criminal.health >= criminal.maxHealth * 0.5 - 1, "The jolt stood them up at [criminal.health]/[criminal.maxHealth], not half") // BOUNTY_LAZARUS_HEAL_TO
 	TEST_ASSERT_NULL(criminal.body_recovery_timer, "The jolt left the recovery clock running")
 	TEST_ASSERT(!piece.charging, "Still charging after the jolt")
-	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The glow stayed on after the jolt")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The outline stayed on after the jolt")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_halo"), "The halo stayed on after the jolt")
+	TEST_ASSERT_NULL(piece.charge_overlays, "The lightning stayed on after the jolt")
 	TEST_ASSERT_NULL(piece.charge_light, "The light stayed on after the jolt")
+	TEST_ASSERT_NULL(piece.arc_timer, "Bolts kept coming after the jolt")
+	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_lazarus_afterglow"), "The jolt left no afterglow") // BOUNTY_LAZARUS_AFTERGLOW
+	piece.end_afterglow()
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_afterglow"), "The afterglow never goes")
 	TEST_ASSERT(!piece.discharge(piece.charge_serial), "A stale charge jolted twice")
 	TEST_ASSERT(examine_has(criminal, criminal, "ribs ticks"), "A spent Lazarus doesn't tick on examine")
 
@@ -72,7 +91,8 @@
 	var/serial = piece.charge_serial
 	criminal.emp_act(EMP_HEAVY)
 	TEST_ASSERT(!piece.charging, "An EMP didn't stop the charge")
-	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The glow stayed on through an EMP")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The outline stayed on through an EMP")
+	TEST_ASSERT_NULL(piece.arc_timer, "Bolts kept coming through an EMP")
 	TEST_ASSERT(!piece.discharge(serial), "An EMP'd charge still jolted")
 	TEST_ASSERT(criminal.downed, "An EMP'd criminal got up")
 	piece.offline_until = world.time
@@ -132,8 +152,10 @@
 	serial = piece.charge_serial
 	criminal.death()
 	TEST_ASSERT(!piece.charging, "Still charging after death")
-	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The glow stayed on a corpse")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_charge"), "The outline stayed on a corpse")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_lazarus_halo"), "The halo stayed on a corpse")
 	TEST_ASSERT_NULL(piece.charge_light, "The light stayed on a corpse")
+	TEST_ASSERT_NULL(piece.arc_timer, "Bolts kept coming off a corpse")
 	TEST_ASSERT(!piece.discharge(serial), "A dead criminal's charge jolted")
 	TEST_ASSERT_EQUAL(criminal.stat, DEAD, "Lazarus revived the dead")
 
@@ -147,6 +169,7 @@
 	TEST_ASSERT(QDELETED(light), "The charge's light outlived its criminal")
 	TEST_ASSERT_NULL(piece.owner, "The piece kept a deleted criminal")
 	TEST_ASSERT_NULL(piece.charge_timer, "The charge's timer outlived its criminal")
+	TEST_ASSERT_NULL(piece.arc_timer, "The bolts' timer outlived its criminal")
 
 	// A mini-boss gets up at its own recovery health, rallying
 	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = lazarus_criminal(/mob/living/basic/bounty_criminal/boss/juggernaut)
@@ -176,8 +199,9 @@
 
 /**
  * Not a check: draws Lazarus fighters to data/bounty_chrome_renders/ for a person to look at. The node
- * sits inside the chest, so the worn looks show nothing of it; the charge looks show the arcs a fighter
- * wears while it charges (the glow outline and the light are not drawn by getFlatIcon()).
+ * sits inside the chest, so the worn looks show nothing of it; the charge looks show the red lightning
+ * crawling over a fighter while it charges (the outline, the halo, the bolts and the light are not drawn
+ * by getFlatIcon()).
  */
 /datum/unit_test/voidcrew_bounty_chrome_lazarus/renders/Run()
 	var/list/looks = list(
@@ -195,7 +219,7 @@
 			continue
 		TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/lazarus) in dummy.organs, "The Lazarus node isn't in the [look_name] dummy")
 		if(spec[3])
-			dummy.add_overlay(bounty_lazarus_arcs())
+			dummy.add_overlay(bounty_lazarus_body_arcs(null))
 		dummy.setDir(SOUTH)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/[look_name].png")
 		qdel(dummy)

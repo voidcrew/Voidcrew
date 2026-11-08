@@ -8,20 +8,34 @@
 #define BOUNTY_LAZARUS_HOLD_CHECK (0.5 SECONDS)
 /// ...for at most this long past the charge (one try with cuffs, BOUNTY_CUFF_TIME, and some), before it bleeds away
 #define BOUNTY_LAZARUS_HOLD_MAX (3 SECONDS)
-/// The name of the glow filter on its fighter while it charges
+/// While it charges, red bolts jump off the body this often, more of them each time...
+#define BOUNTY_LAZARUS_ARC_EVERY (0.25 SECONDS)
+/// ...up to this many at once...
+#define BOUNTY_LAZARUS_ARC_MOST 4
+/// ...to tiles and things this far away
+#define BOUNTY_LAZARUS_ARC_RANGE 3
+/// The jolt throws this many bolts out at once...
+#define BOUNTY_LAZARUS_BURST_BOLTS 8
+/// ...this far
+#define BOUNTY_LAZARUS_BURST_RANGE 4
+/// The names of the filters it puts on its fighter: the outline and the halo while it charges, the glow fading after the jolt
 #define BOUNTY_LAZARUS_FILTER "bounty_lazarus_charge"
-/// The colour of the charge: a defibrillator's blue-white
-#define BOUNTY_LAZARUS_COLOR "#7fdcff"
+#define BOUNTY_LAZARUS_HALO "bounty_lazarus_halo"
+#define BOUNTY_LAZARUS_AFTERGLOW "bounty_lazarus_afterglow"
+/// The red of the charge, its light and its bolts
+#define BOUNTY_LAZARUS_COLOR "#ff2a2a"
 
 /**
  * # Lazarus on a bounty fighter
  *
  * The player's Lazarus node (voidcrew/modules/cyberware/ware_military_body.dm) in a criminal or a
- * companion. When they are beaten it screams up to charge where everyone can see and hear it (the
- * node's own whine, a blue glow and crackling arcs on the body, a seizure), then slams them back onto
- * their feet with a thunderclap: a criminal or companion at BOUNTY_LAZARUS_HEAL_TO percent of their
- * health, a mini-boss at its own recovery health, rallying as it does whenever it gets up. A charge,
- * however it ends, spends the node for BOUNTY_LAZARUS_RECHARGE.
+ * companion. When they are beaten it screams up to charge where the whole room can see and hear it:
+ * the node's own whine, red lightning crawling over the body, a red halo flickering brighter, red bolts
+ * jumping off them onto the floor, walls and things around, faster as it fills, and a red light. Then
+ * it slams them back onto their feet with a thunderclap and a burst of red lightning in every direction:
+ * a criminal or companion at BOUNTY_LAZARUS_HEAL_TO percent of their health, a mini-boss at its own
+ * recovery health, rallying as it does whenever it gets up. A charge, however it ends, spends the node
+ * for BOUNTY_LAZARUS_RECHARGE. Every bolt is only a picture: nothing is hurt, nothing is lit on fire.
  *
  * When it fires: a criminal (mini-bosses too) when it goes down at the downed line
  * (COMSIG_BOUNTY_CRIMINAL_DOWNED), as the player node fires on going into crit. Taken down with
@@ -56,13 +70,17 @@
 	var/charge_serial = 0
 	/// The timer for the jolt, or for the next look at cuffs going on
 	var/charge_timer
+	/// The timer for the next bolts off the body, and how many rounds of them this charge has thrown
+	var/arc_timer
+	var/arc_rounds = 0
 	/// world.time after which a charge held by cuffs going on bleeds away
 	var/hold_until = 0
-	/// The arcs, and their glow in the dark, on the fighter while it charges
-	var/mutable_appearance/charge_arcs
-	var/mutable_appearance/charge_arcs_glow
-	/// The light it gives off while it charges
+	/// The red lightning crawling over the fighter while it charges, and its glow in the dark
+	var/list/charge_overlays
+	/// The red light it gives off while it charges
 	var/obj/effect/dummy/lighting_obj/moblight/charge_light
+	/// The timer that takes the glow off after the jolt
+	var/afterglow_timer
 	/// Spent until then
 	COOLDOWN_DECLARE(recharge)
 
@@ -72,6 +90,7 @@
 
 /datum/bounty_chrome/lazarus/detach()
 	end_charge()
+	end_afterglow()
 	return ..()
 
 /datum/bounty_chrome/lazarus/on_downed()
@@ -86,10 +105,11 @@
 	var/mob/living/fighter = owner
 	end_charge()
 	playsound(fighter, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
-	fighter.visible_message(span_warning("The whine under [fighter]'s ribs cuts out."))
+	fighter.visible_message(span_warning("The red lightning on [fighter] cuts out."))
 
 /datum/bounty_chrome/lazarus/on_death()
 	end_charge()
+	end_afterglow()
 
 /datum/bounty_chrome/lazarus/examine_line()
 	if(!owner || owner.stat == DEAD || offline_until)
@@ -122,31 +142,53 @@
 	// Off its own ground (dragged aboard a ship), it is being taken in
 	return criminal.body_on_site(criminal.loc)
 
-/// Starts the charge: the whine, the seizure, the glow. Spent from now, whether or not it gets to fire.
+/// Starts the charge: the whine, the seizure, the red lightning. Spent from now, whether or not it gets to fire.
 /datum/bounty_chrome/lazarus/proc/start_charge()
 	var/mob/living/basic/fighter = owner
 	charging = TRUE
 	charge_serial++
+	arc_rounds = 0
 	hold_until = world.time + BOUNTY_LAZARUS_CHARGE + BOUNTY_LAZARUS_HOLD_MAX
 	COOLDOWN_START(src, recharge, BOUNTY_LAZARUS_RECHARGE)
-	charge_arcs = bounty_lazarus_arcs()
-	charge_arcs_glow = emissive_appearance('icons/effects/effects.dmi', "electricity", fighter)
-	fighter.add_overlay(charge_arcs)
-	fighter.add_overlay(charge_arcs_glow)
-	// Faint at first, white-hot when full: how close it is, at a glance. Colour animates cleanly; size doesn't (chromatic dermis, ware_street.dm).
-	fighter.add_filter(BOUNTY_LAZARUS_FILTER, 2, outline_filter(1, "[BOUNTY_LAZARUS_COLOR]30"))
-	var/glow = fighter.get_filter(BOUNTY_LAZARUS_FILTER)
-	if(glow)
-		animate(glow, color = "[BOUNTY_LAZARUS_COLOR]a0", time = BOUNTY_LAZARUS_CHARGE * 0.7)
-		animate(color = "#e8faffff", time = BOUNTY_LAZARUS_CHARGE * 0.3)
-	charge_light = fighter.mob_light(2, 1.5, BOUNTY_LAZARUS_COLOR)
+	end_afterglow()
+	// Lightning crawling all over them, glowing in the dark too
+	charge_overlays = bounty_lazarus_body_arcs(fighter)
+	fighter.add_overlay(charge_overlays)
+	// A red outline and a red halo, flickering brighter as it fills: how close it is, at a glance.
+	// Colour animates cleanly; size doesn't (chromatic dermis, ware_street.dm).
+	fighter.add_filter(BOUNTY_LAZARUS_HALO, 2, drop_shadow_filter(0, 0, 4, 0, "#ff000000"))
+	fighter.add_filter(BOUNTY_LAZARUS_FILTER, 3, outline_filter(1, "#ff2a2a40"))
+	bounty_lazarus_build_glow(fighter.get_filter(BOUNTY_LAZARUS_HALO), list("#ff000040", "#ff000020", "#ff000070", "#ff000050", "#ff0000a0", "#ff000080", "#ff1010d0", "#ff2020c0"))
+	bounty_lazarus_build_glow(fighter.get_filter(BOUNTY_LAZARUS_FILTER), list("#ff2a2a80", "#ff2a2a50", "#ff2a2ab0", "#ff2a2a80", "#ff4040e0", "#ff3030b0", "#ff8080ff", "#ffb0b0ff"))
+	charge_light = fighter.mob_light(3, 1, BOUNTY_LAZARUS_COLOR)
 	// Cuffs closing, a carry, a locker, the pad: it dies the moment they are taken, not when it is due
 	RegisterSignals(fighter, bounty_lazarus_capture_signals(), PROC_REF(on_taken))
 	// Runs a little past the jolt: the aftershock
-	fighter.do_jitter_animation(200)
+	fighter.do_jitter_animation(300)
 	playsound(fighter, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
-	fighter.visible_message(span_boldwarning("[fighter] seizes, something under [fighter.p_their()] ribs whines up to full charge!"))
+	playsound(fighter, 'sound/effects/magic/lightning_chargeup.ogg', 60, TRUE)
+	fighter.visible_message(span_boldwarning("Red lightning crawls over [fighter], and something under [fighter.p_their()] ribs whines up to full charge!"))
+	arc_timer = addtimer(CALLBACK(src, PROC_REF(arc_round), charge_serial), BOUNTY_LAZARUS_ARC_EVERY * 0.5, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	charge_timer = addtimer(CALLBACK(src, PROC_REF(discharge), charge_serial), BOUNTY_LAZARUS_CHARGE, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/**
+ * One round of red bolts jumping off them while the charge under `serial` builds: more of them each
+ * round, up to BOUNTY_LAZARUS_ARC_MOST, and the red light brighter. Only pictures. Runs until the
+ * charge ends, a held charge included. Tests call it directly.
+ */
+/datum/bounty_chrome/lazarus/proc/arc_round(serial)
+	arc_timer = null
+	if(!charging || serial != charge_serial || QDELETED(owner))
+		return
+	arc_rounds++
+	var/bolts = min(1 + round(arc_rounds / 2), BOUNTY_LAZARUS_ARC_MOST)
+	for(var/atom/struck as anything in bounty_lazarus_arc_targets(owner, BOUNTY_LAZARUS_ARC_RANGE, bolts))
+		bounty_lazarus_bolt(owner, struck, 0.2 SECONDS)
+	charge_light?.set_light_power(min(1 + arc_rounds * 0.4, 3.5))
+	if(arc_rounds == 3)
+		charge_light?.set_light_range(4)
+	playsound(owner, SFX_SPARKS, min(25 + arc_rounds * 6, 70), TRUE)
+	arc_timer = addtimer(CALLBACK(src, PROC_REF(arc_round), serial), BOUNTY_LAZARUS_ARC_EVERY, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /**
  * The charge under `serial` is full: the jolt, if they may still get up. With someone putting cuffs on
@@ -175,30 +217,34 @@
 	if(charging && !may_jolt())
 		fizzle()
 
-/// The charge came to nothing: it bleeds away with a defibrillator's buzz
+/// The charge came to nothing: the lightning gutters out with a defibrillator's buzz
 /datum/bounty_chrome/lazarus/proc/fizzle()
 	var/mob/living/fighter = owner
 	end_charge()
 	if(QDELETED(fighter) || fighter.stat == DEAD)
 		return
 	playsound(fighter, 'sound/machines/defib/defib_failed.ogg', 50, FALSE)
-	fighter.visible_message(span_notice("The whine under [fighter]'s ribs dies away."))
+	fighter.visible_message(span_notice("The red lightning on [fighter] gutters out."))
 
 /**
  * The discharge, as the player node's: stuns and stamina gone, health back, and up on their feet with
- * a thunderclap. A criminal gets up through the body's own stand-up (its recovery clock stopped
- * first), so everything that follows getting up (its AI, a mini-boss's rally) follows this too.
+ * a thunderclap and a burst of red lightning. A criminal gets up through the body's own stand-up (its
+ * recovery clock stopped first), so everything that follows getting up (its AI, a mini-boss's rally)
+ * follows this too.
  */
 /datum/bounty_chrome/lazarus/proc/jolt()
 	var/mob/living/basic/fighter = owner
 	end_charge()
 	playsound(fighter, 'sound/machines/defib/defib_zap.ogg', 100, TRUE)
-	do_sparks(3, TRUE, fighter)
-	var/turf/here = get_turf(fighter)
-	var/obj/effect/temp_visual/electricity/zap = new(here)
-	zap.color = bounty_lazarus_arc_color()
-	new /obj/effect/dummy/lighting_obj(here, 3, 3, BOUNTY_LAZARUS_COLOR, 0.3 SECONDS)
-	fighter.visible_message(span_boldwarning("[fighter] jolts bolt upright with a thunderclap of current!"))
+	playsound(fighter, 'sound/effects/magic/lightningbolt.ogg', 80, TRUE)
+	bounty_lazarus_burst(fighter)
+	// The body glows red a moment longer, fading
+	fighter.add_filter(BOUNTY_LAZARUS_AFTERGLOW, 3, outline_filter(1, "#ffb0b0ff"))
+	var/afterglow = fighter.get_filter(BOUNTY_LAZARUS_AFTERGLOW)
+	if(afterglow)
+		animate(afterglow, color = "#ff000000", time = 1 SECONDS)
+	afterglow_timer = addtimer(CALLBACK(src, PROC_REF(end_afterglow)), 1 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	fighter.visible_message(span_boldwarning("[fighter] jolts bolt upright with a thunderclap of red lightning!"))
 	if(fighter.staminaloss > 0)
 		// Out of stamina crit with it
 		fighter.adjustStaminaLoss(-fighter.staminaloss, forced = TRUE)
@@ -232,23 +278,28 @@
 	companion.ai_in_fight = FALSE
 	companion.ai_join_fight(hunter)
 
-/// Ends any charge: the timer, the glow, the arcs, the light. Safe to call at any time, the fighter being deleted included.
+/// Ends any charge: its timers, the halo, the lightning, the light. Safe to call at any time, the fighter being deleted included.
 /datum/bounty_chrome/lazarus/proc/end_charge()
 	charging = FALSE
 	deltimer(charge_timer)
 	charge_timer = null
+	deltimer(arc_timer)
+	arc_timer = null
 	hold_until = 0
 	var/mob/living/fighter = owner
 	if(fighter)
 		UnregisterSignal(fighter, bounty_lazarus_capture_signals())
-		if(charge_arcs)
-			fighter.cut_overlay(charge_arcs)
-		if(charge_arcs_glow)
-			fighter.cut_overlay(charge_arcs_glow)
-		fighter.remove_filter(BOUNTY_LAZARUS_FILTER)
-	charge_arcs = null
-	charge_arcs_glow = null
+		if(charge_overlays)
+			fighter.cut_overlay(charge_overlays)
+		fighter.remove_filter(list(BOUNTY_LAZARUS_FILTER, BOUNTY_LAZARUS_HALO))
+	charge_overlays = null
 	QDEL_NULL(charge_light)
+
+/// Takes the glow left by a jolt off its fighter
+/datum/bounty_chrome/lazarus/proc/end_afterglow()
+	deltimer(afterglow_timer)
+	afterglow_timer = null
+	owner?.remove_filter(BOUNTY_LAZARUS_AFTERGLOW)
 
 /// What a charging Lazarus listens for on its fighter: the moments it may be being taken in
 /proc/bounty_lazarus_capture_signals()
@@ -259,15 +310,97 @@
 		SIGNAL_ADDTRAIT(TRAIT_BOUNTY_REMOVED),
 	)
 
-/// The crackling arcs drawn over a fighter while their Lazarus charges, in the charge's blue
-/proc/bounty_lazarus_arcs()
-	var/mutable_appearance/arcs = mutable_appearance('icons/effects/effects.dmi', "electricity", ABOVE_MOB_LAYER)
-	arcs.color = bounty_lazarus_arc_color()
-	return arcs
+/// A colour matrix turning any of tg's lightning art (yellow, blue or white) a vicious red, its brightest parts nearly pink
+/proc/bounty_lazarus_red()
+	return list(0.55, 0.1, 0.1, 0.55, 0.1, 0.1, 0.55, 0.1, 0.1, 0, 0, 0)
 
-/// A colour matrix turning tg's yellow electricity a defibrillator's blue-white
-/proc/bounty_lazarus_arc_color()
-	return list(0.3, 0.43, 0.5, 0.3, 0.43, 0.5, 0, 0, 0, 0, 0, 0)
+/**
+ * The red lightning that crawls over a fighter while their Lazarus charges: a thick bolt of tg's
+ * lightning running through the body, two layers of its arcs, one a little larger than the body so it
+ * crawls off the edges, and their glow in the dark (emissive) when `fighter` is given. For the overlays
+ * and the renders test.
+ */
+/proc/bounty_lazarus_body_arcs(atom/fighter)
+	. = list()
+	var/core_state = "lightning[rand(1, 12)]"
+	var/mutable_appearance/core = mutable_appearance('icons/effects/beam.dmi', core_state, ABOVE_MOB_LAYER)
+	core.color = bounty_lazarus_red()
+	. += core
+	var/mutable_appearance/inner = mutable_appearance('icons/effects/effects.dmi', "electricity", ABOVE_MOB_LAYER)
+	inner.color = bounty_lazarus_red()
+	. += inner
+	var/mutable_appearance/outer = mutable_appearance('icons/effects/effects.dmi', "electricity3", ABOVE_MOB_LAYER)
+	outer.color = bounty_lazarus_red()
+	outer.transform = matrix().Scale(1.3)
+	. += outer
+	if(!fighter)
+		return
+	. += emissive_appearance('icons/effects/beam.dmi', core_state, fighter)
+	. += emissive_appearance('icons/effects/effects.dmi', "electricity", fighter)
+	var/mutable_appearance/outer_glow = emissive_appearance('icons/effects/effects.dmi', "electricity3", fighter)
+	outer_glow.transform = matrix().Scale(1.3)
+	. += outer_glow
+
+/// Animates a glow filter (`glow`, may be null) through `steps` (colours with alpha) over the charge: a flicker that builds
+/proc/bounty_lazarus_build_glow(glow, list/steps)
+	if(!glow || !length(steps))
+		return
+	var/step_time = BOUNTY_LAZARUS_CHARGE / length(steps)
+	animate(glow, color = steps[1], time = step_time)
+	for(var/i in 2 to length(steps))
+		animate(color = steps[i], time = step_time)
+
+/**
+ * Where `count` bolts off `fighter` land, in sight within `range`: something solid nearby (a wall, a
+ * machine, a crate) about half the time, else a floor tile. Never a person: the bolts are only
+ * pictures, and must not look like they hurt anyone. May be fewer than `count`, or empty.
+ */
+/proc/bounty_lazarus_arc_targets(atom/fighter, range, count)
+	. = list()
+	var/turf/here = get_turf(fighter)
+	if(!here)
+		return
+	var/list/floors = list()
+	var/list/things = list()
+	for(var/turf/spot as anything in RANGE_TURFS(range, here))
+		if(spot == here || !can_see(here, spot, range))
+			continue
+		if(spot.density)
+			things += spot
+			continue
+		floors += spot
+		for(var/obj/thing in spot)
+			if(thing.density && !thing.invisibility && !iseffect(thing))
+				things += thing
+	for(var/i in 1 to count)
+		if(length(things) && (prob(50) || !length(floors)))
+			. += pick(things)
+		else if(length(floors))
+			. += pick(floors)
+
+/// One red bolt from `from` to `struck`, crackling where it lands, gone after `time`. Only a picture.
+/proc/bounty_lazarus_bolt(atom/from, atom/struck, time)
+	var/state = prob(25) ? "red_lightning" : "lightning[rand(1, 12)]"
+	from.Beam(struck, icon_state = state, time = time, beam_color = BOUNTY_LAZARUS_COLOR)
+	var/turf/landing = get_turf(struck)
+	if(landing)
+		var/obj/effect/temp_visual/electricity/crackle = new(landing)
+		crackle.color = bounty_lazarus_red()
+
+/// The jolt's burst: red bolts thrown out every way, a red ring, a red flash. Only pictures.
+/proc/bounty_lazarus_burst(atom/fighter)
+	var/turf/here = get_turf(fighter)
+	if(!here)
+		return
+	for(var/atom/struck as anything in bounty_lazarus_arc_targets(fighter, BOUNTY_LAZARUS_BURST_RANGE, BOUNTY_LAZARUS_BURST_BOLTS))
+		bounty_lazarus_bolt(fighter, struck, 0.5 SECONDS)
+	var/obj/effect/temp_visual/emp/pulse/ring = new(here)
+	ring.color = bounty_lazarus_red()
+	ring.transform = matrix().Scale(3)
+	var/obj/effect/temp_visual/electricity/crackle = new(here)
+	crackle.color = bounty_lazarus_red()
+	crackle.transform = matrix().Scale(2)
+	new /obj/effect/dummy/lighting_obj(here, 5, 4, BOUNTY_LAZARUS_COLOR, 0.5 SECONDS)
 
 /// The nearest hunter `fighter` can see and may hit, within a screen, or null
 /proc/bounty_lazarus_nearest_hunter(mob/living/basic/fighter)
@@ -291,5 +424,12 @@
 #undef BOUNTY_LAZARUS_HEAL_TO
 #undef BOUNTY_LAZARUS_HOLD_CHECK
 #undef BOUNTY_LAZARUS_HOLD_MAX
+#undef BOUNTY_LAZARUS_ARC_EVERY
+#undef BOUNTY_LAZARUS_ARC_MOST
+#undef BOUNTY_LAZARUS_ARC_RANGE
+#undef BOUNTY_LAZARUS_BURST_BOLTS
+#undef BOUNTY_LAZARUS_BURST_RANGE
 #undef BOUNTY_LAZARUS_FILTER
+#undef BOUNTY_LAZARUS_HALO
+#undef BOUNTY_LAZARUS_AFTERGLOW
 #undef BOUNTY_LAZARUS_COLOR
