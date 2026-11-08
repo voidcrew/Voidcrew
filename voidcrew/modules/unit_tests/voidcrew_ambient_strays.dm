@@ -94,7 +94,7 @@
 	TEST_ASSERT(istype(stray.activity, /datum/ambient_activity/stray_follow), "A stray who agreed is not following anyone")
 	TEST_ASSERT_EQUAL(stray.get_leader(), leader, "A stray follows someone else")
 	TEST_ASSERT_EQUAL(deck.pending(), stray, "The ship does not know who is on the way")
-	TEST_ASSERT(HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower can't cross open space to the ship")
+	TEST_ASSERT(!HAS_TRAIT(stray, TRAIT_SPACEWALK), "A follower crosses open space with no kit (human NPCs use their own suit and jets)")
 	TEST_ASSERT_NULL(stray.start_activity(new /datum/ambient_activity/shelter(stray, null, 100)), "A storm stopped a stray following")
 	TEST_ASSERT(!stray.accept_offer(leader, ship), "A follower agreed a second time")
 	TEST_ASSERT(!ambient_ship_can_take(ship), "A ship took a second stray while one was on the way") // AMBIENT_RECRUITS_PENDING_PER_SHIP
@@ -136,7 +136,7 @@
 	lost.lose_leader()
 	TEST_ASSERT(lost.is_wild(), "A stray who lost their leader is not wild again")
 	TEST_ASSERT(ambient_ship_can_take(other_ship), "A lost follower kept their ship's place")
-	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower can still cross open space")
+	TEST_ASSERT(!HAS_TRAIT(lost, TRAIT_SPACEWALK), "A lost follower crosses open space with no kit")
 
 	// One killed on the way frees it too, and drops nothing
 	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/doomed = allocate(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, corner)
@@ -437,7 +437,15 @@
 	allocated += survivor
 	survivor.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(survivor.is_wild() && survivor.recruit_open, "The lifeboat's survivor can't be asked along")
-	TEST_ASSERT(HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor can't cross open space")
+	// Their softsuit, helmet and jet harness of air: real kit for the crossing, no trait
+	TEST_ASSERT(!HAS_TRAIT(survivor, TRAIT_SPACEWALK), "The lifeboat's survivor crosses open space with no kit")
+	TEST_ASSERT(istype(survivor.wear_suit, /obj/item/clothing/suit/space), "The lifeboat's survivor has no softsuit")
+	TEST_ASSERT(istype(survivor.head, /obj/item/clothing/head/helmet/space), "The lifeboat's survivor has no helmet")
+	var/obj/item/tank/jetpack/harness = survivor.back
+	TEST_ASSERT(istype(harness), "The lifeboat's survivor has no jet harness")
+	survivor.ready_for_space(TRUE)
+	TEST_ASSERT(harness?.on, "The lifeboat's survivor never turns on their jets")
+	survivor.ready_for_space(FALSE)
 	var/survivor_name = survivor.real_name
 	qdel(survivor)
 	var/mob/living/carbon/human/npc/ambient_npc/stray/lifeboat/again = lifeboat.spawn_survivor(run_loc_floor_bottom_left)

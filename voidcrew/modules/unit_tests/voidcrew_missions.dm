@@ -440,9 +440,9 @@
 	var/expected_vouchers = 0
 	var/list/delivery_cases = list(
 		list("healthy", 0, FALSE, 1250),
-		list("80% health", 12, FALSE, 1250),
-		list("injured", 13, FALSE, 1000),
-		list("revived and healed", 13, TRUE, 1000),
+		list("80% health", 20, FALSE, 1250), // a human survivor: 100 health, 80 is the line
+		list("injured", 21, FALSE, 1000),
+		list("revived and healed", 21, TRUE, 1000),
 	)
 	for(var/list/delivery_case as anything in delivery_cases)
 		var/datum/mission/mission = allocate(/datum/mission)
@@ -493,7 +493,7 @@
  *
  * Double-booking a ruin is cosmetic for salvage and fatal for a rescue. A bounty
  * contract spawns its named target plus a paid entourage at a random interior
- * turf; a rescue spawns a 60 HP survivor who never fights back at another random
+ * turf; a rescue spawns a survivor (a real human body) who never fights back at another random
  * interior turf in the same small template. Playtesting turned that up the
  * obvious way - the crew flew out to a rescue, found the survivor dead, and left
  * with the identification tag of somebody else's bounty target instead.
