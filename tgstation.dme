@@ -7228,6 +7228,7 @@
 #include "voidcrew\modules\dynamic_events\events\vent_clog.dm"
 #include "voidcrew\modules\dynamic_events\events\wormholes.dm"
 #include "voidcrew\modules\food_and_drinks\drinks\bottles.dm"
+#include "voidcrew\modules\gun_feel\bullet_speed.dm"
 #include "voidcrew\modules\gun_feel\casings.dm"
 #include "voidcrew\modules\gun_feel\flinch.dm"
 #include "voidcrew\modules\gun_feel\gun_feel.dm"

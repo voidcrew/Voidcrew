@@ -168,3 +168,16 @@
 #define GUN_FEEL_CASING_ROTATION_STEP 22.5
 /// Pixel scatter for a casing that lands on a floor without flying there.
 #define GUN_FEEL_CASING_DROP_SCATTER 8
+
+// Bullet speeds, in tiles per decisecond (tiles a second / 10). Shiptest's speeds, converted from its
+// deciseconds-per-tile values (code/__DEFINES/projectiles.dm there). tg's default bullet does 1.25.
+/// Pistols and revolvers: 25 tiles a second.
+#define GUN_FEEL_SPEED_PISTOL 2.5
+/// SMGs, rifles and machine guns: 33 tiles a second.
+#define GUN_FEEL_SPEED_RIFLE 3.33
+/// Buckshot, slugs and other shotgun rounds: 28.6 tiles a second.
+#define GUN_FEEL_SPEED_SHOTGUN 2.86
+/// Rubber shot, a little slower like Shiptest's rubber modifier: 22 tiles a second.
+#define GUN_FEEL_SPEED_SHOTGUN_RUBBER 2.22
+/// .50 sniper rounds: 50 tiles a second.
+#define GUN_FEEL_SPEED_SNIPER 5
