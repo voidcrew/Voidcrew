@@ -66,7 +66,7 @@
 
 /datum/shop_buyback/ripperdoc/governor_street
 	name = "Governor Patch (pulled)"
-	desc = "A taped-over governor, pulled. Credit toward a cleaner cut."
+	desc = "A taped-over governor, pulled."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/governor_delete/street
 	match_subtypes = FALSE

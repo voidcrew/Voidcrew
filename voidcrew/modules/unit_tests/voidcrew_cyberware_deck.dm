@@ -197,6 +197,34 @@
 	var/obj/machinery/door/airlock/plain_door = allocate(/obj/machinery/door/airlock, get_step(get_step(start, NORTH), NORTH))
 	TEST_ASSERT(action.can_reach(user, plain_door), "The deck can't reach an ordinary door two tiles off")
 
+	// A prison wing's own APC and lights refuse a deck too, so Kill the Power and Burst the Lights
+	// can't black out the wing. The same fixtures anywhere else answer. The answers are taken first
+	// and the tile put back before any of them is judged, so a failure leaves no stray prison area.
+	var/turf/wing_tile = get_step(start, EAST)
+	var/area/old_area = get_area(wing_tile)
+	var/obj/machinery/power/apc/open_apc = allocate(/obj/machinery/power/apc, wing_tile)
+	var/obj/machinery/light/open_light = allocate(/obj/machinery/light, wing_tile)
+	var/open_apc_reach = action.can_reach(user, open_apc)
+	var/open_light_reach = action.can_reach(user, open_light)
+	var/area/voidcrew/player_outpost/prison/wing = new
+	wing_tile.change_area(old_area, wing)
+	var/obj/machinery/power/apc/wing_apc = new(wing_tile)
+	var/obj/machinery/light/wing_light = new(wing_tile)
+	var/wing_apc_reach = action.can_reach(user, wing_apc)
+	var/wing_light_reach = action.can_reach(user, wing_light)
+	var/wing_apc_started = action.Activate(wing_apc)
+	var/wing_light_started = action.Activate(wing_light)
+	var/wing_busy = action.busy
+	wing_tile.change_area(wing, old_area)
+	qdel(wing_apc)
+	qdel(wing_light)
+	qdel(wing)
+	TEST_ASSERT(open_apc_reach, "The deck can't reach an ordinary APC next to it")
+	TEST_ASSERT(open_light_reach, "The deck can't reach an ordinary light next to it")
+	TEST_ASSERT(!wing_apc_reach, "The deck reaches a prison wing's APC")
+	TEST_ASSERT(!wing_light_reach, "The deck reaches a light in a prison wing")
+	TEST_ASSERT(!wing_apc_started && !wing_light_started && !wing_busy, "The deck went to work on a prison wing's power or lights")
+
 /// An upload lands only if the hacker holds still and stays online: a step or
 /// an EMP loses it and costs no cooldown. A clean upload lands and charges the
 /// deck's cooldown, a hack the target would not take is never offered, and the

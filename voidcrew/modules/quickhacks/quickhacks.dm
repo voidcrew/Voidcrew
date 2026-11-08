@@ -129,7 +129,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/machine_quickhack/safeties
 	name = "Cut the Safeties"
-	desc = "Strip the target's safety interlocks. Exactly what an emag would do to it, which depends entirely on what it is."
+	desc = "Strip the target's safety interlocks."
 	radial_icon = 'icons/obj/card.dmi'
 	radial_icon_state = "emag"
 	cooldown = 25 SECONDS
@@ -162,7 +162,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 
 /datum/machine_quickhack/bolts
 	name = "Bolts"
-	desc = "Throw the door's bolts, or pull them if they are already down. Works on the AI wire, so a cut door will not answer."
+	desc = "Throw the door's bolts, or pull them if they are already down."
 	radial_icon_state = "lockdown"
 	cooldown = 8 SECONDS
 
@@ -197,8 +197,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/machine_quickhack/electrify
 	name = "Electrify"
-	desc = "Run the door's frame live for 30 seconds. It draws on your own current rather than the area's, so a \
-		nearly-empty APC still lands the shock. Touching it without insulated gloves is 20 burn and a stun."
+	desc = "Run the door's frame live for 30 seconds. Touching it without insulated gloves is 20 burn and a stun."
 	radial_icon = 'icons/obj/machines/wallmounts.dmi'
 	radial_icon_state = "apc-spark"
 	cooldown = 20 SECONDS
@@ -263,7 +262,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 
 /datum/machine_quickhack/kill_power
 	name = "Kill the Power"
-	desc = "Flip an APC's breaker. Lights, equipment and air handling across that whole area go dead until it is flipped back."
+	desc = "Flip an APC's breaker. Lights, equipment and air handling across that whole area go dead."
 	radial_icon = 'icons/obj/machines/wallmounts.dmi'
 	radial_icon_state = "apc0"
 	cooldown = 30 SECONDS
@@ -291,7 +290,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/machine_quickhack/burst_lights
 	name = "Burst the Lights"
-	desc = "Push an APC's lighting circuit until every bulb in its area breaks. They stay broken."
+	desc = "Push an APC's lighting circuit until every bulb in its area breaks."
 	radial_icon_state = "blackout"
 	cooldown = 30 SECONDS
 
@@ -331,7 +330,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/machine_quickhack/feedback_surge
 	name = "Feedback Surge"
-	desc = "Dump everything a person's gear is holding into the person. Empties every power cell they are carrying and shocks them for up to 60 burn, scaled to how much charge there was."
+	desc = "Empty every power cell a person is carrying through the person, for up to 60 burn."
 	radial_icon = 'icons/obj/weapons/baton.dmi'
 	radial_icon_state = "stunbaton_active"
 	cooldown = 60 SECONDS
@@ -369,7 +368,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
  */
 /datum/machine_quickhack/cutout
 	name = "Cutout"
-	desc = "Quietly empty every power cell a person is carrying and switch their radios off for 45 seconds. No shock and no stun; their gear just stops."
+	desc = "Quietly empty every power cell a person is carrying and switch their radios off for 45 seconds."
 	radial_icon = 'icons/obj/weapons/baton.dmi'
 	radial_icon_state = "stunbaton_nocell"
 	cooldown = 35 SECONDS
@@ -404,7 +403,7 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 
 /datum/machine_quickhack/silence
 	name = "Silence"
-	desc = "Jam every radio within nine tiles of what you clicked for 45 seconds, and switch the ones already in range off outright for as long."
+	desc = "Jam every radio within nine tiles of what you clicked for 45 seconds."
 	radial_icon = 'icons/obj/devices/syndie_gadget.dmi'
 	radial_icon_state = "jammer"
 	cooldown = 40 SECONDS

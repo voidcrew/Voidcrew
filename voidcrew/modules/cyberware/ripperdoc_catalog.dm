@@ -573,7 +573,7 @@
 
 /datum/shop_buyback/ripperdoc/shock_coils
 	name = "Shock Coils (pulled)"
-	desc = "Reflex legs, lightly used. Trade-in credit toward the jump pistons."
+	desc = "Reflex legs, lightly used."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/shock_coils
 	pay_credits = 250
@@ -582,7 +582,7 @@
 
 /datum/shop_buyback/ripperdoc/second_wind
 	name = "Second Wind Bladder (pulled)"
-	desc = "A used air reserve. Worth half toward something with a longer bladder."
+	desc = "A used air reserve."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/second_wind
 	// The Deep-lung is a subtype with its own, higher entry (ware_models_b.dm).

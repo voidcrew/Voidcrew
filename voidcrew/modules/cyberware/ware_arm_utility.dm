@@ -29,7 +29,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw
 	name = "\improper Rockjaw drill fist"
-	desc = "A compact mining drill that folds out of the forearm. Anything it cracks gets vacuumed straight into an internal hopper, so you aren't crawling around the floor picking up your own ore."
+	desc = "A compact mining drill that folds out of the forearm, with a hopper that swallows whatever it cracks."
 	icon_state = "rockjaw"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
@@ -58,7 +58,7 @@
 /// diamond drill (0.2). The speed is part of what the 1,200 cr buys.
 /obj/item/pickaxe/drill/cyberware
 	name = "rockjaw drill"
-	desc = "The business end of a Rockjaw drill fist. It only comes off the arm at a Chrome Cradle."
+	desc = "The business end of a Rockjaw drill fist."
 	toolspeed = 0.5
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/Destroy()
@@ -160,7 +160,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers
 	name = "\improper Fixer's Fingers"
-	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles, and the servo tendons behind them make everything you do with your hands quicker."
+	desc = "A fingertip omnitool suite. Driver, wrench and cutters fold out of the knuckles on quick servo tendons."
 	icon_state = "fixers"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1

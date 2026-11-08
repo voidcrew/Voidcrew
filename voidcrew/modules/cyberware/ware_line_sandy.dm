@@ -49,7 +49,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge/street
 	name = "Reflex Surge"
-	desc = "Six seconds of speed: melee cooldowns cut by a quarter, 15% chance to dodge ranged fire while moving. Then eight seconds of crash. An EMP mid-window crashes you instantly."
+	desc = "Six seconds of speed: melee cooldowns cut by a quarter, 15% chance to dodge ranged fire while moving. Then eight seconds of crash."
 	cooldown_time = 120 SECONDS
 
 /datum/movespeed_modifier/cyberware_cascade/street
@@ -85,7 +85,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge/milspec
 	name = "Reflex Surge"
-	desc = "Seven seconds of speed: melee cooldowns cut by 40%, 25% chance to dodge ranged fire while moving. Then seven seconds of crash. An EMP mid-window crashes you instantly."
+	desc = "Seven seconds of speed: melee cooldowns cut by 40%, 25% chance to dodge ranged fire while moving. Then seven seconds of crash."
 	cooldown_time = 90 SECONDS
 
 /datum/movespeed_modifier/cyberware_cascade/milspec

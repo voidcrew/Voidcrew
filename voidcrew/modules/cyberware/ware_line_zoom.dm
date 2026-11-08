@@ -104,7 +104,7 @@
 
 /datum/action/cooldown/cyberware/deadeye_tag/marksman
 	name = "Marksman Tag"
-	desc = "Tag a hostile in view. Your next four shots track them automatically. The tag refuses to take a crewmate."
+	desc = "Tag a hostile in view. Your next four shots track them."
 	cooldown_time = 18 SECONDS
 
 // =========================================================================
@@ -180,7 +180,7 @@
 
 /datum/shop_buyback/ripperdoc/assay_optics
 	name = "Assay Optics (pulled)"
-	desc = "Budget surveyor eyes. Worth half toward the full suite."
+	desc = "Budget surveyor eyes, lenses scratched."
 	category = "Trade-In"
 	item_path = /obj/item/organ/eyes/robotic/cyberware/prospector/street
 	match_subtypes = FALSE

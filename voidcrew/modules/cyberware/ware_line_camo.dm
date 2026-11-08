@@ -38,7 +38,7 @@
 	)
 
 /datum/action/cooldown/cyberware/ghostskin_cloak/street
-	desc = "Five seconds of patchy optical camo, enough to fool people and not much else. Attacking, shooting, throwing, taking a hit or an EMP drops it."
+	desc = "Five seconds of patchy optical camo."
 	cooldown_time = 45 SECONDS
 
 // =========================================================================
@@ -58,7 +58,7 @@
 /// Trade-in at half list, credits only, like the other street rungs.
 /datum/shop_buyback/ripperdoc/ghostskin_street
 	name = "Flickerskin weave (pulled)"
-	desc = "A patchy camo weave you've outgrown. Worth half toward the real thing."
+	desc = "A patchy camo weave you've outgrown."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/ghostskin/street
 	pay_credits = 1200

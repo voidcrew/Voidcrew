@@ -33,7 +33,8 @@
  * - EMP and brownout kill the deck (the cyberware action bridge); Chrome Read
  *   shows it.
  * - Outpost property and outpost prison doors (cells and staff doors) refuse
- *   every hack outright, so a deck never springs a prisoner. Overload refuses any
+ *   every hack outright, and so do a prison wing's APC and lights (Kill the
+ *   Power, Burst the Lights), so a deck never springs a prisoner. Overload refuses any
  *   machine on an outpost, trader or player (owner, D12: decks never blow up
  *   outpost machines). A person hacked at a trader outpost counts as an attack
  *   on them there, the same as a punch, and Arc Flash does not run there at all.
@@ -280,8 +281,8 @@
 // ---- Reach -------------------------------------------------------------
 
 /// Whether the deck can work on this target from here: the bearer can see,
-/// the target is not outpost property or a prison door, and it is in range and
-/// in a clear line.
+/// the target is not outpost property or part of a prison wing (a door, its APC
+/// or a light in it), and it is in range and in a clear line.
 /datum/action/cooldown/cyberware/deck/proc/can_reach(mob/living/carbon/bearer, atom/target, feedback = FALSE)
 	var/obj/item/organ/cyberimp/cyberware/deck/deck = get_deck()
 	if(!deck || QDELETED(target))
@@ -290,8 +291,9 @@
 		if(feedback)
 			bearer.balloon_alert(bearer, "can't see!")
 		return FALSE
-	// Prison doors too, cells and staff doors alike: no prison break by deck.
-	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY) || is_outpost_prison_airlock(target))
+	// Prison doors too, cells and staff doors alike, and the wing's own APC and
+	// lights: no prison break by deck.
+	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY) || is_outpost_prison_airlock(target) || is_outpost_prison_fixture(target))
 		if(feedback)
 			target.balloon_alert(bearer, "hardened firmware!")
 		return FALSE
@@ -516,7 +518,7 @@
  */
 /datum/machine_masshack/ping
 	name = "Ping"
-	desc = "Every camera, turret and powered door nearby answers the handshake, and shows through the walls for a moment. Only you see it."
+	desc = "Every camera, turret and powered door nearby answers the handshake and shows through the walls for a moment."
 	radial_icon = 'icons/mob/actions/actions_items.dmi'
 	radial_icon_state = "bci_wireless"
 	cooldown = 20 SECONDS
@@ -562,7 +564,7 @@
  */
 /datum/machine_quickhack/reboot_turret
 	name = "Reboot Turret"
-	desc = "Force a turret through a cold boot. It goes quiet for a few seconds, then comes back as it was."
+	desc = "Force a turret through a cold boot. It goes quiet for a few seconds."
 	radial_icon = 'icons/obj/weapons/turrets.dmi'
 	radial_icon_state = "standard_off"
 	cooldown = 20 SECONDS
@@ -687,7 +689,7 @@
 
 /datum/shop_buyback/ripperdoc/deck_junker
 	name = "Junker deck (pulled)"
-	desc = "A soldered-up cortex deck, pulled. Worth something toward a real one."
+	desc = "A soldered-up cortex deck, pulled."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/deck
 	match_subtypes = FALSE
@@ -697,7 +699,7 @@
 
 /datum/shop_buyback/ripperdoc/deck_street
 	name = "Street deck (pulled)"
-	desc = "A street cortex deck, pulled. Half its price toward a better one."
+	desc = "A street cortex deck, pulled."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/deck/street
 	match_subtypes = FALSE

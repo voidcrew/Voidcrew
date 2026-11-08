@@ -42,7 +42,7 @@
 	aug_overlay = "hopper_street"
 	leap_range = 3
 	leap_cooldown = 14 SECONDS
-	leap_action_desc = "Leap up to three tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
+	leap_action_desc = "Leap up to three tiles over gaps, tables and people."
 
 // =========================================================================
 // VAULTER PISTONS (milspec Hopper)
@@ -65,7 +65,7 @@
 	organ_traits = list(TRAIT_NO_SLIP_WATER)
 	leap_range = 5
 	leap_cooldown = 6 SECONDS
-	leap_action_desc = "Leap up to five tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
+	leap_action_desc = "Leap up to five tiles over gaps, tables and people."
 
 /obj/item/organ/cyberimp/cyberware/hopper/milspec/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()

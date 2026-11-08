@@ -41,7 +41,7 @@
 
 /obj/item/organ/cyberimp/cyberware/second_wind
 	name = "\improper Second Wind bladder"
-	desc = "A vacuum-cured polymer bladder plumbed around the lungs. When the air runs out it kicks in with a hiss and gives you about three minutes to do something about it, then refills off every breath you take normally. You'll know when it's running: the mask-breathing is loud and the indicator is hard to miss."
+	desc = "A vacuum-cured polymer bladder plumbed around the lungs. When the air runs out it takes over with a hiss."
 	icon_state = "second_wind"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SEAL
@@ -71,7 +71,7 @@
 /obj/item/organ/cyberimp/cyberware/second_wind/examine(mob/user)
 	. = ..()
 	var/seconds_left = round(reserve / (1 SECONDS))
-	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air[reserve < max_reserve ? ", refilling while its bearer breathes normally" : " (full)"].")
+	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air.")
 
 /obj/item/organ/cyberimp/cyberware/second_wind/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -139,7 +139,7 @@
 	update_alert(source)
 	if(!low_warned && reserve <= CYBERWARE_SECOND_WIND_LOW)
 		low_warned = TRUE
-		to_chat(source, span_warning("Your bladder gauge drops into the red, <b>[round(reserve / (1 SECONDS))]</b> seconds of air left."))
+		to_chat(source, span_warning("Your bladder gauge drops into the red."))
 		playsound(source, 'sound/machines/buzz/buzz-two.ogg', 30, TRUE)
 	// This IS a successful breath as far as the body is concerned.
 	source.failed_last_breath = FALSE
@@ -157,7 +157,7 @@
 		source.balloon_alert(source, "[LOWER_TEXT(format_text(name))] engages")
 		source.visible_message(
 			span_notice("[source] takes a sharp breath, and something under [source.p_their()] ribs starts working."),
-			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you. You have [round(reserve / (1 SECONDS))] seconds of air."),
+			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you."),
 			span_hear("You hear a pneumatic hiss and the rhythm of mask breathing."),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 		)
@@ -190,7 +190,7 @@
 	indicator.color = running_low ? "#ffb347" : "#4dd8e6"
 	// Named for the bladder actually fitted, so a Deep-lung never reads as a Second Wind.
 	indicator.name = "[format_text(name)] engaged"
-	indicator.desc = "Your [format_text(name)] is doing your breathing for you. [seconds_left] second\s of reserve air left[running_low ? ". Find air." : "."]"
+	indicator.desc = "Your [format_text(name)] is doing your breathing for you. The gauge reads [seconds_left] second\s."
 
 /**
  * Whether the mob's surroundings hold enough oxygen to breathe unassisted:

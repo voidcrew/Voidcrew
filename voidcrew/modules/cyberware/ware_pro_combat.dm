@@ -189,7 +189,7 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/deadeye
 	name = "\improper Deadeye link"
-	desc = "Milspec optics built around a target-processing coprocessor. Paint someone and the link walks your next few rounds onto them, whatever the barrel was actually pointed at."
+	desc = "Military optics built around a targeting coprocessor. It decides where your rounds go, and you aren't consulted."
 	icon_state = "deadeye"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -275,7 +275,7 @@
 
 /datum/action/cooldown/cyberware/deadeye_tag
 	name = "Deadeye Tag"
-	desc = "Tag a hostile in view. Your next three shots track them automatically. The tag refuses to take a crewmate."
+	desc = "Tag a hostile in view. Your next three shots track them."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
 	cooldown_time = 25 SECONDS
@@ -322,7 +322,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps some of the fire coming your way, because your body moved before you told it to."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. Your body gets out of the way before you've decided to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -406,7 +406,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/dead_channel
 	name = "\improper Dead Channel pain editor"
-	desc = "A signal processor clamped over the pain nerves. You stop feeling injuries entirely, which keeps you upright and moving where anyone else would fold. The catch is that you can't tell how bad it's gotten. The colour draining out of the world is the only gauge you get."
+	desc = "A signal processor clamped over the pain nerves. Nothing hurts. That isn't the same as nothing being wrong."
 	icon_state = "dead_channel"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
@@ -623,7 +623,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hopper
 	name = "\improper Hopper piston calves"
-	desc = "Paired myomer pistons sleeved over both calves. Four tiles of flat jump on demand, over railings, tables and whoever's in the way. Flat is the operative word: they will not put you over a wall."
+	desc = "Paired myomer pistons sleeved over both calves, for clearing railings, tables and whoever's in the way."
 	icon_state = "hopper"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -648,7 +648,7 @@
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
-	desc = "Leap up to four tiles over gaps, tables and people, onto any open floor you can see with a clear lane to it. Walls, windows and shut doors stop the jump."
+	desc = "Leap up to four tiles over gaps, tables and people."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS

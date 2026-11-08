@@ -159,7 +159,7 @@
 	else
 		for(var/list/entry as anything in report["entries"])
 			var/status = entry["offline"] ? " · OFFLINE" : ""
-			var/rating = entry["rated"] ? "T[entry["tier"]]" : "UNRATED"
+			var/rating = entry["rated"] ? (list("STREET", "PRO", "MILITARY", "LEGEND")[clamp(entry["tier"], 1, 4)]) : "UNRATED"
 			. += cyberware_scan_line("» [uppertext(entry["name"])] · [rating][status]", entry["color"])
 	if(load > capacity)
 		. += cyberware_scan_line("LOAD OVER CEILING: SUBJECT BROWNED OUT", CYBERWARE_COLOR_TIER_3)
@@ -168,7 +168,7 @@
 
 /datum/action/cooldown/cyberware/chrome_read
 	name = "Chrome Read"
-	desc = "Read a body's hardware bus: what's installed, what tier it is, and how loaded their nervous system is. They'll feel you do it."
+	desc = "Read the chrome in a body you can see. They'll feel you do it."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "scan"
 	ranged_mousepointer = 'icons/effects/mouse_pointers/scan_target.dmi'

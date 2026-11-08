@@ -33,8 +33,8 @@
 	burn_roar_range = 0
 	burn_crash = 6 SECONDS
 	burn_cooldown = 120 SECONDS
-	burn_action_desc = "Eight seconds of damage resistance and harder fists, announced by the chest speaker. Ends in a stamina collapse. An EMP mid-burn collapses you instantly."
-	burn_alert_desc = "The safeties are loosened, not gone. Hits don't hurt as much and your fists hit harder. You collapse when it ends."
+	burn_action_desc = "Eight seconds of damage resistance and harder fists, announced by the chest speaker. Ends in a collapse."
+	burn_alert_desc = "The safeties are loosened, not gone."
 
 /// Milspec: surplus assault issue. Close to the Redline, a size smaller.
 /obj/item/organ/cyberimp/cyberware/redline/milspec
@@ -51,8 +51,8 @@
 	burn_roar_range = 4
 	burn_crash = 5 SECONDS
 	burn_cooldown = 105 SECONDS
-	burn_action_desc = "Ten seconds of stun immunity, 30% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse. An EMP mid-burn collapses you instantly."
-	burn_alert_desc = "The safeties are off. Stuns don't land, hits don't hurt as much and your fists hit harder. You collapse when it ends."
+	burn_action_desc = "Ten seconds of stun immunity, 30% damage resistance and harder fists, opened with a staggering roar. Ends in a collapse."
+	burn_alert_desc = "The safeties are off."
 
 // =========================================================================
 // SPLICE SKUs (wired into the vendors at integration, not here)

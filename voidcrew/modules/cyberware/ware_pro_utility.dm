@@ -189,7 +189,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick
 	name = "\improper Icepick Jack"
-	desc = "A slim data spike folded into the wrist, tipped in monocrystal. Turret IFF buses and door motor controllers all run the same handful of protocols, and the spike knows every one of them. Outpost security hardware is the one exception; nobody has cracked that firmware."
+	desc = "A slim data spike folded into the wrist, tipped in monocrystal. Turrets and door motors both talk to it a little too easily."
 	icon_state = "icepick"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -229,7 +229,7 @@
 
 /datum/action/cooldown/cyberware/icepick/suppress
 	name = "Icepick: Suppress"
-	desc = "Spike a hostile turret in line of sight to knock it offline for a while, or slowly force open a bolted or unpowered door you're standing at."
+	desc = "Spike a hostile turret in sight to knock it offline, or force open a bolted or unpowered door."
 	// Both channels are on the same spike, so both need their own face on the
 	// HUD: two identical buttons is a misclick waiting to happen.
 	button_icon_state = "act_icepick_suppress"
@@ -346,7 +346,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook
 	name = "\improper Skyhook wrist winch"
-	desc = "A barbed anchor over a spooled monofilament winch, built through the wrist bones. Fire it into anything solid within seven tiles and hold on."
+	desc = "A barbed anchor over a spooled monofilament winch, built through the wrist bones. It goes into anything solid and reels you in after it."
 	icon_state = "skyhook"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
@@ -431,7 +431,7 @@
  */
 /obj/item/organ/eyes/robotic/cyberware/prospector
 	name = "\improper Prospector Suite optics"
-	desc = "Amber-ringed surveyor eyes. Blink the command and they thump out a resonance pulse: ore veins light up straight through the rock, and any cache transponders in range echo back with them. The handheld scanner needs line of sight. These don't."
+	desc = "Amber-ringed surveyor eyes that can see ore through solid rock. The pulse that does it makes your skull hum."
 	icon_state = "prospector"
 	eye_color_left = "#b8860b"
 	eye_color_right = "#b8860b"
@@ -508,7 +508,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/hemoglass
 	name = "\improper Hemoglass filter"
-	desc = "A dialysis loop in borosilicate, teed into the vena cava. It strips poisons, chems and radiation out of your blood a little faster than most things can put them in. Party mode tells it to leave the recreational chems alone."
+	desc = "A dialysis loop in borosilicate, teed into the vena cava. It cleans your blood faster than most things can foul it. There's a switch for evenings when you'd rather it didn't."
 	icon_state = "hemoglass"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_FILTER
@@ -523,7 +523,7 @@
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/ui_action_click()
 	party_mode = !party_mode
-	owner.balloon_alert(owner, party_mode ? "party mode, recreational channels open" : "filter scrubbing everything")
+	owner.balloon_alert(owner, party_mode ? "party mode" : "scrubbing everything")
 
 /obj/item/organ/cyberimp/cyberware/hemoglass/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -558,7 +558,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/coolant
 	name = "\improper Coolant Loop lattice"
-	desc = "Kilometres of microbore coolant line threaded between muscle and skin: a full climate system for your body. You can work in lava country and walk out of fires that would cook anyone else. It eats a lot of chrome load to run."
+	desc = "Kilometres of microbore coolant line threaded between muscle and skin, which makes you a climate system with a pulse."
 	icon_state = "coolant"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SEAL
@@ -628,7 +628,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/doppler
 	name = "\improper Heartbeat Doppler"
-	desc = "A sonar transceiver socketed into the bone behind your ear. Anything alive and moving within nine tiles shows up through walls; anything holding still doesn't register at all. The ping is quiet, but it's out loud, so you're not the only one who knows it's running."
+	desc = "A sonar transceiver socketed into the bone behind your ear. It paints whatever is moving nearby, walls or no walls, and the ping is louder than the brochure said."
 	icon_state = "doppler"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_CYBERWARE_EARS
@@ -831,7 +831,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber
 	name = "\improper Graverobber's Jack"
-	desc = "An arm-mounted data spike that reads intel out of dead bodies. Spend three seconds on an adjacent corpse and nearby loot caches and hostile patrols get marked on your HUD."
+	desc = "An arm-mounted data spike for going through the implants of the recently dead."
 	icon_state = "graverobber"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -839,12 +839,6 @@
 	/// Intel marks the last read raised, so pulling the spike takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
-
-/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/examine(mob/user)
-	. = ..()
-	. += span_notice("Once installed, use the Data-Spike the Dead ability on a dead body next to you. The read takes 3 seconds. It marks loot caches within [CYBERWARE_GRAVEROBBER_SWEEP_RANGE] tiles in amber and hostile patrols in red on your HUD for a few seconds.")
-	. += span_notice("Occasionally a read recovers a vault phrase, marking caches within [CYBERWARE_GRAVEROBBER_DEEP_SWEEP_RANGE] tiles instead.")
-	. += span_notice("Each body can only be read once, and the spike takes 20 seconds to recharge between reads.")
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
 	clear_marks()
@@ -931,7 +925,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/angler
 	name = "\improper Harpoon Spool"
-	desc = "A forearm winch spooled with monofilament under a barbed head. Fired, it drags loose gear and small creatures to you from six tiles out, anything heavier drags you instead."
+	desc = "A forearm winch spooled with monofilament under a barbed head. It reels in whatever it hits, or you toward it, depending on who's heavier."
 	icon_state = "angler"
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
@@ -939,7 +933,7 @@
 
 /datum/action/cooldown/cyberware/harpoon
 	name = "Harpoon Barb"
-	desc = "Fire the barb up to six tiles: loose items and small creatures come to you. Anything heavier drags you a tile toward it instead."
+	desc = "Fire the barb up to six tiles. Loose items and small creatures come to you; anything heavier pulls you toward it."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "angler"
 	cooldown_time = 8 SECONDS

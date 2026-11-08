@@ -174,7 +174,7 @@
 /// pay. Credits only, so turning a pair around is always a loss.
 /datum/shop_buyback/ripperdoc/mantis_street
 	name = "Shiv Blade housing (pulled)"
-	desc = "A secondhand forearm housing, either side. Counts toward the real blades."
+	desc = "A secondhand forearm housing, either side."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street
 	match_subtypes = TRUE

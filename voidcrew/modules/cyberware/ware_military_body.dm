@@ -29,7 +29,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/ghostskin
 	name = "\improper Ghostskin weave"
-	desc = "A subdermal lattice of refraction cells. Switched on, you're a faint heat-shimmer and not much else. Swing at anyone and the field drops, mid-swing, out in the open."
+	desc = "A subdermal lattice of refraction cells. Switched on, you're a faint heat-shimmer and not much else."
 	icon_state = "ghostskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SKIN
@@ -104,7 +104,7 @@
 	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
 	wearer.visible_message(
 		span_warning("[wearer] ripples and thins to a heat-shimmer outline!"),
-		span_notice("The weave bends the light around you. Ten seconds."),
+		span_notice("The weave bends the light around you."),
 	)
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_field_expired()
@@ -177,7 +177,7 @@
 
 /datum/action/cooldown/cyberware/ghostskin_cloak
 	name = "Ghostskin Field"
-	desc = "Ten seconds of optical camo. Attacking, shooting, throwing, taking a hit or an EMP drops the field. Anyone standing right next to you still sees you."
+	desc = "Ten seconds of optical camo."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_ghostskin"
 	cooldown_time = 30 SECONDS
@@ -310,7 +310,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/lazarus
 	name = "\improper Lazarus node"
-	desc = "A capacitor bank sunk fist-deep in the chest, wired straight across the heart. When you go down it spends a second charging up, then shocks you back onto your feet. Rebuilding that charge takes a lot longer."
+	desc = "A capacitor bank sunk fist-deep in the chest, wired straight across the heart. It has strong views on you staying down."
 	icon_state = "lazarus"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_HEART_AID
@@ -329,7 +329,7 @@
 	if(COOLDOWN_FINISHED(src, jolt_cooldown))
 		. += span_notice("The charge bank reads <b>READY</b>.")
 	else
-		. += span_notice("The charge bank reads <b>RECHARGING</b>, [DisplayTimeText(COOLDOWN_TIMELEFT(src, jolt_cooldown))] left.")
+		. += span_notice("The charge bank reads <b>RECHARGING</b>.")
 
 /obj/item/organ/cyberimp/cyberware/lazarus/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -445,7 +445,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/atlas
 	name = "\improper Atlas frame"
-	desc = "A titanium truss bolted through the spine and ribs. Nothing breaks your bones and nothing takes a limb off you. Everything softer than bone is still your problem, and anything you throw leaves your hand like it was fired."
+	desc = "A titanium truss bolted through the spine and ribs, so the skeleton stops being the weak point."
 	icon_state = "atlas"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_FRAME
@@ -461,7 +461,7 @@
 	/// Whether a throw of the bearer by something else travels half as far.
 	var/resists_knockback = TRUE
 	/// The line examine adds on top of the organ's own. Null for none.
-	var/frame_examine = "Covers the skeleton only: no dislocations, no fractures, and no losing a limb. Slashes, punctures, burns and bleeding are untouched."
+	var/frame_examine = null
 
 /obj/item/organ/cyberimp/cyberware/atlas/examine(mob/user)
 	. = ..()
@@ -599,7 +599,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/rigger
 	name = "\improper Rigger socket"
-	desc = "A skull jack that patches a ship's helm straight into your head. Anywhere aboard, you can fly it, as long as the ship still has a helm console for the socket to talk to, and as long as you don't mind walking while you do it."
+	desc = "A skull jack that patches a ship's helm straight into your head."
 	icon_state = "rigger"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_CYBERWARE_RIGGER
@@ -614,7 +614,6 @@
 
 /obj/item/organ/cyberimp/cyberware/rigger/examine(mob/user)
 	. = ..()
-	. += span_notice("Opens the helm of whatever ship its bearer stands on, from anywhere on it. It borrows a real console. A hull with no helm left has nothing to answer with.")
 	if(!owner)
 		return
 	if(!linked_ship)
@@ -761,12 +760,12 @@
 		return FALSE
 	if(!linked_ship)
 		pilot.balloon_alert(pilot, "no hull to reach")
-		to_chat(pilot, span_warning("The socket casts around for a hull and finds solid ground. You have to be aboard a ship."))
+		to_chat(pilot, span_warning("The socket casts around for a hull and finds solid ground."))
 		return FALSE
 	var/obj/machinery/computer/helm/console = find_console()
 	if(!console)
 		pilot.balloon_alert(pilot, "no helm answering!")
-		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink. The socket borrows a helm console, and there isn't a working one left on the ship."))
+		to_chat(pilot, span_warning("Nothing aboard [linked_ship] answers the uplink."))
 		return FALSE
 	if(!console.check_crew_access(pilot))
 		return FALSE
@@ -777,7 +776,7 @@
 	cyberware_ink_pulse(pilot, CYBERWARE_INK_HARD)
 	pilot.visible_message(
 		span_notice("The jack behind [pilot]'s ear lights up, and [pilot.p_their()] eyes go somewhere else."),
-		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here, at a walk."),
+		span_notice("The uplink catches [console] aboard [linked_ship]. You are flying the ship from here."),
 	)
 	console.ui_interact(pilot)
 	return TRUE
@@ -812,7 +811,7 @@
 
 /datum/action/cooldown/cyberware/rigger_uplink
 	name = "Helm Uplink"
-	desc = "Open the ship's helm from wherever you're standing. You move at a walk while it's up, and it drops if you leave the hull, black out, or lose the socket."
+	desc = "Open the ship's helm from wherever you're standing. You walk slowly while it's up."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "rigger"
 	cooldown_time = 5 SECONDS

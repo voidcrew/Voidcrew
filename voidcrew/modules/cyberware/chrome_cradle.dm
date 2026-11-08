@@ -94,8 +94,6 @@
 
 /obj/machinery/chrome_cradle/examine(mob/user)
 	. = ..()
-	. += span_notice("Drag yourself (or a patient) onto the slab to lie back on it. Whoever's on the slab runs their own install; the rig won't take orders from anyone else.")
-	. += span_notice("Tune-ups run [CYBERWARE_TUNEUP_FEE] cr: EMP-scrambled and damaged chrome comes back to spec. Load cash into the slab or pay by ID.")
 	if(loaded_credits)
 		. += span_notice("The slab's cash slot holds <b>[loaded_credits] cr</b>.")
 	if(length(tray))
@@ -408,7 +406,7 @@
 	if(any_repairable)
 		return null
 	if(only_brownout && length(installed))
-		return "That chrome is browned out, not broken. Shed some load instead."
+		return "That chrome is browned out, not broken."
 	return "Nothing needs a tune-up."
 
 /obj/machinery/chrome_cradle/proc/try_tune_up(mob/living/carbon/patient)

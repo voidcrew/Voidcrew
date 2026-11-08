@@ -77,6 +77,7 @@
 #include "voidcrew_cyberware_models_a.dm"
 #include "voidcrew_cyberware_models_b.dm"
 #include "voidcrew_cyberware_passives.dm"
+#include "voidcrew_cyberware_text.dm"
 #include "voidcrew_cyberware_zoom.dm"
 #include "voidcrew_derelict_helpers.dm"
 #include "voidcrew_derelict_layout.dm"

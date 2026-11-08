@@ -23,7 +23,7 @@
  */
 /obj/item/cyberware_pair_case
 	name = "cyberware pair case"
-	desc = "A foam-lined clamshell case for a matched set of chrome. Crack it open in hand."
+	desc = "A foam-lined clamshell case for a matched set of chrome."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "ware_case"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -39,7 +39,7 @@
 	. = ..()
 	if(length(contents))
 		. += span_notice("Nestled in the foam: [english_list(contents)].")
-	. += span_notice("Use it in hand to crack it open.")
+
 
 /obj/item/cyberware_pair_case/attack_self(mob/user, modifiers)
 	. = ..()
@@ -61,7 +61,7 @@
 
 /obj/item/cyberware_pair_case/gorilla_arms
 	name = "\improper Gorilla Arms case"
-	desc = "A heavy clamshell case stenciled with a fist. Two myomer lattices inside, one per arm. The Cradle installs the pair in one sitting."
+	desc = "A heavy clamshell case stenciled with a fist. Two myomer lattices inside, one per arm."
 	ware_types = list(
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
@@ -114,7 +114,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms
 	name = "\improper Gorilla Arms myomer lattice (right)"
-	desc = "A myomer weave anchored bone-deep through the arm. You don't look any stronger for it; you just start pulling closed airlocks open with your bare hands."
+	desc = "A myomer weave anchored bone-deep through the arm. You don't look any stronger for it; doors just stop being your problem."
 	icon_state = "gorilla"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_RIGHT_ARM_AUG
@@ -285,8 +285,8 @@
 	id = "organ_set_bonus_cyberware_gorilla"
 	organs_needed = 2
 	required_biotype = NONE
-	bonus_activate_text = span_notice("Your Gorilla Arms sync up. You can force closed airlocks by hand now. Walk up and pull, out of combat mode.")
-	bonus_deactivate_text = span_notice("Your arms fall out of sync. Doors stay shut again.")
+	bonus_activate_text = span_notice("Your Gorilla Arms sync up.")
+	bonus_deactivate_text = span_notice("Your arms fall out of sync.")
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/enable_bonus(obj/item/organ/inserted_organ)
 	. = ..()
@@ -400,7 +400,7 @@
 
 /datum/action/cooldown/cyberware/mantis_lunge
 	name = "Mantis Lunge"
-	desc = "Dash up to five tiles onto a target with the blade leading, cutting them open and dropping them on arrival. The blade must be extended. With both blades out, both land."
+	desc = "Dash up to five tiles onto a target, cutting them open and dropping them on arrival."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_mantis_lunge"
 	cooldown_time = 20 SECONDS
@@ -559,7 +559,7 @@
  */
 /obj/item/melee/cyberware_monowire
 	name = "\improper Widowline monowire"
-	desc = "A weighted spool of monomolecular line, run live. At rest it's a glitter in the air. Swung, it goes through plate and the person wearing it in the same motion, and through whoever is standing next to them."
+	desc = "A weighted spool of monomolecular line, run live. At rest it's a glitter in the air."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "monowire"
 	inhand_icon_state = "monowire"
@@ -695,7 +695,7 @@
  */
 /obj/item/ammo_box/magazine/cyberware_ronin
 	name = "\improper Ronin flush-feed magazine (10x24mm)"
-	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's. Holds twenty caseless rounds."
+	desc = "A flush-feed magazine keyed to the Popup Ronin's action and nothing else's."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	icon_state = "ronin_mag"
 	base_icon_state = "ronin_mag"
@@ -742,7 +742,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin
 	name = "\improper Popup Ronin housing"
-	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast. The mag well only takes Ronin flush-feed magazines."
+	desc = "A forearm rig that unfolds a skeletal machine-pistol into your grip and folds it away again just as fast."
 	icon_state = "ronin"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
@@ -784,7 +784,7 @@
 
 /obj/item/ammo_casing/cyberware_buster
 	name = "30mm shaped rocket"
-	desc = "A stubby shaped-charge rocket in the Buster's proprietary 30mm. All of the blast goes forward and stops at the first thing it hits."
+	desc = "A stubby shaped-charge rocket in the Buster's proprietary 30mm."
 	icon_state = "low_yield_rocket"
 	base_icon_state = "low_yield_rocket"
 	caliber = CYBERWARE_CALIBER_BUSTER
@@ -832,7 +832,7 @@
  */
 /obj/item/gun/ballistic/revolver/cyberware_buster
 	name = "\improper Bunker Buster micro-rocket pod"
-	desc = "A two-tube rocket pod that rides folded along the forearm. The munitions are shaped, so the blast goes into the target instead of the room, and instead of your hull."
+	desc = "A two-tube rocket pod that rides folded along the forearm."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_weapons.dmi'
 	icon_state = "bunker_buster"
 	inhand_icon_state = "bunker_buster"
@@ -858,7 +858,7 @@
  */
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster
 	name = "\improper Bunker Buster housing"
-	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be. Takes proprietary 30mm shaped rockets, so make both count."
+	desc = "A reinforced forearm bay built around two rocket tubes, with a recoil bed where your radius used to be."
 	icon_state = "bunker_buster"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3

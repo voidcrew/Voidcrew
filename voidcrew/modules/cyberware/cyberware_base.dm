@@ -79,7 +79,7 @@
 	// Stack enough chrome and you stop looking human.
 	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
-	failing_desc = "is dark and inert, browned out, EMP-scrambled, or plain broken."
+	failing_desc = "is dark and inert."
 	/// Neural load this ware puts on its bearer. 0-12; see the tier bands.
 	var/chrome_load = 1
 	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.

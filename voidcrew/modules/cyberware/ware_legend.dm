@@ -53,7 +53,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/cascade
 	name = "\improper Cascade lattice"
-	desc = "A full-spine lattice of superconducting myelin, the real thing, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
+	desc = "A full-spine lattice of superconducting myelin, the real thing, not one of the knockoffs. The bill comes afterward."
 	icon_state = "cascade"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS
@@ -84,7 +84,7 @@
 	/// The status alert shown while the window runs.
 	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// What the bearer reads on activation.
-	var/online_message = "CASCADE ONLINE. Eight seconds."
+	var/online_message = "CASCADE ONLINE."
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -114,7 +114,7 @@
 
 /datum/action/cooldown/cyberware/cascade_surge
 	name = "Cascade Surge"
-	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, 40% chance to dodge ranged fire while moving. Then six seconds of crash. An EMP mid-window crashes you instantly."
+	desc = "Eight seconds of overwhelming speed: melee cooldowns halved, 40% chance to dodge ranged fire while moving. Then six seconds of crash."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_cascade"
 	cooldown_time = 60 SECONDS
@@ -159,7 +159,7 @@
 	/// Starting opacity of a trail afterimage.
 	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
 	/// What the bearer reads on activation.
-	var/online_message = "CASCADE ONLINE. Eight seconds."
+	var/online_message = "CASCADE ONLINE."
 	/// The crash this window rolls into.
 	var/crash_duration = CYBERWARE_CASCADE_CRASH
 	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
@@ -257,13 +257,13 @@
 
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
-	desc = "The lattice has the world in slow motion. Make it count. Six seconds of crash follows either way."
+	desc = "The lattice has the world in slow motion. Make it count."
 	icon_state = "radiation_shield"
 
 /// The lesser models' alert (ware_line_sandy.dm), with no crash timer in the text.
 /atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
 	name = "Reflex Window"
-	desc = "The rig has the world in slow motion. Make it count. The crash is coming either way."
+	desc = "The rig has the world in slow motion. Make it count."
 
 /// The bill. No dodge source, no speed, the opposite of all of it.
 /datum/status_effect/cyberware_cascade_crash
@@ -358,7 +358,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/redline
 	name = "\improper Redline core"
-	desc = "A combat governor rebuilt to fail open. Twelve seconds with every safety limit switched off at once, announced by a chest speaker nobody told you was in there."
+	desc = "A combat governor rebuilt to fail open, announced by a chest speaker nobody told you was in there."
 	icon_state = "redline"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS
@@ -422,7 +422,7 @@
 
 /datum/action/cooldown/cyberware/redline_burn
 	name = "Redline Burn"
-	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a stamina collapse. An EMP mid-window collapses you instantly."
+	desc = "Twelve seconds of stun immunity, 40% damage resistance and harder fists, opened with a staggering roar. Ends in a collapse."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_redline"
 	cooldown_time = 90 SECONDS
@@ -721,7 +721,7 @@
 
 /atom/movable/screen/alert/status_effect/cyberware_redline
 	name = "Redline Burn"
-	desc = "Every safety limit off at once. Stuns don't land, hits don't hurt much, and your fists hit a great deal harder. You collapse when it ends."
+	desc = "Every safety limit is off at once."
 	icon_state = "radiation_shield"
 
 /datum/status_effect/cyberware_redline_crash
@@ -855,7 +855,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/piledriver
 	name = "\improper Meteor Piledriver frame"
-	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor. It wants an open lane to throw you down, and everyone underneath gets a shadow to look at before you get there."
+	desc = "Prototype launch pistons sleeved over both legs, running into a gyroscopic landing computer that aims you at the floor."
 	icon_state = "piledriver"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_CYBERWARE_LEGS
@@ -889,7 +889,7 @@
 
 /datum/action/cooldown/cyberware/piledriver_leap
 	name = "Meteor Leap"
-	desc = "Launch onto any tile you can see with a clear arc to it, or onto somebody standing on one. Walls, windows and shut doors stop the jump. A shadow warns everyone underneath first. A direct hit crushes whoever is still there: heavy brute, broken bones, flat on the deck. Everything within two tiles is knocked flat and thrown."
+	desc = "Launch onto a tile you can see, or onto somebody standing on one. A direct hit crushes whoever is still there, and everything within two tiles is knocked flat."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_piledriver"
 	cooldown_time = 60 SECONDS
@@ -928,7 +928,7 @@
 	jumper.face_atom(destination)
 	var/launch_message = "You launch. The landing computer handles the rest."
 	if(isliving(target))
-		launch_message = "You launch. The landing computer locks the tile [target] is standing on, if [target.p_they()] move[target.p_s()], you come down on empty deck."
+		launch_message = "You launch. The landing computer locks onto [target]."
 	jumper.visible_message(
 		span_boldwarning("[jumper]'s leg pistons CRACK the deck and [jumper.p_they()] launch[jumper.p_es()] skyward!"),
 		span_warning(launch_message),

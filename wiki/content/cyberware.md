@@ -132,7 +132,7 @@ Every pair of chrome eyes can zoom: focus on something far off and your view pul
 
 A cyberdeck sits in the back of the skull and talks to machines and other people's gear. Use it, pick something you can see, and the deck offers only what that target will take: doors, lights, a room's power, turrets, radios, a person's gear and the chrome inside them. Pick yourself and it offers what it can do to the room around you. A deck works through your zoom, too.
 
-Every push draws a trace line to the target and makes their gear chirp, and it fails if you move, lose sight or get stunned. No deck opens a locked door, and outpost security, prison doors included, ignores them all. The Junker deck and the Street deck sell for credits at both counters; the Facilities and Breacher decks, one for doors, radios and turrets and one for people and their gear, are vouchers from Splice; and the Blackbox deck, which does both, is legend chrome.
+Every push draws a trace line to the target and makes their gear chirp, and it fails if you move, lose sight or get stunned. No deck opens a locked door, and outpost security, a prison wing's doors, power and lights included, ignores them all. The Junker deck and the Street deck sell for credits at both counters; the Facilities and Breacher decks, one for doors, radios and turrets and one for people and their gear, are vouchers from Splice; and the Blackbox deck, which does both, is legend chrome.
 
 ## Finding chrome in the wild
 

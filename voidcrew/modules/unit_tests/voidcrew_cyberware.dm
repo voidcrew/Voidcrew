@@ -255,7 +255,7 @@
 	// printable augments unrated, and skips what it can't see.
 	var/itemized = jointext(cyberware_scan_readout(lab_rat, 2), "\n")
 	TEST_ASSERT(findtext(itemized, uppertext(optics.name)), "An itemized chrome read didn't name the installed optics: [itemized]")
-	TEST_ASSERT(findtext(itemized, "T1"), "An itemized chrome read didn't rate the tier 1 optics: [itemized]")
+	TEST_ASSERT(findtext(itemized, "STREET"), "An itemized chrome read didn't rate the street-grade optics: [itemized]")
 	TEST_ASSERT(findtext(itemized, "UNRATED"), "An itemized chrome read rated a printable augment as parlor chrome: [itemized]")
 	TEST_ASSERT(!findtext(itemized, uppertext(stash.name)), "An itemized chrome read named the ORGAN_HIDDEN Cargo Cavity: [itemized]")
 	TEST_ASSERT(findtext(itemized, "SIGNATURES 2"), "An itemized chrome read miscounted the visible signatures: [itemized]")

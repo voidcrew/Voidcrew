@@ -171,10 +171,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  */
 /datum/machine_masshack/overload
 	name = "Overload the Room"
-	desc = "Feed every machine around you power at once, each one at full overload strength. Five seconds of the whole \
-		room buzzing, then up to twelve real explosions land a fifth of a second apart. It takes the walls with it and \
-		it will breach a hull if one is in the pattern. Lights just burst. Nothing that goes up comes back, and you are \
-		standing in the middle of it, leave."
+	desc = "Overload every machine around you at once. Five seconds of buzzing, then up to twelve explosions. You are standing in the middle of it."
 	radial_icon_state = "overload_machine"
 	cooldown = 3 MINUTES
 
@@ -215,9 +212,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  */
 /datum/machine_masshack/arc_flash
 	name = "Arc Flash"
-	desc = "Every powered machine around you starts earthing itself through whoever is standing nearest to it. Five \
-		volleys a second and a half apart, 14 burn each, and it comes out of the wall rather than through their hands, \
-		so insulated gloves do nothing. It hits everyone in the room except you, friend or not."
+	desc = "Every powered machine around you earths itself through whoever is standing nearest. Five volleys, 14 burn each, on everyone but you."
 	radial_icon = 'icons/mob/actions/actions_spells.dmi'
 	radial_icon_state = "lightning"
 	cooldown = 2 MINUTES
@@ -330,9 +325,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
  */
 /datum/machine_masshack/wake
 	name = "Wake the Machines"
-	desc = "Stand every free-standing machine in the room up to fight for you. Up to eight of them, twice as tough as an \
-		animated machine and hitting twice as hard, for two minutes before they fall apart. They know you and nobody \
-		else, everyone else in the room is a stranger to them. The machines do not come back."
+	desc = "Stand up to eight free-standing machines in the room up to fight for you for two minutes."
 	radial_icon_state = "override_machine"
 	cooldown = 3 MINUTES
 
@@ -360,7 +353,7 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 		for(var/mob/living/second as anything in woken)
 			if(first != second)
 				first.befriend(second)
-	to_chat(user, span_boldnotice("[length(woken)] of them get up. They know your face and each other's, and nobody else's."))
+	to_chat(user, span_boldnotice("[length(woken)] of them get up."))
 	return TRUE
 
 /**

@@ -390,7 +390,7 @@
 
 /datum/shop_buyback/ripperdoc/adrenal_pump
 	name = "Adrenal pump (pulled)"
-	desc = "A used adrenaline pump. Credit toward something sturdier."
+	desc = "A used adrenaline pump. Splice takes these off your hands."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/adrenal_pump
 	match_subtypes = FALSE
