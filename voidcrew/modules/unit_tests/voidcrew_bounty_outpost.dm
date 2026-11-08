@@ -287,7 +287,10 @@
 	TEST_ASSERT_EQUAL(decoy.dna.species.type, fugitive.dna.species.type, "A decoy is another species")
 	TEST_ASSERT_EQUAL(decoy.gender, fugitive.gender, "A decoy is another sex")
 	TEST_ASSERT_EQUAL(decoy.physique, fugitive.physique, "A decoy has another build")
-	TEST_ASSERT_EQUAL(decoy.skin_tone, fugitive.skin_tone, "A decoy has another skin tone")
+	// Skin tone only where the species has one: the rest are drawn in their body colour, and their unused
+	// skin_tone var is whatever tg rolled when the body was made.
+	if(bounty_species_uses_skin_tones(fugitive.dna.species.type))
+		TEST_ASSERT_EQUAL(decoy.skin_tone, fugitive.skin_tone, "A decoy has another skin tone")
 	TEST_ASSERT_EQUAL(decoy.eye_color_left, fugitive.eye_color_left, "A decoy has other eyes")
 	TEST_ASSERT_EQUAL(decoy.eye_color_right, fugitive.eye_color_right, "A decoy has other eyes")
 
