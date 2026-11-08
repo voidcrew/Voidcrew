@@ -94,6 +94,24 @@
 		// North and south shift sideways; a diagonal shifted sideways moves across itself too.
 		pixel_x = drift
 
+/// Pulls the end splash back along the line, and across it by drift pixels, so the streak runs into it.
+/obj/effect/decal/cleanable/blood/hv_spray/proc/hv_meet_line(spray_dir, drift)
+	var/pull = ISDIAGONALDIR(spray_dir) ? 7 : 9
+	pixel_x = 0
+	pixel_y = 0
+	if(spray_dir & EAST)
+		pixel_x = -pull
+	else if(spray_dir & WEST)
+		pixel_x = pull
+	if(spray_dir & NORTH)
+		pixel_y = -pull
+	else if(spray_dir & SOUTH)
+		pixel_y = pull
+	if(spray_dir == EAST || spray_dir == WEST)
+		pixel_y += drift
+	else
+		pixel_x += drift
+
 /// Blood on the face of a wall or window. Sits on the floor tile in front of it, drawn onto the obstruction.
 /obj/effect/decal/cleanable/blood/hv_spray/wall
 	plane = GAME_PLANE
@@ -208,6 +226,8 @@
 			drift = clamp(drift + rand(-1, 1), -max_drift, max_drift)
 			// The far half of the line thins out before the splash.
 			streak.hv_set_look(step * 2 > tiles, drift)
+		else if(laid && step == tiles && laid.type == /obj/effect/decal/cleanable/blood/hv_spray)
+			laid.hv_meet_line(spray_dir, drift)
 	return FALSE
 
 /// Blood on whatever blocks the spray, drawn from the floor tile in front of it.
