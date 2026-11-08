@@ -111,14 +111,13 @@
 
 /**
  * The human body a basic prisoner turns in (outpost_experiment_subject_body()), until prisoners are human
- * NPCs. A prisoner's things are ordinary items (owner ruling OC-11), and Kessler takes the body away, so
- * nothing cleans its corpse up but Kessler.
+ * NPCs. A prisoner's things are ordinary items (owner ruling OC-11). Kessler takes the body away; the usual
+ * corpse sweep is only a backstop for one Kessler never came for.
  */
 /mob/living/carbon/human/npc/outpost_experiment_subject
 	name = "prisoner"
 	faction = list(FACTION_OUTPOST_EXPERIMENT)
 	npc_gear_locked = FALSE
-	npc_corpse_lifetime = 0
 	npc_target_stat = HARD_CRIT
 	/// The prisoner's personality, for its lines
 	var/subject_personality
@@ -473,7 +472,7 @@
 
 /datum/component/outpost_experiment_form/hulk/announce_change(mob/living/carbon/human/body)
 	playsound(body, 'sound/mobs/non-humanoids/gorilla/gorilla.ogg', 80, TRUE)
-	body.visible_message(span_danger("[body] swells, splits [body.p_their()] jumpsuit and roars!"))
+	body.visible_message(span_danger("[body] swells until [body.p_their()] jumpsuit strains at the seams, and roars!"))
 
 /// Players first, then prisoners still on their feet
 /datum/component/outpost_experiment_form/hulk/target_penalty(mob/living/target)

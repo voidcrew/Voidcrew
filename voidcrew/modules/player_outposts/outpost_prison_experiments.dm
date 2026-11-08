@@ -449,6 +449,7 @@
 	for(var/mob/living/creature as anything in experiment.live_creatures())
 		experiment.downed[REF(creature)] = TRUE
 		kessler_take(creature)
+	take_awaiting_creatures()
 	add_log("The experiment failed: [reason].")
 	log_game("PLAYER OUTPOST PRISON: experiment failed at '[outpost?.name]' ([reason])")
 	resolve_experiment("failed")
@@ -522,6 +523,7 @@
 		for(var/mob/living/creature as anything in experiment.live_creatures())
 			experiment.downed[REF(creature)] = TRUE
 			kessler_take(creature)
+		take_awaiting_creatures()
 		var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
 		if(subject)
 			subject.experiment_subject = FALSE
@@ -650,6 +652,13 @@
 		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_KESSLER_BEAM_TIME + 0.5 SECONDS)
 	transporter_dematerialise(creature, OUTPOST_KESSLER_BEAM_TIME)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(outpost_kessler_finish_take), WEAKREF(creature)), OUTPOST_KESSLER_BEAM_TIME, TIMER_DELETE_ME)
+
+/// Everything down and waiting for Kessler goes with the beam now, unpaid: the experiment is over before the team came
+/datum/outpost_prison/proc/take_awaiting_creatures()
+	for(var/key in experiment.awaiting.Copy())
+		var/datum/weakref/creature_ref = experiment.creature_refs[key]
+		experiment.awaiting -= key
+		kessler_take(creature_ref?.resolve())
 
 /// The end of Kessler's beam: restraints the crew put on it stay, and the rest goes
 /proc/outpost_kessler_finish_take(datum/weakref/creature_ref)
