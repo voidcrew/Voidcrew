@@ -30,20 +30,15 @@
 
 /// Wind-up before an execution shot.
 #define HV_EXECUTION_WINDUP (1.5 SECONDS)
-/// Damage multiplier of a shot fired with the barrel against the head, for deciding the outcome.
+/// Multiplier on the damage of an execution round, fired with the barrel against the head. The round
+/// deals it through tg's normal damage; nothing else is added.
 #define HV_EXECUTION_POINT_BLANK_MULT 2
-/// Extra multiplier for multi-pellet shells: at the muzzle every pellet lands together.
-#define HV_EXECUTION_PELLET_MULT 1.5
-/// Outcome damage (after armour) at which an execution bursts the head instead of holing it.
+/// Damage an execution round must deal to the head (after armour) to burst it instead of holing it.
 #define HV_EXECUTION_BURST_DAMAGE 80
 /// A chambered round must deal at least this much to count as an execution round.
 #define HV_EXECUTION_MIN_DAMAGE 10
-/// Targets with more max health than this take the shot but are not finished off (bosses).
-#define HV_EXECUTION_MAX_HEALTH 200
 /// do_after interaction key for an execution wind-up.
 #define DOAFTER_SOURCE_HV_EXECUTION "hv_execution"
-/// A humanoid NPC (basic mob) at or below this share of its max health is staggering, and can be executed.
-#define HV_EXECUTION_STAGGER_HEALTH 0.2
 
 // ---- NPC corpses (corpses/): the fight carried onto the human body an NPC leaves ----
 

@@ -1,5 +1,5 @@
 // Hyperviolence (voidcrew/modules/hyperviolence/corpses/): NPC corpses that keep the fight, the
-// gore on NPCs that keep their own body, and executions of downed and staggering NPCs.
+// gore on NPCs that keep their own body, and executions of downed and stunned NPCs.
 // Literals carry the name of the voidcrew define they stand for in a comment.
 
 /// The human corpse a basic mob just left on `spot`, which was not there in `before`. Cleaned up with the test.
@@ -125,16 +125,16 @@
 	TEST_ASSERT_NOTNULL(head.get_wound_type(/datum/wound/slash/flesh/moderate/hv_tongue), "The corpse has no severed-tongue wound")
 	TEST_ASSERT_NOTNULL(head.get_wound_type(/datum/wound/slash/flesh/critical/hv_carotid), "A pirate with a slit throat left a corpse with an unbroken throat")
 
-/// A humanoid NPC is helpless on its last legs (HV_EXECUTION_STAGGER_HEALTH 0.2), not before.
-/datum/unit_test/hv_npc_staggering_executable
+/// A humanoid NPC is helpless in tg's states (stunned, cuffed, held), never because of its health.
+/datum/unit_test/hv_npc_executable_states
 
-/datum/unit_test/hv_npc_staggering_executable/Run()
+/datum/unit_test/hv_npc_executable_states/Run()
 	var/mob/living/basic/trooper/pirate/melee/pirate = hv_still_pirate()
 	TEST_ASSERT(!pirate.hv_can_be_executed(), "A pirate at full health could be executed")
-	pirate.adjustBruteLoss(pirate.maxHealth * 0.5)
-	TEST_ASSERT(!pirate.hv_can_be_executed(), "A pirate at half health could be executed")
-	pirate.adjustBruteLoss(pirate.maxHealth * 0.35)
-	TEST_ASSERT(pirate.hv_can_be_executed(), "A pirate at 15% health could not be executed")
+	pirate.adjustBruteLoss(pirate.maxHealth * 0.85)
+	TEST_ASSERT(!pirate.hv_can_be_executed(), "A pirate on its feet at 15% health could be executed")
+	pirate.Paralyze(30 SECONDS)
+	TEST_ASSERT(pirate.hv_can_be_executed(), "A paralysed pirate could not be executed")
 
 /// A point-blank click with the head selected executes someone down, and is a plain shot at someone standing.
 /datum/unit_test/hv_head_aimed_execution
@@ -155,12 +155,13 @@
 	victim.fully_heal(HEAL_ALL)
 	victim.Knockdown(30 SECONDS)
 	gun.fire_cd = FALSE // the standing shot above just fired; skip its cooldown
+	var/round_damage = gun.chambered.loaded_projectile.damage * gun.projectile_damage_multiplier
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
-	TEST_ASSERT_EQUAL(victim.stat, DEAD, "A head-aimed point-blank shot at a downed target was not an execution")
-	TEST_ASSERT_EQUAL(head.hv_skull_wound, 3, "A head-aimed 9mm execution left no heavy skull wound")
+	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
+	TEST_ASSERT(head.hv_skull_wound >= 2, "A head-aimed 9mm execution left no skull wound for its damage")
 
-/// Executing a staggering pirate carries the outcome to its corpse: a light round the skull, a heavy one the head.
+/// Executing a badly hurt, paralysed pirate carries the outcome to its corpse: a light round the skull, a heavy one the head.
 /datum/unit_test/hv_npc_execution_corpse
 
 /datum/unit_test/hv_npc_execution_corpse/Run()
@@ -173,7 +174,8 @@
 
 	var/mob/living/basic/trooper/pirate/melee/pirate = hv_still_pirate()
 	pirate.adjustBruteLoss(pirate.maxHealth * 0.85)
-	TEST_ASSERT(gun.hv_execution_possible(gunner, pirate), "A staggering pirate could not be executed")
+	pirate.Paralyze(30 SECONDS)
+	TEST_ASSERT(gun.hv_execution_possible(gunner, pirate), "A paralysed pirate could not be executed")
 	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under HV_EXECUTION_BURST_DAMAGE 80
 	var/list/before = range(7, spot)
 	TEST_ASSERT(gun.hv_fire_execution(gunner, pirate, null), "The execution shot did not fire")
@@ -186,6 +188,7 @@
 
 	var/mob/living/basic/trooper/pirate/melee/second = hv_still_pirate()
 	second.adjustBruteLoss(second.maxHealth * 0.85)
+	second.Paralyze(30 SECONDS)
 	gun.chambered.loaded_projectile.damage = 60 // doubled: 120
 	gun.fire_cd = FALSE // the first execution just fired; skip its cooldown
 	before = range(7, spot)

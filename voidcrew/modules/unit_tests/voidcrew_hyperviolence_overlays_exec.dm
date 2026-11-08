@@ -73,7 +73,8 @@
 	for(var/state in dummy.hv_gore_states())
 		TEST_ASSERT(!findtext(state, "headshot"), "A healed head still draws [state]")
 
-/// Only a downed, cuffed or held humanoid can be executed, and a light round leaves the head on but kills.
+/// Only a downed, cuffed or held humanoid can be executed. The round is the gun's own, doubled at the
+/// muzzle and dealt through tg's damage: it kills someone in crit, and a healthy target survives it.
 /datum/unit_test/hv_gun_execution
 
 /datum/unit_test/hv_gun_execution/Run()
@@ -91,13 +92,24 @@
 	TEST_ASSERT(gun.hv_execution_possible(gunner, victim), "A downed target could not be executed")
 
 	// The real click path: a point-blank, mouth-aimed shot, the wind-up, then the shot.
+	var/round_damage = gun.chambered.loaded_projectile.damage * gun.projectile_damage_multiplier
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
-	TEST_ASSERT_EQUAL(victim.stat, DEAD, "The executed target survived")
 	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A 9mm execution took the head off")
-	TEST_ASSERT_EQUAL(head.hv_skull_wound, 3, "A 9mm execution left no heavy skull wound")
+	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "The execution round was not boosted at the muzzle ([head.brute_dam] head damage from a [round_damage] round)")
+	TEST_ASSERT_NOTEQUAL(victim.stat, DEAD, "A 9mm execution killed a healthy target with more than its round's damage")
+	TEST_ASSERT(head.hv_skull_wound >= 2, "A 9mm execution left no skull wound for its damage")
 	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_BRAIN), "A 9mm execution destroyed the brain")
-	TEST_ASSERT(victim.getBruteLoss() < 180, "An execution left too much trauma to defibrillate") // MAX_REVIVE_BRUTE_DAMAGE is 180
+	TEST_ASSERT_EQUAL(gun.projectile_damage_multiplier, initial(gun.projectile_damage_multiplier), "The point-blank boost stayed on the gun")
+
+	// Someone in hard crit dies of the same round's real damage.
+	var/mob/living/carbon/human/consistent/dying = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(dying, TRAIT_PIERCEIMMUNE, INNATE_TRAIT)
+	dying.apply_damage(150, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(dying.stat >= SOFT_CRIT, "Test fixture: 150 brute did not put the target in crit")
+	gun.fire_cd = FALSE
+	TEST_ASSERT(gun.hv_fire_execution(gunner, dying, null), "The execution shot did not fire")
+	TEST_ASSERT_EQUAL(dying.stat, DEAD, "A 9mm execution of someone in hard crit did not kill them")
 
 /// A heavy enough round bursts the head, and the brain survives it.
 /datum/unit_test/hv_gun_execution_burst

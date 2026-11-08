@@ -211,12 +211,12 @@
 	TEST_ASSERT(!head.dismember(BRUTE, TRUE), "A burst blow took the head off a body that cannot be dismembered")
 	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A burst blow took the head off a body that cannot be dismembered")
 
-	// an execution shot that would burst the head holes the skull and kills instead
+	// an execution round big enough to burst any other head leaves this one on, and adds nothing of its own
 	head.set_brute_dam(0)
 	victim.set_stat(CONSCIOUS)
-	victim.hv_take_execution(500, NORTH)
+	victim.hv_take_execution(500, NORTH, FALSE)
 	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "An execution burst the head of a body that cannot be dismembered")
-	TEST_ASSERT_EQUAL(victim.stat, DEAD, "An execution did not finish a body that cannot be dismembered")
+	TEST_ASSERT_NOTEQUAL(victim.stat, DEAD, "Settling an execution killed the target on top of the round's own damage")
 	REMOVE_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
 
 /// The spill replaces the cut it comes from, drops guts on the floor, and keeps bleeding until they go back in.

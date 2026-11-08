@@ -4,16 +4,26 @@
 // code/modules/projectiles/gun.dm, AGPL-3.0, by the CM-SS13 team), rewritten for tg's guns.
 //
 // The trigger: a point-blank click with the head or the mouth selected, on a humanoid who can't fight
-// back (down, out cold, dead, cuffed, stunned, held in an aggressive grab, or an NPC staggering on
-// its last legs), is an execution: a short wind-up that both have to hold still for, then the gun's
-// own shot into the head. A round heavy enough bursts the head (hv_burst_head, which keeps the
-// brain); a lighter one leaves a heavy skull wound and finishes them. The brain is never destroyed,
-// so revival works as usual. An NPC that leaves a human corpse has the outcome replayed on that
-// corpse (corpses/). The mouth click reaches us through tg's handle_suicide(); the head click through
+// back (in crit, out cold, dead, lying down, cuffed, stunned or in stamcrit, or held in an aggressive
+// grab: tg's own states, nothing else), is an execution: a short wind-up that both have to hold still
+// for, then the gun's own round fired into the head, its damage multiplied by
+// HV_EXECUTION_POINT_BLANK_MULT for the barrel against the skull. Everything after that is tg's: the
+// round's damage after the head's armour, wounds, dismemberment, and death if the damage kills. If the
+// round dealt HV_EXECUTION_BURST_DAMAGE or more to the head, the head bursts (hv_burst_head, which keeps
+// the brain, so revival works as usual); a lighter round leaves the skull wound its real damage earns.
+// Nothing is added to finish the target off.
+//
+// The mouth click reaches us through tg's handle_suicide(); the head click through
 // hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
 // not apply to keeps tg's behaviour: a normal point-blank shot to the head, or tg's slow mouth
 // version (which is also how you shoot yourself). Holding someone up (right click) and gun bashes are
-// unchanged.
+// unchanged. Human NPCs execute only if they are elites or bosses (owner decision D4,
+// hv_can_land_aimed_crits()). A basic humanoid NPC that leaves a human corpse has the outcome replayed
+// on that corpse (corpses/).
+
+/obj/item/gun
+	/// While an execution round is being fired: the damage it has dealt to the victim's head
+	var/hv_execution_head_damage = 0
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
@@ -34,6 +44,9 @@
 /// Whether a head- or mouth-aimed point-blank click by `user` on `target` should be an execution.
 /obj/item/gun/proc/hv_execution_possible(mob/living/user, mob/living/target)
 	if(!isliving(user) || !isliving(target) || user == target)
+		return FALSE
+	// Executions follow the aimed crit rule: an ordinary human NPC just fires a point-blank shot (D4).
+	if(!user.hv_can_land_aimed_crits())
 		return FALSE
 	if(!target.hv_can_be_executed() || !user.Adjacent(target))
 		return FALSE
@@ -77,7 +90,11 @@
 		return FALSE
 	return user.zone_selected == BODY_ZONE_HEAD || user.zone_selected == BODY_ZONE_PRECISE_MOUTH
 
-/// Fires the execution shot. Returns TRUE if the gun went off.
+/**
+ * Fires the execution round: the gun's own shot at the head through its real fire path, with the
+ * point-blank multiplier on its damage. A point-blank round lands inside process_fire(), so what it
+ * did to the head is known when that returns. Returns TRUE if the gun went off.
+ */
 /obj/item/gun/proc/hv_fire_execution(mob/living/user, mob/living/target, params)
 	if(!user.is_holding(src) || !user.Adjacent(target) || !can_trigger_gun(user))
 		return FALSE
@@ -86,39 +103,53 @@
 		return FALSE
 	if(!hv_execution_round_ok()) // the round changed under the wind-up: just a point-blank shot
 		return process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
-	var/blow = hv_execution_blow(target)
 	var/shot_dir = get_dir(user, target)
-	// An NPC the bullet itself kills dies before the shot is settled below, so tell it now.
-	if((target.hv_leaves_human_corpse || target.hv_gory_own_body) && target.hv_execution_killable())
-		target.hv_note_npc_execution(blow, shot_dir)
-	if(!process_fire(target, user, TRUE, params, BODY_ZONE_HEAD))
+	var/was_dead = target.stat == DEAD
+	// A basic NPC that leaves a human corpse is replaced the moment the round kills it, so its corpse
+	// is told now how hard the round will land.
+	if(!was_dead && (target.hv_leaves_human_corpse || target.hv_gory_own_body))
+		target.hv_note_npc_execution(hv_execution_blow(target), shot_dir)
+	hv_execution_head_damage = 0
+	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_execution_hit))
+	var/normal_multiplier = projectile_damage_multiplier
+	projectile_damage_multiplier *= HV_EXECUTION_POINT_BLANK_MULT
+	// Only the first round of a burst is held to the head; the rest are ordinary shots.
+	var/fired = process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
+	projectile_damage_multiplier = normal_multiplier
+	if(!QDELETED(target))
+		UnregisterSignal(target, COMSIG_MOB_APPLY_DAMAGE)
+	if(!fired)
 		return FALSE
-	log_combat(user, target, "executed", src)
-	if(burst_size > 1) // the burst lands over the next few ticks; settle the outcome once it has
-		addtimer(CALLBACK(src, PROC_REF(hv_finish_execution), WEAKREF(user), WEAKREF(target), blow, shot_dir), burst_delay * (burst_size - 1) + 1)
-	else
-		hv_finish_execution(WEAKREF(user), WEAKREF(target), blow, shot_dir)
+	log_combat(user, target, "executed", src, "([round(hv_execution_head_damage, 0.1)] damage to the head)")
+	if(!QDELETED(target))
+		target.hv_take_execution(hv_execution_head_damage, shot_dir, was_dead)
+		hv_execution_witnesses(user, target)
 	return TRUE
 
-/// How hard the chambered round hits a head with the barrel against it, after that head's armour.
+/// Adds up what this gun's rounds do to the victim's head while an execution round is fired.
+/obj/item/gun/proc/hv_execution_hit(mob/living/source, damage, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/attacking_item)
+	SIGNAL_HANDLER
+	var/obj/projectile/round = attacking_item
+	if(!istype(round) || round.fired_from != src || (damagetype != BRUTE && damagetype != BURN))
+		return
+	var/zone
+	if(isbodypart(def_zone))
+		var/obj/item/bodypart/limb = def_zone
+		zone = limb.body_zone
+	else
+		zone = check_zone(def_zone)
+	if(zone == BODY_ZONE_HEAD)
+		hv_execution_head_damage += damage
+
+/// What the boosted round will deal to this target's head after its armour. Only for the corpse a basic
+/// NPC leaves, which is built before the round's damage can be read.
 /obj/item/gun/proc/hv_execution_blow(mob/living/target)
 	var/obj/projectile/bullet = chambered?.loaded_projectile
 	if(!bullet)
 		return 0
-	var/pellets = max(1, chambered.pellets)
-	var/blow = bullet.damage * projectile_damage_multiplier * pellets * max(1, burst_size) * HV_EXECUTION_POINT_BLANK_MULT
-	if(pellets > 1)
-		blow *= HV_EXECUTION_PELLET_MULT
+	var/blow = bullet.damage * projectile_damage_multiplier * max(1, chambered.pellets) * HV_EXECUTION_POINT_BLANK_MULT
 	var/armor = target.run_armor_check(BODY_ZONE_HEAD, bullet.armor_flag, armour_penetration = bullet.armour_penetration, silent = TRUE, weak_against_armour = bullet.weak_against_armour)
 	return blow * max(0, 100 - armor) / 100
-
-/// Settles an execution once the shot has landed.
-/obj/item/gun/proc/hv_finish_execution(datum/weakref/user_ref, datum/weakref/target_ref, blow, shot_dir)
-	var/mob/living/target = target_ref?.resolve()
-	if(QDELETED(target))
-		return
-	target.hv_take_execution(blow, shot_dir)
-	hv_execution_witnesses(user_ref?.resolve(), target)
 
 /// Everyone who saw it close up feels it, bar the shooter, the victim and those who enjoy that sort of thing.
 /proc/hv_execution_witnesses(mob/living/shooter, mob/living/victim)
@@ -142,83 +173,48 @@
 		return FALSE
 	return hv_is_helpless()
 
-/// Whether this mob is down, out cold, cuffed, stunned or held in an aggressive grab.
+/// Whether this mob is in crit, out cold, dead, lying down, cuffed, stunned or in stamcrit, or held
+/// in an aggressive grab. tg's own states only.
 /mob/living/proc/hv_is_helpless()
-	if(stat >= UNCONSCIOUS || body_position == LYING_DOWN)
+	if(stat >= SOFT_CRIT || body_position == LYING_DOWN)
 		return TRUE
 	if(HAS_TRAIT(src, TRAIT_RESTRAINED) || HAS_TRAIT(src, TRAIT_INCAPACITATED) || HAS_TRAIT(src, TRAIT_FLOORED))
 		return TRUE
 	return pulledby?.grab_state >= GRAB_AGGRESSIVE
 
-// An NPC has no crit to fall into: it fights on until it dies. On its last legs it is staggering.
-/mob/living/basic/hv_is_helpless()
-	if(..())
-		return TRUE
-	return maxHealth > 0 && stat != DEAD && health <= maxHealth * HV_EXECUTION_STAGGER_HEALTH
-
-// Bounty criminals keep their own cuffs, downed and stunned states (voidcrew/modules/bounties/).
+// Bounty criminals keep their own cuffs, downed and stunned states (voidcrew/modules/bounties/) until
+// the human NPC migration moves them onto real bodies.
 /mob/living/basic/bounty_criminal/hv_is_helpless()
 	return ..() || is_restrained() || is_downed() || body_is_stunned()
 
-// ---- What the shot does ----
+// ---- What the round did ----
 
-/// Takes an execution shot that hit with `blow` force, travelling `shot_dir`. Past the shot itself, a
-/// target too tough to finish (see hv_execution_killable()) takes nothing extra. A human-looking NPC
-/// notes the shot first, so the corpse it leaves, or its own body as it dies, shows the same outcome
-/// (corpses/); one already dead shows it at once.
-/mob/living/proc/hv_take_execution(blow, shot_dir)
-	if(stat != DEAD && !hv_execution_killable())
+/**
+ * Shows what an execution round did. `head_damage` is what it dealt to the head; `was_dead` whether
+ * the target was already dead before it. Adds no damage and kills nothing: the round did that or not.
+ * A basic NPC the round killed shows it on the corpse it left (noted before the shot); one whose own
+ * body was already dead shows it here.
+ */
+/mob/living/proc/hv_take_execution(head_damage, shot_dir, was_dead)
+	if(!was_dead || stat != DEAD || hv_body_headless)
 		return
-	var/heavy = blow >= HV_EXECUTION_BURST_DAMAGE
-	hv_blood_spray(shot_dir, heavy ? 4 : 3)
-	if(hv_body_headless)
-		return // nothing left to shoot
-	// Only an NPC whose corpse or own body can show it has a head to burst.
-	var/bursts = heavy && (hv_leaves_human_corpse || hv_body_head_can_burst())
-	if(stat != DEAD && (hv_leaves_human_corpse || hv_gory_own_body))
-		hv_note_npc_execution(blow, shot_dir, TRUE)
+	var/bursts = head_damage >= HV_EXECUTION_BURST_DAMAGE && hv_body_head_can_burst()
+	hv_blood_spray(shot_dir, bursts ? 4 : 3)
 	if(bursts)
 		hv_add_hit_line("[src]'s head bursts apart!", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-	else
-		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-	if(stat != DEAD)
-		hv_execution_kill()
-		return
-	// A body already dead: nothing settles it at death any more, so it shows now.
-	if(bursts)
 		hv_burst_body_head(shot_dir, FALSE)
 	else if(hv_gory_own_body && hv_looks_human())
+		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
 		hv_body_skull = 3
 		update_appearance(UPDATE_OVERLAYS)
 
-/mob/living/carbon/hv_take_execution(blow, shot_dir)
-	if(stat != DEAD && !hv_execution_killable())
-		return
-	if(blow >= HV_EXECUTION_BURST_DAMAGE && hv_burst_head(shot_dir))
-		hv_execution_kill()
-		return
+/mob/living/carbon/hv_take_execution(head_damage, shot_dir, was_dead)
 	var/obj/item/bodypart/head/head = get_bodypart(BODY_ZONE_HEAD)
-	if(isnull(head)) // the shot itself took it
-		hv_execution_kill()
+	if(isnull(head) || head_damage <= 0)
+		return // the round took the head off itself, or never reached it
+	if(head_damage >= HV_EXECUTION_BURST_DAMAGE && hv_burst_head(shot_dir))
 		return
-	if(!HAS_TRAIT(src, TRAIT_GODMODE) && head.brute_dam < HV_SKULL_HEAVY_BRUTE)
-		apply_damage(HV_SKULL_HEAVY_BRUTE - head.brute_dam, BRUTE, head, forced = TRUE, wound_bonus = CANT_WOUND)
-	if(!QDELETED(head) && head.owner == src && head.hv_open_skull())
+	// The skull wound the round's real damage earns (gore_overlays.dm); the line only for the worst.
+	if(head.hv_open_skull() && head.hv_skull_wound >= 3)
 		hv_blood_spray(shot_dir, 3)
 		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-	hv_execution_kill()
-
-/// Whether an execution may finish this mob off: alive, mortal, and not a boss-sized health pool.
-/mob/living/proc/hv_execution_killable()
-	return stat != DEAD && !HAS_TRAIT(src, TRAIT_GODMODE) && maxHealth <= HV_EXECUTION_MAX_HEALTH
-
-/// Finishes off an execution victim if hv_execution_killable() allows it.
-/mob/living/proc/hv_execution_kill()
-	if(hv_execution_killable())
-		adjustBruteLoss(health + 1)
-
-/mob/living/carbon/hv_execution_kill()
-	if(!hv_execution_killable())
-		return
-	// The rest goes in as oxygen damage, not more trauma, so the body stays inside defibrillator limits.
-	adjustOxyLoss(health - HEALTH_THRESHOLD_DEAD + 1, forced = TRUE)

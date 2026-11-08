@@ -11,6 +11,8 @@
 // * Only aimed hits count. The attacker must be a carbon (something with a target doll) holding
 //   the weapon or having fired the shot, must not be the victim, and the hit has to land on the
 //   limb they aimed at. NPC basic mobs never land crits, so NPC fights keep tg's normal wounds.
+//   Human NPCs (voidcrew/modules/human_npcs/) are carbons, but only their elites and bosses land
+//   crits (owner decision D4, hv_can_land_aimed_crits()). Players always can.
 // * The hit must be brute damage with a wound roll (wound_bonus not CANT_WOUND) and a weapon or
 //   projectile behind it. Only the aorta can come from a projectile.
 // * The roll is tg's own wound roll: rand(1, min(damage, 25) ^ 1.4), so 1 to 90. On top of the
@@ -163,7 +165,8 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		return null
 	return new_wound
 
-/// The carbon who aimed this hit: whoever holds the weapon, or fired the projectile.
+/// The carbon who aimed this hit: whoever holds the weapon, or fired the projectile. Null if
+/// nobody aimed it, or if whoever did may not land aimed crits.
 /proc/hv_crit_get_aimer(atom/source)
 	var/atom/aimer
 	if(isprojectile(source))
@@ -171,7 +174,15 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		aimer = shot.firer
 	else if(isitem(source))
 		aimer = source.loc
-	return iscarbon(aimer) ? aimer : null
+	if(!iscarbon(aimer))
+		return null
+	var/mob/living/carbon/carbon_aimer = aimer
+	return carbon_aimer.hv_can_land_aimed_crits() ? carbon_aimer : null
+
+/// Whether this mob's aimed hits can be aimed crits, and its point-blank head shots executions.
+/// Everyone can, bar human NPCs that aren't elites or bosses (voidcrew/modules/human_npcs/human_npc.dm).
+/mob/living/proc/hv_can_land_aimed_crits()
+	return TRUE
 
 /// tg's wounding type for a brute hit. Eye stabs and a few other callers pass no sharpness to
 /// apply_damage, so fall back to the weapon's own.
