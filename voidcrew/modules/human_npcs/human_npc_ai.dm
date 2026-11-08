@@ -195,8 +195,8 @@
 			return AI_BEHAVIOR_DELAY
 		if(!human_npc_take_in_hand(npc, weapon))
 			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	human_npc_ready_weapon(npc, weapon)
 	human_npc_ready_item(npc, weapon)
+	human_npc_ready_weapon(npc, weapon)
 	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
 /datum/ai_behavior/human_npc_draw/finish_action(datum/ai_controller/controller, succeeded, item_key)
@@ -300,6 +300,7 @@
 	var/obj/item/weapon = human_npc_held_melee_weapon(npc)
 	if(weapon)
 		human_npc_ready_item(npc, weapon)
+		human_npc_ready_weapon(npc, weapon) // a two-hander let go of with one hand is gripped again
 	else
 		human_npc_ready_empty_hand(npc)
 	npc.zone_selected = human_npc_pick_aim_zone()
@@ -356,7 +357,9 @@
 			baton.attack_self(npc)
 		return
 	if(weapon.GetComponent(/datum/component/two_handed) && !HAS_TRAIT(weapon, TRAIT_WIELDED) && length(npc.get_empty_held_indexes()))
-		weapon.attack_self(npc)
+		// Wielding takes the weapon's own hand as the active one and the other hand free, as for a player
+		if(human_npc_ready_item(npc, weapon))
+			weapon.attack_self(npc)
 
 /// The gun it holds, preferring one that can fire.
 /proc/human_npc_held_gun(mob/living/carbon/npc)
@@ -379,13 +382,20 @@
 	if(isnull(item) || isgun(item) || isbodypart(item) || isorgan(item) || (item.item_flags & ABSTRACT))
 		return FALSE
 	// Energy blades and batons are weak until switched on.
-	return item.force >= 10 || item.GetComponent(/datum/component/transforming) || istype(item, /obj/item/melee/baton)
+	return human_npc_melee_force(item) >= 10 || item.GetComponent(/datum/component/transforming) || istype(item, /obj/item/melee/baton)
+
+/// What `item` hits for once readied: a two-handed weapon (a fireaxe) counts wielded, as human_npc_ready_weapon() swings it.
+/proc/human_npc_melee_force(obj/item/item)
+	var/datum/component/two_handed/two_handed = item.GetComponent(/datum/component/two_handed)
+	if(two_handed && !HAS_TRAIT(item, TRAIT_WIELDED))
+		return max(item.force, two_handed.force_wielded, item.force * two_handed.force_multiplier)
+	return item.force
 
 /// The best melee weapon it holds, or null.
 /proc/human_npc_held_melee_weapon(mob/living/carbon/npc)
 	var/obj/item/best
 	for(var/obj/item/held in npc.held_items)
-		if(human_npc_is_melee_weapon(held) && (isnull(best) || held.force > best.force))
+		if(human_npc_is_melee_weapon(held) && (isnull(best) || human_npc_melee_force(held) > human_npc_melee_force(best)))
 			best = held
 	return best
 
@@ -400,7 +410,7 @@
 			if(spare.can_shoot())
 				return spare
 			continue
-		if(human_npc_is_melee_weapon(thing) && (isnull(best_melee) || thing.force > best_melee.force))
+		if(human_npc_is_melee_weapon(thing) && (isnull(best_melee) || human_npc_melee_force(thing) > human_npc_melee_force(best_melee)))
 			best_melee = thing
 	return best_melee
 

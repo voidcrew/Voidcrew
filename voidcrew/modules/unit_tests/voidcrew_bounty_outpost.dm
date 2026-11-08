@@ -122,15 +122,29 @@
 		if(decoy)
 			. += decoy
 
-/// A mob's examine as plain text, with its own feature lines taken out
+/**
+ * A mob's examine as plain text, with its own features taken out: their lines, and the lines for the
+ * glasses and scarf it wears for them (bounty_wear_features(); the patron clothes put nothing in those
+ * slots), which differ between a fugitive and a decoy that doesn't share them.
+ */
 /datum/unit_test/voidcrew_bounty_outpost/proc/plain_examine(mob/living/carbon/human/npc/bounty_criminal/patron, mob/viewer)
 	var/list/features = list()
 	for(var/line in patron.record?.feature_lines())
 		features += trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
+	var/list/feature_items = list()
+	for(var/obj/item/worn in list(patron.glasses, patron.wear_neck))
+		feature_items += "[worn]"
 	var/list/lines = list()
 	for(var/line in patron.examine(viewer))
 		var/plain = trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
-		if(!(plain in features))
+		if(plain in features)
+			continue
+		var/names_feature_item = FALSE
+		for(var/item_name in feature_items)
+			if(findtext(plain, item_name))
+				names_feature_item = TRUE
+				break
+		if(!names_feature_item)
 			lines += plain
 	return lines.Join(" | ")
 
@@ -211,7 +225,7 @@
 	TEST_ASSERT_EQUAL(length(decoys), 3, "The queued decoys did not join the posting once built")
 	for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy as anything in decoys)
 		TEST_ASSERT(decoy.blended, "A queued decoy is not blending in")
-		TEST_ASSERT_EQUAL(decoy.name, "patron", "A queued decoy does not go by the zone's name")
+		TEST_ASSERT_EQUAL(decoy.name, bounty_outpost_display_name(outpost), "A queued decoy does not go by the outpost's name for its crowd")
 
 	// Closed before they are built: nobody is built
 	var/datum/criminal_bounty/outpost_test/closing = make_posting(run_loc_floor_bottom_left)
@@ -273,7 +287,10 @@
 	TEST_ASSERT_EQUAL(decoy.dna.species.type, fugitive.dna.species.type, "A decoy is another species")
 	TEST_ASSERT_EQUAL(decoy.gender, fugitive.gender, "A decoy is another sex")
 	TEST_ASSERT_EQUAL(decoy.physique, fugitive.physique, "A decoy has another build")
-	TEST_ASSERT_EQUAL(decoy.skin_tone, fugitive.skin_tone, "A decoy has another skin tone")
+	// Skin tone only where the species has one: the rest are drawn in their body colour, and their unused
+	// skin_tone var is whatever tg rolled when the body was made.
+	if(bounty_species_uses_skin_tones(fugitive.dna.species.type))
+		TEST_ASSERT_EQUAL(decoy.skin_tone, fugitive.skin_tone, "A decoy has another skin tone")
 	TEST_ASSERT_EQUAL(decoy.eye_color_left, fugitive.eye_color_left, "A decoy has other eyes")
 	TEST_ASSERT_EQUAL(decoy.eye_color_right, fugitive.eye_color_right, "A decoy has other eyes")
 

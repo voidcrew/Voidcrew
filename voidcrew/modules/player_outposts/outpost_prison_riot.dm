@@ -140,10 +140,10 @@
  * mean mood, so a neglected wing sours its newcomers. `newcomer` is left out of the mean, as is
  * anyone who has not served a moment yet.
  */
-/datum/outpost_prison/proc/arrival_mood(mob/living/basic/outpost_prisoner/newcomer)
+/datum/outpost_prison/proc/arrival_mood(mob/living/carbon/human/npc/outpost_prisoner/newcomer)
 	var/total = 0
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner == newcomer || prisoner.served_seconds <= 0 || !counts_for_tension(prisoner))
 			continue
 		total += prisoner.mood
@@ -159,7 +159,7 @@
  * PRISONER_LOCKED_IN_RECOVERY seconds a second, so letting them out for a moment does not reset it.
  * A rioter just shut in a cell is in custody, and owes lockdown for it (outpost_prison_capture.dm).
  */
-/datum/outpost_prison/proc/update_locked_in(mob/living/basic/outpost_prisoner/prisoner, seconds)
+/datum/outpost_prison/proc/update_locked_in(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds)
 	var/confined = prisoner.is_confined()
 	if(confined)
 		if(!prisoner.was_confined && prisoner.is_rioting())
@@ -181,7 +181,7 @@
 	return riot_active || runners_at_large() > 0
 
 /// A prisoner is let out after a long lock-in: some relief, and they say so
-/datum/outpost_prison/proc/on_unbolted(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/on_unbolted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.trouble)
 		return FALSE
 	prisoner.adjust_mood(PRISONER_MOOD_UNBOLTED)
@@ -209,7 +209,7 @@
  * Staff killed a prisoner. No fine: the cost is the worst spark there is, the pay and bonus they
  * forfeit, and a body to deal with (body_tick()).
  */
-/datum/outpost_prison/proc/blame_death(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/blame_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.death_blamed)
 		return FALSE
 	prisoner.death_blamed = TRUE
@@ -219,14 +219,14 @@
 	return trouble_event(PRISON_SPIKE_KILLED, "[prisoner.real_name] was killed by staff")
 
 /// Whether a prisoner's mood counts toward the wing's tension: present, alive and not loose
-/datum/outpost_prison/proc/counts_for_tension(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/counts_for_tension(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && prisoner.trouble != PRISONER_TROUBLE_LOOSE
 
 /// 100 minus the mean mood of the prisoners in the cell block, plus the spike and any shivs hidden in the wing
 /datum/outpost_prison/proc/compute_tension()
 	var/total = 0
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!counts_for_tension(prisoner))
 			continue
 		total += prisoner.mood
@@ -289,7 +289,7 @@
 	var/hurt = 0
 	var/locked = 0
 	var/cuffed = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!counts_for_tension(prisoner))
 			continue
 		if(prisoner.hunger < PRISONER_HUNGER_HUNGRY)
@@ -338,7 +338,7 @@
 		add_log("A riot is brewing in the yard.")
 		announce("Prison wing: a riot is brewing.", SHIP_NOTIFY_DANGER)
 	var/shouts = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!prisoner.routine_allowed() || cell_at(get_turf(prisoner)))
 			continue
 		// Leisure makes way, so the gathering (three times as likely now) gets picked.
@@ -355,7 +355,7 @@
 /datum/outpost_prison/proc/trouble_tick(seconds)
 	tension_spike = max(0, tension_spike - PRISON_SPIKE_DECAY * seconds)
 	subdued_left = max(0, subdued_left - seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 			continue
 		prisoner.trouble_counters(seconds)
@@ -373,7 +373,7 @@
 	check_incident_over()
 
 /// A prisoner's own trouble timers
-/mob/living/basic/outpost_prisoner/proc/trouble_counters(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_counters(seconds)
 	threat_cooldown = max(0, threat_cooldown - seconds)
 	fight_cooldown = max(0, fight_cooldown - seconds)
 	if(swing_ref)
@@ -382,10 +382,8 @@
 		if(swing_left <= 0 || !target || target.stat == DEAD)
 			swing_ref = null
 			swing_left = 0
-	if(beaten_left > 0)
-		beaten_left -= seconds
-		if(beaten_left <= 0 || health_factor() > PRISONER_RECOVER_ABOVE)
-			recover()
+	// Down until they are up again, by tg's own clock (crit, stamina, the knockdown), or a yield's lie-down by choice
+	beaten_tick()
 	if(climb_ref)
 		climb_tick(seconds)
 
@@ -396,7 +394,7 @@
  * their AI runs, and never at someone who just helped them. A talk with staff holds the threat.
  */
 /datum/outpost_prison/proc/threats_tick(seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		// Someone in trouble keeps a swing only while hitting back at a player (outpost_prison_trouble.dm).
 		// Running from a creature, staff are the least of their worries (outpost_prison_panic.dm).
 		if(prisoner.phase != PRISONER_PRESENT || (prisoner.trouble && !prisoner.retaliating()) || !prisoner.trouble_can_act() || !prisoner.ai_running() || !in_cell_block(prisoner) || prisoner.is_panicking())
@@ -427,8 +425,8 @@
 /// Two prisoners squaring off: an argument, then blows until one yields
 /datum/outpost_prison_fight
 	var/datum/outpost_prison/prison
-	var/mob/living/basic/outpost_prisoner/first
-	var/mob/living/basic/outpost_prisoner/second
+	var/mob/living/carbon/human/npc/outpost_prisoner/first
+	var/mob/living/carbon/human/npc/outpost_prisoner/second
 	/// What it is about, for the argument's lines: "food", "ball", "bed" or "none"
 	var/cause = "none"
 	/// Past the argument: blows are being thrown
@@ -440,7 +438,7 @@
 	/// Seconds it has lasted
 	var/elapsed = 0
 
-/datum/outpost_prison_fight/New(datum/outpost_prison/owner, mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two, cause = "none")
+/datum/outpost_prison_fight/New(datum/outpost_prison/owner, mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two, cause = "none")
 	. = ..()
 	prison = owner
 	first = one
@@ -457,7 +455,7 @@
 	prison = null
 	return ..()
 
-/datum/outpost_prison_fight/proc/opponent_of(mob/living/basic/outpost_prisoner/fighter)
+/datum/outpost_prison_fight/proc/opponent_of(mob/living/carbon/human/npc/outpost_prisoner/fighter)
 	if(fighter == first)
 		return second
 	if(fighter == second)
@@ -465,7 +463,7 @@
 	return null
 
 /// Still up for it: awake, on their feet, in this fight
-/datum/outpost_prison_fight/proc/fighter_ok(mob/living/basic/outpost_prisoner/fighter)
+/datum/outpost_prison_fight/proc/fighter_ok(mob/living/carbon/human/npc/outpost_prisoner/fighter)
 	return !QDELETED(fighter) && fighter.stat == CONSCIOUS && fighter.phase == PRISONER_PRESENT && fighter.fight == src && fighter.trouble == PRISONER_TROUBLE_FIGHT && !fighter.can_be_dragged()
 
 /// The argument, then the fight. FALSE once it is over.
@@ -476,7 +474,7 @@
 	if(elapsed >= PRISONER_FIGHT_MAX_TIME)
 		return FALSE
 	if(fighting)
-		for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(first, second))
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(first, second))
 			if(fighter.health_factor() <= PRISONER_FIGHT_YIELD)
 				fighter.yield_fight()
 				return FALSE
@@ -485,8 +483,8 @@
 	line_left -= seconds
 	if(line_left <= 0)
 		line_left = 3
-		var/mob/living/basic/outpost_prisoner/speaker = first_speaks ? first : second
-		var/mob/living/basic/outpost_prisoner/listener = opponent_of(speaker)
+		var/mob/living/carbon/human/npc/outpost_prisoner/speaker = first_speaks ? first : second
+		var/mob/living/carbon/human/npc/outpost_prisoner/listener = opponent_of(speaker)
 		first_speaks = !first_speaks
 		speaker.face_atom(listener)
 		speaker.say_context_or("fight_argue_[cause]", "fight_argue", listener)
@@ -494,17 +492,17 @@
 		fighting = TRUE
 		first.manual_emote("goes for [second]!")
 		// A scuffle on the floor is dirty work.
-		for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(first, second))
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(first, second))
 			fighter.set_uniform_grime(fighter.uniform_grime + PRISONER_FIGHT_GRIME)
 	return TRUE
 
 /// Starts a fight between two prisoners over `cause`, telling everyone in sight. Returns the fight, or null.
-/datum/outpost_prison/proc/start_fight(mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two, cause = "none")
+/datum/outpost_prison/proc/start_fight(mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two, cause = "none")
 	if(!trouble_enabled || one == two || one.fight || two.fight || riot_active)
 		return null
 	var/datum/outpost_prison_fight/brawl = new(src, one, two, cause)
 	fights += brawl
-	for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(one, two))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(one, two))
 		fighter.cancel_threat()
 		fighter.end_activity()
 		fighter.stand_up()
@@ -513,7 +511,7 @@
 	one.face_atom(two)
 	two.face_atom(one)
 	add_tension_spike(PRISON_SPIKE_FIGHT)
-	for(var/mob/living/basic/outpost_prisoner/onlooker in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/onlooker in prisoners)
 		if(onlooker == one || onlooker == two || onlooker.stat != CONSCIOUS || onlooker.phase != PRISONER_PRESENT)
 			continue
 		if((onlooker in view(7, one)) || (onlooker in view(7, two)))
@@ -528,7 +526,7 @@
 		return
 	fights -= brawl
 	fight_gap_left = PRISON_FIGHT_GAP
-	for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(brawl.first, brawl.second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(brawl.first, brawl.second))
 		if(QDELETED(fighter))
 			continue
 		if(fighter.fight == brawl)
@@ -541,15 +539,15 @@
 	qdel(brawl)
 
 /// Whether they are angry enough, free and able to start a fight, with someone around to see it, and no creature frightening them
-/mob/living/basic/outpost_prisoner/proc/can_start_fight()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/can_start_fight()
 	return prison && mood < PRISONER_FIGHT_MOOD && !in_trouble() && fight_cooldown <= 0 && trouble_can_act() && health_factor() > PRISONER_FIGHT_YIELD && !activity?.sleeping && ai_running() && prison.in_cell_block(src) && !is_panicking()
 
 /// Chasing the ball, or holding it
-/mob/living/basic/outpost_prisoner/proc/after_ball()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/after_ball()
 	return istype(activity, /datum/prisoner_activity/basketball) || istype(held_item, /obj/item/toy/basketball)
 
 /// What two prisoners would fight about: both hungry ("food"), both after the ball ("ball"), one in the other's cell ("bed"), or nothing ("none")
-/datum/outpost_prison/proc/fight_cause(mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two)
+/datum/outpost_prison/proc/fight_cause(mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two)
 	if(one.hunger < PRISONER_HUNGER_HUNGRY && two.hunger < PRISONER_HUNGER_HUNGRY)
 		return "food"
 	if(one.after_ball() && two.after_ball())
@@ -585,14 +583,14 @@
 	if(!trouble_enabled || riot_active || subdued_left > 0 || length(fights) || fight_gap_left > 0)
 		return null
 	var/list/angry = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.can_start_fight())
 			angry += prisoner
 	var/list/pairs = list()
 	for(var/i in 1 to length(angry) - 1)
-		var/mob/living/basic/outpost_prisoner/one = angry[i]
+		var/mob/living/carbon/human/npc/outpost_prisoner/one = angry[i]
 		for(var/j in i + 1 to length(angry))
-			var/mob/living/basic/outpost_prisoner/two = angry[j]
+			var/mob/living/carbon/human/npc/outpost_prisoner/two = angry[j]
 			if(get_dist(one, two) <= PRISONER_FIGHT_RANGE && one.walkable?[get_turf(two)])
 				pairs += list(list(one, two))
 	if(!length(pairs))
@@ -609,7 +607,7 @@
 // ===== SPATS =====
 
 /// Whether a prisoner is sour enough and free to argue, and no creature is frightening them
-/datum/outpost_prison/proc/can_spat(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/can_spat(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.phase == PRISONER_PRESENT && prisoner.mood < PRISONER_SPAT_MOOD && !prisoner.in_trouble() && prisoner.trouble_can_act() && !prisoner.activity?.sleeping && prisoner.ai_running() && !prisoner.is_panicking()
 
 /**
@@ -620,14 +618,14 @@
 	if(!trouble_enabled || riot_active || spat_lines_left > 0 || spat_gap_left > 0 || !prob(PRISON_SPAT_CHANCE * contraband_spat_mult()))
 		return FALSE
 	var/list/sour = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(can_spat(prisoner))
 			sour += prisoner
 	var/list/pairs = list()
 	for(var/i in 1 to length(sour) - 1)
-		var/mob/living/basic/outpost_prisoner/one = sour[i]
+		var/mob/living/carbon/human/npc/outpost_prisoner/one = sour[i]
 		for(var/j in i + 1 to length(sour))
-			var/mob/living/basic/outpost_prisoner/two = sour[j]
+			var/mob/living/carbon/human/npc/outpost_prisoner/two = sour[j]
 			if(get_dist(one, two) <= PRISONER_FIGHT_RANGE && (two in view(PRISONER_FIGHT_RANGE, one)))
 				pairs += list(list(one, two))
 	if(!length(pairs))
@@ -651,13 +649,13 @@
 	spat_line_left -= seconds
 	if(spat_line_left > 0)
 		return
-	var/mob/living/basic/outpost_prisoner/one = spat_first_ref?.resolve()
-	var/mob/living/basic/outpost_prisoner/two = spat_second_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/one = spat_first_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/two = spat_second_ref?.resolve()
 	if(!one || !two || one.stat != CONSCIOUS || two.stat != CONSCIOUS || one.phase != PRISONER_PRESENT || two.phase != PRISONER_PRESENT || one.in_trouble() || two.in_trouble())
 		spat_lines_left = 0
 		return
-	var/mob/living/basic/outpost_prisoner/speaker = (spat_lines_said % 2) ? two : one
-	var/mob/living/basic/outpost_prisoner/listener = speaker == one ? two : one
+	var/mob/living/carbon/human/npc/outpost_prisoner/speaker = (spat_lines_said % 2) ? two : one
+	var/mob/living/carbon/human/npc/outpost_prisoner/listener = speaker == one ? two : one
 	speaker.face_atom(listener)
 	speaker.say_context("spat", listener)
 	spat_lines_said++
@@ -667,7 +665,7 @@
 // ===== RIOTS =====
 
 /// Whether they are shut in a cell with its door bolted
-/mob/living/basic/outpost_prisoner/proc/in_bolted_cell()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/in_bolted_cell()
 	var/datum/outpost_prison_cell/holding = prison?.cell_at(get_turf(src))
 	return holding?.is_bolted()
 
@@ -676,11 +674,11 @@
  * door bolted open does not count). Down or cuffed, they are still at large, though the riot may
  * count them dealt with (riot_handled()).
  */
-/mob/living/basic/outpost_prisoner/proc/riot_at_large()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/riot_at_large()
 	return phase == PRISONER_PRESENT && stat != DEAD && is_rioting() && !is_confined()
 
 /// A rioter at large and free to act: on their feet, uncuffed, and not given up at a turret's warning (outpost_prison_security.dm)
-/mob/living/basic/outpost_prisoner/proc/riot_free()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/riot_free()
 	return riot_at_large() && stat == CONSCIOUS && !can_be_dragged() && !surrendered_to_turret()
 
 /**
@@ -689,10 +687,10 @@
  * unable to act (in crit, stamina crit, collapsed or stunned). A knockdown they are straight back
  * up from is not enough. The riot is over once every rioter is (riot_tick()).
  */
-/mob/living/basic/outpost_prisoner/proc/riot_handled()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/riot_handled()
 	if(QDELETED(src) || isnull(get_turf(src)))
 		return TRUE
-	if(!riot_at_large() || cuffs)
+	if(!riot_at_large() || handcuffed)
 		return TRUE
 	return stat != CONSCIOUS || HAS_TRAIT(src, TRAIT_INCAPACITATED)
 
@@ -700,11 +698,11 @@
  * Whether they can join a riot now. Not from a cell they are shut in: a riot that nobody can take
  * out of a cell would be over as soon as it began, so they bang on the door and shout instead.
  */
-/mob/living/basic/outpost_prisoner/proc/can_join_riot()
-	return prison && stat == CONSCIOUS && phase == PRISONER_PRESENT && !can_be_dragged() && beaten_left <= 0 && !climb_ref && (!trouble || trouble == PRISONER_TROUBLE_FIGHT) && prison.in_cell_block(src) && !is_confined()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/can_join_riot()
+	return prison && stat == CONSCIOUS && phase == PRISONER_PRESENT && !can_be_dragged() && !beaten && !climb_ref && (!trouble || trouble == PRISONER_TROUBLE_FIGHT) && prison.in_cell_block(src) && !is_confined()
 
 /// Below this mood they join a riot, by personality, raised by a shiv under their mattress (outpost_prison_contraband.dm)
-/mob/living/basic/outpost_prisoner/proc/riot_join_mood()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/riot_join_mood()
 	var/line = PRISON_RIOT_JOIN_CHATTY
 	switch(personality)
 		if("grumpy")
@@ -721,10 +719,10 @@
  * Who joins a riot: everyone below their personality's line (everyone able, for an admin riot),
  * plus `forced`, else the unhappiest alone.
  */
-/datum/outpost_prison/proc/riot_candidates(everyone = FALSE, mob/living/basic/outpost_prisoner/forced)
+/datum/outpost_prison/proc/riot_candidates(everyone = FALSE, mob/living/carbon/human/npc/outpost_prisoner/forced)
 	var/list/joining = list()
-	var/mob/living/basic/outpost_prisoner/unhappiest
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	var/mob/living/carbon/human/npc/outpost_prisoner/unhappiest
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!prisoner.can_join_riot())
 			continue
 		if(everyone || prisoner == forced || prisoner.mood < prisoner.riot_join_mood())
@@ -741,7 +739,7 @@
  * does. `ignore_quiet` starts it in the quiet after a riot too, for a prisoner let out of lockdown
  * early. An experiment under way stops nothing.
  */
-/datum/outpost_prison/proc/start_riot(reason, everyone = FALSE, mob/living/basic/outpost_prisoner/forced, ignore_quiet = FALSE, alone = FALSE)
+/datum/outpost_prison/proc/start_riot(reason, everyone = FALSE, mob/living/carbon/human/npc/outpost_prisoner/forced, ignore_quiet = FALSE, alone = FALSE)
 	if(!trouble_enabled || riot_active)
 		return FALSE
 	if(!everyone && subdued_left > 0 && !ignore_quiet)
@@ -766,7 +764,7 @@
 	open_incident()
 	var/shouts = 0
 	// A Most Wanted ringleader is among the first to shout (outpost_prison_bounty.dm).
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in bounty_ringleaders_first(joining))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in bounty_ringleaders_first(joining))
 		rioter.start_rioting(shouts++ < 2)
 	send_bystanders_home(joining)
 	add_log("Riot in the yard: [length(joining)] prisoner\s.")
@@ -777,7 +775,7 @@
 	return TRUE
 
 /// Joins the riot: a shiv out, everything else dropped
-/mob/living/basic/outpost_prisoner/proc/start_rioting(shout = TRUE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/start_rioting(shout = TRUE)
 	cancel_threat()
 	end_activity()
 	stand_up()
@@ -786,16 +784,15 @@
 	riot_target_ref = null
 	riot_target_hits = 0
 	riot_victim_ref = null
-	// A shiv they hid in their cell is the one they draw (outpost_prison_contraband.dm).
-	if(!prison?.draw_stashed_shiv(src))
-		draw_shiv()
+	// A shiv they hid in their cell is the one they draw (outpost_prison_contraband.dm); without one, their fists.
+	prison?.draw_stashed_shiv(src)
 	update_bubble()
 	if(shout)
 		say_context("riot")
 
 /// Prisoners who stay out of a riot go back to their own cells and sit it out on the bed. Anyone running from a creature keeps running (outpost_prison_panic.dm).
 /datum/outpost_prison/proc/send_bystanders_home(list/rioters)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if((prisoner in rioters) || prisoner.phase != PRISONER_PRESENT || !prisoner.routine_allowed() || prisoner.is_confined() || prisoner.is_panicking())
 			continue
 		var/datum/prisoner_activity/hide/hide = new(prisoner)
@@ -816,7 +813,7 @@
 	riot_windup_left = max(0, riot_windup_left - seconds)
 	var/unhandled = 0
 	var/free = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.riot_handled())
 			continue
 		unhandled++
@@ -862,7 +859,7 @@
 	riot_windup_left = 0
 	tension_spike = 0
 	subdued_left = PRISON_SUBDUED_TIME / (1 SECONDS)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.is_rioting())
 			prisoner.calm_down()
 	stage = outpost_prison_stage_for(compute_tension())
@@ -884,7 +881,7 @@
 /// The riot went on too long: the rioters go all out for the exits, and each one's loose clock starts
 /datum/outpost_prison/proc/begin_breakout()
 	breaking_out = TRUE
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		// Rioters who gave up at a turret's warning stay where they are (outpost_prison_security.dm)
 		if(prisoner.trouble != PRISONER_TROUBLE_RIOT || prisoner.surrendered_to_turret())
 			continue
@@ -901,7 +898,7 @@
  * once a riot turns into a breakout. Anyone else in a riot already on carries on as before. Returns
  * TRUE if they are breaking out.
  */
-/datum/outpost_prison/proc/start_breakout(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/start_breakout(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!trouble_enabled || QDELETED(prisoner) || !(prisoner in prisoners))
 		return FALSE
 	if(!prisoner.is_rioting())
@@ -928,7 +925,7 @@
  */
 /datum/outpost_prison/proc/transfer_rioters()
 	var/list/rioters = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.riot_at_large() && !held_for_experiment(prisoner))
 			rioters += prisoner
 	if(!length(rioters))
@@ -937,7 +934,7 @@
 		return 0
 	open_incident()
 	var/charged = 0
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		close_bounty_record(rioter, BOUNTY_RECORD_CLOSED)
 		charged += charge_fine(OUTPOST_PRISON_TRANSFER_FEE, "Prisoner transfer: [rioter.real_name]", TRUE)
 		note_prisoner_lost(rioter, "transferred")
@@ -951,7 +948,7 @@
 	return length(rioters)
 
 /// A serving hatch left open on both sides that this prisoner can reach from the yard side
-/datum/outpost_prison/proc/open_hatch_for(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/open_hatch_for(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/obj/structure/table/reinforced/prison_hatch/hatch in fixtures_of("hatch"))
 		if(QDELETED(hatch) || !hatch.both_sides_open())
 			continue
@@ -969,7 +966,7 @@
  * were smashing for a few more blows, or a new target (pick_smash_target(),
  * outpost_prison_breakout.dm). Turret warnings are in outpost_prison_security.dm.
  */
-/mob/living/basic/outpost_prisoner/proc/riot_target()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/riot_target()
 	if(!prison)
 		return null
 	if(prison.riot_windup_left > 0 || surrendered_to_turret() || is_confined())
@@ -1004,7 +1001,7 @@
 	return next
 
 /// The nearest member of staff in sight that they can get to, and that no more than PRISON_RIOT_MAX_ATTACKERS - 1 others are going for
-/mob/living/basic/outpost_prisoner/proc/staff_in_reach()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/staff_in_reach()
 	var/mob/living/nearest
 	var/nearest_distance = INFINITY
 	for(var/mob/living/person in view(7, src))
@@ -1020,9 +1017,9 @@
 	return nearest
 
 /// How many rioters other than `except` are going for `person`
-/datum/outpost_prison/proc/attackers_on(mob/living/person, mob/living/basic/outpost_prisoner/except)
+/datum/outpost_prison/proc/attackers_on(mob/living/person, mob/living/carbon/human/npc/outpost_prisoner/except)
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/other in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other == except || !other.is_rioting() || !other.trouble_can_act())
 			continue
 		if(other.riot_victim_ref?.resolve() == person)
@@ -1030,7 +1027,7 @@
 	return count
 
 /// Whether a rioter's target is still worth hitting
-/datum/outpost_prison/proc/still_smashable(atom/target, mob/living/basic/outpost_prisoner/rioter)
+/datum/outpost_prison/proc/still_smashable(atom/target, mob/living/carbon/human/npc/outpost_prisoner/rioter)
 	if(QDELETED(target) || !rioter.reachable?[get_turf(target)] || LAZYACCESS(rioter.riot_skips, REF(target)) > world.time)
 		return FALSE
 	if(istype(target, /obj/machinery/light))
@@ -1078,7 +1075,7 @@
  * wrecking their cells; wrecks under way go on. Nothing happens while their AI sleeps.
  */
 /datum/outpost_prison/proc/wreck_tick(seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 			continue
 		if(prisoner.trouble == PRISONER_TROUBLE_WRECK)
@@ -1091,7 +1088,7 @@
  * and gets dirty, and they hammer on the door. The warden's log says so. Also the admin panel's hook.
  * Returns TRUE if they started.
  */
-/datum/outpost_prison/proc/start_wreck(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/start_wreck(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS || prisoner.trouble)
 		return FALSE
 	var/datum/outpost_prison_cell/holding = cell_at(get_turf(prisoner))
@@ -1122,7 +1119,7 @@
 	return TRUE
 
 /// A wreck goes on: bangs on the door every few seconds, and after PRISONER_WRECK_TIME the bolts shear
-/datum/outpost_prison/proc/wreck_step(mob/living/basic/outpost_prisoner/prisoner, seconds)
+/datum/outpost_prison/proc/wreck_step(mob/living/carbon/human/npc/outpost_prisoner/prisoner, seconds)
 	var/datum/outpost_prison_cell/holding = cell_at(get_turf(prisoner))
 	if(!holding || !prisoner.is_confined())
 		// Let out, or no longer in a cell: the wreck is over.
@@ -1144,7 +1141,7 @@
 		shear_bolts(prisoner, holding)
 
 /// A wreck ends without the bolts shearing: let out, knocked down or gone
-/datum/outpost_prison/proc/stop_wreck(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/stop_wreck(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.trouble != PRISONER_TROUBLE_WRECK)
 		return
 	prisoner.trouble = null
@@ -1153,7 +1150,7 @@
 	prisoner.update_bubble()
 
 /// The cell door gives, bolted or welded: out they come, and unless the wing is subdued they riot
-/datum/outpost_prison/proc/shear_bolts(mob/living/basic/outpost_prisoner/prisoner, datum/outpost_prison_cell/holding)
+/datum/outpost_prison/proc/shear_bolts(mob/living/carbon/human/npc/outpost_prisoner/prisoner, datum/outpost_prison_cell/holding)
 	stop_wreck(prisoner)
 	var/obj/machinery/door/airlock/door = holding.door()
 	if(door && (door.locked || door.welded))
@@ -1199,7 +1196,7 @@
 /// Prisoners on the patrol AI, still in the wing's custody
 /datum/outpost_prison/proc/loose_count()
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE && prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD)
 			count++
 	return count
@@ -1207,8 +1204,8 @@
 /// Loose prisoners nobody has caught yet: not cuffed. Caught ones, left cuffed somewhere, keep no protective custody going.
 /datum/outpost_prison/proc/runners_at_large()
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
-		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE && prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && !prisoner.cuffs)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
+		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE && prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && !prisoner.handcuffed)
 			count++
 	return count
 
@@ -1219,7 +1216,7 @@
  */
 /datum/outpost_prison/proc/alarm_state()
 	var/list/sightings = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE && prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD)
 			sightings += "[prisoner.real_name] ([get_area_name(prisoner)])"
 	var/loose_text
@@ -1242,7 +1239,7 @@
 /// The trouble block for the admin panel and tests: the stage, tension, the riot's clocks and who is on a loose clock where
 /datum/outpost_prison/proc/trouble_payload()
 	var/list/loose = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD || prisoner.loose_left <= 0)
 			continue
 		if(prisoner.trouble != PRISONER_TROUBLE_LOOSE && prisoner.trouble != PRISONER_TROUBLE_BREAKOUT)
@@ -1269,7 +1266,7 @@
  * or cuffed (can_be_dragged()).
  */
 /datum/outpost_prison/proc/check_escapes(seconds)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD)
 			continue
 		var/inside = in_cell_block(prisoner)
@@ -1300,13 +1297,13 @@
 /datum/outpost_prison/proc/loose_tick(seconds)
 	var/list/still_loose = list()
 	var/list/nearly_away = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners.Copy())
 		if(QDELETED(prisoner) || prisoner.phase != PRISONER_PRESENT || prisoner.stat == DEAD || prisoner.loose_left <= 0)
 			continue
 		if(prisoner.trouble != PRISONER_TROUBLE_LOOSE && prisoner.trouble != PRISONER_TROUBLE_BREAKOUT)
 			prisoner.loose_left = 0
 			continue
-		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE ? prisoner.cuffs : !prisoner.riot_free())
+		if(prisoner.trouble == PRISONER_TROUBLE_LOOSE ? prisoner.handcuffed : !prisoner.riot_free())
 			continue
 		if(prisoner.loose_left <= seconds && held_for_experiment(prisoner))
 			continue
@@ -1327,7 +1324,7 @@
  * Out of the cell block: loose on the outpost patrol AI, with their clock running. `breakout`
  * marks it as part of a breakout even if they were not rioting (the admin button).
  */
-/datum/outpost_prison/proc/prisoner_escaped(mob/living/basic/outpost_prisoner/prisoner, breakout = FALSE)
+/datum/outpost_prison/proc/prisoner_escaped(mob/living/carbon/human/npc/outpost_prisoner/prisoner, breakout = FALSE)
 	if(prisoner.trouble == PRISONER_TROUBLE_LOOSE)
 		return FALSE
 	var/from_riot = breakout || prisoner.is_rioting()
@@ -1353,7 +1350,7 @@
 	return TRUE
 
 /// Goes loose: the outpost patrol AI takes over, and the clock starts, or carries on from the breakout
-/mob/living/basic/outpost_prisoner/proc/go_loose()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/go_loose()
 	end_activity()
 	stand_up()
 	stop_climb()
@@ -1366,11 +1363,8 @@
 	trouble = PRISONER_TROUBLE_LOOSE
 	if(loose_left <= 0)
 		loose_left = OUTPOST_PRISON_LOOSE_TIME
-	// Wanted and Most Wanted bounty prisoners hit harder, and a meek one runs faster (outpost_prison_bounty.dm).
-	obj_damage = PRISONER_LOOSE_OBJ_DAMAGE * bounty_breakout_mult()
-	if(bounty_loose_speed())
-		set_varspeed(bounty_base_speed())
-	update_melee()
+	// A runner runs.
+	set_prison_pace(hurry = bounty_base_speed())
 	update_bubble()
 	// The outpost patrol AI (voidcrew/modules/npc_ships/code/outpost_patrol.dm). Finding the doors
 	// yields on a big outpost, and this runs in the prison's tick on SSprocessing.
@@ -1378,7 +1372,7 @@
 	assign_mob_to_outpost_patrol_async(src, prison?.outpost)
 
 /// Back in the cell block, down or cuffed: in custody again, in a foul mood, and owing lockdown if they got out during a riot
-/datum/outpost_prison/proc/recapture(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/recapture(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner.trouble != PRISONER_TROUBLE_LOOSE)
 		return FALSE
 	var/owes_lockdown = prisoner.escaped_rioting
@@ -1391,21 +1385,17 @@
 	update_riot_lights()
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/proc/back_in_custody()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/back_in_custody()
 	clear_outpost_patrol(src)
 	trouble = null
 	loose_left = 0
 	escaped_rioting = FALSE
 	note_trouble_ended()
-	obj_damage = initial(obj_damage)
-	// A meek bounty prisoner slows back down (outpost_prison_bounty.dm).
-	if(bounty_loose_speed())
-		set_varspeed(bounty_base_speed())
+	set_prison_pace(hurry = bounty_base_speed())
 	drop_shiv()
 	set_mood(PRISONER_RECAPTURED_MOOD)
 	swap_basic_ai_controller(src, /datum/ai_controller/basic_controller/outpost_prisoner)
 	prison?.refresh_prisoner_reach(src)
-	update_melee()
 	update_bubble()
 	say_context("recaptured")
 
@@ -1413,7 +1403,7 @@
  * Out of time: gone for good, walls or no walls. No bonus; the treasury is fined
  * OUTPOST_PRISON_ESCAPE_FINE as part of the incident, and the corrections service counts them lost.
  */
-/datum/outpost_prison/proc/escaped_for_good(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/escaped_for_good(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	close_bounty_record(prisoner, BOUNTY_RECORD_ESCAPED)
 	var/fine = charge_fine(OUTPOST_PRISON_ESCAPE_FINE, "Prison escape fine: [prisoner.real_name]", TRUE)
 	note_prisoner_lost(prisoner, "escaped")
@@ -1434,14 +1424,14 @@
  * rioting or not, and treats a loose prisoner outside the wing as fair game until they are down, so
  * a runner is stopped rather than killed. Turrets players build follow outpost_prison_security.dm.
  */
-/mob/living/basic/outpost_prisoner/proc/turret_target()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/turret_target()
 	if(stat == DEAD || trouble != PRISONER_TROUBLE_LOOSE || phase != PRISONER_PRESENT || can_be_dragged())
 		return FALSE
 	return !prison || get_area(src) != prison.wing
 
 /proc/is_loose_outpost_prisoner(mob/living/creature)
-	var/mob/living/basic/outpost_prisoner/prisoner = creature
-	return istype(prisoner) && prisoner.turret_target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = creature
+	return istype(prisoner) && !prisoner.experiment_turned && prisoner.turret_target()
 
 // ===== SERVING HATCH =====
 

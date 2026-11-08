@@ -20,6 +20,11 @@
 	. = ..()
 	ladder_add_survival_knife()
 
+// The combat-ready kit fills its bag already: equip() below hands the knife over instead.
+/datum/outfit/job/miner/equipped/combat/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
+	. = ..()
+	backpack_contents -= /obj/item/knife/combat/survival
+
 /datum/outfit/job/security/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
 	ladder_add_survival_knife()

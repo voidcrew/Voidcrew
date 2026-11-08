@@ -35,10 +35,10 @@
 	TEST_ASSERT(!human_npc_out_of_fight(npc), "A stamcrit NPC counts as out of the fight")
 	npc.setStaminaLoss(0)
 
-	npc.adjustOxyLoss(110)
-	TEST_ASSERT_EQUAL(npc.stat, SOFT_CRIT, "Test fixture: 110 oxygen damage did not put the NPC in soft crit")
+	npc.adjustToxLoss(110) // toxin, not oxygen: 50 oxygen damage knocks a carbon out (tg check_passout())
+	TEST_ASSERT_EQUAL(npc.stat, SOFT_CRIT, "Test fixture: 110 toxin damage did not put the NPC in soft crit")
 	TEST_ASSERT(human_npc_out_of_fight(npc), "An NPC in soft crit is still in the fight")
-	npc.setOxyLoss(0)
+	npc.setToxLoss(0)
 	TEST_ASSERT(!human_npc_out_of_fight(npc), "An NPC healed out of crit is still out of the fight")
 
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
@@ -73,7 +73,7 @@
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/basic/human_npc)
 	TEST_ASSERT(strategy.can_attack(finisher, victim), "Test fixture: the pirate-family NPC won't fight a healthy person")
 	TEST_ASSERT(strategy.can_attack(spare, victim), "Test fixture: the criminal-family NPC won't fight a healthy person")
-	victim.adjustOxyLoss(110)
+	victim.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock them out
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim is not in soft crit")
 	TEST_ASSERT(strategy.can_attack(finisher, victim), "A pirate-family NPC stopped attacking someone in soft crit")
 	TEST_ASSERT(!strategy.can_attack(spare, victim), "A criminal-family NPC keeps attacking someone in crit")
@@ -108,7 +108,10 @@
 	npc.uncuff()
 	TEST_ASSERT_EQUAL(npc.npc_last_bark, "uncuffed", "Its cuffs coming off gave no line")
 
-	// A passive grab breaks on the first resist, in the same call.
+	// A passive grab breaks on the first resist, in the same call, for someone on their feet (prone, it
+	// takes a roll). tg's get-up after the stamcrit is a second's do_after the test doesn't wait for.
+	npc.get_up(instant = TRUE)
+	TEST_ASSERT_EQUAL(npc.body_position, STANDING_UP, "Test fixture: the NPC did not get back up")
 	var/mob/living/carbon/human/consistent/grabber = allocate(/mob/living/carbon/human/consistent, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
 	grabber.start_pulling(npc)
 	TEST_ASSERT_EQUAL(npc.pulledby, grabber, "Test fixture: the grab didn't take")
@@ -145,7 +148,7 @@
 	TEST_ASSERT_NOTNULL(rules, "The thug has no surrender rules")
 
 	TEST_ASSERT(!rules.hurt_enough(npc), "A healthy NPC thinks about giving up")
-	npc.adjustOxyLoss(70)
+	npc.adjustToxLoss(70) // awake at 30 health; 50 oxygen damage would knock it out
 	TEST_ASSERT(rules.hurt_enough(npc), "An NPC at 30 health doesn't think about giving up")
 	TEST_ASSERT(!rules.should_consider(npc, list(1), list()), "One hostile is enough to make it think about giving up")
 	TEST_ASSERT(rules.should_consider(npc, list(1, 2), list()), "Two hostiles aren't enough to make it think about giving up")
@@ -182,7 +185,7 @@
 /datum/unit_test/voidcrew_human_npc_soft_crit/Run()
 	var/mob/living/carbon/human/npc/sample/thug/npc = allocate(/mob/living/carbon/human/npc/sample/thug)
 	var/datum/ai_controller/controller = npc.ai_controller
-	npc.adjustOxyLoss(110)
+	npc.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock it out
 	TEST_ASSERT_EQUAL(npc.stat, SOFT_CRIT, "Test fixture: the NPC is not in soft crit")
 	TEST_ASSERT(!(controller.get_able_to_run() & AI_UNABLE_TO_RUN), "A human NPC's AI can't run in soft crit")
 	var/obj/item/reagent_containers/hypospray/medipen/pen = human_npc_soft_crit_treatment(npc)
@@ -217,7 +220,7 @@
 	var/mob/living/carbon/human/npc/sample/gunner/regular = allocate(/mob/living/carbon/human/npc/sample/gunner, locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z))
 	var/datum/ai_behavior/human_npc_fire_wild/wild = GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_fire_wild)
 	for(var/mob/living/carbon/human/npc/downed as anything in list(elite, regular))
-		downed.adjustOxyLoss(110)
+		downed.adjustToxLoss(110)
 		TEST_ASSERT_EQUAL(downed.stat, SOFT_CRIT, "Test fixture: [downed] is not in soft crit")
 		downed.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
 		soft.SelectBehaviors(downed.ai_controller, 1)
@@ -300,8 +303,9 @@
 			TEST_ASSERT_NOTNULL(human_npc_find_ammo(pirate, gun), "[outfit_type] carries no spare ammunition for its [gun]")
 		qdel(pirate)
 
-/// N7: where the air can't keep a person alive the NPC gets a sealed suit and an open tank; in the cold
-/// it gets cold-weather wear; a species that needs neither is left alone.
+/// N7: where the air can't keep a person alive the NPC gets a sealed suit and a tank; in the cold it gets
+/// cold-weather wear; a species that needs neither is left alone. It minds its valve like a person: open
+/// while the air would hurt it, shut while the air is fine (so the tank doesn't run dry in a good room).
 /datum/unit_test/voidcrew_human_npc_site_layers
 
 /datum/unit_test/voidcrew_human_npc_site_layers/Run()
@@ -324,7 +328,17 @@
 	TEST_ASSERT(istype(spacer.wear_suit, /obj/item/clothing/suit/space/pirate), "An NPC dressed for vacuum has no space suit")
 	TEST_ASSERT(istype(spacer.head, /obj/item/clothing/head/helmet/space), "An NPC dressed for vacuum has no space helmet")
 	TEST_ASSERT(istype(spacer.s_store, /obj/item/tank/internals), "An NPC dressed for vacuum carries no tank")
-	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC dressed for vacuum didn't open its tank")
+	TEST_ASSERT(spacer.can_breathe_internals(), "An NPC dressed for vacuum has nothing to breathe its tank through")
+	TEST_ASSERT_NULL(spacer.internal, "An NPC dressed for vacuum keeps its tank open in good air")
+	var/turf/spacer_turf = get_turf(spacer)
+	var/datum/gas_mixture/room_air = spacer_turf.return_air()
+	var/datum/gas_mixture/saved_air = room_air.copy()
+	room_air.remove_ratio(1)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC in vacuum didn't open its tank")
+	room_air.copy_from(saved_air)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NULL(spacer.internal, "An NPC back in good air didn't shut its tank")
 	var/obj/item/clothing/suit/space/suit = spacer.wear_suit
 	TEST_ASSERT(suit?.thermal_on, "An NPC dressed for vacuum didn't switch on its suit's heating")
 	// Dormant, the regulator is off so the cell lasts; awake, it goes back on.
@@ -414,3 +428,24 @@
 	TEST_ASSERT(prisoner.dropItemToGround(gun), "An unlocked NPC can't let go of its gun")
 	sleep(2)
 	TEST_ASSERT(!QDELETED(gun) && isturf(gun.loc), "An unlocked NPC's dropped gun was deleted")
+
+/**
+ * Phase E follow-ups to the spawn queue: an order built later checks that its spot is still the place it
+ * was queued for (a ruin unloaded while it waited), and the NPC faces the way it was told (a mapped
+ * spawner's dir).
+ */
+/datum/unit_test/voidcrew_human_npc_order_spot
+
+/datum/unit_test/voidcrew_human_npc_order_spot/Run()
+	var/datum/human_npc_order/facing = spawn_human_npc(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left, immediate = TRUE, dir = EAST)
+	var/mob/living/carbon/human/npc/facer = facing.spawned_ref?.resolve()
+	TEST_ASSERT_NOTNULL(facer, "An order for the test floor built nothing")
+	if(facer)
+		allocated += facer
+		TEST_ASSERT_EQUAL(facer.dir, EAST, "An NPC built with a dir doesn't face it")
+	var/datum/human_npc_order/moved_on = new /datum/human_npc_order(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left)
+	TEST_ASSERT(moved_on.spot_still_valid(), "A fresh order's spot doesn't count as its own")
+	// The ground was reused while it waited: its area is not the one it was queued in.
+	moved_on.where_area = null
+	TEST_ASSERT_NULL(moved_on.fulfil(), "An order whose spot was reused still built its NPC there")
+	qdel(moved_on)

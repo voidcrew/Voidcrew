@@ -307,6 +307,10 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define BB_PIRATE_POST_TURF "pirate_post_turf"
 /// Where a mob that strayed is walking back to
 #define BB_PIRATE_RETURN_TURF "pirate_return_turf"
+/// Where a pirate with no crew was put (a ruin's, a planet's, a contract's): it keeps near it
+#define BB_PIRATE_CREWLESS_HOME "pirate_crewless_home"
+/// A pirate with no crew and nothing to fight walks home once it is this many tiles from it
+#define PIRATE_CREWLESS_LEASH 10
 /// The door (or wrecked door frame) this mob is breaking through
 #define BB_PIRATE_BREACH_TARGET "pirate_breach_target"
 /// The turf it breaks the door from

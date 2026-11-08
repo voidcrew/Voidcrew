@@ -413,7 +413,7 @@ GLOBAL_LIST_INIT(bounty_bar_drinks, list(
 	for(var/mob/living/other in range(range, here))
 		if(other == src || other.stat != CONSCIOUS || other.client || other.mind)
 			continue
-		if(istype(other, /mob/living/basic/ambient_npc))
+		if(istype(other, /mob/living/carbon/human/npc/ambient_npc))
 			options += other
 		else if(istype(other, /mob/living/carbon/human/npc/bounty_criminal))
 			var/mob/living/carbon/human/npc/bounty_criminal/patron = other

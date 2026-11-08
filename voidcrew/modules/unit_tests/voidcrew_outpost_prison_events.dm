@@ -65,8 +65,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.wildcards_enabled = TRUE
 	prison.wildcard_force_roll = TRUE
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
 	set_moods(list(first, second), 90)
 	prison.refresh_reach()
 
@@ -129,7 +129,7 @@
 	wildcard_reset(prison)
 
 	// Rivals are picked first, and a shiv under the mattress makes its owner likelier to be the one.
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 11, 8))
 	prison.refresh_reach()
 	prison.set_affinity(first, third, -100)
 	for(var/i in 1 to 30)
@@ -163,8 +163,8 @@
 	TEST_ASSERT_NOTNULL(home, "The incident admin test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
 	set_moods(list(first, second), 90)
 	prison.refresh_reach()
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "wildadmin")
@@ -187,16 +187,19 @@
 	TEST_ASSERT_NOTNULL(stab, "The stab button started no stabbing")
 	TEST_ASSERT_EQUAL(stab.stage, "attack", "The stab button did not skip the tell")
 	TEST_ASSERT_EQUAL(prison.wildcard_gap_left, 600, "An admin stabbing did not start the gap") // PRISON_INCIDENT_GAP
-	var/mob/living/basic/outpost_prisoner/attacker = stab.actor()
-	var/mob/living/basic/outpost_prisoner/victim = stab.target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/attacker = stab.actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = stab.target()
 	TEST_ASSERT(attacker.has_shiv(), "The stabber has no shiv")
 	TEST_ASSERT(!attacker.cell.stash_shiv, "The stabber did not draw the shiv under their mattress")
 	TEST_ASSERT(attacker.fight && attacker.fight == victim.fight, "The stabbing is not a fight between the two")
 	TEST_ASSERT(attacker.fight.fighting, "The stabbing started with an argument")
-	// A shiv hits a prisoner harder than a fist, and softer than it hits staff (PRISONER_STAB_MIN/MAX).
+	// The stab is the real shiv in their hand, from beside the victim, doing what a glass shiv does to anyone.
+	victim.forceMove(get_step(attacker, EAST))
+	outpost_prison_test_ready_blow(attacker)
+	var/obj/item/knife/shiv/shiv = attacker.held_item
 	var/health_before = victim.health
 	TEST_ASSERT(attacker.strike(victim), "The stabber could not strike")
-	TEST_ASSERT(health_before - victim.health >= 7 && health_before - victim.health <= 10, "A stab did [health_before - victim.health] damage, not 7-10")
+	TEST_ASSERT(health_before - victim.health > 0 && health_before - victim.health <= shiv.force, "A stab did [health_before - victim.health] damage, not what a glass shiv does")
 	// The fight over, the stabber drops the shiv and the incident is done.
 	prison.end_fight(attacker.fight)
 	prison.wildcard_tick(1)
@@ -224,11 +227,14 @@
 	TEST_ASSERT(!brawl.fighting, "An incident fight skipped its argument")
 	wildcard_reset(prison)
 
-	// With its tell asked for, a stabbing waits, and nothing else starts meanwhile.
+	// With its tell asked for, a stabbing waits, and nothing else starts meanwhile. A stabbing needs a
+	// blade: the shivs are back under the mattresses.
+	first.cell.stash_shiv = TRUE
+	second.cell.stash_shiv = TRUE
 	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "stab", "tell" = 1))
 	TEST_ASSERT_NULL(panel.error, "The stab button with a tell was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(prison.wildcard?.stage, "tell", "The stab button with a tell went straight to the attack")
-	var/mob/living/basic/outpost_prisoner/brooder = prison.wildcard.actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/brooder = prison.wildcard.actor()
 	TEST_ASSERT(!brooder.has_shiv(), "A shiv came out before the tell was over")
 	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "snap"))
 	TEST_ASSERT_NOTNULL(panel.error, "A second incident started while one was in its tell")
@@ -237,6 +243,8 @@
 	TEST_ASSERT_EQUAL(prison.wildcard?.stage, "attack", "The tell ran out and no stabbing followed")
 	TEST_ASSERT(brooder.has_shiv(), "The stabber pulled no shiv at the end of the tell")
 	wildcard_reset(prison)
+	first.cell.stash_shiv = FALSE
+	second.cell.stash_shiv = FALSE
 
 	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "arson"))
 	TEST_ASSERT_NOTNULL(panel.error, "An unknown incident kind was accepted")
@@ -263,8 +271,8 @@
 	TEST_ASSERT_NOTNULL(home, "The stopped stabbing test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/attacker = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/attacker = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	set_moods(list(attacker, victim), 60)
 	prison.refresh_reach()
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "wildstopowner")
@@ -311,9 +319,9 @@
 	TEST_ASSERT_NOTNULL(home, "The snap test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/snapper = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/pal = trouble_prisoner(prison, prison_spot(home, 12, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/snapper = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/pal = trouble_prisoner(prison, prison_spot(home, 12, 8), "chatty")
 	var/list/everyone = list(snapper, buddy, pal)
 	// Well above every riot line (PRISON_RIOT_JOIN_GRUMPY is the highest)
 	set_moods(everyone, 90)
@@ -329,7 +337,7 @@
 	TEST_ASSERT(prison.riot_active, "A snap never rioted") // PRISON_INCIDENT_TELL_MAX
 	TEST_ASSERT_NULL(prison.wildcard, "The snap outlasted its riot's start")
 	var/rioters = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in everyone)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in everyone)
 		if(prisoner.is_rioting())
 			rioters++
 	TEST_ASSERT(snapper.is_rioting(), "The snapper is not rioting")

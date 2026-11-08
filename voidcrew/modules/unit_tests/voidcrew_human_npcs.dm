@@ -71,8 +71,9 @@
 	TEST_ASSERT(npc.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "200 stamina damage did not stamcrit a human NPC")
 	TEST_ASSERT(npc.ai_controller.get_able_to_run() & AI_UNABLE_TO_RUN, "A stamcrit human NPC's AI can still act")
 
-/// The strip menu never opens, the NPC never lets go of its kit, and kit forced off it is deleted,
+/// The NPC never lets go of its kit, the strip menu shows none of it, and kit forced off it is deleted,
 /// unless it is straight back on the NPC (a tactical reload drops the old magazine and catches it).
+/// What isn't gear (a paper, a ship key) can be taken off it through the strip menu like off anyone.
 /datum/unit_test/voidcrew_human_npc_gear_lock
 
 /datum/unit_test/voidcrew_human_npc_gear_lock/Run()
@@ -86,7 +87,22 @@
 		TEST_ASSERT(human_npc_gear_locked(kit), "[kit] is not locked to the NPC")
 	TEST_ASSERT(!human_npc_gear_locked(npc.get_bodypart(BODY_ZONE_CHEST)), "A body part was locked as gear")
 
-	TEST_ASSERT(!npc.should_strip(player), "The strip menu would open on a human NPC")
+	// The strip menu opens, but every piece of kit reads as an empty slot and can't be taken.
+	TEST_ASSERT(npc.should_strip(player), "The strip menu would not open on a human NPC")
+	for(var/obj/item/kit as anything in list(gun, spare, npc.w_uniform, npc.wear_suit))
+		TEST_ASSERT(HAS_TRAIT(kit, TRAIT_NO_STRIP), "[kit] shows in the strip menu")
+	var/datum/strippable_item/suit_slot = GLOB.strippable_human_items[STRIPPABLE_ITEM_SUIT]
+	TEST_ASSERT(!suit_slot.start_unequip(npc, player), "The strip menu would start taking a human NPC's armour")
+	// A paper in its pocket isn't gear: it comes out like anyone's.
+	var/obj/item/paper/note = allocate(/obj/item/paper)
+	if(!npc.equip_to_slot_if_possible(note, ITEM_SLOT_LPOCKET, disable_warning = TRUE))
+		npc.equip_to_slot_if_possible(note, ITEM_SLOT_RPOCKET, disable_warning = TRUE)
+	TEST_ASSERT(npc.get_slot_by_item(note) & ITEM_SLOT_POCKETS, "No pocket of the sample gunner took a paper")
+	TEST_ASSERT(!HAS_TRAIT(note, TRAIT_NO_STRIP), "A paper in a human NPC's pocket is hidden from the strip menu")
+	var/datum/strippable_item/pocket = GLOB.strippable_human_items[npc.l_store == note ? STRIPPABLE_ITEM_LPOCKET : STRIPPABLE_ITEM_RPOCKET]
+	TEST_ASSERT(pocket.try_unequip(npc, player), "The strip menu would refuse a paper in a human NPC's pocket")
+	pocket.finish_unequip(npc, player)
+	TEST_ASSERT(isturf(note.loc), "Stripping a paper from a human NPC's pocket did not take it out")
 	TEST_ASSERT(!npc.dropItemToGround(gun), "A human NPC let go of its gun")
 	TEST_ASSERT(npc.is_holding(gun), "The gun left the NPC's hand")
 	TEST_ASSERT(!npc.transferItemToLoc(gun, player), "A human NPC handed its gun over")

@@ -13,30 +13,30 @@
  */
 
 /// A prisoner whose talk menu has one more choice, standing in for other packages' (XF's search, XG's questions)
-/mob/living/basic/outpost_prisoner/talk_menu_stub
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub
 	/// The last extra choice that reached this prisoner
 	var/stub_picked
 	/// What a member's left click last did to them: "menu", "uncuff" or "shake"; the real procs sleep or need a client
 	var/stub_clicked
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_open(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_open(mob/living/user)
 	stub_clicked = "menu"
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/uncuff_by(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/uncuff_by(mob/living/user)
 	stub_clicked = "uncuff"
 	return FALSE
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/shake_awake(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/shake_awake(mob/living/user)
 	stub_clicked = "shake"
 	return FALSE
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_other_choices(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_other_choices(mob/living/user)
 	var/list/choices = ..()
 	choices = choices.Copy()
 	choices["Stub choice"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_use")
 	return choices
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_other_act(mob/living/user, choice)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_other_act(mob/living/user, choice)
 	if(choice == "Stub choice")
 		stub_picked = choice
 		return TRUE
@@ -97,8 +97,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("repowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "repowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 9, 9), "repvisitor")
 	TEST_ASSERT(prison.is_member(owner), "The claim's owner is not a member of the wing")
@@ -277,7 +277,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("blowowner")
 	TEST_ASSERT_NOTNULL(home, "The blows test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/plain = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/plain = test_prisoner(prison, prison_spot(home, 8, 8))
 	plain.personality = "chatty"
 	plain.set_mood(70)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "blowowner")
@@ -335,7 +335,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("effectowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation effects test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "effectowner")
 	owner.drop_all_held_items()
@@ -388,7 +388,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_greet_chance = 100
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "greetowner")
 	owner.fully_replace_character_name(owner.real_name, "Isaac Newton")
@@ -463,13 +463,13 @@
 	TEST_ASSERT(!prison.rep_say_word(prisoner, record), "A newcomer had word about a regular")
 	// Arrivals roll for it once (PRISON_REP_WORD_CHANCE, pinned), and wait 10 seconds (PRISON_REP_WORD_DELAY).
 	prison.rep_word_chance = 100
-	var/mob/living/basic/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 10, 8))
 	prison.social_tick(1)
 	TEST_ASSERT(newcomer.rep_noticed && newcomer.rep_word_left == 10, "An arrival at a 100% chance has [newcomer.rep_word_left] seconds to their word, not 10")
 	prison.social_tick(4)
 	TEST_ASSERT_EQUAL(newcomer.rep_word_left, 6, "The word's delay did not count down")
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/quiet_one = test_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/quiet_one = test_prisoner(prison, prison_spot(home, 11, 8))
 	prison.social_tick(1)
 	TEST_ASSERT(quiet_one.rep_noticed && isnull(quiet_one.rep_word_left), "An arrival at a 0% chance still has word to give")
 	// With nobody notable at home, the word is let go once the wait is over (PRISON_REP_WORD_WAIT).
@@ -487,7 +487,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("menuowner")
 	TEST_ASSERT_NOTNULL(home, "The talk menu test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	prisoner.set_mood(70)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "menuowner")
@@ -503,7 +503,7 @@
 	TEST_ASSERT(!prisoner.talk_menu_act(visitor, "What are you in for?"), "A visitor's pick did something") // PRISON_TALK_CRIME
 	TEST_ASSERT(!prisoner.asked_crime && abs(prisoner.mood - 70) < 0.01, "A visitor's pick changed the prisoner")
 
-	var/mob/living/basic/outpost_prisoner/talk_menu_stub/stubbed = new(prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/stubbed = new(prison_spot(home, 10, 8))
 	prison.admit(stubbed)
 	stubbed.sentence_left = 3600
 	stubbed.set_hunger(100)
@@ -526,17 +526,18 @@
 	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click in combat mode was taken")
 	owner.set_combat_mode(FALSE)
 	TEST_ASSERT_NULL(stubbed.stub_clicked, "A visitor's, right or combat mode click did [stubbed.stub_clicked]")
-	// Cuffed, the menu still opens; down in cuffs, there is no talk, and the click takes the cuffs off.
-	TEST_ASSERT(stubbed.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The stub prisoner could not be cuffed")
+	// Cuffed, the menu still opens. Down, there is no talk: the click is tg's own help, as on anyone
+	// (CPR, shaking them), cuffed or not, and their cuffs come off through the strip menu (defaults PR-25).
+	TEST_ASSERT(outpost_prison_test_cuff(stubbed, allocate(/obj/item/restraints/handcuffs)), "The stub prisoner could not be cuffed")
 	SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list())
 	TEST_ASSERT_EQUAL(stubbed.stub_clicked, "menu", "A click on a cuffed prisoner on their feet did [stubbed.stub_clicked || "nothing"], not open the talk menu")
+	stubbed.stub_clicked = null
 	ADD_TRAIT(stubbed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT(!stubbed.talk_menu_allowed(owner), "A prisoner who is down has a talk menu")
-	TEST_ASSERT(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN, "A click on a cuffed prisoner who is down went on to a pat")
-	TEST_ASSERT_EQUAL(stubbed.stub_clicked, "uncuff", "A click on a cuffed prisoner who is down did [stubbed.stub_clicked || "nothing"], not take the cuffs off")
+	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click on a cuffed prisoner who is down was kept from tg's own help")
+	TEST_ASSERT_NULL(stubbed.stub_clicked, "A click on a cuffed prisoner who is down did [stubbed.stub_clicked], not tg's own help")
 	stubbed.remove_cuffs()
-	stubbed.stub_clicked = null
-	TEST_ASSERT(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN, "A click on a prisoner who is down went on to a pat")
+	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click on a prisoner who is down was kept from tg's own help")
 	TEST_ASSERT_NULL(stubbed.stub_clicked, "A click on an uncuffed prisoner who is down did [stubbed.stub_clicked]")
 	REMOVE_TRAIT(stubbed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 
@@ -699,9 +700,9 @@
 	TEST_ASSERT_NOTNULL(home, "The calm down test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "calmowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -740,11 +741,11 @@
 	var/list/choices = prisoner.talk_menu_choices(owner)
 	TEST_ASSERT(("Back to your cell" in choices) && !("Uncuff" in choices), "A free prisoner's menu has [english_list(choices)]") // PRISON_TALK_CELL, PRISON_TALK_UNCUFF
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
-	TEST_ASSERT(prisoner.apply_cuffs(cuffs), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(prisoner, cuffs), "The prisoner could not be cuffed")
 	choices = prisoner.talk_menu_choices(owner)
 	TEST_ASSERT(("Uncuff" in choices) && !("Back to your cell" in choices), "A cuffed prisoner's menu has [english_list(choices)]")
 	TEST_ASSERT(prisoner.talk_menu_act(owner, "Uncuff"), "Picking Uncuff did not take the cuffs off")
-	TEST_ASSERT_NULL(prisoner.cuffs, "The prisoner is still cuffed")
+	TEST_ASSERT_NULL(prisoner.handcuffed, "The prisoner is still cuffed")
 	TEST_ASSERT(owner.is_holding(cuffs), "The cuffs did not go to the member's hand")
 	TEST_ASSERT(!("Uncuff" in prisoner.talk_menu_choices(owner)), "An uncuffed prisoner was still offered the cuffs off")
 	owner.drop_all_held_items()
@@ -761,7 +762,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	prison.contraband_force_rolls = FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "cuffmenuowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -774,7 +775,7 @@
 	TEST_ASSERT(!("Uncuff" in choices), "A free prisoner was offered the cuffs off") // PRISON_TALK_UNCUFF
 
 	// Cuffed, the menu still opens: talk, questions, a search and the cuffs off, but no walking anywhere.
-	TEST_ASSERT(prisoner.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(prisoner, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	TEST_ASSERT(prisoner.talk_menu_allowed(owner), "A cuffed prisoner's talk menu is shut")
 	choices = prisoner.talk_menu_choices(owner)
 	TEST_ASSERT("How are you doing?" in choices, "A cuffed prisoner can't be asked how they are") // PRISON_TALK_HOW
@@ -793,7 +794,7 @@
 	TEST_ASSERT(owner.is_holding(blade), "Patting down a cuffed prisoner did not find the razor blade")
 	TEST_ASSERT_NULL(prisoner.carried_contraband, "The cuffed prisoner still carries what was found")
 	TEST_ASSERT(!prisoner.talking, "The pat-down left the cuffed prisoner held")
-	TEST_ASSERT(prisoner.cuffs, "The pat-down took the cuffs off")
+	TEST_ASSERT(prisoner.handcuffed, "The pat-down took the cuffs off")
 	owner.drop_all_held_items()
 	// Cuffed, they have no say in it, however sour.
 	prisoner.set_mood(5)
@@ -810,9 +811,9 @@
 	prisoner.cuff_work = FALSE
 
 	// A cuffed rioter: the menu opens and the pat-down works; they still won't talk.
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	rioter.start_rioting(FALSE)
-	TEST_ASSERT(rioter.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(rioter, allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")
 	TEST_ASSERT(rioter.is_rioting(), "Cuffs ended the riot for the rioter")
 	TEST_ASSERT(rioter.talk_menu_allowed(owner), "A cuffed rioter's talk menu is shut")
 	TEST_ASSERT_EQUAL(prison.contraband_pat_down(rioter, owner), "empty", "A cuffed rioter could not be patted down")
@@ -834,7 +835,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	// Cell 1 of the unrotated wing is x 2-4, y 13-15, its bed at (2,15); the first prisoner booked in gets it.
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
 	var/datum/outpost_prison_cell/cell = prisoner.cell
 	TEST_ASSERT(cell?.contains(prison_spot(home, 2, 15)), "The prisoner was not booked into cell 1")
 	var/obj/structure/bed/bed = cell.bed()
@@ -900,7 +901,7 @@
 	prisoner.set_mood(70)
 
 	// Cuffed and laid on the bed, they get up too, and the cuffs keep them where they step to.
-	TEST_ASSERT(prisoner.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(prisoner, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	prisoner.forceMove(bed_turf)
 	TEST_ASSERT(bed.buckle_mob(prisoner, force = TRUE), "The cuffed prisoner could not be laid on the bed")
 	TEST_ASSERT(prisoner.talk_menu_allowed(member), "A cuffed prisoner lying on the bed has no talk menu")
@@ -944,7 +945,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	prison.crew_home_override = FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "lockinowner")
 	var/datum/outpost_prison_cell/home_cell = prisoner.cell
@@ -1022,7 +1023,7 @@
 	TEST_ASSERT_NOTNULL(home, "The hold test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "holdowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -1058,16 +1059,12 @@
 	TEST_ASSERT_EQUAL(owner.pulling, prisoner, "A member could not pull a calm prisoner")
 	TEST_ASSERT_NULL(prisoner.activity, "A pulled prisoner kept on with what they were doing")
 	TEST_ASSERT(!prisoner.routine_allowed(), "A pulled prisoner's routine still runs")
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_RESIST_DEFAULT, "A calm prisoner being pulled is too heavy to pull")
 	owner.Move(prison_spot(home, 10, 8), EAST)
 	TEST_ASSERT_EQUAL(prisoner.loc, prison_spot(home, 9, 8), "The calm prisoner was not pulled along (at [prisoner.x],[prisoner.y])")
 	TEST_ASSERT_EQUAL(owner.pulling, prisoner, "The pull broke on the first step")
-	var/obj/structure/bed/bed = prison.cells[1].bed()
-	TEST_ASSERT(SEND_SIGNAL(prisoner, COMSIG_MOUSEDROP_ONTO, bed, owner) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "A calm prisoner could be dragged onto a bed")
-	// Let go: heavy again, and they stay where they were left for 3 seconds (PRISON_PULL_RELEASE_HOLD), then carry on.
+	// Let go, they stay where they were left for 3 seconds (PRISON_PULL_RELEASE_HOLD), then carry on.
 	var/turf/left_at = get_turf(prisoner)
 	owner.stop_pulling()
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_FORCE_VERY_STRONG, "Let go, a prisoner on their feet is light enough to shove")
 	var/datum/prisoner_activity/let_go/still = prisoner.activity
 	TEST_ASSERT(istype(still), "Let go, the prisoner is doing [prisoner.activity?.name || "nothing"], not standing still")
 	TEST_ASSERT(still.started && isnull(still.spot), "Standing still after the pull has them going somewhere")
@@ -1102,26 +1099,27 @@
 	owner.stop_pulling()
 	prisoner.end_activity()
 
-	// A rioter on their feet can't be pulled.
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	// A rioter on their feet won't be led anywhere: they resist the pull at once, as anyone can (tg's resist).
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	owner.forceMove(prison_spot(home, 13, 8))
 	rioter.start_rioting(FALSE)
-	TEST_ASSERT(!rioter.pull_allowed(), "A rioter on their feet may be pulled")
+	TEST_ASSERT(!rioter.pull_allowed(), "A rioter on their feet goes along with a pull")
+	rioter.next_move = 0
 	owner.start_pulling(rioter)
-	TEST_ASSERT(owner.pulling != rioter, "Someone pulled a rioter on their feet")
+	sleep(2)
+	TEST_ASSERT(owner.pulling != rioter, "A rioter on their feet did not shake off a pull")
 	TEST_ASSERT_EQUAL(rioter.trouble, "riot", "A pull on a rioter changed their trouble to [rioter.trouble]") // PRISONER_TROUBLE_RIOT
-	TEST_ASSERT_EQUAL(rioter.move_resist, MOVE_FORCE_VERY_STRONG, "A rioter on their feet is light enough to pull")
 	// Calm when taken hold of and rioting since: the prison's next tick shakes the pull off, and they don't stand still for it.
 	rioter.calm_down()
 	owner.start_pulling(rioter)
 	TEST_ASSERT_EQUAL(owner.pulling, rioter, "The calmed rioter could not be pulled")
 	rioter.start_rioting(FALSE)
+	rioter.next_move = 0
 	prison.tick(1)
 	TEST_ASSERT(owner.pulling != rioter && isnull(rioter.pulledby), "A prisoner who started rioting mid-pull was still pulled")
-	TEST_ASSERT_EQUAL(rioter.move_resist, MOVE_FORCE_VERY_STRONG, "A rioter who shook off a pull is light enough to pull")
 	TEST_ASSERT(!istype(rioter.activity, /datum/prisoner_activity/let_go), "A rioter who shook off a pull stood still for it")
 	// Cuffed, a rioter can be pulled as before, and let go they don't stand still for it either.
-	TEST_ASSERT(rioter.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(rioter, allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")
 	owner.start_pulling(rioter)
 	TEST_ASSERT_EQUAL(owner.pulling, rioter, "A cuffed rioter could not be pulled")
 	owner.stop_pulling()
@@ -1155,9 +1153,9 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	// Cell 1 of the unrotated wing: its bed is at (2,15), and the first prisoner booked in gets it.
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
-	var/mob/living/basic/outpost_prisoner/teller = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/other_teller = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other_teller = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 3, 15), "iconowner")
 
 	// Lying on their bed, with two tips they saw given: every choice the menu has is on it.
@@ -1167,7 +1165,7 @@
 	prisoner.start_activity(resting)
 	resting.arrive()
 	TEST_ASSERT(prisoner.buckled, "Resting did not put the prisoner on their bed")
-	for(var/mob/living/basic/outpost_prisoner/giver as anything in list(teller, other_teller))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/giver as anything in list(teller, other_teller))
 		var/datum/outpost_prison_lead/tip = new
 		tip.teller_ref = WEAKREF(giver)
 		tip.teller_name = giver.real_name
@@ -1190,7 +1188,7 @@
 
 	// Cuffed: the cuffs off in place of Home, and still no icon twice.
 	prisoner.end_activity()
-	TEST_ASSERT(prisoner.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(prisoner, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	choices = prisoner.talk_menu_choices(member)
 	TEST_ASSERT(("Uncuff" in choices) && ("Search" in choices), "A cuffed prisoner's menu has [english_list(choices)]") // PRISON_TALK_UNCUFF, CONTRABAND_PATDOWN_CHOICE
 	used = icons_used(choices)

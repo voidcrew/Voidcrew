@@ -97,6 +97,31 @@
 /datum/unit_test/voidcrew_bounty_criminal/proc/examine_text(mob/living/carbon/human/npc/bounty_criminal/criminal, mob/user)
 	return jointext(criminal.examine(user), "\n")
 
+/**
+ * Real brute on `body`'s chest, no wound, until its health is just under `target_health`: the bounty
+ * tests' beating. Spread brute (adjustBruteLoss) won't do, because tg counts a limb's damage at three
+ * quarters toward health, and a body's toughness, species and limbs change how much of a hit it takes,
+ * so each hit is sized by how much the one before took off (the first is small, to learn that without
+ * overshooting). Healing it back with adjustBruteLoss(-x) gives x health back, as only the chest is hurt.
+ * Returns its health after.
+ */
+/datum/unit_test/proc/bounty_test_hurt_to(mob/living/carbon/body, target_health)
+	var/taken = 1
+	for(var/hit in 1 to 10)
+		var/excess = body.health - target_health
+		if(excess <= 0 || body.stat == DEAD)
+			break
+		var/amount = (excess + 0.5) / taken
+		if(hit == 1)
+			amount = min(amount, 10)
+		var/before = body.health
+		body.apply_damage(amount, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+		var/dropped = before - body.health
+		if(dropped <= 0)
+			break
+		taken = dropped / amount
+	return body.health
+
 // ===== THE BODY IS A PERSON'S =====
 
 /// No stand-in body: a person's health and stamina, tg crit and death, revival works, no fire or vacuum immunity.
@@ -113,11 +138,12 @@
 		TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_GODMODE), "[criminal_type] starts in godmode")
 		TEST_ASSERT_EQUAL(criminal.ai_controller?.blackboard[BB_TARGET_MINIMUM_STAT], CONSCIOUS, "[criminal_type] would attack someone in crit") // HUMAN_NPC_SPARES_DOWNED
 
-	// tg crit: a hit that takes it past 0 health puts it in soft crit, nothing holds it up.
+	// tg crit: a hit that takes it past 0 health puts it in soft crit, nothing holds it up. Chest brute
+	// counts in full toward health (a limb's counts three quarters), and a Petty human takes a person's.
 	var/mob/living/carbon/human/npc/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__)
-	criminal.adjustBruteLoss(90)
+	criminal.apply_damage(90, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(criminal.stat, CONSCIOUS, "90 brute put a criminal down")
-	criminal.adjustBruteLoss(20)
+	criminal.apply_damage(20, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_CRITICAL_CONDITION), "A criminal at -10 health is not in crit")
 	TEST_ASSERT_EQUAL(criminal.stat, SOFT_CRIT, "A criminal at -10 health is not in soft crit")
 	TEST_ASSERT(criminal.health < 0, "A hit on a criminal was clipped to keep it standing")
@@ -134,12 +160,12 @@
 	criminal.revive(HEAL_ALL)
 	TEST_ASSERT_EQUAL(criminal.stat, CONSCIOUS, "A revived criminal is still dead")
 
-	// Stamina is a person's: 120 points, tg's stamcrit.
+	// Stamina is a person's: a pool of 120, and tg's stamcrit once 100 of it is gone (maxHealth less the crit line).
 	var/mob/living/carbon/human/npc/bounty_criminal/meek/runner = allocate(__IMPLIED_TYPE__)
-	runner.adjustStaminaLoss(100)
-	TEST_ASSERT(!runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "100 stamina damage stamcritted a meek criminal")
-	runner.adjustStaminaLoss(30)
-	TEST_ASSERT(runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "130 stamina damage did not stamcrit a meek criminal")
+	runner.adjustStaminaLoss(90)
+	TEST_ASSERT(!runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "90 stamina damage stamcritted a meek criminal")
+	runner.adjustStaminaLoss(20)
+	TEST_ASSERT(runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "110 stamina damage did not stamcrit a meek criminal")
 
 	// Anyone can grab a free one; it isn't too heavy to move.
 	var/mob/living/carbon/human/npc/bounty_criminal/normal/free = allocate(__IMPLIED_TYPE__)
@@ -198,12 +224,14 @@
 	TEST_ASSERT(!criminal.may_attack(hunter), "A cuffed criminal may attack")
 
 	// In crit comes before cuffed, and getting out of crit is the tg way: healing.
-	criminal.adjustBruteLoss(110)
+	bounty_test_hurt_to(criminal, -10)
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A cuffed criminal in crit is not downed") // BOUNTY_STATE_DOWNED
 	TEST_ASSERT_EQUAL(signal_count("downed"), 1, "Going into crit sent [signal_count("downed")] downed signals")
+	// (Getting up from the stamina crit above already sent one recovered signal.)
+	var/recovered_before = signal_count("recovered")
 	criminal.adjustBruteLoss(-50)
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "restrained", "A cuffed criminal healed out of crit is not restrained")
-	TEST_ASSERT_EQUAL(signal_count("recovered"), 1, "Leaving crit sent [signal_count("recovered")] recovered signals")
+	TEST_ASSERT_EQUAL(signal_count("recovered") - recovered_before, 1, "Leaving crit sent [signal_count("recovered") - recovered_before] recovered signals")
 
 	// Uncuffed by someone else: the signal carries a non-null user (it didn't free itself).
 	criminal.uncuff()
@@ -258,7 +286,7 @@
 	TEST_ASSERT(!criminal.body_can_answer_cuffs(), "A stamcritted criminal can still answer a reach for its wrists")
 	criminal.setStaminaLoss(0)
 	criminal.remove_status_effect(/datum/status_effect/incapacitating/stamcrit)
-	criminal.adjustBruteLoss(110)
+	bounty_test_hurt_to(criminal, -10)
 	TEST_ASSERT(!criminal.body_can_answer_cuffs(), "A criminal in crit can still answer a reach for its wrists")
 	criminal.adjustBruteLoss(-110)
 
@@ -275,7 +303,9 @@
 	cuff(criminal, cuffer)
 	escape.SelectBehaviors(criminal.ai_controller, 1)
 	TEST_ASSERT(locate(/datum/ai_behavior/resist) in criminal.ai_controller.planned_behaviors, "A cuffed criminal doesn't work at its cuffs")
+	// The controller's own planning starts each pass on an empty plan; a subtree called by hand doesn't
 	criminal.ai_controller.CancelActions()
+	criminal.ai_controller.planned_behaviors.Cut()
 	// ...but a criminal sitting down or hiding in a locker by choice doesn't fight its way out of the chair or the locker.
 	criminal.uncuff()
 	var/obj/structure/chair/seat = allocate(__IMPLIED_TYPE__, get_turf(criminal))
@@ -523,7 +553,7 @@
 	cuff(criminal)
 	TEST_ASSERT(bounty_turret_ignores(criminal, FALSE), "A turret would shoot a cuffed criminal")
 	criminal.uncuff()
-	criminal.adjustBruteLoss(110)
+	bounty_test_hurt_to(criminal, -10)
 	TEST_ASSERT(bounty_turret_ignores(criminal, FALSE), "A turret would shoot a criminal in crit")
 	criminal.adjustBruteLoss(-110)
 
@@ -702,7 +732,7 @@
 	var/datum/component/bounty_identity_voice/voice = criminal.LoadComponent(/datum/component/bounty_identity_voice)
 	// They just said something: the cooldown is running.
 	COOLDOWN_START(voice, line_cooldown, 8 SECONDS) // BOUNTY_SAY_COOLDOWN
-	criminal.adjustBruteLoss(110)
+	bounty_test_hurt_to(criminal, -10)
 	TEST_ASSERT(criminal.is_downed(), "The criminal did not go into crit")
 	TEST_ASSERT_EQUAL(heard_from(lines["downed"]["any"]), 1, "Going into crit inside the cooldown, they said [heard_from(lines["downed"]["any"])] downed lines, not 1")
 	TEST_ASSERT_NULL(criminal.body_last_alert, "Going down showed [criminal.body_last_alert] over them")

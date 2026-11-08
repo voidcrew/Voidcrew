@@ -54,7 +54,9 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "n" = (
-/obj/effect/spawner/human_npc/ruin/hermit,
+/obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 4
+	},
 /turf/open/floor/wood{
 	broken = 1
 	},

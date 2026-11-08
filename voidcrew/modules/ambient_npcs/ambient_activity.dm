@@ -36,7 +36,7 @@
  * current activity is finished and replaced. Returns the activity, or null if it could not be set
  * up here or was outranked; a refused activity is deleted.
  */
-/mob/living/basic/ambient_npc/proc/start_activity(datum/ambient_activity/new_activity)
+/mob/living/carbon/human/npc/ambient_npc/proc/start_activity(datum/ambient_activity/new_activity)
 	if(QDELETED(new_activity))
 		return null
 	if(fading || stat == DEAD || (activity && activity.priority > new_activity.priority))
@@ -52,7 +52,7 @@
 	return new_activity
 
 /// Stops their activity: it puts everything back and goes
-/mob/living/basic/ambient_npc/proc/end_activity()
+/mob/living/carbon/human/npc/ambient_npc/proc/end_activity()
 	if(!activity)
 		return
 	var/datum/ambient_activity/old = activity
@@ -61,7 +61,7 @@
 	qdel(old)
 
 /// Their activity, or a new one from their routine. Null while they wait after a failure.
-/mob/living/basic/ambient_npc/proc/next_activity()
+/mob/living/carbon/human/npc/ambient_npc/proc/next_activity()
 	if(activity)
 		return activity
 	if(world.time < activity_retry_at)
@@ -75,7 +75,7 @@
  * can be set up, then standing around. Override to choose by other rules (time spent, a bar, a
  * stall). Returns the started activity or null.
  */
-/mob/living/basic/ambient_npc/proc/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/proc/pick_activity()
 	var/list/weights = routine?.Copy()
 	while(length(weights))
 		var/activity_type = pick_weight(weights)
@@ -85,7 +85,7 @@
 	return start_activity(new /datum/ambient_activity/idle(src))
 
 /// One step of their activity where they stand: arriving the first time, then its business. Returns AMBIENT_STEP_*.
-/mob/living/basic/ambient_npc/proc/activity_step(seconds)
+/mob/living/carbon/human/npc/ambient_npc/proc/activity_step(seconds)
 	if(!activity)
 		return AMBIENT_STEP_DONE
 	if(!activity.arrived)
@@ -98,7 +98,7 @@
 	return activity.act(seconds)
 
 /// A walk to their activity's spot ended stuck
-/mob/living/basic/ambient_npc/proc/travel_failed()
+/mob/living/carbon/human/npc/ambient_npc/proc/travel_failed()
 	if(++travel_failures < AMBIENT_TRAVEL_FAILURES_MAX)
 		return
 	travel_failures = 0
@@ -115,7 +115,7 @@
  * activity; if nothing could be set up they stand somewhere out of the way, and their routine
  * starts when someone comes. Override to start them at something in particular (settle_at()).
  */
-/mob/living/basic/ambient_npc/proc/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/proc/settle_in()
 	// Where they were made is only somewhere on the floor: first somewhere they may stand
 	move_to_settle_tile()
 	for(var/attempt in 1 to AMBIENT_SETTLE_TRIES)
@@ -131,7 +131,7 @@
  * (within `radius` of `near`, if given), then from others, up to `tries` places in all. For
  * activities that look round where the NPC stands (the work loop). TRUE if settled.
  */
-/mob/living/basic/ambient_npc/proc/settle_at(activity_type, atom/anchor, tries = AMBIENT_SETTLE_TRIES, atom/near, radius = 6)
+/mob/living/carbon/human/npc/ambient_npc/proc/settle_at(activity_type, atom/anchor, tries = AMBIENT_SETTLE_TRIES, atom/near, radius = 6)
 	if(near || !standable(get_turf(src)))
 		move_to_settle_tile(near, radius)
 	for(var/attempt in 1 to tries)
@@ -147,7 +147,7 @@
  * (arrive()) and sets it part-way in (settle()). Their leash is anchored where they end up. FALSE
  * when they have no activity or its spot is taken.
  */
-/mob/living/basic/ambient_npc/proc/settle_here()
+/mob/living/carbon/human/npc/ambient_npc/proc/settle_here()
 	if(!activity)
 		return FALSE
 	if(!activity.at_spot())
@@ -168,7 +168,7 @@
 	return TRUE
 
 /// Moves them (with nobody watching) to a free tile of their place's floor they could stand on, within `radius` of `near` if given. FALSE if there is none.
-/mob/living/basic/ambient_npc/proc/move_to_settle_tile(atom/near, radius = 6)
+/mob/living/carbon/human/npc/ambient_npc/proc/move_to_settle_tile(atom/near, radius = 6)
 	var/turf/tile = place?.settle_turf(src, near, radius)
 	if(!tile)
 		return FALSE
@@ -185,7 +185,7 @@
  * where their place lets activities send them (an outpost's public floor). `ignore_floor` skips
  * the place's floor (taking cover). Spots in `avoid` are skipped.
  */
-/mob/living/basic/ambient_npc/proc/standable(turf/tile, list/avoid, ignore_floor = FALSE)
+/mob/living/carbon/human/npc/ambient_npc/proc/standable(turf/tile, list/avoid, ignore_floor = FALSE)
 	if(!isturf(tile) || LAZYACCESS(avoid, tile))
 		return FALSE
 	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
@@ -197,7 +197,7 @@
 	return ignore_floor || !place || place.spot_allowed(tile, src)
 
 /// Whether they could stand about on `tile`: standable, and their place's loiter rules. `ignore` is not counted in the crowd (their chat partner).
-/mob/living/basic/ambient_npc/proc/loiter_spot_ok(turf/tile, list/avoid, atom/ignore)
+/mob/living/carbon/human/npc/ambient_npc/proc/loiter_spot_ok(turf/tile, list/avoid, atom/ignore)
 	return standable(tile, avoid) && (!place || place.loiter_ok(tile, src, ignore))
 
 /**
@@ -205,7 +205,7 @@
  * null. Right beside it (distance 1), nothing may stand between them (Adjacent(): no wall, glass or
  * rail), since they use it from there.
  */
-/mob/living/basic/ambient_npc/proc/free_tile_beside(atom/thing, distance = 1, list/avoid, ignore_floor = FALSE)
+/mob/living/carbon/human/npc/ambient_npc/proc/free_tile_beside(atom/thing, distance = 1, list/avoid, ignore_floor = FALSE)
 	var/turf/center = get_turf(thing)
 	if(!center)
 		return null
@@ -223,7 +223,7 @@
 	return best
 
 /// A random free tile within `radius` of `center` in the same area, or null
-/mob/living/basic/ambient_npc/proc/random_tile_near(turf/center, radius, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/proc/random_tile_near(turf/center, radius, list/avoid)
 	center = get_turf(center)
 	if(!center)
 		return null
@@ -239,7 +239,7 @@
  * tiles, a couple of points for one with a wall, a table or a dense anchored machine at its side
  * (somewhere to lean on). Or null.
  */
-/mob/living/basic/ambient_npc/proc/find_loiter_spot(atom/near, radius = AMBIENT_LOITER_RANGE, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/proc/find_loiter_spot(atom/near, radius = AMBIENT_LOITER_RANGE, list/avoid)
 	var/turf/center = get_turf(near)
 	if(!center)
 		return null
@@ -257,7 +257,7 @@
 	return best
 
 /// A table right beside `thing`, or null
-/mob/living/basic/ambient_npc/proc/table_beside(atom/thing)
+/mob/living/carbon/human/npc/ambient_npc/proc/table_beside(atom/thing)
 	var/turf/center = get_turf(thing)
 	if(!center)
 		return null
@@ -271,7 +271,7 @@
  * Whether they could sit on `seat`: loose on the floor, nobody on it, where they may go. Stools
  * (bar stools too) refuse people by default; they are sat on with a forced buckle all the same.
  */
-/mob/living/basic/ambient_npc/proc/seat_usable(obj/structure/chair/seat, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/proc/seat_usable(obj/structure/chair/seat, list/avoid)
 	if(QDELETED(seat) || !isturf(seat.loc) || istype(seat, /obj/structure/chair/e_chair))
 		return FALSE
 	if(seat.has_buckled_mobs() && !(src in seat.buckled_mobs))
@@ -283,7 +283,7 @@
 	return seat.loc == loc || standable(seat.loc, avoid)
 
 /// A random one of the three nearest seats within `range` of `near` they could sit on, beside a table if `needs_table`, in sight of `near`
-/mob/living/basic/ambient_npc/proc/find_seat(atom/near, range = AMBIENT_ACTIVITY_RANGE, needs_table = FALSE, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/proc/find_seat(atom/near, range = AMBIENT_ACTIVITY_RANGE, needs_table = FALSE, list/avoid)
 	var/turf/center = get_turf(near) || get_turf(src)
 	if(!center)
 		return null
@@ -302,7 +302,7 @@
 	return pick(nearest)
 
 /// The nearest table within `range` of `near`, in sight of it, with room to stand at, or null
-/mob/living/basic/ambient_npc/proc/find_table(atom/near, range = AMBIENT_ACTIVITY_RANGE, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/proc/find_table(atom/near, range = AMBIENT_ACTIVITY_RANGE, list/avoid)
 	var/turf/center = get_turf(near) || get_turf(src)
 	if(!center)
 		return null
@@ -318,12 +318,12 @@
 	return best
 
 /// Another ambient NPC within `range`, in sight, who is free to talk (awake, unplayed, doing nothing that can't wait, standing somewhere not already crowded), or null
-/mob/living/basic/ambient_npc/proc/find_chat_partner(range = AMBIENT_ACTIVITY_RANGE)
+/mob/living/carbon/human/npc/ambient_npc/proc/find_chat_partner(range = AMBIENT_ACTIVITY_RANGE)
 	var/turf/here = get_turf(src)
 	if(!here)
 		return null
 	var/list/options = list()
-	for(var/mob/living/basic/ambient_npc/other in range(range, here))
+	for(var/mob/living/carbon/human/npc/ambient_npc/other in range(range, here))
 		if(other == src || other.client || !other.can_act())
 			continue
 		if(other.activity && !other.activity.accepts_company)
@@ -358,7 +358,8 @@
 
 /**
  * An ambient NPC's brain: passive (no targeting, so trader outpost turrets read it as harmless),
- * long paths for crossing a concourse, and nothing at all while idle (nobody near).
+ * long paths for crossing a concourse, and nothing at all while idle (nobody near). First it gets
+ * free of anything holding it, the way a person would.
  */
 /datum/ai_controller/basic_controller/ambient_npc
 	blackboard = list()
@@ -366,7 +367,39 @@
 	ai_movement = /datum/ai_movement/jps/ambient
 	idle_behavior = null
 	max_target_distance = AMBIENT_PATH_LENGTH
-	planning_subtrees = list(/datum/ai_planning_subtree/ambient_routine)
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/ambient_escape,
+		/datum/ai_planning_subtree/ambient_routine,
+	)
+
+// The basic controller's check, except that cuffs don't stop them: a cuffed person works at the cuffs
+// (the human NPC base's rule, voidcrew/modules/human_npcs/human_npc_soft_crit.dm)
+/datum/ai_controller/basic_controller/ambient_npc/get_able_to_run()
+	return human_npc_ai_able_to_run(src)
+
+/**
+ * Getting free, as a person does with Resist: out of a grab, a buckle they didn't choose (their own
+ * seat or boat is fine), a closet or a crate, cuffs, or flames (stop, drop and roll). Only awake and
+ * up; anyone down is just a body.
+ */
+/datum/ai_planning_subtree/ambient_escape
+
+/datum/ai_planning_subtree/ambient_escape/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = controller.pawn
+	if(!istype(npc) || npc.stat != CONSCIOUS || HAS_TRAIT(npc, TRAIT_INCAPACITATED) || LAZYLEN(npc.do_afters))
+		return
+	if(!ambient_wants_free(npc))
+		return
+	controller.queue_behavior(/datum/ai_behavior/resist)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// Whether `npc` is held somewhere it doesn't want to be: grabbed, buckled to something not its own, shut in, cuffed or on fire
+/proc/ambient_wants_free(mob/living/carbon/human/npc/ambient_npc/npc)
+	if(npc.on_fire || npc.pulledby || HAS_TRAIT(npc, TRAIT_RESTRAINED))
+		return TRUE
+	if(npc.buckled && !npc.own_buckle(npc.buckled))
+		return TRUE
+	return !isturf(npc.loc) && !ismob(npc.loc)
 
 // Their AI time, for the Ambient NPCs line in the MC tab (SSambient_npcs.note_ai_cost())
 /datum/ai_controller/basic_controller/ambient_npc/SelectBehaviors(seconds_per_tick)
@@ -387,7 +420,7 @@
 /datum/ai_planning_subtree/ambient_routine
 
 /datum/ai_planning_subtree/ambient_routine/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/ambient_npc/npc = controller.pawn
+	var/mob/living/carbon/human/npc/ambient_npc/npc = controller.pawn
 	if(!istype(npc) || controller.ai_status != AI_STATUS_ON || !npc.can_act())
 		return
 	npc.check_leash()
@@ -423,7 +456,7 @@
 	var/atom/target = controller.blackboard[target_key]
 	var/stuck = !succeeded && controller.consecutive_pathing_attempts > 0 && target && controller.current_movement_target == target
 	. = ..()
-	var/mob/living/basic/ambient_npc/npc = controller.pawn
+	var/mob/living/carbon/human/npc/ambient_npc/npc = controller.pawn
 	if(!istype(npc))
 		return
 	if(succeeded)
@@ -441,11 +474,11 @@
 	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
 
 /datum/ai_behavior/ambient_activity/setup(datum/ai_controller/controller)
-	var/mob/living/basic/ambient_npc/npc = controller.pawn
+	var/mob/living/carbon/human/npc/ambient_npc/npc = controller.pawn
 	return istype(npc) && !!npc.activity
 
 /datum/ai_behavior/ambient_activity/perform(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/basic/ambient_npc/npc = controller.pawn
+	var/mob/living/carbon/human/npc/ambient_npc/npc = controller.pawn
 	var/datum/ambient_activity/current = npc.activity
 	if(!current)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -463,7 +496,7 @@
 // THE ACTIVITY BASE
 // =========================================================================
 
-/datum/ambient_activity/New(mob/living/basic/ambient_npc/new_doer, atom/anchor)
+/datum/ambient_activity/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/anchor)
 	. = ..()
 	doer = new_doer
 	anchor_ref = anchor ? WEAKREF(anchor) : null
@@ -771,8 +804,8 @@
 	set_duration()
 	lines_left = rand(3, 6)
 	// An NPC partner drops what it was doing and answers. `responding` is set before its setup runs, so it never invites back.
-	if(istype(partner, /mob/living/basic/ambient_npc))
-		var/mob/living/basic/ambient_npc/other = partner
+	if(istype(partner, /mob/living/carbon/human/npc/ambient_npc))
+		var/mob/living/carbon/human/npc/ambient_npc/other = partner
 		var/datum/ambient_activity/chat/answer = new(other, doer)
 		answer.responding = TRUE
 		answer.ends_at = ends_at + 10 SECONDS
@@ -822,7 +855,7 @@
 		return AMBIENT_STEP_DONE
 	if(responding)
 		// Only while the one who started it is still talking to them
-		var/mob/living/basic/ambient_npc/starter = partner
+		var/mob/living/carbon/human/npc/ambient_npc/starter = partner
 		var/datum/ambient_activity/chat/their_chat = istype(starter) ? starter.activity : null
 		if(!istype(their_chat) || their_chat.partner() != doer)
 			return AMBIENT_STEP_DONE
@@ -840,7 +873,7 @@
 	if(lines_left-- <= 0)
 		return AMBIENT_STEP_DONE
 	next_line = world.time + rand(7 SECONDS, 12 SECONDS)
-	var/mob/living/basic/ambient_npc/other = istype(partner, /mob/living/basic/ambient_npc) ? partner : null
+	var/mob/living/carbon/human/npc/ambient_npc/other = istype(partner, /mob/living/carbon/human/npc/ambient_npc) ? partner : null
 	var/list/conversation = opened ? null : doer.pick_conversation()
 	opened = TRUE
 	if(conversation)
@@ -871,7 +904,7 @@
 	if(!length(weights) || !isturf(doer.loc))
 		return FALSE
 	// Its room is worked out around where they stand now, and it keeps them in it until the job is done
-	worker = doer.AddComponent(/datum/component/outpost_ambient_worker, weights, TRUE, CALLBACK(doer, TYPE_PROC_REF(/mob/living/basic/ambient_npc, show_work_look)))
+	worker = doer.AddComponent(/datum/component/outpost_ambient_worker, weights, TRUE, CALLBACK(doer, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc, show_work_look)))
 	// A job whose spot they keep off (a doorway, a counter's reach) is skipped for the next one found
 	var/list/job
 	for(var/attempt in 1 to AMBIENT_WORK_FIND_TRIES)
@@ -955,7 +988,7 @@
 	/// world.time they give up walking and fade where they are
 	var/give_up_at = 0
 
-/datum/ambient_activity/leave/New(mob/living/basic/ambient_npc/new_doer, atom/anchor, delay = 0)
+/datum/ambient_activity/leave/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/anchor, delay = 0)
 	. = ..()
 	wait_until = world.time + delay
 
@@ -1059,7 +1092,7 @@
 	/// How long the storm lasts
 	var/duration = 2 MINUTES
 
-/datum/ambient_activity/shelter/New(mob/living/basic/ambient_npc/new_doer, atom/anchor, duration)
+/datum/ambient_activity/shelter/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/anchor, duration)
 	. = ..()
 	if(duration)
 		src.duration = duration

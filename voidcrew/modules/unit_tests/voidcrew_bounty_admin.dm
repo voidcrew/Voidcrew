@@ -216,7 +216,7 @@
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "downed"), "Forcing downed was refused: [panel.error]") // BOUNTY_STATE_DOWNED
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A forced downed criminal reads as [criminal.capture_state()]")
 	TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_CRITICAL_CONDITION), "A forced downed criminal is not in tg's crit")
-	TEST_ASSERT_EQUAL(criminal.stat, SOFT_CRIT, "Forcing downed left them at stat [criminal.stat], not just into soft crit")
+	TEST_ASSERT_EQUAL(criminal.stat, SOFT_CRIT, "Forcing downed left them at stat [criminal.stat] ([criminal.health] health, [criminal.dna.species.type]), not just into soft crit")
 	TEST_ASSERT(criminal.health <= HEALTH_THRESHOLD_CRIT && criminal.health > HEALTH_THRESHOLD_FULLCRIT, "Forcing downed left them at [criminal.health] health, not just past the crit line")
 	var/obj/item/bodypart/chest = criminal.get_bodypart(BODY_ZONE_CHEST)
 	TEST_ASSERT(chest?.brute_dam > 0, "Forcing downed put no brute on their chest")
@@ -227,6 +227,14 @@
 	TEST_ASSERT(tough.npc_damage_taken < 1, "Test fixture: a Most Wanted criminal takes a person's damage")
 	TEST_ASSERT(panel.admin_force_state(operator, tough, "downed"), "Forcing a Most Wanted criminal downed was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(tough.stat, SOFT_CRIT, "A forced downed Most Wanted criminal is at stat [tough.stat]")
+	// A body that takes more of each hit than a person (a plasmaman's frail bones) stops in soft crit too.
+	var/datum/bounty_record/frail_record = generate_bounty_record(1, "normal", "planet", /datum/species/plasmaman) // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_NORMAL, BOUNTY_PLACEMENT_PLANET
+	var/mob/living/carbon/human/npc/bounty_criminal/frail = spawn_bounty_criminal(frail_record, run_loc_floor_bottom_left, null)
+	TEST_ASSERT_NOTNULL(frail, "Test fixture: no plasmaman criminal spawned")
+	allocated += frail
+	frail.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	TEST_ASSERT(panel.admin_force_state(operator, frail, "downed"), "Forcing a plasmaman criminal downed was refused: [panel.error]")
+	TEST_ASSERT_EQUAL(frail.stat, SOFT_CRIT, "A forced downed plasmaman criminal is at stat [frail.stat] ([frail.health] health)")
 
 	// Stunned: a real paralysis.
 	criminal = fresh(panel, operator)
@@ -608,7 +616,7 @@
 	TEST_ASSERT_EQUAL(row["prison"], home.name, "A record for [home.name] lists [row["prison"]]")
 
 	// Admitted: out of the pool, into the first cell, the prisoner made from the record.
-	var/mob/living/basic/outpost_prisoner/prisoner = panel.admin_pool_admit(operator, record, prison)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = panel.admin_pool_admit(operator, record, prison)
 	TEST_ASSERT_NOTNULL(prisoner, "The record was not admitted: [panel.error]")
 	TEST_ASSERT(!(record in GLOB.bounty_prisoner_pool), "The admitted record is still in the pool")
 	TEST_ASSERT_EQUAL(prisoner.bounty_record, record, "The prisoner was not made from the record")

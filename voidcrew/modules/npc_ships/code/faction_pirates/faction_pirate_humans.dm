@@ -46,6 +46,7 @@
 		HUMAN_NPC_BARK_CUFFED = list("The captain will hear of this.", "Get these off me!", "You'll hang for this."),
 		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
 		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
+		HUMAN_NPC_BARK_SURRENDER = list("Alright! Alright, I'm done!", "Don't shoot! I yield!", "Quarter! I'm out!"),
 	)
 	emotes = list(
 		HUMAN_NPC_BARK_DOWNED = list("collapses."),
@@ -79,6 +80,7 @@
 		HUMAN_NPC_BARK_CUFFED = list("I didn't take nothing!"),
 		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
 		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
+		HUMAN_NPC_BARK_SURRENDER = list("Okay! Okay! I give!", "Not the face! I'm done!", "I didn't do nothing! I give up!"),
 	)
 
 /datum/human_npc_voice/faction_pirate/irs
@@ -90,6 +92,7 @@
 		HUMAN_NPC_BARK_CUFFED = list("Obstruction of an audit. Noted."),
 		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
 		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
+		HUMAN_NPC_BARK_SURRENDER = list("I'm unarmed! I'm an accountant!", "Fine! The audit is suspended!", "I yield! Pending review!"),
 	)
 
 /datum/human_npc_voice/faction_pirate/medieval
@@ -101,7 +104,40 @@
 		HUMAN_NPC_BARK_CUFFED = list("Thou shalt pay for this dishonour."),
 		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
 		HUMAN_NPC_BARK_PULLED_FREE = list("Unhand me, cur!"),
+		HUMAN_NPC_BARK_SURRENDER = list("I yield! I yield!", "Quarter! I beg quarter!"),
 	)
+
+/**
+ * When a pirate with no crew gives up (human_npc_surrender.dm): a ruin's, a planet's or a contract's. A crew
+ * aboard a ship fights on together, and its ship decides what is left of it (pirate_crew.dm). Bosses never
+ * give up; captains seldom.
+ */
+/datum/human_npc_surrender/faction_pirate
+	chance = 50
+	retry_chance = 20
+
+/datum/human_npc_surrender/faction_pirate/hurt_enough(mob/living/carbon/human/npc/npc)
+	if(npc.npc_rank >= HUMAN_NPC_RANK_BOSS)
+		return FALSE
+	return ..()
+
+/datum/human_npc_surrender/faction_pirate/odds(mob/living/carbon/human/npc/npc, list/hostiles, list/allies, first)
+	. = ..()
+	if(npc.npc_rank >= HUMAN_NPC_RANK_ELITE)
+		. = round(. / 2)
+
+/// Knights and their kind: they beg quarter less often, and never run.
+/datum/human_npc_surrender/faction_pirate/stubborn
+	chance = 30
+	retry_chance = 10
+	flees = FALSE
+
+/// Auditors and tiders: one gun on them is enough, and they run when they can.
+/datum/human_npc_surrender/faction_pirate/meek
+	chance = 70
+	retry_chance = 35
+	hostiles_needed = 1
+	health_share = 0.5
 
 /mob/living/carbon/human/npc/faction_pirate
 	name = "pirate"
@@ -109,6 +145,8 @@
 	ai_controller = /datum/ai_controller/basic_controller/pirate_crew/human
 	npc_voice = /datum/human_npc_voice/faction_pirate
 	npc_target_stat = HUMAN_NPC_FINISHES_DOWNED
+	// Read only while it has no crew (pirate_crew_human.dm)
+	npc_surrender = /datum/human_npc_surrender/faction_pirate
 	/// SHIP_CREW_ROLE_MELEE or SHIP_CREW_ROLE_GUNNER: which of its faction's outfits a regular wears
 	var/crew_role
 	/// Its faction's table with a sealed suit added, for boarders (an outfit table typepath)
@@ -167,6 +205,9 @@
 				npc_damage_taken = SHIP_CREW_BOSS_DAMAGE_TAKEN
 	. = ..()
 	npc_dressed_zone = order?.resolve_zone()
+	// Where it was put: a pirate with no crew keeps near it (pirate_crew_human.dm)
+	if(istype(ai_controller))
+		ai_controller.set_blackboard_key(BB_PIRATE_CREWLESS_HOME, get_turf(src))
 	// tg's Initialize gave it the planet's alliance before it was dressed; an ordered faction list may
 	// have replaced its factions since, so it rejoins here. Off a planet this does nothing.
 	inherit_planetary_faction(src)
@@ -229,6 +270,31 @@
 			npc_lock_item(thing)
 			return TRUE
 	return FALSE
+
+/**
+ * Puts something that isn't gear (its ship's key) in a pocket, where a crew that has it cuffed or down can
+ * pick it out (the strip menu, human_npc.dm). A full pocket is emptied into its bag or belt first. Falls
+ * back to crew_give() if neither pocket can be had.
+ */
+/mob/living/carbon/human/npc/faction_pirate/proc/crew_pocket(obj/item/thing)
+	if(QDELETED(thing))
+		return FALSE
+	for(var/slot in list(ITEM_SLOT_LPOCKET, ITEM_SLOT_RPOCKET))
+		if(equip_to_slot_if_possible(thing, slot, disable_warning = TRUE))
+			npc_lock_item(thing)
+			return TRUE
+	for(var/slot in list(ITEM_SLOT_LPOCKET, ITEM_SLOT_RPOCKET))
+		var/obj/item/in_pocket = get_item_by_slot(slot)
+		if(isnull(in_pocket))
+			continue
+		for(var/obj/item/container in list(back, belt))
+			if(!container.atom_storage?.attempt_insert(in_pocket, src, override = TRUE, messages = FALSE))
+				continue
+			if(equip_to_slot_if_possible(thing, slot, disable_warning = TRUE))
+				npc_lock_item(thing)
+				return TRUE
+			break
+	return crew_give(thing)
 
 /**
  * The zone it belongs to, for zone-laddered loot: its spawn context's, which may have resolved after it
@@ -335,6 +401,8 @@
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/skeleton
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/skeleton/boarding
 	npc_voice = /datum/human_npc_voice/faction_pirate/skeleton
+	// The dead don't give up
+	npc_surrender = null
 	crew_alert_lines = list(
 		"All hands! Boarders!",
 		"Fresh crew coming aboard!",
@@ -388,6 +456,7 @@
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/grey
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/grey/boarding
 	npc_voice = /datum/human_npc_voice/faction_pirate/grey
+	npc_surrender = /datum/human_npc_surrender/faction_pirate/meek
 	crew_alert_lines = list(
 		"Someone's on the ship!",
 		"Who let them in?",
@@ -527,6 +596,7 @@
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/irs
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/irs/boarding
 	npc_voice = /datum/human_npc_voice/faction_pirate/irs
+	npc_surrender = /datum/human_npc_surrender/faction_pirate/meek
 	crew_alert_lines = list(
 		"Unscheduled visitors. Begin the audit.",
 		"Everyone aboard is now under review.",
@@ -578,6 +648,7 @@
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/medieval
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/medieval/boarding
 	npc_voice = /datum/human_npc_voice/faction_pirate/medieval
+	npc_surrender = /datum/human_npc_surrender/faction_pirate/stubborn
 	crew_alert_lines = list(
 		"To arms! Intruders!",
 		"Who dares board us?",

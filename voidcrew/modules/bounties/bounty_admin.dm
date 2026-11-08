@@ -46,6 +46,8 @@
 #define BOUNTY_ADMIN_STUN_TIME (30 SECONDS)
 /// Most hits "force downed" lands to get a tough body past its crit line (its toughness cuts each one)
 #define BOUNTY_ADMIN_DOWN_HITS 20
+/// The brute of "force downed"'s first hit, which learns how much of a hit the body takes before the rest are sized
+#define BOUNTY_ADMIN_DOWN_PROBE 10
 /// Most questions one opening of the panel asks before it closes itself: a guard, never reached by hand
 #define BOUNTY_ADMIN_MAX_STEPS 200
 /// Who the pool's test records say brought them in
@@ -1089,8 +1091,9 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /**
  * Real brute on its chest until it is just in crit: health a point under its crit line (tg's
  * crit_threshold, HEALTH_THRESHOLD_CRIT; the hard-crit line for a body that has no soft crit). No
- * armour roll and no wound. Its toughness (physiology) takes its share of each hit, so the hit is
- * repeated on what is left until it is down.
+ * armour roll and no wound. How much of a hit it takes (its toughness, a species' weak or tough
+ * limbs) is learned from a small first hit, and each hit after is sized by what the last one took
+ * off, so a body that takes more than a person's doesn't overshoot into hard crit.
  */
 /datum/bounty_admin_panel/proc/force_downed(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(criminal.stat == DEAD)
@@ -1098,14 +1101,23 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(criminal.is_downed())
 		return refuse(user, "[criminal_name(criminal)] is already down.")
 	var/line = (HAS_TRAIT(criminal, TRAIT_NOSOFTCRIT) ? criminal.hardcrit_threshold : criminal.crit_threshold) - 1
+	var/taken = 1
 	for(var/hit in 1 to BOUNTY_ADMIN_DOWN_HITS)
 		if(criminal.is_downed() || criminal.stat == DEAD)
 			break
 		var/excess = criminal.health - line
 		if(excess <= 0)
 			break
-		if(!criminal.apply_damage(excess, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND))
+		var/amount = excess / taken
+		if(hit == 1)
+			amount = min(amount, BOUNTY_ADMIN_DOWN_PROBE)
+		var/before = criminal.health
+		if(!criminal.apply_damage(amount, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND))
 			break
+		var/dropped = before - criminal.health
+		if(dropped <= 0)
+			break
+		taken = dropped / amount
 	if(!criminal.is_downed())
 		return refuse(user, "[criminal_name(criminal)] did not go down ([criminal.health] health).")
 	return TRUE
@@ -1183,7 +1195,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		return refuse(user, "That prison is gone.")
 	if(!prison.free_slots())
 		return refuse(user, "[prison_name(prison)] has no free cell.")
-	var/mob/living/basic/outpost_prisoner/prisoner = prison.bounty_admit_record(record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prison.bounty_admit_record(record)
 	if(QDELETED(prisoner))
 		return refuse(user, "[prison_name(prison)] took nobody: no cell there has room for an arrival.")
 	log_action(user, "admit bounty record [record.name] ([record_kind(record)]) into cell [prisoner.cell?.number] of [prison_name(prison)]")
@@ -1355,6 +1367,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 #undef BOUNTY_ADMIN_TICK_SECONDS
 #undef BOUNTY_ADMIN_STUN_TIME
 #undef BOUNTY_ADMIN_DOWN_HITS
+#undef BOUNTY_ADMIN_DOWN_PROBE
 #undef BOUNTY_ADMIN_MAX_STEPS
 #undef BOUNTY_ADMIN_TEST_CAPTOR
 #undef BOUNTY_ADMIN_RELIST_REASON

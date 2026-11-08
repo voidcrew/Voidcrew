@@ -72,7 +72,7 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 		return is_outpost_experiment_turret_target(creature)
 	// Outpost prisoners (outpost_prison_*.dm): left alone inside their wing, rioting or not;
 	// once loose outside it they are fair game. Turrets players build use outpost_prison_security.dm instead.
-	if(istype(creature, /mob/living/basic/outpost_prisoner))
+	if(istype(creature, /mob/living/carbon/human/npc/outpost_prisoner))
 		return is_loose_outpost_prisoner(creature)
 	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm), real human bodies:
 	// trader-outpost turrets leave them to the hunters, and no turret shoots a criminal already in crit,

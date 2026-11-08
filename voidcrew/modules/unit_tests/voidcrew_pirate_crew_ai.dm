@@ -182,7 +182,7 @@
 		TEST_ASSERT(!member.ai_controller.can_idle, "[member] can still idle on alert")
 
 	// The guard down and the deckhand cuffed: only the gunner is still fighting, so the captain joins in
-	brawler.adjustOxyLoss(110)
+	brawler.adjustToxLoss(110) // down in soft crit; a silverscale doesn't breathe, so oxygen damage wouldn't touch it
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
 	TEST_ASSERT(deckhand.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "Test fixture: the deckhand could not be cuffed")
 	crew.check_promotion()

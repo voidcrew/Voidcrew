@@ -151,7 +151,8 @@
 		owner.apply_status_effect(/datum/status_effect/inebriated/tipsy, drunk_value)
 		return
 
-	var/datum/mood_event/drunk/moodlet = owner.mob_mood.mood_events[id]
+	// VOIDCREW EDIT CHANGE: human NPCs have no mood datum (voidcrew/modules/human_npcs)
+	var/datum/mood_event/drunk/moodlet = owner.mob_mood?.get_mood_event(id)
 	if(istype(moodlet))
 		moodlet.update_change(drunk_value)
 

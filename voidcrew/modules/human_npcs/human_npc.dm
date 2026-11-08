@@ -60,7 +60,11 @@
 	 * when the NPC dies or the ware is taken out of it (owner ruling), so it is never salvaged working.
 	 */
 	var/list/npc_cyberware
-	/// Opens an air tank it carries if it has a mask or helmet that takes one and its outfit didn't.
+	/**
+	 * Handles its own air the way a person does (npc_update_internals()): opens a tank it carries when
+	 * the air it would breathe is bad and it has a mask or helmet that takes one, and closes the valve
+	 * again once the air is fine, so its tank doesn't run dry in a breathable room.
+	 */
 	var/npc_internals = TRUE
 	/// Typepaths spawned under it the first time it dies (its designed loot). Never a second time.
 	var/list/npc_death_loot
@@ -144,7 +148,7 @@
 	for(var/obj/item/held as anything in held_items)
 		if(held)
 			human_npc_ready_weapon(src, held)
-	npc_open_internals()
+	npc_update_internals()
 	npc_set_suit_heating(TRUE)
 	set_npc_toughness(npc_damage_taken)
 	if(npc_body_armor)
@@ -181,6 +185,9 @@
 			npc_catch_up_decay((world.time - npc_dormant_since) / (1 SECONDS), times_fired)
 			npc_dormant_since = 0
 			npc_set_suit_heating(TRUE)
+	// Before the breath this Life() takes: a person who steps into bad air reaches for the valve.
+	if(stat != DEAD)
+		npc_update_internals()
 #ifdef HUMAN_NPC_SPIKE_HARNESS
 	GLOB.human_npc_spike_life_passes++
 #endif
@@ -326,13 +333,63 @@
 		sensor_clothes.sensor_mode = SENSOR_OFF
 		update_suit_sensors()
 
+/**
+ * Opens or closes its internals for the air where it stands, as a person minds their valve: open while
+ * the air would hurt it (too thin, short of what its lungs need, poisonous), closed while it is fine. A
+ * conscious NPC only; one that can't use its hands (cuffs, a stun) leaves the valve as it is, as would a
+ * person. Species that don't breathe, or that only live on what's in their tank (plasmamen), keep it
+ * as it is. Called from Life() and when it is dressed.
+ */
+/mob/living/carbon/human/npc/proc/npc_update_internals()
+	if(!npc_internals || HAS_TRAIT(src, TRAIT_NOBREATH))
+		return
+	if(stat > SOFT_CRIT || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
+		return
+	var/obj/item/organ/lungs/lungs = get_organ_slot(ORGAN_SLOT_LUNGS)
+	if(isnull(lungs))
+		return
+	// Lungs that need something ordinary air doesn't have: whatever it was dressed with stays on.
+	if(lungs.safe_plasma_min > 0 || lungs.safe_nitro_min > 0)
+		return
+	var/bad_air = human_npc_air_hurts(get_turf(src), lungs, margin = internal ? HUMAN_NPC_AIR_MARGIN : 0)
+	if(bad_air)
+		if(!internal)
+			npc_open_internals()
+	else if(internal && !external)
+		close_internals()
+
 /// Turns on an air tank it wears, if it has something to breathe it through, the way a player does.
 /mob/living/carbon/human/npc/proc/npc_open_internals()
-	if(!npc_internals || internal || !can_breathe_internals())
+	if(internal || !can_breathe_internals())
 		return
 	for(var/obj/item/tank/internals/tank in get_equipped_items(INCLUDE_POCKETS | INCLUDE_HELD))
+		if(tank.air_contents?.return_pressure() <= 0)
+			continue
 		if(open_internals(tank))
 			return
+
+/**
+ * Whether breathing the air at `spot` would hurt someone with `lungs`: pressure too low or too high,
+ * too little oxygen, or too much plasma, carbon dioxide or sleeping gas, by those lungs' own limits.
+ * `margin` (kPa) asks for that much better than the limit before the air counts as fine again, so a
+ * valve isn't worked every breath at the edge.
+ */
+/proc/human_npc_air_hurts(turf/spot, obj/item/organ/lungs/lungs, margin = 0)
+	var/datum/gas_mixture/air = spot?.return_air()
+	if(isnull(air))
+		return TRUE
+	var/pressure = air.return_pressure()
+	if(pressure < HAZARD_LOW_PRESSURE + margin * 4 || pressure > HAZARD_HIGH_PRESSURE)
+		return TRUE
+	if(lungs.safe_oxygen_min && human_npc_partial_pressure(air, /datum/gas/oxygen, pressure) < lungs.safe_oxygen_min + margin)
+		return TRUE
+	if(lungs.safe_plasma_max && human_npc_partial_pressure(air, /datum/gas/plasma, pressure) > max(lungs.safe_plasma_max - margin * 0.01, 0))
+		return TRUE
+	if(lungs.safe_co2_max && human_npc_partial_pressure(air, /datum/gas/carbon_dioxide, pressure) > lungs.safe_co2_max - margin)
+		return TRUE
+	if(lungs.n2o_para_min && human_npc_partial_pressure(air, /datum/gas/nitrous_oxide, pressure) >= lungs.n2o_para_min)
+		return TRUE
+	return FALSE
 
 /**
  * Sets how much brute and burn damage it takes, as a multiple of a person's. Scales the
@@ -349,12 +406,10 @@
 
 // ===== RULES OF ENGAGEMENT =====
 
-// The strip menu never opens on a human NPC (D3). Carrying and dragging are unaffected. An NPC whose
-// gear isn't locked (prisoners, OC-11) is searched and stripped like anyone.
-/mob/living/carbon/human/npc/should_strip(mob/user)
-	if(!npc_gear_locked)
-		return ..()
-	return FALSE
+// The strip menu works as on anyone, but locked gear (D3) carries TRAIT_NO_STRIP, so its slots read as
+// empty and can't be emptied. What isn't gear (a ship key, bounty proof, a paper) can be taken from a
+// cuffed, downed or careless NPC the way it could from a person. An NPC whose gear isn't locked
+// (prisoners, OC-11) is searched and stripped like anyone.
 
 // D4: an NPC's hits become aimed crits and executions only if it is an elite or a boss, or a
 // person is driving the body.

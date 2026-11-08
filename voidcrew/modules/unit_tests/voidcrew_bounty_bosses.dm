@@ -54,9 +54,9 @@
 	hunter.mind_initialize()
 	return hunter
 
-/// Puts `person` into crit with real damage (soft crit: health 100 - 120 = -20)
+/// Puts `person` into crit with real damage on the chest (soft crit, health -20)
 /datum/unit_test/voidcrew_bounty_boss/proc/put_in_crit(mob/living/person)
-	person.adjustBruteLoss(120)
+	bounty_test_hurt_to(person, -20)
 	return person.stat != CONSCIOUS && person.stat != DEAD
 
 /// A Ripley at `where` with `pilot` in it
@@ -181,7 +181,7 @@
 	var/obj/item/gun/ballistic/automatic/l6_saw/gun = heavy.boss_gun()
 	TEST_ASSERT_NOTNULL(gun, "The Heavy holds no belt-fed gun")
 	TEST_ASSERT(gun.can_shoot(), "The Heavy's gun isn't loaded")
-	TEST_ASSERT(!heavy.get_inactive_held_item(), "The Heavy's other hand isn't free to fire")
+	TEST_ASSERT(heavy.boss_hands_free_for(gun), "The Heavy's other hand isn't free to fire")
 	TEST_ASSERT_EQUAL(carried(heavy, /obj/item/ammo_box/magazine/m7mm), 2, "The Heavy has no spare box beside the one in its gun")
 	TEST_ASSERT_EQUAL(carried(heavy, /obj/item/grenade/barrier/bounty_boss), 2, "The Heavy doesn't carry its two barrier grenades") // BOUNTY_HEAVY_BARRIERS
 
@@ -683,7 +683,7 @@
 	TEST_ASSERT(!boss.boss_worn_out, "A boss with its stamina back is still worn out")
 
 	// Real health counts too: under 40% of a person's.
-	boss.adjustBruteLoss(65)
+	bounty_test_hurt_to(boss, 35)
 	TEST_ASSERT(boss.boss_is_worn_out(), "A boss at [boss.health] health isn't worn out")
 
 // ===== MECHS (H2) =====
@@ -830,6 +830,9 @@
 	ready_hands(heavy)
 	var/rounds = gun.get_ammo()
 	TEST_ASSERT(burst.Trigger(target = target), "The burst didn't start again")
+	// Starting the ability is a click (tg's 0.6 s ability click cooldown), and its 0.7 s wind-up outlasts
+	// that; the test ends the wind-up at once, so it lets the cooldown go by hand.
+	ready_hands(heavy)
 	TEST_ASSERT(burst.finish_windup(burst.pending_serial), "The burst didn't fire when its wind-up ended")
 	TEST_ASSERT(gun.get_ammo() < rounds, "The burst fired no round from the Heavy's gun")
 	burst.end_burst(heavy.boss_busy_serial)

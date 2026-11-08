@@ -1045,6 +1045,16 @@
 		return gun
 	return null
 
+/**
+ * Whether `gun` is the only thing in its hands. tg fires a heavy gun only with the other hand empty,
+ * whichever hand is active now: the gun may sit in either, and is made the active one to fire.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/proc/boss_hands_free_for(obj/item/gun/gun)
+	for(var/obj/item/held in held_items)
+		if(held != gun)
+			return FALSE
+	return !isnull(gun) && is_holding(gun)
+
 /// A barrier grenade it carries, not yet thrown
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/proc/boss_barrier()
 	for(var/obj/item/grenade/barrier/bounty_boss/barrier in get_all_contents_type(/obj/item/grenade/barrier/bounty_boss))
@@ -1169,7 +1179,7 @@
 		return FALSE
 	var/obj/item/gun/gun = boss.boss_gun()
 	// Its gun loaded, its other hand free to fire it.
-	if(isnull(gun) || !gun.can_shoot() || boss.get_inactive_held_item())
+	if(isnull(gun) || !gun.can_shoot() || !boss.boss_hands_free_for(gun))
 		return FALSE
 	var/distance = get_dist(owner, target)
 	return distance >= 2 && distance <= BOUNTY_HEAVY_BURST_RANGE && can_see(owner, target, BOUNTY_HEAVY_BURST_RANGE) && landing_ok(target)
@@ -1220,7 +1230,7 @@
 		return
 	shots_left--
 	var/turf/spot = round_spot()
-	if(spot && !human_npc_ally_in_line(boss, spot) && !boss.get_inactive_held_item() && human_npc_ready_item(boss, gun))
+	if(spot && !human_npc_ally_in_line(boss, spot) && boss.boss_hands_free_for(gun) && human_npc_ready_item(boss, gun))
 		boss.ai_controller?.ai_interact(target = spot, combat_mode = TRUE)
 	if(shots_left <= 0)
 		end_burst(serial)

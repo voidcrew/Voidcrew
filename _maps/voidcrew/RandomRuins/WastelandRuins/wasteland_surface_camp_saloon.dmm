@@ -192,6 +192,7 @@
 "mr" = (
 /obj/structure/chair/stool/bar,
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 8;
 	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood{
@@ -205,6 +206,7 @@
 "nE" = (
 /obj/structure/chair/stool/bar,
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 1;
 	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
@@ -476,6 +478,7 @@
 /obj/structure/chair/stool/bar,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 8;
 	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
@@ -557,6 +560,7 @@
 "Xb" = (
 /obj/item/chair/stool/bar,
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 1;
 	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
