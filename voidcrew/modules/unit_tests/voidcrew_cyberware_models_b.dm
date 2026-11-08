@@ -90,7 +90,8 @@
 	TEST_ASSERT_EQUAL(atlas.throw_range_bonus, 2, "Atlas Frame's throw range changed")
 	TEST_ASSERT_EQUAL(atlas.throw_speed_bonus, 1, "Atlas Frame's throw speed changed")
 	TEST_ASSERT(atlas.resists_knockback, "Atlas Frame stopped resisting knockback")
-	TEST_ASSERT(atlas.frame_examine, "Atlas Frame lost its examine line")
+	// The text pass cut the examine line that explained the frame's rules.
+	TEST_ASSERT_NULL(atlas.frame_examine, "Atlas Frame's examine explains its rules again")
 	TEST_ASSERT(TRAIT_NODISMEMBER in atlas.organ_traits, "Atlas Frame stopped holding limbs on")
 	TEST_ASSERT("cyberware_unbreakable_bones" in atlas.organ_traits, "Atlas Frame stopped holding bones together")
 

@@ -206,6 +206,9 @@
 	var/obj/machinery/light/open_light = allocate(/obj/machinery/light, wing_tile)
 	var/open_apc_reach = action.can_reach(user, open_apc)
 	var/open_light_reach = action.can_reach(user, open_light)
+	// The wing's fixtures go on the same tile, and tests scream about stacked lights.
+	qdel(open_apc)
+	qdel(open_light)
 	var/area/voidcrew/player_outpost/prison/wing = new
 	wing_tile.change_area(old_area, wing)
 	var/obj/machinery/power/apc/wing_apc = new(wing_tile)
