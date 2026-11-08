@@ -124,13 +124,8 @@
 /// npc_name and npc_faction set one mapped NPC's own name and side.
 /obj/effect/spawner/human_npc/ruin
 	name = "ruin NPC spawner"
-
-// The family's own type places nothing (it is never mapped; tests create every type once).
-/obj/effect/spawner/human_npc/ruin/Initialize(mapload)
-	if(isnull(npc_type))
-		flags_1 |= INITIALIZED_1
-		return INITIALIZE_HINT_QDEL
-	return ..()
+	// The family's own type places nothing (it is never mapped; tests create every type once).
+	abstract_spawner_type = /obj/effect/spawner/human_npc/ruin
 
 // ===== Derelict shuttles inside space ruins =====
 // The caravan ambush ruin docks four upstream derelict shuttles (code/datums/shuttles/ruin.dm) that

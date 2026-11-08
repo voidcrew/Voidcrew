@@ -41,6 +41,7 @@
 /area/ruin/unpowered)
 "h" = (
 /obj/effect/spawner/human_npc/ruin/nanotrasen{
+	dir = 4;
 	npc_name = "NanoTrasen Stranded Security Officer"
 	},
 /turf/open/misc/wasteland/lit,
@@ -71,6 +72,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "v" = (
 /obj/effect/spawner/human_npc/ruin/nanotrasen{
+	dir = 8;
 	npc_name = "NanoTrasen Stranded Security Officer"
 	},
 /turf/open/misc/wasteland/lit,

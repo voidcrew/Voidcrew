@@ -7,7 +7,9 @@
 //   disarm shoves, a held item dropped on a knockdown, gib item drops, a stray transferItemToLoc().
 //   The NPC's own moves inside its inventory (magazine into its gun, gun into its holster, a tank
 //   into its suit storage) still work, because they end on the NPC.
-// * The strip menu never opens on a human NPC (should_strip() in human_npc.dm).
+// * Locked items carry TRAIT_NO_STRIP: tg's strip menu shows their slots as empty and won't take them.
+//   The menu still opens, so what isn't gear (a captain's ship key in his pocket) can be taken off a
+//   cuffed or downed NPC as off a person.
 // * Anything that forces the item out of the body anyway (an arm cut off still holding the gun, a
 //   head knocked off with the helmet on, species changes, admin undress) lands outside the NPC, and
 //   the item is deleted on the next tick (COMSIG_MOVABLE_MOVED). The wait lets tg code that moves an
@@ -71,7 +73,7 @@ GLOBAL_LIST_INIT(human_npc_consumable_gear, typecacheof(list(
 	if(!isitem(target))
 		return ELEMENT_INCOMPATIBLE
 	var/obj/item/gear = target
-	ADD_TRAIT(gear, TRAIT_HUMAN_NPC_GEAR, HUMAN_NPC_GEAR_TRAIT_SOURCE)
+	gear.add_traits(list(TRAIT_HUMAN_NPC_GEAR, TRAIT_NO_STRIP), HUMAN_NPC_GEAR_TRAIT_SOURCE)
 	RegisterSignal(gear, COMSIG_ITEM_PRE_UNEQUIP, PROC_REF(on_pre_unequip))
 	RegisterSignal(gear, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(gear, COMSIG_ITEM_PRE_EXPORT, PROC_REF(on_pre_export))
@@ -79,7 +81,7 @@ GLOBAL_LIST_INIT(human_npc_consumable_gear, typecacheof(list(
 
 /datum/element/human_npc_gear/Detach(datum/source)
 	UnregisterSignal(source, list(COMSIG_ITEM_PRE_UNEQUIP, COMSIG_MOVABLE_MOVED, COMSIG_ITEM_PRE_EXPORT))
-	REMOVE_TRAIT(source, TRAIT_HUMAN_NPC_GEAR, HUMAN_NPC_GEAR_TRAIT_SOURCE)
+	source.remove_traits(list(TRAIT_HUMAN_NPC_GEAR, TRAIT_NO_STRIP), HUMAN_NPC_GEAR_TRAIT_SOURCE)
 	return ..()
 
 /// Refuses any drop or hand-over that would leave the NPC's body. Forced moves are let through and
@@ -115,12 +117,14 @@ GLOBAL_LIST_INIT(human_npc_consumable_gear, typecacheof(list(
 	human_npc_gear_strip_materials(parent)
 
 /datum/component/human_npc_consumable/RegisterWithParent()
-	ADD_TRAIT(parent, TRAIT_HUMAN_NPC_CONSUMABLE, HUMAN_NPC_GEAR_TRAIT_SOURCE)
+	var/obj/item/item = parent
+	item.add_traits(list(TRAIT_HUMAN_NPC_CONSUMABLE, TRAIT_NO_STRIP), HUMAN_NPC_GEAR_TRAIT_SOURCE)
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(parent, COMSIG_ITEM_PRE_EXPORT, PROC_REF(on_pre_export))
 
 /datum/component/human_npc_consumable/UnregisterFromParent()
-	REMOVE_TRAIT(parent, TRAIT_HUMAN_NPC_CONSUMABLE, HUMAN_NPC_GEAR_TRAIT_SOURCE)
+	var/obj/item/item = parent
+	item.remove_traits(list(TRAIT_HUMAN_NPC_CONSUMABLE, TRAIT_NO_STRIP), HUMAN_NPC_GEAR_TRAIT_SOURCE)
 	UnregisterSignal(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_ITEM_PRE_EXPORT))
 
 /datum/component/human_npc_consumable/Destroy(force)

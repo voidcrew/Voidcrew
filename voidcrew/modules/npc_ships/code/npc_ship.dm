@@ -404,10 +404,11 @@
 /obj/structure/overmap/ship/npc/proc/on_captain_built(mob/living/captain)
 	if(QDELETED(captain))
 		return
-	// The key is not gear: a human captain keeps it on him, and it drops when he dies (on_crew_death())
+	// The key is not gear: a human captain keeps it in a pocket, where a crew that cuffs or downs him can
+	// take it (the strip menu), and it drops when he dies (on_crew_death())
 	var/obj/item/ship_key/key = new(null, src)
 	var/mob/living/carbon/human/npc/faction_pirate/human_captain = captain
-	if(!istype(human_captain) || !human_captain.crew_give(key))
+	if(!istype(human_captain) || !human_captain.crew_pocket(key))
 		key.forceMove(captain)
 	track_crewman(captain, PIRATE_ROLE_CAPTAIN)
 

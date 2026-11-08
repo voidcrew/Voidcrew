@@ -31,9 +31,11 @@
  * * context - a /datum/npc_spawn_context (voidcrew/modules/npc_scaling/); the body is built through
  *   spawn_npc_in_zone() and the context finalised after on_spawned
  * * immediate - build it now instead of queueing it (admin tools, tests)
+ * * dir - the way it faces when it appears (a mapped spawner's dir), or NONE for its own
  */
-/proc/spawn_human_npc(npc_type, atom/where, datum/callback/on_spawned, look, outfit, name, list/faction, datum/npc_spawn_context/context, immediate = FALSE)
+/proc/spawn_human_npc(npc_type, atom/where, datum/callback/on_spawned, look, outfit, name, list/faction, datum/npc_spawn_context/context, immediate = FALSE, dir = NONE)
 	var/datum/human_npc_order/order = new(npc_type, where, on_spawned, look, outfit, name, faction, context)
+	order.dir = dir
 	if(immediate)
 		order.fulfil()
 	else
@@ -50,6 +52,13 @@
 	var/name
 	var/list/faction
 	var/datum/npc_spawn_context/context
+	/// The way it faces when built, or NONE
+	var/dir = NONE
+	/// The area its spot was in when queued: the order is dropped if the spot has been reused since
+	var/area/where_area
+	/// Weakref to the map region its spot was in when queued (a packed encounter's footprint or a
+	/// reservation), for the same check; null on a level that isn't packed
+	var/datum/weakref/where_region
 	/// The ZONE_* it is dressed for, once known (resolve_zone())
 	var/zone
 	/// world.time it was queued
@@ -66,6 +75,9 @@
 		CRASH("spawn_human_npc() was given [npc_type], which is not a human NPC type")
 	src.npc_type = npc_type
 	src.where = get_turf(where)
+	src.where_area = src.where?.loc
+	var/datum/region = map_region_for_turf(src.where)
+	src.where_region = region ? WEAKREF(region) : null
 	src.on_spawned = on_spawned
 	src.look = look
 	src.outfit = outfit
@@ -82,6 +94,8 @@
 /// Drops what the order held, so a fulfilled order keeps nothing alive.
 /datum/human_npc_order/proc/release()
 	where = null
+	where_area = null
+	where_region = null
 	on_spawned = null
 	look = null
 	outfit = null
@@ -120,6 +134,23 @@
 	next_zone_check = world.time + 1 SECONDS
 	return !isnull(resolve_zone(now = FALSE))
 
+/**
+ * Whether the spot it was queued for is still the same place. An order can wait in the queue (up to
+ * HUMAN_NPC_ZONE_WAIT for its zone); by then the ruin or planet it was for may have unloaded and its
+ * turfs been reused by something else. The spot must still exist, be in the same area and the same
+ * packed map region, and not have become a wall.
+ */
+/datum/human_npc_order/proc/spot_still_valid()
+	if(isnull(where) || QDELETED(where))
+		return FALSE
+	if(where.loc != where_area)
+		return FALSE
+	// A region that registers after the spot was queued (a planet level coming up late) is fine; one
+	// that has gone, or been replaced by another, means the ground was recycled.
+	if(where_region && map_region_for_turf(where) != where_region.resolve())
+		return FALSE
+	return !isclosedturf(where)
+
 /// Builds the NPC now. Returns it, or null if it couldn't be built.
 /datum/human_npc_order/proc/fulfil()
 	if(done)
@@ -127,7 +158,7 @@
 	done = TRUE
 	SShuman_npcs.queue -= src
 	var/mob/living/carbon/human/npc/npc
-	if(!isnull(where))
+	if(spot_still_valid())
 		if(context)
 			npc = spawn_npc_in_zone(npc_type, where, context, finalize = FALSE, constructor_args = list(src))
 		else
@@ -136,6 +167,8 @@
 		release()
 		return null
 	spawned_ref = WEAKREF(npc)
+	if(dir)
+		npc.setDir(dir)
 	SShuman_npcs.spawned_total++
 	on_spawned?.Invoke(npc)
 	context?.finalize()
@@ -251,10 +284,20 @@ SUBSYSTEM_DEF(human_npcs)
 	var/npc_name
 	/// Factions for this one NPC (a mapped camp's own side), or null for its type's
 	var/list/npc_faction
+	/// The family root this type is: never mapped and places nothing, so it may have no npc_type. A
+	/// family's own root subtype sets this to itself (tests make one of every type).
+	var/abstract_spawner_type = /obj/effect/spawner/human_npc
 
 /obj/effect/spawner/human_npc/Initialize(mapload)
 	. = ..()
 	if(!ispath(npc_type, /mob/living/carbon/human/npc))
-		stack_trace("[type] at [AREACOORD(src)] has no human NPC type to spawn")
+		if(type != abstract_spawner_type)
+			stack_trace("[type] at [AREACOORD(src)] has no human NPC type to spawn")
 		return
-	spawn_human_npc(npc_type, get_turf(src), name = npc_name, faction = npc_faction, context = get_npc_spawn_context())
+#ifdef UNIT_TESTS
+	// The create-and-destroy test makes one of every type on one tile; it isn't a map, so place nothing.
+	if(GLOB.running_create_and_destroy)
+		return
+#endif
+	// The mapped spawner's dir is the way the NPC faces.
+	spawn_human_npc(npc_type, get_turf(src), name = npc_name, faction = npc_faction, context = get_npc_spawn_context(), dir = dir)
