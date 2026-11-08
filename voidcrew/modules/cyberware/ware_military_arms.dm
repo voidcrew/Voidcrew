@@ -509,7 +509,10 @@
 	var/blades = length(blade_housings)
 
 	lunger.face_atom(victim)
-	lunger.do_attack_animation(victim, ATTACK_EFFECT_SLASH)
+	lunger.do_attack_animation(victim, no_effect = TRUE)
+	// The blade's own impact over the target (cyberware_anim.dm).
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/lunge_blade = housing.active_item
+	cyberware_play_impact(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis")
 	// One armor roll for the arrival, reused per blade. Both land in the same
 	// instant on the same plate, and it keeps the armor message to one line.
 	var/armor_block = victim.run_armor_check(BODY_ZONE_CHEST, MELEE)

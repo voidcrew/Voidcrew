@@ -328,6 +328,54 @@
 		var/mutable_appearance/standing = .
 		standing.alpha = 0
 
+// =========================================================================
+// IMPACTS
+// =========================================================================
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis
+	/// What a hit with this blade plays over its target, in place of tg's flying blade.
+	var/impact_state = "impact_mantis"
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/street
+	impact_state = "impact_shiv"
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch
+	impact_state = "impact_scorch"
+
+/obj/item/melee/cyberware_monowire
+	/// What a hit with this wire plays over its target, in place of tg's flying spool.
+	var/impact_state = "impact_widowline"
+
+/obj/item/melee/cyberware_monowire/live
+	impact_state = "impact_arc"
+
+// The swinger's lunge stays; only the picture over the target changes.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
+	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
+		return ..()
+
+/obj/item/melee/cyberware_monowire/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
+	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
+		return ..()
+
+/**
+ * A chrome weapon's hit drawn over what it hit: a short slash, flash or
+ * crackle, upright even on someone lying down, and turned to come from the
+ * attacker's side. Returns the holder, or null if there was nothing to draw on.
+ */
+/proc/cyberware_play_impact(atom/movable/attacker, atom/attacked_atom, impact_state)
+	if(!impact_state || !ismovable(attacked_atom))
+		return null
+	var/obj/effect/abstract/cyberware_anim/impact = cyberware_anim_play(attacked_atom, CYBERWARE_ANIM_ICON, impact_state, CHROME_ANIM_TOP_LAYER, 0.4 SECONDS, glow = impact_state != "impact_shiv")
+	if(!impact)
+		return null
+	impact.appearance_flags |= RESET_TRANSFORM
+	// The art swings in from the left; a blow from the right is mirrored, one from above or below either way.
+	var/direction = get_dir(attacker, attacked_atom)
+	if((direction & WEST) || (!(direction & EAST) && prob(50)))
+		impact.transform = matrix(-1, 0, 0, 0, 1, 0)
+	return impact
+
 #undef BLADE_UNFOLD_SWING
 #undef BLADE_UNFOLD_TIME
 #undef BLADE_FOLD_SWING

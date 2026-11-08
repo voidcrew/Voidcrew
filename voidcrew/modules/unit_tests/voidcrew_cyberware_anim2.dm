@@ -278,3 +278,40 @@
 	TEST_ASSERT_NULL(cradle.rig_phase, "The parked rig still has a move")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in cradle.vis_contents), "The parked rig left a drawing")
 	cradle.unbuckle_mob(patient, force = TRUE)
+
+/// Impacts: a chrome weapon's hit plays its impact over the target in place of
+/// tg's flying item, upright, turned to the attacker's side, and it goes away.
+/datum/unit_test/voidcrew_cyberware_anim2_impact
+
+/datum/unit_test/voidcrew_cyberware_anim2_impact/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/west = allocate(/mob/living/carbon/human/consistent, start)
+	var/mob/living/carbon/human/east = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = allocate(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
+	blade.animate_attack(west, east)
+	var/obj/effect/abstract/cyberware_anim/impact = locate() in east.vis_contents
+	TEST_ASSERT(impact, "A Mantis hit drew no impact over its target")
+	TEST_ASSERT_EQUAL(impact.icon_state, "impact_mantis", "A Mantis hit drew the wrong impact")
+	TEST_ASSERT(impact.appearance_flags & RESET_TRANSFORM, "The impact turns with a lying target")
+	TEST_ASSERT_EQUAL(impact.transform.a, 1, "A blow from the west was mirrored")
+	TEST_ASSERT(length(impact.overlays), "The Mantis impact doesn't glow")
+	qdel(impact)
+
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/street/shiv = allocate(/obj/item/melee/energy/blade/hardlight/cyberware_mantis/street)
+	shiv.animate_attack(east, west)
+	impact = locate() in west.vis_contents
+	TEST_ASSERT(impact && impact.icon_state == "impact_shiv", "A Shiv hit drew the wrong impact")
+	TEST_ASSERT_EQUAL(impact.transform.a, -1, "A blow from the east wasn't mirrored")
+	TEST_ASSERT(!length(impact.overlays), "The Shiv's steel impact glows")
+	qdel(impact)
+
+	var/obj/item/melee/cyberware_monowire/live/wire = allocate(/obj/item/melee/cyberware_monowire/live)
+	wire.animate_attack(west, east)
+	impact = locate() in east.vis_contents
+	TEST_ASSERT(impact && impact.icon_state == "impact_arc", "A Widowline Arc hit drew the wrong impact")
+	qdel(impact)
+	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "The impact stayed on its target")
+
+	// Nothing to draw on a wall or a floor: those keep tg's own.
+	TEST_ASSERT_NULL(cyberware_play_impact(west, get_turf(east), "impact_mantis"), "An impact was drawn on a turf")
