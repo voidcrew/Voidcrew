@@ -100,6 +100,8 @@
 	var/list/lunge_cut
 	/// The lunge cut someone, or struck a mech
 	var/lunge_hit = FALSE
+	/// Who the lunge is aimed at, as a weakref: cut if they may be hit, while anyone else on the line must be in the fight (bounty_chrome_may_splash())
+	var/datum/weakref/lunge_aim
 
 /datum/bounty_chrome/mantis/Destroy(force)
 	cancel_lunge()
@@ -336,7 +338,7 @@
 				return
 			var/obj/vehicle/sealed/mecha/mech = locate() in spot
 			if(mech)
-				if(bounty_chrome_may_splash(owner, mech))
+				if(bounty_chrome_may_splash(owner, mech, lunge_aim?.resolve()))
 					. += spot
 				return
 			if(spot.is_blocked_turf(exclude_mobs = TRUE) || standing_in_the_way(spot))
@@ -367,17 +369,18 @@
 			return person
 	return null
 
-/// Whether the lunge cuts `person`: a hunter on their feet whom they may hit
+/// Whether the lunge cuts `person`: a hunter on their feet whom they may hit, and the one it is aimed at or someone else in the fight
 /datum/bounty_chrome/mantis/proc/may_cut(mob/living/person)
 	if(person.stat != CONSCIOUS || person.body_position == LYING_DOWN)
 		return FALSE
-	return bounty_ai_is_hunter(person) && bounty_chrome_may_splash(owner, person)
+	return bounty_ai_is_hunter(person) && bounty_chrome_may_splash(owner, person, lunge_aim?.resolve())
 
 /**
  * The wind-up: feet planted and low, blades flat along the arms, and the line marked on the floor.
  * The dash follows BOUNTY_MANTIS_LUNGE_WINDUP later. Returns TRUE if it started.
  */
 /datum/bounty_chrome/mantis/proc/start_lunge(atom/target)
+	lunge_aim = WEAKREF(target)
 	var/list/path = lunge_path(target)
 	// Only a line that reaches them: one cut short by a friend standing in the way is no lunge
 	if(!(get_turf(target) in path))
@@ -440,7 +443,7 @@
 			end_dash(serial, person, blocked = TRUE)
 			return
 	for(var/obj/vehicle/sealed/mecha/mech in next)
-		if(bounty_chrome_may_splash(owner, mech))
+		if(bounty_chrome_may_splash(owner, mech, lunge_aim?.resolve()))
 			strike(mech)
 		end_dash(serial, mech)
 		return

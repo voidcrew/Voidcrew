@@ -865,12 +865,12 @@ GLOBAL_LIST_INIT(bounty_chrome_read_lines, list(
 
 /**
  * Whether `victim` (a person, or a mech with one in it) is in `fighter`'s fight: the one it is going
- * for now, or a hunter after it. That is someone on its criminal's grudge list (they attacked,
- * confronted or cuffed it, or attacked one of its companions), in a mini-boss's posse, or crewing a
- * ship that hunts its bounty. Anyone else on the site, a bystander, is none of these. A leaderless
- * companion has only the one it is going for.
+ * for now or `aimed` at with this move, or a hunter after it. That is someone on its criminal's
+ * grudge list (they attacked, confronted or cuffed it, or attacked one of its companions), in a
+ * mini-boss's posse, or crewing a ship that hunts its bounty. Anyone else on the site, a bystander,
+ * is none of these. A leaderless companion has only the one it is going for.
  */
-/proc/bounty_chrome_in_posse(mob/living/basic/fighter, atom/victim)
+/proc/bounty_chrome_in_posse(mob/living/basic/fighter, atom/victim, atom/aimed)
 	if(QDELETED(fighter) || QDELETED(victim))
 		return FALSE
 	var/list/people = list()
@@ -880,9 +880,9 @@ GLOBAL_LIST_INIT(bounty_chrome_read_lines, list(
 		var/obj/vehicle/sealed/mecha/mech = victim
 		for(var/mob/living/pilot in mech.occupants)
 			people += pilot
-	var/atom/target = bounty_chrome_target(fighter)
-	if(target && (target == victim || (target in people) || (isliving(victim) && target == victim.loc)))
-		return TRUE
+	for(var/atom/target in list(bounty_chrome_target(fighter), aimed))
+		if(target == victim || (target in people) || (isliving(victim) && target == victim.loc))
+			return TRUE
 	var/mob/living/basic/bounty_criminal/side = bounty_ai_side_of(fighter)
 	if(QDELETED(side))
 		return FALSE
@@ -903,8 +903,9 @@ GLOBAL_LIST_INIT(bounty_chrome_read_lines, list(
 
 /**
  * Whether one of `fighter`'s area moves (a lunge's line, a landing's shockwave, a roar) catches
- * `victim`: someone it may hit (bounty_ai_may_hit()) who is in its fight (bounty_chrome_in_posse()).
- * A bystander on the site is spared, so a chromed criminal is never a weapon to point at other crews.
+ * `victim`: someone it may hit (bounty_ai_may_hit()) who is in its fight (bounty_chrome_in_posse()),
+ * the one the move is `aimed` at included. A bystander on the site is spared, so a chromed criminal is
+ * never a weapon to point at other crews.
  */
-/proc/bounty_chrome_may_splash(mob/living/basic/fighter, atom/victim)
-	return bounty_ai_may_hit(fighter, victim) && bounty_chrome_in_posse(fighter, victim)
+/proc/bounty_chrome_may_splash(mob/living/basic/fighter, atom/victim, atom/aimed)
+	return bounty_ai_may_hit(fighter, victim) && bounty_chrome_in_posse(fighter, victim, aimed)

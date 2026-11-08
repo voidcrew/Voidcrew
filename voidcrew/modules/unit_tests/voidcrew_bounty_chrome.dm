@@ -257,6 +257,7 @@
 	attacker.mind_initialize()
 	TEST_ASSERT(bounty_ai_may_hit(criminal, bystander), "On its site it may not hit a person at all")
 	TEST_ASSERT(!bounty_chrome_may_splash(criminal, bystander), "An area move catches a bystander")
+	TEST_ASSERT(bounty_chrome_may_splash(criminal, bystander, bystander), "A move spares the one it is aimed at")
 	criminal.body_add_grudge(attacker)
 	TEST_ASSERT(bounty_chrome_may_splash(criminal, attacker), "An area move spares someone who attacked it")
 	criminal.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bystander)
