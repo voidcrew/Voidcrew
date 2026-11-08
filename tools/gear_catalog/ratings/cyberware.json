@@ -605,7 +605,7 @@
    "hash": "",
    "name": "Brawler myomers (right)",
    "rank": 12,
-   "reason": "Half of a pair: a flat 14 damage punch every 6 s, 25 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 2,400 cr at reputation 4. Splice takes a pulled arm back for 600 cr.",
+   "reason": "Half of a pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 2,400 cr at reputation 4. Splice takes a pulled arm back for 600 cr.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
@@ -614,7 +614,7 @@
    "hash": "",
    "name": "Brawler myomers (left)",
    "rank": 13,
-   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 6 s, 25 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
+   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {

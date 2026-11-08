@@ -111,7 +111,7 @@
 	tier = CYBERWARE_TIER_2
 	aug_overlay = "gorilla_street_right"
 	punch_damage = 14
-	structure_damage = 25
+	structure_damage = 20
 	punch_cooldown_time = 6 SECONDS
 	smash_cooldown_time = 1.5 SECONDS
 	hurl_range = 0

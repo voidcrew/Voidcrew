@@ -38,7 +38,7 @@
 	)
 
 /datum/action/cooldown/cyberware/ghostskin_cloak/street
-	desc = "Five seconds of patchy optical camo, enough to fool people and not much else. Attacking, shooting, taking a hit or an EMP drops it."
+	desc = "Five seconds of patchy optical camo, enough to fool people and not much else. Attacking, shooting, throwing, taking a hit or an EMP drops it."
 	cooldown_time = 45 SECONDS
 
 // =========================================================================

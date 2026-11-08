@@ -23,8 +23,8 @@
  * invisibility) that ripples brighter when you move; NPC targeting honors
  * TRAIT_CYBER_CAMO through the hook in cyberware_stealth.dm, but anything
  * within two tiles spots you anyway. The field collapses the instant you
- * attack, shoot, get struck, get cuffed, or eat an EMP, the break-trigger
- * list is the MOD stealth module's, plus gunfire (nothing uncounterable
+ * attack, shoot, throw, get struck, get cuffed, or eat an EMP, the break-trigger
+ * list is the MOD stealth module's, plus gunfire and throws (nothing uncounterable
  * fires from inside a cloak on this server).
  */
 /obj/item/organ/cyberimp/cyberware/ghostskin
@@ -73,7 +73,7 @@
 	animate(wearer, alpha = field_alpha, time = 1 SECONDS)
 	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
-	// gunfire, shooting from inside a cloak breaks it here.
+	// gunfire and throwing: shooting or throwing from inside a cloak breaks it here.
 	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
 	RegisterSignals(wearer, list(
@@ -85,6 +85,7 @@
 		COMSIG_ATOM_ATTACK_PAW,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
+		COMSIG_MOB_THROW,
 		COMSIG_LIVING_DEATH,
 	), PROC_REF(on_break_trigger))
 	RegisterSignal(wearer, COMSIG_MOVABLE_MOVED, PROC_REF(on_camo_move))
@@ -125,6 +126,7 @@
 		COMSIG_ATOM_ATTACK_PAW,
 		COMSIG_CARBON_CUFF_ATTEMPTED,
 		COMSIG_MOB_FIRED_GUN,
+		COMSIG_MOB_THROW,
 		COMSIG_LIVING_DEATH,
 		COMSIG_MOVABLE_MOVED,
 	))
@@ -168,7 +170,7 @@
 
 /datum/action/cooldown/cyberware/ghostskin_cloak
 	name = "Ghostskin Field"
-	desc = "Ten seconds of optical camo. Attacking, shooting, taking a hit or an EMP drops the field. Anyone standing right next to you still sees you."
+	desc = "Ten seconds of optical camo. Attacking, shooting, throwing, taking a hit or an EMP drops the field. Anyone standing right next to you still sees you."
 	button_icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	button_icon_state = "act_ghostskin"
 	cooldown_time = 30 SECONDS

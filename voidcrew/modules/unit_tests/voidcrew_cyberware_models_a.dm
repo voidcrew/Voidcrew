@@ -125,7 +125,7 @@
 
 	// The model.
 	TEST_ASSERT_EQUAL(brawler_right.punch_damage, 14, "Brawler punch isn't 14")
-	TEST_ASSERT_EQUAL(brawler_right.structure_damage, 25, "Brawler smash isn't 25")
+	TEST_ASSERT_EQUAL(brawler_right.structure_damage, 20, "Brawler smash isn't 20")
 	TEST_ASSERT_EQUAL(brawler_right.punch_cooldown_time, 6 SECONDS, "Brawler punch clock isn't six seconds")
 	TEST_ASSERT_EQUAL(brawler_right.smash_cooldown_time, 1.5 SECONDS, "Brawler smash clock isn't a second and a half")
 	TEST_ASSERT(brawler_right.hurl_range <= 0, "Brawler myomers can hurl a grabbed victim")

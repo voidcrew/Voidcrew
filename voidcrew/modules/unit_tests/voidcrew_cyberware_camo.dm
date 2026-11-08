@@ -113,6 +113,12 @@
 	TEST_ASSERT(!HAS_TRAIT(ghost, "cyber_camo"), "Firing a gun didn't drop the field")
 	TEST_ASSERT(hermit.CanAttack(ghost), "A hermit couldn't retaliate against someone who fired from under the field")
 
+	// Throwing from under the field drops it too: a thrown brick is an attack like any other.
+	var/mob/living/carbon/human/consistent/pitcher = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin, spot(4, 4))
+	TEST_ASSERT(HAS_TRAIT(pitcher, "cyber_camo"), "Fixture: the second Ghostskin bearer isn't camo'd")
+	SEND_SIGNAL(pitcher, COMSIG_MOB_THROW, spot(0, 0))
+	TEST_ASSERT(!HAS_TRAIT(pitcher, "cyber_camo"), "Throwing didn't drop the field")
+
 	// The street weave never grants the trait, so nothing here hides it.
 	var/mob/living/carbon/human/consistent/flicker = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin/street, spot(4, 4))
 	TEST_ASSERT(!HAS_TRAIT(flicker, "cyber_camo"), "The Flickerskin granted the camo trait")
