@@ -69,32 +69,89 @@
 	refill()
 	qdel(criminal)
 
-/// Suited, vacuum does nothing; a helmet taken off is a suit no longer sealed
+/// Suited in their own soft suit, vacuum does nothing; a player's suit put on them seals them too, and a helmet taken off unseals them
 /datum/unit_test/voidcrew_bounty_eva/sealed/Run()
 	var/mob/living/basic/bounty_criminal/criminal = new_criminal()
 	var/datum/component/bounty_eva/eva = criminal.GetComponent(/datum/component/bounty_eva)
 	eva.kit_up(null)
 	TEST_ASSERT(eva.sealed(), "A soft suit with its helmet is not sealed")
-	TEST_ASSERT(eva.helmet?.loc == criminal && eva.suit?.loc == criminal, "The soft suit isn't on them")
+	TEST_ASSERT(ispath(eva.worn_type("suit"), /obj/item/clothing/suit) && ispath(eva.worn_type("helmet"), /obj/item/clothing/head), "The soft suit isn't on them") // BOUNTY_EVA_SUIT, BOUNTY_EVA_HELMET
 	empty_air()
 	eva.breathe(10)
 	TEST_ASSERT_EQUAL(criminal.health, criminal.maxHealth, "A suited criminal choked in vacuum")
-	var/obj/item/helmet = eva.helmet
-	helmet.forceMove(run_loc_floor_top_right)
-	TEST_ASSERT_NULL(eva.helmet, "A helmet that left them is still worn")
-	TEST_ASSERT(!eva.sealed(), "A suit without its helmet is sealed")
-	eva.breathe(5)
-	TEST_ASSERT(criminal.health < criminal.maxHealth, "A criminal without a helmet didn't choke in vacuum")
 	refill()
-	// What fits: a pressure-proof helmet back on; a modsuit only with the soft suit off; nothing over a worn piece
-	TEST_ASSERT(eva.fits("helmet", helmet), "A space helmet doesn't fit an empty head") // BOUNTY_EVA_HELMET
-	var/obj/item/clothing/head/beanie/hat = allocate(/obj/item/clothing/head/beanie)
-	TEST_ASSERT(!eva.fits("helmet", hat), "A beanie counts as a space helmet")
+	// What fits: nothing over their own suit, a modsuit least of all
+	var/obj/item/clothing/head/helmet/space/spare = allocate(/obj/item/clothing/head/helmet/space)
+	TEST_ASSERT(!eva.fits("helmet", spare), "A space helmet fits over their own") // BOUNTY_EVA_HELMET
 	var/obj/item/mod/control/pre_equipped/standard/modsuit = allocate(/obj/item/mod/control/pre_equipped/standard)
 	TEST_ASSERT(!eva.fits("mod", modsuit), "A modsuit fits over a soft suit") // BOUNTY_EVA_MOD
-	qdel(helmet)
 	qdel(criminal)
-	TEST_ASSERT(QDELETED(eva.suit) || isnull(eva.suit), "Their suit outlived them")
+
+	// A player's suit, put on through the strip menu, is a real one: it seals them, and it comes off again
+	var/mob/living/basic/bounty_criminal/bare = new_criminal()
+	var/datum/component/bounty_eva/bare_eva = bare.GetComponent(/datum/component/bounty_eva)
+	var/obj/item/clothing/suit/space/suit = allocate(/obj/item/clothing/suit/space)
+	var/obj/item/clothing/head/beanie/hat = allocate(/obj/item/clothing/head/beanie)
+	TEST_ASSERT(!bare_eva.fits("helmet", hat), "A beanie counts as a space helmet")
+	TEST_ASSERT(bare_eva.fits("helmet", spare) && bare_eva.fits("suit", suit), "A space suit doesn't fit someone with none")
+	spare.forceMove(bare)
+	bare_eva.set_piece("helmet", spare)
+	suit.forceMove(bare)
+	bare_eva.set_piece("suit", suit)
+	TEST_ASSERT(bare_eva.sealed(), "A player's soft suit with its helmet doesn't seal them")
+	TEST_ASSERT(!bare_eva.fits("mod", modsuit), "A modsuit fits over a player's soft suit") // BOUNTY_EVA_MOD
+	empty_air()
+	spare.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT_NULL(bare_eva.helmet, "A helmet that left them is still worn")
+	TEST_ASSERT(!bare_eva.sealed(), "A suit without its helmet is sealed")
+	bare_eva.breathe(5)
+	TEST_ASSERT(bare.health < bare.maxHealth, "A criminal without a helmet didn't choke in vacuum")
+	refill()
+	// The suit a player put on them stays behind when they go (on the pad, say)
+	qdel(bare)
+	TEST_ASSERT(!QDELETED(suit) && isturf(suit.loc), "A player's suit went with the criminal it was put on")
+
+/**
+ * Their own suit is a picture, like their guns: no item to strip, nothing dropped when they die or
+ * are taken in, and the strip menu shows its slots shut. Only a modsuit or a soft suit a player put
+ * on them comes off again.
+ */
+/datum/unit_test/voidcrew_bounty_eva/not_loot/Run()
+	var/mob/living/basic/bounty_criminal/criminal = new_criminal("normal", 2)
+	var/datum/component/bounty_eva/eva = criminal.GetComponent(/datum/component/bounty_eva)
+	eva.kit_up(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(eva.sealed(), "Their own modsuit doesn't seal them")
+	TEST_ASSERT_EQUAL(eva.worn_type("mod"), /obj/item/mod/control/pre_equipped/standard, "Their own modsuit isn't on them") // BOUNTY_EVA_MOD
+	TEST_ASSERT(!length(eva.pieces()), "Their own modsuit is an item")
+	TEST_ASSERT_NULL(locate(/obj/item/mod/control) in criminal.get_all_contents(), "A modsuit item is in their contents")
+	// The strip menu: nothing to take, every slot shut
+	criminal.adjustBruteLoss(500)
+	TEST_ASSERT(criminal.is_downed(), "The criminal didn't go down")
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
+	TEST_ASSERT(criminal.eva_may_strip(hunter), "A downed criminal's strip menu won't open")
+	for(var/key in GLOB.bounty_eva_strippables)
+		var/datum/strippable_item/slot = GLOB.bounty_eva_strippables[key]
+		TEST_ASSERT_NULL(slot.get_item(criminal), "The strip menu offers their own suit in the [key] slot")
+		TEST_ASSERT_EQUAL(slot.get_obscuring(criminal), STRIPPABLE_OBSCURING_COMPLETELY, "The [key] slot isn't shut over their own modsuit")
+	// Dead, nothing drops
+	criminal.adjustBruteLoss(500)
+	TEST_ASSERT_EQUAL(criminal.stat, DEAD, "The downed criminal didn't die")
+	var/turf/below = get_turf(criminal)
+	TEST_ASSERT_NULL(locate(/obj/item/mod/control) in below, "Their modsuit dropped when they died")
+	qdel(criminal)
+	TEST_ASSERT_NULL(locate(/obj/item/mod/control) in below, "Their modsuit dropped when they were taken away")
+	// A companion's soft suit is a picture too
+	var/mob/living/basic/bounty_criminal/leader = new_criminal()
+	var/datum/component/bounty_eva/leader_eva = leader.GetComponent(/datum/component/bounty_eva)
+	leader_eva.kit_up(null)
+	var/list/buddies = leader.spawn_companions(1)
+	TEST_ASSERT(length(buddies), "No companion spawned")
+	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	var/datum/component/bounty_eva/buddy_eva = buddy.GetComponent(/datum/component/bounty_eva)
+	TEST_ASSERT(buddy_eva.sealed() && !length(buddy_eva.pieces()), "A companion's suit is an item")
+	TEST_ASSERT_NULL(locate(/obj/item/clothing/suit/space) in buddy.get_all_contents(), "A space suit item is in a companion's contents")
+	qdel(buddy)
+	qdel(leader)
 
 /// The outfit for their look: a modsuit on the back and nothing in its slots, a soft suit over the clothes
 /datum/unit_test/voidcrew_bounty_eva/outfits/Run()
@@ -173,19 +230,15 @@
 	var/datum/component/bounty_eva/eva = criminal.GetComponent(/datum/component/bounty_eva)
 	for(var/look_name in looks)
 		var/list/spec = looks[look_name]
-		for(var/obj/item/piece as anything in eva.pieces())
-			qdel(piece)
-		eva.suit = null
-		eva.helmet = null
-		eva.mod = null
+		eva.own_suit = null
+		eva.own_helmet = null
+		eva.own_mod = null
 		var/gear = spec[3]
 		if(islist(gear))
-			var/suit_type = gear[1]
-			var/helmet_type = gear[2]
-			eva.suit = new suit_type(criminal)
-			eva.helmet = new helmet_type(criminal)
+			eva.own_suit = gear[1]
+			eva.own_helmet = gear[2]
 		else if(ispath(gear))
-			eva.mod = new gear(criminal)
+			eva.own_mod = gear
 		var/datum/bounty_look/look = bounty_roll_look(spec[1], MALE)
 		var/mob/living/carbon/human/dummy/dummy = bounty_look_dummy(look, eva.worn_outfit(spec[2]), null)
 		TEST_ASSERT(dummy, "The [look_name] look could not be built")

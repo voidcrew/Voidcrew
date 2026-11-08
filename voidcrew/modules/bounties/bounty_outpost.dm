@@ -516,7 +516,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	COOLDOWN_DECLARE(outpost_bark_cooldown)
 	/// How long its fugitive stays down (P2's body_recovery_time()), so they get up together; null before it is made one
 	var/outpost_recovery_time
-	/// Its fugitive's stamina pool (P2's body_stamina_pool()); null before it is made one
+	/// Its fugitive's stamina pool (P2's body_stamina_pool()) without the zone's factor, which it takes from its own; null before it is made one
 	var/outpost_stamina_pool
 
 /**
@@ -552,7 +552,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  */
 /mob/living/basic/bounty_criminal/decoy/proc/outpost_match_body(mob/living/basic/bounty_criminal/fugitive)
 	outpost_recovery_time = fugitive.body_recovery_time()
-	outpost_stamina_pool = fugitive.body_stamina_pool()
+	outpost_stamina_pool = fugitive.body_stamina_pool() / (fugitive.npc_zone_health_factor || 1)
 	body_match(fugitive)
 	damage_coeff = fugitive.damage_coeff.Copy()
 	max_stamina = fugitive.max_stamina
@@ -587,7 +587,7 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	return isnull(outpost_recovery_time) ? ..() : outpost_recovery_time
 
 /mob/living/basic/bounty_criminal/decoy/body_stamina_pool()
-	return isnull(outpost_stamina_pool) ? ..() : outpost_stamina_pool
+	return isnull(outpost_stamina_pool) ? ..() : outpost_stamina_pool * npc_zone_health_factor
 
 /// A decoy never fights anyone (P2's gate on attacks)
 /mob/living/basic/bounty_criminal/decoy/may_attack(atom/target)

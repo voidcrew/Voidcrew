@@ -10,10 +10,12 @@
  * Wanted normal criminal, a modsuit by kit for a mini-boss. Their companions get soft suits. Aboard
  * a pirate ship or at a trader outpost they arrive in plain clothes.
  *
- * The suit is real (/datum/component/bounty_eva holds the pieces in the mob's contents). Once they
- * are down, cuffed, stunned or dead, anyone can open the strip menu (drag them onto yourself) to take
- * the helmet, suit or modsuit off, or to put one on: a captured criminal needs a suit to be carried
- * across space alive. Their look is rebuilt whenever a piece goes on or comes off.
+ * Their own suit is a picture, like their guns (/datum/component/bounty_eva keeps its types, never
+ * an item): it can't be stripped, and nothing drops when they die or are taken in. Once they are
+ * down, cuffed, stunned or dead, anyone can open the strip menu (drag them onto yourself) to put a
+ * pressure suit of their own on someone without one, and take it off again: a captured criminal
+ * needs a suit to be carried across space alive. Their look is rebuilt whenever a piece goes on or
+ * comes off.
  */
 
 /// Health lost each second out of a suit in air a person can't breathe, in percent of max health
@@ -124,15 +126,16 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 
 // ===== THE SUIT =====
 
-/// A criminal's or companion's pressure suit: the pieces they wear, their breathing, and the strip menu that takes them off
+/// A criminal's or companion's pressure suit: what they wear, their breathing, and the strip menu that puts a player's suit on them
 /datum/component/bounty_eva
-	/// A soft suit's two pieces
+	/// Their own suit, worn as a picture: a soft suit's two pieces or a modsuit, as typepaths (kit_up())
+	var/own_suit
+	var/own_helmet
+	var/own_mod
+	/// Pieces a player put on them through the strip menu: real items in their contents, theirs to take off again and left behind rather than deleted with them
 	var/obj/item/clothing/suit/suit
 	var/obj/item/clothing/head/helmet
-	/// Or a modsuit
 	var/obj/item/mod/control/mod
-	/// Pieces a player put on them through the strip menu, left behind rather than deleted with them
-	var/list/obj/item/fitted
 	COOLDOWN_DECLARE(gasp_cooldown)
 
 /datum/component/bounty_eva/Initialize()
@@ -150,16 +153,15 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 /datum/component/bounty_eva/Destroy(force)
 	var/atom/movable/owner = parent
 	UnregisterSignal(owner, COMSIG_ATOM_EXITED)
-	// A piece a hunter put on them is theirs: it stays behind (on the pad, say). Their own goes with them.
+	// A piece a hunter put on them is theirs: it stays behind (on the pad, say). Their own is only a picture.
 	var/atom/drop_spot = owner.drop_location()
 	for(var/obj/item/piece as anything in pieces())
 		if(piece.loc != owner)
 			continue
-		if(drop_spot && (piece in fitted))
+		if(drop_spot)
 			piece.forceMove(drop_spot)
 		else
 			qdel(piece)
-	fitted = null
 	suit = null
 	helmet = null
 	mod = null
@@ -171,17 +173,17 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 		return /mob/living/basic/bounty_companion/proc/eva_may_strip
 	return /mob/living/basic/bounty_criminal/proc/eva_may_strip
 
-/// The pieces they have on
+/// The real pieces they have on: only ever a player's, put on through the strip menu
 /datum/component/bounty_eva/proc/pieces()
 	. = list()
 	for(var/obj/item/piece in list(helmet, suit, mod))
 		. += piece
 
-/// Whether they are sealed in: a modsuit, or a soft suit with its helmet
+/// Whether they are sealed in: a modsuit, or a soft suit with its helmet, their own or a player's
 /datum/component/bounty_eva/proc/sealed()
-	return !QDELETED(mod) || (!QDELETED(suit) && !QDELETED(helmet))
+	return !isnull(worn_type(BOUNTY_EVA_MOD)) || (!isnull(worn_type(BOUNTY_EVA_SUIT)) && !isnull(worn_type(BOUNTY_EVA_HELMET)))
 
-/// What they wear in `slot` (BOUNTY_EVA_*)
+/// The real piece a player put on them in `slot` (BOUNTY_EVA_*), or null
 /datum/component/bounty_eva/proc/piece_in(slot)
 	switch(slot)
 		if(BOUNTY_EVA_HELMET)
@@ -192,18 +194,40 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 			return mod
 	return null
 
+/// What they wear in `slot`, as a type: a player's piece, or their own suit's (null: nothing)
+/datum/component/bounty_eva/proc/worn_type(slot)
+	var/obj/item/piece = piece_in(slot)
+	if(!QDELETED(piece))
+		return piece.type
+	switch(slot)
+		if(BOUNTY_EVA_HELMET)
+			return own_helmet
+		if(BOUNTY_EVA_SUIT)
+			return own_suit
+		if(BOUNTY_EVA_MOD)
+			return own_mod
+	return null
+
+/// Whether their own suit keeps `slot` shut in the strip menu: it fills the slot, or covers it (a modsuit covers the soft suit's slots, a soft suit the modsuit's)
+/datum/component/bounty_eva/proc/locked(slot)
+	if(slot == BOUNTY_EVA_MOD)
+		return !isnull(own_mod) || !isnull(own_suit) || !isnull(own_helmet)
+	if(!isnull(own_mod))
+		return TRUE
+	return !isnull(slot == BOUNTY_EVA_SUIT ? own_suit : own_helmet)
+
 /// Whether `thing` can go on in `slot`: a pressure-proof helmet or suit with no modsuit on, or a modsuit with neither
 /datum/component/bounty_eva/proc/fits(slot, obj/item/thing)
-	if(!thing || piece_in(slot))
+	if(!thing || worn_type(slot))
 		return FALSE
 	var/obj/item/clothing/garment = istype(thing, /obj/item/clothing) ? thing : null
 	switch(slot)
 		if(BOUNTY_EVA_HELMET)
-			return !mod && istype(garment, /obj/item/clothing/head) && (garment.clothing_flags & STOPSPRESSUREDAMAGE)
+			return !worn_type(BOUNTY_EVA_MOD) && istype(garment, /obj/item/clothing/head) && (garment.clothing_flags & STOPSPRESSUREDAMAGE)
 		if(BOUNTY_EVA_SUIT)
-			return !mod && istype(garment, /obj/item/clothing/suit) && (garment.clothing_flags & STOPSPRESSUREDAMAGE)
+			return !worn_type(BOUNTY_EVA_MOD) && istype(garment, /obj/item/clothing/suit) && (garment.clothing_flags & STOPSPRESSUREDAMAGE)
 		if(BOUNTY_EVA_MOD)
-			return !suit && !helmet && istype(thing, /obj/item/mod/control)
+			return !worn_type(BOUNTY_EVA_SUIT) && !worn_type(BOUNTY_EVA_HELMET) && istype(thing, /obj/item/mod/control)
 	return FALSE
 
 /// Puts `thing` (already in their contents, or null to clear it) in `slot`
@@ -217,29 +241,25 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 			mod = thing
 
 /**
- * Suits them up: a new `mod_type` modsuit, or a random soft suit when it is null. Their look is
- * rebuilt when `redress`. Doesn't sleep.
+ * Suits them up in a suit of their own, a picture and never an item: a `mod_type` modsuit, or a
+ * random soft suit when it is null. Their look is rebuilt when `redress`. Doesn't sleep.
  */
 /datum/component/bounty_eva/proc/kit_up(mod_type, redress = FALSE)
-	var/atom/movable/owner = parent
 	if(ispath(mod_type, /obj/item/mod/control))
-		mod = new mod_type(owner)
+		own_mod = mod_type
 	else
 		var/list/softsuit = pick(GLOB.bounty_eva_softsuits)
-		var/suit_type = softsuit[1]
-		var/helmet_type = softsuit[2]
-		suit = new suit_type(owner)
-		helmet = new helmet_type(owner)
+		own_suit = softsuit[1]
+		own_helmet = softsuit[2]
 	if(redress)
 		redress()
 	return TRUE
 
-/// A piece left their contents some other way: they no longer wear it
+/// A player's piece left their contents some other way: they no longer wear it
 /datum/component/bounty_eva/proc/on_exited(datum/source, atom/movable/gone, direction)
 	SIGNAL_HANDLER
 	if(gone != helmet && gone != suit && gone != mod)
 		return
-	LAZYREMOVE(fitted, gone)
 	if(gone == helmet)
 		helmet = null
 	if(gone == suit)
@@ -263,22 +283,25 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
  * every time, never cached), else `base_outfit` itself.
  */
 /datum/component/bounty_eva/proc/worn_outfit(base_outfit)
-	if(!length(pieces()))
+	var/mod_type = worn_type(BOUNTY_EVA_MOD)
+	var/suit_type = worn_type(BOUNTY_EVA_SUIT)
+	var/helmet_type = worn_type(BOUNTY_EVA_HELMET)
+	if(!mod_type && !suit_type && !helmet_type)
 		return base_outfit
 	var/datum/outfit/worn = ispath(base_outfit, /datum/outfit) ? new base_outfit : new /datum/outfit
-	if(mod)
-		worn.back = mod.type
+	if(mod_type)
+		worn.back = mod_type
 		worn.suit = null
 		worn.suit_store = null
 		worn.head = null
 		worn.gloves = null
 		worn.shoes = null
 		return worn
-	if(suit)
-		worn.suit = suit.type
+	if(suit_type)
+		worn.suit = suit_type
 		worn.suit_store = null
-	if(helmet)
-		worn.head = helmet.type
+	if(helmet_type)
+		worn.head = helmet_type
 	return worn
 
 /// Their breath this tick: out of a suit in air that would kill a person, they choke, and nothing holds it back
@@ -316,6 +339,11 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 	var/datum/component/bounty_eva/eva = source.GetComponent(/datum/component/bounty_eva)
 	return eva?.piece_in(slot)
 
+// Their own suit is no item: its slots show as shut, and nothing goes on over it
+/datum/strippable_item/bounty_eva/get_obscuring(atom/source)
+	var/datum/component/bounty_eva/eva = source.GetComponent(/datum/component/bounty_eva)
+	return eva?.locked(slot) ? STRIPPABLE_OBSCURING_COMPLETELY : STRIPPABLE_OBSCURING_NONE
+
 /datum/strippable_item/bounty_eva/try_equip(atom/source, obj/item/equipping, mob/user)
 	. = ..()
 	if(!.)
@@ -337,7 +365,6 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 	if(!eva?.fits(slot, equipping) || !user.transferItemToLoc(equipping, source))
 		return
 	eva.set_piece(slot, equipping)
-	LAZYADD(eva.fitted, equipping)
 	eva.redress()
 	finish_equip_mob(equipping, source, user)
 
@@ -354,7 +381,6 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 		return
 	// Cleared first, so the move out of their contents isn't taken for something else
 	eva.set_piece(slot, null)
-	LAZYREMOVE(eva.fitted, piece)
 	piece.forceMove(source.drop_location())
 	user.put_in_hands(piece)
 	eva.redress()

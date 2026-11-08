@@ -11,9 +11,11 @@
  * spawn_bounty_criminal(), the leash and who it may attack (spec sections 4 and 12).
  *
  * The body, in short:
- * - Health: meek BOUNTY_MEEK_HEALTH; normal by tier times its style; mini-bosses per kit (P4).
+ * - Health: meek BOUNTY_MEEK_HEALTH; normal by tier times its style, raised once for the hunters it
+ *   fights (body_size_up()); mini-bosses per kit and posse (P4). The zone scales it (npc_scaling).
  * - Stamina: max_stamina is always 100 (tg's basic mobs leave stamina crit by comparing raw points
- *   with a percentage), so a pool of another size is the stamina damage coefficient, 100 / pool.
+ *   with a percentage), so a pool of another size is the stamina damage coefficient, 100 / pool. The
+ *   pool follows the health, the zone's factor included, so stuns and guns scale together.
  * - Downed at BOUNTY_DOWNED_BELOW percent: floored, harmless and draggable. A hit on one still on its
  *   feet stops just under the line (the mercy rule), so killing it is always a choice; a hit on one
  *   that is down can kill. It gets up after its recovery time, groaning for the last
@@ -116,6 +118,12 @@
 	var/datum/weakref/body_holder_ref
 	/// The last balloon floated over it for hunters (body_alert_hunters()): "worn out"
 	var/body_last_alert
+	/// REF() of each hunter it has sized itself up against (body_size_up()) -> TRUE
+	var/list/body_posse
+	/// It has been sized up for its first fight; from then on its health only rises while it is unhurt
+	var/body_sized = FALSE
+	/// Its max health before the zone's factor when it was first sized up: what each extra hunter adds a share of
+	var/body_posse_base
 
 /mob/living/basic/bounty_criminal/meek
 	maxHealth = BOUNTY_MEEK_HEALTH
@@ -271,11 +279,98 @@
 			return BOUNTY_STYLE_HEALTH_BOTTLE
 	return 1
 
-/// How much stamina damage stamina-crits it: a meek criminal's pool, or anyone else's health
+/// How much stamina damage stamina-crits it: a meek criminal's pool times the zone's health factor, or anyone else's health (already scaled by the zone)
 /mob/living/basic/bounty_criminal/proc/body_stamina_pool()
 	if(istype(src, /mob/living/basic/bounty_criminal/meek))
-		return BOUNTY_MEEK_STAMINA
+		return BOUNTY_MEEK_STAMINA * npc_zone_health_factor
 	return maxHealth
+
+// The zone's health factor goes on or comes off (npc_scaling): the stamina pool follows the health, so a stun takes as much more as a kill does
+/mob/living/basic/bounty_criminal/resize_npc_zone_health(new_max_health)
+	. = ..()
+	body_update_stamina_coeff()
+
+/**
+ * Sizes it up against the hunters it fights, so a crew can't fold it before it gets its gun out. Who
+ * counts is a mini-boss's rule (body_counts_for_posse()). When its first fight starts that is
+ * `instigator`, everyone who counts in view within BOUNTY_BOSS_POSSE_RANGE (mech pilots too), and every
+ * hunting crew member out on its site; later, anyone new who comes at it. Max health is what it had
+ * then (its tier's times its style's, before the zone's factor), plus BOUNTY_NORMAL_POSSE_HEALTH percent
+ * of that for each hunter past the first (at most BOUNTY_NORMAL_POSSE_MAX_EXTRA), times the zone's
+ * factor. The damage it has taken stays
+ * taken, its stamina pool follows, and it never shrinks. After its first fight starts it only rises
+ * while it is unhurt, so nothing here heals it in a fight. Normal criminals only. `engaging`: its
+ * fight is starting now. Returns TRUE if max health rose.
+ */
+/mob/living/basic/bounty_criminal/proc/body_size_up(mob/living/instigator, engaging = FALSE)
+	if(!istype(src, /mob/living/basic/bounty_criminal/normal) || stat == DEAD || downed || is_restrained())
+		return FALSE
+	var/first = engaging && !body_sized
+	var/list/hunters = list()
+	if(instigator)
+		hunters += instigator
+	if(first)
+		for(var/mob/living/watcher in viewers(BOUNTY_BOSS_POSSE_RANGE, src))
+			hunters += watcher
+		for(var/obj/vehicle/sealed/mecha/mech in view(BOUNTY_BOSS_POSSE_RANGE, src))
+			for(var/mob/living/pilot in mech.occupants)
+				hunters += pilot
+		hunters += body_hunting_crew_on_site()
+	var/grew = FALSE
+	for(var/mob/living/hunter as anything in hunters)
+		var/key = REF(hunter)
+		if(LAZYACCESS(body_posse, key) || !body_counts_for_posse(hunter))
+			continue
+		LAZYSET(body_posse, key, TRUE)
+		grew = TRUE
+	if(!length(body_posse))
+		return FALSE
+	var/size_now = first || !body_sized || health >= maxHealth
+	body_sized = TRUE
+	if(isnull(body_posse_base))
+		body_posse_base = npc_zone_applied ? npc_zone_original_max_health : maxHealth
+	if(!grew || !size_now || !body_posse_base)
+		return FALSE
+	var/extra = min(length(body_posse) - 1, BOUNTY_NORMAL_POSSE_MAX_EXTRA)
+	var/raw_health = round(body_posse_base * (1 + BOUNTY_NORMAL_POSSE_HEALTH / 100 * extra), 1)
+	var/wanted = raw_health * npc_zone_health_factor
+	if(wanted <= maxHealth)
+		return FALSE
+	if(npc_zone_applied)
+		npc_zone_original_max_health = raw_health
+	// Basic mobs keep all their damage as bruteloss, which stays as it is
+	setMaxHealth(wanted)
+	updatehealth()
+	body_update_stamina_coeff()
+	return TRUE
+
+/// Whether `hunter` counts toward how many it fights: a player on its grudge list, or one on a ship hunting it (a mini-boss's rule, M4)
+/mob/living/basic/bounty_criminal/proc/body_counts_for_posse(mob/living/hunter)
+	if(!bounty_boss_is_hunter(hunter))
+		return FALSE
+	return body_has_grudge(hunter) || body_on_hunting_crew(hunter)
+
+/// Whether `hunter` is crew of a ship hunting it
+/mob/living/basic/bounty_criminal/proc/body_on_hunting_crew(mob/living/hunter)
+	var/datum/criminal_bounty/posting = posting()
+	if(!posting || !hunter?.mind)
+		return FALSE
+	for(var/obj/structure/overmap/ship/ship as anything in posting.hunter_ships())
+		if(hunter.mind in ship.ship_team?.members)
+			return TRUE
+	return FALSE
+
+/// The crew of every ship hunting it who are out on its site (on its level, not aboard a ship or a hangar), wherever they stand
+/mob/living/basic/bounty_criminal/proc/body_hunting_crew_on_site()
+	. = list()
+	var/datum/criminal_bounty/posting = posting()
+	if(!posting)
+		return
+	for(var/obj/structure/overmap/ship/ship as anything in posting.hunter_ships())
+		for(var/datum/mind/member as anything in ship.ship_team?.members)
+			var/mob/living/hunter = member?.current
+			if(isliving(hunter) && hunter.z == z && body_on_site(get_turf(hunter)))
+				. += hunter
 
 /// Sets its stamina damage coefficient from its pool (max_stamina / pool), times its style's. A mini-boss's is P4's.
 /mob/living/basic/bounty_criminal/proc/body_update_stamina_coeff()

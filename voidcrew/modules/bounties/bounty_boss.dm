@@ -291,10 +291,15 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		boss_bark("exhausted")
 	return TRUE
 
-/// Stamina damage coefficient now: the fresh or tired one, folded against its pool, as max_stamina stays 100
+/// Stamina damage coefficient now: the fresh or tired one, folded against its pool (times the zone's health factor, so stuns and guns scale together), as max_stamina stays 100
 /mob/living/basic/bounty_criminal/boss/proc/boss_stamina_coefficient()
 	var/coefficient = boss_tired ? BOUNTY_BOSS_STAMINA_TIRED : boss_stamina_fresh
-	return coefficient * max_stamina / max(boss_stamina_pool, 1)
+	return coefficient * max_stamina / max(boss_stamina_pool * npc_zone_health_factor, 1)
+
+// The zone's health factor goes on or comes off: its pool follows (P2 leaves a mini-boss's coefficient to P4)
+/mob/living/basic/bounty_criminal/boss/resize_npc_zone_health(new_max_health)
+	. = ..()
+	damage_coeff[STAMINA] = boss_stamina_coefficient()
 
 // ----- busy -----
 

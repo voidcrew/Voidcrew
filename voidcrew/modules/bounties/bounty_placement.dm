@@ -496,7 +496,7 @@
 			return BOUNTY_ACTIVITY_BLEND
 	return BOUNTY_ACTIVITY_EXPLORE
 
-/// Companions for a normal criminal: 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone scales pay, never the fight), within the server's cap
+/// Companions for a normal criminal: 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone never changes how many come; it scales pay, and npc_scaling scales everyone's health and damage), within the server's cap
 /datum/criminal_bounty/proc/board_spawn_companions(mob/living/basic/bounty_criminal/criminal)
 	var/count = rand(0, BOUNTY_MAX_COMPANIONS)
 	// The crew aboard a pirate ship are company enough

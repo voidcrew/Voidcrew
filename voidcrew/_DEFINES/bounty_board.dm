@@ -94,7 +94,7 @@
 #define BOUNTY_MAX_LIVE_CRIMINALS 8
 /// Companions alive at once, server-wide (AR-G3)
 #define BOUNTY_MAX_LIVE_COMPANIONS 12
-/// Companions a normal criminal brings, at most (spec 3). The same in every zone: the zone scales pay, never the fight (12.3 C9).
+/// Companions a normal criminal brings, at most (spec 3). The same number in every zone (12.3 C9). The zone does scale pay, and npc_scaling scales the criminal's and companions' health and damage.
 #define BOUNTY_MAX_COMPANIONS 2
 
 /// Tiles between an NPC ship criminal's spawn and every helm aboard (spec 6)

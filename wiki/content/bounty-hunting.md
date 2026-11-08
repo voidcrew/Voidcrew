@@ -85,7 +85,7 @@ About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a
 - They hide in a locker or crate, pose as a potted plant, or stand still on a dark tile. Opening the locker, bumping into them, examining them from the next tile, hurting them, or lighting up their dark spot finds them. They shove you back a tile and run again.
 - After a minute and a half in hiding they start to fidget: a rustle or a shake every 20 seconds. If nobody is around for a few minutes, they come out.
 - Cornered, they shout and aim a small pistol for half a second, then fire eight quick shots. A stamina hit during the aim makes them fumble it.
-- 120 base health before [zone scaling](threats-and-elites.md). Three disabler shots stun one.
+- 120 base health, and three disabler shots stun one, both before [zone scaling](threats-and-elites.md).
 
 **Bring:** a disabler or other ranged stun, a flashlight, cuffs, and someone to block the exits.
 
@@ -97,8 +97,9 @@ About 70% of Petty criminals and 30% of Wanted ones are meek. They never start a
 About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted criminal on a pirate ship is always normal.
 
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
-- Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and fires two shots a second in strings of six, with a short pause between strings), an SMG (fires bursts of four), a revolver (slow, heavy shots, six before a long reload), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat, a WT-550 or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
+- Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and fires two shots a second in strings of six, with a short pause between strings), a WT-550 (fires bursts of four), a revolver (slow, heavy shots, six before a long reload), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
 - Guns stay holstered, or slung on the back, until a fight starts. Drawing one takes a moment before the first shot.
+- They're tougher against a crew: their health grows with the number of hunters they face when the fight starts. Once hurt, it doesn't grow again.
 - They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
 - Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
 - Badly hurt with nobody around, they break off and retreat. They never heal.
@@ -113,7 +114,7 @@ Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and thei
 - Every ability winds up first, with a sound and a mark on the floor. Move out of the mark.
 - They break tables, chairs, windows and grilles, and up to two interior walls or doors in a fight.
 - While fresh they ignore stuns and stamina damage completely.
-- Below 40% health they are **worn out**: "breathing hard and slowing down". They move slower, use their abilities less often, and stun weapons work on them. About five disabler shots stun one (six for the Heavy).
+- Below 40% health they are **worn out**: "breathing hard and slowing down". They move slower, use their abilities less often, and stun weapons work on them. About five disabler shots stun one in the Neutral Zone (six for the Heavy), and more further out.
 - They go down at 25% health. Between 40% and 25% is your window to stun and cuff them for full pay.
 - After getting up from being downed, they shrug off stamina damage for 20 seconds.
 
