@@ -229,7 +229,7 @@
    "hash": "14f4a2c2517247c0",
    "name": "Herculean gravitronic spinal implant",
    "note": "Cuts the wearer's climbing, ladder, gym-machine, table-carry and vent-boulder lifting times to 80%, adds +1 speed and +4 range to everything they throw, adds 4 to tackle strength and lets them break boulders off a discovered ore vent with bare hands. An EMP deals 20 brute (10 light) to the chest. A gravity anomaly core can be slotted in to change it into the Atlas variant.",
-   "rank": 6,
+   "rank": 7,
    "reason": "Faster climbing, throws fly farther and faster, tackles hit harder, and you can break boulders off ore vents by hand. Nothing here wins a fight. About 85 cr of material.",
    "tier": "green"
   },
@@ -239,7 +239,7 @@
    "hash": "ffff4012788ccee2",
    "name": "implantable thrusters set",
    "note": "A toggle that lets the wearer move under their own power in zero gravity, with a movement-speed bonus while floating and no stabilization, so they keep drifting when they stop. It draws on ambient air above 30 kPa for free, otherwise internals gas or the wearer's plasma store, and turns itself off if neither is available.",
-   "rank": 5,
+   "rank": 6,
    "reason": "A jetpack in your chest with no back slot used, and a speed bonus while floating. Free air when there's pressure, otherwise your tank. About 74 cr of material after 200 research points.",
    "tier": "green"
   },
@@ -350,6 +350,16 @@
    "rank": 2,
    "reason": "Ten seconds of near-invisibility every 30, and mobs farther than 2 tiles lose you. Attacking or being hit ends it. A free escape or free first shot in most fights, and it walks you through ruins. Load 5, 4 vouchers at reputation 22.",
    "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/ghostskin/street": {
+   "confidence": "medium",
+   "group": "Mobility and stealth",
+   "hash": "",
+   "name": "Flickerskin weave",
+   "note": "A button turns on 5 s of optical camo (a half-faded outline that brightens when they move) with a 45 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked, hostile bullets, being cuffed, death or an EMP. It does not grant the mob-hiding camo trait, so NPC AI still targets the wearer at any range and Chrome Read still resolves them.",
+   "rank": 5,
+   "reason": "Five seconds of half-faded camo every 45: people lose you in a crowd, mobs and turrets still see you, and any swing or hit ends it. A cheap way to break line of sight from players. Load 3, 2,400 cr at yellow reputation.",
+   "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms": {
    "confidence": "high",

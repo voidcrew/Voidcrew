@@ -214,6 +214,40 @@
 	TEST_ASSERT(findtext(silhouette, "SIGNATURES 2"), "A silhouette chrome read didn't report the signature count: [silhouette]")
 	TEST_ASSERT_EQUAL(initial(optics.chrome_scan_resolution), 1, "The street-tier Nightshade isn't set to silhouette resolution")
 
+/// Camo line: the street weave fades its bearer but never takes the
+/// cyber_camo trait (NPC targeting and chrome reads key on it, so it fools
+/// players only), while the full Ghostskin keeps both. They share the skin
+/// slot, so the upgrade evicts the street weave and drops its field.
+/// Literals: trait is TRAIT_CYBER_CAMO ("cyber_camo"), alphas are 110 street
+/// and 40 full, times are in deciseconds (50 = 5 s), tier 2 = CYBERWARE_TIER_2.
+/datum/unit_test/voidcrew_cyberware_camo_line
+
+/datum/unit_test/voidcrew_cyberware_camo_line/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/street/street = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin/street)
+	TEST_ASSERT_EQUAL(street.chrome_load, 3, "The street camo weave's load drifted")
+	TEST_ASSERT_EQUAL(street.tier, 2, "The street camo weave left tier 2")
+	TEST_ASSERT_EQUAL(street.field_duration, 50, "The street camo weave's field duration drifted")
+	TEST_ASSERT(!street.hides_from_mobs, "The street camo weave hides its bearer from mobs")
+	TEST_ASSERT(street.Insert(lab_rat, special = TRUE), "Street weave staging insert was refused")
+	street.engage_camo(lab_rat)
+	TEST_ASSERT(street.camo_active, "The street weave's field never came up")
+	TEST_ASSERT_EQUAL(lab_rat.alpha, 110, "The street weave faded its bearer to the wrong alpha")
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "The street weave granted the mob-hiding camo trait")
+
+	// The full weave is unchanged: trait, alpha 40, ten seconds.
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/full = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin)
+	TEST_ASSERT(full.Insert(lab_rat, special = TRUE), "Ghostskin staging insert was refused")
+	TEST_ASSERT(!street.camo_active, "Evicting the street weave left its field up")
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "Nothing should hold the camo trait between fields")
+	TEST_ASSERT_EQUAL(full.field_duration, 100, "Ghostskin's field duration drifted")
+	TEST_ASSERT(full.hides_from_mobs, "Ghostskin stopped hiding its bearer from mobs")
+	full.engage_camo(lab_rat)
+	TEST_ASSERT(HAS_TRAIT(lab_rat, "cyber_camo"), "Ghostskin stopped granting the camo trait")
+	TEST_ASSERT_EQUAL(lab_rat.alpha, 40, "Ghostskin faded its bearer to the wrong alpha")
+	full.break_camo(lab_rat, silent = TRUE)
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "Ghostskin left the camo trait behind when its field dropped")
+
 /// (e) Second Wind Bladder: blocks suffocation while reserve lasts, runs
 /// dry, and refills in breathable air.
 ///

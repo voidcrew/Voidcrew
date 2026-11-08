@@ -41,6 +41,16 @@
 	var/camo_active = FALSE
 	/// Timer for the field's natural collapse.
 	var/camo_timer
+	/// Alpha the bearer fades to while the field is up. Never 0.
+	var/field_alpha = CYBERWARE_GHOSTSKIN_ALPHA
+	/// How long the field holds before it collapses on its own.
+	var/field_duration = CYBERWARE_GHOSTSKIN_DURATION
+	/// Alpha the bearer flashes up to for a step when moving under the field.
+	/// Must stay above field_alpha, motion is meant to make you MORE visible.
+	var/ripple_alpha = 90
+	/// Whether the field takes the bearer out of NPC targeting and scatters a
+	/// chrome read (TRAIT_CYBER_CAMO). Cheaper weaves only fool players.
+	var/hides_from_mobs = TRUE
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -58,13 +68,10 @@
 	if(camo_active || !wearer)
 		return
 	camo_active = TRUE
-	ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
-	animate(wearer, alpha = CYBERWARE_GHOSTSKIN_ALPHA, time = 1 SECONDS)
-	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
-	wearer.visible_message(
-		span_warning("[wearer] ripples and thins to a heat-shimmer outline!"),
-		span_notice("The weave bends the light around you. Ten seconds."),
-	)
+	if(hides_from_mobs)
+		ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
+	animate(wearer, alpha = field_alpha, time = 1 SECONDS)
+	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
 	// gunfire, shooting from inside a cloak breaks it here.
 	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
@@ -81,7 +88,16 @@
 		COMSIG_LIVING_DEATH,
 	), PROC_REF(on_break_trigger))
 	RegisterSignal(wearer, COMSIG_MOVABLE_MOVED, PROC_REF(on_camo_move))
-	camo_timer = addtimer(CALLBACK(src, PROC_REF(on_field_expired)), CYBERWARE_GHOSTSKIN_DURATION, TIMER_STOPPABLE)
+	camo_timer = addtimer(CALLBACK(src, PROC_REF(on_field_expired)), field_duration, TIMER_STOPPABLE)
+
+/// The sound and chat lines that go with the field coming up. Split out so a
+/// cheaper weave can tell it differently.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/engage_feedback(mob/living/carbon/wearer)
+	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
+	wearer.visible_message(
+		span_warning("[wearer] ripples and thins to a heat-shimmer outline!"),
+		span_notice("The weave bends the light around you. Ten seconds."),
+	)
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_field_expired()
 	camo_timer = null
@@ -147,8 +163,8 @@
 	var/mob/living/wearer = owner
 	if(!wearer || !camo_active)
 		return
-	animate(wearer, alpha = 90, time = 0.15 SECONDS)
-	animate(alpha = CYBERWARE_GHOSTSKIN_ALPHA, time = 0.35 SECONDS)
+	animate(wearer, alpha = ripple_alpha, time = 0.15 SECONDS)
+	animate(alpha = field_alpha, time = 0.35 SECONDS)
 
 /datum/action/cooldown/cyberware/ghostskin_cloak
 	name = "Ghostskin Field"
