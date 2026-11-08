@@ -36,6 +36,8 @@
 	/// Sound when the stage begins, from the attacker
 	var/enter_sound
 	var/enter_volume = 60
+	/// Playback speed of the opening sound. Null lets it vary as playsound() does; a big beast wants a fixed low one.
+	var/enter_frequency
 	/// Sound of the beat, from the victim
 	var/effect_sound
 	var/effect_volume = 70
@@ -60,7 +62,7 @@
 	host.user.face_atom(host.victim)
 	host.pose_user(lunge, rise)
 	if(enter_sound)
-		playsound(host.user, enter_sound, enter_volume, TRUE)
+		playsound(host.user, enter_sound, enter_volume, TRUE, frequency = enter_frequency)
 	var/text = enter_message()
 	if(text)
 		host.victim.visible_message(span_danger(text), span_userdanger(enter_self_message() || text), vision_distance = enter_range)

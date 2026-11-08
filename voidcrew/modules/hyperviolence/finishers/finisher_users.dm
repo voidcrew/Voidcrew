@@ -40,7 +40,9 @@
 	return ..()
 
 /datum/hv_finisher_stage/windup/hoarfrost
-	enter_sound = 'sound/effects/hallucinations/growl1.ogg'
+	// A dog's growl, slowed: the hallucination growl sounded like a zombie. Never pitched up, so it stays a big animal.
+	enter_sound = 'sound/mobs/non-humanoids/dog/growl2.ogg'
+	enter_frequency = 0.8
 
 /datum/hv_finisher_stage/windup/hoarfrost/enter_message()
 	return "[host.user] lowers [host.user.p_their()] head over [host.victim] and growls."
