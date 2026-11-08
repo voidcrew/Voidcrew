@@ -23,7 +23,11 @@
 /datum/human_npc_outfit_table/bounty/pick_outfit(mob/living/carbon/human/npc/npc, zone)
 	if(!ishumannpc(npc))
 		return null
-	return npc.bounty_build_outfit(zone || ZONE_GREEN)
+	var/outfit = npc.bounty_build_outfit(zone || ZONE_GREEN)
+	// Chrome carriers dress light, so their worn chrome shows (C0, bounty_chrome.dm). A mini-boss wears its kit.
+	if(length(npc.npc_cyberware) && npc.bounty_dresses_to_show_chrome())
+		outfit = bounty_chrome_expose_outfit(outfit, npc.npc_cyberware)
+	return outfit
 
 /**
  * What a bounty human wears in `zone` (ZONE_*): a /datum/outfit typepath, or an instance made for it

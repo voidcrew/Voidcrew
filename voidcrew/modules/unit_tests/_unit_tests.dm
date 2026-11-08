@@ -43,6 +43,7 @@
 #include "voidcrew_bounty_ai.dm"
 #include "voidcrew_bounty_board.dm"
 #include "voidcrew_bounty_bosses.dm"
+#include "voidcrew_bounty_chrome.dm"
 #include "voidcrew_bounty_criminal.dm"
 #include "voidcrew_bounty_identity.dm"
 #include "voidcrew_bounty_kingpin.dm"

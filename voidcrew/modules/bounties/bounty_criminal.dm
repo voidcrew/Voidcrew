@@ -66,11 +66,15 @@
 	// Who it is must be known before the base dresses it: the outfit table reads the record (bounty_outfits.dm).
 	if(istype(order?.look, /datum/bounty_record))
 		record = order.look
+	// Its record's chrome joins npc_cyberware, so the base installs the real implants once it is dressed (C0, bounty_chrome.dm)
+	bounty_chrome_prepare(src)
 	. = ..()
 	add_traits(list(TRAIT_NO_TELEPORT, TRAIT_NOMOBSWAP), BOUNTY_BODY_TRAIT)
 	AddComponent(/datum/component/bounty_body)
 	body_hook_cuffs()
 	body_toughness()
+	// Its chrome's moves (a mini-boss's in its ability rotation), and the EMP look (C0)
+	bounty_chrome_ready(src)
 
 /mob/living/carbon/human/npc/bounty_criminal/Destroy()
 	if(body_leaves_proof())
