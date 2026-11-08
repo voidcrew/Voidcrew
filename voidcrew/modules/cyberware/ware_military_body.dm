@@ -427,6 +427,8 @@
 	if(!jolting || windup_generation != jolt_generation)
 		return
 	jolting = FALSE
+	// The windup is over whether or not the jolt fires: a patient who got up on their own keeps no glow.
+	clear_charge_fx()
 	var/mob/living/carbon/patient = intended_patient?.resolve()
 	if(QDELETED(src) || QDELETED(patient) || patient != owner)
 		return

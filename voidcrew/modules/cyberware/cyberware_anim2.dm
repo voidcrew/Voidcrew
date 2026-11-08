@@ -636,32 +636,26 @@
 // WEAPON TRAILS
 // =========================================================================
 
-/// A landed Scorch cut: an ember crescent across whoever it cut.
+/// A landed Scorch cut: embers fly off whoever it cut. The burning slash itself
+/// is the blade's impact (cyberware_anim.dm), so nothing else is drawn on top.
 /proc/cyberware_scorch_trail_fx(mob/living/user, mob/living/target)
 	var/turf/here = get_turf(target)
 	if(isnull(here))
 		return
-	var/swing = get_dir(user, target) || user.dir
-	new /obj/effect/temp_visual/cyberware_scorch_arc(here, swing)
+	new /obj/effect/temp_visual/cyberware_scorch_embers(here)
 
-/obj/effect/temp_visual/cyberware_scorch_arc
-	icon = CYBERWARE_ANIM2_LARGE_ICON
-	icon_state = "scorch_arc"
-	pixel_x = -16
-	pixel_y = -16
+/// Only the embers: the picture is blank.
+/obj/effect/temp_visual/cyberware_scorch_embers
 	layer = ABOVE_MOB_LAYER
 	randomdir = FALSE
 	duration = 0.7 SECONDS
 
-/obj/effect/temp_visual/cyberware_scorch_arc/Initialize(mapload, swing = SOUTH)
+/obj/effect/temp_visual/cyberware_scorch_embers/Initialize(mapload)
 	. = ..()
-	// Diagonal swings read as the side the blade came in from.
-	setDir(swing & (NORTH | SOUTH) ? (swing & (NORTH | SOUTH)) : swing)
-	add_overlay(emissive_appearance(icon, icon_state, src))
 	particles = new /particles/embers/spark/cyberware_scorch
 	addtimer(CALLBACK(src, PROC_REF(stop_embers)), 1)
 
-/obj/effect/temp_visual/cyberware_scorch_arc/proc/stop_embers()
+/obj/effect/temp_visual/cyberware_scorch_embers/proc/stop_embers()
 	if(particles)
 		particles.spawning = 0
 

@@ -81,7 +81,7 @@
 	// one. Never the wielder, whoever is in the way.
 	if(. || !landed || QDELETED(target) || target == user)
 		return
-	// An ember crescent across the cut (cyberware_anim2.dm).
+	// Embers off the cut; the blade's impact is the slash (cyberware_anim2.dm).
 	cyberware_scorch_trail_fx(user, target)
 	if(cyberware_scorch_target(target, fire_stacks_per_hit))
 		log_combat(user, target, "set alight", src, "(scorch blade)")

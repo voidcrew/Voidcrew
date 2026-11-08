@@ -306,12 +306,24 @@
 	TEST_ASSERT(!length(impact.overlays), "The Shiv's steel impact glows")
 	qdel(impact)
 
-	var/obj/item/melee/cyberware_monowire/live/wire = allocate(/obj/item/melee/cyberware_monowire/live)
+	var/obj/item/melee/cyberware_monowire/wire = allocate(/obj/item/melee/cyberware_monowire)
 	wire.animate_attack(west, east)
 	impact = locate() in east.vis_contents
-	TEST_ASSERT(impact && impact.icon_state == "impact_arc", "A Widowline Arc hit drew the wrong impact")
+	TEST_ASSERT(impact && impact.icon_state == "impact_widowline", "A Widowline hit drew the wrong impact")
 	qdel(impact)
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "The impact stayed on its target")
+
+	// The Arc's lash, crackle and burst are its picture: nothing goes on top, not even tg's flying spool.
+	wire = allocate(/obj/item/melee/cyberware_monowire/live)
+	wire.animate_attack(west, east)
+	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "A Widowline Arc hit drew an impact over its shock")
+	TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "A Widowline Arc hit drew tg's flying spool")
+
+	// A Scorch cut throws embers but draws nothing over the blade's own slash.
+	cyberware_scorch_trail_fx(west, east)
+	var/obj/effect/temp_visual/cyberware_scorch_embers/embers = locate() in get_turf(east)
+	TEST_ASSERT(embers?.particles, "A Scorch cut threw no embers")
+	TEST_ASSERT_EQUAL(embers.icon_state, "nothing", "A Scorch cut drew a picture over the blade's impact")
 
 	// Nothing to draw on a wall or a floor: those keep tg's own.
 	TEST_ASSERT_NULL(cyberware_play_impact(west, get_turf(east), "impact_mantis"), "An impact was drawn on a turf")
