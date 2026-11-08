@@ -34,6 +34,8 @@
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(body_on_cuff_signal))
 	RegisterSignal(src, COMSIG_MOB_REMOVING_CUFFS, PROC_REF(body_on_working_cuffs))
 
+// tg's own TRAIT_RESTRAINED handlers (code/modules/mob/living/init_signals.dm) block its hands. Registering
+// the trait's signals again on itself would replace them, so the body hears the cuffs through them.
 /mob/living/carbon/human/npc/bounty_criminal/on_restrained_trait_gain(datum/source)
 	. = ..()
 	body_on_restrained(source)

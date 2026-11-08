@@ -6932,6 +6932,7 @@
 #include "voidcrew\edits\modules\shuttle\shuttle_consoles\navigation_computer.dm"
 #include "voidcrew\edits\modules\spells\spell_types\jaunt\bloodcrawl.dm"
 #include "voidcrew\edits\modules\spells\spell_types\jaunt\ethereal_jaunt.dm"
+#include "voidcrew\edits\modules\surgery\organs\internal\cyberimp\augments_internal.dm"
 #include "voidcrew\edits\modules\surgery\organs\internal\heart\heart_anomalock.dm"
 #include "voidcrew\edits\modules\vehicles\mecha\mech_fabricator.dm"
 #include "voidcrew\edits\modules\wiremod\core\component.dm"

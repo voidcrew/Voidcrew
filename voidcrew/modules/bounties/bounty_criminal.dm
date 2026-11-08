@@ -172,6 +172,8 @@
 /**
  * Gives it the same toughness and pace as `other`: a trader-outpost decoy (P6) must be as hard to put
  * down and as quick as the fugitive it stands in for (AR-C6). Its armour comes from its own clothes.
+ * The fugitive's chrome is part of its pace (a meek criminal's Slipwire), so the same pieces go into
+ * this body too, real chrome that an EMP stops and that burns out when it dies.
  */
 /mob/living/carbon/human/npc/bounty_criminal/proc/body_match(mob/living/carbon/human/npc/bounty_criminal/other)
 	if(QDELETED(other) || other == src)
@@ -180,6 +182,10 @@
 		set_npc_toughness(other.npc_damage_taken)
 	if(move_intent != other.move_intent)
 		toggle_move_intent()
+	for(var/obj/item/organ/ware as anything in other.organs)
+		if(!ware.GetComponent(/datum/component/cyberware) || (locate(ware.type) in organs))
+			continue
+		npc_install_cyberware(ware.type)
 
 // ===== THE SITE =====
 
