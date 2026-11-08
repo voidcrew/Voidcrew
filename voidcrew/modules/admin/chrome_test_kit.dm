@@ -5,7 +5,9 @@
  * Cradle beside the admin with a stack of trade vouchers and a holochip of credits, then offers
  * a short list of ready-made builds (see GLOB.chrome_test_loadouts) that either go straight into
  * the admin's own body or into a crate at their feet, plus a chromed human to point Chrome Read,
- * a cyberdeck or Glitch at.
+ * a cyberdeck or Glitch at. The dummy is a human NPC body (voidcrew/modules/human_npcs/) with no
+ * AI, so it is the same kind of body as the NPCs players meet: its chrome works, and burns out
+ * to scrap when it dies or a piece leaves it.
  *
  * Installs here are special inserts, the same door the unit tests use: no cradle sequence, no
  * boot splash, no install context. They still obey the body's rules in two ways. A piece whose
@@ -124,6 +126,33 @@ GLOBAL_LIST_INIT(chrome_test_loadouts, list(
 			left_over += ware
 	return left_over
 
+/**
+ * The kit's dummy: a human NPC body with no AI (it never moves, fights or barks), in a grey
+ * jumpsuit, on no side anyone fights for. Being an NPC body is the point: its chrome burns out at
+ * death and when a piece leaves it, as on every NPC players meet.
+ */
+/mob/living/carbon/human/npc/chrome_dummy
+	ai_controller = null
+	npc_name = "Chrome dummy"
+	npc_outfit = /datum/outfit/chrome_dummy
+	faction = list(FACTION_NEUTRAL)
+	npc_voice = null
+	npc_surrender = null
+
+/datum/outfit/chrome_dummy
+	name = "Chrome dummy"
+	uniform = /obj/item/clothing/under/color/grey
+
+/**
+ * A chrome dummy at `where` carrying what fits of `ware_types` (chrome_kit_install(); pieces that
+ * don't fit are deleted, so the dummy keeps only what fits). Returns the dummy.
+ */
+/proc/chrome_kit_make_dummy(turf/where, list/ware_types, list/report)
+	var/mob/living/carbon/human/npc/chrome_dummy/dummy = new(where)
+	var/list/dummy_spare = chrome_kit_install(dummy, ware_types, report)
+	QDEL_LIST(dummy_spare)
+	return dummy
+
 /// A crate of loose chrome at a turf. Items placed straight into the crate, so its slot count
 /// never turns the big builds away.
 /proc/chrome_kit_crate(turf/where, list/contents_list, crate_name = "chrome crate")
@@ -204,11 +233,7 @@ ADMIN_VERB(chrome_test_kit, R_ADMIN|R_DEBUG, "Chrome: Test Kit", "Drop a Chrome 
 			chrome_kit_crate(origin, everything, "chrome crate (everything)")
 			summary += ", a crate with [length(everything)] items"
 		if(CHROME_KIT_DUMMY)
-			var/mob/living/carbon/human/dummy = new(chrome_kit_adjacent_turf(admin_mob))
-			dummy.fully_replace_character_name(dummy.real_name, "Chrome dummy")
-			dummy.equip_to_slot_or_del(new /obj/item/clothing/under/color/grey(dummy), ITEM_SLOT_ICLOTHING)
-			var/list/dummy_spare = chrome_kit_install(dummy, GLOB.chrome_test_loadouts[dummy_build], report)
-			QDEL_LIST(dummy_spare) // the dummy keeps only what fits
+			var/mob/living/carbon/human/npc/chrome_dummy/dummy = chrome_kit_make_dummy(chrome_kit_adjacent_turf(admin_mob), GLOB.chrome_test_loadouts[dummy_build], report)
 			summary += ", a chrome dummy carrying the [dummy_build] build ([chrome_kit_status_line(dummy)])"
 		else
 			var/list/ware_types = GLOB.chrome_test_loadouts[choice]
