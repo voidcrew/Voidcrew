@@ -118,6 +118,9 @@
 	var/mob/living/carbon/bearer = organ?.owner
 	if(!istype(optics) || !iscarbon(bearer))
 		return FALSE
+	// A bounty criminal or companion: its chrome reads the same way (voidcrew/modules/bounties/bounty_chrome.dm)
+	if(!iscarbon(target) && read_bounty_fighter(bearer, target, optics))
+		return TRUE
 	if(!iscarbon(target))
 		bearer.balloon_alert(bearer, "no chrome bus!")
 		return FALSE
@@ -158,6 +161,25 @@
 				to_chat(subject, span_warning("[bearer] is reading your hardware. Every piece you have just answered a handshake you never authorized."))
 			else
 				to_chat(subject, span_warning("Your hardware answers a handshake you never authorized. Someone nearby is reading you."))
+	StartCooldown()
+	return TRUE
+
+/// Reads a bounty criminal or companion: TRUE if `target` is one and the read went off (or was refused with a reason)
+/datum/action/cooldown/cyberware/chrome_read/proc/read_bounty_fighter(mob/living/carbon/bearer, mob/living/target, obj/item/organ/eyes/robotic/cyberware/optics)
+	if(!isliving(target))
+		return FALSE
+	var/list/report = bounty_chrome_scan_readout(target, optics.chrome_scan_resolution)
+	if(!report)
+		return FALSE
+	if(bearer.is_blind())
+		bearer.balloon_alert(bearer, "optics dark!")
+		return TRUE
+	if(!can_see(bearer, target, CYBERWARE_SCAN_RANGE))
+		bearer.balloon_alert(bearer, "no line of sight!")
+		return TRUE
+	to_chat(bearer, jointext(report, "<br>"))
+	playsound(bearer, 'sound/machines/terminal/terminal_processing.ogg', 20, TRUE)
+	bearer.visible_message(span_notice("[bearer]'s irises flicker with a scrolling readout."), vision_distance = 3)
 	StartCooldown()
 	return TRUE
 

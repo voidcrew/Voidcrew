@@ -298,6 +298,8 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	var/list/exclusive_with
 	/// The real implant organs the look builder puts on their body, so the worn chrome shows
 	var/list/organ_looks
+	/// The real implant a chrome read (cyber optics) names it as: its name and tier come off this type
+	var/scan_organ
 	/// What examining them shows, or null for nothing (chrome under the skin). %THEIR and %THEY are replaced.
 	var/examine_text
 	/// How long it stays down after an EMP
@@ -399,3 +401,62 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 /// What examining them shows, or null
 /datum/bounty_chrome/proc/examine_line()
 	return examine_text
+
+// ===== A CHROME READ =====
+
+// The implant each piece reads as through cyber optics (cyberware_scan.dm)
+/datum/bounty_chrome/cascade
+	scan_organ = /obj/item/organ/cyberimp/cyberware/cascade
+/datum/bounty_chrome/mantis
+	scan_organ = /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis
+/datum/bounty_chrome/gorilla
+	scan_organ = /obj/item/organ/cyberimp/cyberware/gorilla_arms
+/datum/bounty_chrome/redline
+	scan_organ = /obj/item/organ/cyberimp/cyberware/redline
+/datum/bounty_chrome/piledriver
+	scan_organ = /obj/item/organ/cyberimp/cyberware/piledriver
+/datum/bounty_chrome/lazarus
+	scan_organ = /obj/item/organ/cyberimp/cyberware/lazarus
+/datum/bounty_chrome/deadeye
+	scan_organ = /obj/item/organ/eyes/robotic/cyberware/deadeye
+
+/// What a chrome read calls an implant type: list(name, tier), read once off a copy and kept
+/proc/bounty_chrome_scan_info(organ_type)
+	var/static/list/cache = list()
+	if(!ispath(organ_type, /obj/item/organ))
+		return null
+	if(!cache[organ_type])
+		var/obj/item/organ/ware = new organ_type
+		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+		cache[organ_type] = list(ware.name, chrome?.tier)
+		qdel(ware)
+	return cache[organ_type]
+
+/**
+ * A chrome read of a bounty criminal or companion, in the same words cyber optics use for a body
+ * (cyberware_scan_readout()), or null if `target` isn't one. Each piece reads as its real implant;
+ * a piece down from an EMP reads OFFLINE. Someone passing as a patron reads as clean.
+ */
+/proc/bounty_chrome_scan_readout(mob/living/target, resolution = CYBERWARE_SCAN_ITEMIZED)
+	if(!istype(target, /mob/living/basic/bounty_criminal) && !istype(target, /mob/living/basic/bounty_companion))
+		return null
+	var/accent = CYBERWARE_COLOR_TIER_2
+	var/list/lines = list(cyberware_scan_line("CHROME READ: [uppertext(target.name)]", accent))
+	var/datum/component/bounty_chrome/chrome = target.GetComponent(/datum/component/bounty_chrome)
+	var/mob/living/basic/bounty_criminal/criminal = target
+	if(!length(chrome?.pieces) || (istype(criminal) && criminal.blended))
+		lines += cyberware_scan_line("NO HARDWARE SIGNATURE", accent)
+		return lines
+	lines += cyberware_scan_line("SIGNATURES [length(chrome.pieces)]", accent)
+	if(resolution < CYBERWARE_SCAN_ITEMIZED)
+		lines += cyberware_scan_line("BUS RESOLUTION TOO LOW: IDENTITIES UNRESOLVED", accent)
+		return lines
+	for(var/key in chrome.pieces)
+		var/datum/bounty_chrome/piece = chrome.pieces[key]
+		var/list/info = bounty_chrome_scan_info(piece.scan_organ)
+		var/ware_name = info ? info[1] : piece.name
+		var/tier = info ? info[2] : null
+		var/status = piece.offline_until ? " · OFFLINE" : ""
+		var/rating = tier ? "T[tier]" : "UNRATED"
+		lines += cyberware_scan_line("» [uppertext(ware_name)] · [rating][status]", tier ? cyberware_tier_color(tier) : accent)
+	return lines

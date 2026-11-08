@@ -72,6 +72,19 @@
 			found = TRUE
 	TEST_ASSERT(found, "Examining them doesn't show their chrome")
 
+	// Cyber optics read it: each piece as its real implant, OFFLINE while down
+	bounty_chrome_install(criminal, list("gorilla")) // BOUNTY_CHROME_GORILLA
+	var/report = jointext(bounty_chrome_scan_readout(criminal), " ")
+	TEST_ASSERT(findtext(report, "GORILLA ARMS"), "A chrome read doesn't name their Gorilla Arms: [report]")
+	TEST_ASSERT(findtext(report, "SIGNATURES 2"), "A chrome read miscounts their chrome: [report]")
+	var/datum/bounty_chrome/gorilla_piece = bounty_chrome_piece(criminal, "gorilla")
+	gorilla_piece.offline_until = world.time + 10 SECONDS
+	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(criminal), " "), "OFFLINE"), "An EMP'd piece doesn't read offline")
+	gorilla_piece.offline_until = 0
+	var/mob/living/basic/bounty_criminal/normal/clean = allocate(/mob/living/basic/bounty_criminal/normal, run_loc_floor_top_right)
+	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(clean), " "), "NO HARDWARE SIGNATURE"), "A criminal with no chrome reads as chromed")
+	TEST_ASSERT_NULL(bounty_chrome_scan_readout(allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)), "A bounty chrome read answered for a player")
+
 	// The worn look: the implant goes into the look dummy
 	var/datum/bounty_look/look = bounty_roll_look(/datum/species/human, MALE)
 	var/mob/living/carbon/human/dummy/dummy = bounty_look_dummy(look, null, null, chrome_organs = bounty_chrome_organ_looks(list("unit_test")))
