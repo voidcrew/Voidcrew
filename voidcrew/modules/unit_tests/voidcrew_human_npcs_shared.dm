@@ -178,8 +178,8 @@
 	TEST_ASSERT(!npc.npc_surrender_redecide, "A cuffed NPC decided again after giving up")
 	TEST_ASSERT(!npc.npc_surrender(), "A cuffed NPC gave up again")
 
-/// N5: in soft crit the AI keeps running and does only soft-crit things: a medipen, firing wild (elites),
-/// crawling away. Hard crit stops it.
+/// N5: in soft crit the AI keeps running and does only soft-crit things: a medipen and firing wild (elites).
+/// It never crawls away. Hard crit stops it.
 /datum/unit_test/voidcrew_human_npc_soft_crit
 
 /datum/unit_test/voidcrew_human_npc_soft_crit/Run()
@@ -214,7 +214,7 @@
 	TEST_ASSERT_EQUAL(npc.stat, HARD_CRIT, "Test fixture: the NPC is not in hard crit")
 	TEST_ASSERT(controller.get_able_to_run() & AI_UNABLE_TO_RUN, "A human NPC's AI runs in hard crit")
 
-	// An elite fires from the floor at the ground around its attacker; a regular only crawls.
+	// An elite fires from the floor at the ground around its attacker; a regular stays put.
 	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z))
 	var/mob/living/carbon/human/npc/sample/elite/elite = allocate(/mob/living/carbon/human/npc/sample/elite, locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z))
 	var/mob/living/carbon/human/npc/sample/gunner/regular = allocate(/mob/living/carbon/human/npc/sample/gunner, locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z))
@@ -226,6 +226,8 @@
 		soft.SelectBehaviors(downed.ai_controller, 1)
 	TEST_ASSERT(elite.ai_controller.current_behaviors[wild], "An elite in soft crit doesn't fire from the floor")
 	TEST_ASSERT(!regular.ai_controller.current_behaviors[wild], "A regular NPC in soft crit fires from the floor")
+	var/datum/ai_behavior/run_away_from_target/crawl = GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target)
+	TEST_ASSERT(!regular.ai_controller.current_behaviors[crawl], "A downed NPC crawls away")
 
 	var/obj/item/gun/ballistic/elite_gun = locate() in elite.held_items
 	TEST_ASSERT_NOTNULL(elite_gun, "Test fixture: the elite holds no ballistic gun")
