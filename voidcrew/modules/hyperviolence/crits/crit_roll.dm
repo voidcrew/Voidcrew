@@ -27,7 +27,8 @@
 //   held in the attacker's grab loses the throat to about one combat knife slash in three, one
 //   in two for a 25+ weapon. A 10-force kitchen knife tops out near 30, and even on a held
 //   victim under 70, so it never crits by roll.
-// * Gear that covers the spot blocks a crit outright (see each crit's blocked_on_carbon()).
+// * Gear that covers the spot blocks a crit outright (see each crit's blocked_on_carbon()). Worn
+//   armour and the body's own plating (cyberware) count together, as tg's check_armor() stacks them.
 // * A crit never stacks on itself: the wound can only be on a limb once.
 
 /// Most a battered limb adds to the roll, scaled by how much of its max damage it has taken.
@@ -201,7 +202,9 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		return weapon.armour_penetration
 	return 0
 
-/// Best armour rating of armour_flag among the clothes covering limb, less armour_penetration.
+/// How well the victim is armoured against armour_flag on limb, less armour_penetration: the best rating among
+/// the clothes covering it, stacked on the human's own physiology armour (cyberware dermal plating lives there)
+/// the way tg's check_armor() stacks them, each layer stopping its share of what the one before let through.
 /proc/hv_crit_cover_rating(mob/living/carbon/victim, obj/item/bodypart/limb, armour_flag, armour_penetration = 0)
 	if(!ishuman(victim))
 		return 0
@@ -209,7 +212,9 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	var/best = 0
 	for(var/obj/item/clothing/worn as anything in human_victim.get_clothing_on_part(limb))
 		best = max(best, worn.get_armor_rating(armour_flag))
-	return best - armour_penetration
+	var/plating = human_victim.physiology?.armor.get_rating(armour_flag) || 0
+	var/combined = 100 - (100 - min(best, 100)) * (100 - min(plating, 100)) * 0.01
+	return combined - armour_penetration
 
 /// Roll bonus for a victim who cannot defend themselves.
 /mob/living/proc/hv_crit_helpless_bonus(mob/living/attacker)
