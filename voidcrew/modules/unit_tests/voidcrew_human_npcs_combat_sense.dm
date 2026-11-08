@@ -303,7 +303,7 @@
 /datum/unit_test/voidcrew_human_npc_combat_sense/who
 
 /datum/unit_test/voidcrew_human_npc_combat_sense/who/Run()
-	var/static/list/never = list(
+	var/list/never = list(
 		/mob/living/carbon/human/npc/ambient_npc,
 		/mob/living/carbon/human/npc/outpost_prisoner,
 		/mob/living/carbon/human/npc/bounty_criminal/meek,
