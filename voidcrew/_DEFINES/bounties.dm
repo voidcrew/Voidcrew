@@ -120,9 +120,9 @@
 
 // ===== SIGNALS =====
 
-/// Sent by P2 on a criminal when its health falls to the downed line: ()
+/// Sent by P2 on a criminal when it goes into tg's crit (soft or hard): ()
 #define COMSIG_BOUNTY_CRIMINAL_DOWNED "bounty_criminal_downed"
-/// Sent by P2 on a criminal when it gets back up after the recovery time: ()
+/// Sent by P2 on a criminal when it comes out of crit, or gets up from stamina crit: ()
 #define COMSIG_BOUNTY_CRIMINAL_RECOVERED "bounty_criminal_recovered"
 /// Sent by P2 on a criminal when restraints go on: (mob/user)
 #define COMSIG_BOUNTY_CRIMINAL_RESTRAINED "bounty_criminal_restrained"

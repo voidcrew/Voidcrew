@@ -211,7 +211,7 @@
 	TEST_ASSERT_EQUAL(length(decoys), 3, "The queued decoys did not join the posting once built")
 	for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy as anything in decoys)
 		TEST_ASSERT(decoy.blended, "A queued decoy is not blending in")
-		TEST_ASSERT_EQUAL(decoy.name, "patron", "A queued decoy does not go by the zone's name")
+		TEST_ASSERT_EQUAL(decoy.name, bounty_outpost_display_name(outpost), "A queued decoy does not go by the outpost's name for its crowd")
 
 	// Closed before they are built: nobody is built
 	var/datum/criminal_bounty/outpost_test/closing = make_posting(run_loc_floor_bottom_left)

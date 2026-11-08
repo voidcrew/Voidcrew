@@ -144,7 +144,7 @@
 
 /// Puts `body` in tg's crit for real: brute past the crit line (soft crit, health -10 for a person)
 /datum/unit_test/voidcrew_bounty_kingpin/proc/kingpin_test_down(mob/living/carbon/human/body)
-	body.adjustBruteLoss(body.maxHealth + 10)
+	bounty_test_hurt_to(body, -10)
 	return HAS_TRAIT(body, TRAIT_CRITICAL_CONDITION)
 
 /// Real handcuffs in `body`'s cuff slot. Returns TRUE if they went on.
@@ -612,7 +612,7 @@
 	var/datum/human_npc_surrender/rules = kingpin.npc_surrender_rules()
 	TEST_ASSERT(istype(rules, /datum/human_npc_surrender/bounty_kingpin), "The kingpin has no surrender rules of his own")
 	// Through real damage: down to 35 of a person's 100 (BOUNTY_KINGPIN_SURRENDER_BELOW 40)
-	kingpin.adjustBruteLoss(65)
+	bounty_test_hurt_to(kingpin, 35)
 	TEST_ASSERT(kingpin.health <= kingpin.maxHealth * 0.4 && !kingpin.is_downed(), "The test kingpin isn't hurt below 40% and still up ([kingpin.health])")
 	TEST_ASSERT(!rules.hurt_enough(kingpin), "He'd give up with a goon still standing")
 	var/list/goons = crew.goons()
@@ -1028,7 +1028,13 @@
 	var/datum/bounty_kingpin_crew/crew = kingpin.kingpin_crew
 	TEST_ASSERT(istype(kingpin.buckled, /obj/structure/chair/sofa), "The kingpin isn't on the sofa")
 	TEST_ASSERT_EQUAL(length(crew.crew_posts), 6, "The crew doesn't know its six posts")
-	// His goons come a body at a time through the spawn queue
+	// His goons come a body at a time through the spawn queue, dressed for the zone. The test's black
+	// market is on no star map, so no zone can be read for it and their orders would wait a minute for
+	// one (HUMAN_NPC_ZONE_WAIT) before settling on green; the test gives them that answer straight away.
+	TEST_ASSERT_EQUAL(length(crew.crew_pending), 6, "The kingpin's six goons weren't queued")
+	for(var/turf/post as anything in crew.crew_pending)
+		var/datum/human_npc_order/goon_order = crew.crew_pending[post]
+		goon_order?.context?.on_zone_resolved(1) // ZONE_GREEN
 	var/deadline = world.time + 30 SECONDS
 	UNTIL(length(crew.goons()) >= 6 || world.time > deadline)
 	TEST_ASSERT_EQUAL(length(crew.goons()), 6, "The kingpin doesn't have six goons")

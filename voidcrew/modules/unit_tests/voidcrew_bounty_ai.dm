@@ -428,7 +428,9 @@
 	var/before = glass.reagents.total_volume
 	TEST_ASSERT(criminal.ai_sip(), "They would not drink")
 	TEST_ASSERT(glass.reagents.total_volume < before, "A sip left the glass as full as it was")
-	TEST_ASSERT(criminal.reagents.total_volume > 0, "A sip put nothing in them")
+	// A drink goes into the stomach first, as anyone's does, and into the blood as it digests
+	var/obj/item/organ/stomach/belly = criminal.get_organ_slot(ORGAN_SLOT_STOMACH)
+	TEST_ASSERT((belly?.reagents?.total_volume || 0) + criminal.reagents.total_volume > 0, "A sip put nothing in them")
 	criminal.ai_suspend_activity()
 	TEST_ASSERT_NULL(criminal.buckled, "Done at the bar, they are still sitting")
 	TEST_ASSERT_EQUAL(glass.loc, get_turf(table), "Done at the bar, the glass was not put down on the table")
