@@ -141,6 +141,7 @@
 	set_outpost_worker_visors(src, up = work_look != "weld")
 	if(held_prop && (QDELETED(held_prop) || !is_holding(held_prop)))
 		held_prop = null
+		held_prop_slot = NONE
 	if(held_prop && wanted_type && istype(held_prop, wanted_type))
 		light_prop(held_prop)
 		return
@@ -154,8 +155,10 @@
 			light_prop(in_hand)
 			return
 	var/obj/item/carried = carried_item_of(wanted_type)
+	var/carried_slot = carried ? get_slot_by_item(carried) : NONE
 	if(carried && human_npc_take_in_hand(src, carried))
 		held_prop = carried
+		held_prop_slot = carried_slot
 	else
 		var/obj/item/prop = new wanted_type(src)
 		if(!put_in_hands(prop))
@@ -181,10 +184,12 @@
 		welder.set_welding(work_look == "weld")
 		welder.update_appearance()
 
-/// Puts down what they held for show: a prop goes, something of their own goes back on them
+/// Puts down what they held for show: a prop goes, something of their own goes back where it came from
 /mob/living/carbon/human/npc/ambient_npc/proc/put_away_prop()
 	var/obj/item/prop = held_prop
+	var/home_slot = held_prop_slot
 	held_prop = null
+	held_prop_slot = NONE
 	if(QDELETED(prop))
 		return
 	if(HAS_TRAIT(prop, TRAIT_AMBIENT_PROP))
@@ -193,7 +198,7 @@
 	var/obj/item/weldingtool/welder = prop
 	if(istype(welder) && welder.welding)
 		welder.set_welding(FALSE)
-	if(is_holding(prop))
+	if(is_holding(prop) && !(home_slot && equip_to_slot_if_possible(prop, home_slot, disable_warning = TRUE)))
 		prop.equip_to_best_slot(src)
 
 /// Shows them holding what `look` needs ("weld", "tool", "carry"), or their held item / empty hands for null. The worker component calls this.
