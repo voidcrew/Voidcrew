@@ -321,9 +321,9 @@
 	piece.grab_ready_at = 0
 	piece.grab_guard.Cut()
 
-/// Whether `hunter` is held fast by a Gorilla now
+/// Whether `hunter` is held fast now: in tg's aggressive grab, whoever's
 /datum/unit_test/voidcrew_bounty_chrome_gorilla/proc/held(mob/living/hunter)
-	return !!hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held)
+	return hunter.pulledby && hunter.pulledby.grab_state >= GRAB_AGGRESSIVE
 
 /// Every ordinary blow is the implant's punch: its numbers and sound, a knock-back, no brawler's shove; plain fists while EMP'd; the Juggernaut keeps its own blow
 /datum/unit_test/voidcrew_bounty_chrome_gorilla/fists
@@ -448,15 +448,24 @@
 	TEST_ASSERT(!piece.start_punch(hunter), "A piston punch wound up over the reach")
 	TEST_ASSERT(!held(hunter), "The hunter is held before the reach is over")
 
-	// Got hold of them
+	// Got hold of them: tg's own aggressive grab, as a player's would be
 	TEST_ASSERT(piece.finish_reach(piece.serial), "The reach missed a hunter who stood still")
 	TEST_ASSERT_EQUAL(piece.busy, "hold", "Their hands closed, but they aren't holding on") // BOUNTY_GORILLA_HOLD
 	TEST_ASSERT(held(hunter), "The grabbed hunter isn't held")
-	TEST_ASSERT(HAS_TRAIT_FROM(hunter, TRAIT_IMMOBILIZED, "bounty_chrome_gorilla_held"), "The grabbed hunter can walk off") // BOUNTY_GORILLA_HELD_TRAIT
-	TEST_ASSERT(!HAS_TRAIT(hunter, TRAIT_HANDS_BLOCKED), "The grabbed hunter can't use their hands")
-	TEST_ASSERT_EQUAL(LAZYACCESS(LAZYACCESS(hunter.offsets, PIXEL_X_OFFSET), "bounty_chrome_gorilla_held"), -12, "The grabbed hunter isn't drawn in toward them") // GRAB_PIXEL_SHIFT_AGGRESSIVE
+	TEST_ASSERT_EQUAL(hunter.pulledby, criminal, "Someone else holds the grabbed hunter")
+	TEST_ASSERT(piece.holding(hunter), "The piece doesn't know it holds the hunter")
+	TEST_ASSERT(HAS_TRAIT_FROM(hunter, TRAIT_IMMOBILIZED, CHOKEHOLD_TRAIT), "The grabbed hunter can walk off")
+	TEST_ASSERT(HAS_TRAIT_FROM(hunter, TRAIT_HANDS_BLOCKED, CHOKEHOLD_TRAIT), "The grabbed hunter's hands are free, as in no aggressive grab of tg's")
+	TEST_ASSERT_EQUAL(LAZYACCESS(LAZYACCESS(hunter.offsets, PIXEL_X_OFFSET), GRABBING_TRAIT), -GRAB_PIXEL_SHIFT_AGGRESSIVE, "The grabbed hunter isn't drawn in toward them")
 	TEST_ASSERT(criminal.next_move > world.time, "Holding on, they can still throw ordinary blows")
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "The grab itself did harm")
+
+	// Held fast, they can't step off a lit tile: nobody else winds up a piston punch at them
+	var/mob/living/basic/bounty_criminal/normal/other = gorilla_at(tile(2, 3), hunter)
+	var/datum/bounty_chrome/gorilla/other_piece = bounty_chrome_piece(other, "gorilla")
+	TEST_ASSERT(!other_piece.start_punch(hunter), "Another gorilla wound up a punch at a hunter held fast")
+	TEST_ASSERT(!other_piece.start_grab(hunter), "Another gorilla reached for a hunter already held")
+	qdel(other)
 
 	// Two punches to the face
 	var/obj/item/bodypart/head = hunter.get_bodypart(BODY_ZONE_HEAD)
@@ -472,8 +481,11 @@
 	// The finisher: the piston punch lets go and throws them off
 	TEST_ASSERT(piece.pummel(piece.serial), "The finishing punch wasn't thrown")
 	TEST_ASSERT(!held(hunter), "The finisher didn't let go")
-	TEST_ASSERT(!HAS_TRAIT_FROM(hunter, TRAIT_IMMOBILIZED, "bounty_chrome_gorilla_held"), "Let go, the hunter still can't walk")
-	TEST_ASSERT_NULL(LAZYACCESS(LAZYACCESS(hunter.offsets, PIXEL_X_OFFSET), "bounty_chrome_gorilla_held"), "Let go, the hunter is still drawn in")
+	TEST_ASSERT_NULL(criminal.pulling, "The finisher left them pulling the hunter")
+	TEST_ASSERT(!HAS_TRAIT_FROM(hunter, TRAIT_IMMOBILIZED, CHOKEHOLD_TRAIT), "Let go, the hunter still can't walk")
+	TEST_ASSERT(!HAS_TRAIT_FROM(hunter, TRAIT_HANDS_BLOCKED, CHOKEHOLD_TRAIT), "Let go, the hunter's hands are still tied up")
+	TEST_ASSERT_NULL(LAZYACCESS(LAZYACCESS(hunter.offsets, PIXEL_X_OFFSET), GRABBING_TRAIT), "Let go, the hunter is still drawn in")
+	TEST_ASSERT_EQUAL(criminal.grab_state, GRAB_PASSIVE, "Let go, their grip is still tight")
 	TEST_ASSERT(hunter.has_status_effect(/datum/status_effect/staggered), "The finisher didn't stagger the hunter")
 	TEST_ASSERT(hunter.throwing || get_turf(hunter) != tile(2, 2), "The finisher didn't throw the hunter back")
 	TEST_ASSERT_NULL(piece.busy, "Still busy after the finisher")
@@ -543,24 +555,52 @@
 	piece.end_stumble(piece.serial)
 	qdel(shield)
 
-	// Struggling free, by resisting and by trying to walk off
+	// Struggling free through tg's own resist: the Resist verb, and trying to walk off (what a client's
+	// move calls while grabbed, client/Process_Grab()). tg's odds (BASE_GRAB_RESIST_CHANCE), so a few
+	// tries; a failed one costs stamina, put back between tries
 	for(var/how in list("resist", "move"))
 		ready_grab(piece)
 		criminal.next_move = 0
 		TEST_ASSERT(piece.start_grab(hunter), "No grab started ([how])")
 		TEST_ASSERT(piece.finish_reach(piece.serial), "The reach missed ([how])")
-		var/datum/status_effect/bounty_gorilla_held/hold = hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held)
-		TEST_ASSERT_NOTNULL(hold, "The grabbed hunter isn't held ([how])")
-		hold.break_chance = 100
-		if(how == "resist")
-			SEND_SIGNAL(hunter, COMSIG_LIVING_RESIST, hunter)
-		else
-			SEND_SIGNAL(hunter, COMSIG_MOB_CLIENT_PRE_LIVING_MOVE, get_step(hunter, EAST), EAST)
-		TEST_ASSERT(!held(hunter), "Struggling free ([how]) didn't free the hunter")
+		TEST_ASSERT(held(hunter), "The grabbed hunter isn't held ([how])")
+		for(var/attempt in 1 to 20)
+			if(!held(hunter))
+				break
+			hunter.next_move = 0
+			hunter.setStaminaLoss(0)
+			if(how == "resist")
+				hunter.execute_resist()
+			else
+				hunter.resist_grab(TRUE)
+		TEST_ASSERT(!held(hunter), "Twenty struggles ([how]) never freed the hunter")
+		TEST_ASSERT_NULL(criminal.pulling, "Struggled free ([how]), they still pull the hunter")
 		TEST_ASSERT(!HAS_TRAIT(hunter, TRAIT_IMMOBILIZED), "Struggled free ([how]), the hunter still can't walk")
 		TEST_ASSERT_EQUAL(piece.busy, "stumble", "A hunter struggled free ([how]) and they didn't stumble")
 		piece.end_stumble(piece.serial)
+	hunter.setStaminaLoss(0)
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "Getting loose before a punch still hurt")
+
+	// A friend pulls them out of it: let go, and off balance
+	var/mob/living/carbon/human/consistent/friend = hunter_at(tile(2, 3))
+	ready_grab(piece)
+	criminal.next_move = 0
+	TEST_ASSERT(piece.start_grab(hunter), "No grab started before the friend's pull")
+	TEST_ASSERT(piece.finish_reach(piece.serial), "The reach missed before the friend's pull")
+	TEST_ASSERT(friend.start_pulling(hunter), "The friend couldn't take hold of the held hunter")
+	TEST_ASSERT_EQUAL(hunter.pulledby, friend, "The friend's pull didn't take the hunter from them")
+	TEST_ASSERT(!piece.holding(hunter), "Pulled away by a friend, they still hold the hunter")
+	TEST_ASSERT_EQUAL(piece.busy, "stumble", "Pulled away by a friend, they didn't stumble")
+	piece.end_stumble(piece.serial)
+	friend.stop_pulling()
+	friend.forceMove(tile(4, 0))
+
+	// Someone tg's grab can't tighten on: no reach at all
+	ADD_TRAIT(hunter, TRAIT_PUSHIMMUNE, "unit_test")
+	ready_grab(piece)
+	criminal.next_move = 0
+	TEST_ASSERT(!piece.start_grab(hunter), "They reached for someone tg's grab can't hold")
+	REMOVE_TRAIT(hunter, TRAIT_PUSHIMMUNE, "unit_test")
 
 	// Hit hard while holding on: they let go
 	ready_grab(piece)
@@ -582,15 +622,17 @@
 	TEST_ASSERT_NULL(piece.busy, "Knocked down, they are still busy")
 	criminal.SetKnockdown(0)
 
-	// Pulled apart: the hold is gone and the next blow never lands
+	// Pulled apart: the hold is gone, the next blow never lands, and they are left off balance
 	ready_grab(piece)
 	criminal.next_move = 0
 	TEST_ASSERT(piece.start_grab(hunter), "No grab started before the pull")
 	TEST_ASSERT(piece.finish_reach(piece.serial), "The reach missed before the pull")
+	var/held_serial = piece.serial
 	hunter.forceMove(tile(3, 4))
 	TEST_ASSERT(!held(hunter), "Moved out of reach, the hunter is still held")
-	TEST_ASSERT(!piece.pummel(piece.serial), "A punch was thrown at someone pulled out of reach")
-	TEST_ASSERT_NULL(piece.busy, "With nobody to hold, they are still busy")
+	TEST_ASSERT(!piece.pummel(held_serial), "A punch was thrown at someone pulled out of reach")
+	TEST_ASSERT_EQUAL(piece.busy, "stumble", "Pulled apart, they didn't stumble")
+	piece.end_stumble(piece.serial)
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "Someone pulled out of reach was hurt")
 
 	// Dropped mid-pummel: they let go
@@ -645,13 +687,21 @@
 	TEST_ASSERT(!HAS_TRAIT(hunter, TRAIT_IMMOBILIZED), "With the chrome gone, the hunter still can't walk")
 	TEST_ASSERT(!HAS_TRAIT_FROM(second, TRAIT_IMMOBILIZED, "bounty_chrome_gorilla"), "With the chrome gone, the criminal stays rooted")
 
-	// A hold whose gorilla is gone without a word ends on its own clock
-	var/mob/living/basic/bounty_criminal/normal/third = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 4))
+	// A pummel cut off without a word: the hold ends on its own clock
 	hunter.forceMove(tile(2, 4))
-	TEST_ASSERT_NOTNULL(hunter.apply_status_effect(/datum/status_effect/bounty_gorilla_held, third, null), "The hold couldn't be put on by hand")
+	var/mob/living/basic/bounty_criminal/normal/third = gorilla_at(tile(1, 4), hunter)
+	var/datum/bounty_chrome/gorilla/third_piece = bounty_chrome_piece(third, "gorilla")
+	ready_grab(third_piece)
+	TEST_ASSERT(third_piece.start_grab(hunter), "No grab started on the third criminal")
+	TEST_ASSERT(third_piece.finish_reach(third_piece.serial), "The third criminal's reach missed")
+	TEST_ASSERT(held(hunter), "The third criminal didn't take hold")
+	deltimer(third_piece.busy_timer)
+	third_piece.busy_timer = null
 	sleep(3 SECONDS) // BOUNTY_GORILLA_HOLD_MAX 2.5 seconds
-	TEST_ASSERT(!held(hunter), "An orphaned hold never ended")
-	TEST_ASSERT(!HAS_TRAIT(hunter, TRAIT_IMMOBILIZED), "An orphaned hold left the hunter rooted")
+	TEST_ASSERT(!held(hunter), "A hold whose pummel was cut off never ended")
+	TEST_ASSERT_NULL(third.pulling, "A hold whose pummel was cut off left them pulling the hunter")
+	TEST_ASSERT(!HAS_TRAIT(hunter, TRAIT_IMMOBILIZED), "A hold whose pummel was cut off left the hunter rooted")
+	TEST_ASSERT_NULL(third_piece.busy, "A hold whose pummel was cut off left them busy")
 
 	// The Juggernaut: busy through the reach and the hold, and cut off when knocked out of it
 	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = allocate(/mob/living/basic/bounty_criminal/boss/juggernaut, tile(3, 1))

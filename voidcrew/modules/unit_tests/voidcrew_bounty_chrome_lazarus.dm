@@ -24,15 +24,15 @@
 	TEST_ASSERT_NOTNULL(proto, "No Lazarus prototype")
 	TEST_ASSERT(proto.weight > 0, "Lazarus never rolls")
 
-	// Who rolls it: Wanted and up (tier 2, BOUNTY_TIER_WANTED), never the meek; every kit; companions of a Wanted criminal
+	// Who rolls it: Wanted and up (tier 2, BOUNTY_TIER_WANTED), never the meek; every kit. Whether a
+	// companion rolls it is the framework's companion roll (bounty_roll_companion_chrome()), not checked here.
 	TEST_ASSERT(!proto.can_roll(1, "normal", "pistol", null, list()), "A Petty criminal can roll Lazarus") // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_NORMAL
 	TEST_ASSERT(proto.can_roll(2, "normal", "pistol", null, list()), "A Wanted pistol criminal can't roll Lazarus")
 	TEST_ASSERT(proto.can_roll(3, "normal", "brawler", null, list()), "A Most Wanted brawler can't roll Lazarus")
 	TEST_ASSERT(!proto.can_roll(3, "meek", "holdout", null, list()), "A meek criminal can roll Lazarus") // BOUNTY_ARCHETYPE_MEEK
 	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")) // BOUNTY_KIT_*
 		TEST_ASSERT(proto.can_roll(3, "boss", null, kit, list()), "A [kit] mini-boss can't roll Lazarus") // BOUNTY_ARCHETYPE_BOSS
-	TEST_ASSERT(proto.can_roll(2, "companion", "knife", null, list()), "A Wanted criminal's companion can't roll Lazarus") // BOUNTY_CHROME_COMPANION
-	TEST_ASSERT(!proto.can_roll(1, "companion", "knife", null, list()), "A Petty criminal's companion can roll Lazarus")
+	TEST_ASSERT(!proto.can_roll(1, "companion", "knife", null, list()), "A Petty criminal's companion can roll Lazarus") // BOUNTY_CHROME_COMPANION
 	for(var/i in 1 to 100)
 		TEST_ASSERT(!("lazarus" in bounty_roll_chrome(3, "meek", "holdout", null)), "A meek criminal rolled Lazarus")
 	var/rolled = FALSE
@@ -196,6 +196,66 @@
 	TEST_ASSERT(!buddy.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The jolted companion is still in stamina crit")
 	TEST_ASSERT(buddy.health >= buddy.maxHealth * 0.5 - 1, "The companion got up at [buddy.health]/[buddy.maxHealth], not half")
 	TEST_ASSERT(buddy.ai_can_fight(), "The jolted companion can't fight")
+
+/**
+ * The real clocks, nothing called by hand: left alone, the charge fires on its own; cuffs started
+ * mid-charge hold it past full, and it fizzles as they close; a cuff try that fails while it waits
+ * lets it fire. Each criminal is cleared away before the next; the hunter stands beside them.
+ */
+/datum/unit_test/voidcrew_bounty_chrome_lazarus/timers
+
+/datum/unit_test/voidcrew_bounty_chrome_lazarus/timers/Run()
+	// Left alone: the bolts keep coming over the charge, then it stands them up
+	var/mob/living/basic/bounty_criminal/criminal = lazarus_criminal()
+	var/datum/bounty_chrome/lazarus/piece = bounty_chrome_piece(criminal, "lazarus")
+	knock_down(criminal)
+	TEST_ASSERT(piece.charging, "Going down didn't start the charge")
+	sleep(2 SECONDS) // BOUNTY_LAZARUS_CHARGE 1.5 seconds
+	TEST_ASSERT(!piece.charging, "The charge never fired on its own")
+	TEST_ASSERT(!criminal.downed, "The charge ran its course and left them down")
+	TEST_ASSERT(piece.arc_rounds >= 3, "Only [piece.arc_rounds] rounds of bolts came off them over the whole charge")
+	TEST_ASSERT_NULL(piece.arc_floors, "The charge kept its bolts' landing spots after it fired")
+	qdel(criminal)
+
+	// Cuffs started half a second in (they take BOUNTY_CUFF_TIME, 2 seconds): due while they go on, it
+	// waits, and it fizzles the moment they close
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, beside)
+	criminal = lazarus_criminal()
+	piece = bounty_chrome_piece(criminal, "lazarus")
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(hunter.put_in_hands(cuffs), "The hunter couldn't hold the cuffs")
+	knock_down(criminal)
+	sleep(0.5 SECONDS)
+	criminal.body_on_cuffs_used(hunter, cuffs)
+	TEST_ASSERT(criminal.body_cuff_work, "The cuffs didn't start going on")
+	sleep(1.5 SECONDS) // the charge came due half a second ago; the cuffs close in another half
+	TEST_ASSERT(piece.charging, "Due with cuffs going on, the charge didn't wait")
+	TEST_ASSERT(criminal.downed, "Due with cuffs going on, it stood them up anyway")
+	sleep(1 SECONDS)
+	TEST_ASSERT(criminal.is_restrained(), "The cuffs never closed")
+	TEST_ASSERT(!piece.charging, "Cuffed, it still charges")
+	TEST_ASSERT(criminal.downed, "The fizzle let a cuffed criminal up")
+	TEST_ASSERT_NULL(piece.charge_light, "The fizzle left its light on")
+	qdel(criminal)
+
+	// A cuff try that fails while it waits (the hunter steps away): it fires at its next look
+	criminal = lazarus_criminal()
+	piece = bounty_chrome_piece(criminal, "lazarus")
+	cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(hunter.put_in_hands(cuffs), "The hunter couldn't hold the second cuffs")
+	knock_down(criminal)
+	sleep(0.5 SECONDS)
+	criminal.body_on_cuffs_used(hunter, cuffs)
+	TEST_ASSERT(criminal.body_cuff_work, "The second cuffs didn't start going on")
+	sleep(1.2 SECONDS) // due a fifth of a second ago, and waiting
+	TEST_ASSERT(piece.charging && criminal.downed, "Due with cuffs going on, the second charge didn't wait")
+	hunter.forceMove(get_step(beside, NORTH))
+	sleep(1.3 SECONDS) // BOUNTY_LAZARUS_HOLD_CHECK 0.5 seconds, well inside BOUNTY_LAZARUS_HOLD_MAX 3
+	TEST_ASSERT(!criminal.body_cuff_work, "The cuff try went on with the hunter gone")
+	TEST_ASSERT(!criminal.is_restrained(), "Cuffs closed with the hunter gone")
+	TEST_ASSERT(!piece.charging, "The cuff try failed and the charge still waits")
+	TEST_ASSERT(!criminal.downed, "The cuff try failed and it never stood them up")
 
 /**
  * Not a check: draws Lazarus fighters to data/bounty_chrome_renders/ for a person to look at. The node

@@ -128,7 +128,7 @@
 		TEST_ASSERT(!("redline" in meek), "A meek criminal rolled it")
 	TEST_ASSERT(rolled, "In 300 rolls for a Most Wanted brawler it never came up")
 
-/// Badly hurt in a fight: the tell, the roar, twelve seconds of the burn, and the collapse into the cuffs
+/// Badly hurt in a fight: the tell, the roar, the burn (shorter than the player implant's), and the collapse into the cuffs
 /datum/unit_test/voidcrew_bounty_chrome_redline/burn
 
 /datum/unit_test/voidcrew_bounty_chrome_redline/burn/Run()
@@ -153,6 +153,8 @@
 	TEST_ASSERT_EQUAL(piece.state, 1, "A hit to 55% health didn't trip it") // REDLINE_WINDING
 	TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_STUNIMMUNE), "Stuns still land in the tell")
 	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_chrome_redline"), "No red outline in the tell") // REDLINE_FILTER
+	TEST_ASSERT_NOTNULL(piece.glow, "No red light comes up in the tell")
+	var/obj/effect/tell_glow = piece.glow
 	criminal.Knockdown(2 SECONDS)
 	TEST_ASSERT(!criminal.IsKnockdown(), "A knockdown landed in the tell")
 	TEST_ASSERT(criminal.ai_surrender_rolled, "Their surrender roll isn't held off")
@@ -167,6 +169,10 @@
 	TEST_ASSERT_EQUAL(piece.state, 2, "The tell never turned into the burn") // REDLINE_BURNING
 	TEST_ASSERT_NOTNULL(hunter.has_status_effect(/datum/status_effect/staggered), "The roar didn't stagger the hunter beside them")
 	TEST_ASSERT_NOTNULL(piece.glow, "No red glow in the burn")
+	TEST_ASSERT(QDELETED(tell_glow), "The tell's dim light stayed on under the burn's")
+	// The NPC's burn (REDLINE_WINDOW 8 s), not the player implant's 12 (CYBERWARE_REDLINE_WINDOW)
+	var/burn_left = timeleft(piece.burn_timer)
+	TEST_ASSERT(burn_left > 7 SECONDS && burn_left <= 8 SECONDS, "The burn runs [burn_left / 10] seconds, not 8")
 	TEST_ASSERT(findtext(jointext(criminal.examine(hunter), " "), "Red light pours"), "Examining them mid-burn doesn't show it")
 
 	// The burn: hits come in at half, burns too, stamina crit slides off, blows land harder
@@ -267,6 +273,7 @@
 	winding.emp_act(EMP_HEAVY)
 	TEST_ASSERT_EQUAL(winding_piece.state, 0, "An EMP didn't end the tell") // REDLINE_IDLE
 	TEST_ASSERT_NULL(winding_piece.burn_timer, "The roar is still coming after an EMP in the tell")
+	TEST_ASSERT_NULL(winding_piece.glow, "The tell's light outlived an EMP")
 	TEST_ASSERT_NOTNULL(winding.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "An EMP in the tell didn't collapse them")
 
 	// Armed: offline for its reboot, so a knockdown in a fight lands

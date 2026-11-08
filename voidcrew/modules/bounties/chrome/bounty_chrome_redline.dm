@@ -2,18 +2,21 @@
  * # Redline core on a bounty fighter
  *
  * The rage OS from the ripperdoc (/obj/item/organ/cyberimp/cyberware/redline, ware_legend.dm),
- * fought the way an NPC fights: the same roar, the same twelve seconds, the same collapse.
+ * fought the way an NPC fights: the same roar and the same collapse, over a shorter burn.
  *
  * It trips the first time a fight turns on them: a hit that leaves them at or under
  * REDLINE_TRIGGER_BELOW percent health (a mini-boss: the moment it tires, BOUNTY_BOSS_TIRED_BELOW),
  * or a stun, knockdown or stamina crit about to put them on the floor. That stun never lands. Only
  * in a fight: caught unaware, they go down like anyone else, though a fight they come into already
  * that badly hurt trips it at once (a blow lands before the fight it starts).
- * - The tell, REDLINE_WINDUP: the chest speaker charges and a red outline flickers over them.
- *   Stuns slide off and brute and burn come in at REDLINE_DAMAGE_MULT already, so the rounds a
- *   hunter puts in while it charges don't finish the fight before it starts.
- * - The roar: the player implant's line and sounds. Hunters within REDLINE_ROAR_RANGE stagger.
- * - The burn, REDLINE_WINDOW: stuns, knockdowns and stamina crit slide off, stamina never slows them,
+ * - The tell, REDLINE_WINDUP: the chest speaker charges, a red outline flickers over them, they shake
+ *   and a dim red light comes up around them. Stuns slide off and brute and burn come in at
+ *   REDLINE_DAMAGE_MULT already, so the rounds a hunter puts in while it charges don't finish the
+ *   fight before it starts.
+ * - The roar: the player implant's sounds. Hunters within REDLINE_ROAR_RANGE stagger.
+ * - The burn, REDLINE_WINDOW (shorter than the player implant's CYBERWARE_REDLINE_WINDOW: an NPC's
+ *   burn is the deadliest stretch of a capture, and the collapse is the hunters' reward for waiting
+ *   it out): stuns, knockdowns and stamina crit slide off, stamina never slows them,
  *   brute and burn come in at REDLINE_DAMAGE_MULT (never under REDLINE_DAMAGE_FLOOR with a
  *   mini-boss's armour), every blow that lands does REDLINE_MELEE_BONUS more, and they neither give
  *   up nor run. A pulsing red outline and a red glow show it the whole time, and now and then a hit
@@ -38,8 +41,8 @@
 #define REDLINE_TRIGGER_BELOW 75
 /// The tell before the roar
 #define REDLINE_WINDUP (1.5 SECONDS)
-/// The burn, from the roar to the collapse (the player implant's window)
-#define REDLINE_WINDOW (12 SECONDS)
+/// The burn, from the roar to the collapse. The NPC's own: the player implant keeps CYBERWARE_REDLINE_WINDOW (ware_legend.dm)
+#define REDLINE_WINDOW (8 SECONDS)
 /// From tripping to being able to trip again (the player implant's cooldown)
 #define REDLINE_COOLDOWN (90 SECONDS)
 /// Incoming brute and burn multiplier from the tell to the collapse (the player implant's is 0.6)
@@ -58,9 +61,11 @@
 #define REDLINE_COLLAPSE_FALLBACK (10 SECONDS)
 /// The red of the outline and the glow
 #define REDLINE_COLOR "#ff2a2a"
-/// The red glow's reach and strength
+/// The red glow's reach and strength through the burn, and the dimmer one that comes up in the tell: their own tile only (tg's falloff leaves a range under 1.5 dark)
 #define REDLINE_GLOW_RANGE 2
 #define REDLINE_GLOW_POWER 1
+#define REDLINE_TELL_GLOW_RANGE 1.5
+#define REDLINE_TELL_GLOW_POWER 1
 /// Least time between two "barely flinches" lines
 #define REDLINE_FLINCH_GAP (4 SECONDS)
 /// Name of the outline filter
@@ -92,7 +97,7 @@
 	var/burn_timer
 	/// The end of the slow after the collapse
 	var/crash_timer
-	/// Their red glow while it burns
+	/// Their red glow, dim in the tell and full through the burn
 	var/obj/effect/dummy/lighting_obj/moblight/glow
 	/// Their health at the last update, so only a hit can trip it
 	var/last_health
@@ -227,9 +232,11 @@
 	owner.add_movespeed_mod_immunities(REDLINE_TRAIT, /datum/movespeed_modifier/basic_stamina_slowdown)
 	hold_nerve()
 	show_outline(steady = FALSE)
+	QDEL_NULL(glow)
+	glow = owner.mob_light(REDLINE_TELL_GLOW_RANGE, REDLINE_TELL_GLOW_POWER, REDLINE_COLOR)
 	owner.Shake(1, 0, REDLINE_WINDUP)
 	playsound(owner, 'sound/effects/seedling_chargeup.ogg', 60, TRUE)
-	owner.visible_message(span_warning("[owner]'s chest speaker crackles and starts to glow red."))
+	owner.visible_message(span_boldwarning("[owner]'s chest speaker crackles and starts to glow red."))
 	burn_timer = addtimer(CALLBACK(src, PROC_REF(roar)), REDLINE_WINDUP, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// The tell is over: the roar, and the burn
@@ -243,13 +250,13 @@
 	glow = owner.mob_light(REDLINE_GLOW_RANGE, REDLINE_GLOW_POWER, REDLINE_COLOR)
 	playsound(owner, 'sound/effects/magic/demon_attack1.ogg', 90, TRUE)
 	playsound(owner, 'sound/effects/magic/repulse.ogg', 60, TRUE)
-	owner.visible_message(span_boldwarning("[owner]'s eyes flood red and a speaker-drone ROAR shakes the air!"))
+	owner.visible_message(span_boldwarning("[owner]'s eyes flood red and [owner.p_their()] chest speaker lets out a deafening ROAR!"))
 	for(var/mob/living/hunter in ohearers(REDLINE_ROAR_RANGE, owner))
 		if(!bounty_ai_is_hunter(hunter) || !bounty_ai_may_hit(owner, hunter))
 			continue
 		hunter.apply_status_effect(/datum/status_effect/staggered, REDLINE_ROAR_STAGGER)
 		shake_camera(hunter, 3, 1)
-		to_chat(hunter, span_userdanger("The roar hits like a physical wall!"))
+		to_chat(hunter, span_userdanger("The roar hits you like a wall!"))
 	burn_timer = addtimer(CALLBACK(src, PROC_REF(burn_out)), REDLINE_WINDOW, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// The burn ran its course
@@ -421,6 +428,8 @@
 #undef REDLINE_COLOR
 #undef REDLINE_GLOW_RANGE
 #undef REDLINE_GLOW_POWER
+#undef REDLINE_TELL_GLOW_RANGE
+#undef REDLINE_TELL_GLOW_POWER
 #undef REDLINE_FLINCH_GAP
 #undef REDLINE_FILTER
 #undef REDLINE_TRAIT

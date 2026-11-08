@@ -14,15 +14,17 @@
  *   chrome is down from an EMP they punch like anyone else.
  * - The grab and pummel. Now and then, with someone right beside them, they lean in and reach with
  *   both hands: the tile lights up in a ring and the pistons sigh. After BOUNTY_GORILLA_REACH_TIME they
- *   grab whoever still stands there, who is held fast (BOUNTY_GORILLA_HELD_TRAIT: no walking off, though
- *   their hands stay free), then drive two fast punches into their face and finish with the piston
- *   punch (below), which lets go and throws them back. Never more than BOUNTY_GORILLA_PUMMEL_BUDGET
- *   brute for the whole of it, and they let go of anyone who drops. Counterplay: step off the ring;
- *   a shield stops the grab outright; struggling (moving or resisting) may break the grip; hitting
- *   them hard (BOUNTY_GORILLA_HOLD_BREAK_DAMAGE) while they reach or hold makes them let go; a stun,
- *   a knockdown or an EMP ends it at once. Anyone who breaks free, or a reach that closes on air or a
- *   shield, leaves them stumbling. Someone just let go can't be grabbed again for a while
- *   (BOUNTY_GORILLA_GRAB_GUARD).
+ *   take whoever still stands there in tg's own aggressive grab (take_hold()), the one a player with
+ *   the implant uses, so it holds, shows and breaks like anyone's: no walking off, hands tied up, and
+ *   Resist or a step struggles against it (resist_grab()). Then they drive two fast punches into the
+ *   face and finish with the piston punch (below) to the face, which lets go and throws them back.
+ *   Never more than BOUNTY_GORILLA_PUMMEL_BUDGET brute for the whole of it, never longer than
+ *   BOUNTY_GORILLA_HOLD_MAX, and they let go of anyone who drops. Counterplay: step off the ring; a
+ *   shield stops the grab outright; struggle free; a friend can pull them out of it; hitting them hard
+ *   (BOUNTY_GORILLA_HOLD_BREAK_DAMAGE) while they reach or hold makes them let go; a stun, a knockdown
+ *   or an EMP ends it at once. Anyone who struggles or is pulled free, or a reach that closes on air or
+ *   a shield, leaves them stumbling. Someone just let go can't be grabbed again for a while
+ *   (BOUNTY_GORILLA_GRAB_GUARD), and someone another holds is never punched (no stepping off that tile).
  * - The piston punch. Every so often, with someone right beside them, they plant their feet and draw
  *   back a glowing fist: the tile they aim at lights up and the pistons hiss. After
  *   BOUNTY_GORILLA_WINDUP it lands on whoever still stands there, with the player implant's flat
@@ -35,8 +37,9 @@
  * - Doors. When whoever they were fighting gets behind a closed airlock, they force it, as the
  *   player's set bonus does: a short heave on an unpowered door, a slow loud pry on a powered one.
  *   Bolted, welded or sealed doors hold, as they do for the player implant, and that door is then
- *   left alone for a while. They never force a door on a ship, a hangar, an outpost or anywhere off
- *   their site, or one with space or a big pressure difference across it.
+ *   left alone for a while. They never force a door on a player's ship, a hangar, an outpost or
+ *   anywhere off their site (a pirate ship they are wanted aboard is their site, so its doors are
+ *   fair game), or one with space or a big pressure difference across it.
  * - An EMP. A punch winding up, a reach or a hold seizes at once: whoever was held is let go and they
  *   go down; otherwise their next swing while the chrome is down seizes the same way (tg's strongarm
  *   backfire). A Juggernaut can't be knocked down while fresh, so it reels instead (boss_stagger()),
@@ -52,8 +55,8 @@
 #define BOUNTY_GORILLA_WINDUP (0.9 SECONDS)
 /// Gap between piston punches, from the moment the wind-up starts
 #define BOUNTY_GORILLA_PUNCH_COOLDOWN (8 SECONDS)
-/// The first piston punch of a fight comes no sooner than this
-#define BOUNTY_GORILLA_OPENING_DELAY (3 SECONDS)
+/// The first piston punch of a fight comes no sooner than this: inside a solo fight's first few seconds, or the arms never show
+#define BOUNTY_GORILLA_OPENING_DELAY (1.5 SECONDS)
 /// The player implant's punch (CYBERWARE_GORILLA_PUNCH_DAMAGE), before the zone's NPC scaling, and its wound bonus
 #define BOUNTY_GORILLA_PUNCH_DAMAGE 20
 #define BOUNTY_GORILLA_PUNCH_WOUND_BONUS 10
@@ -99,7 +102,7 @@
 #define BOUNTY_GORILLA_REACH_TIME (0.8 SECONDS)
 /// Gap between grabs, from the moment the reach starts, and the first grab of a fight comes no sooner than this
 #define BOUNTY_GORILLA_GRAB_COOLDOWN (20 SECONDS)
-#define BOUNTY_GORILLA_GRAB_OPENING (6 SECONDS)
+#define BOUNTY_GORILLA_GRAB_OPENING (3 SECONDS)
 /// After a grab or a piston punch, the other waits at least this long, so the two never come back to back
 #define BOUNTY_GORILLA_SPECIAL_GAP (4 SECONDS)
 /// Fast punches to the face before the finishing piston punch, and the beat before each blow of the pummel
@@ -109,11 +112,8 @@
 #define BOUNTY_GORILLA_FACE_DAMAGE 20
 /// The most brute the whole grab may do to one hunter, after armour, finisher and all: it hurts a lot, and never kills someone healthy
 #define BOUNTY_GORILLA_PUMMEL_BUDGET 55
-/// Someone held is let go after this whatever happens: the hold's own clock, should its gorilla vanish
+/// Someone held is let go after this whatever happens: the hold's own clock, should the pummel be cut off without a word
 #define BOUNTY_GORILLA_HOLD_MAX (2.5 SECONDS)
-/// Chance a struggle breaks the grip, and the least time between two struggles that count
-#define BOUNTY_GORILLA_BREAK_CHANCE 30
-#define BOUNTY_GORILLA_STRUGGLE_GAP (0.5 SECONDS)
 /// Damage they take while reaching or holding (after armour) that makes them let go
 #define BOUNTY_GORILLA_HOLD_BREAK_DAMAGE 20
 /// Someone just let go can't be grabbed again, by them or another, for this long
@@ -122,8 +122,6 @@
 #define BOUNTY_GORILLA_REACH_LEAN 4
 /// The ring under someone they reach for: the mark's pure red turned to the arms' orange (a plain colour would only darken it), so it reads apart from the piston punch's red box
 #define BOUNTY_GORILLA_MARK_COLOR list(1, 0.54, 0.12, 0, 0, 0, 0, 0, 0)
-/// Trait source for someone held fast in their grip, and for being drawn in close to them
-#define BOUNTY_GORILLA_HELD_TRAIT "bounty_chrome_gorilla_held"
 /// Trait source for standing still mid-punch, mid-pry and stumbling
 #define BOUNTY_GORILLA_TRAIT "bounty_chrome_gorilla"
 /// What a mini-boss's boss_busy says while its arms are busy
@@ -154,7 +152,7 @@
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
 	)
-	examine_text = "%THEIR arms are plated in dull chrome from knuckle to shoulder."
+	examine_text = "Dull chrome plates %THEIR arms from knuckle to shoulder."
 	/// What its arms are doing now: BOUNTY_GORILLA_PUNCH, _REACH, _HOLD, _PRY or _STUMBLE, or null
 	var/busy
 	/// Goes up with everything it starts or stops, so a stale timer does nothing
@@ -188,6 +186,8 @@
 	var/datum/weakref/held_ref
 	var/punches_left = 0
 	var/pummel_budget = 0
+	/// The hold's own clock: lets go at BOUNTY_GORILLA_HOLD_MAX whatever became of the pummel
+	var/hold_timer
 	/// Damage they have taken since the reach started
 	var/busy_damage = 0
 	/// REF() of someone let go of -> world.time they may be grabbed again, shared by every gorilla
@@ -473,7 +473,7 @@
 /datum/bounty_chrome/gorilla/proc/start_punch(atom/target)
 	if(busy || world.time < punch_ready_at || !able() || !bare_handed())
 		return FALSE
-	if(QDELETED(target) || !isturf(target.loc) || get_dist(owner, target) != 1 || !owner.Adjacent(target) || !may_punch(target, target))
+	if(QDELETED(target) || !isturf(target.loc) || get_dist(owner, target) != 1 || !owner.Adjacent(target) || !may_punch(target, target) || held_by_other(target))
 		return FALSE
 	if(!begin(BOUNTY_GORILLA_PUNCH, BOUNTY_GORILLA_WINDUP))
 		return FALSE
@@ -498,8 +498,8 @@
 /**
  * The wind-up under `for_serial` is over: the punch lands on whoever it may hit on the lit tile.
  * If the one it was meant for stepped off it, it hits air and they stumble; if that one is still
- * there but down, it is pulled. Nothing at all if they were stunned, downed or EMP'd meanwhile.
- * Returns TRUE if it hurt someone.
+ * there but down, or held fast by someone else meanwhile, it is pulled. Nothing at all if they were
+ * stunned, downed or EMP'd meanwhile. Returns TRUE if it hurt someone.
  */
 /datum/bounty_chrome/gorilla/proc/finish_punch(for_serial)
 	if(for_serial != serial || busy != BOUNTY_GORILLA_PUNCH)
@@ -515,11 +515,11 @@
 	if(!still_busy || !spot || !able() || !owner.Adjacent(spot))
 		return FALSE
 	var/atom/victim
-	if(!QDELETED(meant) && get_turf(meant) == spot && may_punch(meant, meant))
+	if(!QDELETED(meant) && get_turf(meant) == spot && may_punch(meant, meant) && !held_by_other(meant))
 		victim = meant
 	else
 		for(var/atom/movable/thing as anything in spot)
-			if(may_punch(thing, meant))
+			if(may_punch(thing, meant) && !held_by_other(thing))
 				victim = thing
 				break
 	if(victim)
@@ -530,9 +530,10 @@
 
 /**
  * The punch lands on `victim`: a person, or a mech's hull. `damage_cap` is the most brute it may do a
- * person after armour (what is left of the grab's budget), or null for no cap. Returns TRUE if it hurt.
+ * person after armour (what is left of the grab's budget), or null for no cap. `aim` is the body zone
+ * it lands on (the pummel's finisher goes to the face), or null for wherever. Returns TRUE if it hurt.
  */
-/datum/bounty_chrome/gorilla/proc/slam(atom/victim, damage_cap)
+/datum/bounty_chrome/gorilla/proc/slam(atom/victim, damage_cap, aim)
 	owner.face_atom(victim)
 	owner.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
 	if(ismecha(victim))
@@ -548,7 +549,7 @@
 	var/throw_dir = get_dir(owner, person)
 	playsound(person, 'sound/items/weapons/punch1.ogg', 60, TRUE)
 	playsound(person, 'sound/effects/meteorimpact.ogg', 30, TRUE)
-	var/zone = person.get_random_valid_zone(BODY_ZONE_CHEST)
+	var/zone = aim || person.get_random_valid_zone(BODY_ZONE_CHEST)
 	var/armour = person.run_armor_check(zone, MELEE, armour_penetration = BOUNTY_GORILLA_PUNCH_AP, silent = TRUE)
 	var/damage = npc_zone_damage(BOUNTY_GORILLA_PUNCH_DAMAGE, owner)
 	if(!isnull(damage_cap))
@@ -625,17 +626,36 @@
 
 /**
  * Whether they may grab `person`: a hunter beside them they may hit, awake and on their feet, on a
- * tile of their own (not in a mech, not strapped into anything), not held by anyone already, and not
- * one just let go (BOUNTY_GORILLA_GRAB_GUARD).
+ * tile of their own (not in a mech, not strapped into anything), someone tg's grab can take hold of
+ * aggressively (not a borg, not someone who can't be pushed about or pulled), not held fast by anyone
+ * already, and not one just let go (BOUNTY_GORILLA_GRAB_GUARD).
  */
 /datum/bounty_chrome/gorilla/proc/may_grab(mob/living/person)
-	if(!isliving(person) || QDELETED(person) || person == owner || !isturf(person.loc) || person.buckled)
+	if(!isliving(person) || QDELETED(person) || person == owner || !isturf(person.loc) || person.buckled || person.anchored)
 		return FALSE
-	if(person.stat != CONSCIOUS || person.body_position == LYING_DOWN || person.has_status_effect(/datum/status_effect/bounty_gorilla_held))
+	if(person.stat != CONSCIOUS || person.body_position == LYING_DOWN)
+		return FALSE
+	// tg's grab never tightens on these (grabbedby(), silicon grippedby())
+	if(issilicon(person) || !(person.status_flags & CANPUSH) || HAS_TRAIT(person, TRAIT_PUSHIMMUNE))
+		return FALSE
+	if(person.pulledby?.grab_state >= GRAB_AGGRESSIVE)
 		return FALSE
 	if(grab_guard[REF(person)] > world.time)
 		return FALSE
-	return may_punch(person, person)
+	if(!may_punch(person, person))
+		return FALSE
+	return person.can_be_pulled(owner, owner.pull_force)
+
+/// Whether they hold `person` fast now: tg's aggressive grab, theirs
+/datum/bounty_chrome/gorilla/proc/holding(mob/living/person)
+	return owner && !QDELETED(person) && owner.pulling == person && owner.grab_state >= GRAB_AGGRESSIVE
+
+/// Whether someone other than them holds `target` fast: no piston punch at a person who can't step off the lit tile
+/datum/bounty_chrome/gorilla/proc/held_by_other(atom/target)
+	var/mob/living/person = target
+	if(!isliving(person) || !person.pulledby || person.pulledby == owner)
+		return FALSE
+	return person.pulledby.grab_state >= GRAB_AGGRESSIVE
 
 /**
  * Reaches for `target`, right beside them: rooted, a glow, a lean in, a ring lit under them and the
@@ -710,42 +730,78 @@
 	return grab(victim)
 
 /**
- * They get hold of `victim`: held fast and drawn in close (/datum/status_effect/bounty_gorilla_held),
- * the pummel's first punch a beat away. A mini-boss is kept busy for the whole of it.
+ * They get hold of `victim` in tg's aggressive grab (take_hold()), the pummel's first punch a beat
+ * away. A mini-boss is kept busy for the whole of it.
  */
 /datum/bounty_chrome/gorilla/proc/grab(mob/living/victim)
 	var/hold_time = BOUNTY_GORILLA_PUMMEL_GAP * (BOUNTY_GORILLA_PUMMEL_PUNCHES + 1)
-	if(!victim.apply_status_effect(/datum/status_effect/bounty_gorilla_held, owner, src))
+	owner.face_atom(victim)
+	if(!take_hold(victim))
 		end_busy()
 		return FALSE
+	owner.do_attack_animation(victim)
 	busy = BOUNTY_GORILLA_HOLD
 	serial++
 	held_ref = WEAKREF(victim)
 	punches_left = BOUNTY_GORILLA_PUMMEL_PUNCHES
 	pummel_budget = BOUNTY_GORILLA_PUMMEL_BUDGET
+	// Struggled free, pulled away by a friend, or the two parted: tg lets go, and they hear of it
+	RegisterSignal(owner, COMSIG_ATOM_NO_LONGER_PULLING, PROC_REF(on_hold_broken))
+	deltimer(hold_timer)
+	hold_timer = addtimer(CALLBACK(src, PROC_REF(hold_expired)), BOUNTY_GORILLA_HOLD_MAX, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	ADD_TRAIT(owner, TRAIT_IMMOBILIZED, BOUNTY_GORILLA_TRAIT)
 	owner.changeNext_move(hold_time + 0.2 SECONDS)
 	var/mob/living/basic/bounty_criminal/boss/boss = boss()
 	if(boss)
 		boss.boss_next_ability_at = max(boss.boss_next_ability_at, world.time + hold_time + rand(BOUNTY_BOSS_ABILITY_GAP_MIN, BOUNTY_BOSS_ABILITY_GAP_MAX))
 		boss_serial = boss.boss_set_busy(BOUNTY_GORILLA_BOSS_BUSY, hold_time + 1 SECONDS)
-	owner.face_atom(victim)
-	owner.do_attack_animation(victim)
-	playsound(victim, 'sound/items/weapons/thudswoosh.ogg', 60, TRUE)
-	victim.visible_message(
-		span_danger("[owner] grabs [victim] by the collar!"),
-		span_userdanger("[owner] grabs you by the collar!"),
-	)
-	log_combat(owner, victim, "grabbed", "gorilla arms")
 	busy_timer = addtimer(CALLBACK(src, PROC_REF(pummel), serial), BOUNTY_GORILLA_PUMMEL_GAP, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	return TRUE
+
+/**
+ * tg's own aggressive grab on `victim`, the way a player takes one: the pull, then the grip tightened
+ * at once (a first upgrade always is), with tg's sound, line and log, and all its rules from then on.
+ * A basic mob may only pull (max_grab), so the arms lift that just for this. TRUE if they now hold
+ * `victim` aggressively; otherwise nothing is left half-done.
+ */
+/datum/bounty_chrome/gorilla/proc/take_hold(mob/living/victim)
+	var/old_max_grab = owner.max_grab
+	owner.max_grab = max(old_max_grab, GRAB_AGGRESSIVE)
+	victim.grabbedby(owner, supress_message = TRUE)
+	if(owner.pulling == victim && owner.grab_state < GRAB_AGGRESSIVE)
+		victim.grabbedby(owner)
+	owner.max_grab = old_max_grab
+	if(holding(victim))
+		return TRUE
+	if(owner.pulling == victim)
+		owner.stop_pulling()
+	return FALSE
 
 /// Whether the hold on `victim` goes on: they can still act, nothing cut them off, and the one they hold is awake, on their feet, beside them and still held by them
 /datum/bounty_chrome/gorilla/proc/hold_ok(mob/living/victim)
 	if(!able() || !boss_still_busy() || QDELETED(victim) || victim.stat != CONSCIOUS || victim.body_position == LYING_DOWN || !isturf(victim.loc))
 		return FALSE
-	var/datum/status_effect/bounty_gorilla_held/hold = victim.has_status_effect(/datum/status_effect/bounty_gorilla_held)
-	return hold && hold.piece_ref?.resolve() == src && owner.Adjacent(victim)
+	return holding(victim) && owner.Adjacent(victim)
+
+/**
+ * tg let go of the one they hold, and not because they did: struggled free (resist_grab()), pulled
+ * away by a friend, or the two parted. They are left off balance, unless whatever did it put them down
+ * too. Must not sleep: it runs inside stop_pulling().
+ */
+/datum/bounty_chrome/gorilla/proc/on_hold_broken(datum/source, atom/movable/was_pulling)
+	SIGNAL_HANDLER
+	if(busy != BOUNTY_GORILLA_HOLD || was_pulling != held_ref?.resolve())
+		return
+	var/shaken_off = owner.stat == CONSCIOUS && owner.body_position != LYING_DOWN && !HAS_TRAIT(owner, TRAIT_INCAPACITATED)
+	stop()
+	if(shaken_off)
+		stumble()
+
+/// The hold's own clock ran out with someone still held: let go, whatever kept the pummel from finishing
+/datum/bounty_chrome/gorilla/proc/hold_expired()
+	hold_timer = null
+	if(held_ref)
+		stop()
 
 /**
  * One blow of the pummel under `for_serial`: a punch to the face while any are left, then the
@@ -770,12 +826,12 @@
 		serial++
 		busy_timer = addtimer(CALLBACK(src, PROC_REF(pummel), serial), BOUNTY_GORILLA_PUMMEL_GAP, TIMER_STOPPABLE | TIMER_DELETE_ME)
 		return TRUE
-	// The finisher: let go, and the piston punch sends them off
+	// The finisher: let go, and the piston punch to the face sends them off
 	var/budget_left = pummel_budget
 	serial++
 	release()
 	end_busy()
-	slam(victim, budget_left)
+	slam(victim, budget_left, BODY_ZONE_HEAD)
 	return TRUE
 
 /// A punch to `victim`'s face: the implant's punch, against their head's armour, within what is left of the budget
@@ -806,23 +862,20 @@
 	stop()
 	stumble()
 
-/// `victim` struggled free (/datum/status_effect/bounty_gorilla_held): they are left off balance
-/datum/bounty_chrome/gorilla/proc/broken_free(mob/living/victim)
-	if(busy != BOUNTY_GORILLA_HOLD || held_ref?.resolve() != victim)
-		return
-	stop()
-	stumble()
-
-/// Lets go of whoever they hold, who can't be grabbed again for a while. Safe at any time.
+/// Lets go of whoever they hold (tg's stop_pulling()), who can't be grabbed again for a while. Safe at any time.
 /datum/bounty_chrome/gorilla/proc/release()
 	var/mob/living/victim = held_ref?.resolve()
 	held_ref = null
 	punches_left = 0
+	deltimer(hold_timer)
+	hold_timer = null
+	if(owner)
+		// Before letting go, so on_hold_broken() doesn't take it for a struggle
+		UnregisterSignal(owner, COMSIG_ATOM_NO_LONGER_PULLING)
+		if(victim && owner.pulling == victim)
+			owner.stop_pulling()
 	if(QDELETED(victim))
 		return
-	var/datum/status_effect/bounty_gorilla_held/hold = victim.has_status_effect(/datum/status_effect/bounty_gorilla_held)
-	if(hold && hold.piece_ref?.resolve() == src)
-		qdel(hold)
 	var/list/expired = list()
 	for(var/key in grab_guard)
 		if(grab_guard[key] <= world.time)
@@ -952,9 +1005,10 @@
 	return best
 
 /**
- * Whether they may go at `door`: their side's own ground (never a ship, a hangar, an outpost, or
- * anywhere at a trader outpost: bounty_ai_may_hit()), one that hasn't held against them lately, and
- * one that lets no air out when it opens.
+ * Whether they may go at `door`: their side's own ground (never a player's ship, a hangar, an
+ * outpost, or anywhere at a trader outpost: bounty_ai_may_hit(); a pirate ship they are wanted aboard
+ * is their own ground), one that hasn't held against them lately, and one that lets no air out when
+ * it opens.
  */
 /datum/bounty_chrome/gorilla/proc/door_may_force(obj/machinery/door/airlock/door)
 	if(QDELETED(door) || !door.density)
@@ -1062,101 +1116,6 @@
 		door.take_damage(AIRLOCK_PRY_DAMAGE, BRUTE, sound_effect = FALSE)
 	return TRUE
 
-// ===== HELD =====
-
-/**
- * Held fast in a Gorilla's grip: no walking off (hands stay free, to shoot or swing back), drawn in
- * close to them the way an aggressive grab draws someone in, and facing them. Moving or resisting
- * struggles, at most every BOUNTY_GORILLA_STRUGGLE_GAP, and may break the grip. It ends on its own
- * after BOUNTY_GORILLA_HOLD_MAX, or as soon as either of them is moved apart, whatever became of the
- * one holding on.
- */
-/datum/status_effect/bounty_gorilla_held
-	id = "bounty_gorilla_held"
-	status_type = STATUS_EFFECT_UNIQUE
-	duration = BOUNTY_GORILLA_HOLD_MAX
-	tick_interval = STATUS_EFFECT_NO_TICK
-	alert_type = null
-	on_remove_on_mob_delete = TRUE
-	/// Who holds them, and the piece holding on
-	var/datum/weakref/holder_ref
-	var/datum/weakref/piece_ref
-	/// world.time the next struggle counts
-	var/next_struggle_at = 0
-	/// Percent chance a struggle breaks the grip
-	var/break_chance = BOUNTY_GORILLA_BREAK_CHANCE
-
-/datum/status_effect/bounty_gorilla_held/on_creation(mob/living/new_owner, mob/living/holder, datum/bounty_chrome/gorilla/piece)
-	holder_ref = WEAKREF(holder)
-	piece_ref = WEAKREF(piece)
-	return ..()
-
-/datum/status_effect/bounty_gorilla_held/on_apply()
-	var/mob/living/holder = holder_ref?.resolve()
-	if(QDELETED(holder) || !owner.Adjacent(holder))
-		return FALSE
-	ADD_TRAIT(owner, TRAIT_IMMOBILIZED, BOUNTY_GORILLA_HELD_TRAIT)
-	var/toward = get_dir(owner, holder)
-	owner.setDir(toward)
-	// Drawn in toward them, as tg draws in someone held aggressively
-	if(ISDIAGONALDIR(toward))
-		toward = EWCOMPONENT(toward)
-	var/shift_x = (toward & EAST) ? GRAB_PIXEL_SHIFT_AGGRESSIVE : ((toward & WEST) ? -GRAB_PIXEL_SHIFT_AGGRESSIVE : 0)
-	var/shift_y = (toward & NORTH) ? GRAB_PIXEL_SHIFT_AGGRESSIVE : ((toward & SOUTH) ? -GRAB_PIXEL_SHIFT_AGGRESSIVE : 0)
-	owner.add_offsets(BOUNTY_GORILLA_HELD_TRAIT, x_add = shift_x, y_add = shift_y)
-	RegisterSignal(owner, COMSIG_MOB_CLIENT_PRE_LIVING_MOVE, PROC_REF(on_move_attempt))
-	RegisterSignal(owner, COMSIG_LIVING_RESIST, PROC_REF(on_resist))
-	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	RegisterSignal(holder, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	return TRUE
-
-/datum/status_effect/bounty_gorilla_held/on_remove()
-	REMOVE_TRAIT(owner, TRAIT_IMMOBILIZED, BOUNTY_GORILLA_HELD_TRAIT)
-	owner.remove_offsets(BOUNTY_GORILLA_HELD_TRAIT)
-	UnregisterSignal(owner, list(COMSIG_MOB_CLIENT_PRE_LIVING_MOVE, COMSIG_LIVING_RESIST, COMSIG_MOVABLE_MOVED))
-	var/mob/living/holder = holder_ref?.resolve()
-	if(holder)
-		UnregisterSignal(holder, COMSIG_MOVABLE_MOVED)
-
-/// Trying to walk off is a struggle; the move itself goes nowhere while the grip holds
-/datum/status_effect/bounty_gorilla_held/proc/on_move_attempt(datum/source, new_loc, direct)
-	SIGNAL_HANDLER
-	struggle()
-	return NONE
-
-/datum/status_effect/bounty_gorilla_held/proc/on_resist(datum/source)
-	SIGNAL_HANDLER
-	struggle()
-
-/// Either of them moved (thrown, shoved, pulled away by a friend): out of reach, the grip is gone
-/datum/status_effect/bounty_gorilla_held/proc/on_moved(datum/source)
-	SIGNAL_HANDLER
-	var/mob/living/holder = holder_ref?.resolve()
-	if(QDELETED(holder) || !owner.Adjacent(holder))
-		qdel(src)
-
-/// A struggle against the grip: now and then it breaks, and whoever held on is left off balance
-/datum/status_effect/bounty_gorilla_held/proc/struggle()
-	if(world.time < next_struggle_at || owner.stat != CONSCIOUS || HAS_TRAIT(owner, TRAIT_INCAPACITATED))
-		return FALSE
-	next_struggle_at = world.time + BOUNTY_GORILLA_STRUGGLE_GAP
-	var/mob/living/holder = holder_ref?.resolve()
-	if(QDELETED(holder))
-		qdel(src)
-		return TRUE
-	if(!prob(break_chance))
-		to_chat(owner, span_warning("You struggle against [holder]'s grip!"))
-		return FALSE
-	owner.visible_message(
-		span_danger("[owner] breaks free of [holder]'s grip!"),
-		span_danger("You break free of [holder]'s grip!"),
-	)
-	var/datum/bounty_chrome/gorilla/piece = piece_ref?.resolve()
-	piece?.broken_free(owner)
-	if(!QDELETED(src))
-		qdel(src)
-	return TRUE
-
 #undef BOUNTY_GORILLA_WINDUP
 #undef BOUNTY_GORILLA_PUNCH_COOLDOWN
 #undef BOUNTY_GORILLA_OPENING_DELAY
@@ -1200,12 +1159,9 @@
 #undef BOUNTY_GORILLA_FACE_DAMAGE
 #undef BOUNTY_GORILLA_PUMMEL_BUDGET
 #undef BOUNTY_GORILLA_HOLD_MAX
-#undef BOUNTY_GORILLA_BREAK_CHANCE
-#undef BOUNTY_GORILLA_STRUGGLE_GAP
 #undef BOUNTY_GORILLA_HOLD_BREAK_DAMAGE
 #undef BOUNTY_GORILLA_GRAB_GUARD
 #undef BOUNTY_GORILLA_REACH_LEAN
 #undef BOUNTY_GORILLA_MARK_COLOR
-#undef BOUNTY_GORILLA_HELD_TRAIT
 #undef BOUNTY_GORILLA_REACH
 #undef BOUNTY_GORILLA_HOLD
