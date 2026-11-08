@@ -65,7 +65,7 @@
 /// It ran past its longest possible length. A safety net, never the plan.
 #define HV_FINISHER_TIMED_OUT 6
 
-// Brain burst, gut spill and gut tether (voidcrew/modules/hyperviolence/braingut/).
+// Brain burst, gut spill and gut tether (voidcrew/modules/hyperviolence/braingut/). The guts come out with tg's chest organ spill, so they have no odds of their own.
 
 /// A blow must deal at least this much (after armour) before it can burst a downed victim's head instead of knocking it off whole.
 #define HV_HEAD_BURST_MIN_DAMAGE 30
@@ -80,20 +80,6 @@
 /// Percent chance that a heavy explosion bursts the head of a victim who is dead or in hard crit.
 #define HV_HEAD_BURST_EXPLOSION_CHANCE 10
 
-/// A slash must deal at least this much (after armour) to the chest to be able to spill guts.
-#define HV_GUTSPILL_MIN_DAMAGE 25
-/// A victim who is still up needs the chest this far gone (fraction of its damage limit) before a slash can spill guts.
-#define HV_GUTSPILL_MIN_CHEST_DAMAGE 0.25
-/// Percent chance that a qualifying slash spills guts.
-#define HV_GUTSPILL_CHANCE 12
-/// Percent chance that a qualifying slash spills guts on a victim who is dead or in hard crit.
-#define HV_GUTSPILL_CHANCE_DOWNED 35
-/// Percent chance that a heavy explosion spills guts.
-#define HV_GUTSPILL_EXPLOSION_CHANCE 15
-/// Percent chance that a heavy explosion spills guts on a victim who is dead or in hard crit.
-#define HV_GUTSPILL_EXPLOSION_CHANCE_DOWNED 25
-/// The chest this far gone (fraction of its damage limit) when guts spill also lets the stomach and liver slip out.
-#define HV_GUTSPILL_ORGAN_CHEST_DAMAGE 0.5
 /// How far the guts can lie from their owner before the owner is dragged against them.
 #define HV_GUT_TETHER_RANGE 3
 /// How far apart the guts and their owner can get before the tether tears.

@@ -1,8 +1,10 @@
-// Gut spill (hyperviolence, braingut part): a critical chest wound for big slashes and heavy
-// explosions. The victim's intestines spill onto the floor and stay joined to them by a tether
-// (gut_tether.dm); at the worst level the stomach and liver slip out too. It is a critical slash
-// wound, so gauze, sutures and cautery all work on the bleeding, but the cut will not close while
-// the guts are out. Pushing the guts back in turns it into an ordinary severe cut.
+// Gut spill (hyperviolence, braingut part): tg already spills a victim's chest organs onto the floor
+// when the chest is split open (/obj/item/bodypart/chest/dismember, only ever on someone in hard crit
+// or dead, or cursed). The intestines come out in that same spill, every time, and nothing else
+// triggers them. On a living victim they stay joined to the body by a tether (gut_tether.dm) through
+// a critical slash wound, so gauze, sutures and cautery all work on the bleeding, but the cut will not
+// close while the guts are out. Pushing the guts back in turns it into an ordinary severe cut. On a
+// corpse there is nothing to drag: the guts just lie with the other organs.
 // The design idea is Septic Shock's gut spill and Vanderlin's disembowel (AGPL code, nothing copied).
 
 /// Slows a victim holding their guts in.
@@ -12,7 +14,7 @@
 /datum/wound_pregen_data/flesh_slash/disembowel
 	abstract = FALSE
 	wound_path_to_generate = /datum/wound/slash/flesh/critical/disembowel
-	// only ever applied on purpose (the chest slash hook below, blast_gore.dm), never by the wound roll
+	// only ever applied on purpose, by the chest spill hook below, never by the wound roll
 	can_be_randomly_generated = FALSE
 	viable_zones = list(BODY_ZONE_CHEST)
 	threshold_minimum = WOUND_DISMEMBER_OUTRIGHT_THRESH
@@ -44,13 +46,13 @@
 	/// The strand between the victim and the guts.
 	var/datum/hv_gut_tether/tether
 
-/// Spills quietly: the spill reports itself in the hit message, so the generic "chest is torn open" line would only repeat it.
+/// Spills quietly: tg's chest spill line and the guts line already say it, so the generic "chest is torn open" line would only repeat them.
 /datum/wound/slash/flesh/critical/disembowel/apply_wound(obj/item/bodypart/L, silent = FALSE, datum/wound/old_wound = null, smited = FALSE, attack_direction = null, wound_source = "Unknown", replacing = FALSE)
 	return ..(L, TRUE, old_wound, smited, attack_direction, wound_source, replacing)
 
 /datum/wound/slash/flesh/critical/disembowel/wound_injury(datum/wound/slash/flesh/old_wound = null, attack_direction = null)
 	. = ..()
-	spill_out(attack_direction, !isnull(old_wound))
+	spill_out(attack_direction)
 
 /datum/wound/slash/flesh/critical/disembowel/Destroy()
 	release_guts()
@@ -75,43 +77,17 @@
 /datum/wound/slash/flesh/critical/disembowel/get_bleed_rate_of_change()
 	return ..() || BLOOD_FLOW_STEADY
 
-/// Throws the guts, and at the worst level the stomach and liver, out of the victim and onto the floor.
-/// need_spray is set when the generic cut did not already spray blood (it only does when the wound is new).
-/datum/wound/slash/flesh/critical/disembowel/proc/spill_out(attack_direction, need_spray)
-	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf)
+/// Drops the guts on the floor and ties them to the victim. The other organs are already out: the chest spill
+/// that brought this wound took them.
+/datum/wound/slash/flesh/critical/disembowel/proc/spill_out(attack_direction)
+	var/obj/item/bodypart/chest/chest = limb
+	guts = chest.hv_drop_intestines(attack_direction)
+	if(!guts)
 		return
-	var/atom/drop_spot = victim.drop_location() || victim_turf
-	if(isturf(victim.loc) && attack_direction)
-		var/turf/ahead = get_step(victim, attack_direction)
-		if(ahead && !ahead.is_blocked_turf(exclude_mobs = TRUE))
-			drop_spot = ahead
-	guts = new(drop_spot)
-	guts.add_mob_blood(victim)
 	guts_out = TRUE
 	RegisterSignal(guts, COMSIG_QDELETING, PROC_REF(on_guts_deleted))
 	victim.add_movespeed_modifier(/datum/movespeed_modifier/hv_gut_spill)
-
-	var/list/dna = victim.get_blood_dna_list()
-	if(victim.can_bleed() && isturf(drop_spot))
-		new /obj/effect/decal/cleanable/blood/gibs(drop_spot, null, dna)
-		if(need_spray)
-			victim.hv_blood_spray(attack_direction, 3)
-	playsound(victim, 'sound/effects/wounds/splatter.ogg', 80, TRUE)
 	INVOKE_ASYNC(victim, TYPE_PROC_REF(/mob, emote), "scream")
-	victim.hv_add_hit_line("[victim]'s guts spill out!", HV_LINE_HUGE, "Your guts spill out!", DEFAULT_MESSAGE_RANGE)
-
-	// at the worst level more than the guts come out
-	if(limb.get_damage() >= limb.max_damage * HV_GUTSPILL_ORGAN_CHEST_DAMAGE)
-		var/list/slip_chances = list(ORGAN_SLOT_STOMACH = 70, ORGAN_SLOT_LIVER = 35)
-		for(var/slot in slip_chances)
-			var/obj/item/organ/organ = victim.get_organ_slot(slot)
-			if(!organ || (organ.organ_flags & ORGAN_UNREMOVABLE) || !prob(slip_chances[slot]))
-				continue
-			organ.Remove(victim)
-			organ.forceMove(drop_spot)
-			victim.hv_add_hit_line("[victim]'s [organ.name] slips out!", HV_LINE_BOLD, "Your [organ.name] slips out!")
-
 	tether = new(victim, guts)
 	RegisterSignal(tether, COMSIG_QDELETING, PROC_REF(on_tether_deleted))
 
@@ -176,16 +152,7 @@
 	if(!QDELETED(src) && limb && demotes_to)
 		replace_wound(new demotes_to)
 
-/// Whether a blow to this chest is big enough, and the chest and victim fit, for it to spill guts.
-/// The deterministic part of the roll, split out so it can be tested.
-/obj/item/bodypart/chest/proc/hv_can_spill_guts(blow_damage, sharpness, wound_bonus, forced)
-	if(!owner || forced || wound_bonus == CANT_WOUND)
-		return FALSE
-	if(!(sharpness & SHARP_EDGED) || blow_damage < HV_GUTSPILL_MIN_DAMAGE)
-		return FALSE
-	return hv_chest_can_spill()
-
-/// Whether this chest could spill guts at all, whatever the blow: right body, nothing spilled yet.
+/// Whether this chest could spill intestines at all: a human body that can be wounded.
 /obj/item/bodypart/chest/proc/hv_chest_can_spill()
 	if(!owner || !ishuman(owner))
 		return FALSE
@@ -194,11 +161,28 @@
 	var/datum/wound_pregen_data/pregen = GLOB.all_wound_pregen_data[/datum/wound/slash/flesh/critical/disembowel]
 	return pregen.can_be_applied_to(src)
 
-/// Whether a victim is down for good measure: dead or in hard crit. Cuts and blasts spill guts far more readily on them.
-/obj/item/bodypart/chest/proc/hv_owner_downed()
-	return owner.stat >= HARD_CRIT
+/// Puts a coil of intestines on the floor where the organs fell, ahead of the victim when the blow's direction
+/// is known, with a smear of gibs and a line in the hit message. Returns the guts, or null if there was nowhere to put them.
+/obj/item/bodypart/chest/proc/hv_drop_intestines(attack_direction)
+	var/mob/living/carbon/victim = owner
+	var/turf/victim_turf = get_turf(victim)
+	if(!victim_turf)
+		return null
+	var/atom/drop_spot = victim.drop_location() || victim_turf
+	if(isturf(victim.loc) && attack_direction)
+		var/turf/ahead = get_step(victim, attack_direction)
+		if(ahead && !ahead.is_blocked_turf(exclude_mobs = TRUE))
+			drop_spot = ahead
+	var/obj/item/hv_intestines/guts = new(drop_spot)
+	guts.add_mob_blood(victim)
+	if(victim.can_bleed() && isturf(drop_spot))
+		new /obj/effect/decal/cleanable/blood/gibs(drop_spot, null, victim.get_blood_dna_list())
+	// Reads after tg's "chest is split open, causing their internal organs to spill out!"
+	victim.hv_add_hit_line("[victim]'s guts unspool across the floor!", HV_LINE_BOLD, "Your guts unspool across the floor!", DEFAULT_MESSAGE_RANGE)
+	return guts
 
-/// Puts a disembowelment on this chest, replacing the cut it comes from. Returns the wound, or null if it could not be applied.
+/// Puts a disembowelment on this chest, replacing the cut it comes from, and drops the guts it holds on a tether.
+/// Returns the wound, or null if it could not be applied.
 /obj/item/bodypart/chest/proc/hv_spill_guts(attack_direction, damage_source)
 	if(!hv_chest_can_spill())
 		return null
@@ -212,15 +196,26 @@
 		return null
 	return spill
 
-/obj/item/bodypart/chest/receive_damage(brute = 0, burn = 0, blocked = 0, updating_health = TRUE, forced = FALSE, required_bodytype = null, wound_bonus = 0, exposed_wound_bonus = 0, sharpness = NONE, attack_direction = null, damage_source, wound_clothing = TRUE)
+/// The intestines that come out in the same moment as the other chest organs. A living victim (in hard crit,
+/// or cursed) is disemboweled, so the guts stay tied to them; a corpse has nothing to drag, so its guts only drop.
+/// Does nothing if the guts are already out.
+/obj/item/bodypart/chest/proc/hv_spill_intestines(attack_direction)
+	if(!hv_chest_can_spill())
+		return
+	var/datum/wound/slash/flesh/critical/disembowel/already = get_wound_type(/datum/wound/slash/flesh/critical/disembowel)
+	if(already?.guts_out)
+		return
+	if(owner.stat == DEAD)
+		hv_drop_intestines(attack_direction)
+		return
+	hv_spill_guts(attack_direction, "chest spill")
+
+/// tg splits the chest open by spilling its organs onto the floor; the intestines are part of that spill.
+/// The way the last blow travelled, if one just landed, is where the guts are thrown.
+/obj/item/bodypart/chest/dismember(dam_type = BRUTE, silent = TRUE, wounding_type)
+	var/mob/living/carbon/chest_owner = owner
 	. = ..()
-	if(!(sharpness & SHARP_EDGED) || !owner)
+	// tg gives back the organs it spilled, or FALSE when it did nothing
+	if(!islist(.) || !length(.) || !chest_owner || chest_owner != owner)
 		return
-	if(!hv_can_spill_guts(brute * (100 - blocked) / 100, sharpness, wound_bonus, forced))
-		return
-	var/downed = hv_owner_downed()
-	// a victim who is still up must already be badly hurt: no spill from the first blow
-	if(!downed && get_damage() < max_damage * HV_GUTSPILL_MIN_CHEST_DAMAGE)
-		return
-	if(prob(downed ? HV_GUTSPILL_CHANCE_DOWNED : HV_GUTSPILL_CHANCE))
-		hv_spill_guts(attack_direction, damage_source)
+	hv_spill_intestines(chest_owner.hv_blood_recent_hit_dir())
