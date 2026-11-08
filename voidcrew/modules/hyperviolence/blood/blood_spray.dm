@@ -23,9 +23,32 @@
 
 /mob/living/Initialize(mapload)
 	. = ..()
-	RegisterSignal(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(hv_blood_on_damaged))
-	if(iscarbon(src))
-		RegisterSignal(src, COMSIG_CARBON_REMOVE_LIMB, TYPE_PROC_REF(/mob/living/carbon, hv_blood_on_limb_removed))
+	AddElement(/datum/element/hv_blood_hooks)
+
+/// Listens for hits and lost limbs on a mob and sprays its blood. An element rather than the mob
+/// registering on itself: a mob holds one handler per signal per listener, so a self-registration
+/// would replace (or be replaced by) the mob's own handlers for the same signals.
+/datum/element/hv_blood_hooks
+
+/datum/element/hv_blood_hooks/Attach(datum/target)
+	. = ..()
+	if(!isliving(target))
+		return ELEMENT_INCOMPATIBLE
+	RegisterSignal(target, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
+	if(iscarbon(target))
+		RegisterSignal(target, COMSIG_CARBON_REMOVE_LIMB, PROC_REF(on_limb_removed))
+
+/datum/element/hv_blood_hooks/Detach(datum/source)
+	UnregisterSignal(source, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_CARBON_REMOVE_LIMB))
+	return ..()
+
+/datum/element/hv_blood_hooks/proc/on_damaged(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+	SIGNAL_HANDLER
+	source.hv_blood_on_damaged(source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
+
+/datum/element/hv_blood_hooks/proc/on_limb_removed(mob/living/carbon/source, obj/item/bodypart/removed_limb, special, dismembered)
+	SIGNAL_HANDLER
+	source.hv_blood_on_limb_removed(source, removed_limb, special, dismembered)
 
 /// A fan of blood flung across a floor tile, facing the way it flew.
 /obj/effect/decal/cleanable/blood/hv_spray
