@@ -297,9 +297,7 @@ SUBSYSTEM_DEF(criminal_bounties)
 	if(kind == BOUNTY_PLACEMENT_TRADER_OUTPOST && !record.old_look)
 		make_old_look(record)
 
-	// Now and then a Most Wanted is a cyberpsycho, with its own card and pay (chrome/bounty_cyberpsycho.dm)
-	var/posting_type = bounty_psycho_posting_type(record, kind, private_to)
-	var/datum/criminal_bounty/posting = new posting_type
+	var/datum/criminal_bounty/posting = new
 	posting.record = record
 	posting.placement_kind = kind
 	posting.board_zone = zone

@@ -45,6 +45,9 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
  * and then, for Wanted and up), weighted among the pieces that suit their archetype, style and kit.
  */
 /proc/bounty_roll_chrome(tier, archetype, style, kit)
+	// The cyberpsycho is its chrome: all of it, every time (chrome/bounty_cyberpsycho.dm)
+	if(kit == BOUNTY_KIT_CYBERPSYCHO)
+		return bounty_psycho_chrome_keys()
 	if(!prob(bounty_chrome_tier_chance(tier)))
 		return null
 	var/count = (tier >= BOUNTY_TIER_WANTED && prob(BOUNTY_CHROME_SECOND_CHANCE)) ? 2 : 1
@@ -389,14 +392,15 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	SIGNAL_HANDLER
 	if(protection & EMP_PROTECT_SELF)
 		return
-	var/hit = FALSE
+	// The malfunction shows for as long as the longest piece it knocked out stays down
+	var/longest = 0
 	for(var/key in pieces)
 		var/datum/bounty_chrome/piece = pieces[key]
 		if(piece.emp(severity))
-			hit = TRUE
-	if(hit)
+			longest = max(longest, piece.emp_reboot)
+	if(longest)
 		var/mob/living/fighter = parent
-		do_sparks(3, TRUE, fighter)
+		bounty_chrome_malfunction_fx(fighter, longest)
 		fighter.visible_message(span_warning("[fighter]'s chrome sparks and stutters!"))
 
 /datum/component/bounty_chrome/proc/on_examine(datum/source, mob/user, list/examine_list)
@@ -407,6 +411,124 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		var/line = piece.examine_line()
 		if(line)
 			examine_list += span_warning(replacetext(replacetext(line, "%THEIR", fighter.p_their()), "%THEY", fighter.p_they()))
+
+// ===== A MALFUNCTION =====
+
+/**
+ * Shows `fighter`'s chrome malfunctioning for `duration`: arcs crawling over the body, tg's EMP
+ * sparkle, a flickering chrome-blue outline and light, twitches, and sparks spat onto the tiles around
+ * them with a crackle. Only a picture: nothing is hurt, set alight or switched off by it. An EMP that
+ * knocks chrome out shows it (/datum/component/bounty_chrome/proc/on_emp()); a longer one extends it.
+ */
+/proc/bounty_chrome_malfunction_fx(mob/living/fighter, duration)
+	if(QDELETED(fighter) || fighter.stat == DEAD || duration <= 0)
+		return null
+	return fighter.apply_status_effect(/datum/status_effect/bounty_chrome_malfunction, duration)
+
+/// The arcs over a malfunctioning body, and their glow in the dark when `fighter` is given. For the overlay and the renders.
+/proc/bounty_chrome_malfunction_arcs(atom/fighter)
+	. = list()
+	var/mutable_appearance/arcs = mutable_appearance('icons/effects/effects.dmi', "electricity", ABOVE_MOB_LAYER)
+	arcs.color = BOUNTY_CHROME_MALFUNCTION_MATRIX
+	. += arcs
+	. += mutable_appearance('icons/effects/effects.dmi', "empdisable", ABOVE_MOB_LAYER)
+	if(fighter)
+		. += emissive_appearance('icons/effects/effects.dmi', "electricity", fighter)
+
+/**
+ * A fighter's chrome malfunctioning: the look of bounty_chrome_malfunction_fx(), for its duration.
+ * Purely visual. It ends early if they die.
+ */
+/datum/status_effect/bounty_chrome_malfunction
+	id = "bounty_chrome_malfunction"
+	duration = BOUNTY_CHROME_EMP_REBOOT
+	tick_interval = BOUNTY_CHROME_MALFUNCTION_PULSE
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = null
+	/// The arcs and the sparkle on the body
+	var/list/arcs
+	/// The flickering light they give off
+	var/obj/effect/dummy/lighting_obj/moblight/glow
+
+/datum/status_effect/bounty_chrome_malfunction/on_creation(mob/living/new_owner, new_duration)
+	if(new_duration > 0)
+		duration = new_duration
+	return ..()
+
+/datum/status_effect/bounty_chrome_malfunction/refresh(effect, new_duration)
+	duration = max(duration, world.time + max(new_duration, 0))
+
+/datum/status_effect/bounty_chrome_malfunction/on_apply()
+	if(owner.stat == DEAD)
+		return FALSE
+	arcs = bounty_chrome_malfunction_arcs(owner)
+	owner.add_overlay(arcs)
+	owner.add_filter(BOUNTY_CHROME_MALFUNCTION_FILTER, 3, outline_filter(1, BOUNTY_CHROME_MALFUNCTION_COLOR))
+	var/outline = owner.get_filter(BOUNTY_CHROME_MALFUNCTION_FILTER)
+	if(outline)
+		// A flicker, never steady
+		animate(outline, color = "#7fd4ff20", time = 0.1 SECONDS, loop = -1)
+		animate(color = "#7fd4ffff", time = 0.1 SECONDS)
+		animate(color = "#7fd4ff60", time = 0.2 SECONDS)
+		animate(color = "#c8f0ffff", time = 0.1 SECONDS)
+	glow = owner.mob_light(2, 1, BOUNTY_CHROME_MALFUNCTION_COLOR)
+	playsound(owner, 'sound/effects/empulse.ogg', 40, TRUE)
+	playsound(owner, SFX_SPARKS, 60, TRUE)
+	pulse()
+	return TRUE
+
+/datum/status_effect/bounty_chrome_malfunction/tick(seconds_between_ticks)
+	if(owner.stat == DEAD)
+		qdel(src)
+		return
+	pulse()
+
+/// One beat of it: a twitch, sparks spat onto a tile or two around them, a crackle, the light jumping
+/datum/status_effect/bounty_chrome_malfunction/proc/pulse()
+	if(prob(60))
+		owner.Shake(rand(1, 2), rand(0, 1), 0.2 SECONDS)
+	glow?.set_light_power(pick(0.4, 1, 1.6))
+	var/turf/here = get_turf(owner)
+	if(!here)
+		return
+	var/list/spots = list()
+	for(var/turf/spot as anything in RANGE_TURFS(1, here))
+		if(spot != here && !isclosedturf(spot))
+			spots += spot
+	for(var/i in 1 to rand(1, 2))
+		if(!length(spots))
+			break
+		var/turf/spot = pick_n_take(spots)
+		new /obj/effect/temp_visual/bounty_chrome_spark(spot, (here.x - spot.x) * ICON_SIZE_X / 2, (here.y - spot.y) * ICON_SIZE_Y / 2)
+	if(prob(50))
+		playsound(owner, SFX_SPARKS, 35, TRUE, SILENCED_SOUND_EXTRARANGE)
+
+/datum/status_effect/bounty_chrome_malfunction/on_remove()
+	if(arcs)
+		owner.cut_overlay(arcs)
+	arcs = null
+	owner.remove_filter(BOUNTY_CHROME_MALFUNCTION_FILTER)
+	QDEL_NULL(glow)
+
+/datum/status_effect/bounty_chrome_malfunction/Destroy()
+	QDEL_NULL(glow)
+	return ..()
+
+/// Sparks flung from a malfunctioning body onto a tile beside it: tg's spark art, and nothing else. Starts `from_x`, `from_y` pixels back toward the body.
+/obj/effect/temp_visual/bounty_chrome_spark
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "sparks"
+	layer = ABOVE_MOB_LAYER
+	duration = 0.5 SECONDS
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/temp_visual/bounty_chrome_spark/Initialize(mapload, from_x = 0, from_y = 0)
+	. = ..()
+	setDir(pick(GLOB.cardinals))
+	pixel_x = from_x
+	pixel_y = from_y
+	animate(src, pixel_x = 0, pixel_y = 0, time = 0.2 SECONDS, easing = QUAD_EASING | EASE_OUT)
+	animate(alpha = 0, time = 0.3 SECONDS)
 
 // ===== A PIECE =====
 

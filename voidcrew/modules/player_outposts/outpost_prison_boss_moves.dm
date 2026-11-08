@@ -78,6 +78,9 @@
 			return /datum/prison_boss_move/slip_cuffs
 		if(BOUNTY_KIT_HEAVY)
 			return /datum/prison_boss_move/barricade
+		// Chrome arms and piston legs: the Juggernaut's charge
+		if(BOUNTY_KIT_CYBERPSYCHO)
+			return /datum/prison_boss_move/charge
 	return null
 
 /**
