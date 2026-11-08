@@ -76,6 +76,7 @@
 #include "voidcrew_derelict_outpost.dm"
 #include "voidcrew_derelict_themes.dm"
 #include "voidcrew_destructive_analyzer.dm"
+#include "voidcrew_direct_docking.dm"
 #include "voidcrew_dissection_tiers.dm"
 #include "voidcrew_drug_lab.dm"
 #include "voidcrew_drug_recipe.dm"
