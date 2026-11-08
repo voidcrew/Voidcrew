@@ -67,7 +67,8 @@
 #define BOUNTY_JUGGERNAUT_HEALTH_4 2300
 #define BOUNTY_JUGGERNAUT_BRUTE_MOD 0.7
 #define BOUNTY_JUGGERNAUT_BURN_MOD 0.8
-#define BOUNTY_JUGGERNAUT_SPEED 1.9
+/// Its pace: 0 keeps up with a running hunter, as a normal criminal fighting does (BOUNTY_FIGHT_SPEED); more is slower
+#define BOUNTY_JUGGERNAUT_SPEED 0.65
 /// Its fists
 #define BOUNTY_JUGGERNAUT_MELEE_MIN 20
 #define BOUNTY_JUGGERNAUT_MELEE_MAX 26
@@ -102,7 +103,8 @@
 /// Fireproof, not laser-proof: fire and heat can't hurt it, and lasers (BURN) hit it at this
 #define BOUNTY_PYROMANIAC_BRUTE_MOD 0.9
 #define BOUNTY_PYROMANIAC_BURN_MOD 0.9
-#define BOUNTY_PYROMANIAC_SPEED 1.8
+/// Its pace (see BOUNTY_JUGGERNAUT_SPEED)
+#define BOUNTY_PYROMANIAC_SPEED 0.55
 /// Its torch: burn damage
 #define BOUNTY_PYROMANIAC_MELEE_MIN 10
 #define BOUNTY_PYROMANIAC_MELEE_MAX 14
@@ -135,7 +137,8 @@
 #define BOUNTY_DEMOLITIONIST_HEALTH_4 2850
 #define BOUNTY_DEMOLITIONIST_BRUTE_MOD 0.85
 #define BOUNTY_DEMOLITIONIST_BURN_MOD 0.85
-#define BOUNTY_DEMOLITIONIST_SPEED 1.7
+/// Its pace (see BOUNTY_JUGGERNAUT_SPEED)
+#define BOUNTY_DEMOLITIONIST_SPEED 0.45
 /// Its crowbar: the look in its hand and every number of its blows (bounty_real_weapon())
 #define BOUNTY_DEMOLITIONIST_CROWBAR /obj/item/crowbar/red
 #define BOUNTY_DEMOLITIONIST_MELEE_COOLDOWN (1 SECONDS)
@@ -172,7 +175,8 @@
 #define BOUNTY_GHOST_HEALTH_4 2450
 #define BOUNTY_GHOST_BRUTE_MOD 1
 #define BOUNTY_GHOST_BURN_MOD 1
-#define BOUNTY_GHOST_SPEED 1.2
+/// Its pace (see BOUNTY_JUGGERNAUT_SPEED): a running hunter's; the dash does the rest
+#define BOUNTY_GHOST_SPEED 0
 /// Its blade: the look in its hand and every number of its blows (bounty_real_weapon())
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
 #define BOUNTY_GHOST_MELEE_COOLDOWN (0.7 SECONDS)
@@ -210,7 +214,8 @@
 #define BOUNTY_HEAVY_HEALTH_4 1850
 #define BOUNTY_HEAVY_BRUTE_MOD 0.55
 #define BOUNTY_HEAVY_BURN_MOD 0.65
-#define BOUNTY_HEAVY_SPEED 2.2
+/// Its pace (see BOUNTY_JUGGERNAUT_SPEED): the slowest of them, by design
+#define BOUNTY_HEAVY_SPEED 0.95
 /// 0 after review H3, as BOUNTY_BOSS_STAMINA_FRESH (combat.md had 0.15)
 #define BOUNTY_HEAVY_STAMINA_FRESH 0
 #define BOUNTY_HEAVY_STAMINA 180

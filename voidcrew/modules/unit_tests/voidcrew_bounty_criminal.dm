@@ -891,7 +891,7 @@
 	runner.adjustStaminaLoss(30)
 	TEST_ASSERT(runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Three disabler shots did not stamina-crit a meek criminal")
 
-	// Normal: health by tier and style (BOUNTY_NORMAL_HEALTH_PETTY 140 x BOUNTY_STYLE_HEALTH_BRAWLER 1.2), pace by style.
+	// Normal: health by tier and style (BOUNTY_NORMAL_HEALTH_PETTY 140 x BOUNTY_STYLE_HEALTH_BRAWLER 1.2), and a walk until there is a fight, whatever the style.
 	var/datum/bounty_record/brawler_record = new
 	brawler_record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
 	brawler_record.tier = 1 // BOUNTY_TIER_PETTY
@@ -900,7 +900,7 @@
 	spawned += brawler
 	TEST_ASSERT_EQUAL(brawler.maxHealth, 168, "A petty brawler has the wrong health")
 	TEST_ASSERT_EQUAL(brawler.health, 168, "A petty brawler did not start at full health")
-	TEST_ASSERT_EQUAL(brawler.speed, 1.25, "A brawler has the wrong pace") // BOUNTY_BODY_NORMAL_SPEED_MELEE
+	TEST_ASSERT_EQUAL(brawler.speed, 2.5, "A brawler doesn't start at the calm pace") // BOUNTY_CALM_SPEED
 	TEST_ASSERT(!HAS_TRAIT(brawler, "mission_field_mob"), "A criminal with no posting is kept from the planet sweep")
 	var/datum/bounty_record/gunman_record = new
 	gunman_record.archetype = "normal"
@@ -910,7 +910,7 @@
 	spawned += gunman
 	// BOUNTY_NORMAL_HEALTH_MOST 220 x BOUNTY_STYLE_HEALTH_PISTOL 0.9
 	TEST_ASSERT_EQUAL(gunman.maxHealth, 198, "A Most Wanted gunman has the wrong health")
-	TEST_ASSERT_EQUAL(gunman.speed, 1.4, "A gunman has the wrong pace") // BOUNTY_BODY_NORMAL_SPEED_RANGED
+	TEST_ASSERT_EQUAL(gunman.speed, 2.5, "A gunman doesn't start at the calm pace") // BOUNTY_CALM_SPEED
 
 	// Mini-bosses by kit; never at a trader outpost, where a normal criminal stands in.
 	var/datum/bounty_record/boss_record = new

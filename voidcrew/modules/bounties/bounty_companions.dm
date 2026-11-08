@@ -172,7 +172,7 @@
 	ai_put_drink_away()
 	ai_stand_up()
 	var/datum/bounty_style/style = bounty_ai_style(src)
-	set_varspeed(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
+	set_varspeed(style ? style.speed : BOUNTY_FIGHT_SPEED)
 	bounty_ai_draw(src, ai_hand)
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
 	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
@@ -199,7 +199,7 @@
 		return
 	ai_fled = TRUE
 	ai_let_go()
-	set_varspeed(BOUNTY_NORMAL_SPEED_MELEE)
+	set_varspeed(BOUNTY_FIGHT_SPEED)
 	visible_message(span_notice("[src] backs off and runs for it."))
 	if(QDELETED(ai_controller))
 		return

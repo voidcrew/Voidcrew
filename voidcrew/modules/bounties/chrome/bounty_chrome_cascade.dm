@@ -21,7 +21,8 @@
  *
  * The pace: its speed changes are movespeed modifiers of its own, on top of the AI's set_varspeed()
  * pace, so ai_set_pace() and a boss's tiredness keep working through a surge and nothing is left
- * behind when it ends.
+ * behind when it ends. A fighter keeps up with a running hunter (BOUNTY_FIGHT_SPEED); in the window
+ * it covers ground twice as fast, and in the crash it is down to a walk.
  */
 
 /// The phases of a surge
@@ -194,6 +195,10 @@
 	var/datum/bounty_style/style = bounty_ai_style(owner)
 	if(!style?.ranged || !isturf(owner.loc) || owner.buckled || owner.pulledby)
 		return
+	// One step of its own at a time, shared with the step out of a friend's line of fire (bounty_ai_normal.dm)
+	var/datum/ai_controller/controller = owner.ai_controller
+	if(QDELETED(controller) || world.time < controller.blackboard[BB_BOUNTY_SIDESTEP_AT])
+		return
 	var/atom/target = bounty_chrome_target(owner)
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf || target_turf.z != owner.z)
@@ -210,6 +215,7 @@
 		if(leash_holder && !leash_holder.leash_ok(spot))
 			continue
 		if(owner.Move(spot, side))
+			controller.set_blackboard_key(BB_BOUNTY_SIDESTEP_AT, world.time + owner.cached_multiplicative_slowdown)
 			owner.face_atom(target)
 			return
 
@@ -346,13 +352,13 @@
 			return "The chrome at the base of %THEIR neck ticks as it cools."
 	return "Chrome ports glint at the base of %THEIR neck."
 
-/// The window's pace, on top of the AI's own: less than the player lattice's -1, as an NPC already outpaces a running hunter
+/// The window's pace, on top of the AI's own: a fighter's steps (RUN_DELAY 1.5 apart) come twice as fast, so it runs a hunter down or leaves them behind. Short of the player lattice's -1.
 /datum/movespeed_modifier/bounty_cascade
-	multiplicative_slowdown = -0.5
+	multiplicative_slowdown = -0.75
 
-/// The crash's pace, on top of the AI's own
+/// The crash's pace, on top of the AI's own: a fighter is down to a walking person's pace (WALK_DELAY 4)
 /datum/movespeed_modifier/bounty_cascade_crash
-	multiplicative_slowdown = 1
+	multiplicative_slowdown = 2.5
 
 /**
  * A Cascade fighter's blow timing in a surge: /mob/living/changeNext_move() multiplies the time

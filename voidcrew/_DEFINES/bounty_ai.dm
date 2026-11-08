@@ -66,6 +66,8 @@
 #define BB_BOUNTY_STRING_SHOTS "bb_bounty_string_shots"
 /// world.time a ranged fighter may next step back from someone too close
 #define BB_BOUNTY_BACKSTEP_AT "bb_bounty_backstep_at"
+/// world.time a fighter may next take a step of its own outside its walk: aside out of a friend's line of fire, back from someone too close, a Cascade strafe. Each of those, and each step of the walk, pushes it a step's time on.
+#define BB_BOUNTY_SIDESTEP_AT "bb_bounty_sidestep_at"
 
 // ===== ACTIVITY STEPS =====
 
@@ -78,7 +80,14 @@
 
 // ===== SHARED =====
 
-/// Speed while going about their business, and while blended in (the fugitive and every decoy move alike)
+// Pace. A basic mob's `speed` is added to the run delay every living mob gets (RUN_DELAY in
+// game_options.txt, 1.5: a running person), so 0 keeps pace with a running hunter, more is slower
+// and less is faster. The bounty movement (/datum/ai_movement/jps/bounty_paced) walks the result
+// exactly, never rounded up to the next tick.
+
+/// Speed in a fight, every style, criminals and companions alike: a running hunter's pace
+#define BOUNTY_FIGHT_SPEED 0
+/// Speed while going about their business, and while blended in (the fugitive and every decoy move alike): a walking person's pace (RUN_DELAY 1.5 + 2.5 is WALK_DELAY 4)
 #define BOUNTY_CALM_SPEED 2.5
 /// How often they look around for hunters
 #define BOUNTY_NOTICE_INTERVAL (0.5 SECONDS)
@@ -90,6 +99,8 @@
 #define BOUNTY_FIGHT_VISION 9
 /// How often a ranged fighter steps back from someone inside its style's min_range
 #define BOUNTY_BACKSTEP_GAP (0.8 SECONDS)
+/// Chasing someone this close down a clear straight line, they walk straight at where the target is now rather than follow a path worked out earlier
+#define BOUNTY_CHASE_STRAIGHT_RANGE 8
 /// How many times a walk may fail before they give up on where they were going
 #define BOUNTY_TRAVEL_GIVE_UP 3
 /// How long before trying an activity again after it could not be set up
@@ -107,12 +118,12 @@
 
 // ===== MEEK (combat.md 6.1, spec C6) =====
 
-/// Speed while sprinting: the tg trooper's, faster than a running person (1.5)
-#define BOUNTY_MEEK_SPRINT_SPEED 1.1
+/// Speed while sprinting: a little faster than a running hunter
+#define BOUNTY_MEEK_SPRINT_SPEED -0.25
 /// A lizard sprints a little faster (spec section 2)
 #define BOUNTY_MEEK_LIZARD_SPRINT_BONUS 0.1
-/// Speed while winded: clearly slower than a runner
-#define BOUNTY_MEEK_WINDED_SPEED 2.2
+/// Speed while winded: clearly slower than a runner, quicker than a walk
+#define BOUNTY_MEEK_WINDED_SPEED 1
 /// How long they sprint before they are winded
 #define BOUNTY_MEEK_SPRINT_TIME (8 SECONDS)
 /// Resting still, the sprint comes back in this long
@@ -171,9 +182,6 @@
 
 // ===== NORMAL (combat.md 6.2, spec C7) =====
 
-/// Speed in a fight, by style
-#define BOUNTY_NORMAL_SPEED_MELEE 1.25
-#define BOUNTY_NORMAL_SPEED_RANGED 1.4
 /// Noticed at this range (someone armed, cuffs or a warrant in hand)
 #define BOUNTY_NORMAL_NOTICE_RANGE 6
 /// Someone with a weapon drawn this close, while they are aware of them, starts the fight

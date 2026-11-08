@@ -81,9 +81,10 @@
 	var/slowdown_before = criminal.cached_multiplicative_slowdown
 	piece.open_window()
 	TEST_ASSERT_EQUAL(piece.phase, 2, "The window didn't open") // BOUNTY_CASCADE_WINDOW
-	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before - 0.5)) < 0.01, "The window's pace is [criminal.cached_multiplicative_slowdown], not [slowdown_before - 0.5]")
+	// The window's own pace against a player's is in voidcrew_bounty_speed.dm; here, that it stacks with the AI's
+	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before - 0.75)) < 0.01, "The window's pace is [criminal.cached_multiplicative_slowdown], not [slowdown_before - 0.75]")
 	criminal.ai_set_pace(2.5) // BOUNTY_CALM_SPEED
-	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before - pace_before + 2.5 - 0.5)) < 0.01, "The AI's pace doesn't work through the window")
+	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before - pace_before + 2.5 - 0.75)) < 0.01, "The AI's pace doesn't work through the window")
 	criminal.ai_set_pace(pace_before)
 	criminal.changeNext_move(10)
 	TEST_ASSERT(abs(criminal.next_move - world.time - 7.5) < 0.01, "Blows in the window come [criminal.next_move - world.time] apart, not 7.5") // BOUNTY_CASCADE_WINDOW_BLOWS
@@ -116,7 +117,7 @@
 	piece.start_crash()
 	TEST_ASSERT_EQUAL(piece.phase, 3, "The window didn't crash") // BOUNTY_CASCADE_CRASH
 	TEST_ASSERT(!criminal.has_movespeed_modifier(/datum/movespeed_modifier/bounty_cascade), "The window's speed outlived it")
-	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before + 1)) < 0.01, "The crash's pace is [criminal.cached_multiplicative_slowdown], not [slowdown_before + 1]")
+	TEST_ASSERT(abs(criminal.cached_multiplicative_slowdown - (slowdown_before + 2.5)) < 0.01, "The crash's pace is [criminal.cached_multiplicative_slowdown], not [slowdown_before + 2.5]")
 	TEST_ASSERT_NULL(criminal.GetComponent(/datum/component/cyberware_dodge), "The dodge outlived the window")
 	criminal.changeNext_move(10)
 	TEST_ASSERT(abs(criminal.next_move - world.time - 14) < 0.01, "Blows in the crash come [criminal.next_move - world.time] apart, not 14") // BOUNTY_CASCADE_CRASH_BLOWS
