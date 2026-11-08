@@ -73,12 +73,13 @@
 /**
  * What `spot` asks of a person standing there: HUMAN_NPC_SITE_* flags read from its air. Space and
  * anything under tg's hazard pressure is vacuum; too little oxygen or a lungful of plasma or carbon
- * dioxide is bad air; air below HUMAN_NPC_SITE_COLD_TEMP is cold.
+ * dioxide is bad air; air below HUMAN_NPC_SITE_COLD_TEMP is cold. Only reads the air, so a planet tile
+ * keeps sharing its planet's mix (return_air_readonly(), planetary_shared_air.dm).
  */
 /proc/human_npc_site_at(turf/spot)
 	if(isnull(spot))
 		return NONE
-	var/datum/gas_mixture/air = spot.return_air()
+	var/datum/gas_mixture/air = spot.return_air_readonly()
 	if(isnull(air))
 		return HUMAN_NPC_SITE_VACUUM | HUMAN_NPC_SITE_COLD
 	. = NONE
@@ -130,13 +131,21 @@
 		warmth.apply(dressed)
 	return dressed
 
-/// Whether the outfit's suit and helmet both hold pressure.
+/// Whether the outfit's suit and helmet both hold pressure and keep out the cold of space. A fire suit or a
+/// tactical vest holds pressure too, but a person freezes in one out there (tg's cold protection). A space
+/// suit keeps it out with its thermal regulator, which comes on as an outfit puts it on if it has a cell
+/// (on_outfit_equip()).
 /proc/human_npc_outfit_sealed(datum/outfit/outfit)
-	var/obj/item/clothing/suit = outfit.suit
+	// Typed as a space suit only to read its cell; any suit that holds pressure is checked
+	var/obj/item/clothing/suit/space/suit = outfit.suit
 	var/obj/item/clothing/head = outfit.head
 	if(!ispath(suit, /obj/item/clothing) || !ispath(head, /obj/item/clothing))
 		return FALSE
-	return (initial(suit.clothing_flags) & STOPSPRESSUREDAMAGE) && (initial(head.clothing_flags) & STOPSPRESSUREDAMAGE)
+	if(!(initial(suit.clothing_flags) & STOPSPRESSUREDAMAGE) || !(initial(head.clothing_flags) & STOPSPRESSUREDAMAGE))
+		return FALSE
+	var/suit_cold = (ispath(suit, /obj/item/clothing/suit/space) && initial(suit.cell)) ? SPACE_SUIT_MIN_TEMP_PROTECT : initial(suit.min_cold_protection_temperature)
+	var/head_cold = initial(head.min_cold_protection_temperature)
+	return suit_cold && suit_cold <= SPACE_SUIT_MIN_TEMP_PROTECT && head_cold && head_cold <= SPACE_HELM_MIN_TEMP_PROTECT
 
 /// Whether it wears something it can breathe a tank through: a mask or a helmet that takes internals.
 /proc/human_npc_outfit_can_breathe(datum/outfit/outfit)

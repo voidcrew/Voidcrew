@@ -161,7 +161,7 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 	var/obj/item/clothing/own_head = dressed.head
 	if(ispath(gear[2], /obj/item/clothing/head))
 		dressed.head = gear[2]
-	else if(!ispath(own_head, /obj/item/clothing) || !(initial(own_head.clothing_flags) & STOPSPRESSUREDAMAGE))
+	else if(!ispath(own_head, /obj/item/clothing) || !(initial(own_head.clothing_flags) & STOPSPRESSUREDAMAGE) || !initial(own_head.min_cold_protection_temperature) || initial(own_head.min_cold_protection_temperature) > SPACE_HELM_MIN_TEMP_PROTECT)
 		dressed.head = /obj/item/clothing/head/helmet/space
 	return dressed
 
