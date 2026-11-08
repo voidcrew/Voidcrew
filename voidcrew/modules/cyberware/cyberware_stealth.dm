@@ -8,28 +8,35 @@
  * the hooks that ask it for everything that hunts the bearer by sight.
  *
  * Everything that grants TRAIT_CYBER_CAMO is hidden from:
- * - basic mobs (the targeting strategy below, which every strategy subtype
- *   inherits through its own `..()` calls),
+ * - basic mobs and human NPCs (the targeting strategy below, which every
+ *   strategy subtype inherits through its own `..()` calls: the human NPC
+ *   strategy, pirate crews and boarders, bounty criminals and their crews,
+ *   ruin troopers and hermits, patrols, the club's people),
  * - simple_animal hostiles (hermits, ice demons, polar bears, ...),
  * - every porta_turret subtype: ruin and Syndicate turrets, hull defense
  *   turrets, player-built turrets, trader and player outpost turrets, including
  *   a player an outpost has marked,
  * and, through one-line calls in the files that own them, the scripted target
- * picks that never go through a strategy: the club's mobsters, patrol troopers
- * opening a closet, the lich's thralls and the outpost experiments.
+ * picks that never go through a /basic strategy: the club's people
+ * (mafia_target_ok()), the lich's thralls and the outpost experiment forms
+ * (their form's can_target()).
  *
  * What camo does NOT hide from: anything within CYBERWARE_CAMO_SPOT_RANGE
- * tiles, and the mobs in GLOB.cyberware_camo_piercing_types (megafauna,
- * elites and bosses). Ship weapons that target ships, not people, are not
- * covered here. The street Flickerskin never grants the trait at all.
+ * tiles, the mobs in GLOB.cyberware_camo_piercing_types (megafauna, elites
+ * and the bosses that are still basic mobs), and every human NPC of boss rank
+ * (npc_rank HUMAN_NPC_RANK_BOSS: faction pirate bosses, the NT patrol's
+ * director, bounty bosses, the kingpin, the club's don). Ship weapons that
+ * target ships, not people, are not covered here. The street Flickerskin
+ * never grants the trait at all.
  *
  * The overrides live HERE, in a cyberware-owned file, rather than in the
  * shared AI files: defining the same proc a second time is this fork's blessed
  * way to patch upstream behavior (the later .dme include wraps the earlier
  * definition, and `..()` calls straight into it). That only works for a proc
  * whose first definition is included BEFORE this file, so the hooks for the
- * voidcrew files that include after it (the lich, the patrol, the experiments)
- * are a single call to cyberware_camo_hides() in the proc that picks the target.
+ * voidcrew files that include after it (the lich, the club, the experiment
+ * forms) are a single call to cyberware_camo_hides() in the proc that picks
+ * the target.
  *
  * TRAIT_CYBER_CAMO itself lives in voidcrew/_DEFINES/cyberware.dm, because
  * the chrome read (cyberware_scan.dm) is included ahead of this file and also
@@ -42,9 +49,10 @@
 #define CYBERWARE_CAMO_SPOT_RANGE 2
 
 /// Mobs that see straight through optical camo, whatever it is: megafauna,
-/// mining elites and the bosses and mini bosses of the ruins, bounties, lairs,
-/// outposts and NPC ships (every faction's pirate boss, the NT patrol's
-/// included). A typecache, so subtypes count.
+/// mining elites and the bosses and mini bosses of the ruins, lairs, outposts
+/// and vestiges that are still basic mobs. A typecache, so subtypes count.
+/// Bosses that are people (human NPCs) see through it by rank instead, in
+/// cyberware_camo_hides().
 GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 	/mob/living/simple_animal/hostile/megafauna,
 	/mob/living/basic/trooper/pirate/faction/boss,
@@ -52,8 +60,6 @@ GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 	/mob/living/basic/boss,
 	/mob/living/basic/lich,
 	/mob/living/basic/hoarfrost_matriarch,
-	/mob/living/basic/bounty_criminal/boss,
-	/mob/living/basic/bounty_criminal/kingpin,
 	/mob/living/basic/bounty_lair_boss,
 	/mob/living/basic/outpost_experiment/horror,
 	/mob/living/basic/alien/queen/large/derelict,
@@ -65,7 +71,8 @@ GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 /**
  * Whether optical camo hides `target` from `viewer` right now: the target holds
  * TRAIT_CYBER_CAMO, the viewer is further off than CYBERWARE_CAMO_SPOT_RANGE and
- * the viewer is not one of the mobs that sees through it. `viewer` is whatever
+ * the viewer is not one of the mobs that sees through it (a piercing type, or a
+ * human NPC of boss rank). `viewer` is whatever
  * is doing the looking (a mob, a turret, a creature picking its next victim).
  * Anything that is not a living mob is never hidden.
  */
@@ -78,6 +85,10 @@ GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 		return FALSE
 	if(is_type_in_typecache(viewer, GLOB.cyberware_camo_piercing_types))
 		return FALSE
+	if(ishumannpc(viewer))
+		var/mob/living/carbon/human/npc/person = viewer
+		if(person.npc_rank >= HUMAN_NPC_RANK_BOSS)
+			return FALSE
 	return TRUE
 
 /**

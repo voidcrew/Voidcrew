@@ -81,7 +81,9 @@
 	TEST_ASSERT(!weave.camo_active, "A real shock left the field up")
 
 	TEST_ASSERT(GLOB.cyberware_camo_piercing_types[/mob/living/basic/trooper/pirate/faction/boss], "A pirate boss doesn't see through camo")
-	TEST_ASSERT(GLOB.cyberware_camo_piercing_types[/mob/living/basic/trooper/pirate/faction/boss/nt_patrol], "The NT patrol's boss doesn't see through camo")
+	// The NT patrol's boss is a person now: it sees through camo by rank (HUMAN_NPC_RANK_BOSS is 2).
+	var/mob/living/carbon/human/npc/director_type = /mob/living/carbon/human/npc/faction_pirate/nt_customs/director
+	TEST_ASSERT_EQUAL(initial(director_type.npc_rank), 2, "The NT patrol's boss doesn't see through camo")
 
 /// The wheel shows the zoom as on while zoomed, and a chip whose chrome was
 /// cut out while the wheel was held open can't be picked.
