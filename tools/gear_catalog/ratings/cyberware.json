@@ -19,7 +19,7 @@
    "hash": "c229d282cf893570",
    "name": "Strong-Arm empowered musculature implant",
    "note": "Humans only. With the implanted arm active, an empty-hand combat-mode left-click on a mob becomes a slam on a 5 s cooldown: the hand's unarmed damage roll plus 5 (plus 20 more against beast, special and mining mobs), doubled and run through melee armor, and the target is thrown 1 tile if the wearer is standing; it is not used while Hulk. One implant in each arm lets the wearer pry closed airlocks open bare-handed (6 s, instant if unpowered, refused if bolted or welded). An EMP puts the arm down for 9 s (4.5 s on a light pulse): slams fail, and half the time the wearer lunges onto the target and falls for 3 s, otherwise is paralyzed for 1 s.",
-   "rank": 9,
+   "rank": 10,
    "reason": "A slam for 20 to 30 damage every 5 s per arm, 60 to 70 against mining mobs and beasts, and a pair pries powered airlocks in 6 s. 1,200 cr for two from cargo. EMP makes the arm a liability for 9 s.",
    "tier": "yellow"
   },
@@ -28,7 +28,7 @@
    "group": "Work tools",
    "hash": "5b81131a4a10a42c",
    "name": "Harpoon Spool",
-   "rank": 6,
+   "rank": 9,
    "reason": "Pulls a loose item or small creature to you from 6 tiles every 8 s, anything bigger drags you a tile. Can grab a dropped gun, little else. Load 2, 2,800 cr.",
    "tier": "green"
   },
@@ -56,7 +56,7 @@
    "group": "Work tools",
    "hash": "",
    "name": "Tinker's fingers",
-   "rank": 2,
+   "rank": 3,
    "reason": "A driver, wrench and cutters in the arm, and every timed action 10% faster. The Fixer's Fingers at a tenth of the stack: load 1, 700 cr. Splice takes a pulled set back for 350 cr.",
    "tier": "green"
   },
@@ -75,7 +75,7 @@
    "group": "Hacking and ship control",
    "hash": "52911504b95eb634",
    "name": "Icepick Jack",
-   "rank": 1,
+   "rank": 4,
    "reason": "Knocks hostile turrets out for 15 s, turns them for 10 s, and forces bolted or unpowered doors in 6 s. A boarding crew's key to player hulls, though jacking their turrets sets off an alarm. Load 3, 1 voucher.",
    "tier": "yellow"
   },
@@ -124,7 +124,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (right)",
-   "rank": 12,
+   "rank": 13,
    "reason": "Half of a pair: 14-force blades that can't be disarmed, no lunge. Load 4 the pair, 2,400 cr at yellow reputation. Splice takes a pulled housing back for 600 cr.",
    "tier": "yellow"
   },
@@ -133,7 +133,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (left)",
-   "rank": 13,
+   "rank": 14,
    "reason": "Left half of the Shiv pair: 14-force blades that can't be disarmed, no lunge.",
    "tier": "yellow"
   },
@@ -162,7 +162,7 @@
    "hash": "29ec5344a41717f9",
    "name": "Rockjaw drill fist",
    "note": "Folds a mining drill out of the forearm. While the drill is out, ore from any rock the wearer cracks (with any tool) is swept 0.2 s later into an internal hopper with no size limit in the code instead of landing on the floor; a second button dumps the hopper at the wearer's feet. Sweeping is off during an EMP reboot, and the hopper's contents drop if the arm ware is destroyed.",
-   "rank": 5,
+   "rank": 7,
    "reason": "A mining drill in the forearm with a bottomless ore hopper. A miner's bag and pick in one arm slot. Load 2, 1,200 cr.",
    "tier": "green"
   },
@@ -171,8 +171,8 @@
    "group": "Work tools",
    "hash": "",
    "name": "Deepcore drill fist",
-   "rank": 4,
-   "reason": "The Rockjaw's ore hopper on a faster drill, between the Rockjaw drill and a diamond drill. Load 3, 2,400 cr.",
+   "rank": 6,
+   "reason": "The Rockjaw's ore hopper on a faster drill, between the Rockjaw drill and a diamond drill. Load 3, 2,400 cr. Splice takes a pulled one back for 1,200 cr.",
    "tier": "green"
   },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin": {
@@ -198,7 +198,7 @@
    "group": "Mobility and stealth",
    "hash": "d2c5b721e44bd009",
    "name": "Skyhook wrist winch",
-   "rank": 3,
+   "rank": 4,
    "reason": "Fires a line at any wall or anchored structure within 7 tiles and hauls you there, every 8 s. Real chase and escape mobility, at the cost of an arm slot. Load 3, loot only.",
    "tier": "yellow"
   },
@@ -207,7 +207,7 @@
    "group": "Work tools",
    "hash": "4a6c47ce239cc051",
    "name": "integrated paperwork implant",
-   "rank": 7,
+   "rank": 11,
    "reason": "A pen, clipboard, lighter and laser pointer in your arm. Harmless.",
    "tier": "none"
   },
@@ -216,7 +216,7 @@
    "group": "Work tools",
    "hash": "6e21944c25437900",
    "name": "surgical toolset implant",
-   "rank": 3,
+   "rank": 4,
    "reason": "A surgical kit in your arm. Saves carrying the tools. Late printing.",
    "tier": "green"
   },
@@ -225,7 +225,7 @@
    "group": "Work tools",
    "hash": "2ffcab76bdd48728",
    "name": "morbid surgical toolset implant",
-   "rank": 4,
+   "rank": 5,
    "reason": "The surgical arm rebuilt for looks and a nasty mood. Same job as the plain one.",
    "tier": "green"
   },
@@ -244,7 +244,7 @@
    "hash": "095577f719c51add",
    "name": "anti-drop implant",
    "note": "A toggle button: switching it on makes whatever is in the wearer's hands at that moment undroppable (stuns and disarms don't release it) until the button is pressed again or the item leaves the hand; items picked up afterwards are not locked. An EMP releases it and flings the held items up to 10 tiles in random directions, and as with every brain implant any EMP also stuns the wearer for 20 s (10 s on a light pulse).",
-   "rank": 6,
+   "rank": 8,
    "reason": "Locks what's in your hands so stuns and disarms can't take it. Same job as Gecko Grip at about 24 cr of material, but any EMP stuns you for 20 s and flings the item.",
    "tier": "green"
   },
@@ -254,7 +254,7 @@
    "hash": "8ae45008ffefef4e",
    "name": "CNS rebooter implant",
    "note": "1 s after the wearer gains a stun, immobilize, paralysis or stamina crit it clears stun, knockdown, immobilize, paralysis and all stamina damage, then grants stun immunity, baton resistance and immunity to damage slowdown for 6 s (stamina is zeroed again at the end). Then locks out for 60 s. An EMP takes it offline for 9 s (4.5 s on a light pulse), and as with every brain implant also stuns the wearer for 20 s (10 s light).",
-   "rank": 2,
+   "rank": 3,
    "reason": "Once a minute a stun is cleared after 1 s, stamina resets, and you get 6 s of stun immunity. Undoes the first stun of a fight for one neural load. Any EMP stuns the wearer for 20 s and takes it offline for 9 s.",
    "tier": "yellow"
   },
@@ -264,7 +264,7 @@
    "hash": "df0fb0f149203f80",
    "name": "CNS skillchip connector implant",
    "note": "Lets the wearer put a skillchip in or take one out without surgery: a 1.5 s action, inserting the chip in the active hand or, with an empty hand, choosing an installed chip from a radial menu. An EMP knocks installed chips onto the floor (one on a light pulse, two on a heavy one), and as with every brain implant stuns the wearer for 20 s (10 s light). With no chip installed the handler indexes the first chip of an empty or null list and its brain-damage branch is called without a brain, so it may error out before the reboot timer starts (unconfirmed).",
-   "rank": 7,
+   "rank": 8,
    "reason": "Swap skillchips without surgery. Skillchips do almost nothing, and any EMP stuns you for 20 s.",
    "tier": "none"
   },
@@ -274,7 +274,7 @@
    "hash": "5bc666bd0e7ad39e",
    "name": "nutriment pump implant",
    "note": "While the wearer's nutrition is at or below 150 (250 for the PLUS version) it adds about 50 nutrition, then waits 5 s before it can do so again, which stops nutrition falling below that line. An EMP pushes bad-food toxin into the blood (5 units on a heavy pulse, 10 on the PLUS version).",
-   "rank": 5,
+   "rank": 6,
    "reason": "Keeps you just above starving. Removes the need for a kitchen for one neural load.",
    "tier": "green"
   },
@@ -284,7 +284,7 @@
    "hash": "ce113e10a6c8deab",
    "name": "nutriment pump implant PLUS",
    "note": "While the wearer's nutrition is at or below 150 (250 for the PLUS version) it adds about 50 nutrition, then waits 5 s before it can do so again, which stops nutrition falling below that line. An EMP pushes bad-food toxin into the blood (5 units on a heavy pulse, 10 on the PLUS version).",
-   "rank": 4,
+   "rank": 5,
    "reason": "Keeps you fed before you get hungry. Removes food from a six-hour round for one neural load.",
    "tier": "green"
   },
@@ -304,7 +304,7 @@
    "hash": "14f4a2c2517247c0",
    "name": "Herculean gravitronic spinal implant",
    "note": "Cuts the wearer's climbing, ladder, gym-machine, table-carry and vent-boulder lifting times to 80%, adds +1 speed and +4 range to everything they throw, adds 4 to tackle strength and lets them break boulders off a discovered ore vent with bare hands. An EMP deals 20 brute (10 light) to the chest. A gravity anomaly core can be slotted in to change it into the Atlas variant.",
-   "rank": 7,
+   "rank": 9,
    "reason": "Faster climbing, throws fly farther and faster, tackles hit harder, and you can break boulders off ore vents by hand. Nothing here wins a fight. About 85 cr of material.",
    "tier": "green"
   },
@@ -314,7 +314,7 @@
    "hash": "ffff4012788ccee2",
    "name": "implantable thrusters set",
    "note": "A toggle that lets the wearer move under their own power in zero gravity, with a movement-speed bonus while floating and no stabilization, so they keep drifting when they stop. It draws on ambient air above 30 kPa for free, otherwise internals gas or the wearer's plasma store, and turns itself off if neither is available.",
-   "rank": 6,
+   "rank": 7,
    "reason": "A jetpack in your chest with no back slot used, and a speed bonus while floating. Free air when there's pressure, otherwise your tank. About 74 cr of material after 200 research points.",
    "tier": "green"
   },
@@ -324,7 +324,7 @@
    "hash": "",
    "name": "Adrenal pump",
    "note": "When a stamina update leaves a conscious wearer at 70 or more stamina loss and the pump is ready, one tick later it takes 40 off, speeds the wearer up (movement -0.4) and tints them red for 3 s, and plays a loud heartbeat. It then waits 4 minutes; the wait is stored as a ready-at time on the organ, so a refit does not reset it. It ignores the stamina dumped by the Cascade and Redline crashes. It takes the spare heart slot, so it evicts the Clotter node, and goes off during an EMP reboot or brownout.",
-   "rank": 3,
+   "rank": 5,
    "reason": "Once every 4 minutes a bad run of stamina damage is cut by 40 and the wearer gets 3 s of extra speed, enough to stay out of a stamina crit for one more volley. Load 2, 2,400 cr at reputation 4.",
    "tier": "yellow"
   },
@@ -334,7 +334,7 @@
    "hash": "0a8132740babf01b",
    "name": "Atlas frame",
    "note": "Bones can't be broken (no dislocations or fractures) and limbs can't be dismembered; slashes, punctures, burns and bleeding still land normally. Items and mobs the wearer throws get +2 tiles of range and +1 speed, and any throw of the wearer by something else travels half as far. All of it drops during an EMP reboot or over-capacity brownout.",
-   "rank": 3,
+   "rank": 4,
    "reason": "No broken bones and no lost limbs, thrown things fly farther and you get thrown half as far. Slashes, burns and bleeding still land. Load 4, 2 vouchers at reputation 22.",
    "tier": "yellow"
   },
@@ -344,7 +344,7 @@
    "hash": "",
    "name": "Strut frame",
    "note": "Bone wounds (dislocations, hairline and compound fractures) are refused while the ware is online; nothing else. Limbs can still be dismembered, throws are not boosted and the wearer's own knockback is not reduced. Drops during an EMP reboot or over-capacity brownout.",
-   "rank": 6,
+   "rank": 8,
    "reason": "Bones can't break: no dislocations or fractures. Limbs still come off, and slashes, burns and bleeding land as usual. None of the Atlas Frame's throw boost or knockback cut. Load 2, 1,500 cr at reputation 4.",
    "tier": "yellow"
   },
@@ -390,7 +390,7 @@
    "hash": "ec8cfbbd975a51eb",
    "name": "Chromatic Dermis ink suite",
    "note": "Cosmetic only: draws a glowing outline of the chosen colour and pattern around the wearer that flares when they take damage, swing, use a chrome ability or when other chrome acts, dims when they are hungry, and goes dark while the ware is down. No mechanical effect.",
-   "rank": 8,
+   "rank": 9,
    "reason": "Glowing tattoos with no other effect. Load 0, 400 cr.",
    "tier": "none"
   },
@@ -420,7 +420,7 @@
    "hash": "",
    "name": "Heat-sink lining",
    "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature) and loses 1 fire stack per second. It does not reduce burn damage and does not stop fire: a burning wearer is burned at full strength. Both drop during an EMP reboot or over-capacity brownout.",
-   "rank": 7,
+   "rank": 9,
    "reason": "No heat damage from hot air or lava country, and fire burns off fast, but burns from lasers and flames land at full strength. The heat half of the Coolant Loops for load 1, 1,500 cr.",
    "tier": "green"
   },
@@ -430,7 +430,7 @@
    "hash": "",
    "name": "Cuffer's wrists",
    "note": "While online, handcuffing takes 75% of the usual time, the trait combat and insulated gloves also give. It takes the hands slot, so it evicts the Gecko Grip and the Medic's palms.",
-   "rank": 6,
+   "rank": 10,
    "reason": "Cuffs go on in three quarters of the time with no glove needed. A small edge for bounty hunters and boarders. Load 1, 500 cr.",
    "tier": "green"
   },
@@ -449,7 +449,7 @@
    "group": "Hacking and ship control",
    "hash": "",
    "name": "Junker deck",
-   "rank": 5,
+   "rank": 8,
    "reason": "From 5 tiles with a clear line, after a 2 s upload with a visible trace line: bolt or unbolt a door, burst an area's lights, or ping nearby cameras, turrets and powered doors through walls. 12 to 45 s cooldowns. No access bypass. Load 2, 1,500 cr; Splice takes it back for 750.",
    "tier": "green"
   },
@@ -467,8 +467,8 @@
    "group": "Hacking and ship control",
    "hash": "",
    "name": "Facilities deck",
-   "rank": 2,
-   "reason": "Doors, radios and turrets from 7 tiles after a 1 s upload: electrify a door for 30 s (20 burn and a stun), jam radios in a 9-tile bubble for 45 s, knock a turret off for 8 s, plus the Street deck's hacks. One shared cooldown of 8 to 40 s. Load 6, 4 vouchers at reputation 11.",
+   "rank": 3,
+   "reason": "Doors, radios and turrets from 7 tiles after a 1 s upload: electrify a door for 30 s (20 burn and a stun), jam radios in a 9-tile bubble for 45 s, knock a turret off for 8 s, and Cutout, which empties every cell a person carries (energy guns, MOD suit) and kills their radios for 45 s. Plus the Street deck's hacks. One shared cooldown of 8 to 40 s. Load 6, 4 vouchers at reputation 11.",
    "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/deck/flagship": {
@@ -485,8 +485,8 @@
    "group": "Hacking and ship control",
    "hash": "",
    "name": "Street deck",
-   "rank": 4,
-   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power on an APC and Cutout, which empties every cell a person carries (energy guns, MOD suit) and kills their radios for 45 s. About a minute between Cutouts. Load 4, 3,500 cr at yellow reputation; buys back at 1,750.",
+   "rank": 7,
+   "reason": "The Junker deck at 6 tiles and 1.5 s, plus Kill the Power: flip an APC's breaker and the whole area goes dark and unpowered. No hack that touches a person. Load 4, 3,500 cr at yellow reputation; buys back at 1,750.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/dermal_mesh": {
@@ -495,7 +495,7 @@
    "hash": "5b60dbb7a15c8084",
    "name": "Dermal Mesh weave",
    "note": "While online, adds physiology armor to a human wearer: melee 15, bullet 15, laser 10, wound 5. The armor is removed during an EMP reboot or an over-capacity brownout.",
-   "rank": 4,
+   "rank": 5,
    "reason": "15 melee, 15 bullet, 10 laser on the whole body, on top of whatever you wear. A clear step up for load 2 and 2,000 cr. EMP switches it off for 9 s.",
    "tier": "yellow"
   },
@@ -535,7 +535,7 @@
    "hash": "",
    "name": "Frostline lining",
    "note": "While the ware is online the wearer takes no damage from cold air or body temperature. It does nothing for pressure, breathing or burns. The trait drops during an EMP reboot or over-capacity brownout.",
-   "rank": 9,
+   "rank": 10,
    "reason": "No cold damage on ice planets and in the cold of space, but low pressure and no air still kill. Shares the seal slot with every air and heat lining, so it never sits beside a bladder. Load 1, 1,500 cr.",
    "tier": "green"
   },
@@ -545,7 +545,7 @@
    "hash": "26dc92f22c6385f6",
    "name": "Gastro Reactor",
    "note": "The wearer eats 35% faster, food that is contaminated (for example dropped on the floor) gives no infection or disgust mood, vomiting costs half the nutrition, everything they eat counts as 6 points higher quality (lifting rotten or gross food above the disgust line, though species-toxic food stays toxic) and disgust drains away at 3 per second. Off during an EMP reboot or over-capacity brownout.",
-   "rank": 6,
+   "rank": 7,
    "reason": "Eat anything, eat faster, no food poisoning. No bearing on a fight. Load 1, 400 cr.",
    "tier": "none"
   },
@@ -555,7 +555,7 @@
    "hash": "e331ce1251c1f939",
    "name": "Gecko Grip palm pads",
    "note": "The wearer's hands refuse to drop held items while stunned, paralyzed, unconscious, in crit or stamina-crit (handcuffs still take the hands, and the dead drop them). They can walk over tables and climb obstacles 20% faster, and stepping onto a chasm edge shoves them back to the lip instead of dropping them, resetting after 30 s. An EMP opens the hands and hurls whatever is held up to 5 tiles (3 on a light pulse).",
-   "rank": 5,
+   "rank": 7,
    "reason": "Stuns and crit can't strip what you're holding, you walk over tables and a chasm edge throws you back. Load 1, 900 cr. An EMP flings your gun away.",
    "tier": "green"
   },
@@ -575,7 +575,7 @@
    "hash": "",
    "name": "Flickerskin weave",
    "note": "A button turns on 5 s of optical camo (a half-faded outline that brightens when they move) with a 45 s cooldown spent on use; pressing it again drops the field early. The field collapses on attacking a living thing, firing a gun, being hit or attacked, hostile bullets, being cuffed, death or an EMP. It does not grant the mob-hiding camo trait, so NPC AI still targets the wearer at any range and Chrome Read still resolves them.",
-   "rank": 5,
+   "rank": 6,
    "reason": "Five seconds of half-faded camo every 45: people lose you in a crowd, mobs and turrets still see you, and any swing or hit ends it. A cheap way to break line of sight from players. Load 3, 2,400 cr at yellow reputation.",
    "tier": "yellow"
   },
@@ -585,7 +585,7 @@
    "hash": "9c748c5bf556a0e0",
    "name": "Gorilla Arms myomer lattice (right)",
    "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 10,
+   "rank": 11,
    "reason": "Half of a pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s. A breaching tool more than a weapon. Load 6 the pair.",
    "tier": "yellow"
   },
@@ -595,7 +595,7 @@
    "hash": "25756d0541291f90",
    "name": "Gorilla Arms myomer lattice (left)",
    "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 11,
+   "rank": 12,
    "reason": "Left half of the Gorilla pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s.",
    "tier": "yellow"
   },
@@ -604,7 +604,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (right)",
-   "rank": 12,
+   "rank": 15,
    "reason": "Half of a pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 2,400 cr at reputation 4. Splice takes a pulled arm back for 600 cr.",
    "tier": "yellow"
   },
@@ -613,7 +613,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (left)",
-   "rank": 13,
+   "rank": 16,
    "reason": "Left half of the Brawler pair: a flat 14 damage punch every 6 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
    "tier": "yellow"
   },
@@ -659,7 +659,7 @@
    "group": "Mobility and stealth",
    "hash": "2f8e33baec594340",
    "name": "Hopper piston calves",
-   "rank": 4,
+   "rank": 5,
    "reason": "Jump 4 tiles over tables, gaps and people every 8 s. Won't cross walls or windows. Strong in any fight. Load 3, 3,600 cr.",
    "tier": "yellow"
   },
@@ -668,7 +668,7 @@
    "group": "Mobility and stealth",
    "hash": "",
    "name": "Vaulter pistons",
-   "rank": 2,
+   "rank": 3,
    "reason": "Jump 5 tiles over tables, gaps and people every 6 s, and walk away from drops and wet floors like the Shock Coils. Won't cross walls or windows. Load 4, 3 vouchers at reputation 11.",
    "tier": "red"
   },
@@ -677,7 +677,7 @@
    "group": "Mobility and stealth",
    "hash": "",
    "name": "Spring calves",
-   "rank": 6,
+   "rank": 8,
    "reason": "Jump 3 tiles over tables, gaps and people every 14 s. Won't cross walls or windows. The cheap rung under the Hopper, with none of the Shock Coils' trims. Load 2, 1,800 cr at reputation 4. Splice takes a pulled pair back for 900 cr.",
    "tier": "yellow"
   },
@@ -697,7 +697,7 @@
    "hash": "",
    "name": "Medic's palms",
    "note": "While online, gives the wearer the quicker chemistry trait (syringes, pills, patches and the like take less time) and the quicker fireman carry (3 s instead of 5), the same traits as nitrile gloves, without using the glove slot. It takes the hands slot, so it evicts the Gecko Grip and the Cuffer's wrists.",
-   "rank": 5,
+   "rank": 8,
    "reason": "Nitrile-glove speed on chemistry and carrying without the glove slot, so a medic can wear insulated or armored gloves instead. Load 1, 600 cr.",
    "tier": "green"
   },
@@ -707,7 +707,7 @@
    "hash": "",
    "name": "Muffler ear",
    "note": "While online, takes one point off the intensity of a bang, which is what earmuffs do: a flashbang or similar bang does nothing to the wearer, though the flash still blinds. It goes off during an EMP reboot or brownout. It takes the chrome ears slot, so it evicts the Heartbeat Doppler.",
-   "rank": 7,
+   "rank": 10,
    "reason": "A flashbang's bang stops dropping the wearer, like earmuffs you can't take off. The flash still blinds. Load 1, 700 cr.",
    "tier": "green"
   },
@@ -753,7 +753,7 @@
    "hash": "3ab34be71b4333f9",
    "name": "Registry uplink",
    "note": "Gives a button that opens an outpost's management panel from anywhere, with no distance, docking, zone or console-power requirement, for each outpost where the wearer is currently the management user. It needs the wearer conscious and the ware running, and any open panel closes if the ware goes down or is removed.",
-   "rank": 3,
+   "rank": 6,
    "reason": "Opens the management panel of an outpost you run from anywhere. Convenience for outpost owners, no use to anyone else. Load 2, 2,800 cr.",
    "tier": "green"
   },
@@ -763,7 +763,7 @@
    "hash": "332ab143dabb3d52",
    "name": "Rigger socket",
    "note": "Opens a working helm console on the ship the bearer is standing on, from anywhere aboard, subject to the console's normal crew access; broken, unpowered and view-only viewscreen consoles don't count. While the uplink is up the bearer has +1 movement slowdown, and it drops if they leave the hull, go unconscious, close the panel, lose the console, or the socket is EMP'd or browned out. The button has a 5 second cooldown.",
-   "rank": 2,
+   "rank": 5,
    "reason": "Fly your ship from anywhere aboard at a walking pace. Lets a pilot hide from boarders or fix things mid-fight, and it needs a working helm. Load 4, 3 vouchers at reputation 22.",
    "tier": "yellow"
   },
@@ -773,7 +773,7 @@
    "hash": "e057ede2eff30ba2",
    "name": "Scrapper's Knuckles",
    "note": "Replaces the bearer's own punch (combat mode, left click, not a Hulk) with that hand's normal unarmed roll plus 4 flat damage against mobs, and double that total against machines and structures. Humans can still block it and armor still applies; it stops working while the ware is EMP'd or browned out.",
-   "rank": 14,
+   "rank": 17,
    "reason": "Half of a pair: punches do 4 more, double against machines. A cheap brawler's first step. Load 2 the pair, 800 cr.",
    "tier": "green"
   },
@@ -783,7 +783,7 @@
    "hash": "1262168b74587722",
    "name": "Scrapper's Knuckles",
    "note": "Replaces the bearer's own punch (combat mode, left click, not a Hulk) with that hand's normal unarmed roll plus 4 flat damage against mobs, and double that total against machines and structures. Humans can still block it and armor still applies; it stops working while the ware is EMP'd or browned out.",
-   "rank": 15,
+   "rank": 18,
    "reason": "Left half of the Scrapper pair: punches do 4 more, double against machines.",
    "tier": "green"
   },
@@ -793,7 +793,7 @@
    "hash": "7266f264ffd401f9",
    "name": "Second Wind bladder",
    "note": "When the surroundings have under 16 kPa of oxygen and the bearer isn't on tank internals, the bladder supplies the breath itself from a 180 second reserve, spending 8 seconds of reserve per breath and refilling 16 seconds per breath taken in breathable air. It replaces only the breath, and it announces itself with a gasp, a HUD alert and a loud breathing loop; it does nothing for no-breathers or while EMP'd or browned out.",
-   "rank": 5,
+   "rank": 7,
    "reason": "Three minutes of air when you lose your internals, refills as you breathe. A safety net against vacuum. Load 1, 900 cr.",
    "tier": "green"
   },
@@ -803,7 +803,7 @@
    "hash": "",
    "name": "Deep-lung bladder",
    "note": "Works exactly like the Second Wind bladder: when the surroundings have under 16 kPa of oxygen and the bearer isn't on tank internals, it supplies the breath itself, spending 8 seconds of reserve per breath. The reserve is 360 seconds (180) and refills 24 seconds per breath taken in breathable air (16). It announces itself with a gasp, a HUD alert and a loud breathing loop; it does nothing for no-breathers or while EMP'd or browned out.",
-   "rank": 8,
+   "rank": 6,
    "reason": "Six minutes of air when you lose your internals, refilling faster than the Second Wind. A longer safety net against vacuum, not a way to work in it. Load 2, 1,800 cr.",
    "tier": "green"
   },
@@ -813,7 +813,7 @@
    "hash": "d453bb62463e3dcb",
    "name": "Shock Coil calf pistons",
    "note": "Halves knockdown durations and cuts stun durations by 20%, stops slipping on water-wet floors (water only), and cancels fall damage from dropping down levels with no power cost; falls of 2 or more levels still stagger the bearer for up to 10 seconds. All of it switches off while the ware is EMP'd or browned out.",
-   "rank": 4,
+   "rank": 6,
    "reason": "Knockdowns are half as long, stuns 20% shorter, no slipping on water or fall damage. The best cheap chrome: load 1, 500 cr. Evicted by Hopper.",
    "tier": "green"
   },
@@ -833,7 +833,7 @@
    "hash": "83d2c1a6b828b267",
    "name": "Slipwire reflex shunt",
    "note": "While the bearer has moved within the last second, a hostile projectile has a 15% chance to be dodged with a visible sidestep and the round flies on; shooters 1 tile away always hit, and it doesn't work lying down, buckled or unconscious. Also gives a small speed bonus (-0.1 slowdown); with other dodge sources only the highest chance counts, and everything here is off while the ware is EMP'd or browned out.",
-   "rank": 3,
+   "rank": 4,
    "reason": "15% of bullets miss while you're moving, never from an adjacent shooter, and you run slightly faster. Takes the slot Dead Channel wants. Load 4, 2 vouchers.",
    "tier": "yellow"
   },
@@ -853,7 +853,7 @@
    "hash": "",
    "name": "Twitchwire",
    "note": "While the bearer has moved within the last second, a hostile projectile has an 8% chance to be dodged with a visible sidestep and the round flies on; shooters 1 tile away always hit, and it doesn't work lying down, buckled or unconscious. No speed bonus. With other dodge sources only the highest chance counts, and it is off while the ware is EMP'd or browned out.",
-   "rank": 7,
+   "rank": 9,
    "reason": "8% of bullets miss while you're moving, never from an adjacent shooter, and nothing else. A cheap taste of the Slipwire in the slot Dead Channel wants. Load 2, 1,800 cr at reputation 4.",
    "tier": "yellow"
   },
@@ -863,7 +863,7 @@
    "hash": "",
    "name": "Subvocal mic",
    "note": "While online, a radio line the wearer speaks (headset, department or intercom) is spoken at range 0 instead of 1: the wearer and anyone on their tile hear it, a neighbour one tile away gets the usual garbled eavesdrop copy, and nobody further hears it. Ordinary talk is unchanged. It goes off during an EMP reboot or brownout.",
-   "rank": 8,
+   "rank": 10,
    "reason": "Radio talk is not overheard by anyone standing close. A small edge for sneaking and boarding. Load 1, 600 cr.",
    "tier": "green"
   },
@@ -872,7 +872,7 @@
    "group": "Scouting and sight",
    "hash": "bc1a71fec9d46258",
    "name": "diagnostic HUD implant",
-   "rank": 5,
+   "rank": 6,
    "reason": "A diagnostic HUD with no glasses. Shows machine and robot health, for engineers.",
    "tier": "green"
   },
@@ -881,7 +881,7 @@
    "group": "Scouting and sight",
    "hash": "4beab53dff56918d",
    "name": "medical HUD implant",
-   "rank": 3,
+   "rank": 4,
    "reason": "A health HUD with no glasses, same job as the green goggles but the eye slot stays free. About 30 cr of material, or found on two hulls.",
    "tier": "green"
   },
@@ -890,7 +890,7 @@
    "group": "Scouting and sight",
    "hash": "91681c47158b6422",
    "name": "security HUD implant",
-   "rank": 4,
+   "rank": 5,
    "reason": "A security HUD with no glasses. Names and wanted status, nothing that wins a fight.",
    "tier": "green"
   },
@@ -899,7 +899,7 @@
    "group": "Body upkeep",
    "hash": "81096fd3e55913d0",
    "name": "breathing tube implant",
-   "rank": 3,
+   "rank": 4,
    "reason": "Use internals with no mask, which frees the mask slot, and you can't be choked. About 2 cr of material after 200 research points.",
    "tier": "green"
   }

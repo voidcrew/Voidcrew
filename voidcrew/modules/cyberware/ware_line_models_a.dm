@@ -262,8 +262,8 @@
 	examine_list += span_notice("[source.p_They()] [source.p_have()] a revolver housing set into [source.p_their()] [parse_zone(zone)].")
 
 // =========================================================================
-// SPLICE SKUS: not listed on any vendor yet, the integration pass adds them to
-// the Chop Shop's sku_types (and the street doc's, for the credit-priced ones).
+// SPLICE SKUS: on the Chop Shop's sku_types (ripperdoc_catalog.dm), and the
+// credit-priced ones on the Back Bay's too (street_doc_catalog.dm).
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/hopper_street
@@ -313,8 +313,7 @@
 
 // =========================================================================
 // INTAKE LEDGERS: half the shelf price, credits only, like the other street
-// rungs. Not listed on any buyback_types yet, same integration pass as above.
-// The Vaulter costs vouchers, which can't be refunded, and the Deepcore has no
+// rungs. The Vaulter costs vouchers, which can't be refunded, so it has no
 // entry. Ratchet's subtypes carry his wording and are listed beside Splice's.
 // =========================================================================
 
@@ -356,6 +355,19 @@
 
 /datum/shop_buyback/ripperdoc/fixers_street/street_doc
 	desc = "A used set of fingertip tools, a bit loose."
+
+/datum/shop_buyback/ripperdoc/rockjaw_deepcore
+	name = "Deepcore drill fist (pulled)"
+	desc = "A used drill fist. The bit's still sharp."
+	category = "Trade-In"
+	item_path = /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore
+	match_subtypes = FALSE
+	pay_credits = 1200
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/ripperdoc/rockjaw_deepcore/street_doc
+	desc = "A used drill fist, ore hopper and all."
 
 /datum/shop_buyback/ripperdoc/ronin_holdout
 	name = "Holdout housing (pulled)"

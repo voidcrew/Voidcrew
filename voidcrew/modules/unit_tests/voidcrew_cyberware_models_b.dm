@@ -384,6 +384,15 @@
 		TEST_ASSERT_EQUAL(ratchet.pay_credits, ledger.pay_credits, "The street doc's [ledger_type] pays a different amount")
 		TEST_ASSERT(ratchet.desc != ledger.desc, "The street doc's [ledger_type] has no wording of his own")
 
+	// The parents' own entries take only the parent, so a Hardweave or a
+	// Deep-lung never sells at the cheaper piece's rate.
+	var/datum/shop_buyback/mesh_ledger = allocate(/datum/shop_buyback/ripperdoc/dermal_mesh)
+	TEST_ASSERT(mesh_ledger.matches(allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)), "The Dermal Mesh ledger won't take a Dermal Mesh")
+	TEST_ASSERT(!mesh_ledger.matches(allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave)), "The Dermal Mesh ledger takes a Hardweave")
+	var/datum/shop_buyback/bladder_ledger = allocate(/datum/shop_buyback/ripperdoc/second_wind)
+	TEST_ASSERT(bladder_ledger.matches(allocate(/obj/item/organ/cyberimp/cyberware/second_wind)), "The Second Wind ledger won't take a Second Wind")
+	TEST_ASSERT(!bladder_ledger.matches(allocate(/obj/item/organ/cyberimp/cyberware/second_wind/deep)), "The Second Wind ledger takes a Deep-lung")
+
 	// Vouchers cannot be refunded: the Weaver shunt has no entry anywhere.
 	for(var/buyback_type in typesof(/datum/shop_buyback/ripperdoc))
 		var/datum/shop_buyback/ledger = buyback_type

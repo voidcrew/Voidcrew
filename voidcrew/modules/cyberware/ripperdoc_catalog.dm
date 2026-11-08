@@ -78,6 +78,30 @@
 		/datum/shop_sku/ripperdoc/governor_street,
 		/datum/shop_sku/ripperdoc/redline_street,
 		/datum/shop_sku/ripperdoc/cascade_street,
+		// The phase 2 street models, street passives, optics and decks.
+		/datum/shop_sku/ripperdoc/spyglass,
+		/datum/shop_sku/ripperdoc/cuffer_wrists,
+		/datum/shop_sku/ripperdoc/medic_palms,
+		/datum/shop_sku/ripperdoc/subvocal_mic,
+		/datum/shop_sku/ripperdoc/fixers_street,
+		/datum/shop_sku/ripperdoc/muffler_ear,
+		/datum/shop_sku/ripperdoc/clotter_node,
+		/datum/shop_sku/ripperdoc/assay_optics,
+		/datum/shop_sku/ripperdoc/coolant_street,
+		/datum/shop_sku/ripperdoc/frostline,
+		/datum/shop_sku/ripperdoc/atlas_street,
+		/datum/shop_sku/ripperdoc/doppler_street,
+		/datum/shop_sku/ripperdoc/deck_junker,
+		/datum/shop_sku/ripperdoc/second_wind_deep,
+		/datum/shop_sku/ripperdoc/slipwire_street,
+		/datum/shop_sku/ripperdoc/hopper_street,
+		/datum/shop_sku/ripperdoc/adrenal_pump,
+		/datum/shop_sku/ripperdoc/gorilla_street,
+		/datum/shop_sku/ripperdoc/rockjaw_deepcore,
+		/datum/shop_sku/ripperdoc/ronin_holdout,
+		/datum/shop_sku/ripperdoc/longsight,
+		/datum/shop_sku/ripperdoc/hardweave,
+		/datum/shop_sku/ripperdoc/deck_street,
 		// ---- Pro Chrome (mixed) ----
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/hemoglass,
@@ -105,10 +129,17 @@
 		/datum/shop_sku/ripperdoc/governor_milspec,
 		/datum/shop_sku/ripperdoc/redline_milspec,
 		/datum/shop_sku/ripperdoc/cascade_milspec,
+		/datum/shop_sku/ripperdoc/hopper_milspec,
+		/datum/shop_sku/ripperdoc/slipwire_milspec,
+		/datum/shop_sku/ripperdoc/deadeye_milspec,
+		/datum/shop_sku/ripperdoc/lookout,
+		/datum/shop_sku/ripperdoc/deck_control,
+		/datum/shop_sku/ripperdoc/deck_assault,
 		// ---- Legend Chrome (the chase, always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
 		/datum/shop_sku/ripperdoc/cascade,
+		/datum/shop_sku/ripperdoc/deck_flagship,
 		// ---- Ammunition (parlor-only reloads) ----
 		/datum/shop_sku/ripperdoc/ronin_mag,
 		/datum/shop_sku/ripperdoc/buster_rockets,
@@ -126,6 +157,30 @@
 		/datum/shop_buyback/ripperdoc/governor_street,
 		/datum/shop_buyback/ripperdoc/redline_street,
 		/datum/shop_buyback/ripperdoc/cascade_street,
+		// The phase 2 street models, street passives, optics and decks.
+		/datum/shop_buyback/ripperdoc/spyglass,
+		/datum/shop_buyback/ripperdoc/cuffer_wrists,
+		/datum/shop_buyback/ripperdoc/medic_palms,
+		/datum/shop_buyback/ripperdoc/subvocal_mic,
+		/datum/shop_buyback/ripperdoc/fixers_street,
+		/datum/shop_buyback/ripperdoc/muffler_ear,
+		/datum/shop_buyback/ripperdoc/clotter_node,
+		/datum/shop_buyback/ripperdoc/assay_optics,
+		/datum/shop_buyback/ripperdoc/coolant_street,
+		/datum/shop_buyback/ripperdoc/frostline,
+		/datum/shop_buyback/ripperdoc/atlas_street,
+		/datum/shop_buyback/ripperdoc/doppler_street,
+		/datum/shop_buyback/ripperdoc/deck_junker,
+		/datum/shop_buyback/ripperdoc/second_wind_deep,
+		/datum/shop_buyback/ripperdoc/slipwire_street,
+		/datum/shop_buyback/ripperdoc/hopper_street,
+		/datum/shop_buyback/ripperdoc/adrenal_pump,
+		/datum/shop_buyback/ripperdoc/gorilla_street,
+		/datum/shop_buyback/ripperdoc/rockjaw_deepcore,
+		/datum/shop_buyback/ripperdoc/ronin_holdout,
+		/datum/shop_buyback/ripperdoc/longsight,
+		/datum/shop_buyback/ripperdoc/hardweave,
+		/datum/shop_buyback/ripperdoc/deck_street,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -530,6 +585,8 @@
 	desc = "A used air reserve. Worth half toward something with a longer bladder."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/second_wind
+	// The Deep-lung is a subtype with its own, higher entry (ware_models_b.dm).
+	match_subtypes = FALSE
 	pay_credits = 450
 	demand_min = 2
 	demand_max = 3
@@ -539,6 +596,8 @@
 	desc = "Light plating you've outgrown. Splice recycles the weave toward the heavy slab."
 	category = "Trade-In"
 	item_path = /obj/item/organ/cyberimp/cyberware/dermal_mesh
+	// The Hardweave is a subtype with its own, higher entry (ware_models_b.dm).
+	match_subtypes = FALSE
 	pay_credits = 1000
 	demand_min = 1
 	demand_max = 2

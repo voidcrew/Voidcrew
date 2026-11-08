@@ -56,6 +56,16 @@
 		/datum/shop_sku/ripperdoc/deadeye = 1,
 		/datum/shop_sku/ripperdoc/slipwire = 1,
 		/datum/shop_sku/ripperdoc/prospector = 1,
+		/datum/shop_sku/ripperdoc/hardweave = 1,
+		/datum/shop_sku/ripperdoc/atlas_street = 1,
+		/datum/shop_sku/ripperdoc/slipwire_street = 1,
+		/datum/shop_sku/ripperdoc/doppler_street = 1,
+		/datum/shop_sku/ripperdoc/adrenal_pump = 1,
+		/datum/shop_sku/ripperdoc/hopper_street = 1,
+		/datum/shop_sku/ripperdoc/gorilla_street = 1,
+		/datum/shop_sku/ripperdoc/ronin_holdout = 1,
+		/datum/shop_sku/ripperdoc/longsight = 1,
+		/datum/shop_sku/ripperdoc/deck_street = 1,
 		/datum/shop_sku/black_market/c4 = 1,
 		/datum/shop_sku/black_market/emp_grenade = 1,
 		/datum/shop_sku/black_market/frag_grenade = 1,
@@ -101,6 +111,12 @@
 		/datum/shop_sku/ripperdoc/cascade_milspec = 2,
 		/datum/shop_sku/ripperdoc/redline_milspec = 2,
 		/datum/shop_sku/ripperdoc/governor_milspec = 2,
+		/datum/shop_sku/ripperdoc/slipwire_milspec = 2,
+		/datum/shop_sku/ripperdoc/hopper_milspec = 2,
+		/datum/shop_sku/ripperdoc/deadeye_milspec = 2,
+		/datum/shop_sku/ripperdoc/lookout = 2,
+		/datum/shop_sku/ripperdoc/deck_control = 2,
+		/datum/shop_sku/ripperdoc/deck_assault = 2,
 		/datum/shop_sku/fitter/rare/mod_emp_shield_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener = 2,
 		/datum/shop_sku/black_market/mod_chassis_syndicate = 2,
@@ -134,11 +150,12 @@
 		/datum/shop_sku/ripperdoc/cascade = 3,
 		/datum/shop_sku/ripperdoc/mantis_scorch = 3,
 		/datum/shop_sku/ripperdoc/monowire_live = 3,
+		/datum/shop_sku/ripperdoc/deck_flagship = 3,
 	)
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 108, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 125, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0

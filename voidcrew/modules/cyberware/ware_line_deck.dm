@@ -13,8 +13,8 @@
  *
  * Model       tier  load  range  upload  cooldowns  adds
  * Junker       T1     2     5     2 s      x1.5     Bolts, Burst the Lights, Ping
- * Street       T2     4     6     1.5 s    x1.5     Kill the Power, Cutout
- * Facilities   T3     6     7     1 s      x1       Electrify, Silence, Reboot Turret
+ * Street       T2     4     6     1.5 s    x1.5     Kill the Power
+ * Facilities   T3     6     7     1 s      x1       Cutout, Electrify, Silence, Reboot Turret
  * Breacher     T3     6     7     1 s      x1       Overload, Feedback Surge, Glitch
  * Blackbox     T4     9     8     0.5 s    x1       both T3 sets, and Arc Flash
  *
@@ -32,7 +32,8 @@
  * - One shared cooldown, set by the hack that landed, like the boon's.
  * - EMP and brownout kill the deck (the cyberware action bridge); Chrome Read
  *   shows it.
- * - Outpost property refuses every hack outright, and Overload refuses any
+ * - Outpost property and outpost prison doors (cells and staff doors) refuse
+ *   every hack outright, so a deck never springs a prisoner. Overload refuses any
  *   machine on an outpost, trader or player (owner, D12: decks never blow up
  *   outpost machines). A person hacked at a trader outpost counts as an attack
  *   on them there, the same as a punch, and Arc Flash does not run there at all.
@@ -112,7 +113,6 @@
 		/datum/machine_quickhack/bolts,
 		/datum/machine_quickhack/burst_lights,
 		/datum/machine_quickhack/kill_power,
-		/datum/machine_quickhack/cutout,
 	)
 	hack_range = 6
 	upload_time = 1.5 SECONDS
@@ -149,7 +149,6 @@
 		/datum/machine_quickhack/bolts,
 		/datum/machine_quickhack/burst_lights,
 		/datum/machine_quickhack/kill_power,
-		/datum/machine_quickhack/cutout,
 		/datum/machine_quickhack/overload,
 		/datum/machine_quickhack/feedback_surge,
 		/datum/machine_quickhack/glitch,
@@ -281,7 +280,8 @@
 // ---- Reach -------------------------------------------------------------
 
 /// Whether the deck can work on this target from here: the bearer can see,
-/// the target is not outpost property, and it is in range and in a clear line.
+/// the target is not outpost property or a prison door, and it is in range and
+/// in a clear line.
 /datum/action/cooldown/cyberware/deck/proc/can_reach(mob/living/carbon/bearer, atom/target, feedback = FALSE)
 	var/obj/item/organ/cyberimp/cyberware/deck/deck = get_deck()
 	if(!deck || QDELETED(target))
@@ -290,7 +290,8 @@
 		if(feedback)
 			bearer.balloon_alert(bearer, "can't see!")
 		return FALSE
-	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY))
+	// Prison doors too, cells and staff doors alike: no prison break by deck.
+	if(HAS_TRAIT(target, TRAIT_OUTPOST_PROPERTY) || is_outpost_prison_airlock(target))
 		if(feedback)
 			target.balloon_alert(bearer, "hardened firmware!")
 		return FALSE

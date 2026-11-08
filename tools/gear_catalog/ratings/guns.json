@@ -245,7 +245,7 @@
    "hash": "4f9a01f4056d7085",
    "name": "Liberator",
    "note": "Single-shot barrel that takes a 2 s do-after to unscrew or screw back on. Every shot knocks 70-140 off its 100 integrity: on a fresh gun the first shot shatters it about 58% of the time (hurting the firing hand for up to 20 and sometimes embedding shrapnel), otherwise the next shot always does; point-blank doubles the shot's damage and aiming at someone held at gunpoint adds x1.5.",
-   "rank": 17,
+   "rank": 18,
    "reason": "Holds one round, and the barrel usually shatters within two shots. Its design disk is rare.",
    "score": 0,
    "score_inputs": {
@@ -265,7 +265,7 @@
    "group": "sidearms",
    "hash": "ed8c5fd09e92dcda",
    "name": "M1911",
-   "rank": 12,
+   "rank": 13,
    "reason": "Fires a Makarov's bullet with 8 rounds, one vested man per magazine at best.",
    "score": 35,
    "tier": "green"
@@ -275,7 +275,7 @@
    "group": "sidearms",
    "hash": "58fd32966ac76c57",
    "name": "M1911",
-   "rank": 13,
+   "rank": 14,
    "reason": "An M1911 that starts without its magazine, and the same gun once loaded.",
    "score": 35,
    "tier": "green"
@@ -427,7 +427,7 @@
    "group": "sidearms",
    "hash": "b18390c40543a655",
    "name": ".38 revolver",
-   "rank": 14,
+   "rank": 15,
    "reason": "Does 25 damage and weak wounds, with six shots then a slow reload.",
    "score": 18,
    "tier": "green"
@@ -437,7 +437,7 @@
    "group": "sidearms",
    "hash": "616fe18d05a3ece6",
    "name": "Colt Detective Special",
-   "rank": 15,
+   "rank": 16,
    "reason": "A .38 revolver by another name: 25 damage and six shots.",
    "score": 18,
    "tier": "green"
@@ -622,7 +622,7 @@
    "hash": "f1fd463d783a4af9",
    "name": "pipe pistol",
    "note": "Self-loading; one trigger pull empties its whole magazine in a rapid burst. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 16,
+   "rank": 17,
    "reason": "Fires three weak rounds in a burst, then needs a hand reload.",
    "score": 3,
    "score_inputs": {

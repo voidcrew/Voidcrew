@@ -405,14 +405,18 @@
 		/obj/item/cultivator, /obj/item/shovel/spade, /obj/item/hatchet, /obj/item/secateurs,
 		/obj/item/reagent_containers/cup/watering_can, /obj/item/plant_analyzer, /obj/item/fishing_rod/tech,
 	)
-	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc))
+	for(var/shop_type in list(/datum/outpost_shop/general, /datum/outpost_shop/outfitter, /datum/outpost_shop/black_market, /datum/outpost_shop/vendor/potting_shed, /datum/outpost_shop/vendor/bait_shop, /datum/outpost_shop/vendor/ripperdoc, /datum/outpost_shop/vendor/street_doc))
 		var/datum/outpost_shop/shop = allocate(shop_type)
 		for(var/datum/shop_sku/sku_type as anything in shop.sku_types + shop.rotating_pool + shop.rare_pool + shop.favor_sku_types)
 			var/item_path = initial(sku_type.item_path)
 			TEST_ASSERT(!(item_path in printed_gear), "[shop_type] still sells printable gear [item_path]")
 			if(ispath(item_path, /obj/item/gun))
 				TEST_ASSERT(item_path in allowed_guns, "[shop_type] bypasses the ladder with [item_path]")
-			TEST_ASSERT(item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin && item_path != /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster, "Splice still sells a gun arm")
+			// The heavy gun arms (the Ronin SMG and the Bunker Buster pod, and any
+			// model of them) stay loot-only. The Holdout's .38 is the one gun arm
+			// that is shelf stock, on purpose.
+			if(ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin) || ispath(item_path, /obj/item/organ/cyberimp/arm/toolkit/cyberware/bunker_buster))
+				TEST_ASSERT(item_path == /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, "[shop_type] sells the heavy gun arm [item_path]; only the Holdout housing is shelf stock")
 
 /// Convoys and rotations cannot accelerate deliveries or revive finite stock.
 /datum/unit_test/voidcrew_ladder_restock/Run()

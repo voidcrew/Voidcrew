@@ -130,7 +130,7 @@
 		if(engaged)
 			set_engaged(source, FALSE)
 			source.balloon_alert(source, "air reserve empty!")
-			to_chat(source, span_userdanger("Your Second Wind bladder collapses empty. You are breathing vacuum."))
+			to_chat(source, span_userdanger("Your [format_text(name)] collapses empty. You are breathing vacuum."))
 			playsound(source, 'sound/machines/buzz/buzz-sigh.ogg', 40, TRUE)
 		return NONE
 	if(!engaged)
@@ -154,7 +154,7 @@
 	engaged = new_state
 	if(engaged)
 		INVOKE_ASYNC(source, TYPE_PROC_REF(/mob, emote), "gasp")
-		source.balloon_alert(source, "second wind engages")
+		source.balloon_alert(source, "[LOWER_TEXT(format_text(name))] engages")
 		source.visible_message(
 			span_notice("[source] takes a sharp breath, and something under [source.p_their()] ribs starts working."),
 			span_notice("<b>SEAL ENGAGED.</b> The bladder takes your breathing off you. You have [round(reserve / (1 SECONDS))] seconds of air."),
@@ -166,7 +166,7 @@
 		breath_loop?.start(source)
 		update_alert(source)
 		return
-	source.balloon_alert(source, "second wind disengages")
+	source.balloon_alert(source, "[LOWER_TEXT(format_text(name))] disengages")
 	to_chat(source, span_notice("<b>SEAL RELEASED.</b> You are breathing the room again."))
 	cyberware_ink_pulse(source, CYBERWARE_INK_SOFT)
 	breath_loop?.stop()
@@ -188,7 +188,9 @@
 	var/seconds_left = round(reserve / (1 SECONDS))
 	var/running_low = reserve <= CYBERWARE_SECOND_WIND_LOW
 	indicator.color = running_low ? "#ffb347" : "#4dd8e6"
-	indicator.desc = "Your Second Wind bladder is doing your breathing for you. [seconds_left] second\s of reserve air left[running_low ? ". Find air." : "."]"
+	// Named for the bladder actually fitted, so a Deep-lung never reads as a Second Wind.
+	indicator.name = "[format_text(name)] engaged"
+	indicator.desc = "Your [format_text(name)] is doing your breathing for you. [seconds_left] second\s of reserve air left[running_low ? ". Find air." : "."]"
 
 /**
  * Whether the mob's surroundings hold enough oxygen to breathe unassisted:

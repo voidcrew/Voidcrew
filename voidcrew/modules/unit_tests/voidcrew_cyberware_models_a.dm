@@ -359,6 +359,7 @@
 		list(/datum/shop_buyback/ripperdoc/gorilla_street, /datum/shop_buyback/ripperdoc/gorilla_street/street_doc, /obj/item/organ/cyberimp/cyberware/gorilla_arms/street, 600),
 		list(/datum/shop_buyback/ripperdoc/fixers_street, /datum/shop_buyback/ripperdoc/fixers_street/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street, 350),
 		list(/datum/shop_buyback/ripperdoc/ronin_holdout, /datum/shop_buyback/ripperdoc/ronin_holdout/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout, 1200),
+		list(/datum/shop_buyback/ripperdoc/rockjaw_deepcore, /datum/shop_buyback/ripperdoc/rockjaw_deepcore/street_doc, /obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore, 1200),
 	)
 	for(var/list/row as anything in ledgers)
 		for(var/ledger_index in 1 to 2)
@@ -378,3 +379,5 @@
 	TEST_ASSERT(!spring_ledger.matches(allocate(/obj/item/organ/cyberimp/cyberware/hopper/milspec)), "The Spring calves ledger takes Vaulter pistons")
 	var/datum/shop_buyback/tinker_ledger = allocate(/datum/shop_buyback/ripperdoc/fixers_street)
 	TEST_ASSERT(!tinker_ledger.matches(allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers)), "The Tinker's ledger takes the Fixer's Fingers")
+	var/datum/shop_buyback/deepcore_ledger = allocate(/datum/shop_buyback/ripperdoc/rockjaw_deepcore)
+	TEST_ASSERT(!deepcore_ledger.matches(allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw)), "The Deepcore ledger takes a plain Rockjaw")

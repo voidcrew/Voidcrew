@@ -116,6 +116,12 @@
 	TEST_ASSERT_EQUAL(length(rogue.get_quickhacks()), 1, "A kit listing a boon-only hack kept it")
 	TEST_ASSERT(!length(rogue.get_masshacks()), "A kit listing Wake the Machines kept it")
 
+	// Cutout empties a person's cells: a facilities hack, not a street one.
+	TEST_ASSERT(!(/datum/machine_quickhack/cutout in street.quickhacks), "The Street deck carries Cutout")
+	TEST_ASSERT(!(/datum/machine_quickhack/cutout in assault.quickhacks), "The Breacher deck carries Cutout")
+	TEST_ASSERT(/datum/machine_quickhack/cutout in control.quickhacks, "The Facilities deck lost Cutout")
+	TEST_ASSERT(/datum/machine_quickhack/cutout in flagship.quickhacks, "The Blackbox deck lost Cutout")
+
 	// Higher models carry everything below them.
 	var/list/ladder = list(
 		list(junker, street),
@@ -182,6 +188,14 @@
 	TEST_ASSERT(!action.can_reach(user, property), "The deck reaches outpost property")
 	TEST_ASSERT(!action.Activate(property), "The deck started a hack on outpost property")
 	TEST_ASSERT(!action.busy && !QDELETED(property), "The deck went to work on outpost property")
+
+	// Outpost prison doors refuse a deck the same way: no prison break by deck.
+	var/obj/machinery/door/airlock/security/glass/outpost_prison_cell/cell_door = allocate(/obj/machinery/door/airlock/security/glass/outpost_prison_cell, get_step(start, NORTHEAST))
+	TEST_ASSERT(!action.can_reach(user, cell_door), "The deck reaches an outpost prison cell door")
+	var/obj/machinery/door/airlock/security/prison_staff/staff_door = allocate(/obj/machinery/door/airlock/security/prison_staff, get_step(get_step(start, EAST), EAST))
+	TEST_ASSERT(!action.can_reach(user, staff_door), "The deck reaches an outpost prison staff door")
+	var/obj/machinery/door/airlock/plain_door = allocate(/obj/machinery/door/airlock, get_step(get_step(start, NORTH), NORTH))
+	TEST_ASSERT(action.can_reach(user, plain_door), "The deck can't reach an ordinary door two tiles off")
 
 /// An upload lands only if the hacker holds still and stays online: a step or
 /// an EMP loses it and costs no cooldown. A clean upload lands and charges the
