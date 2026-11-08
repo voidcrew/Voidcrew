@@ -102,3 +102,17 @@
 #define HV_GUT_YANK_COOLDOWN (2 SECONDS)
 /// Brute damage to the chest from one tug on the tether.
 #define HV_GUT_YANK_DAMAGE 4
+
+// Aimed critical wounds (voidcrew/modules/hyperviolence/crits/). Each crit wound sits in its own
+// series so it can stack with tg's ordinary bleeds on the same limb. The jaw and skull crits use
+// tg's blunt bone series instead, since they are the worst head fractures.
+/// A torn-out eye.
+#define WOUND_SERIES_HV_EYE "wound_series_hv_eye"
+/// A severed tongue.
+#define WOUND_SERIES_HV_TONGUE "wound_series_hv_tongue"
+/// A slit throat.
+#define WOUND_SERIES_HV_CAROTID "wound_series_hv_carotid"
+/// A torn aorta.
+#define WOUND_SERIES_HV_AORTA "wound_series_hv_aorta"
+/// Trait source for effects an aimed crit leaves on a mob.
+#define HV_CRIT_TRAIT "hv_crit"
