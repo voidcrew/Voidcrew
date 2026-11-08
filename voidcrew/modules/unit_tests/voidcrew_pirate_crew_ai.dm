@@ -207,3 +207,33 @@
 	body_spawner.equip(body)
 	TEST_ASSERT(!(locate(/obj/item/gun/energy/laser) in body.get_all_contents()), "A spawner left a free gun on a real body")
 	qdel(body_spawner)
+
+// ===== MINERAL DOORS =====
+
+/// Iron and wooden doors only open for players. A pirate crew's paths still go through them shut, the breach search walks through them, and nobody else's paths do.
+/datum/unit_test/voidcrew_pirate_crew/mineral_doors
+
+/datum/unit_test/voidcrew_pirate_crew/mineral_doors/Run()
+	var/mob/living/basic/trooper/pirate/melee/pirate = allocate(/mob/living/basic/trooper/pirate/melee, spot(0, 2))
+	var/mob/living/basic/trooper/pirate/melee/bystander = allocate(/mob/living/basic/trooper/pirate/melee, spot(4, 2))
+	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
+	TEST_ASSERT(pirate_crew_enlist_raider(pirate, target), "A trooper could not join the raid")
+	for(var/dy in list(0, 1, 3, 4))
+		change_turf(spot(2, dy), /turf/closed/wall)
+	var/obj/structure/mineral_door/iron/slab = allocate(/obj/structure/mineral_door/iron, spot(2, 2))
+	var/list/areas = list()
+	areas[get_area(spot(0, 2))] = TRUE
+
+	TEST_ASSERT(pirate_can_open_mineral_door(slab), "A pirate can't push a shut iron door open")
+	TEST_ASSERT(slab.CanAStarPass(EAST, new /datum/can_pass_info(pirate, list())), "A pirate crew's path can't go through a shut iron door")
+	TEST_ASSERT(!slab.CanAStarPass(WEST, new /datum/can_pass_info(bystander, list())), "Any NPC's path now goes through a shut iron door")
+
+	var/list/result = pirate_crew_breach_search(pirate, spot(0, 2), spot(4, 2), areas)
+	TEST_ASSERT_NOTNULL(result, "The search found no way through a shut iron door")
+	TEST_ASSERT_NULL(result["door"], "The search wants to break an iron door the pirate can push open")
+
+	// A loose one can't be opened, so it's just a slab in the way
+	slab.set_anchored(FALSE)
+	TEST_ASSERT(!pirate_can_open_mineral_door(slab), "A pirate tries to open a loose iron door")
+	TEST_ASSERT_NULL(pirate_crew_breach_search(pirate, spot(0, 2), spot(4, 2), areas), "The search found a way through a loose iron door")
+	qdel(pirate_crew_of(target, TRUE))

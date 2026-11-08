@@ -48,6 +48,7 @@
 	COOLDOWN_DECLARE(breach_search_cooldown)
 	COOLDOWN_DECLARE(spot_bark_cooldown)
 	COOLDOWN_DECLARE(target_scan_cooldown)
+	COOLDOWN_DECLARE(no_way_log_cooldown)
 
 /datum/ai_controller/basic_controller/pirate_crew/ranged
 	planning_subtrees = list(
@@ -134,6 +135,8 @@
 	LAZYSET(skipped_doors, REF(door), world.time + PIRATE_CREW_BREACH_SKIP_TIME)
 
 /datum/ai_controller/basic_controller/pirate_crew/proc/start_breach(obj/target, turf/stand)
+	if(blackboard[BB_PIRATE_BREACH_TARGET] != target)
+		log_shuttle("PIRATE_CREW: [pawn] breaking [target] at [AREACOORD(target)]")
 	set_blackboard_key(BB_PIRATE_BREACH_TARGET, target)
 	set_blackboard_key(BB_PIRATE_BREACH_STAND, stand || get_turf(pawn))
 	set_blackboard_key(BB_PIRATE_BREACH_TURF, get_turf(target))
@@ -153,6 +156,13 @@
  */
 /datum/ai_controller/basic_controller/pirate_crew/proc/on_pawn_bump(mob/living/source, atom/bumped)
 	SIGNAL_HANDLER
+	// Iron, wood and the other mineral doors only open for mobs with a player in them
+	// (TryToSwitchState() checks client), so a pirate pushes one open itself
+	if(istype(bumped, /obj/structure/mineral_door))
+		var/obj/structure/mineral_door/slab = bumped
+		if(pirate_can_open_mineral_door(slab))
+			INVOKE_ASYNC(slab, TYPE_PROC_REF(/obj/structure/mineral_door, Open))
+		return
 	if(!istype(bumped, /obj/machinery/door) && !istype(bumped, /obj/structure/door_assembly))
 		return
 	var/obj/blocker = bumped
@@ -352,6 +362,23 @@
 			return FALSE
 	return door.allowed(pawn)
 
+/// Whether a pirate can push mineral door `slab` open: shut, bolted to the floor and not already moving
+/proc/pirate_can_open_mineral_door(obj/structure/mineral_door/slab)
+	return !QDELETED(slab) && slab.density && !slab.door_opened && !slab.isSwitchingStates && slab.anchored
+
+/**
+ * Lets a pirate crew's routes run through shut mineral doors. They open them on contact
+ * (on_pawn_bump()), but tg only opens them for players, so the pathfinder treats them as
+ * walls for every NPC. Only a pirate crew's own path searches are affected.
+ */
+/obj/structure/mineral_door/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	. = ..()
+	if(. || !anchored || door_opened)
+		return
+	var/mob/living/requester = pass_info?.requester_ref?.resolve()
+	if(isliving(requester) && istype(requester.ai_controller, /datum/ai_controller/basic_controller/pirate_crew))
+		return TRUE
+
 /// Whether breaking `door` would open the ship to space: an external airlock or blast door with nothing beyond it
 /proc/pirate_door_vents_space(obj/machinery/door/door, turf/from)
 	if(!istype(door, /obj/machinery/door/airlock/external) && !istype(door, /obj/machinery/door/poddoor))
@@ -396,6 +423,12 @@
 	for(var/obj/thing in next)
 		if(!thing.density)
 			continue
+		if(istype(thing, /obj/structure/mineral_door))
+			// Pushed open on contact; a loose one is just a slab in the way
+			var/obj/structure/mineral_door/slab = thing
+			if(slab.anchored)
+				continue
+			return FALSE
 		if(istype(thing, /obj/machinery/door))
 			var/obj/machinery/door/door = thing
 			if(pirate_can_open_door(pawn, door))
@@ -620,6 +653,9 @@
 	var/list/result = pirate_crew_breach_search(pawn, get_turf(pawn), goal, crew.battlefield_areas, pirate_controller.skipped_doors)
 	if(!result)
 		// No way there at all; the hunt waits a moment before trying it again
+		if(COOLDOWN_FINISHED(pirate_controller, no_way_log_cooldown))
+			COOLDOWN_START(pirate_controller, no_way_log_cooldown, PIRATE_CREW_NO_WAY_LOG_COOLDOWN)
+			log_shuttle("PIRATE_CREW: [pawn] found no way from [AREACOORD(pawn)] to [AREACOORD(goal)]")
 		pirate_controller.unreachable_turf = goal
 		pirate_controller.hunt_backoff_until = world.time + PIRATE_CREW_UNREACHABLE_BACKOFF
 		return
@@ -657,6 +693,7 @@
 		return FALSE
 	var/started = controller.blackboard[BB_PIRATE_BREACH_STARTED] || world.time
 	if(world.time > started + PIRATE_CREW_BREACH_GIVE_UP)
+		log_shuttle("PIRATE_CREW: [pawn] gave up breaking [blocker] at [AREACOORD(blocker)]")
 		controller.skip_door(blocker)
 		return FALSE
 	if(blocker.z != pawn.z || get_dist(pawn, blocker) > PIRATE_CREW_SIGHT_RANGE * 2)

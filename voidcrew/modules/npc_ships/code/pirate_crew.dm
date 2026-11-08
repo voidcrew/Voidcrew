@@ -680,3 +680,52 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 /datum/pirate_crew/proc/on_home_ship_boarded(datum/source, atom/pod, obj/structure/overmap/ship/attacker)
 	SIGNAL_HANDLER
 	raise_alert()
+
+// ===== STATUS REPORT (admin verb "Pirate Crew Status") =====
+
+/// One line about the crew, then one per member
+/datum/pirate_crew/proc/status_report()
+	var/list/lines = list()
+	var/list/hostile_bits = list()
+	for(var/mob/living/hostile in known_hostiles)
+		var/turf/known = last_known_turf(hostile)
+		hostile_bits += "[hostile] at [known ? "[known.x],[known.y],[known.z]" : "?"]"
+	var/seen = last_hostile_seen ? "[DisplayTimeText(world.time - last_hostile_seen)] ago" : "never"
+	lines += "[raiding ? "RAID on" : "CREW of"] [home_ship]: [alerted ? "alerted" : "calm"], hostile last known [seen], \
+		battlefield [length(battlefield_areas)] areas on z[jointext(battlefield_z, ",")], \
+		hostiles: [length(hostile_bits) ? jointext(hostile_bits, "; ") : "none"]"
+	for(var/mob/living/member in members)
+		lines += "- [member_status(member)]"
+	return lines
+
+/datum/pirate_crew/proc/member_status(mob/living/member)
+	var/turf/where = get_turf(member)
+	var/text = "[member] ([members[member]][holds_post(member) ? ", holding post" : ""]) at [where ? "[where.x],[where.y],[where.z]" : "nullspace"][member.stat == DEAD ? " DEAD" : ""]"
+	var/datum/ai_controller/controller = member.ai_controller
+	if(!controller)
+		return "[text]: NO AI"
+	var/list/behavior_names = list()
+	for(var/datum/ai_behavior/behavior as anything in controller.current_behaviors)
+		behavior_names += replacetext("[behavior.type]", "/datum/ai_behavior/", "")
+	text += ": [controller.ai_status][controller.can_idle ? " (may idle)" : ""][controller.able_to_plan ? "" : " (planning blocked)"][controller.on_failed_planning_timeout ? " (planning timeout)" : ""]"
+	text += ", doing [length(behavior_names) ? jointext(behavior_names, " + ") : "nothing"]"
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	text += ", target [target ? "[target]" : "none"]"
+	var/mob/hunt = controller.blackboard[BB_PIRATE_HUNT_TARGET]
+	var/turf/hunt_turf = controller.blackboard[BB_PIRATE_HUNT_TURF]
+	text += ", hunting [hunt ? "[hunt]" : "nobody"][hunt_turf ? " at [hunt_turf.x],[hunt_turf.y],[hunt_turf.z]" : ""]"
+	var/obj/breach = controller.blackboard[BB_PIRATE_BREACH_TARGET]
+	if(breach)
+		text += ", breaking [breach]"
+	var/datum/ai_controller/basic_controller/pirate_crew/pirate_controller = controller
+	if(!istype(pirate_controller))
+		return "[text], WRONG CONTROLLER [controller.type]"
+	if(pirate_controller.hunt_backoff_until > world.time)
+		text += ", found no way to its quarry"
+	var/no_path_at = controller.blackboard[BB_PIRATE_NO_PATH_AT]
+	if(no_path_at)
+		text += ", pathfinder failed [DisplayTimeText(world.time - no_path_at)] ago"
+	var/atom/moving_to = controller.current_movement_target
+	if(moving_to)
+		text += ", walking to [moving_to] ([get_dist(member, moving_to)] tiles)"
+	return text

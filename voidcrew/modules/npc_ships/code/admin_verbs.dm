@@ -543,3 +543,28 @@ ADMIN_VERB(colorize_rooms_direct, R_DEBUG, "Colorize Ship Rooms (Direct)", "Togg
 			T.color = null
 
 	GLOB.room_colored_ships -= ship_ref
+
+/**
+ * What every NPC pirate crew and each of its members is doing right now: alert state, known
+ * hostiles, and per pirate its AI status, behaviours, target, quarry and any door it is breaking.
+ * Also written to the shuttle log, so a playtest's report can be read afterwards.
+ */
+ADMIN_VERB(pirate_crew_status, R_DEBUG, "Pirate Crew Status", "Show what every NPC pirate crew and its members are doing.", ADMIN_CATEGORY_DEBUG)
+	var/list/crews = list()
+	for(var/key in GLOB.pirate_defending_crews)
+		crews += GLOB.pirate_defending_crews[key]
+	for(var/key in GLOB.pirate_raiding_crews)
+		crews += GLOB.pirate_raiding_crews[key]
+	var/list/lines = list()
+	for(var/datum/pirate_crew/crew as anything in crews)
+		if(!QDELETED(crew))
+			lines += crew.status_report()
+	if(!length(lines))
+		lines += "No pirate crews."
+	var/list/shown = list()
+	for(var/line in lines)
+		shown += html_encode(line)
+	to_chat(user, boxed_message(jointext(shown, "<br>")))
+	for(var/line in lines)
+		log_shuttle("PIRATE_CREW_STATUS: [line]")
+	BLACKBOX_LOG_ADMIN_VERB("Pirate Crew Status")

@@ -366,8 +366,10 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define PIRATE_CREW_BREACH_SKIP_TIME (60 SECONDS)
 /// Per mob, between searches for the door in the way
 #define PIRATE_CREW_BREACH_SEARCH_COOLDOWN (5 SECONDS)
-/// A search looks at no more turfs than this
-#define PIRATE_CREW_BREACH_SEARCH_LIMIT 1500
+/// A search looks at no more turfs than this. Two of the largest hulls docked together are about 4500.
+#define PIRATE_CREW_BREACH_SEARCH_LIMIT 6000
+/// How often one pirate may log that it found no way to its quarry
+#define PIRATE_CREW_NO_WAY_LOG_COOLDOWN (30 SECONDS)
 /// A "no path" older than this no longer starts a search
 #define PIRATE_CREW_NO_PATH_WINDOW (3 SECONDS)
 /// After a search finds no way at all, the hunt waits this long before trying the same place again
