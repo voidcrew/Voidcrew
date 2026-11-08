@@ -37,7 +37,7 @@
 	TEST_ASSERT(fling_distance >= 1 && fling_distance <= 3, "The brain landed [fling_distance] tiles away, outside one to three tiles")
 	TEST_ASSERT_EQUAL(brain.x, origin.x, "The brain left the line of the blow")
 	TEST_ASSERT(brain.damage < brain.maxHealth, "The burst killed the brain outright, so the victim could not be revived")
-	TEST_ASSERT_EQUAL(brain.damage, 0, "The burst damaged a brain it had no reason to touch")
+	TEST_ASSERT(brain.damage < 1, "The burst damaged a brain it had no reason to touch (got [brain.damage]; only out-of-body decay is expected)")
 	TEST_ASSERT(!(brain.organ_flags & ORGAN_FAILING), "The burst left the brain failing")
 	TEST_ASSERT_EQUAL(brain.brainmob?.mind, victim_mind, "The mind did not stay with the thrown brain")
 	if(eyes)
