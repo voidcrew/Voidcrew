@@ -45,8 +45,8 @@
 /obj/item/gun/proc/hv_execution_possible(mob/living/user, mob/living/target)
 	if(!isliving(user) || !isliving(target) || user == target)
 		return FALSE
-	// Executions follow the aimed crit rule: an ordinary human NPC just fires a point-blank shot (D4).
-	if(!user.hv_can_land_aimed_crits())
+	// Only players and boss NPCs execute; anyone else just fires a point-blank shot (owner ruling OC-9).
+	if(!user.hv_can_execute())
 		return FALSE
 	if(!target.hv_can_be_executed() || !user.Adjacent(target))
 		return FALSE
@@ -218,3 +218,8 @@
 	if(head.hv_open_skull() && head.hv_skull_wound >= 3)
 		hv_blood_spray(shot_dir, 3)
 		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
+
+/// Whether this mob turns a point-blank head shot on someone helpless into an execution. Players can;
+/// human NPCs only at boss rank (human_npcs/human_npc.dm).
+/mob/living/proc/hv_can_execute()
+	return hv_can_land_aimed_crits()

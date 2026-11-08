@@ -276,6 +276,10 @@
 /mob/living/carbon/human/npc/hv_can_land_aimed_crits()
 	return client || npc_rank >= HUMAN_NPC_RANK_ELITE
 
+// Gun executions are rarer still: bosses only, as a deliberate move (owner ruling OC-9).
+/mob/living/carbon/human/npc/hv_can_execute()
+	return client || npc_rank >= HUMAN_NPC_RANK_BOSS
+
 /mob/living/carbon/human/npc/Login()
 	. = ..()
 	// A player in control of the body (a brain transplant) can't keep its gear (D3). Admins

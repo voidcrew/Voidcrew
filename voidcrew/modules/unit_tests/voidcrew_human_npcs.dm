@@ -152,7 +152,7 @@
 	for(var/obj/item/item as anything in gibbed_kit)
 		TEST_ASSERT(human_npc_wait_deleted(item), "[item] survived its NPC being gibbed")
 
-/// D4: only elite and boss human NPCs land aimed crits and gun executions. Players always can.
+/// D4: only elite and boss human NPCs land aimed crits; only bosses execute (OC-9). Players always can.
 /datum/unit_test/voidcrew_human_npc_crit_policy
 
 /datum/unit_test/voidcrew_human_npc_crit_policy/Run()
@@ -180,7 +180,9 @@
 	var/obj/item/gun/elite_gun = locate() in elite.held_items
 	victim.Knockdown(30 SECONDS)
 	TEST_ASSERT(!regular_gun.hv_execution_possible(regular, victim), "A regular human NPC can execute a downed player")
-	TEST_ASSERT(elite_gun.hv_execution_possible(elite, victim), "An elite human NPC can't execute a downed player")
+	TEST_ASSERT(!elite_gun.hv_execution_possible(elite, victim), "An elite human NPC can execute a downed player; only bosses may")
+	elite.npc_rank = 2 // HUMAN_NPC_RANK_BOSS; tests compile before voidcrew defines
+	TEST_ASSERT(elite_gun.hv_execution_possible(elite, victim), "A boss human NPC can't execute a downed player")
 
 /// spawn_human_npc() queues bodies; the subsystem builds them a budget at a time, and a cancelled
 /// order builds nothing.
