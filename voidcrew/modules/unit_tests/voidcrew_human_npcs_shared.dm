@@ -226,8 +226,7 @@
 		soft.SelectBehaviors(downed.ai_controller, 1)
 	TEST_ASSERT(elite.ai_controller.current_behaviors[wild], "An elite in soft crit doesn't fire from the floor")
 	TEST_ASSERT(!regular.ai_controller.current_behaviors[wild], "A regular NPC in soft crit fires from the floor")
-	var/datum/ai_behavior/run_away_from_target/crawl = GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target)
-	TEST_ASSERT(!regular.ai_controller.current_behaviors[crawl], "A downed NPC crawls away")
+	TEST_ASSERT(!regular.ai_controller.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target)], "A downed NPC crawls away")
 
 	var/obj/item/gun/ballistic/elite_gun = locate() in elite.held_items
 	TEST_ASSERT_NOTNULL(elite_gun, "Test fixture: the elite holds no ballistic gun")

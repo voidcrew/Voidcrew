@@ -600,18 +600,6 @@
 	else
 		creature.visible_message(span_notice("Kessler Biolabs agents beam in to collect [creature]."))
 
-/// Kessler's beam takes `target` away for good
-/proc/outpost_kessler_beam_away(mob/living/target)
-	if(QDELETED(target))
-		return
-	var/turf/spot = get_turf(target)
-	if(spot)
-		target.visible_message(span_notice("A transporter beam takes [target] away."))
-		playsound(spot, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
-		new /obj/effect/temp_visual/transporter_beam(spot, OUTPOST_KESSLER_BEAM_TIME + 0.5 SECONDS)
-	transporter_dematerialise(target, OUTPOST_KESSLER_BEAM_TIME)
-	QDEL_IN(target, OUTPOST_KESSLER_BEAM_TIME)
-
 // ===== LOOKS =====
 
 /datum/outfit/outpost_kessler_researcher

@@ -312,7 +312,6 @@
 
 /// Speech through a cut throat: words drown in blood.
 /proc/hv_crit_gargle(message)
-	var/static/list/vowels = list("a", "e", "i", "o", "u")
 	var/phrase = html_decode(message)
 	if(!length(phrase))
 		return message
@@ -320,7 +319,7 @@
 	var/char = ""
 	for(var/i = 1, i <= length(phrase), i += length(char))
 		char = phrase[i]
-		if((LOWER_TEXT(char) in vowels) && prob(40))
+		if(findtext("aeiou", LOWER_TEXT(char)) && prob(40))
 			output += pick("gh", "rgl", "hl")
 		else
 			output += char
