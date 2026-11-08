@@ -245,7 +245,7 @@
    "hash": "4f9a01f4056d7085",
    "name": "Liberator",
    "note": "Single-shot barrel that takes a 2 s do-after to unscrew or screw back on. Every shot knocks 70-140 off its 100 integrity: on a fresh gun the first shot shatters it about 58% of the time (hurting the firing hand for up to 20 and sometimes embedding shrapnel), otherwise the next shot always does; point-blank doubles the shot's damage and aiming at someone held at gunpoint adds x1.5.",
-   "rank": 17,
+   "rank": 19,
    "reason": "Holds one round, and the barrel usually shatters within two shots. Its design disk is rare.",
    "score": 0,
    "score_inputs": {
@@ -311,6 +311,16 @@
    "score": 13,
    "tier": "green"
   },
+  "/obj/item/gun/ballistic/automatic/pistol/zashch": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "",
+   "name": "'Zashch' heavy pistol",
+   "rank": 14,
+   "reason": "Plain 40 damage 10mm rounds, one a second, 20 to a magazine. The slow cycle keeps it green.",
+   "score": 22,
+   "tier": "green"
+  },
   "/obj/item/gun/ballistic/automatic/proto/unrestricted": {
    "confidence": "high",
    "group": "smgs",
@@ -321,12 +331,22 @@
    "score": 105,
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/automatic/rapier": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "",
+   "name": "M-94 'Rapier' submachinegun",
+   "rank": 7,
+   "reason": "Fires 16 damage bullets at 3.3 a second from a 30 round magazine, a WT-550 with a fifth less damage. It scores just under the yellow line, and it takes a suppressor.",
+   "score": 37,
+   "tier": "green"
+  },
   "/obj/item/gun/ballistic/automatic/smartgun": {
    "confidence": "medium",
    "group": "smgs",
    "hash": "df8d939590e38d5f",
    "name": "Abielle Smart-SMG",
-   "rank": 7,
+   "rank": 8,
    "reason": "Fires 10 damage homing rounds. Its spread of 40 is the drawback the homing fixes. Upstream tg prices it as junk.",
    "score": 32,
    "score_inputs": {
@@ -427,7 +447,7 @@
    "group": "sidearms",
    "hash": "b18390c40543a655",
    "name": ".38 revolver",
-   "rank": 14,
+   "rank": 16,
    "reason": "Does 25 damage and weak wounds, with six shots then a slow reload.",
    "score": 18,
    "tier": "green"
@@ -437,7 +457,7 @@
    "group": "sidearms",
    "hash": "616fe18d05a3ece6",
    "name": "Colt Detective Special",
-   "rank": 15,
+   "rank": 17,
    "reason": "A .38 revolver by another name: 25 damage and six shots.",
    "score": 18,
    "tier": "green"
@@ -613,7 +633,7 @@
    "hash": "f1fd463d783a4af9",
    "name": "pipe pistol",
    "note": "Self-loading; one trigger pull empties its whole magazine in a rapid burst. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 16,
+   "rank": 18,
    "reason": "Fires three weak rounds in a burst, then needs a hand reload.",
    "score": 3,
    "score_inputs": {
@@ -666,6 +686,16 @@
    "rank": 9,
    "reason": "Does 60 damage on bare targets and about 24 through a vest, with five shots and a bolt to work.",
    "score": 15,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/rifle/nt_m96": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "",
+   "name": "NT M-96",
+   "rank": 15,
+   "reason": "Fires 22 damage 9mm rounds every half second, ten in the gun and a little spread. A self-loader a step below the Makarov.",
+   "score": 22,
    "tier": "green"
   },
   "/obj/item/gun/ballistic/rifle/rebarxbow": {

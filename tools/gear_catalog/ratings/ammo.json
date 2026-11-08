@@ -359,6 +359,15 @@
    "reason": "Built into the M-90's underbarrel launcher, never on its own. Rated with the launcher.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_box/magazine/internal/nt_m96": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "NT M-96 internal magazine",
+   "rank": 11,
+   "reason": "Built into the NT M-96, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
   "/obj/item/ammo_box/magazine/internal/shot/bounty": {
    "confidence": "high",
    "group": "magazines built into a gun",
@@ -784,6 +793,15 @@
    "reason": "Regal Condor magazine: 50 damage, armor piercing 40 and it hits the instant you fire. The round is most of why that gun is red.",
    "tier": "red"
   },
+  "/obj/item/ammo_box/magazine/rapier": {
+   "confidence": "high",
+   "group": "4.6x30mm loads",
+   "hash": "",
+   "name": "M-94 'Rapier' magazine",
+   "rank": 4,
+   "reason": "Plain 4.6x30mm rounds, 30 to a magazine. Follows the gun.",
+   "tier": "green"
+  },
   "/obj/item/ammo_box/magazine/smartgun": {
    "confidence": "high",
    "group": ".160 Smart loads",
@@ -1025,6 +1043,15 @@
    "rank": 3,
    "reason": "10 damage and one fire stack. The weakest WT-550 load.",
    "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/zashch": {
+   "confidence": "high",
+   "group": "10mm loads",
+   "hash": "",
+   "name": "Zashch pistol magazine",
+   "rank": 4,
+   "reason": "Plain 40 damage 10mm rounds, 20 to a magazine. Follows the gun.",
+   "tier": "green"
   },
   "/obj/item/ammo_box/n762": {
    "confidence": "high",
@@ -2259,6 +2286,7 @@
   "/obj/item/ammo_box/magazine/m10mm/quiet_word": "needs another system",
   "/obj/item/ammo_box/magazine/m38/empty": "no route",
   "/obj/item/ammo_box/magazine/m75": "needs another system",
+  "/obj/item/ammo_box/magazine/rapier/empty": "no route",
   "/obj/item/ammo_box/magazine/recharge": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf/deagle": "no route",
@@ -2279,6 +2307,7 @@
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/yellow": "no route",
   "/obj/item/ammo_box/magazine/sniper_rounds/surplus": "no route",
   "/obj/item/ammo_box/magazine/toy": "abstract",
+  "/obj/item/ammo_box/magazine/zashch/empty": "no route",
   "/obj/item/ammo_box/rocket": "no route",
   "/obj/item/ammo_box/strilka310/lionhunter": "no route",
   "/obj/item/ammo_casing/a223/phasic": "no route",

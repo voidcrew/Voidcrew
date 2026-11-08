@@ -47,6 +47,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 	LOOT_GUN_POOL_ARMORY = list(
 		LOOT_WEAPON_GREEN = list(
 			/obj/item/gun/ballistic/rifle/boltaction/surplus = 10,
+			/obj/item/gun/ballistic/rifle/nt_m96 = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/energy/laser = 10,
@@ -64,6 +65,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 	LOOT_GUN_POOL_SYNDICATE = list(
 		LOOT_WEAPON_GREEN = list(
 			/obj/item/gun/ballistic/automatic/pistol = 10,
+			/obj/item/gun/ballistic/automatic/rapier = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/automatic/c20r/unrestricted = 10,
@@ -79,6 +81,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		LOOT_WEAPON_GREEN = list(
 			/obj/item/gun/ballistic/revolver/c38/detective = 10,
 			/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
+			/obj/item/gun/ballistic/automatic/pistol/zashch = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,

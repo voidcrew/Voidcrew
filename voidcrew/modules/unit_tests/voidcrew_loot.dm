@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(1, 3, 5), "syndicate" = list(1, 2, 3), "plunder" = list(2, 1, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(2, 3, 5), "syndicate" = list(2, 2, 3), "plunder" = list(3, 1, 3), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -695,6 +695,8 @@
 			/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 			/obj/item/gun/ballistic/automatic/pistol/no_mag,
 			/obj/item/gun/ballistic/automatic/pistol/toy,
+			/obj/item/gun/ballistic/automatic/pistol/zashch,
+			/obj/item/gun/ballistic/automatic/rapier,
 			/obj/item/gun/ballistic/automatic/toy,
 			/obj/item/gun/ballistic/bow,
 			/obj/item/gun/ballistic/revolver/c38,
@@ -705,6 +707,7 @@
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun,
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
 			/obj/item/gun/ballistic/rifle/boltaction/surplus,
+			/obj/item/gun/ballistic/rifle/nt_m96,
 			/obj/item/gun/ballistic/shotgun/doublebarrel,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/slugs,

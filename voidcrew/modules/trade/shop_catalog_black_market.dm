@@ -63,6 +63,9 @@
 		/datum/shop_sku/black_market/cutlass,
 		/datum/shop_sku/black_market/c20r,
 		/datum/shop_sku/black_market/wt550,
+		/datum/shop_sku/black_market/rapier,
+		/datum/shop_sku/black_market/zashch,
+		/datum/shop_sku/black_market/nt_m96,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -879,6 +882,36 @@
 	item_path = /obj/item/gun/ballistic/automatic/wt550
 	price_credits = 4200
 	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/rapier
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/rapier
+	price_credits = 2400
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/zashch
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/pistol/zashch
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/nt_m96
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/rifle/nt_m96
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 1
 	restock_interval = 1 HOURS

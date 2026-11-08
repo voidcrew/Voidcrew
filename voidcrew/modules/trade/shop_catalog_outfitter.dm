@@ -67,6 +67,8 @@
 		/datum/shop_sku/outfitter/rifle_clip,
 		/datum/shop_sku/outfitter/smg_mag,
 		/datum/shop_sku/outfitter/wt550_mag,
+		/datum/shop_sku/outfitter/rapier_mag,
+		/datum/shop_sku/outfitter/zashch_mag,
 		/datum/shop_sku/outfitter/firing_pin,
 		/datum/shop_sku/outfitter/riot_shotgun,
 		// Melee
@@ -332,6 +334,24 @@
 	desc = "A loaded 4.6x30mm magazine for a WT-550."
 	item_path = /obj/item/ammo_box/magazine/wt550m9
 	price_credits = 150
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/rapier_mag
+	category = "Firearms & Ammo"
+	name = "m-94 magazine"
+	desc = "A loaded 4.6x30mm magazine for an M-94 'Rapier'."
+	item_path = /obj/item/ammo_box/magazine/rapier
+	price_credits = 180
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/zashch_mag
+	category = "Firearms & Ammo"
+	name = "zashch magazine"
+	desc = "A loaded 10mm box magazine for a 'Zashch' heavy pistol."
+	item_path = /obj/item/ammo_box/magazine/zashch
+	price_credits = 300
 	stock_min = 10
 	stock_max = 20
 
