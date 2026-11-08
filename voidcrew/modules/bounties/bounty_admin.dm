@@ -57,6 +57,7 @@
 
 // The main menu, in the order it shows
 #define BOUNTY_ADMIN_MENU_SPAWN "Spawn a criminal at my feet"
+#define BOUNTY_ADMIN_MENU_SPAWN_CHROME "Spawn a criminal with chosen chrome"
 #define BOUNTY_ADMIN_MENU_DECOY "Spawn a decoy next to a criminal"
 #define BOUNTY_ADMIN_MENU_POST "Post a bounty now"
 #define BOUNTY_ADMIN_MENU_GIVE "Give a bounty to a player"
@@ -132,6 +133,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /datum/bounty_admin_panel/proc/run_menu(mob/user)
 	var/static/list/menu = list(
 		BOUNTY_ADMIN_MENU_SPAWN,
+		BOUNTY_ADMIN_MENU_SPAWN_CHROME,
 		BOUNTY_ADMIN_MENU_DECOY,
 		BOUNTY_ADMIN_MENU_POST,
 		BOUNTY_ADMIN_MENU_GIVE,
@@ -150,6 +152,8 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		switch(choice)
 			if(BOUNTY_ADMIN_MENU_SPAWN)
 				menu_spawn(user)
+			if(BOUNTY_ADMIN_MENU_SPAWN_CHROME)
+				menu_spawn(user, TRUE)
 			if(BOUNTY_ADMIN_MENU_DECOY)
 				menu_decoy(user)
 			if(BOUNTY_ADMIN_MENU_POST)
@@ -174,8 +178,12 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/about = length(live_criminals())
 	return "[open] open bount[open == 1 ? "y" : "ies"], [about] criminal\s about, [length(GLOB.bounty_prisoner_pool)] record\s in the prisoner pool."
 
-/datum/bounty_admin_panel/proc/menu_spawn(mob/user)
+/// The spawn menu. With `pick_chrome` it also asks which chrome they carry (C0); otherwise it is rolled as usual.
+/datum/bounty_admin_panel/proc/menu_spawn(mob/user, pick_chrome = FALSE)
 	var/list/archetypes = archetype_choices()
+	if(pick_chrome)
+		// The meek carry no chrome
+		archetypes -= "Meek"
 	var/archetype_choice = ask_list(user, "Which archetype?", "Spawn a criminal", archetypes)
 	if(!archetype_choice || !authorized(user))
 		return
@@ -196,11 +204,18 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		if(!style_choice || !authorized(user))
 			return
 		variant = styles[style_choice]
+	var/chrome = BOUNTY_ADMIN_CHROME_ROLL
+	if(pick_chrome)
+		var/list/chromes = chrome_choices()
+		var/chrome_choice = ask_list(user, "Which chrome?", "Spawn a criminal", chromes)
+		if(!chrome_choice || !authorized(user))
+			return
+		chrome = chromes[chrome_choice]
 	var/list/activities = list("None" = null) + activity_choices()
 	var/activity_choice = ask_list(user, "Doing what?", "Spawn a criminal", activities)
 	if(!activity_choice || !authorized(user))
 		return
-	admin_spawn_criminal(user, tier, archetype, variant, activities[activity_choice], get_turf(user))
+	admin_spawn_criminal(user, tier, archetype, variant, activities[activity_choice], get_turf(user), chrome)
 
 /datum/bounty_admin_panel/proc/menu_decoy(mob/user)
 	var/datum/weakref/wanted_ref = WEAKREF(pick_criminal(user, "Spawn a decoy next to whom?"))
@@ -544,6 +559,44 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		"Heavy" = BOUNTY_KIT_HEAVY,
 	)
 
+/**
+ * The chrome a spawned criminal can be given (C0): rolled as usual for the style or kit picked, none,
+ * any one piece whatever their style or kit, or every piece that fits in one body. Values are a list of
+ * BOUNTY_CHROME_* keys, BOUNTY_ADMIN_CHROME_ROLL or BOUNTY_ADMIN_CHROME_ALL.
+ */
+/datum/bounty_admin_panel/proc/chrome_choices()
+	var/list/choices = list("Roll as usual" = BOUNTY_ADMIN_CHROME_ROLL, "None" = list())
+	for(var/key in GLOB.bounty_chrome_pieces)
+		var/datum/bounty_chrome_piece/piece = GLOB.bounty_chrome_pieces[key]
+		if(piece.weight > 0)
+			choices[piece.name] = list(key)
+	choices["All of it"] = BOUNTY_ADMIN_CHROME_ALL
+	return choices
+
+/**
+ * Gives `record` the chrome `chrome` asks for (a chrome_choices() value), for a criminal spawned by an
+ * admin: rolled as usual for the style or kit it ended up with (never the one P1 rolled first), every
+ * piece that fits, or exactly the pieces listed. What doesn't fit with its kit's own chrome is left
+ * off, and a style its chrome can't fight with is changed for one it can.
+ */
+/datum/bounty_admin_panel/proc/admin_set_chrome(datum/bounty_record/record, chrome)
+	var/list/kit_organs = record.archetype == BOUNTY_ARCHETYPE_BOSS ? bounty_chrome_kit_organs(record.kit) : list()
+	if(record.archetype != BOUNTY_ARCHETYPE_NORMAL && record.archetype != BOUNTY_ARCHETYPE_BOSS)
+		record.chrome = null
+		return
+	if(chrome == BOUNTY_ADMIN_CHROME_ALL)
+		chrome = admin_chrome_all(record, kit_organs)
+	if(!islist(chrome))
+		record.chrome = bounty_chrome_roll(record.tier, record.archetype, record.style, record.kit, kit_organs)
+		return
+	var/list/fitted = bounty_chrome_fit_keys(chrome, kit_organs)
+	record.chrome = length(fitted) ? fitted : null
+	bounty_chrome_fit_style(record)
+
+/// "All of it": every piece that fits on top of its kit's chrome. The cyberpsycho kit (C6) takes this choice over.
+/datum/bounty_admin_panel/proc/admin_chrome_all(datum/bounty_record/record, list/kit_organs)
+	return bounty_chrome_all_that_fits(kit_organs)
+
 /// A normal criminal's styles; the meek always carry the holdout, so the menu doesn't offer it
 /datum/bounty_admin_panel/proc/style_choices()
 	return list(
@@ -699,7 +752,8 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(!record)
 		return "no record"
 	var/variant = record.kit || record.style
-	return "[bounty_tier_name(record.tier)] [record.archetype || "criminal"][variant ? " ([variant])" : ""]"
+	var/chrome = length(record.chrome) ? ", chrome: [jointext(record.chrome, ", ")]" : ""
+	return "[bounty_tier_name(record.tier)] [record.archetype || "criminal"][variant ? " ([variant])" : ""][chrome]"
 
 /datum/bounty_admin_panel/proc/criminal_label(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	var/area/place = get_area(criminal)
@@ -801,10 +855,10 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 
 /**
  * Spawns a criminal of `tier` and `archetype` at `where`, with no posting: a new record from P1 with
- * the kit (a boss) or style (anyone else) set to `variant` when given, then P2's spawn, then P3's
- * `activity` when given. Returns the criminal, or null.
+ * the kit (a boss) or style (anyone else) set to `variant` when given, its chrome as `chrome` asks
+ * (admin_set_chrome(), C0), then P2's spawn, then P3's `activity` when given. Returns the criminal, or null.
  */
-/datum/bounty_admin_panel/proc/admin_spawn_criminal(mob/user, tier, archetype, variant, activity, turf/where)
+/datum/bounty_admin_panel/proc/admin_spawn_criminal(mob/user, tier, archetype, variant, activity, turf/where, chrome = BOUNTY_ADMIN_CHROME_ROLL)
 	error = null
 	if(!authorized(user))
 		return null
@@ -836,9 +890,17 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		record.kit = null
 		if(variant)
 			record.style = variant
+	var/list/asked_chrome
+	if(islist(chrome))
+		var/list/chrome_keys = chrome
+		asked_chrome = chrome_keys.Copy()
+	admin_set_chrome(record, chrome)
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(record, where, null)
 	if(QDELETED(criminal))
 		return refuse(user, "The criminal did not spawn.")
+	var/list/left_off = asked_chrome ? asked_chrome - (record.chrome || list()) : null
+	if(length(left_off))
+		tell(user, span_warning("[jointext(left_off, ", ")] didn't fit in them with the rest."))
 	if(activity)
 		criminal.start_activity(activity, null)
 	log_action(user, "spawn [criminal_name(criminal)], [record_kind(record)][activity ? ", [activity]" : ""], at [AREACOORD(where)]")
@@ -1374,6 +1436,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 #undef BOUNTY_ADMIN_TEST_CAPTOR
 #undef BOUNTY_ADMIN_RELIST_REASON
 #undef BOUNTY_ADMIN_MENU_SPAWN
+#undef BOUNTY_ADMIN_MENU_SPAWN_CHROME
 #undef BOUNTY_ADMIN_MENU_DECOY
 #undef BOUNTY_ADMIN_MENU_POST
 #undef BOUNTY_ADMIN_MENU_GIVE
