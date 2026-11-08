@@ -82,10 +82,16 @@ GLOBAL_LIST_INIT(hv_vis_pool_reach, list(10, 15, 26, 29))
 
 /obj/effect/decal/cleanable/blood/hv_pool_show(state)
 	var/old_tier = icon == HV_BLOOD_POOL_ICON ? hv_vis_pool_state_tier(icon_state) : 0
+	// A pool is shown again every time more blood lands on it; only a picture that changed animates.
+	var/was_shown = icon == HV_BLOOD_POOL_ICON && icon_state == state
+	var/was_lobe = icon == HV_BLOOD_POOL_ICON && findtext(icon_state, "lobe") == 1
 	. = ..()
-	if(QDELETED(src) || dried)
+	if(QDELETED(src) || dried || was_shown)
 		return
 	if(findtext(state, "lobe") == 1)
+		// Only a lobe that is new on this tile flows out; a bigger lobe replacing a smaller one just shows.
+		if(was_lobe || old_tier)
+			return
 		hv_vis_lobe_creep()
 		return
 	var/new_tier = hv_vis_pool_state_tier(state)
