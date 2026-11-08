@@ -129,9 +129,9 @@
 
 // =========================================================================
 // SPLICE SKUs and INTAKE LEDGER
-// The lead wires these into /datum/outpost_shop/vendor/ripperdoc (sku_types,
-// buyback_types), the street doc's lists (the credit-priced three and their
-// /street_doc trade-ins), and the zone loot tables at integration.
+// Listed on /datum/outpost_shop/vendor/ripperdoc (sku_types, buyback_types)
+// and on the street doc's lists (the credit-priced three and their
+// /street_doc trade-ins). The optics also ride the zone loot tables.
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/spyglass

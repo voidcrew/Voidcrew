@@ -336,8 +336,7 @@
 	reflist[1] -= bang_reduction
 
 // =========================================================================
-// SHOP SKUS: not listed on any vendor yet, the integration pass adds them to
-// the Chop Shop's sku_types and to the street doc's.
+// SHOP SKUS: on the Chop Shop's sku_types and on the street doc's.
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/clotter_node
@@ -372,8 +371,8 @@
 	price_credits = 700
 
 // =========================================================================
-// TRADE-IN: half list, credits only. Not listed on any buyback_types yet, same
-// integration pass as above. Ratchet's entries (/street_doc) differ only in wording.
+// TRADE-IN: half list, credits only. Ratchet's entries (/street_doc) differ
+// only in wording.
 // =========================================================================
 
 /datum/shop_buyback/ripperdoc/clotter_node

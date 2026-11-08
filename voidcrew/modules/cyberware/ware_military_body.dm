@@ -56,6 +56,13 @@
 	. = ..()
 	break_camo(organ_owner, silent = TRUE)
 
+/// The field runs on the weave: it collapses the moment the weave goes offline,
+/// a deck's Glitch, a brownout or damage, the same as an EMP drops it.
+/obj/item/organ/cyberimp/cyberware/ghostskin/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(camo_active)
+		break_camo(bearer, reason = "weave offline", silent = (owner != bearer))
+
 /obj/item/organ/cyberimp/cyberware/ghostskin/emp_act(severity)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)

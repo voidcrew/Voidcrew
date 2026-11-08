@@ -18,9 +18,9 @@
  * The Vaulter carries the Coils' soft landing and dry footing, which the Hopper
  * itself never had, so stepping up to it costs no safety.
  *
- * Sold at Splice's counter, and the credit-priced ones at the street doc's.
- * The integration pass wires the SKUs and ledger entries below into the vendors
- * and the zone loot tables.
+ * Sold at Splice's counter, and the credit-priced ones at the street doc's
+ * (ripperdoc_catalog.dm, street_doc_catalog.dm). All of them also ride the
+ * zone loot tables (modules/loot/themes/).
  */
 
 // =========================================================================

@@ -310,6 +310,18 @@
 	TEST_ASSERT(chrome.emp_down, "Glitch did not reboot the target's chrome")
 	TEST_ASSERT(!glitch.valid_for(victim, user), "Glitch was offered with nothing left running")
 
+	// A hack that lands on a person is an attack: it drops the hacker's camo.
+	chrome.tune_up()
+	var/obj/item/organ/cyberimp/cyberware/deck/assault/breacher = allocate(/obj/item/organ/cyberimp/cyberware/deck/assault)
+	TEST_ASSERT(breacher.Insert(user, special = TRUE), "Breacher deck staging insert was refused")
+	var/datum/action/cooldown/cyberware/deck/hack_action = locate() in breacher.actions
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin)
+	TEST_ASSERT(weave.Insert(user, special = TRUE), "Ghostskin staging insert was refused")
+	weave.engage_camo(user)
+	TEST_ASSERT(weave.camo_active, "Fixture: the hacker's Ghostskin never raised its field")
+	TEST_ASSERT(hack_action.upload_quickhack(user, victim, breacher.kit.find_quickhack(/datum/machine_quickhack/glitch)), "Glitch did not land through the Breacher deck")
+	TEST_ASSERT(!weave.camo_active, "Hacking a person from under the Ghostskin kept the field up")
+
 	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, get_step(start, NORTH))
 	TEST_ASSERT(reboot.valid_for(turret, user), "Reboot Turret was not offered on a live turret")
 	TEST_ASSERT(reboot.execute(turret, user), "Reboot Turret did not land")

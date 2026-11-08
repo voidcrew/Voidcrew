@@ -24,9 +24,9 @@
  * single highest live source, so the Twitchwire and the Weaver shunt can never
  * stack with a Cascade window or each other.
  *
- * Splice's shelf, the street doc's shelf, and the zone loot tables are wired
- * in the integration pass, not here. The SKUs and ledger entries below exist
- * so the cradle can quote a price and so that pass has something to list.
+ * Splice's shelf, the street doc's shelf (ripperdoc_catalog.dm,
+ * street_doc_catalog.dm) and the zone loot tables list the SKUs, ledger
+ * entries and organs below.
  */
 
 // =========================================================================
@@ -160,8 +160,8 @@
 	ping_volume_bonus = 10
 
 // =========================================================================
-// SPLICE SKUS: not listed on any vendor yet, the integration pass adds them
-// to the Chop Shop's sku_types (and the street doc's, for the credit ones).
+// SPLICE SKUS: on the Chop Shop's sku_types, and the credit ones on the
+// street doc's too.
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/hardweave
@@ -211,9 +211,8 @@
 
 // =========================================================================
 // TRADE-IN: half list, credits only, exact type. The Weaver shunt costs
-// vouchers, which can't be refunded, so it has no entry. Not listed on any
-// buyback_types yet, same integration pass as above. Each entry also has the
-// street doc's own wording below.
+// vouchers, which can't be refunded, so it has no entry. Each entry also has
+// the street doc's own wording below.
 //
 // Names stay siblings of the parent entries (second_wind_deep, not
 // second_wind/deep) so a model never inherits its parent's price. The

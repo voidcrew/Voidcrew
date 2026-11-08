@@ -412,11 +412,20 @@
 		log_combat(bearer, victim, "quickhacked", null, "with [hack.name] from [deck]")
 		// Counts as an attack at a trader outpost, like any other.
 		GLOB.outpost_pvp_enforcement?.register_pvp_aggression(victim, bearer)
+		// And like any other attack, it drops the hacker's camo.
+		drop_bearer_camo(bearer)
 	else
 		bearer.log_message("used the [hack.name] quickhack on [target] ([target.type]) with [deck].", LOG_ATTACK)
 	cyberware_ink_pulse(bearer, CYBERWARE_INK_HARD)
 	StartCooldown(kit.hack_cooldown(hack))
 	return TRUE
+
+/// A hack that hurts someone is an attack, and an attack collapses the
+/// hacker's Ghostskin field the way a punch or a shot does (ware_military_body.dm).
+/datum/action/cooldown/cyberware/deck/proc/drop_bearer_camo(mob/living/carbon/bearer)
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = bearer?.get_organ_slot(ORGAN_SLOT_CYBERWARE_SKIN)
+	if(istype(weave) && weave.camo_active)
+		weave.break_camo(bearer, reason = "field contact")
 
 // ---- Room hacks ----------------------------------------------------------
 
@@ -469,6 +478,8 @@
 	bearer.log_message("used the [hack.name] room hack with [deck].", LOG_ATTACK)
 	if(!istype(hack, /datum/machine_masshack/ping))
 		message_admins("[ADMIN_LOOKUPFLW(bearer)] used the [hack.name] room hack from [deck] at [ADMIN_VERBOSEJMP(here)].")
+		// Arc Flash hurts everyone in the room: an attack, so the camo goes.
+		drop_bearer_camo(bearer)
 	cyberware_ink_pulse(bearer, CYBERWARE_INK_HARD)
 	StartCooldown(kit.hack_cooldown(hack))
 	return TRUE
@@ -632,9 +643,8 @@
 	return TRUE
 
 // =========================================================================
-// SPLICE SKUS: not listed on any vendor yet, the integration pass adds them
-// to the Chop Shop's sku_types (and the street doc's, for the two credit
-// decks), and pins the gated ones in voidcrew_zone_shops' catalog.
+// SPLICE SKUS: on the Chop Shop's sku_types, the two credit decks on the
+// street doc's too, and the gated ones pinned in voidcrew_zone_shops' catalog.
 // =========================================================================
 
 /datum/shop_sku/ripperdoc/deck_junker

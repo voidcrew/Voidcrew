@@ -119,6 +119,15 @@
 	SEND_SIGNAL(pitcher, COMSIG_MOB_THROW, spot(0, 0))
 	TEST_ASSERT(!HAS_TRAIT(pitcher, "cyber_camo"), "Throwing didn't drop the field")
 
+	// A weave knocked into a reboot (a deck's Glitch) drops its field too.
+	var/mob/living/carbon/human/consistent/glitched = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin, spot(4, 4))
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = locate() in glitched.organs
+	var/datum/component/cyberware/chrome = weave?.GetComponent(/datum/component/cyberware)
+	TEST_ASSERT_NOTNULL(chrome, "Fixture: the Ghostskin has no chrome component")
+	chrome.start_emp_reboot(EMP_HEAVY)
+	TEST_ASSERT(!weave.camo_active, "A rebooting weave kept its field up")
+	TEST_ASSERT(!HAS_TRAIT(glitched, "cyber_camo"), "A rebooting weave left its bearer hidden from mobs")
+
 	// The street weave never grants the trait, so nothing here hides it.
 	var/mob/living/carbon/human/consistent/flicker = cloaked_human(/obj/item/organ/cyberimp/cyberware/ghostskin/street, spot(4, 4))
 	TEST_ASSERT(!HAS_TRAIT(flicker, "cyber_camo"), "The Flickerskin granted the camo trait")
