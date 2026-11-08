@@ -1,0 +1,1 @@
+// Artifact effect: plasma vent.
