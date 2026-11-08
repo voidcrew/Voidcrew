@@ -8,8 +8,11 @@
 #define BOUNTY_DEADEYE_WINDOW (6 SECONDS)
 /// From the end of one lock, however it ended, to the next
 #define BOUNTY_DEADEYE_COOLDOWN (15 SECONDS)
-/// The soonest they lock after a fight starts
-#define BOUNTY_DEADEYE_FIRST_DELAY (2 SECONDS)
+/// The soonest they lock after a fight starts. The beat overlaps their draw, so the held fire costs them
+/// little and the homing rounds come while the fight is still on.
+#define BOUNTY_DEADEYE_FIRST_DELAY (0.5 SECONDS)
+/// The same for an SMG: a homing burst that early, on top of a Cascade window, outguns a mini-boss
+#define BOUNTY_DEADEYE_FIRST_DELAY_SMG (2 SECONDS)
 /// How often a held lock checks they can still see their mark
 #define BOUNTY_DEADEYE_WATCH (0.5 SECONDS)
 /// A homing round's turn per tile, as the player implant's
@@ -92,12 +95,22 @@
 	return ..()
 
 /datum/bounty_chrome/deadeye/examine_line()
-	if(!owner)
-		return null
-	return "[owner.p_Their()] eyes are milspec optics, cold and unblinking."
+	return "Thin chrome rings circle %THEIR irises."
 
 /datum/bounty_chrome/deadeye/on_fight_start(atom/target)
-	next_lock_at = max(next_lock_at, world.time + BOUNTY_DEADEYE_FIRST_DELAY)
+	var/datum/bounty_style/style = bounty_ai_style(owner)
+	var/delay = style?.key == BOUNTY_STYLE_SMG ? BOUNTY_DEADEYE_FIRST_DELAY_SMG : BOUNTY_DEADEYE_FIRST_DELAY
+	var/opening = world.time + delay
+	if(opening <= next_lock_at)
+		return
+	next_lock_at = opening
+	// Life() comes every two seconds: the first lock waits on its own timer, not on whichever tick comes after it
+	addtimer(CALLBACK(src, PROC_REF(opening_check)), delay, TIMER_DELETE_ME)
+
+/// The opening lock's own check, on time: what the next Life tick would do
+/datum/bounty_chrome/deadeye/proc/opening_check()
+	if(online())
+		on_tick(0, bounty_chrome_fighting(owner))
 
 /datum/bounty_chrome/deadeye/on_tick(seconds_per_tick, fighting)
 	if(mark_ref)
@@ -158,8 +171,12 @@
 		return FALSE
 	return bounty_ai_may_hit(owner, target) && bounty_ai_can_see(owner, target, BOUNTY_DEADEYE_RANGE)
 
-/// The lock on `target`: eyes red, the red line and the mark, and their gun held for the beat
-/datum/bounty_chrome/deadeye/proc/start_lock(atom/target)
+/**
+ * The lock on `target`: eyes red, the red line and the mark, and their gun held for the beat. The red
+ * line shows for `beam_time`; a mark for some other move (the cyberpsycho's) can pass that move's own
+ * wind-up. `quiet` leaves out the room's "eyes flash red" line where the move has its own.
+ */
+/datum/bounty_chrome/deadeye/proc/start_lock(atom/target, beam_time = BOUNTY_DEADEYE_ARM, quiet = FALSE)
 	if(mark_ref)
 		end_lock()
 	mark_ref = WEAKREF(target)
@@ -169,9 +186,10 @@
 	rounds = null
 	target.add_filter(mark_filter, 2, list("type" = "outline", "color" = BOUNTY_DEADEYE_RED, "size" = 1))
 	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
-	beam_ref = WEAKREF(owner.Beam(target, icon_state = "r_beam", time = BOUNTY_DEADEYE_ARM, maxdistance = BOUNTY_DEADEYE_RANGE + 1))
+	beam_ref = WEAKREF(owner.Beam(target, icon_state = "r_beam", time = beam_time, maxdistance = BOUNTY_DEADEYE_RANGE + 1))
 	owner.face_atom(target)
-	owner.visible_message(span_warning("[owner]'s eyes flash red."))
+	if(!quiet)
+		owner.visible_message(span_warning("[owner]'s eyes flash red."))
 	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 40, TRUE)
 	for(var/mob/living/person as anything in marked_people(target))
 		to_chat(person, span_userdanger("A red targeting glint settles on you!"))

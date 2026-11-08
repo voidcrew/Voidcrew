@@ -75,7 +75,7 @@
 	var/list/examined = criminal.examine(hunter)
 	var/found = FALSE
 	for(var/line in examined)
-		if(findtext(line, "milspec optics"))
+		if(findtext(line, "chrome rings"))
 			found = TRUE
 	TEST_ASSERT(found, "Examining them doesn't show their optics")
 
@@ -85,6 +85,8 @@
 	fight(criminal, hunter)
 	TEST_ASSERT(bounty_chrome_fighting(criminal), "The test fight isn't on")
 	piece.on_fight_start(hunter)
+	// A pistol's first lock comes half a second in, over its draw
+	TEST_ASSERT_EQUAL(piece.next_lock_at - world.time, 5, "A pistol's first lock is due [piece.next_lock_at - world.time] deciseconds in, not 5") // BOUNTY_DEADEYE_FIRST_DELAY
 	piece.on_tick(2, TRUE)
 	TEST_ASSERT_NULL(piece.mark_ref, "They locked on the moment the fight started")
 	piece.next_lock_at = world.time
@@ -205,6 +207,10 @@
 	var/mob/living/basic/bounty_criminal/criminal = new_gunman("smg")
 	var/datum/bounty_chrome/deadeye/piece = bounty_chrome_piece(criminal, "deadeye")
 	fight(criminal, hunter)
+	// An SMG's first lock waits longer than a pistol's: a homing burst that early outguns a mini-boss alongside a Cascade window
+	piece.next_lock_at = 0
+	piece.on_fight_start(hunter)
+	TEST_ASSERT_EQUAL(piece.next_lock_at - world.time, 20, "An SMG's first lock is due [piece.next_lock_at - world.time] deciseconds in, not 20") // BOUNTY_DEADEYE_FIRST_DELAY_SMG
 	piece.next_lock_at = world.time
 	piece.on_tick(2, TRUE)
 	TEST_ASSERT_NOTNULL(piece.mark_ref, "The SMG criminal didn't lock on")

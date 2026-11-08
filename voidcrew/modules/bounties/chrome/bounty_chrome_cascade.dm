@@ -12,7 +12,12 @@
  *   copies flying apart, a violet flash on the screens of hunters who see it), then speed, an
  *   afterimage on every step, the player lattice's dodge against shots while moving (never
  *   point-blank, cyberware_register_dodge_source()), quicker blows and quicker shots. A gunman at
- *   range sidesteps every BOUNTY_CASCADE_STRAFE_GAP, so it is always on the move.
+ *   range sidesteps every BOUNTY_CASCADE_STRAFE_GAP, so it is always on the move, and anyone standing
+ *   still between steps (a gunman aiming, a brawler swinging) keeps blurring with afterimages that
+ *   slide off them (shimmer()), so the surge shows on every fighter, not only on one who runs.
+ * - Held in place (TRAIT_IMMOBILIZED: a Piledriver crouch or leap, a lunge, a Gorilla stumble), it
+ *   neither sidesteps nor dodges. A companion's steps stay on its criminal's leash; one whose
+ *   criminal is gone has no leash left, so it neither sidesteps nor dodges.
  * - Crash (BOUNTY_CASCADE_CRASH_TIME): drained grey, slow, slower blows, a stamina dump, and
  *   stamina hits land BOUNTY_CASCADE_CRASH_STAMINA_MULT times as hard. The capture window.
  * An EMP during the spin-up or the window crashes it at once and re-arms the full cooldown, as it
@@ -39,9 +44,10 @@
 #define BOUNTY_CASCADE_CRASH_TIME (6 SECONDS)
 /// From the start of one surge to the earliest start of the next
 #define BOUNTY_CASCADE_COOLDOWN (45 SECONDS)
-/// The first surge of a fight comes this long after it starts, somewhere between the two
-#define BOUNTY_CASCADE_FIRST_MIN (3 SECONDS)
-#define BOUNTY_CASCADE_FIRST_MAX (6 SECONDS)
+/// The first surge of a fight comes this long after it starts, somewhere between the two: the spin-up
+/// whines inside the fight's opening seconds, so the window opens while there is still a fight
+#define BOUNTY_CASCADE_FIRST_MIN (0.5 SECONDS)
+#define BOUNTY_CASCADE_FIRST_MAX (1.5 SECONDS)
 /// After an EMP reboot it waits at least this long before it may surge
 #define BOUNTY_CASCADE_REBOOT_DELAY (4 SECONDS)
 /// It only surges with its target this close and in sight
@@ -57,8 +63,14 @@
 #define BOUNTY_CASCADE_CRASH_STAMINA_MULT 2
 /// Stamina the crash dumps on them as it starts, before their own stamina coefficient
 #define BOUNTY_CASCADE_CRASH_STAMINA 20
-/// A gunman at range sidesteps this often in the window, and the window checks the fight is still on
+/// The window's loop: it checks the fight is still on this often, and blurs a fighter who stood still since the last one
+#define BOUNTY_CASCADE_PULSE (0.2 SECONDS)
+/// A gunman at range sidesteps this often in the window
 #define BOUNTY_CASCADE_STRAFE_GAP (0.8 SECONDS)
+/// How far a standing fighter's blur slides off them, in pixels, and how long it takes
+#define BOUNTY_CASCADE_SHIMMER_MIN 6
+#define BOUNTY_CASCADE_SHIMMER_MAX 10
+#define BOUNTY_CASCADE_SHIMMER_SLIDE (0.3 SECONDS)
 /// Degrees the afterimage hue moves per step, the player lattice's
 #define BOUNTY_CASCADE_HUE_STEP 25
 /// The dodge source key on the shared arbiter
@@ -88,19 +100,32 @@
 	var/next_surge_at = 0
 	/// The timer that takes it to its next phase
 	var/phase_timer
-	/// The window's loop: the fight check and a gunman's sidestep
+	/// The window's loop: the fight check, a gunman's sidestep and a standing fighter's blur
 	var/strafe_timer
 	/// Hue of the next afterimage, in degrees
 	var/trail_hue = 0
 	/// world.time of its last dodge roll: one a tick
 	var/last_dodge_roll = -1
+	/// world.time of its last step, and of the window's next sidestep
+	var/last_step_at = 0
+	var/next_strafe_at = 0
 
 /datum/bounty_chrome/cascade/detach()
 	end_surge()
 	return ..()
 
 /datum/bounty_chrome/cascade/on_fight_start(atom/target)
-	next_surge_at = max(next_surge_at, world.time + rand(BOUNTY_CASCADE_FIRST_MIN, BOUNTY_CASCADE_FIRST_MAX))
+	var/opening = world.time + rand(BOUNTY_CASCADE_FIRST_MIN, BOUNTY_CASCADE_FIRST_MAX)
+	if(opening <= next_surge_at)
+		return
+	next_surge_at = opening
+	// Life() comes every two seconds: the first surge waits on its own timer, not on whichever tick comes after it
+	addtimer(CALLBACK(src, PROC_REF(opening_check)), opening - world.time, TIMER_DELETE_ME)
+
+/// The opening surge's own check, on time: what the next Life tick would do
+/datum/bounty_chrome/cascade/proc/opening_check()
+	if(online())
+		on_tick(0, bounty_chrome_fighting(owner))
 
 /datum/bounty_chrome/cascade/on_tick(seconds_per_tick, fighting)
 	if(fighting && in_fight())
@@ -152,21 +177,23 @@
 		return
 	phase = BOUNTY_CASCADE_WINDOW
 	trail_hue = rand(0, 359)
+	last_step_at = world.time
+	next_strafe_at = world.time + BOUNTY_CASCADE_STRAFE_GAP
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/bounty_cascade)
 	set_blows(BOUNTY_CASCADE_WINDOW_BLOWS)
 	cyberware_register_dodge_source(owner, BOUNTY_CASCADE_DODGE_KEY, CALLBACK(src, PROC_REF(dodge_chance)))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved), override = TRUE)
-	// A criminal's own Move() already refuses hazards (leash_ok()); a companion's needs this for the dodge's sidestep
+	// A criminal's own Move() already keeps it on its leash (leash_ok()); a companion's needs this for the dodge's sidestep
 	if(!istype(owner, /mob/living/basic/bounty_criminal))
 		RegisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move), override = TRUE)
 	time_tear()
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(start_crash)), BOUNTY_CASCADE_WINDOW_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	strafe_timer = addtimer(CALLBACK(src, PROC_REF(window_pulse)), BOUNTY_CASCADE_STRAFE_GAP, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	strafe_timer = addtimer(CALLBACK(src, PROC_REF(window_pulse)), BOUNTY_CASCADE_PULSE, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
-/// The tear everyone sees and hears: the player lattice's sound and line, four tinted copies flying apart, and a violet flash for hunters who see it
+/// The tear everyone sees and hears: the player lattice's sound, four tinted copies flying apart, and a violet flash for hunters who see it
 /datum/bounty_chrome/cascade/proc/time_tear()
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
-	owner.visible_message(span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"))
+	owner.visible_message(span_boldwarning("[owner] fractures into afterimages and blurs into motion!"))
 	var/turf/here = get_turf(owner)
 	var/static/list/shard_offsets = list(list(-8, 4), list(8, 4), list(-6, -6), list(6, -6))
 	for(var/index in 1 to length(shard_offsets))
@@ -178,7 +205,7 @@
 			continue
 		flash_color(viewer, flash_color = BOUNTY_CASCADE_FLASH_COLOR, flash_time = 4)
 
-/// The window's loop: crashes it if the fight stopped (cuffed, surrendered, stamina-crit, fled), and keeps a gunman moving
+/// The window's loop: crashes it if the fight stopped (cuffed, surrendered, stamina-crit, fled), keeps a gunman moving, and blurs anyone standing still
 /datum/bounty_chrome/cascade/proc/window_pulse()
 	if(phase != BOUNTY_CASCADE_WINDOW || !owner)
 		return
@@ -187,13 +214,29 @@
 	if(!in_fight())
 		start_crash()
 		return
-	strafe_timer = addtimer(CALLBACK(src, PROC_REF(window_pulse)), BOUNTY_CASCADE_STRAFE_GAP, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	sidestep()
+	strafe_timer = addtimer(CALLBACK(src, PROC_REF(window_pulse)), BOUNTY_CASCADE_PULSE, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	if(world.time >= next_strafe_at)
+		next_strafe_at = world.time + BOUNTY_CASCADE_STRAFE_GAP
+		sidestep()
+	if(world.time - last_step_at >= BOUNTY_CASCADE_PULSE)
+		shimmer()
 
-/// A gunman at range takes a step to one side of its target, never off its leash or onto lava, a chasm or space
+/// A fighter standing still in the window still blurs: an afterimage of them slides off to one side and fades, as their trail would if they ran
+/datum/bounty_chrome/cascade/proc/shimmer()
+	var/turf/here = get_turf(owner)
+	if(!here || !isturf(owner.loc))
+		return
+	var/obj/effect/temp_visual/decoy/fading/cascade/blur = new(here, owner, trail_hue)
+	// Behind them, so it shows at their edge and never over their face
+	blur.layer = BELOW_MOB_LAYER
+	trail_hue = (trail_hue + BOUNTY_CASCADE_HUE_STEP) % 360
+	var/slide = pick(-1, 1) * rand(BOUNTY_CASCADE_SHIMMER_MIN, BOUNTY_CASCADE_SHIMMER_MAX)
+	animate(blur, pixel_x = blur.pixel_x + slide, time = BOUNTY_CASCADE_SHIMMER_SLIDE, easing = QUAD_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+
+/// A gunman at range takes a step to one side of its target, never off its leash or onto lava, a chasm or space, and never while held in place
 /datum/bounty_chrome/cascade/proc/sidestep()
 	var/datum/bounty_style/style = bounty_ai_style(owner)
-	if(!style?.ranged || !isturf(owner.loc) || owner.buckled || owner.pulledby)
+	if(!style?.ranged || !isturf(owner.loc) || owner.buckled || owner.pulledby || HAS_TRAIT(owner, TRAIT_IMMOBILIZED) || leashless())
 		return
 	// One step of its own at a time, shared with the step out of a friend's line of fire (bounty_ai_normal.dm)
 	var/datum/ai_controller/controller = owner.ai_controller
@@ -230,29 +273,44 @@
 /**
  * The dodge source on the player lattice's arbiter: only in the window, and only while it is
  * fighting. One roll a tick: of a shell's pellets, or of shots landing together, only the first may be
- * dodged, so buckshot finds it and it never blurs two tiles at once.
+ * dodged, so buckshot finds it and it never blurs two tiles at once. Never while held in place (the
+ * dodge is a step aside), and never for a companion with no criminal's leash to keep that step on.
  */
 /datum/bounty_chrome/cascade/proc/dodge_chance()
 	if(phase != BOUNTY_CASCADE_WINDOW || !online() || !in_fight() || last_dodge_roll == world.time)
 		return 0
+	if(HAS_TRAIT(owner, TRAIT_IMMOBILIZED) || leashless())
+		return 0
 	last_dodge_roll = world.time
 	return BOUNTY_CASCADE_DODGE
+
+/// A companion whose criminal is gone: nothing holds its steps to a site any more
+/datum/bounty_chrome/cascade/proc/leashless()
+	return istype(owner, /mob/living/basic/bounty_companion) && !bounty_ai_side_of(owner)
 
 /// One afterimage per step, the hue rolling on, as the player lattice's trail
 /datum/bounty_chrome/cascade/proc/on_moved(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
+	last_step_at = world.time
 	if(!isturf(old_loc))
 		return
 	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue)
 	trail_hue = (trail_hue + BOUNTY_CASCADE_HUE_STEP) % 360
 
-/// A companion's own steps in the window never go onto lava or into a chasm: the player lattice's dodge sidesteps blind
+/**
+ * A companion's own steps in the window stay on its criminal's leash (as a criminal's own Move()
+ * does) and never go onto lava or into a chasm: the player lattice's dodge sidesteps blind. One
+ * already off its leash may still step about, as a criminal may (body_move_allowed()).
+ */
 /datum/bounty_chrome/cascade/proc/on_pre_move(atom/movable/source, atom/new_loc)
 	SIGNAL_HANDLER
 	var/turf/destination = new_loc
-	if(!isturf(destination) || owner.throwing || owner.pulledby || owner.buckled)
+	if(!isturf(destination) || !isturf(owner.loc) || owner.throwing || owner.pulledby || owner.buckled)
 		return NONE
 	if((islava(destination) || ischasm(destination)) && !destination.can_cross_safely(owner))
+		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
+	var/mob/living/basic/bounty_criminal/leader = bounty_ai_side_of(owner)
+	if(leader && !leader.leash_ok(destination) && leader.leash_ok(owner.loc))
 		return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
 	return NONE
 
@@ -393,7 +451,11 @@
 #undef BOUNTY_CASCADE_WINDOW_SHOTS
 #undef BOUNTY_CASCADE_CRASH_STAMINA_MULT
 #undef BOUNTY_CASCADE_CRASH_STAMINA
+#undef BOUNTY_CASCADE_PULSE
 #undef BOUNTY_CASCADE_STRAFE_GAP
+#undef BOUNTY_CASCADE_SHIMMER_MIN
+#undef BOUNTY_CASCADE_SHIMMER_MAX
+#undef BOUNTY_CASCADE_SHIMMER_SLIDE
 #undef BOUNTY_CASCADE_HUE_STEP
 #undef BOUNTY_CASCADE_DODGE_KEY
 #undef BOUNTY_CASCADE_GLOW_FILTER

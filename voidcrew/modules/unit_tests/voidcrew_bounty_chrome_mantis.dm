@@ -93,7 +93,10 @@
 	TEST_ASSERT_EQUAL(criminal.armour_penetration, initial(blade.armour_penetration), "The blades lost their armour penetration")
 	TEST_ASSERT_EQUAL(criminal.ai_hand?.held_type, blade, "The right hand doesn't show a blade")
 	TEST_ASSERT(piece.left_blade && (piece.left_blade in criminal.vis_contents), "The left hand doesn't show a blade")
+	TEST_ASSERT(!piece.one_blade(), "With both blades out, their lines speak of one")
 	TEST_ASSERT(examine_has(criminal, "Hardlight blades"), "Examining them doesn't show the blades out")
+	// The first lunge comes inside the fight's opening seconds
+	TEST_ASSERT_EQUAL(piece.next_lunge_at - world.time, 10, "The first lunge waits [piece.next_lunge_at - world.time] deciseconds, not 10") // BOUNTY_MANTIS_FIRST_LUNGE
 
 	// ----- The lunge: a marked line through the hunter, then a dash down all of it -----
 	piece.next_lunge_at = 0
@@ -101,6 +104,9 @@
 	TEST_ASSERT(piece.start_lunge(hunter), "The lunge didn't start")
 	TEST_ASSERT_EQUAL(piece.lunge_state, "windup", "The lunge didn't wind up first")
 	TEST_ASSERT(HAS_TRAIT_FROM(criminal, TRAIT_IMMOBILIZED, "bounty_chrome_mantis"), "They don't plant their feet for the wind-up")
+	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_mantis_glow"), "The wind-up shows no outline") // BOUNTY_MANTIS_GLOW_FILTER
+	// No swing through the wind-up and the dash: 9 deciseconds, then one a tile and one more
+	TEST_ASSERT_EQUAL(criminal.next_move - world.time, 15, "They are kept from swinging [criminal.next_move - world.time] deciseconds, not 15") // BOUNTY_MANTIS_LUNGE_WINDUP + BOUNTY_MANTIS_LUNGE_RANGE + 1
 	var/list/path = piece.lunge_path.Copy()
 	TEST_ASSERT_EQUAL(length(path), 4, "The line doesn't run on past the hunter to the room's far wall")
 	TEST_ASSERT_EQUAL(path[length(path)], tile(4, 2), "The line doesn't end at the far wall")
@@ -110,10 +116,12 @@
 	var/health_before = hunter.health
 	TEST_ASSERT(piece.begin_dash(piece.lunge_serial), "The dash didn't start when the wind-up ended")
 	TEST_ASSERT_EQUAL(marks_on(path), 0, "The marks stayed on the floor once the dash began")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_mantis_glow"), "The wind-up's outline stayed on in the dash")
 	sleep(1 SECONDS)
 	TEST_ASSERT(hunter.health < health_before, "The lunge didn't cut the hunter on the line")
 	TEST_ASSERT(hunter.IsKnockdown(), "The lunge didn't put the hunter down")
-	TEST_ASSERT(hunter.has_status_effect(/datum/status_effect/bounty_boss_bleed), "The hunter isn't bleeding from the lunge")
+	// The cuts bleed only through tg's own wound rolls: no stand-in bleed on top
+	TEST_ASSERT(!hunter.has_status_effect(/datum/status_effect/bounty_boss_bleed), "The lunge put a stand-in bleed on the hunter")
 	TEST_ASSERT_EQUAL(get_turf(criminal), tile(4, 2), "The dash didn't carry them down the whole line")
 	TEST_ASSERT_EQUAL(piece.lunge_state, "recover", "They didn't have to recover after the lunge")
 	TEST_ASSERT(piece.lunge_hit, "The lunge didn't count the cut")
@@ -200,6 +208,7 @@
 	TEST_ASSERT(!piece.deployed, "The blades stayed out through an EMP")
 	TEST_ASSERT_NULL(piece.lunge_state, "The lunge carried on through an EMP")
 	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_IMMOBILIZED, "bounty_chrome_mantis"), "An EMP mid wind-up left them rooted")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_mantis_glow"), "An EMP mid wind-up left the outline on")
 	TEST_ASSERT_EQUAL(marks_on(emp_path), 0, "An EMP mid wind-up left the line marked")
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], kitchen_knife, "Their knife didn't come back with the blades in") // BB_BOUNTY_WEAPON
 	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(kitchen_knife.force), "With the blades in, they still hit like a blade")
@@ -246,6 +255,18 @@
 	TEST_ASSERT(companion_piece.deployed, "A companion's blades didn't come out in the fight")
 	TEST_ASSERT_EQUAL(companion.melee_damage_upper, initial(blade.force), "A companion's blades don't hit like a mantis blade")
 	TEST_ASSERT_EQUAL(companion.ai_hand?.held_type, blade, "A companion's hand doesn't show a blade")
+	// The dash stays on its criminal's leash, and with its criminal gone there is no leash to dash on
+	TEST_ASSERT(!companion_piece.tile_ok(tile(3, 1)), "A companion with no criminal may dash")
+	var/mob/living/basic/bounty_criminal/normal/its_criminal = criminal_at(tile(0, 4))
+	companion.leader_ref = WEAKREF(its_criminal)
+	var/turf/corner = tile(0, 0)
+	var/turf/whole_room = tile(4, 4)
+	var/turf/left_half = tile(2, 4)
+	its_criminal.site_bounds = list(corner.x, corner.y, whole_room.x, whole_room.y, corner.z)
+	TEST_ASSERT(companion_piece.tile_ok(tile(3, 1)), "A companion may not dash on its criminal's site")
+	its_criminal.site_bounds = list(corner.x, corner.y, left_half.x, left_half.y, corner.z)
+	TEST_ASSERT(!companion_piece.tile_ok(tile(3, 1)), "A companion may dash off its criminal's site")
+	companion.leader_ref = null
 	companion.ai_leave_fight()
 	var/datum/component/bounty_chrome/companion_chrome = companion.GetComponent(/datum/component/bounty_chrome)
 	companion_chrome.tick(2)

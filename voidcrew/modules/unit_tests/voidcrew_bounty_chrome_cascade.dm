@@ -69,6 +69,16 @@
 	piece.on_tick(2, FALSE)
 	TEST_ASSERT_EQUAL(piece.phase, 0, "It surged out of a fight") // BOUNTY_CASCADE_IDLE
 
+	// The first surge is due in the fight's opening seconds, and a later fight start never brings a cooldown forward
+	piece.next_surge_at = 0
+	piece.on_fight_start(hunter)
+	var/opening = piece.next_surge_at - world.time
+	TEST_ASSERT(opening >= 5 && opening <= 15, "The first surge is due [opening] deciseconds into the fight, not 5 to 15") // BOUNTY_CASCADE_FIRST_MIN, BOUNTY_CASCADE_FIRST_MAX
+	piece.next_surge_at = world.time + 450
+	piece.on_fight_start(hunter)
+	TEST_ASSERT_EQUAL(piece.next_surge_at, world.time + 450, "A fight starting brought the cooldown forward")
+	piece.next_surge_at = 0
+
 	// In a fight, with its target in sight: the spin-up, a beat before anything else
 	chrome.tick(2)
 	TEST_ASSERT_EQUAL(piece.phase, 1, "It didn't spin up in a fight with its target in sight") // BOUNTY_CASCADE_SPINUP
@@ -101,6 +111,19 @@
 	for(var/obj/effect/temp_visual/decoy/fading/cascade/afterimage in from)
 		afterimages_after++
 	TEST_ASSERT_EQUAL(afterimages_after, afterimages_before + 1, "A step in the window didn't leave one afterimage")
+	// Standing still in the window, it still blurs: each pulse with no step leaves an afterimage sliding off it
+	var/turf/standing = get_turf(criminal)
+	var/blurs_before = 0
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/afterimage in standing)
+		blurs_before++
+	piece.last_step_at = world.time - 10
+	piece.window_pulse()
+	TEST_ASSERT_EQUAL(piece.phase, 2, "A pulse in the fight ended the window")
+	var/blurs_after = 0
+	for(var/obj/effect/temp_visual/decoy/fading/cascade/afterimage in standing)
+		blurs_after++
+	TEST_ASSERT_EQUAL(blurs_after, blurs_before + 1, "Standing still in the window, it didn't blur")
+	TEST_ASSERT_EQUAL(get_turf(criminal), standing, "The blur moved them")
 	TEST_ASSERT(findtext(jointext(criminal.examine(hunter), " "), "burns violet"), "Examining them in the window doesn't show it")
 
 	// Quicker shots in the window, once a burst
@@ -208,6 +231,17 @@
 	gunman_piece.sidestep()
 	TEST_ASSERT(get_turf(gunman) != gunman_was, "A gunman in the window didn't sidestep")
 	TEST_ASSERT_EQUAL(gunman.x, gunman_was.x, "A gunman's sidestep went toward or away from its target")
+	// Held in place (a Piledriver crouch, a lunge), it neither sidesteps nor dodges
+	ADD_TRAIT(gunman, TRAIT_IMMOBILIZED, TRAIT_GENERIC)
+	gunman_was = get_turf(gunman)
+	gunman.ai_controller.set_blackboard_key("bb_bounty_sidestep_at", 0) // BB_BOUNTY_SIDESTEP_AT
+	gunman_piece.sidestep()
+	TEST_ASSERT_EQUAL(get_turf(gunman), gunman_was, "Held in place, a gunman sidestepped")
+	gunman_piece.last_dodge_roll = -1
+	TEST_ASSERT_EQUAL(gunman_piece.dodge_chance(), 0, "Held in place, it could dodge")
+	REMOVE_TRAIT(gunman, TRAIT_IMMOBILIZED, TRAIT_GENERIC)
+	gunman_piece.last_dodge_roll = -1
+	TEST_ASSERT_EQUAL(gunman_piece.dodge_chance(), 40, "Let go, it couldn't dodge") // BOUNTY_CASCADE_DODGE
 	gunman_piece.end_surge()
 
 	// A companion at the bar never surges; one in the fight does
@@ -220,6 +254,27 @@
 	buddy.ai_in_fight = TRUE
 	buddy_piece.on_tick(2, TRUE)
 	TEST_ASSERT_EQUAL(buddy_piece.phase, 1, "A companion in the fight didn't surge")
+
+	// Its criminal gone, nothing holds a companion's steps to a site: in the window it neither sidesteps nor dodges
+	buddy.ai_take_style("pistol") // BOUNTY_STYLE_PISTOL
+	buddy_piece.open_window()
+	TEST_ASSERT_EQUAL(buddy_piece.phase, 2, "A companion's window didn't open")
+	buddy_piece.last_dodge_roll = -1
+	TEST_ASSERT_EQUAL(buddy_piece.dodge_chance(), 0, "A companion with no criminal could dodge")
+	var/turf/buddy_was = get_turf(buddy)
+	buddy.ai_controller.set_blackboard_key("bb_bounty_sidestep_at", 0) // BB_BOUNTY_SIDESTEP_AT
+	buddy_piece.sidestep()
+	TEST_ASSERT_EQUAL(get_turf(buddy), buddy_was, "A companion with no criminal sidestepped")
+	// With its criminal, it dodges, and its own steps in the window stay on the criminal's leash
+	buddy.leader_ref = WEAKREF(gunman)
+	buddy_piece.last_dodge_roll = -1
+	TEST_ASSERT_EQUAL(buddy_piece.dodge_chance(), 40, "A companion with its criminal couldn't dodge")
+	var/turf/corner = tile(0, 0)
+	gunman.site_bounds = list(corner.x, corner.y, buddy.x, buddy.y + 1, corner.z)
+	TEST_ASSERT(!buddy.Move(tile(3, 3), EAST), "In the window, a companion stepped off its criminal's leash")
+	TEST_ASSERT(buddy.Move(tile(1, 3), WEST), "In the window, a companion couldn't step about on its criminal's leash")
+	gunman.site_bounds = null
+	buddy.leader_ref = null
 	buddy_piece.end_surge()
 
 /**
