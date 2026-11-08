@@ -57,14 +57,14 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 
 /**
  * The chrome a new companion of a `tier` criminal carries, as a list of one key, or null: rarer than
- * its criminal's, one piece at most, and never Lazarus. A companion gives up to a stamina takedown, and
- * a jolt standing it back up would take away the answer that works on every companion.
+ * its criminal's, one piece at most, and only pieces companions can carry (never Lazarus: a companion
+ * gives up to a stamina takedown, and a jolt standing it back up would take away the answer that works
+ * on every companion).
  */
 /proc/bounty_roll_companion_chrome(tier, style)
-	var/static/list/never_on_companions = list(BOUNTY_CHROME_LAZARUS)
 	if(!prob(bounty_chrome_tier_chance(tier) / BOUNTY_CHROME_COMPANION_DIVISOR))
 		return null
-	return bounty_pick_chrome(1, tier, BOUNTY_CHROME_COMPANION, style, null, never_on_companions)
+	return bounty_pick_chrome(1, tier, BOUNTY_CHROME_COMPANION, style, null)
 
 /// Up to `count` different keys, weighted, among the pieces that suit them and aren't in `excluded`. Null if none suit.
 /proc/bounty_pick_chrome(count, tier, archetype, style, kit, list/excluded)
@@ -196,7 +196,7 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	dummy.temporarilyRemoveItemFromInventory(thing, force = TRUE)
 	qdel(thing)
 
-/// Gives `fighter` (a criminal or a companion) the pieces `keys`, adding to any it has, and the health they bring (bounty_chrome_fit_health()). For spawning and for admins.
+/// Gives `fighter` (a criminal or a companion) the pieces `keys` that suit it (bounty_chrome_suits()), adding to any it has, and the health they bring (bounty_chrome_fit_health()). For spawning and for admins.
 /proc/bounty_chrome_install(mob/living/basic/fighter, list/keys)
 	if(QDELETED(fighter) || !length(keys))
 		return null
@@ -205,8 +205,19 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		chrome.install(keys)
 	else
 		chrome = fighter.AddComponent(/datum/component/bounty_chrome, keys)
+		// Nothing it was given suits it (a companion handed Lazarus): no chrome at all
+		if(chrome && !length(chrome.pieces))
+			qdel(chrome)
+			return null
 	bounty_chrome_fit_health(fighter)
 	return chrome
+
+/// Whether piece `key` can go in `fighter`: a companion carries only the pieces companions can roll (never Lazarus or the piledriver), however they were put in
+/proc/bounty_chrome_suits(mob/living/basic/fighter, key)
+	var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
+	if(!proto)
+		return FALSE
+	return !istype(fighter, /mob/living/basic/bounty_companion) || (BOUNTY_CHROME_COMPANION in proto.archetypes)
 
 /**
  * How much tougher its chrome makes `fighter`: BOUNTY_CHROME_HEALTH_PER_PIECE more for each piece, as
@@ -380,6 +391,8 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
 		if(!proto)
 			stack_trace("Unknown bounty chrome [key]")
+			continue
+		if(!bounty_chrome_suits(parent, key))
 			continue
 		var/datum/bounty_chrome/piece = new proto.type
 		pieces[key] = piece
@@ -827,7 +840,7 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 
 /// What a fighter says to someone reading their chrome
 GLOBAL_LIST_INIT(bounty_chrome_read_lines, list(
-	"Get out of my head.",
+	"Who said you could scan me?",
 	"Stop reading me, creep.",
 	"Quit scanning me.",
 	"Eyes off my chrome.",

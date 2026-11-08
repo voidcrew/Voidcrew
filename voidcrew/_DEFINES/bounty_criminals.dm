@@ -50,16 +50,7 @@
 /// P0's name for the normal criminal's health: the Wanted value
 #define BOUNTY_NORMAL_HEALTH BOUNTY_NORMAL_HEALTH_WANTED
 
-/// Health multiplier by fighting style (combat.md 6.2)
-#define BOUNTY_STYLE_HEALTH_BRAWLER 1.2
-#define BOUNTY_STYLE_HEALTH_KNIFE 1
-#define BOUNTY_STYLE_HEALTH_PISTOL 0.9
-#define BOUNTY_STYLE_HEALTH_SHOTGUN 1
-/// The WT-550's bursts make an SMG gunman the deadliest gun for its health: 0.8, so one with a companion or a Cascade window is no deadlier to one hunter than a mini-boss
-#define BOUNTY_STYLE_HEALTH_SMG 0.8
-#define BOUNTY_STYLE_HEALTH_REVOLVER 0.9
-#define BOUNTY_STYLE_HEALTH_CLUB 1.1
-#define BOUNTY_STYLE_HEALTH_BOTTLE 0.9
+// A fighting style's health multiplier is its style datum's health_mult (BOUNTY_*_HEALTH, _DEFINES/bounty_ai.dm), for criminals and companions alike
 /// A brawler takes stamina damage x this
 #define BOUNTY_STYLE_STAMINA_BRAWLER 0.8
 

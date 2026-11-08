@@ -258,26 +258,10 @@
 			base = BOUNTY_NORMAL_HEALTH_MOST
 	return round(base * bounty_style_health_mult(record?.style) * bounty_chrome_health_mult(src), 1)
 
-/// How much tougher or frailer than its tier a fighting style makes a normal criminal
+/// How much tougher or frailer than its tier a fighting style makes a normal criminal: the style datum's health_mult, the one table companions read too
 /proc/bounty_style_health_mult(style)
-	switch(style)
-		if(BOUNTY_STYLE_BRAWLER)
-			return BOUNTY_STYLE_HEALTH_BRAWLER
-		if(BOUNTY_STYLE_KNIFE)
-			return BOUNTY_STYLE_HEALTH_KNIFE
-		if(BOUNTY_STYLE_PISTOL)
-			return BOUNTY_STYLE_HEALTH_PISTOL
-		if(BOUNTY_STYLE_SHOTGUN)
-			return BOUNTY_STYLE_HEALTH_SHOTGUN
-		if(BOUNTY_STYLE_SMG)
-			return BOUNTY_STYLE_HEALTH_SMG
-		if(BOUNTY_STYLE_REVOLVER)
-			return BOUNTY_STYLE_HEALTH_REVOLVER
-		if(BOUNTY_STYLE_CLUB)
-			return BOUNTY_STYLE_HEALTH_CLUB
-		if(BOUNTY_STYLE_BOTTLE)
-			return BOUNTY_STYLE_HEALTH_BOTTLE
-	return 1
+	var/datum/bounty_style/style_datum = GLOB.bounty_styles[style]
+	return style_datum ? style_datum.health_mult : 1
 
 /// How much stamina damage stamina-crits it: a meek criminal's pool times the zone's health factor, or anyone else's health (already scaled by the zone)
 /mob/living/basic/bounty_criminal/proc/body_stamina_pool()

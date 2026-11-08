@@ -325,6 +325,34 @@
 	redline.burn_out()
 	TEST_ASSERT(!redline.can_trip(), "The core can trip a second time")
 
+/**
+ * Tired with its core unspent (it tired while its chrome was down) and mid-surge: a stamina crit trips
+ * the core instead, the trip crashes the surge, and the crash's stamina dump never lands the stamina
+ * crit the core turned away (review r2).
+ */
+/datum/unit_test/voidcrew_bounty_cyberpsycho/redline_surge
+
+/datum/unit_test/voidcrew_bounty_cyberpsycho/redline_surge/Run()
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(4, 2))
+	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = psycho_at(tile(0, 2), hunter)
+	var/datum/bounty_chrome/redline/psycho/redline = psycho.psycho_piece("redline")
+	var/datum/bounty_chrome/cascade/cascade = psycho.psycho_piece("cascade")
+	// Tired while the core is down: it can't trip then
+	redline.offline_until = world.time + 1 MINUTES
+	psycho.adjustBruteLoss(psycho.maxHealth * 0.62, forced = TRUE)
+	TEST_ASSERT(psycho.boss_tired, "The cyberpsycho at 38% isn't tired")
+	TEST_ASSERT_EQUAL(redline.state, 0, "The core tripped while it was down") // REDLINE_IDLE
+	redline.offline_until = 0
+	TEST_ASSERT(redline.can_trip(), "The core back online can't trip")
+	// A surge open, then enough stamina damage to crit it
+	cascade.spin_up()
+	cascade.open_window()
+	TEST_ASSERT_EQUAL(cascade.phase, 2, "The surge's window didn't open") // BOUNTY_CASCADE_WINDOW
+	psycho.adjustStaminaLoss(200, forced = TRUE)
+	TEST_ASSERT_EQUAL(redline.state, 1, "The stamina crit didn't trip the core") // REDLINE_WINDING
+	TEST_ASSERT_EQUAL(cascade.phase, 3, "The core tripping didn't crash the surge") // BOUNTY_CASCADE_CRASH
+	TEST_ASSERT_NULL(psycho.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The crash's stamina dump landed the stamina crit the core turned away")
+
 // ===== EMP =====
 
 /**

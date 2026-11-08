@@ -233,9 +233,10 @@
 
 /**
  * tg's ranged attack, with the style doing the shooting: its wind-up telegraph, its magazine and
- * reload, through the mob's ranged_attacks component. The pistol keeps BOUNTY_PISTOL_RANGE off and
- * backs off a step when someone gets inside its style's min_range. Planning carries on meanwhile,
- * so a new target, a retreat or a call for help is picked up mid-fight.
+ * reload, through the mob's ranged_attacks component. A gun walks in to BOUNTY_PISTOL_RANGE but
+ * fires at anyone it can see within BOUNTY_GUN_FIRE_RANGE on the way, and backs off a step when
+ * someone gets inside its style's min_range. Planning carries on meanwhile, so a new target, a
+ * retreat or a call for help is picked up mid-fight.
  */
 /datum/ai_behavior/basic_ranged_attack/bounty
 	// Often enough that the pistol fires at its own pace, and its wind-up is never stretched; each tick walks the line of fire (L10)
@@ -244,6 +245,8 @@
 	required_distance = BOUNTY_PISTOL_RANGE
 	chase_range = BOUNTY_FIGHT_VISION
 	avoid_friendly_fire = TRUE
+	/// How far off they shoot at someone they can see, walking in or not
+	var/fire_range = BOUNTY_GUN_FIRE_RANGE
 
 /datum/ai_behavior/basic_ranged_attack/bounty/perform(seconds_per_tick, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
 	var/mob/living/basic/fighter = controller.pawn
@@ -254,7 +257,10 @@
 	var/datum/bounty_style/style = bounty_ai_style(fighter)
 	if(!style?.ranged)
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
-	if(!can_see(fighter, target, required_distance))
+	// A companion still getting up keeps walking in, gun holstered: no aim, no telegraph
+	if(bounty_ai_drawing(fighter))
+		return AI_BEHAVIOR_DELAY
+	if(!can_see(fighter, target, fire_range))
 		return AI_BEHAVIOR_INSTANT
 	if(style.min_range && get_dist(fighter, target) < style.min_range && !controller.blackboard[BB_BOUNTY_WINDUP_UNTIL])
 		back_off(controller, fighter, target)
@@ -309,13 +315,15 @@
 		controller.set_blackboard_key(BB_BOUNTY_SIDESTEP_AT, world.time + fighter.cached_multiplicative_slowdown)
 	fighter.face_atom(target)
 
-/// The shotgun closes in to BOUNTY_SHOTGUN_RANGE
+/// The shotgun closes in to BOUNTY_SHOTGUN_RANGE, and fires from there: buckshot spreads too wide to hit much further off
 /datum/ai_behavior/basic_ranged_attack/bounty/close
 	required_distance = BOUNTY_SHOTGUN_RANGE
+	fire_range = BOUNTY_SHOTGUN_RANGE
 
-/// The bottle thrower stays BOUNTY_BOTTLE_RANGE off
+/// The bottle thrower stays BOUNTY_BOTTLE_RANGE off, and throws from there
 /datum/ai_behavior/basic_ranged_attack/bounty/throw
 	required_distance = BOUNTY_BOTTLE_RANGE
+	fire_range = BOUNTY_BOTTLE_RANGE
 
 // ===== SURRENDER =====
 
@@ -478,7 +486,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		return null
 	return bounty_real_weapon(bounty_ai_held_look(fighter), style.ammo_type)
 
-// A style's health multiplier is P2's bounty_style_health_mult() (bounty_criminal.dm), from the combat.md defines.
+// A style's health multiplier is its health_mult below: criminals read it through P2's bounty_style_health_mult() (bounty_criminal.dm), companions directly.
 
 /// Stamina damage multiplier of a style (the brawler shrugs off some): P2 folds it into damage_coeff[STAMINA]
 /proc/bounty_style_stamina_mult(style_key)
@@ -556,6 +564,10 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	/// Rounds in a burst, and the gap between them (0: one shot at a time). Fired round by round (pull_trigger()), never by the ranged_attacks component's own burst.
 	var/burst = 0
 	var/burst_gap = 0
+	/// A companion's burst, shorter: their gun is backup (null: the same as `burst`)
+	var/companion_burst
+	/// It is a gun: a criminal's company carries one at most (bounty_roll_companion_styles())
+	var/gun = FALSE
 
 /// Sets `weapon`'s blow and gun on `fighter`, at this style's pace
 /datum/bounty_style/proc/apply(mob/living/basic/fighter, datum/bounty_real_weapon/weapon)
@@ -579,16 +591,26 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /datum/bounty_style/proc/needs_windup(datum/ai_controller/controller)
 	return windup > 0
 
+/// Whether the telegraph's line is said this time; its sound always plays
+/datum/bounty_style/proc/says_windup(datum/ai_controller/controller)
+	return TRUE
+
 /// The telegraph: what they say, show and sound like before the shot
 /datum/bounty_style/proc/telegraph(mob/living/basic/fighter, atom/target)
 	fighter.face_atom(target)
 	var/look = bounty_ai_held_look(fighter)
 	if(look)
 		bounty_ai_hold(fighter, look)
-	if(windup_message)
+	if(windup_message && says_windup(fighter.ai_controller))
 		fighter.visible_message(span_warning(replacetext(windup_message, "%USER", "[fighter]")))
 	if(windup_sound)
 		playsound(fighter, windup_sound, 50, TRUE)
+
+/// Rounds a trigger pull fires for `fighter`: a companion's burst is shorter, as their gun is backup
+/datum/bounty_style/proc/burst_rounds(mob/living/basic/fighter)
+	if(istype(fighter, /mob/living/basic/bounty_companion) && !isnull(companion_burst))
+		return companion_burst
+	return burst
 
 /**
  * One tick of a ranged fight: reloading, winding up, or firing through the ranged_attacks
@@ -641,7 +663,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /datum/bounty_style/proc/pull_trigger(mob/living/basic/fighter, atom/target)
 	var/datum/component/ranged_attacks/gun = fighter.GetComponent(/datum/component/ranged_attacks)
 	var/datum/ai_controller/basic_controller/bounty/controller = fighter.ai_controller
-	var/rounds = burst
+	var/rounds = burst_rounds(fighter)
 	if(rounds > 1 && istype(controller) && bounty_ai_real_weapon(fighter)?.magazine)
 		rounds = min(rounds, controller.blackboard[BB_BOUNTY_AMMO])
 	var/ready_at = gun?.fire_cooldown
@@ -749,6 +771,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	reload_time = BOUNTY_PISTOL_RELOAD
 	reload_sound = 'sound/items/weapons/gun/pistol/mag_insert.ogg'
 	draw_message = "%USER pulls out a pistol!"
+	gun = TRUE
 
 /// Only the first shot of a string needs the gun raised
 /datum/bounty_style/pistol/needs_windup(datum/ai_controller/controller)
@@ -764,9 +787,10 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	return ..()
 
 /**
- * Strings of BOUNTY_PISTOL_STRING_SHOTS, then a BOUNTY_PISTOL_STRING_PAUSE pause. This runs after
- * the ranged_attacks component started its cooldown, so the pause pushes that out. An empty
- * magazine reloads instead.
+ * Strings of BOUNTY_PISTOL_STRING_SHOTS (a companion's, backing their criminal up, of
+ * BOUNTY_COMPANION_PISTOL_STRING), then a BOUNTY_PISTOL_STRING_PAUSE pause. This runs after the
+ * ranged_attacks component started its cooldown, so the pause pushes that out. An empty magazine
+ * reloads instead.
  */
 /datum/bounty_style/pistol/after_shot(mob/living/basic/fighter)
 	. = ..()
@@ -774,7 +798,8 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	if(QDELETED(controller))
 		return
 	var/fired = controller.blackboard[BB_BOUNTY_STRING_SHOTS] + 1
-	if(fired < BOUNTY_PISTOL_STRING_SHOTS || controller.blackboard[BB_BOUNTY_AMMO] <= 0)
+	var/string = istype(fighter, /mob/living/basic/bounty_companion) ? BOUNTY_COMPANION_PISTOL_STRING : BOUNTY_PISTOL_STRING_SHOTS
+	if(fired < string || controller.blackboard[BB_BOUNTY_AMMO] <= 0)
 		controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, fired)
 		return
 	controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, 0)
@@ -783,8 +808,9 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		gun.fire_cooldown = max(gun.fire_cooldown, world.time) + BOUNTY_PISTOL_STRING_PAUSE
 
 /**
- * A sub-machine gun: a spin-up, then a burst, as many rounds as are left in the magazine. The WT-550
- * at every tier, companions included: the Uzi's 9mm out-hit the Wanted gun.
+ * A sub-machine gun: a spin-up, then a burst, as many rounds as are left in the magazine (a
+ * companion's bursts are shorter: their gun is backup). The WT-550 at every tier, companions
+ * included: the Uzi's 9mm out-hit the Wanted gun.
  */
 /datum/bounty_style/smg
 	key = BOUNTY_STYLE_SMG
@@ -801,6 +827,8 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	draw_message = "%USER pulls out an SMG!"
 	burst = BOUNTY_SMG_BURST
 	burst_gap = BOUNTY_SMG_BURST_GAP
+	companion_burst = BOUNTY_COMPANION_SMG_BURST
+	gun = TRUE
 
 /// A revolver: slow, heavy shots, then a long reload
 /datum/bounty_style/revolver
@@ -816,6 +844,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	reload_time = BOUNTY_REVOLVER_RELOAD
 	reload_sound = 'sound/items/weapons/gun/revolver/load_bullet.ogg'
 	draw_message = "%USER pulls out a revolver!"
+	gun = TRUE
 
 /// Only the first shot after the draw or a reload needs the hammer cocked
 /datum/bounty_style/revolver/needs_windup(datum/ai_controller/controller)
@@ -839,6 +868,12 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	reload_time = BOUNTY_SHOTGUN_RELOAD
 	reload_sound = 'sound/items/weapons/gun/shotgun/insert_shell.ogg'
 	draw_message = "%USER unslings a shotgun!"
+	gun = TRUE
+
+/// The pump is heard before every shell, but said only before the first of a volley, as the pistol's raise is
+/datum/bounty_style/shotgun/says_windup(datum/ai_controller/controller)
+	var/last_shot = controller?.blackboard[BB_BOUNTY_LAST_SHOT]
+	return !last_shot || world.time - last_shot > BOUNTY_PISTOL_STRING_GAP
 
 /// A beer bottle, thrown: it hits with the bottle's throwforce, and breaks
 /datum/bounty_style/bottle
@@ -863,6 +898,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	key = BOUNTY_STYLE_HOLDOUT
 	ranged = TRUE
 	interval = BOUNTY_MEEK_PISTOL_GAP * 0.8
+	gun = TRUE
 	speed = BOUNTY_MEEK_SPRINT_SPEED
 	held_look = /obj/item/gun/ballistic/automatic/pistol
 	projectile_type = /obj/projectile/bullet/bounty/holdout

@@ -1553,7 +1553,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/structure/bounty_wanted_board, 32)
 			"crime" = record.crime,
 			"reward" = posting.value,
 			"vouchers" = posting.board_vouchers,
-			"place" = here ? "Seen on this concourse" : posting.board_place_text(),
+			"place" = here ? "Seen on this concourse" : posting.board_sighting_text(),
 			"reputation_gain" = posting.board_reputation_worth(viewer_crew),
 		))
 	return entries

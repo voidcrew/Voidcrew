@@ -248,6 +248,28 @@
 	var/obj/item/ammo_box/magazine/internal/cylinder/rev38/cylinder = /obj/item/ammo_box/magazine/internal/cylinder/rev38
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], initial(cylinder.max_ammo), "The revolver doesn't hold a .38 cylinder") // BB_BOUNTY_AMMO
 	TEST_ASSERT(bounty_style_health_mult("brawler") > 1, "The brawler is not sturdier") // BOUNTY_STYLE_BRAWLER
+	// One table of style health: a criminal reads the style datum's, as a companion does
+	TEST_ASSERT_EQUAL(bounty_style_health_mult("smg"), smg.health_mult, "A criminal's SMG health isn't the style's") // BOUNTY_SMG_HEALTH
+
+	// Guns fire at anyone in sight within 7 tiles (BOUNTY_GUN_FIRE_RANGE) while walking in to 5 (BOUNTY_PISTOL_RANGE); the shotgun and the bottle keep to their own distance
+	var/datum/ai_behavior/basic_ranged_attack/bounty/gun_range = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_ranged_attack/bounty)
+	TEST_ASSERT_EQUAL(gun_range.fire_range, 7, "Guns don't fire out to 7 tiles")
+	TEST_ASSERT_EQUAL(gun_range.required_distance, 5, "Guns don't walk in to 5 tiles")
+	var/datum/ai_behavior/basic_ranged_attack/bounty/close/shotgun_range = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_ranged_attack/bounty/close)
+	TEST_ASSERT_EQUAL(shotgun_range.fire_range, shotgun_range.required_distance, "The shotgun fires from further off than it closes to")
+	var/datum/ai_behavior/basic_ranged_attack/bounty/throw/bottle_range = GET_AI_BEHAVIOR(/datum/ai_behavior/basic_ranged_attack/bounty/throw)
+	TEST_ASSERT_EQUAL(bottle_range.fire_range, bottle_range.required_distance, "Bottles fly from further off than the thrower keeps")
+
+	// The shotgun's pump: said before the first shell of a volley, only heard before the rest
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "shotgun"), "The shotgun style would not apply") // BOUNTY_STYLE_SHOTGUN
+	var/datum/bounty_style/shotgun = bounty_ai_style(criminal)
+	var/datum/ai_controller/shotgun_brain = criminal.ai_controller
+	shotgun_brain.clear_blackboard_key("bb_bounty_last_shot") // BB_BOUNTY_LAST_SHOT
+	TEST_ASSERT(shotgun.says_windup(shotgun_brain), "The first pump of a volley isn't said")
+	shotgun_brain.set_blackboard_key("bb_bounty_last_shot", world.time)
+	TEST_ASSERT(!shotgun.says_windup(shotgun_brain), "The pump is said before every shell of a volley")
+	shotgun_brain.set_blackboard_key("bb_bounty_last_shot", world.time - 4 SECONDS) // BOUNTY_PISTOL_STRING_GAP 3 seconds
+	TEST_ASSERT(shotgun.says_windup(shotgun_brain), "The pump after a break isn't said")
 
 	// The club is a baseball bat; a Wanted criminal's is the metal one. The tier picks the bat, never scales it.
 	var/obj/item/melee/baseball_bat/bat = /obj/item/melee/baseball_bat
@@ -664,6 +686,102 @@
 	TEST_ASSERT(buddy.ai_can_fight(), "Up again, the companion still can't fight")
 	QDEL_LIST(buddies)
 
+/**
+ * Companions back their criminal up (review r2): at most one of them armed, their gun out a moment
+ * after they join the fight (and only once they are on their feet), shorter pistol strings and SMG
+ * bursts than a criminal's, and a change of style that keeps the zone's factor and never heals or
+ * hurts them.
+ */
+/datum/unit_test/voidcrew_bounty_ai/companion_backup
+
+/datum/unit_test/voidcrew_bounty_ai/companion_backup/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(2, 2))
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
+	// Nobody acts on their own while the test waits for the draw
+	criminal.ai_controller.set_ai_status(AI_STATUS_OFF)
+	criminal.ai_add_grudge(hunter)
+
+	// Rolled by the criminal, never two guns among them
+	for(var/i in 1 to 15)
+		var/list/gang = criminal.spawn_companions(2)
+		var/guns = 0
+		for(var/mob/living/basic/bounty_companion/member as anything in gang)
+			if(bounty_style_is_gun(bounty_ai_style(member)?.key))
+				guns++
+		TEST_ASSERT(guns <= 1, "A criminal's company rolled [guns] guns")
+		QDEL_LIST(gang)
+	// The posting's styles are the ones they spawn with
+	var/list/buddies = criminal.spawn_companions(2, list("pistol", "knife")) // BOUNTY_STYLE_PISTOL, BOUNTY_STYLE_KNIFE
+	TEST_ASSERT_EQUAL(length(buddies), 2, "The company didn't spawn")
+	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	TEST_ASSERT_EQUAL(bounty_ai_style(buddy)?.key, "pistol", "The first companion didn't take the posting's style")
+	TEST_ASSERT_EQUAL(bounty_ai_style(buddies[2])?.key, "knife", "The second companion didn't take the posting's style")
+	for(var/mob/living/basic/bounty_companion/member as anything in buddies)
+		member.ai_controller.set_ai_status(AI_STATUS_OFF)
+		// Any chrome they rolled comes out, so the numbers below are the style's alone
+		qdel(member.GetComponent(/datum/component/bounty_chrome))
+
+	// Joining the fight, up at once but the gun stays holstered for a moment: no shot, no blow
+	var/datum/ai_controller/basic_controller/bounty/brain = buddy.ai_controller
+	buddy.ai_join_fight(hunter)
+	TEST_ASSERT(buddy.ai_in_fight, "Rallied, the companion didn't join the fight")
+	TEST_ASSERT(buddy.ai_drawing, "The companion's gun came out the moment they joined the fight")
+	TEST_ASSERT_NULL(buddy.ai_hand, "The companion holds their gun before drawing it")
+	TEST_ASSERT_NOTNULL(buddy.ai_draw_timer, "Nothing will get the companion's gun out")
+	TEST_ASSERT(!brain.may_shoot(hunter), "The companion may shoot before drawing")
+	TEST_ASSERT(!brain.may_strike(hunter), "The companion may hit before drawing")
+	sleep(1.5 SECONDS) // BOUNTY_COMPANION_DRAW_DELAY 1 second
+	TEST_ASSERT(!buddy.ai_drawing, "The companion never drew")
+	TEST_ASSERT_EQUAL(buddy.ai_hand?.held_type, /obj/item/gun/ballistic/automatic/pistol/aps, "The companion's drawn pistol isn't in hand")
+	TEST_ASSERT_NOTNULL(brain.blackboard["bb_bounty_windup_until"], "The companion's draw doesn't hold their first shot") // BB_BOUNTY_WINDUP_UNTIL
+	TEST_ASSERT(brain.may_shoot(hunter), "Drawn, the companion may not shoot")
+
+	// On the floor when it is due: it comes out once they are up
+	buddy.ai_leave_fight()
+	TEST_ASSERT_NULL(buddy.ai_hand, "Out of the fight, the companion still holds the gun")
+	buddy.ai_join_fight(hunter)
+	buddy.Knockdown(5 SECONDS)
+	TEST_ASSERT(!buddy.ai_draw(), "A companion on the floor drew")
+	TEST_ASSERT(buddy.ai_drawing, "Knocked down, the companion forgot to draw")
+	buddy.SetKnockdown(0)
+	var/datum/ai_planning_subtree/gate = locate(/datum/ai_planning_subtree/bounty_companion_gate) in brain.planning_subtrees
+	gate.SelectBehaviors(brain, 1)
+	TEST_ASSERT(!buddy.ai_drawing, "Up again, the companion's gun never came out")
+	TEST_ASSERT_NOTNULL(buddy.ai_hand, "Up again, the companion's hand is empty")
+
+	// Backup fire: pistol strings of three (BOUNTY_COMPANION_PISTOL_STRING) with the usual pause, SMG bursts of two (BOUNTY_COMPANION_SMG_BURST)
+	var/datum/bounty_style/pistol = bounty_ai_style(buddy)
+	var/datum/component/ranged_attacks/gun = buddy.GetComponent(/datum/component/ranged_attacks)
+	brain.clear_blackboard_key("bb_bounty_string_shots") // BB_BOUNTY_STRING_SHOTS
+	for(var/shot in 1 to 2)
+		gun.fire_cooldown = world.time + gun.cooldown_time
+		pistol.after_shot(buddy)
+	TEST_ASSERT(gun.fire_cooldown <= world.time + gun.cooldown_time, "The companion's pistol paused before its third shot")
+	gun.fire_cooldown = world.time + gun.cooldown_time
+	pistol.after_shot(buddy)
+	TEST_ASSERT(gun.fire_cooldown >= world.time + gun.cooldown_time + 1.5 SECONDS, "The companion's pistol didn't pause after three shots") // BOUNTY_PISTOL_STRING_PAUSE
+	var/datum/bounty_style/smg = GLOB.bounty_styles["smg"] // BOUNTY_STYLE_SMG
+	TEST_ASSERT_EQUAL(smg.burst_rounds(buddy), 2, "A companion's SMG doesn't fire bursts of two")
+	TEST_ASSERT_EQUAL(smg.burst_rounds(criminal), 4, "A criminal's SMG doesn't fire bursts of four") // BOUNTY_SMG_BURST
+
+	// A change of style in red space keeps the zone's factor, and never heals or hurts a hurt companion
+	var/mob/living/basic/bounty_companion/red = buddies[2]
+	red.npc_zone_applied = TRUE
+	red.npc_zone_health_factor = 1.8
+	red.set_npc_zone_health(red.maxHealth)
+	red.ai_take_style("knife") // BOUNTY_STYLE_KNIFE: 110 raw
+	TEST_ASSERT(abs(red.maxHealth - 110 * 1.8) < 1, "A fresh companion's new style dropped the zone's factor: [red.maxHealth]")
+	TEST_ASSERT_EQUAL(red.health, red.maxHealth, "A fresh companion's new style left them hurt")
+	red.adjustBruteLoss(60)
+	var/hurt_health = red.health
+	red.ai_take_style("pistol") // BOUNTY_STYLE_PISTOL: 99 raw, a lower ceiling
+	TEST_ASSERT(abs(red.health - hurt_health) < 0.01, "A frailer style took a hurt companion from [hurt_health] to [red.health] health")
+	TEST_ASSERT(red.stat != DEAD, "A frailer style killed a hurt companion")
+	red.ai_take_style("brawler") // BOUNTY_STYLE_BRAWLER: 132 raw, a higher one
+	TEST_ASSERT(abs(red.maxHealth - 132 * 1.8) < 1, "A hurt companion's tougher style dropped the zone's factor: [red.maxHealth]")
+	TEST_ASSERT(abs(red.health - hurt_health) < 0.01, "A tougher style took a hurt companion from [hurt_health] to [red.health] health")
+	QDEL_LIST(buddies)
+
 /// A companion fights on when its criminal is down, cuffed, surrendered or gone (H3)
 /datum/unit_test/voidcrew_bounty_ai/companion_fights_on
 
@@ -687,6 +805,9 @@
 	// Hit by the hunter, it takes them on itself: no tg element needed
 	buddy_brain.pawn_attacked(hunter)
 	TEST_ASSERT(hunter in buddy_brain.blackboard[BB_BASIC_MOB_RETALIATE_LIST], "Hit, the companion did not take the hunter on")
+	// ...and joins the fight, its weapon out a moment later (BOUNTY_COMPANION_DRAW_DELAY), not waited for here
+	TEST_ASSERT(buddy.ai_in_fight && buddy.ai_drawing, "Hit, the companion didn't join the fight getting its weapon out")
+	TEST_ASSERT(buddy.ai_draw(), "The companion's weapon didn't come out")
 
 	// Its criminal gone for good, it still fights
 	qdel(criminal)

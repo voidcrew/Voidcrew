@@ -892,7 +892,7 @@
 	runner.adjustStaminaLoss(30)
 	TEST_ASSERT(runner.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Three disabler shots did not stamina-crit a meek criminal")
 
-	// Normal: health by tier and style (BOUNTY_NORMAL_HEALTH_PETTY 140 x BOUNTY_STYLE_HEALTH_BRAWLER 1.2), and a walk until there is a fight, whatever the style.
+	// Normal: health by tier and style (BOUNTY_NORMAL_HEALTH_PETTY 140 x BOUNTY_BRAWLER_HEALTH 1.2), and a walk until there is a fight, whatever the style.
 	var/datum/bounty_record/brawler_record = new
 	brawler_record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
 	brawler_record.tier = 1 // BOUNTY_TIER_PETTY
@@ -909,7 +909,7 @@
 	gunman_record.style = "pistol" // BOUNTY_STYLE_PISTOL
 	var/mob/living/basic/bounty_criminal/normal/gunman = spawn_bounty_criminal(gunman_record, run_loc_floor_bottom_left, null)
 	spawned += gunman
-	// BOUNTY_NORMAL_HEALTH_MOST 280 x BOUNTY_STYLE_HEALTH_PISTOL 0.9
+	// BOUNTY_NORMAL_HEALTH_MOST 280 x BOUNTY_PISTOL_HEALTH 0.9
 	TEST_ASSERT_EQUAL(gunman.maxHealth, 252, "A Most Wanted gunman has the wrong health")
 	TEST_ASSERT_EQUAL(gunman.speed, 2.5, "A gunman doesn't start at the calm pace") // BOUNTY_CALM_SPEED
 

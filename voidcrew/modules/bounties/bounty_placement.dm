@@ -160,7 +160,7 @@
 
 // ===== A POSTING'S SITE =====
 
-/// Places the posting at `new_site`: its name for the card, and the signals that tell it the site loaded, unloaded or went away
+/// Places the posting at `new_site`: its name for the card, the company its criminal keeps there, and the signals that tell it the site loaded, unloaded or went away
 /datum/criminal_bounty/proc/board_set_site(obj/structure/overmap/new_site)
 	board_unhook_site()
 	site_ref = new_site ? WEAKREF(new_site) : null
@@ -168,6 +168,7 @@
 	if(!new_site)
 		return
 	board_site_name = board_describe_site(new_site)
+	board_company = board_roll_company()
 	board_hooked_site = WEAKREF(new_site)
 	RegisterSignal(new_site, COMSIG_QDELETING, PROC_REF(board_on_site_deleted))
 	if(istype(new_site, /obj/structure/overmap/space_ruin))
@@ -496,16 +497,30 @@
 			return BOUNTY_ACTIVITY_BLEND
 	return BOUNTY_ACTIVITY_EXPLORE
 
-/// Companions for a normal criminal: 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone never changes how many come; it scales pay, and npc_scaling scales everyone's health and damage), within the server's cap
-/datum/criminal_bounty/proc/board_spawn_companions(mob/living/basic/bounty_criminal/criminal)
+/**
+ * The company a normal criminal keeps at its site, as fighting styles (BOUNTY_STYLE_*), at most one
+ * of them a gun (bounty_roll_companion_styles()): 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9:
+ * the zone never changes how many come; it scales pay, and npc_scaling scales everyone's health and
+ * damage). At most one aboard a pirate ship, whose crew are company enough, and nobody at a trader
+ * outpost or with any other kind of criminal. Rolled with the site, so the sighting names it and the
+ * same company comes back each time the site loads.
+ */
+/datum/criminal_bounty/proc/board_roll_company()
+	if(record?.archetype != BOUNTY_ARCHETYPE_NORMAL || placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST)
+		return list()
 	var/count = rand(0, BOUNTY_MAX_COMPANIONS)
-	// The crew aboard a pirate ship are company enough
 	if(placement_kind == BOUNTY_PLACEMENT_NPC_SHIP)
 		count = min(count, 1)
-	count = min(count, BOUNTY_MAX_LIVE_COMPANIONS - SScriminal_bounties.board_live_companions())
+	return bounty_roll_companion_styles(count)
+
+/// Spawns the company the posting rolled (board_roll_company()) beside its criminal, within the server's cap on live companions
+/datum/criminal_bounty/proc/board_spawn_companions(mob/living/basic/bounty_criminal/criminal)
+	if(isnull(board_company))
+		board_company = board_roll_company()
+	var/count = min(length(board_company), BOUNTY_MAX_LIVE_COMPANIONS - SScriminal_bounties.board_live_companions())
 	if(count <= 0)
 		return list()
-	var/list/spawned = criminal.spawn_companions(count)
+	var/list/spawned = criminal.spawn_companions(count, board_company)
 	for(var/mob/living/companion in spawned)
 		companions |= WEAKREF(companion)
 	return spawned
