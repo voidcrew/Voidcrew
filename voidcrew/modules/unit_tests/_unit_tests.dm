@@ -51,6 +51,7 @@
 #include "voidcrew_bounty_lairs.dm"
 #include "voidcrew_bounty_outpost.dm"
 #include "voidcrew_bounty_seams.dm"
+#include "voidcrew_bounty_suits.dm"
 #include "voidcrew_camera_scope.dm"
 #include "voidcrew_cargo_cart.dm"
 #include "voidcrew_cargo_docking.dm"

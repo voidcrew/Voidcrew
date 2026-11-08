@@ -27,6 +27,10 @@
  *   real rounds into a cone (a hit while it aims spoils the shot); throws real barrier grenades for
  *   cover (CB-26); changes its own belts. Slow.
  *
+ * Where the air would kill it, each kit seals up in its own space suit, in the armour class of what it
+ * wears in good air (bounty_sealed_gear(), bounty_suits.dm): the Juggernaut and the Heavy in armoured
+ * ones, the Pyromaniac, the Demolitionist and the Ghost in soft ones.
+ *
  * The shared vars are declared in bounty_types.dm and nowhere else; a var only P4 uses goes here
  * with a `boss_` prefix, or on the /boss subtypes.
  */
@@ -51,7 +55,13 @@
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/juggernaut))
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_gear_text()
-	return "Riot plates cover [p_them()] from neck to boots."
+	if(istype(wear_suit, /obj/item/clothing/suit/armor/riot))
+		return "Riot plates cover [p_them()] from neck to boots."
+	return "[p_They()] [p_are()] built like a door."
+
+// Out where the air kills: a black and red space suit, as heavy as its riot plates
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/bounty_sealed_gear()
+	return list(/obj/item/clothing/suit/space/syndicate/black/red, /obj/item/clothing/head/helmet/space/syndicate/black/red)
 
 /datum/outfit/bounty_boss/juggernaut
 	name = "Bounty mini-boss: Juggernaut"
@@ -305,7 +315,13 @@
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/pyromaniac))
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_gear_text()
-	return "[p_Their()] fire suit is scorched black."
+	if(istype(wear_suit, /obj/item/clothing/suit/utility/fire))
+		return "[p_Their()] fire suit is scorched black."
+	return "[p_They()] reek[p_s()] of fuel."
+
+// Out where the air kills: an EVA suit, as light as its fire suit. Nothing burns in vacuum.
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/bounty_sealed_gear()
+	return list(/obj/item/clothing/suit/space/eva, /obj/item/clothing/head/helmet/space/eva)
 
 // The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7). The torch
 // doesn't holster, so it is in hand from the start.
@@ -448,6 +464,10 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_gear_text()
 	return "A bandolier of grenades is slung across [p_their()] chest."
+
+// Out where the air kills: a plain grey space suit over its work clothes
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/bounty_sealed_gear()
+	return list(/obj/item/clothing/suit/space, /obj/item/clothing/head/helmet/space)
 
 /**
  * It keeps BOUNTY_DEMOLITIONIST_KEEP_MIN to _MAX tiles from its target while it has something it
@@ -797,6 +817,10 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/ghost/boss_gear_text()
 	return "[p_They()] move[p_s()] quick and light, and the knife is never still."
 
+// Out where the air kills: a dark red voidsuit, no more armour than its hood
+/mob/living/carbon/human/npc/bounty_criminal/boss/ghost/bounty_sealed_gear()
+	return list(/obj/item/clothing/suit/space/nasavoid, /obj/item/clothing/head/helmet/space/nasavoid)
+
 // The hood goes up as the outfit is put on (tg's hooded suits do that). The knife rides in a pocket until the fight starts.
 /datum/outfit/bounty_boss/ghost
 	name = "Bounty mini-boss: Ghost"
@@ -1023,6 +1047,10 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_gear_text()
 	return "[p_They()] [p_are()] in heavy armour."
+
+// Out where the air kills: a black space suit as heavy as its SWAT armour, under its own SWAT helmet, which already holds pressure
+/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/bounty_sealed_gear()
+	return list(/obj/item/clothing/suit/space/syndicate/black, null)
 
 // The L6 has no sling and won't holster, so it is in hand from the start, its other hand free to fire it.
 // A spare box rides in the bag; a barrier grenade in each pocket.

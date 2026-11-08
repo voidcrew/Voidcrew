@@ -17,6 +17,12 @@
  * They are not bounties, pay nothing and drop nothing (their kit is locked to them, D3). P5 deletes
  * them when the posting closes; deleting one at any time is safe.
  *
+ * Who they are (A1): people of every species criminals come from (GLOB.bounty_species_weights), in rough
+ * clothes picked by their criminal's site (bounty_company_clothes()), and dressed for what their criminal
+ * was dressed for, so they are sealed up wherever it is (bounty_suits.dm). They are made with their
+ * criminal's spawn context (/datum/npc_spawn_context/bounty_company), which is how they know all that
+ * before they are dressed.
+ *
  * The shared vars are declared in bounty_types.dm and nowhere else (leader_ref); the rest here
  * have an `ai_` prefix.
  */
@@ -52,6 +58,22 @@
 	var/ai_next_idle_think = 0
 	/// world.time of their next word in the conversation
 	var/ai_next_reply = 0
+	/// BOUNTY_PLACEMENT_* of their criminal's site, known as they are made (Initialize()), or null
+	var/company_site_kind
+	/// The /datum/outfit their rough clothes came from (bounty_site_clothes()), or null for their plain ones
+	var/company_clothes
+
+/mob/living/carbon/human/npc/bounty_companion/Initialize(mapload, datum/human_npc_order/order)
+	// Before the base dresses them: where their criminal is, and what it was dressed for, so they are too
+	var/datum/npc_spawn_context/bounty_company/company = order?.context
+	var/mob/living/carbon/human/npc/bounty_criminal/leader = istype(company) ? company.company_leader_ref?.resolve() : null
+	if(!QDELETED(leader))
+		company_site_kind = leader.posting()?.placement_kind
+		npc_always_site |= leader.npc_site
+	else
+		npc_always_site |= bounty_site_dress_for(order?.context)
+	company_site_kind ||= bounty_site_kind_of(order?.context)
+	return ..()
 
 /mob/living/carbon/human/npc/bounty_companion/Destroy()
 	ai_let_go()
@@ -78,6 +100,68 @@
 		BOUNTY_STYLE_SHOTGUN = 1,
 	))
 	return bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, BOUNTY_TIER_PETTY, ai_style, FALSE, /obj/item/stack/medical/bruise_pack)
+
+// Someone of any species a criminal can be, with a face from the criminals' own look builder and a name of their species
+/mob/living/carbon/human/npc/bounty_companion/npc_apply_random_look()
+	var/species = bounty_company_species()
+	npc_apply_bounty_look(bounty_roll_look(species, pick(MALE, FEMALE)))
+	real_name = generate_random_name_species_based(gender, TRUE, dna.species.type)
+	name = real_name
+
+/// A species for a companion, weighted as for criminals (GLOB.bounty_species_weights)
+/proc/bounty_company_species()
+	return pick_weight(GLOB.bounty_species_weights)
+
+// Their plain clothes give way to rough ones picked by their criminal's site
+/mob/living/carbon/human/npc/bounty_companion/bounty_site_clothes(outfit)
+	var/list/choices = bounty_company_clothes(company_site_kind)
+	if(!length(choices) || isnull(outfit))
+		return outfit
+	company_clothes = pick_weight(choices)
+	return bounty_wear_clothes_of(outfit, company_clothes)
+
+/**
+ * Rough clothes for a criminal's company at a site of `site_kind` (BOUNTY_PLACEMENT_*), each a /datum/outfit
+ * typepath => weight, so no two crews look alike; null where they keep their plain clothes for the zone.
+ * Only the clothes are taken from these (bounty_wear_clothes_of()), never what they carry.
+ */
+/proc/bounty_company_clothes(site_kind)
+	switch(site_kind)
+		if(BOUNTY_PLACEMENT_NPC_SHIP)
+			return list(
+				/datum/outfit/outpost_off_duty_pirate = 1,
+				/datum/outfit/bounty_criminal/hauler = 1,
+				/datum/outfit/bounty_criminal/tough = 1,
+				/datum/outfit/bounty_criminal/drifter = 1,
+			)
+		if(BOUNTY_PLACEMENT_PLANET, BOUNTY_PLACEMENT_RUIN)
+			return list(
+				/datum/outfit/hermit/survivor = 2,
+				/datum/outfit/bounty_criminal/spacer = 1,
+				/datum/outfit/bounty_criminal/hauler = 1,
+				/datum/outfit/bounty_criminal/drifter = 1,
+				/datum/outfit/bounty_criminal/tough = 1,
+			)
+	return null
+
+/**
+ * `outfit` (a typepath or an instance) in the clothes of `clothes_type`: its uniform, suit, hat, mask,
+ * glasses, gloves, shoes and neck, empty where that outfit leaves them empty. Weapons, bags, belts, pockets
+ * and anything in hand stay as they were. Returns an instance (one passed in is changed in place).
+ */
+/proc/bounty_wear_clothes_of(outfit, datum/outfit/clothes_type)
+	var/datum/outfit/dressed = ispath(outfit, /datum/outfit) ? new outfit() : outfit
+	if(!istype(dressed) || !ispath(clothes_type, /datum/outfit))
+		return outfit
+	dressed.uniform = initial(clothes_type.uniform)
+	dressed.suit = initial(clothes_type.suit)
+	dressed.head = initial(clothes_type.head)
+	dressed.mask = initial(clothes_type.mask)
+	dressed.glasses = initial(clothes_type.glasses)
+	dressed.gloves = initial(clothes_type.gloves)
+	dressed.shoes = initial(clothes_type.shoes)
+	dressed.neck = initial(clothes_type.neck)
+	return dressed
 
 /// Their criminal, if still around
 /mob/living/carbon/human/npc/bounty_companion/proc/ai_leader()
@@ -361,13 +445,36 @@
  * Queues one companion for `leader` at `where` (the human NPC spawn queue: never a room of humans in
  * one tick), who joins them as it is made: their faction, their side, their posting's list. Then
  * `on_spawned` is called with it. If the criminal is gone by then, the companion is not kept.
- * `immediate` builds it now (tests, admin tools). Returns the spawn order (qdel() cancels it).
+ * `immediate` builds it now (tests, admin tools). Returns the spawn order (qdel() cancels it). It is
+ * made with its criminal's spawn context, so it is dressed for where they are.
  */
 /proc/bounty_spawn_companion(mob/living/carbon/human/npc/bounty_criminal/leader, turf/where, datum/callback/on_spawned, immediate = FALSE)
 	where = get_turf(where)
 	if(QDELETED(leader) || !where)
 		return null
-	return spawn_human_npc(/mob/living/carbon/human/npc/bounty_companion, where, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(bounty_companion_spawned), WEAKREF(leader), on_spawned), immediate = immediate)
+	var/datum/npc_spawn_context/bounty_company/company = new(leader, null, "ordinary")
+	company.company_leader_ref = WEAKREF(leader)
+	return spawn_human_npc(/mob/living/carbon/human/npc/bounty_companion, where, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(bounty_companion_spawned), WEAKREF(leader), on_spawned), context = company, immediate = immediate)
+
+/**
+ * A companion's spawn context: its criminal's own (the site, zone and source it inherits from the
+ * criminal it is made from), and which criminal that is, for the companion to read as it is dressed.
+ */
+/datum/npc_spawn_context/bounty_company
+	/// Weakref to the criminal the companion is made for
+	var/datum/weakref/company_leader_ref
+
+/datum/npc_spawn_context/bounty_company/Destroy()
+	company_leader_ref = null
+	return ..()
+
+/**
+ * Whether a criminal may hide aboard `npc_ship`: a plain pirate crew's ship, never a themed crew's
+ * (skeletons, geodes, lizard nobles, customs and the like), so the guards it hides among are ordinary
+ * pirates (board_pick_npc_ship()).
+ */
+/proc/bounty_ship_hides_criminals(obj/structure/overmap/ship/npc/pirate/npc_ship)
+	return istype(npc_ship) && !npc_ship.pirate_faction
 
 /// A queued companion is made: it joins its criminal, or goes if its criminal is gone
 /proc/bounty_companion_spawned(datum/weakref/leader_ref, datum/callback/on_spawned, mob/living/carbon/human/npc/bounty_companion/companion)
