@@ -70,10 +70,10 @@
 // What capture_state() (P2) returns, listed in the order it checks them. The pad pays by these (P5).
 
 #define BOUNTY_STATE_DEAD "dead"
-/// At or below the downed line, cuffed or not
+/// In crit (tg's TRAIT_CRITICAL_CONDITION, soft or hard), cuffed or not
 #define BOUNTY_STATE_DOWNED "downed"
 #define BOUNTY_STATE_RESTRAINED "restrained"
-/// Stamina crit, knocked down, paralysed, or surrendered (TRAIT_BOUNTY_SURRENDERED)
+/// Stamina crit, knocked down, stunned, paralysed (tg's *surrender too), unconscious or asleep
 #define BOUNTY_STATE_STUNNED "stunned"
 /// Standing and free: the pad refuses it
 #define BOUNTY_STATE_FREE "free"
@@ -117,8 +117,6 @@
 
 /// Trait source for everything the bounty packages put on a mob
 #define BOUNTY_TRAIT "bounty"
-/// A normal criminal has given up (P3): it can't attack, and capture_state() (P2) reads it as BOUNTY_STATE_STUNNED
-#define TRAIT_BOUNTY_SURRENDERED "bounty_surrendered"
 
 // ===== SIGNALS =====
 

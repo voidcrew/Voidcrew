@@ -186,11 +186,6 @@
 		return TRUE
 	return pulledby?.grab_state >= GRAB_AGGRESSIVE
 
-// Bounty criminals keep their own cuffs, downed and stunned states (voidcrew/modules/bounties/) until
-// the human NPC migration moves them onto real bodies.
-/mob/living/basic/bounty_criminal/hv_is_helpless()
-	return ..() || is_restrained() || is_downed() || body_is_stunned()
-
 // ---- What the round did ----
 
 /**

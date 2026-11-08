@@ -73,9 +73,10 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 	// headslug, whose stock AI already reads as hostile. Their custom AI does not.
 	if(istype(creature, /mob/living/basic/outpost_experiment))
 		return is_outpost_experiment_turret_target(creature)
-	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm): trader-outpost
-	// turrets leave them to the hunters, and no turret shoots a criminal already down, stunned or cuffed.
-	if(istype(creature, /mob/living/basic/bounty_criminal) || istype(creature, /mob/living/basic/bounty_companion))
+	// Bounty criminals, decoys and companions (voidcrew/modules/bounties/bounty_criminal.dm), real human bodies:
+	// trader-outpost turrets leave them to the hunters, and no turret shoots a criminal already in crit,
+	// stunned or cuffed (tg's states).
+	if(istype(creature, /mob/living/carbon/human/npc/bounty_criminal) || istype(creature, /mob/living/carbon/human/npc/bounty_companion))
 		if(bounty_turret_ignores(creature, istype(get_area(creature), /area/voidcrew/trader_outpost)))
 			return FALSE
 	// Bees from an outpost's own apiary never sting anyone (outpost_apiary.dm), but their

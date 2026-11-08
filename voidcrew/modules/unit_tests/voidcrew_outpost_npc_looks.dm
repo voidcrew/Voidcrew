@@ -115,7 +115,6 @@
 	UNTIL(held_look_has_icon(npc, initial(mop_type.righthand_file)) || world.time > deadline)
 	TEST_ASSERT_EQUAL(npc.held_visual, /obj/item/mop, "Holding a mop did not set held_visual")
 	TEST_ASSERT(held_look_has_icon(npc, initial(mop_type.righthand_file)), "Holding a mop left no custodial right-hand overlay")
-	TEST_ASSERT_NULL(locate(/obj/effect/abstract/bounty_held) in npc.vis_contents, "An ambient NPC still carries the old pasted-icon holder")
 	npc.set_held(null)
 	deadline = world.time + 5 SECONDS
 	UNTIL(!held_look_has_icon(npc, initial(mop_type.righthand_file)) || world.time > deadline)
