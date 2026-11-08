@@ -455,6 +455,24 @@
    "reason": "Twelve seconds in every 90: stun immune, 40% less brute and burn, 8 more on punches, and a roar that staggers everyone within 5 tiles. Then 100 stamina and slow legs. Load 10, 6 vouchers at reputation 22.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/cyberware/redline/milspec": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Vanguard core",
+   "rank": 4,
+   "reason": "Ten seconds in every 105: stun immune, 30% less brute and burn, 5 more on punches, and a roar that staggers everyone within 4 tiles. Then 100 stamina and slow legs. Load 8, 4 vouchers at reputation 11.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/redline/street": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Hothead core",
+   "rank": 5,
+   "reason": "Eight seconds in every 120: 20% less brute and burn and 3 more on punches, with no stun immunity and no roar. Then 100 stamina and slow legs. Load 5, 3,000 cr at reputation 4.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/registry_uplink": {
    "confidence": "low",
    "group": "Hacking and ship control",

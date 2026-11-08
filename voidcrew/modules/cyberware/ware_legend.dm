@@ -281,6 +281,29 @@
 	aug_overlay = "redline"
 	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/redline_burn)
+	// The burn's tuning lives on the organ so a cheaper or rougher model (see
+	// ware_line_berserk.dm) retunes it by setting vars. The defaults below ARE
+	// the Redline core's numbers. The defines stay as those defaults.
+	/// Length of the burn window.
+	var/burn_window = CYBERWARE_REDLINE_WINDOW
+	/// Incoming brute/burn multiplier during the window.
+	var/burn_damage_mult = CYBERWARE_REDLINE_DAMAGE_MULT
+	/// Flat bonus to unarmed strikes during the window.
+	var/burn_melee_bonus = CYBERWARE_REDLINE_MELEE_BONUS
+	/// Whether the window grants stun and baton immunity.
+	var/burn_stun_immune = TRUE
+	/// Roar reach in tiles. 0 keeps the announcement but staggers nobody.
+	var/burn_roar_range = CYBERWARE_REDLINE_ROAR_RANGE
+	/// Crash slowdown duration.
+	var/burn_crash = CYBERWARE_REDLINE_CRASH
+	/// Stamina dumped by the crash.
+	var/burn_crash_stamina = CYBERWARE_REDLINE_CRASH_STAMINA
+	/// Cooldown on the Redline Burn button.
+	var/burn_cooldown = 90 SECONDS
+	/// Button tooltip. Null keeps the Redline Burn action's own text.
+	var/burn_action_desc
+	/// Status alert text while the window is open. Null keeps the alert's own text.
+	var/burn_alert_desc
 
 /obj/item/organ/cyberimp/cyberware/redline/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -318,6 +341,16 @@
 	cooldown_time = 90 SECONDS
 	click_to_activate = FALSE
 
+/datum/action/cooldown/cyberware/redline_burn/New(Target, original = TRUE)
+	. = ..()
+	// The core this button belongs to sets its own cooldown and tooltip.
+	var/obj/item/organ/cyberimp/cyberware/redline/core = organ
+	if(!istype(core))
+		return
+	cooldown_time = core.burn_cooldown
+	if(core.burn_action_desc)
+		desc = core.burn_action_desc
+
 /datum/action/cooldown/cyberware/redline_burn/Activate(atom/target)
 	if(!isliving(owner))
 		return FALSE
@@ -326,7 +359,7 @@
 		burner.balloon_alert(burner, "core still venting!")
 		return FALSE
 	StartCooldown()
-	burner.apply_status_effect(/datum/status_effect/cyberware_redline_window)
+	burner.apply_status_effect(/datum/status_effect/cyberware_redline_window, organ)
 	return TRUE
 
 /**
@@ -382,20 +415,52 @@
 	/// roll, so the next arming is skipped. See suppress_topup() for why this
 	/// can't just clear the armed state.
 	var/topup_suppressed = FALSE
+	// Tuning. The defaults are the Redline core's own numbers; on_creation()
+	// replaces them with the installed core's when one is passed in.
+	/// Incoming brute/burn multiplier.
+	var/damage_mult = CYBERWARE_REDLINE_DAMAGE_MULT
+	/// Flat bonus to unarmed strikes.
+	var/melee_bonus = CYBERWARE_REDLINE_MELEE_BONUS
+	/// Whether the window grants stun and baton immunity.
+	var/stun_immune = TRUE
+	/// Roar reach in tiles, 0 for the announcement only.
+	var/roar_range = CYBERWARE_REDLINE_ROAR_RANGE
+	/// Handed to the crash this window rolls into.
+	var/crash_duration = CYBERWARE_REDLINE_CRASH
+	var/crash_stamina = CYBERWARE_REDLINE_CRASH_STAMINA
+	/// Replaces the alert's description, if set.
+	var/alert_desc
+
+/// Pass the core whose numbers this burn runs on. Without one the window uses
+/// the Redline core's own.
+/datum/status_effect/cyberware_redline_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/redline/core)
+	if(istype(core))
+		duration = core.burn_window
+		damage_mult = core.burn_damage_mult
+		melee_bonus = core.burn_melee_bonus
+		stun_immune = core.burn_stun_immune
+		roar_range = core.burn_roar_range
+		crash_duration = core.burn_crash
+		crash_stamina = core.burn_crash_stamina
+		alert_desc = core.burn_alert_desc
+	. = ..()
+	if(. && linked_alert && alert_desc)
+		linked_alert.desc = alert_desc
 
 /datum/status_effect/cyberware_redline_window/on_apply()
 	// The anti-stun implant's buff pattern: traits plus damage-slowdown immunity.
-	owner.add_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
+	if(stun_immune)
+		owner.add_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/damage_slowdown)
 	if(ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
-		human_owner.physiology.brute_mod *= CYBERWARE_REDLINE_DAMAGE_MULT
-		human_owner.physiology.burn_mod *= CYBERWARE_REDLINE_DAMAGE_MULT
+		human_owner.physiology.brute_mod *= damage_mult
+		human_owner.physiology.burn_mod *= damage_mult
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
 		for(var/obj/item/bodypart/arm/limb in carbon_owner.bodyparts)
-			limb.unarmed_damage_low += CYBERWARE_REDLINE_MELEE_BONUS
-			limb.unarmed_damage_high += CYBERWARE_REDLINE_MELEE_BONUS
+			limb.unarmed_damage_low += melee_bonus
+			limb.unarmed_damage_high += melee_bonus
 			buffed_parts += limb
 	RegisterSignal(owner, COMSIG_LIVING_EARLY_UNARMED_ATTACK, PROC_REF(on_early_unarmed_attack))
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
@@ -405,24 +470,25 @@
 	return TRUE
 
 /datum/status_effect/cyberware_redline_window/on_remove()
-	owner.remove_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
+	if(stun_immune)
+		owner.remove_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/damage_slowdown)
 	if(ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
-		human_owner.physiology.brute_mod /= CYBERWARE_REDLINE_DAMAGE_MULT
-		human_owner.physiology.burn_mod /= CYBERWARE_REDLINE_DAMAGE_MULT
+		human_owner.physiology.brute_mod /= damage_mult
+		human_owner.physiology.burn_mod /= damage_mult
 	for(var/obj/item/bodypart/arm/limb as anything in buffed_parts)
 		if(QDELETED(limb))
 			continue
-		limb.unarmed_damage_low -= CYBERWARE_REDLINE_MELEE_BONUS
-		limb.unarmed_damage_high -= CYBERWARE_REDLINE_MELEE_BONUS
+		limb.unarmed_damage_low -= melee_bonus
+		limb.unarmed_damage_high -= melee_bonus
 	buffed_parts.Cut()
 	UnregisterSignal(owner, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))
 	bypassed_victim = null
 	bypassed_penetration = 0
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
-		owner.apply_status_effect(/datum/status_effect/cyberware_redline_crash)
+		owner.apply_status_effect(/datum/status_effect/cyberware_redline_crash, crash_duration, crash_stamina)
 	return ..()
 
 /**
@@ -436,11 +502,18 @@
 		return
 	playsound(owner, 'sound/effects/magic/demon_attack1.ogg', 90, TRUE)
 	playsound(owner, 'sound/effects/magic/repulse.ogg', 60, TRUE)
+	if(roar_range <= 0)
+		// A core with no roar behind it still announces itself, just doesn't shake anything.
+		owner.visible_message(
+			span_boldwarning("[owner]'s eyes flood red and the speaker in [owner.p_their()] chest blares!"),
+			span_boldwarning("Your chest speaker blares."),
+		)
+		return
 	owner.visible_message(
 		span_boldwarning("[owner]'s eyes flood red and a speaker-drone ROAR shakes the deck!"),
 		span_boldwarning("You ROAR."),
 	)
-	for(var/mob/living/victim in oview(CYBERWARE_REDLINE_ROAR_RANGE, owner))
+	for(var/mob/living/victim in oview(roar_range, owner))
 		if(victim.stat == DEAD)
 			continue
 		if(cyberware_is_ally(owner, victim))
@@ -551,7 +624,7 @@
 		return
 	var/target_zone = victim.get_random_valid_zone(owner.zone_selected)
 	victim.apply_damage(
-		CYBERWARE_REDLINE_MELEE_BONUS,
+		melee_bonus,
 		BRUTE,
 		target_zone,
 		victim.run_armor_check(target_zone, MELEE, armour_penetration = penetration, silent = TRUE),
@@ -569,10 +642,21 @@
 	duration = CYBERWARE_REDLINE_CRASH
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = null
+	/// Stamina dumped on apply.
+	var/stamina_dump = CYBERWARE_REDLINE_CRASH_STAMINA
+
+/// The window hands over its core's crash length and stamina dump. Without
+/// them the crash is the Redline core's own.
+/datum/status_effect/cyberware_redline_crash/on_creation(mob/living/new_owner, new_duration, new_stamina_dump)
+	if(!isnull(new_duration))
+		duration = new_duration
+	if(!isnull(new_stamina_dump))
+		stamina_dump = new_stamina_dump
+	return ..()
 
 /datum/status_effect/cyberware_redline_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_redline_crash)
-	owner.adjustStaminaLoss(CYBERWARE_REDLINE_CRASH_STAMINA)
+	owner.adjustStaminaLoss(stamina_dump)
 	owner.add_client_colour(/datum/client_colour/cyberware_redline_crash, id)
 	owner.visible_message(
 		span_warning("[owner] sags as the red drains out of [owner.p_their()] eyes."),

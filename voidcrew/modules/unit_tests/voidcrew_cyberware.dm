@@ -1118,6 +1118,61 @@
 	TEST_ASSERT_EQUAL(get_chrome_load(patient), 16, "Deleting nanites retained installed program costs")
 	TEST_ASSERT_EQUAL(patient.physiology.armor.get_rating(MELEE), bare_armor, "Deleting recovered nanites retained their armor")
 
+/// The Berserk line: street and milspec cores share the Redline's OS slot and
+/// retune its one burn through vars, and the Redline core itself is unchanged.
+/datum/unit_test/voidcrew_berserk_line
+
+/datum/unit_test/voidcrew_berserk_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/redline/core = allocate(/obj/item/organ/cyberimp/cyberware/redline)
+	TEST_ASSERT_EQUAL(core.burn_window, 12 SECONDS, "Redline core's window moved")
+	TEST_ASSERT_EQUAL(core.burn_damage_mult, 0.6, "Redline core's damage multiplier moved")
+	TEST_ASSERT_EQUAL(core.burn_melee_bonus, 8, "Redline core's punch bonus moved")
+	TEST_ASSERT(core.burn_stun_immune, "Redline core lost its stun immunity")
+	TEST_ASSERT_EQUAL(core.burn_roar_range, 5, "Redline core's roar moved")
+	TEST_ASSERT_EQUAL(core.burn_crash, 5 SECONDS, "Redline core's crash moved")
+	TEST_ASSERT_EQUAL(core.burn_cooldown, 90 SECONDS, "Redline core's cooldown moved")
+	TEST_ASSERT_EQUAL(core.chrome_load, 10, "Redline core's load moved")
+	for(var/model_type in list(/obj/item/organ/cyberimp/cyberware/redline/street, /obj/item/organ/cyberimp/cyberware/redline/milspec))
+		var/obj/item/organ/cyberimp/cyberware/redline/model = allocate(model_type)
+		TEST_ASSERT_EQUAL(model.slot, core.slot, "[model_type] doesn't share the Redline's OS slot")
+		TEST_ASSERT(model.chrome_load < core.chrome_load, "[model_type] doesn't cost less load than the Redline core")
+		TEST_ASSERT(model.tier < core.tier, "[model_type] isn't a lower tier than the Redline core")
+		TEST_ASSERT(model.burn_window < core.burn_window && model.burn_cooldown > core.burn_cooldown, "[model_type] isn't a shorter, slower burn than the Redline core")
+		TEST_ASSERT(model.icon_state != core.icon_state && model.aug_overlay != core.aug_overlay, "[model_type] reuses the Redline core's sprite states")
+	var/obj/item/organ/cyberimp/cyberware/redline/street/street = allocate(/obj/item/organ/cyberimp/cyberware/redline/street)
+	var/obj/item/organ/cyberimp/cyberware/redline/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/redline/milspec)
+	for(var/obj/item/organ/cyberimp/cyberware/redline/model as anything in list(street, milspec))
+		var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in model.actions
+		TEST_ASSERT_NOTNULL(burn, "[model.type] has no Redline Burn button")
+		TEST_ASSERT_EQUAL(burn.cooldown_time, model.burn_cooldown, "[model.type]'s button doesn't use the core's cooldown")
+	// The street burn: no stun immunity, its own damage cut, window and crash length.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window, street)
+	var/datum/status_effect/cyberware_redline_window/window = patient.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_NOTNULL(window, "The street core didn't open a burn window")
+	TEST_ASSERT(!HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The street burn granted stun immunity")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.8, "The street burn didn't cut brute by its own multiplier")
+	TEST_ASSERT_EQUAL(window.duration - world.time, street.burn_window, "The street burn ignored its window length")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 1, "The street burn left a damage multiplier behind")
+	var/datum/status_effect/cyberware_redline_crash/crash = patient.has_status_effect(/datum/status_effect/cyberware_redline_crash)
+	TEST_ASSERT_NOTNULL(crash, "The street burn didn't roll into a crash")
+	TEST_ASSERT(crash.duration - world.time <= street.burn_crash && crash.duration - world.time > street.burn_crash - 1 SECONDS, "The street crash ignored its length")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+	// The milspec burn holds stuns off, and drops them cleanly.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window, milspec)
+	TEST_ASSERT(HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The milspec burn didn't grant stun immunity")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.7, "The milspec burn didn't cut brute by its own multiplier")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT(!HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The milspec burn kept stun immunity after it ended")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 1, "The milspec burn left a damage multiplier behind")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+	// With no core named the window runs the Redline core's own numbers.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.6, "A bare burn window didn't use the Redline core's numbers")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+
 /datum/unit_test/voidcrew_cyberware_running_gates
 
 /datum/unit_test/voidcrew_cyberware_running_gates/Run()

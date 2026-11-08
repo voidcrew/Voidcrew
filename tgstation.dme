@@ -7183,6 +7183,7 @@
 #include "voidcrew\modules\cyberware\ripperdoc_catalog.dm"
 #include "voidcrew\modules\cyberware\ware_arm_utility.dm"
 #include "voidcrew\modules\cyberware\ware_legend.dm"
+#include "voidcrew\modules\cyberware\ware_line_berserk.dm"
 #include "voidcrew\modules\cyberware\ware_line_camo.dm"
 #include "voidcrew\modules\cyberware\ware_line_governor.dm"
 #include "voidcrew\modules\cyberware\ware_military_arms.dm"
