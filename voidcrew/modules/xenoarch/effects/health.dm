@@ -16,17 +16,17 @@
 
 /datum/artifact_effect/heal/do_effect_touch(mob/living/user)
 	if(mend(user, 12))
-		to_chat(user, span_notice(robotic ? "Your damaged parts knit themselves back together." : "A soothing warmth spreads through you."))
+		to_chat(user, span_notice((robotic ? "Your damaged parts knit themselves back together." : "A soothing warmth spreads through you.")))
 
 /datum/artifact_effect/heal/do_effect_aura(seconds_per_tick)
 	for(var/mob/living/target as anything in living_in_range())
 		if(mend(target, 0.75 * seconds_per_tick) && prob(10))
-			to_chat(target, span_notice(robotic ? "A faint hum steadies your systems." : "You feel a gentle warmth from something nearby."))
+			to_chat(target, span_notice((robotic ? "A faint hum steadies your systems." : "You feel a gentle warmth from something nearby.")))
 
 /datum/artifact_effect/heal/do_effect_pulse(power)
 	for(var/mob/living/target as anything in living_in_range())
 		if(mend(target, clamp(power * 0.6, 4, 20)))
-			to_chat(target, span_notice(robotic ? "A wave of energy mends your plating." : "A wave of warmth washes through you."))
+			to_chat(target, span_notice((robotic ? "A wave of energy mends your plating." : "A wave of warmth washes through you.")))
 
 /// Heals one mob within the shared cap. Returns the amount healed.
 /datum/artifact_effect/heal/proc/mend(mob/living/target, amount)
@@ -56,17 +56,17 @@
 
 /datum/artifact_effect/hurt/do_effect_touch(mob/living/user)
 	if(wound(user, 8))
-		to_chat(user, span_warning(robotic ? "Your systems report sudden damage!" : "A painful discharge of energy strikes you!"))
+		to_chat(user, span_warning((robotic ? "Your systems report sudden damage!" : "A painful discharge of energy strikes you!")))
 
 /datum/artifact_effect/hurt/do_effect_aura(seconds_per_tick)
 	for(var/mob/living/target as anything in living_in_range())
 		if(wound(target, 0.5 * seconds_per_tick) && prob(10))
-			to_chat(target, span_warning(robotic ? "Something nearby is stressing your plating." : "You feel a painful force radiating from something nearby."))
+			to_chat(target, span_warning((robotic ? "Something nearby is stressing your plating." : "You feel a painful force radiating from something nearby.")))
 
 /datum/artifact_effect/hurt/do_effect_pulse(power)
 	for(var/mob/living/target as anything in living_in_range())
 		if(wound(target, clamp(power * 0.3, 3, 12)))
-			to_chat(target, span_warning(robotic ? "A wave of energy buckles your plating!" : "A wave of energy tears at your skin!"))
+			to_chat(target, span_warning((robotic ? "A wave of energy buckles your plating!" : "A wave of energy tears at your skin!")))
 
 /// Hurts one mob, split between brute and burn. Returns TRUE if it took any.
 /datum/artifact_effect/hurt/proc/wound(mob/living/target, amount)

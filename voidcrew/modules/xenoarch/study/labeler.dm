@@ -114,7 +114,7 @@
 	playsound(find, 'sound/items/handling/component_pickup.ogg', 30, TRUE)
 	user.visible_message(
 		span_notice("[user] presses a printed tag onto [find]."),
-		span_notice(replaced ? "You peel off the old tag and press the new one onto [find]." : "You press the tag onto [find]."),
+		span_notice((replaced ? "You peel off the old tag and press the new one onto [find]." : "You press the tag onto [find].")),
 	)
 	return ITEM_INTERACT_SUCCESS
 
