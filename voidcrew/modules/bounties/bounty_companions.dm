@@ -23,6 +23,14 @@
  * criminal's spawn context (/datum/npc_spawn_context/bounty_company), which is how they know all that
  * before they are dressed.
  *
+ * They back their criminal up (C4): at most one of a criminal's company carries a gun
+ * (bounty_roll_company()), and a posting rolls its company with its site, so the sighting can say who
+ * they were seen with and the same company comes back each time the site loads (bounty_placement.dm).
+ * Joining a fight, they get up first and get their weapon out BOUNTY_COMPANION_DRAW_DELAY after their
+ * criminal does, and their guns fire shorter pistol strings and SMG bursts (bounty_styles.dm). Now and
+ * then one carries a piece of real chrome, rarer than their criminal's (bounty_chrome_roll_companion()),
+ * installed in their body like a criminal's and driven by the same chrome subtree.
+ *
  * The shared vars are declared in bounty_types.dm and nowhere else (leader_ref); the rest here
  * have an `ai_` prefix.
  */
@@ -62,6 +70,17 @@
 	var/company_site_kind
 	/// The /datum/outfit their rough clothes came from (bounty_site_clothes()), or null for their plain ones
 	var/company_clothes
+	/// Their criminal's tier (BOUNTY_TIER_*), known as they are made: what their chrome rolls by
+	var/company_tier
+	/// Who the posting rolled them as (bounty_roll_company()): their style and chrome, or null to roll their own as they are dressed
+	var/list/company_member
+	/// Their criminal has an armed companion already: they roll no gun of their own
+	var/company_unarmed = FALSE
+	/// The chrome keys in their body (BOUNTY_CHROME_*), and whether that was settled as they were dressed
+	var/list/ai_chrome
+	var/ai_chrome_rolled = FALSE
+	/// world.time they are up and may get their weapon out, in a fight they just joined
+	var/ai_draw_at = 0
 
 /mob/living/carbon/human/npc/bounty_companion/Initialize(mapload, datum/human_npc_order/order)
 	// Before the base dresses them: where their criminal is, and what it was dressed for, so they are too
@@ -70,10 +89,19 @@
 	if(!QDELETED(leader))
 		company_site_kind = leader.posting()?.placement_kind
 		npc_always_site |= leader.npc_site
+		company_tier = leader.record?.tier
+		company_unarmed = bounty_company_armed(leader)
 	else
 		npc_always_site |= bounty_site_dress_for(order?.context)
 	company_site_kind ||= bounty_site_kind_of(order?.context)
-	return ..()
+	// Who the posting rolled them as: the style they are dressed for, and their chrome
+	if(istype(company) && company.company_member)
+		company_member = company.company_member.Copy()
+		ai_style ||= company_member[BOUNTY_COMPANY_STYLE]
+	. = ..()
+	// Their chrome is in their body now (the base installed npc_cyberware): the AI side of it
+	if(length(ai_chrome))
+		bounty_chrome_equip(src, ai_chrome)
 
 /mob/living/carbon/human/npc/bounty_companion/Destroy()
 	ai_let_go()
@@ -87,11 +115,23 @@
 
 /**
  * What they wear: plain clothes for the zone they are made in, their style's weapon (never a Wanted
- * criminal's heavier one) and its spares, and a bruise pack. The style is picked here, as they are
- * dressed, so the weapon they carry is the one they fight with.
+ * criminal's heavier one) and its spares, and a bruise pack. The style is the one the posting rolled
+ * for them, or picked here (never a second gun in their criminal's company), so the weapon they carry
+ * is the one they fight with. Their chrome is settled here too, once: the posting's, or a roll of their
+ * own (bounty_chrome_roll_companion()), into npc_cyberware, so the base installs it and the outfit table
+ * dresses them to show it.
  */
 /mob/living/carbon/human/npc/bounty_companion/bounty_build_outfit(zone)
-	ai_style ||= pick_weight(list(
+	ai_style ||= bounty_roll_companion_style(no_gun = company_unarmed)
+	if(!ai_chrome_rolled)
+		ai_chrome_rolled = TRUE
+		var/list/keys = company_member ? company_member[BOUNTY_COMPANY_CHROME] : bounty_chrome_roll_companion(company_tier, ai_style)
+		ai_chrome = bounty_chrome_prepare_body(src, keys)
+	return bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, BOUNTY_TIER_PETTY, ai_style, FALSE, /obj/item/stack/medical/bruise_pack)
+
+/// Fighting style weights for a companion (BOUNTY_STYLE_* => weight): mostly fists and blades, a gun now and then
+/proc/bounty_companion_style_weights()
+	return list(
 		BOUNTY_STYLE_BRAWLER = 3,
 		BOUNTY_STYLE_KNIFE = 2,
 		BOUNTY_STYLE_CLUB = 2,
@@ -100,8 +140,47 @@
 		BOUNTY_STYLE_SHOTGUN = 1,
 		BOUNTY_STYLE_SMG = 1,
 		BOUNTY_STYLE_REVOLVER = 1,
-	))
-	return bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, BOUNTY_TIER_PETTY, ai_style, FALSE, /obj/item/stack/medical/bruise_pack)
+	)
+
+/**
+ * A companion's fighting style (BOUNTY_STYLE_*), by weight. `no_gun` (their criminal has an armed
+ * companion already) rolls among the rest: fists, a knife, a bat or bottles.
+ */
+/proc/bounty_roll_companion_style(no_gun = FALSE)
+	var/list/weights = bounty_companion_style_weights()
+	if(no_gun)
+		for(var/key in weights.Copy())
+			if(bounty_style_is_gun(key))
+				weights -= key
+	return pick_weight(weights)
+
+/**
+ * The company of `count` companions for a criminal of `tier` (BOUNTY_TIER_*): one list per companion,
+ * its fighting style (BOUNTY_COMPANY_STYLE) and its chrome (BOUNTY_COMPANY_CHROME, rolled for that style,
+ * or null). At most one of them carries a gun, and that one comes first, so a server short of room for
+ * companions still spawns the armed one the sighting names.
+ */
+/proc/bounty_roll_company(count, tier)
+	var/list/company = list()
+	var/armed = FALSE
+	for(var/i in 1 to count)
+		var/style = bounty_roll_companion_style(no_gun = armed)
+		var/list/member = list(BOUNTY_COMPANY_STYLE = style, BOUNTY_COMPANY_CHROME = bounty_chrome_roll_companion(tier, style))
+		if(bounty_style_is_gun(style))
+			armed = TRUE
+			company.Insert(1, list(member))
+		else
+			company += list(member)
+	return company
+
+/// Whether any of `leader`'s company carries a gun: their style is one (bounty_style_is_gun())
+/proc/bounty_company_armed(mob/living/carbon/human/npc/bounty_criminal/leader)
+	if(QDELETED(leader))
+		return FALSE
+	for(var/mob/living/carbon/human/npc/bounty_companion/buddy as anything in leader.ai_companions())
+		if(bounty_style_is_gun(buddy.ai_style))
+			return TRUE
+	return FALSE
 
 // Someone of any species a criminal can be, with a face from the criminals' own look builder and a name of their species
 /mob/living/carbon/human/npc/bounty_companion/npc_apply_random_look()
@@ -208,11 +287,16 @@
 		ai_controller.set_blackboard_key(BB_BASIC_MOB_REINFORCEMENT_TARGET, leader)
 	ai_enter_fight()
 
-/// Up from their seat, drink down, at a run. The weapon comes out through the arm subtree (bounty_styles.dm).
+/**
+ * Up from their seat, drink down, at a run. Their weapon comes out through the arm subtree
+ * (bounty_styles.dm) once they are up, BOUNTY_COMPANION_DRAW_DELAY later (bounty_companion_getting_up),
+ * a beat after their criminal's.
+ */
 /mob/living/carbon/human/npc/bounty_companion/proc/ai_enter_fight()
 	if(ai_in_fight)
 		return
 	ai_in_fight = TRUE
+	ai_draw_at = world.time + BOUNTY_COMPANION_DRAW_DELAY
 	ai_put_drink_away()
 	ai_stand_up()
 	bounty_ai_set_pace(src, BOUNTY_RUN_SPEED)
@@ -222,6 +306,7 @@
 	if(!ai_in_fight)
 		return
 	ai_in_fight = FALSE
+	ai_draw_at = 0
 	bounty_ai_set_pace(src, BOUNTY_CALM_SPEED)
 	bounty_ai_holster(src)
 
@@ -448,26 +533,32 @@
  * one tick), who joins them as it is made: their faction, their side, their posting's list. Then
  * `on_spawned` is called with it. If the criminal is gone by then, the companion is not kept.
  * `immediate` builds it now (tests, admin tools). Returns the spawn order (qdel() cancels it). It is
- * made with its criminal's spawn context, so it is dressed for where they are.
+ * made with its criminal's spawn context, so it is dressed for where they are. `member` (one entry of
+ * bounty_roll_company()) is who it is: its style and chrome; without it, it rolls its own.
  */
-/proc/bounty_spawn_companion(mob/living/carbon/human/npc/bounty_criminal/leader, turf/where, datum/callback/on_spawned, immediate = FALSE)
+/proc/bounty_spawn_companion(mob/living/carbon/human/npc/bounty_criminal/leader, turf/where, datum/callback/on_spawned, immediate = FALSE, list/member)
 	where = get_turf(where)
 	if(QDELETED(leader) || !where)
 		return null
 	var/datum/npc_spawn_context/bounty_company/company = new(leader, null, "ordinary")
 	company.company_leader_ref = WEAKREF(leader)
+	company.company_member = member
 	return spawn_human_npc(/mob/living/carbon/human/npc/bounty_companion, where, CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(bounty_companion_spawned), WEAKREF(leader), on_spawned), context = company, immediate = immediate)
 
 /**
  * A companion's spawn context: its criminal's own (the site, zone and source it inherits from the
- * criminal it is made from), and which criminal that is, for the companion to read as it is dressed.
+ * criminal it is made from), which criminal that is, and who the posting rolled the companion as, for
+ * the companion to read as it is dressed.
  */
 /datum/npc_spawn_context/bounty_company
 	/// Weakref to the criminal the companion is made for
 	var/datum/weakref/company_leader_ref
+	/// One entry of bounty_roll_company() (BOUNTY_COMPANY_STYLE, BOUNTY_COMPANY_CHROME), or null to roll their own
+	var/list/company_member
 
 /datum/npc_spawn_context/bounty_company/Destroy()
 	company_leader_ref = null
+	company_member = null
 	return ..()
 
 /**
@@ -493,15 +584,25 @@
 /**
  * Spawns `count` companions (clamped to BOUNTY_COMPANIONS_MIN-BOUNTY_COMPANIONS_MAX) on free tiles
  * beside them, through the human NPC spawn queue (bounty_spawn_companion()). Each joins them, and their
- * posting, as it is made. Returns the companions already made: only with `immediate` (tests, admin
- * tools), otherwise an empty list.
+ * posting, as it is made. They are `company` (bounty_roll_company(), the posting's), and any more than
+ * it has are rolled here, never a second gun among them. Returns the companions already made: only with
+ * `immediate` (tests, admin tools), otherwise an empty list.
  */
-/mob/living/carbon/human/npc/bounty_criminal/proc/spawn_companions(count, immediate = FALSE)
+/mob/living/carbon/human/npc/bounty_criminal/proc/spawn_companions(count, immediate = FALSE, list/company)
 	. = list()
 	count = clamp(count, BOUNTY_COMPANIONS_MIN, BOUNTY_COMPANIONS_MAX)
 	var/turf/home = get_turf(src)
 	if(!home || count <= 0)
 		return
+	company = company ? company.Copy() : list()
+	if(length(company) < count)
+		var/armed = bounty_company_armed(src)
+		for(var/list/member as anything in company)
+			armed ||= bounty_style_is_gun(member[BOUNTY_COMPANY_STYLE])
+		for(var/i in length(company) + 1 to count)
+			var/style = bounty_roll_companion_style(no_gun = armed)
+			armed ||= bounty_style_is_gun(style)
+			company += list(list(BOUNTY_COMPANY_STYLE = style, BOUNTY_COMPANY_CHROME = bounty_chrome_roll_companion(record?.tier, style)))
 	var/list/spots = list()
 	for(var/turf/tile as anything in RANGE_TURFS(1, home))
 		if(tile != home && ai_standable(tile))
@@ -513,7 +614,7 @@
 	for(var/i in 1 to count)
 		if(!length(spots))
 			break
-		var/datum/human_npc_order/order = bounty_spawn_companion(src, pick_n_take(spots), null, immediate)
+		var/datum/human_npc_order/order = bounty_spawn_companion(src, pick_n_take(spots), null, immediate, company[i])
 		var/mob/living/carbon/human/npc/bounty_companion/buddy = order?.spawned_ref?.resolve()
 		if(!QDELETED(buddy))
 			. += buddy
@@ -533,9 +634,10 @@
 // ===== AI =====
 
 /**
- * A companion's controller: the trooper's peaceful pattern (retaliate, call the others in, attack by
- * style with the real weapon, go to whoever called), patching themselves up when it is quiet (N6), then
- * hanging out with their criminal. It gives up as its criminal does (human_npc_surrender).
+ * A companion's controller: the trooper's peaceful pattern (retaliate, call the others in, get up,
+ * attack by style with the real weapon or their chrome, go to whoever called), patching themselves up
+ * when it is quiet (N6), then hanging out with their criminal. It gives up as its criminal does
+ * (human_npc_surrender).
  */
 /datum/ai_controller/basic_controller/bounty/companion
 	planning_subtrees = list(
@@ -547,6 +649,10 @@
 		/datum/ai_planning_subtree/flee_target/bounty,
 		/datum/ai_planning_subtree/target_retaliate/bounty,
 		/datum/ai_planning_subtree/call_reinforcements/bounty,
+		// Just joined the fight: up first, their criminal draws before they do
+		/datum/ai_planning_subtree/bounty_companion_getting_up,
+		// Their chrome, if they carry any: a tell, then the implant's own action (C0, bounty_chrome.dm)
+		/datum/ai_planning_subtree/bounty_chrome,
 		/datum/ai_planning_subtree/bounty_arm,
 		/datum/ai_planning_subtree/bounty_ranged,
 		/datum/ai_planning_subtree/bounty_melee,
@@ -625,6 +731,22 @@
 	var/atom/threat = controller.blackboard[BB_BASIC_MOB_FLEE_TARGET]
 	if(QDELETED(threat) || bounty_ai_dist(companion, threat) >= (controller.blackboard[BB_BASIC_MOB_FLEE_DISTANCE] || BOUNTY_FLEE_DISTANCE))
 		return SUBTREE_RETURN_FINISH_PLANNING
+
+/**
+ * Just in the fight (ai_enter_fight()), a companion gets up from where they were first: for
+ * BOUNTY_COMPANION_DRAW_DELAY they turn to face whoever they are going for, and no weapon comes out and
+ * no blow or shot is planned, so their criminal's draw comes first. Then the arm subtree draws as usual.
+ */
+/datum/ai_planning_subtree/bounty_companion_getting_up
+
+/datum/ai_planning_subtree/bounty_companion_getting_up/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/carbon/human/npc/bounty_companion/companion = controller.pawn
+	if(!istype(companion) || !companion.ai_in_fight || world.time >= companion.ai_draw_at)
+		return
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target))
+		companion.face_atom(target)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// tg's retaliation, while they can still fight. Its list is filled by the controller's hooks, not tg's element.
 /datum/ai_planning_subtree/target_retaliate/bounty

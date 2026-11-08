@@ -25,10 +25,13 @@
  *   cornered volley in bounty_ai_meek.dm).
  * Nothing is spawned for the fight, no projectile comes from the body, and nothing passes through
  * anyone: before a shot or a throw the fighter checks its line and steps aside for anyone it may not
- * hit (bounty_ai_line_blocked()). The style sets only the timing: how often they pull the trigger or
- * throw, the telegraph before it (a hit during it fumbles the attack), the reload, and the distance they
- * keep. Gear is locked to the body (D3): it never drops and is never loot; bottles are consumables, so a
- * thrown one leaves the hand and breaks.
+ * hit (bounty_ai_line_blocked()), one step at a time at the body's own pace (bounty_ai_step()). The
+ * style sets only the timing: how often they pull the trigger or throw, the telegraph before it (a hit
+ * during it fumbles the attack), the reload, and the distance they keep. A gun fires at anyone it sees
+ * within BOUNTY_GUN_FIRE_RANGE while its holder walks in to BOUNTY_PISTOL_RANGE; the shotgun and the
+ * bottle keep to their own distance. A companion's gun is backup: shorter pistol strings and SMG bursts
+ * (companion_string, companion_burst). Gear is locked to the body (D3): it never drops and is never
+ * loot; bottles are consumables, so a thrown one leaves the hand and breaks.
  *
  * A gun that comes out of its holster, off their back or out of a bag at the start of a fight comes
  * with a line and the holster's sound, and the draw is the telegraph for the first shot: at least
@@ -188,10 +191,10 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 				return TRUE
 	return FALSE
 
-/// One step sideways for a clear line to `target`, no further from them, on the leash
+/// One step sideways for a clear line to `target`, no further from them, on the leash, and no sooner than the body's own next step (a person can't dart about faster than they walk)
 /proc/bounty_ai_sidestep(mob/living/fighter, atom/target)
 	var/turf/here = get_turf(fighter)
-	if(!here || !isturf(fighter.loc))
+	if(!here || !isturf(fighter.loc) || !bounty_ai_step_ready(fighter))
 		return FALSE
 	var/list/options = list()
 	for(var/direction in GLOB.alldirs)
@@ -201,18 +204,18 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		options += next
 	shuffle_inplace(options)
 	for(var/turf/next as anything in options)
-		if(bounty_ai_step(fighter, next))
+		if(bounty_ai_step(fighter, next, paced = TRUE))
 			return TRUE
 	return FALSE
 
-/// A step straight back from `target`, now and then, on the leash
+/// A step straight back from `target`, now and then, on the leash, and no sooner than the body's own next step
 /proc/bounty_ai_back_off(datum/ai_controller/controller, mob/living/fighter, atom/target)
-	if(world.time < controller.blackboard[BB_BOUNTY_BACKSTEP_AT] || !isturf(fighter.loc))
+	if(world.time < controller.blackboard[BB_BOUNTY_BACKSTEP_AT] || !isturf(fighter.loc) || !bounty_ai_step_ready(fighter))
 		return FALSE
 	controller.set_blackboard_key(BB_BOUNTY_BACKSTEP_AT, world.time + BOUNTY_BACKSTEP_GAP)
 	var/away_dir = get_dir(target, fighter)
 	var/turf/away = away_dir && get_step(fighter, away_dir)
-	if(!away || !bounty_ai_step(fighter, away))
+	if(!away || !bounty_ai_step(fighter, away, paced = TRUE))
 		return FALSE
 	fighter.face_atom(target)
 	return TRUE
@@ -266,6 +269,9 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	/// Shots in a string, then string_pause on top of the interval before the next (0: no strings)
 	var/string_shots = 0
 	var/string_pause = 0
+	/// A companion's burst and string, shorter: their gun is backup (null: the same as burst and string_shots)
+	var/companion_burst
+	var/companion_string
 
 /**
  * Puts this style's weapon and spares on `outfit` (an instance), the heavier weapon if `heavy`. The
@@ -278,12 +284,16 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /datum/bounty_style/proc/weapon_for(heavy)
 	return (heavy && heavy_weapon) || weapon
 
-/// Trigger pulls in one burst for `fighter`
+/// Trigger pulls in one burst for `fighter`: a companion's is companion_burst, if the style has one
 /datum/bounty_style/proc/burst_length(mob/living/carbon/fighter)
+	if(!isnull(companion_burst) && istype(fighter, /mob/living/carbon/human/npc/bounty_companion))
+		return companion_burst
 	return burst
 
-/// Shots in one string for `fighter`, 0 for none
+/// Shots in one string for `fighter`, 0 for none: a companion's is companion_string, if the style has one
 /datum/bounty_style/proc/string_length(mob/living/carbon/fighter)
+	if(!isnull(companion_string) && istype(fighter, /mob/living/carbon/human/npc/bounty_companion))
+		return companion_string
 	return string_shots
 
 /// Whether a burst is under way. One whose next pull is long overdue was cut off (the AI stopped meanwhile), and is forgotten.
@@ -482,6 +492,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	single_fire = TRUE
 	string_shots = BOUNTY_PISTOL_STRING_SHOTS
 	string_pause = BOUNTY_PISTOL_STRING_PAUSE
+	companion_string = BOUNTY_COMPANION_PISTOL_STRING
 
 /datum/bounty_style/pistol/equip(datum/outfit/outfit, heavy = FALSE)
 	var/obj/item/gun/ballistic/gun_type = weapon_for(heavy)
@@ -506,6 +517,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	draw_message = "%USER pulls out an SMG!"
 	burst = BOUNTY_SMG_BURST
 	burst_gap = BOUNTY_SMG_BURST_GAP
+	companion_burst = BOUNTY_COMPANION_SMG_BURST
 
 /datum/bounty_style/smg/equip(datum/outfit/outfit, heavy = FALSE)
 	var/obj/item/gun/ballistic/gun_type = weapon_for(heavy)
@@ -789,17 +801,20 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /**
- * Shoots (or throws) at the target from the style's distance: closes in while it can't see them, steps
- * back from anyone inside the style's min_range, steps aside for anyone it may not hit in its line,
- * telegraphs, then pulls the trigger (or throws) once per the style's interval; a burst is that many
- * pulls burst_gap apart, each one checked like the first. Planning carries on meanwhile, so a new
- * target, a retreat or a call for help is picked up mid-fight.
+ * Shoots (or throws) at the target from the style's distance: walks in to required_distance, and fires
+ * at them on the way once it can see them within fire_range; steps back from anyone inside the style's
+ * min_range, steps aside for anyone it may not hit in its line, telegraphs, then pulls the trigger (or
+ * throws) once per the style's interval; a burst is that many pulls burst_gap apart, each one checked
+ * like the first. Planning carries on meanwhile, so a new target, a retreat or a call for help is picked
+ * up mid-fight.
  */
 /datum/ai_behavior/bounty_shoot
 	// Often enough that a style fires at its own pace and its wind-up is never stretched
 	action_cooldown = 0.1 SECONDS
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
 	required_distance = BOUNTY_PISTOL_RANGE
+	/// How far off they shoot at someone they can see, walking in or not
+	var/fire_range = BOUNTY_GUN_FIRE_RANGE
 
 /datum/ai_behavior/bounty_shoot/setup(datum/ai_controller/controller, target_key, targeting_strategy_key)
 	. = ..()
@@ -824,7 +839,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 	// Every round of a burst is a pull of its own, asked for again here: anything above that stops it stops the burst
 	var/bursting = style.burst_under_way(controller)
-	if(!can_see(fighter, target, required_distance))
+	if(!can_see(fighter, target, fire_range))
 		style.end_burst(controller)
 		return AI_BEHAVIOR_INSTANT
 	var/winding = !!controller.blackboard[BB_BOUNTY_WINDUP_UNTIL]
@@ -847,13 +862,15 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	bounty_ai_clear_windup(controller)
 	controller.clear_blackboard_key(BB_BOUNTY_BURST_LEFT)
 
-/// The shotgun closes in to BOUNTY_SHOTGUN_RANGE
+/// The shotgun closes in to BOUNTY_SHOTGUN_RANGE, and fires from there: buckshot spreads too wide to hit much further off
 /datum/ai_behavior/bounty_shoot/close
 	required_distance = BOUNTY_SHOTGUN_RANGE
+	fire_range = BOUNTY_SHOTGUN_RANGE
 
-/// The bottle thrower stays BOUNTY_BOTTLE_RANGE off
+/// The bottle thrower stays BOUNTY_BOTTLE_RANGE off, and throws from there
 /datum/ai_behavior/bounty_shoot/throw
 	required_distance = BOUNTY_BOTTLE_RANGE
+	fire_range = BOUNTY_BOTTLE_RANGE
 
 // ===== MELEE =====
 

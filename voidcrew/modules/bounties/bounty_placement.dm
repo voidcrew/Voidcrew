@@ -491,17 +491,42 @@
 			return BOUNTY_ACTIVITY_BLEND
 	return BOUNTY_ACTIVITY_EXPLORE
 
-/// Companions for a normal criminal: 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone scales pay, never the fight), within the server's cap
-/datum/criminal_bounty/proc/board_spawn_companions(mob/living/carbon/human/npc/bounty_criminal/criminal)
+/**
+ * The company a normal criminal keeps at its site (bounty_roll_company(): a style and chrome a
+ * companion, at most one of them armed): 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone
+ * scales pay, never the fight). At most one aboard a pirate ship, whose crew are company enough, and
+ * nobody at a trader outpost or with any other kind of criminal.
+ */
+/datum/criminal_bounty/proc/board_roll_company()
+	if(record?.archetype != BOUNTY_ARCHETYPE_NORMAL || placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST)
+		return list()
 	var/count = rand(0, BOUNTY_MAX_COMPANIONS)
-	// The crew aboard a pirate ship are company enough
 	if(placement_kind == BOUNTY_PLACEMENT_NPC_SHIP)
 		count = min(count, 1)
-	count = min(count, BOUNTY_MAX_LIVE_COMPANIONS - SScriminal_bounties.board_live_companions())
+	return bounty_roll_company(count, record?.tier)
+
+/**
+ * The company its criminal keeps at its site now, rolled the first time it is asked for at a site
+ * (board_roll_company()) and kept while the bounty stays there: the sighting names it, and the same
+ * company comes back each time the site loads. A new site rolls a new one.
+ */
+/datum/criminal_bounty/proc/board_company()
+	var/obj/structure/overmap/where = site()
+	if(where && board_company_site?.resolve() != where)
+		board_company = null
+		board_company_site = WEAKREF(where)
+	if(isnull(board_company))
+		board_company = board_roll_company()
+	return board_company
+
+/// Spawns the company the posting rolled (board_company()) beside its criminal, within the server's cap on live companions
+/datum/criminal_bounty/proc/board_spawn_companions(mob/living/carbon/human/npc/bounty_criminal/criminal)
+	var/list/company = board_company()
+	var/count = min(length(company), BOUNTY_MAX_LIVE_COMPANIONS - SScriminal_bounties.board_live_companions())
 	if(count <= 0)
 		return list()
 	// Built through the human NPC queue: each companion joins the posting's list as it joins its criminal (bounty_companions.dm).
-	criminal.spawn_companions(count)
+	criminal.spawn_companions(count, FALSE, company)
 
 /**
  * Makes the criminal a friend of the site's own, so it doesn't fight the hostiles native to where
