@@ -57,6 +57,8 @@ GLOBAL_LIST_INIT(bounty_chrome_pieces, init_bounty_chrome_pieces())
 	switch(kit)
 		if(BOUNTY_KIT_GHOST)
 			return list(/obj/item/organ/cyberimp/cyberware/slipwire, /obj/item/organ/cyberimp/cyberware/cascade)
+		if(BOUNTY_KIT_CYBERPSYCHO)
+			return bounty_psycho_organs()
 	return list()
 
 /**

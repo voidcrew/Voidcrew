@@ -652,11 +652,12 @@
 	allocated += clean
 	TEST_ASSERT_NULL(clean.record.chrome, "Asking for no chrome still gave them some")
 	TEST_ASSERT_NULL(clean.GetComponent(/datum/component/bounty_chrome), "Asking for no chrome still gave them a chrome AI")
-	// All of it: every piece that fits, nothing browned out
+	// All of it: the cyberpsycho (C6, chrome/bounty_cyberpsycho.dm), whose body carries it all, nothing browned out
 	var/mob/living/carbon/human/npc/bounty_criminal/all = panel.admin_spawn_criminal(operator, 3, "normal", "brawler", null, spot, "all")
 	allocated += all
-	TEST_ASSERT_EQUAL(length(all.record.chrome), length(bounty_chrome_all_that_fits(list())), "All of it gave [length(all.record.chrome)] pieces")
-	TEST_ASSERT(length(all.record.chrome) >= 3, "All of it fit only [length(all.record.chrome)] pieces")
+	TEST_ASSERT(istype(all, /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho), "All of it spawned [all?.type], not the cyberpsycho")
+	TEST_ASSERT_EQUAL(all?.record?.kit, "cyberpsycho", "All of it isn't on the record as the cyberpsycho's kit") // BOUNTY_KIT_CYBERPSYCHO
+	TEST_ASSERT(get_chrome_load(all) > 20, "All of it carries only [get_chrome_load(all)] load") // CYBERWARE_BASE_CAPACITY
 	TEST_ASSERT(get_chrome_load(all) <= get_chrome_capacity(all), "All of it browned them out")
 	// Redline on a Ghost: its own Cascade has the slot, so it's left off and the admin hears why
 	var/mob/living/carbon/human/npc/bounty_criminal/ghost = panel.admin_spawn_criminal(operator, 3, "boss", "ghost", null, spot, list("redline"))

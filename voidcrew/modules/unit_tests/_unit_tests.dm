@@ -54,6 +54,7 @@
 #include "voidcrew_bounty_chrome_redline.dm"
 #include "voidcrew_bounty_companions_backup.dm"
 #include "voidcrew_bounty_criminal.dm"
+#include "voidcrew_bounty_cyberpsycho.dm"
 #include "voidcrew_bounty_guns.dm"
 #include "voidcrew_bounty_identity.dm"
 #include "voidcrew_bounty_kingpin.dm"

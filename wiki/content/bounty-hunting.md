@@ -109,7 +109,7 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 
 ### Mini-bosses
 
-Every Most Wanted criminal is a mini-boss with one of five kits. The board's **Other crews hunting** line excludes your own active hunt.
+Every Most Wanted criminal is a mini-boss with one of six kits. The board's **Other crews hunting** line excludes your own active hunt.
 
 - They wear their kit's armour and take hits better than most people.
 - Every hunter after the first brings one more of their crew, who turns up from somewhere out of sight.
@@ -125,6 +125,7 @@ Every Most Wanted criminal is a mini-boss with one of five kits. The board's **O
 | Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. | Close the distance, and move off the blinking ring. |
 | Ghost | A hooded criminal with a combat knife | Fast. Dashes in with knife cuts that bleed, cloaks into a shimmer, and backs off after two cuts. Its implants make shots miss now and then while it moves, much more often during its burst of speed. | A flash or a hit breaks the cloak, and an EMP ends the burst. Shoot it when it stops moving. |
 | Heavy | A heavily armed criminal with a belt-fed gun | Heavy armour, slow. Shows a laser sight and a red cone, then fires a burst into it. Throws barrier grenades that open into a barricade. | Get out of the red cone before it fires. Go around the barricade. |
+| Cyberpsycho (rare) | A twitching criminal in shorts, chrome on its arms, chest and legs | Fights with a blade from its forearm. Lunges down a lit line, leaps onto you under a red mark, and throws a piston punch. Its chrome fist breaks windows. Hurt, or hit with a stun weapon, it roars and shrugs off stuns for a while, then collapses. Gets up once after it goes down. | Get off the line and out from under the mark. Back off while it roars, and cuff it when it collapses. An EMP makes its chrome spark and shuts it down for a while, and then it tires like the others. |
 
 !!! warning "Worn out means switch to stuns"
     A mini-boss in critical condition only pays 60% on the pad. Once it's worn out, stun it and cuff it, or patch it up before you turn it in.
