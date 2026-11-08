@@ -68,6 +68,8 @@
 	. = ..()
 	if(!isliving(user) || QDELETED(target) || target == user)
 		return
+	// The wire lashes out to what it hit (cyberware_anim2.dm).
+	cyberware_monowire_lash_fx(user, target)
 	if(isliving(target))
 		discharge_into_mob(target, user)
 	else if(ismecha(target))
@@ -78,6 +80,7 @@
 /// Arc and crackle on whatever the shock went into.
 /obj/item/melee/cyberware_monowire/live/proc/arc_visuals(atom/target, mob/living/user)
 	user.Beam(target, icon_state = "lightning[rand(1, 12)]", time = 0.5 SECONDS)
+	cyberware_arc_crackle_fx(user, target)
 	do_sparks(2, TRUE, target)
 	playsound(target, SFX_SPARKS, 50, TRUE)
 	cyberware_ink_pulse(user, CYBERWARE_INK_SOFT)

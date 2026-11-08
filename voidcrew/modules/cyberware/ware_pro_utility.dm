@@ -58,6 +58,8 @@
 	var/atom/target
 	/// The client image doing the work.
 	var/image/mark
+	/// An outlined copy of the target under the blip, or null for a plain blip (cyberware_anim2.dm).
+	var/image/outline
 	/// The list we were filed into, so we can strike ourselves off it.
 	var/list/registry
 	/// Our key in that list when it's associative; null for a flat list.
@@ -65,12 +67,14 @@
 	/// Expiry timer handle, restarted by refresh().
 	var/timer_id
 
-/datum/cyberware_hud_mark/New(mob/living/new_viewer, atom/new_target, mark_color, duration, mark_state)
+/datum/cyberware_hud_mark/New(mob/living/new_viewer, atom/new_target, mark_color, duration, mark_state, outline_delay = -1)
 	. = ..()
 	viewer = new_viewer
 	target = new_target
 	mark = image('icons/effects/effects.dmi', get_turf(viewer), mark_state, ABOVE_ALL_MOB_LAYER)
 	mark.color = mark_color
+	if(outline_delay >= 0)
+		outline = cyberware_mark_outline(target, mark_color)
 	RegisterSignal(viewer, COMSIG_MOVABLE_MOVED, PROC_REF(on_end_moved))
 	RegisterSignal(viewer, COMSIG_MOB_LOGIN, PROC_REF(on_viewer_login))
 	RegisterSignal(viewer, COMSIG_QDELETING, PROC_REF(on_end_deleted))
@@ -78,6 +82,8 @@
 	RegisterSignal(target, COMSIG_QDELETING, PROC_REF(on_end_deleted))
 	reposition()
 	refresh(duration)
+	if(outline)
+		cyberware_mark_outline_reveal(outline, outline_delay, duration)
 
 /datum/cyberware_hud_mark/Destroy(force)
 	if(timer_id)
@@ -86,6 +92,7 @@
 	if(viewer)
 		UnregisterSignal(viewer, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_LOGIN, COMSIG_QDELETING))
 		viewer.client?.images -= mark
+		viewer.client?.images -= outline
 	if(target)
 		UnregisterSignal(target, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 	if(registry)
@@ -96,6 +103,7 @@
 		registry = null
 		registry_key = null
 	QDEL_NULL(mark)
+	outline = null
 	viewer = null
 	target = null
 	return ..()
@@ -113,12 +121,19 @@
 	if(isnull(viewer_turf) || isnull(target_turf) || viewer_turf.z != target_turf.z)
 		// Nothing sane to draw across a z jump. Park it until they line back up.
 		viewer.client?.images -= mark
+		viewer.client?.images -= outline
 		return
 	mark.loc = viewer_turf
 	mark.pixel_w = ((target_turf.x - viewer_turf.x) * ICON_SIZE_X) + target.pixel_w
 	mark.pixel_z = ((target_turf.y - viewer_turf.y) * ICON_SIZE_Y) + target.pixel_z
 	SET_PLANE_EXPLICIT(mark, ABOVE_LIGHTING_PLANE, viewer_turf)
 	viewer.client?.images |= mark
+	if(outline)
+		outline.loc = viewer_turf
+		outline.pixel_w = mark.pixel_w
+		outline.pixel_z = mark.pixel_z
+		SET_PLANE_EXPLICIT(outline, ABOVE_LIGHTING_PLANE, viewer_turf)
+		viewer.client?.images |= outline
 
 /// Pushes expiry back out. The Doppler leans on this: a contact that keeps
 /// moving keeps its blip, a contact that stops loses it.
@@ -153,10 +168,10 @@
  * out. Add `registry_key` for an associative list; the mark strikes itself
  * off either shape when it dies, so no caller is left holding a dead ref.
  */
-/proc/cyberware_hud_mark(mob/living/viewer, atom/target, mark_color = "#ffb347", duration = 6 SECONDS, mark_state = "sonar_ping", list/registry, registry_key)
+/proc/cyberware_hud_mark(mob/living/viewer, atom/target, mark_color = "#ffb347", duration = 6 SECONDS, mark_state = "sonar_ping", list/registry, registry_key, outline = FALSE, outline_delay = 0)
 	if(!isliving(viewer) || QDELETED(viewer) || QDELETED(target) || viewer == target)
 		return null
-	var/datum/cyberware_hud_mark/new_mark = new(viewer, target, mark_color, duration, mark_state)
+	var/datum/cyberware_hud_mark/new_mark = new(viewer, target, mark_color, duration, mark_state, outline ? outline_delay : -1)
 	if(QDELETED(new_mark))
 		return null
 	if(isnull(registry))

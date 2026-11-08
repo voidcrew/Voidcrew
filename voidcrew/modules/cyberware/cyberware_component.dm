@@ -424,6 +424,9 @@ GLOBAL_LIST_INIT(installed_capacity_costs, list(
 			newly_tripped = TRUE
 		else
 			any_recovered = TRUE
+	if(newly_tripped || any_recovered)
+		// Worn chrome stutters down or back up (cyberware_anim2.dm).
+		cyberware_brownout_fx(target, newly_tripped)
 	if(newly_tripped)
 		target.balloon_alert(target, "chrome brownout!")
 		to_chat(target, span_boldwarning("Your chrome goes dark."))

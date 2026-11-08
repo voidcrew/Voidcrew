@@ -28,12 +28,17 @@
 
 #define CYBERWARE_ANIM_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim.dmi'
 #define CYBERWARE_ANIM_LARGE_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_large.dmi'
+/// Batch-2 art: breathing LEDs and the looks of cyberware_anim2.dm.
+#define CYBERWARE_ANIM2_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim2.dmi'
 
 /// Worn looks. Null is the plain overlay.
 #define CHROME_LOOK_STATIC "static"
 #define CHROME_LOOK_DARK "dark"
 #define CHROME_LOOK_FLASH "flash"
 #define CHROME_LOOK_FOLD "fold"
+/// Brownout looks (cyberware_anim2.dm): browned out, and the warm stutter on the way down or up.
+#define CHROME_LOOK_BROWN "brown"
+#define CHROME_LOOK_WARM "warm"
 
 /// Layer for a blade swing: just over the held item it turns into.
 #define CHROME_ANIM_BLADE_LAYER (-(HANDS_LAYER - 0.5))
@@ -103,6 +108,9 @@
 /// The EMP look the reboot show has put on this piece. Null means "whatever
 /// the reboot state says": dark while down, plain otherwise.
 /datum/component/cyberware/var/emp_look
+/// The brownout look the brownout show has put on this piece. Null means
+/// "whatever the brownout state says": browned out or plain.
+/datum/component/cyberware/var/brownout_look
 
 /**
  * The look this implant's worn overlay draws with right now, or null for the
@@ -116,6 +124,10 @@
 		return chrome.emp_look
 	if(chrome.emp_down)
 		return CHROME_LOOK_DARK
+	if(chrome.brownout_look)
+		return chrome.brownout_look
+	if(chrome.browned_out)
+		return CHROME_LOOK_BROWN
 	return null
 
 /// What this implant adds to its limb's render key, so a look change redraws.
@@ -130,7 +142,7 @@
 /obj/item/organ/cyberimp/proc/cyberware_dress_worn(list/imageset, image_layer, obj/item/bodypart/limb)
 	var/look = cyberware_worn_look()
 	if(!look)
-		return imageset
+		return cyberware_dress_leds(imageset, image_layer, limb)
 	var/list/dressed = list()
 	for(var/image/part as anything in imageset)
 		var/glow = PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE
@@ -158,7 +170,44 @@
 					var/mutable_appearance/noise = mutable_appearance('icons/effects/effects.dmi', "static_base", alpha = 170)
 					noise.blend_mode = BLEND_INSET_OVERLAY
 					part.overlays += noise
+			if(CHROME_LOOK_BROWN)
+				if(glow)
+					continue
+				part.color = list(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.66, 0, 0, 0)
+			if(CHROME_LOOK_WARM)
+				if(glow)
+					// A sagging supply: the lights still burn, weaker.
+					dressed += emissive_appearance(part.icon, part.icon_state, limb?.owner || limb, part.layer, alpha = 110)
+					continue
+				part.color = list(0.9, 0, 0, 0, 0.74, 0, 0, 0, 0.58, 0.05, 0.02, 0)
 		dressed += part
+	return dressed
+
+/**
+ * The plain look: any worn state with breathing LEDs in the batch-2 sheet
+ * gets them, and the breathing glow replaces the piece's own still glow.
+ * The LED states loop on their own, so a lit piece costs the server nothing.
+ */
+/obj/item/organ/cyberimp/proc/cyberware_dress_leds(list/imageset, image_layer, obj/item/bodypart/limb)
+	var/list/leds
+	for(var/image/part as anything in imageset)
+		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
+			continue
+		var/led_state = "[part.icon_state]_led"
+		if(icon_exists(CYBERWARE_ANIM2_ICON, led_state))
+			LAZYSET(leds, "[part.icon_state]", led_state)
+	if(!leds)
+		return imageset
+	var/list/dressed = list()
+	for(var/image/part as anything in imageset)
+		if(PLANE_TO_TRUE(part.plane) == EMISSIVE_PLANE)
+			var/glow_state = "[part.icon_state]"
+			if(length(glow_state) > 2 && copytext(glow_state, -2) == "_e" && leds[copytext(glow_state, 1, -2)])
+				continue
+		dressed += part
+	for(var/worn_state in leds)
+		dressed += image(icon = CYBERWARE_ANIM2_ICON, icon_state = leds[worn_state], layer = image_layer)
+		dressed += emissive_appearance(CYBERWARE_ANIM2_ICON, "[leds[worn_state]]_e", limb?.owner || limb, image_layer)
 	return dressed
 
 // =========================================================================
@@ -837,6 +886,7 @@
 	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
 	if(chrome)
 		chrome.emp_look = null
+		chrome.brownout_look = null
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/cyberware_anim_clear(mob/living/carbon/old_owner)
 	. = ..()
@@ -854,9 +904,12 @@
 
 #undef CYBERWARE_ANIM_ICON
 #undef CYBERWARE_ANIM_LARGE_ICON
+#undef CYBERWARE_ANIM2_ICON
 #undef CHROME_LOOK_STATIC
 #undef CHROME_LOOK_DARK
 #undef CHROME_LOOK_FLASH
 #undef CHROME_LOOK_FOLD
+#undef CHROME_LOOK_BROWN
+#undef CHROME_LOOK_WARM
 #undef CHROME_ANIM_BLADE_LAYER
 #undef CHROME_ANIM_TOP_LAYER

@@ -215,9 +215,12 @@
 	var/busy_timeout = 1 MINUTES
 	/// The trace line drawn while an upload runs.
 	var/datum/beam/trace
+	/// The packets running up the trace (cyberware_anim2.dm).
+	var/datum/beam/packet_trace
 
 /datum/action/cooldown/cyberware/deck/Destroy()
 	QDEL_NULL(trace)
+	QDEL_NULL(packet_trace)
 	return ..()
 
 /datum/action/cooldown/cyberware/deck/chrome_wheel_name()
@@ -232,6 +235,7 @@
 	if(removed_from)
 		UnregisterSignal(removed_from, COMSIG_CYBERWARE_ZOOM_CLICK)
 	QDEL_NULL(trace)
+	QDEL_NULL(packet_trace)
 	busy = FALSE
 	busy_until = 0
 	return ..()
@@ -428,7 +432,9 @@
 		return FALSE
 	var/datum/quickhack_kit/kit = deck.kit
 	QDEL_NULL(trace)
+	QDEL_NULL(packet_trace)
 	trace = bearer.Beam(target, icon_state = "infrared", time = kit.upload_time + 1 SECONDS, maxdistance = kit.hack_range + 1)
+	packet_trace = cyberware_deck_packets(bearer, target, kit.upload_time + 1 SECONDS, kit.hack_range + 1)
 	playsound(target, 'sound/machines/beep/twobeep_high.ogg', 40, FALSE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 	if(ismob(target))
 		to_chat(target, span_warning("Something in your gear chirps."))
@@ -436,6 +442,7 @@
 	if(QDELETED(src))
 		return FALSE
 	QDEL_NULL(trace)
+	QDEL_NULL(packet_trace)
 	if(!landed || !target_holds(bearer, target))
 		if(!QDELETED(bearer))
 			bearer.balloon_alert(bearer, "upload lost")
@@ -447,6 +454,9 @@
 		return FALSE
 	if(!hack.execute(target, bearer))
 		return FALSE
+	// The door takes the hack with a glitch (cyberware_anim2.dm).
+	if(istype(target, /obj/machinery/door))
+		cyberware_glitch_fx(target)
 	if(isliving(target))
 		var/mob/living/victim = target
 		log_combat(bearer, victim, "quickhacked", null, "with [hack.name] from [deck]")
@@ -580,12 +590,14 @@
 	var/marked = 0
 	for(var/obj/machinery/machine in range(reach, center))
 		var/mark_color = ping_color(machine)
-		if(mark_color && cyberware_hud_mark(user, machine, mark_color, mark_time))
+		// The outline shows once the sweep reaches the machine; the mark itself is up at once.
+		if(mark_color && cyberware_hud_mark(user, machine, mark_color, mark_time, outline = TRUE, outline_delay = cyberware_ping_reveal_delay(center, machine)))
 			marked++
 	if(!marked)
 		user.balloon_alert(user, "nothing answers")
 		return FALSE
 	user.playsound_local(center, 'sound/machines/sonar-ping.ogg', 40, FALSE)
+	cyberware_ping_sweep_fx(user)
 	return TRUE
 
 /// The mark colour for a machine that answers a ping, or null if it doesn't.

@@ -7178,6 +7178,7 @@
 #include "voidcrew\modules\cyberware\chrome_wheel_keybindings.dm"
 #include "voidcrew\modules\cyberware\cradle_ui.dm"
 #include "voidcrew\modules\cyberware\cyberware_anim.dm"
+#include "voidcrew\modules\cyberware\cyberware_anim2.dm"
 #include "voidcrew\modules\cyberware\cyberware_base.dm"
 #include "voidcrew\modules\cyberware\cyberware_component.dm"
 #include "voidcrew\modules\cyberware\cyberware_feedback.dm"

@@ -259,6 +259,8 @@
 /// on the marked stage a spark shower plus Splice's mid-line.
 /obj/machinery/chrome_cradle/proc/run_sequence_stage(mid_stage = FALSE)
 	playsound(src, 'sound/effects/servostep.ogg', 60, TRUE)
+	// The rig's arms move on the beat (cyberware_anim2.dm).
+	rig_beat(mid_stage)
 	var/mob/living/patient = occupant
 	if(istype(patient))
 		patient.do_jitter_animation(60)
@@ -315,6 +317,7 @@
 		SStgui.update_uis(src)
 		return
 	do_sparks(3, FALSE, src)
+	rig_boot_fx(patient)
 	patient.flash_act(visual = 1)
 	if(chrome.tier >= CYBERWARE_TIER_4)
 		visible_message(span_notice("The parlor's neon stutters as the rig pulls the current it needs."))
@@ -368,6 +371,7 @@
 	for(var/timer in stage_timers)
 		deltimer(timer)
 	stage_timers.Cut()
+	rig_stop()
 	busy = FALSE
 	busy_action = null
 	busy_ware = null

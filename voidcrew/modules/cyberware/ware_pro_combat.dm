@@ -693,12 +693,13 @@
 		return FALSE
 	StartCooldown()
 	playsound(here, 'sound/items/weapons/punchmiss.ogg', 40, TRUE, -1)
-	new /obj/effect/temp_visual/decoy/fading/halfsecond(here, jumper)
+	var/obj/effect/temp_visual/decoy/fading/halfsecond/afterimage = new(here, jumper)
 	jumper.visible_message(
 		span_warning("[jumper]'s legs fire like pistons and [jumper.p_they()] vault[jumper.p_s()] into the air!"),
 		span_notice("You fire the pistons and leap."),
 	)
-	animate(jumper, pixel_z = 20, time = CYBERWARE_HOPPER_AIRTIME, flags = ANIMATION_RELATIVE, easing = QUAD_EASING|EASE_OUT)
+	// A crouch, dust, and an arc over to the landing; the body stays on its tile until it lands (cyberware_anim2.dm).
+	cyberware_leap_takeoff_fx(jumper, here, destination, CYBERWARE_HOPPER_AIRTIME, 20, 26, afterimage)
 	addtimer(CALLBACK(src, PROC_REF(land), destination), CYBERWARE_HOPPER_AIRTIME)
 	return TRUE
 
@@ -708,7 +709,7 @@
 	var/mob/living/jumper = owner
 	if(QDELETED(jumper))
 		return
-	animate(jumper, pixel_z = -20, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	cyberware_leap_touchdown_fx(jumper, 20, 0.1 SECONDS)
 	var/turf/final = destination
 	if(QDELETED(final) || final.is_blocked_turf())
 		final = null
@@ -720,7 +721,7 @@
 		jumper.balloon_alert(jumper, "landing fouled!")
 		return
 	jumper.forceMove(final)
-	new /obj/effect/temp_visual/mook_dust(final)
+	cyberware_grey_dust(final)
 	playsound(final, 'sound/effects/gravhit.ogg', 50, TRUE)
 
 #undef CYBERWARE_DODGE_MOVE_WINDOW

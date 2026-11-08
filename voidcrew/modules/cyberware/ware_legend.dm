@@ -560,6 +560,8 @@
 	owner.add_client_colour(/datum/client_colour/cyberware_redline, id)
 	owner.balloon_alert(owner, "REDLINE")
 	INVOKE_ASYNC(src, PROC_REF(roar))
+	// Red-hot nodes, red eyes, a red halo (cyberware_anim2.dm).
+	cyberware_redline_window_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_redline_window/on_remove()
@@ -582,6 +584,8 @@
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.apply_status_effect(/datum/status_effect/cyberware_redline_crash, crash_duration, crash_stamina)
+	if(!QDELETED(owner))
+		cyberware_redline_window_end_fx(owner)
 	return ..()
 
 /**
@@ -606,6 +610,7 @@
 		span_boldwarning("[owner]'s eyes flood red and a speaker-drone ROAR shakes the deck!"),
 		span_boldwarning("You ROAR."),
 	)
+	cyberware_redline_roar_fx(owner, roar_range)
 	for(var/mob/living/victim in oview(roar_range, owner))
 		if(victim.stat == DEAD)
 			continue
@@ -756,6 +761,8 @@
 		span_userdanger("The core slams shut and your legs go out from under you."),
 	)
 	owner.balloon_alert(owner, "redline collapse!")
+	// Steam off the back, the nodes cool, the body slumps (cyberware_anim2.dm).
+	cyberware_redline_crash_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_redline_crash/on_remove()
@@ -763,6 +770,8 @@
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "core recovered")
+	if(!QDELETED(owner))
+		cyberware_redline_crash_end_fx(owner)
 	return ..()
 
 /datum/movespeed_modifier/cyberware_redline_crash
@@ -948,9 +957,9 @@
 		span_warning(launch_message),
 	)
 	playsound(here, 'sound/effects/gravhit.ogg', 70, TRUE)
-	new /obj/effect/temp_visual/mook_dust(here)
 	new /obj/effect/temp_visual/cyberware_piledriver_shadow(destination)
-	animate(jumper, pixel_z = 64, time = CYBERWARE_PILEDRIVER_AIRTIME * 0.5, flags = ANIMATION_RELATIVE, easing = QUAD_EASING|EASE_OUT)
+	// Up off the deck and over to the mark; the body stays on its tile until it lands (cyberware_anim2.dm).
+	cyberware_leap_takeoff_fx(jumper, here, destination, CYBERWARE_PILEDRIVER_AIRTIME, 64, 64)
 	addtimer(CALLBACK(src, PROC_REF(land), destination), CYBERWARE_PILEDRIVER_AIRTIME)
 	return TRUE
 
@@ -968,7 +977,7 @@
 	if(QDELETED(jumper))
 		return
 	jumper.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), REF(src))
-	animate(jumper, pixel_z = -64, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	cyberware_leap_touchdown_fx(jumper, 64, 0.1 SECONDS)
 	if(jumper.stat == DEAD)
 		return
 	// The marked tile can stop existing mid-flight (someone blows the floor out
@@ -997,7 +1006,8 @@
 		crushed += pinned
 	jumper.forceMove(final)
 	playsound(final, 'sound/effects/meteorimpact.ogg', 90, TRUE)
-	new /obj/effect/temp_visual/mook_dust(final)
+	cyberware_grey_dust(final)
+	cyberware_piledriver_impact_fx(final, CYBERWARE_PILEDRIVER_IMPACT_RANGE)
 	for(var/mob/living/victim as anything in crushed)
 		crush_victim(jumper, victim)
 	for(var/mob/living/victim in oview(CYBERWARE_PILEDRIVER_IMPACT_RANGE, final))

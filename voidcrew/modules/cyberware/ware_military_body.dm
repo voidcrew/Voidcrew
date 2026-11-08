@@ -376,6 +376,7 @@
 	. = ..()
 	jolting = FALSE
 	jolt_generation++
+	clear_charge_fx()
 
 /**
  * Signal proc for [COMSIG_MOB_STATCHANGE]: fires the windup on the
@@ -384,6 +385,8 @@
  */
 /obj/item/organ/cyberimp/cyberware/lazarus/proc/on_stat_change(mob/living/carbon/source, new_stat, old_stat)
 	SIGNAL_HANDLER
+	if(new_stat == DEAD)
+		clear_charge_fx()
 	if(jolting)
 		return
 	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
@@ -404,6 +407,8 @@
 	playsound(source, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	source.set_jitter_if_lower(4 SECONDS)
 	source.do_jitter_animation(200)
+	// Magenta charge and arcs crawling over the body (cyberware_anim2.dm).
+	play_charge_fx(source, CYBERWARE_LAZARUS_WINDUP)
 	addtimer(CALLBACK(src, PROC_REF(jolt), jolt_generation, WEAKREF(source)), CYBERWARE_LAZARUS_WINDUP)
 
 /// The discharge: heal to 30%, clear the floor out from under every stun,
@@ -446,6 +451,7 @@
 	patient.set_resting(FALSE, silent = TRUE, instant = TRUE)
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 100, TRUE)
 	do_sparks(3, TRUE, patient)
+	play_jolt_fx(patient)
 	patient.emote("gasp")
 	patient.set_jitter_if_lower(20 SECONDS)
 	patient.visible_message(
