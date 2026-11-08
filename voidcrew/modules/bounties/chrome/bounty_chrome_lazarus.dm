@@ -73,6 +73,10 @@
 	/// The timer for the next bolts off the body, and how many rounds of them this charge has thrown
 	var/arc_timer
 	var/arc_rounds = 0
+	/// Where this charge's bolts may land (bounty_lazarus_arc_candidates()), looked up once from the tile the body lies on, and that tile
+	var/list/arc_floors
+	var/list/arc_things
+	var/turf/arc_from
 	/// world.time after which a charge held by cuffs going on bleeds away
 	var/hold_until = 0
 	/// The red lightning crawling over the fighter while it charges, and its glow in the dark
@@ -167,14 +171,15 @@
 	fighter.do_jitter_animation(300)
 	playsound(fighter, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	playsound(fighter, 'sound/effects/magic/lightning_chargeup.ogg', 60, TRUE)
-	fighter.visible_message(span_boldwarning("Red lightning crawls over [fighter], and something under [fighter.p_their()] ribs whines up to full charge!"))
+	fighter.visible_message(span_boldwarning("Red lightning crawls over [fighter] as something under [fighter.p_their()] ribs whines louder and louder!"))
 	arc_timer = addtimer(CALLBACK(src, PROC_REF(arc_round), charge_serial), BOUNTY_LAZARUS_ARC_EVERY * 0.5, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	charge_timer = addtimer(CALLBACK(src, PROC_REF(discharge), charge_serial), BOUNTY_LAZARUS_CHARGE, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /**
  * One round of red bolts jumping off them while the charge under `serial` builds: more of them each
  * round, up to BOUNTY_LAZARUS_ARC_MOST, and the red light brighter. Only pictures. Runs until the
- * charge ends, a held charge included. Tests call it directly.
+ * charge ends, a held charge included. Where the bolts may land is looked up once a charge (again only
+ * if the body is moved), not every round. Tests call it directly.
  */
 /datum/bounty_chrome/lazarus/proc/arc_round(serial)
 	arc_timer = null
@@ -182,7 +187,13 @@
 		return
 	arc_rounds++
 	var/bolts = min(1 + round(arc_rounds / 2), BOUNTY_LAZARUS_ARC_MOST)
-	for(var/atom/struck as anything in bounty_lazarus_arc_targets(owner, BOUNTY_LAZARUS_ARC_RANGE, bolts))
+	var/turf/here = get_turf(owner)
+	if(here != arc_from)
+		arc_from = here
+		var/list/candidates = bounty_lazarus_arc_candidates(owner, BOUNTY_LAZARUS_ARC_RANGE)
+		arc_floors = candidates[1]
+		arc_things = candidates[2]
+	for(var/atom/struck as anything in bounty_lazarus_pick_arcs(arc_floors, arc_things, bolts))
 		bounty_lazarus_bolt(owner, struck, 0.2 SECONDS)
 	charge_light?.set_light_power(min(1 + arc_rounds * 0.4, 3.5))
 	if(arc_rounds == 3)
@@ -244,7 +255,7 @@
 	if(afterglow)
 		animate(afterglow, color = "#ff000000", time = 1 SECONDS)
 	afterglow_timer = addtimer(CALLBACK(src, PROC_REF(end_afterglow)), 1 SECONDS, TIMER_STOPPABLE | TIMER_DELETE_ME)
-	fighter.visible_message(span_boldwarning("[fighter] jolts bolt upright with a thunderclap of red lightning!"))
+	fighter.visible_message(span_boldwarning("[fighter] jerks bolt upright in a thunderclap of red lightning!"))
 	if(fighter.staminaloss > 0)
 		// Out of stamina crit with it
 		fighter.adjustStaminaLoss(-fighter.staminaloss, forced = TRUE)
@@ -285,6 +296,9 @@
 	charge_timer = null
 	deltimer(arc_timer)
 	arc_timer = null
+	arc_floors = null
+	arc_things = null
+	arc_from = null
 	hold_until = 0
 	var/mob/living/fighter = owner
 	if(fighter)
@@ -353,15 +367,25 @@
 /**
  * Where `count` bolts off `fighter` land, in sight within `range`: something solid nearby (a wall, a
  * machine, a crate) about half the time, else a floor tile. Never a person: the bolts are only
- * pictures, and must not look like they hurt anyone. May be fewer than `count`, or empty.
+ * pictures, and must not look like they hurt anyone. May be fewer than `count`, or empty. For a one-off
+ * burst; a charge looks the spots up once (bounty_lazarus_arc_candidates()) and picks from them.
  */
 /proc/bounty_lazarus_arc_targets(atom/fighter, range, count)
-	. = list()
-	var/turf/here = get_turf(fighter)
-	if(!here)
-		return
+	var/list/candidates = bounty_lazarus_arc_candidates(fighter, range)
+	return bounty_lazarus_pick_arcs(candidates[1], candidates[2], count)
+
+/**
+ * Where bolts off `fighter` may land, in sight within `range`, as list(floor tiles, solid things): a
+ * wall, or the first solid thing on a floor tile (one a tile, however much is piled there, so a junk
+ * pile costs no more than a crate). Never a person. Walks every tile in range once, so callers look it
+ * up once and keep it, rather than every round of bolts.
+ */
+/proc/bounty_lazarus_arc_candidates(atom/fighter, range)
 	var/list/floors = list()
 	var/list/things = list()
+	var/turf/here = get_turf(fighter)
+	if(!here)
+		return list(floors, things)
 	for(var/turf/spot as anything in RANGE_TURFS(range, here))
 		if(spot == here || !can_see(here, spot, range))
 			continue
@@ -372,11 +396,20 @@
 		for(var/obj/thing in spot)
 			if(thing.density && !thing.invisibility && !iseffect(thing))
 				things += thing
+				break
+	return list(floors, things)
+
+/// Up to `count` landing spots out of `floors` and `things` (bounty_lazarus_arc_candidates()): a solid thing about half the time, else a floor. Anything gone since it was looked up is skipped.
+/proc/bounty_lazarus_pick_arcs(list/floors, list/things, count)
+	. = list()
 	for(var/i in 1 to count)
+		var/atom/struck
 		if(length(things) && (prob(50) || !length(floors)))
-			. += pick(things)
+			struck = pick(things)
 		else if(length(floors))
-			. += pick(floors)
+			struck = pick(floors)
+		if(!QDELETED(struck))
+			. += struck
 
 /// One red bolt from `from` to `struck`, crackling where it lands, gone after `time`. Only a picture.
 /proc/bounty_lazarus_bolt(atom/from, atom/struck, time)
