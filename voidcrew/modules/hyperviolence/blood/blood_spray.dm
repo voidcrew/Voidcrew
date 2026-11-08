@@ -18,6 +18,8 @@
 	/// Direction of the last brute hit this mob took, and when.
 	var/hv_blood_hit_dir = 0
 	var/hv_blood_hit_time = -100000
+	/// World time before which this mob is not told again that blood spattered across it.
+	var/hv_blood_drench_until = 0
 
 /mob/living/Initialize(mapload)
 	. = ..()
@@ -43,6 +45,10 @@
 /// Turns the decal to the way the blood flew.
 /obj/effect/decal/cleanable/blood/hv_spray/proc/hv_aim(spray_dir)
 	setDir(spray_dir)
+
+// Too thin to dive into.
+/obj/effect/decal/cleanable/blood/hv_spray/can_bloodcrawl_in()
+	return FALSE
 
 /// A thin streak of blood along the floor, the part of the line before the final splash.
 /obj/effect/decal/cleanable/blood/hv_spray/streak
@@ -89,7 +95,8 @@
 /// Lays one spray decal on a floor tile, or turns the one already there. Returns it.
 /proc/hv_blood_lay_spray(turf/target, decal_type, spray_dir, list/blood_dna, list/viruses)
 	for(var/obj/effect/decal/cleanable/blood/hv_spray/existing in target)
-		if(existing.type != decal_type || existing.dried || QDELETED(existing))
+		// A tile holds one floor spray, whatever shape it came in; wall smears are kept apart.
+		if(istype(existing, /obj/effect/decal/cleanable/blood/hv_spray/wall) || existing.dried || QDELETED(existing))
 			continue
 		existing.add_blood_DNA(blood_dna, viruses)
 		existing.hv_aim(spray_dir)
@@ -178,6 +185,9 @@
 	if(QDELETED(src) || !length(blood_dna))
 		return
 	add_blood_DNA(blood_dna, viruses)
+	if(world.time < hv_blood_drench_until)
+		return
+	hv_blood_drench_until = world.time + 3 SECONDS
 	to_chat(src, span_warning("Blood spatters across you."))
 
 /// Big brute hits throw blood the way they travelled.
