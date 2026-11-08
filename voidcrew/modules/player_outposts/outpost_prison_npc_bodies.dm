@@ -8,15 +8,22 @@
  *   a held shiv, a stun baton), so tg's damage, armour, wounds, knockdowns and logs apply.
  * - Saved faces: a guard on the payroll is the same person each time the record sends them back
  *   (outpost_prison_save_look(), outpost_prison_apply_look()).
+ * - Bruising to a health: outpost_prison_bruise() and outpost_prison_set_health(), for a transfer's
+ *   roughing up and the admin tools.
  */
+
+/// Brute in which a limb is bruised by outpost_prison_bruise(): a multiple of it on a limb (0.75 or 0.5 of
+/// the body's health) comes to whole tenths of health
+#define OUTPOST_PRISON_BRUISE_STEP 0.4
 
 /**
  * `hitter` strikes `target` beside it with `weapon` in hand (switched to the active hand), or a fist
  * if `weapon` is null, the way a player clicks with combat mode on. The aim spreads over the body as
- * other human NPCs' does. Returns TRUE if the blow was thrown.
+ * other human NPCs' does. Returns TRUE if the blow was thrown: not if they can't swing yet, nor a second
+ * time in the same tick, which ClickOn() would ignore as it does a player's second click.
  */
 /proc/outpost_prison_npc_hit(mob/living/carbon/human/hitter, atom/target, obj/item/weapon)
-	if(QDELETED(hitter) || QDELETED(target) || hitter.stat != CONSCIOUS || world.time < hitter.next_move)
+	if(QDELETED(hitter) || QDELETED(target) || hitter.stat != CONSCIOUS || world.time < hitter.next_move || world.time <= hitter.next_click)
 		return FALSE
 	if(!hitter.Adjacent(target))
 		return FALSE
@@ -65,3 +72,49 @@
 	if(look["eye_color"])
 		person.set_eye_color(look["eye_color"])
 	person.update_body(is_creating = TRUE)
+
+/**
+ * Bruises `body` until it has lost `health_loss` health: brute spread over its limbs, no wounds and no
+ * attacker, as a rough transfer leaves someone, with the chest taking what is left. Arms and legs count
+ * for less of a body's health than its head and chest (body_damage_coeff), so each limb's share is
+ * measured in health and bruised in steps of OUTPOST_PRISON_BRUISE_STEP brute, which come to whole
+ * tenths of health; the chest, which counts in full, then makes the loss exact. Returns the health it
+ * ended at.
+ */
+/proc/outpost_prison_bruise(mob/living/carbon/body, health_loss)
+	if(QDELETED(body) || health_loss <= 0)
+		return body?.health
+	var/target_health = body.health - health_loss
+	var/obj/item/bodypart/chest = body.get_bodypart(BODY_ZONE_CHEST)
+	var/list/parts = body.get_damageable_bodyparts()
+	if(length(parts))
+		var/share = health_loss / length(parts)
+		for(var/obj/item/bodypart/part as anything in parts)
+			if(part == chest || part.body_damage_coeff <= 0)
+				continue
+			var/room = FLOOR(part.max_damage - part.get_damage(), OUTPOST_PRISON_BRUISE_STEP)
+			var/brute = min(round(share / part.body_damage_coeff, OUTPOST_PRISON_BRUISE_STEP), room)
+			if(brute > 0)
+				part.receive_damage(brute = brute, forced = TRUE, wound_bonus = CANT_WOUND, updating_health = FALSE)
+		body.updatehealth()
+	for(var/i in 1 to 5)
+		var/short = round(body.health - target_health, DAMAGE_PRECISION)
+		if(short <= 0 || !chest)
+			break
+		chest.receive_damage(brute = short, forced = TRUE, wound_bonus = CANT_WOUND)
+	body.update_damage_overlays()
+	return body.health
+
+/**
+ * Sets `body`'s health to `target_health` with brute alone: heals the brute it has, then bruises it
+ * down (outpost_prison_bruise()). Burns, toxins and lost air stay as they are, so a body with those
+ * can't be brought all the way up. For the admin tools. Returns the health it ended at.
+ */
+/proc/outpost_prison_set_health(mob/living/carbon/body, target_health)
+	if(QDELETED(body))
+		return null
+	if(body.getBruteLoss() > 0)
+		body.heal_overall_damage(brute = body.getBruteLoss(), forced = TRUE)
+	return outpost_prison_bruise(body, body.health - target_health)
+
+#undef OUTPOST_PRISON_BRUISE_STEP

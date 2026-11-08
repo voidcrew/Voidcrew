@@ -163,9 +163,9 @@
 			shivs++
 	TEST_ASSERT_EQUAL(shivs, 1, "Drawing the stashed shiv left [shivs] shivs in the wing, not 1")
 	prisoner.calm_down()
-	// Without a stash a rioter still draws a new one
+	// Without a stash a rioter has only their fists: nothing comes from nowhere (PR-18, OC-11)
 	rival.start_rioting(FALSE)
-	TEST_ASSERT(rival.has_shiv(), "A rioter without a stash drew no shiv")
+	TEST_ASSERT(!rival.has_shiv(), "A rioter without a stash drew a shiv from nowhere")
 	rival.calm_down()
 
 	// Tension: 2 for each armed, occupied cell, 4 at most (OUTPOST_CONTRABAND_SHIV_TENSION, _TENSION_MAX)

@@ -77,6 +77,7 @@
 
 	// Cuffed counts as well: a member walks a cuffed prisoner on their feet through, office to yard.
 	prisoner.setStaminaLoss(0)
+	TEST_ASSERT(wait_until_up(prisoner), "The prisoner never got up out of stamina crit")
 	TEST_ASSERT(!prisoner.can_be_dragged(), "A prisoner back on their feet can still be dragged")
 	TEST_ASSERT(outpost_prison_test_cuff(prisoner, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	TEST_ASSERT(prisoner.can_be_dragged(), "A cuffed prisoner on their feet cannot be dragged")
@@ -183,7 +184,8 @@
 	TEST_ASSERT(prisoner.is_holding(ball), "The ball is not in the prisoner's hand")
 	warden.put_in_active_hand(cuffs)
 	warden.set_combat_mode(FALSE)
-	click_wrapper(warden, prisoner)
+	// tg's cuffing waits out its do_after inside the click, so the click runs on while the test looks
+	INVOKE_ASYNC(src, PROC_REF(click_wrapper), warden, prisoner)
 	TEST_ASSERT(prisoner.cuff_work, "Clicking a prisoner with cuffs did not start cuffing")
 	TEST_ASSERT(prisoner.in_trouble() && !prisoner.routine_allowed(), "A prisoner being cuffed kept up their routine")
 	TEST_ASSERT(wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_management, capture_cuffed), prisoner), 8 SECONDS), "A member's cuffs never went on")
@@ -196,11 +198,13 @@
 	// Cuffed: draggable, and they choose to do nothing else. No blows, riots, eating or taking from the hatch.
 	// They can still walk, as anyone in cuffs can.
 	TEST_ASSERT(prisoner.can_be_dragged(), "A cuffed prisoner cannot be dragged")
-	TEST_ASSERT(!HAS_TRAIT(prisoner, TRAIT_IMMOBILIZED), "Cuffs held a prisoner in place")
+	TEST_ASSERT(!HAS_TRAIT_NOT_FROM(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS), "Cuffs held a prisoner in place")
 	TEST_ASSERT(!prisoner.trouble_can_act() && !prisoner.routine_allowed(), "A cuffed prisoner can still act")
 	TEST_ASSERT(!prisoner.can_join_riot(), "A cuffed prisoner could join a riot")
 	TEST_ASSERT(!prisoner.confront(warden), "A cuffed prisoner squared up to the warden")
 	var/obj/item/food/prison_ration/ration = allocate(__IMPLIED_TYPE__, warden.loc)
+	// Hungry, or they turn the food down whoever holds it
+	prisoner.set_hunger(30)
 	TEST_ASSERT(!(SEND_SIGNAL(prisoner, COMSIG_MOB_PRE_EAT, ration, warden) & COMSIG_MOB_CANCEL_EAT), "A cuffed prisoner could not be fed by hand")
 	TEST_ASSERT(SEND_SIGNAL(prisoner, COMSIG_MOB_PRE_EAT, ration, null) & COMSIG_MOB_CANCEL_EAT, "A cuffed prisoner fed themselves")
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
@@ -299,8 +303,11 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
 	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = trouble_prisoner(prison, prison_spot(home, 4, 10), "cheerful")
 	set_moods(list(first, second), 20)
+	// A rioter's shiv is the one hidden in their cell (PR-18)
+	first.cell.stash_shiv = TRUE
 	TEST_ASSERT(prison.start_riot("test"), "The riot did not start")
 	TEST_ASSERT(first.is_rioting() && second.is_rioting() && !bystander.is_rioting(), "The wrong prisoners joined the riot")
+	TEST_ASSERT(first.has_shiv(), "The rioter did not draw the shiv from their cell")
 	prison.tick(5)
 
 	// Down, a rioter is still a rioter at large, but held where they lie: not free, and dealt with
@@ -317,10 +324,11 @@
 	prison.tick(10)
 	TEST_ASSERT(prison.riot_active, "The riot ended with a rioter free")
 	TEST_ASSERT_EQUAL(prison.riot_elapsed, elapsed + 10, "The breakout clock waited with a rioter free")
-	// Up and free again, a rioter riots on, and snatches back the shiv at their feet.
+	// Up and free again (getting up takes a second), a rioter riots on, and snatches back the shiv at their feet.
 	first.setStaminaLoss(0)
+	TEST_ASSERT(wait_until_up(first), "The rioter never got up out of stamina crit")
 	TEST_ASSERT(first.riot_free() && !first.riot_handled(), "A rioter back on their feet is not free")
-	TEST_ASSERT(first.has_shiv(), "A rioter back on their feet left their shiv on the floor")
+	TEST_ASSERT(wait_until(CALLBACK(first, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, has_shiv)), 2 SECONDS), "A rioter back on their feet left their shiv on the floor")
 
 	// Cuffed, a rioter is still a rioter at large, but not free: held.
 	first.adjustStaminaLoss(200)
@@ -366,6 +374,7 @@
 	prison.set_subdued(0)
 	first.remove_cuffs()
 	bystander.setStaminaLoss(0)
+	TEST_ASSERT(wait_until_up(first) && wait_until_up(bystander), "The rioters never got back up after the riot")
 	capture_bolt(prison, second.cell, FALSE)
 	first.forceMove(prison_spot(home, 8, 8))
 	second.forceMove(prison_spot(home, 10, 8))
@@ -548,6 +557,7 @@
 	TEST_ASSERT(capture_logged(prison, "[inmate.real_name] is on lockdown."), "The lockdown was not logged")
 	TEST_ASSERT(!capture_logged(prison, "minutes of lockdown"), "The log gives the lockdown's length")
 	inmate.setStaminaLoss(0)
+	TEST_ASSERT(wait_until_up(inmate), "The inmate never got up out of stamina crit")
 
 	// While they owe it, being shut in or cuffed costs nothing, and it counts down shut in.
 	TEST_ASSERT(!prison.protective_custody(), "The wing is still in protective custody after the riot")

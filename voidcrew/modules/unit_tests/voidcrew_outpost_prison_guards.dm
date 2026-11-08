@@ -261,7 +261,7 @@
 
 // ===== THE BATON =====
 
-/// Three strikes put a prisoner in stamina crit with no brute and no mood of their own; onlookers lose 2 once; calm, downed and players are never struck
+/// One strike with the real baton: tg's stamina damage, then its knockdown two seconds on, no brute and no mood of their own; onlookers lose 2 once; calm, downed and players are never struck
 /datum/unit_test/voidcrew_outpost_prison_guard_baton
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -288,12 +288,13 @@
 	brawl.fighting = TRUE
 	onlooker.set_mood(70)
 	calm.set_mood(70)
-	// One strike with the real baton off the belt: tg's stamina damage and knockdown, and the fight is over.
+	// One strike with the real baton off the belt: tg's stamina damage at once, its knockdown two seconds
+	// on, as on anyone, and the fight is over.
 	guard_test_ready_baton(guard)
 	TEST_ASSERT(guard.strike(first), "The baton strike on a fighter did not land")
 	TEST_ASSERT(guard.is_holding(guard.get_baton()), "The guard struck without the baton in hand")
 	TEST_ASSERT(first.getStaminaLoss() >= 40, "The baton did [first.getStaminaLoss()] stamina damage")
-	TEST_ASSERT(first.is_down(), "The baton did not knock the fighter down")
+	TEST_ASSERT(wait_until(CALLBACK(first, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, is_down)), 4 SECONDS), "The baton did not knock the fighter down")
 	TEST_ASSERT_EQUAL(first.getBruteLoss(), 0, "The baton did brute damage")
 	TEST_ASSERT(abs(first.mood - 30) < 0.01, "The struck prisoner's mood moved to [first.mood]: the baton counted as staff's")
 	TEST_ASSERT(QDELETED(brawl), "The knockdown did not end the fight")
@@ -350,19 +351,27 @@
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "argue_stop"), "The guard did not warn them first: [guard.last_line]")
 	TEST_ASSERT_NULL(guard.response, "The guard kept a response for a finished argument")
 
-	// Blows: a warning, then the baton until it is over.
+	// Blows: a warning, then the baton until it is over. The baton's knockdown lands two seconds after
+	// the strike, as on anyone, so the guard's ticks run in real time here.
 	brawl = prison.start_fight(first, second)
 	TEST_ASSERT_NOTNULL(brawl, "The test fight did not start")
 	brawl.fighting = TRUE
-	for(var/i in 1 to 8)
-		if(QDELETED(brawl))
-			break
+	var/fight_deadline = world.time + 8 SECONDS
+	while(!QDELETED(brawl) && world.time < fight_deadline)
 		guard_test_ready_baton(guard)
 		prison.guards_tick(1)
+		sleep(5)
 	TEST_ASSERT(QDELETED(brawl), "A fight went on with a guard beside it")
-	TEST_ASSERT(first.has_status_effect(/datum/status_effect/incapacitating/stamcrit) || second.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The fight did not end by the baton")
+	TEST_ASSERT(first.getStaminaLoss() >= 40 || second.getStaminaLoss() >= 40, "The fight did not end by the baton")
+	TEST_ASSERT(first.is_down() || second.is_down(), "Nobody in the fight was knocked down")
 	TEST_ASSERT_EQUAL(first.getBruteLoss() + second.getBruteLoss(), 0, "The baton did brute damage")
 	guard.end_response()
+	// Back on their feet for what follows
+	first.setStaminaLoss(0)
+	second.setStaminaLoss(0)
+	first.SetKnockdown(0)
+	second.SetKnockdown(0)
+	TEST_ASSERT(wait_until_up(first) && wait_until_up(second), "The fighters never got back up")
 
 	// A threat: a word, and it is over. No baton for squaring up.
 	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 8, 7))
@@ -509,7 +518,8 @@
 	TEST_ASSERT(length(record.look), "The payroll did not keep the guard's face")
 	var/face_skin = LAZYACCESS(record.look, "skin_tone")
 	var/face_hair = LAZYACCESS(record.look, "hairstyle")
-	guard.adjustBruteLoss(110)
+	// On the chest, which counts in full (limbs count for less of a body's health)
+	guard.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_CRITICAL_CONDITION), "110 brute did not put a guard in crit")
 	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard in crit did not go down") // OUTPOST_GUARD_DOWN
 	TEST_ASSERT(!HAS_TRAIT(guard, TRAIT_GODMODE), "A downed guard is godmoded")
@@ -673,7 +683,7 @@
 /// Lets `guard` swing again at once in a test: their own pause, the baton's recharge, and tg's one-stun-per-hitter rule
 /proc/guard_test_ready_baton(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	guard.baton_cooldown = 0
-	guard.next_move = 0
+	outpost_prison_test_ready_blow(guard)
 	var/obj/item/melee/baton/security/baton = guard.get_baton()
 	if(baton)
 		COOLDOWN_RESET(baton, cooldown_check)

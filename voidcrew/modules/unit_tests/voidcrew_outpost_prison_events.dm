@@ -193,10 +193,13 @@
 	TEST_ASSERT(!attacker.cell.stash_shiv, "The stabber did not draw the shiv under their mattress")
 	TEST_ASSERT(attacker.fight && attacker.fight == victim.fight, "The stabbing is not a fight between the two")
 	TEST_ASSERT(attacker.fight.fighting, "The stabbing started with an argument")
-	// A shiv hits a prisoner harder than a fist, and softer than it hits staff (PRISONER_STAB_MIN/MAX).
+	// The stab is the real shiv in their hand, from beside the victim, doing what a glass shiv does to anyone.
+	victim.forceMove(get_step(attacker, EAST))
+	outpost_prison_test_ready_blow(attacker)
+	var/obj/item/knife/shiv/shiv = attacker.held_item
 	var/health_before = victim.health
 	TEST_ASSERT(attacker.strike(victim), "The stabber could not strike")
-	TEST_ASSERT(health_before - victim.health >= 7 && health_before - victim.health <= 10, "A stab did [health_before - victim.health] damage, not 7-10")
+	TEST_ASSERT(health_before - victim.health > 0 && health_before - victim.health <= shiv.force, "A stab did [health_before - victim.health] damage, not what a glass shiv does")
 	// The fight over, the stabber drops the shiv and the incident is done.
 	prison.end_fight(attacker.fight)
 	prison.wildcard_tick(1)
@@ -224,7 +227,10 @@
 	TEST_ASSERT(!brawl.fighting, "An incident fight skipped its argument")
 	wildcard_reset(prison)
 
-	// With its tell asked for, a stabbing waits, and nothing else starts meanwhile.
+	// With its tell asked for, a stabbing waits, and nothing else starts meanwhile. A stabbing needs a
+	// blade: the shivs are back under the mattresses.
+	first.cell.stash_shiv = TRUE
+	second.cell.stash_shiv = TRUE
 	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "stab", "tell" = 1))
 	TEST_ASSERT_NULL(panel.error, "The stab button with a tell was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(prison.wildcard?.stage, "tell", "The stab button with a tell went straight to the attack")
@@ -237,6 +243,8 @@
 	TEST_ASSERT_EQUAL(prison.wildcard?.stage, "attack", "The tell ran out and no stabbing followed")
 	TEST_ASSERT(brooder.has_shiv(), "The stabber pulled no shiv at the end of the tell")
 	wildcard_reset(prison)
+	first.cell.stash_shiv = FALSE
+	second.cell.stash_shiv = FALSE
 
 	panel.manage_outpost(home, operator, "prison_incident", list("kind" = "arson"))
 	TEST_ASSERT_NOTNULL(panel.error, "An unknown incident kind was accepted")

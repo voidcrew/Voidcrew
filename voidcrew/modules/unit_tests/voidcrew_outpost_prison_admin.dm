@@ -136,10 +136,12 @@
 	var/balance = home.treasury.account_balance
 	panel.manage_outpost(home, operator, "prison_pay_now", list())
 	TEST_ASSERT(home.treasury.account_balance > balance, "Pay now paid nothing")
+	// Measured as the mess the wing holds: Clean itself only drops past PRISON_MESS_FREE, and the hurt above
+	// may already have bled on the floor (real wounds), so the score alone says little here.
 	prison.refresh_conditions()
-	var/clean_before = prison.clean_score
+	var/mess_before = prison.mess_load
 	panel.manage_outpost(home, operator, "prison_mess", list())
-	TEST_ASSERT(prison.clean_score < clean_before, "Spawning mess did not dirty the wing")
+	TEST_ASSERT(prison.mess_load > mess_before, "Spawning mess did not dirty the wing (mess [mess_before] to [prison.mess_load])")
 	// Lit is measured light, so glow from machines and the outer windows keeps it above 0 with
 	// every bulb broken; the wing must still count as dark (PRISON_DARK_BELOW 50).
 	var/lit_before = prison.lit_score

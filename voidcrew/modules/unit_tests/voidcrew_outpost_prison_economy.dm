@@ -24,8 +24,8 @@
 
 /// Sets a prisoner's health to `percent` of their maximum
 /datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/set_health_percent(mob/living/carbon/human/npc/outpost_prisoner/prisoner, percent)
-	var/target_loss = prisoner.maxHealth * (100 - percent) / 100
-	prisoner.adjustBruteLoss(target_loss - prisoner.getBruteLoss(), forced = TRUE)
+	// Limbs count for less of a body's health than the chest, so this measures as it bruises.
+	outpost_prison_set_health(prisoner, prisoner.maxHealth * percent / 100)
 
 /// Every bulb in the wing working (tg breaks a few at load) and drawn, and the condition scores refreshed
 /datum/unit_test/voidcrew_outpost_prison_economy_kit/proc/fix_wing(datum/outpost_prison/prison)

@@ -161,7 +161,7 @@
 	TEST_ASSERT_EQUAL(prison.find_supply(prisoner, TRUE), fresh, "A filthy prisoner did not find the clean uniform on the hatch")
 	TEST_ASSERT(reach_until_ok(prisoner, fresh), "The prisoner could not reach the uniform through the hatch")
 	TEST_ASSERT(prisoner.take_uniform(fresh), "The prisoner did not change at the hatch")
-	TEST_ASSERT(QDELETED(fresh), "The clean uniform was not taken")
+	TEST_ASSERT_EQUAL(prisoner.w_uniform, fresh, "The prisoner is not wearing the clean uniform they took")
 	TEST_ASSERT(prisoner.uniform_grime < 0.01, "Changing did not leave the prisoner clean ([prisoner.uniform_grime])")
 	var/obj/item/clothing/under/rank/prisoner/outpost/left_behind = locate() in hatch_turf
 	TEST_ASSERT_NOTNULL(left_behind, "The old uniform was not left on the hatch")
@@ -278,15 +278,17 @@
 	// Medical: the advanced med HUD tracks their health bar, and a bruise pack treats them.
 	var/datum/atom_hud/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 	TEST_ASSERT(medhud.hud_atoms_all_z_levels[prisoner], "The prisoner is not on the medical HUD")
-	prisoner.adjustBruteLoss(40)
+	// 40 brute on the chest (which counts in full), so 60 health
+	prisoner.apply_damage(40, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	var/image/health_bar = prisoner.hud_list[HEALTH_HUD]
 	TEST_ASSERT_EQUAL(health_bar.icon_state, "hud[RoundHealth(prisoner)]", "The health bar did not follow the injury")
 	TEST_ASSERT(abs(prisoner.care() - (200 + 60) / 3) < 0.01, "Care with 60 health was [prisoner.care()], not 86.7")
 	prison.tick(10 * 60)
 	TEST_ASSERT_EQUAL(prisoner.health, 60, "Health came back on its own")
+	// A bruise pack on the bruised chest, the way it treats anyone's (40 brute off that limb)
 	var/obj/item/stack/medical/bruise_pack/pack = allocate(__IMPLIED_TYPE__)
 	TEST_ASSERT(pack.try_heal_checks(prisoner, warden, BODY_ZONE_CHEST, TRUE), "A bruise pack could not treat the prisoner")
-	pack.heal_simplemob(prisoner, warden)
+	pack.heal_carbon(prisoner, warden, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(prisoner.health, 100, "A bruise pack did not treat the prisoner")
 	TEST_ASSERT_EQUAL(health_bar.icon_state, "hudhealth100", "The health bar did not recover")
 
@@ -299,9 +301,15 @@
 	warden.put_in_active_hand(toolbox)
 	warden.set_combat_mode(TRUE)
 	click_wrapper(warden, prisoner)
-	warden.set_combat_mode(FALSE)
 	TEST_ASSERT(prisoner.health < 100, "The toolbox did not hurt the prisoner")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8), "A brute hit left no blood on the floor")
+	// tg splatters blood on some blows, not all (about half for a toolbox): a few more, healed between
+	for(var/i in 1 to 15)
+		if(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8))
+			break
+		prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
+		click_wrapper(warden, prisoner)
+	warden.set_combat_mode(FALSE)
+	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 10, 8), "Fifteen brute hits left no blood on the floor")
 	prison.refresh_conditions()
 	// Counted in the mess load; Clean itself only drops past PRISON_MESS_FREE units per 100 floor tiles.
 	TEST_ASSERT(prison.mess_load > mess_before, "Blood on the floor did not count as mess")
@@ -611,11 +619,12 @@
 	TEST_ASSERT(drift_is(prisoner, 2 - 5), "A filthy uniform drifts [prisoner.mood_drift_per_minute()], not -3") // PRISONER_MOOD_FILTHY
 	prisoner.set_uniform_grime(0)
 	// Injuries cost mood only below 75% health (PRISONER_HURT_MOOD_BELOW): 8 x (75 - health) / 75.
-	prisoner.adjustBruteLoss(20)
+	// Bruised by health lost, not brute dealt: a limb counts for less of a body's health than the chest.
+	outpost_prison_bruise(prisoner, 20)
 	TEST_ASSERT(drift_is(prisoner, 2), "80% health drifts [prisoner.mood_drift_per_minute()], not +2")
-	prisoner.adjustBruteLoss(30)
+	outpost_prison_bruise(prisoner, 30)
 	TEST_ASSERT(drift_is(prisoner, 2 - 8 * 25 / 75), "Half health drifts [prisoner.mood_drift_per_minute()], not [2 - 8 * 25 / 75]") // PRISONER_MOOD_HURT
-	prisoner.adjustBruteLoss(-50)
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 
 	// Instant changes: a meal +10, a clean uniform +8, treatment +8.
 	prisoner.set_mood(40)
@@ -695,7 +704,7 @@
 	prisoner.set_hunger(100)
 	prisoner.set_uniform_grime(0)
 	TEST_ASSERT_EQUAL(prisoner.bubble, "hurt", "A roughed-up arrival did not show the hurt bubble")
-	prisoner.adjustBruteLoss(-25)
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 
 	// Hunger 5 a minute (PRISONER_HUNGER_DECAY), paused while well fed.
 	prisoner.adjust_needs(60)
@@ -719,7 +728,7 @@
 
 	// Sport: three times the grime (PRISONER_GRIME_SPORT_MULT) at basketball or a workout, not pacing.
 	// At 45% health they play carefully, so no injury gets in the way here (PRISONER_SPORT_INJURY_ABOVE).
-	prisoner.adjustBruteLoss(55)
+	outpost_prison_bruise(prisoner, 55)
 	var/datum/prisoner_activity/basketball/game = new(prisoner)
 	game.started = TRUE
 	prisoner.activity = game
@@ -737,10 +746,10 @@
 	prisoner.adjust_needs(60)
 	TEST_ASSERT(abs(prisoner.uniform_grime - 7.5) < 0.01, "A minute of working out added [prisoner.uniform_grime] grime, not 7.5")
 	TEST_ASSERT(!prisoner.sport_injury(), "A badly hurt prisoner was injured at sport")
-	// A sport injury: 8-15 brute (PRISONER_SPORT_INJURY_MIN/_MAX), no blood, and they stop.
-	prisoner.adjustBruteLoss(-55)
+	// A sport injury: 8-15 brute on the limb it happened to (PRISONER_SPORT_INJURY_MIN/_MAX), no blood, and they stop.
+	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
 	TEST_ASSERT(prisoner.sport_injury(), "A healthy prisoner working out could not be injured")
-	TEST_ASSERT(prisoner.health >= 85 && prisoner.health <= 92, "A sport injury left [prisoner.health] health")
+	TEST_ASSERT(prisoner.getBruteLoss() >= 8 && prisoner.getBruteLoss() <= 15 && prisoner.health < 100, "A sport injury did [prisoner.getBruteLoss()] brute, leaving [prisoner.health] health")
 	TEST_ASSERT_NULL(prisoner.activity, "The injured prisoner kept working out")
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in get_turf(prisoner), "A sport injury bled on the floor")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
@@ -1286,6 +1295,7 @@
 	medic.put_in_active_hand(ball)
 	TEST_ASSERT(game.tick(1) != 1, "The game ended as soon as staff picked up the ball") // ACTIVITY_DONE
 	medic.dropItemToGround(ball)
+	TEST_ASSERT(prisoner.routine_allowed() && !prisoner.held_item, "The playing prisoner could not take a ball before the throw (holding [prisoner.held_item])")
 	ball.throw_at(prisoner, 5, 1, medic)
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(holds), prisoner, ball), 5 SECONDS), "The playing prisoner did not catch the ball")
 	TEST_ASSERT_EQUAL(prisoner.held_item, ball, "The caught ball is not in the prisoner's hands")
