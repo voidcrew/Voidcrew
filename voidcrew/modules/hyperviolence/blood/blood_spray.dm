@@ -74,11 +74,25 @@
 	return FALSE
 
 /// A thin streak of blood along the floor, the part of the line before the final splash.
+/// squirt_greyscale is the old single look, kept in the DMI but no longer laid.
 /obj/effect/decal/cleanable/blood/hv_spray/streak
 	name = "blood streak"
-	icon_state = "squirt_greyscale"
-	random_icon_states = null
+	icon_state = "streak1_greyscale"
+	random_icon_states = list("streak1_greyscale", "streak2_greyscale", "streak3_greyscale", "streak4_greyscale")
 	base_suffix = "streak"
+
+/// Picks a look for this tile of the line: the thinner, broken-up tail set near the end of it, and
+/// a small shift across the line so neighbouring tiles do not look stamped. drift is in pixels.
+/obj/effect/decal/cleanable/blood/hv_spray/streak/proc/hv_set_look(tail, drift)
+	var/static/list/tail_states = list("streaktail1_greyscale", "streaktail2_greyscale", "streaktail3_greyscale")
+	icon_state = pick(tail ? tail_states : random_icon_states)
+	pixel_x = 0
+	pixel_y = 0
+	if(dir == EAST || dir == WEST)
+		pixel_y = drift
+	else
+		// North and south shift sideways; a diagonal shifted sideways moves across itself too.
+		pixel_x = drift
 
 /// Blood on the face of a wall or window. Sits on the floor tile in front of it, drawn onto the obstruction.
 /obj/effect/decal/cleanable/blood/hv_spray/wall
@@ -166,6 +180,9 @@
 /// One line of spray out from src. Mobs it reaches are added to drenched. Returns TRUE if it hit a wall.
 /mob/living/proc/hv_blood_spray_line(spray_dir, tiles, list/blood_dna, list/viruses, list/drenched)
 	var/turf/current = get_turf(src)
+	// How far the streak sits off the centre of the line, walked a pixel at a time so tiles still join.
+	var/drift = rand(-1, 1)
+	var/max_drift = ISDIAGONALDIR(spray_dir) ? 1 : 2
 	for(var/step in 1 to tiles)
 		var/turf/next = get_step(current, spray_dir)
 		if(!next)
@@ -185,7 +202,12 @@
 			// With nothing to pull it down the blood hangs in the air; the floating blood part takes over.
 			new /obj/effect/decal/cleanable/blood(current, viruses, blood_dna)
 			continue
-		hv_blood_lay_spray(current, step < tiles ? /obj/effect/decal/cleanable/blood/hv_spray/streak : /obj/effect/decal/cleanable/blood/hv_spray, spray_dir, blood_dna, viruses)
+		var/obj/effect/decal/cleanable/blood/hv_spray/laid = hv_blood_lay_spray(current, step < tiles ? /obj/effect/decal/cleanable/blood/hv_spray/streak : /obj/effect/decal/cleanable/blood/hv_spray, spray_dir, blood_dna, viruses)
+		if(istype(laid, /obj/effect/decal/cleanable/blood/hv_spray/streak))
+			var/obj/effect/decal/cleanable/blood/hv_spray/streak/streak = laid
+			drift = clamp(drift + rand(-1, 1), -max_drift, max_drift)
+			// The far half of the line thins out before the splash.
+			streak.hv_set_look(step * 2 > tiles, drift)
 	return FALSE
 
 /// Blood on whatever blocks the spray, drawn from the floor tile in front of it.

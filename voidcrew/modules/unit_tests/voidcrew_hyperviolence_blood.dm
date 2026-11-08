@@ -7,7 +7,7 @@
 /// The art the blood part draws from has every state the code asks for.
 /datum/unit_test/hv_blood_icons/Run()
 	var/list/spray_states = icon_states('voidcrew/modules/hyperviolence/blood/icons/blood_spray.dmi')
-	for(var/state in list("squirt_greyscale", "splatter_greyscale", "splatterbloodalt_greyscale"))
+	for(var/state in list("squirt_greyscale", "splatter_greyscale", "splatterbloodalt_greyscale", "streak1_greyscale", "streak2_greyscale", "streak3_greyscale", "streak4_greyscale", "streaktail1_greyscale", "streaktail2_greyscale", "streaktail3_greyscale"))
 		TEST_ASSERT(state in spray_states, "blood_spray.dmi has no [state] state")
 	var/list/pool_states = icon_states('voidcrew/modules/hyperviolence/blood/icons/blood_pool.dmi')
 	for(var/tier in 1 to length(GLOB.hv_blood_pool_thresholds))
