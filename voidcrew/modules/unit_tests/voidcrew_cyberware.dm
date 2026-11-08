@@ -1406,7 +1406,10 @@
 	crash = patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash)
 	TEST_ASSERT_NOTNULL(crash, "The street window ended without a crash")
 	TEST_ASSERT_EQUAL(crash.duration, world.time + 8 SECONDS, "The street crash kept the wrong length")
-	TEST_ASSERT_EQUAL(patient.getStaminaLoss(), 100, "The street crash kept the wrong stamina dump")
+	TEST_ASSERT_EQUAL(crash.crash_stamina, 100, "The street crash kept the wrong stamina dump")
+	// A dump of 100 reaches stamina crit, and tg's stamcrit then adds its own
+	// push on top (up to the 120 cap), so the total is at least the dump.
+	TEST_ASSERT(patient.getStaminaLoss() >= 100, "The street crash didn't dump its stamina")
 	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
 
 	// What Splice quotes for the two lesser models.

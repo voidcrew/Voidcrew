@@ -18,8 +18,9 @@
 	TEST_ASSERT_EQUAL(parent.lunge_bonus, 10, "Mantis lunge bonus changed")
 	TEST_ASSERT_EQUAL(parent.lunge_fire_stacks, 0, "The plain Mantis lunge sets people on fire")
 
-	TEST_ASSERT(!(/datum/action/cooldown/cyberware/mantis_lunge in street.actions_types), "Shiv Blades got a lunge")
-	TEST_ASSERT(/datum/action/cooldown/cyberware/mantis_lunge in scorch.actions_types, "Scorch Blades lost the lunge")
+	// Item Initialize() turns actions_types into granted actions and nulls the list.
+	TEST_ASSERT(!(locate(/datum/action/cooldown/cyberware/mantis_lunge) in (street.actions || list())), "Shiv Blades got a lunge")
+	TEST_ASSERT(locate(/datum/action/cooldown/cyberware/mantis_lunge) in (scorch.actions || list()), "Scorch Blades lost the lunge")
 	TEST_ASSERT_EQUAL(scorch.lunge_fire_stacks, 4, "Scorch lunge fire is not 4 stacks")
 
 	// Same slot as the parent, so the line evicts itself.
