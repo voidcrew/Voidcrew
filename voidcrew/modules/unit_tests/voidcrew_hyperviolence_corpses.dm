@@ -154,6 +154,7 @@
 
 	victim.fully_heal(HEAL_ALL)
 	victim.Knockdown(30 SECONDS)
+	gun.fire_cd = FALSE // the standing shot above just fired; skip its cooldown
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "A head-aimed point-blank shot at a downed target was not an execution")
@@ -186,6 +187,7 @@
 	var/mob/living/basic/trooper/pirate/melee/second = hv_still_pirate()
 	second.adjustBruteLoss(second.maxHealth * 0.85)
 	gun.chambered.loaded_projectile.damage = 60 // doubled: 120
+	gun.fire_cd = FALSE // the first execution just fired; skip its cooldown
 	before = range(7, spot)
 	TEST_ASSERT(gun.hv_fire_execution(gunner, second, null), "The heavy execution shot did not fire")
 	body = hv_new_corpse(spot, before)
