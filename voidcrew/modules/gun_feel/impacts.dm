@@ -103,26 +103,29 @@ GLOBAL_LIST_INIT(gun_feel_surface_types, list(
 	)),
 ))
 
-/// Surface by type, worked out once per type.
+/// Listed surface by type, worked out once per type. FALSE caches "not listed".
 GLOBAL_LIST_EMPTY(gun_feel_surface_by_type)
 
-/// What a bullet hitting `target` should sound like: one of the GUN_FEEL_SURFACE_* names.
 /proc/gun_feel_surface_of(atom/target)
 	if(isliving(target))
 		var/mob/living/victim = target
 		return (victim.mob_biotypes & MOB_ROBOTIC) ? GUN_FEEL_SURFACE_METAL : GUN_FEEL_SURFACE_FLESH
-	// Materials vary per object (a table made of wood or of glass), so they are read every time.
-	var/from_materials = gun_feel_surface_of_materials(target.custom_materials)
-	if(from_materials)
-		return from_materials
-	var/surface = GLOB.gun_feel_surface_by_type[target.type]
-	if(isnull(surface))
-		surface = gun_feel_surface_of_type(target.type)
-		GLOB.gun_feel_surface_by_type[target.type] = surface
-	return surface
+	// Known types first: some never set their own materials (tg's wooden table inherits the base table's iron).
+	var/listed = GLOB.gun_feel_surface_by_type[target.type]
+	if(isnull(listed))
+		listed = gun_feel_listed_surface(target.type) || FALSE
+		GLOB.gun_feel_surface_by_type[target.type] = listed
+	if(listed)
+		return listed
+	// Otherwise go by what it's made of (a generic table built from wood or glass).
+	return gun_feel_surface_of_materials(target.custom_materials) || GUN_FEEL_SURFACE_METAL
 
 /// Surface for a type with no materials to go by.
 /proc/gun_feel_surface_of_type(atom_type)
+	return gun_feel_listed_surface(atom_type) || GUN_FEEL_SURFACE_METAL
+
+/// Surface for a type on the lists above, or null if it isn't listed.
+/proc/gun_feel_listed_surface(atom_type)
 	// Snowy and icy rock looks like stone by type, so check its name first.
 	if(ispath(atom_type, /turf/closed/mineral) || ispath(atom_type, /turf/closed/indestructible/rock) || ispath(atom_type, /turf/open/misc))
 		var/type_name = "[atom_type]"
@@ -132,7 +135,7 @@ GLOBAL_LIST_EMPTY(gun_feel_surface_by_type)
 		var/list/types = GLOB.gun_feel_surface_types[surface]
 		if(types[atom_type])
 			return surface
-	return GUN_FEEL_SURFACE_METAL
+	return null
 
 /// Surface for the main material in a custom_materials list, or null if there is none.
 /proc/gun_feel_surface_of_materials(list/materials)
