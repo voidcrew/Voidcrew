@@ -7121,6 +7121,8 @@
 #include "voidcrew\modules\bounties\bounty_types.dm"
 #include "voidcrew\modules\bounties\bounty_weapons.dm"
 #include "voidcrew\modules\bounties\chrome\bounty_chrome_cascade.dm"
+#include "voidcrew\modules\bounties\chrome\bounty_chrome_gorilla.dm"
+#include "voidcrew\modules\bounties\chrome\bounty_chrome_mantis.dm"
 #include "voidcrew\modules\bounties\chrome\bounty_chrome_piledriver.dm"
 #include "voidcrew\modules\captain_management\captain_management.dm"
 #include "voidcrew\modules\captain_management\command_transfer.dm"
