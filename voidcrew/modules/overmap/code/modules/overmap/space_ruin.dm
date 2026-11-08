@@ -649,8 +649,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /**
  * Picks a random non-dense, non-space turf inside the loaded ruin's template footprint.
  * Used by recovery missions to place objectives. Returns null if the ruin isn't loaded.
+ *
+ * unwatched: mission field spawns. Prefer solid ground nothing dense is standing on, and
+ * ones no living player can see right now (pick_unwatched_turf()), so a crew already
+ * aboard doesn't watch the objective appear.
  */
-/obj/structure/overmap/space_ruin/proc/get_random_interior_turf()
+/obj/structure/overmap/space_ruin/proc/get_random_interior_turf(unwatched = FALSE)
 	if(!loaded || !ruin_bottom_left || !ruin_template?.width || !ruin_template?.height)
 		return null
 	var/turf/top_right = locate(
@@ -679,6 +683,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		candidates += interior_turf
 	if(!length(candidates))
 		return null
+	if(unwatched)
+		var/list/clear = list()
+		for(var/turf/candidate as anything in candidates)
+			if(!candidate.is_blocked_turf(exclude_mobs = TRUE) && !isgroundlessturf(candidate))
+				clear += candidate
+		return pick_unwatched_turf(length(clear) ? clear : candidates)
 	return pick(candidates)
 
 /obj/structure/overmap/space_ruin/proc/remove_docks()

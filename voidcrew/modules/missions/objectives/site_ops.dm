@@ -18,12 +18,15 @@
 /datum/mission_objective/field/plant_quest
 	/// The quest item type planted at the site
 	var/quest_item_type = /obj/item/mission_recovery
+	/// Set dressing laid around the item (a /datum/mission_scene path, null for none)
+	var/scene_type = /datum/mission_scene/dropped_case
 
 /datum/mission_objective/field/plant_quest/spawn_field_objects(turf/spawn_turf)
 	var/obj/item/mission_recovery/quest_item = new quest_item_type(spawn_turf)
 	quest_item.name = mission.objective_name
 	mission.bind_item(quest_item)
 	mission.register_quest_atom(quest_item)
+	dress_mission_scene(scene_type, spawn_turf, mission.target)
 	complete()
 
 /datum/mission_objective/field/plant_quest/get_progress_string()
@@ -91,23 +94,30 @@
 /datum/mission_objective/field/pylon_chain/proc/pick_spawn_spots(turf/anchor)
 	var/list/spots = list(anchor)
 	var/datum/mission_target/target = mission?.target
+	// Out of sight first; ground a crew can see is only used if the rest can't hold the set
+	var/datum/spawn_cover/cover = new(anchor.z)
 	var/list/candidates = list()
+	var/list/in_view = list()
 	for(var/turf/open/tile in RANGE_TURFS(PYLON_SCATTER_RADIUS, anchor))
 		if(isspaceturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
 			continue
 		if(target && !target.contains_turf(tile))
 			continue
-		candidates += tile
-	while(length(spots) < points_total && length(candidates))
-		var/turf/candidate = pick_n_take(candidates)
-		var/too_close = FALSE
-		for(var/turf/taken as anything in spots)
-			if(get_dist(candidate, taken) < PYLON_MIN_SPACING)
-				too_close = TRUE
-				break
-		if(too_close)
-			continue
-		spots += candidate
+		if(cover.is_hidden(tile))
+			candidates += tile
+		else
+			in_view += tile
+	for(var/list/pool as anything in list(candidates, in_view))
+		while(length(spots) < points_total && length(pool))
+			var/turf/candidate = pick_n_take(pool)
+			var/too_close = FALSE
+			for(var/turf/taken as anything in spots)
+				if(get_dist(candidate, taken) < PYLON_MIN_SPACING)
+					too_close = TRUE
+					break
+			if(too_close)
+				continue
+			spots += candidate
 	// Cramped site: take whatever's open rather than hand back a short set
 	while(length(spots) < points_total)
 		spots += get_nearby_open_turf(anchor, 3)
@@ -121,6 +131,7 @@
 	pylon.name = "survey pylon [length(pylons) + 1] of [points_total]"
 	pylon.objective_ref = WEAKREF(src)
 	pylons += pylon
+	dress_mission_scene(/datum/mission_scene/pylon_drop, spawn_turf, mission?.target)
 
 /// The first pylon still waiting on calibration
 /datum/mission_objective/field/pylon_chain/proc/next_pylon()

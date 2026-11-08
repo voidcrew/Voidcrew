@@ -165,6 +165,7 @@
 /datum/mission/recovery/extraction/build_objectives()
 	var/datum/mission_objective/field/plant_quest/plant = new
 	plant.quest_item_type = /obj/item/mission_recovery/anchored
+	plant.scene_type = /datum/mission_scene/cargo_wreck
 	add_objective(plant)
 	add_objective(new /datum/mission_objective/deliver/bound)
 
