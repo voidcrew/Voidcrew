@@ -58,11 +58,32 @@
 /// How long a Heavy barricade stands before it folds away
 #define BOUNTY_BOSS_BARRICADE_LIFE (90 SECONDS)
 
+// ===== HURT FROM WHERE IT CAN'T REACH (P4, review r1 F4) =====
+
+/// Someone who hurt it from where it can't get at them (behind glass, a shut door or a gap, or off its site) is shunned this long: it doesn't walk at them, and it keeps out of their sight
+#define BOUNTY_BOSS_SHUN_TIME (60 SECONDS)
+/// How far it walks for cover, in steps
+#define BOUNTY_BOSS_COVER_RANGE 7
+/// How far a shooter is taken to see, for cover
+#define BOUNTY_BOSS_COVER_SIGHT 9
+/// How far it looks for a way round to someone behind something, in tiles; and how long that look holds
+#define BOUNTY_BOSS_REACH_RANGE 10
+#define BOUNTY_BOSS_REACH_RETHINK (2 SECONDS)
+/// Gorilla Arms through glass: the wind-up (the piston punch's), the blow to the window, grille or door, its armour penetration, and the pause after
+#define BOUNTY_BOSS_SMASH_WINDUP (0.9 SECONDS)
+#define BOUNTY_BOSS_SMASH_DAMAGE 60
+#define BOUNTY_BOSS_SMASH_AP 50
+#define BOUNTY_BOSS_SMASH_RECOVER (1 SECONDS)
+/// It only goes at something it can break in this many blows; anything tougher, it takes cover from
+#define BOUNTY_BOSS_SMASH_MOST_BLOWS 4
+/// The wind-up's glow and floor mark: the Gorilla piston punch's orange
+#define BOUNTY_BOSS_SMASH_COLOR "#ff8a1f"
+
 // ===== JUGGERNAUT =====
 
-/// Health for 1, 2, 3 and 4+ engaged hunters
-#define BOUNTY_JUGGERNAUT_HEALTH_1 300
-#define BOUNTY_JUGGERNAUT_HEALTH_2 950
+/// Health for 1, 2, 3 and 4+ engaged hunters. 1 and 2 raised after review r1 (balance.md 6.8): at 300 a solo hunter won 97-100%.
+#define BOUNTY_JUGGERNAUT_HEALTH_1 800
+#define BOUNTY_JUGGERNAUT_HEALTH_2 1250
 #define BOUNTY_JUGGERNAUT_HEALTH_3 1600
 #define BOUNTY_JUGGERNAUT_HEALTH_4 2300
 #define BOUNTY_JUGGERNAUT_BRUTE_MOD 0.7
@@ -169,8 +190,9 @@
 
 // ===== GHOST =====
 
-#define BOUNTY_GHOST_HEALTH_1 250
-#define BOUNTY_GHOST_HEALTH_2 850
+/// 1 and 2 raised after review r1, as the Juggernaut's (scratchpad sim boss_sim.py)
+#define BOUNTY_GHOST_HEALTH_1 800
+#define BOUNTY_GHOST_HEALTH_2 1250
 #define BOUNTY_GHOST_HEALTH_3 1700
 #define BOUNTY_GHOST_HEALTH_4 2450
 #define BOUNTY_GHOST_BRUTE_MOD 1
@@ -180,7 +202,7 @@
 /// Its blade: the look in its hand and every number of its blows (bounty_real_weapon())
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
 #define BOUNTY_GHOST_MELEE_COOLDOWN (0.7 SECONDS)
-/// Each cut bleeds this much brute a second for BOUNTY_GHOST_BLEED_TIME, up to BOUNTY_GHOST_BLEED_CAP a second
+/// The stand-in bleed's numbers (/datum/status_effect/bounty_boss_bleed). No boss uses it now: the Ghost's cuts bleed through tg's own wounds.
 #define BOUNTY_GHOST_BLEED_PER_CUT 1
 #define BOUNTY_GHOST_BLEED_CAP 2
 #define BOUNTY_GHOST_BLEED_TIME (12 SECONDS)
@@ -188,9 +210,10 @@
 #define BOUNTY_GHOST_DASH_WINDUP (0.3 SECONDS)
 #define BOUNTY_GHOST_DASH_COOLDOWN (5 SECONDS)
 #define BOUNTY_GHOST_DASH_RANGE 5
-/// The dash's cut, its biggest hit (P4: combat.md B4 asks for the dash to be the biggest hit), and its armour penetration
-#define BOUNTY_GHOST_DASH_DAMAGE 20
+/// The dash's cut, its biggest hit (combat.md B4), its armour penetration, and its wound bonus (the Mantis lunge's). 20 -> 30 after review r1: at 20 it was no bigger than a knife blow.
+#define BOUNTY_GHOST_DASH_DAMAGE 30
 #define BOUNTY_GHOST_DASH_AP 10
+#define BOUNTY_GHOST_DASH_WOUND 10
 /// Cloak: a shimmer, then a faint distortion
 #define BOUNTY_GHOST_CLOAK_WINDUP (0.3 SECONDS)
 #define BOUNTY_GHOST_CLOAK_TIME (6 SECONDS)
@@ -202,14 +225,15 @@
 #define BOUNTY_GHOST_DODGE 30
 /// It counts as moving for this long after a step
 #define BOUNTY_GHOST_MOVING_WINDOW (1 SECONDS)
-/// Hit and run: after this many cuts it breaks off for a while
-#define BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF 2
+/// Hit and run: after this many cuts it breaks off for a while. 2 -> 3 after review r1, for the damage the stand-in bleed did.
+#define BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF 3
 #define BOUNTY_GHOST_BREAKOFF_TIME (4 SECONDS)
 
 // ===== HEAVY =====
 
-#define BOUNTY_HEAVY_HEALTH_1 340
-#define BOUNTY_HEAVY_HEALTH_2 970
+/// 1 and 2 raised after review r1, as the Juggernaut's (scratchpad sim boss_sim.py)
+#define BOUNTY_HEAVY_HEALTH_1 800
+#define BOUNTY_HEAVY_HEALTH_2 1200
 #define BOUNTY_HEAVY_HEALTH_3 1400
 #define BOUNTY_HEAVY_HEALTH_4 1850
 #define BOUNTY_HEAVY_BRUTE_MOD 0.55
@@ -251,3 +275,5 @@
 #define BB_BOUNTY_BOSS_PREY "BB_bounty_boss_prey"
 /// world.time it looks for prey again
 #define BB_BOUNTY_BOSS_HUNT_AT "BB_bounty_boss_hunt_at"
+/// Where it is walking to: cover, or the window it means to go through
+#define BB_BOUNTY_BOSS_SPOT "BB_bounty_boss_spot"

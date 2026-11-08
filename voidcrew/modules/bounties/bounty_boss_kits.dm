@@ -15,11 +15,16 @@
  *   burning patch. Fire can't hurt it; lasers can.
  * - Demolitionist: a bandolier of grenades. Keeps its distance and lobs grenades with a visible
  *   fuse, and blows a hole through an interior wall or door to get at someone behind cover.
- * - Ghost: a dark cloak and a knife. Dashes in along a line, cuts that bleed, cloaks into a faint
- *   shimmer that a flash or a hit breaks, dodges shots while moving, and backs off after a couple of
- *   cuts.
+ * - Ghost: a dark cloak and a knife. Dashes in along a line, cuts (tg's own wounds do the
+ *   bleeding), cloaks into a faint shimmer that a flash or a hit breaks, dodges shots while moving,
+ *   and backs off after a few cuts.
  * - Heavy: heavy armour and a belt-fed gun. A laser sight and a spin-up, then a burst into a cone;
  *   drops a folding barrier for cover. Slow.
+ *
+ * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
+ * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
+ * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds. The Ghost has nothing for it, and
+ * takes cover instead.
  *
  * The shared vars are declared in bounty_types.dm and nowhere else; a var only P4 uses goes here
  * with a `boss_` prefix, or on the /boss subtypes.
@@ -61,6 +66,13 @@
 
 /mob/living/basic/bounty_criminal/boss/juggernaut/boss_gear_text()
 	return "Riot plates cover [p_them()] from neck to boots."
+
+// Its charge goes straight through a table, a chair, a plain window or a grille
+/mob/living/basic/bounty_criminal/boss/juggernaut/boss_goes_through(atom/barrier)
+	if(..())
+		return TRUE
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = locate() in boss_abilities
+	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
 
 /datum/outfit/bounty_boss/juggernaut
 	name = "Bounty mini-boss: Juggernaut"
@@ -329,6 +341,10 @@
 /mob/living/basic/bounty_criminal/boss/pyromaniac/boss_gear_text()
 	return "[p_Their()] fire suit is scorched black."
 
+// A molotov goes over anything it can see across
+/mob/living/basic/bounty_criminal/boss/pyromaniac/boss_goes_through(atom/barrier)
+	return ..() || !barrier.opacity
+
 /datum/outfit/bounty_boss/pyromaniac
 	name = "Bounty mini-boss: Pyromaniac"
 	uniform = /obj/item/clothing/under/color/black
@@ -478,6 +494,12 @@
 
 /mob/living/basic/bounty_criminal/boss/demolitionist/boss_gear_text()
 	return "A bandolier of grenades is slung across [p_their()] chest."
+
+// A grenade goes over anything it can see across, and a breaching charge through an interior wall or door
+/mob/living/basic/bounty_criminal/boss/demolitionist/boss_goes_through(atom/barrier)
+	if(..() || !barrier.opacity)
+		return TRUE
+	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier)
 
 /**
  * It keeps BOUNTY_DEMOLITIONIST_KEEP_MIN to _MAX tiles from its target while it has something it
@@ -832,18 +854,17 @@
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	r_hand = BOUNTY_GHOST_KNIFE
 
-/// Its cuts bleed, and after a couple of them it breaks off for a while
+/// After a few cuts it breaks off for a while
 /mob/living/basic/bounty_criminal/boss/ghost/melee_attack(atom/target, list/modifiers, ignore_cooldown = FALSE)
 	. = ..()
 	if(!. || !isliving(target))
 		return
 	boss_cut(target)
 
-/// A cut on `victim`: it bleeds, and the hit-and-run count goes up
+/// A cut on `victim`: the hit-and-run count goes up. The blade's own wound, if it rolled one, does the bleeding.
 /mob/living/basic/bounty_criminal/boss/ghost/proc/boss_cut(mob/living/victim)
 	if(QDELETED(victim) || victim.stat == DEAD)
 		return
-	victim.apply_status_effect(/datum/status_effect/bounty_boss_bleed, get_npc_zone_damage_factor())
 	boss_cuts++
 	if(boss_cuts >= BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF)
 		boss_cuts = 0
@@ -929,7 +950,7 @@
 
 /**
  * Dash: it crouches and a blurred line shows on the floor to its target, then it darts down it,
- * leaving after-images, and cuts at the end: BOUNTY_GHOST_DASH_DAMAGE and a bleed.
+ * leaving after-images, and cuts at the end: BOUNTY_GHOST_DASH_DAMAGE, with a wound roll.
  */
 /datum/action/cooldown/mob_cooldown/bounty_boss/dash
 	name = "Dash"
@@ -1024,7 +1045,7 @@
 		boss.boss_hit(victim, BOUNTY_GHOST_DASH_DAMAGE, BRUTE, MELEE, 0, BOUNTY_GHOST_DASH_AP)
 		return
 	var/mob/living/person = victim
-	person.apply_damage(npc_zone_damage(BOUNTY_GHOST_DASH_DAMAGE, boss), BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = BOUNTY_GHOST_DASH_AP, silent = TRUE), sharpness = SHARP_EDGED)
+	person.apply_damage(npc_zone_damage(BOUNTY_GHOST_DASH_DAMAGE, boss), BRUTE, BODY_ZONE_CHEST, person.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = BOUNTY_GHOST_DASH_AP, silent = TRUE), wound_bonus = BOUNTY_GHOST_DASH_WOUND, sharpness = SHARP_EDGED)
 	boss.boss_cut(person)
 
 /// Cloak: the air around it shimmers, then it fades to a faint distortion that half of all hits miss
@@ -1050,9 +1071,10 @@
 		boss.visible_message(span_warning("[boss] fades into a faint shimmer!"))
 
 /**
- * The Ghost's cuts: BOUNTY_GHOST_BLEED_PER_CUT brute a second for each cut, up to
- * BOUNTY_GHOST_BLEED_CAP, for BOUNTY_GHOST_BLEED_TIME after the last one, with the blood to show it.
- * It stops once they are down (C4, M3).
+ * A stand-in bleed: BOUNTY_GHOST_BLEED_PER_CUT brute a second for each cut, up to
+ * BOUNTY_GHOST_BLEED_CAP, for BOUNTY_GHOST_BLEED_TIME after the last one. It stops once they are down
+ * (C4, M3). No boss applies it any more (review r1 F2: a stand-in for tg's wounds); delete it once
+ * nothing else does.
  */
 /datum/status_effect/bounty_boss_bleed
 	id = "bounty_boss_bleed"
@@ -1113,6 +1135,14 @@
 
 /mob/living/basic/bounty_criminal/boss/heavy/boss_gear_text()
 	return "[p_They()] [p_are()] in heavy armour."
+
+// Its rounds chip through a window or grille it may break, and fly over a gap
+/mob/living/basic/bounty_criminal/boss/heavy/boss_goes_through(atom/barrier)
+	if(..())
+		return TRUE
+	if(isturf(barrier))
+		return !barrier.density
+	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)
 
 /datum/outfit/bounty_boss/heavy
 	name = "Bounty mini-boss: Heavy"

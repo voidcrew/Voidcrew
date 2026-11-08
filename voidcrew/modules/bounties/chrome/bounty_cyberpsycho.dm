@@ -24,9 +24,10 @@
  * - Deadeye optics: before a lunge or a leap its eyes go red and the hunter it is going for glints.
  * - Cascade lattice: the surge. Its spin-up holds the next move back; in the window it is fast and
  *   dodges and keeps making moves; in the crash it starts nothing at all. That is the hunters' turn.
- * - Redline core: phase two. It trips once, where the boss tires: whatever it was doing stops, any
- *   surge goes dark, it stands and roars, burns, then collapses into stamina crit: the capture.
- * - Lazarus: the one time it gets up again, after it is downed.
+ * - Redline core: phase two. It trips once, where the boss tires: whatever it was doing stops, a
+ *   surge under way crashes (the hunters get their crash), it stands and roars, burns, then
+ *   collapses into stamina crit: the capture.
+ * - Lazarus: the one time it gets up again, after it is downed. Once a spawn, however long the fight.
  * An EMP throws it into a malfunction for BOUNTY_PSYCHO_MALFUNCTION: every piece down at once, so it
  * starts no move, sparking and twitching all the while (bounty_chrome_malfunction_fx()), then it
  * recovers. For BOUNTY_PSYCHO_EMP_GRACE after that its chrome shrugs further pulses off, so EMPs are
@@ -35,11 +36,11 @@
 
 // ===== ITS BODY =====
 
-/// Health for 1, 2, 3 and 4+ engaged hunters. Lower than the other kits': the Redline burn, the Cascade dodge and the Lazarus jolt all add to it.
-#define BOUNTY_PSYCHO_HEALTH_1 300
-#define BOUNTY_PSYCHO_HEALTH_2 900
-#define BOUNTY_PSYCHO_HEALTH_3 1500
-#define BOUNTY_PSYCHO_HEALTH_4 2100
+/// Health for 1, 2, 3 and 4+ engaged hunters (review r1, balance.md 6.7's table for zone scaling kept). The Redline burn, the Cascade dodge and the Lazarus jolt all add to it.
+#define BOUNTY_PSYCHO_HEALTH_1 800
+#define BOUNTY_PSYCHO_HEALTH_2 1300
+#define BOUNTY_PSYCHO_HEALTH_3 1900
+#define BOUNTY_PSYCHO_HEALTH_4 2600
 /// Its pace (on the scale of BOUNTY_JUGGERNAUT_SPEED): a little slower than a running hunter; the Cascade window runs them down
 #define BOUNTY_PSYCHO_SPEED 0.35
 /// Between blows; the blade's own numbers are its blows (Mantis Blades)
@@ -54,11 +55,16 @@
 /// How long its Deadeye optics mark the hunter a lunge or a leap is going for: about its wind-up
 #define BOUNTY_PSYCHO_MARK_LUNGE (1 SECONDS)
 #define BOUNTY_PSYCHO_MARK_LEAP (1.6 SECONDS)
+/// Its Deadeye mark's red (the player implant's) and how often the mark checks it still holds
+#define BOUNTY_PSYCHO_MARK_RED "#ff3300"
+#define BOUNTY_PSYCHO_MARK_WATCH (0.5 SECONDS)
 /// What boss_busy says while it lunges, and while its Redline core winds up
 #define BOUNTY_PSYCHO_BUSY_LUNGE "lunge"
 #define BOUNTY_PSYCHO_BUSY_REDLINE "redline"
 /// Its pieces' states, as numbers: their defines stay in their own files
 #define BOUNTY_PSYCHO_CASCADE_IDLE 0
+#define BOUNTY_PSYCHO_CASCADE_SPINUP 1
+#define BOUNTY_PSYCHO_CASCADE_WINDOW 2
 #define BOUNTY_PSYCHO_CASCADE_CRASH 3
 #define BOUNTY_PSYCHO_REDLINE_IDLE 0
 #define BOUNTY_PSYCHO_PILEDRIVER_IDLE 0
@@ -86,7 +92,7 @@
 		BOUNTY_CHROME_MANTIS = /datum/bounty_chrome/mantis/psycho,
 		BOUNTY_CHROME_GORILLA = /datum/bounty_chrome/gorilla/psycho,
 		BOUNTY_CHROME_PILEDRIVER = /datum/bounty_chrome/piledriver/psycho,
-		BOUNTY_CHROME_LAZARUS = /datum/bounty_chrome/lazarus,
+		BOUNTY_CHROME_LAZARUS = /datum/bounty_chrome/lazarus/psycho,
 		BOUNTY_CHROME_DEADEYE = /datum/bounty_chrome/deadeye/psycho,
 	)
 	return types
@@ -217,17 +223,17 @@
 	deadeye?.end_lock()
 
 /**
- * Its Redline core trips: the red takes over. Whatever it was doing stops and any surge goes dark,
- * so the burn never runs on top of a Cascade window or crash. Called by the core as it trips;
- * must not sleep.
+ * Its Redline core trips: the red takes over. Whatever it was doing stops, and a surge winding up or
+ * running crashes, as an EMP crashes it: the burn starts leaden, and the hunters get the crash they
+ * earned. A crash under way runs on. Called by the core as it trips; must not sleep.
  */
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_before_redline()
 	if(boss_busy)
 		boss_clear_busy()
 	psycho_stop_moves()
 	var/datum/bounty_chrome/cascade/cascade = psycho_piece(BOUNTY_CHROME_CASCADE)
-	if(cascade && cascade.phase != BOUNTY_PSYCHO_CASCADE_IDLE)
-		cascade.end_surge()
+	if(cascade && (cascade.phase == BOUNTY_PSYCHO_CASCADE_SPINUP || cascade.phase == BOUNTY_PSYCHO_CASCADE_WINDOW))
+		cascade.start_crash()
 
 /// For a while after an EMP took its chrome down, further pulses slide off
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_pre_emp(datum/source, severity)
@@ -451,6 +457,20 @@
 		return "A hardlight blade juts from %THEIR right forearm."
 	return "A chrome housing sheathes %THEIR right forearm."
 
+// One blade going back in, not two
+/datum/bounty_chrome/mantis/psycho/retract(quiet = FALSE)
+	var/was_out = deployed
+	. = ..(TRUE)
+	if(. && was_out && !quiet && owner?.stat == CONSCIOUS)
+		owner.visible_message(span_notice("[owner]'s blade slides back into [owner.p_their()] right forearm."))
+		playsound(owner, 'sound/items/sheath.ogg', 40, TRUE)
+
+// One blade flickering out, not two
+/datum/bounty_chrome/mantis/psycho/on_emp(severity)
+	if(deployed)
+		owner.visible_message(span_warning("[owner]'s blade flickers out."))
+	retract(quiet = TRUE)
+
 // The lunge is one of its moves: nothing else starts until it is back on balance
 /datum/bounty_chrome/mantis/psycho/start_lunge(atom/target)
 	var/mob/living/basic/bounty_criminal/boss/psycho = owner
@@ -485,7 +505,7 @@
 /// Gorilla Arms in its left arm only: punches and grabs only when the psycho calls one. It still forces doors on its own, under the boss's busy rule.
 /datum/bounty_chrome/gorilla/psycho
 	key = null
-	examine_text = "%THEIR left arm is plated in dull chrome from knuckle to shoulder."
+	examine_text = "Dull chrome plates %THEIR left arm from knuckle to shoulder."
 	/// The psycho's punch is starting this one: nothing else may
 	var/psycho_called = FALSE
 
@@ -520,11 +540,39 @@
 	..()
 	if(!istype(psycho) || psycho.stat != CONSCIOUS)
 		return
-	// It stands and roars: the tell is a move of its own
-	psycho.boss_bark("exhausted")
+	// It stands and roars: the tell is a move of its own. A rage line, not a burnt-out one.
+	psycho.boss_bark("redline", "intro")
 	var/tell = timeleft(burn_timer) || 0
 	psycho.boss_set_busy(BOUNTY_PSYCHO_BUSY_REDLINE, tell)
 	psycho.boss_next_ability_at = max(psycho.boss_next_ability_at, world.time + tell + rand(BOUNTY_BOSS_ABILITY_GAP_MIN, BOUNTY_BOSS_ABILITY_GAP_MAX))
+
+// The collapse: now it is burnt out, and sounds it
+/datum/bounty_chrome/redline/psycho/crash()
+	..()
+	var/mob/living/basic/bounty_criminal/boss/psycho = owner
+	if(istype(psycho))
+		psycho.boss_bark("burnout", "exhausted")
+
+/// The Lazarus node: stands it up once a spawn, not once a recharge (review r1 F7)
+/datum/bounty_chrome/lazarus/psycho
+	key = null
+	/// It has jolted, or charged trying to: spent for good
+	var/psycho_spent = FALSE
+
+/datum/bounty_chrome/lazarus/psycho/on_downed()
+	if(psycho_spent)
+		return
+	return ..()
+
+/datum/bounty_chrome/lazarus/psycho/start_charge()
+	psycho_spent = TRUE
+	return ..()
+
+// Spent, it ticks for good: it never hums again
+/datum/bounty_chrome/lazarus/psycho/examine_line()
+	if(psycho_spent && !charging && owner && owner.stat != DEAD && !offline_until)
+		return "Something under %THEIR ribs ticks."
+	return ..()
 
 /// The Meteor Piledriver: leaps only when the psycho calls a leap
 /datum/bounty_chrome/piledriver/psycho
@@ -544,12 +592,30 @@
 /datum/bounty_chrome/deadeye/psycho/try_lock()
 	return FALSE
 
-/// Marks `target` for `duration`: red eyes, the red line and the glint. TRUE if it marked them.
+/**
+ * Marks `target` for `duration`: red eyes, the red line for as long as the mark, the outline, the
+ * reticle, the chirp and the glint on them. No line to the room: the move's own wind-up says what
+ * is coming. TRUE if it marked them.
+ */
 /datum/bounty_chrome/deadeye/psycho/proc/psycho_mark(atom/target, duration)
 	if(!lockable(target))
 		return FALSE
-	start_lock(target)
+	if(mark_ref)
+		end_lock()
+	mark_ref = WEAKREF(target)
+	shots_left = 0
+	rounds = null
+	armed_at = world.time
 	lock_ends_at = world.time + duration
+	target.add_filter(mark_filter, 2, list("type" = "outline", "color" = BOUNTY_PSYCHO_MARK_RED, "size" = 1))
+	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
+	beam_ref = WEAKREF(owner.Beam(target, icon_state = "r_beam", time = duration, maxdistance = get_dist(owner, target) + 1))
+	owner.face_atom(target)
+	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 40, TRUE)
+	for(var/mob/living/person as anything in marked_people(target))
+		to_chat(person, span_userdanger("A red targeting glint settles on you!"))
+	owner.update_appearance(UPDATE_OVERLAYS)
+	watch_timer = addtimer(CALLBACK(src, PROC_REF(watch_lock)), BOUNTY_PSYCHO_MARK_WATCH, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 	return TRUE
 
 #undef BOUNTY_PSYCHO_HEALTH_1
@@ -562,9 +628,13 @@
 #undef BOUNTY_PSYCHO_SURGE_SPINUP
 #undef BOUNTY_PSYCHO_MARK_LUNGE
 #undef BOUNTY_PSYCHO_MARK_LEAP
+#undef BOUNTY_PSYCHO_MARK_RED
+#undef BOUNTY_PSYCHO_MARK_WATCH
 #undef BOUNTY_PSYCHO_BUSY_LUNGE
 #undef BOUNTY_PSYCHO_BUSY_REDLINE
 #undef BOUNTY_PSYCHO_CASCADE_IDLE
+#undef BOUNTY_PSYCHO_CASCADE_SPINUP
+#undef BOUNTY_PSYCHO_CASCADE_WINDOW
 #undef BOUNTY_PSYCHO_CASCADE_CRASH
 #undef BOUNTY_PSYCHO_REDLINE_IDLE
 #undef BOUNTY_PSYCHO_PILEDRIVER_IDLE
