@@ -537,22 +537,22 @@
 	var/mob/living/carbon/human/consistent/third = hunter_at(spot(2, 4))
 	var/mob/living/carbon/human/consistent/fourth = hunter_at(spot(1, 4))
 	var/mob/living/carbon/human/consistent/fifth = hunter_at(spot(0, 4))
-	// BOUNTY_JUGGERNAUT_HEALTH_1 to _4: 300, 950, 1600, 2300
-	TEST_ASSERT_EQUAL(boss.maxHealth, 300, "The Juggernaut doesn't start at its one-hunter health")
+	// BOUNTY_JUGGERNAUT_HEALTH_1 to _4: 800, 1250, 1600, 2300
+	TEST_ASSERT_EQUAL(boss.maxHealth, 800, "The Juggernaut doesn't start at its one-hunter health")
 
 	// Only hunters on its grudge list (or hunting its bounty) count.
 	TEST_ASSERT(!boss.boss_engage(first), "A hunter who never touched it joined the posse")
 	TEST_ASSERT(posse_member(boss, first), "The first hunter didn't join the posse")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 300, "One hunter raised the health")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 800, "One hunter raised the health")
 	TEST_ASSERT(!boss.boss_engage(first), "The same hunter joined twice")
 	// It sizes up the bigger posse in its kit's own words (BUG-2: "_posse" had no lines)
 	var/datum/component/bounty_identity_voice/voice = boss.LoadComponent(/datum/component/bounty_identity_voice)
 	voice.line_cooldown = 0
 	voice.last_line = null
 	TEST_ASSERT(posse_member(boss, second), "The second hunter didn't join")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 950, "Two hunters didn't raise the health")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "Two hunters didn't raise the health")
 	TEST_ASSERT(voice.last_line in bounty_identity_strings("lines")["juggernaut_posse"]["any"], "Sizing up two hunters, the Juggernaut said [voice.last_line || "nothing"]")
-	TEST_ASSERT_EQUAL(boss.health, 950, "A fresh boss's raise didn't lift current health")
+	TEST_ASSERT_EQUAL(boss.health, 1250, "A fresh boss's raise didn't lift current health")
 
 	// Someone with no mind isn't a hunter.
 	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
@@ -727,9 +727,165 @@
 	SEND_SIGNAL(ghost, COMSIG_MOB_FLASHED)
 	TEST_ASSERT(!ghost.boss_cloaked, "A flash didn't break the Ghost's cloak")
 
-	// Its cuts bleed, and a couple of them make it break off.
+	// Its cuts bleed through tg's own wounds, with no stand-in bleed (review r1 F2), and a few of them make it break off.
 	var/mob/living/carbon/human/consistent/victim = hunter_at(spot(1, 0))
 	ghost.boss_cut(victim)
-	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/bounty_boss_bleed), "The Ghost's cut didn't bleed")
+	for(var/datum/status_effect/effect as anything in victim.status_effects)
+		TEST_ASSERT(effect.id != "bounty_boss_bleed", "The Ghost's cut put a stand-in bleed on the hunter")
 	ghost.boss_cut(victim)
-	TEST_ASSERT(ghost.boss_breakoff_until > world.time, "The Ghost didn't break off after two cuts") // BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF
+	TEST_ASSERT(ghost.boss_breakoff_until <= world.time, "The Ghost broke off after two cuts")
+	ghost.boss_cut(victim)
+	TEST_ASSERT(ghost.boss_breakoff_until > world.time, "The Ghost didn't break off after three cuts") // BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF
+
+// ===== THE WHOLE HUNTING CREW (review r1) =====
+
+/**
+ * Turning hostile, it counts every crew member of a ship hunting it who is on its level, seen or not:
+ * one hunter can't wake it at one hunter's health and bring the crew in after. Anyone else out of
+ * sight doesn't count.
+ */
+/datum/unit_test/voidcrew_bounty_boss/crews
+	/// The test crew, let go of its minds before it goes
+	var/datum/team/voidcrew/crew
+
+/datum/unit_test/voidcrew_bounty_boss/crews/Run()
+	board_test_begin()
+	var/datum/criminal_bounty/posting = board_test_posting(3, null, 3400, 2, "boss")
+	posting.record.kit = "juggernaut" // BOUNTY_KIT_JUGGERNAUT
+	var/obj/structure/overmap/ship/ship = board_test_ship()
+	crew = new
+	crew.ship = ship
+	ship.ship_team = crew
+	var/mob/living/carbon/human/consistent/tagger = hunter_at(spot(2, 0))
+	var/turf/far = locate(run_loc_floor_bottom_left.x, clamp(run_loc_floor_bottom_left.y + 20, 1, world.maxy), run_loc_floor_bottom_left.z)
+	if(get_dist(far, run_loc_floor_bottom_left) <= 9)
+		far = locate(run_loc_floor_bottom_left.x, clamp(run_loc_floor_bottom_left.y - 20, 1, world.maxy), run_loc_floor_bottom_left.z)
+	TEST_ASSERT(get_dist(far, run_loc_floor_bottom_left) > 9, "No spot out of the boss's sight on the test level") // BOUNTY_BOSS_POSSE_RANGE
+	var/mob/living/carbon/human/consistent/crewmate = hunter_at(far)
+	var/mob/living/carbon/human/consistent/stranger = hunter_at(far)
+	crew.join_member(tagger.mind)
+	crew.join_member(crewmate.mind)
+	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The test ship couldn't hunt the bounty")
+	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = spawn_bounty_criminal(posting.record, spot(0, 0), posting)
+	if(boss)
+		allocated += boss
+	TEST_ASSERT(istype(boss), "The posted Juggernaut spawned as [boss?.type]")
+	boss.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	boss.body_add_grudge(tagger)
+	boss.boss_turn_hostile(tagger)
+	TEST_ASSERT(boss.boss_engaged[REF(tagger)], "The hunter who woke it isn't in its posse")
+	TEST_ASSERT(boss.boss_engaged[REF(crewmate)], "A crewmate out of its sight on its level isn't in its posse")
+	TEST_ASSERT(!boss.boss_engaged[REF(stranger)], "Someone out of its sight who isn't hunting it joined its posse")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "Woken by one of a crew of two, it has [boss.maxHealth] health") // BOUNTY_JUGGERNAUT_HEALTH_2
+	for(var/datum/mind/member as anything in crew.members.Copy())
+		member.ship_teams = null
+	crew.members.Cut()
+	crew.ship = null
+	ship.ship_team = null
+	QDEL_NULL(crew)
+	board_test_end()
+
+// ===== HURT FROM WHERE IT CAN'T REACH (review r1 F4) =====
+
+/**
+ * Shot from behind glass it can't break, with no way round: it doesn't go after the shooter, and it
+ * finds cover out of their sight on its own side. Once they come round, it goes after them again.
+ */
+/datum/unit_test/voidcrew_bounty_boss/out_of_reach
+
+/datum/unit_test/voidcrew_bounty_boss/out_of_reach/Run()
+	// A wall down the middle of the room: reinforced glass low, solid wall high
+	for(var/dy in 0 to 2)
+		allocate(/obj/structure/window/reinforced/fulltile, spot(2, dy))
+	change_turf(spot(2, 3), /turf/closed/wall/r_wall)
+	change_turf(spot(2, 4), /turf/closed/wall/r_wall)
+	var/mob/living/basic/bounty_criminal/boss/ghost/ghost = allocate(/mob/living/basic/bounty_criminal/boss/ghost, spot(0, 0))
+	var/mob/living/carbon/human/consistent/sniper = hunter_at(spot(4, 4))
+	var/atom/barrier = ghost.boss_barrier_between(get_turf(ghost), get_turf(sniper))
+	TEST_ASSERT(istype(barrier, /obj/structure/window), "The glass between them isn't what stops it: [barrier?.type]")
+	TEST_ASSERT(!ghost.boss_goes_through(barrier), "The Ghost goes through reinforced glass")
+	TEST_ASSERT(!ghost.boss_can_reach(sniper), "The Ghost can reach someone behind glass with no way round")
+	TEST_ASSERT(ghost.boss_valid_target(sniper), "Before a shot, the Ghost won't go after someone it can see")
+
+	// Shot from there: it keeps away from them, and hides
+	ghost.body_add_grudge(sniper)
+	TEST_ASSERT(ghost.boss_note_attacker(sniper), "The shot wasn't noted")
+	TEST_ASSERT(ghost.boss_shuns(sniper), "Shot from behind glass, the Ghost doesn't keep away from the shooter")
+	TEST_ASSERT(!ghost.boss_valid_target(sniper), "Shot from behind glass, the Ghost still goes after the shooter")
+	TEST_ASSERT_NULL(ghost.boss_revenge_target(), "Shot from behind glass, the Ghost turns on the shooter")
+	var/list/watchers = ghost.boss_watchers()
+	TEST_ASSERT(sniper in watchers, "The shooter isn't one it hides from")
+	TEST_ASSERT(ghost.boss_seen_from(get_turf(ghost), watchers), "The test needs the shooter to see the Ghost where it stands")
+	var/turf/cover = ghost.boss_find_cover(watchers)
+	TEST_ASSERT_NOTNULL(cover, "The Ghost found no cover on its side of the glass")
+	TEST_ASSERT(!can_see(sniper, cover, 9), "The Ghost's cover is in the shooter's sight") // BOUNTY_BOSS_COVER_SIGHT
+	TEST_ASSERT(cover.x < spot(2, 0).x, "The Ghost's cover is on the shooter's side")
+
+	// Come round: fair game again
+	sniper.forceMove(spot(1, 0))
+	TEST_ASSERT(ghost.boss_can_reach(sniper), "The Ghost can't reach someone right beside it")
+	TEST_ASSERT(!ghost.boss_shuns(sniper), "The Ghost keeps away from someone who came round to it")
+	TEST_ASSERT(ghost.boss_valid_target(sniper), "The Ghost won't go after someone who came round to it")
+
+/**
+ * Who gets through what: Gorilla Arms smash glass they break in a few blows, with a wind-up first and
+ * real damage after, and never reinforced glass or an airlock (they force those their own way); the
+ * Juggernaut's charge takes plain glass; the Heavy's rounds chip any interior glass; the Ghost has
+ * nothing for any of it.
+ */
+/datum/unit_test/voidcrew_bounty_boss/smash
+
+/datum/unit_test/voidcrew_bounty_boss/smash/Run()
+	var/obj/structure/window/fulltile/pane = allocate(/obj/structure/window/fulltile, spot(1, 2))
+	var/obj/structure/window/reinforced/fulltile/thick = allocate(/obj/structure/window/reinforced/fulltile, spot(1, 4))
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, spot(1, 0))
+	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = allocate(/mob/living/basic/bounty_criminal/boss/cyberpsycho, spot(0, 2))
+	var/mob/living/carbon/human/consistent/behind = hunter_at(spot(3, 2))
+	psycho.body_add_grudge(behind)
+	psycho.boss_turn_hostile(behind)
+	psycho.boss_next_ability_at = 0
+	TEST_ASSERT(psycho.boss_goes_through(pane), "Gorilla Arms don't go through plain glass")
+	TEST_ASSERT(!psycho.boss_goes_through(thick), "Gorilla Arms go through reinforced glass")
+	TEST_ASSERT(!psycho.boss_can_smash(door), "Gorilla Arms smash an airlock instead of forcing it")
+
+	// The smash: rooted, the tile lit, nothing broken before the wind-up is over
+	var/integrity = pane.get_integrity()
+	TEST_ASSERT(psycho.boss_start_smash(pane), "The smash didn't start")
+	TEST_ASSERT_EQUAL(psycho.boss_busy, "smash", "The smash doesn't hold the boss") // BOUNTY_BOSS_BUSY_SMASH
+	TEST_ASSERT(HAS_TRAIT(psycho, TRAIT_IMMOBILIZED), "It walks about mid-smash")
+	TEST_ASSERT(marks_near(pane, 0) > 0, "The smash marks nothing")
+	TEST_ASSERT_EQUAL(pane.get_integrity(), integrity, "The glass broke before the wind-up was over")
+	TEST_ASSERT(!psycho.boss_start_smash(pane), "A second smash started mid-smash")
+	TEST_ASSERT(psycho.boss_finish_smash(psycho.boss_busy_serial, WEAKREF(pane)), "The smash didn't land")
+	TEST_ASSERT(QDELETED(pane) || pane.get_integrity() < integrity, "The smash did nothing to the glass")
+	TEST_ASSERT_NULL(psycho.boss_busy, "The smash kept the boss after it landed")
+	TEST_ASSERT_NULL(psycho.get_filter("bounty_boss_smash"), "The smash's glow outlived it") // BOUNTY_BOSS_SMASH_FILTER
+
+	// Interrupted mid-wind-up: nothing lands, the mark goes
+	var/obj/structure/window/fulltile/other_pane = allocate(/obj/structure/window/fulltile, spot(0, 3))
+	psycho.boss_next_ability_at = 0
+	integrity = other_pane.get_integrity()
+	TEST_ASSERT(psycho.boss_start_smash(other_pane), "The second smash didn't start")
+	var/serial = psycho.boss_busy_serial
+	psycho.boss_interrupt()
+	TEST_ASSERT(!psycho.boss_finish_smash(serial, WEAKREF(other_pane)), "An interrupted smash landed")
+	TEST_ASSERT_EQUAL(other_pane.get_integrity(), integrity, "An interrupted smash hurt the glass")
+	TEST_ASSERT_EQUAL(marks_near(other_pane, 0), 0, "An interrupted smash left its mark")
+
+	// EMP'd, the arms are dead weight
+	psycho.boss_next_ability_at = 0
+	var/datum/bounty_chrome/gorilla/gorilla = psycho.psycho_piece("gorilla") // BOUNTY_CHROME_GORILLA
+	gorilla.offline_until = world.time + 5 SECONDS
+	TEST_ASSERT(!psycho.boss_goes_through(other_pane), "EMP'd Gorilla Arms go through glass")
+	TEST_ASSERT(!psycho.boss_start_smash(other_pane), "EMP'd Gorilla Arms smashed glass")
+	gorilla.offline_until = 0
+
+	// The other kits
+	var/obj/structure/window/fulltile/plain = allocate(/obj/structure/window/fulltile, spot(3, 0))
+	var/mob/living/basic/bounty_criminal/boss/juggernaut/juggernaut = allocate(/mob/living/basic/bounty_criminal/boss/juggernaut, spot(4, 0))
+	TEST_ASSERT(juggernaut.boss_goes_through(plain), "The Juggernaut's charge doesn't go through plain glass")
+	TEST_ASSERT(!juggernaut.boss_goes_through(thick), "The Juggernaut's charge goes through reinforced glass")
+	var/mob/living/basic/bounty_criminal/boss/heavy/heavy = allocate(/mob/living/basic/bounty_criminal/boss/heavy, spot(4, 3))
+	TEST_ASSERT(heavy.boss_goes_through(thick), "The Heavy's rounds don't chip interior glass")
+	var/mob/living/basic/bounty_criminal/boss/ghost/ghost = allocate(/mob/living/basic/bounty_criminal/boss/ghost, spot(4, 4))
+	TEST_ASSERT(!ghost.boss_goes_through(plain), "The Ghost goes through glass")

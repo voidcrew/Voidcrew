@@ -123,7 +123,7 @@
 		"gorilla" = /datum/bounty_chrome/gorilla/psycho,
 		"redline" = /datum/bounty_chrome/redline/psycho,
 		"piledriver" = /datum/bounty_chrome/piledriver/psycho,
-		"lazarus" = /datum/bounty_chrome/lazarus,
+		"lazarus" = /datum/bounty_chrome/lazarus/psycho,
 		"deadeye" = /datum/bounty_chrome/deadeye/psycho,
 	)
 	for(var/key in expected)
@@ -136,9 +136,9 @@
 		var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[proto_key]
 		TEST_ASSERT(!findtext("[proto.type]", "/psycho"), "The psycho's [proto.type] is a prototype")
 	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(psycho), " "), "SIGNATURES 7"), "A chrome read doesn't count seven pieces")
-	for(var/text in list("right forearm", "left arm is plated", "neck", "speaker grille", "launch pistons", "ribs", "milspec optics"))
+	for(var/text in list("right forearm", "left arm from knuckle", "neck", "speaker grille", "launch pistons", "ribs", "chrome rings"))
 		TEST_ASSERT(examine_has(psycho, text), "Examining the cyberpsycho doesn't show [text]")
-	TEST_ASSERT_EQUAL(jointext(psycho.boss_health_table(), ","), "300,900,1500,2100", "The cyberpsycho's health table changed") // BOUNTY_PSYCHO_HEALTH_*
+	TEST_ASSERT_EQUAL(jointext(psycho.boss_health_table(), ","), "800,1300,1900,2600", "The cyberpsycho's health table changed") // BOUNTY_PSYCHO_HEALTH_*
 	// Its pace: slower than the Ghost, quicker than the Heavy, like the other kits (voidcrew_bounty_speed's rule)
 	var/mob/living/basic/bounty_criminal/boss/ghost/ghost_type = /mob/living/basic/bounty_criminal/boss/ghost
 	var/mob/living/basic/bounty_criminal/boss/heavy/heavy_type = /mob/living/basic/bounty_criminal/boss/heavy
@@ -288,11 +288,13 @@
 	TEST_ASSERT(!punch.Trigger(target = hunter), "It punched mid-reach")
 	gorilla.finish_reach(gorilla.serial)
 	TEST_ASSERT_EQUAL(gorilla.busy, "hold", "The reach didn't take hold") // BOUNTY_GORILLA_HOLD
+	// TODO(merge): the pieces branch deletes bounty_gorilla_held for tg's real grab; there this is TEST_ASSERT(gorilla.holding(hunter), "The hunter isn't held")
 	TEST_ASSERT_NOTNULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "The hunter isn't held")
 	TEST_ASSERT_EQUAL(psycho.boss_busy, "gorilla", "The hold doesn't keep the boss") // BOUNTY_GORILLA_BOSS_BUSY
 	psycho.boss_next_ability_at = 0
 	TEST_ASSERT(!lunge.Trigger(target = hunter) && !surge.Trigger(target = hunter), "Another move started mid-hold")
 	psycho.psycho_stop_moves()
+	// TODO(merge): on the pieces branch, TEST_ASSERT(!gorilla.holding(hunter) && !hunter.pulledby, "Stopped, it kept hold of the hunter")
 	TEST_ASSERT_NULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "Stopped, it kept hold of the hunter")
 	TEST_ASSERT_NULL(psycho.boss_busy, "The grab kept the boss after it stopped")
 	ready(psycho)
@@ -301,7 +303,7 @@
 		var/datum/action/cooldown/mob_cooldown/bounty_boss/picked = psycho.boss_choose_ability(hunter)
 		TEST_ASSERT(picked && picked != punch, "It picked [picked?.type] right after a punch with the surge ready")
 
-	// The Redline core takes over: mid-lunge, as it tires, the lunge and any surge stop and it stands and roars
+	// The Redline core takes over: mid-lunge, as it tires, the lunge stops, the surge winding up crashes, and it stands and roars
 	hunter.forceMove(tile(3, 0))
 	ready(psycho)
 	cascade.spin_up()
@@ -312,7 +314,7 @@
 	TEST_ASSERT(psycho.boss_tired, "The cyberpsycho at 38% isn't tired")
 	TEST_ASSERT_EQUAL(redline.state, 1, "The core didn't trip as it tired") // REDLINE_WINDING
 	TEST_ASSERT_NULL(mantis.lunge_state, "The lunge ran on through the core tripping")
-	TEST_ASSERT_EQUAL(cascade.phase, 0, "The lattice ran on through the core tripping")
+	TEST_ASSERT_EQUAL(cascade.phase, 3, "A surge winding up didn't crash as the core tripped") // BOUNTY_CASCADE_CRASH
 	TEST_ASSERT_EQUAL(psycho.boss_busy, "redline", "It doesn't stand still for the roar") // BOUNTY_PSYCHO_BUSY_REDLINE
 	deltimer(redline.burn_timer)
 	redline.roar()
@@ -466,10 +468,12 @@
 	TEST_ASSERT(lazarus.discharge(lazarus.charge_serial), "The Lazarus node didn't stand it up")
 	TEST_ASSERT(!second.downed, "It is still down after the jolt")
 	TEST_ASSERT(second.health >= second.maxHealth * 0.34, "It got up at [second.health] of [second.maxHealth]") // BOUNTY_RECOVER_TO
-	// Down again: no second jolt, and cuffs go on
+	// Down again, even with the node's own clock run out: no second jolt, and cuffs go on
+	COOLDOWN_RESET(lazarus, recharge)
 	second.adjustBruteLoss(second.maxHealth * 0.2, forced = TRUE)
 	TEST_ASSERT(second.downed, "It isn't down the second time")
 	TEST_ASSERT(!lazarus.charging, "The Lazarus node charged twice")
+	TEST_ASSERT(findtext(lazarus.examine_line(), "ticks"), "A spent node still hums")
 	TEST_ASSERT(second.body_apply_cuffs(allocate(/obj/item/restraints/handcuffs, tile(0, 4))), "Cuffs didn't go on the downed cyberpsycho")
 	TEST_ASSERT_EQUAL(second.capture_state(), "downed", "Cuffed while down, it doesn't count as downed") // BOUNTY_STATE_DOWNED
 	var/datum/criminal_bounty/second_posting = new
