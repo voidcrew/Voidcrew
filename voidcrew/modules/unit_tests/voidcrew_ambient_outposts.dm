@@ -297,13 +297,11 @@
 	TEST_ASSERT_EQUAL(visit.order_at, order_before + 6000, "Ten minutes standing still were not added to a customer's order")
 	TEST_ASSERT_EQUAL(customer.leave_at, leave_before + 6000, "Ten minutes standing still counted towards a customer's visit")
 
-	// A drunk's slurring does not wear off while nobody is there
-	drinker.get_drunker(3 - drinker.drunk)
-	TEST_ASSERT(drinker.has_status_effect(/datum/status_effect/speech/slurring/generic), "A stage 3 drinker does not slur")
-	SSambient_npcs.update_outpost(place, 0, list(), 0)
-	TEST_ASSERT(!drinker.has_status_effect(/datum/status_effect/speech/slurring/generic), "A drunk's slurring ran on with nobody there")
-	SSambient_npcs.update_outpost(place, 1, list())
-	TEST_ASSERT(drinker.has_status_effect(/datum/status_effect/speech/slurring/generic), "A drunk stopped slurring after holding still")
+	// How far gone they are is how drunk they really are (tg's drunkenness), not a counter
+	drinker.set_drunk_effect(35)
+	drinker.update_drunk_stage()
+	TEST_ASSERT_EQUAL(drinker.drunk, 3, "A drinker as drunk as 35 is at stage [drinker.drunk], not 3") // PATRON_DRUNK_SWAYING
+	TEST_ASSERT(drinker.has_status_effect(/datum/status_effect/inebriated/drunk), "A swaying drinker is not drunk as far as their body knows")
 
 	// The janitor is found at something, where they may stand
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor, pa_tile(4, 0), place)
@@ -380,7 +378,12 @@
 // DRINKERS (owner item 2)
 // =========================================================================
 
-/// A drinker orders at the bar, sits, drinks a real glass, gets drunker every two strong sips, slurs, is cut off, sleeps it off on a sofa and leaves; a drink handed to them is drunk
+/**
+ * A drinker orders at the bar, sits, really drinks a real glass (the drink goes into them, and tg's
+ * drunkenness sets their stage), is cut off when done for, sleeps it off on a sofa for real (tg's
+ * Sleeping) and leaves; a drink handed to them is drunk the same way; poison anyone could see is
+ * refused, poison hidden in a drink is not, and counts as violence at the outpost.
+ */
 /datum/unit_test/voidcrew_ambient_outpost_drinkers
 
 /datum/unit_test/voidcrew_ambient_outpost_drinkers/Run()
@@ -400,7 +403,7 @@
 	TEST_ASSERT_EQUAL(order.spot, pa_tile(0, 2), "A drinker orders from somewhere other than the front of the bar")
 	drinker.end_activity()
 
-	// Drinking: the bar stool, a real glass of something strong
+	// Drinking: the bar stool, a real glass of something strong, in hand
 	var/datum/ambient_activity/drink/bar/drink = drinker.start_activity(new /datum/ambient_activity/drink/bar(drinker, dram))
 	TEST_ASSERT_NOTNULL(drink, "A drinker found no seat")
 	TEST_ASSERT_EQUAL(drink.spot, get_turf(stool), "A drinker passed up a free bar stool at a table")
@@ -408,60 +411,77 @@
 	drinker.activity_step(1)
 	TEST_ASSERT_EQUAL(drinker.buckled, stool, "A drinker did not sit on the stool")
 	TEST_ASSERT(istype(drinker.held_item, /obj/item/reagent_containers/cup/glass/drinkingglass), "A drinker has no glass")
+	TEST_ASSERT(drinker.is_holding(drinker.held_item), "A drinker's glass is not in their hand")
 	TEST_ASSERT(drinker.glass_is_strong(), "The Dregs poured a drinker something soft")
 
-	// Two sips of something strong: one stage drunker
+	// Two gulps of something strong: it goes into them
 	for(var/sip in 1 to 2)
 		drink.next_sip = world.time
 		drinker.activity_step(1)
-	TEST_ASSERT_EQUAL(drinker.drunk, 1, "Two strong sips made a drinker [drinker.drunk] stages drunk, not 1")
+	var/obj/item/organ/stomach/belly = drinker.get_organ_slot(ORGAN_SLOT_STOMACH)
+	var/swallowed = drinker.reagents.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE) || belly?.reagents?.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE)
+	TEST_ASSERT(swallowed, "Two strong gulps never went into the drinker")
 
-	// Stage 3 slurs; stage 4 is cut off
-	drinker.get_drunker(2)
-	TEST_ASSERT(drinker.has_status_effect(/datum/status_effect/speech/slurring/generic), "A stage 3 drinker does not slur")
-	drinker.get_drunker(1)
-	TEST_ASSERT(drinker.cut_off, "A drinker at the last stage was not cut off")
+	// Their stage is how drunk they are: loud at 20, done for at 45 and cut off
+	drinker.set_drunk_effect(20)
+	drinker.activity_step(1)
+	TEST_ASSERT_EQUAL(drinker.drunk, 2, "A drinker as drunk as 20 is at stage [drinker.drunk], not 2") // PATRON_DRUNK_LOUD
+	drinker.set_drunk_effect(45)
+	drink.next_sip = world.time + 1 MINUTES
+	TEST_ASSERT_EQUAL(drinker.activity_step(1), 2, "A drinker done for kept drinking") // AMBIENT_STEP_DONE
+	TEST_ASSERT(drinker.cut_off, "A drinker done for was not cut off")
 	var/obj/item/glass = drinker.held_item
 	drinker.end_activity()
 	// Nobody works the bar at the test outpost, so the finished glass goes rather than onto the table
 	TEST_ASSERT(QDELETED(glass) || isnull(glass.loc), "A drinker's glass was left behind where nobody clears glasses")
 
-	// Sleeping it off on the sofa
+	// Sleeping it off on the sofa: really asleep
 	drinker.pick_activity()
 	var/datum/ambient_activity/sleep_it_off/nap = drinker.activity
-	TEST_ASSERT(istype(nap), "A drinker at the last stage did not go to sleep it off")
+	TEST_ASSERT(istype(nap), "A drinker done for did not go to sleep it off")
 	TEST_ASSERT_EQUAL(nap.spot, get_turf(sofa), "A drinker went to sleep somewhere other than the sofa")
 	drinker.forceMove(nap.spot)
 	drinker.activity_step(1)
-	TEST_ASSERT(drinker.asleep, "A drinker on the sofa is not asleep")
+	TEST_ASSERT(drinker.IsSleeping(), "A drinker on the sofa is not asleep")
+	TEST_ASSERT_EQUAL(drinker.stat, UNCONSCIOUS, "A sleeping drinker is awake as far as their body knows")
 	TEST_ASSERT_EQUAL(drinker.buckled, sofa, "A sleeping drinker is not on the sofa")
-	TEST_ASSERT(length(drinker.get_lines("talk")), "A sleeping drinker has nothing to mumble") // AMBIENT_LINE_TALK
+	TEST_ASSERT(!drinker.can_be_talked_to(), "An empty hand talks to a sleeping drinker instead of shaking them")
+	// Awake again (shaken, or the sleep ran out): up, and off home
+	drinker.SetSleeping(0)
+	TEST_ASSERT_EQUAL(drinker.activity_step(1), 2, "A drinker who woke kept sleeping it off") // AMBIENT_STEP_DONE
 	drinker.end_activity()
-	TEST_ASSERT(!drinker.asleep, "A drinker who slept it off is still lying down")
+	TEST_ASSERT(drinker.slept, "A drinker who slept it off does not know it")
 	drinker.pick_activity()
 	TEST_ASSERT(istype(drinker.activity, /datum/ambient_activity/leave), "A drinker who slept it off did not head home")
 
-	// A drink handed over is drunk: something strong takes them further, coffee brings them back, poison they refuse
+	// A drink handed over is drunk for real
 	var/mob/living/carbon/human/consistent/player = allocate(/mob/living/carbon/human/consistent, pa_tile(4, 0))
+	player.mind_initialize()
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/regular = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/drinker, pa_tile(3, 0), place)
 	regular.set_bar(dram, dram, "bar_dregs")
-	regular.drunk = 1
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/beer = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
 	beer.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, 30)
 	TEST_ASSERT_EQUAL(regular.item_interaction(player, beer, list()), 1, "Handing a drinker a beer did nothing") // ITEM_INTERACT_SUCCESS
-	TEST_ASSERT_EQUAL(regular.drunk, 2, "A beer handed over did not make a drinker drunker")
 	TEST_ASSERT(beer.reagents.total_volume < 30, "A drinker did not drink the beer handed over")
 	TEST_ASSERT(!regular.accept_drink(player, beer), "A drinker drank two handed drinks back to back")
+	// A glass that is plainly something else they won't touch
 	LAZYREMOVE(regular.reaction_cooldowns, "handed")
-	var/obj/item/reagent_containers/cup/glass/drinkingglass/poison = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
-	poison.reagents.add_reagent(/datum/reagent/toxin/plasma, 30)
-	TEST_ASSERT(!regular.accept_drink(player, poison), "A drinker drank poison")
-	TEST_ASSERT_EQUAL(poison.reagents.total_volume, 30, "A drinker sipped the poison")
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/plasma = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
+	plasma.reagents.add_reagent(/datum/reagent/toxin/plasma, 30)
+	TEST_ASSERT(!regular.accept_drink(player, plasma), "A drinker drank a glass of plasma")
+	TEST_ASSERT_EQUAL(plasma.reagents.total_volume, 30, "A drinker sipped the plasma")
+	// Poison hidden in a beer goes down, and the outpost counts it as violence
+	LAZYREMOVE(regular.reaction_cooldowns, "handed")
+	var/obj/item/reagent_containers/cup/glass/drinkingglass/spiked = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
+	spiked.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, 25)
+	spiked.reagents.add_reagent(/datum/reagent/toxin, 5)
+	TEST_ASSERT(regular.accept_drink(player, spiked), "A drinker turned down a spiked beer they couldn't tell from a beer")
+	TEST_ASSERT(outpost.aggressor_strikes[player.mind] >= 1, "Spiking a drinker's beer is not violence at the outpost")
+	// Coffee is welcome too
 	LAZYREMOVE(regular.reaction_cooldowns, "handed")
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/coffee = allocate(/obj/item/reagent_containers/cup/glass/drinkingglass, pa_tile(4, 0))
 	coffee.reagents.add_reagent(/datum/reagent/consumable/coffee, 30)
 	TEST_ASSERT(regular.accept_drink(player, coffee), "A drinker would not take a coffee")
-	TEST_ASSERT_EQUAL(regular.drunk, 1, "A coffee did not sober a drinker up")
 
 	// The crew room: coffee first, then something stronger
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/crew = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/drinker, pa_tile(1, 1), place)
@@ -622,13 +642,16 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drunk = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/drinker, pa_tile(0, 2), place)
 	drunk.start_activity(new /datum/ambient_activity/sleep_it_off(drunk))
 	drunk.activity_step(1)
-	TEST_ASSERT(drunk.asleep, "A drinker sleeping it off is not asleep")
+	TEST_ASSERT(drunk.IsSleeping(), "A drinker sleeping it off is not asleep")
+	// Nearly slept it off: one shake (tg's help, ten seconds off a sleep) wakes them
+	drunk.SetSleeping(5 SECONDS)
 	var/datum/ambient_activity/escort/escort = barback.start_activity(new /datum/ambient_activity/escort(barback, drunk))
 	TEST_ASSERT_NOTNULL(escort, "The barback would not walk a sleeping drinker out")
 	barback.forceMove(pa_tile(1, 2))
 	barback.activity_step(1)
+	TEST_ASSERT(!drunk.IsSleeping(), "The barback's shake did not wake the drinker")
+	barback.activity_step(1)
 	TEST_ASSERT(istype(drunk.activity, /datum/ambient_activity/leave), "A drinker the barback woke did not head for the lift")
-	TEST_ASSERT(!drunk.asleep, "A drinker walked out is still lying down")
 	TEST_ASSERT_EQUAL(barback.activity_step(1), 0, "The barback left the drinker's side") // AMBIENT_STEP_CONTINUE
 
 /// On the convoy the dock worker carries crates from the lift to the counter and back, a few times; the crates are only a look

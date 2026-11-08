@@ -104,8 +104,8 @@
 	TEST_ASSERT_EQUAL(tribal.npc_count(2), 4, "A yellow band is not four hunters") // ZONE_YELLOW
 	TEST_ASSERT_EQUAL(tribal.npc_count(3), 5, "A red band is not five hunters") // ZONE_RED
 	var/datum/ambient_site_kind/planet/peddler/peddler = allocate(/datum/ambient_site_kind/planet/peddler)
-	TEST_ASSERT_EQUAL(peddler.npc_count(1), 2, "A green caravan is not a peddler and a pony") // ZONE_GREEN
-	TEST_ASSERT_EQUAL(peddler.npc_count(3), 3, "A red caravan has no guard") // ZONE_RED
+	TEST_ASSERT_EQUAL(peddler.npc_count(1), 1, "A green caravan is not one peddler (the pony is an animal, not one of the people)") // ZONE_GREEN
+	TEST_ASSERT_EQUAL(peddler.npc_count(3), 2, "A red caravan has no guard") // ZONE_RED
 	TEST_ASSERT_EQUAL(ambient_ambush_size(1), 0, "Caravans are jumped in green") // ZONE_GREEN
 	TEST_ASSERT(ambient_ambush_size(3) > ambient_ambush_size(2), "A red ambush is no bigger than a yellow one") // ZONE_RED, ZONE_YELLOW
 
@@ -374,7 +374,7 @@
 	TEST_ASSERT_NOTNULL(fire, "The hunters' camp has no fire")
 	TEST_ASSERT(count_in_room(/obj/effect/ambient_camp_prop/mat) >= 3, "Not every hunter has a sleeping mat")
 	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
-		TEST_ASSERT(hunter.has_spear, "A hunter came out without a spear")
+		TEST_ASSERT(hunter.has_spear(), "A hunter came out without a spear")
 		TEST_ASSERT_NOTNULL(hunter.leash_bounds, "A hunter is not leashed to the camp")
 	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/first = hunters[1]
 	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/lookout = first.camp_lookout()
@@ -415,24 +415,36 @@
 	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
 		hunter.end_activity()
 
-	// A thrown spear: a wind-up first, one throw at a time for the camp, never at their own
+	// A thrown spear: a wind-up first, one throw at a time for the camp, never with one of their own in the way;
+	// the real spear in hand flies (tg's throw) and lies where it came down, theirs to pick up again
 	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/thrower = first
 	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/mate = hunters[2]
 	thrower.forceMove(room_turf(0, 0))
+	mate.forceMove(room_turf(0, 4))
 	visitor.forceMove(room_turf(4, 4))
 	visit["next_throw"] = 0
+	var/obj/item/spear/held_spear = thrower.held_weapon()
+	TEST_ASSERT(istype(held_spear), "A hunter holds no real spear")
 	TEST_ASSERT(thrower.try_ranged(visitor), "No throw at four tiles")
-	TEST_ASSERT(thrower.has_spear, "A spear flew without a wind-up")
+	TEST_ASSERT(thrower.has_spear(), "A spear flew without a wind-up")
 	TEST_ASSERT(!mate.try_ranged(visitor), "Two hunters wound up a throw at once")
 	thrower.throw_windup_until = world.time
 	thrower.try_ranged(visitor)
-	TEST_ASSERT(!thrower.has_spear, "The spear was never thrown")
+	TEST_ASSERT(!thrower.has_spear(), "The spear was never thrown")
+	TEST_ASSERT(!thrower.is_holding(held_spear), "A hunter still holds the spear they threw")
 	TEST_ASSERT_EQUAL(thrower.throw_reach(), 0, "A hunter throws a spear they no longer have")
-	var/obj/projectile/ambient_spear/test_spear = allocate(/obj/projectile/ambient_spear, room_turf(1, 1))
-	test_spear.firer = thrower
-	TEST_ASSERT(!test_spear.can_hit_target(mate, FALSE, TRUE), "A thrown spear can hit the thrower's own camp")
-	thrower.rearm()
-	TEST_ASSERT(thrower.has_spear, "A hunter could not take up a spear again")
+	TEST_ASSERT(HAS_TRAIT(held_spear, "human_npc_consumable"), "A camp's spear is loot once thrown") // TRAIT_HUMAN_NPC_CONSUMABLE
+	// Never past one of their own: a hunter standing in the line stops the throw
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/blocker = hunters[3]
+	blocker.forceMove(room_turf(2, 2))
+	visit["next_throw"] = 0
+	mate.forceMove(room_turf(0, 0))
+	TEST_ASSERT(ambient_camp_mate_in_line(mate, visitor), "A hunter's own camp mate in the line doesn't count")
+	TEST_ASSERT(!mate.try_ranged(visitor), "A hunter wound up a throw with one of their own in the way")
+	// A spare off the camp's rack (the thrown one is still in the air or far off)
+	thrower.rearm(from_rack = TRUE)
+	TEST_ASSERT(thrower.has_spear(), "A hunter could not take up a spear again")
+	TEST_ASSERT(HAS_TRAIT(thrower.held_weapon(), "human_npc_consumable"), "A spear off the rack is not the camp's") // TRAIT_HUMAN_NPC_CONSUMABLE
 
 	// A hide for a bone spear, once per crew
 	visitor.drop_all_held_items()
@@ -534,9 +546,9 @@
 	site.band = 2 // ZONE_YELLOW
 	site.npc_total = kind.npc_count(2) // ZONE_YELLOW
 	TEST_ASSERT(kind.realize(site), "The caravan did not come out")
-	TEST_ASSERT_EQUAL(length(site.living_npcs()), 3, "A yellow caravan came out with [length(site.living_npcs())] people")
+	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "A yellow caravan came out with [length(site.living_npcs())] people")
 	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
-	var/mob/living/carbon/human/npc/ambient_npc/planet/pack_pony/pony = locate() in site.living_npcs()
+	var/mob/living/basic/pony/ambient_pack/pony = caravan_pony(site)
 	var/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard/guard = locate() in site.living_npcs()
 	TEST_ASSERT_NOTNULL(peddler, "The caravan has no peddler")
 	TEST_ASSERT_NOTNULL(pony, "The caravan has no pony")
@@ -576,7 +588,7 @@
 		qdel(member)
 	TEST_ASSERT(kind.realize(site), "The caravan did not come back for the next visit")
 	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "[length(site.living_npcs())] came back, not the peddler and the guard")
-	TEST_ASSERT_NULL(locate(/mob/living/carbon/human/npc/ambient_npc/planet/pack_pony) in site.living_npcs(), "A killed pony came back")
+	TEST_ASSERT_NULL(caravan_pony(site), "A killed pony came back")
 	peddler = locate() in site.living_npcs()
 	TEST_ASSERT(peddler?.shop_closed, "The shop opened again with no pony")
 	for(var/datum/shop_buyback/buyback as anything in peddler.shop.buybacks)
@@ -786,7 +798,7 @@
 	// A dead pony shuts the pack: the weapon cannot be bought, and it is still shut next visit
 	site = new_caravan(kind, 1) // ZONE_GREEN
 	peddler = locate() in site.living_npcs()
-	var/mob/living/carbon/human/npc/ambient_npc/planet/pack_pony/pony = locate() in site.living_npcs()
+	var/mob/living/basic/pony/ambient_pack/pony = caravan_pony(site)
 	weapon = peddler.shop.weapon
 	pony.death()
 	var/balance = account.account_balance
@@ -800,7 +812,8 @@
 
 	// Killing the whole caravan drops nothing from the pack, and it is spent
 	site = new_caravan(kind, 3) // ZONE_RED
-	TEST_ASSERT_EQUAL(length(site.living_npcs()), 3, "A red caravan came out with [length(site.living_npcs())] people")
+	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "A red caravan came out with [length(site.living_npcs())] people")
+	caravan_pony(site)?.death()
 	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.living_npcs())
 		member.death()
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku/peddler/weapon))

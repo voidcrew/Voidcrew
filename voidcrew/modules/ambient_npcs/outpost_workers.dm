@@ -859,7 +859,8 @@
 		if(!doer.buckled)
 			doer.face_atom(drunk)
 		if(drunk.stat != CONSCIOUS)
-			// A shake, as anyone wakes a sleeper
+			// A shake, as anyone wakes a sleeper (an empty hand)
+			human_npc_ready_empty_hand(doer)
 			doer.ai_controller?.ai_interact(drunk, combat_mode = FALSE)
 			return AMBIENT_STEP_CONTINUE
 		woke = TRUE

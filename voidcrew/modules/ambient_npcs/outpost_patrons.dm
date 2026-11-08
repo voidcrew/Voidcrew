@@ -1076,8 +1076,10 @@
 		return
 	if(!istype(tool, /obj/item/reagent_containers/cup/glass) && !istype(tool, /obj/item/reagent_containers/cup/soda_cans))
 		return
-	if(!accept_drink(user, tool))
+	// Awake and up, they answer it themselves (a gulp, or a refusal); otherwise it is tg's feeding
+	if(!can_act() || fading)
 		return
+	accept_drink(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
 /// `user` hands them `drink`. TRUE if they drank from it.
@@ -1085,16 +1087,16 @@
 	if(!can_act() || fading)
 		return FALSE
 	if(!reaction_ready("handed", PATRON_HANDED_COOLDOWN))
-		return TRUE
+		return FALSE
 	if(!buckled)
 		face_atom(user)
 	if(!drink.reagents?.total_volume || !drink.is_drainable())
 		speak_context("handed_empty", user, force = TRUE)
-		return TRUE
+		return FALSE
 	var/datum/reagent/looks_like = drink.reagents.get_master_reagent()
 	if(!istype(looks_like, /datum/reagent/consumable) || istype(looks_like, /datum/reagent/toxin))
 		speak_context("handed_refuse", user, force = TRUE)
-		return TRUE
+		return FALSE
 	if(!drink.canconsume(src, src))
 		return FALSE
 	var/strong = drink.reagents.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE)

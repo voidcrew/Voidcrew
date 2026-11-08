@@ -63,55 +63,71 @@
 // THE BASE NPC
 // =========================================================================
 
-/// Nobody drags, boxes, teleports or polymorphs an ambient NPC; they can be hurt; an outpost's turrets count its people as their own; a killed one drops its cash and loot once
+/**
+ * An ambient NPC is a real human body (human NPC phase E1): no godmode, no containment or weather
+ * immunity, one face for life, kit locked to them. Living and awake they won't stay held (their AI
+ * resists) and refuse teleports at an outpost; in crit or dead they are an ordinary body. They can be
+ * hurt; an outpost's turrets count its people as their own; a killed one drops its cash and loot once.
+ */
 /datum/unit_test/voidcrew_ambient_npc_protections
 
 /datum/unit_test/voidcrew_ambient_npc_protections/Run()
 	var/mob/living/carbon/human/npc/ambient_npc/core_test/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, run_loc_floor_bottom_left)
 	TEST_ASSERT(npc in GLOB.ambient_npcs, "An ambient NPC is not on the list")
-	TEST_ASSERT_EQUAL(npc.sentience_type, SENTIENCE_HUMANOID, "Sentience or transference potions would work on an ambient NPC")
+	TEST_ASSERT(istype(npc, /mob/living/carbon/human), "An ambient NPC is not a human body")
 	TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "An ambient NPC cannot be hurt")
-	TEST_ASSERT(HAS_TRAIT(npc, "no_containment"), "An ambient NPC can be shut in a closet") // TRAIT_NO_CONTAINMENT
-	TEST_ASSERT(HAS_TRAIT(npc, TRAIT_NO_STORAGE_INSERT), "An ambient NPC can be put in a bag")
-	TEST_ASSERT(HAS_TRAIT(npc, TRAIT_WEATHER_IMMUNE), "Weather hurts an ambient NPC")
-	TEST_ASSERT(!npc.unsuitable_atmos_damage && !npc.unsuitable_cold_damage && !npc.unsuitable_heat_damage, "An ambient NPC dies in vacuum or cold")
+	TEST_ASSERT(!HAS_TRAIT(npc, "no_containment"), "An ambient NPC's body can't be shut in a closet") // TRAIT_NO_CONTAINMENT
+	TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_WEATHER_IMMUNE), "An ambient NPC is proof against the weather")
+	TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_SPACEWALK), "An ambient NPC walks in space with no kit")
 	TEST_ASSERT(!is_hostile_creature(npc), "Outpost turrets would shoot an ambient NPC as a wild hostile")
 	TEST_ASSERT(npc.name != initial(npc.name), "An ambient NPC has no name of their own")
+	TEST_ASSERT_NOTNULL(npc.person, "An ambient NPC has no face of their own")
+	TEST_ASSERT_EQUAL(npc.skin_tone, npc.person.skin_tone, "An ambient NPC's body does not wear their face")
+	TEST_ASSERT_NOTNULL(npc.w_uniform, "An ambient NPC wears no clothes")
+	TEST_ASSERT(HAS_TRAIT(npc.w_uniform, "human_npc_gear"), "An ambient NPC's clothes are not locked to them") // TRAIT_HUMAN_NPC_GEAR
 
 	// An outpost's turrets count its people as their own, and only while they belong to it
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
 	npc.set_place(SSambient_npcs.outpost_place(outpost))
 	TEST_ASSERT(FACTION_TURRET in npc.faction, "Outpost turrets do not count an outpost's people as their own")
-	npc.set_place(null)
-	TEST_ASSERT(!(FACTION_TURRET in npc.faction), "Someone gone from an outpost is still one of its turrets' own")
 
 	// A blow hurts them
 	var/health_before = npc.health
-	npc.apply_damage(20, BRUTE)
+	npc.apply_damage(20, BRUTE, BODY_ZONE_CHEST)
 	TEST_ASSERT(npc.health < health_before, "A blow did not hurt an ambient NPC")
 	npc.revive(ADMIN_HEAL_ALL)
 	health_before = npc.health
 
-	// Teleports of any kind leave them where they are
+	// At an outpost, a living person's teleports leave them where they are
 	var/turf/start = get_turf(npc)
-	TEST_ASSERT(!do_teleport(npc, run_loc_floor_top_right, forced = TRUE, no_effects = TRUE), "An ambient NPC was teleported")
-	TEST_ASSERT_EQUAL(get_turf(npc), start, "An ambient NPC moved when teleported")
+	TEST_ASSERT(!do_teleport(npc, run_loc_floor_top_right, forced = TRUE, no_effects = TRUE), "An outpost's person was teleported")
+	TEST_ASSERT_EQUAL(get_turf(npc), start, "An outpost's person moved when teleported")
+	npc.set_place(null)
+	TEST_ASSERT(!(FACTION_TURRET in npc.faction), "Someone gone from an outpost is still one of its turrets' own")
 
 	// No polymorph, no mob type change
 	TEST_ASSERT(SEND_SIGNAL(npc, COMSIG_LIVING_PRE_WABBAJACKED, "animal") & STOP_WABBAJACK, "An ambient NPC can be polymorphed")
 	TEST_ASSERT(SEND_SIGNAL(npc, COMSIG_PRE_MOB_CHANGED_TYPE) & COMPONENT_BLOCK_MOB_CHANGE, "An ambient NPC can be turned into another mob")
 
-	// No pulling, no drag-dropping onto a bed or into a crate, no closet
+	// Grabbed, they want free (their AI resists, as a person does); their own seat is fine
 	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	TEST_ASSERT(!ambient_wants_free(npc), "An ambient NPC standing free wants free")
 	player.start_pulling(npc)
-	TEST_ASSERT(player.pulling != npc, "An ambient NPC can be pulled")
-	TEST_ASSERT(SEND_SIGNAL(npc, COMSIG_MOUSEDROP_ONTO, run_loc_floor_top_right, player) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "An ambient NPC can be drag-dropped")
-	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_turf(npc))
-	TEST_ASSERT(!closet.insertion_allowed(npc), "A closet takes an ambient NPC")
+	TEST_ASSERT_EQUAL(player.pulling, npc, "An ambient NPC can't be grabbed at all")
+	TEST_ASSERT(ambient_wants_free(npc), "A grabbed ambient NPC doesn't try to get free")
+	player.stop_pulling()
+	var/obj/structure/chair/seat = allocate(/obj/structure/chair, get_turf(npc))
+	TEST_ASSERT(npc.sit_on(seat), "An ambient NPC could not sit down")
+	TEST_ASSERT(!ambient_wants_free(npc), "An ambient NPC wants out of their own seat")
+	npc.stand_up()
 
-	// Talking to them with an empty hand is not an attack
+	// Talking to them with an empty hand is not an attack; lying down, it is tg's help instead
 	npc.attack_hand(player, list())
 	TEST_ASSERT_EQUAL(npc.health, health_before, "Talking to an ambient NPC hurt them")
+	TEST_ASSERT(npc.can_be_talked_to(), "An ambient NPC up and about can't be talked to")
+	npc.set_resting(TRUE, silent = TRUE, instant = TRUE)
+	TEST_ASSERT(!npc.can_be_talked_to(), "An empty hand talks to an ambient NPC lying down, not helping them up")
+	npc.set_resting(FALSE, silent = TRUE, instant = TRUE)
 
 	// The leash: never a step off it by themselves; off it, a step back is allowed
 	var/turf/corner = run_loc_floor_bottom_left
@@ -127,20 +143,34 @@
 	leashed.forceMove(far_outside)
 	TEST_ASSERT(leashed.own_step_allowed(outside), "An ambient NPC off their leash may not step back towards it")
 
-	// Killed: a body that lies down, their cash and loot once, and nothing more from a revived one killed again
+	// Killed: a body anyone can drag or bag, their cash and loot once, and nothing more from a revived one killed again
 	var/turf/loot_turf = run_loc_floor_top_right
 	var/mob/living/carbon/human/npc/ambient_npc/core_test/killable/victim = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test/killable, loot_turf)
-	victim.apply_damage(victim.maxHealth * 2, BRUTE)
+	victim.adjustBruteLoss(250)
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "An ambient NPC did not die of their wounds")
 	TEST_ASSERT(!victim.density, "An ambient NPC's body still blocks the way")
+	TEST_ASSERT(victim.death_counted, "A killed ambient NPC's death was not counted")
 	TEST_ASSERT_EQUAL(count_pickaxes(loot_turf), 1, "A killed NPC dropped [count_pickaxes(loot_turf)] of its loot, not one")
 	var/cash = ambient_test_cash_on(loot_turf)
 	TEST_ASSERT(cash >= 5 && cash <= 30, "A killed NPC dropped [cash] cr, not 5 to 30") // AMBIENT_DEATH_CASH_LOW/HIGH
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet, loot_turf)
+	TEST_ASSERT(closet.insertion_allowed(victim), "A closet won't take an ambient NPC's body")
+	player.forceMove(get_step(loot_turf, WEST))
+	player.start_pulling(victim)
+	TEST_ASSERT_EQUAL(player.pulling, victim, "An ambient NPC's body can't be dragged")
+	player.stop_pulling()
 	victim.revive(ADMIN_HEAL_ALL)
 	TEST_ASSERT_EQUAL(victim.stat, CONSCIOUS, "A revived NPC is not up again")
 	victim.death()
 	TEST_ASSERT_EQUAL(count_pickaxes(loot_turf), 1, "A revived NPC dropped its loot again")
 	TEST_ASSERT_EQUAL(ambient_test_cash_on(loot_turf), cash, "A revived NPC dropped cash again")
+
+	// A trader outpost's dead lie until nobody is near, then go sooner than other NPC bodies
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/patron = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, run_loc_floor_bottom_left)
+	patron.set_place(SSambient_npcs.outpost_place(outpost))
+	patron.death()
+	TEST_ASSERT_EQUAL(patron.npc_corpse_lifetime, 5 MINUTES, "An outpost's dead don't go with the outpost's body time") // AMBIENT_OUTPOST_BODY_TIME
+	TEST_ASSERT(patron in SShuman_npcs.corpses, "An outpost's dead are not left to the corpse sweep")
 
 /datum/unit_test/voidcrew_ambient_npc_protections/proc/count_pickaxes(turf/where)
 	. = 0
@@ -469,7 +499,13 @@
 	TEST_ASSERT_EQUAL(drinker.activity_step(1), 0, "Drinking stopped at once") // AMBIENT_STEP_CONTINUE
 	var/obj/item/glass = drinker.held_item
 	TEST_ASSERT(istype(glass, /obj/item/reagent_containers/cup/glass/drinkingglass), "A drinker has no glass")
+	TEST_ASSERT(drinker.is_holding(glass), "A drinker's glass is not in their hand")
+	var/in_glass = glass.reagents.total_volume
 	TEST_ASSERT(drinker.sip(), "A drinker could not sip")
+	TEST_ASSERT(glass.reagents.total_volume < in_glass, "A sip took nothing out of the glass")
+	var/obj/item/organ/stomach/belly = drinker.get_organ_slot(ORGAN_SLOT_STOMACH)
+	var/swallowed = drinker.reagents.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE) || belly?.reagents?.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE)
+	TEST_ASSERT(swallowed, "A sip of beer never went into the drinker")
 	drinker.end_activity()
 	TEST_ASSERT_NULL(drinker.held_item, "A drinker kept their glass after drinking")
 	TEST_ASSERT_EQUAL(glass.loc, table.loc, "A finished glass was not set down on the table")
