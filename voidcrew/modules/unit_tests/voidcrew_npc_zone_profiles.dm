@@ -691,7 +691,6 @@
 		/mob/living/basic/mining/wolf/random = /mob/living/basic/mining/wolf/alpha,
 		/mob/living/basic/mining/wolf/wasteland/random = /mob/living/basic/mining/wolf/alpha/wasteland,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/random = /mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random = /mob/living/simple_animal/hostile/asteroid/hermit/ranged,
 	)
 	for(var/spawn_type in replacement_types)
 		var/found_replacement = FALSE

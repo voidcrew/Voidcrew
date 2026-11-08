@@ -22,8 +22,8 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "af" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	npc_faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
@@ -50,9 +50,8 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "al" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
-	dir = 4;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	npc_faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
@@ -104,17 +103,15 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "aw" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
-	dir = 4;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "ax" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 4;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("adobe")
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -144,23 +141,21 @@
 /area/ruin/unpowered)
 "aC" = (
 /obj/structure/chair/plastic,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "aD" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger{
-	dir = 4;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit/gunslinger{
+	npc_faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "aE" = (
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 1;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/zone_loot/wardrobe,
@@ -215,9 +210,8 @@
 /obj/structure/chair/plastic{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 4;
-	faction = list("adobe")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,

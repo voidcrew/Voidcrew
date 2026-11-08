@@ -126,7 +126,7 @@
 
 		if(can_spawn)
 			var/datum/npc_spawn_context/context = new(src, source_turf = new_turf)
-			spawn_npc_in_zone(picked_mob, new_turf, context)
+			spawn_npc_in_zone_or_queue(picked_mob, new_turf, context)
 			new_turf.flags_1 |= NO_LAVA_GEN
 
 

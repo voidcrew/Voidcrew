@@ -64,7 +64,6 @@
 		/mob/living/basic/regal_rat,
 		/mob/living/basic/snail,
 		/mob/living/basic/stoat,
-		/mob/living/simple_animal/hostile/asteroid/hermit,
 	))
 	return is_type_in_typecache(src, plain_bleeders)
 

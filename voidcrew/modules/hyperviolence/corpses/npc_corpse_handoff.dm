@@ -5,8 +5,8 @@
 // For a human-looking NPC of flesh and blood we make the corpse the same way, then hand the fight
 // over (npc_corpse_gore.dm) in place of that even spread, give the player's deathgasp in the NPC's
 // name, and let the corpse seize up on its feet before it falls. The NPC is still in the world while
-// this runs: basic mobs are deleted after their death signal. Wasteland hermits (legacy simple mobs
-// whose corpse comes from their loot list) get the same.
+// this runs: basic mobs are deleted after their death signal. (Wasteland hermits had hooks here too;
+// they are human NPCs now, voidcrew/modules/human_npcs/ruins/, and die in their own bodies.)
 
 /datum/element/death_drops/Attach(datum/target, list/loot)
 	. = ..()
@@ -51,35 +51,10 @@
 	dead.hv_npc_deathgasp(body, gasp_now)
 	return body
 
-// ---- Wasteland hermits ----
-
-/mob/living/simple_animal/hostile/asteroid/hermit/Initialize(mapload)
-	. = ..()
-	for(var/path in loot)
-		if(hv_is_human_corpse_path(path))
-			hv_leaves_human_corpse = TRUE
-			AddElement(/datum/element/hv_npc_wounds)
-			break
-
-/mob/living/simple_animal/hostile/asteroid/hermit/hv_is_fleshy_humanoid_npc()
-	return TRUE
+// ---- Simple mobs ----
 
 /mob/living/simple_animal/hv_damage_share(damagetype)
 	return damage_coeff?[damagetype] || 0
-
-// A simple mob drops its loot before it is marked dead, so its corpse is made here, by hand, with the
-// rest of the loot left to the usual drop.
-/mob/living/simple_animal/hostile/asteroid/hermit/drop_loot()
-	if(!hv_leaves_human_corpse || !length(loot))
-		return ..()
-	// The attack line goes out before the corpse's lines and the deathgasp.
-	hv_flush_hit()
-	for(var/path in loot.Copy())
-		if(!hv_is_human_corpse_path(path))
-			continue
-		loot -= path
-		hv_make_npc_corpse(path, drop_location(), src, FALSE)
-	return ..()
 
 // ---- Deathgasp and death throes ----
 

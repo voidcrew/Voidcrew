@@ -9,8 +9,10 @@
  * words, sounds and timing:
  * - windup: rears up and marks the victim. Holds nobody, so the victim can still be pulled clear.
  * - hold: the pin. From here the victim is held down.
- * - maul: a bite or a blow, with blood. Deals no damage, so the victim lives to the end.
- * - kill/rip_limb, kill/decapitate, kill/burst_head, kill/bisect: the killing blow.
+ * - maul: a bite or a blow, with blood. Deals no damage, so the victim lives to the end. When a person
+ *   does it (host.real_hits) it is a real blow with the weapon in hand instead, at [var/blow_zone].
+ * - kill/rip_limb, kill/decapitate, kill/burst_head, kill/bisect: the killing blow. A person's is a real
+ *   blow with a higher wound bonus (real_kill()); tg's wounds and dismemberment decide what it takes.
  * - recover: the attacker straightens up after the kill. Lets the victim go.
  */
 
@@ -148,16 +150,22 @@
 
 // ===== Maul =====
 
-/// A bite or a blow: blood and a shake, but no damage, so the victim lives until the kill
+/// A bite or a blow: blood and a shake, but no damage, so the victim lives until the kill. A person's is a
+/// real blow with its weapon at blow_zone.
 /datum/hv_finisher_stage/maul
 	duration = 2 SECONDS
 	effect_delay = 0.5 SECONDS
 	lunge = 8
 	/// How far the blood flies
 	var/spray_strength = 2
+	/// Where a person's blow lands
+	var/blow_zone = BODY_ZONE_HEAD
 
 /datum/hv_finisher_stage/maul/effect()
 	. = ..()
+	if(host.real_hits)
+		host.real_blow(blow_zone)
+		return
 	host.victim.hv_blood_spray(away_dir(), spray_strength)
 	host.victim.Shake(2, 1, 0.6 SECONDS)
 
@@ -181,12 +189,46 @@
 	if(effect_sound)
 		playsound(host.victim, effect_sound, effect_volume, TRUE)
 	var/spray_dir = away_dir()
+	if(host.real_hits)
+		real_kill(spray_dir)
+		return
 	if(!can_gore())
 		fallback(spray_dir)
 		return
 	// The line names the part, so it goes out while the part is still attached
 	show_effect_line()
 	gore(spray_dir)
+
+/// Where a person's killing blow lands
+/datum/hv_finisher_stage/kill/proc/real_zones()
+	return list(host.target_zone || BODY_ZONE_CHEST)
+
+/**
+ * A person's killing blow: a real blow at each of real_zones() with the finisher's extra wound bonus. What
+ * it takes off, if anything, is tg's to decide. The line said is what happened: the gore line if the part
+ * came off, else the fallback.
+ */
+/datum/hv_finisher_stage/kill/proc/real_kill(spray_dir)
+	var/list/before = real_parts()
+	for(var/zone in real_zones())
+		host.real_blow(zone, host.kill_wound_bonus)
+		if(QDELETED(host.victim))
+			return
+	var/list/after = real_parts()
+	if(length(after) < length(before))
+		show_effect_line()
+		return
+	var/text = fallback_message()
+	if(text)
+		host.victim.hv_add_hit_line(text, HV_LINE_BOLD, null, effect_range)
+
+/// The parts a person's killing blow goes for that the victim still has
+/datum/hv_finisher_stage/kill/proc/real_parts()
+	. = list()
+	for(var/zone in real_zones())
+		var/obj/item/bodypart/part = host.victim.get_bodypart(zone)
+		if(part)
+			. += part
 
 /// Whether the victim still has what gore() takes
 /datum/hv_finisher_stage/kill/proc/can_gore()
@@ -246,6 +288,14 @@
 	if(!host.victim.hv_burst_head(spray_dir))
 		fallback(spray_dir)
 
+/datum/hv_finisher_stage/kill/burst_head/real_zones()
+	return list(BODY_ZONE_HEAD)
+
+// The blow is the line here, whatever it does: a head that bursts says so itself (brain_burst.dm).
+/datum/hv_finisher_stage/kill/burst_head/real_kill(spray_dir)
+	show_effect_line()
+	host.real_blow(BODY_ZONE_HEAD, host.kill_wound_bonus)
+
 /// Cuts through at the hips: both legs come off
 /datum/hv_finisher_stage/kill/bisect
 
@@ -255,6 +305,9 @@
 		if(leg?.can_dismember())
 			return TRUE
 	return FALSE
+
+/datum/hv_finisher_stage/kill/bisect/real_zones()
+	return list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 
 /datum/hv_finisher_stage/kill/bisect/gore(spray_dir)
 	var/turf/spot = get_turf(host.victim)
