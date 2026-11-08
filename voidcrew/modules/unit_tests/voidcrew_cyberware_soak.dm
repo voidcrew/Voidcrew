@@ -201,7 +201,13 @@
 	var/list/snap = list()
 	snap["filters"] = length(body.filters)
 	snap["actions"] = length(body.actions)
-	snap["vis_contents"] = length(body.vis_contents)
+	// tg's eyelids join the body's vis_contents whenever eyes are drawn, and stay there after
+	// the eyes leave, so chrome optics going in and out would read as a leak. Not chrome's.
+	var/visible = 0
+	for(var/atom/movable/thing as anything in body.vis_contents)
+		if(!istype(thing, /obj/effect/abstract/eyelid_effect))
+			visible++
+	snap["vis_contents"] = visible
 	var/list/statuses = list()
 	for(var/datum/status_effect/effect as anything in body.status_effects)
 		statuses += "[effect.type]"
