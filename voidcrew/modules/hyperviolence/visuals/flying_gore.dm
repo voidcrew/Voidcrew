@@ -348,16 +348,18 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 		color = blood_color
 	var/dx = HV_VIS_DX(dir)
 	var/dy = HV_VIS_DY(dir)
-	// The art is a line through the whole tile; shrunk and moved out so it starts at the body.
+	// The art is a thin line through the whole tile: shortened along the jet (and moved out so it starts
+	// at the body), and drawn a little thicker across it. A diagonal jet is shortened both ways.
 	var/reach = 0.25 + 0.35 * strength
+	var/thick = 1 + 0.5 * strength
 	var/matrix/start = matrix()
-	start.Scale(0.1)
+	start.Scale(dx ? 0.1 : thick, dy ? 0.1 : thick)
 	start.Translate(dx * 2, dy * 2)
 	var/matrix/out = matrix()
-	out.Scale(reach)
+	out.Scale(dx ? reach : thick, dy ? reach : thick)
 	out.Translate(dx * 16 * reach, dy * 16 * reach)
 	var/matrix/spent = matrix()
-	spent.Scale(reach * 1.1)
+	spent.Scale(dx ? reach * 1.1 : thick * 1.2, dy ? reach * 1.1 : thick * 1.2)
 	spent.Translate(dx * 18 * reach, dy * 18 * reach)
 	alpha = 0
 	animate(src, alpha = 235, transform = start, time = 0, loop = pulses)

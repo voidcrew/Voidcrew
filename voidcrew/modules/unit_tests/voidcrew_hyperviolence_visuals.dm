@@ -115,7 +115,7 @@
 /datum/unit_test/voidcrew_hv_visuals/death_falls_away/Run()
 	for(var/blow_dir in list(EAST, WEST))
 		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
-		victim.adjustOxyLoss(185, updating_health = FALSE)
+		victim.adjustToxLoss(185, updating_health = FALSE, forced = TRUE)
 		TEST_ASSERT_EQUAL(victim.body_position, STANDING_UP, "Test fixture: the victim fell before the killing blow")
 		victim.apply_damage(25, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND, attack_direction = blow_dir)
 		TEST_ASSERT_EQUAL(victim.stat, DEAD, "Test fixture: the killing blow did not kill")
@@ -141,7 +141,7 @@
 /datum/unit_test/voidcrew_hv_visuals/death_kinds/Run()
 	// HV_VIS_DEATH_QUIET 0, _HIT 1, _HEADSHOT 2, _BURNED 3, _BLED_OUT 4, _EXECUTED 5
 	var/mob/living/carbon/human/consistent/shot = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
-	shot.adjustOxyLoss(185, updating_health = FALSE)
+	shot.adjustToxLoss(185, updating_health = FALSE, forced = TRUE)
 	shot.apply_damage(25, BRUTE, BODY_ZONE_HEAD, wound_bonus = CANT_WOUND, attack_direction = NORTH)
 	TEST_ASSERT_EQUAL(shot.hv_vis_death_kind(), 2, "A head shot did not read as a head shot")
 	var/matrix/laid = matrix()
@@ -149,7 +149,7 @@
 	TEST_ASSERT(same_matrix(shot.transform, laid), "The head shot drop changed how the body lies")
 
 	var/mob/living/carbon/human/consistent/burned = allocate(/mob/living/carbon/human/consistent, spot(3, 1))
-	burned.adjustOxyLoss(185, updating_health = FALSE)
+	burned.adjustToxLoss(185, updating_health = FALSE, forced = TRUE)
 	burned.apply_damage(25, BURN, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND, attack_direction = WEST)
 	TEST_ASSERT_EQUAL(burned.hv_vis_death_kind(), 3, "A burning blow did not read as burned")
 	TEST_ASSERT(holds(burned) >= 1, "The burned curl is not held")
@@ -191,7 +191,7 @@
 
 	// Through a real killing blow, next tick
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
-	victim.adjustOxyLoss(185, updating_health = FALSE)
+	victim.adjustToxLoss(185, updating_health = FALSE, forced = TRUE)
 	victim.apply_damage(50, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND, attack_direction = EAST)
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "Test fixture: the killing blow did not kill")
 	sleep(3)

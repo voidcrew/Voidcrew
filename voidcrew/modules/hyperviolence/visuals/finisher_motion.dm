@@ -61,11 +61,16 @@
 		head_dir = EAST
 	else if(victim.lying_angle == LYING_ANGLE_WEST)
 		head_dir = WEST
+	// The legs slide off the feet end, or off to the side if the knight stands there.
+	var/legs_dir = REVERSE_DIR(head_dir)
+	var/turf/legs_to = get_step(victim, legs_dir)
+	if(!legs_to || legs_to == get_turf(host.user) || legs_to.is_blocked_turf(FALSE))
+		legs_dir = pick(turn(legs_dir, 90), turn(legs_dir, -90))
 	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 		var/obj/item/bodypart/leg = victim.get_bodypart(zone)
 		if(leg?.can_dismember())
 			leg.hv_vis_tumble = HV_VIS_TUMBLE_SLIDE
-			leg.hv_vis_fling_dir = REVERSE_DIR(head_dir)
+			leg.hv_vis_fling_dir = legs_dir
 	. = ..()
 	if(!QDELETED(victim) && isturf(victim.loc))
 		victim.hv_vis_slide_in_tile(head_dir, 40)
