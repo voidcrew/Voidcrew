@@ -418,11 +418,13 @@
 	// tg's hulk gene takes only on a human body: the serum makes one of whatever it finds.
 	if(body.dna.species.id != SPECIES_HUMAN)
 		body.set_species(/datum/species/human)
+	// Before the gene: handlers of one signal run in the order they were registered, and on_punch() must
+	// see the target's health before the gene's own handler lands the blow.
+	RegisterSignal(body, COMSIG_LIVING_EARLY_UNARMED_ATTACK, PROC_REF(on_punch))
 	body.dna.add_mutation(/datum/mutation/hulk, MUTATION_SOURCE_MUTATOR)
 	body.dna.add_mutation(/datum/mutation/gigantism, MUTATION_SOURCE_MUTATOR)
 	charge = new(body)
 	charge.Grant(body)
-	RegisterSignal(body, COMSIG_LIVING_EARLY_UNARMED_ATTACK, PROC_REF(on_punch))
 	RegisterSignal(body, SIGNAL_REMOVETRAIT(TRAIT_HULK), PROC_REF(on_hulk_lost))
 
 /datum/component/outpost_experiment_form/hulk/setup_controller(datum/ai_controller/brain)
