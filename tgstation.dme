@@ -7551,6 +7551,7 @@
 #include "voidcrew\modules\player_outposts\outpost_prison_dialogue.dm"
 #include "voidcrew\modules\player_outposts\outpost_prison_doors.dm"
 #include "voidcrew\modules\player_outposts\outpost_prison_economy.dm"
+#include "voidcrew\modules\player_outposts\outpost_prison_experiment_forms.dm"
 #include "voidcrew\modules\player_outposts\outpost_prison_experiments.dm"
 #include "voidcrew\modules\player_outposts\outpost_prison_extension.dm"
 #include "voidcrew\modules\player_outposts\outpost_prison_extras.dm"

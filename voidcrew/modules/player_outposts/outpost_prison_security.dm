@@ -39,6 +39,9 @@
 /proc/outpost_prison_turret_verdict(mob/living/target, obj/machinery/porta_turret/turret)
 	if(!isliving(target))
 		return OUTPOST_PRISON_TURRET_NOT_MINE
+	// A body the serum took is the creature now, whoever it was (outpost_prison_experiment_forms.dm)
+	if(is_outpost_experiment_creature(target))
+		return (target.stat != DEAD && is_hostile_creature(target)) ? OUTPOST_PRISON_TURRET_SHOOT : OUTPOST_PRISON_TURRET_SPARE
 	if(is_outpost_prisoner(target))
 		var/mob/living/basic/outpost_prisoner/prisoner = target
 		return prisoner.turret_verdict(turret)

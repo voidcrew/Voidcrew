@@ -296,6 +296,28 @@
 
 // ===== THE SERUM =====
 
+/// A human body turned into serum `form` for `prison` where it stands, the way the serum turns a subject
+/// (outpost_prison_experiment_forms.dm), and tracked as the experiment's creature. Cleaned up with the test.
+/datum/unit_test/voidcrew_outpost_management/proc/experiment_form_body(datum/outpost_prison/prison, turf/spot, form, track = FALSE)
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, spot)
+	QDEL_NULL(body.ai_controller)
+	if(!outpost_experiment_turn(body, form, prison, null))
+		return null
+	if(track)
+		prison.experiment_creature_appeared(body, form)
+	return body
+
+/// The form a serum put on `body`
+/datum/unit_test/voidcrew_outpost_management/proc/form_of(mob/living/body)
+	return body?.GetComponent(/datum/component/outpost_experiment_form)
+
+/// The body on or beside `spot` that the serum turned into `form`
+/datum/unit_test/voidcrew_outpost_management/proc/form_body_near(turf/spot, form)
+	for(var/mob/living/carbon/human/body in range(1, spot))
+		if(outpost_experiment_form_name(body) == form)
+			return body
+	return null
+
 /datum/unit_test/voidcrew_outpost_prison_experiment_serum
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -307,6 +329,7 @@
 	var/turf/yard = prison_spot(home, 8, 8)
 	var/mob/living/basic/outpost_prisoner/subject = trouble_prisoner(prison, yard)
 	var/mob/living/basic/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/subject_name = subject.real_name
 	TEST_ASSERT_NULL(prison.experiment_payload(), "The console shows an experiment before there is one")
 
 	TEST_ASSERT(prison.start_experiment("hulk", subject), "A prisoner in the yard could not be dosed")
@@ -340,25 +363,30 @@
 	TEST_ASSERT_EQUAL(prison.experiment.twitch_left, 35, "The twitch ran outside the cell block")
 	subject.forceMove(yard)
 
-	// The change: the hulk where they stood, and the fee paid. No clock: it stays until it is put down.
+	// The change: the subject's own body (until prisoners are human NPCs, a human body in their place) takes
+	// tg's hulk gene and gigantism where they stood, and the fee is paid. No clock: it stays until it is put down.
 	prison.experiments_tick(35)
-	var/mob/living/basic/outpost_experiment/hulk/hulk = locate() in yard
+	var/mob/living/carbon/human/hulk = form_body_near(yard, "hulk")
 	TEST_ASSERT_NOTNULL(hulk, "The subject did not turn into a hulk")
-	TEST_ASSERT(QDELETED(subject), "The subject stayed after the change")
+	allocated += hulk
+	TEST_ASSERT(QDELETED(subject) || subject == hulk, "The basic subject stayed beside the hulk")
+	TEST_ASSERT_EQUAL(hulk.real_name, subject_name, "The hulk is not the subject")
+	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_HULK), "The hulk has no hulk gene")
+	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_GIANT), "The hulk did not grow")
+	TEST_ASSERT_EQUAL(hulk.maxHealth, 100, "The hulk has [hulk.maxHealth] health, not a person's")
+	TEST_ASSERT(abs(hulk.physiology.brute_mod - 0.6) < 0.01, "The hulk takes [hulk.physiology.brute_mod] of a person's brute, not 0.6") // OUTPOST_HULK_DAMAGE_TAKEN
 	TEST_ASSERT_EQUAL(treasury.account_balance, 600, "The hulk's data fee was [treasury.account_balance], not 600") // OUTPOST_EXPERIMENT_FEE_HULK
 	block = prison.experiment_payload()
 	TEST_ASSERT_EQUAL(block["form"], "hulk", "The console did not name the hulk once it showed")
 	TEST_ASSERT_EQUAL(block["stage"], "live", "The console does not show the hulk loose")
 	TEST_ASSERT_NULL(block["time_left"], "The console shows a clock on a loose hulk ([block["time_left"]] s)")
 	TEST_ASSERT_EQUAL(block["fee_paid"], 600, "The console does not show the fee")
-	TEST_ASSERT_EQUAL(hulk.maxHealth, 350, "A hulk facing nobody has [hulk.maxHealth] health, not 350") // OUTPOST_HULK_HEALTH
-	TEST_ASSERT(!ismegafauna(hulk), "The hulk counts as megafauna")
 	sleep(2)
 	TEST_ASSERT(!QDELETED(hulk), "The megafauna ban removed the hulk from the prison wing")
 	// Loose in the yard in plain sight of them (outpost_prison_panic.dm)
 	TEST_ASSERT(istype(buddy.activity, /datum/prisoner_activity/creature_panic), "A prisoner did not run from the hulk")
 
-	// Put down by the crew: the containment bonus, once.
+	// Killed by the crew: the containment bonus at once, once, and it lies there for Kessler.
 	var/mob/living/carbon/human/guard = make_player(prison_spot(home, 8, 9), "serumowner")
 	hit_with_toolbox(guard, hulk)
 	var/datum/component/experiment_damage_ledger/ledger = hulk.GetComponent(/datum/component/experiment_damage_ledger)
@@ -366,16 +394,22 @@
 	hulk.death()
 	TEST_ASSERT_EQUAL(treasury.account_balance, 2500, "The hulk's containment bonus came to [treasury.account_balance - 600], not 1900") // OUTPOST_EXPERIMENT_BONUS_HULK
 	TEST_ASSERT_EQUAL(prison.experiment.stage, "contained", "Killing the hulk did not contain it")
+	TEST_ASSERT_EQUAL(prison.experiment_payload()["pickup"], "down", "The console does not show the dead hulk awaiting pickup")
 	TEST_ASSERT(!prison.experiment_active(), "The experiment went on after the hulk died")
 	TEST_ASSERT(!prison.experiment_creature_down(hulk), "The containment bonus could be claimed twice")
 	TEST_ASSERT(prison.researcher_wait >= 2100 && prison.researcher_wait <= 3000, "The next visit was not scheduled 35-50 minutes off")
+	prison.kessler_finish_collect(WEAKREF(hulk))
+	TEST_ASSERT_EQUAL(treasury.account_balance, 2500, "Kessler taking the hulk paid the bonus again")
+	TEST_ASSERT(HAS_TRAIT_FROM(hulk, TRAIT_IMMOBILIZED, "outpost_kessler"), "Kessler's beam did not take the dead hulk") // OUTPOST_KESSLER_TRAIT
+	TEST_ASSERT(!HAS_TRAIT(hulk, TRAIT_GODMODE), "Kessler's beam made the hulk invulnerable")
 
 	// Mostly hurt by something other than the crew: no bonus.
 	var/mob/living/basic/outpost_prisoner/second_subject = trouble_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("fly", second_subject), "A second experiment could not start after the first ended")
 	prison.experiments_tick(60)
-	var/mob/living/basic/outpost_experiment/fly/fly = locate() in yard
+	var/mob/living/carbon/human/fly = form_body_near(yard, "fly")
 	TEST_ASSERT_NOTNULL(fly, "The subject did not turn into a fly person")
+	allocated += fly
 	var/balance = treasury.account_balance
 	fly.apply_damage(50, BRUTE)
 	sleep(1)
@@ -420,7 +454,10 @@
 	if(!prison.start_experiment(form, host, forced = TRUE))
 		return null
 	prison.experiments_tick(60)
-	return locate(/mob/living/basic/outpost_experiment) in yard
+	var/mob/living/carbon/human/body = form_body_near(yard, form)
+	if(body)
+		allocated += body
+	return body
 
 /// How many containment breaches the warden's log shows
 /datum/unit_test/voidcrew_outpost_prison_experiment_kessler/proc/breaches_logged(datum/outpost_prison/prison)
@@ -430,16 +467,19 @@
 			count++
 	return count
 
+/// Whether Kessler's beam has `creature`: held still for it (OUTPOST_KESSLER_TRAIT), and never invulnerable
+/datum/unit_test/voidcrew_outpost_prison_experiment_kessler/proc/being_taken(mob/living/creature)
+	return HAS_TRAIT_FROM(creature, TRAIT_IMMOBILIZED, "outpost_kessler") && !HAS_TRAIT(creature, TRAIT_GODMODE)
+
 /datum/unit_test/voidcrew_outpost_prison_experiment_kessler/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = experiment_test_claim("kesslerowner")
 	TEST_ASSERT_NOTNULL(home, "The Kessler test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/datum/bank_account/treasury = trouble_fund(home, 0)
 
-	var/mob/living/basic/outpost_experiment/fly/fly = creature_for(home, "fly")
-	TEST_ASSERT(istype(fly), "No fly person")
+	var/mob/living/carbon/human/fly = creature_for(home, "fly")
+	TEST_ASSERT_NOTNULL(fly, "No fly person")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 300, "The fly's data fee was not 300") // OUTPOST_EXPERIMENT_FEE_FLY
-	TEST_ASSERT_EQUAL(fly.maxHealth, 60, "The fly person has [fly.maxHealth] health, not 60") // OUTPOST_FLY_HEALTH
 
 	// No clock: left well past the old 12 minutes, crew home or not, it stays and costs nothing.
 	prison.crew_home_override = FALSE
@@ -448,7 +488,7 @@
 	prison.crew_home_override = TRUE
 	prison.experiments_tick(800)
 	TEST_ASSERT(prison.experiment_active(), "Kessler recovered a creature left alone in the wing") // no OUTPOST_EXPERIMENT_KESSLER_TIME any more
-	TEST_ASSERT(!HAS_TRAIT(fly, TRAIT_GODMODE), "Kessler came for a creature nobody took off the outpost")
+	TEST_ASSERT(!being_taken(fly), "Kessler came for a creature nobody took off the outpost")
 	TEST_ASSERT_EQUAL(prison.treasury_debt(), 0, "Leaving a creature alone ran up [prison.treasury_debt()] cr of debt")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 300, "Leaving a creature alone cost [300 - treasury.account_balance] cr")
 	TEST_ASSERT_NULL(prison.experiment_payload()["time_left"], "The console shows a clock on a creature in the wing")
@@ -456,23 +496,23 @@
 	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), WEAKREF(fly)), 12 SECONDS), "Kessler never took the called-off fly away")
 
 	// Walked off the outpost: recovered at once, with the fee, which is debt when the treasury is short.
-	var/mob/living/basic/outpost_experiment/hulk/hulk = creature_for(home, "hulk")
-	TEST_ASSERT(istype(hulk), "No hulk")
+	var/mob/living/carbon/human/hulk = creature_for(home, "hulk")
+	TEST_ASSERT_NOTNULL(hulk, "No hulk")
 	treasury.adjust_money(-treasury.account_balance, "Test")
 	hulk.forceMove(run_loc_floor_bottom_left)
 	prison.experiments_tick(1)
 	TEST_ASSERT(!prison.experiment_active(), "A creature off the outpost was not recovered at once")
 	TEST_ASSERT_EQUAL(prison.experiment.stage, "failed", "A recovered creature counted as contained")
 	TEST_ASSERT_EQUAL(prison.treasury_debt(), 1500, "The hulk walking off was [prison.treasury_debt()] cr of debt, not 1500") // OUTPOST_EXPERIMENT_RECOVERY_HULK
-	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_GODMODE), "A creature Kessler is taking could still be hurt")
+	TEST_ASSERT(being_taken(hulk), "Kessler's beam did not hold the hulk still, or made it invulnerable")
 	TEST_ASSERT(!is_hostile_creature(hulk), "A turret would shoot a creature Kessler is taking")
 	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), WEAKREF(hulk)), 12 SECONDS), "Kessler never took the hulk away")
 	treasury.account_debt = 0
 	trouble_fund(home, 3500)
 
 	// Carried off in something: recovered, but no fee.
-	var/mob/living/basic/outpost_experiment/nightmare/nightmare = creature_for(home, "nightmare")
-	TEST_ASSERT(istype(nightmare), "No nightmare")
+	var/mob/living/carbon/human/nightmare = creature_for(home, "nightmare")
+	TEST_ASSERT_NOTNULL(nightmare, "No nightmare")
 	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, run_loc_floor_bottom_left)
 	nightmare.forceMove(crate)
 	var/balance = treasury.account_balance
@@ -481,8 +521,8 @@
 	TEST_ASSERT_EQUAL(treasury.account_balance, balance, "A creature carried off cost a recovery fee")
 
 	// Walked off while nobody from the wing is home (a visitor led it away): recovered, and no fee.
-	var/mob/living/basic/outpost_experiment/hulk/stray = creature_for(home, "hulk")
-	TEST_ASSERT(istype(stray), "No stray hulk")
+	var/mob/living/carbon/human/stray = creature_for(home, "hulk")
+	TEST_ASSERT_NOTNULL(stray, "No stray hulk")
 	prison.crew_home_override = FALSE
 	stray.forceMove(run_loc_floor_bottom_left)
 	balance = treasury.account_balance
@@ -492,8 +532,8 @@
 	prison.crew_home_override = TRUE
 
 	// Out of the wing onto the outpost's own floor: the containment breach alarm, once, and still no clock.
-	var/mob/living/basic/outpost_experiment/fly/runner = creature_for(home, "fly")
-	TEST_ASSERT(istype(runner), "No second fly person")
+	var/mob/living/carbon/human/runner = creature_for(home, "fly")
+	TEST_ASSERT_NOTNULL(runner, "No second fly person")
 	runner.forceMove(get_turf(home.management_console))
 	TEST_ASSERT(prison.outpost_holds(runner), "The outpost's own floor did not count as the outpost")
 	prison.experiments_tick(1)
@@ -505,14 +545,66 @@
 	TEST_ASSERT_EQUAL(breaches_logged(prison), 1, "Staying out of the wing sounded the breach again")
 	TEST_ASSERT(prison.experiment_end_admin(), "The runner's experiment could not be called off")
 
+	// Taken alive: beaten into crit and cuffed, it is subdued. Kessler pays the bigger bonus only once its beam
+	// has the hulk, and its team darts it with real chloral hydrate first (owner ruling OC-3).
+	var/mob/living/carbon/human/brute = creature_for(home, "hulk")
+	TEST_ASSERT_NOTNULL(brute, "No third hulk")
+	var/mob/living/carbon/human/crew = make_player(prison_spot(home, 12, 3), "kesslerowner")
+	var/datum/component/experiment_damage_ledger/ledger = brute.GetComponent(/datum/component/experiment_damage_ledger)
+	ledger.note_attacker(crew)
+	ledger.add_damage(100, TRUE)
+	brute.apply_damage(200, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(brute.stat >= SOFT_CRIT && brute.stat != DEAD, "Two hundred brute did not put the hulk into crit (stat [brute.stat])")
+	// tg's hulk gene lets go below crit on its next tick of life; nobody is on the level, so the test ticks it.
+	var/datum/mutation/hulk/gene = brute.dna.get_mutation(/datum/mutation/hulk)
+	gene?.on_life(SSMOBS_DT, 0)
+	TEST_ASSERT(!HAS_TRAIT(brute, TRAIT_HULK), "The hulk kept its gene in crit")
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(brute.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED) && HAS_TRAIT(brute, TRAIT_RESTRAINED), "The hulk in crit could not be cuffed")
+	balance = treasury.account_balance
+	prison.experiments_tick(1)
+	TEST_ASSERT(prison.experiment_awaiting_pickup(brute), "The hulk down in crit and cuffed is not awaiting pickup")
+	TEST_ASSERT_EQUAL(prison.experiment_payload()["pickup"], "subdued", "The console does not show the hulk subdued")
+	TEST_ASSERT_EQUAL(treasury.account_balance, balance, "Kessler paid for the hulk before it had it")
+	prison.kessler_collect(WEAKREF(brute))
+	var/darted = FALSE
+	for(var/i in 1 to 10)
+		if(brute.reagents.has_reagent(/datum/reagent/toxin/chloralhydrate))
+			darted = TRUE
+			break
+		sleep(1)
+	TEST_ASSERT(darted, "Kessler's team never darted the hulk with chloral hydrate")
+	prison.kessler_finish_collect(WEAKREF(brute))
+	TEST_ASSERT_EQUAL(treasury.account_balance - balance, 2400, "Taking the hulk alive and cuffed paid [treasury.account_balance - balance], not 2400") // OUTPOST_EXPERIMENT_BONUS_HULK_SUBDUED
+	TEST_ASSERT(being_taken(brute), "Kessler's beam did not take the subdued hulk")
+	TEST_ASSERT_EQUAL(prison.experiment.stage, "contained", "Taking the subdued hulk did not contain it")
+	var/turf/brute_spot = get_turf(brute)
+	TEST_ASSERT(wait_until(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(is_qdeleted_ref), WEAKREF(brute)), 12 SECONDS), "Kessler never took the subdued hulk away")
+	TEST_ASSERT(cuffs.loc == brute_spot, "The crew's cuffs went with the hulk")
+
+	// Down, then back on its feet before Kessler comes: loose again, and nothing paid.
+	var/mob/living/carbon/human/sleeper = creature_for(home, "fly")
+	TEST_ASSERT_NOTNULL(sleeper, "No third fly person")
+	sleeper.Sleeping(5 SECONDS)
+	prison.experiments_tick(1)
+	TEST_ASSERT(prison.experiment_awaiting_pickup(sleeper), "A sleeping fly person is not awaiting pickup")
+	sleeper.SetSleeping(0)
+	balance = treasury.account_balance
+	prison.kessler_collect(WEAKREF(sleeper))
+	TEST_ASSERT(!prison.experiment_awaiting_pickup(sleeper), "A fly person back on its feet still awaits pickup")
+	TEST_ASSERT(sleeper in prison.experiment.live_creatures(), "A fly person back on its feet is not loose again")
+	TEST_ASSERT(!being_taken(sleeper), "Kessler took a fly person that was up and about")
+	TEST_ASSERT_EQUAL(treasury.account_balance, balance, "A creature that got back up paid a bonus")
+	TEST_ASSERT(prison.experiment_end_admin(), "The sleeper's experiment could not be called off")
+
 	// Called off by an admin: no fee.
-	var/mob/living/basic/outpost_experiment/hulk/last = creature_for(home, "hulk")
-	TEST_ASSERT(istype(last), "No second hulk")
+	var/mob/living/carbon/human/last = creature_for(home, "hulk")
+	TEST_ASSERT_NOTNULL(last, "No last hulk")
 	balance = treasury.account_balance
 	TEST_ASSERT(prison.experiment_end_admin(), "The admin end found nothing to end")
 	TEST_ASSERT_NULL(prison.experiment, "The admin end left the experiment")
 	TEST_ASSERT_EQUAL(treasury.account_balance, balance, "Calling the experiment off cost a fee")
-	TEST_ASSERT(HAS_TRAIT(last, TRAIT_GODMODE), "The called-off hulk was not being taken away")
+	TEST_ASSERT(being_taken(last), "The called-off hulk was not being taken away")
 	settle_prison_air(home)
 
 // ===== THE SUBJECT STAYS =====
@@ -593,101 +685,117 @@
 	trouble_fund(home, 0)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 3), "creatureowner")
 
-	// Every creature: not megafauna, no sentience, no boxing, teleporting, polymorph, air or revival.
-	for(var/creature_type in list(/mob/living/basic/outpost_experiment/hulk, /mob/living/basic/outpost_experiment/fly, /mob/living/basic/outpost_experiment/nightmare))
+	// Every form: a person's body changed by tg's biology, on its side, out of boxes, teleports and
+	// polymorphs, and revivable like anyone (EX-2).
+	for(var/form in list("hulk", "fly", "nightmare"))
 		var/turf/spot = prison_spot(home, 10, 10)
-		var/mob/living/basic/outpost_experiment/creature = allocate(creature_type, spot, prison, null)
-		TEST_ASSERT(!ismegafauna(creature), "[creature_type] counts as megafauna")
-		TEST_ASSERT(!creature.compare_sentience_type(SENTIENCE_ORGANIC) && !creature.compare_sentience_type(SENTIENCE_HUMANOID), "[creature_type] takes a sentience potion")
-		TEST_ASSERT(HAS_TRAIT(creature, "no_containment"), "[creature_type] can be boxed") // TRAIT_NO_CONTAINMENT
-		TEST_ASSERT(is_outpost_experiment_mob(creature), "[creature_type] is not marked as an experiment's")
-		TEST_ASSERT(!creature.unsuitable_atmos_damage && !creature.unsuitable_cold_damage && !creature.unsuitable_heat_damage, "[creature_type] needs air")
-		TEST_ASSERT(!do_teleport(creature, prison_spot(home, 12, 10), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved [creature_type]")
-		TEST_ASSERT_EQUAL(creature.loc, spot, "A teleport moved [creature_type]")
-		creature.wabbajack()
-		TEST_ASSERT(!QDELETED(creature), "A polymorph bolt deleted [creature_type]")
-		TEST_ASSERT_NULL(creature.change_mob_type(/mob/living/basic/mouse, delete_old_mob = TRUE), "[creature_type] was turned into another mob")
-		TEST_ASSERT(!creature.can_be_revived(), "[creature_type] could be revived")
-		TEST_ASSERT(is_hostile_creature(creature), "Turrets would leave [creature_type] alone") // interim turret rule
-		sleep(2)
-		TEST_ASSERT(!QDELETED(creature), "The megafauna ban removed [creature_type] from the prison wing")
-		qdel(creature)
+		var/mob/living/carbon/human/body = experiment_form_body(prison, spot, form)
+		TEST_ASSERT_NOTNULL(body, "The [form] serum did not take on a body")
+		TEST_ASSERT_EQUAL(outpost_experiment_form_name(body), form, "The [form] body does not read as a [form]")
+		TEST_ASSERT(is_outpost_experiment_creature(body), "The [form] body is not an experiment's creature")
+		TEST_ASSERT(HAS_TRAIT(body, "no_containment"), "The [form] body can be boxed") // TRAIT_NO_CONTAINMENT
+		TEST_ASSERT(is_outpost_experiment_mob(body), "The [form] body is not marked as an experiment's")
+		TEST_ASSERT(("outpost_experiment" in body.faction) && length(body.faction) == 1, "The [form] body is on [english_list(body.faction)]'s side") // FACTION_OUTPOST_EXPERIMENT
+		TEST_ASSERT(istype(body.ai_controller, /datum/ai_controller/basic_controller/human_npc/outpost_experiment), "The [form] body does not think as a creature")
+		TEST_ASSERT(!do_teleport(body, prison_spot(home, 12, 10), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved the [form] body")
+		TEST_ASSERT_EQUAL(body.loc, spot, "A teleport moved the [form] body")
+		body.wabbajack()
+		TEST_ASSERT(!QDELETED(body), "A polymorph bolt deleted the [form] body")
+		TEST_ASSERT_NULL(body.change_mob_type(/mob/living/basic/mouse, delete_old_mob = TRUE), "The [form] body was turned into another mob")
+		TEST_ASSERT(body.can_be_revived(), "The [form] body could not be revived")
+		TEST_ASSERT(is_hostile_creature(body), "Turrets would leave the [form] body alone")
+		switch(form)
+			if("hulk")
+				TEST_ASSERT(HAS_TRAIT(body, TRAIT_HULK) && HAS_TRAIT(body, TRAIT_STUNIMMUNE), "The hulk has no hulk gene")
+				TEST_ASSERT(HAS_TRAIT(body, TRAIT_GIANT), "The hulk has no gigantism")
+			if("fly")
+				TEST_ASSERT(isflyperson(body), "The fly person is not tg's fly species")
+				TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/slipwire) in body.organs, "The fly person has no Slipwire to sidestep with")
+			if("nightmare")
+				TEST_ASSERT(isnightmare(body), "The nightmare is not tg's nightmare species")
+				TEST_ASSERT_NOTNULL(locate(/obj/item/light_eater) in body.held_items, "The nightmare has no light eater")
+		qdel(body)
 
-	// Kessler's people: no sentience potions, and they cannot be hurt.
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 12, 4), null)
-	TEST_ASSERT(!doctor.compare_sentience_type(SENTIENCE_ORGANIC), "The researcher takes a sentience potion")
-	TEST_ASSERT(HAS_TRAIT(doctor, "no_containment"), "The researcher can be boxed")
-	TEST_ASSERT(!do_teleport(doctor, prison_spot(home, 12, 5), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved the researcher")
-	doctor.apply_damage(30, BRUTE)
-	TEST_ASSERT_EQUAL(doctor.health, doctor.maxHealth, "The researcher was hurt")
+	// The species can rename a body (tg's nightmares take a nightmare's name); the subject keeps theirs.
+	var/mob/living/carbon/human/named = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, prison_spot(home, 10, 10))
+	var/name_before = named.real_name
+	TEST_ASSERT_NOTNULL(outpost_experiment_turn(named, "nightmare", prison, null), "The nightmare serum did not take")
+	TEST_ASSERT_EQUAL(named.real_name, name_before, "The nightmare took a new name")
+	qdel(named)
 
 	// Only the outpost's inside breaks.
 	TEST_ASSERT(!outpost_experiment_can_smash(prison_spot(home, 1, 7), prison), "The wing's outer wall counted as breakable")
 	TEST_ASSERT(!outpost_experiment_can_smash(prison_spot(home, 1, 10), prison), "A window in the wing's outer wall counted as breakable")
 	TEST_ASSERT(outpost_experiment_can_smash(prison_spot(home, 5, 14), prison), "A wall between two cells could not be broken")
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 8, 9), prison, null)
-	TEST_ASSERT(hulk.can_break(prison_spot(home, 5, 14)), "The hulk could not tear a wall between two cells")
-	TEST_ASSERT(!hulk.can_break(prison_spot(home, 1, 7)), "The hulk could tear the wing's outer wall")
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 8, 9), "hulk")
+	var/datum/component/outpost_experiment_form/hulk/hulk_form = form_of(hulk)
+	TEST_ASSERT(hulk_form.can_break(prison_spot(home, 5, 14)), "The hulk could not tear a wall between two cells")
+	TEST_ASSERT(!hulk_form.can_break(prison_spot(home, 1, 7)), "The hulk could tear the wing's outer wall")
 	var/list/hatches = prison.hatches()
 	TEST_ASSERT(length(hatches), "The wing has no serving hatch")
-	TEST_ASSERT(!hulk.can_break(hatches[1]), "The hulk could break a serving hatch's counter")
+	TEST_ASSERT(!hulk_form.can_break(hatches[1]), "The hulk could break a serving hatch's counter")
 
 	// With nobody from the wing home it hunts nobody, but it fights back.
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 10, 10), "creaturevisitor")
 	prison.crew_home_override = FALSE
-	TEST_ASSERT_NULL(hulk.choose_target(), "The hulk went after a visitor with nobody from the wing home")
+	prison.experiment_creature_appeared(hulk, "hulk")
+	TEST_ASSERT_NULL(hulk_form.choose_target(), "The hulk went after a visitor with nobody from the wing home")
 	var/datum/component/experiment_damage_ledger/hulk_ledger = hulk.GetComponent(/datum/component/experiment_damage_ledger)
 	hulk_ledger.note_attacker(visitor)
-	TEST_ASSERT_EQUAL(hulk.choose_target(), visitor, "The hulk did not fight back with nobody from the wing home")
+	TEST_ASSERT_EQUAL(hulk_form.choose_target(), visitor, "The hulk did not fight back with nobody from the wing home")
 	prison.crew_home_override = TRUE
 	visitor.key = null // a test key on a deleted mob is a runtime; the fixture only clears keys at the end
 	qdel(visitor)
 
-	// The hulk knocks prisoners flat and never kills them.
+	// Its charge and its punches land through armour, at a body zone, and can wound (EX-7).
+	var/mob/living/carbon/human/armoured = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 9, 9))
+	armoured.equip_to_slot_or_del(new /obj/item/clothing/suit/armor/vest(armoured), ITEM_SLOT_OCLOTHING)
+	var/dealt = outpost_experiment_ability_hit(armoured, 20, zone = BODY_ZONE_CHEST, attacker = hulk)
+	TEST_ASSERT(dealt > 0 && dealt < 20, "An ability hit on an armour vest dealt [dealt] of 20")
+	var/obj/item/bodypart/chest = armoured.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT(chest.brute_dam > 0, "An ability hit on the chest left the chest unhurt")
+	qdel(armoured)
+
+	// A real hulk punch knocks a standing prisoner flat, and it leaves them be once they are down.
 	var/mob/living/basic/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/basic/outpost_prisoner/onlooker = trouble_prisoner(prison, prison_spot(home, 12, 8))
-	TEST_ASSERT(hulk.can_target(victim), "The hulk ignored a prisoner on their feet")
-	hulk.melee_attack(victim, ignore_cooldown = TRUE)
-	TEST_ASSERT(victim.beaten_left > 0, "The hulk's blow did not knock the prisoner down")
-	for(var/i in 1 to 10)
-		hulk.knock_down_prisoner(victim)
-	TEST_ASSERT(victim.stat != DEAD && victim.health >= 1, "The hulk killed a prisoner")
-	TEST_ASSERT(!hulk.can_target(victim), "The hulk went after a prisoner who was already down")
+	TEST_ASSERT(hulk_form.can_target(victim), "The hulk ignored a prisoner on their feet")
+	var/health_before = victim.health
+	hulk.set_combat_mode(TRUE)
+	hulk.UnarmedAttack(victim, TRUE)
+	sleep(2)
+	TEST_ASSERT(victim.health < health_before, "The hulk's punch did not hurt the prisoner")
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "The hulk's punch did not knock the prisoner flat")
+	TEST_ASSERT(!hulk_form.can_target(victim), "The hulk went after a prisoner who was already down")
 
-	// Stamina does nothing until it is worn down; then it puts it down alive, for the bigger bonus.
-	prison.experiment_creature_appeared(hulk, "hulk")
-	TEST_ASSERT_EQUAL(prison.experiment.fee_paid, 600, "The hulk's fee was [prison.experiment.fee_paid]")
-	hulk.apply_damage(200, STAMINA)
-	TEST_ASSERT(!hulk.subdued, "Stamina put down a hulk that was not worn out")
-	hulk.adjustBruteLoss(hulk.maxHealth * 0.8)
-	TEST_ASSERT(hulk.exhausted, "A hulk at a fifth of its health was not exhausted") // OUTPOST_HULK_EXHAUSTED_AT
-	// The crew's batons: stamina is no damage on the ledger, so the recent blow is what counts.
-	hulk_ledger.note_attacker(owner)
-	hulk.apply_damage(120, STAMINA)
-	TEST_ASSERT(hulk.subdued, "Two baton hits' worth of stamina did not put the exhausted hulk down") // OUTPOST_HULK_STAMINA
-	TEST_ASSERT(hulk.stat != DEAD, "Subduing the hulk killed it")
-	TEST_ASSERT_EQUAL(hulk.body_position, LYING_DOWN, "The subdued hulk stayed on its feet")
-	TEST_ASSERT_EQUAL(prison.experiment_payload()["pickup"], "subdued", "The console does not show the hulk subdued, awaiting pickup")
-	TEST_ASSERT_EQUAL(prison.experiment.bonus_paid, 2400, "Subduing the hulk paid [prison.experiment.bonus_paid], not 2400") // OUTPOST_EXPERIMENT_BONUS_HULK_SUBDUED
-	TEST_ASSERT(!is_hostile_creature(hulk), "A turret would shoot a subdued hulk")
+	// Beaten into crit, tg's hulk gene lets go: an ordinary person again, whom batons and cuffs work on.
+	hulk.apply_damage(200, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	var/datum/mutation/hulk/gene = hulk.dna.get_mutation(/datum/mutation/hulk)
+	gene?.on_life(SSMOBS_DT, 0)
+	TEST_ASSERT(!HAS_TRAIT(hulk, TRAIT_HULK), "The hulk kept its gene in crit")
+	TEST_ASSERT(!HAS_TRAIT(hulk, TRAIT_STUNIMMUNE), "The hulk shrugs off stuns in crit")
+	TEST_ASSERT(!hulk_form.smashes_through(), "The hulk without its gene still smashes through walls")
+	TEST_ASSERT_EQUAL(outpost_experiment_down_state(hulk), "down", "The hulk in crit is not down for Kessler") // OUTPOST_EXPERIMENT_DOWN_DOWN
+	prison.experiment_end_admin()
 
-	// The fly person: a flyswatter hits it thirty times harder, it eats what it finds, and it throws up.
-	var/mob/living/basic/outpost_experiment/fly/fly = allocate(/mob/living/basic/outpost_experiment/fly, prison_spot(home, 11, 8), prison, null)
+	// The fly person: a flyswatter is thirty times worse for it (tg's fly species), and it eats real food.
+	var/mob/living/carbon/human/fly = experiment_form_body(prison, prison_spot(home, 11, 8), "fly")
+	var/datum/component/outpost_experiment_form/fly/fly_form = form_of(fly)
 	var/obj/item/melee/flyswatter/swatter = allocate(/obj/item/melee/flyswatter)
 	var/before = fly.health
-	fly.apply_damage(1, BRUTE, attacking_item = swatter)
-	TEST_ASSERT_EQUAL(before - fly.health, 30, "A swat did [before - fly.health] damage, not 30") // OUTPOST_FLY_SWATTER_MULT
+	fly.apply_damage(1, BRUTE, BODY_ZONE_CHEST, attacking_item = swatter)
+	TEST_ASSERT(before - fly.health >= 29, "A swat did [before - fly.health] damage, not 30")
 	var/obj/item/food/snack = allocate(/obj/item/food/prison_ration, prison_spot(home, 10, 8))
-	fly.melee_attack(snack, ignore_cooldown = TRUE)
-	TEST_ASSERT(QDELETED(snack), "The fly person left the food alone")
+	TEST_ASSERT_EQUAL(fly_form.find_meal(), snack, "The fly person did not spot the food beside it")
+	TEST_ASSERT(fly_form.can_target(snack), "The fly person would not go for food on the floor")
 	onlooker.set_mood(70)
-	var/turf/splat = fly.throw_up()
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/vomit) in splat, "The fly person threw up nothing")
+	fly.vomit(MOB_VOMIT_MESSAGE | MOB_VOMIT_FORCE, lost_nutrition = 0)
 	TEST_ASSERT(onlooker.mood < 70, "Watching the fly person throw up bothered nobody")
 	qdel(fly)
 
-	// The nightmare puts lights out, burns from a flash, and kills prisoners without staff being blamed.
-	var/mob/living/basic/outpost_experiment/nightmare/nightmare = allocate(/mob/living/basic/outpost_experiment/nightmare, prison_spot(home, 8, 9), prison, null)
+	// The nightmare: its light eater breaks lights, and it kills prisoners without staff being blamed.
+	var/mob/living/carbon/human/nightmare = experiment_form_body(prison, prison_spot(home, 8, 9), "nightmare")
+	var/datum/component/outpost_experiment_form/nightmare/nightmare_form = form_of(nightmare)
 	var/obj/machinery/light/fixture
 	for(var/turf/tile as anything in prison.wing_turfs())
 		fixture = locate(/obj/machinery/light) in tile
@@ -695,20 +803,24 @@
 			break
 		fixture = null
 	TEST_ASSERT_NOTNULL(fixture, "The wing has no working light")
-	nightmare.melee_attack(fixture, ignore_cooldown = TRUE)
-	TEST_ASSERT_EQUAL(fixture.status, LIGHT_BROKEN, "The nightmare left a light on")
-	var/health = nightmare.health
-	nightmare.flashed(owner)
-	TEST_ASSERT_EQUAL(health - nightmare.health, 20, "A flash burned the nightmare for [health - nightmare.health], not 20") // OUTPOST_NIGHTMARE_FLASH_DAMAGE
-	prison.experiment_end_admin()
+	TEST_ASSERT(nightmare_form.can_target(fixture), "The nightmare would leave a working light alone")
+	var/obj/item/light_eater/blade = locate() in nightmare.held_items
+	TEST_ASSERT(nightmare_form.ready_to_hit(fixture) && nightmare.get_active_held_item() == blade, "The nightmare did not ready its light eater")
+	nightmare.forceMove(get_turf(fixture))
+	nightmare.set_combat_mode(TRUE)
+	blade.melee_attack_chain(nightmare, fixture)
+	TEST_ASSERT_EQUAL(fixture.status, LIGHT_BROKEN, "The nightmare's light eater left a light on")
+	TEST_ASSERT(!nightmare_form.can_target(fixture), "The nightmare still wants a broken light")
+	nightmare.forceMove(prison_spot(home, 8, 9))
 	prison.experiment_creature_appeared(nightmare, "nightmare")
 	var/fined = prison.fined_total
 	onlooker.set_mood(70)
+	nightmare.set_combat_mode(TRUE)
 	for(var/i in 1 to 10)
 		if(victim.stat == DEAD)
 			break
-		nightmare.melee_attack(victim, ignore_cooldown = TRUE)
-	TEST_ASSERT_EQUAL(victim.stat, DEAD, "The nightmare could not kill a prisoner who was down")
+		blade.melee_attack_chain(nightmare, victim)
+	TEST_ASSERT_EQUAL(victim.stat, DEAD, "The nightmare's light eater could not kill a prisoner who was down")
 	TEST_ASSERT(!victim.death_blamed, "The nightmare's kill was put down to staff")
 	TEST_ASSERT_EQUAL(prison.fined_total, fined, "The nightmare's kill fined the treasury")
 	TEST_ASSERT_EQUAL(prison.experiment.creature_kills, 1, "The nightmare's kill was not counted")
@@ -721,11 +833,13 @@
 	TEST_ASSERT_EQUAL(prison.experiment_payload()["pickup"], "down", "The console does not show the dead nightmare awaiting pickup")
 	TEST_ASSERT(abs(onlooker.mood - 60) < 0.01, "A witness lost [70 - onlooker.mood] mood, not 10") // OUTPOST_EXPERIMENT_SAW_DEATH_MOOD
 	TEST_ASSERT(prison.tension_spike >= tension + 15 - 0.01, "A creature's kill added [prison.tension_spike - tension] tension, not 15") // OUTPOST_EXPERIMENT_KILL_TENSION
+	var/list/looked = nightmare.examine(owner)
+	TEST_ASSERT(findtext(jointext(looked, " "), "will collect"), "The dead nightmare's examine does not say Kessler is coming for it")
 	settle_prison_air(home)
 
 // ===== THE FLY PERSON =====
 
-/// The fly person darts about the cell block, keeps away from people, dodges shots while it flies freely, and drops when put down
+/// The fly person darts about the cell block, keeps away from people and from whoever hit it, and stays still only when it can't move
 /datum/unit_test/voidcrew_outpost_prison_experiment_fly
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -735,89 +849,83 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_experiment/fly/fly = allocate(/mob/living/basic/outpost_experiment/fly, yard, prison, null)
-	prison.experiment_creature_appeared(fly, "fly")
+	var/mob/living/carbon/human/fly = experiment_form_body(prison, yard, "fly", track = TRUE)
+	var/datum/component/outpost_experiment_form/fly/fly_form = form_of(fly)
 	var/datum/ai_controller/brain = fly.ai_controller
 	// Four tiles off: not close enough to chase it off
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 8), "flyowner")
-	TEST_ASSERT(HAS_TRAIT(fly, TRAIT_MOVE_FLYING), "The fly person does not fly")
-	TEST_ASSERT(fly.flying_freely(), "A fly person alone in the yard is not flying freely")
-	TEST_ASSERT(fly.speed < 1.5, "The fly person moves at [fly.speed], no faster than a running person")
+	TEST_ASSERT(fly_form.free_to_dart(), "A fly person alone in the yard is not free to move")
 	var/list/looked = fly.examine(owner)
-	TEST_ASSERT(findtext(jointext(looked, " "), "It never lands for long."), "The fly person's examine has no tell")
+	TEST_ASSERT(findtext(jointext(looked, " "), "never stays still"), "The fly person's examine has no tell")
 	TEST_ASSERT(!findtext(jointext(looked, " "), "Knock it out"), "The fly person's examine says how to put it down")
 
 	// Its darts: two to five tiles, always in the cell block.
 	for(var/i in 1 to 30)
-		var/turf/spot = fly.dart_spot()
+		var/turf/spot = fly_form.dart_spot()
 		TEST_ASSERT_NOTNULL(spot, "The fly person found nowhere to dart in the yard")
 		TEST_ASSERT(prison.in_cell_block(spot), "The fly person darted out of the cell block to [spot.x],[spot.y]")
 		var/distance = get_dist(fly, spot)
 		TEST_ASSERT(distance >= 2 && distance <= 5, "A dart went [distance] tiles, not 2 to 5") // OUTPOST_FLY_DART_MIN/_MAX
-	fly.ai_think(brain)
+	fly_form.ai_think(brain)
 	TEST_ASSERT(brain.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/outpost_fly_dart)], "The fly person alone did not dart about")
 	brain.CancelActions()
 
 	// Someone beside it: it darts away from them, to somewhere farther off.
 	owner.forceMove(prison_spot(home, 9, 8))
-	TEST_ASSERT_EQUAL(fly.nearest_threat(), owner, "The fly person paid no mind to someone beside it")
+	TEST_ASSERT_EQUAL(fly_form.nearest_threat(), owner, "The fly person paid no mind to someone beside it")
 	for(var/i in 1 to 20)
-		var/turf/away = fly.dart_spot(owner)
+		var/turf/away = fly_form.dart_spot(owner)
 		TEST_ASSERT_NOTNULL(away, "The fly person had nowhere to go from someone beside it in the open yard")
 		TEST_ASSERT(get_dist(away, owner) > 1, "The fly person darted no farther from the person beside it")
-	fly.ai_think(brain)
+	fly_form.ai_think(brain)
 	TEST_ASSERT(brain.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/outpost_fly_dart/away)], "The fly person did not dart away from someone beside it")
 	brain.CancelActions()
 
 	// Hit, it keeps away from whoever did it even once they are out of reach.
 	SEND_SIGNAL(fly, COMSIG_ATOM_WAS_ATTACKED, owner, ATTACKER_DAMAGING_ATTACK)
 	owner.forceMove(prison_spot(home, 12, 8))
-	TEST_ASSERT_NULL(fly.nearest_threat(), "Someone four tiles off still counts as close") // OUTPOST_FLY_FLEE_RANGE
-	TEST_ASSERT_EQUAL(fly.flit_threat(), owner, "The fly person forgot who just hit it")
-	fly.ai_think(brain)
+	TEST_ASSERT_NULL(fly_form.nearest_threat(), "Someone four tiles off still counts as close") // OUTPOST_FLY_FLEE_RANGE
+	TEST_ASSERT_EQUAL(fly_form.flit_threat(), owner, "The fly person forgot who just hit it")
+	fly_form.ai_think(brain)
 	TEST_ASSERT(brain.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/outpost_fly_dart/away)], "The fly person did not flit away from whoever hit it")
 	brain.CancelActions()
-	fly.flit_until = 0
+	fly_form.flit_until = 0
 
-	// Shots: it dodges some while it flies freely, and none while knocked down.
-	var/obj/projectile/beam/disabler/shot = allocate(/obj/projectile/beam/disabler, prison_spot(home, 12, 8))
-	var/dodged = 0
-	for(var/i in 1 to 200)
-		if(fly.dodge(fly, shot) & PROJECTILE_INTERRUPT_HIT_PHASE)
-			dodged++
-	TEST_ASSERT(dodged >= 40 && dodged <= 120, "The fly person dodged [dodged] of 200 shots, not about 40%") // OUTPOST_FLY_DODGE
+	// Food in sight: it goes and eats it, the way anyone does.
+	var/obj/item/food/snack = allocate(/obj/item/food/prison_ration, prison_spot(home, 10, 8))
+	fly_form.ai_think(brain)
+	TEST_ASSERT(brain.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/outpost_fly_eat)], "The fly person did not go for the food it saw")
+	brain.CancelActions()
+	qdel(snack)
+
+	// Knocked down by a baton's worth of stamina it is down: it darts nowhere and, cuffed, it is subdued.
 	fly.Knockdown(5 SECONDS)
-	TEST_ASSERT_EQUAL(fly.body_position, LYING_DOWN, "A baton's knockdown did not put the fly person on the floor")
-	TEST_ASSERT(!HAS_TRAIT(fly, TRAIT_MOVE_FLYING), "The fly person flies while knocked down")
-	for(var/i in 1 to 50)
-		TEST_ASSERT(!(fly.dodge(fly, shot) & PROJECTILE_INTERRUPT_HIT_PHASE), "The fly person dodged a shot while knocked down")
+	TEST_ASSERT_EQUAL(fly.body_position, LYING_DOWN, "A knockdown did not put the fly person on the floor")
+	TEST_ASSERT(!fly_form.free_to_dart(), "The fly person could dart off while knocked down")
 	fly.SetKnockdown(0)
 	fly.get_up(instant = TRUE)
-	TEST_ASSERT_EQUAL(fly.body_position, STANDING_UP, "The fly person did not get back up")
-	TEST_ASSERT(HAS_TRAIT(fly, TRAIT_MOVE_FLYING), "The fly person did not take off again")
-
-	// Worn out: it drops out of the air and stays down, and the console says so until Kessler takes it.
+	TEST_ASSERT(fly_form.free_to_dart(), "The fly person could not move again once it got up")
 	var/datum/component/experiment_damage_ledger/ledger = fly.GetComponent(/datum/component/experiment_damage_ledger)
 	ledger.note_attacker(owner)
-	fly.apply_damage(100, STAMINA) // OUTPOST_FLY_STAMINA
-	TEST_ASSERT(fly.subdued, "A full load of stamina damage did not subdue the fly person")
-	TEST_ASSERT_EQUAL(fly.body_position, LYING_DOWN, "The subdued fly person stayed in the air")
-	TEST_ASSERT(!HAS_TRAIT(fly, TRAIT_MOVE_FLYING), "The subdued fly person is still flying")
-	TEST_ASSERT(!fly.flying_freely(), "The subdued fly person could still fly off")
-	fly.SetAllImmobility(0)
-	fly.setStaminaLoss(0)
-	TEST_ASSERT_EQUAL(fly.body_position, LYING_DOWN, "The subdued fly person got up once its stamina came back")
-	TEST_ASSERT_EQUAL(prison.experiment.bonus_paid, 700, "Subduing the fly person paid [prison.experiment.bonus_paid], not 700") // OUTPOST_EXPERIMENT_BONUS_FLY
+	fly.apply_damage(150, STAMINA)
+	TEST_ASSERT(HAS_TRAIT_FROM(fly, TRAIT_INCAPACITATED, STAMINA), "A full load of stamina damage did not put the fly person in stamcrit")
+	TEST_ASSERT_EQUAL(outpost_experiment_down_state(fly), "down", "The fly person in stamcrit is not down for Kessler") // OUTPOST_EXPERIMENT_DOWN_DOWN
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	TEST_ASSERT(fly.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "The fly person in stamcrit could not be cuffed")
+	TEST_ASSERT_EQUAL(outpost_experiment_down_state(fly), "subdued", "The fly person in stamcrit and cuffed is not subdued") // OUTPOST_EXPERIMENT_DOWN_SUBDUED
+	prison.experiments_tick(1)
 	var/list/block = prison.experiment_payload()
-	TEST_ASSERT_EQUAL(block["stage"], "contained", "The subdued fly person did not contain the experiment")
 	TEST_ASSERT_EQUAL(block["pickup"], "subdued", "The console does not show the fly person subdued, awaiting pickup")
+	TEST_ASSERT_EQUAL(block["stage"], "live", "The fly person down alive contained the experiment before Kessler had it")
 	looked = fly.examine(owner)
 	TEST_ASSERT(findtext(jointext(looked, " "), "will collect"), "The subdued fly person's examine does not say Kessler is coming for it")
 
-	// Kessler's team beams in for it, and the beam takes it; then the console shows it contained.
+	// Kessler's team beams in, and its beam takes it; then the bonus, and the console shows it contained.
 	prison.kessler_collect(WEAKREF(fly))
-	TEST_ASSERT(HAS_TRAIT(fly, TRAIT_GODMODE), "The fly person could be hurt while Kessler collected it")
 	TEST_ASSERT_NOTNULL(locate(/mob/living/basic/outpost_kessler_staff/agent) in range(1, fly), "No Kessler agents beamed in for the fly person")
+	prison.kessler_finish_collect(WEAKREF(fly))
+	TEST_ASSERT_EQUAL(prison.experiment.bonus_paid, 700, "Subduing the fly person paid [prison.experiment.bonus_paid], not 700") // OUTPOST_EXPERIMENT_BONUS_FLY
+	TEST_ASSERT_EQUAL(prison.experiment_payload()["stage"], "contained", "Taking the subdued fly person did not contain the experiment")
 	var/logged = FALSE
 	for(var/list/entry as anything in prison.entries)
 		if(findtext(entry["text"], "Kessler Biolabs collected"))
@@ -977,68 +1085,67 @@
 	TEST_ASSERT_NOTNULL(home, "The reach test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_experiment/nightmare/nightmare = allocate(/mob/living/basic/outpost_experiment/nightmare, prison_spot(home, 9, 8), prison, null)
+	var/mob/living/carbon/human/nightmare = experiment_form_body(prison, prison_spot(home, 9, 8), "nightmare")
+	var/datum/component/outpost_experiment_form/nightmare/nightmare_form = form_of(nightmare)
 
 	// A prisoner locked in a bolted cell the nightmare is not in is off-limits; the same door unbolted is not.
 	var/mob/living/basic/outpost_prisoner/locked = test_prisoner(prison, yard)
 	TEST_ASSERT_NOTNULL(locked.cell, "The locked prisoner was not booked into a cell")
 	locked.forceMove(locked.cell.arrival_turf())
 	var/mob/living/basic/outpost_prisoner/open_prisoner = test_prisoner(prison, yard)
-	TEST_ASSERT(nightmare.can_target(locked), "The nightmare ignored a prisoner in an unbolted cell")
+	TEST_ASSERT(nightmare_form.can_target(locked), "The nightmare ignored a prisoner in an unbolted cell")
 	TEST_ASSERT(prison.toggle_cell_bolts(locked.cell.number, null), "The test cell would not bolt")
 	TEST_ASSERT(locked.cell.is_bolted(), "The test cell did not report itself bolted")
-	TEST_ASSERT(!nightmare.can_target(locked), "The nightmare went after a prisoner locked in a bolted cell")
-	TEST_ASSERT(nightmare.can_target(open_prisoner), "A bolted cell elsewhere stopped the nightmare targeting someone in the open")
+	TEST_ASSERT(!nightmare_form.can_target(locked), "The nightmare went after a prisoner locked in a bolted cell")
+	TEST_ASSERT(nightmare_form.can_target(open_prisoner), "A bolted cell elsewhere stopped the nightmare targeting someone in the open")
 
 	// Standing in the cell with them, its own occupant is fair game again.
 	var/turf/outside = get_turf(nightmare)
 	nightmare.forceMove(locked.cell.arrival_turf())
-	TEST_ASSERT(nightmare.can_target(locked), "The nightmare in the cell still could not reach its own occupant")
+	TEST_ASSERT(nightmare_form.can_target(locked), "The nightmare in the cell still could not reach its own occupant")
 	nightmare.forceMove(outside)
 
 	// The hulk smashes in regardless of the bolt.
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 11, 8), prison, null)
-	TEST_ASSERT(hulk.can_target(locked), "A bolted cell kept the hulk out")
-	qdel(hulk)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 11, 8), "hulk")
+	var/datum/component/outpost_experiment_form/hulk_form = form_of(hulk)
+	TEST_ASSERT(hulk_form.can_target(locked), "A bolted cell kept the hulk out")
 
 	// A target it makes no progress toward for a while is written off, and another is picked instead.
 	var/mob/living/basic/outpost_prisoner/stuck_prisoner = test_prisoner(prison, prison_spot(home, 10, 10))
 	var/datum/ai_controller/brain = nightmare.ai_controller
 	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, stuck_prisoner)
-	nightmare.track_reach(brain)
-	TEST_ASSERT(!nightmare.target_unreachable(stuck_prisoner), "A target was written off before it had any chance to be reached")
-	nightmare.chase_progress_time -= 5 SECONDS // OUTPOST_EXPERIMENT_STUCK_TIME is 4 seconds
-	nightmare.track_reach(brain)
-	TEST_ASSERT(nightmare.target_unreachable(stuck_prisoner), "A target that never got any closer was not written off")
-	TEST_ASSERT_EQUAL(nightmare.choose_target(), open_prisoner, "choose_target() still offered a target written off as unreachable")
+	nightmare_form.track_reach(brain)
+	TEST_ASSERT(!nightmare_form.target_unreachable(stuck_prisoner), "A target was written off before it had any chance to be reached")
+	nightmare_form.chase_progress_time -= 5 SECONDS // OUTPOST_EXPERIMENT_STUCK_TIME is 4 seconds
+	nightmare_form.track_reach(brain)
+	TEST_ASSERT(nightmare_form.target_unreachable(stuck_prisoner), "A target that never got any closer was not written off")
+	TEST_ASSERT_EQUAL(nightmare_form.choose_target(), open_prisoner, "choose_target() still offered a target written off as unreachable")
 
 	// On the move, it is chasing: a target that keeps its distance is not written off
 	var/turf/was_at = nightmare.loc
 	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, open_prisoner)
-	nightmare.track_reach(brain)
-	nightmare.chase_progress_time -= 5 SECONDS
+	nightmare_form.track_reach(brain)
+	nightmare_form.chase_progress_time -= 5 SECONDS
 	nightmare.forceMove(get_step_away(nightmare, open_prisoner) || get_step(nightmare, NORTH))
-	nightmare.track_reach(brain)
-	TEST_ASSERT(!nightmare.target_unreachable(open_prisoner), "A target it was following was written off")
+	nightmare_form.track_reach(brain)
+	TEST_ASSERT(!nightmare_form.target_unreachable(open_prisoner), "A target it was following was written off")
 	nightmare.forceMove(was_at)
 	brain.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 
 	// find_light() skips the same list, so lights behind glass do not trap it forever.
 	var/obj/machinery/light/near_light = allocate(/obj/machinery/light, prison_spot(home, 10, 8))
 	var/obj/machinery/light/far_light = allocate(/obj/machinery/light, prison_spot(home, 12, 8))
-	TEST_ASSERT_EQUAL(nightmare.find_light(), near_light, "find_light() did not prefer the nearer light")
-	nightmare.mark_unreachable(near_light)
-	TEST_ASSERT_EQUAL(nightmare.find_light(), far_light, "find_light() still offered a light written off as unreachable")
+	TEST_ASSERT_EQUAL(nightmare_form.find_light(), near_light, "find_light() did not prefer the nearer light")
+	nightmare_form.mark_unreachable(near_light)
+	TEST_ASSERT_EQUAL(nightmare_form.find_light(), far_light, "find_light() still offered a light written off as unreachable")
 	qdel(near_light)
 	qdel(far_light)
 
 	// The hulk smashes through, so it never writes a target off as unreachable either.
-	var/mob/living/basic/outpost_experiment/hulk/patient_hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 11, 8), prison, null)
-	var/datum/ai_controller/hulk_brain = patient_hulk.ai_controller
+	var/datum/ai_controller/hulk_brain = hulk.ai_controller
 	hulk_brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, stuck_prisoner)
-	patient_hulk.track_reach(hulk_brain)
-	patient_hulk.chase_progress_time -= 5 SECONDS
-	patient_hulk.track_reach(hulk_brain)
-	TEST_ASSERT(!patient_hulk.target_unreachable(stuck_prisoner), "The hulk wrote a target off as unreachable")
-	qdel(patient_hulk)
+	hulk_form.track_reach(hulk_brain)
+	hulk_form.chase_progress_time -= 5 SECONDS
+	hulk_form.track_reach(hulk_brain)
+	TEST_ASSERT(!hulk_form.target_unreachable(stuck_prisoner), "The hulk wrote a target off as unreachable")
 	settle_prison_air(home)

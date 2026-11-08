@@ -39,7 +39,7 @@
 	var/mob/living/basic/outpost_prisoner/watcher = trouble_prisoner(prison, prison_spot(home, 8, 8))
 
 	// A hulk in the office behind the wall: outside the cell block and out of their sight, so nobody runs.
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 3, 3), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 3, 3), "hulk")
 	TEST_ASSERT(!prison.in_cell_block(hulk), "The office counts as the cell block")
 	TEST_ASSERT(!can_see(corner, hulk, 7) && !can_see(watcher, hulk, 7), "The test spots in the yard can see the office corner")
 	prison.experiment_creature_appeared(hulk, "hulk")
@@ -130,7 +130,7 @@
 
 	// Across the yard from their cell: home is safe, and they run for their cell's chair.
 	var/far_x = own.door_turf.x < middle.x ? 15 : 3
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, far_x, 8), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, far_x, 8), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	var/datum/prisoner_activity/creature_panic/panic = runner.activity
 	TEST_ASSERT(istype(panic), "A prisoner in the yard with a hulk loose in it did not run ([runner.activity?.type])")
@@ -195,7 +195,7 @@
 	// Two fighters who roll to run: the fight is over, and they run like anyone.
 	prison.forced_creature_reaction = "flee"
 	TEST_ASSERT_NOTNULL(prison.start_fight(first, second), "The test fight did not start")
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 9, 10), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 9, 10), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	TEST_ASSERT(!length(prison.fights), "Two fighters who ran from a hulk kept fighting")
 	for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(first, second))
@@ -298,7 +298,7 @@
 	door.bolt()
 	prison.refresh_reach()
 	TEST_ASSERT(hider.is_confined(), "The hider is not shut in their cell")
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 9, 9), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 9, 9), "hulk")
 	prison.experiment_creature_appeared(hulk, "hulk")
 	TEST_ASSERT(hider.is_panicking(), "A hulk loose in the yard did not frighten a prisoner in their cell")
 	TEST_ASSERT(hider.sheltering_from_creature(), "A frightened prisoner bolted in their own cell is not sheltering")
