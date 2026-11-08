@@ -170,6 +170,9 @@
 		/obj/item/wrench/cyborg,
 		/obj/item/wirecutters/cyborg,
 	)
+	/// The action-speed modifier the servo tendons apply while the ware is running.
+	/// The model in the line (ware_line_models_a.dm) swaps in a weaker one.
+	var/datum/actionspeed_modifier/speed_modifier = /datum/actionspeed_modifier/cyberware_fixers
 
 // The tool-speed bonus rides the failing-gated passive layer (BAL-4): servo
 // tendons with an EMP reboot or a brownout are just fingers until the ware
@@ -177,10 +180,10 @@
 // idempotent and needs no applied-state guard.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.add_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.add_actionspeed_modifier(speed_modifier)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.remove_actionspeed_modifier(/datum/actionspeed_modifier/cyberware_fixers)
+	bearer?.remove_actionspeed_modifier(speed_modifier)
 
 #undef CYBERWARE_ROCKJAW_SWEEP_DELAY

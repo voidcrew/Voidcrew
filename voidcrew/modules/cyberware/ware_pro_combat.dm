@@ -629,6 +629,14 @@
 	tier = CYBERWARE_TIER_2
 	aug_overlay = "hopper"
 	actions_types = list(/datum/action/cooldown/cyberware/hopper_leap)
+	// The models in the line (ware_line_models_a.dm) retune these by setting vars.
+	/// Leap distance in tiles.
+	var/leap_range = CYBERWARE_HOPPER_RANGE
+	/// Gap between leaps. The button reads it when it is built.
+	var/leap_cooldown = 8 SECONDS
+	/// Tooltip for the button when this model's numbers differ from the button's
+	/// own text. Null keeps the button's own.
+	var/leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap
 	name = "Piston Leap"
@@ -637,6 +645,16 @@
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+
+/datum/action/cooldown/cyberware/hopper_leap/New(Target, original = TRUE)
+	. = ..()
+	// The pistons this button belongs to set its cooldown and tooltip.
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	if(!istype(pistons))
+		return
+	cooldown_time = pistons.leap_cooldown
+	if(pistons.leap_action_desc)
+		desc = pistons.leap_action_desc
 
 /datum/action/cooldown/cyberware/hopper_leap/Activate(atom/target)
 	if(!isliving(owner))
@@ -649,10 +667,12 @@
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't jump from here!")
 		return FALSE
-	if(get_dist(here, destination) > CYBERWARE_HOPPER_RANGE)
+	var/obj/item/organ/cyberimp/cyberware/hopper/pistons = organ
+	var/leap_range = istype(pistons) ? pistons.leap_range : CYBERWARE_HOPPER_RANGE
+	if(get_dist(here, destination) > leap_range)
 		jumper.balloon_alert(jumper, "too far!")
 		return FALSE
-	if(!can_see(jumper, destination, CYBERWARE_HOPPER_RANGE))
+	if(!can_see(jumper, destination, leap_range))
 		jumper.balloon_alert(jumper, "no line of sight!")
 		return FALSE
 	if(destination.is_blocked_turf() || islava(destination) || ischasm(destination))

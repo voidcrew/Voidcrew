@@ -128,6 +128,21 @@
 	aug_overlay = "gorilla_right"
 	/// Rate limit on this arm's empowered hits.
 	COOLDOWN_DECLARE(slam_cooldown)
+	// The defines above are the Gorilla defaults. They live in vars so the other
+	// models of the line (ware_line_models_a.dm) can retune by setting them.
+	/// Flat brute per empowered punch.
+	var/punch_damage = CYBERWARE_GORILLA_PUNCH_DAMAGE
+	/// Damage per structure/machine smash.
+	var/structure_damage = CYBERWARE_GORILLA_STRUCTURE_DAMAGE
+	/// Gap between empowered punches, per arm.
+	var/punch_cooldown_time = CYBERWARE_GORILLA_PUNCH_COOLDOWN
+	/// Gap between structure smashes / rock breaks, per arm.
+	var/smash_cooldown_time = CYBERWARE_GORILLA_SMASH_COOLDOWN
+	/// How far an aggressively-grabbed victim gets hurled. 0 or less: no hurl,
+	/// the grabbed victim takes the ordinary slam.
+	var/hurl_range = CYBERWARE_GORILLA_HURL_RANGE
+	/// Whether a matched pair of these pries closed airlocks (the set bonus).
+	var/pries_doors = TRUE
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/left
 	name = "\improper Gorilla Arms myomer lattice (left)"
@@ -137,7 +152,8 @@
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/Initialize(mapload)
 	. = ..()
-	AddElement(/datum/element/organ_set_bonus, /datum/status_effect/organ_set_bonus/cyberware_gorilla)
+	if(pries_doors)
+		AddElement(/datum/element/organ_set_bonus, /datum/status_effect/organ_set_bonus/cyberware_gorilla)
 
 /**
  * Worn-chrome overlay hook. Gorilla Arms replace the limb outright, hand
@@ -197,7 +213,7 @@
 		source.do_attack_animation(rock, ATTACK_EFFECT_SMASH)
 		playsound(rock, 'sound/effects/meteorimpact.ogg', 30, TRUE)
 		rock.gets_drilled(source, 1)
-		COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_SMASH_COOLDOWN)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
 	// Structures, girders, machines cave in. Loose items are beneath us.
@@ -212,8 +228,8 @@
 			span_danger("[source] caves [smashed] in with a piston-driven fist!"),
 			span_danger("You cave [smashed] in!"),
 		)
-		smashed.take_damage(CYBERWARE_GORILLA_STRUCTURE_DAMAGE, BRUTE, MELEE)
-		COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_SMASH_COOLDOWN)
+		smashed.take_damage(structure_damage, BRUTE, MELEE)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
 	if(!isliving(target))
@@ -226,24 +242,24 @@
 
 	if(ishuman(living_target))
 		var/mob/living/carbon/human/human_target = living_target
-		if(human_target.check_block(source, CYBERWARE_GORILLA_PUNCH_DAMAGE, "[source]'s piston punch"))
+		if(human_target.check_block(source, punch_damage, "[source]'s piston punch"))
 			source.do_attack_animation(living_target)
 			playsound(living_target.loc, 'sound/items/weapons/punchmiss.ogg', 25, TRUE, -1)
 			log_combat(source, living_target, "attempted to piston-punch", "gorilla arms")
 			return COMPONENT_CANCEL_ATTACK_CHAIN
 
 	// The one damage line. Flat, wounding, honest.
-	var/grabbed_hurl = living_target.pulledby == source && source.grab_state >= GRAB_AGGRESSIVE
+	var/grabbed_hurl = hurl_range > 0 && living_target.pulledby == source && source.grab_state >= GRAB_AGGRESSIVE
 	source.do_attack_animation(living_target, ATTACK_EFFECT_SMASH)
 	playsound(living_target.loc, 'sound/items/weapons/punch1.ogg', 40, TRUE, -1)
 	var/target_zone = living_target.get_random_valid_zone(source.zone_selected)
 	var/armor_block = living_target.run_armor_check(target_zone, MELEE, armour_penetration = active_hand.unarmed_effectiveness)
-	living_target.apply_damage(CYBERWARE_GORILLA_PUNCH_DAMAGE, BRUTE, target_zone, armor_block, wound_bonus = 10)
+	living_target.apply_damage(punch_damage, BRUTE, target_zone, armor_block, wound_bonus = 10)
 
 	if(source.body_position != LYING_DOWN)
 		var/atom/throw_target = get_edge_target_turf(living_target, source.dir)
 		if(grabbed_hurl)
-			living_target.safe_throw_at(throw_target, CYBERWARE_GORILLA_HURL_RANGE, 2, source)
+			living_target.safe_throw_at(throw_target, hurl_range, 2, source)
 			living_target.visible_message(
 				span_danger("[source] hurls [living_target] across the room!"),
 				span_userdanger("[source] hurls you across the room!"),
@@ -256,7 +272,7 @@
 			)
 	to_chat(source, span_danger("You slam [living_target]!"))
 	log_combat(source, living_target, "piston-punched", "gorilla arms")
-	COOLDOWN_START(src, slam_cooldown, CYBERWARE_GORILLA_PUNCH_COOLDOWN)
+	COOLDOWN_START(src, slam_cooldown, punch_cooldown_time)
 	return COMPONENT_CANCEL_ATTACK_CHAIN
 
 /**

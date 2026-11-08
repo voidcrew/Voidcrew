@@ -312,6 +312,15 @@
    "reason": "Built into the peashooter, never on its own. Rated with the gun.",
    "tier": "green"
   },
+  "/obj/item/ammo_box/magazine/internal/cylinder/rev38/cyberware_holdout": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "holdout cylinder",
+   "rank": 8,
+   "reason": "Built into the Holdout revolver arm, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/internal/cylinder/rev38/housecall": {
    "confidence": "high",
    "group": "magazines built into a gun",

@@ -51,6 +51,15 @@
    "reason": "Every timed action takes 25% less time, surgery, welding, cuffing and repairs alike, plus a driver, wrench and cutters in the arm. Worth a slot for medics and engineers. Load 2, 1,800 cr.",
    "tier": "yellow"
   },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/fixers/street": {
+   "confidence": "medium",
+   "group": "Work tools",
+   "hash": "",
+   "name": "Tinker's fingers",
+   "rank": 2,
+   "reason": "A driver, wrench and cutters in the arm, and every timed action 10% faster. The Fixer's Fingers at a tenth of the stack: load 1, 700 cr. Splice takes a pulled set back for 350 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/graverobber": {
    "confidence": "medium",
    "group": "Scouting and sight",
@@ -157,6 +166,15 @@
    "reason": "A mining drill in the forearm with a bottomless ore hopper. A miner's bag and pick in one arm slot. Load 2, 1,200 cr.",
    "tier": "green"
   },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw/deepcore": {
+   "confidence": "medium",
+   "group": "Work tools",
+   "hash": "",
+   "name": "Deepcore drill fist",
+   "rank": 4,
+   "reason": "The Rockjaw's ore hopper on a faster drill, between the Rockjaw drill and a diamond drill. Load 3, 2,400 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin": {
    "confidence": "medium",
    "group": "Arm weapons and fists",
@@ -164,6 +182,15 @@
    "name": "Popup Ronin housing",
    "rank": 7,
    "reason": "A one-handed machine pistol in the arm that can't be disarmed: 20 damage, 3.3 shots a second, about a WT-550 on the gun score (47). 20-round magazines are 250 cr at reputation 22 or late research. Loot only.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/ronin/holdout": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Holdout housing",
+   "rank": 9,
+   "reason": "A .38 revolver in the arm that can't be disarmed: 25 damage, six shots, about 2.5 a second, reloaded by hand a round at a time with ordinary .38. Load 3, 2,400 cr at reputation 4. Splice takes a pulled housing back for 1,200 cr.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/skyhook": {
@@ -527,6 +554,24 @@
    "reason": "Left half of the Gorilla pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s.",
    "tier": "yellow"
   },
+  "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Brawler myomers (right)",
+   "rank": 12,
+   "reason": "Half of a pair: a flat 14 damage punch every 6 s, 25 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 2,400 cr at reputation 4. Splice takes a pulled arm back for 600 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Brawler myomers (left)",
+   "rank": 13,
+   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 6 s, 25 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {
    "confidence": "medium",
    "group": "Operating system",
@@ -571,6 +616,24 @@
    "name": "Hopper piston calves",
    "rank": 4,
    "reason": "Jump 4 tiles over tables, gaps and people every 8 s. Won't cross walls or windows. Strong in any fight. Load 3, 3,600 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/hopper/milspec": {
+   "confidence": "medium",
+   "group": "Mobility and stealth",
+   "hash": "",
+   "name": "Vaulter pistons",
+   "rank": 2,
+   "reason": "Jump 5 tiles over tables, gaps and people every 6 s, and walk away from drops and wet floors like the Shock Coils. Won't cross walls or windows. Load 4, 3 vouchers at reputation 11.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/hopper/street": {
+   "confidence": "medium",
+   "group": "Mobility and stealth",
+   "hash": "",
+   "name": "Spring calves",
+   "rank": 6,
+   "reason": "Jump 3 tiles over tables, gaps and people every 14 s. Won't cross walls or windows. The cheap rung under the Hopper, with none of the Shock Coils' trims. Load 2, 1,800 cr at reputation 4. Splice takes a pulled pair back for 900 cr.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/cyberware/lazarus": {

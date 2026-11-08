@@ -469,6 +469,15 @@
    },
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/revolver/cyberware_holdout": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "",
+   "name": "holdout revolver",
+   "rank": 12,
+   "reason": "A .38 revolver folded into the forearm: 25 damage, six shots, about 2.5 a second. Can't be disarmed while deployed, and every reload is a round at a time by hand.",
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/revolver/golden": {
    "confidence": "medium",
    "group": "sidearms",
