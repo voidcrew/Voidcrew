@@ -139,7 +139,7 @@
 
 	// A random kit is still a kit.
 	var/mob/living/basic/bounty_criminal/random_boss = spawn_criminal(panel, operator, 3, "boss", null, spot) // BOUNTY_TIER_MOST_WANTED
-	TEST_ASSERT((random_boss?.record?.kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")), "A boss with a random kit has the kit [random_boss?.record?.kit]")
+	TEST_ASSERT((random_boss?.record?.kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho")), "A boss with a random kit has the kit [random_boss?.record?.kit]")
 
 	// Bad requests are refused, with a reason and no log line.
 	var/logged = length(panel.operations)
@@ -332,7 +332,7 @@
 
 	// A boss record always has a kit.
 	var/datum/bounty_record/boss_record = panel.admin_pool_add(operator, 3, "boss", null) // BOUNTY_TIER_MOST_WANTED
-	TEST_ASSERT((boss_record?.kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")), "A boss test record has the kit [boss_record?.kit]")
+	TEST_ASSERT((boss_record?.kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho")), "A boss test record has the kit [boss_record?.kit]")
 	TEST_ASSERT_EQUAL(length(panel.pool_rows()), 2, "The pool does not list both records")
 
 	// Through the menu: the list names the records, and a record added there joins.

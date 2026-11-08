@@ -1,16 +1,13 @@
 /**
  * # Bounty hunting: the cyberpsycho
  *
- * A rare Most Wanted: a mini-boss kit (BOUNTY_KIT_CYBERPSYCHO) whose kit is its chrome, all seven
- * pieces at once. Its record says "all of it", and every piece shows and reads on it as on anyone
+ * A mini-boss kit (BOUNTY_KIT_CYBERPSYCHO) whose kit is its chrome, all seven pieces at once. Its
+ * record rolls "all of it" (bounty_roll_chrome()), and every piece shows and reads on it as on anyone
  * else: the real implants in its look, each piece's examine line, each piece's chrome read.
  *
- * Where it sits: the board turns a public Most Wanted posting into one now and then
- * (bounty_psycho_posting_type(), called from board_post()), never before BOUNTY_PSYCHO_EARLIEST into
- * the round, at most BOUNTY_PSYCHO_PER_ROUND a round, BOUNTY_PSYCHO_GAP apart, and one on the board at
- * a time. Its posting (/datum/criminal_bounty/cyberpsycho) is "dead or alive": brought in dead, it
- * pays what brought in down does; standing and cuffed, it pays in full. It is worth
- * BOUNTY_PSYCHO_PAY_MULT times a Most Wanted's base. Nothing drops.
+ * Where it sits: everything but the fight is any mini-boss's. The record rolls it as a kit, the
+ * rarest (bounty_roll_kit()); its posting, pay, shares, suit in the void, capture and prison riot
+ * move (the Juggernaut's charge) are the standard ones. Nothing drops.
  *
  * How its pieces work together. Each piece here is a psycho subtype of the real one: the same
  * telegraphs, effects, counterplay and clean-up, but a piece never starts a move on its own. The
@@ -30,8 +27,10 @@
  * - Redline core: phase two. It trips once, where the boss tires: whatever it was doing stops, any
  *   surge goes dark, it stands and roars, burns, then collapses into stamina crit: the capture.
  * - Lazarus: the one time it gets up again, after it is downed.
- * An EMP takes every piece down at once and it locks up for a moment; for a while after, its chrome
- * shrugs further pulses off (BOUNTY_PSYCHO_EMP_GRACE), so EMPs are timed, not spammed.
+ * An EMP throws it into a malfunction for BOUNTY_PSYCHO_MALFUNCTION: every piece down at once, so it
+ * starts no move, sparking and twitching all the while (bounty_chrome_malfunction_fx()), then it
+ * recovers. For BOUNTY_PSYCHO_EMP_GRACE after that its chrome shrugs further pulses off, so EMPs are
+ * timed, not spammed.
  */
 
 // ===== ITS BODY =====
@@ -41,21 +40,10 @@
 #define BOUNTY_PSYCHO_HEALTH_2 900
 #define BOUNTY_PSYCHO_HEALTH_3 1500
 #define BOUNTY_PSYCHO_HEALTH_4 2100
-#define BOUNTY_PSYCHO_SPEED 1.5
+/// Its pace (on the scale of BOUNTY_JUGGERNAUT_SPEED): a little slower than a running hunter; the Cascade window runs them down
+#define BOUNTY_PSYCHO_SPEED 0.35
 /// Between blows; the blade's own numbers are its blows (Mantis Blades)
 #define BOUNTY_PSYCHO_MELEE_COOLDOWN (0.9 SECONDS)
-
-// ===== THE BOARD =====
-
-/// Percent of public Most Wanted postings that are a cyberpsycho, once the rules below allow one
-#define BOUNTY_PSYCHO_CHANCE 30
-/// None before this far into the round
-#define BOUNTY_PSYCHO_EARLIEST (60 MINUTES)
-/// At most this many a round, this far apart
-#define BOUNTY_PSYCHO_PER_ROUND 2
-#define BOUNTY_PSYCHO_GAP (90 MINUTES)
-/// Its base value is a Most Wanted's times this
-#define BOUNTY_PSYCHO_PAY_MULT 1.25
 
 // ===== ITS MOVES =====
 
@@ -77,21 +65,14 @@
 
 // ===== EMP =====
 
-/// After an EMP takes its chrome down, further pulses slide off for the reboot (BOUNTY_CHROME_EMP_REBOOT) and this long after
-#define BOUNTY_PSYCHO_EMP_GRACE (12 SECONDS)
-/// The EMP locks it up this long, taking this much more damage
-#define BOUNTY_PSYCHO_EMP_STAGGER (1.5 SECONDS)
-#define BOUNTY_PSYCHO_EMP_VULNERABLE 1.25
+/// An EMP's malfunction: every piece down this long (its emp_reboot), sparking and twitching
+#define BOUNTY_PSYCHO_MALFUNCTION (5 SECONDS)
+/// After the malfunction, further pulses slide off this long
+#define BOUNTY_PSYCHO_EMP_GRACE (8 SECONDS)
 /// The line about a pulse sliding off shows at most this often
 #define BOUNTY_PSYCHO_STATIC_MESSAGE (2 SECONDS)
 
-/// Cyberpsychos posted this round, and the world.time the last one went up
-GLOBAL_VAR_INIT(bounty_psycho_posted, 0)
-GLOBAL_VAR_INIT(bounty_psycho_last_posted, 0)
-/// An admin asked for the next Most Wanted posting to be a cyberpsycho, whatever the rules say (the Bounty Panel)
-GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
-
-// ===== THE BOARD =====
+// ===== ITS RECORD =====
 
 /**
  * Its chrome, key -> the psycho's own subtype of that piece, in the order they go in. The order sets
@@ -117,96 +98,17 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 		keys += key
 	return keys
 
-/// What a cyberpsycho is wanted for
-/proc/bounty_psycho_crimes()
-	var/list/crimes = bounty_identity_strings("crimes")
-	var/list/pool = crimes["cyberpsycho"]
-	return islist(pool) ? pool : list()
-
 /**
- * Makes `record` a cyberpsycho's: the kit, every piece of chrome, and a crime to match. Idempotent:
- * the board calls it as it posts, and the body again as it spawns (an admin spawn picks the kit only).
+ * Makes `record` a cyberpsycho's: the kit and every piece of chrome. Idempotent: the body calls it as it
+ * spawns, so an admin's spawn (which picks the kit only) carries all of it too.
  */
 /proc/bounty_psycho_make_record(datum/bounty_record/record)
 	if(!record)
 		return
-	var/was_psycho = record.kit == BOUNTY_KIT_CYBERPSYCHO
 	record.archetype = BOUNTY_ARCHETYPE_BOSS
 	record.kit = BOUNTY_KIT_CYBERPSYCHO
 	record.style = null
 	record.chrome = bounty_psycho_chrome_keys()
-	var/list/crimes = bounty_psycho_crimes()
-	if(length(crimes) && !(record.crime in crimes))
-		record.crime = pick(crimes)
-	if(!was_psycho)
-		record.alias = bounty_roll_alias(record)
-
-/// Its posting on the board now, if one is open
-/proc/bounty_psycho_open_posting()
-	for(var/datum/criminal_bounty/cyberpsycho/posting in GLOB.criminal_bounties)
-		if(!QDELETED(posting) && posting.is_open())
-			return posting
-	return null
-
-/// Why a cyberpsycho may not go on the board now, or null if it may. `elapsed` is how long the round has run.
-/proc/bounty_psycho_post_refusal(elapsed = world.time - SSticker.round_start_time)
-	if(elapsed < BOUNTY_PSYCHO_EARLIEST)
-		return "too early in the round"
-	if(GLOB.bounty_psycho_posted >= BOUNTY_PSYCHO_PER_ROUND)
-		return "enough this round"
-	if(GLOB.bounty_psycho_posted && world.time < GLOB.bounty_psycho_last_posted + BOUNTY_PSYCHO_GAP)
-		return "the last one went up too recently"
-	if(bounty_psycho_open_posting())
-		return "one is on the board"
-	return null
-
-/**
- * The posting type the board makes for `record`, a new public Most Wanted (board_post()): now and
- * then a cyberpsycho's, and `record` is made one, worth BOUNTY_PSYCHO_PAY_MULT times more. An
- * admin's forced one (GLOB.bounty_psycho_forced) skips the chance and the rules. Doesn't sleep.
- */
-/proc/bounty_psycho_posting_type(datum/bounty_record/record, placement_kind, obj/structure/overmap/ship/private_to)
-	var/forced = GLOB.bounty_psycho_forced
-	GLOB.bounty_psycho_forced = FALSE
-	if(!record || private_to || record.tier != BOUNTY_TIER_MOST_WANTED || record.archetype != BOUNTY_ARCHETYPE_BOSS || placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST)
-		return /datum/criminal_bounty
-	if(!forced && (bounty_psycho_post_refusal() || !prob(BOUNTY_PSYCHO_CHANCE)))
-		return /datum/criminal_bounty
-	bounty_psycho_make_record(record)
-	record.base_value = round(record.base_value * BOUNTY_PSYCHO_PAY_MULT, 10)
-	GLOB.bounty_psycho_posted++
-	GLOB.bounty_psycho_last_posted = world.time
-	return /datum/criminal_bounty/cyberpsycho
-
-/// A cyberpsycho's posting: dead or alive
-/datum/criminal_bounty/cyberpsycho
-
-/datum/criminal_bounty/cyberpsycho/board_terms()
-	return "Wanted dead or alive"
-
-// Dead or alive: brought in dead, it pays what brought in down does; stunned or cuffed on its feet, in full
-/datum/criminal_bounty/cyberpsycho/board_share_for(state, worst_state)
-	. = ..()
-	if(. && (state == BOUNTY_STATE_DEAD || worst_state == BOUNTY_STATE_DEAD))
-		. = max(., BOUNTY_SHARE_DOWNED)
-
-/datum/criminal_bounty/cyberpsycho/board_warrant_text()
-	. = ..()
-	var/terms = "<b>[board_terms()]</b>."
-	. = replacetext(., "[terms]<br>", "[terms] Armed with military chrome.<br>")
-
-/// The Bounty Panel's "Post a bounty now" entry: a cyberpsycho on the board now, whatever the clock says
-/datum/bounty_admin_post_action/cyberpsycho
-	name = "Cyberpsycho"
-
-/datum/bounty_admin_post_action/cyberpsycho/post(datum/bounty_admin_panel/panel, mob/user)
-	GLOB.bounty_psycho_forced = TRUE
-	var/datum/criminal_bounty/posting = post_criminal_bounty(BOUNTY_TIER_MOST_WANTED, null)
-	GLOB.bounty_psycho_forced = FALSE
-	if(!istype(posting, /datum/criminal_bounty/cyberpsycho))
-		posting?.close(BOUNTY_CLOSE_ADMIN)
-		return panel.refuse(user, "No site would take a cyberpsycho right now.")
-	return "post a cyberpsycho bounty on [posting.record?.name || "nobody"] at [posting.board_site_name || "an unknown site"]"
 
 // ===== THE BOSS =====
 
@@ -268,6 +170,8 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 		var/piece_type = types[key]
 		var/datum/bounty_chrome/piece = new piece_type
 		piece.key = key
+		// An EMP is a short malfunction on it, not a long reboot
+		piece.emp_reboot = BOUNTY_PSYCHO_MALFUNCTION
 		chrome.pieces[key] = piece
 		piece.attach(src)
 
@@ -335,17 +239,22 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 		visible_message(span_warning("Static crawls over [src]'s chrome and dies away."))
 	return EMP_PROTECT_SELF
 
-/// An EMP took its chrome down: every piece has reacted already; it locks up for a moment, and the grace starts
+/// An EMP threw it into a malfunction (every piece has reacted already): it comes back on the dot, and the grace runs from then
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_on_emp(datum/source, severity, protection)
 	SIGNAL_HANDLER
 	if(stat == DEAD || (protection & EMP_PROTECT_SELF))
 		return
-	psycho_emp_shield_until = world.time + BOUNTY_CHROME_EMP_REBOOT + BOUNTY_PSYCHO_EMP_GRACE
-	// A piece that was mid-move (a punch, a leap) may already have it reeling
-	if(!boss_can_act() || boss_busy == "stagger")
+	psycho_emp_shield_until = world.time + BOUNTY_PSYCHO_MALFUNCTION + BOUNTY_PSYCHO_EMP_GRACE
+	addtimer(CALLBACK(src, PROC_REF(psycho_recover)), BOUNTY_PSYCHO_MALFUNCTION, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_DELETE_ME)
+
+/// The malfunction is over: its chrome comes back now, not at its next breath
+/mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_recover()
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	if(!chrome || stat == DEAD)
 		return
-	visible_message(span_danger("[src] locks up, twitching."))
-	boss_stagger(BOUNTY_PSYCHO_EMP_STAGGER, BOUNTY_PSYCHO_EMP_VULNERABLE)
+	for(var/key in chrome.pieces)
+		var/datum/bounty_chrome/piece = chrome.pieces[key]
+		piece.check_reboot()
 
 // ===== ITS MOVES =====
 
@@ -649,11 +558,6 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 #undef BOUNTY_PSYCHO_HEALTH_4
 #undef BOUNTY_PSYCHO_SPEED
 #undef BOUNTY_PSYCHO_MELEE_COOLDOWN
-#undef BOUNTY_PSYCHO_CHANCE
-#undef BOUNTY_PSYCHO_EARLIEST
-#undef BOUNTY_PSYCHO_PER_ROUND
-#undef BOUNTY_PSYCHO_GAP
-#undef BOUNTY_PSYCHO_PAY_MULT
 #undef BOUNTY_PSYCHO_LUNGE_HOLD
 #undef BOUNTY_PSYCHO_SURGE_SPINUP
 #undef BOUNTY_PSYCHO_MARK_LUNGE
@@ -664,7 +568,6 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 #undef BOUNTY_PSYCHO_CASCADE_CRASH
 #undef BOUNTY_PSYCHO_REDLINE_IDLE
 #undef BOUNTY_PSYCHO_PILEDRIVER_IDLE
+#undef BOUNTY_PSYCHO_MALFUNCTION
 #undef BOUNTY_PSYCHO_EMP_GRACE
-#undef BOUNTY_PSYCHO_EMP_STAGGER
-#undef BOUNTY_PSYCHO_EMP_VULNERABLE
 #undef BOUNTY_PSYCHO_STATIC_MESSAGE

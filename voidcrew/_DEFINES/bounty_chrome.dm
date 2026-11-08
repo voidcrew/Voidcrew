@@ -14,6 +14,13 @@
 /// The archetype a companion rolls chrome as (the criminal archetypes are BOUNTY_ARCHETYPE_*)
 #define BOUNTY_CHROME_COMPANION "companion"
 
+/// A malfunction (bounty_chrome_malfunction_fx()): how often it twitches and spits sparks, its outline's name, and its chrome blue
+#define BOUNTY_CHROME_MALFUNCTION_PULSE (0.4 SECONDS)
+#define BOUNTY_CHROME_MALFUNCTION_FILTER "bounty_chrome_malfunction"
+#define BOUNTY_CHROME_MALFUNCTION_COLOR "#7fd4ff"
+/// A colour matrix turning tg's yellow arcs a hot chrome blue, their brightest parts near white
+#define BOUNTY_CHROME_MALFUNCTION_MATRIX list(0.25, 0.45, 0.55, 0.25, 0.45, 0.55, 0.25, 0.45, 0.55, 0, 0, 0)
+
 /// The chrome keys, one per /datum/bounty_chrome subtype
 #define BOUNTY_CHROME_CASCADE "cascade"
 #define BOUNTY_CHROME_MANTIS "mantis"

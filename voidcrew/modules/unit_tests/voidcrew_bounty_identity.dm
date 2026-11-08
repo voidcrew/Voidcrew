@@ -10,7 +10,7 @@
 
 /datum/unit_test/voidcrew_bounty_identity_records/Run()
 	var/list/styles = list("brawler", "knife", "pistol", "shotgun", "smg", "revolver", "club", "bottle") // BOUNTY_STYLE_*, normal
-	var/list/kits = list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy") // BOUNTY_KIT_*
+	var/list/kits = list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho") // BOUNTY_KIT_*
 	var/list/labels = bounty_feature_labels()
 	// BOUNTY_TIER_*, BOUNTY_ARCHETYPE_*, BOUNTY_PLACEMENT_*
 	for(var/tier in list(1, 2, 3))
@@ -400,7 +400,7 @@
 		"cuffed", "slipping_cuffs", "beamed_out",
 		"accused_wrongly", "accused_rightly", "companion_reply",
 	)
-	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")) // BOUNTY_KIT_*
+	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho")) // BOUNTY_KIT_*
 		// "_posse" is boss_bark("posse", "intro") as the posse grows (BUG-2)
 		contexts += list("[kit]_intro", "[kit]_ability", "[kit]_exhausted", "[kit]_posse")
 	for(var/context in contexts)

@@ -70,86 +70,51 @@
 // ===== WHERE IT SITS =====
 
 /**
- * The board: its rules (never early, twice a round at most, far apart, one at a time), an admin's
- * forced one, and the posting it makes: the record, the pay, the card and the warrant. Then it
- * spawns as the cyberpsycho with all seven pieces, and the Bounty Panel spawns one too.
+ * Where it sits: any mini-boss's rules. The record rolls it as a kit, the rarest, with all of its
+ * chrome; the board posts it as it posts any Most Wanted, with the standard card, pay and shares; it
+ * spawns as the cyberpsycho with all seven pieces, at a pace like the other kits', in the standard
+ * suit in the void, and in prison it has the Juggernaut's charge. The Bounty Panel lists the kit
+ * and spawns one at the admin's feet.
  */
 /datum/unit_test/voidcrew_bounty_cyberpsycho/posting
-	var/saved_posted
-	var/saved_last
-	var/saved_forced
 
 /datum/unit_test/voidcrew_bounty_cyberpsycho/posting/Run()
-	saved_posted = GLOB.bounty_psycho_posted
-	saved_last = GLOB.bounty_psycho_last_posted
-	saved_forced = GLOB.bounty_psycho_forced
 	board_test_begin()
 	checks()
 	board_test_end()
-	GLOB.bounty_psycho_posted = saved_posted
-	GLOB.bounty_psycho_last_posted = saved_last
-	GLOB.bounty_psycho_forced = saved_forced
 
 /datum/unit_test/voidcrew_bounty_cyberpsycho/posting/proc/checks()
-	// The rules
-	GLOB.bounty_psycho_posted = 0
-	GLOB.bounty_psycho_last_posted = 0
-	TEST_ASSERT_NOTNULL(bounty_psycho_post_refusal(30 MINUTES), "A cyberpsycho may go up half an hour in") // BOUNTY_PSYCHO_EARLIEST
-	TEST_ASSERT_NULL(bounty_psycho_post_refusal(61 MINUTES), "A cyberpsycho may not go up an hour in")
-	GLOB.bounty_psycho_posted = 1
-	GLOB.bounty_psycho_last_posted = world.time
-	TEST_ASSERT_NOTNULL(bounty_psycho_post_refusal(4 HOURS), "A second cyberpsycho may go up right after the first") // BOUNTY_PSYCHO_GAP
-	GLOB.bounty_psycho_last_posted = world.time - 91 MINUTES
-	TEST_ASSERT_NULL(bounty_psycho_post_refusal(4 HOURS), "A second cyberpsycho may not go up long after the first")
-	GLOB.bounty_psycho_posted = 2 // BOUNTY_PSYCHO_PER_ROUND
-	TEST_ASSERT_NOTNULL(bounty_psycho_post_refusal(4 HOURS), "A third cyberpsycho may go up in a round")
-	GLOB.bounty_psycho_posted = 0
+	// The kit roll: it comes up, and less often than any other kit
+	var/list/counts = list()
+	for(var/i in 1 to 2000)
+		var/kit = bounty_roll_kit()
+		counts[kit] = (counts[kit] || 0) + 1
+	TEST_ASSERT(counts["cyberpsycho"] > 0, "The cyberpsycho never rolled as a kit") // BOUNTY_KIT_CYBERPSYCHO
+	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")) // BOUNTY_KIT_*
+		TEST_ASSERT(counts["cyberpsycho"] < counts[kit], "The cyberpsycho ([counts["cyberpsycho"]]) rolled as often as the [kit] ([counts[kit]])")
+	// Its record rolls all of it
+	var/list/rolled = bounty_roll_chrome(3, "boss", null, "cyberpsycho") // BOUNTY_TIER_MOST_WANTED, BOUNTY_ARCHETYPE_BOSS
+	TEST_ASSERT_EQUAL(length(rolled), 7, "A cyberpsycho's record rolled [length(rolled)] pieces of chrome")
 
-	// Only a public Most Wanted mini-boss, and only when the rules allow (a test runs minutes into its round)
-	var/datum/bounty_record/record = generate_bounty_record(3, "boss", "planet") // BOUNTY_TIER_MOST_WANTED, BOUNTY_ARCHETYPE_BOSS
-	for(var/i in 1 to 20)
-		TEST_ASSERT_EQUAL(bounty_psycho_posting_type(record, "planet", null), /datum/criminal_bounty, "A cyberpsycho went up minutes into the round")
-	TEST_ASSERT(record.kit != "cyberpsycho", "A record turned cyberpsycho without being posted as one") // BOUNTY_KIT_CYBERPSYCHO
-	var/datum/bounty_record/wanted = generate_bounty_record(2, "normal", "planet")
-	GLOB.bounty_psycho_forced = TRUE
-	TEST_ASSERT_EQUAL(bounty_psycho_posting_type(wanted, "planet", null), /datum/criminal_bounty, "A forced Wanted posting became a cyberpsycho")
-	TEST_ASSERT(!GLOB.bounty_psycho_forced, "The admin's forced cyberpsycho wasn't used up")
-	GLOB.bounty_psycho_forced = TRUE
-	TEST_ASSERT_EQUAL(bounty_psycho_posting_type(record, "trader_outpost", null), /datum/criminal_bounty, "A cyberpsycho went up at a trader outpost")
+	// A Most Wanted posting like any other: the standard card and shares
+	var/datum/criminal_bounty/posting = board_test_posting(3, null, 3400, 2, "boss")
+	var/datum/bounty_record/record = posting.record
+	var/crime = record.crime
+	record.kit = "cyberpsycho"
+	TEST_ASSERT_EQUAL(posting.type, /datum/criminal_bounty, "A cyberpsycho's posting isn't a standard one")
+	TEST_ASSERT_EQUAL(posting.board_terms(), "Wanted alive", "A cyberpsycho's card doesn't read as any boss's")
+	for(var/state in list("restrained", "stunned", "downed", "dead"))
+		TEST_ASSERT_EQUAL(posting.board_share_for(state, state), bounty_state_share(state), "A [state] cyberpsycho doesn't pay the standard share")
 
-	// An admin's: the board posts it at a ruin
-	var/obj/structure/overmap/space_ruin/ruin = allocate(/obj/structure/overmap/space_ruin, outpost_lead_overmap_turf(48, 48))
-	GLOB.bounty_psycho_forced = TRUE
-	var/datum/criminal_bounty/cyberpsycho/posting = post_criminal_bounty(3, "ruin", ruin)
-	TEST_ASSERT(!GLOB.bounty_psycho_forced, "The forced cyberpsycho wasn't used up by the posting")
-	TEST_ASSERT(istype(posting, /datum/criminal_bounty/cyberpsycho), "The forced Most Wanted isn't a cyberpsycho: [posting?.type]")
-	if(!istype(posting))
-		return
-	TEST_ASSERT_EQUAL(GLOB.bounty_psycho_posted, 1, "The posting wasn't counted")
-	TEST_ASSERT_EQUAL(bounty_psycho_open_posting(), posting, "The open cyberpsycho posting can't be found")
-	TEST_ASSERT_NOTNULL(bounty_psycho_post_refusal(4 HOURS), "A second cyberpsycho may go up while one is on the board")
-	var/datum/bounty_record/psycho_record = posting.record
-	TEST_ASSERT_EQUAL(psycho_record.kit, "cyberpsycho", "The posted record's kit is [psycho_record.kit]")
-	TEST_ASSERT_EQUAL(length(psycho_record.chrome), 7, "The posted record carries [length(psycho_record.chrome)] pieces of chrome")
-	TEST_ASSERT(psycho_record.crime in bounty_psycho_crimes(), "The posted record is wanted for [psycho_record.crime]")
-	// BOUNTY_PAY_MOST_WANTED_MIN 3000, _MAX 3800, times BOUNTY_PSYCHO_PAY_MULT 1.25
-	TEST_ASSERT(psycho_record.base_value >= 3750 && psycho_record.base_value <= 4750, "The cyberpsycho's base value is [psycho_record.base_value]")
-	TEST_ASSERT_EQUAL(posting.board_terms(), "Wanted dead or alive", "The card doesn't say dead or alive")
-	// BOUNTY_SHARE_RESTRAINED 100, BOUNTY_SHARE_DOWNED 60
-	TEST_ASSERT_EQUAL(posting.board_share_for("restrained", "stunned"), 100, "Cuffed on its feet, it doesn't pay in full")
-	TEST_ASSERT_EQUAL(posting.board_share_for("restrained", "downed"), 60, "Cuffed after a downing, it doesn't pay the downed share")
-	TEST_ASSERT_EQUAL(posting.board_share_for("dead", "dead"), 60, "Dead, it doesn't pay the downed share")
-	TEST_ASSERT_EQUAL(posting.board_share_for("free", "free"), 0, "Free and standing, it pays")
-	var/warrant = posting.board_warrant_text()
-	TEST_ASSERT(findtext(warrant, "Wanted dead or alive</b>. Armed with military chrome."), "The warrant doesn't warn of the chrome")
-
-	// It spawns as the cyberpsycho, with all of it
-	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = spawn_bounty_criminal(posting.record, tile(2, 2), posting)
+	// It spawns as the cyberpsycho, with all of it, and its record keeps its crime
+	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = spawn_bounty_criminal(record, tile(2, 2), posting)
 	if(psycho)
 		allocated += psycho
 	TEST_ASSERT(istype(psycho), "The posted cyberpsycho spawned as [psycho?.type]")
 	if(!istype(psycho))
 		return
+	TEST_ASSERT_EQUAL(record.crime, crime, "Spawning the cyberpsycho changed its crime")
+	TEST_ASSERT_EQUAL(length(record.chrome), 7, "The record carries [length(record.chrome)] pieces of chrome")
 	var/datum/component/bounty_chrome/chrome = psycho.GetComponent(/datum/component/bounty_chrome)
 	TEST_ASSERT_EQUAL(length(chrome?.pieces), 7, "The cyberpsycho carries [length(chrome?.pieces)] pieces of chrome")
 	var/list/expected = list(
@@ -172,8 +137,16 @@
 		TEST_ASSERT(!findtext("[proto.type]", "/psycho"), "The psycho's [proto.type] is a prototype")
 	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(psycho), " "), "SIGNATURES 7"), "A chrome read doesn't count seven pieces")
 	for(var/text in list("right forearm", "left arm is plated", "neck", "speaker grille", "launch pistons", "ribs", "milspec optics"))
-		TEST_ASSERT(examine_has(psycho, text), "Examining the cyberpsycho doesn't show \"[text]\"")
+		TEST_ASSERT(examine_has(psycho, text), "Examining the cyberpsycho doesn't show [text]")
 	TEST_ASSERT_EQUAL(jointext(psycho.boss_health_table(), ","), "300,900,1500,2100", "The cyberpsycho's health table changed") // BOUNTY_PSYCHO_HEALTH_*
+	// Its pace: slower than the Ghost, quicker than the Heavy, like the other kits (voidcrew_bounty_speed's rule)
+	var/mob/living/basic/bounty_criminal/boss/ghost/ghost_type = /mob/living/basic/bounty_criminal/boss/ghost
+	var/mob/living/basic/bounty_criminal/boss/heavy/heavy_type = /mob/living/basic/bounty_criminal/boss/heavy
+	TEST_ASSERT(initial(psycho.speed) > initial(ghost_type.speed) + 0.3, "The cyberpsycho keeps up with a running hunter, as only the Ghost does")
+	TEST_ASSERT(initial(psycho.speed) < initial(heavy_type.speed), "The cyberpsycho is as slow as the Heavy")
+	// In the void, the standard modsuit; in prison, the Juggernaut's charge
+	TEST_ASSERT_EQUAL(bounty_eva_criminal_gear(psycho), /obj/item/mod/control/pre_equipped/standard, "The cyberpsycho's void suit is [bounty_eva_criminal_gear(psycho)]")
+	TEST_ASSERT_EQUAL(bounty_boss_move_type(record), /datum/prison_boss_move/charge, "A caught cyberpsycho's riot move is [bounty_boss_move_type(record)]")
 	posting.close("admin") // BOUNTY_CLOSE_ADMIN
 
 	// The Bounty Panel: listed with the kits, and a spawn at the admin's feet carries all of it whatever chrome was picked
@@ -189,15 +162,6 @@
 	TEST_ASSERT_EQUAL(length(spawned?.record?.chrome), 7, "The panel's cyberpsycho record lists [length(spawned?.record?.chrome)] pieces")
 	var/datum/component/bounty_chrome/spawned_chrome = spawned?.GetComponent(/datum/component/bounty_chrome)
 	TEST_ASSERT_EQUAL(length(spawned_chrome?.pieces), 7, "The panel's cyberpsycho carries [length(spawned_chrome?.pieces)] pieces")
-	// "Post a bounty now": the board posts one wherever it can, and the forced flag never outlives the attempt
-	var/datum/bounty_admin_post_action/cyberpsycho/action = new
-	var/done = action.post(panel, operator)
-	qdel(action)
-	TEST_ASSERT(!GLOB.bounty_psycho_forced, "The panel's forced cyberpsycho outlived the attempt")
-	if(done)
-		TEST_ASSERT(istype(bounty_psycho_open_posting(), /datum/criminal_bounty/cyberpsycho), "The panel said it posted a cyberpsycho, but none is on the board")
-	else
-		TEST_ASSERT_EQUAL(panel.error, "No site would take a cyberpsycho right now.", "The panel's cyberpsycho failed with [panel.error]")
 
 // ===== ITS PIECES WORK ONE AT A TIME =====
 
@@ -363,9 +327,11 @@
 // ===== EMP =====
 
 /**
- * An EMP takes every piece down at once: the window crashes, the blade goes in, it locks up. More
+ * An EMP throws it into a short malfunction: every piece down for 5 seconds, the window crashes, the
+ * blade goes in, and it sparks and twitches (only a picture: no real sparks); then it recovers. More
  * pulses slide off for a while after; then one lands again. In the burn it drops the core into its
- * collapse, and in the charge it dumps the Lazarus node.
+ * collapse, and in the charge it dumps the Lazarus node. Any chrome criminal shows the same
+ * malfunction, for as long as its own pieces stay down.
  */
 /datum/unit_test/voidcrew_bounty_cyberpsycho/emp
 
@@ -385,17 +351,37 @@
 	for(var/key in chrome.pieces)
 		var/datum/bounty_chrome/piece = chrome.pieces[key]
 		TEST_ASSERT(!piece.online(), "Its [key] works through an EMP")
+		TEST_ASSERT(piece.offline_until <= world.time + 5 SECONDS, "Its [key] is down longer than the malfunction") // BOUNTY_PSYCHO_MALFUNCTION
 	TEST_ASSERT_EQUAL(cascade.phase, 3, "An EMP in the window didn't crash it") // BOUNTY_CASCADE_CRASH
 	TEST_ASSERT(!mantis.deployed, "Its blade stayed out through an EMP")
 	TEST_ASSERT(psycho.ai_hand?.held_type != /obj/item/melee/energy/blade/hardlight/cyberware_mantis, "The blade still shows in its hand") // BOUNTY_MANTIS_BLADE
-	TEST_ASSERT_EQUAL(psycho.boss_busy, "stagger", "An EMP didn't lock it up")
+	var/datum/status_effect/bounty_chrome_malfunction/malfunction = psycho.has_status_effect(/datum/status_effect/bounty_chrome_malfunction)
+	TEST_ASSERT_NOTNULL(malfunction, "An EMP didn't throw it into a malfunction")
+	TEST_ASSERT(malfunction?.duration <= world.time + 5 SECONDS, "Its malfunction outlasts its reboot")
+	TEST_ASSERT_NOTNULL(psycho.get_filter("bounty_chrome_malfunction"), "The malfunction has no flicker") // BOUNTY_CHROME_MALFUNCTION_FILTER
+	TEST_ASSERT(psycho.boss_busy != "stagger", "The malfunction stuns it")
 	TEST_ASSERT(psycho.psycho_emp_shield_until > world.time, "No grace after the EMP")
-	TEST_ASSERT(!psycho.boss_can_use_ability(), "It may start a move with its chrome down")
+	for(var/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/move in psycho.boss_abilities)
+		psycho.boss_next_ability_at = 0
+		TEST_ASSERT(!move.worth_using(hunter), "It may start [move.name] in the malfunction")
+	TEST_ASSERT_NULL(locate(/obj/effect/particle_effect/sparks) in range(2, psycho), "The malfunction threw real sparks")
+	malfunction?.tick(0.4)
+	var/flung = 0
+	for(var/turf/spot as anything in RANGE_TURFS(1, psycho))
+		for(var/obj/effect/temp_visual/bounty_chrome_spark/spark in spot)
+			flung++
+	TEST_ASSERT(flung > 0, "The malfunction spat no sparks around it")
 
-	// Back up, and another pulse straight away slides off
+	// The malfunction is over: everything comes back on the dot, and the sparking stops
 	for(var/key in chrome.pieces)
 		var/datum/bounty_chrome/piece = chrome.pieces[key]
 		piece.offline_until = world.time
+	psycho.psycho_recover()
+	for(var/key in chrome.pieces)
+		var/datum/bounty_chrome/piece = chrome.pieces[key]
+		TEST_ASSERT(piece.online(), "Its [key] didn't recover from the malfunction")
+	psycho.remove_status_effect(/datum/status_effect/bounty_chrome_malfunction)
+	TEST_ASSERT_NULL(psycho.get_filter("bounty_chrome_malfunction"), "The flicker outlived the malfunction")
 	chrome.tick(2)
 	TEST_ASSERT(mantis.online(), "Its blade didn't come back from the reboot")
 	TEST_ASSERT(mantis.deployed, "Its blade didn't come back out after the reboot")
@@ -419,6 +405,19 @@
 	burning.emp_act(EMP_HEAVY)
 	TEST_ASSERT_EQUAL(redline.state, 0, "An EMP in the burn didn't end it") // REDLINE_IDLE
 	TEST_ASSERT_NOTNULL(burning.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "An EMP in the burn didn't drop it into the collapse")
+
+	// Any chrome criminal malfunctions the same way, for as long as its own piece stays down
+	var/mob/living/basic/bounty_criminal/normal/brawler = allocate(/mob/living/basic/bounty_criminal/normal, tile(4, 0))
+	bounty_chrome_install(brawler, list("gorilla")) // BOUNTY_CHROME_GORILLA
+	var/datum/bounty_chrome/gorilla/arms = bounty_chrome_piece(brawler, "gorilla")
+	brawler.emp_act(EMP_HEAVY)
+	var/datum/status_effect/bounty_chrome_malfunction/sparking = brawler.has_status_effect(/datum/status_effect/bounty_chrome_malfunction)
+	TEST_ASSERT_NOTNULL(sparking, "An EMP'd chrome criminal doesn't malfunction")
+	TEST_ASSERT_EQUAL(sparking?.duration, arms.offline_until, "The malfunction doesn't last as long as the piece is down")
+	TEST_ASSERT_NULL(locate(/obj/effect/particle_effect/sparks) in range(2, brawler), "An EMP'd chrome criminal threw real sparks")
+	brawler.death()
+	sparking?.tick(0.4)
+	TEST_ASSERT_NULL(brawler.has_status_effect(/datum/status_effect/bounty_chrome_malfunction), "A dead body goes on malfunctioning")
 
 	// In the Lazarus charge: the node dumps
 	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/charging = psycho_at(tile(2, 4), hunter)
@@ -452,8 +451,8 @@
 	TEST_ASSERT_EQUAL(psycho.capture_state(), "stunned", "Collapsed, it doesn't count as stunned") // BOUNTY_STATE_STUNNED
 	TEST_ASSERT(psycho.body_apply_cuffs(allocate(/obj/item/restraints/handcuffs, tile(0, 2))), "Cuffs didn't go on the collapsed cyberpsycho")
 	TEST_ASSERT_EQUAL(psycho.capture_state(), "restrained", "Cuffed, it doesn't count as restrained") // BOUNTY_STATE_RESTRAINED
-	var/datum/criminal_bounty/cyberpsycho/posting = new
-	TEST_ASSERT_EQUAL(posting.board_share_for(psycho.capture_state(), psycho.worst_state), 100, "Cuffed in the collapse, it doesn't pay in full")
+	var/datum/criminal_bounty/posting = new
+	TEST_ASSERT_EQUAL(posting.board_share_for(psycho.capture_state(), psycho.worst_state), 100, "Cuffed in the collapse, it doesn't pay in full") // BOUNTY_SHARE_RESTRAINED
 	qdel(posting)
 
 	// Downed: the node stands it up once
@@ -473,7 +472,7 @@
 	TEST_ASSERT(!lazarus.charging, "The Lazarus node charged twice")
 	TEST_ASSERT(second.body_apply_cuffs(allocate(/obj/item/restraints/handcuffs, tile(0, 4))), "Cuffs didn't go on the downed cyberpsycho")
 	TEST_ASSERT_EQUAL(second.capture_state(), "downed", "Cuffed while down, it doesn't count as downed") // BOUNTY_STATE_DOWNED
-	var/datum/criminal_bounty/cyberpsycho/second_posting = new
+	var/datum/criminal_bounty/second_posting = new
 	TEST_ASSERT_EQUAL(second_posting.board_share_for(second.capture_state(), second.worst_state), 60, "Downed, it doesn't pay the downed share") // BOUNTY_SHARE_DOWNED
 	qdel(second_posting)
 
