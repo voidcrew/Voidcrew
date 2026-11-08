@@ -24,8 +24,6 @@
 	suppressor_y_offset = 2
 	// Bulky and automatic would pick the rifle kick and sounds. This is an SMG.
 	gun_feel_class = GUN_FEEL_CLASS_SMG
-	// A 48x32 icon, centred on the tile.
-	SET_BASE_PIXEL(-8, 0)
 
 /obj/item/gun/ballistic/automatic/rapier/Initialize(mapload)
 	. = ..()
