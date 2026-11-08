@@ -127,6 +127,8 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 		BOUNTY_KIT_PYROMANIAC = 20,
 		BOUNTY_KIT_DEMOLITIONIST = 18,
 		BOUNTY_KIT_GHOST = 18,
+		// The rarest: its kit is its chrome (chrome/bounty_cyberpsycho.dm)
+		BOUNTY_KIT_CYBERPSYCHO = 8,
 	)
 	return pick_weight(weights)
 

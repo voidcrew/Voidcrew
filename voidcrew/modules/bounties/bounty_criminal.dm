@@ -130,6 +130,8 @@
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/ghost
 				if(BOUNTY_KIT_HEAVY)
 					return /mob/living/carbon/human/npc/bounty_criminal/boss/heavy
+				if(BOUNTY_KIT_CYBERPSYCHO)
+					return /mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho
 			return pick(
 				/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut,
 				/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac,

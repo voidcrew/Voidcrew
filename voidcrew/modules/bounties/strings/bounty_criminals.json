@@ -75,7 +75,8 @@
 		"pyromaniac": ["Matches", "Torch", "Cinders", "Smoky", "Blaze"],
 		"demolitionist": ["Fuse", "Boomer", "Sticks", "Two-Fingers", "Detonator"],
 		"ghost": ["Shade", "Blink", "Needle", "Nobody", "Quiet"],
-		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"]
+		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"],
+		"cyberpsycho": ["Static", "Glitch", "Hardwire", "Burnout", "Scrap Saint", "Sparks"]
 	},
 	"features": {
 		"scar": [
@@ -727,6 +728,66 @@
 				"Peek out again. Go on.",
 				"I've got all day.",
 				"Shooting from back there? Cute."
+			]
+		},
+		"cyberpsycho_intro": {
+			"any": [
+				"Get out of my head!",
+				"Can you hear it humming? Can you?",
+				"More meat. Come here.",
+				"Don't look at me like that!",
+				"It won't stop. Nothing stops.",
+				"You're not real. None of you are real."
+			]
+		},
+		"cyberpsycho_ability": {
+			"any": [
+				"Hold still!",
+				"There you are.",
+				"Got you now!",
+				"Come here!",
+				"Stay right there!",
+				"Don't run, meat!"
+			]
+		},
+		"cyberpsycho_redline": {
+			"any": [
+				"Make it stop!",
+				"LOUDER!",
+				"Not now. Not now!",
+				"Everything's red.",
+				"Shut up! Shut up!",
+				"It's too loud!"
+			]
+		},
+		"cyberpsycho_exhausted": {
+			"any": [
+				"Why is it so quiet?",
+				"Something's burning. Is that me?",
+				"I can't feel my arms.",
+				"Keep running, keep running...",
+				"My hands won't stop shaking.",
+				"Just let me sit down."
+			]
+		},
+		"cyberpsycho_posse": {
+			"any": [
+				"More of you? Good. More meat.",
+				"All of you. I'll take all of you.",
+				"Bring the whole crew.",
+				"So many voices...",
+				"Line up.",
+				"Doesn't matter how many."
+			]
+		},
+		"cyberpsycho_cover": {
+			"any": [
+				"Come out! Come OUT!",
+				"I can hear you breathing.",
+				"Where'd you go? Where'd you GO?",
+				"You can't stay in there forever!",
+				"Hiding won't help. I'll find you.",
+				"Come out and play."
 			]
 		}
 	}
