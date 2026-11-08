@@ -7304,6 +7304,7 @@
 #include "voidcrew\modules\missions\missions\recovery.dm"
 #include "voidcrew\modules\missions\missions\recovery_variants.dm"
 #include "voidcrew\modules\missions\missions\rescue.dm"
+#include "voidcrew\modules\missions\missions\rescue_survivor.dm"
 #include "voidcrew\modules\missions\missions\research.dm"
 #include "voidcrew\modules\missions\missions\suppression.dm"
 #include "voidcrew\modules\missions\missions\survey.dm"
