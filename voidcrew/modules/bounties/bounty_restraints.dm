@@ -27,12 +27,20 @@
 	/// world.time it last started working at its cuffs (tg's cuff_resist())
 	var/body_working_cuffs_at = 0
 
-/// Hooks tg's cuffing on it. Called once from Initialize().
+/// Hooks tg's cuffing on it. Called once from Initialize(). Cuffs going on and off come through tg's
+/// own TRAIT_RESTRAINED handlers below: a second registration of that signal on itself would replace
+/// tg's, and its hands would stay free in cuffs.
 /mob/living/carbon/human/npc/bounty_criminal/proc/body_hook_cuffs()
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(body_on_cuff_signal))
 	RegisterSignal(src, COMSIG_MOB_REMOVING_CUFFS, PROC_REF(body_on_working_cuffs))
-	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED), PROC_REF(body_on_restrained))
-	RegisterSignal(src, SIGNAL_REMOVETRAIT(TRAIT_RESTRAINED), PROC_REF(body_on_unrestrained))
+
+/mob/living/carbon/human/npc/bounty_criminal/on_restrained_trait_gain(datum/source)
+	. = ..()
+	body_on_restrained(source)
+
+/mob/living/carbon/human/npc/bounty_criminal/on_restrained_trait_loss(datum/source)
+	. = ..()
+	body_on_unrestrained(source)
 
 // A fulton never goes on a criminal (M2).
 /mob/living/carbon/human/npc/bounty_criminal/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
