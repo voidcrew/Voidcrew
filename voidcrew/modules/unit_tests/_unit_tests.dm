@@ -44,6 +44,8 @@
 #include "voidcrew_bounty_board.dm"
 #include "voidcrew_bounty_bosses.dm"
 #include "voidcrew_bounty_chrome.dm"
+#include "voidcrew_bounty_chrome_gorilla.dm"
+#include "voidcrew_bounty_chrome_mantis.dm"
 #include "voidcrew_bounty_criminal.dm"
 #include "voidcrew_bounty_identity.dm"
 #include "voidcrew_bounty_kingpin.dm"
