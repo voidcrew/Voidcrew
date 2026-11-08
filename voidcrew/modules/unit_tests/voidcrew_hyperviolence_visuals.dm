@@ -218,7 +218,11 @@
 	TEST_ASSERT_EQUAL(tumble.fling_dir, EAST, "The arm was not flung the way the blow went")
 	check_rest(victim, standing, "Losing an arm")
 	TEST_ASSERT_NOTNULL(victim.get_filter("hv_vis_flash"), "Losing an arm got no hit-stop flash")
-	sleep(1 SECONDS)
+	// Wait for the landing rather than a fixed time: a busy server flies it slower.
+	for(var/i in 1 to 50)
+		if(!arm.GetComponent(/datum/component/hv_tumble))
+			break
+		sleep(1)
 	TEST_ASSERT(isturf(arm.loc), "The arm did not land")
 	TEST_ASSERT(arm.x > start.x && arm.y == start.y, "The arm did not fly the way the blow went")
 	TEST_ASSERT_NULL(arm.GetComponent(/datum/component/hv_tumble), "The tumble outlived the landing")
@@ -242,7 +246,10 @@
 		if(!QDELETED(organ))
 			TEST_ASSERT_NULL(organ.hv_vis_tumble, "[organ] kept its fling mark after the burst")
 	TEST_ASSERT(!GLOB.hv_vis_arcing_gibs, "The burst left gibs arcing")
-	sleep(2 SECONDS)
+	for(var/i in 1 to 50)
+		if(!brain.GetComponent(/datum/component/hv_tumble))
+			break
+		sleep(1)
 	TEST_ASSERT_NULL(brain.GetComponent(/datum/component/hv_tumble), "The brain's tumble outlived its landing")
 	TEST_ASSERT_EQUAL(brain.pixel_w, 0, "The landed brain is drawn off to the side")
 	TEST_ASSERT_EQUAL(brain.pixel_z, 0, "The landed brain is drawn in the air")
