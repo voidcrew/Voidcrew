@@ -247,7 +247,7 @@
 	else if(!tk_firing(user))
 		user.visible_message(
 			span_danger("[user] fires [src]!"),
-			span_danger("You fire [src]!"),
+			null, // VOIDCREW EDIT CHANGE - gun_feel: no chat line to the shooter on every shot (voidcrew/modules/gun_feel). ORIGINAL: span_danger("You fire [src]!"),
 			span_hear("You hear a gunshot!"),
 			vision_distance = COMBAT_MESSAGE_RANGE,
 			ignored_mobs = user,

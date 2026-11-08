@@ -104,3 +104,67 @@
 #define MOVABLE_PHYSICS_MIN_BOUNCE 1.2
 /// Anything still moving after this long settles where it is.
 #define MOVABLE_PHYSICS_TIMEOUT (3 SECONDS)
+
+// ---- Sounds ----
+
+/// A random playback speed of 1 +- spread, as a multiplier of the recording's own rate.
+/// BYOND reads a sound frequency between -100 and 100 as a multiplier, so this works whatever the file's sample rate.
+#define GUN_FEEL_PITCH(spread) (1 + (rand() * 2 - 1) * (spread))
+/// Pitch spread for energy weapon shots. Powder guns play at their recorded pitch every time.
+#define GUN_FEEL_ENERGY_PITCH_SPREAD 0.06
+/// Pitch spread for bullet impacts and near misses.
+#define GUN_FEEL_IMPACT_PITCH_SPREAD 0.08
+
+// Sound effect keys for /datum/sound_effect.
+#define SFX_GUN_FEEL_BULLET_FLESH "gun_feel_bullet_flesh"
+#define SFX_GUN_FEEL_BULLET_MISS "gun_feel_bullet_miss"
+#define SFX_GUN_FEEL_HIT_METAL "gun_feel_hit_metal"
+#define SFX_GUN_FEEL_HIT_GLASS "gun_feel_hit_glass"
+#define SFX_GUN_FEEL_HIT_STONE "gun_feel_hit_stone"
+#define SFX_GUN_FEEL_HIT_WOOD "gun_feel_hit_wood"
+#define SFX_GUN_FEEL_HIT_SNOW "gun_feel_hit_snow"
+
+// What a bullet hit is made of, for its impact sound.
+#define GUN_FEEL_SURFACE_FLESH "flesh"
+#define GUN_FEEL_SURFACE_METAL "metal"
+#define GUN_FEEL_SURFACE_GLASS "glass"
+#define GUN_FEEL_SURFACE_STONE "stone"
+#define GUN_FEEL_SURFACE_WOOD "wood"
+#define GUN_FEEL_SURFACE_SNOW "snow"
+
+/// Volume of a bullet hitting flesh. Fixed, like Shiptest, instead of scaling with damage.
+#define GUN_FEEL_FLESH_HIT_VOLUME 100
+/// Volume of a suppressed bullet hitting anything. Matches upstream vol_by_damage().
+#define GUN_FEEL_SUPPRESSED_HIT_VOLUME 5
+/// One thing hit by several pellets or bullets within this many deciseconds makes one impact sound.
+#define GUN_FEEL_IMPACT_SOUND_WINDOW 1
+
+// ---- Near misses ----
+
+/// A bullet must be at least this many tiles from where it was fired before it whizzes past anyone.
+#define GUN_FEEL_NEAR_MISS_MIN_TRAVEL 3
+#define GUN_FEEL_NEAR_MISS_VOLUME 70
+/// Flinch strength, in pixels, for a bullet passing close by.
+#define GUN_FEEL_NEAR_MISS_FLINCH 1
+/// One mob hears at most one whizz in this window (a shotgun blast is one whizz, not six).
+#define GUN_FEEL_NEAR_MISS_COOLDOWN (0.1 SECONDS)
+
+// ---- Hit flinch ----
+
+/// Flinch strength, in pixels, is BASE + damage * PER_DAMAGE, rounded and capped at MAX.
+#define GUN_FEEL_FLINCH_BASE 1
+#define GUN_FEEL_FLINCH_PER_DAMAGE 0.08
+#define GUN_FEEL_FLINCH_MAX 3
+/// Vertical flinch is this share of the horizontal one; a sprite reads sideways jolts better.
+#define GUN_FEEL_FLINCH_VERTICAL 0.5
+#define GUN_FEEL_FLINCH_OUT_TIME (0.1 SECONDS)
+#define GUN_FEEL_FLINCH_BACK_TIME (0.25 SECONDS)
+/// No new flinch starts until the last one has played out, so automatic fire never stacks them.
+#define GUN_FEEL_FLINCH_COOLDOWN (0.35 SECONDS)
+
+// ---- Resting casings ----
+
+/// Casings on the floor lie at a random multiple of this angle.
+#define GUN_FEEL_CASING_ROTATION_STEP 22.5
+/// Pixel scatter for a casing that lands on a floor without flying there.
+#define GUN_FEEL_CASING_DROP_SCATTER 8

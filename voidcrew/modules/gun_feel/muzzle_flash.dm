@@ -1,6 +1,7 @@
 // Muzzle flash for powder guns: tg's muzzle_bullet sprite at the barrel, turned to the shot, plus a
-// short light on the shooter. After Shiptest's handle_muzzle_flash(). Energy weapons already glow
-// (their projectiles carry a light) and hitscan rounds already spawn a lit muzzle, so neither gets one.
+// short cone of light thrown ahead of the shooter. After Shiptest's handle_muzzle_flash() and its
+// directional gun light. Energy weapons already glow (their projectiles carry a light) and hitscan
+// rounds already spawn a lit muzzle, so neither gets one.
 
 /obj/item/ammo_casing
 	/// FALSE for rounds that don't burn powder (darts, arrows, lenses, gumballs...).
@@ -63,13 +64,19 @@
 	new /obj/effect/temp_visual/gun_feel_muzzle_flash(user, angle)
 	if(QDELETED(gun_feel_light) || gun_feel_light.loc != user)
 		gun_feel_clear_light()
-		gun_feel_light = user.mob_light(GUN_FEEL_FLASH_LIGHT_RANGE, GUN_FEEL_FLASH_LIGHT_POWER, GUN_FEEL_FLASH_LIGHT_COLOR)
+		gun_feel_light = user.mob_light(GUN_FEEL_FLASH_LIGHT_RANGE, GUN_FEEL_FLASH_LIGHT_POWER, GUN_FEEL_FLASH_LIGHT_COLOR, null, /obj/effect/dummy/lighting_obj/moblight/gun_feel_muzzle)
 		if(QDELETED(gun_feel_light))
 			gun_feel_light = null
 			return
 		RegisterSignal(gun_feel_light, COMSIG_QDELETING, PROC_REF(gun_feel_light_deleted))
 	// Each shot pushes the light-off back, so automatic fire keeps one light lit instead of making one per shot.
 	addtimer(CALLBACK(src, PROC_REF(gun_feel_clear_light)), GUN_FEEL_FLASH_LIGHT_TIME, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/// The flash light. Directional, like a flashlight: it follows the shooter's facing, and firing turns
+/// the shooter to face the target, so the cone points down the line of fire.
+/obj/effect/dummy/lighting_obj/moblight/gun_feel_muzzle
+	name = "muzzle flash lighting"
+	light_system = OVERLAY_LIGHT_DIRECTIONAL
 
 /obj/item/gun/proc/gun_feel_clear_light()
 	if(isnull(gun_feel_light))

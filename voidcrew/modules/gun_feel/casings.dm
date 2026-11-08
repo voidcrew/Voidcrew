@@ -44,3 +44,48 @@
 	var/lift = GUN_FEEL_CASING_LIFT_MIN + (GUN_FEEL_CASING_LIFT_MAX - GUN_FEEL_CASING_LIFT_MIN) * rand()
 	var/datum/component/movable_physics/flight = AddComponent(/datum/component/movable_physics, speed, lift, angle, GUN_FEEL_CASING_START_HEIGHT, !!still_warm, TRUE)
 	return !QDELETED(flight)
+
+// ---- Resting casings ----
+// Casings on a floor lie at a random angle in 22.5 degree steps, as in Shiptest, so piles look tossed
+// rather than lined up. A casing in a hand, a pocket or a magazine stands straight again.
+// The spins (throwing, ejecting, bouncing) all end on the current transform, so they keep the angle.
+
+/obj/item/ammo_casing
+	/// FALSE for rounds too big to lie at a random angle, like rockets.
+	var/gun_feel_tumbles = TRUE
+
+/obj/item/ammo_casing/rocket
+	gun_feel_tumbles = FALSE
+
+/obj/item/ammo_casing/Initialize(mapload)
+	. = ..()
+	if(isturf(loc))
+		gun_feel_lie_down()
+
+/obj/item/ammo_casing/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	var/on_floor = isturf(loc)
+	// Only when it lands from somewhere else or gets picked up; not on every step of a flight.
+	if(on_floor == isturf(old_loc))
+		return
+	if(!on_floor)
+		gun_feel_stand_up()
+		return
+	gun_feel_lie_down()
+	// Tipped out of a gun, box or hand: land a little apart from the others.
+	if(!GetComponent(/datum/component/movable_physics))
+		pixel_x = base_pixel_x + rand(-GUN_FEEL_CASING_DROP_SCATTER, GUN_FEEL_CASING_DROP_SCATTER)
+		pixel_y = base_pixel_y + rand(-GUN_FEEL_CASING_DROP_SCATTER, GUN_FEEL_CASING_DROP_SCATTER)
+
+/// Turns this casing to a random resting angle.
+/obj/item/ammo_casing/proc/gun_feel_lie_down()
+	if(!gun_feel_tumbles)
+		return
+	var/matrix/resting = matrix()
+	resting.Turn(GUN_FEEL_CASING_ROTATION_STEP * rand(0, 15))
+	transform = resting
+
+/// Stands this casing straight again, for hands, pockets and magazines.
+/obj/item/ammo_casing/proc/gun_feel_stand_up()
+	if(gun_feel_tumbles)
+		transform = matrix()
