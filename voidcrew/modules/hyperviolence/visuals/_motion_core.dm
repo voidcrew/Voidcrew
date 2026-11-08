@@ -141,6 +141,9 @@
 		return
 	var/big = hv_vis_big_hit_time == world.time
 	var/headshot = hv_vis_hit_zone == BODY_ZONE_HEAD && damagetype != STAMINA && hv_vis_hit_damage >= HV_VIS_HEADSHOT_MIN
+	// Only the big moments move the body: a headshot, a blow heavy enough to stagger, or a hit-stop. Ordinary hits don't.
+	if(!big && !headshot && hv_vis_hit_damage < HV_VIS_STAGGER_DAMAGE)
+		return
 	hv_vis_flinch(hv_vis_hit_damage, hit_dir, headshot, big ? HV_VIS_HITSTOP_TIME : 0)
 	if(big)
 		hv_vis_hitstop_extras(hit_dir)

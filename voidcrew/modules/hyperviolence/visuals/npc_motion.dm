@@ -1,9 +1,8 @@
 // Hyperviolence visuals: people who are losing. These read the same on players and human NPCs: an
-// NPC that surrenders, crawls, pleads or injects itself does so through the same tg actions.
+// NPC that surrenders, pleads or injects itself does so through the same tg actions.
 // 19. Surrender (tg's *surrender emote): down on the floor with hands on head, trembling until they
 //     get up.
-// 20. In soft crit, a body crawling along hauls itself forward a heave at a time, with the blood
-//     smear tg already leaves behind a badly hurt body that moves while down. Anything it says
+// 20. In soft crit, anything a body says
 //     comes with a pleading lean up toward whoever last hurt it. Injecting yourself with a medipen
 //     or hypospray while badly hurt is shaky.
 
@@ -21,58 +20,36 @@
 
 /mob/living/carbon/hv_vis_on_stat_change(new_stat, old_stat)
 	if(new_stat == SOFT_CRIT && old_stat != SOFT_CRIT)
-		AddComponent(/datum/component/hv_crawl)
+		AddComponent(/datum/component/hv_downed)
 
 /**
- * A body in soft crit. Each move it makes on its own while down is a heave forward; whatever it says
- * comes with a lean up toward whoever last hurt it. Goes when the body leaves soft crit.
+ * A body in soft crit: whatever it says comes with a lean up toward whoever last hurt it. Goes when the body leaves soft crit.
  */
-/datum/component/hv_crawl
+/datum/component/hv_downed
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 
-/datum/component/hv_crawl/Initialize()
+/datum/component/hv_downed/Initialize()
 	if(!iscarbon(parent))
 		return COMPONENT_INCOMPATIBLE
 
-/datum/component/hv_crawl/RegisterWithParent()
-	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
+/datum/component/hv_downed/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_MOB_SAY, PROC_REF(on_say))
 	RegisterSignal(parent, COMSIG_MOB_STATCHANGE, PROC_REF(on_stat_change))
 
-/datum/component/hv_crawl/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_SAY, COMSIG_MOB_STATCHANGE))
+/datum/component/hv_downed/UnregisterFromParent()
+	UnregisterSignal(parent, list(COMSIG_MOB_SAY, COMSIG_MOB_STATCHANGE))
 
-/datum/component/hv_crawl/proc/on_stat_change(mob/living/source, new_stat, old_stat)
+/datum/component/hv_downed/proc/on_stat_change(mob/living/source, new_stat, old_stat)
 	SIGNAL_HANDLER
 	if(new_stat != SOFT_CRIT)
-		source.hv_vis_stop(list(HV_VIS_TAG_CRAWL, HV_VIS_TAG_LEAN))
+		source.hv_vis_stop(list(HV_VIS_TAG_LEAN))
 		qdel(src)
 
-/datum/component/hv_crawl/proc/on_moved(mob/living/carbon/source, atom/old_loc, movement_dir, forced, list/old_locs)
-	SIGNAL_HANDLER
-	if(forced || source.pulledby || source.buckled || source.body_position != LYING_DOWN || !isturf(source.loc) || !isturf(old_loc))
-		return
-	source.hv_vis_play(HV_VIS_TAG_CRAWL, source.hv_vis_crawl_steps(movement_dir || get_dir(old_loc, source.loc)))
-
-/datum/component/hv_crawl/proc/on_say(mob/living/carbon/source, list/speech_args)
+/datum/component/hv_downed/proc/on_say(mob/living/carbon/source, list/speech_args)
 	SIGNAL_HANDLER
 	if(source.stat != SOFT_CRIT || !isturf(source.loc))
 		return
 	source.hv_vis_plead(source.hv_vis_hit_by?.resolve())
-
-/// One heave of a crawl: the body drags behind the move, then hauls itself up to where it is going.
-/mob/living/carbon/proc/hv_vis_crawl_steps(going)
-	var/dx = HV_VIS_DX(going)
-	var/dy = HV_VIS_DY(going)
-	var/matrix/base = matrix(transform)
-	// Stretched along the way it pulls itself, in the screen's frame since the body lies sideways.
-	var/matrix/reaching = matrix(base)
-	reaching.Scale(dx ? 1.06 : 1, dy ? 1.06 : 1)
-	return list(
-		list(pixel_w - dx * 5, pixel_z - dy * 5, base, 0, LINEAR_EASING),
-		list(pixel_w - dx * 3, pixel_z - dy * 3, reaching, 3, SINE_EASING),
-		list(pixel_w, pixel_z, base, 3, QUAD_EASING|EASE_OUT),
-	)
 
 /// Leans up toward `toward` (or the way it faces) for a moment: a body on the floor begging.
 /mob/living/proc/hv_vis_plead(atom/toward)

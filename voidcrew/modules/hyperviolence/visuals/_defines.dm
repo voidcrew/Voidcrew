@@ -25,7 +25,6 @@
 #define HV_VIS_TAG_DRIFT "hv_drift"
 #define HV_VIS_TAG_TREMBLE "hv_tremble"
 #define HV_VIS_TAG_LEAN "hv_lean"
-#define HV_VIS_TAG_CRAWL "hv_crawl"
 #define HV_VIS_TAG_PRESS "hv_press"
 #define HV_VIS_TAG_LIFT "hv_lift"
 #define HV_VIS_TAG_SHAKE "hv_shake"

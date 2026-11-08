@@ -35,7 +35,7 @@
 
 /mob/living/carbon/hv_vis_on_death(gibbed)
 	. = ..()
-	hv_vis_stop(list(HV_VIS_TAG_TREMBLE, HV_VIS_TAG_LEAN, HV_VIS_TAG_CRAWL, HV_VIS_TAG_LIMP))
+	hv_vis_stop(list(HV_VIS_TAG_TREMBLE, HV_VIS_TAG_LEAN, HV_VIS_TAG_LIMP))
 	if(gibbed || QDELETED(src) || !isturf(loc))
 		return
 	var/fell = hv_vis_fell_time == world.time

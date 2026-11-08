@@ -92,7 +92,6 @@
 			check_ends_at_rest(body, body.hv_vis_flinch_steps(25, hit_dir), "A flinch ([state], [dir2text(hit_dir)])")
 			check_ends_at_rest(body, body.hv_vis_flinch_steps(60, hit_dir, TRUE, 1.5), "A held stagger to the head ([state], [dir2text(hit_dir)])")
 			check_ends_at_rest(body, body.hv_vis_slide_steps(hit_dir, 30, 1.5), "A death slide ([state], [dir2text(hit_dir)])")
-			check_ends_at_rest(body, body.hv_vis_crawl_steps(hit_dir), "A crawl heave ([state], [dir2text(hit_dir)])")
 		for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 			check_ends_at_rest(body, body.hv_vis_lurch_steps(zone), "A lurch ([state], [zone])")
 			check_ends_at_rest(body, body.hv_vis_limp_steps(zone), "A limping step ([state], [zone])")
@@ -263,20 +262,20 @@
 	leg.try_attach_limb(victim)
 	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/hv_limp), "The limp outlived the leg coming back")
 
-/// Soft crit brings the crawl; leaving it takes it away
-/datum/unit_test/voidcrew_hv_visuals/crawl
+/// Soft crit brings the pleading lean; leaving it takes it away. Moving while down plays nothing.
+/datum/unit_test/voidcrew_hv_visuals/downed
 
-/datum/unit_test/voidcrew_hv_visuals/crawl/Run()
+/datum/unit_test/voidcrew_hv_visuals/downed/Run()
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
 	victim.apply_damage(110, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim is not in soft crit")
-	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/hv_crawl), "Soft crit did not bring the crawl")
+	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/hv_downed), "Soft crit did not bring the pleading lean")
 	var/list/rest = rest_of(victim)
 	victim.Move(spot(2, 1), EAST)
 	victim.hv_vis_plead(null)
-	check_rest(victim, rest, "A heave and a plea")
+	check_rest(victim, rest, "A move and a plea")
 	victim.fully_heal(HEAL_ALL)
-	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/hv_crawl), "The crawl outlived soft crit")
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/hv_downed), "The pleading lean outlived soft crit")
 
 /// A surrender trembles until they stand back up
 /datum/unit_test/voidcrew_hv_visuals/surrender
