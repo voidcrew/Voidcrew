@@ -193,6 +193,7 @@
 #include "voidcrew_overmap_management_bans.dm"
 #include "voidcrew_pandora_links.dm"
 #include "voidcrew_pirate_crew_ai.dm"
+#include "voidcrew_pirate_crew_human.dm"
 #include "voidcrew_planet_anomalies.dm"
 #include "voidcrew_planet_cleanup.dm"
 #include "voidcrew_planet_definitions.dm"

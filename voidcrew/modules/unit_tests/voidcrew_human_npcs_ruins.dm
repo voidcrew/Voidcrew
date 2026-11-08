@@ -7,9 +7,6 @@
 	return list(
 		/mob/living/carbon/human/npc/ruin,
 		/mob/living/carbon/human/npc/ruin/trooper,
-		/mob/living/carbon/human/npc/ruin/faction_pirate,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/captain,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss,
 	)
 
 /**
@@ -73,19 +70,20 @@
 	TEST_ASSERT(istype(commando?.wear_suit, /obj/item/clothing/suit/space/syndicate), "A Syndicate commando wears no space suit")
 	TEST_ASSERT_NOTNULL(commando?.internal, "A Syndicate commando isn't breathing from its tank")
 
-/// Faction pirates drop what the basic mobs dropped: fixed pieces, a captain's zone blade, the ladder weapon, cash.
+/// Faction pirates (shared with the NPC ship crews, voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm)
+/// drop what the basic mobs dropped: fixed pieces, a captain's zone blade, the ladder weapon, cash.
 /datum/unit_test/voidcrew_ruin_npc_faction_pirate_loot
 
 /datum/unit_test/voidcrew_ruin_npc_faction_pirate_loot/Run()
-	var/mob/living/carbon/human/npc/ruin/faction_pirate/captain/silverscale/noble = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/faction_pirate/captain/silverscale, 2)
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/captain/noble = human_npc_build_in_zone(/mob/living/carbon/human/npc/faction_pirate/silverscale/captain, 2)
 	TEST_ASSERT_EQUAL(noble?.npc_rank, 1, "A faction captain isn't an elite")
 	TEST_ASSERT(/obj/item/claymore/shortsword in noble?.npc_roll_death_loot(), "A yellow-zone Silverscale noble doesn't carry the zone's shortsword")
-	var/mob/living/carbon/human/npc/ruin/faction_pirate/boss/skeleton/davy = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/faction_pirate/boss/skeleton, 3)
+	var/mob/living/carbon/human/npc/faction_pirate/skeleton/boss/davy = human_npc_build_in_zone(/mob/living/carbon/human/npc/faction_pirate/skeleton/boss, 3)
 	TEST_ASSERT_EQUAL(davy?.npc_rank, 2, "A faction leader isn't a boss")
 	var/list/davy_loot = davy?.npc_roll_death_loot()
 	TEST_ASSERT(/obj/item/gun/ballistic/shotgun/hook in davy_loot, "Davy Jones lost his hook shotgun")
 	TEST_ASSERT_EQUAL(length(davy_loot), 1, "Davy Jones rolls loot a boss doesn't")
-	var/mob/living/carbon/human/npc/ruin/faction_pirate/grey/tider = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/faction_pirate/grey, 1)
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/tider = human_npc_build_in_zone(/mob/living/carbon/human/npc/faction_pirate/grey/melee, 1)
 	TEST_ASSERT_EQUAL(length(tider?.npc_roll_death_loot()), 2, "A grey tider doesn't roll a ladder weapon and one odds-and-ends item")
 	// The designed drops and the cash land once, however often it dies.
 	var/turf/drop_turf = tider.drop_location()
@@ -154,7 +152,7 @@
 	TEST_ASSERT_EQUAL(counter.kill_count, 1, "A dead human pirate wasn't counted")
 	counter.on_any_death(null, pirate, FALSE)
 	TEST_ASSERT_EQUAL(counter.kill_count, 1, "A human pirate revived and killed again counted twice")
-	var/mob/living/carbon/human/npc/captain = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/faction_pirate/captain/grey, 2)
+	var/mob/living/carbon/human/npc/captain = human_npc_build_in_zone(/mob/living/carbon/human/npc/faction_pirate/grey/captain, 2)
 	counter.on_any_death(null, captain, FALSE)
 	TEST_ASSERT_EQUAL(counter.kill_count, 2, "A dead faction pirate captain wasn't counted")
 	var/mob/living/carbon/human/npc/boater = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/trooper/pirate/beach, 2)
@@ -176,12 +174,12 @@
 	var/datum/mission_objective/field/kill_named/hunt = allocate(/datum/mission_objective/field/kill_named)
 	hunt.mission = mission
 	hunt.active = TRUE
-	hunt.target_mob_type = /mob/living/carbon/human/npc/ruin/faction_pirate/captain/grey
+	hunt.target_mob_type = /mob/living/carbon/human/npc/faction_pirate/grey/captain
 	hunt.spawn_field_objects(location)
 	TEST_ASSERT_NULL(hunt.target_mob, "A human target was built on the spot instead of queued")
 	TEST_ASSERT_NOTNULL(hunt.quarry_order, "A human target wasn't queued")
 	var/datum/human_npc_order/order = hunt.quarry_order
-	var/mob/living/carbon/human/npc/ruin/quarry = order?.fulfil()
+	var/mob/living/carbon/human/npc/faction_pirate/quarry = order?.fulfil()
 	TEST_ASSERT_NOTNULL(quarry, "The queued target wasn't built")
 	if(isnull(quarry))
 		return

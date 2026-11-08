@@ -71,39 +71,39 @@
 	gps_tag_prefix = "HUNT"
 
 	/// Mob type pools per difficulty: faction pirates as human NPCs
-	/// (voidcrew/modules/human_npcs/ruins/), in space suits where the site is airless.
+	/// (voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm), in space suits where the site is airless.
 	/// Hard pool is the real faction bosses. Red-zone bounties are the
 	/// named monsters of the sector, not just another captain.
 	var/static/list/easy_targets = list(
-		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/grey,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee,
 	)
 	var/static/list/medium_targets = list(
-		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/lustrous/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/grey,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/grey/captain,
 	)
 	var/static/list/hard_targets = list(
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/silverscale,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/skeleton,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/grey,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/lustrous,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/interdyne,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/medieval,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/boss,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/boss,
+		/mob/living/carbon/human/npc/faction_pirate/grey/boss,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/boss,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/boss,
+		/mob/living/carbon/human/npc/faction_pirate/medieval/boss,
 	)
 	/// Entourage pools: bounty targets above easy keep hired muscle around
 	var/static/list/medium_guards = list(
-		/mob/living/carbon/human/npc/ruin/faction_pirate/grey,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
 	)
 	var/static/list/hard_guards = list(
-		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/lustrous/gunner,
-		/mob/living/carbon/human/npc/ruin/faction_pirate/interdyne/gunner,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/ranged,
 	)
 
 /datum/mission/recovery/kill/generate_details()

@@ -10,6 +10,9 @@
  *
  * Each boss gets its finisher from a second Initialize() on its type, here, so the files that own
  * those bosses stay untouched. DM chains duplicate overrides: both bodies run, and both call ..().
+ * The NPC ship bosses are human NPCs now (voidcrew/modules/npc_ships/code/faction_pirates/
+ * faction_pirate_humans.dm, which adds the component to the human Black Knight and Robust One): theirs
+ * is a real grab and real blows (finisher.dm). The basic-mob bosses below are the ruin and planet ones.
  */
 
 // ===== The hoarfrost matriarch =====

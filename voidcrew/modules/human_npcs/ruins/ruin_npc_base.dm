@@ -2,8 +2,11 @@
  * # Ruin, planet and mission human NPCs (phase C of the human NPC migration)
  *
  * The people found in ruins, on planets and at mission sites: tg's troopers (space pirates, Syndicate
- * operatives, Nanotrasen security, Russian mobsters), the beach and boat pirates, faction pirate crews
- * squatting in ruins or named in kill contracts, and the wasteland hermits and poacher squads. They were
+ * operatives, Nanotrasen security, Russian mobsters), the beach and boat pirates, and the wasteland hermits
+ * and poacher squads. The faction pirate crews squatting in ruins or named in kill contracts are the same
+ * faction pirates that crew NPC ships (/mob/living/carbon/human/npc/faction_pirate,
+ * voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm), which do the same things for
+ * themselves (planet alliance, spot line, contract cash). They were
  * basic and simple mobs that swapped to a corpse on death; now they are real
  * /mob/living/carbon/human/npc bodies (voidcrew/modules/human_npcs/), so wounds, crit, bleeding,
  * medicine, cuffs and revival work on them as on players. Developer notes: kit vault modules/human_npcs.md.

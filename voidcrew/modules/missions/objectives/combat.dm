@@ -228,6 +228,9 @@
 	else if(istype(target, /mob/living/carbon/human/npc/ruin))
 		var/mob/living/carbon/human/npc/ruin/quarry = target
 		quarry.npc_payout_mission = WEAKREF(mission)
+	else if(istype(target, /mob/living/carbon/human/npc/faction_pirate))
+		var/mob/living/carbon/human/npc/faction_pirate/pirate_quarry = target
+		pirate_quarry.npc_payout_mission = WEAKREF(mission)
 	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(target)
 
@@ -274,8 +277,9 @@
  * turn-in item - the mission auto-completes like a survey.
  */
 /datum/mission_objective/kill_count
-	/// Base typepath of mobs that count
-	var/mob_base_type = /mob/living/basic/trooper/pirate/faction
+	/// Base typepaths of basic mobs that count (the basic faction pirates). Human NPCs count by the pirate
+	/// flag they sail under (counts_victim()): ruin pirates and NPC ship crews alike.
+	var/list/mob_base_types = list(/mob/living/basic/trooper/pirate/faction)
 	/// Minimum zone the kill must happen in (design guard: no green farming)
 	var/minimum_zone = ZONE_YELLOW
 	/// Kills required / confirmed
@@ -289,7 +293,7 @@
 /datum/mission_objective/kill_count/reset()
 	. = ..()
 	kill_count = 0
-	counted_kills = list()
+	counted_kills.Cut()
 
 /datum/mission_objective/kill_count/activate()
 	. = ..()
@@ -326,10 +330,11 @@
 
 /**
  * Whether `victim` is a mob this sweep counts: the basic faction pirates, and human NPCs
- * (voidcrew/modules/human_npcs/) that sail under the pirate flag.
+ * (voidcrew/modules/human_npcs/) that sail under the pirate flag: ruin and mission pirates and the crews
+ * of NPC pirate ships. Each body counts once (counted_kills).
  */
 /datum/mission_objective/kill_count/proc/counts_victim(mob/living/victim)
-	if(istype(victim, mob_base_type))
+	if(is_type_in_list(victim, mob_base_types))
 		return TRUE
 	return ishumannpc(victim) && (FACTION_PIRATE in victim.faction)
 
