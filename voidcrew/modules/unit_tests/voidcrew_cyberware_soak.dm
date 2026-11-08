@@ -222,6 +222,9 @@
 	snap["actionspeed"] = action_speed
 	var/list/physiology = list()
 	for(var/var_name in body.physiology.vars)
+		// The reference finder stamps every datum it walks after a failed GC.
+		if(var_name == "last_find_references")
+			continue
 		var/value = body.physiology.vars[var_name]
 		if(isnum(value))
 			physiology[var_name] = value
@@ -729,8 +732,11 @@
 				suspect("[ware_ref]|brownout", "brownout flag out of step with the body's load", "[ware.type] browned_out [chrome.browned_out], load [get_chrome_load(body)] of [get_chrome_capacity(body)]")
 			if(chrome.emp_down && !chrome.emp_timer)
 				suspect("[ware_ref]|emptimer", "EMP downtime with no reboot timer", "[ware.type]")
-			if(chrome.emp_down)
-				suspect("[ware_ref]|empstuck", "EMP downtime that never ended", "[ware.type] still down", SOAK_EMP_DOWNTIME + 8 SECONDS)
+			// A reboot always ends on its timer (a missing one is caught just above), but EMPs
+			// landing back to back can keep a piece down across sweeps. Only a timer set further
+			// out than any EMP's downtime is an outage that would not end.
+			if(chrome.emp_down && chrome.emp_timer && timeleft(chrome.emp_timer) > SOAK_EMP_DOWNTIME)
+				suspect("[ware_ref]|empstuck", "EMP downtime that never ended", "[ware.type] still down", SOAK_EMP_DOWNTIME)
 			if(istype(ware, /obj/item/organ/cyberimp/arm/toolkit/cyberware))
 				var/obj/item/organ/cyberimp/arm/toolkit/cyberware/arm = ware
 				if(arm.active_item && !running && arm.active_item.loc == body)
@@ -781,6 +787,9 @@
 			loose_chrome += ware
 		if(get_chrome_load(body) != 0)
 			note("a body still carries load with no chrome in it", "[body] carries [get_chrome_load(body)]")
+		// Chrome optics and lungs replaced the body's own, so pulling them leaves gaps a
+		// body without chrome never had (no eyes means blind).
+		body.dna.species.regenerate_organs(body, replace_current = FALSE)
 	log_world("SOAK auditing [length(survivors)] survivors after a 20 second quiet")
 	sleep(20 SECONDS)
 	for(var/mob/living/carbon/human/body as anything in survivors)
