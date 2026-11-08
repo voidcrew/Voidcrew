@@ -47,29 +47,18 @@
 		TEST_ASSERT(abs(casing.pixel_x - casing.base_pixel_x) <= 16 && abs(casing.pixel_y - casing.base_pixel_y) <= 16, "A flight at [angle] degrees left the casing drawn off its tile.")
 		TEST_ASSERT_EQUAL(casing.pixel_z, casing.base_pixel_z, "A flight at [angle] degrees left the casing floating.")
 
-/// Long guns are hip-fired until both hands have been on them for the shoulder delay (0.4 s).
-/datum/unit_test/voidcrew_gun_feel_shouldering
-/datum/unit_test/voidcrew_gun_feel_shouldering/Run()
+/// Gun feel never changes a gun's spread, whatever is in the other hand.
+/datum/unit_test/voidcrew_gun_feel_no_spread
+/datum/unit_test/voidcrew_gun_feel_no_spread/Run()
 	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/gun/ballistic/automatic/wt550/rifle = allocate(/obj/item/gun/ballistic/automatic/wt550)
+	var/start_spread = rifle.spread
 	TEST_ASSERT(shooter.put_in_hands(rifle), "The shooter could not hold the rifle.")
-	TEST_ASSERT(rifle.gun_feel_long, "The WT-550 should be a long gun.")
-	TEST_ASSERT(rifle.gun_feel_hip_spread(shooter) > 0, "A long gun should not be shouldered the moment it is drawn.")
-
-	rifle.gun_feel_brace_start = max(1, world.time - 1 SECONDS)
-	TEST_ASSERT_EQUAL(rifle.gun_feel_hip_spread(shooter), 0, "A long gun held in both hands past the delay should be shouldered.")
-
 	var/obj/item/pen/pen = allocate(/obj/item/pen)
 	TEST_ASSERT(shooter.put_in_hands(pen), "The shooter could not hold a pen in the other hand.")
-	TEST_ASSERT_EQUAL(rifle.gun_feel_brace_start, 0, "Filling the off hand should drop the shoulder.")
-	TEST_ASSERT(rifle.gun_feel_hip_spread(shooter) > 0, "A long gun held one-handed should fire from the hip.")
-
-	shooter.dropItemToGround(pen)
-	TEST_ASSERT(rifle.gun_feel_brace_start, "Freeing the off hand should start the shoulder clock.")
-	TEST_ASSERT(rifle.gun_feel_hip_spread(shooter) > 0, "A long gun should not be shouldered the moment the off hand frees up.")
-
-	var/obj/item/gun/ballistic/automatic/pistol/pistol = allocate(/obj/item/gun/ballistic/automatic/pistol)
-	TEST_ASSERT_EQUAL(pistol.gun_feel_hip_spread(shooter), 0, "Pistols have no hip-fire penalty.")
+	rifle.gun_feel_resolve()
+	TEST_ASSERT(rifle.recoil_kick > 0, "The WT-550 should have a camera kick.")
+	TEST_ASSERT_EQUAL(rifle.spread, start_spread, "Gun feel should never change a gun's spread.")
 
 /// TRUE if two matrices are the same, element by element.
 /datum/unit_test/proc/gun_feel_same_matrix(matrix/first, matrix/second)

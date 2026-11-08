@@ -1,4 +1,4 @@
-// Tunables for voidcrew/modules/gun_feel: recoil kick, muzzle flash, flying casings and shouldering.
+// Tunables for voidcrew/modules/gun_feel: recoil kick, muzzle flash, flying casings, sounds and bullet speeds.
 
 // ---- Recoil kick ----
 // Kick strengths are in tiles of camera travel (1 = 32 px). Keep them well under 1.
@@ -25,34 +25,15 @@
 #define GUN_FEEL_CLASS_ENERGY "energy"
 #define GUN_FEEL_CLASS_ENERGY_LONG "energy_long"
 
-// Kick when shouldered (KICK) and from the hip (KICK_HIP), in tiles.
-// HIP_SPREAD is extra spread in degrees from the hip, fed into tg's bonus spread (rand(0, x), then +-0.7x).
+// Camera kick per class, in tiles.
 #define GUN_FEEL_KICK_PISTOL 0.12
 #define GUN_FEEL_KICK_REVOLVER 0.18
 #define GUN_FEEL_KICK_SMG 0.08
-#define GUN_FEEL_KICK_HIP_SMG 0.2
-#define GUN_FEEL_HIP_SPREAD_SMG 10
 #define GUN_FEEL_KICK_RIFLE 0.12
-#define GUN_FEEL_KICK_HIP_RIFLE 0.3
-#define GUN_FEEL_HIP_SPREAD_RIFLE 20
 #define GUN_FEEL_KICK_SHOTGUN 0.3
-#define GUN_FEEL_KICK_HIP_SHOTGUN 0.55
-#define GUN_FEEL_HIP_SPREAD_SHOTGUN 12
 #define GUN_FEEL_KICK_MARKSMAN 0.35
-#define GUN_FEEL_KICK_HIP_MARKSMAN 0.7
-#define GUN_FEEL_HIP_SPREAD_MARKSMAN 30
 #define GUN_FEEL_KICK_HEAVY 0.18
-#define GUN_FEEL_KICK_HIP_HEAVY 0.45
-#define GUN_FEEL_HIP_SPREAD_HEAVY 30
 #define GUN_FEEL_KICK_LAUNCHER 0.4
-#define GUN_FEEL_KICK_HIP_LAUNCHER 0.7
-#define GUN_FEEL_HIP_SPREAD_LAUNCHER 15
-#define GUN_FEEL_HIP_SPREAD_ENERGY_LONG 10
-
-// ---- Shouldering ----
-
-/// How long a long gun must be held in both hands before it is shouldered.
-#define GUN_FEEL_SHOULDER_TIME (0.4 SECONDS)
 
 // ---- Muzzle flash ----
 
