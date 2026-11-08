@@ -165,6 +165,17 @@
 /// Fire stacks (tg's) the bursting bottle puts on anyone it splashes. (phase D, CB-8)
 #define BOUNTY_PYROMANIAC_MOLOTOV_STACKS 3
 #define BOUNTY_PYROMANIAC_MOLOTOV_POOL (8 SECONDS)
+/// Smoke (C9): tg's smoke grenade, two in its pockets, on tg's shortest timed fuse (a screwdriver setting a player can pick too)
+#define BOUNTY_PYROMANIAC_SMOKE /obj/item/grenade/smokebomb/bounty_boss
+#define BOUNTY_PYROMANIAC_SMOKE_FUSE (3 SECONDS)
+/// It takes a grenade out and stands this long, then pulls the pin and throws (the Heavy's barrier grenade wind-up)
+#define BOUNTY_PYROMANIAC_SMOKE_WINDUP (0.6 SECONDS)
+/// Longer than the cloud lasts (tg's 16 s), so it never stacks one on the last
+#define BOUNTY_PYROMANIAC_SMOKE_COOLDOWN (20 SECONDS)
+/// The furthest shooter it throws at; the nearest is anyone past its flamer's reach
+#define BOUNTY_PYROMANIAC_SMOKE_RANGE 7
+/// How long after a hit from someone past its flamer's reach it still answers with smoke (stun fire counts while its combat sense says it is under fire)
+#define BOUNTY_PYROMANIAC_SMOKE_HURT_WINDOW (3 SECONDS)
 
 // ===== DEMOLITIONIST =====
 

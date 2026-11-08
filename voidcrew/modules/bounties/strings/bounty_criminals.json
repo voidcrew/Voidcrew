@@ -540,6 +540,16 @@
 				"Light them up!"
 			]
 		},
+		"pyromaniac_smoke": {
+			"any": [
+				"Hold your breath.",
+				"Lights out.",
+				"Bit smoky in here.",
+				"Where'd I go?",
+				"Breathe deep.",
+				"Mind your eyes."
+			]
+		},
 		"pyromaniac_exhausted": {
 			"any": [
 				"Running low on fuel...",
