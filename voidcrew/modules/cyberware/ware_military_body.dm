@@ -348,6 +348,8 @@
 	playsound(source, 'sound/machines/defib/defib_charge.ogg', 75, TRUE)
 	source.set_jitter_if_lower(4 SECONDS)
 	source.do_jitter_animation(200)
+	// Red lightning over the body for the windup, a picture only (ware_lazarus_lightning.dm)
+	source.apply_status_effect(/datum/status_effect/cyberware_lazarus_charge, src, CYBERWARE_LAZARUS_WINDUP)
 	addtimer(CALLBACK(src, PROC_REF(jolt), jolt_generation, WEAKREF(source)), CYBERWARE_LAZARUS_WINDUP)
 
 /// The discharge: heal to 30%, clear the floor out from under every stun,
@@ -390,6 +392,8 @@
 	patient.set_resting(FALSE, silent = TRUE, instant = TRUE)
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 100, TRUE)
 	do_sparks(3, TRUE, patient)
+	patient.remove_status_effect(/datum/status_effect/cyberware_lazarus_charge)
+	cyberware_lazarus_burst(patient)
 	patient.emote("gasp")
 	patient.set_jitter_if_lower(20 SECONDS)
 	patient.visible_message(
