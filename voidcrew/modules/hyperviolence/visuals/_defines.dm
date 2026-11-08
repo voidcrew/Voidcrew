@@ -78,6 +78,10 @@
 #define HV_VIS_FULL_SLIDE_DAMAGE 40
 /// How long a whole-tile slide takes.
 #define HV_VIS_SLIDE_TIME (0.4 SECONDS)
+/// How long a head shot that kills whips the head back before the body drops.
+#define HV_VIS_KILL_WHIP_TIME (0.2 SECONDS)
+/// How high a heavy killing blow lifts the body as it throws it back a tile.
+#define HV_VIS_LAUNCH_LIFT 4
 /// Most a body slides within its own tile, in pixels.
 #define HV_VIS_MAX_SLIDE 10
 /// How long a corpse keeps a pose (a slide, a curl) before it eases back. Moving, standing up or

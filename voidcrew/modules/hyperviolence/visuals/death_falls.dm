@@ -168,27 +168,49 @@
 /mob/living/carbon/proc/hv_vis_slide_tile(slide_dir)
 	if(QDELETED(src) || stat != DEAD)
 		return
-	if(hv_vis_can_slide_tile(slide_dir))
-		Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(HV_VIS_SLIDE_TIME))
+	if(hv_vis_can_slide_tile(slide_dir) && Move(get_step(loc, slide_dir), slide_dir, DELAY_TO_GLIDE_SIZE(HV_VIS_SLIDE_TIME)))
+		// Thrown back as it falls: a little lift over the slide.
+		var/matrix/base = matrix(transform)
+		hv_vis_play(HV_VIS_TAG_FALL, list(
+			list(pixel_w, pixel_z, base, 0, LINEAR_EASING),
+			list(pixel_w, pixel_z + HV_VIS_LAUNCH_LIFT, base, HV_VIS_SLIDE_TIME * 0.4, QUAD_EASING|EASE_OUT),
+			list(pixel_w, pixel_z, base, HV_VIS_SLIDE_TIME * 0.6, QUAD_EASING|EASE_IN),
+		))
 	hv_vis_twitches(rand(3, 5), HV_VIS_SLIDE_TIME + 2)
 
 /// Killed by a head shot, or the head came off: straight down, no fall, lying limp. A burst gets its
 /// hit-stop first.
 /mob/living/carbon/proc/hv_vis_death_drop(hit_dir, fell, big)
+	var/whip = 0
 	if(fell && hv_vis_can_hold_fall())
 		if(big)
 			hv_vis_play_over(hv_vis_hold_then_fall_steps(HV_VIS_HITSTOP_TIME, 0.5))
 		else
-			hv_vis_play_over(list(list(pixel_y, matrix(transform), 0, LINEAR_EASING)))
+			// The head whips back from the shot, then the body drops.
+			whip = HV_VIS_KILL_WHIP_TIME
+			hv_vis_play_over(hv_vis_whip_then_fall_steps(hit_dir))
 	var/dx = HV_VIS_DX(hit_dir)
 	var/dy = HV_VIS_DY(hit_dir)
 	var/matrix/base = matrix(transform)
 	// Lands with a small bounce and stays where it fell.
 	hv_vis_play(HV_VIS_TAG_FALL, list(
-		list(pixel_w, pixel_z, base, big ? HV_VIS_HITSTOP_TIME + 0.5 : 0.5, LINEAR_EASING),
+		list(pixel_w, pixel_z, base, big ? HV_VIS_HITSTOP_TIME + 0.5 : whip + 0.5, LINEAR_EASING),
 		list(pixel_w + dx * 2, pixel_z + dy * 2 + 2, base, 0.5, QUAD_EASING|EASE_OUT),
 		list(pixel_w, pixel_z, base, 1.5, BOUNCE_EASING),
 	))
+
+/// Upright, the head whipped back along the shot, then down. Steps for hv_vis_play_over().
+/mob/living/carbon/proc/hv_vis_whip_then_fall_steps(hit_dir)
+	var/list/upright = hv_vis_upright()
+	var/matrix/standing = upright[2]
+	var/back = HV_VIS_DX(hit_dir) || (prob(50) ? 1 : -1)
+	var/matrix/whipped = hv_vis_turned(standing, back * 14, HV_VIS_FEET_Y)
+	return list(
+		list(upright[1], standing, 0, LINEAR_EASING),
+		list(upright[1], whipped, HV_VIS_KILL_WHIP_TIME * 0.5, QUAD_EASING|EASE_OUT),
+		list(upright[1], whipped, HV_VIS_KILL_WHIP_TIME * 0.5, LINEAR_EASING),
+		list(pixel_y, matrix(transform), 1, QUAD_EASING|EASE_IN),
+	)
 
 /// Burned to death: the body draws up and curls, and keeps that shape.
 /mob/living/carbon/proc/hv_vis_death_curl(fell)

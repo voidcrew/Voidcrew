@@ -139,14 +139,13 @@
 	var/hit_dir = hv_vis_hit_dir || attack_direction
 	if(!hit_dir || !isturf(loc))
 		return
-	var/big = hv_vis_big_hit_time == world.time
-	var/headshot = hv_vis_hit_zone == BODY_ZONE_HEAD && damagetype != STAMINA && hv_vis_hit_damage >= HV_VIS_HEADSHOT_MIN
-	// Only the big moments move the body: a headshot, a blow heavy enough to stagger, or a hit-stop. Ordinary hits don't.
-	if(!big && !headshot && hv_vis_hit_damage < HV_VIS_STAGGER_DAMAGE)
+	// A body that lives through a hit only moves for a gore moment (a sever, burst or crit gets its
+	// hit-stop). Killing blows are shown by the death (death_falls.dm); other hits don't move the body.
+	if(hv_vis_big_hit_time != world.time)
 		return
-	hv_vis_flinch(hv_vis_hit_damage, hit_dir, headshot, big ? HV_VIS_HITSTOP_TIME : 0)
-	if(big)
-		hv_vis_hitstop_extras(hit_dir)
+	var/headshot = hv_vis_hit_zone == BODY_ZONE_HEAD && damagetype != STAMINA && hv_vis_hit_damage >= HV_VIS_HEADSHOT_MIN
+	hv_vis_flinch(hv_vis_hit_damage, hit_dir, headshot, HV_VIS_HITSTOP_TIME)
+	hv_vis_hitstop_extras(hit_dir)
 
 /// Whether a hit on this mob is being resolved right now, between its two damage signals.
 /mob/living/proc/hv_vis_inside_hit()
