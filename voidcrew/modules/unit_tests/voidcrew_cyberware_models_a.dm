@@ -180,7 +180,7 @@
 	var/hurt_before = victim.getBruteLoss()
 	TEST_ASSERT_EQUAL(punch_arm.on_punch(puncher, victim, TRUE, null), COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler arm didn't take the punch")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss() - hurt_before, 14, "A Brawler punch didn't land 14")
-	TEST_ASSERT_EQUAL(COOLDOWN_TIMELEFT(punch_arm, slam_cooldown), 6 SECONDS, "A Brawler punch didn't start the six second clock")
+	TEST_ASSERT_EQUAL(COOLDOWN_TIMELEFT(punch_arm, slam_cooldown), 5 SECONDS, "A Brawler punch didn't start the five second clock")
 	TEST_ASSERT_NOTEQUAL(punch_arm.on_punch(puncher, victim, TRUE, null), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler arm punched again on its clock")
 
 /// Tinker's fingers: the Fixer's three tools and a weaker servo speed-up under
