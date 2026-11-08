@@ -1,5 +1,5 @@
 /**
- * What a paid-for save keeps beyond the hull: the stock parts in the machines on the price table, and one
+ * What a paid-for save keeps beyond the hull: the stock parts in upgraded machines on the price table, and one
  * R&D server's research. The carried funds are in the payload too, but nothing has to be done to the hull
  * for those. Everything here is what the map text can't say, stored as text so saves outlive code changes.
  */
@@ -30,6 +30,36 @@ GLOBAL_LIST_INIT(ship_save_kept_power_parts, typecacheof(list(
 	/obj/item/stock_parts/power_store/battery/bluespace,
 	/obj/item/stock_parts/power_store/battery/bluespace/empty,
 ), only_root_path = TRUE))
+
+/**
+ * Whether a machine holds a stock part above tier 1, or a kept cell that holds more than the one its board
+ * comes with. Only these are charged for and only these carry their parts, so a stock machine saves for
+ * free and comes back the same.
+ */
+/proc/ship_save_machine_upgraded(obj/machinery/machine)
+	SHOULD_NOT_SLEEP(TRUE)
+	for(var/part in machine.component_parts)
+		if(istype(part, /datum/stock_part))
+			var/datum/stock_part/stock_part = part
+			if(stock_part.tier > 1)
+				return TRUE
+		else if(istype(part, /obj/item/stock_parts/power_store))
+			var/obj/item/stock_parts/power_store/power_part = part
+			if(GLOB.ship_save_kept_power_parts[power_part.type] && power_part.maxcharge > ship_save_default_charge(machine, power_part))
+				return TRUE
+	return FALSE
+
+/// How much the cell a machine's board puts in this power part's slot holds.
+/proc/ship_save_default_charge(obj/machinery/machine, obj/item/stock_parts/power_store/power_part)
+	SHOULD_NOT_SLEEP(TRUE)
+	var/obj/item/stock_parts/power_store/default_type = istype(power_part, /obj/item/stock_parts/power_store/battery) ? /obj/item/stock_parts/power_store/battery : /obj/item/stock_parts/power_store/cell
+	var/obj/item/circuitboard/machine/board = machine.circuit
+	if(istype(board))
+		for(var/slot_type in board.req_components)
+			if(ispath(slot_type, /obj/item/stock_parts/power_store) && istype(power_part, slot_type))
+				default_type = board.def_components?[slot_type] || slot_type
+				break
+	return initial(default_type.maxcharge)
 
 /// Researched nodes a fresh web doesn't start with, if this server's disk is really installed. Else 0.
 /obj/machinery/rnd/server/ship/proc/saved_research_count()
@@ -75,7 +105,7 @@ GLOBAL_LIST_INIT(ship_save_kept_power_parts, typecacheof(list(
 			if(!ship_save_keeps_object(machine))
 				continue
 			var/saved_type = machine.checkpoint_type()
-			if(GLOB.ship_save_priced_machines[saved_type])
+			if(GLOB.ship_save_priced_machines[saved_type] && ship_save_machine_upgraded(machine))
 				var/list/part_paths = ship_save_part_paths(machine)
 				if(length(part_paths))
 					var/key = machine_key(machine, port, saved_type)

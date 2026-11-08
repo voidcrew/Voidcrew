@@ -4,12 +4,15 @@
 #define SHIP_SAVE_SLOTS 3
 /// The least a save can cost, in ship parts of every class together.
 #define SHIP_SAVE_PRICE_MIN 5
+/// The most a save's upgraded machines and research cost together, in combat, science and trade parts.
+/// The hull and carried funds are on top.
+#define SHIP_SAVE_PRICE_MAX 10
 /// A hull costs one misc part per this much mass, rounded up.
 #define SHIP_SAVE_MASS_PER_PART 150
 /// What a captain pays in credits for each misc part of a save's price they don't pay in parts.
 #define SHIP_SAVE_CREDITS_PER_PART 2500
 /// A save's research costs one science part per this many nodes above what a fresh web starts with, rounded up.
-#define SHIP_SAVE_NODES_PER_PART 20
+#define SHIP_SAVE_NODES_PER_PART 50
 /// How many credits one trade part carries in a save.
 #define SHIP_SAVE_FUNDS_PER_TRADE_PART 5000
 /// The most trade parts a captain can ask to spend on funds at once. Keeps the request a sane number.

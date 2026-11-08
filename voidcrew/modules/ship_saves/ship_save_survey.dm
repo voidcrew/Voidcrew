@@ -3,7 +3,8 @@
 #define SHIP_SAVE_PRICE(part_class, each_machine, label_text) list("class" = part_class, "each" = each_machine, "label" = label_text)
 
 /**
- * What the machines a save keeps cost. Machines not on this table are free. Subtypes inherit, and a later,
+ * What upgraded machines cost to save, since their stock parts come back. A machine at stock parts, or one
+ * not on this table, is free. Subtypes inherit, and a later,
  * more specific entry wins: a null takes a subtype back off the table.
  */
 GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
@@ -100,13 +101,15 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 					// What comes back, which is what gets paid for: a machine rebuilds as its board's product.
 					var/saved_type = machine.checkpoint_type()
 					var/list/price = GLOB.ship_save_priced_machines[saved_type]
-					if(price)
+					// A stock machine comes back the same for free. Only upgrades are paid for, because only they carry.
+					if(price && ship_save_machine_upgraded(machine))
 						var/line_name = ship_save_machine_line_name(price, saved_type)
 						var/list/line = lines[line_name]
 						if(!line)
 							line = list("class" = price["class"], "each" = price["each"], "count" = 0)
 							lines[line_name] = line
 						line["count"]++
+					if(price)
 						object_mark = class_mark[price["class"]]
 					else if(istype(machine, /obj/machinery/power/shuttle_engine))
 						object_mark = "e"
@@ -143,6 +146,22 @@ GLOBAL_LIST_INIT(ship_save_priced_machines, zebra_typecacheof(list(
 		var/research_parts = CEILING(research_nodes / SHIP_SAVE_NODES_PER_PART, 1)
 		items_by_class[PART_CLASS_SCIENCE] += list(list("name" = "Research, [research_nodes] nodes", "count" = null, "parts" = research_parts, "carry" = 1))
 		total += research_parts
+	// Machines and research together never cost more than SHIP_SAVE_PRICE_MAX. The biggest class gives first.
+	if(total > SHIP_SAVE_PRICE_MAX)
+		var/list/class_parts = list()
+		for(var/part_class in items_by_class)
+			for(var/list/item as anything in items_by_class[part_class])
+				class_parts[part_class] += item["parts"]
+		var/list/discount = list()
+		while(total > SHIP_SAVE_PRICE_MAX)
+			var/biggest
+			for(var/part_class in GLOB.ship_part_classes)
+				if(class_parts[part_class] - discount[part_class] > (biggest ? class_parts[biggest] - discount[biggest] : 0))
+					biggest = part_class
+			discount[biggest]++
+			total--
+		for(var/part_class in discount)
+			items_by_class[part_class] += list(list("name" = "Yard discount", "count" = null, "parts" = -discount[part_class]))
 	var/list/misc_items = items_by_class[PART_CLASS_MISC]
 	var/hull_parts = CEILING(mass / SHIP_SAVE_MASS_PER_PART, 1)
 	if(hull_parts)

@@ -3,7 +3,8 @@
 #define SHIP_SAVE_TEST_PRICE_MIN 5 // SHIP_SAVE_PRICE_MIN
 #define SHIP_SAVE_TEST_MASS_PER_PART 150 // SHIP_SAVE_MASS_PER_PART
 #define SHIP_SAVE_TEST_CREDITS_PER_PART 2500 // SHIP_SAVE_CREDITS_PER_PART
-#define SHIP_SAVE_TEST_NODES_PER_PART 20 // SHIP_SAVE_NODES_PER_PART
+#define SHIP_SAVE_TEST_NODES_PER_PART 50 // SHIP_SAVE_NODES_PER_PART
+#define SHIP_SAVE_TEST_PRICE_MAX 10 // SHIP_SAVE_PRICE_MAX
 #define SHIP_SAVE_TEST_FUNDS_PER_PART 5000 // SHIP_SAVE_FUNDS_PER_TRADE_PART
 #define SHIP_SAVE_TEST_PLAN_MAX 8000 // SHIP_SAVE_PLAN_MAX_LENGTH
 #define SHIP_SAVE_TEST_PASSWORD_PRICE 3 // SHIP_PASSWORD_PRICE
@@ -424,6 +425,14 @@
 			return item
 	return null
 
+/// Swaps one of a machine's stock parts for a better one.
+/datum/unit_test/voidcrew_ship_saves/proc/upgrade_part(obj/machinery/machine, part_base, better_part)
+	var/datum/stock_part/old_part = locate(part_base) in machine.component_parts
+	TEST_ASSERT_NOTNULL(old_part, "[machine.type] has no [part_base] to upgrade")
+	machine.component_parts -= old_part
+	machine.component_parts += GLOB.stock_part_datums[better_part]
+	machine.RefreshParts()
+
 /// A hull of a few known machines, in the test room.
 /datum/unit_test/voidcrew_ship_saves/proc/check_survey()
 	var/turf/tile = run_loc_floor_bottom_left
@@ -433,13 +442,24 @@
 			qdel(loose)
 	var/list/rooms = list()
 	rooms[tile.loc] = TRUE
-	var/obj/machinery/ship_combat/laser_turret/laser = allocate(/obj/machinery/ship_combat/laser_turret, tile)
-	// The bill never uses a name a player gave it.
-	laser.name = "Big Bertha"
-	for(var/i in 1 to 3)
-		allocate(/obj/machinery/porta_turret/ship_defense, tile)
+	// Only upgraded machines are billed: their parts are what a save carries.
+	for(var/i in 1 to 2)
+		var/obj/machinery/ship_combat/laser_turret/laser = allocate(/obj/machinery/ship_combat/laser_turret, tile)
+		upgrade_part(laser, /datum/stock_part/micro_laser, /datum/stock_part/micro_laser/tier4)
+		// The bill never uses a name a player gave it.
+		laser.name = "Big Bertha"
+	// A stock laser turret comes back the same, and is free.
+	allocate(/obj/machinery/ship_combat/laser_turret, tile)
+	var/obj/machinery/chem_dispenser/chem = allocate(/obj/machinery/chem_dispenser, tile)
+	upgrade_part(chem, /datum/stock_part/matter_bin, /datum/stock_part/matter_bin/tier2)
+	// Comes with a better cell than a plain one, which isn't an upgrade.
 	allocate(/obj/machinery/chem_dispenser, tile)
-	allocate(/obj/machinery/chem_dispenser/drinks, tile)
+	var/obj/machinery/chem_dispenser/drinks/bar = allocate(/obj/machinery/chem_dispenser/drinks, tile)
+	upgrade_part(bar, /datum/stock_part/matter_bin, /datum/stock_part/matter_bin/tier2)
+	var/obj/machinery/mineral/ore_redemption/redemption = allocate(/obj/machinery/mineral/ore_redemption, tile)
+	upgrade_part(redemption, /datum/stock_part/matter_bin, /datum/stock_part/matter_bin/tier3)
+	// Nothing to upgrade, so nothing to pay.
+	allocate(/obj/machinery/porta_turret/ship_defense, tile)
 	allocate(/obj/machinery/computer/voidcrew_cargo, tile)
 	// Infrastructure, and things a save refuses, cost nothing and aren't counted.
 	allocate(/obj/machinery/door/airlock, tile)
@@ -454,26 +474,23 @@
 	var/list/classes = list()
 	for(var/list/entry as anything in survey["bill"])
 		classes += entry["class"]
-	TEST_ASSERT_EQUAL(classes.Join(","), "combat,science,trade", "The bill's classes are in the wrong order")
-	TEST_ASSERT_EQUAL(bill_class(survey, "combat")["parts"], 3, "Wrong combat total")
-	var/list/combat_items = bill_class(survey, "combat")["items"]
-	var/list/first_combat = combat_items[1]
-	TEST_ASSERT_EQUAL(first_combat["name"], "Defense turret", "The biggest line is not first")
-	TEST_ASSERT_EQUAL(first_combat["count"], 3, "Wrong count of defense turrets")
-	TEST_ASSERT_EQUAL(first_combat["parts"], 2, "Three defense turrets at 1 per 2 did not round up to 2")
+	TEST_ASSERT_EQUAL(classes.Join(","), "combat,science,trade,misc", "The bill's classes are in the wrong order")
 	var/list/laser_line = bill_line(survey, "combat", "Laser turret")
 	TEST_ASSERT_NOTNULL(laser_line, "The laser turret has no line under its own name")
-	TEST_ASSERT_EQUAL(laser_line["count"], 1, "A hologram counted as a laser turret")
-	TEST_ASSERT_EQUAL(bill_line(survey, "science", "Chem dispenser")?["parts"], 1, "A chem dispenser did not cost 1 science")
+	TEST_ASSERT_EQUAL(laser_line["count"], 2, "A stock or hologram laser turret was billed")
+	TEST_ASSERT_EQUAL(bill_class(survey, "combat")["parts"], 2, "Wrong combat total")
+	TEST_ASSERT_NULL(bill_line(survey, "combat", "Defense turret"), "A turret with nothing to upgrade was billed")
+	TEST_ASSERT_EQUAL(bill_line(survey, "science", "Chem dispenser")?["parts"], 1, "An upgraded chem dispenser did not cost 1 science")
+	TEST_ASSERT_EQUAL(bill_line(survey, "science", "Chem dispenser")?["count"], 1, "A stock chem dispenser's own cell counted as an upgrade")
 	TEST_ASSERT_EQUAL(bill_class(survey, "science")["parts"], 1, "A drink dispenser counted as a chem dispenser")
-	TEST_ASSERT_EQUAL(bill_line(survey, "trade", "Cargo console")?["parts"], 1, "A cargo console did not cost 1 trade")
-	TEST_ASSERT_NULL(bill_class(survey, "misc"), "Machines off the price table were charged in misc")
+	TEST_ASSERT_EQUAL(bill_line(survey, "trade", "Ore redemption machine")?["parts"], 1, "An upgraded ore redemption machine did not cost 1 trade")
+	TEST_ASSERT_NULL(bill_line(survey, "trade", "Cargo console"), "A console with nothing to upgrade was billed")
+	TEST_ASSERT_EQUAL(bill_line(survey, "misc", "Yard minimum")?["parts"], 1, "Machines off the price table were charged, or the minimum is wrong")
 	TEST_ASSERT_EQUAL(survey["total"], 5, "Wrong total")
-	TEST_ASSERT_EQUAL(survey["cost"]["combat"], 3, "The charge disagrees with the bill")
+	TEST_ASSERT_EQUAL(survey["cost"]["combat"], 2, "The charge disagrees with the bill")
 	TEST_ASSERT_EQUAL(survey["cost"]["science"], 1, "The charge disagrees with the bill")
 	TEST_ASSERT_EQUAL(survey["cost"]["trade"], 1, "The charge disagrees with the bill")
-	TEST_ASSERT_NULL(survey["cost"]["misc"], "The charge disagrees with the bill")
-	TEST_ASSERT_EQUAL(ship_save_cost_text(survey["cost"]), "3 combat, 1 science and 1 trade parts", "Wrong words for the price")
+	TEST_ASSERT_EQUAL(survey["cost"]["misc"], 1, "The charge disagrees with the bill")
 
 	// A label wins, a subtype inherits, and a name with no label comes from the type.
 	var/list/price = GLOB.ship_save_priced_machines[/obj/machinery/rnd/production/protolathe/department/science]
@@ -572,6 +589,24 @@
 	TEST_ASSERT_EQUAL(nothing["total"], SHIP_SAVE_TEST_PRICE_MIN, "An empty hull did not pay the minimum")
 	var/list/lines = list("Defense turret" = list("class" = "combat", "each" = 0.5, "count" = 6))
 	TEST_ASSERT_EQUAL(bill_line(ship_save_price_bill(lines, 0), "combat", "Defense turret")?["parts"], 3, "Six turrets at 1 per 2 are not one line of 3")
+
+	// Machines and research stop at the cap, taken off the biggest class first. The hull is on top.
+	var/list/big_lines = list(
+		"Laser turret" = list("class" = "combat", "each" = 1, "count" = 9),
+		"Protolathe" = list("class" = "science", "each" = 1, "count" = 3),
+		"Ore silo" = list("class" = "trade", "each" = 1, "count" = 2),
+	)
+	var/list/capped = ship_save_price_bill(big_lines, 300, SHIP_SAVE_TEST_NODES_PER_PART)
+	TEST_ASSERT_EQUAL(capped["total"], SHIP_SAVE_TEST_PRICE_MAX + 2, "Machines and research went over the cap, or the hull was capped")
+	TEST_ASSERT_EQUAL(capped["cost"]["combat"], 4, "The cap didn't come off the biggest class first")
+	TEST_ASSERT_EQUAL(capped["cost"]["science"], 4, "The cap took from the wrong class")
+	TEST_ASSERT_EQUAL(capped["cost"]["trade"], 2, "The cap took from a small class")
+	TEST_ASSERT_EQUAL(capped["cost"]["misc"], 2, "The cap touched the hull")
+	TEST_ASSERT_EQUAL(bill_line(capped, "combat", "Yard discount")?["parts"], -5, "The discount line doesn't show what came off")
+	TEST_ASSERT_EQUAL(bill_class(capped, "combat")["parts"], 4, "The class total doesn't match its lines")
+	TEST_ASSERT_NULL(bill_line(capped, "trade", "Yard discount"), "A class the cap didn't touch has a discount line")
+	var/list/at_cap = ship_save_price_bill(list("Laser turret" = list("class" = "combat", "each" = 1, "count" = SHIP_SAVE_TEST_PRICE_MAX)), 0)
+	TEST_ASSERT_NULL(bill_line(at_cap, "combat", "Yard discount"), "A bill at the cap was discounted")
 
 	set_parts(misc = SHIP_SAVE_TEST_PRICE_MIN)
 	GLOB.ship_saves.refresh("tinyhull")
@@ -1910,6 +1945,7 @@
 #undef SHIP_SAVE_TEST_MASS_PER_PART
 #undef SHIP_SAVE_TEST_CREDITS_PER_PART
 #undef SHIP_SAVE_TEST_NODES_PER_PART
+#undef SHIP_SAVE_TEST_PRICE_MAX
 #undef SHIP_SAVE_TEST_FUNDS_PER_PART
 #undef SHIP_SAVE_TEST_PLAN_MAX
 #undef SHIP_SAVE_TEST_PASSWORD_PRICE
