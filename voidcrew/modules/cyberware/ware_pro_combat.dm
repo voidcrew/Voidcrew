@@ -43,6 +43,8 @@
 	var/list/dodge_sources = list()
 	/// world.time of the bearer's last move.
 	var/last_move_time = 0
+	/// world.time a dodge was last announced, so an NPC under fire doesn't flood chat
+	var/last_message_at = -INFINITY
 
 /datum/component/cyberware_dodge/Initialize()
 	if(!isliving(parent))
@@ -96,10 +98,12 @@
 		return
 	new /obj/effect/temp_visual/decoy/fading/halfsecond(source.loc, source)
 	playsound(source, SFX_BULLET_MISS, 60, TRUE)
-	source.visible_message(
-		span_danger("[source] blurs sideways out of [dodged]'s path!"),
-		span_danger("You blur out of [dodged]'s path!"),
-	)
+	if(source.client || world.time - last_message_at >= 1.5 SECONDS)
+		last_message_at = world.time
+		source.visible_message(
+			span_danger("[source] blurs sideways out of [dodged]'s path!"),
+			span_danger("You blur out of [dodged]'s path!"),
+		)
 	var/incoming_dir = QDELETED(dodged) ? source.dir : dodged.dir
 	var/list/side_dirs = shuffle(list(turn(incoming_dir, 90), turn(incoming_dir, -90)))
 	for(var/step_dir in side_dirs)
