@@ -70,14 +70,50 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		picked += pick_weight(weights)
 	return length(picked) ? picked : null
 
-/// The organ typepaths the look builder puts in a dummy for chrome `keys`
+/**
+ * The organ typepaths the look builder puts in a dummy for chrome `keys`. A slot holds one implant, as
+ * on a player, so the first piece listed for a slot keeps it (a second would evict the first as it
+ * goes in). Arms are shared out: with two pieces that each take both arms (Mantis Blades and Gorilla
+ * Arms), the first listed keeps its right arm and the second gets its left, and any more get none.
+ */
 /proc/bounty_chrome_organ_looks(list/keys)
 	var/list/organs = list()
+	var/list/slots_taken = list()
+	var/list/arm_sharers = list()
 	for(var/key in keys)
 		var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
-		if(proto?.organ_looks)
-			organs |= proto.organ_looks
+		if(proto && bounty_chrome_takes_both_arms(proto.organ_looks))
+			arm_sharers += key
+	var/sharing = length(arm_sharers) > 1
+	for(var/key in keys)
+		var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
+		if(!proto?.organ_looks)
+			continue
+		var/sharer = sharing ? arm_sharers.Find(key) : 0
+		for(var/obj/item/organ/organ_type as anything in proto.organ_looks)
+			if(sharer)
+				var/zone = initial(organ_type.zone)
+				if((zone == BODY_ZONE_R_ARM && sharer != 1) || (zone == BODY_ZONE_L_ARM && sharer != 2))
+					continue
+			var/slot = initial(organ_type.slot)
+			if(slot)
+				if(slots_taken[slot])
+					continue
+				slots_taken[slot] = TRUE
+			organs |= organ_type
 	return organs
+
+/// Whether `organ_types` put chrome on both arms
+/proc/bounty_chrome_takes_both_arms(list/organ_types)
+	var/right = FALSE
+	var/left = FALSE
+	for(var/obj/item/organ/organ_type as anything in organ_types)
+		switch(initial(organ_type.zone))
+			if(BODY_ZONE_R_ARM)
+				right = TRUE
+			if(BODY_ZONE_L_ARM)
+				left = TRUE
+	return right && left
 
 /**
  * Puts the real implants `organ_types` in a look dummy, so its worn chrome draws as a player's does.
