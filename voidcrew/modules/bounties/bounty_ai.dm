@@ -189,17 +189,53 @@
  * A step `mover` (a criminal or a companion) takes by hand, outside the AI's pathing: never off its
  * side's leash (the criminal's own body_move_allowed(); a companion its criminal's leash_ok()), into
  * lava or a chasm. Returns TRUE if it moved. Every direct step in the bounty AI goes through here.
+ *
+ * A `paced` step (a fighter's step aside or back) comes no sooner than a person could take it: the
+ * body's own move delay after its last step, by hand or on the AI's walk (bounty_ai_step_ready()). Any
+ * step taken here holds the AI's walk back by that delay too, so the two never add up to a double step.
  */
-/proc/bounty_ai_step(mob/living/mover, turf/destination)
+/proc/bounty_ai_step(mob/living/mover, turf/destination, paced = FALSE)
 	if(QDELETED(mover) || !isturf(mover.loc) || !isturf(destination) || get_dist(mover, destination) != 1)
+		return FALSE
+	if(paced && !bounty_ai_step_ready(mover))
 		return FALSE
 	if(islava(destination) || ischasm(destination) || destination.is_blocked_turf(source_atom = mover))
 		return FALSE
 	if(!bounty_ai_step_allowed(mover, destination))
 		return FALSE
 	var/turf/was = mover.loc
-	mover.Move(destination, get_dir(mover, destination))
-	return mover.loc != was
+	var/direction = get_dir(mover, destination)
+	mover.Move(destination, direction)
+	if(mover.loc == was)
+		return FALSE
+	var/delay = bounty_ai_note_step(mover, direction)
+	mover.set_glide_size(DELAY_TO_GLIDE_SIZE(delay))
+	// The AI's own walk waits as long before its next step
+	var/datum/move_loop/walk = GLOB.move_manager.processing_on(mover, SSai_movement)
+	if(walk && walk.timer < world.time + delay)
+		walk.pause_for(delay)
+	return TRUE
+
+/// Whether `mover` may take a step by hand now: its own move delay has passed since its last step (BB_BOUNTY_NEXT_STEP_AT)
+/proc/bounty_ai_step_ready(mob/living/mover)
+	var/datum/ai_controller/controller = mover?.ai_controller
+	if(QDELETED(controller))
+		return TRUE
+	return world.time >= controller.blackboard[BB_BOUNTY_NEXT_STEP_AT]
+
+/**
+ * `mover` just stepped in `direction`: its next step by hand waits out the body's own move delay
+ * (cached_multiplicative_slowdown, what a player's step costs them), longer after a diagonal one as a
+ * player's is. Returns that delay.
+ */
+/proc/bounty_ai_note_step(mob/living/mover, direction)
+	var/delay = max(mover.cached_multiplicative_slowdown, world.tick_lag)
+	if(ISDIAGONALDIR(direction))
+		delay *= sqrt(2)
+	var/datum/ai_controller/controller = mover.ai_controller
+	if(!QDELETED(controller))
+		controller.set_blackboard_key(BB_BOUNTY_NEXT_STEP_AT, world.time + delay)
+	return delay
 
 /// Whether `mover`'s own step onto `destination` keeps to its leash (see bounty_ai_step())
 /proc/bounty_ai_step_allowed(mob/living/mover, turf/destination)
@@ -623,6 +659,13 @@
 	var/mob/living/mover = source.moving
 	if(isliving(mover) && !bounty_ai_step_allowed(mover, path[1]))
 		return FALSE
+
+// Each step of the walk counts as the body's last step, so a step by hand (bounty_ai_step()) waits a step's time after it
+/datum/ai_movement/jps/bounty/post_move(datum/move_loop/source, succeeded)
+	. = ..()
+	var/mob/living/mover = source.moving
+	if(succeeded == MOVELOOP_SUCCESS && isliving(mover))
+		bounty_ai_note_step(mover, mover.last_move)
 
 /// Now and then a step in some direction, while nothing else is planned: never off the leash, never while hiding, cuffed or down
 /datum/idle_behavior/bounty_wander

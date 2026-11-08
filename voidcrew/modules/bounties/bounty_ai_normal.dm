@@ -34,6 +34,8 @@
 		/datum/ai_planning_subtree/bounty_gate,
 		/datum/ai_planning_subtree/bounty_notice,
 		/datum/ai_planning_subtree/bounty_fight_target,
+		// Its chrome: a tell, then the implant's own action (C0, bounty_chrome.dm)
+		/datum/ai_planning_subtree/bounty_chrome,
 		/datum/ai_planning_subtree/bounty_arm,
 		/datum/ai_planning_subtree/bounty_ranged,
 		/datum/ai_planning_subtree/bounty_melee,

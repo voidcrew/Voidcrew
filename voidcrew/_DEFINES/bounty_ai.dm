@@ -58,6 +58,8 @@
 /// Shots fired in the pistol's current string, and the magazine they came from (a new one starts the count again)
 #define BB_BOUNTY_STRING_SHOTS "bb_bounty_string_shots"
 #define BB_BOUNTY_STRING_MAGAZINE "bb_bounty_string_magazine"
+/// world.time the body may take its next step by hand (bounty_ai_step()): its last step, AI walk or by hand, plus its own move delay
+#define BB_BOUNTY_NEXT_STEP_AT "bb_bounty_next_step_at"
 
 // ===== ACTIVITY STEPS =====
 
@@ -200,6 +202,16 @@
 #define BOUNTY_COMPANION_FOLLOW 2
 /// How often a companion calls the rest of the gang in (the trooper's 30 s)
 #define BOUNTY_REINFORCE_COOLDOWN (30 SECONDS)
+/// A companion joining a fight gets up first: no weapon out, no blow or shot, for this long, so their criminal draws first
+#define BOUNTY_COMPANION_DRAW_DELAY (1 SECONDS)
+/// A companion's gun is backup: pistol strings this long (a criminal's are BOUNTY_PISTOL_STRING_SHOTS)...
+#define BOUNTY_COMPANION_PISTOL_STRING 3
+/// ...and SMG bursts this long (a criminal's are BOUNTY_SMG_BURST)
+#define BOUNTY_COMPANION_SMG_BURST 2
+/// Company keys (bounty_roll_company()): one companion's fighting style (BOUNTY_STYLE_*)...
+#define BOUNTY_COMPANY_STYLE "style"
+/// ...and their chrome keys (BOUNTY_CHROME_*), or null for none
+#define BOUNTY_COMPANY_CHROME "chrome"
 
 // ===== STYLES (combat.md 6.2, bounty_styles.dm) =====
 // Every style is a real item the fighter carries and draws: blows and shots are the item's own, through
@@ -220,7 +232,9 @@
 #define BOUNTY_PISTOL_STRING_SHOTS 6
 /// ...with this pause on top of the interval before the next string. A reload after an empty magazine is separate.
 #define BOUNTY_PISTOL_STRING_PAUSE (1.5 SECONDS)
-/// Keeps about this far away
+/// A gun fires at anyone it can see this far off, while its holder still walks in to its style's own distance (BOUNTY_PISTOL_RANGE). The shotgun's spread and the bottle's throw keep them to their own.
+#define BOUNTY_GUN_FIRE_RANGE 7
+/// Walks in to about this far away
 #define BOUNTY_PISTOL_RANGE 5
 #define BOUNTY_PISTOL_MIN_RANGE 3
 /// Raising the gun before the first shot of a string
