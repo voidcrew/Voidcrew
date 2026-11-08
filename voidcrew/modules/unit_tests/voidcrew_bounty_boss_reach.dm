@@ -457,10 +457,14 @@
 		ware.tune_up()
 	TEST_ASSERT(boss.boss_gorilla_goes_through(other_pane), "Rebooted Gorilla Arms don't go through glass")
 
-	// Both hands full: no fist to punch with
+	// Both hands full: no fist to punch with (the Juggernaut's off hand already holds its shield, C8)
 	var/obj/item/wrench/left_load = allocate(/obj/item/wrench)
 	var/obj/item/screwdriver/right_load = allocate(/obj/item/screwdriver)
-	TEST_ASSERT(boss.put_in_hands(left_load) && boss.put_in_hands(right_load), "Test fixture: the boss couldn't fill both hands")
+	if(length(boss.get_empty_held_indexes()))
+		boss.put_in_hands(left_load)
+	if(length(boss.get_empty_held_indexes()))
+		boss.put_in_hands(right_load)
+	TEST_ASSERT(!length(boss.get_empty_held_indexes()), "Test fixture: the boss couldn't fill both hands")
 	TEST_ASSERT(!boss.boss_has_gorilla_fist(), "With both hands full, it still has a fist to punch with")
 	TEST_ASSERT(!boss.boss_gorilla_goes_through(other_pane), "With both hands full, its Gorilla Arms go through glass")
 	qdel(left_load)

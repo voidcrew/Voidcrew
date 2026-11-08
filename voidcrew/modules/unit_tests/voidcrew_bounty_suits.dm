@@ -43,6 +43,10 @@
 /datum/unit_test/voidcrew_bounty_suits/proc/armoured(obj/item/item)
 	return !isnull(item) && max(item.get_armor_rating(MELEE), item.get_armor_rating(BULLET)) >= 30
 
+/// Whether a mini-boss kit's `item` is in the armoured class: armoured, or energy armour of 30 or more (the Heavy's ablative coat and hood, C8)
+/datum/unit_test/voidcrew_bounty_suits/proc/kit_armoured(obj/item/item)
+	return armoured(item) || (!isnull(item) && item.get_armor_rating(ENERGY) >= 30)
+
 /// Checks `npc` is sealed up for vacuum in real, locked gear: a pressure suit and helmet that keep out the cold of space, and a tank it can breathe
 /datum/unit_test/voidcrew_bounty_suits/proc/check_sealed(mob/living/carbon/human/npc/npc, label)
 	var/obj/item/clothing/suit = npc.wear_suit
@@ -101,13 +105,15 @@
 		TEST_ASSERT(istype(in_air) && istype(in_vacuum), "No [kit] was made")
 		TEST_ASSERT_EQUAL(in_vacuum.boss_kit, kit, "Test fixture: the [kit] came out as a [in_vacuum.boss_kit]")
 		check_sealed(in_vacuum, "The [kit] at a space ruin")
-		TEST_ASSERT_EQUAL(armoured(in_vacuum.wear_suit), armoured(in_air.wear_suit), "The [kit]'s space suit ([in_vacuum.wear_suit.type]) isn't in the armour class of its own suit ([in_air.wear_suit?.type])")
-		TEST_ASSERT_EQUAL(armoured(in_vacuum.head), armoured(in_air.head), "The [kit]'s space helmet ([in_vacuum.head.type]) isn't in the armour class of its own headgear ([in_air.head?.type])")
+		TEST_ASSERT_EQUAL(kit_armoured(in_vacuum.wear_suit), kit_armoured(in_air.wear_suit), "The [kit]'s space suit ([in_vacuum.wear_suit.type]) isn't in the armour class of its own suit ([in_air.wear_suit?.type])")
+		TEST_ASSERT_EQUAL(kit_armoured(in_vacuum.head), kit_armoured(in_air.head), "The [kit]'s space helmet ([in_vacuum.head.type]) isn't in the armour class of its own headgear ([in_air.head?.type])")
 		TEST_ASSERT(in_vacuum.boss_gear_text(), "The [kit] in its space suit has no gear line on examine")
 		var/list/gear = bounty_vacuum_gear(in_vacuum)
 		TEST_ASSERT(length(gear) == 2 && istype(in_vacuum.wear_suit, gear[1]), "The [kit] doesn't wear the suit it was given for vacuum")
 		if(kit == "heavy")
-			TEST_ASSERT(istype(in_vacuum.head, /obj/item/clothing/head/helmet/swat), "The Heavy lost its SWAT helmet in vacuum")
+			// Its ablative coat and hood hold no pressure: out there it seals up in an armoured suit and helmet (C8)
+			TEST_ASSERT(istype(in_air.head, /obj/item/clothing/head/hooded/ablative), "The Heavy's ablative hood isn't up in good air")
+			TEST_ASSERT(istype(in_vacuum.head, /obj/item/clothing/head/helmet/space/syndicate/black), "The Heavy has no armoured helmet in vacuum")
 		qdel(in_air)
 		qdel(in_vacuum)
 

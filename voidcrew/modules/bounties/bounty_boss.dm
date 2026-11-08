@@ -14,10 +14,11 @@
  * crit, stamina, stamcrit, stuns, cuffs, wounds, bleeding and death are tg's, exactly as a player's:
  * - Toughness is real armour from its kit (locked to its body, D3) and npc_damage_taken
  *   (BOUNTY_BOSS_DAMAGE_TAKEN), fixed whatever the posse (defaults 1.5, OC-8). Never health.
- * - Resistance to stuns is its armour and a real stimulant pen it carries and injects, with a visible
- *   emote, when its fight starts (defaults 1.6). A second pen is its second wind.
+ * - Resistance to stuns is its armour, its kit's own answer to a disabler (bounty_boss_kits.dm, C8) and
+ *   the real stimulant pens it carries, used the way combat sense uses them (human_npc_combat_sense.dm):
+ *   when it tires in a fight, never while one is still in its blood (/datum/npc_combat_sense/bounty/boss).
  * - "Worn out" is its AI reading real state (stamina loss over half its pool, or health under 40%): it
- *   says so, falls back, and then takes its second pen if it has one (CB-2, CR-4).
+ *   says so, takes a pen if it wants one, and falls back (CB-2, CR-4).
  * - It fights with what it holds (real knives, a real torch, a real gun, its fists) through its hands,
  *   the way a player does (controller.ai_interact()).
  * - It never surrenders. Bosses execute nobody this phase (the core's hv_can_execute(), OC-9).
@@ -30,7 +31,8 @@
  *   beyond the first brings one more companion in from out of their view, one at a time (OC-8, CB-1),
  *   up to BOUNTY_BOSS_REINFORCEMENTS_MAX. Never health.
  * - Its AI: soft crit and breaking free first (the human NPC base's and the core's); nothing while
- *   busy or disabled; worn out, it falls back; its stimulant; a target; its kit's gear; an ability,
+ *   busy or disabled; worn out, it falls back; a target; its combat sense (its stimulant, and the kit's
+ *   reaction to stun fire, if it has one); its kit's gear; an ability,
  *   never the same one twice in a row; the kit's way of closing in or keeping away; up to and through
  *   whatever is in its way, if its kit can go through it; its melee; patching itself up with nobody
  *   about; with nobody in sight, the hunt for the nearest hunter still on its site that it can get at;
@@ -110,6 +112,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	// Fixed toughness, whatever its tier or posse (defaults 1.5, OC-8). Its armour does the rest.
 	npc_damage_taken = BOUNTY_BOSS_DAMAGE_TAKEN
 	body_tier_toughness = FALSE
+	// Its stimulant pens, and a kit's answer to stun fire (C8). A kit with its own reaction uses a subtype.
+	npc_combat_sense = /datum/npc_combat_sense/bounty/boss
 	/// BOUNTY_KIT_*: which kit it is, and the prefix of its dialogue contexts
 	var/boss_kit
 	/// The ability types it is given
@@ -149,10 +153,6 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	/// Worn out (boss_is_worn_out(), read by its AI): said so, and falls back until boss_fallback_until
 	var/boss_worn_out = FALSE
 	var/boss_fallback_until = 0
-	/// Stimulant pens it has used: the first when its fight starts, the second for its second wind
-	var/boss_stimulants_used = 0
-	/// Its fall back is over and it is still worn out: its next plan takes the second pen
-	var/boss_second_wind_due = FALSE
 	/// Hunters who hurt it from where it couldn't get at them: weakref -> world.time of the last such hit (boss_note_reach())
 	var/list/boss_shunned = list()
 	/// The tiles it can walk to (boss_walkable()): turf -> steps, the tile it stood on then, and when that was worked out
@@ -229,8 +229,9 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss))
 
 /**
- * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS combat stimulants
- * and a bruise pack, in a bag on its back (one is added if it wears none). Returns the outfit.
+ * Packs what every boss carries into `outfit`, an instance: BOUNTY_BOSS_STIMULANTS stimulant pens (its
+ * combat sense uses them when it tires) and a bruise pack, in a bag on its back (one is added if it wears
+ * none). Returns the outfit.
  */
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_supplies(datum/outfit/outfit)
 	if(!istype(outfit))
@@ -287,18 +288,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /// It has just worn out: it says so where the fight is, drops what it was winding up and falls back for a while
 /mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_wear_out()
 	boss_worn_out = TRUE
-	boss_second_wind_due = FALSE
 	boss_fallback_until = world.time + BOUNTY_BOSS_FALLBACK_TIME
 	boss_interrupt()
 	visible_message(span_warning("[src] is breathing hard and slowing down. [p_They()] look[p_s()] worn out."))
 	body_alert_hunters("worn out")
 	boss_bark("exhausted")
-
-/// Whether its next plan should take a stimulant: the first when its fight starts, the second for its second wind
-/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_wants_stimulant()
-	if(!boss_hostile || boss_stimulants_used >= BOUNTY_BOSS_STIMULANTS)
-		return FALSE
-	return !boss_stimulants_used || boss_second_wind_due
 
 // ----- busy -----
 
@@ -1744,7 +1738,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Its planning, on a real human body (contract 2.4): soft crit and breaking free first; nothing while
- * it is busy or can't act; worn out, it falls back; its stimulant; its target; its kit's gear; drawing
+ * it is busy or can't act; worn out, it falls back; its target; its combat sense (a stimulant when it
+ * tires, and a kit's own reaction to stun fire); its kit's gear; drawing
  * its weapon once its fight has started; an ability; the kit's way of closing in or keeping away; up to
  * and through whatever is in its way; its melee with what it holds; patching itself up with nobody
  * about; with nobody in sight, the hunt for the nearest hunter still on its site that it can get at;
@@ -1764,9 +1759,9 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		/datum/ai_planning_subtree/bounty_escape_captivity,
 		/datum/ai_planning_subtree/bounty_boss_busy,
 		/datum/ai_planning_subtree/bounty_boss_worn_out,
-		/datum/ai_planning_subtree/bounty_boss_stimulant,
 		/datum/ai_planning_subtree/bounty_boss_target,
 		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/bounty_boss_gear,
 		/datum/ai_planning_subtree/human_npc_arm/bounty_boss,
 		/datum/ai_planning_subtree/bounty_boss_abilities,
@@ -1817,9 +1812,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Worn out (boss_is_worn_out(), its body's real state): the first time, it says so and shows it to
- * the hunters (boss_wear_out()); then it falls back from whoever it was fighting for
- * BOUNTY_BOSS_FALLBACK_TIME, and after that its second wind is due (bounty_boss_stimulant). Back above
- * the line (healed, or its stamina back), it is fresh again.
+ * the hunters (boss_wear_out()). If it wants a stimulant pen now (combat sense's own rule: winded, in a
+ * fight, none in its blood) it takes it first; then it falls back from whoever it was fighting for
+ * BOUNTY_BOSS_FALLBACK_TIME and fights on. Back above the line (healed, or its stamina back), it is fresh
+ * again.
  */
 /datum/ai_planning_subtree/bounty_boss_worn_out
 
@@ -1833,9 +1829,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return
 	if(!boss.boss_worn_out)
 		boss.boss_wear_out()
+	var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
+	if(sense?.rules.can_act(boss, controller) && sense.rules.plan_stim(boss, controller, sense))
+		return SUBTREE_RETURN_FINISH_PLANNING
 	if(world.time >= boss.boss_fallback_until)
-		if(boss.boss_fallback_until && boss.boss_stimulants_used < BOUNTY_BOSS_STIMULANTS)
-			boss.boss_second_wind_due = TRUE
 		boss.boss_fallback_until = 0
 		return
 	var/atom/threat = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] || boss.boss_revenge_target()
@@ -1843,38 +1840,6 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return
 	controller.set_blackboard_key(BB_BOUNTY_BOSS_FALL_BACK_FROM, threat)
 	controller.queue_behavior(/datum/ai_behavior/run_away_from_target, BB_BOUNTY_BOSS_FALL_BACK_FROM)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/**
- * Its combat stimulant (defaults 1.6, CR-4): the first pen as its fight starts, the second for its
- * second wind once a fall back is over, each a real pen it carries, used on itself the player's way
- * through the core's bounty_ai_use_injector() (a visible emote first). The second comes with its
- * "recover" line ("Round two."). While a pen is going in, it keeps at it.
- */
-/datum/ai_planning_subtree/bounty_boss_stimulant
-
-/datum/ai_planning_subtree/bounty_boss_stimulant/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = controller.pawn
-	if(!istype(boss) || !boss.boss_hostile)
-		return
-	var/obj/item/reagent_containers/hypospray/medipen/using = controller.blackboard[BB_HUMAN_NPC_TREAT_ITEM]
-	if(istype(using) && !QDELETED(using) && !using.used_up && bounty_ai_is_stimulant(using))
-		controller.queue_behavior(/datum/ai_behavior/human_npc_treat_self, BB_HUMAN_NPC_TREAT_ITEM)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(!boss.boss_wants_stimulant())
-		return
-	var/obj/item/reagent_containers/hypospray/medipen/pen = bounty_ai_find_injector(boss, BOUNTY_BOSS_STIMULANT)
-	if(isnull(pen))
-		// Nothing left to take: it fights on as it is.
-		boss.boss_stimulants_used = BOUNTY_BOSS_STIMULANTS
-		boss.boss_second_wind_due = FALSE
-		return
-	if(!bounty_ai_use_injector(controller, pen))
-		return
-	boss.boss_stimulants_used++
-	if(boss.boss_second_wind_due)
-		boss.boss_second_wind_due = FALSE
-		INVOKE_ASYNC(boss, TYPE_PROC_REF(/mob/living, bounty_say), "recover", null, TRUE)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Drops a target it may no longer go after, and turns on whoever hurt it last when it has none
@@ -2075,6 +2040,55 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	boss.boss_cover_bark()
 	controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_COVER)
 	return SUBTREE_RETURN_FINISH_PLANNING
+
+// ===== COMBAT SENSE: ITS STIMULANT, AND A KIT'S ANSWER TO STUN FIRE (C8) =====
+
+/**
+ * A boss's combat sense (voidcrew/modules/human_npcs/human_npc_combat_sense.dm): the bounty family's leash
+ * and gang rules, and the stimulant pens it carries (boss_supplies()), taken when it tires in a fight and
+ * never while one is still in its blood. Nothing else injects them: its worn-out fall back asks this for
+ * the pen too (bounty_boss_worn_out). By default stun fire changes nothing else about how it fights; a
+ * kit with its own reaction sets it on a subtype (bounty_boss_kits.dm), and a ready ability always goes
+ * first, its wind-up being the kit's own answer.
+ */
+/datum/npc_combat_sense/bounty/boss
+	react_to_stun_fire = FALSE
+
+/datum/npc_combat_sense/bounty/boss/can_act(mob/living/carbon/human/npc, datum/ai_controller/controller)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	return istype(boss) && boss.boss_hostile && !boss.boss_busy && ..()
+
+/datum/npc_combat_sense/bounty/boss/in_fight(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	return istype(boss) && boss.boss_hostile && (controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET) || sense.under_fire())
+
+/datum/npc_combat_sense/bounty/boss/plan(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	if(!can_act(npc, controller))
+		sense.stand_down(controller)
+		return
+	var/under_fire = sense.under_fire()
+	if(!under_fire && sense.hits)
+		sense.end_exchange(controller)
+	if(plan_stim(npc, controller, sense))
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(!under_fire || !react_to_stun_fire || !may_move(npc, controller))
+		return
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(target) && boss.boss_choose_ability(target))
+		return
+	if(close_in_reach && reach(npc, controller) <= close_in_reach)
+		return plan_close_in(npc, controller, sense)
+	return plan_cover(npc, controller, sense)
+
+// The second pen of a fight comes with its "recover" line ("Round two."), as its second wind always did.
+/datum/npc_combat_sense/bounty/boss/telegraph(mob/living/carbon/human/npc, kind, atom/about, obj/item/used)
+	. = ..()
+	if(kind != HUMAN_NPC_BARK_STIMULANT)
+		return
+	var/datum/component/npc_combat_sense/sense = npc.GetComponent(/datum/component/npc_combat_sense)
+	if(sense?.stims_used)
+		INVOKE_ASYNC(npc, TYPE_PROC_REF(/mob/living, bounty_say), "recover", null, TRUE)
 
 // ===== LOOKS =====
 
