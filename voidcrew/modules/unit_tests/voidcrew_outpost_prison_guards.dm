@@ -288,20 +288,22 @@
 	brawl.fighting = TRUE
 	onlooker.set_mood(70)
 	calm.set_mood(70)
-	for(var/i in 1 to 3)
-		guard.baton_cooldown = 0
-		TEST_ASSERT(guard.strike(first), "Baton strike [i] on a fighter did not land")
-	TEST_ASSERT(first.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Three baton strikes did not put a prisoner in stamina crit") // OUTPOST_GUARD_BATON_STAMINA
+	// One strike with the real baton off the belt: tg's stamina damage and knockdown, and the fight is over.
+	guard_test_ready_baton(guard)
+	TEST_ASSERT(guard.strike(first), "The baton strike on a fighter did not land")
+	TEST_ASSERT(guard.is_holding(guard.get_baton()), "The guard struck without the baton in hand")
+	TEST_ASSERT(first.getStaminaLoss() >= 40, "The baton did [first.getStaminaLoss()] stamina damage")
+	TEST_ASSERT(first.is_down(), "The baton did not knock the fighter down")
 	TEST_ASSERT_EQUAL(first.getBruteLoss(), 0, "The baton did brute damage")
 	TEST_ASSERT(abs(first.mood - 30) < 0.01, "The struck prisoner's mood moved to [first.mood]: the baton counted as staff's")
-	TEST_ASSERT(QDELETED(brawl), "Stamina crit did not end the fight")
+	TEST_ASSERT(QDELETED(brawl), "The knockdown did not end the fight")
 	TEST_ASSERT(abs(onlooker.mood - 68) < 0.01, "An onlooker ended at [onlooker.mood], not 68: seeing it costs 2, once a minute") // OUTPOST_GUARD_ONLOOKER_MOOD
 	TEST_ASSERT(abs(calm.mood - 68) < 0.01, "A prisoner beside it ended at [calm.mood], not 68")
 
 	// Down, never again.
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	var/stamina = first.getStaminaLoss()
-	TEST_ASSERT(!guard.strike(first), "A guard struck a prisoner in stamina crit")
+	TEST_ASSERT(!guard.strike(first), "A guard struck a prisoner who was down")
 	TEST_ASSERT_EQUAL(first.getStaminaLoss(), stamina, "A downed prisoner took baton damage")
 
 	// A person is never struck, whatever they do.
@@ -355,7 +357,7 @@
 	for(var/i in 1 to 8)
 		if(QDELETED(brawl))
 			break
-		guard.baton_cooldown = 0
+		guard_test_ready_baton(guard)
 		prison.guards_tick(1)
 	TEST_ASSERT(QDELETED(brawl), "A fight went on with a guard beside it")
 	TEST_ASSERT(first.has_status_effect(/datum/status_effect/incapacitating/stamcrit) || second.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The fight did not end by the baton")
@@ -375,7 +377,7 @@
 	third.threat_ref = WEAKREF(warden)
 	third.struck_ref = WEAKREF(warden)
 	third.struck_at = world.time
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	prison.guards_tick(1)
 	TEST_ASSERT_EQUAL(third.getStaminaLoss(), 0, "A guard struck before the warning")
 	prison.guards_tick(1)
@@ -408,7 +410,7 @@
 	// A loose prisoner: called out, and batoned when they come beside a guard. No chase.
 	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_awake_prisoner(prison, prison_spot(home, 5, 4))
 	runner.trouble = "loose" // PRISONER_TROUBLE_LOOSE
-	guard.baton_cooldown = 0
+	guard_test_ready_baton(guard)
 	prison.guards_tick(1)
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "loose_call"), "The guard did not call out the loose prisoner: [guard.last_line]")
 	// Said aloud and logged; nothing goes out over the outpost.
@@ -473,7 +475,7 @@
 	TEST_ASSERT_NOTNULL(beside, "No office tile beside the hold position")
 	through.forceMove(beside)
 	prison.riot_windup_left = 0
-	guard_one.baton_cooldown = 0
+	guard_test_ready_baton(guard_one)
 	prison.guards_tick(1)
 	TEST_ASSERT(through.getStaminaLoss() >= 35, "A holding guard did not baton the rioter beside them") // OUTPOST_GUARD_BATON_STAMINA
 
@@ -662,3 +664,13 @@
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "report_restless"), "The guard's report was [guard.last_line]")
 	TEST_ASSERT(!guard.greet_member(owner), "A guard reported twice within three minutes") // OUTPOST_GUARD_REPORT_GAP
 	settle_prison_air(home)
+
+/// Lets `guard` swing again at once in a test: their own pause, the baton's recharge, and tg's one-stun-per-hitter rule
+/proc/guard_test_ready_baton(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	guard.baton_cooldown = 0
+	guard.next_move = 0
+	var/obj/item/melee/baton/security/baton = guard.get_baton()
+	if(baton)
+		COOLDOWN_RESET(baton, cooldown_check)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in range(1, guard))
+		REMOVE_TRAIT(prisoner, TRAIT_IWASBATONED, REF(guard))

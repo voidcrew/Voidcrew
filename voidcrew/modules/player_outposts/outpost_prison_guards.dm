@@ -488,7 +488,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		baton_flat()
 		return FALSE
 	set_baton(TRUE)
-	if(!is_holding(baton) || !baton.active)
+	// The baton recharges between stuns, as anyone's does.
+	if(!is_holding(baton) || !baton.active || !COOLDOWN_FINISHED(baton, cooldown_check))
 		return FALSE
 	COOLDOWN_START(src, baton_cooldown, OUTPOST_GUARD_BATON_COOLDOWN)
 	if(!outpost_prison_npc_hit(src, prisoner, baton))
@@ -951,6 +952,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/turf/spot = guard_office_spot()
 	if(!spot)
 		return null
+	// Nobody is sent into an office with air nobody can breathe; the slot waits for it to be fixed.
+	if(outpost_prison_unsafe_air(spot.return_air()))
+		return null
 	var/datum/npc_spawn_context/context = new(outpost, role = "exempt")
 	// One at a time, as they are hired or sent back: no need for the human NPC spawn queue.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = spawn_npc_in_zone(record.guard_type, spot, context, FALSE)
@@ -1023,6 +1027,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 					guard.beam_out()
 			if(OUTPOST_GUARD_PRESENT)
 				guard.shake_off_pull()
+				// Bad air in the wing (a breach, a fire): guards carry no air of their own, so the corrections
+				// service calls them off it until the office is fit to stand in again (spawn_guard()).
+				if(guard.stat == CONSCIOUS && outpost_prison_unsafe_air(guard.loc?.return_air()))
+					guard.say_guard("recalled")
+					add_log("[guard.real_name] was called off the wing: bad air.")
+					guard.beam_out(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
 	guard_rounds_tick(seconds)
 	guard_check_clock += seconds
 	if(guard_check_clock >= OUTPOST_GUARD_CHECK_SECONDS)

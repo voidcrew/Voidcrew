@@ -231,7 +231,7 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/beam_in()
 	phase = PRISONER_ARRIVING
 	if(arrival_brute > 0)
-		// Roughed up in transfer: no attacker, so no blame, no blood and no collapse.
+		// Roughed up in transfer: real bruising spread over their limbs, with no attacker, so no blame.
 		adjustBruteLoss(arrival_brute)
 		arrival_brute = 0
 		arrived_hurt = TRUE
