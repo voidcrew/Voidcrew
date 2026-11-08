@@ -1270,3 +1270,60 @@
 	node.Remove(patient, TRUE)
 	node.Insert(patient, TRUE)
 	TEST_ASSERT_EQUAL(node.jolt_cooldown, ready_at, "Removal/reinstall reset Lazarus cooldown")
+
+/// The Cascade line: the street and service models share the lattice's OS slot,
+/// carry their own numbers onto the window and crash, and the original lattice
+/// keeps every one of its.
+/datum/unit_test/voidcrew_cascade_line
+
+/datum/unit_test/voidcrew_cascade_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	var/obj/item/organ/cyberimp/cyberware/cascade/street/street = allocate(/obj/item/organ/cyberimp/cyberware/cascade/street)
+	var/obj/item/organ/cyberimp/cyberware/cascade/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/cascade/milspec)
+	TEST_ASSERT_EQUAL(street.slot, lattice.slot, "The street rig isn't in the lattice's OS slot")
+	TEST_ASSERT_EQUAL(milspec.slot, lattice.slot, "The service lattice isn't in the lattice's OS slot")
+	TEST_ASSERT(street.chrome_load < milspec.chrome_load && milspec.chrome_load < lattice.chrome_load, "The Cascade line's loads don't climb")
+	TEST_ASSERT(street.Insert(patient, TRUE), "Street fixture failed")
+	TEST_ASSERT(milspec.Insert(patient, TRUE), "Service fixture failed")
+	TEST_ASSERT(!street.owner && milspec.owner == patient, "Two Cascade models shared the OS slot")
+
+	// The original lattice runs on its original numbers.
+	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, lattice)
+	var/datum/status_effect/cyberware_cascade_window/window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(window, "The lattice didn't open a window")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 40, "The lattice window lost its dodge")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.5, "The lattice window lost its melee boost")
+	TEST_ASSERT_EQUAL(window.duration, world.time + 8 SECONDS, "The lattice window lost its length")
+	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade), "The lattice window lost its gait")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	var/datum/status_effect/cyberware_cascade_crash/crash = patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NOTNULL(crash, "The lattice window ended without a crash")
+	TEST_ASSERT_EQUAL(crash.duration, world.time + 6 SECONDS, "The lattice crash lost its length")
+	TEST_ASSERT_EQUAL(patient.getStaminaLoss(), 80, "The lattice crash lost its stamina dump")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	patient.setStaminaLoss(0)
+
+	// The street rig runs on its own.
+	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, street)
+	window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(window, "The street rig didn't open a window")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 15, "The street window kept the wrong dodge")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.75, "The street window kept the wrong melee boost")
+	TEST_ASSERT_EQUAL(window.duration, world.time + 6 SECONDS, "The street window kept the wrong length")
+	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade/street), "The street window lost its gait")
+	TEST_ASSERT(!patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade), "The street window kept the lattice's gait")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT(!patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade/street), "The street gait outlived its window")
+	crash = patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NOTNULL(crash, "The street window ended without a crash")
+	TEST_ASSERT_EQUAL(crash.duration, world.time + 8 SECONDS, "The street crash kept the wrong length")
+	TEST_ASSERT_EQUAL(patient.getStaminaLoss(), 100, "The street crash kept the wrong stamina dump")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+	// What Splice quotes for the two lesser models.
+	build_cyberware_price_index()
+	var/list/street_price = GLOB.cyberware_price_index[street.type]
+	var/list/milspec_price = GLOB.cyberware_price_index[milspec.type]
+	TEST_ASSERT(street_price && street_price["credits"] > 0 && !street_price["vouchers"], "The street rig isn't a credit-priced SKU")
+	TEST_ASSERT(milspec_price && milspec_price["vouchers"] > 0, "The service lattice isn't a voucher-priced SKU")

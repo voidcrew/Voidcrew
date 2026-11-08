@@ -271,6 +271,24 @@
    "reason": "Eight seconds a minute at about double speed, melee twice as fast and 40% dodge while moving, then six seconds of crash and 80 stamina. Load 12 of 20, 8 vouchers at reputation 22. An EMP mid-burst ends it.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/cyberware/cascade/milspec": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Service reflex lattice",
+   "rank": 4,
+   "reason": "Seven seconds in every 90 at close to the lattice's speed, melee 40% quicker and 25% dodge while moving, then seven seconds of crash and 90 stamina. Load 9, 4 vouchers at reputation 11. An EMP mid-burst ends it.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/cascade/street": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Spliced reflex rig",
+   "rank": 5,
+   "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker and 15% dodge while moving, then eight seconds of crash and 100 stamina. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/chromatic_dermis": {
    "confidence": "high",
    "group": "Body upkeep",

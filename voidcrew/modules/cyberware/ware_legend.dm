@@ -26,6 +26,10 @@
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
 /// Degrees the afterimage hue moves per step of the trail.
 #define CYBERWARE_CASCADE_HUE_STEP 25
+/// Melee-cooldown multiplier during the window (lower is faster).
+#define CYBERWARE_CASCADE_MELEE_MULT 0.5
+/// Starting opacity of a trail afterimage.
+#define CYBERWARE_CASCADE_AFTERIMAGE_ALPHA 200
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -41,6 +45,11 @@
  * Then the heat bill: six seconds of crash, heavy stamina dump, leaden
  * slowdown, zero dodge. An EMP during the window skips straight to the
  * crash and re-arms the full sixty-second cooldown.
+ *
+ * Every number the window and the crash run on is a var here, so the lesser
+ * models in ware_line_sandy.dm retune by setting vars and swapping the action
+ * for a slower one. The status effects copy the numbers off the organ when the
+ * button is pressed and hold no reference back to it.
  */
 /obj/item/organ/cyberimp/cyberware/cascade
 	name = "\improper Cascade lattice"
@@ -54,6 +63,28 @@
 	aug_overlay = "cascade"
 	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/cascade_surge)
+	/// How long the window lasts.
+	var/window_duration = CYBERWARE_CASCADE_WINDOW
+	/// How long the crash lasts once the window ends.
+	var/crash_duration = CYBERWARE_CASCADE_CRASH
+	/// Stamina dumped on the bearer by the crash.
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+	/// Ranged dodge chance while moving during the window.
+	var/window_dodge = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// The gait the window grants.
+	var/datum/movespeed_modifier/window_speed = /datum/movespeed_modifier/cyberware_cascade
+	/// Melee-cooldown multiplier during the window (lower is faster).
+	var/window_melee_mult = CYBERWARE_CASCADE_MELEE_MULT
+	/// The bearer's screen tint during the window.
+	var/datum/client_colour/window_colour = /datum/client_colour/cyberware_cascade
+	/// A trail afterimage is left on every Nth step.
+	var/afterimage_interval = 1
+	/// Starting opacity of a trail afterimage.
+	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// The status alert shown while the window runs.
+	var/window_alert = /atom/movable/screen/alert/status_effect/cyberware_cascade
+	/// What the bearer reads on activation.
+	var/online_message = "CASCADE ONLINE. Eight seconds."
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -97,7 +128,8 @@
 		surger.balloon_alert(surger, "lattice still cycling!")
 		return FALSE
 	StartCooldown()
-	surger.apply_status_effect(/datum/status_effect/cyberware_cascade_window)
+	// The lattice hands the window its numbers (an organ-less call falls back to the T4 defaults).
+	surger.apply_status_effect(/datum/status_effect/cyberware_cascade_window, organ)
 	return TRUE
 
 /**
@@ -112,40 +144,77 @@
 	alert_type = /atom/movable/screen/alert/status_effect/cyberware_cascade
 	/// Hue of the next afterimage, in degrees. Starts random so no two surges match.
 	var/trail_hue = 0
+	// The numbers below default to the T4 lattice and are overwritten from the
+	// organ that opened the window (see on_creation). Copied, never referenced.
+	/// Ranged dodge chance while the window lives.
+	var/dodge_chance = CYBERWARE_CASCADE_DODGE_CHANCE
+	/// The gait the window grants.
+	var/datum/movespeed_modifier/speed_type = /datum/movespeed_modifier/cyberware_cascade
+	/// Melee-cooldown multiplier (lower is faster).
+	var/melee_mult = CYBERWARE_CASCADE_MELEE_MULT
+	/// The bearer's screen tint.
+	var/datum/client_colour/colour_type = /datum/client_colour/cyberware_cascade
+	/// A trail afterimage is left on every Nth step.
+	var/afterimage_interval = 1
+	/// Starting opacity of a trail afterimage.
+	var/afterimage_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA
+	/// What the bearer reads on activation.
+	var/online_message = "CASCADE ONLINE. Eight seconds."
+	/// The crash this window rolls into.
+	var/crash_duration = CYBERWARE_CASCADE_CRASH
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+	/// Steps taken so far, for the afterimage cadence.
+	var/steps_taken = 0
+
+/// Optional second argument: the lattice whose numbers this window runs on.
+/datum/status_effect/cyberware_cascade_window/on_creation(mob/living/new_owner, obj/item/organ/cyberimp/cyberware/cascade/lattice)
+	if(istype(lattice))
+		duration = lattice.window_duration
+		alert_type = lattice.window_alert
+		dodge_chance = lattice.window_dodge
+		speed_type = lattice.window_speed
+		melee_mult = lattice.window_melee_mult
+		colour_type = lattice.window_colour
+		afterimage_interval = lattice.afterimage_interval
+		afterimage_alpha = lattice.afterimage_alpha
+		online_message = lattice.online_message
+		crash_duration = lattice.crash_duration
+		crash_stamina = lattice.crash_stamina
+	return ..()
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
 	trail_hue = rand(0, 359)
-	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
+	owner.add_movespeed_modifier(speed_type)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_move))
-	owner.add_client_colour(/datum/client_colour/cyberware_cascade, id)
+	owner.add_client_colour(colour_type, id)
 	playsound(owner, 'sound/effects/magic/timeparadox2.ogg', 70, TRUE)
 	owner.visible_message(
 		span_boldwarning("[owner] fractures into afterimages. Something under [owner.p_their()] skin is running far too fast!"),
-		span_boldnotice("CASCADE ONLINE. Eight seconds."),
+		span_boldnotice(online_message),
 	)
 	owner.balloon_alert(owner, "cascade online")
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
-	owner.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
+	owner.remove_movespeed_modifier(speed_type)
 	owner.remove_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_unregister_dodge_source(owner, id)
 	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
-		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash)
+		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
 	return ..()
 
-/// Melee cooldowns halved for the window (changeNext_move multiplies these in).
+/// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
 /datum/status_effect/cyberware_cascade_window/nextmove_modifier()
-	return 0.5
+	return melee_mult
 
-/// Dodge-source callback for the shared arbiter: flat 40 while the window
+/// Dodge-source callback for the shared arbiter: flat chance while the window
 /// lives (the arbiter itself enforces moving-only and point-blank rules).
 /datum/status_effect/cyberware_cascade_window/proc/get_dodge_chance()
-	return CYBERWARE_CASCADE_DODGE_CHANCE
+	return dodge_chance
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
 /// telegraph everyone in the fight can read. Each step shifts the hue, so the
@@ -154,16 +223,19 @@
 	SIGNAL_HANDLER
 	if(!isturf(old_loc))
 		return
-	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue)
+	steps_taken++
+	if(steps_taken % afterimage_interval) // cheaper chrome leaves a sparser trail
+		return
+	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue, afterimage_alpha)
 	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
 
 /// One afterimage in the Cascade trail, washed in a single hue.
 /obj/effect/temp_visual/decoy/fading/cascade
 	duration = 8
 
-/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0)
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0, start_alpha = CYBERWARE_CASCADE_AFTERIMAGE_ALPHA)
 	. = ..()
-	alpha = 200
+	alpha = start_alpha
 	color = cascade_tint_matrix(hue)
 	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
 
@@ -188,16 +260,31 @@
 	desc = "The lattice has the world in slow motion. Make it count. Six seconds of crash follows either way."
 	icon_state = "radiation_shield"
 
+/// The lesser models' alert (ware_line_sandy.dm), with no crash timer in the text.
+/atom/movable/screen/alert/status_effect/cyberware_cascade/aftermarket
+	name = "Reflex Window"
+	desc = "The rig has the world in slow motion. Make it count. The crash is coming either way."
+
 /// The bill. No dodge source, no speed, the opposite of all of it.
 /datum/status_effect/cyberware_cascade_crash
 	id = "cyberware_cascade_crash"
 	duration = CYBERWARE_CASCADE_CRASH
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = null
+	/// Stamina dumped on the bearer when the crash lands.
+	var/crash_stamina = CYBERWARE_CASCADE_CRASH_STAMINA
+
+/// Optional arguments: crash length and stamina dump, from the window that ended.
+/datum/status_effect/cyberware_cascade_crash/on_creation(mob/living/new_owner, crash_duration, stamina_dump)
+	if(isnum(crash_duration))
+		duration = crash_duration
+	if(isnum(stamina_dump))
+		crash_stamina = stamina_dump
+	return ..()
 
 /datum/status_effect/cyberware_cascade_crash/on_apply()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade_crash)
-	owner.adjustStaminaLoss(CYBERWARE_CASCADE_CRASH_STAMINA)
+	owner.adjustStaminaLoss(crash_stamina)
 	owner.add_client_colour(/datum/client_colour/cyberware_cascade_crash, id)
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
 	owner.visible_message(

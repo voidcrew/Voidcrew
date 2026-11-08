@@ -7186,6 +7186,7 @@
 #include "voidcrew\modules\cyberware\ware_line_berserk.dm"
 #include "voidcrew\modules\cyberware\ware_line_camo.dm"
 #include "voidcrew\modules\cyberware\ware_line_governor.dm"
+#include "voidcrew\modules\cyberware\ware_line_sandy.dm"
 #include "voidcrew\modules\cyberware\ware_military_arms.dm"
 #include "voidcrew\modules\cyberware\ware_military_body.dm"
 #include "voidcrew\modules\cyberware\ware_pro_combat.dm"

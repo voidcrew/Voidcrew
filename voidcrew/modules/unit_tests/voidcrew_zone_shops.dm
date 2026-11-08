@@ -43,6 +43,7 @@
 		/datum/shop_sku/favor/freight_beacon = 1,
 		/datum/shop_sku/favor/fitter_gauntlets = 1,
 		/datum/shop_sku/ripperdoc/nightshade = 1,
+		/datum/shop_sku/ripperdoc/cascade_street = 1,
 		/datum/shop_sku/ripperdoc/fixers = 1,
 		/datum/shop_sku/ripperdoc/dermal_mesh = 1,
 		/datum/shop_sku/ripperdoc/hopper = 1,
@@ -93,6 +94,7 @@
 		/datum/shop_sku/ripperdoc/atlas = 2,
 		/datum/shop_sku/ripperdoc/gorilla = 2,
 		/datum/shop_sku/ripperdoc/rigger = 2,
+		/datum/shop_sku/ripperdoc/cascade_milspec = 2,
 		/datum/shop_sku/fitter/rare/mod_emp_shield_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener = 2,
 		/datum/shop_sku/black_market/mod_chassis_syndicate = 2,
@@ -128,7 +130,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 98, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 100, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
