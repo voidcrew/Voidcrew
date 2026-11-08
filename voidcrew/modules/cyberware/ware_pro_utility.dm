@@ -442,6 +442,12 @@
 		/datum/action/cooldown/cyberware/prospector_pulse,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
+	/// How far the resonance pulse reaches, through rock, in tiles.
+	var/pulse_range = CYBERWARE_PROSPECTOR_RANGE
+	/// Whether the pulse also flags zone loot caches.
+	var/pulse_marks_caches = TRUE
 	/// Cache marks the last pulse raised, so pulling the optics takes them out
 	/// with it instead of leaving blips on a client that no longer owns them.
 	var/list/hud_marks = list()
@@ -472,10 +478,14 @@
 	var/mob/living/carbon/bearer = organ.owner
 	var/obj/item/organ/eyes/robotic/cyberware/prospector/optics = organ
 	var/list/marks = istype(optics) ? optics.hud_marks : null
-	mineral_scan_pulse(get_turf(bearer), CYBERWARE_PROSPECTOR_RANGE, scanner = bearer)
+	var/pulse_range = istype(optics) ? optics.pulse_range : CYBERWARE_PROSPECTOR_RANGE
+	mineral_scan_pulse(get_turf(bearer), pulse_range, scanner = bearer)
 	playsound(bearer, 'sound/machines/sonar-ping.ogg', 25, TRUE)
+	if(istype(optics) && !optics.pulse_marks_caches)
+		StartCooldown()
+		return TRUE
 	var/caches = 0
-	for(var/obj/structure/closet/crate/zone_loot/cache in range(CYBERWARE_PROSPECTOR_RANGE, bearer))
+	for(var/obj/structure/closet/crate/zone_loot/cache in range(pulse_range, bearer))
 		// Marks go up through the rock the same way the ore reveal does, a
 		// cache you can already see was never the thing worth pinging for.
 		cyberware_hud_mark(bearer, cache, "#ffb347", 6 SECONDS, registry = marks)

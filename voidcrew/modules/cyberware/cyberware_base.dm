@@ -155,6 +155,10 @@
  * Every optic on this base carries the chrome read (cyberware_scan.dm), the
  * diagnostic bus is what makes chrome eyes chrome eyes. Subtypes that add
  * their own ability must keep the read in their actions_types list.
+ *
+ * Every optic also zooms (cyberware_zoom.dm). That button is added in
+ * Initialize() whenever optics_zoom is above 0, so it never goes in
+ * actions_types.
  */
 /obj/item/organ/eyes/robotic/cyberware
 	name = "cyberware optics"
@@ -174,6 +178,8 @@
 /obj/item/organ/eyes/robotic/cyberware/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+	// Zoom rides every optic on this base (cyberware_zoom.dm).
+	setup_optics_zoom()
 
 /obj/item/organ/eyes/robotic/cyberware/Destroy()
 	var/turf/drop_turf = get_turf(src)

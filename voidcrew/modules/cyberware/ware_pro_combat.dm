@@ -197,6 +197,14 @@
 		/datum/action/cooldown/cyberware/deadeye_tag,
 		/datum/action/cooldown/cyberware/chrome_read,
 	)
+	optics_zoom = 1.5
+	zoom_walk_penalty = 0.5
+	/// How far a tag can be planted, and how far homing keeps correcting.
+	var/tag_range = CYBERWARE_DEADEYE_TAG_RANGE
+	/// Homing shots granted per tag.
+	var/tag_shots = CYBERWARE_DEADEYE_TAG_SHOTS
+	/// How long a tag lasts, spent or not.
+	var/tag_duration = CYBERWARE_DEADEYE_TAG_DURATION
 	/// Weakref to the currently tagged target.
 	var/datum/weakref/tagged_ref
 	/// Homing shots remaining on the current tag.
@@ -217,14 +225,14 @@
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/start_tag(mob/living/target)
 	end_tag(owner)
 	tagged_ref = WEAKREF(target)
-	shots_left = CYBERWARE_DEADEYE_TAG_SHOTS
+	shots_left = tag_shots
 	RegisterSignal(owner, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_owner_fired))
 	target.add_filter(CYBERWARE_DEADEYE_MARK_FILTER, 2, list("type" = "outline", "color" = "#ff3300", "size" = 1))
 	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
 	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 30, TRUE)
 	owner.balloon_alert(owner, "target tagged")
 	to_chat(target, span_userdanger("A red targeting glint settles on you!"))
-	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), CYBERWARE_DEADEYE_TAG_DURATION, TIMER_STOPPABLE)
+	tag_timer = addtimer(CALLBACK(src, PROC_REF(on_tag_expired)), tag_duration, TIMER_STOPPABLE)
 
 /obj/item/organ/eyes/robotic/cyberware/deadeye/proc/on_tag_expired()
 	tag_timer = null
@@ -255,7 +263,7 @@
 	if(!istype(projectile))
 		return
 	var/mob/living/target = tagged_ref?.resolve()
-	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > CYBERWARE_DEADEYE_TAG_RANGE)
+	if(QDELETED(target) || target.stat == DEAD || target.z != user.z || get_dist(user, target) > tag_range)
 		end_tag(user)
 		return
 	projectile.set_homing_target(target)
@@ -287,7 +295,7 @@
 	if(cyberware_is_ally(owner, victim))
 		owner.balloon_alert(owner, "friendly, tag refused!")
 		return FALSE
-	if(!can_see(owner, victim, CYBERWARE_DEADEYE_TAG_RANGE))
+	if(!can_see(owner, victim, optics.tag_range))
 		owner.balloon_alert(owner, "no line of sight!")
 		return FALSE
 	StartCooldown()

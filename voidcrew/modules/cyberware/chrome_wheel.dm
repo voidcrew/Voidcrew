@@ -54,10 +54,11 @@ GLOBAL_LIST_INIT(chrome_wheel_slot_order, list(
 /// Positions a region holds for one organ slot, filled or not, so the rest of
 /// that region never moves when the slot is filled or emptied. Region =>
 /// list(slot, positions held). The OS owns the top of the torso ring; chrome
-/// optics (their ability plus the chrome read) own the top two head positions.
+/// optics (their ability, the chrome read and the zoom) own the first row of
+/// head positions.
 GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	CHROME_WHEEL_TORSO = list(ORGAN_SLOT_CYBERWARE_OS, 1),
-	CHROME_WHEEL_HEAD = list(ORGAN_SLOT_EYES, 2),
+	CHROME_WHEEL_HEAD = list(ORGAN_SLOT_EYES, 3),
 ))
 
 // ---- Collection --------------------------------------------------------

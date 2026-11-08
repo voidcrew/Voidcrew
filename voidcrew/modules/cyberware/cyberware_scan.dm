@@ -38,6 +38,14 @@
 /// robotic that isn't parlor chrome.
 #define CYBERWARE_SCAN_UNRATED_COLOR "#8fa1a8"
 
+// Reach and pacing belong to the optics, so a scout model can read further or
+// faster. The defaults are the read's stock numbers.
+/obj/item/organ/eyes/robotic/cyberware
+	/// How far this set of eyes can read a body, in tiles, with line of sight.
+	var/chrome_read_range = CYBERWARE_SCAN_RANGE
+	/// Cooldown on this set of eyes' chrome read.
+	var/chrome_read_cooldown = CYBERWARE_SCAN_COOLDOWN
+
 // ---- Readout -----------------------------------------------------------
 
 /**
@@ -169,6 +177,12 @@
 	/// The readout this read is drawing for our bearer. A new read replaces it.
 	var/datum/chrome_readout/current_readout
 
+/datum/action/cooldown/cyberware/chrome_read/New(Target, original = TRUE)
+	. = ..()
+	var/obj/item/organ/eyes/robotic/cyberware/optics = organ
+	if(istype(optics))
+		cooldown_time = optics.chrome_read_cooldown
+
 /datum/action/cooldown/cyberware/chrome_read/Destroy()
 	QDEL_NULL(current_readout)
 	return ..()
@@ -205,7 +219,7 @@
 	if(bearer.is_blind())
 		bearer.balloon_alert(bearer, "optics dark!")
 		return FALSE
-	if(!self_read && !can_see(bearer, subject, CYBERWARE_SCAN_RANGE))
+	if(!self_read && !can_see(bearer, subject, optics.chrome_read_range))
 		bearer.balloon_alert(bearer, "no line of sight!")
 		return FALSE
 	// Ghostskin scatters the handshake the same way it scatters NPC targeting:
@@ -237,7 +251,7 @@
 		// flinches on their screen, and their chat names the reader.
 		if(subject_feels_it)
 			chrome_read_flinch(subject)
-			if(can_see(subject, bearer, CYBERWARE_SCAN_RANGE))
+			if(can_see(subject, bearer, optics.chrome_read_range))
 				to_chat(subject, span_warning("[bearer] is reading your hardware. Every piece you have just answered a handshake you never authorized."))
 			else
 				to_chat(subject, span_warning("Your hardware answers a handshake you never authorized. Someone nearby is reading you."))
