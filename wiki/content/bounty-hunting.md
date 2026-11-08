@@ -98,7 +98,7 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
 - Each has one fighting style, with a real weapon they carry and draw when the fight starts: fists (and shoves), a knife, a machine pistol with a spare magazine, a WT-550 with a spare magazine, a .38 revolver with a speedloader, a pump shotgun with buckshot, a baseball bat or thrown bottles. Wanted criminals carry a combat knife or a semi-automatic shotgun instead. Their guns run dry and they reload them like you do.
-- Guns stay holstered, or slung on the back, until the fight. You see one drawn, and the first shot comes a moment later; hit them while they draw and they fumble it.
+- Guns stay in a holster, on the belt or slung on the back until the fight. You see one drawn, and the first shot comes a moment later; hit them while they draw and they fumble it.
 - Their pistols fire single shots, two a second, in strings of six with a short pause between. So do the kingpin's goons and Club Volga's gunmen. The WT-550 fires bursts of four, and a burst stops as soon as the shooter goes down or loses you.
 - Wanted criminals wear an armour vest, and Most Wanted a vest and a helmet. Nothing a criminal carries can be taken: it goes with the body.
 - They may have up to two companions who fight beside them. Companions can be of any species and wear rough clothes for where they are. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and when they come round from a stun they may give up or run.
@@ -121,7 +121,7 @@ Every Most Wanted criminal is a mini-boss with one of five kits. The board's **O
 | Kit | Looks like | What it does | How to handle it |
 |---|---|---|---|
 | Juggernaut | A giant in riot plates | Charges along a line after a roar, smashing what's in the way. Slams the floor around it when you're close. | Step off the charge line. If it charges into something it can't break, it hurts itself and falls down for a few seconds. |
-| Pyromaniac | A scorched criminal in a fire suit | Sweeps a cone of fire 3 tiles long and throws molotovs that leave burning floor. Its fire suit keeps the flames off it. | Stay more than 3 tiles away and off burning floor. If you catch fire, stop, drop and roll, or use an extinguisher. |
+| Pyromaniac | A scorched criminal in a fire suit | Sweeps a cone of fire 3 tiles long and throws molotovs that leave burning floor. Its fire suit keeps the flames off it; the space suit it wears at space ruins doesn't. | Stay more than 3 tiles away and off burning floor. If you catch fire, stop, drop and roll, or use an extinguisher. |
 | Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. | Close the distance, and move off the blinking ring. |
 | Ghost | A hooded criminal with a combat knife | Fast. Dashes in with knife cuts that bleed, cloaks into a shimmer, and backs off after two cuts. Its implants make shots miss now and then while it moves, much more often during its burst of speed. | A flash or a hit breaks the cloak, and an EMP ends the burst. Shoot it when it stops moving. |
 | Heavy | A heavily armed criminal with a belt-fed gun | Heavy armour, slow. Shows a laser sight and a red cone, then fires a burst into it. Throws barrier grenades that open into a barricade. | Get out of the red cone before it fires. Go around the barricade. |
@@ -175,6 +175,7 @@ Guns, disablers included, don't get past the outpost's checkpoint unless you buy
 
 - The fugitive and three **look-alikes** wear the same clothes and go by the same name: "patron" at Waystation Halcyon, "dockhand" at Quartermain Depot and "spacer" at the Undertow Exchange. They have the same species, sex, skin and eyes.
 - The mugshot on the card is old. Their hair has changed since, and the old hair doesn't match anyone there now.
+- Nothing they carry gives them away. A fugitive here never has a shotgun, an SMG or a bat, and the look-alikes wear the same holster, pouch or bag.
 - Examine a patron to see their distinguishing features: hair, a scar, a tattoo, a scarf, a limp, glasses, a missing ear. Each look-alike shares one or two of the fugitive's features, never all of them. The warrant lists all of them but one.
 - **Ask the traders.** While your ship hunts the bounty, every trader, the barkeep included, has an **Ask about the wanted person** option. Each gives your ship one clue, and each trader a different one: where the fugitive was seen, how their hair looks now, one of their features, or one patron who isn't them.
 - **Show the warrant** to the one you think it is. The right person drops the act: a meek one runs, a normal one fights. Anyone else protests and shows you a docking pass. Your ship can show a warrant once every 30 seconds.

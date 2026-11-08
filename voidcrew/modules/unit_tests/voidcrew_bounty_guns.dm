@@ -479,8 +479,10 @@
 /**
  * A fugitive blending in at a trader outpost keeps its holster or fanny pack on under the patron's coat;
  * its decoys wear an empty one of the same kind, so what a pistol, revolver or meek fugitive carries in
- * plain sight examines like its decoys. The decoys still carry no gun. (The rest of the look-alike
- * examine is voidcrew_bounty_outpost/look_alikes.)
+ * plain sight examines like its decoys. The decoys still carry no gun. A knife sits in a pocket and
+ * bottles in a satchel the decoys wear too. A fugitive there never rolls a style whose weapon shows (an
+ * SMG on the belt, a shotgun on the back, a bat in hand). (The rest of the look-alike examine is
+ * voidcrew_bounty_outpost/look_alikes.)
  */
 /datum/unit_test/voidcrew_bounty_guns_blend
 	parent_type = /datum/unit_test/voidcrew_bounty_outpost
@@ -498,11 +500,27 @@
 	outpost = make_outpost(/obj/structure/overmap/trader_outpost/outfitter)
 	outpost.lobby_alcove_turfs = list(run_loc_floor_top_right)
 	var/mob/living/carbon/human/viewer = make_hunter()
+
+	// Only styles whose weapon is out of sight, for a fugitive passing as a customer: the roll, and the
+	// records a trader-outpost posting makes (BOUNTY_TIER_WANTED, BOUNTY_ARCHETYPE_NORMAL, BOUNTY_PLACEMENT_TRADER_OUTPOST)
+	var/list/hidden_rolls = list()
+	for(var/i in 1 to 300)
+		hidden_rolls[bounty_roll_style(concealed = TRUE)] = TRUE
+	for(var/i in 1 to 30)
+		var/datum/bounty_record/rolled = generate_bounty_record(2, "normal", "trader_outpost")
+		hidden_rolls[rolled.style] = TRUE
+	TEST_ASSERT(!hidden_rolls["smg"] && !hidden_rolls["shotgun"] && !hidden_rolls["club"], "A fugitive passing as a customer fights with an SMG, a shotgun or a bat") // BOUNTY_STYLE_SMG, BOUNTY_STYLE_SHOTGUN, BOUNTY_STYLE_CLUB
+	TEST_ASSERT(hidden_rolls["brawler"] && hidden_rolls["knife"] && hidden_rolls["pistol"] && hidden_rolls["revolver"] && hidden_rolls["bottle"], "A fugitive passing as a customer never fights in some style it could hide")
+
 	var/list/cases = list(
 		list("normal", "pistol", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_ARCHETYPE_NORMAL, BOUNTY_STYLE_PISTOL
 		list("normal", "revolver", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_STYLE_REVOLVER
 		list("meek", "holdout", /mob/living/carbon/human/npc/bounty_criminal/meek), // BOUNTY_ARCHETYPE_MEEK, BOUNTY_STYLE_HOLDOUT
+		list("normal", "knife", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_STYLE_KNIFE
+		list("normal", "brawler", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_STYLE_BRAWLER
+		list("normal", "bottle", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_STYLE_BOTTLE
 	)
+
 	for(var/list/spec as anything in cases)
 		var/datum/bounty_record/record = generate_bounty_record(1, spec[1], "trader_outpost", /datum/species/human) // BOUNTY_TIER_PETTY, BOUNTY_PLACEMENT_TRADER_OUTPOST
 		record.style = spec[2]
@@ -513,7 +531,8 @@
 		TEST_ASSERT_NOTNULL(fugitive, "Test fixture: no [spec[2]] fugitive was made")
 		allocated += fugitive
 		fugitive.record = record
-		TEST_ASSERT(istype(fugitive.belt, /obj/item/storage), "Test fixture: the [spec[2]] fugitive wears no holster or pouch")
+		if(spec[2] in list("pistol", "revolver", "holdout"))
+			TEST_ASSERT(istype(fugitive.belt, /obj/item/storage), "Test fixture: the [spec[2]] fugitive wears no holster or pouch")
 		var/datum/criminal_bounty/outpost_test/posting = allocate(/datum/criminal_bounty/outpost_test)
 		posting.record = record
 		posting.placement_kind = "trader_outpost" // BOUNTY_PLACEMENT_TRADER_OUTPOST
@@ -526,11 +545,15 @@
 		var/list/decoys = decoys_of(posting)
 		TEST_ASSERT(length(decoys), "The [spec[2]] fugitive has no decoys")
 		var/fugitive_carry = carry_lines(fugitive, viewer)
-		TEST_ASSERT(findtext(fugitive_carry, "waist"), "Test fixture: the [spec[2]] fugitive's belt doesn't show")
+		if(fugitive.belt)
+			TEST_ASSERT(findtext(fugitive_carry, "waist"), "Test fixture: the [spec[2]] fugitive's belt doesn't show")
+		TEST_ASSERT(!fugitive.get_active_held_item() && !fugitive.get_inactive_held_item(), "The [spec[2]] fugitive holds something while it passes as a customer")
 		for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy as anything in decoys)
-			TEST_ASSERT_EQUAL(decoy.belt?.type, fugitive.belt?.type, "A decoy of the [spec[2]] fugitive wears no [fugitive.belt]")
-			TEST_ASSERT(human_npc_gear_locked(decoy.belt), "A decoy's [decoy.belt] isn't locked to it")
-			TEST_ASSERT(!length(decoy.belt.contents), "A decoy's [decoy.belt] has something in it")
+			TEST_ASSERT_EQUAL(decoy.belt?.type, fugitive.belt?.type, "A decoy of the [spec[2]] fugitive wears another belt")
+			TEST_ASSERT_EQUAL(decoy.back?.type, fugitive.back?.type, "A decoy of the [spec[2]] fugitive wears another bag")
+			if(decoy.belt)
+				TEST_ASSERT(human_npc_gear_locked(decoy.belt), "A decoy's [decoy.belt] isn't locked to it")
+				TEST_ASSERT(!length(decoy.belt.contents), "A decoy's [decoy.belt] has something in it")
 			TEST_ASSERT_NULL(locate(/obj/item/gun) in decoy.get_all_contents(), "A decoy carries a gun")
 			TEST_ASSERT_EQUAL(carry_lines(decoy, viewer), fugitive_carry, "A decoy carries something else in plain sight than the [spec[2]] fugitive")
 #ifdef BOUNTY_GUN_RENDERS

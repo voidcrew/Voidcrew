@@ -382,12 +382,12 @@
 	var/turf/spot = get_turf(leaving)
 	if(spot && leaving.stat != DEAD)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
-	// Its locked kit goes with it (D3); whatever on it isn't its own (papers, a key, a crew's cuffs) stays behind.
+	// Its locked kit goes with it (D3); whatever on it isn't its own (papers, a key, a crew's cuffs, a suit a
+	// crew put on it) stays behind, as at the pad (bounty_return_crew_items(), bounty_suits.dm).
 	if(ishumannpc(leaving) && spot)
 		var/mob/living/carbon/human/npc/body = leaving
 		body.npc_drop_not_gear()
-		for(var/obj/item/restraints/worn in list(body.handcuffed, body.legcuffed))
-			body.transferItemToLoc(worn, spot, force = TRUE)
+		bounty_return_crew_items(body, spot)
 	qdel(leaving)
 
 // ===== RELISTING =====

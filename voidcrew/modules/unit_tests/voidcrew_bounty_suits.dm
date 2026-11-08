@@ -116,7 +116,8 @@
 /**
  * A hunter can put their own space suit and helmet on a cuffed criminal in place of its own locked vest
  * and helmet, which are gone; it pulls away while free; the suit comes off again through tg's strip menu;
- * and the pad leaves the crew's things behind while the criminal's own go with it.
+ * and the pad leaves the crew's things behind while the criminal's own go with it, as does the board when
+ * it takes a criminal away.
  */
 /datum/unit_test/voidcrew_bounty_suits/suit_up
 
@@ -173,6 +174,18 @@
 	for(var/obj/item/crew_item as anything in list(suit, helmet, tank, cuffs))
 		TEST_ASSERT(!QDELETED(crew_item) && crew_item.loc == pad_spot, "The pad didn't leave the crew's [crew_item] behind")
 	TEST_ASSERT(QDELETED(own_uniform), "The criminal's own clothes were left on the pad")
+
+	// Taken away by the board instead (a relist, the clock running out): the crew's things are left there too
+	criminal = new_criminal("normal", 1) // BOUNTY_TIER_PETTY
+	board_test_cuff(criminal)
+	cuffs = criminal.handcuffed
+	hunter.put_in_active_hand(suit)
+	TEST_ASSERT(criminal.suits_swap_now(hunter, criminal.wear_suit, suit), "A space suit wouldn't go on a second cuffed criminal")
+	var/datum/criminal_bounty/posting = allocate(/datum/criminal_bounty)
+	posting.board_dispose_mob(criminal)
+	TEST_ASSERT(QDELETED(criminal), "The board didn't take the criminal away")
+	TEST_ASSERT(!QDELETED(suit) && suit.loc == pad_spot, "The board took the crew's suit away with the criminal")
+	TEST_ASSERT(!QDELETED(cuffs) && cuffs.loc == pad_spot, "The board took the crew's cuffs away with the criminal")
 
 // ===== COMPANY =====
 

@@ -266,6 +266,10 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	/// Shots in a string, then string_pause on top of the interval before the next (0: no strings)
 	var/string_shots = 0
 	var/string_pause = 0
+	/// Its weapon goes where nobody sees it while they pass as a customer: a pocket, a holster or a bag under
+	/// a coat (decoys wear the same holster or bag, outpost_match_carry()). A gun on the belt or the back, or
+	/// a bat in hand, gives them away, so a trader-outpost fugitive never fights this way (bounty_roll_style()).
+	var/concealable = TRUE
 
 /**
  * Puts this style's weapon and spares on `outfit` (an instance), the heavier weapon if `heavy`. The
@@ -462,6 +466,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	weapon = /obj/item/melee/baseball_bat
 	heavy_weapon = /obj/item/melee/baseball_bat/ablative
 	weapon_type = /obj/item/melee/baseball_bat
+	concealable = FALSE
 
 /datum/bounty_style/club/equip(datum/outfit/outfit, heavy = FALSE)
 	outfit.r_hand = weapon_for(heavy)
@@ -506,6 +511,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	draw_message = "%USER pulls out an SMG!"
 	burst = BOUNTY_SMG_BURST
 	burst_gap = BOUNTY_SMG_BURST_GAP
+	concealable = FALSE
 
 /datum/bounty_style/smg/equip(datum/outfit/outfit, heavy = FALSE)
 	var/obj/item/gun/ballistic/gun_type = weapon_for(heavy)
@@ -547,6 +553,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	windup_sound = 'sound/items/weapons/gun/shotgun/rack.ogg'
 	pumps = TRUE
 	draw_message = "%USER unslings a shotgun!"
+	concealable = FALSE
 
 /datum/bounty_style/shotgun/equip(datum/outfit/outfit, heavy = FALSE)
 	outfit.back = weapon_for(heavy)
