@@ -17,8 +17,8 @@
  *   its mark and slams down with a ring and a cracked floor.
  * - Cyberdeck: packets run up the trace, a door glitches when a hack lands on
  *   it, and Ping sweeps a ring out and outlines what answered.
- * - Weapon trails: a Scorch cut leaves an ember crescent; the Widowline Arc
- *   lashes and its lightning crackles along the wire.
+ * - Weapon trails: a Scorch cut throws embers; the Widowline Arc's wire
+ *   lashes out, a small crackle runs along it and sparks burst where it hit.
  * - Brownout: worn chrome stutters, warms and dims together, and stutters
  *   back on when the load comes off. (The LEDs breathing at rest are part of
  *   the plain worn look in cyberware_anim.dm.)
@@ -668,13 +668,15 @@
 	velocity = generator(GEN_CIRCLE, 2, 3, SQUARE_RAND)
 	gravity = list(0, -0.15)
 
-/// A landed Widowline Arc swing: the wire lashes out to whatever it hit.
+/// A landed Widowline Arc swing: the wire lashes out to whatever it hit, a
+/// blue-white line held as long as the shock's crackle runs along it.
 /proc/cyberware_monowire_lash_fx(mob/living/user, atom/target)
 	if(QDELETED(user) || QDELETED(target) || get_turf(user) == get_turf(target))
 		return
-	user.Beam(target, icon_state = "monowire_lash", icon = CYBERWARE_ANIM2_ICON, time = 0.3 SECONDS)
+	user.Beam(target, icon_state = "monowire_lash", icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS)
 
-/// The Arc's shock: a crackle runs along the wire and sparks burst where it lands.
+/// The Arc's shock: a small crackle runs along the wire and sparks burst where
+/// it touched. It's a wire, so there is no bolt of its own.
 /proc/cyberware_arc_crackle_fx(mob/living/user, atom/target)
 	if(QDELETED(user) || QDELETED(target))
 		return

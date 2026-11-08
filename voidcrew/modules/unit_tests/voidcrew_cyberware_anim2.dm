@@ -319,6 +319,17 @@
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "A Widowline Arc hit drew an impact over its shock")
 	TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "A Widowline Arc hit drew tg's flying spool")
 
+	// Its shock is a crackle along the wire, never a lightning bolt from the wielder.
+	var/obj/item/melee/cyberware_monowire/live/arc = wire
+	arc.arc_visuals(east, west)
+	var/list/drawn = list()
+	for(var/obj/effect/ebeam/segment in get_turf(west))
+		for(var/obj/effect/ebeam/look in segment.vis_contents)
+			drawn += look.icon_state
+	TEST_ASSERT(("arc_crackle" in drawn), "The Arc's shock drew no crackle along the wire")
+	for(var/state in drawn)
+		TEST_ASSERT(!findtext(state, "lightning"), "The Arc's shock drew a lightning bolt")
+
 	// A Scorch cut throws embers but draws nothing over the blade's own slash.
 	cyberware_scorch_trail_fx(west, east)
 	var/obj/effect/temp_visual/cyberware_scorch_embers/embers = locate() in get_turf(east)

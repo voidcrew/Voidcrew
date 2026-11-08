@@ -77,9 +77,9 @@
 	else if(ismachinery(target))
 		discharge_into_machine(target, user)
 
-/// Arc and crackle on whatever the shock went into.
+/// The shock on whatever it went into: a crackle along the wire and sparks
+/// where it touched (cyberware_anim2.dm). The wire is the picture, never a bolt.
 /obj/item/melee/cyberware_monowire/live/proc/arc_visuals(atom/target, mob/living/user)
-	user.Beam(target, icon_state = "lightning[rand(1, 12)]", time = 0.5 SECONDS)
 	cyberware_arc_crackle_fx(user, target)
 	do_sparks(2, TRUE, target)
 	playsound(target, SFX_SPARKS, 50, TRUE)
