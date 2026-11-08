@@ -8,18 +8,8 @@
 /mob/living/proc/hv_blood_spray(spray_dir, strength = 3)
 	return hv_blood_throw(spray_dir, strength)
 
-/// Bursts src's head: it comes off in pieces rather than dropping whole. burst_dir is the way the
-/// shot or blow travelled. The brain-and-guts part replaces this to fling the brain out intact.
+/// Bursts src's head: it comes apart in gibs and the brain is thrown out intact. burst_dir is the way
+/// the shot or blow travelled. The body is in braingut/brain_burst.dm.
 /// Returns TRUE if the head was burst.
 /mob/living/carbon/proc/hv_burst_head(burst_dir)
-	var/obj/item/bodypart/head/head = get_bodypart(BODY_ZONE_HEAD)
-	if(!head || !head.can_dismember())
-		return FALSE
-	hv_blood_spray(burst_dir, 4)
-	if(!head.dismember(BRUTE, silent = TRUE))
-		return FALSE
-	head.drop_organs(null, TRUE)
-	qdel(head)
-	new /obj/effect/gibspawner/generic(get_turf(src), src)
-	hv_add_hit_line("[src]'s head bursts apart!", HV_LINE_HUGE)
-	return TRUE
+	return hv_burst_head_apart(burst_dir)

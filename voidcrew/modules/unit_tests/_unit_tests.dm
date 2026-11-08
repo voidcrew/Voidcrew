@@ -92,6 +92,7 @@
 #include "voidcrew_hull_survey.dm"
 #include "voidcrew_hv_finishers.dm"
 #include "voidcrew_hyperviolence_blood.dm"
+#include "voidcrew_hyperviolence_braingut.dm"
 #include "voidcrew_hyperviolence_hitlines.dm"
 #include "voidcrew_hyperviolence_overlays_exec.dm"
 #include "voidcrew_launch_access.dm"
