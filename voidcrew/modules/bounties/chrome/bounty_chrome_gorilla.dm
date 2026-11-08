@@ -37,8 +37,9 @@
  * - Doors. When whoever they were fighting gets behind a closed airlock, they force it, as the
  *   player's set bonus does: a short heave on an unpowered door, a slow loud pry on a powered one.
  *   Bolted, welded or sealed doors hold, as they do for the player implant, and that door is then
- *   left alone for a while. They never force a door on a ship, a hangar, an outpost or anywhere off
- *   their site, or one with space or a big pressure difference across it.
+ *   left alone for a while. They never force a door on a player's ship, a hangar, an outpost or
+ *   anywhere off their site (a pirate ship they are wanted aboard is their site, so its doors are
+ *   fair game), or one with space or a big pressure difference across it.
  * - An EMP. A punch winding up, a reach or a hold seizes at once: whoever was held is let go and they
  *   go down; otherwise their next swing while the chrome is down seizes the same way (tg's strongarm
  *   backfire). A Juggernaut can't be knocked down while fresh, so it reels instead (boss_stagger()),
@@ -1004,9 +1005,10 @@
 	return best
 
 /**
- * Whether they may go at `door`: their side's own ground (never a ship, a hangar, an outpost, or
- * anywhere at a trader outpost: bounty_ai_may_hit()), one that hasn't held against them lately, and
- * one that lets no air out when it opens.
+ * Whether they may go at `door`: their side's own ground (never a player's ship, a hangar, an
+ * outpost, or anywhere at a trader outpost: bounty_ai_may_hit(); a pirate ship they are wanted aboard
+ * is their own ground), one that hasn't held against them lately, and one that lets no air out when
+ * it opens.
  */
 /datum/bounty_chrome/gorilla/proc/door_may_force(obj/machinery/door/airlock/door)
 	if(QDELETED(door) || !door.density)
