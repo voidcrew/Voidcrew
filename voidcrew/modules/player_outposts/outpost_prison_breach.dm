@@ -27,10 +27,16 @@
 	. = ..()
 	AddElement(/datum/element/outpost_property)
 
-/obj/structure/closet/emcloset/outpost_prison/PopulateContents()
+// Stocked when it is placed, not on first opening (tg's closets fill lazily), so a prisoner can tell from
+// the yard which locker still has air in it (emergency_locker_for()).
+/obj/structure/closet/emcloset/outpost_prison/populate_contents_immediate()
+	. = ..()
 	for(var/i in 1 to 4)
 		new /obj/item/clothing/mask/breath(src)
 		new /obj/item/tank/internals/emergency_oxygen(src)
+
+/obj/structure/closet/emcloset/outpost_prison/PopulateContents()
+	return
 
 /datum/outpost_prison
 	/// The emergency lockers the wing's cell block has (weakrefs)
@@ -97,10 +103,13 @@
 		var/obj/structure/closet/locker = locker_ref.resolve()
 		if(QDELETED(locker) || !prisoner.approach_turf(locker))
 			continue
-		if(!(locate(/obj/item/clothing/mask/breath) in locker) && !(locate(/obj/item/clothing/mask/gas) in locker))
-			continue
-		if(!(locate(/obj/item/tank/internals) in locker))
-			continue
+		// A locker nobody has opened yet (tg fills them on first opening) is worth a look.
+		if(locker.contents_initialized || locker.opened)
+			var/atom/inside = locker.opened ? get_turf(locker) : locker
+			if(!(locate(/obj/item/clothing/mask/breath) in inside) && !(locate(/obj/item/clothing/mask/gas) in inside))
+				continue
+			if(!(locate(/obj/item/tank/internals) in inside))
+				continue
 		var/distance = get_dist(prisoner, locker)
 		if(distance < best_distance)
 			best = locker
