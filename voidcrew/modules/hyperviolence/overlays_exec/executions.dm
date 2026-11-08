@@ -132,6 +132,10 @@
 	var/obj/projectile/round = attacking_item
 	if(!istype(round) || round.fired_from != src || (damagetype != BRUTE && damagetype != BURN))
 		return
+	// A body without limbs (a basic mob) takes the whole round in the head it was pressed to.
+	if(!iscarbon(source))
+		hv_execution_head_damage += damage
+		return
 	var/zone
 	if(isbodypart(def_zone))
 		var/obj/item/bodypart/limb = def_zone

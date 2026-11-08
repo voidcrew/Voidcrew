@@ -64,9 +64,9 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 /// The boarding outfit table for a human ship crewman (its faction's table sealed for vacuum), or null
 /// for anything else.
 /proc/boarding_outfit_for(mob_type)
-	if(!ispath(mob_type, /mob/living/carbon/human/npc/ship_crew))
+	if(!ispath(mob_type, /mob/living/carbon/human/npc/faction_pirate))
 		return null
-	var/mob/living/carbon/human/npc/ship_crew/crew_type = mob_type
+	var/mob/living/carbon/human/npc/faction_pirate/crew_type = mob_type
 	return initial(crew_type.boarding_outfit_table)
 
 /**
@@ -83,7 +83,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		return
 	var/obj/structure/closet/supplypod/boarding/pod = new pod_type()
 	boarder.forceMove(pod)
-	var/mob/living/carbon/human/npc/ship_crew/crewman = boarder
+	var/mob/living/carbon/human/npc/faction_pirate/crewman = boarder
 	if(istype(crewman) && ispath(pod_type, /obj/structure/closet/supplypod/boarding/boss))
 		crewman.parent_ship = source_ship
 	boarding_pod_send(pod, boarder, target_turf, target_ship, source_ship)

@@ -81,7 +81,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "K" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+/obj/effect/spawner/human_npc/ruin/hermit/hunter,
 /turf/open/floor/pod/dark,
 /area/overmap_encounter/planetoid/wasteland)
 "M" = (

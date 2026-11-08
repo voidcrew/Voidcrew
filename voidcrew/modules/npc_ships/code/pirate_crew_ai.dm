@@ -585,7 +585,12 @@
 		return
 	pirate_controller.target_hold_ground = (target_reach(pirate_controller, crew, found) == PIRATE_TARGET_HOLD)
 	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, found)
-	crew?.on_member_spotted(pawn, found)
+	if(crew)
+		crew.on_member_spotted(pawn, found)
+	else if(ishumannpc(pawn))
+		// A faction pirate met in a ruin or a contract, with no crew to tell
+		var/mob/living/carbon/human/npc/loner = pawn
+		loner.npc_bark(PIRATE_BARK_SPOT)
 
 /datum/ai_planning_subtree/pirate_crew_find_target/proc/scan_for_target(datum/ai_controller/basic_controller/pirate_crew/controller, datum/pirate_crew/crew, datum/targeting_strategy/strategy, mob/living/basic/pawn, turf/pawn_turf)
 	var/atom/best_player

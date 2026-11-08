@@ -30,11 +30,11 @@
 
 	crew_min = 2
 	crew_max = 4
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/silverscale/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/silverscale/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/melee,
+		/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged,
 	)
 
 	// Boarding pods - aristocrats send their duelists
@@ -53,7 +53,7 @@
 	pirate_faction = "silverscale"
 
 	// Phased combat - aristocratic duelists
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/silverscale/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/silverscale/boss
 	broke_lines = list(
 		"Destitute. How disappointing. My retainers will see what else your hold contains.",
 		"You have nothing to offer but cargo, then. And perhaps your lives.",
@@ -91,11 +91,11 @@
 
 	crew_min = 3
 	crew_max = 6
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/skeleton/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/skeleton/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/ranged,
 	)
 
 	// Boarding pods - undead are relentless boarders
@@ -113,7 +113,7 @@
 	pirate_faction = "skeleton"
 
 	// Phased combat - undead hordes
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/skeleton/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/skeleton/boss
 	broke_lines = list(
 		"No coin on this wreck. No matter - we take flesh as readily as gold.",
 		"Empty holds, empty pockets. We will settle for your crew.",
@@ -151,11 +151,11 @@
 
 	crew_min = 3
 	crew_max = 5
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/grey/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/grey/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/grey/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee,
+		/mob/living/carbon/human/npc/faction_pirate/grey/ranged,
 	)
 
 	// Boarding pods - grey tiders love swarming
@@ -173,7 +173,7 @@
 	hold_credits_max = 1600
 
 	// Phased combat - greytide swarm
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/grey/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/grey/boss
 	broke_lines = list(
 		"lmao ur broke? w/e. boys go grab whatever isnt bolted down",
 		"no creds? fine. WE TAKE THE TOOLBOXES",
@@ -207,10 +207,10 @@
 
 	crew_min = 2
 	crew_max = 4
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/lustrous/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/lustrous/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/melee,
+		/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged,
 	)
 
 	// Boarding pods - ethereals prefer ranged combat, fewer boarders
@@ -228,7 +228,7 @@
 	hold_credits_max = 3000
 
 	// Phased combat - crystalline beings
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/lustrous/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/lustrous/boss
 	broke_lines = list(
 		"You carry no wealth. We will take what matter you do carry.",
 		"Nothing of value in your accounts. We will harvest from your hold instead.",
@@ -267,11 +267,11 @@
 
 	crew_min = 3
 	crew_max = 5
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/interdyne/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/interdyne/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/ranged,
-		/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/melee,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/interdyne/ranged,
 	)
 
 	// Boarding pods - interdyne sends surgical strike teams
@@ -289,7 +289,7 @@
 	hold_credits_max = 3800
 
 	// Phased combat - surgical strike teams
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/interdyne/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/interdyne/boss
 	broke_lines = list(
 		"Accounts empty. Switching to physical asset recovery. Deploying collection team.",
 		"No liquid funds. Your cargo and your crew will serve as compensation.",
@@ -332,11 +332,11 @@
 
 	crew_min = 3
 	crew_max = 5
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/irs/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/irs/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged,
-		/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/irs/melee,
+		/mob/living/carbon/human/npc/faction_pirate/irs/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/irs/ranged,
 	)
 
 	// Boarding pods - IRS sends auditors to seize assets
@@ -355,7 +355,7 @@
 	hold_credits_max = 6000
 
 	// Phased combat - tax enforcement
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/irs/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/irs/boss
 	broke_lines = list(
 		"Insufficient funds for settlement. Proceeding directly to asset seizure.",
 		"You cannot pay. Then we collect in kind. Agents are boarding now.",
@@ -397,11 +397,11 @@
 
 	crew_min = 3
 	crew_max = 6
-	captain_type = /mob/living/carbon/human/npc/ship_crew/pirate/medieval/captain
+	captain_type = /mob/living/carbon/human/npc/faction_pirate/medieval/captain
 	crew_types = list(
-		/mob/living/carbon/human/npc/ship_crew/pirate/medieval/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/medieval/melee,
-		/mob/living/carbon/human/npc/ship_crew/pirate/medieval/ranged,
+		/mob/living/carbon/human/npc/faction_pirate/medieval/melee,
+		/mob/living/carbon/human/npc/faction_pirate/medieval/melee,
+		/mob/living/carbon/human/npc/faction_pirate/medieval/ranged,
 	)
 
 	// Boarding pods - medieval warriors LOVE boarding actions
@@ -419,7 +419,7 @@
 	hold_credits_max = 3200
 
 	// Phased combat - knights and men-at-arms
-	boss_type = /mob/living/carbon/human/npc/ship_crew/pirate/medieval/boss
+	boss_type = /mob/living/carbon/human/npc/faction_pirate/medieval/boss
 	broke_lines = list(
 		"No coin in thy coffers? Then we shall take thy goods by force of arms!",
 		"A pauper's ship! Very well - the spoils shall be whatever thou carriest!",

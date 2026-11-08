@@ -90,7 +90,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	var/list/alert_lines
 	var/list/spot_lines
 	var/mob/living/basic/trooper/pirate/faction/faction_pirate = speaker
-	var/mob/living/carbon/human/npc/ship_crew/crewman = speaker
+	var/mob/living/carbon/human/npc/faction_pirate/crewman = speaker
 	if(istype(faction_pirate))
 		alert_lines = faction_pirate.crew_alert_lines
 		spot_lines = faction_pirate.crew_spot_lines

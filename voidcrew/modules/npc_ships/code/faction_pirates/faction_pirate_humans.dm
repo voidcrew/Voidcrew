@@ -1,53 +1,113 @@
 /**
- * # Human NPC ship crews
+ * # Faction pirates as human NPCs
  *
- * The crews of NPC pirate hulls and the boarders they send are real human NPCs
- * (voidcrew/modules/human_npcs/): real bodies with real crit, stamina, wounds, cuffs, bleeding and
- * revival, holding the real weapons they fight with (human NPC migration, phase B). Their AI is PR #500's
- * pirate crew on the human base (pirate_crew_human.dm). The basic-mob faction pirates in
- * faction_pirate_mobs.dm stay for ruins, planets and missions until phase C moves those.
+ * The seven pirate factions (Silverscale, the skeletons, the grey tide, the Lustrous, Interdyne, the IRS
+ * and the medieval knights) as real human NPCs (voidcrew/modules/human_npcs/): real bodies with real
+ * crit, stamina, wounds, cuffs, bleeding and revival, holding the real weapons they fight with. One type
+ * per faction and rank, /mob/living/carbon/human/npc/faction_pirate/<faction>/<melee|ranged|captain|boss>,
+ * used wherever a faction pirate turns up:
+ * - aboard NPC pirate ships, as the hull's crew and the boarders it sends (phase B). The ship enlists them
+ *   in a /datum/pirate_crew (pirate_crew.dm); boarders are dressed from the faction's boarding table;
+ *   a boarding boss learns its hull (parent_ship);
+ * - in ruins and on planets, scattered by the pirate zone markers (voidcrew/modules/loot/themes/plunder.dm),
+ *   and as kill contract targets and their guards (voidcrew/modules/missions/missions/recovery.dm)
+ *   (phase C). There they belong to the planet's alliance like the fauna, and a contract target pays its
+ *   cash once per contract (npc_payout_mission).
+ * Their AI is PR #500's pirate crew on the human base (pirate_crew_human.dm), crew or no crew: one with no
+ * crew fights what it sees and calls out who it spotted.
  *
- * Every faction keeps its PR #500 look, lines and guns:
- * - the look (species, hair, skin) comes from today's faction corpse spawner (npc_look), the clothes and
+ * Every faction keeps its look, lines and guns:
+ * - the look (species, hair, skin) comes from the faction corpse spawner (npc_look), the clothes and
  *   weapons from the faction's outfit table (human_npc_outfits_pirates.dm), picked by crew_role and rank;
- * - a crewman holds the gun or blade its outfit gives it, with its spare magazines, shells or a knife;
- * - boarders cross space, so they are dressed from the faction's boarding table, which adds a sealed suit
- *   and air (bosses only take a mask and a tank: they keep their look and suffer a vented room as a player
- *   would);
+ *   in vacuum the faction's own space suit, whatever outfit it wears;
  * - toughness comes from what they wear plus npc_damage_taken by rank (captains 0.8, bosses 0.6), never
  *   from a health pool;
  * - captains and bosses carry a real stimulant and inject it when their fight starts (the old stun
  *   immunity), Davy Jones drinks from a flask of cursed grog (his old regeneration), the Black Knight has
  *   tg's hulk and gigantism (his size and his shrugging off batons), the Radiant One is a real ethereal;
  * - medieval footsoldiers, the warlord and the Black Knight refuse guns (TRAIT_NOGUNS), as before;
- * - the designed loot rolls (the zone ladder, the red-zone 25% weapon, boss uniques, the plunder of 300,
- *   1000 or 3000 credits) drop once at death. What they wear and hold is locked to the body (D3) and
- *   never loot. The captain's ship key is not gear: it drops when he dies.
+ * - the designed loot rolls (the zone ladder, the red-zone 25% piece, boss uniques, the plunder of 25, 300,
+ *   1000 or 3000 credits) drop once at death, by the zone it belongs to (npc_home_zone()). What they wear
+ *   and hold is locked to the body (D3) and never loot. A ship captain's key is not gear: it drops when he
+ *   dies.
  *
- * Their ID card carries their name, so a crewman whose helmet hides his face is still "Silverscale
- * Duelist" and not "Unknown". It is locked gear like the rest and opens nothing.
+ * Their ID card carries their name, so one whose helmet hides its face is still "Silverscale Duelist" and
+ * not "Unknown". It is locked gear like the rest and opens nothing.
  */
 
-/// What a pirate ship crewman says when things happen to its body (human_npc_barks.dm)
-/datum/human_npc_voice/pirate
+/// What a faction pirate says when things happen to its body (human_npc_barks.dm). "spot" is said when one
+/// with no crew picks someone new to fight; a crew calls out its own (pirate_crew.dm).
+/datum/human_npc_voice/faction_pirate
 	lines = list(
+		PIRATE_BARK_SPOT = list("There!", "Over here!", "Found one!", "Contact!"),
 		HUMAN_NPC_BARK_DOWNED = list("I'm hit!", "Agh! Man down!", "Not like this..."),
 		HUMAN_NPC_BARK_PLEAD = list("Don't... don't.", "Quarter... give quarter..."),
 		HUMAN_NPC_BARK_RECOVER = list("Still breathing.", "Back on my feet."),
-		HUMAN_NPC_BARK_CUFFED = list("Get these off me!", "You'll hang for this."),
+		HUMAN_NPC_BARK_CUFFED = list("The captain will hear of this.", "Get these off me!", "You'll hang for this."),
 		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
 		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
 	)
 	emotes = list(
+		HUMAN_NPC_BARK_DOWNED = list("collapses."),
 		"stimulant" = list("jabs a needle into their neck."),
 		"drink" = list("takes a long pull from a battered flask."),
 	)
+	chances = list(PIRATE_BARK_SPOT = 60)
 
-/mob/living/carbon/human/npc/ship_crew
-	name = "spacer"
+/datum/human_npc_voice/faction_pirate/skeleton
+	lines = list(
+		PIRATE_BARK_SPOT = list("There ye are!", "I see ye!", "Over here, lads!"),
+		HUMAN_NPC_BARK_DOWNED = list("Back to the deep..."),
+		HUMAN_NPC_BARK_PLEAD = list("Mercy, matey..."),
+		HUMAN_NPC_BARK_RECOVER = list("The dead don't stay down."),
+		HUMAN_NPC_BARK_CUFFED = list("Irons won't hold the dead."),
+		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
+		HUMAN_NPC_BARK_PULLED_FREE = list("Unhand me!"),
+	)
+	emotes = list(
+		HUMAN_NPC_BARK_DOWNED = list("clatters to the floor."),
+		"stimulant" = list("jabs a needle between their ribs."),
+		"drink" = list("takes a long pull from a battered flask."),
+	)
+
+/datum/human_npc_voice/faction_pirate/grey
+	lines = list(
+		PIRATE_BARK_SPOT = list("Get 'em!", "That one, there!", "Over here!"),
+		HUMAN_NPC_BARK_DOWNED = list("I want my toolbox..."),
+		HUMAN_NPC_BARK_PLEAD = list("I didn't do nothing!"),
+		HUMAN_NPC_BARK_RECOVER = list("Robust!"),
+		HUMAN_NPC_BARK_CUFFED = list("I didn't take nothing!"),
+		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
+		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
+	)
+
+/datum/human_npc_voice/faction_pirate/irs
+	lines = list(
+		PIRATE_BARK_SPOT = list("There's the taxpayer!", "Stop right there.", "You're overdue."),
+		HUMAN_NPC_BARK_DOWNED = list("This will be... noted..."),
+		HUMAN_NPC_BARK_PLEAD = list("I'm only an auditor..."),
+		HUMAN_NPC_BARK_RECOVER = list("Where were we."),
+		HUMAN_NPC_BARK_CUFFED = list("Obstruction of an audit. Noted."),
+		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
+		HUMAN_NPC_BARK_PULLED_FREE = list("Hands off!"),
+	)
+
+/datum/human_npc_voice/faction_pirate/medieval
+	lines = list(
+		PIRATE_BARK_SPOT = list("Have at thee!", "There, the coward!", "Halt!"),
+		HUMAN_NPC_BARK_DOWNED = list("I am slain!", "'Tis but a scratch..."),
+		HUMAN_NPC_BARK_PLEAD = list("Quarter! I beg quarter!"),
+		HUMAN_NPC_BARK_RECOVER = list("I yet stand!"),
+		HUMAN_NPC_BARK_CUFFED = list("Thou shalt pay for this dishonour."),
+		HUMAN_NPC_BARK_SLIPPING = list("Almost..."),
+		HUMAN_NPC_BARK_PULLED_FREE = list("Unhand me, cur!"),
+	)
+
+/mob/living/carbon/human/npc/faction_pirate
+	name = "pirate"
 	faction = list(FACTION_PIRATE)
 	ai_controller = /datum/ai_controller/basic_controller/pirate_crew/human
-	npc_voice = /datum/human_npc_voice/pirate
+	npc_voice = /datum/human_npc_voice/faction_pirate
 	npc_target_stat = HUMAN_NPC_FINISHES_DOWNED
 	/// SHIP_CREW_ROLE_MELEE or SHIP_CREW_ROLE_GUNNER: which of its faction's outfits a regular wears
 	var/crew_role
@@ -59,6 +119,8 @@
 	var/list/crew_alert_lines
 	/// What it shouts when it spots someone. Null: the generic lines.
 	var/list/crew_spot_lines
+	/// The ZONE_* its spawn order dressed it for, or null if it was made without one
+	var/npc_dressed_zone
 
 	// ===== Designed loot, as the basic faction pirates roll it (faction_pirate_mobs.dm) =====
 	/// Always dropped
@@ -83,8 +145,9 @@
 	)
 	/// A captain whose zone ladder drops a melee weapon (Silverscale, Lustrous and Interdyne captains)
 	var/captain_ladder_melee = FALSE
-	/// A named mission target pays its cash once, however often it dies
-	var/datum/weakref/mission_payout_ref
+	/// Weakref to the /datum/mission whose named target this is; its death cash pays only if that contract
+	/// can still claim it (/datum/mission/proc/claim_boss_cash())
+	var/datum/weakref/npc_payout_mission
 
 	// ===== Elites and bosses =====
 	/// The medipen it injects when its fight starts, or null. Elites and bosses get one by rank.
@@ -92,7 +155,7 @@
 	/// The NPC hull this is the boarding boss of; killing or taking it disables the hull
 	var/obj/structure/overmap/ship/npc/pirate/parent_ship
 
-/mob/living/carbon/human/npc/ship_crew/Initialize(mapload, datum/human_npc_order/order)
+/mob/living/carbon/human/npc/faction_pirate/Initialize(mapload, datum/human_npc_order/order)
 	switch(npc_rank)
 		if(HUMAN_NPC_RANK_ELITE)
 			// A type that sets its own toughness keeps it
@@ -103,6 +166,10 @@
 			if(npc_damage_taken == 1)
 				npc_damage_taken = SHIP_CREW_BOSS_DAMAGE_TAKEN
 	. = ..()
+	npc_dressed_zone = order?.resolve_zone()
+	// tg's Initialize gave it the planet's alliance before it was dressed; an ordered faction list may
+	// have replaced its factions since, so it rejoins here. Off a planet this does nothing.
+	inherit_planetary_faction(src)
 	rolled_rare_loot = list()
 	for(var/item_type in rare_loot_pool)
 		if(npc_ladder_red_drop())
@@ -113,18 +180,28 @@
 		if(!crew_give(stimulant))
 			qdel(stimulant)
 
-/mob/living/carbon/human/npc/ship_crew/Destroy()
+/mob/living/carbon/human/npc/faction_pirate/Destroy()
 	parent_ship = null
-	mission_payout_ref = null
+	npc_payout_mission = null
 	return ..()
 
-/mob/living/carbon/human/npc/ship_crew/examine(mob/user)
+// Natives of the planet they are found on, like the fauna they share it with.
+/mob/living/carbon/human/npc/faction_pirate/should_inherit_planetary_faction()
+	return TRUE
+
+// In vacuum, the faction's own space suit, even over an outfit it was handed directly.
+/mob/living/carbon/human/npc/faction_pirate/npc_fit_outfit_to_site(outfit, datum/human_npc_outfit_table/table)
+	if(isnull(table) && ispath(npc_outfit_table, /datum/human_npc_outfit_table))
+		table = human_npc_singleton(npc_outfit_table)
+	return ..(outfit, table)
+
+/mob/living/carbon/human/npc/faction_pirate/examine(mob/user)
 	. = ..()
 	if(crew_desc && stat != DEAD)
 		. += span_notice(crew_desc)
 
 /// An ID card with its name on it, so a helmet that hides its face doesn't make it "Unknown".
-/mob/living/carbon/human/npc/ship_crew/proc/crew_issue_id()
+/mob/living/carbon/human/npc/faction_pirate/proc/crew_issue_id()
 	if(wear_id)
 		return
 	var/obj/item/card/id/advanced/black/card = new(src)
@@ -141,7 +218,7 @@
  * Locks or issues it by the gear rules (a ship key isn't gear, a medipen is a consumable). Returns TRUE
  * if it is on the body; FALSE leaves it where it was, for the caller to deal with.
  */
-/mob/living/carbon/human/npc/ship_crew/proc/crew_give(obj/item/thing)
+/mob/living/carbon/human/npc/faction_pirate/proc/crew_give(obj/item/thing)
 	if(QDELETED(thing))
 		return FALSE
 	if(equip_to_slot_if_possible(thing, ITEM_SLOT_LPOCKET, disable_warning = TRUE) || equip_to_slot_if_possible(thing, ITEM_SLOT_RPOCKET, disable_warning = TRUE))
@@ -153,10 +230,18 @@
 			return TRUE
 	return FALSE
 
+/**
+ * The zone it belongs to, for zone-laddered loot: its spawn context's, which may have resolved after it
+ * was made (a ruin loading before its planet registered), else the zone it was dressed for, else where
+ * it stands.
+ */
+/mob/living/carbon/human/npc/faction_pirate/proc/npc_home_zone()
+	return npc_spawn_context?.zone_type || npc_dressed_zone || npc_spawn_zone()
+
 // ===== Death and its designed drops =====
 
-/mob/living/carbon/human/npc/ship_crew/npc_roll_death_loot()
-	var/zone = npc_spawn_zone()
+/mob/living/carbon/human/npc/faction_pirate/npc_roll_death_loot()
+	var/zone = npc_home_zone()
 	. = list()
 	if(length(loot_pool))
 		. += loot_pool
@@ -172,22 +257,23 @@
 	if(length(random_loot_2))
 		. += pick(random_loot_2)
 
-/mob/living/carbon/human/npc/ship_crew/npc_drop_death_loot()
-	// A named mission target pays its cash once for the mission, however many bodies it takes
-	if(!npc_loot_dropped && npc_death_cash > 0 && mission_payout_ref)
-		var/datum/mission/mission = mission_payout_ref.resolve()
+// A named contract target's cash goes to the contract once: if the contract is gone or has already paid,
+// the body carries none.
+/mob/living/carbon/human/npc/faction_pirate/npc_drop_death_loot()
+	if(!npc_loot_dropped && npc_death_cash > 0 && npc_payout_mission)
+		var/datum/mission/mission = npc_payout_mission.resolve()
 		if(!mission?.claim_boss_cash())
 			npc_death_cash = 0
 	return ..()
 
-/mob/living/carbon/human/npc/ship_crew/death(gibbed)
+/mob/living/carbon/human/npc/faction_pirate/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
 	if(was_alive && stat == DEAD)
 		crew_report_boss_down()
 
 /// The hull this boarded for hears its boss is down (PI-22: the boss's fall disables the hull).
-/mob/living/carbon/human/npc/ship_crew/proc/crew_report_boss_down()
+/mob/living/carbon/human/npc/faction_pirate/proc/crew_report_boss_down()
 	var/datum/ai_controller/npc_ship/controller = parent_ship?.ai_controller
 	if(istype(controller))
 		SEND_SIGNAL(controller, COMSIG_BOARDING_BOSS_KILLED, src)
@@ -196,35 +282,32 @@
 
 // ----- Silverscale (aristocratic lizards) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate
-	name = "pirate"
-
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale
+/mob/living/carbon/human/npc/faction_pirate/silverscale
 	npc_name = "Silverscale Pirate"
 	crew_desc = "An aristocratic lizard pirate demanding tribute from lesser beings."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/silverscale
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/silverscale/boarding
 
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/Initialize(mapload, datum/human_npc_order/order)
+/mob/living/carbon/human/npc/faction_pirate/silverscale/Initialize(mapload, datum/human_npc_order/order)
 	// The rank and file may be carrying a fish (as the basic duelists and marksmen do)
 	if(crew_role)
 		random_loot_2 = list(/obj/item/storage/medkit/regular, /obj/item/storage/toolbox/mechanical, random_fish_type())
 	return ..()
 
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee
+/mob/living/carbon/human/npc/faction_pirate/silverscale/melee
 	npc_name = "Silverscale Duelist"
 	crew_desc = "A noble lizard trained in the art of the blade."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/ranged
+/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged
 	npc_name = "Silverscale Marksman"
 	crew_desc = "A noble lizard with impeccable aim."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/captain
+/mob/living/carbon/human/npc/faction_pirate/silverscale/captain
 	npc_name = "Silverscale Noble"
 	crew_desc = "A high-born lizard of impeccable breeding and ruthless ambition."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -232,7 +315,7 @@
 	captain_ladder_melee = TRUE
 	npc_death_cash = 1000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/boss
+/mob/living/carbon/human/npc/faction_pirate/silverscale/boss
 	npc_name = "Silverscale Highlord"
 	crew_desc = "The supreme ruler of the Silverscale noble house. A master duelist who has slain countless challengers."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -245,12 +328,13 @@
 
 // ----- Skeleton (the Flying Dutchman) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate/skeleton
+/mob/living/carbon/human/npc/faction_pirate/skeleton
 	npc_name = "Skeleton Pirate"
 	crew_desc = "Yarr! An undead scourge of the space lanes."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/skeleton
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/skeleton/boarding
+	npc_voice = /datum/human_npc_voice/faction_pirate/skeleton
 	crew_alert_lines = list(
 		"All hands! Boarders!",
 		"Fresh crew coming aboard!",
@@ -262,19 +346,19 @@
 		"Over here, lads!",
 	)
 
-/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/melee
+/mob/living/carbon/human/npc/faction_pirate/skeleton/melee
 	npc_name = "Skeleton Swashbuckler"
 	crew_desc = "A skeletal swordsman that refuses to stay dead."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/ranged
+/mob/living/carbon/human/npc/faction_pirate/skeleton/ranged
 	npc_name = "Skeleton Gunner"
 	crew_desc = "A skeletal marksman with hollow eyes."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/captain
+/mob/living/carbon/human/npc/faction_pirate/skeleton/captain
 	npc_name = "Skeleton Captain"
 	crew_desc = "The terrifying undead commander of the Flying Dutchman."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -284,7 +368,7 @@
 
 /// Davy Jones drinks cursed grog from the flask in his pocket when he is hurt (his old regeneration,
 /// defaults PI-5).
-/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/boss
+/mob/living/carbon/human/npc/faction_pirate/skeleton/boss
 	npc_name = "Davy Jones"
 	crew_desc = "Captain of the Flying Dutchman. His cursed compass always points to the greatest treasure... or the nearest victim."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -297,12 +381,13 @@
 
 // ----- Grey Tide (rogue assistants) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey
+/mob/living/carbon/human/npc/faction_pirate/grey
 	npc_name = "Grey Tider"
 	crew_desc = "A former assistant turned space pirate. Robust."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/grey
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/grey/boarding
+	npc_voice = /datum/human_npc_voice/faction_pirate/grey
 	crew_alert_lines = list(
 		"Someone's on the ship!",
 		"Who let them in?",
@@ -314,18 +399,18 @@
 		"Over here!",
 	)
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee
+/mob/living/carbon/human/npc/faction_pirate/grey/melee
 	crew_desc = "Armed with a toolbox and bad intentions."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey/ranged
+/mob/living/carbon/human/npc/faction_pirate/grey/ranged
 	npc_name = "Grey Tider Gunner"
 	crew_desc = "An assistant with a gun. Uh oh."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey/captain
+/mob/living/carbon/human/npc/faction_pirate/grey/captain
 	npc_name = "Tidemaster"
 	crew_desc = "If he's on your shift, the Captain does not have his spare."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -333,7 +418,7 @@
 	random_loot = null
 	npc_death_cash = 1000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey/boss
+/mob/living/carbon/human/npc/faction_pirate/grey/boss
 	npc_name = "The Robust One"
 	crew_desc = "The ultimate assistant. The greyest tider to ever live. Their toolbox has seen things."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -345,7 +430,7 @@
 	rare_loot_pool = list(/obj/item/storage/toolbox/mechanical/old/clean)
 	npc_death_cash = 3000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/grey/boss/Initialize(mapload, datum/human_npc_order/order)
+/mob/living/carbon/human/npc/faction_pirate/grey/boss/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
 	AddComponent(/datum/component/hv_finisher_user, /datum/hv_finisher/robust_one)
 
@@ -353,26 +438,26 @@
 
 // Real ethereals: they glow by their species, and a dead one's heart crystallises and revives it as a
 // player's does, unless the crystal is broken (defaults PI-6).
-/mob/living/carbon/human/npc/ship_crew/pirate/lustrous
+/mob/living/carbon/human/npc/faction_pirate/lustrous
 	npc_name = "Lustrous Pirate"
 	crew_desc = "A mutated ethereal obsessed with bluespace crystals."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/lustrous
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/lustrous/boarding
 
-/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/melee
+/mob/living/carbon/human/npc/faction_pirate/lustrous/melee
 	npc_name = "Lustrous Scintillant"
 	crew_desc = "A crystalline being with a sharp blade."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/ranged
+/mob/living/carbon/human/npc/faction_pirate/lustrous/ranged
 	npc_name = "Lustrous Coruscant"
 	crew_desc = "A crystalline being channeling energy through strange weapons."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/captain
+/mob/living/carbon/human/npc/faction_pirate/lustrous/captain
 	npc_name = "Lustrous Radiant"
 	crew_desc = "A blindingly bright ethereal, the leader of their crystalline kind."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -380,7 +465,7 @@
 	captain_ladder_melee = TRUE
 	npc_death_cash = 1000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/lustrous/boss
+/mob/living/carbon/human/npc/faction_pirate/lustrous/boss
 	npc_name = "The Radiant One"
 	crew_desc = "A blindingly luminous ethereal. The crystalline matrix of their body phases in and out of realspace."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -394,26 +479,26 @@
 
 // ----- Interdyne (ex-pharmacists) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate/interdyne
+/mob/living/carbon/human/npc/faction_pirate/interdyne
 	npc_name = "Interdyne Pirate"
 	crew_desc = "A former pharmaceutical employee turned bioterrorist."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/interdyne
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/interdyne/boarding
 
-/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/melee
+/mob/living/carbon/human/npc/faction_pirate/interdyne/melee
 	npc_name = "Interdyne Enforcer"
 	crew_desc = "Enforces pharmaceutical compliance with surgical precision."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/ranged
+/mob/living/carbon/human/npc/faction_pirate/interdyne/ranged
 	npc_name = "Interdyne Pharmacist"
 	crew_desc = "Dispenses death instead of medicine."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/captain
+/mob/living/carbon/human/npc/faction_pirate/interdyne/captain
 	npc_name = "Interdyne Director"
 	crew_desc = "The head of this rogue pharmaceutical operation."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -421,7 +506,7 @@
 	captain_ladder_melee = TRUE
 	npc_death_cash = 1000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/interdyne/boss
+/mob/living/carbon/human/npc/faction_pirate/interdyne/boss
 	npc_name = "Director Prime"
 	crew_desc = "The head of all Interdyne black site operations. Their hypospray contains experimental compounds."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -434,13 +519,14 @@
 
 // ----- IRS (tax collectors) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate/irs
+/mob/living/carbon/human/npc/faction_pirate/irs
 	npc_name = "IRS Agent"
 	crew_desc = "The only thing certain in life is death and taxes. They're here for both."
 	faction = list(FACTION_PIRATE, FACTION_IRS)
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/irs
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/irs/boarding
+	npc_voice = /datum/human_npc_voice/faction_pirate/irs
 	crew_alert_lines = list(
 		"Unscheduled visitors. Begin the audit.",
 		"Everyone aboard is now under review.",
@@ -452,18 +538,18 @@
 		"You're overdue.",
 	)
 
-/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee
+/mob/living/carbon/human/npc/faction_pirate/irs/melee
 	npc_name = "IRS Enforcer"
 	crew_desc = "Collects taxes the hard way."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged
+/mob/living/carbon/human/npc/faction_pirate/irs/ranged
 	crew_desc = "Armed and ready to collect."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
-/mob/living/carbon/human/npc/ship_crew/pirate/irs/captain
+/mob/living/carbon/human/npc/faction_pirate/irs/captain
 	npc_name = "IRS Head Auditor"
 	crew_desc = "The head of tax enforcement. Nobody escapes their audits."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -471,7 +557,7 @@
 	random_loot = null
 	npc_death_cash = 1000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/irs/boss
+/mob/living/carbon/human/npc/faction_pirate/irs/boss
 	npc_name = "Chief Auditor"
 	crew_desc = "The supreme authority of the Space IRS. No one escapes their audits. NO ONE."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -485,12 +571,13 @@
 
 // ----- Medieval (space warmongers) -----
 
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval
+/mob/living/carbon/human/npc/faction_pirate/medieval
 	npc_name = "Medieval Pirate"
 	crew_desc = "A space-faring knight who somehow operates a starship."
 	npc_look = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
 	npc_outfit_table = /datum/human_npc_outfit_table/pirate/medieval
 	boarding_outfit_table = /datum/human_npc_outfit_table/pirate/medieval/boarding
+	npc_voice = /datum/human_npc_voice/faction_pirate/medieval
 	crew_alert_lines = list(
 		"To arms! Intruders!",
 		"Who dares board us?",
@@ -504,26 +591,26 @@
 	/// Hates guns and throws them hard (footsoldiers, the warlord and the Black Knight; not the crossbowmen)
 	var/refuses_guns = FALSE
 
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/Initialize(mapload, datum/human_npc_order/order)
+/mob/living/carbon/human/npc/faction_pirate/medieval/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
 	if(refuses_guns)
 		add_traits(list(TRAIT_NOGUNS, TRAIT_TOSS_GUN_HARD), INNATE_TRAIT)
 
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/melee
+/mob/living/carbon/human/npc/faction_pirate/medieval/melee
 	npc_name = "Medieval Footsoldier"
 	crew_desc = "A knight who refuses to use guns. Honorable."
 	crew_role = SHIP_CREW_ROLE_MELEE
 	refuses_guns = TRUE
 	npc_death_cash = 300
 
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/ranged
+/mob/living/carbon/human/npc/faction_pirate/medieval/ranged
 	npc_name = "Medieval Crossbowman"
 	crew_desc = "At least crossbows are period-appropriate. Sort of."
 	crew_role = SHIP_CREW_ROLE_GUNNER
 	npc_death_cash = 25
 
 /// The warlord: plate armour and a stimulant where the basic mob had stun immunity (defaults PI-4).
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/captain
+/mob/living/carbon/human/npc/faction_pirate/medieval/captain
 	npc_name = "Medieval Warlord"
 	crew_desc = "A hulking brute of a knight. Massive, and very angry."
 	npc_rank = HUMAN_NPC_RANK_ELITE
@@ -534,7 +621,7 @@
 	npc_death_cash = 1000
 
 /// The Black Knight: tg's hulk (stun and shove immune until he drops into crit) and gigantism (his size).
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/boss
+/mob/living/carbon/human/npc/faction_pirate/medieval/boss
 	npc_name = "The Black Knight"
 	crew_desc = "A massive armored warrior. 'Tis but a scratch!' No really, they refuse to die."
 	npc_rank = HUMAN_NPC_RANK_BOSS
@@ -546,7 +633,7 @@
 	loot_pool = list(/obj/item/claymore/shortsword, /obj/item/shield/kite)
 	npc_death_cash = 3000
 
-/mob/living/carbon/human/npc/ship_crew/pirate/medieval/boss/Initialize(mapload, datum/human_npc_order/order)
+/mob/living/carbon/human/npc/faction_pirate/medieval/boss/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
 	dna.add_mutation(/datum/mutation/hulk, MUTATION_SOURCE_MUTATOR)
 	dna.add_mutation(/datum/mutation/gigantism, MUTATION_SOURCE_MUTATOR)
@@ -641,7 +728,7 @@
 // (voidcrew/modules/human_npcs/human_npc_outfits_pirates.dm): a duelist the faction's blades, a marksman
 // its guns in PR #500's gun weights. Captains and bosses wear their own.
 /datum/human_npc_outfit_table/pirate/outfits_for(mob/living/carbon/human/npc/npc, zone)
-	var/mob/living/carbon/human/npc/ship_crew/crewman = npc
+	var/mob/living/carbon/human/npc/faction_pirate/crewman = npc
 	if(istype(crewman) && crewman.npc_rank == HUMAN_NPC_RANK_REGULAR)
 		switch(crewman.crew_role)
 			if(SHIP_CREW_ROLE_MELEE)

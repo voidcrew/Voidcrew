@@ -46,7 +46,7 @@
 /datum/unit_test/voidcrew_pirate_crew/door_rules
 
 /datum/unit_test/voidcrew_pirate_crew/door_rules/Run()
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(0, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 0))
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, spot(2, 2))
 	TEST_ASSERT(door.density, "The test airlock spawned open")
 	TEST_ASSERT(pirate_can_open_door(pirate, door), "A pirate can't open an unlocked, powered airlock")
@@ -97,7 +97,7 @@
 /datum/unit_test/voidcrew_pirate_crew/breach_search
 
 /datum/unit_test/voidcrew_pirate_crew/breach_search/Run()
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(0, 2))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 2))
 	for(var/dy in list(0, 1, 3, 4))
 		change_turf(spot(2, dy), /turf/closed/wall)
 	var/obj/machinery/door/airlock/instant/door = allocate(/obj/machinery/door/airlock/instant, spot(2, 2))
@@ -136,10 +136,10 @@
 
 /datum/unit_test/voidcrew_pirate_crew/defending_roles/Run()
 	var/obj/structure/overmap/ship/npc/pirate/hull = allocate(/obj/structure/overmap/ship/npc/pirate)
-	var/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/captain/captain = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/captain, spot(0, 0))
-	var/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/ranged/gunner = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/ranged, spot(1, 0))
-	var/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee/brawler = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee, spot(2, 0))
-	var/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee/deckhand = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/melee, spot(3, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/captain/captain = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/captain, spot(0, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged/gunner = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/ranged, spot(1, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/melee/brawler = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/melee, spot(2, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/silverscale/melee/deckhand = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/melee, spot(3, 0))
 	TEST_ASSERT(pirate_crew_is_ranged(gunner), "A marksman holding a gun doesn't count as a gunner")
 	TEST_ASSERT(!pirate_crew_is_ranged(brawler), "A duelist counts as a gunner")
 
@@ -201,7 +201,7 @@
 	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
 	var/mob/living/basic/trooper/trooper = allocate(/mob/living/basic/trooper, spot(0, 0))
 	var/mob/living/basic/trooper/pirate/ranged/basic_gunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(1, 0))
-	var/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged/boarder = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged, spot(2, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/irs/ranged/boarder = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(2, 0))
 	TEST_ASSERT_EQUAL(pirate_crew_controller_type(trooper), /datum/ai_controller/basic_controller/pirate_crew, "A melee trooper is down for the wrong controller")
 	TEST_ASSERT_EQUAL(pirate_crew_controller_type(basic_gunner), /datum/ai_controller/basic_controller/pirate_crew/ranged, "A ranged trooper is down for the wrong controller")
 	TEST_ASSERT_EQUAL(pirate_crew_controller_type(boarder), /datum/ai_controller/basic_controller/pirate_crew/human, "A human pirate is down for the wrong controller")
@@ -249,7 +249,7 @@
 /datum/unit_test/voidcrew_pirate_crew/mineral_doors
 
 /datum/unit_test/voidcrew_pirate_crew/mineral_doors/Run()
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(0, 2))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/pirate = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 2))
 	var/mob/living/basic/trooper/pirate/melee/bystander = allocate(/mob/living/basic/trooper/pirate/melee, spot(4, 2))
 	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
 	TEST_ASSERT(pirate_crew_enlist_raider(pirate, target), "A pirate could not join the raid")

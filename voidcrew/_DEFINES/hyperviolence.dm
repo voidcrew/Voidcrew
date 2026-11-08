@@ -34,7 +34,7 @@
 /// deals it through tg's normal damage; nothing else is added.
 #define HV_EXECUTION_POINT_BLANK_MULT 2
 /// Damage an execution round must deal to the head (after armour) to burst it instead of holing it.
-#define HV_EXECUTION_BURST_DAMAGE 80
+#define HV_EXECUTION_BURST_DAMAGE 50
 /// A chambered round must deal at least this much to count as an execution round.
 #define HV_EXECUTION_MIN_DAMAGE 10
 /// do_after interaction key for an execution wind-up.

@@ -22,12 +22,12 @@
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/dress/Run()
 	for(var/faction in list("silverscale", "skeleton", "grey", "lustrous", "interdyne", "irs", "medieval"))
-		var/melee_type = text2path("/mob/living/carbon/human/npc/ship_crew/pirate/[faction]/melee")
-		var/ranged_type = text2path("/mob/living/carbon/human/npc/ship_crew/pirate/[faction]/ranged")
-		var/captain_type = text2path("/mob/living/carbon/human/npc/ship_crew/pirate/[faction]/captain")
-		var/mob/living/carbon/human/npc/ship_crew/melee = build_npc(melee_type, spot(0, 0))
-		var/mob/living/carbon/human/npc/ship_crew/ranged = build_npc(ranged_type, spot(1, 0))
-		var/mob/living/carbon/human/npc/ship_crew/captain = build_npc(captain_type, spot(2, 0))
+		var/melee_type = text2path("/mob/living/carbon/human/npc/faction_pirate/[faction]/melee")
+		var/ranged_type = text2path("/mob/living/carbon/human/npc/faction_pirate/[faction]/ranged")
+		var/captain_type = text2path("/mob/living/carbon/human/npc/faction_pirate/[faction]/captain")
+		var/mob/living/carbon/human/npc/faction_pirate/melee = build_npc(melee_type, spot(0, 0))
+		var/mob/living/carbon/human/npc/faction_pirate/ranged = build_npc(ranged_type, spot(1, 0))
+		var/mob/living/carbon/human/npc/faction_pirate/captain = build_npc(captain_type, spot(2, 0))
 		TEST_ASSERT(human_npc_held_melee_weapon(melee) && !human_npc_held_gun(melee), "[melee_type] isn't holding a blade or a club")
 		TEST_ASSERT_NOTNULL(human_npc_held_gun(ranged), "[ranged_type] isn't holding a gun")
 		var/obj/item/gun/ballistic/bullet_gun = human_npc_held_gun(ranged)
@@ -45,7 +45,7 @@
 		// Aboard its own hull in good air: no space suit
 		TEST_ASSERT(!istype(melee.wear_suit, /obj/item/clothing/suit/space), "[melee_type] wears a space suit in good air")
 		// A boarder: sealed and on its own air, unless it is a skeleton
-		var/mob/living/carbon/human/npc/ship_crew/boarder = build_npc(melee_type, spot(3, 0), boarding_outfit_for(melee_type))
+		var/mob/living/carbon/human/npc/faction_pirate/boarder = build_npc(melee_type, spot(3, 0), boarding_outfit_for(melee_type))
 		if(faction == "skeleton")
 			TEST_ASSERT(!istype(boarder.wear_suit, /obj/item/clothing/suit/space), "A skeleton boarder was given a space suit it doesn't need")
 		else
@@ -65,7 +65,7 @@
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/captain_key/Run()
 	var/obj/structure/overmap/ship/npc/pirate/hull = allocate(/obj/structure/overmap/ship/npc/pirate)
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/captain/captain = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/captain, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/captain/captain = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/captain, spot(1, 1))
 	hull.on_captain_built(captain)
 	var/obj/item/ship_key/key = locate() in captain.get_all_contents()
 	TEST_ASSERT_NOTNULL(key, "The captain doesn't carry the ship key")
@@ -84,12 +84,12 @@
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/crew_wipe/Run()
 	var/obj/structure/overmap/ship/npc/pirate/hull = allocate(/obj/structure/overmap/ship/npc/pirate)
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee/first = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(0, 1))
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/ranged/second = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/ranged, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/first = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/ranged/second = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/ranged, spot(1, 1))
 	hull.on_crewman_built(first)
 	hull.on_crewman_built(second)
 	// One more still waiting in the queue
-	var/datum/human_npc_order/pending = new /datum/human_npc_order(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(2, 1))
+	var/datum/human_npc_order/pending = new /datum/human_npc_order(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(2, 1))
 	hull.crew_orders += pending
 
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
@@ -118,11 +118,11 @@
 	controller.set_combat_state("boarding")
 	var/list/wave = list()
 	controller.blackboard["npc_boarding_wave_boarders"] = wave
-	var/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee/boarder = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/irs/melee/boarder = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/melee, spot(1, 1))
 	controller.track_wave_boarder(wave, boarder)
 	TEST_ASSERT(boarder in wave, "The boarder didn't join its wave")
 
-	var/datum/human_npc_order/coming = new /datum/human_npc_order(/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee, spot(2, 1))
+	var/datum/human_npc_order/coming = new /datum/human_npc_order(/mob/living/carbon/human/npc/faction_pirate/irs/melee, spot(2, 1))
 	controller.wave_orders += coming
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
 	TEST_ASSERT(boarder.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "Test fixture: the boarder could not be cuffed")
@@ -148,7 +148,7 @@
 	controller.set_combat_state("boarding")
 	var/list/wave = list()
 	controller.blackboard["npc_boarding_wave_boarders"] = wave
-	var/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee/boarder = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, spot(4, 4), /datum/human_npc_outfit_table/pirate/grey/boarding)
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/boarder = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(4, 4), /datum/human_npc_outfit_table/pirate/grey/boarding)
 	TEST_ASSERT(pirate_crew_enlist_raider(boarder, target), "The boarder could not join the raid")
 	controller.track_wave_boarder(wave, boarder)
 	TEST_ASSERT(pirate_crew_member_adrift(boarder), "A boarder floating in space isn't adrift")
@@ -172,7 +172,7 @@
 	var/obj/docking_port/mobile/voidcrew/port = allocate(/obj/docking_port/mobile/voidcrew, run_loc_floor_bottom_left)
 	port.shuttle_areas = list((get_area(spot(1, 1))) = TRUE)
 	target.shuttle = port
-	var/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee/boarder = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/melee, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/irs/melee/boarder = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/melee, spot(1, 1))
 	TEST_ASSERT(pirate_crew_enlist_raider(boarder, target), "The boarder could not join the raid")
 	var/datum/ai_behavior/npc_ship/fire_boarding_pods/pods = GET_AI_BEHAVIOR(/datum/ai_behavior/npc_ship/fire_boarding_pods)
 	var/counted = pods.count_hostile_mobs_on_ship(target)
@@ -201,17 +201,17 @@
 	controller.set_target(target)
 	var/list/heard = list()
 	controller.blackboard["npc_boarding_wave_boarders"] = heard
-	var/sent = create_boarding_pod(spot(2, 2), target, pirate, /mob/living/carbon/human/npc/ship_crew/pirate/lustrous/melee, on_boarder = CALLBACK(controller, TYPE_PROC_REF(/datum/ai_controller/npc_ship, track_wave_boarder), heard))
+	var/sent = create_boarding_pod(spot(2, 2), target, pirate, /mob/living/carbon/human/npc/faction_pirate/lustrous/melee, on_boarder = CALLBACK(controller, TYPE_PROC_REF(/datum/ai_controller/npc_ship, track_wave_boarder), heard))
 	TEST_ASSERT(istype(sent, /datum/human_npc_order), "A human boarder wasn't queued")
 	var/datum/human_npc_order/order = sent
 	TEST_ASSERT(order in controller.boarding_orders, "The encounter isn't tracking its queued boarder")
-	var/mob/living/carbon/human/npc/ship_crew/boarder = order.fulfil()
+	var/mob/living/carbon/human/npc/faction_pirate/boarder = order.fulfil()
 	TEST_ASSERT_NOTNULL(boarder, "The queued boarder wasn't built")
 	TEST_ASSERT(istype(boarder.loc, /obj/structure/closet/supplypod/boarding), "The boarder isn't in its pod")
 	TEST_ASSERT(boarder in heard, "The caller didn't hear about its boarder")
 	TEST_ASSERT(boarder.wear_suit && (boarder.wear_suit.clothing_flags & STOPSPRESSUREDAMAGE), "A boarder came without a sealed suit")
 
-	var/datum/human_npc_order/second = create_boarding_pod(spot(3, 2), target, pirate, /mob/living/carbon/human/npc/ship_crew/pirate/lustrous/melee)
+	var/datum/human_npc_order/second = create_boarding_pod(spot(3, 2), target, pirate, /mob/living/carbon/human/npc/faction_pirate/lustrous/melee)
 	TEST_ASSERT(istype(second), "The second boarder wasn't queued")
 	controller.cancel_boarding_orders()
 	TEST_ASSERT(QDELETED(second), "Calling the raid off left a boarder in the spawn queue")
@@ -245,7 +245,7 @@
 	TEST_ASSERT_EQUAL(shotgun_handling.close_range, 3, "A shotgunner doesn't walk in close")
 
 	// A pistol volley: two pulls, a short gap between them, then a long one
-	var/mob/living/carbon/human/npc/ship_crew/gunner = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged, spot(0, 0), /datum/outfit/piratecorpse/faction/irs/ranged/pistol)
+	var/mob/living/carbon/human/npc/faction_pirate/gunner = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(0, 0), /datum/outfit/piratecorpse/faction/irs/ranged/pistol)
 	var/mob/living/carbon/human/consistent/mark = allocate(/mob/living/carbon/human/consistent, spot(4, 0))
 	var/obj/item/gun/ballistic/automatic/pistol/pistol = locate() in gunner.held_items
 	TEST_ASSERT_NOTNULL(pistol, "Test fixture: the gunner holds no pistol")
@@ -265,7 +265,7 @@
 	TEST_ASSERT_EQUAL(pistol.get_ammo(), rounds, "The gunner fired again before the gap between its shots")
 
 	// A shotgun aims a moment first; a hit in that moment spoils it
-	var/mob/living/carbon/human/npc/ship_crew/shotgunner = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged, spot(0, 2), /datum/outfit/piratecorpse/faction/irs/ranged/shotgun)
+	var/mob/living/carbon/human/npc/faction_pirate/shotgunner = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(0, 2), /datum/outfit/piratecorpse/faction/irs/ranged/shotgun)
 	var/datum/ai_controller/pump_controller = shotgunner.ai_controller
 	pump_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, mark)
 	shotgunner.next_move = 0
@@ -279,8 +279,8 @@
 /datum/unit_test/voidcrew_pirate_crew/human_crew/executions
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/executions/Run()
-	var/mob/living/carbon/human/npc/ship_crew/chief = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/boss, spot(1, 1))
-	var/mob/living/carbon/human/npc/ship_crew/agent = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/irs/ranged, spot(1, 3), /datum/outfit/piratecorpse/faction/irs/ranged/energy_gun)
+	var/mob/living/carbon/human/npc/faction_pirate/chief = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/boss, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/agent = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(1, 3), /datum/outfit/piratecorpse/faction/irs/ranged/energy_gun)
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
 	victim.adjustOxyLoss(110)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim isn't in soft crit")
@@ -297,7 +297,7 @@
 /datum/unit_test/voidcrew_pirate_crew/human_crew/self_care
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/self_care/Run()
-	var/mob/living/carbon/human/npc/ship_crew/noble = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/silverscale/captain, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/noble = build_npc(/mob/living/carbon/human/npc/faction_pirate/silverscale/captain, spot(1, 1))
 	var/mob/living/carbon/human/consistent/foe = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
 	TEST_ASSERT_NOTNULL(pirate_crew_human_stimulant(noble), "A captain carries no stimulant")
 	var/datum/ai_controller/controller = noble.ai_controller
@@ -319,7 +319,7 @@
 	TEST_ASSERT(noble.reagents.has_reagent(/datum/reagent/medicine/stimulants), "The stimulant isn't in the captain's blood")
 	TEST_ASSERT(human_npc_held_melee_weapon(noble), "The captain didn't take up its sabre again")
 
-	var/mob/living/carbon/human/npc/ship_crew/davy = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/skeleton/boss, spot(1, 3))
+	var/mob/living/carbon/human/npc/faction_pirate/davy = build_npc(/mob/living/carbon/human/npc/faction_pirate/skeleton/boss, spot(1, 3))
 	var/obj/item/reagent_containers/cup/glass/flask/flask = pirate_crew_human_flask(davy)
 	TEST_ASSERT_NOTNULL(flask, "Davy Jones has no flask")
 	TEST_ASSERT(flask.reagents.has_reagent(/datum/reagent/medicine/omnizine/cursed_grog), "Davy Jones's flask has no grog in it")
@@ -345,8 +345,8 @@
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/bosses/Run()
 	for(var/faction in list("silverscale", "skeleton", "grey", "lustrous", "interdyne", "irs", "medieval"))
-		var/boss_type = text2path("/mob/living/carbon/human/npc/ship_crew/pirate/[faction]/boss")
-		var/mob/living/carbon/human/npc/ship_crew/boss = build_npc(boss_type, spot(2, 2))
+		var/boss_type = text2path("/mob/living/carbon/human/npc/faction_pirate/[faction]/boss")
+		var/mob/living/carbon/human/npc/faction_pirate/boss = build_npc(boss_type, spot(2, 2))
 		TEST_ASSERT_NOTNULL(boss, "[boss_type] wasn't built")
 		TEST_ASSERT_EQUAL(boss.npc_rank, 2, "[boss_type] isn't a boss")
 		TEST_ASSERT(boss.npc_damage_taken < 0.8, "[boss_type] is no tougher than a captain")
@@ -369,7 +369,7 @@
 /datum/unit_test/voidcrew_pirate_crew/human_crew/finisher
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/finisher/Run()
-	var/mob/living/carbon/human/npc/ship_crew/robust = build_npc(/mob/living/carbon/human/npc/ship_crew/pirate/grey/boss, spot(1, 1))
+	var/mob/living/carbon/human/npc/faction_pirate/robust = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/boss, spot(1, 1))
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
 	victim.adjustOxyLoss(110)
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim isn't down")
@@ -403,11 +403,9 @@
 /datum/unit_test/voidcrew_pirate_crew/human_crew/suppression_counts
 
 /datum/unit_test/voidcrew_pirate_crew/human_crew/suppression_counts/Run()
-	var/datum/mission_objective/kill_count/counter = new
-	TEST_ASSERT(ispath(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, /mob/living/carbon/human/npc/ship_crew/pirate), "Test fixture: the grey tider isn't a pirate crewman")
-	var/counts = FALSE
-	for(var/base_type in counter.mob_base_types)
-		if(ispath(/mob/living/carbon/human/npc/ship_crew/pirate/grey/melee, base_type))
-			counts = TRUE
-	TEST_ASSERT(counts, "A suppression sweep doesn't count the human pirate crews")
-	qdel(counter)
+	var/datum/mission_objective/kill_count/counter = allocate(/datum/mission_objective/kill_count)
+	var/mob/living/carbon/human/npc/crewman = human_npc_build_in_zone(/mob/living/carbon/human/npc/faction_pirate/grey/melee, 2)
+	TEST_ASSERT_NOTNULL(crewman, "Test fixture: the grey tider wasn't built")
+	TEST_ASSERT(counter.counts_victim(crewman), "A suppression sweep doesn't count the human pirate crews")
+	var/mob/living/basic/trooper/pirate/faction/basic_pirate = allocate(/mob/living/basic/trooper/pirate/faction/grey/melee)
+	TEST_ASSERT(counter.counts_victim(basic_pirate), "A suppression sweep stopped counting the basic faction pirates")

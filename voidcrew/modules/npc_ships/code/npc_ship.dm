@@ -406,7 +406,7 @@
 		return
 	// The key is not gear: a human captain keeps it on him, and it drops when he dies (on_crew_death())
 	var/obj/item/ship_key/key = new(null, src)
-	var/mob/living/carbon/human/npc/ship_crew/human_captain = captain
+	var/mob/living/carbon/human/npc/faction_pirate/human_captain = captain
 	if(!istype(human_captain) || !human_captain.crew_give(key))
 		key.forceMove(captain)
 	track_crewman(captain, PIRATE_ROLE_CAPTAIN)

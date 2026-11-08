@@ -247,10 +247,14 @@ SUBSYSTEM_DEF(human_npcs)
 	icon_state = "mobspawner"
 	/// The /mob/living/carbon/human/npc typepath to spawn
 	var/npc_type
+	/// A name for this one NPC (a mapped character), or null for its type's
+	var/npc_name
+	/// Factions for this one NPC (a mapped camp's own side), or null for its type's
+	var/list/npc_faction
 
 /obj/effect/spawner/human_npc/Initialize(mapload)
 	. = ..()
 	if(!ispath(npc_type, /mob/living/carbon/human/npc))
 		stack_trace("[type] at [AREACOORD(src)] has no human NPC type to spawn")
 		return
-	spawn_human_npc(npc_type, get_turf(src), context = get_npc_spawn_context())
+	spawn_human_npc(npc_type, get_turf(src), name = npc_name, faction = npc_faction, context = get_npc_spawn_context())
