@@ -73,6 +73,17 @@
    "score": 219,
    "tier": "red"
   },
+  "/obj/item/gun/ballistic/automatic/battle_rifle": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "",
+   "name": "NT BR-38 battle rifle",
+   "note": "Right-click scopes in at 2x view range. After ten shots each shot has a 1 in 10 chance to wear the rifle down a stage, up to five; at the last stage it misfires three shots in four. A multitool (20 s) or a weapon recharger sets it right, and an EMP wears it down at once. An emag lifts its shots from 30 to 40 damage, and a fully worn emagged rifle blows up five seconds after the next trigger pull.",
+   "rank": 10,
+   "reason": "Fires 30 damage .38 rounds from a 15 round magazine, with a 2x scope. It wears itself out after ten shots until someone recalibrates it, which keeps it just under the yellow line.",
+   "score": 36,
+   "tier": "green"
+  },
   "/obj/item/gun/ballistic/automatic/c20r/toy/unrestricted": {
    "confidence": "high",
    "group": "toys and novelties",
@@ -178,7 +189,7 @@
    "group": "sidearms",
    "hash": "dc518916bb509d96",
    "name": "Makarov pistol",
-   "rank": 10,
+   "rank": 12,
    "reason": "A pocket pistol about level with a laser gun: 30 damage, 12 rounds, printable ammo.",
    "score": 42,
    "tier": "yellow"
@@ -191,6 +202,33 @@
    "rank": 3,
    "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
    "score": 105,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/clandestine": {
+   "confidence": "high",
+   "group": "sidearms",
+   "hash": "",
+   "name": "Ansem pistol",
+   "rank": 11,
+   "reason": "Does 40 damage a shot where the Makarov does 30, from an 8 round magazine. The 10mm rounds print at every autolathe.",
+   "score": 56,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher": {
+   "confidence": "medium",
+   "group": "sidearms",
+   "hash": "",
+   "name": "Ansem/SC pistol",
+   "note": "Right-click fires the underbarrel disruptor, twice before it recharges. Hitting something with the pistol, or throwing it, disrupts it for 25 s. The suppressor is part of the gun and cannot come off.",
+   "rank": 10,
+   "reason": "An Ansem with a suppressor built in and a SC/FISHER light disruptor under the barrel (right-click), which knocks out lights, cameras, turrets and APCs for 15 s.",
+   "score": 60,
+   "score_inputs": {
+    "points": {
+     "value": 4,
+     "why": "Suppressor built in, plus the SC/FISHER disruptor under the barrel."
+    }
+   },
    "tier": "yellow"
   },
   "/obj/item/gun/ballistic/automatic/pistol/deagle": {
@@ -245,7 +283,7 @@
    "hash": "4f9a01f4056d7085",
    "name": "Liberator",
    "note": "Single-shot barrel that takes a 2 s do-after to unscrew or screw back on. Every shot knocks 70-140 off its 100 integrity: on a fresh gun the first shot shatters it about 58% of the time (hurting the firing hand for up to 20 and sometimes embedding shrapnel), otherwise the next shot always does; point-blank doubles the shot's damage and aiming at someone held at gunpoint adds x1.5.",
-   "rank": 19,
+   "rank": 21,
    "reason": "Holds one round, and the barrel usually shatters within two shots. Its design disk is rare.",
    "score": 0,
    "score_inputs": {
@@ -265,7 +303,7 @@
    "group": "sidearms",
    "hash": "ed8c5fd09e92dcda",
    "name": "M1911",
-   "rank": 12,
+   "rank": 14,
    "reason": "Fires a Makarov's bullet with 8 rounds, one vested man per magazine at best.",
    "score": 35,
    "tier": "green"
@@ -275,7 +313,7 @@
    "group": "sidearms",
    "hash": "58fd32966ac76c57",
    "name": "M1911",
-   "rank": 13,
+   "rank": 15,
    "reason": "An M1911 that starts without its magazine, and the same gun once loaded.",
    "score": 35,
    "tier": "green"
@@ -285,7 +323,7 @@
    "group": "sidearms",
    "hash": "cfb7e46635e265f8",
    "name": "Makarov pistol",
-   "rank": 11,
+   "rank": 13,
    "reason": "A Makarov that starts without its magazine, and the same gun once loaded.",
    "score": 42,
    "tier": "yellow"
@@ -316,7 +354,7 @@
    "group": "sidearms",
    "hash": "",
    "name": "'Zashch' heavy pistol",
-   "rank": 14,
+   "rank": 16,
    "reason": "Plain 40 damage 10mm rounds, one a second, 20 to a magazine. The slow cycle keeps it green.",
    "score": 22,
    "tier": "green"
@@ -404,7 +442,7 @@
    "hash": "9b6b11da9005d066",
    "name": "bow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 10,
+   "rank": 12,
    "reason": "Does 50 damage per arrow, drawn by hand.",
    "score": 7,
    "score_inputs": {
@@ -421,7 +459,7 @@
    "hash": "4231c1aae8664849",
    "name": "shortbow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands. Same as the bow; only the damage multiplier differs. / Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 14,
+   "rank": 16,
    "reason": "Does 18 damage per arrow. Its recipe book comes in a 1,000 cr cargo kit.",
    "score": 3,
    "score_inputs": {
@@ -447,7 +485,7 @@
    "group": "sidearms",
    "hash": "b18390c40543a655",
    "name": ".38 revolver",
-   "rank": 16,
+   "rank": 18,
    "reason": "Does 25 damage and weak wounds, with six shots then a slow reload.",
    "score": 18,
    "tier": "green"
@@ -457,7 +495,7 @@
    "group": "sidearms",
    "hash": "616fe18d05a3ece6",
    "name": "Colt Detective Special",
-   "rank": 17,
+   "rank": 19,
    "reason": "A .38 revolver by another name: 25 damage and six shots.",
    "score": 18,
    "tier": "green"
@@ -610,13 +648,30 @@
    "score": 44,
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/rifle/boltaction/harpoon": {
+   "confidence": "low",
+   "group": "rifles",
+   "hash": "",
+   "name": "ballistic harpoon gun",
+   "note": "Holds one harpoon, so every shot needs the bolt worked and a new harpoon loaded by hand. A hit nearly always embeds and hurts when the target moves, until someone pulls it out.",
+   "rank": 9,
+   "reason": "One harpoon at a time: 60 damage that goes through a vest and sticks in the target. It scores just over the yellow line, and every shot is a reload.",
+   "score": 41,
+   "score_inputs": {
+    "points": {
+     "value": 10,
+     "why": "Every hit embeds and keeps hurting; the formula counts a single 60 damage shot only."
+    }
+   },
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/rifle/boltaction/pipegun": {
    "confidence": "medium",
    "group": "rifles",
    "hash": "09224ff4494cd405",
    "name": "pipegun",
    "note": "Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 12,
+   "rank": 14,
    "reason": "Fires one hand-loaded round at a time.",
    "score": 5,
    "score_inputs": {
@@ -633,7 +688,7 @@
    "hash": "f1fd463d783a4af9",
    "name": "pipe pistol",
    "note": "Self-loading; one trigger pull empties its whole magazine in a rapid burst. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 18,
+   "rank": 20,
    "reason": "Fires three weak rounds in a burst, then needs a hand reload.",
    "score": 3,
    "score_inputs": {
@@ -683,7 +738,7 @@
    "group": "rifles",
    "hash": "7673980e5008c01b",
    "name": "Sakhno M2442 Army",
-   "rank": 9,
+   "rank": 11,
    "reason": "Does 60 damage on bare targets and about 24 through a vest, with five shots and a bolt to work.",
    "score": 15,
    "tier": "green"
@@ -693,7 +748,7 @@
    "group": "sidearms",
    "hash": "",
    "name": "NT M-96",
-   "rank": 15,
+   "rank": 17,
    "reason": "Fires 22 damage 9mm rounds every half second, ten in the gun and a little spread. A self-loader a step below the Makarov.",
    "score": 22,
    "tier": "green"
@@ -704,7 +759,7 @@
    "hash": "2ed82f9db0fc22be",
    "name": "heated rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 13,
+   "rank": 15,
    "reason": "Does 30 damage then needs a 3 s draw. Better ammo exists, which the score doesn't cover.",
    "score": 3,
    "score_inputs": {
@@ -721,7 +776,7 @@
    "hash": "04bae29a51921f7d",
    "name": "stressed rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target. Here the redraw time is 1.5 ticks (about 0.15 s) because the value lacks SECONDS, and 25% of shots aimed at someone else misfire into the shooter. / Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 11,
+   "rank": 13,
    "reason": "Redraws almost instantly at the cost of shooting yourself one time in four.",
    "score": 7,
    "score_inputs": {
@@ -756,7 +811,7 @@
    "name": "Dardo-RE Rocket Launcher",
    "note": "Single shot: the tube is emptied by every shot and needs a new rocket. Each shot throws a backblast behind the user (60-degree arc, light blast and fire out to 6 tiles; the user is protected), and the rocket explodes on impact with a bigger blast against walls and objects and a 1% chance to gib a living target outright.",
    "rank": 4,
-   "reason": "Blows holes in ships, one rocket at a time. No shop, ruin or played hull has one.",
+   "reason": "Blows holes in ships, one rocket at a time. Turns up in red-zone armory and Syndicate caches.",
    "score": 114,
    "score_inputs": {
     "points": {
@@ -775,7 +830,7 @@
    "group": "shotguns",
    "hash": "8f3e8cf98b213a9b",
    "name": "shotgun",
-   "rank": 9,
+   "rank": 10,
    "reason": "A pump shotgun loaded with beanbags. Lethal shells print with Ballistic Ammunition.",
    "score": 20,
    "score_inputs": {
@@ -795,7 +850,7 @@
    "group": "shotguns",
    "hash": "8f3e8cf98b213a9b",
    "name": "shotgun",
-   "rank": 7,
+   "rank": 8,
    "reason": "A self-racking pump shotgun, with beanbags as issued.",
    "score": 33,
    "score_inputs": {
@@ -868,6 +923,23 @@
    },
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "",
+   "name": "cycler shotgun",
+   "note": "Racks itself after every shot, so it never needs pumping. Has two 4-shell tubes, buckshot in one and slugs in the other by default; using it in hand switches the active tube (or racks, if the chamber is empty), and the shell already chambered still fires first. A point-blank shot throws the target back 2 tiles.",
+   "rank": 5,
+   "reason": "The cycler shotgun shipped with buckshot in one tube and slugs in the other. It takes rubber like the plain cycler.",
+   "score": 54,
+   "score_inputs": {
+    "judged": {
+     "value": 54,
+     "why": "The same gun as the plain cycler, which takes rubber shells too, and rubber is its best load; it scores the same."
+    }
+   },
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/shotgun/bulldog/unrestricted": {
    "confidence": "medium",
    "group": "shotguns",
@@ -885,7 +957,7 @@
    "hash": "0c9baf65ab7c8e64",
    "name": "double-barreled shotgun",
    "note": "Holds two shells with no pumping between shots, and a point-blank shot throws the target back 3 tiles. A saw-type tool (3 seconds) can shorten it; sawing with a shell chambered fires it at the sawer, and the sawn-off gun fits a belt instead of the back, gains recoil and takes a 25 spread penalty.",
-   "rank": 6,
+   "rank": 7,
    "reason": "Two shots then a reload, with beanbags as issued. It takes lethal shells.",
    "score": 36,
    "score_inputs": {
@@ -910,7 +982,7 @@
    "hash": "0a407fc564167813",
    "name": "breaching shotgun",
    "note": "Double-barrel (3-tile point-blank throw, can be sawn off) chambered for breaching shells, which do 5 damage to creatures but carry a 200x demolition modifier. The code comment says one shell breaks a window or grille and two breach an airlock door.",
-   "rank": 11,
+   "rank": 12,
    "reason": "Loaded to open doors: a door key, not a weapon.",
    "score": 14,
    "score_inputs": {
@@ -927,7 +999,7 @@
    "hash": "0a9911c1c6748c4a",
    "name": "hunting shotgun",
    "note": "Double-barrel (3-tile point-blank throw, can be sawn off) loaded with 12g slugs; nothing else differs from the plain double-barrel.",
-   "rank": 8,
+   "rank": 9,
    "reason": "Holds two slugs of 25. AP 30 helps, but two shots is the problem.",
    "score": 28,
    "score_inputs": {
@@ -944,7 +1016,7 @@
    "hash": "d9f220632d6f2013",
    "name": "hook modified sawn-off shotgun",
    "note": "Right-click fires an attached hook (1 charge, back in about 8 seconds) that drags the first unanchored thing it hits to the shooter's tile, knocking a creature down for half a second and freezing the shooter's movement until it arrives; the hook deals stamina damage and no brute damage. Left-click fires the shotgun, and the barrel hook gives it a sharp melee attack that can butcher corpses; a point-blank shot throws the target back 2 tiles.",
-   "rank": 5,
+   "rank": 6,
    "reason": "A sawn-off shotgun loaded with rubber, plus a hook that drags the target in.",
    "score": 49,
    "score_inputs": {
@@ -960,7 +1032,7 @@
    "group": "shotguns",
    "hash": "bdd1ea5bf292ed3f",
    "name": "shotgun",
-   "rank": 12,
+   "rank": 13,
    "reason": "A pump shotgun loaded with four buckshot shells.",
    "score": 8,
    "tier": "green"
@@ -970,7 +1042,7 @@
    "group": "shotguns",
    "hash": "b60ba70b55c1b7d5",
    "name": "Donk Co. Musket",
-   "rank": 13,
+   "rank": 14,
    "reason": "Fires one shell, loaded by hand.",
    "score": 0,
    "score_inputs": {
@@ -997,7 +1069,7 @@
    "hash": "b2de977a12875c5b",
    "name": "riot shotgun",
    "note": "Pump-action shotgun loaded with rubber shot, whose pellets ricochet off walls (ricochet chance falls 4 points per tile travelled); a point-blank shot throws the target back 2 tiles. A saw-type tool (3 seconds) can shorten it; sawing with a shell chambered fires it at the sawer, and the sawn-off gun fits a belt instead of the back, gains recoil and takes a 25 spread penalty.",
-   "rank": 10,
+   "rank": 11,
    "reason": "Weaker against a vest than a 400 cr disabler: a slow pump loaded with rubber. It takes lethal shells.",
    "score": 19,
    "score_inputs": {
@@ -1942,7 +2014,6 @@
   "/obj/item/gun": "abstract",
   "/obj/item/gun/ballistic": "abstract",
   "/obj/item/gun/ballistic/automatic": "abstract",
-  "/obj/item/gun/ballistic/automatic/battle_rifle": "no route",
   "/obj/item/gun/ballistic/automatic/c20r": "needs another system",
   "/obj/item/gun/ballistic/automatic/c20r/sc_c20r": "needs another system",
   "/obj/item/gun/ballistic/automatic/c20r/toy": "toy",
@@ -1962,8 +2033,6 @@
   "/obj/item/gun/ballistic/automatic/laser/ctf/yellow": "admin",
   "/obj/item/gun/ballistic/automatic/m90": "needs another system",
   "/obj/item/gun/ballistic/automatic/mini_uzi/chimpgun": "needs another system",
-  "/obj/item/gun/ballistic/automatic/pistol/clandestine": "leftover",
-  "/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/contraband": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/deagle/contraband": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/deagle/ctf": "admin",
@@ -1989,7 +2058,6 @@
   "/obj/item/gun/ballistic/revolver/reverse": "leftover",
   "/obj/item/gun/ballistic/revolver/reverse/mateba": "leftover",
   "/obj/item/gun/ballistic/rifle": "abstract",
-  "/obj/item/gun/ballistic/rifle/boltaction/harpoon": "leftover",
   "/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol/prime": "leftover",
   "/obj/item/gun/ballistic/rifle/enchanted": "leftover",
   "/obj/item/gun/ballistic/rifle/lionhunter": "leftover",
@@ -2003,7 +2071,6 @@
   "/obj/item/gun/ballistic/rocketlauncher/unrestricted/nanotrasen": "leftover",
   "/obj/item/gun/ballistic/shotgun/automatic/combat/compact": "leftover",
   "/obj/item/gun/ballistic/shotgun/automatic/dual_tube/bounty": "leftover",
-  "/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly": "leftover",
   "/obj/item/gun/ballistic/shotgun/bulldog": "needs another system",
   "/obj/item/gun/ballistic/shotgun/ctf": "admin",
   "/obj/item/gun/ballistic/shotgun/ctf/blue": "admin",

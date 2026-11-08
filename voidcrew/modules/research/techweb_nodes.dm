@@ -422,6 +422,7 @@
 		"vc_shotgun_dragonsbreath",
 		"vc_ammo_uzi",
 		"vc_strilka310_clip",
+		"vc_ammo_harpoon",
 		"suppressor",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
@@ -436,6 +437,9 @@
 		"vc_ammo_m9mm_ap",
 		"vc_ammo_m9mm_hp",
 		"vc_ammo_m9mm_fire",
+		"vc_ammo_m10mm_ap",
+		"vc_ammo_m10mm_hp",
+		"vc_ammo_m10mm_fire",
 		"vc_ammo_aps_ap",
 		"vc_ammo_aps_hp",
 		"vc_ammo_aps_fire",

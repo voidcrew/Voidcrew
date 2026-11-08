@@ -85,3 +85,19 @@
 	TEST_ASSERT(mauser.bolt_locked, "The M-96 should lock open when it runs dry")
 	TEST_ASSERT_NULL(mauser.chambered, "A dry M-96 still has a round chambered")
 	TEST_ASSERT_EQUAL(mauser.get_ammo(TRUE), 0, "A dry M-96 still reports rounds")
+
+/// The older guns that joined the shops and loot tables feel like what they are, and the type rules agree.
+/datum/unit_test/voidcrew_old_guns_feel
+/datum/unit_test/voidcrew_old_guns_feel/Run()
+	var/list/classes = list(
+		/obj/item/gun/ballistic/automatic/battle_rifle = "rifle",
+		/obj/item/gun/ballistic/automatic/pistol/clandestine = "pistol",
+		/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = "pistol",
+		/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly = "shotgun",
+		/obj/item/gun/ballistic/rifle/boltaction/harpoon = "marksman",
+		/obj/item/gun/ballistic/rocketlauncher/unrestricted = "launcher",
+	)
+	for(var/gun_path in classes)
+		var/obj/item/gun/gun = allocate(gun_path)
+		gun.gun_feel_resolve()
+		TEST_ASSERT_EQUAL(gun.gun_feel_class, classes[gun_path], "[gun_path] has the wrong feel class")

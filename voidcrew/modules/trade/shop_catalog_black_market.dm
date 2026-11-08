@@ -66,6 +66,10 @@
 		/datum/shop_sku/black_market/rapier,
 		/datum/shop_sku/black_market/zashch,
 		/datum/shop_sku/black_market/nt_m96,
+		/datum/shop_sku/black_market/battle_rifle,
+		/datum/shop_sku/black_market/ansem,
+		/datum/shop_sku/black_market/ansem_sc,
+		/datum/shop_sku/black_market/lethal_cycler,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -912,6 +916,55 @@
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/rifle/nt_m96
 	price_credits = 1800
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/battle_rifle
+	category = "Weapons"
+	desc = "Nanotrasen's prototype security rifle, chambered in .38."
+	item_path = /obj/item/gun/ballistic/automatic/battle_rifle
+	price_credits = 2200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/ansem
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine
+	price_credits = 2000
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/ansem_sc
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "An Ansem with the suppressor built in and a light disruptor under the barrel. Chambered in 10mm."
+	item_path = /obj/item/gun/ballistic/automatic/pistol/clandestine/fisher
+	price_credits = 2800
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/lethal_cycler
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A cycler shotgun with buckshot in one tube and slugs in the other."
+	item_path = /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly
+	price_credits = 2400
+	price_vouchers = 1
 	stock_min = 1
 	stock_max = 1
 	restock_interval = 1 HOURS

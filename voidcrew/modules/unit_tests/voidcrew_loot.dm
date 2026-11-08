@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(2, 3, 5), "syndicate" = list(2, 2, 3), "plunder" = list(3, 1, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(3, 4, 5), "syndicate" = list(2, 3, 3), "plunder" = list(3, 2, 3), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -690,6 +690,7 @@
 			/obj/item/bambostaff,
 			/obj/item/claymore/shortsword,
 			/obj/item/fireaxe,
+			/obj/item/gun/ballistic/automatic/battle_rifle,
 			/obj/item/gun/ballistic/automatic/pistol,
 			/obj/item/gun/ballistic/automatic/pistol/m1911,
 			/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
@@ -743,6 +744,8 @@
 			/obj/item/gun/ballistic/automatic/c20r/unrestricted,
 			/obj/item/gun/ballistic/automatic/mini_uzi,
 			/obj/item/gun/ballistic/automatic/pistol/aps,
+			/obj/item/gun/ballistic/automatic/pistol/clandestine,
+			/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher,
 			/obj/item/gun/ballistic/automatic/pistol/deagle,
 			/obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 			/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
@@ -755,10 +758,12 @@
 			/obj/item/gun/ballistic/revolver/mateba,
 			/obj/item/gun/ballistic/rifle/boltaction,
 			/obj/item/gun/ballistic/rifle/boltaction/donkrifle,
+			/obj/item/gun/ballistic/rifle/boltaction/harpoon,
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun/prime,
 			/obj/item/gun/ballistic/rifle/boltaction/prime,
 			/obj/item/gun/ballistic/rifle/rebarxbow/forced,
 			/obj/item/gun/ballistic/shotgun,
+			/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
 			/obj/item/gun/ballistic/shotgun/lethal,
 			/obj/item/gun/ballistic/shotgun/musket/no_quarter,
 			/obj/item/gun/ballistic/shotgun/riot,
@@ -819,6 +824,7 @@
 			/obj/item/gun/ballistic/automatic/m90/unrestricted,
 			/obj/item/gun/ballistic/automatic/tommygun,
 			/obj/item/gun/ballistic/rifle/sniper_rifle,
+			/obj/item/gun/ballistic/rocketlauncher/unrestricted,
 			/obj/item/gun/ballistic/shotgun/automatic/combat,
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted,
 			/obj/item/gun/energy/e_gun/hos,

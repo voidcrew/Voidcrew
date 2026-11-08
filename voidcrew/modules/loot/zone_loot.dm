@@ -58,12 +58,15 @@
 GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	// detachable magazines
 	/obj/item/gun/ballistic/automatic/ar = /obj/item/ammo_box/magazine/m223,
+	/obj/item/gun/ballistic/automatic/battle_rifle = /obj/item/ammo_box/magazine/m38,
 	/obj/item/gun/ballistic/automatic/c20r/unrestricted = /obj/item/ammo_box/magazine/smgm45,
 	/obj/item/gun/ballistic/automatic/gyropistol = /obj/item/ammo_box/magazine/m75,
 	/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = /obj/item/ammo_box/magazine/m7mm,
 	/obj/item/gun/ballistic/automatic/m90 = /obj/item/ammo_box/magazine/m223,
 	/obj/item/gun/ballistic/automatic/mini_uzi = /obj/item/ammo_box/magazine/uzim9mm,
 	/obj/item/gun/ballistic/automatic/pistol = /obj/item/ammo_box/magazine/m9mm,
+	/obj/item/gun/ballistic/automatic/pistol/clandestine = /obj/item/ammo_box/magazine/m10mm,
+	/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher = /obj/item/ammo_box/magazine/m10mm,
 	/obj/item/gun/ballistic/automatic/pistol/deagle = /obj/item/ammo_box/magazine/m50,
 	/obj/item/gun/ballistic/automatic/pistol/m1911 = /obj/item/ammo_box/magazine/m45,
 	/obj/item/gun/ballistic/automatic/pistol/zashch = /obj/item/ammo_box/magazine/zashch,
@@ -78,10 +81,13 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/revolver/c38/detective = /obj/item/ammo_box/c38,
 	/obj/item/gun/ballistic/revolver/mateba = /obj/item/ammo_box/a357,
 	/obj/item/gun/ballistic/rifle/boltaction = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/rifle/boltaction/harpoon = /obj/item/storage/bag/harpoon_quiver,
 	/obj/item/gun/ballistic/rifle/boltaction/prime = /obj/item/ammo_box/strilka310,
 	/obj/item/gun/ballistic/rifle/boltaction/surplus = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/rocketlauncher/unrestricted = /obj/item/ammo_casing/rocket,
 	// break/pump actions: a box of shells
 	/obj/item/gun/ballistic/shotgun/automatic/combat = /obj/item/storage/box/lethalshot,
+	/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/doublebarrel = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/riot = /obj/item/storage/box/lethalshot,
 ))

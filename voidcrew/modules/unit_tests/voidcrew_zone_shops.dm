@@ -33,6 +33,9 @@
 		/datum/shop_sku/black_market/rotating/mateba = 1,
 		/datum/shop_sku/black_market/c20r = 1,
 		/datum/shop_sku/black_market/wt550 = 1,
+		/datum/shop_sku/black_market/ansem = 1,
+		/datum/shop_sku/black_market/ansem_sc = 1,
+		/datum/shop_sku/black_market/lethal_cycler = 1,
 		/datum/shop_sku/outfitter/rare/ablative_vest = 1,
 		/datum/shop_sku/skunk/rotating/thermal_glasses = 1,
 		/datum/shop_sku/black_market/thermals = 1,
@@ -128,7 +131,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 98, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 101, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0
