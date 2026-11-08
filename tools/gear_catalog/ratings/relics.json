@@ -349,6 +349,7 @@
   "/obj/item/hot_potato/harmless": "no route",
   "/obj/item/hot_potato/harmless/toy": "toy",
   "/obj/item/hot_potato/syndicate": "no route",
+  "/obj/item/relic/excavated": "no route",
   "/obj/item/shadowcloak/weaker": "no route",
   "/obj/item/soulstone": "no route",
   "/obj/item/soulstone/anybody/chaplain/sparring": "no route",

@@ -208,6 +208,7 @@ CATEGORIES = [
     ('/obj/item/dragons_blood', 'relics', ITEM),
     ('/obj/item/emergency_bed', 'tools', ITEM),
     ('/obj/item/experi_scanner', 'tools', ITEM),
+    ('/obj/item/excavation', 'tools', ITEM),
     ('/obj/item/extendohand', 'tools', ITEM),
     ('/obj/item/extinguisher', 'tools', ITEM),
     ('/obj/item/extraction_pack', 'tools', ITEM),
