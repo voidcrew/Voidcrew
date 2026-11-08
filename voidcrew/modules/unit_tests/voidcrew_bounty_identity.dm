@@ -9,7 +9,7 @@
 /datum/unit_test/voidcrew_bounty_identity_records
 
 /datum/unit_test/voidcrew_bounty_identity_records/Run()
-	var/list/styles = list("brawler", "knife", "pistol", "shotgun", "club", "bottle") // BOUNTY_STYLE_*, normal
+	var/list/styles = list("brawler", "knife", "pistol", "shotgun", "smg", "revolver", "club", "bottle") // BOUNTY_STYLE_*, normal
 	var/list/kits = list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy") // BOUNTY_KIT_*
 	var/list/labels = bounty_feature_labels()
 	// BOUNTY_TIER_*, BOUNTY_ARCHETYPE_*, BOUNTY_PLACEMENT_*

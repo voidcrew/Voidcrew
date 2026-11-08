@@ -10,9 +10,15 @@
  * - knife: a knife from a pocket (Wanted and above: a combat knife). Its cuts and bleeding are the
  *   knife's own;
  * - club: a baseball bat in hand (Wanted and above: the metal bat). It knocks people back as tg's bat does;
- * - pistol: a Stechkin from a shoulder holster, a spare magazine in a pocket, reloaded the player's way;
+ * - pistol: a Stechkin from a shoulder holster, set to single shots with its own fire selector, a spare
+ *   magazine in a pocket, reloaded the player's way. Strings of BOUNTY_PISTOL_STRING_SHOTS, then a pause;
  * - shotgun: a pump shotgun on the back with buckshot (Wanted and above: a semi-automatic combat
  *   shotgun), shells on a bandolier, loaded into the tube shell by shell;
+ * - SMG: a WT-550 worn on the belt at every tier, a spare magazine in a pocket. A burst is
+ *   BOUNTY_SMG_BURST separate trigger pulls at the gun's own full-auto rate, so it stops the moment
+ *   they can't shoot or the target is gone;
+ * - revolver: a .38 in a shoulder holster, a speedloader in a pocket. A dry cylinder is reloaded the
+ *   player's way: the speedloader clicked into it pushes the spent casings out;
  * - bottle: beer bottles from a satchel, thrown one at a time with a real throw (tg's bottle smashes on
  *   whoever it hits); out of bottles, they fight with their fists;
  * - holdout: a meek criminal's little Makarov, a pocket gun, and a spare magazine in a fanny pack (the
@@ -23,6 +29,10 @@
  * throw, the telegraph before it (a hit during it fumbles the attack), the reload, and the distance they
  * keep. Gear is locked to the body (D3): it never drops and is never loot; bottles are consumables, so a
  * thrown one leaves the hand and breaks.
+ *
+ * A gun that comes out of its holster, off their back or out of a bag at the start of a fight comes
+ * with a line and the holster's sound, and the draw is the telegraph for the first shot: at least
+ * BOUNTY_DRAW_TIME after it, fumbled by a hit in between (/datum/ai_behavior/human_npc_draw/bounty).
  */
 
 /// Every fighting style by key (BOUNTY_STYLE_*), one datum each
@@ -51,7 +61,13 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		return FALSE
 	controller.set_blackboard_key(BB_BOUNTY_STYLE, key)
 	bounty_ai_clear_windup(controller)
+	controller.clear_blackboard_key(BB_BOUNTY_BURST_LEFT)
 	return TRUE
+
+/// Whether style `key` (BOUNTY_STYLE_*) fights with a gun
+/proc/bounty_style_is_gun(key)
+	var/datum/bounty_style/style = GLOB.bounty_styles[key]
+	return !!style && ispath(style.weapon, /obj/item/gun)
 
 /// Whether a pawn is in a fight it can take part in: a criminal fighting, or a companion that has not broken
 /proc/bounty_ai_fighting(mob/living/fighter)
@@ -86,6 +102,58 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		return TRUE
 	var/obj/item/gun/ballistic/ballistic = gun
 	return pumps && istype(ballistic) && human_npc_gun_needs_rack(ballistic)
+
+/// Live rounds in a ballistic gun: its magazine (a revolver's cylinder holds its chamber) and a chambered round. Null for anything else.
+/proc/bounty_gun_live_rounds(obj/item/gun/ballistic/gun)
+	if(!istype(gun))
+		return null
+	. = gun.magazine ? human_npc_live_rounds(gun.magazine) : 0
+	if(gun.chambered?.loaded_projectile && (!gun.magazine || !(gun.chambered in gun.magazine.stored_ammo)))
+		.++
+
+/**
+ * Sets `gun` to single shots with its own fire selector, the way `user` would: their fire-mode button
+ * on the gun, or the selector itself while the button isn't theirs. A Stechkin fires three-round
+ * bursts until it is switched. Returns TRUE if the gun fires one round a pull now.
+ */
+/proc/bounty_gun_single_fire(mob/living/user, obj/item/gun/ballistic/gun)
+	if(!istype(gun))
+		return FALSE
+	if(gun.burst_size <= 1)
+		return TRUE
+	// A gun with no selector only fires its burst
+	if(!gun.burst_fire_selection)
+		return FALSE
+	// The selector's click and its note go to whoever flips it, not to whoever's turn it is
+	var/mob/old_usr = usr
+	usr = user
+	for(var/datum/action/item_action/toggle_firemode/selector in gun.actions)
+		if(selector.owner == user)
+			selector.Trigger(user)
+			break
+	if(gun.burst_size > 1 && gun.burst_fire_selection)
+		gun.burst_select()
+	usr = old_usr
+	return gun.burst_size <= 1
+
+/**
+ * Counts a shot just fired from `gun` towards a string of `string_length` on `controller`'s blackboard. A
+ * new magazine (a reload) starts the count again. TRUE when the shot ends a string with rounds still in
+ * the gun; an empty one is reloaded instead.
+ */
+/proc/bounty_ai_string_done(datum/ai_controller/controller, obj/item/gun/ballistic/gun, string_length)
+	if(!istype(gun) || string_length <= 0 || !gun.magazine)
+		return FALSE
+	var/shots = 1
+	if(controller.blackboard[BB_BOUNTY_STRING_MAGAZINE] == gun.magazine)
+		shots += controller.blackboard[BB_BOUNTY_STRING_SHOTS]
+	else
+		controller.set_blackboard_key(BB_BOUNTY_STRING_MAGAZINE, gun.magazine)
+	if(shots >= string_length && bounty_gun_live_rounds(gun) > 0)
+		controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, 0)
+		return TRUE
+	controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, shots)
+	return FALSE
 
 /// Empties the hand that isn't holding `keep`, for a gun that needs both: puts what's there away, and lets go of a spent shell or a spent magazine
 /proc/bounty_ai_free_other_hand(mob/living/carbon/body, obj/item/keep)
@@ -184,8 +252,20 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	var/windup_sound
 	/// The telegraph works a pump: a spent shell in the chamber doesn't need a reload
 	var/pumps = FALSE
+	/// Only the first shot of a string needs the telegraph (the gun raised, the hammer back); the draw counts as one
+	var/windup_per_string = FALSE
 	/// Chance a blow is a shove instead
 	var/shove_chance = 0
+	/// A gun kept in a holster, on the back or in a bag until a fight: what people see as it comes out (on_drawn())
+	var/draw_message
+	/// The gun is set to single shots with its own fire selector before it fires
+	var/single_fire = FALSE
+	/// Trigger pulls in one burst, burst_gap apart (1: a pull at a time). Each pull is its own step of bounty_shoot.
+	var/burst = 1
+	var/burst_gap = 0
+	/// Shots in a string, then string_pause on top of the interval before the next (0: no strings)
+	var/string_shots = 0
+	var/string_pause = 0
 
 /**
  * Puts this style's weapon and spares on `outfit` (an instance), the heavier weapon if `heavy`. The
@@ -197,6 +277,54 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /// The weapon this style carries at `heavy`
 /datum/bounty_style/proc/weapon_for(heavy)
 	return (heavy && heavy_weapon) || weapon
+
+/// Trigger pulls in one burst for `fighter`
+/datum/bounty_style/proc/burst_length(mob/living/carbon/fighter)
+	return burst
+
+/// Shots in one string for `fighter`, 0 for none
+/datum/bounty_style/proc/string_length(mob/living/carbon/fighter)
+	return string_shots
+
+/// Whether a burst is under way. One whose next pull is long overdue was cut off (the AI stopped meanwhile), and is forgotten.
+/datum/bounty_style/proc/burst_under_way(datum/ai_controller/controller)
+	if(!controller.blackboard[BB_BOUNTY_BURST_LEFT])
+		return FALSE
+	if(world.time > controller.blackboard[BB_BOUNTY_NEXT_SHOT] + BOUNTY_BURST_STALE)
+		end_burst(controller)
+		return FALSE
+	return TRUE
+
+/// Whatever is left of a burst never fires: the next one starts with its own telegraph
+/datum/bounty_style/proc/end_burst(datum/ai_controller/controller)
+	controller.clear_blackboard_key(BB_BOUNTY_BURST_LEFT)
+
+/**
+ * `weapon`, this style's own, just came into `fighter`'s hand out of `drawn_from` (a holster, a bag, or
+ * the body itself for a slot). The selector is set, and a gun that was put away comes out with the
+ * line and the holster's sound: the draw is the telegraph for the first shot, BOUNTY_DRAW_TIME later,
+ * and a hit in between fumbles it.
+ */
+/datum/bounty_style/proc/on_drawn(mob/living/carbon/fighter, datum/ai_controller/controller, obj/item/weapon, atom/drawn_from)
+	if(single_fire)
+		bounty_gun_single_fire(fighter, weapon)
+	if(!draw_message)
+		return
+	var/now = world.time
+	end_burst(controller)
+	controller.set_blackboard_key(BB_BOUNTY_DRAWN_AT, now)
+	controller.set_blackboard_key(BB_BOUNTY_NEXT_SHOT, now + BOUNTY_DRAW_TIME)
+	controller.set_blackboard_key(BB_BOUNTY_WINDUP_UNTIL, now + BOUNTY_DRAW_TIME)
+	controller.set_blackboard_key(BB_BOUNTY_WINDUP_FROM, now)
+	controller.set_blackboard_key(BB_BOUNTY_WINDUP_STAMINA, fighter.getStaminaLoss())
+	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(target)
+		fighter.face_atom(target)
+	fighter.visible_message(span_warning(replacetext(draw_message, "%USER", "[fighter]")), vision_distance = COMBAT_MESSAGE_RANGE)
+	var/obj/item/container = drawn_from
+	var/open_sound = istype(container) ? container.atom_storage?.open_sound : null
+	if(open_sound)
+		playsound(fighter, open_sound, 50, TRUE)
 
 /// The ranged weapon in `fighter`'s hand that is ready to use, or null: a loaded (or pumpable) gun, a bottle
 /datum/bounty_style/proc/ready_in_hand(mob/living/carbon/fighter)
@@ -220,7 +348,13 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 
 /// Whether this shot needs the telegraph first
 /datum/bounty_style/proc/needs_windup(datum/ai_controller/controller)
-	return windup > 0
+	if(windup <= 0)
+		return FALSE
+	if(!windup_per_string)
+		return TRUE
+	// Raised by the last shot, or by the draw, recently enough: the string goes on
+	var/raised_at = max(controller.blackboard[BB_BOUNTY_LAST_SHOT], controller.blackboard[BB_BOUNTY_DRAWN_AT])
+	return !raised_at || world.time - raised_at > BOUNTY_PISTOL_STRING_GAP
 
 /// The telegraph: what they say, show and sound like before the shot
 /datum/bounty_style/proc/telegraph(mob/living/carbon/fighter, atom/target, obj/item/weapon)
@@ -274,8 +408,38 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		bounty_ai_free_other_hand(fighter, gun)
 	if(!human_npc_ready_item(fighter, gun))
 		return FALSE
+	if(single_fire)
+		bounty_gun_single_fire(fighter, gun)
 	fighter.zone_selected = human_npc_pick_aim_zone()
-	return controller.ai_interact(target = target, combat_mode = TRUE)
+	var/rounds = bounty_gun_live_rounds(gun)
+	if(!controller.ai_interact(target = target, combat_mode = TRUE))
+		return FALSE
+	// Only a round that went counts: a click the gun refused (its fire delay, an empty chamber) is no shot
+	return isnull(rounds) || bounty_gun_live_rounds(gun) < rounds
+
+/**
+ * One pull of the trigger (or one throw) at `target`, then the clock for the next: the burst's next
+ * pull burst_gap away while one is under way, else the style's interval, with string_pause on top after
+ * the last shot of a string. Returns TRUE if a round went.
+ */
+/datum/bounty_style/proc/pull(mob/living/carbon/fighter, datum/ai_controller/controller, atom/target, obj/item/weapon)
+	var/fired = attack(fighter, controller, target, weapon)
+	var/now = world.time
+	if(fired)
+		controller.set_blackboard_key(BB_BOUNTY_LAST_SHOT, now)
+	var/pulls = burst_length(fighter)
+	if(fired && pulls > 1)
+		var/left = (controller.blackboard[BB_BOUNTY_BURST_LEFT] || pulls) - 1
+		if(left > 0 && ready_in_hand(fighter))
+			controller.set_blackboard_key(BB_BOUNTY_BURST_LEFT, left)
+			controller.set_blackboard_key(BB_BOUNTY_NEXT_SHOT, now + burst_gap)
+			return TRUE
+	end_burst(controller)
+	var/next = now + interval
+	if(fired && bounty_ai_string_done(controller, weapon, string_length(fighter)))
+		next += string_pause
+	controller.set_blackboard_key(BB_BOUNTY_NEXT_SHOT, next)
+	return fired
 
 /// Bare fists: a person's punch, and now and then a shove
 /datum/bounty_style/brawler
@@ -302,7 +466,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /datum/bounty_style/club/equip(datum/outfit/outfit, heavy = FALSE)
 	outfit.r_hand = weapon_for(heavy)
 
-/// A Stechkin in a shoulder holster, a spare magazine in a pocket
+/// A Stechkin in a shoulder holster, a spare magazine in a pocket: single shots twice a second, in strings
 /datum/bounty_style/pistol
 	key = BOUNTY_STYLE_PISTOL
 	ranged = TRUE
@@ -311,8 +475,13 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	interval = BOUNTY_PISTOL_INTERVAL
 	min_range = BOUNTY_PISTOL_MIN_RANGE
 	windup = BOUNTY_PISTOL_WINDUP
+	windup_per_string = TRUE
 	windup_message = "%USER raises a pistol."
 	windup_sound = 'sound/items/weapons/gun/pistol/rack_small.ogg'
+	draw_message = "%USER pulls out a pistol!"
+	single_fire = TRUE
+	string_shots = BOUNTY_PISTOL_STRING_SHOTS
+	string_pause = BOUNTY_PISTOL_STRING_PAUSE
 
 /datum/bounty_style/pistol/equip(datum/outfit/outfit, heavy = FALSE)
 	var/obj/item/gun/ballistic/gun_type = weapon_for(heavy)
@@ -321,10 +490,48 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	LAZYADDASSOC(outfit.belt_contents, gun_type, 1)
 	bounty_outfit_carry(outfit, initial(gun_type.accepted_magazine_type))
 
-/// Only the first shot of a string needs the gun raised
-/datum/bounty_style/pistol/needs_windup(datum/ai_controller/controller)
-	var/last_shot = controller.blackboard[BB_BOUNTY_LAST_SHOT]
-	return !last_shot || world.time - last_shot > BOUNTY_PISTOL_STRING_GAP
+/**
+ * A WT-550 worn on the belt, at every tier, and a spare magazine in a pocket. Brought up level before
+ * each burst; a burst is BOUNTY_SMG_BURST trigger pulls at the gun's own full-auto rate.
+ */
+/datum/bounty_style/smg
+	key = BOUNTY_STYLE_SMG
+	ranged = TRUE
+	weapon = /obj/item/gun/ballistic/automatic/wt550
+	weapon_type = /obj/item/gun/ballistic/automatic/wt550
+	interval = BOUNTY_SMG_INTERVAL
+	min_range = BOUNTY_SMG_MIN_RANGE
+	windup = BOUNTY_SMG_WINDUP
+	windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
+	draw_message = "%USER pulls out an SMG!"
+	burst = BOUNTY_SMG_BURST
+	burst_gap = BOUNTY_SMG_BURST_GAP
+
+/datum/bounty_style/smg/equip(datum/outfit/outfit, heavy = FALSE)
+	var/obj/item/gun/ballistic/gun_type = weapon_for(heavy)
+	outfit.belt = gun_type
+	outfit.belt_contents = null
+	bounty_outfit_carry(outfit, initial(gun_type.accepted_magazine_type))
+
+/// A .38 revolver in a shoulder holster, a speedloader in a pocket: one heavy shot a second
+/datum/bounty_style/revolver
+	key = BOUNTY_STYLE_REVOLVER
+	ranged = TRUE
+	weapon = /obj/item/gun/ballistic/revolver/c38
+	weapon_type = /obj/item/gun/ballistic/revolver/c38
+	interval = BOUNTY_REVOLVER_INTERVAL
+	min_range = BOUNTY_REVOLVER_MIN_RANGE
+	windup = BOUNTY_REVOLVER_WINDUP
+	windup_per_string = TRUE
+	windup_message = "%USER thumbs back the hammer."
+	windup_sound = 'sound/items/weapons/gun/general/ballistic_click.ogg'
+	draw_message = "%USER pulls out a revolver!"
+
+/datum/bounty_style/revolver/equip(datum/outfit/outfit, heavy = FALSE)
+	outfit.belt = /obj/item/storage/belt/holster
+	outfit.belt_contents = null
+	LAZYADDASSOC(outfit.belt_contents, weapon_for(heavy), 1)
+	bounty_outfit_carry(outfit, /obj/item/ammo_box/c38)
 
 /// Buckshot: a pump shotgun on the back, shells on a bandolier. The pump is the telegraph before each blast.
 /datum/bounty_style/shotgun
@@ -339,12 +546,20 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	windup_message = "%USER pumps the shotgun."
 	windup_sound = 'sound/items/weapons/gun/shotgun/rack.ogg'
 	pumps = TRUE
+	draw_message = "%USER unslings a shotgun!"
 
 /datum/bounty_style/shotgun/equip(datum/outfit/outfit, heavy = FALSE)
 	outfit.back = weapon_for(heavy)
 	outfit.belt = /obj/item/storage/belt/bandolier
 	outfit.belt_contents = null
 	LAZYADDASSOC(outfit.belt_contents, /obj/item/ammo_casing/shotgun/buckshot, BOUNTY_SHOTGUN_SHELLS)
+
+/// Off the back, the pump is worked as it comes up if nothing is chambered: the draw is the first blast's telegraph
+/datum/bounty_style/shotgun/on_drawn(mob/living/carbon/fighter, datum/ai_controller/controller, obj/item/weapon, atom/drawn_from)
+	. = ..()
+	var/obj/item/gun/ballistic/gun = weapon
+	if(istype(gun) && human_npc_gun_needs_rack(gun) && human_npc_ready_item(fighter, gun))
+		gun.attack_self(fighter)
 
 /// The pump is real: a spent shell in the chamber is worked out by hand, which makes the rack's own sound
 /datum/bounty_style/shotgun/telegraph(mob/living/carbon/fighter, atom/target, obj/item/weapon)
@@ -500,8 +715,26 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	if(!to_draw)
 		return
 	controller.set_blackboard_key(BB_HUMAN_NPC_DRAW_ITEM, to_draw)
-	controller.queue_behavior(/datum/ai_behavior/human_npc_draw, BB_HUMAN_NPC_DRAW_ITEM)
+	controller.queue_behavior(/datum/ai_behavior/human_npc_draw/bounty, BB_HUMAN_NPC_DRAW_ITEM)
 	return SUBTREE_RETURN_FINISH_PLANNING
+
+/**
+ * The human NPC base's draw. When what comes into the hand is their style's own weapon, the style
+ * answers it (on_drawn()): a holstered or slung gun comes out with a line, and the first shot waits.
+ */
+/datum/ai_behavior/human_npc_draw/bounty
+
+/datum/ai_behavior/human_npc_draw/bounty/perform(seconds_per_tick, datum/ai_controller/controller, item_key)
+	var/mob/living/carbon/npc = controller.pawn
+	var/obj/item/weapon = controller.blackboard[item_key]
+	var/atom/drawn_from = weapon?.loc
+	var/held_before = !QDELETED(weapon) && npc.is_holding(weapon)
+	. = ..()
+	if(held_before || QDELETED(weapon) || !npc.is_holding(weapon))
+		return
+	var/datum/bounty_style/style = bounty_ai_style(npc)
+	if(style?.weapon_type && istype(weapon, style.weapon_type))
+		style.on_drawn(npc, controller, weapon, drawn_from)
 
 /**
  * The human NPC base's reload, for a gun loaded through its tube (a shotgun): every shell it can fit,
@@ -558,8 +791,9 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 /**
  * Shoots (or throws) at the target from the style's distance: closes in while it can't see them, steps
  * back from anyone inside the style's min_range, steps aside for anyone it may not hit in its line,
- * telegraphs, then pulls the trigger (or throws) once per the style's interval. Planning carries on
- * meanwhile, so a new target, a retreat or a call for help is picked up mid-fight.
+ * telegraphs, then pulls the trigger (or throws) once per the style's interval; a burst is that many
+ * pulls burst_gap apart, each one checked like the first. Planning carries on meanwhile, so a new
+ * target, a retreat or a call for help is picked up mid-fight.
  */
 /datum/ai_behavior/bounty_shoot
 	// Often enough that a style fires at its own pace and its wind-up is never stretched
@@ -588,27 +822,30 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	if(!weapon || HAS_TRAIT(fighter, TRAIT_HANDS_BLOCKED))
 		// Dry or empty-handed: the arm subtree reloads or draws, or they fight with their fists
 		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	// Every round of a burst is a pull of its own, asked for again here: anything above that stops it stops the burst
+	var/bursting = style.burst_under_way(controller)
 	if(!can_see(fighter, target, required_distance))
+		style.end_burst(controller)
 		return AI_BEHAVIOR_INSTANT
 	var/winding = !!controller.blackboard[BB_BOUNTY_WINDUP_UNTIL]
-	if(style.min_range && get_dist(fighter, target) < style.min_range && !winding)
+	if(style.min_range && get_dist(fighter, target) < style.min_range && !winding && !bursting)
 		bounty_ai_back_off(controller, fighter, target)
 	if(bounty_ai_line_blocked(fighter, target))
+		style.end_burst(controller)
 		bounty_ai_sidestep(fighter, target)
 		return AI_BEHAVIOR_DELAY
 	if(!winding && world.time < controller.blackboard[BB_BOUNTY_NEXT_SHOT])
 		return AI_BEHAVIOR_DELAY
-	if(!style.windup_step(fighter, controller, target, weapon))
+	if(!bursting && !style.windup_step(fighter, controller, target, weapon))
 		return AI_BEHAVIOR_DELAY
-	if(style.attack(fighter, controller, target, weapon))
-		controller.set_blackboard_key(BB_BOUNTY_LAST_SHOT, world.time)
-	controller.set_blackboard_key(BB_BOUNTY_NEXT_SHOT, world.time + style.interval)
+	style.pull(fighter, controller, target, weapon)
 	return AI_BEHAVIOR_DELAY
 
-/// A wind-up cut short never carries over: the next shot telegraphs again
+/// A wind-up or a burst cut short never carries over: the next shot telegraphs again
 /datum/ai_behavior/bounty_shoot/finish_action(datum/ai_controller/controller, succeeded, target_key, targeting_strategy_key)
 	. = ..()
 	bounty_ai_clear_windup(controller)
+	controller.clear_blackboard_key(BB_BOUNTY_BURST_LEFT)
 
 /// The shotgun closes in to BOUNTY_SHOTGUN_RANGE
 /datum/ai_behavior/bounty_shoot/close

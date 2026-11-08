@@ -610,8 +610,32 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	if(bounds)
 		site_bounds = bounds
 	body_match(fugitive)
+	outpost_match_carry(fugitive)
 	AddComponent(/datum/component/bounty_outpost_blend, posting, TRUE, display_name, display_desc, outfit)
 	start_activity(BOUNTY_ACTIVITY_BLEND, anchor)
+
+/**
+ * Wears what shows of `fugitive`'s kit the same way: an empty belt or bag of the same kind on its belt
+ * and back (a shoulder holster, a fanny pack, a satchel). The fugitive's gun sits in its holster under
+ * its coat, and a holster on one patron and not the others would point it out. A decoy still carries
+ * no weapon. The new pieces are locked to the body like the rest of its clothes (D3).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/decoy/proc/outpost_match_carry(mob/living/carbon/human/npc/bounty_criminal/fugitive)
+	if(QDELETED(fugitive))
+		return
+	for(var/slot in list(ITEM_SLOT_BELT, ITEM_SLOT_BACK))
+		var/obj/item/theirs = fugitive.get_item_by_slot(slot)
+		var/obj/item/ours = get_item_by_slot(slot)
+		if(!istype(theirs, /obj/item/storage) || ours?.type == theirs.type)
+			continue
+		if(ours)
+			temporarilyRemoveItemFromInventory(ours, force = TRUE)
+			qdel(ours)
+		var/obj/item/storage/copy = new theirs.type(src)
+		for(var/obj/item/inside in copy.contents)
+			qdel(inside)
+		if(equip_to_slot_or_del(copy, slot, initial = TRUE))
+			npc_lock_item(copy)
 
 /// A decoy never fights anyone (P2's gate on attacks)
 /mob/living/carbon/human/npc/bounty_criminal/decoy/may_attack(atom/target)
