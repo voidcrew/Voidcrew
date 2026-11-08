@@ -541,7 +541,7 @@
 /datum/unit_test/voidcrew_bounty_lair_mafia/goons/Run()
 	var/mob/living/basic/trooper/russian/mafia/pistol/gunman = allocate(/mob/living/basic/trooper/russian/mafia/pistol, spot(0, 0))
 	TEST_ASSERT_EQUAL(gunman.maxHealth, 120, "The gunman's health is wrong") // BOUNTY_MOBSTER_PISTOL_HEALTH
-	TEST_ASSERT(gunman.speed < 1.5, "The gunman can't keep up with a running player")
+	TEST_ASSERT(gunman.speed <= 0.25, "The gunman can't keep up with a running player") // speed stacks on the 1.5 run delay
 	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(4, 0), as_client = TRUE)
 	TEST_ASSERT(!gunman.mafia_is_ready(), "The gunman is ready before seeing anyone")
 

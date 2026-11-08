@@ -120,8 +120,8 @@
 /// How long a goon's body takes to fade, and a leaving goon to walk out
 #define BOUNTY_GOON_FADE_OUT (2 SECONDS)
 #define BOUNTY_GOON_LEAVE_TIME (5 SECONDS)
-/// Between a goon's steps in a fight
-#define BOUNTY_GOON_STEP (0.35 SECONDS)
+/// Between a goon's steps in a fight: a running player's pace (the config run delay, 1.5)
+#define BOUNTY_GOON_STEP (0.15 SECONDS)
 
 // ===== TALKING =====
 

@@ -86,7 +86,8 @@
 #define BOUNTY_MOBSTER_KNIFE /obj/item/knife/kitchen
 #define BOUNTY_MOBSTER_KNIFE_HEALTH 120
 #define BOUNTY_MOBSTER_KNIFE_COOLDOWN (0.8 SECONDS)
-#define BOUNTY_MOBSTER_KNIFE_SPEED 1.2
+/// Speeds stack on the run delay every living mob has, so 0 is a running player's pace (BOUNTY_FIGHT_SPEED); gunmen a touch slower, keeping their range
+#define BOUNTY_MOBSTER_KNIFE_SPEED 0
 
 #define BOUNTY_MOBSTER_PISTOL_GUN /obj/item/gun/ballistic/automatic/pistol/aps
 #define BOUNTY_MOBSTER_PISTOL_HEALTH 120
@@ -95,7 +96,7 @@
 #define BOUNTY_MOBSTER_PISTOL_BURST_GAP (0.25 SECONDS)
 #define BOUNTY_MOBSTER_PISTOL_COOLDOWN (0.5 SECONDS)
 #define BOUNTY_MOBSTER_PISTOL_RELOAD (2 SECONDS)
-#define BOUNTY_MOBSTER_PISTOL_SPEED 1.4
+#define BOUNTY_MOBSTER_PISTOL_SPEED 0.25
 
 #define BOUNTY_MOBSTER_SMG_GUN /obj/item/gun/ballistic/automatic/mini_uzi
 #define BOUNTY_MOBSTER_SMG_HEALTH 150
@@ -104,7 +105,7 @@
 #define BOUNTY_MOBSTER_SMG_WINDUP (0.3 SECONDS)
 #define BOUNTY_MOBSTER_SMG_COOLDOWN (1 SECONDS)
 #define BOUNTY_MOBSTER_SMG_RELOAD (2.5 SECONDS)
-#define BOUNTY_MOBSTER_SMG_SPEED 1.4
+#define BOUNTY_MOBSTER_SMG_SPEED 0.25
 
 /// The shout before a room's first shot
 #define BOUNTY_MOBSTER_ALERT (0.5 SECONDS)
@@ -132,7 +133,7 @@
 #define BOUNTY_LIEUTENANT_TOMMY_WINDUP (0.3 SECONDS)
 #define BOUNTY_LIEUTENANT_TOMMY_COOLDOWN (1 SECONDS)
 #define BOUNTY_LIEUTENANT_TOMMY_RELOAD (3 SECONDS)
-#define BOUNTY_LIEUTENANT_TOMMY_SPEED 1.4
+#define BOUNTY_LIEUTENANT_TOMMY_SPEED 0.25
 
 /// Brute fights with his fists: a human's punch
 #define BOUNTY_LIEUTENANT_BRUTE_HEALTH 400
@@ -140,7 +141,7 @@
 /// Percent chance a blow knocks the hunter down
 #define BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN_CHANCE 25
 #define BOUNTY_LIEUTENANT_BRUTE_KNOCKDOWN (1 SECONDS)
-#define BOUNTY_LIEUTENANT_BRUTE_SPEED 1.2
+#define BOUNTY_LIEUTENANT_BRUTE_SPEED 0
 
 /// Both lieutenants take this much of any brute or burn damage
 #define BOUNTY_LIEUTENANT_DAMAGE_MOD 0.8
@@ -217,5 +218,5 @@
 #define BOUNTY_DON_RELOAD (2 SECONDS)
 /// He raises the pistol this long before each string of shots
 #define BOUNTY_DON_RAISE (0.2 SECONDS)
-#define BOUNTY_DON_SPEED 1.4
+#define BOUNTY_DON_SPEED 0.25
 #define BOUNTY_DON_EJECT_STAGGER (2 SECONDS)

@@ -738,7 +738,8 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 	unique_name = FALSE
 	maxHealth = BOUNTY_GOON_HEALTH
 	health = BOUNTY_GOON_HEALTH
-	speed = 1
+	// On top of the run delay every living mob has: a running player's pace (BOUNTY_FIGHT_SPEED)
+	speed = 0
 	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
 	mob_size = MOB_SIZE_HUMAN
 	sentience_type = SENTIENCE_BOSS
