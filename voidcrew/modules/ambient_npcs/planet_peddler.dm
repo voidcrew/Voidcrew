@@ -68,6 +68,16 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	back = /obj/item/storage/backpack/satchel/leather
 
+/// Yellow and red: a flak vest under the poncho's place
+/datum/outfit/ambient_peddler/vest
+	name = "Ambient NPC: peddler in a flak vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/// The peddler by band (AM-1)
+/datum/human_npc_outfit_table/ambient_peddler
+	green = list(/datum/outfit/ambient_peddler = 1)
+	yellow = list(/datum/outfit/ambient_peddler/vest = 1)
+
 /**
  * What a walking trader carries: survival basics a crew forgot, one odd thing, one weapon, credits
  * only, and about a quarter cheaper than a counter, because crews rarely meet one. The ledger buys a few planetary goods at AMBIENT_PEDDLER_BUYBACK_RATE of an outpost's price,
@@ -427,7 +437,8 @@
 	desc = "A walking trader under a wide hat, bags hanging off every strap."
 	death_cash_low = 30
 	death_cash_high = 80
-	outfit = /datum/outfit/ambient_peddler
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_peddler
 	dialogue_section = "peddler"
 	speech_pace = 0.8
 	ai_controller = /datum/ai_controller/basic_controller/ambient_npc/roaming
@@ -733,12 +744,24 @@
 	head = /obj/item/clothing/head/soft/black
 	shoes = /obj/item/clothing/shoes/jackboots
 	mask = /obj/item/clothing/mask/bandana/red
+	r_hand = /obj/item/melee/baseball_bat
+
+/// Red: a helmet for the cap
+/datum/outfit/ambient_caravan_guard/helmet
+	name = "Ambient NPC: caravan guard in a helmet"
+	head = /obj/item/clothing/head/helmet
+
+/// The caravan guard by band (AM-1): only out in yellow and red
+/datum/human_npc_outfit_table/ambient_caravan_guard
+	green = list(/datum/outfit/ambient_caravan_guard = 1)
+	red = list(/datum/outfit/ambient_caravan_guard/helmet = 1)
 
 /// The hired guard, in yellow and red: follows the peddler, fights anyone who goes for the caravan and the pack that jumps it
 /mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard
 	name = "caravan guard"
 	desc = "A hired guard in a flak vest, a bat over one shoulder."
-	outfit = /datum/outfit/ambient_caravan_guard
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_caravan_guard
 	dialogue_section = "caravan_guard"
 	fights_back = TRUE
 	joins_camp_fights = TRUE

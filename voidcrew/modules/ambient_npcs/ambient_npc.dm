@@ -52,6 +52,10 @@
 		person = new_outpost_npc_person(gender)
 	if(length(outfit_choices))
 		outfit = pick(outfit_choices)
+	else if(isnull(outfit) && ispath(npc_outfit_table, /datum/human_npc_outfit_table))
+		// Their kit by band (AM-1): a camp's yellow and red people are better kitted, never given more health
+		var/datum/human_npc_outfit_table/table = human_npc_singleton(npc_outfit_table)
+		outfit = table.pick_outfit(src, order ? order.resolve_zone() : (get_zone_type_for_player_turf(get_turf(src)) || ZONE_GREEN))
 	if(outfit)
 		npc_outfit = outfit
 	npc_name = random_name ? generate_random_name(gender) : name

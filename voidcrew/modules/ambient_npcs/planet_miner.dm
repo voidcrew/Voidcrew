@@ -201,20 +201,39 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	gloves = /obj/item/clothing/gloves/color/black
 	head = /obj/item/clothing/head/utility/hardhat/orange
+	belt = /obj/item/pickaxe
 
 /datum/outfit/ambient_miner/winter
 	name = "Ambient NPC: prospector in a coat"
 	suit = /obj/item/clothing/suit/hooded/wintercoat/miner
+
+/// Yellow: rougher ground, an explorer suit
+/datum/outfit/ambient_miner/explorer
+	name = "Ambient NPC: prospector in an explorer suit"
+	suit = /obj/item/clothing/suit/hooded/explorer
+
+/// Red: the explorer suit and its mask, and a drill
+/datum/outfit/ambient_miner/explorer/red
+	name = "Ambient NPC: prospector with a drill"
+	mask = /obj/item/clothing/mask/gas/explorer
+	belt = /obj/item/pickaxe/drill
 
 /datum/outfit/ambient_miner/void
 	name = "Ambient NPC: asteroid miner"
 	suit = /obj/item/clothing/suit/space/eva
 	head = /obj/item/clothing/head/helmet/space/eva
 
+/// Miners by band (AM-1): kit, not health, makes the red zone's harder to put down
+/datum/human_npc_outfit_table/ambient_miner
+	green = list(/datum/outfit/ambient_miner = 1, /datum/outfit/ambient_miner/winter = 1)
+	yellow = list(/datum/outfit/ambient_miner/explorer = 1)
+	red = list(/datum/outfit/ambient_miner/explorer/red = 1)
+
 /mob/living/carbon/human/npc/ambient_npc/planet/miner
 	name = "miner"
 	desc = "A prospector in dusty overalls, working the rock by hand."
-	outfit_choices = list(/datum/outfit/ambient_miner, /datum/outfit/ambient_miner/winter)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_miner
 	dialogue_section = "miner"
 	speech_pace = 1.2
 	fights_back = TRUE

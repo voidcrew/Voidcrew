@@ -92,6 +92,23 @@
 	shoes = /obj/item/clothing/shoes/sandal
 	r_hand = /obj/item/knife/butcher
 
+/// Yellow: a skull for a helmet
+/datum/outfit/ambient_cannibal/skull
+	name = "Ambient NPC: cannibal in a skull"
+	head = /obj/item/clothing/head/helmet/skull
+
+/// Red: the skull, and bone armour for the apron
+/datum/outfit/ambient_cannibal/bone
+	name = "Ambient NPC: cannibal in bone"
+	head = /obj/item/clothing/head/helmet/skull
+	suit = /obj/item/clothing/suit/armor/bone
+
+/// The cannibal by band (AM-1)
+/datum/human_npc_outfit_table/ambient_cannibal
+	green = list(/datum/outfit/ambient_cannibal = 1)
+	yellow = list(/datum/outfit/ambient_cannibal/skull = 1)
+	red = list(/datum/outfit/ambient_cannibal/bone = 1)
+
 /// Dinner: a dead stranger in rags, already carved
 /datum/outfit/ambient_victim
 	name = "Ambient NPC: the cannibal's dinner"
@@ -108,7 +125,8 @@
 	random_name = FALSE
 	random_gender = FALSE
 	gender = MALE
-	outfit = /datum/outfit/ambient_cannibal
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_cannibal
 	dialogue_section = "cannibal"
 	fights_back = TRUE
 	weapon_type = /obj/item/knife/butcher
@@ -285,11 +303,27 @@
 	name = "Ambient NPC: hunter in a hide cloak"
 	suit = /obj/item/clothing/suit/hooded/cloak/goliath
 
+/// Red: bone bracers too
+/datum/outfit/ambient_tribal/bone/bracers
+	name = "Ambient NPC: hunter in bone and bracers"
+	gloves = /obj/item/clothing/gloves/bracer
+
+/datum/outfit/ambient_tribal/cloak/bracers
+	name = "Ambient NPC: hunter in a hide cloak and bracers"
+	gloves = /obj/item/clothing/gloves/bracer
+
+/// Hunters by band (AM-1): bone and hide further out, never more health
+/datum/human_npc_outfit_table/ambient_tribal
+	green = list(/datum/outfit/ambient_tribal = 2, /datum/outfit/ambient_tribal/bone = 1, /datum/outfit/ambient_tribal/cloak = 1)
+	yellow = list(/datum/outfit/ambient_tribal/bone = 1, /datum/outfit/ambient_tribal/cloak = 1)
+	red = list(/datum/outfit/ambient_tribal/bone/bracers = 1, /datum/outfit/ambient_tribal/cloak/bracers = 1)
+
 /mob/living/carbon/human/npc/ambient_npc/planet/tribal
 	name = "hunter"
 	desc = "A lean hunter in hide and bone, a bamboo spear in hand."
 	random_name = FALSE
-	outfit_choices = list(/datum/outfit/ambient_tribal, /datum/outfit/ambient_tribal/bone, /datum/outfit/ambient_tribal/cloak)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_tribal
 	dialogue_section = "tribal"
 	speech_pace = 1.5
 	fights_back = TRUE

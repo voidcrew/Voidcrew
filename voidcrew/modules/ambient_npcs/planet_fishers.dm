@@ -306,11 +306,23 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	gloves = /obj/item/clothing/gloves/color/black
 	glasses = /obj/item/clothing/glasses/meson
+	belt = /obj/item/pickaxe
+
+/// Red: a goliath hide cloak over the scorched overalls
+/datum/outfit/ambient_lava_fisher/cloak
+	name = "Ambient NPC: lava fisher in a hide cloak"
+	suit = /obj/item/clothing/suit/hooded/cloak/goliath
+
+/// Lava fishers by band (AM-1)
+/datum/human_npc_outfit_table/ambient_lava_fisher
+	green = list(/datum/outfit/ambient_lava_fisher = 1)
+	red = list(/datum/outfit/ambient_lava_fisher/cloak = 1)
 
 /mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher
 	name = "lava fisher"
 	desc = "A miner in a scorched coat, fishing the lava on a long steel line."
-	outfit = /datum/outfit/ambient_lava_fisher
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_lava_fisher
 	dialogue_section = "lava_fisher"
 	speech_pace = 1.2
 	fights_back = TRUE
@@ -422,6 +434,16 @@
 	head = /obj/item/clothing/head/soft/fishing_hat
 	shoes = /obj/item/clothing/shoes/workboots
 
+/// Red: a flak vest instead of the puffer
+/datum/outfit/ambient_boat_fisher/vest
+	name = "Ambient NPC: boat fisher in a flak vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/// Boat fishers by band (AM-1)
+/datum/human_npc_outfit_table/ambient_boat_fisher
+	green = list(/datum/outfit/ambient_boat_fisher = 1)
+	red = list(/datum/outfit/ambient_boat_fisher/vest = 1)
+
 /**
  * A hide boat out on the water: scenery with a seat. The fisher sits in it; it floats (nothing in
  * it is drawn under the water) and rows with them in it. Nobody can pull the fisher out or wreck it.
@@ -439,16 +461,17 @@
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF | UNACIDABLE
 	layer = BELOW_MOB_LAYER
 
-// The fisher stays in their boat while they live
+// The fisher stays in their boat while awake; one who is down or dead can be pulled out like anyone
 /obj/structure/ambient_boat/user_unbuckle_mob(mob/living/buckled_mob, mob/user)
-	if(istype(buckled_mob, /mob/living/carbon/human/npc/ambient_npc) && buckled_mob.stat != DEAD)
+	if(istype(buckled_mob, /mob/living/carbon/human/npc/ambient_npc) && buckled_mob.stat == CONSCIOUS)
 		return null
 	return ..()
 
 /mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher
 	name = "fisher"
 	desc = "A weathered fisher in a hide boat, line in the water."
-	outfit = /datum/outfit/ambient_boat_fisher
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_boat_fisher
 	dialogue_section = "boat_fisher"
 	speech_pace = 1.2
 	watches = TRUE
@@ -464,6 +487,10 @@
 /mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/Initialize(mapload)
 	. = ..()
 	next_row_at = world.time + rand(AMBIENT_BOAT_ROW_LOW, AMBIENT_BOAT_ROW_HIGH)
+
+// Their boat is their own seat: they don't try to get out of it
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/own_buckle(atom/thing)
+	return istype(thing, /obj/structure/ambient_boat) || ..()
 
 /// The boat they sit in, if any
 /mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/proc/boat()
@@ -578,7 +605,7 @@
 			continue
 		if(istype(site) && site.center && get_dist(target, site.center) > 12)
 			continue
-		if(locate(/mob/living/basic/trooper/pirate) in range(5, target))
+		if(locate(/mob/living/carbon/human/npc/ruin/trooper/pirate) in range(5, target))
 			continue
 		return target
 	return null

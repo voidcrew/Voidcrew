@@ -160,11 +160,8 @@
 /mob/living/carbon/human/npc/ambient_npc/stray/stranded
 	name = "stranded spacer"
 	desc = "Sunburnt, grubby and very glad to see a ship."
-	outfit_choices = list(
-		/datum/outfit/ambient_stranded,
-		/datum/outfit/ambient_stranded/hauler,
-		/datum/outfit/ambient_stranded/engineer,
-	)
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_stranded
 	dialogue_section = "stranded"
 	routine = list(
 		/datum/ambient_activity/stray_fire = 3,
@@ -192,6 +189,20 @@
 	name = "Stranded Engineer"
 	uniform = /obj/item/clothing/under/rank/engineering/engineer
 	suit = null
+
+/// Further out, an armour vest pulled off the wreck
+/datum/outfit/ambient_stranded/vest
+	name = "Stranded Spacer in a vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/datum/outfit/ambient_stranded/hauler/vest
+	name = "Stranded Hauler in a vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/// The stranded by band (AM-1)
+/datum/human_npc_outfit_table/ambient_stranded
+	green = list(/datum/outfit/ambient_stranded = 1, /datum/outfit/ambient_stranded/hauler = 1, /datum/outfit/ambient_stranded/engineer = 1)
+	red = list(/datum/outfit/ambient_stranded/vest = 1, /datum/outfit/ambient_stranded/hauler/vest = 1)
 
 // =========================================================================
 // WHAT THEY DO

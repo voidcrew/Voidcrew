@@ -203,17 +203,9 @@
 		best_distance = distance
 	return best
 
-/// A woman's scream. Never sleeps.
+/// A scream, her own (tg's *scream). Never sleeps.
 /mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/scream()
-	var/static/list/screams = list(
-		'sound/mobs/humanoids/human/scream/femalescream_1.ogg',
-		'sound/mobs/humanoids/human/scream/femalescream_2.ogg',
-		'sound/mobs/humanoids/human/scream/femalescream_3.ogg',
-		'sound/mobs/humanoids/human/scream/femalescream_4.ogg',
-		'sound/mobs/humanoids/human/scream/femalescream_5.ogg',
-	)
-	manual_emote("screams!")
-	playsound(src, pick(screams), 50, TRUE)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/mob, emote), "scream")
 
 /**
  * Keeping clear of a fight: she runs a few steps away from it and crouches, until nothing has
