@@ -7,34 +7,43 @@
  * It trips the first time a fight turns on them: a hit that leaves them at or under
  * REDLINE_TRIGGER_BELOW percent health (a mini-boss: the moment it tires, BOUNTY_BOSS_TIRED_BELOW),
  * or a stun, knockdown or stamina crit about to put them on the floor. That stun never lands. Only
- * in a fight: caught unaware, they go down like anyone else.
+ * in a fight: caught unaware, they go down like anyone else, though a fight they come into already
+ * that badly hurt trips it at once (a blow lands before the fight it starts).
  * - The tell, REDLINE_WINDUP: the chest speaker charges and a red outline flickers over them.
- *   Stuns already slide off; nothing else has changed yet.
+ *   Stuns slide off and brute and burn come in at REDLINE_DAMAGE_MULT already, so the rounds a
+ *   hunter puts in while it charges don't finish the fight before it starts.
  * - The roar: the player implant's line and sounds. Hunters within REDLINE_ROAR_RANGE stagger.
  * - The burn, REDLINE_WINDOW: stuns, knockdowns and stamina crit slide off, stamina never slows them,
  *   brute and burn come in at REDLINE_DAMAGE_MULT (never under REDLINE_DAMAGE_FLOOR with a
  *   mini-boss's armour), every blow that lands does REDLINE_MELEE_BONUS more, and they neither give
- *   up nor run. A pulsing red outline and a red glow show it the whole time.
+ *   up nor run. A pulsing red outline and a red glow show it the whole time, and now and then a hit
+ *   that barely moves them says so.
  * - The collapse: the player implant's crash line, then the floor in stamina crit (a knockdown where
  *   stamina crit can't land), so they can be cuffed, and slow for REDLINE_CRASH_SLOW. A companion in
  *   stamina crit gives up for good.
  * Counterplay: back off and wait for the collapse. An EMP in the tell or the burn drops them straight
  * into it; an EMP while it is armed knocks it offline for its reboot, so a stun lands meanwhile.
  *
+ * Why it trips early and resists from the tell: real guns do 25-30 a round against 110-220 health,
+ * so a line at 60% with an unprotected tell was crossed on the third round, the rounds fired while
+ * it charged landed in full, and the burn began a round from the downed line (or, for a companion,
+ * from death). The resistance is a little stronger than the player's for the same reason: an NPC's
+ * whole fight lasts a few seconds of a crew's fire.
+ *
  * The body's rules stand: the downed line, the mercy line and the cuffs are untouched, and a burn cut
  * off at the downed line ends quietly, with no collapse. It re-arms REDLINE_COOLDOWN after it trips.
  */
 
-/// Percent of health at or under which a hit trips it (a mini-boss trips where it tires instead)
-#define REDLINE_TRIGGER_BELOW 60
+/// Percent of health at or under which a hit trips it (a mini-boss trips where it tires instead): a round or two into a gunfight
+#define REDLINE_TRIGGER_BELOW 75
 /// The tell before the roar
 #define REDLINE_WINDUP (1.5 SECONDS)
 /// The burn, from the roar to the collapse (the player implant's window)
 #define REDLINE_WINDOW (12 SECONDS)
 /// From tripping to being able to trip again (the player implant's cooldown)
 #define REDLINE_COOLDOWN (90 SECONDS)
-/// Incoming brute and burn multiplier during the burn (the player implant's)
-#define REDLINE_DAMAGE_MULT 0.6
+/// Incoming brute and burn multiplier from the tell to the collapse (the player implant's is 0.6)
+#define REDLINE_DAMAGE_MULT 0.5
 /// Brute and burn never come in at less than this, the fighter's own armour (damage_coeff) included
 #define REDLINE_DAMAGE_FLOOR 0.5
 /// Extra brute on every blow that lands during the burn (the player implant's)
@@ -52,6 +61,8 @@
 /// The red glow's reach and strength
 #define REDLINE_GLOW_RANGE 2
 #define REDLINE_GLOW_POWER 1
+/// Least time between two "barely flinches" lines
+#define REDLINE_FLINCH_GAP (4 SECONDS)
 /// Name of the outline filter
 #define REDLINE_FILTER "bounty_chrome_redline"
 /// Trait and immunity source
@@ -89,6 +100,8 @@
 	var/held_roll = FALSE
 	/// Whether the burn is holding that roll off now
 	var/nerve_held = FALSE
+	/// world.time the next "barely flinches" line may show
+	var/next_flinch_at = 0
 
 /datum/bounty_chrome/redline/Destroy(force)
 	QDEL_NULL(glow)
@@ -135,19 +148,32 @@
 		return owner.maxHealth * BOUNTY_BOSS_TIRED_BELOW / 100
 	return owner.maxHealth * REDLINE_TRIGGER_BELOW / 100
 
-/// A hit that leaves them badly hurt trips it, unless it put them down
+/// Health lost: a hit that leaves them badly hurt trips it, and mid-burn a hit that barely moves them shows it
 /datum/bounty_chrome/redline/proc/on_health_update(mob/living/basic/source)
 	SIGNAL_HANDLER
 	var/health_before = last_health
 	last_health = source.health
-	if(isnull(health_before) || source.health >= health_before || source.health > trip_health())
+	if(isnull(health_before) || source.health >= health_before)
 		return
-	// At the downed line the body takes over (body_check_downed() runs right after this)
-	var/mob/living/basic/bounty_criminal/criminal = source
-	if(istype(criminal) && source.health <= criminal.body_downed_line())
+	if(state == REDLINE_IDLE)
+		trip_if_hurt()
 		return
-	if(can_trip())
-		start_tell()
+	if(world.time < next_flinch_at || source.health <= down_health())
+		return
+	next_flinch_at = world.time + REDLINE_FLINCH_GAP
+	source.visible_message(span_warning("[source] barely flinches."), vision_distance = COMBAT_MESSAGE_RANGE)
+
+/// The health at which the body takes over: a criminal's downed line (body_check_downed() runs right after a health update), anyone else's death
+/datum/bounty_chrome/redline/proc/down_health()
+	var/mob/living/basic/bounty_criminal/criminal = owner
+	return istype(criminal) ? criminal.body_downed_line() : 0
+
+/// Trips it if they are badly hurt, still on their feet, and it may trip now. TRUE if it tripped.
+/datum/bounty_chrome/redline/proc/trip_if_hurt()
+	if(owner.health > trip_health() || owner.health <= down_health() || !can_trip())
+		return FALSE
+	start_tell()
+	return TRUE
 
 /**
  * Every stun check: through the tell and the burn nothing lands. Armed, in a fight, a stamina crit
@@ -193,7 +219,7 @@
 
 // ----- the tell, the roar and the burn -----
 
-/// It trips: stuns slide off from now, the cooldown starts, and the chest speaker charges for REDLINE_WINDUP
+/// It trips: stuns slide off and hits are resisted from now, the cooldown starts, and the chest speaker charges for REDLINE_WINDUP
 /datum/bounty_chrome/redline/proc/start_tell()
 	state = REDLINE_WINDING
 	ready_at = world.time + REDLINE_COOLDOWN
@@ -325,6 +351,11 @@
 
 // ----- the framework's hooks -----
 
+// A fight that starts with them already badly hurt: a blow lands before the fight it starts (an item's hit, an ambush)
+/datum/bounty_chrome/redline/on_fight_start(atom/target)
+	if(state == REDLINE_IDLE)
+		trip_if_hurt()
+
 /datum/bounty_chrome/redline/on_tick(seconds_per_tick, fighting)
 	if(state == REDLINE_IDLE)
 		return
@@ -333,8 +364,9 @@
 	if(istype(criminal) && (criminal.is_restrained() || HAS_TRAIT(criminal, TRAIT_BOUNTY_SURRENDERED) || criminal.hidden || criminal.blended))
 		end_burn(collapse = FALSE)
 
+// From the tell on: the rounds that land while it charges are resisted too
 /datum/bounty_chrome/redline/modify_damage(list/damage_mods, damage, damagetype)
-	if(state != REDLINE_BURNING || !(damagetype in list(BRUTE, BURN)))
+	if(state == REDLINE_IDLE || !(damagetype in list(BRUTE, BURN)))
 		return
 	damage_mods += damage_mult(damagetype)
 
@@ -389,6 +421,7 @@
 #undef REDLINE_COLOR
 #undef REDLINE_GLOW_RANGE
 #undef REDLINE_GLOW_POWER
+#undef REDLINE_FLINCH_GAP
 #undef REDLINE_FILTER
 #undef REDLINE_TRAIT
 #undef REDLINE_IDLE
