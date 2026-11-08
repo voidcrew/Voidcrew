@@ -480,13 +480,35 @@
 	repeated.voucher_count = initial(rescue_type.voucher_count)
 	var/datum/mission_objective/field/escort/repeated_escort = new
 	repeated.add_objective(repeated_escort)
-	repeated_escort.survivor = allocate(/mob/living/basic/mission_survivor, pad_turf)
+	repeated_escort.survivor = allocate(/mob/living/basic/ambient_npc/mission_survivor, pad_turf)
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "A healthy survivor must add 25% to credits")
 	TEST_ASSERT_NULL(repeated_escort.survivor, "Finalization must clear the survivor reference")
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "Repeated finalization must not stack the bonus")
 	TEST_ASSERT_EQUAL(repeated.voucher_count, initial(rescue_type.voucher_count), "Repeated finalization must not change vouchers")
+
+/**
+ * A survivor the contract lets go of in front of someone is taken up in the transporter's beam:
+ * held still and untouchable for the length of it, with the column on their tile, rather than
+ * blinking out. With nobody about they are simply deleted (the delivery test above relies on it).
+ */
+/datum/unit_test/voidcrew_mission_survivor_beam/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	var/mob/living/basic/ambient_npc/mission_survivor/watched = allocate(/mob/living/basic/ambient_npc/mission_survivor, spot)
+	watched.beam_out(force_visual = TRUE)
+	TEST_ASSERT(!QDELETED(watched), "A watched survivor must stay for the beam, not vanish on the spot")
+	TEST_ASSERT(watched.beaming_out, "A watched survivor must be marked as leaving")
+	TEST_ASSERT(HAS_TRAIT(watched, TRAIT_GODMODE), "A survivor in the beam must not be hurt")
+	TEST_ASSERT(HAS_TRAIT(watched, TRAIT_IMMOBILIZED), "A survivor in the beam must not walk out of it")
+	TEST_ASSERT(watched.anchored, "A survivor in the beam must not be pulled out of it")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/transporter_beam) in spot, "A watched survivor must get the beam column on their tile")
+	watched.talked_to(allocate(/mob/living/carbon/human/consistent, get_step(spot, NORTH)))
+	TEST_ASSERT(!watched.is_following(), "A survivor in the beam must not start following anyone")
+
+	var/mob/living/basic/ambient_npc/mission_survivor/unseen = allocate(/mob/living/basic/ambient_npc/mission_survivor, get_step(spot, EAST))
+	unseen.beam_out()
+	TEST_ASSERT(QDELETED(unseen), "A survivor nobody can see must be deleted at once")
 
 /**
  * A contract that marks itself exclusive_site must get a wreck to itself.

@@ -310,7 +310,7 @@
  */
 /datum/mission_objective/field/escort
 	/// The survivor mob type
-	var/survivor_type = /mob/living/basic/mission_survivor
+	var/survivor_type = /mob/living/basic/ambient_npc/mission_survivor
 	/// The live survivor
 	var/mob/living/survivor
 	/// Health fraction at turn-in for the "still walking" pay bonus
@@ -352,6 +352,9 @@
  *
  * The successful turn-in has already nulled the ref by the time deactivation
  * runs, so a repatriated survivor never reaches this.
+ *
+ * Whoever is watching sees them taken up from orbit in a column of light
+ * (beam_out()); this is usually aboard the crew's own ship, mid-escort.
  */
 /datum/mission_objective/field/escort/proc/release_survivor()
 	clear_grace()
@@ -360,11 +363,20 @@
 	if(QDELETED(leaving))
 		return
 	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
-	leaving.visible_message(span_notice("[leaving]'s beacon chirps, and they are teleported away."))
+	var/mob/living/basic/ambient_npc/mission_survivor/person = leaving
+	if(istype(person))
+		person.beam_out()
+		return
 	qdel(leaving)
 
+/// The survivor goes somewhere sheltered in the site (a locker, a corner), not just any open tile
 /datum/mission_objective/field/escort/spawn_field_objects(turf/spawn_turf)
-	survivor = new survivor_type(spawn_turf)
+	var/list/hiding_place = mission_survivor_hiding_place(spawn_turf, mission?.target)
+	survivor = new survivor_type(hiding_place[1] || spawn_turf)
+	var/mob/living/basic/ambient_npc/mission_survivor/person = survivor
+	if(istype(person))
+		person.join_contract(mission)
+		person.take_shelter(hiding_place[2])
 	protect_field_mob(survivor)
 	RegisterSignal(survivor, COMSIG_LIVING_DEATH, PROC_REF(on_survivor_death))
 	RegisterSignal(survivor, COMSIG_LIVING_REVIVE, PROC_REF(on_survivor_revived))
@@ -455,14 +467,17 @@
 	if(!was_revived && survivor.health >= survivor.maxHealth * unharmed_threshold)
 		mission.value *= unharmed_bonus
 		notify_crew("Survivor recovered unharmed.")
-	// Repatriation: they step onto the pad and ship out
+	// Repatriation: a goodbye, and the beam takes them home from beside the pad
 	var/mob/living/leaving = survivor
 	UnregisterSignal(leaving, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE))
 	survivor = null
-	leaving.visible_message(span_notice("[leaving] waves goodbye and is teleported out."))
 	if(istype(reward_anchor, /obj/machinery/mission_pad))
 		var/obj/machinery/mission_pad/pad = reward_anchor
 		pad.do_teleport_effect()
+	var/mob/living/basic/ambient_npc/mission_survivor/person = leaving
+	if(istype(person))
+		person.beam_out(farewell = TRUE)
+		return
 	qdel(leaving)
 
 /datum/mission_objective/field/escort/get_progress_string()
