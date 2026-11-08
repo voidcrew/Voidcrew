@@ -330,6 +330,35 @@
 	var/list/ears_now = positions[sonar]
 	TEST_ASSERT(ears_at[1] == ears_now[1] && ears_at[2] == ears_now[2], "Swapping optics moved the ear chrome on the wheel")
 
+	// All three of the link's buttons get a place of their own in the eyes
+	// socket: none sits on another, and none sits on any other socket's chip.
+	var/list/placements = chrome_wheel_placements(abilities)
+	var/list/eye_buttons = list()
+	for(var/datum/action/ability as anything in link.actions)
+		if(ability in abilities)
+			eye_buttons += ability
+	TEST_ASSERT_EQUAL(length(eye_buttons), 3, "The marksman link should put three buttons on the wheel")
+	var/list/eye_indexes = list()
+	for(var/datum/action/ability as anything in eye_buttons)
+		var/list/placement = placements[ability]
+		TEST_ASSERT_EQUAL(placement["socket"], "eyes", "[ability.name] is not in the eyes socket")
+		eye_indexes |= placement["index"]
+	TEST_ASSERT_EQUAL(length(eye_indexes), 3, "Two optics buttons share a place on the wheel")
+	for(var/datum/action/ability as anything in eye_buttons)
+		var/list/here = positions[ability]
+		for(var/datum/action/other as anything in abilities)
+			if(other == ability)
+				continue
+			var/list/there = positions[other]
+			// Chips are 22 px across (26 when pointed at).
+			TEST_ASSERT(sqrt((here[1] - there[1]) ** 2 + (here[2] - there[2]) ** 2) >= 24, "[ability.name] overlaps [other.name] on the wheel")
+		// Nor on the first places of the head socket beside it.
+		for(var/head_index in 1 to 2)
+			var/list/head_point = chrome_wheel_position("head", head_index)
+			TEST_ASSERT(sqrt((here[1] - head_point[1]) ** 2 + (here[2] - head_point[2]) ** 2) >= 24, "[ability.name] sits on the head socket's place [head_index]")
+	var/datum/action/link_zoom = locate(/datum/action/cooldown/cyberware/optics_zoom) in link.actions
+	TEST_ASSERT_EQUAL(link_zoom?.chrome_wheel_name(), "Zoom", "The zoom chip isn't called Zoom")
+
 /// Shelf prices and gates, half-list trade-ins, and cradle quotes.
 /datum/unit_test/voidcrew_cyberware_zoom_catalog
 

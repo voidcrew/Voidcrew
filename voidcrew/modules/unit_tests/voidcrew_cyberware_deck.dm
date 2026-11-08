@@ -155,6 +155,7 @@
 	// button or its wheel slice, arms targeting, and using it again disarms.
 	var/datum/action/cooldown/cyberware/deck/action = locate() in flagship.actions
 	TEST_ASSERT(!length(action.chrome_wheel_options(user)), "Deck hacks are on the chrome wheel's ring")
+	TEST_ASSERT_EQUAL(action.chrome_wheel_name(), "Cyberdeck", "The deck's chip isn't called Cyberdeck")
 	TEST_ASSERT(action.Trigger(user), "Using the deck did not arm it")
 	TEST_ASSERT_EQUAL(user.click_intercept, action, "Using the deck did not arm targeting")
 	action.Trigger(user)

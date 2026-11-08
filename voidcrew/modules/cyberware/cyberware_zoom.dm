@@ -235,6 +235,9 @@
 	button_icon = 'icons/obj/devices/tool.dmi'
 	button_icon_state = "binoculars"
 
+/datum/action/cooldown/cyberware/optics_zoom/chrome_wheel_name()
+	return "Zoom"
+
 /datum/action/cooldown/cyberware/optics_zoom/Activate(atom/target)
 	var/obj/item/organ/eyes/robotic/cyberware/optics = organ
 	if(!istype(optics) || !optics.owner)

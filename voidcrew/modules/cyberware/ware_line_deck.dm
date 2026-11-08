@@ -54,18 +54,6 @@
  * COMSIG_CYBERWARE_ZOOM_CLICK.
  */
 
-// The optics zoom (voidcrew/_DEFINES/cyberware.dm on phase2/zoom) owns these.
-// Copies with the same names and values, until both are on one branch.
-#ifndef COMSIG_CYBERWARE_ZOOM_CLICK
-/// Sent on the bearer for every click made while zoomed, before the click
-/// intercept chain: (mob/living/carbon/bearer, atom/target, list/modifiers).
-#define COMSIG_CYBERWARE_ZOOM_CLICK "cyberware_zoom_click"
-#endif
-#ifndef COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED
-/// Return from a COMSIG_CYBERWARE_ZOOM_CLICK handler that took the click.
-#define COMPONENT_CYBERWARE_ZOOM_CLICK_HANDLED (1<<0)
-#endif
-
 // =========================================================================
 // THE DECKS
 // =========================================================================
@@ -231,6 +219,9 @@
 /datum/action/cooldown/cyberware/deck/Destroy()
 	QDEL_NULL(trace)
 	return ..()
+
+/datum/action/cooldown/cyberware/deck/chrome_wheel_name()
+	return "Cyberdeck"
 
 /datum/action/cooldown/cyberware/deck/Grant(mob/grant_to)
 	. = ..()
