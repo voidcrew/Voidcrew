@@ -95,7 +95,7 @@ GLOBAL_VAR(hv_blood_sweep_timer)
 	// Starts the fade to dried again, from the full drying time.
 	update_atom_colour()
 	update_appearance()
-	hv_pool_tier = 0
+	hv_pool_reset()
 	hv_update_pool_tier()
 
 /// A slow rise and fall, a little different for every bead so they do not move together.

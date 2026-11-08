@@ -13,6 +13,14 @@
 	for(var/tier in 1 to length(GLOB.hv_blood_pool_thresholds))
 		for(var/variant in 1 to 3)
 			TEST_ASSERT("pool[tier]_[variant]" in pool_states, "blood_pool.dmi has no pool[tier]_[variant] state")
+	// the pictures are 64x64, drawn centred on their tile, and the ends of a big pool running onto the next tile come with them
+	var/icon/pool_icon = icon('voidcrew/modules/hyperviolence/blood/icons/blood_pool.dmi')
+	TEST_ASSERT_EQUAL(pool_icon.Width(), 64, "The pool art is not 64 pixels wide")
+	TEST_ASSERT_EQUAL(pool_icon.Height(), 64, "The pool art is not 64 pixels tall")
+	for(var/lobe_tier in list(3, 4))
+		for(var/lobe_dir in list("north", "south", "east", "west"))
+			for(var/variant in 1 to 2)
+				TEST_ASSERT("lobe[lobe_tier]_[lobe_dir]_[variant]" in pool_states, "blood_pool.dmi has no lobe[lobe_tier]_[lobe_dir]_[variant] state")
 	var/list/float_states = icon_states('voidcrew/modules/hyperviolence/blood/icons/blood_weightless.dmi')
 	for(var/variant in 1 to 12)
 		TEST_ASSERT("float[variant]" in float_states, "blood_weightless.dmi has no float[variant] state")
@@ -128,13 +136,97 @@
 		expected_tier++
 		TEST_ASSERT_EQUAL(pool.hv_pool_tier, expected_tier, "Bloodiness [pool.bloodiness] did not make a tier [expected_tier] pool")
 		TEST_ASSERT_EQUAL(pool.icon, 'voidcrew/modules/hyperviolence/blood/icons/blood_pool.dmi', "A tier [expected_tier] pool does not use the pool art")
-		TEST_ASSERT(findtext(pool.icon_state, "pool[expected_tier]_") == 1, "A tier [expected_tier] pool shows [pool.icon_state]")
+		// next to open space a pool keeps to a size that fits its tile
+		var/shown_tier = (expected_tier > 2 && !pool.hv_pool_can_overflow()) ? 2 : expected_tier
+		TEST_ASSERT(findtext(pool.icon_state, "pool[shown_tier]_") == 1, "A tier [expected_tier] pool shows [pool.icon_state]")
+		TEST_ASSERT_EQUAL(pool.pixel_x, -16, "A tier [expected_tier] pool is not drawn centred on its tile")
+		TEST_ASSERT_EQUAL(pool.pixel_y, -16, "A tier [expected_tier] pool is not drawn centred on its tile")
 	pool.adjust_bloodiness(-150)
 	TEST_ASSERT_EQUAL(pool.hv_pool_tier, 4, "A pool shrank when it lost blood")
 	var/pools = 0
 	for(var/obj/effect/decal/cleanable/blood/found in spot)
 		pools++
 	TEST_ASSERT_EQUAL(pools, 1, "The pool is not the only blood on its tile")
+
+/// A big pool runs onto the open tiles beside it: one at the first big size, more at the biggest, never through a wall or
+/// a window, one decal per tile, each carrying the blood and each a decal of its own that cleaning takes up.
+/datum/unit_test/hv_blood_pool_lobes/Run()
+	// the bottom-left tile has a wall to its west and south, so only north and east are open
+	var/turf/spot = run_loc_floor_bottom_left
+	var/turf/north = get_step(spot, NORTH)
+	var/turf/east = get_step(spot, EAST)
+	var/obj/effect/decal/cleanable/blood/pool = allocate(/obj/effect/decal/cleanable/blood, spot)
+	TEST_ASSERT(pool.hv_pool_can_overflow(), "Test fixture: the test room's corner tile is next to open space")
+
+	pool.adjust_bloodiness(150)
+	TEST_ASSERT_EQUAL(pool.hv_pool_tier, 3, "Test fixture: 200 blood is not a tier 3 pool")
+	TEST_ASSERT_EQUAL(pool.hv_pool_lobes, 1, "A pool of the first big size did not run onto exactly one tile")
+	var/lobe_count = 0
+	for(var/direction in list(NORTH, EAST))
+		var/turf/beside = get_step(spot, direction)
+		var/obj/effect/decal/cleanable/blood/lobe = locate() in beside
+		if(!lobe)
+			continue
+		lobe_count++
+		TEST_ASSERT_EQUAL(lobe.hv_pool_lobe_dir, direction, "A lobe does not know which way the blood flowed")
+		TEST_ASSERT(findtext(lobe.icon_state, "lobe3_[dir2text(direction)]_") == 1, "A lobe from a tier 3 pool shows [lobe.icon_state]")
+		TEST_ASSERT_EQUAL(lobe.pixel_x, -16, "A lobe is not drawn centred on its tile")
+		TEST_ASSERT(GET_ATOM_BLOOD_DNA_LENGTH(lobe) > 0, "A lobe carries no blood")
+		TEST_ASSERT(HAS_TRAIT(lobe, TRAIT_MOPABLE), "A lobe cannot be mopped up")
+		TEST_ASSERT_EQUAL(lobe.hv_pool_lobes, 0, "A lobe ran onto tiles of its own")
+		var/decals = 0
+		for(var/obj/effect/decal/cleanable/blood/found in beside)
+			decals++
+		TEST_ASSERT_EQUAL(decals, 1, "A lobe stacked decals on its tile")
+	TEST_ASSERT_EQUAL(lobe_count, 1, "The pool ran onto [lobe_count] open tiles, not one")
+
+	// the biggest size runs onto the rest of the open sides, and no more however much more blood comes
+	pool.adjust_bloodiness(70)
+	TEST_ASSERT_EQUAL(pool.hv_pool_tier, 4, "Test fixture: 270 blood is not a tier 4 pool")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood) in north, "The biggest pool did not run north")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood) in east, "The biggest pool did not run east")
+	TEST_ASSERT_EQUAL(pool.hv_pool_lobes, 2, "The pool ran onto something besides its two open sides")
+	pool.adjust_bloodiness(25)
+	TEST_ASSERT_EQUAL(pool.hv_pool_lobes, 2, "More blood ran the pool onto more tiles")
+	var/pools_here = 0
+	for(var/obj/effect/decal/cleanable/blood/found in spot)
+		pools_here++
+	TEST_ASSERT_EQUAL(pools_here, 1, "The pool left more than one decal on its own tile")
+
+/// Blood does not run through a window, or out of a splatter that has dried.
+/datum/unit_test/hv_blood_pool_lobes_blocked/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	var/turf/north = get_step(spot, NORTH)
+	allocate(/obj/structure/window/fulltile, north)
+	var/obj/effect/decal/cleanable/blood/pool = allocate(/obj/effect/decal/cleanable/blood, spot)
+	pool.adjust_bloodiness(220)
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood) in north, "A pool ran through a window")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood) in get_step(spot, EAST), "A pool did not run onto the open tile beside it")
+	TEST_ASSERT_EQUAL(pool.hv_pool_lobes, 1, "A pool ran onto a blocked tile")
+
+	var/turf/other = get_step(get_step(spot, EAST), NORTH)
+	var/obj/effect/decal/cleanable/blood/dry_pool = allocate(/obj/effect/decal/cleanable/blood, other)
+	dry_pool.dry()
+	dry_pool.adjust_bloodiness(220)
+	TEST_ASSERT_EQUAL(dry_pool.hv_pool_tier, 0, "A dried splatter grew into a pool")
+	TEST_ASSERT_EQUAL(dry_pool.hv_pool_lobes, 0, "A dried splatter ran onto other tiles")
+
+/// A plain splatter already lying on the tile is stretched into the lobe rather than doubled up; a pool there stays as it is.
+/datum/unit_test/hv_blood_pool_lobes_existing/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	var/turf/east = get_step(spot, EAST)
+	var/turf/north = get_step(spot, NORTH)
+	var/obj/effect/decal/cleanable/blood/splatter = allocate(/obj/effect/decal/cleanable/blood, east)
+	var/obj/effect/decal/cleanable/blood/neighbour_pool = allocate(/obj/effect/decal/cleanable/blood, north)
+	neighbour_pool.adjust_bloodiness(45)
+	TEST_ASSERT_EQUAL(neighbour_pool.hv_pool_tier, 1, "Test fixture: 95 blood is not a tier 1 pool")
+	var/obj/effect/decal/cleanable/blood/pool = allocate(/obj/effect/decal/cleanable/blood, spot)
+	pool.adjust_bloodiness(270)
+	TEST_ASSERT_EQUAL(splatter.hv_pool_lobe_dir, EAST, "A splatter beside a big pool was not stretched into it")
+	TEST_ASSERT(!QDELETED(splatter), "The splatter was replaced instead of stretched")
+	TEST_ASSERT_EQUAL(neighbour_pool.hv_pool_lobe_dir, 0, "A pool beside a bigger pool became a lobe")
+	TEST_ASSERT_EQUAL(neighbour_pool.hv_pool_tier, 1, "A pool beside a bigger pool changed size")
+	TEST_ASSERT_EQUAL(pool.hv_pool_lobes, 1, "A pool counted a tile it did not run onto")
 
 /// A bleeder who stays put adds to the splatter under them; one who moves does not.
 /datum/unit_test/hv_blood_pool_feed/Run()

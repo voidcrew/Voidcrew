@@ -97,32 +97,127 @@
 	TEST_ASSERT(!QDELETED(head), "An ordinary decapitation destroyed the head")
 	TEST_ASSERT_EQUAL(brain.loc, head, "An ordinary decapitation moved the brain out of the head")
 
-/// Which blows to a chest can spill guts.
-/datum/unit_test/voidcrew_hv_gut_spill_gating
+/// The intestines of a victim who is up and fighting (hard crit, or cursed) come out in the same moment as tg's chest organs,
+/// stay tied to them by a tether, and a second spill does not drop a second set.
+/datum/unit_test/voidcrew_hv_chest_spill_living
 
-/datum/unit_test/voidcrew_hv_gut_spill_gating/Run()
+/datum/unit_test/voidcrew_hv_chest_spill_living/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/bodypart/chest/chest = victim.get_bodypart(BODY_ZONE_CHEST)
-	var/min_slash
-	for(var/blow in 1 to 200)
-		if(chest.hv_can_spill_guts(blow, SHARP_EDGED, 0, FALSE))
-			min_slash = blow
-			break
-	TEST_ASSERT_NOTNULL(min_slash, "No slash to a human chest can spill guts")
-	TEST_ASSERT(min_slash >= 10, "A slash of only [min_slash] can spill guts")
-	TEST_ASSERT(!chest.hv_can_spill_guts(min_slash - 1, SHARP_EDGED, 0, FALSE), "A slash just under the limit can spill guts")
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, NONE, 0, FALSE), "A blunt blow can spill guts")
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, SHARP_POINTY, 0, FALSE), "A stab can spill guts")
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, SHARP_EDGED, CANT_WOUND, FALSE), "A blow that cannot wound can spill guts")
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, SHARP_EDGED, 0, TRUE), "Forced damage can spill guts")
-	TEST_ASSERT(!chest.hv_owner_downed(), "A conscious victim counted as downed")
+	var/turf/here = get_turf(victim)
+	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_HEART), "Test fixture: the victim has no heart")
 	victim.set_stat(HARD_CRIT)
-	TEST_ASSERT(chest.hv_owner_downed(), "A victim in hard crit did not count as downed")
+	TEST_ASSERT(chest.can_dismember(), "Test fixture: tg will not spill the chest of a victim in hard crit")
+
+	var/list/spilled = chest.dismember(BRUTE, TRUE)
+	TEST_ASSERT(islist(spilled) && length(spilled), "tg's chest spill did not spill anything")
+	TEST_ASSERT_NULL(victim.get_organ_slot(ORGAN_SLOT_HEART), "The chest organs were not spilled")
+	var/datum/wound/slash/flesh/critical/disembowel/spill = chest.get_wound_type(/datum/wound/slash/flesh/critical/disembowel)
+	TEST_ASSERT_NOTNULL(spill, "A living victim's chest spill did not disembowel them")
+	TEST_ASSERT(spill.guts_out, "The wound does not count the guts as out")
+	var/obj/item/hv_intestines/guts = spill.guts
+	TEST_ASSERT_NOTNULL(guts, "The chest spill dropped no guts")
+	TEST_ASSERT(isturf(guts.loc), "The guts were not dropped on the floor")
+	TEST_ASSERT_NOTNULL(spill.tether, "A living victim's guts are not tied to them")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/hv_gut_spill), "A victim holding their guts in was not slowed")
+	var/found_line = FALSE
+	for(var/list/line as anything in victim.hv_hit?.lines)
+		if(findtext(line[1], "guts"))
+			found_line = TRUE
+	TEST_ASSERT(found_line, "The spill did not say the guts came out")
+
+	// the organs are gone and the guts are out: a second spill drops nothing more
+	chest.dismember(BRUTE, TRUE)
+	var/guts_on_floor = 0
+	for(var/obj/item/hv_intestines/coil in here)
+		guts_on_floor++
+	TEST_ASSERT_EQUAL(guts_on_floor, 1, "A second chest spill dropped more guts")
+	chest.hv_spill_intestines(NORTH)
+	guts_on_floor = 0
+	for(var/obj/item/hv_intestines/coil in here)
+		guts_on_floor++
+	TEST_ASSERT_EQUAL(guts_on_floor, 1, "Guts already out spilled again")
+
+/// A corpse has nothing to drag: its guts drop with the other organs, with no wound, tether or slowdown.
+/datum/unit_test/voidcrew_hv_chest_spill_corpse
+
+/datum/unit_test/voidcrew_hv_chest_spill_corpse/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/bodypart/chest/chest = victim.get_bodypart(BODY_ZONE_CHEST)
+	var/turf/here = get_turf(victim)
+	victim.set_stat(DEAD)
+
+	var/list/spilled = chest.dismember(BRUTE, TRUE)
+	TEST_ASSERT(islist(spilled) && length(spilled), "tg's chest spill did not spill anything")
+	var/obj/item/hv_intestines/guts = locate() in here
+	TEST_ASSERT_NOTNULL(guts, "A corpse's chest spill dropped no guts")
+	TEST_ASSERT_NULL(chest.get_wound_type(/datum/wound/slash/flesh/critical/disembowel), "A corpse was given a disembowelment to carry")
+	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/hv_gut_spill), "A corpse was slowed by its guts")
+	var/found_line = FALSE
+	for(var/list/line as anything in victim.hv_hit?.lines)
+		if(findtext(line[1], "guts"))
+			found_line = TRUE
+	TEST_ASSERT(found_line, "The spill did not say the guts came out")
+
+	chest.dismember(BRUTE, TRUE)
+	var/guts_on_floor = 0
+	for(var/obj/item/hv_intestines/coil in here)
+		guts_on_floor++
+	TEST_ASSERT_EQUAL(guts_on_floor, 1, "A second chest spill dropped more guts on a corpse")
+
+/// Nothing spills the guts but tg's chest spill: a body that cannot be dismembered (an Atlas frame) keeps them, and
+/// a chest with nothing to spill drops none.
+/datum/unit_test/voidcrew_hv_chest_spill_blocked
+
+/datum/unit_test/voidcrew_hv_chest_spill_blocked/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/bodypart/chest/chest = victim.get_bodypart(BODY_ZONE_CHEST)
+	var/turf/here = get_turf(victim)
+	victim.set_stat(HARD_CRIT)
 	ADD_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, SHARP_EDGED, 0, FALSE), "A victim who cannot be dismembered can spill guts")
+	TEST_ASSERT(!chest.dismember(BRUTE, TRUE), "A chest that cannot be dismembered spilled")
+	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_HEART), "A chest that cannot be dismembered lost its organs")
+	TEST_ASSERT_NULL(locate(/obj/item/hv_intestines) in here, "A chest that cannot be dismembered dropped its guts")
+	chest.hv_spill_intestines(NORTH)
+	TEST_ASSERT_NULL(locate(/obj/item/hv_intestines) in here, "The guts spilled from a body that cannot be dismembered")
+	TEST_ASSERT_NULL(chest.hv_spill_guts(NORTH, "test"), "A body that cannot be dismembered was disemboweled")
 	REMOVE_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
-	TEST_ASSERT_NOTNULL(chest.hv_spill_guts(NORTH, "test"), "The spill was refused")
-	TEST_ASSERT(!chest.hv_can_spill_guts(200, SHARP_EDGED, 0, FALSE), "A chest that has already spilled can spill again")
+
+	// the same chest with its organs already gone has nothing to spill
+	for(var/obj/item/organ/organ in chest)
+		organ.Remove(victim)
+		qdel(organ)
+	chest.dismember(BRUTE, TRUE)
+	TEST_ASSERT_NULL(locate(/obj/item/hv_intestines) in here, "A chest with nothing in it dropped guts")
+
+/// A body that cannot be dismembered (an Atlas frame) never has its head burst, by any gore path, and an execution
+/// falls back to the plain kill.
+/datum/unit_test/voidcrew_hv_head_burst_nodismember
+
+/datum/unit_test/voidcrew_hv_head_burst_nodismember/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	var/obj/item/organ/brain/brain = victim.get_organ_slot(ORGAN_SLOT_BRAIN)
+	victim.set_stat(HARD_CRIT)
+
+	TEST_ASSERT(!victim.hv_burst_head(NORTH), "The head of a body that cannot be dismembered burst")
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "The head came off a body that cannot be dismembered")
+	TEST_ASSERT_EQUAL(brain.loc, head, "The brain left a head that did not burst")
+
+	// a blow that would burst any other head
+	head.set_brute_dam(head.max_damage)
+	head.hv_burst_pending = head.hv_blow_bursts(WOUND_BLUNT, 200)
+	TEST_ASSERT(!head.dismember(BRUTE, TRUE), "A burst blow took the head off a body that cannot be dismembered")
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A burst blow took the head off a body that cannot be dismembered")
+
+	// an execution shot that would burst the head holes the skull and kills instead
+	head.set_brute_dam(0)
+	victim.set_stat(CONSCIOUS)
+	victim.hv_take_execution(500, NORTH)
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "An execution burst the head of a body that cannot be dismembered")
+	TEST_ASSERT_EQUAL(victim.stat, DEAD, "An execution did not finish a body that cannot be dismembered")
+	REMOVE_TRAIT(victim, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
 
 /// The spill replaces the cut it comes from, drops guts on the floor, and keeps bleeding until they go back in.
 /datum/unit_test/voidcrew_hv_gut_spill

@@ -250,3 +250,20 @@
 	TEST_ASSERT_EQUAL(finisher.result, 6, "the finisher ended for the wrong reason") // HV_FINISHER_TIMED_OUT
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold), "the victim is still held")
 	TEST_ASSERT(!HAS_TRAIT(matriarch, TRAIT_AI_PAUSED), "the matriarch's AI is still paused")
+
+/// No finisher stage plays a hallucination, ghost or zombie sound, which sit wrong on a beast, a knight or a pirate,
+/// and the matriarch's growl is a fixed, slowed animal growl rather than one the random pitch can squeak up.
+/datum/unit_test/voidcrew_hv_finisher/sounds
+
+/datum/unit_test/voidcrew_hv_finisher/sounds/Run()
+	var/list/wrong_for_a_mob = list("hallucinations", "zombie", "ghost", "faithless")
+	for(var/datum/hv_finisher_stage/stage_type as anything in typesof(/datum/hv_finisher_stage))
+		for(var/sound_file in list(initial(stage_type.enter_sound), initial(stage_type.effect_sound)))
+			if(!sound_file)
+				continue
+			for(var/word in wrong_for_a_mob)
+				TEST_ASSERT(!findtext("[sound_file]", word), "[stage_type] plays [sound_file], which is a [word] sound")
+	var/datum/hv_finisher_stage/windup/hoarfrost/growl = /datum/hv_finisher_stage/windup/hoarfrost
+	TEST_ASSERT(findtext("[initial(growl.enter_sound)]", "non-humanoids"), "The matriarch's wind-up is not a beast sound")
+	var/slowed = initial(growl.enter_frequency)
+	TEST_ASSERT(slowed > 0 && slowed < 1, "The matriarch's growl is not slowed")

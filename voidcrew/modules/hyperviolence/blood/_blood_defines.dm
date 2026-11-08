@@ -18,6 +18,17 @@
 
 /// Each unit of blood a standing bleeder loses adds this much to the pool under them.
 #define HV_BLOOD_POOL_PER_UNIT 1
+/// Pool pictures are 64x64 and drawn this many pixels left of and below their tile, which centres them on it.
+#define HV_BLOOD_POOL_OFFSET -16
+/// Pool sizes up to this one fit inside their own tile. Bigger ones reach over its edges.
+#define HV_BLOOD_POOL_CONTAINED_TIER 2
+/// The pool size from which a pool runs onto the tiles beside it.
+#define HV_BLOOD_POOL_LOBE_TIER 3
+/// The biggest pool size.
+#define HV_BLOOD_POOL_BIGGEST_TIER 4
+/// How many neighbouring tiles a pool of the first big size has run onto, and a pool of the biggest size.
+#define HV_BLOOD_POOL_LOBES_BIG 1
+#define HV_BLOOD_POOL_LOBES_BIGGEST 3
 
 /// How often, at most, floating blood is checked against gravity when nothing announced a change.
 #define HV_BLOOD_FLOAT_SWEEP (15 SECONDS)

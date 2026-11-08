@@ -171,6 +171,65 @@
 	TEST_ASSERT(istype(crit, /datum/hv_crit/skull), "A skull crit on a victim in crit did not land")
 	TEST_ASSERT_NULL(dying.get_bodypart(BODY_ZONE_HEAD), "A skull crit on a victim in crit did not burst the head")
 
+/// Plating under the skin (cyberware dermal armour, which lives in the body's own armour) counts with worn armour the
+/// way tg stacks them: a vest and Slabskin stop the aorta crit that neither stops alone, and the lightest helmet and
+/// Slabskin stop the skull crit.
+/datum/unit_test/voidcrew_hv_crit_plating
+
+/// A human with Slabskin's armour mixed into their own, as the implant does.
+/datum/unit_test/voidcrew_hv_crit_plating/proc/plated_human()
+	var/mob/living/carbon/human/plated = allocate(/mob/living/carbon/human/consistent)
+	plated.physiology.armor = plated.physiology.armor.add_other_armor(/datum/armor/cyberware_slabskin)
+	return plated
+
+/datum/unit_test/voidcrew_hv_crit_plating/Run()
+	var/mob/living/carbon/human/attacker = allocate(/mob/living/carbon/human/consistent)
+
+	// the aorta, shot at the chest: heavy chest armour is 40 or better after penetration
+	var/obj/projectile/bullet/shot = allocate(/obj/projectile/bullet)
+	shot.firer = attacker
+	var/mob/living/carbon/human/vest_only = allocate(/mob/living/carbon/human/consistent)
+	vest_only.equip_to_slot_if_possible(allocate(/obj/item/clothing/suit/armor/vest), ITEM_SLOT_OCLOTHING)
+	var/mob/living/carbon/human/plate_only = plated_human()
+	var/mob/living/carbon/human/both = plated_human()
+	both.equip_to_slot_if_possible(allocate(/obj/item/clothing/suit/armor/vest), ITEM_SLOT_OCLOTHING)
+	var/chest_rating = hv_crit_cover_rating(vest_only, vest_only.get_bodypart(BODY_ZONE_CHEST), BULLET)
+	TEST_ASSERT(hv_crit_cover_rating(plate_only, plate_only.get_bodypart(BODY_ZONE_CHEST), BULLET) > 0, "Plating under the skin counted for nothing")
+	TEST_ASSERT(hv_crit_cover_rating(both, both.get_bodypart(BODY_ZONE_CHEST), BULLET) > chest_rating, "Plating did not add to the vest")
+	TEST_ASSERT(hv_crit_cover_rating(both, both.get_bodypart(BODY_ZONE_CHEST), BULLET, 20) < hv_crit_cover_rating(both, both.get_bodypart(BODY_ZONE_CHEST), BULLET), "Armour penetration did not cut the rating")
+	TEST_ASSERT(istype(vest_only.hv_try_aimed_crit(vest_only.get_bodypart(BODY_ZONE_CHEST), BODY_ZONE_CHEST, WOUND_PIERCE, 30, 0, 0, NORTH, shot, attacker, 500), /datum/hv_crit/aorta), "A plain vest stopped the aorta crit")
+	TEST_ASSERT(istype(plate_only.hv_try_aimed_crit(plate_only.get_bodypart(BODY_ZONE_CHEST), BODY_ZONE_CHEST, WOUND_PIERCE, 30, 0, 0, NORTH, shot, attacker, 500), /datum/hv_crit/aorta), "Plating alone stopped the aorta crit")
+	TEST_ASSERT_NULL(both.hv_try_aimed_crit(both.get_bodypart(BODY_ZONE_CHEST), BODY_ZONE_CHEST, WOUND_PIERCE, 30, 0, 0, NORTH, shot, attacker, 500), "A vest over Slabskin did not stop the aorta crit")
+
+	// the skull, with a toolbox: a cap worth 10 melee and Slabskin's 25 each fall short of the 30 that stops it, together they pass
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
+	attacker.put_in_active_hand(toolbox)
+	var/obj/item/clothing/head/soft/black/cap = allocate(/obj/item/clothing/head/soft/black)
+	cap.set_armor_rating(MELEE, 10)
+	var/obj/item/clothing/head/soft/black/other_cap = allocate(/obj/item/clothing/head/soft/black)
+	other_cap.set_armor_rating(MELEE, 10)
+	var/mob/living/carbon/human/cap_only = allocate(/mob/living/carbon/human/consistent)
+	cap_only.equip_to_slot_if_possible(cap, ITEM_SLOT_HEAD)
+	var/mob/living/carbon/human/plate_and_cap = plated_human()
+	plate_and_cap.equip_to_slot_if_possible(other_cap, ITEM_SLOT_HEAD)
+	var/mob/living/carbon/human/bare_plated = plated_human()
+	TEST_ASSERT(istype(cap_only.hv_try_aimed_crit(cap_only.get_bodypart(BODY_ZONE_HEAD), BODY_ZONE_HEAD, WOUND_BLUNT, 25, 0, 0, NORTH, toolbox, attacker, 500), /datum/hv_crit/skull), "A thin cap stopped the skull crit")
+	TEST_ASSERT(istype(bare_plated.hv_try_aimed_crit(bare_plated.get_bodypart(BODY_ZONE_HEAD), BODY_ZONE_HEAD, WOUND_BLUNT, 25, 0, 0, NORTH, toolbox, attacker, 500), /datum/hv_crit/skull), "Plating alone stopped the skull crit")
+	TEST_ASSERT_NULL(plate_and_cap.hv_try_aimed_crit(plate_and_cap.get_bodypart(BODY_ZONE_HEAD), BODY_ZONE_HEAD, WOUND_BLUNT, 25, 0, 0, NORTH, toolbox, attacker, 500), "A cap over Slabskin did not stop the skull crit")
+
+/// A skull crit on a victim in crit bursts the head, except on a body that cannot be dismembered (an Atlas frame).
+/datum/unit_test/voidcrew_hv_crit_skull_nodismember/Run()
+	var/mob/living/carbon/human/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
+	attacker.put_in_active_hand(toolbox)
+	var/mob/living/carbon/human/dying = allocate(/mob/living/carbon/human/consistent)
+	ADD_TRAIT(dying, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
+	dying.set_stat(HARD_CRIT)
+	var/obj/item/bodypart/head = dying.get_bodypart(BODY_ZONE_HEAD)
+	dying.hv_try_aimed_crit(head, BODY_ZONE_HEAD, WOUND_BLUNT, 40, 0, 0, NORTH, toolbox, attacker, 500)
+	TEST_ASSERT_EQUAL(dying.get_bodypart(BODY_ZONE_HEAD), head, "A skull crit burst the head of a body that cannot be dismembered")
+	REMOVE_TRAIT(dying, TRAIT_NODISMEMBER, TRAIT_SOURCE_UNIT_TESTS)
+
 /// Jaw crit: a broken jaw that mumbles speech and gives no brain traumas.
 /datum/unit_test/voidcrew_hv_crit_jaw/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)

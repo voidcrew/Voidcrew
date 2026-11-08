@@ -216,6 +216,11 @@
 		return
 	hv_blood_throw(attack_direction, round(damage_dealt / HV_BLOOD_DAMAGE_PER_TILE))
 
+/// The way the last brute hit travelled if it landed a moment ago, else null.
+/mob/living/proc/hv_blood_recent_hit_dir()
+	if(world.time - hv_blood_hit_time <= HV_BLOOD_HIT_MEMORY)
+		return hv_blood_hit_dir
+
 /// A limb torn off sprays the way the blow that took it travelled.
 /mob/living/carbon/proc/hv_blood_on_limb_removed(datum/source, obj/item/bodypart/removed_limb, special, dismembered)
 	SIGNAL_HANDLER
