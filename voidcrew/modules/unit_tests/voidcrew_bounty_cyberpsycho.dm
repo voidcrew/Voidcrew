@@ -189,12 +189,12 @@
 	TEST_ASSERT_NOTNULL(bounty_ai_find_injector(psycho, /obj/item/reagent_containers/hypospray/medipen/stimpack), "The cyberpsycho can't reach its stimulants")
 	TEST_ASSERT_NULL(psycho.back, "The cyberpsycho wears [psycho.back] over its spine rig")
 	// In the void, a soft suit: it wears no armour in good air either
-	var/list/void_suit = bounty_vacuum_gear(psycho)
+	var/list/gear = bounty_vacuum_gear(psycho)
 	var/soft = FALSE
 	for(var/list/suit as anything in GLOB.bounty_soft_suits)
-		if(length(void_suit) == 2 && suit[1] == void_suit[1] && suit[2] == void_suit[2])
+		if(length(gear) == 2 && suit[1] == gear[1] && suit[2] == gear[2])
 			soft = TRUE
-	TEST_ASSERT(soft, "The cyberpsycho's void suit isn't a soft one: [jointext(void_suit, ", ")]")
+	TEST_ASSERT(soft, "The cyberpsycho's void suit isn't a soft one: [jointext(gear, ", ")]")
 
 	// Dead, its chrome burns out to scrap, all six pieces
 	var/turf/here = get_turf(psycho)
@@ -385,11 +385,11 @@
 /datum/unit_test/voidcrew_bounty_cyberpsycho/admin/Run()
 	var/mob/living/carbon/human/operator = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
 	var/datum/bounty_admin_panel/unit_test/panel = allocate(/datum/bounty_admin_panel/unit_test, operator)
-	var/mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho/by_kit = panel.admin_spawn_criminal(operator, 3, "boss", "cyberpsycho", null, tile(1, 1), "roll") // BOUNTY_ADMIN_CHROME_ROLL
-	allocated += by_kit
-	TEST_ASSERT(istype(by_kit), "The panel's cyberpsycho spawned as [by_kit?.type]: [panel.error]")
-	TEST_ASSERT_EQUAL(length(chrome_in(by_kit)), 6, "The panel's cyberpsycho carries [length(chrome_in(by_kit))] pieces")
-	TEST_ASSERT_NULL(by_kit?.record?.chrome, "Rolled as usual, the cyberpsycho rolled chrome on top of its own")
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho/spawned = panel.admin_spawn_criminal(operator, 3, "boss", "cyberpsycho", null, tile(1, 1), "roll") // BOUNTY_ADMIN_CHROME_ROLL
+	allocated += spawned
+	TEST_ASSERT(istype(spawned), "The panel's cyberpsycho spawned as [spawned?.type]: [panel.error]")
+	TEST_ASSERT_EQUAL(length(chrome_in(spawned)), 6, "The panel's cyberpsycho carries [length(chrome_in(spawned))] pieces")
+	TEST_ASSERT_NULL(spawned?.record?.chrome, "Rolled as usual, the cyberpsycho rolled chrome on top of its own")
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/cyberpsycho/all = panel.admin_spawn_criminal(operator, 3, "normal", "brawler", null, tile(3, 1), "all") // BOUNTY_ADMIN_CHROME_ALL
 	allocated += all
 	TEST_ASSERT(istype(all), "All of it spawned [all?.type], not the cyberpsycho")
