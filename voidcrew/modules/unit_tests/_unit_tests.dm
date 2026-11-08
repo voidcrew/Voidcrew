@@ -92,6 +92,7 @@
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
 #include "voidcrew_human_npcs.dm"
+#include "voidcrew_human_npcs_ruins.dm"
 #include "voidcrew_human_npcs_shared.dm"
 #include "voidcrew_hv_finishers.dm"
 #include "voidcrew_hyperviolence_blood.dm"

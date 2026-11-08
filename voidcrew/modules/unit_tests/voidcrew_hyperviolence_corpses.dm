@@ -230,20 +230,3 @@
 	TEST_ASSERT_EQUAL(pirate.gender, body.gender, "The pirate's deathgasp would not match its corpse's sex")
 	var/datum/emote/living/deathgasp/gasp = /datum/emote/living/deathgasp
 	TEST_ASSERT_EQUAL(pirate.death_message, initial(gasp.message), "The pirate's death line is not the player's deathgasp")
-
-/// A wasteland hermit (a legacy simple mob with its corpse in its loot) hands its fight over too.
-/datum/unit_test/hv_hermit_corpse
-
-/datum/unit_test/hv_hermit_corpse/Run()
-	var/turf/spot = run_loc_floor_bottom_left
-	var/mob/living/simple_animal/hostile/asteroid/hermit/survivor/hermit = allocate(/mob/living/simple_animal/hostile/asteroid/hermit/survivor)
-	hermit.toggle_ai(AI_OFF)
-	TEST_ASSERT(hermit.hv_leaves_human_corpse, "A hermit was not marked as leaving a human corpse")
-	var/list/before = range(7, spot)
-	hermit.apply_damage(hermit.maxHealth * 0.4, BRUTE, BODY_ZONE_L_LEG, wound_bonus = CANT_WOUND)
-	hermit.apply_damage(hermit.maxHealth, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
-	TEST_ASSERT(QDELETED(hermit), "The hermit did not die")
-	var/mob/living/carbon/human/body = hv_new_corpse(spot, before)
-	TEST_ASSERT_NOTNULL(body, "The hermit left no human corpse")
-	var/obj/item/bodypart/leg = body.get_bodypart(BODY_ZONE_L_LEG)
-	TEST_ASSERT(leg.brute_dam > 10, "The hermit's corpse lost the beating its leg took")

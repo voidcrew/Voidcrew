@@ -121,9 +121,9 @@
 "hL" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/old,
-/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter{
-	faction = list("saloon");
-	name = "Whitesands Bartender"
+/obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	npc_faction = list("saloon");
+	npc_name = "Whitesands Bartender"
 	},
 /turf/open/floor/wood{
 	broken = 1
@@ -191,9 +191,8 @@
 /area/ruin/unpowered)
 "mr" = (
 /obj/structure/chair/stool/bar,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 8;
-	faction = list("saloon")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood{
 	broken = 1
@@ -205,9 +204,8 @@
 /area/ruin/unpowered)
 "nE" = (
 /obj/structure/chair/stool/bar,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 1;
-	faction = list("saloon")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -477,9 +475,8 @@
 "Ov" = (
 /obj/structure/chair/stool/bar,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 8;
-	faction = list("saloon")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -559,9 +556,8 @@
 /area/ruin/unpowered)
 "Xb" = (
 /obj/item/chair/stool/bar,
-/mob/living/simple_animal/hostile/asteroid/hermit/survivor{
-	dir = 1;
-	faction = list("saloon")
+/obj/effect/spawner/human_npc/ruin/hermit{
+	npc_faction = list("saloon")
 	},
 /turf/open/floor/wood,
 /area/ruin/unpowered)
