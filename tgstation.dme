@@ -7666,6 +7666,7 @@
 #include "voidcrew\modules\shuttle\survey\survey_data_disk.dm"
 #include "voidcrew\modules\shuttle\survey\survey_designs.dm"
 #include "voidcrew\modules\slime_extract_piles\slime_extract_piles.dm"
+#include "voidcrew\modules\storage\cargo_shelf.dm"
 #include "voidcrew\modules\storage\smart_locker.dm"
 #include "voidcrew\modules\storage\wall_locker.dm"
 #include "voidcrew\modules\surgery\experimental_dissection.dm"
