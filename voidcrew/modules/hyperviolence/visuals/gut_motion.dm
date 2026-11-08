@@ -1,7 +1,7 @@
 // Hyperviolence visuals: guts.
 // 15. Spilled intestines come out of the body: they start small at the body, spill along the floor to
-//     where they lie and flop down, and the strand to the body (braingut/gut_tether.dm) only appears
-//     once they are out.
+//     where they lie and flop down, and the strand to the body (braingut/gut_tether.dm) only shows
+//     once they are out. The tether itself holds from the first moment, as before.
 // 16. Guts dragged along the floor, by someone pulling them or by the strand, slither as they go.
 
 /// How long the guts take to come out of the body.
@@ -36,12 +36,24 @@
 		list(pixel_w, pixel_z, base, HV_VIS_UNSPOOL_TIME * 0.2 + 2, ELASTIC_EASING),
 	))
 
-/// The strand to the body waits until the guts are out.
+/// The strand to the body only shows once the guts are out. It exists (and holds) from the start;
+/// only its picture waits.
 /datum/hv_gut_tether/refresh()
-	if(!strand && guts && world.time < guts.hv_vis_unspooled_at)
-		addtimer(CALLBACK(src, PROC_REF(refresh)), guts.hv_vis_unspooled_at - world.time, TIMER_UNIQUE|TIMER_DELETE_ME)
+	var/had_strand = !!strand
+	. = ..()
+	if(had_strand || !strand || !guts || world.time >= guts.hv_vis_unspooled_at)
 		return
-	return ..()
+	var/wait = guts.hv_vis_unspooled_at - world.time
+	// Every piece of the strand shows the shared visuals, except the cropped end piece.
+	var/list/pictures = list()
+	if(strand.visuals)
+		pictures += strand.visuals
+	pictures += strand.elements
+	for(var/atom/movable/picture as anything in pictures)
+		var/full_alpha = picture.alpha
+		animate(picture, alpha = 0, time = 0)
+		animate(alpha = 0, time = wait)
+		animate(alpha = full_alpha, time = 2, easing = SINE_EASING)
 
 /obj/item/hv_intestines/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()

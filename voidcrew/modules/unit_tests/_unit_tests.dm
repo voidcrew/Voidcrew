@@ -99,6 +99,7 @@
 #include "voidcrew_hyperviolence_crits.dm"
 #include "voidcrew_hyperviolence_hitlines.dm"
 #include "voidcrew_hyperviolence_overlays_exec.dm"
+#include "voidcrew_hyperviolence_visuals.dm"
 #include "voidcrew_launch_access.dm"
 #include "voidcrew_launch_cargo.dm"
 #include "voidcrew_launch_fabrication.dm"

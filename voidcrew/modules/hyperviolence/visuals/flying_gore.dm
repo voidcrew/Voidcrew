@@ -32,8 +32,9 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 	if(fling_dir)
 		target = hv_vis_fling_target(target, fling_dir, style == HV_VIS_TUMBLE_SLIDE ? 1 : 0)
 	speed = style == HV_VIS_TUMBLE_SLIDE ? 0.5 : min(speed, HV_VIS_TUMBLE_SPEED)
-	// Our own spin replaces tg's single quick turn.
-	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback, force, gentle, quickstart, throw_type_path)
+	// Our own spin replaces tg's single quick turn. No quick start: the tumble has to be listening
+	// before the first step, to streak the tile the part leaves.
+	. = ..(target, range, speed, thrower, FALSE, diagonals_first, callback, force, gentle, FALSE, throw_type_path)
 	if(throwing && !QDELETED(src))
 		AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir || get_dir(src, target))
 
