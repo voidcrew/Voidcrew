@@ -212,7 +212,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		return
 	if(isliving(pulledby) && prison?.is_member(pulledby))
 		return
-	resist()
+	execute_resist()
 
 // ===== HURT, DOWN AND DEAD =====
 

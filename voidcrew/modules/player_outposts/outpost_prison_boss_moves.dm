@@ -773,21 +773,29 @@
 	if(prisoner?.stat == CONSCIOUS && prisoner.handcuffed)
 		prisoner.visible_message(span_notice("[prisoner] loses [prisoner.p_their()] grip on [prisoner.handcuffed]."))
 
+/**
+ * After the telegraph, they work at the cuffs the way anyone does (tg's cuff_resist(): the cuffs' own
+ * breakout time, broken by being moved or knocked down). Out of them, they slip away in a shimmer.
+ */
 /datum/prison_boss_move/slip_cuffs/effect(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/target)
 	var/obj/item/restraints/handcuffs/worn = prisoner.handcuffed
 	if(!worn || worn != target)
 		return FALSE
-	// Without a user they drop where they stand: the same cuffs, on the floor
-	prisoner.remove_cuffs()
+	INVOKE_ASYNC(src, PROC_REF(work_free), prisoner, worn)
+	return TRUE
+
+/datum/prison_boss_move/slip_cuffs/proc/work_free(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/restraints/handcuffs/worn)
+	prisoner.cuff_resist(worn)
+	if(QDELETED(prisoner) || prisoner.handcuffed == worn || prisoner.stat != CONSCIOUS)
+		return
 	prisoner.visible_message(span_danger("[prisoner] slips out of [worn]!"))
 	playsound(prisoner, 'sound/effects/magic/smoke.ogg', 40, TRUE)
 	prisoner.apply_status_effect(/datum/status_effect/prison_boss_shimmer)
-	return TRUE
 
 /**
- * The shimmer after a Ghost slips their cuffs, as the field cloak: faint and blurred for
- * PRISON_BOSS_SHIMMER_TIME, and PRISON_BOSS_SHIMMER_MISS percent of blows, throws and shots miss. A hit
- * that lands or a flash ends it.
+ * The shimmer after a Ghost slips their cuffs: faint and blurred for PRISON_BOSS_SHIMMER_TIME, a look
+ * and nothing more. A Ghost's dodging is their real chrome (a Slipwire shunt, outpost_prison_bounty.dm;
+ * owner ruling OC-6), which works with the shimmer or without it. A hit that lands or a flash ends it.
  */
 /datum/status_effect/prison_boss_shimmer
 	id = "prison_boss_shimmer"
@@ -797,47 +805,23 @@
 	alert_type = null
 	/// Broken by a hit or a flash, which says so itself
 	var/broken = FALSE
-	/// The miss message shows at most every second, so a burst of fire doesn't flood chat
-	COOLDOWN_DECLARE(miss_message_cooldown)
 
 /datum/status_effect/prison_boss_shimmer/on_apply()
 	if(owner.stat != CONSCIOUS)
 		return FALSE
 	animate(owner, alpha = PRISON_BOSS_SHIMMER_ALPHA, time = 0.3 SECONDS)
 	owner.add_filter("prison_boss_shimmer", 2, list("type" = "blur", "size" = 1))
-	RegisterSignal(owner, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(on_check_block))
-	RegisterSignal(owner, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_prehit))
 	RegisterSignal(owner, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
 	RegisterSignal(owner, COMSIG_MOB_FLASHED, PROC_REF(on_flashed))
 	owner.visible_message(span_warning("[owner] fades into a faint shimmer!"))
 	return TRUE
 
 /datum/status_effect/prison_boss_shimmer/on_remove()
-	UnregisterSignal(owner, list(COMSIG_LIVING_CHECK_BLOCK, COMSIG_PROJECTILE_PREHIT, COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_MOB_FLASHED))
+	UnregisterSignal(owner, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_MOB_FLASHED))
 	animate(owner, alpha = 255, time = 0.3 SECONDS)
 	owner.remove_filter("prison_boss_shimmer")
 	if(!broken && owner.stat != DEAD)
 		owner.visible_message(span_notice("The shimmer around [owner] fades."))
-
-/datum/status_effect/prison_boss_shimmer/proc/miss_message(message)
-	if(!COOLDOWN_FINISHED(src, miss_message_cooldown))
-		return
-	COOLDOWN_START(src, miss_message_cooldown, 1 SECONDS)
-	owner.visible_message(message)
-
-/datum/status_effect/prison_boss_shimmer/proc/on_check_block(mob/living/source, atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
-	SIGNAL_HANDLER
-	if(owner.stat != CONSCIOUS || !prob(PRISON_BOSS_SHIMMER_MISS))
-		return NONE
-	miss_message(span_warning("[attack_text] passes through the shimmer where [owner] was!"))
-	return SUCCESSFUL_BLOCK
-
-/datum/status_effect/prison_boss_shimmer/proc/on_prehit(mob/living/source, obj/projectile/shot)
-	SIGNAL_HANDLER
-	if(shot.firer == owner || owner.stat != CONSCIOUS || !prob(PRISON_BOSS_SHIMMER_MISS))
-		return NONE
-	miss_message(span_warning("[shot] passes through the shimmer around [owner]!"))
-	return PROJECTILE_INTERRUPT_HIT_PHASE
 
 /datum/status_effect/prison_boss_shimmer/proc/on_damaged(mob/living/source, damage, damagetype)
 	SIGNAL_HANDLER

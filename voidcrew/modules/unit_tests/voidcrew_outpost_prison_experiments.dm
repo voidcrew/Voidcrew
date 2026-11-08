@@ -175,14 +175,15 @@
 	TEST_ASSERT(specimens > 0 && specimens < 60, "[specimens] of 60 offers were specimens")
 	TEST_ASSERT(first && second, "The prisoners vanished")
 
-	// Hurt, the researcher leaves at once, unhurt, and the next offer is not sweeter for it.
+	// Hurt for real (OC-3), the researcher says so and leaves, and the next offer is not sweeter for it.
 	qdel(serum)
 	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/target = prison.spawn_researcher(TRUE)
 	TEST_ASSERT_NOTNULL(target, "An admin could not send the researcher")
 	var/sweet = prison.sweetener
+	target.finish_beam_in()
 	target.apply_damage(10, BRUTE)
 	TEST_ASSERT(target.leaving, "A hurt researcher stayed")
-	TEST_ASSERT_EQUAL(target.health, target.maxHealth, "The researcher could be hurt")
+	TEST_ASSERT(target.health < target.maxHealth, "The researcher's body took no damage")
 	TEST_ASSERT_NULL(prison.researcher, "A hurt researcher kept the offer open")
 	TEST_ASSERT_EQUAL(prison.sweetener, sweet, "Hurting the researcher sweetened the next offer")
 
@@ -613,13 +614,21 @@
 		TEST_ASSERT(!QDELETED(creature), "The megafauna ban removed [creature_type] from the prison wing")
 		qdel(creature)
 
-	// Kessler's people: no sentience potions, and they cannot be hurt.
+	// Kessler's people: real bodies (OC-3) that keep out of lockers and teleporters while alive, and leave when hurt.
 	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 12, 4), null)
 	TEST_ASSERT(!doctor.compare_sentience_type(SENTIENCE_ORGANIC), "The researcher takes a sentience potion")
 	TEST_ASSERT(HAS_TRAIT(doctor, "no_containment"), "The researcher can be boxed")
 	TEST_ASSERT(!do_teleport(doctor, prison_spot(home, 12, 5), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved the researcher")
+	TEST_ASSERT(ishuman(doctor), "The researcher is not a real body")
 	doctor.apply_damage(30, BRUTE)
-	TEST_ASSERT_EQUAL(doctor.health, doctor.maxHealth, "The researcher was hurt")
+	TEST_ASSERT(doctor.health < doctor.maxHealth, "The researcher could not be hurt")
+	TEST_ASSERT(doctor.leaving, "A hurt researcher stayed")
+	// An agent's tranquilliser gun holds a real chloral hydrate dart.
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 13, 4), null)
+	var/obj/item/gun/syringe/dart_gun = locate() in agent.held_items
+	TEST_ASSERT_NOTNULL(dart_gun, "A Kessler agent holds no tranquilliser gun")
+	var/obj/item/reagent_containers/syringe/dart = length(dart_gun.syringes) ? dart_gun.syringes[1] : null
+	TEST_ASSERT(dart?.reagents?.has_reagent(/datum/reagent/toxin/chloralhydrate), "A Kessler agent's dart holds no chloral hydrate")
 
 	// Only the outpost's inside breaks.
 	TEST_ASSERT(!outpost_experiment_can_smash(prison_spot(home, 1, 7), prison), "The wing's outer wall counted as breakable")

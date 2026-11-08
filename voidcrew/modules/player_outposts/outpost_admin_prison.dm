@@ -612,13 +612,11 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 			if("clean")
 				prisoner.set_uniform_grime(0)
 			if("hurt")
-				// A real hit, so they bleed, never a killing one.
-				var/damage = min(30, prisoner.health - 1)
-				if(damage > 0)
-					prisoner.apply_damage(damage, BRUTE)
+				// A real hit on one limb, so they bruise and may bleed (defaults PR-27).
+				prisoner.apply_damage(30, BRUTE, pick(BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 			if("heal")
-				prisoner.adjustBruteLoss(-prisoner.getBruteLoss(), forced = TRUE)
-				prisoner.setStaminaLoss(0)
+				// tg's own full heal of the body (damage, wounds, blood), cuffs and the rest left as they are.
+				prisoner.fully_heal(HEAL_DAMAGE | HEAL_WOUNDS | HEAL_BLOOD | HEAL_LIMBS | HEAL_ORGANS)
 			if("enrage")
 				// Low enough to threaten staff, fight, and riot once it has held for half a minute.
 				prisoner.set_mood(10)

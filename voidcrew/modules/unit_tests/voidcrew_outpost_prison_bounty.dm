@@ -407,7 +407,7 @@
 	TEST_ASSERT_EQUAL(wanted.gender, MALE, "A bounty prisoner's gender did not carry over")
 	TEST_ASSERT_EQUAL(wanted.crime, "arson", "A bounty prisoner is in for [wanted.crime], not their plain crime")
 	TEST_ASSERT(wanted.personality in list("grumpy", "chatty"), "A normal criminal came in [wanted.personality]")
-	TEST_ASSERT_EQUAL(wanted.maxHealth, 120, "A Wanted prisoner has [wanted.maxHealth] health") // BOUNTY_PRISONER_HEALTH_WANTED
+	TEST_ASSERT_EQUAL(wanted.npc_damage_taken, 0.9, "A Wanted prisoner takes [wanted.npc_damage_taken] of a blow, not 0.9") // BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED
 	TEST_ASSERT_EQUAL(wanted.health, 120, "A Wanted prisoner starts at [wanted.health] health")
 	TEST_ASSERT_EQUAL(wanted.arrival_brute, 36, "Caught 30% hurt, they carry [wanted.arrival_brute] brute into the beam")
 	TEST_ASSERT_EQUAL(wanted.outfit_path, /datum/outfit/outpost_prisoner, "A bounty prisoner is not in the plain jumpsuit")
@@ -423,7 +423,7 @@
 	var/datum/bounty_record/boss_record = make_record(3, "boss", "Oren Vask")
 	var/mob/living/carbon/human/npc/outpost_prisoner/boss = bounty_prisoner(prison, prison_spot(home, 12, 8), boss_record)
 	TEST_ASSERT_EQUAL(boss.personality, "grumpy", "A mini-boss came in [boss.personality]")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 150, "A Most Wanted prisoner has [boss.maxHealth] health") // BOUNTY_PRISONER_HEALTH_MOST_WANTED
+	TEST_ASSERT_EQUAL(boss.npc_damage_taken, 0.8, "A Most Wanted prisoner takes [boss.npc_damage_taken] of a blow, not 0.8") // BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.gender, FEMALE, "A bounty prisoner's gender did not carry over")
 	// A Most Wanted's crime is no line to toss off in the yard (BUG-12); the console and examine keep it
 	TEST_ASSERT_EQUAL(boss.crime, "a lot of things", "A Most Wanted prisoner tells the yard they're in for [boss.crime]") // BOUNTY_PRISON_MOST_WANTED_YARD_CRIME
@@ -438,7 +438,7 @@
 	var/datum/bounty_record/meek_record = make_record(1, "meek", "Pim Sallow")
 	var/mob/living/carbon/human/npc/outpost_prisoner/meek = bounty_prisoner(prison, prison_spot(home, 3, 11), meek_record)
 	TEST_ASSERT(meek.personality in list("nervous", "quiet"), "A meek criminal came in [meek.personality]")
-	TEST_ASSERT_EQUAL(meek.maxHealth, 100, "A Petty prisoner has [meek.maxHealth] health") // BOUNTY_PRISONER_HEALTH_PETTY
+	TEST_ASSERT_EQUAL(meek.maxHealth, 100, "A Petty prisoner has [meek.maxHealth] health, not a person's") // human NPC
 	TEST_ASSERT_EQUAL(meek.arrival_brute, 0, "Caught unhurt, they came in hurt")
 	var/mob/living/carbon/human/npc/outpost_prisoner/ordinary = kept_prisoner(prison, prison_spot(home, 12, 11))
 
@@ -1188,24 +1188,31 @@
 	warden.stop_pulling()
 	warden.forceMove(prison_spot(home, 10, 9))
 
-	// Out: the same cuffs on the floor, none lost or doubled, and a shimmer.
+	// Out: tg's own breakout (the cuffs' breakout time; fake cuffs here, a second, so the test needn't wait a
+	// minute), the same cuffs on the floor, none lost or doubled, and a shimmer.
+	ghost.remove_cuffs()
+	var/obj/item/restraints/handcuffs/fake/quick = allocate(/obj/item/restraints/handcuffs/fake)
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, quick), "The ghost could not be cuffed with the quick cuffs")
+	move.observe(ghost)
+	move.cuffed_at = world.time - 10 SECONDS
 	move.ready_at = 0
 	TEST_ASSERT(move.try_start(), "The ghost did not try the cuffs a third time")
-	TEST_ASSERT(move.finish_windup(move.pending_serial), "The ghost never got out of the cuffs")
+	TEST_ASSERT(move.finish_windup(move.pending_serial), "The ghost never started on the cuffs")
+	var/deadline = world.time + 5 SECONDS
+	UNTIL(!ghost.handcuffed || world.time > deadline)
 	TEST_ASSERT_NULL(ghost.handcuffed, "The ghost is still cuffed")
-	TEST_ASSERT(!QDELETED(cuffs) && cuffs.loc == ghost.loc, "The cuffs are not on the floor at the ghost's feet ([cuffs?.loc])")
+	TEST_ASSERT(!QDELETED(quick) && quick.loc == ghost.loc, "The cuffs are not on the floor at the ghost's feet ([quick?.loc])")
 	var/cuffs_there = 0
 	for(var/obj/item/restraints/handcuffs/pair in ghost.loc)
 		cuffs_there++
 	TEST_ASSERT_EQUAL(cuffs_there, 1, "[cuffs_there] pairs of cuffs lie at the ghost's feet, not 1")
 	TEST_ASSERT(ghost.has_status_effect(/datum/status_effect/prison_boss_shimmer), "The ghost did not shimmer after slipping the cuffs")
-	var/missed = 0
-	for(var/i in 1 to 60)
-		if(ghost.check_block(warden, 10, "the test blow", MELEE_ATTACK) & SUCCESSFUL_BLOCK)
-			missed++
-	TEST_ASSERT(missed > 10 && missed < 50, "[missed] of 60 blows missed the shimmer, not about half") // PRISON_BOSS_SHIMMER_MISS
+	// The shimmer is a look; the Ghost's dodging is real chrome (OC-6), a Slipwire shunt.
+	var/obj/item/organ/slipwire = locate(/obj/item/organ/cyberimp/cyberware/slipwire) in ghost.organs
+	TEST_ASSERT_NOTNULL(slipwire, "A Ghost in prison has no Slipwire to dodge with")
 	ghost.apply_damage(5, BRUTE)
 	TEST_ASSERT(!ghost.has_status_effect(/datum/status_effect/prison_boss_shimmer), "A hit that landed did not break the shimmer")
+	qdel(quick)
 
 	// Once a riot.
 	TEST_ASSERT(outpost_prison_test_cuff(ghost, cuffs), "The ghost could not be cuffed again")

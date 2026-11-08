@@ -212,20 +212,16 @@
 	var/obj/projectile/at_hulk = turret.shootAt(hulk)
 	TEST_ASSERT(istype(at_hulk, /obj/projectile/beam/laser), "A lethal laser turret fired [at_hulk?.type || "nothing"] at the hulk, not its laser")
 
-	// Its shots pass through everyone the prison spares, and a lethal one through every prisoner
+	// Its shots land on whoever they meet, as anyone's do (PR-12): the rule is only the turret's choice of target.
 	var/obj/projectile/beam/disabler/stun_shot = allocate(/obj/projectile/beam/disabler, prison_spot(home, 9, 9))
 	stun_shot.firer = turret
 	TEST_ASSERT(stun_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's stun shot could not land on a rioter")
-	TEST_ASSERT(!stun_shot.can_hit_target(calm, TRUE, TRUE), "A turret's stun shot could land on a calm prisoner")
-	TEST_ASSERT(!stun_shot.can_hit_target(guard, TRUE, TRUE), "A turret's stun shot could land on a guard")
-	TEST_ASSERT(!stun_shot.can_hit_target(doctor, TRUE, TRUE), "A turret's stun shot could land on the Kessler researcher")
+	TEST_ASSERT(stun_shot.can_hit_target(calm, TRUE, TRUE), "A turret's stray stun shot passed through a calm prisoner")
+	TEST_ASSERT(stun_shot.can_hit_target(guard, TRUE, TRUE), "A turret's stray stun shot passed through a guard")
 	var/obj/projectile/beam/laser/lethal_shot = allocate(/obj/projectile/beam/laser, prison_spot(home, 9, 9))
 	lethal_shot.firer = turret
-	TEST_ASSERT(!lethal_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's lethal shot could land on a rioter")
+	TEST_ASSERT(lethal_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's lethal shot passed through a rioter")
 	TEST_ASSERT(lethal_shot.can_hit_target(hulk, TRUE, TRUE), "A turret's lethal shot could not land on the hulk")
-	// Anyone else's shots are none of the prison's business
-	var/obj/projectile/beam/laser/stray_shot = allocate(/obj/projectile/beam/laser, prison_spot(home, 9, 9))
-	TEST_ASSERT(stray_shot.can_hit_target(calm, TRUE, TRUE), "A shot nobody fired from a turret passed through a calm prisoner")
 
 	// Never a shot at a prisoner the rule spares, however the turret is aimed
 	warning_over(turret, calm)

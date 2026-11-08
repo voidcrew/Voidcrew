@@ -1058,16 +1058,12 @@
 	TEST_ASSERT_EQUAL(owner.pulling, prisoner, "A member could not pull a calm prisoner")
 	TEST_ASSERT_NULL(prisoner.activity, "A pulled prisoner kept on with what they were doing")
 	TEST_ASSERT(!prisoner.routine_allowed(), "A pulled prisoner's routine still runs")
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_RESIST_DEFAULT, "A calm prisoner being pulled is too heavy to pull")
 	owner.Move(prison_spot(home, 10, 8), EAST)
 	TEST_ASSERT_EQUAL(prisoner.loc, prison_spot(home, 9, 8), "The calm prisoner was not pulled along (at [prisoner.x],[prisoner.y])")
 	TEST_ASSERT_EQUAL(owner.pulling, prisoner, "The pull broke on the first step")
-	var/obj/structure/bed/bed = prison.cells[1].bed()
-	TEST_ASSERT(SEND_SIGNAL(prisoner, COMSIG_MOUSEDROP_ONTO, bed, owner) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "A calm prisoner could be dragged onto a bed")
-	// Let go: heavy again, and they stay where they were left for 3 seconds (PRISON_PULL_RELEASE_HOLD), then carry on.
+	// Let go, they stay where they were left for 3 seconds (PRISON_PULL_RELEASE_HOLD), then carry on.
 	var/turf/left_at = get_turf(prisoner)
 	owner.stop_pulling()
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_FORCE_VERY_STRONG, "Let go, a prisoner on their feet is light enough to shove")
 	var/datum/prisoner_activity/let_go/still = prisoner.activity
 	TEST_ASSERT(istype(still), "Let go, the prisoner is doing [prisoner.activity?.name || "nothing"], not standing still")
 	TEST_ASSERT(still.started && isnull(still.spot), "Standing still after the pull has them going somewhere")
@@ -1102,23 +1098,24 @@
 	owner.stop_pulling()
 	prisoner.end_activity()
 
-	// A rioter on their feet can't be pulled.
+	// A rioter on their feet won't be led anywhere: they resist the pull at once, as anyone can (tg's resist).
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	owner.forceMove(prison_spot(home, 13, 8))
 	rioter.start_rioting(FALSE)
-	TEST_ASSERT(!rioter.pull_allowed(), "A rioter on their feet may be pulled")
+	TEST_ASSERT(!rioter.pull_allowed(), "A rioter on their feet goes along with a pull")
+	rioter.next_move = 0
 	owner.start_pulling(rioter)
-	TEST_ASSERT(owner.pulling != rioter, "Someone pulled a rioter on their feet")
+	sleep(2)
+	TEST_ASSERT(owner.pulling != rioter, "A rioter on their feet did not shake off a pull")
 	TEST_ASSERT_EQUAL(rioter.trouble, "riot", "A pull on a rioter changed their trouble to [rioter.trouble]") // PRISONER_TROUBLE_RIOT
-	TEST_ASSERT_EQUAL(rioter.move_resist, MOVE_FORCE_VERY_STRONG, "A rioter on their feet is light enough to pull")
 	// Calm when taken hold of and rioting since: the prison's next tick shakes the pull off, and they don't stand still for it.
 	rioter.calm_down()
 	owner.start_pulling(rioter)
 	TEST_ASSERT_EQUAL(owner.pulling, rioter, "The calmed rioter could not be pulled")
 	rioter.start_rioting(FALSE)
+	rioter.next_move = 0
 	prison.tick(1)
 	TEST_ASSERT(owner.pulling != rioter && isnull(rioter.pulledby), "A prisoner who started rioting mid-pull was still pulled")
-	TEST_ASSERT_EQUAL(rioter.move_resist, MOVE_FORCE_VERY_STRONG, "A rioter who shook off a pull is light enough to pull")
 	TEST_ASSERT(!istype(rioter.activity, /datum/prisoner_activity/let_go), "A rioter who shook off a pull stood still for it")
 	// Cuffed, a rioter can be pulled as before, and let go they don't stand still for it either.
 	TEST_ASSERT(outpost_prison_test_cuff(rioter, allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")

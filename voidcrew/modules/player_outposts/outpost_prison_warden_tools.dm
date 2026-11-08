@@ -496,8 +496,9 @@
 	if(calm_for_pull())
 		INVOKE_ASYNC(src, PROC_REF(go_along_with_pull))
 		return
-	// Making trouble, they won't be led anywhere: they shake it off, as anyone resists a pull.
-	INVOKE_ASYNC(src, PROC_REF(shake_off_pull))
+	// Making trouble, they won't be led anywhere: they shake it off, as anyone resists a pull (next tick,
+	// once the grab has finished taking hold).
+	addtimer(CALLBACK(src, PROC_REF(shake_off_pull)), 1)
 
 /// Stops whatever they were doing, and any walk, so they follow the pull instead of walking against it
 /mob/living/carbon/human/npc/outpost_prisoner/proc/go_along_with_pull()
@@ -525,7 +526,7 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/shake_off_pull()
 	if(!pulledby || pull_allowed() || stat != CONSCIOUS || world.time < next_move)
 		return
-	resist()
+	execute_resist()
 
 /// Let go after a pull: they stay where they were left for PRISON_PULL_RELEASE_HOLD, then carry on
 /datum/prisoner_activity/let_go

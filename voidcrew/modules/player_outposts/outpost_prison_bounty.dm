@@ -464,6 +464,9 @@ GLOBAL_VAR(bounty_pool_timer)
 	if(record in GLOB.bounty_prisoner_pool)
 		bounty_pool_remove(record)
 	npc_damage_taken = bounty_by_tier(record.tier, BOUNTY_PRISONER_DAMAGE_TAKEN_PETTY, BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED, BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED)
+	// The Ghost's dodging is real chrome (owner ruling OC-6): a Slipwire shunt, which burns out to scrap if they die.
+	if(record.archetype == BOUNTY_ARCHETYPE_BOSS && record.kit == BOUNTY_KIT_GHOST)
+		npc_cyberware = list(/obj/item/organ/cyberimp/cyberware/slipwire)
 
 /**
  * At the end of the prisoner's Initialize(), before their look is built: who their record says

@@ -487,7 +487,7 @@
 
 // ===== DOWN AND BACK =====
 
-/// At 30 health a guard goes down, takes no more, beams out ten seconds later and is back ten minutes after, free; the slot's wait survives a rehire
+/// A guard is a real body (OC-2): in crit they go down and are medevaced ten seconds later, killed they are collected a minute later; either way back ten minutes after, free, with the same face; the slot's wait survives a rehire
 /datum/unit_test/voidcrew_outpost_prison_guard_down
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
@@ -503,17 +503,18 @@
 	var/guard_name = guard.real_name
 	guard.finish_beam_in()
 
-	// Damage stops at 30: down, and nothing more hurts them.
-	guard.adjustBruteLoss(100)
-	TEST_ASSERT_EQUAL(guard.health, 30, "A guard's health went to [guard.health], not 30") // OUTPOST_GUARD_DOWN_AT
-	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard at 30 health did not go down") // OUTPOST_GUARD_DOWN
-	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_GODMODE), "A downed guard can still be hurt")
+	// Real damage into tg crit: down, and nothing protects them there.
+	var/list/face = record.look?.Copy()
+	TEST_ASSERT(length(face), "The payroll did not keep the guard's face")
+	guard.adjustBruteLoss(110)
+	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_CRITICAL_CONDITION), "110 brute did not put a guard in crit")
+	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard in crit did not go down") // OUTPOST_GUARD_DOWN
+	TEST_ASSERT(!HAS_TRAIT(guard, TRAIT_GODMODE), "A downed guard is godmoded")
 	TEST_ASSERT(!is_outpost_prison_staff(guard), "A downed guard still counted as staff")
-	guard.adjustBruteLoss(50)
-	guard.adjustFireLoss(50)
-	TEST_ASSERT_EQUAL(guard.health, 30, "A downed guard took more damage")
-	guard.death()
-	TEST_ASSERT(guard.stat != DEAD, "A guard died")
+	var/health_down = guard.health
+	guard.adjustBruteLoss(5)
+	TEST_ASSERT(guard.health < health_down, "A downed guard took no more damage")
+	TEST_ASSERT_EQUAL(prison.guard_payroll(), 0, "A downed guard still draws a wage")
 
 	// Ten seconds later they beam out, and they are back ten minutes after that, at no charge.
 	prison.tick(9)
@@ -529,7 +530,26 @@
 	prison.tick(1)
 	TEST_ASSERT_NOTNULL(record.guard, "A downed guard did not come back after ten minutes")
 	TEST_ASSERT_EQUAL(record.guard.real_name, guard_name, "A different guard came back")
+	TEST_ASSERT_EQUAL(record.guard.skin_tone, face["skin_tone"], "The guard came back with someone else's face")
+	TEST_ASSERT_EQUAL(record.guard.hairstyle, face["hairstyle"], "The guard came back with someone else's hair")
+	TEST_ASSERT(record.guard.health >= record.guard.maxHealth, "The guard came back hurt")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "The return cost [4000 - treasury.account_balance] cr")
+
+	// Killed on duty: the body lies a minute, then the corrections service collects it; back ten minutes later.
+	var/mob/living/carbon/human/npc/outpost_prison_guard/victim = record.guard
+	victim.finish_beam_in()
+	victim.death()
+	TEST_ASSERT_EQUAL(victim.stat, DEAD, "A guard could not die")
+	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard is [victim.phase], not down")
+	TEST_ASSERT(locate(/obj/item/melee/baton/security) in victim.get_all_contents(), "A dead guard's baton left the body")
+	TEST_ASSERT(human_npc_gear_locked(locate(/obj/item/melee/baton/security) in victim.get_all_contents()), "A dead guard's baton is not locked to the body (D3)")
+	prison.tick(59)
+	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard's body was collected early")
+	prison.tick(1) // OUTPOST_GUARD_BODY_COLLECT_DELAY
+	TEST_ASSERT_EQUAL(victim.phase, "leaving", "A dead guard's body was not collected after a minute")
+	TEST_ASSERT_EQUAL(record.away_left, 600, "A killed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
+	prison.tick(600)
+	TEST_ASSERT_NOTNULL(record.guard, "A killed guard's slot was not filled again after ten minutes")
 
 	// Down again and dismissed: the next hire waits out the same slot.
 	var/mob/living/carbon/human/npc/outpost_prison_guard/back = record.guard
