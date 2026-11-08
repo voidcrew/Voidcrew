@@ -262,21 +262,19 @@
 	host.update_bubble()
 	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_host_death))
 	RegisterSignal(host, COMSIG_QDELETING, PROC_REF(on_host_deleted))
-	// A host with a body (EX-8): the specimen is a real thing in their chest, which surgery can cut out.
-	if(iscarbon(new_host))
-		var/obj/item/organ/body_egg/outpost_specimen/specimen = new()
-		specimen.event_ref = WEAKREF(src)
-		if(!specimen.Insert(new_host, special = TRUE))
-			qdel(specimen)
+	// EX-8: the specimen is a real thing in their chest, which surgery can cut out.
+	var/obj/item/organ/body_egg/outpost_specimen/specimen = new()
+	specimen.event_ref = WEAKREF(src)
+	if(!specimen.Insert(new_host, special = TRUE))
+		qdel(specimen)
 
-/// The specimen in a host with a body, if there is one
+/// The specimen in the host, if there is one
 /datum/outpost_changeling_event/proc/host_specimen()
-	var/mob/living/carbon/body = host
-	if(!istype(body))
+	if(QDELETED(host))
 		return null
-	return locate(/obj/item/organ/body_egg/outpost_specimen) in body.organs
+	return locate(/obj/item/organ/body_egg/outpost_specimen) in host.organs
 
-/// Takes the specimen out of a host with a body for good, as the burst or the end of the experiment does
+/// Takes the specimen out of the host for good, as the burst or the end of the experiment does
 /datum/outpost_changeling_event/proc/remove_specimen()
 	var/obj/item/organ/body_egg/outpost_specimen/specimen = host_specimen()
 	if(!specimen)
@@ -293,7 +291,6 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/was_host = host
 	host = null
 	UnregisterSignal(was_host, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
-	was_host.remove_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
 	if(istype(was_host.activity, /datum/prisoner_activity/changeling_bed))
 		was_host.end_activity()
 	if(cured && !QDELETED(was_host))
@@ -392,30 +389,25 @@
 	heave()
 
 /**
- * The host goes down, on their bunk if they got there: groaning, and draggable. A host with a body lies
- * down the way anyone sick does, and the heaves keep knocking them flat (heave()). A basic prisoner, with no
- * body to be sick in, is held down by traits until prisoners are human NPCs.
+ * The host goes down, on their bunk if they got there: groaning, and draggable. They lie down the way
+ * anyone sick does, and the heaves keep knocking them flat (heave()).
  */
 /datum/outpost_changeling_event/proc/host_lie_down()
 	if(host_down || QDELETED(host))
 		return
 	host_down = TRUE
-	if(iscarbon(host))
-		host.set_resting(TRUE, silent = TRUE)
-		host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
-	else
-		host.add_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
+	host.set_resting(TRUE, silent = TRUE)
+	host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
 	host.visible_message(span_warning("[host] curls up, groaning, arms wrapped around [host.p_their()] belly."))
 
-/// The host's belly heaves, and a host with a body is sick and knocked flat by it; now and then a neighbour notices
+/// The host's belly heaves, and they are sick and knocked flat by it; now and then a neighbour notices
 /datum/outpost_changeling_event/proc/heave()
 	host.Shake(1, 0, 0.6 SECONDS)
 	playsound(host, 'sound/effects/meatslap.ogg', 15, TRUE, -2)
-	if(iscarbon(host) && host.stat != DEAD)
-		var/mob/living/carbon/body = host
+	if(host.stat != DEAD)
 		if(prob(40))
-			body.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = 0)
-		body.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
+			host.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = 0)
+		host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
 	if(prob(50))
 		host.visible_message(span_warning("Something moves under [host]'s jumpsuit. [host.p_Their()] belly heaves."))
 	else

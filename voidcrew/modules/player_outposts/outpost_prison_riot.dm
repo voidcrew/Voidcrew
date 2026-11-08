@@ -1431,7 +1431,7 @@
 
 /proc/is_loose_outpost_prisoner(mob/living/creature)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = creature
-	return istype(prisoner) && prisoner.turret_target()
+	return istype(prisoner) && !prisoner.experiment_turned && prisoner.turret_target()
 
 // ===== SERVING HATCH =====
 

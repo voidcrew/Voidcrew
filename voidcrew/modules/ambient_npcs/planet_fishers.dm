@@ -605,10 +605,18 @@
 			continue
 		if(istype(site) && site.center && get_dist(target, site.center) > 12)
 			continue
-		if(locate(/mob/living/carbon/human/npc/ruin/trooper/pirate) in range(5, target))
+		if(ambient_pirate_near(target, 5))
 			continue
 		return target
 	return null
+
+/// Whether a living pirate is within `distance` of `spot`: any human NPC on the pirate side (a ruin's
+/// pirates, a faction's crew or raiders).
+/proc/ambient_pirate_near(turf/spot, distance)
+	for(var/mob/living/carbon/human/npc/npc in range(distance, spot))
+		if(npc.stat != DEAD && (FACTION_PIRATE in npc.faction))
+			return TRUE
+	return FALSE
 
 /datum/ambient_activity/row/act(seconds)
 	var/obj/structure/ambient_boat/boat = boat()

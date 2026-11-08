@@ -117,6 +117,8 @@
 	var/last_cared_at = 0
 	/// world.time they last got the lift of a shared meal
 	var/shared_meal_at = 0
+	/// The serum turned them into an experiment's creature: off the roster, no longer treated as an inmate
+	var/experiment_turned = FALSE
 	/// The criminal they were, when a bounty hunter caught them (outpost_prison_bounty.dm); null for an ordinary prisoner
 	var/datum/bounty_record/bounty_record
 	COOLDOWN_DECLARE(speech_cooldown)
@@ -200,6 +202,39 @@
 	. = ..()
 	if(gone == held_item)
 		held_item = null
+
+/**
+ * The serum took them (outpost_prison_experiment_forms.dm): the same body, no longer an inmate. Whatever
+ * they were doing and whatever trouble they were in stops, their thought bubble goes, and the prisoner's
+ * own reactions (needs and treatment, cuffing rules, blame, turret rules, teleport and polymorph refusals)
+ * are switched off; the form brings its own. The caller takes them off the roster (forget()).
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/stand_down_for_experiment()
+	experiment_turned = TRUE
+	// The prison no longer owns the body: if Kessler never takes it, it goes like any NPC's
+	npc_corpse_lifetime = HUMAN_NPC_CORPSE_LIFETIME
+	end_activity(cancel_ai = FALSE)
+	clear_trouble()
+	bubble = null
+	if(popped_bubble)
+		fade_bubble()
+	UnregisterSignal(src, list(
+		COMSIG_MOB_PRE_EAT,
+		COMSIG_MOB_ATE,
+		COMSIG_ATOM_ITEM_INTERACTION,
+		COMSIG_MOB_AFTER_APPLY_DAMAGE,
+		COMSIG_LIVING_HEALTH_UPDATE,
+		COMSIG_MOB_SAY,
+		COMSIG_MOB_EMOTE,
+		COMSIG_CARBON_CUFF_ATTEMPTED,
+		COMSIG_ATOM_WAS_ATTACKED,
+		COMSIG_MOB_BATONED,
+		COMSIG_ATOM_BULLET_ACT,
+		COMSIG_MOVABLE_TELEPORTING,
+		COMSIG_LIVING_PRE_WABBAJACKED,
+		COMSIG_PRE_MOB_CHANGED_TYPE,
+		COMSIG_LIVING_REVIVE,
+	))
 
 /// Walking pace, or a run for a runner, a rioter or someone fleeing, by the move intent a player uses.
 /mob/living/carbon/human/npc/proc/set_prison_pace(hurry)

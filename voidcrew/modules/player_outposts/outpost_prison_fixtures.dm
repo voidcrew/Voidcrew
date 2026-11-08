@@ -10,7 +10,9 @@
 
 /// Whether this is an outpost prisoner
 /proc/is_outpost_prisoner(atom/thing)
-	return istype(thing, /mob/living/carbon/human/npc/outpost_prisoner)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = thing
+	// A body the serum turned is an experiment's creature now (outpost_prison_experiment_forms.dm)
+	return istype(prisoner) && !prisoner.experiment_turned
 
 // ===== UNIFORM =====
 

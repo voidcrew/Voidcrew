@@ -21,9 +21,9 @@
  * people go through armour and wound like anyone's (EX-7). Kessler's team collects it only once it is down
  * (outpost_experiment_down_state()), and pays by the state it finds it in.
  *
- * The form is a component on a human body, so the serum can work on the prisoner's own body once prisoners
- * are human NPCs (phase E1). Until then a basic prisoner can't take a gene or a species, and
- * outpost_experiment_subject_body() puts a human body dressed as them in their place.
+ * The form is a component on the prisoner's own body (human NPC phase E1): the serum turns the inmate, who
+ * leaves the prison's roster (transform_subject(), outpost_prisoner/proc/stand_down_for_experiment()) but
+ * keeps their name, face, wounds and blood.
  */
 
 /// Trait source for what the form puts on a body
@@ -64,34 +64,6 @@
 	return istype(creature, /mob/living/basic/outpost_experiment) || !!creature.GetComponent(/datum/component/outpost_experiment_form)
 
 /**
- * The body the serum works on. A prisoner who is a person already is their own body. A basic prisoner
- * (until prisoners are human NPCs, phase E1) can't take a gene or a species, so a human body dressed as
- * them, with their name, sex and outfit, stands where they stood, and the basic prisoner is deleted the
- * way the change always took them off the roster. Returns the body, or null.
- */
-/proc/outpost_experiment_subject_body(mob/living/subject)
-	if(ishuman(subject))
-		return subject
-	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = subject
-	if(!istype(prisoner) || QDELETED(prisoner))
-		return null
-	var/turf/spot = get_turf(prisoner)
-	if(!spot)
-		return null
-	var/datum/human_npc_order/order = spawn_human_npc(/mob/living/carbon/human/npc/outpost_experiment_subject, spot, outfit = prisoner.outfit_path || /datum/outfit/outpost_prisoner, name = prisoner.real_name, immediate = TRUE)
-	var/mob/living/carbon/human/npc/outpost_experiment_subject/body = order.spawned_ref?.resolve()
-	qdel(order)
-	if(QDELETED(body))
-		return null
-	if(prisoner.gender == MALE || prisoner.gender == FEMALE)
-		body.gender = prisoner.gender
-		body.physique = prisoner.gender
-		body.update_body(is_creating = TRUE)
-	body.setDir(prisoner.dir)
-	qdel(prisoner)
-	return body
-
-/**
  * Turns `body` into serum `form` for `prison` where it stands. Returns the form, or null if it didn't take.
  * `personality` is the prisoner's, for its lines.
  */
@@ -107,17 +79,6 @@
 		return null
 	turned.change_body()
 	return turned
-
-/**
- * The human body a basic prisoner turns in (outpost_experiment_subject_body()), until prisoners are human
- * NPCs. A prisoner's things are ordinary items (owner ruling OC-11). Kessler takes the body away; the usual
- * corpse sweep is only a backstop for one Kessler never came for.
- */
-/mob/living/carbon/human/npc/outpost_experiment_subject
-	name = "prisoner"
-	faction = list(FACTION_OUTPOST_EXPERIMENT)
-	npc_gear_locked = FALSE
-	npc_target_stat = HARD_CRIT
 
 // ===== THE FORM =====
 

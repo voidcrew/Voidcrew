@@ -177,7 +177,11 @@
 	var/subject_name = subject.real_name
 	var/personality = subject.personality
 	experiment.subject_ref = null
-	var/mob/living/carbon/human/body = outpost_experiment_subject_body(subject)
+	// The same body, no longer an inmate: off the roster (its cell waits a refill), the prisoner's own
+	// reactions off. The form brings its own mind, side and refusals.
+	subject.stand_down_for_experiment()
+	forget(subject)
+	var/mob/living/carbon/human/body = subject
 	var/datum/component/outpost_experiment_form/form = outpost_experiment_turn(body, experiment.form, src, personality)
 	if(!form)
 		experiment_failed("the serum did not take")

@@ -297,10 +297,11 @@
 
 // ===== THE SERUM =====
 
-/// A human body turned into serum `form` for `prison` where it stands, the way the serum turns a subject
-/// (outpost_prison_experiment_forms.dm), and tracked as the experiment's creature. Cleaned up with the test.
+/// A prisoner of no wing turned into serum `form` for `prison` where they stand, the way the serum turns a
+/// subject (outpost_prison_experiment_forms.dm), and tracked as the experiment's creature. Cleaned up with the test.
 /datum/unit_test/voidcrew_outpost_management/proc/experiment_form_body(datum/outpost_prison/prison, turf/spot, form, track = FALSE)
-	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/body = allocate(/mob/living/carbon/human/npc/outpost_prisoner, spot)
+	body.stand_down_for_experiment()
 	QDEL_NULL(body.ai_controller)
 	if(!outpost_experiment_turn(body, form, prison, null))
 		return null
@@ -364,13 +365,15 @@
 	TEST_ASSERT_EQUAL(prison.experiment.twitch_left, 35, "The twitch ran outside the cell block")
 	subject.forceMove(yard)
 
-	// The change: the subject's own body (until prisoners are human NPCs, a human body in their place) takes
-	// tg's hulk gene and gigantism where they stood, and the fee is paid. No clock: it stays until it is put down.
+	// The change: the subject's own body takes tg's hulk gene and gigantism where they stood, leaves the
+	// roster but not the world, and the fee is paid. No clock: it stays until it is put down.
 	prison.experiments_tick(35)
 	var/mob/living/carbon/human/hulk = form_body_near(yard, "hulk")
 	TEST_ASSERT_NOTNULL(hulk, "The subject did not turn into a hulk")
 	allocated += hulk
-	TEST_ASSERT(QDELETED(subject) || subject == hulk, "The basic subject stayed beside the hulk")
+	TEST_ASSERT_EQUAL(hulk, subject, "The serum turned some other body than the subject's own")
+	TEST_ASSERT(!(subject in prison.prisoners), "The hulk is still on the prison's roster")
+	TEST_ASSERT(!is_outpost_prisoner(subject), "The hulk still counts as an inmate")
 	TEST_ASSERT_EQUAL(hulk.real_name, subject_name, "The hulk is not the subject")
 	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_HULK), "The hulk has no hulk gene")
 	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_GIANT), "The hulk did not grow")
@@ -717,8 +720,25 @@
 				TEST_ASSERT_NOTNULL(locate(/obj/item/light_eater) in body.held_items, "The nightmare has no light eater")
 		qdel(body)
 
+	// Kessler's people: real bodies (OC-3) that keep out of lockers and teleporters while alive, and leave when hurt.
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 12, 4), null)
+	TEST_ASSERT(!doctor.compare_sentience_type(SENTIENCE_ORGANIC), "The researcher takes a sentience potion")
+	TEST_ASSERT(HAS_TRAIT(doctor, "no_containment"), "The researcher can be boxed")
+	TEST_ASSERT(!do_teleport(doctor, prison_spot(home, 12, 5), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved the researcher")
+	TEST_ASSERT(ishuman(doctor), "The researcher is not a real body")
+	doctor.apply_damage(30, BRUTE)
+	TEST_ASSERT(doctor.health < doctor.maxHealth, "The researcher could not be hurt")
+	TEST_ASSERT(doctor.leaving, "A hurt researcher stayed")
+	// An agent's tranquilliser gun holds a real chloral hydrate dart.
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 13, 4), null)
+	var/obj/item/gun/syringe/dart_gun = locate() in agent.held_items
+	TEST_ASSERT_NOTNULL(dart_gun, "A Kessler agent holds no tranquilliser gun")
+	var/obj/item/reagent_containers/syringe/dart = length(dart_gun.syringes) ? dart_gun.syringes[1] : null
+	TEST_ASSERT(dart?.reagents?.has_reagent(/datum/reagent/toxin/chloralhydrate), "A Kessler agent's dart holds no chloral hydrate")
+
 	// The species can rename a body (tg's nightmares take a nightmare's name); the subject keeps theirs.
-	var/mob/living/carbon/human/named = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/named = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 10, 10))
+	named.stand_down_for_experiment()
 	var/name_before = named.real_name
 	TEST_ASSERT_NOTNULL(outpost_experiment_turn(named, "nightmare", prison, null), "The nightmare serum did not take")
 	TEST_ASSERT_EQUAL(named.real_name, name_before, "The nightmare took a new name")
@@ -748,16 +768,6 @@
 	visitor.key = null // a test key on a deleted mob is a runtime; the fixture only clears keys at the end
 	qdel(visitor)
 
-	// The hulk knocks prisoners flat and never kills them.
-	var/mob/living/carbon/human/npc/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/carbon/human/npc/outpost_prisoner/onlooker = trouble_prisoner(prison, prison_spot(home, 12, 8))
-	TEST_ASSERT(hulk.can_target(victim), "The hulk ignored a prisoner on their feet")
-	hulk.melee_attack(victim, ignore_cooldown = TRUE)
-	TEST_ASSERT(victim.is_beaten(), "The hulk's blow did not knock the prisoner down")
-	for(var/i in 1 to 10)
-		hulk.knock_down_prisoner(victim)
-	TEST_ASSERT(victim.stat != DEAD && victim.health >= 1, "The hulk killed a prisoner")
-	TEST_ASSERT(!hulk.can_target(victim), "The hulk went after a prisoner who was already down")
 	// Its charge and its punches land through armour, at a body zone, and can wound (EX-7).
 	var/mob/living/carbon/human/armoured = allocate(/mob/living/carbon/human/consistent, prison_spot(home, 9, 9))
 	armoured.equip_to_slot_or_del(new /obj/item/clothing/suit/armor/vest(armoured), ITEM_SLOT_OCLOTHING)
