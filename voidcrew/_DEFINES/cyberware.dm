@@ -226,3 +226,9 @@
 /// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
 /// gate itself is in ware_military_body.dm.
 #define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
+
+// ---- Cyberdecks (ware_line_deck.dm) ------------------------------------
+
+/// Hacking deck, head. The deck line, Junker deck up to the Blackbox deck.
+/// Its own slot, not the OS slot, so a hacker can still run a sandevistan.
+#define ORGAN_SLOT_CYBERWARE_DECK "cyberware_deck"
