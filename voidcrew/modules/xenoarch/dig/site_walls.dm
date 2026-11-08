@@ -91,6 +91,7 @@ GLOBAL_LIST_INIT(xenoarch_rock_tints, list(
 			playsound(src, 'sound/effects/rock/rock_break.ogg', 50, TRUE)
 		if(XENOARCH_FIND_SMALL)
 			freed = new /obj/item/strange_rock(src, site.band, site.site_kind)
+			playsound(src, 'sound/effects/rock/rocktap3.ogg', 50, TRUE)
 			if(user)
 				to_chat(user, span_notice("A lump of veined rock drops out of the face."))
 	return freed

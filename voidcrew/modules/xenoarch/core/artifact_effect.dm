@@ -304,6 +304,15 @@
 	var/mob/responsible = get_responsible()
 	log_combat(responsible || holder, victim, "exposed", holder, "to [log_name]")
 
+/// Hook: it had a limited number of uses (lives, a gas reserve) and has none left. A spent
+/// effect does nothing more and sells as common (pricing_tier()).
+/datum/artifact_effect/proc/is_spent()
+	return FALSE
+
+/// The tier buyers price it at: its own, or common once it is spent.
+/datum/artifact_effect/proc/pricing_tier()
+	return is_spent() ? ARTIFACT_TIER_COMMON : tier
+
 /// What the analyser can read off it: list("kind", "release", "family"), in report words.
 /datum/artifact_effect/proc/report_parts()
 	var/datum/artifact_energy_kind/kind = artifact_energy_kind(energy_kind)

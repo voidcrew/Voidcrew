@@ -171,7 +171,7 @@
 	var/obj/item/xenoarch_curio/bowl = rock.free_find(null)
 	TEST_ASSERT(istype(bowl), "a rock at depth gave no curio")
 	TEST_ASSERT_EQUAL(bowl?.origin_band, 2, "the curio was not stamped with its rock's band")
-	TEST_ASSERT_EQUAL(bowl?.dig_value, 80, "a bowl was not marked at the pottery price")
+	TEST_ASSERT_EQUAL(xenoarch_curio_value(bowl), 80, "a bowl was not marked at the pottery price")
 	TEST_ASSERT_EQUAL(xenoarch_find_band(bowl), 2, "xenoarch_find_band() can't read a curio")
 	qdel(bowl)
 

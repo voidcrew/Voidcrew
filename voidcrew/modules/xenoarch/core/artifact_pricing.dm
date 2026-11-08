@@ -13,7 +13,12 @@
 	var/datum/artifact_effect/main = artifact.main_effect
 	if(!main)
 		return 0
-	return xenoarch_price_for(artifact.origin_band, main.tier, artifact.label_accuracy(), artifact.damaged, artifact.harvests_taken())
+	return xenoarch_price_for(artifact.origin_band, main.pricing_tier(), artifact.label_accuracy(), artifact.damaged, artifact.harvests_taken())
+
+/// The tier buyers price this artifact at: its main effect's, or common once that effect is spent.
+/// Vex's voucher reads this too, so a spent extreme earns none.
+/proc/artifact_price_tier(obj/machinery/artifact/artifact)
+	return artifact?.main_effect?.pricing_tier() || ARTIFACT_TIER_COMMON
 
 /**
  * The pure price function behind artifact_sale_value().
@@ -52,7 +57,8 @@
 	return round(.)
 
 /// Research points this artifact pays on its first full analysis, or 0 once paid or if it was never dug.
+/// A spent effect still studies at its own tier: it is the same thing, only emptied.
 /proc/artifact_research_value(obj/machinery/artifact/artifact)
-	if(QDELETED(artifact) || artifact.research_paid || !artifact.main_effect)
+	if(QDELETED(artifact) || !artifact.is_dug() || artifact.research_paid || !artifact.main_effect)
 		return 0
 	return xenoarch_research_points(artifact.origin_band, artifact.main_effect.tier)

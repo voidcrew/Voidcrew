@@ -27,9 +27,14 @@
 	reserve = rand(reserve_low, reserve_high)
 	max_pressure = rand(110, 140)
 
+// Half of what is left goes with a copy, so the reserve is shared, never doubled.
 /datum/artifact_effect/gas_vent/copy_settings_to(datum/artifact_effect/gas_vent/copy)
-	copy.reserve = reserve
+	copy.reserve = round(reserve / 2)
+	reserve -= copy.reserve
 	copy.max_pressure = max_pressure
+
+/datum/artifact_effect/gas_vent/is_spent()
+	return reserve <= 0
 
 /datum/artifact_effect/gas_vent/do_effect_touch(mob/living/user)
 	if(vent(rand(3, 8)))

@@ -46,6 +46,9 @@
 /datum/artifact_effect/resurrect/copy_settings_to(datum/artifact_effect/resurrect/copy)
 	copy.uses_left = uses_left
 
+/datum/artifact_effect/resurrect/is_spent()
+	return uses_left <= 0
+
 /datum/artifact_effect/resurrect/do_effect_touch(mob/living/user)
 	seek()
 

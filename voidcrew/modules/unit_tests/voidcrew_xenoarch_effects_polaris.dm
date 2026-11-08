@@ -274,6 +274,26 @@
 	TEST_ASSERT_EQUAL(vent.vent(6), 0, "a dry plasma vent kept venting")
 	var/list/plasma = here.return_air().gases[/datum/gas/plasma]
 	TEST_ASSERT(plasma && plasma[MOLES] >= 9.5, "the vented plasma is not on the tile")
+	TEST_ASSERT(vent.is_spent(), "a dry plasma vent is not spent")
+	here.return_air().copy_from(original)
+	here.air_update_turf(FALSE, FALSE)
+
+	// The plain gas vent holds a reserve too, under one gas contract (600 mol), and a harvest copy
+	// takes half of what is left rather than a fresh one.
+	find.replace_effects(/datum/artifact_effect/gas, null, 3)
+	var/datum/artifact_effect/gas/plain = find.main_effect
+	TEST_ASSERT(plain.reserve > 0 && plain.reserve < 600, "a gas vent rolled a reserve of [plain.reserve] mol")
+	plain.reserve = 100
+	var/obj/item/anomaly_battery/battery = allocate(/obj/item/anomaly_battery)
+	var/datum/artifact_effect/gas/copy = plain.make_harvest_copy(battery)
+	TEST_ASSERT_EQUAL(copy.reserve + plain.reserve, 100, "a harvest copy made more gas than the vent held")
+	TEST_ASSERT_EQUAL(copy.gas_type, plain.gas_type, "a harvest copy vents a different gas")
+	qdel(copy)
+	plain.reserve = 5
+	plain.max_pressure = 1000
+	TEST_ASSERT(plain.vent(8), "the gas vent did not vent indoors")
+	TEST_ASSERT(!plain.vent(8), "a dry gas vent kept venting")
+	TEST_ASSERT(plain.is_spent(), "a dry gas vent is not spent")
 	here.return_air().copy_from(original)
 	here.air_update_turf(FALSE, FALSE)
 

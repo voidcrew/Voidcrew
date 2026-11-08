@@ -79,7 +79,7 @@
 
 /obj/item/excavation/brush/quick
 	name = "quick brush"
-	desc = "An excavation brush with a vibrating head. It clears grit in a third of the time."
+	desc = "An excavation brush with a vibrating head. It buzzes against your fingers."
 	icon_state = "brush_quick"
 	custom_materials = list(/datum/material/plastic = SMALL_MATERIAL_AMOUNT * 2, /datum/material/iron = SMALL_MATERIAL_AMOUNT * 2, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 2)
 	brush_time = XENOARCH_BRUSH_TIME_QUICK

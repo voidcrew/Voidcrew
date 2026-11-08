@@ -27,7 +27,9 @@
 	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact)
 	find.replace_effects(/datum/artifact_effect/heal, null, 2)
 	TEST_ASSERT_EQUAL(artifact_sale_value(find), 0, "a find never dug sold for credits")
+	TEST_ASSERT_EQUAL(artifact_research_value(find), 0, "a find never dug paid research")
 	find.stamp_origin(2)
+	TEST_ASSERT_EQUAL(artifact_research_value(find), 150, "a dug yellow uncommon find pays the wrong research")
 	TEST_ASSERT(!find.stamp_origin(3), "a second stamp replaced the first")
 	TEST_ASSERT_EQUAL(artifact_sale_value(find), 135, "an unlabelled yellow uncommon find")
 	var/trigger_word = artifact_trigger_name(find.main_effect.trigger)
@@ -168,6 +170,13 @@
 	TEST_ASSERT(healed <= 30.5, "artifact healing went past the cap ([healed])")
 	TEST_ASSERT(healed >= 29.5, "artifact healing stopped short of the cap ([healed])")
 	TEST_ASSERT_EQUAL(artifact_capped_heal(patient, 50), 0, "a fresh call slipped past the cap")
+
+	// A wound of one kind takes the whole heal, not half of it.
+	var/mob/living/carbon/human/consistent/bruised = allocate(/mob/living/carbon/human/consistent)
+	bruised.take_overall_damage(40, 0)
+	var/mended = artifact_capped_heal(bruised, 12)
+	TEST_ASSERT(mended >= 11.5 && mended <= 12.5, "a brute-only wound healed [mended] of 12")
+	TEST_ASSERT_EQUAL(artifact_capped_heal(allocate(/mob/living/carbon/human/consistent), 12), 0, "an unhurt body used up heal")
 
 /// Deleting an artifact deletes its effects and leaves them no holder.
 /datum/unit_test/voidcrew_xenoarch_cleanup/Run()

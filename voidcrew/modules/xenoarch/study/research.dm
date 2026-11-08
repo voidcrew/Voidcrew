@@ -45,8 +45,22 @@
  * pleasant extra rather than a research route.
  */
 GLOBAL_LIST_INIT(xenoarch_curio_research_points, list(
-	// The strange object a technical, house or temple site gives up is tg's relic.
-	/obj/item/relic = 60,
+	/obj/item/xenoarch_curio/shell = 20,
+	/obj/item/xenoarch_curio/plant_fossil = 25,
+	/obj/item/xenoarch_curio/bone = 25,
+	/obj/item/xenoarch_curio/bowl = 25,
+	/obj/item/xenoarch_curio/skull = 30,
+	/obj/item/xenoarch_curio/urn = 30,
+	/obj/item/xenoarch_curio/scrap = 30,
+	/obj/item/xenoarch_curio/sidearm = 35,
+	/obj/item/xenoarch_curio/seed_pod = 40,
+	/obj/item/xenoarch_curio/statuette = 45,
+	/obj/item/xenoarch_curio/instrument = 45,
+	/obj/item/xenoarch_curio/idol = 50,
+	/obj/item/xenoarch_curio/skeleton = 60,
+	// The strange object a site gives up is tg's relic. Only a dug one pays: maintenance relics and
+	// experimentor copies are the plain type.
+	/obj/item/relic/excavated = 60,
 ))
 
 /// Adds the curio table to tg's destructive-analyzer payouts.

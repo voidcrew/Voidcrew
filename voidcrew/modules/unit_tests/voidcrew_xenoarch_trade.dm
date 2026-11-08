@@ -162,6 +162,21 @@
 	TEST_ASSERT_EQUAL(vouchers, 1, "Vex didn't pay exactly one voucher for an extreme find")
 	tidy(seller)
 
+	// A spent extreme is a curio now: priced as common, and no voucher.
+	var/obj/machinery/artifact/dull = allocate(/obj/machinery/artifact, get_step(seller, EAST), 3)
+	dull.replace_effects(/datum/artifact_effect/resurrect, null, 3)
+	TEST_ASSERT_EQUAL(dull.main_effect.tier, 4, "the resurrect effect is no longer extreme")
+	TEST_ASSERT_EQUAL(artifact_sale_value(dull), 560, "a fresh unlabelled red resurrect find is not worth 560")
+	var/datum/artifact_effect/resurrect/lives = dull.main_effect
+	lives.uses_left = 0
+	TEST_ASSERT(lives.is_spent(), "a resurrect with no lives left is not spent")
+	TEST_ASSERT_EQUAL(artifact_sale_value(dull), 140, "a spent red resurrect find kept its extreme price")
+	TEST_ASSERT_EQUAL(shop.xenoarch_buyer.vouchers_for(dull), 0, "Vex pays a voucher for a spent extreme find")
+	TEST_ASSERT(!(shop.xenoarch_buyer.closing_line(dull) in shop.xenoarch_buyer.lines["live"]), "Vex calls a spent find live")
+	TEST_ASSERT_EQUAL(row.settle(dull, seller, account, null), 140, "Vex paid the wrong credits for a spent find")
+	TEST_ASSERT(!(locate(/obj/item/stack/trade_voucher) in near_seller(seller)), "Vex handed over a voucher for a spent find")
+	tidy(seller)
+
 	// The others pay credits only, extreme or not
 	var/datum/outpost_shop/general/halcyon = allocate(/datum/outpost_shop/general)
 	var/obj/machinery/artifact/other = allocate(/obj/machinery/artifact, get_step(seller, EAST), 3)
@@ -185,10 +200,11 @@
 	seller.stop_pulling()
 
 	var/obj/structure/closet/crate/specimen/crate = allocate(/obj/structure/closet/crate/specimen, beside)
-	if(crate.opened)
-		crate.close()
-	find.forceMove(crate)
+	if(!crate.opened)
+		crate.open()
+	TEST_ASSERT(crate.load_find(find, seller), "the find would not heave into the open crate")
 	TEST_ASSERT(find.loc == crate, "the find would not go in the crate")
+	TEST_ASSERT(!crate.opened, "the lid did not shut on the find")
 	TEST_ASSERT(findtext(jointext(crate.examine(seller), " "), find.serial), "the crate lid doesn't show the find's tag")
 	seller.start_pulling(crate)
 	TEST_ASSERT_EQUAL(length(row.sellable_finds(seller)), 1, "a find in a pulled crate did not count")
@@ -197,7 +213,7 @@
 	TEST_ASSERT_EQUAL(length(row.sellable_finds(seller)), 0, "an open crate still counted as holding the find")
 	seller.stop_pulling()
 
-	// A plain crate works too
+	// A plain crate a find got into some other way (an exosuit clamp, an admin) counts too
 	var/obj/structure/closet/crate/plain = allocate(/obj/structure/closet/crate, beside)
 	if(plain.opened)
 		plain.close()
@@ -246,6 +262,74 @@
 	TEST_ASSERT_EQUAL(barnaby_row.demand, 5, "a curio sale did not use up demand")
 	TEST_ASSERT(!barnaby_row.try_sell(seller, null), "a curio sold that wasn't there")
 
+	// The whole join: a curio brushed out of a strange rock is marked, sells at its class price, and
+	// pays research once in a destructive analyzer.
+	var/obj/item/strange_rock/rock = allocate(/obj/item/strange_rock, get_turf(seller), 1, "house")
+	rock.find_type = /obj/item/xenoarch_curio/urn
+	rock.target_depth = 10
+	rock.dug = 10
+	var/obj/item/xenoarch_curio/urn = rock.free_find(null)
+	TEST_ASSERT(istype(urn), "a strange rock at depth gave no curio")
+	TEST_ASSERT(barnaby_row.matches(urn), "Barnaby refused a curio dug out of a strange rock")
+	var/list/urn_points = techweb_item_point_check(urn)
+	TEST_ASSERT_EQUAL(urn_points?[TECHWEB_POINT_TYPE_GENERIC], 30, "a dug urn pays the wrong research")
+	seller.put_in_hands(urn)
+	var/before = account.account_balance
+	TEST_ASSERT(barnaby_row.try_sell(seller, null), "a dug curio didn't sell")
+	TEST_ASSERT_EQUAL(account.account_balance - before, 80, "a dug urn paid the wrong amount")
+
+	var/obj/item/strange_rock/relic_rock = allocate(/obj/item/strange_rock, get_turf(seller), 2, "technical")
+	relic_rock.find_type = /obj/item/relic/excavated
+	relic_rock.target_depth = 10
+	relic_rock.dug = 10
+	var/obj/item/relic/excavated/oddity = relic_rock.free_find(null)
+	TEST_ASSERT(istype(oddity), "a strange rock at depth gave no strange object")
+	TEST_ASSERT(boffin_row.matches(oddity), "Boffin refused a dug strange object")
+	TEST_ASSERT(!barnaby_row.matches(oddity), "Barnaby took a dug strange object")
+	qdel(oddity)
+
+/// A large find gets into a specimen crate the way a crew would: pushed onto the open crate and the
+/// lid shut, or heaved in. Never two to a crate, never into a shut one, never into a plain crate.
+/datum/unit_test/voidcrew_xenoarch_trade/crating/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/crate_spot = get_step(start, EAST)
+	var/turf/plain_spot = get_step(start, NORTH)
+	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact, start, 1)
+	var/obj/structure/closet/crate/specimen/crate = allocate(/obj/structure/closet/crate/specimen, crate_spot)
+	if(crate.opened)
+		crate.close()
+	TEST_ASSERT(!find.Move(crate_spot, EAST), "a find was pushed onto a shut crate")
+	TEST_ASSERT_EQUAL(find.loc, start, "a find ended up on a shut crate")
+	TEST_ASSERT(!crate.load_find(find), "a find was heaved into a shut crate")
+
+	crate.open()
+	TEST_ASSERT(find.Move(crate_spot, EAST), "a find could not be pushed onto the open specimen crate")
+	TEST_ASSERT(crate.close(), "the crate would not shut on a find")
+	TEST_ASSERT_EQUAL(find.loc, crate, "shutting the lid did not take the find in")
+	TEST_ASSERT(find.suppressed, "a crated find was not held still")
+
+	// Opened again, the find sits in the crate; a second find has no room by either path.
+	crate.open()
+	TEST_ASSERT_EQUAL(find.loc, crate_spot, "opening the crate did not leave the find in it")
+	var/obj/machinery/artifact/other = allocate(/obj/machinery/artifact, start, 1)
+	TEST_ASSERT(!other.Move(crate_spot, EAST), "two finds were pushed into one crate")
+	TEST_ASSERT(!crate.load_find(other), "two finds were heaved into one crate")
+
+	// Bolted finds don't go anywhere.
+	find.forceMove(get_step(crate_spot, EAST))
+	other.set_anchored(TRUE)
+	TEST_ASSERT(!crate.load_find(other), "a bolted find was heaved into a crate")
+	other.set_anchored(FALSE)
+	TEST_ASSERT(crate.load_find(other), "a loose find beside the open crate would not heave in")
+	TEST_ASSERT_EQUAL(other.loc, crate, "a heaved find is not in the crate")
+
+	// A plain crate takes no large find.
+	var/obj/structure/closet/crate/plain = allocate(/obj/structure/closet/crate, plain_spot)
+	if(!plain.opened)
+		plain.open()
+	var/obj/machinery/artifact/third = allocate(/obj/machinery/artifact, start, 1)
+	TEST_ASSERT(!third.Move(plain_spot, NORTH), "a find was pushed into an open plain crate")
+
 /// The checkpoint turns back a loose find, lets a crated one through, and never stops one leaving.
 /datum/unit_test/voidcrew_xenoarch_trade/checkpoint/Run()
 	var/datum/outpost_checkpoint/checkpoint = allocate(/datum/outpost_checkpoint)
@@ -264,9 +348,9 @@
 	checkpoint.exit_request = FALSE
 
 	var/obj/structure/closet/crate/specimen/crate = allocate(/obj/structure/closet/crate/specimen, chamber)
-	if(crate.opened)
-		crate.close()
-	find.forceMove(crate)
+	if(!crate.opened)
+		crate.open()
+	TEST_ASSERT(crate.load_find(find), "the find would not heave into the open crate")
 	TEST_ASSERT_EQUAL(length(checkpoint.inspect_chamber()), 0, "a crated find was turned back")
 
 	var/datum/outpost_shop/vendor/checkpoint/halcyon/desk = allocate(/datum/outpost_shop/vendor/checkpoint/halcyon)

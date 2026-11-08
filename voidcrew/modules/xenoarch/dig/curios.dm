@@ -171,13 +171,8 @@ GLOBAL_LIST_INIT(xenoarch_curio_values, list(
  */
 /proc/xenoarch_dig_mark_find(obj/item/find, value)
 	if(!istype(find) || !value)
-		return
-	if(istype(find, /obj/item/xenoarch_curio))
-		var/obj/item/xenoarch_curio/curio = find
-		curio.dig_value = value
-	else if(istype(find, /obj/item/relic/excavated))
-		var/obj/item/relic/excavated/relic = find
-		relic.dig_value = value
+		return FALSE
+	return xenoarch_mark_curio(find, value)
 
 // ===== Research notes =====
 
@@ -196,8 +191,6 @@ GLOBAL_LIST_INIT(xenoarch_curio_values, list(
 /obj/item/relic/excavated
 	/// ZONE_* it was dug in, or null
 	var/origin_band
-	/// Credits an outpost buyer pays for it, once marked as dug
-	var/dig_value = 0
 
 // ===== Curios =====
 
@@ -212,8 +205,6 @@ GLOBAL_LIST_INIT(xenoarch_curio_values, list(
 	var/curio_class = XENOARCH_CURIO_FOSSIL
 	/// ZONE_* it was dug in, or null if it never came out of the ground
 	var/origin_band
-	/// Credits an outpost buyer pays for it, once marked as dug
-	var/dig_value = 0
 	/// Icon states to pick from
 	var/list/variants
 	/// Descriptions to pick from

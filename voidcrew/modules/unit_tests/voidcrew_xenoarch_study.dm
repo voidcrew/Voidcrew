@@ -187,8 +187,14 @@
 	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("xenoarch_exotic_particles").zone_permission, 1, "the harvester node should need yellow standing (ZONE_PERMISSION_YELLOW)")
 	var/datum/design/board/analyser_board = SSresearch.techweb_designs["xenoarch_analyser"]
 	TEST_ASSERT_EQUAL(analyser_board.build_path, /obj/item/circuitboard/machine/artifact_analyser, "the analyser design prints the wrong board")
-	var/list/curio_points = SSresearch.techweb_point_items[/obj/item/relic]
+	var/list/curio_points = SSresearch.techweb_point_items[/obj/item/relic/excavated]
 	TEST_ASSERT_EQUAL(curio_points?[TECHWEB_POINT_TYPE_GENERIC], 60, "the strange object pays no research in the destructive analyzer")
+	TEST_ASSERT_NULL(SSresearch.techweb_point_items[/obj/item/relic], "a strange object from maintenance pays research like a dug one")
+	// Every curio a dig can give pays something, and nothing pays more than the cheapest node.
+	for(var/curio_type in subtypesof(/obj/item/xenoarch_curio))
+		var/list/points = SSresearch.techweb_point_items[curio_type]
+		var/value = points?[TECHWEB_POINT_TYPE_GENERIC]
+		TEST_ASSERT(value >= 20 && value <= 60, "[curio_type] pays [value || 0] research in the destructive analyzer")
 
 /**
  * Every design the xenoarchaeology nodes list exists. The dig, use and trade parts define most of
@@ -205,3 +211,25 @@
 		for(var/design_id in expected[node_id])
 			TEST_ASSERT_NOTNULL(SSresearch.techweb_designs[design_id], "[node_id] lists design [design_id], which no part defines")
 			TEST_ASSERT(design_id in node?.design_ids, "[node_id] lost design [design_id]")
+
+/**
+ * Every xenoarchaeology design has exactly one way in: the hand kit from the autolathe at round
+ * start, or one research node. Nothing is both, and nothing sits in two nodes.
+ */
+/datum/unit_test/voidcrew_xenoarch_design_routes/Run()
+	var/list/node_count = list()
+	for(var/node_id in SSresearch.techweb_nodes)
+		var/datum/techweb_node/node = SSresearch.techweb_nodes[node_id]
+		for(var/design_id in node.design_ids)
+			node_count[design_id] = (node_count[design_id] || 0) + 1
+	var/checked = 0
+	for(var/design_id in SSresearch.techweb_designs)
+		if(!findtext(design_id, "xenoarch_", 1, 10))
+			continue
+		var/datum/design/design = SSresearch.techweb_designs[design_id]
+		var/routes = node_count[design_id] || 0
+		if(RND_CATEGORY_INITIAL in design.category)
+			routes++
+		TEST_ASSERT_EQUAL(routes, 1, "design [design_id] has [routes] routes (nodes: [node_count[design_id] || 0])")
+		checked++
+	TEST_ASSERT(checked >= 17, "only [checked] xenoarchaeology designs were found")

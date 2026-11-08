@@ -186,9 +186,9 @@
 		return !COOLDOWN_FINISHED(src, inspect_cooldown)
 	return TRUE
 
-/// Vouchers this buyer adds for `find`.
+/// Vouchers this buyer adds for `find`. A spent extreme is only a curiosity, and earns none.
 /datum/xenoarch_buyer/proc/vouchers_for(obj/machinery/artifact/find)
-	if(extreme_vouchers > 0 && find?.main_effect?.tier == ARTIFACT_TIER_EXTREME)
+	if(extreme_vouchers > 0 && find?.main_effect && artifact_price_tier(find) == ARTIFACT_TIER_EXTREME)
 		return extreme_vouchers
 	return 0
 
@@ -223,7 +223,7 @@
 
 /// What the trader says as they pay for `find`. Only said once the find is theirs.
 /datum/xenoarch_buyer/proc/closing_line(obj/machinery/artifact/find)
-	if(find.main_effect?.tier == ARTIFACT_TIER_EXTREME)
+	if(find.main_effect && artifact_price_tier(find) == ARTIFACT_TIER_EXTREME)
 		return line(XENOARCH_LINE_LIVE)
 	if(!find.label)
 		return line(XENOARCH_LINE_BLANK)
