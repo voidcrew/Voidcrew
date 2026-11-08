@@ -22,7 +22,7 @@ Each card is a wanted poster:
 - **WANTED** or **MOST WANTED**, and **Private offer** on one made to your ship alone;
 - the mugshot, name, species, sex and alias. "Old photo" under the mugshot means it shows how they used to look (a trader-outpost fugitive);
 - how they're wanted and what for: **Wanted alive**, **Wanted dead or alive** (the kingpin) or **Wanted dead** (lairs and the lich);
-- where they were last seen, and the zone;
+- where they were last seen, who they were seen with, and the zone;
 - the reward: the full pay, in credits and vouchers. The card doesn't show what a downed or dead catch pays; see [the pad and turning in](#the-pad-and-turning-in);
 - the time left.
 
@@ -100,7 +100,7 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 - Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and fires two shots a second in strings of six, with a short pause between strings), a WT-550 (fires bursts of four), a revolver (slow, heavy shots, six before a long reload), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
 - Guns stay holstered, or slung on the back, until a fight starts. Drawing one takes a moment before the first shot.
 - They're tougher against a crew: their health grows with the number of hunters they face when the fight starts, and every crew member of a ship hunting them who is out on the site counts. Once hurt, it doesn't grow again.
-- They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
+- They may have up to two companions who fight beside them, and the card says who they were seen with. At most one companion carries a gun. Companions get their weapons out a moment after their criminal, and their guns fire shorter strings and bursts. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
 - Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
 - Badly hurt with nobody around, they break off and retreat. They never heal, but [Lazarus chrome](#chrome) can stand a downed one back up.
 
