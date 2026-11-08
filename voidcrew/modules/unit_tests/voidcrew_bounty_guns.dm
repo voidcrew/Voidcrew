@@ -533,6 +533,14 @@
 			TEST_ASSERT(!length(decoy.belt.contents), "A decoy's [decoy.belt] has something in it")
 			TEST_ASSERT_NULL(locate(/obj/item/gun) in decoy.get_all_contents(), "A decoy carries a gun")
 			TEST_ASSERT_EQUAL(carry_lines(decoy, viewer), fugitive_carry, "A decoy carries something else in plain sight than the [spec[2]] fugitive")
+#ifdef BOUNTY_GUN_RENDERS
+		var/mob/living/carbon/human/npc/bounty_criminal/decoy/first_decoy = decoys[1]
+		for(var/facing in list(SOUTH, EAST))
+			fugitive.setDir(facing)
+			first_decoy.setDir(facing)
+			fcopy(getFlatIcon(fugitive, facing, no_anim = TRUE), "data/bounty_gun_renders/blend_[spec[2]]_fugitive_[dir2text(facing)].png")
+			fcopy(getFlatIcon(first_decoy, facing, no_anim = TRUE), "data/bounty_gun_renders/blend_[spec[2]]_decoy_[dir2text(facing)].png")
+#endif
 		for(var/datum/weakref/decoy_ref as anything in posting.decoys)
 			qdel(decoy_ref?.resolve())
 		posting.decoys = list()
