@@ -6,7 +6,7 @@
  *
  * - Xenoarchaeology (tier 1): stabiliser, spectrometer, analyser and scan pad, labeler, specimen crate.
  * - Advanced Excavation (tier 2): the advanced scanner and quick brush.
- * - Exotic Particles (tier 3): the harvester, exotic battery and utilizer.
+ * - Exotic Particles (tier 3, yellow standing): the harvester, exotic battery and utilizer.
  *
  * Each node lists every design it unlocks, including those printed by the dig, use and trade
  * parts of this module (named below by the file that defines them).
@@ -53,6 +53,8 @@
 		"xenoarch_utilizer", // use/utilizer.dm
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+	// The utilizer and battery are rated yellow (tools/gear_catalog/ratings/relics.json).
+	zone_permission = ZONE_PERMISSION_YELLOW
 
 // ===== Designs printed by this part =====
 

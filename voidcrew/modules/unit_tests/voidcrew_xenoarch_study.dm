@@ -183,6 +183,8 @@
 		for(var/design_id in expected[node_id][2])
 			TEST_ASSERT_NOTNULL(SSresearch.techweb_designs[design_id], "design [design_id] is missing")
 			TEST_ASSERT(design_id in node.design_ids, "[node_id] doesn't unlock [design_id]")
+	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("xenoarchaeology").zone_permission, 0, "the analyser node needs no standing")
+	TEST_ASSERT_EQUAL(SSresearch.techweb_node_by_id("xenoarch_exotic_particles").zone_permission, 1, "the harvester node should need yellow standing (ZONE_PERMISSION_YELLOW)")
 	var/datum/design/board/analyser_board = SSresearch.techweb_designs["xenoarch_analyser"]
 	TEST_ASSERT_EQUAL(analyser_board.build_path, /obj/item/circuitboard/machine/artifact_analyser, "the analyser design prints the wrong board")
 	var/list/curio_points = SSresearch.techweb_point_items[/obj/item/relic]
