@@ -199,6 +199,51 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	var/datum/component/bounty_chrome/chrome = fighter?.GetComponent(/datum/component/bounty_chrome)
 	return chrome?.pieces[key]
 
+/// Whether a piece `fighter` carries makes their ordinary blow its own now (blades out, empowered fists), so their style's extras (a brawler's shove, a bat's knock-back) stay out of it
+/proc/bounty_chrome_owns_blow(mob/living/basic/fighter)
+	var/datum/component/bounty_chrome/chrome = fighter?.GetComponent(/datum/component/bounty_chrome)
+	if(!chrome)
+		return FALSE
+	for(var/datum/bounty_chrome/piece as anything in chrome.online_pieces())
+		if(piece.owns_blow())
+			return TRUE
+	return FALSE
+
+/**
+ * Puts `fighter` on a style its chrome fights with: theirs if it is one of `allowed` (BOUNTY_STYLE_*),
+ * otherwise `fallback`. Chrome that is a blade or a fist never comes with a gun or a bottle, however
+ * it was installed (an admin's pick, all of it at once). A criminal's record is fixed too, as its AI
+ * keeps to the record, and its health follows the new style. A meek criminal and a mini-boss keep
+ * their own ways. Returns TRUE if the style changed.
+ */
+/proc/bounty_chrome_fit_style(mob/living/basic/fighter, list/allowed, fallback)
+	if(QDELETED(fighter) || !GLOB.bounty_styles[fallback])
+		return FALSE
+	if(istype(fighter, /mob/living/basic/bounty_criminal/normal))
+		var/mob/living/basic/bounty_criminal/normal/criminal = fighter
+		if(!criminal.record || (criminal.ai_wanted_style() in allowed))
+			return FALSE
+		criminal.record.style = fallback
+		var/health = criminal.body_tier_health()
+		if(health)
+			criminal.maxHealth = health
+			criminal.updatehealth()
+		criminal.body_update_stamina_coeff()
+		criminal.ai_update_style()
+		// A gun already in hand goes, for the style's own weapon if they are fighting
+		if(criminal.ai_hand)
+			bounty_ai_hold(criminal, criminal.ai_mode == BOUNTY_AI_FIGHTING ? bounty_ai_held_look(criminal) : null)
+		return TRUE
+	if(istype(fighter, /mob/living/basic/bounty_companion))
+		var/mob/living/basic/bounty_companion/companion = fighter
+		if(bounty_ai_style(companion)?.key in allowed)
+			return FALSE
+		companion.ai_take_style(fallback)
+		if(companion.ai_hand)
+			bounty_ai_hold(companion, companion.ai_in_fight ? bounty_ai_held_look(companion) : null)
+		return TRUE
+	return FALSE
+
 /// Whether `fighter` is in a fight it can take part in: a criminal fighting, a companion that hasn't broken, a hostile mini-boss able to act
 /proc/bounty_chrome_fighting(mob/living/basic/fighter)
 	if(istype(fighter, /mob/living/basic/bounty_criminal/boss))
@@ -495,6 +540,10 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 /// What examining them shows, or null
 /datum/bounty_chrome/proc/examine_line()
 	return examine_text
+
+/// Whether their ordinary blow is this piece's now, in place of their style's extras (bounty_chrome_owns_blow()). Must not sleep.
+/datum/bounty_chrome/proc/owns_blow()
+	return FALSE
 
 // ===== A CHROME READ =====
 
