@@ -7,8 +7,9 @@
  *
  * Zones (/datum/human_npc_outfit_table/ruin): green wears what the trooper wore; yellow adds armour; red
  * adds a helmet and a medipen. The trooper weapon ladder (voidcrew/edits/mobs/weapon_drops.dm) lives in
- * the tables: Syndicate SMGs and shotguns, and the Nanotrasen guns, are pistols outside the red zone, and
- * the Syndicate sword guard has only a knife in the green.
+ * the tables: Syndicate SMGs and shotguns are pistols outside the red zone (stormtroopers' SMGs only in
+ * the green), and the Syndicate sword guard has only a knife in the green. Nanotrasen officers only ever
+ * carried the M1911 in Voidcrew maps.
  *
  * Designed drops stay as the troopers had them: only the Russians carried any (a kitchen knife, a Nagant
  * revolver). Their clothes and guns are gear (decision D3) and never loot. The pirates' coin-snatching

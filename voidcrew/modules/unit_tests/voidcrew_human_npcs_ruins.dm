@@ -234,17 +234,19 @@
 	TEST_ASSERT("'Snares' Okafor" in names, "The trailboss lost the contract's name")
 	mission.forget_quest_atom(mission.quest_atom)
 	camp.deactivate()
+	// The camp's dressing and its cache (with the evidence inside).
 	for(var/obj/thing in range(3, location))
-		if(!isturf(thing) && !istype(thing, /obj/effect/landmark))
+		if(istype(thing, /obj/structure/bonfire) || istype(thing, /obj/structure/barricade) || istype(thing, /obj/structure/bed) || istype(thing, /obj/item/bedsheet) || istype(thing, /obj/structure/closet))
 			qdel(thing)
 
-/// No Voidcrew map places a trooper or hermit basic mob any more, and the derelict shuttles inside ruins load
+/// No Voidcrew ruin, shuttle or hull map places a trooper or hermit basic mob any more, and the derelict shuttles inside ruins load
 /// their Voidcrew copies (the bounty lair's mafia is another phase's).
 /datum/unit_test/voidcrew_ruin_npc_maps
 
 /datum/unit_test/voidcrew_ruin_npc_maps/Run()
 	var/list/maps = list()
-	ruin_npc_collect_maps("_maps/voidcrew/", maps)
+	for(var/root in list("_maps/voidcrew/RandomRuins/", "_maps/voidcrew/shuttles/", "_maps/voidcrew/ships/"))
+		ruin_npc_collect_maps(root, maps)
 	TEST_ASSERT(length(maps) > 100, "The Voidcrew map scan found only [length(maps)] maps")
 	for(var/map_path in maps)
 		if(findtext(map_path, "bounty_lair_mafia_club.dmm"))
