@@ -20,13 +20,12 @@
  * (autosurgeon.dm's "insertion failed!" path).
  */
 /**
- * The worn-chrome overlay: tg's augment overlay, drawn one notch higher.
- * Stock augments sit at BODY_ADJ_LAYER, which the character-setup underwear
- * layer paints over, a bra would cover a Cascade spine rig. Chrome instead
- * draws at CYBERWARE_WORN_LAYER: over underwear and undershirts, still under
- * eyes, damage, and every EQUIPPED clothing layer. One override covers the
- * images, the emissive twins and the emissive blockers alike, because they
- * all take their layer from bitflag_to_layer().
+ * The worn-chrome overlay: tg's augment overlay, drawn higher. Stock augments
+ * sit at BODY_ADJ_LAYER, under underwear and every piece of clothing. Chrome
+ * draws at CYBERWARE_WORN_LAYER instead: over the jumpsuit, still under hands,
+ * gloves, shoes and suits. One override covers the images, the emissive twins
+ * and the emissive blockers alike, because they all take their layer from
+ * bitflag_to_layer().
  */
 /datum/bodypart_overlay/augment/cyberware
 
@@ -35,13 +34,48 @@
 		return -CYBERWARE_WORN_LAYER
 	return ..()
 
+// Arm hardware whose worn sprite draws the folded item (the Mantis line) is not
+// drawn while that item is out in a hand. Hiding here also drops the overlay from
+// the limb's icon key, so update_body_parts() redraws the arm on the flip.
+/datum/bodypart_overlay/augment/cyberware/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner)
+	// A bearer being deleted can lose its chrome before its clothes, and taking
+	// the clothes off redraws the limbs while this overlay is still on them.
+	if(!implant)
+		return FALSE
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/arm_ware = implant
+	if(istype(arm_ware) && arm_ware.worn_overlay_hidden())
+		return FALSE
+	return ..()
+
+/**
+ * The parent puts an emissive blocker over every image it draws, the glow
+ * included. Same layer, later in the list, so a Cascade or Redline would black
+ * out its own glow. Glows skip the blocker and go last, after every blocker of
+ * this overlay, the same order tg's worn clothing uses.
+ */
+/datum/bodypart_overlay/augment/cyberware/get_overlay(layer, obj/item/bodypart/limb)
+	layer = bitflag_to_layer(layer)
+	var/list/imageset = implant.get_overlay(layer, limb)
+	if(blocks_emissive == EMISSIVE_BLOCK_NONE || !limb)
+		return imageset
+
+	var/list/all_images = list()
+	var/list/glows = list()
+	for(var/image/overlay as anything in imageset)
+		if(PLANE_TO_TRUE(overlay.plane) == EMISSIVE_PLANE)
+			glows += overlay
+			continue
+		all_images += overlay
+		all_images += emissive_blocker(overlay.icon, overlay.icon_state, limb, layer = overlay.layer, alpha = overlay.alpha)
+	return all_images + glows
+
 /obj/item/organ/cyberimp/cyberware
 	name = "cyberware"
 	desc = "Aftermarket chrome. Someone sat in a parlor chair for this."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
 	// Worn look: ware that reads from outside the body sets aug_overlay to a
 	// state in this sheet and tg's bodypart-overlay pipeline draws it ON the
-	// bearer, over the character-setup underwear, under equipped clothing.
+	// bearer, over the jumpsuit, under suits and armour.
 	// Stack enough chrome and you stop looking human.
 	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
@@ -209,6 +243,9 @@
 	var/tier = CYBERWARE_TIER_1
 	/// Chrome capacity this ware grants while installed.
 	var/chrome_capacity_bonus = 0
+	/// TRUE when the worn sprite draws the deployable folded into its housing
+	/// (the Mantis line). The worn overlay hides while that item is out in a hand.
+	var/hide_worn_while_deployed = FALSE
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Initialize(mapload)
 	. = ..()
@@ -254,12 +291,34 @@
 	// (augments_arms.dm), so "did it deploy" is "did it leave us", not "is it set".
 	if(active_item && !(active_item in src))
 		cyberware_ink_pulse(owner, CYBERWARE_INK_HARD)
+		if(hide_worn_while_deployed)
+			// Any way out of the hand that isn't Retract() (a forced drop, a
+			// deleted blade) must put the folded sprite back as well.
+			RegisterSignal(active_item, COMSIG_ITEM_DROPPED, PROC_REF(on_deployed_item_dropped), override = TRUE)
+			owner.update_body_parts()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Retract()
 	var/mob/living/carbon/stowing_owner = owner
+	var/obj/item/stowing = active_item
 	. = ..()
 	if(.)
 		cyberware_ink_pulse(stowing_owner, CYBERWARE_INK_SOFT)
+		if(hide_worn_while_deployed)
+			UnregisterSignal(stowing, COMSIG_ITEM_DROPPED)
+			stowing_owner?.update_body_parts()
+
+/// TRUE while the worn overlay should not draw: this hardware's worn sprite
+/// shows its item folded away, and that item is out in the bearer's hand.
+/// Stowed, dropped, deleted or with no bearer, the overlay draws.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/worn_overlay_hidden()
+	return hide_worn_while_deployed && owner && active_item && owner.is_holding(active_item)
+
+/// Signal proc for [COMSIG_ITEM_DROPPED] on a deployed item whose folded sprite
+/// is part of the worn overlay. Redraws the arm so the housing shows again.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/on_deployed_item_dropped(obj/item/source, mob/user)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_ITEM_DROPPED)
+	owner?.update_body_parts()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/emp_act(severity)
 	. = ..() // toolkit's own EMP retract fires first

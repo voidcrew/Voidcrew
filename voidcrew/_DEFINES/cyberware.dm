@@ -6,12 +6,13 @@
 /// it browns every piece of chrome out until the load drops back under.
 #define CYBERWARE_BASE_CAPACITY 20
 
-/// Mob-overlay height worn chrome draws at: between the character-setup
-/// underwear/undershirt layer (BODY_LAYER, 32) and the eyes (EYES_LAYER, 31),
-/// so a spine rig reads over a bra or undershirt while every EQUIPPED
-/// clothing layer (UNIFORM_LAYER 28 and up) still covers it. Fractional on
-/// purpose, it must never collide with a real layer index.
-#define CYBERWARE_WORN_LAYER 31.5
+/// Mob-overlay height worn chrome draws at: just over the jumpsuit
+/// (UNIFORM_LAYER, 28) and under the worn ID (ID_LAYER, 27), so arm plates and
+/// a spine rig read over normal clothes while hands (BODYPARTS_HIGH_LAYER 25),
+/// gloves, shoes and every suit, vest or armour layer (SUIT_LAYER 19 and up)
+/// still cover them. Mob layers count down: a lower number draws on top.
+/// Fractional on purpose, it must never collide with a real layer index.
+#define CYBERWARE_WORN_LAYER 27.5
 
 // ---- Organ slots -------------------------------------------------------
 // Minted here, never in DNA.dm. Slot uniqueness is global per mob, so

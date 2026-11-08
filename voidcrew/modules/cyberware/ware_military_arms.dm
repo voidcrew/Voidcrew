@@ -146,12 +146,11 @@
  * sits well above CYBERWARE_WORN_LAYER, so a plate drawn only at the chrome
  * layer gets painted back over by bare knuckles.
  *
- * One image cannot fix that. The hand already draws above UNIFORM_LAYER, so
- * anything stacked over the hand is also stacked over the jumpsuit, and the
- * chrome layer exists precisely to stay under worn clothing. Instead we do what
- * tg's own toolkit augments do (augments_arms.dm's hand_state): the arm plate
- * keeps the chrome layer and hides under sleeves, and a separate "_hand" plate
- * rides at the hand's own layer, where gloves still cover it like real skin.
+ * Lifting the whole arm plate above the hand would also lift it over the worn
+ * ID. Instead we do what tg's own toolkit augments do (augments_arms.dm's
+ * hand_state): the arm plate keeps the chrome layer, over the sleeve, and a
+ * separate "_hand" plate rides at the hand's own layer, where gloves still
+ * cover it like real skin.
  *
  * The sheet may ship without the hand plate. Then this is a no-op and the arm
  * plate renders alone, exactly as it did before.
@@ -308,9 +307,9 @@
  *
  * Every sprite comes off the cyberware sheets rather than the stock hardlight
  * sword: this is a long blade running forward past the hand out of a forearm
- * housing, not something anybody is gripping. The held sprite is blade only.
- * The housing is already on the bearer's arm as the organ's aug_overlay, and
- * drawing a second one in the hand put a metal brick over their bicep.
+ * housing, not something anybody is gripping. The held sprite is the blade
+ * along the forearm. The organ's worn overlay (the housing with the blade
+ * folded in) hides while the blade is out, see hide_worn_while_deployed.
  *
  * base_icon_state comes along for the ride purely so it cannot disagree with
  * icon_state; update_icon_state() only consults it when sword_color_icon is
@@ -346,6 +345,8 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_3
 	aug_overlay = "mantis"
+	// The worn housing sprite carries the folded blade, so it hides while the blade is out.
+	hide_worn_while_deployed = TRUE
 	items_to_create = list(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
 	// A blade sliding out of a forearm housing and snapping back into it, the
 	// cursed katana's pair (mining_loot/cursed_katana.dm), not a baton's ratchet.

@@ -68,3 +68,84 @@
 	corpse.stat = DEAD
 	TEST_ASSERT(!cyberware_scorch_target(corpse, 4), "A corpse was set alight")
 	TEST_ASSERT(!corpse.on_fire, "A corpse is burning")
+
+/// The worn housing sprite shows the blade folded in, so each arm's housing
+/// hides while that arm's blade is out and comes back when the blade is stowed,
+/// knocked out of the hand, the chrome is EMP'd, or the housing is pulled.
+/datum/unit_test/voidcrew_cyberware_mantis_stowed_overlay
+
+/datum/unit_test/voidcrew_cyberware_mantis_stowed_overlay/Run()
+	var/mob/living/carbon/human/bearer = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/right = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left/left = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left)
+	TEST_ASSERT(right.Insert(bearer, special = TRUE), "Test fixture: right housing insert refused")
+	TEST_ASSERT(left.Insert(bearer, special = TRUE), "Test fixture: left housing insert refused")
+	var/obj/item/bodypart/right_arm = bearer.get_bodypart(BODY_ZONE_R_ARM)
+	var/obj/item/bodypart/left_arm = bearer.get_bodypart(BODY_ZONE_L_ARM)
+	var/obj/item/blade = right.contents[1]
+	TEST_ASSERT(right.bodypart_aug in right_arm.bodypart_overlays, "Test fixture: the right housing has no worn overlay on the arm")
+	TEST_ASSERT(stowed_drawn(bearer, right_arm, right), "A stowed housing isn't drawn")
+
+	right.Extend(blade)
+	TEST_ASSERT(bearer.is_holding(blade), "Test fixture: the blade never reached a hand")
+	TEST_ASSERT(!stowed_drawn(bearer, right_arm, right), "The folded housing still draws with its blade out")
+	TEST_ASSERT(stowed_drawn(bearer, left_arm, left), "Deploying the right blade hid the left housing")
+
+	right.Retract()
+	TEST_ASSERT(stowed_drawn(bearer, right_arm, right), "The housing didn't come back when the blade was stowed")
+
+	right.Extend(blade)
+	bearer.dropItemToGround(blade, force = TRUE)
+	TEST_ASSERT(stowed_drawn(bearer, right_arm, right), "The housing stayed hidden after the blade left the hand")
+	right.Retract()
+	TEST_ASSERT(blade.loc == right, "Test fixture: the dropped blade never went back into the housing")
+
+	var/datum/component/cyberware/chrome = right.GetComponent(/datum/component/cyberware)
+	right.Extend(blade)
+	chrome.start_emp_reboot()
+	TEST_ASSERT(blade.loc == right, "Test fixture: the EMP didn't stow the blade")
+	TEST_ASSERT(stowed_drawn(bearer, right_arm, right), "The housing stayed hidden after an EMP stowed the blade")
+	chrome.tune_up()
+
+	right.Extend(blade)
+	right.Remove(bearer, special = TRUE)
+	TEST_ASSERT(!(right.bodypart_aug in right_arm.bodypart_overlays), "A pulled housing left its overlay on the arm")
+	// A fresh body: tg's arm implants never drop their bearer signals on removal,
+	// so going back into the same body trips a double-registration warning.
+	var/mob/living/carbon/human/next_bearer = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(right.Insert(next_bearer, special = TRUE), "Test fixture: installing the pulled housing was refused")
+	TEST_ASSERT(stowed_drawn(next_bearer, next_bearer.get_bodypart(BODY_ZONE_R_ARM), right), "A housing pulled with its blade out doesn't draw in its next body")
+
+/// TRUE when the housing's worn overlay is both allowed to draw and present in the
+/// arm's last render key, so a missed redraw fails as well as a wrong check.
+/datum/unit_test/voidcrew_cyberware_mantis_stowed_overlay/proc/stowed_drawn(mob/living/carbon/human/bearer, obj/item/bodypart/arm, obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing)
+	var/drawable = housing.bodypart_aug.can_draw_on_bodypart(arm)
+	var/in_key = !!findtext(bearer.icon_render_keys[arm.body_zone], housing.get_overlay_state())
+	TEST_ASSERT_EQUAL(drawable, in_key, "[housing] can_draw_on_bodypart() and the arm's render key disagree, the arm was not redrawn")
+	return drawable
+
+/// Worn chrome with a glow (Cascade, Redline) must not black the glow out with
+/// its own emissive blocker: the glow comes after every blocker the overlay makes.
+/datum/unit_test/voidcrew_cyberware_worn_glow
+
+/datum/unit_test/voidcrew_cyberware_worn_glow/Run()
+	var/mob/living/carbon/human/bearer = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	TEST_ASSERT(lattice.Insert(bearer, special = TRUE), "Test fixture: Cascade insert refused")
+	var/obj/item/bodypart/chest = bearer.get_bodypart(BODY_ZONE_CHEST)
+	var/list/images = lattice.bodypart_aug.get_overlay(EXTERNAL_ADJACENT, chest)
+	var/glow_at = 0
+	var/last_blocker_at = 0
+	for(var/i in 1 to length(images))
+		var/mutable_appearance/part = images[i]
+		if(PLANE_TO_TRUE(part.plane) != EMISSIVE_PLANE)
+			continue
+		// The emissive matrix puts its glow in the constant row; a blocker's constant row is all zero.
+		var/list/matrix = part.color
+		if(islist(matrix) && length(matrix) >= 20 && (matrix[17] || matrix[18] || matrix[19]))
+			glow_at = i
+		else
+			last_blocker_at = i
+	TEST_ASSERT(glow_at, "The Cascade worn overlay has no glow")
+	TEST_ASSERT(last_blocker_at, "The Cascade worn overlay has no emissive blocker")
+	TEST_ASSERT(glow_at > last_blocker_at, "An emissive blocker sits on top of the Cascade glow")
