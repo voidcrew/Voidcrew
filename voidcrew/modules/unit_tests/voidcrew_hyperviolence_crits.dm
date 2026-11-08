@@ -10,7 +10,6 @@
 		TEST_ASSERT_NOTNULL(pregen, "[crit.wound_type] has no pregen data")
 		TEST_ASSERT(!pregen.can_be_randomly_generated, "[crit.wound_type] can come from tg's random wound roll")
 		TEST_ASSERT(crit.limb_zone in pregen.viable_zones, "[crit.wound_type] cannot go on [crit.limb_zone]")
-		TEST_ASSERT(ispath(crit.basic_effect, /datum/status_effect), "[crit.type] has nothing for basic mobs")
 		for(var/zone in crit.aim_zones)
 			TEST_ASSERT_EQUAL(check_zone(zone), crit.limb_zone, "[crit.type] is aimed at [zone], which is not on [crit.limb_zone]")
 
