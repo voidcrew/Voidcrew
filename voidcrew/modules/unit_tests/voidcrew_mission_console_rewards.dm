@@ -424,16 +424,17 @@
 /datum/unit_test/voidcrew_m2_rewards/chips/Run()
 	var/datum/mission/recovery/kill/kill_type = allocate(/datum/mission/recovery/kill/m2_rewards_test)
 	TEST_ASSERT_EQUAL(kill_type.guarded_prize_family, "kill", "Kill fixture lost its production prize family")
+	// The targets are human NPC faction pirates (voidcrew/modules/human_npcs/ruins/); their chip is npc_death_cash.
 	var/easy_cash = 0
-	for(var/mob/living/basic/trooper/pirate/faction/pirate_type as anything in kill_type.easy_targets)
-		easy_cash += initial(pirate_type.plunder_credits)
+	for(var/mob/living/carbon/human/npc/ruin/faction_pirate/pirate_type as anything in kill_type.easy_targets)
+		easy_cash += initial(pirate_type.npc_death_cash)
 	TEST_ASSERT_EQUAL(easy_cash / length(kill_type.easy_targets), 300, "Wrong green kill-chip expectation")
 	var/medium_cash = 0
-	for(var/mob/living/basic/trooper/pirate/faction/pirate_type as anything in kill_type.medium_targets)
-		medium_cash += initial(pirate_type.plunder_credits)
+	for(var/mob/living/carbon/human/npc/ruin/faction_pirate/pirate_type as anything in kill_type.medium_targets)
+		medium_cash += initial(pirate_type.npc_death_cash)
 	TEST_ASSERT_EQUAL(medium_cash / length(kill_type.medium_targets) + 300, 568.75, "Wrong yellow kill-chip expectation")
-	for(var/mob/living/basic/trooper/pirate/faction/pirate_type as anything in kill_type.hard_targets)
-		TEST_ASSERT_EQUAL(initial(pirate_type.plunder_credits) + 2 * 25, 3050, "Wrong red kill-chip expectation")
+	for(var/mob/living/carbon/human/npc/ruin/faction_pirate/pirate_type as anything in kill_type.hard_targets)
+		TEST_ASSERT_EQUAL(initial(pirate_type.npc_death_cash) + 2 * 25, 3050, "Wrong red kill-chip expectation")
 	var/mob/living/basic/trooper/pirate/faction/medieval/captain/captain_type = /mob/living/basic/trooper/pirate/faction/medieval/captain
 	TEST_ASSERT_EQUAL(initial(captain_type.plunder_credits), 1000, "Medieval captain kept its melee chip value")
 

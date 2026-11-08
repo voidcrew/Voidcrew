@@ -552,7 +552,7 @@
 
 				if(can_spawn)
 					var/datum/npc_spawn_context/context = new(src, zone_band, "auto", source_turf = target_turf)
-					spawn_npc_in_zone(picked_mob, target_turf, context)
+					spawn_npc_in_zone_or_queue(picked_mob, target_turf, context)
 					spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See

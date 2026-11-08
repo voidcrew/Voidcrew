@@ -95,40 +95,40 @@
 /obj/effect/zone_mobs/pirate
 	name = "zone mob spawner (pirate)"
 	mobs_green = list(
-		/mob/living/basic/trooper/pirate/faction/grey/melee = 10,
-		/mob/living/basic/trooper/pirate/faction/skeleton/melee = 8,
-		/mob/living/basic/trooper/pirate/faction/silverscale/melee = 6,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/grey = 10,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton = 8,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale = 6,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/pirate/faction/grey/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/skeleton/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/silverscale/melee = 6,
-		/mob/living/basic/trooper/pirate/faction/lustrous/ranged = 5,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/grey/gunner = 8,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/skeleton/gunner = 8,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale = 6,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/lustrous/gunner = 5,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/pirate/faction/silverscale/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/lustrous/ranged = 8,
-		/mob/living/basic/trooper/pirate/faction/interdyne/ranged = 6,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain = 4,
-		/mob/living/basic/trooper/pirate/faction/grey/captain = 4,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/silverscale/gunner = 8,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/lustrous/gunner = 8,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/interdyne/gunner = 6,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/skeleton = 4,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/grey = 4,
 	)
 
 /// The pirate setpiece: a captain holding the vault, a proper boss in the red.
 /obj/effect/zone_mobs/pirate/boss
 	name = "zone mob spawner (pirate boss)"
 	mobs_green = list(
-		/mob/living/basic/trooper/pirate/faction/grey/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/grey = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/skeleton = 1,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/pirate/faction/silverscale/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/lustrous/captain = 1,
-		/mob/living/basic/trooper/pirate/faction/interdyne/captain = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/silverscale = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/lustrous = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/captain/interdyne = 1,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/pirate/faction/boss/silverscale = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/skeleton = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/grey = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/lustrous = 1,
-		/mob/living/basic/trooper/pirate/faction/boss/interdyne = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/silverscale = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/skeleton = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/grey = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/lustrous = 1,
+		/mob/living/carbon/human/npc/ruin/faction_pirate/boss/interdyne = 1,
 	)

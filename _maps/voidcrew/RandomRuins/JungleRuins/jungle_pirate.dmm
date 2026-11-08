@@ -167,7 +167,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "rc" = (
@@ -242,11 +242,11 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "DH" = (
-/mob/living/basic/trooper/pirate/ranged/space,
+/obj/effect/spawner/human_npc/ruin/pirate/space/gunner,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "DS" = (
-/mob/living/basic/trooper/pirate/ranged,
+/obj/effect/spawner/human_npc/ruin/pirate/gunner,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "DV" = (
@@ -296,7 +296,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "LT" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /obj/structure/chair/wood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
@@ -366,7 +366,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "UX" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Vf" = (
@@ -396,7 +396,7 @@
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "XA" = (
-/mob/living/basic/trooper/pirate/melee,
+/obj/effect/spawner/human_npc/ruin/pirate,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)

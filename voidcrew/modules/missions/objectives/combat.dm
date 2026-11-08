@@ -158,8 +158,12 @@
 	var/proof_type = /obj/item/mission_recovery/proof
 	/// The live target, while they're alive
 	var/mob/living/target_mob
+	/// The queued order building a human NPC target (voidcrew/modules/human_npcs/), until it is built
+	var/datum/human_npc_order/quarry_order
 
 /datum/mission_objective/field/kill_named/deactivate()
+	// A target still waiting in the spawn queue is never built.
+	QDEL_NULL(quarry_order)
 	if(target_mob)
 		UnregisterSignal(target_mob, COMSIG_LIVING_DEATH)
 		target_mob = null
@@ -174,6 +178,9 @@
 		create_proof(spawn_turf)
 		complete()
 		return
+	if(ispath(target_mob_type, /mob/living/carbon/human/npc))
+		spawn_human_quarry(spawn_turf)
+		return
 	var/mob/living/target = spawn_field_npc(target_mob_type, spawn_turf, finalize = FALSE)
 	target.name = mission.objective_name
 	target.desc += " They look like they're worth something dead."
@@ -186,6 +193,31 @@
 		guard.desc += " They're on somebody's payroll."
 		guard.npc_spawn_context.finalize()
 
+/**
+ * A human NPC target (voidcrew/modules/human_npcs/) and its guards are queued, a body a tick, not built
+ * on the spot. The target carries the contract's name and is tracked once it exists; the guards are
+ * untracked muscle, as above.
+ */
+/datum/mission_objective/field/kill_named/proc/spawn_human_quarry(turf/spawn_turf)
+	var/datum/npc_spawn_context/context = new(mission?.target || src, mission?.target?.get_zone_type(), "auto", source_turf = spawn_turf)
+	quarry_order = spawn_human_npc(target_mob_type, spawn_turf, CALLBACK(src, PROC_REF(on_quarry_built)), name = mission.objective_name, context = context)
+	for(var/guard_type in guard_types)
+		var/turf/guard_spot = get_nearby_open_turf(spawn_turf)
+		if(ispath(guard_type, /mob/living/carbon/human/npc))
+			var/datum/npc_spawn_context/guard_context = new(mission?.target || src, mission?.target?.get_zone_type(), "auto", source_turf = guard_spot)
+			spawn_human_npc(guard_type, guard_spot, context = guard_context)
+			continue
+		var/mob/living/guard = spawn_field_npc(guard_type, guard_spot, finalize = FALSE)
+		guard.desc += " They're on somebody's payroll."
+		guard.npc_spawn_context.finalize()
+
+/// The queued target exists now: track it, unless the contract moved on while it waited.
+/datum/mission_objective/field/kill_named/proc/on_quarry_built(mob/living/quarry)
+	quarry_order = null
+	if(!active || !mission || mission.failed || mission.completed || mission.named_kill_completed)
+		return
+	track_target(quarry)
+
 /// Keep death tracking and the cash entitlement attached to the same mission.
 /datum/mission_objective/field/kill_named/proc/track_target(mob/living/target)
 	target_mob = target
@@ -193,6 +225,9 @@
 	if(istype(target, /mob/living/basic/trooper/pirate/faction))
 		var/mob/living/basic/trooper/pirate/faction/pirate = target
 		pirate.mission_payout_ref = WEAKREF(mission)
+	else if(istype(target, /mob/living/carbon/human/npc/ruin))
+		var/mob/living/carbon/human/npc/ruin/quarry = target
+		quarry.npc_payout_mission = WEAKREF(mission)
 	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(target)
 
@@ -248,10 +283,13 @@
 	var/kill_count = 0
 	/// How close (tiles) a living crew member must be to confirm a kill
 	var/confirm_range = 9
+	/// Weakrefs to every body already counted: one revived and killed again counts once
+	var/list/datum/weakref/counted_kills = list()
 
 /datum/mission_objective/kill_count/reset()
 	. = ..()
 	kill_count = 0
+	counted_kills = list()
 
 /datum/mission_objective/kill_count/activate()
 	. = ..()
@@ -263,22 +301,37 @@
 
 /datum/mission_objective/kill_count/proc/on_any_death(datum/source, mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	if(completed || !istype(victim, mob_base_type))
+	if(completed || !counts_victim(victim))
+		return
+	var/datum/weakref/victim_ref = WEAKREF(victim)
+	if(victim_ref in counted_kills)
 		return
 	var/turf/where = get_turf(victim)
-	if(!where)
-		return
-	var/zone_type = SSovermap_zones?.get_zone_type_anywhere(where)
-	if(isnull(zone_type) || zone_type < minimum_zone)
+	if(!where || !kill_zone_counts(where))
 		return
 	if(!kill_attributable_to_crew(victim, where))
 		return
+	counted_kills += victim_ref
 	kill_count++
 	if(kill_count >= required_kills)
 		notify_crew("Suppression sweep complete.")
 		complete()
 		return
 	notify_crew("Kill confirmed: [kill_count]/[required_kills].", sound = 'voidcrew/sound/notify2.ogg')
+
+/// Whether a kill at `where` is deep enough to count (design guard: no green farming).
+/datum/mission_objective/kill_count/proc/kill_zone_counts(turf/where)
+	var/zone_type = SSovermap_zones?.get_zone_type_anywhere(where)
+	return !isnull(zone_type) && zone_type >= minimum_zone
+
+/**
+ * Whether `victim` is a mob this sweep counts: the basic faction pirates, and human NPCs
+ * (voidcrew/modules/human_npcs/) that sail under the pirate flag.
+ */
+/datum/mission_objective/kill_count/proc/counts_victim(mob/living/victim)
+	if(istype(victim, mob_base_type))
+		return TRUE
+	return ishumannpc(victim) && (FACTION_PIRATE in victim.faction)
 
 /**
  * Whether this kill belongs to the servant crew: the last attacker's ckey is
