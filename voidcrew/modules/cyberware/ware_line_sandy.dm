@@ -37,7 +37,7 @@
 	actions_types = list(/datum/action/cooldown/cyberware/cascade_surge/street)
 	window_duration = 6 SECONDS
 	crash_duration = 8 SECONDS
-	crash_stamina = 100
+	crash_stamina = 90
 	window_dodge = 15
 	window_speed = /datum/movespeed_modifier/cyberware_cascade/street
 	window_melee_mult = 0.75
