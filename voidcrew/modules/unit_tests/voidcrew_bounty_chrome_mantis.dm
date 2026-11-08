@@ -93,7 +93,7 @@
 	TEST_ASSERT_EQUAL(criminal.armour_penetration, initial(blade.armour_penetration), "The blades lost their armour penetration")
 	TEST_ASSERT_EQUAL(criminal.ai_hand?.held_type, blade, "The right hand doesn't show a blade")
 	TEST_ASSERT(piece.left_blade && (piece.left_blade in criminal.vis_contents), "The left hand doesn't show a blade")
-	TEST_ASSERT(!piece.one_blade(), "With both blades out, their lines speak of one")
+	TEST_ASSERT(findtext(piece.crouch_line(), "blades"), "With both blades out, their lines speak of one")
 	TEST_ASSERT(examine_has(criminal, "Hardlight blades"), "Examining them doesn't show the blades out")
 	// The first lunge comes inside the fight's opening seconds
 	TEST_ASSERT_EQUAL(piece.next_lunge_at - world.time, 10, "The first lunge waits [piece.next_lunge_at - world.time] deciseconds, not 10") // BOUNTY_MANTIS_FIRST_LUNGE
@@ -120,8 +120,6 @@
 	sleep(1 SECONDS)
 	TEST_ASSERT(hunter.health < health_before, "The lunge didn't cut the hunter on the line")
 	TEST_ASSERT(hunter.IsKnockdown(), "The lunge didn't put the hunter down")
-	// The cuts bleed only through tg's own wound rolls: no stand-in bleed on top
-	TEST_ASSERT(!hunter.has_status_effect(/datum/status_effect/bounty_boss_bleed), "The lunge put a stand-in bleed on the hunter")
 	TEST_ASSERT_EQUAL(get_turf(criminal), tile(4, 2), "The dash didn't carry them down the whole line")
 	TEST_ASSERT_EQUAL(piece.lunge_state, "recover", "They didn't have to recover after the lunge")
 	TEST_ASSERT(piece.lunge_hit, "The lunge didn't count the cut")
@@ -375,7 +373,7 @@
 		qdel(buddy)
 
 /**
- * Not a check: draws the worn housings and the blades out to data/bounty_chrome_renders/ for a person
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws the worn housings and the blades out to data/bounty_chrome_renders/ for a person
  * to look at. Each look three ways: housings only, blades out facing south, blades out facing east.
  * The blades are the NPC's own in-hand states laid over the body, as its vis_contents draw them.
  */
@@ -391,7 +389,9 @@
 		"2_lizard_tough" = list(/datum/species/lizard, /datum/outfit/bounty_criminal/tough),
 		"3_moth_survivor" = list(/datum/species/moth, /datum/outfit/hermit/survivor),
 	)
+#ifdef BOUNTY_CHROME_RENDERS
 	var/obj/item/blade = /obj/item/melee/energy/blade/hardlight/cyberware_mantis
+#endif
 	for(var/look_name in looks)
 		var/list/spec = looks[look_name]
 		var/datum/bounty_look/look = bounty_roll_look(spec[1], MALE)
@@ -399,6 +399,7 @@
 		TEST_ASSERT(dummy, "The [look_name] look could not be built")
 		if(!dummy)
 			continue
+#ifdef BOUNTY_CHROME_RENDERS
 		dummy.setDir(SOUTH)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/mantis_[look_name].png")
 		for(var/facing in list(SOUTH, EAST))
@@ -406,9 +407,12 @@
 			out.Blend(icon(initial(blade.righthand_file), initial(blade.inhand_icon_state), facing), ICON_OVERLAY)
 			out.Blend(icon(initial(blade.lefthand_file), initial(blade.inhand_icon_state), facing), ICON_OVERLAY)
 			fcopy(out, "data/bounty_chrome_renders/mantis_[look_name]_blades_[dir2text(facing)].png")
+#endif
 		qdel(dummy)
+#ifdef BOUNTY_CHROME_RENDERS
 	// One tile of the marked line, first frame, in its colour
 	var/icon/mark = icon('icons/mob/telegraphing/telegraph_holographic.dmi', "target_box", SOUTH, 1)
 	mark.MapColors(0.42, 0.72, 1, 0, 0, 0, 0, 0, 0) // BOUNTY_MANTIS_MARK_COLOR
 	fcopy(mark, "data/bounty_chrome_renders/mantis_mark.png")
+#endif
 	qdel(bare)

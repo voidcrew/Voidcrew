@@ -24,8 +24,8 @@
 	TEST_ASSERT_NOTNULL(proto, "No Lazarus prototype")
 	TEST_ASSERT(proto.weight > 0, "Lazarus never rolls")
 
-	// Who rolls it: Wanted and up (tier 2, BOUNTY_TIER_WANTED), never the meek; every kit. Whether a
-	// companion rolls it is the framework's companion roll (bounty_roll_companion_chrome()), not checked here.
+	// Who rolls it: Wanted and up (tier 2, BOUNTY_TIER_WANTED), never the meek; every kit; never a
+	// companion (bounty_roll_companion_chrome() leaves it out: a jolt would undo the takedown that works on every companion).
 	TEST_ASSERT(!proto.can_roll(1, "normal", "pistol", null, list()), "A Petty criminal can roll Lazarus") // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_NORMAL
 	TEST_ASSERT(proto.can_roll(2, "normal", "pistol", null, list()), "A Wanted pistol criminal can't roll Lazarus")
 	TEST_ASSERT(proto.can_roll(3, "normal", "brawler", null, list()), "A Most Wanted brawler can't roll Lazarus")
@@ -35,6 +35,14 @@
 	TEST_ASSERT(!proto.can_roll(1, "companion", "knife", null, list()), "A Petty criminal's companion can roll Lazarus") // BOUNTY_CHROME_COMPANION
 	for(var/i in 1 to 100)
 		TEST_ASSERT(!("lazarus" in bounty_roll_chrome(3, "meek", "holdout", null)), "A meek criminal rolled Lazarus")
+	// About one roll in five gives a Most Wanted companion chrome (BOUNTY_CHROME_CHANCE_MOST_WANTED / BOUNTY_CHROME_COMPANION_DIVISOR)
+	var/companion_chrome = 0
+	for(var/i in 1 to 500)
+		var/list/companion_keys = bounty_roll_companion_chrome(3, "pistol")
+		if(length(companion_keys))
+			companion_chrome++
+		TEST_ASSERT(!("lazarus" in companion_keys), "A companion rolled Lazarus")
+	TEST_ASSERT(companion_chrome > 0, "No companion rolled any chrome in 500 tries")
 	var/rolled = FALSE
 	for(var/i in 1 to 300)
 		if("lazarus" in bounty_pick_chrome(1, 3, "normal", "pistol", null))
@@ -258,7 +266,7 @@
 	TEST_ASSERT(!criminal.downed, "The cuff try failed and it never stood them up")
 
 /**
- * Not a check: draws Lazarus fighters to data/bounty_chrome_renders/ for a person to look at. The node
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws Lazarus fighters to data/bounty_chrome_renders/ for a person to look at. The node
  * sits inside the chest, so the worn looks show nothing of it; the charge looks show the red lightning
  * crawling over a fighter while it charges (the outline, the halo, the bolts and the light are not drawn
  * by getFlatIcon()).
@@ -280,6 +288,8 @@
 		TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/lazarus) in dummy.organs, "The Lazarus node isn't in the [look_name] dummy")
 		if(spec[3])
 			dummy.add_overlay(bounty_lazarus_body_arcs(null))
+#ifdef BOUNTY_CHROME_RENDERS
 		dummy.setDir(SOUTH)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/[look_name].png")
+#endif
 		qdel(dummy)

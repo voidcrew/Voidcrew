@@ -621,6 +621,12 @@
 	TEST_ASSERT(!held(hunter), "Knocked down, they kept hold")
 	TEST_ASSERT_NULL(piece.busy, "Knocked down, they are still busy")
 	criminal.SetKnockdown(0)
+	// Still on the floor for tg's second of getting up: no reach from there
+	ready_grab(piece)
+	criminal.next_move = 0
+	if(criminal.body_position == LYING_DOWN)
+		TEST_ASSERT(!piece.start_grab(hunter), "They reached for someone while still getting up")
+	criminal.get_up(instant = TRUE)
 
 	// Pulled apart: the hold is gone, the next blow never lands, and they are left off balance
 	ready_grab(piece)
@@ -723,7 +729,7 @@
 	TEST_ASSERT_EQUAL(tank.getBruteLoss(), 0, "The cut-off pummel hurt someone")
 
 /**
- * Not a check: draws the worn look to data/bounty_chrome_renders/ for a person to look at, each with
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws the worn look to data/bounty_chrome_renders/ for a person to look at, each with
  * the chrome and without it, facing south and east. Checks only that both arms go into the dummy.
  */
 /datum/unit_test/voidcrew_bounty_chrome_gorilla/renders
@@ -751,12 +757,15 @@
 				for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in dummy.organs)
 					arms++
 				TEST_ASSERT_EQUAL(arms, 2, "The [look_name] dummy has [arms] Gorilla Arms in it, not 2")
+#ifdef BOUNTY_CHROME_RENDERS
 			var/suffix = with_chrome ? "" : "_none"
 			for(var/facing in list(SOUTH, EAST))
 				dummy.setDir(facing)
 				fcopy(getFlatIcon(dummy, facing), "data/bounty_chrome_renders/gorilla_[look_name][suffix]_[dir2text(facing)].png")
+#endif
 			qdel(dummy)
 
+#ifdef BOUNTY_CHROME_RENDERS
 	// The grab in its parts, for a person to lay together: the brawler facing the one they hold, the
 	// held hunter facing back, the ring under someone reached for, the piston punch's tile, and the
 	// punch over a face
@@ -781,3 +790,4 @@
 	box.Blend("#ff8a1f", ICON_MULTIPLY) // BOUNTY_GORILLA_COLOR
 	fcopy(box, "data/bounty_chrome_renders/gorilla_mark_target_box.png")
 	fcopy(icon('icons/effects/effects.dmi', "punch", SOUTH, 1), "data/bounty_chrome_renders/gorilla_grab_punch_fx.png")
+#endif

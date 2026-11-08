@@ -278,7 +278,7 @@
 	buddy_piece.end_surge()
 
 /**
- * Not a check: draws the lattice as worn, and a surge's afterimage and crash colours, to
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws the lattice as worn, and a surge's afterimage and crash colours, to
  * data/bounty_chrome_renders/ for a person to look at.
  */
 /datum/unit_test/voidcrew_bounty_chrome_cascade/renders
@@ -307,7 +307,10 @@
 		dummies[look_name] = dummy
 		TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/cascade) in dummy.organs, "The [look_name] dummy has no lattice")
 		dummy.setDir(spec[3])
+#ifdef BOUNTY_CHROME_RENDERS
 		fcopy(getFlatIcon(dummy, spec[3]), "data/bounty_chrome_renders/cascade_[look_name].png")
+#endif
+#ifdef BOUNTY_CHROME_RENDERS
 	// The afterimages a step leaves, tinted as the trail is, a few hues along it (flattening drops an atom's colour, so the tint is put on by hand)
 	var/mob/living/carbon/human/dummy/clothed = dummies["5_tough_felinid_south"]
 	if(clothed)
@@ -322,6 +325,7 @@
 		var/icon/crashed = getFlatIcon(clothed, SOUTH)
 		crashed.MapColors(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)
 		fcopy(crashed, "data/bounty_chrome_renders/cascade_7_crash.png")
+#endif
 	for(var/look_name in dummies)
 		delete_dummy(dummies[look_name])
 

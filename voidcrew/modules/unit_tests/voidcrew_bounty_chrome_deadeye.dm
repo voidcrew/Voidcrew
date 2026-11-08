@@ -287,7 +287,7 @@
 	QDEL_LIST(buddies)
 
 /**
- * Not a check: draws gunmen with and without a lock up to data/bounty_chrome_renders/ for a person to
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws gunmen with and without a lock up to data/bounty_chrome_renders/ for a person to
  * look at, facing south.
  */
 /datum/unit_test/voidcrew_bounty_chrome_deadeye/renders
@@ -295,23 +295,31 @@
 /datum/unit_test/voidcrew_bounty_chrome_deadeye/renders/Run()
 	var/list/species_list = list(/datum/species/human, /datum/species/moth, /datum/species/lizard, /datum/species/jelly)
 	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 4))
+#ifdef BOUNTY_CHROME_RENDERS
 	var/number = 0
+#endif
 	for(var/species in species_list)
+#ifdef BOUNTY_CHROME_RENDERS
 		number++
+#endif
 		var/mob/living/basic/bounty_criminal/criminal = new_gunman("pistol", species, tile(0, 0))
+		var/datum/bounty_chrome/deadeye/piece = bounty_chrome_piece(criminal, "deadeye")
+#ifdef BOUNTY_CHROME_RENDERS
 		// The look goes on in the background
 		for(var/wait in 1 to 50)
 			if(length(criminal.overlays))
 				break
 			sleep(1)
-		var/datum/bounty_chrome/deadeye/piece = bounty_chrome_piece(criminal, "deadeye")
 		criminal.setDir(SOUTH)
 		fcopy(getFlatIcon(criminal, SOUTH, no_anim = TRUE), "data/bounty_chrome_renders/deadeye_[number]_plain.png")
+#endif
 		fight(criminal, hunter)
 		piece.next_lock_at = world.time
 		piece.on_tick(2, TRUE)
 		TEST_ASSERT_NOTNULL(piece.mark_ref, "The [species] gunman didn't lock on for the render")
+#ifdef BOUNTY_CHROME_RENDERS
 		criminal.setDir(SOUTH)
 		fcopy(getFlatIcon(criminal, SOUTH, no_anim = TRUE), "data/bounty_chrome_renders/deadeye_[number]_locked.png")
+#endif
 		piece.end_lock()
 		qdel(criminal)

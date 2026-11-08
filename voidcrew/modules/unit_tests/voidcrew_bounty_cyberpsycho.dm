@@ -192,6 +192,7 @@
 	TEST_ASSERT(bounty_chrome_fighting(psycho), "The hostile cyberpsycho isn't fighting")
 	TEST_ASSERT(mantis.deployed, "Its blade didn't come out when the fight started")
 	TEST_ASSERT_NULL(mantis.left_blade, "A blade came out of its Gorilla arm")
+	TEST_ASSERT(!findtext(mantis.blades_out_line(), "blades") && !findtext(mantis.crouch_line(), "blades"), "Its lines speak of two blades")
 
 	// No piece starts anything on its own, however ready
 	ready(psycho)
@@ -288,14 +289,12 @@
 	TEST_ASSERT(!punch.Trigger(target = hunter), "It punched mid-reach")
 	gorilla.finish_reach(gorilla.serial)
 	TEST_ASSERT_EQUAL(gorilla.busy, "hold", "The reach didn't take hold") // BOUNTY_GORILLA_HOLD
-	// TODO(merge): the pieces branch deletes bounty_gorilla_held for tg's real grab; there this is TEST_ASSERT(gorilla.holding(hunter), "The hunter isn't held")
-	TEST_ASSERT_NOTNULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "The hunter isn't held")
+	TEST_ASSERT(gorilla.holding(hunter), "The hunter isn't held")
 	TEST_ASSERT_EQUAL(psycho.boss_busy, "gorilla", "The hold doesn't keep the boss") // BOUNTY_GORILLA_BOSS_BUSY
 	psycho.boss_next_ability_at = 0
 	TEST_ASSERT(!lunge.Trigger(target = hunter) && !surge.Trigger(target = hunter), "Another move started mid-hold")
 	psycho.psycho_stop_moves()
-	// TODO(merge): on the pieces branch, TEST_ASSERT(!gorilla.holding(hunter) && !hunter.pulledby, "Stopped, it kept hold of the hunter")
-	TEST_ASSERT_NULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "Stopped, it kept hold of the hunter")
+	TEST_ASSERT(!gorilla.holding(hunter) && !hunter.pulledby, "Stopped, it kept hold of the hunter")
 	TEST_ASSERT_NULL(psycho.boss_busy, "The grab kept the boss after it stopped")
 	ready(psycho)
 	psycho.boss_last_ability = punch.type
@@ -538,7 +537,7 @@
 
 /**
  * The look: an arm takes one piece, so the blade housing goes on its right arm and the Gorilla
- * plating on its left, and its shorts leave every piece showing. Not only a check: draws it, three
+ * plating on its left, and its shorts leave every piece showing. Not only a check: with -DBOUNTY_CHROME_RENDERS, draws it, three
  * species, every way it faces, with and without the blade out, to data/bounty_chrome_renders/.
  */
 /datum/unit_test/voidcrew_bounty_cyberpsycho/renders
@@ -574,6 +573,7 @@
 		TEST_ASSERT_NULL(dummy.wear_suit, "The [body_name] cyberpsycho wears something over its chest")
 		TEST_ASSERT_NULL(dummy.gloves, "The [body_name] cyberpsycho wears gloves over its arms")
 		TEST_ASSERT_NULL(dummy.shoes, "The [body_name] cyberpsycho wears shoes over its pistons")
+#ifdef BOUNTY_CHROME_RENDERS
 		for(var/facing in list(SOUTH, NORTH, EAST, WEST))
 			fcopy(getFlatIcon(dummy, facing), "data/bounty_chrome_renders/cyberpsycho_[body_name]_[dir2text(facing)].png")
 		// In the fight: the blade out in its right hand
@@ -581,6 +581,7 @@
 		dummy.put_in_r_hand(blade)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/cyberpsycho_[body_name]_blade_south.png")
 		fcopy(getFlatIcon(dummy, EAST), "data/bounty_chrome_renders/cyberpsycho_[body_name]_blade_east.png")
+#endif
 		qdel(dummy)
 
 	// "All of it" on an ordinary criminal: the same arms, and the clothes off where the chrome is
@@ -588,5 +589,7 @@
 	var/mob/living/carbon/human/dummy/everything = bounty_look_dummy(plain, /datum/outfit/bounty_criminal/tough, null, chrome_organs = bounty_chrome_organ_looks(bounty_psycho_chrome_keys()))
 	TEST_ASSERT_NOTNULL(everything, "All of it on an ordinary criminal failed")
 	if(everything)
+#ifdef BOUNTY_CHROME_RENDERS
 		fcopy(getFlatIcon(everything, SOUTH), "data/bounty_chrome_renders/cyberpsycho_all_of_it_tough_south.png")
+#endif
 		qdel(everything)

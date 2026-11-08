@@ -186,9 +186,13 @@
 	TEST_ASSERT_NOTNULL(eva, "A criminal has no suit to put on")
 	eva.kit_up(null)
 	TEST_ASSERT(!findtext(examined(criminal, viewer), "test chrome"), "Chrome shows through a pressure suit")
-	qdel(eva.suit)
-	qdel(eva.helmet)
+	eva.own_suit = null
+	eva.own_helmet = null
 	TEST_ASSERT(findtext(examined(criminal, viewer), "test chrome"), "Chrome doesn't show once the suit is off")
+	// A modsuit covers it too
+	eva.kit_up(/obj/item/mod/control/pre_equipped/standard)
+	TEST_ASSERT(!findtext(examined(criminal, viewer), "test chrome"), "Chrome shows through a modsuit")
+	eva.own_mod = null
 
 	// Dead, it is burnt out: one line, and a chrome read finds it offline
 	criminal.death()
@@ -221,6 +225,18 @@
 	TEST_ASSERT(abs(chromed.maxHealth - plain.maxHealth * 1.3) <= 2, "Two pieces of chrome gave [chromed.maxHealth] health over a plain [plain.maxHealth], not 30% more")
 	TEST_ASSERT_EQUAL(chromed.health, chromed.maxHealth, "A chromed criminal didn't start at full health")
 
+	// Sized up against a crew, its chrome's share comes along: three hunters make it twice its chromed health (BOUNTY_NORMAL_POSSE_HEALTH 50)
+	var/chromed_max = chromed.maxHealth
+	var/list/crew = list()
+	for(var/dx in 1 to 3)
+		var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+		hunter.mind_initialize()
+		chromed.body_add_grudge(hunter)
+		crew += hunter
+	TEST_ASSERT(chromed.body_size_up(crew[1], engaging = TRUE), "A crew of three didn't size up a chromed criminal")
+	TEST_ASSERT_EQUAL(chromed.maxHealth, chromed_max * 2, "A chromed criminal fighting three has [chromed.maxHealth] health, not twice its [chromed_max]")
+	TEST_ASSERT(abs(chromed.damage_coeff[STAMINA] - 100 / chromed.maxHealth) < 0.0001, "The chromed criminal's stamina pool didn't follow its health")
+
 	// Hurt, then chrome put in: a higher ceiling, the same health
 	plain.adjustBruteLoss(40)
 	var/before = plain.health
@@ -241,6 +257,11 @@
 	bounty_chrome_install(buddy, list("cascade"))
 	TEST_ASSERT(abs(buddy.maxHealth - bare * 1.15) <= 1, "A piece of chrome took a companion from [bare] to [buddy.maxHealth] health, not 15% more")
 	TEST_ASSERT_EQUAL(buddy.health, buddy.maxHealth, "A fresh companion's chrome left them hurt")
+	// A hurt companion put on a tougher style keeps the health it had
+	buddy.adjustBruteLoss(30)
+	var/hurt_health = buddy.health
+	buddy.ai_take_style("brawler") // BOUNTY_STYLE_BRAWLER, the toughest
+	TEST_ASSERT(abs(buddy.health - hurt_health) < 0.01, "A new style took a hurt companion from [hurt_health] to [buddy.health] health")
 
 	// Never Lazarus on a companion: a stamina takedown is the answer to every one of them
 	for(var/i in 1 to 300)

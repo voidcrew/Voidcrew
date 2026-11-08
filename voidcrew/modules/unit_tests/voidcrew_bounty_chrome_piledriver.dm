@@ -367,7 +367,7 @@
 // ===== RENDERS =====
 
 /**
- * Not a check: draws the worn frame to data/bounty_chrome_renders/ for a person to look at. A dummy
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws the worn frame to data/bounty_chrome_renders/ for a person to look at. A dummy
  * per look, facing south, and the bare one from the side too.
  */
 /datum/unit_test/voidcrew_bounty_chrome_piledriver/renders
@@ -386,9 +386,11 @@
 		TEST_ASSERT(dummy, "The [look_name] look could not be built")
 		if(!dummy)
 			continue
+#ifdef BOUNTY_CHROME_RENDERS
 		dummy.setDir(SOUTH)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/piledriver_[look_name].png")
 		if(look_name == "1")
 			dummy.setDir(EAST)
 			fcopy(getFlatIcon(dummy, EAST), "data/bounty_chrome_renders/piledriver_[look_name]_side.png")
+#endif
 		qdel(dummy)

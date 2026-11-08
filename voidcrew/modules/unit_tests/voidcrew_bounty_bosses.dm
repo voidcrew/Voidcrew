@@ -511,19 +511,14 @@
 	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = allocate(/mob/living/basic/bounty_criminal/boss/juggernaut, spot(0, 0))
 	var/mob/living/carbon/human/consistent/victim = hunter_at(spot(1, 0))
 	victim.apply_status_effect(/datum/status_effect/bounty_boss_burning)
-	victim.apply_status_effect(/datum/status_effect/bounty_boss_bleed)
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/bounty_boss_burning), "The hunter didn't catch fire")
-	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/bounty_boss_bleed), "The hunter didn't bleed")
 	victim.adjustBruteLoss(120)
 	TEST_ASSERT(victim.stat != CONSCIOUS && victim.stat != DEAD, "The hunter isn't down")
 	TEST_ASSERT(!boss.boss_can_hurt(victim), "The boss may hurt a downed hunter")
 	TEST_ASSERT(!(victim in boss.boss_victims_on(list(get_turf(victim)))), "Area abilities catch a downed hunter")
 	var/datum/status_effect/burning = victim.has_status_effect(/datum/status_effect/bounty_boss_burning)
 	burning?.tick(1)
-	var/datum/status_effect/bleeding = victim.has_status_effect(/datum/status_effect/bounty_boss_bleed)
-	bleeding?.tick(1)
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/bounty_boss_burning), "A downed hunter keeps burning")
-	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/bounty_boss_bleed), "A downed hunter keeps bleeding from the cuts")
 	TEST_ASSERT(!victim.apply_status_effect(/datum/status_effect/bounty_boss_burning), "A downed hunter can be set alight")
 
 // ===== HEALTH GROWS WITH THE POSSE (M4) =====
@@ -727,11 +722,9 @@
 	SEND_SIGNAL(ghost, COMSIG_MOB_FLASHED)
 	TEST_ASSERT(!ghost.boss_cloaked, "A flash didn't break the Ghost's cloak")
 
-	// Its cuts bleed through tg's own wounds, with no stand-in bleed (review r1 F2), and a few of them make it break off.
+	// A few of its cuts make it break off.
 	var/mob/living/carbon/human/consistent/victim = hunter_at(spot(1, 0))
 	ghost.boss_cut(victim)
-	for(var/datum/status_effect/effect as anything in victim.status_effects)
-		TEST_ASSERT(effect.id != "bounty_boss_bleed", "The Ghost's cut put a stand-in bleed on the hunter")
 	ghost.boss_cut(victim)
 	TEST_ASSERT(ghost.boss_breakoff_until <= world.time, "The Ghost broke off after two cuts")
 	ghost.boss_cut(victim)

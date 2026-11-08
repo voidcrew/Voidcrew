@@ -205,7 +205,7 @@
 	qdel(criminal)
 
 /**
- * Not a check: draws each suited look to data/bounty_eva_renders/ for a person to look at. A dummy
+ * Not a check: with -DBOUNTY_CHROME_RENDERS, draws each suited look to data/bounty_eva_renders/ for a person to look at. A dummy
  * per look, facing south.
  */
 /datum/unit_test/voidcrew_bounty_eva/renders/Run()
@@ -244,6 +244,8 @@
 		TEST_ASSERT(dummy, "The [look_name] look could not be built")
 		if(!dummy)
 			continue
+#ifdef BOUNTY_CHROME_RENDERS
 		dummy.setDir(SOUTH)
 		fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_eva_renders/[look_name].png")
+#endif
 		qdel(dummy)

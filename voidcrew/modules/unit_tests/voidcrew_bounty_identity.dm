@@ -403,6 +403,8 @@
 	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho")) // BOUNTY_KIT_*
 		// "_posse" is boss_bark("posse", "intro") as the posse grows (BUG-2)
 		contexts += list("[kit]_intro", "[kit]_ability", "[kit]_exhausted", "[kit]_posse")
+	// The cyberpsycho's Redline core tripping: boss_bark("redline")
+	contexts += "cyberpsycho_redline"
 	for(var/context in contexts)
 		var/list/by_voice = lines[context]
 		TEST_ASSERT(length(by_voice?["any"]) >= 6, "The context [context] has fewer than 6 lines")
