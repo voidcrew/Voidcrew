@@ -20,6 +20,10 @@
 		bodypart_aug = new(src)
 
 /obj/item/organ/cyberimp/Destroy()
+	// VOIDCREW EDIT ADDITION START - take the overlay off the limb first, even a limb being deleted (a deleted mob's limb deletes its organs but stays in its bodyparts): the parent removes it only after this line, when bodypart_aug is already null, and the limb kept a dead overlay that runtimed on every redraw (bounty chrome look dummies, voidcrew/modules/bounties/bounty_chrome.dm)
+	if(bodypart_aug && bodypart_owner)
+		bodypart_owner.remove_bodypart_overlay(bodypart_aug, update = !QDELETED(bodypart_owner))
+	// VOIDCREW EDIT ADDITION END
 	QDEL_NULL(bodypart_aug)
 	return ..()
 
