@@ -366,7 +366,9 @@
 
 /// Whether `creature` lies down waiting for Kessler's team
 /datum/outpost_prison/proc/experiment_awaiting_pickup(mob/living/creature)
-	return !!experiment?.awaiting[REF(creature)]
+	if(!experiment)
+		return FALSE
+	return !!experiment.awaiting[REF(creature)]
 
 /**
  * A creature that went down is back on its feet before Kessler had it (revived, woken, out of its

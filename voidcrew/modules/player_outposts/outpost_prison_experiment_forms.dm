@@ -88,7 +88,6 @@
 		body.physique = prisoner.gender
 		body.update_body(is_creating = TRUE)
 	body.setDir(prisoner.dir)
-	body.subject_personality = prisoner.personality
 	qdel(prisoner)
 	return body
 
@@ -119,8 +118,6 @@
 	faction = list(FACTION_OUTPOST_EXPERIMENT)
 	npc_gear_locked = FALSE
 	npc_target_stat = HARD_CRIT
-	/// The prisoner's personality, for its lines
-	var/subject_personality
 
 // ===== THE FORM =====
 
