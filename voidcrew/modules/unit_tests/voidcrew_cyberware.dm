@@ -259,6 +259,131 @@
 	TEST_ASSERT(findtext(silhouette, "SIGNATURES 2"), "A silhouette chrome read didn't report the signature count: [silhouette]")
 	TEST_ASSERT_EQUAL(initial(optics.chrome_scan_resolution), 1, "The street-tier Nightshade isn't set to silhouette resolution")
 
+/// (f2) Chrome read overlay: the report it draws, and the readout's life.
+/// Every reader here is clientless, so this proves the data and the teardown,
+/// never how the client draws it.
+/// Literals: resolution 1 = CYBERWARE_SCAN_SILHOUETTE, 2 = _ITEMIZED; tier 1 =
+/// CYBERWARE_TIER_1; "#8fa1a8" is the unrated colour; "cyber_camo" is
+/// TRAIT_CYBER_CAMO; looks are the overlay's own "itemized", "silhouette",
+/// "scatter" and "clean".
+/datum/unit_test/voidcrew_cyberware_scan_overlay
+
+/datum/unit_test/voidcrew_cyberware_scan_overlay/Run()
+	var/mob/living/carbon/human/reader = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/eyes/robotic/cyberware/deadeye/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/deadeye)
+	TEST_ASSERT(optics.Insert(reader, special = TRUE), "Deadeye staging insert was refused")
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate() in optics.actions
+	TEST_ASSERT_NOTNULL(read, "The Deadeye link lost its chrome read")
+	TEST_ASSERT(!reader.is_blind(), "Test fixture: the staged optics left the reader blind")
+
+	// The subject: a hidden stash, a printable augment, and a weave knocked offline.
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/stash = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
+	TEST_ASSERT(stash.Insert(subject, special = TRUE), "Cargo Cavity staging insert was refused")
+	var/obj/item/organ/cyberimp/chest/reviver/printable = allocate(/obj/item/organ/cyberimp/chest/reviver)
+	TEST_ASSERT(printable.Insert(subject, special = TRUE), "Reviver implant staging insert was refused")
+	var/obj/item/organ/cyberimp/cyberware/dermal_mesh/weave = allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)
+	TEST_ASSERT(weave.Insert(subject, special = TRUE), "Dermal Mesh staging insert was refused")
+	var/datum/component/cyberware/weave_chrome = weave.GetComponent(/datum/component/cyberware)
+	weave_chrome.start_emp_reboot()
+	TEST_ASSERT(weave.organ_flags & ORGAN_FAILING, "Test fixture: an EMP didn't knock the weave offline")
+
+	// The report: one entry per visible signature, nothing hidden, the
+	// printable augment unrated and grey, the EMP'd weave offline.
+	var/list/report = cyberware_scan_report(subject, 2)
+	TEST_ASSERT_EQUAL(report["count"], 2, "The report miscounted the visible hardware")
+	TEST_ASSERT_EQUAL(length(report["entries"]), length(cyberware_scannable_hardware(subject)), "The report's entries don't match the scannable hardware")
+	var/list/reviver_entry
+	var/list/weave_entry
+	for(var/list/entry as anything in report["entries"])
+		TEST_ASSERT(entry["name"] != stash.name, "The report listed the ORGAN_HIDDEN Cargo Cavity")
+		if(entry["name"] == printable.name)
+			reviver_entry = entry
+		if(entry["name"] == weave.name)
+			weave_entry = entry
+	TEST_ASSERT_NOTNULL(reviver_entry, "The report dropped the printable reviver")
+	TEST_ASSERT(!reviver_entry["rated"], "The report rated a printable augment as parlor chrome")
+	TEST_ASSERT_EQUAL(reviver_entry["color"], "#8fa1a8", "An unrated augment didn't get the unrated colour")
+	TEST_ASSERT_NOTNULL(weave_entry, "The report dropped the Dermal Mesh")
+	TEST_ASSERT(weave_entry["offline"], "An EMP'd weave didn't read as offline")
+	TEST_ASSERT_EQUAL(weave_entry["tier"], 1, "The weave lost its tier")
+	TEST_ASSERT_EQUAL(weave_entry["label"], "Dermal Mesh weave", "The label kept the name's formatting macro")
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/blade = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
+	TEST_ASSERT_EQUAL(cyberware_scan_label(blade), "Mantis Blade housing", "A paired arm piece kept its side in the label")
+
+	// Silhouette resolution counts the same signatures and resolves none of them.
+	var/list/blurred = cyberware_scan_report(subject, 1)
+	TEST_ASSERT_EQUAL(length(blurred["entries"]), 2, "A silhouette report miscounted")
+	for(var/list/entry as anything in blurred["entries"])
+		TEST_ASSERT(isnull(entry["label"]) && isnull(entry["icon"]), "A silhouette report named or pictured a piece it shouldn't resolve")
+
+	// A read draws a readout: one socket and one name line per entry, every
+	// image hung off the subject (never through walls) and deaf to clicks.
+	TEST_ASSERT(read.PreActivate(subject), "The chrome read didn't run on a subject in reach")
+	var/datum/chrome_readout/first = read.current_readout
+	TEST_ASSERT_NOTNULL(first, "A read left no readout on the action")
+	TEST_ASSERT_EQUAL(first.mode, "itemized", "Deadeye optics drew the wrong look")
+	TEST_ASSERT_EQUAL(length(first.sockets), 2, "The readout drew the wrong number of sockets")
+	TEST_ASSERT_EQUAL(length(first.name_lines), 2, "The readout drew the wrong number of names")
+	TEST_ASSERT_NULL(first.shown_to, "A clientless reader was handed images")
+	for(var/image/drawn as anything in first.images)
+		TEST_ASSERT_EQUAL(drawn.loc, subject, "A readout image hangs off something other than the subject")
+		TEST_ASSERT_EQUAL(drawn.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A readout image takes clicks meant for the floor")
+
+	// A new read replaces the old one.
+	read.ResetCooldown()
+	TEST_ASSERT(read.PreActivate(subject), "A second read didn't run")
+	TEST_ASSERT(QDELETED(first), "A second read left the first readout up")
+	var/datum/chrome_readout/readout = read.current_readout
+	TEST_ASSERT(readout && readout != first, "A second read didn't draw a new readout")
+
+	// Each way it ends early.
+	SEND_SIGNAL(reader, COMSIG_MOB_LOGOUT)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its reader logging out")
+	TEST_ASSERT_NULL(read.current_readout, "The action held on to a readout that had ended")
+
+	read.PreActivate(subject)
+	readout = read.current_readout
+	SEND_SIGNAL(subject, COMSIG_MOVABLE_Z_CHANGED, null, null, TRUE)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its subject changing z")
+
+	read.PreActivate(subject)
+	readout = read.current_readout
+	optics.Remove(reader, special = TRUE)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived the optics that drew it")
+	TEST_ASSERT(optics.Insert(reader, special = TRUE), "The optics wouldn't go back in")
+
+	var/mob/living/carbon/human/doomed = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(read.PreActivate(doomed), "The chrome read didn't run on a bare body")
+	readout = read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "clean", "A body with no hardware drew the wrong look")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 0, "A body with no hardware drew sockets")
+	qdel(doomed)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its subject")
+
+	// Ghostskin: the lock breaks. No sockets, no names, and it stays on the
+	// turf where the lock was tried instead of following the subject.
+	ADD_TRAIT(subject, "cyber_camo", "chrome_read_overlay_test")
+	TEST_ASSERT(read.PreActivate(subject), "The chrome read didn't run on a camouflaged subject")
+	readout = read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "scatter", "Ghostskin didn't scatter the readout")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 0, "A scattered readout drew sockets")
+	TEST_ASSERT_EQUAL(length(readout.name_lines), 0, "A scattered readout named hardware")
+	for(var/image/drawn as anything in readout.images)
+		TEST_ASSERT_EQUAL(drawn.loc, get_turf(subject), "A scattered readout image follows the camouflaged subject")
+	REMOVE_TRAIT(subject, "cyber_camo", "chrome_read_overlay_test")
+
+	// Street optics: a socket per signature, and not one name.
+	var/mob/living/carbon/human/street_reader = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/eyes/robotic/cyberware/nightshade/street_optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
+	TEST_ASSERT(street_optics.Insert(street_reader, special = TRUE), "Nightshade staging insert was refused")
+	var/datum/action/cooldown/cyberware/chrome_read/street_read = locate() in street_optics.actions
+	TEST_ASSERT(street_read.PreActivate(subject), "The street read didn't run")
+	readout = street_read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "silhouette", "Nightshade optics drew the wrong look")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 2, "A silhouette readout didn't draw a socket per signature")
+	TEST_ASSERT_EQUAL(length(readout.name_lines), 0, "A silhouette readout named hardware")
+
 /// Camo line: the street weave fades its bearer but never takes the
 /// cyber_camo trait (NPC targeting and chrome reads key on it, so it fools
 /// players only), while the full Ghostskin keeps both. They share the skin

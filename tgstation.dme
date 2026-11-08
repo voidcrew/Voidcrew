@@ -7181,6 +7181,7 @@
 #include "voidcrew\modules\cyberware\cyberware_feedback.dm"
 #include "voidcrew\modules\cyberware\cyberware_salvage.dm"
 #include "voidcrew\modules\cyberware\cyberware_scan.dm"
+#include "voidcrew\modules\cyberware\cyberware_scan_overlay.dm"
 #include "voidcrew\modules\cyberware\cyberware_stealth.dm"
 #include "voidcrew\modules\cyberware\parlor_fixtures.dm"
 #include "voidcrew\modules\cyberware\ripperdoc_catalog.dm"
