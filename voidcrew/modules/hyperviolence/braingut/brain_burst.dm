@@ -35,6 +35,11 @@
 	hv_blood_spray(burst_dir, 4)
 	if(!head.dismember(BRUTE, silent = TRUE))
 		return FALSE
+	// dismember() throws the head off in a random direction, and the throw takes its first step at once.
+	// A burst head comes apart where it was, so it goes back before its insides fall out: otherwise the
+	// brain starts its fling a tile off (one to four tiles along the blow, or off its line altogether).
+	if(isturf(here) && head.loc != here)
+		head.forceMove(here)
 	// no violent_removal: that would damage the brain, and it has to stay good for revival
 	head.drop_organs()
 	qdel(head)
