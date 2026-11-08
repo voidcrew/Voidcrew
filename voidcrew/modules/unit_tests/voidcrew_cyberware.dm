@@ -170,6 +170,51 @@
 			if(BODY_ZONE_L_ARM)
 				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot. It would stack with blades/launchers on the same arm")
 
+/// The Widowline Arc: same slot as the Widowline it steps up from, a heavier
+/// load, and a wire whose shock lands through insulated gloves, skips the
+/// shock-immune, hits robots harder, and shorts a turret once per recharge.
+/datum/unit_test/voidcrew_cyberware_widowline_arc
+
+/datum/unit_test/voidcrew_cyberware_widowline_arc/Run()
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/plain = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live/arc = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live)
+	TEST_ASSERT_EQUAL(arc.slot, plain.slot, "The Arc housing isn't in the Widowline's slot, so the two would stack")
+	TEST_ASSERT(arc.chrome_load > plain.chrome_load, "The Arc housing is no heavier than the plain Widowline")
+	var/obj/item/melee/cyberware_monowire/live/wire = locate() in arc
+	TEST_ASSERT(wire, "The Arc housing didn't build its live wire")
+
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	TEST_ASSERT(wire.discharge_into_mob(victim, user), "The shock didn't land on a plain human")
+	TEST_ASSERT(victim.getFireLoss() > 0, "The shock left no burn")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/staggered), "The shock left no stagger")
+
+	var/mob/living/carbon/human/gloved = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	var/obj/item/clothing/gloves/color/yellow/insulated = allocate(/obj/item/clothing/gloves/color/yellow)
+	gloved.equip_to_slot_if_possible(insulated, ITEM_SLOT_GLOVES, qdel_on_fail = FALSE, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(gloved.gloves, insulated, "Insulated gloves fixture failed to equip")
+	TEST_ASSERT(wire.discharge_into_mob(gloved, user), "Insulated gloves stopped the shock")
+
+	var/mob/living/carbon/human/immune = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	ADD_TRAIT(immune, TRAIT_SHOCKIMMUNE, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!wire.discharge_into_mob(immune, user), "A shock-immune target was shocked")
+	TEST_ASSERT_EQUAL(immune.getFireLoss(), 0, "A shock-immune target took burn")
+	TEST_ASSERT(!immune.has_status_effect(/datum/status_effect/staggered), "A shock-immune target was staggered")
+
+	// Any robotic biotype takes the robot bonus, not just silicons.
+	var/mob/living/basic/pet/dog/corgi/robot = allocate(/mob/living/basic/pet/dog/corgi, get_step(start, EAST))
+	robot.mob_biotypes = MOB_ROBOTIC
+	TEST_ASSERT(wire.discharge_into_mob(robot, user), "The robot bonus didn't land on a robotic mob")
+	TEST_ASSERT(robot.health < robot.maxHealth, "The robot bonus did no damage")
+
+	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, get_step(start, NORTH))
+	TEST_ASSERT(wire.discharge_into_machine(turret, user), "The wire didn't short a porta-turret")
+	TEST_ASSERT(!COOLDOWN_FINISHED(turret, disabled_time), "A shorted porta-turret isn't disabled")
+	var/obj/machinery/porta_turret/second_turret = allocate(/obj/machinery/porta_turret, get_step(start, NORTH))
+	TEST_ASSERT(!wire.discharge_into_machine(second_turret, user), "The wire shorted a second machine before it recharged")
+	TEST_ASSERT(COOLDOWN_FINISHED(second_turret, disabled_time), "A turret was disabled with the wire recharging")
+
 /// (f) Chrome read: the optics' scan resolves installed hardware by name at
 /// itemized resolution, rates parlor chrome by tier and everything else
 /// UNRATED, counts either way, and NEVER resolves anything flagged

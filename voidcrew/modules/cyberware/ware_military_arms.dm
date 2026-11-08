@@ -562,6 +562,10 @@
 	attack_verb_continuous = list("garrotes", "flenses", "lashes", "bisects")
 	attack_verb_simple = list("garrote", "flense", "lash", "bisect")
 	hitsound = 'voidcrew/sound/monowire1.ogg'
+	/// Cleave fraction of the wire's damage dealt to secondary targets.
+	var/cleave_mult = CYBERWARE_MONOWIRE_CLEAVE_MULT
+	/// Burn the charged line adds on top of the cut, every hit.
+	var/charge_burn = CYBERWARE_MONOWIRE_BURN
 
 /obj/item/melee/cyberware_monowire/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	// The parent plays hitsound partway through the swing, so pick which of the
@@ -577,7 +581,7 @@
 	// already announced the penetration for this same swing.
 	var/burn_zone = target.get_random_valid_zone(user.zone_selected)
 	target.apply_damage(
-		CYBERWARE_MONOWIRE_BURN,
+		charge_burn,
 		BURN,
 		burn_zone,
 		target.run_armor_check(burn_zone, MELEE, armour_penetration = armour_penetration, silent = TRUE),
@@ -594,7 +598,7 @@
 		// One roll for both halves: it is one pass of the same wire.
 		var/cleave_block = nearby.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
 		nearby.apply_damage(
-			force * CYBERWARE_MONOWIRE_CLEAVE_MULT,
+			force * cleave_mult,
 			BRUTE,
 			BODY_ZONE_CHEST,
 			cleave_block,
@@ -602,7 +606,7 @@
 			sharpness = SHARP_EDGED,
 		)
 		nearby.apply_damage(
-			CYBERWARE_MONOWIRE_BURN * CYBERWARE_MONOWIRE_CLEAVE_MULT,
+			charge_burn * cleave_mult,
 			BURN,
 			BODY_ZONE_CHEST,
 			cleave_block,

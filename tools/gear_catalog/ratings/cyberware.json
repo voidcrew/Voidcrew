@@ -137,6 +137,16 @@
    "reason": "20 damage a swing (15 brute, 5 burn) straight through all armor, reach 2, and it cuts neighbours for 75%. The best melee against armored crews, useless on walls and doors. Load 5, 3 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Widowline Arc spool housing",
+   "note": "The Widowline wire with a shock on every landed hit. A living target takes 5 more burn and a 2 s stagger (stacking to 4 s) unless it is shock immune or its suit is insulated; gloves do not matter. Silicons, mechs and robotic mobs take 25 more burn. A hit on a turret, ship laser turret, console or camera knocks it out for 5 s, once per 15 s per wire; outpost property is immune. The cleave does not shock.",
+   "rank": 1,
+   "reason": "The Widowline's 20 a swing through all armor and reach 2, plus 5 burn and a stagger on the target, 25 extra burn on robots and mechs, and a turret or console shorted out for 5 s. Load 6, 5 vouchers at reputation 22, one on the shelf per round.",
+   "tier": "red"
+  },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/rockjaw": {
    "confidence": "high",
    "group": "Work tools",

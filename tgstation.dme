@@ -7188,6 +7188,7 @@
 #include "voidcrew\modules\cyberware\ware_line_governor.dm"
 #include "voidcrew\modules\cyberware\ware_line_mantis.dm"
 #include "voidcrew\modules\cyberware\ware_line_sandy.dm"
+#include "voidcrew\modules\cyberware\ware_line_widowline.dm"
 #include "voidcrew\modules\cyberware\ware_military_arms.dm"
 #include "voidcrew\modules\cyberware\ware_military_body.dm"
 #include "voidcrew\modules\cyberware\ware_pro_combat.dm"

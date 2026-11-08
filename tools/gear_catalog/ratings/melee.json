@@ -1165,6 +1165,16 @@
    "reason": "Rated with its arm housing: 25 a second through any armor at 2 tiles, and the hit carries into every enemy beside the target. Hidden until used. Needs surgery.",
    "tier": "red"
   },
+  "/obj/item/melee/cyberware_monowire/live": {
+   "confidence": "medium",
+   "group": "arm blades",
+   "hash": "",
+   "name": "Widowline Arc monowire",
+   "note": "Each landed hit also shocks the target for 5 burn and a short stagger (not through shock immunity or insulated suits), adds 25 burn on silicons, mechs and robotic mobs, and shorts a turret, ship laser turret, console or camera for 5 s, once per 15 s. The cleave neighbours take the plain cleave only.",
+   "rank": 1,
+   "reason": "Rated with its arm housing: the Widowline wire with a shock, a stagger and a machine-killing short on every landed hit. Needs surgery.",
+   "tier": "red"
+  },
   "/obj/item/melee/energy/blade/hardlight/cyberware_mantis": {
    "confidence": "medium",
    "group": "arm blades",
