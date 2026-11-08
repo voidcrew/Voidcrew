@@ -67,11 +67,11 @@
 	return FALSE
 
 /// Whether the last thing `speaker` said was a `context` line
-/datum/unit_test/voidcrew_outpost_prison_life_base/proc/life_said(mob/living/basic/outpost_prisoner/speaker, context)
+/datum/unit_test/voidcrew_outpost_prison_life_base/proc/life_said(mob/living/carbon/human/npc/outpost_prisoner/speaker, context)
 	return life_line_for(speaker.last_line, context)
 
 /// Whether `prisoner` has a `context` line queued
-/datum/unit_test/voidcrew_outpost_prison_life_base/proc/life_queued(mob/living/basic/outpost_prisoner/prisoner, context)
+/datum/unit_test/voidcrew_outpost_prison_life_base/proc/life_queued(mob/living/carbon/human/npc/outpost_prisoner/prisoner, context)
 	for(var/list/entry in prisoner.life_lines)
 		if(entry[2] == context)
 			return TRUE
@@ -90,9 +90,9 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("affinityowner")
 	TEST_ASSERT_NOTNULL(home, "The affinity test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/rosa = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/dale = trouble_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/cole = trouble_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rosa = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dale = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/cole = trouble_prisoner(prison, prison_spot(home, 8, 10))
 
 	// Each source moves affinity by its amount, whichever way round the pair comes
 	TEST_ASSERT_EQUAL(prison.affinity(rosa, dale), 0, "Two new prisoners started with an affinity")
@@ -107,7 +107,7 @@
 	prison.note_fight(dale, cole)
 	TEST_ASSERT_EQUAL(prison.affinity(dale, cole), -17, "A fight did not take 20") // PRISON_AFFINITY_FIGHT
 	// Basketball together: +2 for each full minute (PRISON_AFFINITY_BASKETBALL)
-	for(var/mob/living/basic/outpost_prisoner/player as anything in list(rosa, dale))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player as anything in list(rosa, dale))
 		var/datum/prisoner_activity/basketball/game = player.start_activity(new /datum/prisoner_activity/basketball(player))
 		game.started = TRUE
 	prison.coplay_tick(59)
@@ -142,7 +142,7 @@
 	var/stranger_picks = 0
 	for(var/i in 1 to 300)
 		var/list/options = list(dale, cole)
-		var/mob/living/basic/outpost_prisoner/picked = prison.take_chat_partner(rosa, options)
+		var/mob/living/carbon/human/npc/outpost_prisoner/picked = prison.take_chat_partner(rosa, options)
 		TEST_ASSERT_EQUAL(length(options), 1, "The chosen chat partner was not taken out of the options")
 		if(picked == dale)
 			friend_picks++
@@ -185,8 +185,8 @@
 		TEST_ASSERT_NULL(prison.pick_conversation(rosa, cole), "A pair at 10 opened with a friends' or rivals' conversation")
 
 	// At most six pairs; a new one pushes out the mildest (PRISON_AFFINITY_MAX_PAIRS)
-	var/mob/living/basic/outpost_prisoner/ed = trouble_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prisoner/fay = trouble_prisoner(prison, prison_spot(home, 12, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/ed = trouble_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fay = trouble_prisoner(prison, prison_spot(home, 12, 7))
 	TEST_ASSERT_NULL(prison.relationship_examine(ed), "A prisoner with no friends or rivals had a relationship line")
 	TEST_ASSERT_NULL(prison.worst_rival_name(ed), "A prisoner with no rivals had a worst rival")
 	prison.affinities.Cut()
@@ -203,12 +203,12 @@
 
 	// Arrivals who crewed with someone inside, or fell out with them (PRISON_CREW_TIE 30), and say so later
 	prison.affinities.Cut()
-	var/mob/living/basic/outpost_prisoner/newcomer = trouble_prisoner(prison, prison_spot(home, 12, 10))
-	var/mob/living/basic/outpost_prisoner/crewmate = prison.roll_crew_tie(newcomer, "friend")
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = trouble_prisoner(prison, prison_spot(home, 12, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/crewmate = prison.roll_crew_tie(newcomer, "friend")
 	TEST_ASSERT_NOTNULL(crewmate, "An arrival found no crewmate with others inside")
 	TEST_ASSERT_EQUAL(prison.affinity(newcomer, crewmate), 30, "An arrival's crewmate started at [prison.affinity(newcomer, crewmate)]")
 	TEST_ASSERT(life_queued(newcomer, "arrival_crew_friend"), "An arrival did not mean to greet their crewmate")
-	var/mob/living/basic/outpost_prisoner/enemy = prison.roll_crew_tie(newcomer, "rival")
+	var/mob/living/carbon/human/npc/outpost_prisoner/enemy = prison.roll_crew_tie(newcomer, "rival")
 	TEST_ASSERT_EQUAL(prison.affinity(newcomer, enemy), -30, "An arrival's rival started at [prison.affinity(newcomer, enemy)]")
 	TEST_ASSERT(life_queued(newcomer, "arrival_crew_rival"), "An arrival did not mean to say who they fell out with")
 	// About 8% have a birthday (PRISON_BIRTHDAY_CHANCE); 2000 rolls keep this steady
@@ -242,9 +242,9 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("breakupowner")
 	TEST_ASSERT_NOTNULL(home, "The break-up test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/pal = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/pal = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
 	prison.set_affinity(first, pal, 40)
 
 	// One try per fight: a friend who fails does not get another (PRISON_BREAKUP_CHANCE forced)
@@ -284,11 +284,11 @@
 
 	// Release lines by how the stay was kept (PRISON_RELEASE_THANKS_AVERAGE 0.9, _BITTER_AVERAGE 0.4)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 11, 10), "breakupowner")
-	var/mob/living/basic/outpost_prisoner/lucky = trouble_awake_prisoner(prison, prison_spot(home, 12, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/lucky = trouble_awake_prisoner(prison, prison_spot(home, 12, 10))
 	TEST_ASSERT(prison.on_prisoner_releasing(lucky, 0.95), "A stay kept well did not end in thanks")
 	TEST_ASSERT(life_said(lucky, "release_thanks"), "The thanks were not a release_thanks line ([lucky.last_line])")
 	TEST_ASSERT_EQUAL(lucky.dir, get_dir(lucky, warden), "The leaver did not turn to the member in sight")
-	var/mob/living/basic/outpost_prisoner/sour = trouble_awake_prisoner(prison, prison_spot(home, 13, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/sour = trouble_awake_prisoner(prison, prison_spot(home, 13, 7))
 	TEST_ASSERT(prison.on_prisoner_releasing(sour, 0.3), "A poor stay did not end in a bitter word")
 	TEST_ASSERT(life_said(sour, "release_bitter"), "The bitter word was not a release_bitter line ([sour.last_line])")
 	TEST_ASSERT(!prison.on_prisoner_releasing(sour, 0.6), "A middling stay with no friends in sight replaced the usual release line")
@@ -322,8 +322,8 @@
 	var/obj/item/toy/cards/deck/deck = locate() in prison_spot(home, 5, 9)
 	TEST_ASSERT_NOTNULL(deck, "The deck is not on the mess table where the map puts it")
 	var/full = deck.count_cards()
-	var/mob/living/basic/outpost_prisoner/dealer = trouble_awake_prisoner(prison, prison_spot(home, 5, 10))
-	var/mob/living/basic/outpost_prisoner/player = trouble_awake_prisoner(prison, prison_spot(home, 5, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dealer = trouble_awake_prisoner(prison, prison_spot(home, 5, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/player = trouble_awake_prisoner(prison, prison_spot(home, 5, 8))
 	prison.refresh_reach()
 
 	// The dealer takes the deck, sits at its table and calls the other over
@@ -407,8 +407,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/obj/item/storage/dice/bag = locate() in prison_spot(home, 13, 9)
 	TEST_ASSERT_NOTNULL(bag, "The bag of dice is not on the mess table where the map puts it")
-	var/mob/living/basic/outpost_prisoner/roller = trouble_awake_prisoner(prison, prison_spot(home, 13, 10))
-	var/mob/living/basic/outpost_prisoner/opponent = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/roller = trouble_awake_prisoner(prison, prison_spot(home, 13, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/opponent = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	prison.refresh_reach()
 
 	var/datum/prisoner_activity/dice/game = roller.start_activity(new /datum/prisoner_activity/dice(roller))
@@ -460,10 +460,10 @@
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 5, 5), "partyowner")
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	TEST_ASSERT_NOTNULL(hatch, "The serving hatch is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/host = trouble_awake_prisoner(prison, prison_spot(home, 5, 7))
-	var/mob/living/basic/outpost_prisoner/guest = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/other_guest = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/starving = test_prisoner(prison, prison_spot(home, 4, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = trouble_awake_prisoner(prison, prison_spot(home, 5, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/guest = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other_guest = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/starving = test_prisoner(prison, prison_spot(home, 4, 7))
 	prison.refresh_reach()
 
 	// A cake handed to a prisoner with no birthday is ordinary food
@@ -519,7 +519,7 @@
 	TEST_ASSERT(prison.scene_active(), "The party did not take the floor")
 	TEST_ASSERT(!prison.wing_can_speak(), "The yard's chatter did not wait for the party")
 	TEST_ASSERT(!istype(starving.activity, /datum/prisoner_activity/party_guest), "A prisoner whose AI sleeps was called to the party")
-	for(var/mob/living/basic/outpost_prisoner/attending as anything in list(guest, other_guest))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/attending as anything in list(guest, other_guest))
 		var/datum/prisoner_activity/party_guest/coming = attending.activity
 		TEST_ASSERT(istype(coming), "[attending] was not called over to the party")
 		attending.forceMove(coming.spot)
@@ -529,7 +529,7 @@
 	// PRISONER_MOOD_FED_COOKED 15), and cheers up: the host 20, guests 8 (PRISON_PARTY_HOST_MOOD, _GUEST_MOOD)
 	var/list/diners = list(host, guest, other_guest)
 	set_moods(diners, 50)
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in diners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in diners)
 		diner.set_hunger(30)
 		diner.well_fed_left = 0
 	prison.party_tick(1)
@@ -537,14 +537,14 @@
 	prison.party_tick(2) // PRISON_PARTY_CANDLES_SECONDS
 	TEST_ASSERT_EQUAL(prison.party_stage, "eating", "The cake was not cut after the candles")
 	TEST_ASSERT(QDELETED(cake), "The cake was still whole after it was cut")
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in diners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in diners)
 		TEST_ASSERT(istype(diner.held_item, /obj/item/food/cakeslice), "[diner] got no slice")
 	prison.party_tick(5) // PRISON_PARTY_EAT_SECONDS
 	TEST_ASSERT_NULL(prison.party_stage, "The party did not end")
 	TEST_ASSERT(!prison.scene_active(), "The party kept the floor after it ended")
 	TEST_ASSERT(host.party_done, "The birthday prisoner could have another party")
 	TEST_ASSERT(!findtext(jointext(host.examine_more(warden), " "), "birthday today"), "A closer look still gives the birthday after the party")
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in diners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in diners)
 		TEST_ASSERT(abs(diner.hunger - 90) < 0.01, "[diner] was fed to [diner.hunger], not 90")
 		TEST_ASSERT(diner.well_fed_left > 0, "[diner]'s slice did not count as a cooked meal")
 		TEST_ASSERT_NULL(diner.held_item, "[diner] still held something after eating")
@@ -585,15 +585,15 @@
 	var/obj/structure/hoop/hoop = locate() in prison_spot(home, 9, 11)
 	TEST_ASSERT_NOTNULL(hoop, "The hoop is not where the map puts it")
 	var/mob/living/carbon/human/coach = make_player(prison_spot(home, 9, 7), "crowdowner")
-	var/mob/living/basic/outpost_prisoner/shooter = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/teammate = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/fan = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/shooter = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teammate = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fan = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
 	prison.refresh_reach()
 
 	// Watching: only while someone plays, from beside the court, facing the hoop
 	var/datum/prisoner_activity/watch_game/watching = new(fan)
 	TEST_ASSERT_EQUAL(watching.get_weight(), 0, "A prisoner wanted to watch with nobody playing")
-	for(var/mob/living/basic/outpost_prisoner/player as anything in list(shooter, teammate))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player as anything in list(shooter, teammate))
 		var/datum/prisoner_activity/basketball/game = player.start_activity(new /datum/prisoner_activity/basketball(player))
 		TEST_ASSERT(game.setup(), "[player] could not start a game of basketball")
 		game.started = TRUE
@@ -669,7 +669,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("marksowner")
 	TEST_ASSERT_NOTNULL(home, "The marks test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/tenant = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/tenant = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/datum/outpost_prison_cell/home_cell = tenant.cell
 	TEST_ASSERT_NOTNULL(home_cell, "The tenant has no cell")
 	tenant.forceMove(home_cell.arrival_turf())

@@ -10,15 +10,16 @@
 #define OUTPOST_GUARD_WAGE 2
 /// Wages skipped in a row (the treasury could not cover them) before the guards walk off
 #define OUTPOST_GUARD_UNPAID_LEAVE 2
-#define OUTPOST_GUARD_HEALTH 120
-/// Health at which a guard goes down (godmode, lying) instead of taking more damage
-#define OUTPOST_GUARD_DOWN_AT 30
-/// From going down to beaming out
+/// From going into crit to the corrections service's medevac of the body
 #define OUTPOST_GUARD_RECALL_DELAY (10 SECONDS)
+/// From a guard's death to the corrections service collecting the body
+#define OUTPOST_GUARD_BODY_COLLECT_DELAY (60 SECONDS)
+/// A guard whose baton went flat is back with a charged one after this
+#define OUTPOST_GUARD_SHIFT_SWAP_TIME (1 MINUTES)
+/// A guard with this much brute and burn damage or more patches up from the office first-aid kit when nothing is going on
+#define OUTPOST_GUARD_TREAT_ABOVE 20
 /// A downed or recalled guard comes back free after this, if still hired and a member is home
 #define OUTPOST_GUARD_RETURN_TIME (10 MINUTES)
-/// Stamina damage per baton strike: prisoners crit at 100, so three strikes
-#define OUTPOST_GUARD_BATON_STAMINA 35
 #define OUTPOST_GUARD_BATON_COOLDOWN (2 SECONDS)
 /// Percent chance a guard arriving at an argument ends it with words
 #define OUTPOST_GUARD_TALKDOWN_CHANCE 60
@@ -56,11 +57,6 @@
 #define OUTPOST_GUARD_SPAT_VIEW 7
 /// How close to a member in the cell block a guard stays during a riot
 #define OUTPOST_GUARD_FOLLOW_RANGE 2
-/// Health a guard gets back per minute while not in a riot and not down
-#define OUTPOST_GUARD_HEAL_PER_MINUTE 12
-/// Movement: an unhurried walk on routine, a hurry on a response (basic mob speed)
-#define OUTPOST_GUARD_SPEED_WALK 2
-#define OUTPOST_GUARD_SPEED_HURRY 1
 /// How long a prisoner is left alone after a guard checked on them or they greeted a guard
 #define OUTPOST_GUARD_CHECK_ON_GAP (5 MINUTES)
 
@@ -97,5 +93,5 @@
 
 /// Trait source for the beam holding a guard still
 #define OUTPOST_GUARD_BEAM_TRAIT "outpost_guard_beam"
-/// Trait source for a guard lying down, out of it
-#define OUTPOST_GUARD_DOWN_TRAIT "outpost_guard_down"
+/// Trait source for what a guard on their feet refuses (lockers, bags)
+#define OUTPOST_GUARD_UPRIGHT_TRAIT "outpost_guard_upright"

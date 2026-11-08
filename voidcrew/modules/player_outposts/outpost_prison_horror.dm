@@ -736,7 +736,7 @@
 	if(victim.stat != CONSCIOUS)
 		return TRUE
 	if(is_outpost_prisoner(victim))
-		var/mob/living/basic/outpost_prisoner/prisoner = victim
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
 		return prisoner.can_be_dragged()
 	return HAS_TRAIT_FROM(victim, TRAIT_INCAPACITATED, STAMINA)
 
@@ -785,8 +785,8 @@
 		if(watcher.client)
 			shake_camera(watcher, 3, 1)
 	if(is_outpost_prisoner(victim))
-		var/mob/living/basic/outpost_prisoner/prisoner = victim
-		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "absorbed")
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
+		INVOKE_ASYNC(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "absorbed")
 	addtimer(CALLBACK(src, PROC_REF(absorb_proboscis), serial), OUTPOST_HORROR_ABSORB_PROBOSCIS, TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(absorb_drained), serial), OUTPOST_HORROR_ABSORB_TIME, TIMER_DELETE_ME)
 	return TRUE
@@ -1049,7 +1049,7 @@
 
 /// Whether a prisoner is shut in a bolted cell, which it leaves for last
 /mob/living/basic/outpost_experiment/horror/proc/bolted_away(mob/living/target)
-	var/mob/living/basic/outpost_prisoner/prisoner = target
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = target
 	return istype(prisoner) && prisoner.in_bolted_cell()
 
 /**
@@ -1133,7 +1133,7 @@
 				best_distance = distance
 	if(best)
 		return best
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in event?.prison?.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in event?.prison?.prisoners)
 		if(!valid_quarry(prisoner) || bolted_away(prisoner))
 			continue
 		var/distance = get_dist(src, prisoner)

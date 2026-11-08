@@ -1212,7 +1212,7 @@
 	home.npc_spawn_context = allocate(/datum/npc_spawn_context, home, 3)
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE)
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	check_npc_zone_child(guard, home.npc_spawn_context, TRUE)
 	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, guard)
 	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, get_turf(guard), context)

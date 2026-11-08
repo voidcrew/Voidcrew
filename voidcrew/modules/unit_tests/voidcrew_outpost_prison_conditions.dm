@@ -310,7 +310,7 @@
 		TEST_ASSERT_EQUAL(fixture.light_range, normal_range, "[fixture] at [fixture.x],[fixture.y] kept the emergency range")
 
 	// The lights going out puts the wing on edge on the second dark sample in a row, once.
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the lights-out check")
 	for(var/obj/machinery/light/fixture as anything in prison.wing_lights)
 		fixture.break_light_tube(TRUE)
@@ -337,7 +337,7 @@
 	prison.refresh_conditions()
 	var/obj/machinery/power/apc/apc = prison.wing.apc
 	TEST_ASSERT_NOTNULL(apc, "The wing has no APC")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the power checks")
 	prison.tension_spike = 0
 
@@ -438,10 +438,20 @@
 		prison.conditions_tick(60)
 	TEST_ASSERT_EQUAL(prison.living_rats(), 0, "Rats kept coming to a clean wing")
 
-	// Bad air hurts, a point every 5 seconds (PRISON_AIR_DAMAGE), never below 30% (PRISON_AIR_HEALTH_FLOOR).
+	// Bad air is tg's (Q3): the prison deals no damage of its own; a prisoner on bad air goes for the
+	// cell block's emergency locker, puts on a mask and a tank and breathes from it.
+	TEST_ASSERT(length(prison.emergency_lockers), "The cell block has no emergency locker")
+	var/datum/weakref/locker_ref = prison.emergency_lockers[1]
+	var/obj/structure/closet/emcloset/locker = locker_ref.resolve()
+	TEST_ASSERT_NOTNULL(locker, "The emergency locker is gone")
+	TEST_ASSERT(prison.in_cell_block(locker), "The emergency locker is outside the cell block")
+	TEST_ASSERT(locate(/obj/item/clothing/mask/breath) in locker, "The emergency locker has no breath mask")
+	TEST_ASSERT(locate(/obj/item/tank/internals/emergency_oxygen) in locker, "The emergency locker has no air tank")
 	var/turf/open/spot = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, spot)
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the air checks")
+	REMOVE_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
+	prison.refresh_prisoner_reach(prisoner)
 	var/datum/gas_mixture/air = spot.return_air()
 	TEST_ASSERT(!outpost_prison_unsafe_air(air), "The wing's own air counts as unsafe")
 	prison.conditions_tick(5)
@@ -449,12 +459,15 @@
 	air.remove_ratio(1)
 	TEST_ASSERT(outpost_prison_unsafe_air(air), "A vented tile's air counts as safe")
 	prison.conditions_tick(5)
-	TEST_ASSERT_EQUAL(prisoner.health, 99, "Five seconds on vented air took [100 - prisoner.health] health, not 1")
-	prison.conditions_tick(2000)
-	TEST_ASSERT_EQUAL(prisoner.health, 30, "Vented air left a prisoner at [prisoner.health] health, not 30")
-	prison.conditions_tick(2000)
-	TEST_ASSERT_EQUAL(prisoner.health, 30, "Vented air took a prisoner below 30 health")
-	TEST_ASSERT_EQUAL(prisoner.stat, CONSCIOUS, "Vented air knocked a prisoner out")
+	TEST_ASSERT_EQUAL(prisoner.health, 100, "The prison hurt a prisoner on bad air itself")
+	TEST_ASSERT(istype(prisoner.activity, /datum/prisoner_activity/emergency_air), "A prisoner on bad air did not go for the emergency locker ([prisoner.activity?.type])")
+	// At the locker (the AI walks them there; here they are put beside it), they take a mask and a tank and breathe from it.
+	var/datum/prisoner_activity/emergency_air/dash = prisoner.activity
+	prisoner.forceMove(prisoner.approach_turf(locker) || get_turf(locker))
+	dash.arrive()
+	TEST_ASSERT(istype(prisoner.wear_mask, /obj/item/clothing/mask/breath), "The prisoner did not put on a breath mask")
+	TEST_ASSERT(prisoner.has_emergency_air(), "The prisoner has no tank to breathe from")
+	TEST_ASSERT_NOTNULL(prisoner.internal, "The prisoner is not breathing from the tank")
 	settle_prison_air(home)
 
 // ===== WHAT THE WING DOES TO MOOD =====
@@ -466,7 +479,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodwingowner")
 	TEST_ASSERT_NOTNULL(home, "The wing mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(abs(prison.conditions_score() - 100) < 0.01, "The mood test wing is not in perfect condition")
 	// Per minute: a well kept prisoner in a clean, lit, powered wing gains 2 (PRISONER_MOOD_GOOD_WING).
 	TEST_ASSERT(drift_is(prisoner, 2), "A well kept prisoner drifts [prisoner.mood_drift_per_minute()], not +2")

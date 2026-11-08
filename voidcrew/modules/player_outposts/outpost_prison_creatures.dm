@@ -53,7 +53,7 @@
  * One tell of what the serum is turning `subject` into, `progress` (0 to 1) through the last
  * OUTPOST_EXPERIMENT_TELLS seconds. Plain to see, so the crew can fetch the right tool.
  */
-/proc/outpost_experiment_tell(form, mob/living/basic/outpost_prisoner/subject, progress)
+/proc/outpost_experiment_tell(form, mob/living/carbon/human/npc/outpost_prisoner/subject, progress)
 	if(QDELETED(subject) || subject.stat != CONSCIOUS)
 		return
 	subject.Shake(1, 1, 0.5 SECONDS)
@@ -87,7 +87,7 @@
 			playsound(subject, pick('sound/effects/hallucinations/i_see_you1.ogg', 'sound/effects/hallucinations/behind_you1.ogg'), 20, TRUE)
 
 /// Takes the tells off a subject the serum never finished with
-/proc/outpost_experiment_clear_tells(mob/living/basic/outpost_prisoner/subject)
+/proc/outpost_experiment_clear_tells(mob/living/carbon/human/npc/outpost_prisoner/subject)
 	if(QDELETED(subject))
 		return
 	subject.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
@@ -154,7 +154,7 @@
 	/// Targets it has given up on reaching -> world.time it may try them again (find_light(), choose_target())
 	var/list/unreachable_until
 
-/mob/living/basic/outpost_experiment/Initialize(mapload, datum/outpost_prison/owner, mob/living/basic/outpost_prisoner/subject)
+/mob/living/basic/outpost_experiment/Initialize(mapload, datum/outpost_prison/owner, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	if(subject)
 		gender = subject.gender
 	. = ..()
@@ -316,14 +316,14 @@
 	if(is_outpost_experiment_mob(victim) || HAS_TRAIT(victim, TRAIT_GODMODE))
 		return FALSE
 	if(is_outpost_prisoner(victim))
-		var/mob/living/basic/outpost_prisoner/prisoner = victim
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
 		if(prisoner.phase != PRISONER_PRESENT || !may_hit_prisoner(prisoner))
 			return FALSE
 		return !blocked_by_cell(prisoner)
 	return ishuman(victim) || issilicon(victim) || !isnull(victim.mind)
 
 /// Whether it hits this prisoner
-/mob/living/basic/outpost_experiment/proc/may_hit_prisoner(mob/living/basic/outpost_prisoner/prisoner)
+/mob/living/basic/outpost_experiment/proc/may_hit_prisoner(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return TRUE
 
 /// How much less it wants a target than its distance says; prisoners and people may count differently
@@ -376,7 +376,7 @@
 	return FALSE
 
 /// Whether a bolted cell keeps `prisoner` away from it: shut and locked, and it is not inside with them
-/mob/living/basic/outpost_experiment/proc/blocked_by_cell(mob/living/basic/outpost_prisoner/prisoner)
+/mob/living/basic/outpost_experiment/proc/blocked_by_cell(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(smashes_through())
 		return FALSE
 	var/datum/outpost_prison_cell/holding = prison?.cell_at(get_turf(prisoner))
@@ -485,7 +485,7 @@
 	/// Its charge
 	var/datum/action/cooldown/mob_cooldown/charge/basic_charge/outpost_hulk/charge
 
-/mob/living/basic/outpost_experiment/hulk/Initialize(mapload, datum/outpost_prison/owner, mob/living/basic/outpost_prisoner/subject)
+/mob/living/basic/outpost_experiment/hulk/Initialize(mapload, datum/outpost_prison/owner, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	. = ..()
 	update_transform(1.25)
 	charge = new(src)
@@ -508,8 +508,8 @@
 	return is_outpost_prisoner(target) ? 3 : 0
 
 /// Only prisoners still standing: it knocks them flat and leaves them
-/mob/living/basic/outpost_experiment/hulk/may_hit_prisoner(mob/living/basic/outpost_prisoner/prisoner)
-	return !prisoner.can_be_dragged() && prisoner.beaten_left <= 0
+/mob/living/basic/outpost_experiment/hulk/may_hit_prisoner(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	return !prisoner.can_be_dragged() && !prisoner.is_beaten()
 
 /// It tears through walls and forces doors, so a bolted cell and a blocked path never stop it
 /mob/living/basic/outpost_experiment/hulk/smashes_through()
@@ -545,14 +545,14 @@
 	victim.throw_at(get_ranged_target_turf(victim, get_dir(src, victim), OUTPOST_HULK_THROW_RANGE), OUTPOST_HULK_THROW_RANGE, 1, src)
 
 /// Knocks a prisoner into the beaten state: hurt, flat on the floor, never killed
-/mob/living/basic/outpost_experiment/hulk/proc/knock_down_prisoner(mob/living/basic/outpost_prisoner/prisoner)
+/mob/living/basic/outpost_experiment/hulk/proc/knock_down_prisoner(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.stat == DEAD)
 		return FALSE
 	var/damage = min(rand(OUTPOST_HULK_PUNCH_MIN, OUTPOST_HULK_PUNCH_MAX), max(0, prisoner.health - 1))
 	if(damage > 0)
 		prisoner.apply_damage(damage, BRUTE)
 	prisoner.visible_message(span_danger("[src] knocks [prisoner] flat!"))
-	if(prisoner.stat == CONSCIOUS && prisoner.beaten_left <= 0)
+	if(prisoner.stat == CONSCIOUS && !prisoner.is_beaten())
 		prisoner.collapse()
 	return TRUE
 
@@ -769,7 +769,7 @@
 	var/datum/weakref/flit_from_ref
 	var/flit_until = 0
 
-/mob/living/basic/outpost_experiment/fly/Initialize(mapload, datum/outpost_prison/owner, mob/living/basic/outpost_prisoner/subject)
+/mob/living/basic/outpost_experiment/fly/Initialize(mapload, datum/outpost_prison/owner, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	. = ..()
 	RegisterSignal(src, COMSIG_MOB_APPLY_DAMAGE_MODIFIERS, PROC_REF(swatter_weakness))
 	RegisterSignal(src, COMSIG_PROJECTILE_PREHIT, PROC_REF(dodge))
@@ -1008,7 +1008,7 @@
 	playsound(src, 'sound/mobs/humanoids/human/gag_vomit/crack_vomit.ogg', 50, TRUE)
 	if(isopenturf(spot))
 		new /obj/effect/decal/cleanable/vomit(spot)
-	for(var/mob/living/basic/outpost_prisoner/watcher in viewers(5, src))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/watcher in viewers(5, src))
 		if(watcher.stat != CONSCIOUS || LAZYACCESS(disgusted, REF(watcher)) > world.time)
 			continue
 		LAZYSET(disgusted, REF(watcher), world.time + OUTPOST_EXPERIMENT_FLY_DISGUST_GAP)
@@ -1046,7 +1046,7 @@
 	var/in_shadow = TRUE
 	COOLDOWN_DECLARE(jaunt_cooldown)
 
-/mob/living/basic/outpost_experiment/nightmare/Initialize(mapload, datum/outpost_prison/owner, mob/living/basic/outpost_prisoner/subject)
+/mob/living/basic/outpost_experiment/nightmare/Initialize(mapload, datum/outpost_prison/owner, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	. = ..()
 	opening_left = rand(OUTPOST_NIGHTMARE_OPENING_MIN, OUTPOST_NIGHTMARE_OPENING_MAX)
 	RegisterSignal(src, COMSIG_PROJECTILE_PREHIT, PROC_REF(dodge))

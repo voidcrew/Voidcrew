@@ -1,61 +1,51 @@
 /**
  * # Outpost prisoner
  *
- * An inmate of a player outpost's prison wing (outpost_prison_core.dm). Each prisoner owns one
- * cell, beams into it on arrival and out of it on release, and fills the time in between with the
- * routine in outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy
- * they threaten, fight, riot and escape (outpost_prison_trouble.dm, outpost_prison_riot.dm).
+ * An inmate of a player outpost's prison wing (outpost_prison_core.dm), and a real human body
+ * (voidcrew/modules/human_npcs/): they breathe, bleed, bruise, stamcrit, go into crit, die and can be
+ * revived through tg's own code, like anyone. Each prisoner owns one cell, beams into it on arrival
+ * and out of it on release, and fills the time in between with the routine in
+ * outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy they threaten,
+ * fight, riot and escape (outpost_prison_trouble.dm, outpost_prison_riot.dm).
  *
  * Needs, on 0-100 scales: `hunger` falls over time and food restores it, by how good the food
- * is; `uniform_grime` rises over time, three times as fast at sport, and a cleaner prison uniform
- * resets it. Health does not come back on its own; brute medical stacks treat it. Arrivals come in
- * hungry, a third in a stained uniform and a fifth roughed up in transfer. A thought bubble with
- * the item they need shows when one needs attention, cycling when they need several. They bleed
- * when hit, and drip while badly hurt. They take supplies only from a serving hatch or from a
- * person's hand (outpost_prison_core.dm).
+ * is (the prison's own meter: human NPCs have tg's hunger off); `uniform_grime` rises over time,
+ * three times as fast at sport, shows on the real prison jumpsuit they wear, and a cleaner prison
+ * uniform resets it. Health does not come back on its own; treatment does. Arrivals come in hungry, a
+ * third in a stained uniform and a fifth roughed up in transfer (real limb damage). A thought bubble
+ * with the item they need shows when one needs attention, cycling when they need several. They take
+ * supplies only from a serving hatch or from a person's hand (outpost_prison_core.dm), into a real hand.
  *
- * Awake, they cannot be dragged onto things or boxed, and only a calm one (calm_for_pull()) can be
- * pulled, going along with it (outpost_prison_warden_tools.dm). Knocked down, in stamina crit,
- * cuffed or dead, staff can drag them; stamina crit lasts PRISONER_STAMCRIT_TIME after the last
- * hit. Cuffs and lockdown are in outpost_prison_capture.dm.
+ * Owner ruling OC-11: their jumpsuit, contraband and shivs are ordinary items, not locked to them, so
+ * they can be searched, stripped and disarmed like anyone. Awake and free they keep out of bags and
+ * lockers (a bluespace bag is a way out of the wing); down or dead they can be bagged. Anyone can
+ * pull them: a calm one goes along with it (outpost_prison_warden_tools.dm), one making trouble
+ * resists it, as anyone can. Cuffs (tg's) and lockdown are in outpost_prison_capture.dm.
  */
 
 /// Trait source for the beam holding a prisoner still
 #define PRISONER_BEAM_TRAIT "outpost_prisoner_beam"
 /// Offset source for sitting on a bed edge
 #define PRISONER_SITTING_OFFSET "outpost_prisoner_sitting"
+/// Trait source for what only an awake prisoner on their feet refuses (a bag, a locker)
+#define PRISONER_AWAKE_TRAIT "outpost_prisoner_awake"
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	name = "prisoner"
 	desc = "An inmate of the outpost's prison wing."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	unique_name = FALSE
 	combat_mode = FALSE
-	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
-	sentience_type = SENTIENCE_HUMANOID
-	maxHealth = 100
-	health = 100
-	speed = 2
-	// Heavy while awake, so nobody shoves them about; see update_drag_resistance().
-	move_resist = MOVE_FORCE_VERY_STRONG
-	density = TRUE
-	basic_mob_flags = NONE
-	// tg's human deathgasp
-	death_message = "seizes up and falls limp, their eyes dead and lifeless..."
-	// They lie down on beds, when knocked down and when dead.
-	mobility_flags = MOBILITY_FLAGS_REST_CAPABLE_DEFAULT
-	rotate_on_lying = TRUE
-	blood_volume = BLOOD_VOLUME_NORMAL
-	// Batons knock them down, as they do people.
-	status_flags = CANPUSH | CANSTUN | CANKNOCKDOWN
-	stamina_regen_time = PRISONER_STAMCRIT_TIME
-	// No air needs yet: a breach must not kill the inmates.
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	response_help_continuous = "pats"
-	response_help_simple = "pat"
+	faction = list(FACTION_NEUTRAL)
 	ai_controller = /datum/ai_controller/basic_controller/outpost_prisoner
+	npc_outfit = /datum/outfit/outpost_prisoner
+	// Owner ruling OC-11: their jumpsuit, contraband and shivs are ordinary items, so shakedowns,
+	// confiscation and uniform swaps work. Searched and stripped like anyone.
+	npc_gear_locked = FALSE
+	// They stop once someone is down (defaults 1.13).
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
+	// The prison owns the body: it lies in the cell block until carried out (outpost_prison_economy.dm).
+	npc_corpse_lifetime = 0
+	// No air tank: the cell block's emergency lockers have the masks and tanks (outpost_prison_conditions.dm).
+	npc_internals = TRUE
 
 	/// The prison holding them
 	var/datum/outpost_prison/prison
@@ -80,8 +70,6 @@
 	var/locked_in_seconds = 0
 	/// Outfit whose look they wear
 	var/outfit_path
-	/// Which of the people wearing that outfit they look like (outpost_npc_looks.dm)
-	var/look_number = 1
 	/// The need their thought bubble is about, if any; see update_bubble()
 	var/bubble
 	/// The bubble that is up now, if one is; it pops up now and then rather than staying
@@ -93,7 +81,7 @@
 	var/bubble_timer
 	/// Which grime overlay they show: 0 none, 1 dirty, 2 filthy
 	var/grime_stage = 0
-	/// What they are carrying, held in their contents
+	/// What they are carrying in their hand for the prison's routine (take_item()), a real item in a real hand
 	var/obj/item/held_item
 	/// What they are holding a hand out for, one activity tick before they take it (see reach_for())
 	var/datum/weakref/reaching_ref
@@ -142,29 +130,39 @@
 	/// Running while what they last said is up over their head: no thought bubble (hush_bubble())
 	COOLDOWN_DECLARE(bubble_hush)
 
-/mob/living/basic/outpost_prisoner/Initialize(mapload, datum/bounty_record/record)
-	gender = pick(MALE, FEMALE)
-	// A caught bounty criminal (admit_next()) keeps their body and who they were (outpost_prison_bounty.dm).
+/**
+ * The second argument is a caught criminal's record (admit_next(), outpost_prison_bounty.dm), never a
+ * human NPC spawn order: a bounty prisoner keeps the face the record says they were caught with (the
+ * base dresses a /datum/bounty_record look). Anyone else is a random person in one of the prison's
+ * jumpsuits. Prisoners are made one at a time as they are admitted, so they don't go through the
+ * human NPC spawn queue.
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/Initialize(mapload, datum/bounty_record/record)
+	if(!istype(record))
+		record = null
 	bounty_record = record
 	if(record)
 		apply_bounty_body(record)
-	. = ..()
-	real_name = generate_random_name_species_based(gender, TRUE, /datum/species/human)
-	name = real_name
+		npc_look = record
+		// The plain jumpsuit: the glasses and beanie variants would hide their hair or fake their eyewear
+		npc_outfit = /datum/outfit/outpost_prisoner
+	else
+		npc_outfit = pick(/datum/outfit/outpost_prisoner, /datum/outfit/outpost_prisoner/glasses, /datum/outfit/outpost_prisoner/beanie)
+	outfit_path = npc_outfit
+	. = ..(mapload)
+	// They stroll; a runner or a rioter breaks into a run (set_prison_pace()).
+	set_prison_pace(hurry = FALSE)
 	roll_arrival()
 	var/list/personalities = outpost_prisoner_dialogue("personalities")
 	personality = length(personalities) ? pick(personalities) : "quiet"
 	var/list/crimes = outpost_prisoner_dialogue("crimes")
 	crime = length(crimes) ? pick(crimes) : "unpaid docking fees"
-	outfit_path = pick(/datum/outfit/outpost_prisoner, /datum/outfit/outpost_prisoner/glasses, /datum/outfit/outpost_prisoner/beanie)
-	look_number = random_outpost_npc_look_number()
 	if(record)
 		apply_bounty_record(record)
-	INVOKE_ASYNC(src, PROC_REF(build_look))
+	uniform_grime_to_suit()
 	// One shared list: element arguments are keyed by list reference.
 	var/static/list/edible_types = list(/obj/item/food)
 	AddElement(/datum/element/basic_eating, food_types = edible_types)
-	AddElement(/datum/element/footstep, footstep_type = FOOTSTEP_MOB_SHOE)
 	RegisterSignal(src, COMSIG_MOB_PRE_EAT, PROC_REF(on_pre_eat))
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate))
 	RegisterSignal(src, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_item_interaction))
@@ -172,67 +170,54 @@
 	RegisterSignal(src, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_health_update))
 	// Talking puts the thought bubble away (manual_emote() below covers the prison's own emotes).
 	RegisterSignals(src, list(COMSIG_MOB_SAY, COMSIG_MOB_EMOTE), PROC_REF(on_speech))
-	// Dragging only while they are down or cuffed (can_be_dragged()); pulling also while calm (pull_allowed()).
-	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
-	RegisterSignal(src, COMSIG_ATOM_CAN_BE_PULLED, PROC_REF(check_pullable))
-	// Changes to being down reach update_drag_resistance() through the living trait handlers
-	// overridden below; registering those trait signals here would replace living's own.
-	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
-	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+	// Members only put cuffs on them (outpost_prison_capture.dm); tg's handcuffs do the rest.
+	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(on_cuff_attempt))
+	// Cuffs going on and off, and going down and getting up (crit, stamcrit, knockdowns), reach
+	// update_drag_resistance() through the living trait handlers overridden below; registering those
+	// trait signals here would replace living's own.
 	setup_trouble()
 	setup_containment()
 	setup_extras()
 	last_health = health
+	update_drag_resistance()
 
-/mob/living/basic/outpost_prisoner/Destroy()
+/mob/living/carbon/human/npc/outpost_prisoner/Destroy()
 	end_activity(cancel_ai = FALSE)
 	clear_trouble()
-	if(held_item)
-		held_item.forceMove(drop_location())
-	remove_cuffs()
 	prison?.forget(src)
 	prison = null
 	cell = null
 	walkable = null
 	reachable = null
+	held_item = null
 	deltimer(bubble_timer)
 	if(thought)
 		vis_contents -= thought
 		QDEL_NULL(thought)
 	return ..()
 
-/mob/living/basic/outpost_prisoner/Exited(atom/movable/gone, direction)
+/mob/living/carbon/human/npc/outpost_prisoner/Exited(atom/movable/gone, direction)
 	. = ..()
 	if(gone == held_item)
 		held_item = null
-		update_appearance(UPDATE_OVERLAYS)
-	else if(gone == cuffs)
-		// Cuffs taken or destroyed some other way than remove_cuffs()
-		cuffs = null
-		uncuffed()
 
-/// Dresses them as their own person in their outfit, with a body to match their gender; a bounty prisoner keeps the face they were caught with (bounty_looks.dm). Can sleep.
-/mob/living/basic/outpost_prisoner/proc/build_look()
-	if(bounty_record)
-		apply_bounty_look(src, bounty_record, outfit_path)
-	else
-		set_outpost_npc_look(src, outfit_path, gender, look_number)
-	if(QDELETED(src))
-		return
-	update_appearance(UPDATE_OVERLAYS)
+/// Walking pace, or a run for a runner, a rioter or someone fleeing, by the move intent a player uses.
+/mob/living/carbon/human/npc/proc/set_prison_pace(hurry)
+	if((move_intent == MOVE_INTENT_RUN) != !!hurry)
+		toggle_move_intent()
 
 /**
  * How they come in: hungry, a third in a stained transfer uniform, a fifth roughed up in transfer.
  * The injury waits for beam_in(), so a prisoner made any other way (an admin, a test) starts whole.
  */
-/mob/living/basic/outpost_prisoner/proc/roll_arrival()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/roll_arrival()
 	hunger = rand(PRISONER_ARRIVAL_HUNGER_MIN, PRISONER_ARRIVAL_HUNGER_MAX)
 	arrived_stained = prob(PRISONER_STAINED_CHANCE)
 	uniform_grime = arrived_stained ? rand(PRISONER_STAINED_GRIME_MIN, PRISONER_STAINED_GRIME_MAX) : rand(0, PRISONER_ARRIVAL_GRIME_MAX)
 	arrival_brute = prob(PRISONER_HURT_ARRIVAL_CHANCE) ? round(maxHealth * (100 - rand(PRISONER_HURT_ARRIVAL_MIN, PRISONER_HURT_ARRIVAL_MAX)) / 100) : 0
 
 /// Their first name, for dialogue. (Not called first_name(): inside it, that would call itself.)
-/mob/living/basic/outpost_prisoner/proc/speech_name()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/speech_name()
 	return first_name(real_name)
 
 // ===== BEAMING IN AND OUT =====
@@ -243,10 +228,10 @@
  * PRISONER_ARRIVING, and so do nothing at all (no walking, routine, trouble, speech or thought
  * bubble), until finish_beam_in() as the beam ends.
  */
-/mob/living/basic/outpost_prisoner/proc/beam_in()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/beam_in()
 	phase = PRISONER_ARRIVING
 	if(arrival_brute > 0)
-		// Roughed up in transfer: no attacker, so no blame, no blood and no collapse.
+		// Roughed up in transfer: real bruising spread over their limbs, with no attacker, so no blame.
 		adjustBruteLoss(arrival_brute)
 		arrival_brute = 0
 		arrived_hurt = TRUE
@@ -264,7 +249,7 @@
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_in)), OUTPOST_PRISON_BEAM_TIME)
 
 /// Fully there as the beam ends: the flash, and only now are they present, free to move, and say hello
-/mob/living/basic/outpost_prisoner/proc/finish_beam_in()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_beam_in()
 	if(phase != PRISONER_ARRIVING)
 		return
 	var/turf/spot = get_turf(src)
@@ -291,7 +276,7 @@
  * Dematerialises them where they stand and deletes them at the end of the beam. From the start
  * they are PRISONER_LEAVING: held still, with no routine, trouble, speech or thought bubble.
  */
-/mob/living/basic/outpost_prisoner/proc/beam_out()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/beam_out()
 	if(phase == PRISONER_LEAVING)
 		return
 	phase = PRISONER_LEAVING
@@ -312,7 +297,7 @@
 	transporter_dematerialise(src, OUTPOST_PRISON_BEAM_TIME)
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_out)), OUTPOST_PRISON_BEAM_TIME)
 
-/mob/living/basic/outpost_prisoner/proc/finish_beam_out()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_beam_out()
 	var/turf/spot = get_turf(src)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
@@ -321,7 +306,7 @@
 	qdel(src)
 
 /// What the warden's roster calls them: present, arriving, leaving or dead
-/mob/living/basic/outpost_prisoner/proc/console_status()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/console_status()
 	if(stat == DEAD)
 		return "dead"
 	if(phase == PRISONER_ARRIVING)
@@ -330,75 +315,76 @@
 		return "leaving"
 	return "present"
 
-// ===== DRAGGING =====
+// ===== DOWN, CUFFED AND PULLED =====
 
-/// Whether they are down: knocked down, in stamina crit, beaten, out or dead
-/mob/living/basic/outpost_prisoner/proc/is_down()
-	// Floored but not buckled is on the floor; a bed floors them too, and that doesn't count.
-	return stat != CONSCIOUS || HAS_TRAIT(src, TRAIT_INCAPACITATED) || (HAS_TRAIT(src, TRAIT_FLOORED) && !buckled)
+/// Whether they are down: in crit, in stamina crit, knocked down, stunned, out cold, lying on the floor or dead (tg's own states)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_down()
+	if(stat != CONSCIOUS || HAS_TRAIT(src, TRAIT_INCAPACITATED))
+		return TRUE
+	// On the floor but not on a bed: lying in bed is no more down than sitting in a chair.
+	return (HAS_TRAIT(src, TRAIT_FLOORED) || body_position == LYING_DOWN) && !buckled
 
-/// Staff may drag them only while they are down or cuffed (outpost_prison_capture.dm)
-/mob/living/basic/outpost_prisoner/proc/can_be_dragged()
-	return is_down() || !!cuffs
+/// Down or in handcuffs: whatever trouble they were in stops, and staff can take them by the arm (outpost_prison_capture.dm)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/can_be_dragged()
+	return is_down() || !!handcuffed
 
 /**
  * Calm enough to go along with a pull: awake, present, and in no trouble of their own (rioting,
  * loose, fighting, wrecking, squaring up, swinging, climbing, beaten down or hitting back).
  * Someone talking to them or working on their cuffs does not count.
  */
-/mob/living/basic/outpost_prisoner/proc/calm_for_pull()
-	return stat == CONSCIOUS && phase == PRISONER_PRESENT && !trouble && !threat_ref && !swing_ref && !climb_ref && beaten_left <= 0 && !retaliating()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/calm_for_pull()
+	return stat == CONSCIOUS && phase == PRISONER_PRESENT && !trouble && !threat_ref && !swing_ref && !climb_ref && !retaliating()
 
-/// Anyone may pull them while they are down or cuffed, or while they are calm
-/mob/living/basic/outpost_prisoner/proc/pull_allowed()
+/// Whether they go along with a pull, or let it be: down, cuffed or calm. Anyone else resists it the way a person does.
+/mob/living/carbon/human/npc/outpost_prisoner/proc/pull_allowed()
 	return can_be_dragged() || calm_for_pull()
 
-/// Their move_resist: ordinary while they can be dragged or are going along with a pull, else too heavy to shove or pull
-/mob/living/basic/outpost_prisoner/proc/pull_weight()
-	return (can_be_dragged() || (pulledby && calm_for_pull())) ? MOVE_RESIST_DEFAULT : MOVE_FORCE_VERY_STRONG
-
-/mob/living/basic/outpost_prisoner/proc/check_pullable(datum/source, mob/living/puller)
-	SIGNAL_HANDLER
-	return pull_allowed() ? NONE : COMSIG_ATOM_CANT_PULL
-
-// Calm, they go along with a pull however heavy they are against shoves; pull_weight() lightens them once it has hold.
-/mob/living/basic/outpost_prisoner/can_be_pulled(user, force)
-	if(!can_be_dragged() && calm_for_pull())
-		force = max(force, move_resist * MOVE_FORCE_PULL_RATIO)
-	return ..(user, force)
-
-/mob/living/basic/outpost_prisoner/proc/block_being_dragged(atom/over, mob/user)
-	SIGNAL_HANDLER
-	return can_be_dragged() ? NONE : COMPONENT_CANCEL_MOUSEDROP_ONTO
-
-/mob/living/basic/outpost_prisoner/on_floored_trait_gain(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/on_floored_trait_gain(datum/source)
 	. = ..()
 	update_drag_resistance()
 
-/mob/living/basic/outpost_prisoner/on_floored_trait_loss(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/on_floored_trait_loss(datum/source)
 	. = ..()
 	update_drag_resistance()
 
-/mob/living/basic/outpost_prisoner/on_incapacitated_trait_gain(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/on_incapacitated_trait_gain(datum/source)
 	. = ..()
 	update_drag_resistance()
 
-/mob/living/basic/outpost_prisoner/on_incapacitated_trait_loss(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/on_incapacitated_trait_loss(datum/source)
 	. = ..()
 	update_drag_resistance()
 
-/mob/living/basic/outpost_prisoner/set_stat(new_stat)
+/mob/living/carbon/human/npc/outpost_prisoner/on_restrained_trait_gain(datum/source)
+	. = ..()
+	on_restraint_changed()
+	update_drag_resistance()
+
+/mob/living/carbon/human/npc/outpost_prisoner/on_restrained_trait_loss(datum/source)
+	. = ..()
+	on_restraint_changed()
+	update_drag_resistance()
+
+/mob/living/carbon/human/npc/outpost_prisoner/set_stat(new_stat)
 	. = ..()
 	update_drag_resistance()
 
-/// Heavy while awake and free, so nobody shoves them about; ordinary while they are down or cuffed, or calm and being pulled
-/mob/living/basic/outpost_prisoner/proc/update_drag_resistance()
+/**
+ * Going down, getting up, cuffs on and off. Awake and free they keep out of bags and lockers (a
+ * bluespace bag is a way out of the wing); down or dead they can be bagged like anyone. Down or cuffed,
+ * whatever they were doing and whatever trouble they were making stops. Up and free again, a rioter
+ * riots on.
+ */
+/mob/living/carbon/human/npc/outpost_prisoner/proc/update_drag_resistance()
 	var/draggable = can_be_dragged()
-	move_resist = pull_weight()
+	if(stat == CONSCIOUS && !is_down())
+		ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, PRISONER_AWAKE_TRAIT)
+		ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, PRISONER_AWAKE_TRAIT)
+	else
+		REMOVE_TRAIT(src, TRAIT_NO_STORAGE_INSERT, PRISONER_AWAKE_TRAIT)
+		REMOVE_TRAIT(src, TRAIT_NO_CONTAINMENT, PRISONER_AWAKE_TRAIT)
 	if(!draggable)
-		// A calm prisoner goes along with a pull (outpost_prison_warden_tools.dm); anyone else shakes it off.
-		if(!calm_for_pull())
-			pulledby?.stop_pulling()
 		if(is_rioting() && stat == CONSCIOUS)
 			// Up and free again: a rioter riots on until the riot is over.
 			INVOKE_ASYNC(src, PROC_REF(back_to_rioting))
@@ -416,7 +402,7 @@
  * Time passing: hunger falls (not while well fed after cooked food) and the uniform gets dirtier,
  * three times as fast at sport, where they sometimes get hurt.
  */
-/mob/living/basic/outpost_prisoner/proc/adjust_needs(seconds)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/adjust_needs(seconds)
 	if(stat == DEAD)
 		return
 	var/hungry_seconds = seconds
@@ -434,7 +420,7 @@
 		sport_injury()
 
 /// Shooting hoops or working out: sweaty, and now and then painful
-/mob/living/basic/outpost_prisoner/proc/playing_sport()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/playing_sport()
 	if(!activity?.started)
 		return FALSE
 	if(istype(activity, /datum/prisoner_activity/basketball))
@@ -443,49 +429,69 @@
 	return istype(workout) && workout.exercising
 
 /**
- * Hurt at sport: a turned ankle or the ball in the face, PRISONER_SPORT_INJURY_MIN to _MAX brute,
- * and they stop playing. No attacker, so no blame and no blood. Never while already badly hurt,
- * and never enough to put them down.
+ * Hurt at sport, as anyone gets hurt at sport: a turned ankle (a real sprain on a leg), the ball in
+ * the face or a pulled back, PRISONER_SPORT_INJURY_MIN to _MAX brute on the limb it happened to, and
+ * they stop playing. No attacker, so no blame. Not while already badly hurt.
  */
-/mob/living/basic/outpost_prisoner/proc/sport_injury()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sport_injury()
 	if(stat != CONSCIOUS || health_factor() <= PRISONER_SPORT_INJURY_ABOVE)
 		return FALSE
-	var/damage = min(rand(PRISONER_SPORT_INJURY_MIN, PRISONER_SPORT_INJURY_MAX), health - 1)
-	if(damage < 1)
-		return FALSE
-	if(istype(activity, /datum/prisoner_activity/basketball))
-		manual_emote(pick("goes down clutching an ankle.", "takes the ball to the face.", "lands badly and hops off the court."))
+	var/damage = rand(PRISONER_SPORT_INJURY_MIN, PRISONER_SPORT_INJURY_MAX)
+	var/ankle = prob(50)
+	var/zone = ankle ? pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG) : (istype(activity, /datum/prisoner_activity/basketball) ? BODY_ZONE_HEAD : BODY_ZONE_CHEST)
+	if(ankle)
+		manual_emote(pick("goes down clutching an ankle.", "lands badly and hops off the court."))
+	else if(istype(activity, /datum/prisoner_activity/basketball))
+		manual_emote("takes the ball to the face.")
 	else
-		manual_emote(pick("goes down clutching an ankle.", "pulls something and sits down hard.", "grabs at [p_their()] back mid push-up."))
-	adjustBruteLoss(damage)
+		manual_emote(pick("pulls something and sits down hard.", "grabs at [p_their()] back mid push-up."))
+	apply_damage(damage, BRUTE, zone, wound_bonus = CANT_WOUND)
+	if(ankle)
+		var/obj/item/bodypart/leg = get_bodypart(zone)
+		if(leg)
+			var/datum/wound/blunt/bone/moderate/sprain = new
+			sprain.apply_wound(leg)
 	end_activity()
 	return TRUE
 
-/mob/living/basic/outpost_prisoner/proc/set_hunger(amount)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/set_hunger(amount)
 	hunger = clamp(amount, 0, 100)
 	update_bubble()
 
-/mob/living/basic/outpost_prisoner/proc/set_uniform_grime(amount)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/set_uniform_grime(amount)
 	uniform_grime = clamp(amount, 0, 100)
+	uniform_grime_to_suit()
 	update_bubble()
 
+/// The prison jumpsuit they wear, if it is one of the outpost's (a stripped or redressed prisoner may have none)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/worn_prison_uniform()
+	var/obj/item/clothing/under/rank/prisoner/outpost/suit = w_uniform
+	return istype(suit) ? suit : null
+
+/// Their grime shows on the real jumpsuit they wear, which keeps it when it comes off
+/mob/living/carbon/human/npc/outpost_prisoner/proc/uniform_grime_to_suit()
+	var/obj/item/clothing/under/rank/prisoner/outpost/suit = worn_prison_uniform()
+	if(suit && suit.grime != uniform_grime)
+		suit.set_grime(uniform_grime)
+		update_worn_undersuit()
+
 /// Fed, 0-100: full marks until they are hungry, then down to nothing once they are starving
-/mob/living/basic/outpost_prisoner/proc/fed_factor()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fed_factor()
 	return clamp(100 * (hunger - PRISONER_HUNGER_STARVING) / (PRISONER_HUNGER_HUNGRY - PRISONER_HUNGER_STARVING), 0, 100)
 
 /// Clean, 0-100: full marks until the uniform is dirty, then down to nothing once it is filthy
-/mob/living/basic/outpost_prisoner/proc/clean_factor()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/clean_factor()
 	return clamp(100 * (PRISONER_GRIME_FILTHY - uniform_grime) / (PRISONER_GRIME_FILTHY - PRISONER_GRIME_DIRTY), 0, 100)
 
-/mob/living/basic/outpost_prisoner/proc/health_factor()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/health_factor()
 	return stat == DEAD ? 0 : clamp(100 * health / maxHealth, 0, 100)
 
 /// Care, 0-100: the mean of fed, clean and health
-/mob/living/basic/outpost_prisoner/proc/care()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/care()
 	return (fed_factor() + clean_factor() + health_factor()) / 3
 
 /// What their needs do to their mood per minute: list(gain, loss), before personality
-/mob/living/basic/outpost_prisoner/proc/needs_mood_per_minute()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/needs_mood_per_minute()
 	var/loss = 0
 	if(hunger < PRISONER_HUNGER_STARVING)
 		loss += PRISONER_MOOD_STARVING
@@ -501,21 +507,21 @@
 		loss += PRISONER_MOOD_HURT * (PRISONER_HURT_MOOD_BELOW - health_percent) / PRISONER_HURT_MOOD_BELOW
 	return list(0, loss)
 
-/mob/living/basic/outpost_prisoner/proc/wants_food()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/wants_food()
 	return stat == CONSCIOUS && hunger < PRISONER_HUNGER_SEEK && well_fed_left <= 0
 
-/mob/living/basic/outpost_prisoner/proc/wants_clean_uniform()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/wants_clean_uniform()
 	return stat == CONSCIOUS && uniform_grime >= PRISONER_GRIME_DIRTY
 
 /// Whether they would take this off the floor or the hatch and change into it
-/mob/living/basic/outpost_prisoner/proc/would_change_into(obj/item/thing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/would_change_into(obj/item/thing)
 	var/obj/item/clothing/under/rank/prisoner/outpost/fresh = thing
 	return istype(fresh) && wants_clean_uniform() && fresh.grime < PRISONER_GRIME_DIRTY && fresh.grime < uniform_grime
 
 // ===== THOUGHT BUBBLE =====
 
 /// The needs that want attention now, most urgent first: hungry, hurt, dirty
-/mob/living/basic/outpost_prisoner/proc/bubble_needs()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bubble_needs()
 	var/list/needs = list()
 	if(hunger < PRISONER_HUNGER_HUNGRY)
 		needs += "hungry"
@@ -530,7 +536,7 @@
  * or loose (a shiv) and being an experiment's subject (a syringe) show on their own. Otherwise it
  * cycles through their needs every PRISONER_BUBBLE_CYCLE, most urgent first.
  */
-/mob/living/basic/outpost_prisoner/proc/wanted_bubble(list/needs)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/wanted_bubble(list/needs)
 	if(stat == DEAD || phase != PRISONER_PRESENT)
 		return null
 	if(is_rioting() || trouble == PRISONER_TROUBLE_LOOSE)
@@ -549,7 +555,7 @@
  * starts at the most urgent. The bubble itself pops up now and then (see schedule_bubble()); a need that
  * has just come up, a riot or a dose pops it soon.
  */
-/mob/living/basic/outpost_prisoner/proc/update_bubble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/update_bubble()
 	var/list/needs = bubble_needs()
 	var/needs_text = jointext(needs, ",")
 	var/fresh = FALSE
@@ -576,7 +582,7 @@
  * Pops the bubble when it is due, but not while what they last said is still up over their head
  * (hush_bubble()). One that no longer holds fades early, and a riot takes over at once.
  */
-/mob/living/basic/outpost_prisoner/proc/schedule_bubble(list/needs, fresh)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/schedule_bubble(list/needs, fresh)
 	if(popped_bubble && popped_bubble != bubble && (!(popped_bubble in needs) || bubble == "riot"))
 		fade_bubble()
 	if(!bubble)
@@ -587,11 +593,11 @@
 		pop_bubble()
 
 /// They said or emoted something: see hush_bubble()
-/mob/living/basic/outpost_prisoner/proc/on_speech(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_speech(datum/source)
 	SIGNAL_HANDLER
 	hush_bubble()
 
-/mob/living/basic/outpost_prisoner/manual_emote(text)
+/mob/living/carbon/human/npc/outpost_prisoner/manual_emote(text)
 	. = ..()
 	if(.)
 		hush_bubble()
@@ -601,7 +607,7 @@
  * sinks away out of the text's way, and none pops until the words are gone; then a need that
  * still holds comes back within PRISONER_BUBBLE_FRESH_DELAY.
  */
-/mob/living/basic/outpost_prisoner/proc/hush_bubble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hush_bubble()
 	COOLDOWN_START(src, bubble_hush, PRISONER_BUBBLE_HUSH)
 	if(!popped_bubble)
 		return
@@ -609,7 +615,7 @@
 	bubble_next_pop = min(bubble_next_pop, world.time + PRISONER_BUBBLE_HUSH + rand(0, PRISONER_BUBBLE_FRESH_DELAY))
 
 /// Pops the bubble up with a little bounce; it bobs, then fades on its own
-/mob/living/basic/outpost_prisoner/proc/pop_bubble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/pop_bubble()
 	if(!bubble || QDELETED(src))
 		return
 	popped_bubble = bubble
@@ -623,7 +629,7 @@
 	bubble_timer = addtimer(CALLBACK(src, PROC_REF(end_bubble)), PRISONER_BUBBLE_SHOW + PRISONER_BUBBLE_FADE, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// Fades the bubble out early, sinking with `sink` (see /obj/effect/abstract/outpost_thought/proc/fade())
-/mob/living/basic/outpost_prisoner/proc/fade_bubble(sink = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fade_bubble(sink = FALSE)
 	popped_bubble = null
 	if(!thought)
 		return
@@ -632,56 +638,22 @@
 	bubble_timer = addtimer(CALLBACK(src, PROC_REF(end_bubble)), PRISONER_BUBBLE_FADE, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /// Takes the faded bubble down
-/mob/living/basic/outpost_prisoner/proc/end_bubble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/end_bubble()
 	bubble_timer = null
 	popped_bubble = null
 	if(thought)
 		vis_contents -= thought
 
 /// Takes any bubble down at once, with no fade: for when they beam in or out
-/mob/living/basic/outpost_prisoner/proc/drop_bubble()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/drop_bubble()
 	deltimer(bubble_timer)
 	end_bubble()
 
-/mob/living/basic/outpost_prisoner/update_overlays()
+/mob/living/carbon/human/npc/outpost_prisoner/update_overlays()
 	. = ..()
-	if(grime_stage)
-		var/mutable_appearance/grime = mutable_appearance('icons/effects/blood.dmi', "uniformblood")
-		grime.color = "#5a4630"
-		grime.alpha = grime_stage == 2 ? 200 : 130
-		. += grime
+	// Their grime is on the jumpsuit itself (uniform_grime_to_suit()); filth draws flies.
 	if(grime_stage == 2)
 		. += mutable_appearance('icons/effects/effects.dmi', "fly-surrounding", ABOVE_MOB_LAYER)
-	if(cuffs)
-		// tg's own cuff overlay, as people wear it
-		. += mutable_appearance('icons/mob/simple/mob.dmi', "handcuff1")
-	if(held_item)
-		// In hand the way a player holds it, turning with them (npc_inhand_look() in bounty_ai.dm)
-		var/list/inhand = npc_inhand_look(held_item)
-		if(inhand)
-			var/mutable_appearance/carried = mutable_appearance(inhand[1], inhand[2])
-			carried.plane = FLOAT_PLANE
-			carried.layer = FLOAT_LAYER
-			. += carried
-		else
-			// No in-hand sprite: the item itself, small, in the same hand whichever way they face
-			var/mutable_appearance/carried = new(held_item.appearance)
-			carried.plane = FLOAT_PLANE
-			carried.layer = FLOAT_LAYER
-			carried.dir = SOUTH
-			carried.pixel_x = 0
-			carried.pixel_y = 0
-			carried.pixel_w = ((dir & WEST) || dir == NORTH) ? -7 : 7
-			carried.pixel_z = -4
-			carried.transform = matrix().Scale(0.6)
-			. += carried
-
-/// Turning moves what they carry to the other side
-/mob/living/basic/outpost_prisoner/setDir(newdir)
-	var/old_dir = dir
-	. = ..()
-	if(held_item && dir != old_dir)
-		update_appearance(UPDATE_OVERLAYS)
 
 /**
  * tg's thought bubble, as a point uses, with the needed item's own sprite inset. A prisoner's pops up
@@ -775,7 +747,7 @@
  * turn to it, lean in, and it visibly goes into their hand. With `announce`, the room is told what
  * they took and from where. Returns TRUE if they hold it.
  */
-/mob/living/basic/outpost_prisoner/proc/take_item(obj/item/thing, announce = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/take_item(obj/item/thing, announce = FALSE)
 	if(held_item || QDELETED(thing))
 		return FALSE
 	if(thing.loc != src)
@@ -793,15 +765,14 @@
 			var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in from
 			var/message = hatch ? "[src] takes [thing] off [hatch]." : "[src] picks up [thing]."
 			visible_message(span_notice(message))
-	thing.forceMove(src)
-	if(thing.loc != src)
+	// Into a real hand: tg draws it there, and anyone can knock it out of it.
+	if(!put_in_hands(thing))
 		return FALSE
 	held_item = thing
-	update_appearance(UPDATE_OVERLAYS)
 	return TRUE
 
 /// Leans towards `target` for a moment, as a hand goes out to it
-/mob/living/basic/outpost_prisoner/proc/reach_animation(atom/target)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/reach_animation(atom/target)
 	var/direction = get_dir(src, target)
 	if(!direction)
 		return
@@ -811,18 +782,20 @@
 	animate(pixel_x = pixel_x - shift_x, pixel_y = pixel_y - shift_y, time = 2, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /// Puts down whatever they carry, on `where` or their own tile
-/mob/living/basic/outpost_prisoner/proc/drop_held_item(atom/where)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/drop_held_item(atom/where)
 	if(!held_item)
 		return null
 	var/obj/item/dropped = held_item
-	dropped.forceMove(where || drop_location())
+	if(!(where ? transferItemToLoc(dropped, where, force = TRUE) : dropItemToGround(dropped, force = TRUE)))
+		return null
+	held_item = null
 	return dropped
 
 /**
  * Whether they can reach `thing` from where they stand. At a serving hatch they open their side
  * first: PRISONER_REACH_WAIT means it is opening.
  */
-/mob/living/basic/outpost_prisoner/proc/try_reach(obj/item/thing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/try_reach(obj/item/thing)
 	if(QDELETED(thing) || !isturf(thing.loc))
 		return PRISONER_REACH_FAILED
 	if(thing.loc == loc)
@@ -840,7 +813,7 @@
  * first time it is in reach they turn to it and hold out a hand (PRISONER_REACH_WAIT), and only on
  * the next call, about a second later, is it PRISONER_REACH_OK to take it.
  */
-/mob/living/basic/outpost_prisoner/proc/reach_for(obj/item/thing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/reach_for(obj/item/thing)
 	var/result = try_reach(thing)
 	if(result != PRISONER_REACH_OK)
 		reaching_ref = null
@@ -853,7 +826,7 @@
 	return PRISONER_REACH_WAIT
 
 /// Sits on a chair, stool or toilet, facing `facing` if given
-/mob/living/basic/outpost_prisoner/proc/sit_on(obj/structure/seat, facing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sit_on(obj/structure/seat, facing)
 	if(buckled != seat)
 		if(loc != seat.loc)
 			return FALSE
@@ -865,7 +838,7 @@
 	return TRUE
 
 /// Gets up from whatever they sit or lie on
-/mob/living/basic/outpost_prisoner/proc/stand_up()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/stand_up()
 	remove_offsets(PRISONER_SITTING_OFFSET)
 	buckled?.unbuckle_mob(src, force = TRUE)
 
@@ -873,7 +846,7 @@
  * Settles on the bed under them. There is no sitting pose for a bed, and a standing sprite shifted down
  * reads as someone standing on it, so they lie on it, awake. With no bed to lie on, they crouch.
  */
-/mob/living/basic/outpost_prisoner/proc/sit_on_edge(facing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sit_on_edge(facing)
 	var/obj/structure/bed/bed = locate() in loc
 	if(bed && buckled != bed)
 		stand_up()
@@ -884,7 +857,7 @@
 		setDir(facing)
 
 /// Whether they crouch where they are, as sit_on_edge() leaves them with no bed under them
-/mob/living/basic/outpost_prisoner/proc/is_crouching()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/is_crouching()
 	return !!has_offset(PRISONER_SITTING_OFFSET)
 
 /**
@@ -893,7 +866,7 @@
  * way it faces; `facing` is for the bed and the crouch. The bed is for lying down, so any sitting in
  * the cell goes to the chair first (home_seat()).
  */
-/mob/living/basic/outpost_prisoner/proc/sit_in_cell(facing)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/sit_in_cell(facing)
 	var/obj/structure/chair/chair = locate() in loc
 	if(chair && (buckled == chair || !chair.has_buckled_mobs()) && sit_on(chair))
 		return
@@ -903,7 +876,7 @@
  * Where they sit down in their own cell: its chair if they can use it (seat_usable()), else its bed
  * on the same terms, lying on it. Null if the cell has neither they can use.
  */
-/mob/living/basic/outpost_prisoner/proc/home_seat()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/home_seat()
 	if(!cell)
 		return null
 	var/obj/structure/chair/chair = cell.chair()
@@ -915,7 +888,7 @@
 	return null
 
 /// Whether they can walk to `seat` and use it: nobody else on its tile or in it, and nobody else has claimed it
-/mob/living/basic/outpost_prisoner/proc/seat_usable(obj/structure/seat)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/seat_usable(obj/structure/seat)
 	var/turf/tile = get_turf(seat)
 	if(!tile || !walkable?[tile] || (tile != loc && tile_taken(tile)))
 		return FALSE
@@ -949,11 +922,9 @@
 		return "snack"
 	return "poor"
 
-/mob/living/basic/outpost_prisoner/proc/on_pre_eat(datum/source, atom/food, mob/living/feeder)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_pre_eat(datum/source, atom/food, mob/living/feeder)
 	SIGNAL_HANDLER
-	if(cuffs)
-		if(feeder)
-			balloon_alert(feeder, "cuffed")
+	if(handcuffed && !feeder)
 		return COMSIG_MOB_CANCEL_EAT
 	if(prison?.pastime_pre_eat(src, food, feeder))
 		return COMSIG_MOB_CANCEL_EAT
@@ -967,7 +938,7 @@
  * Eats `meal`: hunger and mood by how good it is, and cooked food keeps them full for
  * PRISONER_WELL_FED_TIME. Returns the tier.
  */
-/mob/living/basic/outpost_prisoner/proc/eat_food(obj/item/food/meal)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/eat_food(obj/item/food/meal)
 	var/tier = outpost_prisoner_food_tier(meal)
 	switch(tier)
 		if("ration")
@@ -985,7 +956,7 @@
 	return tier
 
 /// What they say about a meal: praise for cooking, a complaint about poor food, else thanks to whoever fed them
-/mob/living/basic/outpost_prisoner/proc/react_to_food(tier, mob/living/feeder)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/react_to_food(tier, mob/living/feeder)
 	switch(tier)
 		if("cooked")
 			if(thank("good_food") || !feeder)
@@ -997,7 +968,7 @@
 		thank("thanks_food")
 
 /// Fed by hand
-/mob/living/basic/outpost_prisoner/proc/on_ate(datum/source, atom/food, mob/living/feeder)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_ate(datum/source, atom/food, mob/living/feeder)
 	SIGNAL_HANDLER
 	var/tier = eat_food(food)
 	if(isturf(loc) && prob(50))
@@ -1011,7 +982,7 @@
  * `table_turf` is null when they ate standing up. Returns the wrapper when they mean to take it
  * to the bin, else null.
  */
-/mob/living/basic/outpost_prisoner/proc/finish_meal(obj/item/food/meal, turf/seat_turf, turf/table_turf)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/finish_meal(obj/item/food/meal, turf/seat_turf, turf/table_turf)
 	if(QDELETED(meal))
 		return null
 	var/tier = eat_food(meal)
@@ -1030,7 +1001,7 @@
  * unhappy one (below PRISONER_LITTER_MOOD) drops it on the floor; anyone else leaves it where
  * they ate.
  */
-/mob/living/basic/outpost_prisoner/proc/leave_meal_mess(obj/item/food/meal, turf/floor, turf/table_turf)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/leave_meal_mess(obj/item/food/meal, turf/floor, turf/table_turf)
 	if(isopenturf(floor) && (!table_turf || prob(PRISONER_TABLE_CRUMB_CHANCE)))
 		new /obj/effect/decal/cleanable/food/crumbs(floor)
 	var/trash_type
@@ -1057,7 +1028,7 @@
 	return trash
 
 /// Puts `trash` in `bin` (or the nearest bin in reach) straight away. Returns TRUE if it went in.
-/mob/living/basic/outpost_prisoner/proc/bin_litter(obj/item/trash, obj/structure/closet/crate/bin/bin)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/bin_litter(obj/item/trash, obj/structure/closet/crate/bin/bin)
 	if(QDELETED(trash))
 		return FALSE
 	bin = bin || prison?.find_bin(src)
@@ -1085,7 +1056,7 @@
 	return count < bin.storage_capacity
 
 /// Someone fed, clothed or treated them by hand
-/mob/living/basic/outpost_prisoner/proc/note_carer(mob/living/carer)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/note_carer(mob/living/carer)
 	if(!istype(carer) || is_outpost_prisoner(carer))
 		return
 	last_carer_ref = WEAKREF(carer)
@@ -1094,11 +1065,9 @@
 
 // ===== UNIFORMS =====
 
-/// Cuffs go on them (outpost_prison_capture.dm); handed a cleaner prison uniform, they change and hand the old one back
-/mob/living/basic/outpost_prisoner/proc/on_item_interaction(datum/source, mob/living/user, obj/item/tool, list/modifiers)
+/// Treated by hand, they notice; handed a cleaner prison uniform, they change and hand the old one back. Cuffs are tg's own (outpost_prison_capture.dm).
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_item_interaction(datum/source, mob/living/user, obj/item/tool, list/modifiers)
 	SIGNAL_HANDLER
-	if(istype(tool, /obj/item/restraints/handcuffs))
-		return on_cuffs_used(user, tool)
 	if(istype(tool, /obj/item/stack/medical))
 		// Treatment only shows as health coming back once the dressing is on.
 		COOLDOWN_START(src, treatment_window, 20 SECONDS)
@@ -1108,7 +1077,7 @@
 	// Not while they beam in or out, invisible or half there.
 	if(!istype(offered) || user.combat_mode || stat != CONSCIOUS || phase != PRISONER_PRESENT)
 		return NONE
-	if(cuffs)
+	if(handcuffed)
 		balloon_alert(user, "cuffed")
 		return ITEM_INTERACT_BLOCKING
 	if(offered.grime >= uniform_grime)
@@ -1128,7 +1097,7 @@
  * Picks up a cleaner uniform within arm's reach (their own tile or beside them) and changes, leaving
  * the old one in its place. They turn to it, lean in, and it visibly leaves the floor or the hatch.
  */
-/mob/living/basic/outpost_prisoner/proc/take_uniform(obj/item/clothing/under/rank/prisoner/outpost/fresh)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/take_uniform(obj/item/clothing/under/rank/prisoner/outpost/fresh)
 	if(!would_change_into(fresh) || !isturf(fresh.loc) || !(fresh.loc == loc || Adjacent(fresh)))
 		return FALSE
 	var/turf/spot = fresh.loc
@@ -1143,32 +1112,38 @@
 	return TRUE
 
 /**
- * Changes into `fresh` and returns their old uniform, created at `drop_spot`. The clean one goes
- * before the old one appears, so a swap on a full serving hatch never pushes it over capacity.
+ * Changes into `fresh`, the way anyone changes: the jumpsuit they wear comes off onto `drop_spot`
+ * and the clean one goes on. Returns the old one (null if what they wore wasn't a prison jumpsuit).
  */
-/mob/living/basic/outpost_prisoner/proc/swap_uniform(obj/item/clothing/under/rank/prisoner/outpost/fresh, atom/drop_spot)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/swap_uniform(obj/item/clothing/under/rank/prisoner/outpost/fresh, atom/drop_spot)
 	var/fresh_grime = fresh.grime
-	var/old_grime = uniform_grime
-	qdel(fresh)
-	var/obj/item/clothing/under/rank/prisoner/outpost/old = new(drop_spot)
-	old.set_grime(old_grime)
+	// Off the counter before the old one goes down, so a swap on a full serving hatch never pushes it over capacity.
+	fresh.forceMove(src)
+	var/obj/item/clothing/under/rank/prisoner/outpost/old = worn_prison_uniform()
+	if(old)
+		old.set_grime(uniform_grime)
+		if(!transferItemToLoc(old, drop_spot, force = TRUE))
+			return null
+	else if(w_uniform)
+		// Someone else's clothes: off they come, as they are
+		var/obj/item/other_clothes = w_uniform
+		if(!transferItemToLoc(other_clothes, drop_spot, force = TRUE))
+			return null
+	if(!equip_to_slot_if_possible(fresh, ITEM_SLOT_ICLOTHING, disable_warning = TRUE))
+		fresh.forceMove(drop_spot)
 	set_uniform_grime(fresh_grime)
 	adjust_mood(PRISONER_MOOD_CLEAN_UNIFORM)
 	return old
 
 // ===== HURT AND TREATED =====
 
-/// Blood on the floor from any real brute hit
-/mob/living/basic/outpost_prisoner/proc/on_damaged(datum/source, damage_dealt, damagetype)
+/// A real hit that puts them down is a collapse (outpost_prison_trouble.dm). tg does the blood.
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_damaged(datum/source, damage_dealt, damagetype)
 	SIGNAL_HANDLER
-	if((damagetype == BRUTE || damagetype == BURN) && damage_dealt > 0)
-		// Low enough and they collapse (outpost_prison_trouble.dm).
+	if(damage_dealt > 0 && (damagetype == BRUTE || damagetype == BURN || damagetype == STAMINA))
 		INVOKE_ASYNC(src, PROC_REF(check_beaten))
-	if(damagetype != BRUTE || damage_dealt < 3 || !isturf(loc))
-		return
-	add_splatter_floor(loc, damage_dealt < 10)
 
-/mob/living/basic/outpost_prisoner/proc/on_health_update(datum/source)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_health_update(datum/source)
 	SIGNAL_HANDLER
 	var/was = last_health
 	last_health = health
@@ -1177,15 +1152,6 @@
 		COOLDOWN_RESET(src, treatment_window)
 		adjust_mood(PRISONER_MOOD_TREATED)
 		INVOKE_ASYNC(src, PROC_REF(thank), "thanks_treatment")
-
-/// Badly hurt and untreated: now and then a drop of blood
-/mob/living/basic/outpost_prisoner/proc/maybe_drip(seconds)
-	if(stat == DEAD || !isturf(loc) || health_factor() >= PRISONER_BLEED_BELOW)
-		return FALSE
-	if(!SPT_PROB(3, seconds))
-		return FALSE
-	add_splatter_floor(loc, small_drip = TRUE)
-	return TRUE
 
 // ===== LEFT ALONE =====
 
@@ -1197,7 +1163,7 @@
  * moments tg switches the AI off after a plan that queued nothing (ai_running()), they walk over
  * and take things by hand instead.
  */
-/mob/living/basic/outpost_prisoner/proc/fend_for_self()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/fend_for_self()
 	if(!routine_allowed() || ai_running())
 		return
 	if(wants_food())
@@ -1213,7 +1179,7 @@
 			swap_uniform(fresh, fresh.loc)
 
 /// Leaves some dirt or a wrapper where they stand
-/mob/living/basic/outpost_prisoner/proc/make_mess()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/make_mess()
 	var/turf/open/floor = loc
 	if(!istype(floor))
 		return
@@ -1223,13 +1189,12 @@
 		var/trash_type = pick(/obj/item/trash/candy, /obj/item/trash/chips, /obj/item/trash/raisins)
 		new trash_type(floor)
 
-/mob/living/basic/outpost_prisoner/death(gibbed)
+/mob/living/carbon/human/npc/outpost_prisoner/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
+	// The body keeps what it held and wore, cuffs too, as anyone's does.
 	if(was_alive && stat == DEAD)
 		end_activity()
-		drop_held_item()
-		remove_cuffs()
 		prison?.on_prisoner_death(src)
 		update_bubble()
 
@@ -1237,7 +1202,7 @@
 
 /datum/outfit/outpost_prisoner
 	name = "Outpost prisoner"
-	uniform = /obj/item/clothing/under/rank/prisoner
+	uniform = /obj/item/clothing/under/rank/prisoner/outpost
 	shoes = /obj/item/clothing/shoes/sneakers/orange
 
 /datum/outfit/outpost_prisoner/glasses
@@ -1250,3 +1215,4 @@
 
 #undef PRISONER_BEAM_TRAIT
 #undef PRISONER_SITTING_OFFSET
+#undef PRISONER_AWAKE_TRAIT

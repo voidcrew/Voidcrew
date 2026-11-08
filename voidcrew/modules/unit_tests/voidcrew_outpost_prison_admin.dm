@@ -22,7 +22,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_admin/proc/all_present(datum/outpost_prison/prison)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prison.prisoners)
 		if(prisoner.phase != "present")
 			return FALSE
 	return TRUE
@@ -70,14 +70,14 @@
 	// Spawn one now, then fill the rest; nothing when full.
 	panel.manage_outpost(home, operator, "prison_spawn", list())
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 1, "Spawn did not beam in one prisoner")
-	var/mob/living/basic/outpost_prisoner/first = prison.prisoners[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = prison.prisoners[1]
 	TEST_ASSERT_EQUAL(first.cell, prison.cells[1], "The spawned prisoner is not in a free cell")
 	panel.manage_outpost(home, operator, "prison_fill", list())
 	TEST_ASSERT_EQUAL(length(prison.prisoners), 4, "Fill did not fill every cell")
 	panel.manage_outpost(home, operator, "prison_spawn", list())
 	TEST_ASSERT(length(prison.prisoners) == 4 && panel.error, "Spawn into a full prison did not refuse")
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(all_present), prison), 8 SECONDS), "The spawned prisoners never finished beaming in")
-	for(var/mob/living/basic/outpost_prisoner/arrival as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/arrival as anything in prison.prisoners)
 		ADD_TRAIT(arrival, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	section = panel.ui_data(operator)["selected"]["prison"]
 	TEST_ASSERT_EQUAL(length(section["prisoners"]), 4, "The prison section lists [length(section["prisoners"])] prisoners")
@@ -109,24 +109,24 @@
 
 	// Everyone at once.
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "starve"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		TEST_ASSERT(prisoner.hunger < 0.01, "Starve all left [prisoner] at [prisoner.hunger]")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "feed"))
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "dirty"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		TEST_ASSERT(prisoner.hunger > 99.99 && prisoner.uniform_grime > 99.99, "Feed and dirty all missed [prisoner]")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "clean"))
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "hurt"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		TEST_ASSERT(prisoner.uniform_grime < 0.01 && prisoner.health < prisoner.maxHealth && prisoner.stat != DEAD, "Clean and hurt all missed [prisoner] or killed them")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "heal"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prison.prisoners)
 		TEST_ASSERT_EQUAL(prisoner.health, prisoner.maxHealth, "Heal all missed [prisoner]")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "riot"))
 	TEST_ASSERT(panel.error, "An unknown prisoner-wide action was accepted")
 
 	// Time, money, mess, lights and power.
-	var/mob/living/basic/outpost_prisoner/second = prison.prisoners[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = prison.prisoners[2]
 	var/sentence_before = second.sentence_left
 	panel.manage_outpost(home, operator, "prison_advance", list("minutes" = 2))
 	TEST_ASSERT_EQUAL(sentence_before - second.sentence_left, 120, "Advancing 2 minutes took [sentence_before - second.sentence_left] s off a sentence")
@@ -157,8 +157,8 @@
 	TEST_ASSERT_EQUAL(prison.powered_score, 100, "Restoring power left the wing unpowered")
 
 	// Release, kill, remove.
-	var/mob/living/basic/outpost_prisoner/third = prison.prisoners[3]
-	var/mob/living/basic/outpost_prisoner/fourth = prison.prisoners[4]
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = prison.prisoners[3]
+	var/mob/living/carbon/human/npc/outpost_prisoner/fourth = prison.prisoners[4]
 	balance = home.treasury.account_balance
 	panel.manage_outpost(home, operator, "prison_release", list("ref" = REF(first)))
 	TEST_ASSERT_EQUAL(first.phase, "leaving", "Release did not beam the prisoner out")
@@ -190,9 +190,9 @@
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "troubleadmin")
 	var/datum/outpost_manipulator/unit_test/prison/panel = allocate(__IMPLIED_TYPE__, operator)
 	panel.selected = home
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8))
 
 	// The section carries tension, stage and the breakout countdown; each row mood, state and loose time.
 	var/list/section = panel.ui_data(operator)["selected"]["prison"]
@@ -212,10 +212,10 @@
 	panel.manage_outpost(home, operator, "prison_set", list("ref" = REF(first), "field" = "mood", "value" = "lots"))
 	TEST_ASSERT(panel.error && abs(first.mood - 20) < 0.01, "A non-number mood was accepted")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "enrage"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in list(first, second, third))
 		TEST_ASSERT(prisoner.mood < 20, "Enrage left [prisoner] at [prisoner.mood]")
 	panel.manage_outpost(home, operator, "prison_all", list("what" = "calm"))
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in list(first, second, third))
 		TEST_ASSERT(prisoner.mood > 99, "Calm all left [prisoner] at [prisoner.mood]")
 
 	// A fight with the nearest other; refused with nobody free to fight.
@@ -232,7 +232,7 @@
 	// A riot everyone joins; a second is refused.
 	panel.manage_outpost(home, operator, "prison_riot", list())
 	TEST_ASSERT(prison.riot_active, "The admin riot did not start")
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in list(first, second, third))
 		TEST_ASSERT_EQUAL(prisoner.trouble, "riot", "[prisoner] stayed out of the admin riot")
 	section = panel.ui_data(operator)["selected"]["prison"]
 	TEST_ASSERT_EQUAL(section["breakout_in"], 180, "The riot's breakout is due in [section["breakout_in"]]")
@@ -241,7 +241,7 @@
 	TEST_ASSERT(panel.error, "A second riot was accepted")
 	panel.manage_outpost(home, operator, "prison_calm", list())
 	TEST_ASSERT(!prison.riot_active, "Calm did not end the riot")
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in list(first, second, third))
 		TEST_ASSERT(isnull(prisoner.trouble) && !istype(prisoner.held_item, /obj/item/knife/shiv), "[prisoner] kept rioting after the calm")
 
 	// A breakout: that prisoner alone riots and goes for the ways out, from where they stand, in the
@@ -282,7 +282,7 @@
 /datum/unit_test/voidcrew_outpost_prison_admin_hooks
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
-/datum/unit_test/voidcrew_outpost_prison_admin_hooks/proc/row_for(list/section, mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_admin_hooks/proc/row_for(list/section, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	for(var/list/row as anything in section["prisoners"])
 		if(row["ref"] == REF(prisoner))
 			return row
@@ -295,9 +295,9 @@
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "prisonhooks")
 	var/datum/outpost_manipulator/unit_test/prison/panel = allocate(__IMPLIED_TYPE__, operator)
 	panel.selected = home
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8))
 
 	// Wing data: every key, whether or not the package behind it has landed.
 	var/list/section = panel.ui_data(operator)["selected"]["prison"]
@@ -436,9 +436,9 @@
 	var/mob/living/carbon/human/operator = make_player(prison_spot(home, 8, 4), "prisonexperiments")
 	var/datum/outpost_manipulator/unit_test/prison/panel = allocate(__IMPLIED_TYPE__, operator)
 	panel.selected = home
-	var/mob/living/basic/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/third = test_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = test_prisoner(prison, prison_spot(home, 12, 8))
 
 	// The admin section and the warden console both carry the block, null while nothing runs.
 	var/list/section = panel.ui_data(operator)["selected"]["prison"]

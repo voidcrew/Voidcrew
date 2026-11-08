@@ -3,20 +3,27 @@
  *
  * Owner: XA (extras-plan.md 4.1). NPC guards the wing's managers hire at the warden's console:
  * named people on the payroll who keep a peaceful routine, step in on spats, arguments, fights,
- * threats and hatch climbs, hold the staff doors in a riot, go down instead of dying and come
- * back free. Paid per minute while a member is home. Their routine and activities are in
+ * threats and hatch climbs, and hold the staff doors in a riot. Paid per minute while a member is home. Their routine and activities are in
  * outpost_prison_guard_routine.dm; numbers in voidcrew/_DEFINES/outpost_prison_guards.dm.
  *
- * Each hired guard is a record on the prison (name, rank, personality, when they are back). The
+ * A guard is a real human body (voidcrew/modules/human_npcs/, owner ruling OC-2): stuns, stamina,
+ * batons, bleeding, crit and death work on them as on anyone, and nothing tops their health up. Hurt,
+ * they patch themselves up with the office first-aid kit (outpost_prison_guard_routine.dm). In crit
+ * for OUTPOST_GUARD_RECALL_DELAY the corrections service medevacs the real body; a dead guard's body
+ * is collected OUTPOST_GUARD_BODY_COLLECT_DELAY after they die. Either way their record waits
+ * OUTPOST_GUARD_RETURN_TIME, then sends them back (the same face, from the record). Their kit is
+ * locked to them (D3): it never becomes loot.
+ *
+ * Each hired guard is a record on the prison (name, rank, personality, face, when they are back). The
  * guard on the wing is a mob made from the record; when a guard goes down or is called away the
  * mob beams out and the record waits to send them back. A slot's wait belongs to the prison, so
  * dismissing a downed guard and hiring another does not skip it.
  *
  * Guards are security only: they never feed, clothe, treat, clean or light anything, so they
  * cannot raise pay. They never strike players, pets, bots or other NPCs, and they strike a
- * prisoner only for violence under way (fighting, rioting, swinging, climbing out, loose) with a
- * stun baton that does stamina damage and nothing else. The strike never goes through
- * melee_attack(), so no hit is put down to staff.
+ * prisoner only for violence under way (fighting, rioting, swinging, climbing out, loose) with the
+ * real stun baton off their belt, through their own hands: tg's stamina, knockdown and cell charge.
+ * A prisoner never holds a guard's blow against staff (hit_by_staff()).
  *
  * The dispatcher (dispatch_guards()) runs every second from guards_tick() and only for guards whose
  * AI is running, which it is only while a player is on the level. Every response has a proc a test
@@ -31,7 +38,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /// Whether `thing` is one of a prison's NPC guards; with `on_duty`, only one present, arrived and not down
 /proc/is_outpost_prison_guard(atom/thing, on_duty = FALSE)
-	var/mob/living/basic/outpost_prison_guard/guard = thing
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = thing
 	if(!istype(guard))
 		return FALSE
 	return !on_duty || guard.on_duty()
@@ -42,34 +49,17 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== THE GUARD =====
 
-/mob/living/basic/outpost_prison_guard
+/mob/living/carbon/human/npc/outpost_prison_guard
 	name = "guard"
 	desc = "A corrections officer on the prison wing's payroll."
-	icon = 'icons/mob/simple/simple_human.dmi'
-	unique_name = FALSE
 	combat_mode = FALSE
-	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
-	// No sentience potions, no lazarus.
-	sentience_type = SENTIENCE_HUMANOID
-	maxHealth = OUTPOST_GUARD_HEALTH
-	health = OUTPOST_GUARD_HEALTH
-	speed = OUTPOST_GUARD_SPEED_WALK
-	// Nobody drags or shoves them about.
-	move_resist = MOVE_FORCE_VERY_STRONG
-	density = TRUE
-	basic_mob_flags = NONE
-	mobility_flags = MOBILITY_FLAGS_REST_CAPABLE_DEFAULT
-	rotate_on_lying = TRUE
-	// No stuns or knockdowns: a guard is up or down (go_down()), nothing between.
-	status_flags = NONE
-	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, STAMINA = 0, OXY = 0)
-	// A breach or a fire in the wing must not kill them.
-	unsuitable_atmos_damage = 0
-	unsuitable_cold_damage = 0
-	unsuitable_heat_damage = 0
-	response_help_continuous = "pats"
-	response_help_simple = "pat"
+	faction = list(FACTION_NEUTRAL)
 	ai_controller = /datum/ai_controller/basic_controller/outpost_prison_guard
+	npc_outfit = /datum/outfit/outpost_prison_guard
+	// They stop once a prisoner is down (defaults 1.13), and only ever go for prisoners.
+	npc_target_stat = HUMAN_NPC_SPARES_DOWNED
+	// The corrections service collects a guard's body (guards_tick()); the base never cleans it up.
+	npc_corpse_lifetime = 0
 
 	/// The prison that hired them
 	var/datum/outpost_prison/prison
@@ -91,10 +81,14 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/response_skips
 	/// Whether the stun baton is out in their hand
 	var/baton_out = FALSE
+	/// world.time they went down (crit) or died, for the medevac and the body's collection
+	var/down_since = 0
 	/// The last thing they said, so they don't repeat it at once
 	var/last_line
 	/// Down: seconds until they are beamed out
 	var/down_left = 0
+	/// Killed rather than downed: the body is collected, and the record's wait starts after
+	var/died_on_duty = FALSE
 	/// Dismissed: seconds left to walk to the office before they beam out wherever they are
 	var/dismiss_left = 0
 	/// Dismissed: where they walk to before beaming out
@@ -107,10 +101,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	/// Between "Hey. Don't." lines
 	COOLDOWN_DECLARE(warned_cooldown)
 
-/mob/living/basic/outpost_prison_guard/Initialize(mapload)
-	gender = pick(MALE, FEMALE)
-	. = ..()
-	AddElement(/datum/element/footstep, footstep_type = FOOTSTEP_MOB_SHOE)
+/mob/living/carbon/human/npc/outpost_prison_guard/Initialize(mapload)
+	. = ..(mapload)
 	AddElement(/datum/element/relay_attackers)
 	RegisterSignal(src, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_attacked))
 	// Nothing moves a guard but their own feet and the prison's beam.
@@ -118,13 +110,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
 	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
-	RegisterSignal(src, COMSIG_ATOM_CAN_BE_PULLED, PROC_REF(refuse_pull))
-	ADD_TRAIT(src, TRAIT_NO_CONTAINMENT, INNATE_TRAIT)
-	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
-	// Next tick: spawn_guard() calls join() right after new, which sets the record's gender and face.
-	addtimer(CALLBACK(src, PROC_REF(guard_build_look)), 1)
+	// On their feet nobody boxes or bags them; down or dead they are a body like anyone's (set_guard_upright()).
+	// Anyone can drag a guard who is down. A guard on their feet shakes off anyone but the wing's members (guards_tick()).
+	set_guard_upright(TRUE)
+	set_prison_pace(hurry = FALSE)
 
-/mob/living/basic/outpost_prison_guard/Destroy()
+/mob/living/carbon/human/npc/outpost_prison_guard/Destroy()
 	end_response(cancel_ai = FALSE)
 	end_activity(cancel_ai = FALSE)
 	if(record?.guard == src)
@@ -138,120 +129,158 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	leave_spot = null
 	return ..()
 
-/// Dresses them as their own person in the guard's outfit (outpost_npc_looks.dm): the record's face and gender. Can sleep.
-/mob/living/basic/outpost_prison_guard/proc/guard_build_look()
-	set_outpost_npc_look(src, /datum/outfit/outpost_prison_guard, gender, record ? record.look_number : 1)
-	if(QDELETED(src))
-		return
-	update_appearance(UPDATE_OVERLAYS)
-
-/// Takes on the name, rank, gender and personality of the guard on the payroll
-/mob/living/basic/outpost_prison_guard/proc/join(datum/outpost_prison/owner, datum/outpost_guard_record/hired)
+/// Takes on the name, rank, face and personality of the guard on the payroll. The first one sent sets the record's face.
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/join(datum/outpost_prison/owner, datum/outpost_guard_record/hired)
 	prison = owner
 	record = hired
 	hired.guard = src
 	owner.guard_mobs |= src
-	gender = hired.gender
+	if(length(hired.look))
+		outpost_prison_apply_look(src, hired.look)
+	else
+		hired.look = outpost_prison_save_look(src)
+		hired.gender = gender
 	personality = hired.personality
-	real_name = hired.full_name()
-	name = real_name
+	fully_replace_character_name(real_name, hired.full_name())
 
-/// On the wing and on duty: arrived, not down, not dismissed, and not paid by the kingpin to stand back (outpost_prison_boss_moves.dm)
-/mob/living/basic/outpost_prison_guard/proc/on_duty()
-	return !QDELETED(src) && phase == OUTPOST_GUARD_PRESENT && stat == CONSCIOUS && !boss_bribed()
+/// On the wing and on duty: arrived, not down, cuffed or stunned, not dismissed, and not paid by the kingpin to stand back (outpost_prison_boss_moves.dm)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/on_duty()
+	return !QDELETED(src) && phase == OUTPOST_GUARD_PRESENT && stat == CONSCIOUS && !human_npc_out_of_fight(src) && !boss_bribed()
 
 /// Whether their AI is running, which it is only while someone is on the level to see them (see outpost_prison_ai_running())
-/mob/living/basic/outpost_prison_guard/proc/ai_running()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/ai_running()
 	return outpost_prison_ai_running(src)
 
-/mob/living/basic/outpost_prison_guard/update_overlays()
-	. = ..()
-	if(!baton_out || phase == OUTPOST_GUARD_DOWN)
-		return
-	// The lit baton in hand, the way a security officer holds one, turning with them
-	var/mutable_appearance/baton = mutable_appearance('icons/mob/inhands/equipment/security_righthand.dmi', "stunbaton_active")
-	baton.plane = FLOAT_PLANE
-	baton.layer = FLOAT_LAYER
-	. += baton
+/// Their stun baton, wherever on them it is
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/get_baton()
+	return locate(/obj/item/melee/baton/security) in get_all_contents()
 
-/// Draws or puts away the baton
-/mob/living/basic/outpost_prison_guard/proc/set_baton(out)
+/// Draws the baton off the belt into a hand and switches it on, or puts it away again, as an officer does
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/set_baton(out)
 	out = !!out
-	if(baton_out == out)
+	var/obj/item/melee/baton/security/baton = get_baton()
+	if(!baton)
+		baton_out = FALSE
 		return
-	baton_out = out
-	update_appearance(UPDATE_OVERLAYS)
+	if(out)
+		if(!is_holding(baton) && !human_npc_take_in_hand(src, baton))
+			return
+		if(!baton.active && baton.cell?.charge >= baton.cell_hit_cost)
+			baton.attack_self(src)
+		baton_out = TRUE
+		return
+	baton_out = FALSE
+	if(!is_holding(baton))
+		return
+	if(baton.active)
+		baton.attack_self(src)
+	if(!equip_to_slot_if_possible(baton, ITEM_SLOT_BELT, disable_warning = TRUE))
+		baton.equip_to_best_slot(src)
 
 // ===== REFUSALS =====
 
-/mob/living/basic/outpost_prison_guard/proc/refuse_teleport(datum/source, atom/destination, channel)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/refuse_teleport(datum/source, atom/destination, channel)
 	SIGNAL_HANDLER
 	if(isturf(loc))
 		visible_message(span_notice("[src] flickers for a moment, but stays where [p_they()] [p_are()]."))
 	return TRUE
 
-/mob/living/basic/outpost_prison_guard/proc/refuse_polymorph(datum/source, what_to_randomize)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/refuse_polymorph(datum/source, what_to_randomize)
 	SIGNAL_HANDLER
 	visible_message(span_notice("[src] shimmers for a moment, then looks the same as before."))
 	return STOP_WABBAJACK
 
-/mob/living/basic/outpost_prison_guard/proc/refuse_type_change(datum/source)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/refuse_type_change(datum/source)
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_MOB_CHANGE
 
-/mob/living/basic/outpost_prison_guard/proc/block_being_dragged(atom/over, mob/user)
+/// On their feet they refuse lockers and bags; down or dead, a body can be bagged like anyone's
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/set_guard_upright(upright)
+	if(upright)
+		add_traits(list(TRAIT_NO_CONTAINMENT, TRAIT_NO_STORAGE_INSERT), OUTPOST_GUARD_UPRIGHT_TRAIT)
+	else
+		remove_traits(list(TRAIT_NO_CONTAINMENT, TRAIT_NO_STORAGE_INSERT), OUTPOST_GUARD_UPRIGHT_TRAIT)
+
+/// Not dragged onto things while on their feet
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/block_being_dragged(atom/over, mob/user)
 	SIGNAL_HANDLER
-	return COMPONENT_CANCEL_MOUSEDROP_ONTO
+	return stat == CONSCIOUS && phase == OUTPOST_GUARD_PRESENT ? COMPONENT_CANCEL_MOUSEDROP_ONTO : NONE
 
-/mob/living/basic/outpost_prison_guard/proc/refuse_pull(datum/source, mob/living/puller)
-	SIGNAL_HANDLER
-	return COMSIG_ATOM_CANT_PULL
-
-// ===== HURT AND DOWN =====
-
-/**
- * Damage never takes a guard below OUTPOST_GUARD_DOWN_AT: at that point they go down instead,
- * and while down nothing hurts them (TRAIT_GODMODE). Forced damage is held to the same floor.
- */
-/mob/living/basic/outpost_prison_guard/adjust_health(amount, updating_health = TRUE, forced = FALSE)
-	var/floor_loss = maxHealth - OUTPOST_GUARD_DOWN_AT
-	if(amount > 0)
-		if(phase == OUTPOST_GUARD_DOWN || phase == OUTPOST_GUARD_LEAVING || bruteloss >= floor_loss)
-			return 0
-		amount = min(amount, floor_loss - bruteloss)
-	. = ..()
-	if(bruteloss >= floor_loss && prison)
-		INVOKE_ASYNC(src, PROC_REF(go_down))
-
-/// Guards never die: whatever would kill one puts them down instead
-/mob/living/basic/outpost_prison_guard/death(gibbed)
-	if(!gibbed && prison && phase != OUTPOST_GUARD_LEAVING)
-		go_down()
+/// On their feet, a guard won't be led about by anyone but the wing's members: they resist it, as anyone resists a pull
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/shake_off_pull()
+	if(!pulledby || !on_duty() || world.time < next_move)
 		return
-	return ..()
+	if(isliving(pulledby) && prison?.is_member(pulledby))
+		return
+	execute_resist()
+
+// ===== HURT, DOWN AND DEAD =====
 
 /**
- * Down: lying there, nothing more can hurt them, and OUTPOST_GUARD_RECALL_DELAY later they are
- * beamed out, to come back free OUTPOST_GUARD_RETURN_TIME after that (guards_tick()).
+ * Into crit: they go down. The corrections service medevacs the real body after
+ * OUTPOST_GUARD_RECALL_DELAY (guards_tick()); treated and back out of crit before then, they are back on duty.
  */
-/mob/living/basic/outpost_prison_guard/proc/go_down()
+/mob/living/carbon/human/npc/outpost_prison_guard/npc_on_downed()
+	. = ..()
+	go_down()
+
+/// Back out of crit before the medevac came: on their feet and on duty again
+/mob/living/carbon/human/npc/outpost_prison_guard/npc_on_recovered()
+	. = ..()
+	if(phase != OUTPOST_GUARD_DOWN || died_on_duty || stat == DEAD || HAS_TRAIT(src, TRAIT_CRITICAL_CONDITION))
+		return
+	phase = OUTPOST_GUARD_PRESENT
+	down_left = 0
+	down_since = 0
+	set_guard_upright(TRUE)
+	prison?.add_log("[real_name] is back on [p_their()] feet.")
+
+/// The prison's guards speak from their own file (say_guard()); a few of tg's changes map onto their lines.
+/mob/living/carbon/human/npc/outpost_prison_guard/npc_bark(kind, force = FALSE)
+	switch(kind)
+		if(HUMAN_NPC_BARK_DOWNED)
+			return say_guard("downed")
+	return FALSE
+
+/mob/living/carbon/human/npc/outpost_prison_guard/death(gibbed)
+	var/was_alive = stat != DEAD
+	. = ..()
+	if(!was_alive || stat != DEAD)
+		return
+	died_on_duty = TRUE
+	set_guard_upright(FALSE)
+	if(phase == OUTPOST_GUARD_LEAVING || !prison)
+		return
+	end_response()
+	end_activity()
+	baton_out = FALSE
+	phase = OUTPOST_GUARD_DOWN
+	down_since = world.time
+	down_left = OUTPOST_GUARD_BODY_COLLECT_DELAY / (1 SECONDS)
+	prison.guard_killed(src)
+
+/**
+ * Down in crit: lying there, and OUTPOST_GUARD_RECALL_DELAY later the corrections service medevacs the
+ * body, to send them back OUTPOST_GUARD_RETURN_TIME after that (guards_tick()). Nothing protects them
+ * meanwhile: they can bleed out, or be finished off.
+ */
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/go_down()
 	if(QDELETED(src) || phase == OUTPOST_GUARD_DOWN || phase == OUTPOST_GUARD_LEAVING)
 		return FALSE
 	var/was_leaving = phase == OUTPOST_GUARD_DISMISSED
 	phase = OUTPOST_GUARD_DOWN
 	end_response()
 	end_activity()
-	set_baton(FALSE)
-	ADD_TRAIT(src, TRAIT_GODMODE, OUTPOST_GUARD_DOWN_TRAIT)
-	add_traits(list(TRAIT_FLOORED, TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED), OUTPOST_GUARD_DOWN_TRAIT)
+	baton_out = FALSE
+	set_guard_upright(FALSE)
+	down_since = world.time
 	down_left = was_leaving ? 0 : OUTPOST_GUARD_RECALL_DELAY / (1 SECONDS)
 	visible_message(span_danger("[src] goes down!"))
-	say_guard("downed")
 	prison?.add_log("[real_name] went down.")
 	return TRUE
 
 /// Someone took a swing at them. Prisoners are the dispatcher's business; anyone else gets a warning and some room.
-/mob/living/basic/outpost_prison_guard/proc/on_attacked(datum/source, atom/attacker, attack_flags)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/on_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
 	if(!(attack_flags & (ATTACKER_DAMAGING_ATTACK | ATTACKER_STAMINA_ATTACK | ATTACKER_SHOVING)))
 		return
@@ -260,7 +289,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	INVOKE_ASYNC(src, PROC_REF(warn_off), attacker)
 
 /// "Hey. Don't." and a step back. Guards never strike players.
-/mob/living/basic/outpost_prison_guard/proc/warn_off(atom/attacker)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/warn_off(atom/attacker)
 	if(!on_duty() || QDELETED(attacker))
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, warned_cooldown))
@@ -273,12 +302,6 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		log_combat(attacker, src, "attacked a prison guard")
 	return TRUE
 
-/// Healing slowly while nothing is going on
-/mob/living/basic/outpost_prison_guard/proc/heal_tick(seconds)
-	if(phase != OUTPOST_GUARD_PRESENT || bruteloss <= 0 || prison?.riot_active)
-		return
-	adjust_health(-OUTPOST_GUARD_HEAL_PER_MINUTE * seconds / 60)
-
 // ===== BEAMING IN AND OUT =====
 
 /**
@@ -286,7 +309,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * the whole beam. They stay OUTPOST_GUARD_ARRIVING (held still, no routine, no responses, no
  * speech) until finish_beam_in() as the beam ends.
  */
-/mob/living/basic/outpost_prison_guard/proc/beam_in()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/beam_in()
 	phase = OUTPOST_GUARD_ARRIVING
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, OUTPOST_GUARD_BEAM_TRAIT)
 	var/turf/spot = get_turf(src)
@@ -298,7 +321,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_in)), OUTPOST_PRISON_BEAM_TIME)
 
 /// Fully there as the beam ends: the flash, and only now are they on duty, and say so
-/mob/living/basic/outpost_prison_guard/proc/finish_beam_in()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/finish_beam_in()
 	if(phase != OUTPOST_GUARD_ARRIVING)
 		return FALSE
 	var/turf/spot = get_turf(src)
@@ -318,7 +341,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * Dematerialises them and deletes them at the end of the beam. Their record, if they are still on
  * the payroll, sends them back after `away_seconds` (guards_tick()).
  */
-/mob/living/basic/outpost_prison_guard/proc/beam_out(away_seconds = 0)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/beam_out(away_seconds = 0)
 	if(phase == OUTPOST_GUARD_LEAVING)
 		return FALSE
 	phase = OUTPOST_GUARD_LEAVING
@@ -339,7 +362,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	addtimer(CALLBACK(src, PROC_REF(finish_beam_out)), OUTPOST_PRISON_BEAM_TIME)
 	return TRUE
 
-/mob/living/basic/outpost_prison_guard/proc/finish_beam_out()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/finish_beam_out()
 	var/turf/spot = get_turf(src)
 	if(spot)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
@@ -348,7 +371,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	qdel(src)
 
 /// Called back from somewhere they should not be (off the wing's level, or out of the wing with nobody about)
-/mob/living/basic/outpost_prison_guard/proc/recall(away_seconds = OUTPOST_GUARD_OFF_LEVEL_AWAY)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/recall(away_seconds = OUTPOST_GUARD_OFF_LEVEL_AWAY)
 	if(phase != OUTPOST_GUARD_PRESENT)
 		return FALSE
 	say_guard("recalled")
@@ -359,7 +382,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * Off the payroll: they say `context`, walk back to the office and beam out there, or wherever
  * they are after OUTPOST_GUARD_DISMISS_WALK seconds. Down or arriving, they beam out at once.
  */
-/mob/living/basic/outpost_prison_guard/proc/leave(context = "dismissed")
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/leave(context = "dismissed")
 	if(phase == OUTPOST_GUARD_LEAVING || phase == OUTPOST_GUARD_DISMISSED)
 		return FALSE
 	if(phase != OUTPOST_GUARD_PRESENT || stat != CONSCIOUS)
@@ -368,7 +391,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	end_response()
 	end_activity()
 	set_baton(FALSE)
-	set_varspeed(OUTPOST_GUARD_SPEED_WALK)
+	set_prison_pace(hurry = FALSE)
 	say_guard(context)
 	dismiss_left = OUTPOST_GUARD_DISMISS_WALK
 	leave_spot = prison?.guard_office_spot(src)
@@ -377,7 +400,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== SPEECH =====
 
 /// A line for `context` in their personality (or anyone's), with `values` filled in, or null
-/mob/living/basic/outpost_prison_guard/proc/pick_guard_line(context, list/values)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/pick_guard_line(context, list/values)
 	var/list/guard_lines = outpost_guard_dialogue("guard_lines")
 	var/list/by_personality = guard_lines[context]
 	if(!islist(by_personality))
@@ -396,7 +419,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return line
 
 /// The lines of `pool` that are not the last thing they said and need no placeholder `values` lacks
-/mob/living/basic/outpost_prison_guard/proc/usable_guard_lines(list/pool, list/values)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/usable_guard_lines(list/pool, list/values)
 	var/list/usable = list()
 	for(var/line in pool)
 		if(!istext(line) || line == last_line)
@@ -411,7 +434,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return usable
 
 /// Says a line for `context`. Returns TRUE if they said something. Never while beaming in or out, invisible or half there.
-/mob/living/basic/outpost_prison_guard/proc/say_guard(context, list/values)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/say_guard(context, list/values)
 	if(QDELETED(src) || stat == DEAD || phase == OUTPOST_GUARD_ARRIVING || phase == OUTPOST_GUARD_LEAVING)
 		return FALSE
 	var/line = pick_guard_line(context, values)
@@ -422,7 +445,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return TRUE
 
 /// An idle line: waits for the wing to be quiet and for their own pause, and counts toward the wing's
-/mob/living/basic/outpost_prison_guard/proc/idle_say(context, list/values)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/idle_say(context, list/values)
 	if(!prison?.wing_can_speak() || !COOLDOWN_FINISHED(src, speech_cooldown))
 		return FALSE
 	if(!say_guard(context, values))
@@ -438,7 +461,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * and making violent trouble right now (rioting, breaking out, fighting with blows, swinging at
  * someone or having just struck someone, climbing out, or loose). Never a calm or downed prisoner.
  */
-/mob/living/basic/outpost_prison_guard/proc/may_strike(mob/living/basic/outpost_prisoner/prisoner)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/may_strike(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!on_duty() || !is_outpost_prisoner(prisoner) || QDELETED(prisoner) || !prison || prisoner.prison != prison)
 		return FALSE
 	if(prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.can_be_dragged() || !Adjacent(prisoner))
@@ -451,29 +474,47 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return prisoner.guard_struck_recently()
 
 /**
- * One stun baton strike: OUTPOST_GUARD_BATON_STAMINA stamina, their blows stop, and every prisoner
- * who sees it loses a little mood. Not an attack in tg's sense (no relay_attackers, no
- * hit_by_staff()), so it is never held against staff and never hurts. Returns TRUE if it landed.
+ * One strike with the real stun baton off their belt, through their own hands: tg's baton does its
+ * stamina damage and knockdown, against the prisoner's armour, off the cell's charge. Their blows stop,
+ * and every prisoner who sees it loses a little mood. A prisoner never holds a guard's blow against staff
+ * (hit_by_staff()). Returns TRUE if they swung.
  */
-/mob/living/basic/outpost_prison_guard/proc/strike(mob/living/basic/outpost_prisoner/prisoner)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/strike(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!COOLDOWN_FINISHED(src, baton_cooldown) || !may_strike(prisoner))
 		return FALSE
-	COOLDOWN_START(src, baton_cooldown, OUTPOST_GUARD_BATON_COOLDOWN)
+	var/obj/item/melee/baton/security/baton = get_baton()
+	// A flat cell would make it a club, and guards never hurt anyone: they go to change it (baton_flat()).
+	if(!baton || !baton.cell || baton.cell.charge < baton.cell_hit_cost)
+		baton_flat()
+		return FALSE
 	set_baton(TRUE)
-	face_atom(prisoner)
-	do_attack_animation(prisoner)
-	playsound(prisoner, 'sound/items/weapons/egloves.ogg', 50, TRUE)
-	prisoner.visible_message(span_danger("[src] strikes [prisoner] with a stun baton!"), span_userdanger("[src] strikes you with a stun baton!"))
-	prisoner.apply_damage(OUTPOST_GUARD_BATON_STAMINA, STAMINA)
+	// The baton recharges between stuns, as anyone's does.
+	if(!is_holding(baton) || !baton.active || !COOLDOWN_FINISHED(baton, cooldown_check))
+		return FALSE
+	COOLDOWN_START(src, baton_cooldown, OUTPOST_GUARD_BATON_COOLDOWN)
+	if(!outpost_prison_npc_hit(src, prisoner, baton))
+		return FALSE
 	prisoner.stop_blows()
 	prison.guard_strike_seen(prisoner, src)
 	return TRUE
 
+/**
+ * Their baton's cell is flat. The office recharger can't take a baton that is locked to its guard
+ * (human_npc_gear.dm), so the corrections service swaps the shift: they say so and beam out, and the
+ * record sends them back with a charged baton after OUTPOST_GUARD_SHIFT_SWAP_TIME. Their wages stop meanwhile.
+ */
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/baton_flat()
+	if(phase != OUTPOST_GUARD_PRESENT || !prison)
+		return FALSE
+	say_guard("recalled")
+	prison.add_log("[real_name]'s baton went flat. [p_They()] went to swap shifts.")
+	return beam_out(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
+
 /// Strikes a rioter beside them. Returns TRUE if they struck.
-/mob/living/basic/outpost_prison_guard/proc/strike_adjacent_rioter()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/strike_adjacent_rioter()
 	if(!COOLDOWN_FINISHED(src, baton_cooldown))
 		return FALSE
-	for(var/mob/living/basic/outpost_prisoner/rioter in orange(1, src))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter in orange(1, src))
 		if(rioter.is_rioting() && strike(rioter))
 			return TRUE
 	return FALSE
@@ -481,29 +522,29 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== RESPONSES =====
 
 /// Sends them to deal with something, dropping their routine
-/mob/living/basic/outpost_prison_guard/proc/give_response(kind, priority, key, atom/target, turf/spot)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/give_response(kind, priority, key, atom/target, turf/spot)
 	end_response(cancel_ai = FALSE)
 	end_activity(cancel_ai = FALSE)
 	response = new(kind, key, priority, target, spot)
 	response.expires_at = world.time + OUTPOST_GUARD_RESPONSE_TIMEOUT
-	set_varspeed(OUTPOST_GUARD_SPEED_HURRY)
+	set_prison_pace(hurry = TRUE)
 	set_baton(TRUE)
 	ai_controller?.CancelActions()
 	return response
 
 /// Back to routine
-/mob/living/basic/outpost_prison_guard/proc/end_response(cancel_ai = TRUE)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/end_response(cancel_ai = TRUE)
 	if(!response)
 		return
 	QDEL_NULL(response)
 	if(!QDELETED(src))
-		set_varspeed(OUTPOST_GUARD_SPEED_WALK)
+		set_prison_pace(hurry = FALSE)
 		set_baton(FALSE)
 	if(cancel_ai)
 		ai_controller?.CancelActions()
 
 /// Whether they gave up on an incident recently
-/mob/living/basic/outpost_prison_guard/proc/skipping(key)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/skipping(key)
 	return LAZYACCESS(response_skips, key) > world.time
 
 /**
@@ -511,7 +552,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * the AI walks them to) and, once there, acts. Called by the dispatcher every second. Returns
  * TRUE while the response goes on.
  */
-/mob/living/basic/outpost_prison_guard/proc/perform_response()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/perform_response()
 	var/datum/outpost_guard_response/job = response
 	if(!job)
 		return FALSE
@@ -545,7 +586,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return TRUE
 
 /// Whether they stand where a response wants them: beside a mob, or on a tile
-/mob/living/basic/outpost_prison_guard/proc/at_goal(atom/goal)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/at_goal(atom/goal)
 	if(!goal)
 		return TRUE
 	if(isturf(goal))
@@ -557,13 +598,13 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * it down (the prison's guard_talkdown_chance); once blows fly, "Break it up!", then the baton on
  * the first fighter every OUTPOST_GUARD_BATON_COOLDOWN until the fight is over.
  */
-/mob/living/basic/outpost_prison_guard/proc/fight_response(datum/outpost_guard_response/job)
-	var/mob/living/basic/outpost_prisoner/fighter = job.target()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/fight_response(datum/outpost_guard_response/job)
+	var/mob/living/carbon/human/npc/outpost_prisoner/fighter = job.target()
 	var/datum/outpost_prison_fight/brawl = fighter?.fight
 	if(QDELETED(brawl))
 		return TRUE
-	var/mob/living/basic/outpost_prisoner/other = brawl.opponent_of(fighter)
-	var/mob/living/basic/outpost_prisoner/beside = Adjacent(fighter) ? fighter : ((other && Adjacent(other)) ? other : null)
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = brawl.opponent_of(fighter)
+	var/mob/living/carbon/human/npc/outpost_prisoner/beside = Adjacent(fighter) ? fighter : ((other && Adjacent(other)) ? other : null)
 	if(!beside)
 		job.set_goal(fighter)
 		return FALSE
@@ -595,8 +636,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * decided to swing, or struck someone in the last OUTPOST_GUARD_STRUCK_RECENT, gets the baton
  * after the warning instead, until they stop.
  */
-/mob/living/basic/outpost_prison_guard/proc/threat_response(datum/outpost_guard_response/job)
-	var/mob/living/basic/outpost_prisoner/prisoner = job.target()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/threat_response(datum/outpost_guard_response/job)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = job.target()
 	if(!prisoner || prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT || prisoner.can_be_dragged() || prisoner.trouble)
 		return TRUE
 	var/violent = prisoner.swing_ref || prisoner.guard_struck_recently()
@@ -622,8 +663,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return FALSE
 
 /// A prisoner climbing over a serving hatch: to the hatch's office side, "Get down off that!", and down they slide
-/mob/living/basic/outpost_prison_guard/proc/climb_response(datum/outpost_guard_response/job)
-	var/mob/living/basic/outpost_prisoner/climber = job.target()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/climb_response(datum/outpost_guard_response/job)
+	var/mob/living/carbon/human/npc/outpost_prisoner/climber = job.target()
 	var/obj/structure/table/reinforced/prison_hatch/hatch = climber?.climb_ref?.resolve()
 	if(!hatch)
 		return TRUE
@@ -647,7 +688,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * OUTPOST_GUARD_FOLLOW_RANGE of them and go for any rioter at them. Otherwise they hold the staff
  * door from the office. They baton any rioter beside them whatever they are doing.
  */
-/mob/living/basic/outpost_prison_guard/proc/riot_response(datum/outpost_guard_response/job)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/riot_response(datum/outpost_guard_response/job)
 	if(!prison.riot_active)
 		return TRUE
 	job.reached = TRUE
@@ -657,7 +698,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			job.spot = prison.guard_fallback_spot(src)
 			say_guard("fallback")
 		job.set_goal((job.spot && loc != job.spot) ? job.spot : null)
-		strike_adjacent_rioter()
+		if(!strike_adjacent_rioter() && (!job.spot || loc == job.spot))
+			// Back in the corner, they patch themselves up from the office's first-aid kit (outpost_prison_guard_routine.dm).
+			INVOKE_ASYNC(src, PROC_REF(treat_self))
 		return FALSE
 	var/mob/living/member = prison.guard_member_in_cell_block()
 	if(member)
@@ -665,7 +708,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			job.mode = "follow"
 			job.spot = null
 			say_guard("follow_member", list("{boss}" = prison.guard_boss_name(member)))
-		var/mob/living/basic/outpost_prisoner/attacker = prison.rioter_beside(member)
+		var/mob/living/carbon/human/npc/outpost_prisoner/attacker = prison.rioter_beside(member)
 		if(attacker && !Adjacent(attacker))
 			job.set_goal(attacker)
 		else if(get_dist(src, member) > OUTPOST_GUARD_FOLLOW_RANGE)
@@ -690,7 +733,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * cell block that the other guard is not holding, the tiles to its sides first so the doorway
  * itself stays clear for the crew. Sets it as their response's spot. Returns it, or null.
  */
-/mob/living/basic/outpost_prison_guard/proc/take_hold_position()
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/take_hold_position()
 	if(!prison)
 		return null
 	for(var/turf/spot as anything in prison.guard_hold_spots())
@@ -705,7 +748,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * it is dead, taken or shut in. They never strike the creatures. The rest of an experiment (the dose,
  * the incubation, the slug in the vents) is no reason to leave the yard to itself.
  */
-/mob/living/basic/outpost_prison_guard/proc/shelter_response(datum/outpost_guard_response/job)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/shelter_response(datum/outpost_guard_response/job)
 	if(!prison.creature_out())
 		return TRUE
 	job.reached = TRUE
@@ -715,7 +758,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return FALSE
 
 /// Wandered out of the wing: back to the office
-/mob/living/basic/outpost_prison_guard/proc/leash_response(datum/outpost_guard_response/job)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/leash_response(datum/outpost_guard_response/job)
 	if(get_area(src) == prison.wing)
 		outside_seconds = 0
 		return TRUE
@@ -728,14 +771,14 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 // ===== THE PRISONER'S SIDE =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// world.time a guard last checked on them, or they last said hello to a guard
 	var/guard_noticed_at = 0
 	/// world.time they last lost mood seeing a guard's baton
 	var/guard_onlooker_at = 0
 
 /// Whether they struck someone (not another prisoner) in the last OUTPOST_GUARD_STRUCK_RECENT
-/mob/living/basic/outpost_prisoner/proc/guard_struck_recently()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/guard_struck_recently()
 	return struck_at && world.time - struck_at <= OUTPOST_GUARD_STRUCK_RECENT && !isnull(struck_ref?.resolve())
 
 // ===== THE PAYROLL =====
@@ -744,28 +787,28 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_guard_record
 	var/datum/outpost_prison/prison
 	/// The guard on the wing now, if any
-	var/mob/living/basic/outpost_prison_guard/guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard
 	/// "Officer" or "Sergeant"
 	var/rank = "Officer"
 	var/surname = "Hale"
 	var/gender = MALE
 	var/personality = "by_the_book"
-	/// Which face they have (set_outpost_npc_look())
-	var/look_number = 1
+	/// Their face, saved from the first body sent (outpost_prison_save_look()), so the same person comes back
+	var/list/look
 	/// An admin's guard: no fee, no wage, not counted against guard_max()
 	var/free = FALSE
 	var/dismissed = FALSE
 	/// Seconds until they are sent back while away (down, recalled); they come only while a member is home
 	var/away_left = 0
 	/// What the guard is made as (tests use a subtype)
-	var/guard_type = /mob/living/basic/outpost_prison_guard
+	var/guard_type = /mob/living/carbon/human/npc/outpost_prison_guard
 
 /datum/outpost_guard_record/New(datum/outpost_prison/owner, rank, free = FALSE, guard_type)
 	. = ..()
 	prison = owner
 	src.rank = rank
 	src.free = free
-	if(ispath(guard_type, /mob/living/basic/outpost_prison_guard))
+	if(ispath(guard_type, /mob/living/carbon/human/npc/outpost_prison_guard))
 		src.guard_type = guard_type
 	gender = pick(MALE, FEMALE)
 	if(length(GLOB.last_names))
@@ -773,7 +816,6 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/personalities = outpost_guard_dialogue("guard_personalities")
 	if(length(personalities))
 		personality = pick(personalities)
-	look_number = random_outpost_npc_look_number()
 
 /datum/outpost_guard_record/Destroy()
 	if(guard?.record == src)
@@ -789,7 +831,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /// Seconds before this slot could have a guard on the wing again: the down time and the return, or the time still away
 /datum/outpost_guard_record/proc/pending_wait()
 	if(guard)
-		return guard.phase == OUTPOST_GUARD_DOWN ? guard.down_left + OUTPOST_GUARD_RETURN_TIME / (1 SECONDS) : 0
+		return guard.phase == OUTPOST_GUARD_DOWN ? max(0, guard.down_left) + OUTPOST_GUARD_RETURN_TIME / (1 SECONDS) : 0
 	return max(0, away_left)
 
 /// What the console calls them: arriving, post, rounds, routine, responding, riot, down or away
@@ -816,7 +858,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	/// Every guard on the payroll
 	var/list/datum/outpost_guard_record/guard_records = list()
 	/// Every guard mob of this prison, on the wing or leaving it
-	var/list/mob/living/basic/outpost_prison_guard/guard_mobs = list()
+	var/list/mob/living/carbon/human/npc/outpost_prison_guard/guard_mobs = list()
 	/// Seconds each slot still waits for a dismissed guard's return, passed on to the next hire
 	var/list/guard_slot_waits = list()
 	/// Wages earned and not yet charged, in credits, and the seconds into the charging interval
@@ -910,8 +952,12 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/turf/spot = guard_office_spot()
 	if(!spot)
 		return null
+	// Nobody is sent into an office with air nobody can breathe; the slot waits for it to be fixed.
+	if(outpost_prison_unsafe_air(spot.return_air()))
+		return null
 	var/datum/npc_spawn_context/context = new(outpost, role = "exempt")
-	var/mob/living/basic/outpost_prison_guard/guard = spawn_npc_in_zone(record.guard_type, spot, context, FALSE)
+	// One at a time, as they are hired or sent back: no need for the human NPC spawn queue.
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = spawn_npc_in_zone(record.guard_type, spot, context, FALSE)
 	guard.join(src, record)
 	context.finalize()
 	record.away_left = 0
@@ -933,7 +979,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		guard_slot_waits += wait
 	record.dismissed = TRUE
 	guard_records -= record
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	record.guard = null
 	if(guard)
 		guard.record = null
@@ -967,20 +1013,26 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		record.away_left = max(0, record.away_left - seconds)
 		if(record.away_left <= 0 && home)
 			spawn_guard(record)
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs.Copy())
 		if(QDELETED(guard))
 			continue
 		switch(guard.phase)
 			if(OUTPOST_GUARD_DOWN)
 				guard.down_left -= seconds
 				if(guard.down_left <= 0)
-					guard.beam_out(OUTPOST_GUARD_RETURN_TIME / (1 SECONDS))
+					guard_medevac(guard)
 			if(OUTPOST_GUARD_DISMISSED)
 				guard.dismiss_left -= seconds
 				if(guard.dismiss_left <= 0 || (guard.leave_spot && guard.loc == guard.leave_spot) || !guard.ai_running())
 					guard.beam_out()
 			if(OUTPOST_GUARD_PRESENT)
-				guard.heal_tick(seconds)
+				guard.shake_off_pull()
+				// Bad air in the wing (a breach, a fire): guards carry no air of their own, so the corrections
+				// service calls them off it until the office is fit to stand in again (spawn_guard()).
+				if(guard.stat == CONSCIOUS && outpost_prison_unsafe_air(guard.loc?.return_air()))
+					guard.say_guard("recalled")
+					add_log("[guard.real_name] was called off the wing: bad air.")
+					guard.beam_out(OUTPOST_GUARD_SHIFT_SWAP_TIME / (1 SECONDS))
 	guard_rounds_tick(seconds)
 	guard_check_clock += seconds
 	if(guard_check_clock >= OUTPOST_GUARD_CHECK_SECONDS)
@@ -989,6 +1041,33 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		guard_greet_check()
 		guard_yard_chatter()
 	dispatch_guards()
+
+/**
+ * The corrections service takes a downed guard's real body away (a transport: the same beam as
+ * everyone's, with no heal), or a dead guard's body once it has lain for OUTPOST_GUARD_BODY_COLLECT_DELAY.
+ * Their wages stopped when they went down (guard_payroll()); their record sends them back after
+ * OUTPOST_GUARD_RETURN_TIME. A body nobody can reach (off the level, buckled, in a bag) waits.
+ */
+/datum/outpost_prison/proc/guard_medevac(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	if(QDELETED(guard) || guard.phase != OUTPOST_GUARD_DOWN)
+		return FALSE
+	if(!isturf(guard.loc))
+		return FALSE
+	guard.pulledby?.stop_pulling()
+	guard.buckled?.unbuckle_mob(guard, force = TRUE)
+	add_log(guard.stat == DEAD ? "The corrections service collected [guard.real_name]'s body." : "The corrections service took [guard.real_name] away for treatment.")
+	return guard.beam_out(OUTPOST_GUARD_RETURN_TIME / (1 SECONDS))
+
+/**
+ * A guard was killed on duty. Logged with whoever last hurt them (the warden's log and the game log),
+ * and the yard hears of it. The slot waits out the body's collection and the return before anyone is sent.
+ */
+/datum/outpost_prison/proc/guard_killed(mob/living/carbon/human/npc/outpost_prison_guard/guard)
+	var/mob/killer = guard.lastattacker ? get_mob_by_ckey(guard.lastattackerckey) : null
+	add_log("[guard.real_name] was killed on duty.")
+	log_game("PLAYER OUTPOST PRISON: '[outpost?.name]': guard [guard.real_name] was killed[killer ? " (last hit by [key_name(killer)])" : ""]")
+	if(killer && !is_member(killer))
+		announce("Prison wing: [guard.real_name] was killed on duty.", SHIP_NOTIFY_WARNING)
 
 /**
  * Wages: OUTPOST_GUARD_WAGE a minute for each hired guard on the wing, only while a member is
@@ -1050,7 +1129,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	guard_rounds_left -= seconds
 	if(guard_rounds_left > 0)
 		return
-	for(var/mob/living/basic/outpost_prison_guard/guard in shuffle(guard_mobs))
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in shuffle(guard_mobs))
 		if(!guard.on_duty() || !guard.ai_running() || guard.response)
 			continue
 		if(guard.activity && (!guard.activity.interruptible || istype(guard.activity, /datum/outpost_guard_activity/rounds)))
@@ -1069,7 +1148,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  */
 /datum/outpost_prison/proc/guard_leash_check()
 	var/z = wing_z()
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 		if(guard.phase != OUTPOST_GUARD_PRESENT)
 			continue
 		var/turf/here = get_turf(guard)
@@ -1101,7 +1180,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  */
 /datum/outpost_prison/proc/dispatch_guards()
 	var/list/on_duty = list()
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 		if(guard.on_duty() && guard.ai_running())
 			on_duty += guard
 	if(!riot_active)
@@ -1112,7 +1191,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!length(on_duty))
 		return
 	if(creature_about)
-		for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 			if(guard.response?.kind == "shelter")
 				continue
 			guard.give_response("shelter", OUTPOST_GUARD_PRIORITY_SHELTER, "shelter", null, guard_office_spot(guard))
@@ -1120,7 +1199,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				guard_shelter_called = TRUE
 				guard.say_guard("creature_flee")
 	else if(riot_active)
-		for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 			if(guard.response?.kind == "riot")
 				continue
 			guard.give_response("riot", OUTPOST_GUARD_PRIORITY_RIOT, "riot", null, null)
@@ -1129,7 +1208,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		assign_guard_incidents(on_duty)
 		guard_stop_spat(on_duty)
 	guard_watch_loose(on_duty)
-	for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 		guard.perform_response()
 
 /**
@@ -1139,7 +1218,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  */
 /datum/outpost_prison/proc/guard_incidents()
 	var/list/found = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS || prisoner.can_be_dragged())
 			continue
 		if(prisoner.climb_ref)
@@ -1166,7 +1245,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	for(var/list/incident as anything in guard_incidents())
 		var/key = incident[1]
 		var/handled = FALSE
-		for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 			if(guard.response?.key == key)
 				handled = TRUE
 				// A fight's priority rises once blows fly.
@@ -1174,15 +1253,15 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 				break
 		if(handled)
 			continue
-		var/mob/living/basic/outpost_prisoner/prisoner = incident[4]
+		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = incident[4]
 		var/atom/where = prisoner
 		var/turf/spot
 		if(incident[2] == "climb")
 			var/obj/structure/table/reinforced/prison_hatch/hatch = prisoner.climb_ref?.resolve()
 			spot = hatch?.staff_side_turf()
 			where = spot || prisoner
-		var/mob/living/basic/outpost_prison_guard/best
-		for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+		var/mob/living/carbon/human/npc/outpost_prison_guard/best
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 			if(guard.response && guard.response.priority >= incident[3])
 				continue
 			if(guard.skipping(key))
@@ -1195,13 +1274,13 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_prison/proc/guard_stop_spat(list/on_duty)
 	if(spat_lines_left <= 0)
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/one = spat_first_ref?.resolve()
-	var/mob/living/basic/outpost_prisoner/two = spat_second_ref?.resolve()
-	for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+	var/mob/living/carbon/human/npc/outpost_prisoner/one = spat_first_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/two = spat_second_ref?.resolve()
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 		if(guard.response)
 			continue
 		var/list/seen = view(OUTPOST_GUARD_SPAT_VIEW, guard)
-		var/mob/living/basic/outpost_prisoner/speaker = (one && (one in seen)) ? one : ((two && (two in seen)) ? two : null)
+		var/mob/living/carbon/human/npc/outpost_prisoner/speaker = (one && (one in seen)) ? one : ((two && (two in seen)) ? two : null)
 		if(!speaker)
 			continue
 		guard.face_atom(speaker)
@@ -1213,19 +1292,19 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /// Loose prisoners: one guard calls each one out, once, and any guard they come beside batons them. No chase.
 /datum/outpost_prison/proc/guard_watch_loose(list/on_duty)
 	var/list/called = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.trouble != PRISONER_TROUBLE_LOOSE || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 			continue
 		var/key = REF(prisoner)
 		called[key] = TRUE
 		if(!guard_loose_called[key])
 			// Said aloud, and noted in the warden's log
-			var/mob/living/basic/outpost_prison_guard/crier = pick(on_duty)
+			var/mob/living/carbon/human/npc/outpost_prison_guard/crier = pick(on_duty)
 			if(crier.say_guard("loose_call", list("{place}" = get_area_name(prisoner))))
 				add_log("[crier.real_name]: \"[crier.last_line]\"")
 		if(prisoner.can_be_dragged())
 			continue
-		for(var/mob/living/basic/outpost_prison_guard/guard as anything in on_duty)
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard as anything in on_duty)
 			if(guard.strike(prisoner))
 				break
 	guard_loose_called = called
@@ -1241,18 +1320,18 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/first_names = list()
 	var/list/full_names = list()
 	var/list/places = list()
-	for(var/mob/living/basic/outpost_prisoner/runner as anything in runners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/runner as anything in runners)
 		first_names += runner.speech_name()
 		full_names += runner.real_name
 		places |= get_area_name(runner)
 	// Every line says where they were last seen
 	var/list/values = list("{prisoner}" = english_list(first_names), "{place}" = english_list(places))
 	var/list/on_duty = list()
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 		if(guard.on_duty())
 			on_duty += guard
 	if(length(on_duty))
-		var/mob/living/basic/outpost_prison_guard/crier = pick(on_duty)
+		var/mob/living/carbon/human/npc/outpost_prison_guard/crier = pick(on_duty)
 		if(crier.say_guard("loose_nearly", values))
 			add_log("[crier.real_name]: \"[crier.last_line]\"")
 			announce("[crier.real_name]: \"[crier.last_line]\"", SHIP_NOTIFY_DANGER)
@@ -1261,7 +1340,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return TRUE
 
 /// The riot hold is called out once a riot: said aloud, and noted in the warden's log
-/datum/outpost_prison/proc/announce_riot_hold(mob/living/basic/outpost_prison_guard/guard)
+/datum/outpost_prison/proc/announce_riot_hold(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	if(guard_riot_announced)
 		return FALSE
 	guard_riot_announced = TRUE
@@ -1271,9 +1350,9 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	return TRUE
 
 /// Every prisoner who sees a baton strike loses OUTPOST_GUARD_ONLOOKER_MOOD, at most once per OUTPOST_GUARD_ONLOOKER_GAP each; one may say so
-/datum/outpost_prison/proc/guard_strike_seen(mob/living/basic/outpost_prisoner/struck, mob/living/basic/outpost_prison_guard/guard)
+/datum/outpost_prison/proc/guard_strike_seen(mob/living/carbon/human/npc/outpost_prisoner/struck, mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	var/list/watchers = list()
-	for(var/mob/living/basic/outpost_prisoner/onlooker in view(OUTPOST_GUARD_ONLOOKER_RANGE, struck))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/onlooker in view(OUTPOST_GUARD_ONLOOKER_RANGE, struck))
 		if(onlooker == struck || onlooker.prison != src || onlooker.stat != CONSCIOUS || onlooker.phase != PRISONER_PRESENT)
 			continue
 		if(onlooker.guard_onlooker_at && world.time - onlooker.guard_onlooker_at < OUTPOST_GUARD_ONLOOKER_GAP)
@@ -1282,8 +1361,8 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 		onlooker.adjust_mood(-OUTPOST_GUARD_ONLOOKER_MOOD)
 		watchers += onlooker
 	if(length(watchers) && prob(50))
-		var/mob/living/basic/outpost_prisoner/speaker = pick(watchers)
-		INVOKE_ASYNC(speaker, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context_with), "guard_batoned", list("{staff}" = guard.real_name))
+		var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick(watchers)
+		INVOKE_ASYNC(speaker, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context_with), "guard_batoned", list("{staff}" = guard.real_name))
 	return watchers
 
 // ===== MEMBERS, GREETINGS AND REPORTS =====
@@ -1310,7 +1389,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 
 /// A rioter on their feet beside `member`, if any
 /datum/outpost_prison/proc/rioter_beside(mob/living/member)
-	for(var/mob/living/basic/outpost_prisoner/rioter in orange(1, member))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter in orange(1, member))
 		if(rioter.prison == src && rioter.is_rioting() && rioter.stat == CONSCIOUS && !rioter.can_be_dragged())
 			return rioter
 	return null
@@ -1335,7 +1414,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	var/list/causes = restless_causes()
 	if(length(causes))
 		return list("report_restless", list("{cause}" = causes[1]))
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(counts_for_tension(prisoner) && ("hurt" in prisoner.bubble_needs()))
 			return list("report_hurt", list("{prisoner}" = prisoner.speech_name()))
 	var/list/dark = conditions_payload()["dark_cells"]
@@ -1349,7 +1428,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!length(members))
 		return
 	for(var/mob/living/member as anything in members)
-		for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs)
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 			if(!guard.on_duty() || guard.response || get_dist(guard, member) > OUTPOST_GUARD_REPORT_RANGE || !(member in view(OUTPOST_GUARD_REPORT_RANGE, guard)))
 				continue
 			if(guard.greet_member(member))
@@ -1359,7 +1438,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * Greets `member` if it is time, else reports to them if it is time. Returns TRUE if they said
  * something.
  */
-/mob/living/basic/outpost_prison_guard/proc/greet_member(mob/living/member)
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/greet_member(mob/living/member)
 	if(!prison || !on_duty())
 		return FALSE
 	var/key = member.ckey || REF(member)
@@ -1390,10 +1469,10 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_prison/proc/guard_yard_chatter()
 	if(!wing_can_speak() || !prob(OUTPOST_GUARD_NOTICE_CHANCE))
 		return FALSE
-	for(var/mob/living/basic/outpost_prison_guard/guard in shuffle(guard_mobs))
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in shuffle(guard_mobs))
 		if(!guard.on_duty() || !guard.ai_running())
 			continue
-		for(var/mob/living/basic/outpost_prisoner/prisoner in view(OUTPOST_GUARD_NOTICE_RANGE, guard))
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in view(OUTPOST_GUARD_NOTICE_RANGE, guard))
 			if(prisoner.prison != src || !prisoner.ai_running() || !prisoner.routine_allowed() || prisoner.activity?.sleeping)
 				continue
 			if(prisoner.guard_noticed_at && world.time - prisoner.guard_noticed_at < OUTPOST_GUARD_CHECK_ON_GAP)
@@ -1431,7 +1510,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	for(var/mob/living/other in tile)
 		if(other != except && other.density)
 			return TRUE
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs)
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs)
 		if(guard == except)
 			continue
 		if(guard.response?.spot == tile || guard.activity?.goal_turf() == tile)
@@ -1547,7 +1626,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /datum/outpost_prison/proc/guards_admin_payload()
 	var/list/rows = list()
 	for(var/datum/outpost_guard_record/record as anything in guard_records)
-		var/mob/living/basic/outpost_prison_guard/guard = record.guard
+		var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 		var/status = record.status()
 		if(status == "away" || status == "down")
 			var/back = record.back_in()
@@ -1581,10 +1660,11 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 			if(action == "prison_guard_remove")
 				dismiss_guard(record, "dismissed", forget_wait = TRUE)
 				return "remove prison guard [guard_name]"
-			var/mob/living/basic/outpost_prison_guard/guard = record.guard
+			var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 			if(!guard?.on_duty())
 				return list("error" = "That guard is not on duty.")
-			guard.adjust_health(guard.health - OUTPOST_GUARD_DOWN_AT)
+			// Real damage over their limbs, enough to put them in crit; tg's crit does the rest.
+			guard.take_overall_damage(brute = max(0, guard.health) + 5)
 			if(guard.phase != OUTPOST_GUARD_DOWN)
 				guard.go_down()
 			return "put prison guard [guard_name] down"
@@ -1593,7 +1673,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== LIFE AND DEATH OF THE PRISON =====
 
 /datum/outpost_prison/proc/guards_destroy()
-	for(var/mob/living/basic/outpost_prison_guard/guard in guard_mobs.Copy())
+	for(var/mob/living/carbon/human/npc/outpost_prison_guard/guard in guard_mobs.Copy())
 		if(QDELETED(guard))
 			continue
 		guard.prison = null
@@ -1611,7 +1691,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 /// The outpost was abandoned: every guard is dismissed, no refund, and beams out
 /datum/outpost_prison/proc/guards_abandon()
 	for(var/datum/outpost_guard_record/record as anything in guard_records.Copy())
-		var/mob/living/basic/outpost_prison_guard/guard = record.guard
+		var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 		dismiss_guard(record, "dismissed", forget_wait = TRUE)
 		guard?.beam_out()
 	guard_slot_waits.Cut()
@@ -1621,16 +1701,20 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 // ===== LOOK =====
 
 /**
- * A corrections officer: pale blue shirt and tie over navy trousers, a navy peaked police cap,
- * black gloves and combat boots, and an earpiece. No red, no orange (that's the inmates), no
- * armour; the stun baton is drawn in hand only when they use it (update_overlays()).
+ * A corrections officer: pale blue shirt and tie over navy trousers, a blue-trimmed vest and helmet,
+ * black gloves and combat boots, and an earpiece. No red, no orange (that's the inmates). The stun
+ * baton rides on the belt and is drawn only when they use it (set_baton()); a bruise pack in a pocket
+ * for their own scrapes. Locked to them (D3): none of it is ever loot.
  */
 /datum/outfit/outpost_prison_guard
 	name = "Outpost prison guard"
 	uniform = /obj/item/clothing/under/rank/security/officer/blueshirt
-	head = /obj/item/clothing/head/hats/warden/police
+	suit = /obj/item/clothing/suit/armor/vest/blueshirt
+	head = /obj/item/clothing/head/helmet/blueshirt
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/jackboots
 	ears = /obj/item/radio/headset
+	belt = /obj/item/melee/baton/security/loaded
+	r_pocket = /obj/item/stack/medical/bruise_pack
 
 #undef OUTPOST_GUARD_DIALOGUE_FILE
