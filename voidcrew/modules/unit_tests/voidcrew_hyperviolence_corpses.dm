@@ -155,11 +155,12 @@
 	victim.fully_heal(HEAL_ALL)
 	victim.Knockdown(30 SECONDS)
 	gun.fire_cd = FALSE // the standing shot above just fired; skip its cooldown
+	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under the burst line
 	var/round_damage = gun.chambered.loaded_projectile.damage * gun.projectile_damage_multiplier
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
-	TEST_ASSERT(head.hv_skull_wound >= 2, "A head-aimed 9mm execution left no skull wound for its damage")
+	TEST_ASSERT(head.hv_skull_wound >= 2, "A head-aimed light execution left no skull wound for its damage")
 
 /// Executing a badly hurt, paralysed pirate carries the outcome to its corpse: a light round the skull, a heavy one the head.
 /datum/unit_test/hv_npc_execution_corpse
@@ -176,7 +177,7 @@
 	pirate.adjustBruteLoss(pirate.maxHealth * 0.85)
 	pirate.Paralyze(30 SECONDS)
 	TEST_ASSERT(gun.hv_execution_possible(gunner, pirate), "A paralysed pirate could not be executed")
-	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under HV_EXECUTION_BURST_DAMAGE 80
+	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under HV_EXECUTION_BURST_DAMAGE 50
 	var/list/before = range(7, spot)
 	TEST_ASSERT(gun.hv_fire_execution(gunner, pirate, null), "The execution shot did not fire")
 	TEST_ASSERT(QDELETED(pirate), "The executed pirate did not die")
