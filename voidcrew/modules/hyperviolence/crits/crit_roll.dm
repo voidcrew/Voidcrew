@@ -70,8 +70,6 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	var/allow_dead = FALSE
 	/// The wound a carbon gets.
 	var/datum/wound/wound_type
-	/// The status effect a humanoid basic mob gets instead. See crit_basic.dm.
-	var/datum/status_effect/basic_effect
 	/// Size of the hit line: HV_LINE_BOLD or HV_LINE_HUGE.
 	var/line_severity = HV_LINE_BOLD
 	/// How far the hit line carries. As tg does for wounds: critical ones carry the full
@@ -124,17 +122,6 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		playsound(victim, hit_sound, 80, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE, falloff_distance = 0)
 	if(shake)
 		shake_camera(victim, shake, 1)
-
-/// TRUE if a humanoid basic mob can take this crit right now.
-/datum/hv_crit/proc/can_apply_basic(mob/living/basic/victim)
-	return basic_effect && !victim.has_status_effect(basic_effect)
-
-/// Applies the crit to a humanoid basic mob. Returns TRUE if it landed.
-/datum/hv_crit/proc/apply_basic(mob/living/basic/victim, damage, attack_direction, atom/source, mob/living/attacker)
-	if(!victim.apply_status_effect(basic_effect, attack_direction))
-		return FALSE
-	announce(victim, attack_direction)
-	return TRUE
 
 // ---------------------------------------------------------------------------------------------
 // Helpers
@@ -274,8 +261,8 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	hv_crit_check_hit(., def_zone, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item)
 	return .
 
-/// Decides whether this hit can be an aimed crit and rolls it. Only carbons and humanoid basic
-/// mobs can take crits.
+/// Decides whether this hit can be an aimed crit and rolls it. Only carbons take crits: every human-looking
+/// NPC is a real body now (human NPC migration), so there is no stand-in for basic mobs.
 /mob/living/proc/hv_crit_check_hit(damage, def_zone, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/source)
 	return
 
@@ -323,49 +310,6 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		if(!crit.apply_carbon(src, limb, damage, attack_direction, source, attacker))
 			continue
 		log_combat(attacker, src, "landed an aimed crit on", source, "([crit.name], roll [isnull(roll) ? "none" : roll])")
-		return crit
-	return null
-
-/mob/living/basic/hv_crit_check_hit(damage, def_zone, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, atom/source)
-	if(!(mob_biotypes & MOB_HUMANOID) || !(mob_biotypes & MOB_ORGANIC) || stat == DEAD)
-		return
-	var/mob/living/carbon/attacker = hv_crit_get_aimer(source)
-	if(isnull(attacker) || attacker == src)
-		return
-	var/aimed_zone = attacker.zone_selected
-	var/hit_zone = check_zone(aimed_zone)
-	if(isprojectile(source))
-		// Shots know where they landed; it has to be where they were aimed.
-		if(check_zone(def_zone) != hit_zone)
-			return
-	else if(hit_zone != BODY_ZONE_CHEST && !prob(80))
-		// Simple mobs have no limbs for a blow to stray onto, so give them the same 80% a carbon gets.
-		return
-	var/wounding_type = hv_crit_wounding_type(sharpness, source)
-	hv_try_basic_crit(hit_zone, aimed_zone, wounding_type, damage, wound_bonus, attack_direction || get_dir(attacker, src), source, attacker)
-
-/// The basic mob version of hv_try_aimed_crit(). No limbs and no worn armour, so the roll is the
-/// same tg roll and bonuses with health standing in for limb damage.
-/mob/living/basic/proc/hv_try_basic_crit(hit_zone, aimed_zone, wounding_type, damage, wound_bonus, attack_direction, atom/source, mob/living/attacker, forced_roll)
-	var/from_projectile = isprojectile(source)
-	var/roll
-	for(var/datum/hv_crit/crit as anything in GLOB.hv_crits)
-		if(!crit.matches(hit_zone, aimed_zone, wounding_type, from_projectile))
-			continue
-		if(!crit.can_apply_basic(src) || damage < crit.min_damage)
-			continue
-		if(isnull(roll))
-			if(isnull(forced_roll))
-				var/base_roll = rand(1, round(min(damage, WOUND_MAX_CONSIDERED_DAMAGE) ** WOUND_DAMAGE_EXPONENT))
-				var/battered = round(HV_CRIT_BATTERED_BONUS * (1 - health / max(maxHealth, 1)))
-				roll = (base_roll + wound_bonus + battered + hv_crit_helpless_bonus(attacker)) * (hit_zone == BODY_ZONE_CHEST ? 0.9 : 0.95)
-			else
-				roll = forced_roll
-		if(roll < crit.threshold)
-			continue
-		if(!crit.apply_basic(src, damage, attack_direction, source, attacker))
-			continue
-		log_combat(attacker, src, "landed an aimed crit on", source, "([crit.name], roll [roll])")
 		return crit
 	return null
 

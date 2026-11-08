@@ -17,9 +17,9 @@
 // hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
 // not apply to keeps tg's behaviour: a normal point-blank shot to the head, or tg's slow mouth
 // version (which is also how you shoot yourself). Holding someone up (right click) and gun bashes are
-// unchanged. Human NPCs execute only if they are elites or bosses (owner decision D4,
-// hv_can_land_aimed_crits()). A basic humanoid NPC that leaves a human corpse has the outcome replayed
-// on that corpse (corpses/).
+// unchanged. Human NPCs execute only if they are bosses (owner rulings D4 and OC-9, hv_can_execute()).
+// Every human-looking NPC is a real body, so what the round does shows on that body; a basic mob shows
+// nothing more than the shot.
 
 /obj/item/gun
 	/// While an execution round is being fired: the damage it has dealt to the victim's head
@@ -105,10 +105,6 @@
 		return process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
 	var/shot_dir = get_dir(user, target)
 	var/was_dead = target.stat == DEAD
-	// A basic NPC that leaves a human corpse is replaced the moment the round kills it, so its corpse
-	// is told now how hard the round will land.
-	if(!was_dead && (target.hv_leaves_human_corpse || target.hv_gory_own_body))
-		target.hv_note_npc_execution(hv_execution_blow(target), shot_dir)
 	hv_execution_head_damage = 0
 	RegisterSignal(target, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(hv_execution_hit))
 	var/normal_multiplier = projectile_damage_multiplier
@@ -144,16 +140,6 @@
 		zone = check_zone(def_zone)
 	if(zone == BODY_ZONE_HEAD)
 		hv_execution_head_damage += damage
-
-/// What the boosted round will deal to this target's head after its armour. Only for the corpse a basic
-/// NPC leaves, which is built before the round's damage can be read.
-/obj/item/gun/proc/hv_execution_blow(mob/living/target)
-	var/obj/projectile/bullet = chambered?.loaded_projectile
-	if(!bullet)
-		return 0
-	var/blow = bullet.damage * projectile_damage_multiplier * max(1, chambered.pellets) * HV_EXECUTION_POINT_BLANK_MULT
-	var/armor = target.run_armor_check(BODY_ZONE_HEAD, bullet.armor_flag, armour_penetration = bullet.armour_penetration, silent = TRUE, weak_against_armour = bullet.weak_against_armour)
-	return blow * max(0, 100 - armor) / 100
 
 /// Everyone who saw it close up feels it, bar the shooter, the victim and those who enjoy that sort of thing.
 /proc/hv_execution_witnesses(mob/living/shooter, mob/living/victim)
@@ -191,21 +177,10 @@
 /**
  * Shows what an execution round did. `head_damage` is what it dealt to the head; `was_dead` whether
  * the target was already dead before it. Adds no damage and kills nothing: the round did that or not.
- * A basic NPC the round killed shows it on the corpse it left (noted before the shot); one whose own
- * body was already dead shows it here.
+ * Only a body with a head shows it (below); anything else just took the shot.
  */
 /mob/living/proc/hv_take_execution(head_damage, shot_dir, was_dead)
-	if(!was_dead || stat != DEAD || hv_body_headless)
-		return
-	var/bursts = head_damage >= HV_EXECUTION_BURST_DAMAGE && hv_body_head_can_burst()
-	hv_blood_spray(shot_dir, bursts ? 4 : 3)
-	if(bursts)
-		hv_add_hit_line("[src]'s head bursts apart!", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-		hv_burst_body_head(shot_dir, FALSE)
-	else if(hv_gory_own_body && hv_looks_human())
-		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-		hv_body_skull = 3
-		update_appearance(UPDATE_OVERLAYS)
+	return
 
 /mob/living/carbon/hv_take_execution(head_damage, shot_dir, was_dead)
 	var/obj/item/bodypart/head/head = get_bodypart(BODY_ZONE_HEAD)
