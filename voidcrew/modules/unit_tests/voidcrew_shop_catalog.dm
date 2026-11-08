@@ -659,7 +659,10 @@
 					var/ammo_path = GLOB.loot_gun_spare_ammo[gun.type]
 					TEST_ASSERT(locate(ammo_path) in cache, "A freight gun arrived without its spare reload")
 			TEST_ASSERT(contents_count - spare_count >= 2 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate lost ordinary draws")
-			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws")
+			var/list/packed = list()
+			for(var/atom/movable/inside as anything in cache.contents)
+				packed += "[inside.type]"
+			TEST_ASSERT(contents_count - spare_count <= 3 + (zone == 3 ? 2 : zone == 2 ? 1 : 0) + cache.bonus_draws, "Premium crate added unbudgeted draws (zone [zone], [row[1]]): [packed.Join(", ")]")
 			cache.PopulateContents()
 			TEST_ASSERT_EQUAL(length(cache.contents), contents_count, "Reopening bought cargo paid twice")
 			TEST_ASSERT(deep_compare_list(list(theme.loot_common, theme.loot_uncommon, theme.loot_prime, theme.loot_uniques), original_pools), "Bought cargo mutated the shared theme")
