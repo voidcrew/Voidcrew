@@ -41,6 +41,8 @@
 #define WIRE_STAINED_TIME (30 SECONDS)
 /// Most drips one wet spell leaves.
 #define WIRE_MAX_DRIPS 8
+/// Drops a wet wire throws when it cracks back into the spool.
+#define WIRE_FLICK_DROPS 6
 
 /// The swing out of the spool and back in.
 #define WIRE_SWING_TIME (0.4 SECONDS)

@@ -18,16 +18,53 @@
 /proc/wire_blood_color(mob/living/bleeder)
 	return bleeder.get_bloodtype()?.get_damage_color(bleeder) || BLOOD_COLOR_RED
 
-/// Which way a limb in `zone` falls away from a body facing `facing`: -1 to screen left, 1 to screen right.
-/proc/wire_limb_side(zone, facing)
+/// Which way a limb in `zone` falls away from a body facing `facing`, cut by a swing going `swing_dir`:
+/// -1 to screen left, 1 to screen right. Seen from the front or back it falls out on its own side; in profile
+/// it falls the way the swing carries it, away from the wielder.
+/proc/wire_limb_side(zone, facing, swing_dir)
+	if(facing == EAST || facing == WEST)
+		if(swing_dir & EAST)
+			return 1
+		if(swing_dir & WEST)
+			return -1
+		return facing == EAST ? 1 : -1
+	if(facing == NORTH)
+		return (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG) ? 1 : -1
+	return (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG) ? -1 : 1
+
+/// The middle of a human limb in `zone` as a body facing `facing` draws it, in pixels from the middle of the
+/// tile. An arm on the far side of a body in profile is hidden, so it is placed as the near one. list(x, y)
+/proc/wire_limb_centre(zone, facing)
+	var/arm = (zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM)
+	var/right = (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG)
+	var/y = arm ? 0 : -11
 	switch(facing)
 		if(EAST)
-			return 1
+			return list(arm ? -2 : 0, y)
 		if(WEST)
-			return -1
+			return list(arm ? 2 : 0, y)
 		if(NORTH)
-			return (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG) ? 1 : -1
-	return (zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG) ? -1 : 1
+			return list(arm ? (right ? 6 : -7) : (right ? 3 : -4), y)
+	return list(arm ? (right ? -7 : 6) : (right ? -4 : 3), y)
+
+/**
+ * Where a cut limb comes to rest, as a transform for something drawing it about `pivot` (where the limb's middle
+ * is drawn in that thing's own picture). Upright, it has toppled over `side` and lies on the floor beside the feet;
+ * off a body already lying down it only slides out a little, since it is on the floor already. Then it is moved and
+ * turned as the body was (`body_shape`).
+ */
+/proc/wire_limb_rest(list/pivot, list/centre, side, lying, matrix/body_shape)
+	var/matrix/rest = matrix()
+	rest.Translate(-pivot[1], -pivot[2])
+	if(lying)
+		rest.Turn(side * 10)
+		rest.Translate(centre[1] + side * 3, centre[2] - 1)
+	else
+		rest.Turn(side * 90)
+		rest.Translate(side * 10, -13)
+	if(body_shape)
+		rest.Multiply(body_shape)
+	return rest
 
 // ---- The held limb ----
 
@@ -47,6 +84,12 @@
 	var/datum/weakref/severed_ref
 	/// Timer of the slide
 	var/slide_timer
+	/// Which way the body faced when it was cut
+	var/facing = SOUTH
+	/// Which way the limb falls: -1 to screen left, 1 to screen right
+	var/side = 1
+	/// The body was lying down when it was cut
+	var/lying = FALSE
 
 /obj/effect/abstract/cyberware_anim/wire_ghost/Destroy()
 	if(slide_timer)
@@ -68,6 +111,9 @@
 	ghost.seared = seared
 	ghost.spray_dir = spray_dir
 	ghost.cut_at = get_turf(victim)
+	ghost.facing = victim.dir
+	ghost.side = wire_limb_side(ghost.zone, victim.dir, spray_dir)
+	ghost.lying = victim.body_position == LYING_DOWN
 	ghost.dress(victim, limb)
 	ghost.bearer = victim
 	ghost.RegisterSignal(victim, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
@@ -84,7 +130,14 @@
 	var/mob/living/carbon/human/dressed = ishuman(victim) ? victim : null
 	var/reshaped = dressed && dressed.mob_height != HUMAN_HEIGHT_MEDIUM
 	// The dropped form carries its bruising and burns, which the body draws on a layer of its own.
-	for(var/image/part_image in limb.get_limb_icon(TRUE, victim))
+	// A seared limb shows burns where the cut would have bled.
+	var/list/parts = limb.get_limb_icon(TRUE, victim)
+	if(seared)
+		for(var/image/part_image in parts)
+			if(part_image.layer == -DAMAGE_LAYER)
+				parts -= part_image
+		parts += image('icons/mob/effects/dam_mob.dmi', "[limb.dmg_overlay_type]_[zone]_0[max(limb.burnstate, 2)]", -DAMAGE_LAYER)
+	for(var/image/part_image in parts)
 		if(PLANE_TO_TRUE(part_image.plane) == EMISSIVE_PLANE)
 			continue
 		if(reshaped)
@@ -111,23 +164,63 @@
 	clothes.add_filter("wire_ghost_cutout", 0, alpha_mask_filter(render_source = cutout.render_target))
 	overlays += clothes
 
-/// The severed limb on the floor stays unseen until this lands, then fades in where this falls.
+/**
+ * The severed limb on the floor stays unseen until this lands, then shows where this came to rest: facing the way
+ * it hung on the body, lying on the floor beside the feet, turned as far as this fell.
+ */
 /obj/effect/abstract/cyberware_anim/wire_ghost/proc/hold_severed(obj/item/bodypart/severed)
 	if(QDELETED(severed) || !isturf(severed.loc))
 		return
 	severed_ref = WEAKREF(severed)
 	var/mob/living/body = bearer
-	// A dropped limb draws itself shifted to the middle of its tile (px_x, px_y); undo that, so it lies
-	// where the held one falls: a few pixels out from where it was, down by the feet.
-	severed.pixel_x = wire_limb_side(zone, body ? body.dir : SOUTH) * 3 - severed.px_x
-	severed.pixel_y = -4 - severed.px_y
-	// The server value is 255 from here on; only the picture waits.
+	// A dropped limb is drawn facing south otherwise. An arm on the far side of a body in profile is not drawn at
+	// all from that side, so that one lies as the near arm would: the other way round, flipped.
+	var/far_arm = (facing == EAST && zone == BODY_ZONE_L_ARM) || (facing == WEST && zone == BODY_ZONE_R_ARM)
+	severed.setDir(far_arm ? REVERSE_DIR(facing) : facing)
+	var/list/centre = wire_limb_centre(zone, facing)
+	// The dropped limb's picture is shifted by (px_x, px_y) to sit mid-tile, flipped with it for the far arm.
+	var/list/pivot = list(centre[1] + (far_arm ? -severed.px_x : severed.px_x), centre[2] + severed.px_y)
+	var/matrix/rest = wire_limb_rest(pivot, centre, side, lying, body?.transform)
+	if(far_arm)
+		var/matrix/flipped = matrix(-1, 0, 0, 0, 1, 0)
+		flipped.Multiply(rest)
+		rest = flipped
+	severed.transform = rest
+	severed.pixel_x = body ? body.pixel_x : 0
+	severed.pixel_y = body ? body.pixel_y : 0
+	severed.pixel_w = body ? body.pixel_w : 0
+	severed.pixel_z = body ? body.pixel_z : 0
+	// Picked up, kicked or put back on, it is an ordinary limb again.
+	severed.RegisterSignal(severed, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/obj/item/bodypart, wire_stand_up), override = TRUE)
+	// The server value is 255 at once; only the picture waits for the landing.
 	severed.alpha = 0
-	animate(severed, alpha = 0, time = WIRE_CUT_DELAY + WIRE_SLIDE_TIME)
-	animate(alpha = 255, time = WIRE_FALL_TIME)
-	severed.alpha = 255
+	animate(severed, alpha = 0, time = WIRE_CUT_DELAY + WIRE_SLIDE_TIME + WIRE_FALL_TIME)
+	animate(alpha = 255, time = 0.5)
 
-/// The limb leaves: it slides along the cut, turns, falls and fades. The stump shows, and the blood goes.
+/// A limb the wire cut, once it is moved: drawn as any dropped limb.
+/obj/item/bodypart/proc/wire_stand_up()
+	SIGNAL_HANDLER
+	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
+	animate(src, alpha = 255, time = 0)
+	transform = matrix()
+	setDir(SOUTH)
+	pixel_x = base_pixel_x
+	pixel_y = base_pixel_y
+	pixel_w = base_pixel_w
+	pixel_z = base_pixel_z
+
+/// A limb cut by a hot wire: burnt, not bloody. Only the picture; its damage is as it was.
+/obj/item/bodypart/proc/wire_char()
+	brutestate = 0
+	burnstate = max(burnstate, 2)
+	// The blood it caught coming off is burnt away too. A later wash brings the body's own back, as for any limb.
+	var/list/kept = blood_dna_info
+	blood_dna_info = null
+	wash(CLEAN_TYPE_BLOOD)
+	blood_dna_info = kept
+	update_icon_dropped()
+
+/// The limb leaves: it slides along the cut, topples and falls to the floor. The stump shows, and the blood goes.
 /obj/effect/abstract/cyberware_anim/wire_ghost/proc/slide()
 	slide_timer = null
 	var/mob/living/carbon/victim = bearer
@@ -140,16 +233,29 @@
 		animate(src, alpha = 0, time = 0.1 SECONDS)
 		QDEL_IN(src, 0.1 SECONDS)
 		return
-	var/side = wire_limb_side(zone, victim.dir)
-	var/matrix/turned = matrix()
-	turned.Turn(side * 20)
-	var/matrix/fallen = matrix()
-	fallen.Turn(side * 45)
-	animate(src, pixel_w = side * 2, pixel_z = -1, transform = turned, time = WIRE_SLIDE_TIME, easing = EASE_IN)
-	animate(pixel_w = side * 3, pixel_z = -4, transform = fallen, alpha = 0, time = WIRE_FALL_TIME, easing = EASE_IN)
+	// Drawn in its body's own frame, which turns it with a lying body: so no body_shape here.
+	var/list/centre = wire_limb_centre(zone, facing)
+	var/matrix/slid = matrix()
+	slid.Translate(-centre[1], -centre[2])
+	slid.Turn(side * (lying ? 4 : 15))
+	slid.Translate(centre[1] + side * 2, centre[2] - 1)
+	var/matrix/rest = wire_limb_rest(centre, centre, side, lying)
+	// Halfway over: the turn is split so it turns rather than squashes on the way.
+	var/matrix/tipping = matrix()
+	tipping.Translate(-centre[1], -centre[2])
+	tipping.Turn(side * (lying ? 7 : 50))
+	if(lying)
+		tipping.Translate(centre[1] + side * 3, centre[2] - 1)
+	else
+		tipping.Translate((centre[1] + side * 12) / 2, (centre[2] - 13) / 2)
+	animate(src, transform = slid, time = WIRE_SLIDE_TIME, easing = SINE_EASING | EASE_IN)
+	animate(transform = tipping, time = WIRE_FALL_TIME / 2, easing = QUAD_EASING | EASE_IN)
+	animate(transform = rest, time = WIRE_FALL_TIME / 2, easing = QUAD_EASING | EASE_IN)
+	// Down: the limb on the floor takes over.
+	animate(alpha = 0, time = 0.5)
 	if(!seared)
 		victim.hv_wire_spray(spray_dir, 2)
-	QDEL_IN(src, WIRE_SLIDE_TIME + WIRE_FALL_TIME)
+	QDEL_IN(src, WIRE_SLIDE_TIME + WIRE_FALL_TIME + 0.1 SECONDS)
 
 // ---- The seam ----
 
@@ -185,7 +291,7 @@
 	var/particles/smoke/steam/mild/puff = new
 	var/side = wire_limb_side(zone, victim.dir)
 	var/arm = (zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM)
-	puff.position = list(side * 6, arm ? 4 : -6, 0)
+	puff.position = zone == BODY_ZONE_HEAD ? list(0, 8, 0) : list(side * 6, arm ? 4 : -6, 0)
 	smoke.particles = puff
 	smoke.bearer = victim
 	smoke.RegisterSignal(victim, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))

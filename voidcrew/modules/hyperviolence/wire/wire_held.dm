@@ -4,8 +4,8 @@
  * - Deploying and stowing: the wire swings out of the spool and reels back in (WIRE_HELD_ANIM_ICON), played
  *   on the wielder while the held wire itself is not drawn, like the Mantis unfold.
  * - Blood: a cut that draws blood leaves the wire wet (dripping) for WIRE_WET_TIME, then stained until
- *   WIRE_STAINED_TIME, drawn from greyscale states tinted to the blood. Stowing a wet wire flicks a few drops
- *   onto the floor in front. Only the picture clears: the blood's DNA stays on the wire until it is washed.
+ *   WIRE_STAINED_TIME, drawn from greyscale states tinted to the blood. Stowing a wet wire cracks a fan of
+ *   drops off it that land spread over the floor ahead. Only the picture clears: the blood's DNA stays on the wire until it is washed.
  *   tg's generic item stain is not drawn on the wire, which draws its own.
  * - The Arc's charged wire burns its blood off: it never shows any.
  */
@@ -179,6 +179,13 @@
 		return null
 	return IS_LEFT_INDEX(index) ? "left" : "right"
 
+/// The light at the spool while the wire runs out or snaps back: the wire's own colour.
+/obj/item/melee/cyberware_monowire/proc/spool_light_color()
+	return "#f86cfa"
+
+/obj/item/melee/cyberware_monowire/live/spool_light_color()
+	return "#7fe0ff"
+
 /// The wire swings out of the spool into the hand.
 /obj/item/melee/cyberware_monowire/proc/play_deploy(mob/living/user)
 	var/side = held_side(user)
@@ -186,33 +193,106 @@
 		return
 	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_deploy_[side]", WIRE_SWING_LAYER, WIRE_SWING_TIME)
 	hide_inhand_for(WIRE_SWING_TIME)
+	user.mob_light(1.5, 0.6, spool_light_color(), 0.3 SECONDS)
 
-/// The wire reels back into the spool from the `side` hand. A wet wire flicks its blood off first.
+/// The wire reels back into the spool from the `side` hand. A wet wire cracks its blood off first.
 /obj/item/melee/cyberware_monowire/proc/play_retract(mob/living/user, side, stage)
 	if(QDELETED(user) || !side)
 		return
 	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_retract_[side]", WIRE_SWING_LAYER, WIRE_SWING_TIME)
+	user.mob_light(1.5, 0.6, spool_light_color(), 0.3 SECONDS)
 	if(stage)
 		var/obj/effect/abstract/cyberware_anim/blood = cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "monowire_retract_blood[stage]_[side]", WIRE_SWING_LAYER + 0.05, WIRE_SWING_TIME)
 		if(blood)
 			blood.appearance_flags |= RESET_COLOR
 			blood.color = get_blood_dna_color() || BLOOD_COLOR_RED
 	if(stage >= 2)
-		flick_blood(user)
+		flick_blood(user, side)
 	clear_blood_look()
 
-/// A few drops thrown onto the floor in front of `user`, and one at their feet.
-/obj/item/melee/cyberware_monowire/proc/flick_blood(mob/living/user)
+/**
+ * The fan a wet wire throws as it cracks back into the spool: WIRE_FLICK_DROPS drops leave its tip, fly an arc
+ * and land spread over the floor ahead and to the sides, each as a drip. Drawn on temporary visuals; only the
+ * drips stay.
+ */
+/obj/item/melee/cyberware_monowire/proc/flick_blood(mob/living/user, side)
 	var/list/blood_dna = GET_ATOM_BLOOD_DNA(src)
 	var/turf/feet = get_turf(user)
 	if(!length(blood_dna) || !feet || !feet.has_gravity())
 		return
-	if(!isgroundlessturf(feet))
-		new /obj/effect/decal/cleanable/blood/drip(feet, null, blood_dna)
-	var/turf/ahead = get_step(feet, user.dir)
-	if(ahead && !hv_blood_spray_blocked(ahead) && !isgroundlessturf(ahead))
-		new /obj/effect/decal/cleanable/blood/drip(ahead, null, blood_dna)
-		new /obj/effect/decal/cleanable/blood/drip(ahead, null, blood_dna)
+	var/blood_color = get_blood_dna_color() || BLOOD_COLOR_RED
+	for(var/list/drop as anything in wire_fan_plan(user.dir, side))
+		new /obj/effect/temp_visual/wire_blood_drop(feet, drop, blood_color, blood_dna)
+
+/**
+ * Where each drop of the fan starts and lands, in pixels from the middle of the wielder's tile:
+ * list(start x, start y, land x, land y, arc height, flight time). It leaves the wire's tip, which hangs by the
+ * `side` hand ("left" or "right"), and lands up to a tile and a bit ahead of `facing`, spread to both sides.
+ */
+/proc/wire_fan_plan(facing, side)
+	. = list()
+	var/forward_x = (facing & EAST) ? 1 : ((facing & WEST) ? -1 : 0)
+	var/forward_y = (facing & NORTH) ? 1 : ((facing & SOUTH) ? -1 : 0)
+	if(!forward_x && !forward_y)
+		forward_y = -1
+	// The tip hangs by the hand: screen left or right of the body facing north or south, in front of it in profile.
+	var/start_x = forward_x * 3
+	if(!forward_x)
+		var/screen_left = (side == "right") == (facing != NORTH)
+		start_x = screen_left ? -6 : 6
+	var/start_y = -13
+	for(var/i in 1 to WIRE_FLICK_DROPS)
+		var/spread = (i - (WIRE_FLICK_DROPS + 1) / 2) * 7
+		var/reach = 14 + ((i * 5) % WIRE_FLICK_DROPS) * 5
+		var/land_x = start_x + forward_x * reach + (forward_x ? (i % 3 - 1) * 3 : spread)
+		var/land_y = start_y + forward_y * reach + (forward_x ? (i % 2 ? -2 : 3) : (i % 3 - 1) * 2)
+		var/height = 6 + (i % 3) * 3
+		var/flight = round(2 + reach / 12, 0.5)
+		. += list(list(start_x, start_y, land_x, land_y, height, flight))
+
+/// One drop of the fan in flight. It lands as a drip, unless where it lands has no floor to hold it.
+/obj/effect/temp_visual/wire_blood_drop
+	name = "blood"
+	icon = WIRE_GORE_ICON
+	icon_state = "wire_drop"
+	layer = ABOVE_MOB_LAYER
+	randomdir = FALSE
+	duration = 0.6 SECONDS
+
+/obj/effect/temp_visual/wire_blood_drop/Initialize(mapload, list/drop, blood_color, list/blood_dna)
+	var/start_x = drop[1]
+	var/start_y = drop[2]
+	var/land_x = drop[3]
+	var/land_y = drop[4]
+	var/height = drop[5]
+	var/flight = drop[6]
+	// Held back a beat: the drops leave on the crack, the retract's second frame.
+	var/crack = 0.5
+	duration = crack + flight
+	. = ..()
+	color = blood_color
+	pixel_x = start_x
+	pixel_y = start_y
+	alpha = 0
+	animate(src, alpha = 0, time = crack)
+	animate(alpha = 255, pixel_x = (start_x + land_x) / 2, pixel_y = max(start_y, land_y) + height, time = flight / 2, easing = SINE_EASING | EASE_OUT)
+	animate(pixel_x = land_x, pixel_y = land_y, time = flight / 2, easing = SINE_EASING | EASE_IN)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_drop_land), get_turf(src), land_x, land_y, blood_dna), duration - 0.1)
+
+/// A drop of the fan comes down at (`land_x`, `land_y`) pixels from the middle of `origin`.
+/proc/wire_drop_land(turf/origin, land_x, land_y, list/blood_dna)
+	if(!origin)
+		return
+	var/tile_x = floor((land_x + 16) / 32)
+	var/tile_y = floor((land_y + 16) / 32)
+	var/turf/landing = locate(origin.x + tile_x, origin.y + tile_y, origin.z)
+	if(!landing || isgroundlessturf(landing) || !landing.has_gravity() || (landing != origin && hv_blood_spray_blocked(landing)))
+		return
+	var/obj/effect/decal/cleanable/blood/drip/drop = new(landing, null, blood_dna)
+	if(QDELETED(drop))
+		return
+	drop.pixel_x = land_x - tile_x * 32
+	drop.pixel_y = land_y - tile_y * 32
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/Extend(obj/item/augment)
 	. = ..()

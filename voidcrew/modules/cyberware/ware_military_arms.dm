@@ -630,6 +630,11 @@
 /obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()
 	swing_landed = TRUE
+	if(!isliving(user) || QDELETED(target) || target == user)
+		return
+	// The wire lashes out of the hand to what it hit (cyberware_anim2.dm), so the hanging wire isn't drawn meanwhile.
+	cyberware_monowire_lash_fx(user, target)
+	hide_inhand_for(0.5 SECONDS)
 
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)

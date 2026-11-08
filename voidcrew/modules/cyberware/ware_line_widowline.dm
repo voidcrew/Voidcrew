@@ -68,8 +68,7 @@
 	. = ..()
 	if(!isliving(user) || QDELETED(target) || target == user)
 		return
-	// The wire lashes out to what it hit (cyberware_anim2.dm).
-	cyberware_monowire_lash_fx(user, target)
+	// The lash out to what it hit is every wire's (ware_military_arms.dm); the shock is this one's.
 	if(isliving(target))
 		discharge_into_mob(target, user)
 	else if(ismecha(target))

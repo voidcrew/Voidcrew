@@ -122,6 +122,12 @@
 	if(isliving(attacker))
 		var/mob/living/swinger = attacker
 		swinger.mob_light(2, 1, cross_light_color(), 0.3 SECONDS)
+		// Both wires go through: the other hand's lashes out too, beside this one's.
+		for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
+			if(other == src)
+				continue
+			cyberware_monowire_lash_fx(swinger, target, origin_offset_x = 5)
+			other.hide_inhand_for(0.5 SECONDS)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 	return cross
 
@@ -221,6 +227,8 @@
 		LAZYREMOVE(victim.hv_stump_burnt, zone)
 		qdel(ghost)
 		return null
+	if(seared)
+		severed.wire_char()
 	ghost?.hold_severed(severed)
 	wire_seam_fx(victim, zone, seared)
 	if(seared)

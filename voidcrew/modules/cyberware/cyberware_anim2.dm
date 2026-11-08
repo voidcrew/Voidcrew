@@ -668,12 +668,12 @@
 	velocity = generator(GEN_CIRCLE, 2, 3, SQUARE_RAND)
 	gravity = list(0, -0.15)
 
-/// A landed Widowline Arc swing: the wire lashes out to whatever it hit, a
-/// blue-white line held as long as the shock's crackle runs along it.
-/proc/cyberware_monowire_lash_fx(mob/living/user, atom/target)
+/// A landed Widowline swing: the wire lashes out to whatever it hit, a
+/// pale line held for half a second.
+/proc/cyberware_monowire_lash_fx(mob/living/user, atom/target, origin_offset_x = 0)
 	if(QDELETED(user) || QDELETED(target) || get_turf(user) == get_turf(target))
 		return
-	user.Beam(target, icon_state = "monowire_lash", icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS)
+	user.Beam(target, icon_state = "monowire_lash", icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y)
 
 /// The Arc's shock: a small crackle runs along the wire and sparks burst where
 /// it touched. It's a wire, so there is no bolt of its own.

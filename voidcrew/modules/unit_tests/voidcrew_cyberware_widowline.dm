@@ -77,6 +77,24 @@
 	cut(user, victim, BODY_ZONE_R_ARM)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "An aimed cut didn't take off an arm at 60%")
 	TEST_ASSERT_EQUAL(right.loc, get_turf(victim), "The severed arm was flung instead of dropping at the body")
+	TEST_ASSERT_EQUAL(right.dir, victim.dir, "The severed arm lies facing another way than it hung")
+
+	// In profile: the near limb keeps the body's facing and lies down by the feet; the far arm lies as the near one would.
+	var/mob/living/carbon/human/consistent/profile = allocate(/mob/living/carbon/human/consistent, spot(2, 3))
+	profile.setDir(EAST)
+	arm = profile.get_bodypart(BODY_ZONE_R_LEG)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, profile, BODY_ZONE_R_LEG)
+	TEST_ASSERT_NULL(profile.get_bodypart(BODY_ZONE_R_LEG), "Fixture: the leg didn't come off")
+	TEST_ASSERT_EQUAL(arm.dir, EAST, "A leg cut from a body facing east doesn't lie facing east")
+	TEST_ASSERT(abs(arm.transform.a) < 0.1 && arm.transform.f < -4, "The cut leg doesn't lie on the floor ([arm.transform.a], [arm.transform.f])")
+	arm = profile.get_bodypart(BODY_ZONE_L_ARM)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	profile.setDir(EAST)
+	cut(user, profile, BODY_ZONE_L_ARM)
+	TEST_ASSERT_NULL(profile.get_bodypart(BODY_ZONE_L_ARM), "Fixture: the far arm didn't come off")
+	TEST_ASSERT_EQUAL(arm.dir, WEST, "The far arm cut in profile isn't drawn as the near arm")
+	TEST_ASSERT(abs(arm.transform.a) < 0.1, "The far arm cut in profile doesn't lie down")
 	TEST_ASSERT_EQUAL(splatter(victim), before, "A wire sever threw tg's flying hitsplatter")
 	TEST_ASSERT(findtext(lines(victim), "comes away clean"), "The sever's line didn't join the hit: [lines(victim)]")
 	TEST_ASSERT(!HAS_TRAIT(victim, "hv_clean_cut"), "TRAIT_HV_CLEAN_CUT outlived the cut")
@@ -376,8 +394,24 @@
 	// Wet again, stowed: drops in front, the look clears, the DNA stays.
 	cut(user, victim, BODY_ZONE_CHEST)
 	user.setDir(EAST)
-	wire.flick_blood(user)
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/drip) in get_step(user, EAST), "Stowing a wet wire flicked no blood ahead")
+	var/list/plan = wire_fan_plan(EAST, "right")
+	TEST_ASSERT_EQUAL(length(plan), 6, "The fan isn't six drops") // WIRE_FLICK_DROPS
+	for(var/list/drop as anything in plan)
+		TEST_ASSERT(drop[3] > drop[1] && abs(drop[4]) <= 48, "A drop of the fan lands behind the wielder or too far off ([drop[3]], [drop[4]])")
+	var/turf/ahead = get_step(user, EAST)
+	var/before = 0
+	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
+		if(get_turf(drop) != get_turf(user))
+			before++
+	wire.flick_blood(user, "right")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/wire_blood_drop) in get_turf(user), "The fan threw no drops")
+	sleep(1 SECONDS)
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/drip) in ahead, "The fan landed no blood ahead")
+	var/after = 0
+	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
+		if(get_turf(drop) != get_turf(user))
+			after++
+	TEST_ASSERT(after - before <= 6, "The fan left more drips than drops")
 	wire.clear_blood_look()
 	TEST_ASSERT_EQUAL(wire.blood_stage(), 0, "The flick left the wire looking bloody")
 	TEST_ASSERT(length(GET_ATOM_BLOOD_DNA(wire)), "The flick wiped the blood DNA")
@@ -458,6 +492,14 @@
 	TEST_ASSERT(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE, "The garrote's hold isn't a real aggressive grab")
 	loop = garrote.loop_ref?.resolve()
 	TEST_ASSERT(loop && loop.icon_state == "garrote_tight", "The wire didn't pull tight")
+	// The grab's own pull is applied (12 px toward the garroter, who stands west), the body lies head first to them,
+	// and the hold draws the neck the rest of the way in to their hands.
+	TEST_ASSERT_EQUAL(LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_X_OFFSET), GRABBING_TRAIT), -12, "The grab didn't pull the body in")
+	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_WEST, "The body doesn't lie head first to the garroter")
+	var/list/neck = garrote.neck_point()
+	var/list/hands = garrote.hold_point()
+	TEST_ASSERT(abs(neck[1] - hands[1]) <= 2 && abs(neck[2] - hands[2]) <= 2, "The neck isn't at the garroter's hands ([neck[1]],[neck[2]] vs [hands[1]],[hands[2]])")
+	TEST_ASSERT_EQUAL(length(garrote.strand_refs), 2, "The wire doesn't run from both hands")
 	TEST_ASSERT(user.wire_garrote_ready_at - world.time > 10 SECONDS, "A garrote that got a grip has the short wait")
 	// The kill, not in hard crit: the throat.
 	for(var/i in 1 to 10)
@@ -488,6 +530,14 @@
 	TEST_ASSERT_NULL(dying.get_bodypart(BODY_ZONE_HEAD), "A garrote in hard crit didn't take the head")
 	TEST_ASSERT_NOTNULL(taken, "The head wasn't left at the body")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/brain) in taken, "The head lost its brain")
+	// The garroter stands south of this one: the head drops toward their feet, the spray goes the other way.
+	TEST_ASSERT(taken.transform.f + taken.pixel_y < 0, "The head didn't drop at the garroter's feet ([taken.transform.f], [taken.pixel_y])")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in get_step(dying, get_dir(user, dying)), "The neck threw no spray away from the garroter")
+	var/pooled = FALSE
+	for(var/obj/effect/decal/cleanable/blood/pool in get_turf(dying))
+		if(!istype(pool, /obj/effect/decal/cleanable/blood/drip) && !istype(pool, /obj/effect/decal/cleanable/blood/hv_spray))
+			pooled = TRUE
+	TEST_ASSERT(pooled, "The neck left no pool under the body")
 
 	// A sealed helmet turns the wire: no slit throat, a blow instead.
 	user.wire_garrote_ready_at = 0
