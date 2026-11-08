@@ -16,6 +16,10 @@
 		var/dx = HV_VIS_DX(hv_vis_hit_dir)
 		if(dx)
 			new_lying = dx > 0 ? LYING_ANGLE_EAST : LYING_ANGLE_WEST
+	// tg can lay a dying body down twice in one tick, the second time on a random side: keep the side
+	// this tick's hit chose.
+	else if(lying_angle && new_lying && hv_vis_fell_time == world.time && hv_vis_hit_time == world.time && HV_VIS_DX(hv_vis_hit_dir))
+		new_lying = lying_angle
 	. = ..()
 	if(falling && lying_angle)
 		hv_vis_fell_time = world.time
