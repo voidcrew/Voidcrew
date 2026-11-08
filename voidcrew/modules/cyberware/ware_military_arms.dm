@@ -567,7 +567,8 @@
  * and both halves cleave.
  *
  * Every landed hit cleaves through mobs adjacent to the victim with line of
- * sight, allies filtered out, for CYBERWARE_MONOWIRE_CLEAVE_MULT of both.
+ * sight, allies filtered out, for CYBERWARE_MONOWIRE_CLEAVE_MULT of both. The
+ * cleave, severs and the garrote live in voidcrew/modules/hyperviolence/wire/.
  */
 /obj/item/melee/cyberware_monowire
 	name = "\improper Widowline monowire"
@@ -605,11 +606,14 @@
 	// line's two voices we are before handing off.
 	hitsound = pick('voidcrew/sound/monowire1.ogg', 'voidcrew/sound/monowire2.ogg')
 	swing_landed = FALSE
+	// The cut rides the hit: clean severs, the through-cut and the cleave all land
+	// while tg resolves it, so their lines join its message (hyperviolence/wire/wire_cut.dm).
+	wire_cut_begin(target, user)
 	. = ..()
+	wire_cut_end(target)
 	var/landed = swing_landed
 	swing_landed = FALSE
-	// No cut landed (blocked, cancelled, pulled), so nothing burns and nothing
-	// carries through.
+	// No cut landed (blocked, cancelled, pulled), so nothing burns.
 	if(. || !landed || QDELETED(target) || !isliving(user))
 		return
 
@@ -622,39 +626,6 @@
 		burn_zone,
 		target.run_armor_check(burn_zone, MELEE, armour_penetration = armour_penetration, silent = TRUE),
 	)
-
-	var/cleaved_anyone = FALSE
-	for(var/mob/living/nearby in orange(1, target))
-		if(nearby == user || nearby == target || nearby.stat == DEAD)
-			continue
-		if(!can_see(target, nearby, 1))
-			continue
-		if(cyberware_is_ally(user, nearby))
-			continue
-		// One roll for both halves: it is one pass of the same wire.
-		var/cleave_block = nearby.run_armor_check(BODY_ZONE_CHEST, MELEE, armour_penetration = armour_penetration)
-		nearby.apply_damage(
-			force * cleave_mult,
-			BRUTE,
-			BODY_ZONE_CHEST,
-			cleave_block,
-			wound_bonus = wound_bonus,
-			sharpness = SHARP_EDGED,
-		)
-		nearby.apply_damage(
-			charge_burn * cleave_mult,
-			BURN,
-			BODY_ZONE_CHEST,
-			cleave_block,
-		)
-		to_chat(nearby, span_userdanger("[user]'s monowire carries through into you!"))
-		cleaved_anyone = TRUE
-	if(cleaved_anyone)
-		user.visible_message(
-			span_danger("The wire sings through everything beside [target]!"),
-			span_danger("The wire carries through the whole cluster."),
-		)
-		playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
 
 /obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()

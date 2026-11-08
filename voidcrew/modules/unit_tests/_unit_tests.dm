@@ -85,6 +85,7 @@
 #include "voidcrew_cyberware_passives.dm"
 #include "voidcrew_cyberware_soak.dm"
 #include "voidcrew_cyberware_text.dm"
+#include "voidcrew_cyberware_widowline.dm"
 #include "voidcrew_cyberware_zoom.dm"
 #include "voidcrew_derelict_helpers.dm"
 #include "voidcrew_derelict_layout.dm"
