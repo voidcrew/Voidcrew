@@ -99,7 +99,7 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
 - Each has one fighting style: fists (tougher, and harder to stun), a knife (cuts that bleed), a pistol (keeps its distance and fires two shots a second in strings of six, with a short pause between strings), a WT-550 (fires bursts of four), a revolver (slow, heavy shots, six before a long reload), a shotgun loaded with buckshot (close range, reloads after four shells), a baseball bat (knocks you back) or thrown bottles. Wanted criminals carry a combat knife, a metal bat or a combat shotgun instead. Their weapons use the real item's damage, increased by the spawn zone. Their displayed weapon does not guarantee a loot drop.
 - Guns stay holstered, or slung on the back, until a fight starts. Drawing one takes a moment before the first shot.
-- They're tougher against a crew: their health grows with the number of hunters they face when the fight starts. Once hurt, it doesn't grow again.
+- They're tougher against a crew: their health grows with the number of hunters they face when the fight starts, and every crew member of a ship hunting them who is out on the site counts. Once hurt, it doesn't grow again.
 - They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
 - Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
 - Badly hurt with nobody around, they break off and retreat. They never heal, but [Lazarus chrome](#chrome) can stand a downed one back up.
@@ -110,9 +110,10 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 
 Every Most Wanted criminal is a mini-boss with one of six kits. Bosses and their companions also use the [zone health and damage profile](threats-and-elites.md). The board's **Other crews hunting** line excludes your own active hunt.
 
-- Their health grows with the number of hunters who can see them when the fight starts, and with anyone who hurts them later.
+- Their health grows with the number of hunters when the fight starts: everyone who can see them, and every crew member of a ship hunting them who is on the site, seen or not. Anyone who hurts them later adds to it.
 - Every ability winds up first with a sound, and most put a mark on the floor. Move out of the mark.
 - They break tables, chairs, windows and grilles, and up to two interior walls or doors in a fight.
+- Shot from somewhere they can't reach, they come through if their kit can (a charge, a grenade, Gorilla Arms smashing the glass), and otherwise take cover out of your sight.
 - While fresh they ignore stuns and stamina damage completely.
 - Below 40% health they are **worn out**: "breathing hard and slowing down". They move slower, use their abilities less often, and stun weapons work on them. About five disabler shots stun one in the Neutral Zone (six for the Heavy), and more further out.
 - They go down at 25% health. Between 40% and 25% is your window to stun and cuff them for full pay.
@@ -123,7 +124,7 @@ Every Most Wanted criminal is a mini-boss with one of six kits. Bosses and their
 | Juggernaut | An armoured criminal in riot plates | Charges along a line after a roar, smashing what's in the way. Slams the floor around it when you're close. Resists damage. | Step off the charge line. If it charges into something it can't break, it reels for 2 seconds and takes extra damage. |
 | Pyromaniac | A scorched criminal in a fire suit | Sweeps a cone of fire 3 tiles long and throws molotovs that leave burning floor. Fire can't hurt it. | Stay more than 3 tiles away and off burning floor. Use lasers or bullets, not fire. |
 | Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. | Close the distance, and move off the blinking ring. |
-| Ghost | A hooded criminal with a long knife | Fast. Dashes in with cuts that bleed, cloaks into a shimmer, dodges shots while moving, and backs off after two cuts. | A flash or a hit breaks the cloak. Shoot it when it stops moving. |
+| Ghost | A hooded criminal with a long knife | Fast. Dashes in with cuts that bleed, cloaks into a shimmer, dodges shots while moving, and backs off after three cuts. | A flash or a hit breaks the cloak. Shoot it when it stops moving. |
 | Heavy | A heavily armed criminal with a belt-fed gun | Heavy armour, slow. Shows a laser sight and a red cone, then fires a burst into it. Drops a barricade that stops half your shots. | Get out of the red cone before it fires. Go around the barricade. |
 | Cyberpsycho | A twitching criminal in shorts, more chrome than skin | Carries all seven pieces of [chrome](#chrome) and uses one at a time: lunges, leaps, piston punches, grabs and bursts of speed. Badly hurt, its Redline trips and it rages, then collapses. | Keep your distance from the rage and cuff it when it collapses. An EMP shuts its chrome down for a moment, but a second one straight after does nothing. |
 
@@ -147,7 +148,7 @@ Some criminals carry cyberware: now and then a normal criminal, more often the h
 | Cascade lattice | Its spine whines and glows violet, then it moves twice as fast and dodges shots while it moves. Then it crashes. | EMP it during the whine. Stun it during the crash, when stamina hits land twice as hard. |
 | Redline core | Hurt, or about to be stunned, its chest glows red and it roars, staggering hunters nearby. For a while it ignores stuns and takes half damage, then it collapses. | Back off and wait, then cuff it. An EMP ends it at once. |
 | Meteor Piledriver | Crouches, then leaps onto someone 3 to 7 tiles away. A shadow marks the landing, and hunters near it are knocked down. | Leave the shadow, or stay close. Windows and shut doors block the leap. An EMP, a stun or a door shut while it's in the air drops it. |
-| Lazarus | Downed, it crackles with red lightning for a second and a half, then gets back up at half health. Once a fight. | Cuff it, EMP it or finish it during the charge. A stamina takedown never sets it off. |
+| Lazarus | Downed, it crackles with red lightning for a second and a half, then gets back up at half health (a mini-boss lower). Once a fight. | Cuff it, EMP it or finish it during the charge. A stamina takedown never sets it off. |
 | Deadeye optics | Its eyes flash red and a red line marks you. Its next three shots home in. | Break line of sight. |
 
 ## Taking them alive
