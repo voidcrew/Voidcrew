@@ -341,6 +341,10 @@
 
 		if("toggle_ban")
 			var/list/banned_user_data = params["user_data"]
+			// VOIDCREW EDIT ADDITION START - the name comes from the client and is printed to chat and radio (XSS)
+			if(islist(banned_user_data))
+				banned_user_data["name"] = STRIP_HTML_SIMPLE("[banned_user_data["name"]]", MAX_NAME_LEN)
+			// VOIDCREW EDIT ADDITION END
 			attempt_ban_toggle(usr, banned_user_data)
 			return TRUE
 
