@@ -1,6 +1,6 @@
 // Hyperviolence visuals: the animation pass over the gore. Bodies flinch, snap, lurch and limp when
 // hit, fall away from the killing blow and twitch after, severed parts and brains tumble through
-// the air, blood paints in, drips, spreads and floats, guts unspool and slither, and executions and
+// the air, blood paints in, drips, spreads and floats, guts slither, and executions and
 // boss finishers get their beats.
 //
 // Rules every animation here keeps:

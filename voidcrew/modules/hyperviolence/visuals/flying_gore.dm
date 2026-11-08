@@ -3,9 +3,6 @@
 //    enough to see: up in an arc, spinning, leaving a blood streak on each tile it crosses; it bounces
 //    once where it lands, and a head rolls on.
 // 9. A burst head's brain arcs out spinning and lands with a wet bounce. Its gibs arc as they fly.
-// 10. A wound bleeding hard enough spurts with the heartbeat: a jet from that side of the body, two or
-//     three beats between Life ticks, quicker and weaker as the blood runs out. Nothing while the heart
-//     is stopped.
 // In zero gravity nothing arcs or bounces: a part just turns slowly as it drifts, and leaves no streak.
 
 /// Set while a burst head throws its gibs, so they arc.
@@ -277,92 +274,3 @@ GLOBAL_VAR_INIT(hv_vis_arcing_gibs, FALSE)
 			list(pixel_w, pixel_z + 2, hv_vis_turned(base, turn), 0.7, QUAD_EASING|EASE_OUT),
 			list(pixel_w, pixel_z, base, 1.5, BOUNCE_EASING),
 		))
-
-// ---- Arterial spurts ----
-
-/mob/living/carbon
-	/// World time before which this body does not spurt again.
-	var/hv_vis_next_spurt = 0
-
-/mob/living/carbon/human/bleed(amt)
-	. = ..()
-	hv_vis_arterial_spurt()
-
-/// The wound bleeding hard enough to spurt, the worst if several, or null.
-/mob/living/carbon/proc/hv_vis_arterial_wound()
-	var/datum/wound/worst
-	for(var/datum/wound/wound as anything in all_wounds)
-		if(wound.blood_flow < HV_VIS_ARTERIAL_FLOW || !wound.limb)
-			continue
-		if(!worst || wound.blood_flow > worst.blood_flow)
-			worst = wound
-	return worst
-
-/// A spurt from the worst wound, beating with the heart, at most once per Life tick.
-/mob/living/carbon/proc/hv_vis_arterial_spurt()
-	if(world.time < hv_vis_next_spurt || stat == DEAD || !isturf(loc))
-		return
-	var/datum/wound/artery = hv_vis_arterial_wound()
-	if(!artery || can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
-		return
-	var/obj/item/organ/heart/heart = get_organ_slot(ORGAN_SLOT_HEART)
-	if(!heart?.is_beating())
-		return
-	hv_vis_next_spurt = world.time + HV_VIS_SPURT_COOLDOWN
-	var/beat = HV_VIS_BEAT_RESTING
-	if(blood_volume < BLOOD_VOLUME_BAD)
-		beat = HV_VIS_BEAT_RACING
-	else if(blood_volume < BLOOD_VOLUME_OKAY)
-		beat = HV_VIS_BEAT_FAST
-	var/strength = clamp(blood_volume / BLOOD_VOLUME_NORMAL, 0.25, 1)
-	var/pulses = max(1, round(HV_VIS_SPURT_COOLDOWN / beat))
-	new /obj/effect/temp_visual/hv_arterial_spurt(loc, hv_vis_spurt_dir(artery.limb.body_zone), get_bloodtype()?.get_color(), strength, beat, pulses)
-
-/// Which way a wound on `zone` spurts: out to the side for limbs, forward for the head and chest.
-/mob/living/carbon/proc/hv_vis_spurt_dir(zone)
-	switch(zone)
-		if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
-			var/side = hv_vis_zone_side(zone)
-			return side > 0 ? EAST : (side < 0 ? WEST : dir)
-		if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
-			var/side = hv_vis_zone_side(zone)
-			return side > 0 ? SOUTHEAST : (side < 0 ? SOUTHWEST : turn(dir, 180))
-	return dir
-
-/// A jet of blood from a body, pulsing `pulses` times one `beat` apart. Thinner and shorter for a
-/// body low on blood.
-/obj/effect/temp_visual/hv_arterial_spurt
-	name = "blood"
-	icon = HV_BLOOD_SPRAY_ICON
-	icon_state = "squirt_greyscale"
-	plane = GAME_PLANE
-	layer = ABOVE_MOB_LAYER
-	randomdir = FALSE
-	duration = 2 SECONDS
-
-/obj/effect/temp_visual/hv_arterial_spurt/Initialize(mapload, spurt_dir, blood_color, strength = 1, beat = HV_VIS_BEAT_RESTING, pulses = 2)
-	duration = beat * pulses + 1
-	. = ..()
-	setDir(spurt_dir || SOUTH)
-	if(blood_color)
-		color = blood_color
-	var/dx = HV_VIS_DX(dir)
-	var/dy = HV_VIS_DY(dir)
-	// The art is a thin line through the whole tile: shortened along the jet (and moved out so it starts
-	// at the body), and drawn a little thicker across it. A diagonal jet is shortened both ways.
-	var/reach = 0.25 + 0.35 * strength
-	var/thick = 1 + 0.5 * strength
-	var/matrix/start = matrix()
-	start.Scale(dx ? 0.1 : thick, dy ? 0.1 : thick)
-	start.Translate(dx * 2, dy * 2)
-	var/matrix/out = matrix()
-	out.Scale(dx ? reach : thick, dy ? reach : thick)
-	out.Translate(dx * 16 * reach, dy * 16 * reach)
-	var/matrix/spent = matrix()
-	spent.Scale(dx ? reach * 1.1 : thick * 1.2, dy ? reach * 1.1 : thick * 1.2)
-	spent.Translate(dx * 18 * reach, dy * 18 * reach)
-	alpha = 0
-	animate(src, alpha = 235, transform = start, time = 0, loop = pulses)
-	animate(alpha = 235, transform = out, time = beat * 0.35, easing = CUBIC_EASING|EASE_OUT)
-	animate(alpha = 0, transform = spent, time = beat * 0.4, easing = LINEAR_EASING)
-	animate(alpha = 0, transform = spent, time = beat * 0.25, easing = LINEAR_EASING)

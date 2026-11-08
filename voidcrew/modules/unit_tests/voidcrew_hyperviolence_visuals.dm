@@ -290,7 +290,7 @@
 	TEST_ASSERT_EQUAL(victim.body_position, STANDING_UP, "Test fixture: they did not stand back up")
 	TEST_ASSERT_EQUAL(holds(victim), 0, "The tremble outlived getting back up")
 
-/// Spilled guts unspool over time but hold their strand at once, and slither without moving off their spot
+/// Spilled guts hold their strand at once, and slither without moving off their spot
 /datum/unit_test/voidcrew_hv_visuals/guts
 
 /datum/unit_test/voidcrew_hv_visuals/guts/Run()
@@ -299,8 +299,7 @@
 	var/datum/wound/slash/flesh/critical/disembowel/spill = chest.hv_spill_guts(EAST, "test")
 	TEST_ASSERT_NOTNULL(spill, "Test fixture: the guts did not spill")
 	var/obj/item/hv_intestines/guts = spill.guts
-	TEST_ASSERT(guts.hv_vis_unspooled_at > world.time, "The guts came out all at once")
-	TEST_ASSERT_NOTNULL(spill.tether.strand, "The strand waited for the guts instead of holding at once")
+	TEST_ASSERT_NOTNULL(spill.tether.strand, "The guts spilled without a strand to the body")
 	var/list/rest = rest_of(guts)
 	guts.forceMove(spot(2, 2))
 	check_rest(guts, rest, "A slither")

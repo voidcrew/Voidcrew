@@ -112,14 +112,6 @@
 #define HV_VIS_TUMBLE_SPEED 1
 /// Most blood streaks one tumbling part leaves along its way.
 #define HV_VIS_TUMBLE_MAX_STREAKS 4
-/// Blood flow of a single wound from which it spurts with the heartbeat.
-#define HV_VIS_ARTERIAL_FLOW 3
-/// Heartbeats: resting, fast (blood running low) and racing (nearly bled out).
-#define HV_VIS_BEAT_RESTING (0.8 SECONDS)
-#define HV_VIS_BEAT_FAST (0.55 SECONDS)
-#define HV_VIS_BEAT_RACING (0.45 SECONDS)
-/// How often at most a body spurts, about one Life tick.
-#define HV_VIS_SPURT_COOLDOWN (2 SECONDS)
 
 // ---- Blood ----
 
