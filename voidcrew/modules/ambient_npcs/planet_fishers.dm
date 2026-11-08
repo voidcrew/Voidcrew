@@ -89,7 +89,7 @@
 	var/catches = 0
 	var/misses = 0
 
-/datum/ambient_activity/fish/New(mob/living/basic/ambient_npc/new_doer, atom/water)
+/datum/ambient_activity/fish/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/water)
 	. = ..()
 	if(!water)
 		water = find_water()
@@ -251,7 +251,7 @@
 	. = ..()
 	if(QDELETED(doer))
 		return
-	var/mob/living/basic/ambient_npc/planet/planet_npc = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/planet_npc = doer
 	if(istype(planet_npc))
 		planet_npc.show_idle_held()
 	else
@@ -307,7 +307,7 @@
 	gloves = /obj/item/clothing/gloves/color/black
 	glasses = /obj/item/clothing/glasses/meson
 
-/mob/living/basic/ambient_npc/planet/lava_fisher
+/mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher
 	name = "lava fisher"
 	desc = "A miner in a scorched coat, fishing the lava on a long steel line."
 	outfit = /datum/outfit/ambient_lava_fisher
@@ -325,7 +325,7 @@
 	)
 
 // Once per crew: a fillet off the hot rock
-/mob/living/basic/ambient_npc/planet/lava_fisher/talked_to(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher/talked_to(mob/living/user)
 	if(!talk_ready(user))
 		return
 	if(!buckled)
@@ -375,7 +375,7 @@
 			chair.setDir(get_dir(site.center, lava))
 	ensure_prop(site, /obj/effect/ambient_camp_prop/lamp, ambient_free_turf_near(site.center, 1))
 	for(var/i in 1 to missing)
-		var/mob/living/basic/ambient_npc/planet/lava_fisher/fisher = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 1) || site.center)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher/fisher = site.spawn_npc(npc_type, ambient_free_turf_near(site.center, 1) || site.center)
 		if(fisher)
 			fisher.leash_bounds = ambient_square_bounds(site.center, 8)
 	return TRUE
@@ -441,11 +441,11 @@
 
 // The fisher stays in their boat while they live
 /obj/structure/ambient_boat/user_unbuckle_mob(mob/living/buckled_mob, mob/user)
-	if(istype(buckled_mob, /mob/living/basic/ambient_npc) && buckled_mob.stat != DEAD)
+	if(istype(buckled_mob, /mob/living/carbon/human/npc/ambient_npc) && buckled_mob.stat != DEAD)
 		return null
 	return ..()
 
-/mob/living/basic/ambient_npc/planet/boat_fisher
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher
 	name = "fisher"
 	desc = "A weathered fisher in a hide boat, line in the water."
 	outfit = /datum/outfit/ambient_boat_fisher
@@ -461,17 +461,17 @@
 	/// world.time they next row somewhere else
 	var/next_row_at = 0
 
-/mob/living/basic/ambient_npc/planet/boat_fisher/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/Initialize(mapload)
 	. = ..()
 	next_row_at = world.time + rand(AMBIENT_BOAT_ROW_LOW, AMBIENT_BOAT_ROW_HIGH)
 
 /// The boat they sit in, if any
-/mob/living/basic/ambient_npc/planet/boat_fisher/proc/boat()
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/proc/boat()
 	var/obj/structure/ambient_boat/boat = buckled
 	return istype(boat) ? boat : null
 
 // Every few minutes, a new spot
-/mob/living/basic/ambient_npc/planet/boat_fisher/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/pick_activity()
 	if(world.time >= next_row_at && boat())
 		next_row_at = world.time + rand(AMBIENT_BOAT_ROW_LOW, AMBIENT_BOAT_ROW_HIGH)
 		if(start_activity(new /datum/ambient_activity/row(src)))
@@ -479,7 +479,7 @@
 	return ..()
 
 // Stuck in a boat: a shout, and they row away
-/mob/living/basic/ambient_npc/planet/boat_fisher/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading)
 		return
 	if(reaction_ready("attacked", 4 SECONDS))
@@ -488,7 +488,7 @@
 		start_activity(new /datum/ambient_activity/row(src, attacker))
 
 // Sharks near the boat get shouted at
-/mob/living/basic/ambient_npc/planet/boat_fisher/watch(list/players)
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/watch(list/players)
 	if(!reaction_ready("sharks", 90 SECONDS))
 		return
 	for(var/mob/living/basic/carp/shark in range(6, src))
@@ -502,7 +502,7 @@
 	LAZYSET(reaction_cooldowns, "sharks", world.time + 10 SECONDS)
 
 // Once per crew: a fish thrown over to them
-/mob/living/basic/ambient_npc/planet/boat_fisher/talked_to(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/talked_to(mob/living/user)
 	if(!talk_ready(user))
 		return
 	if(!first_for_crew(user, "fish_thrown"))
@@ -539,7 +539,7 @@
 	/// Where the boat is going
 	var/turf/destination
 
-/datum/ambient_activity/row/New(mob/living/basic/ambient_npc/new_doer, atom/threat)
+/datum/ambient_activity/row/New(mob/living/carbon/human/npc/ambient_npc/new_doer, atom/threat)
 	. = ..()
 	threat_ref = threat ? WEAKREF(threat) : null
 
@@ -629,7 +629,7 @@
 		boat = make_prop(site, /obj/structure/ambient_boat, site.center)
 	var/turf/where = get_turf(boat) || site.center
 	for(var/i in 1 to missing)
-		var/mob/living/basic/ambient_npc/planet/boat_fisher/fisher = site.spawn_npc(npc_type, where)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/fisher = site.spawn_npc(npc_type, where)
 		if(fisher && boat && !boat.has_buckled_mobs())
 			boat.buckle_mob(fisher, force = TRUE)
 	return TRUE

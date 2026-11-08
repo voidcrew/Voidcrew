@@ -47,7 +47,7 @@
 	gloves = null
 	shoes = /obj/item/clothing/shoes/workboots
 
-/mob/living/basic/ambient_npc/outpost/angler
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler
 	desc = "Here for the fish, and the quiet."
 	dialogue_file = AMBIENT_STRINGS_WORKERS
 	dialogue_section = "angler"
@@ -75,11 +75,11 @@
 	/// Weakrefs to the players whose fishing they follow
 	var/list/watched
 
-/mob/living/basic/ambient_npc/outpost/angler/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/Initialize(mapload)
 	. = ..()
 	leave_at = world.time + rand(ANGLER_VISIT_LOW, ANGLER_VISIT_HIGH)
 
-/mob/living/basic/ambient_npc/outpost/angler/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/Destroy()
 	for(var/datum/weakref/ref as anything in watched)
 		var/mob/living/player = ref.resolve()
 		if(player)
@@ -93,7 +93,7 @@
 	fishing_spot = null
 	return ..()
 
-/mob/living/basic/ambient_npc/outpost/angler/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/pick_activity()
 	if(world.time >= leave_at)
 		if(prob(40))
 			speak_context(AMBIENT_LINE_LEAVE)
@@ -111,7 +111,7 @@
 	return start_activity(new /datum/ambient_activity/pond_sit(src))
 
 /// Here a while already: at the pond's edge in their chair with a line out, part-way through their stay
-/mob/living/basic/ambient_npc/outpost/angler/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/settle_in()
 	leave_at = ambient_part_way(leave_at)
 	if(find_pond_spot())
 		// PB's fishing, anchored on the water (planet_fishers.dm)
@@ -122,14 +122,14 @@
 			return TRUE
 	return ..()
 
-/mob/living/basic/ambient_npc/outpost/angler/shift_times(delay)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/shift_times(delay)
 	. = ..()
 	leave_at = ambient_shifted(leave_at, delay)
 	next_watch_at = ambient_shifted(next_watch_at, delay)
 	next_show_at = ambient_shifted(next_show_at, delay)
 
 /// Whether `tile` is a place at the pond's edge they could fish from into `pond`
-/mob/living/basic/ambient_npc/outpost/angler/proc/fishing_spot_ok(turf/tile, turf/open/water/pond)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/fishing_spot_ok(turf/tile, turf/open/water/pond)
 	if(!tile || !istype(pond) || !isopenturf(tile) || istype(tile, /turf/open/water))
 		return FALSE
 	if(tile != loc && !standable(tile))
@@ -141,7 +141,7 @@
  * tile on the concourse floor. An empty chair already there is theirs to use; otherwise they bring
  * a folding chair, once a visit. FALSE when there is no pond or no room at it.
  */
-/mob/living/basic/ambient_npc/outpost/angler/proc/find_pond_spot()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/find_pond_spot()
 	if(water && fishing_spot && fishing_spot_ok(fishing_spot, water))
 		return TRUE
 	var/datum/ambient_place/outpost/outpost_place = place
@@ -166,7 +166,7 @@
 	return FALSE
 
 /// A chair at `stand`: an empty one already there, their own folding chair moved over, or a new folding chair (once a visit)
-/mob/living/basic/ambient_npc/outpost/angler/proc/take_chair(turf/stand, turf/pond)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/take_chair(turf/stand, turf/pond)
 	var/obj/structure/chair/seat = locate() in stand
 	if(seat && seat_usable(seat))
 		chair_ref = WEAKREF(seat)
@@ -185,7 +185,7 @@
 	return folding
 
 /// Sits in their chair if they are at it
-/mob/living/basic/ambient_npc/outpost/angler/proc/sit_in_chair()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/sit_in_chair()
 	if(buckled || fading)
 		return
 	var/obj/structure/chair/seat = chair_ref?.resolve()
@@ -193,11 +193,11 @@
 		sit_on(seat)
 
 /// Faces the water
-/mob/living/basic/ambient_npc/outpost/angler/proc/face_water()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/face_water()
 	if(water && !buckled && loc != water)
 		face_atom(water)
 
-/mob/living/basic/ambient_npc/outpost/angler/activity_step(seconds)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/activity_step(seconds)
 	. = ..()
 	if(world.time >= next_watch_at)
 		next_watch_at = world.time + ANGLER_WATCH_EVERY
@@ -207,7 +207,7 @@
 		sit_in_chair()
 
 /// Starts following the fishing of players near them, and stops for the ones who went
-/mob/living/basic/ambient_npc/outpost/angler/proc/watch_players()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/watch_players()
 	for(var/datum/weakref/ref as anything in watched?.Copy())
 		var/mob/living/player = ref.resolve()
 		if(QDELETED(player) || get_dist(src, player) > ANGLER_WATCH_RANGE + 3)
@@ -215,11 +215,11 @@
 				UnregisterSignal(player, COMSIG_MOB_COMPLETE_FISHING)
 			LAZYREMOVE(watched, ref)
 	for(var/mob/living/player in view(ANGLER_WATCH_RANGE, src))
-		if(player.client && !istype(player, /mob/living/basic/ambient_npc))
+		if(player.client && !istype(player, /mob/living/carbon/human/npc/ambient_npc))
 			watch_player(player)
 
 /// Follows `player`'s fishing
-/mob/living/basic/ambient_npc/outpost/angler/proc/watch_player(mob/living/player)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/watch_player(mob/living/player)
 	for(var/datum/weakref/ref as anything in watched)
 		if(ref.resolve() == player)
 			return
@@ -227,7 +227,7 @@
 	LAZYADD(watched, WEAKREF(player))
 
 /// A player near them finished reeling in: a word about the fish, or about the one that got away
-/mob/living/basic/ambient_npc/outpost/angler/proc/on_player_fished(mob/living/source, datum/fishing_challenge/challenge, win)
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/on_player_fished(mob/living/source, datum/fishing_challenge/challenge, win)
 	SIGNAL_HANDLER
 	if(stat != CONSCIOUS || fading || get_dist(src, source) > ANGLER_WATCH_RANGE + 1 || !reaction_ready("player_fish", 20 SECONDS))
 		return
@@ -237,7 +237,7 @@
  * A fish to hold up: a type from the pond's own fish table, weighted as the pond would weigh it.
  * Only the picture is used; nothing is caught and the pond's stock is never touched.
  */
-/mob/living/basic/ambient_npc/outpost/angler/proc/pond_fish_picture()
+/mob/living/carbon/human/npc/ambient_npc/outpost/angler/proc/pond_fish_picture()
 	var/turf/open/water/pond = water
 	if(!istype(pond) || !pond.fishing_datum)
 		return /obj/item/fish/goldfish
@@ -261,7 +261,7 @@
 	duration_high = 4 MINUTES
 
 /datum/ambient_activity/pond_sit/setup()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	if(!istype(angler) || !angler.fishing_spot)
 		return FALSE
 	go_to(angler.fishing_spot)
@@ -270,7 +270,7 @@
 	return TRUE
 
 /datum/ambient_activity/pond_sit/arrive()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	angler.face_water()
 	angler.sit_in_chair()
 	doer.set_held(/obj/item/fishing_rod)
@@ -287,7 +287,7 @@
 /// Could not get to their spot: they look for another next time instead of sitting down wherever they are
 /datum/ambient_activity/pond_sit/spot_unreachable()
 	. = ..()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	if(istype(angler))
 		angler.fishing_spot = null
 	ends_at = world.time
@@ -308,7 +308,7 @@
 	var/next_step_at = 0
 
 /datum/ambient_activity/show_catch/setup()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	if(!istype(angler))
 		return FALSE
 	var/mob/living/basic/outpost_trader/pike = ambient_outpost_trader_of(doer.place, /datum/outpost_shop/vendor/bait_shop)
@@ -328,7 +328,7 @@
 	return ..()
 
 /datum/ambient_activity/show_catch/arrive()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	var/mob/living/basic/outpost_trader/pike = pike_ref?.resolve()
 	switch(stage)
 		if(0)
@@ -347,7 +347,7 @@
 			next_step_at = world.time + rand(1 SECONDS, 2 SECONDS)
 
 /datum/ambient_activity/show_catch/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	if(world.time < next_step_at)
 		return AMBIENT_STEP_CONTINUE
 	switch(stage)
@@ -365,7 +365,7 @@
 
 /// Back into the pond it goes
 /datum/ambient_activity/show_catch/proc/release()
-	var/mob/living/basic/ambient_npc/outpost/angler/angler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/angler/angler = doer
 	playsound(angler.water || doer, 'sound/effects/fish_splash.ogg', 30, TRUE, -3)
 	doer.set_held(null)
 	if(prob(50))
@@ -387,7 +387,7 @@
 /// One angler at Halcyon's pond
 /datum/ambient_outpost_role/angler
 	name = "angler"
-	npc_type = /mob/living/basic/ambient_npc/outpost/angler
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/angler
 	outpost_types = list(/obj/structure/overmap/trader_outpost/general)
 	max_count = 1
 	weight = 2

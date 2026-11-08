@@ -391,13 +391,15 @@ GLOBAL_LIST_EMPTY(ambient_convicts)
 	var/turf/here = get_turf(src)
 	if(!here || QDELETED(ship) || QDELETED(leader))
 		return null
-	var/mob/living/basic/ambient_npc/stray/convict/stray = new(here, list("name" = real_name, "gender" = gender), record)
+	// The same name and face: a human NPC spawn order carrying their record (human NPC phase E1;
+	// phase D replaces this file)
+	var/datum/human_npc_order/order = new /datum/human_npc_order(/mob/living/carbon/human/npc/ambient_npc/stray/convict, here)
+	order.look = record
+	order.name = real_name
+	var/mob/living/carbon/human/npc/ambient_npc/stray/convict/stray = order.fulfil()
+	if(QDELETED(stray))
+		return null
 	stray.setDir(dir)
-	// Their face, carried over at once; build_look() puts the same one back on from the record
-	stray.icon = icon
-	stray.icon_state = icon_state
-	stray.appearance_flags |= KEEP_TOGETHER
-	stray.copy_overlays(src, cut_old = TRUE)
 	var/datum/criminal_bounty/posting = posting()
 	if(posting)
 		UnregisterSignal(posting, COMSIG_BOUNTY_POSTING_CLOSED)
@@ -419,7 +421,7 @@ GLOBAL_LIST_EMPTY(ambient_convicts)
 // =========================================================================
 
 /// A convict who went with a crew: the same face, a stray now (recruit.dm)
-/mob/living/basic/ambient_npc/stray/convict
+/mob/living/carbon/human/npc/ambient_npc/stray/convict
 	name = "escaped convict"
 	desc = "Someone in prison orange who has decided not to go back."
 	outfit = /datum/outfit/prisoner
@@ -428,20 +430,14 @@ GLOBAL_LIST_EMPTY(ambient_convicts)
 	/// Who they are (/datum/bounty_record): their face comes from it
 	var/datum/bounty_record/bounty_record
 
-/mob/living/basic/ambient_npc/stray/convict/Initialize(mapload, list/identity, datum/bounty_record/from_record)
-	bounty_record = from_record
-	return ..(mapload, identity)
-
-/mob/living/basic/ambient_npc/stray/convict/Destroy()
-	bounty_record = null
+/mob/living/carbon/human/npc/ambient_npc/stray/convict/Initialize(mapload, datum/human_npc_order/order)
+	// Their face comes from their record (the human NPC base dresses a body from it)
+	if(istype(order?.look, /datum/bounty_record))
+		bounty_record = order.look
 	return ..()
 
-/mob/living/basic/ambient_npc/stray/convict/build_look()
-	if(QDELETED(src))
-		return
-	if(bounty_record)
-		apply_bounty_look(src, bounty_record, /datum/outfit/prisoner)
-		return
+/mob/living/carbon/human/npc/ambient_npc/stray/convict/Destroy()
+	bounty_record = null
 	return ..()
 
 #undef CONVICT_SIGHT_RANGE

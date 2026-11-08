@@ -31,7 +31,7 @@
 	)
 	chance = 5
 	spot_room = 2
-	npc_type = /mob/living/basic/ambient_npc/stray/stranded
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/stray/stranded
 
 // Oceanic planets see a few more pods come down (spec 4.1)
 /datum/ambient_site_kind/stranded/chance_on(datum/ambient_planet/record)
@@ -44,10 +44,9 @@
 		return FALSE
 	var/atom/fire = build_camp(site)
 	var/turf/where = (fire && ambient_free_turf_near(get_turf(fire), 1)) || ambient_free_turf_near(site.center, 2) || site.center
-	var/mob/living/basic/ambient_npc/stray/stranded/npc = new npc_type(where, site.data["identity"])
-	npc.set_place(site)
-	npc.scale_health(site.health_multiplier())
-	site.state = AMBIENT_SITE_ACTIVE
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/npc = site.spawn_npc(npc_type, where, site.data["identity"])
+	if(!npc)
+		return FALSE
 	site.data["identity"] = npc.stray_identity()
 	ambient_offer_recruit(npc)
 	return TRUE
@@ -158,7 +157,7 @@
 // THE STRANDED SURVIVOR
 // =========================================================================
 
-/mob/living/basic/ambient_npc/stray/stranded
+/mob/living/carbon/human/npc/ambient_npc/stray/stranded
 	name = "stranded spacer"
 	desc = "Sunburnt, grubby and very glad to see a ship."
 	outfit_choices = list(

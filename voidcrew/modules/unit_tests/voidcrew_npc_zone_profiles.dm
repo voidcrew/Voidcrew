@@ -821,7 +821,7 @@
 	var/turf/location = run_loc_floor_bottom_left
 	var/datum/ambient_place/site/site = allocate(/datum/ambient_place/site, null, location)
 	site.band = 2
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = allocate(/mob/living/basic/ambient_npc/planet/peddler, location)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler, location)
 	peddler.set_place(site)
 	var/mob/living/basic/bait = allocate(/mob/living/basic, run_loc_floor_top_right)
 	var/datum/ambient_activity/caravan_ambush/ambush = allocate(/datum/ambient_activity/caravan_ambush, peddler)
@@ -967,7 +967,7 @@
 	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
 	var/mob/living/carbon/human/consistent/leader = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
 	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "ordinary")
-	var/mob/living/basic/ambient_npc/stray/stranded/stray = spawn_npc_in_zone(/mob/living/basic/ambient_npc/stray/stranded, run_loc_floor_bottom_left, context, FALSE)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/stray = spawn_npc_in_zone(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, run_loc_floor_bottom_left, context, FALSE)
 	allocated += stray
 	stray.faction = list(FACTION_HOSTILE)
 	context.finalize()

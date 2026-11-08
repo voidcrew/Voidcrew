@@ -382,7 +382,7 @@
 	for(var/mob/living/basic/other in range(range, here))
 		if(other == src || other.stat != CONSCIOUS || other.client)
 			continue
-		if(istype(other, /mob/living/basic/ambient_npc))
+		if(istype(other, /mob/living/carbon/human/npc/ambient_npc))
 			options += other
 		else if(istype(other, /mob/living/basic/bounty_criminal))
 			var/mob/living/basic/bounty_criminal/patron = other

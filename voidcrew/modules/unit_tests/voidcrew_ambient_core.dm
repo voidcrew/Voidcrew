@@ -8,19 +8,19 @@
  */
 
 /// A plain ambient NPC for the core tests, who only stands about
-/mob/living/basic/ambient_npc/core_test
+/mob/living/carbon/human/npc/ambient_npc/core_test
 	routine = list(/datum/ambient_activity/idle = 1)
 
 /// One with something to drop besides their cash
-/mob/living/basic/ambient_npc/core_test/killable
+/mob/living/carbon/human/npc/ambient_npc/core_test/killable
 	death_loot = list(/obj/item/pickaxe)
 
 /// One who only ever sits down
-/mob/living/basic/ambient_npc/core_test/sitter
+/mob/living/carbon/human/npc/ambient_npc/core_test/sitter
 	routine = list(/datum/ambient_activity/sit = 1)
 
 /// One whose only routine is leaving: settle_in() must never settle them into it
-/mob/living/basic/ambient_npc/core_test/leaver
+/mob/living/carbon/human/npc/ambient_npc/core_test/leaver
 	routine = list(/datum/ambient_activity/leave = 1)
 
 /// A site kind the tests hand to the subsystem. No planet types and no npc_type, so the shared instance never rolls or spawns.
@@ -67,7 +67,7 @@
 /datum/unit_test/voidcrew_ambient_npc_protections
 
 /datum/unit_test/voidcrew_ambient_npc_protections/Run()
-	var/mob/living/basic/ambient_npc/core_test/npc = allocate(/mob/living/basic/ambient_npc/core_test, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, run_loc_floor_bottom_left)
 	TEST_ASSERT(npc in GLOB.ambient_npcs, "An ambient NPC is not on the list")
 	TEST_ASSERT_EQUAL(npc.sentience_type, SENTIENCE_HUMANOID, "Sentience or transference potions would work on an ambient NPC")
 	TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "An ambient NPC cannot be hurt")
@@ -115,7 +115,7 @@
 
 	// The leash: never a step off it by themselves; off it, a step back is allowed
 	var/turf/corner = run_loc_floor_bottom_left
-	var/mob/living/basic/ambient_npc/core_test/leashed = allocate(/mob/living/basic/ambient_npc/core_test, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/leashed = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, corner)
 	leashed.leash_bounds = list(corner.x, corner.y, corner.x + 1, corner.y + 1, corner.z)
 	var/turf/edge = locate(corner.x + 1, corner.y, corner.z)
 	var/turf/outside = locate(corner.x + 2, corner.y, corner.z)
@@ -129,7 +129,7 @@
 
 	// Killed: a body that lies down, their cash and loot once, and nothing more from a revived one killed again
 	var/turf/loot_turf = run_loc_floor_top_right
-	var/mob/living/basic/ambient_npc/core_test/killable/victim = allocate(/mob/living/basic/ambient_npc/core_test/killable, loot_turf)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/killable/victim = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test/killable, loot_turf)
 	victim.apply_damage(victim.maxHealth * 2, BRUTE)
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "An ambient NPC did not die of their wounds")
 	TEST_ASSERT(!victim.density, "An ambient NPC's body still blocks the way")
@@ -157,7 +157,7 @@
 /datum/unit_test/voidcrew_ambient_npc_dialogue
 
 /datum/unit_test/voidcrew_ambient_npc_dialogue/Run()
-	var/mob/living/basic/ambient_npc/core_test/npc = allocate(/mob/living/basic/ambient_npc/core_test, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, run_loc_floor_bottom_left)
 	TEST_ASSERT(length(npc.get_lines("attacked")), "The core file has no line for being attacked") // AMBIENT_LINE_ATTACKED
 	TEST_ASSERT(length(npc.get_lines("talk")), "The core file has no line for being talked to") // AMBIENT_LINE_TALK
 	TEST_ASSERT_EQUAL(length(ambient_dialogue_lines("no_such_file.json", "default", "talk")), 0, "A missing dialogue file gave lines")
@@ -190,7 +190,7 @@
 	TEST_ASSERT_EQUAL(SSambient_npcs.outpost_place(outpost), place, "A trader outpost got a second place")
 	TEST_ASSERT_EQUAL(length(SSambient_npcs.outpost_players(outpost)), 0, "Someone with a client is on a test concourse")
 	var/datum/ambient_outpost_role/core_test/role = allocate(/datum/ambient_outpost_role/core_test)
-	role.npc_type = /mob/living/basic/ambient_npc/core_test
+	role.npc_type = /mob/living/carbon/human/npc/ambient_npc/core_test
 	var/list/roles = list(role)
 	var/turf/lift = run_loc_floor_top_right
 
@@ -200,7 +200,7 @@
 	TEST_ASSERT_EQUAL(SSambient_npcs.update_outpost(place, 0, roles, 2), 1, "The rest of the role was not made in place on the next tick")
 	TEST_ASSERT_EQUAL(SSambient_npcs.update_outpost(place, 0, roles, 2), 0, "More people were made in place than the role wants")
 	TEST_ASSERT_EQUAL(length(place.npcs), 3, "An empty outpost has [length(place.npcs)] people for a role of three")
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		TEST_ASSERT_EQUAL(npc.place, place, "Someone made in place does not belong to the outpost")
 		TEST_ASSERT_EQUAL(npc.role, role.type, "Someone made in place does not know their role")
 		TEST_ASSERT(get_dist(npc, lift) > 1, "[npc] was made on or beside the lift, not in place")
@@ -213,7 +213,7 @@
 		TEST_ASSERT_EQUAL(npc.ai_controller.ai_status, AI_STATUS_OFF, "[npc]'s AI is on at an empty outpost")
 
 	// Their clocks stop while nobody is there: say this one stood still for five minutes
-	var/mob/living/basic/ambient_npc/sleeper = place.npcs[1]
+	var/mob/living/carbon/human/npc/ambient_npc/sleeper = place.npcs[1]
 	var/ends_before = sleeper.activity.ends_at
 	var/line_before = sleeper.next_line_at
 	TEST_ASSERT(ends_before, "Someone made in place is doing something with no end")
@@ -223,7 +223,7 @@
 	SSambient_npcs.update_outpost(place, 1, roles)
 	TEST_ASSERT(place.occupied, "A concourse with a player on it is not occupied")
 	TEST_ASSERT_EQUAL(length(place.npcs), 3, "Someone came while every role was full")
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_AI_PAUSED), "[npc] is still held still with a player on the concourse")
 		TEST_ASSERT(!npc.paused_at, "[npc] still counts as stopped with a player on the concourse")
 		TEST_ASSERT(npc.ai_controller.able_to_run, "[npc]'s AI cannot run with a player on the concourse")
@@ -235,7 +235,7 @@
 	qdel(place.npcs[2])
 	SSambient_npcs.update_outpost(place, 1, roles)
 	TEST_ASSERT_EQUAL(length(place.npcs), 2, "[length(place.npcs) - 1] people came off the lift at once")
-	var/mob/living/basic/ambient_npc/newcomer = place.npcs[2]
+	var/mob/living/carbon/human/npc/ambient_npc/newcomer = place.npcs[2]
 	TEST_ASSERT_EQUAL(get_turf(newcomer), lift, "A replacement with a player there came somewhere other than the lift")
 	TEST_ASSERT_EQUAL(newcomer.role, role.type, "A replacement does not know their role")
 	TEST_ASSERT(!HAS_TRAIT(newcomer, TRAIT_AI_PAUSED), "A replacement with a player there is held still")
@@ -246,7 +246,7 @@
 	place.arrivals_at = world.time
 	SSambient_npcs.update_outpost(place, 1, roles)
 	TEST_ASSERT_EQUAL(length(place.npcs), 3, "The second replacement never came")
-	for(var/mob/living/basic/ambient_npc/arrival in lift)
+	for(var/mob/living/carbon/human/npc/ambient_npc/arrival in lift)
 		arrival.forceMove(run_loc_floor_bottom_left)
 
 	// Never more than the outpost's cap, whatever the roles want
@@ -254,12 +254,12 @@
 	for(var/i in 1 to 15)
 		place.arrivals_at = world.time
 		SSambient_npcs.update_outpost(place, 1, roles)
-		for(var/mob/living/basic/ambient_npc/arrival in lift)
+		for(var/mob/living/carbon/human/npc/ambient_npc/arrival in lift)
 			arrival.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_EQUAL(length(place.living_npcs()), 8, "A trader outpost has [length(place.living_npcs())] NPCs, not the cap of 8") // AMBIENT_OUTPOST_TRANSIENT_CAP
 
 	// A fight near them: they duck and head off
-	var/mob/living/basic/ambient_npc/witness = place.npcs[1]
+	var/mob/living/carbon/human/npc/ambient_npc/witness = place.npcs[1]
 	var/mob/living/carbon/human/brawler = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
 	SEND_SIGNAL(outpost, "trader_outpost_violence", brawler) // COMSIG_TRADER_OUTPOST_VIOLENCE
 	TEST_ASSERT(istype(witness.activity, /datum/ambient_activity/leave), "A witness to a fight did not head for the lift")
@@ -272,25 +272,25 @@
 		SSambient_npcs.update_outpost(place, 0, roles, 10)
 	TEST_ASSERT(!place.occupied, "The concourse is still occupied with nobody on it")
 	TEST_ASSERT_EQUAL(length(place.npcs), length(everyone), "[length(place.npcs)] people are at an outpost that had [length(everyone)] before the players left")
-	for(var/mob/living/basic/ambient_npc/npc as anything in everyone)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in everyone)
 		TEST_ASSERT(!QDELETED(npc), "[npc] was deleted when the players left")
 		TEST_ASSERT(HAS_TRAIT_FROM(npc, TRAIT_AI_PAUSED, "ambient_paused"), "[npc] is not held still after the players left") // AMBIENT_PAUSED_TRAIT
 		TEST_ASSERT(!npc.ai_controller.able_to_run, "[npc]'s AI can run after the players left")
 
 	// Someone who left while players were there is made up in place once they have gone
 	role.max_count = 3
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs.Copy())
 		qdel(npc)
 	place.needs_settling = TRUE
 	SSambient_npcs.update_outpost(place, 0, roles, 10)
 	TEST_ASSERT_EQUAL(length(place.npcs), 3, "An empty outpost's role was not made up in place")
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		TEST_ASSERT(get_dist(npc, lift) > 1, "[npc] was made up on or beside the lift, not in place")
 
 	// The next player wakes them all again
 	SSambient_npcs.update_outpost(place, 1, roles)
 	TEST_ASSERT(place.occupied, "A returning player did not wake the outpost")
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs)
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs)
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_AI_PAUSED), "[npc] is still held still after a player came back")
 
 /// Settling in never starts someone off heading for the lift: a role whose only routine is leaving fails to settle rather than starting it
@@ -299,7 +299,7 @@
 /datum/unit_test/voidcrew_ambient_settle_never_leaves/Run()
 	var/obj/structure/overmap/trader_outpost/outpost = ambient_test_outpost()
 	var/datum/ambient_place/outpost/place = SSambient_npcs.outpost_place(outpost)
-	var/mob/living/basic/ambient_npc/core_test/leaver/npc = new(run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/leaver/npc = new(run_loc_floor_bottom_left)
 	npc.set_place(place)
 	TEST_ASSERT(!npc.settle_in(), "Someone whose only routine is leaving was settled into it")
 	TEST_ASSERT_NULL(npc.activity, "A failed settle left an activity running")
@@ -314,7 +314,7 @@
 
 /datum/unit_test/voidcrew_ambient_planet_sites/Run()
 	var/datum/ambient_site_kind/core_test/kind = allocate(/datum/ambient_site_kind/core_test)
-	kind.npc_type = /mob/living/basic/ambient_npc/core_test/killable
+	kind.npc_type = /mob/living/carbon/human/npc/ambient_npc/core_test/killable
 	kind.planet_types = list(/datum/overmap/planet/jungle)
 	kind.chance = 100
 	var/datum/ambient_planet/record = allocate(/datum/ambient_planet)
@@ -359,7 +359,7 @@
 	TEST_ASSERT_EQUAL(SSambient_npcs.realize_planet(record, 6), 2, "A two-NPC site did not come out")
 	TEST_ASSERT_EQUAL(site.state, "active", "A site with its NPCs out is not active") // AMBIENT_SITE_ACTIVE
 	TEST_ASSERT_EQUAL(SSambient_npcs.realize_planet(record, 6), 0, "A site came out twice")
-	for(var/mob/living/basic/ambient_npc/npc as anything in site.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in site.living_npcs())
 		TEST_ASSERT_EQUAL(npc.place, site, "A site's NPC does not belong to it")
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "A planet NPC is in godmode")
 
@@ -371,20 +371,20 @@
 
 	// Killed: that one never comes back, the other still does
 	npcs = site.living_npcs()
-	var/mob/living/basic/ambient_npc/first_victim = npcs[1]
+	var/mob/living/carbon/human/npc/ambient_npc/first_victim = npcs[1]
 	first_victim.death()
 	TEST_ASSERT_EQUAL(site.dead, 1, "A killed NPC was not counted")
 	TEST_ASSERT(site.state != "spent", "A site was spent with one of its two NPCs still alive") // AMBIENT_SITE_SPENT
-	for(var/mob/living/basic/ambient_npc/npc as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in site.npcs.Copy())
 		qdel(npc)
 	TEST_ASSERT_EQUAL(SSambient_npcs.realize_planet(record, 6), 1, "A site came back with [length(site.living_npcs())] NPCs after losing one of two")
 
 	// Both killed: spent for the round, however often the crew leaves and lands again
 	npcs = site.living_npcs()
-	var/mob/living/basic/ambient_npc/second_victim = npcs[1]
+	var/mob/living/carbon/human/npc/ambient_npc/second_victim = npcs[1]
 	second_victim.death()
 	TEST_ASSERT_EQUAL(site.state, "spent", "A site whose NPCs were all killed is not spent") // AMBIENT_SITE_SPENT
-	for(var/mob/living/basic/ambient_npc/npc as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in site.npcs.Copy())
 		qdel(npc)
 	for(var/visit in 1 to 3)
 		TEST_ASSERT_EQUAL(SSambient_npcs.realize_planet(record, 6), 0, "A spent site came back on visit [visit]")
@@ -425,7 +425,7 @@
 
 	// The planner: a routine of sitting, a chair across the room
 	var/obj/structure/chair/chair = allocate(/obj/structure/chair, chair_turf)
-	var/mob/living/basic/ambient_npc/core_test/sitter/sitter = allocate(/mob/living/basic/ambient_npc/core_test/sitter, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/sitter/sitter = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test/sitter, corner)
 	var/datum/ai_controller/controller = sitter.ai_controller
 	TEST_ASSERT(istype(controller, /datum/ai_controller/basic_controller/ambient_npc), "An ambient NPC has no ambient AI")
 	// A test world has no client near: every move (update_grid(), recalculate_idle()) would idle the AI, and the planner only runs while it is on
@@ -448,7 +448,7 @@
 	TEST_ASSERT_NULL(sitter.activity, "An ended activity is still running")
 
 	// Priorities: a reaction replaces a routine, and nothing replaces leaving
-	var/mob/living/basic/ambient_npc/core_test/npc = allocate(/mob/living/basic/ambient_npc/core_test, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/npc = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, corner)
 	TEST_ASSERT_NOTNULL(npc.start_activity(new /datum/ambient_activity/idle(npc)), "Standing about could not start")
 	TEST_ASSERT_NOTNULL(npc.start_activity(new /datum/ambient_activity/shelter(npc, null, 100)), "Sheltering did not replace standing about")
 	TEST_ASSERT_NULL(npc.start_activity(new /datum/ambient_activity/idle(npc)), "Standing about replaced sheltering")
@@ -462,7 +462,7 @@
 
 	// Drinking: a real glass in hand, sipped, set down on the table at the end
 	var/obj/structure/table/table = allocate(/obj/structure/table, locate(corner.x + 2, corner.y, corner.z))
-	var/mob/living/basic/ambient_npc/core_test/drinker = allocate(/mob/living/basic/ambient_npc/core_test, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/drinker = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, corner)
 	var/datum/ambient_activity/drink/drink = drinker.start_activity(new /datum/ambient_activity/drink(drinker, table))
 	TEST_ASSERT_NOTNULL(drink, "A drink at a table could not start")
 	drinker.forceMove(drink.spot)
@@ -475,8 +475,8 @@
 	TEST_ASSERT_EQUAL(glass.loc, table.loc, "A finished glass was not set down on the table")
 
 	// Chat: the partner drops what it was doing and answers until the starter is done
-	var/mob/living/basic/ambient_npc/core_test/talker = allocate(/mob/living/basic/ambient_npc/core_test, corner)
-	var/mob/living/basic/ambient_npc/core_test/listener = allocate(/mob/living/basic/ambient_npc/core_test, locate(corner.x, corner.y + 1, corner.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/talker = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/listener = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, locate(corner.x, corner.y + 1, corner.z))
 	listener.start_activity(new /datum/ambient_activity/idle(listener))
 	var/datum/ambient_activity/chat/chat = talker.start_activity(new /datum/ambient_activity/chat(talker, listener))
 	TEST_ASSERT_NOTNULL(chat, "A chat with someone right there could not start")
@@ -490,7 +490,7 @@
 
 	// Work at an object: the mechanics' work loop, on them for the job and off them after
 	allocate(/obj/structure/rack, locate(corner.x + 2, corner.y + 3, corner.z))
-	var/mob/living/basic/ambient_npc/core_test/worker = allocate(/mob/living/basic/ambient_npc/core_test, locate(corner.x + 1, corner.y + 3, corner.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/worker = allocate(/mob/living/carbon/human/npc/ambient_npc/core_test, locate(corner.x + 1, corner.y + 3, corner.z))
 	worker.work_weights = list(/datum/outpost_ambient_work/wrench = 1)
 	var/datum/ambient_activity/work/work = worker.start_activity(new /datum/ambient_activity/work(worker))
 	TEST_ASSERT_NOTNULL(work, "Work at a rack could not start")
@@ -538,15 +538,15 @@
 
 	// crowded(): one NPC within 2 tiles does not crowd it; two do; a claimed (not yet arrived) spot is crowded too
 	var/turf/target = locate(far_corner.x + 2, far_corner.y + 2, far_corner.z)
-	var/mob/living/basic/ambient_npc/core_test/watcher1 = new(locate(target.x - 1, target.y, target.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/watcher1 = new(locate(target.x - 1, target.y, target.z))
 	watcher1.set_place(place)
 	TEST_ASSERT(!place.crowded(target, null), "One NPC within 2 tiles already crowds a tile") // AMBIENT_CROWD_MAX
-	var/mob/living/basic/ambient_npc/core_test/watcher2 = new(locate(target.x, target.y - 1, target.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/watcher2 = new(locate(target.x, target.y - 1, target.z))
 	watcher2.set_place(place)
 	TEST_ASSERT(place.crowded(target, null), "Two NPCs within 2 tiles do not crowd a tile") // AMBIENT_CROWD_RADIUS, AMBIENT_CROWD_MAX
 	qdel(watcher1)
 	qdel(watcher2)
-	var/mob/living/basic/ambient_npc/core_test/claimer = new(bl)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/claimer = new(bl)
 	claimer.set_place(place)
 	claimer.activity = new /datum/ambient_activity/idle(claimer)
 	claimer.activity.go_to(target)
@@ -554,13 +554,13 @@
 	qdel(claimer)
 
 	// An NPC starting idle beside the door is sent to a loiter tile; a wander stop is a loiter tile
-	var/mob/living/basic/ambient_npc/core_test/idler = new(beside_door)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/idler = new(beside_door)
 	idler.set_place(place)
 	var/datum/ambient_activity/idle/idle_act = idler.start_activity(new /datum/ambient_activity/idle(idler))
 	TEST_ASSERT_NOTNULL(idle_act, "Idle could not start beside the door")
 	TEST_ASSERT(idle_act.spot && loiter[idle_act.spot], "An NPC idling beside the door was not sent to a loiter tile")
 	qdel(idler)
-	var/mob/living/basic/ambient_npc/core_test/wanderer = new(far_corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/wanderer = new(far_corner)
 	wanderer.set_place(place)
 	var/stops = 0
 	for(var/i in 1 to 20)
@@ -573,13 +573,13 @@
 	qdel(wanderer)
 
 	// find_chat_partner() skips a candidate crowded by two others already beside them
-	var/mob/living/basic/ambient_npc/core_test/crowded_a = new(far_corner)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/crowded_a = new(far_corner)
 	crowded_a.set_place(place)
-	var/mob/living/basic/ambient_npc/core_test/crowded_b = new(locate(far_corner.x + 1, far_corner.y, far_corner.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/crowded_b = new(locate(far_corner.x + 1, far_corner.y, far_corner.z))
 	crowded_b.set_place(place)
-	var/mob/living/basic/ambient_npc/core_test/crowded_c = new(locate(far_corner.x, far_corner.y + 1, far_corner.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/crowded_c = new(locate(far_corner.x, far_corner.y + 1, far_corner.z))
 	crowded_c.set_place(place)
-	var/mob/living/basic/ambient_npc/core_test/asker = new(locate(far_corner.x + 2, far_corner.y, far_corner.z))
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/asker = new(locate(far_corner.x + 2, far_corner.y, far_corner.z))
 	asker.set_place(place)
 	TEST_ASSERT_NULL(asker.find_chat_partner(), "find_chat_partner() picked a partner already crowded by two others")
 	qdel(crowded_a)
@@ -589,30 +589,30 @@
 
 	// Settling three with a role of max_count = 3: none within 2 of the lift, none with 2 or more others within 2 tiles
 	var/datum/ambient_outpost_role/core_test/spread_role = allocate(/datum/ambient_outpost_role/core_test)
-	spread_role.npc_type = /mob/living/basic/ambient_npc/core_test
+	spread_role.npc_type = /mob/living/carbon/human/npc/ambient_npc/core_test
 	spread_role.max_count = 3
 	place.needs_settling = TRUE
 	SSambient_npcs.settle_outpost(place, list(spread_role), 10)
 	TEST_ASSERT_EQUAL(length(place.npcs), 3, "Settling a role of three made [length(place.npcs)] NPCs")
 	var/list/settled = place.npcs.Copy()
 	for(var/i in 1 to length(settled))
-		var/mob/living/basic/ambient_npc/npc = settled[i]
+		var/mob/living/carbon/human/npc/ambient_npc/npc = settled[i]
 		TEST_ASSERT(get_dist(npc, lift) > 2, "[npc] settled within 2 tiles of the lift") // AMBIENT_LIFT_CLEARANCE
 		var/earlier_nearby = 0
 		for(var/j in 1 to i - 1)
 			if(get_dist(npc, settled[j]) <= 2) // AMBIENT_CROWD_RADIUS
 				earlier_nearby++
 		TEST_ASSERT(earlier_nearby < 2, "[npc] settled with 2 or more earlier arrivals within 2 tiles") // AMBIENT_CROWD_MAX
-	for(var/mob/living/basic/ambient_npc/npc as anything in place.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc as anything in place.npcs.Copy())
 		qdel(npc)
 
 	// Cover: with no crew fighting, three NPCs sent for cover get three different spots, the first one the refuge
 	var/turf/refuge = locate(bl.x + 2, bl.y + 2, bl.z)
-	var/mob/living/basic/ambient_npc/core_test/first = new(bl)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/first = new(bl)
 	first.set_place(place)
-	var/mob/living/basic/ambient_npc/core_test/second = new(bl)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/second = new(bl)
 	second.set_place(place)
-	var/mob/living/basic/ambient_npc/core_test/third = new(bl)
+	var/mob/living/carbon/human/npc/ambient_npc/core_test/third = new(bl)
 	third.set_place(place)
 	first.react_shootout(refuge)
 	TEST_ASSERT(istype(first.activity, /datum/ambient_activity/take_cover), "The first NPC did not take cover")

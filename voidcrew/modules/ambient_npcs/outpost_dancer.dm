@@ -81,7 +81,7 @@
 // =========================================================================
 
 /// Dances on the pole for the crowd, and screams and runs if the kingpin's crew starts trouble
-/mob/living/basic/ambient_npc/outpost/dancer
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer
 	desc = "Dances on the pole for the crowd."
 	dialogue_file = "outpost_dancer.json"
 	dialogue_section = "dancer"
@@ -98,7 +98,7 @@
 	var/back_to_pole = FALSE
 
 /// Dances at the pole, with the odd break at the bar or a nearby seat. Straight back to the pole after trouble.
-/mob/living/basic/ambient_npc/outpost/dancer/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/pick_activity()
 	if(back_to_pole)
 		back_to_pole = FALSE
 		if(start_activity(new /datum/ambient_activity/dance_pole(src)))
@@ -108,13 +108,13 @@
 	return pick_anchored(routine, bar_spot, list(/datum/ambient_activity/sit))
 
 /// Found mid-dance, up on the pole
-/mob/living/basic/ambient_npc/outpost/dancer/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/settle_in()
 	if(settle_at(/datum/ambient_activity/dance_pole))
 		return TRUE
 	return ..()
 
 /// The Undertow's suplexed rod, if there is one
-/mob/living/basic/ambient_npc/outpost/dancer/proc/find_pole()
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/find_pole()
 	return ambient_outpost_find(get_outpost(), /obj/structure/festivus/anchored)
 
 /**
@@ -123,7 +123,7 @@
  * is the dance's own check for that one tile: open ground on her leash, not in `avoid`, and nobody
  * else on it, standing or lying.
  */
-/mob/living/basic/ambient_npc/outpost/dancer/proc/pole_free(turf/tile, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/pole_free(turf/tile, list/avoid)
 	if(!isturf(tile) || LAZYACCESS(avoid, tile))
 		return FALSE
 	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
@@ -134,7 +134,7 @@
 	return leash_ok(tile)
 
 /// A fight at the outpost: she gets clear of it and keeps her head down until it has been quiet a while, screaming if it is right by the kingpin. She never leaves over it.
-/mob/living/basic/ambient_npc/outpost/dancer/react_violence(mob/living/offender)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/react_violence(mob/living/offender)
 	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave) || istype(activity, /datum/ambient_activity/take_cover))
 		return
 	// Already hiding: it is still going on
@@ -150,7 +150,7 @@
 		speak_context(AMBIENT_LINE_VIOLENCE, offender, force = TRUE)
 
 /// Hit herself: she screams and gets clear, and goes back to her pole once it is quiet
-/mob/living/basic/ambient_npc/outpost/dancer/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave))
 		return
 	if(still_hiding())
@@ -161,7 +161,7 @@
 		scream()
 
 /// The kingpin's crew is shooting: she screams and runs for cover, and goes back to her pole once it is over (shootout_over(), inherited)
-/mob/living/basic/ambient_npc/outpost/dancer/react_shootout(turf/refuge)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/react_shootout(turf/refuge)
 	if(stat != CONSCIOUS || fading || istype(activity, /datum/ambient_activity/leave) || istype(activity, /datum/ambient_activity/take_cover))
 		return
 	if(start_activity(new /datum/ambient_activity/take_cover(src, refuge)))
@@ -169,14 +169,14 @@
 		scream()
 
 /// Starts her hiding from `threat`. TRUE if she is.
-/mob/living/basic/ambient_npc/outpost/dancer/proc/hide_from(atom/threat)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/hide_from(atom/threat)
 	if(!start_activity(new /datum/ambient_activity/dancer_hide(src, threat)))
 		return FALSE
 	back_to_pole = TRUE
 	return TRUE
 
 /// If she is hiding, more trouble means it is not quiet yet, so she stays hidden longer. TRUE if she is hiding.
-/mob/living/basic/ambient_npc/outpost/dancer/proc/still_hiding()
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/still_hiding()
 	var/datum/ambient_activity/dancer_hide/hiding = activity
 	if(!istype(hiding))
 		return FALSE
@@ -184,7 +184,7 @@
 	return TRUE
 
 /// A free tile within DANCER_HIDE_RANGE of her, further from `threat` than she is and as far as she can find; null to stay put
-/mob/living/basic/ambient_npc/outpost/dancer/proc/hiding_spot(atom/threat, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/hiding_spot(atom/threat, list/avoid)
 	var/turf/here = get_turf(src)
 	var/turf/danger = get_turf(threat)
 	if(!here || !danger || danger.z != here.z)
@@ -204,7 +204,7 @@
 	return best
 
 /// A woman's scream. Never sleeps.
-/mob/living/basic/ambient_npc/outpost/dancer/proc/scream()
+/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/proc/scream()
 	var/static/list/screams = list(
 		'sound/mobs/humanoids/human/scream/femalescream_1.ogg',
 		'sound/mobs/humanoids/human/scream/femalescream_2.ogg',
@@ -229,7 +229,7 @@
 	var/calm_at = 0
 
 /datum/ambient_activity/dancer_hide/setup()
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = doer
 	if(!istype(dancer))
 		return FALSE
 	set_duration()
@@ -282,7 +282,7 @@
 	var/side = SOUTH
 
 /datum/ambient_activity/dance_pole/setup()
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = doer
 	if(!istype(dancer))
 		return FALSE
 	var/obj/structure/festivus/anchored/pole = dancer.find_pole()
@@ -346,7 +346,7 @@
 /datum/ambient_activity/dance_pole/proc/try_climb()
 	if(on_pole)
 		return TRUE
-	var/mob/living/basic/ambient_npc/outpost/dancer/dancer = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = doer
 	if(!pole() || doer.buckled || get_dist(doer, pole_turf) > 1 || !dancer.pole_free(pole_turf))
 		return FALSE
 	if(doer.loc != pole_turf)
@@ -498,7 +498,7 @@
 /// One dancer at the Undertow
 /datum/ambient_outpost_role/dancer
 	name = "dancer"
-	npc_type = /mob/living/basic/ambient_npc/outpost/dancer
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/dancer
 	outpost_types = list(/obj/structure/overmap/trader_outpost/black_market)
 	max_count = 1
 	weight = 3

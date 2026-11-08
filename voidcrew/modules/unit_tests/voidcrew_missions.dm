@@ -480,7 +480,7 @@
 	repeated.voucher_count = initial(rescue_type.voucher_count)
 	var/datum/mission_objective/field/escort/repeated_escort = new
 	repeated.add_objective(repeated_escort)
-	repeated_escort.survivor = allocate(/mob/living/basic/mission_survivor, pad_turf)
+	repeated_escort.survivor = allocate(/mob/living/carbon/human/npc/mission_survivor, pad_turf)
 	repeated_escort.on_turn_in_finalized(pad)
 	TEST_ASSERT_EQUAL(repeated.value, 1250, "A healthy survivor must add 25% to credits")
 	TEST_ASSERT_NULL(repeated_escort.survivor, "Finalization must clear the survivor reference")

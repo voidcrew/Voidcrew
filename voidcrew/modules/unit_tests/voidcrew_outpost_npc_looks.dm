@@ -106,7 +106,7 @@
 	qdel(glass)
 
 	// An ambient NPC's own overlays follow set_held()
-	var/mob/living/basic/ambient_npc/npc = allocate(/mob/living/basic/ambient_npc)
+	var/mob/living/carbon/human/npc/ambient_npc/npc = allocate(/mob/living/carbon/human/npc/ambient_npc)
 	var/deadline = world.time + 5 SECONDS
 	UNTIL(npc.icon == 'icons/mob/human/human.dmi' || world.time > deadline)
 	npc.set_held(/obj/item/mop)
@@ -145,10 +145,10 @@
 	droid_worker.set_carried(TRUE)
 	TEST_ASSERT_NOTNULL(droid_worker.carried, "A carrying droid has no box overlay")
 
-	var/mob/living/basic/ambient_npc/hauler = allocate(/mob/living/basic/ambient_npc)
+	var/mob/living/carbon/human/npc/ambient_npc/hauler = allocate(/mob/living/carbon/human/npc/ambient_npc)
 	deadline = world.time + 5 SECONDS
 	UNTIL(hauler.icon == 'icons/mob/human/human.dmi' || world.time > deadline)
-	var/datum/component/outpost_ambient_worker/hauler_worker = hauler.AddComponent(/datum/component/outpost_ambient_worker, list(), FALSE, CALLBACK(hauler, TYPE_PROC_REF(/mob/living/basic/ambient_npc, show_work_look)))
+	var/datum/component/outpost_ambient_worker/hauler_worker = hauler.AddComponent(/datum/component/outpost_ambient_worker, list(), FALSE, CALLBACK(hauler, TYPE_PROC_REF(/mob/living/carbon/human/npc/ambient_npc, show_work_look)))
 	hauler_worker.set_carried(TRUE)
 	deadline = world.time + 5 SECONDS
 	UNTIL(hauler.work_look == "carry" || world.time > deadline)

@@ -2,7 +2,7 @@
  * # World population: customers and drinkers at the trader outposts (owner items 2 and 3)
  *
  * Built here (spec 3.1, 3.2):
- * - /mob/living/basic/ambient_npc/outpost: the base for everyone PA brings to a trader outpost
+ * - /mob/living/carbon/human/npc/ambient_npc/outpost: the base for everyone PA brings to a trader outpost
  *   (customers, drinkers, the staff in outpost_workers.dm, the angler in outpost_angler.dm). They
  *   keep out of the pond, doorways, the lift's mouth, the kingpin's lounge and the bees.
  * - Customers: to one or two counters, a line for that trader and the trader's answer in the
@@ -20,7 +20,7 @@
  *   mess for the janitor.
  * Lines are in strings/outpost_patrons.json (AMBIENT_STRINGS_PATRONS).
  *
- * Seams (P0, frozen): /mob/living/basic/ambient_npc (speak_context(), reply_to(), talked_to(),
+ * Seams (P0, frozen): /mob/living/carbon/human/npc/ambient_npc (speak_context(), reply_to(), talked_to(),
  * react_violence(), react_shootout(), react_convoy(), pick_activity(), `routine`), the activities
  * in ambient_activity.dm (idle, wander, sit, drink, chat, work, leave), /datum/ambient_outpost_role
  * (npc_type, outpost_types, max_count, weight, gap_low/gap_high, wanted(), arrive()),
@@ -45,19 +45,27 @@
 #define PATRON_SERVE_HIGH (15 SECONDS)
 /// How far from the bar a drinker looks for a seat
 #define PATRON_BAR_RANGE 14
-/// Sips of something strong per drunk stage
-#define PATRON_SIPS_PER_STAGE 2
-/// The stage at which they pass out
+/// How drunk (tg's get_drunk_amount()) a drinker is at each stage: chatty, loud, swaying, and done for
+/// (tg's own lines: 6 is drunk not tipsy, 16 slurs, 41 brings dizziness and confusion)
+#define PATRON_DRUNK_CHATTY 6
+#define PATRON_DRUNK_LOUD 16
+#define PATRON_DRUNK_SWAYING 31
+#define PATRON_DRUNK_DONE 41
+/// Drunk enough to be sick (tg's own line for it)
+#define PATRON_DRUNK_SICK 51
+/// The stage at which they are done for and sleep it off
 #define PATRON_DRUNK_MAX 4
-/// A drinker sips this often
-#define PATRON_SIP_LOW (20 SECONDS)
-#define PATRON_SIP_HIGH (40 SECONDS)
+/// Gulps a drinker who was here before anyone came has already had, per round of drinks
+#define PATRON_GULPS_PER_ROUND 3
+/// A drinker takes a gulp this often
+#define PATRON_SIP_LOW (15 SECONDS)
+#define PATRON_SIP_HIGH (30 SECONDS)
 /// Coffee sips at the crew room before something stronger
 #define PATRON_COFFEE_SIPS 2
 /// How long a drinker sleeps it off before going
 #define PATRON_SLEEP_LOW (2 MINUTES)
 #define PATRON_SLEEP_HIGH (4 MINUTES)
-/// Chance, when a drinker reaches stage 3 or 4, that they are sick on the floor (once)
+/// Chance, when a drinker drunk enough to be sick reaches a new stage, that they are (once)
 #define PATRON_VOMIT_CHANCE 20
 /// Least time between two drinks handed to one drinker
 #define PATRON_HANDED_COOLDOWN (20 SECONDS)
@@ -83,7 +91,7 @@
  * activities never send them into the pond, into or beside a doorway, into the lift's mouth, into
  * the kingpin's lounge or near an apiary.
  */
-/mob/living/basic/ambient_npc/outpost
+/mob/living/carbon/human/npc/ambient_npc/outpost
 	desc = "Someone off one of the ships."
 	dialogue_file = AMBIENT_STRINGS_PATRONS
 	dialogue_section = "customer"
@@ -97,7 +105,7 @@
  * ambient_outpost_tile_avoided() lists: the pond, doorways, the lift's mouth, the kingpin's lounge,
  * the hives, and a counter's reach unless they have business there and nobody is being served.
  */
-/mob/living/basic/ambient_npc/outpost/standable(turf/tile, list/avoid, ignore_floor = FALSE)
+/mob/living/carbon/human/npc/ambient_npc/outpost/standable(turf/tile, list/avoid, ignore_floor = FALSE)
 	if(!isturf(tile) || LAZYACCESS(avoid, tile))
 		return FALSE
 	if(!isopenturf(tile) || isspaceturf(tile) || isgroundlessturf(tile) || islava(tile) || ischasm(tile))
@@ -112,7 +120,7 @@
 		return FALSE
 	return !ambient_outpost_tile_avoided(tile, place, counter_business)
 
-/mob/living/basic/ambient_npc/outpost/seat_usable(obj/structure/chair/seat, list/avoid)
+/mob/living/carbon/human/npc/ambient_npc/outpost/seat_usable(obj/structure/chair/seat, list/avoid)
 	. = ..()
 	if(!.)
 		return
@@ -127,7 +135,7 @@
  * can be set up, then standing about: P0's pick_activity() with an anchor. The types in
  * `anchored_types` (all of them when null) are made with `anchor`, the rest without.
  */
-/mob/living/basic/ambient_npc/outpost/proc/pick_anchored(list/weights, atom/anchor, list/anchored_types)
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/pick_anchored(list/weights, atom/anchor, list/anchored_types)
 	var/list/options = weights?.Copy()
 	while(length(options))
 		var/activity_type = pick_weight(options)
@@ -138,12 +146,12 @@
 	return start_activity(new /datum/ambient_activity/idle(src))
 
 /// The trader outpost they are at, if any
-/mob/living/basic/ambient_npc/outpost/proc/get_outpost()
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/get_outpost()
 	var/datum/ambient_place/outpost/outpost_place = place
 	return istype(outpost_place) ? outpost_place.outpost() : null
 
 /// A line for `context` from `section` of their file, said now to `other`. TRUE if said.
-/mob/living/basic/ambient_npc/outpost/proc/say_from(section, context, atom/other)
+/mob/living/carbon/human/npc/ambient_npc/outpost/proc/say_from(section, context, atom/other)
 	var/list/lines = ambient_dialogue_lines(dialogue_file, section, context)
 	if(!length(lines) || stat != CONSCIOUS || fading)
 		return FALSE
@@ -264,7 +272,7 @@
 	if(!trader)
 		return null
 	for(var/mob/living/customer in range(PATRON_COUNTER_RANGE, trader))
-		if(customer.stat == DEAD || istype(customer, /mob/living/basic/ambient_npc) || istype(customer, /mob/living/basic/outpost_trader))
+		if(customer.stat == DEAD || istype(customer, /mob/living/carbon/human/npc/ambient_npc) || istype(customer, /mob/living/basic/outpost_trader))
 			continue
 		if(customer.client || ishuman(customer))
 			return customer
@@ -273,7 +281,7 @@
 /// How many ambient NPCs stand or sit within reach of `trader`, not counting `exclude`
 /proc/ambient_counter_crowd(mob/living/basic/outpost_trader/trader, mob/living/exclude)
 	. = 0
-	for(var/mob/living/basic/ambient_npc/npc in range(PATRON_COUNTER_RANGE, trader))
+	for(var/mob/living/carbon/human/npc/ambient_npc/npc in range(PATRON_COUNTER_RANGE, trader))
 		if(npc != exclude && npc.stat != DEAD && !npc.fading)
 			.++
 
@@ -282,12 +290,12 @@
  * tiles out with the counter (a table) in between, so never on the trader's own side. A trader with
  * no counter at all is served from anywhere within reach.
  */
-/proc/ambient_counter_spots(mob/living/basic/ambient_npc/npc, mob/living/basic/outpost_trader/trader, list/avoid)
+/proc/ambient_counter_spots(mob/living/carbon/human/npc/ambient_npc/npc, mob/living/basic/outpost_trader/trader, list/avoid)
 	. = list()
 	var/turf/center = get_turf(trader)
 	if(!center || !npc)
 		return
-	var/mob/living/basic/ambient_npc/outpost/visitor = npc
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/visitor = npc
 	if(istype(visitor))
 		visitor.counter_business = TRUE
 	var/list/open_spots = list()
@@ -329,7 +337,7 @@
  * With `loiter` (default), only loiter spots count, so a crowded or bad queue gives up the
  * spot instead of stacking. Null if none.
  */
-/proc/ambient_waiting_spot(mob/living/basic/ambient_npc/npc, atom/center, low = 3, high = 4, list/avoid, loiter = TRUE)
+/proc/ambient_waiting_spot(mob/living/carbon/human/npc/ambient_npc/npc, atom/center, low = 3, high = 4, list/avoid, loiter = TRUE)
 	var/turf/middle = get_turf(center)
 	if(!middle || !npc)
 		return null
@@ -512,7 +520,7 @@
 /proc/ambient_outpost_report_mess(datum/ambient_place/outpost/place, obj/effect/decal/cleanable/mess)
 	if(!istype(place) || !ambient_is_mess(mess))
 		return
-	for(var/mob/living/basic/ambient_npc/outpost/worker/janitor/janitor in place.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/janitor/janitor in place.living_npcs())
 		if(janitor.notice_mess(mess))
 			return
 
@@ -591,7 +599,7 @@
 // =========================================================================
 
 /// Someone off one of the berthed ships, doing their shopping
-/mob/living/basic/ambient_npc/outpost/customer
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer
 	desc = "Someone off one of the ships, doing their shopping."
 	dialogue_section = "customer"
 	outfit_choices = list(
@@ -617,16 +625,16 @@
 	/// Weakrefs to the traders they already bought from
 	var/list/visited
 
-/mob/living/basic/ambient_npc/outpost/customer/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/Initialize(mapload)
 	. = ..()
 	leave_at = world.time + rand(PATRON_VISIT_LOW, PATRON_VISIT_HIGH)
 	stalls_left = rand(1, PATRON_STALLS_MAX)
 
-/mob/living/basic/ambient_npc/outpost/customer/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/Destroy()
 	visited = null
 	return ..()
 
-/mob/living/basic/ambient_npc/outpost/customer/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/pick_activity()
 	if(world.time >= leave_at)
 		if(prob(30))
 			speak_context(AMBIENT_LINE_LEAVE)
@@ -639,26 +647,26 @@
 	return ..()
 
 /// Here a while already: part-way through their visit, at a counter, or done there with a bag in hand
-/mob/living/basic/ambient_npc/outpost/customer/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/settle_in()
 	leave_at = ambient_part_way(leave_at)
 	if(prob(40))
 		stalls_left--
 		set_held(/obj/item/storage/box/papersack)
 	return ..()
 
-/mob/living/basic/ambient_npc/outpost/customer/shift_times(delay)
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/shift_times(delay)
 	. = ..()
 	leave_at = ambient_shifted(leave_at, delay)
 
 /// Whether they already bought from `trader` this visit
-/mob/living/basic/ambient_npc/outpost/customer/proc/has_visited(mob/living/basic/outpost_trader/trader)
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/proc/has_visited(mob/living/basic/outpost_trader/trader)
 	for(var/datum/weakref/ref as anything in visited)
 		if(ref.resolve() == trader)
 			return TRUE
 	return FALSE
 
 /// The convoy came in: now and then a word about it
-/mob/living/basic/ambient_npc/outpost/customer/react_convoy(obj/structure/overmap/trader_outpost/outpost)
+/mob/living/carbon/human/npc/ambient_npc/outpost/customer/react_convoy(obj/structure/overmap/trader_outpost/outpost)
 	if(stat == CONSCIOUS && !fading && prob(30) && reaction_ready("convoy", 1 MINUTES))
 		speak_context("convoy")
 
@@ -699,7 +707,7 @@
 
 /// A trader at their place to visit: one they have not bought from, whose counter is not crowded with NPCs
 /datum/ambient_activity/shop_visit/proc/pick_trader()
-	var/mob/living/basic/ambient_npc/outpost/customer/shopper = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/shopper = doer
 	var/list/options = list()
 	for(var/mob/living/basic/outpost_trader/trader as anything in ambient_outpost_traders(doer.place))
 		if(!ambient_trader_section(trader))
@@ -791,7 +799,7 @@
 /// Served: off with a paper bag
 /datum/ambient_activity/shop_visit/proc/served(mob/living/basic/outpost_trader/trader)
 	doer.set_held(/obj/item/storage/box/papersack)
-	var/mob/living/basic/ambient_npc/outpost/customer/shopper = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/shopper = doer
 	if(istype(shopper))
 		LAZYADD(shopper.visited, WEAKREF(trader))
 
@@ -812,7 +820,7 @@
 // =========================================================================
 
 /// Off duty and at the bar, and it shows more with every drink
-/mob/living/basic/ambient_npc/outpost/drinker
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker
 	desc = "Someone off one of the ships, off duty."
 	dialogue_section = "drinker"
 	outfit_choices = list(
@@ -830,11 +838,9 @@
 	var/datum/weakref/barkeep_ref
 	/// Their bar's section of AMBIENT_STRINGS_PATRONS (PATRON_BAR_*)
 	var/bar_section
-	/// 0 sober to PATRON_DRUNK_MAX passed out
+	/// How far gone they are, 0 sober to PATRON_DRUNK_MAX done for: read from tg's drunkenness (drunk_stage())
 	var/drunk = 0
-	/// Sips of something strong since the last stage
-	var/strong_sips = 0
-	/// Sips of coffee (the crew room starts with coffee)
+	/// Gulps of coffee (the crew room starts with coffee)
 	var/coffee_sips = 0
 	/// They ordered at the bar
 	var/ordered = FALSE
@@ -842,21 +848,20 @@
 	var/cut_off = FALSE
 	/// They were sick on the floor (once)
 	var/vomited = FALSE
-	/// They slept it off: next stop, the lift
+	/// They slept it off, or have had their fill: next stop, the lift
 	var/slept = FALSE
-	/// Lying down and snoring
-	var/asleep = FALSE
-	/// Their transform before they lay down
-	var/matrix/standing_transform
 
-/mob/living/basic/ambient_npc/outpost/drinker/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/Initialize(mapload, datum/human_npc_order/order)
+	. = ..()
+	RegisterSignal(src, COMSIG_CARBON_VOMITED, PROC_REF(on_vomited))
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/Destroy()
 	bar_ref = null
 	barkeep_ref = null
-	standing_transform = null
 	return ..()
 
 /// Finds their outpost's bar. FALSE when it has none.
-/mob/living/basic/ambient_npc/outpost/drinker/proc/find_bar()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/find_bar()
 	var/list/bar = ambient_outpost_bar(place)
 	if(!length(bar))
 		return FALSE
@@ -864,23 +869,23 @@
 	return TRUE
 
 /// Sets their bar: `where` it is, its `barkeep` (or null), its `section` (PATRON_BAR_*)
-/mob/living/basic/ambient_npc/outpost/drinker/proc/set_bar(atom/where, mob/living/basic/outpost_trader/barkeep, section)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/set_bar(atom/where, mob/living/basic/outpost_trader/barkeep, section)
 	bar_ref = where ? WEAKREF(where) : null
 	barkeep_ref = barkeep ? WEAKREF(barkeep) : null
 	bar_section = section
 
 /// Their bar, if it is still there
-/mob/living/basic/ambient_npc/outpost/drinker/proc/get_bar()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/get_bar()
 	var/atom/bar = bar_ref?.resolve()
 	return QDELETED(bar) ? null : bar
 
 /// Their barkeep, if still at the bar
-/mob/living/basic/ambient_npc/outpost/drinker/proc/get_barkeep()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/get_barkeep()
 	var/mob/living/basic/outpost_trader/barkeep = barkeep_ref?.resolve()
 	return QDELETED(barkeep) ? null : barkeep
 
 /// What is poured for them at their bar
-/mob/living/basic/ambient_npc/outpost/drinker/proc/bar_drink()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/bar_drink()
 	switch(bar_section)
 		if(PATRON_BAR_CREW_ROOM)
 			return /datum/reagent/consumable/coffee
@@ -888,7 +893,8 @@
 			return pick(/datum/reagent/consumable/ethanol/whiskey, /datum/reagent/consumable/ethanol/rum, /datum/reagent/consumable/ethanol/beer)
 	return /datum/reagent/consumable/ethanol/beer
 
-/mob/living/basic/ambient_npc/outpost/drinker/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/pick_activity()
+	update_drunk_stage()
 	if(slept)
 		return start_activity(new /datum/ambient_activity/leave(src))
 	if(drunk >= PATRON_DRUNK_MAX)
@@ -906,58 +912,57 @@
 
 /**
  * Here a while already: in a seat near the bar (or at a table) with a glass in hand, having ordered
- * long ago, and some of them a stage or two in. With no seat or table to be had, their routine
- * starts when someone comes.
+ * long ago, and some of them a few drinks in: those gulps are swallowed now, while nobody is there
+ * to see, and the drink works on them as it would on anyone once people come. With no seat or table
+ * to be had, their routine starts when someone comes.
  */
-/mob/living/basic/ambient_npc/outpost/drinker/settle_in()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/settle_in()
 	if(!get_bar() && !find_bar())
 		return ..()
 	ordered = TRUE
 	if(!start_activity(new /datum/ambient_activity/drink/bar(src, get_bar())) || !settle_here())
 		end_activity()
 		return ..()
-	var/stages = pick(0, 1, 1, 2)
-	if(stages && bar_section == PATRON_BAR_CREW_ROOM)
+	var/rounds = pick(0, 1, 1, 2)
+	if(rounds && bar_section == PATRON_BAR_CREW_ROOM)
 		// Off the coffee and onto something stronger already
-		var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = held_item
-		if(istype(glass))
-			glass.reagents.clear_reagents()
-			glass.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, 25)
-			set_held(glass)
-		coffee_sips = -INFINITY
-	if(stages)
-		get_drunker(stages)
-	strong_sips = rand(0, PATRON_SIPS_PER_STAGE - 1)
+		switch_to_strong(quiet = TRUE)
+	for(var/gulp in 1 to rounds * PATRON_GULPS_PER_ROUND)
+		if(!sip())
+			break
 	return TRUE
 
-// Slurring would wear off by itself while they sit still
-/mob/living/basic/ambient_npc/outpost/drinker/pause_routine()
-	. = ..()
-	remove_status_effect(/datum/status_effect/speech/slurring/generic)
-
-/mob/living/basic/ambient_npc/outpost/drinker/resume_routine()
-	. = ..()
-	if(drunk >= 3)
-		set_slurring_if_lower(10 MINUTES)
-
 /// Their lines for being talked to depend on how far gone they are
-/mob/living/basic/ambient_npc/outpost/drinker/get_lines(context)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/get_lines(context)
 	if(context == AMBIENT_LINE_TALK)
-		var/list/staged = ambient_dialogue_lines(dialogue_file, dialogue_section, asleep ? "talk_asleep" : "talk_[drunk]")
+		var/list/staged = ambient_dialogue_lines(dialogue_file, dialogue_section, "talk_[drunk]")
 		if(length(staged))
 			return staged
 	return ..()
 
+/// How far gone they are, from tg's drunkenness: 0 sober, 1 chatty, 2 loud, 3 swaying, PATRON_DRUNK_MAX done for
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/drunk_stage()
+	var/amount = get_drunk_amount()
+	if(amount >= PATRON_DRUNK_DONE)
+		return PATRON_DRUNK_MAX
+	if(amount >= PATRON_DRUNK_SWAYING)
+		return 3
+	if(amount >= PATRON_DRUNK_LOUD)
+		return 2
+	if(amount >= PATRON_DRUNK_CHATTY)
+		return 1
+	return 0
+
 /**
- * One stage drunker (or `amount`; negative sobers them). Stage 1 is chatty, stage 2 loud, stage 3
- * slurring and swaying, stage 4 done: the barkeep cuts them off and they go and lie down.
+ * Catches their stage up with how drunk they are. Stage 1 is chatty, stage 2 loud, stage 3 slurring
+ * and swaying (tg's drunkenness does the slurring), stage 4 done: the barkeep cuts them off and they
+ * go and sleep it off. A heavy drinker may be sick on the floor, once.
  */
-/mob/living/basic/ambient_npc/outpost/drinker/proc/get_drunker(amount = 1)
-	var/old_stage = drunk
-	drunk = clamp(drunk + amount, 0, PATRON_DRUNK_MAX)
-	if(drunk == old_stage)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/update_drunk_stage()
+	var/stage = drunk_stage()
+	if(stage == drunk)
 		return
-	strong_sips = 0
+	drunk = stage
 	switch(drunk)
 		if(0)
 			speech_pace = 1
@@ -967,17 +972,13 @@
 			speech_pace = 0.6
 		else
 			speech_pace = 0.7
-	if(drunk >= 3)
-		set_slurring_if_lower(10 MINUTES)
-	else
-		remove_status_effect(/datum/status_effect/speech/slurring/generic)
-	if(drunk >= 3 && !vomited && prob(PATRON_VOMIT_CHANCE))
+	if(drunk >= 3 && !vomited && get_drunk_amount() >= PATRON_DRUNK_SICK && prob(PATRON_VOMIT_CHANCE))
 		be_sick()
 	if(drunk >= PATRON_DRUNK_MAX)
 		cut_off()
 
 /// The barkeep has seen enough (once)
-/mob/living/basic/ambient_npc/outpost/drinker/proc/cut_off()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/cut_off()
 	if(cut_off)
 		return
 	cut_off = TRUE
@@ -985,49 +986,59 @@
 	if(barkeep)
 		ambient_trader_reply(barkeep, src, AMBIENT_STRINGS_PATRONS, bar_section, "cutoff", 10)
 
-/// Sick on the floor beside them, once. The janitor hears about it.
-/mob/living/basic/ambient_npc/outpost/drinker/proc/be_sick()
+/**
+ * Sick on the floor, once: tg's own vomiting. Human NPCs have TRAIT_NOHUNGER (the base's performance
+ * rule), which stops tg's drunk vomiting, so this is the drunk's own heave, at tg's own drunkenness
+ * for it (PATRON_DRUNK_SICK).
+ */
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/be_sick()
 	vomited = TRUE
-	var/turf/spot = free_tile_beside(src, 1) || get_turf(src)
-	if(!spot)
-		return
-	var/obj/effect/decal/cleanable/vomit/mess = new(spot)
-	playsound(src, 'sound/effects/splat.ogg', 30, TRUE, -3)
-	INVOKE_ASYNC(src, TYPE_PROC_REF(/atom, manual_emote), "throws up.")
-	if(!QDELETED(mess))
-		ambient_outpost_report_mess(place, mess)
+	vomit(VOMIT_CATEGORY_DEFAULT | MOB_VOMIT_FORCE)
+
+/// They threw up: the janitor hears about the mess
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/on_vomited(datum/source, distance, force)
+	SIGNAL_HANDLER
+	vomited = TRUE
+	// The decal goes down after the signal: report it next tick
+	addtimer(CALLBACK(src, PROC_REF(report_vomit), get_turf(src), dir), 1, TIMER_DELETE_ME)
+
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/report_vomit(turf/where, facing)
+	for(var/turf/tile in list(where, get_step(where, facing)))
+		var/obj/effect/decal/cleanable/vomit/mess = locate() in tile
+		if(mess)
+			ambient_outpost_report_mess(place, mess)
+			return
 
 /**
- * A sip was had from their glass: it counts towards the next stage when it was something strong.
- * At the crew room the first sips are coffee, then something stronger.
+ * A gulp was had from their glass. At the crew room the first gulps are coffee, then something
+ * stronger; drink works on them by itself, and their stage follows it.
  */
-/mob/living/basic/ambient_npc/outpost/drinker/proc/on_sip(strong)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/on_sip(strong)
 	if(!strong)
 		coffee_sips++
 		if(bar_section == PATRON_BAR_CREW_ROOM && coffee_sips >= PATRON_COFFEE_SIPS)
 			switch_to_strong()
-		return
-	if(++strong_sips >= PATRON_SIPS_PER_STAGE)
-		get_drunker(1)
+	update_drunk_stage()
 
 /// Coffee's done; something stronger in the same glass
-/mob/living/basic/ambient_npc/outpost/drinker/proc/switch_to_strong()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/switch_to_strong(quiet = FALSE)
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = held_item
 	if(!istype(glass))
 		return
 	glass.reagents.clear_reagents()
-	glass.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, 25)
+	glass.reagents.add_reagent(/datum/reagent/consumable/ethanol/beer, AMBIENT_DRINK_POUR)
 	set_held(glass)
 	coffee_sips = -INFINITY
-	say_from(bar_section, "stronger")
+	if(!quiet)
+		say_from(bar_section, "stronger")
 
 /// Whether their glass holds something strong right now
-/mob/living/basic/ambient_npc/outpost/drinker/proc/glass_is_strong()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/glass_is_strong()
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = held_item
 	return istype(glass) && glass.reagents?.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE)
 
 /// A word for the stage they are at: the bar's own lines early on, songs at stage 2, a pair talk with another drinker
-/mob/living/basic/ambient_npc/outpost/drinker/proc/drunk_chatter()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/drunk_chatter()
 	if(world.time < next_line_at || (place && world.time < place.next_line_at))
 		return
 	if(drunk >= 1 && prob(35) && pair_talk())
@@ -1039,12 +1050,12 @@
 	speak_context("stage_[drunk]")
 
 /// An exchange with another drinker at their bar within a few tiles. TRUE if one started.
-/mob/living/basic/ambient_npc/outpost/drinker/proc/pair_talk()
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/pair_talk()
 	var/list/conversation = pick_conversation()
 	if(length(conversation) < 2)
 		return FALSE
-	for(var/mob/living/basic/ambient_npc/outpost/drinker/other in range(3, src))
-		if(other == src || other.asleep || !other.can_act() || other.bar_section != bar_section)
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/other in range(3, src))
+		if(other == src || !other.can_act() || other.bar_section != bar_section)
 			continue
 		if(!istype(other.activity, /datum/ambient_activity/drink/bar))
 			continue
@@ -1053,65 +1064,50 @@
 		return TRUE
 	return FALSE
 
-/// Down on the sofa (or the floor), out cold
-/mob/living/basic/ambient_npc/outpost/drinker/proc/lie_down()
-	if(asleep)
-		return
-	asleep = TRUE
-	standing_transform = matrix(transform)
-	var/matrix/lying = matrix(transform)
-	lying.Turn(90)
-	animate(src, transform = lying, time = 0.4 SECONDS)
-
-/// Up again
-/mob/living/basic/ambient_npc/outpost/drinker/proc/wake_up()
-	if(!asleep)
-		return
-	asleep = FALSE
-	// Killed where they slept: a body stays down
-	if(stat != DEAD)
-		animate(src, transform = standing_transform || matrix(), time = 0.4 SECONDS)
-	standing_transform = null
-
 /**
- * A drink handed to them: they drink from it. Something strong takes them a stage further,
- * anything else sobers them a little; poison they will not touch. The drink stays in the giver's hand.
+ * A drink handed to them: they take a gulp from it, as anyone does (the glass's own drinking: what
+ * is in it goes into them). They turn down only what anyone could tell by looking: a glass of
+ * something that isn't a drink, or a known poison. Poisoning one at a trader outpost is violence
+ * there, like hitting them. The drink stays in the giver's hand.
  */
-/mob/living/basic/ambient_npc/outpost/drinker/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	. = ..()
 	if(. || user.combat_mode)
 		return
 	if(!istype(tool, /obj/item/reagent_containers/cup/glass) && !istype(tool, /obj/item/reagent_containers/cup/soda_cans))
 		return
-	accept_drink(user, tool)
+	if(!accept_drink(user, tool))
+		return
 	return ITEM_INTERACT_SUCCESS
 
 /// `user` hands them `drink`. TRUE if they drank from it.
-/mob/living/basic/ambient_npc/outpost/drinker/proc/accept_drink(mob/living/user, obj/item/reagent_containers/drink)
-	if(stat != CONSCIOUS || fading)
-		return FALSE
-	if(asleep)
-		INVOKE_ASYNC(src, TYPE_PROC_REF(/atom, manual_emote), "snores on.")
+/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/proc/accept_drink(mob/living/user, obj/item/reagent_containers/cup/drink)
+	if(!can_act() || fading)
 		return FALSE
 	if(!reaction_ready("handed", PATRON_HANDED_COOLDOWN))
-		return FALSE
+		return TRUE
 	if(!buckled)
 		face_atom(user)
 	if(!drink.reagents?.total_volume || !drink.is_drainable())
 		speak_context("handed_empty", user, force = TRUE)
-		return FALSE
-	if(drink.reagents.has_reagent(/datum/reagent/toxin, check_subtypes = TRUE))
+		return TRUE
+	var/datum/reagent/looks_like = drink.reagents.get_master_reagent()
+	if(!istype(looks_like, /datum/reagent/consumable) || istype(looks_like, /datum/reagent/toxin))
 		speak_context("handed_refuse", user, force = TRUE)
+		return TRUE
+	if(!drink.canconsume(src, src))
 		return FALSE
 	var/strong = drink.reagents.has_reagent(/datum/reagent/consumable/ethanol, check_subtypes = TRUE)
-	drink.reagents.remove_all(20)
-	playsound(src, 'sound/items/drink.ogg', 30, TRUE, -4)
+	var/poisoned = drink.reagents.has_reagent(/datum/reagent/toxin, check_subtypes = TRUE)
+	log_combat(user, src, "handed a drink to", drink, "containing [drink.reagents.get_reagent_log_string()]")
+	drink.attack(src, src)
+	if(poisoned)
+		place?.npc_attacked(src, user, ATTACKER_DAMAGING_ATTACK)
 	if(strong)
-		get_drunker(1)
 		speak_context(prob(30) ? "handed_gossip" : "handed", user, force = TRUE)
 	else
-		get_drunker(-1)
 		speak_context("handed_sober", user, force = TRUE)
+	update_drunk_stage()
 	return TRUE
 
 /// Ordering at the bar: up to the barkeep's counter ("the usual"), or a cup from the crew room's coffee machine
@@ -1125,7 +1121,7 @@
 	var/done_at = 0
 
 /datum/ambient_activity/bar_order/setup()
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
 	var/atom/bar = anchor()
 	if(!istype(drinker) || !bar)
 		return FALSE
@@ -1151,7 +1147,7 @@
 	done_at = world.time + rand(4 SECONDS, 7 SECONDS)
 
 /datum/ambient_activity/bar_order/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
 	var/atom/bar = anchor()
 	if(!bar || !istype(drinker))
 		return AMBIENT_STEP_DONE
@@ -1189,7 +1185,7 @@
 	var/next_sway = 0
 
 /datum/ambient_activity/drink/bar/setup()
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
 	if(!istype(drinker))
 		return FALSE
 	reagent_type = drinker.bar_drink()
@@ -1234,9 +1230,12 @@
 	next_sip = world.time + rand(8 SECONDS, 15 SECONDS)
 
 /datum/ambient_activity/drink/bar/act(seconds)
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
-	// Done for (a drink handed over can do it between sips)
-	if(!istype(drinker) || drinker.drunk >= PATRON_DRUNK_MAX)
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
+	if(!istype(drinker))
+		return AMBIENT_STEP_DONE
+	drinker.update_drunk_stage()
+	// Done for (a drink handed over can do it between gulps)
+	if(drinker.drunk >= PATRON_DRUNK_MAX)
 		return AMBIENT_STEP_DONE
 	if(world.time >= next_sip)
 		next_sip = world.time + rand(PATRON_SIP_LOW, PATRON_SIP_HIGH)
@@ -1248,20 +1247,23 @@
 			return AMBIENT_STEP_DONE
 	if(drinker.drunk >= 3 && world.time >= next_sway)
 		next_sway = world.time + rand(30 SECONDS, 60 SECONDS)
-		drinker.Shake(2, 0, 0.6 SECONDS)
 		drinker.manual_emote(pick("sways.", "hiccups.", "grabs the edge of the table.", "nearly slides off the seat."))
 	if(world.time >= next_line)
 		next_line = world.time + rand(25 SECONDS, 50 SECONDS)
 		drinker.drunk_chatter()
 	return AMBIENT_STEP_CONTINUE
 
-/// The glass is finished before it goes down, so the barback can take it
+/// The glass is finished before it goes down, so the barback can take it. A night that ran its length
+/// without them getting done for ends with them heading home.
 /datum/ambient_activity/drink/bar/finish()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/glass = doer?.held_item
 	if(istype(glass))
 		glass.reagents?.clear_reagents()
 	if(!QDELETED(doer) && !ambient_outpost_has_barback(doer.place))
 		table_ref = null
+	if(istype(drinker) && !QDELETED(drinker) && ends_at && world.time >= ends_at && drinker.drunk < PATRON_DRUNK_MAX)
+		drinker.slept = TRUE
 	return ..()
 
 /datum/ambient_activity/drink/bar/shift_times(delay)
@@ -1269,18 +1271,19 @@
 	next_sway = ambient_shifted(next_sway, delay)
 
 /**
- * Sleeping it off: over to a sofa if there is one near (the floor if not), down, and snoring for a
- * few minutes. Then they wake and go, unless the barback walks them out first.
+ * Sleeping it off: over to a sofa if there is one near (the floor if not), down, and asleep for a
+ * few minutes, as anyone falls asleep (tg's Sleeping: they snore by themselves, and can be shaken
+ * awake). Then they wake and go, unless the barback shakes them awake and walks them out first.
  */
 /datum/ambient_activity/sleep_it_off
 	name = "sleeping it off"
 	duration_low = PATRON_SLEEP_LOW
 	duration_high = PATRON_SLEEP_HIGH
 	var/datum/weakref/sofa_ref
-	/// world.time of the next snore
-	var/next_snore = 0
-	/// world.time the barback is asked to come
+	/// world.time the barback comes for them, if one is free (half the time); 0 once asked
 	var/escort_at = 0
+	/// They have dropped off
+	var/slept_yet = FALSE
 
 /datum/ambient_activity/sleep_it_off/setup()
 	var/obj/structure/chair/sofa/sofa = find_sofa()
@@ -1306,31 +1309,30 @@
 	return best
 
 /datum/ambient_activity/sleep_it_off/arrive()
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
 	var/obj/structure/chair/sofa/sofa = sofa_ref?.resolve()
 	if(sofa)
 		doer.sit_on(sofa)
-	if(istype(drinker))
-		drinker.lie_down()
-	next_snore = world.time + rand(5 SECONDS, 15 SECONDS)
-	escort_at = world.time + rand(30 SECONDS, 60 SECONDS)
+	else
+		doer.set_resting(TRUE, silent = TRUE)
+	doer.manual_emote(pick("slumps back, eyes closing.", "settles in for a nap."))
+	slept_yet = TRUE
+	escort_at = prob(50) ? world.time + rand(30 SECONDS, 60 SECONDS) : 0
+	doer.Sleeping(max(1 SECONDS, ends_at - world.time))
 
+// They only act once awake again: the sleep ran out, or someone shook them
 /datum/ambient_activity/sleep_it_off/act(seconds)
-	if(world.time >= next_snore)
-		next_snore = world.time + rand(15 SECONDS, 30 SECONDS)
-		doer.manual_emote(pick("snores.", "snores loudly.", "mumbles in their sleep.", "snores, and turns over."))
-	if(escort_at && world.time >= escort_at)
-		escort_at = 0
-		ambient_outpost_call_escort(doer.place, doer)
-	return AMBIENT_STEP_CONTINUE
+	if(doer.IsSleeping())
+		return AMBIENT_STEP_CONTINUE
+	return AMBIENT_STEP_DONE
 
 /datum/ambient_activity/sleep_it_off/finish()
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = doer
-	if(istype(drinker) && !QDELETED(drinker))
-		drinker.wake_up()
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = doer
+	if(istype(drinker) && !QDELETED(drinker) && slept_yet)
 		drinker.slept = TRUE
-		if(!drinker.fading && prob(50))
-			drinker.speak_context("wake", null, force = TRUE)
+		if(drinker.stat == CONSCIOUS)
+			drinker.set_resting(FALSE, silent = TRUE)
+			if(!drinker.fading && prob(50))
+				drinker.speak_context("wake", null, force = TRUE)
 	return ..()
 
 /datum/ambient_activity/sleep_it_off/spot_unreachable()
@@ -1339,14 +1341,25 @@
 
 /datum/ambient_activity/sleep_it_off/shift_times(delay)
 	. = ..()
-	next_snore = ambient_shifted(next_snore, delay)
 	escort_at = ambient_shifted(escort_at, delay)
 
+/// A drinker at `place` sleeping it off whom the barback should come and walk out now, or null. Once each.
+/proc/ambient_outpost_drunk_to_walk_out(datum/ambient_place/outpost/place)
+	if(!istype(place))
+		return null
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drunk in place.npcs)
+		var/datum/ambient_activity/sleep_it_off/nap = drunk.activity
+		if(QDELETED(drunk) || drunk.stat == DEAD || drunk.fading || !istype(nap) || !nap.escort_at || world.time < nap.escort_at)
+			continue
+		nap.escort_at = 0
+		return drunk
+	return null
+
 /// Someone at `place` could walk `drunk` to the lift: a free barback there, half the time
-/proc/ambient_outpost_call_escort(datum/ambient_place/outpost/place, mob/living/basic/ambient_npc/drunk)
+/proc/ambient_outpost_call_escort(datum/ambient_place/outpost/place, mob/living/carbon/human/npc/ambient_npc/drunk)
 	if(!istype(place) || QDELETED(drunk) || !prob(50))
 		return FALSE
-	for(var/mob/living/basic/ambient_npc/outpost/worker/barback/barback in place.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/outpost/worker/barback/barback in place.living_npcs())
 		if(barback.activity?.priority > AMBIENT_PRIORITY_ROUTINE)
 			continue
 		if(barback.start_activity(new /datum/ambient_activity/escort(barback, drunk)))
@@ -1360,7 +1373,7 @@
 /// Customers at every trader outpost: two at a time (one at the Undertow), one every minute or so
 /datum/ambient_outpost_role/customer
 	name = "customer"
-	npc_type = /mob/living/basic/ambient_npc/outpost/customer
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/customer
 	outpost_types = list(
 		/obj/structure/overmap/trader_outpost/general,
 		/obj/structure/overmap/trader_outpost/outfitter,
@@ -1382,7 +1395,7 @@
 /// One drinker at each outpost's bar
 /datum/ambient_outpost_role/drinker
 	name = "drinker"
-	npc_type = /mob/living/basic/ambient_npc/outpost/drinker
+	npc_type = /mob/living/carbon/human/npc/ambient_npc/outpost/drinker
 	outpost_types = list(
 		/obj/structure/overmap/trader_outpost/general,
 		/obj/structure/overmap/trader_outpost/outfitter,
@@ -1398,7 +1411,7 @@
 
 /datum/ambient_outpost_role/drinker/arrive(datum/ambient_place/outpost/place, turf/where)
 	. = ..()
-	var/mob/living/basic/ambient_npc/outpost/drinker/drinker = .
+	var/mob/living/carbon/human/npc/ambient_npc/outpost/drinker/drinker = .
 	if(istype(drinker))
 		drinker.find_bar()
 
@@ -1411,7 +1424,12 @@
 #undef PATRON_SERVE_LOW
 #undef PATRON_SERVE_HIGH
 #undef PATRON_BAR_RANGE
-#undef PATRON_SIPS_PER_STAGE
+#undef PATRON_DRUNK_CHATTY
+#undef PATRON_DRUNK_LOUD
+#undef PATRON_DRUNK_SWAYING
+#undef PATRON_DRUNK_DONE
+#undef PATRON_DRUNK_SICK
+#undef PATRON_GULPS_PER_ROUND
 #undef PATRON_DRUNK_MAX
 #undef PATRON_SIP_LOW
 #undef PATRON_SIP_HIGH
