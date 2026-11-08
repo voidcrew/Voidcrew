@@ -95,6 +95,7 @@
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
+	wave_pod_style = /datum/pod_style/syndicate
 	mobs_green = list(
 		/mob/living/basic/trooper/syndicate/melee = 14,
 	)
