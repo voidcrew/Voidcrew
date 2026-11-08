@@ -566,15 +566,22 @@
 	var/cleave_mult = CYBERWARE_MONOWIRE_CLEAVE_MULT
 	/// Burn the charged line adds on top of the cut, every hit.
 	var/charge_burn = CYBERWARE_MONOWIRE_BURN
+	/// Set by afterattack() during attack()'s parent call. Only a swing that
+	/// connected gets that far, and attack()'s own return can't tell a hit from
+	/// a pacifist's pulled swing or a signal-skipped one (both return FALSE).
+	var/swing_landed = FALSE
 
 /obj/item/melee/cyberware_monowire/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	// The parent plays hitsound partway through the swing, so pick which of the
 	// line's two voices we are before handing off.
 	hitsound = pick('voidcrew/sound/monowire1.ogg', 'voidcrew/sound/monowire2.ogg')
+	swing_landed = FALSE
 	. = ..()
-	// A truthy return means the swing was blocked or cancelled outright, no
-	// cut landed, so nothing burns and nothing carries through.
-	if(. || QDELETED(target) || !isliving(user))
+	var/landed = swing_landed
+	swing_landed = FALSE
+	// No cut landed (blocked, cancelled, pulled), so nothing burns and nothing
+	// carries through.
+	if(. || !landed || QDELETED(target) || !isliving(user))
 		return
 
 	// The charge on the line, on top of the cut. Silent armor check: the parent
@@ -619,6 +626,10 @@
 			span_danger("The wire carries through the whole cluster."),
 		)
 		playsound(target, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
+
+/obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
+	. = ..()
+	swing_landed = TRUE
 
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)
