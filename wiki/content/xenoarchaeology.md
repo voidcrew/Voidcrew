@@ -112,7 +112,7 @@ A large find is dense and unbolted, so you pull it. Pulling or bumping an artifa
 !!! warning "Hauled artifacts can go off"
     Latex gloves stop you waking a touch-triggered artifact. They do not stop one that is already awake from acting on you.
 
-A large find can be shut in a crate. A bolted-down find will not go in. While a find is shut in a crate it does nothing at all. Any ordinary crate will take it. The **specimen crate** is a padded, lead-lined crate built for one large find: it takes the find and small things, never people or other machines, and its lid shows the find's catalogue number.
+A large find travels in a **specimen crate**, a padded, lead-lined crate built for one large find. Open the crate, then either drag the find onto it (a few seconds' heave, and the lid shuts on it) or push the find onto the open crate and close the lid. Ordinary crates will not take one, and a bolted-down find will not go in. The specimen crate also holds small things, never people or other machines, and its lid shows the find's catalogue number. While a find is shut in a crate it does nothing at all.
 
 Every way into a trader outpost runs through a scan chamber. A loose artifact on the chamber floor makes the guard refuse the whole chamber ("Crate it first.") until someone takes it back out. A find in a shut crate passes. Going out is never a problem. Inside an outpost an artifact does nothing and cannot be bolted down. The lift between floors carries unbolted things standing in its alcove, so a crate rides up with you.
 
@@ -244,7 +244,7 @@ Barnaby and Boffin pay by the piece. Vex buys none.
 | 150 | Statuette, strange instrument, idol, seed pod, fossil skeleton |
 | 200 | Strange object (Boffin only) |
 
-Only finds that came out of a dig site sell. A strange object from maintenance or an experimentor copy is not one. Feeding a strange object to the destructive analyzer pays 60 research points, once per research server.
+Only finds that came out of a dig site sell. A strange object from maintenance or an experimentor copy is not one. Feeding a dug curio or strange object to the destructive analyzer pays research points, once per kind per research server. Rarer finds pay more.
 
 ## Labels and triggers
 
