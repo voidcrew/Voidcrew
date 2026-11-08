@@ -90,6 +90,7 @@
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
+#include "voidcrew_hyperviolence_braingut.dm"
 #include "voidcrew_launch_access.dm"
 #include "voidcrew_launch_cargo.dm"
 #include "voidcrew_launch_fabrication.dm"
