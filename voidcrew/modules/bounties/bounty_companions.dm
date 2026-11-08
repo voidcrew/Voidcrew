@@ -76,6 +76,8 @@
 		BOUNTY_STYLE_PISTOL = 1,
 		BOUNTY_STYLE_BOTTLE = 1,
 		BOUNTY_STYLE_SHOTGUN = 1,
+		BOUNTY_STYLE_SMG = 1,
+		BOUNTY_STYLE_REVOLVER = 1,
 	))
 	return bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, BOUNTY_TIER_PETTY, ai_style, FALSE, /obj/item/stack/medical/bruise_pack)
 
