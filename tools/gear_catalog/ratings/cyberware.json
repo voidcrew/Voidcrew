@@ -90,6 +90,44 @@
    "reason": "Left half of the Mantis pair: 20-force blades that can't be disarmed, plus a 5-tile lunge every 20 s that adds 20 damage and floors the target for 2 s.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Scorch Blade housing (right)",
+   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
+   "rank": 2,
+   "reason": "Half of a pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight. Load 8 the pair, 5 vouchers at reputation 22, one on the shelf per round.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/scorch/left": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Scorch Blade housing (left)",
+   "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
+   "rank": 3,
+   "reason": "Left half of the Scorch pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Shiv Blade housing (right)",
+   "rank": 6,
+   "reason": "Half of a pair: 14-force blades that can't be disarmed, no lunge. Load 4 the pair, 2,400 cr at yellow reputation. Splice takes a pulled housing back for 600 cr.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/street/left": {
+   "confidence": "medium",
+   "group": "Arm weapons and fists",
+   "hash": "",
+   "name": "Shiv Blade housing (left)",
+   "rank": 7,
+   "reason": "Left half of the Shiv pair: 14-force blades that can't be disarmed, no lunge.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire": {
    "confidence": "high",
    "group": "Arm weapons and fists",

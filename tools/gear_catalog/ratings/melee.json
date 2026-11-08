@@ -1174,6 +1174,25 @@
    "reason": "Rated with its arm housing: 20 force blades that cannot be disarmed, and a 5 tile lunge every 20 s that floors the target for 2 s. Needs surgery.",
    "tier": "red"
   },
+  "/obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch": {
+   "confidence": "medium",
+   "group": "arm blades",
+   "hash": "",
+   "name": "scorch blade",
+   "note": "Each landed cut adds 2 fire stacks and sets the target alight. Corpses are left alone and the wielder is never lit.",
+   "rank": 2,
+   "reason": "Rated with its arm housing: the Mantis blade and lunge, with every cut and the lunge setting the target alight. Needs surgery.",
+   "tier": "red"
+  },
+  "/obj/item/melee/energy/blade/hardlight/cyberware_mantis/street": {
+   "confidence": "medium",
+   "group": "arm blades",
+   "hash": "",
+   "name": "shiv blade",
+   "rank": 3,
+   "reason": "Rated with its arm housing: 14 force blades that cannot be disarmed, no lunge. Needs surgery.",
+   "tier": "yellow"
+  },
   "/obj/item/melee/energy/sword/pirate": {
    "confidence": "high",
    "group": "energy blades",

@@ -287,6 +287,9 @@
 // MANTIS BLADES
 // =========================================================================
 
+// These four are the Mantis defaults. The housing reads them into vars so the
+// other models in the line (ware_line_mantis.dm) can retune by setting vars.
+
 /// Lunge reach in tiles.
 #define CYBERWARE_MANTIS_LUNGE_RANGE 5
 /// Bonus brute the arriving lunge lands PER BLADE (cap 10 per ADDENDUM 2).
@@ -352,6 +355,17 @@
 		/datum/action/item_action/organ_action/toggle/toolkit,
 		/datum/action/cooldown/cyberware/mantis_lunge,
 	)
+	/// Lunge reach in tiles.
+	var/lunge_range = CYBERWARE_MANTIS_LUNGE_RANGE
+	/// Bonus brute the arriving lunge lands per blade out.
+	var/lunge_bonus = CYBERWARE_MANTIS_LUNGE_BONUS
+	/// Delay between the wind-up and the dash.
+	var/lunge_telegraph = CYBERWARE_MANTIS_LUNGE_TELEGRAPH
+	/// How long a connecting lunge floors its target.
+	var/lunge_knockdown = CYBERWARE_MANTIS_LUNGE_KNOCKDOWN
+	/// Fire stacks the arriving lunge puts on its target (and lights them
+	/// with). 0 for no fire. The most of any blade that arrives lands, not the sum.
+	var/lunge_fire_stacks = 0
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/left
 	name = "\improper Mantis Blade housing (left)"
@@ -376,19 +390,24 @@
 	click_to_activate = TRUE
 
 /**
- * How many mantis blades this owner has out right now. Every housing grants
- * exactly one of these buttons, so counting the buttons whose blade is
- * extended counts the blades that will arrive.
+ * The housings whose blade is out right now and will arrive with the lunge.
+ * Every lunging housing grants exactly one of these buttons, so walking the
+ * buttons whose blade is extended finds the blades. A model with no lunge
+ * button never lands in this list.
  */
-/datum/action/cooldown/cyberware/mantis_lunge/proc/count_extended_blades()
+/datum/action/cooldown/cyberware/mantis_lunge/proc/get_extended_housings()
+	var/list/housings = list()
 	if(!owner)
-		return 0
-	var/blades = 0
+		return housings
 	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in owner.actions)
 		var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = lunge_action.organ
 		if(istype(housing) && housing.blade_extended())
-			blades++
-	return blades
+			housings += housing
+	return housings
+
+/// How many mantis blades this owner has out right now.
+/datum/action/cooldown/cyberware/mantis_lunge/proc/count_extended_blades()
+	return length(get_extended_housings())
 
 /datum/action/cooldown/cyberware/mantis_lunge/Activate(atom/target)
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
@@ -408,7 +427,7 @@
 	if(victim == lunger || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "no target!")
 		return FALSE
-	if(get_dist(lunger, victim) > CYBERWARE_MANTIS_LUNGE_RANGE || !can_see(lunger, victim, CYBERWARE_MANTIS_LUNGE_RANGE))
+	if(get_dist(lunger, victim) > housing.lunge_range || !can_see(lunger, victim, housing.lunge_range))
 		lunger.balloon_alert(lunger, "out of reach!")
 		return FALSE
 	// One lunge clock across both housings: start every mantis_lunge button
@@ -423,7 +442,7 @@
 		span_warning("You coil for the lunge."),
 	)
 	playsound(lunger, 'sound/items/weapons/sear.ogg', 50, TRUE)
-	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim)), CYBERWARE_MANTIS_LUNGE_TELEGRAPH)
+	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim)), housing.lunge_telegraph)
 	return TRUE
 
 /// The dash itself: walk the line to the target with a decoy per tile,
@@ -432,12 +451,15 @@
 	var/mob/living/lunger = owner
 	if(QDELETED(lunger) || lunger.incapacitated || !isturf(lunger.loc))
 		return
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = organ
+	if(!istype(housing))
+		return
 	var/mob/living/victim = victim_ref?.resolve()
 	if(QDELETED(victim) || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "target lost!")
 		return
 	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || get_dist(lunger, victim_turf) > CYBERWARE_MANTIS_LUNGE_RANGE + 1)
+	if(!victim_turf || get_dist(lunger, victim_turf) > housing.lunge_range + 1)
 		lunger.balloon_alert(lunger, "target lost!")
 		return
 	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
@@ -456,23 +478,30 @@
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
 	// nothing when the dash still connected.
-	var/blades = max(count_extended_blades(), 1)
+	var/list/blade_housings = get_extended_housings()
+	if(!length(blade_housings))
+		blade_housings = list(housing)
+	var/blades = length(blade_housings)
 
 	lunger.face_atom(victim)
 	lunger.do_attack_animation(victim, ATTACK_EFFECT_SLASH)
 	// One armor roll for the arrival, reused per blade. Both land in the same
 	// instant on the same plate, and it keeps the armor message to one line.
 	var/armor_block = victim.run_armor_check(BODY_ZONE_CHEST, MELEE)
-	for(var/i in 1 to blades)
+	var/lunge_fire = 0
+	for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/blade_housing as anything in blade_housings)
 		victim.apply_damage(
-			CYBERWARE_MANTIS_LUNGE_BONUS,
+			blade_housing.lunge_bonus,
 			BRUTE,
 			BODY_ZONE_CHEST,
 			armor_block,
 			wound_bonus = 10,
 			sharpness = SHARP_EDGED,
 		)
-	victim.Knockdown(CYBERWARE_MANTIS_LUNGE_KNOCKDOWN)
+		lunge_fire = max(lunge_fire, blade_housing.lunge_fire_stacks)
+	victim.Knockdown(housing.lunge_knockdown)
+	if(lunge_fire)
+		cyberware_scorch_target(victim, lunge_fire)
 	if(blades > 1)
 		victim.visible_message(
 			span_danger("[lunger] flickers across the gap and shuts both blades on [victim] like a trap, dropping [victim.p_them()]!"),
