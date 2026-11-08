@@ -470,20 +470,28 @@
 
 /**
  * The prospect-stake centerpiece: a claim beacon kit is dispensed at accept;
- * deploying it (only with the ship holding at the target coordinates) files
- * the claim on Wideband - everyone hears - and starts a defend clock that
- * only runs while the ship stays on station. The beacon survives, it prints
- * the deed; the beacon dies, the contract dies with it.
+ * deploying it on the site's open ground (the kit decides where) files the
+ * claim on Wideband - everyone hears - and starts a defend clock that only
+ * runs while a crew member stands guard at the beacon. Waves come on that
+ * clock, not the wall clock, so stepping away never calls extra company. The
+ * beacon survives, it prints the deed; the beacon dies, the contract dies
+ * with it.
  */
 /datum/mission_objective/claim_defense
 	/// How long the beacon must survive after deployment
 	var/defend_duration = 8 MINUTES
 	/// Seconds of defense remaining (set on deploy)
 	var/defend_remaining = 0
-	/// How far (overmap tiles) the ship may drift from the stake coordinates
-	var/hold_range = 2
-	/// Interval between defender waves while the clock runs
+	/// How close (tiles) a crew member must stand to the beacon for the clock to run
+	var/guard_range = 7
+	/// A guard idle at the keyboard this long stops counting
+	var/guard_afk_time = 3 MINUTES
+	/// Guarded time before the first defender wave
+	var/first_wave_delay = 1 MINUTES
+	/// Guarded time between defender waves
 	var/wave_interval = 2 MINUTES
+	/// Seconds of guarded time left until the next wave
+	var/wave_countdown = 0
 	/// zone_mobs theme answering the claim (set by the mission)
 	var/wave_theme
 	/// The kit handed over at accept
@@ -492,6 +500,10 @@
 	var/obj/structure/mission_claim_beacon/beacon
 	/// Whether the deed has printed (beacon survived)
 	var/deed_printed = FALSE
+	/// Whether the last tick found nobody standing guard
+	var/unguarded = FALSE
+	/// Throttle for the unattended-beacon notice
+	COOLDOWN_DECLARE(unguarded_notice_cooldown)
 
 /datum/mission_objective/claim_defense/deactivate()
 	if(beacon)
@@ -520,15 +532,28 @@
 	notify_crew("Claim beacon kit delivered.")
 	return TRUE
 
-/// Whether the ship is close enough to the stake coordinates to count
-/datum/mission_objective/claim_defense/proc/ship_on_station()
+/**
+ * Whether a crew member is standing guard: alive, awake, at the keyboard, out
+ * on the site's ground rather than inside a hull, and within guard_range of
+ * the beacon. Nobody there, no clock.
+ */
+/datum/mission_objective/claim_defense/proc/is_guarded()
 	var/obj/structure/overmap/ship/ship = get_servant()
-	var/datum/mission_target/target = mission?.target
-	if(!ship || !target)
+	var/datum/team/crew_team = ship?.ship_team
+	var/turf/beacon_turf = get_turf(beacon)
+	if(!crew_team || !beacon_turf)
 		return FALSE
-	var/rel_x = ship.x
-	var/rel_y = ship.y - OVERMAP_SOUTH_SIDE_COORD + 1
-	return sqrt((rel_x - target.target_x) ** 2 + (rel_y - target.target_y) ** 2) <= hold_range
+	for(var/datum/mind/member as anything in crew_team.members)
+		var/mob/living/guard = member?.current
+		if(!istype(guard) || guard.stat >= UNCONSCIOUS || !guard.client || guard.client.is_afk(guard_afk_time))
+			continue
+		var/turf/guard_turf = get_turf(guard)
+		if(!guard_turf || guard_turf.z != beacon_turf.z || get_dist(guard_turf, beacon_turf) > guard_range)
+			continue
+		if(istype(get_area(guard_turf), /area/shuttle) || !mission.target?.contains_turf(guard_turf))
+			continue
+		return TRUE
+	return FALSE
 
 /// The kit was used in hand and the channel finished: raise the beacon
 /datum/mission_objective/claim_defense/proc/deploy(mob/living/user, turf/where)
@@ -537,26 +562,38 @@
 	beacon = new(where)
 	beacon.objective_ref = WEAKREF(src)
 	QDEL_NULL(kit)
+	unguarded = FALSE
+	wave_countdown = first_wave_delay / 10
 	var/datum/mission_target/target = mission.target
-	beacon.file_claim("Prospect filing: mineral-rights claim staked at grid [target.target_x], [target.target_y]. Claim matures in [round(defend_duration / (1 MINUTES))] minutes. All counterclaims settled on-site.")
+	var/datum/mission_target/planet/site = target
+	var/site_name = istype(site) ? site.planet?.name : null
+	beacon.file_claim("Prospect filing: mineral-rights claim staked[site_name ? " on [site_name]" : ""] at grid [target.target_x], [target.target_y]. All counterclaims settled on-site.")
 	notify_crew("Claim filed on Wideband.", type = SHIP_NOTIFY_WARNING)
 
-/// One second of defending, ticked by the beacon's process
+/// One tick of defending, from the beacon's process
 /datum/mission_objective/claim_defense/proc/tick_defense(seconds)
 	if(deed_printed || !active || !beacon)
 		return
-	if(!ship_on_station())
-		beacon.show_offstation_warning()
+	if(!is_guarded())
+		if(!unguarded && COOLDOWN_FINISHED(src, unguarded_notice_cooldown))
+			COOLDOWN_START(src, unguarded_notice_cooldown, 1 MINUTES)
+			notify_crew("Claim beacon unattended.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+		unguarded = TRUE
 		return
+	unguarded = FALSE
 	defend_remaining -= seconds
 	if(defend_remaining <= 0)
 		print_deed()
 		return
-	// Periodic company
-	if(wave_theme && beacon.next_wave_at <= world.time)
-		beacon.next_wave_at = world.time + wave_interval
-		new wave_theme(get_turf(beacon), list(1, 2), TRUE)
-		notify_crew("Claim jumpers inbound on the beacon!", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+	// Periodic company, counted in guarded time
+	if(!wave_theme)
+		return
+	wave_countdown -= seconds
+	if(wave_countdown > 0)
+		return
+	wave_countdown += wave_interval / 10
+	new wave_theme(get_turf(beacon), list(1, 2), TRUE)
+	notify_crew("Claim jumpers inbound on the beacon!", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
 /// The clock ran out with the beacon alive: print the deed
 /datum/mission_objective/claim_defense/proc/print_deed()
@@ -578,14 +615,19 @@
 	beacon = null
 	if(deed_printed || !mission || mission.failed || mission.completed)
 		return
+	// Left alone long enough for the site to empty out and be torn down
+	var/datum/mission_target/planet/site = mission.target
+	if(istype(site) && site.planet?.unloading)
+		mission.fail("Claim abandoned - the filing is void.")
+		return
 	mission.fail("Claim beacon destroyed - the filing is void.")
 
 /datum/mission_objective/claim_defense/get_progress_string()
 	if(deed_printed)
 		return "Deed printed"
 	if(beacon)
-		if(!ship_on_station())
-			return "OFF STATION - claim clock paused"
+		if(unguarded)
+			return "Beacon unattended"
 		return "Defend the beacon ([round(defend_remaining / 60)]:[add_leading(num2text(round(defend_remaining) % 60), 2, "0")])"
 	var/datum/mission_target/target = mission?.target
-	return target ? "Deploy the beacon at ([target.target_x], [target.target_y])" : "Deploy the beacon"
+	return target ? "Stake the claim at ([target.target_x], [target.target_y])" : "Stake the claim"
