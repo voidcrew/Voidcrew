@@ -1,44 +1,58 @@
 /**
  * # Chrome wheel
  *
- * One radial holding every ability the bearer's chrome carries, so nobody has
+ * One wheel holding every ability the bearer's chrome carries, so nobody has
  * to hunt a row of action buttons mid-fight. Three keybinds drive it
  * (chrome_wheel_keybindings.dm):
  *
  * - Chrome wheel: hold it and the wheel opens at the centre of the view. Point
- *   at a slice and let go, or click one, to pick it. A quick tap leaves the
+ *   at a chip and let go, or click one, to pick it. A quick tap leaves the
  *   wheel open for a click instead; pressing the key again shuts it.
  * - Use chrome: fires the picked ability on key down.
  * - Use OS chrome: fires the OS-slot ware's ability on key down, whatever is
  *   picked.
  *
- * A slice IS the bearer's existing /datum/action, the same one their button
+ * A chip IS the bearer's existing /datum/action, the same one their button
  * holds, fired through the same Trigger() a button click uses. Cooldowns,
  * ORGAN_FAILING, check_flags and click-to-target modes are therefore shared
  * with the buttons, and nothing here grants, copies or replaces an ability.
  * Abilities are collected generically from every installed organ carrying
  * /datum/component/cyberware, so new ware shows up without touching this file.
  *
- * Layout is fixed by body region (chrome_wheel_layout()): head at the top,
- * right arm on the right, legs at the bottom, left arm on the left, torso on a
- * ring around the centre with the OS at its top. A region's chrome changing
- * never moves another region's slices, and an empty region keeps a dim slice
- * where it would be. The centre shows what Use chrome will fire, and that
- * ability's own button carries the MOD-style "selected" frame on the HUD.
+ * Looks: an outline of the bearer's body inside a ring cut into one arc per
+ * body region. Each ware sits in a socket (chrome_wheel_socket()), a run of
+ * fixed positions on its region's arc, with a leader line from the socket to
+ * the part of the body it lives in. A socket's chrome changing never moves
+ * another socket's chips, and an empty socket keeps a dim outline. Pointing at
+ * a chip grows it and lights its arc, its leader and its body part in its
+ * tier's colour, and a fixed readout under the ring names it. The pick wears
+ * the chrome read's corner brackets, and its own button carries the MOD-style
+ * "selected" frame on the HUD.
  *
- * Sub-options: an ability can hand the wheel an outer ring of choices through
- * /datum/action/proc/chrome_wheel_options(), empty by default. Pointing at that
- * ability opens the ring outside the wheel; picking one makes Use chrome call
- * the ability's use_chrome_wheel_option() with its id instead of Trigger().
+ * Pointing is by bearing from the ring's centre, so a flick outward picks the
+ * chip in that direction without landing on it. Inside the body nothing is
+ * pointed at.
+ *
+ * Sub-options: an ability can offer choices through
+ * /datum/action/proc/chrome_wheel_options(), empty by default. The wheel does
+ * not show them; a pick made with select(ability, option_id) makes Use chrome
+ * call the ability's use_chrome_wheel_option() with that id instead of Trigger().
  *
  * Mouse handling: BYOND only reports the mouse over things it can hit, so the
  * open wheel lays a full-view cursor catcher (tg's, as the scope uses) under
- * its mouse-transparent slices. Every move and click lands on the catcher, and
- * the slice is worked out from where the mouse is relative to the centre.
+ * its mouse-transparent pieces. Every move and click lands on the catcher, and
+ * the chip is worked out from where the mouse is relative to the centre.
  */
 
-/// Organ slots that sort first inside their wheel region, in this order. Any
-/// other slot follows them, alphabetically by slot name.
+// Readout panel under the ring, in pixels from the bottom left of the centre
+// tile (y up). The panel's top edge, left edge and size.
+#define CHROME_WHEEL_READOUT_TOP -108
+#define CHROME_WHEEL_READOUT_LEFT -66
+#define CHROME_WHEEL_READOUT_WIDTH 164
+#define CHROME_WHEEL_READOUT_HEIGHT 25
+
+/// Organ slots that sort first inside their socket, in this order. Any other
+/// slot follows them, alphabetically by slot name.
 GLOBAL_LIST_INIT(chrome_wheel_slot_order, list(
 	ORGAN_SLOT_EYES,
 	ORGAN_SLOT_CYBERWARE_EARS,
@@ -51,14 +65,31 @@ GLOBAL_LIST_INIT(chrome_wheel_slot_order, list(
 	ORGAN_SLOT_CYBERWARE_LEGS,
 ))
 
-/// Positions a region holds for one organ slot, filled or not, so the rest of
-/// that region never moves when the slot is filled or emptied. Region =>
-/// list(slot, positions held). The OS owns the top of the torso ring; chrome
-/// optics (their ability, the chrome read and the zoom) own the first row of
-/// head positions.
+/**
+ * Where each socket's chips sit on the ring. "start" is the bearing of its
+ * first chip in degrees clockwise from twelve o'clock, "turn" the way the rest
+ * follow (1 clockwise, -1 counter-clockwise), "fits" how many its arc holds
+ * before another row starts further out. "arc" is the ring arc it lights and
+ * "region" the body part. The art in chrome_wheel_ring.dmi is drawn to match.
+ */
+GLOBAL_LIST_INIT(chrome_wheel_sockets, list(
+	CHROME_WHEEL_SOCKET_EYES = list("start" = -9, "turn" = -1, "fits" = 2, "arc" = "head", "region" = "head"),
+	CHROME_WHEEL_SOCKET_HEAD = list("start" = 9, "turn" = 1, "fits" = 2, "arc" = "head", "region" = "head"),
+	CHROME_WHEEL_SOCKET_OS = list("start" = 47, "turn" = 1, "fits" = 2, "arc" = "os", "region" = "spine"),
+	CHROME_WHEEL_SOCKET_RIGHT_ARM = list("start" = 83, "turn" = 1, "fits" = 4, "arc" = "r_arm", "region" = "r_arm"),
+	CHROME_WHEEL_SOCKET_LEGS = list("start" = 180, "turn" = 1, "fits" = 3, "arc" = "legs", "region" = "legs"),
+	CHROME_WHEEL_SOCKET_LEFT_ARM = list("start" = -83, "turn" = -1, "fits" = 4, "arc" = "l_arm", "region" = "l_arm"),
+	CHROME_WHEEL_SOCKET_SKIN = list("start" = -47, "turn" = -1, "fits" = 2, "arc" = "skin", "region" = "torso"),
+))
+
+/// Positions a socket holds for one organ slot, filled or not, so the rest of
+/// that socket never moves when the slot is filled or emptied. Socket =>
+/// list(slot, positions held). The OS owns the first chip of its arc. Chrome
+/// optics own the first three of theirs (their own ability, the chrome read and
+/// the zoom, cyberware_zoom.dm); the third starts the eyes' second row.
 GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
-	CHROME_WHEEL_TORSO = list(ORGAN_SLOT_CYBERWARE_OS, 1),
-	CHROME_WHEEL_HEAD = list(ORGAN_SLOT_EYES, 3),
+	CHROME_WHEEL_SOCKET_OS = list(ORGAN_SLOT_CYBERWARE_OS, 1),
+	CHROME_WHEEL_SOCKET_EYES = list(ORGAN_SLOT_EYES, 3),
 ))
 
 // ---- Collection --------------------------------------------------------
@@ -101,15 +132,15 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 // ---- Sub-option hooks --------------------------------------------------
 
 /**
- * One entry on an ability's outer ring. [id] must stay the same between calls
- * for the same choice: the wheel remembers a pick by id and asks the ability
- * for its options again before firing it.
+ * One choice an ability offers. [id] must stay the same between calls for the
+ * same choice: the wheel remembers a pick by id and asks the ability for its
+ * options again before firing it.
  */
 /datum/chrome_wheel_option
 	/// Stable key for this choice within its ability. Non-empty text: a false
 	/// id reads as "no option" and would fire the ability itself.
 	var/id
-	/// Shown under the wheel while the slice is pointed at.
+	/// What the readout calls the pick.
 	var/name
 	var/icon
 	var/icon_state
@@ -121,9 +152,9 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	src.icon_state = icon_state
 
 /**
- * Sub-options this ability shows on an outer ring of the chrome wheel while it
- * is pointed at: a list of /datum/chrome_wheel_option, or null for none (the
- * default, and every ability today). A cyberdeck's hacks belong here.
+ * Choices this ability offers on top of firing it plainly: a list of
+ * /datum/chrome_wheel_option, or null for none (the default, and every ability
+ * today).
  */
 /datum/action/proc/chrome_wheel_options(mob/living/carbon/bearer)
 	RETURN_TYPE(/list)
@@ -144,33 +175,76 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 			return option
 	return null
 
+// ---- Names -------------------------------------------------------------
+
+/**
+ * What the wheel calls this ability: its own name, or for a ware's plain
+ * deploy or use button, the ware without its housing ("Mantis Blade", not
+ * "Toggle Mantis Blade housing (left)"). Override for a better one.
+ */
+/datum/action/proc/chrome_wheel_name()
+	var/obj/item/organ/ware = target
+	if(istype(ware) && (istype(src, /datum/action/item_action/organ_action/toggle) || istype(src, /datum/action/item_action/organ_action/use)))
+		var/static/regex/hardware = regex(@"(\s+(spool\s+)?housing|\s+drill fist)?(\s*\((left|right)\))?$", "i")
+		return hardware.Replace(format_text(ware.name), "")
+	return format_text(name)
+
+/// The name of the chrome an ability lives in, or "" for one that lives in nothing.
+/proc/chrome_wheel_ware_name(datum/action/ability)
+	var/obj/item/organ/ware = ability?.target
+	return istype(ware) ? format_text(ware.name) : ""
+
+/// Display names, ability => text.
+/proc/chrome_wheel_names(list/abilities)
+	RETURN_TYPE(/list)
+	. = list()
+	for(var/datum/action/ability as anything in abilities)
+		.[ability] = ability.chrome_wheel_name()
+
 // ---- Layout ------------------------------------------------------------
 
-/// Which wheel region an organ's abilities sit in, from the zone it lives in.
-/proc/chrome_wheel_region(obj/item/organ/ware)
+/// Which socket an organ's abilities sit in, from its slot and the zone it lives in.
+/proc/chrome_wheel_socket(obj/item/organ/ware)
 	if(!istype(ware))
-		return CHROME_WHEEL_TORSO
+		return CHROME_WHEEL_SOCKET_OS
+	if(ware.slot == ORGAN_SLOT_EYES || ware.zone == BODY_ZONE_PRECISE_EYES)
+		return CHROME_WHEEL_SOCKET_EYES
+	if(ware.slot == ORGAN_SLOT_CYBERWARE_OS)
+		return CHROME_WHEEL_SOCKET_OS
+	if(ware.slot == ORGAN_SLOT_CYBERWARE_SKIN)
+		return CHROME_WHEEL_SOCKET_SKIN
 	switch(ware.zone)
-		if(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH)
-			return CHROME_WHEEL_HEAD
+		if(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH)
+			return CHROME_WHEEL_SOCKET_HEAD
 		if(BODY_ZONE_R_ARM, BODY_ZONE_PRECISE_R_HAND)
-			return CHROME_WHEEL_RIGHT_ARM
+			return CHROME_WHEEL_SOCKET_RIGHT_ARM
 		if(BODY_ZONE_L_ARM, BODY_ZONE_PRECISE_L_HAND)
-			return CHROME_WHEEL_LEFT_ARM
+			return CHROME_WHEEL_SOCKET_LEFT_ARM
 		if(BODY_ZONE_R_LEG, BODY_ZONE_L_LEG, BODY_ZONE_PRECISE_R_FOOT, BODY_ZONE_PRECISE_L_FOOT)
-			return CHROME_WHEEL_LEGS
-	return CHROME_WHEEL_TORSO
+			return CHROME_WHEEL_SOCKET_LEGS
+	// The chest and anything else: the OS's arc, after the OS.
+	return CHROME_WHEEL_SOCKET_OS
 
-/// Where an organ slot ranks inside its region. Unlisted slots rank last.
+/// Hand chrome rides its arm's socket, after the arm's own chrome, with its
+/// own leader to the hand.
+/proc/chrome_wheel_is_hand(obj/item/organ/ware)
+	if(!istype(ware))
+		return FALSE
+	return ware.slot == ORGAN_SLOT_CYBERWARE_HANDS || ware.zone == BODY_ZONE_PRECISE_L_HAND || ware.zone == BODY_ZONE_PRECISE_R_HAND
+
+/// Where an organ slot ranks inside its socket. Unlisted slots rank last.
 /proc/chrome_wheel_slot_rank(obj/item/organ/ware)
 	var/rank = istype(ware) ? GLOB.chrome_wheel_slot_order.Find(ware.slot) : 0
 	return rank || length(GLOB.chrome_wheel_slot_order) + 1
 
-/// Order inside a region: ranked organ slots, then other slots by name, then
-/// each organ's own button order.
+/// Order inside a socket: hand chrome last, then ranked organ slots, other
+/// slots by name, and each organ's own button order.
 /proc/cmp_chrome_wheel_abilities(datum/action/first, datum/action/second)
 	var/obj/item/organ/first_ware = first.target
 	var/obj/item/organ/second_ware = second.target
+	var/hand_gap = chrome_wheel_is_hand(first_ware) - chrome_wheel_is_hand(second_ware)
+	if(hand_gap)
+		return hand_gap
 	var/rank_gap = chrome_wheel_slot_rank(first_ware) - chrome_wheel_slot_rank(second_ware)
 	if(rank_gap)
 		return rank_gap
@@ -180,59 +254,43 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		return sorttext(second_slot, first_slot) || sorttext(second.name, first.name)
 	return LAZYFIND(first_ware.actions, first) - LAZYFIND(second_ware.actions, second)
 
-/**
- * Pixel offset from the wheel centre of position [index] in [region], as
- * list(x, y). The four limb regions own a 90 degree arc of the outer ring
- * each: position 1 on the compass point, 2 and 3 thirty degrees either side
- * (mirrored so both arms' second slice hangs low), 4 and on a row further out.
- * The torso gets the inner ring, starting at the top.
- */
-/proc/chrome_wheel_position(region, index)
-	RETURN_TYPE(/list)
-	var/angle = 0
-	var/radius = 0
-	if(region == CHROME_WHEEL_TORSO)
-		var/static/list/torso_angles = list(0, 60, 300, 120, 240, 180)
-		angle = torso_angles[((index - 1) % length(torso_angles)) + 1]
-		// Six torso abilities is more than any body can carry today; extras
-		// stack outward rather than reflowing anything.
-		var/row = round((index - 1) / length(torso_angles))
-		radius = row ? CHROME_WHEEL_OUTER_RADIUS + row * CHROME_WHEEL_ROW_GAP : CHROME_WHEEL_INNER_RADIUS
-	else
-		var/base_angle = 0
-		var/turn = 30
-		switch(region)
-			if(CHROME_WHEEL_RIGHT_ARM)
-				base_angle = 90
-			if(CHROME_WHEEL_LEGS)
-				base_angle = 180
-				turn = -30
-			if(CHROME_WHEEL_LEFT_ARM)
-				base_angle = 270
-				turn = -30
-		var/static/list/steps = list(0, 1, -1)
-		angle = base_angle + turn * steps[((index - 1) % length(steps)) + 1]
-		radius = CHROME_WHEEL_OUTER_RADIUS + round((index - 1) / length(steps)) * CHROME_WHEEL_ROW_GAP
-	return list(round(sin(angle) * radius, 1), round(cos(angle) * radius, 1))
+/// How many chips the socket's arc holds before another row starts.
+/proc/chrome_wheel_socket_fits(socket)
+	var/list/spec = GLOB.chrome_wheel_sockets[socket]
+	return spec ? spec["fits"] : 1
 
 /**
- * Lays the abilities out by region: an associative list of ability =>
- * list(x, y). Positions depend only on each ability's own region, slot and
- * button order, never on what the rest of the body carries.
+ * Pixel offset from the centre of the view of position [index] in [socket],
+ * as list(x, y). Positions run along the socket's arc CHROME_WHEEL_STEP
+ * degrees apart; once the arc is full they start again a row further out.
  */
-/proc/chrome_wheel_layout(list/abilities)
+/proc/chrome_wheel_position(socket, index)
 	RETURN_TYPE(/list)
-	var/list/by_region = list()
+	var/list/spec = GLOB.chrome_wheel_sockets[socket]
+	var/fits = spec["fits"]
+	var/row = round((index - 1) / fits)
+	var/angle = spec["start"] + spec["turn"] * ((index - 1) % fits) * CHROME_WHEEL_STEP
+	var/radius = CHROME_WHEEL_RADIUS + row * CHROME_WHEEL_ROW_GAP
+	return list(round(sin(angle) * radius, 1), round(cos(angle) * radius + CHROME_WHEEL_CENTRE_Y, 1))
+
+/**
+ * Sorts the abilities into sockets: ability => list("socket", "index",
+ * "hand"). Where an ability lands depends only on its own socket's chrome,
+ * never on what the rest of the body carries.
+ */
+/proc/chrome_wheel_placements(list/abilities)
+	RETURN_TYPE(/list)
+	var/list/by_socket = list()
 	for(var/datum/action/ability as anything in abilities)
-		var/region = chrome_wheel_region(ability.target)
-		if(!by_region[region])
-			by_region[region] = list()
-		var/list/members = by_region[region]
+		var/socket = chrome_wheel_socket(ability.target)
+		if(!by_socket[socket])
+			by_socket[socket] = list()
+		var/list/members = by_socket[socket]
 		members += ability
-	var/list/positions = list()
-	for(var/region in by_region)
-		var/list/members = sortTim(by_region[region], GLOBAL_PROC_REF(cmp_chrome_wheel_abilities))
-		var/list/reserved = GLOB.chrome_wheel_reserved[region]
+	var/list/placements = list()
+	for(var/socket in by_socket)
+		var/list/members = sortTim(by_socket[socket], GLOBAL_PROC_REF(cmp_chrome_wheel_abilities))
+		var/list/reserved = GLOB.chrome_wheel_reserved[socket]
 		var/reserved_slot = length(reserved) ? reserved[1] : null
 		var/reserved_count = length(reserved) ? reserved[2] : 0
 		var/next_reserved = 1
@@ -244,50 +302,37 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 				index = next_reserved++
 			else
 				index = next_free++
-			positions[ability] = chrome_wheel_position(region, index)
-	return positions
+			placements[ability] = list("socket" = socket, "index" = index, "hand" = chrome_wheel_is_hand(ware))
+	return placements
 
-/// Positions of [count] sub-option slices on a ring outside [ring_radius],
-/// centred on the direction of their parent slice at (parent_x, parent_y).
-/proc/chrome_wheel_sub_positions(parent_x, parent_y, count, ring_radius)
+/// Where each ability's chip sits: ability => list(x, y), from the centre of the view.
+/proc/chrome_wheel_layout(list/abilities)
 	RETURN_TYPE(/list)
+	var/list/placements = chrome_wheel_placements(abilities)
 	. = list()
-	var/angle = delta_to_angle(parent_x, parent_y)
-	var/radius = ring_radius + CHROME_WHEEL_ROW_GAP
-	var/step = TODEGREES(CHROME_WHEEL_SLICE_SPACING / radius)
-	for(var/i in 1 to count)
-		// 0, +1, -1, +2, -2 steps: the first option sits straight out from its parent.
-		var/slice_angle = angle + round(i / 2) * step * ((i % 2) ? -1 : 1)
-		. += list(list(round(sin(slice_angle) * radius, 1), round(cos(slice_angle) * radius, 1)))
-
-/// Display names, with the body side added where two slices would read the
-/// same (a pair of Mantis housings gives two Mantis Lunges).
-/proc/chrome_wheel_names(list/abilities)
-	RETURN_TYPE(/list)
-	var/list/names = list()
-	var/list/counts = list()
-	for(var/datum/action/ability as anything in abilities)
-		var/name = format_text(ability.name)
-		names[ability] = name
-		counts[name] += 1
-	for(var/datum/action/ability as anything in abilities)
-		var/obj/item/organ/ware = ability.target
-		if(counts[names[ability]] > 1 && istype(ware))
-			names[ability] = "[names[ability]] ([parse_zone(ware.zone)])"
-	return names
+	for(var/datum/action/ability as anything in placements)
+		var/list/placement = placements[ability]
+		.[ability] = chrome_wheel_position(placement["socket"], placement["index"])
 
 // ---- Pointing ----------------------------------------------------------
 
+/// Bearing of an offset from the centre of the view, as seen from the ring's
+/// centre: degrees clockwise from twelve o'clock.
+/proc/chrome_wheel_bearing(x, y)
+	return delta_to_angle(x, y - CHROME_WHEEL_CENTRE_Y)
+
 /**
- * Which of [points] (a list of list(x, y) offsets) the mouse at offset
- * (dx, dy) means, as an index, or 0 for none. A slice within reach of the
- * mouse is the one under it; past the slices, the mouse points at the slice
- * in its direction, so a quick flick outward works without landing on it.
- * Empty regions point at nothing.
+ * Which of [points] (a list of list(x, y) chip centres) the mouse at offset
+ * (dx, dy) means, as an index, or 0 for none. Inside the body nothing is
+ * pointed at. A chip right under the mouse is the one meant; anywhere else,
+ * the mouse points at the chip whose bearing from the ring's centre is
+ * nearest its own, so a quick flick outward works without landing on it.
+ * [on_ring], if given, says which points a bearing can pick (the first row);
+ * the rest only answer the mouse right on them.
  */
-/proc/chrome_wheel_pick(dx, dy, list/points)
-	var/distance = sqrt(dx ** 2 + dy ** 2)
-	if(distance < CHROME_WHEEL_DEADZONE)
+/proc/chrome_wheel_pick(dx, dy, list/points, list/on_ring)
+	var/ring_y = dy - CHROME_WHEEL_CENTRE_Y
+	if(sqrt(dx ** 2 + ring_y ** 2) < CHROME_WHEEL_DEADZONE)
 		return 0
 	var/nearest = 0
 	var/nearest_gap = INFINITY
@@ -299,24 +344,18 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 			nearest_gap = gap
 	if(nearest_gap <= CHROME_WHEEL_PICK_RANGE)
 		return nearest
-	var/mouse_angle = delta_to_angle(dx, dy)
+	var/mouse_bearing = delta_to_angle(dx, ring_y)
 	var/pointed = 0
-	var/pointed_turn = 0
-	var/pointed_radius = 0
+	var/pointed_turn = INFINITY
 	for(var/i in 1 to length(points))
+		if(on_ring && !on_ring[i])
+			continue
 		var/list/point = points[i]
-		var/radius = sqrt(point[1] ** 2 + point[2] ** 2)
-		if(radius >= distance)
-			continue
-		var/turn = abs(WRAP(mouse_angle - delta_to_angle(point[1], point[2]) + 180, 0, 360) - 180)
-		if(turn > CHROME_WHEEL_POINT_TOLERANCE)
-			continue
-		// Ties on direction go to the slice further out: further means deeper.
-		if(!pointed || turn < pointed_turn - 2 || (turn <= pointed_turn + 2 && radius > pointed_radius))
+		var/turn = abs(WRAP(mouse_bearing - chrome_wheel_bearing(point[1], point[2]) + 180, 0, 360) - 180)
+		if(turn < pointed_turn)
 			pointed = i
 			pointed_turn = turn
-			pointed_radius = radius
-	return pointed
+	return pointed_turn <= CHROME_WHEEL_POINT_TOLERANCE ? pointed : 0
 
 /// The mouse position in a screen mouse params string, as pixels from the
 /// centre of the viewer's map: list(x, y), or null if the params have none.
@@ -345,8 +384,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 // ---- Looks -------------------------------------------------------------
 
-/// A radial.dmi frame for a slice or button, shared: "module_selected" (cyan,
-/// what Use chrome fires) or "module_active" (green, deployed or armed).
+/// The radial.dmi "module_selected" frame the picked ability's buttons wear, shared.
 /proc/chrome_wheel_marker(frame_state)
 	var/static/list/markers = list()
 	if(!markers[frame_state])
@@ -354,10 +392,10 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	return markers[frame_state]
 
 /**
- * What an ability's slice shows: a copy of the bearer's own button for it,
- * minus the button background, so the slice carries the same icon, item
- * overlay and cooldown seconds the button does. Built from the action's vars
- * when the bearer has no button for it.
+ * What an ability's chip shows: a copy of the bearer's own button for it,
+ * minus the button background and text, so the chip carries the same icon
+ * and item overlay the button does. Built from the action's vars when the
+ * bearer has no button for it.
  */
 /proc/chrome_wheel_ability_look(datum/action/ability, mob/viewer)
 	RETURN_TYPE(/mutable_appearance)
@@ -381,18 +419,13 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	look.pixel_w = 0
 	look.pixel_z = 0
 	look.screen_loc = null
+	look.maptext = null
 	look.color = null
 	look.alpha = 255
 	look.transform = matrix()
-	// A copied button keeps APPEARANCE_UI; let the icon grow with its slice when pointed at.
-	look.appearance_flags &= ~RESET_TRANSFORM
+	// Keeps its own colour, follows the chip's pop, and shrinks smoothly.
+	look.appearance_flags = RESET_COLOR | NO_CLIENT_COLOR
 	return look
-
-/proc/chrome_wheel_option_look(datum/chrome_wheel_option/option)
-	RETURN_TYPE(/mutable_appearance)
-	if(option?.icon && option.icon_state)
-		return mutable_appearance(option.icon, option.icon_state)
-	return mutable_appearance('icons/hud/actions.dmi', "default")
 
 /// Whether an ability is "on" right now: a toggled arm with its hardware out,
 /// or a click-to-target ability armed and waiting for the click.
@@ -403,6 +436,46 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	if(istype(arm) && istype(ability, /datum/action/item_action/organ_action/toggle))
 		return arm.active_item && !(arm.active_item in arm)
 	return FALSE
+
+/// Deciseconds left on an ability's cooldown, 0 for one that has none.
+/proc/chrome_wheel_cooldown_left(datum/action/ability)
+	var/datum/action/cooldown/timed = ability
+	return istype(timed) ? max(timed.next_use_time - world.time, 0) : 0
+
+/// Whether the chrome an ability lives in is down: rebooting from an EMP, or
+/// browned out over capacity.
+/proc/chrome_wheel_offline(datum/action/ability)
+	var/obj/item/organ/ware = ability.target
+	var/datum/component/cyberware/chrome = istype(ware) ? ware.GetComponent(/datum/component/cyberware) : null
+	return chrome && !chrome.is_running()
+
+/// Whether an ability can't be used right now for any other reason than its
+/// chrome being down or its cooldown: its button's own checks say no.
+/proc/chrome_wheel_unavailable(datum/action/ability, cooldown_left)
+	// On cooldown IsAvailable() is FALSE anyway; the shade shows that instead.
+	return !cooldown_left && !ability.IsAvailable()
+
+/// The tier colour of the chrome an ability lives in.
+/proc/chrome_wheel_tier_color(datum/action/ability)
+	var/obj/item/organ/ware = ability.target
+	var/datum/component/cyberware/chrome = istype(ware) ? ware.GetComponent(/datum/component/cyberware) : null
+	return chrome ? cyberware_tier_color(chrome.tier) : CHROME_WHEEL_HUD_COLOR
+
+/// [color] taken [amount] of the way to white.
+/proc/chrome_wheel_lighten(color, amount)
+	var/list/channels = rgb2num(color)
+	return rgb(round(channels[1] + (255 - channels[1]) * amount), round(channels[2] + (255 - channels[2]) * amount), round(channels[3] + (255 - channels[3]) * amount))
+
+/// One of the chip art states as an overlay that keeps its own colour.
+/proc/chrome_wheel_chip_piece(piece_state, piece_color, piece_alpha = 255)
+	var/mutable_appearance/piece = mutable_appearance(CHROME_WHEEL_ICON, piece_state, FLOAT_LAYER, appearance_flags = RESET_COLOR | NO_CLIENT_COLOR | PIXEL_SCALE)
+	piece.color = piece_color
+	piece.alpha = piece_alpha
+	return piece
+
+/// Sorts chips clockwise from twelve o'clock, the order they pop in.
+/proc/cmp_chrome_wheel_bearing(atom/movable/screen/chrome_wheel/chip/first, atom/movable/screen/chrome_wheel/chip/second)
+	return chrome_wheel_bearing(first.chip_x, first.chip_y) - chrome_wheel_bearing(second.chip_x, second.chip_y)
 
 // ---- The wheel ---------------------------------------------------------
 
@@ -422,30 +495,39 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	var/client/shown_to
 	/// Screen-centre object every visible part of the wheel hangs off.
 	var/atom/movable/screen/chrome_wheel/hub/hub
-	/// Full-view mouse tracker under the slices.
+	/// Full-view mouse tracker under the wheel.
 	var/atom/movable/screen/fullscreen/cursor_catcher/chrome_wheel/catcher
-	/// Screen objects the open wheel made, except sub-option slices, for teardown.
+	/// Every screen object the open wheel made, for teardown.
 	var/list/parts
-	/// Ability slices that can be pointed at, one per ability.
-	var/list/main_slices
-	/// Sub-option slices on show, all belonging to [sub_parent].
-	var/list/sub_slices
-	/// The ability slice whose sub-option ring is open.
-	var/atom/movable/screen/chrome_wheel/slice/sub_parent
-	/// The slice the mouse is on.
-	var/atom/movable/screen/chrome_wheel/slice/highlighted
-	/// Shows what Use chrome fires.
-	var/atom/movable/screen/chrome_wheel/slice/centre
-	/// Name of the slice the mouse is on.
-	var/atom/movable/screen/chrome_wheel/label/label
-	/// Furthest ability slice from the centre; the sub-option ring goes outside it.
-	var/outer_radius = 0
+	/// One chip per ability.
+	var/list/chips
+	/// Leader key => list("leader", "node", "node_state", "alpha"): the line
+	/// from a socket (or a hand chip) to the body, and its dot on the body.
+	var/list/leaders
+	/// Arc name => its piece of ring art.
+	var/list/arcs
+	/// The body part lit under the chip pointed at.
+	var/atom/movable/screen/chrome_wheel/art/glow
+	/// The chip the mouse is on.
+	var/atom/movable/screen/chrome_wheel/chip/highlighted
+	/// Readout lines, and the pick mark it shows when nothing is pointed at.
+	var/atom/movable/screen/chrome_wheel/readout/readout_title
+	var/atom/movable/screen/chrome_wheel/readout/readout_sub
+	var/atom/movable/screen/chrome_wheel/readout/readout_status
+	var/atom/movable/screen/chrome_wheel/readout/readout_mark
+	/// What the readout last showed.
+	var/readout_state
 	/// First mouse position reported after opening. Nothing is pointed at until
 	/// the mouse leaves it, so a cursor that was resting somewhere when the
 	/// key went down picks nothing by accident.
 	var/list/mouse_start
 	/// Whether the mouse has left [mouse_start].
 	var/mouse_moved = FALSE
+	/// A closed wheel still fading out: its client, its pieces and the timer
+	/// that takes them away.
+	var/client/fading_client
+	var/list/fading_parts
+	var/fading_timer
 
 /datum/component/chrome_wheel/Initialize()
 	if(!iscarbon(parent))
@@ -460,6 +542,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 /datum/component/chrome_wheel/Destroy(force)
 	close_wheel()
+	clear_fading()
 	unmark()
 	selected_ref = null
 	return ..()
@@ -467,6 +550,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /datum/component/chrome_wheel/proc/on_logout(datum/source)
 	SIGNAL_HANDLER
 	close_wheel()
+	clear_fading()
 
 /datum/component/chrome_wheel/proc/on_stat_change(datum/source, new_stat, old_stat)
 	SIGNAL_HANDLER
@@ -522,7 +606,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /datum/component/chrome_wheel/proc/use_selected()
 	if(wheel_mode != CHROME_WHEEL_CLOSED)
 		if(highlighted)
-			select_slice(highlighted, quiet = TRUE)
+			select_chip(highlighted, quiet = TRUE)
 		close_wheel()
 	var/datum/action/ability = get_selected_ability()
 	if(ability)
@@ -571,8 +655,9 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	selected_ref = WEAKREF(ability)
 	selected_option = option_id
 	mark(ability)
-	if(wheel_mode != CHROME_WHEEL_CLOSED)
-		draw_centre()
+	for(var/atom/movable/screen/chrome_wheel/chip/chip as anything in chips)
+		draw_chip(chip)
+	update_readout()
 
 /datum/component/chrome_wheel/proc/deselect()
 	selected_ref = null
@@ -632,20 +717,21 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	if(old_owner == parent)
 		deselect()
 
-/datum/component/chrome_wheel/proc/select_slice(atom/movable/screen/chrome_wheel/slice/slice, quiet = FALSE)
-	var/datum/action/ability = slice?.ability_ref?.resolve()
+/datum/component/chrome_wheel/proc/select_chip(atom/movable/screen/chrome_wheel/chip/chip, quiet = FALSE)
+	var/datum/action/ability = chip?.ability_ref?.resolve()
 	if(!ability)
 		return
-	select(ability, slice.option_id)
+	select(ability)
 	if(!quiet)
 		var/mob/living/carbon/bearer = parent
-		bearer.balloon_alert(bearer, lowertext(slice.name))
+		bearer.balloon_alert(bearer, lowertext(chip.name))
 
-/// Pick [slice] (or nothing, for null) and close the wheel.
-/datum/component/chrome_wheel/proc/choose(atom/movable/screen/chrome_wheel/slice/slice)
-	if(slice)
-		select_slice(slice)
-	close_wheel()
+/// Pick [chip] (or nothing, for null) and close the wheel. The pick lands at
+/// once; the wheel stays up a moment longer for the lock and the fade.
+/datum/component/chrome_wheel/proc/choose(atom/movable/screen/chrome_wheel/chip/chip)
+	if(chip)
+		select_chip(chip)
+	close_wheel(linger = TRUE, chosen = chip?.ability_ref?.resolve() ? chip : null)
 
 // ---- Opening and closing -----------------------------------------------
 
@@ -658,38 +744,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	if(!length(abilities))
 		bearer.balloon_alert(bearer, "no chrome!")
 		return FALSE
-	var/list/positions = chrome_wheel_layout(abilities)
-	var/list/names = chrome_wheel_names(abilities)
-	parts = list()
-	main_slices = list()
-	sub_slices = list()
-	outer_radius = 0
-	hub = new
-	parts += hub
-	var/list/taken = list()
-	for(var/datum/action/ability as anything in abilities)
-		var/list/point = positions[ability]
-		var/atom/movable/screen/chrome_wheel/slice/slice = new_slice(point[1], point[2])
-		slice.ability_ref = WEAKREF(ability)
-		slice.name = names[ability]
-		main_slices += slice
-		taken["[point[1]],[point[2]]"] = TRUE
-		outer_radius = max(outer_radius, sqrt(point[1] ** 2 + point[2] ** 2))
-		draw_slice(slice)
-	// Regions with nothing on their first position keep a dim slice there, so
-	// the wheel always has the same shape.
-	for(var/region in list(CHROME_WHEEL_HEAD, CHROME_WHEEL_RIGHT_ARM, CHROME_WHEEL_LEGS, CHROME_WHEEL_LEFT_ARM, CHROME_WHEEL_TORSO))
-		var/list/point = chrome_wheel_position(region, 1)
-		if(taken["[point[1]],[point[2]]"])
-			continue
-		var/atom/movable/screen/chrome_wheel/slice/placeholder = new_slice(point[1], point[2])
-		placeholder.alpha = 70
-	centre = new_slice(0, 0)
-	draw_centre()
-	label = new
-	label.pixel_y = -(CHROME_WHEEL_OUTER_RADIUS + 34)
-	parts += label
-	hub.vis_contents += label
+	clear_fading()
+	build_wheel(abilities)
 
 	catcher = new
 	catcher.wheel = src
@@ -698,8 +754,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	shown_to = viewer
 	viewer.screen += catcher
 	viewer.screen += hub
-	hub.alpha = 0
-	animate(hub, alpha = 255, time = 0.1 SECONDS)
+	play_open()
 
 	wheel_mode = mode
 	mouse_start = null
@@ -707,38 +762,217 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	START_PROCESSING(SSfastprocess, src)
 	return TRUE
 
-/datum/component/chrome_wheel/proc/new_slice(x, y)
-	var/atom/movable/screen/chrome_wheel/slice/slice = new
-	slice.pixel_x = x
-	slice.pixel_y = y
-	slice.slice_x = x
-	slice.slice_y = y
-	parts += slice
-	hub.vis_contents += slice
-	return slice
+/**
+ * Makes every piece of the wheel for [abilities] and hangs it off a new hub,
+ * without putting anything on a screen.
+ */
+/datum/component/chrome_wheel/proc/build_wheel(list/abilities)
+	var/list/placements = chrome_wheel_placements(abilities)
+	var/list/names = chrome_wheel_names(abilities)
+	parts = list()
+	chips = list()
+	leaders = list()
+	arcs = list()
+	readout_state = null
+	hub = new
+	parts += hub
+	add_piece(/atom/movable/screen/chrome_wheel/art/backdrop)
+	add_piece(/atom/movable/screen/chrome_wheel/art, "body")
+	glow = add_piece(/atom/movable/screen/chrome_wheel/art, null, 2.2)
+	glow.alpha = 0
+	var/list/arc_names = list()
+	for(var/socket in GLOB.chrome_wheel_sockets)
+		arc_names |= GLOB.chrome_wheel_sockets[socket]["arc"]
+	for(var/arc_name in arc_names)
+		arcs[arc_name] = add_piece(/atom/movable/screen/chrome_wheel/art, "arc_[arc_name]", 2.25)
 
-/datum/component/chrome_wheel/proc/close_wheel()
+	// Which sockets hold chrome of their own, and which positions are taken.
+	var/list/occupied = list()
+	var/list/taken = list()
+	for(var/datum/action/ability as anything in placements)
+		var/list/placement = placements[ability]
+		taken["[placement["socket"]]|[placement["index"]]"] = TRUE
+		if(!placement["hand"])
+			occupied[placement["socket"]] = TRUE
+	for(var/socket in GLOB.chrome_wheel_sockets)
+		add_leader(socket, socket, occupied[socket])
+		if(!taken["[socket]|1"])
+			var/list/point = chrome_wheel_position(socket, 1)
+			var/atom/movable/screen/chrome_wheel/empty_socket/outline = add_piece(/atom/movable/screen/chrome_wheel/empty_socket)
+			outline.pixel_x = point[1]
+			outline.pixel_y = point[2]
+
+	for(var/datum/action/ability as anything in abilities)
+		var/list/placement = placements[ability]
+		var/socket = placement["socket"]
+		var/list/point = chrome_wheel_position(socket, placement["index"])
+		var/atom/movable/screen/chrome_wheel/chip/chip = add_piece(/atom/movable/screen/chrome_wheel/chip)
+		chip.ability_ref = WEAKREF(ability)
+		chip.name = names[ability]
+		chip.socket = socket
+		chip.index = placement["index"]
+		chip.leader_key = socket
+		chip.region = GLOB.chrome_wheel_sockets[socket]["region"]
+		if(placement["hand"])
+			var/hand = (socket == CHROME_WHEEL_SOCKET_LEFT_ARM) ? "l_hand" : "r_hand"
+			chip.region = hand
+			// The ring art has a run to the hand from each first-row position.
+			if(chip.index <= chrome_wheel_socket_fits(socket))
+				chip.leader_key = "[hand]_[chip.index]"
+				add_leader(chip.leader_key, hand, TRUE)
+		chip.chip_x = point[1]
+		chip.chip_y = point[2]
+		chip.pixel_x = point[1]
+		chip.pixel_y = point[2]
+		chips += chip
+		draw_chip(chip)
+	build_readout()
+	update_readout()
+
+/// A new piece of the wheel on the hub. [art_state] sets its icon state and
+/// [piece_layer] its layer, when given.
+/datum/component/chrome_wheel/proc/add_piece(piece_type, art_state, piece_layer)
+	var/atom/movable/screen/chrome_wheel/piece = new piece_type
+	if(art_state)
+		piece.icon_state = art_state
+	if(piece_layer)
+		piece.layer = piece_layer
+	parts += piece
+	hub.vis_contents += piece
+	return piece
+
+/// The leader for [key] and the dot where it meets the body, from the ring art.
+/datum/component/chrome_wheel/proc/add_leader(key, art_key, filled)
+	if(leaders[key])
+		return
+	var/atom/movable/screen/chrome_wheel/art/line = add_piece(/atom/movable/screen/chrome_wheel/art, "leader_[key]", 2.3)
+	var/atom/movable/screen/chrome_wheel/art/dot = add_piece(/atom/movable/screen/chrome_wheel/art, "node_[art_key]", 2.4)
+	leaders[key] = list("leader" = line, "node" = dot, "node_state" = "node_[art_key]", "alpha" = filled ? 100 : 40)
+	style_leader(key, null)
+
+/// The readout panel's frame and its empty text lines.
+/datum/component/chrome_wheel/proc/build_readout()
+	var/left = CHROME_WHEEL_READOUT_LEFT
+	var/top = CHROME_WHEEL_READOUT_TOP
+	var/width = CHROME_WHEEL_READOUT_WIDTH
+	var/height = CHROME_WHEEL_READOUT_HEIGHT
+	add_readout_block(left, top - height, width, height, CHROME_WHEEL_PANEL_COLOR, 205, 4)
+	add_readout_block(left, top - 1, width, 1, CHROME_WHEEL_HUD_COLOR, 120, 4.1)
+	add_readout_block(left, top - height, width, 1, CHROME_WHEEL_HUD_COLOR, 120, 4.1)
+	add_readout_block(left, top - height, 1, height, CHROME_WHEEL_HUD_COLOR, 120, 4.1)
+	add_readout_block(left + width - 1, top - height, 1, height, CHROME_WHEEL_HUD_COLOR, 120, 4.1)
+	add_readout_block(left, top - 12, 2, 12, CHROME_WHEEL_HUD_COLOR, 255, 4.1)
+	// Text boxes are taller than their line and centred on it, as the chrome
+	// read sets them: Grand9K caps start 5 px under a 16 px box's top,
+	// TinyUnicode caps 8 px under a 17 px one.
+	readout_title = add_readout_text(left + 5, top - 11 - 2, width - 9, 16)
+	readout_sub = add_readout_text(left + 5, top - 9 - 13, width - 9, 17)
+	readout_status = add_readout_text(left + 5, top - 11 - 3, width - 10, 16)
+	readout_mark = add_piece(/atom/movable/screen/chrome_wheel/readout, "pick_glyph", 4.3)
+	readout_mark.color = CHROME_WHEEL_PICKED_COLOR
+	readout_mark.alpha = 0
+	readout_mark.pixel_x = left + 140
+	readout_mark.pixel_y = top - 22
+
+/datum/component/chrome_wheel/proc/add_readout_block(x, y, width, height, block_color, block_alpha, block_layer)
+	var/atom/movable/screen/chrome_wheel/readout/block = add_piece(/atom/movable/screen/chrome_wheel/readout, null, block_layer)
+	block.color = block_color
+	block.alpha = block_alpha
+	block.transform = chrome_readout_quad(x, y, width, height)
+	return block
+
+/datum/component/chrome_wheel/proc/add_readout_text(x, y, width, height)
+	var/atom/movable/screen/chrome_wheel/readout/line = add_piece(/atom/movable/screen/chrome_wheel/readout, null, 4.2)
+	line.icon_state = null
+	line.maptext_x = x
+	line.maptext_y = y
+	line.maptext_width = width
+	line.maptext_height = height
+	return line
+
+/// Fades the wheel in and pops the chips out one after another, clockwise from the top.
+/datum/component/chrome_wheel/proc/play_open()
+	hub.alpha = 0
+	animate(hub, alpha = 255, time = 1)
+	var/list/order = sortTim(chips.Copy(), GLOBAL_PROC_REF(cmp_chrome_wheel_bearing))
+	for(var/i in 1 to length(order))
+		var/atom/movable/screen/chrome_wheel/chip/chip = order[i]
+		var/matrix/small = matrix(0.6, 0, 0, 0, 0.6, 0)
+		chip.transform = small
+		animate(chip, transform = small, time = (i - 1) * 0.08)
+		animate(transform = matrix(), time = 0.8, easing = BACK_EASING | EASE_OUT)
+
+/**
+ * Shuts the wheel and gives the mouse back to the world. With [linger] the
+ * pieces stay on screen a moment to fade, after [chosen] locks.
+ */
+/datum/component/chrome_wheel/proc/close_wheel(linger = FALSE, atom/movable/screen/chrome_wheel/chip/chosen)
 	STOP_PROCESSING(SSfastprocess, src)
 	wheel_mode = CHROME_WHEEL_CLOSED
 	if(shown_to)
 		shown_to.screen -= catcher
-		shown_to.screen -= hub
-	shown_to = null
-	hide_sub_ring()
-	highlighted = null
-	hub?.vis_contents.Cut()
-	QDEL_LIST(parts)
 	QDEL_NULL(catcher)
+	if(linger && shown_to && hub)
+		clear_fading()
+		fading_client = shown_to
+		fading_parts = parts
+		if(chosen)
+			play_lock(chosen)
+		animate(hub, alpha = hub.alpha, time = chosen ? 1 : 0)
+		animate(alpha = 0, time = 1)
+		fading_timer = addtimer(CALLBACK(src, PROC_REF(fade_done)), CHROME_WHEEL_LINGER_TIME, TIMER_STOPPABLE | TIMER_CLIENT_TIME | TIMER_DELETE_ME)
+	else
+		shown_to?.screen -= hub
+		QDEL_LIST(parts)
+	shown_to = null
 	hub = null
-	centre = null
-	label = null
 	parts = null
-	main_slices = null
-	sub_slices = null
+	chips = null
+	leaders = null
+	arcs = null
+	glow = null
+	highlighted = null
+	readout_title = null
+	readout_sub = null
+	readout_status = null
+	readout_mark = null
+	readout_state = null
 	mouse_start = null
 	mouse_moved = FALSE
 
-/// While open: catch a modifier bind's release, and keep the slices current.
+/datum/component/chrome_wheel/proc/fade_done()
+	fading_timer = null
+	clear_fading()
+
+/// Takes a fading wheel off its screen now.
+/datum/component/chrome_wheel/proc/clear_fading()
+	if(fading_timer)
+		deltimer(fading_timer)
+		fading_timer = null
+	if(fading_client && length(fading_parts))
+		fading_client.screen -= fading_parts[1]
+	fading_client = null
+	QDEL_LIST(fading_parts)
+
+/// The pick locking on: its frame flashes white and the brackets snap in.
+/datum/component/chrome_wheel/proc/play_lock(atom/movable/screen/chrome_wheel/chip/chip)
+	var/settled = chip.color
+	chip.color = "#ffffff"
+	animate(chip, color = "#ffffff", time = 0.5)
+	animate(color = settled, time = 0)
+	for(var/atom/movable/screen/chrome_wheel/bracket/corner as anything in chip.brackets)
+		if(!corner.alpha)
+			continue
+		var/final_x = corner.pixel_x
+		var/final_y = corner.pixel_y
+		corner.pixel_x = final_x + corner.out_x * 7
+		corner.pixel_y = final_y + corner.out_y * 7
+		corner.color = "#ffffff"
+		animate(corner, pixel_x = final_x, pixel_y = final_y, time = 1, easing = BACK_EASING | EASE_OUT)
+		animate(corner, color = "#ffffff", time = 0.5, flags = ANIMATION_PARALLEL)
+		animate(color = CHROME_WHEEL_PICKED_COLOR, time = 0)
+
+/// While open: catch a modifier bind's release, and keep the chips current.
 /datum/component/chrome_wheel/process(seconds_per_tick)
 	if(wheel_mode == CHROME_WHEEL_CLOSED)
 		return PROCESS_KILL
@@ -746,96 +980,262 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		wheel_key_up()
 		if(wheel_mode == CHROME_WHEEL_CLOSED)
 			return PROCESS_KILL
-	for(var/atom/movable/screen/chrome_wheel/slice/slice in main_slices + sub_slices)
-		draw_slice(slice)
+	for(var/atom/movable/screen/chrome_wheel/chip/chip as anything in chips)
+		draw_chip(chip)
+	update_readout()
 
 // ---- Drawing -----------------------------------------------------------
 
 /**
- * Brings a slice up to date: the ability's look, red when it cannot be used
- * (the button's own tint), a draining shade while it cools down, and a frame
- * when it is picked (cyan) or deployed/armed (green). Redraws only on change.
+ * Brings a chip up to date: its frame in its tier colour (blinking red while
+ * the chrome is down), the ability's icon, the green inner line while it is
+ * deployed or armed, the pick's brackets, and a draining shade with seconds
+ * while it cools down. Bigger and brighter while pointed at. Redraws only on
+ * change.
  */
-/datum/component/chrome_wheel/proc/draw_slice(atom/movable/screen/chrome_wheel/slice/slice)
+/datum/component/chrome_wheel/proc/draw_chip(atom/movable/screen/chrome_wheel/chip/chip)
 	var/mob/living/carbon/bearer = parent
-	var/datum/action/ability = slice.ability_ref?.resolve()
+	var/datum/action/ability = chip.ability_ref?.resolve()
 	if(!ability)
-		if(slice.drawn_state)
-			slice.cut_overlays()
-			slice.drawn_state = null
-			slice.alpha = 70
+		if(chip.drawn_state != "gone")
+			chip.drawn_state = "gone"
+			chip.cut_overlays()
+			chip.underlays.Cut()
+			chip.alpha = 70
 		return
 	var/datum/action/cooldown/timed = istype(ability, /datum/action/cooldown) ? ability : null
 	var/cooldown_left = timed ? max(timed.next_use_time - world.time, 0) : 0
-	var/obj/item/organ/ware = ability.target
-	var/datum/component/cyberware/chrome = istype(ware) ? ware.GetComponent(/datum/component/cyberware) : null
-	var/offline = chrome ? !chrome.is_running() : FALSE
-	// On cooldown IsAvailable() is FALSE anyway; the shade shows that instead.
-	if(!offline && !cooldown_left && !ability.IsAvailable())
-		offline = TRUE
-	var/frame
-	if(selected_ref?.resolve() == ability && (!slice.option_id || slice.option_id == selected_option))
-		frame = "module_selected"
-	else if(!slice.option_id && chrome_wheel_ability_active(ability, bearer))
-		frame = "module_active"
+	var/offline = chrome_wheel_offline(ability)
+	var/unavailable = !offline && chrome_wheel_unavailable(ability, cooldown_left)
+	var/hovered = (chip == highlighted)
+	var/picked = (selected_ref?.resolve() == ability)
+	var/active = chrome_wheel_ability_active(ability, bearer)
 	var/atom/movable/screen/movable/action_button/button = bearer.hud_used ? ability.viewers[bearer.hud_used] : null
-	var/state = "[offline]|[frame]|[timed?.next_use_time]|[!!cooldown_left]|[button?.maptext]|[button?.icon_state]"
-	if(state == slice.drawn_state)
-		return
-	slice.drawn_state = state
-	slice.cut_overlays()
-	if(frame)
-		slice.add_overlay(chrome_wheel_marker(frame))
-	var/mutable_appearance/look = slice.option_look ? new /mutable_appearance(slice.option_look) : chrome_wheel_ability_look(ability, bearer)
-	if(offline)
+	var/state = "[offline]|[unavailable]|[hovered]|[picked]|[active]|[timed?.next_use_time]|[!!cooldown_left]|[button?.icon_state]|[ability.button_icon_state]"
+	if(state != chip.drawn_state)
+		chip.drawn_state = state
+		paint_chip(chip, ability, offline, unavailable, hovered, picked, active)
+		update_shade(chip, cooldown_left, timed ? max(timed.cooldown_time, cooldown_left) : 0)
+		if(hovered)
+			light_up(chip)
+	update_count(chip, cooldown_left)
+
+/datum/component/chrome_wheel/proc/paint_chip(atom/movable/screen/chrome_wheel/chip/chip, datum/action/ability, offline, unavailable, hovered, picked, active)
+	var/size = hovered ? 26 : 22
+	chip.size = size
+	var/base_color = offline ? CHROME_WHEEL_OFFLINE_COLOR : chrome_wheel_tier_color(ability)
+	chip.icon_state = "frame_[size][offline ? "_blink" : ""]"
+	chip.color = hovered ? chrome_wheel_lighten(base_color, 0.35) : base_color
+	chip.alpha = 255
+	chip.cut_overlays()
+	chip.underlays.Cut()
+	chip.underlays += chrome_wheel_chip_piece("fill_[size]")
+	if(hovered)
+		chip.add_overlay(chrome_wheel_chip_piece("halo_26", base_color, 90))
+	var/mutable_appearance/look = chrome_wheel_ability_look(ability, parent)
+	// The icon fills the chip but for a pixel all round.
+	var/scale = (size - 2) / ICON_SIZE_X
+	look.transform = matrix(scale, 0, 0, 0, scale, 0)
+	// Red like its button when it can't be used.
+	if(offline || unavailable)
 		look.color = ability.transparent_when_unavailable ? rgb(128, 0, 0, 128) : rgb(128, 0, 0)
-	slice.add_overlay(look)
-	update_shade(slice, cooldown_left, timed ? max(timed.cooldown_time, cooldown_left) : 0, timed?.next_use_time)
+	chip.add_overlay(look)
+	if(active)
+		chip.add_overlay(chrome_wheel_chip_piece("deployed_[size]"))
+	draw_brackets(chip, picked)
 
-/// The cooldown wipe: a dark copy of the slice that drains downward to nothing
-/// as the cooldown runs out. Animated on the client, so it costs no ticks.
-/datum/component/chrome_wheel/proc/update_shade(atom/movable/screen/chrome_wheel/slice/slice, cooldown_left, cooldown_total, cooldown_until)
+/// The pick's corner brackets, a couple of pixels clear of the chip's corners.
+/datum/component/chrome_wheel/proc/draw_brackets(atom/movable/screen/chrome_wheel/chip/chip, picked)
+	if(!picked)
+		for(var/atom/movable/screen/chrome_wheel/bracket/corner as anything in chip.brackets)
+			corner.alpha = 0
+		return
+	if(!chip.brackets)
+		chip.brackets = list()
+		for(var/corner_name in list("nw", "ne", "sw", "se"))
+			var/atom/movable/screen/chrome_wheel/bracket/corner = new
+			corner.icon_state = "bracket_[corner_name]"
+			corner.out_x = findtext(corner_name, "w") ? -1 : 1
+			corner.out_y = findtext(corner_name, "n") ? 1 : -1
+			chip.brackets += corner
+			chip.vis_contents += corner
+	// The bracket art has its corner pixel one in from the edge of its tile; a
+	// chip's brackets sit two pixels outside its corners.
+	var/reach = chip.size / 2 + 2 - 15
+	for(var/atom/movable/screen/chrome_wheel/bracket/corner as anything in chip.brackets)
+		animate(corner)
+		corner.alpha = 255
+		corner.color = CHROME_WHEEL_PICKED_COLOR
+		corner.pixel_x = corner.out_x * reach
+		corner.pixel_y = corner.out_y * reach
+
+/// The cooldown wipe: a dark block over the chip's inside that drains downward
+/// to nothing as the cooldown runs out, with a faint line along its top.
+/// Animated on the client, so it costs no ticks.
+/datum/component/chrome_wheel/proc/update_shade(atom/movable/screen/chrome_wheel/chip/chip, cooldown_left, cooldown_total)
 	if(!cooldown_left)
-		if(slice.shade)
-			animate(slice.shade)
-			slice.shade.alpha = 0
-		slice.cooldown_until = 0
+		for(var/atom/movable/screen/chrome_wheel/chip_part/part in list(chip.shade, chip.shade_edge))
+			animate(part)
+			part.alpha = 0
 		return
-	if(slice.cooldown_until == cooldown_until)
-		return
-	slice.cooldown_until = cooldown_until
-	if(!slice.shade)
-		slice.shade = new
-		slice.vis_contents += slice.shade
-	var/atom/movable/screen/chrome_wheel/shade/shade = slice.shade
-	var/fraction = clamp(cooldown_left / max(cooldown_total, 1), 0.01, 1)
-	// The slice graphic is 26 pixels tall around the icon's centre, so a shade
-	// squashed to [fraction] sits on the bottom edge when dropped by 13 * (1 - fraction).
-	shade.alpha = 255
-	shade.transform = matrix(1, 0, 0, 0, fraction, -13 * (1 - fraction))
-	animate(shade, transform = matrix(1, 0, 0, 0, 0.01, -13 * 0.99), time = cooldown_left)
+	if(!chip.shade)
+		chip.shade = new
+		chip.shade.color = COLOR_BLACK
+		chip.shade_edge = new
+		chip.shade_edge.layer = 3.2
+		chip.vis_contents += list(chip.shade, chip.shade_edge)
+	var/list/start = chrome_wheel_shade_shape(chip.size, cooldown_left / max(cooldown_total, 1))
+	var/list/finish = chrome_wheel_shade_shape(chip.size, 0)
+	chip.shade.alpha = 185
+	chip.shade.transform = start[1]
+	animate(chip.shade, transform = finish[1], time = cooldown_left)
+	chip.shade_edge.alpha = 110
+	chip.shade_edge.transform = start[2]
+	animate(chip.shade_edge, transform = finish[2], time = cooldown_left)
 
-/// The centre shows what Use chrome fires, dim when nothing is picked.
-/datum/component/chrome_wheel/proc/draw_centre()
-	if(!centre)
+/**
+ * The cooldown wipe's shape on a chip of [size] with [fraction] of its
+ * cooldown left: list(shade transform, edge transform). The px state is a
+ * full tile, squashed to the chip's inside and sitting on its floor; the edge
+ * is the wipe's top row.
+ */
+/proc/chrome_wheel_shade_shape(size, fraction)
+	RETURN_TYPE(/list)
+	var/inside = size - 2
+	var/height = max(inside * min(fraction, 1), 0.3)
+	return list(
+		matrix(inside / 32, 0, 0, 0, height / 32, -(inside - height) / 2),
+		matrix(inside / 32, 0, 0, 0, 1 / 32, max(height, 1) - inside / 2 - 0.5),
+	)
+
+/// Whole seconds left on the cooldown, in the chip's bottom left corner.
+/datum/component/chrome_wheel/proc/update_count(atom/movable/screen/chrome_wheel/chip/chip, cooldown_left)
+	var/seconds = cooldown_left ? CEILING(cooldown_left / 10, 1) : 0
+	var/state = "[seconds]|[chip.size]"
+	if(state == chip.count_state)
 		return
-	centre.cut_overlays()
+	chip.count_state = state
+	if(!seconds)
+		if(chip.count)
+			chip.count.maptext = null
+		return
+	if(!chip.count)
+		chip.count = new
+		chip.count.icon_state = null
+		chip.count.layer = 3.3
+		chip.count.maptext_width = 32
+		chip.count.maptext_height = 17
+		chip.vis_contents += chip.count
+	// Box centred like the readout's lines (caps 8 px under a 17 px box's top),
+	// putting the number three pixels in from the chip's bottom left corner.
+	chip.count.maptext = chrome_readout_tiny_html("[seconds]")
+	chip.count.maptext_x = 16 - chip.size / 2 + 3
+	chip.count.maptext_y = 18 - chip.size / 2
+
+/// Sets a leader and its node to [lit_color], or back to the dim HUD colour for null.
+/datum/component/chrome_wheel/proc/style_leader(key, lit_color)
+	var/list/leader = leaders?[key]
+	if(!leader)
+		return
+	var/atom/movable/screen/chrome_wheel/art/line = leader["leader"]
+	var/atom/movable/screen/chrome_wheel/art/dot = leader["node"]
+	if(lit_color)
+		line.color = lit_color
+		line.alpha = 235
+		dot.icon_state = "[leader["node_state"]]_lit"
+		dot.color = chrome_wheel_lighten(lit_color, 0.6)
+		dot.alpha = 255
+		return
+	line.color = CHROME_WHEEL_HUD_COLOR
+	line.alpha = leader["alpha"]
+	dot.icon_state = leader["node_state"]
+	dot.color = CHROME_WHEEL_HUD_COLOR
+	dot.alpha = min(255, leader["alpha"] + 60)
+
+/// Lights the arc, leader and body part of [chip] in its colour, and puts
+/// everything else back. Null lights nothing.
+/datum/component/chrome_wheel/proc/light_up(atom/movable/screen/chrome_wheel/chip/chip)
+	var/datum/action/ability = chip?.ability_ref?.resolve()
+	var/lit_color
+	if(ability)
+		lit_color = chrome_wheel_offline(ability) ? CHROME_WHEEL_OFFLINE_COLOR : chrome_wheel_tier_color(ability)
+	for(var/key in leaders)
+		style_leader(key, (lit_color && key == chip.leader_key) ? lit_color : null)
+	var/lit_arc = lit_color ? GLOB.chrome_wheel_sockets[chip.socket]["arc"] : null
+	for(var/arc_name in arcs)
+		var/atom/movable/screen/chrome_wheel/art/arc = arcs[arc_name]
+		var/lit = (arc_name == lit_arc)
+		arc.color = lit ? lit_color : CHROME_WHEEL_HUD_COLOR
+		arc.alpha = lit ? 200 : 80
+	if(!glow)
+		return
+	if(!lit_color)
+		glow.alpha = 0
+		return
+	glow.icon_state = "glow_[chip.region]"
+	glow.color = lit_color
+	glow.alpha = 255
+
+/**
+ * The readout under the ring: the chip pointed at, the chrome it lives in in
+ * its tier colour, and on the right how it stands ("14s", "offline", "out").
+ * With nothing pointed at it shows the pick, dim, with a small bracket mark.
+ */
+/datum/component/chrome_wheel/proc/update_readout()
+	if(!readout_title)
+		return
 	var/mob/living/carbon/bearer = parent
-	var/datum/action/ability = get_selected_ability()
-	if(!ability)
-		centre.alpha = 70
-		return
-	centre.alpha = 255
-	centre.add_overlay(chrome_wheel_marker("module_selected"))
-	if(selected_option)
-		centre.add_overlay(chrome_wheel_option_look(chrome_wheel_find_option(ability, bearer, selected_option)))
+	var/atom/movable/screen/chrome_wheel/chip/shown = highlighted
+	var/datum/action/ability = shown?.ability_ref?.resolve()
+	var/idle = !ability
+	var/title
+	if(idle)
+		ability = get_selected_ability()
+		if(ability)
+			var/datum/chrome_wheel_option/option = selected_option ? chrome_wheel_find_option(ability, bearer, selected_option) : null
+			title = option ? option.name : ability.chrome_wheel_name()
 	else
-		centre.add_overlay(chrome_wheel_ability_look(ability, bearer))
-
-/datum/component/chrome_wheel/proc/draw_label()
-	if(!label)
+		title = shown.name
+	var/sub = ability ? chrome_wheel_ware_name(ability) : ""
+	var/sub_color = CHROME_WHEEL_DIM_COLOR
+	var/title_color = CHROME_WHEEL_DIM_COLOR
+	var/status
+	var/status_color
+	if(ability && !idle)
+		title_color = CHROME_WHEEL_NAME_COLOR
+		var/datum/action/cooldown/timed = istype(ability, /datum/action/cooldown) ? ability : null
+		var/cooldown_left = timed ? max(timed.next_use_time - world.time, 0) : 0
+		if(chrome_wheel_offline(ability))
+			status = "offline"
+			status_color = CHROME_WHEEL_OFFLINE_COLOR
+			sub_color = CHROME_WHEEL_OFFLINE_NAME_COLOR
+		else
+			sub_color = chrome_wheel_tier_color(ability)
+			if(chrome_wheel_ability_active(ability, bearer))
+				status = timed ? "armed" : "out"
+				status_color = CHROME_WHEEL_DEPLOYED_COLOR
+			else if(cooldown_left)
+				status = "[CEILING(cooldown_left / 10, 1)]s"
+				status_color = "#ffffff"
+	var/state = "[idle]|[title]|[title_color]|[sub]|[sub_color]|[status]"
+	if(state == readout_state)
 		return
-	label.maptext = highlighted ? MAPTEXT("<div align='center'>[html_encode(highlighted.name)]</div>") : null
+	readout_state = state
+	var/static/datum/font/header_font = new /datum/font/grand9k/size_6pt()
+	var/static/datum/font/list_font = new /datum/font/tiny_unicode/size_12pt()
+	var/status_width = status ? header_font.get_metrics(status) + 6 : 0
+	if(title)
+		title = chrome_readout_fit(title, header_font, CHROME_WHEEL_READOUT_WIDTH - 10 - status_width)
+		readout_title.maptext = chrome_readout_header_html(html_encode(title), title_color)
+	else
+		readout_title.maptext = null
+	if(sub)
+		sub = chrome_readout_fit(sub, list_font, CHROME_WHEEL_READOUT_WIDTH - 10)
+		readout_sub.maptext = chrome_readout_tiny_html("<span style='color:[sub_color]'>[html_encode(sub)]</span>")
+	else
+		readout_sub.maptext = null
+	readout_status.maptext = status ? chrome_readout_header_html(status, status_color, "right") : null
+	readout_mark.alpha = (idle && ability) ? 200 : 0
 
 // ---- Mouse -------------------------------------------------------------
 
@@ -866,69 +1266,29 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 /// Highlights whatever the mouse at [offset] points at.
 /datum/component/chrome_wheel/proc/point_at(list/offset)
-	var/list/candidates = list()
 	var/list/points = list()
-	for(var/atom/movable/screen/chrome_wheel/slice/slice in main_slices + sub_slices)
-		candidates += slice
-		points += list(list(slice.slice_x, slice.slice_y))
-	var/index = chrome_wheel_pick(offset[1], offset[2], points)
-	set_highlight(index ? candidates[index] : null, sqrt(offset[1] ** 2 + offset[2] ** 2) < CHROME_WHEEL_DEADZONE)
+	var/list/on_ring = list()
+	for(var/atom/movable/screen/chrome_wheel/chip/chip as anything in chips)
+		points += list(list(chip.chip_x, chip.chip_y))
+		on_ring += chip.index <= chrome_wheel_socket_fits(chip.socket)
+	var/index = chrome_wheel_pick(offset[1], offset[2], points, on_ring)
+	set_highlight(index ? chips[index] : null)
 
-/**
- * Moves the highlight. An ability slice opens its sub-option ring, if it has
- * one. The ring stays open while the mouse crosses the gap out to it, and
- * closes when another ability slice is highlighted or the mouse comes home.
- */
-/datum/component/chrome_wheel/proc/set_highlight(atom/movable/screen/chrome_wheel/slice/slice, back_in_centre = FALSE)
-	if(slice == highlighted)
+/// Moves the highlight: the old chip shrinks back, the new one grows and lights its part of the body.
+/datum/component/chrome_wheel/proc/set_highlight(atom/movable/screen/chrome_wheel/chip/chip)
+	if(chip == highlighted)
 		return
-	if(highlighted)
-		highlighted.icon_state = "radial_slice"
-		highlighted.transform = null
-	highlighted = slice
-	if(slice)
-		// The focus state alone is a faint border; the size change is what reads mid-fight.
-		slice.icon_state = "radial_slice_focus"
-		slice.transform = matrix(1.25, 0, 0, 0, 1.25, 0)
-		if(!slice.option_id && slice != sub_parent)
-			show_sub_ring(slice)
-	else if(back_in_centre)
-		hide_sub_ring()
-	draw_label()
+	var/atom/movable/screen/chrome_wheel/chip/old = highlighted
+	highlighted = chip
+	if(old)
+		draw_chip(old)
+	if(chip)
+		draw_chip(chip)
+	else
+		light_up(null)
+	update_readout()
 
-/datum/component/chrome_wheel/proc/show_sub_ring(atom/movable/screen/chrome_wheel/slice/parent_slice)
-	hide_sub_ring()
-	var/datum/action/ability = parent_slice.ability_ref?.resolve()
-	var/list/options = ability?.chrome_wheel_options(parent)
-	if(!length(options))
-		return
-	sub_parent = parent_slice
-	var/list/points = chrome_wheel_sub_positions(parent_slice.slice_x, parent_slice.slice_y, length(options), outer_radius)
-	for(var/i in 1 to length(options))
-		var/datum/chrome_wheel_option/option = options[i]
-		if(!istype(option))
-			continue
-		var/list/point = points[i]
-		var/atom/movable/screen/chrome_wheel/slice/sub = new
-		sub.pixel_x = point[1]
-		sub.pixel_y = point[2]
-		sub.slice_x = point[1]
-		sub.slice_y = point[2]
-		sub.ability_ref = parent_slice.ability_ref
-		sub.option_id = option.id
-		sub.name = option.name
-		sub.option_look = chrome_wheel_option_look(option)
-		sub_slices += sub
-		hub.vis_contents += sub
-		draw_slice(sub)
-
-/datum/component/chrome_wheel/proc/hide_sub_ring()
-	sub_parent = null
-	if(!length(sub_slices))
-		return
-	if(highlighted in sub_slices)
-		highlighted = null
-	for(var/atom/movable/screen/chrome_wheel/slice/sub in sub_slices)
-		hub?.vis_contents -= sub
-		qdel(sub)
-	sub_slices.Cut()
+#undef CHROME_WHEEL_READOUT_TOP
+#undef CHROME_WHEEL_READOUT_LEFT
+#undef CHROME_WHEEL_READOUT_WIDTH
+#undef CHROME_WHEEL_READOUT_HEIGHT

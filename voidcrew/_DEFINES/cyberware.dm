@@ -187,32 +187,55 @@
 #define CHROME_WHEEL_HELD 1
 #define CHROME_WHEEL_CLICK 2
 
-/// Body regions. Each owns fixed slice positions, so one region's chrome
-/// changing never moves another region's slices.
-#define CHROME_WHEEL_HEAD "head"
-#define CHROME_WHEEL_RIGHT_ARM "right_arm"
-#define CHROME_WHEEL_LEFT_ARM "left_arm"
-#define CHROME_WHEEL_LEGS "legs"
-#define CHROME_WHEEL_TORSO "torso"
+/// Sockets: where a ware's chips sit on the ring. Each owns a run of fixed
+/// positions on its region's arc, so one socket's chrome changing never moves
+/// another socket's chips. Hand chrome rides its arm's socket.
+#define CHROME_WHEEL_SOCKET_EYES "eyes"
+#define CHROME_WHEEL_SOCKET_HEAD "head"
+#define CHROME_WHEEL_SOCKET_OS "os"
+#define CHROME_WHEEL_SOCKET_SKIN "skin"
+#define CHROME_WHEEL_SOCKET_LEFT_ARM "l_arm"
+#define CHROME_WHEEL_SOCKET_RIGHT_ARM "r_arm"
+#define CHROME_WHEEL_SOCKET_LEGS "legs"
 
-/// Radius in pixels of the torso ring around the centre. The OS slot sits at
-/// its top.
-#define CHROME_WHEEL_INNER_RADIUS 40
-/// Radius of the outer ring, which holds the head (top), right arm (right),
-/// legs (bottom) and left arm (left), three positions each, 30 degrees apart.
-#define CHROME_WHEEL_OUTER_RADIUS 72
-/// Distance between rows: a region's fourth slice and on, and the sub-option
-/// ring outside everything.
-#define CHROME_WHEEL_ROW_GAP 38
-/// Centre-to-centre spacing of sub-option slices along their ring.
-#define CHROME_WHEEL_SLICE_SPACING 37
-/// Mouse distance from the centre inside which nothing is pointed at.
-#define CHROME_WHEEL_DEADZONE 16
-/// A slice this close to the mouse is the one under it.
-#define CHROME_WHEEL_PICK_RANGE 28
-/// Past the slices, the mouse points at whichever slice lies within this many
-/// degrees of its direction.
-#define CHROME_WHEEL_POINT_TOLERANCE 20
+/// Radius in pixels of the ring the chips sit on.
+#define CHROME_WHEEL_RADIUS 100
+/// Degrees between neighbouring chips on the ring.
+#define CHROME_WHEEL_STEP 14.5
+/// A socket with more chips than its arc holds starts another row this much
+/// further out, at the same angles.
+#define CHROME_WHEEL_ROW_GAP 26
+/// The ring's centre sits this many pixels above the centre of the view.
+#define CHROME_WHEEL_CENTRE_Y 2
+/// Mouse distance from the ring centre inside which nothing is pointed at.
+#define CHROME_WHEEL_DEADZONE 34
+/// A chip this close to the mouse is the one under it.
+#define CHROME_WHEEL_PICK_RANGE 12
+/// Otherwise the mouse points at the first-row chip whose bearing from the ring
+/// centre is nearest its own, if one lies within this many degrees.
+#define CHROME_WHEEL_POINT_TOLERANCE 13
+
+/// After a pick the wheel stays up this long for the lock and fade. The pick
+/// itself lands at once.
+#define CHROME_WHEEL_LINGER_TIME (0.2 SECONDS)
+
+#define CHROME_WHEEL_ICON 'voidcrew/modules/cyberware/icons/chrome_wheel.dmi'
+/// 240x240 art centred on the ring: body, arcs, leaders, glows, backdrop.
+#define CHROME_WHEEL_RING_ICON 'voidcrew/modules/cyberware/icons/chrome_wheel_ring.dmi'
+/// Corner brackets borrowed from the chrome read.
+#define CHROME_WHEEL_BRACKET_ICON 'voidcrew/modules/cyberware/icons/chrome_read.dmi'
+
+/// Wheel colours, the chrome read's own.
+#define CHROME_WHEEL_HUD_COLOR CYBERWARE_COLOR_TIER_2
+#define CHROME_WHEEL_PANEL_COLOR "#060e12"
+#define CHROME_WHEEL_NAME_COLOR "#e6fbff"
+#define CHROME_WHEEL_DIM_COLOR "#8fa1a8"
+#define CHROME_WHEEL_OFFLINE_COLOR "#ff5a4a"
+#define CHROME_WHEEL_OFFLINE_NAME_COLOR "#7d8a90"
+/// The pick's brackets (radial.dmi's module_selected cyan).
+#define CHROME_WHEEL_PICKED_COLOR "#00ffff"
+/// Deployed or armed (radial.dmi's module_active green).
+#define CHROME_WHEEL_DEPLOYED_COLOR "#00ff00"
 
 // ---- Phase 2 models: seal, frame and nervous street models -------------
 // ware_models_b.dm. Hardweave, the Strut frame, the Deep-lung bladder, the

@@ -3,16 +3,19 @@
  *
  * The wheel (voidcrew/modules/cyberware/chrome_wheel.dm) fires the bearer's
  * own chrome buttons, so these tests hold it to that: it collects exactly the
- * buttons installed chrome grants (never a printable tg implant's), lays them
- * out by body region without one region moving another, points at the right
- * slice, and fires the pick through Trigger() with the button's own cooldown,
- * offline and arm-toggle behaviour. No client exists here, so the wheel never
- * draws; opening it must fail quietly instead.
+ * buttons installed chrome grants (never a printable tg implant's), sockets
+ * them on the ring by body part without one socket moving another, points at
+ * the right chip by bearing, and fires the pick through Trigger() with the
+ * button's own cooldown, offline and arm-toggle behaviour. No client exists
+ * here, so the wheel never goes on a screen; opening it must fail quietly, and
+ * building its pieces must still work.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so fork defines are
- * written as literals: CHROME_WHEEL_INNER_RADIUS 40, CHROME_WHEEL_OUTER_RADIUS
- * 72, CHROME_WHEEL_ROW_GAP 38, CHROME_WHEEL_DEADZONE 16, and
- * ORGAN_SLOT_CYBERWARE_OS "cyberware_os".
+ * written as literals: CHROME_WHEEL_RADIUS 100, CHROME_WHEEL_STEP 14.5,
+ * CHROME_WHEEL_ROW_GAP 26, CHROME_WHEEL_CENTRE_Y 2, CHROME_WHEEL_DEADZONE 34,
+ * CHROME_WHEEL_SOCKET_OS "os", CHROME_WHEEL_SOCKET_RIGHT_ARM "r_arm",
+ * ORGAN_SLOT_CYBERWARE_OS "cyberware_os" and ORGAN_SLOT_CYBERWARE_HANDS
+ * "cyberware_hands".
  */
 
 /obj/item/organ/cyberimp/cyberware/test_wheel_pulse
@@ -28,6 +31,13 @@
 	slot = "cyberware_os" // ORGAN_SLOT_CYBERWARE_OS
 	chrome_load = 1
 	actions_types = list(/datum/action/cooldown/cyberware/test_wheel/os)
+
+/obj/item/organ/cyberimp/cyberware/test_wheel_hand
+	name = "test wheel grips"
+	zone = BODY_ZONE_R_ARM
+	slot = "cyberware_hands" // ORGAN_SLOT_CYBERWARE_HANDS
+	chrome_load = 1
+	actions_types = list(/datum/action/cooldown/cyberware/test_wheel/hand)
 
 /// Counts its firings, and offers two sub-options whose use it records.
 /datum/action/cooldown/cyberware/test_wheel
@@ -57,6 +67,12 @@
 /datum/action/cooldown/cyberware/test_wheel/os/chrome_wheel_options(mob/living/carbon/bearer)
 	return null
 
+/datum/action/cooldown/cyberware/test_wheel/hand
+	name = "Test Wheel Grip"
+
+/datum/action/cooldown/cyberware/test_wheel/hand/chrome_wheel_options(mob/living/carbon/bearer)
+	return null
+
 /// Collection, region layout, its stability, display names and pointing.
 /datum/unit_test/voidcrew_chrome_wheel_layout
 
@@ -84,13 +100,15 @@
 	TEST_ASSERT(!(toolset_toggle in abilities), "A printable tg implant's button made it onto the chrome wheel")
 	TEST_ASSERT_EQUAL(get_os_chrome_action(lab_rat), burn, "Use OS chrome does not find the OS-slot ware's ability")
 
+	// Sockets run round the ring 14.5 degrees apart at radius 100, from a
+	// centre 2 px above the view's. The OS starts its arc right of the head.
 	var/list/positions = chrome_wheel_layout(abilities)
-	TEST_ASSERT_EQUAL(point_text(positions[burn]), "0,40", "The OS ability is not at the top of the torso ring")
-	TEST_ASSERT_EQUAL(point_text(positions[pulse]), "35,20", "Other torso chrome should start beside the OS, 60 degrees round the torso ring")
-	TEST_ASSERT_EQUAL(point_text(positions[blade]), "-72,0", "Left arm chrome is not on the left of the wheel")
-	TEST_ASSERT_EQUAL(point_text(positions[lunge]), "-62,-36", "A left arm's second ability should hang 30 degrees below the first")
+	TEST_ASSERT_EQUAL(point_text(positions[burn]), "73,70", "The OS ability is not first on its arc, up and right of the body")
+	TEST_ASSERT_EQUAL(point_text(positions[pulse]), "88,50", "Other chest chrome should follow the OS one step round its arc")
+	TEST_ASSERT_EQUAL(point_text(positions[blade]), "-99,14", "Left arm chrome is not on the left of the ring")
+	TEST_ASSERT_EQUAL(point_text(positions[lunge]), "-99,-11", "A left arm's second ability should sit one step further round its arc")
 
-	// Region independence: new right-arm chrome takes the right side and moves
+	// Socket independence: new right-arm chrome takes the right side and moves
 	// nothing on the left, and a missing OS leaves its place empty.
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/right_mantis = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
 	TEST_ASSERT(right_mantis.Insert(lab_rat, special = TRUE), "Right Mantis staging insert was refused")
@@ -98,26 +116,46 @@
 	os_ware.Remove(lab_rat, special = TRUE)
 	abilities = get_chrome_wheel_actions(lab_rat)
 	positions = chrome_wheel_layout(abilities)
-	TEST_ASSERT_EQUAL(point_text(positions[right_blade]), "72,0", "Right arm chrome is not on the right of the wheel")
-	TEST_ASSERT_EQUAL(point_text(positions[blade]), "-72,0", "Adding right-arm chrome moved the left arm's slice")
-	TEST_ASSERT_EQUAL(point_text(positions[pulse]), "35,20", "Removing the OS moved other torso chrome into its place")
+	TEST_ASSERT_EQUAL(point_text(positions[right_blade]), "99,14", "Right arm chrome is not on the right of the ring")
+	TEST_ASSERT_EQUAL(point_text(positions[blade]), "-99,14", "Adding right-arm chrome moved the left arm's chip")
+	TEST_ASSERT_EQUAL(point_text(positions[pulse]), "88,50", "Removing the OS moved other chest chrome into its place")
 
-	// Two housings give two Mantis Lunges; the side tells them apart.
+	// Hand chrome follows its arm's own chrome round the arm's arc.
+	var/obj/item/organ/cyberimp/cyberware/test_wheel_hand/grips = allocate(/obj/item/organ/cyberimp/cyberware/test_wheel_hand)
+	TEST_ASSERT(grips.Insert(lab_rat, special = TRUE), "Test hand chrome staging insert was refused")
+	var/datum/action/grip = locate(/datum/action/cooldown/cyberware/test_wheel/hand) in grips.actions
+	TEST_ASSERT_NOTNULL(grip, "The test hand chrome is missing its button")
+	abilities = get_chrome_wheel_actions(lab_rat)
+	var/list/placements = chrome_wheel_placements(abilities)
+	var/list/grip_place = placements[grip]
+	TEST_ASSERT_EQUAL(grip_place?["socket"], "r_arm", "Hand chrome is not in its arm's socket")
+	TEST_ASSERT_EQUAL(grip_place?["index"], 3, "Hand chrome should come after both of the right Mantis housing's chips")
+	TEST_ASSERT(grip_place?["hand"], "Hand chrome was not marked as hand chrome")
+	positions = chrome_wheel_layout(abilities)
+	TEST_ASSERT_EQUAL(point_text(positions[right_blade]), "99,14", "Hand chrome pushed its arm's own chrome along")
+
+	// A full arc starts a row further out at the same bearing.
+	TEST_ASSERT_EQUAL(point_text(chrome_wheel_position("os", 3)), "92,88", "The OS arc's third chip did not start a second row outside the first")
+
+	// Chips are called by what they do, not by their button's full name.
 	var/list/names = chrome_wheel_names(abilities)
-	TEST_ASSERT_EQUAL(names[lunge], "Mantis Lunge (left arm)", "Matching ability names are not told apart by body side")
+	TEST_ASSERT_EQUAL(names[blade], "Mantis Blade", "A Mantis housing's deploy chip should read as the blade, without its housing or side")
+	TEST_ASSERT_EQUAL(names[lunge], "Mantis Lunge", "An ability with its own name was renamed")
+	TEST_ASSERT_EQUAL(chrome_wheel_ware_name(lunge), "Mantis Blade housing (left)", "The readout should name the chrome an ability lives in")
 
-	// Pointing. Points: 1 pulse (35,20), 2 blade (-72,0), 3 lunge (-62,-36), 4 right blade (72,0).
-	var/list/points = list(positions[pulse], positions[blade], positions[lunge], positions[right_blade])
-	TEST_ASSERT_EQUAL(chrome_wheel_pick(5, 5, points), 0, "The dead zone in the middle pointed at a slice")
-	TEST_ASSERT_EQUAL(chrome_wheel_pick(33, 22, points), 1, "The mouse on a slice did not point at it")
-	TEST_ASSERT_EQUAL(chrome_wheel_pick(-300, 4, points), 2, "A flick far out to the left did not point at the left arm")
-	TEST_ASSERT_EQUAL(chrome_wheel_pick(0, -300, points), 0, "A flick into the empty legs region pointed at something")
-
-	var/list/ring = chrome_wheel_sub_positions(0, 72, 3, 72)
-	TEST_ASSERT_EQUAL(point_text(ring[1]), "0,110", "The first sub-option should sit straight out from its parent, a row outside the wheel")
-	var/list/second = ring[2]
-	var/list/third = ring[3]
-	TEST_ASSERT(second[1] > 0 && third[1] < 0, "Sub-options should spread to both sides of the first")
+	// Pointing. Points: 1 pulse (88,50), 2 blade (-99,14), 3 lunge (-99,-11),
+	// 4 right blade (99,14), 5 grip (93,-35).
+	var/list/points = list(positions[pulse], positions[blade], positions[lunge], positions[right_blade], positions[grip])
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(5, 5, points), 0, "The middle of the body pointed at a chip")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(20, 20, points), 0, "A point inside the body pointed at a chip")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(87, 51, points), 1, "The mouse on a chip did not point at it")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(-300, 4, points), 2, "A flick far out to the left did not point at the left arm's nearest chip by bearing")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(-40, -6, points), 3, "A short move between the body and the ring did not point at the chip on its bearing")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(0, -300, points), 0, "A flick into the empty legs arc pointed at something")
+	// A second-row chip answers the mouse right on it, never a bearing.
+	var/list/rows = list(list(73, 70), list(92, 88))
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(184, 176, rows, list(TRUE, FALSE)), 1, "A flick out along a socket's bearing picked its second row over its first")
+	TEST_ASSERT_EQUAL(chrome_wheel_pick(93, 87, rows, list(TRUE, FALSE)), 2, "The mouse on a second-row chip did not point at it")
 
 	TEST_ASSERT_EQUAL(chrome_wheel_raw_key("ShiftV"), "V", "A Shift bind's key was not found")
 	TEST_ASSERT_EQUAL(chrome_wheel_raw_key("CtrlShiftV"), "V", "A two-modifier bind's key was not found")
@@ -152,6 +190,19 @@
 	wheel.wheel_key_down()
 	TEST_ASSERT(!wheel.is_open(), "The wheel opened with no client to draw on")
 	wheel.wheel_key_up()
+
+	// Its pieces build without a screen to go on: one chip per ability, and
+	// pointing, picking and teardown work on them.
+	wheel.build_wheel(get_chrome_wheel_actions(lab_rat))
+	TEST_ASSERT_EQUAL(length(wheel.chips), 4, "The built wheel should have one chip per chrome ability")
+	var/atom/movable/screen/chrome_wheel/chip/first_chip = wheel.chips[1]
+	wheel.set_highlight(first_chip)
+	TEST_ASSERT_EQUAL(first_chip.size, 26, "The chip pointed at did not grow")
+	wheel.select_chip(first_chip, quiet = TRUE)
+	TEST_ASSERT_EQUAL(wheel.get_selected_ability(), first_chip.ability_ref.resolve(), "Picking a chip did not pick its ability")
+	TEST_ASSERT_EQUAL(length(first_chip.brackets), 4, "The picked chip did not get its lock brackets")
+	wheel.close_wheel()
+	TEST_ASSERT_NULL(wheel.chips, "Closing the wheel left its chips behind")
 
 	wheel.select(pulse)
 	TEST_ASSERT(wheel.use_selected(), "Use chrome refused a ready pick")
