@@ -218,6 +218,17 @@
 /// After a pick the wheel stays up this long for the lock and fade. The pick
 /// itself lands at once.
 #define CHROME_WHEEL_LINGER_TIME (0.2 SECONDS)
+/// A wheel opened from the Chrome button fires what a click picks, so a click
+/// further than this from the ring's centre picks by bearing no more: out past
+/// the second row, a click just shuts the wheel.
+#define CHROME_WHEEL_FIRE_REACH (CHROME_WHEEL_RADIUS + CHROME_WHEEL_ROW_GAP + 24)
+/// Reserves Arm chrome's place on the wheel (GLOB.chrome_wheel_reserved), as an
+/// organ slot reserves its ware's.
+#define CHROME_WHEEL_ARMS_KEY "chrome_arms"
+/// The region an Arm chrome chip lights: both arms.
+#define CHROME_WHEEL_REGION_ARMS "arms"
+/// The Chrome button's and Arm chrome's own art.
+#define CHROME_HUD_ICON 'voidcrew/modules/cyberware/icons/chrome_hud.dmi'
 
 #define CHROME_WHEEL_ICON 'voidcrew/modules/cyberware/icons/chrome_wheel.dmi'
 /// 240x240 art centred on the ring: body, arcs, leaders, glows, backdrop.

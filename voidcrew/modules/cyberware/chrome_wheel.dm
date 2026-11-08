@@ -12,12 +12,15 @@
  * - Use OS chrome: fires the OS-slot ware's ability on key down, whatever is
  *   picked.
  *
- * A chip IS the bearer's existing /datum/action, the same one their button
- * holds, fired through the same Trigger() a button click uses. Cooldowns,
- * ORGAN_FAILING, check_flags and click-to-target modes are therefore shared
- * with the buttons, and nothing here grants, copies or replaces an ability.
- * Abilities are collected generically from every installed organ carrying
- * /datum/component/cyberware, so new ware shows up without touching this file.
+ * A chip IS the bearer's existing /datum/action, fired through the same
+ * Trigger() a button click would use. Cooldowns, ORGAN_FAILING, check_flags
+ * and click-to-target modes are the ability's own, and nothing here copies or
+ * replaces one. Abilities are collected generically from every installed
+ * organ carrying /datum/component/cyberware, so new ware shows up without
+ * touching this file. Chrome abilities get no HUD button of their own
+ * (chrome_hud.dm): the wheel owns the one "Chrome" button that shows the pick
+ * and opens the wheel, and the Arm chrome ability (chrome_wheel_arms.dm) that
+ * deploys every arm at once.
  *
  * Looks: an outline of the bearer's body inside a ring cut into one arc per
  * body region. Each ware sits in a socket (chrome_wheel_socket()), a run of
@@ -26,8 +29,8 @@
  * another socket's chips, and an empty socket keeps a dim outline. Pointing at
  * a chip grows it and lights its arc, its leader and its body part in its
  * tier's colour, and a fixed readout under the ring names it. The pick wears
- * the chrome read's corner brackets, and its own button carries the MOD-style
- * "selected" frame on the HUD.
+ * the chrome read's corner brackets, and the Chrome button shows it in the
+ * MOD-style "selected" frame on the HUD.
  *
  * Pointing is by bearing from the ring's centre, so a flick outward picks the
  * chip in that direction without landing on it. Inside the body nothing is
@@ -86,19 +89,22 @@ GLOBAL_LIST_INIT(chrome_wheel_sockets, list(
 /// that socket never moves when the slot is filled or emptied. Socket =>
 /// list(slot, positions held). The OS owns the first chip of its arc. Chrome
 /// optics own the first three of theirs (their own ability, the chrome read and
-/// the zoom, cyberware_zoom.dm); the third starts the eyes' second row.
+/// the zoom, cyberware_zoom.dm); the third starts the eyes' second row. Arm
+/// chrome (chrome_wheel_arms.dm) owns the top of the right arm's arc, where it
+/// meets the torso.
 GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	CHROME_WHEEL_SOCKET_OS = list(ORGAN_SLOT_CYBERWARE_OS, 1),
 	CHROME_WHEEL_SOCKET_EYES = list(ORGAN_SLOT_EYES, 3),
+	CHROME_WHEEL_SOCKET_RIGHT_ARM = list(CHROME_WHEEL_ARMS_KEY, 1),
 ))
 
 // ---- Collection --------------------------------------------------------
 
 /**
- * Every ability the bearer's installed chrome gives them a button for. Offline
- * ware stays in (it shows dark, and firing it gives the button's own
- * feedback); ware that is not in the body has no owner on its actions and
- * drops out on its own.
+ * Every ability the bearer's installed chrome gives them, then Arm chrome if
+ * they have it. Offline ware stays in (it shows dark, and firing it gives the
+ * ability's own feedback); ware that is not in the body has no owner on its
+ * actions and drops out on its own.
  */
 /proc/get_chrome_wheel_actions(mob/living/carbon/bearer)
 	RETURN_TYPE(/list)
@@ -108,6 +114,10 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 			if(QDELETED(ability) || ability.owner != bearer || !ability.owner_has_control)
 				continue
 			. += ability
+	var/datum/component/chrome_wheel/wheel = bearer?.GetComponent(/datum/component/chrome_wheel)
+	var/datum/action/chrome_arms/arms = wheel?.arm_action
+	if(arms && !QDELETED(arms) && arms.owner == bearer)
+		. += arms
 
 /// The ability of whatever OS-slot chrome the bearer runs, or null.
 /proc/get_os_chrome_action(mob/living/carbon/bearer)
@@ -127,7 +137,9 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	var/datum/component/chrome_wheel/wheel = bearer.GetComponent(/datum/component/chrome_wheel)
 	if(wheel || !length(get_chrome_wheel_actions(bearer)))
 		return wheel
-	return bearer.AddComponent(/datum/component/chrome_wheel)
+	wheel = bearer.AddComponent(/datum/component/chrome_wheel)
+	wheel?.sync_abilities()
+	return wheel
 
 // ---- Sub-option hooks --------------------------------------------------
 
@@ -225,6 +237,20 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	// The chest and anything else: the OS's arc, after the OS.
 	return CHROME_WHEEL_SOCKET_OS
 
+/// Which socket an ability's chip sits in: its chrome's, or for Arm chrome the right arm's.
+/proc/chrome_wheel_ability_socket(datum/action/ability)
+	if(istype(ability, /datum/action/chrome_arms))
+		return CHROME_WHEEL_SOCKET_RIGHT_ARM
+	return chrome_wheel_socket(ability.target)
+
+/// What claims an ability a reserved position (GLOB.chrome_wheel_reserved):
+/// its chrome's organ slot, or CHROME_WHEEL_ARMS_KEY for Arm chrome.
+/proc/chrome_wheel_reserve_key(datum/action/ability)
+	if(istype(ability, /datum/action/chrome_arms))
+		return CHROME_WHEEL_ARMS_KEY
+	var/obj/item/organ/ware = ability.target
+	return istype(ware) ? ware.slot : null
+
 /// Hand chrome rides its arm's socket, after the arm's own chrome, with its
 /// own leader to the hand.
 /proc/chrome_wheel_is_hand(obj/item/organ/ware)
@@ -242,6 +268,9 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /proc/cmp_chrome_wheel_abilities(datum/action/first, datum/action/second)
 	var/obj/item/organ/first_ware = first.target
 	var/obj/item/organ/second_ware = second.target
+	// Abilities that live in no organ (Arm chrome) go last; their place is reserved anyway.
+	if(!isorgan(first_ware) || !isorgan(second_ware))
+		return !isorgan(first_ware) - !isorgan(second_ware)
 	var/hand_gap = chrome_wheel_is_hand(first_ware) - chrome_wheel_is_hand(second_ware)
 	if(hand_gap)
 		return hand_gap
@@ -282,7 +311,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	RETURN_TYPE(/list)
 	var/list/by_socket = list()
 	for(var/datum/action/ability as anything in abilities)
-		var/socket = chrome_wheel_socket(ability.target)
+		var/socket = chrome_wheel_ability_socket(ability)
 		if(!by_socket[socket])
 			by_socket[socket] = list()
 		var/list/members = by_socket[socket]
@@ -298,7 +327,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		for(var/datum/action/ability as anything in members)
 			var/obj/item/organ/ware = ability.target
 			var/index
-			if(reserved_slot && istype(ware) && ware.slot == reserved_slot && next_reserved <= reserved_count)
+			if(reserved_slot && chrome_wheel_reserve_key(ability) == reserved_slot && next_reserved <= reserved_count)
 				index = next_reserved++
 			else
 				index = next_free++
@@ -328,11 +357,13 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
  * the mouse points at the chip whose bearing from the ring's centre is
  * nearest its own, so a quick flick outward works without landing on it.
  * [on_ring], if given, says which points a bearing can pick (the first row);
- * the rest only answer the mouse right on them.
+ * the rest only answer the mouse right on them. With [reach], a bearing only
+ * picks within that many pixels of the ring's centre.
  */
-/proc/chrome_wheel_pick(dx, dy, list/points, list/on_ring)
+/proc/chrome_wheel_pick(dx, dy, list/points, list/on_ring, reach)
 	var/ring_y = dy - CHROME_WHEEL_CENTRE_Y
-	if(sqrt(dx ** 2 + ring_y ** 2) < CHROME_WHEEL_DEADZONE)
+	var/from_centre = sqrt(dx ** 2 + ring_y ** 2)
+	if(from_centre < CHROME_WHEEL_DEADZONE)
 		return 0
 	var/nearest = 0
 	var/nearest_gap = INFINITY
@@ -344,6 +375,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 			nearest_gap = gap
 	if(nearest_gap <= CHROME_WHEEL_PICK_RANGE)
 		return nearest
+	if(reach && from_centre > reach)
+		return 0
 	var/mouse_bearing = delta_to_angle(dx, ring_y)
 	var/pointed = 0
 	var/pointed_turn = INFINITY
@@ -384,7 +417,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 
 // ---- Looks -------------------------------------------------------------
 
-/// The radial.dmi "module_selected" frame the picked ability's buttons wear, shared.
+/// The radial.dmi "module_selected" frame the Chrome button puts round the pick, shared.
 /proc/chrome_wheel_marker(frame_state)
 	var/static/list/markers = list()
 	if(!markers[frame_state])
@@ -392,37 +425,13 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	return markers[frame_state]
 
 /**
- * What an ability's chip shows: a copy of the bearer's own button for it,
- * minus the button background and text, so the chip carries the same icon
- * and item overlay the button does. Built from the action's vars when the
- * bearer has no button for it.
+ * What an ability's chip shows: the ability's own button look, minus the
+ * button background and text (chrome_ability_look(), chrome_hud.dm), so the
+ * chip carries the same icon and item overlay a button would.
  */
-/proc/chrome_wheel_ability_look(datum/action/ability, mob/viewer)
+/proc/chrome_wheel_ability_look(datum/action/ability)
 	RETURN_TYPE(/mutable_appearance)
-	var/atom/movable/screen/movable/action_button/button = viewer?.hud_used ? ability.viewers[viewer.hud_used] : null
-	var/mutable_appearance/look
-	if(button)
-		look = new(button)
-		look.underlays = list()
-		look.overlays -= chrome_wheel_marker("module_selected")
-	else if(ability.button_icon && ability.button_icon_state)
-		look = mutable_appearance(ability.button_icon, ability.button_icon_state)
-	else if(isatom(ability.target))
-		var/atom/thing = ability.target
-		look = new(thing.appearance)
-	else
-		look = mutable_appearance('icons/hud/actions.dmi', "default")
-	look.plane = FLOAT_PLANE
-	look.layer = FLOAT_LAYER
-	look.pixel_x = 0
-	look.pixel_y = 0
-	look.pixel_w = 0
-	look.pixel_z = 0
-	look.screen_loc = null
-	look.maptext = null
-	look.color = null
-	look.alpha = 255
-	look.transform = matrix()
+	var/mutable_appearance/look = chrome_ability_look(ability)
 	// Keeps its own colour, follows the chip's pop, and shrinks smoothly.
 	look.appearance_flags = RESET_COLOR | NO_CLIENT_COLOR
 	return look
@@ -430,6 +439,12 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /// Whether an ability is "on" right now: a toggled arm with its hardware out,
 /// or a click-to-target ability armed and waiting for the click.
 /proc/chrome_wheel_ability_active(datum/action/ability, mob/living/carbon/bearer)
+	// Arm chrome is on while any arm has its hardware out.
+	if(istype(ability, /datum/action/chrome_arms))
+		for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/housing as anything in get_chrome_arm_housings(bearer))
+			if(housing.chrome_arm_deployed())
+				return TRUE
+		return FALSE
 	// The zoom is a toggle, not a click-to-target: it is on while the optics are zoomed.
 	if(istype(ability, /datum/action/cooldown/cyberware/optics_zoom))
 		var/datum/action/cooldown/cyberware/optics_zoom/zoom = ability
@@ -448,8 +463,15 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	return istype(timed) ? max(timed.next_use_time - world.time, 0) : 0
 
 /// Whether the chrome an ability lives in is down: rebooting from an EMP, or
-/// browned out over capacity.
+/// browned out over capacity. Arm chrome is down when every arm is.
 /proc/chrome_wheel_offline(datum/action/ability)
+	if(istype(ability, /datum/action/chrome_arms))
+		var/list/housings = get_chrome_arm_housings(ability.owner)
+		for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/housing as anything in housings)
+			var/datum/component/cyberware/arm_chrome = housing.GetComponent(/datum/component/cyberware)
+			if(arm_chrome?.is_running())
+				return FALSE
+		return length(housings) > 0
 	var/obj/item/organ/ware = ability.target
 	var/datum/component/cyberware/chrome = istype(ware) ? ware.GetComponent(/datum/component/cyberware) : null
 	return chrome && !chrome.is_running()
@@ -460,8 +482,15 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	// On cooldown IsAvailable() is FALSE anyway; the shade shows that instead.
 	return !cooldown_left && !ability.IsAvailable()
 
-/// The tier colour of the chrome an ability lives in.
+/// The tier colour of the chrome an ability lives in. Arm chrome wears the
+/// colour of the best arm hardware it deploys.
 /proc/chrome_wheel_tier_color(datum/action/ability)
+	if(istype(ability, /datum/action/chrome_arms))
+		var/best_tier = 0
+		for(var/obj/item/organ/cyberimp/arm/toolkit/cyberware/housing as anything in get_chrome_arm_housings(ability.owner))
+			var/datum/component/cyberware/arm_chrome = housing.GetComponent(/datum/component/cyberware)
+			best_tier = max(best_tier, arm_chrome?.tier || 0)
+		return best_tier ? cyberware_tier_color(best_tier) : CHROME_WHEEL_HUD_COLOR
 	var/obj/item/organ/ware = ability.target
 	var/datum/component/cyberware/chrome = istype(ware) ? ware.GetComponent(/datum/component/cyberware) : null
 	return chrome ? cyberware_tier_color(chrome.tier) : CHROME_WHEEL_HUD_COLOR
@@ -533,6 +562,18 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	var/client/fading_client
 	var/list/fading_parts
 	var/fading_timer
+	/// The second body-part glow, for a chip that lights both arms.
+	var/atom/movable/screen/chrome_wheel/art/glow_twin
+	/// Opened from the Chrome button: a chip clicked is fired as well as picked.
+	var/fire_on_pick = FALSE
+	/// The one HUD button chrome gets (chrome_hud.dm), while any chrome has an ability.
+	var/datum/action/chrome_button/hud_button
+	/// Arm chrome (chrome_wheel_arms.dm), while there is arm hardware to deploy.
+	var/datum/action/chrome_arms/arm_action
+	/// What the Chrome button last showed, so it only redraws on a change.
+	var/button_state
+	/// Set while sync_abilities() runs: granting and removing actions calls back into it.
+	var/syncing = FALSE
 
 /datum/component/chrome_wheel/Initialize()
 	if(!iscarbon(parent))
@@ -541,15 +582,22 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /datum/component/chrome_wheel/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_MOB_LOGOUT, PROC_REF(on_logout))
 	RegisterSignal(parent, COMSIG_MOB_STATCHANGE, PROC_REF(on_stat_change))
+	// Things the Chrome button shows that no button redraw announces: chrome going
+	// down or coming back (checked every Life), an EMP, arm hardware in or out of a hand.
+	RegisterSignal(parent, COMSIG_LIVING_LIFE, PROC_REF(on_life))
+	RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp))
+	RegisterSignals(parent, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM), PROC_REF(on_hands_changed))
 
 /datum/component/chrome_wheel/UnregisterFromParent()
-	UnregisterSignal(parent, list(COMSIG_MOB_LOGOUT, COMSIG_MOB_STATCHANGE))
+	UnregisterSignal(parent, list(COMSIG_MOB_LOGOUT, COMSIG_MOB_STATCHANGE, COMSIG_LIVING_LIFE, COMSIG_ATOM_EMP_ACT, COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM))
 
 /datum/component/chrome_wheel/Destroy(force)
 	close_wheel()
 	clear_fading()
 	unmark()
 	selected_ref = null
+	QDEL_NULL(hud_button)
+	QDEL_NULL(arm_action)
 	return ..()
 
 /datum/component/chrome_wheel/proc/on_logout(datum/source)
@@ -561,6 +609,96 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	SIGNAL_HANDLER
 	if(new_stat >= UNCONSCIOUS)
 		close_wheel()
+	refresh_button()
+
+/datum/component/chrome_wheel/proc/on_life(datum/source, seconds_per_tick, times_fired)
+	SIGNAL_HANDLER
+	refresh_button()
+
+/datum/component/chrome_wheel/proc/on_emp(datum/source, severity, protection)
+	SIGNAL_HANDLER
+	// The chrome takes the pulse after the body's signal; look once it has.
+	addtimer(CALLBACK(src, PROC_REF(refresh_button)), 1, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/datum/component/chrome_wheel/proc/on_hands_changed(datum/source, obj/item/item)
+	SIGNAL_HANDLER
+	refresh_button()
+
+// ---- HUD ---------------------------------------------------------------
+
+/**
+ * Gives or takes the Chrome button and Arm chrome to match the chrome the
+ * body carries now. Runs whenever a chrome ability is granted or removed
+ * (chrome_hud.dm), so the button comes with the first chrome ability and
+ * goes with the last.
+ */
+/datum/component/chrome_wheel/proc/sync_abilities()
+	if(syncing || QDELETED(src))
+		return
+	var/mob/living/carbon/bearer = parent
+	if(QDELETED(bearer))
+		return
+	syncing = TRUE
+	if(length(get_chrome_arm_housings(bearer)))
+		if(!arm_action)
+			arm_action = new(src)
+		if(arm_action.owner != bearer)
+			arm_action.Grant(bearer)
+	else if(arm_action)
+		QDEL_NULL(arm_action)
+	if(length(get_chrome_wheel_actions(bearer)))
+		if(!hud_button)
+			hud_button = new(src)
+		if(hud_button.owner != bearer)
+			hud_button.Grant(bearer)
+	else if(hud_button)
+		QDEL_NULL(hud_button)
+	syncing = FALSE
+	refresh_button(force = TRUE)
+
+/// The ability the Chrome button shows: the pick, while its chrome is still in this body.
+/datum/component/chrome_wheel/proc/get_button_pick()
+	var/datum/action/ability = selected_ref?.resolve()
+	if(!ability || QDELETED(ability) || ability.owner != parent)
+		return null
+	return ability
+
+/// A chrome ability's button would have redrawn: so does the Chrome button, if it shows that one.
+/datum/component/chrome_wheel/proc/on_ability_changed(datum/action/ability)
+	if(ability == get_button_pick())
+		refresh_button()
+
+/// Redraws the Chrome button when what it shows has changed, or always with [force].
+/datum/component/chrome_wheel/proc/refresh_button(force = FALSE)
+	// No HUD shows it (no client, an NPC): a button made later is drawn current anyway.
+	if(!hud_button || QDELETED(hud_button) || !length(hud_button.viewers))
+		button_state = null
+		return
+	var/mob/living/carbon/bearer = parent
+	var/datum/action/pick = get_button_pick()
+	var/state = "none"
+	if(pick)
+		var/cooldown_left = chrome_wheel_cooldown_left(pick)
+		state = "[REF(pick)]|[chrome_ability_look_key(pick)]|[CEILING(cooldown_left / 10, 1)]|[chrome_wheel_offline(pick)]|[pick.IsAvailable()]|[chrome_wheel_ability_active(pick, bearer)]"
+	if(!force && state == button_state)
+		return
+	button_state = state
+	hud_button.build_all_button_icons(ALL, TRUE)
+
+/// The Chrome button was clicked: open the wheel for the mouse, or shut it.
+/datum/component/chrome_wheel/proc/button_clicked()
+	if(is_open())
+		close_wheel()
+		return
+	open_wheel(CHROME_WHEEL_CLICK, fire = TRUE)
+
+/// The "Deploy arm chrome" key: fire Arm chrome, as its chip would.
+/datum/component/chrome_wheel/proc/use_arms()
+	var/mob/living/carbon/bearer = parent
+	if(!arm_action || arm_action.owner != bearer)
+		bearer.balloon_alert(bearer, "no arm chrome!")
+		return FALSE
+	return fire(arm_action)
 
 /// Whether the wheel is on screen.
 /datum/component/chrome_wheel/proc/is_open()
@@ -652,6 +790,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		INVOKE_ASYNC(ability, TYPE_PROC_REF(/datum/action, use_chrome_wheel_option), bearer, option_id)
 	else
 		INVOKE_ASYNC(ability, TYPE_PROC_REF(/datum/action, Trigger), bearer)
+	// A toggle (zoom, arm hardware) changes nothing a redraw announces.
+	refresh_button()
 	return TRUE
 
 // ---- Selection ---------------------------------------------------------
@@ -683,40 +823,23 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		return null
 	return ability
 
-/// Frames the picked ability's buttons, now and whenever they are rebuilt.
+/// Shows the pick on the Chrome button, and watches it for leaving the body.
 /datum/component/chrome_wheel/proc/mark(datum/action/ability)
-	if(marked_ref?.resolve() == ability)
-		return
-	unmark()
-	marked_ref = WEAKREF(ability)
-	RegisterSignal(ability, COMSIG_ACTION_OVERLAY_APPLY, PROC_REF(on_marked_overlays))
-	RegisterSignal(ability, COMSIG_ACTION_REMOVED, PROC_REF(on_marked_removed))
-	var/mutable_appearance/frame = chrome_wheel_marker("module_selected")
-	for(var/datum/hud/viewing_hud as anything in ability.viewers)
-		var/atom/movable/screen/movable/action_button/button = ability.viewers[viewing_hud]
-		button?.cut_overlay(frame)
-		button?.add_overlay(frame)
+	if(marked_ref?.resolve() != ability)
+		unmark()
+		marked_ref = WEAKREF(ability)
+		RegisterSignal(ability, COMSIG_ACTION_REMOVED, PROC_REF(on_marked_removed))
+	refresh_button()
 
 /datum/component/chrome_wheel/proc/unmark()
 	var/datum/action/marked = marked_ref?.resolve()
 	marked_ref = null
-	if(!marked)
-		return
-	UnregisterSignal(marked, list(COMSIG_ACTION_OVERLAY_APPLY, COMSIG_ACTION_REMOVED))
-	var/mutable_appearance/frame = chrome_wheel_marker("module_selected")
-	for(var/datum/hud/viewing_hud as anything in marked.viewers)
-		var/atom/movable/screen/movable/action_button/button = marked.viewers[viewing_hud]
-		button?.cut_overlay(frame)
-
-/// A button for the marked ability was built or rebuilt; put the frame back on.
-/datum/component/chrome_wheel/proc/on_marked_overlays(datum/action/source, atom/movable/screen/movable/action_button/button, force)
-	SIGNAL_HANDLER
-	var/mutable_appearance/frame = chrome_wheel_marker("module_selected")
-	button.cut_overlay(frame)
-	button.add_overlay(frame)
+	if(marked)
+		UnregisterSignal(marked, COMSIG_ACTION_REMOVED)
+	refresh_button()
 
 /// The picked ability left this body (the ware was cut out, or moved to someone
-/// else): drop the pick now, so its frame never follows it into another body.
+/// else): drop the pick now, so it never follows it into another body.
 /datum/component/chrome_wheel/proc/on_marked_removed(datum/action/source, mob/old_owner)
 	SIGNAL_HANDLER
 	if(old_owner == parent)
@@ -736,14 +859,21 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	return TRUE
 
 /// Pick [chip] (or nothing, for null) and close the wheel. The pick lands at
-/// once; the wheel stays up a moment longer for the lock and the fade.
+/// once; the wheel stays up a moment longer for the lock and the fade. A wheel
+/// opened from the Chrome button fires the pick as well.
 /datum/component/chrome_wheel/proc/choose(atom/movable/screen/chrome_wheel/chip/chip)
-	var/picked = chip && select_chip(chip)
+	var/fire_it = fire_on_pick
+	var/picked = chip && select_chip(chip, quiet = fire_it)
 	close_wheel(linger = TRUE, chosen = picked ? chip : null)
+	if(picked && fire_it)
+		var/datum/action/ability = get_selected_ability()
+		if(ability)
+			fire(ability, selected_option)
 
 // ---- Opening and closing -----------------------------------------------
 
-/datum/component/chrome_wheel/proc/open_wheel(mode)
+/// Opens the wheel in [mode]. With [fire], a chip clicked is fired as well as picked.
+/datum/component/chrome_wheel/proc/open_wheel(mode, fire = FALSE)
 	var/mob/living/carbon/bearer = parent
 	var/client/viewer = bearer.client
 	if(wheel_mode != CHROME_WHEEL_CLOSED || !viewer || bearer.stat >= UNCONSCIOUS)
@@ -765,6 +895,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	play_open()
 
 	wheel_mode = mode
+	fire_on_pick = fire
 	mouse_start = null
 	mouse_moved = FALSE
 	START_PROCESSING(SSfastprocess, src)
@@ -788,6 +919,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	add_piece(/atom/movable/screen/chrome_wheel/art, "body")
 	glow = add_piece(/atom/movable/screen/chrome_wheel/art, null, 2.2)
 	glow.alpha = 0
+	glow_twin = add_piece(/atom/movable/screen/chrome_wheel/art, null, 2.2)
+	glow_twin.alpha = 0
 	var/list/arc_names = list()
 	for(var/socket in GLOB.chrome_wheel_sockets)
 		arc_names |= GLOB.chrome_wheel_sockets[socket]["arc"]
@@ -800,7 +933,8 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	for(var/datum/action/ability as anything in placements)
 		var/list/placement = placements[ability]
 		taken["[placement["socket"]]|[placement["index"]]"] = TRUE
-		if(!placement["hand"])
+		// Arm chrome borrows the right arm's arc; it doesn't make the right arm chromed.
+		if(!placement["hand"] && !istype(ability, /datum/action/chrome_arms))
 			occupied[placement["socket"]] = TRUE
 	for(var/socket in GLOB.chrome_wheel_sockets)
 		add_leader(socket, socket, occupied[socket])
@@ -821,7 +955,10 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 		chip.index = placement["index"]
 		chip.leader_key = socket
 		chip.region = GLOB.chrome_wheel_sockets[socket]["region"]
-		if(placement["hand"])
+		if(istype(ability, /datum/action/chrome_arms))
+			// Lights both arms: their arcs, their leaders and the arms on the body.
+			chip.region = CHROME_WHEEL_REGION_ARMS
+		else if(placement["hand"])
 			var/hand = (socket == CHROME_WHEEL_SOCKET_LEFT_ARM) ? "l_hand" : "r_hand"
 			chip.region = hand
 			// The ring art has a run to the hand from each first-row position.
@@ -917,6 +1054,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 /datum/component/chrome_wheel/proc/close_wheel(linger = FALSE, atom/movable/screen/chrome_wheel/chip/chosen)
 	STOP_PROCESSING(SSfastprocess, src)
 	wheel_mode = CHROME_WHEEL_CLOSED
+	fire_on_pick = FALSE
 	if(shown_to)
 		shown_to.screen -= catcher
 	QDEL_NULL(catcher)
@@ -939,6 +1077,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	leaders = null
 	arcs = null
 	glow = null
+	glow_twin = null
 	highlighted = null
 	readout_title = null
 	readout_sub = null
@@ -1018,8 +1157,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	var/hovered = (chip == highlighted)
 	var/picked = (selected_ref?.resolve() == ability)
 	var/active = chrome_wheel_ability_active(ability, bearer)
-	var/atom/movable/screen/movable/action_button/button = bearer.hud_used ? ability.viewers[bearer.hud_used] : null
-	var/state = "[offline]|[unavailable]|[hovered]|[picked]|[active]|[timed?.next_use_time]|[!!cooldown_left]|[button?.icon_state]|[ability.button_icon_state]"
+	var/state = "[offline]|[unavailable]|[hovered]|[picked]|[active]|[timed?.next_use_time]|[!!cooldown_left]|[chrome_ability_look_key(ability)]"
 	if(state != chip.drawn_state)
 		chip.drawn_state = state
 		paint_chip(chip, ability, offline, unavailable, hovered, picked, active)
@@ -1040,7 +1178,7 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	chip.underlays += chrome_wheel_chip_piece("fill_[size]")
 	if(hovered)
 		chip.add_overlay(chrome_wheel_chip_piece("halo_26", base_color, 90))
-	var/mutable_appearance/look = chrome_wheel_ability_look(ability, parent)
+	var/mutable_appearance/look = chrome_wheel_ability_look(ability)
 	// The icon fills the chip but for a pixel all round.
 	var/scale = (size - 2) / ICON_SIZE_X
 	look.transform = matrix(scale, 0, 0, 0, scale, 0)
@@ -1167,22 +1305,38 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	var/lit_color
 	if(ability)
 		lit_color = chrome_wheel_offline(ability) ? CHROME_WHEEL_OFFLINE_COLOR : chrome_wheel_tier_color(ability)
+	// Arm chrome lights both arms; anything else its own socket and body part.
+	var/both_arms = lit_color && chip.region == CHROME_WHEEL_REGION_ARMS
+	var/list/lit_leaders = list()
+	var/list/lit_arcs = list()
+	var/list/lit_regions = list()
+	if(both_arms)
+		for(var/arm_socket in list(CHROME_WHEEL_SOCKET_LEFT_ARM, CHROME_WHEEL_SOCKET_RIGHT_ARM))
+			lit_leaders += arm_socket
+			lit_arcs += GLOB.chrome_wheel_sockets[arm_socket]["arc"]
+			lit_regions += GLOB.chrome_wheel_sockets[arm_socket]["region"]
+	else if(lit_color)
+		lit_leaders += chip.leader_key
+		lit_arcs += GLOB.chrome_wheel_sockets[chip.socket]["arc"]
+		lit_regions += chip.region
 	for(var/key in leaders)
-		style_leader(key, (lit_color && key == chip.leader_key) ? lit_color : null)
-	var/lit_arc = lit_color ? GLOB.chrome_wheel_sockets[chip.socket]["arc"] : null
+		style_leader(key, (key in lit_leaders) ? lit_color : null)
 	for(var/arc_name in arcs)
 		var/atom/movable/screen/chrome_wheel/art/arc = arcs[arc_name]
-		var/lit = (arc_name == lit_arc)
+		var/lit = (arc_name in lit_arcs)
 		arc.color = lit ? lit_color : CHROME_WHEEL_HUD_COLOR
 		arc.alpha = lit ? 200 : 80
-	if(!glow)
-		return
-	if(!lit_color)
-		glow.alpha = 0
-		return
-	glow.icon_state = "glow_[chip.region]"
-	glow.color = lit_color
-	glow.alpha = 255
+	var/list/glows = list(glow, glow_twin)
+	for(var/i in 1 to length(glows))
+		var/atom/movable/screen/chrome_wheel/art/body_glow = glows[i]
+		if(!body_glow)
+			continue
+		if(i > length(lit_regions))
+			body_glow.alpha = 0
+			continue
+		body_glow.icon_state = "glow_[lit_regions[i]]"
+		body_glow.color = lit_color
+		body_glow.alpha = 255
 
 /**
  * The readout under the ring: the chip pointed at, the chrome it lives in in
@@ -1272,14 +1426,15 @@ GLOBAL_LIST_INIT(chrome_wheel_reserved, list(
 	point_at(offset)
 	choose(highlighted)
 
-/// Highlights whatever the mouse at [offset] points at.
+/// Highlights whatever the mouse at [offset] points at. A wheel opened from the
+/// Chrome button fires what a click picks, so out past the ring a click picks nothing.
 /datum/component/chrome_wheel/proc/point_at(list/offset)
 	var/list/points = list()
 	var/list/on_ring = list()
 	for(var/atom/movable/screen/chrome_wheel/chip/chip as anything in chips)
 		points += list(list(chip.chip_x, chip.chip_y))
 		on_ring += chip.index <= chrome_wheel_socket_fits(chip.socket)
-	var/index = chrome_wheel_pick(offset[1], offset[2], points, on_ring)
+	var/index = chrome_wheel_pick(offset[1], offset[2], points, on_ring, fire_on_pick ? CHROME_WHEEL_FIRE_REACH : null)
 	set_highlight(index ? chips[index] : null)
 
 /// Moves the highlight: the old chip shrinks back, the new one grows and lights its part of the body.

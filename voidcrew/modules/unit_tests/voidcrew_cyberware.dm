@@ -795,8 +795,9 @@
 	// the cursor and needs a client, so it is deliberately not what we call.
 	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
 	TEST_ASSERT(optics.Insert(lab_rat, special = TRUE), "Nightshade staging insert was refused")
-	var/datum/action/cooldown/cyberware/chrome_read/read = locate(/datum/action/cooldown/cyberware/chrome_read) in lab_rat.actions
-	TEST_ASSERT(!isnull(read), "The optics never granted their chrome read action to the body")
+	// Chrome abilities have no HUD button, so they never join lab_rat.actions (chrome_hud.dm).
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate(/datum/action/cooldown/cyberware/chrome_read) in optics.actions
+	TEST_ASSERT(read?.owner == lab_rat, "The optics never granted their chrome read action to the body")
 	TEST_ASSERT(!lab_rat.is_blind(), "Test fixture: the staged optics left the body blind, so the read could never run")
 
 	var/before = ink.pulse_count

@@ -1,8 +1,10 @@
 /**
- * The chrome wheel's three binds (chrome_wheel.dm). Defaults sit on V, the one
- * free letter by the movement keys: hold V for the wheel, Shift+V fires the
- * pick (beside tg's Shift+E/Q/B variants), Ctrl+V fires the OS. All three
- * rebind in the keybind settings like any other.
+ * The chrome wheel's binds (chrome_wheel.dm). Defaults sit on V, the one free
+ * letter by the movement keys: hold V for the wheel, Shift+V fires the pick
+ * (beside tg's Shift+E/Q/B variants), Ctrl+V fires the OS and Alt+V deploys or
+ * stows all arm chrome (chrome_wheel_arms.dm). Alt alone is tg's "Block
+ * movement", held only for the moment the combo is down. All of them rebind in
+ * the keybind settings like any other.
  */
 /datum/keybinding/living/chrome
 
@@ -66,4 +68,18 @@
 	if(.)
 		return
 	get_wheel(user)?.use_os()
+	return TRUE
+
+/datum/keybinding/living/chrome/deploy_arms
+	hotkey_keys = list("AltV")
+	name = "deploy_arm_chrome"
+	full_name = "Deploy arm chrome"
+	description = "Deploy or stow all your arm chrome."
+	keybind_signal = COMSIG_KB_LIVING_DEPLOY_ARM_CHROME_DOWN
+
+/datum/keybinding/living/chrome/deploy_arms/down(client/user, turf/target)
+	. = ..()
+	if(.)
+		return
+	get_wheel(user)?.use_arms()
 	return TRUE
