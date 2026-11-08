@@ -1415,3 +1415,108 @@
 	var/list/milspec_price = GLOB.cyberware_price_index[milspec.type]
 	TEST_ASSERT(street_price && street_price["credits"] > 0 && !street_price["vouchers"], "The street rig isn't a credit-priced SKU")
 	TEST_ASSERT(milspec_price && milspec_price["vouchers"] > 0, "The service lattice isn't a voucher-priced SKU")
+
+/// The ripperdoc trade-in, the one ledger that takes chrome bought over a
+/// counter. No entry may pay more than half the cheapest shelf price of the
+/// piece (a special takes at most 30% off, so a bought piece always sells back
+/// at a loss), none may buy back a piece any shop sells for vouchers, and none
+/// may reach into the seller's body. Every other ledger and the cargo shuttle
+/// still refuse the same piece once it is pulled.
+/datum/unit_test/voidcrew_ripperdoc_resale
+
+/datum/unit_test/voidcrew_ripperdoc_resale/Run()
+	// Every installable piece any shelf sells: its lowest credit price for one
+	// piece, and whether any shelf asks vouchers for it.
+	var/list/lowest_credits = list()
+	var/list/voucher_sold = list()
+	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
+		var/item_path = initial(sku_type.item_path)
+		var/list/pieces = list()
+		if(ispath(item_path, /obj/item/organ))
+			pieces += item_path
+		else if(ispath(item_path, /obj/item/cyberware_pair_case) || ispath(item_path, /obj/item/storage/case/cyberware))
+			// A cased set sells every piece inside it for the one price.
+			var/obj/item/sample = new item_path(null)
+			for(var/obj/item/organ/held in sample.contents)
+				pieces += held.type
+			for(var/atom/movable/packed as anything in sample.contents.Copy())
+				qdel(packed)
+			qdel(sample)
+		if(!length(pieces))
+			continue
+		var/credits = initial(sku_type.price_credits)
+		for(var/piece in pieces)
+			if(initial(sku_type.price_vouchers) > 0)
+				voucher_sold[piece] = TRUE
+			if(credits > 0)
+				var/each = credits / length(pieces)
+				lowest_credits[piece] = isnull(lowest_credits[piece]) ? each : min(lowest_credits[piece], each)
+
+	var/list/ledger_types = typesof(/datum/shop_buyback/ripperdoc) - /datum/shop_buyback/ripperdoc
+	TEST_ASSERT(length(ledger_types), "There is no ripperdoc trade-in")
+	for(var/buyback_type in ledger_types)
+		var/datum/shop_buyback/ledger = allocate(buyback_type)
+		TEST_ASSERT(ledger.takes_shop_stock(), "[buyback_type] refuses chrome bought at a counter")
+		TEST_ASSERT(ledger.pay_credits > 0 && !ledger.pay_vouchers, "[buyback_type] does not pay in credits alone")
+		var/matched = 0
+		for(var/piece in lowest_credits | voucher_sold)
+			if(ledger.match_subtypes ? !ispath(piece, ledger.item_path) : piece != ledger.item_path)
+				continue
+			matched++
+			TEST_ASSERT(!voucher_sold[piece], "[buyback_type] buys back [piece], which a shop sells for vouchers")
+			var/lowest = lowest_credits[piece]
+			if(isnull(lowest))
+				continue
+			TEST_ASSERT(ledger.pay_credits * 2 <= lowest, "[buyback_type] pays [ledger.pay_credits] cr for [piece], more than half its lowest shelf price ([lowest] cr)")
+			// The deepest special (shop.dm roll_special, 30% off) still loses money.
+			TEST_ASSERT(ledger.pay_credits < max(5, round(lowest * 70 / 100, 5)), "[buyback_type] pays more for [piece] than it costs on special")
+		TEST_ASSERT(matched, "[buyback_type] buys back a piece no shelf sells")
+
+	// One street core, bought, installed, pulled and sold back.
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/obj/item/card/id/id = allocate(/obj/item/card/id)
+	id.registered_account = allocate(/datum/bank_account, "Ripperdoc resale test", null, 1, FALSE)
+	patient.put_in_active_hand(id)
+	var/datum/bank_account/account = id.registered_account
+	var/datum/shop_sku/sku = allocate(/datum/shop_sku/ripperdoc/redline_street)
+	var/obj/item/organ/cyberimp/cyberware/redline/street/core = sku.dispense(patient, null)
+	TEST_ASSERT(istype(core), "The street core's shelf handed over [core]")
+	TEST_ASSERT(is_trader_good(core), "Chrome bought at the counter came without the shop mark")
+	patient.dropItemToGround(core)
+	TEST_ASSERT(core.Insert(patient, special = TRUE), "The bought core would not install")
+
+	var/datum/shop_buyback/splice = allocate(/datum/shop_buyback/ripperdoc/redline_street)
+	var/datum/shop_buyback/ratchet = allocate(/datum/shop_buyback/ripperdoc/redline_street/street_doc)
+	splice.demand = 2
+	var/balance = account.account_balance
+	TEST_ASSERT_EQUAL(splice.count_carried_units(patient), 0, "The trade-in offered to buy a core still installed in its owner")
+	TEST_ASSERT(!splice.try_sell(patient, null), "The trade-in bought a core out of a living chest")
+	TEST_ASSERT(!QDELETED(core) && core.owner == patient, "A trade-in took chrome out of its owner")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "A refused trade-in paid out")
+
+	core.Remove(patient, special = TRUE)
+	patient.put_in_hands(core)
+	TEST_ASSERT(is_trader_good(core), "Pulling the core wiped its shop mark")
+
+	// Nobody else buys it: a plain ledger for this exact piece, every other
+	// ledger in the game, or the cargo shuttle.
+	var/datum/shop_buyback/any_ledger = allocate(/datum/shop_buyback)
+	any_ledger.item_path = core.type
+	any_ledger.pay_credits = 10
+	TEST_ASSERT(!any_ledger.matches(core), "A plain ledger for this very core bought it")
+	for(var/buyback_type in subtypesof(/datum/shop_buyback))
+		if(ispath(buyback_type, /datum/shop_buyback/ripperdoc))
+			continue
+		var/datum/shop_buyback/other = allocate(buyback_type)
+		if(other.item_path)
+			TEST_ASSERT(!other.matches(core), "[buyback_type] bought back chrome sold at a counter")
+	var/datum/export/export = allocate(/datum/export)
+	export.export_types = typecacheof(list(core.type))
+	TEST_ASSERT(!export.applies_to(core), "Cargo would export chrome sold at a counter")
+
+	// Both ripperdocs take it, at half list.
+	TEST_ASSERT(ratchet.matches(core), "The street doc won't take back chrome a ripperdoc sold")
+	TEST_ASSERT(splice.try_sell(patient, null), "Splice won't take back chrome a ripperdoc sold")
+	TEST_ASSERT(QDELETED(core), "The sold core stayed with the seller")
+	TEST_ASSERT_EQUAL(account.account_balance, balance + splice.pay_credits, "The trade-in paid the wrong amount")
+	TEST_ASSERT_EQUAL(splice.pay_credits * 2, sku.price_credits, "The street core does not sell back at half list")

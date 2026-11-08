@@ -103,7 +103,7 @@
 
 /datum/shop_sku/ripperdoc/cascade_street
 	zone_permission = ZONE_PERMISSION_YELLOW
-	category = "Pro Chrome"
+	category = "Street Chrome"
 	item_path = /obj/item/organ/cyberimp/cyberware/cascade/street
 	price_credits = 3600
 

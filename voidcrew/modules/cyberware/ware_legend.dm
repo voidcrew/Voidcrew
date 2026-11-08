@@ -53,7 +53,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/cascade
 	name = "\improper Cascade lattice"
-	desc = "A full-spine lattice of superconducting myelin, a real sandevistan, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
+	desc = "A full-spine lattice of superconducting myelin, the real thing, not one of the knockoffs. For eight seconds at a time you move and nobody else really does. Then all the heat it just made has to go somewhere, and it goes into you."
 	icon_state = "cascade"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_OS

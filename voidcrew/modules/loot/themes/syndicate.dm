@@ -9,6 +9,9 @@
 // Cyberware rides the same two channels: the parlor's smuggling cavity and
 // door spike sit at uncommon, and the three voucher-only pieces an operative
 // would carry (cloak weave, wire, reflex shunt) sit at the bottom of prime.
+// The camo and reflex lines follow the same split: the street weave and the
+// taped reflex rig at uncommon, the service lattice in prime, and the live
+// wire beside the plain one in the red melee extras.
 // =========================================================================
 
 /datum/loot_theme/syndicate
@@ -30,6 +33,7 @@
 		LOOT_WEAPON_RED = list(
 			/obj/item/knife/understudy = 1,
 			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire = 1,
+			/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live = 1,
 		),
 	)
 	guard_themes = list(/obj/effect/zone_mobs/syndicate, /obj/effect/zone_mobs/syndicate/boss)
@@ -45,6 +49,10 @@
 		/datum/shop_sku/ripperdoc/slipwire,
 		/datum/shop_sku/ripperdoc/monowire,
 		/datum/shop_sku/ripperdoc/ghostskin,
+		/datum/shop_sku/ripperdoc/ghostskin_street,
+		/datum/shop_sku/ripperdoc/cascade_street,
+		/datum/shop_sku/ripperdoc/cascade_milspec,
+		/datum/shop_sku/ripperdoc/monowire_live,
 	)
 	loot_common = list(
 		/obj/item/soap/syndie = 10,
@@ -66,6 +74,9 @@
 		// a wrist spike for door motors and turret IFF
 		/obj/item/organ/cyberimp/cyberware/cargo_cavity = 4,
 		/obj/item/organ/cyberimp/arm/toolkit/cyberware/icepick = 3,
+		// knockoff operative chrome: a patchy camo weave and a taped reflex rig
+		/obj/item/organ/cyberimp/cyberware/ghostskin/street = 3,
+		/obj/item/organ/cyberimp/cyberware/cascade/street = 2,
 	)
 	loot_prime = list(
 		/obj/item/pen/sleepy = 4,
@@ -74,6 +85,7 @@
 		// Operative chrome: the reflex shunt and refraction weave.
 		/obj/item/organ/cyberimp/cyberware/slipwire = 3,
 		/obj/item/organ/cyberimp/cyberware/ghostskin = 2,
+		/obj/item/organ/cyberimp/cyberware/cascade/milspec = 2,
 	)
 	// One-of-a-kind authored prizes, drawn as the fourth tier from any
 	// band (weight = how shallow the item used to sit: 3 was reachable

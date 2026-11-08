@@ -16,9 +16,9 @@
  * entries there for no gain.
  *
  * His intake ledger takes the same street rungs as Splice's at the same pay
- * (subtypes of Splice's buybacks, with his own wording). Like every ledger it
- * refuses trader goods (is_trader_good()), so it only ever buys chrome that
- * was looted, never chrome bought at a counter and pulled again.
+ * (subtypes of Splice's buybacks, with his own wording). Like Splice's, and
+ * unlike every other ledger, it takes chrome bought at a counter and pulled
+ * again (buys_shop_stock on /datum/shop_buyback/ripperdoc, ripperdoc_catalog.dm).
  *
  * Catalog and NPC only: the organs live in ware_*.dm, the cradle in
  * chrome_cradle.dm, the room on the Quartermain map
@@ -73,6 +73,11 @@
 		/datum/shop_sku/ripperdoc/dermal_mesh,
 		// ---- Street models from the cyberware lines (credit-priced T2) ----
 		// CYBERWARE LINES: T2 SKUS START
+		/datum/shop_sku/ripperdoc/ghostskin_street,
+		/datum/shop_sku/ripperdoc/mantis_street,
+		/datum/shop_sku/ripperdoc/governor_street,
+		/datum/shop_sku/ripperdoc/redline_street,
+		/datum/shop_sku/ripperdoc/cascade_street,
 		// CYBERWARE LINES: T2 SKUS END
 	)
 	buyback_types = list(
@@ -82,6 +87,11 @@
 		/datum/shop_buyback/ripperdoc/dermal_mesh/street_doc,
 		/datum/shop_buyback/ripperdoc/scrapper/street_doc,
 		// CYBERWARE LINES: T2 BUYBACKS START
+		/datum/shop_buyback/ripperdoc/ghostskin_street/street_doc,
+		/datum/shop_buyback/ripperdoc/mantis_street/street_doc,
+		/datum/shop_buyback/ripperdoc/governor_street/street_doc,
+		/datum/shop_buyback/ripperdoc/redline_street/street_doc,
+		/datum/shop_buyback/ripperdoc/cascade_street/street_doc,
 		// CYBERWARE LINES: T2 BUYBACKS END
 	)
 	trader_lines = list(
@@ -147,6 +157,21 @@
 
 /datum/shop_buyback/ripperdoc/scrapper/street_doc
 	desc = "One used knuckle plate, either hand."
+
+/datum/shop_buyback/ripperdoc/ghostskin_street/street_doc
+	desc = "A used camo weave. Patchy, like they all are."
+
+/datum/shop_buyback/ripperdoc/mantis_street/street_doc
+	desc = "One used blade housing, either arm."
+
+/datum/shop_buyback/ripperdoc/governor_street/street_doc
+	desc = "A used governor patch. The tape's still on it."
+
+/datum/shop_buyback/ripperdoc/redline_street/street_doc
+	desc = "A used rage core. Smells burnt."
+
+/datum/shop_buyback/ripperdoc/cascade_street/street_doc
+	desc = "A used spinal rig, held together with tape."
 
 // =========================================================================
 // THE NPC

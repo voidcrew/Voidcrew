@@ -19,7 +19,7 @@
    "hash": "c229d282cf893570",
    "name": "Strong-Arm empowered musculature implant",
    "note": "Humans only. With the implanted arm active, an empty-hand combat-mode left-click on a mob becomes a slam on a 5 s cooldown: the hand's unarmed damage roll plus 5 (plus 20 more against beast, special and mining mobs), doubled and run through melee armor, and the target is thrown 1 tile if the wearer is standing; it is not used while Hulk. One implant in each arm lets the wearer pry closed airlocks open bare-handed (6 s, instant if unpowered, refused if bolted or welded). An EMP puts the arm down for 9 s (4.5 s on a light pulse): slams fail, and half the time the wearer lunges onto the target and falls for 3 s, otherwise is paralyzed for 1 s.",
-   "rank": 6,
+   "rank": 9,
    "reason": "A slam for 20 to 30 damage every 5 s per arm, 60 to 70 against mining mobs and beasts, and a pair pries powered airlocks in 6 s. 1,200 cr for two from cargo. EMP makes the arm a liability for 9 s.",
    "tier": "yellow"
   },
@@ -37,7 +37,7 @@
    "group": "Arm weapons and fists",
    "hash": "31fd669dadf0cf4c",
    "name": "Bunker Buster housing",
-   "rank": 5,
+   "rank": 8,
    "reason": "Two 60-damage rockets that floor the target and wreck doors and machines with no blast, about 10 on the gun score plus breaching. Two hands, two shots, then 600 cr at reputation 22 or late research. Loot only.",
    "tier": "yellow"
   },
@@ -76,7 +76,7 @@
    "hash": "b190c2719a5d40f7",
    "name": "Mantis Blade housing (right)",
    "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s. The 20 s cooldown is shared by both housings and is spent even if the dash falls short.",
-   "rank": 2,
+   "rank": 5,
    "reason": "Half of a pair: 20-force blades that can't be disarmed, plus a 5-tile lunge every 20 s that adds 20 damage and floors the target for 2 s. Load 6 the pair, 4 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
@@ -86,7 +86,7 @@
    "hash": "91733b8b4ac9435a",
    "name": "Mantis Blade housing (left)",
    "note": "Each housing extends a hardlight blade into the hand (it can't be dropped; retract stows it). An ability, usable from either housing with its blade out, dashes up to 5 tiles to a living target after a 0.3 s wind-up, lands 10 brute (armor applies, wounding) per extended blade on arrival and floors the target for 2 s. The 20 s cooldown is shared by both housings and is spent even if the dash falls short.",
-   "rank": 3,
+   "rank": 6,
    "reason": "Left half of the Mantis pair: 20-force blades that can't be disarmed, plus a 5-tile lunge every 20 s that adds 20 damage and floors the target for 2 s.",
    "tier": "red"
   },
@@ -96,7 +96,7 @@
    "hash": "",
    "name": "Scorch Blade housing (right)",
    "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
-   "rank": 2,
+   "rank": 3,
    "reason": "Half of a pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight. Load 8 the pair, 5 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
@@ -106,7 +106,7 @@
    "hash": "",
    "name": "Scorch Blade housing (left)",
    "note": "Each landed cut adds 2 fire stacks and sets the target alight; the lunge adds 4 once, however many blades arrive. Corpses are left alone and the wearer is never lit. The blade is lit while out.",
-   "rank": 3,
+   "rank": 4,
    "reason": "Left half of the Scorch pair: the Mantis blades and lunge, with every cut and the lunge setting the target alight.",
    "tier": "red"
   },
@@ -115,7 +115,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (right)",
-   "rank": 6,
+   "rank": 12,
    "reason": "Half of a pair: 14-force blades that can't be disarmed, no lunge. Load 4 the pair, 2,400 cr at yellow reputation. Splice takes a pulled housing back for 600 cr.",
    "tier": "yellow"
   },
@@ -124,7 +124,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (left)",
-   "rank": 7,
+   "rank": 13,
    "reason": "Left half of the Shiv pair: 14-force blades that can't be disarmed, no lunge.",
    "tier": "yellow"
   },
@@ -133,7 +133,7 @@
    "group": "Arm weapons and fists",
    "hash": "174a6ea665db7cac",
    "name": "Widowline spool housing",
-   "rank": 1,
+   "rank": 2,
    "reason": "20 damage a swing (15 brute, 5 burn) straight through all armor, reach 2, and it cuts neighbours for 75%. The best melee against armored crews, useless on walls and doors. Load 5, 3 vouchers at reputation 22, one on the shelf per round.",
    "tier": "red"
   },
@@ -162,7 +162,7 @@
    "group": "Arm weapons and fists",
    "hash": "43903115df46709c",
    "name": "Popup Ronin housing",
-   "rank": 4,
+   "rank": 7,
    "reason": "A one-handed machine pistol in the arm that can't be disarmed: 20 damage, 3.3 shots a second, about a WT-550 on the gun score (47). 20-round magazines are 250 cr at reputation 22 or late research. Loot only.",
    "tier": "yellow"
   },
@@ -333,7 +333,7 @@
    "group": "Operating system",
    "hash": "",
    "name": "Spliced reflex rig",
-   "rank": 5,
+   "rank": 7,
    "reason": "Six seconds in every 120 at a clear speed boost, melee a quarter quicker and 15% dodge while moving, then eight seconds of crash and 100 stamina. Load 6, 3,600 cr at reputation 4. An EMP mid-burst ends it.",
    "tier": "yellow"
   },
@@ -433,7 +433,7 @@
    "hash": "9c748c5bf556a0e0",
    "name": "Gorilla Arms myomer lattice (right)",
    "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 7,
+   "rank": 10,
    "reason": "Half of a pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s. A breaching tool more than a weapon. Load 6 the pair.",
    "tier": "yellow"
   },
@@ -443,7 +443,7 @@
    "hash": "25756d0541291f90",
    "name": "Gorilla Arms myomer lattice (left)",
    "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 8,
+   "rank": 11,
    "reason": "Left half of the Gorilla pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s.",
    "tier": "yellow"
   },
@@ -461,7 +461,7 @@
    "group": "Operating system",
    "hash": "",
    "name": "Governor Bypass",
-   "rank": 4,
+   "rank": 6,
    "reason": "Raises the neural load limit from 20 to 30 for no load of its own, in the slot Cascade and Redline need. 3 vouchers at reputation 11.",
    "tier": "red"
   },
@@ -470,7 +470,7 @@
    "group": "Operating system",
    "hash": "",
    "name": "Governor Patch",
-   "rank": 5,
+   "rank": 9,
    "reason": "Raises the neural load limit from 20 to 25 for no load of its own, in the slot Cascade and Redline need. 2,500 cr at reputation 4.",
    "tier": "yellow"
   },
@@ -526,7 +526,7 @@
    "group": "Operating system",
    "hash": "",
    "name": "Vanguard core",
-   "rank": 4,
+   "rank": 5,
    "reason": "Ten seconds in every 105: stun immune, 30% less brute and burn, 5 more on punches, and a roar that staggers everyone within 4 tiles. Then 100 stamina and slow legs. Load 8, 4 vouchers at reputation 11.",
    "tier": "red"
   },
@@ -535,7 +535,7 @@
    "group": "Operating system",
    "hash": "",
    "name": "Hothead core",
-   "rank": 5,
+   "rank": 8,
    "reason": "Eight seconds in every 120: 20% less brute and burn and 3 more on punches, with no stun immunity and no roar. Then 100 stamina and slow legs. Load 5, 3,000 cr at reputation 4.",
    "tier": "yellow"
   },
@@ -565,7 +565,7 @@
    "hash": "e057ede2eff30ba2",
    "name": "Scrapper's Knuckles",
    "note": "Replaces the bearer's own punch (combat mode, left click, not a Hulk) with that hand's normal unarmed roll plus 4 flat damage against mobs, and double that total against machines and structures. Humans can still block it and armor still applies; it stops working while the ware is EMP'd or browned out.",
-   "rank": 9,
+   "rank": 14,
    "reason": "Half of a pair: punches do 4 more, double against machines. A cheap brawler's first step. Load 2 the pair, 800 cr.",
    "tier": "green"
   },
@@ -575,7 +575,7 @@
    "hash": "1262168b74587722",
    "name": "Scrapper's Knuckles",
    "note": "Replaces the bearer's own punch (combat mode, left click, not a Hulk) with that hand's normal unarmed roll plus 4 flat damage against mobs, and double that total against machines and structures. Humans can still block it and armor still applies; it stops working while the ware is EMP'd or browned out.",
-   "rank": 10,
+   "rank": 15,
    "reason": "Left half of the Scrapper pair: punches do 4 more, double against machines.",
    "tier": "green"
   },

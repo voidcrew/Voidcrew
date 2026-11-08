@@ -73,6 +73,11 @@
 		/datum/shop_sku/ripperdoc/rockjaw,
 		/datum/shop_sku/ripperdoc/fixers,
 		/datum/shop_sku/ripperdoc/dermal_mesh,
+		/datum/shop_sku/ripperdoc/ghostskin_street,
+		/datum/shop_sku/ripperdoc/mantis_street,
+		/datum/shop_sku/ripperdoc/governor_street,
+		/datum/shop_sku/ripperdoc/redline_street,
+		/datum/shop_sku/ripperdoc/cascade_street,
 		// ---- Pro Chrome (mixed) ----
 		/datum/shop_sku/ripperdoc/angler,
 		/datum/shop_sku/ripperdoc/hemoglass,
@@ -90,11 +95,16 @@
 		/datum/shop_sku/ripperdoc/atlas,
 		/datum/shop_sku/ripperdoc/gorilla,
 		/datum/shop_sku/ripperdoc/monowire,
+		/datum/shop_sku/ripperdoc/monowire_live,
 		/datum/shop_sku/ripperdoc/rigger,
 		/datum/shop_sku/ripperdoc/slabskin,
 		/datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/mantis_scorch,
 		/datum/shop_sku/ripperdoc/ghostskin,
 		/datum/shop_sku/ripperdoc/lazarus,
+		/datum/shop_sku/ripperdoc/governor_milspec,
+		/datum/shop_sku/ripperdoc/redline_milspec,
+		/datum/shop_sku/ripperdoc/cascade_milspec,
 		// ---- Legend Chrome (the chase, always listed) ----
 		/datum/shop_sku/ripperdoc/governor_delete,
 		/datum/shop_sku/ripperdoc/redline,
@@ -110,6 +120,12 @@
 		/datum/shop_buyback/ripperdoc/second_wind,
 		/datum/shop_buyback/ripperdoc/dermal_mesh,
 		/datum/shop_buyback/ripperdoc/scrapper,
+		// The cyberware lines' street models (ware_line_*.dm).
+		/datum/shop_buyback/ripperdoc/ghostskin_street,
+		/datum/shop_buyback/ripperdoc/mantis_street,
+		/datum/shop_buyback/ripperdoc/governor_street,
+		/datum/shop_buyback/ripperdoc/redline_street,
+		/datum/shop_buyback/ripperdoc/cascade_street,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -444,7 +460,7 @@
 /datum/shop_sku/ripperdoc/cascade
 	zone_permission = ZONE_PERMISSION_ELITE
 	category = "Legend Chrome"
-	desc = "A Sandevistan reflex lattice in a sealed surgical case."
+	desc = "A full-spine reflex lattice in a sealed surgical case."
 	item_path = /obj/item/organ/cyberimp/cyberware/cascade
 	price_vouchers = 8
 	stock_min = 1
@@ -479,7 +495,17 @@
 // Half list, credits only, street rungs only. Removed chrome resold here is
 // always a loss (you can't refund vouchers, and 50% never beats buying up the
 // ladder), so this reads as "trade up" and never as an arbitrage loop.
+//
+// The ripperdoc trade-in is the one ledger that takes chrome bought over a
+// counter (owner decision, 2026-11-07): every other buyer and every export
+// refuses anything carrying the trader-goods mark (trade/resale.dm). It holds
+// because each entry pays half the lowest list price of the piece and a special
+// takes at most 30% off, so a bought piece always sells back at a loss. The
+// voidcrew_ripperdoc_resale unit test pins both halves of that.
 // =========================================================================
+
+/datum/shop_buyback/ripperdoc
+	buys_shop_stock = TRUE
 
 /datum/shop_buyback/ripperdoc/nightshade
 	name = "Nightshade Optics (pulled)"

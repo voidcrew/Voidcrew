@@ -345,7 +345,9 @@
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
 			list(/datum/shop_sku/ripperdoc/monowire, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire, 1, 0, 3),
+			list(/datum/shop_sku/ripperdoc/monowire_live, /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live, 1, 0, 5),
 			list(/datum/shop_sku/ripperdoc/mantis, /obj/item/cyberware_pair_case/mantis_blades, 1, 0, 4),
+			list(/datum/shop_sku/ripperdoc/mantis_scorch, /obj/item/cyberware_pair_case/mantis_scorch, 1, 0, 5),
 			list(/datum/shop_sku/ripperdoc/gorilla, /obj/item/cyberware_pair_case/gorilla_arms, 1, 0, 3),
 		),
 	)
@@ -467,7 +469,7 @@
 				TEST_ASSERT_EQUAL(finite.stock, 0, "A rotation refilled restricted stock")
 
 	// Arm chrome takes one unit every few convoys, and a full shelf banks nothing toward the next.
-	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/gorilla))
+	for(var/sku_type in list(/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/gorilla))
 		var/datum/outpost_shop/chrome_shop = allocate(/datum/outpost_shop)
 		chrome_shop.add_sku(sku_type, "core")
 		var/datum/shop_sku/chrome = chrome_shop.skus[1]
@@ -509,6 +511,7 @@
 		/datum/shop_sku/black_market/c20r, /datum/shop_sku/black_market/wt550, /datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/monowire_live, /datum/shop_sku/ripperdoc/mantis_scorch, /datum/shop_sku/ripperdoc/mantis_street,
 		/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare,
 	)
 	for(var/sku_type in restricted)

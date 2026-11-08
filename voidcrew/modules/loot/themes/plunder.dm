@@ -6,7 +6,8 @@
 // crews.
 // Cyberware: boarding chrome, and it reads as taken off somebody rather than
 // bought, grip pads at uncommon, and in the treasure the blade pair, the
-// folding machine-pistol and the rocket pod.
+// folding machine-pistol and the rocket pod. The cheap shiv pair is a yellow
+// melee extra, the heat-sunk blade pair a red one beside the Mantis.
 // TODO: review/balance-pass all four tiers: first-draft weights and
 // contents, never playtested.
 // =========================================================================
@@ -30,9 +31,13 @@
 		),
 	)
 	melee_extras = list(
+		LOOT_WEAPON_YELLOW = list(
+			/obj/item/cyberware_pair_case/mantis_street = 1,
+		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/claymore/cutlass/parley = 1,
 			/obj/item/cyberware_pair_case/mantis_blades = 1,
+			/obj/item/cyberware_pair_case/mantis_scorch = 1,
 			/obj/item/heave_ho = 1,
 		),
 	)
@@ -41,6 +46,8 @@
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/ripperdoc/gecko,
 		/datum/shop_sku/ripperdoc/mantis,
+		/datum/shop_sku/ripperdoc/mantis_street,
+		/datum/shop_sku/ripperdoc/mantis_scorch,
 		/datum/shop_sku/ripperdoc/ronin,
 		/datum/shop_sku/ripperdoc/bunker_buster,
 	)

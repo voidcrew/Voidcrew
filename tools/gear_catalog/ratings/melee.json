@@ -1161,7 +1161,7 @@
    "hash": "c34e783490904319",
    "name": "Widowline monowire",
    "note": "Each landed hit adds 5 burn damage and cleaves every living mob next to the target that the target can see and that is not on the wielder's crew team, for 75% of the hit's damage in brute and burn. Its armour penetration is the full 100.",
-   "rank": 1,
+   "rank": 2,
    "reason": "Rated with its arm housing: 25 a second through any armor at 2 tiles, and the hit carries into every enemy beside the target. Hidden until used. Needs surgery.",
    "tier": "red"
   },
@@ -1180,7 +1180,7 @@
    "group": "arm blades",
    "hash": "e09509a45772dc39",
    "name": "mantis blade",
-   "rank": 2,
+   "rank": 4,
    "reason": "Rated with its arm housing: 20 force blades that cannot be disarmed, and a 5 tile lunge every 20 s that floors the target for 2 s. Needs surgery.",
    "tier": "red"
   },
@@ -1190,7 +1190,7 @@
    "hash": "",
    "name": "scorch blade",
    "note": "Each landed cut adds 2 fire stacks and sets the target alight. Corpses are left alone and the wielder is never lit.",
-   "rank": 2,
+   "rank": 3,
    "reason": "Rated with its arm housing: the Mantis blade and lunge, with every cut and the lunge setting the target alight. Needs surgery.",
    "tier": "red"
   },
@@ -1199,7 +1199,7 @@
    "group": "arm blades",
    "hash": "",
    "name": "shiv blade",
-   "rank": 3,
+   "rank": 5,
    "reason": "Rated with its arm housing: 14 force blades that cannot be disarmed, no lunge. Needs surgery.",
    "tier": "yellow"
   },
@@ -1344,7 +1344,7 @@
    "group": "arm blades",
    "hash": "63a21bf583afc355",
    "name": "synthetic arm blade",
-   "rank": 3,
+   "rank": 6,
    "reason": "20 force blade grown on a hacked limb grower. Huge, no parry. The route was not fully traced.",
    "tier": "green"
   },
