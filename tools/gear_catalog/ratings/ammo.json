@@ -2283,7 +2283,6 @@
   "/obj/item/ammo_box/magazine/m10mm/ap": "needs another system",
   "/obj/item/ammo_box/magazine/m10mm/fire": "needs another system",
   "/obj/item/ammo_box/magazine/m10mm/hp": "needs another system",
-  "/obj/item/ammo_box/magazine/m10mm/quiet_word": "needs another system",
   "/obj/item/ammo_box/magazine/m38/empty": "no route",
   "/obj/item/ammo_box/magazine/m75": "needs another system",
   "/obj/item/ammo_box/magazine/rapier/empty": "no route",

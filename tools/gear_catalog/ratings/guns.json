@@ -1964,7 +1964,6 @@
   "/obj/item/gun/ballistic/automatic/mini_uzi/chimpgun": "needs another system",
   "/obj/item/gun/ballistic/automatic/pistol/clandestine": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher": "leftover",
-  "/obj/item/gun/ballistic/automatic/pistol/clandestine/quiet_word": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/contraband": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/deagle/contraband": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/deagle/ctf": "admin",
