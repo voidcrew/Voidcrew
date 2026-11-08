@@ -390,3 +390,38 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define PIRATE_CREW_CROSS_BARK_CREW (30 SECONDS)
 /// How often a pirate with no target looks around for one
 #define PIRATE_CREW_SCAN_COOLDOWN (1 SECONDS)
+
+// ========== HUMAN SHIP CREWS (faction_pirate_humans.dm, pirate_crew_human.dm) ==========
+// NPC ship crews and their boarders are real human NPCs (voidcrew/modules/human_npcs/). Unit tests
+// can't see these; they use the literals.
+
+/// A crewman who fights hand to hand (ship_crew/var/crew_role); its faction table dresses it from the melee outfits
+#define SHIP_CREW_ROLE_MELEE "melee"
+/// A crewman who fights with a gun; its faction table dresses it from the gunner outfits
+#define SHIP_CREW_ROLE_GUNNER "gunner"
+
+/// Pulls of the trigger left in the volley a human gunner is firing
+#define BB_PIRATE_VOLLEY_LEFT "pirate_volley_left"
+/// world.time a gunner's spin-up or aim ends; a hit before then spoils it
+#define BB_PIRATE_WINDUP_UNTIL "pirate_windup_until"
+/// world.time the door being broken last lost integrity, so a breach that gets somewhere isn't given up on
+#define BB_PIRATE_BREACH_PROGRESS_AT "pirate_breach_progress_at"
+/// The door's integrity when it was last looked at
+#define BB_PIRATE_BREACH_INTEGRITY "pirate_breach_integrity"
+/// The item an elite or boss is using on itself (its stimulant, a flask)
+#define BB_PIRATE_SELF_ITEM "pirate_self_item"
+/// world.time a boss may next drink from its flask
+#define BB_PIRATE_NEXT_DRINK "pirate_next_drink"
+/// world.time a boss gunner may next put its gun to a downed hunter's head
+#define BB_PIRATE_NEXT_EXECUTION "pirate_next_execution"
+
+/// A crew member adrift in space, out of sight of every player, this long is cleaned up (pirate_crew.dm)
+#define PIRATE_CREW_ADRIFT_TIME (2 MINUTES)
+/// A boss gunner waits this long between executions
+#define PIRATE_CREW_EXECUTION_COOLDOWN (60 SECONDS)
+/// A boss with a flask drinks from it no more often than this, and only once it is this hurt
+#define PIRATE_CREW_DRINK_COOLDOWN (20 SECONDS)
+#define PIRATE_CREW_DRINK_HEALTH_SHARE 0.7
+/// Elites' and bosses' toughness by rank (npc_damage_taken). Starting values for the balance pass.
+#define SHIP_CREW_ELITE_DAMAGE_TAKEN 0.8
+#define SHIP_CREW_BOSS_DAMAGE_TAKEN 0.6

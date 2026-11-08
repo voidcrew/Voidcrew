@@ -239,8 +239,11 @@
  * turn-in item - the mission auto-completes like a survey.
  */
 /datum/mission_objective/kill_count
-	/// Base typepath of mobs that count
-	var/mob_base_type = /mob/living/basic/trooper/pirate/faction
+	/// Base typepaths of mobs that count: the basic faction pirates of ruins and planets, and the human
+	/// pirate crews of NPC ships (voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm)
+	var/list/mob_base_types = list(/mob/living/basic/trooper/pirate/faction, /mob/living/carbon/human/npc/ship_crew/pirate)
+	/// Weakrefs to the bodies already counted: a pirate revived and killed again counts once
+	var/list/datum/weakref/counted_kills = list()
 	/// Minimum zone the kill must happen in (design guard: no green farming)
 	var/minimum_zone = ZONE_YELLOW
 	/// Kills required / confirmed
@@ -252,6 +255,7 @@
 /datum/mission_objective/kill_count/reset()
 	. = ..()
 	kill_count = 0
+	counted_kills.Cut()
 
 /datum/mission_objective/kill_count/activate()
 	. = ..()
@@ -263,7 +267,10 @@
 
 /datum/mission_objective/kill_count/proc/on_any_death(datum/source, mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	if(completed || !istype(victim, mob_base_type))
+	if(completed || !is_type_in_list(victim, mob_base_types))
+		return
+	var/datum/weakref/victim_ref = WEAKREF(victim)
+	if(victim_ref in counted_kills)
 		return
 	var/turf/where = get_turf(victim)
 	if(!where)
@@ -273,6 +280,7 @@
 		return
 	if(!kill_attributable_to_crew(victim, where))
 		return
+	counted_kills += victim_ref
 	kill_count++
 	if(kill_count >= required_kills)
 		notify_crew("Suppression sweep complete.")

@@ -67,6 +67,8 @@
 /proc/hv_finisher_add_subtree(datum/ai_controller/controller)
 	var/static/list/goes_first = typecacheof(list(
 		/datum/ai_planning_subtree/call_reinforcements,
+		/datum/ai_planning_subtree/human_npc_soft_crit,
+		/datum/ai_planning_subtree/pirate_crew_find_target,
 		/datum/ai_planning_subtree/escape_captivity,
 		/datum/ai_planning_subtree/pet_planning,
 		/datum/ai_planning_subtree/simple_find_target,

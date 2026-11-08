@@ -14,6 +14,11 @@
  * - Damage on the attacker breaks its hold ([var/interrupt_damage]), and it reels for a moment.
  *   While it works it is rooted and takes [var/vulnerability] times the damage, so the victim's
  *   crew can save them.
+ * - A person doing it (a human NPC boss, [var/real_hits]) does it with their body, as a player would
+ *   (human NPC migration, defaults HV-4 and HV-5): the pin is a real aggressive grab, which the victim
+ *   can resist out of; every beat is a real blow with the weapon in hand (tg damage, armour, wounds and
+ *   dismemberment decide what it does); the killing blow is the same with a higher wound bonus. It isn't
+ *   rooted, takes no extra damage, and doesn't reel: a hit that makes it let go is just that.
  * - Both mobs carry a status effect that expires on its own (finisher_effects.dm), and the
  *   finisher stops itself after its longest possible length, so nothing holds a victim forever.
  * - The kill never destroys the brain: a torn-off head lands at the victim's feet with the brain
@@ -80,12 +85,17 @@
 	var/result
 	/// Called once when it ends: (datum/hv_finisher/finisher, result)
 	var/datum/callback/on_end
+	/// Set when the attacker is a carbon: real grab, real blows (see the top of this file)
+	var/real_hits = FALSE
+	/// Wound bonus added to the killing blow when it is a real one
+	var/kill_wound_bonus = 30
 
 /datum/hv_finisher/New(mob/living/user, mob/living/carbon/victim, datum/callback/on_end)
 	. = ..()
 	src.user = user
 	src.victim = victim
 	src.on_end = on_end
+	real_hits = iscarbon(user)
 	var/list/stage_types = stages
 	stages = list()
 	for(var/stage_type in stage_types)
@@ -116,6 +126,8 @@
 /datum/hv_finisher/proc/can_start()
 	if(QDELETED(user) || user.stat != CONSCIOUS || HAS_TRAIT(user, TRAIT_INCAPACITATED))
 		return FALSE
+	if(real_hits && (HAS_TRAIT(user, TRAIT_HANDS_BLOCKED) || isnull(hv_finisher_weapon(user))))
+		return FALSE
 	if(!hv_finisher_valid_victim(user, victim))
 		return FALSE
 	return get_dist(user, victim) <= 1 && user.Adjacent(victim)
@@ -132,8 +144,8 @@
 	start_health = user.health
 	pick_zone()
 	var/longest = longest_duration()
-	user.apply_status_effect(/datum/status_effect/hv_finishing, longest, vulnerability)
-	victim.apply_status_effect(/datum/status_effect/hv_finisher_hold, longest)
+	user.apply_status_effect(/datum/status_effect/hv_finishing, longest, real_hits ? 1 : vulnerability, !real_hits)
+	victim.apply_status_effect(/datum/status_effect/hv_finisher_hold, longest, real_hits)
 	RegisterSignals(user, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING), PROC_REF(on_user_down))
 	RegisterSignal(user, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_user_damaged))
 	RegisterSignal(victim, COMSIG_LIVING_DEATH, PROC_REF(on_victim_died))
@@ -206,7 +218,9 @@
 	current_stage = stages[stage_index]
 	stage_started_at = world.time
 	if(current_stage.pins)
-		take_grip()
+		if(!take_grip())
+			end_early(HV_FINISHER_LOST_GRIP)
+			return
 	else
 		release_grip()
 	current_stage.enter()
@@ -223,21 +237,25 @@
 		log_combat(user, victim, "finished", addition = "([name])")
 	current_stage.effect()
 
-/// Holds the victim down from here on
+/// Holds the victim down from here on. A person grabs them for real. Returns FALSE if it couldn't.
 /datum/hv_finisher/proc/take_grip()
 	if(gripped)
-		return
+		return TRUE
+	if(real_hits && !hv_finisher_grab(user, victim))
+		return FALSE
 	gripped = TRUE
 	ever_gripped = TRUE
 	QDEL_NULL(mark)
 	var/datum/status_effect/hv_finisher_hold/hold = victim.has_status_effect(/datum/status_effect/hv_finisher_hold)
 	hold?.set_gripped(TRUE)
+	return TRUE
 
 /// Lets the victim go, for any stages after the kill
 /datum/hv_finisher/proc/release_grip()
 	if(!gripped)
 		return
 	gripped = FALSE
+	hv_finisher_let_go(user, victim)
 	var/datum/status_effect/hv_finisher_hold/hold = victim.has_status_effect(/datum/status_effect/hv_finisher_hold)
 	hold?.set_gripped(FALSE)
 
@@ -254,6 +272,12 @@
 	// An admin heal, or anything else that took the hold off, frees them
 	if(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold))
 		return HV_FINISHER_LOST_GRIP
+	if(real_hits && !completed)
+		// Cuffed, or the weapon gone: it can't go on. The victim broke the grab: it lost its grip.
+		if(HAS_TRAIT(user, TRAIT_HANDS_BLOCKED) || isnull(hv_finisher_weapon(user)))
+			return HV_FINISHER_ATTACKER_DOWN
+		if(gripped && (user.pulling != victim || user.grab_state < GRAB_AGGRESSIVE))
+			return HV_FINISHER_LOST_GRIP
 	return 0
 
 /// Whether the attacker has lost [var/interrupt_damage] health since it began
@@ -279,8 +303,10 @@
 	switch(reason)
 		if(HV_FINISHER_DAMAGED)
 			user.visible_message(span_danger("[user] staggers back and lets go of [victim]!"))
-			// Before stop(), so the AI stays held through the hand-over
-			user.apply_status_effect(/datum/status_effect/hv_finisher_reeling, stagger_time)
+			// Before stop(), so the AI stays held through the hand-over. A person doesn't reel: the
+			// hit that made it let go stuns it or doesn't, by tg's rules (HV-5).
+			if(!real_hits)
+				user.apply_status_effect(/datum/status_effect/hv_finisher_reeling, stagger_time)
 		if(HV_FINISHER_LOST_GRIP)
 			if(gripped && !QDELETED(user) && !QDELETED(victim))
 				user.visible_message(span_danger("[user] loses [user.p_their()] grip on [victim]."))
@@ -296,6 +322,8 @@
 		deltimer(tick_timer)
 		tick_timer = null
 	QDEL_NULL(mark)
+	if(gripped && real_hits)
+		hv_finisher_let_go(user, victim)
 	if(user)
 		UnregisterSignal(user, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING, COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_MOVABLE_MOVED))
 		if(!QDELETED(user))
@@ -323,6 +351,37 @@
 	var/dx = (toward & EAST) ? 1 : ((toward & WEST) ? -1 : 0)
 	var/dy = (toward & NORTH) ? 1 : ((toward & SOUTH) ? -1 : 0)
 	user.add_offsets(HV_FINISHER_OFFSET, null, dx * lunge, dy * lunge + rise)
+
+/**
+ * A real blow from the attacker at `zone` with the melee weapon in its hand, through the attack chain a
+ * player's click runs (a person attacker only). `extra_wound_bonus` is added to the weapon's for this
+ * one blow, the way an execution boosts its one round. Returns TRUE if it swung.
+ */
+/datum/hv_finisher/proc/real_blow(zone, extra_wound_bonus = 0)
+	if(QDELETED(user) || QDELETED(victim) || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
+		return FALSE
+	var/obj/item/weapon = hv_finisher_weapon(user)
+	if(isnull(weapon))
+		return FALSE
+	var/mob/living/carbon/attacker = user
+	if(attacker.get_active_held_item() != weapon)
+		var/index = attacker.get_held_index_of_item(weapon)
+		if(!index)
+			return FALSE
+		attacker.swap_hand(index, silent = TRUE)
+	user.zone_selected = zone
+	user.face_atom(victim)
+	var/old_combat_mode = user.combat_mode
+	user.set_combat_mode(TRUE)
+	var/old_wound_bonus = weapon.wound_bonus
+	weapon.wound_bonus += extra_wound_bonus
+	weapon.melee_attack_chain(user, victim)
+	if(!QDELETED(weapon))
+		weapon.wound_bonus = old_wound_bonus
+	if(!QDELETED(user))
+		user.set_combat_mode(old_combat_mode)
+		user.changeNext_move(CLICK_CD_MELEE)
+	return TRUE
 
 /// Puts the wind-up's mark on the victim, following them until it is taken off
 /datum/hv_finisher/proc/place_mark(duration)
@@ -376,6 +435,35 @@
 	if(user.faction_check_atom(victim))
 		return FALSE
 	return TRUE
+
+/// The melee weapon a person attacker swings in a finisher: the heaviest one in its hands, or null
+/proc/hv_finisher_weapon(mob/living/user)
+	var/obj/item/best
+	for(var/obj/item/held in user.held_items)
+		if(isgun(held) || (held.item_flags & ABSTRACT) || held.force <= 0)
+			continue
+		if(isnull(best) || held.force > best.force)
+			best = held
+	return best
+
+/**
+ * A person attacker's pin: a real aggressive grab on `victim`, the way a player gets one (a pull, then
+ * the grip tightened). Fails if the victim blocks it or can't be grabbed hard (a hulk). Returns TRUE if
+ * it holds them.
+ */
+/proc/hv_finisher_grab(mob/living/user, mob/living/carbon/victim)
+	if(user.pulling != victim)
+		victim.grabbedby(user, supress_message = TRUE)
+	if(user.pulling != victim)
+		return FALSE
+	if(user.grab_state < GRAB_AGGRESSIVE)
+		victim.grabbedby(user)
+	return user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE
+
+/// A person attacker lets go of the victim it grabbed.
+/proc/hv_finisher_let_go(mob/living/user, mob/living/victim)
+	if(!QDELETED(user) && user.pulling == victim)
+		user.stop_pulling()
 
 /// Whether `victim` is down: in crit, on the floor, or stunned
 /proc/hv_finisher_is_down(mob/living/victim)

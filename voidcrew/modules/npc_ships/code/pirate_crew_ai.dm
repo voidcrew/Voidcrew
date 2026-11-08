@@ -4,6 +4,10 @@
  * Fights whoever it can see, breaks through doors that won't open for it, holds the helm if it
  * is the captain or the guard, and otherwise walks to wherever the crew last knew a hostile to
  * be. Doors it may open are walked through, never hit. Allies in a corridor swap places.
+ *
+ * NPC ship crews and boarders are human NPCs and run the human controller (pirate_crew_human.dm),
+ * which fights and breaks doors with the body's own hands. The basic-mob controllers below are what
+ * a basic pirate gets if it is enlisted (an admin spawn, a basic boarding type).
  */
 
 // ===== CONTROLLERS =====
@@ -67,8 +71,6 @@
  * or away from the helm, since nothing would get to check.
  */
 /datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper/pirate_crew
-	// Stock gunfire, or a rolled pirate gun (pirate_guns.dm)
-	operational_datums = list(/datum/component/ranged_attacks, /datum/component/pirate_gun)
 	ranged_attack_behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew
 
 /datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper/pirate_crew/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
@@ -78,19 +80,11 @@
 	var/behavior = ranged_attack_behavior
 	if(istype(pirate_controller) && pirate_controller.target_hold_ground)
 		behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/hold_ground
-	else
-		var/datum/component/pirate_gun/gun = pirate_gun_of(controller.pawn)
-		if(gun?.loadout.close_range)
-			behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/close
 	controller.queue_behavior(behavior, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-
-/// A shotgunner walks in close before it fires
-/datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/close
-	required_distance = 3
 
 /// Returns fire at someone it may not go after (off the battlefield, or past the helm's leash) without taking a step towards them
 /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/hold_ground
@@ -129,8 +123,7 @@
 	if(QDELETED(target))
 		return FALSE
 	if(istype(src, /datum/ai_controller/basic_controller/pirate_crew/ranged))
-		var/datum/component/pirate_gun/gun = pirate_gun_of(pawn)
-		return can_see(pawn, target, gun?.loadout.close_range || 5)
+		return can_see(pawn, target, 5)
 	return get_dist(pawn, target) <= 1
 
 // ----- Door bookkeeping -----
@@ -155,12 +148,16 @@
 	set_blackboard_key(BB_PIRATE_BREACH_STAND, stand || get_turf(pawn))
 	set_blackboard_key(BB_PIRATE_BREACH_TURF, get_turf(target))
 	set_blackboard_key(BB_PIRATE_BREACH_STARTED, world.time)
+	clear_blackboard_key(BB_PIRATE_BREACH_INTEGRITY)
+	clear_blackboard_key(BB_PIRATE_BREACH_PROGRESS_AT)
 
 /datum/ai_controller/basic_controller/pirate_crew/proc/clear_breach()
 	clear_blackboard_key(BB_PIRATE_BREACH_TARGET)
 	clear_blackboard_key(BB_PIRATE_BREACH_STAND)
 	clear_blackboard_key(BB_PIRATE_BREACH_TURF)
 	clear_blackboard_key(BB_PIRATE_BREACH_STARTED)
+	clear_blackboard_key(BB_PIRATE_BREACH_INTEGRITY)
+	clear_blackboard_key(BB_PIRATE_BREACH_PROGRESS_AT)
 
 // ----- Pawn signals -----
 
@@ -427,8 +424,15 @@
 	if(isliving(requester) && istype(requester.ai_controller, /datum/ai_controller/basic_controller/pirate_crew))
 		return TRUE
 
-/// Whether breaking `door` would open the ship to space: an external airlock or blast door with nothing beyond it
+/**
+ * Whether breaking `door` would open the ship to space: an external airlock or blast door with nothing
+ * beyond it, or a firelock holding back a room that has lost its air.
+ */
 /proc/pirate_door_vents_space(obj/machinery/door/door, turf/from)
+	if(istype(door, /obj/machinery/door/firedoor))
+		var/turf/firelock_turf = get_turf(door)
+		var/turf/beyond = (from && firelock_turf) ? get_turf_through_door(from, firelock_turf) : null
+		return beyond && !is_safe_turf(beyond, TRUE, FALSE)
 	if(!istype(door, /obj/machinery/door/airlock/external) && !istype(door, /obj/machinery/door/poddoor))
 		return FALSE
 	var/turf/door_turf = get_turf(door)
@@ -627,7 +631,7 @@
  * battlefield or only just off it on solid ground, and within PIRATE_CREW_POST_LEASH of the helm
  * for the captain and the guard. Past that a gunner standing on the battlefield still shoots back
  * at a player from where it stands (PIRATE_TARGET_HOLD); anything else is let go (PIRATE_TARGET_OUT).
- * Nobody follows a target into space, where the spaced-crew sweeps would kill them.
+ * Nobody follows a target into space: a crewman adrift is lost to the crew (pirate_crew.dm).
  */
 /datum/ai_planning_subtree/pirate_crew_find_target/proc/target_reach(datum/ai_controller/basic_controller/pirate_crew/controller, datum/pirate_crew/crew, atom/target)
 	if(!crew)
@@ -637,7 +641,7 @@
 		return PIRATE_TARGET_OUT
 	var/mob/living/pawn = controller.pawn
 	var/fallback = PIRATE_TARGET_OUT
-	if(istype(controller, /datum/ai_controller/basic_controller/pirate_crew/ranged) && crew.turf_on_battlefield(get_turf(pawn)) && pirate_crew_player_target(target))
+	if(pirate_crew_is_ranged(pawn) && crew.turf_on_battlefield(get_turf(pawn)) && pirate_crew_player_target(target))
 		fallback = PIRATE_TARGET_HOLD
 	if(crew.holds_post(pawn))
 		var/turf/post = crew.post_for(pawn)
@@ -739,8 +743,14 @@
 	if(!pirate_door_breachable(blocker, stand))
 		controller.skip_door(blocker)
 		return FALSE
+	// Given up once a stretch goes by with the door taking no damage at all: a human shooting a door
+	// open takes longer than a basic mob smashing it, but gets somewhere.
 	var/started = controller.blackboard[BB_PIRATE_BREACH_STARTED] || world.time
-	if(world.time > started + PIRATE_CREW_BREACH_GIVE_UP)
+	if(blocker.atom_integrity < (controller.blackboard[BB_PIRATE_BREACH_INTEGRITY] || INFINITY))
+		controller.set_blackboard_key(BB_PIRATE_BREACH_INTEGRITY, blocker.atom_integrity)
+		controller.set_blackboard_key(BB_PIRATE_BREACH_PROGRESS_AT, world.time)
+	var/progress_at = max(started, controller.blackboard[BB_PIRATE_BREACH_PROGRESS_AT])
+	if(world.time > progress_at + PIRATE_CREW_BREACH_GIVE_UP)
 		log_shuttle("PIRATE_CREW: [pawn] gave up breaking [blocker] at [AREACOORD(blocker)]")
 		controller.skip_door(blocker)
 		return FALSE
@@ -910,12 +920,28 @@
 
 /datum/ai_behavior/pirate_crew_breach/perform(seconds_per_tick, datum/ai_controller/controller, target_key, stand_key)
 	var/obj/blocker = controller.blackboard[target_key]
-	var/mob/living/basic/pawn = controller.pawn
+	var/mob/living/pawn = controller.pawn
 	if(QDELETED(blocker) || !blocker.density)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	if(istype(blocker, /obj/machinery/door) && pirate_can_open_door(pawn, blocker))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	if(!isbasicmob(pawn) || !pawn.Adjacent(blocker))
+	if(ishuman(pawn))
+		// A person's hands: pry it, shoot it from a step back, or hit it (pirate_crew_human.dm)
+		var/turf/stand = controller.blackboard[stand_key] || get_turf(pawn)
+		var/turf/spot = pirate_crew_human_breach_spot(pawn, blocker, stand)
+		if(controller.current_movement_target != spot)
+			set_movement_target(controller, spot)
+		if(get_turf(pawn) != spot && !(spot == stand && pawn.Adjacent(blocker)))
+			return AI_BEHAVIOR_DELAY
+		if(!pirate_crew_human_breach(controller, pawn, blocker))
+			// Nothing it carries can hurt this door: leave it to someone who can
+			var/datum/ai_controller/basic_controller/pirate_crew/pirate_controller = controller
+			pirate_controller.skip_door(blocker)
+			pirate_controller.clear_breach()
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY
-	pawn.melee_attack(blocker)
+	var/mob/living/basic/basic_pawn = pawn
+	if(!isbasicmob(basic_pawn) || !basic_pawn.Adjacent(blocker))
+		return AI_BEHAVIOR_DELAY
+	basic_pawn.melee_attack(blocker)
 	return AI_BEHAVIOR_DELAY

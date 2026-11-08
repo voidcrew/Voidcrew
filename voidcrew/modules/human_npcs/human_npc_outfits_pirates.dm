@@ -7,13 +7,16 @@
  * magazines, shells or backup knife it fights on with (human_npc_ai.dm reloads from them the way a player
  * does). Energy guns can't be reloaded by hand, so energy gunners carry a knife.
  *
- * Guns per faction follow each faction's crew_gun_weights (faction_pirate_mobs.dm); melee weapons,
- * captains and bosses hold what the basic mobs hold today. Bosses are a first pass for phase B.
+ * Guns per faction follow PR #500's crew gun weights; melee weapons, captains and bosses hold what the
+ * basic mobs hold today, the bosses' with their own attack verbs (faction_pirate_humans.dm). The melee
+ * crew carry a crowbar for unpowered doors. The ship crews that wear these are in
+ * voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm.
  *
  * Tables (one per faction): /datum/human_npc_outfit_table/pirate/<faction> dresses a mixed crew (melee
  * and gunners, the faction's captain for elites and its boss for bosses);
- * /datum/human_npc_outfit_table/pirate/<faction>/gunners only gunners. A fixed melee crewman can use the
- * melee outfit directly. In vacuum each faction gets its own space suit (vacuum_layer).
+ * /datum/human_npc_outfit_table/pirate/<faction>/gunners only gunners. The ship crews add a boarding
+ * table per faction (sealed for vacuum) and pick by their crew_role (faction_pirate_humans.dm). In vacuum
+ * each faction gets its own space suit (vacuum_layer).
  */
 
 /datum/human_npc_outfit_table/pirate
@@ -59,6 +62,7 @@
 /datum/outfit/piratecorpse/faction/silverscale/melee/armed
 	name = "Human NPC: Silverscale Duelist"
 	r_hand = /obj/item/melee/energy/sword/pirate
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/silverscale/ranged/energy_gun
 	name = "Human NPC: Silverscale Marksman (energy gun)"
@@ -88,7 +92,7 @@
 
 /datum/outfit/piratecorpse/faction/silverscale/highlord/armed
 	name = "Human NPC: Silverscale Highlord"
-	r_hand = /obj/item/melee/energy/sword/pirate
+	r_hand = /obj/item/melee/energy/sword/pirate/boss
 
 // ===== SKELETON =====
 
@@ -114,6 +118,7 @@
 /datum/outfit/piratecorpse/faction/skeleton/melee/armed
 	name = "Human NPC: Skeleton Swashbuckler"
 	r_hand = /obj/item/melee/energy/sword/pirate
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/skeleton/ranged/laser_rifle
 	name = "Human NPC: Skeleton Gunner (laser rifle)"
@@ -142,9 +147,12 @@
 	name = "Human NPC: Skeleton Captain"
 	r_hand = /obj/item/claymore/cutlass
 
+// His flask of cursed grog (voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm) where
+// the corpse kept a doubloon.
 /datum/outfit/piratecorpse/faction/skeleton/davyjones/armed
 	name = "Human NPC: Davy Jones"
-	r_hand = /obj/item/claymore/cutlass
+	r_hand = /obj/item/claymore/cutlass/davy_jones
+	l_pocket = /obj/item/reagent_containers/cup/glass/flask/davy_jones
 
 // ===== GREY TIDE =====
 
@@ -166,6 +174,7 @@
 /datum/outfit/piratecorpse/faction/grey/melee/armed
 	name = "Human NPC: Grey Tider"
 	r_hand = /obj/item/storage/toolbox/mechanical
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/grey/ranged/energy_gun
 	name = "Human NPC: Grey Tider Gunner (energy gun)"
@@ -189,7 +198,7 @@
 
 /datum/outfit/piratecorpse/faction/grey/robust/armed
 	name = "Human NPC: The Robust One"
-	r_hand = /obj/item/storage/toolbox/mechanical/old/clean
+	r_hand = /obj/item/storage/toolbox/mechanical/old/clean/robust_one
 
 // ===== LUSTROUS =====
 
@@ -209,6 +218,7 @@
 /datum/outfit/piratecorpse/faction/lustrous/melee/armed
 	name = "Human NPC: Lustrous Scintillant"
 	r_hand = /obj/item/switchblade
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/lustrous/ranged/energy_gun
 	name = "Human NPC: Lustrous Coruscant (energy gun)"
@@ -232,7 +242,7 @@
 
 /datum/outfit/piratecorpse/faction/lustrous/radiant/armed
 	name = "Human NPC: The Radiant One"
-	r_hand = /obj/item/melee/energy/sword/pirate
+	r_hand = /obj/item/melee/energy/sword/pirate/boss/radiant
 
 // ===== INTERDYNE =====
 
@@ -258,6 +268,7 @@
 /datum/outfit/piratecorpse/faction/interdyne/melee/armed
 	name = "Human NPC: Interdyne Enforcer"
 	r_hand = /obj/item/scalpel
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/interdyne/ranged/energy_gun
 	name = "Human NPC: Interdyne Pharmacist (energy gun)"
@@ -319,6 +330,7 @@
 /datum/outfit/piratecorpse/faction/irs/melee/armed
 	name = "Human NPC: IRS Enforcer"
 	r_hand = /obj/item/melee/baton/telescopic
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/irs/ranged/energy_gun
 	name = "Human NPC: IRS Agent (energy gun)"
@@ -352,6 +364,7 @@
 	name = "Human NPC: IRS Chief Auditor"
 	r_hand = /obj/item/gun/energy/e_gun/lethal
 	l_pocket = /obj/item/knife/combat/survival
+	r_pocket = /obj/item/reagent_containers/hypospray/medipen/stimulants
 
 // ===== MEDIEVAL =====
 
@@ -369,6 +382,7 @@
 /datum/outfit/piratecorpse/faction/medieval/melee/armed
 	name = "Human NPC: Medieval Footsoldier"
 	r_hand = /obj/item/claymore/shortsword
+	l_pocket = /obj/item/crowbar
 
 /datum/outfit/piratecorpse/faction/medieval/ranged/crossbow
 	name = "Human NPC: Medieval Crossbowman"
@@ -377,8 +391,8 @@
 
 /datum/outfit/piratecorpse/faction/medieval/captain/armed
 	name = "Human NPC: Medieval Warlord"
-	r_hand = /obj/item/fireaxe/boardingaxe
+	r_hand = /obj/item/fireaxe/boardingaxe/warlord
 
 /datum/outfit/piratecorpse/faction/medieval/blackknight/armed
 	name = "Human NPC: The Black Knight"
-	r_hand = /obj/item/claymore
+	r_hand = /obj/item/claymore/black_knight
