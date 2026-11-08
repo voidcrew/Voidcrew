@@ -130,6 +130,8 @@
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
 	if(fresh)
 		ai_bark(bark || "fight_start")
+		var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+		chrome?.fight_started(target)
 	ai_rally_companions(target)
 	ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bounty_ai_target_for(target))
 	return TRUE

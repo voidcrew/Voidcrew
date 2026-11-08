@@ -152,6 +152,8 @@
 	// Out of a suit where a person can't breathe, it chokes (bounty_eva.dm)
 	var/datum/component/bounty_eva/eva = GetComponent(/datum/component/bounty_eva)
 	eva?.breathe(seconds_per_tick)
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	chrome?.tick(seconds_per_tick)
 	if(stat == DEAD || istype(src, /mob/living/basic/bounty_criminal/boss))
 		return
 	if(on_fire || bodytemperature > BOUNTY_CRIMINAL_MAX_TEMP)
@@ -233,6 +235,8 @@
 		ADD_TRAIT(src, TRAIT_MISSION_FIELD_MOB, BOUNTY_TRAIT)
 	// Suited where the site's air would kill it, before the look goes on
 	bounty_eva_kit_up_criminal(src, new_posting)
+	// Their chrome, before the look goes on, so it shows (bounty_chrome.dm)
+	bounty_chrome_install(src, record?.chrome)
 	INVOKE_ASYNC(src, PROC_REF(body_dress))
 
 /// A normal criminal's health: its tier's, times its style's. Null for anyone else, who keeps their built-in health.

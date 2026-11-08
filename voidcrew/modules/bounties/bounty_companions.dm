@@ -116,6 +116,8 @@
 		BOUNTY_STYLE_SMG = 1,
 		BOUNTY_STYLE_REVOLVER = 1,
 	)))
+	// Now and then some chrome of their own, rarer than their criminal's (bounty_chrome.dm)
+	bounty_chrome_install(src, list(bounty_roll_companion_chrome(leader.record?.tier, bounty_ai_style(src)?.key)) - null)
 	// A face of their own species, the clothes for the site, and a suit if their criminal wears one (bounty_eva.dm)
 	eva_join(leader, species)
 
@@ -173,6 +175,8 @@
 	set_varspeed(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
 	bounty_ai_draw(src, ai_hand)
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	chrome?.fight_started(bounty_chrome_target(src))
 
 /// The fight is over for them: weapon away, easy pace
 /mob/living/basic/bounty_companion/proc/ai_leave_fight()
@@ -212,6 +216,9 @@
 		return
 	ai_gave_up = TRUE
 	ai_let_go()
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	if(chrome)
+		INVOKE_ASYNC(chrome, TYPE_PROC_REF(/datum/component/bounty_chrome, downed))
 	ai_over_head = bounty_ai_update_held(src, ai_over_head, /obj/effect/abstract/bounty_surrender_mark, over_head = TRUE)
 	visible_message(span_notice("[src] puts [p_their()] hands up."))
 	if(QDELETED(ai_controller))

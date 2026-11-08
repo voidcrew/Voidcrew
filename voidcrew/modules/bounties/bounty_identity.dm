@@ -73,6 +73,7 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 			record.style = bounty_roll_style()
 		if(BOUNTY_ARCHETYPE_BOSS)
 			record.kit = bounty_roll_kit()
+	record.chrome = bounty_roll_chrome(tier, archetype, record.style, record.kit)
 	record.alias = bounty_roll_alias(record)
 	record.crime = bounty_roll_crime(tier)
 	record.features = bounty_roll_features(record)

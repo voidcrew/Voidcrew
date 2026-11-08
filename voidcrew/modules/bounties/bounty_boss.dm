@@ -420,6 +420,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			boss_engage(pilot, announce = FALSE)
 	boss_apply_posse_health(announce = FALSE)
 	boss_bark("intro")
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	chrome?.fight_started(instigator)
 	return TRUE
 
 /// With no hunter left on its site, it stops hunting and waits again. Its posse and health stay.

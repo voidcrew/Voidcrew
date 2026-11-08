@@ -387,6 +387,8 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 	. = ..()
 	var/datum/component/bounty_eva/eva = GetComponent(/datum/component/bounty_eva)
 	eva?.breathe(seconds_per_tick)
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	chrome?.tick(seconds_per_tick)
 
 /// Whether `user` may open their strip menu: out of the fight on the floor, given up, or dead
 /mob/living/basic/bounty_companion/proc/eva_may_strip(mob/user)
@@ -414,7 +416,8 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 	if(!eva_look)
 		set_outpost_npc_look(src, eva_base_outfit, gender, random_outpost_npc_look_number())
 		return
-	var/mob/living/carbon/human/dummy/dummy = bounty_look_dummy(eva_look, outfit, null)
+	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
+	var/mob/living/carbon/human/dummy/dummy = bounty_look_dummy(eva_look, outfit, null, chrome_organs = bounty_chrome_organ_looks(chrome?.keys()))
 	if(!dummy)
 		return
 	if(!QDELETED(src))

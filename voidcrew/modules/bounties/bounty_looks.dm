@@ -71,7 +71,7 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
 	// Glasses are theirs anywhere; a scarf stays with their things when they go to prison.
 	var/neckwear = !ispath(outfit, /datum/outfit/outpost_prisoner)
 	var/mob/living/carbon/human/dummy/dummy = new
-	var/dressed = bounty_dress_dummy(dummy, look, outfit, record.features, neckwear)
+	var/dressed = bounty_dress_dummy(dummy, look, outfit, record.features, neckwear, bounty_chrome_organ_looks(record.chrome))
 	var/built = dressed ? dummy.appearance : null
 	qdel(dummy)
 	if(!built)
@@ -90,19 +90,19 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
  * A new human dummy looking like `look` in `outfit`, or null if dressing it failed (the dummy is
  * deleted then). For tests and tools; the caller deletes the dummy. Can sleep.
  */
-/proc/bounty_look_dummy(datum/bounty_look/look, outfit, list/features, neckwear = TRUE)
+/proc/bounty_look_dummy(datum/bounty_look/look, outfit, list/features, neckwear = TRUE, list/chrome_organs)
 	var/mob/living/carbon/human/dummy/dummy = new
-	if(bounty_dress_dummy(dummy, look, outfit, features, neckwear))
+	if(bounty_dress_dummy(dummy, look, outfit, features, neckwear, chrome_organs))
 		return dummy
 	qdel(dummy)
 	return null
 
 /**
  * Makes `dummy` look like `look` in `outfit`, wearing the glasses and (when `neckwear`) the scarf
- * that `features` name where the outfit leaves room. Returns TRUE when done; a runtime part way
+ * that `features` name where the outfit leaves room, and the implants `chrome_organs` (typepaths). Returns TRUE when done; a runtime part way
  * returns null to the caller, which still deletes the dummy. Can sleep.
  */
-/proc/bounty_dress_dummy(mob/living/carbon/human/dummy/dummy, datum/bounty_look/look, outfit, list/features, neckwear = TRUE)
+/proc/bounty_dress_dummy(mob/living/carbon/human/dummy/dummy, datum/bounty_look/look, outfit, list/features, neckwear = TRUE, list/chrome_organs)
 	if(QDELETED(dummy) || !look)
 		return FALSE
 	// Before the species: its visible organs take their shape from dna.features as they go in.
@@ -127,6 +127,9 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
 	dummy.socks = "Nude"
 	// Without is_creating the limbs keep the colours they were made with.
 	dummy.update_body(is_creating = TRUE)
+	// Their chrome, worn as a player wears it: under the clothes (bounty_chrome.dm)
+	if(length(chrome_organs))
+		bounty_chrome_dress_dummy(dummy, chrome_organs)
 	if(outfit)
 		dummy.equipOutfit(outfit, visuals_only = TRUE)
 	bounty_wear_features(dummy, features, neckwear)

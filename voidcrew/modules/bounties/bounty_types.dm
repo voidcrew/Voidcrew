@@ -68,6 +68,8 @@ GLOBAL_LIST_EMPTY(bounty_prisoner_pool)
 	var/style
 	/// BOUNTY_KIT_* for a mini-boss, else null
 	var/kit
+	/// The chrome they carry (BOUNTY_CHROME_* keys), rolled once with the record, or null (bounty_chrome.dm)
+	var/list/chrome
 	/// Distinguishing features, as P1's feature keys; feature_lines() turns them into examine lines
 	var/list/features
 	/// What carries into the prison beyond the tier: P1's trait keys, which P7's danger helpers read
