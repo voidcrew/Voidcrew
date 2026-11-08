@@ -262,11 +262,34 @@
 	host.update_bubble()
 	RegisterSignal(host, COMSIG_LIVING_DEATH, PROC_REF(on_host_death))
 	RegisterSignal(host, COMSIG_QDELETING, PROC_REF(on_host_deleted))
+	// A host with a body (EX-8): the specimen is a real thing in their chest, which surgery can cut out.
+	if(iscarbon(new_host))
+		var/obj/item/organ/body_egg/outpost_specimen/specimen = new()
+		specimen.event_ref = WEAKREF(src)
+		if(!specimen.Insert(new_host, special = TRUE))
+			qdel(specimen)
+
+/// The specimen in a host with a body, if there is one
+/datum/outpost_changeling_event/proc/host_specimen()
+	var/mob/living/carbon/body = host
+	if(!istype(body))
+		return null
+	return locate(/obj/item/organ/body_egg/outpost_specimen) in body.organs
+
+/// Takes the specimen out of a host with a body for good, as the burst or the end of the experiment does
+/datum/outpost_changeling_event/proc/remove_specimen()
+	var/obj/item/organ/body_egg/outpost_specimen/specimen = host_specimen()
+	if(!specimen)
+		return
+	specimen.event_ref = null
+	specimen.Remove(specimen.owner, special = TRUE)
+	qdel(specimen)
 
 /// Lets go of the host: signals off and back on their feet. `cured` also ends their part in the experiment.
 /datum/outpost_changeling_event/proc/release_host(cured = FALSE)
 	if(!host)
 		return
+	remove_specimen()
 	var/mob/living/carbon/human/npc/outpost_prisoner/was_host = host
 	host = null
 	UnregisterSignal(was_host, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
@@ -368,18 +391,31 @@
 	heave_left = rand(3, 5)
 	heave()
 
-/// The host goes down, on their bunk if they got there: groaning, and draggable
+/**
+ * The host goes down, on their bunk if they got there: groaning, and draggable. A host with a body lies
+ * down the way anyone sick does, and the heaves keep knocking them flat (heave()). A basic prisoner, with no
+ * body to be sick in, is held down by traits until prisoners are human NPCs.
+ */
 /datum/outpost_changeling_event/proc/host_lie_down()
 	if(host_down || QDELETED(host))
 		return
 	host_down = TRUE
-	host.add_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
+	if(iscarbon(host))
+		host.set_resting(TRUE, silent = TRUE)
+		host.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
+	else
+		host.add_traits(list(TRAIT_FLOORED, TRAIT_INCAPACITATED, TRAIT_IMMOBILIZED), CHANGELING_HOST_TRAIT)
 	host.visible_message(span_warning("[host] curls up, groaning, arms wrapped around [host.p_their()] belly."))
 
-/// The host's belly heaves; now and then a neighbour notices
+/// The host's belly heaves, and a host with a body is sick and knocked flat by it; now and then a neighbour notices
 /datum/outpost_changeling_event/proc/heave()
 	host.Shake(1, 0, 0.6 SECONDS)
 	playsound(host, 'sound/effects/meatslap.ogg', 15, TRUE, -2)
+	if(iscarbon(host) && host.stat != DEAD)
+		var/mob/living/carbon/body = host
+		if(prob(40))
+			body.vomit(VOMIT_CATEGORY_KNOCKDOWN, lost_nutrition = 0)
+		body.Knockdown(OUTPOST_CHANGELING_HOST_KNOCKDOWN)
 	if(prob(50))
 		host.visible_message(span_warning("Something moves under [host]'s jumpsuit. [host.p_Their()] belly heaves."))
 	else
@@ -1421,3 +1457,34 @@
 #undef CHANGELING_HOST_TRAIT
 #undef HEADSLUG_VENT_TRAIT
 #undef BB_OUTPOST_HEADSLUG_VENT
+
+// ===== THE SPECIMEN IN A BODY =====
+
+/**
+ * The specimen growing in a host with a body (EX-8): a real organ in the chest, as tg's alien embryo is.
+ * The event's clock grows it and bursts the host; the organ is what is there to find on a scanner or cut
+ * out in surgery. Cut out, it dies, and the experiment loses its specimen.
+ */
+/obj/item/organ/body_egg/outpost_specimen
+	name = "Kessler specimen"
+	desc = "A small, wet, curled-up thing that never stops moving."
+	icon_state = "innards"
+	/// The changeling event it is part of
+	var/datum/weakref/event_ref
+
+/obj/item/organ/body_egg/outpost_specimen/Destroy()
+	event_ref = null
+	return ..()
+
+/obj/item/organ/body_egg/outpost_specimen/on_mob_remove(mob/living/carbon/egg_owner, special, movement_flags)
+	. = ..()
+	// The event's own removals (the burst, the end of the experiment) are special.
+	if(special)
+		return
+	var/datum/outpost_changeling_event/event = event_ref?.resolve()
+	event_ref = null
+	// Cut out: it dies outside a body, and the specimen is lost.
+	if(event)
+		INVOKE_ASYNC(event, TYPE_PROC_REF(/datum/outpost_changeling_event, lose_specimen), "the specimen was cut out")
+	visible_message(span_warning("[src] shudders and goes still."))
+	QDEL_IN(src, 1)

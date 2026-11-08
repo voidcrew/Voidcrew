@@ -12,8 +12,7 @@
  *
  * It changes other packages' state only through their procs:
  * - P1: generate_bounty_record(), make_decoy_record();
- * - P2: spawn_bounty_criminal(), body_apply_cuffs(), body_remove_cuffs(), body_downed_line(),
- *   body_stand_up(), capture_state();
+ * - P2: spawn_bounty_criminal(), capture_state();
  * - P3: start_activity();
  * - P5: post_criminal_bounty(), close(), relist(), hunt() (forced), print_warrant(),
  *   SScriminal_bounties.board_fast_forward() and
@@ -21,8 +20,10 @@
  * - P6: the decoy's outpost_become() and the outpost's display name, description and outfit;
  * - P7: bounty_pool_add(), bounty_pool_remove(), bounty_pool_clear(), the prison's
  *   bounty_admit_record().
- * The one direct write is a criminal's worst_state back to free (force_free()): no package has a
- * proc that makes a worst state better, and the admin's "Free" exists to try a full-pay turn-in again.
+ * A criminal is a real human body (voidcrew/modules/human_npcs/), so the forced capture states are
+ * tg's own, put on through tg's procs (CR-21): real brute on the chest to just past its crit line, a
+ * real Paralyze, real handcuffs in the cuff slot, death(), and for "Free" tg's revive(HEAL_ALL) with the
+ * cuffs taken off and every stun ended. No stand-in states; the pad reads them as it reads anyone's.
  *
  * Everything goes through /datum/bounty_admin_panel. The menu procs (menu_*) ask the questions; the
  * action procs (admin_*) take plain arguments, check the admin again, act and log, so a unit test can
@@ -43,6 +44,8 @@
 #define BOUNTY_ADMIN_TICK_SECONDS 10
 /// How long a forced stun lasts
 #define BOUNTY_ADMIN_STUN_TIME (30 SECONDS)
+/// Most hits "force downed" lands to get a tough body past its crit line (its toughness cuts each one)
+#define BOUNTY_ADMIN_DOWN_HITS 20
 /// Most questions one opening of the panel asks before it closes itself: a guard, never reached by hand
 #define BOUNTY_ADMIN_MAX_STEPS 200
 /// Who the pool's test records say brought them in
@@ -205,7 +208,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/share_choice = ask_list(user, "The decoy shares how much of their look?", "Spawn a decoy", shares)
 	if(!share_choice || !authorized(user))
 		return
-	var/mob/living/basic/bounty_criminal/wanted = wanted_ref.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/wanted = wanted_ref.resolve()
 	if(QDELETED(wanted))
 		refuse(user, "That criminal is gone.")
 		return
@@ -353,12 +356,12 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		"Stunned" = BOUNTY_STATE_STUNNED,
 		"Restrained (cuffs on)" = BOUNTY_STATE_RESTRAINED,
 		"Dead" = BOUNTY_STATE_DEAD,
-		"Free (up, healed, uncuffed, worst state cleared)" = BOUNTY_STATE_FREE,
+		"Free (alive, healed, uncuffed)" = BOUNTY_STATE_FREE,
 	)
 	var/state_choice = ask_list(user, "Which state?", "Force a capture state", states)
 	if(!state_choice || !authorized(user))
 		return
-	var/mob/living/basic/bounty_criminal/criminal = criminal_ref.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal_ref.resolve()
 	if(QDELETED(criminal))
 		refuse(user, "That criminal is gone.")
 		return
@@ -454,7 +457,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /// The live criminal the admin picks (never a decoy), or null
 /datum/bounty_admin_panel/proc/pick_criminal(mob/user, message)
 	var/list/choices = list()
-	for(var/mob/living/basic/bounty_criminal/criminal as anything in live_criminals())
+	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal as anything in live_criminals())
 		choices[unique_label(choices, criminal_label(criminal))] = WEAKREF(criminal)
 	if(!length(choices))
 		return refuse(user, "No bounty criminals are about. Spawn one first.")
@@ -462,7 +465,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(!choice || !authorized(user))
 		return null
 	var/datum/weakref/criminal_ref = choices[choice]
-	var/mob/living/basic/bounty_criminal/criminal = criminal_ref?.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal_ref?.resolve()
 	if(QDELETED(criminal))
 		return refuse(user, "That criminal is gone.")
 	return criminal
@@ -500,10 +503,10 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 /// Every live bounty criminal in the world, decoys only if asked for
 /datum/bounty_admin_panel/proc/live_criminals(include_decoys = FALSE)
 	var/list/found = list()
-	for(var/mob/living/basic/bounty_criminal/criminal in GLOB.mob_living_list)
+	for(var/mob/living/carbon/human/npc/bounty_criminal/criminal in GLOB.mob_living_list)
 		if(QDELETED(criminal))
 			continue
-		if(!include_decoys && istype(criminal, /mob/living/basic/bounty_criminal/decoy))
+		if(!include_decoys && istype(criminal, /mob/living/carbon/human/npc/bounty_criminal/decoy))
 			continue
 		found += criminal
 	return found
@@ -682,7 +685,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 
 // ===== DESCRIPTIONS =====
 
-/datum/bounty_admin_panel/proc/criminal_name(mob/living/basic/bounty_criminal/criminal)
+/datum/bounty_admin_panel/proc/criminal_name(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(!criminal)
 		return "nobody"
 	return criminal.record?.name || criminal.real_name || criminal.name
@@ -694,7 +697,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/variant = record.kit || record.style
 	return "[bounty_tier_name(record.tier)] [record.archetype || "criminal"][variant ? " ([variant])" : ""]"
 
-/datum/bounty_admin_panel/proc/criminal_label(mob/living/basic/bounty_criminal/criminal)
+/datum/bounty_admin_panel/proc/criminal_label(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	var/area/place = get_area(criminal)
 	return "[criminal_name(criminal)]: [record_kind(criminal.record)], [criminal.capture_state()], in [place?.name || "nowhere"]"
 
@@ -739,7 +742,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/datum/bounty_record/record = posting.record
 	var/obj/structure/overmap/site = posting.site()
 	var/obj/structure/overmap/ship/private_ship = posting.offered_to()
-	var/mob/living/basic/bounty_criminal/criminal = posting.criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = posting.criminal()
 	var/location = criminal ? "[ADMIN_VERBOSEJMP(criminal)], [criminal.capture_state()]" : absent_reason(posting)
 	return list(
 		"tier" = bounty_tier_name(record?.tier),
@@ -829,7 +832,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		record.kit = null
 		if(variant)
 			record.style = variant
-	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, where, null)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(record, where, null)
 	if(QDELETED(criminal))
 		return refuse(user, "The criminal did not spawn.")
 	if(activity)
@@ -845,11 +848,11 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
  * the alert and it walks out when the posting ends; anywhere else it stands alone, with the black
  * market's look. A decoy is never linked to a posting through posting_ref (P6). Returns the decoy.
  */
-/datum/bounty_admin_panel/proc/admin_spawn_decoy(mob/user, mob/living/basic/bounty_criminal/wanted, shared = 1)
+/datum/bounty_admin_panel/proc/admin_spawn_decoy(mob/user, mob/living/carbon/human/npc/bounty_criminal/wanted, shared = 1)
 	error = null
 	if(!authorized(user))
 		return null
-	if(QDELETED(wanted) || istype(wanted, /mob/living/basic/bounty_criminal/decoy))
+	if(QDELETED(wanted) || istype(wanted, /mob/living/carbon/human/npc/bounty_criminal/decoy))
 		return refuse(user, "Pick a wanted criminal, not a decoy.")
 	if(!wanted.record)
 		return refuse(user, "[criminal_name(wanted)] has no record to copy.")
@@ -868,8 +871,12 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	var/datum/criminal_bounty/posting = wanted.posting()
 	if(posting && (posting.placement_kind != BOUNTY_PLACEMENT_TRADER_OUTPOST || posting.outpost_site?.resolve() != outpost))
 		posting = null
-	var/datum/npc_spawn_context/context = wanted.bounty_profile_context()
-	var/mob/living/basic/bounty_criminal/decoy/decoy = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/decoy, decoy_spot(center), context, FALSE)
+	// One body, wanted back at once: built now rather than queued, in the decoy record's face
+	var/datum/human_npc_order/order = spawn_human_npc(/mob/living/carbon/human/npc/bounty_criminal/decoy, decoy_spot(center), look = decoy_record, immediate = TRUE)
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = order?.spawned_ref?.resolve()
+	qdel(order)
+	if(QDELETED(decoy))
+		return refuse(user, "The decoy did not spawn.")
 	decoy.outpost_become(wanted, decoy_record, posting, outpost, bounty_outpost_display_name(outpost), bounty_outpost_display_desc(outpost), bounty_outpost_outfit(outpost))
 	if(posting)
 		posting.decoys += WEAKREF(decoy)
@@ -1012,7 +1019,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	return "not spawned yet"
 
 /// Moves the admin to `criminal`. Returns TRUE if they moved.
-/datum/bounty_admin_panel/proc/admin_jump(mob/user, mob/living/basic/bounty_criminal/criminal, datum/criminal_bounty/posting)
+/datum/bounty_admin_panel/proc/admin_jump(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal, datum/criminal_bounty/posting)
 	error = null
 	if(!authorized(user))
 		return FALSE
@@ -1024,7 +1031,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	return TRUE
 
 /// Brings `criminal` to the admin's tile, out of any locker or crate. Returns TRUE if they came.
-/datum/bounty_admin_panel/proc/admin_bring(mob/user, mob/living/basic/bounty_criminal/criminal, datum/criminal_bounty/posting)
+/datum/bounty_admin_panel/proc/admin_bring(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal, datum/criminal_bounty/posting)
 	error = null
 	if(!authorized(user))
 		return FALSE
@@ -1043,11 +1050,12 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 // ===== CAPTURE STATES =====
 
 /**
- * Puts `criminal` in capture state `state` (BOUNTY_STATE_*) through P2's own procs: damage to its
- * downed line, a stun, real handcuffs put on by nobody (so nobody lands on its grudge list), death,
- * or taking all of that off again. Returns TRUE if capture_state() now reads `state`.
+ * Puts `criminal` in capture state `state` (BOUNTY_STATE_*) the way tg does it to anyone (CR-21): real
+ * brute to just past its crit line, a real Paralyze, real handcuffs put on by nobody (so nobody lands on
+ * its grudge list), death(), or for free a revive with all of that taken off again. Returns TRUE if it
+ * was done; what capture_state() reads then is reported to the admin.
  */
-/datum/bounty_admin_panel/proc/admin_force_state(mob/user, mob/living/basic/bounty_criminal/criminal, state)
+/datum/bounty_admin_panel/proc/admin_force_state(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal, state)
 	error = null
 	if(!authorized(user))
 		return FALSE
@@ -1070,7 +1078,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(!done)
 		return FALSE
 	var/now = criminal.capture_state()
-	log_action(user, "force [criminal_name(criminal)] to [state] (capture state now [now], worst [criminal.worst_state])")
+	log_action(user, "force [criminal_name(criminal)] to [state] (capture state now [now])")
 	if(now != state)
 		// Stunned or cuffed while down still reads as downed, as the pad would pay it
 		tell(user, span_notice("[criminal_name(criminal)] is [state], but reads as [now]: [now] comes first."))
@@ -1078,21 +1086,32 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		tell(user, span_notice("[criminal_name(criminal)] is now [now]."))
 	return TRUE
 
-/// Damage straight to P2's downed line, past the mercy rule and armour; P2 downs it from there
-/datum/bounty_admin_panel/proc/force_downed(mob/user, mob/living/basic/bounty_criminal/criminal)
+/**
+ * Real brute on its chest until it is just in crit: health a point under its crit line (tg's
+ * crit_threshold, HEALTH_THRESHOLD_CRIT; the hard-crit line for a body that has no soft crit). No
+ * armour roll and no wound. Its toughness (physiology) takes its share of each hit, so the hit is
+ * repeated on what is left until it is down.
+ */
+/datum/bounty_admin_panel/proc/force_downed(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(criminal.stat == DEAD)
 		return refuse(user, "[criminal_name(criminal)] is dead.")
 	if(criminal.is_downed())
 		return refuse(user, "[criminal_name(criminal)] is already down.")
-	var/excess = criminal.health - criminal.body_downed_line()
-	if(excess > 0)
-		criminal.adjust_health(excess, TRUE, TRUE)
+	var/line = (HAS_TRAIT(criminal, TRAIT_NOSOFTCRIT) ? criminal.hardcrit_threshold : criminal.crit_threshold) - 1
+	for(var/hit in 1 to BOUNTY_ADMIN_DOWN_HITS)
+		if(criminal.is_downed() || criminal.stat == DEAD)
+			break
+		var/excess = criminal.health - line
+		if(excess <= 0)
+			break
+		if(!criminal.apply_damage(excess, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND))
+			break
 	if(!criminal.is_downed())
-		return refuse(user, "[criminal_name(criminal)] did not go down ([criminal.health] health, line [criminal.body_downed_line()]).")
+		return refuse(user, "[criminal_name(criminal)] did not go down ([criminal.health] health).")
 	return TRUE
 
-/// A long paralysis, past stun immunity
-/datum/bounty_admin_panel/proc/force_stunned(mob/user, mob/living/basic/bounty_criminal/criminal)
+/// A long tg paralysis, past stun immunity
+/datum/bounty_admin_panel/proc/force_stunned(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(criminal.stat == DEAD)
 		return refuse(user, "[criminal_name(criminal)] is dead.")
 	criminal.Paralyze(BOUNTY_ADMIN_STUN_TIME, TRUE)
@@ -1100,20 +1119,27 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		return refuse(user, "[criminal_name(criminal)] shrugged the stun off.")
 	return TRUE
 
-/// A new pair of real handcuffs, put on at once through P2's body_apply_cuffs() by nobody: held still, its AI paused, and no one on its grudge list
-/datum/bounty_admin_panel/proc/force_restrained(mob/user, mob/living/basic/bounty_criminal/criminal)
+/**
+ * A new pair of real handcuffs in its cuff slot, put on the way tg's apply_cuffs() does it, by nobody:
+ * no cuffing do_after for it to answer, and no one on its grudge list. It can work at them as at
+ * anyone's.
+ */
+/datum/bounty_admin_panel/proc/force_restrained(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(criminal.stat == DEAD)
-		return refuse(user, "[criminal_name(criminal)] is dead: the cuffs would only fall off.")
+		return refuse(user, "[criminal_name(criminal)] is dead.")
 	if(criminal.is_restrained())
-		return refuse(user, "[criminal_name(criminal)] is already cuffed.")
+		return refuse(user, "[criminal_name(criminal)] is already restrained.")
+	if(!criminal.canBeHandcuffed())
+		return refuse(user, "[criminal_name(criminal)] has no wrists to cuff.")
 	var/obj/item/restraints/handcuffs/cuffs = new(criminal.drop_location())
-	if(!criminal.body_apply_cuffs(cuffs, null))
+	criminal.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	if(criminal.handcuffed != cuffs)
 		if(!QDELETED(cuffs) && cuffs.loc != criminal)
 			qdel(cuffs)
 		return refuse(user, "The cuffs did not go on [criminal_name(criminal)].")
 	return TRUE
 
-/datum/bounty_admin_panel/proc/force_dead(mob/user, mob/living/basic/bounty_criminal/criminal)
+/datum/bounty_admin_panel/proc/force_dead(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	if(criminal.stat == DEAD)
 		return refuse(user, "[criminal_name(criminal)] is already dead.")
 	criminal.death()
@@ -1122,27 +1148,20 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	return TRUE
 
 /**
- * Takes every capture state off: the cuffs come off through P2's body_remove_cuffs() (they drop at
- * its feet), the surrender ends, stuns end, all damage heals, a downed one gets back up through P2's
- * body_stand_up() (a mini-boss rallies, as it would), and the worst state goes back to free, so a
- * full-pay turn-in can be tried again. The dead stay dead: a criminal can't be revived.
+ * Takes every capture state off, through tg (CR-21): revive(HEAL_ALL) heals every hurt (damage, wounds,
+ * organs, blood, stamina, stuns) and brings a dead one back if its body can live; the cuffs come off
+ * through tg's uncuff() (they drop at its feet), and any stun left ends, a surrender with it. So a
+ * full-pay turn-in can be tried again, or a dead criminal brought back for another go.
  */
-/datum/bounty_admin_panel/proc/force_free(mob/user, mob/living/basic/bounty_criminal/criminal)
+/datum/bounty_admin_panel/proc/force_free(mob/user, mob/living/carbon/human/npc/bounty_criminal/criminal)
+	criminal.revive(HEAL_ALL)
 	if(criminal.stat == DEAD)
-		return refuse(user, "[criminal_name(criminal)] is dead, and the dead stay dead.")
-	criminal.body_remove_cuffs(null)
-	REMOVE_TRAIT(criminal, TRAIT_BOUNTY_SURRENDERED, BOUNTY_TRAIT)
-	criminal.SetParalyzed(0, TRUE)
-	criminal.SetKnockdown(0, TRUE)
-	criminal.SetStun(0, TRUE)
-	criminal.SetImmobilized(0, TRUE)
+		return refuse(user, "[criminal_name(criminal)] could not be brought back.")
+	if(criminal.handcuffed || criminal.legcuffed)
+		criminal.uncuff()
+	criminal.SetAllImmobility(0)
+	criminal.SetSleeping(0)
 	criminal.remove_status_effect(/datum/status_effect/incapacitating/stamcrit)
-	criminal.fully_heal(HEAL_DAMAGE)
-	if(criminal.is_downed())
-		criminal.body_cancel_recovery()
-		criminal.body_stand_up()
-	// No proc makes a worst state better: this is the panel's one direct write (see the file's header)
-	criminal.worst_state = BOUNTY_STATE_FREE
 	if(criminal.capture_state() != BOUNTY_STATE_FREE)
 		return refuse(user, "[criminal_name(criminal)] still reads as [criminal.capture_state()].")
 	return TRUE
@@ -1335,6 +1354,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 #undef BOUNTY_ADMIN_MAX_TICKS
 #undef BOUNTY_ADMIN_TICK_SECONDS
 #undef BOUNTY_ADMIN_STUN_TIME
+#undef BOUNTY_ADMIN_DOWN_HITS
 #undef BOUNTY_ADMIN_MAX_STEPS
 #undef BOUNTY_ADMIN_TEST_CAPTOR
 #undef BOUNTY_ADMIN_RELIST_REASON

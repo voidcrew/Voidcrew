@@ -277,7 +277,7 @@
 	SIGNAL_HANDLER
 	if(!is_open() || board_relisting)
 		return
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	// A criminal carried off the site (aboard a ship) is not the site's to take
 	if(criminal && !board_site_contains(source, get_turf(criminal)))
 		return
@@ -285,11 +285,11 @@
 
 /**
  * The site's interior went away with the criminal in it (spec 6: unload): the criminal, its
- * companions and the marker go, the posting stays open, and the same record comes back at full
- * health on the next load. Cuffs don't survive, but the worst state it reached does (12.1): it
- * never pays more than it did before, and a dead one comes back as proof of death.
+ * companions and the marker go, the posting stays open, and the same record comes back unhurt on the
+ * next load, out of any cuffs. Pay is by its condition on the pad, so a living one owes nothing to how
+ * it was before; one that died comes back as proof of death.
  */
-/datum/criminal_bounty/proc/board_site_took_criminal(mob/living/basic/bounty_criminal/criminal)
+/datum/criminal_bounty/proc/board_site_took_criminal(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	board_note_worst(criminal)
 	board_detach_criminal()
 	var/list/extras = list()
@@ -307,13 +307,10 @@
 	board_wait_for_load(site())
 	log_game("BOUNTY: the [board_log_name()] waits for its site to load again")
 
-/// Remembers the worst state `criminal` reached, for whatever body of it comes next (12.1)
-/datum/criminal_bounty/proc/board_note_worst(mob/living/basic/bounty_criminal/criminal)
-	if(!criminal)
-		return
-	var/state = criminal.stat == DEAD ? BOUNTY_STATE_DEAD : criminal.worst_state
-	if(bounty_state_rank(state) < bounty_state_rank(board_worst_state))
-		board_worst_state = state
+/// Remembers whether `criminal` was dead when its site took it: the next body of it is then its proof of death
+/datum/criminal_bounty/proc/board_note_worst(mob/living/carbon/human/npc/bounty_criminal/criminal)
+	if(criminal?.stat == DEAD)
+		board_worst_state = BOUNTY_STATE_DEAD
 
 /// The site is gone (a ruin respawning elsewhere, a pirate ship destroyed or despawned)
 /datum/criminal_bounty/proc/board_on_site_deleted(datum/source)
@@ -409,7 +406,7 @@
 		return null
 	if(board_worst_state == BOUNTY_STATE_DEAD)
 		return board_place_proof(spot)
-	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, spot, src)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(record, spot, src)
 	board_spawning = FALSE
 	if(QDELETED(criminal))
 		return null
@@ -441,7 +438,7 @@
  * the blend at a trader outpost: P6's setup_outpost_blend()). Also used by tests and the admin panel
  * to adopt a criminal spawned by hand.
  */
-/datum/criminal_bounty/proc/board_adopt_criminal(mob/living/basic/bounty_criminal/criminal, obj/structure/overmap/where, activity, atom/anchor)
+/datum/criminal_bounty/proc/board_adopt_criminal(mob/living/carbon/human/npc/bounty_criminal/criminal, obj/structure/overmap/where, activity, atom/anchor)
 	if(QDELETED(criminal))
 		return FALSE
 	board_detach_criminal()
@@ -451,8 +448,6 @@
 		criminal.record = record
 	RegisterSignal(criminal, COMSIG_QDELETING, PROC_REF(board_on_criminal_deleted))
 	board_spawn_failures = 0
-	// Whatever an earlier body of theirs went through still counts (12.1). Only ever made worse.
-	criminal.body_restore_worst_state(board_worst_state)
 	if(where)
 		criminal.site_bounds = board_site_bounds(where)
 		board_add_site_factions(criminal, where)
@@ -480,7 +475,7 @@
 
 /// Stops tracking the criminal without touching it
 /datum/criminal_bounty/proc/board_detach_criminal()
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	if(criminal)
 		UnregisterSignal(criminal, COMSIG_QDELETING)
 	criminal_ref = null
@@ -497,7 +492,7 @@
 	return BOUNTY_ACTIVITY_EXPLORE
 
 /// Companions for a normal criminal: 0 to BOUNTY_MAX_COMPANIONS in every zone (12.3 C9: the zone scales pay, never the fight), within the server's cap
-/datum/criminal_bounty/proc/board_spawn_companions(mob/living/basic/bounty_criminal/criminal)
+/datum/criminal_bounty/proc/board_spawn_companions(mob/living/carbon/human/npc/bounty_criminal/criminal)
 	var/count = rand(0, BOUNTY_MAX_COMPANIONS)
 	// The crew aboard a pirate ship are company enough
 	if(placement_kind == BOUNTY_PLACEMENT_NPC_SHIP)
@@ -505,17 +500,15 @@
 	count = min(count, BOUNTY_MAX_LIVE_COMPANIONS - SScriminal_bounties.board_live_companions())
 	if(count <= 0)
 		return list()
-	var/list/spawned = criminal.spawn_companions(count)
-	for(var/mob/living/companion in spawned)
-		companions |= WEAKREF(companion)
-	return spawned
+	// Built through the human NPC queue: each companion joins the posting's list as it joins its criminal (bounty_companions.dm).
+	criminal.spawn_companions(count)
 
 /**
  * Makes the criminal a friend of the site's own, so it doesn't fight the hostiles native to where
  * it hides (spec 3): the crew's factions aboard a pirate ship, the planet's and ruins' hostiles.
  * The neutral faction every player has is never added.
  */
-/datum/criminal_bounty/proc/board_add_site_factions(mob/living/basic/bounty_criminal/criminal, obj/structure/overmap/where)
+/datum/criminal_bounty/proc/board_add_site_factions(mob/living/carbon/human/npc/bounty_criminal/criminal, obj/structure/overmap/where)
 	var/list/added = list(FACTION_HOSTILE)
 	if(istype(where, /obj/structure/overmap/ship/npc))
 		var/obj/structure/overmap/ship/npc/npc_ship = where
@@ -562,7 +555,7 @@
  * let go and the bounty lists at a new site. Returns TRUE if it acted.
  */
 /datum/criminal_bounty/proc/board_check_unreachable()
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	if(!criminal)
 		return FALSE
 	var/in_chasm = istype(criminal.loc, /obj/effect/abstract/chasm_storage)
@@ -850,7 +843,7 @@
 	if(placement_kind == BOUNTY_PLACEMENT_TRADER_OUTPOST)
 		board_drop_marker()
 		return FALSE
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	if(!criminal)
 		return FALSE
 	if(!force && world.time < board_next_sighting)

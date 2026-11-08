@@ -68,7 +68,7 @@
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
 	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
 	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 7, 7), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, prison_spot(home, 8, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	TEST_ASSERT(outpost_prison_test_cuff(cuffed, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
@@ -94,9 +94,9 @@
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(agent, probe), 1, "The rule does not spare a Kessler agent")
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(hulk, probe), 2, "The rule does not shoot the hulk")
 	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(mouse, probe), 0, "The rule claimed a mouse that is not the prison's")
-	hulk.subdued = TRUE
-	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(hulk, probe), 1, "The rule shoots a subdued hulk")
-	hulk.subdued = FALSE
+	hulk.Sleeping(10 SECONDS)
+	TEST_ASSERT_EQUAL(outpost_prison_turret_verdict(hulk, probe), 1, "The rule shoots a hulk that is down")
+	hulk.SetSleeping(0)
 
 	// A turret they cannot walk up to, such as one behind the office glass, covers them too
 	rioter.reachable = list()
@@ -188,7 +188,7 @@
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
 	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
 	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
-	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 7, 7), prison, null)
+	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
 

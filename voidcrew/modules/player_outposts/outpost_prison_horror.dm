@@ -836,16 +836,20 @@
 	set_busy("digest", OUTPOST_HORROR_DIGEST_TIME)
 	return victim
 
-/// Husked and dead
+/// Dead and husked the way tg's changeling absorb leaves its victims: death, then tg's Drain() on a body
 /mob/living/basic/outpost_experiment/horror/proc/husk(mob/living/victim)
 	victim.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
-	victim.become_husk(CHANGELING_DRAIN)
-	if(!ishuman(victim))
-		// A basic mob has no husk sprite: grey and dried out
-		victim.add_atom_colour(list(0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0,0,0,1, -0.05,-0.05,-0.05,0), FIXED_COLOUR_PRIORITY)
-	victim.blood_volume = 0
 	if(victim.stat != DEAD)
+		victim.investigate_log("has died from being absorbed by an outpost prison horror.", INVESTIGATE_DEATHS)
 		victim.death()
+	if(iscarbon(victim))
+		var/mob/living/carbon/body = victim
+		body.Drain()
+		return
+	// A basic mob has no husk sprite: grey and dried out
+	victim.become_husk(CHANGELING_DRAIN)
+	victim.add_atom_colour(list(0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0.35,0.35,0.35,0, 0,0,0,1, -0.05,-0.05,-0.05,0), FIXED_COLOUR_PRIORITY)
+	victim.blood_volume = 0
 
 /// Admins hear about every non-member it absorbs; the game log gets every absorb
 /mob/living/basic/outpost_experiment/horror/proc/log_absorb(mob/living/victim)

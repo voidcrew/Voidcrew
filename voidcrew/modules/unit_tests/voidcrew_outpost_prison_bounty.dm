@@ -1024,7 +1024,7 @@
 		TEST_ASSERT(marked(spot), "The fire patch is not marked at [spot.x],[spot.y]")
 	TEST_ASSERT(get_turf(warden) in move.patch, "The fire patch misses the warden beside the bunk")
 	TEST_ASSERT_EQUAL(warden.getFireLoss(), 0, "The warden burned before the match was thrown")
-	TEST_ASSERT(!warden.has_status_effect(/datum/status_effect/bounty_boss_burning), "The warden was alight before the match was thrown")
+	TEST_ASSERT(!warden.on_fire, "The warden was alight before the match was thrown")
 
 	// A prisoner in the patch too: it goes up, the warden burns, the prisoner doesn't.
 	var/mob/living/carbon/human/npc/outpost_prisoner/cellmate = kept_prisoner(prison, prison_spot(home, 2, 14))
@@ -1036,8 +1036,8 @@
 		TEST_ASSERT(get_dist(spot, bunk) <= 1, "The fire burns at [spot.x],[spot.y], past the tiles beside the bunk")
 		TEST_ASSERT(prison.in_cell_block(spot), "The fire burns outside the cell block")
 	TEST_ASSERT(warden.getFireLoss() > 0, "The burning bunk did not burn the warden beside it")
-	TEST_ASSERT(warden.has_status_effect(/datum/status_effect/bounty_boss_burning), "The burning bunk did not set the warden alight")
-	TEST_ASSERT(!cellmate.has_status_effect(/datum/status_effect/bounty_boss_burning), "The burning bunk set a prisoner alight")
+	TEST_ASSERT(warden.on_fire, "The burning bunk did not set the warden alight") // tg fire stacks (human NPC phase D, CB-8)
+	TEST_ASSERT(!cellmate.on_fire, "The burning bunk set a prisoner alight")
 	TEST_ASSERT_EQUAL(cellmate.health, cellmate_health, "The burning bunk hurt a prisoner")
 
 	// Not again inside the cooldown (PRISON_BOSS_FIRE_COOLDOWN).

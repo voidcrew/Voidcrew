@@ -608,7 +608,6 @@
 /mob/living/basic/trooper/pirate/faction/boss/mission_rewind_test
 	ai_controller = null
 	basic_mob_flags = NONE
-	use_dynamic_appearance = FALSE
 	corpse = null
 	loot = null
 	loot_pool = null

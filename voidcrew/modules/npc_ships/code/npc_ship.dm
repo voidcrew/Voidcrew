@@ -955,10 +955,10 @@
 	// Crew configuration
 	crew_min = 3
 	crew_max = 6
-	captain_type = /mob/living/basic/trooper/pirate/ranged/space
+	captain_type = /mob/living/carbon/human/npc/ruin/trooper/pirate/space/gunner
 	crew_types = list(
-		/mob/living/basic/trooper/pirate/melee/space,
-		/mob/living/basic/trooper/pirate/ranged/space,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/space,
+		/mob/living/carbon/human/npc/ruin/trooper/pirate/space/gunner,
 	)
 
 	// Faction

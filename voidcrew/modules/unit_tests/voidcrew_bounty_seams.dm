@@ -10,7 +10,7 @@
 
 /datum/unit_test/voidcrew_bounty_seams/Run()
 	// Every criminal, decoy, companion and bounty object, made with no arguments.
-	for(var/type in typesof(/mob/living/basic/bounty_criminal, /mob/living/basic/bounty_companion, /obj/effect/bounty_sighting, /obj/item/paper/bounty_warrant, /obj/structure/bounty_wanted_board))
+	for(var/type in typesof(/mob/living/carbon/human/npc/bounty_criminal, /mob/living/carbon/human/npc/bounty_companion, /obj/effect/bounty_sighting, /obj/item/paper/bounty_warrant, /obj/structure/bounty_wanted_board))
 		var/atom/thing = allocate(type)
 		TEST_ASSERT(!QDELETED(thing), "[type] was deleted as it was made")
 
