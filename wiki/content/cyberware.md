@@ -2,32 +2,36 @@
 title: Cyberware
 category: Economy
 order: 6
-blurb: Chrome implants from the Chop Shop at the Undertow Exchange, neural capacity, the four tiers, the full catalog, and what an EMP does to a chromed body.
+blurb: Chrome implants from the Chop Shop at the Undertow Exchange and the Back Bay at Quartermain Depot, neural capacity, the four tiers, the full catalog, and what an EMP does to a chromed body.
 ---
 
-Cyberware (**chrome**) is a roster of implantable robotic organs sold at the **Chop Shop**, the neon-lit parlor off the Dregs cantina at the [Undertow Exchange](trader-outposts.md). Every piece does something no printed equipment does, from seeing in the dark to a deployable pair of hardlight blades, and every piece costs **neural load** against a fixed capacity, so a build is a budget rather than a shopping spree. Street chrome sells for credits; the good stuff wants [vouchers](money-and-trade.md).
+Cyberware (**chrome**) is a roster of implantable robotic organs sold at the **Chop Shop**, the neon-lit parlor off the Dregs cantina at the [Undertow Exchange](trader-outposts.md), and, street chrome only, at the **Back Bay** in [Quartermain Depot](trader-outposts.md). Every piece does something no printed equipment does, from seeing in the dark to a deployable pair of hardlight blades, and every piece costs **neural load** against a fixed capacity, so a build is a budget rather than a shopping spree. Street chrome sells for credits; the good stuff wants [vouchers](money-and-trade.md).
 
 ## The Chop Shop
 
 Splice runs the parlor from behind counter glass. Click them for the shop, sorted into Street, Pro, Military and Legend tabs plus an ammunition shelf. Bought chrome lands in your hands as an organ, which does nothing until it is installed.
 
-Installation is the **Chrome Cradle**, the salvaged operating slab in the middle of the parlor, the only one in the galaxy. Drag yourself onto it and its console opens, showing your neural load, every piece of chrome within reach (installed, carried, or in the parts tray), and a projection of what any swap would cost and evict. Hit Install and the rig sedates you and does the work in seconds. Only you can ever order work on your own body, and only while conscious and unrestrained. Nobody can be strapped to the slab and carved for their chrome. Evicted and removed pieces wait in the parts tray, which anyone adjacent can eject.
+Installation is the **Chrome Cradle**, the salvaged operating slab in the middle of the parlor. Drag yourself onto it and its console opens, showing your neural load, every piece of chrome within reach (installed, carried, or in the parts tray), and a projection of what any swap would cost and evict. Hit Install and the rig sedates you and does the work in seconds. Only you can ever order work on your own body, and only while conscious and unrestrained. Nobody can be strapped to the slab and carved for their chrome. Evicted and removed pieces wait in the parts tray, which anyone adjacent can eject.
 
 The Cradle also removes chrome in three seconds flat, and runs a **tune-up** for 200 credits that clears EMP scramble and repairs all your installed ware. If you carry the Chromatic Dermis ink suite, the Cradle's ink panel re-keys its color and pattern for free.
 
-Outside the parlor, ordinary organ-manipulation surgery at any operating table installs and removes chrome too, leg surgery exists for exactly this reason. Autosurgeons refuse the work entirely.
+Outside the parlors, ordinary organ-manipulation surgery at any operating table installs and removes chrome too, leg surgery exists for exactly this reason. Autosurgeons refuse the work entirely.
+
+## The Back Bay
+
+Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled street chrome back on the same terms as Splice.
 
 ## Neural load
 
 Your body has **20 capacity** shared by chrome, ordinary implants, cybernetic organs, surgical enhancements and installed nanite programs. Ordinary implants, robotic organs and surgical enhancements cost **1 each**. Mindshield implants cost **0**. Prosthetic limbs cost **0**, but implants inside them still count. Chrome uses the catalogue loads below. Nanite costs depend on the program and count even when switched off. See [Nanites & Revival](nanites-and-revival.md). Every installed upgrade sums its load against capacity, and the Cradle refuses any install that would take you over, though swapping within a ladder only costs the difference, since the piece being replaced comes out first. If you somehow end up over capacity anyway, everything browns out: **every** piece of chrome goes offline and beneficial nanite programs pause until the load drops back under, Remove enough installed load to restore capacity.
 
-Same-slot ware is mutually exclusive, one operating system, one dermal layer, one leg rig, one piece of hardware per arm, which makes most slots either a ladder (Shock Coils into Hopper Pistons, Dermal Mesh into Slabskin) or a straight choice (Cascade Lattice *or* Redline Core). Arm chrome always claims the whole arm: installing Mantis Blades evicts whatever that arm already carried. Chrome optics replace your natural eyes outright. The Governor Delete raises capacity by **15**, to **35**. It occupies the chest operating-system slot, so it competes with the Cascade lattice and Redline core.
+Same-slot ware is mutually exclusive, one operating system, one dermal layer, one leg rig, one piece of hardware per arm, which makes most slots either a ladder (Shock Coils into Hopper Pistons, Dermal Mesh into Slabskin) or a straight choice (Cascade Lattice *or* Redline Core). Arm chrome always claims the whole arm: installing Mantis Blades evicts whatever that arm already carried. Chrome optics replace your natural eyes outright. The Governor Delete raises capacity by **15**, to **35**, and the cheaper Governor Patch and Governor Bypass raise it by **5** and **10**. All three occupy the chest operating-system slot, so they compete with the Cascade lattice and Redline core.
 
 Much of it shows. Plated arms, leg rigs, dermal weaves and spine lattices draw on your body under your clothes, and stacking enough chrome genuinely stops you looking human.
 
 ## The catalog
 
-Prices are Splice's, stock is limited per round, and load is the neural cost. Nightshade optics, Fixer's Fingers, Dermal Mesh, Hopper pistons, Icepick Jack, Heartbeat Doppler, Deadeye link, Slipwire and Prospector Suite need 4 [reputation](zone-reputation.md). Coolant Loop, Dead Channel, Atlas frame, Gorilla Arms and Rigger socket need 11. The rest of the military and legend stock needs 22. Barnaby at Waystation Halcyon also sells Shock Coils and Second Wind at these prices. "Pair" ware is sold as a cased set and installed one organ per arm.
+Prices are the same at both counters, stock is limited per round, and load is the neural cost. Nightshade optics, Fixer's Fingers, Dermal Mesh, Hopper pistons, Icepick Jack, Heartbeat Doppler, Deadeye link, Slipwire, Prospector Suite and every street model need 4 [reputation](zone-reputation.md). Coolant Loop, Dead Channel, Atlas frame, Gorilla Arms, Rigger socket, the service reflex lattice, the Vanguard core and the Governor Bypass need 11. The rest of the military and legend stock needs 22. Barnaby at Waystation Halcyon also sells Shock Coils and Second Wind at these prices. "Pair" ware is sold as a cased set and installed one organ per arm.
 
 ### Tier 1: Street chrome (credits)
 
@@ -84,10 +88,27 @@ Prices are Splice's, stock is limited per round, and load is the neural cost. Ni
 |---|---|---|---|
 | Governor Delete | 5 | 0 | +15 capacity. Occupies the chest OS slot, competing with Cascade and Redline |
 | Redline core | 6 | 10 | Twelve seconds of stun immunity, 40% less brute and burn taken, +8 unarmed damage and a roar that staggers everyone nearby, then the crash |
-| Cascade lattice | 8 | 12 | The sandevistan: eight seconds at double time with halved melee cooldowns and 40% projectile dodge while moving, then the crash. An EMP mid-window ends it early and eats the cooldown |
+| Cascade lattice | 8 | 12 | Eight seconds at double time with halved melee cooldowns and 40% projectile dodge while moving, then the crash. An EMP mid-window ends it early and eats the cooldown |
 | Meteor Piledriver frame | *never sold* | 8 | An eight-tile leap that crushes whoever is standing on the landing tile and hurls everyone around them. A rare guarded-mission completion prize; see [Missions](missions.md) |
 
-The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits and Buster rocket pairs at 300, both at 4 [reputation](zone-reputation.md). Splice also buys back *removed* street chrome at about half list price; military chrome is never bought back.
+### Cheaper models
+
+Six of the big pieces come in cheaper models from other makers. Each takes the same slot as the original, so you can start on the cheap one, sell it back and move up. Street models sell for credits at both counters. The service models and the fire and shock variants are vouchers, from Splice only.
+
+| Piece | Price | Load | What it does |
+|---|---|---|---|
+| Flickerskin weave | 2,400 cr | 3 | Five seconds of patchy camo. It fools people, but NPCs still see you and Chrome Reads still land |
+| Shiv Blades (pair) | 2,400 cr | 2/arm | Deployable hardlight blades, duller than the Mantis, with no lunge |
+| Governor Patch | 2,500 cr | 0 | +5 capacity. Occupies the chest OS slot |
+| Hothead core | 3,000 cr | 5 | Eight seconds of 20% less brute and burn and +3 unarmed damage, then the crash. No stun immunity and no roar |
+| Spliced reflex rig | 3,600 cr | 6 | Six seconds of quicker movement, melee cooldowns cut by a quarter and 15% projectile dodge while moving, then a long crash |
+| Governor Bypass | 3 vouchers | 0 | +10 capacity. Occupies the chest OS slot |
+| Service reflex lattice | 4 vouchers | 9 | Seven seconds of quicker movement, melee cooldowns cut by 40% and 25% projectile dodge while moving, then the crash |
+| Vanguard core | 4 vouchers | 8 | Ten seconds of stun immunity, 30% less brute and burn and +5 unarmed damage, opened by a roar that staggers people nearby, then the crash |
+| Scorch Blades (pair) | 5 vouchers | 4/arm | Mantis Blades that set whoever they cut on fire. The lunge lights them harder |
+| Widowline Arc | 5 vouchers | 6 | A Widowline that shocks on every hit, cuts robots and mechs much harder, and briefly knocks out turrets, consoles and cameras it strikes |
+
+The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits and Buster rocket pairs at 300, both at 4 [reputation](zone-reputation.md). Both ripperdocs buy back *removed* street chrome, street models included and even pieces they sold you, at about half list price. Chrome paid for in vouchers is never bought back.
 
 ## Finding chrome in the wild
 
