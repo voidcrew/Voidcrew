@@ -2,13 +2,11 @@
 // hv_add_hit_line() (a line added to the combat message of the hit being resolved on a mob) lives
 // in hitlines/hit_lines.dm, which batches the lines into the attack message.
 
-/// Sprays blood from src toward spray_dir. The blood part replaces this with directional spray
-/// decals that paint walls and drench bystanders; the stub uses tg's flying splatter.
+/// Sprays blood from src toward spray_dir: streaks and a splash on the floor, a smear on the first
+/// wall in the way, and anyone standing in the line is drenched. The body lives in the blood part
+/// (blood/blood_spray.dm).
 /mob/living/proc/hv_blood_spray(spray_dir, strength = 3)
-	return
-
-/mob/living/carbon/hv_blood_spray(spray_dir, strength = 3)
-	spray_blood(spray_dir || pick(GLOB.alldirs), strength)
+	return hv_blood_throw(spray_dir, strength)
 
 /// Bursts src's head: it comes off in pieces rather than dropping whole. burst_dir is the way the
 /// shot or blow travelled. The brain-and-guts part replaces this to fling the brain out intact.
