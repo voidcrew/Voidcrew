@@ -11,10 +11,10 @@
  * Every number below is a plain var override instead.
  *
  * What hides_from_mobs = FALSE buys, in practice: no TRAIT_CYBER_CAMO, so
- * cyberware_stealth.dm never refuses the bearer as a target and
- * cyberware_scan.dm never scatters a chrome read on them. Both are keyed on
- * that one trait. Anything that AIs target by sight, simple_animal hostiles,
- * turrets, a few voidcrew scripted hunters, never read it at any tier.
+ * cyberware_stealth.dm never refuses the bearer as a target (basic mobs,
+ * simple_animal hostiles, turrets and the scripted hunters it names) and
+ * cyberware_scan.dm never scatters a chrome read on them. All of it is keyed
+ * on that one trait.
  */
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/street
