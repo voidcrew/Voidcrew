@@ -146,7 +146,8 @@
 		var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = allocate(kit_type)
 		TEST_ASSERT(ishuman(boss), "[kit_type] isn't a real human")
 		TEST_ASSERT_EQUAL(boss.boss_kit, kits[kit_type], "[kit_type] has the wrong kit")
-		TEST_ASSERT_EQUAL(length(boss.boss_abilities), 2, "[kit_type] doesn't have its two abilities")
+		// Two each; the Pyromaniac's smoke is a third (C9)
+		TEST_ASSERT_EQUAL(length(boss.boss_abilities), kit_type == /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac ? 3 : 2, "[kit_type] has [length(boss.boss_abilities)] abilities")
 		TEST_ASSERT(istype(boss.ai_controller, /datum/ai_controller/basic_controller/bounty_boss), "[kit_type] doesn't have the boss AI")
 		TEST_ASSERT_EQUAL(boss.npc_rank, 2, "[kit_type] isn't ranked a boss") // HUMAN_NPC_RANK_BOSS
 		// Toughness is armour and physiology, never health (defaults 1.5).
@@ -1236,6 +1237,137 @@
 		TEST_ASSERT_NULL(subtree.SelectBehaviors(boss.ai_controller, 1), "[kit_type] reacted to one disabler bolt with combat sense")
 		TEST_ASSERT_NULL(boss.ai_controller.blackboard["human_npc_cover"], "[kit_type] ran for cover")
 		qdel(boss)
+
+/**
+ * The Pyromaniac's smoke (C9): two real smoke grenades in its pockets, issued as consumables. Shot from
+ * past its flamer's reach it takes one out, pulls the pin and throws it halfway to the shooter: never at someone in its
+ * flamer's reach, never cuffed, never again inside its cooldown, and never more than the two it carries.
+ * The cloud is tg's. With the shooter out of sight, it makes for where the shots came from.
+ */
+/datum/unit_test/voidcrew_bounty_boss/pyromaniac_smoke
+
+/datum/unit_test/voidcrew_bounty_boss/pyromaniac_smoke/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(0, 0))
+	var/mob/living/carbon/human/consistent/shooter = hunter_at(spot(4, 4))
+	var/mob/living/carbon/human/consistent/near = hunter_at(spot(1, 0))
+	var/datum/ai_controller/controller = pyro.ai_controller
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/smoke = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/smoke)
+	TEST_ASSERT_NOTNULL(smoke, "The Pyromaniac has no smoke")
+
+	// Two real smoke grenades, issued to it: nobody can strip them, and taken off it they are gone
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/grenade/smokebomb), 2, "The Pyromaniac doesn't carry its two smoke grenades")
+	for(var/obj/item/grenade/smokebomb/grenade as anything in pyro.get_all_contents_type(/obj/item/grenade/smokebomb))
+		TEST_ASSERT(human_npc_gear_consumable(grenade), "The Pyromaniac's smoke grenade isn't issued to it")
+		TEST_ASSERT(HAS_TRAIT(grenade, TRAIT_NO_STRIP), "The Pyromaniac's smoke grenade can be stripped")
+		TEST_ASSERT_EQUAL(grenade.det_time, 3 SECONDS, "The Pyromaniac's smoke grenade has a [grenade.det_time] fuse") // BOUNTY_PYROMANIAC_SMOKE_FUSE
+		TEST_ASSERT(!grenade.active && !pyro.is_holding(grenade), "The Pyromaniac has a smoke grenade out before any fight")
+
+	TEST_ASSERT(fight(pyro, shooter), "Test fixture: the Pyromaniac didn't turn hostile")
+	ready(pyro)
+	TEST_ASSERT(!smoke.worth_using(shooter), "The Pyromaniac wanted its smoke before anyone shot it")
+
+	// Shot from within its flamer's reach: no smoke
+	TEST_ASSERT(shoot(pyro, spot(1, 0), near), "Test fixture: the close bolt didn't land")
+	pyro.setStaminaLoss(0)
+	TEST_ASSERT(!smoke.worth_using(near), "The Pyromaniac wanted smoke for someone in its flamer's reach")
+
+	// Shot from past it: the smoke goes first
+	TEST_ASSERT(shoot(pyro, spot(4, 4), shooter), "Test fixture: the bolt didn't land")
+	pyro.setStaminaLoss(0)
+	TEST_ASSERT_EQUAL(pyro.boss_choose_ability(shooter), smoke, "Shot from past its flamer's reach, the Pyromaniac didn't choose its smoke")
+
+	// Stunned in its wind-up: the pin stays in, nothing is thrown, and the grenade is kept
+	TEST_ASSERT(smoke.Trigger(target = shooter), "The smoke didn't start for the stun check")
+	var/obj/item/grenade/smokebomb/kept = locate() in pyro.held_items
+	pyro.Paralyze(1 SECONDS)
+	TEST_ASSERT(!smoke.finish_windup(smoke.pending_serial), "The smoke went ahead with the Pyromaniac stunned")
+	TEST_ASSERT(!QDELETED(kept) && !kept.active, "A smoke grenade was set off by a stunned Pyromaniac")
+	pyro.SetParalyzed(0)
+	if(!QDELETED(kept) && !pyro.is_holding(kept))
+		pyro.put_in_hands(kept)
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/grenade/smokebomb), 2, "A stunned Pyromaniac lost a smoke grenade")
+	ready(pyro)
+	shoot(pyro, spot(4, 4), shooter)
+	pyro.setStaminaLoss(0)
+
+	// Not while cuffed
+	var/obj/item/restraints/handcuffs/cuffs = new(pyro)
+	pyro.set_handcuffed(cuffs)
+	pyro.update_handcuffed()
+	TEST_ASSERT(pyro.is_restrained(), "Test fixture: the cuffs didn't go on")
+	TEST_ASSERT_NULL(pyro.boss_choose_ability(shooter), "The Pyromaniac chose an ability in cuffs")
+	pyro.set_handcuffed(null)
+	pyro.update_handcuffed()
+	qdel(cuffs)
+
+	// A lethal hit from past its reach counts too
+	controller.CancelActions()
+	var/datum/component/npc_combat_sense/sense = pyro.GetComponent(/datum/component/npc_combat_sense)
+	sense.end_exchange(controller)
+	pyro.boss_last_attacked_at = 0
+	TEST_ASSERT(!smoke.worth_using(shooter), "The Pyromaniac wanted its smoke with nobody shooting at it")
+	pyro.boss_note_attacker(shooter)
+	TEST_ASSERT(smoke.worth_using(shooter), "Hurt from past its flamer's reach, the Pyromaniac didn't want its smoke")
+
+	// It takes one out, aimed halfway to the shooter; the pin comes out as it throws
+	TEST_ASSERT(smoke.Trigger(target = shooter), "The smoke didn't start")
+	var/obj/item/grenade/smokebomb/first = locate() in pyro.held_items
+	TEST_ASSERT_NOTNULL(first, "The Pyromaniac didn't take out a smoke grenade")
+	TEST_ASSERT(!first.active, "The Pyromaniac pulled the pin before its wind-up was over")
+	TEST_ASSERT_EQUAL(smoke.landing, spot(2, 2), "The smoke is aimed at [smoke.landing], not halfway to the shooter")
+	TEST_ASSERT(smoke.next_use_time >= world.time + 19 SECONDS, "The smoke has no cooldown") // BOUNTY_PYROMANIAC_SMOKE_COOLDOWN
+	TEST_ASSERT(smoke.finish_windup(smoke.pending_serial), "The smoke's wind-up didn't finish")
+	TEST_ASSERT(!pyro.is_holding(first), "The Pyromaniac didn't throw its smoke grenade")
+	TEST_ASSERT(isturf(first.loc), "The thrown smoke grenade isn't loose")
+	TEST_ASSERT(first.active, "The Pyromaniac threw its smoke grenade with the pin in")
+
+	// The cooldown holds, shot again or not
+	pyro.boss_next_ability_at = 0
+	shoot(pyro, spot(4, 4), shooter)
+	pyro.setStaminaLoss(0)
+	TEST_ASSERT(pyro.boss_choose_ability(shooter) != smoke, "The Pyromaniac threw smoke again inside its cooldown")
+
+	// The cloud is tg's: opaque smoke where the grenade goes off, and the grenade spent
+	var/turf/where = get_turf(first)
+	first.detonate()
+	TEST_ASSERT(QDELETED(first), "The smoke grenade wasn't used up")
+	var/obj/effect/particle_effect/fluid/smoke/cloud = locate() in where
+	TEST_ASSERT_NOTNULL(cloud, "No smoke came out of the grenade")
+	TEST_ASSERT(cloud.opacity, "The smoke can be seen through")
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/grenade/smokebomb), 1, "The Pyromaniac doesn't have one smoke grenade left")
+
+	// Out of sight in smoke, it makes for where the shots came from, not for where the shooter is now
+	var/obj/item/grenade/smokebomb/bounty_boss/wall = allocate(/obj/item/grenade/smokebomb/bounty_boss, spot(2, 2))
+	wall.detonate()
+	TEST_ASSERT(!can_see(pyro, shooter, 9), "Test fixture: the Pyromaniac can see through the smoke")
+	controller.CancelActions()
+	pyro.boss_next_ability_at = world.time + 100 SECONDS
+	shoot(pyro, spot(4, 4), shooter)
+	pyro.setStaminaLoss(0)
+	shooter.forceMove(spot(3, 4))
+	TEST_ASSERT(!can_see(pyro, shooter, 9), "Test fixture: the Pyromaniac can see its shooter round the smoke")
+	TEST_ASSERT_EQUAL(sense_subtree().SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "In smoke, the Pyromaniac stopped coming")
+	TEST_ASSERT_EQUAL(controller.blackboard["human_npc_stun_shooter"], spot(4, 4), "In smoke, the Pyromaniac isn't making for where the shots came from") // BB_HUMAN_NPC_STUN_SHOOTER
+	TEST_ASSERT(controller.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_close_in)], "In smoke, the Pyromaniac isn't moving")
+	controller.CancelActions()
+
+	// Two grenades, two clouds: then none
+	ready(pyro)
+	TEST_ASSERT(smoke.Trigger(target = shooter), "The second smoke didn't start")
+	var/obj/item/grenade/smokebomb/second = locate() in pyro.held_items
+	TEST_ASSERT_NOTNULL(second, "The Pyromaniac didn't take out its second grenade")
+	smoke.finish_windup(smoke.pending_serial)
+	TEST_ASSERT(second.active, "The Pyromaniac didn't pull the pin on its second grenade")
+	if(!QDELETED(second))
+		second.detonate()
+	ready(pyro)
+	pyro.boss_note_attacker(shooter)
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/grenade/smokebomb), 0, "The Pyromaniac has smoke grenades left after two")
+	TEST_ASSERT(!smoke.worth_using(shooter), "The Pyromaniac wanted smoke with none left")
+
+	for(var/turf/place as anything in RANGE_TURFS(9, spot(2, 2)))
+		for(var/obj/effect/particle_effect/fluid/smoke/puff in place)
+			qdel(puff)
 
 #ifdef BOUNTY_BOSS_RENDERS
 /**

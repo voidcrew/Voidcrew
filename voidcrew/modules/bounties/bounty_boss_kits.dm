@@ -18,7 +18,9 @@
  * - Pyromaniac: a real firefighter suit and helmet (tg's thermal protection, CB-7) and a lit torch.
  *   Sweeps a cone of fire and throws molotovs that leave a burning patch; whoever it catches burns with
  *   tg's fire stacks (CB-8). Shot with a disabler, it goes for the shooter until its flamer reaches
- *   them (C8: keep your distance and keep moving).
+ *   them (C8: keep your distance and keep moving). Shot from past its flamer's reach, it pulls the pin
+ *   on one of its two real smoke grenades and throws it halfway to the shooter, then comes through the
+ *   cloud to where the shots came from (C9: back out of the smoke, flank it, or see through it).
  * - Demolitionist: a hard hat, a hi-vis vest, a bandolier and a crowbar in its bag. Keeps its distance
  *   and lobs grenades with a visible fuse, and blows a hole through an interior wall or door to get at
  *   someone behind cover. Whoever a blast catches takes tg's light explosion (CB-10). A real CNS
@@ -376,6 +378,7 @@
 	boss_ability_types = list(
 		/datum/action/cooldown/mob_cooldown/bounty_boss/flamer,
 		/datum/action/cooldown/mob_cooldown/bounty_boss/molotov,
+		/datum/action/cooldown/mob_cooldown/bounty_boss/smoke,
 	)
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/bounty_build_outfit(zone)
@@ -398,10 +401,34 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_breaks_through_now(atom/barrier)
 	return ..() || (!barrier.opacity && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
 
+// Shot from past its flamer's reach, the smoke goes before anything else (C9)
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_choose_ability(atom/target)
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/ability = boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/smoke)
+	if(ability && !QDELETED(target) && ability.IsAvailable() && ability.worth_using(target))
+		return ability
+	return ..()
+
+// Its smoke has its own line
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_bark(suffix, fallback)
+	if(suffix == "ability" && istype(boss_winding(), /datum/action/cooldown/mob_cooldown/bounty_boss/smoke))
+		return ..("smoke", "ability")
+	return ..()
+
+/// A smoke grenade it carries with the pin still in, in hand or where it can draw it from
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_smoke_grenade()
+	for(var/obj/item/grenade/smokebomb/grenade in get_all_contents_type(/obj/item/grenade/smokebomb))
+		if(!grenade.active && (is_holding(grenade) || human_npc_can_draw(src, grenade)))
+			return grenade
+	return null
+
 /**
  * The Pyromaniac's answer to stun fire (C8): it goes for whoever is shooting it, until its flamer
- * reaches them (combat sense's close-in), throwing a molotov or sweeping the flamer the moment either is
- * ready (the boss rules let a ready ability go first). Keep your distance and keep moving.
+ * reaches them (combat sense's close-in), throwing smoke, a molotov or sweeping the flamer the moment one
+ * is ready (the boss rules let a ready ability go first). Keep your distance and keep moving.
+ *
+ * Out of its sight (in its own smoke, or round a corner) it makes for where the shots last came from,
+ * not for where the shooter is now (C9): tg's targeting drops whoever it can't see, so this is how it
+ * comes through the cloud. There it looks again; if they moved, it is the hunt's to find them.
  */
 /datum/npc_combat_sense/bounty/boss/pyromaniac
 	react_to_stun_fire = TRUE
@@ -419,10 +446,19 @@
 		var/atom/aim = boss.boss_target_for(shooter)
 		if(aim != controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] && boss.boss_valid_target(aim))
 			controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, aim)
+		if(!can_see(npc, shooter, HUMAN_NPC_SIGHT_RANGE))
+			var/turf/spot = sense.threat_turf(npc)
+			if(isnull(spot) || get_dist(npc, spot) <= 1 || !tile_ok(npc, controller, spot))
+				return
+			sense.charged_at = world.time
+			sense.decided_at = world.time
+			controller.set_blackboard_key(BB_HUMAN_NPC_STUN_SHOOTER, spot)
+			controller.queue_behavior(/datum/ai_behavior/human_npc_close_in, BB_HUMAN_NPC_STUN_SHOOTER, 1)
+			return SUBTREE_RETURN_FINISH_PLANNING
 	return ..()
 
 // The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7). The torch
-// doesn't holster, so it is in hand from the start.
+// doesn't holster, so it is in hand from the start. A smoke grenade in each pocket (C9).
 /datum/outfit/bounty_boss/pyromaniac
 	name = "Bounty mini-boss: Pyromaniac"
 	uniform = /obj/item/clothing/under/color/black
@@ -431,6 +467,8 @@
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/workboots
 	r_hand = BOUNTY_PYROMANIAC_TORCH
+	l_pocket = BOUNTY_PYROMANIAC_SMOKE
+	r_pocket = BOUNTY_PYROMANIAC_SMOKE
 
 /**
  * Flamer: the pilot light hisses and an orange cone shows on the floor, then a jet of fire sweeps
@@ -528,6 +566,90 @@
 		return
 	playsound(spot, 'sound/effects/glass/glassbr3.ogg', 70, TRUE)
 	new /obj/effect/bounty_boss_fire_pool(spot, splash_turfs(spot), BOUNTY_PYROMANIAC_MOLOTOV_POOL, owner, BOUNTY_PYROMANIAC_MOLOTOV_DAMAGE, BOUNTY_PYROMANIAC_MOLOTOV_STACKS)
+
+/**
+ * Smoke: it takes out a real smoke grenade it carries, then pulls the pin and throws it halfway to
+ * whoever shot it from past its flamer's reach (C9). The fuse and the cloud are tg's own: the cloud
+ * blinds everyone, weakens beams that cross it and makes anyone breathing it without internals cough and
+ * drop what they hold. Downed during the wind-up, the pin stays in and nothing happens (the grenade is
+ * kept for later). Two grenades, two clouds: then it has none left.
+ */
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke
+	name = "Smoke Grenade"
+	desc = "Throw a smoke grenade between you and whoever is shooting at you."
+	cooldown_time = BOUNTY_PYROMANIAC_SMOKE_COOLDOWN
+	windup = BOUNTY_PYROMANIAC_SMOKE_WINDUP
+	/// Where it will land, from the telegraph
+	var/turf/landing
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/Destroy()
+	landing = null
+	return ..()
+
+// Someone it can see past its flamer's reach who has just shot it, with a grenade and a hand for it
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/worth_using(atom/target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	if(!aimable(target) || !istype(boss) || !boss.boss_valid_target(target))
+		return FALSE
+	var/obj/item/grenade/smokebomb/grenade = boss.boss_smoke_grenade()
+	if(isnull(grenade) || (!boss.is_holding(grenade) && !length(boss.get_empty_held_indexes())))
+		return FALSE
+	var/distance = get_dist(owner, target)
+	if(distance <= BOUNTY_PYROMANIAC_FLAMER_RANGE || distance > BOUNTY_PYROMANIAC_SMOKE_RANGE || !can_see(owner, target, BOUNTY_PYROMANIAC_SMOKE_RANGE))
+		return FALSE
+	var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
+	var/shot = sense?.under_fire() && boss.boss_target_for(sense.threat()) == target
+	if(!shot && (world.time > boss.boss_last_attacked_at + BOUNTY_PYROMANIAC_SMOKE_HURT_WINDOW || boss.boss_last_attacker?.resolve() != target))
+		return FALSE
+	return !isnull(find_spot(target))
+
+/**
+ * Where it throws: halfway to `target` and at least two tiles out, short of anything in the way, on
+ * ground it may aim at. That rule keeps ships, hangars and outposts more than the cloud's reach away (M2).
+ */
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/proc/find_spot(atom/target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
+	var/turf/here = get_turf(owner)
+	var/turf/there = get_turf(target)
+	if(!istype(boss) || !here || !there)
+		return null
+	var/turf/spot = here
+	for(var/i in 1 to max(2, floor(get_dist(here, there) / 2)))
+		var/turf/next = get_step_towards(spot, there)
+		if(isnull(next) || next == there || next.is_blocked_turf(exclude_mobs = TRUE))
+			break
+		spot = next
+	if(spot == here || !boss.boss_landing_ok(spot))
+		return null
+	return spot
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/telegraph(atom/target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	landing = find_spot(target)
+	var/obj/item/grenade/smokebomb/grenade = boss.boss_smoke_grenade()
+	if(isnull(grenade) || !human_npc_take_in_hand(boss, grenade) || !human_npc_ready_item(boss, grenade))
+		return
+	owner.visible_message(span_boldwarning("[owner] pulls out a smoke grenade!"))
+	if(landing)
+		mark_turfs(list(landing), "#d8d8d8", "target_circle", /obj/effect/temp_visual/bounty_boss_thrown::duration)
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/effect(atom/target)
+	var/turf/spot = landing || get_turf(target)
+	landing = null
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
+	var/obj/item/grenade/smokebomb/grenade = locate() in boss.held_items
+	if(isnull(grenade) || grenade.active || !spot || !human_npc_ready_item(boss, grenade))
+		return
+	// The player's way: pull the pin in hand, then throw it. From here the fuse is the grenade's own.
+	grenade.attack_self(boss)
+	boss.throw_mode_on(THROW_MODE_TOGGLE)
+	if(!boss.throw_item(spot))
+		boss.throw_mode_off(THROW_MODE_TOGGLE)
+		boss.dropItemToGround(grenade)
+
+/// The Pyromaniac's smoke grenades: tg's smoke grenade, its fuse turned down to 3 seconds
+/obj/item/grenade/smokebomb/bounty_boss
+	det_time = BOUNTY_PYROMANIAC_SMOKE_FUSE
 
 /// Something thrown, flying from where it starts to `destination`
 /obj/effect/temp_visual/bounty_boss_thrown
