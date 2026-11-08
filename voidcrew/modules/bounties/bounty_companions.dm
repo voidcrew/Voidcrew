@@ -438,6 +438,7 @@
 		/datum/ai_planning_subtree/flee_target/bounty,
 		/datum/ai_planning_subtree/target_retaliate/bounty,
 		/datum/ai_planning_subtree/call_reinforcements/bounty,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/bounty_arm,
 		/datum/ai_planning_subtree/bounty_ranged,
 		/datum/ai_planning_subtree/bounty_melee,

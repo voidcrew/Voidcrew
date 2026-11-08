@@ -202,7 +202,11 @@ GLOBAL_LIST_INIT(outpost_guard_leisure, outpost_guard_leisure_types())
 	can_idle = FALSE
 	// No finding targets: guards only ever strike through the dispatcher (outpost_prison_guards.dm),
 	// so turrets never read them as hostile.
-	planning_subtrees = list(/datum/ai_planning_subtree/outpost_prison_guard)
+	// Combat sense first: out of a line of stun fire before anything else (outpost_prison_guard_combat_sense.dm)
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/npc_combat_sense,
+		/datum/ai_planning_subtree/outpost_prison_guard,
+	)
 
 /// Walks to the response's goal, else the activity's, or ticks the activity once there
 /datum/ai_planning_subtree/outpost_prison_guard
