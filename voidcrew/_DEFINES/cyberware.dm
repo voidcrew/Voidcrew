@@ -146,3 +146,45 @@
 /// Minimum environmental O2 partial pressure (kPa) the bladder considers
 /// breathable, mirroring the lungs' safe_oxygen_min of 16.
 #define CYBERWARE_BREATHABLE_O2_KPA 16
+
+// ---- Chrome wheel (chrome_wheel.dm) ------------------------------------
+
+/// Name of the "Chrome wheel" keybind; the release poll reads the player's
+/// keys for it to catch modifier binds, which never get a keyUp of their own.
+#define CHROME_WHEEL_KEYBIND "chrome_wheel"
+/// A wheel key let go sooner than this was a tap, and the wheel stays open
+/// for a click instead of closing on release.
+#define CHROME_WHEEL_HOLD_TIME (0.3 SECONDS)
+
+/// Wheel states. CLOSED, HELD (open while the key is down) or CLICK (open
+/// after a tap, until the next click or press).
+#define CHROME_WHEEL_CLOSED 0
+#define CHROME_WHEEL_HELD 1
+#define CHROME_WHEEL_CLICK 2
+
+/// Body regions. Each owns fixed slice positions, so one region's chrome
+/// changing never moves another region's slices.
+#define CHROME_WHEEL_HEAD "head"
+#define CHROME_WHEEL_RIGHT_ARM "right_arm"
+#define CHROME_WHEEL_LEFT_ARM "left_arm"
+#define CHROME_WHEEL_LEGS "legs"
+#define CHROME_WHEEL_TORSO "torso"
+
+/// Radius in pixels of the torso ring around the centre. The OS slot sits at
+/// its top.
+#define CHROME_WHEEL_INNER_RADIUS 40
+/// Radius of the outer ring, which holds the head (top), right arm (right),
+/// legs (bottom) and left arm (left), three positions each, 30 degrees apart.
+#define CHROME_WHEEL_OUTER_RADIUS 72
+/// Distance between rows: a region's fourth slice and on, and the sub-option
+/// ring outside everything.
+#define CHROME_WHEEL_ROW_GAP 38
+/// Centre-to-centre spacing of sub-option slices along their ring.
+#define CHROME_WHEEL_SLICE_SPACING 37
+/// Mouse distance from the centre inside which nothing is pointed at.
+#define CHROME_WHEEL_DEADZONE 16
+/// A slice this close to the mouse is the one under it.
+#define CHROME_WHEEL_PICK_RANGE 28
+/// Past the slices, the mouse points at whichever slice lies within this many
+/// degrees of its direction.
+#define CHROME_WHEEL_POINT_TOLERANCE 20

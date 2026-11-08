@@ -59,6 +59,7 @@
 #include "voidcrew_checkpoint_mergers.dm"
 #include "voidcrew_checkpoints.dm"
 #include "voidcrew_checkpoints_every_ship.dm"
+#include "voidcrew_chrome_wheel.dm"
 #include "voidcrew_cloning_vat_claim.dm"
 #include "voidcrew_colosseum.dm"
 #include "voidcrew_combat_camera_breaches.dm"
