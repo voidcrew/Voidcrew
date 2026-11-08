@@ -6,8 +6,8 @@
  * the mechanics call into it after they have already happened.
  *
  * - Mantis blades swing out of the housing and fold back into it.
- * - The Ghostskin field sweeps down over its bearer, shimmers while it holds,
- *   and collapses inward with a crackle when it breaks.
+ * - The Ghostskin field flickers in and out: hard steps of alpha with a
+ *   pixel of jitter, and a sharper stutter when something knocks it down.
  * - The Cascade's spine nodes ignite neck to hips, a ring rolls out across the
  *   floor, and the nodes die hips to neck when the crash hits.
  * - An EMP fills every worn piece with static, arcs between them, kills them one
@@ -334,160 +334,91 @@
 #undef BLADE_FOLD_TIME
 
 // =========================================================================
-// GHOSTSKIN FIELD
+// GHOSTSKIN FIELD: THE SIGNAL FLICKER
 // =========================================================================
 
-#define CLOAK_MASK_FILTER "cyberware_cloak_mask"
-#define CLOAK_BAND_FILTER "cyberware_cloak_band"
-#define CLOAK_RIM_FILTER "cyberware_cloak_rim"
-#define CLOAK_WAVE_FILTER "cyberware_cloak_wave"
-#define CLOAK_RIPPLE_FILTER "cyberware_cloak_ripple"
-/// How long the field takes to sweep down over its bearer.
-#define CLOAK_SWEEP_TIME (1 SECONDS)
-/// Mask offsets: the front starts just over the head and ends under the feet,
-/// then the mask is moved clear of the bearer.
-#define CLOAK_FRONT_START 45
-#define CLOAK_FRONT_END 5
-#define CLOAK_FRONT_AWAY 200
-/// The refraction line rides one pixel under the front: from just over the
-/// head (pixel_y 2) to under the feet (pixel_y -38) on a 64x64 holder.
-#define CLOAK_EDGE_START 2
-#define CLOAK_EDGE_END -38
-/// When the crackle follows the inward collapse of a breaking field.
-#define CLOAK_CRACKLE_DELAY (0.2 SECONDS)
+/// How long the field takes to flicker in.
+#define CLOAK_ENTER_TIME (0.6 SECONDS)
 
 /obj/item/organ/cyberimp/cyberware/ghostskin
-	/// world.time the sweep finishes. The moving shimmer waits for it.
-	var/cloak_sweep_until = 0
-	/// Timer that swaps the sweep for the held shimmer.
-	var/cloak_settle_timer
-	/// Timer that clears the inward ripple after a break.
-	var/cloak_ripple_timer
-	/// Timer for the crackle that follows the collapse.
-	var/cloak_crackle_timer
-	/// The refraction line sweeping down with the field. Weak: it deletes itself.
-	var/datum/weakref/cloak_edge_ref
-	/// Who carries our filters.
-	var/datum/weakref/cloak_fx_ref
-
-/// The sweep mask for a field alpha, built once per alpha value.
-/proc/cyberware_cloak_mask(field_alpha)
-	var/static/list/masks = list()
-	var/key = "[field_alpha]"
-	if(!masks[key])
-		var/icon/mask = icon(CYBERWARE_ANIM_LARGE_ICON, "cloak_mask")
-		mask.ChangeOpacity((255 - field_alpha) / 255)
-		masks[key] = mask
-	return masks[key]
+	/// world.time the field finishes flickering in. Moving under the field waits for it.
+	var/cloak_enter_until = 0
 
 /**
- * Raises the field visually: the bearer stays solid while a mask sweeps down
- * over them, then drops to field alpha the moment the sweep ends. The alpha
- * var holds field_alpha from the first tick, as it always has; only the
- * picture takes the second.
+ * Hard 1 px jumps sideways alongside one of the alpha chains below. [steps]
+ * are (jump, hold) pairs; the jumps are relative and add up to nothing, so the
+ * bearer ends where it started however the chain is cut short.
  */
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_sweep_in(mob/living/carbon/wearer)
-	clear_cloak_fx()
-	cloak_fx_ref = WEAKREF(wearer)
-	cloak_sweep_until = world.time + CLOAK_SWEEP_TIME
-	animate(wearer, alpha = 255, time = CLOAK_SWEEP_TIME)
-	animate(alpha = field_alpha, time = 0)
-	wearer.add_filters(list(
-		list("name" = CLOAK_MASK_FILTER, "priority" = 20, "params" = alpha_mask_filter(y = CLOAK_FRONT_START, icon = cyberware_cloak_mask(field_alpha), flags = MASK_INVERSE)),
-		list("name" = CLOAK_BAND_FILTER, "priority" = 21, "params" = displacement_map_filter(icon = icon(CYBERWARE_ANIM_LARGE_ICON, "cloak_band"), y = CLOAK_FRONT_START, size = 2)),
-	))
-	for(var/filter_name in list(CLOAK_MASK_FILTER, CLOAK_BAND_FILTER))
-		animate(wearer.get_filter(filter_name), y = CLOAK_FRONT_END, time = CLOAK_SWEEP_TIME)
-		animate(y = CLOAK_FRONT_AWAY, time = 0)
-		// A rebuild of the bearer's filters mid-sweep lands on the end state, not the start.
-		wearer.filter_data[filter_name]["y"] = CLOAK_FRONT_AWAY
-	// A pale line on the front, inset so it only lights the bearer's own pixels.
-	var/obj/effect/abstract/cyberware_anim/edge = cyberware_anim_play(wearer, CYBERWARE_ANIM_LARGE_ICON, "cloak_edge", CHROME_ANIM_TOP_LAYER, CLOAK_SWEEP_TIME)
-	if(edge)
-		edge.blend_mode = BLEND_INSET_OVERLAY
-		edge.pixel_y = CLOAK_EDGE_START
-		animate(edge, pixel_y = CLOAK_EDGE_END, time = CLOAK_SWEEP_TIME)
-		cloak_edge_ref = WEAKREF(edge)
-	cloak_settle_timer = addtimer(CALLBACK(src, PROC_REF(cloak_settle)), CLOAK_SWEEP_TIME, TIMER_STOPPABLE)
-
-/// The sweep is done: drop its filters and leave the shimmer and a faint rim.
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_settle()
-	cloak_settle_timer = null
-	var/mob/living/carbon/wearer = cloak_fx_ref?.resolve()
-	if(!camo_active || QDELETED(wearer))
-		return
-	wearer.remove_filter(list(CLOAK_MASK_FILTER, CLOAK_BAND_FILTER))
-	// The rim fades with the bearer, so it is drawn bright for a faint result.
-	var/rim_alpha = clamp(round(40 * 255 / max(field_alpha, 1)), 40, 255)
-	var/rim_bright = rgb(216, 244, 255, rim_alpha)
-	var/rim_dim = rgb(216, 244, 255, round(rim_alpha * 0.7))
-	wearer.add_filters(list(
-		list("name" = CLOAK_RIM_FILTER, "priority" = 22, "params" = outline_filter(1, rim_bright)),
-		list("name" = CLOAK_WAVE_FILTER, "priority" = 23, "params" = wave_filter(x = 0, y = 8, size = 1.2, offset = 0, flags = WAVE_SIDEWAYS)),
-	))
-	var/wave = wearer.get_filter(CLOAK_WAVE_FILTER)
-	animate(wave, offset = 1, time = 0.8 SECONDS, loop = -1)
-	animate(offset = 0, time = 0)
-	var/rim = wearer.get_filter(CLOAK_RIM_FILTER)
-	animate(rim, color = rim_dim, time = 0.8 SECONDS, loop = -1, easing = SINE_EASING)
-	animate(color = rim_bright, time = 0.8 SECONDS, easing = SINE_EASING)
+/proc/cyberware_cloak_jolt(mob/living/wearer, list/steps)
+	for(var/i in 1 to length(steps) step 2)
+		var/jump = steps[i]
+		var/hold = steps[i + 1]
+		if(i == 1)
+			animate(wearer, pixel_w = jump, time = 0, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+		else
+			animate(pixel_w = jump, time = 0, flags = ANIMATION_RELATIVE)
+		if(hold)
+			animate(pixel_w = 0, time = hold, flags = ANIMATION_RELATIVE)
 
 /**
- * The field is down: clear its filters and, unless it went quietly, collapse
- * it inward with a crackle. The fade back to full view is break_camo()'s own.
+ * The field comes up: the bearer's alpha stutters through hard steps and eases
+ * down to field alpha, jumping a pixel sideways on the way. While the field
+ * holds there is nothing on the bearer but that alpha.
  */
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_break_fx(mob/living/carbon/wearer, silent)
-	clear_cloak_fx()
-	if(silent || QDELETED(wearer))
-		return
-	cloak_fx_ref = WEAKREF(wearer)
-	wearer.add_filter(CLOAK_RIPPLE_FILTER, 24, ripple_filter(radius = 26, size = 2.2, falloff = 0.6, repeat = 5, y = -2))
-	animate(wearer.get_filter(CLOAK_RIPPLE_FILTER), radius = 3, size = 0, time = 0.3 SECONDS)
-	wearer.filter_data[CLOAK_RIPPLE_FILTER]["radius"] = 3
-	wearer.filter_data[CLOAK_RIPPLE_FILTER]["size"] = 0
-	cloak_ripple_timer = addtimer(CALLBACK(src, PROC_REF(clear_cloak_fx)), 0.35 SECONDS, TIMER_STOPPABLE)
-	// The field folds in on itself first, then crackles out.
-	cloak_crackle_timer = addtimer(CALLBACK(src, PROC_REF(cloak_crackle), WEAKREF(wearer)), CLOAK_CRACKLE_DELAY, TIMER_STOPPABLE)
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_flicker_in(mob/living/carbon/wearer)
+	cloak_enter_until = world.time + CLOAK_ENTER_TIME
+	var/faded = field_alpha
+	// The alpha chain first: it replaces whatever the bearer was animating.
+	animate(wearer, alpha = max(115, faded), time = 0)
+	animate(alpha = max(115, faded), time = 0.5)
+	animate(alpha = 230, time = 0)
+	animate(alpha = 230, time = 1)
+	animate(alpha = max(75, faded), time = 0)
+	animate(alpha = max(75, faded), time = 0.5)
+	animate(alpha = 180, time = 0)
+	animate(alpha = 180, time = 1)
+	animate(alpha = max(55, faded), time = 0)
+	animate(alpha = max(55, faded), time = 0.5)
+	animate(alpha = 125, time = 0)
+	animate(alpha = 125, time = 0.5)
+	animate(alpha = faded, time = 2, easing = SINE_EASING)
+	cyberware_cloak_jolt(wearer, list(1, 0.5, -1, 1, -1, 0.5, 1, 1, 1, 0.5, -1, 0.5))
 
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_crackle(datum/weakref/wearer_ref)
-	cloak_crackle_timer = null
-	var/mob/living/carbon/wearer = wearer_ref?.resolve()
-	if(QDELETED(wearer))
-		return
-	cyberware_anim_play(wearer, 'icons/effects/effects.dmi', "lightning", CHROME_ANIM_TOP_LAYER, 0.5 SECONDS, glow = TRUE)
-	wearer.mob_light(2, 0.8, "#9fdcff", 0.5 SECONDS)
+/// The field runs out or is switched off: the flicker in reverse, back to full view.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_flicker_out(mob/living/carbon/wearer)
+	cloak_enter_until = 0
+	var/faded = field_alpha
+	animate(wearer, alpha = 110, time = 0)
+	animate(alpha = 110, time = 0.5)
+	animate(alpha = max(60, faded), time = 0)
+	animate(alpha = max(60, faded), time = 0.5)
+	animate(alpha = 175, time = 0)
+	animate(alpha = 175, time = 0.5)
+	animate(alpha = 105, time = 0)
+	animate(alpha = 105, time = 0.5)
+	animate(alpha = 235, time = 0)
+	animate(alpha = 235, time = 0.5)
+	animate(alpha = 255, time = 1, easing = SINE_EASING)
+	cyberware_cloak_jolt(wearer, list(-1, 0.5, 1, 0.5, 1, 0.5, -1, 0.5, -1, 0.5, 1, 1))
 
-/// Takes every field filter off whoever carries them and stops the field's timers.
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/clear_cloak_fx()
-	if(cloak_settle_timer)
-		deltimer(cloak_settle_timer)
-		cloak_settle_timer = null
-	if(cloak_ripple_timer)
-		deltimer(cloak_ripple_timer)
-		cloak_ripple_timer = null
-	if(cloak_crackle_timer)
-		deltimer(cloak_crackle_timer)
-		cloak_crackle_timer = null
-	qdel(cloak_edge_ref?.resolve())
-	cloak_edge_ref = null
-	cloak_sweep_until = 0
-	var/mob/living/carbon/wearer = cloak_fx_ref?.resolve()
-	cloak_fx_ref = null
+/// The field is knocked down: full view, a dip, full view, with hard 2 px jolts.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_flicker_break(mob/living/carbon/wearer)
+	cloak_enter_until = 0
+	animate(wearer, alpha = 255, time = 0)
+	animate(alpha = 255, time = 0.5)
+	animate(alpha = 140, time = 0)
+	animate(alpha = 140, time = 0.5)
+	animate(alpha = 255, time = 0)
+	animate(alpha = 255, time = 0.5)
+	cyberware_cloak_jolt(wearer, list(2, 0.5, -4, 0.5, 3, 0.5, -1, 0))
+
+/// A quiet drop (the weave pulled, or switched off while not worn): straight back to full view.
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/cloak_reset(mob/living/carbon/wearer)
+	cloak_enter_until = 0
 	if(!QDELETED(wearer))
-		wearer.remove_filter(list(CLOAK_MASK_FILTER, CLOAK_BAND_FILTER, CLOAK_RIM_FILTER, CLOAK_WAVE_FILTER, CLOAK_RIPPLE_FILTER))
+		animate(wearer, alpha = 255, time = 0)
 
-#undef CLOAK_MASK_FILTER
-#undef CLOAK_BAND_FILTER
-#undef CLOAK_RIM_FILTER
-#undef CLOAK_WAVE_FILTER
-#undef CLOAK_RIPPLE_FILTER
-#undef CLOAK_SWEEP_TIME
-#undef CLOAK_FRONT_START
-#undef CLOAK_FRONT_END
-#undef CLOAK_FRONT_AWAY
-#undef CLOAK_EDGE_START
-#undef CLOAK_EDGE_END
-#undef CLOAK_CRACKLE_DELAY
+#undef CLOAK_ENTER_TIME
 
 // =========================================================================
 // CASCADE: SPINE NODES AND THE TIME RING
@@ -896,7 +827,7 @@
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/cyberware_anim_clear(mob/living/carbon/old_owner)
 	. = ..()
-	clear_cloak_fx()
+	cloak_enter_until = 0
 
 /obj/item/organ/cyberimp/cyberware/cascade/cyberware_anim_clear(mob/living/carbon/old_owner)
 	. = ..()

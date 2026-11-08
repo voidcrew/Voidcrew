@@ -24,7 +24,7 @@
 	chrome_load = 2
 	tier = CYBERWARE_TIER_2
 	actions_types = list(/datum/action/cooldown/cyberware/ghostskin_cloak/street)
-	// Mostly faded, but never the full weave's heat-shimmer. Moving flares it
+	// Mostly faded, but never as faint as the full weave. Moving flares it
 	// well above that.
 	field_alpha = 60
 	ripple_alpha = 170

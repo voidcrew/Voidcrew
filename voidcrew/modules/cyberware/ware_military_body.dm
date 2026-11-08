@@ -10,7 +10,7 @@
 // GHOSTSKIN WEAVE
 // =========================================================================
 
-/// Cloak alpha. NEVER 0: a shimmer stays readable point-blank.
+/// Cloak alpha. NEVER 0: a faint outline stays readable point-blank.
 #define CYBERWARE_GHOSTSKIN_ALPHA 40
 /// How long a camo field holds before it collapses on its own.
 #define CYBERWARE_GHOSTSKIN_DURATION (10 SECONDS)
@@ -19,8 +19,8 @@
  * # Ghostskin Weave (T3, chest, skin slot, load 5)
  *
  * A dermal mesh of refraction cells: ten seconds of optical camo on a
- * 30-second clock. Players see a heat-shimmer outline (alpha 40, never full
- * invisibility) that ripples brighter when you move; NPC targeting honors
+ * 30-second clock. Players see a faint outline (alpha 40, never full
+ * invisibility) that flashes brighter when you move; NPC targeting honors
  * TRAIT_CYBER_CAMO through the hook in cyberware_stealth.dm, but anything
  * within two tiles spots you anyway. The field collapses the instant you
  * attack, shoot, throw, get struck, get cuffed, or eat an EMP, the break-trigger
@@ -29,7 +29,7 @@
  */
 /obj/item/organ/cyberimp/cyberware/ghostskin
 	name = "\improper Ghostskin weave"
-	desc = "A subdermal lattice of refraction cells. Switched on, you're a faint heat-shimmer and not much else."
+	desc = "A subdermal lattice of refraction cells. Switched on, you flicker out until there's barely anything of you left to see."
 	icon_state = "ghostskin"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_SKIN
@@ -70,15 +70,15 @@
 	if(camo_active)
 		break_camo(owner, reason = "EMP discharge")
 
-/// Raises the field: shimmer alpha, camo trait, break triggers, expiry clock.
+/// Raises the field: field alpha, camo trait, break triggers, expiry clock.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/engage_camo(mob/living/carbon/wearer)
 	if(camo_active || !wearer)
 		return
 	camo_active = TRUE
 	if(hides_from_mobs)
 		ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
-	// Fades to field_alpha over a second, as a sweep from the head down (cyberware_anim.dm).
-	cloak_sweep_in(wearer)
+	// Flickers down to field_alpha over 0.6 s (cyberware_anim.dm). The var holds field_alpha at once.
+	cloak_flicker_in(wearer)
 	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
 	// gunfire and throwing: shooting or throwing from inside a cloak breaks it here.
@@ -114,16 +114,21 @@
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/engage_feedback(mob/living/carbon/wearer)
 	playsound(wearer, 'voidcrew/sound/machines/cloaking/on.ogg', 60, TRUE)
 	wearer.visible_message(
-		span_warning("[wearer] ripples and thins to a heat-shimmer outline!"),
+		span_warning("[wearer] flickers and fades almost out of sight!"),
 		span_notice("The weave bends the light around you."),
 	)
 
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_field_expired()
 	camo_timer = null
-	break_camo(owner, reason = "field capacity spent")
+	break_camo(owner, reason = "field capacity spent", gentle = TRUE)
 
-/// Collapses the field and returns the bearer to full visibility.
-/obj/item/organ/cyberimp/cyberware/ghostskin/proc/break_camo(mob/living/carbon/wearer, reason, silent = FALSE)
+/**
+ * Collapses the field and returns the bearer to full visibility. A [gentle]
+ * drop (the field ran out or was switched off) flickers back out; anything
+ * that knocks it down stutters back with sparks; a [silent] one just snaps
+ * back.
+ */
+/obj/item/organ/cyberimp/cyberware/ghostskin/proc/break_camo(mob/living/carbon/wearer, reason, silent = FALSE, gentle = FALSE)
 	if(!camo_active)
 		return
 	camo_active = FALSE
@@ -131,7 +136,6 @@
 		deltimer(camo_timer)
 		camo_timer = null
 	if(!wearer)
-		clear_cloak_fx()
 		return
 	REMOVE_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
 	UnregisterSignal(wearer, list(
@@ -155,12 +159,17 @@
 		COMSIG_LIVING_DEATH,
 		COMSIG_MOVABLE_MOVED,
 	))
-	animate(wearer, alpha = 255, time = 0.5 SECONDS)
-	cloak_break_fx(wearer, silent)
-	if(!silent)
+	// The way back to full view is the exit's own (cyberware_anim.dm).
+	if(silent)
+		cloak_reset(wearer)
+	else if(gentle)
+		cloak_flicker_out(wearer)
+	else
+		cloak_flicker_break(wearer)
 		do_sparks(2, TRUE, wearer)
+	if(!silent)
 		wearer.visible_message(
-			span_danger("[wearer] shimmers back into full view!"),
+			span_danger("[wearer] flickers back into full view!"),
 			span_warning("The weave collapses[reason ? ", [reason]" : ""]. You are visible."),
 		)
 
@@ -193,15 +202,15 @@
 		return
 	break_camo(owner, reason = "field disrupted")
 
-/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving-shimmer ripple.
+/// Signal proc for [COMSIG_MOVABLE_MOVED]: the moving flash.
 /// Motion makes you briefly MORE visible. Free counterplay for sharp eyes.
 /obj/item/organ/cyberimp/cyberware/ghostskin/proc/on_camo_move(datum/source)
 	SIGNAL_HANDLER
 	var/mob/living/wearer = owner
 	if(!wearer || !camo_active)
 		return
-	// The sweep is still coming down; the bearer is more visible than this already.
-	if(world.time < cloak_sweep_until)
+	// Still flickering in; the bearer is more visible than this already.
+	if(world.time < cloak_enter_until)
 		return
 	animate(wearer, alpha = ripple_alpha, time = 0.15 SECONDS)
 	animate(alpha = field_alpha, time = 0.35 SECONDS)
@@ -220,7 +229,7 @@
 		return FALSE
 	if(weave.camo_active)
 		// Manual early collapse; the cooldown was already paid.
-		weave.break_camo(owner, reason = "disengaged")
+		weave.break_camo(owner, reason = "disengaged", gentle = TRUE)
 		return TRUE
 	StartCooldown()
 	weave.engage_camo(owner)

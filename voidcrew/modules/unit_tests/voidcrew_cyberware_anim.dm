@@ -54,59 +54,66 @@
 	TEST_ASSERT(!housing.fold_hide_until && !housing.fold_timer, "Pulling the housing left the folded housing waiting")
 	TEST_ASSERT(!blade.inhand_hidden_until, "A pulled housing's blade stays hidden in its next hand")
 
-/// Ghostskin: the sweep filters come up with the field, give way to the
-/// shimmer, and every filter is off the bearer once the field breaks and the
-/// weave is pulled. The alpha var itself is unchanged by the sweep.
+/// Ghostskin: the field flickers in to plain field alpha with nothing else on
+/// the bearer, and every way out (run out, switched off, knocked down, pulled,
+/// dead) ends at full view, back where the body started, with nothing left on it.
 /datum/unit_test/voidcrew_cyberware_anim_cloak
 
 /datum/unit_test/voidcrew_cyberware_anim_cloak/Run()
-	var/static/list/field_filters = list("cyberware_cloak_mask", "cyberware_cloak_band", "cyberware_cloak_rim", "cyberware_cloak_wave", "cyberware_cloak_ripple")
 	var/mob/living/carbon/human/bearer = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin)
 	TEST_ASSERT(weave.Insert(bearer, special = TRUE), "Test fixture: Ghostskin insert refused")
+	var/filters_before = length(bearer.filter_data)
+	var/rest_w = bearer.pixel_w
 
 	weave.engage_camo(bearer)
-	TEST_ASSERT_EQUAL(bearer.alpha, 40, "The sweep changed the field's alpha")
-	TEST_ASSERT(bearer.get_filter("cyberware_cloak_mask"), "The field came up without its sweep")
-	TEST_ASSERT(bearer.get_filter("cyberware_cloak_band"), "The sweep has no refraction band")
-	TEST_ASSERT(weave.cloak_settle_timer, "Nothing ends the sweep")
-	var/obj/effect/abstract/cyberware_anim/edge = weave.cloak_edge_ref?.resolve()
-	TEST_ASSERT(edge && (edge in bearer.vis_contents), "The sweep has no refraction line")
+	TEST_ASSERT_EQUAL(bearer.alpha, 40, "The flicker doesn't end at the field's alpha")
+	TEST_ASSERT_EQUAL(bearer.pixel_w, rest_w, "The flicker's jumps don't add up to nothing")
+	TEST_ASSERT(weave.cloak_enter_until > world.time, "Nothing keeps a step from cutting the flicker short")
+	TEST_ASSERT_EQUAL(length(bearer.filter_data), filters_before, "The field put a filter on its bearer")
+	TEST_ASSERT(!voidcrew_test_has_chrome_anim(bearer), "The field put a drawing on its bearer")
+	weave.cloak_enter_until = 0
+	weave.on_camo_move(bearer)
+	TEST_ASSERT_EQUAL(bearer.alpha, 40, "Moving under the field left the bearer brighter")
 
-	weave.cloak_settle()
-	qdel(edge) // Its own lifetime is the sweep's.
-	TEST_ASSERT(!bearer.get_filter("cyberware_cloak_mask"), "The sweep mask stayed on after the sweep")
-	TEST_ASSERT(bearer.get_filter("cyberware_cloak_wave"), "The held field doesn't shimmer")
-	TEST_ASSERT(bearer.get_filter("cyberware_cloak_rim"), "The held field has no rim")
+	// Run out: the gentle way back.
+	weave.on_field_expired()
+	TEST_ASSERT(!weave.camo_active, "Test fixture: the field didn't run out")
+	TEST_ASSERT_EQUAL(bearer.alpha, 255, "A field that ran out left its bearer faded")
+	TEST_ASSERT_EQUAL(bearer.pixel_w, rest_w, "The way back out left the body off to one side")
 
+	// Knocked down: the sharp way back.
+	weave.engage_camo(bearer)
 	weave.break_camo(bearer, reason = "test")
-	for(var/filter_name in field_filters - "cyberware_cloak_ripple")
-		TEST_ASSERT(!bearer.get_filter(filter_name), "A broken field left [filter_name] on its bearer")
-	TEST_ASSERT(bearer.get_filter("cyberware_cloak_ripple"), "The field broke without collapsing")
-	TEST_ASSERT(weave.cloak_crackle_timer, "The field broke without a crackle")
-	weave.cloak_crackle(WEAKREF(bearer))
-	TEST_ASSERT(voidcrew_test_has_chrome_anim(bearer), "The crackle didn't play on the bearer")
+	TEST_ASSERT_EQUAL(bearer.alpha, 255, "A knocked-down field left its bearer faded")
+	TEST_ASSERT_EQUAL(bearer.pixel_w, rest_w, "The knock left the body off to one side")
+	TEST_ASSERT_EQUAL(length(bearer.filter_data), filters_before, "A broken field left a filter behind")
+	TEST_ASSERT(!voidcrew_test_has_chrome_anim(bearer), "A broken field left a drawing behind")
 
+	// Switched off by hand.
+	var/datum/action/cooldown/cyberware/ghostskin_cloak/button = locate() in weave.actions
+	weave.engage_camo(bearer)
+	button.Activate(bearer)
+	TEST_ASSERT(!weave.camo_active, "Test fixture: the button didn't drop the field")
+	TEST_ASSERT_EQUAL(bearer.alpha, 255, "A field switched off left its bearer faded")
+
+	// Pulled mid-flicker, and dead mid-field.
+	weave.engage_camo(bearer)
 	weave.Remove(bearer, special = TRUE)
-	TEST_ASSERT(!bearer.get_filter("cyberware_cloak_ripple"), "Pulling the weave left the collapse on its old bearer")
-
-	// Pulled mid-sweep, and dead mid-field: nothing stays behind either way.
-	var/mob/living/carbon/human/next_bearer = allocate(/mob/living/carbon/human/consistent)
-	TEST_ASSERT(weave.Insert(next_bearer, special = TRUE), "Test fixture: Ghostskin reinsert refused")
-	weave.engage_camo(next_bearer)
-	weave.Remove(next_bearer, special = TRUE)
-	for(var/filter_name in field_filters)
-		TEST_ASSERT(!next_bearer.get_filter(filter_name), "A weave pulled mid-sweep left [filter_name] behind")
-	TEST_ASSERT(!voidcrew_test_has_chrome_anim(next_bearer), "A weave pulled mid-sweep left its refraction line")
-	TEST_ASSERT(!weave.cloak_crackle_timer && !weave.cloak_settle_timer, "A pulled weave kept animating")
+	TEST_ASSERT_EQUAL(bearer.alpha, 255, "A weave pulled mid-flicker left its bearer faded")
+	TEST_ASSERT_EQUAL(bearer.pixel_w, rest_w, "A weave pulled mid-flicker left the body off to one side")
+	TEST_ASSERT(!weave.cloak_enter_until, "A pulled weave still holds off the moving flash")
 
 	var/mob/living/carbon/human/doomed = allocate(/mob/living/carbon/human/consistent)
-	TEST_ASSERT(weave.Insert(doomed, special = TRUE), "Test fixture: Ghostskin third insert refused")
-	weave.engage_camo(doomed)
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/street/rag = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin/street)
+	TEST_ASSERT(rag.Insert(doomed, special = TRUE), "Test fixture: Flickerskin insert refused")
+	var/doomed_filters = length(doomed.filter_data)
+	rag.engage_camo(doomed)
+	TEST_ASSERT_EQUAL(doomed.alpha, 60, "Flickerskin doesn't flicker down to its own alpha")
 	doomed.death()
-	TEST_ASSERT(!weave.camo_active, "Test fixture: death didn't drop the field")
-	for(var/filter_name in field_filters - "cyberware_cloak_ripple")
-		TEST_ASSERT(!doomed.get_filter(filter_name), "Death left [filter_name] on the body")
+	TEST_ASSERT(!rag.camo_active, "Test fixture: death didn't drop the field")
+	TEST_ASSERT_EQUAL(doomed.alpha, 255, "Death left the body faded")
+	TEST_ASSERT(length(doomed.filter_data) <= doomed_filters, "Death left a filter on the body")
 
 /// Cascade: the window lights the spine, the crash kills it, the crash ending
 /// puts the plain lattice back, and a lattice pulled mid-window leaves no frames.
