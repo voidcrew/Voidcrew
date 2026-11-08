@@ -69,11 +69,6 @@
 	if(.)
 		hv_vis_big_hit(attack_direction, attacker)
 
-/mob/living/basic/hv_try_basic_crit(hit_zone, aimed_zone, wounding_type, damage, wound_bonus, attack_direction, atom/source, mob/living/attacker, forced_roll)
-	. = ..()
-	if(.)
-		hv_vis_big_hit(attack_direction, attacker)
-
 // ---- Lost limbs ----
 
 /mob/living/proc/hv_vis_on_limb_lost(obj/item/bodypart/lost_limb, special, dismembered)
