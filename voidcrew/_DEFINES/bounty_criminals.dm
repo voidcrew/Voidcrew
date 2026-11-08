@@ -39,10 +39,14 @@
 
 /// Health of a meek criminal, every tier
 #define BOUNTY_MEEK_HEALTH 120
-/// Health of a normal criminal by tier, before the style's multiplier (C7)
+/// Health of a normal criminal by tier, before the style's multiplier (C7). Wanted and Most Wanted are high enough that one hunter's fight lasts past the draw.
 #define BOUNTY_NORMAL_HEALTH_PETTY 140
-#define BOUNTY_NORMAL_HEALTH_WANTED 180
-#define BOUNTY_NORMAL_HEALTH_MOST 220
+#define BOUNTY_NORMAL_HEALTH_WANTED 240
+#define BOUNTY_NORMAL_HEALTH_MOST 280
+/// A normal criminal fighting more than one hunter gets this percent of its tier's health more for each one past the first (body_size_up()), the way a mini-boss's health follows its posse
+#define BOUNTY_NORMAL_POSSE_HEALTH 50
+/// Hunters past the first who count toward that, at most
+#define BOUNTY_NORMAL_POSSE_MAX_EXTRA 3
 /// P0's name for the normal criminal's health: the Wanted value
 #define BOUNTY_NORMAL_HEALTH BOUNTY_NORMAL_HEALTH_WANTED
 
@@ -74,12 +78,13 @@
 // ===== STAMINA =====
 // max_stamina stays at 100 on every criminal: basic mobs leave stamina crit by comparing raw stamina
 // with a percentage (stamcrit.dm), which only agree at 100. A pool of any other size is the stamina
-// damage coefficient: 100 / pool.
+// damage coefficient: 100 / pool. The zone's health factor (npc_scaling) scales the pool with the
+// health, so stuns and guns get harder together in yellow and red space.
 
 #define BOUNTY_CRIMINAL_MAX_STAMINA 100
 /// Stamina crit at this much stamina: a hair under 100, so a pool that divides evenly (three 30-point disabler shots on a 90 pool) still crits through float rounding
 #define BOUNTY_CRIMINAL_STAMCRIT_AT 99.9
-/// A meek criminal's stamina pool: three disabler shots or two batons (C5)
+/// A meek criminal's stamina pool before the zone's factor: three disabler shots or two batons (C5)
 #define BOUNTY_MEEK_STAMINA 90
 /// A meek criminal's slowdown with no stamina left (tg's is 3): one hit must not end the chase (C5)
 #define BOUNTY_MEEK_STAMINA_SLOWDOWN 0.5

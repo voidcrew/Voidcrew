@@ -234,10 +234,13 @@
 		pistol.after_shot(criminal)
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], 0, "A magazine's worth of shots did not empty the magazine") // BB_BOUNTY_AMMO
 
-	// The SMG fires bursts through the component; the revolver holds six
+	// The SMG fires bursts of four, round by round (the style's, never the component's own burst); the revolver holds six
 	TEST_ASSERT(bounty_ai_apply_style(criminal, "smg"), "The SMG style would not apply") // BOUNTY_STYLE_SMG
-	TEST_ASSERT(gun.burst_shots > 1, "The SMG doesn't fire bursts")
-	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/mini_uzi, "The SMG style isn't the Uzi") // BB_BOUNTY_WEAPON
+	TEST_ASSERT_NULL(gun.burst_shots, "The SMG fires the component's own burst, which no one stops")
+	var/datum/bounty_style/smg = bounty_ai_style(criminal)
+	TEST_ASSERT_EQUAL(smg.burst, 4, "The SMG doesn't fire bursts of four") // BOUNTY_SMG_BURST
+	// The WT-550 at every tier: a Petty criminal's (and a companion's) is never the harder-hitting Uzi
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/wt550, "A Petty criminal's SMG isn't the WT-550") // BB_BOUNTY_WEAPON
 	TEST_ASSERT(bounty_ai_apply_style(criminal, "smg", TRUE), "The heavy SMG style would not apply")
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/wt550, "A Wanted criminal's SMG isn't the WT-550") // BB_BOUNTY_WEAPON
 	TEST_ASSERT(bounty_ai_apply_style(criminal, "revolver"), "The revolver style would not apply") // BOUNTY_STYLE_REVOLVER
@@ -262,6 +265,52 @@
 	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(arm.unarmed_damage_high), "A brawler's hardest punch isn't a human's")
 	TEST_ASSERT_NULL(criminal.ai_controller.blackboard["bb_bounty_weapon"], "A brawler has something in their hand") // BB_BOUNTY_WEAPON
 	TEST_ASSERT_NULL(criminal.ai_holster, "A brawler wears a holster")
+
+/**
+ * An SMG burst stops when the shooter can't shoot any more: each round after the first asks again
+ * (/datum/ai_controller/basic_controller/bounty/proc/burst_round()), and a refused one ends the burst.
+ */
+/datum/unit_test/voidcrew_bounty_ai/smg_burst
+	/// Rounds the criminal fired
+	var/shots_fired = 0
+
+/datum/unit_test/voidcrew_bounty_ai/smg_burst/proc/on_fired(datum/source, obj/projectile/shot, atom/fired_from, atom/original)
+	SIGNAL_HANDLER
+	shots_fired++
+
+/datum/unit_test/voidcrew_bounty_ai/smg_burst/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
+	var/mob/living/carbon/human/consistent/hunter = allocate(/mob/living/carbon/human/consistent, tile(4, 1))
+	criminal.ai_add_grudge(hunter)
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "smg"), "The SMG style would not apply") // BOUNTY_STYLE_SMG
+	RegisterSignal(criminal, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_fired))
+	var/datum/ai_controller/basic_controller/bounty/brain = criminal.ai_controller
+	var/full = brain.blackboard["bb_bounty_ammo"] // BB_BOUNTY_AMMO
+
+	// A round of a burst under way goes while they can shoot, and takes a round from the magazine
+	var/serial = ++brain.burst_serial
+	TEST_ASSERT(brain.burst_round(hunter, serial), "A burst round didn't fire at a hunter in the fight")
+	TEST_ASSERT_EQUAL(shots_fired, 1, "A burst round fired [shots_fired] projectiles")
+	TEST_ASSERT_EQUAL(brain.blackboard["bb_bounty_ammo"], full - 1, "A burst round didn't take a round from the magazine") // BB_BOUNTY_AMMO
+
+	// Down: the rest of the burst never fires, even once they could shoot again
+	criminal.adjustBruteLoss(500)
+	TEST_ASSERT(criminal.is_downed(), "The criminal didn't go down")
+	TEST_ASSERT(!brain.burst_round(hunter, serial), "A downed criminal's burst kept firing")
+	criminal.body_stand_up()
+	TEST_ASSERT(!brain.burst_round(hunter, serial), "A burst cut short went on once they got up")
+	TEST_ASSERT_EQUAL(shots_fired, 1, "Rounds fired after the burst was cut short")
+
+	// Cuffed, or the hunter gone down: no round either
+	serial = ++brain.burst_serial
+	TEST_ASSERT(criminal.body_apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The criminal couldn't be cuffed")
+	TEST_ASSERT(!brain.burst_round(hunter, serial), "A cuffed criminal's burst kept firing")
+	criminal.body_remove_cuffs()
+	serial = ++brain.burst_serial
+	hunter.adjustBruteLoss(150)
+	TEST_ASSERT(hunter.stat != CONSCIOUS, "The hunter didn't go down")
+	TEST_ASSERT(!brain.burst_round(hunter, serial), "A burst kept firing at a downed hunter")
+	TEST_ASSERT_EQUAL(shots_fired, 1, "Rounds fired at a downed hunter or from cuffs")
 
 /// A gun sits holstered (or slung) until a fight, and drawing it comes before the first shot
 /datum/unit_test/voidcrew_bounty_ai/holster

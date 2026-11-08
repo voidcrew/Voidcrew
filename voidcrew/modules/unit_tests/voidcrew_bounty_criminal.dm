@@ -75,12 +75,12 @@
 
 /datum/unit_test/voidcrew_bounty_criminal_mercy/Run()
 	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__)
-	// BOUNTY_NORMAL_HEALTH_WANTED 180; BOUNTY_DOWNED_BELOW 25: the line is 45
-	TEST_ASSERT_EQUAL(criminal.maxHealth, 180, "A normal criminal has the wrong health")
+	// BOUNTY_NORMAL_HEALTH_WANTED 240; BOUNTY_DOWNED_BELOW 25: the line is 60
+	TEST_ASSERT_EQUAL(criminal.maxHealth, 240, "A normal criminal has the wrong health")
 	TEST_ASSERT(!criminal.is_downed(), "A fresh criminal is downed")
 	criminal.adjustBruteLoss(500)
 	TEST_ASSERT_EQUAL(criminal.stat, CONSCIOUS, "One big hit killed a criminal on its feet")
-	TEST_ASSERT_EQUAL(criminal.health, 44, "A big hit on a criminal on its feet did not stop 1 under the downed line")
+	TEST_ASSERT_EQUAL(criminal.health, 59, "A big hit on a criminal on its feet did not stop 1 under the downed line")
 	TEST_ASSERT(criminal.is_downed(), "A criminal at the downed line is not downed")
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A downed criminal's capture state is wrong") // BOUNTY_STATE_DOWNED
 	// Down, the next hit can kill: that is a choice.
@@ -100,24 +100,24 @@
 
 	// Small hits add up to the same line and no further.
 	var/mob/living/basic/bounty_criminal/normal/chipped = allocate(__IMPLIED_TYPE__)
-	for(var/i in 1 to 30)
+	for(var/i in 1 to 40)
 		chipped.adjustBruteLoss(7)
 		if(chipped.is_downed())
 			break
 	TEST_ASSERT(chipped.is_downed(), "Small hits never downed a criminal")
-	TEST_ASSERT(chipped.health > 0 && chipped.health <= 45, "Small hits left a downed criminal at [chipped.health]")
+	TEST_ASSERT(chipped.health > 0 && chipped.health <= 60, "Small hits left a downed criminal at [chipped.health]")
 
 	// Fire and heat burn it like a suited person (BOUNTY_CRIMINAL_MAX_TEMP 1500, BOUNTY_CRIMINAL_BURN_DAMAGE 3 a second), but not past the mercy line.
 	var/mob/living/basic/bounty_criminal/normal/burning = allocate(__IMPLIED_TYPE__)
 	burning.bodytemperature = 3000
 	burning.Life(2)
-	TEST_ASSERT(burning.health < 180, "Heat did not hurt a criminal")
-	burning.adjustBruteLoss(burning.health - 46)
-	TEST_ASSERT_EQUAL(burning.health, 46, "The burning criminal was not brought near the line")
+	TEST_ASSERT(burning.health < 240, "Heat did not hurt a criminal")
+	burning.adjustBruteLoss(burning.health - 61)
+	TEST_ASSERT_EQUAL(burning.health, 61, "The burning criminal was not brought near the line")
 	burning.bodytemperature = 3000
 	burning.Life(2)
 	TEST_ASSERT_EQUAL(burning.stat, CONSCIOUS, "Heat killed a criminal on its feet")
-	TEST_ASSERT_EQUAL(burning.health, 44, "Heat took a criminal on its feet past the downed line")
+	TEST_ASSERT_EQUAL(burning.health, 59, "Heat took a criminal on its feet past the downed line")
 
 // ===== DOWNED AND GETTING UP =====
 
@@ -141,7 +141,7 @@
 
 	// Healing raises its health, not its state.
 	criminal.adjustBruteLoss(-500)
-	TEST_ASSERT_EQUAL(criminal.health, 180, "A downed criminal could not be healed")
+	TEST_ASSERT_EQUAL(criminal.health, 240, "A downed criminal could not be healed")
 	TEST_ASSERT(criminal.is_downed(), "Healing stood a downed criminal up")
 
 	// A stamina hit starts the clock over.
@@ -173,7 +173,7 @@
 	TEST_ASSERT(criminal.body_stand_up(), "A stirring criminal could not get up")
 	TEST_ASSERT(!criminal.is_downed(), "A criminal that got up is still downed")
 	TEST_ASSERT_EQUAL(signal_count("recovered"), 1, "Getting up did not send the recovered signal once")
-	TEST_ASSERT_EQUAL(criminal.health, 180, "A criminal healed while down did not get up with its health")
+	TEST_ASSERT_EQUAL(criminal.health, 240, "A criminal healed while down did not get up with its health")
 	TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_FLOORED), "A criminal that got up is still on the floor")
 	TEST_ASSERT(!HAS_TRAIT(criminal, "bounty_held"), "A criminal that got up is still held") // TRAIT_BOUNTY_HELD
 	TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_AI_PAUSED), "A criminal that got up still has its AI paused")
@@ -185,8 +185,8 @@
 	other.body_stir()
 	TEST_ASSERT(other.body_stirring, "A downed criminal did not stir when its time came")
 	TEST_ASSERT(other.body_stand_up(), "A downed criminal did not get up")
-	// BOUNTY_RECOVER_TO 35: 63 of 180
-	TEST_ASSERT_EQUAL(other.health, 63, "A criminal got up with the wrong health")
+	// BOUNTY_RECOVER_TO 35: 84 of 240
+	TEST_ASSERT_EQUAL(other.health, 84, "A criminal got up with the wrong health")
 
 	// Only mini-bosses rally: stamina does nothing to one that just got up, until the rally ends.
 	TEST_ASSERT(!other.body_is_rallying(), "A normal criminal rallies")
@@ -581,12 +581,13 @@
 	var/turf/here = run_loc_floor_bottom_left
 	var/list/site = list(here.x - 2, here.y - 2, here.x + 4, here.y + 4, here.z)
 
-	// An explosion with nobody near is automated too: it stops at the floor (BOUNTY_AUTOMATED_FLOOR 40: 72 of 180).
+	// An explosion with nobody near is automated too: it stops at the floor (BOUNTY_AUTOMATED_FLOOR 40: 96 of 240). Three heavy blasts (60 each) would reach 60.
 	var/mob/living/basic/bounty_criminal/normal/unwatched = allocate(__IMPLIED_TYPE__)
 	unwatched.site_bounds = site
 	unwatched.ex_act(EXPLODE_HEAVY)
 	unwatched.ex_act(EXPLODE_HEAVY)
-	TEST_ASSERT_EQUAL(unwatched.health, 72, "An explosion nobody set took a criminal on its site past the floor")
+	unwatched.ex_act(EXPLODE_HEAVY)
+	TEST_ASSERT_EQUAL(unwatched.health, 96, "An explosion nobody set took a criminal on its site past the floor")
 
 	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__)
 	criminal.site_bounds = site
@@ -595,7 +596,7 @@
 
 	// Nobody's mind behind it: it stops at the floor, on its feet.
 	criminal.adjustBruteLoss(500)
-	TEST_ASSERT_EQUAL(criminal.health, 72, "Automated damage took a criminal on its site past the floor")
+	TEST_ASSERT_EQUAL(criminal.health, 96, "Automated damage took a criminal on its site past the floor")
 	TEST_ASSERT(!criminal.is_downed(), "Automated damage downed a criminal on its site")
 
 	// A player's hit: only the mercy rule.
@@ -605,7 +606,7 @@
 	TEST_ASSERT(ledger.player_hit_now(), "A hunter with a mind did not count as a player")
 	TEST_ASSERT(criminal.body_has_grudge(hunter), "An attacker did not go on the grudge list")
 	criminal.adjustBruteLoss(500)
-	TEST_ASSERT_EQUAL(criminal.health, 44, "A player's hit on a criminal on its site did not stop at the downed line")
+	TEST_ASSERT_EQUAL(criminal.health, 59, "A player's hit on a criminal on its site did not stop at the downed line")
 	TEST_ASSERT(criminal.is_downed(), "A player's hit did not down the criminal")
 
 	// Down on its site, nothing automated finishes it off.
@@ -633,11 +634,11 @@
 	mech.remove_occupant(pilot)
 	target_ledger.player_hit_at = -1
 
-	// An explosion with someone near counts as theirs: only the mercy rule. Three heavy blasts (60 each) reach the line.
+	// An explosion with someone near counts as theirs: only the mercy rule. Three heavy blasts (60 each) reach the line (60 of 240).
 	target.ex_act(EXPLODE_HEAVY)
 	target.ex_act(EXPLODE_HEAVY)
 	target.ex_act(EXPLODE_HEAVY)
-	TEST_ASSERT_EQUAL(target.health, 44, "An explosion beside a hunter was held at the automated floor")
+	TEST_ASSERT_EQUAL(target.health, 60, "An explosion beside a hunter was held at the automated floor")
 	TEST_ASSERT(target.is_downed(), "An explosion beside a hunter did not down the criminal")
 
 	// Its own side's blows miss it while it is down.
@@ -646,13 +647,13 @@
 	var/datum/component/bounty_body/other_ledger = downed_off_site.GetComponent(/datum/component/bounty_body)
 	other_ledger.note_attacker(allocate(/mob/living/basic/bounty_companion))
 	downed_off_site.adjustBruteLoss(10)
-	TEST_ASSERT_EQUAL(downed_off_site.health, 44, "A companion's blow hurt a downed criminal")
+	TEST_ASSERT_EQUAL(downed_off_site.health, 59, "A companion's blow hurt a downed criminal")
 
 	// Off its site, automated damage gets the mercy rule only.
 	var/mob/living/basic/bounty_criminal/normal/stray = allocate(__IMPLIED_TYPE__)
 	stray.site_bounds = list(here.x + 5, here.y + 5, here.x + 6, here.y + 6, here.z)
 	stray.adjustBruteLoss(500)
-	TEST_ASSERT_EQUAL(stray.health, 44, "Automated damage off its site did not stop at the downed line")
+	TEST_ASSERT_EQUAL(stray.health, 59, "Automated damage off its site did not stop at the downed line")
 
 // ===== THE LEASH AND WHO IT FIGHTS =====
 
@@ -770,7 +771,7 @@
 	stowaway.body_add_grudge(crew)
 	TEST_ASSERT(stowaway.may_attack(crew), "A criminal aboard a ship may not fight someone it holds a grudge against")
 	stowaway.adjustBruteLoss(500)
-	TEST_ASSERT_EQUAL(stowaway.health, 44, "The automated floor held a criminal aboard a ship")
+	TEST_ASSERT_EQUAL(stowaway.health, 59, "The automated floor held a criminal aboard a ship")
 	qdel(stowaway)
 
 	// Off its leash aboard ship A, it walks about that ship and back to its site, never on into
@@ -908,8 +909,8 @@
 	gunman_record.style = "pistol" // BOUNTY_STYLE_PISTOL
 	var/mob/living/basic/bounty_criminal/normal/gunman = spawn_bounty_criminal(gunman_record, run_loc_floor_bottom_left, null)
 	spawned += gunman
-	// BOUNTY_NORMAL_HEALTH_MOST 220 x BOUNTY_STYLE_HEALTH_PISTOL 0.9
-	TEST_ASSERT_EQUAL(gunman.maxHealth, 198, "A Most Wanted gunman has the wrong health")
+	// BOUNTY_NORMAL_HEALTH_MOST 280 x BOUNTY_STYLE_HEALTH_PISTOL 0.9
+	TEST_ASSERT_EQUAL(gunman.maxHealth, 252, "A Most Wanted gunman has the wrong health")
 	TEST_ASSERT_EQUAL(gunman.speed, 1.4, "A gunman has the wrong pace") // BOUNTY_BODY_NORMAL_SPEED_RANGED
 
 	// Mini-bosses by kit; never at a trader outpost, where a normal criminal stands in.
@@ -1005,3 +1006,121 @@
 	for(var/datum/criminal_bounty/each_posting as anything in postings)
 		each_posting.status = "closed" // BOUNTY_POSTING_CLOSED
 	QDEL_LIST(postings)
+
+// ===== SIZED UP AGAINST THE CREW =====
+
+/**
+ * A normal criminal fighting a crew is tougher, the way a mini-boss is: +50% of its health for each
+ * hunter past the first who counts (on its grudge list), at most three more (BOUNTY_NORMAL_POSSE_HEALTH,
+ * BOUNTY_NORMAL_POSSE_MAX_EXTRA). It is set when the fight starts, rises later only while it is
+ * unhurt, keeps the damage it took, and its stamina pool follows.
+ */
+/datum/unit_test/voidcrew_bounty_criminal_posse
+	parent_type = /datum/unit_test/voidcrew_bounty_criminal
+
+/// A hunter with a mind at `dx`, `dy` from the room's corner, on `criminal`'s grudge list if given
+/datum/unit_test/voidcrew_bounty_criminal_posse/proc/hunter(dx, dy, mob/living/basic/bounty_criminal/criminal)
+	var/turf/corner = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/consistent/person = allocate(/mob/living/carbon/human/consistent, locate(corner.x + dx, corner.y + dy, corner.z))
+	person.mind_initialize()
+	criminal?.body_add_grudge(person)
+	return person
+
+/datum/unit_test/voidcrew_bounty_criminal_posse/Run()
+	// Alone, nothing changes (BOUNTY_NORMAL_HEALTH_WANTED 240)
+	var/mob/living/basic/bounty_criminal/normal/solo = allocate(__IMPLIED_TYPE__)
+	TEST_ASSERT(!solo.body_size_up(hunter(1, 0, solo), engaging = TRUE), "One hunter made a criminal tougher")
+	TEST_ASSERT_EQUAL(solo.maxHealth, 240, "One hunter changed a criminal's health")
+	qdel(solo)
+
+	// Three hunters when the fight starts, the instigator and two in view: 240 x 2. A bystander with no grudge doesn't count.
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__)
+	var/mob/living/first = hunter(1, 0, criminal)
+	hunter(2, 0, criminal)
+	hunter(3, 0, criminal)
+	hunter(0, 1, null)
+	TEST_ASSERT(criminal.body_size_up(first, engaging = TRUE), "A crew of three didn't make a criminal tougher")
+	TEST_ASSERT_EQUAL(criminal.maxHealth, 480, "A criminal fighting three has the wrong health")
+	TEST_ASSERT_EQUAL(criminal.health, 480, "Sized up unhurt, it didn't start at full health")
+	// Its stamina pool is its health: max_stamina 100 over 480
+	TEST_ASSERT(abs(criminal.damage_coeff[STAMINA] - 100 / 480) < 0.0001, "The stamina pool didn't follow the health: [criminal.damage_coeff[STAMINA]]")
+	// A fourth joins while it is unhurt: 240 x 2.5
+	TEST_ASSERT(criminal.body_size_up(hunter(0, 2, criminal)), "A fourth hunter joining an unhurt criminal changed nothing")
+	TEST_ASSERT_EQUAL(criminal.maxHealth, 600, "A criminal fighting four has the wrong health")
+	// Hurt, it never rises again: no healing in a fight
+	criminal.adjustBruteLoss(50)
+	TEST_ASSERT(!criminal.body_size_up(hunter(0, 3, criminal)), "A hunter joining a hurt criminal raised its health")
+	TEST_ASSERT_EQUAL(criminal.health, 550, "A hunter joining a hurt criminal healed it")
+	qdel(criminal)
+
+	// Hurt by the hit that starts the fight: the damage stays taken. Capped at three past the first.
+	var/mob/living/basic/bounty_criminal/normal/opened = allocate(__IMPLIED_TYPE__)
+	var/mob/living/opener = hunter(4, 0, opened)
+	for(var/dy in 1 to 4)
+		hunter(4, dy, opened)
+	opened.adjustBruteLoss(40)
+	TEST_ASSERT(opened.body_size_up(opener, engaging = TRUE), "A crew of five didn't make a criminal tougher")
+	TEST_ASSERT_EQUAL(opened.maxHealth, 600, "A crew of five went past the cap")
+	TEST_ASSERT_EQUAL(opened.health, 560, "Sizing up undid the opening hit")
+	qdel(opened)
+
+	// Meek criminals run: no sizing up
+	var/mob/living/basic/bounty_criminal/meek/runner = allocate(__IMPLIED_TYPE__)
+	var/mob/living/runner_hunter = hunter(1, 1, runner)
+	hunter(2, 1, runner)
+	TEST_ASSERT(!runner.body_size_up(runner_hunter, engaging = TRUE), "A meek criminal sized up a crew")
+
+// ===== THE ZONE SCALES STUNS WITH HEALTH =====
+
+/**
+ * npc_scaling raises a criminal's health in yellow and red space. Its stamina pool rises with it, so
+ * a stun takes as many more shots as a kill does: a normal criminal's pool is its health, a meek
+ * one's and a tired mini-boss's are theirs times the zone's health factor (1.8 ordinary, 1.3 boss in red).
+ */
+/datum/unit_test/voidcrew_bounty_criminal_zone_stamina
+	parent_type = /datum/unit_test/voidcrew_bounty_criminal
+
+/datum/unit_test/voidcrew_bounty_criminal_zone_stamina/Run()
+	var/turf/here = run_loc_floor_bottom_left
+	// A Wanted gunman: 240 x 0.9 = 216, x 1.8 in red
+	var/datum/bounty_record/record = allocate(/datum/bounty_record)
+	record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
+	record.tier = 2 // BOUNTY_TIER_WANTED
+	record.style = "pistol" // BOUNTY_STYLE_PISTOL
+	var/mob/living/basic/bounty_criminal/normal/gunman = spawn_bounty_criminal(record, here, null)
+	allocated += gunman
+	TEST_ASSERT(abs(gunman.damage_coeff[STAMINA] - 100 / 216) < 0.0001, "A green-space gunman's stamina pool isn't its health")
+	gunman.npc_spawn_context.on_zone_resolved(3) // ZONE_RED
+	TEST_ASSERT(abs(gunman.maxHealth - 216 * 1.8) < 0.001, "A red-space gunman's health wasn't scaled")
+	TEST_ASSERT(abs(gunman.damage_coeff[STAMINA] - 100 / (216 * 1.8)) < 0.0001, "A red-space gunman's stamina pool didn't follow its health")
+	// Thirteen disabler shots stun it, not the six a green one takes
+	for(var/i in 1 to 12)
+		gunman.adjustStaminaLoss(30)
+	TEST_ASSERT(!gunman.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Twelve disabler shots stunned a red-space gunman")
+	gunman.adjustStaminaLoss(30)
+	TEST_ASSERT(gunman.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Thirteen disabler shots didn't stun a red-space gunman")
+	// Taken off the zone's profile (a player in it), the pool goes back
+	gunman.exempt_npc_zone()
+	TEST_ASSERT(abs(gunman.damage_coeff[STAMINA] - 100 / 216) < 0.0001, "Off the zone's profile, the stamina pool didn't come back down")
+
+	// A meek runner: BOUNTY_MEEK_STAMINA 90, x 1.8 in red
+	var/datum/bounty_record/meek_record = allocate(/datum/bounty_record)
+	meek_record.archetype = "meek" // BOUNTY_ARCHETYPE_MEEK
+	meek_record.tier = 1
+	var/mob/living/basic/bounty_criminal/meek/runner = spawn_bounty_criminal(meek_record, here, null)
+	allocated += runner
+	runner.npc_spawn_context.on_zone_resolved(3) // ZONE_RED
+	TEST_ASSERT(abs(runner.damage_coeff[STAMINA] - 100 / (90 * 1.8)) < 0.0001, "A red-space runner's stamina pool didn't follow its health")
+
+	// A mini-boss: tired, BOUNTY_BOSS_STAMINA 150 x 1.3 in red, so seven disabler shots instead of five
+	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss")
+	var/mob/living/basic/bounty_criminal/boss/boss = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/boss/juggernaut, here, context)
+	allocated += boss
+	boss.adjustBruteLoss(boss.maxHealth * 0.65, forced = TRUE)
+	TEST_ASSERT(boss.boss_tired, "The boss didn't tire")
+	TEST_ASSERT(abs(boss.damage_coeff[STAMINA] - 100 / (150 * 1.3)) < 0.0001, "A tired red-space boss's stamina pool didn't follow its health: [boss.damage_coeff[STAMINA]]")
+	for(var/i in 1 to 6)
+		boss.adjustStaminaLoss(30)
+	TEST_ASSERT(!boss.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Six disabler shots put a tired red-space boss down")
+	boss.adjustStaminaLoss(30)
+	TEST_ASSERT(boss.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Seven disabler shots didn't put a tired red-space boss down")

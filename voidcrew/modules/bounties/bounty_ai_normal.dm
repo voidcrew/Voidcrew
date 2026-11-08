@@ -71,6 +71,8 @@
 /// Hit in a fight by someone new: they turn on whoever is closer (a pilot through their mech, H4)
 /mob/living/basic/bounty_criminal/normal/ai_attacked_again(mob/living/attacker)
 	if(ai_mode == BOUNTY_AI_FIGHTING)
+		// Someone new on them: while still unhurt they square up to the bigger crew (P2's body_size_up())
+		body_size_up(attacker)
 		ai_rally_companions(attacker)
 		var/mob/living/threat = ai_threat()
 		if(!threat || bounty_ai_dist(src, attacker) < bounty_ai_dist(src, threat))
@@ -113,7 +115,10 @@
 
 // ===== FIGHTING =====
 
-/// Starts (or keeps) fighting `target`: up, weapon out, companions called in, a line for it. A pilot is fought through their mech (H4).
+/**
+ * Starts (or keeps) fighting `target`: up, weapon out, companions called in, a line for it, and
+ * sized up against the hunters it faces (P2's body_size_up()). A pilot is fought through their mech (H4).
+ */
 /mob/living/basic/bounty_criminal/proc/ai_start_fight(mob/living/target, bark)
 	if(!ai_can_act() || !isliving(target) || QDELETED(ai_controller))
 		return FALSE
@@ -124,6 +129,7 @@
 	ai_set_mode(BOUNTY_AI_FIGHTING)
 	ai_set_threat(target)
 	ai_add_grudge(target)
+	body_size_up(target, engaging = fresh)
 	var/datum/bounty_style/style = bounty_ai_style(src)
 	ai_set_pace(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
 	bounty_ai_draw(src, ai_hand)
@@ -540,7 +546,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	var/reload_sound
 	/// A gun kept holstered or slung until a fight: what they say as they get it out (null: always in hand, or no gun)
 	var/draw_message
-	/// Shots in a burst through the ranged_attacks component, and the gap between them (0: one shot at a time)
+	/// Rounds in a burst, and the gap between them (0: one shot at a time). Fired round by round (pull_trigger()), never by the ranged_attacks component's own burst.
 	var/burst = 0
 	var/burst_gap = 0
 
@@ -555,8 +561,8 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	gun.projectile_type = projectile_type
 	gun.projectile_sound = weapon.fire_sound || projectile_sound
 	gun.cooldown_time = interval
-	gun.burst_shots = burst > 1 ? burst : null
-	gun.burst_intervals = burst_gap
+	// One round a trigger pull: the component's burst fires its later rounds on bare timers, whoever is still standing
+	gun.burst_shots = null
 
 /// Anything extra a melee hit does
 /datum/bounty_style/proc/on_melee_hit(mob/living/basic/fighter, mob/living/target)
@@ -617,8 +623,25 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 		fighter.face_atom(target)
 		return AI_BEHAVIOR_DELAY
 	controller.clear_blackboard_key(BB_BOUNTY_WINDUP_UNTIL)
-	fighter.RangedAttack(target)
+	pull_trigger(fighter, target)
 	return AI_BEHAVIOR_DELAY
+
+/**
+ * Fires at `target`: the first round through the ranged_attacks component (its cooldown and the
+ * pre-shot gate), then the rest of a burst, as many as the magazine still holds, each one only if
+ * they may still shoot (/datum/ai_controller/basic_controller/bounty/proc/burst_round()).
+ */
+/datum/bounty_style/proc/pull_trigger(mob/living/basic/fighter, atom/target)
+	var/datum/component/ranged_attacks/gun = fighter.GetComponent(/datum/component/ranged_attacks)
+	var/datum/ai_controller/basic_controller/bounty/controller = fighter.ai_controller
+	var/rounds = burst
+	if(rounds > 1 && istype(controller) && bounty_ai_real_weapon(fighter)?.magazine)
+		rounds = min(rounds, controller.blackboard[BB_BOUNTY_AMMO])
+	var/ready_at = gun?.fire_cooldown
+	fighter.RangedAttack(target)
+	// The first round went if the component's cooldown started
+	if(rounds > 1 && istype(controller) && gun && gun.fire_cooldown != ready_at)
+		controller.continue_burst(target, rounds - 1, burst_gap)
 
 /// After each shot: the magazine and the clock for the next string
 /datum/bounty_style/proc/after_shot(mob/living/basic/fighter)
@@ -753,15 +776,17 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	if(gun)
 		gun.fire_cooldown = max(gun.fire_cooldown, world.time) + BOUNTY_PISTOL_STRING_PAUSE
 
-/// A sub-machine gun: a spin-up, then a burst, as many rounds as are left in the magazine
+/**
+ * A sub-machine gun: a spin-up, then a burst, as many rounds as are left in the magazine. The WT-550
+ * at every tier, companions included: the Uzi's 9mm out-hit the Wanted gun.
+ */
 /datum/bounty_style/smg
 	key = BOUNTY_STYLE_SMG
 	ranged = TRUE
 	health_mult = BOUNTY_SMG_HEALTH
 	interval = BOUNTY_SMG_INTERVAL
 	speed = BOUNTY_NORMAL_SPEED_RANGED
-	held_look = /obj/item/gun/ballistic/automatic/mini_uzi
-	heavy_look = /obj/item/gun/ballistic/automatic/wt550
+	held_look = /obj/item/gun/ballistic/automatic/wt550
 	projectile_type = /obj/projectile/bullet/bounty
 	windup = BOUNTY_SMG_WINDUP
 	windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
@@ -771,15 +796,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	draw_message = "%USER pulls out an SMG!"
 	burst = BOUNTY_SMG_BURST
 	burst_gap = BOUNTY_SMG_BURST_GAP
-
-/// The burst never fires more rounds than the magazine has left
-/datum/bounty_style/smg/ranged_tick(mob/living/basic/fighter, atom/target)
-	var/datum/component/ranged_attacks/gun = fighter.GetComponent(/datum/component/ranged_attacks)
-	var/ammo = fighter.ai_controller.blackboard[BB_BOUNTY_AMMO]
-	if(gun && ammo > 0)
-		var/shots = min(burst, ammo)
-		gun.burst_shots = shots > 1 ? shots : null
-	return ..()
 
 /// A revolver: slow, heavy shots, then a long reload
 /datum/bounty_style/revolver

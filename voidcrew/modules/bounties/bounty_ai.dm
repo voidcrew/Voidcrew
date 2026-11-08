@@ -893,6 +893,8 @@
 	idle_behavior = /datum/idle_behavior/bounty_wander
 	/// Whether the mob carries a ranged_attacks component, for a ranged style or the holdout. A tree with a ranged subtree needs it at init.
 	var/armed = TRUE
+	/// Goes up with each burst, and when a round of one is refused, so the rest of that burst never fires
+	var/burst_serial = 0
 
 /datum/ai_controller/basic_controller/bounty/TryPossessPawn(atom/new_pawn)
 	if(!isbasicmob(new_pawn))
@@ -944,6 +946,35 @@
 /// Whether the pawn may shoot at `target` now at all. Subtypes add their rules.
 /datum/ai_controller/basic_controller/bounty/proc/may_shoot(atom/target)
 	return may_strike(target)
+
+/// The rest of a burst whose first round just went: `rounds` more at `target`, `gap` apart (/datum/bounty_style/proc/pull_trigger())
+/datum/ai_controller/basic_controller/bounty/proc/continue_burst(atom/target, rounds, gap)
+	var/serial = ++burst_serial
+	for(var/i in 1 to rounds)
+		addtimer(CALLBACK(src, PROC_REF(burst_round), target, serial), i * gap, TIMER_DELETE_ME)
+
+/**
+ * One more round of the burst under `serial`, asking again whether they may shoot: never once they
+ * are down, cuffed, stunned, dead or giving up, and never at someone gone, off their level or down
+ * (BB_TARGET_MINIMUM_STAT). A refused round ends the burst. TRUE if it fired.
+ */
+/datum/ai_controller/basic_controller/bounty/proc/burst_round(atom/target, serial)
+	if(serial != burst_serial)
+		return FALSE
+	var/mob/living/basic/fighter = pawn
+	var/datum/component/ranged_attacks/gun = istype(fighter) ? fighter.GetComponent(/datum/component/ranged_attacks) : null
+	if(!burst_target_ok(target) || !gun || QDELETED(fighter) || !may_shoot(target))
+		burst_serial++
+		return FALSE
+	gun.async_fire_ranged_attack(fighter, target)
+	return TRUE
+
+/// Whether a burst may go on at `target`: still there, on the pawn's level, and not down
+/datum/ai_controller/basic_controller/bounty/proc/burst_target_ok(atom/target)
+	if(QDELETED(target) || bounty_ai_dist(pawn, target) == INFINITY)
+		return FALSE
+	var/mob/living/person = target
+	return !isliving(person) || person.stat <= blackboard[BB_TARGET_MINIMUM_STAT]
 
 /// Someone attacked the pawn. Called outside the signal handler's stack.
 /datum/ai_controller/basic_controller/bounty/proc/pawn_attacked(mob/living/attacker)
