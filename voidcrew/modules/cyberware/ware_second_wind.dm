@@ -48,8 +48,14 @@
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
-	/// Breathable reserve remaining, in deciseconds of breathing covered.
+	/// Breathable reserve remaining, in deciseconds of breathing covered. A
+	/// model with a bigger bladder sets this to its max_reserve too, a var
+	/// initialiser can't read another var.
 	var/reserve = CYBERWARE_SECOND_WIND_RESERVE
+	/// The most reserve the bladder holds.
+	var/max_reserve = CYBERWARE_SECOND_WIND_RESERVE
+	/// Reserve regained per normal breath in breathable air.
+	var/refill_rate = CYBERWARE_SECOND_WIND_REFILL
 	/// TRUE while feeding the owner from reserve, for the engage/disengage beats.
 	var/engaged = FALSE
 	/// Whether the low-reserve warning has already fired this engagement, so
@@ -65,7 +71,7 @@
 /obj/item/organ/cyberimp/cyberware/second_wind/examine(mob/user)
 	. = ..()
 	var/seconds_left = round(reserve / (1 SECONDS))
-	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air[reserve < CYBERWARE_SECOND_WIND_RESERVE ? ", refilling while its bearer breathes normally" : " (full)"].")
+	. += span_notice("The reserve gauge reads <b>[seconds_left]</b> seconds of air[reserve < max_reserve ? ", refilling while its bearer breathes normally" : " (full)"].")
 
 /obj/item/organ/cyberimp/cyberware/second_wind/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -116,8 +122,8 @@
 	if(environment_is_breathable(source))
 		if(engaged)
 			set_engaged(source, FALSE)
-		if(reserve < CYBERWARE_SECOND_WIND_RESERVE)
-			reserve = min(reserve + CYBERWARE_SECOND_WIND_REFILL, CYBERWARE_SECOND_WIND_RESERVE)
+		if(reserve < max_reserve)
+			reserve = min(reserve + refill_rate, max_reserve)
 			low_warned = FALSE
 		return NONE
 	if(reserve <= 0)

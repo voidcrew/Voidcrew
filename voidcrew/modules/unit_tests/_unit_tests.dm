@@ -73,6 +73,7 @@
 #include "voidcrew_cyberware.dm"
 #include "voidcrew_cyberware_camo.dm"
 #include "voidcrew_cyberware_mantis.dm"
+#include "voidcrew_cyberware_models_b.dm"
 #include "voidcrew_derelict_helpers.dm"
 #include "voidcrew_derelict_layout.dm"
 #include "voidcrew_derelict_leash.dm"

@@ -301,6 +301,16 @@
    "reason": "No broken bones and no lost limbs, thrown things fly farther and you get thrown half as far. Slashes, burns and bleeding still land. Load 4, 2 vouchers at reputation 22.",
    "tier": "yellow"
   },
+  "/obj/item/organ/cyberimp/cyberware/atlas/street": {
+   "confidence": "medium",
+   "group": "Armor and frame",
+   "hash": "",
+   "name": "Strut frame",
+   "note": "Bone wounds (dislocations, hairline and compound fractures) are refused while the ware is online; nothing else. Limbs can still be dismembered, throws are not boosted and the wearer's own knockback is not reduced. Drops during an EMP reboot or over-capacity brownout.",
+   "rank": 6,
+   "reason": "Bones can't break: no dislocations or fractures. Limbs still come off, and slashes, burns and bleeding land as usual. None of the Atlas Frame's throw boost or knockback cut. Load 2, 1,500 cr at reputation 4.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/cargo_cavity": {
    "confidence": "high",
    "group": "Body upkeep",
@@ -357,6 +367,16 @@
    "reason": "Halves all burn damage on top of armor, lasers included, plus no heat damage and fire burns off fast. Half of every beam in the game for load 3. Bullets and blades ignore it. 3,600 cr with no reputation.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/cyberware/coolant/street": {
+   "confidence": "medium",
+   "group": "Armor and frame",
+   "hash": "",
+   "name": "Heat-sink lining",
+   "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature) and loses 1 fire stack per second. It does not reduce burn damage and does not stop fire: a burning wearer is burned at full strength. Both drop during an EMP reboot or over-capacity brownout.",
+   "rank": 7,
+   "reason": "No heat damage from hot air or lava country, and fire burns off fast, but burns from lasers and flames land at full strength. The heat half of the Coolant Loops for load 1, 1,500 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/cyberware/dead_channel": {
    "confidence": "medium",
    "group": "Nerves and stuns",
@@ -377,6 +397,16 @@
    "reason": "15 melee, 15 bullet, 10 laser on the whole body, on top of whatever you wear. A clear step up for load 2 and 2,000 cr. EMP switches it off for 9 s.",
    "tier": "yellow"
   },
+  "/obj/item/organ/cyberimp/cyberware/dermal_mesh/hardweave": {
+   "confidence": "medium",
+   "group": "Armor and frame",
+   "hash": "",
+   "name": "Hardweave plating",
+   "note": "While online, adds physiology armor to a human wearer: melee 20, bullet 20, laser 15, energy 10, wound 10. The armor is removed during an EMP reboot or an over-capacity brownout.",
+   "rank": 3,
+   "reason": "20 melee, 20 bullet, 15 laser, 10 energy and 10 wound armor on the whole body, on top of whatever you wear. A size up from the Mesh and well short of the Slabskin Plate, which adds bomb, fire and acid. Load 3, 3,000 cr at reputation 4. EMP switches it off for 9 s.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/doppler": {
    "confidence": "high",
    "group": "Scouting and sight",
@@ -386,6 +416,26 @@
    "rank": 1,
    "reason": "Anything alive and moving within 9 tiles shows through walls, without taking your eye slot. Standing still hides you and the ping is audible. Thermals' little brother. Load 2, 1 voucher.",
    "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/doppler/street": {
+   "confidence": "medium",
+   "group": "Scouting and sight",
+   "hash": "",
+   "name": "Thumper ear",
+   "note": "A toggle: while on, living mobs within 5 tiles on the wearer's level that are moving show as blips through walls on the wearer's HUD, each lasting 3 s after its last step so standing still drops off the display; machines never show. It plays a sonar ping at the wearer on every life tick while any mover is tracked, louder than the Heartbeat Doppler's and doubled within 3 tiles, so nearby players can hear it.",
+   "rank": 3,
+   "reason": "Anything alive and moving within 5 tiles shows through walls for a moment after each step, without taking your eye slot. Standing still hides you and the ping carries. A shorter, louder Heartbeat Doppler. Load 1, 1,500 cr at reputation 4.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/frostline": {
+   "confidence": "medium",
+   "group": "Armor and frame",
+   "hash": "",
+   "name": "Frostline lining",
+   "note": "While the ware is online the wearer takes no damage from cold air or body temperature. It does nothing for pressure, breathing or burns. The trait drops during an EMP reboot or over-capacity brownout.",
+   "rank": 9,
+   "reason": "No cold damage on ice planets and in the cold of space, but low pressure and no air still kill. Shares the seal slot with every air and heat lining, so it never sits beside a bladder. Load 1, 1,500 cr.",
+   "tier": "green"
   },
   "/obj/item/organ/cyberimp/cyberware/gastro": {
    "confidence": "high",
@@ -589,6 +639,16 @@
    "reason": "Three minutes of air when you lose your internals, refills as you breathe. A safety net against vacuum. Load 1, 900 cr.",
    "tier": "green"
   },
+  "/obj/item/organ/cyberimp/cyberware/second_wind/deep": {
+   "confidence": "medium",
+   "group": "Armor and frame",
+   "hash": "",
+   "name": "Deep-lung bladder",
+   "note": "Works exactly like the Second Wind bladder: when the surroundings have under 16 kPa of oxygen and the bearer isn't on tank internals, it supplies the breath itself, spending 8 seconds of reserve per breath. The reserve is 360 seconds (180) and refills 24 seconds per breath taken in breathable air (16). It announces itself with a gasp, a HUD alert and a loud breathing loop; it does nothing for no-breathers or while EMP'd or browned out.",
+   "rank": 8,
+   "reason": "Six minutes of air when you lose your internals, refilling faster than the Second Wind. A longer safety net against vacuum, not a way to work in it. Load 2, 1,800 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/cyberware/shock_coils": {
    "confidence": "medium",
    "group": "Nerves and stuns",
@@ -617,6 +677,26 @@
    "note": "While the bearer has moved within the last second, a hostile projectile has a 15% chance to be dodged with a visible sidestep and the round flies on; shooters 1 tile away always hit, and it doesn't work lying down, buckled or unconscious. Also gives a small speed bonus (-0.1 slowdown); with other dodge sources only the highest chance counts, and everything here is off while the ware is EMP'd or browned out.",
    "rank": 3,
    "reason": "15% of bullets miss while you're moving, never from an adjacent shooter, and you run slightly faster. Takes the slot Dead Channel wants. Load 4, 2 vouchers.",
+   "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/slipwire/milspec": {
+   "confidence": "medium",
+   "group": "Nerves and stuns",
+   "hash": "",
+   "name": "Weaver shunt",
+   "note": "While the bearer has moved within the last second, a hostile projectile has a 20% chance to be dodged with a visible sidestep and the round flies on; shooters 1 tile away always hit, and it doesn't work lying down, buckled or unconscious. Also gives a speed bonus (-0.15 slowdown). With other dodge sources only the highest chance counts, so a Cascade window's 40% still wins, and everything here is off while the ware is EMP'd or browned out.",
+   "rank": 2,
+   "reason": "20% of bullets miss while you're moving, never from an adjacent shooter, and you run a little faster than a Slipwire. Takes the slot Dead Channel wants. Load 5, 3 vouchers at reputation 11.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/slipwire/street": {
+   "confidence": "medium",
+   "group": "Nerves and stuns",
+   "hash": "",
+   "name": "Twitchwire",
+   "note": "While the bearer has moved within the last second, a hostile projectile has an 8% chance to be dodged with a visible sidestep and the round flies on; shooters 1 tile away always hit, and it doesn't work lying down, buckled or unconscious. No speed bonus. With other dodge sources only the highest chance counts, and it is off while the ware is EMP'd or browned out.",
+   "rank": 7,
+   "reason": "8% of bullets miss while you're moving, never from an adjacent shooter, and nothing else. A cheap taste of the Slipwire in the slot Dead Channel wants. Load 2, 1,800 cr at reputation 4.",
    "tier": "yellow"
   },
   "/obj/item/organ/cyberimp/eyes/hud/diagnostic": {

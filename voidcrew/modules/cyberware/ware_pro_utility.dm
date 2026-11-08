@@ -556,6 +556,9 @@
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
 	organ_traits = list(TRAIT_RESISTHEAT)
+	/// Multiplier on the bearer's burn damage while running. 1 leaves burns alone
+	/// and applies no physiology mod at all.
+	var/burn_mult = 0.5
 	/// TRUE while the burn-halving physiology mod is applied. Guards the
 	/// failing-gated passive hooks against double multiply/divide.
 	var/coolant_mod_applied = FALSE
@@ -567,11 +570,11 @@
 // Physiology persists across species changes (physiology.dm:1).
 /obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	if(coolant_mod_applied || !ishuman(bearer))
+	if(coolant_mod_applied || !ishuman(bearer) || burn_mult == 1)
 		return
 	coolant_mod_applied = TRUE
 	var/mob/living/carbon/human/human_bearer = bearer
-	human_bearer.physiology.burn_mod *= 0.5
+	human_bearer.physiology.burn_mod *= burn_mult
 
 /obj/item/organ/cyberimp/cyberware/coolant/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
@@ -581,7 +584,7 @@
 	if(!ishuman(bearer) || QDELETED(bearer))
 		return
 	var/mob/living/carbon/human/human_bearer = bearer
-	human_bearer.physiology.burn_mod /= 0.5
+	human_bearer.physiology.burn_mod /= burn_mult
 
 /obj/item/organ/cyberimp/cyberware/coolant/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -625,6 +628,12 @@
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	/// Whether the sonar is running.
 	var/active = FALSE
+	/// How far the sonar reaches, in tiles.
+	var/sonar_range = CYBERWARE_DOPPLER_RANGE
+	/// How long a contact stays painted after its last step.
+	var/contact_fade = CYBERWARE_DOPPLER_FADE
+	/// Added to the ping's volume, on top of the distance falloff.
+	var/ping_volume_bonus = 0
 	/// Living things in range we hold movement and death hooks on. Assoc for
 	/// the O(1) membership test; the values are dummies.
 	var/list/watched = list()
@@ -694,7 +703,7 @@
 		return
 	next_sweep = world.time + CYBERWARE_DOPPLER_SWEEP
 	var/list/in_range = list()
-	for(var/mob/living/contact in range(CYBERWARE_DOPPLER_RANGE, owner))
+	for(var/mob/living/contact in range(sonar_range, owner))
 		if(contact == owner || contact.stat == DEAD)
 			continue
 		in_range[contact] = TRUE
@@ -742,14 +751,14 @@
 /obj/item/organ/cyberimp/cyberware/doppler/proc/paint_contact(mob/living/contact)
 	if(!active || (organ_flags & ORGAN_FAILING) || QDELETED(owner) || QDELETED(contact))
 		return
-	if(contact.stat == DEAD || get_dist(owner, contact) > CYBERWARE_DOPPLER_RANGE || contact.z != owner.z)
+	if(contact.stat == DEAD || get_dist(owner, contact) > sonar_range || contact.z != owner.z)
 		unwatch_contact(contact)
 		return
 	var/datum/cyberware_hud_mark/blip = contacts[contact]
 	if(blip)
-		blip.refresh(CYBERWARE_DOPPLER_FADE)
+		blip.refresh(contact_fade)
 		return
-	cyberware_hud_mark(owner, contact, "#9fd8ff", CYBERWARE_DOPPLER_FADE, "sonar_ping_small", contacts, contact)
+	cyberware_hud_mark(owner, contact, "#9fd8ff", contact_fade, "sonar_ping_small", contacts, contact)
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED] on the bearer: the set of things
 /// close enough to hook changed. The blips re-aim themselves.
@@ -792,7 +801,7 @@
 	if(nearest_mover == INFINITY)
 		return
 	// Louder as they close; audible around you either way. That's the deal.
-	var/ping_volume = clamp(45 - nearest_mover * 3, 15, 45)
+	var/ping_volume = clamp(45 - nearest_mover * 3, 15, 45) + ping_volume_bonus
 	playsound(owner, 'sound/machines/sonar-ping.ogg', ping_volume, TRUE)
 	if(nearest_mover <= 3) // close contact: the beep doubles up
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), owner, 'sound/machines/sonar-ping.ogg', ping_volume, TRUE), 0.4 SECONDS)

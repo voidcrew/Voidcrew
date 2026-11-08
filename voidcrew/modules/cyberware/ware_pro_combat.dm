@@ -309,17 +309,22 @@
  * sidestep (never point-blank, never while browned out) plus a small
  * always-on gait boost. The dodge itself lives in the shared arbiter above;
  * this organ just contributes a source whose chance drops to zero the moment
- * the ware is EMP-scrambled or browned out.
+ * the ware is EMP-scrambled or browned out. The chance and the gait boost are
+ * vars, so the street and service models (ware_models_b.dm) retune them.
  */
 /obj/item/organ/cyberimp/cyberware/slipwire
 	name = "\improper Slipwire reflex shunt"
-	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps incoming fire on its own, roughly one shot in seven misses because your body moved before you told it to."
+	desc = "A reflex arc spliced in parallel with the spinal trunk. While you're moving it sidesteps some of the fire coming your way, because your body moved before you told it to."
 	icon_state = "slipwire"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_CYBERWARE_NERVOUS
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 4
 	tier = CYBERWARE_TIER_2
+	/// Percent of hostile projectiles dodged while the bearer is moving.
+	var/dodge_chance = CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	/// The gait boost the ware adds while it runs. Null for none.
+	var/datum/movespeed_modifier/gait_modifier = /datum/movespeed_modifier/cyberware_slipwire
 
 /obj/item/organ/cyberimp/cyberware/slipwire/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -335,17 +340,19 @@
 // add/remove is idempotent and needs no applied-state guard.
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_on(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.add_movespeed_modifier(gait_modifier)
 
 /obj/item/organ/cyberimp/cyberware/slipwire/chrome_passives_off(mob/living/carbon/bearer)
 	. = ..()
-	bearer?.remove_movespeed_modifier(/datum/movespeed_modifier/cyberware_slipwire)
+	if(gait_modifier)
+		bearer?.remove_movespeed_modifier(gait_modifier)
 
 /// Dodge-source callback: dead weight while failing, 15% otherwise.
 /obj/item/organ/cyberimp/cyberware/slipwire/proc/get_dodge_chance()
 	if(organ_flags & ORGAN_FAILING)
 		return 0
-	return CYBERWARE_SLIPWIRE_DODGE_CHANCE
+	return dodge_chance
 
 /datum/movespeed_modifier/cyberware_slipwire
 	multiplicative_slowdown = -0.1

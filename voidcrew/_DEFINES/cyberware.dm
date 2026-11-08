@@ -188,3 +188,16 @@
 /// Past the slices, the mouse points at whichever slice lies within this many
 /// degrees of its direction.
 #define CHROME_WHEEL_POINT_TOLERANCE 20
+
+// ---- Phase 2 models: seal, frame and nervous street models -------------
+// ware_models_b.dm. Hardweave, the Strut frame, the Deep-lung bladder, the
+// Heat-sink and Frostline linings, the Twitchwire and Weaver shunts, and the
+// Thumper ear.
+
+/// Held by a bearer whose skeleton simply does not break. Blocks the whole
+/// bone wound series, dislocations, hairline fractures, compound fractures,
+/// at the wound system's own gate, and nothing else. Every other wound series
+/// lands on its bearer exactly as it lands on anyone. Granted by the Atlas
+/// frame (ware_military_body.dm) and the Strut frame (ware_models_b.dm); the
+/// gate itself is in ware_military_body.dm.
+#define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"

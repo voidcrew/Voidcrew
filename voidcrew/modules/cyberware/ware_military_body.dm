@@ -418,11 +418,8 @@
 // ATLAS FRAME
 // =========================================================================
 
-/// Held by a bearer whose skeleton simply does not break. Blocks the whole
-/// bone wound series, dislocations, hairline fractures, compound fractures,
-/// at the wound system's own gate, and nothing else. Every other wound series
-/// lands on its bearer exactly as it lands on anyone.
-#define TRAIT_CYBERWARE_UNBREAKABLE_BONES "cyberware_unbreakable_bones"
+// TRAIT_CYBERWARE_UNBREAKABLE_BONES lives in voidcrew/_DEFINES/cyberware.dm
+// so the street frame (ware_models_b.dm) can name it too.
 
 /**
  * # Atlas Frame (T3, chest, frame slot, load 4)
@@ -447,15 +444,27 @@
 	chrome_load = 4
 	tier = CYBERWARE_TIER_3
 	organ_traits = list(TRAIT_NODISMEMBER, TRAIT_CYBERWARE_UNBREAKABLE_BONES)
+	/// Tiles added to the range of anything the bearer throws. With no speed
+	/// bonus either, the throw hook is never armed.
+	var/throw_range_bonus = 2
+	/// Speed added to anything the bearer throws.
+	var/throw_speed_bonus = 1
+	/// Whether a throw of the bearer by something else travels half as far.
+	var/resists_knockback = TRUE
+	/// The line examine adds on top of the organ's own. Null for none.
+	var/frame_examine = "Covers the skeleton only: no dislocations, no fractures, and no losing a limb. Slashes, punctures, burns and bleeding are untouched."
 
 /obj/item/organ/cyberimp/cyberware/atlas/examine(mob/user)
 	. = ..()
-	. += span_notice("Covers the skeleton only: no dislocations, no fractures, and no losing a limb. Slashes, punctures, burns and bleeding are untouched.")
+	if(frame_examine)
+		. += span_notice(frame_examine)
 
 /obj/item/organ/cyberimp/cyberware/atlas/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
-	RegisterSignal(organ_owner, COMSIG_MOB_THROW, PROC_REF(on_owner_throws))
-	RegisterSignal(organ_owner, COMSIG_MOVABLE_PRE_THROW, PROC_REF(on_owner_thrown))
+	if(throw_range_bonus || throw_speed_bonus)
+		RegisterSignal(organ_owner, COMSIG_MOB_THROW, PROC_REF(on_owner_throws))
+	if(resists_knockback)
+		RegisterSignal(organ_owner, COMSIG_MOVABLE_PRE_THROW, PROC_REF(on_owner_thrown))
 
 /obj/item/organ/cyberimp/cyberware/atlas/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -488,8 +497,8 @@
 	SIGNAL_HANDLER
 	if(throw_args[4] != owner) // someone else's throw, somehow
 		return
-	throw_args[2] += 2 // range
-	throw_args[3] += 1 // speed
+	throw_args[2] += throw_range_bonus // range
+	throw_args[3] += throw_speed_bonus // speed
 
 /obj/item/organ/cyberimp/cyberware/atlas/proc/clear_throw_hooks(list/candidates)
 	for(var/atom/movable/candidate as anything in candidates)
@@ -863,5 +872,4 @@
 #undef CYBERWARE_LAZARUS_COOLDOWN
 #undef CYBERWARE_LAZARUS_WINDUP
 #undef CYBERWARE_LAZARUS_HEAL_TO
-#undef TRAIT_CYBERWARE_UNBREAKABLE_BONES
 #undef CYBERWARE_RIGGER_SLOWDOWN

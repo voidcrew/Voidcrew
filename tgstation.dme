@@ -7196,6 +7196,7 @@
 #include "voidcrew\modules\cyberware\ware_line_widowline.dm"
 #include "voidcrew\modules\cyberware\ware_military_arms.dm"
 #include "voidcrew\modules\cyberware\ware_military_body.dm"
+#include "voidcrew\modules\cyberware\ware_models_b.dm"
 #include "voidcrew\modules\cyberware\ware_pro_combat.dm"
 #include "voidcrew\modules\cyberware\ware_pro_utility.dm"
 #include "voidcrew\modules\cyberware\ware_registry.dm"
