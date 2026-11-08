@@ -193,7 +193,7 @@ The **exotic utilizer** is a handheld projector with a slot for the battery. Ope
 
 - A field or burst effect runs until the battery is empty, about six and a half minutes from full.
 - A contact effect waits for you to press the prongs against someone, yourself included. A full battery gives ten uses.
-- A field or burst reaches everyone in range, and many effects do not spare the person holding it.
+- A field or burst reaches everyone in range, including the person holding it.
 - It goes dark in a trader outpost.
 
 ### Smashing

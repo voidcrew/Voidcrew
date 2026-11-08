@@ -312,10 +312,8 @@
 	log_harm(target)
 	return TRUE
 
-/// Who it works on. A harmful one carried in a battery spares whoever carries it.
+/// Who it works on. A harmful one carried in a battery works on whoever carries it too.
 /datum/artifact_effect/bestow/proc/can_bestow(mob/living/target)
-	if(harmful && target == artifact_effect_visible_source(holder))
-		return FALSE
 	return target.stat != DEAD
 
 /// Hook: `target` just got their first dose.

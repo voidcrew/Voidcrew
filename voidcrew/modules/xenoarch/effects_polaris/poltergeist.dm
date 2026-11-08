@@ -46,7 +46,7 @@
 	var/best_distance = INFINITY
 	var/best_has_mind = FALSE
 	for(var/mob/living/candidate in living_in_range())
-		if(candidate.stat != CONSCIOUS || candidate == artifact_effect_visible_source(holder))
+		if(candidate.stat != CONSCIOUS)
 			continue
 		var/has_mind = !!candidate.mind
 		var/distance = get_dist(center, candidate)

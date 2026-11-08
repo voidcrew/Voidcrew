@@ -47,8 +47,6 @@
 /datum/artifact_effect/life_drain/proc/can_hook(mob/living/target)
 	if(target.stat == DEAD || hooked?[REF(target)])
 		return FALSE
-	if(target == artifact_effect_visible_source(holder))
-		return FALSE
 	return artifact_exposure(target) >= 0.5
 
 /// Hooks a beam into `target`; the drain lands after the windup if they stay. Returns TRUE if it hooked.
@@ -58,26 +56,38 @@
 	var/atom/origin = artifact_effect_visible_source(holder)
 	if(!isatom(origin))
 		return FALSE
-	var/datum/beam/drain_beam = origin.Beam(target, icon_state = "drain_life", time = ARTIFACT_DRAIN_WINDUP + 0.5 SECONDS, maxdistance = range + 1)
 	var/key = REF(target)
 	hooked[key] = TRUE
+	playsound(target, 'sound/effects/magic/enter_blood.ogg', 35, TRUE)
+	// Carried in a battery, it feeds on whoever holds it: no beam to step out of.
+	if(origin == target)
+		target.visible_message(
+			span_danger("[target] shudders as something in [target.p_their()] grip starts to pull."),
+			span_userdanger("Something in your grip hooks into you. Something cold starts to pull."),
+		)
+		addtimer(CALLBACK(src, PROC_REF(finish_hook), WEAKREF(target), null, key, damage, TRUE), ARTIFACT_DRAIN_WINDUP, TIMER_DELETE_ME)
+		return TRUE
+	var/datum/beam/drain_beam = origin.Beam(target, icon_state = "drain_life", time = ARTIFACT_DRAIN_WINDUP + 0.5 SECONDS, maxdistance = range + 1)
 	target.visible_message(
 		span_danger("A sickly beam lashes out from [origin] and hooks into [target]!"),
 		span_userdanger("A sickly beam lashes out from [origin] and hooks into you. Something cold starts to pull."),
 	)
-	playsound(target, 'sound/effects/magic/enter_blood.ogg', 35, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(finish_hook), WEAKREF(target), WEAKREF(drain_beam), key, damage), ARTIFACT_DRAIN_WINDUP, TIMER_DELETE_ME)
 	return TRUE
 
 /// The windup ended: drains `target` if the beam still holds them.
-/datum/artifact_effect/life_drain/proc/finish_hook(datum/weakref/target_ref, datum/weakref/beam_ref, key, damage)
+/datum/artifact_effect/life_drain/proc/finish_hook(datum/weakref/target_ref, datum/weakref/beam_ref, key, damage, held = FALSE)
 	hooked -= key
 	var/mob/living/target = target_ref?.resolve()
 	var/datum/beam/drain_beam = beam_ref?.resolve()
 	if(!target || target.stat == DEAD)
 		qdel(drain_beam)
 		return
-	if(QDELETED(drain_beam))
+	if(held)
+		if(artifact_effect_visible_source(holder) != target)
+			to_chat(target, span_notice("The cold hook slips out of you."))
+			return
+	else if(QDELETED(drain_beam))
 		to_chat(target, span_notice("The cold hook slips out of you."))
 		return
 	qdel(drain_beam)

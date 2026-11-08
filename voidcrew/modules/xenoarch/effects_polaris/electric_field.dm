@@ -5,7 +5,7 @@
 // Polaris shocked everyone in range for up to 40 burn. Field arcs never stun, bursts only knock
 // down briefly, and every arc is logged. A hand on it grounds the toucher: the charge leaps to
 // everyone else nearby instead, as in Polaris. Lights in range flicker as it charges. Run from a
-// carried battery, it never arcs to its carrier.
+// carried battery, it arcs to its carrier too.
 
 /// Lights one charge can flicker, so a room full of lamps costs no more than a few
 #define ARTIFACT_FIELD_MAX_FLICKERS 6
@@ -54,7 +54,7 @@
  */
 /datum/artifact_effect/electric_field/proc/arc_to(mob/living/target, damage, knockdown)
 	var/atom/source = artifact_effect_visible_source(holder)
-	if(target.stat == DEAD || target == source || !conducts(target))
+	if(target.stat == DEAD || !conducts(target))
 		return FALSE
 	damage *= artifact_exposure(target)
 	if(damage < 1)
@@ -63,10 +63,13 @@
 	// Positional on purpose: only the carbon override has the jitter, stutter and stun arguments.
 	if(!target.electrocute_act(damage, holder, 1, flags, 4 SECONDS, 2 SECONDS, 1 SECONDS))
 		return FALSE
-	source?.Beam(target, icon_state = "lightning[rand(1, 12)]", time = 0.5 SECONDS)
+	if(source != target)
+		source?.Beam(target, icon_state = "lightning[rand(1, 12)]", time = 0.5 SECONDS)
 	if(issilicon(target) || (target.mob_biotypes & MOB_ROBOTIC))
 		to_chat(target, span_danger("ERROR: Electrical fault detected!"))
 		target.adjust_stutter(3 SECONDS)
+	else if(source == target)
+		to_chat(target, span_danger("Sparks crawl up your arm!"))
 	else
 		to_chat(target, span_danger("A spark leaps from [source] to you!"))
 	log_harm(target)

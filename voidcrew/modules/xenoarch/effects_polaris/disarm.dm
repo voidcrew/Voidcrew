@@ -2,7 +2,7 @@
 // Rewritten from Polaris (6cd19fe0dec6) code/modules/xenoarcheaology/effects/disarm.dm. Voidcrew:
 // pries open the hand people are using, so what they hold drops at their feet (never thrown, so
 // nothing lands in a chasm or lava); items that can't be dropped stay put. Run from a carried
-// battery, it never pries open its carrier's hand. Logged like a weapon.
+// battery, it pries open its carrier's hand too. Logged like a weapon.
 
 /datum/artifact_effect/disarm
 	label_name = "Makes people drop things"
@@ -28,7 +28,7 @@
 
 /// Makes `target` drop what is in their active hand. Returns TRUE if it fell.
 /datum/artifact_effect/disarm/proc/pry(mob/living/target)
-	if(target.stat != CONSCIOUS || target == artifact_effect_visible_source(holder))
+	if(target.stat != CONSCIOUS)
 		return FALSE
 	if(!prob(100 * artifact_exposure(target)))
 		return FALSE

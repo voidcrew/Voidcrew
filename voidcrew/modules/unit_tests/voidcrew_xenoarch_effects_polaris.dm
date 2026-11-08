@@ -100,7 +100,7 @@
 /**
  * Harvested copies run from a battery item, usually in someone's hand (the utilizer). Every Polaris
  * effect runs from such a holder through the public API (wake, touch, tick) and the raw hooks
- * without errors, and the harmful ones never turn on whoever carries the battery. A folder stands
+ * without errors, and the harmful ones work on whoever carries the battery too. A folder stands
  * in for the battery: these tests must not depend on another part's types.
  */
 /datum/unit_test/voidcrew_xenoarch_polaris_battery_holder/Run()
@@ -131,8 +131,6 @@
 		copy.do_effect_aura(2)
 		copy.do_effect_pulse(copy.maximum_charges)
 		copy.deactivate(quiet = TRUE)
-		if(copy.harmful)
-			TEST_ASSERT(carrier.is_holding(battery), "[effect_type] run from a battery made its carrier drop it")
 		qdel(copy)
 		carrier.fully_heal(HEAL_ALL)
 		target.fully_heal(HEAL_ALL)
@@ -141,15 +139,17 @@
 		if(!carrier.is_holding(battery))
 			carrier.put_in_active_hand(battery)
 
-	// The harmful ones spare their carrier outright.
+	// The harmful ones hit their carrier too.
 	find.replace_effects(/datum/artifact_effect/electric_field, /datum/artifact_effect/disarm, 3)
 	var/datum/artifact_effect/electric_field/field = find.main_effect.make_harvest_copy(battery)
 	var/datum/artifact_effect/disarm/pry = find.second_effect.make_harvest_copy(battery)
 	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
 	carrier.put_in_inactive_hand(bar)
-	TEST_ASSERT(!field.arc_to(carrier, 10, FALSE), "an electric field in a battery arced to its own carrier")
-	TEST_ASSERT(!pry.pry(carrier), "a disarm battery pried open its own carrier's hand")
-	TEST_ASSERT(carrier.is_holding(battery), "the carrier lost the battery")
+	TEST_ASSERT(field.arc_to(carrier, 10, FALSE), "an electric field in a battery spared its own carrier")
+	carrier.fully_heal(HEAL_ALL)
+	carrier.swap_hand()
+	TEST_ASSERT(pry.pry(carrier), "a disarm battery spared its own carrier's hand")
+	TEST_ASSERT(!carrier.is_holding(bar), "the disarm battery did not make its carrier drop the crowbar")
 	qdel(field)
 	qdel(pry)
 
