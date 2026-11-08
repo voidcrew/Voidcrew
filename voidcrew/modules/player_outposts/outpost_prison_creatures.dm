@@ -86,6 +86,18 @@
 			subject.manual_emote(pick("flinches away from the light.", "whispers to nobody.", "shades [subject.p_their()] eyes.", "stands very still in the dark."))
 			playsound(subject, pick('sound/effects/hallucinations/i_see_you1.ogg', 'sound/effects/hallucinations/behind_you1.ogg'), 20, TRUE)
 
+/**
+ * One of a creature's ability hits on `victim` (the hulk's charge, the nightmare's lunge out of the dark):
+ * at a body zone, through the armour on it, and able to wound like any other blow of its kind. A blunt hit
+ * when `sharpness` is NONE. Returns the damage dealt.
+ */
+/proc/outpost_experiment_ability_hit(mob/living/victim, damage, sharpness = NONE, armour_penetration = 0, zone, atom/attacker)
+	if(QDELETED(victim))
+		return 0
+	zone ||= victim.get_random_valid_zone(BODY_ZONE_CHEST)
+	var/blocked = victim.run_armor_check(zone, MELEE, armour_penetration = armour_penetration)
+	return victim.apply_damage(damage, BRUTE, zone, blocked, sharpness = sharpness, attack_direction = attacker ? get_dir(attacker, victim) : null)
+
 /// Takes the tells off a subject the serum never finished with
 /proc/outpost_experiment_clear_tells(mob/living/basic/outpost_prisoner/subject)
 	if(QDELETED(subject))
@@ -712,7 +724,7 @@
 		return
 	if(isliving(target))
 		var/mob/living/victim = target
-		victim.apply_damage(damage_dealt, BRUTE, wound_bonus = CANT_WOUND)
+		outpost_experiment_ability_hit(victim, damage_dealt, attacker = source)
 		playsound(get_turf(victim), 'sound/effects/meteorimpact.ogg', 80, TRUE)
 		return ..()
 	hulk?.visible_message(span_danger("[hulk] slams into [target] and reels!"))
@@ -1238,7 +1250,7 @@
 	do_attack_animation(target, ATTACK_EFFECT_SLASH)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 	target.visible_message(span_danger("[src] lunges out of the dark at [target]!"), span_userdanger("[src] lunges out of the dark at you!"))
-	target.apply_damage(OUTPOST_NIGHTMARE_JAUNT_DAMAGE, BRUTE, wound_bonus = CANT_WOUND)
+	outpost_experiment_ability_hit(target, OUTPOST_NIGHTMARE_JAUNT_DAMAGE, SHARP_EDGED, OUTPOST_NIGHTMARE_ARMOUR_PENETRATION, attacker = src)
 	target.Knockdown(OUTPOST_NIGHTMARE_JAUNT_KNOCKDOWN)
 	return TRUE
 
