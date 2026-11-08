@@ -45,6 +45,8 @@
 #include "voidcrew_bounty_boss_reach.dm"
 #include "voidcrew_bounty_bosses.dm"
 #include "voidcrew_bounty_chrome.dm"
+#include "voidcrew_bounty_chrome_cascade.dm"
+#include "voidcrew_bounty_chrome_piledriver.dm"
 #include "voidcrew_bounty_companions_backup.dm"
 #include "voidcrew_bounty_criminal.dm"
 #include "voidcrew_bounty_guns.dm"
