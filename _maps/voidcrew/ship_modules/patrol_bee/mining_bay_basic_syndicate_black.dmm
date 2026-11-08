@@ -1,0 +1,123 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aFH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/miner,
+/obj/effect/turf_decal/bot_white,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"bcu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/arrows/red{
+	dir = 1;
+	pixel_y = -10
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"bsm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"cTF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/box/red,
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"fFR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/cargo/mining,
+/obj/effect/spawner/random/maintenance/three,
+/obj/item/pickaxe/drill,
+/obj/item/mining_voucher,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"gOm" = (
+/turf/template_noop,
+/area/template_noop)
+"jDy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"jQN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"pGM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/mineral/ore_redemption{
+	output_dir = 1
+	},
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+"rEv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"slD" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"sJY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"wKj" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth_large,
+/area/template_noop)
+"xqQ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/order_console/mining,
+/turf/open/floor/iron/dark/textured_half,
+/area/template_noop)
+
+(1,1,1) = {"
+gOm
+fFR
+sJY
+bcu
+pGM
+"}
+(2,1,1) = {"
+gOm
+xqQ
+sJY
+rEv
+aFH
+"}
+(3,1,1) = {"
+wKj
+jQN
+jDy
+rEv
+cTF
+"}
+(4,1,1) = {"
+slD
+bsm
+bsm
+rEv
+aFH
+"}

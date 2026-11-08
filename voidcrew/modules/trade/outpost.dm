@@ -504,12 +504,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		trader.speak_line(TRADER_LINE_AGGRESSION)
 
 /**
- * Places a ship under trade embargo for OUTPOST_EMBARGO_DURATION.
+ * Places a ship under trade embargo for `duration` (admins set their own, see overmap_management_bans.dm).
  */
-/obj/structure/overmap/trader_outpost/proc/embargo_ship(obj/structure/overmap/ship/ship)
+/obj/structure/overmap/trader_outpost/proc/embargo_ship(obj/structure/overmap/ship/ship, duration = OUTPOST_EMBARGO_DURATION)
 	if(!istype(ship))
 		return
-	embargoed_ships[ship] = world.time + OUTPOST_EMBARGO_DURATION
+	embargoed_ships[ship] = world.time + duration
 	ship.ship_notify("[name] has placed your vessel under trade embargo.", "TRADE EMBARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 25)
 
 /**

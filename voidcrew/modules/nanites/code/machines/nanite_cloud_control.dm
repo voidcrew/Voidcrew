@@ -135,6 +135,7 @@
 		data["name"] = current_program.name
 		data["desc"] = current_program.desc
 		data["use_rate"] = current_program.use_rate
+		data["load"] = current_program.capacity_cost()
 		data["can_trigger"] = current_program.can_trigger
 		data["trigger_cost"] = current_program.trigger_cost
 		data["trigger_cooldown"] = current_program.trigger_cooldown / 10
@@ -179,6 +180,7 @@
 				cloud_program["desc"] = P.desc
 				cloud_program["id"] = id
 				cloud_program["use_rate"] = P.use_rate
+				cloud_program["load"] = P.capacity_cost()
 				cloud_program["can_trigger"] = P.can_trigger
 				cloud_program["trigger_cost"] = P.trigger_cost
 				cloud_program["trigger_cooldown"] = P.trigger_cooldown / 10
@@ -260,6 +262,7 @@
 		program_design["id"] = D.id
 		program_design["name"] = D.name
 		program_design["desc"] = D.desc
+		program_design["load"] = nanite_program_type_capacity_cost(D.program_type)
 		data["programs"][cat_name] += list(program_design)
 
 	if(!length(data["programs"]))

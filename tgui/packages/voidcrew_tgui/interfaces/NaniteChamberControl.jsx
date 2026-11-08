@@ -1,6 +1,7 @@
 import { useBackend } from '../../tgui/backend';
 import { Box, Button, Collapsible, Flex, LabeledList, NoticeBox, NumberInput, Section } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
+import { NeuralLoadBar } from './common/NeuralLoad';
 
 export const NaniteChamberControl = (props, context) => {
   return (
@@ -25,6 +26,8 @@ export const NaniteChamberControlContent = (props, context) => {
     cloud_id,
     cloud_ship,
     scan_level,
+    neural_load,
+    neural_capacity,
   } = data;
 
   if (status_msg) {
@@ -32,6 +35,7 @@ export const NaniteChamberControlContent = (props, context) => {
   }
 
   const mob_programs = data.mob_programs || [];
+  const load_segments = data.load_segments || [];
 
   return (
     <Section
@@ -75,7 +79,7 @@ export const NaniteChamberControlContent = (props, context) => {
               />
             }>
             <Flex>
-              <Flex.Item>
+              <Flex.Item mr={3}>
                 <LabeledList>
                   <LabeledList.Item label="Nanite Volume">
                     {nanite_volume}
@@ -122,6 +126,18 @@ export const NaniteChamberControlContent = (props, context) => {
                 </LabeledList>
               </Flex.Item>
             </Flex>
+            {neural_capacity > 0 && (
+              <Box mt={1}>
+                <Box color="label" mb={0.5}>
+                  Neural Load
+                </Box>
+                <NeuralLoadBar
+                  load={neural_load}
+                  capacity={neural_capacity}
+                  segments={load_segments}
+                />
+              </Box>
+            )}
             <Box mt={1} color="label">
               Nanite clouds are ship-local. Setting a cloud ID here links these
               nanites to the matching backup on this ship&apos;s cloud
@@ -133,7 +149,14 @@ export const NaniteChamberControlContent = (props, context) => {
               const extra_settings = program.extra_settings || [];
               const rules = program.rules || [];
               return (
-                <Collapsible key={program.name} title={program.name}>
+                <Collapsible
+                  key={program.name}
+                  title={program.name}
+                  buttons={
+                    <Box inline color="label" mr={1} lineHeight="20px">
+                      Load {program.load}
+                    </Box>
+                  }>
                   <Section>
                     <Flex>
                       <Flex.Item grow>{program.desc}</Flex.Item>

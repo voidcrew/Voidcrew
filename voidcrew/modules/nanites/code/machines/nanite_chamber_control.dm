@@ -61,6 +61,11 @@
 
 	SEND_SIGNAL(L, COMSIG_NANITE_UI_DATA, data, chamber.scan_level)
 
+	if(iscarbon(L))
+		data["neural_load"] = get_chrome_load(L)
+		data["neural_capacity"] = get_chrome_capacity(L)
+		data["load_segments"] = get_neural_load_segments(L)
+
 	return data
 
 /obj/machinery/computer/nanite_chamber_control/ui_act(action, params)

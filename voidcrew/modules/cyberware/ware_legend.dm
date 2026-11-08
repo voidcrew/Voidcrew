@@ -24,6 +24,8 @@
 #define CYBERWARE_CASCADE_DODGE_CHANCE 40
 /// Stamina dumped by the crash.
 #define CYBERWARE_CASCADE_CRASH_STAMINA 80
+/// Degrees the afterimage hue moves per step of the trail.
+#define CYBERWARE_CASCADE_HUE_STEP 25
 
 /**
  * # Cascade Lattice (T4, chest, OS slot, load 12)
@@ -108,8 +110,11 @@
 	duration = CYBERWARE_CASCADE_WINDOW
 	tick_interval = STATUS_EFFECT_NO_TICK
 	alert_type = /atom/movable/screen/alert/status_effect/cyberware_cascade
+	/// Hue of the next afterimage, in degrees. Starts random so no two surges match.
+	var/trail_hue = 0
 
 /datum/status_effect/cyberware_cascade_window/on_apply()
+	trail_hue = rand(0, 359)
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade)
 	owner.add_movespeed_mod_immunities(id, /datum/movespeed_modifier/reagent)
 	cyberware_register_dodge_source(owner, id, CALLBACK(src, PROC_REF(get_dodge_chance)))
@@ -143,11 +148,40 @@
 	return CYBERWARE_CASCADE_DODGE_CHANCE
 
 /// Signal proc for [COMSIG_MOVABLE_MOVED]: one afterimage per step, the
-/// telegraph everyone in the fight can read.
+/// telegraph everyone in the fight can read. Each step shifts the hue, so the
+/// trail reads as one rolling colour gradient.
 /datum/status_effect/cyberware_cascade_window/proc/on_move(atom/movable/source, atom/old_loc, dir, forced)
 	SIGNAL_HANDLER
-	if(isturf(old_loc))
-		new /obj/effect/temp_visual/decoy/fading/halfsecond(old_loc, owner)
+	if(!isturf(old_loc))
+		return
+	new /obj/effect/temp_visual/decoy/fading/cascade(old_loc, owner, trail_hue)
+	trail_hue = (trail_hue + CYBERWARE_CASCADE_HUE_STEP) % 360
+
+/// One afterimage in the Cascade trail, washed in a single hue.
+/obj/effect/temp_visual/decoy/fading/cascade
+	duration = 8
+
+/obj/effect/temp_visual/decoy/fading/cascade/Initialize(mapload, atom/mimiced_atom, hue = 0)
+	. = ..()
+	alpha = 200
+	color = cascade_tint_matrix(hue)
+	animate(src, alpha = 0, time = duration) // restart the parent's fade from the new alpha
+
+/// Colour matrix that flattens the copy to luminance and paints it one hue,
+/// with a lift so dark clothes still glow instead of going black.
+/obj/effect/temp_visual/decoy/fading/cascade/proc/cascade_tint_matrix(hue)
+	var/list/tint = rgb2num(rgb(hue, 100, 100, space = COLORSPACE_HSV))
+	var/red = tint[1] / 255
+	var/green = tint[2] / 255
+	var/blue = tint[3] / 255
+	var/gain = 0.8
+	var/lift = 0.6
+	return list(
+		0.3 * gain * red, 0.3 * gain * green, 0.3 * gain * blue,
+		0.59 * gain * red, 0.59 * gain * green, 0.59 * gain * blue,
+		0.11 * gain * red, 0.11 * gain * green, 0.11 * gain * blue,
+		lift * red, lift * green, lift * blue,
+	)
 
 /atom/movable/screen/alert/status_effect/cyberware_cascade
 	name = "Cascade Window"
@@ -858,6 +892,7 @@
 #undef CYBERWARE_CASCADE_CRASH
 #undef CYBERWARE_CASCADE_DODGE_CHANCE
 #undef CYBERWARE_CASCADE_CRASH_STAMINA
+#undef CYBERWARE_CASCADE_HUE_STEP
 #undef CYBERWARE_REDLINE_WINDOW
 #undef CYBERWARE_REDLINE_DAMAGE_MULT
 #undef CYBERWARE_REDLINE_MELEE_BONUS

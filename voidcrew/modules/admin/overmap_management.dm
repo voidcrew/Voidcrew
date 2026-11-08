@@ -100,6 +100,7 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 		"worldgen" = SSovermap.worldgen_label,
 		"worldgen_seconds" = SSovermap.worldgen_owner ? round((world.time - SSovermap.worldgen_claimed_at) / 10) : 0,
 		"queued_jobs" = SSovermap.worldgen_queue_length(),
+		"bans" = viewing_bans ? ban_data() : null, // overmap_management_bans.dm
 	)
 	for(var/obj/structure/overmap/contact as anything in GLOB.overmap_objects)
 		if(!can_manage_contact(contact))
@@ -206,6 +207,8 @@ ADMIN_VERB(overmap_management, R_ADMIN, "Overmap Management", "Manage overmap co
 		if(!spawning)
 			INVOKE_ASYNC(src, PROC_REF(spawn_contact), ui.user, params["id"], params["location"], params["ref"])
 		return TRUE
+	if(findtext(action, "ban_") == 1)
+		return ban_act(action, params, ui.user) // overmap_management_bans.dm
 	if(action == "select")
 		var/obj/structure/overmap/contact = locate(params["ref"]) in GLOB.overmap_objects
 		select_contact(contact)

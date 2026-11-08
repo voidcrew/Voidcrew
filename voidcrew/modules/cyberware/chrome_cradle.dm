@@ -701,6 +701,7 @@
 	data["load"] = has_patient ? get_chrome_load(patient) : 0
 	data["capacity"] = has_patient ? get_chrome_capacity(patient) : 0
 	data["brownout"] = has_patient && get_chrome_load(patient) > get_chrome_capacity(patient)
+	data["load_segments"] = has_patient ? get_neural_load_segments(patient) : list()
 	data["tuneup_denial"] = has_patient ? get_tuneup_denial(patient) : "No chrome installed."
 
 	// Settle the highlight before anything renders off it: the piece may have
