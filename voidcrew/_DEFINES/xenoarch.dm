@@ -132,6 +132,16 @@
 
 // ===== Harvesting (P4 owns the machines) =====
 #define ARTIFACT_MAX_HARVESTS 3
+/// Charge an exotic battery holds. One harvest fills one battery.
+#define ARTIFACT_BATTERY_CAPACITY 200
+/// Charge per second a harvester draws on tier-1 capacitors: a full battery in 80 seconds.
+#define ARTIFACT_HARVEST_DRAW_RATE 2.5
+/// Charge per second a utilizer spends running a field or bursts: a full battery lasts 400 seconds.
+#define ARTIFACT_UTILIZER_DRAIN 0.5
+/// Charge per second a utilizer feeds a burst effect's store, twice what an artifact refills.
+#define ARTIFACT_UTILIZER_PULSE_FEED 1
+/// Charge one contact use costs: ten from a full battery.
+#define ARTIFACT_UTILIZER_TOUCH_COST 20
 
 // ===== Pricing (core function; buyers are P5) =====
 /// Base price of a large artifact by stamped band (green, yellow, red).
