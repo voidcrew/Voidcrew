@@ -71,6 +71,7 @@
 #include "voidcrew_crew_antag_gc.dm"
 #include "voidcrew_crew_hud.dm"
 #include "voidcrew_cyberware.dm"
+#include "voidcrew_cyberware_anim.dm"
 #include "voidcrew_cyberware_camo.dm"
 #include "voidcrew_cyberware_deck.dm"
 #include "voidcrew_cyberware_kit.dm"

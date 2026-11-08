@@ -77,7 +77,8 @@
 	camo_active = TRUE
 	if(hides_from_mobs)
 		ADD_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
-	animate(wearer, alpha = field_alpha, time = 1 SECONDS)
+	// Fades to field_alpha over a second, as a sweep from the head down (cyberware_anim.dm).
+	cloak_sweep_in(wearer)
 	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
 	// gunfire and throwing: shooting or throwing from inside a cloak breaks it here.
@@ -122,6 +123,7 @@
 		deltimer(camo_timer)
 		camo_timer = null
 	if(!wearer)
+		clear_cloak_fx()
 		return
 	REMOVE_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
 	UnregisterSignal(wearer, list(
@@ -141,6 +143,7 @@
 		COMSIG_MOVABLE_MOVED,
 	))
 	animate(wearer, alpha = 255, time = 0.5 SECONDS)
+	cloak_break_fx(wearer, silent)
 	if(!silent)
 		do_sparks(2, TRUE, wearer)
 		wearer.visible_message(
@@ -174,6 +177,9 @@
 	SIGNAL_HANDLER
 	var/mob/living/wearer = owner
 	if(!wearer || !camo_active)
+		return
+	// The sweep is still coming down; the bearer is more visible than this already.
+	if(world.time < cloak_sweep_until)
 		return
 	animate(wearer, alpha = ripple_alpha, time = 0.15 SECONDS)
 	animate(alpha = field_alpha, time = 0.35 SECONDS)

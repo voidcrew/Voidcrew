@@ -56,6 +56,8 @@
 /datum/bodypart_overlay/augment/cyberware/get_overlay(layer, obj/item/bodypart/limb)
 	layer = bitflag_to_layer(layer)
 	var/list/imageset = implant.get_overlay(layer, limb)
+	// EMP static, dark and blink looks, the folding housing, the spine nodes (cyberware_anim.dm).
+	imageset = implant.cyberware_dress_worn(imageset, layer, limb)
 	if(blocks_emissive == EMISSIVE_BLOCK_NONE || !limb)
 		return imageset
 
@@ -68,6 +70,12 @@
 		all_images += overlay
 		all_images += emissive_blocker(overlay.icon, overlay.icon_state, limb, layer = overlay.layer, alpha = overlay.alpha)
 	return all_images + glows
+
+/// The animation look is part of the limb's render key, so changing it redraws the limb.
+/datum/bodypart_overlay/augment/cyberware/generate_icon_cache()
+	. = ..()
+	if(implant)
+		. += implant.cyberware_worn_key()
 
 /obj/item/organ/cyberimp/cyberware
 	name = "cyberware"
@@ -311,16 +319,21 @@
 			// Any way out of the hand that isn't Retract() (a forced drop, a
 			// deleted blade) must put the folded sprite back as well.
 			RegisterSignal(active_item, COMSIG_ITEM_DROPPED, PROC_REF(on_deployed_item_dropped), override = TRUE)
+			play_blade_unfold(active_item)
 			owner.update_body_parts()
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/Retract()
 	var/mob/living/carbon/stowing_owner = owner
 	var/obj/item/stowing = active_item
+	// Only a blade coming out of the hand folds back in; one picked off the floor just stows.
+	var/was_held = stowing && stowing_owner?.is_holding(stowing)
 	. = ..()
 	if(.)
 		cyberware_ink_pulse(stowing_owner, CYBERWARE_INK_SOFT)
 		if(hide_worn_while_deployed)
 			UnregisterSignal(stowing, COMSIG_ITEM_DROPPED)
+			if(was_held && owner)
+				play_blade_fold()
 			stowing_owner?.update_body_parts()
 
 /// TRUE while the worn overlay should not draw: this hardware's worn sprite

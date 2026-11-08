@@ -195,6 +195,7 @@
 		span_boldnotice(online_message),
 	)
 	owner.balloon_alert(owner, "cascade online")
+	cyberware_cascade_window_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_window/on_remove()
@@ -205,6 +206,8 @@
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.apply_status_effect(/datum/status_effect/cyberware_cascade_crash, crash_duration, crash_stamina)
+	if(!QDELETED(owner))
+		cyberware_cascade_window_end_fx(owner)
 	return ..()
 
 /// Melee cooldowns scaled for the window (changeNext_move multiplies these in).
@@ -292,6 +295,7 @@
 		span_userdanger("The lattice dumps its heat. Your whole body seizes up and everything slows to a crawl."),
 	)
 	owner.balloon_alert(owner, "cascade crash!")
+	cyberware_cascade_crash_fx(owner)
 	return TRUE
 
 /datum/status_effect/cyberware_cascade_crash/on_remove()
@@ -299,6 +303,8 @@
 	owner.remove_client_colour(id)
 	if(!QDELETED(owner) && owner.stat != DEAD)
 		owner.balloon_alert(owner, "systems restabilized")
+	if(!QDELETED(owner))
+		cyberware_cascade_crash_end_fx(owner)
 	return ..()
 
 /datum/movespeed_modifier/cyberware_cascade
