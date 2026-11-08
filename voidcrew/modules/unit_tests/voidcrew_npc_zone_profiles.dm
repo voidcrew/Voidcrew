@@ -728,6 +728,13 @@
 	TEST_ASSERT(abs(hivelord.maxHealth - hivelord.npc_zone_original_max_health * 1.8) < 0.001, "Delayed retaliation did not finalize")
 	allocated += hivelord
 
+/// A caravan ambush whose pack comes from a turf the test picks: the test room is smaller than the ten tiles a pack lands off
+/datum/ambient_activity/caravan_ambush/unit_test
+	var/turf/test_landing
+
+/datum/ambient_activity/caravan_ambush/unit_test/find_landing(datum/ambient_place/site/site, turf/here)
+	return test_landing
+
 /datum/unit_test/voidcrew_npc_zone_ambush_route/Run()
 	var/turf/location = run_loc_floor_bottom_left
 	var/datum/ambient_place/site/site = allocate(/datum/ambient_place/site, null, location)
@@ -735,7 +742,8 @@
 	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler, location)
 	peddler.set_place(site)
 	var/mob/living/basic/bait = allocate(/mob/living/basic, run_loc_floor_top_right)
-	var/datum/ambient_activity/caravan_ambush/ambush = allocate(/datum/ambient_activity/caravan_ambush, peddler)
+	var/datum/ambient_activity/caravan_ambush/unit_test/ambush = allocate(/datum/ambient_activity/caravan_ambush/unit_test, peddler)
+	ambush.test_landing = run_loc_floor_top_right
 	// The pack is human pirates, sent for through the human NPC queue with the site's band
 	var/sent = ambush.spawn_pack()
 	TEST_ASSERT_EQUAL(sent, 2, "A yellow caravan's ambush sent for [sent] raiders, not 2")
@@ -744,7 +752,8 @@
 		TEST_ASSERT(ispath(order.npc_type, /mob/living/carbon/human/npc/faction_pirate), "A caravan ambusher is [order.npc_type], not a human pirate")
 		TEST_ASSERT_EQUAL(order.context?.zone_type, 2, "A caravan ambusher is not dressed for the site's band")
 	// Each raider, once built, is turned on the caravan and kept near it
-	var/mob/living/raider = allocate(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right)
+	// (not the replacement type: that one deletes itself on Initialize)
+	var/mob/living/raider = allocate(/mob/living/basic/npc_zone_test, run_loc_floor_top_right)
 	raider.faction = list("planetary_test", FACTION_HOSTILE)
 	ambush.raider_built(WEAKREF(bait), raider)
 	TEST_ASSERT(WEAKREF(raider) in ambush.pack, "A built raider is not counted in the pack")

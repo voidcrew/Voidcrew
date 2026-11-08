@@ -99,7 +99,8 @@
 	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A light execution took the head off")
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "The execution round was not boosted at the muzzle ([head.brute_dam] head damage from a [round_damage] round)")
 	TEST_ASSERT_NOTEQUAL(victim.stat, DEAD, "A light execution killed a healthy target with more than its round's damage")
-	TEST_ASSERT(head.hv_skull_wound >= 2, "A light execution left no skull wound for its damage")
+	// 40 head brute under the burst line opens a light skull wound (HV_SKULL_LIGHT_BRUTE 20, medium at 45)
+	TEST_ASSERT(head.hv_skull_wound >= 1, "A light execution left no skull wound for its damage")
 	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_BRAIN), "A light execution destroyed the brain")
 	TEST_ASSERT_EQUAL(gun.projectile_damage_multiplier, initial(gun.projectile_damage_multiplier), "The point-blank boost stayed on the gun")
 
@@ -159,7 +160,7 @@
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "A head-aimed point-blank shot at a downed target was not an execution ([head.brute_dam] head damage from a [round_damage] round)")
-	TEST_ASSERT(head.hv_skull_wound >= 2, "A head-aimed light execution left no skull wound for its damage")
+	TEST_ASSERT(head.hv_skull_wound >= 1, "A head-aimed light execution left no skull wound for its damage") // light: 40 head brute
 
 /// A human NPC is helpless only in tg's states (stunned, cuffed, held, down), never because of its health.
 /datum/unit_test/hv_npc_executable_states

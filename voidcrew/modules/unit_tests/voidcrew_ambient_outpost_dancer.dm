@@ -189,7 +189,7 @@
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/dancer/dancer = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/dancer, spot, place)
 	TEST_ASSERT(!HAS_TRAIT(dancer, TRAIT_GODMODE), "The dancer cannot be hurt")
 
-	dancer.apply_damage(dancer.maxHealth * 2, BRUTE)
+	dancer.apply_damage(dancer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(dancer.stat, DEAD, "The dancer did not die of her wounds")
 	var/dropped = ambient_test_cash_on(spot) - cash_before
 	TEST_ASSERT(dropped >= 5 && dropped <= 30, "The dancer dropped [dropped] cr, not 5 to 30") // AMBIENT_DEATH_CASH_LOW/HIGH
@@ -209,7 +209,7 @@
 	dance.climb_at = world.time
 	performer.activity_step(1)
 	TEST_ASSERT(dance.on_pole, "The dancer did not climb onto the pole")
-	performer.apply_damage(performer.maxHealth * 2, BRUTE)
+	performer.apply_damage(performer.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(performer.stat, DEAD, "The dancer on the pole did not die of her wounds")
 	TEST_ASSERT(get_turf(performer) != get_turf(pole), "The dancer's body stayed up on the pole")
 	TEST_ASSERT_EQUAL(get_dist(performer, pole), 1, "The dancer's body did not fall beside the pole")
