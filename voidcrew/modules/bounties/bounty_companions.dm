@@ -117,7 +117,8 @@
 		BOUNTY_STYLE_REVOLVER = 1,
 	)))
 	// Now and then some chrome of their own, rarer than their criminal's (bounty_chrome.dm)
-	bounty_chrome_install(src, list(bounty_roll_companion_chrome(leader.record?.tier, bounty_ai_style(src)?.key)) - null)
+	// The roll is a list of keys already (or null): wrapped in another list, the install found no piece and stack-traced
+	bounty_chrome_install(src, bounty_roll_companion_chrome(leader.record?.tier, bounty_ai_style(src)?.key))
 	// A face of their own species, the clothes for the site, and a suit if their criminal wears one (bounty_eva.dm)
 	eva_join(leader, species)
 

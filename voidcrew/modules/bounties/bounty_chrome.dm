@@ -50,7 +50,7 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	var/count = (tier >= BOUNTY_TIER_WANTED && prob(BOUNTY_CHROME_SECOND_CHANCE)) ? 2 : 1
 	return bounty_pick_chrome(count, tier, archetype, style, kit)
 
-/// The chrome key a new companion of a `tier` criminal carries, or null: rarer than its criminal's, one piece at most
+/// The chrome a new companion of a `tier` criminal carries, as a list of one key, or null: rarer than its criminal's, one piece at most
 /proc/bounty_roll_companion_chrome(tier, style)
 	if(!prob(bounty_chrome_tier_chance(tier) / BOUNTY_CHROME_COMPANION_DIVISOR))
 		return null

@@ -36,6 +36,16 @@
 	TEST_ASSERT_NOTNULL(test_proto, "The test piece has no prototype")
 	for(var/i in 1 to 20)
 		TEST_ASSERT(!("unit_test" in bounty_roll_chrome(3, "normal", "brawler", null)), "A weight 0 piece rolled")
+	// A companion's roll is one key, in a list the install takes as it is (companions joining used to wrap it again and get nothing)
+	var/list/companion_roll
+	for(var/i in 1 to 500)
+		companion_roll = bounty_roll_companion_chrome(3, "knife") // BOUNTY_TIER_MOST_WANTED, BOUNTY_STYLE_KNIFE
+		if(companion_roll)
+			break
+	TEST_ASSERT(islist(companion_roll) && length(companion_roll) == 1, "A companion's chrome roll gave [companion_roll || "nothing in 500 tries"], not one key")
+	var/mob/living/basic/bounty_companion/rolled_buddy = allocate(/mob/living/basic/bounty_companion, run_loc_floor_bottom_left)
+	bounty_chrome_install(rolled_buddy, companion_roll)
+	TEST_ASSERT_NOTNULL(bounty_chrome_piece(rolled_buddy, companion_roll[1]), "A companion's rolled [companion_roll[1]] didn't go in")
 
 	// Installing, and the hooks
 	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, run_loc_floor_bottom_left)

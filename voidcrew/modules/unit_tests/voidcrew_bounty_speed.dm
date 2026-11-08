@@ -201,6 +201,43 @@
 	mover.ai_controller.can_idle = FALSE
 	mover.ai_controller.set_ai_status(AI_STATUS_ON)
 
+/**
+ * Sets `chaser` on `runner` and waits, up to 5 seconds, for its first step, then puts the runner
+ * `gap` tiles ahead: the race times its pace, not how soon the AI first got to it. The AI plans, acts
+ * and walks on background subsystems, which a busy world can hold back, while the runner's move loop
+ * runs on SSmovement and never waits. TRUE once it is moving.
+ */
+/datum/unit_test/voidcrew_bounty_speed/chase/proc/start_chase(mob/living/basic/bounty_criminal/chaser, mob/living/runner, gap)
+	runner.forceMove(spot(chaser.x - anchor.x + 7, chaser.y - anchor.y))
+	wake(chaser)
+	chaser.ai_start_fight(runner)
+	var/from_x = chaser.x
+	var/until = world.time + 5 SECONDS
+	while(world.time < until && chaser.x == from_x)
+		sleep(world.tick_lag)
+	runner.forceMove(spot(chaser.x - anchor.x + gap, chaser.y - anchor.y))
+	return chaser.x != from_x
+
+/// What a chaser is doing, for a failure message: its AI, its walk and anything holding it still
+/datum/unit_test/voidcrew_bounty_speed/chase/proc/describe(mob/living/basic/bounty_criminal/chaser)
+	var/datum/ai_controller/controller = chaser.ai_controller
+	var/list/behaviors = list()
+	for(var/datum/ai_behavior/behavior as anything in controller.current_behaviors)
+		behaviors += "[behavior.type]"
+	var/datum/movement_packet/packet = chaser.move_packet
+	var/datum/move_loop/has_target/jps/loop = packet ? packet.existing_loops[SSai_movement] : null
+	var/list/held = list()
+	for(var/trait in list(TRAIT_IMMOBILIZED, TRAIT_INCAPACITATED, TRAIT_FLOORED, TRAIT_AI_PAUSED, TRAIT_HANDS_BLOCKED, TRAIT_NO_TRANSFORM))
+		if(HAS_TRAIT(chaser, trait))
+			held += trait
+	var/list/parts = list(
+		"mode [chaser.ai_mode], acts [chaser.ai_can_act()], ai [controller.ai_status], runs [controller.able_to_run], plans [controller.able_to_plan]",
+		"target [controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]], behaviors [jointext(behaviors, " ")], walking to [controller.current_movement_target]",
+		"loop [loop ? "[loop.type] delay [loop.delay] path [length(loop.movement_path)] pathing [loop.is_pathing]" : "none"], path fails [controller.consecutive_pathing_attempts]",
+		"moves [!!(chaser.mobility_flags & MOBILITY_MOVE)], delay [delay_of(chaser)], traits [jointext(held, " ")]",
+	)
+	return jointext(parts, "; ")
+
 /// Runs `runner` east at a player's pace for `time`, healing them as they go; returns how far `chaser` got, as list(chaser, runner)
 /datum/unit_test/voidcrew_bounty_speed/chase/proc/race(mob/living/runner, mob/living/basic/chaser, time)
 	var/chaser_from = chaser.x
@@ -229,10 +266,7 @@
 
 	// A knife fighter keeps up with a runner: the gap may not open up
 	var/mob/living/basic/bounty_criminal/normal/knifer = criminal(spot(3, 4), style = "knife")
-	wake(knifer)
-	knifer.ai_start_fight(runner)
-	sleep(1.5 SECONDS)
-	runner.forceMove(spot(knifer.x - anchor.x + 2, 4))
+	TEST_ASSERT(start_chase(knifer, runner, 2), "A knife criminal's AI never took up the chase: [describe(knifer)]")
 	var/list/ran = race(runner, knifer, 4 SECONDS)
 	var/gap = runner.x - knifer.x
 	TEST_NOTICE(src, "Knife chase: the criminal covered [ran[1]] tiles to the runner's [ran[2]], [gap] behind at the end")
@@ -265,28 +299,25 @@
 	qdel(walker)
 
 	// In a Cascade window, a fighter runs a runner down from well back
-	runner.forceMove(spot(10, 4))
 	var/mob/living/basic/bounty_criminal/normal/surger = criminal(spot(3, 4), style = "knife")
 	bounty_chrome_install(surger, list("cascade")) // BOUNTY_CHROME_CASCADE
-	wake(surger)
-	surger.ai_start_fight(runner)
+	TEST_ASSERT(start_chase(surger, runner, 7), "A Cascade criminal's AI never took up the chase: [describe(surger)]")
 	var/datum/bounty_chrome/cascade/lattice = bounty_chrome_piece(surger, "cascade")
 	lattice.next_surge_at = world.time + 1 MINUTES
 	lattice.spin_up()
 	lattice.open_window()
+	var/surger_before = describe(surger)
 	ran = race(runner, surger, 2.5 SECONDS)
 	gap = runner.x - surger.x
 	TEST_NOTICE(src, "Cascade window chase from 7 back: the criminal covered [ran[1]] tiles to the runner's [ran[2]], [gap] behind at the end")
-	TEST_ASSERT(gap <= 2, "In a Cascade window, a criminal 7 tiles back covered [ran[1]] tiles to a runner's [ran[2]] and was still [gap] behind")
+	TEST_ASSERT(gap <= 2, "In a Cascade window, a criminal 7 tiles back covered [ran[1]] tiles to a runner's [ran[2]] and was still [gap] behind. Before: [surger_before]. After: [describe(surger)]")
 	allocated -= surger
 	qdel(surger)
 
 	// Its crash falls behind
-	runner.forceMove(spot(5, 4))
 	var/mob/living/basic/bounty_criminal/normal/crashed = criminal(spot(3, 4), style = "knife")
 	bounty_chrome_install(crashed, list("cascade"))
-	wake(crashed)
-	crashed.ai_start_fight(runner)
+	TEST_ASSERT(start_chase(crashed, runner, 2), "A Cascade criminal's AI never took up the chase: [describe(crashed)]")
 	var/datum/bounty_chrome/cascade/spent = bounty_chrome_piece(crashed, "cascade")
 	spent.next_surge_at = world.time + 1 MINUTES
 	spent.spin_up()
@@ -299,13 +330,9 @@
 	qdel(crashed)
 
 	// A gunman keeps a runner in range: never left behind past its sight
-	runner.forceMove(spot(8, 4))
 	var/mob/living/basic/bounty_criminal/normal/gunman = criminal(spot(3, 4), style = "pistol")
-	wake(gunman)
-	gunman.ai_start_fight(runner)
+	TEST_ASSERT(start_chase(gunman, runner, 5), "A gunman's AI never took up the chase: [describe(gunman)]")
 	gunman.ai_controller.set_blackboard_key("bb_bounty_reload_until", world.time + 1 MINUTES) // BB_BOUNTY_RELOAD_UNTIL: no shots, only the chase
-	sleep(1 SECONDS)
-	runner.forceMove(spot(gunman.x - anchor.x + 5, 4))
 	ran = race(runner, gunman, 3 SECONDS)
 	gap = runner.x - gunman.x
 	TEST_NOTICE(src, "Gunman chase: the criminal covered [ran[1]] tiles to the runner's [ran[2]], [gap] behind at the end")
