@@ -177,7 +177,8 @@ GLOBAL_LIST_EMPTY(artifact_heal_ledger)
 	entry[2] += amount
 
 /**
- * Heals brute and burn on `target`, never past what the shared cap allows.
+ * Heals brute and burn on `target`, never past what the shared cap allows. The heal is split in
+ * proportion to the brute and burn they have, so a one-sided wound gets the whole amount.
  * Returns the amount actually healed.
  *
  * * required_bodytype - limit to robotic or organic limbs on carbons (heal_overall_damage's arg)
@@ -187,7 +188,10 @@ GLOBAL_LIST_EMPTY(artifact_heal_ledger)
 	if(allowed <= 0)
 		return 0
 	var/before = target.getBruteLoss() + target.getFireLoss()
-	target.heal_overall_damage(allowed / 2, allowed / 2, required_bodytype = required_bodytype)
+	if(before <= 0)
+		return 0
+	var/brute_share = allowed * target.getBruteLoss() / before
+	target.heal_overall_damage(brute_share, allowed - brute_share, required_bodytype = required_bodytype)
 	var/healed = max(before - (target.getBruteLoss() + target.getFireLoss()), 0)
 	artifact_record_heal(target, healed)
 	return healed
