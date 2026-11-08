@@ -63,6 +63,10 @@
 			find_row.demand = 0
 			shop.convoy_restock()
 			TEST_ASSERT(find_row.demand > 0, "[shop_type]'s find demand never comes back")
+	// Sarge buys nothing but points the way
+	var/datum/outpost_shop/outfitter/depot = allocate(/datum/outpost_shop/outfitter)
+	TEST_ASSERT_NOTNULL(depot.xenoarch_buyer, "Sarge has nothing to say about a find")
+	TEST_ASSERT(depot.xenoarch_buyer.line("notice"), "Sarge has nothing to say about a find")
 	TEST_ASSERT_EQUAL(xenoarch_credits_text(1125), "1,125 cr", "credit formatting")
 	TEST_ASSERT_EQUAL(xenoarch_credits_text(250), "250 cr", "credit formatting")
 	TEST_ASSERT_EQUAL(xenoarch_credits_text(1000000), "1,000,000 cr", "credit formatting")

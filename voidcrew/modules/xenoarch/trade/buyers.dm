@@ -17,7 +17,8 @@
  *   xenoarch_mark_curio(); Barnaby and Boffin take them, and only Boffin takes strange objects.
  * - Each buyer takes XENOARCH_FIND_DEMAND large finds and XENOARCH_CURIO_DEMAND curios at a time,
  *   topped up by the convoy like any other ledger row (shop.dm convoy_restock()).
- * - A buyer notices a find being hauled up to the counter and says so, once per find.
+ * - A buyer notices a find being hauled up to the counter and says so, once per find. Sarge, who
+ *   buys none, points the way to Boffin's stall instead.
  * - Selling earns no reputation; that comes from jobs (trader_favor.dm).
  */
 
@@ -118,6 +119,8 @@
 	var/datum/outpost_shop/shop
 	/// Vouchers paid on top of credits for a find whose main effect is extreme
 	var/extreme_vouchers = 0
+	/// Buys large finds at all (a trader who only points the way to the buyer next door doesn't)
+	var/buys_finds = TRUE
 	/// Buys curios at all
 	var/buys_curios = TRUE
 	/// Takes tg's strange objects among the curios
@@ -165,7 +168,9 @@
 
 /// Ledger rows this buyer adds to their shop.
 /datum/xenoarch_buyer/proc/ledger_types()
-	. = list(/datum/shop_buyback/xenoarch_find)
+	. = list()
+	if(buys_finds)
+		. += /datum/shop_buyback/xenoarch_find
 	if(buys_curios)
 		. += /datum/shop_buyback/xenoarch_curio
 
@@ -514,6 +519,19 @@
 	parts += "<hr><i>[receipt_signoff]</i>"
 	return parts.Join()
 
+// ----- Sarge: Quartermain Depot's main counter, who sends finds round to Boffin -----
+
+/datum/xenoarch_buyer/sarge
+	buys_finds = FALSE
+	buys_curios = FALSE
+	lines = list(
+		XENOARCH_LINE_NOTICE = list(
+			"That's not armor. Boffin buys rocks. Skunkworks, round the back.",
+			"Dig piece? Not my department. Boffin's stall.",
+			"Don't park that at my counter. Boffin's the one who wants it.",
+		),
+	)
+
 // =========================================================================
 // SHOPS AND TRADERS
 // =========================================================================
@@ -532,6 +550,9 @@
 
 /datum/outpost_shop/black_market
 	xenoarch_buyer_type = /datum/xenoarch_buyer/vex
+
+/datum/outpost_shop/outfitter
+	xenoarch_buyer_type = /datum/xenoarch_buyer/sarge
 
 // The buyer's ledger rows go in before the base New() makes the buybacks, so they share the
 // shop's demand and convoy restock like any other row.

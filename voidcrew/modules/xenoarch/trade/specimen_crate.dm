@@ -40,6 +40,6 @@
 	var/obj/machinery/artifact/find = locate() in contents
 	if(!find)
 		return
-	. += "It sits heavy on its straps."
+	. += "Something heavy is strapped in."
 	if(find.is_dug())
 		. += "A field tag clipped to the lid reads <b>[find.serial]</b>."
