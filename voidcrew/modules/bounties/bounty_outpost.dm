@@ -15,9 +15,10 @@
  *   (/datum/component/bounty_outpost_blend). They are people like any other: they can be grabbed,
  *   shot, knocked down and cuffed the way anyone can, and what they do about it is their AI's.
  * - Decoys (/mob/living/carbon/human/npc/bounty_criminal/decoy): look-alikes with the fugitive's
- *   face (a record that shares one or two of its features), the zone's clothes, and its toughness
- *   and pace (body_match()). Showing one the warrant, hitting one on purpose or reaching for its
- *   wrists raises the posting's alert; a hit is also an outpost strike for the hitter.
+ *   face (a record that shares one or two of its features), the zone's clothes, its bag and belt
+ *   (outpost_match_kit(), emptied), and its toughness and pace (body_match()). Showing one the
+ *   warrant, hitting one on purpose or reaching for its wrists raises the posting's alert; a hit is
+ *   also an outpost strike for the hitter.
  * - Traders' clues: any trader, the barkeep included, gives a ship hunting a fugitive there one
  *   true clue, a different one per trader.
  * - The warrant (/obj/item/paper/bounty_warrant): shown to the fugitive it exposes them (P3's
@@ -545,8 +546,8 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 // =========================================================================
 
 // Built-in values, P6's. A decoy is a person like the fugitive: the same species, build and face but
-// for the features it was made not to share, the zone's clothes, and the fugitive's toughness and pace
-// (body_match()). It carries no weapon and never fights.
+// for the features it was made not to share, the zone's clothes, the fugitive's bag and belt
+// (outpost_match_kit()), and its toughness and pace (body_match()). It carries no weapon and never fights.
 /mob/living/carbon/human/npc/bounty_criminal/decoy
 	name = "patron"
 	desc = "Another customer passing through."
@@ -610,8 +611,34 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	if(bounds)
 		site_bounds = bounds
 	body_match(fugitive)
+	outpost_match_kit(fugitive)
 	AddComponent(/datum/component/bounty_outpost_blend, posting, TRUE, display_name, display_desc, outfit)
 	start_activity(BOUNTY_ACTIVITY_BLEND, anchor)
+
+/**
+ * Wears the same bag and belt as `fugitive` (a meek criminal's fanny pack, a holster, a satchel), which
+ * show at a glance and which the patron clothes leave on the fugitive. Each is a new one of its type,
+ * emptied: a decoy carries no weapon, so a gun slung on the fugitive's back has no match here. Locked
+ * to its body like the rest of its kit (D3).
+ */
+/mob/living/carbon/human/npc/bounty_criminal/decoy/proc/outpost_match_kit(mob/living/carbon/human/npc/bounty_criminal/fugitive)
+	if(QDELETED(fugitive))
+		return
+	for(var/slot in list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
+		var/obj/item/theirs = fugitive.get_item_by_slot(slot)
+		var/obj/item/mine = get_item_by_slot(slot)
+		if(mine?.type == theirs?.type)
+			continue
+		if(mine)
+			temporarilyRemoveItemFromInventory(mine, force = TRUE)
+			qdel(mine)
+		if(!istype(theirs, /obj/item/storage))
+			continue
+		var/obj/item/storage/copy = new theirs.type(src)
+		for(var/atom/movable/inside as anything in copy.contents)
+			qdel(inside)
+		if(equip_to_slot_or_del(copy, slot, initial = TRUE))
+			npc_lock_item(copy)
 
 /// A decoy never fights anyone (P2's gate on attacks)
 /mob/living/carbon/human/npc/bounty_criminal/decoy/may_attack(atom/target)
@@ -768,6 +795,8 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
  * nothing on the head or the face (the zone's patrons wear no hats: hair is a clue). What it wore
  * there is taken away and deleted. Everything else it carries stays where it is, pockets and belt
  * included. The new clothes are locked to the body like the rest of its kit (D3).
+ * What its species can't live without stays on (a plasmaman's envirosuit, helmet and gloves, its
+ * species' outfit_important_for_life): its decoys, of its species, are dressed over the same.
  */
 /mob/living/carbon/human/npc/bounty_criminal/proc/outpost_wear_patron_clothes(outfit_type)
 	var/datum/outfit/patron = new outfit_type()
@@ -780,10 +809,13 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		list(wear_mask, patron.mask, ITEM_SLOT_MASK),
 	)
 	qdel(patron)
+	var/datum/outfit/life = dna?.species?.outfit_important_for_life
 	for(var/list/swap as anything in swaps)
 		var/obj/item/worn = swap[1]
 		var/new_type = swap[2]
 		if(worn && ispath(new_type) && worn.type == new_type)
+			continue
+		if(bounty_outpost_kept_for_life(worn, life, swap[3]))
 			continue
 		if(worn)
 			// idrop off: the pockets, belt and suit storage are meant to stay when the clothes over them are swapped
@@ -794,6 +826,26 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		var/obj/item/clothes = new new_type(src)
 		equip_to_slot_or_del(clothes, swap[3], initial = TRUE)
 		npc_lock_item(clothes)
+
+/// Whether `worn`, in `slot`, is what `life` (a species' outfit_important_for_life) puts there: kept on when blending in
+/proc/bounty_outpost_kept_for_life(obj/item/worn, datum/outfit/life, slot)
+	if(isnull(worn) || !ispath(life, /datum/outfit))
+		return FALSE
+	var/life_type
+	switch(slot)
+		if(ITEM_SLOT_ICLOTHING)
+			life_type = initial(life.uniform)
+		if(ITEM_SLOT_OCLOTHING)
+			life_type = initial(life.suit)
+		if(ITEM_SLOT_GLOVES)
+			life_type = initial(life.gloves)
+		if(ITEM_SLOT_FEET)
+			life_type = initial(life.shoes)
+		if(ITEM_SLOT_HEAD)
+			life_type = initial(life.head)
+		if(ITEM_SLOT_MASK)
+			life_type = initial(life.mask)
+	return ispath(life_type) && istype(worn, life_type)
 
 /// Ends the act: containable again, and no longer in the turrets' faction. The name stays.
 /datum/component/bounty_outpost_blend/proc/stop_blending()
