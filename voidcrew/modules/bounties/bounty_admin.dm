@@ -191,11 +191,15 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		if(!style_choice || !authorized(user))
 			return
 		variant = styles[style_choice]
+	var/list/chromes = chrome_choices()
+	var/chrome_choice = ask_list(user, "Which chrome?", "Spawn a criminal", chromes)
+	if(!chrome_choice || !authorized(user))
+		return
 	var/list/activities = list("None" = null) + activity_choices()
 	var/activity_choice = ask_list(user, "Doing what?", "Spawn a criminal", activities)
 	if(!activity_choice || !authorized(user))
 		return
-	admin_spawn_criminal(user, tier, archetype, variant, activities[activity_choice], get_turf(user))
+	admin_spawn_criminal(user, tier, archetype, variant, activities[activity_choice], get_turf(user), chromes[chrome_choice])
 
 /datum/bounty_admin_panel/proc/menu_decoy(mob/user)
 	var/datum/weakref/wanted_ref = WEAKREF(pick_criminal(user, "Spawn a decoy next to whom?"))
@@ -540,6 +544,23 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	)
 
 /// A normal criminal's styles; the meek always carry the holdout, so the menu doesn't offer it
+/**
+ * The chrome a spawned criminal can be given: rolled as usual, none, every piece by name (whatever
+ * their style or kit), or every piece at once. Values are a list of BOUNTY_CHROME_* keys, or
+ * BOUNTY_ADMIN_CHROME_ROLL.
+ */
+/datum/bounty_admin_panel/proc/chrome_choices()
+	var/list/choices = list("Roll as usual" = BOUNTY_ADMIN_CHROME_ROLL, "None" = list())
+	var/list/every_piece = list()
+	for(var/key in GLOB.bounty_chrome_protos)
+		var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
+		if(proto.weight <= 0)
+			continue
+		choices[proto.name] = list(key)
+		every_piece += key
+	choices["All of it"] = every_piece
+	return choices
+
 /datum/bounty_admin_panel/proc/style_choices()
 	return list(
 		"Brawler" = BOUNTY_STYLE_BRAWLER,
@@ -694,7 +715,8 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	if(!record)
 		return "no record"
 	var/variant = record.kit || record.style
-	return "[bounty_tier_name(record.tier)] [record.archetype || "criminal"][variant ? " ([variant])" : ""]"
+	var/chrome = length(record.chrome) ? ", chrome: [jointext(record.chrome, ", ")]" : ""
+	return "[bounty_tier_name(record.tier)] [record.archetype || "criminal"][variant ? " ([variant])" : ""][chrome]"
 
 /datum/bounty_admin_panel/proc/criminal_label(mob/living/basic/bounty_criminal/criminal)
 	var/area/place = get_area(criminal)
@@ -799,7 +821,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
  * the kit (a boss) or style (anyone else) set to `variant` when given, then P2's spawn, then P3's
  * `activity` when given. Returns the criminal, or null.
  */
-/datum/bounty_admin_panel/proc/admin_spawn_criminal(mob/user, tier, archetype, variant, activity, turf/where)
+/datum/bounty_admin_panel/proc/admin_spawn_criminal(mob/user, tier, archetype, variant, activity, turf/where, chrome = BOUNTY_ADMIN_CHROME_ROLL)
 	error = null
 	if(!authorized(user))
 		return null
@@ -831,6 +853,13 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		record.kit = null
 		if(variant)
 			record.style = variant
+	// Chrome: kept as rolled, or exactly what was picked (any piece, whatever it would normally suit)
+	if(islist(chrome))
+		var/list/keys = list()
+		for(var/key in chrome)
+			if(GLOB.bounty_chrome_protos[key])
+				keys += key
+		record.chrome = length(keys) ? keys : null
 	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, where, null)
 	if(QDELETED(criminal))
 		return refuse(user, "The criminal did not spawn.")

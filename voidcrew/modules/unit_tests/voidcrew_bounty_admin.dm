@@ -152,7 +152,7 @@
 	TEST_ASSERT_EQUAL(length(panel.operations), logged, "A refused spawn was logged")
 
 	// Through the menu: a normal shotgunner at the admin's feet, camping.
-	panel.answers = list("Spawn a criminal at my feet", "Normal", "Petty", "Shotgun", "Camping")
+	panel.answers = list("Spawn a criminal at my feet", "Normal", "Petty", "Shotgun", "Roll as usual", "Camping")
 	panel.run_menu(operator)
 	TEST_ASSERT_EQUAL(length(panel.missed), 0, "The spawn menu did not offer: [jointext(panel.missed, "; ")]")
 	var/mob/living/basic/bounty_criminal/from_menu
@@ -620,3 +620,22 @@
 	TEST_ASSERT_NULL(panel.admin_pool_admit(operator, third, prison), "A full prison took a record")
 	TEST_ASSERT(panel.error, "A full prison's refusal left no reason")
 	TEST_ASSERT(third in GLOB.bounty_prisoner_pool, "A refused admission took the record out of the pool")
+
+/// The spawn menu can give a criminal exactly the chrome asked for, any piece whatever their style, or none
+/datum/unit_test/voidcrew_bounty_admin/chrome
+
+/datum/unit_test/voidcrew_bounty_admin/chrome/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/operator = make_operator(run_loc_floor_top_right)
+	var/datum/bounty_admin_panel/unit_test/panel = allocate(__IMPLIED_TYPE__, operator)
+	var/list/choices = panel.chrome_choices()
+	TEST_ASSERT_EQUAL(length(choices["All of it"]), 7, "The chrome menu doesn't offer all seven pieces")
+	// Deadeye on a brawler: a style it would never roll on
+	var/mob/living/basic/bounty_criminal/criminal = panel.admin_spawn_criminal(operator, 2, "normal", "brawler", null, spot, list("deadeye")) // BOUNTY_TIER_WANTED, BOUNTY_STYLE_BRAWLER, BOUNTY_CHROME_DEADEYE
+	allocated += criminal
+	TEST_ASSERT_NOTNULL(bounty_chrome_piece(criminal, "deadeye"), "The spawn menu's chosen chrome isn't in them")
+	TEST_ASSERT(length(criminal.record.chrome) == 1 && criminal.record.chrome[1] == "deadeye", "The record doesn't carry the chosen chrome")
+	var/mob/living/basic/bounty_criminal/clean = panel.admin_spawn_criminal(operator, 3, "normal", null, null, spot, list()) // BOUNTY_TIER_MOST_WANTED
+	allocated += clean
+	TEST_ASSERT_NULL(clean.record.chrome, "Asking for no chrome still gave them some")
+	TEST_ASSERT_NULL(clean.GetComponent(/datum/component/bounty_chrome), "Asking for no chrome still installed some")

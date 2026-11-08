@@ -22,3 +22,6 @@
 #define BOUNTY_CHROME_PILEDRIVER "piledriver"
 #define BOUNTY_CHROME_LAZARUS "lazarus"
 #define BOUNTY_CHROME_DEADEYE "deadeye"
+
+/// The admin spawn menu's "roll chrome as usual" choice (bounty_admin.dm)
+#define BOUNTY_ADMIN_CHROME_ROLL "roll"
