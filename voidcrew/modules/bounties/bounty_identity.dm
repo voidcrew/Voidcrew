@@ -710,22 +710,22 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 /mob/living/proc/identity_line_values()
 	return null
 
-/mob/living/basic/bounty_criminal/identity_voice()
+/mob/living/carbon/human/npc/bounty_criminal/identity_voice()
 	// Blended in at a trader outpost, the fugitive talks exactly like its decoys (AR-C6).
 	if(blended)
 		return null
 	return record?.archetype
 
-/mob/living/basic/bounty_criminal/identity_line_values()
+/mob/living/carbon/human/npc/bounty_criminal/identity_line_values()
 	// A Most Wanted crime is no line to toss off ("All this over the Corvina Station massacre?").
 	if(!record?.crime || record.tier == BOUNTY_TIER_MOST_WANTED)
 		return null
 	return list("{crime}" = record.crime)
 
 /// A decoy is an innocent patron: always the shared, neutral lines, whether or not it is blended in
-/mob/living/basic/bounty_criminal/decoy/identity_voice()
+/mob/living/carbon/human/npc/bounty_criminal/decoy/identity_voice()
 	return null
 
 /// A decoy has no crime to own up to
-/mob/living/basic/bounty_criminal/decoy/identity_line_values()
+/mob/living/carbon/human/npc/bounty_criminal/decoy/identity_line_values()
 	return null
