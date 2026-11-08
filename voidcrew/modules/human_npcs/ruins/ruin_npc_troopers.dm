@@ -255,6 +255,22 @@
 	l_pocket = /obj/item/ammo_box/magazine/m12g
 	r_pocket = /obj/item/ammo_box/magazine/m12g
 
+/// The hijack team a cargo shuttle loan brings aboard (voidcrew/modules/cargo/shipping/_shuttle_loan.dm):
+/// a suppressed Makarov and two spare magazines.
+/datum/outfit/ruin_npc/syndicate/pistol/infiltrator
+	name = "Ruin NPC: Syndicate infiltrator"
+	r_hand = /obj/item/gun/ballistic/automatic/pistol/suppressed
+
+/datum/outfit/ruin_npc/syndicate/pistol/infiltrator/vest
+	name = "Ruin NPC: Syndicate infiltrator in a vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/datum/outfit/ruin_npc/syndicate/pistol/infiltrator/vest/helmet
+	name = "Ruin NPC: Syndicate infiltrator, red zone"
+	head = /obj/item/clothing/head/helmet/swat
+	belt = /obj/item/storage/belt/military
+	belt_contents = list(/obj/item/reagent_containers/hypospray/medipen = 1)
+
 /// The salvage pilots of the caravan ambush: flight scarf and goggles over the armour.
 /datum/outfit/ruin_npc/syndicate/pistol/pilot
 	name = "Ruin NPC: Syndicate salvage pilot"
@@ -370,6 +386,11 @@
 /datum/human_npc_outfit_table/ruin/syndicate/pistol/shotgun
 	red = list(/datum/outfit/ruin_npc/syndicate/pistol/vest/helmet/shotgun = 1)
 
+/datum/human_npc_outfit_table/ruin/syndicate/infiltrator
+	green = list(/datum/outfit/ruin_npc/syndicate/pistol/infiltrator = 1)
+	yellow = list(/datum/outfit/ruin_npc/syndicate/pistol/infiltrator/vest = 1)
+	red = list(/datum/outfit/ruin_npc/syndicate/pistol/infiltrator/vest/helmet = 1)
+
 /datum/human_npc_outfit_table/ruin/syndicate/pilot
 	green = list(/datum/outfit/ruin_npc/syndicate/pistol/pilot = 1)
 	yellow = list(/datum/outfit/ruin_npc/syndicate/pistol/pilot = 1)
@@ -438,6 +459,11 @@
 
 /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun
 	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/pistol/shotgun
+
+/// The hijack team a cargo shuttle loan brings aboard.
+/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/infiltrator
+	npc_name = "Syndicate Infiltrator"
+	npc_outfit_table = /datum/human_npc_outfit_table/ruin/syndicate/infiltrator
 
 /mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/pilot
 	npc_name = "Syndicate Salvage Pilot"

@@ -850,8 +850,16 @@
 	for(var/loan_type in list(/datum/voidcrew_shuttle_loan/syndiehijacking, /datum/voidcrew_shuttle_loan/lots_of_bees, /datum/voidcrew_shuttle_loan/russian_party, /datum/voidcrew_shuttle_loan/spider_gift))
 		token.current_zone = red
 		var/datum/voidcrew_shuttle_loan/loan = allocate(loan_type)
+		var/list/queued_before = SShuman_npcs.queue.Copy()
 		loan.spawn_items(cargo)
 		var/hostiles = 0
+		// People (human NPCs) are queued, a body a tick: their orders carry the same delivery context.
+		for(var/datum/human_npc_order/order as anything in SShuman_npcs.queue - queued_before)
+			hostiles++
+			TEST_ASSERT_EQUAL(order.context?.zone_type, 3, "[loan_type] queued a person against the cargo bay")
+			TEST_ASSERT_EQUAL(order.context?.source_id, REF(cargo), "[loan_type] queued a person without its delivery identity")
+			TEST_ASSERT_EQUAL(order.context?.role, "ordinary", "[loan_type] queued a person without its encounter role")
+			qdel(order)
 		for(var/turf/tile as anything in cargo.test_turfs)
 			for(var/mob/living/body in tile)
 				if(!isbasicmob(body) && !isanimal(body))

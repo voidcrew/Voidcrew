@@ -40,19 +40,7 @@
 /// do_after interaction key for an execution wind-up.
 #define DOAFTER_SOURCE_HV_EXECUTION "hv_execution"
 
-// ---- NPC corpses (corpses/): the fight carried onto the human body an NPC leaves ----
-
-/// A killing blow that cuts must deal at least this much to roll for taking the limb off the corpse.
-#define HV_CORPSE_EDGED_SEVER_DAMAGE 20
-/// A killing blow that crushes or pierces must deal at least this much to roll for taking the limb off.
-#define HV_CORPSE_HEAVY_SEVER_DAMAGE 30
-/// A crushing or piercing killing blow to the head this big always bursts it.
-#define HV_CORPSE_HEAD_BURST_DAMAGE 60
-/// A body zone that took this share of the NPC's max health in brute gets the clothes over it bloodied.
-#define HV_CORPSE_BLOOD_ZONE_SHARE 0.15
-/// Brute damage (share of max health) at which the corpse's hands are bloody and it lies in a pool.
-#define HV_CORPSE_BLOOD_HANDS_SHARE 0.5
-/// How long a new corpse convulses on its feet before it falls.
+/// How long a dying body convulses (hv_death_throes(), _core.dm).
 #define HV_DEATH_THROES_TIME (0.6 SECONDS)
 
 // Finishers (voidcrew/modules/hyperviolence/finishers/): a boss kills someone who is down, in stages.
@@ -112,5 +100,3 @@
 #define WOUND_SERIES_HV_CAROTID "wound_series_hv_carotid"
 /// A torn aorta.
 #define WOUND_SERIES_HV_AORTA "wound_series_hv_aorta"
-/// Trait source for effects an aimed crit leaves on a mob.
-#define HV_CRIT_TRAIT "hv_crit"

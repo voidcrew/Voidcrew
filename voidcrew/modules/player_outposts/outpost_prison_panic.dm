@@ -718,7 +718,7 @@
 /// What they shout: to be bolted in, on the way home or in it; to run, otherwise; about the dark, now and then, with a nightmare about
 /datum/prisoner_activity/creature_panic/proc/panic_line()
 	var/mob/living/threat = prisoner.panic_threat()
-	var/nightmare = istype(threat, /mob/living/basic/outpost_experiment/nightmare) || (!threat && prisoner.prison?.experiment?.form == "nightmare")
+	var/nightmare = outpost_experiment_form_name(threat) == "nightmare" || (!threat && prisoner.prison?.experiment?.form == "nightmare")
 	if(nightmare && prob(50))
 		return "nightmare_fear"
 	return plan == "home" ? "creature_panic" : "creature_flee"

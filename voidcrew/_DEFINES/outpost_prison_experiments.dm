@@ -131,74 +131,50 @@
 /// How long a rioter who runs has to get away before they riot on
 #define OUTPOST_PANIC_RETREAT_TIME (15 SECONDS)
 
-// ----- Creatures: health grows with the crew on the level when they appear -----
-/// Most extra players counted
-#define OUTPOST_EXPERIMENT_EXTRA_PLAYERS_MAX 3
+// ----- The serum's forms (outpost_prison_experiment_forms.dm) -----
+// The subject's own body changed by tg's genes and species. Their toughness is physiology
+// (npc_damage_taken: brute and burn taken as a multiple of a person's), never health, and never
+// scaled by who is on the level.
 
-// Hulk
-#define OUTPOST_HULK_HEALTH 350
-#define OUTPOST_HULK_HEALTH_PER_PLAYER 100
-#define OUTPOST_HULK_SPEED 1.8
-#define OUTPOST_HULK_EXHAUSTED_SPEED 2.5
-#define OUTPOST_HULK_PUNCH_MIN 18
-#define OUTPOST_HULK_PUNCH_MAX 22
-#define OUTPOST_HULK_PUNCH_COOLDOWN (1.5 SECONDS)
-/// Percent chance a punch throws its target OUTPOST_HULK_THROW_RANGE tiles
+/// How Kessler finds a creature it comes for (outpost_experiment_down_state()): dead; alive on the
+/// floor and held (cuffed or asleep), which pays the subdued rate; or on the floor or held but not both
+#define OUTPOST_EXPERIMENT_DOWN_DEAD "dead"
+#define OUTPOST_EXPERIMENT_DOWN_SUBDUED "subdued"
+#define OUTPOST_EXPERIMENT_DOWN_DOWN "down"
+/// Units of chloral hydrate in a Kessler agent's dart (owner ruling OC-3)
+#define OUTPOST_KESSLER_DART_DOSE 15
+
+// Hulk: tg's hulk gene and gigantism
+#define OUTPOST_HULK_DAMAGE_TAKEN 0.6
+/// Percent chance a punch that lands throws someone OUTPOST_HULK_THROW_RANGE tiles; a standing prisoner is knocked down instead
 #define OUTPOST_HULK_THROW_CHANCE 25
 #define OUTPOST_HULK_THROW_RANGE 2
+#define OUTPOST_HULK_KNOCKDOWN (2 SECONDS)
 /// The charge: wind-up, range, damage, knockdown, cooldown
 #define OUTPOST_HULK_CHARGE_WINDUP (1.5 SECONDS)
 #define OUTPOST_HULK_CHARGE_RANGE 6
 #define OUTPOST_HULK_CHARGE_DAMAGE 20
 #define OUTPOST_HULK_CHARGE_KNOCKDOWN (2 SECONDS)
 #define OUTPOST_HULK_CHARGE_COOLDOWN (12 SECONDS)
-/// Charging into a wall with nobody caught: stunned this long, taking this much more damage meanwhile
+/// Charging into a wall with nobody caught: stunned this long
 #define OUTPOST_HULK_WALL_STUN (2 SECONDS)
-#define OUTPOST_HULK_WALL_VULNERABLE 1.25
-/// Tearing through an interior wall, and forcing a door
-#define OUTPOST_HULK_TEAR_TIME (3 SECONDS)
+/// Forcing a door
 #define OUTPOST_HULK_DOOR_TIME (4 SECONDS)
-/// Worn down to this percent of health, it stops charging and a baton or disabler can put it down
-#define OUTPOST_HULK_EXHAUSTED_AT 25
-/// Stamina it can take once exhausted: two baton hits or four disabler shots
-#define OUTPOST_HULK_STAMINA 110
 
-// Nightmare
-#define OUTPOST_NIGHTMARE_HEALTH 225
-#define OUTPOST_NIGHTMARE_HEALTH_PER_PLAYER 75
-#define OUTPOST_NIGHTMARE_DARK_SPEED 1.5
-#define OUTPOST_NIGHTMARE_LIGHT_SPEED 2.5
-#define OUTPOST_NIGHTMARE_DAMAGE 20
-#define OUTPOST_NIGHTMARE_ATTACK_COOLDOWN (1.2 SECONDS)
+// Nightmare: tg's nightmare species and organs
+#define OUTPOST_NIGHTMARE_DAMAGE_TAKEN 0.8
 #define OUTPOST_NIGHTMARE_ARMOUR_PENETRATION 20
-/// Percent chance a hit burns out a flashlight the target holds (never flares or glowsticks)
-#define OUTPOST_NIGHTMARE_BURNOUT_CHANCE 35
-/// Light level below which it is in the dark (SHADOW_SPECIES_LIGHT_THRESHOLD)
-#define OUTPOST_NIGHTMARE_DARK 0.2
-/// Health per second: regained in the dark, lost in the light
-#define OUTPOST_NIGHTMARE_REGEN 2
-#define OUTPOST_NIGHTMARE_BURN 2
-/// Percent of shots it sidesteps in the dark
-#define OUTPOST_NIGHTMARE_DODGE 60
 /// The shadow jaunt: cooldown, the ripple that warns of it, what it does
 #define OUTPOST_NIGHTMARE_JAUNT_COOLDOWN (12 SECONDS)
 #define OUTPOST_NIGHTMARE_JAUNT_RIPPLE (1 SECONDS)
 #define OUTPOST_NIGHTMARE_JAUNT_DAMAGE 25
 #define OUTPOST_NIGHTMARE_JAUNT_KNOCKDOWN (1 SECONDS)
-/// A handheld flash: burn and stagger
-#define OUTPOST_NIGHTMARE_FLASH_DAMAGE 20
-#define OUTPOST_NIGHTMARE_FLASH_STAGGER (2 SECONDS)
 /// Seconds it spends breaking the lights first, ignoring people who leave it alone
 #define OUTPOST_NIGHTMARE_OPENING_MIN 30
 #define OUTPOST_NIGHTMARE_OPENING_MAX 45
 
-// Fly person
-#define OUTPOST_FLY_HEALTH 60
-/// Its move delay: faster than a running person (1.5)
-#define OUTPOST_FLY_SPEED 0.7
-/// Percent of shots it jinks out of the way of while flying freely (not knocked down, held or subdued)
-#define OUTPOST_FLY_DODGE 40
-#define OUTPOST_FLY_BITE 5
+// Fly person: tg's fly species and a Slipwire implant
+#define OUTPOST_FLY_DAMAGE_TAKEN 1
 /// It darts away from anyone this close
 #define OUTPOST_FLY_FLEE_RANGE 3
 /// Its darts: tiles, the pause between random ones, and how long one may take before it gives up on it
@@ -209,16 +185,6 @@
 #define OUTPOST_FLY_DART_TIMEOUT (1.5 SECONDS)
 /// How long it keeps away from whoever last hit it
 #define OUTPOST_FLY_FLIT_TIME (3 SECONDS)
-/// Trait source for its flight
-#define OUTPOST_FLY_TRAIT "outpost_fly"
-/// Seconds between throwing up, and the percent chance it gets someone beside it
-#define OUTPOST_FLY_VOMIT_MIN 6
-#define OUTPOST_FLY_VOMIT_MAX 10
-#define OUTPOST_FLY_VOMIT_ON_CHANCE 25
-/// A flyswatter hits it this many times harder, as it does tg's fly people
-#define OUTPOST_FLY_SWATTER_MULT 30
-/// Stamina it can take: two baton hits
-#define OUTPOST_FLY_STAMINA 100
 
 // ----- Trait sources and timings shared by the experiment files -----
 /// Seconds a creature may chase its current target with no progress (not closer, not adjacent)

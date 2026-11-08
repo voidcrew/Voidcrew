@@ -26,7 +26,6 @@
 	min_damage = 12
 	threshold = 80
 	wound_type = /datum/wound/pierce/bleed/severe/eye/hv_gouged
-	basic_effect = /datum/status_effect/hv_crit_basic/eye
 	hit_sound = 'sound/effects/wounds/pierce2.ogg'
 	shake = 4
 
@@ -111,7 +110,6 @@
 	min_damage = 12
 	threshold = 80
 	wound_type = /datum/wound/slash/flesh/moderate/hv_tongue
-	basic_effect = /datum/status_effect/hv_crit_basic/tongue
 	hit_sound = 'sound/effects/wounds/blood2.ogg'
 
 /datum/hv_crit/tongue/blocked_on_carbon(mob/living/carbon/victim, obj/item/bodypart/limb, atom/source)
@@ -154,7 +152,6 @@
 	min_damage = 18
 	threshold = 90
 	wound_type = /datum/wound/slash/flesh/critical/hv_carotid
-	basic_effect = /datum/status_effect/hv_crit_basic/bleed/throat
 	line_severity = HV_LINE_HUGE
 	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/blood3.ogg'
@@ -197,7 +194,6 @@
 	threshold = 90
 	allow_projectiles = TRUE
 	wound_type = /datum/wound/pierce/bleed/critical/hv_aorta
-	basic_effect = /datum/status_effect/hv_crit_basic/bleed/aorta
 	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/pierce3.ogg'
 	shake = 4
@@ -232,7 +228,6 @@
 	threshold = 95
 	allow_dead = TRUE
 	wound_type = /datum/wound/blunt/bone/critical/hv_skull
-	basic_effect = /datum/status_effect/hv_crit_basic/skull
 	line_severity = HV_LINE_HUGE
 	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/crack2.ogg'
@@ -276,7 +271,6 @@
 	min_damage = 12
 	threshold = 80
 	wound_type = /datum/wound/blunt/bone/severe/hv_jaw
-	basic_effect = /datum/status_effect/hv_crit_basic/jaw
 	hit_sound = 'sound/effects/wounds/crack1.ogg'
 	shake = 3
 
