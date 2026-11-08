@@ -105,7 +105,7 @@
 	var/well_fed_left = 0
 	/// Came in wearing a stained transfer uniform
 	var/arrived_stained = FALSE
-	/// Brute damage they carry from transfer, applied when they beam in, and whether they came in hurt
+	/// Health they lose to a rough transfer, as bruising when they beam in, and whether they came in hurt
 	var/arrival_brute = 0
 	var/arrived_hurt = FALSE
 	/// Seconds the thought bubble has shown the current set of needs, for cycling through them
@@ -168,6 +168,8 @@
 	RegisterSignal(src, COMSIG_MOB_PRE_EAT, PROC_REF(on_pre_eat))
 	RegisterSignal(src, COMSIG_MOB_ATE, PROC_REF(on_ate))
 	RegisterSignal(src, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_item_interaction))
+	// Whatever lands in their hands by tg's own means (a catch, a hand-over) is what they hold too
+	RegisterSignal(src, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_equipped_item))
 	RegisterSignal(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, PROC_REF(on_damaged))
 	RegisterSignal(src, COMSIG_LIVING_HEALTH_UPDATE, PROC_REF(on_health_update))
 	// Talking puts the thought bubble away (manual_emote() below covers the prison's own emotes).
@@ -202,6 +204,12 @@
 	. = ..()
 	if(gone == held_item)
 		held_item = null
+
+/// Something went into their hands without take_item(): tg caught a thrown ball for them, or someone handed it over. They hold it now.
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_equipped_item(datum/source, obj/item/equipped, slot)
+	SIGNAL_HANDLER
+	if(!held_item && (slot & ITEM_SLOT_HANDS))
+		held_item = equipped
 
 /**
  * The serum took them (outpost_prison_experiment_forms.dm): the same body, no longer an inmate. Whatever
@@ -267,7 +275,7 @@
 	phase = PRISONER_ARRIVING
 	if(arrival_brute > 0)
 		// Roughed up in transfer: real bruising spread over their limbs, with no attacker, so no blame.
-		adjustBruteLoss(arrival_brute)
+		outpost_prison_bruise(src, arrival_brute)
 		arrival_brute = 0
 		arrived_hurt = TRUE
 	ADD_TRAIT(src, TRAIT_IMMOBILIZED, PRISONER_BEAM_TRAIT)
@@ -402,6 +410,16 @@
 	update_drag_resistance()
 
 /mob/living/carbon/human/npc/outpost_prisoner/set_stat(new_stat)
+	. = ..()
+	update_drag_resistance()
+
+// Getting up takes a moment once a knockdown or stamina crit is over (tg's get_up()): they count as down
+// until they are on their feet, so standing up (and lying down) is a change too.
+/mob/living/carbon/human/npc/outpost_prisoner/on_standing_up()
+	. = ..()
+	update_drag_resistance()
+
+/mob/living/carbon/human/npc/outpost_prisoner/on_lying_down(new_lying_angle)
 	. = ..()
 	update_drag_resistance()
 
