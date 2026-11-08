@@ -656,6 +656,7 @@
 		/datum/ai_planning_subtree/bounty_companion_getting_up,
 		// Their chrome, if they carry any: a tell, then the implant's own action (C0, bounty_chrome.dm)
 		/datum/ai_planning_subtree/bounty_chrome,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/bounty_arm,
 		/datum/ai_planning_subtree/bounty_ranged,
 		/datum/ai_planning_subtree/bounty_melee,

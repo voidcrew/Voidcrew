@@ -105,6 +105,7 @@
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
 #include "voidcrew_human_npcs.dm"
+#include "voidcrew_human_npcs_combat_sense.dm"
 #include "voidcrew_human_npcs_nt_customs.dm"
 #include "voidcrew_human_npcs_ruins.dm"
 #include "voidcrew_human_npcs_shared.dm"

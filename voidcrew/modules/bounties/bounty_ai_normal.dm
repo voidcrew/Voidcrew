@@ -15,7 +15,8 @@
  * - breaking off and retreating when badly hurt with nobody near: they sit down there and patch
  *   themselves up with what they carry (N6), and nothing else heals them;
  * - what they wear: plain clothes for their zone, their tier's armour, their style's weapon and spares,
- *   and a bruise pack.
+ *   and a bruise pack; a stimpack when Wanted, a combat stimpack when Most Wanted, if a pocket is free;
+ * - combat sense (bounty_combat_sense.dm): the stimpack when they tire, cover or a charge under stun fire.
  *
  * The shared vars are declared in bounty_types.dm and nowhere else; a var only P3 uses has an
  * `ai_` prefix.
@@ -36,6 +37,7 @@
 		/datum/ai_planning_subtree/bounty_fight_target,
 		// Its chrome: a tell, then the implant's own action (C0, bounty_chrome.dm)
 		/datum/ai_planning_subtree/bounty_chrome,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/bounty_arm,
 		/datum/ai_planning_subtree/bounty_ranged,
 		/datum/ai_planning_subtree/bounty_melee,
@@ -53,9 +55,23 @@
 		return key
 	return BOUNTY_STYLE_BRAWLER
 
-/// Plain clothes for their zone, their tier's armour, their style's weapon and spares, and a bruise pack
+/**
+ * Plain clothes for their zone, their tier's armour, their style's weapon and spares, a bruise pack, and a
+ * stimulant for when they tire in a fight (combat sense, bounty_combat_sense.dm): a stimpack when Wanted,
+ * a combat stimpack when Most Wanted. The stimulant goes in a pocket, if the style left one free: a pistol's
+ * spare magazine or a knife fills the second pocket, and a holster or bandolier takes nothing else.
+ */
 /mob/living/carbon/human/npc/bounty_criminal/normal/bounty_build_outfit(zone)
-	return bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, record?.tier, ai_wanted_style(), ai_heavy_weapon(), /obj/item/stack/medical/bruise_pack)
+	var/datum/outfit/outfit = bounty_fighter_outfit(BOUNTY_ARCHETYPE_NORMAL, zone, record?.tier, ai_wanted_style(), ai_heavy_weapon(), /obj/item/stack/medical/bruise_pack)
+	var/stimulant
+	switch(record?.tier)
+		if(BOUNTY_TIER_WANTED)
+			stimulant = /obj/item/reagent_containers/hypospray/medipen/stimpack
+		if(BOUNTY_TIER_MOST_WANTED)
+			stimulant = /obj/item/reagent_containers/hypospray/medipen/stimpack/traitor
+	if(stimulant && outfit && (!outfit.r_pocket || !outfit.l_pocket))
+		bounty_outfit_carry(outfit, stimulant)
+	return outfit
 
 /mob/living/carbon/human/npc/bounty_criminal/normal/ai_notice(mob/living/hunter)
 	var/mob/living/watched = ai_threat()

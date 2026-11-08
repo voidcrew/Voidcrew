@@ -21,7 +21,8 @@
  * same test human_npc.dm uses for Life().
  *
  * Planning order: soft crit (plead, medipen, elites fire wild), escape captivity, walk out (human_npc_states.dm),
- * surrender (human_npc_surrender.dm), then find a target, arm, shoot, melee.
+ * surrender (human_npc_surrender.dm), then find a target, combat sense for the types that have it
+ * (human_npc_combat_sense.dm), arm, shoot, melee.
  *
  * Phase B (PR #500's pirate crews) can drop these subtrees into its own planning lists:
  * human_npc_arm, human_npc_shoot and human_npc_melee need only BB_BASIC_MOB_CURRENT_TARGET and
@@ -46,6 +47,7 @@
 		/datum/ai_planning_subtree/human_npc_walk_out,
 		/datum/ai_planning_subtree/human_npc_surrender,
 		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/npc_combat_sense,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/human_npc_shoot,
 		/datum/ai_planning_subtree/human_npc_melee,
