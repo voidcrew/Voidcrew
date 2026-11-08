@@ -28,6 +28,7 @@
 	if(stun_time && owner.stat != DEAD)
 		owner.Stun(stun_time)
 	owner.hv_blood_spray(attack_direction, 2)
+	owner.add_splatter_floor(get_turf(owner)) // NPCs have blood since the hit-lines part (npc_blood.dm)
 	return TRUE
 
 /datum/status_effect/hv_crit_basic/eye
@@ -74,6 +75,8 @@
 	owner.adjustBruteLoss(owner.maxHealth * bleed_share * bled)
 	if(prob(50))
 		owner.hv_blood_spray(pick(GLOB.alldirs), 2)
+	else
+		owner.add_splatter_floor(get_turf(owner), small_drip = TRUE)
 	if(bleed_left <= 0)
 		// Stays on as a marker so the crit cannot land again, but stops ticking.
 		tick_interval = STATUS_EFFECT_NO_TICK

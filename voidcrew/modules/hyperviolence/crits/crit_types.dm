@@ -76,7 +76,9 @@
 	victim.adjust_eye_blur(20 SECONDS)
 	victim.add_mood_event("eye_stab", /datum/mood_event/eye_stab)
 
-	var/line
+	var/side_name = side == RIGHT_EYE_SCAR ? "right" : "left"
+	var/line = "[victim]'s [side_name] eye is torn out!"
+	var/own_line = "Your [side_name] eye is torn out!"
 	if(last_eye)
 		// Nothing left to see with: the whole organ comes out.
 		eyes.Remove(victim)
@@ -85,15 +87,18 @@
 		var/turf/landing = get_step(drop_turf, attack_direction)
 		if(landing && !landing.is_blocked_turf())
 			eyes.throw_at(landing, 1, 1)
-		line = length(open_sides) ? "[victim]'s [side == RIGHT_EYE_SCAR ? "right" : "left"] eye is torn out!" : "[victim]'s eyes are torn out!"
-	else
-		line = "[victim]'s [side == RIGHT_EYE_SCAR ? "right" : "left"] eye is torn out!"
+		if(!length(open_sides))
+			line = "[victim]'s eyes are torn out!"
+			own_line = "Your eyes are torn out!"
 	victim.hv_blood_spray(attack_direction, 2)
-	announce(victim, attack_direction, line)
+	announce(victim, attack_direction, line, own_line)
 	return TRUE
 
 /datum/hv_crit/eye/hit_line(mob/living/victim)
-	return "[victim]'s [pick("left", "right")] eye is torn out!"
+	return "[victim]'s eye is torn out!"
+
+/datum/hv_crit/eye/self_line(mob/living/victim)
+	return "Your eye is torn out!"
 
 // ---------------------------------------------------------------------------------------------
 // Tongue cut off: a slash aimed at the mouth. A mask or helmet over the mouth stops it.
@@ -135,6 +140,9 @@
 /datum/hv_crit/tongue/hit_line(mob/living/victim)
 	return "[victim]'s tongue is cut off!"
 
+/datum/hv_crit/tongue/self_line(mob/living/victim)
+	return "Your tongue is cut off!"
+
 // ---------------------------------------------------------------------------------------------
 // Throat slit: a slash aimed at the head. A sealed helmet or an armoured collar stops it.
 
@@ -148,6 +156,7 @@
 	wound_type = /datum/wound/slash/flesh/critical/hv_carotid
 	basic_effect = /datum/status_effect/hv_crit_basic/bleed/throat
 	line_severity = HV_LINE_HUGE
+	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/blood3.ogg'
 	shake = 5
 
@@ -172,6 +181,9 @@
 /datum/hv_crit/throat/hit_line(mob/living/victim)
 	return "[victim]'s throat is slit open!"
 
+/datum/hv_crit/throat/self_line(mob/living/victim)
+	return "Your throat is slit open!"
+
 // ---------------------------------------------------------------------------------------------
 // Aorta torn: a huge stab, slash or shot aimed at the chest. Heavy chest armour against that kind
 // of hit stops it; ordinary vests only make it rarer through their wound armour.
@@ -186,6 +198,7 @@
 	allow_projectiles = TRUE
 	wound_type = /datum/wound/pierce/bleed/critical/hv_aorta
 	basic_effect = /datum/status_effect/hv_crit_basic/bleed/aorta
+	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/pierce3.ogg'
 	shake = 4
 
@@ -201,6 +214,9 @@
 
 /datum/hv_crit/aorta/hit_line(mob/living/victim)
 	return "[victim]'s aorta is torn open!"
+
+/datum/hv_crit/aorta/self_line(mob/living/victim)
+	return "Something tears deep in your chest!"
 
 // ---------------------------------------------------------------------------------------------
 // Skull caved in: a heavy blunt blow aimed at the head. A real helmet, or anything that blocks
@@ -218,6 +234,7 @@
 	wound_type = /datum/wound/blunt/bone/critical/hv_skull
 	basic_effect = /datum/status_effect/hv_crit_basic/skull
 	line_severity = HV_LINE_HUGE
+	line_range = DEFAULT_MESSAGE_RANGE
 	hit_sound = 'sound/effects/wounds/crack2.ogg'
 	shake = 8
 
@@ -244,6 +261,9 @@
 
 /datum/hv_crit/skull/hit_line(mob/living/victim)
 	return "[victim]'s skull caves in!"
+
+/datum/hv_crit/skull/self_line(mob/living/victim)
+	return "Your skull caves in!"
 
 // ---------------------------------------------------------------------------------------------
 // Jaw shattered: a blunt blow aimed at the mouth. A helmet that covers the mouth stops it.
@@ -272,6 +292,9 @@
 
 /datum/hv_crit/jaw/hit_line(mob/living/victim)
 	return "[victim]'s jaw shatters!"
+
+/datum/hv_crit/jaw/self_line(mob/living/victim)
+	return "Your jaw shatters!"
 
 #undef HV_EYE_RUINED_CHANCE
 #undef HV_SKULL_BURST_DAMAGE

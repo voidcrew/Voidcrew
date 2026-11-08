@@ -69,6 +69,9 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 	var/datum/status_effect/basic_effect
 	/// Size of the hit line: HV_LINE_BOLD or HV_LINE_HUGE.
 	var/line_severity = HV_LINE_BOLD
+	/// How far the hit line carries. As tg does for wounds: critical ones carry the full
+	/// DEFAULT_MESSAGE_RANGE, lesser ones only the close combat range.
+	var/line_range = COMBAT_MESSAGE_RANGE
 	/// Played on the victim when it lands. Must be a sound already in the repo.
 	var/hit_sound
 	/// How long the victim's screen shakes, in deciseconds. 0 for none.
@@ -105,9 +108,13 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 /datum/hv_crit/proc/hit_line(mob/living/victim)
 	return "[victim] is badly hurt!"
 
-/// Hit line, sound and shake.
-/datum/hv_crit/proc/announce(mob/living/victim, attack_direction, line)
-	victim.hv_add_hit_line(line || hit_line(victim), line_severity)
+/// What the victim reads in place of hit_line().
+/datum/hv_crit/proc/self_line(mob/living/victim)
+	return "You are badly hurt!"
+
+/// Hit line, sound and shake. line and own_line override hit_line() and self_line().
+/datum/hv_crit/proc/announce(mob/living/victim, attack_direction, line, own_line)
+	victim.hv_add_hit_line(line || hit_line(victim), line_severity, own_line || self_line(victim), line_range)
 	if(hit_sound)
 		playsound(victim, hit_sound, 80, TRUE, falloff_exponent = SOUND_FALLOFF_EXPONENT + 2, ignore_walls = FALSE, falloff_distance = 0)
 	if(shake)
