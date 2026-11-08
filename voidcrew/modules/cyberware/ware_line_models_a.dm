@@ -116,6 +116,12 @@
 	smash_cooldown_time = 1.5 SECONDS
 	hurl_range = 0
 	pries_doors = FALSE
+	// Punches and broken bones only: no slam, haymaker, ground pound or finisher (hyperviolence_gorilla/)
+	heavy_moves = FALSE
+	fist_word = "myomer-driven"
+	snap_strain = 4
+	punch_wound_bonus = BRAWLER_PUNCH_WOUND_BONUS
+	impact_state = "impact_brawler"
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left
 	name = "\improper Brawler myomers (left)"

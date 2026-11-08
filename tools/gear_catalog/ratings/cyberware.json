@@ -19,7 +19,7 @@
    "hash": "c229d282cf893570",
    "name": "Strong-Arm empowered musculature implant",
    "note": "Humans only. With the implanted arm active, an empty-hand combat-mode left-click on a mob becomes a slam on a 5 s cooldown: the hand's unarmed damage roll plus 5 (plus 20 more against beast, special and mining mobs), doubled and run through melee armor, and the target is thrown 1 tile if the wearer is standing; it is not used while Hulk. One implant in each arm lets the wearer pry closed airlocks open bare-handed (6 s, instant if unpowered, refused if bolted or welded). An EMP puts the arm down for 9 s (4.5 s on a light pulse): slams fail, and half the time the wearer lunges onto the target and falls for 3 s, otherwise is paralyzed for 1 s.",
-   "rank": 10,
+   "rank": 12,
    "reason": "A slam for 20 to 30 damage every 5 s per arm, 60 to 70 against mining mobs and beasts, and a pair pries powered airlocks in 6 s. 1,200 cr for two from cargo. EMP makes the arm a liability for 9 s.",
    "tier": "yellow"
   },
@@ -37,7 +37,7 @@
    "group": "Arm weapons and fists",
    "hash": "31fd669dadf0cf4c",
    "name": "Bunker Buster housing",
-   "rank": 8,
+   "rank": 10,
    "reason": "Two 60-damage rockets that floor the target and wreck doors and machines with no blast, about 10 on the gun score plus breaching. Two hands, two shots, then 600 cr at reputation 22 or late research. Loot only.",
    "tier": "yellow"
   },
@@ -180,7 +180,7 @@
    "group": "Arm weapons and fists",
    "hash": "43903115df46709c",
    "name": "Popup Ronin housing",
-   "rank": 7,
+   "rank": 9,
    "reason": "A one-handed machine pistol in the arm that can't be disarmed: 20 damage, 3.3 shots a second, about a WT-550 on the gun score (47). 20-round magazines are 250 cr at reputation 22 or late research. Loot only.",
    "tier": "yellow"
   },
@@ -189,7 +189,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Holdout housing",
-   "rank": 9,
+   "rank": 11,
    "reason": "A .38 revolver in the arm that can't be disarmed: 25 damage, six shots, about 2.5 a second, reloaded by hand a round at a time with ordinary .38. Load 3, 2,400 cr at reputation 4. Splice takes a pulled housing back for 1,200 cr.",
    "tier": "yellow"
   },
@@ -582,22 +582,22 @@
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms": {
    "confidence": "high",
    "group": "Arm weapons and fists",
-   "hash": "9c748c5bf556a0e0",
+   "hash": "",
    "name": "Gorilla Arms myomer lattice (right)",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 11,
-   "reason": "Half of a pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s. A breaching tool more than a weapon. Load 6 the pair.",
-   "tier": "yellow"
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 20 brute punch (armor rolled, +15 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback on the safe path, 4 s cooldown per arm; three punches on one limb inside 15 s snap it (compound fracture on an arm or leg, caved ribs on the chest) unless 40+ melee covers it. A mob held in an aggressive grab is hurled 4 tiles, or slammed into the floor (25) or onto a table (30), once per 10 s grab-move cooldown. Each arm has a Haymaker wheel chip: wind up 0.8 to 1.5 s, 20 to 30 brute and a 3 to 4 tile launch (into a wall: +10 and cracked ribs), 20 s shared cooldown. The pair adds Ground pound (stagger and daze everything adjacent bar crew, 45 s) and three finishers on a target in crit or stunned with both hands empty, picked by aim: head bursts the head, an arm tears it off, the chest breaks the back (floored until set); about 2 s of wind-up, interrupted by 10 damage, a step or the victim breaking free; shares the 20 s cooldown. Rock breaks, structures take 40, and the pair pries powered airlocks in 4 s (never trader outpost doors).",
+   "rank": 7,
+   "reason": "Half of a pair. With the haymaker, the grab-slam and three finishers it is a melee kill kit, not only a breaching tool: about Mantis-level against someone it can catch, and it ends downed targets outright. Counters are range, the wind-ups, 40+ melee armour and the Atlas frame. Load 6 the pair, 3 vouchers at advanced reputation.",
+   "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/left": {
    "confidence": "high",
    "group": "Arm weapons and fists",
-   "hash": "25756d0541291f90",
+   "hash": "",
    "name": "Gorilla Arms myomer lattice (left)",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a flat 20 brute (armor rolled, +10 wound bonus) with a 1-tile knockback on a mob, 4 s cooldown per arm; a mob held in an aggressive grab is hurled 4 tiles. On a rock wall it drills it, and on a structure or machine with integrity it does 40 brute (1 s cooldown for both). With both arms, closed airlocks can be pried bare-handed (4 s if powered, instant if unpowered, refused if bolted or welded). Not used while Hulk or while the ware is down.",
-   "rank": 12,
-   "reason": "Left half of the Gorilla pair: a flat 20 damage punch every 4 s, 40 to machines and structures every second, breaks rock, and the pair pries powered airlocks in 4 s.",
-   "tier": "yellow"
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 20 brute punch (armor rolled, +15 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback on the safe path, 4 s cooldown per arm; three punches on one limb inside 15 s snap it (compound fracture on an arm or leg, caved ribs on the chest) unless 40+ melee covers it. A mob held in an aggressive grab is hurled 4 tiles, or slammed into the floor (25) or onto a table (30), once per 10 s grab-move cooldown. Each arm has a Haymaker wheel chip: wind up 0.8 to 1.5 s, 20 to 30 brute and a 3 to 4 tile launch (into a wall: +10 and cracked ribs), 20 s shared cooldown. The pair adds Ground pound (stagger and daze everything adjacent bar crew, 45 s) and three finishers on a target in crit or stunned with both hands empty, picked by aim: head bursts the head, an arm tears it off, the chest breaks the back (floored until set); about 2 s of wind-up, interrupted by 10 damage, a step or the victim breaking free; shares the 20 s cooldown. Rock breaks, structures take 40, and the pair pries powered airlocks in 4 s (never trader outpost doors).",
+   "rank": 8,
+   "reason": "Left half of the Gorilla pair: the punch, snaps, slam and Haymaker; the pair adds Ground pound and the three finishers. With the haymaker, the grab-slam and three finishers it is a melee kill kit, not only a breaching tool: about Mantis-level against someone it can catch, and it ends downed targets outright. Counters are range, the wind-ups, 40+ melee armour and the Atlas frame. Load 6 the pair, 3 vouchers at advanced reputation.",
+   "tier": "red"
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street": {
    "confidence": "medium",
@@ -605,8 +605,9 @@
    "hash": "",
    "name": "Brawler myomers (right)",
    "rank": 15,
-   "reason": "Half of a pair: a flat 14 damage punch every 5 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying. Load 4 the pair, 1,600 cr at reputation 4. Either ripperdoc takes a pulled arm back for 400 cr.",
-   "tier": "yellow"
+   "reason": "Half of a pair: a 14 damage punch every 5 s that can snap a limb on the fourth hit, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab, no heavy moves and no door prying. Load 4 the pair, 1,600 cr at reputation 4. Either ripperdoc takes a pulled arm back for 400 cr.",
+   "tier": "yellow",
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 20 to structures every 1.5 s, breaks rock. No hurl, slam, haymaker, ground pound, finisher or door pry."
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
    "confidence": "medium",
@@ -614,8 +615,9 @@
    "hash": "",
    "name": "Brawler myomers (left)",
    "rank": 16,
-   "reason": "Left half of the Brawler pair: a flat 14 damage punch every 5 s, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab and no door prying.",
-   "tier": "yellow"
+   "reason": "Left half of the Brawler pair: a 14 damage punch every 5 s that can snap a limb on the fourth hit, 20 to machines and structures every 1.5 s, breaks rock. No heavy moves and no door prying.",
+   "tier": "yellow",
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 20 to structures every 1.5 s, breaks rock. No hurl, slam, haymaker, ground pound, finisher or door pry."
   },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {
    "confidence": "medium",
