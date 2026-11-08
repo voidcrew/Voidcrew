@@ -169,6 +169,60 @@
 /// Minimum tiles between two dig sites.
 #define XENOARCH_SITE_SPACING 20
 
+/// do_after key for every dig tool, so one person works one thing at a time.
+#define DOAFTER_SOURCE_XENOARCH "doafter_xenoarch"
+
+/// What a site wall gives up when it is mined.
+#define XENOARCH_FIND_LARGE 1
+#define XENOARCH_FIND_SMALL 2
+
+/// Dig site kinds (Bay's), which set the small finds a site holds.
+#define XENOARCH_SITE_GARDEN "garden"
+#define XENOARCH_SITE_ANIMAL "animal"
+#define XENOARCH_SITE_HOUSE "house"
+#define XENOARCH_SITE_TECHNICAL "technical"
+#define XENOARCH_SITE_TEMPLE "temple"
+#define XENOARCH_SITE_WAR "war"
+
+/// Large find shares, in percent, out of what a boulder holds. The rest is an alien artifact.
+#define XENOARCH_FIND_SHARE_FORMATION 6
+#define XENOARCH_FIND_SHARE_CRYSTAL 4
+#define XENOARCH_FIND_SHARE_CASE 2
+/// Combat exosuit wrecks: red sites only, taken out of the artifact share. About one a round.
+#define XENOARCH_FIND_SHARE_EXOSUIT_RED 1
+
+/// A boulder's find sits this deep, in cm.
+#define XENOARCH_BOULDER_DEPTH_MIN 25
+#define XENOARCH_BOULDER_DEPTH_MAX 200
+/// The plain depth scanner reads a boulder to within this many cm (a strange rock to a third of it).
+#define XENOARCH_SCAN_ERROR 15
+/// Hammering costs this long per cm the head takes off.
+#define XENOARCH_HAMMER_TIME_PER_CM (0.5 SECONDS)
+/// One pass of the brush.
+#define XENOARCH_BRUSH_TIME (3 SECONDS)
+#define XENOARCH_BRUSH_TIME_QUICK (1 SECONDS)
+/// A pick or drill takes this much off a boulder per swing, roughly.
+#define XENOARCH_PICK_CUT_MIN 18
+#define XENOARCH_PICK_CUT_MAX 30
+/// Chance an unstabilised large find comes apart as it is freed. The rest come out damaged.
+#define XENOARCH_UNSTABLE_CRUMBLE_CHANCE 50
+
+/// Strange rocks: the find sits 6 to 14 cm deep, plus this much per tier.
+#define XENOARCH_ROCK_DEPTH_PER_TIER 8
+
+/// Curio classes, as buyers price them (design: shell 40, fossil 50, pottery 80,
+/// statuette or instrument 150, strange object 200 cr).
+#define XENOARCH_CURIO_SHELL "shell"
+#define XENOARCH_CURIO_FOSSIL "fossil"
+#define XENOARCH_CURIO_POTTERY "pottery"
+#define XENOARCH_CURIO_STATUETTE "statuette"
+#define XENOARCH_CURIO_INSTRUMENT "instrument"
+#define XENOARCH_CURIO_STRANGE_OBJECT "strange object"
+
+/// Charged crystal: what it puts on the wire and for how long in all before it goes dull.
+#define XENOARCH_CRYSTAL_POWER (15 KILO WATTS)
+#define XENOARCH_CRYSTAL_LIFETIME (90 MINUTES)
+
 // ===== Signals =====
 // All sent on the artifact (/obj/machinery/artifact) unless noted.
 
