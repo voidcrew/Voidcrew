@@ -13,9 +13,9 @@
 
 /// Brute and burn a boss takes, as a multiple of a person's, through its physiology (npc_damage_taken, defaults 1.5). Its armour does the rest. (phase D)
 #define BOUNTY_BOSS_DAMAGE_TAKEN 0.6
-/// Its combat stimulant: one at the start of a fight, a second for its second wind (defaults 1.6, CR-4). Ephedrine: baton resistance, speed and quicker recovery from stuns, never immunity, so a crew can still stun and cuff a worn-out boss. (phase D)
+/// Its combat stimulant, used through combat sense's rule (human_npc_combat_sense.dm) when it tires in a fight, never while one is still in its blood (C8; it used to inject at the start of a fight, defaults 1.6, CR-4). Ephedrine: baton resistance, speed and quicker recovery from stuns, never immunity, so a crew can still stun and cuff a worn-out boss. (phase D)
 #define BOUNTY_BOSS_STIMULANT /obj/item/reagent_containers/hypospray/medipen/stimpack
-/// How many of BOUNTY_BOSS_STIMULANT it carries. (phase D)
+/// How many of BOUNTY_BOSS_STIMULANT it carries: one for when it first tires, one for a long fight (an ephedrine pen lasts about 100 s). (phase D)
 #define BOUNTY_BOSS_STIMULANTS 2
 /// Worn out: stamina loss over this share of its max stamina... (phase D, CB-2)
 #define BOUNTY_BOSS_WORN_OUT_STAMINA 0.5
@@ -101,6 +101,20 @@
 #define BOUNTY_BOSS_BARRICADE_LIFE (90 SECONDS)
 /// Fire stacks (tg's) a boss's burning floor adds every second to anyone standing in it. (phase D, CB-8)
 #define BOUNTY_BOSS_FIRE_TICK_STACKS 1
+
+// ===== EACH KIT'S ANSWER TO A DISABLER (C8) =====
+// Real gear a player can own too, worn and locked to the body like the rest of the kit (D3). Measured in
+// the port's boss model: a solo hunter with a disabler stamcritted any of them in about two seconds before.
+
+/// The Juggernaut's tower shield, held from the start and raised as its fight starts: raised, it stops every shot from the half of the map the Juggernaut faces (the Phalanx buckler's own rule, loot/uniques/armory.dm). Flank it.
+#define BOUNTY_JUGGERNAUT_SHIELD /obj/item/shield/riot/phalanx_buckler
+/// The Heavy's coat: an ablative trenchcoat with its hood up, energy and laser armour 60 on every limb and its head, and half of all beams that hit it reflected (tg's own). Bullets go through it. Bring lethal, or a lot of shots.
+#define BOUNTY_HEAVY_COAT /obj/item/clothing/suit/hooded/ablative
+/// The Demolitionist's implant: tg's CNS rebooter, one neural load (cyberware_component.dm). Its first stamina crit of a minute lasts a second, then six seconds of stun immunity; cuff it on the second.
+#define BOUNTY_DEMOLITIONIST_REBOOTER /obj/item/organ/cyberimp/brain/anti_stun
+/// The Ghost's cover from stun fire (combat sense): how many steps it runs for cover, and how many runs it makes in one exchange of fire. Corner it.
+#define BOUNTY_GHOST_COVER_STEPS 5
+#define BOUNTY_GHOST_COVER_MOVES 4
 
 // ===== JUGGERNAUT =====
 

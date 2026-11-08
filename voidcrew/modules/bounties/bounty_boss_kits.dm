@@ -7,29 +7,37 @@
  * (/mob/living/carbon/human/npc/bounty_criminal/boss/<kit>, BOUNTY_KIT_*): what each wears and carries,
  * and its two abilities (spec section 5, 12.3 C8). Every kit is a real human in real gear, locked to its
  * body (D3): its armour protects by tg's rules and its weapon is a real item it fights with. Its
- * stimulants and bruise pack are packed by boss_supplies(). Nothing it carries is ever loot.
+ * stimulants and bruise pack are packed by boss_supplies(), and its combat sense (bounty_boss.dm) uses
+ * the pens when it tires. Nothing it carries is ever loot.
  *
- * - Juggernaut: riot armour and a body grown huge (tg's gigantism gene). Charges in a line, smashing
+ * - Juggernaut: riot armour, a body grown huge (tg's gigantism gene) and a tower shield it raises as its
+ *   fight starts, stopping every shot from in front of it (C8: flank it). Charges in a line, smashing
  *   tables, chairs and plain windows and tearing through an interior wall; running into anything else
  *   hurts it and knocks it down, as running into a wall does anyone (CB-6). Slams the floor around it
- *   when someone is close. Fights with its fists.
+ *   when someone is close. Fights with its shield and its free fist.
  * - Pyromaniac: a real firefighter suit and helmet (tg's thermal protection, CB-7) and a lit torch.
  *   Sweeps a cone of fire and throws molotovs that leave a burning patch; whoever it catches burns with
- *   tg's fire stacks (CB-8).
+ *   tg's fire stacks (CB-8). Shot with a disabler, it goes for the shooter until its flamer reaches
+ *   them (C8: keep your distance and keep moving).
  * - Demolitionist: a hard hat, a hi-vis vest, a bandolier and a crowbar in its bag. Keeps its distance
  *   and lobs grenades with a visible fuse, and blows a hole through an interior wall or door to get at
- *   someone behind cover. Whoever a blast catches takes tg's light explosion (CB-10).
+ *   someone behind cover. Whoever a blast catches takes tg's light explosion (CB-10). A real CNS
+ *   rebooter in its head gets it up a second after its first stamina crit of a minute (C8: pile on, and
+ *   cuff it on the second).
  * - Ghost: a dark hood, a real combat knife and real chrome (Slipwire, Cascade; the OC-6 ruling).
  *   Dashes in along a line with its Cascade lattice firing and stabs at the end of it (CB-9); fades
  *   into a shimmer that is only a look, broken by a hit or a flash (CB-12); backs off after a couple of
- *   cuts.
- * - Heavy: SWAT armour and a real L6 with a spare box. A laser sight and a spin-up, then a burst of
- *   real rounds into a cone (a hit while it aims spoils the shot); throws real barrier grenades for
- *   cover (CB-26); changes its own belts. Slow.
+ *   cuts. Shot with a disabler from beyond its dash, it breaks the line and comes again from cover (C8:
+ *   corner it).
+ * - Heavy: an ablative trenchcoat with its hood up (C8: energy armour everywhere and half of all beams
+ *   reflected; bring lethal, or a lot of shots) and a real L6 with a spare box. A laser sight and a
+ *   spin-up, then a burst of real rounds into a cone (a hit while it aims spoils the shot); throws real
+ *   barrier grenades for cover (CB-26); changes its own belts.
  *
  * Where the air would kill it, each kit seals up in its own space suit, in the armour class of what it
  * wears in good air (bounty_sealed_gear(), bounty_suits.dm): the Juggernaut and the Heavy in armoured
- * ones, the Pyromaniac, the Demolitionist and the Ghost in soft ones.
+ * ones, the Pyromaniac, the Demolitionist and the Ghost in soft ones. The Heavy's coat doesn't hold
+ * pressure, so out there it has no reflection, only the armoured suit.
  *
  * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
  * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
@@ -46,7 +54,7 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut
 	name = "armoured criminal"
-	desc = "A huge criminal in riot plates, built like a door."
+	desc = "A huge criminal in riot plates behind a tower shield, built like a door."
 	boss_kit = BOUNTY_KIT_JUGGERNAUT
 	boss_ability_types = list(
 		/datum/action/cooldown/mob_cooldown/bounty_boss/charge,
@@ -62,9 +70,44 @@
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/juggernaut))
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_gear_text()
-	if(istype(wear_suit, /obj/item/clothing/suit/armor/riot))
-		return "Riot plates cover [p_them()] from neck to boots."
-	return "[p_They()] [p_are()] built like a door."
+	. = istype(wear_suit, /obj/item/clothing/suit/armor/riot) ? "Riot plates cover [p_them()] from neck to boots." : "[p_They()] [p_are()] built like a door."
+	if(boss_shield())
+		. += " A tower shield covers [p_their()] front."
+
+/// The tower shield it holds, if it still has one (C8)
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/proc/boss_shield()
+	for(var/obj/item/shield/riot/phalanx_buckler/shield in held_items)
+		return shield
+	return null
+
+// Its fight on, it raises the shield it holds, the player's way (use in hand), and keeps it up.
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_gear_plan(datum/ai_controller/controller)
+	var/obj/item/shield/riot/phalanx_buckler/shield = boss_shield()
+	if(isnull(shield) || shield.raised || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED) || world.time < controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT])
+		return FALSE
+	controller.queue_behavior(/datum/ai_behavior/bounty_juggernaut_raise_shield)
+	return TRUE
+
+/// The Juggernaut raises its shield: the shield in its active hand, then used in hand (tg's Z key)
+/datum/ai_behavior/bounty_juggernaut_raise_shield
+
+/datum/ai_behavior/bounty_juggernaut_raise_shield/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/jugg = controller.pawn
+	var/obj/item/shield/riot/phalanx_buckler/shield = istype(jugg) ? jugg.boss_shield() : null
+	if(isnull(shield) || !human_npc_ready_item(jugg, shield))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(!shield.raised)
+		jugg.execute_mode()
+	if(!shield.raised)
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	jugg.visible_message(span_warning("[jugg] sets [jugg.p_their()] shield in front of [jugg.p_them()]."))
+	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+
+// A try that got nowhere: it fights on and tries again in a while, rather than fumble with it every plan
+/datum/ai_behavior/bounty_juggernaut_raise_shield/finish_action(datum/ai_controller/controller, succeeded)
+	. = ..()
+	if(!succeeded)
+		controller.set_blackboard_key(BB_HUMAN_NPC_ARMING_RETRY_AT, world.time + 5 SECONDS)
 
 // Out where the air kills: a black and red space suit, as heavy as its riot plates
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/bounty_sealed_gear()
@@ -84,6 +127,7 @@
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/charge)
 	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
 
+// The shield has no sling, so it is held from the start, in the off hand; the other fist stays free.
 /datum/outfit/bounty_boss/juggernaut
 	name = "Bounty mini-boss: Juggernaut"
 	uniform = /obj/item/clothing/under/syndicate/combat
@@ -91,6 +135,7 @@
 	head = /obj/item/clothing/head/helmet/toggleable/riot
 	gloves = /obj/item/clothing/gloves/combat
 	shoes = /obj/item/clothing/shoes/jackboots
+	l_hand = BOUNTY_JUGGERNAUT_SHIELD
 
 /**
  * Charge: a roar, a stamp and a line on the floor, then a run down that line. The first person in
@@ -295,7 +340,7 @@
  */
 /datum/action/cooldown/mob_cooldown/bounty_boss/slam
 	name = "Ground Slam"
-	desc = "Bring both fists down on the floor and knock everyone around you off their feet."
+	desc = "Bring your whole weight down on the floor and knock everyone around you off their feet."
 	cooldown_time = BOUNTY_JUGGERNAUT_SLAM_COOLDOWN
 	windup = BOUNTY_JUGGERNAUT_SLAM_WINDUP
 
@@ -303,7 +348,7 @@
 	return aimable(target) && get_dist(owner, target) <= 1
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/slam/telegraph(atom/target)
-	owner.visible_message(span_boldwarning("[owner] raises both fists high over [owner.p_their()] head!"))
+	owner.visible_message(span_boldwarning("[owner] raises both arms high over [owner.p_their()] head!"))
 	playsound(owner, 'sound/effects/magic/tail_swing.ogg', 60, TRUE)
 	mark_turfs(RANGE_TURFS(1, owner), COLOR_RED)
 	var/matrix/rest = matrix(owner.transform)
@@ -314,7 +359,7 @@
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/slam/effect(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
-	boss.visible_message(span_danger("[boss] brings both fists down on the floor!"))
+	boss.visible_message(span_danger("[boss] brings [boss.p_their()] whole weight down on the floor!"))
 	playsound(boss, 'sound/effects/meteorimpact.ogg', 80, TRUE)
 	for(var/atom/victim as anything in boss.boss_victims_on(RANGE_TURFS(1, boss)))
 		boss.boss_hit(victim, BOUNTY_JUGGERNAUT_SLAM_DAMAGE, BRUTE, MELEE, BOUNTY_JUGGERNAUT_SLAM_KNOCKDOWN)
@@ -327,6 +372,7 @@
 	name = "scorched criminal"
 	desc = "A criminal in a blackened fire suit, with a lit torch in hand."
 	boss_kit = BOUNTY_KIT_PYROMANIAC
+	npc_combat_sense = /datum/npc_combat_sense/bounty/boss/pyromaniac
 	boss_ability_types = list(
 		/datum/action/cooldown/mob_cooldown/bounty_boss/flamer,
 		/datum/action/cooldown/mob_cooldown/bounty_boss/molotov,
@@ -351,6 +397,29 @@
 // With a molotov ready
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_breaks_through_now(atom/barrier)
 	return ..() || (!barrier.opacity && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
+
+/**
+ * The Pyromaniac's answer to stun fire (C8): it goes for whoever is shooting it, until its flamer
+ * reaches them (combat sense's close-in), throwing a molotov or sweeping the flamer the moment either is
+ * ready (the boss rules let a ready ability go first). Keep your distance and keep moving.
+ */
+/datum/npc_combat_sense/bounty/boss/pyromaniac
+	react_to_stun_fire = TRUE
+	close_in_reach = BOUNTY_PYROMANIAC_FLAMER_RANGE
+
+// It closes until its flamer reaches, not to arm's length
+/datum/npc_combat_sense/bounty/boss/pyromaniac/reach(mob/living/carbon/human/npc, datum/ai_controller/controller)
+	return BOUNTY_PYROMANIAC_FLAMER_RANGE
+
+// Whoever is shooting it becomes who it goes for, if it may go after them
+/datum/npc_combat_sense/bounty/boss/pyromaniac/plan_close_in(mob/living/carbon/human/npc, datum/ai_controller/controller, datum/component/npc_combat_sense/sense)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = npc
+	var/atom/shooter = sense.threat()
+	if(istype(boss) && shooter)
+		var/atom/aim = boss.boss_target_for(shooter)
+		if(aim != controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] && boss.boss_valid_target(aim))
+			controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, aim)
+	return ..()
 
 // The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7). The torch
 // doesn't holster, so it is in hand from the start.
@@ -488,11 +557,39 @@
 		/datum/action/cooldown/mob_cooldown/bounty_boss/breach,
 	)
 
+/**
+ * Its rebooter (C8): tg's CNS rebooter, a real implant in its head, one neural load beside any chrome it
+ * rolled (a Demolitionist rolls at most Cascade and Lazarus, 17 of the body's 20). It is no chrome, so the
+ * chrome roll doesn't count it and it doesn't burn out when it dies.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/Initialize(mapload, datum/human_npc_order/order)
+	. = ..()
+	if(QDELETED(src))
+		return
+	var/obj/item/organ/implant = new BOUNTY_DEMOLITIONIST_REBOOTER()
+	if(!implant.Insert(src, special = TRUE))
+		qdel(implant)
+	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_STUNIMMUNE), PROC_REF(boss_rebooted))
+
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/bounty_build_outfit(zone)
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/demolitionist))
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_gear_text()
-	return "A bandolier of grenades is slung across [p_their()] chest."
+	. = "A bandolier of grenades is slung across [p_their()] chest."
+	if(boss_rebooter())
+		. += " A steel port glints at the base of [p_their()] skull."
+
+/// Its CNS rebooter, if it is still in its head
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/proc/boss_rebooter()
+	return locate(BOUNTY_DEMOLITIONIST_REBOOTER) in organs
+
+/// Its rebooter just fired (the implant's own stun immunity went on): everyone sees it get up
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/proc/boss_rebooted(datum/source)
+	SIGNAL_HANDLER
+	var/obj/item/organ/implant = boss_rebooter()
+	if(isnull(implant) || stat == DEAD || !HAS_TRAIT_FROM(src, TRAIT_STUNIMMUNE, REF(implant)))
+		return
+	visible_message(span_warning("[src] jerks back to [p_their()] feet, sparks spitting from the back of [p_their()] neck!"))
 
 // Out where the air kills: a plain grey space suit over its work clothes
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/bounty_sealed_gear()
@@ -832,6 +929,7 @@
 	name = "hooded criminal"
 	desc = "A lean criminal in a dark hooded cloak, a knife at the ready."
 	boss_kit = BOUNTY_KIT_GHOST
+	npc_combat_sense = /datum/npc_combat_sense/bounty/boss/ghost
 	// Its quickness is real chrome (the OC-6 ruling): a Slipwire shunt and a Cascade lattice. An EMP or a
 	// brownout takes it away as it would from a player, and it burns out when the Ghost dies.
 	npc_cyberware = list(
@@ -863,6 +961,18 @@
 // Out where the air kills: a dark red voidsuit, no more armour than its hood
 /mob/living/carbon/human/npc/bounty_criminal/boss/ghost/bounty_sealed_gear()
 	return list(/obj/item/clothing/suit/space/nasavoid, /obj/item/clothing/head/helmet/space/nasavoid)
+
+/**
+ * The Ghost's answer to stun fire (C8): from beyond its dash, it breaks the shooter's line, running a few
+ * steps for cover (combat sense's cover, Slipwire dodging as it goes), and keeps down a moment, longer
+ * while winded; from cover it comes again with its dash once someone is in reach (the boss rules let a
+ * ready ability go first). Corner it.
+ */
+/datum/npc_combat_sense/bounty/boss/ghost
+	react_to_stun_fire = TRUE
+	close_in_reach = 0
+	cover_steps = BOUNTY_GHOST_COVER_STEPS
+	cover_moves = BOUNTY_GHOST_COVER_MOVES
 
 // The hood goes up as the outfit is put on (tg's hooded suits do that). The knife rides in a pocket until the fight starts.
 /datum/outfit/bounty_boss/ghost
@@ -1078,7 +1188,7 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy
 	name = "heavily armed criminal"
-	desc = "A big criminal in heavy armour, carrying a belt-fed gun."
+	desc = "A big criminal in an ablative coat, carrying a belt-fed gun."
 	boss_kit = BOUNTY_KIT_HEAVY
 	boss_ability_types = list(
 		/datum/action/cooldown/mob_cooldown/bounty_boss/burst,
@@ -1089,11 +1199,13 @@
 	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/heavy))
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_gear_text()
+	if(istype(wear_suit, BOUNTY_HEAVY_COAT))
+		return "[p_Their()] coat and hood are lined with reflective panels."
 	return "[p_They()] [p_are()] in heavy armour."
 
-// Out where the air kills: a black space suit as heavy as its SWAT armour, under its own SWAT helmet, which already holds pressure
+// Out where the air kills: a black armoured space suit and helmet (its coat and hood hold no pressure)
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/bounty_sealed_gear()
-	return list(/obj/item/clothing/suit/space/syndicate/black, null)
+	return list(/obj/item/clothing/suit/space/syndicate/black, /obj/item/clothing/head/helmet/space/syndicate/black)
 // Its rounds chip through a window or grille it may break, and fly over a gap
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_goes_through(atom/barrier)
 	if(..())
@@ -1114,12 +1226,12 @@
 	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)
 
 // The L6 has no sling and won't holster, so it is in hand from the start, its other hand free to fire it.
-// A spare box rides in the bag; a barrier grenade in each pocket.
+// A spare box rides in the bag; a barrier grenade in each pocket. The coat's hood goes up as it is put on
+// (tg's hooded suits do that), so its own reflecting hood covers its head (C8).
 /datum/outfit/bounty_boss/heavy
 	name = "Bounty mini-boss: Heavy"
 	uniform = /obj/item/clothing/under/syndicate/combat
-	suit = /obj/item/clothing/suit/armor/swat
-	head = /obj/item/clothing/head/helmet/swat
+	suit = BOUNTY_HEAVY_COAT
 	gloves = /obj/item/clothing/gloves/combat
 	shoes = /obj/item/clothing/shoes/jackboots
 	r_hand = BOUNTY_HEAVY_GUN

@@ -104,6 +104,32 @@
 /datum/unit_test/voidcrew_bounty_boss/proc/carried(mob/living/holder, item_type)
 	return length(holder.get_all_contents_type(item_type))
 
+/**
+ * A real `projectile_type` landing on `target` from `from_turf`, the way a projectile's hit loop lands one
+ * (process_hit_loop(): its PREHIT, then projectile_hit()), aimed at `zone`. Returns what bullet_act()
+ * returned, or 0 if something stopped it before it landed (a shield).
+ */
+/datum/unit_test/voidcrew_bounty_boss/proc/shoot(mob/living/target, turf/from_turf, mob/living/firer, projectile_type = /obj/projectile/beam/disabler, zone = BODY_ZONE_CHEST)
+	var/obj/projectile/shot = allocate(projectile_type, from_turf)
+	shot.firer = firer
+	shot.fired_from = firer
+	shot.starting = from_turf
+	shot.def_zone = zone
+	if(SEND_SIGNAL(target, COMSIG_PROJECTILE_PREHIT, shot) & PROJECTILE_INTERRUPT_HIT)
+		return 0
+	return target.projectile_hit(shot, zone)
+
+/// The combat sense planning subtree's shared instance, which every boss plans with
+/datum/unit_test/voidcrew_bounty_boss/proc/sense_subtree()
+	return GLOB.ai_subtrees[/datum/ai_planning_subtree/npc_combat_sense]
+
+/// `boss` in a fight with `hunter`: on its grudge list, hostile, and its target
+/datum/unit_test/voidcrew_bounty_boss/proc/fight(mob/living/carbon/human/npc/bounty_criminal/boss/boss, mob/living/hunter)
+	boss.body_add_grudge(hunter)
+	boss.boss_turn_hostile(hunter)
+	boss.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
+	return boss.boss_hostile
+
 // ===== EACH KIT IS A REAL HUMAN IN REAL GEAR, AND GOES CLEANLY =====
 
 /datum/unit_test/voidcrew_bounty_boss/kits
@@ -129,9 +155,12 @@
 		TEST_ASSERT(abs(boss.physiology.burn_mod - 0.6) < 0.01, "[kit_type] takes [boss.physiology.burn_mod] burn, not 0.6")
 		TEST_ASSERT(boss.status_flags & CANSTUN, "[kit_type] can't be stunned")
 		TEST_ASSERT(boss.status_flags & CANKNOCKDOWN, "[kit_type] can't be knocked down")
-		// Its stimulants and a bruise pack, carried for real.
+		// Its stimulants and a bruise pack, carried for real, the pens used by its combat sense (C8).
 		TEST_ASSERT_EQUAL(carried(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack), 2, "[kit_type] doesn't carry its two stimulants") // BOUNTY_BOSS_STIMULANTS
 		TEST_ASSERT(carried(boss, /obj/item/stack/medical/bruise_pack) >= 1, "[kit_type] carries nothing to patch itself up with")
+		var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
+		TEST_ASSERT(istype(sense?.rules, /datum/npc_combat_sense/bounty/boss), "[kit_type] has no boss combat sense")
+		TEST_ASSERT(sense_subtree() in boss.ai_controller.planning_subtrees, "[kit_type]'s AI doesn't plan its combat sense")
 		TEST_ASSERT(boss.boss_gear_text(), "[kit_type] has no gear line on examine")
 		var/list/abilities = boss.boss_abilities.Copy()
 		qdel(boss)
@@ -139,12 +168,18 @@
 		for(var/datum/ability as anything in abilities)
 			TEST_ASSERT(QDELETED(ability), "[kit_type]'s [ability.type] outlived it")
 
-	// The Juggernaut: riot armour, and a real gene for its size (CB-5, CB-21).
+	// The Juggernaut: riot armour, a real gene for its size (CB-5, CB-21), and a real tower shield in hand, locked to it, not yet raised (C8).
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/jugg = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut)
 	TEST_ASSERT(istype(jugg.wear_suit, /obj/item/clothing/suit/armor/riot), "The Juggernaut isn't wearing riot armour")
 	TEST_ASSERT(istype(jugg.head, /obj/item/clothing/head/helmet/toggleable/riot), "The Juggernaut isn't wearing a riot helmet")
 	TEST_ASSERT(HAS_TRAIT(jugg, TRAIT_GIANT), "The Juggernaut isn't a giant")
 	TEST_ASSERT_NOTNULL(jugg.dna.get_mutation(/datum/mutation/gigantism), "The Juggernaut's size isn't the gigantism gene")
+	var/obj/item/shield/riot/phalanx_buckler/shield = jugg.boss_shield()
+	TEST_ASSERT_NOTNULL(shield, "The Juggernaut holds no tower shield") // BOUNTY_JUGGERNAUT_SHIELD
+	TEST_ASSERT(human_npc_gear_locked(shield), "The Juggernaut's shield isn't locked to it")
+	TEST_ASSERT(!shield.raised, "The Juggernaut has its shield up before any fight")
+	TEST_ASSERT(length(jugg.get_empty_held_indexes()), "The Juggernaut has no free fist beside its shield")
+	TEST_ASSERT(findtext(jugg.boss_gear_text(), "shield"), "The Juggernaut's examine doesn't show its shield")
 
 	// The Pyromaniac: its fire suit and helmet keep fire off it, not a trait (CB-7). Its torch is a real one, lit.
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac)
@@ -157,9 +192,13 @@
 	TEST_ASSERT_NOTNULL(torch, "The Pyromaniac holds no torch")
 	TEST_ASSERT(torch.light_on && torch.damtype == BURN, "The Pyromaniac's torch isn't lit")
 
-	// The Demolitionist: a hard hat, and its crowbar in its bag until the fight starts.
+	// The Demolitionist: a hard hat, its crowbar in its bag until the fight starts, and a real CNS rebooter in its head (C8).
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/demo = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist)
 	TEST_ASSERT(istype(demo.head, /obj/item/clothing/head/utility/hardhat), "The Demolitionist isn't wearing a hard hat")
+	var/obj/item/organ/cyberimp/brain/anti_stun/implant = demo.boss_rebooter()
+	TEST_ASSERT_NOTNULL(implant, "The Demolitionist has no CNS rebooter") // BOUNTY_DEMOLITIONIST_REBOOTER
+	TEST_ASSERT_EQUAL(implant.owner, demo, "The Demolitionist's implant isn't in its body")
+	TEST_ASSERT(get_chrome_load(demo) <= get_chrome_capacity(demo), "The Demolitionist's rebooter puts it over its neural capacity")
 	TEST_ASSERT(istype(demo.belt, /obj/item/storage/belt/bandolier), "The Demolitionist has no bandolier")
 	var/obj/item/crowbar/large/crowbar = locate() in demo.get_all_contents_type(/obj/item/crowbar/large)
 	TEST_ASSERT_NOTNULL(crowbar, "The Demolitionist carries no crowbar")
@@ -174,10 +213,11 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/slipwire) in ghost.organs, "The Ghost has no Slipwire")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/cascade) in ghost.organs, "The Ghost has no Cascade lattice")
 
-	// The Heavy: SWAT armour, a real L6 with a belt in it, a spare box and two barrier grenades (CB-13, CB-26).
+	// The Heavy: an ablative trenchcoat with its hood up (C8), a real L6 with a belt in it, a spare box and two barrier grenades (CB-13, CB-26).
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/heavy = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/heavy)
-	TEST_ASSERT(istype(heavy.wear_suit, /obj/item/clothing/suit/armor/swat), "The Heavy isn't wearing SWAT armour")
-	TEST_ASSERT(istype(heavy.head, /obj/item/clothing/head/helmet/swat), "The Heavy isn't wearing a SWAT helmet")
+	TEST_ASSERT(istype(heavy.wear_suit, /obj/item/clothing/suit/hooded/ablative), "The Heavy isn't wearing its ablative coat") // BOUNTY_HEAVY_COAT
+	TEST_ASSERT(istype(heavy.head, /obj/item/clothing/head/hooded/ablative), "The Heavy's ablative hood isn't up")
+	TEST_ASSERT(human_npc_gear_locked(heavy.wear_suit) && human_npc_gear_locked(heavy.head), "The Heavy's coat and hood aren't locked to it")
 	var/obj/item/gun/ballistic/automatic/l6_saw/gun = heavy.boss_gun()
 	TEST_ASSERT_NOTNULL(gun, "The Heavy holds no belt-fed gun")
 	TEST_ASSERT(gun.can_shoot(), "The Heavy's gun isn't loaded")
@@ -618,64 +658,92 @@
 	TEST_ASSERT(other.body_has_grudge(first), "A confronted boss has no grudge against who confronted it")
 	TEST_ASSERT_EQUAL(other.ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET], first, "A confronted boss isn't going after who confronted it")
 
-// ===== WORN OUT AND THE STIMULANT: REAL STATE, REAL PENS (CB-2, CB-4, CR-4) =====
+// ===== WORN OUT AND THE STIMULANT: REAL STATE, REAL PENS (CB-2, CB-4, CR-4, C8) =====
 
+/**
+ * Its stimulant pens go in by combat sense's own rule (human_npc_combat_sense.dm): when it tires in a
+ * fight, never at the fight's start, never while one is still in its blood, and nothing else injects
+ * them. Worn out, it takes the pen first and then falls back.
+ */
 /datum/unit_test/voidcrew_bounty_boss/stamina
 
 /datum/unit_test/voidcrew_bounty_boss/stamina/Run()
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut, spot(0, 0))
 	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(3, 0))
 	var/datum/ai_controller/controller = boss.ai_controller
-	boss.body_add_grudge(hunter)
-	boss.boss_turn_hostile(hunter)
-	TEST_ASSERT(boss.boss_hostile, "Test fixture: the boss didn't turn hostile")
+	var/datum/ai_planning_subtree/npc_combat_sense/subtree = sense_subtree()
+	var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
+	var/datum/ai_behavior/npc_combat_sense_stim/stim = GET_AI_BEHAVIOR(/datum/ai_behavior/npc_combat_sense_stim)
 
-	// Stamina works on it from the first hit (CB-2): no fresh immunity.
+	// Winded but not yet hostile: nothing.
+	boss.setStaminaLoss(55)
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "A boss that isn't fighting used a stimulant")
+	boss.setStaminaLoss(0)
+	TEST_ASSERT(fight(boss, hunter), "Test fixture: the boss didn't turn hostile")
+
+	// Stamina works on it from the first hit (CB-2): no fresh immunity, and no pen at the fight's start.
 	boss.apply_damage(30, STAMINA)
 	TEST_ASSERT(boss.getStaminaLoss() >= 30, "A fresh boss shrugged off stamina damage")
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "The boss reached for a stimulant before it tired")
 
-	// The fight starting, it injects a real stimulant it carries.
-	var/datum/ai_planning_subtree/bounty_boss_stimulant/stimulant = new
-	TEST_ASSERT_EQUAL(stimulant.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "The boss didn't reach for its stimulant as its fight started")
-	TEST_ASSERT_EQUAL(boss.boss_stimulants_used, 1, "The boss didn't count its first stimulant")
-	var/datum/ai_behavior/human_npc_treat_self/treat = GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_treat_self)
-	TEST_ASSERT(controller.current_behaviors[treat], "The boss didn't plan to use its stimulant")
+	// Tired (55 of the 100 that stamcrit it), still short of worn out: it uses a real pen it carries.
+	boss.setStaminaLoss(55)
+	TEST_ASSERT(!boss.boss_is_worn_out(), "Test fixture: 55 stamina loss counts as worn out")
+	TEST_ASSERT_EQUAL(subtree.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "The tired boss didn't reach for its stimulant")
+	TEST_ASSERT(controller.current_behaviors[stim], "The tired boss didn't plan to use its stimulant")
+	var/obj/item/reagent_containers/hypospray/medipen/stimpack/pen = controller.blackboard["human_npc_stim_item"] // BB_HUMAN_NPC_STIM_ITEM
+	TEST_ASSERT(istype(pen), "The boss reached for something other than its stimpack")
 	var/finished = FALSE
-	for(var/step in 1 to 10)
+	for(var/step in 1 to 6)
 		ready_hands(boss)
-		var/result = treat.perform(1, controller, "human_npc_treat_item") // BB_HUMAN_NPC_TREAT_ITEM
+		var/result = stim.perform(1, controller, "human_npc_stim_item")
 		TEST_ASSERT(!(result & AI_BEHAVIOR_FAILED), "Using the stimulant failed at step [step]")
 		if(result & AI_BEHAVIOR_SUCCEEDED)
 			finished = TRUE
 			break
 	TEST_ASSERT(finished, "The boss never finished using its stimulant")
+	stim.finish_action(controller, TRUE, "human_npc_stim_item")
 	TEST_ASSERT(boss.reagents.has_reagent(/datum/reagent/medicine/ephedrine), "The stimulant isn't in the boss's blood")
-	TEST_ASSERT_NOTNULL(bounty_ai_find_injector(boss, /obj/item/reagent_containers/hypospray/medipen/stimpack), "The boss has no second stimulant left for its second wind")
-	treat.finish_action(controller, TRUE, "human_npc_treat_item")
-	TEST_ASSERT(!boss.boss_wants_stimulant(), "The boss wants a second stimulant before its second wind")
+	TEST_ASSERT(pen.used_up, "The stimpack isn't spent")
+	TEST_ASSERT_EQUAL(sense.stims_used, 1, "The stimulant wasn't counted")
+	TEST_ASSERT(boss.boss_shield()?.loc == boss, "Using the stimulant cost the Juggernaut its shield")
 
-	// Worn out is its real stamina (over half its pool): it says so, shows the hunters, and falls back.
-	boss.setStaminaLoss(0)
+	// One in its blood: the second pen waits, however tired it gets.
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "With a stimulant already in its blood, it reached for another")
+
+	// Worn out is its real stamina (over half its pool): it says so, shows the hunters, takes its second pen first...
 	boss.reagents.clear_reagents()
-	boss.adjustStaminaLoss(70)
+	boss.setStaminaLoss(70)
 	TEST_ASSERT(boss.boss_is_worn_out(), "A boss at [boss.getStaminaLoss()] stamina loss isn't worn out")
-	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
 	var/datum/ai_planning_subtree/bounty_boss_worn_out/worn = new
-	TEST_ASSERT_EQUAL(worn.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A worn-out boss didn't fall back")
+	TEST_ASSERT_EQUAL(worn.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A worn-out boss did nothing")
 	TEST_ASSERT(boss.boss_worn_out, "The boss didn't wear out")
 	TEST_ASSERT_EQUAL(boss.body_last_alert, "worn out", "Wearing out showed [boss.body_last_alert || "nothing"] over the boss")
+	TEST_ASSERT(controller.current_behaviors[stim], "Worn out with a pen left, it fell back without it")
+	finished = FALSE
+	for(var/step in 1 to 6)
+		ready_hands(boss)
+		var/result = stim.perform(1, controller, "human_npc_stim_item")
+		if(result & AI_BEHAVIOR_SUCCEEDED)
+			finished = TRUE
+			break
+	TEST_ASSERT(finished, "The worn-out boss never used its second pen")
+	stim.finish_action(controller, TRUE, "human_npc_stim_item")
+	TEST_ASSERT_EQUAL(sense.stims_used, 2, "The second stimulant wasn't counted")
+
+	// ...then falls back, its abilities waiting.
+	TEST_ASSERT_EQUAL(worn.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A worn-out boss didn't fall back")
+	TEST_ASSERT(controller.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target)], "A worn-out boss isn't falling back from its target")
 	TEST_ASSERT(boss.boss_fallback_until > world.time, "A worn-out boss has no fall back")
 	TEST_ASSERT(!boss.boss_can_use_ability(), "A boss falling back can still start an ability")
 
-	// The fall back over and still worn out: its second wind is due, the second pen with its "recover" line.
+	// No pens left: it just falls back, and once that is over it fights on.
+	boss.reagents.clear_reagents()
+	TEST_ASSERT_NULL(human_npc_find_stim(boss), "Test fixture: the boss still has a stimulant")
+	TEST_ASSERT_EQUAL(worn.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "With no pens left, the worn-out boss didn't fall back")
+	TEST_ASSERT(!controller.current_behaviors[stim], "With no pens left, it tried to use one")
 	boss.boss_fallback_until = world.time - 1
-	worn.SelectBehaviors(controller, 1)
-	TEST_ASSERT(boss.boss_second_wind_due, "The boss's second wind isn't due after its fall back")
-	TEST_ASSERT(boss.boss_wants_stimulant(), "The boss doesn't want its second stimulant")
-	controller.clear_blackboard_key("human_npc_treat_item")
-	TEST_ASSERT_EQUAL(stimulant.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "The boss didn't take its second wind")
-	TEST_ASSERT_EQUAL(boss.boss_stimulants_used, 2, "The boss didn't count its second stimulant")
-	TEST_ASSERT(!boss.boss_second_wind_due, "The second wind is still due after it was taken")
+	TEST_ASSERT_NULL(worn.SelectBehaviors(controller, 1), "Its fall back over, the boss kept falling back")
 
 	// Its stamina back, it is no longer worn out.
 	boss.setStaminaLoss(0)
@@ -950,3 +1018,254 @@
 	TEST_ASSERT(ghost.boss_surge(), "The Ghost's Cascade lattice didn't fire")
 	TEST_ASSERT(ghost.has_status_effect(/datum/status_effect/cyberware_cascade_window), "The Cascade window didn't open")
 	TEST_ASSERT(!ghost.boss_surge(), "The Cascade lattice fired twice in one cycle")
+
+// ===== EACH KIT'S ANSWER TO A DISABLER (C8) =====
+
+/**
+ * The Juggernaut raises its real tower shield (the Phalanx buckler) the player's way once its fight is on.
+ * Raised, shots from the half of the map it faces stop at it; from the side or behind a disabler bolt
+ * lands (a riot shield lets beams through). It keeps hold of it through a stun, as locked gear does, and
+ * bullets from the flank wear it out until it breaks.
+ */
+/datum/unit_test/voidcrew_bounty_boss/juggernaut_shield
+
+/datum/unit_test/voidcrew_bounty_boss/juggernaut_shield/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut, spot(2, 2))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(2, 4))
+	var/datum/ai_controller/controller = boss.ai_controller
+	var/obj/item/shield/riot/phalanx_buckler/shield = boss.boss_shield()
+	TEST_ASSERT_NOTNULL(shield, "Test fixture: the Juggernaut has no shield")
+	var/datum/ai_planning_subtree/bounty_boss_gear/gear = GLOB.ai_subtrees[/datum/ai_planning_subtree/bounty_boss_gear]
+	TEST_ASSERT_NULL(gear.SelectBehaviors(controller, 1), "The Juggernaut raised its shield with no fight on")
+
+	// Its fight on, it raises the shield it holds, used in hand
+	TEST_ASSERT(fight(boss, hunter), "Test fixture: the Juggernaut didn't turn hostile")
+	TEST_ASSERT_EQUAL(gear.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "The Juggernaut didn't plan to raise its shield")
+	var/datum/ai_behavior/bounty_juggernaut_raise_shield/raise = GET_AI_BEHAVIOR(/datum/ai_behavior/bounty_juggernaut_raise_shield)
+	ready_hands(boss)
+	TEST_ASSERT(raise.perform(1, controller) & AI_BEHAVIOR_SUCCEEDED, "The Juggernaut couldn't raise its shield")
+	TEST_ASSERT(shield.raised, "The Juggernaut's shield isn't raised")
+	TEST_ASSERT(!boss.boss_gear_plan(controller), "With its shield up, it went to raise it again")
+	TEST_ASSERT(boss.has_movespeed_modifier(/datum/movespeed_modifier/phalanx_raised), "The raised shield doesn't slow it as it slows anyone")
+
+	// Facing its shooter: bolts from in front, straight or at an angle, stop at the shield
+	boss.setDir(NORTH)
+	TEST_ASSERT_EQUAL(shoot(boss, spot(2, 4), hunter), 0, "A bolt from in front got past the raised shield")
+	TEST_ASSERT_EQUAL(shoot(boss, spot(4, 4), hunter), 0, "A bolt from in front and to one side got past the raised shield")
+	TEST_ASSERT_EQUAL(boss.getStaminaLoss(), 0, "Bolts from in front did [boss.getStaminaLoss()] stamina damage through the shield")
+	// From the side and from behind they land, through riot armour's energy 10
+	for(var/turf/flank as anything in list(spot(4, 2), spot(0, 2), spot(2, 0)))
+		boss.setStaminaLoss(0)
+		TEST_ASSERT(shoot(boss, flank, hunter), "A bolt from [flank.x - boss.x], [flank.y - boss.y] never landed")
+		TEST_ASSERT(abs(boss.getStaminaLoss() - 27) < 1, "A bolt from [flank.x - boss.x], [flank.y - boss.y] did [boss.getStaminaLoss()] stamina, not 27")
+	// Turned round, the same shooter gets through
+	boss.setStaminaLoss(0)
+	boss.setDir(SOUTH)
+	TEST_ASSERT(shoot(boss, spot(2, 4), hunter) && boss.getStaminaLoss() > 0, "Its back to the shooter, the shield still stopped the bolt")
+	boss.setStaminaLoss(0)
+
+	// Paralysed, it keeps hold of its shield (the gear lock refuses the drop), still raised and still facing
+	boss.setDir(NORTH)
+	boss.Paralyze(2 SECONDS)
+	TEST_ASSERT(shield.loc == boss && shield.raised, "Paralysed, the Juggernaut let go of its shield")
+	TEST_ASSERT_EQUAL(shoot(boss, spot(2, 4), hunter), 0, "Down and facing its shooter, the shield stopped nothing")
+	boss.SetParalyzed(0)
+	boss.setStaminaLoss(0)
+
+	// Bullets from the flank: a riot shield's block, and every block wears it until it breaks
+	var/shots = 0
+	while(!QDELETED(shield) && shots < 80)
+		shots++
+		shoot(boss, spot(4, 2), hunter, /obj/projectile/bullet/c9mm)
+		boss.adjustBruteLoss(-100)
+	TEST_ASSERT(QDELETED(shield), "[shots] bullets from the flank didn't break the Juggernaut's shield")
+	TEST_ASSERT_NULL(boss.boss_shield(), "The broken shield is still in the Juggernaut's hand")
+	TEST_ASSERT(shoot(boss, spot(2, 4), hunter) && boss.getStaminaLoss() > 0, "With its shield broken, bolts from in front still stop")
+	TEST_ASSERT(!findtext(boss.boss_gear_text(), "shield"), "The Juggernaut's examine still shows a shield it has lost")
+	boss.setStaminaLoss(0)
+
+/**
+ * The Heavy's ablative coat and hood: half of the disabler bolts that hit it reflect, wherever they hit,
+ * and the rest do what energy armour 60 lets through. A bullet goes into it like into cloth.
+ */
+/datum/unit_test/voidcrew_bounty_boss/heavy_coat
+
+/datum/unit_test/voidcrew_bounty_boss/heavy_coat/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/heavy = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/heavy, spot(2, 2))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(2, 4))
+	TEST_ASSERT(findtext(heavy.boss_gear_text(), "reflective"), "The Heavy's examine doesn't show its coat")
+	var/blocks = 0
+	var/list/zones = list()
+	for(var/i in 1 to 240)
+		var/zone = pick(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_PRECISE_GROIN)
+		heavy.setStaminaLoss(0)
+		var/result = shoot(heavy, spot(2, 4), hunter, /obj/projectile/beam/disabler, zone)
+		if(result == BULLET_ACT_FORCE_PIERCE)
+			blocks++
+			zones[zone] = TRUE
+			TEST_ASSERT_EQUAL(heavy.getStaminaLoss(), 0, "A bolt the coat reflected still did stamina damage")
+			continue
+		TEST_ASSERT(abs(heavy.getStaminaLoss() - 12) < 0.5, "A bolt on its [zone] did [heavy.getStaminaLoss()] stamina, not the 12 that energy armour 60 lets through")
+	TEST_ASSERT(blocks > 80 && blocks < 160, "The coat reflected [blocks] of 240 bolts, not about half")
+	for(var/zone in list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG))
+		TEST_ASSERT(zones[zone], "No bolt to its [zone] was ever reflected")
+	heavy.setStaminaLoss(0)
+
+	// Bullets are another matter: no reflection, and bullet armour 10
+	var/result = shoot(heavy, spot(2, 4), hunter, /obj/projectile/bullet/c9mm)
+	TEST_ASSERT(result && result != BULLET_ACT_FORCE_PIERCE, "A bullet bounced off the Heavy's coat")
+	TEST_ASSERT(heavy.getBruteLoss() > 12, "A pistol round did only [heavy.getBruteLoss()] brute through the coat")
+
+/**
+ * The Demolitionist's CNS rebooter, tg's own: its first stamina crit of a minute is over in a second, then
+ * it can't be put down for six; the next one, inside that minute, holds as long as anyone's.
+ */
+/datum/unit_test/voidcrew_bounty_boss/demolitionist_rebooter
+
+/datum/unit_test/voidcrew_bounty_boss/demolitionist_rebooter/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/demo = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist, spot(2, 2))
+	demo.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/obj/item/organ/implant = demo.boss_rebooter()
+	TEST_ASSERT_NOTNULL(implant, "Test fixture: the Demolitionist has no implant")
+	TEST_ASSERT(findtext(demo.boss_gear_text(), "skull"), "The Demolitionist's examine doesn't show its implant")
+
+	demo.apply_damage(120, STAMINA)
+	TEST_ASSERT(demo.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Test fixture: 120 stamina didn't stamcrit the Demolitionist")
+	sleep(1.5 SECONDS)
+	TEST_ASSERT(!demo.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The rebooter didn't get the Demolitionist up a second after it went down")
+	TEST_ASSERT_EQUAL(demo.getStaminaLoss(), 0, "The rebooter left it [demo.getStaminaLoss()] stamina loss")
+	TEST_ASSERT(HAS_TRAIT_FROM(demo, TRAIT_STUNIMMUNE, REF(implant)), "The implant gave it no stun immunity")
+
+	// The window: it can't go down again
+	demo.apply_damage(120, STAMINA)
+	TEST_ASSERT(!demo.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "It went down again inside its rebooter's window")
+	sleep(6 SECONDS)
+	TEST_ASSERT(!HAS_TRAIT(demo, TRAIT_STUNIMMUNE), "The rebooter's window never closed")
+	TEST_ASSERT_EQUAL(demo.getStaminaLoss(), 0, "The rebooter didn't clear its stamina as its window closed")
+
+	// The gap: the rebooter is spent for a minute, and the next stamina crit holds long enough for cuffs
+	demo.apply_damage(120, STAMINA)
+	TEST_ASSERT(demo.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "After the window it couldn't be put down")
+	sleep(4.5 SECONDS)
+	TEST_ASSERT(demo.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The rebooter got it up twice in a minute")
+	demo.setStaminaLoss(0)
+
+/**
+ * The Ghost under stun fire from beyond its dash: it breaks the shooter's line, a few steps to cover.
+ * With its dash ready and someone in reach, the dash goes first.
+ */
+/datum/unit_test/voidcrew_bounty_boss/ghost_cover
+
+/datum/unit_test/voidcrew_bounty_boss/ghost_cover/Run()
+	// A short wall east of the middle: the far corner behind it is out of a western hunter's line
+	change_turf(spot(3, 3), /turf/closed/wall)
+	change_turf(spot(3, 4), /turf/closed/wall)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/ghost/ghost = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/ghost, spot(2, 2))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(0, 2))
+	var/datum/ai_controller/controller = ghost.ai_controller
+	var/datum/ai_planning_subtree/npc_combat_sense/subtree = sense_subtree()
+	var/datum/component/npc_combat_sense/sense = ghost.GetComponent(/datum/component/npc_combat_sense)
+	TEST_ASSERT(istype(sense?.rules, /datum/npc_combat_sense/bounty/boss/ghost), "The Ghost doesn't have its own combat sense")
+	TEST_ASSERT(fight(ghost, hunter), "Test fixture: the Ghost didn't turn hostile")
+	// Nothing of its own ready: its knife still in its pocket and its abilities waiting
+	ghost.boss_next_ability_at = world.time + 100 SECONDS
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "The Ghost took cover before anyone shot at it")
+
+	TEST_ASSERT(shoot(ghost, spot(0, 2), hunter), "Test fixture: the bolt didn't land on the Ghost")
+	TEST_ASSERT(ghost.getStaminaLoss() > 0, "Test fixture: the bolt did no stamina damage")
+	TEST_ASSERT_EQUAL(subtree.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "Shot with a disabler, the Ghost stood in the open")
+	var/turf/cover = controller.blackboard["human_npc_cover"] // BB_HUMAN_NPC_COVER
+	TEST_ASSERT_NOTNULL(cover, "The Ghost picked no cover")
+	TEST_ASSERT(!human_npc_line_of_fire(get_turf(hunter), cover, PASSTABLE | PASSGLASS | PASSGRILLE), "The Ghost's cover is in the hunter's line of fire")
+	TEST_ASSERT(get_dist(ghost, cover) <= 5, "The Ghost's cover is further than it runs") // BOUNTY_GHOST_COVER_STEPS
+	TEST_ASSERT(controller.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/npc_combat_sense_take_cover)], "The Ghost didn't set off for its cover")
+
+	// Its knife out and its dash ready, with the shooter in reach: the dash goes first
+	sense.end_exchange(controller)
+	controller.CancelActions()
+	var/obj/item/knife/combat/knife = locate() in ghost.get_all_contents_type(/obj/item/knife/combat)
+	TEST_ASSERT(human_npc_take_in_hand(ghost, knife), "Test fixture: the Ghost couldn't draw its knife")
+	ready(ghost)
+	ghost.setStaminaLoss(0)
+	shoot(ghost, spot(0, 2), hunter)
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "With its dash ready and the shooter in reach, the Ghost ran for cover")
+	TEST_ASSERT_NULL(controller.blackboard["human_npc_cover"], "With its dash ready, the Ghost picked cover")
+	ghost.setStaminaLoss(0)
+
+/**
+ * The Pyromaniac under stun fire goes for whoever is shooting it, until its flamer reaches them; a ready
+ * molotov or flamer goes first. The kits without a reaction of their own (Juggernaut, Heavy, Demolitionist)
+ * fight on as they were.
+ */
+/datum/unit_test/voidcrew_bounty_boss/pyromaniac_charge
+
+/datum/unit_test/voidcrew_bounty_boss/pyromaniac_charge/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(0, 0))
+	var/mob/living/carbon/human/consistent/first = hunter_at(spot(1, 0))
+	var/mob/living/carbon/human/consistent/shooter = hunter_at(spot(4, 4))
+	var/datum/ai_controller/controller = pyro.ai_controller
+	var/datum/ai_planning_subtree/npc_combat_sense/subtree = sense_subtree()
+	TEST_ASSERT(fight(pyro, first), "Test fixture: the Pyromaniac didn't turn hostile")
+	pyro.boss_next_ability_at = world.time + 100 SECONDS
+
+	TEST_ASSERT(shoot(pyro, spot(4, 4), shooter), "Test fixture: the bolt didn't land on the Pyromaniac")
+	TEST_ASSERT_EQUAL(subtree.SelectBehaviors(controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "Shot with a disabler, the Pyromaniac didn't go for the shooter")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], shooter, "The Pyromaniac didn't turn on whoever shot it")
+	TEST_ASSERT(controller.current_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/human_npc_close_in)], "The Pyromaniac isn't closing on its shooter")
+	TEST_ASSERT_EQUAL(controller.blackboard["human_npc_stun_shooter"], shooter, "The Pyromaniac is closing on someone else") // BB_HUMAN_NPC_STUN_SHOOTER
+	TEST_ASSERT_NULL(controller.blackboard["human_npc_cover"], "The Pyromaniac ran for cover")
+	controller.CancelActions()
+
+	// Within its flamer's reach it stops closing: the flamer does the rest
+	pyro.forceMove(spot(2, 2))
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "Within its flamer's reach, the Pyromaniac kept closing")
+
+	// A molotov ready: it throws rather than runs
+	pyro.forceMove(spot(0, 0))
+	ready(pyro)
+	shoot(pyro, spot(4, 4), shooter)
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "With its molotov ready, the Pyromaniac ran at the shooter instead")
+	pyro.setStaminaLoss(0)
+
+	// The kits with no reaction of their own stand their ground (their answer is their gear)
+	for(var/kit_type in list(/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut, /mob/living/carbon/human/npc/bounty_criminal/boss/heavy, /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist))
+		var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = allocate(kit_type, spot(0, 4))
+		TEST_ASSERT(fight(boss, shooter), "Test fixture: [kit_type] didn't turn hostile")
+		boss.boss_next_ability_at = world.time + 100 SECONDS
+		shoot(boss, spot(4, 4), shooter)
+		TEST_ASSERT_NULL(subtree.SelectBehaviors(boss.ai_controller, 1), "[kit_type] reacted to one disabler bolt with combat sense")
+		TEST_ASSERT_NULL(boss.ai_controller.blackboard["human_npc_cover"], "[kit_type] ran for cover")
+		qdel(boss)
+
+#ifdef BOUNTY_BOSS_RENDERS
+/**
+ * Not a check: renders the kits whose looks changed (C8), before and after, facing each way, to
+ * data/c8_renders/. Compile with -DBOUNTY_BOSS_RENDERS to run it. "Before" puts the old kit back on the
+ * same body: no shield on the Juggernaut, SWAT armour and helmet on the Heavy.
+ */
+/datum/unit_test/voidcrew_bounty_boss/renders
+
+/datum/unit_test/voidcrew_bounty_boss/renders/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/jugg = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut, spot(1, 1))
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/heavy = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/heavy, spot(3, 1))
+	jugg.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	heavy.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/obj/item/shield/riot/phalanx_buckler/shield = jugg.boss_shield()
+	shield?.raise_shield(jugg)
+	for(var/facing in list(SOUTH, EAST, NORTH, WEST))
+		jugg.setDir(facing)
+		heavy.setDir(facing)
+		fcopy(getFlatIcon(jugg, facing, no_anim = TRUE), "data/c8_renders/juggernaut_after_[dir2text(facing)].png")
+		fcopy(getFlatIcon(heavy, facing, no_anim = TRUE), "data/c8_renders/heavy_after_[dir2text(facing)].png")
+	qdel(shield)
+	qdel(heavy.wear_suit)
+	if(heavy.head)
+		qdel(heavy.head)
+	heavy.equip_to_slot_or_del(new /obj/item/clothing/suit/armor/swat(heavy), ITEM_SLOT_OCLOTHING)
+	heavy.equip_to_slot_or_del(new /obj/item/clothing/head/helmet/swat(heavy), ITEM_SLOT_HEAD)
+	for(var/facing in list(SOUTH, EAST, NORTH, WEST))
+		jugg.setDir(facing)
+		heavy.setDir(facing)
+		fcopy(getFlatIcon(jugg, facing, no_anim = TRUE), "data/c8_renders/juggernaut_before_[dir2text(facing)].png")
+		fcopy(getFlatIcon(heavy, facing, no_anim = TRUE), "data/c8_renders/heavy_before_[dir2text(facing)].png")
+#endif
