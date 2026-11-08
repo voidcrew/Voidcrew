@@ -286,6 +286,7 @@
 	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "Test fixture: the surrender did not put them on the floor")
 	TEST_ASSERT_EQUAL(holds(victim), 1, "The surrender tremble is not held")
 	victim.SetParalyzed(0)
+	victim.get_up(instant = TRUE) // tg's own get-up takes a second
 	TEST_ASSERT_EQUAL(victim.body_position, STANDING_UP, "Test fixture: they did not stand back up")
 	TEST_ASSERT_EQUAL(holds(victim), 0, "The tremble outlived getting back up")
 

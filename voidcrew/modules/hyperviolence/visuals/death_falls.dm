@@ -162,6 +162,10 @@
 		return FALSE
 	if(next.has_gravity() <= 0 || next.is_blocked_turf(FALSE, src) || !here.Adjacent(next))
 		return FALSE
+	// A lying body may move into a standing person's tile in tg; a thrown corpse never lands on one.
+	for(var/mob/living/standing in next)
+		if(standing.body_position == STANDING_UP)
+			return FALSE
 	return TRUE
 
 /// Slides the corpse a whole tile along the killing blow, a real move with a slow glide.
