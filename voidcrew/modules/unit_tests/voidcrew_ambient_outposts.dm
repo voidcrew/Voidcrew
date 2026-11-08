@@ -649,7 +649,11 @@
 	TEST_ASSERT_NOTNULL(escort, "The barback would not walk a sleeping drinker out")
 	barback.forceMove(pa_tile(1, 2))
 	barback.activity_step(1)
-	TEST_ASSERT(!drunk.IsSleeping(), "The barback's shake did not wake the drinker")
+	// tg's shake takes ten seconds off the sleep, which ends on its next tick
+	var/datum/status_effect/incapacitating/sleeping/sleep = drunk.IsSleeping()
+	TEST_ASSERT(!sleep || sleep.duration < world.time, "The barback's shake did not wake the drinker")
+	sleep?.process(0.2)
+	TEST_ASSERT(!drunk.IsSleeping(), "The drinker slept on after the shake")
 	barback.activity_step(1)
 	TEST_ASSERT(istype(drunk.activity, /datum/ambient_activity/leave), "A drinker the barback woke did not head for the lift")
 	TEST_ASSERT_EQUAL(barback.activity_step(1), 0, "The barback left the drinker's side") // AMBIENT_STEP_CONTINUE
@@ -731,12 +735,17 @@
 	TEST_ASSERT(istype(angler.activity, /datum/ambient_activity/fish), "The angler is [angler.activity?.name || "doing nothing"], not fishing (PB's fishing activity)")
 	angler.end_activity()
 
-	// A catch for Pike: only a picture, and the pond is not touched
+	// A catch for Pike: a prop in the angler's hand, like their other held looks (locked to them,
+	// gone when put away), and the pond is not touched
 	var/datum/ambient_activity/show_catch/show = angler.start_activity(new /datum/ambient_activity/show_catch(angler))
 	TEST_ASSERT_NOTNULL(show, "The angler could not show Pike a catch")
 	TEST_ASSERT(ispath(show.fish_type, /obj/item/fish), "The angler is holding up [show.fish_type], not a fish")
 	TEST_ASSERT_EQUAL(get_dist(show.spot, pike), 2, "The angler shows Pike the fish from somewhere other than his counter")
-	TEST_ASSERT_NULL(locate(/obj/item/fish) in range(5, angler), "Showing Pike a catch made a real fish")
+	var/obj/item/fish/shown = locate(/obj/item/fish) in angler.held_items
+	TEST_ASSERT_NOTNULL(shown, "The angler is not holding the fish up")
+	TEST_ASSERT(HAS_TRAIT(shown, "ambient_prop"), "The fish the angler shows is not a prop") // TRAIT_AMBIENT_PROP
+	for(var/turf/nearby in range(5, angler))
+		TEST_ASSERT_NULL(locate(/obj/item/fish) in nearby, "Showing Pike a catch left a fish lying about")
 	angler.forceMove(show.spot)
 	angler.activity_step(1)
 	show.next_step_at = world.time
@@ -746,7 +755,9 @@
 	show.next_step_at = world.time
 	TEST_ASSERT_EQUAL(angler.activity_step(1), 2, "The angler never let the fish go") // AMBIENT_STEP_DONE
 	TEST_ASSERT_NULL(angler.held_visual, "The angler is still holding the fish they let go")
-	TEST_ASSERT_NULL(locate(/obj/item/fish) in range(5, angler), "Letting a fish go made a real fish")
+	TEST_ASSERT(QDELETED(shown), "The fish the angler let go is still about")
+	for(var/turf/nearby in range(5, angler))
+		TEST_ASSERT_NULL(locate(/obj/item/fish) in nearby, "Letting a fish go left a fish lying about")
 	angler.end_activity()
 
 	// A player near them lands a fish: a word from the angler
@@ -844,7 +855,7 @@
 		var/mob/living/carbon/human/npc/ambient_npc/npc = pa_npc(npc_type, spot, place)
 		TEST_ASSERT(!HAS_TRAIT(npc, TRAIT_GODMODE), "[npc_type] cannot be hurt")
 		TEST_ASSERT(FACTION_TURRET in npc.faction, "The outpost's turrets would shoot [npc_type]")
-		npc.apply_damage(npc.maxHealth * 2, BRUTE)
+		npc.apply_damage(npc.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 		TEST_ASSERT_EQUAL(npc.stat, DEAD, "[npc_type] did not die of their wounds")
 		var/dropped = ambient_test_cash_on(spot) - cash_before
 		TEST_ASSERT(dropped >= 5 && dropped <= 30, "[npc_type] dropped [dropped] cr, not 5 to 30") // AMBIENT_DEATH_CASH_LOW/HIGH
@@ -862,14 +873,17 @@
 	TEST_ASSERT_EQUAL(place.count_role(role.type), 1, "The role was not filled in place")
 	var/list/settled = place.living_npcs()
 	var/mob/living/carbon/human/npc/ambient_npc/victim = settled[1]
-	victim.apply_damage(victim.maxHealth * 2, BRUTE)
+	victim.apply_damage(victim.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(place.killed_slots(role.type), 1, "A killing did not leave its place empty")
 	var/list/until = place.killed_until[role.type]
 	TEST_ASSERT(until[1] - world.time >= 11900 && until[1] - world.time <= 12000, "A killed person's place opens again in [(until[1] - world.time) / 10] seconds, not twenty minutes") // AMBIENT_OUTPOST_KILLED_SLOT_TIME
-	// Nobody there: the body goes, and nobody is made in their place
+	// Nobody there: nobody is made in their place, and the body lies until the human NPC corpse sweep
+	// takes it once nobody is near (N9; AMBIENT_OUTPOST_BODY_TIME at a trader outpost)
 	place.needs_settling = TRUE
 	TEST_ASSERT_EQUAL(SSambient_npcs.update_outpost(place, 0, roles, 5), 0, "A killed person was made up in place at once")
-	TEST_ASSERT(QDELETED(victim), "A body stayed at an outpost nobody is on")
+	TEST_ASSERT(!QDELETED(victim), "A body vanished at an outpost nobody is on")
+	TEST_ASSERT(victim in SShuman_npcs.corpses, "A body at an outpost is not up for the corpse sweep")
+	TEST_ASSERT_EQUAL(victim.npc_corpse_lifetime, 3000, "A body at a trader outpost lies [victim.npc_corpse_lifetime / 10] seconds, not five minutes") // AMBIENT_OUTPOST_BODY_TIME
 	// A player comes: nobody off the lift for them either
 	for(var/i in 1 to 3)
 		place.arrivals_at = world.time
@@ -903,14 +917,15 @@
 	TEST_ASSERT(outpost.aggressor_strikes[brute.mind], "A blow to one of the outpost's people was no strike")
 	TEST_ASSERT(istype(witness.activity, /datum/ambient_activity/leave), "Nobody near ducked and left when one of the outpost's people was hit")
 
-	// With players there a body lies a while, then is taken away
+	// With players there a body lies a while; after five minutes the human NPC corpse sweep takes it
+	// once nobody is near (N9)
 	var/mob/living/carbon/human/npc/ambient_npc/outpost/customer/body = pa_npc(/mob/living/carbon/human/npc/ambient_npc/outpost/customer, pa_tile(1, 2), place)
 	body.death()
 	SSambient_npcs.update_outpost(place, 1, list())
 	TEST_ASSERT(!body.fading && !QDELETED(body), "A body was taken away the moment someone died in front of players")
-	body.timeofdeath = world.time - 3001 // AMBIENT_OUTPOST_BODY_TIME
-	SSambient_npcs.update_outpost(place, 1, list())
-	TEST_ASSERT(QDELETED(body) || body.fading, "A body lay at the outpost past five minutes with players there")
+	TEST_ASSERT(!body.npc_corpse_expired(), "A fresh body is already up to be taken away")
+	body.npc_died_at = world.time - 3001 // AMBIENT_OUTPOST_BODY_TIME
+	TEST_ASSERT(body.npc_corpse_expired(), "A body nobody is near is not taken away after five minutes")
 
 /// Nobody new comes up the lift while someone is still in it
 /datum/unit_test/voidcrew_ambient_outpost_lift_one_at_a_time

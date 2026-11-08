@@ -670,8 +670,8 @@
 
 /mob/living/basic/pony/ambient_pack/Initialize(mapload, datum/ambient_place/site/site)
 	. = ..()
+	// tg's pony already remembers who hit it (ai_retaliate), which its flee subtree reads
 	set_greyscale(colors = list("#8a5a3c", "#3b2a1e"))
-	AddElement(/datum/element/ai_retaliate)
 	if(istype(site))
 		site_ref = WEAKREF(site)
 		site.data["pony"] = WEAKREF(src)
@@ -1047,6 +1047,14 @@
 			return 2
 	return 0
 
+/// Open ground on `site` AMBIENT_AMBUSH_DISTANCE from `here` in some direction, where the pack comes from, or null
+/datum/ambient_activity/caravan_ambush/proc/find_landing(datum/ambient_place/site/site, turf/here)
+	for(var/attempt in 1 to 6)
+		var/turf/far = get_ranged_target_turf(here, pick(GLOB.alldirs), AMBIENT_AMBUSH_DISTANCE)
+		if(far && site.leash_ok(far) && ambient_ground_ok(far))
+			return far
+	return null
+
 /**
  * Sends for the pack out of what the planet's budget has left, ten tiles off: real human pirates,
  * built a body a tick through the human NPC queue, turned on the caravan and kept near it as they
@@ -1065,11 +1073,7 @@
 	if(count <= 0)
 		return 0
 	var/turf/here = get_turf(doer)
-	for(var/attempt in 1 to 6)
-		var/turf/far = get_ranged_target_turf(here, pick(GLOB.alldirs), AMBIENT_AMBUSH_DISTANCE)
-		if(far && site.leash_ok(far) && ambient_ground_ok(far))
-			landing = far
-			break
+	landing = find_landing(site, here)
 	if(!landing)
 		return 0
 	var/mob/living/bait = caravan_pony(site) || locate(/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard) in site.living_npcs()

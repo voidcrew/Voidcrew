@@ -454,7 +454,8 @@
 		mission.add_objective(escort)
 		escort.spawn_field_objects(pad_turf)
 		var/mob/living/survivor = escort.survivor
-		survivor.adjustBruteLoss(delivery_case[2])
+		// On the chest: spread over the limbs, damage counts for less of a human's health (limbs count 0.75)
+		survivor.apply_damage(delivery_case[2], BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
 		if(delivery_case[3])
 			survivor.death()
 			TEST_ASSERT(escort.grace_timer, "The survivor's death must start the revival window")

@@ -267,11 +267,11 @@
 /datum/unit_test/voidcrew_ambient_pb/fighting/Run()
 	var/mob/living/carbon/human/npc/ambient_npc/planet/miner/miner = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/miner, room_turf(0, 0))
 	var/mob/living/carbon/human/consistent/brute = allocate(/mob/living/carbon/human/consistent, room_turf(1, 0))
-	var/obj/item/pickaxe/reference = allocate(/obj/item/pickaxe)
-	TEST_ASSERT_EQUAL(miner.melee_damage_upper, reference.force, "A miner does not hit like their pickaxe")
+	TEST_ASSERT_NOTNULL(locate(/obj/item/pickaxe) in miner.get_all_contents(), "A miner carries no pickaxe")
 	miner.react_attacked(brute)
 	var/datum/ambient_activity/fight/fight = miner.activity
 	TEST_ASSERT(istype(fight), "A miner who was hit did not fight back")
+	TEST_ASSERT(istype(miner.held_weapon(), /obj/item/pickaxe), "A miner who fights back does not take their pickaxe in hand")
 	TEST_ASSERT_EQUAL(fight.target(), brute, "The miner fights someone other than who hit them")
 	var/health_before = brute.health
 	fight.next_blow = world.time
@@ -610,7 +610,7 @@
 	// A killed peddler: a trader's cash, once, and the shop goes with them
 	var/turf/body_turf = room_turf(1, 1)
 	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/victim = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler, body_turf)
-	victim.apply_damage(victim.maxHealth * 2, BRUTE)
+	victim.apply_damage(victim.maxHealth * 2, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND) // a limb takes no more than its own max damage
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "The peddler did not die of their wounds")
 	TEST_ASSERT(victim.shop_closed, "The shop stayed open with the peddler dead")
 	var/cash = ambient_test_cash_on(body_turf)

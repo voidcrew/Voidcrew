@@ -453,7 +453,7 @@
 	shoes = /obj/item/clothing/shoes/sneakers/random
 	belt = /obj/item/modular_computer/pda/clear
 	id = /obj/item/card/id/advanced/rainbow
-	suit_store = /obj/item/reagent_containers/cup/soda_cans/random
+	r_pocket = /obj/item/reagent_containers/cup/soda_cans/cola
 
 /datum/outfit/job/workshop_bogatyr_job_15/pre_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	. = ..()
@@ -465,4 +465,4 @@
 	shoes = /obj/item/clothing/shoes/sneakers/random
 	belt = /obj/item/modular_computer/pda/clear
 	id = /obj/item/card/id/advanced/rainbow
-	suit_store = /obj/item/reagent_containers/cup/soda_cans/random
+	r_pocket = /obj/item/reagent_containers/cup/soda_cans/cola

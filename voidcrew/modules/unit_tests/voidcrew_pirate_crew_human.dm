@@ -98,7 +98,7 @@
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
 	TEST_ASSERT(first.equip_to_slot_if_possible(cuffs, ITEM_SLOT_HANDCUFFED), "Test fixture: the crewman could not be cuffed")
 	TEST_ASSERT(!hull.crew_wipe_handled, "Cuffing one of two crewmen wiped the crew")
-	second.adjustOxyLoss(110)
+	second.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock them out
 	TEST_ASSERT_EQUAL(second.stat, SOFT_CRIT, "Test fixture: the second crewman isn't in soft crit")
 	TEST_ASSERT(!hull.crew_wipe_handled, "The crew was wiped with another crewman still being built")
 	qdel(pending)
@@ -285,7 +285,7 @@
 	var/mob/living/carbon/human/npc/faction_pirate/chief = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/boss, spot(1, 1))
 	var/mob/living/carbon/human/npc/faction_pirate/agent = build_npc(/mob/living/carbon/human/npc/faction_pirate/irs/ranged, spot(1, 3), /datum/outfit/piratecorpse/faction/irs/ranged/energy_gun)
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
-	victim.adjustOxyLoss(110)
+	victim.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock them out
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim isn't in soft crit")
 	TEST_ASSERT_EQUAL(chief.npc_rank, 2, "The Chief Auditor isn't a boss")
 	TEST_ASSERT(pirate_crew_human_wants_execution(chief.ai_controller, chief, victim), "A boss gunner doesn't go for a downed hunter's head")
@@ -374,7 +374,7 @@
 /datum/unit_test/voidcrew_pirate_crew/human_crew/finisher/Run()
 	var/mob/living/carbon/human/npc/faction_pirate/robust = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/boss, spot(1, 1))
 	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
-	victim.adjustOxyLoss(110)
+	victim.adjustToxLoss(110) // awake in soft crit; 50 oxygen damage would knock them out
 	TEST_ASSERT_EQUAL(victim.stat, SOFT_CRIT, "Test fixture: the victim isn't down")
 	var/datum/hv_finisher/robust_one/finisher = new(robust, victim)
 	TEST_ASSERT(finisher.real_hits, "A human boss's finisher isn't done with real hits")
@@ -387,7 +387,8 @@
 	TEST_ASSERT(finisher.take_grip(), "The Robust One couldn't get hold of the victim")
 	TEST_ASSERT_EQUAL(robust.pulling, victim, "The pin isn't a real grab")
 	TEST_ASSERT(robust.grab_state >= GRAB_AGGRESSIVE, "The pin isn't an aggressive grab")
-	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_IMMOBILIZED), "The victim is held by a trait as well as the grab")
+	// tg itself holds anyone in soft crit who is being pulled (PULLED_WHILE_SOFTCRIT_TRAIT); nothing else may
+	TEST_ASSERT(!HAS_TRAIT_NOT_FROM(victim, TRAIT_IMMOBILIZED, PULLED_WHILE_SOFTCRIT_TRAIT), "The victim is held by a trait as well as the grab")
 
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	var/head_before = head.get_damage()

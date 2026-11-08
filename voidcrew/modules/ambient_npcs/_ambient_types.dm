@@ -67,6 +67,8 @@ GLOBAL_LIST_EMPTY(ambient_npcs)
 	var/work_look
 	/// The real item in their hand for `held_visual` or `work_look`, locked to them like their kit
 	var/obj/item/held_prop
+	/// The slot `held_prop` came off when it is their own (a belt pickaxe), where it goes back; NONE for a prop or a bag
+	var/held_prop_slot = NONE
 	/// A real item they carry for an activity (a drink): in their hand while they have it, not locked
 	var/obj/item/held_item
 
