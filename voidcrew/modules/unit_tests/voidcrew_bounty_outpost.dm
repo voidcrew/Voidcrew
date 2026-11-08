@@ -122,15 +122,29 @@
 		if(decoy)
 			. += decoy
 
-/// A mob's examine as plain text, with its own feature lines taken out
+/**
+ * A mob's examine as plain text, with its own features taken out: their lines, and the lines for the
+ * glasses and scarf it wears for them (bounty_wear_features(); the patron clothes put nothing in those
+ * slots), which differ between a fugitive and a decoy that doesn't share them.
+ */
 /datum/unit_test/voidcrew_bounty_outpost/proc/plain_examine(mob/living/carbon/human/npc/bounty_criminal/patron, mob/viewer)
 	var/list/features = list()
 	for(var/line in patron.record?.feature_lines())
 		features += trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
+	var/list/feature_items = list()
+	for(var/obj/item/worn in list(patron.glasses, patron.wear_neck))
+		feature_items += "[worn]"
 	var/list/lines = list()
 	for(var/line in patron.examine(viewer))
 		var/plain = trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
-		if(!(plain in features))
+		if(plain in features)
+			continue
+		var/names_feature_item = FALSE
+		for(var/item_name in feature_items)
+			if(findtext(plain, item_name))
+				names_feature_item = TRUE
+				break
+		if(!names_feature_item)
 			lines += plain
 	return lines.Join(" | ")
 
