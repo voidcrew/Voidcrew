@@ -3,6 +3,15 @@
 // wound: a blow sized to the mob's max health (so health scaling at the spawn site still works),
 // a short stun for some, and a bleed for the throat and aorta. The effect stays on the mob so the
 // same crit cannot land on it twice.
+//
+// Bosses are humanoid basic mobs too. The damage is worked out from at most
+// HV_BASIC_CRIT_HEALTH_CAP of their health, so a crit hurts a 2,000 health boss about as much as a
+// tough pirate, and boss-sized mobs are never stunned or silenced by one.
+
+/// Crit damage on a basic mob is a share of its max health, but never of more than this.
+#define HV_BASIC_CRIT_HEALTH_CAP 200
+/// Mobs with more max health than this are boss-sized: no stun, no silencing.
+#define HV_BASIC_CRIT_BOSS_HEALTH 300
 
 /datum/status_effect/hv_crit_basic
 	id = "hv_crit_basic"
@@ -24,12 +33,19 @@
 
 /datum/status_effect/hv_crit_basic/on_apply()
 	if(blow_share)
-		owner.adjustBruteLoss(owner.maxHealth * blow_share)
-	if(stun_time && owner.stat != DEAD)
+		owner.adjustBruteLoss(crit_health() * blow_share)
+	if(stun_time && owner.stat != DEAD && !boss_sized())
 		owner.Stun(stun_time)
 	owner.hv_blood_spray(attack_direction, 2)
 	owner.add_splatter_floor(get_turf(owner)) // NPCs have blood since the hit-lines part (npc_blood.dm)
 	return TRUE
+
+/// The health the crit's damage is worked out from.
+/datum/status_effect/hv_crit_basic/proc/crit_health()
+	return min(owner.maxHealth, HV_BASIC_CRIT_HEALTH_CAP)
+
+/datum/status_effect/hv_crit_basic/proc/boss_sized()
+	return owner.maxHealth > HV_BASIC_CRIT_BOSS_HEALTH
 
 /datum/status_effect/hv_crit_basic/eye
 	id = "hv_crit_basic_eye"
@@ -42,7 +58,8 @@
 
 /datum/status_effect/hv_crit_basic/tongue/on_apply()
 	. = ..()
-	ADD_TRAIT(owner, TRAIT_MUTE, HV_CRIT_TRAIT)
+	if(!boss_sized())
+		ADD_TRAIT(owner, TRAIT_MUTE, HV_CRIT_TRAIT)
 
 /datum/status_effect/hv_crit_basic/tongue/on_remove()
 	REMOVE_TRAIT(owner, TRAIT_MUTE, HV_CRIT_TRAIT)
@@ -72,7 +89,7 @@
 		return
 	var/bled = min(seconds_between_ticks, bleed_left)
 	bleed_left -= bled
-	owner.adjustBruteLoss(owner.maxHealth * bleed_share * bled)
+	owner.adjustBruteLoss(crit_health() * bleed_share * bled)
 	if(prob(50))
 		owner.hv_blood_spray(pick(GLOB.alldirs), 2)
 	else
@@ -89,3 +106,6 @@
 /datum/status_effect/hv_crit_basic/bleed/aorta
 	id = "hv_crit_basic_aorta"
 	bleed_share = 0.02
+
+#undef HV_BASIC_CRIT_HEALTH_CAP
+#undef HV_BASIC_CRIT_BOSS_HEALTH

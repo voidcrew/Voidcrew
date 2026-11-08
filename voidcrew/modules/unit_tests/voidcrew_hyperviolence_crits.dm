@@ -204,3 +204,18 @@
 	crit = pirate.hv_try_basic_crit(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH, WOUND_SLASH, 25, 0, NORTH, knife, attacker, 500)
 	TEST_ASSERT(istype(crit, /datum/hv_crit/tongue), "A forced tongue crit on a pirate did not land (got [crit])")
 	TEST_ASSERT(HAS_TRAIT(pirate, TRAIT_MUTE), "A pirate without a tongue can still talk")
+
+/// A boss-sized humanoid takes capped crit damage and is not stunned by it.
+/datum/unit_test/voidcrew_hv_crit_basic_boss_capped/Run()
+	var/mob/living/basic/trooper/pirate/melee/boss = allocate(/mob/living/basic/trooper/pirate/melee)
+	var/mob/living/carbon/human/attacker = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox)
+	attacker.put_in_active_hand(toolbox)
+	boss.maxHealth = 2000
+	boss.health = 2000
+
+	var/datum/hv_crit/crit = boss.hv_try_basic_crit(BODY_ZONE_HEAD, BODY_ZONE_HEAD, WOUND_BLUNT, 25, 0, NORTH, toolbox, attacker, 500)
+	TEST_ASSERT(istype(crit, /datum/hv_crit/skull), "A forced skull crit on a boss did not land (got [crit])")
+	// 0.3 of the 200 health cap (HV_BASIC_CRIT_HEALTH_CAP), not of 2000
+	TEST_ASSERT(boss.health >= 2000 - 61, "A skull crit took [2000 - boss.health] health from a boss")
+	TEST_ASSERT(!boss.IsStun(), "A skull crit stunned a boss")
