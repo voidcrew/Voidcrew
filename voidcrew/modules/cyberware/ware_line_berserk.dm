@@ -54,7 +54,7 @@
 	burn_stun_immune = TRUE
 	burn_roar_range = 4
 	burn_crash = 5 SECONDS
-	burn_cooldown = 105 SECONDS
+	burn_cooldown = 90 SECONDS
 	burn_action_desc = "Ten seconds of stun immunity, 30% damage resistance and harder fists, opened with a staggering roar. Ends in a collapse."
 	burn_alert_desc = "The safeties are off."
 
