@@ -13,7 +13,9 @@
  *
  * How it looks: a piece names the real implant organs it shows (organ_looks). The look builder puts
  * them in its dummy (bounty_dress_dummy()), so the worn chrome a player shows (a Cascade spine rig,
- * Gorilla Arms plating) shows on the NPC the same way, under the same clothes.
+ * Gorilla Arms plating) shows on the NPC the same way, under the same clothes. A fugitive passing as a
+ * patron shows none of it until the act drops (get_bounty_look()'s hide_chrome), and examine only
+ * describes chrome that shows (bounty_chrome_on_show()).
  *
  * How it fights: the component passes the fight's moments to each piece (bounty_chrome hooks
  * below). A piece knocked out by an EMP sparks and stays down for its emp_reboot; while it is down
@@ -53,18 +55,25 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	var/count = (tier >= BOUNTY_TIER_WANTED && prob(BOUNTY_CHROME_SECOND_CHANCE)) ? 2 : 1
 	return bounty_pick_chrome(count, tier, archetype, style, kit)
 
-/// The chrome a new companion of a `tier` criminal carries, as a list of one key, or null: rarer than its criminal's, one piece at most
+/**
+ * The chrome a new companion of a `tier` criminal carries, as a list of one key, or null: rarer than
+ * its criminal's, one piece at most, and never Lazarus. A companion gives up to a stamina takedown, and
+ * a jolt standing it back up would take away the answer that works on every companion.
+ */
 /proc/bounty_roll_companion_chrome(tier, style)
+	var/static/list/never_on_companions = list(BOUNTY_CHROME_LAZARUS)
 	if(!prob(bounty_chrome_tier_chance(tier) / BOUNTY_CHROME_COMPANION_DIVISOR))
 		return null
-	return bounty_pick_chrome(1, tier, BOUNTY_CHROME_COMPANION, style, null)
+	return bounty_pick_chrome(1, tier, BOUNTY_CHROME_COMPANION, style, null, never_on_companions)
 
-/// Up to `count` different keys, weighted, among the pieces that suit them. Null if none suit.
-/proc/bounty_pick_chrome(count, tier, archetype, style, kit)
+/// Up to `count` different keys, weighted, among the pieces that suit them and aren't in `excluded`. Null if none suit.
+/proc/bounty_pick_chrome(count, tier, archetype, style, kit, list/excluded)
 	var/list/picked = list()
 	for(var/i in 1 to count)
 		var/list/weights = list()
 		for(var/key in GLOB.bounty_chrome_protos)
+			if(excluded && (key in excluded))
+				continue
 			var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
 			if(!(key in picked) && proto.weight > 0 && proto.can_roll(tier, archetype, style, kit, picked))
 				weights[key] = proto.weight
@@ -187,15 +196,70 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	dummy.temporarilyRemoveItemFromInventory(thing, force = TRUE)
 	qdel(thing)
 
-/// Gives `fighter` (a criminal or a companion) the pieces `keys`, adding to any it has. For spawning and for admins.
+/// Gives `fighter` (a criminal or a companion) the pieces `keys`, adding to any it has, and the health they bring (bounty_chrome_fit_health()). For spawning and for admins.
 /proc/bounty_chrome_install(mob/living/basic/fighter, list/keys)
 	if(QDELETED(fighter) || !length(keys))
 		return null
 	var/datum/component/bounty_chrome/chrome = fighter.GetComponent(/datum/component/bounty_chrome)
 	if(chrome)
 		chrome.install(keys)
-		return chrome
-	return fighter.AddComponent(/datum/component/bounty_chrome, keys)
+	else
+		chrome = fighter.AddComponent(/datum/component/bounty_chrome, keys)
+	bounty_chrome_fit_health(fighter)
+	return chrome
+
+/**
+ * How much tougher its chrome makes `fighter`: BOUNTY_CHROME_HEALTH_PER_PIECE more for each piece, as
+ * a multiplier on the rest of its health (body_tier_health(), ai_style_health()), for a normal
+ * criminal or a companion.
+ * A criminal counts its record's chrome too, so its health is right before the pieces go in. A
+ * mini-boss's health is its kit's table: 1.
+ */
+/proc/bounty_chrome_health_mult(mob/living/basic/fighter)
+	if(!istype(fighter, /mob/living/basic/bounty_criminal/normal) && !istype(fighter, /mob/living/basic/bounty_companion))
+		return 1
+	var/list/keys = list()
+	var/mob/living/basic/bounty_criminal/criminal = fighter
+	if(istype(criminal) && length(criminal.record?.chrome))
+		keys |= criminal.record.chrome
+	var/datum/component/bounty_chrome/chrome = fighter.GetComponent(/datum/component/bounty_chrome)
+	if(chrome)
+		keys |= chrome.keys()
+	return 1 + length(keys) * BOUNTY_CHROME_HEALTH_PER_PIECE
+
+/**
+ * Raises `fighter`'s max health to what its tier, style and chrome give it now, as chrome goes in.
+ * Never lowers it, and never heals: a fighter already hurt keeps the health it has and only its ceiling
+ * rises (a fresh one rises with it). The zone's health factor stays on top. TRUE if it rose.
+ */
+/proc/bounty_chrome_fit_health(mob/living/basic/fighter)
+	if(QDELETED(fighter) || fighter.stat == DEAD)
+		return FALSE
+	var/raw
+	if(istype(fighter, /mob/living/basic/bounty_criminal/normal))
+		var/mob/living/basic/bounty_criminal/criminal = fighter
+		raw = criminal.body_tier_health()
+	else if(istype(fighter, /mob/living/basic/bounty_companion))
+		var/mob/living/basic/bounty_companion/companion = fighter
+		raw = companion.ai_style_health(bounty_ai_style(companion))
+	if(!raw)
+		return FALSE
+	var/wanted = fighter.npc_zone_applied ? raw * fighter.npc_zone_health_factor : raw
+	var/old_max = fighter.maxHealth
+	if(wanted <= old_max)
+		return FALSE
+	var/hurt = fighter.health < old_max
+	if(fighter.npc_zone_applied)
+		fighter.npc_zone_original_max_health = raw
+	fighter.setMaxHealth(wanted)
+	// Basic mobs keep all their damage as bruteloss: more of it keeps their health where it was
+	if(hurt)
+		fighter.bruteloss += wanted - old_max
+	fighter.updatehealth()
+	if(istype(fighter, /mob/living/basic/bounty_criminal))
+		var/mob/living/basic/bounty_criminal/criminal = fighter
+		criminal.body_update_stamina_coeff()
+	return TRUE
 
 /// A piece `fighter` carries, by key, or null
 /proc/bounty_chrome_piece(mob/living/basic/fighter, key)
@@ -272,6 +336,8 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 /datum/component/bounty_chrome
 	/// Key -> its /datum/bounty_chrome, in install order
 	var/list/pieces = list()
+	/// Running after they tell off someone reading their chrome (bounty_chrome_read_noticed())
+	COOLDOWN_DECLARE(read_noticed)
 
 /datum/component/bounty_chrome/Initialize(list/keys)
 	if(!istype(parent, /mob/living/basic/bounty_criminal) && !istype(parent, /mob/living/basic/bounty_companion))
@@ -403,14 +469,45 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		bounty_chrome_malfunction_fx(fighter, longest)
 		fighter.visible_message(span_warning("[fighter]'s chrome sparks and stutters!"))
 
+/**
+ * What their chrome looks like up close, while it shows (bounty_chrome_on_show()). Dead, it is burnt
+ * out, as all NPC chrome is. Knocked out by an EMP, it sparks. Each line starts with a capital,
+ * whatever placeholder it starts with.
+ */
 /datum/component/bounty_chrome/proc/on_examine(datum/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
-	var/mob/living/fighter = parent
+	var/mob/living/basic/fighter = parent
+	if(!bounty_chrome_on_show(fighter))
+		return
+	if(fighter.stat == DEAD)
+		examine_list += span_warning("[fighter.p_Their()] chrome is burnt out.")
+		return
+	var/sparking = FALSE
 	for(var/key in pieces)
 		var/datum/bounty_chrome/piece = pieces[key]
+		if(piece.offline_until)
+			sparking = TRUE
 		var/line = piece.examine_line()
 		if(line)
-			examine_list += span_warning(replacetext(replacetext(line, "%THEIR", fighter.p_their()), "%THEY", fighter.p_they()))
+			examine_list += span_warning(capitalize(replacetext(replacetext(line, "%THEIR", fighter.p_their()), "%THEY", fighter.p_they())))
+	if(sparking)
+		examine_list += span_warning("Sparks crawl over [fighter.p_their()] chrome.")
+
+/**
+ * Whether someone looking at `fighter` can see its chrome: not while it passes as a patron or hides
+ * (a trader-outpost fugitive keeps it under the patron's clothes, as its decoys have none), and not
+ * through a pressure suit or a modsuit.
+ */
+/proc/bounty_chrome_on_show(mob/living/basic/fighter)
+	if(QDELETED(fighter))
+		return FALSE
+	var/mob/living/basic/bounty_criminal/criminal = fighter
+	if(istype(criminal) && (criminal.blended || criminal.hidden))
+		return FALSE
+	var/datum/component/bounty_eva/eva = fighter.GetComponent(/datum/component/bounty_eva)
+	if(eva && (!QDELETED(eva.suit) || !QDELETED(eva.mod)))
+		return FALSE
+	return TRUE
 
 // ===== A MALFUNCTION =====
 
@@ -699,8 +796,9 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 
 /**
  * A chrome read of a bounty criminal or companion, in the same words cyber optics use for a body
- * (cyberware_scan_readout()), or null if `target` isn't one. Each piece reads as its real implant;
- * a piece down from an EMP reads OFFLINE. Someone passing as a patron reads as clean.
+ * (cyberware_scan_readout()), or null if `target` isn't one. Each piece reads as its real implant, in
+ * its tier's colour; a piece down from an EMP, and all of it on a corpse, reads OFFLINE. Someone
+ * passing as a patron reads as clean.
  */
 /proc/bounty_chrome_scan_readout(mob/living/target, resolution = CYBERWARE_SCAN_ITEMIZED)
 	if(!istype(target, /mob/living/basic/bounty_criminal) && !istype(target, /mob/living/basic/bounty_companion))
@@ -716,12 +814,97 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	if(resolution < CYBERWARE_SCAN_ITEMIZED)
 		lines += cyberware_scan_line("BUS RESOLUTION TOO LOW: IDENTITIES UNRESOLVED", accent)
 		return lines
+	var/dead = target.stat == DEAD
 	for(var/key in chrome.pieces)
 		var/datum/bounty_chrome/piece = chrome.pieces[key]
 		var/list/info = bounty_chrome_scan_info(piece.scan_organ)
 		var/ware_name = info ? info[1] : piece.name
 		var/tier = info ? info[2] : null
-		var/status = piece.offline_until ? " · OFFLINE" : ""
-		var/rating = tier ? "T[tier]" : "UNRATED"
-		lines += cyberware_scan_line("» [uppertext(ware_name)] · [rating][status]", tier ? cyberware_tier_color(tier) : accent)
+		var/status = (dead || piece.offline_until) ? " · OFFLINE" : ""
+		// The colour carries the tier; only hardware the bus can't rate says so
+		var/rating = tier ? "" : " · UNRATED"
+		lines += cyberware_scan_line("» [uppertext(ware_name)][rating][status]", tier ? cyberware_tier_color(tier) : accent)
 	return lines
+
+/// What a fighter says to someone reading their chrome
+GLOBAL_LIST_INIT(bounty_chrome_read_lines, list(
+	"Get out of my head.",
+	"Stop reading me, creep.",
+	"Quit scanning me.",
+	"Eyes off my chrome.",
+))
+
+/**
+ * `reader` just read `fighter`'s chrome with cyber optics. They feel it, as anyone with chrome does:
+ * one who isn't fighting turns to the reader and tells them off. Not while passing as a patron or
+ * hiding (the read finds nothing then), and at most once every BOUNTY_CHROME_READ_NOTICE_COOLDOWN.
+ * Returns TRUE if they answered. Doesn't sleep.
+ */
+/proc/bounty_chrome_read_noticed(mob/living/basic/fighter, mob/living/reader)
+	var/datum/component/bounty_chrome/chrome = fighter?.GetComponent(/datum/component/bounty_chrome)
+	if(!chrome || !length(chrome.pieces) || !isliving(reader) || reader == fighter || !COOLDOWN_FINISHED(chrome, read_noticed))
+		return FALSE
+	if(fighter.stat != CONSCIOUS || fighter.client || fighter.mind || bounty_chrome_fighting(fighter))
+		return FALSE
+	var/mob/living/basic/bounty_criminal/criminal = fighter
+	if(istype(criminal) && (criminal.blended || criminal.hidden))
+		return FALSE
+	COOLDOWN_START(chrome, read_noticed, BOUNTY_CHROME_READ_NOTICE_COOLDOWN)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(bounty_chrome_answer_read), fighter, reader)
+	return TRUE
+
+/// `fighter` looks round at `reader` and says something about being read. Sleeps (say()).
+/proc/bounty_chrome_answer_read(mob/living/basic/fighter, mob/living/reader)
+	if(QDELETED(fighter) || QDELETED(reader) || fighter.stat != CONSCIOUS)
+		return
+	if(isturf(fighter.loc) && !fighter.buckled && fighter.body_position == STANDING_UP)
+		fighter.setDir(get_dir(fighter, reader))
+	fighter.say(pick(GLOB.bounty_chrome_read_lines), forced = "bounty chrome read")
+
+// ===== WHO AN AREA MOVE CATCHES =====
+
+/**
+ * Whether `victim` (a person, or a mech with one in it) is in `fighter`'s fight: the one it is going
+ * for now, or a hunter after it. That is someone on its criminal's grudge list (they attacked,
+ * confronted or cuffed it, or attacked one of its companions), in a mini-boss's posse, or crewing a
+ * ship that hunts its bounty. Anyone else on the site, a bystander, is none of these. A leaderless
+ * companion has only the one it is going for.
+ */
+/proc/bounty_chrome_in_posse(mob/living/basic/fighter, atom/victim)
+	if(QDELETED(fighter) || QDELETED(victim))
+		return FALSE
+	var/list/people = list()
+	if(isliving(victim))
+		people += victim
+	else if(ismecha(victim))
+		var/obj/vehicle/sealed/mecha/mech = victim
+		for(var/mob/living/pilot in mech.occupants)
+			people += pilot
+	var/atom/target = bounty_chrome_target(fighter)
+	if(target && (target == victim || (target in people) || (isliving(victim) && target == victim.loc)))
+		return TRUE
+	var/mob/living/basic/bounty_criminal/side = bounty_ai_side_of(fighter)
+	if(QDELETED(side))
+		return FALSE
+	var/mob/living/basic/bounty_criminal/boss/boss = side
+	var/datum/criminal_bounty/posting = side.posting()
+	var/list/hunter_ships = posting?.hunter_ships()
+	for(var/mob/living/person as anything in people)
+		if(side.body_has_grudge(person))
+			return TRUE
+		if(istype(boss) && boss.boss_engaged[REF(person)])
+			return TRUE
+		if(!person.mind)
+			continue
+		for(var/obj/structure/overmap/ship/ship as anything in hunter_ships)
+			if(person.mind in ship.ship_team?.members)
+				return TRUE
+	return FALSE
+
+/**
+ * Whether one of `fighter`'s area moves (a lunge's line, a landing's shockwave, a roar) catches
+ * `victim`: someone it may hit (bounty_ai_may_hit()) who is in its fight (bounty_chrome_in_posse()).
+ * A bystander on the site is spared, so a chromed criminal is never a weapon to point at other crews.
+ */
+/proc/bounty_chrome_may_splash(mob/living/basic/fighter, atom/victim)
+	return bounty_ai_may_hit(fighter, victim) && bounty_chrome_in_posse(fighter, victim)

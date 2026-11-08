@@ -336,7 +336,7 @@
 				return
 			var/obj/vehicle/sealed/mecha/mech = locate() in spot
 			if(mech)
-				if(bounty_ai_may_hit(owner, mech))
+				if(bounty_chrome_may_splash(owner, mech))
 					. += spot
 				return
 			if(spot.is_blocked_turf(exclude_mobs = TRUE) || standing_in_the_way(spot))
@@ -371,7 +371,7 @@
 /datum/bounty_chrome/mantis/proc/may_cut(mob/living/person)
 	if(person.stat != CONSCIOUS || person.body_position == LYING_DOWN)
 		return FALSE
-	return bounty_ai_is_hunter(person) && bounty_ai_may_hit(owner, person)
+	return bounty_ai_is_hunter(person) && bounty_chrome_may_splash(owner, person)
 
 /**
  * The wind-up: feet planted and low, blades flat along the arms, and the line marked on the floor.
@@ -440,7 +440,7 @@
 			end_dash(serial, person, blocked = TRUE)
 			return
 	for(var/obj/vehicle/sealed/mecha/mech in next)
-		if(bounty_ai_may_hit(owner, mech))
+		if(bounty_chrome_may_splash(owner, mech))
 			strike(mech)
 		end_dash(serial, mech)
 		return

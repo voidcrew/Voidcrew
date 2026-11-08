@@ -180,6 +180,8 @@
 	to_chat(bearer, jointext(report, "<br>"))
 	playsound(bearer, 'sound/machines/terminal/terminal_processing.ogg', 20, TRUE)
 	bearer.visible_message(span_notice("[bearer]'s irises flicker with a scrolling readout."), vision_distance = 3)
+	// They feel it, as a player does
+	bounty_chrome_read_noticed(target, bearer)
 	StartCooldown()
 	return TRUE
 

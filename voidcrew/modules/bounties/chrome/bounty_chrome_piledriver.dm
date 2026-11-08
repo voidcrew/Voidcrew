@@ -425,7 +425,7 @@
 		return FALSE
 	if(istype(owner, /mob/living/basic/bounty_criminal/boss))
 		var/mob/living/basic/bounty_criminal/boss/boss = owner
-		return boss.boss_can_hurt(victim)
+		return boss.boss_can_hurt(victim) && bounty_chrome_in_posse(owner, victim)
 	var/mob/living/basic/bounty_criminal/side = bounty_ai_side_of(owner)
 	if(side?.body_forbidden_turf(get_turf(victim)))
 		return FALSE
@@ -433,12 +433,12 @@
 		var/obj/vehicle/sealed/mecha/mech = victim
 		for(var/mob/living/pilot in mech.occupants)
 			if(bounty_ai_is_hunter(pilot) && !owner.faction_check_atom(pilot))
-				return bounty_ai_may_hit(owner, mech)
+				return bounty_chrome_may_splash(owner, mech)
 		return FALSE
 	var/mob/living/person = victim
 	if(!isliving(person) || !bounty_ai_is_hunter(person) || HAS_TRAIT(person, TRAIT_GODMODE) || owner.faction_check_atom(person))
 		return FALSE
-	return bounty_ai_may_hit(owner, person)
+	return bounty_chrome_may_splash(owner, person)
 
 /**
  * The tile a leap at `target` comes down on, or null if there is no leap to make: a hunter (or a

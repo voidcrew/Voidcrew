@@ -729,14 +729,20 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 		COMSIG_HOSTILE_POST_ATTACKINGTARGET,
 	))
 
-/// Puts the zone's clothes back on, while still blending in and not hiding (a meek one's disguise stays)
+/**
+ * Puts the zone's clothes back on, while still blending in and not hiding (a meek one's disguise
+ * stays). Their chrome stays under them: the decoys have none (bounty_chrome.dm).
+ */
 /datum/component/bounty_outpost_blend/proc/redress()
 	var/mob/living/basic/bounty_criminal/owner = parent
 	if(!blending || leaving || !outfit || !owner.record || owner.hidden)
 		return
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(apply_bounty_look), owner, owner.record, outfit)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(apply_bounty_look), owner, owner.record, outfit, TRUE)
 
-/// Ends the act: pullable (by P2's rules) and containable again, and no longer in the turrets' faction. The name stays.
+/**
+ * Ends the act: pullable (by P2's rules) and containable again, and no longer in the turrets' faction.
+ * The name and the clothes stay, but chrome kept under them shows now (dressed light over it).
+ */
 /datum/component/bounty_outpost_blend/proc/stop_blending()
 	if(!blending)
 		return
@@ -745,6 +751,8 @@ GLOBAL_LIST_INIT(bounty_outpost_trader_react_lines, list(
 	if(QDELETED(owner))
 		return
 	owner.blended = FALSE
+	if(!leaving && outfit && !owner.hidden && length(owner.record?.chrome))
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(apply_bounty_look), owner, owner.record, outfit)
 	if(!leaving)
 		owner.body_update_drag()
 	REMOVE_TRAIT(owner, TRAIT_NO_CONTAINMENT, BOUNTY_OUTPOST_TRAIT)

@@ -621,7 +621,7 @@
 	TEST_ASSERT(panel.error, "A full prison's refusal left no reason")
 	TEST_ASSERT(third in GLOB.bounty_prisoner_pool, "A refused admission took the record out of the pool")
 
-/// The spawn menu can give a criminal exactly the chrome asked for, any piece whatever their style, or none
+/// The spawn menu can give a criminal exactly the chrome asked for, any piece whatever their style, none, or chrome rolled as usual for the style or kit picked
 /datum/unit_test/voidcrew_bounty_admin/chrome
 
 /datum/unit_test/voidcrew_bounty_admin/chrome/Run()
@@ -639,3 +639,23 @@
 	allocated += clean
 	TEST_ASSERT_NULL(clean.record.chrome, "Asking for no chrome still gave them some")
 	TEST_ASSERT_NULL(clean.GetComponent(/datum/component/bounty_chrome), "Asking for no chrome still installed some")
+
+	// Rolled as usual, it is rolled for the style or kit asked for, never the one first rolled
+	for(var/i in 1 to 40)
+		var/datum/bounty_record/pistol = panel.admin_criminal_record(3, "normal", "pistol", "roll") // BOUNTY_TIER_MOST_WANTED, BOUNTY_STYLE_PISTOL, BOUNTY_ADMIN_CHROME_ROLL
+		TEST_ASSERT_EQUAL(pistol.style, "pistol", "A pistol criminal's record has the style [pistol.style]")
+		for(var/key in pistol.chrome)
+			var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
+			TEST_ASSERT(proto?.can_roll(3, "normal", "pistol", null, list()), "A pistol criminal rolled as usual got [key], chrome for another style")
+		var/datum/bounty_record/juggernaut = panel.admin_criminal_record(3, "boss", "juggernaut", "roll") // BOUNTY_KIT_JUGGERNAUT
+		TEST_ASSERT_EQUAL(juggernaut.kit, "juggernaut", "A Juggernaut's record has the kit [juggernaut.kit]")
+		TEST_ASSERT(length(juggernaut.chrome) <= 2, "A Juggernaut rolled as usual got [length(juggernaut.chrome)] pieces, the cyberpsycho's chrome")
+		for(var/key in juggernaut.chrome)
+			var/datum/bounty_chrome/proto = GLOB.bounty_chrome_protos[key]
+			TEST_ASSERT(proto?.can_roll(3, "boss", null, "juggernaut", list()), "A Juggernaut rolled as usual got [key], chrome for another kit")
+	var/datum/bounty_record/psycho = panel.admin_criminal_record(3, "boss", "cyberpsycho", "roll") // BOUNTY_KIT_CYBERPSYCHO
+	TEST_ASSERT_EQUAL(length(psycho.chrome), 7, "A cyberpsycho rolled as usual doesn't carry all seven pieces")
+	// Through the spawn: the style asked for stays, whatever chrome it rolled
+	var/mob/living/basic/bounty_criminal/rolled = panel.admin_spawn_criminal(operator, 3, "normal", "pistol", null, spot) // BOUNTY_TIER_MOST_WANTED
+	allocated += rolled
+	TEST_ASSERT_EQUAL(rolled.record.style, "pistol", "A pistol criminal spawned with chrome rolled as usual came out a [rolled.record.style]")

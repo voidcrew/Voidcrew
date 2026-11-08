@@ -238,7 +238,7 @@
 	bounty_chrome_install(src, record?.chrome)
 	INVOKE_ASYNC(src, PROC_REF(body_dress))
 
-/// A normal criminal's health: its tier's, times its style's. Null for anyone else, who keeps their built-in health.
+/// A normal criminal's health: its tier's, times its style's, times what its chrome adds (bounty_chrome_health_mult()). Null for anyone else, who keeps their built-in health.
 /mob/living/basic/bounty_criminal/proc/body_tier_health()
 	if(!istype(src, /mob/living/basic/bounty_criminal/normal))
 		return null
@@ -248,7 +248,7 @@
 			base = BOUNTY_NORMAL_HEALTH_PETTY
 		if(BOUNTY_TIER_MOST_WANTED)
 			base = BOUNTY_NORMAL_HEALTH_MOST
-	return round(base * bounty_style_health_mult(record?.style), 1)
+	return round(base * bounty_style_health_mult(record?.style) * bounty_chrome_health_mult(src), 1)
 
 /// How much tougher or frailer than its tier a fighting style makes a normal criminal
 /proc/bounty_style_health_mult(style)
