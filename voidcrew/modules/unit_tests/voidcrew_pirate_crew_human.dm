@@ -44,14 +44,16 @@
 		TEST_ASSERT(human_npc_gear_locked(card), "[melee_type]'s ID card isn't locked to it")
 		// Aboard its own hull in good air: no space suit
 		TEST_ASSERT(!istype(melee.wear_suit, /obj/item/clothing/suit/space), "[melee_type] wears a space suit in good air")
-		// A boarder: sealed and on its own air, unless it is a skeleton
+		// A boarder: sealed against vacuum's pressure and cold, and on its own air if it breathes. A skeleton
+		// needs neither; silverscale and lustrous shrug off the pressure and don't breathe, but feel the cold.
 		var/mob/living/carbon/human/npc/faction_pirate/boarder = build_npc(melee_type, spot(3, 0), boarding_outfit_for(melee_type))
 		if(faction == "skeleton")
 			TEST_ASSERT(!istype(boarder.wear_suit, /obj/item/clothing/suit/space), "A skeleton boarder was given a space suit it doesn't need")
 		else
 			TEST_ASSERT(boarder.wear_suit && (boarder.wear_suit.clothing_flags & STOPSPRESSUREDAMAGE), "A [faction] boarder has no sealed suit")
 			TEST_ASSERT(boarder.head && (boarder.head.clothing_flags & STOPSPRESSUREDAMAGE), "A [faction] boarder has no sealed helmet")
-			TEST_ASSERT(boarder.can_breathe_internals() && length(boarder.get_all_contents_type(/obj/item/tank/internals)), "A [faction] boarder carries no air it can breathe")
+			if(!HAS_TRAIT(boarder, TRAIT_NOBREATH))
+				TEST_ASSERT(boarder.can_breathe_internals() && length(boarder.get_all_contents_type(/obj/item/tank/internals)), "A [faction] boarder carries no air it can breathe")
 		if(faction == "medieval")
 			TEST_ASSERT(HAS_TRAIT(melee, TRAIT_NOGUNS), "A medieval footsoldier will use guns")
 			TEST_ASSERT(HAS_TRAIT(captain, TRAIT_NOGUNS), "The medieval warlord will use guns")
@@ -166,6 +168,33 @@
 	raid.check_adrift()
 	TEST_ASSERT(QDELETED(boarder), "A boarder adrift for minutes with nobody to see it wasn't cleaned up")
 	controller.clear_target()
+
+/// Silverscale and lustrous pirates don't breathe and shrug off low pressure, but space is cold and only a
+/// space suit keeps that out: their boarders come through tg's vacuum (pressure, cold) unhurt, where the same
+/// pirate in its shipboard clothes freezes.
+/datum/unit_test/voidcrew_pirate_crew/human_crew/vacuum_boarders
+
+/datum/unit_test/voidcrew_pirate_crew/human_crew/vacuum_boarders/Run()
+	var/turf/void = change_turf(spot(4, 4), /turf/open/space)
+	var/turf/void_too = change_turf(spot(4, 3), /turf/open/space)
+	for(var/faction in list("silverscale", "lustrous"))
+		var/melee_type = text2path("/mob/living/carbon/human/npc/faction_pirate/[faction]/melee")
+		var/mob/living/carbon/human/npc/faction_pirate/boarder = build_npc(melee_type, spot(0, 0), boarding_outfit_for(melee_type))
+		var/mob/living/carbon/human/npc/faction_pirate/crewman = build_npc(melee_type, spot(1, 0))
+		TEST_ASSERT(HAS_TRAIT(boarder, TRAIT_RESISTLOWPRESSURE) && HAS_TRAIT(boarder, TRAIT_NOBREATH) && !HAS_TRAIT(boarder, TRAIT_RESISTCOLD), "Test fixture: a [faction] pirate isn't pressure-proof and breathless but cold-blooded")
+		TEST_ASSERT(!istype(crewman.wear_suit, /obj/item/clothing/suit/space), "Test fixture: a [faction] crewman aboard wears a space suit")
+		boarder.forceMove(void)
+		crewman.forceMove(void_too)
+		// A minute of what Life() does with the air around them (the test level has no player, so they're dormant)
+		for(var/tick in 1 to 30)
+			for(var/mob/living/carbon/human/body as anything in list(boarder, crewman))
+				body.dna.species.handle_environment(body, body.loc.return_air(), 2, tick)
+				body.dna.species.handle_body_temperature(body, 2, tick)
+		TEST_ASSERT(boarder.bodytemperature >= boarder.dna.species.bodytemp_cold_damage_limit, "A sealed [faction] boarder froze in vacuum ([boarder.bodytemperature] K)")
+		TEST_ASSERT(!(boarder.getBruteLoss() + boarder.getFireLoss() + boarder.getOxyLoss()), "A sealed [faction] boarder was hurt by a minute in vacuum")
+		TEST_ASSERT(crewman.bodytemperature < crewman.dna.species.bodytemp_cold_damage_limit, "Test fixture: a [faction] pirate in shipboard clothes didn't feel the cold of space ([crewman.bodytemperature] K)")
+		qdel(boarder)
+		qdel(crewman)
 
 /// The pod cap counts the raid's boarders aboard still fighting, human or not.
 /datum/unit_test/voidcrew_pirate_crew/human_crew/pod_cap
@@ -387,8 +416,10 @@
 	TEST_ASSERT(finisher.take_grip(), "The Robust One couldn't get hold of the victim")
 	TEST_ASSERT_EQUAL(robust.pulling, victim, "The pin isn't a real grab")
 	TEST_ASSERT(robust.grab_state >= GRAB_AGGRESSIVE, "The pin isn't an aggressive grab")
-	// tg itself holds anyone in soft crit who is being pulled (PULLED_WHILE_SOFTCRIT_TRAIT); nothing else may
-	TEST_ASSERT(!HAS_TRAIT_NOT_FROM(victim, TRAIT_IMMOBILIZED, PULLED_WHILE_SOFTCRIT_TRAIT), "The victim is held by a trait as well as the grab")
+	// Only tg's own grab holds them: an aggressive grab (CHOKEHOLD_TRAIT) and being pulled in soft crit
+	// (PULLED_WHILE_SOFTCRIT_TRAIT). The finisher adds no hold of its own.
+	var/list/other_holds = GET_TRAIT_SOURCES(victim, TRAIT_IMMOBILIZED) - list(CHOKEHOLD_TRAIT, PULLED_WHILE_SOFTCRIT_TRAIT)
+	TEST_ASSERT(!length(other_holds), "The victim is held by something besides the grab ([english_list(other_holds)])")
 
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	var/head_before = head.get_damage()
