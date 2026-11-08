@@ -121,7 +121,7 @@
 /// The light goes to work on `body`; it wakes after the rite if nothing has changed.
 /datum/artifact_effect/resurrect/proc/begin_rite(mob/living/carbon/human/body)
 	working_on = WEAKREF(body)
-	var/atom/origin = get_atom_on_turf(holder)
+	var/atom/origin = artifact_effect_visible_source(holder)
 	origin?.Beam(body, icon_state = "lichbeam", time = ARTIFACT_RESURRECT_RITE)
 	body.visible_message(span_warning("Threads of red light reach out of [holder] and sink into [body]. The body twitches."))
 	playsound(body, 'sound/effects/magic/enter_blood.ogg', 45, TRUE)

@@ -3,13 +3,16 @@
 // also in VOREStation (9335d66b9fdf). Voidcrew: one huge knockback ring instead of Polaris'
 // singularity pull. It draws the air in for a moment first (a shimmer closing on it, a rising
 // hum), so anyone watching has time to brace or back off; then everything loose in reach is
-// flung outward and people are knocked down, hardest near the middle. Anchored things stay put.
+// flung outward and people are knocked down, hardest near the middle. Anchored things stay put,
+// and nobody is thrown into lava, a chasm, open air or space.
 // Smashing it lets the wave go at once. Not harvestable; logged.
 
 /// How long it gathers before the wave
 #define ARTIFACT_WAVE_WINDUP (1.5 SECONDS)
 /// Furthest it ever reaches
 #define ARTIFACT_WAVE_MAX_RANGE 7
+/// Loose objects one wave can fling (people always feel it), so a junk pile can't lag the server
+#define ARTIFACT_WAVE_MAX_OBJECTS 40
 
 /datum/artifact_effect/gravity_wave
 	label_name = "Shockwave"
@@ -58,12 +61,18 @@
 	var/turf/center = source_turf()
 	if(!center)
 		return
-	new /obj/effect/temp_visual/circle_wave/artifact_mist/gravity_wave(center, range)
+	new /obj/effect/temp_visual/circle_wave/artifact_ring/gravity_wave(center, range)
 	playsound(center, 'sound/effects/gravhit.ogg', 70, TRUE, extrarange = 4)
 	playsound(center, 'sound/effects/magic/repulse.ogg', 60, TRUE)
+	var/atom/movable/carrier = artifact_effect_visible_source(holder)
+	var/objects_flung = 0
 	for(var/atom/movable/thing in range(range, center))
-		if(thing == holder || thing == get_atom_on_turf(holder) || !can_fling(thing))
+		if(thing == holder || thing == carrier || !can_fling(thing))
 			continue
+		if(!isliving(thing))
+			if(objects_flung >= ARTIFACT_WAVE_MAX_OBJECTS)
+				continue
+			objects_flung++
 		fling(thing, center)
 
 /// Loose items, unanchored structures and the living; nothing anchored or immovable.
@@ -83,17 +92,31 @@
 	if(throw_range < 1)
 		return
 	var/direction = (distance > 0) ? get_dir(center, thing) : pick(GLOB.alldirs)
-	var/turf/landing = get_ranged_target_turf(thing, direction, throw_range)
-	if(!landing)
-		return
 	if(isliving(thing))
 		var/mob/living/victim = thing
+		throw_range = safe_distance(victim, direction, throw_range)
 		shake_camera(victim, 3, 2)
 		victim.Knockdown(2 SECONDS * exposure)
-		to_chat(victim, span_userdanger("A wall of force hits you and lifts you off your feet!"))
+		to_chat(victim, span_userdanger("A wall of force hits you and [throw_range ? "lifts you off your feet" : "slams you to the ground"]!"))
 		log_harm(victim)
-	// Positional: some throw_at() overrides rename their arguments.
-	thing.throw_at(landing, throw_range, 2)
+	if(throw_range < 1)
+		return
+	var/turf/landing = get_ranged_target_turf(thing, direction, throw_range)
+	if(landing)
+		// Positional: some throw_at() overrides rename their arguments.
+		thing.throw_at(landing, throw_range, 2)
+
+/**
+ * How far `thing` can be thrown toward `direction`, up to `limit`, without crossing lava, a chasm,
+ * open air or space. A wave knocks people over; it never throws them off a ledge or out an airlock.
+ */
+/datum/artifact_effect/gravity_wave/proc/safe_distance(atom/movable/thing, direction, limit)
+	var/turf/spot = get_turf(thing)
+	for(var/step in 1 to limit)
+		spot = get_step(spot, direction)
+		if(!spot || isspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot))
+			return step - 1
+	return limit
 
 /// A shimmer closing in on the artifact before the wave.
 /obj/effect/temp_visual/artifact_wave_gather
@@ -113,10 +136,11 @@
 	animate(alpha = 220, time = duration * 0.5)
 
 /// The wave itself.
-/obj/effect/temp_visual/circle_wave/artifact_mist/gravity_wave
+/obj/effect/temp_visual/circle_wave/artifact_ring/gravity_wave
 	color = "#d8c3ff"
 	max_alpha = 230
 	duration = 0.6 SECONDS
 
 #undef ARTIFACT_WAVE_WINDUP
 #undef ARTIFACT_WAVE_MAX_RANGE
+#undef ARTIFACT_WAVE_MAX_OBJECTS

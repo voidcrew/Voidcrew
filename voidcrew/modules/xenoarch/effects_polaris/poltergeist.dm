@@ -46,7 +46,7 @@
 	var/best_distance = INFINITY
 	var/best_has_mind = FALSE
 	for(var/mob/living/candidate in living_in_range())
-		if(candidate.stat != CONSCIOUS || candidate == get_atom_on_turf(holder))
+		if(candidate.stat != CONSCIOUS || candidate == artifact_effect_visible_source(holder))
 			continue
 		var/has_mind = !!candidate.mind
 		var/distance = get_dist(center, candidate)
@@ -84,7 +84,7 @@
 	missile.visible_message(span_warning("[missile] lifts off the floor and turns toward [target]!"))
 	playsound(missile, 'sound/effects/magic/summonitems_generic.ogg', 30, TRUE)
 	animate(missile, pixel_z = 10, time = ARTIFACT_POLTERGEIST_WINDUP, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
-	var/atom/origin = get_atom_on_turf(holder)
+	var/atom/origin = artifact_effect_visible_source(holder)
 	origin?.Beam(missile, icon_state = "kinesis", time = ARTIFACT_POLTERGEIST_WINDUP)
 	addtimer(CALLBACK(src, PROC_REF(hurl), WEAKREF(missile), WEAKREF(target)), ARTIFACT_POLTERGEIST_WINDUP, TIMER_DELETE_ME)
 	return TRUE

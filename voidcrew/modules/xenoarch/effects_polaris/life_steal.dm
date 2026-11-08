@@ -16,14 +16,14 @@
 
 /datum/artifact_effect/life_steal/do_effect_touch(mob/living/user)
 	if(!steal_for(user, 10))
-		to_chat(user, span_notice("Something in [holder] reaches for you, then lets go."))
+		to_chat(user, span_notice("Something reaches into you, finds nothing it wants, and lets go."))
 
 /datum/artifact_effect/life_steal/do_effect_pulse(power)
 	steal_for(pick_beneficiary(), clamp(power * 0.4, 5, 15))
 
 /// Whoever a burst feeds: the person carrying it, else the nearest hurt person in reach.
 /datum/artifact_effect/life_steal/proc/pick_beneficiary()
-	var/atom/carrier = get_atom_on_turf(holder)
+	var/atom/carrier = artifact_effect_visible_source(holder)
 	if(isliving(carrier))
 		return carrier
 	var/turf/center = source_turf()

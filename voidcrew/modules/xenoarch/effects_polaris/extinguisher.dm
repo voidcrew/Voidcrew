@@ -20,7 +20,7 @@
 
 /datum/artifact_effect/extinguisher/do_effect_touch(mob/living/user)
 	douse(user, 4)
-	to_chat(user, span_notice("Cold mist beads on your skin where you touched [holder]."))
+	to_chat(user, span_notice("Cold mist beads on your skin."))
 	playsound(source_turf(), 'sound/effects/extinguish.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /datum/artifact_effect/extinguisher/do_effect_aura(seconds_per_tick)
@@ -41,22 +41,25 @@
 	var/turf/center = source_turf()
 	if(!center)
 		return
-	new /obj/effect/temp_visual/circle_wave/artifact_mist(center, max(range * 0.6, 1.5))
+	new /obj/effect/temp_visual/circle_wave/artifact_ring/mist(center, max(range * 0.6, 1.5))
 	playsound(center, 'sound/effects/extinguish.ogg', 45, TRUE)
 	quench_area(center)
 	for(var/mob/living/target in living_in_range())
-		douse(target, 3)
+		if(!douse(target, 3))
+			to_chat(target, span_notice("A cold, damp mist rolls over you."))
 
 /datum/artifact_effect/extinguisher/do_effect_destroy()
 	return
 
-/// Puts out `target` and leaves them damp. Tells them if they were burning.
+/// Puts out `target` and leaves them damp. Returns TRUE (and tells them) if it put them out.
 /datum/artifact_effect/extinguisher/proc/douse(mob/living/target, wetness)
 	var/was_burning = target.on_fire
 	target.extinguish_mob()
 	target.adjust_wet_stacks(wetness * artifact_exposure(target))
 	if(was_burning && !target.on_fire)
 		to_chat(target, span_notice("A cold mist rolls over you, and the flames on you gutter out."))
+		return TRUE
+	return FALSE
 
 /// Snuffs open flames and burning objects in range. Returns TRUE if it put anything out.
 /datum/artifact_effect/extinguisher/proc/quench_area(turf/center)
@@ -95,15 +98,10 @@
 	animate(src, alpha = 0, pixel_y = pixel_y + 6, time = duration)
 
 /// A ring of mist rolling out from the artifact.
-/obj/effect/temp_visual/circle_wave/artifact_mist
+/obj/effect/temp_visual/circle_wave/artifact_ring/mist
 	color = "#cfe9ff"
 	max_alpha = 170
 	duration = 0.8 SECONDS
-
-/obj/effect/temp_visual/circle_wave/artifact_mist/Initialize(mapload, scale)
-	if(isnum(scale))
-		amount_to_scale = scale
-	return ..()
 
 #undef ARTIFACT_EXTINGUISH_COOL_TO
 #undef ARTIFACT_EXTINGUISH_COOL_STEP

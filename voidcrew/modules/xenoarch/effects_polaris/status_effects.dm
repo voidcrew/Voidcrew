@@ -38,7 +38,7 @@
 
 /datum/status_effect/artifact/fortify/on_apply()
 	RegisterSignal(owner, COMSIG_MOB_APPLY_DAMAGE_MODIFIERS, PROC_REF(soften_blow))
-	owner.add_filter("artifact_fortify", 2, outline_filter(1, "#a7b89a80"))
+	owner.add_filter("artifact_fortify", 2, outline_filter(1, "#a7b89aa8"))
 	return TRUE
 
 /datum/status_effect/artifact/fortify/on_remove()
@@ -88,7 +88,7 @@
 
 /atom/movable/screen/alert/status_effect/artifact_faraday
 	name = "Grounded"
-	desc = "There is a cold, still hush on your skin. Even your radio sounds far away."
+	desc = "A cold, still hush has settled on your skin."
 	icon_state = "shock_immune"
 
 // ===== Sprint =====
@@ -170,7 +170,7 @@
 
 /atom/movable/screen/alert/status_effect/artifact_berserk
 	name = "Seeing Red"
-	desc = "Your blood is up. Every swing lands, and lands hard."
+	desc = "Your blood is up. You want to hit something."
 	icon_state = "blooddrunk"
 
 /datum/movespeed_modifier/status_effect/artifact_exhausted
@@ -239,6 +239,27 @@
 	desc = "Living things glow through the walls like coals through paper."
 	icon_state = "moon_hide"
 
+// ===== Shared helpers =====
+
+/**
+ * What people see an effect coming from: the artifact itself, or, for an effect harvested into a
+ * battery, whoever or whatever carries that battery. Safe on a null or deleted holder.
+ */
+/proc/artifact_effect_visible_source(atom/holder)
+	if(!ismovable(holder))
+		return holder
+	return get_atom_on_turf(holder)
+
+// ===== Shared visuals =====
+
+/// A ring rolling out from an artifact. Pass the reach in tiles after the location.
+/obj/effect/temp_visual/circle_wave/artifact_ring
+
+/obj/effect/temp_visual/circle_wave/artifact_ring/Initialize(mapload, scale)
+	if(isnum(scale))
+		amount_to_scale = scale
+	return ..()
+
 // ===== Effects that hand one out =====
 
 /**
@@ -291,8 +312,10 @@
 	log_harm(target)
 	return TRUE
 
-/// Who it works on.
+/// Who it works on. A harmful one carried in a battery spares whoever carries it.
 /datum/artifact_effect/bestow/proc/can_bestow(mob/living/target)
+	if(harmful && target == artifact_effect_visible_source(holder))
+		return FALSE
 	return target.stat != DEAD
 
 /// Hook: `target` just got their first dose.

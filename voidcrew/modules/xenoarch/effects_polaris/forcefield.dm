@@ -92,7 +92,7 @@
 /datum/artifact_effect/forcefield/proc/drop_ring()
 	if(!length(walls))
 		return
-	for(var/obj/effect/forcefield/artifact/wall as anything in walls)
+	for(var/obj/effect/forcefield/artifact/wall in walls)
 		UnregisterSignal(wall, COMSIG_QDELETING)
 		wall.fade_out()
 	walls.Cut()

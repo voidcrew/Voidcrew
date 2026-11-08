@@ -97,6 +97,62 @@
 	for(var/obj/effect/decal/cleanable/artifact_ooze/puddle in range(4, home))
 		TEST_ASSERT(puddle.reagents?.total_volume <= 30, "an ooze puddle grew past a cupful")
 
+/**
+ * Harvested copies run from a battery item, usually in someone's hand (the utilizer). Every Polaris
+ * effect runs from such a holder through the public API (wake, touch, tick) and the raw hooks
+ * without errors, and the harmful ones never turn on whoever carries the battery. A folder stands
+ * in for the battery: these tests must not depend on another part's types.
+ */
+/datum/unit_test/voidcrew_xenoarch_polaris_battery_holder/Run()
+	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact)
+	var/turf/home = get_turf(find)
+	var/turf/carrier_spot = locate(home.x + 2, home.y, home.z)
+	var/turf/target_spot = locate(home.x + 3, home.y, home.z)
+	var/mob/living/carbon/human/consistent/carrier = allocate(/mob/living/carbon/human/consistent, carrier_spot)
+	var/mob/living/carbon/human/consistent/target = allocate(/mob/living/carbon/human/consistent, target_spot)
+	carrier.mind_initialize()
+	target.mind_initialize()
+	var/obj/item/folder/battery = allocate(/obj/item/folder)
+	carrier.put_in_active_hand(battery)
+	TEST_ASSERT_EQUAL(artifact_effect_visible_source(battery), carrier, "a carried battery is not seen as coming from its carrier")
+	for(var/effect_type in voidcrew_xenoarch_polaris_catalogue())
+		find.replace_effects(effect_type, null, 3)
+		var/datum/artifact_effect/copy = find.main_effect.make_harvest_copy(battery)
+		TEST_ASSERT_EQUAL(copy.holder, battery, "[effect_type]'s harvest copy is not held by the battery")
+		if(istype(copy, /datum/artifact_effect/gas_vent))
+			var/datum/artifact_effect/gas_vent/vent = copy
+			vent.reserve = 0
+		copy.wake(1 MINUTES)
+		copy.current_charge = copy.maximum_charges
+		copy.touch(target)
+		copy.current_charge = copy.maximum_charges
+		copy.tick(2)
+		copy.do_effect_touch(target)
+		copy.do_effect_aura(2)
+		copy.do_effect_pulse(copy.maximum_charges)
+		copy.deactivate(quiet = TRUE)
+		if(copy.harmful)
+			TEST_ASSERT(carrier.is_holding(battery), "[effect_type] run from a battery made its carrier drop it")
+		qdel(copy)
+		carrier.fully_heal(HEAL_ALL)
+		target.fully_heal(HEAL_ALL)
+		carrier.forceMove(carrier_spot)
+		target.forceMove(target_spot)
+		if(!carrier.is_holding(battery))
+			carrier.put_in_active_hand(battery)
+
+	// The harmful ones spare their carrier outright.
+	find.replace_effects(/datum/artifact_effect/electric_field, /datum/artifact_effect/disarm, 3)
+	var/datum/artifact_effect/electric_field/field = find.main_effect.make_harvest_copy(battery)
+	var/datum/artifact_effect/disarm/pry = find.second_effect.make_harvest_copy(battery)
+	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
+	carrier.put_in_inactive_hand(bar)
+	TEST_ASSERT(!field.arc_to(carrier, 10, FALSE), "an electric field in a battery arced to its own carrier")
+	TEST_ASSERT(!pry.pry(carrier), "a disarm battery pried open its own carrier's hand")
+	TEST_ASSERT(carrier.is_holding(battery), "the carrier lost the battery")
+	qdel(field)
+	qdel(pry)
+
 /// Resurrect: three lives, then spent; refuses the long dead, minds that moved on, and the absent.
 /datum/unit_test/voidcrew_xenoarch_resurrect/Run()
 	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact)
@@ -237,9 +293,38 @@
 	TEST_ASSERT(walker.stalk(), "a loose artifact did not follow someone in reach")
 	TEST_ASSERT(get_dist(find, quarry) < 3, "the artifact did not close in on its quarry")
 
+/// The gravity wave knocks people down but never throws them into space (or lava, or a chasm).
+/datum/unit_test/voidcrew_xenoarch_gravity_wave_ledge/Run()
+	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact)
+	find.replace_effects(/datum/artifact_effect/gravity_wave, null, 3)
+	var/datum/artifact_effect/gravity_wave/wave = find.main_effect
+	var/turf/start = get_turf(find)
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, locate(start.x + 1, start.y, start.z))
+	var/turf/ledge = locate(start.x + 3, start.y, start.z)
+	var/old_type = ledge.type
+	ledge.ChangeTurf(/turf/open/space/basic, flags = CHANGETURF_IGNORE_AIR)
+	TEST_ASSERT_EQUAL(wave.safe_distance(bystander, EAST, 5), 1, "the wave would throw someone into space")
+	TEST_ASSERT_EQUAL(wave.safe_distance(bystander, WEST, 1), 1, "the wave refused a safe throw")
+	ledge = locate(start.x + 3, start.y, start.z)
+	ledge.ChangeTurf(old_type, flags = CHANGETURF_IGNORE_AIR)
+
+/// The electric field only arcs to machines and to people holding something metal.
+/datum/unit_test/voidcrew_xenoarch_electric_field/Run()
+	var/obj/machinery/artifact/find = allocate(/obj/machinery/artifact)
+	find.replace_effects(/datum/artifact_effect/electric_field, null, 3)
+	var/datum/artifact_effect/electric_field/field = find.main_effect
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, get_step(find, EAST))
+	TEST_ASSERT(!field.arc_to(bystander, 10, FALSE), "the field arced to someone with empty hands")
+	TEST_ASSERT_EQUAL(bystander.getFireLoss(), 0, "an empty-handed bystander was burned")
+	var/obj/item/crowbar/bar = allocate(/obj/item/crowbar)
+	bystander.put_in_active_hand(bar)
+	TEST_ASSERT(field.arc_to(bystander, 10, FALSE), "the field did not arc to someone holding a crowbar")
+	TEST_ASSERT(bystander.getFireLoss() > 0, "the arc did not burn")
+
 /**
  * Polaris effects on planet ground never give a planet turf private air: the gas vents, the
- * extinguisher and the force walls. (A real flame writes the air itself, so none is lit here.) Uses the shared planet air room from voidcrew_planet_shared_air.dm.
+ * extinguisher and the force walls. (A real flame writes the air itself, so none is lit here.)
+ * Uses the shared planet air room from voidcrew_planet_shared_air.dm.
  */
 /datum/unit_test/voidcrew_planet_shared_air/xenoarch_polaris_effects/Run()
 	if(!planetary_atmos_shared_mix_enabled())

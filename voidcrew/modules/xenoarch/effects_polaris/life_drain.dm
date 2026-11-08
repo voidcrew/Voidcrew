@@ -47,7 +47,7 @@
 /datum/artifact_effect/life_drain/proc/can_hook(mob/living/target)
 	if(target.stat == DEAD || hooked?[REF(target)])
 		return FALSE
-	if(target == get_atom_on_turf(holder))
+	if(target == artifact_effect_visible_source(holder))
 		return FALSE
 	return artifact_exposure(target) >= 0.5
 
@@ -55,15 +55,15 @@
 /datum/artifact_effect/life_drain/proc/hook(mob/living/target, damage)
 	if(!can_hook(target))
 		return FALSE
-	var/atom/origin = get_atom_on_turf(holder)
-	if(!origin)
+	var/atom/origin = artifact_effect_visible_source(holder)
+	if(!isatom(origin))
 		return FALSE
 	var/datum/beam/drain_beam = origin.Beam(target, icon_state = "drain_life", time = ARTIFACT_DRAIN_WINDUP + 0.5 SECONDS, maxdistance = range + 1)
 	var/key = REF(target)
 	hooked[key] = TRUE
 	target.visible_message(
-		span_danger("A sickly beam lashes out from [holder] and hooks into [target]!"),
-		span_userdanger("A sickly beam lashes out from [holder] and hooks into you. Something cold starts to pull."),
+		span_danger("A sickly beam lashes out from [origin] and hooks into [target]!"),
+		span_userdanger("A sickly beam lashes out from [origin] and hooks into you. Something cold starts to pull."),
 	)
 	playsound(target, 'sound/effects/magic/enter_blood.ogg', 35, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(finish_hook), WEAKREF(target), WEAKREF(drain_beam), key, damage), ARTIFACT_DRAIN_WINDUP, TIMER_DELETE_ME)
@@ -93,7 +93,7 @@
 	target.apply_status_effect(/datum/status_effect/artifact/exhausted, 10 SECONDS)
 	new /obj/effect/temp_visual/heal(get_turf(target), "#7a1d3a")
 	target.visible_message(
-		span_danger("[holder] pulls something pale and shining out of [target]."),
+		span_danger("Something pale and shining is pulled out of [target]."),
 		span_userdanger("Something is torn out of you. Your legs go weak."),
 	)
 	playsound(target, 'sound/effects/magic/exit_blood.ogg', 40, TRUE)

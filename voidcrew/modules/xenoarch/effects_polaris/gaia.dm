@@ -42,9 +42,11 @@
 	var/turf/center = source_turf()
 	if(!center)
 		return
-	new /obj/effect/temp_visual/circle_wave/artifact_mist/gaia(center, max(range * 0.6, 1.5))
+	new /obj/effect/temp_visual/circle_wave/artifact_ring/gaia(center, max(range * 0.6, 1.5))
 	playsound(center, 'sound/effects/rustle/rustle1.ogg', 40, TRUE)
 	tend_all(range, clamp(power / 5, 2, 8), 10)
+	if(prob(25))
+		draw_butterfly(get_step(center, pick(GLOB.alldirs)))
 	for(var/mob/living/carbon/human/sprout in living_in_range())
 		nourish(sprout, clamp(power / 4, 2, 8))
 
@@ -74,7 +76,7 @@
 	tray.adjust_pestlevel(-1)
 	tray.adjust_toxic(-amount)
 	tray.update_appearance()
-	if(prob(40))
+	if(prob(30))
 		new /obj/effect/temp_visual/artifact_gaia_bloom(get_turf(tray))
 	return TRUE
 
@@ -90,10 +92,10 @@
 	for(var/datum/weakref/butterfly_ref as anything in butterflies)
 		if(!butterfly_ref.resolve())
 			butterflies -= butterfly_ref
-	if(length(butterflies) >= ARTIFACT_GAIA_MAX_BUTTERFLIES || !istype(spot))
+	if(length(butterflies) >= ARTIFACT_GAIA_MAX_BUTTERFLIES || !istype(spot) || spot.is_blocked_turf())
 		return
 	var/mob/living/basic/butterfly/lavaland/temporary/butterfly = new(spot)
-	butterfly.source = get_atom_on_turf(holder)
+	butterfly.source = artifact_effect_visible_source(holder)
 	butterfly.max_distance = range + 3
 	butterflies += WEAKREF(butterfly)
 	addtimer(CALLBACK(butterfly, TYPE_PROC_REF(/mob/living/basic/butterfly/lavaland/temporary, fadeout)), rand(60, 120) SECONDS, TIMER_DELETE_ME)
@@ -111,7 +113,7 @@
 	animate(alpha = 0, time = 1.1 SECONDS)
 
 /// A soft green ring for the burst.
-/obj/effect/temp_visual/circle_wave/artifact_mist/gaia
+/obj/effect/temp_visual/circle_wave/artifact_ring/gaia
 	color = "#8cd448"
 	max_alpha = 140
 

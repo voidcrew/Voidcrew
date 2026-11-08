@@ -47,7 +47,7 @@
 	bristling = TRUE
 	center.visible_message(span_danger("[holder] bristles with sharp bone!"))
 	playsound(center, 'sound/effects/blob/blobattack.ogg', 50, TRUE)
-	var/atom/movable/shaker = get_atom_on_turf(holder)
+	var/atom/movable/shaker = artifact_effect_visible_source(holder)
 	if(shaker)
 		shaker.Shake(1, 1, ARTIFACT_SPINES_WINDUP)
 	addtimer(CALLBACK(src, PROC_REF(fire_volley), spared ? WEAKREF(spared) : null), ARTIFACT_SPINES_WINDUP, TIMER_DELETE_ME)
@@ -64,7 +64,7 @@
 		return 0
 	var/mob/living/spared = spared_ref?.resolve()
 	var/spared_angle = (spared && get_dist(center, spared) <= 1 && spared.loc != center) ? get_angle(center, spared) : null
-	var/atom/movable/launcher = get_atom_on_turf(holder)
+	var/atom/movable/launcher = artifact_effect_visible_source(holder)
 	var/step = 360 / volley
 	var/offset = rand(0, step - 1)
 	var/fired = 0
@@ -89,7 +89,7 @@
 	name = "bone spine"
 	icon_state = "magspear"
 	color = "#efe2c4"
-	damage = 8
+	damage = 10
 	damage_type = BRUTE
 	armor_flag = BULLET
 	sharpness = SHARP_POINTY

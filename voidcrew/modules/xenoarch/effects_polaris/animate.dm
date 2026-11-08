@@ -34,10 +34,12 @@
 /datum/artifact_effect/animate/do_effect_aura(seconds_per_tick)
 	stalk()
 
+/// A burst is a short run of lurches, a beat apart.
 /datum/artifact_effect/animate/do_effect_pulse(power)
-	for(var/step in 1 to clamp(round(power / 12), 1, 3))
-		if(!stalk())
-			return
+	if(!stalk())
+		return
+	for(var/step in 1 to clamp(round(power / 12), 1, 3) - 1)
+		addtimer(CALLBACK(src, PROC_REF(stalk)), step * 0.4 SECONDS, TIMER_DELETE_ME)
 
 /datum/artifact_effect/animate/do_effect_destroy()
 	return

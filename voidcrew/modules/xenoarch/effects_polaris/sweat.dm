@@ -33,14 +33,15 @@
 /datum/artifact_effect/sweat/do_effect_touch(mob/living/user)
 	var/turf/user_turf = get_turf(user)
 	if(prob(25) && weep(user_turf, 6))
+		var/atom/source = istype(holder, /obj/machinery/artifact) ? holder : null
 		user.visible_message(
-			span_warning("[holder] shudders at [user]'s touch and spits a slick of fluid across [user.p_their()] feet!"),
-			span_warning("[holder] shudders at your touch and spits a slick of fluid across your feet!"),
+			span_warning("[source ? "[source] shudders at [user]'s touch and spits" : "Something spits"] a slick of fluid across [user]'s feet!"),
+			span_warning("[source ? "[source] shudders at your touch and spits" : "Something spits"] a slick of fluid across your feet!"),
 		)
 		playsound(user_turf, 'sound/effects/splat.ogg', 35, TRUE)
 		return
 	weep(source_turf(), 2)
-	to_chat(user, span_notice("Your palm comes away slick. It is beaded with moisture where you touched it."))
+	to_chat(user, span_notice("A cold, slick film beads on your skin."))
 
 /datum/artifact_effect/sweat/do_effect_aura(seconds_per_tick)
 	if(SPT_PROB(25, seconds_per_tick) && weep(source_turf(), 2))
@@ -57,7 +58,10 @@
 	for(var/i in 1 to min(3, length(neighbours)))
 		spilled = weep(pick_n_take(neighbours), clamp(power / 8, 1, 5)) || spilled
 	if(spilled)
-		center.visible_message(span_warning("[holder] shudders and spits fluid across the floor."))
+		if(istype(holder, /obj/machinery/artifact))
+			center.visible_message(span_warning("[holder] shudders and spits fluid across the floor."))
+		else
+			center.visible_message(span_warning("Fluid spatters across the floor."))
 		playsound(center, 'sound/effects/splat.ogg', 40, TRUE)
 
 /// Adds `amount` of its liquid to a puddle on `spot`. Returns TRUE if any went in.
@@ -75,7 +79,8 @@
 	if(room <= 0)
 		return FALSE
 	puddle.reagents.add_reagent(reagent_type, min(amount, room))
-	puddle.color = initial(reagent_type.color)
+	// Just the hue: water's own colour is nearly clear and the slick would vanish.
+	puddle.color = copytext(initial(reagent_type.color), 1, 8)
 	return TRUE
 
 /// A puddle of whatever an artifact wept. Scoop it up with a container, or mop it.
