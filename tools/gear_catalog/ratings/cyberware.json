@@ -291,6 +291,16 @@
    "reason": "A jetpack in your chest with no back slot used, and a speed bonus while floating. Free air when there's pressure, otherwise your tank. About 74 cr of material after 200 research points.",
    "tier": "green"
   },
+  "/obj/item/organ/cyberimp/cyberware/adrenal_pump": {
+   "confidence": "medium",
+   "group": "Nerves and stuns",
+   "hash": "",
+   "name": "Adrenal pump",
+   "note": "When a stamina update leaves a conscious wearer at 70 or more stamina loss and the pump is ready, one tick later it takes 40 off, speeds the wearer up (movement -0.4) and tints them red for 3 s, and plays a loud heartbeat. It then waits 4 minutes; the wait is stored as a ready-at time on the organ, so a refit does not reset it. It ignores the stamina dumped by the Cascade and Redline crashes. It takes the spare heart slot, so it evicts the Clotter node, and goes off during an EMP reboot or brownout.",
+   "rank": 3,
+   "reason": "Once every 4 minutes a bad run of stamina damage is cut by 40 and the wearer gets 3 s of extra speed, enough to stay out of a stamina crit for one more volley. Load 2, 2,400 cr at reputation 4.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/atlas": {
    "confidence": "medium",
    "group": "Armor and frame",
@@ -357,6 +367,16 @@
    "reason": "Glowing tattoos with no other effect. Load 0, 400 cr.",
    "tier": "none"
   },
+  "/obj/item/organ/cyberimp/cyberware/clotter_node": {
+   "confidence": "medium",
+   "group": "Body upkeep",
+   "hash": "",
+   "name": "Clotter node",
+   "note": "While online, multiplies the blood a human wearer loses by 0.5, on life ticks and flat bleeds alike. It stacks multiplicatively with other bleed reducers and goes off during an EMP reboot or over-capacity brownout. It takes the spare heart slot, so it evicts the Adrenal pump.",
+   "rank": 3,
+   "reason": "Halves the blood lost to wounds. It buys a bleeding crew member time between medic visits and does nothing against burst damage. Load 1, 900 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/cyberware/coolant": {
    "confidence": "medium",
    "group": "Armor and frame",
@@ -375,6 +395,16 @@
    "note": "While the ware is online the wearer takes no damage from overheating (hot air or body temperature) and loses 1 fire stack per second. It does not reduce burn damage and does not stop fire: a burning wearer is burned at full strength. Both drop during an EMP reboot or over-capacity brownout.",
    "rank": 7,
    "reason": "No heat damage from hot air or lava country, and fire burns off fast, but burns from lasers and flames land at full strength. The heat half of the Coolant Loops for load 1, 1,500 cr.",
+   "tier": "green"
+  },
+  "/obj/item/organ/cyberimp/cyberware/cuffer_wrists": {
+   "confidence": "medium",
+   "group": "Work tools",
+   "hash": "",
+   "name": "Cuffer's wrists",
+   "note": "While online, handcuffing takes 75% of the usual time, the trait combat and insulated gloves also give. It takes the hands slot, so it evicts the Gecko Grip and the Medic's palms.",
+   "rank": 6,
+   "reason": "Cuffs go on in three quarters of the time with no glove needed. A small edge for bounty hunters and boarders. Load 1, 500 cr.",
    "tier": "green"
   },
   "/obj/item/organ/cyberimp/cyberware/dead_channel": {
@@ -553,6 +583,26 @@
    "reason": "Once every 6 minutes, dropping into crit stands you up at 30% health with stuns cleared after a 1 s seizure. A second life in the same fight. Load 5, 4 vouchers at reputation 22.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/cyberware/medic_palms": {
+   "confidence": "medium",
+   "group": "Work tools",
+   "hash": "",
+   "name": "Medic's palms",
+   "note": "While online, gives the wearer the quicker chemistry trait (syringes, pills, patches and the like take less time) and the quicker fireman carry (3 s instead of 5), the same traits as nitrile gloves, without using the glove slot. It takes the hands slot, so it evicts the Gecko Grip and the Cuffer's wrists.",
+   "rank": 5,
+   "reason": "Nitrile-glove speed on chemistry and carrying without the glove slot, so a medic can wear insulated or armored gloves instead. Load 1, 600 cr.",
+   "tier": "green"
+  },
+  "/obj/item/organ/cyberimp/cyberware/muffler_ear": {
+   "confidence": "medium",
+   "group": "Nerves and stuns",
+   "hash": "",
+   "name": "Muffler ear",
+   "note": "While online, takes one point off the intensity of a bang, which is what earmuffs do: a flashbang or similar bang does nothing to the wearer, though the flash still blinds. It goes off during an EMP reboot or brownout. It takes the chrome ears slot, so it evicts the Heartbeat Doppler.",
+   "rank": 7,
+   "reason": "A flashbang's bang stops dropping the wearer, like earmuffs you can't take off. The flash still blinds. Load 1, 700 cr.",
+   "tier": "green"
+  },
   "/obj/item/organ/cyberimp/cyberware/piledriver": {
    "confidence": "high",
    "group": "Mobility and stealth",
@@ -698,6 +748,16 @@
    "rank": 7,
    "reason": "8% of bullets miss while you're moving, never from an adjacent shooter, and nothing else. A cheap taste of the Slipwire in the slot Dead Channel wants. Load 2, 1,800 cr at reputation 4.",
    "tier": "yellow"
+  },
+  "/obj/item/organ/cyberimp/cyberware/subvocal_mic": {
+   "confidence": "medium",
+   "group": "Mobility and stealth",
+   "hash": "",
+   "name": "Subvocal mic",
+   "note": "While online, a radio line the wearer speaks (headset, department or intercom) is spoken at range 0 instead of 1: the wearer and anyone on their tile hear it, a neighbour one tile away gets the usual garbled eavesdrop copy, and nobody further hears it. Ordinary talk is unchanged. It goes off during an EMP reboot or brownout.",
+   "rank": 8,
+   "reason": "Radio talk is not overheard by anyone standing close. A small edge for sneaking and boarding. Load 1, 600 cr.",
+   "tier": "green"
   },
   "/obj/item/organ/cyberimp/eyes/hud/diagnostic": {
    "confidence": "high",

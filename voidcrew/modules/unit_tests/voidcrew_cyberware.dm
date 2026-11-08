@@ -158,7 +158,8 @@
 /datum/unit_test/voidcrew_cyberware_arm_slots
 
 /datum/unit_test/voidcrew_cyberware_arm_slots/Run()
-	var/list/exempt = list(/obj/item/organ/cyberimp/cyberware/gecko)
+	// The other two palm and wrist pieces share the hands slot with it (ware_street_passives.dm).
+	var/list/exempt = list(/obj/item/organ/cyberimp/cyberware/gecko, /obj/item/organ/cyberimp/cyberware/medic_palms, /obj/item/organ/cyberimp/cyberware/cuffer_wrists)
 	var/list/arm_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
 	for(var/organ_path in arm_ware)
 		if(organ_path in exempt)
