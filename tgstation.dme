@@ -7236,6 +7236,8 @@
 #include "voidcrew\modules\hyperviolence\blood\blood_weightless.dm"
 #include "voidcrew\modules\hyperviolence\hitlines\hit_lines.dm"
 #include "voidcrew\modules\hyperviolence\hitlines\npc_blood.dm"
+#include "voidcrew\modules\hyperviolence\overlays_exec\executions.dm"
+#include "voidcrew\modules\hyperviolence\overlays_exec\gore_overlays.dm"
 #include "voidcrew\modules\intents\_defines.dm"
 #include "voidcrew\modules\intents\hud_integration.dm"
 #include "voidcrew\modules\intents\hud_intent.dm"
