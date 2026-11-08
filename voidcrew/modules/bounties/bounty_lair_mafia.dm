@@ -157,7 +157,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
  */
 /proc/bounty_mafia_room_crew(area_type)
 	var/type_text = "[area_type]"
-	var/static/marker = "/mafia_club/"
+	var/marker = "/mafia_club/"
 	var/at = findtext(type_text, marker)
 	if(!at)
 		return null
