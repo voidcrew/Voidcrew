@@ -566,11 +566,10 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 		if("grime")
 			prisoner.set_uniform_grime(clamp(value, 0, 100))
 		if("health")
-			// 1 to 100 percent; killing has its own button.
+			// 1 to 100 percent; killing has its own button. Bruising over the limbs, measured as it lands.
 			if(prisoner.stat == DEAD)
 				return FALSE
-			var/target_loss = prisoner.maxHealth * (100 - clamp(value, 1, 100)) / 100
-			prisoner.adjustBruteLoss(target_loss - prisoner.getBruteLoss(), forced = TRUE)
+			outpost_prison_set_health(prisoner, prisoner.maxHealth * clamp(value, 1, 100) / 100)
 		if("sentence")
 			if(prisoner.stat == DEAD || prisoner.phase != PRISONER_PRESENT)
 				return FALSE
