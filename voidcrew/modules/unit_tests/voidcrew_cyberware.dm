@@ -415,6 +415,49 @@
 		TEST_ASSERT(paired["vouchers"] > 0, "[half] indexed with no voucher price")
 		TEST_ASSERT(paired["paired"], "[half] came out of a pair case without the paired flag")
 
+/// (h2) Ratchet, the street doc at Quartermain: credit sales only, every piece
+/// he sells has a cradle quote that matches his shelf, his ledger never pays
+/// vouchers, and on the map he stands in view of his own cradle, so the install
+/// patter (play_ripperdoc_bark) comes out of his mouth.
+/datum/unit_test/voidcrew_street_doc
+
+/datum/unit_test/voidcrew_street_doc/Run()
+	build_cyberware_price_index()
+	var/datum/outpost_shop/vendor/street_doc/shop = allocate(/datum/outpost_shop/vendor/street_doc)
+	TEST_ASSERT(length(shop.skus), "The street doc has nothing on his shelf")
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		TEST_ASSERT(istype(sku, /datum/shop_sku/ripperdoc), "[sku.type] at the street doc is not ripperdoc stock, so the cradle never quotes it")
+		TEST_ASSERT(sku.price_credits > 0 && !sku.price_vouchers, "[sku.type] at the street doc is not a credit sale")
+		if(!ispath(sku.item_path, /obj/item/organ))
+			continue
+		var/list/quote = GLOB.cyberware_price_index[sku.item_path]
+		TEST_ASSERT(!isnull(quote), "The cradle has no price for [sku.item_path], which the street doc sells")
+		if(quote)
+			TEST_ASSERT_EQUAL(quote["credits"], sku.price_credits, "The cradle quotes [sku.item_path] differently from the street doc's shelf")
+	TEST_ASSERT(length(shop.buybacks), "The street doc buys nothing back")
+	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+		TEST_ASSERT(buyback.pay_credits > 0 && !buyback.pay_vouchers, "[buyback.type] at the street doc pays vouchers for chrome a ship can buy")
+
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost/outfitter)
+	TEST_ASSERT(outpost.load_level(), "Quartermain's interior failed to load")
+	var/turf/bottom_left = outpost.template_bottom_left
+	var/turf/top_right = locate(bottom_left.x + outpost.outpost_template.width - 1, bottom_left.y + outpost.outpost_template.height - 1, bottom_left.z)
+	var/list/docs = list()
+	var/list/cradles = list()
+	for(var/turf/interior as anything in block(bottom_left, top_right))
+		for(var/mob/living/basic/outpost_trader/ripperdoc/street_doc/doc in interior)
+			docs += doc
+		for(var/obj/machinery/chrome_cradle/cradle in interior)
+			cradles += cradle
+	TEST_ASSERT_EQUAL(length(docs), 1, "Quartermain has [length(docs)] street docs, not one")
+	TEST_ASSERT_EQUAL(length(cradles), 1, "Quartermain has [length(cradles)] chrome cradles, not one")
+	var/mob/living/basic/outpost_trader/ripperdoc/street_doc/ratchet = docs[1]
+	var/obj/machinery/chrome_cradle/rig = cradles[1]
+	TEST_ASSERT(istype(ratchet.shop, /datum/outpost_shop/vendor/street_doc), "The street doc is not running his own counter")
+	TEST_ASSERT(ratchet in view(7, rig), "The street doc can't see his cradle, so installs there run without him")
+	TEST_ASSERT_EQUAL(get_trader_outpost_for_turf(get_turf(rig)), outpost, "Quartermain's cradle does not know which outpost it is in")
+	qdel(outpost)
+
 /// Recheck the complete final installation after the delay, before touching incumbents.
 /datum/unit_test/voidcrew_cradle_installed_capacity
 
