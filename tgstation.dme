@@ -33,6 +33,7 @@
 #include "code\__DEFINES\_protect.dm"
 #include "code\__DEFINES\_tick.dm"
 #include "voidcrew\_DEFINES\core_integration.dm" // VOIDCREW EDIT: shared hooks must precede upstream macro use.
+#include "voidcrew\_DEFINES\hyperviolence.dm" // VOIDCREW EDIT: shared hooks must precede upstream macro use (hit lines in code/datums/wounds).
 #include "voidcrew\_DEFINES\modular_hooks.dm" // VOIDCREW EDIT: shared hooks must precede upstream macro use.
 #include "code\__DEFINES\access.dm"
 #include "code\__DEFINES\achievements.dm"
@@ -6694,7 +6695,6 @@
 #include "voidcrew\_DEFINES\dynamic_events.dm"
 #include "voidcrew\_DEFINES\flags.dm"
 #include "voidcrew\_DEFINES\hud.dm"
-#include "voidcrew\_DEFINES\hyperviolence.dm"
 #include "voidcrew\_DEFINES\job_categories.dm"
 #include "voidcrew\_DEFINES\keybindings.dm"
 #include "voidcrew\_DEFINES\lich.dm"
@@ -7230,6 +7230,8 @@
 #include "voidcrew\modules\food_and_drinks\drinks\bottles.dm"
 #include "voidcrew\modules\holopads\ship_holocall.dm"
 #include "voidcrew\modules\hyperviolence\_core.dm"
+#include "voidcrew\modules\hyperviolence\hitlines\hit_lines.dm"
+#include "voidcrew\modules\hyperviolence\hitlines\npc_blood.dm"
 #include "voidcrew\modules\intents\_defines.dm"
 #include "voidcrew\modules\intents\hud_integration.dm"
 #include "voidcrew\modules\intents\hud_intent.dm"
