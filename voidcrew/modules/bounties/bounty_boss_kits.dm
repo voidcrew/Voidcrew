@@ -27,6 +27,13 @@
  *   real rounds into a cone (a hit while it aims spoils the shot); throws real barrier grenades for
  *   cover (CB-26); changes its own belts. Slow.
  *
+ * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
+ * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
+ * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds, and real Gorilla Arms on any kit.
+ * The Ghost has nothing for it, and takes cover instead. It walks up to the barrier only while that
+ * ability is off cooldown (boss_breaks_through_now()), or when there is no way round; otherwise it goes
+ * round on foot.
+ *
  * The shared vars are declared in bounty_types.dm and nowhere else; a var only P4 uses goes here
  * with a `boss_` prefix, or on the /boss subtypes.
  */
@@ -52,6 +59,20 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_gear_text()
 	return "Riot plates cover [p_them()] from neck to boots."
+
+// Its charge goes straight through a table, a chair, a plain window or a grille
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_goes_through(atom/barrier)
+	if(..())
+		return TRUE
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = locate() in boss_abilities
+	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
+
+// With its charge ready
+/mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/charge)
+	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
 
 /datum/outfit/bounty_boss/juggernaut
 	name = "Bounty mini-boss: Juggernaut"
@@ -307,6 +328,14 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_gear_text()
 	return "[p_Their()] fire suit is scorched black."
 
+// A molotov goes over anything it can see across
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_goes_through(atom/barrier)
+	return ..() || !barrier.opacity
+
+// With a molotov ready
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_breaks_through_now(atom/barrier)
+	return ..() || (!barrier.opacity && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
+
 // The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7). The torch
 // doesn't holster, so it is in hand from the start.
 /datum/outfit/bounty_boss/pyromaniac
@@ -448,6 +477,21 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_gear_text()
 	return "A bandolier of grenades is slung across [p_their()] chest."
+
+// A grenade goes over anything it can see across, and a breaching charge through an interior wall or door
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_goes_through(atom/barrier)
+	if(..() || !barrier.opacity)
+		return TRUE
+	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier)
+
+// With a grenade ready for anything it can see across, or a breaching charge for an interior wall or door
+/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	if(!barrier.opacity && boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/grenade))
+		return TRUE
+	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier) \
+		&& !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/breach))
 
 /**
  * It keeps BOUNTY_DEMOLITIONIST_KEEP_MIN to _MAX tiles from its target while it has something it
@@ -1023,6 +1067,25 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_gear_text()
 	return "[p_They()] [p_are()] in heavy armour."
+
+// Its rounds chip through a window or grille it may break, and fly over a gap
+/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_goes_through(atom/barrier)
+	if(..())
+		return TRUE
+	if(isturf(barrier))
+		return !barrier.density
+	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)
+
+// With its burst ready and a belt in its gun
+/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	var/obj/item/gun/gun = boss_gun()
+	if(!gun?.can_shoot() || isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/burst)))
+		return FALSE
+	if(isturf(barrier))
+		return !barrier.density
+	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)
 
 // The L6 has no sling and won't holster, so it is in hand from the start, its other hand free to fire it.
 // A spare box rides in the bag; a barrier grenade in each pocket.

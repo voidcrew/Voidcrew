@@ -678,6 +678,56 @@
 				"More targets. Fine.",
 				"Hope you all brought armor."
 			]
+		},
+		"juggernaut_cover": {
+			"any": [
+				"Hiding back there? I'll wait.",
+				"Come out and face me.",
+				"You can't stay in there forever.",
+				"Come out from behind there!",
+				"I'll be right here when you come out.",
+				"Shooting from back there? Real brave."
+			]
+		},
+		"pyromaniac_cover": {
+			"any": [
+				"Hiding? I can wait.",
+				"You'll have to come out sometime.",
+				"Come out, come out. It's warm out here.",
+				"I've got all day, and plenty of fuel.",
+				"Stay in there, then. I'll wait.",
+				"Shooting from back there? Come closer."
+			]
+		},
+		"demolitionist_cover": {
+			"any": [
+				"Come out from behind there!",
+				"Hiding? I've got time.",
+				"You can't hide in there forever.",
+				"Shoot from back there all you like. I'll wait.",
+				"I know where you are.",
+				"Sooner or later, you come out."
+			]
+		},
+		"ghost_cover": {
+			"any": [
+				"You'll come out eventually.",
+				"I'll be right here.",
+				"Hiding won't help you.",
+				"Take your time. I'm not going anywhere.",
+				"Come and find me.",
+				"I can wait all day."
+			]
+		},
+		"heavy_cover": {
+			"any": [
+				"Can't hide in there forever.",
+				"Come out from behind there!",
+				"Stay in there, then. I'll wait.",
+				"Peek out again. Go on.",
+				"I've got all day.",
+				"Shooting from back there? Cute."
+			]
 		}
 	}
 }
