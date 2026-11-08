@@ -274,7 +274,7 @@
 	aim_zones = list(BODY_ZONE_PRECISE_MOUTH)
 	wounding_types = list(WOUND_BLUNT)
 	min_damage = 12
-	threshold = 75
+	threshold = 80
 	wound_type = /datum/wound/blunt/bone/severe/hv_jaw
 	basic_effect = /datum/status_effect/hv_crit_basic/jaw
 	hit_sound = 'sound/effects/wounds/crack1.ogg'

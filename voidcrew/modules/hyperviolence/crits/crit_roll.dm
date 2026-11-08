@@ -20,11 +20,13 @@
 //   check_woundings_mods() adds the limb's existing wound penalties and scales everything by
 //   wound armour (worn WOUND ratings plus the limb's own resistance: head 5%, chest 10%).
 // * Each crit has a threshold and a minimum damage after armour (crit_types.dm). A fresh,
-//   standing, unarmoured target hit by a 25+ damage weapon tops out at about 85, so the face
-//   crits (eye, tongue at 80, jaw at 75) land on roughly one such hit in ten to twenty, and the
-//   throat (90), aorta (90, chest armour scales it to 81 max) and skull (95) need the victim
-//   worn down or helpless first. A helpless target held by the attacker gets the throat about
-//   one big slash in four. A 10-force kitchen knife tops out near 30 and never crits by roll.
+//   standing, unarmoured target hit by a 25+ damage weapon tops out at about 90, so the face
+//   crits (eye, tongue and jaw at 80) land on about one such hit in eight; the throat (90) on
+//   about one in a hundred; the aorta (90, but the chest's resistance caps a fresh roll at 85)
+//   and the skull (95) not at all until the victim is worn down or helpless. A helpless victim
+//   held in the attacker's grab loses the throat to about one combat knife slash in three, one
+//   in two for a 25+ weapon. A 10-force kitchen knife tops out near 30, and even on a held
+//   victim under 70, so it never crits by roll.
 // * Gear that covers the spot blocks a crit outright (see each crit's blocked_on_carbon()).
 // * A crit never stacks on itself: the wound can only be on a limb once.
 
@@ -137,7 +139,7 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 /// Applies wound_type to limb the way tg's own roll does: it replaces a lesser wound of the same
 /// series, and does nothing if one as bad is already there. Silent, since the crit adds its own
 /// hit line. Returns the wound, or null.
-/proc/hv_crit_apply_wound(obj/item/bodypart/limb, datum/wound/wound_type, attack_direction, atom/source, right_side)
+/proc/hv_crit_apply_wound(obj/item/bodypart/limb, datum/wound/wound_type, attack_direction, atom/source)
 	var/datum/wound_pregen_data/pregen = GLOB.all_wound_pregen_data[wound_type]
 	if(!pregen)
 		return null
