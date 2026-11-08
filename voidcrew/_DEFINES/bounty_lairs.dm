@@ -91,7 +91,7 @@
 #define BOUNTY_MOBSTER_PISTOL_GUN /obj/item/gun/ballistic/automatic/pistol/aps
 #define BOUNTY_MOBSTER_PISTOL_HEALTH 120
 /// A pistol fires this many shots each time it fires, this far apart; a goon only decides to shoot every half second
-#define BOUNTY_MOBSTER_PISTOL_BURST 2
+#define BOUNTY_MOBSTER_PISTOL_BURST 1
 #define BOUNTY_MOBSTER_PISTOL_BURST_GAP (0.25 SECONDS)
 #define BOUNTY_MOBSTER_PISTOL_COOLDOWN (0.5 SECONDS)
 #define BOUNTY_MOBSTER_PISTOL_RELOAD (2 SECONDS)
@@ -210,7 +210,7 @@
 
 /// His name when his posting's record gives none: the name P10's card shows for Club Volga
 #define BOUNTY_DON_NAME "Arkady Sokolov"
-/// His gold pistol: its look, its rounds and its magazine (bounty_real_weapon()); he fires strings of BOUNTY_MOBSTER_PISTOL_BURST as a goon does
+/// His gold pistol: its look, its rounds and its magazine (bounty_real_weapon()); he fires one shot at a time, in strings of BOUNTY_PISTOL_STRING_SHOTS, as a mobster does
 #define BOUNTY_DON_GUN /obj/item/gun/ballistic/automatic/pistol/deagle/gold
 #define BOUNTY_DON_HEALTH 250
 #define BOUNTY_DON_COOLDOWN (0.5 SECONDS)

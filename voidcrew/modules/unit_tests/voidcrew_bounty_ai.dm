@@ -221,9 +221,29 @@
 	var/rounds = initial(magazine.max_ammo)
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], rounds, "The pistol's magazine isn't a full Stechkin magazine") // BB_BOUNTY_AMMO
 	var/datum/bounty_style/pistol = bounty_ai_style(criminal)
-	for(var/shot in 1 to rounds)
+	// Strings of six (BOUNTY_PISTOL_STRING_SHOTS), then a 1.5 second pause (BOUNTY_PISTOL_STRING_PAUSE)
+	for(var/shot in 1 to 5)
+		gun.fire_cooldown = world.time + gun.cooldown_time
+		pistol.after_shot(criminal)
+	TEST_ASSERT(gun.fire_cooldown <= world.time + gun.cooldown_time, "The pistol paused before its sixth shot")
+	gun.fire_cooldown = world.time + gun.cooldown_time
+	pistol.after_shot(criminal)
+	TEST_ASSERT(gun.fire_cooldown >= world.time + gun.cooldown_time + 1.5 SECONDS, "The pistol didn't pause after six shots")
+	TEST_ASSERT_EQUAL(gun.cooldown_time, 0.5 SECONDS, "The pistol doesn't fire twice a second") // BOUNTY_PISTOL_INTERVAL
+	for(var/shot in 7 to rounds)
 		pistol.after_shot(criminal)
 	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], 0, "A magazine's worth of shots did not empty the magazine") // BB_BOUNTY_AMMO
+
+	// The SMG fires bursts through the component; the revolver holds six
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "smg"), "The SMG style would not apply") // BOUNTY_STYLE_SMG
+	TEST_ASSERT(gun.burst_shots > 1, "The SMG doesn't fire bursts")
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/mini_uzi, "The SMG style isn't the Uzi") // BB_BOUNTY_WEAPON
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "smg", TRUE), "The heavy SMG style would not apply")
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun/ballistic/automatic/wt550, "A Wanted criminal's SMG isn't the WT-550") // BB_BOUNTY_WEAPON
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "revolver"), "The revolver style would not apply") // BOUNTY_STYLE_REVOLVER
+	TEST_ASSERT_NULL(gun.burst_shots, "The revolver fires bursts")
+	var/obj/item/ammo_box/magazine/internal/cylinder/rev38/cylinder = /obj/item/ammo_box/magazine/internal/cylinder/rev38
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_ammo"], initial(cylinder.max_ammo), "The revolver doesn't hold a .38 cylinder") // BB_BOUNTY_AMMO
 	TEST_ASSERT(bounty_style_health_mult("brawler") > 1, "The brawler is not sturdier") // BOUNTY_STYLE_BRAWLER
 
 	// The club is a baseball bat; a Wanted criminal's is the metal one. The tier picks the bat, never scales it.
@@ -241,6 +261,34 @@
 	TEST_ASSERT_EQUAL(criminal.melee_damage_lower, initial(arm.unarmed_damage_low), "A brawler's weakest punch isn't a human's")
 	TEST_ASSERT_EQUAL(criminal.melee_damage_upper, initial(arm.unarmed_damage_high), "A brawler's hardest punch isn't a human's")
 	TEST_ASSERT_NULL(criminal.ai_controller.blackboard["bb_bounty_weapon"], "A brawler has something in their hand") // BB_BOUNTY_WEAPON
+	TEST_ASSERT_NULL(criminal.ai_holster, "A brawler wears a holster")
+
+/// A gun sits holstered (or slung) until a fight, and drawing it comes before the first shot
+/datum/unit_test/voidcrew_bounty_ai/holster
+
+/datum/unit_test/voidcrew_bounty_ai/holster/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "pistol"), "The pistol style would not apply") // BOUNTY_STYLE_PISTOL
+	TEST_ASSERT_NOTNULL(criminal.ai_holster, "A calm pistol criminal shows no holster")
+	TEST_ASSERT(criminal.ai_holster in criminal.vis_contents, "The holster isn't drawn on them")
+	TEST_ASSERT_EQUAL(criminal.ai_holster.icon_state, "gun", "A pistol isn't on the hip")
+	TEST_ASSERT(bounty_ai_draw(criminal, criminal.ai_hand), "Drawing the pistol did nothing")
+	TEST_ASSERT(criminal.ai_controller.blackboard["bb_bounty_windup_until"] >= world.time, "Drawing doesn't hold the first shot") // BB_BOUNTY_WINDUP_UNTIL
+	bounty_ai_hold(criminal, bounty_ai_held_look(criminal))
+	TEST_ASSERT_NULL(criminal.ai_holster, "The holster still shows with the pistol in hand")
+	TEST_ASSERT(!bounty_ai_draw(criminal, criminal.ai_hand), "They drew a pistol already in hand")
+	bounty_ai_hold(criminal, null)
+	TEST_ASSERT_NOTNULL(criminal.ai_holster, "Putting the pistol away didn't holster it")
+	// A shotgun is slung on the back
+	TEST_ASSERT(bounty_ai_apply_style(criminal, "shotgun"), "The shotgun style would not apply") // BOUNTY_STYLE_SHOTGUN
+	TEST_ASSERT_EQUAL(criminal.ai_holster?.icon, 'icons/mob/clothing/back.dmi', "A shotgun isn't slung on the back")
+	// Nothing shows on someone passing as a patron
+	criminal.blended = TRUE
+	bounty_ai_sync_holster(criminal, null)
+	TEST_ASSERT_NULL(criminal.ai_holster, "A criminal passing as a patron shows their gun")
+	criminal.blended = FALSE
+	bounty_ai_sync_holster(criminal, null)
+	TEST_ASSERT_NOTNULL(criminal.ai_holster, "The gun didn't show once they stopped blending in")
 
 /// Their weapons are the real thing: a pistol's shot is a 9mm round, a shotgun fires a whole shell of buckshot, a knife cuts like a knife
 /datum/unit_test/voidcrew_bounty_ai/real_weapons

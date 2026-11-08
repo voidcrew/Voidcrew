@@ -25,6 +25,8 @@
  *   player's when someone with a mind made it, fired it (a mech's or vehicle's shot counts its pilot),
  *   last touched the explosive, or stands near an explosion.
  * - Fire and heat burn it like a suited person (L3), within the mercy line and the floor.
+ * - It breathes: out of a pressure suit in air a person couldn't breathe it chokes to death, past the
+ *   mercy line and the floor. Wanted where the air would kill it, it arrives suited (bounty_eva.dm).
  * - worst_state only ever gets worse (spec 12.1); P5 pays on it, and carries it to a respawned copy
  *   with body_restore_worst_state().
  * - On the floor and draggable (down, stunned, cuffed or dead), it can be fireman carried like a
@@ -76,8 +78,8 @@
 	mobility_flags = MOBILITY_FLAGS_REST_CAPABLE_DEFAULT
 	rotate_on_lying = TRUE
 	blood_volume = BLOOD_VOLUME_NORMAL
-	// Dressed for out there: vacuum and cold don't hurt them (D-A9). Weapons, lava, chasms and fire do;
-	// fire and heat through Life(), not tg's element, so the mercy line holds.
+	// tg's elements stay off: breathing is bounty_eva.dm's (a suit or the right air, or it chokes),
+	// fire and heat are Life()'s, so the mercy line holds for those.
 	unsuitable_atmos_damage = 0
 	unsuitable_cold_damage = 0
 	unsuitable_heat_damage = 0
@@ -129,6 +131,7 @@
 	// TRAIT_CAN_MOUNT_HUMANS: someone can carry it over their shoulders (body_can_be_carried())
 	add_traits(list(TRAIT_NO_TELEPORT, TRAIT_NOMOBSWAP, TRAIT_CAN_MOUNT_HUMANS), BOUNTY_BODY_TRAIT)
 	AddComponent(/datum/component/bounty_body)
+	AddComponent(/datum/component/bounty_eva)
 	AddElement(/datum/element/footstep, footstep_type = FOOTSTEP_MOB_SHOE)
 
 /mob/living/basic/bounty_criminal/Destroy()
@@ -140,11 +143,15 @@
 	body_set_holder(null)
 	grudge?.Cut()
 	body_site_ref = null
-	return ..()
+	. = ..()
+	bounty_ai_sync_holster(src)
 
 // Fire and heat burn it like a suited person (L3). Not forced, so the mercy line and the automated floor hold. Mini-bosses keep P4's own fire rules.
 /mob/living/basic/bounty_criminal/Life(seconds_per_tick = SSMOBS_DT, times_fired)
 	. = ..()
+	// Out of a suit where a person can't breathe, it chokes (bounty_eva.dm)
+	var/datum/component/bounty_eva/eva = GetComponent(/datum/component/bounty_eva)
+	eva?.breathe(seconds_per_tick)
 	if(stat == DEAD || istype(src, /mob/living/basic/bounty_criminal/boss))
 		return
 	if(on_fire || bodytemperature > BOUNTY_CRIMINAL_MAX_TEMP)
@@ -217,13 +224,15 @@
 		maxHealth = tier_health
 		updatehealth()
 	if(istype(src, /mob/living/basic/bounty_criminal/normal))
-		var/ranged = record?.style == BOUNTY_STYLE_PISTOL || record?.style == BOUNTY_STYLE_BOTTLE
+		var/ranged = (record?.style in list(BOUNTY_STYLE_PISTOL, BOUNTY_STYLE_SMG, BOUNTY_STYLE_REVOLVER, BOUNTY_STYLE_BOTTLE))
 		set_varspeed(ranged ? BOUNTY_BODY_NORMAL_SPEED_RANGED : BOUNTY_BODY_NORMAL_SPEED_MELEE)
 	body_update_stamina_coeff()
 	body_set_site(new_posting?.site_ref?.resolve())
 	if(new_posting)
 		// The planet's fauna sweep leaves it be while it is wanted (missions/objectives/combat.dm). P5 takes it off when the posting ends.
 		ADD_TRAIT(src, TRAIT_MISSION_FIELD_MOB, BOUNTY_TRAIT)
+	// Suited where the site's air would kill it, before the look goes on
+	bounty_eva_kit_up_criminal(src, new_posting)
 	INVOKE_ASYNC(src, PROC_REF(body_dress))
 
 /// A normal criminal's health: its tier's, times its style's. Null for anyone else, who keeps their built-in health.
@@ -249,6 +258,10 @@
 			return BOUNTY_STYLE_HEALTH_PISTOL
 		if(BOUNTY_STYLE_SHOTGUN)
 			return BOUNTY_STYLE_HEALTH_SHOTGUN
+		if(BOUNTY_STYLE_SMG)
+			return BOUNTY_STYLE_HEALTH_SMG
+		if(BOUNTY_STYLE_REVOLVER)
+			return BOUNTY_STYLE_HEALTH_REVOLVER
 		if(BOUNTY_STYLE_CLUB)
 			return BOUNTY_STYLE_HEALTH_CLUB
 		if(BOUNTY_STYLE_BOTTLE)
@@ -963,7 +976,9 @@
 /mob/living/basic/bounty_criminal/proc/body_dress()
 	var/outfit = bounty_outfit()
 	if(record)
-		apply_bounty_look(src, record, outfit)
+		// With any pressure suit on top (bounty_eva.dm)
+		var/datum/component/bounty_eva/eva = GetComponent(/datum/component/bounty_eva)
+		apply_bounty_look(src, record, eva ? eva.worn_outfit(outfit) : outfit)
 	else
 		set_outpost_npc_look(src, outfit, gender, 1)
 	if(QDELETED(src))

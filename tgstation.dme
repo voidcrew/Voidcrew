@@ -7098,6 +7098,7 @@
 #include "voidcrew\modules\bounties\bounty_boss_kits.dm"
 #include "voidcrew\modules\bounties\bounty_companions.dm"
 #include "voidcrew\modules\bounties\bounty_criminal.dm"
+#include "voidcrew\modules\bounties\bounty_eva.dm"
 #include "voidcrew\modules\bounties\bounty_identity.dm"
 #include "voidcrew\modules\bounties\bounty_kingpin.dm"
 #include "voidcrew\modules\bounties\bounty_lair.dm"

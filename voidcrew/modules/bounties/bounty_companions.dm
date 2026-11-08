@@ -34,7 +34,7 @@
 	// Stamina crit compares raw loss with a percentage when it ends; a pool of 100 keeps the two the same.
 	max_stamina = 100
 	max_stamina_slowdown = 1
-	// Dressed for the site, as their criminal is: no dying of the air or the cold on the way.
+	// tg's elements stay off: they breathe by bounty_eva.dm's rules, suited where their criminal is.
 	unsuitable_atmos_damage = 0
 	unsuitable_cold_damage = 0
 	unsuitable_heat_damage = 0
@@ -48,6 +48,8 @@
 	ai_controller = /datum/ai_controller/basic_controller/bounty/companion
 	/// What they hold, drawn in their vis_contents
 	var/obj/effect/abstract/bounty_held/ai_hand
+	/// Their gun in its holster or slung on their back while it isn't in their hand (bounty_ai_sync_holster())
+	var/obj/effect/abstract/bounty_held/ai_holster
 	/// Hands up, over their head, once they give up
 	var/obj/effect/abstract/bounty_held/ai_over_head
 	/// Put their hands up (stamina crit): out of it for good
@@ -75,7 +77,8 @@
 	ai_over_head = bounty_ai_update_held(src, ai_over_head, null)
 	ai_idle_spot = null
 	leader_ref = null
-	return ..()
+	. = ..()
+	bounty_ai_sync_holster(src)
 
 /mob/living/basic/bounty_companion/death(gibbed)
 	ai_let_go()
@@ -99,7 +102,8 @@
 	leader_ref = WEAKREF(leader)
 	faction = leader.faction.Copy()
 	gender = pick(MALE, FEMALE)
-	name = generate_random_name_species_based(gender, TRUE, /datum/species/human)
+	var/species = pick_weight(GLOB.bounty_species_weights)
+	name = generate_random_name_species_based(gender, TRUE, species)
 	real_name = name
 	ai_controller?.set_blackboard_key(BB_BOUNTY_LEADER, leader)
 	ai_take_style(pick_weight(list(
@@ -109,8 +113,11 @@
 		BOUNTY_STYLE_PISTOL = 1,
 		BOUNTY_STYLE_BOTTLE = 1,
 		BOUNTY_STYLE_SHOTGUN = 1,
+		BOUNTY_STYLE_SMG = 1,
+		BOUNTY_STYLE_REVOLVER = 1,
 	)))
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(set_outpost_npc_look), src, bounty_companion_outfit(leader), gender, random_outpost_npc_look_number())
+	// A face of their own species, the clothes for the site, and a suit if their criminal wears one (bounty_eva.dm)
+	eva_join(leader, species)
 
 /// Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's, and the style's own weapon (never a Wanted criminal's heavier one)
 /mob/living/basic/bounty_companion/proc/ai_take_style(key)
@@ -123,15 +130,27 @@
 	damage_coeff[STAMINA] = style.stamina_mult
 	return bounty_ai_apply_style(src, key)
 
-/// What a companion of `leader` wears, by where the criminal is
+/// What a companion of `leader` wears, by where the criminal is: a mix of rough clothes, so no two crews look alike
 /proc/bounty_companion_outfit(mob/living/basic/bounty_criminal/leader)
 	var/datum/criminal_bounty/posting = leader?.posting()
 	switch(posting?.placement_kind)
 		if(BOUNTY_PLACEMENT_NPC_SHIP)
-			return /datum/outfit/outpost_off_duty_pirate
+			return pick(
+				/datum/outfit/outpost_off_duty_pirate,
+				/datum/outfit/bounty_criminal/hauler,
+				/datum/outfit/bounty_criminal/tough,
+				/datum/outfit/bounty_criminal/drifter,
+			)
 		if(BOUNTY_PLACEMENT_TRADER_OUTPOST)
 			return /datum/outfit/job/assistant/greytide
-	return pick(/datum/outfit/hermit/survivor, /datum/outfit/hermit/survivor/hunter)
+	return pick(
+		/datum/outfit/hermit/survivor,
+		/datum/outfit/hermit/survivor/hunter,
+		/datum/outfit/bounty_criminal/spacer,
+		/datum/outfit/bounty_criminal/hauler,
+		/datum/outfit/bounty_criminal/drifter,
+		/datum/outfit/bounty_criminal/tough,
+	)
 
 /// Called in by their criminal: `target` is theirs to fight too
 /mob/living/basic/bounty_companion/proc/ai_join_fight(mob/living/target)
@@ -152,6 +171,7 @@
 	ai_stand_up()
 	var/datum/bounty_style/style = bounty_ai_style(src)
 	set_varspeed(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
+	bounty_ai_draw(src, ai_hand)
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
 
 /// The fight is over for them: weapon away, easy pace

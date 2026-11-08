@@ -44,6 +44,7 @@
 #include "voidcrew_bounty_board.dm"
 #include "voidcrew_bounty_bosses.dm"
 #include "voidcrew_bounty_criminal.dm"
+#include "voidcrew_bounty_eva.dm"
 #include "voidcrew_bounty_identity.dm"
 #include "voidcrew_bounty_kingpin.dm"
 #include "voidcrew_bounty_lair_mafia.dm"

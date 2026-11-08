@@ -62,6 +62,8 @@
 #define BB_BOUNTY_WINDUP_UNTIL "bb_bounty_windup_until"
 /// world.time of the last shot
 #define BB_BOUNTY_LAST_SHOT "bb_bounty_last_shot"
+/// Shots fired in the pistol's current string
+#define BB_BOUNTY_STRING_SHOTS "bb_bounty_string_shots"
 /// world.time a ranged fighter may next step back from someone too close
 #define BB_BOUNTY_BACKSTEP_AT "bb_bounty_backstep_at"
 
@@ -229,7 +231,7 @@
 #define BOUNTY_KNIFE_INTERVAL (0.8 SECONDS)
 
 #define BOUNTY_PISTOL_HEALTH 0.9
-#define BOUNTY_PISTOL_INTERVAL (0.25 SECONDS)
+#define BOUNTY_PISTOL_INTERVAL (0.5 SECONDS)
 /// Keeps about this far away
 #define BOUNTY_PISTOL_RANGE 5
 #define BOUNTY_PISTOL_MIN_RANGE 3
@@ -239,6 +241,31 @@
 #define BOUNTY_PISTOL_WINDUP (0.2 SECONDS)
 /// Shots further apart than this start a new string
 #define BOUNTY_PISTOL_STRING_GAP (3 SECONDS)
+/// Every bounty pistol (criminals, companions, the kingpin's goons, Club Volga) fires strings of this many shots...
+#define BOUNTY_PISTOL_STRING_SHOTS 6
+/// ...with this pause before the next string. A reload after an empty magazine is separate.
+#define BOUNTY_PISTOL_STRING_PAUSE (1.5 SECONDS)
+
+/// A sub-machine gun: bursts, a spin-up before each one
+#define BOUNTY_SMG_HEALTH 0.9
+/// From one burst to the next
+#define BOUNTY_SMG_INTERVAL (1.4 SECONDS)
+#define BOUNTY_SMG_BURST 4
+#define BOUNTY_SMG_BURST_GAP (0.12 SECONDS)
+#define BOUNTY_SMG_WINDUP (0.3 SECONDS)
+#define BOUNTY_SMG_RANGE 5
+#define BOUNTY_SMG_MIN_RANGE 2
+#define BOUNTY_SMG_RELOAD (2.5 SECONDS)
+
+/// A revolver: slow, heavy shots, six in the cylinder and a long reload
+#define BOUNTY_REVOLVER_HEALTH 0.9
+#define BOUNTY_REVOLVER_INTERVAL (1 SECONDS)
+#define BOUNTY_REVOLVER_MIN_RANGE 3
+#define BOUNTY_REVOLVER_WINDUP (0.3 SECONDS)
+#define BOUNTY_REVOLVER_RELOAD (3 SECONDS)
+
+/// Getting a holstered gun out at the start of a fight, before the first shot
+#define BOUNTY_DRAW_TIME (0.6 SECONDS)
 
 #define BOUNTY_SHOTGUN_HEALTH 1
 #define BOUNTY_SHOTGUN_INTERVAL (1.2 SECONDS)

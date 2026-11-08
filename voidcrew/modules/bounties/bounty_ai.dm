@@ -41,6 +41,8 @@
 	var/ai_pace
 	/// What they hold in their hand, drawn in their vis_contents
 	var/obj/effect/abstract/bounty_held/ai_hand
+	/// Their gun in its holster or slung on their back while it isn't in their hand (bounty_ai_sync_holster())
+	var/obj/effect/abstract/bounty_held/ai_holster
 	/// What shows over their head (hands up), drawn in their vis_contents
 	var/obj/effect/abstract/bounty_held/ai_over_head
 	/// A walk that keeps failing: how many times, so they give up on it
@@ -166,6 +168,8 @@
 	var/over_head = FALSE
 	/// Drawn with the item's own in-hand sprite, which turns with the holder, rather than its item icon
 	var/inhand = FALSE
+	/// The typepath it shows, when it was given one
+	var/held_type
 
 /**
  * Draws `look` in `owner`'s hand (or over their head), reusing `holder`: `look` is an atom, whose
@@ -178,6 +182,8 @@
 		if(holder)
 			owner?.vis_contents -= holder
 			qdel(holder)
+		if(!over_head && owner)
+			bounty_ai_sync_holster(owner, null)
 		return null
 	if(!holder)
 		holder = new(null)
@@ -194,6 +200,7 @@
 	holder.name = ""
 	holder.over_head = over_head
 	holder.inhand = !!inhand_look
+	holder.held_type = ispath(look) ? look : null
 	holder.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	holder.appearance_flags = KEEP_APART | RESET_COLOR | RESET_TRANSFORM | PIXEL_SCALE
 	holder.vis_flags = VIS_INHERIT_PLANE
@@ -203,6 +210,8 @@
 	holder.pixel_x = 0
 	holder.pixel_y = 0
 	bounty_ai_place_held(owner, holder)
+	if(!over_head)
+		bounty_ai_sync_holster(owner, look)
 	return holder
 
 /**
@@ -245,6 +254,76 @@
 	// The same hand whichever way they face: to the right facing south or east, the left facing north or west
 	holder.pixel_w = ((facing_dir & WEST) || facing_dir == NORTH) ? -7 : 7
 	holder.pixel_z = -4
+
+/**
+ * Where a gun sits until it is drawn, as list(file, state) for a whole body: slung on the back when
+ * the gun is carried there and has a back sprite (a shotgun), otherwise a pistol on the hip. Null
+ * for anything that is not a gun.
+ */
+/proc/bounty_ai_holster_look(gun_type)
+	if(!ispath(gun_type, /obj/item/gun))
+		return null
+	var/obj/item/gun/gun = gun_type
+	if(initial(gun.slot_flags) & ITEM_SLOT_BACK)
+		var/back_file = initial(gun.worn_icon) || 'icons/mob/clothing/back.dmi'
+		var/back_state = initial(gun.worn_icon_state) || initial(gun.icon_state)
+		if(icon_exists(back_file, back_state))
+			return list(back_file, back_state)
+	return list('icons/mob/clothing/belt.dmi', "gun")
+
+/**
+ * Shows `fighter`'s gun holstered or slung while their hand (`hand_look`, what it shows now) isn't
+ * holding it. Nothing shows for a melee weapon, the meek's hidden holdout, or a criminal passing as
+ * a patron. Cheap when nothing changed. Works on criminals and companions; anything else is left be.
+ */
+/proc/bounty_ai_sync_holster(mob/living/fighter, hand_look)
+	var/mob/living/basic/bounty_criminal/criminal = istype(fighter, /mob/living/basic/bounty_criminal) ? fighter : null
+	var/mob/living/basic/bounty_companion/companion = istype(fighter, /mob/living/basic/bounty_companion) ? fighter : null
+	if(!criminal && !companion)
+		return
+	var/obj/effect/abstract/bounty_held/holster = criminal ? criminal.ai_holster : companion.ai_holster
+	var/weapon = bounty_ai_held_look(fighter)
+	var/list/look
+	if(!QDELETED(fighter) && !criminal?.blended)
+		var/datum/bounty_style/style = bounty_ai_style(fighter)
+		if(style?.draw_message && weapon != hand_look)
+			look = bounty_ai_holster_look(weapon)
+	if(!look)
+		if(holster)
+			fighter.vis_contents -= holster
+			qdel(holster)
+			holster = null
+	else if(!holster || holster.held_type != weapon)
+		if(!holster)
+			holster = new(null)
+			fighter.vis_contents += holster
+		holster.appearance = mutable_appearance(look[1], look[2])
+		holster.name = ""
+		holster.held_type = weapon
+		holster.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		// Worn like the rest of their clothes: it turns and lies down with them
+		holster.appearance_flags = KEEP_APART | RESET_COLOR | PIXEL_SCALE
+		holster.vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_DIR
+		holster.layer = ABOVE_MOB_LAYER
+	if(criminal)
+		criminal.ai_holster = holster
+	else
+		companion.ai_holster = holster
+
+/**
+ * Gets a holstered gun out at the start of a fight: a line, a sound, and BOUNTY_DRAW_TIME before
+ * the first shot, which needs no other telegraph. Call before the gun goes in their hand; nothing
+ * happens if it was out already or the style keeps nothing holstered. TRUE if they drew it now.
+ */
+/proc/bounty_ai_draw(mob/living/basic/fighter, obj/effect/abstract/bounty_held/hand)
+	var/datum/bounty_style/style = bounty_ai_style(fighter)
+	var/weapon = bounty_ai_held_look(fighter)
+	if(!style?.draw_message || !weapon || hand?.held_type == weapon || QDELETED(fighter.ai_controller))
+		return FALSE
+	fighter.visible_message(span_warning(replacetext(style.draw_message, "%USER", "[fighter]")), vision_distance = COMBAT_MESSAGE_RANGE)
+	playsound(fighter, 'sound/items/handling/holster_open.ogg', 40, TRUE)
+	fighter.ai_controller.set_blackboard_key(BB_BOUNTY_WINDUP_UNTIL, world.time + BOUNTY_DRAW_TIME)
+	return TRUE
 
 /// What a fighter holds, by whichever of the two types it is
 /proc/bounty_ai_hold(mob/living/basic/fighter, look)
@@ -701,6 +780,9 @@
 	if(!isturf(criminal.loc))
 		return SUBTREE_RETURN_FINISH_PLANNING
 	criminal.ai_update_style()
+	// The holster goes while they pass as a patron, and comes back once they don't
+	if(!criminal.ai_holster == !criminal.blended)
+		bounty_ai_sync_holster(criminal, criminal.ai_hand?.held_type)
 
 /// Looks around for hunters; the archetype decides what noticing one means (ai_notice())
 /datum/ai_planning_subtree/bounty_notice

@@ -2012,6 +2012,10 @@ GLOBAL_LIST_EMPTY(bounty_kingpin_marks)
 		else
 			goon.goon_next_fire_at = world.time + BOUNTY_GOON_PISTOL_COOLDOWN
 			goon_fire(goon, target)
+			// Strings of BOUNTY_PISTOL_STRING_SHOTS, a pause between them; an empty magazine reloads instead
+			var/fired = bounty_kingpin_goon_mag(goon.goon_weapon) - goon.goon_rounds
+			if(goon.goon_rounds > 0 && fired > 0 && !(fired % BOUNTY_PISTOL_STRING_SHOTS))
+				goon.goon_next_fire_at += BOUNTY_PISTOL_STRING_PAUSE
 	return TRUE
 
 /// The wind-up is done: the SMG's burst or the shotgun's blast, if he still can and still sees them

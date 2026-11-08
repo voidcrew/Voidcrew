@@ -34,6 +34,8 @@
 #define BOUNTY_STYLE_KNIFE "knife"
 #define BOUNTY_STYLE_PISTOL "pistol"
 #define BOUNTY_STYLE_SHOTGUN "shotgun"
+#define BOUNTY_STYLE_SMG "smg"
+#define BOUNTY_STYLE_REVOLVER "revolver"
 #define BOUNTY_STYLE_CLUB "club"
 #define BOUNTY_STYLE_BOTTLE "bottle"
 #define BOUNTY_STYLE_HOLDOUT "holdout"

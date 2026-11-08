@@ -329,9 +329,13 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	/// The real gun: the one in its owner's hand
 	var/gun_type = BOUNTY_MOBSTER_PISTOL_GUN
 	var/projectile_type = /obj/projectile/bullet/bounty_mafia
-	/// Shots in one burst, and the time between them. A pistol fires a quick string of shots each time.
+	/// Shots in one burst, and the time between them. A pistol fires one shot at a time.
 	var/burst = BOUNTY_MOBSTER_PISTOL_BURST
 	var/burst_delay = BOUNTY_MOBSTER_PISTOL_BURST_GAP
+	/// A pistol fires strings of this many shots, then pauses BOUNTY_PISTOL_STRING_PAUSE (0: no strings)
+	var/string_shots = BOUNTY_PISTOL_STRING_SHOTS
+	/// Shots fired in the current string
+	var/string_count = 0
 	/// From the start of one burst (or wind-up) to the next
 	var/cooldown = BOUNTY_MOBSTER_PISTOL_COOLDOWN
 	var/reload_time = BOUNTY_MOBSTER_PISTOL_RELOAD
@@ -436,6 +440,13 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 		addtimer(CALLBACK(src, PROC_REF(shoot_once), fire_serial), (i - 1) * burst_delay, TIMER_DELETE_ME)
 	if(ammo <= 0)
 		start_reload((shots - 1) * burst_delay)
+		return
+	if(!string_shots)
+		return
+	string_count += shots
+	if(string_count >= string_shots)
+		string_count = 0
+		next_fire_at += BOUNTY_PISTOL_STRING_PAUSE
 
 /// One shot of the burst under `fire_serial`. Never at someone who went down meanwhile.
 /datum/bounty_mafia_gun/proc/shoot_once(fire_serial)
@@ -454,6 +465,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 /datum/bounty_mafia_gun/proc/start_reload(delay = 0)
 	ammo = magazine
 	raised = FALSE
+	string_count = 0
 	reloading_until = world.time + delay + reload_time
 	next_fire_at = max(next_fire_at, reloading_until)
 	var/mob/living/owner = owner()
@@ -475,6 +487,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	gun_type = BOUNTY_MOBSTER_SMG_GUN
 	burst = BOUNTY_MOBSTER_SMG_BURST
 	burst_delay = BOUNTY_MOBSTER_SMG_BURST_GAP
+	string_shots = 0
 	cooldown = BOUNTY_MOBSTER_SMG_COOLDOWN
 	reload_time = BOUNTY_MOBSTER_SMG_RELOAD
 	windup = BOUNTY_MOBSTER_SMG_WINDUP
@@ -487,6 +500,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	gun_type = BOUNTY_LIEUTENANT_TOMMY_GUN
 	burst = BOUNTY_LIEUTENANT_TOMMY_BURST
 	burst_delay = BOUNTY_LIEUTENANT_TOMMY_BURST_GAP
+	string_shots = 0
 	cooldown = BOUNTY_LIEUTENANT_TOMMY_COOLDOWN
 	reload_time = BOUNTY_LIEUTENANT_TOMMY_RELOAD
 	windup = BOUNTY_LIEUTENANT_TOMMY_WINDUP

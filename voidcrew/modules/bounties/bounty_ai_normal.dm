@@ -126,6 +126,7 @@
 	ai_add_grudge(target)
 	var/datum/bounty_style/style = bounty_ai_style(src)
 	ai_set_pace(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
+	bounty_ai_draw(src, ai_hand)
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
 	if(fresh)
 		ai_bark(bark || "fight_start")
@@ -490,7 +491,9 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	controller.set_blackboard_key(BB_BOUNTY_AMMO, weapon.magazine)
 	controller.clear_blackboard_key(BB_BOUNTY_RELOAD_UNTIL)
 	controller.clear_blackboard_key(BB_BOUNTY_WINDUP_UNTIL)
+	controller.clear_blackboard_key(BB_BOUNTY_STRING_SHOTS)
 	style.apply(fighter, weapon)
+	bounty_ai_sync_holster(fighter)
 	return TRUE
 
 /**
@@ -535,6 +538,11 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	/// How long a reload takes once the magazine is spent, and what it sounds like
 	var/reload_time = 0
 	var/reload_sound
+	/// A gun kept holstered or slung until a fight: what they say as they get it out (null: always in hand, or no gun)
+	var/draw_message
+	/// Shots in a burst through the ranged_attacks component, and the gap between them (0: one shot at a time)
+	var/burst = 0
+	var/burst_gap = 0
 
 /// Sets `weapon`'s blow and gun on `fighter`, at this style's pace
 /datum/bounty_style/proc/apply(mob/living/basic/fighter, datum/bounty_real_weapon/weapon)
@@ -547,8 +555,8 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	gun.projectile_type = projectile_type
 	gun.projectile_sound = weapon.fire_sound || projectile_sound
 	gun.cooldown_time = interval
-	gun.burst_shots = null
-	gun.burst_intervals = 0
+	gun.burst_shots = burst > 1 ? burst : null
+	gun.burst_intervals = burst_gap
 
 /// Anything extra a melee hit does
 /datum/bounty_style/proc/on_melee_hit(mob/living/basic/fighter, mob/living/target)
@@ -711,6 +719,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	min_range = BOUNTY_PISTOL_MIN_RANGE
 	reload_time = BOUNTY_PISTOL_RELOAD
 	reload_sound = 'sound/items/weapons/gun/pistol/mag_insert.ogg'
+	draw_message = "%USER pulls out a pistol!"
 
 /// Only the first shot of a string needs the gun raised
 /datum/bounty_style/pistol/needs_windup(datum/ai_controller/controller)
@@ -722,7 +731,76 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	var/datum/ai_controller/controller = fighter.ai_controller
 	if(controller.blackboard[BB_BOUNTY_RELOAD_UNTIL] && world.time >= controller.blackboard[BB_BOUNTY_RELOAD_UNTIL])
 		controller.clear_blackboard_key(BB_BOUNTY_LAST_SHOT)
+		controller.clear_blackboard_key(BB_BOUNTY_STRING_SHOTS)
 	return ..()
+
+/**
+ * Strings of BOUNTY_PISTOL_STRING_SHOTS, then a BOUNTY_PISTOL_STRING_PAUSE pause. This runs after
+ * the ranged_attacks component started its cooldown, so the pause pushes that out. An empty
+ * magazine reloads instead.
+ */
+/datum/bounty_style/pistol/after_shot(mob/living/basic/fighter)
+	. = ..()
+	var/datum/ai_controller/controller = fighter.ai_controller
+	if(QDELETED(controller))
+		return
+	var/fired = controller.blackboard[BB_BOUNTY_STRING_SHOTS] + 1
+	if(fired < BOUNTY_PISTOL_STRING_SHOTS || controller.blackboard[BB_BOUNTY_AMMO] <= 0)
+		controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, fired)
+		return
+	controller.set_blackboard_key(BB_BOUNTY_STRING_SHOTS, 0)
+	var/datum/component/ranged_attacks/gun = fighter.GetComponent(/datum/component/ranged_attacks)
+	if(gun)
+		gun.fire_cooldown = max(gun.fire_cooldown, world.time) + BOUNTY_PISTOL_STRING_PAUSE
+
+/// A sub-machine gun: a spin-up, then a burst, as many rounds as are left in the magazine
+/datum/bounty_style/smg
+	key = BOUNTY_STYLE_SMG
+	ranged = TRUE
+	health_mult = BOUNTY_SMG_HEALTH
+	interval = BOUNTY_SMG_INTERVAL
+	speed = BOUNTY_NORMAL_SPEED_RANGED
+	held_look = /obj/item/gun/ballistic/automatic/mini_uzi
+	heavy_look = /obj/item/gun/ballistic/automatic/wt550
+	projectile_type = /obj/projectile/bullet/bounty
+	windup = BOUNTY_SMG_WINDUP
+	windup_sound = 'sound/items/weapons/gun/smg/smgrack.ogg'
+	min_range = BOUNTY_SMG_MIN_RANGE
+	reload_time = BOUNTY_SMG_RELOAD
+	reload_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
+	draw_message = "%USER pulls out an SMG!"
+	burst = BOUNTY_SMG_BURST
+	burst_gap = BOUNTY_SMG_BURST_GAP
+
+/// The burst never fires more rounds than the magazine has left
+/datum/bounty_style/smg/ranged_tick(mob/living/basic/fighter, atom/target)
+	var/datum/component/ranged_attacks/gun = fighter.GetComponent(/datum/component/ranged_attacks)
+	var/ammo = fighter.ai_controller.blackboard[BB_BOUNTY_AMMO]
+	if(gun && ammo > 0)
+		var/shots = min(burst, ammo)
+		gun.burst_shots = shots > 1 ? shots : null
+	return ..()
+
+/// A revolver: slow, heavy shots, then a long reload
+/datum/bounty_style/revolver
+	key = BOUNTY_STYLE_REVOLVER
+	ranged = TRUE
+	health_mult = BOUNTY_REVOLVER_HEALTH
+	interval = BOUNTY_REVOLVER_INTERVAL
+	speed = BOUNTY_NORMAL_SPEED_RANGED
+	held_look = /obj/item/gun/ballistic/revolver/c38
+	projectile_type = /obj/projectile/bullet/bounty
+	windup = BOUNTY_REVOLVER_WINDUP
+	windup_sound = 'sound/items/weapons/gun/revolver/spin1.ogg'
+	min_range = BOUNTY_REVOLVER_MIN_RANGE
+	reload_time = BOUNTY_REVOLVER_RELOAD
+	reload_sound = 'sound/items/weapons/gun/revolver/load_bullet.ogg'
+	draw_message = "%USER pulls out a revolver!"
+
+/// Only the first shot after the draw or a reload needs the hammer cocked
+/datum/bounty_style/revolver/needs_windup(datum/ai_controller/controller)
+	var/last_shot = controller.blackboard[BB_BOUNTY_LAST_SHOT]
+	return !last_shot || world.time - last_shot > BOUNTY_PISTOL_STRING_GAP
 
 /// Buckshot: every pellet of a shell, one shell a shot
 /datum/bounty_style/shotgun
@@ -741,6 +819,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	windup_sound = 'sound/items/weapons/gun/shotgun/rack.ogg'
 	reload_time = BOUNTY_SHOTGUN_RELOAD
 	reload_sound = 'sound/items/weapons/gun/shotgun/insert_shell.ogg'
+	draw_message = "%USER unslings a shotgun!"
 
 /// A beer bottle, thrown: it hits with the bottle's throwforce, and breaks
 /datum/bounty_style/bottle

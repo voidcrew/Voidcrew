@@ -93,12 +93,14 @@ GLOBAL_LIST_INIT(bounty_species_weights, list(
 /// A fighting style for a normal criminal, weighted
 /proc/bounty_roll_style()
 	var/static/list/weights = list(
-		BOUNTY_STYLE_BRAWLER = 20,
-		BOUNTY_STYLE_PISTOL = 20,
-		BOUNTY_STYLE_KNIFE = 18,
-		BOUNTY_STYLE_CLUB = 15,
-		BOUNTY_STYLE_BOTTLE = 15,
-		BOUNTY_STYLE_SHOTGUN = 12,
+		BOUNTY_STYLE_BRAWLER = 18,
+		BOUNTY_STYLE_PISTOL = 14,
+		BOUNTY_STYLE_KNIFE = 16,
+		BOUNTY_STYLE_CLUB = 14,
+		BOUNTY_STYLE_BOTTLE = 12,
+		BOUNTY_STYLE_SHOTGUN = 10,
+		BOUNTY_STYLE_SMG = 8,
+		BOUNTY_STYLE_REVOLVER = 8,
 	)
 	return pick_weight(weights)
 

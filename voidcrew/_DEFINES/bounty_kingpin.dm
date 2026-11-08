@@ -91,7 +91,7 @@
 /// What the shotguns are loaded with
 #define BOUNTY_GOON_SHOTGUN_AMMO /obj/item/ammo_casing/shotgun/buckshot
 
-#define BOUNTY_GOON_PISTOL_COOLDOWN (0.3 SECONDS)
+#define BOUNTY_GOON_PISTOL_COOLDOWN (0.5 SECONDS)
 #define BOUNTY_GOON_PISTOL_RELOAD (2 SECONDS)
 
 /// Shots in a burst, and the gap between them
