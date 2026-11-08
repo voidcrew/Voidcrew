@@ -194,9 +194,9 @@
 			ship.call_election(usr)
 
 		if("setMemo")
-			if(!("newName" in params) || params["newName"] == ship.memo)
+			if(!("newName" in params))
 				return
-			ship.memo = params["newName"]
+			ship.set_memo(params["newName"])
 
 		if("adjustJobSlot")
 			if(!("toAdjust" in params) || !("delta" in params) || !COOLDOWN_FINISHED(ship, job_slot_adjustment_cooldown))
