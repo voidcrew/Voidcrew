@@ -15,11 +15,12 @@
 GLOBAL_LIST_EMPTY(human_npc_spike_mobs)
 /// Whether the harness pretends a player is on the test room's z-level.
 GLOBAL_VAR_INIT(human_npc_spike_awake, FALSE)
+/// Human NPC Life() calls that got past the dormancy guard (counted in human_npc.dm under this define).
+GLOBAL_VAR_INIT(human_npc_spike_life_passes, 0)
 
 /// Same NPC with every Life() trim switched off, to measure what the trims save.
-/mob/living/carbon/human/npc/ranged/spike_untrimmed
+/mob/living/carbon/human/npc/sample/laser/spike_untrimmed
 	npc_trim_life = FALSE
-	npc_dormant_when_dead = FALSE
 
 /mob/living/carbon/human/npc/npc_players_on_level()
 	if(GLOB.human_npc_spike_mobs[src])
@@ -62,10 +63,12 @@ SUBSYSTEM_DEF(human_npc_spike)
 		if("trooper")
 			mob_type = /mob/living/basic/trooper/pirate/ranged
 		if("human_untrimmed")
-			mob_type = /mob/living/carbon/human/npc/ranged/spike_untrimmed
+			mob_type = /mob/living/carbon/human/npc/sample/laser/spike_untrimmed
 		else
 			kind = "human"
-			mob_type = /mob/living/carbon/human/npc/ranged
+			mob_type = /mob/living/carbon/human/npc/sample/laser
+	if(params?["spike_mode"] == "dormancy")
+		kind = "[kind]_dormancy"
 	out_prefix = "data/human_npc_spike_[kind]"
 	csv_path = "[out_prefix]_results.csv"
 	phase_path = "[out_prefix]_phase.txt"
@@ -73,7 +76,10 @@ SUBSYSTEM_DEF(human_npc_spike)
 	rustg_file_write("kind,phase,n,metric,value\n", csv_path)
 	set_phase("init")
 	SSticker.start_immediately = TRUE
-	INVOKE_ASYNC(src, PROC_REF(run_spike))
+	if(params?["spike_mode"] == "dormancy")
+		INVOKE_ASYNC(src, PROC_REF(run_dormancy_proof))
+	else
+		INVOKE_ASYNC(src, PROC_REF(run_spike))
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/human_npc_spike/proc/set_phase(label)
@@ -155,6 +161,84 @@ SUBSYSTEM_DEF(human_npc_spike)
 	rustg_file_write(fight_profile, "[out_prefix]_profile_fight_25.json")
 	settle("after_fight_profiled", 0, 10 SECONDS)
 	set_phase("done")
+
+/**
+ * spike_mode=dormancy: a short run for the production base. Queues 100 NPCs through
+ * spawn_human_npc() and records how many were built per tick, then measures their Life() and AI
+ * cost dormant, awake, and as corpses without and with a player on the z-level, counting the Life()
+ * calls that got past the dormancy guard in each phase, and checks that a waking corpse catches up
+ * the organ decay it slept through.
+ */
+/datum/controller/subsystem/human_npc_spike/proc/run_dormancy_proof()
+	UNTIL(SSticker.current_state == GAME_STATE_PLAYING)
+	SSticker.delay_end = TRUE
+	SSprofiler.can_fire = FALSE
+	world.Profile(PROFILE_STOP)
+	set_phase("settle_roundstart")
+	sleep(45 SECONDS)
+	if(!build_room())
+		set_phase("failed_room")
+		return
+	sleep(10 SECONDS)
+	census("baseline")
+	measure("baseline", 0, 20 SECONDS)
+	queue_npcs(100)
+	set_awake(FALSE)
+	settle("spawned", 100, 15 SECONDS)
+	life_phase("dormant", 100, 30 SECONDS)
+	set_awake(TRUE)
+	settle("awake_settle", 100, 5 SECONDS)
+	life_phase("awake", 100, 30 SECONDS)
+	kill_npcs()
+	set_awake(FALSE)
+	settle("corpse_settle", 100, 10 SECONDS)
+	life_phase("corpses_dormant", 100, 30 SECONDS)
+	var/mob/living/carbon/human/sample_corpse
+	for(var/mob/living/carbon/human/npc/body as anything in npcs)
+		if(!QDELETED(body) && body.stat == DEAD)
+			sample_corpse = body
+			break
+	var/obj/item/organ/brain/brain = sample_corpse?.get_organ_slot(ORGAN_SLOT_BRAIN)
+	record("decay", 100, "brain_damage_asleep", brain?.damage)
+	set_awake(TRUE)
+	life_phase("corpses_awake", 100, 30 SECONDS)
+	record("decay", 100, "brain_damage_after_waking", brain?.damage)
+	set_phase("done")
+
+/// Queues `count` NPCs through the production spawn queue and records how fast it builds them.
+/datum/controller/subsystem/human_npc_spike/proc/queue_npcs(count)
+	set_phase("queueing_[count]")
+	var/start_built = SShuman_npcs.spawned_total
+	var/start_time = world.time
+	var/first_slot = length(npcs)
+	for(var/i in 1 to count)
+		spawn_human_npc(mob_type, npc_slot(first_slot + i), on_spawned = CALLBACK(src, PROC_REF(adopt_npc)))
+	var/most_in_one_tick = 0
+	var/last_built = start_built
+	var/ticks = 0
+	while(SShuman_npcs.spawned_total - start_built < count && ticks < 4000)
+		sleep(world.tick_lag)
+		ticks++
+		most_in_one_tick = max(most_in_one_tick, SShuman_npcs.spawned_total - last_built)
+		last_built = SShuman_npcs.spawned_total
+	record("spawn_queue", count, "built", SShuman_npcs.spawned_total - start_built)
+	record("spawn_queue", count, "ticks", ticks)
+	record("spawn_queue", count, "seconds", (world.time - start_time) / 10)
+	record("spawn_queue", count, "most_built_in_one_tick", most_in_one_tick)
+
+/datum/controller/subsystem/human_npc_spike/proc/adopt_npc(mob/living/npc)
+	npcs += npc
+	GLOB.human_npc_spike_mobs[npc] = TRUE
+	RegisterSignal(npc, COMSIG_QDELETING, PROC_REF(forget_mob))
+
+/// measure(), plus how many Life() calls got past the dormancy guard.
+/datum/controller/subsystem/human_npc_spike/proc/life_phase(label, n, duration)
+	GLOB.human_npc_spike_life_passes = 0
+	var/start = world.time
+	measure(label, n, duration)
+	var/seconds = max((world.time - start) / 10, 1)
+	record(label, n, "life_passes", GLOB.human_npc_spike_life_passes)
+	record(label, n, "life_passes_per_npc_per_s", GLOB.human_npc_spike_life_passes / max(n, 1) / seconds)
 
 /datum/controller/subsystem/human_npc_spike/proc/settle(label, n, duration)
 	set_phase("[label]_[n]")

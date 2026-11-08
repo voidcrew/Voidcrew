@@ -288,17 +288,19 @@
 		return FALSE
 	if(creature.client || creature.mind) // Anything a player is driving, or was driving.
 		return FALSE
-	if(iscarbon(creature) || issilicon(creature)) // People, monkeys, xenos, borgs, pAIs.
+	// People, monkeys, xenos, borgs, pAIs. Human NPCs (voidcrew/modules/human_npcs/) are bodies no
+	// player drives, the human boarders that replace troopers, so they are fair game like them.
+	if(issilicon(creature) || (iscarbon(creature) && !ishumannpc(creature)))
 		return FALSE
 	if(creature.invisibility > SEE_INVISIBLE_LIVING)
 		return FALSE
 	if(in_faction(creature)) // Bots, pets and other turrets.
 		return FALSE
 	// With wildlife targeting off the turret only watches for boarding parties, which are
-	// all trooper-type humanoids (pirates and their kin). Lets the crew hunt the local
+	// all trooper-type humanoids or human NPCs (pirates and their kin). Lets the crew hunt the local
 	// fauna themselves without the turret stealing every kill.
 	// Escaped outpost prisoners count as boarders (outpost_prison_riot.dm).
-	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper) && !is_loose_outpost_prisoner(creature))
+	if(!target_wildlife && !istype(creature, /mob/living/basic/trooper) && !ishumannpc(creature) && !is_loose_outpost_prisoner(creature))
 		return FALSE
 	if(!is_hostile_creature(creature)) // Livestock, pets and passive fauna get left alone.
 		return FALSE

@@ -38,9 +38,14 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 	"Fine. I'll do it myself.",
 ))
 
+/// Whether `recruit` is a body a pirate crew can take on: a basic mob, or a human NPC
+/// (voidcrew/modules/human_npcs/). Human members still need their own ranged and breach behaviours.
+/proc/pirate_crew_can_enlist(mob/living/recruit)
+	return isbasicmob(recruit) || ishumannpc(recruit)
+
 /// Enlists `recruit` in the crew defending `hull`, making the crew if it has none yet
 /proc/pirate_crew_enlist_defender(mob/living/recruit, obj/structure/overmap/ship/hull, role = PIRATE_ROLE_HUNTER)
-	if(QDELETED(hull) || !isbasicmob(recruit) || QDELETED(recruit))
+	if(QDELETED(hull) || !pirate_crew_can_enlist(recruit) || QDELETED(recruit))
 		return FALSE
 	var/datum/pirate_crew/crew = pirate_crew_of(hull, FALSE)
 	if(!crew)
@@ -49,7 +54,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 
 /// Enlists `recruit` in the raid on `target`, making the raid if there is none yet
 /proc/pirate_crew_enlist_raider(mob/living/recruit, obj/structure/overmap/ship/target)
-	if(QDELETED(target) || !isbasicmob(recruit) || QDELETED(recruit))
+	if(QDELETED(target) || !pirate_crew_can_enlist(recruit) || QDELETED(recruit))
 		return FALSE
 	var/datum/pirate_crew/crew = pirate_crew_of(target, TRUE)
 	if(!crew)
@@ -646,7 +651,8 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
  */
 /datum/pirate_crew/proc/check_members()
 	var/list/stranded = list()
-	for(var/mob/living/basic/member in members)
+	// Every member, human NPCs included: a loop typed to basic mobs skipped them silently.
+	for(var/mob/living/member in members)
 		if(QDELETED(member) || member.stat == DEAD || GET_CLIENT(member))
 			continue
 		var/datum/ai_controller/controller = member.ai_controller
@@ -660,7 +666,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 		var/obj/structure/overmap/ship/other = pirate_crew_ship_at(where)
 		if(other && other != home_ship)
 			stranded[member] = other
-	for(var/mob/living/basic/member as anything in stranded)
+	for(var/mob/living/member as anything in stranded)
 		var/obj/structure/overmap/ship/other = stranded[member]
 		remove_member(member)
 		pirate_crew_enlist_raider(member, other)
