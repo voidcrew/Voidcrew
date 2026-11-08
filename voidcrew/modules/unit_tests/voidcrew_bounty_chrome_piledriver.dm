@@ -113,6 +113,7 @@
 	buddy.leader_ref = WEAKREF(criminal)
 	TEST_ASSERT(bounty_chrome_fighting(criminal), "The criminal isn't fighting")
 	TEST_ASSERT(piece.next_leap_at > world.time, "It may leap the moment the fight starts")
+	TEST_ASSERT_EQUAL(piece.next_leap_at - world.time, 15, "The first leap waits [piece.next_leap_at - world.time] deciseconds into the fight, not 15") // BOUNTY_PILEDRIVER_OPENING
 	chrome.tick(2)
 	TEST_ASSERT_EQUAL(piece.phase, 0, "It leapt before its opening wait was over") // BOUNTY_PILEDRIVER_IDLE
 
@@ -121,9 +122,11 @@
 	TEST_ASSERT_EQUAL(piece.phase, 1, "Off cooldown with a hunter in reach, it didn't crouch") // BOUNTY_PILEDRIVER_CROUCHING
 	TEST_ASSERT(held(criminal), "It isn't held still while it crouches")
 	TEST_ASSERT_EQUAL(criminal.loc, tile(0, 0), "It moved in the crouch")
+	TEST_ASSERT_NOTNULL(criminal.get_filter("bounty_piledriver_glow"), "The crouch shows no outline") // BOUNTY_PILEDRIVER_GLOW_FILTER
 
 	TEST_ASSERT(piece.launch(piece.serial), "It didn't launch")
 	TEST_ASSERT_EQUAL(piece.phase, 2, "Launched, it isn't in the air") // BOUNTY_PILEDRIVER_AIRBORNE
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_piledriver_glow"), "The crouch's outline stayed on in the air")
 	TEST_ASSERT_EQUAL(piece.landing, tile(3, 0), "It isn't coming down on its target's tile")
 	TEST_ASSERT(shadow_on(tile(3, 0)), "No shadow on the landing tile")
 	TEST_ASSERT_EQUAL(criminal.loc, tile(0, 0), "It arrived before the air time was over")
@@ -227,6 +230,7 @@
 	TEST_ASSERT_EQUAL(piece.phase, 0, "An EMP in the crouch didn't stop it") // BOUNTY_PILEDRIVER_IDLE
 	TEST_ASSERT(!held(criminal), "An EMP in the crouch left it held")
 	TEST_ASSERT(!criminal.IsKnockdown(), "An EMP in the crouch knocked it down")
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_piledriver_glow"), "An EMP in the crouch left the outline on")
 	TEST_ASSERT(!piece.try_leap(target), "It leapt with its chrome down")
 	piece.offline_until = world.time
 	piece.check_reboot()
@@ -262,14 +266,35 @@
 	for(var/dy in 0 to 4)
 		change_turf(tile(2, dy), /turf/open/floor/iron)
 
-	// Knocked down in the air: it never lands, and nothing is left behind
+	// Knocked down in the air: it drops where it took off, in a puff of dust, never lands, and nothing is left behind
 	TEST_ASSERT(piece.try_leap(target), "It didn't crouch the fourth time")
 	TEST_ASSERT(piece.launch(piece.serial), "It didn't launch the fourth time")
+	var/dust_before = 0
+	for(var/obj/effect/temp_visual/mook_dust/small/dust in tile(0, 0))
+		dust_before++
 	criminal.Knockdown(1 SECONDS)
 	TEST_ASSERT_EQUAL(piece.phase, 0, "Knocked down in the air, it is still leaping") // BOUNTY_PILEDRIVER_IDLE
 	TEST_ASSERT(!shadow_on(tile(3, 0)), "Knocked down in the air, its shadow stayed")
 	TEST_ASSERT(!held(criminal), "Knocked down in the air, it is still held")
+	TEST_ASSERT_EQUAL(criminal.pixel_z, criminal.base_pixel_z, "Knocked down in the air, it is still up there")
+	TEST_ASSERT_EQUAL(criminal.loc, tile(0, 0), "Knocked down in the air, it still went somewhere")
+	var/dust_after = 0
+	for(var/obj/effect/temp_visual/mook_dust/small/dust in tile(0, 0))
+		dust_after++
+	TEST_ASSERT_EQUAL(dust_after, dust_before + 1, "Knocked out of the air, it came down with no dust")
 	TEST_ASSERT(target.getBruteLoss() == 0, "The target was hurt by a leap knocked out of the air")
+	criminal.SetKnockdown(0)
+
+	// Knocked down in the crouch: it just stands up out of it, no fall
+	TEST_ASSERT(piece.try_leap(target), "It didn't crouch the fifth time")
+	dust_before = dust_after
+	criminal.Knockdown(1 SECONDS)
+	TEST_ASSERT_EQUAL(piece.phase, 0, "Knocked down in the crouch, it is still leaping") // BOUNTY_PILEDRIVER_IDLE
+	TEST_ASSERT_NULL(criminal.get_filter("bounty_piledriver_glow"), "Knocked down in the crouch, the outline stayed on")
+	dust_after = 0
+	for(var/obj/effect/temp_visual/mook_dust/small/dust in tile(0, 0))
+		dust_after++
+	TEST_ASSERT_EQUAL(dust_after, dust_before, "Knocked down in the crouch, it fell as if from the air")
 
 /// Death and deletion mid-leap leave nothing behind
 /datum/unit_test/voidcrew_bounty_chrome_piledriver/cleanup

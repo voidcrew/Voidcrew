@@ -13,10 +13,12 @@
  * - They never carry a gun or a bottle: whatever put the housings in them (a roll, an admin's pick),
  *   a fighter whose style isn't one of the close-in ones becomes a knife fighter (bounty_chrome_fit_style()).
  * - The lunge: with someone two to five tiles off in a clear line, they plant their feet and drop
- *   low, and a line lights up on the floor from them through their target. A beat later they dash
- *   down the whole line, after-images behind them, and cut everyone standing on it: the player
- *   lunge's two blade cuts, a bleed, and a knockdown. Then they have to recover, rooted and unable to
- *   swing, and for longer if they hit nobody, or ran into a shield.
+ *   low in a blue outline, and a line lights up on the floor from them through their target. A beat
+ *   later they dash down the whole line, after-images behind them, and cut everyone standing on it:
+ *   the player lunge's two blade cuts, through tg's armour and wound rolls (a slash wound does any
+ *   bleeding), and a knockdown. Then they have to recover, rooted and unable to swing, and for longer
+ *   if they hit nobody, or ran into a shield.
+ * - A companion whose criminal is gone has no site to hold it to, so it never lunges.
  *
  * Counterplay: step off the marked line (it never turns), keep out of five tiles, keep a table, a
  * railing or a door between you (the line stops at anything solid, and a door shut on it stops the
@@ -31,11 +33,11 @@
 /// Tiles the lunge covers, and the closest and farthest a target may be for one (the player lunge's range)
 #define BOUNTY_MANTIS_LUNGE_RANGE 5
 #define BOUNTY_MANTIS_LUNGE_MIN 2
-/// The wind-up: the marked line shows this long before the dash
-#define BOUNTY_MANTIS_LUNGE_WINDUP (0.7 SECONDS)
-/// Between lunges, and before the first one once the blades are out
+/// The wind-up: the marked line shows this long before the dash, as long as a Gorilla piston punch's
+#define BOUNTY_MANTIS_LUNGE_WINDUP (0.9 SECONDS)
+/// Between lunges, and before the first one once the blades are out (early enough to land inside a fight)
 #define BOUNTY_MANTIS_LUNGE_COOLDOWN (12 SECONDS)
-#define BOUNTY_MANTIS_FIRST_LUNGE (2.5 SECONDS)
+#define BOUNTY_MANTIS_FIRST_LUNGE (1 SECONDS)
 /// Brute each blade lands on everyone the lunge cuts, and its wound bonus (the player lunge's CYBERWARE_MANTIS_LUNGE_BONUS, both blades out)
 #define BOUNTY_MANTIS_LUNGE_DAMAGE 10
 #define BOUNTY_MANTIS_LUNGE_WOUND 10
@@ -50,6 +52,9 @@
 /// The marked line in the hardlight blade's blue (#6cb8ff). The mark art is pure red, which a plain colour
 /// only darkens, so a colour matrix turns its red into the blue.
 #define BOUNTY_MANTIS_MARK_COLOR list(0.42, 0.72, 1, 0, 0, 0, 0, 0, 0)
+/// The outline on them through the wind-up, in the same blue, as the other pieces' wind-ups glow in theirs
+#define BOUNTY_MANTIS_GLOW_FILTER "bounty_mantis_glow"
+#define BOUNTY_MANTIS_GLOW_COLOR "#6cb8ff"
 /// How far the crouch drops them for the wind-up
 #define BOUNTY_MANTIS_CROUCH -3
 
@@ -148,7 +153,7 @@
 
 /datum/bounty_chrome/mantis/on_emp(severity)
 	if(deployed)
-		owner.visible_message(span_warning("[owner]'s blades flicker out."))
+		owner.visible_message(span_warning(one_blade() ? "[owner]'s blade flickers out." : "[owner]'s blades flicker out."))
 	retract(quiet = TRUE)
 
 /datum/bounty_chrome/mantis/examine_line()
@@ -178,6 +183,13 @@
 		return companion.ai_in_fight && !companion.ai_fled && !companion.ai_gave_up
 	return FALSE
 
+/**
+ * Whether only the right blade is out: no left blade is drawn while the blades are out (show_left_blade()
+ * draws nothing where the left arm is other chrome, as on the cyberpsycho). Their lines say one blade then.
+ */
+/datum/bounty_chrome/mantis/proc/one_blade()
+	return deployed && !left_blade
+
 /// What they hold in their hand now, by whichever of the two types they are
 /datum/bounty_chrome/mantis/proc/hand()
 	if(istype(owner, /mob/living/basic/bounty_criminal))
@@ -200,7 +212,7 @@
 	owner.attack_vis_effect = ATTACK_EFFECT_SLASH
 	bounty_ai_hold(owner, BOUNTY_MANTIS_BLADE)
 	show_left_blade()
-	owner.visible_message(span_warning("Blades of hard light slide out of [owner]'s forearms!"))
+	owner.visible_message(span_warning(one_blade() ? "A blade of hard light slides out of [owner]'s right forearm!" : "Blades of hard light slide out of [owner]'s forearms!"))
 	playsound(owner, 'sound/items/unsheath.ogg', 50, TRUE)
 	next_lunge_at = max(next_lunge_at, world.time + BOUNTY_MANTIS_FIRST_LUNGE)
 	deltimer(watch_timer)
@@ -218,6 +230,7 @@
  * sound.
  */
 /datum/bounty_chrome/mantis/proc/retract(quiet = FALSE)
+	var/single = one_blade()
 	cancel_lunge()
 	deltimer(watch_timer)
 	watch_timer = null
@@ -243,7 +256,7 @@
 		bounty_ai_hold(owner, in_fight() ? saved_weapon : null)
 	saved_weapon = null
 	if(!quiet && owner.stat == CONSCIOUS)
-		owner.visible_message(span_notice("[owner]'s blades slide back into [owner.p_their()] forearms."))
+		owner.visible_message(span_notice(single ? "[owner]'s blade slides back into [owner.p_their()] forearm." : "[owner]'s blades slide back into [owner.p_their()] forearms."))
 		playsound(owner, 'sound/items/sheath.ogg', 40, TRUE)
 	return TRUE
 
@@ -349,14 +362,19 @@
 		if(!to_spot || to_spot == from)
 			return
 
-/// Whether they may dash over `spot`: on their leash (their criminal's, for a companion), and no wall, space, drop, lava or chasm
+/**
+ * Whether they may dash over `spot`: on their leash (their criminal's, for a companion), and no wall,
+ * space, drop, lava or chasm. A companion whose criminal is gone has no leash to dash on, so nowhere.
+ */
 /datum/bounty_chrome/mantis/proc/tile_ok(turf/spot)
 	if(!spot || isclosedturf(spot) || isspaceturf(spot) || isopenspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot))
 		return FALSE
 	if(!spot.can_cross_safely(owner))
 		return FALSE
 	var/mob/living/basic/bounty_criminal/leash_holder = bounty_ai_side_of(owner)
-	return !leash_holder || leash_holder.leash_ok(spot)
+	if(!leash_holder)
+		return FALSE
+	return leash_holder.leash_ok(spot)
 
 /// Someone standing on `spot` the lunge won't cut, and stops short of: their own gang, anyone but a hunter they may hit
 /datum/bounty_chrome/mantis/proc/standing_in_the_way(turf/spot)
@@ -374,8 +392,8 @@
 	return bounty_ai_is_hunter(person) && bounty_ai_may_hit(owner, person)
 
 /**
- * The wind-up: feet planted and low, blades flat along the arms, and the line marked on the floor.
- * The dash follows BOUNTY_MANTIS_LUNGE_WINDUP later. Returns TRUE if it started.
+ * The wind-up: feet planted and low in a blue outline, blades flat along the arms, and the line marked
+ * on the floor. The dash follows BOUNTY_MANTIS_LUNGE_WINDUP later. Returns TRUE if it started.
  */
 /datum/bounty_chrome/mantis/proc/start_lunge(atom/target)
 	var/list/path = lunge_path(target)
@@ -392,7 +410,11 @@
 	owner.changeNext_move(BOUNTY_MANTIS_LUNGE_WINDUP + BOUNTY_MANTIS_LUNGE_RANGE + 1)
 	owner.face_atom(target)
 	owner.add_offsets(BOUNTY_MANTIS_TRAIT, y_add = BOUNTY_MANTIS_CROUCH)
-	owner.visible_message(span_boldwarning("[owner] drops low, blades laid flat along [owner.p_their()] arms!"))
+	owner.add_filter(BOUNTY_MANTIS_GLOW_FILTER, 2, outline_filter(1, BOUNTY_MANTIS_GLOW_COLOR))
+	if(one_blade())
+		owner.visible_message(span_boldwarning("[owner] drops low, blade laid flat along [owner.p_their()] arm!"))
+	else
+		owner.visible_message(span_boldwarning("[owner] drops low, blades laid flat along [owner.p_their()] arms!"))
 	playsound(owner, 'sound/items/weapons/sear.ogg', 50, TRUE)
 	lunge_marks = list()
 	for(var/turf/spot as anything in path)
@@ -406,6 +428,7 @@
 		return FALSE
 	clear_marks()
 	owner.remove_offsets(BOUNTY_MANTIS_TRAIT)
+	owner.remove_filter(BOUNTY_MANTIS_GLOW_FILTER)
 	if(!online() || !able())
 		cancel_lunge()
 		return FALSE
@@ -472,8 +495,9 @@
 	return null
 
 /**
- * The lunge reaches `person`: both blades, a bleed, and the floor. A shield blocks it outright, and
- * then nothing lands. Returns FALSE if it was blocked.
+ * The lunge reaches `person`: both blades and the floor. The cuts go through tg's armour and wound
+ * rolls, so a slash wound bleeds as any other would. A shield blocks it outright, and then nothing
+ * lands. Returns FALSE if it was blocked.
  */
 /datum/bounty_chrome/mantis/proc/cut(mob/living/person)
 	lunge_cut[REF(person)] = TRUE
@@ -489,10 +513,9 @@
 	for(var/i in 1 to 2)
 		person.apply_damage(npc_zone_damage(BOUNTY_MANTIS_LUNGE_DAMAGE, owner), BRUTE, BODY_ZONE_CHEST, armour, wound_bonus = BOUNTY_MANTIS_LUNGE_WOUND, sharpness = SHARP_EDGED)
 	person.Knockdown(BOUNTY_MANTIS_LUNGE_KNOCKDOWN)
-	person.apply_status_effect(/datum/status_effect/bounty_boss_bleed, owner.get_npc_zone_damage_factor())
 	person.visible_message(
 		span_danger("[owner] flickers across the gap and cuts [person] down!"),
-		span_userdanger("[owner] flickers across the gap. The blades are already in you, and the floor comes up fast!"),
+		span_userdanger("[owner] lunges across the gap and cuts you down!"),
 	)
 	playsound(person, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 	log_combat(owner, person, "mantis-lunged", "mantis blades")
@@ -505,7 +528,7 @@
 	owner.face_atom(mech)
 	owner.do_attack_animation(mech, ATTACK_EFFECT_SLASH)
 	mech.take_damage(npc_zone_damage(BOUNTY_MANTIS_LUNGE_DAMAGE * 2, owner), BRUTE, MELEE, TRUE, get_dir(mech, owner), initial(blade.armour_penetration))
-	mech.visible_message(span_danger("[owner] rakes both blades across [mech]!"))
+	mech.visible_message(span_danger(one_blade() ? "[owner] rakes [owner.p_their()] blade across [mech]!" : "[owner] rakes both blades across [mech]!"))
 	playsound(mech, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 
 /**
@@ -550,6 +573,7 @@
 	lunge_state = null
 	if(owner)
 		owner.remove_offsets(BOUNTY_MANTIS_TRAIT)
+		owner.remove_filter(BOUNTY_MANTIS_GLOW_FILTER)
 		REMOVE_TRAIT(owner, TRAIT_IMMOBILIZED, BOUNTY_MANTIS_TRAIT)
 
 /// Takes the marked line off the floor
@@ -575,6 +599,8 @@
 #undef BOUNTY_MANTIS_RECOVER_BLOCKED
 #undef BOUNTY_MANTIS_WATCH
 #undef BOUNTY_MANTIS_MARK_COLOR
+#undef BOUNTY_MANTIS_GLOW_FILTER
+#undef BOUNTY_MANTIS_GLOW_COLOR
 #undef BOUNTY_MANTIS_CROUCH
 #undef BOUNTY_MANTIS_WINDUP
 #undef BOUNTY_MANTIS_DASH

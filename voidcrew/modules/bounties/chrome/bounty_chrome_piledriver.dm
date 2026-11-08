@@ -9,7 +9,8 @@
  * - In a fight, off cooldown, with its target BOUNTY_PILEDRIVER_MIN_RANGE to BOUNTY_PILEDRIVER_RANGE
  *   tiles off, in sight, with gravity, an open arc (no wall, window or shut door on the line; tables,
  *   crates and railings are cleared) and a safe tile to land on inside its leash.
- * - Crouch (BOUNTY_PILEDRIVER_CROUCH): it dips and trembles and the pistons whine. It stands still.
+ * - Crouch (BOUNTY_PILEDRIVER_CROUCH): it dips and trembles in an amber outline and the pistons
+ *   whine. It stands still.
  * - Launch: the target's tile is locked (or the free tile beside them, if they stand on a table or
  *   sit in a mech), and the player implant's warning shadow covers everything the landing reaches.
  *   It rises for BOUNTY_PILEDRIVER_AIRTIME. If the target slipped out of reach during the crouch,
@@ -23,7 +24,8 @@
  * Counterplay: step out of the shadow; stay close (it never leaps at someone within
  * BOUNTY_PILEDRIVER_MIN_RANGE); fight round corners, behind windows or across a door; no gravity, no
  * leap. Shutting a door across its arc while it is in the air, or an EMP then, drops it short in a
- * heap. Stunned, knocked down, downed or killed while crouched or in the air, it never lands.
+ * heap. Stunned, knocked down, downed or killed while crouched or in the air, it never lands: shot
+ * down mid-air, it drops where it took off with a thud for everyone to see (fall()).
  *
  * A mini-boss runs the leap inside its busy state (bounty_boss.dm), so the leap and its kit's
  * abilities never overlap; anyone else is held still with its AI paused for the length of it.
@@ -42,8 +44,8 @@
 /// Between leaps, counted from the launch. A mini-boss's stretches once it tires, as its own abilities do.
 #define BOUNTY_PILEDRIVER_COOLDOWN (14 SECONDS)
 #define BOUNTY_PILEDRIVER_BOSS_COOLDOWN (16 SECONDS)
-/// How long into a fight before the first leap
-#define BOUNTY_PILEDRIVER_OPENING (4 SECONDS)
+/// How long into a fight before the first leap: early enough that it comes inside the fight
+#define BOUNTY_PILEDRIVER_OPENING (1.5 SECONDS)
 /// After a crouch that came to nothing (the target slipped out of reach), the next try
 #define BOUNTY_PILEDRIVER_RETRY (4 SECONDS)
 /// After an EMP wears off, before it may leap again
@@ -68,6 +70,9 @@
 #define BOUNTY_PILEDRIVER_CRASH_VULNERABLE 1.25
 /// Trait and offset source while it leaps, and a mini-boss's busy state
 #define BOUNTY_PILEDRIVER_SOURCE "bounty_chrome_piledriver"
+/// The outline through the crouch, in piston amber, as the other pieces' wind-ups glow in theirs
+#define BOUNTY_PILEDRIVER_GLOW_FILTER "bounty_piledriver_glow"
+#define BOUNTY_PILEDRIVER_GLOW_COLOR "#ffb347"
 /// What the leap is doing
 #define BOUNTY_PILEDRIVER_IDLE 0
 #define BOUNTY_PILEDRIVER_CROUCHING 1
@@ -130,7 +135,17 @@
 // ----- the hooks -----
 
 /datum/bounty_chrome/piledriver/on_fight_start(atom/target)
-	next_leap_at = max(next_leap_at, world.time + BOUNTY_PILEDRIVER_OPENING)
+	var/opening = world.time + BOUNTY_PILEDRIVER_OPENING
+	if(opening <= next_leap_at)
+		return
+	next_leap_at = opening
+	// Life() comes every two seconds: the first leap waits on its own timer, not on whichever tick comes after it
+	addtimer(CALLBACK(src, PROC_REF(opening_check)), BOUNTY_PILEDRIVER_OPENING, TIMER_DELETE_ME)
+
+/// The opening leap's own check, on time: what the next Life tick would do
+/datum/bounty_chrome/piledriver/proc/opening_check()
+	if(online())
+		on_tick(0, bounty_chrome_fighting(owner))
 
 /datum/bounty_chrome/piledriver/on_tick(seconds_per_tick, fighting)
 	if(fighting && phase == BOUNTY_PILEDRIVER_IDLE && world.time >= next_leap_at)
@@ -148,16 +163,39 @@
 	next_leap_at = max(next_leap_at, world.time + BOUNTY_PILEDRIVER_REBOOT_DELAY)
 
 /datum/bounty_chrome/piledriver/on_downed()
+	if(phase == BOUNTY_PILEDRIVER_AIRBORNE)
+		fall()
+		return
 	end_leap()
 
 /datum/bounty_chrome/piledriver/on_death()
+	if(phase == BOUNTY_PILEDRIVER_AIRBORNE)
+		fall()
+		return
 	end_leap()
 
-/// Floored, stunned or giving up while crouched or in the air: it comes down where it stands, harmlessly
+/// Floored, stunned or giving up while crouched or in the air: it comes down where it stands, harmlessly. Out of the air, everyone sees and hears it drop.
 /datum/bounty_chrome/piledriver/proc/on_grounded(datum/source)
 	SIGNAL_HANDLER
-	if(phase == BOUNTY_PILEDRIVER_CROUCHING || phase == BOUNTY_PILEDRIVER_AIRBORNE)
+	if(phase == BOUNTY_PILEDRIVER_AIRBORNE)
+		fall()
+	else if(phase == BOUNTY_PILEDRIVER_CROUCHING)
 		end_leap()
+
+/**
+ * Shot, stunned or killed out of the air: it drops back onto the tile it took off from, with a thud
+ * and a puff of dust, and nothing under the shadow is hit. Whatever brought it down already has it
+ * on the floor, so nothing more is done to it.
+ */
+/datum/bounty_chrome/piledriver/proc/fall()
+	var/mob/living/basic/fighter = owner
+	end_leap()
+	if(QDELETED(fighter))
+		return
+	var/turf/here = get_turf(fighter)
+	playsound(here, 'sound/effects/bang.ogg', 50, TRUE)
+	new /obj/effect/temp_visual/mook_dust/small(here)
+	fighter.visible_message(span_warning("[fighter] drops out of the air!"))
 
 // ----- the leap -----
 
@@ -173,6 +211,7 @@
 	hold(BOUNTY_PILEDRIVER_CROUCH + BOUNTY_PILEDRIVER_AIRTIME + BOUNTY_PILEDRIVER_RECOVERY)
 	owner.face_atom(target)
 	owner.add_offsets(BOUNTY_PILEDRIVER_SOURCE, z_add = -BOUNTY_PILEDRIVER_DIP)
+	owner.add_filter(BOUNTY_PILEDRIVER_GLOW_FILTER, 2, outline_filter(1, BOUNTY_PILEDRIVER_GLOW_COLOR))
 	owner.Shake(1, 0, BOUNTY_PILEDRIVER_CROUCH)
 	playsound(owner, 'sound/machines/piston/piston_lower.ogg', 60, TRUE)
 	owner.visible_message(span_warning("[owner] drops into a crouch, [owner.p_their()] leg pistons whining."))
@@ -184,6 +223,7 @@
 	if(leap_serial != serial || phase != BOUNTY_PILEDRIVER_CROUCHING)
 		return FALSE
 	owner.remove_offsets(BOUNTY_PILEDRIVER_SOURCE, animate = FALSE)
+	owner.remove_filter(BOUNTY_PILEDRIVER_GLOW_FILTER)
 	if(!still_held() || !able())
 		end_leap()
 		return FALSE
@@ -282,7 +322,7 @@
 	shake_camera(victim, 6, 2)
 	victim.visible_message(
 		span_danger("[owner] comes down square on top of [victim]!"),
-		span_userdanger("[owner] lands on you. Something gives."),
+		span_userdanger("[owner] lands square on top of you!"),
 	)
 	log_combat(owner, victim, "crushed with a Meteor Piledriver landing")
 
@@ -344,6 +384,7 @@
 	if(!owner || !was_leaping)
 		return
 	owner.remove_offsets(BOUNTY_PILEDRIVER_SOURCE)
+	owner.remove_filter(BOUNTY_PILEDRIVER_GLOW_FILTER)
 	release()
 
 /// Takes the landing shadow off the floor, if it is still there
@@ -555,6 +596,8 @@
 #undef BOUNTY_PILEDRIVER_CRASH
 #undef BOUNTY_PILEDRIVER_CRASH_VULNERABLE
 #undef BOUNTY_PILEDRIVER_SOURCE
+#undef BOUNTY_PILEDRIVER_GLOW_FILTER
+#undef BOUNTY_PILEDRIVER_GLOW_COLOR
 #undef BOUNTY_PILEDRIVER_IDLE
 #undef BOUNTY_PILEDRIVER_CROUCHING
 #undef BOUNTY_PILEDRIVER_AIRBORNE
