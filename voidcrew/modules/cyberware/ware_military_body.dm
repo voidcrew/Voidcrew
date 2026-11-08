@@ -81,7 +81,9 @@
 	engage_feedback(wearer)
 	// The MOD stealth break list (modules_ninja.dm), minus bump-off, plus
 	// gunfire and throwing: shooting or throwing from inside a cloak breaks it here.
-	RegisterSignal(wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
+	// The early signal too: a fist that takes over the attack (Gorilla, Scrapper) cancels the
+	// chain before the late one is ever sent.
+	RegisterSignals(wearer, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK), PROC_REF(on_unarmed_attack))
 	RegisterSignal(wearer, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet_act))
 	RegisterSignals(wearer, list(
 		COMSIG_MOB_ITEM_ATTACK,
@@ -123,6 +125,7 @@
 		return
 	REMOVE_TRAIT(wearer, TRAIT_CYBER_CAMO, REF(src))
 	UnregisterSignal(wearer, list(
+		COMSIG_LIVING_EARLY_UNARMED_ATTACK,
 		COMSIG_LIVING_UNARMED_ATTACK,
 		COMSIG_ATOM_BULLET_ACT,
 		COMSIG_MOB_ITEM_ATTACK,

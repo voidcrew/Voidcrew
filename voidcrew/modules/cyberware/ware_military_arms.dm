@@ -232,7 +232,8 @@
 		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 
-	if(!isliving(target))
+	// A pacifist's punch at a living thing is the ordinary punch, which refuses it.
+	if(!isliving(target) || HAS_TRAIT(source, TRAIT_PACIFISM))
 		return NONE
 	if(!source.can_unarmed_attack())
 		return COMPONENT_SKIP_ATTACK
@@ -405,6 +406,8 @@
 	button_icon_state = "act_mantis_lunge"
 	cooldown_time = 20 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body, or one with its hands tied, does not lunge.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE | AB_CHECK_HANDS_BLOCKED
 
 /**
  * The housings whose blade is out right now and will arrive with the lunge.
@@ -431,6 +434,9 @@
 	if(!istype(housing) || !isliving(owner))
 		return FALSE
 	var/mob/living/lunger = owner
+	if(HAS_TRAIT(lunger, TRAIT_PACIFISM))
+		lunger.balloon_alert(lunger, "can't bring yourself to!")
+		return FALSE
 	if(!housing.blade_extended())
 		lunger.balloon_alert(lunger, "extend the blade first!")
 		return FALSE
@@ -447,6 +453,8 @@
 	if(get_dist(lunger, victim) > housing.lunge_range || !can_see(lunger, victim, housing.lunge_range))
 		lunger.balloon_alert(lunger, "out of reach!")
 		return FALSE
+	// The blade is about to be used on someone.
+	cyberware_camo_drop(lunger)
 	// One lunge clock across both housings: start every mantis_lunge button
 	// this owner has, ours included.
 	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in lunger.actions)

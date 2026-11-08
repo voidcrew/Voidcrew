@@ -805,6 +805,13 @@
 
 	return TRUE
 
+// ---- Ship saves ---------------------------------------------------------
+
+// A cradle belongs to a parlor. A saved hull must never rebuild one (an admin test kit can
+// drop one on a ship), or every load would hand that ship a free operating slab.
+/obj/machinery/chrome_cradle/checkpoint_type()
+	return null
+
 // ---- Outpost aggression ------------------------------------------------
 
 // Attacking outpost property is aggression, the cradle included.

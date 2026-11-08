@@ -288,6 +288,12 @@
 	if(!special)
 		cyberware_boot_splash(arm_owner, src)
 
+// tg's arm implants register these two on the bearer and never let go on removal, so a
+// housing sold on or reinstalled elsewhere kept answering to the body it was pulled from.
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/on_mob_remove(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
+	. = ..()
+	UnregisterSignal(arm_owner, list(COMSIG_CARBON_POST_ATTACH_LIMB, COMSIG_KB_MOB_DROPITEM_DOWN))
+
 // Deploying and stowing arm hardware is the most visible thing a piece of
 // chrome does, so it is also the ink's most common cue: every toolkit arm
 // (Fixer's Fingers picking a tool off the radial, the Rockjaw drill, blades,
@@ -365,10 +371,21 @@
 /proc/cyberware_insert_check(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE, mob/feedback_to)
 	if(!iscarbon(target))
 		return FALSE
+	if(!cyberware_has_limb(ware, target, silent))
+		return FALSE
 	if(installed_capacity_check(target, list(ware), ware.cyberware_get_incumbents(target), silent))
 		return TRUE
 	if(!silent && feedback_to && feedback_to != target)
 		feedback_to.balloon_alert(feedback_to, "no neural headroom!")
+	return FALSE
+
+/// Whether the body still has the limb this ware lives in. Chrome cannot go into a limb that
+/// is gone: the insert would seat it on a body with nothing to hold it.
+/proc/cyberware_has_limb(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE)
+	if(target.get_bodypart(deprecise_zone(ware.zone)))
+		return TRUE
+	if(!silent)
+		target.balloon_alert(target, "no limb for it!")
 	return FALSE
 
 /**
@@ -389,6 +406,9 @@
 		if(receiver)
 			receiver.balloon_alert(receiver, "needs a real rig!")
 			to_chat(receiver, span_warning("The autosurgeon chokes. This needs a real rig."))
+		return FALSE
+	// Even a forced window cannot seat chrome in a limb that is not there.
+	if(!cyberware_has_limb(ware, receiver))
 		return FALSE
 	if(!chrome.install_context_forced && !cyberware_insert_check(ware, receiver))
 		return FALSE

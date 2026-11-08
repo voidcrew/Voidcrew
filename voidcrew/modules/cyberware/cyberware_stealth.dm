@@ -126,3 +126,13 @@ GLOBAL_LIST_INIT(cyberware_camo_piercing_types, typecacheof(list(
 			popDown()
 		return FALSE
 	return ..()
+
+/**
+ * Drops the bearer's camo field, if it is up. For the abilities that hurt someone without going
+ * through an attack the field listens for: a lunge, a landing. Same collapse as any other
+ * contact.
+ */
+/proc/cyberware_camo_drop(mob/living/carbon/bearer, reason = "field contact")
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/weave = bearer?.get_organ_slot(ORGAN_SLOT_CYBERWARE_SKIN)
+	if(istype(weave))
+		weave.break_camo(bearer, reason = reason)

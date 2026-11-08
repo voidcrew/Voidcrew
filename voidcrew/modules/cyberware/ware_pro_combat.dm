@@ -653,6 +653,8 @@
 	button_icon_state = "act_hopper"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body does not get to leap out of it.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE
 
 /datum/action/cooldown/cyberware/hopper_leap/New(Target, original = TRUE)
 	. = ..()

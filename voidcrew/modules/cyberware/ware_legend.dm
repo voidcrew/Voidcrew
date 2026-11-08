@@ -894,6 +894,8 @@
 	button_icon_state = "act_piledriver"
 	cooldown_time = 60 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body does not get to leap out of it.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE
 
 /datum/action/cooldown/cyberware/piledriver_leap/Activate(atom/target)
 	if(!isliving(owner))
@@ -902,6 +904,10 @@
 	var/turf/destination = get_turf(target)
 	var/turf/here = get_turf(jumper)
 	if(isnull(destination) || isnull(here) || destination == here)
+		return FALSE
+	// The landing crushes whoever is under it, so it is not for a pacifist.
+	if(HAS_TRAIT(jumper, TRAIT_PACIFISM))
+		jumper.balloon_alert(jumper, "can't bring yourself to!")
 		return FALSE
 	if(jumper.buckled || !isturf(jumper.loc))
 		jumper.balloon_alert(jumper, "can't launch from here!")
@@ -920,6 +926,8 @@
 	if(arc_blocker(here, destination))
 		jumper.balloon_alert(jumper, "no room for the arc!")
 		return FALSE
+	// The shadow goes down and the landing hurts someone.
+	cyberware_camo_drop(jumper)
 	StartCooldown()
 	// Liftoff: locked in for the whole arc, committed, like everything
 	// with this much telegraph. The TILE is what gets locked, never the mob,

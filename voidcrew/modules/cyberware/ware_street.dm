@@ -458,6 +458,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	var/is_structure_target = ismachinery(target) || isstructure(target)
 	if(!isliving(target) && !is_structure_target)
 		return NONE
+	// A pacifist's punch at a living thing is the ordinary punch, which refuses it.
+	if(isliving(target) && HAS_TRAIT(source, TRAIT_PACIFISM))
+		return NONE
 	// Past the last "not our punch" guard: this swing is ours from here on, so
 	// stand Redline's bypass top-up down before we take the chain away. The
 	// roll below reads the hand's unarmed damage, which already carries the
@@ -832,19 +835,32 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 	RegisterSignal(organ_owner, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_item_equipped))
 	RegisterSignal(organ_owner, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_item_unequipped))
 	RegisterSignal(organ_owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
-	passtable_on(organ_owner, REF(src))
 	// Whatever they were already holding when the pads went in.
 	for(var/obj/item/held in organ_owner.held_items)
 		guard_item(held)
-	if(catch_ready)
-		ADD_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
 	drop_guards()
 	UnregisterSignal(organ_owner, list(COMSIG_MOB_EQUIPPED_ITEM, COMSIG_MOB_UNEQUIPPED_ITEM, COMSIG_MOVABLE_MOVED))
-	passtable_off(organ_owner, REF(src))
-	REMOVE_TRAIT(organ_owner, TRAIT_CHASM_STOPPER, REF(src))
+
+// Tables as flat ground and the chasm catch ride the failing-gated passive layer: dark pads
+// (EMP, brownout, damage) do neither. The catch used to stay armed through a pulse, and a
+// bearer whose pads were dark could cross a chasm because the arming trait was never spent.
+/obj/item/organ/cyberimp/cyberware/gecko/chrome_passives_on(mob/living/carbon/bearer)
+	. = ..()
+	if(isnull(bearer))
+		return
+	passtable_on(bearer, REF(src))
+	if(catch_ready)
+		ADD_TRAIT(bearer, TRAIT_CHASM_STOPPER, REF(src))
+
+/obj/item/organ/cyberimp/cyberware/gecko/chrome_passives_off(mob/living/carbon/bearer)
+	. = ..()
+	if(isnull(bearer))
+		return
+	passtable_off(bearer, REF(src))
+	REMOVE_TRAIT(bearer, TRAIT_CHASM_STOPPER, REF(src))
 
 /obj/item/organ/cyberimp/cyberware/gecko/Destroy()
 	drop_guards()
@@ -968,7 +984,9 @@ GLOBAL_LIST_INIT(cyberware_ink_palette, list(
 
 /obj/item/organ/cyberimp/cyberware/gecko/proc/rearm_catch()
 	catch_ready = TRUE
-	if(owner)
+	// Dark pads re-arm too, the trait goes back on with the passive layer.
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(owner && chrome?.passives_online)
 		ADD_TRAIT(owner, TRAIT_CHASM_STOPPER, REF(src))
 		owner.balloon_alert(owner, "grips re-set")
 

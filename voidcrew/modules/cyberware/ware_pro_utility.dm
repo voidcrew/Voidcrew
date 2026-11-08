@@ -359,6 +359,8 @@
 	button_icon_state = "skyhook"
 	cooldown_time = 8 SECONDS
 	click_to_activate = TRUE
+	// A stunned, paralysed or bound body, or one with its hands tied, does not winch itself out.
+	check_flags = AB_CHECK_CONSCIOUS | AB_CHECK_INCAPACITATED | AB_CHECK_IMMOBILE | AB_CHECK_HANDS_BLOCKED
 	/// The zipline visual for the current pull.
 	var/datum/beam/zipline
 	/// Traits worn for the duration of the pull, per the grapple gun.
@@ -941,7 +943,8 @@
 
 /datum/action/cooldown/cyberware/harpoon/Activate(atom/target)
 	var/mob/living/carbon/bearer = organ.owner
-	if(isturf(target) || QDELETED(target))
+	// Clicking yourself fires the barb at nothing: a line from the bearer to the bearer.
+	if(isturf(target) || QDELETED(target) || target == bearer)
 		bearer.balloon_alert(bearer, "barb skitters off!")
 		return FALSE
 	if(get_dist(bearer, target) > CYBERWARE_ANGLER_RANGE || !(target in view(CYBERWARE_ANGLER_RANGE, bearer)))
