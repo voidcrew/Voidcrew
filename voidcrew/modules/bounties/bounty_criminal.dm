@@ -199,6 +199,8 @@
 					return /mob/living/basic/bounty_criminal/boss/ghost
 				if(BOUNTY_KIT_HEAVY)
 					return /mob/living/basic/bounty_criminal/boss/heavy
+				if(BOUNTY_KIT_CYBERPSYCHO)
+					return /mob/living/basic/bounty_criminal/boss/cyberpsycho
 			return pick(
 				/mob/living/basic/bounty_criminal/boss/juggernaut,
 				/mob/living/basic/bounty_criminal/boss/pyromaniac,

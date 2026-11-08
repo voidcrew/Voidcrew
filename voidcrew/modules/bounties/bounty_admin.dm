@@ -541,6 +541,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		"Demolitionist" = BOUNTY_KIT_DEMOLITIONIST,
 		"Ghost" = BOUNTY_KIT_GHOST,
 		"Heavy" = BOUNTY_KIT_HEAVY,
+		"Cyberpsycho" = BOUNTY_KIT_CYBERPSYCHO,
 	)
 
 /// A normal criminal's styles; the meek always carry the holdout, so the menu doesn't offer it

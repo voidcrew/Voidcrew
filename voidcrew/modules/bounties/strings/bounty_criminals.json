@@ -57,6 +57,14 @@
 			"killing three witnesses before a trial",
 			"the Ardent Reach hijacking, with no survivors",
 			"arming a pirate fleet with stolen torpedoes"
+		],
+		"cyberpsycho": [
+			"a cyberpsycho rampage through a mining camp",
+			"cutting down everyone in a ripperdoc's clinic",
+			"killing nine people in a bar with their bare hands",
+			"tearing apart the security team sent to bring them in",
+			"a cyberpsycho rampage aboard a passenger liner",
+			"butchering a salvage crew for their chrome"
 		]
 	},
 	"aliases": {
@@ -75,7 +83,8 @@
 		"pyromaniac": ["Matches", "Torch", "Cinders", "Smoky", "Blaze"],
 		"demolitionist": ["Fuse", "Boomer", "Sticks", "Two-Fingers", "Detonator"],
 		"ghost": ["Shade", "Blink", "Needle", "Nobody", "Quiet"],
-		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"]
+		"heavy": ["Gunner", "Big Iron", "Tank", "Belt", "Rattle"],
+		"cyberpsycho": ["Static", "Glitch", "Hardwire", "Burnout", "Scrap Saint"]
 	},
 	"features": {
 		"scar": [
@@ -677,6 +686,46 @@
 				"Get in line.",
 				"More targets. Fine.",
 				"Hope you all brought armor."
+			]
+		},
+		"cyberpsycho_intro": {
+			"any": [
+				"Get out of my head!",
+				"Can you hear it humming? Can you?",
+				"More meat. Come here.",
+				"Don't look at me like that!",
+				"It won't stop. Nothing stops.",
+				"You're not real. None of you are real."
+			]
+		},
+		"cyberpsycho_ability": {
+			"any": [
+				"Faster!",
+				"Hold still!",
+				"There you are.",
+				"Got you now!",
+				"Too slow, meat!",
+				"Come here!"
+			]
+		},
+		"cyberpsycho_exhausted": {
+			"any": [
+				"Everything's red.",
+				"Why is it so quiet?",
+				"Something's burning. Is that me?",
+				"Not now. Not now!",
+				"I can't feel my arms.",
+				"Keep running, keep running..."
+			]
+		},
+		"cyberpsycho_posse": {
+			"any": [
+				"More of you? Good. More meat.",
+				"All of you. I'll take all of you.",
+				"Bring the whole crew.",
+				"So many voices...",
+				"Line up.",
+				"Doesn't matter how many."
 			]
 		}
 	}

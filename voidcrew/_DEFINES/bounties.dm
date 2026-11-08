@@ -48,6 +48,8 @@
 #define BOUNTY_KIT_DEMOLITIONIST "demolitionist"
 #define BOUNTY_KIT_GHOST "ghost"
 #define BOUNTY_KIT_HEAVY "heavy"
+/// The cyberpsycho: a rare Most Wanted carrying every piece of chrome at once (bounties/chrome/bounty_cyberpsycho.dm)
+#define BOUNTY_KIT_CYBERPSYCHO "cyberpsycho"
 
 // ===== PLACEMENT KINDS =====
 

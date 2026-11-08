@@ -7122,6 +7122,7 @@
 #include "voidcrew\modules\bounties\chrome\bounty_chrome_mantis.dm"
 #include "voidcrew\modules\bounties\chrome\bounty_chrome_piledriver.dm"
 #include "voidcrew\modules\bounties\chrome\bounty_chrome_redline.dm"
+#include "voidcrew\modules\bounties\chrome\bounty_cyberpsycho.dm"
 #include "voidcrew\modules\captain_management\captain_management.dm"
 #include "voidcrew\modules\captain_management\command_transfer.dm"
 #include "voidcrew\modules\captain_management\ship_applications.dm"

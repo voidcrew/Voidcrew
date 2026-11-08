@@ -52,6 +52,7 @@
 #include "voidcrew_bounty_chrome_piledriver.dm"
 #include "voidcrew_bounty_chrome_redline.dm"
 #include "voidcrew_bounty_criminal.dm"
+#include "voidcrew_bounty_cyberpsycho.dm"
 #include "voidcrew_bounty_eva.dm"
 #include "voidcrew_bounty_identity.dm"
 #include "voidcrew_bounty_kingpin.dm"
