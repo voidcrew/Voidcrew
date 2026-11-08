@@ -1,8 +1,9 @@
 /**
  * Redline core on a bounty fighter (voidcrew/modules/bounties/chrome/bounty_chrome_redline.dm). Every
  * test drives the procs directly with the mobs in place: a test world has no clients, so the AI is
- * off. Fork defines are included after the tests, so a test uses the literal value with a comment
- * naming the define. The tell's and the burn's timers are cut short by calling their procs.
+ * off (its signal hooks still run, so a real shot or blow still starts the fight). Fork defines are
+ * included after the tests, so a test uses the literal value with a comment naming the define. The
+ * tell's and the burn's timers are cut short by calling their procs.
  */
 /datum/unit_test/voidcrew_bounty_chrome_redline
 	abstract_type = /datum/unit_test/voidcrew_bounty_chrome_redline
@@ -33,6 +34,65 @@
 /datum/unit_test/voidcrew_bounty_chrome_redline/proc/burn_out_now(datum/bounty_chrome/redline/piece)
 	deltimer(piece.burn_timer)
 	piece.burn_out()
+
+/// `hunter` shoots `target` point-blank with a real round of `round_type`, down a gun's own path (prehit, bullet_act, on_hit). Returns the health it took.
+/datum/unit_test/voidcrew_bounty_chrome_redline/proc/shoot(mob/living/hunter, mob/living/target, round_type)
+	var/health_before = target.health
+	var/obj/projectile/shot = new round_type(get_turf(hunter))
+	shot.firer = hunter
+	shot.fired_from = hunter
+	shot.aim_projectile(target, hunter)
+	shot.fire(get_angle(hunter, target), target)
+	if(!QDELETED(shot))
+		qdel(shot)
+	return health_before - target.health
+
+/// `hunter` hits `target` with `weapon` in hand, down an item's own attack (attacked_by, then the after-attack signal). Returns the health it took.
+/datum/unit_test/voidcrew_bounty_chrome_redline/proc/strike(mob/living/hunter, mob/living/target, obj/item/weapon)
+	var/health_before = target.health
+	weapon.attack(target, hunter)
+	return health_before - target.health
+
+/**
+ * `hunter` shoots `target`, which carries `piece`, with rounds of `round_type` from where it stands
+ * until it is down, dead or has given up (at most 20 rounds). `tell_rounds` rounds land in the tell,
+ * then it roars. Returns list("trip" = the round that tripped it or 0, "trip_percent" = its health
+ * then, "after" = how many rounds landed after the trip, "resisted" = what each of those that left
+ * it on its feet took, "fighting" = whether it was in the fight after the first round, "trace").
+ */
+/datum/unit_test/voidcrew_bounty_chrome_redline/proc/shoot_it_out(mob/living/basic/target, mob/living/hunter, datum/bounty_chrome/redline/piece, round_type, tell_rounds = 2)
+	var/static/list/state_names = list("idle", "tell", "burn")
+	var/list/trace = list()
+	var/list/resisted = list()
+	var/after = 0
+	var/trip = 0
+	var/trip_percent = 0
+	var/fighting = FALSE
+	var/tell_left = 0
+	var/mob/living/basic/bounty_criminal/criminal = istype(target, /mob/living/basic/bounty_criminal) ? target : null
+	var/mob/living/basic/bounty_companion/companion = istype(target, /mob/living/basic/bounty_companion) ? target : null
+	for(var/shot in 1 to 20)
+		if(target.stat == DEAD || criminal?.downed || companion?.ai_gave_up)
+			break
+		var/tripped_before = piece.state != 0 // REDLINE_IDLE
+		var/taken = shoot(hunter, target, round_type)
+		if(shot == 1)
+			fighting = bounty_chrome_fighting(target)
+		var/still_up = target.stat != DEAD && !criminal?.downed
+		trace += "[shot]: -[taken] = [target.health] ([round(100 * target.health / target.maxHealth)]%) [state_names[piece.state + 1]][still_up ? "" : " DOWN"]"
+		if(tripped_before)
+			after++
+			if(still_up)
+				resisted += taken
+			if(piece.state == 1) // REDLINE_WINDING
+				tell_left--
+				if(tell_left <= 0)
+					roar_now(piece)
+		else if(piece.state != 0)
+			trip = shot
+			trip_percent = round(100 * target.health / target.maxHealth)
+			tell_left = tell_rounds
+	return list("trip" = trip, "trip_percent" = trip_percent, "after" = after, "resisted" = resisted, "fighting" = fighting, "trace" = jointext(trace, "; "))
 
 /// Who rolls it: Wanted and up, never the meek, not the armoured kits, never beside a Cascade lattice
 /datum/unit_test/voidcrew_bounty_chrome_redline/rolls
@@ -97,6 +157,11 @@
 	TEST_ASSERT(!criminal.IsKnockdown(), "A knockdown landed in the tell")
 	TEST_ASSERT(criminal.ai_surrender_rolled, "Their surrender roll isn't held off")
 
+	// The tell already takes the edge off a hit (REDLINE_DAMAGE_MULT 0.5)
+	var/tell_before = criminal.bruteloss
+	criminal.apply_damage(10, BRUTE)
+	TEST_ASSERT(abs(criminal.bruteloss - tell_before - 5) < 0.1, "A hit in the tell came in at [criminal.bruteloss - tell_before], not 5") // 10 * REDLINE_DAMAGE_MULT
+
 	// The roar: the hunter two tiles off staggers
 	roar_now(piece)
 	TEST_ASSERT_EQUAL(piece.state, 2, "The tell never turned into the burn") // REDLINE_BURNING
@@ -104,10 +169,14 @@
 	TEST_ASSERT_NOTNULL(piece.glow, "No red glow in the burn")
 	TEST_ASSERT(findtext(jointext(criminal.examine(hunter), " "), "Red light pours"), "Examining them mid-burn doesn't show it")
 
-	// The burn: hits come in at 60%, stamina crit slides off, blows land harder
+	// The burn: hits come in at half, burns too, stamina crit slides off, blows land harder
 	var/before = criminal.bruteloss
 	criminal.apply_damage(10, BRUTE)
-	TEST_ASSERT(abs(criminal.bruteloss - before - 6) < 0.1, "A hit in the burn came in at [criminal.bruteloss - before], not 6") // 10 * REDLINE_DAMAGE_MULT
+	TEST_ASSERT(abs(criminal.bruteloss - before - 5) < 0.1, "A hit in the burn came in at [criminal.bruteloss - before], not 5") // 10 * REDLINE_DAMAGE_MULT
+	before = criminal.bruteloss
+	criminal.apply_damage(10, BURN)
+	TEST_ASSERT(abs(criminal.bruteloss - before - 5) < 0.1, "A burn in the burn came in at [criminal.bruteloss - before], not 5") // 10 * REDLINE_DAMAGE_MULT
+	TEST_ASSERT(piece.next_flinch_at > world.time, "A hit mid-burn didn't show them barely flinching")
 	criminal.adjustStaminaLoss(200, forced = TRUE)
 	TEST_ASSERT_NULL(criminal.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "Stamina crit landed in the burn")
 	criminal.setStaminaLoss(0, TRUE, TRUE)
@@ -325,6 +394,104 @@
 		plated.modify_damage(plated_mods, 10, damage_type)
 		TEST_ASSERT(plated_mods[1] * juggernaut.damage_coeff[damage_type] >= 0.499, "Riot plates and the burn go under the floor for [damage_type]") // REDLINE_DAMAGE_FLOOR
 	plated.state = 0 // REDLINE_IDLE
+
+/**
+ * The owner's playtest, with real rounds: a criminal shot point-blank with a 9mm from full health.
+ * The first round starts the fight; it trips a round or two in, while the fight is still young; the
+ * rounds in the tell and the burn come in at half; and the burn gets several rounds of fight before
+ * the downed line, where the mercy rule still holds. Two rounds land in the tell: one hunter's fire
+ * over its 1.5 seconds.
+ */
+/datum/unit_test/voidcrew_bounty_chrome_redline/shot
+
+/datum/unit_test/voidcrew_bounty_chrome_redline/shot/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = redliner(tile(1, 1))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(2, 1))
+	var/datum/bounty_chrome/redline/piece = bounty_chrome_piece(criminal, "redline")
+	var/obj/projectile/bullet/c9mm/nine = /obj/projectile/bullet/c9mm
+	var/round_damage = initial(nine.damage)
+	var/list/fight = shoot_it_out(criminal, hunter, piece, /obj/projectile/bullet/c9mm)
+	TEST_NOTICE(src, "Redline, 9mm from full health ([criminal.maxHealth]): [fight["trace"]]")
+	TEST_ASSERT(fight["fighting"], "The first round didn't start the fight: [fight["trace"]]")
+	TEST_ASSERT(fight["trip"] && fight["trip"] <= 2, "It tripped on round [fight["trip"]] at [fight["trip_percent"]]%, not by the second: [fight["trace"]]")
+	TEST_ASSERT(fight["trip_percent"] >= 55, "It tripped at [fight["trip_percent"]]%, too late in the fight: [fight["trace"]]")
+	var/list/resisted = fight["resisted"]
+	TEST_ASSERT(length(resisted), "No round landed between the trip and the downed line: [fight["trace"]]")
+	for(var/taken in resisted)
+		TEST_ASSERT(abs(taken - round_damage * 0.5) < 0.5, "A 9mm round in the tell or the burn took [taken], not half of [round_damage]: [fight["trace"]]") // REDLINE_DAMAGE_MULT
+	TEST_ASSERT(fight["after"] >= 4, "Only [fight["after"]] rounds after it tripped put them down: [fight["trace"]]")
+	TEST_ASSERT(criminal.downed, "Twenty rounds didn't put them down: [fight["trace"]]")
+	TEST_ASSERT(criminal.stat != DEAD, "A round killed them through the mercy line: [fight["trace"]]")
+	TEST_ASSERT_EQUAL(piece.state, 0, "The burn went on after they went down") // REDLINE_IDLE
+
+/**
+ * Lasers into a companion, who has no mercy line: it trips as the fight turns, lasers in the tell and
+ * the burn come in at half, and it lasts several more of them.
+ */
+/datum/unit_test/voidcrew_bounty_chrome_redline/laser_companion
+
+/datum/unit_test/voidcrew_bounty_chrome_redline/laser_companion/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(1, 1))
+	var/list/buddies = criminal.spawn_companions(1)
+	TEST_ASSERT(length(buddies), "No companion spawned")
+	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	buddy.forceMove(tile(1, 3))
+	// A knife companion, BOUNTY_COMPANION_HEALTH 110, and nothing but the core
+	buddy.ai_take_style("knife") // BOUNTY_STYLE_KNIFE
+	qdel(buddy.GetComponent(/datum/component/bounty_chrome))
+	bounty_chrome_install(buddy, list("redline")) // BOUNTY_CHROME_REDLINE
+	var/datum/bounty_chrome/redline/piece = bounty_chrome_piece(buddy, "redline")
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(2, 3))
+	var/obj/projectile/beam/laser/laser = /obj/projectile/beam/laser
+	var/round_damage = initial(laser.damage)
+	var/list/fight = shoot_it_out(buddy, hunter, piece, /obj/projectile/beam/laser)
+	TEST_NOTICE(src, "Redline, lasers into a companion ([buddy.maxHealth]): [fight["trace"]]")
+	TEST_ASSERT(fight["fighting"], "The first laser didn't bring the companion into the fight: [fight["trace"]]")
+	TEST_ASSERT(fight["trip"] && fight["trip"] <= 2, "It tripped on laser [fight["trip"]], not by the second: [fight["trace"]]")
+	var/list/resisted = fight["resisted"]
+	TEST_ASSERT(length(resisted), "No laser landed between the trip and its death: [fight["trace"]]")
+	for(var/taken in resisted)
+		TEST_ASSERT(abs(taken - round_damage * 0.5) < 0.5, "A laser in the tell or the burn took [taken], not half of [round_damage]: [fight["trace"]]") // REDLINE_DAMAGE_MULT
+	TEST_ASSERT(fight["after"] >= 4, "Only [fight["after"]] lasers after it tripped finished it: [fight["trace"]]")
+	for(var/mob/living/basic/bounty_companion/leftover in buddies)
+		qdel(leftover)
+
+/**
+ * Blows with a real knife. Hurt before the fight (they never saw it coming), the stab that starts the
+ * fight trips it at once, since the fight starts only after that stab lands; stabs in the tell and the
+ * burn then come in at half.
+ */
+/datum/unit_test/voidcrew_bounty_chrome_redline/melee
+
+/datum/unit_test/voidcrew_bounty_chrome_redline/melee/Run()
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(2, 1))
+	hunter.set_combat_mode(TRUE)
+	var/obj/item/knife/kitchen/knife = locate() in hunter.held_items
+	TEST_ASSERT_NOTNULL(knife, "The hunter has no knife")
+
+	// Fresh: a stab out of the blue starts the fight, at full damage, and doesn't trip it
+	var/mob/living/basic/bounty_criminal/normal/fresh = redliner(tile(1, 1))
+	var/datum/bounty_chrome/redline/fresh_piece = bounty_chrome_piece(fresh, "redline")
+	var/full = strike(hunter, fresh, knife)
+	TEST_ASSERT(full > 0, "The knife did nothing")
+	TEST_ASSERT(bounty_chrome_fighting(fresh), "A stab didn't start the fight")
+	TEST_ASSERT_EQUAL(fresh_piece.state, 0, "One stab at full health tripped it") // REDLINE_IDLE
+
+	// Hurt out of a fight, then stabbed: the fight starts with them badly hurt, and it trips
+	var/mob/living/basic/bounty_criminal/normal/hurt = redliner(tile(1, 2))
+	var/datum/bounty_chrome/redline/piece = bounty_chrome_piece(hurt, "redline")
+	hunter.forceMove(tile(2, 2))
+	hurt.apply_damage(hurt.maxHealth * 0.3, BRUTE)
+	TEST_ASSERT_EQUAL(piece.state, 0, "It tripped out of a fight") // REDLINE_IDLE
+	strike(hunter, hurt, knife)
+	TEST_ASSERT(bounty_chrome_fighting(hurt), "The stab didn't start the fight")
+	TEST_ASSERT_EQUAL(piece.state, 1, "A fight that started with them at [round(100 * hurt.health / hurt.maxHealth)]% didn't trip it") // REDLINE_WINDING
+	var/in_tell = strike(hunter, hurt, knife)
+	TEST_ASSERT(abs(in_tell - full * 0.5) < 0.1, "A stab in the tell took [in_tell], not half of [full]") // REDLINE_DAMAGE_MULT
+	roar_now(piece)
+	var/in_burn = strike(hunter, hurt, knife)
+	TEST_ASSERT(abs(in_burn - full * 0.5) < 0.1, "A stab in the burn took [in_burn], not half of [full]") // REDLINE_DAMAGE_MULT
+	piece.end_burn(collapse = FALSE)
 
 /// A bare-chested pair of shorts, so the worn chest chrome shows
 /datum/outfit/redline_render_shorts
