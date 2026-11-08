@@ -55,9 +55,6 @@
 /// How long its Deadeye optics mark the hunter a lunge or a leap is going for: about its wind-up
 #define BOUNTY_PSYCHO_MARK_LUNGE (1 SECONDS)
 #define BOUNTY_PSYCHO_MARK_LEAP (1.6 SECONDS)
-/// Its Deadeye mark's red (the player implant's) and how often the mark checks it still holds
-#define BOUNTY_PSYCHO_MARK_RED "#ff3300"
-#define BOUNTY_PSYCHO_MARK_WATCH (0.5 SECONDS)
 /// What boss_busy says while it lunges, and while its Redline core winds up
 #define BOUNTY_PSYCHO_BUSY_LUNGE "lunge"
 #define BOUNTY_PSYCHO_BUSY_REDLINE "redline"
@@ -457,19 +454,24 @@
 		return "A hardlight blade juts from %THEIR right forearm."
 	return "A chrome housing sheathes %THEIR right forearm."
 
-// One blade going back in, not two
-/datum/bounty_chrome/mantis/psycho/retract(quiet = FALSE)
-	var/was_out = deployed
-	. = ..(TRUE)
-	if(. && was_out && !quiet && owner?.stat == CONSCIOUS)
-		owner.visible_message(span_notice("[owner]'s blade slides back into [owner.p_their()] right forearm."))
-		playsound(owner, 'sound/items/sheath.ogg', 40, TRUE)
+// One blade, in the right arm
+/datum/bounty_chrome/mantis/psycho/blades_out_line()
+	return "A blade of hard light slides out of [owner]'s right forearm!"
 
-// One blade flickering out, not two
-/datum/bounty_chrome/mantis/psycho/on_emp(severity)
-	if(deployed)
-		owner.visible_message(span_warning("[owner]'s blade flickers out."))
-	retract(quiet = TRUE)
+/datum/bounty_chrome/mantis/psycho/blades_in_line()
+	return "[owner]'s blade slides back into [owner.p_their()] right forearm."
+
+/datum/bounty_chrome/mantis/psycho/flicker_line()
+	return "[owner]'s blade flickers out."
+
+/datum/bounty_chrome/mantis/psycho/crouch_line()
+	return "[owner] drops low, blade laid flat along [owner.p_their()] arm!"
+
+/datum/bounty_chrome/mantis/psycho/rake_line(obj/vehicle/sealed/mecha/mech)
+	return "[owner] rakes [owner.p_their()] blade across [mech]!"
+
+/datum/bounty_chrome/mantis/psycho/skid_line()
+	return "[owner] skids to a stop, blade scraping the floor."
 
 // The lunge is one of its moves: nothing else starts until it is back on balance
 /datum/bounty_chrome/mantis/psycho/start_lunge(atom/target)
@@ -540,8 +542,8 @@
 	..()
 	if(!istype(psycho) || psycho.stat != CONSCIOUS)
 		return
-	// It stands and roars: the tell is a move of its own. A rage line, not a burnt-out one.
-	psycho.boss_bark("redline", "intro")
+	// It stands and roars: the tell is a move of its own. A rage line (cyberpsycho_redline), not a burnt-out one.
+	psycho.boss_bark("redline")
 	var/tell = timeleft(burn_timer) || 0
 	psycho.boss_set_busy(BOUNTY_PSYCHO_BUSY_REDLINE, tell)
 	psycho.boss_next_ability_at = max(psycho.boss_next_ability_at, world.time + tell + rand(BOUNTY_BOSS_ABILITY_GAP_MIN, BOUNTY_BOSS_ABILITY_GAP_MAX))
@@ -593,29 +595,17 @@
 	return FALSE
 
 /**
- * Marks `target` for `duration`: red eyes, the red line for as long as the mark, the outline, the
- * reticle, the chirp and the glint on them. No line to the room: the move's own wind-up says what
- * is coming. TRUE if it marked them.
+ * Marks `target` for `duration`: the ordinary lock (red eyes, the red line, the outline, the reticle,
+ * the chirp and the glint on them) for as long as the move's wind-up. No line to the room: the move's
+ * own wind-up says what is coming. No gun to steer, so no round homes on it. TRUE if it marked them.
  */
 /datum/bounty_chrome/deadeye/psycho/proc/psycho_mark(atom/target, duration)
 	if(!lockable(target))
 		return FALSE
-	if(mark_ref)
-		end_lock()
-	mark_ref = WEAKREF(target)
+	start_lock(target, duration, quiet = TRUE)
 	shots_left = 0
-	rounds = null
 	armed_at = world.time
 	lock_ends_at = world.time + duration
-	target.add_filter(mark_filter, 2, list("type" = "outline", "color" = BOUNTY_PSYCHO_MARK_RED, "size" = 1))
-	new /obj/effect/temp_visual/smartgun_target(get_turf(target))
-	beam_ref = WEAKREF(owner.Beam(target, icon_state = "r_beam", time = duration, maxdistance = get_dist(owner, target) + 1))
-	owner.face_atom(target)
-	playsound(owner, 'sound/machines/synth/synth_yes.ogg', 40, TRUE)
-	for(var/mob/living/person as anything in marked_people(target))
-		to_chat(person, span_userdanger("A red targeting glint settles on you!"))
-	owner.update_appearance(UPDATE_OVERLAYS)
-	watch_timer = addtimer(CALLBACK(src, PROC_REF(watch_lock)), BOUNTY_PSYCHO_MARK_WATCH, TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 	return TRUE
 
 #undef BOUNTY_PSYCHO_HEALTH_1
@@ -628,8 +618,6 @@
 #undef BOUNTY_PSYCHO_SURGE_SPINUP
 #undef BOUNTY_PSYCHO_MARK_LUNGE
 #undef BOUNTY_PSYCHO_MARK_LEAP
-#undef BOUNTY_PSYCHO_MARK_RED
-#undef BOUNTY_PSYCHO_MARK_WATCH
 #undef BOUNTY_PSYCHO_BUSY_LUNGE
 #undef BOUNTY_PSYCHO_BUSY_REDLINE
 #undef BOUNTY_PSYCHO_CASCADE_IDLE

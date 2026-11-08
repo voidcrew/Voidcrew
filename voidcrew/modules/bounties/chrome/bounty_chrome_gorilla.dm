@@ -312,6 +312,9 @@
 /datum/bounty_chrome/gorilla/proc/able()
 	if(!online() || !isturf(owner.loc) || owner.client || owner.mind)
 		return FALSE
+	// Still getting up after a knockdown: tg's pull is blocked while lying, so no grab could take hold
+	if(owner.body_position == LYING_DOWN)
+		return FALSE
 	return bounty_chrome_fighting(owner)
 
 /// The mini-boss it is in, or null

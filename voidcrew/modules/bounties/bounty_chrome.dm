@@ -291,10 +291,8 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		if(!criminal.record || (criminal.ai_wanted_style() in allowed))
 			return FALSE
 		criminal.record.style = fallback
-		var/health = criminal.body_tier_health()
-		if(health)
-			criminal.maxHealth = health
-			criminal.updatehealth()
+		// Its health follows the new style the way chrome's does: the zone's factor kept, never lowered, never healed
+		bounty_chrome_fit_health(criminal)
 		criminal.body_update_stamina_coeff()
 		criminal.ai_update_style()
 		// A gun already in hand goes, for the style's own weapon if they are fighting
@@ -505,7 +503,8 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 	if(istype(criminal) && (criminal.blended || criminal.hidden))
 		return FALSE
 	var/datum/component/bounty_eva/eva = fighter.GetComponent(/datum/component/bounty_eva)
-	if(eva && (!QDELETED(eva.suit) || !QDELETED(eva.mod)))
+	// Their own suit is only a picture (own_suit, own_mod), so ask what they wear, not which items they hold
+	if(eva?.covers_body())
 		return FALSE
 	return TRUE
 

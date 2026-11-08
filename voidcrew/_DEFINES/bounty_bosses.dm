@@ -202,10 +202,6 @@
 /// Its blade: the look in its hand and every number of its blows (bounty_real_weapon())
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
 #define BOUNTY_GHOST_MELEE_COOLDOWN (0.7 SECONDS)
-/// The stand-in bleed's numbers (/datum/status_effect/bounty_boss_bleed). No boss uses it now: the Ghost's cuts bleed through tg's own wounds.
-#define BOUNTY_GHOST_BLEED_PER_CUT 1
-#define BOUNTY_GHOST_BLEED_CAP 2
-#define BOUNTY_GHOST_BLEED_TIME (12 SECONDS)
 /// Dash: a blur line to the target
 #define BOUNTY_GHOST_DASH_WINDUP (0.3 SECONDS)
 #define BOUNTY_GHOST_DASH_COOLDOWN (5 SECONDS)

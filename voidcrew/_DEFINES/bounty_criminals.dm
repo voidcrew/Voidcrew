@@ -55,7 +55,8 @@
 #define BOUNTY_STYLE_HEALTH_KNIFE 1
 #define BOUNTY_STYLE_HEALTH_PISTOL 0.9
 #define BOUNTY_STYLE_HEALTH_SHOTGUN 1
-#define BOUNTY_STYLE_HEALTH_SMG 0.9
+/// The WT-550's bursts make an SMG gunman the deadliest gun for its health: 0.8, so one with a companion or a Cascade window is no deadlier to one hunter than a mini-boss
+#define BOUNTY_STYLE_HEALTH_SMG 0.8
 #define BOUNTY_STYLE_HEALTH_REVOLVER 0.9
 #define BOUNTY_STYLE_HEALTH_CLUB 1.1
 #define BOUNTY_STYLE_HEALTH_BOTTLE 0.9

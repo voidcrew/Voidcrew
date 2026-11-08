@@ -1070,42 +1070,6 @@
 	if(istype(boss) && boss.boss_cloak())
 		boss.visible_message(span_warning("[boss] fades into a faint shimmer!"))
 
-/**
- * A stand-in bleed: BOUNTY_GHOST_BLEED_PER_CUT brute a second for each cut, up to
- * BOUNTY_GHOST_BLEED_CAP, for BOUNTY_GHOST_BLEED_TIME after the last one. It stops once they are down
- * (C4, M3). No boss applies it any more (review r1 F2: a stand-in for tg's wounds); delete it once
- * nothing else does.
- */
-/datum/status_effect/bounty_boss_bleed
-	id = "bounty_boss_bleed"
-	duration = BOUNTY_GHOST_BLEED_TIME
-	tick_interval = 1 SECONDS
-	status_type = STATUS_EFFECT_REFRESH
-	alert_type = null
-	/// Cuts bleeding
-	var/cuts = 1
-	var/damage_factor = 1
-
-/datum/status_effect/bounty_boss_bleed/on_creation(mob/living/new_owner, factor = 1)
-	damage_factor = factor
-	return ..()
-
-/datum/status_effect/bounty_boss_bleed/on_apply()
-	return owner.stat == CONSCIOUS
-
-/datum/status_effect/bounty_boss_bleed/refresh(mob/living/new_owner, factor = 1)
-	damage_factor = factor
-	. = ..()
-	cuts++
-
-/datum/status_effect/bounty_boss_bleed/tick(seconds_between_ticks)
-	if(owner.stat != CONSCIOUS)
-		qdel(src)
-		return
-	var/rate = min(cuts * BOUNTY_GHOST_BLEED_PER_CUT, BOUNTY_GHOST_BLEED_CAP)
-	owner.apply_damage(npc_zone_damage(rate, damage_factor), BRUTE, spread_damage = TRUE)
-	owner.bleed(rate)
-
 // ===== HEAVY =====
 
 /mob/living/basic/bounty_criminal/boss/heavy

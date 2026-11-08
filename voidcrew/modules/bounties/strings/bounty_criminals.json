@@ -700,14 +700,24 @@
 				"Come here!"
 			]
 		},
+		"cyberpsycho_redline": {
+			"any": [
+				"Make it stop!",
+				"LOUDER!",
+				"Not now. Not now!",
+				"Everything's red.",
+				"Shut up! Shut up!",
+				"It's too loud!"
+			]
+		},
 		"cyberpsycho_exhausted": {
 			"any": [
-				"Everything's red.",
 				"Why is it so quiet?",
 				"Something's burning. Is that me?",
-				"Not now. Not now!",
 				"I can't feel my arms.",
-				"Keep running, keep running..."
+				"Keep running, keep running...",
+				"My hands won't stop shaking.",
+				"Just let me sit down."
 			]
 		},
 		"cyberpsycho_posse": {

@@ -155,7 +155,7 @@
 
 /datum/bounty_chrome/mantis/on_emp(severity)
 	if(deployed)
-		owner.visible_message(span_warning(one_blade() ? "[owner]'s blade flickers out." : "[owner]'s blades flicker out."))
+		owner.visible_message(span_warning(flicker_line()))
 	retract(quiet = TRUE)
 
 /datum/bounty_chrome/mantis/examine_line()
@@ -185,12 +185,24 @@
 		return companion.ai_in_fight && !companion.ai_fled && !companion.ai_gave_up
 	return FALSE
 
-/**
- * Whether only the right blade is out: no left blade is drawn while the blades are out (show_left_blade()
- * draws nothing where the left arm is other chrome, as on the cyberpsycho). Their lines say one blade then.
- */
-/datum/bounty_chrome/mantis/proc/one_blade()
-	return deployed && !left_blade
+// What onlookers see the blades do. A carrier with one blade (the cyberpsycho) says so in its own versions.
+/datum/bounty_chrome/mantis/proc/blades_out_line()
+	return "Blades of hard light slide out of [owner]'s forearms!"
+
+/datum/bounty_chrome/mantis/proc/blades_in_line()
+	return "[owner]'s blades slide back into [owner.p_their()] forearms."
+
+/datum/bounty_chrome/mantis/proc/flicker_line()
+	return "[owner]'s blades flicker out."
+
+/datum/bounty_chrome/mantis/proc/crouch_line()
+	return "[owner] drops low, blades laid flat along [owner.p_their()] arms!"
+
+/datum/bounty_chrome/mantis/proc/rake_line(obj/vehicle/sealed/mecha/mech)
+	return "[owner] rakes both blades across [mech]!"
+
+/datum/bounty_chrome/mantis/proc/skid_line()
+	return "[owner] skids to a stop, blades scraping the floor."
 
 /// What they hold in their hand now, by whichever of the two types they are
 /datum/bounty_chrome/mantis/proc/hand()
@@ -214,7 +226,7 @@
 	owner.attack_vis_effect = ATTACK_EFFECT_SLASH
 	bounty_ai_hold(owner, BOUNTY_MANTIS_BLADE)
 	show_left_blade()
-	owner.visible_message(span_warning(one_blade() ? "A blade of hard light slides out of [owner]'s right forearm!" : "Blades of hard light slide out of [owner]'s forearms!"))
+	owner.visible_message(span_warning(blades_out_line()))
 	playsound(owner, 'sound/items/unsheath.ogg', 50, TRUE)
 	next_lunge_at = max(next_lunge_at, world.time + BOUNTY_MANTIS_FIRST_LUNGE)
 	deltimer(watch_timer)
@@ -232,7 +244,6 @@
  * sound.
  */
 /datum/bounty_chrome/mantis/proc/retract(quiet = FALSE)
-	var/single = one_blade()
 	cancel_lunge()
 	deltimer(watch_timer)
 	watch_timer = null
@@ -258,7 +269,7 @@
 		bounty_ai_hold(owner, in_fight() ? saved_weapon : null)
 	saved_weapon = null
 	if(!quiet && owner.stat == CONSCIOUS)
-		owner.visible_message(span_notice(single ? "[owner]'s blade slides back into [owner.p_their()] forearm." : "[owner]'s blades slide back into [owner.p_their()] forearms."))
+		owner.visible_message(span_notice(blades_in_line()))
 		playsound(owner, 'sound/items/sheath.ogg', 40, TRUE)
 	return TRUE
 
@@ -414,10 +425,7 @@
 	owner.face_atom(target)
 	owner.add_offsets(BOUNTY_MANTIS_TRAIT, y_add = BOUNTY_MANTIS_CROUCH)
 	owner.add_filter(BOUNTY_MANTIS_GLOW_FILTER, 2, outline_filter(1, BOUNTY_MANTIS_GLOW_COLOR))
-	if(one_blade())
-		owner.visible_message(span_boldwarning("[owner] drops low, blade laid flat along [owner.p_their()] arm!"))
-	else
-		owner.visible_message(span_boldwarning("[owner] drops low, blades laid flat along [owner.p_their()] arms!"))
+	owner.visible_message(span_boldwarning(crouch_line()))
 	playsound(owner, 'sound/items/weapons/sear.ogg', 50, TRUE)
 	lunge_marks = list()
 	for(var/turf/spot as anything in path)
@@ -531,7 +539,7 @@
 	owner.face_atom(mech)
 	owner.do_attack_animation(mech, ATTACK_EFFECT_SLASH)
 	mech.take_damage(npc_zone_damage(BOUNTY_MANTIS_LUNGE_DAMAGE * 2, owner), BRUTE, MELEE, TRUE, get_dir(mech, owner), initial(blade.armour_penetration))
-	mech.visible_message(span_danger(one_blade() ? "[owner] rakes [owner.p_their()] blade across [mech]!" : "[owner] rakes both blades across [mech]!"))
+	mech.visible_message(span_danger(rake_line(mech)))
 	playsound(mech, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 
 /**
@@ -554,7 +562,7 @@
 			owner.visible_message(span_warning("[owner] crashes into [blocker]!"))
 			playsound(owner, 'sound/effects/bang.ogg', 50, TRUE)
 		else
-			owner.visible_message(span_warning("[owner] skids to a stop, blades scraping the floor."))
+			owner.visible_message(span_warning(skid_line()))
 	owner.changeNext_move(recover)
 	addtimer(CALLBACK(src, PROC_REF(end_recovery), serial), recover, TIMER_DELETE_ME)
 

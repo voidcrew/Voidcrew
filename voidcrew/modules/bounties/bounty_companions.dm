@@ -122,13 +122,21 @@
 	// A face of their own species, the clothes for the site, and a suit if their criminal wears one (bounty_eva.dm)
 	eva_join(leader, species)
 
-/// Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's (and their chrome's), and the style's own weapon (never a Wanted criminal's heavier one)
+/**
+ * Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's (and their chrome's), and the style's
+ * own weapon (never a Wanted criminal's heavier one). Already hurt, the damage stays taken and a higher
+ * ceiling doesn't raise their health.
+ */
 /mob/living/basic/bounty_companion/proc/ai_take_style(key)
 	var/datum/bounty_style/style = GLOB.bounty_styles[key]
 	if(!style)
 		return FALSE
-	maxHealth = ai_style_health(style)
-	health = maxHealth
+	var/new_max = ai_style_health(style)
+	// Basic mobs keep all their damage as bruteloss: more of it keeps their health where it was
+	if(health < maxHealth && new_max > maxHealth)
+		bruteloss += new_max - maxHealth
+	maxHealth = new_max
+	updatehealth()
 	damage_coeff = damage_coeff.Copy()
 	damage_coeff[STAMINA] = style.stamina_mult
 	return bounty_ai_apply_style(src, key)

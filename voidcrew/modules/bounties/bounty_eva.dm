@@ -179,6 +179,10 @@ GLOBAL_LIST_INIT(bounty_eva_strippables, create_strippable_list(list(
 	for(var/obj/item/piece in list(helmet, suit, mod))
 		. += piece
 
+/// Whether a suit covers their body: a modsuit or a soft suit, their own or a player's
+/datum/component/bounty_eva/proc/covers_body()
+	return !isnull(worn_type(BOUNTY_EVA_MOD)) || !isnull(worn_type(BOUNTY_EVA_SUIT))
+
 /// Whether they are sealed in: a modsuit, or a soft suit with its helmet, their own or a player's
 /datum/component/bounty_eva/proc/sealed()
 	return !isnull(worn_type(BOUNTY_EVA_MOD)) || (!isnull(worn_type(BOUNTY_EVA_SUIT)) && !isnull(worn_type(BOUNTY_EVA_HELMET)))
