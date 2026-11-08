@@ -239,11 +239,20 @@
 	var/obj/item/hunting_lure/kit
 	/// The kill step this lure feeds its stake position to
 	var/datum/mission_objective/field/kill_named/big_game/hunt_objective
+	/// The kit went into the ground; a rewind (the site unloaded) needs a fresh one
+	var/kit_spent = FALSE
 
 /datum/mission_objective/set_lure/Destroy()
 	kit = null // the item survives; it self-reports expiry on use
 	hunt_objective = null
 	return ..()
+
+/// Back on this step after the site unloaded with the beast in it: send a new lure
+/datum/mission_objective/set_lure/activate()
+	. = ..()
+	if(kit_spent && QDELETED(kit))
+		kit_spent = FALSE
+		dispense_kit()
 
 /// Called by the mission at start: hand the lure over at the ship's pad
 /datum/mission_objective/set_lure/proc/dispense_kit()
@@ -274,6 +283,7 @@
 	// answers takes over the slot once it has been called in
 	mission.forget_quest_atom(kit)
 	QDEL_NULL(kit)
+	kit_spent = TRUE
 	notify_crew("Lure staked.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 	complete()
 
