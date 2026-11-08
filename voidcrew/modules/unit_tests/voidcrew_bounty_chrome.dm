@@ -95,3 +95,41 @@
 	// Gone with the component, and no hooks after death
 	qdel(chrome)
 	TEST_ASSERT_NULL(piece.owner, "A removed piece kept its owner")
+
+/// Chrome carriers are dressed light enough that their worn chrome shows: renders every piece in every criminal outfit, and checks the clothes come off
+/datum/unit_test/voidcrew_bounty_chrome/exposed
+
+/datum/unit_test/voidcrew_bounty_chrome/exposed/Run()
+	var/list/outfits = list(
+		"local" = /datum/outfit/bounty_criminal/local,
+		"spacer" = /datum/outfit/bounty_criminal/spacer,
+		"hauler" = /datum/outfit/bounty_criminal/hauler,
+		"drifter" = /datum/outfit/bounty_criminal/drifter,
+		"tough" = /datum/outfit/bounty_criminal/tough,
+	)
+	var/list/look_sets = list(
+		"none" = list(),
+		"gorilla" = list("gorilla"),
+		"mantis" = list("mantis"),
+		"cascade" = list("cascade"),
+		"redline" = list("redline"),
+		"piledriver" = list("piledriver"),
+		"cascade_gorilla" = list("cascade", "gorilla"),
+	)
+	var/datum/bounty_look/look = bounty_roll_look(/datum/species/human, MALE)
+	for(var/set_name in look_sets)
+		var/list/organs = bounty_chrome_organ_looks(look_sets[set_name])
+		for(var/outfit_name in outfits)
+			var/mob/living/carbon/human/dummy/dummy = bounty_look_dummy(look, outfits[outfit_name], null, chrome_organs = organs)
+			TEST_ASSERT_NOTNULL(dummy, "[set_name] in [outfit_name]: the look failed")
+			if(set_name == "gorilla")
+				TEST_ASSERT_NULL(dummy.gloves, "[set_name] in [outfit_name]: gloves still cover the arms")
+				TEST_ASSERT_NULL(dummy.wear_suit, "[set_name] in [outfit_name]: a jacket still covers the arms")
+			if(set_name == "cascade" || set_name == "gorilla")
+				var/obj/item/clothing/under/uniform = dummy.w_uniform
+				TEST_ASSERT(istype(uniform, /obj/item/clothing/under/pants) || uniform?.adjusted == ALT_STYLE, "[set_name] in [outfit_name]: a shirt still covers the chrome")
+			if(set_name == "piledriver")
+				TEST_ASSERT(istype(dummy.w_uniform, /obj/item/clothing/under/shorts), "[set_name] in [outfit_name]: trousers still cover the legs")
+			fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/exposed_[set_name]_[outfit_name]_s.png")
+			fcopy(getFlatIcon(dummy, NORTH), "data/bounty_chrome_renders/exposed_[set_name]_[outfit_name]_n.png")
+			qdel(dummy)

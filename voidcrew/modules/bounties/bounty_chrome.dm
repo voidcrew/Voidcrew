@@ -90,6 +90,64 @@ GLOBAL_LIST_INIT(bounty_chrome_protos, init_bounty_chrome_protos())
 		if(!organ.Insert(dummy, special = TRUE))
 			qdel(organ)
 
+/**
+ * Strips `dummy`'s clothes off the worn chrome in `organ_types`, so it shows: arm and chest chrome
+ * lose the jacket (and arm chrome the gloves), and the jumpsuit is rolled down to the waist, or
+ * swapped for trousers when it can't be; leg chrome loses the shoes and trousers (shorts go on). A pressure suit or a modsuit stays on, and so does what is under it: the
+ * air would kill them.
+ */
+/proc/bounty_chrome_expose(mob/living/carbon/human/dummy/dummy, list/organ_types)
+	var/arms = FALSE
+	var/chest = FALSE
+	var/legs = FALSE
+	for(var/organ_type in organ_types)
+		var/obj/item/organ/cyberimp/implant = organ_type
+		if(!ispath(organ_type, /obj/item/organ/cyberimp) || !initial(implant.aug_overlay))
+			continue
+		switch(initial(implant.zone))
+			if(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM)
+				arms = TRUE
+			if(BODY_ZONE_CHEST)
+				chest = TRUE
+			if(BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+				legs = TRUE
+	if(!arms && !chest && !legs)
+		return
+	var/obj/item/clothing/suit = dummy.wear_suit
+	if((istype(suit) && (suit.clothing_flags & STOPSPRESSUREDAMAGE)) || istype(dummy.back, /obj/item/mod/control))
+		return
+	if(suit && (arms || chest))
+		bounty_chrome_take_off(dummy, suit)
+	if(arms && dummy.gloves)
+		bounty_chrome_take_off(dummy, dummy.gloves)
+	if(legs && dummy.shoes)
+		bounty_chrome_take_off(dummy, dummy.shoes)
+	if(!arms && !chest && !legs)
+		return
+	// Arm or chest chrome: a jumpsuit rolled down to the waist, the way a player wears one
+	var/obj/item/clothing/under/uniform = dummy.w_uniform
+	if(!legs && istype(uniform) && uniform.can_adjust && !uniform.alt_covers_chest && uniform.adjusted == NORMAL_STYLE)
+		uniform.toggle_jumpsuit_adjust()
+		dummy.update_worn_undersuit()
+		return
+	// Trousers for chest or arm chrome, shorts for leg chrome: the belt goes back on over them
+	var/static/list/trousers = list(/obj/item/clothing/under/pants/jeans, /obj/item/clothing/under/pants/camo, /obj/item/clothing/under/pants/track)
+	var/static/list/shorts = list(/obj/item/clothing/under/shorts/jeanshorts, /obj/item/clothing/under/shorts/black, /obj/item/clothing/under/shorts/grey)
+	var/obj/item/belt = dummy.belt
+	if(belt)
+		dummy.temporarilyRemoveItemFromInventory(belt, force = TRUE)
+	if(dummy.w_uniform)
+		bounty_chrome_take_off(dummy, dummy.w_uniform)
+	var/bottoms = pick(legs ? shorts : trousers)
+	dummy.equip_to_slot_or_del(new bottoms(dummy), ITEM_SLOT_ICLOTHING, initial = TRUE)
+	if(belt && !QDELETED(belt) && !dummy.equip_to_slot_if_possible(belt, ITEM_SLOT_BELT, disable_warning = TRUE, initial = TRUE))
+		qdel(belt)
+
+/// Takes `thing` off a look dummy and deletes it
+/proc/bounty_chrome_take_off(mob/living/carbon/human/dummy/dummy, obj/item/thing)
+	dummy.temporarilyRemoveItemFromInventory(thing, force = TRUE)
+	qdel(thing)
+
 /// Gives `fighter` (a criminal or a companion) the pieces `keys`, adding to any it has. For spawning and for admins.
 /proc/bounty_chrome_install(mob/living/basic/fighter, list/keys)
 	if(QDELETED(fighter) || !length(keys))
