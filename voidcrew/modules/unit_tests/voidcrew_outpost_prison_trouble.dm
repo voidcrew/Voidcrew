@@ -14,14 +14,14 @@
  */
 
 /// A prisoner whose AI counts as running, as if someone were on the level
-/mob/living/basic/outpost_prisoner/awake_for_test
+/mob/living/carbon/human/npc/outpost_prisoner/awake_for_test
 
-/mob/living/basic/outpost_prisoner/awake_for_test/ai_running()
+/mob/living/carbon/human/npc/outpost_prisoner/awake_for_test/ai_running()
 	return TRUE
 
 /// Like trouble_prisoner(), but awake: threats, fights, spats and wrecks need someone on the level
 /datum/unit_test/voidcrew_outpost_management/proc/trouble_awake_prisoner(datum/outpost_prison/prison, turf/spot, personality = "chatty")
-	var/mob/living/basic/outpost_prisoner/prisoner = new /mob/living/basic/outpost_prisoner/awake_for_test(spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new /mob/living/carbon/human/npc/outpost_prisoner/awake_for_test(spot)
 	prison.admit(prisoner)
 	prisoner.sentence_left = 3600
 	prisoner.set_hunger(100)
@@ -53,7 +53,7 @@
 	return treasury
 
 /// The mood drift a prisoner should have from the parts it is made of, as mood_drift_per_minute() adds them
-/datum/unit_test/voidcrew_outpost_management/proc/trouble_expected_drift(mob/living/basic/outpost_prisoner/prisoner, extra_gain = 0, extra_loss = 0, subdued = FALSE)
+/datum/unit_test/voidcrew_outpost_management/proc/trouble_expected_drift(mob/living/carbon/human/npc/outpost_prisoner/prisoner, extra_gain = 0, extra_loss = 0, subdued = FALSE)
 	var/list/needs = prisoner.needs_mood_per_minute()
 	var/list/wing = prisoner.wing_mood_per_minute()
 	var/loss = needs[2] + (subdued ? 0 : wing[2]) + extra_loss
@@ -70,9 +70,9 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodowner")
 	TEST_ASSERT_NOTNULL(home, "The mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/fresh_arrival = allocate(/mob/living/basic/outpost_prisoner, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fresh_arrival = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 12, 8))
 	TEST_ASSERT_EQUAL(fresh_arrival.mood, 70, "A prisoner does not start at 70 mood") // PRISONER_MOOD_START
 	qdel(fresh_arrival)
 
@@ -166,8 +166,8 @@
 	TEST_ASSERT_NOTNULL(home, "The stage test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 11, 8))
 	var/list/both = list(first, second)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 7, 7), "stageowner")
 
@@ -272,14 +272,14 @@
 
 	// Staff beating a prisoner down while restless: the other one riots. (The calm just now would
 	// otherwise make these hits the end of the same subdual.)
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in both)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in both)
 		prisoner.trouble_ended_at = 0
 	prison.tension_spike = 0
 	set_moods(both, 35)
 	prison.update_stage(0)
 	first.adjustBruteLoss(80)
 	hit_with_toolbox(warden, first)
-	TEST_ASSERT(first.beaten_left > 0, "A prisoner at 20 health hit with a toolbox did not collapse")
+	TEST_ASSERT(first.is_beaten(), "A prisoner at 20 health hit with a toolbox did not collapse")
 	TEST_ASSERT(first.beaten_by_staff, "The collapse was not put down to staff")
 	TEST_ASSERT(prison.riot_active, "A prisoner beaten down by staff in a restless wing started no riot")
 	TEST_ASSERT_EQUAL(second.trouble, "riot", "The other prisoner did not riot")
@@ -292,7 +292,7 @@
 	// Staff killing one who is down while restless: the same, and no fine.
 	var/datum/bank_account/treasury = trouble_fund(home, 5000)
 	second.apply_damage(90, BRUTE)
-	TEST_ASSERT(second.beaten_left > 0, "A prisoner at 10 health did not collapse")
+	TEST_ASSERT(second.is_beaten(), "A prisoner at 10 health did not collapse")
 	TEST_ASSERT(!second.beaten_by_staff, "A collapse with no staff about was put down to staff")
 	prison.tension_spike = 0
 	set_moods(both, 35)
@@ -317,8 +317,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("threatowner")
 	TEST_ASSERT_NOTNULL(home, "The threat test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 10, 8), "threatowner")
 
 	// 35 or more: never.
@@ -431,10 +431,10 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("fightowner")
 	TEST_ASSERT_NOTNULL(home, "The fight test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 3, 10))
-	var/mob/living/basic/outpost_prisoner/fourth = trouble_awake_prisoner(prison, prison_spot(home, 4, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 3, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fourth = trouble_awake_prisoner(prison, prison_spot(home, 4, 10))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 8, 4), "fightowner")
 	var/list/everyone = list(first, second, third, fourth)
 
@@ -443,8 +443,8 @@
 	for(var/i in 1 to 20)
 		TEST_ASSERT_NULL(prison.try_start_fight(), "Prisoners at mood 50 started a fight") // PRISONER_FIGHT_MOOD
 	// Nor do angry ones whose AI sleeps: nobody on the level, nobody moves.
-	var/mob/living/basic/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 14, 8))
-	var/mob/living/basic/outpost_prisoner/dozing_too = trouble_prisoner(prison, prison_spot(home, 15, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dozing = trouble_prisoner(prison, prison_spot(home, 14, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/dozing_too = trouble_prisoner(prison, prison_spot(home, 15, 8))
 	set_moods(list(dozing, dozing_too), 20)
 	for(var/i in 1 to 30)
 		TEST_ASSERT_NULL(prison.try_start_fight(), "Two prisoners whose AI sleeps started a fight")
@@ -485,14 +485,14 @@
 
 	// Blows of 3-6 (PRISONER_FIGHT_HIT) until one yields at 40% or less (PRISONER_FIGHT_YIELD).
 	for(var/i in 1 to 40)
-		if(second.beaten_left > 0)
+		if(second.is_beaten())
 			break
 		var/health_before = second.health
 		TEST_ASSERT(first.confront(second), "A fighter could not land a blow")
 		var/dealt = health_before - second.health
 		TEST_ASSERT(dealt >= 3 && dealt <= 6, "A fighter's blow did [dealt], not 3-6")
 		TEST_ASSERT(second.stat != DEAD, "A prisoner's blows killed another")
-	TEST_ASSERT(second.beaten_left > 0, "A fight never ended with someone yielding")
+	TEST_ASSERT(second.is_beaten(), "A fight never ended with someone yielding")
 	TEST_ASSERT(second.health_factor() <= 40 && second.health_factor() > 30, "The loser yielded at [second.health_factor()]%, not just under 40%")
 	TEST_ASSERT_EQUAL(second.beaten_left, 20, "The loser is down for [second.beaten_left] s, not 20") // PRISONER_FIGHT_YIELD_TIME
 	TEST_ASSERT(second.can_be_dragged(), "A prisoner who yielded is standing")
@@ -512,7 +512,7 @@
 		TEST_ASSERT_NULL(prison.try_start_fight(), "A fight started inside the gap after the last")
 	// The loser gets up after 20 seconds.
 	prison.tick(19)
-	TEST_ASSERT(second.beaten_left > 0, "The loser got up early")
+	TEST_ASSERT(second.is_beaten(), "The loser got up early")
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(second.beaten_left, 0, "The loser was still down after 20 seconds")
 	TEST_ASSERT(!second.can_be_dragged(), "The loser got up but is still down")
@@ -542,7 +542,7 @@
 	third.forceMove(prison_spot(home, 7, 8))
 	first.strike(third)
 	TEST_ASSERT(third.stat != DEAD && third.health >= 1, "A punch killed a prisoner at 3 health")
-	TEST_ASSERT(third.beaten_left > 0, "A prisoner at 1-3 health did not collapse")
+	TEST_ASSERT(third.is_beaten(), "A prisoner at 1-3 health did not collapse")
 	// Treated above 40% they get up; untreated, after two minutes (PRISONER_BEATEN_TIME).
 	third.adjustBruteLoss(-(third.getBruteLoss() - 50))
 	prison.tick(1)
@@ -551,7 +551,7 @@
 	// Only staff can kill a prisoner who is down.
 	third.adjustBruteLoss(-third.getBruteLoss())
 	third.apply_damage(95, BRUTE)
-	TEST_ASSERT(third.beaten_left > 0, "A prisoner at 5 health did not collapse")
+	TEST_ASSERT(third.is_beaten(), "A prisoner at 5 health did not collapse")
 	TEST_ASSERT(is_line_for(third.last_line, "beaten"), "The beaten prisoner said no beaten line: [third.last_line]")
 	warden.forceMove(prison_spot(home, 7, 7))
 	for(var/i in 1 to 5)
@@ -599,10 +599,10 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("forceowner")
 	TEST_ASSERT_NOTNULL(home, "The force test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/fighter = trouble_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/rival = trouble_prisoner(prison, prison_spot(home, 11, 8))
-	var/mob/living/basic/outpost_prisoner/plain = trouble_prisoner(prison, prison_spot(home, 4, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/fighter = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rival = trouble_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/plain = trouble_prisoner(prison, prison_spot(home, 4, 10))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "forceowner")
 
 	// A rioter hit by staff loses no mood and adds no tension.
@@ -668,7 +668,7 @@
 	plain.apply_damage(150, BRUTE)
 	TEST_ASSERT_EQUAL(plain.stat, CONSCIOUS, "150 damage killed a standing prisoner")
 	TEST_ASSERT_EQUAL(plain.health, 1, "150 damage left a standing prisoner at [plain.health] health, not 1")
-	TEST_ASSERT(plain.beaten_left > 0 && plain.can_be_dragged(), "A prisoner spared a killing blow did not collapse")
+	TEST_ASSERT(plain.is_beaten() && plain.can_be_dragged(), "A prisoner spared a killing blow did not collapse")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 5000, "A blow nobody was blamed for cost the treasury")
 	// A hit on the downed one kills, and staff get the blame, but no fine.
 	warden.forceMove(prison_spot(home, 5, 10))
@@ -705,10 +705,10 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
 	var/obj/machinery/computer/outpost_prison_warden/console = locate() in prison_spot(home, 7, 5)
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 7), "cheerful")
-	var/mob/living/basic/outpost_prisoner/nervous = trouble_prisoner(prison, prison_spot(home, 6, 8), "nervous")
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 7), "cheerful")
+	var/mob/living/carbon/human/npc/outpost_prisoner/nervous = trouble_prisoner(prison, prison_spot(home, 6, 8), "nervous")
 	var/list/everyone = list(first, second, third, nervous)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 8, 4), "riotowner")
 	var/list/calm_data = console.ui_data(warden)
@@ -731,10 +731,10 @@
 	TEST_ASSERT_EQUAL(second.trouble, "riot", "A grumpy prisoner at 50 did not join")
 	TEST_ASSERT_NULL(third.trouble, "A cheerful prisoner at 45 joined")
 	TEST_ASSERT_NULL(nervous.trouble, "A nervous prisoner at 35 joined")
-	for(var/mob/living/basic/outpost_prisoner/bystander as anything in list(third, nervous))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/bystander as anything in list(third, nervous))
 		TEST_ASSERT(istype(bystander.activity, /datum/prisoner_activity/hide), "[bystander] did not go to sit the riot out ([bystander.activity?.type])")
 		TEST_ASSERT(bystander.cell?.turf_set[bystander.activity?.spot], "[bystander] is sitting the riot out outside their cell")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second))
 		TEST_ASSERT(istype(rioter.held_item, /obj/item/knife/shiv), "[rioter] has no shiv out")
 		TEST_ASSERT_EQUAL(rioter.bubble, "riot", "[rioter] shows the [rioter.bubble] bubble, not the shiv")
 		TEST_ASSERT_EQUAL(rioter.melee_damage_lower, 10, "A shiv does not hit harder") // PRISONER_SHIV_MIN
@@ -818,7 +818,7 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/item/knife/shiv) in first.loc, "A stunned rioter dropped no shiv")
 	TEST_ASSERT(abs(first.mood - first_mood) < 0.01, "Stunning a rioter moved their mood to [first.mood]")
 	second.apply_damage(90, BRUTE)
-	TEST_ASSERT(second.beaten_left > 0, "A rioter at 10 health did not collapse")
+	TEST_ASSERT(second.is_beaten(), "A rioter at 10 health did not collapse")
 	TEST_ASSERT_EQUAL(second.trouble, "riot", "A beaten rioter stopped rioting")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/knife/shiv) in second.loc, "A beaten rioter dropped no shiv")
 
@@ -829,7 +829,7 @@
 	// not even the window beside the cell door.
 	var/list/cell_doors = list()
 	for(var/list/pair as anything in list(list(first, prison.cells[1], prison_spot(home, 3, 14)), list(second, prison.cells[2], prison_spot(home, 7, 14))))
-		var/mob/living/basic/outpost_prisoner/downed = pair[1]
+		var/mob/living/carbon/human/npc/outpost_prisoner/downed = pair[1]
 		var/datum/outpost_prison_cell/downed_cell = pair[2]
 		var/obj/machinery/door/airlock/downed_door = downed_cell.door()
 		downed.forceMove(pair[3])
@@ -854,7 +854,7 @@
 	prison.tension_spike = 40
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "The riot went on with every rioter bolted in a cell")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second, third))
 		TEST_ASSERT(isnull(rioter.trouble), "[rioter] kept rioting after the riot")
 		TEST_ASSERT(abs(rioter.mood - 50) < 1, "[rioter] calmed to [rioter.mood], not 50")
 		TEST_ASSERT(rioter.lockdown_left > 0, "[rioter] was shut in a cell and owes no lockdown")
@@ -867,7 +867,7 @@
 	// Their lockdown is the capture test's; out they come, clear of it.
 	for(var/obj/machinery/door/airlock/bolted as anything in cell_doors)
 		bolted.unbolt()
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second, third))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second, third))
 		rioter.lockdown_left = 0
 	first.forceMove(prison_spot(home, 8, 8))
 	second.forceMove(prison_spot(home, 10, 8))
@@ -913,13 +913,13 @@
 	TEST_ASSERT_NULL(prison.trouble_payload()["breakout_in"], "The breakout countdown outlived the breakout")
 	var/list/breakout_data = console.ui_data(warden)
 	TEST_ASSERT_EQUAL(breakout_data["alarm"], "breakout", "The breakout alarm is [breakout_data["alarm"]]")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in everyone)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in everyone)
 		TEST_ASSERT_EQUAL(rioter.trouble, "breakout", "[rioter] is [rioter.trouble] in the breakout")
 		TEST_ASSERT_EQUAL(rioter.loose_left, 300, "[rioter] has [rioter.loose_left] s on their breakout clock")
 	TEST_ASSERT_EQUAL(length(prison.trouble_payload()["loose"]), 4, "The console lists [length(prison.trouble_payload()["loose"])] prisoners on the clock")
 	// Breaking out, every rioter goes for a way out, never a fixture on the way.
 	prison.riot_detour_chance = 100
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in everyone)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in everyone)
 		var/atom/exit = rioter.riot_target()
 		TEST_ASSERT_NOTNULL(exit, "[rioter] breaking out found no way out to hit")
 		TEST_ASSERT(prison.is_exit_blocker(exit), "[rioter] breaking out went for [exit] at [exit.x],[exit.y], which is no way out")
@@ -957,7 +957,7 @@
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
 /datum/unit_test/voidcrew_outpost_prison_riot_clocks/proc/all_gone(list/prisoners)
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prisoners)
 		if(!QDELETED(prisoner))
 			return FALSE
 	return TRUE
@@ -995,7 +995,7 @@
 	TEST_ASSERT(prison.riot_active, "The rioters were transferred early")
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "Ten minutes of sit-in did not end the riot")
-	for(var/mob/living/basic/outpost_prisoner/sitter as anything in sitters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/sitter as anything in sitters)
 		TEST_ASSERT_EQUAL(sitter.phase, "leaving", "[sitter] was not transferred out")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 10000 - 2250, "Three transfers took [10000 - treasury.account_balance], not 2250")
 	TEST_ASSERT(10000 - treasury.account_balance <= 2500, "One sit-in cost more than the incident cap") // OUTPOST_PRISON_INCIDENT_FINE_CAP
@@ -1009,9 +1009,9 @@
 	// are free, but their clock waits while they are down.
 	prison.crew_home_override = TRUE
 	treasury = trouble_fund(home, 10000)
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/stayer = trouble_prisoner(prison, prison_spot(home, 10, 8))
-	var/mob/living/basic/outpost_prisoner/downed = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/stayer = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/downed = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	TEST_ASSERT(prison.start_riot("test", everyone = TRUE), "The breakout riot did not start")
 	prison.tick(180)
 	TEST_ASSERT(prison.breaking_out, "Three minutes of riot with the crew home did not break out")
@@ -1054,7 +1054,7 @@
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	var/obj/machinery/door/window/yard_door = hatch.yard_windoor()
 	var/obj/machinery/door/window/staff_door = hatch.staff_windoor()
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 5, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 5, 7))
 	runner.set_mood(30)
 
 	// The climb needs both window doors open (PRISONER_CLIMB_MOOD 50 and below 50 mood).
@@ -1161,7 +1161,7 @@
 	var/list/bounds = prison.upgrade.footprint_bounds
 	var/turf/outside = locate(bounds[1] + 8, bounds[2] - 2, bounds[5])
 	TEST_ASSERT(get_area(outside) != prison.wing, "The spot outside the wing is in the wing")
-	var/mob/living/basic/outpost_prisoner/carried = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/carried = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	carried.adjustStaminaLoss(200)
 	carried.forceMove(outside)
 	prison.tick(1)
@@ -1179,7 +1179,7 @@
 	carried.setStaminaLoss(0)
 
 	// Turrets (interim rule): prisoners in the wing are left alone, rioting or loose; outside it, fair game.
-	var/mob/living/basic/outpost_prisoner/target = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	TEST_ASSERT(!is_hostile_creature(target), "A turret would shoot a prisoner in the yard")
 	target.start_rioting()
 	TEST_ASSERT(!is_hostile_creature(target), "A turret would shoot a rioter in the wing")
@@ -1204,8 +1204,8 @@
 	TEST_ASSERT_NOTNULL(home, "The lock-in test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/inmate = trouble_awake_prisoner(prison, prison_spot(home, 3, 14))
-	var/mob/living/basic/outpost_prisoner/yardbird = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = trouble_awake_prisoner(prison, prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/yardbird = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/datum/outpost_prison_cell/cell_one = prison.cells[1]
 	TEST_ASSERT_EQUAL(inmate.cell, cell_one, "The inmate is not in cell 1")
 	var/obj/machinery/door/airlock/cell_door = cell_one.door()
@@ -1313,9 +1313,9 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("talkowner")
 	TEST_ASSERT_NOTNULL(home, "The talk test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "talkowner")
 	warden.drop_all_held_items()
 	warden.set_combat_mode(FALSE)
@@ -1366,10 +1366,10 @@
 /datum/unit_test/voidcrew_outpost_prison_retaliation
 	parent_type = /datum/unit_test/voidcrew_outpost_management
 
-/datum/unit_test/voidcrew_outpost_prison_retaliation/proc/is_down(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_retaliation/proc/is_down(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return prisoner.can_be_dragged()
 
-/datum/unit_test/voidcrew_outpost_prison_retaliation/proc/is_up(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_retaliation/proc/is_up(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !prisoner.can_be_dragged()
 
 /datum/unit_test/voidcrew_outpost_prison_retaliation/Run()
@@ -1389,7 +1389,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("hitbackowner")
 	TEST_ASSERT_NOTNULL(home, "The hitting back test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "hitbackowner")
 
 	// A calm prisoner hit by a player hits back (the roll forced): at the attacker, with a line.
@@ -1496,7 +1496,7 @@
 
 	// Already in trouble, they turn on whoever hit them, without a roll.
 	var/mob/living/carbon/human/bystander = make_player(prison_spot(home, 7, 9), "hitbackbystander")
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 7, 8))
 	rioter.start_rioting(FALSE)
 	hit_with_toolbox(bystander, rioter)
 	TEST_ASSERT_EQUAL(rioter.swing_ref?.resolve(), bystander, "A rioter did not turn on the player who hit them")
@@ -1507,7 +1507,7 @@
 	rioter.end_retaliation()
 
 	// A guard's blow is not a player's.
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 10, 9), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 10, 9), awake = FALSE)
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
 	TEST_ASSERT(!prisoner.may_react_to_hit(guard), "A guard's blow gets a reaction")
 	prison.forced_hit_reaction = null
@@ -1530,7 +1530,7 @@
 	last_blow = list("damage" = damage, "type" = damagetype, "wound_bonus" = wound_bonus, "exposed" = exposed_wound_bonus, "sharpness" = sharpness)
 
 /// One blow from `prisoner` at a freshly healed `warden`; returns the brute it did
-/datum/unit_test/voidcrew_outpost_prison_shiv_blows/proc/blow(mob/living/basic/outpost_prisoner/prisoner, mob/living/carbon/human/warden)
+/datum/unit_test/voidcrew_outpost_prison_shiv_blows/proc/blow(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/carbon/human/warden)
 	warden.fully_heal()
 	last_blow = null
 	prisoner.strike(warden)
@@ -1540,7 +1540,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("shivowner")
 	TEST_ASSERT_NOTNULL(home, "The shiv test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "shivowner")
 	RegisterSignal(warden, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(note_blow))
 	// A body that takes any wound a blow is able to give, so whether it can wound is not left to the
@@ -1590,7 +1590,7 @@
 	// A guard takes the same blows and is still on duty after five of them (down at 30 of 120 health).
 	warden.fully_heal()
 	warden.forceMove(prison_spot(home, 12, 4))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 9, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 9, 8), awake = FALSE)
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
 	for(var/i in 1 to 5)
 		TEST_ASSERT(prisoner.strike(guard), "The prisoner could not strike the guard")
@@ -1599,7 +1599,7 @@
 
 	// At another prisoner a stab stays at 7-10 (PRISONER_STAB_MIN/MAX); the mercy rule is tested with fights.
 	guard.forceMove(prison_spot(home, 13, 4))
-	var/mob/living/basic/outpost_prisoner/other = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = trouble_prisoner(prison, prison_spot(home, 9, 8))
 	var/health_before = other.health
 	TEST_ASSERT(prisoner.strike(other), "The prisoner could not stab another prisoner")
 	TEST_ASSERT(health_before - other.health >= 7 && health_before - other.health <= 10, "A stab at a prisoner did [health_before - other.health], not 7-10")

@@ -310,7 +310,7 @@
 		TEST_ASSERT_EQUAL(fixture.light_range, normal_range, "[fixture] at [fixture.x],[fixture.y] kept the emergency range")
 
 	// The lights going out puts the wing on edge on the second dark sample in a row, once.
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the lights-out check")
 	for(var/obj/machinery/light/fixture as anything in prison.wing_lights)
 		fixture.break_light_tube(TRUE)
@@ -337,7 +337,7 @@
 	prison.refresh_conditions()
 	var/obj/machinery/power/apc/apc = prison.wing.apc
 	TEST_ASSERT_NOTNULL(apc, "The wing has no APC")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the power checks")
 	prison.tension_spike = 0
 
@@ -440,7 +440,7 @@
 
 	// Bad air hurts, a point every 5 seconds (PRISON_AIR_DAMAGE), never below 30% (PRISON_AIR_HEALTH_FLOOR).
 	var/turf/open/spot = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, spot)
 	TEST_ASSERT_NOTNULL(prisoner, "No prisoner for the air checks")
 	var/datum/gas_mixture/air = spot.return_air()
 	TEST_ASSERT(!outpost_prison_unsafe_air(air), "The wing's own air counts as unsafe")
@@ -466,7 +466,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("moodwingowner")
 	TEST_ASSERT_NOTNULL(home, "The wing mood test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(abs(prison.conditions_score() - 100) < 0.01, "The mood test wing is not in perfect condition")
 	// Per minute: a well kept prisoner in a clean, lit, powered wing gains 2 (PRISONER_MOOD_GOOD_WING).
 	TEST_ASSERT(drift_is(prisoner, 2), "A well kept prisoner drifts [prisoner.mood_drift_per_minute()], not +2")

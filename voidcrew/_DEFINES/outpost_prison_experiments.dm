@@ -236,5 +236,10 @@
 #define OUTPOST_KESSLER_TEAM_TIME (5 SECONDS)
 /// How long a Kessler beam takes, in and out
 #define OUTPOST_KESSLER_BEAM_TIME (3 SECONDS)
+/// From a real hit on Kessler staff to Kessler's beam taking them out ("I'm leaving!")
+#define OUTPOST_KESSLER_ASSAULT_BEAM_DELAY (2 SECONDS)
+/// Seconds before Kessler sends anyone again after its researcher was killed on a visit
+#define OUTPOST_KESSLER_KILLED_WAIT_MIN (90 * 60)
+#define OUTPOST_KESSLER_KILLED_WAIT_MAX (120 * 60)
 /// The creatures' sentience type: it matches no potion, lazarus injector or ghost role (the spec's SENTIENCE_NONE)
 #define OUTPOST_EXPERIMENT_NO_SENTIENCE 0

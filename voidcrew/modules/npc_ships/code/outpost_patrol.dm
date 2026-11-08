@@ -185,7 +185,7 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
 
 /// Whether a breakout controller leaves `target` alone: prisoners, and anyone else breaking out
 /proc/is_outpost_breakout_ally(mob/living/target)
-	if(istype(target, /mob/living/basic/outpost_prisoner))
+	if(istype(target, /mob/living/carbon/human/npc/outpost_prisoner))
 		return TRUE
 	return istype(target?.ai_controller, /datum/ai_controller/basic_controller/outpost_breakout)
 

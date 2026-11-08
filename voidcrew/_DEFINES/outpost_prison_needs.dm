@@ -37,7 +37,7 @@
 #define PRISONER_MOOD_CLEAN_UNIFORM 8
 #define PRISONER_MOOD_TREATED 8
 
-// Where a prisoner is in their stay (/mob/living/basic/outpost_prisoner/var/phase)
+// Where a prisoner is in their stay (/mob/living/carbon/human/npc/outpost_prisoner/var/phase)
 /// Being beamed into their cell
 #define PRISONER_ARRIVING "arriving"
 /// In the wing, serving their sentence
@@ -45,7 +45,7 @@
 /// Being beamed out, released or collected
 #define PRISONER_LEAVING "leaving"
 
-// What /mob/living/basic/outpost_prisoner/proc/try_reach() found
+// What /mob/living/carbon/human/npc/outpost_prisoner/proc/try_reach() found
 #define PRISONER_REACH_FAILED 0
 #define PRISONER_REACH_OK 1
 /// Their side of a serving hatch is opening

@@ -21,10 +21,10 @@
 	prison.refresh_reach()
 	return door
 
-/datum/unit_test/voidcrew_outpost_management/proc/capture_cuffed(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/capture_cuffed(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !!prisoner.cuffs
 
-/datum/unit_test/voidcrew_outpost_management/proc/capture_uncuffed(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/capture_uncuffed(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !prisoner.cuffs && !prisoner.cuff_work
 
 /// Whether the prison's log has an entry containing `text`
@@ -47,7 +47,7 @@
 	TEST_ASSERT_NOTNULL(staff_door, "The staff door is not where the map puts it")
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 8, 5), "dragowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 10, 5), "dragvisitor")
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 9, 5))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 9, 5))
 	staff_door.autoclose = FALSE
 	staff_door.open()
 	TEST_ASSERT(!staff_door.density, "The staff door did not open")
@@ -92,7 +92,7 @@
 
 	// A runner caught out on the outpost: on their feet they must be put down first; cuffed, their
 	// clock waits and turrets leave them be; walked back into the cell block, they are recaptured.
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	var/list/bounds = prison.upgrade.footprint_bounds
 	var/turf/outside = locate(bounds[1] + 8, bounds[2] - 2, bounds[5])
 	TEST_ASSERT(get_area(outside) != prison.wing, "The spot outside the wing is in the wing")
@@ -125,7 +125,7 @@
 	// their pathing goes through it. Shut, it still won't open for them.
 	var/obj/machinery/door/airlock/security/prison_staff/entrance = locate() in prison_spot(home, 9, 1)
 	TEST_ASSERT_NOTNULL(entrance, "The entrance is not where the map puts it")
-	var/mob/living/basic/outpost_prisoner/bolter = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/bolter = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	bolter.forceMove(prison_spot(home, 9, 3))
 	prison.tick(1)
 	TEST_ASSERT_EQUAL(bolter.trouble, "loose", "A prisoner loose in the office is [bolter.trouble]") // PRISONER_TROUBLE_LOOSE
@@ -149,8 +149,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 7, 8), "cuffsowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 11, 8), "cuffsvisitor")
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/other = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	var/obj/item/restraints/handcuffs/cuffs = allocate(__IMPLIED_TYPE__)
 
 	// Members only; on their feet only while out of trouble; used zipties are no use.
@@ -290,7 +290,7 @@
 	var/turf/release_spot = get_turf(other)
 	prison.release(other)
 	TEST_ASSERT_EQUAL(leaving_cuffs.loc, release_spot, "A released prisoner took the cuffs with them")
-	var/mob/living/basic/outpost_prisoner/deleted = trouble_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/deleted = trouble_prisoner(prison, prison_spot(home, 10, 10))
 	var/obj/item/restraints/handcuffs/deleted_cuffs = allocate(__IMPLIED_TYPE__)
 	TEST_ASSERT(deleted.apply_cuffs(deleted_cuffs), "The cuffs did not go on for the deletion check")
 	var/turf/deleted_spot = get_turf(deleted)
@@ -308,9 +308,9 @@
 	TEST_ASSERT_NOTNULL(home, "The riot capture test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/bystander = trouble_prisoner(prison, prison_spot(home, 4, 10), "cheerful")
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/bystander = trouble_prisoner(prison, prison_spot(home, 4, 10), "cheerful")
 	set_moods(list(first, second), 20)
 	TEST_ASSERT(prison.start_riot("test"), "The riot did not start")
 	TEST_ASSERT(first.is_rioting() && second.is_rioting() && !bystander.is_rioting(), "The wrong prisoners joined the riot")
@@ -363,7 +363,7 @@
 	bystander.adjustStaminaLoss(200)
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "The riot went on with every rioter cuffed, down or shut in a cell")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second, bystander))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second, bystander))
 		TEST_ASSERT_NULL(rioter.trouble, "[rioter] kept rioting after the riot")
 		TEST_ASSERT(abs(rioter.mood - 50) < 1, "[rioter] calmed to [rioter.mood], not 50")
 	TEST_ASSERT(second.lockdown_left > 0, "The rioter shut in a cell owes no lockdown after the riot")
@@ -416,7 +416,7 @@
 	second.forceMove(prison_spot(home, 10, 8))
 	prison.refresh_reach()
 	set_moods(list(second, bystander), 70)
-	var/mob/living/basic/outpost_prisoner/doomed = trouble_prisoner(prison, prison_spot(home, 12, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/doomed = trouble_prisoner(prison, prison_spot(home, 12, 8), "grumpy")
 	doomed.set_mood(10)
 	TEST_ASSERT(prison.start_riot("test"), "The last riot did not start")
 	TEST_ASSERT(doomed.is_rioting() && !second.is_rioting(), "The wrong prisoners joined the last riot")
@@ -442,7 +442,7 @@
 	if(!prison.start_riot("test"))
 		return FALSE
 	prison.tick(5)
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		if(!rioter.is_rioting())
 			return FALSE
 	return TRUE
@@ -452,9 +452,9 @@
 	TEST_ASSERT_NOTNULL(home, "The riot end test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
-	var/mob/living/basic/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8), "grumpy")
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 12, 8), "grumpy")
 	var/list/rioters = list(first, second, third)
 
 	// Every rioter cuffed, two in the yard and one in their own cell with the door left unbolted:
@@ -463,19 +463,19 @@
 	third.forceMove(third.cell.arrival_turf())
 	prison.refresh_reach()
 	TEST_ASSERT(!third.is_confined(), "A rioter behind an unbolted cell door counts as shut in")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second))
 		TEST_ASSERT(rioter.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "[rioter] could not be cuffed")
 	prison.tick(1)
 	TEST_ASSERT(prison.riot_active, "The riot ended with a rioter free in an unbolted cell")
 	TEST_ASSERT(third.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The rioter in the unbolted cell could not be cuffed")
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "The riot went on with every rioter cuffed")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		TEST_ASSERT_NULL(rioter.trouble, "[rioter] kept rioting after the riot")
 		TEST_ASSERT(rioter.cuffs, "The end of the riot took [rioter]'s cuffs off")
 		TEST_ASSERT_EQUAL(rioter.lockdown_left, 0, "[rioter] was never shut in a cell but owes lockdown")
 	TEST_ASSERT(!prison.incident_open, "The incident outlived the cuffed riot")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		rioter.remove_cuffs()
 	third.forceMove(prison_spot(home, 12, 8))
 	prison.refresh_reach()
@@ -500,7 +500,7 @@
 	capture_bolt(prison, third.cell)
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "The riot went on with every rioter bolted in a cell")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in rioters)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in rioters)
 		TEST_ASSERT_NULL(rioter.trouble, "[rioter] kept rioting after the riot")
 		TEST_ASSERT(rioter.lockdown_left > 0, "[rioter] was shut in a cell and owes no lockdown")
 	prison.admin_calm()
@@ -514,7 +514,7 @@
 	// A rioter deleted mid-riot drops out of the count: with the others cuffed, the riot is over.
 	// Knocked off their feet for a moment, the last one still counts.
 	TEST_ASSERT(riot_of(prison, rioters), "The third riot did not start with all three")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second))
 		TEST_ASSERT(rioter.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "[rioter] could not be cuffed")
 	prison.tick(1)
 	TEST_ASSERT(prison.riot_active, "The riot ended with a rioter free in the yard")
@@ -529,7 +529,7 @@
 	prison.tick(1)
 	TEST_ASSERT(!prison.riot_active, "The riot went on after its last free rioter was deleted")
 	TEST_ASSERT(!prison.incident_open, "The incident outlived the riot")
-	for(var/mob/living/basic/outpost_prisoner/rioter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/rioter as anything in list(first, second))
 		rioter.remove_cuffs()
 	settle_prison_air(home)
 
@@ -544,8 +544,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.crew_home_override = TRUE
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 8, 4), "lockdownowner")
-	var/mob/living/basic/outpost_prisoner/inmate = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
-	var/mob/living/basic/outpost_prisoner/yardbird = trouble_prisoner(prison, prison_spot(home, 12, 8), "cheerful")
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = trouble_prisoner(prison, prison_spot(home, 8, 8), "chatty")
+	var/mob/living/carbon/human/npc/outpost_prisoner/yardbird = trouble_prisoner(prison, prison_spot(home, 12, 8), "cheerful")
 	var/datum/outpost_prison_cell/cell = inmate.cell
 
 	// A rioter shut in a cell owes four minutes of lockdown (PRISON_RIOT_LOCKDOWN_TIME).

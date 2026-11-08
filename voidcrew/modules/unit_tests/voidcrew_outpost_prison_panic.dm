@@ -35,8 +35,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
 	// One by the bookcases in the yard's corner, one in front of the office windows
-	var/mob/living/basic/outpost_prisoner/corner = trouble_prisoner(prison, prison_spot(home, 3, 8))
-	var/mob/living/basic/outpost_prisoner/watcher = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/corner = trouble_prisoner(prison, prison_spot(home, 3, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/watcher = trouble_prisoner(prison, prison_spot(home, 8, 8))
 
 	// A hulk in the office behind the wall: outside the cell block and out of their sight, so nobody runs.
 	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 3, 3), prison, null)
@@ -121,7 +121,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
 	var/turf/middle = prison_spot(home, 9, 8)
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, middle)
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, middle)
 	var/datum/outpost_prison_cell/own = runner.cell
 	TEST_ASSERT_NOTNULL(own, "The test prisoner has no cell")
 	var/obj/structure/chair/seat = own.chair()
@@ -188,8 +188,8 @@
 	TEST_ASSERT_NOTNULL(home, "The rioter test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
-	var/mob/living/basic/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	set_moods(list(first, second), 20)
 
 	// Two fighters who roll to run: the fight is over, and they run like anyone.
@@ -198,7 +198,7 @@
 	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 9, 10), prison, null)
 	prison.experiment_creature_appeared(hulk, "hulk")
 	TEST_ASSERT(!length(prison.fights), "Two fighters who ran from a hulk kept fighting")
-	for(var/mob/living/basic/outpost_prisoner/fighter as anything in list(first, second))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/fighter as anything in list(first, second))
 		TEST_ASSERT(fighter.trouble != "fight", "[fighter] is still fighting") // PRISONER_TROUBLE_FIGHT
 		TEST_ASSERT(istype(fighter.activity, /datum/prisoner_activity/creature_panic), "[fighter] did not run from the hulk ([fighter.activity?.type])")
 
@@ -261,8 +261,8 @@
 	TEST_ASSERT_NOTNULL(home, "The shelter test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	trouble_fund(home, 0)
-	var/mob/living/basic/outpost_prisoner/subject = trouble_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/hider = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/hider = trouble_prisoner(prison, prison_spot(home, 8, 8))
 
 	// While the serum works, nothing waits for it: no protective custody, incidents and wing events
 	// can come, a riot can start, and the guards stay on duty.

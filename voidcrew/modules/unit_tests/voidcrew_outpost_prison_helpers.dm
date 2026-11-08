@@ -67,7 +67,7 @@
 
 /// A prisoner booked into the first free cell by hand, standing still at `spot`, fed and in a clean uniform
 /datum/unit_test/voidcrew_outpost_management/proc/test_prisoner(datum/outpost_prison/prison, turf/spot)
-	var/mob/living/basic/outpost_prisoner/prisoner = new(spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = new(spot)
 	prison.admit(prisoner)
 	prisoner.sentence_left = 3600
 	prisoner.set_hunger(100)
@@ -103,7 +103,7 @@
 	return windoor && !windoor.density && !windoor.operating
 
 /// Keeps a prisoner reaching for `thing` (opening a hatch as needed) until they can, or 12 seconds pass
-/datum/unit_test/voidcrew_outpost_management/proc/reach_until_ok(mob/living/basic/outpost_prisoner/prisoner, obj/item/thing)
+/datum/unit_test/voidcrew_outpost_management/proc/reach_until_ok(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/item/thing)
 	var/deadline = world.time + 12 SECONDS
 	while(world.time < deadline)
 		if(prisoner.try_reach(thing) == 1) // PRISONER_REACH_OK
@@ -115,7 +115,7 @@
  * Plays one activity to its end as the AI would, with walks done by teleport. Returns what the
  * last tick returned (1 done), or 0 if it ran out of steps.
  */
-/datum/unit_test/voidcrew_outpost_management/proc/drive_activity(mob/living/basic/outpost_prisoner/prisoner, datum/prisoner_activity/activity, steps = 40, list/walked)
+/datum/unit_test/voidcrew_outpost_management/proc/drive_activity(mob/living/carbon/human/npc/outpost_prisoner/prisoner, datum/prisoner_activity/activity, steps = 40, list/walked)
 	for(var/i in 1 to steps)
 		if(QDELETED(activity) || prisoner.activity != activity)
 			return 1
@@ -159,16 +159,16 @@
 
 /// A prisoner with a known personality at mood 70, booked in and standing still at `spot`
 /datum/unit_test/voidcrew_outpost_management/proc/trouble_prisoner(datum/outpost_prison/prison, turf/spot, personality = "chatty")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, spot)
 	prisoner.personality = personality
 	prisoner.set_mood(70)
 	return prisoner
 
-/datum/unit_test/voidcrew_outpost_management/proc/drift_is(mob/living/basic/outpost_prisoner/prisoner, expected)
+/datum/unit_test/voidcrew_outpost_management/proc/drift_is(mob/living/carbon/human/npc/outpost_prisoner/prisoner, expected)
 	return abs(prisoner.mood_drift_per_minute() - expected) < 0.01
 
 /datum/unit_test/voidcrew_outpost_management/proc/set_moods(list/prisoners, mood)
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in prisoners)
 		prisoner.set_mood(mood)
 
 /datum/unit_test/voidcrew_outpost_management/proc/all_lights(datum/outpost_prison/prison)

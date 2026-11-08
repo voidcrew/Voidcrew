@@ -10,7 +10,7 @@
 
 /// Whether this is an outpost prisoner
 /proc/is_outpost_prisoner(atom/thing)
-	return istype(thing, /mob/living/basic/outpost_prisoner)
+	return istype(thing, /mob/living/carbon/human/npc/outpost_prisoner)
 
 // ===== UNIFORM =====
 

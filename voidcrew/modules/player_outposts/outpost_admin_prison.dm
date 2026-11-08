@@ -94,7 +94,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 			record(user, home, "[open ? "open" : "close"] prison intake")
 		if("prison_spawn")
 			// Forced: an admin spawn ignores the cell's ready time and a running experiment
-			var/mob/living/basic/outpost_prisoner/arrival = prison.admit_next(TRUE)
+			var/mob/living/carbon/human/npc/outpost_prisoner/arrival = prison.admit_next(TRUE)
 			if(!arrival)
 				error = "No free cell."
 				return
@@ -108,7 +108,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 				return
 			record(user, home, "fill [count] prison cell\s")
 		if("prison_release", "prison_kill", "prison_remove", "prison_set", "prison_fight", "prison_breakout", "prison_wreck")
-			var/mob/living/basic/outpost_prisoner/prisoner = locate(params["ref"]) in prison.prisoners
+			var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = locate(params["ref"]) in prison.prisoners
 			if(QDELETED(prisoner))
 				error = "That prisoner is gone."
 				return
@@ -126,7 +126,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 					if(!prisoner.can_join_riot() || prisoner.trouble)
 						error = "That prisoner can't fight now."
 						return
-					var/mob/living/basic/outpost_prisoner/partner = prison.nearest_fight_partner(prisoner)
+					var/mob/living/carbon/human/npc/outpost_prisoner/partner = prison.nearest_fight_partner(prisoner)
 					if(!partner)
 						error = "No other prisoner can fight."
 						return
@@ -284,7 +284,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 			if(!istext(form) || !(form in list("hulk", "fly", "nightmare", "changeling")))
 				error = "Invalid experiment form."
 				return
-			var/mob/living/basic/outpost_prisoner/subject = locate(params["ref"]) in prison.prisoners
+			var/mob/living/carbon/human/npc/outpost_prisoner/subject = locate(params["ref"]) in prison.prisoners
 			if(QDELETED(subject))
 				error = "That prisoner is gone."
 				return
@@ -418,7 +418,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	for(var/datum/outpost_prison_cell/cell as anything in cells)
 		cell_rows += list(list("number" = cell.number, "occupant_ref" = cell.occupant ? REF(cell.occupant) : null))
 	var/list/prisoner_rows = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner as anything in roster_order())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner as anything in roster_order())
 		prisoner_rows += list(list(
 			"ref" = REF(prisoner),
 			"name" = prisoner.real_name,
@@ -440,7 +440,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 			"mood" = round(prisoner.mood),
 			"state" = prisoner.trouble_state(),
 			"loose_left" = prisoner.loose_seconds_shown(),
-			"cuffed" = !!prisoner.cuffs,
+			"cuffed" = !!prisoner.handcuffed,
 			"lockdown_left" = max(0, round(prisoner.lockdown_left)),
 		))
 	var/list/trouble_block = trouble_payload()
@@ -519,11 +519,11 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	return null
 
 /// Where their care falls between no pay and full pay, 0 to 1 (section 1's G(care))
-/mob/living/basic/outpost_prisoner/proc/admin_care_grade()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/admin_care_grade()
 	return clamp((care() - OUTPOST_PRISON_GRADE_FLOOR) / (OUTPOST_PRISON_GRADE_FULL - OUTPOST_PRISON_GRADE_FLOOR), 0, 1)
 
 /// What they are up to, in a few words
-/mob/living/basic/outpost_prisoner/proc/admin_activity_text()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/admin_activity_text()
 	if(stat == DEAD)
 		return "dead"
 	if(phase == PRISONER_ARRIVING)
@@ -532,9 +532,9 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 		return "beaming out"
 	if(pulledby)
 		return "being dragged"
-	if(beaten_left > 0)
-		return "beaten ([round(beaten_left)] s)"
-	if(cuffs)
+	if(beaten)
+		return HAS_TRAIT(src, TRAIT_CRITICAL_CONDITION) ? "beaten, in crit" : "beaten"
+	if(handcuffed)
 		if(trouble == PRISONER_TROUBLE_LOOSE)
 			return "cuffed, loose"
 		return is_rioting() ? "cuffed, rioting" : "cuffed"
@@ -559,7 +559,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	return text
 
 /// Sets one of a prisoner's values. Returns FALSE if it can't take it.
-/datum/outpost_prison/proc/admin_set(mob/living/basic/outpost_prisoner/prisoner, field, value)
+/datum/outpost_prison/proc/admin_set(mob/living/carbon/human/npc/outpost_prisoner/prisoner, field, value)
 	switch(field)
 		if("hunger")
 			prisoner.set_hunger(clamp(value, 0, 100))
@@ -598,7 +598,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 /// Applies one change to every living prisoner. Returns how many.
 /datum/outpost_prison/proc/admin_all(what)
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.stat == DEAD || prisoner.phase == PRISONER_LEAVING)
 			continue
 		count++
@@ -636,7 +636,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 		end_fight(brawl)
 	if(riot_active)
 		end_riot()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.stat == DEAD || prisoner.phase == PRISONER_LEAVING)
 			continue
 		prisoner.cancel_threat()
@@ -651,10 +651,10 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	return count
 
 /// The nearest other prisoner who could fight, for the admin fight button
-/datum/outpost_prison/proc/nearest_fight_partner(mob/living/basic/outpost_prisoner/prisoner)
-	var/mob/living/basic/outpost_prisoner/nearest
+/datum/outpost_prison/proc/nearest_fight_partner(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	var/mob/living/carbon/human/npc/outpost_prisoner/nearest
 	var/nearest_distance = INFINITY
-	for(var/mob/living/basic/outpost_prisoner/other in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other == prisoner || !other.can_join_riot() || other.trouble)
 			continue
 		var/distance = get_dist(prisoner, other)
@@ -664,10 +664,10 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	return nearest
 
 /// What the admin panel shows as their state
-/mob/living/basic/outpost_prisoner/proc/trouble_state()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/trouble_state()
 	if(trouble == PRISONER_TROUBLE_LOOSE)
 		return "loose"
-	if(beaten_left > 0)
+	if(beaten)
 		return "beaten"
 	// is_rioting() covers a breakout too; the panel tells them apart, as admin_activity_text() does
 	if(trouble == PRISONER_TROUBLE_BREAKOUT)
@@ -680,7 +680,7 @@ GLOBAL_LIST_INIT(outpost_admin_prison_crew_modes, list("auto" = null, "home" = T
 	return trouble || "normal"
 
 /// Seconds left loose, shown only while they are out of the cell block
-/mob/living/basic/outpost_prisoner/proc/loose_seconds_shown()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/loose_seconds_shown()
 	if(trouble != PRISONER_TROUBLE_LOOSE || stat == DEAD || prison?.in_cell_block(src))
 		return null
 	return max(0, round(loose_left))

@@ -38,12 +38,12 @@
 	return turret
 
 /// Lets `turret`'s warning to `prisoner` run out, and its gun cool down
-/datum/unit_test/voidcrew_outpost_management/proc/warning_over(obj/machinery/porta_turret/turret, mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/warning_over(obj/machinery/porta_turret/turret, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	LAZYSET(turret.prison_warned_at, REF(prisoner), world.time - 30) // past OUTPOST_PRISON_TURRET_WARN_TIME 2 s
 	turret.last_fired = 0
 
 /// Forgets `turret`'s warning to `prisoner` and what they did about it
-/datum/unit_test/voidcrew_outpost_management/proc/forget_warning(obj/machinery/porta_turret/turret, mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/forget_warning(obj/machinery/porta_turret/turret, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	LAZYREMOVE(turret.prison_warned_at, REF(prisoner))
 	prisoner.clear_turret_reaction()
 
@@ -60,14 +60,14 @@
 	var/obj/machinery/porta_turret/prison_test_probe/probe = allocate(/obj/machinery/porta_turret/prison_test_probe, prison_spot(home, 9, 8))
 	TEST_ASSERT(probe.turret_flags & (1<<4), "A built turret does not look for unidentified life signs by default") // TURRET_FLAG_SHOOT_ANOMALOUS
 
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prisoner/cuffed = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
-	var/mob/living/basic/outpost_prisoner/downed = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/cuffed = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/downed = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
-	var/mob/living/basic/outpost_kessler_staff/agent/agent = allocate(/mob/living/basic/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
 	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 7, 7), prison, null)
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, prison_spot(home, 8, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
@@ -185,10 +185,10 @@
 	var/stun_before = turret.stun_projectile
 	TEST_ASSERT(!outpost_prison_stun_projectile(stun_before), "The laser gun's stun setting is a stun shot, so this test proves nothing")
 
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
 	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 7, 7), prison, null)
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
@@ -267,10 +267,10 @@
 	var/obj/machinery/porta_turret/turret = still_turret(prison_spot(home, 9, 8))
 	turret.setup(allocate(/obj/item/gun/energy/disabler))
 	var/mob/living/carbon/human/staff = make_player(prison_spot(home, 7, 9), "btturretwarning")
-	var/mob/living/basic/outpost_prisoner/swinger = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/swinger = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
 	prison.refresh_reach()
 
 	// A swinger who backs off drops it, steps away, won't square up again for a while, and is not shot
@@ -370,7 +370,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
 	var/obj/machinery/porta_turret/turret = still_turret(prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 9))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
 

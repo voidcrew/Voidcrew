@@ -82,7 +82,7 @@
 	TEST_ASSERT(staff_door in path, "The rebuild after a door was deleted lost the office door")
 
 	// Assigning, and clearing every key again
-	var/mob/living/basic/outpost_prisoner/runner = allocate(/mob/living/basic/outpost_prisoner, prison_spot(home, 9, 3))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 9, 3))
 	var/datum/ai_controller/controller = swap_basic_ai_controller(runner, /datum/ai_controller/basic_controller/outpost_breakout)
 	TEST_ASSERT_NOTNULL(controller, "The breakout controller could not take a prisoner")
 	TEST_ASSERT(assign_mob_to_outpost_patrol(runner, home), "A prisoner in the office was not given the patrol")
@@ -182,8 +182,8 @@
 	TEST_ASSERT_NOTNULL(home, "The breakout test prison did not load")
 	var/key = REF(home)
 	var/turf/start = prison_spot(home, 9, 8)
-	var/mob/living/basic/outpost_prisoner/walker = allocate(/mob/living/basic/outpost_prisoner, start)
-	var/mob/living/basic/outpost_prisoner/inmate = allocate(/mob/living/basic/outpost_prisoner, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/walker = allocate(/mob/living/carbon/human/npc/outpost_prisoner, start)
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 8, 8))
 	var/mob/living/basic/trooper/other_escapee = allocate(/mob/living/basic/trooper, prison_spot(home, 10, 8))
 	TEST_ASSERT_NOTNULL(swap_basic_ai_controller(other_escapee, /datum/ai_controller/basic_controller/outpost_breakout), "The breakout controller could not take a trooper")
 
@@ -412,8 +412,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("patrolasyncowner")
 	TEST_ASSERT_NOTNULL(home, "The patrol lookup test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/caught = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/caught = trouble_prisoner(prison, prison_spot(home, 10, 8))
 
 	// With no tick left, the lookup's first CHECK_TICK has to give the tick back.
 	var/started = world.time

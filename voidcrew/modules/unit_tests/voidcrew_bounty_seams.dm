@@ -23,7 +23,7 @@
 	TEST_ASSERT_EQUAL(posting.status, "open", "A new posting is [posting.status], not open") // BOUNTY_POSTING_OPEN
 
 	// An ordinary prisoner: no record, and every bounty helper neutral.
-	var/mob/living/basic/outpost_prisoner/prisoner = allocate(/mob/living/basic/outpost_prisoner)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = allocate(/mob/living/carbon/human/npc/outpost_prisoner)
 	TEST_ASSERT_NULL(prisoner.bounty_record, "An ordinary prisoner has a bounty record")
 	TEST_ASSERT_EQUAL(prisoner.bounty_damage_mult(), 1, "An ordinary prisoner's blows are scaled")
 	TEST_ASSERT_EQUAL(prisoner.bounty_mood_scale(), 1, "An ordinary prisoner's mood losses are scaled")
@@ -37,5 +37,5 @@
 	var/datum/bounty_record/record = new
 	record.name = "Test Criminal"
 	record.gender = MALE
-	var/mob/living/basic/outpost_prisoner/caught = allocate(/mob/living/basic/outpost_prisoner, null, record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/caught = allocate(/mob/living/carbon/human/npc/outpost_prisoner, null, record)
 	TEST_ASSERT_EQUAL(caught.bounty_record, record, "A prisoner made from a record did not keep it")

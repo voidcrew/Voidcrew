@@ -67,7 +67,7 @@ GLOBAL_LIST_INIT(turret_retaliating_subtrees, typecacheof(list(
 /proc/is_hostile_creature(mob/living/creature)
 	// Outpost prisoners (outpost_prison_*.dm): left alone inside their wing, rioting or not;
 	// once loose outside it they are fair game. Turrets players build use outpost_prison_security.dm instead.
-	if(istype(creature, /mob/living/basic/outpost_prisoner))
+	if(istype(creature, /mob/living/carbon/human/npc/outpost_prisoner))
 		return is_loose_outpost_prisoner(creature)
 	// Prison experiment creatures (outpost_prison_creatures.dm): fair game anywhere, like the
 	// headslug, whose stock AI already reads as hostile. Their custom AI does not.

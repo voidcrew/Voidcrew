@@ -13,30 +13,30 @@
  */
 
 /// A prisoner whose talk menu has one more choice, standing in for other packages' (XF's search, XG's questions)
-/mob/living/basic/outpost_prisoner/talk_menu_stub
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub
 	/// The last extra choice that reached this prisoner
 	var/stub_picked
 	/// What a member's left click last did to them: "menu", "uncuff" or "shake"; the real procs sleep or need a client
 	var/stub_clicked
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_open(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_open(mob/living/user)
 	stub_clicked = "menu"
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/uncuff_by(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/uncuff_by(mob/living/user)
 	stub_clicked = "uncuff"
 	return FALSE
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/shake_awake(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/shake_awake(mob/living/user)
 	stub_clicked = "shake"
 	return FALSE
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_other_choices(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_other_choices(mob/living/user)
 	var/list/choices = ..()
 	choices = choices.Copy()
 	choices["Stub choice"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_use")
 	return choices
 
-/mob/living/basic/outpost_prisoner/talk_menu_stub/talk_menu_other_act(mob/living/user, choice)
+/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/talk_menu_other_act(mob/living/user, choice)
 	if(choice == "Stub choice")
 		stub_picked = choice
 		return TRUE
@@ -97,8 +97,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("repowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "repowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 9, 9), "repvisitor")
 	TEST_ASSERT(prison.is_member(owner), "The claim's owner is not a member of the wing")
@@ -277,7 +277,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("blowowner")
 	TEST_ASSERT_NOTNULL(home, "The blows test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/plain = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/plain = test_prisoner(prison, prison_spot(home, 8, 8))
 	plain.personality = "chatty"
 	plain.set_mood(70)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "blowowner")
@@ -335,7 +335,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("effectowner")
 	TEST_ASSERT_NOTNULL(home, "The reputation effects test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "effectowner")
 	owner.drop_all_held_items()
@@ -388,7 +388,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_greet_chance = 100
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "greetowner")
 	owner.fully_replace_character_name(owner.real_name, "Isaac Newton")
@@ -463,13 +463,13 @@
 	TEST_ASSERT(!prison.rep_say_word(prisoner, record), "A newcomer had word about a regular")
 	// Arrivals roll for it once (PRISON_REP_WORD_CHANCE, pinned), and wait 10 seconds (PRISON_REP_WORD_DELAY).
 	prison.rep_word_chance = 100
-	var/mob/living/basic/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/newcomer = test_prisoner(prison, prison_spot(home, 10, 8))
 	prison.social_tick(1)
 	TEST_ASSERT(newcomer.rep_noticed && newcomer.rep_word_left == 10, "An arrival at a 100% chance has [newcomer.rep_word_left] seconds to their word, not 10")
 	prison.social_tick(4)
 	TEST_ASSERT_EQUAL(newcomer.rep_word_left, 6, "The word's delay did not count down")
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/quiet_one = test_prisoner(prison, prison_spot(home, 11, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/quiet_one = test_prisoner(prison, prison_spot(home, 11, 8))
 	prison.social_tick(1)
 	TEST_ASSERT(quiet_one.rep_noticed && isnull(quiet_one.rep_word_left), "An arrival at a 0% chance still has word to give")
 	// With nobody notable at home, the word is let go once the wait is over (PRISON_REP_WORD_WAIT).
@@ -487,7 +487,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("menuowner")
 	TEST_ASSERT_NOTNULL(home, "The talk menu test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	prisoner.set_mood(70)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "menuowner")
@@ -503,7 +503,7 @@
 	TEST_ASSERT(!prisoner.talk_menu_act(visitor, "What are you in for?"), "A visitor's pick did something") // PRISON_TALK_CRIME
 	TEST_ASSERT(!prisoner.asked_crime && abs(prisoner.mood - 70) < 0.01, "A visitor's pick changed the prisoner")
 
-	var/mob/living/basic/outpost_prisoner/talk_menu_stub/stubbed = new(prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/talk_menu_stub/stubbed = new(prison_spot(home, 10, 8))
 	prison.admit(stubbed)
 	stubbed.sentence_left = 3600
 	stubbed.set_hunger(100)
@@ -699,9 +699,9 @@
 	TEST_ASSERT_NOTNULL(home, "The calm down test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "calmowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -761,7 +761,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	prison.contraband_force_rolls = FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "cuffmenuowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -810,7 +810,7 @@
 	prisoner.cuff_work = FALSE
 
 	// A cuffed rioter: the menu opens and the pat-down works; they still won't talk.
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	rioter.start_rioting(FALSE)
 	TEST_ASSERT(rioter.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The rioter could not be cuffed")
 	TEST_ASSERT(rioter.is_rioting(), "Cuffs ended the riot for the rioter")
@@ -834,7 +834,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	// Cell 1 of the unrotated wing is x 2-4, y 13-15, its bed at (2,15); the first prisoner booked in gets it.
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
 	var/datum/outpost_prison_cell/cell = prisoner.cell
 	TEST_ASSERT(cell?.contains(prison_spot(home, 2, 15)), "The prisoner was not booked into cell 1")
 	var/obj/structure/bed/bed = cell.bed()
@@ -944,7 +944,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	prison.crew_home_override = FALSE
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	prisoner.personality = "chatty"
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "lockinowner")
 	var/datum/outpost_prison_cell/home_cell = prisoner.cell
@@ -1022,7 +1022,7 @@
 	TEST_ASSERT_NOTNULL(home, "The hold test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 9, 8), "holdowner")
 	owner.drop_all_held_items()
 	owner.set_combat_mode(FALSE)
@@ -1103,7 +1103,7 @@
 	prisoner.end_activity()
 
 	// A rioter on their feet can't be pulled.
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	owner.forceMove(prison_spot(home, 13, 8))
 	rioter.start_rioting(FALSE)
 	TEST_ASSERT(!rioter.pull_allowed(), "A rioter on their feet may be pulled")
@@ -1155,9 +1155,9 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.rep_word_chance = 0
 	// Cell 1 of the unrotated wing: its bed is at (2,15), and the first prisoner booked in gets it.
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
-	var/mob/living/basic/outpost_prisoner/teller = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/other_teller = trouble_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, prison_spot(home, 2, 15))
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/other_teller = trouble_prisoner(prison, prison_spot(home, 10, 8))
 	var/mob/living/carbon/human/member = make_player(prison_spot(home, 3, 15), "iconowner")
 
 	// Lying on their bed, with two tips they saw given: every choice the menu has is on it.
@@ -1167,7 +1167,7 @@
 	prisoner.start_activity(resting)
 	resting.arrive()
 	TEST_ASSERT(prisoner.buckled, "Resting did not put the prisoner on their bed")
-	for(var/mob/living/basic/outpost_prisoner/giver as anything in list(teller, other_teller))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/giver as anything in list(teller, other_teller))
 		var/datum/outpost_prison_lead/tip = new
 		tip.teller_ref = WEAKREF(giver)
 		tip.teller_name = giver.real_name

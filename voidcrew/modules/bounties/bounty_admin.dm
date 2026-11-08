@@ -1164,7 +1164,7 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 		return refuse(user, "That prison is gone.")
 	if(!prison.free_slots())
 		return refuse(user, "[prison_name(prison)] has no free cell.")
-	var/mob/living/basic/outpost_prisoner/prisoner = prison.bounty_admit_record(record)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = prison.bounty_admit_record(record)
 	if(QDELETED(prisoner))
 		return refuse(user, "[prison_name(prison)] took nobody: no cell there has room for an arrival.")
 	log_action(user, "admit bounty record [record.name] ([record_kind(record)]) into cell [prisoner.cell?.number] of [prison_name(prison)]")

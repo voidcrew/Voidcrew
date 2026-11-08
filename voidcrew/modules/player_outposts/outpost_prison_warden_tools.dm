@@ -24,8 +24,8 @@
  *   below their line. Off a bed they step aside and stay put for PRISON_TALK_GET_UP_HOLD, so the
  *   mattress can be searched. Nothing else changes.
  * The same left click on a prisoner asleep in bed shakes them awake instead (shake_awake()): they
- * get up as if told to, and lose PRISON_TALK_WAKE_MOOD for it. On one who is down or out cold there
- * is nothing to talk about: the click takes their cuffs off if they wear any.
+ * get up as if told to, and lose PRISON_TALK_WAKE_MOOD for it. On one who is down, out cold or on fire
+ * the click is tg's own help (CPR, patting out flames, shaking them), as for anyone.
  *
  * While the menu is open, and through the talk picked from it, they stop and face the member
  * (held_by_talk_menu(), which routine_allowed() checks), and a threat they were making waits
@@ -39,7 +39,7 @@
 // What an activity's tick() wants when it is over, as in outpost_prison_routine.dm (which undefines its own)
 #define ACTIVITY_DONE 1
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Between answers to "How are you doing?" and "What are you in for?"
 	COOLDOWN_DECLARE(ask_how_cooldown)
 	COOLDOWN_DECLARE(ask_crime_cooldown)
@@ -53,7 +53,7 @@
 	var/list/talk_menu_holders
 
 /// Registers the talk menu and the pull hold on the prisoner; called from setup_extras()
-/mob/living/basic/outpost_prisoner/proc/setup_warden_tools()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_warden_tools()
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_talk_menu_click))
 	// Sent to the pulled mob by a living puller; living pullers never send COMSIG_ATOM_START_PULL.
 	RegisterSignal(src, COMSIG_LIVING_GET_PULLED, PROC_REF(on_pulled))
@@ -64,7 +64,7 @@
  * awake, or take the cuffs off someone down; everyone else pats them as usual. A right click is
  * tg's own.
  */
-/mob/living/basic/outpost_prisoner/proc/on_talk_menu_click(datum/source, mob/living/user, list/modifiers)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_talk_menu_click(datum/source, mob/living/user, list/modifiers)
 	SIGNAL_HANDLER
 	if(!istype(user) || user.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK) || is_outpost_prisoner(user) || !prison?.is_member(user))
 		return NONE
@@ -77,15 +77,15 @@
 		// The radial menu sleeps until a pick.
 		INVOKE_ASYNC(src, PROC_REF(talk_menu_open), user)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
-	// Down or out cold: nothing to talk about, but the cuffs can still come off.
-	if(cuffs)
-		INVOKE_ASYNC(src, PROC_REF(uncuff_by), user)
-		return COMPONENT_CANCEL_ATTACK_CHAIN
+	// Down, out cold or on fire: tg's own help, as for anyone (CPR, patting out the flames, shaking them).
+	// Their cuffs come off through the strip menu then.
+	if(is_down() || on_fire)
+		return NONE
 	balloon_alert(user, "can't talk now")
 	return COMPONENT_CANCEL_ATTACK_CHAIN
 
 /// Whether `user` may use the talk menu on them now: a member out of combat mode, and them awake, present and not down (cuffed is fine)
-/mob/living/basic/outpost_prisoner/proc/talk_menu_allowed(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_allowed(mob/living/user)
 	if(!istype(user) || QDELETED(user) || user.stat != CONSCIOUS || user.combat_mode || is_outpost_prisoner(user))
 		return FALSE
 	if(QDELETED(src) || stat != CONSCIOUS || phase != PRISONER_PRESENT || is_down() || activity?.sleeping)
@@ -93,7 +93,7 @@
 	return !!prison?.is_member(user)
 
 /// Shows the radial and runs the pick. They stand still facing `user` until the menu closes and the picked talk is over. Sleeps.
-/mob/living/basic/outpost_prisoner/proc/talk_menu_open(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_open(mob/living/user)
 	// Nothing to show a menu on.
 	if(!user?.client)
 		return
@@ -105,7 +105,7 @@
 	release_talk_menu(holder_ref)
 
 /// Stops them where they are, facing `user`, while `user` has the menu open. Returns the hold, for release_talk_menu().
-/mob/living/basic/outpost_prisoner/proc/hold_for_talk_menu(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/hold_for_talk_menu(mob/living/user)
 	var/datum/weakref/holder_ref = WEAKREF(user)
 	LAZYADD(talk_menu_holders, holder_ref)
 	ai_controller?.CancelActions()
@@ -113,11 +113,11 @@
 	return holder_ref
 
 /// The menu `holder_ref` opened is closed and its talk over
-/mob/living/basic/outpost_prisoner/proc/release_talk_menu(datum/weakref/holder_ref)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/release_talk_menu(datum/weakref/holder_ref)
 	LAZYREMOVE(talk_menu_holders, holder_ref)
 
 /// Whether someone beside them has the talk menu open on them, or is in the talk they picked from it
-/mob/living/basic/outpost_prisoner/proc/held_by_talk_menu()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/held_by_talk_menu()
 	// A holder who walked off or went down no longer holds them, even if their menu never closed cleanly.
 	for(var/datum/weakref/holder_ref in talk_menu_holders)
 		var/mob/living/holder = holder_ref.resolve()
@@ -130,7 +130,7 @@
  * the cuffs off in place of a walk back to the cell, no getting up for someone already up), then
  * other packages'. No two choices share an icon; all are drawn like tg's radial_talk.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_choices(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_choices(mob/living/user)
 	var/static/list/own_choices
 	if(!own_choices)
 		own_choices = list(
@@ -144,7 +144,7 @@
 	var/list/choices = own_choices.Copy()
 	if(!will_listen())
 		choices -= PRISON_TALK_CALM
-	if(cuffs)
+	if(handcuffed)
 		choices -= PRISON_TALK_CELL
 	else
 		choices -= PRISON_TALK_UNCUFF
@@ -157,16 +157,16 @@
 	return choices
 
 /// Other packages' choices for this prisoner and `user` (outpost_prison_extras.dm)
-/mob/living/basic/outpost_prisoner/proc/talk_menu_other_choices(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_other_choices(mob/living/user)
 	var/list/extra = prison?.talk_menu_extra_choices(src, user)
 	return islist(extra) ? extra : list()
 
 /// Runs another package's choice; TRUE if one took it. May sleep.
-/mob/living/basic/outpost_prisoner/proc/talk_menu_other_act(mob/living/user, choice)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_other_act(mob/living/user, choice)
 	return prison ? prison.talk_menu_extra_act(src, user, choice) : FALSE
 
 /// Runs a pick from the menu, checked again now that the menu is closed. May sleep.
-/mob/living/basic/outpost_prisoner/proc/talk_menu_act(mob/living/user, choice)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_act(mob/living/user, choice)
 	if(!talk_menu_allowed(user) || !user.Adjacent(src))
 		return FALSE
 	switch(choice)
@@ -189,7 +189,7 @@
  * Anyone in trouble (fighting, rioting, loose, wrecking) or below PRISONER_TALK_MIN_MOOD won't
  * have it. Returns TRUE once the talk is done and they're still listening. Sleeps.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_chat(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_chat(mob/living/user)
 	if(QDELETED(user))
 		return FALSE
 	if(talking)
@@ -216,7 +216,7 @@
 
 // ===== "HOW ARE YOU DOING?" =====
 
-/mob/living/basic/outpost_prisoner/proc/talk_menu_ask_how(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_ask_how(mob/living/user)
 	if(!COOLDOWN_FINISHED(src, ask_how_cooldown))
 		balloon_alert(user, "just asked")
 		return FALSE
@@ -231,7 +231,7 @@
  * Their biggest complaint, as list(context, other): starving, hungry, filthy, dirty, hurt, locked
  * in, a dark cell, a dark wing, a dirty floor, no power, a rival (named when they can be), else fine.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_complaint()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_complaint()
 	var/list/needs = bubble_needs()
 	if(hunger < PRISONER_HUNGER_STARVING)
 		return list("ask_how_starving", null)
@@ -263,15 +263,15 @@
 	return list("ask_how_fine", null)
 
 /// Another prisoner of theirs who goes by `first`, for naming them in a line, or null
-/mob/living/basic/outpost_prisoner/proc/talk_menu_prisoner_named(first)
-	for(var/mob/living/basic/outpost_prisoner/other in prison?.prisoners)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_prisoner_named(first)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prison?.prisoners)
 		if(other != src && other.speech_name() == first)
 			return other
 	return null
 
 // ===== "CRIME" =====
 
-/mob/living/basic/outpost_prisoner/proc/talk_menu_ask_crime(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_ask_crime(mob/living/user)
 	if(!COOLDOWN_FINISHED(src, ask_crime_cooldown))
 		balloon_alert(user, "just asked")
 		return FALSE
@@ -291,9 +291,9 @@
  * refuse. The PRISON_TALK_ORDER_SPAM_COUNT-th ask inside PRISON_TALK_ORDER_SPAM_WINDOW costs
  * PRISON_TALK_ORDER_SPAM_MOOD and is refused. Returns TRUE if they went.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_order(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_order(mob/living/user)
 	// Cuffed while the menu was open: they can't walk anywhere.
-	if(cuffs)
+	if(handcuffed)
 		balloon_alert(user, "cuffed")
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, order_cooldown))
@@ -328,7 +328,7 @@
 	return TRUE
 
 /// The mood at or above which they go back when `user` asks: by personality, then by how the yard sees `user`
-/mob/living/basic/outpost_prisoner/proc/talk_menu_order_line(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_order_line(mob/living/user)
 	var/line = PRISON_TALK_ORDER_LINE
 	switch(personality)
 		if("grumpy")
@@ -392,7 +392,7 @@
 // ===== "GET UP" =====
 
 /// Whether they lie or sit on something, or crouch, so there is something to get up from
-/mob/living/basic/outpost_prisoner/proc/talk_menu_can_get_up()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_can_get_up()
 	return !!buckled || is_crouching()
 
 /**
@@ -404,7 +404,7 @@
  * Only trouble, or someone else already talking to them, stops it. Returns TRUE if they got up.
  * `woken`: they were asleep and `user` shook them awake (shake_awake()), which costs PRISON_TALK_WAKE_MOOD.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_get_up(mob/living/user, woken = FALSE)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_get_up(mob/living/user, woken = FALSE)
 	if(QDELETED(user))
 		return FALSE
 	if(!talk_menu_can_get_up())
@@ -414,7 +414,7 @@
 		balloon_alert(user, "busy")
 		return FALSE
 	// Trouble comes before any order, unless cuffs have put a stop to it.
-	if(!cuffs && in_trouble())
+	if(!handcuffed && in_trouble())
 		face_atom(user)
 		say_context("talk_refuse")
 		balloon_alert(user, "not listening")
@@ -438,7 +438,7 @@
 		line = "woken"
 	say_context(line)
 	// Cuffs keep them where they are anyway.
-	if(!cuffs)
+	if(!handcuffed)
 		var/datum/prisoner_activity/told_to_stand/standing = new(src)
 		if(bed)
 			standing.claim(bed)
@@ -448,7 +448,7 @@
 	return TRUE
 
 /// Shakes them awake in their bed, and they get up as if told to (talk_menu_get_up()). Returns TRUE if they got up.
-/mob/living/basic/outpost_prisoner/proc/shake_awake(mob/living/user)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/shake_awake(mob/living/user)
 	if(!activity?.sleeping)
 		return FALSE
 	return talk_menu_get_up(user, woken = TRUE)
@@ -457,7 +457,7 @@
  * Steps off `bed` onto a free tile beside it: one inside the bed's cell if there is one, else any.
  * Returns the tile, or null if they stayed where they were.
  */
-/mob/living/basic/outpost_prisoner/proc/talk_menu_step_off(obj/structure/bed/bed)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/talk_menu_step_off(obj/structure/bed/bed)
 	var/turf/bed_turf = get_turf(bed)
 	if(!bed_turf || loc != bed_turf)
 		return null
@@ -489,29 +489,31 @@
 // ===== A PULL =====
 
 /// Someone took hold of them: they weigh what pull_weight() says, and a calm prisoner drops what they were doing to go along
-/mob/living/basic/outpost_prisoner/proc/on_pulled(datum/source, mob/living/puller)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_pulled(datum/source, mob/living/puller)
 	SIGNAL_HANDLER
-	move_resist = pull_weight()
-	if(can_be_dragged() || !calm_for_pull())
+	if(can_be_dragged())
 		return
-	INVOKE_ASYNC(src, PROC_REF(go_along_with_pull))
+	if(calm_for_pull())
+		INVOKE_ASYNC(src, PROC_REF(go_along_with_pull))
+		return
+	// Making trouble, they won't be led anywhere: they shake it off, as anyone resists a pull.
+	INVOKE_ASYNC(src, PROC_REF(shake_off_pull))
 
 /// Stops whatever they were doing, and any walk, so they follow the pull instead of walking against it
-/mob/living/basic/outpost_prisoner/proc/go_along_with_pull()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/go_along_with_pull()
 	if(QDELETED(src) || !pulledby)
 		return
 	end_activity()
 	ai_controller?.CancelActions()
 
 /// Let go: back to their usual weight, and a calm prisoner stays where they were left for a moment
-/mob/living/basic/outpost_prisoner/proc/on_pull_released(datum/source, atom/movable/puller)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/on_pull_released(datum/source, atom/movable/puller)
 	SIGNAL_HANDLER
-	move_resist = pull_weight()
 	if(routine_allowed())
 		INVOKE_ASYNC(src, PROC_REF(stay_put_after_pull))
 
 /// Holds them where they stand for PRISON_PULL_RELEASE_HOLD before the routine picks up again
-/mob/living/basic/outpost_prisoner/proc/stay_put_after_pull()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/stay_put_after_pull()
 	if(QDELETED(src) || !routine_allowed())
 		return
 	var/datum/prisoner_activity/let_go/still = new(src)
@@ -519,10 +521,11 @@
 	// Already where they stand: the clock starts now, AI or not.
 	still.arrive()
 
-/// Pulled along while calm, and in trouble since: they shake the pull off. Called every tick of the prison.
-/mob/living/basic/outpost_prisoner/proc/shake_off_pull()
-	if(pulledby && !pull_allowed())
-		update_drag_resistance()
+/// Pulled along while in trouble: they resist it, tg's resist (a hold that isn't a grab breaks at once). Called every tick of the prison.
+/mob/living/carbon/human/npc/outpost_prisoner/proc/shake_off_pull()
+	if(!pulledby || pull_allowed() || stat != CONSCIOUS || world.time < next_move)
+		return
+	resist()
 
 /// Let go after a pull: they stay where they were left for PRISON_PULL_RELEASE_HOLD, then carry on
 /datum/prisoner_activity/let_go

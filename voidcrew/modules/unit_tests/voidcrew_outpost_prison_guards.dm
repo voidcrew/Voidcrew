@@ -12,15 +12,15 @@
  */
 
 /// A guard whose AI counts as running, as if someone were on the level
-/mob/living/basic/outpost_prison_guard/awake_for_test
+/mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test
 
-/mob/living/basic/outpost_prison_guard/awake_for_test/ai_running()
+/mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test/ai_running()
 	return TRUE
 
 /// An admin's guard (no fee, no wage), beamed in and standing at `spot`, on duty
 /datum/unit_test/voidcrew_outpost_management/proc/guard_test_spawn(datum/outpost_prison/prison, turf/spot, awake = TRUE)
-	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, awake ? /mob/living/basic/outpost_prison_guard/awake_for_test : /mob/living/basic/outpost_prison_guard)
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE, awake ? /mob/living/carbon/human/npc/outpost_prison_guard/awake_for_test : /mob/living/carbon/human/npc/outpost_prison_guard)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	if(!guard)
 		return null
 	guard.finish_beam_in()
@@ -146,7 +146,7 @@
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 1, "The owner's hire made no guard")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "Hiring a guard cost [5000 - treasury.account_balance], not 1000") // OUTPOST_GUARD_HIRE_COST
 	var/datum/outpost_guard_record/first = prison.guard_records[1]
-	var/mob/living/basic/outpost_prison_guard/officer = first.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/officer = first.guard
 	TEST_ASSERT_NOTNULL(officer, "The hired guard did not beam in")
 	TEST_ASSERT_EQUAL(first.rank, "Officer", "The first guard is not an officer")
 	TEST_ASSERT_EQUAL(officer.real_name, "Officer [first.surname]", "The guard is not named for their rank")
@@ -163,7 +163,7 @@
 	TEST_ASSERT_NOTNULL(door, "No staff door at (9,6)")
 	TEST_ASSERT(may_use_outpost_prison_staff_door(door, officer), "A staff door refused a guard")
 	TEST_ASSERT(door.allowed(officer), "A staff door would not open for a guard")
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(!may_use_outpost_prison_staff_door(door, prisoner), "A staff door let a prisoner through")
 
 	// A runner about to get away: the guard on duty calls it out by name, with no clock, and the log and the crew get their words.
@@ -194,7 +194,7 @@
 	TEST_ASSERT(!("unpaid" in block), "The guards block still counts missed wages")
 
 	// Dismissal: managers only, no refund, and the guard walks out.
-	var/mob/living/basic/outpost_prison_guard/sergeant = second.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/sergeant = second.guard
 	prison.guards_act("guard_dismiss", list("ref" = REF(second)), visitor)
 	TEST_ASSERT_EQUAL(length(prison.guard_records), 2, "A visitor dismissed a guard")
 	prison.guards_act("guard_dismiss", list("ref" = REF(second)), owner)
@@ -269,11 +269,11 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = trouble_test_claim("guardbatonowner")
 	TEST_ASSERT_NOTNULL(home, "The baton test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 8, 9))
-	var/mob/living/basic/outpost_prisoner/onlooker = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 8, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/onlooker = trouble_awake_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 
 	// A calm prisoner beside the guard is never struck.
@@ -323,8 +323,8 @@
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 14, 3), "guardresponseowner")
 
 	// Nobody on the level: the guard's AI sleeps and the dispatcher leaves them be.
-	var/mob/living/basic/outpost_prison_guard/sleepy = guard_test_spawn(prison, prison_spot(home, 12, 8), awake = FALSE)
-	var/mob/living/basic/outpost_prisoner/sulky = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/sleepy = guard_test_spawn(prison, prison_spot(home, 12, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prisoner/sulky = trouble_awake_prisoner(prison, prison_spot(home, 13, 8))
 	sulky.threat_ref = WEAKREF(warden)
 	prison.guards_tick(1)
 	TEST_ASSERT_NULL(sleepy.response, "A guard whose AI sleeps was given a response")
@@ -334,9 +334,9 @@
 	qdel(sulky)
 	prison.dismiss_guard(sleepy.record, "dismissed", TRUE)
 
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 9, 8))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 7, 8))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 
 	// An argument, the talk-down forced (OUTPOST_GUARD_TALKDOWN_CHANCE is 60).
@@ -363,7 +363,7 @@
 	guard.end_response()
 
 	// A threat: a word, and it is over. No baton for squaring up.
-	var/mob/living/basic/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 8, 7))
+	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_awake_prisoner(prison, prison_spot(home, 8, 7))
 	third.threat_ref = WEAKREF(warden)
 	third.threat_left = 4
 	prison.guards_tick(1)
@@ -396,7 +396,7 @@
 	// A hatch climb: from the office side of the hatch, down they slide.
 	var/obj/structure/table/reinforced/prison_hatch/hatch = locate() in prison_spot(home, 5, 6)
 	TEST_ASSERT_NOTNULL(hatch, "No serving hatch at (5,6)")
-	var/mob/living/basic/outpost_prisoner/climber = trouble_awake_prisoner(prison, hatch.yard_side_turf())
+	var/mob/living/carbon/human/npc/outpost_prisoner/climber = trouble_awake_prisoner(prison, hatch.yard_side_turf())
 	climber.climb_ref = WEAKREF(hatch)
 	climber.climb_left = 3
 	guard.forceMove(hatch.staff_side_turf())
@@ -406,7 +406,7 @@
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "climb_stop"), "The guard did not say a climb_stop line: [guard.last_line]")
 
 	// A loose prisoner: called out, and batoned when they come beside a guard. No chase.
-	var/mob/living/basic/outpost_prisoner/runner = trouble_awake_prisoner(prison, prison_spot(home, 5, 4))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_awake_prisoner(prison, prison_spot(home, 5, 4))
 	runner.trouble = "loose" // PRISONER_TROUBLE_LOOSE
 	guard.baton_cooldown = 0
 	prison.guards_tick(1)
@@ -434,8 +434,8 @@
 		trouble_awake_prisoner(prison, prison_spot(home, 12, 8)),
 	)
 	set_moods(rioters, 10)
-	var/mob/living/basic/outpost_prison_guard/guard_one = guard_test_spawn(prison, prison_spot(home, 12, 4))
-	var/mob/living/basic/outpost_prison_guard/guard_two = guard_test_spawn(prison, prison_spot(home, 13, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard_one = guard_test_spawn(prison, prison_spot(home, 12, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard_two = guard_test_spawn(prison, prison_spot(home, 13, 4))
 	TEST_ASSERT(guard_one && guard_two, "The test guards did not beam in")
 	TEST_ASSERT(prison.start_riot("guard test", everyone = TRUE), "The test riot did not start")
 
@@ -454,7 +454,7 @@
 	// Said aloud and logged as "Name: \"line\"", once; nothing goes out over the outpost.
 	var/holds_logged = 0
 	for(var/list/entry as anything in prison.entries)
-		for(var/mob/living/basic/outpost_prison_guard/holder as anything in list(guard_one, guard_two))
+		for(var/mob/living/carbon/human/npc/outpost_prison_guard/holder as anything in list(guard_one, guard_two))
 			var/prefix = "[holder.real_name]: \""
 			var/text = entry["text"]
 			if(findtext(text, prefix) == 1 && guard_test_is_line(copytext(text, length(prefix) + 1, -1), "riot_hold"))
@@ -463,7 +463,7 @@
 
 	// A rioter who comes up beside a guard holding the door gets the baton.
 	guard_one.forceMove(one_spot)
-	var/mob/living/basic/outpost_prisoner/through = rioters[1]
+	var/mob/living/carbon/human/npc/outpost_prisoner/through = rioters[1]
 	var/turf/beside = null
 	for(var/direction in GLOB.cardinals)
 		var/turf/tile = get_step(one_spot, direction)
@@ -478,7 +478,7 @@
 	TEST_ASSERT(through.getStaminaLoss() >= 35, "A holding guard did not baton the rioter beside them") // OUTPOST_GUARD_BATON_STAMINA
 
 	// A guard in the yard is staff a rioter can go for.
-	var/mob/living/basic/outpost_prisoner/rioter = rioters[2]
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = rioters[2]
 	guard_two.forceMove(prison_spot(home, 11, 8))
 	prison.refresh_prisoner_reach(rioter)
 	TEST_ASSERT_EQUAL(rioter.staff_in_reach(), guard_two, "A rioter could not go for a guard in the yard")
@@ -499,7 +499,7 @@
 	var/datum/bank_account/treasury = guard_test_fund(home, 5000)
 	prison.guards_act("guard_hire", list(), owner)
 	var/datum/outpost_guard_record/record = prison.guard_records[1]
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	var/guard_name = guard.real_name
 	guard.finish_beam_in()
 
@@ -532,7 +532,7 @@
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "The return cost [4000 - treasury.account_balance] cr")
 
 	// Down again and dismissed: the next hire waits out the same slot.
-	var/mob/living/basic/outpost_prison_guard/back = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/back = record.guard
 	back.finish_beam_in()
 	var/downed = prison.guards_admin_act("prison_guard_down", list("ref" = REF(record)), null)
 	TEST_ASSERT(istext(downed), "The admin could not put a guard down")
@@ -556,7 +556,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardrefuseowner")
 	TEST_ASSERT_NOTNULL(home, "The guard refusal test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 4))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 4))
 	TEST_ASSERT_NOTNULL(guard, "The test guard did not beam in")
 	var/turf/start = guard.loc
 
@@ -593,7 +593,7 @@
 	// are called back for a minute (OUTPOST_GUARD_LEASH_SECONDS, OUTPOST_GUARD_OFF_LEVEL_AWAY).
 	var/turf/outside = get_step(prison_spot(home, 9, 1), SOUTH)
 	TEST_ASSERT(outside && get_area(outside) != prison.wing, "No tile outside the wing's entrance")
-	var/mob/living/basic/outpost_prison_guard/wanderer = guard_test_spawn(prison, outside, awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prison_guard/wanderer = guard_test_spawn(prison, outside, awake = FALSE)
 	var/datum/outpost_guard_record/wanderer_record = wanderer.record
 	for(var/i in 1 to 10)
 		prison.guards_tick(5)
@@ -613,7 +613,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("guardreportowner")
 	TEST_ASSERT_NOTNULL(home, "The guard report test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 
 	// An empty hatch with someone waiting comes first.
 	prison.waiting_for_food = 2
@@ -630,7 +630,7 @@
 
 	// Greeted, then told, then left alone.
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 12, 4), "guardreportowner")
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 3))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 12, 3))
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not greet the owner")
 	TEST_ASSERT(guard_test_is_line(guard.last_line, "greet_owner"), "The guard's greeting was [guard.last_line]")
 	TEST_ASSERT(guard.greet_member(owner), "A guard did not report to the owner")

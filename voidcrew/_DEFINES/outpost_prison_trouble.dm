@@ -77,22 +77,6 @@
 #define PRISONER_THREAT_COOLDOWN 20
 /// Seconds a decided swing waits for them to close in before it is dropped
 #define PRISONER_SWING_TIMEOUT 6
-/// Brute damage of a punch at staff: blunt, and it never wounds
-#define PRISONER_PUNCH_MIN 5
-#define PRISONER_PUNCH_MAX 8
-/// Brute damage of a shiv at staff or anyone else who is not a prisoner (tg's glass shiv is force 8).
-/// Each blow is a stab or a slash, so it can leave a puncture or a cut that bleeds.
-#define PRISONER_SHIV_MIN 10
-#define PRISONER_SHIV_MAX 15
-/// The shiv's wounding, as tg's glass shiv has it in someone's hand. Four blows in five land on the
-/// chest, which resists wounds; the rest on an arm, a leg or now and then the head (tg's
-/// attack_zone_randomiser). On a bare body about two blows in five wound. An armour vest takes a
-/// third off chest blows and stops nearly every wound there, leaving about one in five.
-#define PRISONER_SHIV_WOUND_BONUS 5
-#define PRISONER_SHIV_EXPOSED_WOUND_BONUS 15
-/// Brute damage of a shiv at another prisoner (a stabbing, outpost_prison_incidents.dm), never a killing blow
-#define PRISONER_STAB_MIN 7
-#define PRISONER_STAB_MAX 10
 
 // A player's blow on a prisoner on their feet: they hit back, or back off
 /// Seconds they go after the attacker before letting it drop
@@ -139,10 +123,7 @@
 #define PRISONER_FIGHT_COOLDOWN 300
 /// Seconds between any two fights in the wing
 #define PRISON_FIGHT_GAP 180
-/// Brute of a blow in a fight between prisoners
-#define PRISONER_FIGHT_HIT_MIN 3
-#define PRISONER_FIGHT_HIT_MAX 6
-/// Health percent at which a fighter yields, and seconds they stay down
+/// Health percent at which a losing fighter gives up, and seconds they then stay lying down by choice
 #define PRISONER_FIGHT_YIELD 40
 #define PRISONER_FIGHT_YIELD_TIME 20
 /// Below this mood two prisoners near each other may argue without blows, at most once per PRISON_SPAT_GAP in the wing
@@ -152,11 +133,8 @@
 #define PRISON_SPAT_CHANCE 8
 
 // Beaten down
-/// At or below this health percent a prisoner collapses
-#define PRISONER_BEATEN_BELOW 15
-/// Seconds they lie beaten, unless treated above PRISONER_RECOVER_ABOVE percent first
-#define PRISONER_BEATEN_TIME 120
-#define PRISONER_RECOVER_ABOVE 40
+/// How long something that slams a prisoner on their feet to the floor knocks them down (collapse(), a real tg Knockdown)
+#define PRISONER_COLLAPSE_KNOCKDOWN (4 SECONDS)
 
 // Riots
 /// Below these moods each personality joins a riot; if nobody does, the unhappiest starts it alone.
@@ -252,7 +230,7 @@
 /// Seconds out of a cell, on their feet and uncuffed, before a prisoner who owes lockdown riots again
 #define PRISON_LOCKDOWN_GRACE 30
 
-// What trouble a prisoner is in (/mob/living/basic/outpost_prisoner/var/trouble); null is none
+// What trouble a prisoner is in (/mob/living/carbon/human/npc/outpost_prisoner/var/trouble); null is none
 #define PRISONER_TROUBLE_FIGHT "fight"
 #define PRISONER_TROUBLE_RIOT "riot"
 /// Rioting after the riot turned into a breakout: going for the exits
