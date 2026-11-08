@@ -64,11 +64,13 @@
 #define BOUNTY_BOSS_SHUN_TIME (60 SECONDS)
 /// How far it walks for cover, in steps
 #define BOUNTY_BOSS_COVER_RANGE 7
-/// How far a shooter is taken to see, for cover
+/// How far a shooter is taken to see, for cover, at the least: a shooter farther off sees as far as a clear line from them goes (a scope, or a shot from across the site)
 #define BOUNTY_BOSS_COVER_SIGHT 9
-/// How far it looks for a way round to someone behind something, in tiles; and how long that look holds
+/// How far it looks for a way round to someone behind something, in tiles; and how long that look holds while it stands on the same tile. Someone farther off is in reach if the walk gets it at least half this much closer on their side.
 #define BOUNTY_BOSS_REACH_RANGE 10
 #define BOUNTY_BOSS_REACH_RETHINK (2 SECONDS)
+/// It says a line as it breaks for cover at most this often
+#define BOUNTY_BOSS_COVER_BARK_COOLDOWN (30 SECONDS)
 /// Gorilla Arms through glass: the wind-up (the piston punch's), the blow to the window, grille or door, its armour penetration, and the pause after
 #define BOUNTY_BOSS_SMASH_WINDUP (0.9 SECONDS)
 #define BOUNTY_BOSS_SMASH_DAMAGE 60
@@ -110,7 +112,7 @@
 #define BOUNTY_JUGGERNAUT_WALL_STAGGER (2 SECONDS)
 #define BOUNTY_JUGGERNAUT_WALL_VULNERABLE 1.25
 /// Slam: both fists up, a red ring
-#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.7 SECONDS)
+#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.8 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_COOLDOWN (7 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_DAMAGE 20
 #define BOUNTY_JUGGERNAUT_SLAM_KNOCKDOWN (1.5 SECONDS)
@@ -132,7 +134,7 @@
 #define BOUNTY_PYROMANIAC_MELEE_AP 15
 #define BOUNTY_PYROMANIAC_MELEE_COOLDOWN (1 SECONDS)
 /// Flamer: a pilot light hiss, an orange cone
-#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.5 SECONDS)
+#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.8 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_COOLDOWN (5 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_RANGE 3
 /// Full width of the cone, in degrees
@@ -202,8 +204,8 @@
 /// Its blade: the look in its hand and every number of its blows (bounty_real_weapon())
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
 #define BOUNTY_GHOST_MELEE_COOLDOWN (0.7 SECONDS)
-/// Dash: a blur line to the target
-#define BOUNTY_GHOST_DASH_WINDUP (0.3 SECONDS)
+/// Dash: a blur line to the target. 0.3 -> 0.6 s after review r2: at 0.3 s only someone already moving could step off the line.
+#define BOUNTY_GHOST_DASH_WINDUP (0.6 SECONDS)
 #define BOUNTY_GHOST_DASH_COOLDOWN (5 SECONDS)
 #define BOUNTY_GHOST_DASH_RANGE 5
 /// The dash's cut, its biggest hit (combat.md B4), its armour penetration, and its wound bonus (the Mantis lunge's). 20 -> 30 after review r1: at 20 it was no bigger than a knife blow.
@@ -271,5 +273,7 @@
 #define BB_BOUNTY_BOSS_PREY "BB_bounty_boss_prey"
 /// world.time it looks for prey again
 #define BB_BOUNTY_BOSS_HUNT_AT "BB_bounty_boss_hunt_at"
-/// Where it is walking to: cover, or the window it means to go through
+/// Where it is walking to, to go through the window, door or wall in its way
 #define BB_BOUNTY_BOSS_SPOT "BB_bounty_boss_spot"
+/// Where it is walking to, out of the sight of someone it can't get at
+#define BB_BOUNTY_BOSS_COVER "BB_bounty_boss_cover"

@@ -9,7 +9,7 @@
 /// Shared helpers; not a test itself
 /datum/unit_test/voidcrew_bounty_boss
 	abstract_type = /datum/unit_test/voidcrew_bounty_boss
-	/// Turfs a test changed, put back to plain floor when it ends
+	/// Turfs a test changed -> the type each had first, put back when it ends
 	var/list/turf/changed_turfs = list()
 	/// Turf -> the area it had before a test moved it into a ship's area
 	var/list/original_areas = list()
@@ -18,7 +18,7 @@
 
 /datum/unit_test/voidcrew_bounty_boss/Destroy()
 	for(var/turf/changed as anything in changed_turfs)
-		changed.ChangeTurf(/turf/open/floor/iron)
+		changed.ChangeTurf(changed_turfs[changed])
 	changed_turfs = null
 	for(var/turf/moved as anything in original_areas)
 		moved.change_area(get_area(moved), original_areas[moved])
@@ -30,10 +30,33 @@
 /datum/unit_test/voidcrew_bounty_boss/proc/spot(dx, dy)
 	return locate(run_loc_floor_bottom_left.x + dx, run_loc_floor_bottom_left.y + dy, run_loc_floor_bottom_left.z)
 
-/// Changes `where` to `new_type`, to be put back when the test ends
+/// Changes `where` to `new_type`, to be put back to what it was when the test ends
 /datum/unit_test/voidcrew_bounty_boss/proc/change_turf(turf/where, new_type)
-	changed_turfs |= where
+	if(isnull(changed_turfs[where]))
+		changed_turfs[where] = where.type
 	return where.ChangeTurf(new_type)
+
+/// The tile `dx`, `dy` from the test room's bottom-left corner, outside the room too (open space on the test level until a test floors it)
+/datum/unit_test/voidcrew_bounty_boss/proc/outside(dx, dy)
+	return locate(clamp(run_loc_floor_bottom_left.x + dx, 1, world.maxx), clamp(run_loc_floor_bottom_left.y + dy, 1, world.maxy), run_loc_floor_bottom_left.z)
+
+/// Floors the rectangle `dx`..`dx2`, `dy`..`dy2` from the room's corner (outside the room), to be put back when the test ends
+/datum/unit_test/voidcrew_bounty_boss/proc/floor_area(dx, dy, dx2, dy2)
+	for(var/x_offset in dx to dx2)
+		for(var/y_offset in dy to dy2)
+			change_turf(outside(x_offset, y_offset), /turf/open/floor/iron)
+
+/// What `controller` planned last: `behavior_type` among its planned behaviours
+/datum/unit_test/voidcrew_bounty_boss/proc/planned(datum/ai_controller/controller, behavior_type)
+	return !!controller.planned_behaviors[GET_AI_BEHAVIOR(behavior_type)]
+
+/// Runs `boss`'s planning subtree of `subtree_type` once, as a planning pass would, and returns what it returned
+/datum/unit_test/voidcrew_bounty_boss/proc/plan_with(mob/living/basic/bounty_criminal/boss/boss, subtree_type)
+	var/datum/ai_controller/controller = boss.ai_controller
+	var/datum/ai_planning_subtree/subtree = locate(subtree_type) in controller.planning_subtrees
+	TEST_ASSERT_NOTNULL(subtree, "[boss.type] doesn't plan with [subtree_type]")
+	controller.planned_behaviors.Cut()
+	return subtree.SelectBehaviors(controller, 1)
 
 /// Makes `where` part of a ship that isn't the boss's (a player's), to be put back when the test ends
 /datum/unit_test/voidcrew_bounty_boss/proc/make_ship_tile(turf/where)
@@ -122,6 +145,21 @@
 	var/mob/living/basic/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/basic/bounty_criminal/boss/pyromaniac)
 	TEST_ASSERT(HAS_TRAIT(pyro, TRAIT_NOFIRE), "The Pyromaniac can be set alight")
 	TEST_ASSERT(pyro.damage_coeff[BURN] >= 0.9, "The Pyromaniac shrugs off lasers") // BOUNTY_PYROMANIAC_BURN_MOD
+
+	// Tells long enough to answer on sight (review r2): the Ghost's dash, the flamer and the slam
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/flamer = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/flamer)
+	TEST_ASSERT(abs(flamer.windup - 8) < 0.01, "The flamer's tell is [flamer.windup / 10] s") // BOUNTY_PYROMANIAC_FLAMER_WINDUP 0.8 s
+	var/mob/living/basic/bounty_criminal/boss/ghost/ghost = allocate(/mob/living/basic/bounty_criminal/boss/ghost)
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/dash/dash = ability_of(ghost, /datum/action/cooldown/mob_cooldown/bounty_boss/dash)
+	TEST_ASSERT(abs(dash.windup - 6) < 0.01, "The Ghost's dash tell is [dash.windup / 10] s") // BOUNTY_GHOST_DASH_WINDUP 0.6 s
+	var/mob/living/basic/bounty_criminal/boss/juggernaut/juggernaut = allocate(/mob/living/basic/bounty_criminal/boss/juggernaut)
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/slam/slam = ability_of(juggernaut, /datum/action/cooldown/mob_cooldown/bounty_boss/slam)
+	TEST_ASSERT(abs(slam.windup - 8) < 0.01, "The slam's tell is [slam.windup / 10] s") // BOUNTY_JUGGERNAUT_SLAM_WINDUP 0.8 s
+
+	// Every kit has its own lines for breaking cover (boss_bark("cover")), as many as any other context
+	var/list/lines = bounty_identity_strings("lines")
+	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy", "cyberpsycho")) // BOUNTY_KIT_*
+		TEST_ASSERT(length(lines["[kit]_cover"]?["any"]) >= 6, "The [kit] has fewer than 6 lines for taking cover")
 
 // ===== WIND-UP BEFORE DAMAGE; RESTRAINED OR DOWNED, NOTHING =====
 
@@ -547,32 +585,44 @@
 	TEST_ASSERT(posse_member(boss, second), "The second hunter didn't join")
 	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "Two hunters didn't raise the health")
 	TEST_ASSERT(voice.last_line in bounty_identity_strings("lines")["juggernaut_posse"]["any"], "Sizing up two hunters, the Juggernaut said [voice.last_line || "nothing"]")
-	TEST_ASSERT_EQUAL(boss.health, 1250, "A fresh boss's raise didn't lift current health")
+	TEST_ASSERT_EQUAL(boss.health, 1250, "An unhurt boss's raise didn't start it at the new full")
 
 	// Someone with no mind isn't a hunter.
 	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
 	boss.body_add_grudge(bystander)
 	TEST_ASSERT(!boss.boss_engage(bystander), "A mindless bystander joined the posse")
 
-	// Tired, a raise keeps its share of health: it is never healed out of its capture window.
-	boss.adjustBruteLoss(boss.maxHealth * 0.7, forced = TRUE)
-	TEST_ASSERT(boss.boss_tired, "The boss didn't tire")
-	var/share = boss.health / boss.maxHealth
+	// Hurt but fresh, someone new (a rival crew's tagger) neither heals it nor raises it (review r2).
+	boss.adjustBruteLoss(250, forced = TRUE)
+	TEST_ASSERT(!boss.boss_tired, "The boss tired at [boss.health]/[boss.maxHealth]")
+	var/health_before = boss.health
 	TEST_ASSERT(posse_member(boss, third), "The third hunter didn't join")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 1600, "Three hunters didn't raise max health")
-	TEST_ASSERT(abs(boss.health / boss.maxHealth - share) < 0.01, "A tired boss's raise healed it from [share] to [boss.health / boss.maxHealth]")
-	TEST_ASSERT(boss.boss_tired, "A raise healed the boss out of being tired")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "A newcomer raised a hurt boss's max health")
+	TEST_ASSERT_EQUAL(boss.health, health_before, "A newcomer healed a hurt boss from [health_before] to [boss.health]")
 
-	// Downed, a newcomer waits; they count when it gets up, capped at the 4+ value.
+	// Tired, the same: it is never healed out of its capture window, and stays in it.
+	boss.adjustBruteLoss(boss.maxHealth * 0.5, forced = TRUE)
+	TEST_ASSERT(boss.boss_tired, "The boss didn't tire")
+	health_before = boss.health
+	TEST_ASSERT(posse_member(boss, fourth), "The fourth hunter didn't join")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "A newcomer raised a tired boss's max health")
+	TEST_ASSERT_EQUAL(boss.health, health_before, "A newcomer healed a tired boss")
+	TEST_ASSERT(boss.boss_tired, "A newcomer took the boss out of being tired")
+
+	// Downed, a newcomer waits; getting up hurt, still nothing.
 	boss.downed = TRUE
-	TEST_ASSERT(posse_member(boss, fourth), "The fourth hunter wasn't noted while it was down")
 	TEST_ASSERT(posse_member(boss, fifth), "The fifth hunter wasn't noted while it was down")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 1600, "A downed boss's health rose")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "A downed boss's health rose")
 	boss.downed = FALSE
-	share = boss.health / boss.maxHealth
 	SEND_SIGNAL(boss, "bounty_criminal_recovered") // COMSIG_BOUNTY_CRIMINAL_RECOVERED
-	TEST_ASSERT_EQUAL(boss.maxHealth, 2300, "Hunters who joined while it was down didn't count when it got up")
-	TEST_ASSERT(abs(boss.health / boss.maxHealth - share) < 0.01, "Getting up with a bigger posse healed it")
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "Getting up hurt raised its max health")
+	TEST_ASSERT_EQUAL(boss.health, health_before, "Getting up with a bigger posse healed it")
+
+	// Whole again, it takes on the posse it has, capped at the 4+ value, at the new full.
+	boss.adjustBruteLoss(-boss.maxHealth, forced = TRUE)
+	boss.boss_apply_posse_health(FALSE)
+	TEST_ASSERT_EQUAL(boss.maxHealth, 2300, "Whole again, five hunters didn't count")
+	TEST_ASSERT_EQUAL(boss.health, 2300, "Whole again, it didn't start at the new full")
 
 	// Never lowered.
 	boss.boss_engaged.Cut()
@@ -730,12 +780,14 @@
 	ghost.boss_cut(victim)
 	TEST_ASSERT(ghost.boss_breakoff_until > world.time, "The Ghost didn't break off after three cuts") // BOUNTY_GHOST_CUTS_BEFORE_BREAKOFF
 
-// ===== THE WHOLE HUNTING CREW (review r1) =====
+// ===== THE WHOLE HUNTING CREW (review r1, r2) =====
 
 /**
- * Turning hostile, it counts every crew member of a ship hunting it who is on its level, seen or not:
- * one hunter can't wake it at one hunter's health and bring the crew in after. Anyone else out of
- * sight doesn't count.
+ * Turning hostile, it counts every crew member of a ship hunting it who is playing and at its site,
+ * seen or not: on the site, on its dock strip, aboard a ship landed there. One hunter can't wake it at
+ * one hunter's health while the crew waits by the ship. Crew elsewhere on its level (another site in
+ * the same lattice), SSD crew, and strangers don't count. Squaring up, it takes the posse's health in
+ * full, whatever the opening blow did.
  */
 /datum/unit_test/voidcrew_bounty_boss/crews
 	/// The test crew, let go of its minds before it goes
@@ -750,26 +802,47 @@
 	crew.ship = ship
 	ship.ship_team = crew
 	var/mob/living/carbon/human/consistent/tagger = hunter_at(spot(2, 0))
-	var/turf/far = locate(run_loc_floor_bottom_left.x, clamp(run_loc_floor_bottom_left.y + 20, 1, world.maxy), run_loc_floor_bottom_left.z)
-	if(get_dist(far, run_loc_floor_bottom_left) <= 9)
-		far = locate(run_loc_floor_bottom_left.x, clamp(run_loc_floor_bottom_left.y - 20, 1, world.maxy), run_loc_floor_bottom_left.z)
-	TEST_ASSERT(get_dist(far, run_loc_floor_bottom_left) > 9, "No spot out of the boss's sight on the test level") // BOUNTY_BOSS_POSSE_RANGE
-	var/mob/living/carbon/human/consistent/crewmate = hunter_at(far)
-	var/mob/living/carbon/human/consistent/stranger = hunter_at(far)
-	crew.join_member(tagger.mind)
-	crew.join_member(crewmate.mind)
+	// Out of its sight past the room's walls, but on its site
+	var/mob/living/carbon/human/consistent/on_site = hunter_at(outside(0, 20))
+	// On the dock strip, at the bottom of its site
+	var/mob/living/carbon/human/consistent/on_dock = hunter_at(outside(3, -2))
+	// On its level, off its site: another planet in the lattice
+	var/mob/living/carbon/human/consistent/elsewhere = hunter_at(outside(40, 0))
+	// On its site, but SSD
+	var/mob/living/carbon/human/consistent/asleep = hunter_at(outside(1, 20))
+	// On its site and playing, but not hunting it
+	var/mob/living/carbon/human/consistent/stranger = hunter_at(outside(2, 20))
+	TEST_ASSERT(get_dist(on_site, run_loc_floor_bottom_left) > 9, "The on-site crewmate is within the boss's sight") // BOUNTY_BOSS_POSSE_RANGE
+	for(var/mob/living/carbon/human/consistent/playing as anything in list(tagger, on_site, on_dock, elsewhere, stranger))
+		playing.mock_client = allocate(/datum/client_interface)
+	for(var/mob/living/carbon/human/consistent/member as anything in list(tagger, on_site, on_dock, elsewhere, asleep))
+		crew.join_member(member.mind)
 	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The test ship couldn't hunt the bounty")
 	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = spawn_bounty_criminal(posting.record, spot(0, 0), posting)
 	if(boss)
 		allocated += boss
 	TEST_ASSERT(istype(boss), "The posted Juggernaut spawned as [boss?.type]")
 	boss.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	// Its site: the room and well around it, with a dock strip along the bottom
+	var/turf/corner = run_loc_floor_bottom_left
+	boss.site_bounds = list(corner.x - 3, corner.y - 3, corner.x + 25, corner.y + 25, corner.z)
+	boss.body_dock_top_y = corner.y - 1
+	TEST_ASSERT(boss.body_on_site(get_turf(on_site)), "The test's on-site spot is off the site")
+	TEST_ASSERT(!boss.body_on_site(get_turf(on_dock)) && boss.body_on_dock_strip(get_turf(on_dock)), "The test's dock strip spot isn't on the dock strip")
+	TEST_ASSERT(!boss.body_on_site(get_turf(elsewhere)), "The test's off-site spot is on the site")
+
+	// The opening blow lands first
+	boss.adjustBruteLoss(50, forced = TRUE)
 	boss.body_add_grudge(tagger)
 	boss.boss_turn_hostile(tagger)
 	TEST_ASSERT(boss.boss_engaged[REF(tagger)], "The hunter who woke it isn't in its posse")
-	TEST_ASSERT(boss.boss_engaged[REF(crewmate)], "A crewmate out of its sight on its level isn't in its posse")
+	TEST_ASSERT(boss.boss_engaged[REF(on_site)], "A crewmate out of its sight on its site isn't in its posse")
+	TEST_ASSERT(boss.boss_engaged[REF(on_dock)], "A crewmate waiting on the dock strip isn't in its posse")
+	TEST_ASSERT(!boss.boss_engaged[REF(elsewhere)], "A crewmate on another site on its level joined its posse")
+	TEST_ASSERT(!boss.boss_engaged[REF(asleep)], "An SSD crewmate joined its posse")
 	TEST_ASSERT(!boss.boss_engaged[REF(stranger)], "Someone out of its sight who isn't hunting it joined its posse")
-	TEST_ASSERT_EQUAL(boss.maxHealth, 1250, "Woken by one of a crew of two, it has [boss.maxHealth] health") // BOUNTY_JUGGERNAUT_HEALTH_2
+	TEST_ASSERT_EQUAL(boss.maxHealth, 1600, "Woken with three of a crew at its site, it has [boss.maxHealth] health") // BOUNTY_JUGGERNAUT_HEALTH_3
+	TEST_ASSERT_EQUAL(boss.health, 1550, "Squaring up, it didn't keep the opening blow or didn't take the posse's health")
 	for(var/datum/mind/member as anything in crew.members.Copy())
 		member.ship_teams = null
 	crew.members.Cut()
@@ -819,6 +892,177 @@
 	TEST_ASSERT(ghost.boss_can_reach(sniper), "The Ghost can't reach someone right beside it")
 	TEST_ASSERT(!ghost.boss_shuns(sniper), "The Ghost keeps away from someone who came round to it")
 	TEST_ASSERT(ghost.boss_valid_target(sniper), "The Ghost won't go after someone who came round to it")
+
+/**
+ * A sniper far off (review r2): past the walk it works out, and past BOUNTY_BOSS_COVER_SIGHT. On its
+ * site with open ground round the table between them, it goes after them. Off its site (where it can't
+ * follow), it sees that they see it and backs off, keeps walking until it gets there, and hides
+ * behind a wall when one is near. Its walk is always worked out from the tile it stands on.
+ */
+/datum/unit_test/voidcrew_bounty_boss/far_sniper
+
+/datum/unit_test/voidcrew_bounty_boss/far_sniper/Run()
+	// Open floor north of the room: 21 wide, 5 deep
+	floor_area(0, 10, 20, 14)
+	var/mob/living/basic/bounty_criminal/boss/ghost/ghost = allocate(/mob/living/basic/bounty_criminal/boss/ghost, outside(0, 12))
+	ghost.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/datum/ai_controller/controller = ghost.ai_controller
+	allocate(/obj/structure/table, outside(2, 12))
+	var/mob/living/carbon/human/consistent/sniper = hunter_at(outside(13, 12))
+	TEST_ASSERT(get_dist(ghost, sniper) > 10, "The sniper isn't past the walk it works out") // BOUNTY_BOSS_REACH_RANGE
+	TEST_ASSERT(istype(ghost.boss_barrier_between(get_turf(ghost), get_turf(sniper)), /obj/structure/table), "The table isn't between them")
+
+	// On its site, open ground round the table: in reach, and it goes after them
+	TEST_ASSERT(ghost.boss_can_reach(sniper), "A sniper 13 tiles off across open ground is out of its reach")
+	ghost.body_add_grudge(sniper)
+	TEST_ASSERT(ghost.boss_note_attacker(sniper), "The shot wasn't noted")
+	TEST_ASSERT(!ghost.boss_shuns(sniper), "Shot from 13 tiles off across open ground, it keeps away from the shooter")
+	TEST_ASSERT(ghost.boss_valid_target(sniper), "Shot from 13 tiles off, it won't go after the shooter")
+	TEST_ASSERT(!(sniper in ghost.boss_watchers()), "It hides from a shooter it can walk to")
+	TEST_ASSERT_EQUAL(ghost.boss_nearest_hunter(list(sniper)), sniper, "The hunt doesn't pick the shooter")
+	controller.set_blackboard_key("BB_bounty_boss_prey", sniper) // BB_BOUNTY_BOSS_PREY
+	controller.set_blackboard_key("BB_bounty_boss_hunt_at", world.time + 10 SECONDS) // BB_BOUNTY_BOSS_HUNT_AT
+	TEST_ASSERT_EQUAL(plan_with(ghost, /datum/ai_planning_subtree/bounty_boss_hunt), SUBTREE_RETURN_FINISH_PLANNING, "The hunt planned nothing")
+	TEST_ASSERT(planned(controller, /datum/ai_behavior/travel_towards/adjacent), "It doesn't walk after the shooter")
+	controller.CancelActions()
+	controller.clear_blackboard_key("BB_bounty_boss_prey")
+
+	// Walled in near it, the same sniper is out of reach: the walk never gets it closer to them
+	var/mob/living/basic/bounty_criminal/boss/ghost/boxed = allocate(/mob/living/basic/bounty_criminal/boss/ghost, outside(0, 12))
+	boxed.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	for(var/dy in 10 to 14)
+		change_turf(outside(1, dy), /turf/closed/wall/r_wall)
+	TEST_ASSERT(!boxed.boss_can_reach(sniper), "Walled in, it can reach a sniper 13 tiles off")
+	for(var/dy in 10 to 14)
+		change_turf(outside(1, dy), /turf/open/floor/iron)
+	qdel(boxed)
+
+	// Off its site (in their ship), 12 tiles off with a clear line: it can't follow, and it knows they see it
+	var/mob/living/basic/bounty_criminal/boss/ghost/hider = allocate(/mob/living/basic/bounty_criminal/boss/ghost, outside(7, 12))
+	hider.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	controller = hider.ai_controller
+	var/turf/ship_floor = make_ship_tile(outside(19, 12))
+	sniper.forceMove(ship_floor)
+	hider.body_add_grudge(sniper)
+	TEST_ASSERT(hider.boss_note_attacker(sniper), "The shot from the ship wasn't noted")
+	TEST_ASSERT(hider.boss_shuns(sniper), "Shot from off its site, it doesn't keep away from the shooter")
+	var/list/watchers = hider.boss_watchers()
+	TEST_ASSERT(sniper in watchers, "The shooter in their ship isn't one it hides from")
+	TEST_ASSERT(hider.boss_seen_from(get_turf(hider), watchers), "12 tiles off with a clear line, it thinks the shooter can't see it")
+
+	// Nowhere hidden in reach: it backs off as far as it can, saying so, and keeps going (review r2 bug 3)
+	var/datum/component/bounty_identity_voice/voice = hider.LoadComponent(/datum/component/bounty_identity_voice)
+	voice.line_cooldown = 0
+	voice.last_line = null
+	var/turf/start = get_turf(hider)
+	TEST_ASSERT_EQUAL(plan_with(hider, /datum/ai_planning_subtree/bounty_boss_cover), SUBTREE_RETURN_FINISH_PLANNING, "In the open in a shooter's sight, it planned nothing")
+	var/turf/away = controller.blackboard["BB_bounty_boss_cover"] // BB_BOUNTY_BOSS_COVER
+	TEST_ASSERT_NOTNULL(away, "In the open in a shooter's sight, it stays put")
+	TEST_ASSERT(get_dist(away, sniper) > get_dist(start, sniper), "It doesn't back away from the shooter")
+	TEST_ASSERT(planned(controller, /datum/ai_behavior/travel_towards), "It doesn't walk away from the shooter")
+	TEST_ASSERT(voice.last_line in bounty_identity_strings("lines")["ghost_cover"]["any"], "Breaking for cover, the Ghost said [voice.last_line || "nothing"]")
+	// The next plan, still on its way: it keeps walking
+	TEST_ASSERT_EQUAL(plan_with(hider, /datum/ai_planning_subtree/bounty_boss_cover), SUBTREE_RETURN_FINISH_PLANNING, "On its way, it planned nothing")
+	TEST_ASSERT(planned(controller, /datum/ai_behavior/travel_towards), "On its way to the farthest spot, it dropped its own walk")
+	TEST_ASSERT_EQUAL(controller.blackboard["BB_bounty_boss_cover"], away, "On its way, it changed its mind") // BB_BOUNTY_BOSS_COVER
+	controller.CancelActions()
+
+	// A wall near it: it hides behind that, out of the shooter's line
+	for(var/dy in 11 to 13)
+		change_turf(outside(5, dy), /turf/closed/wall/r_wall)
+	hider.boss_walk_cache = null
+	var/turf/cover = hider.boss_find_cover(watchers)
+	TEST_ASSERT_NOTNULL(cover, "With a wall near it, it found no cover from a shooter 12 tiles off")
+	TEST_ASSERT(!hider.boss_seen_from(cover, watchers), "Its cover is in the shooter's line")
+	TEST_ASSERT(cover.x < outside(5, 12).x, "Its cover isn't behind the wall")
+
+	// Its walk is worked out from where it stands, not where it stood
+	var/list/steps = hider.boss_walkable()
+	TEST_ASSERT_EQUAL(steps[get_turf(hider)], 0, "Its walk doesn't start where it stands")
+	hider.forceMove(outside(8, 10))
+	steps = hider.boss_walkable()
+	TEST_ASSERT_EQUAL(steps[get_turf(hider)], 0, "A step later, its walk still starts where it stood")
+
+/**
+ * The breach planner (review r2): with its charge on cooldown and a way round, the Juggernaut goes
+ * round rather than wait at the glass; with the charge ready it walks up; with no way round it waits
+ * at the glass for the charge.
+ */
+/datum/unit_test/voidcrew_bounty_boss/breach
+
+/datum/unit_test/voidcrew_bounty_boss/breach/Run()
+	var/mob/living/basic/bounty_criminal/boss/juggernaut/boss = allocate(/mob/living/basic/bounty_criminal/boss/juggernaut, spot(0, 2))
+	boss.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/datum/ai_controller/controller = boss.ai_controller
+	var/mob/living/carbon/human/consistent/behind = hunter_at(spot(4, 2))
+	var/obj/structure/window/fulltile/pane = allocate(/obj/structure/window/fulltile, spot(2, 2))
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = ability_of(boss, /datum/action/cooldown/mob_cooldown/bounty_boss/charge)
+	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, behind)
+	TEST_ASSERT(boss.boss_goes_through(pane), "The Juggernaut's charge doesn't go through plain glass")
+	var/list/blockers = boss.boss_line_blockers(get_turf(boss), get_turf(behind))
+	TEST_ASSERT_EQUAL(length(blockers), 1, "One plain window reads as [length(blockers)] things in its way")
+	TEST_ASSERT(boss.boss_gets_through(blockers), "The Juggernaut's charge doesn't get through one plain window")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], behind, "The test's target didn't stick")
+
+	// Charge on cooldown, a way round: no breach, so the melee planner walks it round
+	charge.next_use_time = world.time + 100 SECONDS
+	TEST_ASSERT(!boss.boss_breaks_through_now(pane), "The Juggernaut's charge is ready on cooldown")
+	TEST_ASSERT_NULL(plan_with(boss, /datum/ai_planning_subtree/bounty_boss_breach), "With its charge on cooldown and a way round, it went at the glass")
+	TEST_ASSERT_NULL(controller.blackboard["BB_bounty_boss_spot"], "With its charge on cooldown and a way round, it picked a spot at the glass") // BB_BOUNTY_BOSS_SPOT
+
+	// Charge ready: it walks up to the glass
+	charge.next_use_time = 0
+	TEST_ASSERT(boss.boss_breaks_through_now(pane), "The Juggernaut's charge isn't ready off cooldown")
+	TEST_ASSERT_EQUAL(plan_with(boss, /datum/ai_planning_subtree/bounty_boss_breach), SUBTREE_RETURN_FINISH_PLANNING, "With its charge ready, it didn't go at the glass")
+	TEST_ASSERT_EQUAL(controller.blackboard["BB_bounty_boss_spot"], spot(1, 2), "With its charge ready, it isn't walking up to the glass") // BB_BOUNTY_BOSS_SPOT
+	TEST_ASSERT(planned(controller, /datum/ai_behavior/travel_towards), "With its charge ready, it doesn't walk")
+	controller.CancelActions()
+	controller.clear_blackboard_key("BB_bounty_boss_spot")
+
+	// No way round: it waits at the glass for its charge
+	for(var/dy in list(0, 1, 3, 4))
+		allocate(/obj/structure/window/reinforced/fulltile, spot(2, dy))
+	boss.boss_walk_cache = null
+	charge.next_use_time = world.time + 100 SECONDS
+	TEST_ASSERT(!boss.boss_walks_to(get_turf(behind)), "The test's glass wall has a way round")
+	TEST_ASSERT_EQUAL(plan_with(boss, /datum/ai_planning_subtree/bounty_boss_breach), SUBTREE_RETURN_FINISH_PLANNING, "With no way round, it didn't go at the glass")
+	TEST_ASSERT_EQUAL(controller.blackboard["BB_bounty_boss_spot"], spot(1, 2), "With no way round, it isn't walking up to the glass") // BB_BOUNTY_BOSS_SPOT
+	controller.CancelActions()
+
+/**
+ * Smashing is all or nothing (review r2): Gorilla Arms leave alone a grille with glass behind it they
+ * can't break in a few blows, and go at one with glass they can.
+ */
+/datum/unit_test/voidcrew_bounty_boss/smash_line
+
+/datum/unit_test/voidcrew_bounty_boss/smash_line/Run()
+	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = allocate(/mob/living/basic/bounty_criminal/boss/cyberpsycho, spot(0, 1))
+	psycho.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	var/datum/ai_controller/controller = psycho.ai_controller
+	var/mob/living/carbon/human/consistent/behind = hunter_at(spot(4, 1))
+	psycho.body_add_grudge(behind)
+	psycho.boss_turn_hostile(behind)
+	psycho.boss_next_ability_at = 0
+	var/obj/structure/grille/grille = allocate(/obj/structure/grille, spot(2, 1))
+	var/obj/structure/window/reinforced/fulltile/thick = allocate(/obj/structure/window/reinforced/fulltile, spot(2, 1))
+	var/list/blockers = psycho.boss_line_blockers(get_turf(psycho), get_turf(behind))
+	TEST_ASSERT((grille in blockers) && (thick in blockers), "The grille and the glass on one tile aren't both in its way")
+	TEST_ASSERT(psycho.boss_goes_through(grille), "Gorilla Arms don't go through a grille")
+	TEST_ASSERT(!psycho.boss_gets_through(blockers), "Gorilla Arms go at a grille with glass behind it they can't break")
+	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, behind)
+	TEST_ASSERT_NULL(plan_with(psycho, /datum/ai_planning_subtree/bounty_boss_breach), "It went at a grille with glass behind it it can't break")
+	TEST_ASSERT_NULL(controller.blackboard["BB_bounty_boss_spot"], "It picked a spot at glass it can't break") // BB_BOUNTY_BOSS_SPOT
+
+	// Plain glass behind the grille: all of it breaks, so it goes at it
+	qdel(thick)
+	var/obj/structure/window/fulltile/pane = allocate(/obj/structure/window/fulltile, spot(2, 1))
+	blockers = psycho.boss_line_blockers(get_turf(psycho), get_turf(behind))
+	TEST_ASSERT((grille in blockers) && (pane in blockers), "The grille and the plain glass on one tile aren't both in its way")
+	TEST_ASSERT_EQUAL(length(blockers), 2, "A grille and a window on one tile read as [length(blockers)] things in its way")
+	TEST_ASSERT(psycho.boss_gets_through(blockers), "Gorilla Arms won't go at a grille with plain glass behind it")
+	TEST_ASSERT_EQUAL(plan_with(psycho, /datum/ai_planning_subtree/bounty_boss_breach), SUBTREE_RETURN_FINISH_PLANNING, "It didn't go at a grille and glass it can break")
+	TEST_ASSERT_EQUAL(controller.blackboard["BB_bounty_boss_spot"], spot(1, 1), "It isn't walking up to glass it can break") // BB_BOUNTY_BOSS_SPOT
+	controller.CancelActions()
 
 /**
  * Who gets through what: Gorilla Arms smash glass they break in a few blows, with a wind-up first and

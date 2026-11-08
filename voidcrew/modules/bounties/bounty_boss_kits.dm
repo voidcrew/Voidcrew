@@ -24,7 +24,8 @@
  * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
  * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
  * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds. The Ghost has nothing for it, and
- * takes cover instead.
+ * takes cover instead. It walks up to the barrier only while that ability is off cooldown
+ * (boss_breaks_through_now()), or when there is no way round; otherwise it goes round on foot.
  *
  * The shared vars are declared in bounty_types.dm and nowhere else; a var only P4 uses goes here
  * with a `boss_` prefix, or on the /boss subtypes.
@@ -72,6 +73,13 @@
 	if(..())
 		return TRUE
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = locate() in boss_abilities
+	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
+
+// With its charge ready
+/mob/living/basic/bounty_criminal/boss/juggernaut/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/charge/charge = boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/charge)
 	return isobj(barrier) && charge?.smashes(barrier) && boss_may_break(barrier)
 
 /datum/outfit/bounty_boss/juggernaut
@@ -345,6 +353,10 @@
 /mob/living/basic/bounty_criminal/boss/pyromaniac/boss_goes_through(atom/barrier)
 	return ..() || !barrier.opacity
 
+// With a molotov ready
+/mob/living/basic/bounty_criminal/boss/pyromaniac/boss_breaks_through_now(atom/barrier)
+	return ..() || (!barrier.opacity && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
+
 /datum/outfit/bounty_boss/pyromaniac
 	name = "Bounty mini-boss: Pyromaniac"
 	uniform = /obj/item/clothing/under/color/black
@@ -500,6 +512,15 @@
 	if(..() || !barrier.opacity)
 		return TRUE
 	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier)
+
+// With a grenade ready for anything it can see across, or a breaching charge for an interior wall or door
+/mob/living/basic/bounty_criminal/boss/demolitionist/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	if(!barrier.opacity && boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/grenade))
+		return TRUE
+	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier) \
+		&& !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/breach))
 
 /**
  * It keeps BOUNTY_DEMOLITIONIST_KEEP_MIN to _MAX tiles from its target while it has something it
@@ -1104,6 +1125,16 @@
 /mob/living/basic/bounty_criminal/boss/heavy/boss_goes_through(atom/barrier)
 	if(..())
 		return TRUE
+	if(isturf(barrier))
+		return !barrier.density
+	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)
+
+// With its burst ready
+/mob/living/basic/bounty_criminal/boss/heavy/boss_breaks_through_now(atom/barrier)
+	if(..())
+		return TRUE
+	if(isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/burst)))
+		return FALSE
 	if(isturf(barrier))
 		return !barrier.density
 	return (istype(barrier, /obj/structure/window) || istype(barrier, /obj/structure/grille)) && boss_may_break(barrier)

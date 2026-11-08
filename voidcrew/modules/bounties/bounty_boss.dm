@@ -17,17 +17,20 @@
  * How a fight goes:
  * - A boss waits (its activity, if P3 gives it one) until it spots a hunter, is attacked or is
  *   confronted. Then it turns hostile: every player within BOUNTY_BOSS_POSSE_RANGE who can see it
- *   joins its posse, and so does every crew member of a ship hunting it who is on its level, and its
- *   health is set from the kit's table for that many hunters. Anyone who hurts it later joins too,
- *   raising its health again (never lowering it).
+ *   joins its posse, and so does every crew member of a ship hunting it who is playing and at its
+ *   site (on it, on its dock strip or aboard a ship landed there), and its health is set from the
+ *   kit's table for that many hunters. Anyone who hurts it later joins too, raising its max health
+ *   while it is unhurt (never lowering it, and never healing it in a fight).
  * - Its AI: nothing while busy or disabled; a target; an ability, never the same one twice in a
  *   row; the kit's way of closing in or keeping away; through whatever is in its way, if its kit can
  *   go through it; its melee attack; and with nobody in sight, the hunt for the nearest hunter still
  *   on its site. It calms down after BOUNTY_BOSS_CALM_TIME with nobody around.
  * - Hurt by someone it can't get at (behind glass it can't break, a shut door, a gap, or off its
  *   site), it doesn't stand there: it stops going after them for BOUNTY_BOSS_SHUN_TIME and gets out of
- *   their sight (boss_find_cover()), coming out for anyone it can reach. With Gorilla Arms it smashes
- *   through a window, grille or door it can break, with the piston punch's wind-up (boss_start_smash()).
+ *   their sight (boss_find_cover()), however far off they are, with a line as it goes, coming out for
+ *   anyone it can reach. Someone far off with a way to them on foot is in reach, and it goes after
+ *   them. With Gorilla Arms it smashes through a window, grille or door it can break, with the piston
+ *   punch's wind-up (boss_start_smash()), and only if it can break everything on the way.
  * - Every ability winds up first, where everyone can see and hear it (telegraph()), and does its
  *   harm only when the wind-up is over (effect()). Downed, restrained, stunned or dead in between,
  *   and nothing happens.
@@ -119,6 +122,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	var/boss_burn_coeff = 1
 	/// Turned hostile: it spotted a hunter, or someone attacked or confronted it
 	var/boss_hostile = FALSE
+	/// Squaring up as its fight starts (boss_turn_hostile()): its posse's health lands in full, its damage kept as it is
+	var/boss_squaring_up = FALSE
 	/// REF() of each hunter in its posse -> TRUE; its health follows how many
 	var/list/boss_engaged = list()
 	/// Walls and doors it may still break this fight
@@ -130,11 +135,14 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	var/boss_calm_at = 0
 	/// Hunters who hurt it from where it couldn't get at them: weakref -> world.time of the last such hit (boss_note_reach())
 	var/list/boss_shunned = list()
-	/// The tiles it can walk to (boss_walkable()): turf -> steps, and when that was worked out
+	/// The tiles it can walk to (boss_walkable()): turf -> steps, the tile it stood on then, and when that was worked out
 	var/list/boss_walk_cache
+	var/turf/boss_walk_origin
 	var/boss_walk_at = 0
 	/// world.time it may look for new cover
 	var/boss_cover_rethink_at = 0
+	/// world.time it may say a line again as it breaks for cover
+	var/boss_cover_bark_at = 0
 	/// The floor mark of a smash winding up
 	var/datum/weakref/boss_smash_mark
 
@@ -165,6 +173,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	boss_last_attacker = null
 	boss_shunned = null
 	boss_walk_cache = null
+	boss_walk_origin = null
 	return ..()
 
 /mob/living/basic/bounty_criminal/boss/death(gibbed)
@@ -437,6 +446,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			boss_engage(instigator)
 		return FALSE
 	boss_hostile = TRUE
+	// Its fight starts: it sizes up everyone at once, whatever the opening blow did (boss_apply_posse_health())
+	boss_squaring_up = TRUE
 	if(instigator)
 		boss_engage(instigator, announce = FALSE)
 	for(var/mob/living/watcher in viewers(BOUNTY_BOSS_POSSE_RANGE, src))
@@ -446,27 +457,44 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			boss_engage(pilot, announce = FALSE)
 	boss_engage_hunting_crews()
 	boss_apply_posse_health(announce = FALSE)
+	boss_squaring_up = FALSE
 	boss_bark("intro")
 	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
 	chrome?.fight_started(instigator)
 	return TRUE
 
 /**
- * Every crew member of a ship hunting its bounty who is on its level (on its site, on the dock strip,
- * aboard their ship landed there) joins its posse, seen or not: one hunter can't wake it at one
- * hunter's health and then bring the rest of the crew in (review r1).
+ * Every crew member of a ship hunting its bounty who is playing (not SSD) and at its site joins its
+ * posse, seen or not (boss_crew_at_site()): one hunter can't wake it at one hunter's health while the
+ * rest of the crew wait on the dock strip or aboard their landed ship (review r1). Crew on another
+ * site sharing its level, or aboard a ship anywhere else, don't count (review r2).
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_engage_hunting_crews()
 	var/datum/criminal_bounty/posting = posting()
-	var/turf/here = get_turf(src)
-	if(!posting || !here)
+	if(!posting || !get_turf(src))
 		return
 	for(var/obj/structure/overmap/ship/ship as anything in posting.hunter_ships())
 		for(var/datum/mind/member as anything in ship.ship_team?.members)
 			var/mob/living/body = member?.current
-			var/turf/where = get_turf(body)
-			if(isliving(body) && where?.z == here.z)
+			if(isliving(body) && GET_CLIENT(body) && boss_crew_at_site(body, ship))
 				boss_engage(body, announce = FALSE)
+
+/**
+ * Whether `body`, of the crew of `ship`, is at its site for its posse: on its level, and on the site
+ * itself (as a normal criminal counts its hunting crew, body_hunting_crew_on_site()), or anywhere in
+ * the site's rectangle, which holds its dock strip and the ships landed on it. For a site with no
+ * rectangle (a pirate ship), aboard `ship` close alongside it.
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_crew_at_site(mob/living/body, obj/structure/overmap/ship/ship)
+	var/turf/here = get_turf(src)
+	var/turf/where = get_turf(body)
+	if(!here || !where || where.z != here.z)
+		return FALSE
+	if(body_on_site(where))
+		return TRUE
+	if(site_bounds)
+		return where.z == site_bounds[5] && where.x >= site_bounds[1] && where.x <= site_bounds[3] && where.y >= site_bounds[2] && where.y <= site_bounds[4]
+	return ship?.is_aboard(where) && get_dist(here, where) <= BOUNTY_BOSS_HUNT_RANGE
 
 /// With no hunter left on its site, it stops hunting and waits again. Its posse and health stay.
 /mob/living/basic/bounty_criminal/boss/proc/boss_calm_down()
@@ -504,11 +532,15 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Max health for the posse it has: the kit's table entry for that many hunters (never more than the
- * 4+ entry), raised and never lowered (M4).
- * - Fresh, current health rises by the same step (spec: "raised, current health too").
- * - Tired, it keeps the same share of its health, so a newcomer never heals it out of its capture
- *   window.
- * - Downed or cuffed, the raise waits; it is applied when it gets up (on_freed), keeping its share.
+ * 4+ entry), raised and never lowered (M4). Basic mobs keep their damage as bruteloss, and that stays
+ * as it is, so:
+ * - Squaring up as its fight starts (boss_squaring_up), current health rises by the same step (spec:
+ *   "raised, current health too"), whatever the opening blow did.
+ * - Otherwise it rises only while it is unhurt, starting at the new full. Hurt, the raise waits until
+ *   it is whole again: nobody new (a rival crew included) heals it in a fight, and nobody new lowers
+ *   its share of health toward its capture window either (review r2), as body_size_up() does for a
+ *   normal criminal.
+ * - Downed or cuffed, the raise waits; on_freed tries again when it gets up.
  * Returns TRUE if max health rose.
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_apply_posse_health(announce = TRUE)
@@ -523,12 +555,10 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	wanted *= npc_zone_health_factor
 	if(wanted <= maxHealth)
 		return FALSE
+	if(!boss_squaring_up && health < maxHealth)
+		return FALSE
 	npc_zone_original_max_health = raw_health
-	var/share = maxHealth > 0 ? health / maxHealth : 1
 	setMaxHealth(wanted)
-	if(boss_tired)
-		// Basic mobs keep all their damage as bruteloss. Not rounded, so it never lands over the tired line.
-		bruteloss = wanted * (1 - share)
 	updatehealth()
 	boss_update_tired(silent = TRUE)
 	if(announce && count > 1)
@@ -645,24 +675,33 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		boss_note_reach(hunter)
 	return TRUE
 
-/// The nearest hunter (or their mech) still on its site within BOUNTY_BOSS_HUNT_RANGE, for the hunt. Only players with a client count, from SSmobs' list for its level.
-/mob/living/basic/bounty_criminal/boss/proc/boss_nearest_hunter()
+/**
+ * The nearest hunter (or their mech) still on its site within BOUNTY_BOSS_HUNT_RANGE that it can get
+ * at (boss_can_reach()), for the hunt: it never walks back out to stand in front of someone behind
+ * glass. Only players with a client count, from SSmobs' list for its level; a test passes its own
+ * `candidates`.
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_nearest_hunter(list/candidates)
 	var/turf/here = get_turf(src)
-	if(!here || here.z > length(SSmobs.clients_by_zlevel))
+	if(!here)
 		return null
+	if(isnull(candidates))
+		if(here.z > length(SSmobs.clients_by_zlevel))
+			return null
+		candidates = SSmobs.clients_by_zlevel[here.z]
 	var/atom/best
 	var/best_distance = BOUNTY_BOSS_HUNT_RANGE + 1
-	for(var/mob/living/person as anything in SSmobs.clients_by_zlevel[here.z])
+	for(var/mob/living/person in candidates)
 		var/atom/target = boss_target_for(person)
-		if(!boss_valid_target(target))
-			continue
 		var/turf/spot = get_turf(target)
-		if(!spot || !leash_ok(spot))
+		if(!spot || spot.z != here.z)
 			continue
 		var/distance = get_dist(here, spot)
-		if(distance < best_distance)
-			best = target
-			best_distance = distance
+		// Nearest first: the costly checks only for someone nearer than the best so far
+		if(distance >= best_distance || !leash_ok(spot) || !boss_valid_target(target) || !boss_can_reach(target))
+			continue
+		best = target
+		best_distance = distance
 	return best
 
 // ----- where it may reach, and what it may break -----
@@ -823,8 +862,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Whether it can get at `target` (a person, or a mech) from where it stands: it may hurt them there,
- * and it is beside them, or nothing on the straight way stops it, or what does its kit goes through
- * (boss_goes_through()), or it can walk round to them (boss_walkable()).
+ * and it is beside them, or nothing on the straight way stops it, or its kit goes through everything
+ * that does (boss_gets_through()), or it can walk round to them (boss_walks_to()).
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_can_reach(atom/target)
 	if(!boss_can_hurt(target))
@@ -835,26 +874,48 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return FALSE
 	if(Adjacent(target))
 		return TRUE
-	var/atom/barrier = boss_barrier_between(here, there)
-	if(!barrier || boss_goes_through(barrier))
+	var/list/blockers = boss_line_blockers(here, there)
+	if(!length(blockers) || boss_gets_through(blockers))
 		return TRUE
+	return boss_walks_to(there)
+
+/**
+ * Whether it can walk to `there`, or beside it (someone up on a table or a crate), through nothing it
+ * can't open (boss_walkable()). Someone beyond BOUNTY_BOSS_REACH_RANGE is past the walk it works out:
+ * they count as reachable if that walk reaches its edge at least half its range closer to them, so a
+ * far shooter with open ground between is chased, and one across a gap or behind a wall near it is
+ * not (review r2).
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_walks_to(turf/there)
+	var/turf/here = get_turf(src)
+	if(!here || !there || here.z != there.z)
+		return FALSE
 	var/list/steps = boss_walkable()
 	if(!isnull(steps[there]))
 		return TRUE
-	// Someone up on a table or a crate: a tile beside them will do
 	for(var/direction in GLOB.cardinals)
 		var/turf/beside = get_step(there, direction)
 		if(beside && !isnull(steps[beside]) && !boss_border_between(beside, there))
 			return TRUE
+	var/distance = get_dist(here, there)
+	if(distance <= BOUNTY_BOSS_REACH_RANGE)
+		return FALSE
+	var/closer_than = distance - BOUNTY_BOSS_REACH_RANGE / 2
+	for(var/turf/spot as anything in steps)
+		if(get_dist(here, spot) >= BOUNTY_BOSS_REACH_RANGE && get_dist(spot, there) <= closer_than)
+			return TRUE
 	return FALSE
 
 /**
- * Whether its kit gets through `barrier` (from boss_barrier_between()) to someone behind it. With
- * working Gorilla Arms, an airlock they may force (they do that themselves, bounty_chrome_gorilla.dm)
- * and anything else they can break (boss_can_smash()). Each kit adds its own: a charge, a grenade or
+ * Whether its kit gets through `barrier` (from boss_line_blockers()) to someone behind it: with
+ * working Gorilla Arms (boss_gorilla_goes_through()). Each kit adds its own: a charge, a grenade or
  * a molotov thrown over, a breaching charge, rounds that chip through.
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_goes_through(atom/barrier)
+	return boss_gorilla_goes_through(barrier)
+
+/// Whether working Gorilla Arms get it through `barrier`: an airlock they may force (they do that themselves, bounty_chrome_gorilla.dm), and anything else they can break (boss_can_smash())
+/mob/living/basic/bounty_criminal/boss/proc/boss_gorilla_goes_through(atom/barrier)
 	var/datum/bounty_chrome/gorilla/gorilla = bounty_chrome_piece(src, BOUNTY_CHROME_GORILLA)
 	if(!gorilla?.online())
 		return FALSE
@@ -862,30 +923,77 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return gorilla.door_may_force(barrier)
 	return boss_can_smash(barrier)
 
+/// All or nothing: whether its kit goes through every one of `blockers` (boss_line_blockers()), so it never breaks a grille only to meet glass it can't
+/mob/living/basic/bounty_criminal/boss/proc/boss_gets_through(list/blockers)
+	if(!length(blockers))
+		return TRUE
+	for(var/atom/blocker as anything in blockers)
+		if(!boss_goes_through(blocker))
+			return FALSE
+	return TRUE
+
+/**
+ * Whether what gets it through `barrier` is ready now, so walking up to it is worth more than going
+ * round: working Gorilla Arms that aren't busy. Each kit adds its own ability that breaks or crosses
+ * it, off cooldown. With it on cooldown, the boss goes round on foot if it can (the breach planner).
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_breaks_through_now(atom/barrier)
+	var/datum/bounty_chrome/gorilla/gorilla = bounty_chrome_piece(src, BOUNTY_CHROME_GORILLA)
+	return gorilla?.online() && !gorilla.busy && boss_gorilla_goes_through(barrier)
+
+/// Its ability of `ability_type`, if it has one off cooldown
+/mob/living/basic/bounty_criminal/boss/proc/boss_ability_off_cooldown(ability_type)
+	for(var/datum/action/cooldown/mob_cooldown/bounty_boss/ability as anything in boss_abilities)
+		if(!QDELETED(ability) && istype(ability, ability_type))
+			return ability.next_use_time <= world.time ? ability : null
+	return null
+
 /**
  * The first thing on the straight way from `start` to `finish` that stops it walking: a wall, a gap
  * (space, a drop, lava, a chasm), or something solid it can't open or climb (a window, a grille, a
  * shut door, a table). Null if the way is clear. People never count.
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_barrier_between(turf/start, turf/finish)
+	var/list/blockers = boss_line_blockers(start, finish, TRUE)
+	return length(blockers) ? blockers[1] : null
+
+/**
+ * Everything on the straight way from `start` to `finish` that stops it walking, in order: walls,
+ * gaps, and every solid thing it can't open or climb on each step (a grille and the window on the
+ * same tile are both there). With `first_only`, only the first step that is blocked.
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_line_blockers(turf/start, turf/finish, first_only = FALSE)
+	. = list()
 	if(!start || !finish || start.z != finish.z)
-		return null
+		return
 	var/datum/can_pass_info/pass_info = new(src, list())
 	var/turf/previous = start
 	for(var/turf/spot as anything in get_line(start, finish))
 		if(spot == start)
 			continue
 		if(spot.density)
-			return spot
-		if(spot != finish && (isspaceturf(spot) || isopenspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot)))
-			return spot
-		if(previous.LinkBlockedWithAccess(spot, pass_info))
-			return boss_blocker_on_step(previous, spot, pass_info) || spot
+			. += spot
+		else if(spot != finish && (isspaceturf(spot) || isopenspaceturf(spot) || isgroundlessturf(spot) || islava(spot) || ischasm(spot)))
+			. += spot
+		else if(previous.LinkBlockedWithAccess(spot, pass_info))
+			var/list/on_step = boss_blockers_on_step(previous, spot, pass_info)
+			if(length(on_step))
+				// A full-tile window blocks the step off its tile as well as the step onto it: once is enough
+				. |= on_step
+			else
+				. += spot
+		if(first_only && length(.))
+			return
 		previous = spot
-	return null
 
-/// What stops a step from `origin` onto `destination`: a window or door on the edge between them, or something solid on `destination`. A diagonal step is checked both ways round.
-/mob/living/basic/bounty_criminal/boss/proc/boss_blocker_on_step(turf/origin, turf/destination, datum/can_pass_info/pass_info)
+/**
+ * What stops a step from `origin` onto `destination`: windows or doors on the edge between them, a
+ * window filling `origin` (tg's pathing counts one as blocking the step off its tile too), and
+ * everything solid on `destination`. A diagonal step is checked both ways round, giving what stops the
+ * first way.
+ */
+/mob/living/basic/bounty_criminal/boss/proc/boss_blockers_on_step(turf/origin, turf/destination, datum/can_pass_info/pass_info)
+	. = list()
 	var/direction = get_dir(origin, destination)
 	if(origin.x != destination.x && origin.y != destination.y)
 		for(var/half in list(direction & (NORTH|SOUTH), direction & (EAST|WEST)))
@@ -893,19 +1001,18 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			if(!middle)
 				continue
 			if(middle.density)
-				return middle
-			var/atom/blocker = boss_blocker_on_step(origin, middle, pass_info) || boss_blocker_on_step(middle, destination, pass_info)
-			if(blocker)
-				return blocker
-		return null
+				return list(middle)
+			var/list/found = boss_blockers_on_step(origin, middle, pass_info) + boss_blockers_on_step(middle, destination, pass_info)
+			if(length(found))
+				return found
+		return
 	for(var/obj/border in origin)
-		if(border.density && (border.flags_1 & ON_BORDER_1) && !border.CanAStarPass(direction, pass_info))
-			return border
+		if(border.density && ((border.flags_1 & ON_BORDER_1) || istype(border, /obj/structure/window)) && !border.CanAStarPass(direction, pass_info))
+			. += border
 	var/reverse = get_dir(destination, origin)
 	for(var/obj/thing in destination)
 		if(thing.density && !thing.CanAStarPass(reverse, pass_info))
-			return thing
-	return null
+			. += thing
 
 /// Whether a window or door stands on the edge between two tiles side by side
 /mob/living/basic/bounty_criminal/boss/proc/boss_border_between(turf/origin, turf/destination)
@@ -921,15 +1028,15 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 
 /**
  * Every tile it could walk to from where it stands, within BOUNTY_BOSS_REACH_RANGE and on its leash,
- * through nothing it can't open: turf -> steps, nearest first. Worked out again after
- * BOUNTY_BOSS_REACH_RETHINK, or once it is somewhere the last look didn't reach; steps are counted
- * from where it stood then.
+ * through nothing it can't open: turf -> steps, nearest first. Worked out again once it stands on
+ * another tile, or after BOUNTY_BOSS_REACH_RETHINK on the same one, so the steps and the range are
+ * always counted from where it is (review r2).
  */
 /mob/living/basic/bounty_criminal/boss/proc/boss_walkable()
 	var/turf/here = get_turf(src)
 	if(!here)
 		return list()
-	if(boss_walk_cache && world.time < boss_walk_at + BOUNTY_BOSS_REACH_RETHINK && !isnull(boss_walk_cache[here]))
+	if(boss_walk_cache && boss_walk_origin == here && world.time < boss_walk_at + BOUNTY_BOSS_REACH_RETHINK)
 		return boss_walk_cache
 	var/datum/can_pass_info/pass_info = new(src, list())
 	var/list/steps = list()
@@ -949,6 +1056,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			steps[next] = next_steps
 			queue += next
 	boss_walk_cache = steps
+	boss_walk_origin = here
 	boss_walk_at = world.time
 	return steps
 
@@ -983,12 +1091,30 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		if(!boss_can_reach(watcher))
 			. |= watcher
 
-/// Whether any of `watchers` can see `spot`
+/**
+ * Whether any of `watchers` can see `spot`: a clear line from them on its level. Within
+ * BOUNTY_BOSS_COVER_SIGHT, and as far as the line goes past that, so a shooter further off (a scope,
+ * the dock strip) never leaves it standing in the open thinking it is hidden (review r2).
+ */
 /mob/living/basic/bounty_criminal/boss/proc/boss_seen_from(turf/spot, list/watchers)
+	spot = get_turf(spot)
+	if(!spot)
+		return FALSE
 	for(var/atom/watcher as anything in watchers)
-		if(can_see(watcher, spot, BOUNTY_BOSS_COVER_SIGHT))
+		var/turf/from = get_turf(watcher)
+		if(!from || from.z != spot.z)
+			continue
+		if(can_see(from, spot, max(BOUNTY_BOSS_COVER_SIGHT, get_dist(from, spot))))
 			return TRUE
 	return FALSE
+
+/// It breaks for cover from someone it can't get at: a line for it, at most every BOUNTY_BOSS_COVER_BARK_COOLDOWN, so it reads as biding its time, not running
+/mob/living/basic/bounty_criminal/boss/proc/boss_cover_bark()
+	if(world.time < boss_cover_bark_at)
+		return FALSE
+	boss_cover_bark_at = world.time + BOUNTY_BOSS_COVER_BARK_COOLDOWN
+	boss_bark("cover")
+	return TRUE
 
 /// How far `spot` is from the nearest of `watchers`
 /mob/living/basic/bounty_criminal/boss/proc/boss_distance_from(turf/spot, list/watchers)
@@ -1735,9 +1861,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /**
- * Its target stands behind something its kit goes through (boss_goes_through()): it walks up to it,
- * and with Gorilla Arms right beside it, smashes it. A kit's own ability (a charge, a grenade, a
- * breaching charge) has had its turn already.
+ * Its target stands behind things its kit goes through, every one of them (boss_gets_through()): it
+ * walks up to the first, and with Gorilla Arms right beside it, smashes it. A kit's own ability (a
+ * charge, a grenade, a breaching charge) has had its turn already. It only does this while what breaks
+ * through is ready (boss_breaks_through_now()), or when there is no way round on foot; otherwise it
+ * leaves the walk round to the melee planner rather than wait at the glass (review r2).
  */
 /datum/ai_planning_subtree/bounty_boss_breach
 
@@ -1747,8 +1875,12 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	if(QDELETED(target) || boss.Adjacent(target))
 		return
 	var/turf/here = get_turf(boss)
-	var/atom/barrier = boss.boss_barrier_between(here, get_turf(target))
-	if(!barrier || !boss.boss_goes_through(barrier))
+	var/turf/there = get_turf(target)
+	var/list/blockers = boss.boss_line_blockers(here, there)
+	if(!length(blockers) || !boss.boss_gets_through(blockers))
+		return
+	var/atom/barrier = blockers[1]
+	if(!boss.boss_breaks_through_now(barrier) && boss.boss_walks_to(there))
 		return
 	if(get_dist(here, barrier) <= 1)
 		if(boss.boss_start_smash(barrier))
@@ -1766,7 +1898,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /**
  * Hurt lately by someone it can't get at (boss_shuns()), and nobody it can reach in sight or on the
  * hunt: it gets out of their sight (boss_find_cover()) and waits there, rather than stand in the open
- * for them. Anyone it can reach brings it out.
+ * for them, with a line as it goes (boss_cover_bark()). With nowhere hidden in reach it backs off as
+ * far from them as it can, and keeps going until it gets there. Anyone it can reach brings it out.
  */
 /datum/ai_planning_subtree/bounty_boss_cover
 
@@ -1779,20 +1912,26 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		return
 	var/turf/here = get_turf(boss)
 	if(!boss.boss_seen_from(here, watchers))
-		controller.clear_blackboard_key(BB_BOUNTY_BOSS_SPOT)
+		controller.clear_blackboard_key(BB_BOUNTY_BOSS_COVER)
 		return SUBTREE_RETURN_FINISH_PLANNING
-	var/turf/spot = controller.blackboard[BB_BOUNTY_BOSS_SPOT]
-	if(!spot || spot == here || boss.boss_seen_from(spot, watchers))
-		if(world.time < boss.boss_cover_rethink_at)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		boss.boss_cover_rethink_at = world.time + BOUNTY_BOSS_REACH_RETHINK
-		spot = boss.boss_find_cover(watchers)
-		if(!spot)
-			controller.clear_blackboard_key(BB_BOUNTY_BOSS_SPOT)
-			return
+	var/turf/spot = controller.blackboard[BB_BOUNTY_BOSS_COVER]
+	// On its way: it keeps walking (every plan, or the walk it queued last time is dropped) until it
+	// gets there, unless someone took the spot, or it may look again and finds the spot in their sight.
+	if(spot && spot != here && !boss.boss_someone_on(spot) && (world.time < boss.boss_cover_rethink_at || !boss.boss_seen_from(spot, watchers)))
+		controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_COVER)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(world.time < boss.boss_cover_rethink_at)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	boss.boss_cover_rethink_at = world.time + BOUNTY_BOSS_REACH_RETHINK
+	spot = boss.boss_find_cover(watchers)
+	if(!spot)
+		controller.clear_blackboard_key(BB_BOUNTY_BOSS_COVER)
+		return
+	if(controller.blackboard[BB_BOUNTY_BOSS_COVER] != spot)
 		controller.CancelActions()
-		controller.set_blackboard_key(BB_BOUNTY_BOSS_SPOT, spot)
-	controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_SPOT)
+		controller.set_blackboard_key(BB_BOUNTY_BOSS_COVER, spot)
+	boss.boss_cover_bark()
+	controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_BOUNTY_BOSS_COVER)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 // ===== LOOKS =====
