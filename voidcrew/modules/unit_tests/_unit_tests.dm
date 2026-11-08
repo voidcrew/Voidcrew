@@ -90,6 +90,7 @@
 #include "voidcrew_helpers.dm"
 #include "voidcrew_hull_containment.dm"
 #include "voidcrew_hull_survey.dm"
+#include "voidcrew_hv_finishers.dm"
 #include "voidcrew_launch_access.dm"
 #include "voidcrew_launch_cargo.dm"
 #include "voidcrew_launch_fabrication.dm"
