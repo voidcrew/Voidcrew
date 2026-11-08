@@ -199,11 +199,20 @@
 	TEST_ASSERT_NULL(body.get_bodypart(BODY_ZONE_HEAD), "A heavy execution round left the corpse's head on")
 	hv_new_things(spot, /obj/item/organ, before)
 
+/// A human-looking basic mob that keeps its own body, for the own-body gore test. The mission survivor
+/// it used to borrow is a real human body now (human NPC phase E1).
+/mob/living/basic/hv_test_own_body
+	name = "survivor"
+	icon = 'icons/mob/simple/simple_human.dmi'
+	maxHealth = 60
+	health = 60
+	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
+
 /// An NPC that keeps its own body gives the deathgasp and shows a burst head on it, and coming back clears it.
 /datum/unit_test/hv_npc_own_body_gore
 
 /datum/unit_test/hv_npc_own_body_gore/Run()
-	var/mob/living/basic/mission_survivor/survivor = allocate(/mob/living/basic/mission_survivor)
+	var/mob/living/basic/hv_test_own_body/survivor = allocate(/mob/living/basic/hv_test_own_body)
 	QDEL_NULL(survivor.ai_controller)
 	TEST_ASSERT(survivor.hv_gory_own_body, "A survivor (no DEL_ON_DEATH) did not get the body gore")
 	survivor.icon = 'icons/mob/human/human.dmi' // its look is put on in the background
