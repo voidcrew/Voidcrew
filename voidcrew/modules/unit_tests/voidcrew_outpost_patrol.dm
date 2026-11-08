@@ -194,7 +194,10 @@
 	TEST_ASSERT_EQUAL(walker.ai_controller, controller, "The prisoner is not run by the new controller")
 	TEST_ASSERT(QDELETED(routine), "The prisoner's routine controller outlived the swap")
 	TEST_ASSERT_EQUAL(swap_basic_ai_controller(walker, /datum/ai_controller/basic_controller/outpost_breakout), controller, "Swapping to the same controller type replaced it")
-	RegisterSignal(walker, COMSIG_HOSTILE_PRE_ATTACKINGTARGET, PROC_REF(on_swing))
+	// Running, as anyone loose does (go_loose()): on walk intent tg lets nobody push or swap past a person in the way
+	walker.set_prison_pace(hurry = TRUE)
+	// A real human body swings through its own hands: tg's unarmed attack
+	RegisterSignal(walker, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_swing))
 
 	// Targeting: people and pets, never prisoners or anyone else breaking out
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])

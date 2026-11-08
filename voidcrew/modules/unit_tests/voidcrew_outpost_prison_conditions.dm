@@ -461,9 +461,12 @@
 	prison.conditions_tick(5)
 	TEST_ASSERT_EQUAL(prisoner.health, 100, "The prison hurt a prisoner on bad air itself")
 	TEST_ASSERT(istype(prisoner.activity, /datum/prisoner_activity/emergency_air), "A prisoner on bad air did not go for the emergency locker ([prisoner.activity?.type])")
-	// At the locker (the AI walks them there; here they are put beside it), they take a mask and a tank and breathe from it.
+	// At the locker they went for, the nearest one (the AI walks them there; here they are put beside it),
+	// they take a mask and a tank and breathe from it.
 	var/datum/prisoner_activity/emergency_air/dash = prisoner.activity
-	prisoner.forceMove(prisoner.approach_turf(locker) || get_turf(locker))
+	var/obj/structure/closet/dash_locker = dash.locker_ref?.resolve()
+	TEST_ASSERT_NOTNULL(dash_locker, "The prisoner went for no locker")
+	prisoner.forceMove(prisoner.approach_turf(dash_locker) || get_turf(dash_locker))
 	dash.arrive()
 	TEST_ASSERT(istype(prisoner.wear_mask, /obj/item/clothing/mask/breath), "The prisoner did not put on a breath mask")
 	TEST_ASSERT(prisoner.has_emergency_air(), "The prisoner has no tank to breathe from")

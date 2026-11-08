@@ -90,12 +90,13 @@
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 7, 8), "restraintowner")
 	var/obj/structure/bed/bed = prison.cells[1].bed()
 
-	// Awake and calm: they can be pulled and go along with it, but nobody drags them onto things.
+	// Awake and calm: they can be pulled and go along with it. Dragging them onto a bed is tg's buckling,
+	// as it is for anyone (defaults PR-19): nothing of the prison's stops it.
 	TEST_ASSERT(!prisoner.can_be_dragged(), "An awake prisoner counts as draggable")
 	warden.start_pulling(prisoner)
 	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "Nobody could pull a calm prisoner")
 	warden.stop_pulling()
-	TEST_ASSERT(SEND_SIGNAL(prisoner, COMSIG_MOUSEDROP_ONTO, bed, warden) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "An awake prisoner could be dragged onto a bed")
+	TEST_ASSERT(!(SEND_SIGNAL(prisoner, COMSIG_MOUSEDROP_ONTO, bed, warden) & COMPONENT_CANCEL_MOUSEDROP_ONTO), "Something of the prison's stopped an awake prisoner being dragged onto a bed")
 	prisoner.end_activity()
 
 	// A security baton: 60 stamina and a knockdown a hit; two hits put them in stamina crit.
@@ -124,6 +125,8 @@
 	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "A prisoner in stamina crit could not be pulled")
 	// Back on their feet and calm, they go along with the pull that still has them (outpost_prison_warden_tools.dm).
 	prisoner.setStaminaLoss(0)
+	// The second hit's knockdown (five seconds, two after it) would outlast the stamina crit
+	prisoner.SetKnockdown(0)
 	TEST_ASSERT(!in_stamcrit(prisoner), "Clearing stamina did not end stamina crit")
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(back_up), prisoner), 8 SECONDS), "The prisoner never recovered")
 	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "A calm prisoner back on their feet shook off the pull")

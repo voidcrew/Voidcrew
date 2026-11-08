@@ -99,6 +99,22 @@
 		sleep(1)
 	return condition.Invoke()
 
+/// Whether a prisoner is on their feet: not down in any of tg's ways (is_down())
+/datum/unit_test/voidcrew_outpost_management/proc/prisoner_up(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
+	return !prisoner.is_down()
+
+/// Waits for a prisoner to get up after a knockdown or stamina crit ends: tg's get_up() takes a second
+/datum/unit_test/voidcrew_outpost_management/proc/wait_until_up(mob/living/carbon/human/npc/outpost_prisoner/prisoner, timeout = 5 SECONDS)
+	return wait_until(CALLBACK(src, PROC_REF(prisoner_up), prisoner), timeout)
+
+/**
+ * Lets `hitter` swing again at once, as click_wrapper() does for a player: its melee cooldown, and
+ * ClickOn()'s one click a tick, which would drop a second blow in the same tick.
+ */
+/proc/outpost_prison_test_ready_blow(mob/living/hitter)
+	hitter.next_move = 0
+	hitter.next_click = 0
+
 /datum/unit_test/voidcrew_outpost_management/proc/windoor_open(obj/machinery/door/window/windoor)
 	return windoor && !windoor.density && !windoor.operating
 

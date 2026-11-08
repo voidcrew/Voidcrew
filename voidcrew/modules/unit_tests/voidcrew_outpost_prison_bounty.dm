@@ -379,7 +379,7 @@
 
 /**
  * A prisoner rebuilt from a record keeps their name, gender and crime, takes a personality from
- * their archetype and health from their tier, arrives as hurt as they were caught but never below
+ * their archetype and toughness from their tier, arrives as hurt as they were caught but never below
  * half their health, earns x1.5 / x2 / x2.5 on the rate and the release bonus, carries their
  * tier's danger, shows on the roster and on examine, and Kessler won't touch them. Every way out
  * closes their record, the first close winning, and none puts it back in the pool.
@@ -408,8 +408,9 @@
 	TEST_ASSERT_EQUAL(wanted.crime, "arson", "A bounty prisoner is in for [wanted.crime], not their plain crime")
 	TEST_ASSERT(wanted.personality in list("grumpy", "chatty"), "A normal criminal came in [wanted.personality]")
 	TEST_ASSERT_EQUAL(wanted.npc_damage_taken, 0.9, "A Wanted prisoner takes [wanted.npc_damage_taken] of a blow, not 0.9") // BOUNTY_PRISONER_DAMAGE_TAKEN_WANTED
-	TEST_ASSERT_EQUAL(wanted.health, 120, "A Wanted prisoner starts at [wanted.health] health")
-	TEST_ASSERT_EQUAL(wanted.arrival_brute, 36, "Caught 30% hurt, they carry [wanted.arrival_brute] brute into the beam")
+	// A person's health, whatever the tier (PR-16): toughness is how much of a blow they take, above
+	TEST_ASSERT_EQUAL(wanted.health, 100, "A Wanted prisoner starts at [wanted.health] health, not a person's")
+	TEST_ASSERT_EQUAL(wanted.arrival_brute, 30, "Caught 30% hurt, they come in [wanted.arrival_brute] health down, not 30")
 	TEST_ASSERT_EQUAL(wanted.outfit_path, /datum/outfit/outpost_prisoner, "A bounty prisoner is not in the plain jumpsuit")
 	TEST_ASSERT_NULL(wanted.held_item, "A bounty prisoner came in holding [wanted.held_item]")
 	TEST_ASSERT_EQUAL(wanted_record.status, "imprisoned", "A bounty prisoner's record is [wanted_record.status]") // BOUNTY_RECORD_IMPRISONED
@@ -576,10 +577,10 @@
 	var/datum/bounty_record/downed_record = make_record(2, "normal", "Tomas Reed")
 	downed_record.hurt_fraction = 0.9
 	var/mob/living/carbon/human/npc/outpost_prisoner/downed = new(prison_spot(home, 7, 8), downed_record)
-	TEST_ASSERT_EQUAL(downed.arrival_brute, 60, "Caught nearly dead, they carry [downed.arrival_brute] brute, not half their 120 health")
+	TEST_ASSERT_EQUAL(downed.arrival_brute, 50, "Caught nearly dead, they come in [downed.arrival_brute] health down, not half their 100")
 	prison.admit(downed)
 	downed.beam_in()
-	TEST_ASSERT_EQUAL(downed.health, 60, "A downed delivery arrived at [downed.health] health, not half")
+	TEST_ASSERT_EQUAL(downed.health, 50, "A downed delivery arrived at [downed.health] health, not half")
 	TEST_ASSERT(downed.health_factor() >= 50, "A bounty prisoner arrived below half health")
 	TEST_ASSERT(downed.arrived_hurt, "A downed delivery did not arrive hurt")
 	wait_until(CALLBACK(src, TYPE_PROC_REF(/datum/unit_test/voidcrew_outpost_prison_economy_kit, all_present), prison), 8 SECONDS)
@@ -1176,6 +1177,8 @@
 	TEST_ASSERT(!move.pending_serial, "The work on the cuffs went on after a knockdown")
 	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "A knocked-down ghost got out of the cuffs")
 	ghost.SetKnockdown(0)
+	// Getting up takes a second, as it does anyone (tg's get_up())
+	TEST_ASSERT(wait_until_up(ghost), "The ghost never got up after the knockdown")
 
 	// Being dragged stops it too.
 	move.ready_at = 0
@@ -1191,6 +1194,8 @@
 	// Out: tg's own breakout (the cuffs' breakout time; fake cuffs here, a second, so the test needn't wait a
 	// minute), the same cuffs on the floor, none lost or doubled, and a shimmer.
 	ghost.remove_cuffs()
+	// The pair taken off drops at their feet; set it aside, so the count below is of the slipped pair
+	cuffs.forceMove(get_turf(warden))
 	var/obj/item/restraints/handcuffs/fake/quick = allocate(/obj/item/restraints/handcuffs/fake)
 	TEST_ASSERT(outpost_prison_test_cuff(ghost, quick), "The ghost could not be cuffed with the quick cuffs")
 	move.observe(ghost)

@@ -526,17 +526,18 @@
 	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click in combat mode was taken")
 	owner.set_combat_mode(FALSE)
 	TEST_ASSERT_NULL(stubbed.stub_clicked, "A visitor's, right or combat mode click did [stubbed.stub_clicked]")
-	// Cuffed, the menu still opens; down in cuffs, there is no talk, and the click takes the cuffs off.
+	// Cuffed, the menu still opens. Down, there is no talk: the click is tg's own help, as on anyone
+	// (CPR, shaking them), cuffed or not, and their cuffs come off through the strip menu (defaults PR-25).
 	TEST_ASSERT(outpost_prison_test_cuff(stubbed, allocate(/obj/item/restraints/handcuffs)), "The stub prisoner could not be cuffed")
 	SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list())
 	TEST_ASSERT_EQUAL(stubbed.stub_clicked, "menu", "A click on a cuffed prisoner on their feet did [stubbed.stub_clicked || "nothing"], not open the talk menu")
+	stubbed.stub_clicked = null
 	ADD_TRAIT(stubbed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT(!stubbed.talk_menu_allowed(owner), "A prisoner who is down has a talk menu")
-	TEST_ASSERT(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN, "A click on a cuffed prisoner who is down went on to a pat")
-	TEST_ASSERT_EQUAL(stubbed.stub_clicked, "uncuff", "A click on a cuffed prisoner who is down did [stubbed.stub_clicked || "nothing"], not take the cuffs off")
+	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click on a cuffed prisoner who is down was kept from tg's own help")
+	TEST_ASSERT_NULL(stubbed.stub_clicked, "A click on a cuffed prisoner who is down did [stubbed.stub_clicked], not tg's own help")
 	stubbed.remove_cuffs()
-	stubbed.stub_clicked = null
-	TEST_ASSERT(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN, "A click on a prisoner who is down went on to a pat")
+	TEST_ASSERT(!(SEND_SIGNAL(stubbed, COMSIG_ATOM_ATTACK_HAND, owner, list()) & COMPONENT_CANCEL_ATTACK_CHAIN), "A click on a prisoner who is down was kept from tg's own help")
 	TEST_ASSERT_NULL(stubbed.stub_clicked, "A click on an uncuffed prisoner who is down did [stubbed.stub_clicked]")
 	REMOVE_TRAIT(stubbed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 
