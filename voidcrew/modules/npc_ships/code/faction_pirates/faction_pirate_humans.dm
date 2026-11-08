@@ -561,17 +561,22 @@
 	list_reagents = list(/datum/reagent/medicine/omnizine/cursed_grog = 40)
 
 /**
- * Cursed grog: knits flesh while it is in the blood, with a cold blue glow. Never synthesised, never
+ * Cursed grog: knits the flesh of the undead while it is in their blood, with a cold blue glow. To the
+ * living it is brine and bad rum, so blood drawn from Davy Jones heals nobody. Never synthesised, never
  * overdosed. Like any reagent it can be purged, and the flask runs dry.
  */
 /datum/reagent/medicine/omnizine/cursed_grog
 	name = "Cursed Grog"
-	description = "Sea water and something older. It knits flesh back together while it lasts."
+	description = "Sea water and something older. It keeps the dead from staying dead."
 	color = "#2a4a7a"
 	taste_description = "brine and old rum"
 	healing = 3
 	overdose_threshold = 0
 	chemical_flags = NONE
+
+/datum/reagent/medicine/omnizine/cursed_grog/on_mob_life(mob/living/carbon/affected_mob, seconds_per_tick, times_fired)
+	healing = (affected_mob.mob_biotypes & MOB_UNDEAD) ? initial(healing) : 0
+	return ..()
 
 /datum/reagent/medicine/omnizine/cursed_grog/on_mob_metabolize(mob/living/affected_mob)
 	. = ..()

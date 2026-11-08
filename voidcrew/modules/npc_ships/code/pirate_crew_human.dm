@@ -369,16 +369,12 @@
 			var/list/modifiers = (istype(blocker, /obj/machinery/door/firedoor) && pry_tool.tool_behaviour == TOOL_CROWBAR) ? list(RIGHT_CLICK = TRUE) : null
 			controller.ai_interact(target = blocker, combat_mode = FALSE, modifiers = modifiers)
 			return TRUE
-	// A gun, from a step back so the shot isn't a bash
+	// A gun, from a step back so the shot isn't a bash (pirate_crew_human_breach_spot() puts it there)
 	var/obj/item/gun/gun = human_npc_loaded_gun(npc)
-	if(gun)
-		if(npc.Adjacent(blocker))
-			step_away(npc, blocker)
-			return TRUE
-		if(get_dist(npc, blocker) <= 3 && can_see(npc, blocker, 3) && human_npc_ready_item(npc, gun))
+	if(gun && !npc.Adjacent(blocker) && get_dist(npc, blocker) <= 3 && can_see(npc, blocker, 3))
+		if(human_npc_ready_item(npc, gun))
 			npc.face_atom(blocker)
 			controller.ai_interact(target = blocker, combat_mode = TRUE)
-			return TRUE
 		return TRUE
 	// A blade or a club that dents it
 	var/obj/item/weapon = pirate_crew_human_door_weapon(npc, blocker)
