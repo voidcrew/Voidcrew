@@ -48,3 +48,77 @@
 #define BB_HUMAN_NPC_RELOAD_UNTIL "human_npc_reload_until"
 /// The item the NPC is drawing (human_npc_draw).
 #define BB_HUMAN_NPC_DRAW_ITEM "human_npc_draw_item"
+
+// ===== Phase A2: shared pieces for pirates, ruin NPCs, hermits and criminals =====
+
+// npc_target_stat: the worst state a target can be in and still get attacked (BB_TARGET_MINIMUM_STAT).
+/// Pirates, troopers, hermits, raiders, NT customs: keep shooting someone in crit, as tg troopers do.
+#define HUMAN_NPC_FINISHES_DOWNED HARD_CRIT
+/// Criminals, companions, bosses, prisoners, guards: stop once a target is in crit.
+#define HUMAN_NPC_SPARES_DOWNED CONSCIOUS
+
+// Bark kinds (human_npc_barks.dm). Families supply the lines through a /datum/human_npc_voice.
+/// Entered crit. Whispered in soft crit; hard crit gets the emote only.
+#define HUMAN_NPC_BARK_DOWNED "downed"
+/// Left crit, or got up from stamcrit.
+#define HUMAN_NPC_BARK_RECOVER "recover"
+/// Now and then while it crawls in soft crit. Falls back to the downed lines.
+#define HUMAN_NPC_BARK_PLEAD "plead"
+/// Handcuffs went on.
+#define HUMAN_NPC_BARK_CUFFED "cuffed"
+/// Started working at its cuffs (tg's cuff_resist).
+#define HUMAN_NPC_BARK_SLIPPING "slipping_cuffs"
+/// Its cuffs came off, by its own work or someone else's.
+#define HUMAN_NPC_BARK_UNCUFFED "uncuffed"
+/// Broke out of a grab or off someone's shoulders by resisting.
+#define HUMAN_NPC_BARK_PULLED_FREE "pulled_free"
+/// Gave up (human_npc_surrender.dm). Always said.
+#define HUMAN_NPC_BARK_SURRENDER "surrender"
+/// Died. Emote only: the dead don't talk.
+#define HUMAN_NPC_BARK_DEATH "death"
+/// Default seconds between two barks from one NPC.
+#define HUMAN_NPC_BARK_COOLDOWN (4 SECONDS)
+/// How often an NPC crawling in soft crit pleads, at most.
+#define HUMAN_NPC_PLEAD_INTERVAL (12 SECONDS)
+
+// Sites (human_npc_outfits.dm): what the air where an NPC is dressed asks of its kit.
+/// Too little pressure to live in: a sealed suit and helmet and its own air.
+#define HUMAN_NPC_SITE_VACUUM (1<<0)
+/// Pressure is fine but the air isn't: a mask and a tank.
+#define HUMAN_NPC_SITE_BAD_AIR (1<<1)
+/// Cold enough to freeze an unprotected person: cold-weather wear.
+#define HUMAN_NPC_SITE_COLD (1<<2)
+/// Air colder than this, in kelvin, is a cold site.
+#define HUMAN_NPC_SITE_COLD_TEMP (T0C - 10)
+/// Oxygen partial pressure below this, in kPa, is not breathable (tg's safe minimum).
+#define HUMAN_NPC_SITE_MIN_OXYGEN 16
+/// A queued NPC dressed by an outfit table waits this long for its spawn zone to resolve, then takes green.
+#define HUMAN_NPC_ZONE_WAIT (60 SECONDS)
+
+// Leaving (human_npc_states.dm).
+/// How often SShuman_npcs checks whether an NPC walking out may be deleted.
+#define HUMAN_NPC_LEAVER_SWEEP_INTERVAL (1 SECONDS)
+
+// Signals sent on a human NPC.
+/// It gave up: tg's *surrender is running. ()
+#define COMSIG_HUMAN_NPC_SURRENDERED "human_npc_surrendered"
+/// Its surrender's paralysis ended and nobody had cuffed it. ()
+#define COMSIG_HUMAN_NPC_SURRENDER_ENDED "human_npc_surrender_ended"
+/// It entered crit. ()
+#define COMSIG_HUMAN_NPC_DOWNED "human_npc_downed"
+/// It left crit, or got up from stamcrit. ()
+#define COMSIG_HUMAN_NPC_RECOVERED "human_npc_recovered"
+/// It walked out and is about to be deleted (human_npc_states.dm). ()
+#define COMSIG_HUMAN_NPC_LEFT "human_npc_left"
+
+// More blackboard keys.
+/// A mob it is running from (surrender flight, soft-crit crawl).
+#define BB_HUMAN_NPC_FLEE_FROM "human_npc_flee_from"
+/// world.time it stops fleeing after deciding not to give up again.
+#define BB_HUMAN_NPC_FLEE_UNTIL "human_npc_flee_until"
+/// The item it is using on itself (human_npc_treat_self).
+#define BB_HUMAN_NPC_TREAT_ITEM "human_npc_treat_item"
+/// world.time it may next treat itself.
+#define BB_HUMAN_NPC_NEXT_TREAT "human_npc_next_treat"
+/// The turf it is walking out to (npc_walk_out()).
+#define BB_HUMAN_NPC_EXIT "human_npc_exit"

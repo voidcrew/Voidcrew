@@ -284,7 +284,9 @@
  * which is the whole job.
  */
 /obj/machinery/porta_turret/ship_defense/proc/valid_target(mob/living/creature)
-	if(creature.stat == DEAD)
+	// Dead, in crit or cuffed: out of the fight (human_npc_out_of_fight(), owner ruling OC-7), so a
+	// boarder the crew has taken down or captured is left alone. A basic mob is out only once dead.
+	if(human_npc_out_of_fight(creature))
 		return FALSE
 	if(creature.client || creature.mind) // Anything a player is driving, or was driving.
 		return FALSE

@@ -20,6 +20,8 @@
  *   bleed out until someone arrives. A corpse that wakes catches up the organ decay it missed while
  *   dormant (npc_catch_up_decay()), so the defib window and organ rot match a player's corpse; its
  *   body temperature is not caught up. Stamina recovery is a timer, not Life(), so it is not paused.
+ *   A space suit's thermal regulator is switched off while it is dormant and back on when it wakes
+ *   (npc_set_suit_heating()), so a cell doesn't run flat keeping a frozen-in-time body warm.
  *   This has to be a guard on this type's own Life(): COMSIG_LIVING_LIFE's cancel flag only stops
  *   /mob/living/Life(), and carbon and human Life() run organs, wounds, limbs and temperature around it.
  * - No mood datum and TRAIT_NOHUNGER (performance, and an NPC never eats over a 6 hour round).
@@ -70,6 +72,54 @@
 	/// Apply the dormancy and life trims. Only the measurement harness turns this off.
 	var/npc_trim_life = TRUE
 
+	// ===== Per-family behaviour (phase A2). A family sets these on its own subtype. =====
+	/**
+	 * Picks its outfit by zone and rank when npc_outfit is unset: a /datum/human_npc_outfit_table typepath
+	 * (human_npc_outfits.dm). spawn_human_npc(outfit =) also takes a table.
+	 */
+	var/datum/human_npc_outfit_table/npc_outfit_table
+	/// HUMAN_NPC_SITE_* flags it always dresses for, on top of the air where it spawns: a boarder that
+	/// crosses vacuum sets HUMAN_NPC_SITE_VACUUM so it carries a sealed suit even when it spawns indoors.
+	var/npc_always_site = NONE
+	/// What it says when things happen to it: a /datum/human_npc_voice typepath (human_npc_barks.dm), or
+	/// null for nothing. Override npc_bark() to voice it another way.
+	var/datum/human_npc_voice/npc_voice
+	/// When it gives up: a /datum/human_npc_surrender typepath (human_npc_surrender.dm), or null if it never does.
+	var/datum/human_npc_surrender/npc_surrender
+	/**
+	 * The worst state a target can be in and still get attacked, written into its AI's
+	 * BB_TARGET_MINIMUM_STAT at spawn: HUMAN_NPC_FINISHES_DOWNED (pirates, troopers, hermits) or
+	 * HUMAN_NPC_SPARES_DOWNED (criminals, bosses, prisoners, guards).
+	 */
+	var/npc_target_stat = HUMAN_NPC_FINISHES_DOWNED
+	/// D3: its kit is locked to its body. Prisoners turn this off (owner ruling OC-11): their jumpsuits,
+	/// contraband and shivs are ordinary items that shakedowns and confiscation work on.
+	var/npc_gear_locked = TRUE
+
+	/// The HUMAN_NPC_SITE_* flags it was dressed for
+	var/npc_site = NONE
+	/// The bark kind it last gave, for tests and admins
+	var/npc_last_bark
+	COOLDOWN_DECLARE(npc_bark_cooldown)
+	/// world.time it may next plead while crawling in soft crit
+	var/npc_next_plead = 0
+	/// TRUE while the paralysis of its own *surrender runs
+	var/npc_surrendering = FALSE
+	/// Set when a surrender's paralysis ended with nobody cuffing it: it decides again at once
+	var/npc_surrender_redecide = FALSE
+	/// world.time it may next roll to surrender
+	var/npc_next_surrender_roll = 0
+	/// How many times it has rolled to give up, and how many times it did
+	var/npc_surrender_rolls = 0
+	var/npc_surrender_count = 0
+	/// Weakref to whoever held it when it last resisted, and the world.time it did
+	var/datum/weakref/npc_resisted_hold
+	var/npc_resisted_at = 0
+	/// The turf it is walking out to (npc_walk_out()), or null
+	var/turf/npc_exit
+	/// Called with it just before it is deleted on walking out
+	var/datum/callback/npc_on_left
+
 	/// TRUE once its death loot has dropped
 	var/npc_loot_dropped = FALSE
 	/// world.time it last died, or 0
@@ -89,19 +139,28 @@
 	for(var/ware_type in npc_cyberware)
 		npc_install_cyberware(ware_type)
 	npc_conceal_presence()
-	npc_lock_all_gear()
+	if(npc_gear_locked)
+		npc_lock_all_gear()
 	for(var/obj/item/held as anything in held_items)
 		if(held)
 			human_npc_ready_weapon(src, held)
 	npc_open_internals()
+	npc_set_suit_heating(TRUE)
 	set_npc_toughness(npc_damage_taken)
 	if(npc_body_armor)
 		physiology.armor = physiology.armor.add_other_armor(npc_body_armor)
+	if(istype(ai_controller))
+		ai_controller.set_blackboard_key(BB_TARGET_MINIMUM_STAT, npc_target_stat)
 	AddElement(/datum/element/human_npc_body)
+	AddElement(/datum/element/human_npc_reactions)
 
 /mob/living/carbon/human/npc/Destroy()
 	SShuman_npcs?.forget_corpse(src)
+	SShuman_npcs?.leavers -= src
 	npc_remains = null
+	npc_resisted_hold = null
+	npc_exit = null
+	npc_on_left = null
 	return ..()
 
 /mob/living/carbon/human/npc/setup_mood()
@@ -114,11 +173,14 @@
 /mob/living/carbon/human/npc/Life(seconds_per_tick = SSMOBS_DT, times_fired)
 	if(npc_trim_life)
 		if(npc_dormant())
-			npc_dormant_since ||= world.time
+			if(!npc_dormant_since)
+				npc_dormant_since = world.time
+				npc_set_suit_heating(FALSE)
 			return FALSE
 		if(npc_dormant_since)
 			npc_catch_up_decay((world.time - npc_dormant_since) / (1 SECONDS), times_fired)
 			npc_dormant_since = 0
+			npc_set_suit_heating(TRUE)
 #ifdef HUMAN_NPC_SPIKE_HARNESS
 	GLOB.human_npc_spike_life_passes++
 #endif
@@ -147,26 +209,46 @@
 
 // ===== DRESSING =====
 
-/// Puts on its look, outfit, name and faction. `order` may override the type's own.
+/**
+ * Puts on its look, outfit, name and faction. `order` may override the type's own.
+ *
+ * The outfit is, first found: the order's outfit, npc_outfit, a pick from npc_outfit_table, or the
+ * outfit of a spawner look. An outfit table (as the order's outfit or npc_outfit_table) picks by the
+ * zone it spawns in and its rank. Then the site layers go on (human_npc_outfits.dm): where the air
+ * can't keep it alive it gets a sealed suit and a tank, where it is cold it gets cold-weather wear, so
+ * no NPC suffocates or freezes on the spot it was made. Species that don't need them (skeletons in
+ * vacuum) are left as they are.
+ */
 /mob/living/carbon/human/npc/proc/npc_dress(datum/human_npc_order/order)
 	var/look = order?.look || npc_look
 	var/outfit = order?.outfit || npc_outfit
+	var/datum/human_npc_outfit_table/table
+	if(ispath(outfit, /datum/human_npc_outfit_table))
+		table = outfit
+		outfit = null
+	else if(isnull(outfit) && ispath(npc_outfit_table, /datum/human_npc_outfit_table))
+		table = npc_outfit_table
 	var/datum/bounty_record/record
 	if(istype(look, /datum/bounty_record))
 		record = look
 		look = bounty_ensure_look(record)
+	var/spawner_outfit
 	if(ispath(look, /obj/effect/mob_spawn))
-		var/spawner_outfit = npc_apply_spawner_look(look)
-		outfit ||= spawner_outfit
+		spawner_outfit = npc_apply_spawner_look(look)
 	else if(istype(look, /datum/bounty_look))
 		npc_apply_bounty_look(look)
 	else
 		npc_apply_random_look()
 	// Plasmamen and other species that need their own kit to live get it first, as from a spawner.
 	dna.species.give_important_for_life(src)
+	if(table)
+		table = human_npc_singleton(table)
+		outfit = table.pick_outfit(src, order ? order.resolve_zone() : npc_spawn_zone())
+	outfit ||= spawner_outfit
 	// Dressed directly, not through /obj/effect/mob_spawn/equip(), whose ladder strip
 	// (voidcrew/edits/mobs/ladder_outfits.dm) would delete the guns an NPC fights with.
 	if(outfit)
+		outfit = npc_fit_outfit_to_site(outfit, table)
 		equipOutfit(outfit)
 	if(record)
 		bounty_wear_features(src, record.features)
@@ -267,8 +349,11 @@
 
 // ===== RULES OF ENGAGEMENT =====
 
-// The strip menu never opens on a human NPC (D3). Carrying and dragging are unaffected.
+// The strip menu never opens on a human NPC (D3). Carrying and dragging are unaffected. An NPC whose
+// gear isn't locked (prisoners, OC-11) is searched and stripped like anyone.
 /mob/living/carbon/human/npc/should_strip(mob/user)
+	if(!npc_gear_locked)
+		return ..()
 	return FALSE
 
 // D4: an NPC's hits become aimed crits and executions only if it is an elite or a boss, or a
@@ -484,3 +569,34 @@
 		return FALSE
 	var/mob/living/carbon/human/npc/npc = candidate
 	return !npc.npc_dormant()
+
+/// Shared instances of the per-family rule datums (voices, surrender rules, outfit tables, site layers),
+/// one per type, made on first use.
+GLOBAL_LIST_EMPTY(human_npc_singletons)
+
+/// The shared instance of `datum_type`.
+/proc/human_npc_singleton(datum_type)
+	var/datum/instance = GLOB.human_npc_singletons[datum_type]
+	if(isnull(instance))
+		instance = new datum_type()
+		GLOB.human_npc_singletons[datum_type] = instance
+	return instance
+
+/**
+ * The zone it was made in, for outfit tables: its spawn context's zone, else the zone of where it
+ * stands (a ship's overmap tile when aboard one), else green, the weakest.
+ */
+/mob/living/carbon/human/npc/proc/npc_spawn_zone()
+	return npc_spawn_context?.zone_type || get_zone_type_for_player_turf(get_turf(src)) || ZONE_GREEN
+
+/**
+ * Switches its space suit's thermal regulator on or off, as a player does with the suit's button. On only
+ * where it was dressed for vacuum or cold, and never for a corpse. Off while dormant (see the top of this
+ * file).
+ */
+/mob/living/carbon/human/npc/proc/npc_set_suit_heating(on)
+	if(on && (stat == DEAD || !(npc_site & (HUMAN_NPC_SITE_VACUUM | HUMAN_NPC_SITE_COLD))))
+		return
+	var/obj/item/clothing/suit/space/suit = wear_suit
+	if(istype(suit) && suit.thermal_on != !!on)
+		suit.toggle_spacesuit(src)

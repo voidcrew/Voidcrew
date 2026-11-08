@@ -11,12 +11,17 @@
  *   using the gun, and the empty magazine is dropped. Nothing refills from nowhere. When the spares
  *   run out it draws another weapon it carries, or fights with what it holds.
  *
- * tg's basic controller already stops the AI at any stat above CONSCIOUS (soft crit and worse) and
- * while stunned, knocked out, in stamcrit or in stasis. It also stops while cuffed, which would keep
- * tg's escape_captivity subtree from ever working the cuffs; get_able_to_run() below lets a cuffed or
- * grabbed NPC struggle the way a player does (resist), and do_after()s pause it so a breakout isn't
- * cut short by walking. The AI goes off with the body's dormancy: tg switches it off while no player
- * is on the z-level, the same test human_npc.dm uses for Life().
+ * tg's basic controller already stops the AI at any stat above CONSCIOUS and while stunned, knocked
+ * out, in stamcrit or in stasis. It also stops while cuffed, which would keep tg's escape_captivity
+ * subtree from ever working the cuffs; get_able_to_run() below lets a cuffed or grabbed NPC struggle the
+ * way a player does (resist), and do_after()s pause it so a breakout isn't cut short by walking. It also
+ * lets the AI run in soft crit, where only the soft-crit subtree plans (human_npc_soft_crit.dm).
+ *
+ * The AI goes off with the body's dormancy: tg switches it off while no player is on the z-level, the
+ * same test human_npc.dm uses for Life().
+ *
+ * Planning order: soft crit (crawl, plead, medipen), escape captivity, walk out (human_npc_states.dm),
+ * surrender (human_npc_surrender.dm), then find a target, arm, shoot, melee.
  *
  * Phase B (PR #500's pirate crews) can drop these subtrees into its own planning lists:
  * human_npc_arm, human_npc_shoot and human_npc_melee need only BB_BASIC_MOB_CURRENT_TARGET and
@@ -36,7 +41,10 @@
 	ai_movement = /datum/ai_movement/basic_avoidance
 	idle_behavior = /datum/idle_behavior/idle_random_walk/less_walking
 	planning_subtrees = list(
+		/datum/ai_planning_subtree/human_npc_soft_crit,
 		/datum/ai_planning_subtree/escape_captivity,
+		/datum/ai_planning_subtree/human_npc_walk_out,
+		/datum/ai_planning_subtree/human_npc_surrender,
 		/datum/ai_planning_subtree/simple_find_target,
 		/datum/ai_planning_subtree/human_npc_arm,
 		/datum/ai_planning_subtree/human_npc_shoot,
@@ -56,23 +64,14 @@
 		UnregisterSignal(pawn, COMSIG_ATOM_WAS_ATTACKED)
 	return ..()
 
-// The basic controller's own check, except that cuffs don't stop us (see the top of this file).
+// The basic controller's own check, except that cuffs and soft crit don't stop us (see the top of this
+// file, and human_npc_soft_crit.dm).
 /datum/ai_controller/basic_controller/human_npc/get_able_to_run()
-	if(HAS_TRAIT(pawn, TRAIT_AI_PAUSED) || world.time < paused_until)
-		return AI_UNABLE_TO_RUN
-	var/mob/living/living_pawn = pawn
-	if(living_pawn.stat && !(ai_traits & CAN_ACT_WHILE_DEAD))
-		return AI_UNABLE_TO_RUN
-	var/ignore_incap_flags = INCAPABLE_RESTRAINTS
-	if(ai_traits & CAN_ACT_IN_STASIS)
-		ignore_incap_flags |= INCAPABLE_STASIS
-	if(ai_traits & CAN_ACT_WHILE_GRABBED)
-		ignore_incap_flags |= INCAPABLE_GRAB
-	if(INCAPACITATED_IGNORING(living_pawn, ignore_incap_flags))
-		return AI_UNABLE_TO_RUN
-	if((ai_traits & PAUSE_DURING_DO_AFTER) && LAZYLEN(living_pawn.do_afters))
-		return AI_UNABLE_TO_RUN | AI_PREVENT_CANCEL_ACTIONS
-	return NONE
+	return human_npc_ai_able_to_run(src)
+
+/datum/ai_controller/basic_controller/human_npc/on_stat_changed(mob/living/source, new_stat)
+	. = ..()
+	human_npc_ai_stat_changed(src, new_stat)
 
 /// Someone hit us: with nothing else to fight, fight them, if we can see them.
 /datum/ai_controller/basic_controller/human_npc/proc/on_pawn_attacked(mob/living/source, atom/attacker, attack_flags)
