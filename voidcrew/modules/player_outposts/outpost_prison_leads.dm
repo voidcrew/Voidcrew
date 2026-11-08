@@ -32,7 +32,7 @@
 /// Lies given anywhere this round, so every lie's waypoint key is unique on any ship's helm
 GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Knows where something is, until they tell it (leads_prisoner_admitted())
 	var/carries_lead = FALSE
 	/// A member is putting a question about leads to them right now
@@ -83,11 +83,11 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 // ===== CARRIERS =====
 
 /// A prisoner was booked in: some carry a lead
-/datum/outpost_prison/proc/leads_prisoner_admitted(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/leads_prisoner_admitted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.carries_lead = prob(OUTPOST_PRISON_LEAD_CHANCE)
 
 /// Their tips stay on the helms and in the tracking by name; a liar who has gone never owns up
-/datum/outpost_prison/proc/leads_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/leads_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	prisoner.carries_lead = FALSE
 
 /// Whether the wing's gap between leads is over
@@ -100,7 +100,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 		return !!lead_test_roll
 	return prob(chance)
 
-/datum/outpost_prison/proc/lead_member_in_view(mob/living/basic/outpost_prisoner/prisoner, range)
+/datum/outpost_prison/proc/lead_member_in_view(mob/living/carbon/human/npc/outpost_prisoner/prisoner, range)
 	for(var/mob/living/person in view(range, prisoner))
 		if(person.stat == CONSCIOUS && is_member(person))
 			return TRUE
@@ -109,7 +109,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 // ===== SPEECH AND EXAMINE =====
 
 /// A carrier hints at what they know, while the wing is ready to give a lead and a member is near
-/datum/outpost_prison/proc/leads_extra_speech(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/leads_extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner.carries_lead || !lead_ready())
 		return null
 	if(!lead_member_in_view(prisoner, OUTPOST_PRISON_LEAD_HINT_RANGE) || !lead_roll(OUTPOST_PRISON_LEAD_HINT_CHANCE))
@@ -117,13 +117,13 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return list("lead_hint", null)
 
 /// Nothing: mood (XB's examine) and the tells as they answer are what there is to read
-/datum/outpost_prison/proc/leads_examine(mob/living/basic/outpost_prisoner/prisoner, mob/user)
+/datum/outpost_prison/proc/leads_examine(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/user)
 	return null
 
 // ===== THE TALK MENU =====
 
 /// "Heard anything?" on every prisoner, and "About that tip" on those who saw a recent one given; members only
-/datum/outpost_prison/proc/leads_talk_choices(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/leads_talk_choices(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	var/list/choices = list()
 	if(!prisoner || !user || !is_member(user))
 		return choices
@@ -133,7 +133,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return choices
 
 /// Runs a talk menu choice of this package; TRUE if it was one. May sleep.
-/datum/outpost_prison/proc/leads_talk_act(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, choice)
+/datum/outpost_prison/proc/leads_talk_act(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, choice)
 	if(choice == LEAD_ASK_CHOICE)
 		lead_ask(prisoner, user)
 		return TRUE
@@ -147,12 +147,12 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return FALSE
 
 /// The newest tip `prisoner` can be asked about (lead_vouchable()), or null
-/datum/outpost_prison/proc/lead_newest_vouchable(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/lead_newest_vouchable(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/list/vouchable = lead_vouchable(prisoner)
 	return length(vouchable) ? vouchable[length(vouchable)] : null
 
 /// Open leads `prisoner` saw given, recent enough to ask about, that they did not give and have not answered for
-/datum/outpost_prison/proc/lead_vouchable(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/lead_vouchable(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/list/found = list()
 	var/datum/weakref/prisoner_ref = WEAKREF(prisoner)
 	for(var/datum/outpost_prison_lead/lead as anything in open_leads)
@@ -164,14 +164,14 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return found
 
 /// Whether `user` may put a question to `prisoner` now; shows or says why not
-/datum/outpost_prison/proc/lead_can_ask(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/lead_can_ask(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(QDELETED(prisoner) || QDELETED(user) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return FALSE
 	if(!is_member(user))
 		prisoner.balloon_alert(user, "not your prisoner")
 		return FALSE
 	// Not talking: the talk menu may hold that while it hands this question over.
-	if(prisoner.lead_questioned || prisoner.trouble || prisoner.fight || prisoner.threat_ref || prisoner.swing_ref || prisoner.climb_ref || prisoner.beaten_left > 0)
+	if(prisoner.lead_questioned || prisoner.trouble || prisoner.fight || prisoner.threat_ref || prisoner.swing_ref || prisoner.climb_ref || prisoner.is_beaten())
 		prisoner.balloon_alert(user, "they're busy")
 		return FALSE
 	if(!prisoner.will_listen())
@@ -182,7 +182,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return TRUE
 
 /// A few seconds face to face, as a talk-down takes; FALSE if it was cut short or they stopped listening
-/datum/outpost_prison/proc/lead_face_to_face(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, self_message)
+/datum/outpost_prison/proc/lead_face_to_face(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, self_message)
 	prisoner.lead_questioned = TRUE
 	// Put back as found: the talk menu may already hold it and clear it itself.
 	var/was_talking = prisoner.talking
@@ -204,7 +204,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return TRUE
 
 /// "Heard anything?": the checks and the talk, then give_lead() for the asker's ship
-/datum/outpost_prison/proc/lead_ask(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/lead_ask(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(!lead_can_ask(prisoner, user))
 		return FALSE
 	if(!get_crew_ship(user))
@@ -226,7 +226,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return TRUE
 
 /// "About that tip": the checks and the talk, then lead_vouch()
-/datum/outpost_prison/proc/lead_ask_about(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, datum/outpost_prison_lead/lead)
+/datum/outpost_prison/proc/lead_ask_about(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, datum/outpost_prison_lead/lead)
 	if(!lead_can_ask(prisoner, user))
 		return FALSE
 	if(!(lead in lead_vouchable(prisoner)))
@@ -240,7 +240,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 // ===== GIVING A LEAD =====
 
 /// Whether `asker` hit `prisoner` unprovoked in the last OUTPOST_PRISON_LEAD_HIT_MEMORY
-/datum/outpost_prison/proc/lead_hit_by(mob/living/basic/outpost_prisoner/prisoner, mob/asker)
+/datum/outpost_prison/proc/lead_hit_by(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/asker)
 	if(prisoner.last_hit_justified || !prisoner.last_staff_hit)
 		return FALSE
 	if(world.time - prisoner.last_staff_hit > OUTPOST_PRISON_LEAD_HIT_MEMORY)
@@ -248,7 +248,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return prisoner.last_staff_attacker_ref?.resolve() == asker
 
 /// Percent chance `prisoner` lies to `asker`: none when content, then by mood, the asker's name in the yard and personality
-/datum/outpost_prison/proc/lead_lie_chance(mob/living/basic/outpost_prisoner/prisoner, mob/asker)
+/datum/outpost_prison/proc/lead_lie_chance(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/asker)
 	if(prisoner.mood >= OUTPOST_PRISON_LEAD_TRUE_MOOD)
 		return 0
 	var/chance = prisoner.mood < OUTPOST_PRISON_LEAD_HOSTILE_MOOD ? OUTPOST_PRISON_LEAD_LIE_HOSTILE : OUTPOST_PRISON_LEAD_LIE_UNEASY
@@ -272,7 +272,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
  * lead_lie_chance(), which `force_lie` (tests) decides instead. Returns "invalid", "refuse_hit",
  * "refuse", "none", "nothing", "truth" or "lie".
  */
-/datum/outpost_prison/proc/give_lead(mob/living/basic/outpost_prisoner/prisoner, obj/structure/overmap/ship/ship, mob/living/asker, force_lie = null)
+/datum/outpost_prison/proc/give_lead(mob/living/carbon/human/npc/outpost_prisoner/prisoner, obj/structure/overmap/ship/ship, mob/living/asker, force_lie = null)
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return "invalid"
 	if(QDELETED(ship) || QDELETED(asker))
@@ -326,7 +326,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	lead.ship_ref = WEAKREF(ship)
 	lead.ship_name = ship.name
 	lead.given_at = world.time
-	for(var/mob/living/basic/outpost_prisoner/other in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prisoners)
 		if(other != prisoner && other.phase == PRISONER_PRESENT)
 			lead.witnesses += WEAKREF(other)
 
@@ -347,7 +347,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	return lead.lie ? "lie" : "truth"
 
 /// A tell as they answer: an emote from the dialogue file's "tells", their personality's more often than the shared ones
-/datum/outpost_prison/proc/lead_tell_emote(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/lead_tell_emote(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/list/tells = outpost_prisoner_extra_dialogue(LEAD_DIALOGUE_FILE, "tells")
 	var/list/own = prisoner.personality ? tells[prisoner.personality] : null
 	var/list/shared = tells["any"]
@@ -477,13 +477,13 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	var/datum/outpost_prison_lead/lead = lead_ref?.resolve()
 	if(!lead || !(lead in open_leads))
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/teller = lead.teller_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = lead.teller_ref?.resolve()
 	var/mob/living/asker = lead.asker_ref?.resolve()
 	if(QDELETED(teller) || QDELETED(asker) || teller.prison != src)
 		return FALSE
 	if(!lead_roll(OUTPOST_PRISON_LEAD_GOSSIP_CHANCE))
 		return FALSE
-	for(var/mob/living/basic/outpost_prisoner/other in shuffle(prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in shuffle(prisoners))
 		if(other == teller || other.stat != CONSCIOUS || other.phase != PRISONER_PRESENT || other.trouble || other.mood < OUTPOST_PRISON_LEAD_GOSSIP_MOOD)
 			continue
 		var/list/seen = view(OUTPOST_PRISON_LEAD_GOSSIP_RANGE, other)
@@ -498,7 +498,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
  * middling aren't sure, and the sour and anyone the asker hit refuse (they can be asked again
  * later). Returns "refuse_hit", "refuse", "unsure", "true" or "lie" (what they said the tip was).
  */
-/datum/outpost_prison/proc/lead_vouch(mob/living/basic/outpost_prisoner/prisoner, datum/outpost_prison_lead/lead, mob/living/asker)
+/datum/outpost_prison/proc/lead_vouch(mob/living/carbon/human/npc/outpost_prisoner/prisoner, datum/outpost_prison_lead/lead, mob/living/asker)
 	prisoner.face_atom(asker)
 	if(lead_hit_by(prisoner, asker))
 		prisoner.say_context("lead_refuse_hit")
@@ -550,7 +550,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 
 /// A caught liar still in the wing owns up once the asker comes within OUTPOST_PRISON_LEAD_CAUGHT_RANGE
 /datum/outpost_prison/proc/lead_caught_line(datum/outpost_prison_lead/lead)
-	var/mob/living/basic/outpost_prisoner/teller = lead.teller_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/teller = lead.teller_ref?.resolve()
 	if(QDELETED(teller) || teller.prison != src)
 		lead.caught_said = TRUE
 		return FALSE
@@ -574,7 +574,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 /// The admin panel's leads block: {ready_in, carriers: [ref], open: [{teller, ship, name, lie, exposed, age}]}; times in seconds
 /datum/outpost_prison/proc/leads_admin_payload()
 	var/list/carriers = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.carries_lead)
 			carriers += REF(prisoner)
 	var/list/open = list()
@@ -598,7 +598,7 @@ GLOBAL_VAR_INIT(outpost_prison_lead_lies, 0)
 	if(action != "prison_lead")
 		return null
 	var/ref = params ? params["ref"] : null
-	var/mob/living/basic/outpost_prisoner/prisoner = istext(ref) ? (locate(ref) in prisoners) : null
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = istext(ref) ? (locate(ref) in prisoners) : null
 	if(QDELETED(prisoner))
 		return list("error" = "No such prisoner.")
 	prisoner.carries_lead = TRUE

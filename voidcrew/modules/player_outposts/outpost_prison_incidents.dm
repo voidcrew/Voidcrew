@@ -66,7 +66,7 @@
 /// Prisoners who count for wildcards: present, alive, not loose, in the cell block
 /datum/outpost_prison/proc/wildcard_prisoner_count()
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(counts_for_tension(prisoner) && in_cell_block(prisoner))
 			count++
 	return count
@@ -146,7 +146,7 @@
 /// The kinds and their weights: a stabbing is likelier while someone who could do it has a shiv stashed
 /datum/outpost_prison/proc/wildcard_kind_weights()
 	var/stab_weight = PRISON_INCIDENT_WEIGHT_STAB
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.cell?.stash_shiv && wildcard_can_act(prisoner))
 			stab_weight *= PRISON_INCIDENT_STASH_KIND_MULT
 			break
@@ -171,7 +171,7 @@
  * block, out of trouble and not busy with it, not shut in a cell, owing no lockdown, not an
  * experiment's subject, and not running from a creature
  */
-/datum/outpost_prison/proc/wildcard_can_act(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/wildcard_can_act(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return FALSE
 	if(prisoner.in_trouble() || prisoner.can_be_dragged() || prisoner.pulledby || prisoner.experiment_subject || prisoner.lockdown_left > 0 || prisoner.is_panicking())
@@ -181,7 +181,7 @@
 	return in_cell_block(prisoner) && !prisoner.is_confined()
 
 /// Whether `prisoner` can be the one a stabbing is aimed at: as wildcard_can_act(), but asleep will do
-/datum/outpost_prison/proc/wildcard_can_be_target(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/wildcard_can_be_target(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(QDELETED(prisoner) || prisoner.prison != src || prisoner.phase != PRISONER_PRESENT || prisoner.stat != CONSCIOUS)
 		return FALSE
 	if(prisoner.in_trouble() || prisoner.can_be_dragged() || prisoner.pulledby || prisoner.experiment_subject)
@@ -189,7 +189,7 @@
 	return in_cell_block(prisoner) && !prisoner.is_confined()
 
 /// Whether `one` can walk to where `two` stands
-/datum/outpost_prison/proc/wildcard_can_reach(mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two)
+/datum/outpost_prison/proc/wildcard_can_reach(mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two)
 	if(!one.walkable)
 		refresh_prisoner_reach(one)
 	return !!one.walkable?[get_turf(two)]
@@ -218,11 +218,11 @@
 	var/list/weights = list()
 	var/list/rival_pairs = list()
 	var/list/rival_weights = list()
-	for(var/mob/living/basic/outpost_prisoner/attacker in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/attacker in prisoners)
 		if(!wildcard_can_act(attacker))
 			continue
 		var/weight = attacker.cell?.stash_shiv ? PRISON_INCIDENT_STASH_PICK_MULT : 1
-		for(var/mob/living/basic/outpost_prisoner/victim in prisoners)
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/victim in prisoners)
 			if(victim == attacker || !wildcard_can_be_target(victim) || !wildcard_can_reach(attacker, victim))
 				continue
 			if(are_rivals(attacker, victim))
@@ -241,7 +241,7 @@
 /datum/outpost_prison/proc/pick_snapper()
 	var/list/options = list()
 	var/list/weights = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!wildcard_can_act(prisoner) || !prisoner.can_join_riot())
 			continue
 		options += prisoner
@@ -253,15 +253,15 @@
 /// Who fights whom: list(one, two), rivals first, or null
 /datum/outpost_prison/proc/pick_fight_pair()
 	var/list/able = list()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(wildcard_can_act(prisoner) && !prisoner.fight)
 			able += prisoner
 	var/list/pairs = list()
 	var/list/rival_pairs = list()
 	for(var/first_index in 1 to length(able) - 1)
-		var/mob/living/basic/outpost_prisoner/one = able[first_index]
+		var/mob/living/carbon/human/npc/outpost_prisoner/one = able[first_index]
 		for(var/second_index in first_index + 1 to length(able))
-			var/mob/living/basic/outpost_prisoner/two = able[second_index]
+			var/mob/living/carbon/human/npc/outpost_prisoner/two = able[second_index]
 			if(!wildcard_can_reach(one, two))
 				continue
 			if(are_rivals(one, two))
@@ -289,7 +289,7 @@
 
 /// A snap: the tell, or with `skip_tell` the riot at once. Returns TRUE if it started.
 /datum/outpost_prison/proc/start_snap(skip_tell = FALSE)
-	var/mob/living/basic/outpost_prisoner/snapper = pick_snapper()
+	var/mob/living/carbon/human/npc/outpost_prisoner/snapper = pick_snapper()
 	if(!snapper)
 		return FALSE
 	if(skip_tell)
@@ -300,7 +300,7 @@
 	return TRUE
 
 /// `snapper` riots, alone unless others are unhappy enough to join. Returns TRUE if the riot started.
-/datum/outpost_prison/proc/snap(mob/living/basic/outpost_prisoner/snapper)
+/datum/outpost_prison/proc/snap(mob/living/carbon/human/npc/outpost_prisoner/snapper)
 	if(!snapper?.can_join_riot())
 		return FALSE
 	if(!start_riot("[snapper.real_name] snapped", forced = snapper, ignore_quiet = TRUE))
@@ -318,27 +318,27 @@
 // ===== STOPPING ONE =====
 
 /// Whether `prisoner` is working up to a stabbing or a snap right now
-/datum/outpost_prison/proc/wildcard_brooding(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/wildcard_brooding(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !!prisoner && wildcard?.stage == WILDCARD_TELL && wildcard.actor() == prisoner
 
 /// The tell for examine, while `prisoner` works up to a stabbing or a snap; or null
-/datum/outpost_prison/proc/wildcard_examine(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/wildcard_examine(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!wildcard_brooding(prisoner))
 		return null
 	if(wildcard.kind != "stab")
 		return "Paces and mutters, fists clenched."
-	var/mob/living/basic/outpost_prisoner/target = wildcard.target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = wildcard.target()
 	var/stare = target ? "Keeps staring at [target.speech_name()]" : "Keeps staring at someone"
 	return wildcard.last_tell_shown ? "[stare], one hand under [prisoner.p_their()] shirt." : "[stare]."
 
 /// A member talked `prisoner` down (talk_down()): a tell under way is called off. Returns TRUE if one was.
-/datum/outpost_prison/proc/wildcard_talked_down(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/wildcard_talked_down(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(!wildcard_brooding(prisoner))
 		return FALSE
 	return wildcard.stopped_by_staff(user, "talk")
 
 /// Staff batoned `prisoner` (a signal handler's call: nothing here sleeps): a tell under way is called off
-/datum/outpost_prison/proc/wildcard_batoned(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/wildcard_batoned(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	if(!wildcard_brooding(prisoner))
 		return FALSE
 	return wildcard.stopped_by_staff(user, "baton")
@@ -346,7 +346,7 @@
 // ===== COMINGS AND GOINGS =====
 
 /// A prisoner is leaving the roster: a wildcard they are part of ends, and a stabber drops the shiv
-/datum/outpost_prison/proc/wildcard_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/wildcard_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!wildcard || (wildcard.actor() != prisoner && wildcard.target() != prisoner))
 		return
 	if(wildcard.stage == WILDCARD_ATTACK && wildcard.actor() != prisoner)
@@ -360,8 +360,8 @@
 
 /// The admin panel's wildcard numbers, with the wing events' (outpost_prison_wing_events.dm)
 /datum/outpost_prison/proc/incidents_admin_payload()
-	var/mob/living/basic/outpost_prisoner/actor = wildcard?.actor()
-	var/mob/living/basic/outpost_prisoner/target = wildcard?.target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = wildcard?.actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = wildcard?.target()
 	return list(
 		"chance" = round(outpost_prison_wildcard_chance(tension), 0.1),
 		"gap_left" = round(wildcard_gap_left),
@@ -397,7 +397,7 @@
 	/// A stabbing's fight
 	var/datum/weakref/fight_ref
 
-/datum/outpost_prison_wildcard/New(datum/outpost_prison/owner, kind, mob/living/basic/outpost_prisoner/actor, mob/living/basic/outpost_prisoner/target)
+/datum/outpost_prison_wildcard/New(datum/outpost_prison/owner, kind, mob/living/carbon/human/npc/outpost_prisoner/actor, mob/living/carbon/human/npc/outpost_prisoner/target)
 	. = ..()
 	prison = owner
 	src.kind = kind
@@ -406,7 +406,7 @@
 	tell_left = rand(PRISON_INCIDENT_TELL_MIN, PRISON_INCIDENT_TELL_MAX)
 
 /datum/outpost_prison_wildcard/Destroy()
-	var/mob/living/basic/outpost_prisoner/actor = actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = actor()
 	if(actor && is_tell_activity(actor.activity))
 		actor.end_activity()
 	if(prison?.wildcard == src)
@@ -425,13 +425,13 @@
 	return istype(activity, /datum/prisoner_activity/wildcard_shadow) || istype(activity, /datum/prisoner_activity/pace/wildcard)
 
 /// Whether a stabbing's victim is still there to go for
-/datum/outpost_prison_wildcard/proc/target_ok(mob/living/basic/outpost_prisoner/target)
+/datum/outpost_prison_wildcard/proc/target_ok(mob/living/carbon/human/npc/outpost_prisoner/target)
 	return !QDELETED(target) && target.prison == prison && (target in prison.prisoners) && target.phase == PRISONER_PRESENT && target.stat != DEAD && target.trouble != PRISONER_TROUBLE_LOOSE && !target.is_rioting()
 
 /// The tell begins: a stare and the shadowing, or the pacing
 /datum/outpost_prison_wildcard/proc/begin_tell()
-	var/mob/living/basic/outpost_prisoner/actor = actor()
-	var/mob/living/basic/outpost_prisoner/target = target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = target()
 	if(!actor)
 		return
 	actor.end_activity()
@@ -445,7 +445,7 @@
 	log_game("PLAYER OUTPOST PRISON: [actor.real_name] is working up to [kind == "stab" ? "stabbing [target?.real_name]" : "snapping"] at '[prison?.outpost?.name]'")
 
 /// Starts the tell's activity again if something ended it
-/datum/outpost_prison_wildcard/proc/restart_activity(mob/living/basic/outpost_prisoner/actor)
+/datum/outpost_prison_wildcard/proc/restart_activity(mob/living/carbon/human/npc/outpost_prisoner/actor)
 	if(is_tell_activity(actor.activity) || !actor.routine_allowed())
 		return
 	var/datum/prisoner_activity/tell_activity
@@ -460,8 +460,8 @@
 
 /// Advances the tell, or watches the attack until its fight is over
 /datum/outpost_prison_wildcard/proc/tick(seconds)
-	var/mob/living/basic/outpost_prisoner/actor = actor()
-	var/mob/living/basic/outpost_prisoner/target = target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = target()
 	if(stage == WILDCARD_ATTACK)
 		var/datum/outpost_prison_fight/brawl = fight_ref?.resolve()
 		if(!QDELETED(brawl) && actor?.fight == brawl)
@@ -504,7 +504,7 @@
 	qdel(src)
 
 /// A stabbing's tell: the stare, a mutter, the hand under the shirt
-/datum/outpost_prison_wildcard/proc/tell_stab(mob/living/basic/outpost_prisoner/actor, mob/living/basic/outpost_prisoner/target)
+/datum/outpost_prison_wildcard/proc/tell_stab(mob/living/carbon/human/npc/outpost_prisoner/actor, mob/living/carbon/human/npc/outpost_prisoner/target)
 	var/in_sight = (target in view(7, actor))
 	if(in_sight)
 		actor.face_atom(target)
@@ -516,7 +516,7 @@
 		actor.manual_emote("slips a hand under [actor.p_their()] shirt.")
 
 /// A snap's tell: muttering, a blow at the wall, then shouting
-/datum/outpost_prison_wildcard/proc/tell_snap(mob/living/basic/outpost_prisoner/actor)
+/datum/outpost_prison_wildcard/proc/tell_snap(mob/living/carbon/human/npc/outpost_prisoner/actor)
 	if(!muttered && tell_elapsed >= PRISON_INCIDENT_MUTTER_AT)
 		muttered = TRUE
 		actor.say_context("incident_pacing")
@@ -543,8 +543,8 @@
  * victim, a fight past its argument. Returns TRUE if it started.
  */
 /datum/outpost_prison_wildcard/proc/strike()
-	var/mob/living/basic/outpost_prisoner/actor = actor()
-	var/mob/living/basic/outpost_prisoner/target = target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = target()
 	// Nobody goes for a prisoner who is already down, or busy fighting someone else.
 	if(QDELETED(actor) || actor.stat != CONSCIOUS || actor.trouble || actor.can_be_dragged() || !target_ok(target) || target.stat != CONSCIOUS || target.can_be_dragged() || target.fight)
 		return FALSE
@@ -553,9 +553,9 @@
 	if(is_tell_activity(actor.activity))
 		actor.end_activity()
 	actor.stand_up()
-	if(!prison.draw_stashed_shiv(actor))
-		actor.draw_shiv()
-		actor.manual_emote("pulls a shiv out from under [actor.p_their()] shirt!")
+	// A stabbing needs a blade: one stashed in their cell, or one they already carry. Nothing comes from nowhere.
+	if(!actor.has_shiv() && !prison.draw_stashed_shiv(actor))
+		return FALSE
 	var/datum/outpost_prison_fight/brawl = prison.start_fight(actor, target, "stab")
 	if(!brawl)
 		put_away_shiv(actor)
@@ -570,13 +570,13 @@
 	return TRUE
 
 /// After a stabbing, the attacker lets go of the shiv, unless they are rioting or loose with it
-/datum/outpost_prison_wildcard/proc/put_away_shiv(mob/living/basic/outpost_prisoner/actor)
+/datum/outpost_prison_wildcard/proc/put_away_shiv(mob/living/carbon/human/npc/outpost_prisoner/actor)
 	if(QDELETED(actor) || !actor.has_shiv() || actor.is_rioting() || actor.trouble == PRISONER_TROUBLE_LOOSE)
 		return
 	actor.drop_shiv()
 
 /// It came to nothing (the victim out of reach, the snapper shut in): they think better of it
-/datum/outpost_prison_wildcard/proc/give_up(mob/living/basic/outpost_prisoner/actor)
+/datum/outpost_prison_wildcard/proc/give_up(mob/living/carbon/human/npc/outpost_prisoner/actor)
 	if(!QDELETED(actor) && actor.stat == CONSCIOUS)
 		actor.say_context("incident_stopped")
 	qdel(src)
@@ -589,8 +589,8 @@
 /datum/outpost_prison_wildcard/proc/stopped_by_staff(mob/living/user, how)
 	if(stage != WILDCARD_TELL)
 		return FALSE
-	var/mob/living/basic/outpost_prisoner/actor = actor()
-	var/mob/living/basic/outpost_prisoner/target = target()
+	var/mob/living/carbon/human/npc/outpost_prisoner/actor = actor()
+	var/mob/living/carbon/human/npc/outpost_prisoner/target = target()
 	if(actor)
 		actor.note_trouble_ended()
 		var/what = kind == "stab" ? "went for [target?.real_name || "someone"]" : "snapped"
@@ -599,7 +599,7 @@
 			prison?.add_log("[user?.name || "Someone"] talked [who] down before [actor.p_they()] [what].")
 		else
 			prison?.add_log(user ? "[user.name] stopped [who] before [actor.p_they()] [what]." : "[who] was stopped before [actor.p_they()] [what].")
-		INVOKE_ASYNC(actor, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "incident_stopped")
+		INVOKE_ASYNC(actor, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "incident_stopped")
 	qdel(src)
 	return TRUE
 
@@ -613,7 +613,7 @@
 	interruptible = FALSE
 	var/datum/weakref/target_ref
 
-/datum/prisoner_activity/wildcard_shadow/New(mob/living/basic/outpost_prisoner/doer, mob/living/basic/outpost_prisoner/target)
+/datum/prisoner_activity/wildcard_shadow/New(mob/living/carbon/human/npc/outpost_prisoner/doer, mob/living/carbon/human/npc/outpost_prisoner/target)
 	. = ..()
 	target_ref = target ? WEAKREF(target) : null
 

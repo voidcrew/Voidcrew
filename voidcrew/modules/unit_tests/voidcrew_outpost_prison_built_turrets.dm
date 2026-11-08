@@ -38,12 +38,12 @@
 	return turret
 
 /// Lets `turret`'s warning to `prisoner` run out, and its gun cool down
-/datum/unit_test/voidcrew_outpost_management/proc/warning_over(obj/machinery/porta_turret/turret, mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/warning_over(obj/machinery/porta_turret/turret, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	LAZYSET(turret.prison_warned_at, REF(prisoner), world.time - 30) // past OUTPOST_PRISON_TURRET_WARN_TIME 2 s
 	turret.last_fired = 0
 
 /// Forgets `turret`'s warning to `prisoner` and what they did about it
-/datum/unit_test/voidcrew_outpost_management/proc/forget_warning(obj/machinery/porta_turret/turret, mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_management/proc/forget_warning(obj/machinery/porta_turret/turret, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	LAZYREMOVE(turret.prison_warned_at, REF(prisoner))
 	prisoner.clear_turret_reaction()
 
@@ -60,18 +60,18 @@
 	var/obj/machinery/porta_turret/prison_test_probe/probe = allocate(/obj/machinery/porta_turret/prison_test_probe, prison_spot(home, 9, 8))
 	TEST_ASSERT(probe.turret_flags & (1<<4), "A built turret does not look for unidentified life signs by default") // TURRET_FLAG_SHOOT_ANOMALOUS
 
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prisoner/cuffed = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
-	var/mob/living/basic/outpost_prisoner/downed = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/cuffed = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/downed = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
 	TEST_ASSERT_NOTNULL(guard, "The guard did not arrive")
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
-	var/mob/living/basic/outpost_kessler_staff/agent/agent = allocate(/mob/living/basic/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 11, 7), null)
 	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, prison_spot(home, 8, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
-	TEST_ASSERT(cuffed.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(cuffed, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	ADD_TRAIT(downed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 	prison.refresh_reach()
 	TEST_ASSERT(rioter.reachable?[get_turf(probe)], "A rioter in the yard cannot reach the turret standing in it")
@@ -185,10 +185,9 @@
 	var/stun_before = turret.stun_projectile
 	TEST_ASSERT(!outpost_prison_stun_projectile(stun_before), "The laser gun's stun setting is a stun shot, so this test proves nothing")
 
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/basic/outpost_kessler_staff/researcher, prison_spot(home, 10, 7), null)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/calm = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = guard_test_spawn(prison, prison_spot(home, 11, 8), awake = FALSE)
 	var/mob/living/carbon/human/hulk = experiment_form_body(prison, prison_spot(home, 7, 7), "hulk")
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
@@ -212,20 +211,16 @@
 	var/obj/projectile/at_hulk = turret.shootAt(hulk)
 	TEST_ASSERT(istype(at_hulk, /obj/projectile/beam/laser), "A lethal laser turret fired [at_hulk?.type || "nothing"] at the hulk, not its laser")
 
-	// Its shots pass through everyone the prison spares, and a lethal one through every prisoner
+	// Its shots land on whoever they meet, as anyone's do (PR-12): the rule is only the turret's choice of target.
 	var/obj/projectile/beam/disabler/stun_shot = allocate(/obj/projectile/beam/disabler, prison_spot(home, 9, 9))
 	stun_shot.firer = turret
 	TEST_ASSERT(stun_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's stun shot could not land on a rioter")
-	TEST_ASSERT(!stun_shot.can_hit_target(calm, TRUE, TRUE), "A turret's stun shot could land on a calm prisoner")
-	TEST_ASSERT(!stun_shot.can_hit_target(guard, TRUE, TRUE), "A turret's stun shot could land on a guard")
-	TEST_ASSERT(!stun_shot.can_hit_target(doctor, TRUE, TRUE), "A turret's stun shot could land on the Kessler researcher")
+	TEST_ASSERT(stun_shot.can_hit_target(calm, TRUE, TRUE), "A turret's stray stun shot passed through a calm prisoner")
+	TEST_ASSERT(stun_shot.can_hit_target(guard, TRUE, TRUE), "A turret's stray stun shot passed through a guard")
 	var/obj/projectile/beam/laser/lethal_shot = allocate(/obj/projectile/beam/laser, prison_spot(home, 9, 9))
 	lethal_shot.firer = turret
-	TEST_ASSERT(!lethal_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's lethal shot could land on a rioter")
+	TEST_ASSERT(lethal_shot.can_hit_target(rioter, TRUE, TRUE), "A turret's lethal shot passed through a rioter")
 	TEST_ASSERT(lethal_shot.can_hit_target(hulk, TRUE, TRUE), "A turret's lethal shot could not land on the hulk")
-	// Anyone else's shots are none of the prison's business
-	var/obj/projectile/beam/laser/stray_shot = allocate(/obj/projectile/beam/laser, prison_spot(home, 9, 9))
-	TEST_ASSERT(stray_shot.can_hit_target(calm, TRUE, TRUE), "A shot nobody fired from a turret passed through a calm prisoner")
 
 	// Never a shot at a prisoner the rule spares, however the turret is aimed
 	warning_over(turret, calm)
@@ -267,10 +262,10 @@
 	var/obj/machinery/porta_turret/turret = still_turret(prison_spot(home, 9, 8))
 	turret.setup(allocate(/obj/item/gun/energy/disabler))
 	var/mob/living/carbon/human/staff = make_player(prison_spot(home, 7, 9), "btturretwarning")
-	var/mob/living/basic/outpost_prisoner/swinger = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
-	var/mob/living/basic/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
-	var/mob/living/basic/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/swinger = trouble_awake_prisoner(prison, prison_spot(home, 9, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = trouble_awake_prisoner(prison, prison_spot(home, 8, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = trouble_awake_prisoner(prison, prison_spot(home, 11, 10))
 	prison.refresh_reach()
 
 	// A swinger who backs off drops it, steps away, won't square up again for a while, and is not shot
@@ -327,7 +322,8 @@
 	// A rioter who gives up puts the shiv down and heads for their own cell; they are not shot
 	prison.forced_turret_reaction = "give_up" // OUTPOST_PRISON_TURRET_GIVE_UP
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
-	rioter.draw_shiv()
+	rioter.cell.stash_shiv = TRUE
+	prison.draw_stashed_shiv(rioter)
 	TEST_ASSERT(rioter.has_shiv(), "The rioter has no shiv")
 	TEST_ASSERT_NULL(turret.shootAt(rioter), "The turret fired at a rioter without a warning")
 	TEST_ASSERT(rioter.surrendered_to_turret(), "A rioter who gave up did not")
@@ -370,7 +366,7 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	prison.riot_windup_left = 0
 	var/obj/machinery/porta_turret/turret = still_turret(prison_spot(home, 9, 8))
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 9))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 9, 9))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	prison.refresh_reach()
 

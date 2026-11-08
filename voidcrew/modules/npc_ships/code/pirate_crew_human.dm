@@ -31,6 +31,7 @@
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/human_npc_soft_crit,
 		/datum/ai_planning_subtree/escape_captivity,
+		/datum/ai_planning_subtree/human_npc_surrender/crewless,
 		/datum/ai_planning_subtree/pirate_crew_find_target,
 		/datum/ai_planning_subtree/pirate_crew_human_self_care,
 		/datum/ai_planning_subtree/pirate_crew_doors,
@@ -40,6 +41,7 @@
 		/datum/ai_planning_subtree/pirate_crew_hold_post,
 		/datum/ai_planning_subtree/pirate_crew_hunt,
 		/datum/ai_planning_subtree/pirate_crew_leash,
+		/datum/ai_planning_subtree/pirate_crewless_home,
 	)
 
 /datum/ai_controller/basic_controller/pirate_crew/human/TryPossessPawn(atom/new_pawn)
@@ -74,6 +76,36 @@
 		var/reach = handling.close_range || blackboard[BB_HUMAN_NPC_FIRE_RANGE] || 7
 		return get_dist(npc, target) <= reach && can_see(npc, target, reach)
 	return npc.Adjacent(target)
+
+// ===== WITH NO CREW: ruins, planets, contracts =====
+
+/// A pirate with no crew gives up by its family's rules (npc_surrender, human_npc_surrender.dm). One in a
+/// crew fights on with it.
+/datum/ai_planning_subtree/human_npc_surrender/crewless
+
+/datum/ai_planning_subtree/human_npc_surrender/crewless/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/datum/ai_controller/basic_controller/pirate_crew/pirate_controller = controller
+	if(istype(pirate_controller) && pirate_controller.get_crew())
+		return
+	return ..()
+
+/// A pirate with no crew and nobody to fight walks back to where it was put once it has strayed more
+/// than PIRATE_CREWLESS_LEASH tiles (a chase, a flight from its surrender).
+/datum/ai_planning_subtree/pirate_crewless_home
+
+/datum/ai_planning_subtree/pirate_crewless_home/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/datum/ai_controller/basic_controller/pirate_crew/pirate_controller = controller
+	if(!istype(pirate_controller) || pirate_controller.get_crew() || controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+	var/turf/home = controller.blackboard[BB_PIRATE_CREWLESS_HOME]
+	var/turf/here = get_turf(controller.pawn)
+	if(isnull(home) || isnull(here) || home.z != here.z)
+		return
+	if(get_dist(here, home) <= PIRATE_CREWLESS_LEASH)
+		return
+	controller.set_blackboard_key(BB_PIRATE_RETURN_TURF, home)
+	controller.queue_behavior(/datum/ai_behavior/pirate_crew_travel/leash, BB_PIRATE_RETURN_TURF)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Whether a human crewman fights at range: it holds or carries a gun it can fire, and may use guns.
 /proc/pirate_crew_human_gunner(mob/living/carbon/human/npc)

@@ -300,8 +300,9 @@
 			TEST_ASSERT_NOTNULL(human_npc_find_ammo(pirate, gun), "[outfit_type] carries no spare ammunition for its [gun]")
 		qdel(pirate)
 
-/// N7: where the air can't keep a person alive the NPC gets a sealed suit and an open tank; in the cold
-/// it gets cold-weather wear; a species that needs neither is left alone.
+/// N7: where the air can't keep a person alive the NPC gets a sealed suit and a tank; in the cold it gets
+/// cold-weather wear; a species that needs neither is left alone. It minds its valve like a person: open
+/// while the air would hurt it, shut while the air is fine (so the tank doesn't run dry in a good room).
 /datum/unit_test/voidcrew_human_npc_site_layers
 
 /datum/unit_test/voidcrew_human_npc_site_layers/Run()
@@ -324,7 +325,17 @@
 	TEST_ASSERT(istype(spacer.wear_suit, /obj/item/clothing/suit/space/pirate), "An NPC dressed for vacuum has no space suit")
 	TEST_ASSERT(istype(spacer.head, /obj/item/clothing/head/helmet/space), "An NPC dressed for vacuum has no space helmet")
 	TEST_ASSERT(istype(spacer.s_store, /obj/item/tank/internals), "An NPC dressed for vacuum carries no tank")
-	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC dressed for vacuum didn't open its tank")
+	TEST_ASSERT(spacer.can_breathe_internals(), "An NPC dressed for vacuum has nothing to breathe its tank through")
+	TEST_ASSERT_NULL(spacer.internal, "An NPC dressed for vacuum keeps its tank open in good air")
+	var/turf/spacer_turf = get_turf(spacer)
+	var/datum/gas_mixture/room_air = spacer_turf.return_air()
+	var/datum/gas_mixture/saved_air = room_air.copy()
+	room_air.remove_ratio(1)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC in vacuum didn't open its tank")
+	room_air.copy_from(saved_air)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NULL(spacer.internal, "An NPC back in good air didn't shut its tank")
 	var/obj/item/clothing/suit/space/suit = spacer.wear_suit
 	TEST_ASSERT(suit?.thermal_on, "An NPC dressed for vacuum didn't switch on its suit's heating")
 	// Dormant, the regulator is off so the cell lasts; awake, it goes back on.
@@ -414,3 +425,24 @@
 	TEST_ASSERT(prisoner.dropItemToGround(gun), "An unlocked NPC can't let go of its gun")
 	sleep(2)
 	TEST_ASSERT(!QDELETED(gun) && isturf(gun.loc), "An unlocked NPC's dropped gun was deleted")
+
+/**
+ * Phase E follow-ups to the spawn queue: an order built later checks that its spot is still the place it
+ * was queued for (a ruin unloaded while it waited), and the NPC faces the way it was told (a mapped
+ * spawner's dir).
+ */
+/datum/unit_test/voidcrew_human_npc_order_spot
+
+/datum/unit_test/voidcrew_human_npc_order_spot/Run()
+	var/datum/human_npc_order/facing = spawn_human_npc(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left, immediate = TRUE, dir = EAST)
+	var/mob/living/carbon/human/npc/facer = facing.spawned_ref?.resolve()
+	TEST_ASSERT_NOTNULL(facer, "An order for the test floor built nothing")
+	if(facer)
+		allocated += facer
+		TEST_ASSERT_EQUAL(facer.dir, EAST, "An NPC built with a dir doesn't face it")
+	var/datum/human_npc_order/moved_on = new /datum/human_npc_order(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left)
+	TEST_ASSERT(moved_on.spot_still_valid(), "A fresh order's spot doesn't count as its own")
+	// The ground was reused while it waited: its area is not the one it was queued in.
+	moved_on.where_area = null
+	TEST_ASSERT_NULL(moved_on.fulfil(), "An order whose spot was reused still built its NPC there")
+	qdel(moved_on)

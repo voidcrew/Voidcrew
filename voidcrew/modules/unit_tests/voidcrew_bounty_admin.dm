@@ -608,7 +608,7 @@
 	TEST_ASSERT_EQUAL(row["prison"], home.name, "A record for [home.name] lists [row["prison"]]")
 
 	// Admitted: out of the pool, into the first cell, the prisoner made from the record.
-	var/mob/living/basic/outpost_prisoner/prisoner = panel.admin_pool_admit(operator, record, prison)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = panel.admin_pool_admit(operator, record, prison)
 	TEST_ASSERT_NOTNULL(prisoner, "The record was not admitted: [panel.error]")
 	TEST_ASSERT(!(record in GLOB.bounty_prisoner_pool), "The admitted record is still in the pool")
 	TEST_ASSERT_EQUAL(prisoner.bounty_record, record, "The prisoner was not made from the record")

@@ -15,7 +15,7 @@
  * One tell of what the serum is turning `subject` into, `progress` (0 to 1) through the last
  * OUTPOST_EXPERIMENT_TELLS seconds. Plain to see, so the crew can fetch the right tool.
  */
-/proc/outpost_experiment_tell(form, mob/living/basic/outpost_prisoner/subject, progress)
+/proc/outpost_experiment_tell(form, mob/living/carbon/human/npc/outpost_prisoner/subject, progress)
 	if(QDELETED(subject) || subject.stat != CONSCIOUS)
 		return
 	subject.Shake(1, 1, 0.5 SECONDS)
@@ -61,7 +61,7 @@
 	return victim.apply_damage(damage, BRUTE, zone, blocked, sharpness = sharpness, attack_direction = attacker ? get_dir(attacker, victim) : null)
 
 /// Takes the tells off a subject the serum never finished with
-/proc/outpost_experiment_clear_tells(mob/living/basic/outpost_prisoner/subject)
+/proc/outpost_experiment_clear_tells(mob/living/carbon/human/npc/outpost_prisoner/subject)
 	if(QDELETED(subject))
 		return
 	subject.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)

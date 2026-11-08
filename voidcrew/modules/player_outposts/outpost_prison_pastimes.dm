@@ -70,7 +70,7 @@
 	/// Seconds since the last look for scrubbed marks
 	var/mark_check_clock = 0
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Between the lifts a card game gives them
 	COOLDOWN_DECLARE(cards_mood_cooldown)
 	/// Between the lifts a game of basketball with staff gives them
@@ -83,7 +83,7 @@
 
 /// Hooks up the prisoner's side of the pastimes; called from setup_extras(). Nothing to hook: the
 /// pastimes run from activities and the prison's clock.
-/mob/living/basic/outpost_prisoner/proc/setup_pastimes()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_pastimes()
 	return
 
 /// Advances the party, the game with staff and the marks on the walls by `seconds`
@@ -140,7 +140,7 @@
 	return found
 
 /// Whether `prisoner` could sit on `stool` now: they can walk there, and nobody else sits on it, stands on it or has it
-/datum/outpost_prison/proc/stool_free_for(obj/structure/chair/stool, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/stool_free_for(obj/structure/chair/stool, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/turf/seat = get_turf(stool)
 	if(QDELETED(stool) || !seat || !prisoner.walkable?[seat] || claimed_by_other(stool, prisoner))
 		return FALSE
@@ -202,7 +202,7 @@
 	/// Whether members of the wing sitting at the table are dealt in
 	var/deals_in_members = FALSE
 
-/datum/prisoner_activity/table_game/New(mob/living/basic/outpost_prisoner/doer, datum/prisoner_activity/table_game/host_game)
+/datum/prisoner_activity/table_game/New(mob/living/carbon/human/npc/outpost_prisoner/doer, datum/prisoner_activity/table_game/host_game)
 	. = ..(doer)
 	if(host_game)
 		game_ref = WEAKREF(host_game)
@@ -284,7 +284,7 @@
 	return best
 
 /// Whether `other` may be called over: free for leisure (the chat's rule), not hungry, and no rival of the host
-/datum/prisoner_activity/table_game/proc/can_invite(mob/living/basic/outpost_prisoner/other)
+/datum/prisoner_activity/table_game/proc/can_invite(mob/living/carbon/human/npc/outpost_prisoner/other)
 	if(other == prisoner || QDELETED(other) || !other.routine_allowed() || !other.ai_running())
 		return FALSE
 	var/datum/prisoner_activity/doing = other.activity
@@ -303,7 +303,7 @@
 			free_stools++
 	if(!free_stools)
 		return FALSE
-	for(var/mob/living/basic/outpost_prisoner/other in prison.prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in prison.prisoners)
 		if(can_invite(other))
 			return TRUE
 	return FALSE
@@ -454,7 +454,7 @@
 	if(own && prisoner.buckled == own)
 		seats += list(list(prisoner, own, prison.table_beside(own)))
 	for(var/datum/weakref/joiner_ref as anything in joiner_refs)
-		var/mob/living/basic/outpost_prisoner/joiner = joiner_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/joiner = joiner_ref.resolve()
 		var/datum/prisoner_activity/table_game/seat = joiner?.activity
 		if(!istype(seat) || seat.game_ref?.resolve() != src || !seat.started)
 			continue
@@ -491,7 +491,7 @@
 	var/datum/outpost_prison/prison = prisoner.prison
 	var/list/live = list()
 	for(var/datum/weakref/joiner_ref as anything in joiner_refs)
-		var/mob/living/basic/outpost_prisoner/joiner = joiner_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/joiner = joiner_ref.resolve()
 		var/datum/prisoner_activity/table_game/seat = joiner?.activity
 		if(istype(seat) && seat.game_ref?.resolve() == src)
 			live += joiner_ref
@@ -500,14 +500,14 @@
 	if(room <= 0)
 		return 0
 	var/list/candidates = list()
-	for(var/mob/living/basic/outpost_prisoner/other in shuffle(prison.prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/other in shuffle(prison.prisoners))
 		if(can_invite(other))
 			candidates += other
-	var/mob/living/basic/outpost_prisoner/first_called
+	var/mob/living/carbon/human/npc/outpost_prisoner/first_called
 	var/came = 0
 	while(room > 0 && length(candidates))
-		var/mob/living/basic/outpost_prisoner/best
-		for(var/mob/living/basic/outpost_prisoner/other as anything in candidates)
+		var/mob/living/carbon/human/npc/outpost_prisoner/best
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/other as anything in candidates)
 			if(!best || prison.affinity(prisoner, other) > prison.affinity(prisoner, best))
 				best = other
 		candidates -= best
@@ -523,7 +523,7 @@
 	return came
 
 /// Gives `other` a seat at this game and sends them to it. TRUE if they are coming.
-/datum/prisoner_activity/table_game/proc/seat_joiner(mob/living/basic/outpost_prisoner/other)
+/datum/prisoner_activity/table_game/proc/seat_joiner(mob/living/carbon/human/npc/outpost_prisoner/other)
 	if(!seat_type || QDELETED(other))
 		return FALSE
 	var/datum/prisoner_activity/table_game/seat = new seat_type(other, src)
@@ -537,7 +537,7 @@
 /// Sends everyone the host called over back to their own business
 /datum/prisoner_activity/table_game/proc/release_joiners()
 	for(var/datum/weakref/joiner_ref as anything in joiner_refs)
-		var/mob/living/basic/outpost_prisoner/joiner = joiner_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/joiner = joiner_ref.resolve()
 		var/datum/prisoner_activity/table_game/seat = joiner?.activity
 		if(istype(seat) && seat.game_ref?.resolve() == src)
 			joiner.end_activity()
@@ -738,7 +738,7 @@
 /datum/prisoner_activity/cards/proc/reward_players(list/in_hand)
 	var/datum/outpost_prison/prison = prisoner.prison
 	for(var/mob/living/player as anything in in_hand)
-		var/mob/living/basic/outpost_prisoner/inmate = player
+		var/mob/living/carbon/human/npc/outpost_prisoner/inmate = player
 		if(istype(inmate))
 			if(COOLDOWN_FINISHED(inmate, cards_mood_cooldown))
 				COOLDOWN_START(inmate, cards_mood_cooldown, PRISON_CARDS_MOOD_GAP)
@@ -755,19 +755,19 @@
 	if(!prob(PRISON_CARDS_TALK_CHANCE))
 		return
 	var/list/inmate_losers = list()
-	for(var/mob/living/basic/outpost_prisoner/loser in in_hand)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/loser in in_hand)
 		if(loser != winner)
 			inmate_losers += loser
-	var/mob/living/basic/outpost_prisoner/inmate_winner = is_outpost_prisoner(winner) ? winner : null
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate_winner = is_outpost_prisoner(winner) ? winner : null
 	if(inmate_winner && (!length(inmate_losers) || prob(55)))
-		var/mob/living/basic/outpost_prisoner/beaten = length(inmate_losers) ? pick(inmate_losers) : null
+		var/mob/living/carbon/human/npc/outpost_prisoner/beaten = length(inmate_losers) ? pick(inmate_losers) : null
 		if(beaten)
 			inmate_winner.face_atom(beaten)
 		inmate_winner.say_context("cards_win", beaten)
 		return
 	if(!length(inmate_losers))
 		return
-	var/mob/living/basic/outpost_prisoner/grumbler = pick(inmate_losers)
+	var/mob/living/carbon/human/npc/outpost_prisoner/grumbler = pick(inmate_losers)
 	grumbler.face_atom(winner)
 	if(inmate_winner)
 		grumbler.say_context("cards_lose", inmate_winner)
@@ -792,8 +792,8 @@
 	var/list/talkers = seated_prisoners()
 	if(!length(talkers))
 		return
-	var/mob/living/basic/outpost_prisoner/speaker = pick(talkers)
-	var/mob/living/basic/outpost_prisoner/other = length(talkers) > 1 ? pick(talkers - speaker) : null
+	var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick(talkers)
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = length(talkers) > 1 ? pick(talkers - speaker) : null
 	if(speaker.say_context("cards", other))
 		prison.note_speech()
 
@@ -807,7 +807,7 @@
 		return FALSE
 	COOLDOWN_START(prison, cards_missing_cooldown, PRISON_CARDS_MISSING_GAP)
 	var/list/talkers = seated_prisoners()
-	var/mob/living/basic/outpost_prisoner/speaker = length(talkers) ? pick(talkers) : prisoner
+	var/mob/living/carbon/human/npc/outpost_prisoner/speaker = length(talkers) ? pick(talkers) : prisoner
 	return speaker.say_context("cards_missing")
 
 /datum/prisoner_activity/cards/end_game()
@@ -815,7 +815,7 @@
 
 /// The admin panel's card game: a prisoner free to play takes a deck to its table and calls others over. A log line, or null.
 /datum/outpost_prison/proc/admin_start_cards()
-	for(var/mob/living/basic/outpost_prisoner/host in shuffle(prisoners))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/host in shuffle(prisoners))
 		if(!host.ai_running() || !host.routine_allowed())
 			continue
 		var/datum/prisoner_activity/doing = host.activity
@@ -912,7 +912,7 @@
 
 /// The prisoner rolling against the host, while they still sit at the table
 /datum/prisoner_activity/dice/proc/partner()
-	var/mob/living/basic/outpost_prisoner/other = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = partner_ref?.resolve()
 	return (other && front_of(other)) ? other : null
 
 /datum/prisoner_activity/dice/play_step()
@@ -923,7 +923,7 @@
 		return ACTIVITY_CONTINUE
 	if(--roll_wait > 0)
 		return ACTIVITY_CONTINUE
-	var/mob/living/basic/outpost_prisoner/roller = turn == 1 ? prisoner : partner()
+	var/mob/living/carbon/human/npc/outpost_prisoner/roller = turn == 1 ? prisoner : partner()
 	if(rounds_left <= 0 || !roller || !roll_die(roller))
 		stage = "tidy"
 		steps = 0
@@ -931,8 +931,8 @@
 	return ACTIVITY_CONTINUE
 
 /// Where `roller` rolls to: the table in front of the other player, else the table two tiles off
-/datum/prisoner_activity/dice/proc/roll_target(mob/living/basic/outpost_prisoner/roller)
-	var/mob/living/basic/outpost_prisoner/other = roller == prisoner ? partner() : prisoner
+/datum/prisoner_activity/dice/proc/roll_target(mob/living/carbon/human/npc/outpost_prisoner/roller)
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = roller == prisoner ? partner() : prisoner
 	var/turf/front = front_of(other)
 	if(front && front != get_turf(roller))
 		return front
@@ -942,7 +942,7 @@
 	return front_of(roller)
 
 /// `roller` picks up the die and rolls it across the table. TRUE if it is rolling.
-/datum/prisoner_activity/dice/proc/roll_die(mob/living/basic/outpost_prisoner/roller)
+/datum/prisoner_activity/dice/proc/roll_die(mob/living/carbon/human/npc/outpost_prisoner/roller)
 	var/obj/item/dice/die = die_ref?.resolve()
 	if(QDELETED(die))
 		return FALSE
@@ -980,11 +980,11 @@
 /// Both have rolled: the higher roll wins and usually says so. Returns the winner, or null for a draw.
 /datum/prisoner_activity/dice/proc/settle_round()
 	last_winner_ref = null
-	var/mob/living/basic/outpost_prisoner/other = partner_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/other = partner_ref?.resolve()
 	if(!other || rolls[1] == rolls[2])
 		return null
-	var/mob/living/basic/outpost_prisoner/winner = rolls[1] > rolls[2] ? prisoner : other
-	var/mob/living/basic/outpost_prisoner/loser = winner == prisoner ? other : prisoner
+	var/mob/living/carbon/human/npc/outpost_prisoner/winner = rolls[1] > rolls[2] ? prisoner : other
+	var/mob/living/carbon/human/npc/outpost_prisoner/loser = winner == prisoner ? other : prisoner
 	last_winner_ref = WEAKREF(winner)
 	if(prob(70) && winner.stat == CONSCIOUS)
 		winner.face_atom(loser)
@@ -1034,7 +1034,7 @@
 
 /// The prisoner whose birthday it is and who has not had their party, if any is in the wing
 /datum/outpost_prison/proc/birthday_host()
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.has_birthday && !prisoner.party_done && prisoner.stat != DEAD && prisoner.phase == PRISONER_PRESENT)
 			return prisoner
 	return null
@@ -1043,7 +1043,7 @@
  * Keeps `cake` for `host`'s party: nobody eats it as a meal while it waits (reserved_supply()).
  * `giver` is whoever put it on the hatch or handed it over. Never sleeps. Returns TRUE if it is kept.
  */
-/datum/outpost_prison/proc/start_party(mob/living/basic/outpost_prisoner/host, obj/item/food/cake/cake, mob/living/giver)
+/datum/outpost_prison/proc/start_party(mob/living/carbon/human/npc/outpost_prisoner/host, obj/item/food/cake/cake, mob/living/giver)
 	if(party_stage || QDELETED(host) || !istype(cake) || QDELETED(cake))
 		return FALSE
 	if(!host.has_birthday || host.party_done || host.stat == DEAD || host.phase != PRISONER_PRESENT || !(host in prisoners))
@@ -1059,7 +1059,7 @@
 
 /// Sends the host to fetch the cake, once they are free. TRUE if they are on it.
 /datum/outpost_prison/proc/try_start_party_host()
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	if(!host || party_stage != PARTY_WAITING || !party_cake())
 		return FALSE
 	if(istype(host.activity, /datum/prisoner_activity/party_host))
@@ -1078,7 +1078,7 @@
 	return TRUE
 
 /// Whether `guest` would come over to the party: awake, free and not busy with a meal or a duty
-/datum/outpost_prison/proc/party_guest_free(mob/living/basic/outpost_prisoner/guest)
+/datum/outpost_prison/proc/party_guest_free(mob/living/carbon/human/npc/outpost_prisoner/guest)
 	if(QDELETED(guest) || !guest.ai_running() || !guest.routine_allowed())
 		return FALSE
 	var/datum/prisoner_activity/doing = guest.activity
@@ -1093,7 +1093,7 @@
  * Returns TRUE if it began.
  */
 /datum/outpost_prison/proc/party_ready(turf/spot)
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	if(party_stage != PARTY_WAITING || !host || !spot)
 		return FALSE
 	party_spot = spot
@@ -1101,14 +1101,14 @@
 	party_stage_seconds = 0
 	party_scene_seconds = 0
 	party_guests = list()
-	for(var/mob/living/basic/outpost_prisoner/guest in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/guest in prisoners)
 		if(guest != host)
 			invite_party_guest(guest)
 	host.manual_emote("waves everyone over.")
 	return TRUE
 
 /// Calls `guest` over to the party. TRUE if they are coming.
-/datum/outpost_prison/proc/invite_party_guest(mob/living/basic/outpost_prisoner/guest)
+/datum/outpost_prison/proc/invite_party_guest(mob/living/carbon/human/npc/outpost_prisoner/guest)
 	if(!party_spot || !party_guest_free(guest))
 		return FALSE
 	var/datum/prisoner_activity/party_guest/coming = new(guest)
@@ -1123,7 +1123,7 @@
 /datum/outpost_prison/proc/present_guests(arrived_only = TRUE)
 	var/list/found = list()
 	for(var/datum/weakref/guest_ref as anything in party_guests)
-		var/mob/living/basic/outpost_prisoner/guest = guest_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/guest = guest_ref.resolve()
 		var/datum/prisoner_activity/party_guest/attending = guest?.activity
 		if(!istype(attending) || guest.stat != CONSCIOUS || (arrived_only && !attending.started))
 			continue
@@ -1139,7 +1139,7 @@
 /datum/outpost_prison/proc/party_tick(seconds)
 	if(!party_stage)
 		return
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	if(!host || !(host in prisoners) || host.stat == DEAD || host.phase != PRISONER_PRESENT)
 		end_party()
 		return
@@ -1174,7 +1174,7 @@
 
 /// The candles go out, and the guests cheer and clap
 /datum/outpost_prison/proc/blow_candles()
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	var/obj/item/food/cake/cake = party_cake()
 	if(!host || !cake)
 		end_party()
@@ -1184,7 +1184,7 @@
 	host.face_atom(cake)
 	host.manual_emote("blows out the candles.")
 	var/cheers = 0
-	for(var/mob/living/basic/outpost_prisoner/guest as anything in shuffle(present_guests()))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/guest as anything in shuffle(present_guests()))
 		guest.face_atom(cake)
 		if(cheers < 2)
 			addtimer(CALLBACK(src, PROC_REF(say_life_line), WEAKREF(guest), "birthday_party", WEAKREF(host)), (0.5 + 0.8 * cheers) SECONDS)
@@ -1199,7 +1199,7 @@
  * table. Crumbs are left behind.
  */
 /datum/outpost_prison/proc/serve_party()
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	var/obj/item/food/cake/cake = party_cake()
 	var/turf/center = party_spot || get_turf(cake)
 	if(!host || !cake || !center)
@@ -1216,11 +1216,11 @@
 	host.visible_message(span_notice("[host] cuts [cake] and passes the slices round."))
 	qdel(cake)
 	var/list/diners = list(host)
-	for(var/mob/living/basic/outpost_prisoner/guest as anything in present_guests())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/guest as anything in present_guests())
 		if(get_dist(guest, center) <= PRISON_PARTY_REACH)
 			diners += guest
 	party_diners = list()
-	for(var/mob/living/basic/outpost_prisoner/diner as anything in diners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/diner as anything in diners)
 		diner.drop_held_item()
 		// Beside the table they take theirs off it; further round, the slice is passed along to them.
 		// Nobody picks anything up from further off than they can reach (take_item()).
@@ -1237,12 +1237,12 @@
 
 /// Everyone eats their slice; the host thanks whoever brought the cake, and has had their party
 /datum/outpost_prison/proc/finish_party()
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	var/fed = 0
 	for(var/list/entry as anything in party_diners)
 		var/datum/weakref/diner_ref = entry[1]
 		var/datum/weakref/slice_ref = entry[2]
-		var/mob/living/basic/outpost_prisoner/diner = diner_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/diner = diner_ref.resolve()
 		var/obj/item/food/slice = slice_ref.resolve()
 		if(!diner || !slice || diner.held_item != slice || diner.stat != CONSCIOUS)
 			continue
@@ -1268,7 +1268,7 @@
  * `diner` eats a slice of the birthday cake. It counts as a cooked meal however the cake was made
  * (a birthday cake is junk food to outpost_prisoner_food_tier()), as the build plan asks.
  */
-/datum/outpost_prison/proc/party_feed(mob/living/basic/outpost_prisoner/diner, obj/item/food/slice)
+/datum/outpost_prison/proc/party_feed(mob/living/carbon/human/npc/outpost_prisoner/diner, obj/item/food/slice)
 	if(outpost_prisoner_food_tier(slice) == "cooked")
 		diner.eat_food(slice)
 		return
@@ -1289,7 +1289,7 @@
 /// The party is over or off: everyone goes back to their day, and the cake (if uneaten) is ordinary food
 /datum/outpost_prison/proc/end_party()
 	var/list/guests = party_guests
-	var/mob/living/basic/outpost_prisoner/host = party_host_ref?.resolve()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = party_host_ref?.resolve()
 	clear_party_state()
 	dismiss_party_guests(guests)
 	if(host && istype(host.activity, /datum/prisoner_activity/party_host))
@@ -1297,7 +1297,7 @@
 
 /datum/outpost_prison/proc/dismiss_party_guests(list/guests)
 	for(var/datum/weakref/guest_ref as anything in guests)
-		var/mob/living/basic/outpost_prisoner/guest = guest_ref.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/guest = guest_ref.resolve()
 		if(guest && istype(guest.activity, /datum/prisoner_activity/party_guest))
 			guest.end_activity()
 
@@ -1314,7 +1314,7 @@
 	party_diners = list()
 
 /// Whether `thing` is the cake kept for a party, which nobody may eat as a meal
-/datum/outpost_prison/proc/reserved_supply(obj/item/thing, mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/reserved_supply(obj/item/thing, mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !!party_stage && !!thing && thing == party_cake()
 
 /**
@@ -1322,7 +1322,7 @@
  * eaten this way. A whole cake handed to the prisoner whose birthday it is starts their party: they
  * take it, and fetch it to a table once they are free. Runs in a signal handler: never sleeps.
  */
-/datum/outpost_prison/proc/pastime_pre_eat(mob/living/basic/outpost_prisoner/prisoner, atom/food, mob/living/feeder)
+/datum/outpost_prison/proc/pastime_pre_eat(mob/living/carbon/human/npc/outpost_prisoner/prisoner, atom/food, mob/living/feeder)
 	if(reserved_supply(food, prisoner))
 		// Handing the kept cake to the birthday prisoner saves them fetching it.
 		if(party_stage == PARTY_WAITING && prisoner == party_host_ref?.resolve() && istype(feeder) && food.loc == feeder && !prisoner.held_item && feeder.temporarilyRemoveItemFromInventory(food))
@@ -1359,7 +1359,7 @@
 		if(!QDELETED(whole) && whole.loc == hatch?.loc)
 			cake = whole
 			break
-	var/mob/living/basic/outpost_prisoner/host = birthday_host()
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = birthday_host()
 	if(!cake || !host || !start_party(host, cake, user))
 		return FALSE
 	INVOKE_ASYNC(src, PROC_REF(try_start_party_host))
@@ -1591,7 +1591,7 @@
 
 /// The hoop a prisoner is shooting at now, or null when nobody is playing
 /datum/outpost_prison/proc/game_hoop()
-	for(var/mob/living/basic/outpost_prisoner/player in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player in prisoners)
 		var/datum/prisoner_activity/basketball/game = player.activity
 		if(!istype(game) || !game.started || player.stat != CONSCIOUS)
 			continue
@@ -1603,7 +1603,7 @@
 /// Prisoners playing basketball now
 /datum/outpost_prison/proc/basketball_players()
 	var/list/players = list()
-	for(var/mob/living/basic/outpost_prisoner/player in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player in prisoners)
 		if(player.stat == CONSCIOUS && istype(player.activity, /datum/prisoner_activity/basketball) && player.activity.started)
 			players += player
 	return players
@@ -1611,7 +1611,7 @@
 /// Prisoners watching the game at `hoop`
 /datum/outpost_prison/proc/game_watchers(obj/structure/hoop/hoop)
 	var/list/watchers = list()
-	for(var/mob/living/basic/outpost_prisoner/watcher in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/watcher in prisoners)
 		var/datum/prisoner_activity/watch_game/watching = watcher.activity
 		if(istype(watching) && watching.started && watcher.stat == CONSCIOUS && watching.hoop_ref?.resolve() == hoop)
 			watchers += watcher
@@ -1668,7 +1668,7 @@
 
 /// Each prisoner playing now cheers up for playing with staff, at most every PRISON_STAFF_GAME_MOOD_GAP
 /datum/outpost_prison/proc/lift_staff_game_players()
-	for(var/mob/living/basic/outpost_prisoner/player as anything in basketball_players())
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/player as anything in basketball_players())
 		if(!COOLDOWN_FINISHED(player, staff_game_mood_cooldown))
 			continue
 		COOLDOWN_START(player, staff_game_mood_cooldown, PRISON_STAFF_GAME_MOOD_GAP)
@@ -1683,11 +1683,11 @@
 		return
 	var/mob/living/shooter = shooter_ref?.resolve()
 	var/list/watchers = game_watchers(hoop)
-	for(var/mob/living/basic/outpost_prisoner/watcher as anything in watchers)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/watcher as anything in watchers)
 		watcher.face_atom(hoop)
 	if(score_event)
 		var/list/announcers = length(watchers) ? watchers : basketball_players()
-		var/mob/living/basic/outpost_prisoner/announcer = length(announcers) ? pick(announcers) : null
+		var/mob/living/carbon/human/npc/outpost_prisoner/announcer = length(announcers) ? pick(announcers) : null
 		var/mob/living/staff = staff_ref?.resolve()
 		switch(score_event)
 			if("call")
@@ -1698,7 +1698,7 @@
 				announcer?.say_to_staff("game_lost", staff)
 	if(scored && length(watchers) && COOLDOWN_FINISHED(src, crowd_clap_cooldown))
 		COOLDOWN_START(src, crowd_clap_cooldown, PRISON_CROWD_CLAP_GAP)
-		for(var/mob/living/basic/outpost_prisoner/watcher as anything in watchers)
+		for(var/mob/living/carbon/human/npc/outpost_prisoner/watcher as anything in watchers)
 			if(prob(70))
 				watcher.manual_emote("claps.")
 				playsound(watcher, pick('sound/mobs/humanoids/human/clap/clap1.ogg', 'sound/mobs/humanoids/human/clap/clap2.ogg', 'sound/mobs/humanoids/human/clap/clap3.ogg'), 35, TRUE)
@@ -1708,7 +1708,7 @@
 	if(!context)
 		return
 	COOLDOWN_START(src, crowd_line_cooldown, PRISON_CROWD_LINE_GAP)
-	var/mob/living/basic/outpost_prisoner/speaker = pick(watchers)
+	var/mob/living/carbon/human/npc/outpost_prisoner/speaker = pick(watchers)
 	if(is_outpost_prisoner(shooter))
 		speaker.say_context(context, shooter)
 	else if(shooter)
@@ -1822,7 +1822,7 @@
 	return initials || "Someone"
 
 /// The crayon state for a prisoner's mark: their first initial, or a doodle
-/proc/outpost_prisoner_mark_state(mob/living/basic/outpost_prisoner/prisoner)
+/proc/outpost_prisoner_mark_state(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	var/letter = lowertext(copytext(prisoner.real_name, 1, 2))
 	if(prob(PRISON_MARK_INITIAL_CHANCE) && length(letter) == 1 && text2ascii(letter) >= 97 && text2ascii(letter) <= 122)
 		return letter
@@ -1844,7 +1844,7 @@
  * "R.D. was here." A cell keeps PRISON_CELL_MARKS_MAX marks; a new one replaces the oldest.
  * Crayon marks are not mess (outpost_prison_conditions.dm). Returns the mark, or null.
  */
-/datum/outpost_prison/proc/add_cell_mark(mob/living/basic/outpost_prisoner/prisoner, turf/wall)
+/datum/outpost_prison/proc/add_cell_mark(mob/living/carbon/human/npc/outpost_prisoner/prisoner, turf/wall)
 	var/datum/outpost_prison_cell/home = prisoner?.cell
 	if(!home || !isclosedturf(wall))
 		return null
@@ -1871,7 +1871,7 @@
 
 /// A mark is going for a newer one: whoever made it no longer looks for it
 /datum/outpost_prison/proc/forget_wall_mark(obj/effect/decal/cleanable/crayon/mark)
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.wall_mark_ref?.resolve() == mark)
 			prisoner.wall_mark_ref = null
 			prisoner.wall_mark_spot = null
@@ -1882,7 +1882,7 @@
  */
 /datum/outpost_prison/proc/check_scrubbed_marks()
 	var/noticed = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(!prisoner.wall_mark_ref || prisoner.stat != CONSCIOUS || prisoner.phase != PRISONER_PRESENT)
 			continue
 		var/obj/effect/decal/cleanable/crayon/mark = prisoner.wall_mark_ref.resolve()

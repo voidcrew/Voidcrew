@@ -34,7 +34,7 @@
  * Every clock here counts only while a member of the wing is home (crew_home()).
  */
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Dosed or carrying a specimen: their death is the experiment's, not staff's
 	var/experiment_subject = FALSE
 
@@ -42,7 +42,7 @@
 	/// The experiment under way, or just ended (the console shows the result for a while)
 	var/datum/outpost_experiment/experiment
 	/// The researcher, while visiting with an offer
-	var/mob/living/basic/outpost_kessler_staff/researcher/researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/researcher
 	/// Crew-home seconds until the researcher is due; null before the first arrival and while an offer, item or experiment is out
 	var/researcher_wait
 	/// The researcher's visits have been scheduled: the wing has had its first arrival
@@ -119,7 +119,7 @@
  * bursts from the body.
  */
 /datum/outpost_prison/proc/subject_tick(seconds, home)
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	if(!subject || subject.prison != src || subject.phase != PRISONER_PRESENT)
 		experiment_failed("the subject is gone")
 		return FALSE
@@ -139,14 +139,14 @@
 /datum/outpost_prison/proc/experiment_paused()
 	if(!experiment_active() || !crew_home())
 		return TRUE
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	return subject && subject.stat != DEAD && (get_area(subject) != wing || !in_cell_block(subject))
 
 /// A minute of twitching, then the change. The form's tells show in the last OUTPOST_EXPERIMENT_TELLS seconds.
 /datum/outpost_prison/proc/twitch_tick(seconds, home)
 	if(!home)
 		return
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	experiment.twitch_left -= seconds
 	experiment.stage = experiment.twitch_left > OUTPOST_EXPERIMENT_TELLS ? "dosed" : "twitching"
 	if(experiment.twitch_left <= 0)
@@ -169,7 +169,7 @@
 
 /// The serum takes: the subject's body becomes the creature where they stand (outpost_prison_experiment_forms.dm)
 /datum/outpost_prison/proc/transform_subject()
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	var/turf/spot = get_turf(subject)
 	if(!subject || !outpost_experiment_form_type(experiment.form) || !spot)
 		experiment_failed("the serum did not take")
@@ -177,7 +177,11 @@
 	var/subject_name = subject.real_name
 	var/personality = subject.personality
 	experiment.subject_ref = null
-	var/mob/living/carbon/human/body = outpost_experiment_subject_body(subject)
+	// The same body, no longer an inmate: off the roster (its cell waits a refill), the prisoner's own
+	// reactions off. The form brings its own mind, side and refusals.
+	subject.stand_down_for_experiment()
+	forget(subject)
+	var/mob/living/carbon/human/body = subject
 	var/datum/component/outpost_experiment_form/form = outpost_experiment_turn(body, experiment.form, src, personality)
 	if(!form)
 		experiment_failed("the serum did not take")
@@ -249,7 +253,7 @@
  * does the admin panel with `forced`, which skips the cell block rule. One experiment at a time,
  * on a living prisoner of this wing. Returns TRUE if it started.
  */
-/datum/outpost_prison/proc/start_experiment(form, mob/living/basic/outpost_prisoner/subject, forced = FALSE)
+/datum/outpost_prison/proc/start_experiment(form, mob/living/carbon/human/npc/outpost_prisoner/subject, forced = FALSE)
 	if(!(form in list("hulk", "fly", "nightmare", "changeling")))
 		return FALSE
 	if(QDELETED(subject) || subject.prison != src || subject.phase != PRISONER_PRESENT || subject.stat == DEAD)
@@ -281,7 +285,7 @@
 		experiment.stage = "dosed"
 		experiment.twitch_left = OUTPOST_EXPERIMENT_TWITCH
 		experiment.effect_left = rand(3, 5)
-		INVOKE_ASYNC(subject, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, say_context), "experiment_dose")
+		INVOKE_ASYNC(subject, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, say_context), "experiment_dose")
 	return TRUE
 
 // ===== CREATURES AND PAY =====
@@ -526,7 +530,7 @@
 			experiment.downed[REF(creature)] = TRUE
 			kessler_take(creature)
 		take_awaiting_creatures()
-		var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+		var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 		if(subject)
 			subject.experiment_subject = FALSE
 			outpost_experiment_clear_tells(subject)
@@ -557,7 +561,7 @@
 	experiment.resolved = TRUE
 	experiment.stage = outcome
 	experiment.result_left = OUTPOST_EXPERIMENT_RESULT_SHOWN
-	var/mob/living/basic/outpost_prisoner/subject = experiment.subject()
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = experiment.subject()
 	if(subject && subject.stat != DEAD)
 		subject.experiment_subject = FALSE
 		outpost_experiment_clear_tells(subject)
@@ -567,7 +571,7 @@
 	// absorbed who was not a prisoner. Its witnesses join the experiment's, once each.
 	if(!QDELETED(experiment.changeling))
 		for(var/datum/weakref/witness_ref as anything in experiment.changeling.witnesses)
-			var/mob/living/basic/outpost_prisoner/witness = witness_ref?.resolve()
+			var/mob/living/carbon/human/npc/outpost_prisoner/witness = witness_ref?.resolve()
 			if(witness)
 				experiment.witnesses[REF(witness)] = witness_ref
 #endif
@@ -585,7 +589,7 @@
 /datum/outpost_prison/proc/experiment_aftermath()
 	for(var/key in experiment.witnesses)
 		var/datum/weakref/witness_ref = experiment.witnesses[key]
-		var/mob/living/basic/outpost_prisoner/witness = witness_ref?.resolve()
+		var/mob/living/carbon/human/npc/outpost_prisoner/witness = witness_ref?.resolve()
 		if(!witness || witness.prison != src || witness.stat == DEAD || witness.phase != PRISONER_PRESENT)
 			continue
 		witness.adjust_mood(-OUTPOST_EXPERIMENT_SAW_DEATH_MOOD)
@@ -726,7 +730,7 @@
 /// Prisoners who could be the researcher's subjects: in the wing, alive, not loose and not dosed already
 /datum/outpost_prison/proc/researcher_prisoner_count()
 	var/count = 0
-	for(var/mob/living/basic/outpost_prisoner/prisoner in prisoners)
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/prisoner in prisoners)
 		if(prisoner.phase == PRISONER_PRESENT && prisoner.stat != DEAD && prisoner.trouble != PRISONER_TROUBLE_LOOSE && !prisoner.experiment_subject)
 			count++
 	return count
@@ -736,7 +740,7 @@
  * researcher says so. A changeling host dying is the changeling event's to handle. Anyone else a
  * creature (not staff) killed counts toward the aftermath, with everyone in sight of it a witness.
  */
-/datum/outpost_prison/on_prisoner_death(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/on_prisoner_death(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	. = ..()
 	if(!experiment_active())
 		return
@@ -751,12 +755,12 @@
 	if(!creature_live() || prisoner.death_blamed)
 		return
 	experiment.creature_kills++
-	for(var/mob/living/basic/outpost_prisoner/witness in viewers(OUTPOST_EXPERIMENT_WITNESS_RANGE, get_turf(prisoner)))
+	for(var/mob/living/carbon/human/npc/outpost_prisoner/witness in viewers(OUTPOST_EXPERIMENT_WITNESS_RANGE, get_turf(prisoner)))
 		if(witness != prisoner && witness.prison == src && witness.stat != DEAD)
 			experiment.witnesses[REF(witness)] = WEAKREF(witness)
 
 /// A dosed subject earns nothing: their pay and release bonus are forfeit
-/datum/outpost_prison/pay_factor(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/pay_factor(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(prisoner?.experiment_subject)
 		return 0
 	return ..()
@@ -768,7 +772,7 @@
  * of the cell block stays on the roster (body_tick()).
  * Once the experiment is over the usual rules apply again.
  */
-/datum/outpost_prison/proc/held_for_experiment(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/held_for_experiment(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(!prisoner || !experiment_active())
 		return FALSE
 	if(prisoner == experiment.subject())
@@ -780,12 +784,12 @@
 	return FALSE
 
 /// A dosed subject is not released at the end of their sentence
-/datum/outpost_prison/check_release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/check_release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(held_for_experiment(prisoner))
 		return
 	return ..()
 
-/datum/outpost_prison/release(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/release(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	if(held_for_experiment(prisoner))
 		return 0
 	return ..()
@@ -916,7 +920,7 @@
 	var/list/witnesses = list()
 	var/creature_kills = 0
 
-/datum/outpost_experiment/New(datum/outpost_prison/owner, form, mob/living/basic/outpost_prisoner/subject)
+/datum/outpost_experiment/New(datum/outpost_prison/owner, form, mob/living/carbon/human/npc/outpost_prisoner/subject)
 	. = ..()
 	prison = owner
 	src.form = form
@@ -1279,7 +1283,7 @@
 	return TRUE
 
 /// Starts a changeling event in `host`, a prisoner of `prison`, and returns it
-/proc/outpost_changeling_infect(mob/living/basic/outpost_prisoner/host, datum/outpost_prison/prison)
+/proc/outpost_changeling_infect(mob/living/carbon/human/npc/outpost_prisoner/host, datum/outpost_prison/prison)
 	var/datum/outpost_changeling_event/event = new
 	event.prison = prison
 	event.host_ref = WEAKREF(host)

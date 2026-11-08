@@ -68,11 +68,21 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	back = /obj/item/storage/backpack/satchel/leather
 
+/// Yellow and red: a flak vest under the poncho's place
+/datum/outfit/ambient_peddler/vest
+	name = "Ambient NPC: peddler in a flak vest"
+	suit = /obj/item/clothing/suit/armor/vest
+
+/// The peddler by band (AM-1)
+/datum/human_npc_outfit_table/ambient_peddler
+	green = list(/datum/outfit/ambient_peddler = 1)
+	yellow = list(/datum/outfit/ambient_peddler/vest = 1)
+
 /**
  * What a walking trader carries: survival basics a crew forgot, one odd thing, one weapon, credits
  * only, and about a quarter cheaper than a counter, because crews rarely meet one. The ledger buys a few planetary goods at AMBIENT_PEDDLER_BUYBACK_RATE of an outpost's price,
  * never for vouchers. One shop per peddler, fresh each visit, but for the weapon, which stays with
- * the site (/mob/living/basic/ambient_npc/planet/peddler/proc/load_weapon()).
+ * the site (/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/load_weapon()).
  */
 /datum/outpost_shop/vendor/peddler
 	outpost_name = "Peddler's pack"
@@ -422,12 +432,13 @@
  * waypoints; "camps", the waypoints it camps at; "leg", the last one reached). Killable like
  * anyone; a trader carries more cash than most, and the shop dies with them.
  */
-/mob/living/basic/ambient_npc/planet/peddler
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler
 	name = "peddler"
 	desc = "A walking trader under a wide hat, bags hanging off every strap."
 	death_cash_low = 30
 	death_cash_high = 80
-	outfit = /datum/outfit/ambient_peddler
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_peddler
 	dialogue_section = "peddler"
 	speech_pace = 0.8
 	ai_controller = /datum/ai_controller/basic_controller/ambient_npc/roaming
@@ -444,13 +455,13 @@
 	var/hold_until = 0
 	COOLDOWN_DECLARE(trade_line_cooldown)
 
-/mob/living/basic/ambient_npc/planet/peddler/Initialize(mapload)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/Initialize(mapload)
 	. = ..()
 	shop = new(null)
 	shop.trader_name = real_name
 	shop_ui = new(src)
 
-/mob/living/basic/ambient_npc/planet/peddler/Destroy()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/Destroy()
 	save_ledger()
 	QDEL_NULL(shop_ui)
 	QDEL_NULL(shop)
@@ -461,7 +472,7 @@
  * away and brought back next visit is not a fresh market for the same goods or a fresh pack (load_ledger()
  * puts them back).
  */
-/mob/living/basic/ambient_npc/planet/peddler/proc/save_ledger()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/save_ledger()
 	var/datum/ambient_place/site/site = place
 	if(!istype(site) || !shop)
 		return
@@ -473,7 +484,7 @@
 		site.data["weapon_left"] = shop.weapon.stock
 
 /// Takes up the ledger and the pack where the last visit's peddler left them
-/mob/living/basic/ambient_npc/planet/peddler/proc/load_ledger()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/load_ledger()
 	var/datum/ambient_place/site/site = place
 	if(!istype(site) || !shop)
 		return
@@ -486,7 +497,7 @@
 			buyback.demand = demand[buyback.type]
 
 /// The site's one weapon: picked the first time from what its zone carries, then only ever the same one, while it has not sold
-/mob/living/basic/ambient_npc/planet/peddler/proc/load_weapon(datum/ambient_place/site/site)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/load_weapon(datum/ambient_place/site/site)
 	if(!site.data["weapon"])
 		site.data["weapon"] = pick(ambient_peddler_weapons(site.band))
 		site.data["weapon_left"] = 1
@@ -494,7 +505,7 @@
 		shop.stock_weapon(site.data["weapon"])
 
 /// A line from the shop's own lines (the shop window calls this, as it does on a trader)
-/mob/living/basic/ambient_npc/planet/peddler/proc/speak_line(category)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/speak_line(category)
 	var/line = shop?.get_line(category)
 	if(!line || !COOLDOWN_FINISHED(src, trade_line_cooldown))
 		return
@@ -502,17 +513,17 @@
 	say_line(line)
 
 /// The "no" noise (the shop window calls this, as it does on a trader)
-/mob/living/basic/ambient_npc/planet/peddler/proc/play_denial()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/play_denial()
 	playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)
 
 // A customer: the Trade and Talk radial, and the caravan waits for them
-/mob/living/basic/ambient_npc/planet/peddler/talked_to(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/talked_to(mob/living/user)
 	if(!talk_ready(user))
 		return
 	hold_until = world.time + AMBIENT_PEDDLER_HOLD
 	INVOKE_ASYNC(src, PROC_REF(open_menu), user)
 
-/mob/living/basic/ambient_npc/planet/peddler/proc/open_menu(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/open_menu(mob/living/user)
 	face_atom(user)
 	var/list/options = list(
 		"Trade" = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buy"),
@@ -529,15 +540,15 @@
 			chat_with(user)
 
 /// Whether `user` can still do business: near, awake, in sight
-/mob/living/basic/ambient_npc/planet/peddler/proc/menu_ok(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/menu_ok(mob/living/user)
 	return istype(user) && !IS_DEAD_OR_INCAP(user) && can_act() && get_dist(src, user) <= 2 && (src in view(2, user))
 
 /// The shop window and every sale ask this of their host, as of a trader: a customer still here, and a pack to sell from
-/mob/living/basic/ambient_npc/planet/peddler/proc/check_menu(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/check_menu(mob/living/user)
 	return !shop_closed && menu_ok(user)
 
 /// Opens the shop window for `user`, unless the stock went down with the pony
-/mob/living/basic/ambient_npc/planet/peddler/proc/open_shop(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/open_shop(mob/living/user)
 	if(shop_closed || !shop)
 		speak_context("pack_lost", user, force = TRUE)
 		return
@@ -545,7 +556,7 @@
 	speak_line(TRADER_LINE_GREETING)
 
 /// A word; the first time for a crew, where the nearest ruin on this planet lies
-/mob/living/basic/ambient_npc/planet/peddler/proc/chat_with(mob/living/user)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/chat_with(mob/living/user)
 	var/turf/ruin = ruin_to_tell()
 	if(ruin && first_for_crew(user, "ruin_tip"))
 		var/list/lines = get_lines("ruin_tip")
@@ -556,7 +567,7 @@
 	speak_context(AMBIENT_LINE_TALK, user, force = TRUE)
 
 /// A ruin on their planet, looked for once (a few hundred random tiles) and remembered by the site, or null
-/mob/living/basic/ambient_npc/planet/peddler/proc/ruin_to_tell()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/ruin_to_tell()
 	var/datum/ambient_place/site/site = place
 	if(!istype(site) || length(site.planet?.bounds) < 5)
 		return null
@@ -573,7 +584,7 @@
 	return null
 
 /// The pony is dead: the stock went with it
-/mob/living/basic/ambient_npc/planet/peddler/proc/lose_pack()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/lose_pack()
 	if(shop_closed)
 		return
 	shop_closed = TRUE
@@ -581,7 +592,7 @@
 	speak_context("pack_lost", null, force = TRUE)
 
 // A word, the guard deals with it, and the peddler gets out of the way
-/mob/living/basic/ambient_npc/planet/peddler/react_attacked(atom/attacker)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/react_attacked(atom/attacker)
 	if(stat != CONSCIOUS || fading || !reaction_ready("attacked"))
 		return
 	speak_context(AMBIENT_LINE_ATTACKED, attacker, force = TRUE)
@@ -590,7 +601,7 @@
 		run_from(attacker)
 
 // Killed: the shop goes with them. Its stock is a ledger, never items on the body.
-/mob/living/basic/ambient_npc/planet/peddler/death(gibbed)
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
 	if(!was_alive)
@@ -602,7 +613,7 @@
  * The caravan's next move: camp at a camp stop not yet camped at, walk to the next waypoint (jumped
  * on the way, maybe), or walk off the planet at the end of the route.
  */
-/mob/living/basic/ambient_npc/planet/peddler/pick_activity()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/pick_activity()
 	var/datum/ambient_place/site/site = place
 	var/list/route = istype(site) ? site.data["route"] : null
 	if(!length(route) || world.time < hold_until)
@@ -630,7 +641,7 @@
 	return start_activity(new /datum/ambient_activity/caravan_walk(src, route[leg + 1], leg + 1))
 
 /// The end of the road: the caravan walks off, and the site is done for the round
-/mob/living/basic/ambient_npc/planet/peddler/proc/leave_planet()
+/mob/living/carbon/human/npc/ambient_npc/planet/peddler/proc/leave_planet()
 	var/datum/ambient_place/site/site = place
 	speak_context("farewell", null, force = TRUE)
 	if(!istype(site))
@@ -638,74 +649,93 @@
 		return
 	// Spent before anyone goes, so nobody comes back on the next visit
 	site.state = AMBIENT_SITE_SPENT
-	for(var/mob/living/basic/ambient_npc/member as anything in site.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.living_npcs())
 		member.fade_out()
 
 /**
- * The pack pony. Killable; a dead pony closes the shop. It follows the peddler, and runs a little
- * way when hit.
+ * The pack pony. An animal, so it stays a basic mob (tg's pony) when the people of the caravan are
+ * human bodies: it isn't one of the site's NPCs, but the caravan's beast, kept in the site's data
+ * ("pony") and brought back with it on a later visit. Killable; a dead pony closes the shop. It
+ * follows the peddler, and runs a little way when hit.
  */
-/mob/living/basic/ambient_npc/planet/pack_pony
+/mob/living/basic/pony/ambient_pack
 	name = "pack pony"
 	desc = "A sturdy pony under a mountain of bags and bundles."
-	icon = 'icons/mob/simple/animal.dmi'
-	icon_state = "pony"
-	icon_living = "pony"
-	icon_dead = "pony_dead"
-	greyscale_config = /datum/greyscale_config/pony
-	random_name = FALSE
-	random_gender = FALSE
-	mob_biotypes = MOB_ORGANIC | MOB_BEAST
-	maxHealth = 60
 	health = 60
-	// A pony carries bags, not a purse
-	death_cash_low = 0
-	death_cash_high = 0
-	speak_emote = list("neighs")
-	ai_controller = /datum/ai_controller/basic_controller/ambient_npc/roaming
-	routine = list(/datum/ambient_activity/idle = 1)
+	maxHealth = 60
+	gold_core_spawnable = NO_SPAWN
+	ai_controller = /datum/ai_controller/basic_controller/ambient_pack_pony
+	/// The caravan's site
+	var/datum/weakref/site_ref
 
-/mob/living/basic/ambient_npc/planet/pack_pony/Initialize(mapload)
+/mob/living/basic/pony/ambient_pack/Initialize(mapload, datum/ambient_place/site/site)
 	. = ..()
 	set_greyscale(colors = list("#8a5a3c", "#3b2a1e"))
+	AddElement(/datum/element/ai_retaliate)
+	if(istype(site))
+		site_ref = WEAKREF(site)
+		site.data["pony"] = WEAKREF(src)
 
-// A pony, not a person: no human look
-/mob/living/basic/ambient_npc/planet/pack_pony/build_look()
-	return
-
-// It lies as its own sprite does
-/mob/living/basic/ambient_npc/planet/pack_pony/look_dead()
-	. = ..()
-	transform = matrix()
-
-// Snorts and whickers instead of words
-/mob/living/basic/ambient_npc/planet/pack_pony/speak_context(context, atom/other, force = FALSE)
-	if(stat != CONSCIOUS || fading)
-		return FALSE
-	if(!force && world.time < next_line_at)
-		return FALSE
-	next_line_at = world.time + rand(60 SECONDS, 120 SECONDS)
-	manual_emote(pick("snorts.", "whickers.", "stamps a hoof.", "flicks its ears."))
-	playsound(src, 'sound/mobs/non-humanoids/pony/snort.ogg', 30, TRUE, -3)
-	return TRUE
-
-/mob/living/basic/ambient_npc/planet/pack_pony/pick_activity()
-	var/mob/living/basic/ambient_npc/planet/peddler/leader = caravan_leader(src)
-	if(leader && start_activity(new /datum/ambient_activity/follow(src, leader, 2)))
-		return activity
+/mob/living/basic/pony/ambient_pack/Destroy()
+	site_ref = null
 	return ..()
 
+// No saddle and no rider: it carries the stock
+/mob/living/basic/pony/ambient_pack/tamed(mob/living/tamer, atom/food)
+	return
+
 // The stock was on its back
-/mob/living/basic/ambient_npc/planet/pack_pony/death(gibbed)
+/mob/living/basic/pony/ambient_pack/death(gibbed)
 	var/was_alive = stat != DEAD
 	. = ..()
 	if(!was_alive)
 		return
-	var/datum/ambient_place/site/site = place
-	if(istype(site))
-		site.data["pack_lost"] = TRUE
-	var/mob/living/basic/ambient_npc/planet/peddler/leader = caravan_leader(src)
+	var/datum/ambient_place/site/site = site_ref?.resolve()
+	if(!istype(site))
+		return
+	site.data["pack_lost"] = TRUE
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/leader = caravan_leader_of(site)
 	leader?.lose_pack()
+
+/// Keeps near the caravan's peddler; runs from whoever hits it
+/datum/ai_controller/basic_controller/ambient_pack_pony
+	blackboard = list(
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
+	)
+	ai_traits = PASSIVE_AI_FLAGS
+	ai_movement = /datum/ai_movement/basic_avoidance
+	idle_behavior = null
+	// Walking with players anywhere on the level, as the caravan does
+	can_idle = FALSE
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_nearest_thing_which_attacked_me_to_flee,
+		/datum/ai_planning_subtree/flee_target,
+		/datum/ai_planning_subtree/ambient_pony_follow,
+	)
+
+/// Walks after the caravan's peddler when more than two tiles behind
+/datum/ai_planning_subtree/ambient_pony_follow
+
+/datum/ai_planning_subtree/ambient_pony_follow/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	var/mob/living/basic/pony/ambient_pack/pony = controller.pawn
+	if(!istype(pony))
+		return
+	var/mob/living/leader = caravan_leader_of(pony.site_ref?.resolve())
+	if(!leader || leader.z != pony.z || get_dist(pony, leader) <= 2)
+		return
+	controller.set_blackboard_key(BB_AMBIENT_DESTINATION, leader)
+	controller.queue_behavior(/datum/ai_behavior/travel_towards/stop_on_arrival, BB_AMBIENT_DESTINATION)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/// The caravan's pack pony on `site`, if it is still alive
+/proc/caravan_pony(datum/ambient_place/site/site)
+	if(!istype(site))
+		return null
+	var/datum/weakref/pony_ref = site.data["pony"]
+	var/mob/living/basic/pony/ambient_pack/pony = pony_ref?.resolve()
+	if(QDELETED(pony) || pony.stat == DEAD)
+		return null
+	return pony
 
 /datum/outfit/ambient_caravan_guard
 	name = "Ambient NPC: caravan guard"
@@ -714,12 +744,24 @@
 	head = /obj/item/clothing/head/soft/black
 	shoes = /obj/item/clothing/shoes/jackboots
 	mask = /obj/item/clothing/mask/bandana/red
+	r_hand = /obj/item/melee/baseball_bat
+
+/// Red: a helmet for the cap
+/datum/outfit/ambient_caravan_guard/helmet
+	name = "Ambient NPC: caravan guard in a helmet"
+	head = /obj/item/clothing/head/helmet
+
+/// The caravan guard by band (AM-1): only out in yellow and red
+/datum/human_npc_outfit_table/ambient_caravan_guard
+	green = list(/datum/outfit/ambient_caravan_guard = 1)
+	red = list(/datum/outfit/ambient_caravan_guard/helmet = 1)
 
 /// The hired guard, in yellow and red: follows the peddler, fights anyone who goes for the caravan and the pack that jumps it
-/mob/living/basic/ambient_npc/planet/caravan_guard
+/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard
 	name = "caravan guard"
 	desc = "A hired guard in a flak vest, a bat over one shoulder."
-	outfit = /datum/outfit/ambient_caravan_guard
+	outfit = null
+	npc_outfit_table = /datum/human_npc_outfit_table/ambient_caravan_guard
 	dialogue_section = "caravan_guard"
 	fights_back = TRUE
 	joins_camp_fights = TRUE
@@ -730,14 +772,14 @@
 	ai_controller = /datum/ai_controller/basic_controller/ambient_npc/roaming
 	routine = list(/datum/ambient_activity/idle = 1)
 
-/mob/living/basic/ambient_npc/planet/caravan_guard/pick_activity()
-	var/mob/living/basic/ambient_npc/planet/peddler/leader = caravan_leader(src)
+/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard/pick_activity()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/leader = caravan_leader(src)
 	if(leader && start_activity(new /datum/ambient_activity/follow(src, leader, 3)))
 		return activity
 	return ..()
 
 // The pack that jumped the caravan
-/mob/living/basic/ambient_npc/planet/caravan_guard/watch(list/players)
+/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard/watch(list/players)
 	if(istype(activity, /datum/ambient_activity/fight))
 		return
 	var/list/pack = ambient_site_visit(place)["pack"]
@@ -748,8 +790,12 @@
 			return
 
 /// The peddler leading `member`'s caravan, if they are still about
-/proc/caravan_leader(mob/living/basic/ambient_npc/member)
-	for(var/mob/living/basic/ambient_npc/planet/peddler/leader in member?.place?.living_npcs())
+/proc/caravan_leader(mob/living/carbon/human/npc/ambient_npc/member)
+	return caravan_leader_of(member?.place)
+
+/// The peddler leading the caravan on `site`, if they are still about
+/proc/caravan_leader_of(datum/ambient_place/site)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/leader in site?.living_npcs())
 		return leader
 	return null
 
@@ -773,7 +819,7 @@
 	/// world.time they started waiting for the others, or 0
 	var/waiting_since = 0
 
-/datum/ambient_activity/caravan_walk/New(mob/living/basic/ambient_npc/new_doer, turf/goal, leg_index)
+/datum/ambient_activity/caravan_walk/New(mob/living/carbon/human/npc/ambient_npc/new_doer, turf/goal, leg_index)
 	. = ..()
 	src.goal = goal
 	src.leg_index = leg_index
@@ -834,7 +880,7 @@
 	if(get_dist(doer, goal) <= 2)
 		reached()
 		return AMBIENT_STEP_DONE
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = doer
 	if(istype(peddler) && world.time < peddler.hold_until)
 		return AMBIENT_STEP_CONTINUE
 	// The others catch up first, for a while
@@ -854,7 +900,7 @@
 
 /// Whether the pony or the guard has fallen well behind
 /datum/ambient_activity/caravan_walk/proc/others_behind()
-	for(var/mob/living/basic/ambient_npc/member in doer.place?.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member in doer.place?.living_npcs())
 		if(member != doer && get_dist(member, doer) > 5)
 			return TRUE
 	return FALSE
@@ -926,11 +972,15 @@
 	var/give_up_at = 0
 	/// The pack (weakrefs)
 	var/list/pack = list()
+	/// Spawn orders for raiders not built yet (human pirates come through the human NPC queue)
+	var/list/datum/human_npc_order/orders = list()
+	/// Where the pack came from: what is left of it walks back out that way
+	var/turf/landing
 
 /datum/ambient_activity/caravan_ambush/setup()
 	go_to(null)
 	pack_at = world.time + AMBIENT_AMBUSH_WARNING
-	var/mob/living/basic/ambient_npc/shouter = locate(/mob/living/basic/ambient_npc/planet/caravan_guard) in doer.place?.living_npcs()
+	var/mob/living/carbon/human/npc/ambient_npc/shouter = locate(/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard) in doer.place?.living_npcs()
 	shouter = shouter || doer
 	shouter.speak_context("ambush", null, force = TRUE)
 	return TRUE
@@ -941,6 +991,8 @@
 		if(raider)
 			UnregisterSignal(raider, COMSIG_ATOM_WAS_ATTACKED)
 	pack = null
+	QDEL_LIST(orders)
+	landing = null
 	return ..()
 
 /datum/ambient_activity/caravan_ambush/arrive()
@@ -956,9 +1008,14 @@
 			return AMBIENT_STEP_DONE
 		return AMBIENT_STEP_CONTINUE
 	var/alive = 0
+	for(var/datum/human_npc_order/order as anything in orders.Copy())
+		if(QDELETED(order) || order.done)
+			orders -= order
+		else
+			alive++
 	for(var/datum/weakref/ref as anything in pack)
 		var/mob/living/raider = ref?.resolve()
-		if(!QDELETED(raider) && raider.stat != DEAD)
+		if(!QDELETED(raider) && !human_npc_out_of_fight(raider))
 			alive++
 	if(!alive)
 		doer.speak_context("ambush_over", null, force = TRUE)
@@ -967,17 +1024,21 @@
 		return AMBIENT_STEP_DONE
 	return AMBIENT_STEP_CONTINUE
 
-// Whatever is left of the pack slinks off when it is over
+// Whatever is left of the pack heads back out the way it came, and is gone once out of sight
 /datum/ambient_activity/caravan_ambush/finish()
+	QDEL_LIST(orders)
 	for(var/datum/weakref/ref as anything in pack)
-		var/mob/living/raider = ref?.resolve()
-		if(!QDELETED(raider) && raider.stat != DEAD && !raider.client)
-			qdel(raider)
+		var/mob/living/carbon/human/npc/raider = ref?.resolve()
+		if(!ishumannpc(raider) || QDELETED(raider) || raider.client || human_npc_out_of_fight(raider))
+			continue
+		qdel(raider.GetComponent(/datum/component/leash))
+		raider.ai_controller?.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		raider.npc_walk_out(landing || get_ranged_target_turf(raider, get_dir(doer, raider) || pick(GLOB.alldirs), AMBIENT_AMBUSH_DISTANCE))
 	var/list/visit = ambient_site_visit(doer?.place)
 	visit -= "pack"
 	return ..()
 
-/// How many pirates jump a caravan in `band`: none in green
+/// How many jump the caravan in `band`
 /proc/ambient_ambush_size(band)
 	switch(band)
 		if(ZONE_RED)
@@ -987,8 +1048,9 @@
 	return 0
 
 /**
- * Makes the pack out of what the planet's budget has left, ten tiles off, turns it on the caravan
- * and keeps it near it. Returns how many came.
+ * Sends for the pack out of what the planet's budget has left, ten tiles off: real human pirates,
+ * built a body a tick through the human NPC queue, turned on the caravan and kept near it as they
+ * come (raider_built()). Returns how many were sent for.
  */
 /datum/ambient_activity/caravan_ambush/proc/spawn_pack()
 	var/datum/ambient_place/site/site = doer.place
@@ -1003,7 +1065,6 @@
 	if(count <= 0)
 		return 0
 	var/turf/here = get_turf(doer)
-	var/turf/landing
 	for(var/attempt in 1 to 6)
 		var/turf/far = get_ranged_target_turf(here, pick(GLOB.alldirs), AMBIENT_AMBUSH_DISTANCE)
 		if(far && site.leash_ok(far) && ambient_ground_ok(far))
@@ -1011,34 +1072,27 @@
 			break
 	if(!landing)
 		return 0
-	var/mob/living/bait = locate(/mob/living/basic/ambient_npc/planet/pack_pony) in site.living_npcs()
-	bait = bait || locate(/mob/living/basic/ambient_npc/planet/caravan_guard) in site.living_npcs()
-	var/list/visit = ambient_site_visit(site)
-	var/list/pack_refs = list()
+	var/mob/living/bait = caravan_pony(site) || locate(/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard) in site.living_npcs()
+	ambient_site_visit(site)["pack"] = list()
 	var/static/list/raiders = list(
-		/mob/living/basic/trooper/pirate/faction/grey/melee = 2,
-		/mob/living/basic/trooper/pirate/faction/skeleton/melee = 2,
-		/mob/living/basic/trooper/pirate/faction/grey/ranged = 1,
+		/mob/living/carbon/human/npc/faction_pirate/grey/melee = 2,
+		/mob/living/carbon/human/npc/faction_pirate/skeleton/melee = 2,
+		/mob/living/carbon/human/npc/faction_pirate/grey/ranged = 1,
 	)
 	for(var/i in 1 to count)
 		var/turf/where = ambient_free_turf_near(landing, 2) || landing
-		var/raider_type = i == 3 ? /mob/living/basic/trooper/pirate/faction/grey/ranged : pick_weight(raiders - /mob/living/basic/trooper/pirate/faction/grey/ranged)
-		var/mob/living/raider = spawn_raider(raider_type, where, bait)
-		var/datum/weakref/ref = WEAKREF(raider)
-		pack += ref
-		pack_refs += ref
-	visit["pack"] = pack_refs
+		var/raider_type = i == 3 ? /mob/living/carbon/human/npc/faction_pirate/grey/ranged : pick_weight(raiders - /mob/living/carbon/human/npc/faction_pirate/grey/ranged)
+		var/datum/npc_spawn_context/context = new(site, site.band, source_turf = here)
+		orders += spawn_human_npc(raider_type, where, CALLBACK(src, PROC_REF(raider_built), WEAKREF(bait)), context = context)
 	if(tracker)
 		tracker.spawned_count += count
 		SSplanet_mobs.total_managed_mobs += count
 	return count
 
-/// Ready each ambusher against the caravan site before applying its profile.
-/datum/ambient_activity/caravan_ambush/proc/spawn_raider(raider_type, turf/where, mob/living/bait)
-	var/datum/ambient_place/site/site = doer.place
-	var/datum/npc_spawn_context/context = new(site, site.band, source_turf = get_turf(doer))
-	var/mob/living/raider = spawn_npc_in_zone(raider_type, where, context, FALSE)
-	// Not the planet's own: it comes for the caravan, and is kept near it.
+/// A raider of the pack is built: not the planet's own, it comes for the caravan and is kept near it
+/datum/ambient_activity/caravan_ambush/proc/raider_built(datum/weakref/bait_ref, mob/living/raider)
+	if(QDELETED(src) || QDELETED(doer) || QDELETED(raider))
+		return
 	var/list/kept = list()
 	for(var/faction_token in raider.faction)
 		if(!findtext("[faction_token]", "planetary_"))
@@ -1047,15 +1101,22 @@
 	raider.AddComponent(/datum/component/leash, doer, AMBIENT_AMBUSH_LEASH)
 	raider.AddElement(/datum/element/relay_attackers)
 	RegisterSignal(raider, COMSIG_ATOM_WAS_ATTACKED, PROC_REF(on_pack_attacked))
-	if(bait)
+	var/mob/living/bait = bait_ref?.resolve()
+	if(!QDELETED(bait) && bait.stat != DEAD)
 		raider.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bait)
-	context.finalize()
-	return raider
+	var/datum/weakref/ref = WEAKREF(raider)
+	pack += ref
+	var/list/visit = ambient_site_visit(doer.place)
+	var/list/pack_refs = visit["pack"]
+	if(!islist(pack_refs))
+		pack_refs = list()
+		visit["pack"] = pack_refs
+	pack_refs += ref
 
 /// Someone hit the pack: their crew gets the helpers' price
 /datum/ambient_activity/caravan_ambush/proc/on_pack_attacked(datum/source, atom/attacker, attack_flags)
 	SIGNAL_HANDLER
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = doer
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = doer
 	if(!istype(peddler) || !peddler.shop || !ismob(attacker))
 		return
 	var/obj/structure/overmap/ship/ship = get_crew_ship(attacker)
@@ -1068,7 +1129,7 @@
 
 /**
  * Brings the caravan out: plans its route the first time, then puts whoever is missing (and was
- * not killed) where it last got to.
+ * not killed) where it last got to, and the pony with them while it lives.
  */
 /datum/ambient_site_kind/planet/peddler/realize(datum/ambient_place/site/site)
 	var/missing = site.npcs_missing()
@@ -1082,10 +1143,10 @@
 	if(!ambient_ground_ok(start))
 		start = ambient_free_turf_near(start, 3) || site.center
 	var/list/killed = site.data["killed"] || list()
-	var/list/wanted = list(/mob/living/basic/ambient_npc/planet/peddler, /mob/living/basic/ambient_npc/planet/pack_pony)
-	if(site.npc_total >= 3)
-		wanted += /mob/living/basic/ambient_npc/planet/caravan_guard
-	for(var/mob/living/basic/ambient_npc/present as anything in site.living_npcs())
+	var/list/wanted = list(/mob/living/carbon/human/npc/ambient_npc/planet/peddler)
+	if(site.npc_total >= 2)
+		wanted += /mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard
+	for(var/mob/living/carbon/human/npc/ambient_npc/present as anything in site.living_npcs())
 		wanted -= present.type
 	var/spawned = 0
 	for(var/member_type in wanted)
@@ -1094,7 +1155,7 @@
 		if(spawned >= missing)
 			break
 		var/turf/where = spawned ? (ambient_free_turf_near(start, 2) || start) : start
-		var/mob/living/basic/ambient_npc/planet/peddler/member = site.spawn_npc(member_type, where)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/member = site.spawn_npc(member_type, where)
 		if(!member)
 			continue
 		spawned++
@@ -1102,9 +1163,18 @@
 			member.load_ledger()
 			if(site.data["pack_lost"])
 				member.shop_closed = TRUE
+	if(spawned && !site.data["pack_lost"] && !caravan_pony(site))
+		new /mob/living/basic/pony/ambient_pack(ambient_free_turf_near(start, 2) || start, site)
 	return spawned > 0
 
-/datum/ambient_site_kind/planet/peddler/on_npc_died(datum/ambient_place/site/site, mob/living/basic/ambient_npc/npc)
+// The pony goes with the caravan when the planet is swept, and comes back with it
+/datum/ambient_site_kind/planet/peddler/on_depopulated(datum/ambient_place/site/site)
+	var/mob/living/basic/pony/ambient_pack/pony = caravan_pony(site)
+	if(pony)
+		qdel(pony)
+	return ..()
+
+/datum/ambient_site_kind/planet/peddler/on_npc_died(datum/ambient_place/site/site, mob/living/carbon/human/npc/ambient_npc/npc)
 	var/list/killed = site.data["killed"]
 	if(!islist(killed))
 		killed = list()

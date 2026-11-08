@@ -61,14 +61,14 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 
 // ===== THE PRISONER =====
 
-/mob/living/basic/outpost_prisoner
+/mob/living/carbon/human/npc/outpost_prisoner
 	/// Values for extra placeholders ("{staff}" = "Isaac") while one line is picked and said
 	var/list/extra_line_values
 	/// The last person or borg (never a machine) whose hit on them counted as staff's
 	var/datum/weakref/last_staff_attacker_ref
 
 /// Hooks up every package's own handlers; called once from Initialize()
-/mob/living/basic/outpost_prisoner/proc/setup_extras()
+/mob/living/carbon/human/npc/outpost_prisoner/proc/setup_extras()
 	setup_ambience()
 	setup_warden_tools()
 	setup_pastimes()
@@ -78,13 +78,13 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
  * Says a line for `context` with values for extra placeholders, list("{place}" = "the Meridian").
  * Lines naming a placeholder without a value are skipped. Returns TRUE if they said something.
  */
-/mob/living/basic/outpost_prisoner/proc/say_context_with(context, list/values, mob/living/basic/outpost_prisoner/other)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/say_context_with(context, list/values, mob/living/carbon/human/npc/outpost_prisoner/other)
 	extra_line_values = values
 	. = say_context(context, other)
 	extra_line_values = null
 
 /// Says a line for `context` to `person`, filling {staff} with the name the yard knows them by
-/mob/living/basic/outpost_prisoner/proc/say_to_staff(context, mob/person)
+/mob/living/carbon/human/npc/outpost_prisoner/proc/say_to_staff(context, mob/person)
 	var/staff_name = prison?.staff_greeting_name(person)
 	return say_context_with(context, staff_name ? list("{staff}" = staff_name) : null)
 
@@ -123,13 +123,13 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 	guards_abandon()
 
 /// A prisoner was booked in (admit()), with their cell and mood set
-/datum/outpost_prison/proc/extras_prisoner_admitted(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/extras_prisoner_admitted(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	on_prisoner_admitted(prisoner)
 	contraband_prisoner_admitted(prisoner)
 	leads_prisoner_admitted(prisoner)
 
 /// A prisoner is leaving the roster (forget()), still holding their prison and cell
-/datum/outpost_prison/proc/extras_prisoner_leaving(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/extras_prisoner_leaving(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	on_prisoner_leaving(prisoner)
 	contraband_prisoner_leaving(prisoner)
 	mail_prisoner_leaving(prisoner)
@@ -146,7 +146,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 // ===== THE PRISON: SPEECH, EXAMINE AND THE TALK MENU =====
 
 /// Something a package wants a prisoner to say now: list(context, other[, values]), or null
-/datum/outpost_prison/proc/extra_speech(mob/living/basic/outpost_prisoner/prisoner)
+/datum/outpost_prison/proc/extra_speech(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	// A bounty prisoner who sees someone off the ship that caught them (outpost_prison_bounty.dm): rare and gated
 	var/list/choice = bounty_extra_speech(prisoner)
 	if(choice)
@@ -163,7 +163,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 	return leads_extra_speech(prisoner)
 
 /// Extra sentences for a prisoner's examine text, from every package that has one; XB's examine() shows them
-/datum/outpost_prison/proc/examine_extra_lines(mob/living/basic/outpost_prisoner/prisoner, mob/user)
+/datum/outpost_prison/proc/examine_extra_lines(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/user)
 	var/list/lines = list()
 	for(var/line in list(relationship_examine(prisoner), contraband_examine(prisoner, user), leads_examine(prisoner, user), wildcard_examine(prisoner), bounty_examine(prisoner, user)))
 		if(istext(line) && length(line))
@@ -171,7 +171,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 	return lines
 
 /// Extra choices for the talk menu (XC's radial): name -> image, from the packages that add one
-/datum/outpost_prison/proc/talk_menu_extra_choices(mob/living/basic/outpost_prisoner/prisoner, mob/living/user)
+/datum/outpost_prison/proc/talk_menu_extra_choices(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user)
 	var/list/choices = list()
 	for(var/list/extra as anything in list(contraband_talk_choices(prisoner, user), leads_talk_choices(prisoner, user)))
 		for(var/key in extra)
@@ -179,7 +179,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 	return choices
 
 /// Runs an extra talk menu choice; TRUE if a package handled it. May sleep (the menu is async).
-/datum/outpost_prison/proc/talk_menu_extra_act(mob/living/basic/outpost_prisoner/prisoner, mob/living/user, choice)
+/datum/outpost_prison/proc/talk_menu_extra_act(mob/living/carbon/human/npc/outpost_prisoner/prisoner, mob/living/user, choice)
 	if(contraband_talk_act(prisoner, user, choice))
 		return TRUE
 	return leads_talk_act(prisoner, user, choice)
@@ -187,7 +187,7 @@ GLOBAL_LIST_INIT(outpost_prisoner_extra_placeholders, list("{staff}", "{place}",
 // ===== THE PRISON: TROUBLE =====
 
 /// What the packages do to the chance two prisoners start a fight: a multiplier, 1 for no change
-/datum/outpost_prison/proc/extras_fight_mult(mob/living/basic/outpost_prisoner/one, mob/living/basic/outpost_prisoner/two)
+/datum/outpost_prison/proc/extras_fight_mult(mob/living/carbon/human/npc/outpost_prisoner/one, mob/living/carbon/human/npc/outpost_prisoner/two)
 	return fight_chance_mult(one, two) * contraband_fight_mult(one, two)
 
 // ===== THE PRISON: CONSOLES =====

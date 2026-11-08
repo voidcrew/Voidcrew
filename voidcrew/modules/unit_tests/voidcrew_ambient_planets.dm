@@ -94,7 +94,7 @@
 			var/wanted = chances[planet_type] || 0
 			TEST_ASSERT_EQUAL(kind.chance_on(record), wanted, "[kind_type] rolls [kind.chance_on(record)]% on [planet_type], not [wanted]%")
 		if(kind.npc_type)
-			TEST_ASSERT(ispath(kind.npc_type, /mob/living/basic/ambient_npc/planet), "[kind_type] brings out [kind.npc_type], not a planet person")
+			TEST_ASSERT(ispath(kind.npc_type, /mob/living/carbon/human/npc/ambient_npc/planet), "[kind_type] brings out [kind.npc_type], not a planet person")
 	var/datum/ambient_site_kind/planet/miner/miner_kind = allocate(/datum/ambient_site_kind/planet/miner)
 	TEST_ASSERT_EQUAL(miner_kind.field_chance, 10, "Miners are not on asteroid fields one time in ten")
 
@@ -104,23 +104,23 @@
 	TEST_ASSERT_EQUAL(tribal.npc_count(2), 4, "A yellow band is not four hunters") // ZONE_YELLOW
 	TEST_ASSERT_EQUAL(tribal.npc_count(3), 5, "A red band is not five hunters") // ZONE_RED
 	var/datum/ambient_site_kind/planet/peddler/peddler = allocate(/datum/ambient_site_kind/planet/peddler)
-	TEST_ASSERT_EQUAL(peddler.npc_count(1), 2, "A green caravan is not a peddler and a pony") // ZONE_GREEN
-	TEST_ASSERT_EQUAL(peddler.npc_count(3), 3, "A red caravan has no guard") // ZONE_RED
+	TEST_ASSERT_EQUAL(peddler.npc_count(1), 1, "A green caravan is not one peddler (the pony is an animal, not one of the people)") // ZONE_GREEN
+	TEST_ASSERT_EQUAL(peddler.npc_count(3), 2, "A red caravan has no guard") // ZONE_RED
 	TEST_ASSERT_EQUAL(ambient_ambush_size(1), 0, "Caravans are jumped in green") // ZONE_GREEN
 	TEST_ASSERT(ambient_ambush_size(3) > ambient_ambush_size(2), "A red ambush is no bigger than a yellow one") // ZONE_RED, ZONE_YELLOW
 
 	// Everyone has lines of their own, and anyone can be hurt
 	var/list/people = list(
-		/mob/living/basic/ambient_npc/planet/miner,
-		/mob/living/basic/ambient_npc/planet/lava_fisher,
-		/mob/living/basic/ambient_npc/planet/boat_fisher,
-		/mob/living/basic/ambient_npc/planet/cannibal,
-		/mob/living/basic/ambient_npc/planet/tribal,
-		/mob/living/basic/ambient_npc/planet/peddler,
-		/mob/living/basic/ambient_npc/planet/caravan_guard,
+		/mob/living/carbon/human/npc/ambient_npc/planet/miner,
+		/mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher,
+		/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher,
+		/mob/living/carbon/human/npc/ambient_npc/planet/cannibal,
+		/mob/living/carbon/human/npc/ambient_npc/planet/tribal,
+		/mob/living/carbon/human/npc/ambient_npc/planet/peddler,
+		/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard,
 	)
 	for(var/npc_type in people)
-		var/mob/living/basic/ambient_npc/planet/npc = allocate(npc_type)
+		var/mob/living/carbon/human/npc/ambient_npc/planet/npc = allocate(npc_type)
 		TEST_ASSERT_EQUAL(npc.dialogue_file, "planet_npcs.json", "[npc_type] does not talk from the planet file") // AMBIENT_STRINGS_PLANETS
 		TEST_ASSERT(length(ambient_dialogue_lines("planet_npcs.json", npc.dialogue_section, "talk")), "[npc_type] has no talk lines of their own") // AMBIENT_LINE_TALK
 		TEST_ASSERT(length(npc.get_lines("attacked")), "[npc_type] has nothing to say when attacked") // AMBIENT_LINE_ATTACKED
@@ -139,7 +139,7 @@
 	TEST_ASSERT_NOTNULL(source, "Beach water has no fish source for an NPC")
 	TEST_ASSERT_NULL(ambient_fish_source(room_turf(0, 0)), "A floor has fish in it")
 
-	var/mob/living/basic/ambient_npc/planet/boat_fisher/angler = allocate(/mob/living/basic/ambient_npc/planet/boat_fisher, room_turf(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/angler = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher, room_turf(0, 0))
 	var/datum/ambient_activity/fish/fishing = angler.start_activity(new /datum/ambient_activity/fish(angler, water))
 	TEST_ASSERT_NOTNULL(fishing, "Fishing water two tiles off could not start")
 	if(fishing.spot)
@@ -194,7 +194,7 @@
 	TEST_ASSERT(ambient_ore_wall_ok(wall), "An iron wall in the open cannot be dug")
 	TEST_ASSERT(!ambient_ore_wall_ok(room_turf(0, 0)), "A floor counts as an ore wall")
 
-	var/mob/living/basic/ambient_npc/planet/miner/miner = allocate(/mob/living/basic/ambient_npc/planet/miner, room_turf(1, 2))
+	var/mob/living/carbon/human/npc/ambient_npc/planet/miner/miner = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/miner, room_turf(1, 2))
 	TEST_ASSERT_NOTNULL(miner.ore_bag, "A miner has no satchel")
 	var/datum/ambient_activity/mine/mine = miner.start_activity(new /datum/ambient_activity/mine(miner, wall))
 	TEST_ASSERT_NOTNULL(mine, "A miner beside an ore wall would not dig it")
@@ -265,7 +265,7 @@
 /datum/unit_test/voidcrew_ambient_pb/fighting
 
 /datum/unit_test/voidcrew_ambient_pb/fighting/Run()
-	var/mob/living/basic/ambient_npc/planet/miner/miner = allocate(/mob/living/basic/ambient_npc/planet/miner, room_turf(0, 0))
+	var/mob/living/carbon/human/npc/ambient_npc/planet/miner/miner = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/miner, room_turf(0, 0))
 	var/mob/living/carbon/human/consistent/brute = allocate(/mob/living/carbon/human/consistent, room_turf(1, 0))
 	var/obj/item/pickaxe/reference = allocate(/obj/item/pickaxe)
 	TEST_ASSERT_EQUAL(miner.melee_damage_upper, reference.force, "A miner does not hit like their pickaxe")
@@ -279,13 +279,13 @@
 	TEST_ASSERT(brute.health < health_before, "The miner's blow did nothing")
 
 	// Someone who is not a fighter runs instead
-	var/mob/living/basic/ambient_npc/planet/boat_fisher/meek = allocate(/mob/living/basic/ambient_npc/planet/boat_fisher, room_turf(4, 4))
+	var/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/meek = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher, room_turf(4, 4))
 	meek.react_attacked(brute)
 	TEST_ASSERT(!istype(meek.activity, /datum/ambient_activity/fight), "A boat fisher picked a fight")
 
 	// A leash holds a camp's fighters near it
 	var/turf/center = room_turf(2, 2)
-	var/mob/living/basic/ambient_npc/planet/tribal/hunter = allocate(/mob/living/basic/ambient_npc/planet/tribal, center)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/tribal, center)
 	hunter.leash_bounds = ambient_square_bounds(center, 12)
 	TEST_ASSERT(hunter.leash_ok(locate(center.x + 12, center.y, center.z)), "A hunter's leash stops short of five tiles past the ring")
 	TEST_ASSERT(!hunter.leash_ok(locate(center.x + 13, center.y, center.z)), "A hunter's leash reaches past five tiles beyond the ring")
@@ -322,7 +322,7 @@
 	TEST_ASSERT_EQUAL(body.stat, DEAD, "The body on the stake is alive")
 	TEST_ASSERT_EQUAL(body.buckled, stake, "The body is not tied to the stake")
 
-	var/mob/living/basic/ambient_npc/planet/cannibal/cannibal = locate() in site.living_npcs()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/cannibal/cannibal = locate() in site.living_npcs()
 	TEST_ASSERT_NOTNULL(cannibal, "The cannibal did not come out")
 	cannibal.forceMove(room_turf(0, 0))
 	var/mob/living/carbon/human/consistent/guest = allocate(/mob/living/carbon/human/consistent, room_turf(4, 4))
@@ -373,22 +373,22 @@
 	var/obj/structure/bonfire/fire = site.get_prop(/obj/structure/bonfire)
 	TEST_ASSERT_NOTNULL(fire, "The hunters' camp has no fire")
 	TEST_ASSERT(count_in_room(/obj/effect/ambient_camp_prop/mat) >= 3, "Not every hunter has a sleeping mat")
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in hunters)
-		TEST_ASSERT(hunter.has_spear, "A hunter came out without a spear")
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
+		TEST_ASSERT(hunter.has_spear(), "A hunter came out without a spear")
 		TEST_ASSERT_NOTNULL(hunter.leash_bounds, "A hunter is not leashed to the camp")
-	var/mob/living/basic/ambient_npc/planet/tribal/first = hunters[1]
-	var/mob/living/basic/ambient_npc/planet/tribal/lookout = first.camp_lookout()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/first = hunters[1]
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/lookout = first.camp_lookout()
 	TEST_ASSERT_NOTNULL(lookout, "Nobody keeps watch")
 
 	// Across the ring: a warning, nothing more
 	var/mob/living/carbon/human/consistent/visitor = allocate(/mob/living/carbon/human/consistent, room_turf(4, 4))
 	lookout.watch(list(visitor))
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in hunters)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
 		TEST_ASSERT(!istype(hunter.activity, /datum/ambient_activity/fight), "A hunter attacked without a warning")
 	// Empty-handed: someone comes over to trade
 	lookout.watch(list(visitor))
 	var/offered = FALSE
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in hunters)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
 		if(istype(hunter.activity, /datum/ambient_activity/tribal_offer))
 			offered = TRUE
 		TEST_ASSERT(!istype(hunter.activity, /datum/ambient_activity/fight), "A hunter attacked an empty-handed visitor")
@@ -402,7 +402,7 @@
 	var/list/entered = visit["entered"]
 	entered[REF(visitor)] = world.time - 101 // AMBIENT_TRIBAL_ARMED_GRACE
 	lookout.watch(list(visitor))
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in hunters)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
 		var/datum/ambient_activity/fight/fight = hunter.activity
 		TEST_ASSERT(istype(fight) && fight.target() == visitor, "A hunter stayed out of the camp's fight")
 		hunter.end_activity()
@@ -412,27 +412,39 @@
 	visitor.forceMove(room_turf(3, 3))
 	lookout.watch(list(visitor))
 	TEST_ASSERT(istype(lookout.activity, /datum/ambient_activity/fight), "Someone armed stood by the fire unharmed")
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in hunters)
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in hunters)
 		hunter.end_activity()
 
-	// A thrown spear: a wind-up first, one throw at a time for the camp, never at their own
-	var/mob/living/basic/ambient_npc/planet/tribal/thrower = first
-	var/mob/living/basic/ambient_npc/planet/tribal/mate = hunters[2]
+	// A thrown spear: a wind-up first, one throw at a time for the camp, never with one of their own in the way;
+	// the real spear in hand flies (tg's throw) and lies where it came down, theirs to pick up again
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/thrower = first
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/mate = hunters[2]
 	thrower.forceMove(room_turf(0, 0))
+	mate.forceMove(room_turf(0, 4))
 	visitor.forceMove(room_turf(4, 4))
 	visit["next_throw"] = 0
+	var/obj/item/spear/held_spear = thrower.held_weapon()
+	TEST_ASSERT(istype(held_spear), "A hunter holds no real spear")
 	TEST_ASSERT(thrower.try_ranged(visitor), "No throw at four tiles")
-	TEST_ASSERT(thrower.has_spear, "A spear flew without a wind-up")
+	TEST_ASSERT(thrower.has_spear(), "A spear flew without a wind-up")
 	TEST_ASSERT(!mate.try_ranged(visitor), "Two hunters wound up a throw at once")
 	thrower.throw_windup_until = world.time
 	thrower.try_ranged(visitor)
-	TEST_ASSERT(!thrower.has_spear, "The spear was never thrown")
+	TEST_ASSERT(!thrower.has_spear(), "The spear was never thrown")
+	TEST_ASSERT(!thrower.is_holding(held_spear), "A hunter still holds the spear they threw")
 	TEST_ASSERT_EQUAL(thrower.throw_reach(), 0, "A hunter throws a spear they no longer have")
-	var/obj/projectile/ambient_spear/test_spear = allocate(/obj/projectile/ambient_spear, room_turf(1, 1))
-	test_spear.firer = thrower
-	TEST_ASSERT(!test_spear.can_hit_target(mate, FALSE, TRUE), "A thrown spear can hit the thrower's own camp")
-	thrower.rearm()
-	TEST_ASSERT(thrower.has_spear, "A hunter could not take up a spear again")
+	TEST_ASSERT(HAS_TRAIT(held_spear, "human_npc_consumable"), "A camp's spear is loot once thrown") // TRAIT_HUMAN_NPC_CONSUMABLE
+	// Never past one of their own: a hunter standing in the line stops the throw
+	var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/blocker = hunters[3]
+	blocker.forceMove(room_turf(2, 2))
+	visit["next_throw"] = 0
+	mate.forceMove(room_turf(0, 0))
+	TEST_ASSERT(ambient_camp_mate_in_line(mate, visitor), "A hunter's own camp mate in the line doesn't count")
+	TEST_ASSERT(!mate.try_ranged(visitor), "A hunter wound up a throw with one of their own in the way")
+	// A spare off the camp's rack (the thrown one is still in the air or far off)
+	thrower.rearm(from_rack = TRUE)
+	TEST_ASSERT(thrower.has_spear(), "A hunter could not take up a spear again")
+	TEST_ASSERT(HAS_TRAIT(thrower.held_weapon(), "human_npc_consumable"), "A spear off the rack is not the camp's") // TRAIT_HUMAN_NPC_CONSUMABLE
 
 	// A hide for a bone spear, once per crew
 	visitor.drop_all_held_items()
@@ -447,7 +459,7 @@
 	TEST_ASSERT(!QDELETED(second_hide) && second_hide.amount == 1, "A crew traded for a second bone spear")
 
 	// All killed: a spear each, and the camp is spent
-	for(var/mob/living/basic/ambient_npc/planet/tribal/hunter as anything in site.living_npcs())
+	for(var/mob/living/carbon/human/npc/ambient_npc/planet/tribal/hunter as anything in site.living_npcs())
 		hunter.forceMove(room_turf(0, 4))
 		hunter.death()
 	TEST_ASSERT(count_in_room(/obj/item/spear/bamboospear) >= 3, "Dead hunters dropped no spears")
@@ -471,7 +483,7 @@
 	var/obj/structure/ambient_boat/boat = boat_site.get_prop(/obj/structure/ambient_boat)
 	TEST_ASSERT_NOTNULL(boat, "There is no boat")
 	TEST_ASSERT_EQUAL(get_turf(boat), sea, "The boat is not on the water")
-	var/mob/living/basic/ambient_npc/planet/boat_fisher/fisher = locate() in boat_site.living_npcs()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/boat_fisher/fisher = locate() in boat_site.living_npcs()
 	TEST_ASSERT_NOTNULL(fisher, "Nobody is in the boat")
 	TEST_ASSERT_EQUAL(fisher.buckled, boat, "The fisher is not sitting in the boat")
 	boat.user_unbuckle_mob(fisher, visitor)
@@ -498,7 +510,7 @@
 	TEST_ASSERT_NOTNULL(chair, "The lava fisher has no chair")
 	TEST_ASSERT_EQUAL(get_turf(chair), bank, "The chair is not on the bank")
 	TEST_ASSERT_EQUAL(chair.dir, EAST, "The chair does not face the lava")
-	var/mob/living/basic/ambient_npc/planet/lava_fisher/lava_man = locate() in bank_site.living_npcs()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/lava_fisher/lava_man = locate() in bank_site.living_npcs()
 	TEST_ASSERT_NOTNULL(lava_man, "The lava fisher did not come out")
 	var/datum/ambient_activity/fish/lava/lava_fishing = new(lava_man)
 	TEST_ASSERT_EQUAL(lava_fishing.water(), lava, "The lava fisher does not fish the lava by their chair")
@@ -534,10 +546,10 @@
 	site.band = 2 // ZONE_YELLOW
 	site.npc_total = kind.npc_count(2) // ZONE_YELLOW
 	TEST_ASSERT(kind.realize(site), "The caravan did not come out")
-	TEST_ASSERT_EQUAL(length(site.living_npcs()), 3, "A yellow caravan came out with [length(site.living_npcs())] people")
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
-	var/mob/living/basic/ambient_npc/planet/pack_pony/pony = locate() in site.living_npcs()
-	var/mob/living/basic/ambient_npc/planet/caravan_guard/guard = locate() in site.living_npcs()
+	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "A yellow caravan came out with [length(site.living_npcs())] people")
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
+	var/mob/living/basic/pony/ambient_pack/pony = caravan_pony(site)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/caravan_guard/guard = locate() in site.living_npcs()
 	TEST_ASSERT_NOTNULL(peddler, "The caravan has no peddler")
 	TEST_ASSERT_NOTNULL(pony, "The caravan has no pony")
 	TEST_ASSERT_NOTNULL(guard, "A yellow caravan has no guard")
@@ -572,11 +584,11 @@
 	// The pony dies: the shop closes; the next visit, the pony stays dead and the shop shut
 	pony.death()
 	TEST_ASSERT(peddler.shop_closed, "The shop stayed open with the pony dead")
-	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.npcs.Copy())
 		qdel(member)
 	TEST_ASSERT(kind.realize(site), "The caravan did not come back for the next visit")
 	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "[length(site.living_npcs())] came back, not the peddler and the guard")
-	TEST_ASSERT_NULL(locate(/mob/living/basic/ambient_npc/planet/pack_pony) in site.living_npcs(), "A killed pony came back")
+	TEST_ASSERT_NULL(caravan_pony(site), "A killed pony came back")
 	peddler = locate() in site.living_npcs()
 	TEST_ASSERT(peddler?.shop_closed, "The shop opened again with no pony")
 	for(var/datum/shop_buyback/buyback as anything in peddler.shop.buybacks)
@@ -597,7 +609,7 @@
 
 	// A killed peddler: a trader's cash, once, and the shop goes with them
 	var/turf/body_turf = room_turf(1, 1)
-	var/mob/living/basic/ambient_npc/planet/peddler/victim = allocate(/mob/living/basic/ambient_npc/planet/peddler, body_turf)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/victim = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler, body_turf)
 	victim.apply_damage(victim.maxHealth * 2, BRUTE)
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "The peddler did not die of their wounds")
 	TEST_ASSERT(victim.shop_closed, "The shop stayed open with the peddler dead")
@@ -673,14 +685,14 @@
 
 /// The planet sweep takes the caravan away, and the next visit brings it back. Returns the peddler.
 /datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/next_visit(datum/ambient_site_kind/planet/peddler/kind, datum/ambient_place/site/site)
-	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.npcs.Copy())
 		qdel(member)
 	if(!kind.realize(site))
 		TEST_FAIL("The caravan did not come back for the next visit")
-	return locate(/mob/living/basic/ambient_npc/planet/peddler) in site.living_npcs()
+	return locate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler) in site.living_npcs()
 
 /// The weapon lines in `peddler`'s shop
-/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/weapons_on(mob/living/basic/ambient_npc/planet/peddler/peddler)
+/datum/unit_test/voidcrew_ambient_pb/peddler_weapon/proc/weapons_on(mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler)
 	. = list()
 	for(var/datum/shop_sku/sku as anything in peddler?.shop?.skus)
 		if(istype(sku, /datum/shop_sku/peddler/weapon))
@@ -692,7 +704,7 @@
 	// One weapon of the planet's tier, on the top shelf, and the same one on every later visit
 	for(var/band in 1 to 3) // ZONE_GREEN, ZONE_YELLOW, ZONE_RED
 		var/datum/ambient_place/site/site = new_caravan(kind, band)
-		var/mob/living/basic/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
+		var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
 		var/list/weapons = weapons_on(peddler)
 		TEST_ASSERT_EQUAL(length(weapons), 1, "A band [band] peddler carries [length(weapons)] weapons")
 		var/datum/shop_sku/peddler/weapon/weapon = weapons[1]
@@ -710,7 +722,7 @@
 			weapon = weapons[1]
 			TEST_ASSERT_EQUAL(weapon.type, rolled, "Visit [visit] rerolled [rolled] into [weapon.type]")
 			TEST_ASSERT_EQUAL(weapon.stock, 1, "Visit [visit] changed the weapon's stock")
-		for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+		for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.npcs.Copy())
 			qdel(member)
 
 	// A customer with a crew and money
@@ -727,7 +739,7 @@
 	ship.ship_account = account
 
 	var/datum/ambient_place/site/site = new_caravan(kind, 2) // ZONE_YELLOW
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = locate() in site.living_npcs()
 	var/datum/shop_sku/peddler/weapon/weapon = peddler.shop.weapon
 	var/rolled = weapon.type
 	var/price = weapon.price_credits
@@ -780,13 +792,13 @@
 		TEST_ASSERT_EQUAL(length(weapons_on(peddler)), 0, "Visit [visit] restocked a sold weapon")
 		TEST_ASSERT_NULL(peddler.shop.weapon, "Visit [visit] left a sold weapon on the shop")
 		TEST_ASSERT_EQUAL(site.data["weapon"], rolled, "Visit [visit] forgot what was rolled")
-	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.npcs.Copy())
 		qdel(member)
 
 	// A dead pony shuts the pack: the weapon cannot be bought, and it is still shut next visit
 	site = new_caravan(kind, 1) // ZONE_GREEN
 	peddler = locate() in site.living_npcs()
-	var/mob/living/basic/ambient_npc/planet/pack_pony/pony = locate() in site.living_npcs()
+	var/mob/living/basic/pony/ambient_pack/pony = caravan_pony(site)
 	weapon = peddler.shop.weapon
 	pony.death()
 	var/balance = account.account_balance
@@ -795,13 +807,14 @@
 	peddler = next_visit(kind, site)
 	TEST_ASSERT(peddler.shop_closed, "The pack opened again with no pony")
 	TEST_ASSERT(!peddler.shop.weapon.try_purchase(buyer, peddler), "A shut pack sold a weapon next visit")
-	for(var/mob/living/basic/ambient_npc/member as anything in site.npcs.Copy())
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.npcs.Copy())
 		qdel(member)
 
 	// Killing the whole caravan drops nothing from the pack, and it is spent
 	site = new_caravan(kind, 3) // ZONE_RED
-	TEST_ASSERT_EQUAL(length(site.living_npcs()), 3, "A red caravan came out with [length(site.living_npcs())] people")
-	for(var/mob/living/basic/ambient_npc/member as anything in site.living_npcs())
+	TEST_ASSERT_EQUAL(length(site.living_npcs()), 2, "A red caravan came out with [length(site.living_npcs())] people")
+	caravan_pony(site)?.death()
+	for(var/mob/living/carbon/human/npc/ambient_npc/member as anything in site.living_npcs())
 		member.death()
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku/peddler/weapon))
 		var/item_path = initial(sku_type.item_path)

@@ -24,7 +24,7 @@
 /// A researcher standing anywhere in the office
 /datum/unit_test/voidcrew_outpost_management/proc/office_researcher(datum/outpost_prison/prison)
 	for(var/turf/tile as anything in prison.wing_turfs())
-		var/mob/living/basic/outpost_kessler_staff/researcher/doctor = locate() in tile
+		var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = locate() in tile
 		if(doctor)
 			return doctor
 	return null
@@ -45,7 +45,7 @@
 	// Visits are scheduled from the wing's first arrival, 15-25 minutes off, and wait for the crew.
 	prison.experiments_tick(1)
 	TEST_ASSERT(!prison.visits_started, "The researcher was scheduled before any prisoner arrived")
-	var/mob/living/basic/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 8, 8))
 	prison.experiments_tick(1)
 	TEST_ASSERT(prison.visits_started, "The first arrival did not schedule the researcher")
 	TEST_ASSERT(prison.researcher_wait >= 900 && prison.researcher_wait <= 1500, "The first visit is [prison.researcher_wait] s off, not 15-25 minutes") // OUTPOST_EXPERIMENT_FIRST_VISIT_MIN/_MAX
@@ -78,7 +78,7 @@
 	TEST_ASSERT_NULL(prison.researcher, "The researcher offered work in a filthy wing")
 	TEST_ASSERT(prison.pigsty_shown, "The researcher did not come to complain about the wing")
 	TEST_ASSERT_EQUAL(prison.researcher_wait, 120, "The conditions gate did not retry in 2 minutes")
-	var/mob/living/basic/outpost_kessler_staff/researcher/complainer = office_researcher(prison)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/complainer = office_researcher(prison)
 	TEST_ASSERT_NOTNULL(complainer, "Nobody came to look at the filthy wing")
 	TEST_ASSERT_NULL(complainer.prison, "The complaining researcher held on to the prison")
 	qdel(complainer)
@@ -91,7 +91,7 @@
 	// A clean wing: the researcher comes to the office with a serum; the first offer is never a specimen.
 	prison.researcher_wait = 1
 	prison.experiments_tick(1)
-	var/mob/living/basic/outpost_kessler_staff/researcher/doctor = prison.researcher
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = prison.researcher
 	TEST_ASSERT_NOTNULL(doctor, "The researcher did not come to a clean wing")
 	TEST_ASSERT(prison.staff_ground[get_turf(doctor)], "The researcher did not come to the office")
 	TEST_ASSERT(!prison.pigsty_shown, "The complaint flag outlived a proper visit")
@@ -127,13 +127,13 @@
 
 	// Declines raise the next offer, up to 30%.
 	for(var/i in 1 to 3)
-		var/mob/living/basic/outpost_kessler_staff/researcher/visiting = prison.spawn_researcher(TRUE)
+		var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/visiting = prison.spawn_researcher(TRUE)
 		TEST_ASSERT_NOTNULL(visiting, "An admin could not send the researcher")
 		TEST_ASSERT(prison.decline_offer(owner), "Declining an offer failed")
 	TEST_ASSERT(abs(prison.sweetener - 0.3) < 0.001, "Four passed offers raised the next by [prison.sweetener], not 30%") // OUTPOST_EXPERIMENT_SWEETENER_MAX
 
 	// Taking it: the serum in hand, the sweetener spent on it, and no visits while it is out.
-	var/mob/living/basic/outpost_kessler_staff/researcher/seller = prison.spawn_researcher(TRUE)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/seller = prison.spawn_researcher(TRUE)
 	TEST_ASSERT_NOTNULL(seller, "An admin could not send the researcher")
 	prison.offer_kind = "serum"
 	prison.offer_form = "fly"
@@ -166,7 +166,7 @@
 		if(prison.offer_kind == "specimen")
 			specimens++
 	TEST_ASSERT_EQUAL(specimens, 0, "A specimen was offered to a wing with one prisoner")
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 10, 8))
 	for(var/i in 1 to 60)
 		prison.roll_offer()
 		if(prison.offer_kind == "specimen")
@@ -175,19 +175,20 @@
 	TEST_ASSERT(specimens > 0 && specimens < 60, "[specimens] of 60 offers were specimens")
 	TEST_ASSERT(first && second, "The prisoners vanished")
 
-	// Hurt, the researcher leaves at once, unhurt, and the next offer is not sweeter for it.
+	// Hurt for real (OC-3), the researcher says so and leaves, and the next offer is not sweeter for it.
 	qdel(serum)
-	var/mob/living/basic/outpost_kessler_staff/researcher/target = prison.spawn_researcher(TRUE)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/target = prison.spawn_researcher(TRUE)
 	TEST_ASSERT_NOTNULL(target, "An admin could not send the researcher")
 	var/sweet = prison.sweetener
+	target.finish_beam_in()
 	target.apply_damage(10, BRUTE)
 	TEST_ASSERT(target.leaving, "A hurt researcher stayed")
-	TEST_ASSERT_EQUAL(target.health, target.maxHealth, "The researcher could be hurt")
+	TEST_ASSERT(target.health < target.maxHealth, "The researcher's body took no damage")
 	TEST_ASSERT_NULL(prison.researcher, "A hurt researcher kept the offer open")
 	TEST_ASSERT_EQUAL(prison.sweetener, sweet, "Hurting the researcher sweetened the next offer")
 
 	// Deleted without leaving (gibbed, dusted, an admin): the next visit is still scheduled.
-	var/mob/living/basic/outpost_kessler_staff/researcher/doomed = prison.spawn_researcher(TRUE)
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doomed = prison.spawn_researcher(TRUE)
 	TEST_ASSERT_NOTNULL(doomed, "An admin could not send the researcher")
 	TEST_ASSERT_NULL(prison.researcher_wait, "A visit was scheduled while the researcher waited")
 	qdel(doomed)
@@ -209,8 +210,8 @@
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 8, 9), "itemowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 9, 9), "itemvisitor")
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/subject = test_prisoner(prison, yard)
-	var/mob/living/basic/outpost_prisoner/stranger = allocate(/mob/living/basic/outpost_prisoner, prison_spot(home, 10, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/stranger = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 10, 8))
 
 	// The serum: a member's hands, this wing's prisoners, the cell block.
 	var/obj/item/outpost_experiment/serum/serum = new(prison_spot(home, 8, 9), prison, "fly")
@@ -296,10 +297,11 @@
 
 // ===== THE SERUM =====
 
-/// A human body turned into serum `form` for `prison` where it stands, the way the serum turns a subject
-/// (outpost_prison_experiment_forms.dm), and tracked as the experiment's creature. Cleaned up with the test.
+/// A prisoner of no wing turned into serum `form` for `prison` where they stand, the way the serum turns a
+/// subject (outpost_prison_experiment_forms.dm), and tracked as the experiment's creature. Cleaned up with the test.
 /datum/unit_test/voidcrew_outpost_management/proc/experiment_form_body(datum/outpost_prison/prison, turf/spot, form, track = FALSE)
-	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, spot)
+	var/mob/living/carbon/human/npc/outpost_prisoner/body = allocate(/mob/living/carbon/human/npc/outpost_prisoner, spot)
+	body.stand_down_for_experiment()
 	QDEL_NULL(body.ai_controller)
 	if(!outpost_experiment_turn(body, form, prison, null))
 		return null
@@ -327,8 +329,8 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/datum/bank_account/treasury = trouble_fund(home, 0)
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/subject = trouble_prisoner(prison, yard)
-	var/mob/living/basic/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/buddy = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	var/subject_name = subject.real_name
 	TEST_ASSERT_NULL(prison.experiment_payload(), "The console shows an experiment before there is one")
 
@@ -363,13 +365,15 @@
 	TEST_ASSERT_EQUAL(prison.experiment.twitch_left, 35, "The twitch ran outside the cell block")
 	subject.forceMove(yard)
 
-	// The change: the subject's own body (until prisoners are human NPCs, a human body in their place) takes
-	// tg's hulk gene and gigantism where they stood, and the fee is paid. No clock: it stays until it is put down.
+	// The change: the subject's own body takes tg's hulk gene and gigantism where they stood, leaves the
+	// roster but not the world, and the fee is paid. No clock: it stays until it is put down.
 	prison.experiments_tick(35)
 	var/mob/living/carbon/human/hulk = form_body_near(yard, "hulk")
 	TEST_ASSERT_NOTNULL(hulk, "The subject did not turn into a hulk")
 	allocated += hulk
-	TEST_ASSERT(QDELETED(subject) || subject == hulk, "The basic subject stayed beside the hulk")
+	TEST_ASSERT_EQUAL(hulk, subject, "The serum turned some other body than the subject's own")
+	TEST_ASSERT(!(subject in prison.prisoners), "The hulk is still on the prison's roster")
+	TEST_ASSERT(!is_outpost_prisoner(subject), "The hulk still counts as an inmate")
 	TEST_ASSERT_EQUAL(hulk.real_name, subject_name, "The hulk is not the subject")
 	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_HULK), "The hulk has no hulk gene")
 	TEST_ASSERT(HAS_TRAIT(hulk, TRAIT_GIANT), "The hulk did not grow")
@@ -404,7 +408,7 @@
 	TEST_ASSERT(!HAS_TRAIT(hulk, TRAIT_GODMODE), "Kessler's beam made the hulk invulnerable")
 
 	// Mostly hurt by something other than the crew: no bonus.
-	var/mob/living/basic/outpost_prisoner/second_subject = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/second_subject = trouble_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("fly", second_subject), "A second experiment could not start after the first ended")
 	prison.experiments_tick(60)
 	var/mob/living/carbon/human/fly = form_body_near(yard, "fly")
@@ -418,7 +422,7 @@
 	TEST_ASSERT_EQUAL(prison.experiment.bonus_paid, 0, "The console shows a bonus nobody earned")
 
 	// Killed while dosed: no data, no fee and no fine.
-	var/mob/living/basic/outpost_prisoner/unlucky = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/unlucky = trouble_prisoner(prison, yard)
 	balance = treasury.account_balance
 	var/fined = prison.fined_total
 	TEST_ASSERT(prison.start_experiment("nightmare", unlucky), "A third experiment could not start")
@@ -429,7 +433,7 @@
 	TEST_ASSERT_EQUAL(prison.fined_total, fined, "A dead subject cost a fine")
 
 	// A subject taken out of the cell block for a minute: the experiment fails, and they are theirs again.
-	var/mob/living/basic/outpost_prisoner/taken = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/taken = trouble_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("hulk", taken), "A fourth experiment could not start")
 	taken.forceMove(prison_spot(home, 9, 3))
 	prison.experiments_tick(30)
@@ -450,7 +454,7 @@
 /datum/unit_test/voidcrew_outpost_prison_experiment_kessler/proc/creature_for(obj/structure/overmap/dynamic/player_outpost/home, form)
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = test_prisoner(prison, yard)
 	if(!prison.start_experiment(form, host, forced = TRUE))
 		return null
 	prison.experiments_tick(60)
@@ -620,7 +624,7 @@
 	var/turf/yard = prison_spot(home, 8, 8)
 
 	// A dosed subject whose sentence runs out: the sentence holds and they are not released.
-	var/mob/living/basic/outpost_prisoner/subject = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/subject = trouble_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("hulk", subject), "The subject could not be dosed")
 	TEST_ASSERT(prison.held_for_experiment(subject), "The experiment does not hold its subject")
 	subject.sentence_left = 5
@@ -634,7 +638,7 @@
 	TEST_ASSERT_EQUAL(subject.phase, "present", "A dosed subject was beamed out by a release")
 
 	// Rioting, they are not transferred out with the other rioters.
-	var/mob/living/basic/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	subject.trouble = "riot" // PRISONER_TROUBLE_RIOT
 	rioter.trouble = "riot"
 	prison.riot_active = TRUE
@@ -656,7 +660,7 @@
 	TEST_ASSERT_EQUAL(subject.phase, "leaving", "Once the experiment was over, the loose subject did not get away") // PRISONER_LEAVING
 
 	// A specimen host who dies out of the cell block does not burst there, and stays on the roster meanwhile.
-	var/mob/living/basic/outpost_prisoner/host = trouble_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = trouble_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", host), "The host could not take the specimen")
 	var/datum/outpost_changeling_event/event = prison.changeling_event()
 	TEST_ASSERT_NOTNULL(event, "No changeling event")
@@ -716,8 +720,25 @@
 				TEST_ASSERT_NOTNULL(locate(/obj/item/light_eater) in body.held_items, "The nightmare has no light eater")
 		qdel(body)
 
+	// Kessler's people: real bodies (OC-3) that keep out of lockers and teleporters while alive, and leave when hurt.
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/researcher/doctor = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/researcher, prison_spot(home, 12, 4), null)
+	TEST_ASSERT(!doctor.compare_sentience_type(SENTIENCE_ORGANIC), "The researcher takes a sentience potion")
+	TEST_ASSERT(HAS_TRAIT(doctor, "no_containment"), "The researcher can be boxed")
+	TEST_ASSERT(!do_teleport(doctor, prison_spot(home, 12, 5), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE), "A forced teleport moved the researcher")
+	TEST_ASSERT(ishuman(doctor), "The researcher is not a real body")
+	doctor.apply_damage(30, BRUTE)
+	TEST_ASSERT(doctor.health < doctor.maxHealth, "The researcher could not be hurt")
+	TEST_ASSERT(doctor.leaving, "A hurt researcher stayed")
+	// An agent's tranquilliser gun holds a real chloral hydrate dart.
+	var/mob/living/carbon/human/npc/outpost_kessler_staff/agent/agent = allocate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent, prison_spot(home, 13, 4), null)
+	var/obj/item/gun/syringe/dart_gun = locate() in agent.held_items
+	TEST_ASSERT_NOTNULL(dart_gun, "A Kessler agent holds no tranquilliser gun")
+	var/obj/item/reagent_containers/syringe/dart = length(dart_gun.syringes) ? dart_gun.syringes[1] : null
+	TEST_ASSERT(dart?.reagents?.has_reagent(/datum/reagent/toxin/chloralhydrate), "A Kessler agent's dart holds no chloral hydrate")
+
 	// The species can rename a body (tg's nightmares take a nightmare's name); the subject keeps theirs.
-	var/mob/living/carbon/human/named = allocate(/mob/living/carbon/human/npc/outpost_experiment_subject, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/named = allocate(/mob/living/carbon/human/npc/outpost_prisoner, prison_spot(home, 10, 10))
+	named.stand_down_for_experiment()
 	var/name_before = named.real_name
 	TEST_ASSERT_NOTNULL(outpost_experiment_turn(named, "nightmare", prison, null), "The nightmare serum did not take")
 	TEST_ASSERT_EQUAL(named.real_name, name_before, "The nightmare took a new name")
@@ -757,8 +778,8 @@
 	qdel(armoured)
 
 	// A real hulk punch knocks a standing prisoner flat, and it leaves them be once they are down.
-	var/mob/living/basic/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 8, 8))
-	var/mob/living/basic/outpost_prisoner/onlooker = trouble_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/victim = trouble_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/onlooker = trouble_prisoner(prison, prison_spot(home, 12, 8))
 	TEST_ASSERT(hulk_form.can_target(victim), "The hulk ignored a prisoner on their feet")
 	var/health_before = victim.health
 	hulk.set_combat_mode(TRUE)
@@ -922,7 +943,7 @@
 
 	// Kessler's team beams in, and its beam takes it; then the bonus, and the console shows it contained.
 	prison.kessler_collect(WEAKREF(fly))
-	TEST_ASSERT_NOTNULL(locate(/mob/living/basic/outpost_kessler_staff/agent) in range(1, fly), "No Kessler agents beamed in for the fly person")
+	TEST_ASSERT_NOTNULL(locate(/mob/living/carbon/human/npc/outpost_kessler_staff/agent) in range(1, fly), "No Kessler agents beamed in for the fly person")
 	prison.kessler_finish_collect(WEAKREF(fly))
 	TEST_ASSERT_EQUAL(prison.experiment.bonus_paid, 700, "Subduing the fly person paid [prison.experiment.bonus_paid], not 700") // OUTPOST_EXPERIMENT_BONUS_FLY
 	TEST_ASSERT_EQUAL(prison.experiment_payload()["stage"], "contained", "Taking the subdued fly person did not contain the experiment")
@@ -949,7 +970,7 @@
 	var/mob/living/carbon/human/crew = make_player(prison_spot(home, 12, 3), "apiowner")
 
 	// A specimen host: the changeling event runs it.
-	var/mob/living/basic/outpost_prisoner/host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/host = test_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", host, forced = TRUE), "The specimen could not start")
 	var/datum/outpost_changeling_event/event = prison.changeling_event()
 	TEST_ASSERT_NOTNULL(event, "No changeling event")
@@ -957,7 +978,7 @@
 
 	// Bolted in while it incubates, with no creature about, the lock-in clock counts as it always does:
 	// an experiment is no protective custody (owner, 2026-09-25).
-	var/mob/living/basic/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 3, 14))
 	var/datum/outpost_prison_cell/cell_one = prison.cells[1]
 	var/obj/machinery/door/airlock/cell_door = cell_one.door()
 	cell_door.bolt()
@@ -994,7 +1015,7 @@
 	TEST_ASSERT_EQUAL(prison.experiment_payload()["stage"], "contained", "The console does not show the horror contained")
 
 	// A headslug caught before it grows, after a blow from the crew: 900.
-	var/mob/living/basic/outpost_prisoner/second_host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/second_host = test_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", second_host, forced = TRUE), "The second specimen could not start")
 	var/mob/living/basic/headslug/early = allocate(/mob/living/basic/headslug/beakless, prison_spot(home, 8, 9))
 	prison.experiment_creature_appeared(early, "headslug")
@@ -1004,7 +1025,7 @@
 	TEST_ASSERT_EQUAL(treasury.account_balance, 6000, "A caught headslug paid [treasury.account_balance - 5100], not 900") // OUTPOST_EXPERIMENT_BONUS_HEADSLUG
 
 	// Dead with nothing on its ledger and no blow from the crew: no bonus.
-	var/mob/living/basic/outpost_prisoner/unhit_host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/unhit_host = test_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", unhit_host, forced = TRUE), "The unhit specimen could not start")
 	var/mob/living/basic/headslug/unhit = allocate(/mob/living/basic/headslug/beakless, prison_spot(home, 8, 9))
 	prison.experiment_creature_appeared(unhit, "headslug")
@@ -1013,7 +1034,7 @@
 	TEST_ASSERT_EQUAL(treasury.account_balance, balance, "A headslug nobody touched paid a containment bonus")
 
 	// Blown apart after one small hit from the crew: the blast did the rest, so no bonus.
-	var/mob/living/basic/outpost_prisoner/bombed_host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/bombed_host = test_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", bombed_host, forced = TRUE), "The bombed specimen could not start")
 	var/mob/living/basic/headslug/bombed = allocate(/mob/living/basic/headslug/beakless, prison_spot(home, 8, 9))
 	prison.experiment_creature_appeared(bombed, "headslug")
@@ -1026,7 +1047,7 @@
 	TEST_ASSERT_EQUAL(prison.experiment.stage, "contained", "The blown apart headslug did not end the specimen")
 
 	// A host killed before the burst does not end the specimen: it bursts from the body.
-	var/mob/living/basic/outpost_prisoner/third_host = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/third_host = test_prisoner(prison, yard)
 	TEST_ASSERT(prison.start_experiment("changeling", third_host, forced = TRUE), "The third specimen could not start")
 	third_host.death()
 	prison.experiments_tick(1)
@@ -1059,7 +1080,7 @@
 /datum/unit_test/voidcrew_outpost_prison_ledger_prisoners/Run()
 	var/mob/living/basic/cow/creature = allocate(/mob/living/basic/cow, run_loc_floor_bottom_left)
 	var/datum/component/experiment_damage_ledger/ledger = creature.AddComponent(/datum/component/experiment_damage_ledger)
-	var/mob/living/basic/outpost_prisoner/rioter = allocate(/mob/living/basic/outpost_prisoner, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = allocate(/mob/living/carbon/human/npc/outpost_prisoner, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/crew = make_player(run_loc_floor_bottom_left, "ledgercrew")
 	ledger.note_attacker(crew)
 	creature.apply_damage(10, BRUTE)
@@ -1089,10 +1110,10 @@
 	var/datum/component/outpost_experiment_form/nightmare/nightmare_form = form_of(nightmare)
 
 	// A prisoner locked in a bolted cell the nightmare is not in is off-limits; the same door unbolted is not.
-	var/mob/living/basic/outpost_prisoner/locked = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/locked = test_prisoner(prison, yard)
 	TEST_ASSERT_NOTNULL(locked.cell, "The locked prisoner was not booked into a cell")
 	locked.forceMove(locked.cell.arrival_turf())
-	var/mob/living/basic/outpost_prisoner/open_prisoner = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/open_prisoner = test_prisoner(prison, yard)
 	TEST_ASSERT(nightmare_form.can_target(locked), "The nightmare ignored a prisoner in an unbolted cell")
 	TEST_ASSERT(prison.toggle_cell_bolts(locked.cell.number, null), "The test cell would not bolt")
 	TEST_ASSERT(locked.cell.is_bolted(), "The test cell did not report itself bolted")
@@ -1111,7 +1132,7 @@
 	TEST_ASSERT(hulk_form.can_target(locked), "A bolted cell kept the hulk out")
 
 	// A target it makes no progress toward for a while is written off, and another is picked instead.
-	var/mob/living/basic/outpost_prisoner/stuck_prisoner = test_prisoner(prison, prison_spot(home, 10, 10))
+	var/mob/living/carbon/human/npc/outpost_prisoner/stuck_prisoner = test_prisoner(prison, prison_spot(home, 10, 10))
 	var/datum/ai_controller/brain = nightmare.ai_controller
 	brain.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, stuck_prisoner)
 	nightmare_form.track_reach(brain)

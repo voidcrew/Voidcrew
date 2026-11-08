@@ -78,14 +78,14 @@
 /datum/unit_test/voidcrew_outpost_prison_restraint/proc/in_stamcrit(mob/living/prisoner)
 	return !!prisoner.has_status_effect(/datum/status_effect/incapacitating/stamcrit)
 
-/datum/unit_test/voidcrew_outpost_prison_restraint/proc/back_up(mob/living/basic/outpost_prisoner/prisoner)
+/datum/unit_test/voidcrew_outpost_prison_restraint/proc/back_up(mob/living/carbon/human/npc/outpost_prisoner/prisoner)
 	return !prisoner.can_be_dragged()
 
 /datum/unit_test/voidcrew_outpost_prison_restraint/Run()
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("restraintowner")
 	TEST_ASSERT_NOTNULL(home, "The restraint test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	REMOVE_TRAIT(prisoner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 7, 8), "restraintowner")
 	var/obj/structure/bed/bed = prison.cells[1].bed()
@@ -107,7 +107,7 @@
 	click_wrapper(warden, prisoner)
 	TEST_ASSERT(prisoner.getStaminaLoss() >= 60, "A baton hit did [prisoner.getStaminaLoss()] stamina damage")
 	// A security baton knocks down two seconds after the hit, as it does people.
-	TEST_ASSERT(wait_until(CALLBACK(prisoner, TYPE_PROC_REF(/mob/living/basic/outpost_prisoner, can_be_dragged)), 4 SECONDS), "A knocked down prisoner could not be dragged")
+	TEST_ASSERT(wait_until(CALLBACK(prisoner, TYPE_PROC_REF(/mob/living/carbon/human/npc/outpost_prisoner, can_be_dragged)), 4 SECONDS), "A knocked down prisoner could not be dragged")
 	TEST_ASSERT(prisoner.has_status_effect(/datum/status_effect/incapacitating/knockdown), "The baton did not knock the prisoner down")
 	COOLDOWN_RESET(baton, cooldown_check)
 	REMOVE_TRAIT(prisoner, TRAIT_IWASBATONED, REF(warden))
@@ -117,26 +117,25 @@
 	TEST_ASSERT_EQUAL(prisoner.body_position, LYING_DOWN, "A prisoner in stamina crit is still standing")
 	TEST_ASSERT(!prisoner.routine_allowed(), "A prisoner in stamina crit kept up their routine")
 
-	// Down, they can be pulled and dragged; stamina crit holds 20 seconds after the last hit
-	// (PRISONER_STAMCRIT_TIME), twice tg's default.
-	TEST_ASSERT_EQUAL(prisoner.stamina_regen_time, 200, "Prisoner stamina crit does not last 20 seconds")
+	// Down, they can be pulled and dragged, and bagged; stamina crit is tg's own, as long as anyone's.
 	TEST_ASSERT(!(SEND_SIGNAL(prisoner, COMSIG_MOUSEDROP_ONTO, bed, warden) & COMPONENT_CANCEL_MOUSEDROP_ONTO), "A prisoner in stamina crit could not be dragged onto a bed")
+	TEST_ASSERT(!HAS_TRAIT(prisoner, TRAIT_NO_STORAGE_INSERT), "A prisoner in stamina crit could not be bagged")
 	warden.start_pulling(prisoner)
 	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "A prisoner in stamina crit could not be pulled")
-	sleep(11 SECONDS)
-	TEST_ASSERT(in_stamcrit(prisoner), "Stamina crit ended within tg's default 10 seconds")
 	// Back on their feet and calm, they go along with the pull that still has them (outpost_prison_warden_tools.dm).
 	prisoner.setStaminaLoss(0)
 	TEST_ASSERT(!in_stamcrit(prisoner), "Clearing stamina did not end stamina crit")
 	TEST_ASSERT(wait_until(CALLBACK(src, PROC_REF(back_up), prisoner), 8 SECONDS), "The prisoner never recovered")
 	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "A calm prisoner back on their feet shook off the pull")
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_RESIST_DEFAULT, "A calm prisoner being pulled is too heavy to pull")
+	prisoner.next_move = 0
+	prisoner.shake_off_pull()
+	TEST_ASSERT_EQUAL(warden.pulling, prisoner, "A calm prisoner resisted a pull")
+	TEST_ASSERT(HAS_TRAIT(prisoner, TRAIT_NO_STORAGE_INSERT), "A prisoner on their feet could be put in a bag")
 	warden.stop_pulling()
-	TEST_ASSERT_EQUAL(prisoner.move_resist, MOVE_FORCE_VERY_STRONG, "Let go, a prisoner on their feet is light enough to shove")
 	prisoner.end_activity()
 
 	// A disabler: 30 stamina a shot, four shots.
-	var/mob/living/basic/outpost_prisoner/runner = test_prisoner(prison, prison_spot(home, 12, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = test_prisoner(prison, prison_spot(home, 12, 8))
 	REMOVE_TRAIT(runner, TRAIT_IMMOBILIZED, TRAIT_SOURCE_UNIT_TESTS)
 	var/obj/item/gun/energy/disabler/disabler = allocate(__IMPLIED_TYPE__)
 	warden.forceMove(prison_spot(home, 11, 8))
@@ -165,7 +164,7 @@
 			TEST_ASSERT(!other.door().locked, "Cell 2's button bolted cell [other.number]")
 
 	// Bolted in: they stay in the cell, and the time is counted.
-	var/mob/living/basic/outpost_prisoner/inmate = runner
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = runner
 	inmate.forceMove(prison_spot(home, 7, 14))
 	prison.refresh_prisoner_reach(inmate)
 	TEST_ASSERT(!inmate.walkable[prison_spot(home, 7, 8)], "A bolted-in prisoner could still walk into the yard")
@@ -223,7 +222,7 @@
 	TEST_ASSERT_NOTNULL(home, "The relocation test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/yard = prison_spot(home, 8, 8)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, yard)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, yard)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 10, 8), "relocateowner")
 
 	// A forced teleport, as a drop pod's is, fails; the same teleport moves anyone else.
@@ -247,25 +246,28 @@
 	TEST_ASSERT_NULL(prisoner.change_mob_type(/mob/living/basic/mouse, delete_old_mob = TRUE), "A prisoner was turned into another mob")
 	TEST_ASSERT(!QDELETED(prisoner), "Changing a prisoner's type deleted them")
 
-	// Strange reagent on a dead prisoner: they stay dead, the attempt is logged, and nobody comes for the body.
-	var/mob/living/basic/outpost_prisoner/body = test_prisoner(prison, prison_spot(home, 12, 10))
+	// Strange reagent on a dead prisoner brings them back, as it would anyone (PR-10): the same inmate,
+	// the death still on the books.
+	var/mob/living/carbon/human/npc/outpost_prisoner/body = test_prisoner(prison, prison_spot(home, 12, 10))
 	body.death()
 	TEST_ASSERT_EQUAL(body.stat, DEAD, "The prisoner did not die")
-	var/datum/reagent/medicine/strange_reagent/instant/strange = allocate(__IMPLIED_TYPE__)
-	strange.expose_mob(body, TOUCH, 20)
-	TEST_ASSERT_EQUAL(body.stat, DEAD, "Strange reagent brought a dead prisoner back")
-	TEST_ASSERT(!QDELETED(body) && body.phase == "present" && (body in prison.prisoners), "A revival attempt took the body away") // PRISONER_PRESENT
+	TEST_ASSERT(body.died_at, "The prison did not note the death")
+	TEST_ASSERT(body.can_be_revived(), "A dead prisoner cannot be revived")
+	TEST_ASSERT(!HAS_TRAIT(body, TRAIT_NO_STORAGE_INSERT), "A body can't be bagged")
+	body.revive(HEAL_ALL)
+	TEST_ASSERT(body.stat != DEAD, "Revival did not bring a dead prisoner back")
+	TEST_ASSERT(!QDELETED(body) && body.phase == "present" && (body in prison.prisoners), "A revived prisoner left the roster") // PRISONER_PRESENT
+	TEST_ASSERT_EQUAL(body.died_at, 0, "A revived prisoner is still dead on the roster")
 	var/list/newest = prison.entries[1]
-	TEST_ASSERT(findtext(newest["text"], "already logged the death"), "The revival attempt was not logged: [newest["text"]]")
-	// Carried out of the cell block, the body leaves the roster, and it still stays dead.
+	TEST_ASSERT(findtext(newest["text"], "already logged the death"), "The revival was not logged: [newest["text"]]")
+	// Dead again and carried out of the cell block, the body leaves the roster, and is cleaned up like any human NPC's.
+	body.death()
 	var/turf/outside = prison.outside_spot_near(body)
 	TEST_ASSERT_NOTNULL(outside, "Nowhere outside the cell block to carry the body")
 	body.forceMove(outside)
 	prison.tick(1)
 	TEST_ASSERT(!(body in prison.prisoners), "The body carried out of the cell block stayed on the roster")
-	TEST_ASSERT(!body.can_be_revived(), "A dead prisoner off the roster could be revived")
-	strange.expose_mob(body, TOUCH, 20)
-	TEST_ASSERT_EQUAL(body.stat, DEAD, "Strange reagent brought back a dead prisoner off the roster")
+	TEST_ASSERT(body.npc_corpse_lifetime > 0 && (body in SShuman_npcs.corpses), "A body off the roster is never cleaned up")
 	qdel(body)
 	settle_prison_air(home)
 
@@ -284,7 +286,7 @@
 	TEST_ASSERT_NOTNULL(home, "The breach test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/turf/cell_one = prison_spot(home, 3, 14)
-	var/mob/living/basic/outpost_prisoner/prisoner = trouble_prisoner(prison, cell_one)
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_prisoner(prison, cell_one)
 
 	// The wall between cells 1 and 2, knocked down
 	var/turf/divider = prison_spot(home, 5, 14)
@@ -313,7 +315,7 @@
 	TEST_ASSERT(prison.in_cell_block(office_wall), "The hole in the yard wall is not part of the cell block")
 	TEST_ASSERT(!prison.in_cell_block(office), "The office joined the cell block through a hole in the wall")
 	TEST_ASSERT(!prison.in_cell_block(prison_spot(home, 9, 3)), "The office joined the cell block through a hole in the wall")
-	var/mob/living/basic/outpost_prisoner/runner = trouble_prisoner(prison, office_wall)
+	var/mob/living/carbon/human/npc/outpost_prisoner/runner = trouble_prisoner(prison, office_wall)
 	prison.tick(1)
 	TEST_ASSERT_NULL(runner.trouble, "A prisoner standing in the hole counted as [runner.trouble]")
 	runner.forceMove(office)
@@ -347,7 +349,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("confineowner")
 	TEST_ASSERT_NOTNULL(home, "The confinement test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 7, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 7, 14))
 	var/datum/outpost_prison_cell/cell_two = prison.cells[2]
 	var/obj/machinery/door/airlock/door = cell_two.door()
 	TEST_ASSERT(cell_two.contains(inmate), "The inmate is not in cell 2")
@@ -400,7 +402,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("wingowner")
 	TEST_ASSERT_NOTNULL(home, "The visitor test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = test_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 3, 3), "wingowner")
 	var/mob/living/carbon/human/visitor = make_player(prison_spot(home, 4, 3), "wingvisitor")
 	var/mob/living/carbon/human/builder = make_player(prison_spot(home, 5, 3), "wingbuilder")
@@ -479,7 +481,7 @@
 	TEST_ASSERT_NOTNULL(home, "The rebuilt door test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 8, 10), "doorsowner")
-	var/mob/living/basic/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 7, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/inmate = test_prisoner(prison, prison_spot(home, 7, 14))
 	var/datum/outpost_prison_cell/cell_two = prison.cells[2]
 
 	// Cell 2's door, torn out and replaced with a plain airlock
@@ -532,8 +534,8 @@
 	var/obj/structure/overmap/dynamic/player_outpost/home = prison_test_claim("deleteowner")
 	TEST_ASSERT_NOTNULL(home, "The deletion test prison did not load")
 	var/datum/outpost_prison/prison = test_prison(home)
-	var/mob/living/basic/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 3, 14))
-	var/mob/living/basic/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 8, 8))
+	var/mob/living/carbon/human/npc/outpost_prisoner/first = test_prisoner(prison, prison_spot(home, 3, 14))
+	var/mob/living/carbon/human/npc/outpost_prisoner/second = test_prisoner(prison, prison_spot(home, 8, 8))
 	TEST_ASSERT(is_outpost_prison_mob(first), "A prisoner does not count as one of the prison's mobs")
 	var/datum/outpost_manipulator/manipulator = allocate(__IMPLIED_TYPE__, null)
 	TEST_ASSERT_NULL(manipulator.deletion_denial(home), "Prisoners blocked deleting the outpost: [manipulator.deletion_denial(home)]")

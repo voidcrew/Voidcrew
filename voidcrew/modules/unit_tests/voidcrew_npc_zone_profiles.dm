@@ -732,16 +732,22 @@
 	var/turf/location = run_loc_floor_bottom_left
 	var/datum/ambient_place/site/site = allocate(/datum/ambient_place/site, null, location)
 	site.band = 2
-	var/mob/living/basic/ambient_npc/planet/peddler/peddler = allocate(/mob/living/basic/ambient_npc/planet/peddler, location)
+	var/mob/living/carbon/human/npc/ambient_npc/planet/peddler/peddler = allocate(/mob/living/carbon/human/npc/ambient_npc/planet/peddler, location)
 	peddler.set_place(site)
 	var/mob/living/basic/bait = allocate(/mob/living/basic, run_loc_floor_top_right)
 	var/datum/ambient_activity/caravan_ambush/ambush = allocate(/datum/ambient_activity/caravan_ambush, peddler)
-	var/mob/living/raider = ambush.spawn_raider(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right, bait)
-	allocated += raider
-	// spawn_pack owns this ledger and Destroy unregisters the pack's attack signal.
-	ambush.pack += WEAKREF(raider)
-	TEST_ASSERT_EQUAL(raider.npc_spawn_context.source_id, REF(site), "Caravan ambusher lost site identity")
-	TEST_ASSERT_EQUAL(raider.maxHealth, 135, "Caravan ambusher ignored the site band")
+	// The pack is human pirates, sent for through the human NPC queue with the site's band
+	var/sent = ambush.spawn_pack()
+	TEST_ASSERT_EQUAL(sent, 2, "A yellow caravan's ambush sent for [sent] raiders, not 2")
+	TEST_ASSERT_EQUAL(length(ambush.orders), sent, "The ambush did not queue its raiders")
+	for(var/datum/human_npc_order/order as anything in ambush.orders)
+		TEST_ASSERT(ispath(order.npc_type, /mob/living/carbon/human/npc/faction_pirate), "A caravan ambusher is [order.npc_type], not a human pirate")
+		TEST_ASSERT_EQUAL(order.context?.zone_type, 2, "A caravan ambusher is not dressed for the site's band")
+	// Each raider, once built, is turned on the caravan and kept near it
+	var/mob/living/raider = allocate(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_top_right)
+	raider.faction = list("planetary_test", FACTION_HOSTILE)
+	ambush.raider_built(WEAKREF(bait), raider)
+	TEST_ASSERT(WEAKREF(raider) in ambush.pack, "A built raider is not counted in the pack")
 	TEST_ASSERT(raider.GetComponent(/datum/component/leash), "Caravan ambusher missed its setup")
 	TEST_ASSERT_EQUAL(raider.ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET], bait, "Caravan target setup was lost")
 	for(var/faction_token in raider.faction)
@@ -886,15 +892,17 @@
 	var/obj/structure/overmap/ship/ship = strays_test_ship(ambient_test_room_bounds())
 	var/mob/living/carbon/human/consistent/leader = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
 	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "ordinary")
-	var/mob/living/basic/ambient_npc/stray/stranded/stray = spawn_npc_in_zone(/mob/living/basic/ambient_npc/stray/stranded, run_loc_floor_bottom_left, context, FALSE)
+	var/mob/living/carbon/human/npc/ambient_npc/stray/stranded/stray = spawn_npc_in_zone(/mob/living/carbon/human/npc/ambient_npc/stray/stranded, run_loc_floor_bottom_left, context, FALSE)
 	allocated += stray
-	stray.faction = list(FACTION_HOSTILE)
 	context.finalize()
-	TEST_ASSERT(stray.npc_zone_applied, "Recruit fixture did not begin profiled")
-	stray.setBruteLoss(stray.maxHealth / 2)
+	// A human body keeps tg's health in any zone (human NPCs, defaults PI-1): no profile to begin with
+	TEST_ASSERT(!stray.npc_zone_applied, "A human stray was given a zone health profile")
+	TEST_ASSERT_EQUAL(stray.maxHealth, 100, "A human stray's health was scaled by its zone")
+	stray.apply_damage(40, BRUTE, BODY_ZONE_CHEST)
+	var/health_before = stray.health
 	TEST_ASSERT(stray.accept_offer(leader, ship), "Recruit fixture could not join")
-	TEST_ASSERT(stray.npc_zone_exempt && !stray.npc_zone_applied, "Recruitment retained a hostile profile")
-	TEST_ASSERT(abs(stray.health / stray.maxHealth - 0.5) < 0.001, "Recruitment healed the recruit")
+	TEST_ASSERT(stray.npc_zone_exempt, "Recruitment did not take the recruit out of the zone rules")
+	TEST_ASSERT_EQUAL(stray.health, health_before, "Recruitment healed the recruit")
 	var/datum/npc_spawn_context/child_context = allocate(/datum/npc_spawn_context, stray, 3)
 	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test/replacement, run_loc_floor_bottom_left, child_context)
 	allocated += child
@@ -1131,7 +1139,7 @@
 	home.npc_spawn_context = allocate(/datum/npc_spawn_context, home, 3)
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/datum/outpost_guard_record/record = prison.add_guard_record(TRUE)
-	var/mob/living/basic/outpost_prison_guard/guard = record.guard
+	var/mob/living/carbon/human/npc/outpost_prison_guard/guard = record.guard
 	check_npc_zone_child(guard, home.npc_spawn_context, TRUE)
 	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, guard)
 	var/mob/living/child = spawn_npc_in_zone(/mob/living/basic/npc_zone_test, get_turf(guard), context)
@@ -1234,8 +1242,6 @@
 		/mob/living/basic/trooper/nanotrasen/ranged/smg,
 		/mob/living/basic/trooper/nanotrasen/ranged/assault,
 		/mob/living/basic/trooper/nanotrasen/ranged/elite,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/assault/customs,
 		/mob/living/basic/trooper/syndicate/ranged/smg,
 		/mob/living/basic/trooper/syndicate/ranged/shotgun,
 		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
@@ -1243,8 +1249,8 @@
 	for(var/mob_type in shooters)
 		for(var/zone in 1 to 3)
 			var/is_nt = ispath(mob_type, /mob/living/basic/trooper/nanotrasen)
-			var/is_customs = mob_type == /mob/living/basic/trooper/nanotrasen/ranged/smg/customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
-			var/replaced = zone == 1 || (zone == 2 && (!is_nt || is_customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
+			// NT customs are human NPCs now; their ladder is tested in voidcrew_human_npcs_nt_customs.dm
+			var/replaced = zone == 1 || (zone == 2 && (!is_nt || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
 			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
 			var/mob/living/basic/trooper/body = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
 			var/datum/component/ranged_attacks/ranged = body.GetComponent(/datum/component/ranged_attacks)
