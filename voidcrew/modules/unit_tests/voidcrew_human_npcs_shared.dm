@@ -425,3 +425,24 @@
 	TEST_ASSERT(prisoner.dropItemToGround(gun), "An unlocked NPC can't let go of its gun")
 	sleep(2)
 	TEST_ASSERT(!QDELETED(gun) && isturf(gun.loc), "An unlocked NPC's dropped gun was deleted")
+
+/**
+ * Phase E follow-ups to the spawn queue: an order built later checks that its spot is still the place it
+ * was queued for (a ruin unloaded while it waited), and the NPC faces the way it was told (a mapped
+ * spawner's dir).
+ */
+/datum/unit_test/voidcrew_human_npc_order_spot
+
+/datum/unit_test/voidcrew_human_npc_order_spot/Run()
+	var/datum/human_npc_order/facing = spawn_human_npc(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left, immediate = TRUE, dir = EAST)
+	var/mob/living/carbon/human/npc/facer = facing.spawned_ref?.resolve()
+	TEST_ASSERT_NOTNULL(facer, "An order for the test floor built nothing")
+	if(facer)
+		allocated += facer
+		TEST_ASSERT_EQUAL(facer.dir, EAST, "An NPC built with a dir doesn't face it")
+	var/datum/human_npc_order/moved_on = new /datum/human_npc_order(/mob/living/carbon/human/npc/sample/gunner, run_loc_floor_bottom_left)
+	TEST_ASSERT(moved_on.spot_still_valid(), "A fresh order's spot doesn't count as its own")
+	// The ground was reused while it waited: its area is not the one it was queued in.
+	moved_on.where_area = null
+	TEST_ASSERT_NULL(moved_on.fulfil(), "An order whose spot was reused still built its NPC there")
+	qdel(moved_on)

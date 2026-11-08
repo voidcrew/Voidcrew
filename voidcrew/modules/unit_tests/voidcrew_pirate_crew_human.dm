@@ -412,3 +412,41 @@
 	TEST_ASSERT(counter.counts_victim(crewman), "A suppression sweep doesn't count the human pirate crews")
 	var/mob/living/basic/trooper/pirate/faction/basic_pirate = allocate(/mob/living/basic/trooper/pirate/faction/grey/melee)
 	TEST_ASSERT(counter.counts_victim(basic_pirate), "A suppression sweep stopped counting the basic faction pirates")
+
+// ===== WITH NO CREW =====
+
+/**
+ * A pirate with no crew (a ruin's, a contract's) gives up by its family's rules and walks home when it has
+ * strayed with nothing to fight; one in a crew does neither. Blackboard keys by their strings.
+ */
+/datum/unit_test/voidcrew_pirate_crew/human_crew/crewless
+
+/datum/unit_test/voidcrew_pirate_crew/human_crew/crewless/Run()
+	var/mob/living/carbon/human/npc/faction_pirate/grey/melee/tider = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/melee, spot(0, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/skeleton/melee/skeleton = build_npc(/mob/living/carbon/human/npc/faction_pirate/skeleton/melee, spot(1, 0))
+	var/mob/living/carbon/human/npc/faction_pirate/grey/boss/robust = build_npc(/mob/living/carbon/human/npc/faction_pirate/grey/boss, spot(2, 0))
+	TEST_ASSERT(istype(tider.npc_surrender_rules(), /datum/human_npc_surrender/faction_pirate/meek), "A grey tider doesn't give up like a tider")
+	TEST_ASSERT_NULL(skeleton.npc_surrender_rules(), "A skeleton pirate can give up")
+	tider.apply_damage(70, BRUTE, BODY_ZONE_CHEST)
+	robust.apply_damage(70, BRUTE, BODY_ZONE_CHEST)
+	TEST_ASSERT(tider.npc_surrender_rules().hurt_enough(tider), "A badly hurt grey tider doesn't think about giving up")
+	TEST_ASSERT(!robust.npc_surrender_rules().hurt_enough(robust), "A pirate boss thinks about giving up")
+	TEST_ASSERT_EQUAL(tider.ai_controller.blackboard["pirate_crewless_home"], spot(0, 0), "A crewless pirate doesn't know where it was put")
+
+	// Strayed with nobody to fight: it walks home.
+	var/turf/far_home = locate(tider.x + 12, tider.y, tider.z)
+	tider.ai_controller.set_blackboard_key("pirate_crewless_home", far_home)
+	var/datum/ai_planning_subtree/pirate_crewless_home/home_leash = GLOB.ai_subtrees[/datum/ai_planning_subtree/pirate_crewless_home]
+	TEST_ASSERT_EQUAL(home_leash.SelectBehaviors(tider.ai_controller, 1), SUBTREE_RETURN_FINISH_PLANNING, "A crewless pirate twelve tiles from home doesn't walk back")
+	TEST_ASSERT_EQUAL(tider.ai_controller.blackboard["pirate_return_turf"], far_home, "A crewless pirate walks somewhere other than home")
+	tider.ai_controller.CancelActions()
+	tider.ai_controller.clear_blackboard_key("pirate_return_turf")
+
+	// In a crew it does neither: its crew decides.
+	var/obj/structure/overmap/ship/npc/pirate/hull = allocate(/obj/structure/overmap/ship/npc/pirate)
+	hull.on_crewman_built(tider)
+	TEST_ASSERT_NULL(home_leash.SelectBehaviors(tider.ai_controller, 1), "A pirate in a crew walks to its own spawn point")
+	var/datum/ai_planning_subtree/human_npc_surrender/crewless/give_up = GLOB.ai_subtrees[/datum/ai_planning_subtree/human_npc_surrender/crewless]
+	tider.npc_next_surrender_roll = 0
+	TEST_ASSERT_NULL(give_up.SelectBehaviors(tider.ai_controller, 1), "A pirate in a crew rolls to give up on its own")
+	qdel(pirate_crew_of(hull))
