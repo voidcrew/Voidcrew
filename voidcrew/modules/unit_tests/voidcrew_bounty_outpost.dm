@@ -86,14 +86,19 @@
 		fugitive.record = record
 	return fugitive
 
-/// An open trader-outpost posting at `outpost` with its fugitive standing at `where`
-/datum/unit_test/voidcrew_bounty_outpost/proc/make_posting(turf/where, fugitive_type = /mob/living/carbon/human/npc/bounty_criminal/meek/outpost_test)
-	var/datum/bounty_record/record = generate_bounty_record(1, "meek", "trader_outpost") // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_MEEK, BOUNTY_PLACEMENT_TRADER_OUTPOST
+/// An open trader-outpost posting at `outpost` with its fugitive standing at `where`. `features` and `species`, if given, are the record's instead of rolled ones.
+/datum/unit_test/voidcrew_bounty_outpost/proc/make_posting(turf/where, fugitive_type = /mob/living/carbon/human/npc/bounty_criminal/meek/outpost_test, list/features, species)
+	var/datum/bounty_record/record = generate_bounty_record(1, "meek", "trader_outpost", species) // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_MEEK, BOUNTY_PLACEMENT_TRADER_OUTPOST
+	if(features)
+		record.features = features.Copy()
 	var/datum/criminal_bounty/outpost_test/posting = allocate(/datum/criminal_bounty/outpost_test)
 	posting.record = record
 	posting.placement_kind = "trader_outpost" // BOUNTY_PLACEMENT_TRADER_OUTPOST
 	posting.site_ref = WEAKREF(outpost)
 	posting.value = 1234
+	// The real board ticks every posting in GLOB.criminal_bounties: with no time left it would close this
+	// one as expired at its next tick, and its decoys would walk out (and vanish, with no player there)
+	posting.expires_at = world.time + 1 HOURS
 	var/mob/living/carbon/human/npc/bounty_criminal/fugitive = make_fugitive(fugitive_type, where, record)
 	fugitive.posting_ref = WEAKREF(posting)
 	posting.criminal_ref = WEAKREF(fugitive)
@@ -123,28 +128,33 @@
 			. += decoy
 
 /**
- * A mob's examine as plain text, with its own features taken out: their lines, and the lines for the
- * glasses and scarf it wears for them (bounty_wear_features(); the patron clothes put nothing in those
- * slots), which differ between a fugitive and a decoy that doesn't share them.
+ * A mob's examine as plain text without its features: their lines, and the lines for the glasses and
+ * scarf it wears for its Eyewear and Clothing features (bounty_wear_features()). Features are the
+ * clues, made to differ between a fugitive and a decoy that doesn't share them; the rest is what the
+ * game makes the same (AR-C6). An item's line is found by the item's own examine title, as tg's examine
+ * writes it ("some sunglasses"; "[item]" would read "the sunglasses" and never match).
  */
 /datum/unit_test/voidcrew_bounty_outpost/proc/plain_examine(mob/living/carbon/human/npc/bounty_criminal/patron, mob/viewer)
 	var/list/features = list()
 	for(var/line in patron.record?.feature_lines())
 		features += trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
-	var/list/feature_items = list()
-	for(var/obj/item/worn in list(patron.glasses, patron.wear_neck))
-		feature_items += "[worn]"
+	var/list/feature_titles = list()
+	var/list/kinds = patron.record?.features
+	if(LAZYACCESS(kinds, "glasses") && patron.glasses) // BOUNTY_FEATURE_GLASSES
+		feature_titles += trim(STRIP_HTML_FULL(patron.glasses.examine_title(viewer), MAX_MESSAGE_LEN))
+	if(LAZYACCESS(kinds, "clothing") && patron.wear_neck) // BOUNTY_FEATURE_CLOTHING
+		feature_titles += trim(STRIP_HTML_FULL(patron.wear_neck.examine_title(viewer), MAX_MESSAGE_LEN))
 	var/list/lines = list()
 	for(var/line in patron.examine(viewer))
 		var/plain = trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
 		if(plain in features)
 			continue
-		var/names_feature_item = FALSE
-		for(var/item_name in feature_items)
-			if(findtext(plain, item_name))
-				names_feature_item = TRUE
+		var/feature_item_line = FALSE
+		for(var/title in feature_titles)
+			if(length(title) && findtext(plain, title))
+				feature_item_line = TRUE
 				break
-		if(!names_feature_item)
+		if(!feature_item_line)
 			lines += plain
 	return lines.Join(" | ")
 
@@ -265,12 +275,29 @@
 /datum/unit_test/voidcrew_bounty_outpost/look_alikes/Run()
 	outpost = make_outpost(/obj/structure/overmap/trader_outpost/outfitter)
 	outpost.lobby_alcove_turfs = list(run_loc_floor_top_right)
-	var/datum/criminal_bounty/outpost_test/posting = make_posting()
+	// A human (a plasmaman is below), and its features are set, not rolled: worn ones (glasses, a scarf)
+	// and one that is only words, so every run has worn feature items on the fugitive, and on whichever
+	// decoys share or roll them. Which ones the decoys share stays random; nothing below depends on it.
+	var/list/features = list(
+		"glasses" = "sunglasses", // BOUNTY_FEATURE_GLASSES
+		"clothing" = "a red scarf", // BOUNTY_FEATURE_CLOTHING
+		"scar" = "a scar across the chin", // BOUNTY_FEATURE_SCAR
+	)
+	var/datum/criminal_bounty/outpost_test/posting = make_posting(features = features, species = /datum/species/human)
 	var/mob/living/carbon/human/npc/bounty_criminal/fugitive = posting.criminal()
 	// Tougher than a person, so the decoys have something to match
 	fugitive.set_npc_toughness(0.8)
 	TEST_ASSERT_NOTNULL(fugitive.wear_suit, "Test fixture: the fugitive wears no armour")
 	TEST_ASSERT_NOTNULL(fugitive.head, "Test fixture: the fugitive wears no helmet")
+	TEST_ASSERT(istype(fugitive.glasses, /obj/item/clothing/glasses/sunglasses), "Test fixture: the fugitive doesn't wear its sunglasses")
+	TEST_ASSERT(istype(fugitive.wear_neck, /obj/item/clothing/neck/scarf/red), "Test fixture: the fugitive doesn't wear its scarf")
+	// A meek criminal's fanny pack, with its spare magazine, as its holdout style gives it
+	var/obj/item/storage/belt/fannypack/pack = new(fugitive)
+	new /obj/item/ammo_box/magazine/m9mm(pack)
+	TEST_ASSERT(fugitive.equip_to_slot_or_del(pack, ITEM_SLOT_BELT), "Test fixture: the fugitive's fanny pack didn't go on")
+	// Only features go on the eyes and the neck: none of the crowds' clothes puts anything there
+	for(var/datum/outfit/crowd as anything in list(/datum/outfit/bounty_outpost_patron, /datum/outfit/bounty_outpost_dockhand, /datum/outfit/bounty_outpost_spacer))
+		TEST_ASSERT(!initial(crowd.glasses) && !initial(crowd.neck), "[crowd] puts something on the eyes or the neck")
 	TEST_ASSERT(posting.setup_outpost_blend(TRUE), "The posting could not be set up to blend in")
 	var/list/decoys = decoys_of(posting)
 	TEST_ASSERT(length(decoys), "No decoys to compare with")
@@ -317,6 +344,13 @@
 	TEST_ASSERT_NULL(locate(/obj/item/gun) in decoy.get_all_contents(), "A decoy carries a gun")
 	TEST_ASSERT_NULL(decoy.get_active_held_item(), "A decoy holds something")
 	TEST_ASSERT_NULL(decoy.get_inactive_held_item(), "A decoy holds something")
+	// The fugitive keeps its fanny pack, and every decoy wears one like it, empty (outpost_match_kit())
+	TEST_ASSERT_EQUAL(fugitive.belt, pack, "Changing clothes took the fugitive's fanny pack")
+	for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/each as anything in decoys)
+		TEST_ASSERT_EQUAL(each.belt?.type, fugitive.belt?.type, "A decoy wears another belt from the fugitive's")
+		TEST_ASSERT_EQUAL(each.back?.type, fugitive.back?.type, "A decoy wears another bag from the fugitive's")
+		TEST_ASSERT(!length(each.belt?.contents), "A decoy's fanny pack has something in it")
+		TEST_ASSERT(human_npc_gear_locked(each.belt), "A decoy's fanny pack isn't locked to its body")
 
 	// The same toughness and pace, through the body and never through a stand-in
 	TEST_ASSERT_EQUAL(fugitive.npc_damage_taken, 0.8, "Test fixture: the fugitive's toughness did not take")
@@ -330,9 +364,31 @@
 	TEST_ASSERT_EQUAL(decoy.move_resist, person.move_resist, "A decoy is harder to move than a person")
 	TEST_ASSERT_EQUAL(fugitive.move_resist, person.move_resist, "A fugitive blending in is harder to move than a person")
 
-	// Examine: the same plain text once each one's own feature lines are taken out
+	// Examine: the same plain text for every decoy once each one's own features are taken out
 	var/mob/living/carbon/human/viewer = make_hunter()
-	TEST_ASSERT_EQUAL(plain_examine(decoy, viewer), plain_examine(fugitive, viewer), "A decoy examines differently from the fugitive")
+	var/fugitive_examine = plain_examine(fugitive, viewer)
+	TEST_ASSERT(!findtext(fugitive_examine, "sunglasses") && !findtext(fugitive_examine, "scarf"), "The fugitive's worn features weren't taken out of its examine: [fugitive_examine]")
+	TEST_ASSERT(findtext(fugitive_examine, "fannypack"), "The fugitive's fanny pack isn't in its examine: [fugitive_examine]")
+	for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/each as anything in decoys)
+		TEST_ASSERT_EQUAL(plain_examine(each, viewer), fugitive_examine, "A decoy examines differently from the fugitive")
+
+	// A plasmaman keeps what it can't live without (its envirosuit, helmet and gloves) under the zone's
+	// coat and boots, and its decoys, plasmamen too, are dressed over the same
+	var/datum/criminal_bounty/outpost_test/plasma_posting = make_posting(species = /datum/species/plasmaman)
+	var/mob/living/carbon/human/npc/bounty_criminal/plasma = plasma_posting.criminal()
+	TEST_ASSERT(plasma_posting.setup_outpost_blend(TRUE), "A plasmaman's posting could not be set up to blend in")
+	TEST_ASSERT(istype(plasma.w_uniform, /obj/item/clothing/under/plasmaman), "A plasmaman fugitive took off its envirosuit to blend in")
+	TEST_ASSERT(istype(plasma.head, /obj/item/clothing/head/helmet/space/plasmaman), "A plasmaman fugitive took off its helmet to blend in")
+	TEST_ASSERT(istype(plasma.wear_suit, /obj/item/clothing/suit/hazardvest), "A plasmaman fugitive did not put on the zone's coat")
+	var/list/plasma_decoys = decoys_of(plasma_posting)
+	TEST_ASSERT(length(plasma_decoys), "No decoys for the plasmaman")
+	for(var/mob/living/carbon/human/npc/bounty_criminal/decoy/each as anything in plasma_decoys)
+		TEST_ASSERT_EQUAL(each.dna.species.type, /datum/species/plasmaman, "A plasmaman's decoy is another species")
+		TEST_ASSERT_EQUAL(each.w_uniform?.type, plasma.w_uniform?.type, "A plasmaman's decoy wears another envirosuit")
+		TEST_ASSERT_EQUAL(each.head?.type, plasma.head?.type, "A plasmaman's decoy wears another helmet")
+		TEST_ASSERT_EQUAL(each.wear_suit?.type, plasma.wear_suit?.type, "A plasmaman's decoy wears another coat")
+		TEST_ASSERT_EQUAL(each.gloves?.type, plasma.gloves?.type, "A plasmaman's decoy wears other gloves")
+		TEST_ASSERT_EQUAL(each.shoes?.type, plasma.shoes?.type, "A plasmaman's decoy wears other boots")
 
 	// A decoy made any other way still dresses as a customer, never as a criminal
 	var/mob/living/carbon/human/npc/bounty_criminal/decoy/stray = allocate(/mob/living/carbon/human/npc/bounty_criminal/decoy)
