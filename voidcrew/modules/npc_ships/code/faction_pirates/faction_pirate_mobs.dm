@@ -174,7 +174,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/melee/sabre
 	random_loot = null
 	plunder_credits = 1000
 
@@ -250,7 +250,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/claymore/cutlass
 	loot_pool = list(/obj/item/gun/energy/laser)
 	random_loot = null
 	plunder_credits = 1000

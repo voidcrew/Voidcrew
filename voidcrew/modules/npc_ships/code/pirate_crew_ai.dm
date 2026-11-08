@@ -13,7 +13,7 @@
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 		BB_TARGET_MINIMUM_STAT = HARD_CRIT,
 	)
-	ai_movement = /datum/ai_movement/jps/pirate_crew
+	ai_movement = /datum/ai_movement/pirate_crew
 	idle_behavior = /datum/idle_behavior/pirate_crew_wander
 	// A hunt across two docked hulls runs far past tg's 14-tile give-up distance
 	max_target_distance = 90
@@ -266,18 +266,52 @@
 
 // ===== MOVEMENT =====
 
-/// JPS that reaches across two docked hulls and tells the AI when it finds no way at all
-/datum/ai_movement/jps/pirate_crew
+/**
+ * JPS that reaches across two docked hulls, never plans a route through space, and tells the AI
+ * when it finds no way at all.
+ *
+ * Not a /datum/ai_movement/jps subtype on purpose. That one lets anything with TRAIT_SPACEWALK
+ * (every faction pirate) path through space, and it decides so before a subtype could step in,
+ * so a pirate kept out of its own docking airlock by blast doors walked out another airlock and
+ * across open space instead. The body below is upstream's start_moving_towards() with space
+ * routing switched off. Two hulls berthed exit-to-exit share no space tiles, so crossing over
+ * still works.
+ */
+/datum/ai_movement/pirate_crew
 	max_pathing_attempts = 10
-	maximum_length = PIRATE_CREW_MAX_PATH
+	/// Longest route the pathfinder plans in one go; the hunt adds waypoints past this
+	var/maximum_length = PIRATE_CREW_MAX_PATH
+	/// How diagonal steps are handled, as upstream JPS does it
+	var/diagonal_flags = DIAGONAL_REMOVE_CLUNKY
 
-/datum/ai_movement/jps/pirate_crew/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target, min_distance)
-	var/datum/move_loop/loop = ..()
-	if(loop)
-		RegisterSignal(loop, COMSIG_MOVELOOP_JPS_FINISHED_PATHING, PROC_REF(on_path_finished))
+/datum/ai_movement/pirate_crew/start_moving_towards(datum/ai_controller/controller, atom/current_movement_target, min_distance)
+	. = ..()
+	var/datum/move_loop/has_target/jps/loop = GLOB.move_manager.jps_move(controller.pawn,
+		current_movement_target,
+		controller.movement_delay,
+		repath_delay = 0.5 SECONDS,
+		simulated_only = TRUE,
+		max_path_length = maximum_length,
+		minimum_distance = controller.get_minimum_distance(),
+		access = controller.get_access(),
+		subsystem = SSai_movement,
+		diagonal_handling = diagonal_flags,
+		extra_info = controller,
+	)
+	RegisterSignal(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move))
+	RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move))
+	RegisterSignal(loop, COMSIG_MOVELOOP_JPS_REPATH, PROC_REF(repath_incoming))
+	RegisterSignal(loop, COMSIG_MOVELOOP_JPS_FINISHED_PATHING, PROC_REF(on_path_finished))
 	return loop
 
-/datum/ai_movement/jps/pirate_crew/proc/on_path_finished(datum/move_loop/has_target/jps/source, list/path)
+/// Same as upstream JPS: the next route uses our current access and reach
+/datum/ai_movement/pirate_crew/proc/repath_incoming(datum/move_loop/has_target/jps/source)
+	SIGNAL_HANDLER
+	var/datum/ai_controller/controller = source.extra_info
+	source.access = controller.get_access()
+	source.minimum_distance = controller.get_minimum_distance()
+
+/datum/ai_movement/pirate_crew/proc/on_path_finished(datum/move_loop/has_target/jps/source, list/path)
 	SIGNAL_HANDLER
 	if(length(path))
 		return
@@ -286,12 +320,12 @@
 		return
 	note_no_path(controller, get_turf(source.target))
 
-/datum/ai_movement/jps/pirate_crew/increment_pathing_failures(datum/ai_controller/controller)
+/datum/ai_movement/pirate_crew/increment_pathing_failures(datum/ai_controller/controller)
 	if(controller.consecutive_pathing_attempts + 1 >= max_pathing_attempts)
 		note_no_path(controller, get_turf(controller.current_movement_target))
 	return ..()
 
-/datum/ai_movement/jps/pirate_crew/proc/note_no_path(datum/ai_controller/controller, turf/goal)
+/datum/ai_movement/pirate_crew/proc/note_no_path(datum/ai_controller/controller, turf/goal)
 	if(!goal)
 		return
 	controller.set_blackboard_key(BB_PIRATE_NO_PATH_AT, world.time)
