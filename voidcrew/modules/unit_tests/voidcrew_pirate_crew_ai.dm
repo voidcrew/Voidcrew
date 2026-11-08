@@ -237,3 +237,66 @@
 	TEST_ASSERT(!pirate_can_open_mineral_door(slab), "A pirate tries to open a loose iron door")
 	TEST_ASSERT_NULL(pirate_crew_breach_search(pirate, spot(0, 2), spot(4, 2), areas), "The search found a way through a loose iron door")
 	qdel(pirate_crew_of(target, TRUE))
+
+// ===== GUNS =====
+
+/// Every pirate gun fires a real round from a real magazine; a gunner joining a crew trades its stock shot for one, and a crossbowman keeps his
+/datum/unit_test/voidcrew_pirate_crew/guns
+
+/datum/unit_test/voidcrew_pirate_crew/guns/Run()
+	for(var/loadout_type in subtypesof(/datum/pirate_gun_loadout))
+		var/datum/pirate_gun_loadout/loadout = GLOB.pirate_gun_loadouts[loadout_type]
+		TEST_ASSERT_NOTNULL(loadout, "[loadout_type] has no shared copy")
+		TEST_ASSERT(loadout.magazine_size() > 1, "[loadout_type] holds [loadout.magazine_size()] rounds")
+		TEST_ASSERT(loadout.fire_sound, "[loadout_type] makes no sound")
+		var/obj/projectile/shot = loadout.make_projectile(spot(4, 4))
+		TEST_ASSERT_NOTNULL(shot, "[loadout_type] fires nothing")
+		TEST_ASSERT(shot.damage > 0, "[loadout_type]'s round does no damage")
+		qdel(shot)
+	var/datum/pirate_gun_loadout/shotgun = GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/shotgun]
+	TEST_ASSERT(shotgun.pellets() > 1, "The shotgun fires one pellet")
+	var/datum/pirate_gun_loadout/smg = GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/smg]
+	TEST_ASSERT_EQUAL(smg.magazine_size(), 32, "The SMG's magazine isn't the Uzi's")
+
+	var/obj/structure/overmap/ship/target = allocate(/obj/structure/overmap/ship)
+	var/mob/living/basic/trooper/pirate/faction/irs/ranged/gunner = allocate(/mob/living/basic/trooper/pirate/faction/irs/ranged, spot(0, 0))
+	var/mob/living/basic/trooper/pirate/faction/medieval/ranged/archer = allocate(/mob/living/basic/trooper/pirate/faction/medieval/ranged, spot(0, 1))
+	TEST_ASSERT(pirate_crew_enlist_raider(gunner, target), "A gunner could not join the raid")
+	TEST_ASSERT(pirate_crew_enlist_raider(archer, target), "A crossbowman could not join the raid")
+	var/datum/component/pirate_gun/gun = pirate_gun_of(gunner)
+	TEST_ASSERT_NOTNULL(gun, "A gunner joined a crew without rolling a gun")
+	TEST_ASSERT_NULL(gunner.GetComponent(/datum/component/ranged_attacks), "A gunner kept its stock shot as well as its gun")
+	TEST_ASSERT_EQUAL(gunner.r_hand, gun.loadout.gun_type, "A gunner holds a different gun from the one it fires")
+	TEST_ASSERT_NULL(pirate_gun_of(archer), "A crossbowman traded his crossbow for a gun")
+	TEST_ASSERT_NOTNULL(archer.GetComponent(/datum/component/ranged_attacks), "A crossbowman lost his crossbow")
+
+	// A pistol fires its pair, and reloads when the magazine runs dry
+	var/mob/living/basic/trooper/pirate/ranged/pistoleer = allocate(/mob/living/basic/trooper/pirate/ranged, spot(0, 2))
+	TEST_ASSERT_EQUAL(pirate_crew_arm(pistoleer, /datum/pirate_gun_loadout/pistol), GLOB.pirate_gun_loadouts[/datum/pirate_gun_loadout/pistol], "A gunner couldn't be handed a pistol")
+	var/datum/component/pirate_gun/pistol = pirate_gun_of(pistoleer)
+	var/mob/living/carbon/human/consistent/mark = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
+	var/full = pistol.ammo
+	TEST_ASSERT(pistol.try_fire(mark), "A loaded pistol wouldn't fire")
+	TEST_ASSERT_EQUAL(pistol.ammo, full - 2, "A pistol pair didn't use two rounds")
+	TEST_ASSERT(!pistol.try_fire(mark), "A pistol fired again before its cooldown")
+	pistol.next_fire_at = 0
+	pistol.ammo = 1
+	TEST_ASSERT(pistol.try_fire(mark), "A pistol with one round left wouldn't fire")
+	TEST_ASSERT(pistol.is_reloading(), "An empty pistol isn't reloading")
+	TEST_ASSERT_EQUAL(pistol.ammo, full, "A reload didn't fill the magazine")
+
+	// A shotgunner holds fire until it's close, and a hit during the pump spoils the shot
+	var/mob/living/basic/trooper/pirate/ranged/shotgunner = allocate(/mob/living/basic/trooper/pirate/ranged, spot(0, 3))
+	pirate_crew_arm(shotgunner, /datum/pirate_gun_loadout/shotgun)
+	var/datum/component/pirate_gun/pump = pirate_gun_of(shotgunner)
+	var/mob/living/carbon/human/consistent/far_mark = allocate(/mob/living/carbon/human/consistent, spot(4, 3))
+	TEST_ASSERT(!pump.try_fire(far_mark), "A shotgun fired from four tiles out")
+	far_mark.forceMove(spot(2, 3))
+	TEST_ASSERT(pump.try_fire(far_mark), "A shotgun wouldn't fire from two tiles")
+	TEST_ASSERT(pump.winding, "A shotgun fired without pumping")
+	var/shells = pump.ammo
+	shotgunner.apply_damage(5, BRUTE)
+	TEST_ASSERT(!pump.winding, "A hit during the pump didn't spoil it")
+	pump.finish_windup(pump.serial - 1)
+	TEST_ASSERT_EQUAL(pump.ammo, shells, "A spoiled pump still fired")
+	qdel(pirate_crew_of(target, TRUE))

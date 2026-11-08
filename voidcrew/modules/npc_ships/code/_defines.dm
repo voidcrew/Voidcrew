@@ -382,6 +382,8 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define PIRATE_CREW_SWAP_COOLDOWN (1 SECONDS)
 /// Per mob, between "there he is" lines
 #define PIRATE_CREW_SPOT_BARK_MOB (20 SECONDS)
+/// Percent chance a pirate shouts as it reloads (pirate_guns.dm)
+#define PIRATE_CREW_RELOAD_BARK_CHANCE 35
 /// Per crew, between "there he is" lines
 #define PIRATE_CREW_SPOT_BARK_CREW (6 SECONDS)
 /// Per crew, between "into their ship" lines

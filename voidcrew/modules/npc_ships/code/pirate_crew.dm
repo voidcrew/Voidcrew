@@ -220,6 +220,7 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 			home_turfs -= recruit
 		return FALSE
 	if(!already_member)
+		pirate_crew_arm(recruit)
 		RegisterSignal(recruit, COMSIG_LIVING_DEATH, PROC_REF(on_member_lost))
 		RegisterSignal(recruit, COMSIG_QDELETING, PROC_REF(on_member_lost))
 		if(!raiding && role != PIRATE_ROLE_CAPTAIN)
@@ -709,6 +710,9 @@ GLOBAL_LIST_INIT(pirate_crew_captain_lines, list(
 		behavior_names += replacetext("[behavior.type]", "/datum/ai_behavior/", "")
 	text += ": [controller.ai_status][controller.can_idle ? " (may idle)" : ""][controller.able_to_plan ? "" : " (planning blocked)"][controller.on_failed_planning_timeout ? " (planning timeout)" : ""]"
 	text += ", doing [length(behavior_names) ? jointext(behavior_names, " + ") : "nothing"]"
+	var/datum/component/pirate_gun/gun = pirate_gun_of(member)
+	if(gun)
+		text += ", [gun.status_text()]"
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	text += ", target [target ? "[target]" : "none"]"
 	var/mob/hunt = controller.blackboard[BB_PIRATE_HUNT_TARGET]

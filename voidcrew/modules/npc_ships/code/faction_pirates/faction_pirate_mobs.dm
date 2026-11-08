@@ -25,6 +25,10 @@
 	var/list/crew_alert_lines
 	/// What it shouts when it spots someone. Null uses the generic lines.
 	var/list/crew_spot_lines
+	/// Weights of the guns a gunner of this faction rolls when it joins a crew (pirate_guns.dm). Null: the default mix.
+	var/list/crew_gun_weights
+	/// Keeps its own ranged weapon instead of rolling a gun
+	var/crew_keeps_gun = FALSE
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
 		/obj/item/knife/combat/survival,\
@@ -632,3 +636,56 @@
 	ADD_TRAIT(src, TRAIT_PUSHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
+
+// ==================== CREW GUNS ====================
+// What each faction's gunners roll when they join a crew (pirate_guns.dm)
+
+/mob/living/basic/trooper/pirate/faction/silverscale
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 2,
+		/datum/pirate_gun_loadout/pistol = 3,
+		/datum/pirate_gun_loadout/shotgun = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/skeleton
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/laser_rifle = 1,
+		/datum/pirate_gun_loadout/pistol = 2,
+		/datum/pirate_gun_loadout/smg = 2,
+		/datum/pirate_gun_loadout/shotgun = 3,
+	)
+
+/mob/living/basic/trooper/pirate/faction/grey
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 3,
+		/datum/pirate_gun_loadout/smg = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/lustrous
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 3,
+		/datum/pirate_gun_loadout/pistol = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/interdyne
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 2,
+		/datum/pirate_gun_loadout/pistol = 2,
+		/datum/pirate_gun_loadout/smg = 3,
+		/datum/pirate_gun_loadout/shotgun = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/irs
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 1,
+		/datum/pirate_gun_loadout/pistol = 3,
+		/datum/pirate_gun_loadout/smg = 2,
+		/datum/pirate_gun_loadout/shotgun = 2,
+	)
+
+// Crossbows suit them
+/mob/living/basic/trooper/pirate/faction/medieval
+	crew_keeps_gun = TRUE

@@ -67,17 +67,30 @@
  * or away from the helm, since nothing would get to check.
  */
 /datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper/pirate_crew
+	// Stock gunfire, or a rolled pirate gun (pirate_guns.dm)
+	operational_datums = list(/datum/component/ranged_attacks, /datum/component/pirate_gun)
 	ranged_attack_behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew
 
 /datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper/pirate_crew/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	if(!controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
 	var/datum/ai_controller/basic_controller/pirate_crew/pirate_controller = controller
-	if(istype(pirate_controller) && pirate_controller.target_hold_ground && controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
-		controller.queue_behavior(/datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/hold_ground, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
-		return SUBTREE_RETURN_FINISH_PLANNING
-	return ..()
+	var/behavior = ranged_attack_behavior
+	if(istype(pirate_controller) && pirate_controller.target_hold_ground)
+		behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/hold_ground
+	else
+		var/datum/component/pirate_gun/gun = pirate_gun_of(controller.pawn)
+		if(gun?.loadout.close_range)
+			behavior = /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/close
+	controller.queue_behavior(behavior, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+	return SUBTREE_RETURN_FINISH_PLANNING
 
 /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/// A shotgunner walks in close before it fires
+/datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/close
+	required_distance = 3
 
 /// Returns fire at someone it may not go after (off the battlefield, or past the helm's leash) without taking a step towards them
 /datum/ai_behavior/basic_ranged_attack/trooper/pirate_crew/hold_ground
@@ -116,7 +129,8 @@
 	if(QDELETED(target))
 		return FALSE
 	if(istype(src, /datum/ai_controller/basic_controller/pirate_crew/ranged))
-		return can_see(pawn, target, 5)
+		var/datum/component/pirate_gun/gun = pirate_gun_of(pawn)
+		return can_see(pawn, target, gun?.loadout.close_range || 5)
 	return get_dist(pawn, target) <= 1
 
 // ----- Door bookkeeping -----
