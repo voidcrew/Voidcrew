@@ -92,14 +92,15 @@
 	TEST_ASSERT(gun.hv_execution_possible(gunner, victim), "A downed target could not be executed")
 
 	// The real click path: a point-blank, mouth-aimed shot, the wind-up, then the shot.
+	gun.chambered.loaded_projectile.damage = 20 // doubled at the muzzle: 40, under the burst line
 	var/round_damage = gun.chambered.loaded_projectile.damage * gun.projectile_damage_multiplier
 	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	gun.fire_gun(victim, gunner, TRUE, null)
-	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A 9mm execution took the head off")
+	TEST_ASSERT_EQUAL(victim.get_bodypart(BODY_ZONE_HEAD), head, "A light execution took the head off")
 	TEST_ASSERT(head.brute_dam >= round_damage * 1.5, "The execution round was not boosted at the muzzle ([head.brute_dam] head damage from a [round_damage] round)")
-	TEST_ASSERT_NOTEQUAL(victim.stat, DEAD, "A 9mm execution killed a healthy target with more than its round's damage")
-	TEST_ASSERT(head.hv_skull_wound >= 2, "A 9mm execution left no skull wound for its damage")
-	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_BRAIN), "A 9mm execution destroyed the brain")
+	TEST_ASSERT_NOTEQUAL(victim.stat, DEAD, "A light execution killed a healthy target with more than its round's damage")
+	TEST_ASSERT(head.hv_skull_wound >= 2, "A light execution left no skull wound for its damage")
+	TEST_ASSERT_NOTNULL(victim.get_organ_slot(ORGAN_SLOT_BRAIN), "A light execution destroyed the brain")
 	TEST_ASSERT_EQUAL(gun.projectile_damage_multiplier, initial(gun.projectile_damage_multiplier), "The point-blank boost stayed on the gun")
 
 	// Someone in hard crit dies of the same round's real damage.
@@ -109,7 +110,7 @@
 	TEST_ASSERT(dying.stat >= SOFT_CRIT, "Test fixture: 150 brute did not put the target in crit")
 	gun.fire_cd = FALSE
 	TEST_ASSERT(gun.hv_fire_execution(gunner, dying, null), "The execution shot did not fire")
-	TEST_ASSERT_EQUAL(dying.stat, DEAD, "A 9mm execution of someone in hard crit did not kill them")
+	TEST_ASSERT_EQUAL(dying.stat, DEAD, "A light execution of someone in hard crit did not kill them")
 
 /// A heavy enough round bursts the head, and the brain survives it.
 /datum/unit_test/hv_gun_execution_burst
@@ -122,7 +123,7 @@
 	gun.can_misfire = FALSE
 	gunner.put_in_active_hand(gun, forced = TRUE)
 	gunner.zone_selected = BODY_ZONE_PRECISE_MOUTH
-	gun.chambered.loaded_projectile.damage = 60 // doubled at the muzzle: over HV_EXECUTION_BURST_DAMAGE 80
+	gun.chambered.loaded_projectile.damage = 60 // doubled at the muzzle: over HV_EXECUTION_BURST_DAMAGE 50
 	ADD_TRAIT(victim, TRAIT_RESTRAINED, TRAIT_SOURCE_UNIT_TESTS)
 	TEST_ASSERT(gun.hv_execution_possible(gunner, victim), "A restrained target could not be executed")
 
