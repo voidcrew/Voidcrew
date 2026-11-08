@@ -546,10 +546,14 @@
 	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard is [victim.phase], not down")
 	TEST_ASSERT(locate(/obj/item/melee/baton/security) in victim.get_all_contents(), "A dead guard's baton left the body")
 	TEST_ASSERT(human_npc_gear_locked(locate(/obj/item/melee/baton/security) in victim.get_all_contents()), "A dead guard's baton is not locked to the body (D3)")
+	// Zipped into a bag out of sight, the body is still collected: the service locks on to its own staff.
+	var/stash = allocate(/obj/structure/closet/body_bag, get_turf(victim))
+	victim.forceMove(stash)
 	prison.tick(59)
 	TEST_ASSERT_EQUAL(victim.phase, "down", "A dead guard's body was collected early")
 	prison.tick(1) // OUTPOST_GUARD_BODY_COLLECT_DELAY
 	TEST_ASSERT_EQUAL(victim.phase, "leaving", "A dead guard's body was not collected after a minute")
+	TEST_ASSERT(isturf(victim.loc), "A dead guard's body was left in the bag it was stashed in")
 	TEST_ASSERT_EQUAL(record.away_left, 600, "A killed guard is away for [record.away_left] s, not 600") // OUTPOST_GUARD_RETURN_TIME
 	prison.tick(600)
 	TEST_ASSERT_NOTNULL(record.guard, "A killed guard's slot was not filled again after ten minutes")

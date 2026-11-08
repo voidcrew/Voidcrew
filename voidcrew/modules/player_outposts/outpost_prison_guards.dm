@@ -1046,13 +1046,18 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
  * The corrections service takes a downed guard's real body away (a transport: the same beam as
  * everyone's, with no heal), or a dead guard's body once it has lain for OUTPOST_GUARD_BODY_COLLECT_DELAY.
  * Their wages stopped when they went down (guard_payroll()); their record sends them back after
- * OUTPOST_GUARD_RETURN_TIME. A body nobody can reach (off the level, buckled, in a bag) waits.
+ * OUTPOST_GUARD_RETURN_TIME. The service locks on to its own staff wherever the body is: zipped in a bag,
+ * shut in a locker, carried off. Otherwise a body stashed out of sight would hold the slot for the rest
+ * of the round, and lie there for anyone to cut up.
  */
 /datum/outpost_prison/proc/guard_medevac(mob/living/carbon/human/npc/outpost_prison_guard/guard)
 	if(QDELETED(guard) || guard.phase != OUTPOST_GUARD_DOWN)
 		return FALSE
 	if(!isturf(guard.loc))
-		return FALSE
+		var/turf/out_of_it = get_turf(guard)
+		if(isnull(out_of_it))
+			return FALSE
+		guard.forceMove(out_of_it)
 	guard.pulledby?.stop_pulling()
 	guard.buckled?.unbuckle_mob(guard, force = TRUE)
 	add_log(guard.stat == DEAD ? "The corrections service collected [guard.real_name]'s body." : "The corrections service took [guard.real_name] away for treatment.")
