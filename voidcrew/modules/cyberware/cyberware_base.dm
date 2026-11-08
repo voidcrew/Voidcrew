@@ -164,6 +164,8 @@
 	name = "cyberware optics"
 	desc = "Aftermarket eyes. The irises catch the light in a way real ones don't."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// The base is never sold; it borrows the plainest optics' sprite so it has one.
+	icon_state = "nightshade"
 	actions_types = list(/datum/action/cooldown/cyberware/chrome_read)
 	/// Neural load this ware puts on its bearer.
 	var/chrome_load = 1
@@ -238,6 +240,8 @@
 	name = "arm cyberware"
 	desc = "Aftermarket arm hardware. Folds away until you want it."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// The base is never sold; it borrows a plain arm housing's sprite so it has one.
+	icon_state = "fixers"
 	// Worn look (see the cyberware base above): the arm pipeline derives
 	// "[aug_overlay]_left/_right" from the installed zone on its own. No
 	// separate hand states in our sheet, so the hand overlay stays off.

@@ -158,8 +158,14 @@
 /datum/unit_test/voidcrew_cyberware_arm_slots
 
 /datum/unit_test/voidcrew_cyberware_arm_slots/Run()
-	// The other two palm and wrist pieces share the hands slot with it (ware_street_passives.dm).
-	var/list/exempt = list(/obj/item/organ/cyberimp/cyberware/gecko, /obj/item/organ/cyberimp/cyberware/medic_palms, /obj/item/organ/cyberimp/cyberware/cuffer_wrists)
+	// The other two palm and wrist pieces share the hands slot with it (ware_street_passives.dm),
+	// and the chrome wheel tests' hand fixture stands in for them (voidcrew_chrome_wheel.dm).
+	var/list/exempt = list(
+		/obj/item/organ/cyberimp/cyberware/gecko,
+		/obj/item/organ/cyberimp/cyberware/medic_palms,
+		/obj/item/organ/cyberimp/cyberware/cuffer_wrists,
+		/obj/item/organ/cyberimp/cyberware/test_wheel_hand,
+	)
 	var/list/arm_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
 	for(var/organ_path in arm_ware)
 		if(organ_path in exempt)
