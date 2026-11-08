@@ -7,8 +7,11 @@
  * - The housings show on both forearms (organ_looks puts the real pair in the look dummy).
  * - When the fight starts the blades come out with the housing's own sound and a line, one in each
  *   hand, drawn with the blade's real in-hand sprites. While they are out the blade is their weapon:
- *   its real numbers (bounty_real_weapon()), and its verbs. When they leave the fight, go down, die
- *   or are hit by an EMP, the blades go back in and their own weapon comes back.
+ *   its real numbers (bounty_real_weapon()) and its verbs on every blow, and their style's own extras
+ *   (a brawler's shove, a bat's knock-back) stay out of it (owns_blow()). When they leave the fight,
+ *   go down, die or are hit by an EMP, the blades go back in and their own weapon comes back.
+ * - They never carry a gun or a bottle: whatever put the housings in them (a roll, an admin's pick),
+ *   a fighter whose style isn't one of the close-in ones becomes a knife fighter (bounty_chrome_fit_style()).
  * - The lunge: with someone two to five tiles off in a clear line, they plant their feet and drop
  *   low, and a line lights up on the floor from them through their target. A beat later they dash
  *   down the whole line, after-images behind them, and cut everyone standing on it: the player
@@ -105,9 +108,18 @@
 	QDEL_NULL(left_blade)
 	return ..()
 
+/datum/bounty_chrome/mantis/attach(mob/living/basic/fighter)
+	. = ..()
+	// The blades are their weapon: never a gun or a bottle, however the housings got there
+	bounty_chrome_fit_style(fighter, list(BOUNTY_STYLE_BRAWLER, BOUNTY_STYLE_KNIFE, BOUNTY_STYLE_CLUB), BOUNTY_STYLE_KNIFE)
+
 /datum/bounty_chrome/mantis/detach()
 	retract(quiet = TRUE)
 	return ..()
+
+/// With the blades out every blow is the blade's: a brawler's shove or a bat's knock-back has no place in it
+/datum/bounty_chrome/mantis/owns_blow()
+	return deployed
 
 /datum/bounty_chrome/mantis/on_fight_start(atom/target)
 	if(in_fight())

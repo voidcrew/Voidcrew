@@ -962,7 +962,8 @@
 	if(!result || !isliving(target))
 		return
 	var/datum/bounty_style/style = bounty_ai_style(source)
-	if(style)
+	// Chrome that is the blow (blades out, empowered fists) leaves the style's extras out of it (bounty_chrome.dm)
+	if(style && !bounty_chrome_owns_blow(source))
 		INVOKE_ASYNC(style, TYPE_PROC_REF(/datum/bounty_style, on_melee_hit), source, target)
 
 /datum/ai_controller/basic_controller/bounty/proc/on_pre_ranged(mob/living/basic/source, atom/target, list/modifiers)
