@@ -20,7 +20,7 @@
  * The Subvocal mic needs two small hooks in the speech path. Both are chained
  * overrides at the bottom of this file, nothing upstream is edited.
  *
- * SKUs and trade-ins are defined at the bottom, listed on no vendor yet.
+ * SKUs and trade-ins are defined at the bottom.
  */
 
 /// Held by a mob whose radio talk is not overheard. Granted by the Subvocal mic.

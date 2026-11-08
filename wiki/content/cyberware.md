@@ -19,7 +19,7 @@ Outside the parlors, ordinary organ-manipulation surgery at any operating table 
 
 ## The Back Bay
 
-Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled street chrome back on the same terms as Splice.
+Ratchet, a loader mechanic who started putting chrome in people, works out of a storage bay off Quartermain's upper landing. He sells street chrome only, for credits, at Splice's prices, and the bay has a Chrome Cradle of its own that works the same way. He buys pulled street chrome back on the same terms as Splice. His shelf carries the newer street pieces too: the cheap optics, the junk and street decks, and the quiet passives below.
 
 ## Neural load
 
@@ -79,7 +79,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 | Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. Solid hits visibly spark off you. Everyone can see you are plated |
 | Mantis Blades (pair) | 4 | 3/arm | Deployable hardlight blades, plus a five-tile lunge that knocks the target down |
 | Bunker Buster housing | *loot only* | 5 | Two shaped micro-rockets: 60 damage, no splash, will never breach a hull. Reloads are sold at the parlor or printed with Experimental Ammunition |
-| Ghostskin weave | 4 | 5 | Ten seconds of optical camo. NPCs will not target you, and Chrome Reads scatter. Attacking, taking a hit or an EMP drops it |
+| Ghostskin weave | 4 | 5 | Ten seconds of optical camo. NPCs will not target you, and Chrome Reads scatter. Attacking, throwing, taking a hit or an EMP drops it |
 | Lazarus node | 4 | 5 | The moment you drop into crit, it charges for a second and shocks you back to your feet at 30% health. Once per six minutes |
 
 ### Tier 4: Legend chrome (vouchers, one of each per round)
@@ -109,6 +109,30 @@ Six of the big pieces come in cheaper models from other makers. Each takes the s
 | Widowline Arc | 5 vouchers | 6 | A Widowline that shocks on every hit, cuts robots and mechs much harder, and briefly knocks out turrets, consoles and cameras it strikes |
 
 The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits and Buster rocket pairs at 300, both at 4 [reputation](zone-reputation.md). Both ripperdocs buy back *removed* street chrome, street models included and even pieces they sold you, at about half list price. Chrome paid for in vouchers is never bought back.
+
+### More street pieces
+
+The newer makers fill in the gaps under the big names. Each takes the same slot as the piece it copies, so it sells back and climbs like the others.
+
+- **Spring calves** and **Vaulter pistons**: a short hop on cheap springs, and the service pistons that clear a room.
+- **Brawler myomers**: a cased pair of forearms that hit hard and break rock, but no door gives way to them.
+- **Tinker's fingers** and the **Deepcore drill fist**: a looser set of fingertip tools, and a heavier drill on the same ore hopper.
+- **Holdout housing**: a snub revolver folded into the forearm, loaded one round at a time.
+- **Hardweave plating** and the **Strut frame**: a heavier dermal weave, and a frame that keeps your bones whole.
+- **Deep-lung bladder**, **Heat-sink lining** and **Frostline lining**: a longer breath, a lining for the heat, a lining for the cold.
+- **Twitchwire** and the **Weaver shunt**: a twitchy reflex shunt, and the service model.
+- **Thumper ear**: a louder, shorter-ranged sonar behind the ear.
+- Quiet pieces with no button: the **Clotter node** slows bleeding, the **Adrenal pump** kicks in when you're about to drop, **Medic's palms** and **Cuffer's wrists** do the glove's job without the glove, the **Subvocal mic** keeps your radio talk from the people next to you, and the **Muffler ear** shuts out a bang.
+
+## Optics and zoom
+
+Every pair of chrome eyes can zoom: focus on something far off and your view pulls toward it. Better eyes see further, and cheap ones make you slow while you look. Nobody shoots straight through a zoom, so you have to look up before you fire. A flash, a stun or an EMP snaps you out of it. Spyglass and assay optics are the cheap way in; the Longsight, the marksman link and the Lookout are what scouts and sharpshooters save for.
+
+## Cyberdecks
+
+A cyberdeck sits in the back of the skull and talks to machines and other people's gear. Use it, pick something you can see, and the deck offers only what that target will take: doors, lights, a room's power, turrets, radios, a person's gear and the chrome inside them. Pick yourself and it offers what it can do to the room around you. A deck works through your zoom, too.
+
+Every push draws a trace line to the target and makes their gear chirp, and it fails if you move, lose sight or get stunned. No deck opens a locked door, and outpost security, prison doors included, ignores them all. The Junker deck and the Street deck sell for credits at both counters; the Facilities and Breacher decks, one for doors, radios and turrets and one for people and their gear, are vouchers from Splice; and the Blackbox deck, which does both, is legend chrome.
 
 ## Finding chrome in the wild
 
