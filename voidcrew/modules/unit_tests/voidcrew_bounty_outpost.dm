@@ -125,7 +125,8 @@
 /**
  * A mob's examine as plain text, with its own features taken out: their lines, and the lines for the
  * glasses and scarf it wears for them (bounty_wear_features(); the patron clothes put nothing in those
- * slots), which differ between a fugitive and a decoy that doesn't share them.
+ * slots), which differ between a fugitive and a decoy that doesn't share them. Those are found by the
+ * item's name as the examine words it ("some sunglasses"); "[item]" alone reads "the sunglasses".
  */
 /datum/unit_test/voidcrew_bounty_outpost/proc/plain_examine(mob/living/carbon/human/npc/bounty_criminal/patron, mob/viewer)
 	var/list/features = list()
@@ -133,7 +134,7 @@
 		features += trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
 	var/list/feature_items = list()
 	for(var/obj/item/worn in list(patron.glasses, patron.wear_neck))
-		feature_items += "[worn]"
+		feature_items += trim(STRIP_HTML_FULL(worn.examine_title(viewer), MAX_MESSAGE_LEN))
 	var/list/lines = list()
 	for(var/line in patron.examine(viewer))
 		var/plain = trim(STRIP_HTML_FULL("[line]", MAX_MESSAGE_LEN))
@@ -313,10 +314,10 @@
 	TEST_ASSERT_NULL(locate(/obj/item/clothing/suit/armor/vest) in fugitive.loc, "The fugitive's armour was left on the floor")
 	TEST_ASSERT_NULL(locate(/obj/item/clothing/head/helmet) in fugitive.loc, "The fugitive's helmet was left on the floor")
 	TEST_ASSERT(istype(fugitive.l_store, /obj/item/reagent_containers/hypospray/medipen), "The fugitive's pocket was emptied when it changed clothes")
-	// A decoy is nobody's fighter: no weapon, nothing in its hands
+	// A decoy is nobody's fighter: no weapon, nothing in its hands but a plasmaman's own air tank (tg's /datum/outfit/plasmaman)
 	TEST_ASSERT_NULL(locate(/obj/item/gun) in decoy.get_all_contents(), "A decoy carries a gun")
-	TEST_ASSERT_NULL(decoy.get_active_held_item(), "A decoy holds something")
-	TEST_ASSERT_NULL(decoy.get_inactive_held_item(), "A decoy holds something")
+	for(var/obj/item/held in decoy.held_items)
+		TEST_ASSERT(istype(held, /obj/item/tank/internals), "A decoy holds [held]")
 
 	// The same toughness and pace, through the body and never through a stand-in
 	TEST_ASSERT_EQUAL(fugitive.npc_damage_taken, 0.8, "Test fixture: the fugitive's toughness did not take")
