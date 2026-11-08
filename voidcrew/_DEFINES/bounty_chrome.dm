@@ -10,6 +10,10 @@
 #define BOUNTY_CHROME_COMPANION_DIVISOR 3
 /// How long a piece stays down after an EMP, unless the piece says otherwise
 #define BOUNTY_CHROME_EMP_REBOOT (8 SECONDS)
+/// How much more health each piece gives a normal criminal or a companion, as a share of the rest of it (a mini-boss's health is its kit's)
+#define BOUNTY_CHROME_HEALTH_PER_PIECE 0.15
+/// How soon a fighter answers another chrome read after telling someone off for one
+#define BOUNTY_CHROME_READ_NOTICE_COOLDOWN (20 SECONDS)
 
 /// The archetype a companion rolls chrome as (the criminal archetypes are BOUNTY_ARCHETYPE_*)
 #define BOUNTY_CHROME_COMPANION "companion"

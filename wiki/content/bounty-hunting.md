@@ -102,16 +102,16 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 - They're tougher against a crew: their health grows with the number of hunters they face when the fight starts. Once hurt, it doesn't grow again.
 - They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and give up for good once stunned.
 - Below 40% health, with two hunters nearby who can see them, they may give up and put their hands up. Someone who has given up counts as stunned: cuff them for full pay. Stop hitting them, because they can still be downed.
-- Badly hurt with nobody around, they break off and retreat. They never heal.
+- Badly hurt with nobody around, they break off and retreat. They never heal, but [Lazarus chrome](#chrome) can stand a downed one back up.
 
 **Bring:** a partner, stun weapons, armour and cuffs.
 
 ### Mini-bosses
 
-Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and their companions also use the [zone health and damage profile](threats-and-elites.md). The board's **Other crews hunting** line excludes your own active hunt.
+Every Most Wanted criminal is a mini-boss with one of six kits. Bosses and their companions also use the [zone health and damage profile](threats-and-elites.md). The board's **Other crews hunting** line excludes your own active hunt.
 
 - Their health grows with the number of hunters who can see them when the fight starts, and with anyone who hurts them later.
-- Every ability winds up first, with a sound and a mark on the floor. Move out of the mark.
+- Every ability winds up first with a sound, and most put a mark on the floor. Move out of the mark.
 - They break tables, chairs, windows and grilles, and up to two interior walls or doors in a fight.
 - While fresh they ignore stuns and stamina damage completely.
 - Below 40% health they are **worn out**: "breathing hard and slowing down". They move slower, use their abilities less often, and stun weapons work on them. About five disabler shots stun one in the Neutral Zone (six for the Heavy), and more further out.
@@ -125,9 +125,30 @@ Every Most Wanted criminal is a mini-boss with one of five kits. Bosses and thei
 | Demolitionist | A criminal in a hard hat with a grenade bandolier | Keeps 4 to 6 tiles away and throws grenades with a blinking fuse. Blows holes in interior walls and doors to reach you behind cover. | Close the distance, and move off the blinking ring. |
 | Ghost | A hooded criminal with a long knife | Fast. Dashes in with cuts that bleed, cloaks into a shimmer, dodges shots while moving, and backs off after two cuts. | A flash or a hit breaks the cloak. Shoot it when it stops moving. |
 | Heavy | A heavily armed criminal with a belt-fed gun | Heavy armour, slow. Shows a laser sight and a red cone, then fires a burst into it. Drops a barricade that stops half your shots. | Get out of the red cone before it fires. Go around the barricade. |
+| Cyberpsycho | A twitching criminal in shorts, more chrome than skin | Carries all seven pieces of [chrome](#chrome) and uses one at a time: lunges, leaps, piston punches, grabs and bursts of speed. Badly hurt, its Redline trips and it rages, then collapses. | Keep your distance from the rage and cuff it when it collapses. An EMP shuts its chrome down for a moment, but a second one straight after does nothing. |
 
 !!! warning "Worn out means switch to stuns"
     Once a mini-boss is worn out, stop using lethal weapons. A few more hits put it under 25%, and a downed criminal only pays 60%.
+
+## Chrome
+
+Some criminals carry cyberware: now and then a normal criminal, more often the higher their tier, a few companions, and most mini-bosses. Meek criminals never do.
+
+- Arm, chest and leg chrome shows. They dress light over it, and examining them describes it. A mini-boss's kit, a pressure suit or a modsuit covers it.
+- Cyber optics with a chrome read name every piece. A criminal who isn't fighting feels the read and tells you off.
+- An EMP knocks all of it out for 8 seconds and stops whatever it was doing.
+- A chromed criminal is tougher than a plain one. A lunge, a landing or a roar only catches the crews hunting it and anyone who has attacked it, never a bystander.
+- Their chrome burns out when they die. There's nothing to salvage from the body.
+
+| Chrome | What it does | How to handle it |
+|---|---|---|
+| Mantis Blades | Blades out in a fight. Crouches, then lunges down a blue line 2 to 5 tiles long, cutting and knocking down the hunters on it. | Step off the line, or keep a table or a door between you. A shield stops it. It stands still for a moment after. |
+| Gorilla Arms | Punches knock you back. Lights your tile red before a piston punch that throws you, and rings you in orange before it grabs and pummels you. Forces doors open. | Step off the lit tile. Struggle or hit it hard to break a grab. A miss leaves it stumbling. Bolted or welded doors hold. |
+| Cascade lattice | Its spine whines and glows violet, then it moves twice as fast and dodges shots while it moves. Then it crashes. | EMP it during the whine. Stun it during the crash, when stamina hits land twice as hard. |
+| Redline core | Hurt, or about to be stunned, its chest glows red and it roars, staggering hunters nearby. For a while it ignores stuns and takes half damage, then it collapses. | Back off and wait, then cuff it. An EMP ends it at once. |
+| Meteor Piledriver | Crouches, then leaps onto someone 3 to 7 tiles away. A shadow marks the landing, and hunters near it are knocked down. | Leave the shadow, or stay close. Windows and shut doors block the leap. An EMP, a stun or a door shut while it's in the air drops it. |
+| Lazarus | Downed, it crackles with red lightning for a second and a half, then gets back up at half health. Once a fight. | Cuff it, EMP it or finish it during the charge. A stamina takedown never sets it off. |
+| Deadeye optics | Its eyes flash red and a red line marks you. Its next three shots home in. | Break line of sight. |
 
 ## Taking them alive
 
@@ -178,6 +199,7 @@ Guns, disablers included, don't get past the outpost's checkpoint unless you buy
 - **The alert.** Showing the warrant to the wrong patron raises the alert. So does hitting a look-alike on purpose: a punch, a shove, a baton, a thrown item, a shot aimed at them, or reaching for their wrists with cuffs. Hitting a look-alike is also an outpost strike. At two alerts, the fugitive and the look-alikes walk out to the hangar and leave, and the bounty lists at a different trader outpost 5 minutes later.
 - Hitting the right patron on purpose exposes them, the same as the warrant.
 - While they blend in, nobody can pull them, and shots aimed at someone else pass through them. The outpost's turrets leave them alone. An exposed fugitive only fights the people who came for it. If it hurts a bystander, the turrets can fire on it.
+- A fugitive with [chrome](#chrome) keeps it under the zone's clothes while blending in, and a chrome read finds nothing on any of them. Once exposed, it shows.
 
 ## Pirate ships
 

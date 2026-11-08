@@ -87,6 +87,7 @@
 	var/report = jointext(bounty_chrome_scan_readout(criminal), " ")
 	TEST_ASSERT(findtext(report, "GORILLA ARMS"), "A chrome read doesn't name their Gorilla Arms: [report]")
 	TEST_ASSERT(findtext(report, "SIGNATURES 2"), "A chrome read miscounts their chrome: [report]")
+	TEST_ASSERT(!findtextEx(report, "· T"), "A chrome read labels a piece with its tier: [report]")
 	var/datum/bounty_chrome/gorilla_piece = bounty_chrome_piece(criminal, "gorilla")
 	gorilla_piece.offline_until = world.time + 10 SECONDS
 	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(criminal), " "), "OFFLINE"), "An EMP'd piece doesn't read offline")
@@ -140,6 +141,206 @@
 				TEST_ASSERT(istype(uniform, /obj/item/clothing/under/pants) || uniform?.adjusted == ALT_STYLE, "[set_name] in [outfit_name]: a shirt still covers the chrome")
 			if(set_name == "piledriver")
 				TEST_ASSERT(istype(dummy.w_uniform, /obj/item/clothing/under/shorts), "[set_name] in [outfit_name]: trousers still cover the legs")
+#ifdef BOUNTY_CHROME_RENDERS
+			// Only when asked for (dm.exe -DBOUNTY_CHROME_RENDERS): renders to look at, into data/
 			fcopy(getFlatIcon(dummy, SOUTH), "data/bounty_chrome_renders/exposed_[set_name]_[outfit_name]_s.png")
 			fcopy(getFlatIcon(dummy, NORTH), "data/bounty_chrome_renders/exposed_[set_name]_[outfit_name]_n.png")
+#endif
 			qdel(dummy)
+
+/// Everything examining `fighter` shows `viewer`, as one text
+/datum/unit_test/voidcrew_bounty_chrome/proc/examined(mob/living/fighter, mob/viewer)
+	return jointext(fighter.examine(viewer), "\n")
+
+/**
+ * What examining a chromed fighter shows: its chrome while it is on show, none of it while it passes
+ * as a patron, hides or wears a pressure suit, sparks while an EMP has it down, and one line once it is
+ * dead, when a chrome read also finds it all offline.
+ */
+/datum/unit_test/voidcrew_bounty_chrome/shows
+
+/datum/unit_test/voidcrew_bounty_chrome/shows/Run()
+	var/mob/living/carbon/human/consistent/viewer = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__, run_loc_floor_bottom_left)
+	bounty_chrome_install(criminal, list("unit_test"))
+	var/datum/bounty_chrome/unit_test/piece = bounty_chrome_piece(criminal, "unit_test")
+	// The test piece's line starts with a placeholder, and still starts with a capital
+	var/line = capitalize("[criminal.p_their()] test chrome hums.")
+	TEST_ASSERT(findtextEx(examined(criminal, viewer), line), "Examining them doesn't show '[line]': [examined(criminal, viewer)]")
+
+	criminal.blended = TRUE
+	TEST_ASSERT(!findtext(examined(criminal, viewer), "test chrome"), "A fighter passing as a patron shows their chrome")
+	criminal.blended = FALSE
+	criminal.hidden = TRUE
+	TEST_ASSERT(!findtext(examined(criminal, viewer), "test chrome"), "A hidden fighter shows their chrome")
+	criminal.hidden = FALSE
+
+	// Down from an EMP, it sparks
+	piece.offline_until = world.time + 10 SECONDS
+	TEST_ASSERT(findtext(examined(criminal, viewer), "Sparks crawl over"), "Chrome down from an EMP examines as working")
+	piece.offline_until = 0
+	TEST_ASSERT(!findtext(examined(criminal, viewer), "Sparks crawl over"), "Working chrome sparks")
+
+	// Under a pressure suit it doesn't show
+	var/datum/component/bounty_eva/eva = criminal.GetComponent(/datum/component/bounty_eva)
+	TEST_ASSERT_NOTNULL(eva, "A criminal has no suit to put on")
+	eva.kit_up(null)
+	TEST_ASSERT(!findtext(examined(criminal, viewer), "test chrome"), "Chrome shows through a pressure suit")
+	qdel(eva.suit)
+	qdel(eva.helmet)
+	TEST_ASSERT(findtext(examined(criminal, viewer), "test chrome"), "Chrome doesn't show once the suit is off")
+
+	// Dead, it is burnt out: one line, and a chrome read finds it offline
+	criminal.death()
+	var/dead_text = examined(criminal, viewer)
+	TEST_ASSERT(findtext(dead_text, "chrome is burnt out") && !findtext(dead_text, "test chrome"), "Dead chrome examines as working: [dead_text]")
+	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(criminal), " "), "OFFLINE"), "Dead chrome reads as working")
+
+/**
+ * Chrome makes a normal criminal or a companion tougher, BOUNTY_CHROME_HEALTH_PER_PIECE (0.15) a piece
+ * on top of the rest of its health, from the start; put in someone already hurt, it raises the
+ * ceiling and never their health. Companions never roll Lazarus.
+ */
+/datum/unit_test/voidcrew_bounty_chrome/health
+
+/datum/unit_test/voidcrew_bounty_chrome/health/Run()
+	// Two pieces that leave a pistol a pistol
+	var/datum/bounty_record/chromed_record = new
+	chromed_record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
+	chromed_record.tier = 2 // BOUNTY_TIER_WANTED
+	chromed_record.style = "pistol" // BOUNTY_STYLE_PISTOL
+	chromed_record.chrome = list("cascade", "lazarus") // BOUNTY_CHROME_CASCADE, BOUNTY_CHROME_LAZARUS
+	var/mob/living/basic/bounty_criminal/normal/chromed = spawn_bounty_criminal(chromed_record, run_loc_floor_bottom_left, null)
+	allocated += chromed
+	var/datum/bounty_record/plain_record = new
+	plain_record.archetype = "normal"
+	plain_record.tier = 2
+	plain_record.style = "pistol"
+	var/mob/living/basic/bounty_criminal/normal/plain = spawn_bounty_criminal(plain_record, run_loc_floor_bottom_left, null)
+	allocated += plain
+	TEST_ASSERT(abs(chromed.maxHealth - plain.maxHealth * 1.3) <= 2, "Two pieces of chrome gave [chromed.maxHealth] health over a plain [plain.maxHealth], not 30% more")
+	TEST_ASSERT_EQUAL(chromed.health, chromed.maxHealth, "A chromed criminal didn't start at full health")
+
+	// Hurt, then chrome put in: a higher ceiling, the same health
+	plain.adjustBruteLoss(40)
+	var/before = plain.health
+	var/old_max = plain.maxHealth
+	bounty_chrome_install(plain, list("unit_test"))
+	TEST_ASSERT(plain.maxHealth > old_max, "Chrome put in didn't raise their max health from [old_max]")
+	TEST_ASSERT(abs(plain.health - before) < 0.01, "Chrome put in a hurt criminal took them from [before] to [plain.health] health")
+
+	// A companion: the same share on its own health
+	var/mob/living/basic/bounty_criminal/normal/leader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	var/list/buddies = leader.spawn_companions(1)
+	TEST_ASSERT(length(buddies), "No companion spawned")
+	allocated += buddies
+	var/mob/living/basic/bounty_companion/buddy = buddies[1]
+	qdel(buddy.GetComponent(/datum/component/bounty_chrome))
+	buddy.ai_take_style("knife") // BOUNTY_STYLE_KNIFE
+	var/bare = buddy.maxHealth
+	bounty_chrome_install(buddy, list("cascade"))
+	TEST_ASSERT(abs(buddy.maxHealth - bare * 1.15) <= 1, "A piece of chrome took a companion from [bare] to [buddy.maxHealth] health, not 15% more")
+	TEST_ASSERT_EQUAL(buddy.health, buddy.maxHealth, "A fresh companion's chrome left them hurt")
+
+	// Never Lazarus on a companion: a stamina takedown is the answer to every one of them
+	for(var/i in 1 to 300)
+		TEST_ASSERT(!("lazarus" in bounty_roll_companion_chrome(3, "knife")), "A companion rolled Lazarus") // BOUNTY_TIER_MOST_WANTED, BOUNTY_CHROME_LAZARUS
+
+/// An area move catches only those in the fight: whoever it is going for and anyone who attacked it, never a bystander on the site
+/datum/unit_test/voidcrew_bounty_chrome/posse
+
+/datum/unit_test/voidcrew_bounty_chrome/posse/Run()
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/consistent/bystander = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	bystander.mind_initialize()
+	var/mob/living/carbon/human/consistent/attacker = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	attacker.mind_initialize()
+	TEST_ASSERT(bounty_ai_may_hit(criminal, bystander), "On its site it may not hit a person at all")
+	TEST_ASSERT(!bounty_chrome_may_splash(criminal, bystander), "An area move catches a bystander")
+	TEST_ASSERT(bounty_chrome_may_splash(criminal, bystander, bystander), "A move spares the one it is aimed at")
+	criminal.body_add_grudge(attacker)
+	TEST_ASSERT(bounty_chrome_may_splash(criminal, attacker), "An area move spares someone who attacked it")
+	criminal.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bystander)
+	TEST_ASSERT(bounty_chrome_may_splash(criminal, bystander), "An area move spares the one it is going for")
+	criminal.ai_controller?.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+
+/// A calm fighter feels a chrome read and tells the reader off, once in a while; passing as a patron, or with no chrome, they never do
+/datum/unit_test/voidcrew_bounty_chrome/read_noticed
+
+/datum/unit_test/voidcrew_bounty_chrome/read_noticed/Run()
+	var/mob/living/carbon/human/consistent/reader = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(__IMPLIED_TYPE__, run_loc_floor_bottom_left)
+	bounty_chrome_install(criminal, list("unit_test"))
+	criminal.blended = TRUE
+	TEST_ASSERT(!bounty_chrome_read_noticed(criminal, reader), "A fighter passing as a patron felt a read")
+	criminal.blended = FALSE
+	TEST_ASSERT(bounty_chrome_read_noticed(criminal, reader), "A calm fighter with chrome didn't feel a read")
+	TEST_ASSERT(!bounty_chrome_read_noticed(criminal, reader), "A fighter told off two reads in a row")
+	var/mob/living/basic/bounty_criminal/normal/clean = allocate(__IMPLIED_TYPE__, run_loc_floor_bottom_left)
+	TEST_ASSERT(!bounty_chrome_read_noticed(clean, reader), "A fighter with no chrome felt a read")
+
+/**
+ * A chromed fugitive passing as a patron looks and examines like its decoys: nothing of its chrome in
+ * its look and nothing taken off over it, no chrome lines, and a chrome read finds nothing. Once the
+ * act is over, the chrome is on show again. P6's helpers (voidcrew_bounty_outpost.dm) make the outpost.
+ */
+/datum/unit_test/voidcrew_bounty_outpost/chrome_fugitive
+
+/datum/unit_test/voidcrew_bounty_outpost/chrome_fugitive/Run()
+	outpost = make_outpost(/obj/structure/overmap/trader_outpost/general)
+	var/datum/criminal_bounty/outpost_test/posting = make_posting(null, /mob/living/basic/bounty_criminal/normal)
+	var/datum/bounty_record/record = posting.record
+	record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
+	record.style = "brawler" // BOUNTY_STYLE_BRAWLER
+	// Plating on both arms, which the patron's jacket would come off over
+	record.chrome = list("gorilla") // BOUNTY_CHROME_GORILLA
+	var/mob/living/basic/bounty_criminal/fugitive = posting.criminal()
+	bounty_chrome_install(fugitive, record.chrome)
+	TEST_ASSERT(posting.setup_outpost_blend(), "The posting could not be set up to blend in")
+	var/list/decoys = decoys_of(posting)
+	TEST_ASSERT(length(decoys), "No decoys to compare with")
+	var/mob/living/basic/bounty_criminal/decoy/decoy = decoys[1]
+	decoy.gender = fugitive.gender
+	var/mob/living/carbon/human/viewer = make_hunter()
+
+	// Examine: a decoy's, with no chrome in it, and a chrome read finds nothing
+	var/datum/bounty_chrome/gorilla = bounty_chrome_piece(fugitive, "gorilla")
+	var/chrome_line = replacetext(replacetext(gorilla.examine_line(), "%THEIR", fugitive.p_their()), "%THEY", fugitive.p_they())
+	TEST_ASSERT(!findtext(plain_examine(fugitive, viewer), chrome_line), "The blended fugitive's chrome shows on examine")
+	TEST_ASSERT_EQUAL(plain_examine(decoy, viewer), plain_examine(fugitive, viewer), "The chromed fugitive examines differently from a decoy")
+	TEST_ASSERT(findtext(jointext(bounty_chrome_scan_readout(fugitive), " "), "NO HARDWARE SIGNATURE"), "A chrome read finds the blended fugitive's chrome")
+
+	// The look: the patron's clothes all on, as on a decoy, and no implant drawn
+	var/outfit = bounty_outpost_outfit(outpost)
+	var/mob/living/carbon/human/dummy/blended_look = new
+	var/mob/living/carbon/human/dummy/decoy_look = new
+	TEST_ASSERT(bounty_dress_record_dummy(blended_look, record, outfit, TRUE), "The fugitive's patron look failed")
+	TEST_ASSERT(bounty_dress_record_dummy(decoy_look, decoy.record, outfit), "The decoy's patron look failed")
+	for(var/slot in list(ITEM_SLOT_OCLOTHING, ITEM_SLOT_GLOVES, ITEM_SLOT_ICLOTHING, ITEM_SLOT_FEET))
+		var/obj/item/fugitive_wears = blended_look.get_item_by_slot(slot)
+		var/obj/item/decoy_wears = decoy_look.get_item_by_slot(slot)
+		TEST_ASSERT_EQUAL(fugitive_wears?.type, decoy_wears?.type, "Passing as a patron, the fugitive wears [fugitive_wears?.type || "nothing"] where a decoy wears [decoy_wears?.type || "nothing"]")
+	var/obj/item/clothing/under/fugitive_uniform = blended_look.w_uniform
+	var/obj/item/clothing/under/decoy_uniform = decoy_look.w_uniform
+	TEST_ASSERT_EQUAL(fugitive_uniform?.adjusted, decoy_uniform?.adjusted, "Passing as a patron, the fugitive wears their shirt differently from a decoy")
+	for(var/obj/item/organ/cyberimp/implant in blended_look.organs)
+		TEST_FAIL("Passing as a patron, the fugitive's look has [implant] in it")
+	qdel(blended_look)
+	qdel(decoy_look)
+
+	// Out of the act, in the same clothes: the plating shows, with the jacket and gloves off
+	var/mob/living/carbon/human/dummy/exposed_look = new
+	TEST_ASSERT(bounty_dress_record_dummy(exposed_look, record, outfit), "The fugitive's exposed look failed")
+	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/cyberimp/cyberware/gorilla_arms) in exposed_look.organs, "The exposed fugitive's look has no plating")
+	TEST_ASSERT(!exposed_look.wear_suit && !exposed_look.gloves, "The exposed fugitive's jacket or gloves still cover the plating")
+	qdel(exposed_look)
+	// Cached apart, so the patron's look never serves the one with chrome
+	var/patron_look = get_bounty_look(record, outfit, TRUE)
+	var/chrome_look = get_bounty_look(record, outfit)
+	TEST_ASSERT(patron_look && chrome_look, "A look of the fugitive in the patron's clothes failed")
+	TEST_ASSERT(patron_look != chrome_look, "The look with chrome and the patron's look are the same")
+
+	// The warrant ends the act: the chrome is on show again
+	posting.outpost_confront(fugitive, viewer)
+	TEST_ASSERT(!fugitive.blended, "The confronted fugitive is still blending in")
+	TEST_ASSERT(findtext(plain_examine(fugitive, viewer), chrome_line), "The exposed fugitive's chrome doesn't show on examine")

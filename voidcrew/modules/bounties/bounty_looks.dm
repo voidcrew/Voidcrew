@@ -43,13 +43,13 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
 /**
  * Dresses `target` as the person in `record` wearing `outfit` (a typepath): the same face in any
  * outfit. A record with no look gets one rolled for its species and gender first, and keeps it.
- * Updates the target's own overlays afterwards (cuffs and the like). Can sleep, so call it from an
- * async proc.
+ * With `hide_chrome` none of their chrome shows (a fugitive passing as a patron). Updates the target's
+ * own overlays afterwards (cuffs and the like). Can sleep, so call it from an async proc.
  */
-/proc/apply_bounty_look(mob/living/target, datum/bounty_record/record, outfit)
+/proc/apply_bounty_look(mob/living/target, datum/bounty_record/record, outfit, hide_chrome = FALSE)
 	if(QDELETED(target) || !record)
 		return
-	var/look = get_bounty_look(record, outfit)
+	var/look = get_bounty_look(record, outfit, hide_chrome)
 	if(QDELETED(target) || !look)
 		return
 	target.icon = 'icons/mob/human/human.dmi'
@@ -60,20 +60,17 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
 
 /**
  * The appearance of `record`'s person in `outfit`, built the first time it's asked for and cached
- * per record and outfit (an outfit passed as a datum is built every time). Null if the build
- * failed. Can sleep.
+ * per record and outfit, and apart with `hide_chrome` when they carry chrome (an outfit passed as a
+ * datum is built every time). Null if the build failed. Can sleep.
  */
-/proc/get_bounty_look(datum/bounty_record/record, outfit)
-	var/datum/bounty_look/look = bounty_ensure_look(record)
-	var/key = (isnull(outfit) || ispath(outfit)) ? "[record.id]|[outfit]" : null
+/proc/get_bounty_look(datum/bounty_record/record, outfit, hide_chrome = FALSE)
+	bounty_ensure_look(record)
+	var/plain = hide_chrome && length(record.chrome)
+	var/key = (isnull(outfit) || ispath(outfit)) ? "[record.id]|[outfit][plain ? "|plain" : ""]" : null
 	if(key && GLOB.bounty_looks[key])
 		return GLOB.bounty_looks[key]
-	// Glasses are theirs anywhere; a scarf stays with their things when they go to prison.
-	var/neckwear = !ispath(outfit, /datum/outfit/outpost_prisoner)
 	var/mob/living/carbon/human/dummy/dummy = new
-	// Dressed light where their chrome is, except in a prison uniform or a mini-boss's kit (bounty_chrome.dm)
-	var/expose = neckwear && record.archetype != BOUNTY_ARCHETYPE_BOSS
-	var/dressed = bounty_dress_dummy(dummy, look, outfit, record.features, neckwear, bounty_chrome_organ_looks(record.chrome), expose)
+	var/dressed = bounty_dress_record_dummy(dummy, record, outfit, plain)
 	var/built = dressed ? dummy.appearance : null
 	qdel(dummy)
 	if(!built)
@@ -87,6 +84,20 @@ GLOBAL_LIST_EMPTY(bounty_mugshot_queue)
 		GLOB.bounty_looks[key] = built
 		GLOB.bounty_look_owners[key] = WEAKREF(record)
 	return GLOB.bounty_looks[key]
+
+/**
+ * Makes `dummy` look like `record`'s person in `outfit`: their glasses anywhere and their scarf
+ * outside prison, and their chrome, dressed light enough that it shows except in a prison uniform or a
+ * mini-boss's kit (bounty_chrome.dm). With `hide_chrome`, no chrome and nothing taken off: the clothes
+ * everyone passing as a patron wears. TRUE when done; the caller deletes the dummy. Can sleep.
+ */
+/proc/bounty_dress_record_dummy(mob/living/carbon/human/dummy/dummy, datum/bounty_record/record, outfit, hide_chrome = FALSE)
+	var/datum/bounty_look/look = bounty_ensure_look(record)
+	// Glasses are theirs anywhere; a scarf stays with their things when they go to prison.
+	var/neckwear = !ispath(outfit, /datum/outfit/outpost_prisoner)
+	var/list/chrome_organs = hide_chrome ? null : bounty_chrome_organ_looks(record.chrome)
+	var/expose = neckwear && record.archetype != BOUNTY_ARCHETYPE_BOSS
+	return bounty_dress_dummy(dummy, look, outfit, record.features, neckwear, chrome_organs, expose)
 
 /**
  * A new human dummy looking like `look` in `outfit`, or null if dressing it failed (the dummy is

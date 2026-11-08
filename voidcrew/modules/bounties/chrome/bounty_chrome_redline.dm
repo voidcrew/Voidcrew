@@ -252,7 +252,7 @@
 	playsound(owner, 'sound/effects/magic/repulse.ogg', 60, TRUE)
 	owner.visible_message(span_boldwarning("[owner]'s eyes flood red and [owner.p_their()] chest speaker lets out a deafening ROAR!"))
 	for(var/mob/living/hunter in ohearers(REDLINE_ROAR_RANGE, owner))
-		if(!bounty_ai_is_hunter(hunter) || !bounty_ai_may_hit(owner, hunter))
+		if(!bounty_ai_is_hunter(hunter) || !bounty_chrome_may_splash(owner, hunter))
 			continue
 		hunter.apply_status_effect(/datum/status_effect/staggered, REDLINE_ROAR_STAGGER)
 		shake_camera(hunter, 3, 1)

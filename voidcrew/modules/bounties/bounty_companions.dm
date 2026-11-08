@@ -122,16 +122,20 @@
 	// A face of their own species, the clothes for the site, and a suit if their criminal wears one (bounty_eva.dm)
 	eva_join(leader, species)
 
-/// Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's, and the style's own weapon (never a Wanted criminal's heavier one)
+/// Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's (and their chrome's), and the style's own weapon (never a Wanted criminal's heavier one)
 /mob/living/basic/bounty_companion/proc/ai_take_style(key)
 	var/datum/bounty_style/style = GLOB.bounty_styles[key]
 	if(!style)
 		return FALSE
-	maxHealth = round(BOUNTY_COMPANION_HEALTH * style.health_mult)
+	maxHealth = ai_style_health(style)
 	health = maxHealth
 	damage_coeff = damage_coeff.Copy()
 	damage_coeff[STAMINA] = style.stamina_mult
 	return bounty_ai_apply_style(src, key)
+
+/// Their max health in `style` (a /datum/bounty_style, or null for none): BOUNTY_COMPANION_HEALTH x the style's, x what their chrome adds (bounty_chrome_health_mult())
+/mob/living/basic/bounty_companion/proc/ai_style_health(datum/bounty_style/style)
+	return round(BOUNTY_COMPANION_HEALTH * (style ? style.health_mult : 1) * bounty_chrome_health_mult(src))
 
 /// What a companion of `leader` wears, by where the criminal is: a mix of rough clothes, so no two crews look alike
 /proc/bounty_companion_outfit(mob/living/basic/bounty_criminal/leader)

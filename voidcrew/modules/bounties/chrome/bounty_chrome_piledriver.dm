@@ -270,7 +270,7 @@
 /datum/bounty_chrome/piledriver/proc/impact(turf/final)
 	var/list/crushed = list()
 	for(var/mob/living/pinned in final)
-		if(may_hit(pinned))
+		if(may_hit(pinned, leap_target?.resolve()))
 			crushed += pinned
 	// Gathered before anyone is pushed, so nobody is caught twice
 	var/list/shaken = list()
@@ -279,7 +279,7 @@
 			continue
 		var/list/caught = list()
 		for(var/atom/movable/thing in spot)
-			if((isliving(thing) || ismecha(thing)) && may_hit(thing))
+			if((isliving(thing) || ismecha(thing)) && may_hit(thing, leap_target?.resolve()))
 				caught += thing
 		if(length(caught) && !arc_blocked(final, spot))
 			shaken += caught
@@ -459,14 +459,15 @@
  * Whether the landing may hurt `victim`: a hunter (someone played, awake, not a criminal or one of
  * their friends, not on its side) its kind may attack from where it stands, or a mech with one
  * aboard. A mini-boss goes by its own rules (boss_can_hurt()). Never anyone standing in a ship, a
- * hangar or an outpost.
+ * hangar or an outpost, and never a bystander: only the one it is `aimed` at, or someone else in the
+ * fight (bounty_chrome_may_splash()).
  */
-/datum/bounty_chrome/piledriver/proc/may_hit(atom/movable/victim)
+/datum/bounty_chrome/piledriver/proc/may_hit(atom/movable/victim, atom/aimed)
 	if(QDELETED(victim) || victim == owner)
 		return FALSE
 	if(istype(owner, /mob/living/basic/bounty_criminal/boss))
 		var/mob/living/basic/bounty_criminal/boss/boss = owner
-		return boss.boss_can_hurt(victim)
+		return boss.boss_can_hurt(victim) && bounty_chrome_in_posse(owner, victim, aimed)
 	var/mob/living/basic/bounty_criminal/side = bounty_ai_side_of(owner)
 	if(side?.body_forbidden_turf(get_turf(victim)))
 		return FALSE
@@ -474,12 +475,12 @@
 		var/obj/vehicle/sealed/mecha/mech = victim
 		for(var/mob/living/pilot in mech.occupants)
 			if(bounty_ai_is_hunter(pilot) && !owner.faction_check_atom(pilot))
-				return bounty_ai_may_hit(owner, mech)
+				return bounty_chrome_may_splash(owner, mech, aimed)
 		return FALSE
 	var/mob/living/person = victim
 	if(!isliving(person) || !bounty_ai_is_hunter(person) || HAS_TRAIT(person, TRAIT_GODMODE) || owner.faction_check_atom(person))
 		return FALSE
-	return bounty_ai_may_hit(owner, person)
+	return bounty_chrome_may_splash(owner, person, aimed)
 
 /**
  * The tile a leap at `target` comes down on, or null if there is no leap to make: a hunter (or a
@@ -488,7 +489,7 @@
  * nearest such tile beside them.
  */
 /datum/bounty_chrome/piledriver/proc/landing_for(atom/movable/target)
-	if(QDELETED(target) || !(isliving(target) || ismecha(target)) || !may_hit(target))
+	if(QDELETED(target) || !(isliving(target) || ismecha(target)) || !may_hit(target, target))
 		return null
 	var/turf/here = get_turf(owner)
 	var/turf/aim = get_turf(target)

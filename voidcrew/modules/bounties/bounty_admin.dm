@@ -842,25 +842,9 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	where = get_turf(where)
 	if(!where)
 		return refuse(user, "There is no floor there to put them on.")
-	var/datum/bounty_record/record = generate_bounty_record(tier, archetype, BOUNTY_PLACEMENT_PLANET)
+	var/datum/bounty_record/record = admin_criminal_record(tier, archetype, variant, chrome)
 	if(!record)
 		return refuse(user, "No record was made for them.")
-	record.tier = tier
-	record.archetype = archetype
-	if(archetype == BOUNTY_ARCHETYPE_BOSS)
-		record.kit = variant || record.kit || pick(kits)
-		record.style = null
-	else
-		record.kit = null
-		if(variant)
-			record.style = variant
-	// Chrome: kept as rolled, or exactly what was picked (any piece, whatever it would normally suit)
-	if(islist(chrome))
-		var/list/keys = list()
-		for(var/key in chrome)
-			if(GLOB.bounty_chrome_protos[key])
-				keys += key
-		record.chrome = length(keys) ? keys : null
 	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, where, null)
 	if(QDELETED(criminal))
 		return refuse(user, "The criminal did not spawn.")
@@ -869,6 +853,36 @@ ADMIN_VERB(bounty_panel, R_ADMIN, "Bounty Panel", "Spawn, post, give out, list a
 	log_action(user, "spawn [criminal_name(criminal)], [record_kind(record)][activity ? ", [activity]" : ""], at [AREACOORD(where)]")
 	tell(user, span_notice("Spawned [criminal_name(criminal)]: [record_kind(record)], wanted for [record.crime || "nothing yet"]."))
 	return criminal
+
+/**
+ * The record for a spawned criminal of `tier` and `archetype`, checked by the caller: a new one from
+ * P1, with the kit (a boss) or style (anyone else) set to `variant` when given, then its chrome.
+ * `chrome` is exactly what was picked (a list of BOUNTY_CHROME_* keys: any piece, whatever it would
+ * normally suit), or BOUNTY_ADMIN_CHROME_ROLL to roll it as usual for the style or kit it ended up
+ * with, never for the one P1 rolled first. Doesn't sleep.
+ */
+/datum/bounty_admin_panel/proc/admin_criminal_record(tier, archetype, variant, chrome = BOUNTY_ADMIN_CHROME_ROLL)
+	var/datum/bounty_record/record = generate_bounty_record(tier, archetype, BOUNTY_PLACEMENT_PLANET)
+	if(!record)
+		return null
+	record.tier = tier
+	record.archetype = archetype
+	if(archetype == BOUNTY_ARCHETYPE_BOSS)
+		record.kit = variant || record.kit || pick(choice_values(kit_choices()))
+		record.style = null
+	else
+		record.kit = null
+		if(variant)
+			record.style = variant
+	if(islist(chrome))
+		var/list/keys = list()
+		for(var/key in chrome)
+			if(GLOB.bounty_chrome_protos[key])
+				keys += key
+		record.chrome = length(keys) ? keys : null
+	else
+		record.chrome = bounty_roll_chrome(record.tier, record.archetype, record.style, record.kit)
+	return record
 
 /**
  * Spawns a decoy next to `wanted` through P6's decoy builder (outpost_become()): a record sharing

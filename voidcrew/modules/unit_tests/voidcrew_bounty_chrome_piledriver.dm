@@ -95,7 +95,8 @@
 /**
  * A whole leap from the fight's tick: it crouches held still, launches with the shadow on its
  * target's tile, lands there crushing the target and knocking down a hunter in the ring, leaves a
- * hunter outside the ring and its own companion alone, vents, and lets go with the cooldown running.
+ * hunter outside the ring, a bystander in it and its own companion alone, vents, and lets go with the
+ * cooldown running.
  */
 /datum/unit_test/voidcrew_bounty_chrome_piledriver/leap
 
@@ -105,10 +106,14 @@
 	var/mob/living/carbon/human/consistent/target = hunter_at(tile(3, 0))
 	var/mob/living/carbon/human/consistent/beside = hunter_at(tile(4, 2))
 	var/mob/living/carbon/human/consistent/far = hunter_at(tile(0, 4))
+	// Someone on the site who has nothing to do with the fight: the shockwave spares them
+	var/mob/living/carbon/human/consistent/bystander = hunter_at(tile(2, 2))
 	var/mob/living/basic/bounty_companion/buddy = allocate(/mob/living/basic/bounty_companion, tile(2, 1))
 	var/datum/component/bounty_chrome/chrome = criminal.GetComponent(/datum/component/bounty_chrome)
 
 	TEST_ASSERT(criminal.ai_start_fight(target), "The criminal wouldn't start the fight")
+	// In the fight too (it attacked them, say): the shockwave catches them
+	criminal.body_add_grudge(beside)
 	// Theirs from here on, after the rally, so the companion's own fight never starts in the test
 	buddy.leader_ref = WEAKREF(criminal)
 	TEST_ASSERT(bounty_chrome_fighting(criminal), "The criminal isn't fighting")
@@ -143,6 +148,7 @@
 	TEST_ASSERT(beside.IsKnockdown(), "A hunter two tiles off wasn't knocked down")
 	TEST_ASSERT(!beside.IsParalyzed(), "A hunter in the ring was pinned as if crushed")
 	TEST_ASSERT(far.getBruteLoss() == 0 && !far.IsKnockdown(), "A hunter four tiles off was caught")
+	TEST_ASSERT(bystander.getBruteLoss() == 0 && !bystander.IsKnockdown(), "The shockwave caught a bystander")
 	TEST_ASSERT(buddy.health == buddy.maxHealth && !buddy.IsKnockdown(), "It hit its own companion")
 	TEST_ASSERT_EQUAL(piece.phase, 3, "Landed, it isn't venting") // BOUNTY_PILEDRIVER_RECOVERING
 	TEST_ASSERT(held(criminal), "It isn't held still while it vents")
