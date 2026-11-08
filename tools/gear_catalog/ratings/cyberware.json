@@ -380,6 +380,24 @@
    "reason": "Adds 15 neural load for 35 in all, giving up the slot Cascade and Redline need. That runs Slabskin, Lazarus, Mantis, Hopper, Dead Channel, Coolant, Deadeye and Atlas at once. 5 vouchers at reputation 22.",
    "tier": "red"
   },
+  "/obj/item/organ/cyberimp/cyberware/governor_delete/milspec": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Governor Bypass",
+   "rank": 4,
+   "reason": "Raises the neural load limit from 20 to 30 for no load of its own, in the slot Cascade and Redline need. 3 vouchers at reputation 11.",
+   "tier": "red"
+  },
+  "/obj/item/organ/cyberimp/cyberware/governor_delete/street": {
+   "confidence": "medium",
+   "group": "Operating system",
+   "hash": "",
+   "name": "Governor Patch",
+   "rank": 5,
+   "reason": "Raises the neural load limit from 20 to 25 for no load of its own, in the slot Cascade and Redline need. 2,500 cr at reputation 4.",
+   "tier": "yellow"
+  },
   "/obj/item/organ/cyberimp/cyberware/hemoglass": {
    "confidence": "medium",
    "group": "Body upkeep",

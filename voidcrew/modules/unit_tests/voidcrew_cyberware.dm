@@ -887,6 +887,60 @@
 	TEST_ASSERT(governor.Insert(patient, TRUE), "Governor couldn't replace an OS")
 	TEST_ASSERT(!cascade.owner && governor.owner == patient, "Chest OS hardware stacked")
 
+/// The Governor line: each rung gives its own headroom at no load in the shared
+/// OS slot, and swapping down never leaves the body quietly over its new ceiling.
+/datum/unit_test/voidcrew_governor_line
+
+/datum/unit_test/voidcrew_governor_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/delete = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/milspec/bypass = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete/milspec)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/street/patch = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete/street)
+	// ware, bonus, tier (the defines aren't visible from here: CYBERWARE_TIER_2/3/4)
+	var/list/rungs = list(
+		list(patch, 5, 2),
+		list(bypass, 10, 3),
+		list(delete, 15, 4),
+	)
+	for(var/list/rung as anything in rungs)
+		var/obj/item/organ/cyberimp/cyberware/ware = rung[1]
+		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+		TEST_ASSERT_EQUAL(ware.slot, delete.slot, "[ware.type] isn't in the Governor's OS slot")
+		TEST_ASSERT_EQUAL(chrome.chrome_load, 0, "[ware.type] costs load, a Governor never does")
+		TEST_ASSERT_EQUAL(chrome.capacity_bonus, rung[2], "[ware.type] has the wrong capacity bonus")
+		TEST_ASSERT_EQUAL(chrome.tier, rung[3], "[ware.type] has the wrong tier")
+		TEST_ASSERT(ware.Insert(patient, TRUE), "[ware.type] fixture failed to install")
+		TEST_ASSERT_EQUAL(get_chrome_capacity(patient), 20 + rung[2], "[ware.type] gave the wrong capacity")
+		TEST_ASSERT_EQUAL(get_chrome_load(patient), 0, "[ware.type] put load on the body")
+	// Only the last rung is left in the slot: each install evicted the one before.
+	TEST_ASSERT(delete.owner == patient && !bypass.owner && !patch.owner, "Governor rungs stacked in the OS slot")
+
+	// Swapping down is gated, not trapped: at a load the lower rung can't hold, the
+	// swap is refused with the incumbent still online.
+	var/obj/item/organ/cyberimp/cyberware/test_full_body/bulk = allocate(/obj/item/organ/cyberimp/cyberware/test_full_body)
+	var/obj/item/organ/cyberimp/cyberware/test_heavy/heavy = allocate(/obj/item/organ/cyberimp/cyberware/test_heavy)
+	bulk.Insert(patient, TRUE)
+	heavy.Insert(patient, TRUE)
+	TEST_ASSERT_EQUAL(get_chrome_load(patient), 35, "Governor line fixture load is wrong")
+	TEST_ASSERT(!cyberware_insert_check(bypass, patient, TRUE), "35 load fit under the Bypass's 30")
+	TEST_ASSERT(!cyberware_insert_check(patch, patient, TRUE), "35 load fit under the Patch's 25")
+	TEST_ASSERT(delete.owner == patient && !(delete.organ_flags & ORGAN_FAILING), "A refused downgrade disturbed the incumbent Governor")
+	heavy.Remove(patient, TRUE)
+	TEST_ASSERT(cyberware_insert_check(patch, patient, TRUE), "20 load didn't fit under the Patch's 25")
+	TEST_ASSERT(cyberware_insert_check(bypass, patient, TRUE), "20 load didn't fit under the Bypass's 30")
+	heavy.Insert(patient, TRUE)
+
+	// Pulling the Governor is never blocked: everything browns out, and the
+	// smaller one that goes back in only lifts it once load fits.
+	var/datum/component/cyberware/bulk_chrome = bulk.GetComponent(/datum/component/cyberware)
+	TEST_ASSERT(bulk_chrome.is_running(), "35 of 35 browned out")
+	delete.Remove(patient, TRUE)
+	TEST_ASSERT(!bulk_chrome.is_running(), "Losing the Governor didn't brown out the over-capacity chrome")
+	TEST_ASSERT(patch.Insert(patient, TRUE), "The Patch couldn't go in over capacity with special")
+	TEST_ASSERT(!bulk_chrome.is_running(), "35 load stayed up under the Patch's 25")
+	heavy.Remove(patient, TRUE)
+	TEST_ASSERT(bulk_chrome.is_running(), "20 load stayed browned out under the Patch's 25")
+
 /// Every approved exception is checked independently of the table under test.
 /datum/unit_test/voidcrew_nanite_capacity_costs
 
