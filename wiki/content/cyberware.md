@@ -77,7 +77,7 @@ Prices are the same at both counters, stock is limited per round, and load is th
 | Popup Ronin housing | *loot only* | 5 | Deployable full-auto machine pistol in 10x24mm caseless. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Rigger socket | 3 | 4 | Jack into your own ship's helm from anywhere aboard and fly it from a corridor |
 | Slabskin plate | 3 | 6 | Heavy built-in armor in every damage type. Solid hits visibly spark off you. Everyone can see you are plated |
-| Mantis Blades (pair) | 4 | 3/arm | Deployable hardlight blades, plus a five-tile lunge that knocks the target down |
+| Mantis Blades (pair) | 4 | 3/arm | Deployable hardlight blades, plus a five-tile lunge that knocks the target down. Press and hold the lunge on a target to crouch, and let go to spring up to seven tiles; a solid hit or a stun while you crouch wastes it. A kill brings the lunge back almost at once. Three quick cuts to one limb open its artery, a two-blade lunge skewers someone already hurt, every third cut with both blades out crosses them and staggers, and a swing at the head of someone dying takes it off |
 | Bunker Buster housing | *loot only* | 5 | Two shaped micro-rockets: 60 damage, no splash, will never breach a hull. Reloads are sold at the parlor or printed with Experimental Ammunition |
 | Ghostskin weave | 4 | 5 | Ten seconds of optical camo. NPCs will not target you, and Chrome Reads scatter. Attacking, throwing, taking a hit or a shock, or an EMP drops it |
 | Lazarus node | 4 | 5 | The moment you drop into crit, it charges for a second and shocks you back to your feet at 30% health. Once per six minutes |
@@ -98,14 +98,14 @@ Six of the big pieces come in cheaper models from other makers. Each takes the s
 | Piece | Price | Load | What it does |
 |---|---|---|---|
 | Flickerskin weave | 2,400 cr | 2 | Seven seconds of patchy camo. It fools people, but NPCs still see you and Chrome Reads still land |
-| Shiv Blades (pair) | 2,400 cr | 2/arm | Deployable hardlight blades, duller than the Mantis, with no lunge |
+| Shiv Blades (pair) | 2,400 cr | 2/arm | Deployable hardlight blades, duller than the Mantis, with no lunge and none of its tricks. They still bleed people |
 | Governor Patch | 2,500 cr | 0 | +5 capacity. Occupies the chest OS slot |
 | Hothead core | 3,000 cr | 4 | Eight seconds of 20% less brute and burn and +3 unarmed damage, then the crash. No stun immunity and no roar |
 | Spliced reflex rig | 3,600 cr | 6 | Six seconds of quicker movement, melee cooldowns cut by a quarter and 15% projectile dodge while moving, then a long crash |
 | Governor Bypass | 3 vouchers | 0 | +10 capacity. Occupies the chest OS slot |
 | Service reflex lattice | 4 vouchers | 9 | Seven seconds of quicker movement, melee cooldowns cut by 40% and 25% projectile dodge while moving, then the crash |
 | Vanguard core | 4 vouchers | 8 | Ten seconds of stun immunity, 30% less brute and burn and +5 unarmed damage, opened by a roar that staggers people nearby, then the crash |
-| Scorch Blades (pair) | 4 vouchers | 4/arm | Mantis Blades that set whoever they cut on fire. The lunge lights them harder |
+| Scorch Blades (pair) | 4 vouchers | 4/arm | Mantis Blades that set whoever they cut on fire. The lunge lights them harder, and the heat half-seals the arteries they open |
 | Widowline Arc | 5 vouchers | 6 | A Widowline that shocks on every hit, cuts robots and mechs much harder, and briefly knocks out turrets, consoles and cameras it strikes |
 
 The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credits and Buster rocket pairs at 300, both at 4 [reputation](zone-reputation.md). Both ripperdocs buy back any *removed* chrome that sells for credits, even pieces they sold you, at half list price. Chrome paid for in vouchers is never bought back.
