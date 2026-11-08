@@ -21,7 +21,7 @@
 /datum/artifact_effect/hallucination/do_effect_pulse(power)
 	for(var/mob/living/carbon/target in living_in_range())
 		if(dose(target, power SECONDS))
-			to_chat(target, span_hypnophrase("The world tilts and blooms."))
+			to_chat(target, span_hypnophrase("Everything starts to swim."))
 
 /datum/artifact_effect/hallucination/proc/dose(mob/living/target, duration)
 	if(!iscarbon(target) || target.stat == DEAD)

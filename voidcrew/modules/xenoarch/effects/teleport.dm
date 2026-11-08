@@ -12,7 +12,7 @@
 
 /datum/artifact_effect/teleport/do_effect_touch(mob/living/user)
 	if(hop(user, 6))
-		to_chat(user, span_warning("The world folds, and you are somewhere else."))
+		to_chat(user, span_warning("You're suddenly standing somewhere else!"))
 
 /datum/artifact_effect/teleport/do_effect_aura(seconds_per_tick)
 	for(var/mob/living/target as anything in living_in_range())

@@ -146,7 +146,7 @@ GLOBAL_LIST_INIT(artifact_examine_notes, list(
 	"Up close, the surface has a fine grain, like fingerprints.",
 	"It doesn't ring when tapped. It doesn't make any sound at all.",
 	"Dust doesn't seem to settle on it.",
-	"Your reflection in it is a moment late.",
+	"It smells faintly of ozone.",
 ))
 
 /// Lines for falling asleep: "[artifact] [line]"
@@ -360,8 +360,8 @@ GLOBAL_LIST_INIT(artifact_examine_notes, list(
 			size = 1.5
 			period = 2 SECONDS
 		else
-			low_alpha = "14"
-			high_alpha = "3c"
+			low_alpha = "18"
+			high_alpha = "50"
 			size = 1
 			period = 3 SECONDS
 	if(flash)
