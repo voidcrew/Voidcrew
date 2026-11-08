@@ -20,8 +20,11 @@
  * - HUMAN_NPC_SITE_COLD: the table's cold_layer fills the slots the outfit leaves empty with cold-weather
  *   wear and swaps the shoes for winter boots. An outfit meant for ice planets should bring its own.
  * A table's always_site, and the NPC's npc_always_site, add sites regardless of the air (boarders that
- * cross vacuum). Species that need none of it (skeletons) are left alone. The NPC then opens its tank
- * and switches on its suit's thermal regulator, as a player would.
+ * cross vacuum). Species that need none of it (skeletons) are left alone. Resisting low pressure isn't
+ * enough on its own: vacuum is as cold as space, and only a space suit keeps that out (tg insulation),
+ * so a pressure-proof species that feels the cold (silverscale, lustrous) is still sealed; one that
+ * doesn't breathe gets no tank. The NPC then opens its tank and switches on its suit's thermal
+ * regulator, as a player would.
  */
 
 /**
@@ -105,7 +108,8 @@
  */
 /mob/living/carbon/human/npc/proc/npc_fit_outfit_to_site(outfit, datum/human_npc_outfit_table/table)
 	npc_site = human_npc_site_at(get_turf(src)) | npc_always_site | table?.always_site
-	var/needs_seal = (npc_site & HUMAN_NPC_SITE_VACUUM) && !HAS_TRAIT(src, TRAIT_RESISTLOWPRESSURE)
+	// The cold of vacuum gets through anything but a space suit (SPACE_SUIT_MIN_TEMP_PROTECT)
+	var/needs_seal = (npc_site & HUMAN_NPC_SITE_VACUUM) && !(HAS_TRAIT(src, TRAIT_RESISTLOWPRESSURE) && HAS_TRAIT(src, TRAIT_RESISTCOLD))
 	var/needs_air = (npc_site & (HUMAN_NPC_SITE_VACUUM | HUMAN_NPC_SITE_BAD_AIR)) && !HAS_TRAIT(src, TRAIT_NOBREATH)
 	var/needs_warmth = (npc_site & HUMAN_NPC_SITE_COLD) && !HAS_TRAIT(src, TRAIT_RESISTCOLD)
 	if(!needs_seal && !needs_air && !needs_warmth)
