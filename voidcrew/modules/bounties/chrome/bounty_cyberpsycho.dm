@@ -18,8 +18,9 @@
  * by the boss AI like any kit's: one at a time, never the same twice running while another is ready,
  * with the boss's gap between them. A move holds the boss's busy state (boss_set_busy()) for as long
  * as it runs, so nothing else starts meanwhile and a stun or a downing cuts it off.
- * - Gorilla Arms (its left arm): the piston punch, on someone right beside it. It pries doors open
- *   on its own, under the same busy rule.
+ * - Gorilla Arms (its left arm, bare while the blade is out in its right): the piston punch, and the
+ *   grab and pummel, on someone right beside it. It pries doors open on its own, under the same
+ *   busy rule.
  * - Mantis Blades (its right arm): the blade is its weapon while it fights; the lunge, two to five
  *   tiles down a marked line.
  * - Meteor Piledriver: the leap, three to seven tiles, under the landing shadow.
@@ -223,6 +224,7 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 		/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/lunge,
 		/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/leap,
 		/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/punch,
+		/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab,
 	)
 	/// world.time until which its chrome shrugs off EMPs, after one took it down
 	var/psycho_emp_shield_until = 0
@@ -298,7 +300,7 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/boss_on_interrupted()
 	psycho_stop_moves()
 
-/// Stops every move under way, with no harm done: a lunge, a punch, a leap, and the mark on whoever they were for
+/// Stops every move under way, with no harm done: a lunge, a punch or a grab (whoever it holds is let go), a leap, and the mark on whoever they were for
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_stop_moves()
 	var/datum/bounty_chrome/mantis/mantis = psycho_piece(BOUNTY_CHROME_MANTIS)
 	mantis?.cancel_lunge()
@@ -482,6 +484,28 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 	gorilla.punch_ready_at = psycho.psycho_stretch(gorilla.punch_ready_at)
 	return TRUE
 
+/// The Gorilla grab and pummel, on someone right beside it
+/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab
+	name = "Gorilla Grab"
+	desc = "Grab someone by the collar and pummel them."
+	piece_key = BOUNTY_CHROME_GORILLA
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab/piece_ready(datum/bounty_chrome/gorilla/gorilla, mob/living/target)
+	if(gorilla.busy || world.time < gorilla.grab_ready_at || !isliving(target))
+		return FALSE
+	return get_dist(owner, target) == 1 && owner.Adjacent(target) && gorilla.may_grab(target)
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab/piece_start(mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho, datum/bounty_chrome/gorilla/psycho/gorilla, mob/living/target)
+	if(!istype(gorilla) || !isliving(target))
+		return FALSE
+	gorilla.psycho_called = TRUE
+	var/started = gorilla.start_grab(target)
+	gorilla.psycho_called = FALSE
+	if(!started)
+		return FALSE
+	gorilla.grab_ready_at = psycho.psycho_stretch(gorilla.grab_ready_at)
+	return TRUE
+
 // ===== ITS PIECES =====
 // Each is the real piece with its own trigger taken away: only the psycho's moves start one. Their
 // key is null, so they are never a prototype; psycho_install_chrome() sets it on each one.
@@ -549,7 +573,7 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 	psycho.boss_clear_busy(serial)
 	psycho.boss_next_ability_at = world.time + rand(BOUNTY_BOSS_ABILITY_GAP_MIN, BOUNTY_BOSS_ABILITY_GAP_MAX)
 
-/// Gorilla Arms in its left arm only: punches only when the psycho calls a punch. It still forces doors on its own, under the boss's busy rule.
+/// Gorilla Arms in its left arm only: punches and grabs only when the psycho calls one. It still forces doors on its own, under the boss's busy rule.
 /datum/bounty_chrome/gorilla/psycho
 	key = null
 	examine_text = "%THEIR left arm is plated in dull chrome from knuckle to shoulder."
@@ -560,6 +584,15 @@ GLOBAL_VAR_INIT(bounty_psycho_forced, FALSE)
 	if(!psycho_called)
 		return FALSE
 	return ..()
+
+/datum/bounty_chrome/gorilla/psycho/start_grab(mob/living/target)
+	if(!psycho_called)
+		return FALSE
+	return ..()
+
+// The blade is out in its right hand; the Gorilla arm is the left, and that hand is always empty
+/datum/bounty_chrome/gorilla/psycho/bare_handed()
+	return TRUE
 
 /// The Redline core: trips once a spawn, where it tires, and takes over from whatever was running
 /datum/bounty_chrome/redline/psycho

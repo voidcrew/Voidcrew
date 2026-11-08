@@ -36,6 +36,7 @@
 	mantis.next_lunge_at = 0
 	var/datum/bounty_chrome/gorilla/gorilla = psycho.psycho_piece("gorilla")
 	gorilla.punch_ready_at = 0
+	gorilla.grab_ready_at = 0
 	var/datum/bounty_chrome/piledriver/piledriver = psycho.psycho_piece("piledriver")
 	piledriver.next_leap_at = 0
 
@@ -43,7 +44,7 @@
 /datum/unit_test/voidcrew_bounty_cyberpsycho/proc/move_of(mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho, move_type)
 	return locate(move_type) in psycho.boss_abilities
 
-/// Whether `psycho` is in the middle of any move: a punch, a lunge, a leap or a surge's spin-up
+/// Whether `psycho` is in the middle of any move: a punch or a grab, a lunge, a leap or a surge's spin-up
 /datum/unit_test/voidcrew_bounty_cyberpsycho/proc/moves_running(mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho)
 	var/datum/bounty_chrome/cascade/cascade = psycho.psycho_piece("cascade")
 	var/datum/bounty_chrome/mantis/mantis = psycho.psycho_piece("mantis")
@@ -222,7 +223,8 @@
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/lunge = move_of(psycho, /datum/action/cooldown/mob_cooldown/bounty_boss/psycho/lunge)
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/leap = move_of(psycho, /datum/action/cooldown/mob_cooldown/bounty_boss/psycho/leap)
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/punch = move_of(psycho, /datum/action/cooldown/mob_cooldown/bounty_boss/psycho/punch)
-	TEST_ASSERT(surge && lunge && leap && punch, "The cyberpsycho is missing a move")
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab = move_of(psycho, /datum/action/cooldown/mob_cooldown/bounty_boss/psycho/grab)
+	TEST_ASSERT(surge && lunge && leap && punch && grab, "The cyberpsycho is missing a move")
 	TEST_ASSERT(bounty_chrome_fighting(psycho), "The hostile cyberpsycho isn't fighting")
 	TEST_ASSERT(mantis.deployed, "Its blade didn't come out when the fight started")
 	TEST_ASSERT_NULL(mantis.left_blade, "A blade came out of its Gorilla arm")
@@ -232,7 +234,11 @@
 	for(var/i in 1 to 3)
 		chrome.tick(2)
 		mantis.watch()
-		gorilla.on_melee_hit(hunter)
+	var/mob/living/carbon/human/consistent/beside = hunter_at(tile(1, 2))
+	psycho.body_add_grudge(beside)
+	gorilla.on_melee_hit(beside)
+	chrome.tick(2)
+	beside.forceMove(tile(4, 4))
 	TEST_ASSERT_EQUAL(moves_running(psycho), 0, "A piece started a move on its own")
 	TEST_ASSERT_NULL(psycho.boss_busy, "A piece made it busy on its own")
 	TEST_ASSERT_NULL(deadeye.mark_ref, "Its optics locked on with no move")
@@ -306,8 +312,25 @@
 	TEST_ASSERT(punch.Trigger(target = hunter), "The punch didn't start")
 	TEST_ASSERT_EQUAL(gorilla.busy, "punch", "The punch isn't winding up") // BOUNTY_GORILLA_PUNCH
 	TEST_ASSERT(!surge.Trigger(target = hunter), "It surged mid-punch")
+	TEST_ASSERT(!grab.Trigger(target = hunter), "It grabbed mid-punch")
 	gorilla.stop()
 	TEST_ASSERT_NULL(psycho.boss_busy, "The punch kept the boss after it stopped")
+
+	// The grab: the reach, then the hold, and nothing else meanwhile; stopped, it lets go
+	ready(psycho)
+	cascade.next_surge_at = world.time + 1 MINUTES
+	TEST_ASSERT(grab.Trigger(target = hunter), "The grab didn't start with the blade out")
+	TEST_ASSERT_EQUAL(gorilla.busy, "reach", "The grab isn't reaching") // BOUNTY_GORILLA_REACH
+	TEST_ASSERT(!punch.Trigger(target = hunter), "It punched mid-reach")
+	gorilla.finish_reach(gorilla.serial)
+	TEST_ASSERT_EQUAL(gorilla.busy, "hold", "The reach didn't take hold") // BOUNTY_GORILLA_HOLD
+	TEST_ASSERT_NOTNULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "The hunter isn't held")
+	TEST_ASSERT_EQUAL(psycho.boss_busy, "gorilla", "The hold doesn't keep the boss") // BOUNTY_GORILLA_BOSS_BUSY
+	psycho.boss_next_ability_at = 0
+	TEST_ASSERT(!lunge.Trigger(target = hunter) && !surge.Trigger(target = hunter), "Another move started mid-hold")
+	psycho.psycho_stop_moves()
+	TEST_ASSERT_NULL(hunter.has_status_effect(/datum/status_effect/bounty_gorilla_held), "Stopped, it kept hold of the hunter")
+	TEST_ASSERT_NULL(psycho.boss_busy, "The grab kept the boss after it stopped")
 	ready(psycho)
 	psycho.boss_last_ability = punch.type
 	for(var/i in 1 to 20)
