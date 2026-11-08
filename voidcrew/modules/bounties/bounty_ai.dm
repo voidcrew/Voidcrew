@@ -489,7 +489,7 @@
 /mob/living/basic/bounty_criminal/proc/ai_flee_from(mob/living/threat)
 	if(!isliving(threat) || !ai_flee_event(threat, null, seek_hiding = FALSE, quiet = TRUE))
 		return FALSE
-	ai_set_pace(BOUNTY_NORMAL_SPEED_MELEE)
+	ai_set_pace(BOUNTY_FIGHT_SPEED)
 	return TRUE
 
 /**
@@ -713,11 +713,78 @@
 	return FALSE
 
 /**
+ * Smart pathing for every bounty fighter, criminals, companions and mini-bosses, that keeps their
+ * pace in a chase:
+ * - tg's move loop waits its delay from the tick a step ran on, so a pace between ticks is walked
+ *   as the next tick up (1.25 as 1.5). Here each step is due a full delay after the last one was
+ *   due, so a fractional pace is walked as it is.
+ * - JPS walks the path it worked out to where the target was, and waits for a new one at its end:
+ *   a hunter on the move stays ahead of it. Chasing someone within BOUNTY_CHASE_STRAIGHT_RANGE down
+ *   a clear straight line, the path is the line to where they are now, worked out after every
+ *   step. Anything in the way, and JPS paths as usual.
+ */
+/datum/ai_movement/jps/bounty_paced
+
+/datum/ai_movement/jps/bounty_paced/post_move(datum/move_loop/has_target/jps/source, succeeded)
+	. = ..()
+	if(QDELETED(source))
+		return
+	// pre_move() set the delay to their pace; the next step is due that long after this one was due.
+	// Never sooner than a tick short of it, so a step that came late is not made up with a burst.
+	source.delay = max(source.timer + source.delay - world.time, source.delay - world.tick_lag, world.tick_lag)
+	// A step of their own (aside, back, a Cascade strafe) never comes on top of one of the walk
+	var/datum/ai_controller/controller = source.extra_info
+	if(succeeded == MOVELOOP_SUCCESS && controller)
+		controller.set_blackboard_key(BB_BOUNTY_SIDESTEP_AT, world.time + controller.movement_delay)
+	bounty_chase_straight(source)
+
+/**
+ * Points `loop` straight at its target when the target is a mob or a mech within
+ * BOUNTY_CHASE_STRAIGHT_RANGE and every step there is clear: no wall, window, door they can't open,
+ * hazard or step off a criminal's leash. Never while a path is being worked out, so a path that
+ * comes back later never starts from a tile they have left. Cheap: a few turfs, only while chasing.
+ */
+/proc/bounty_chase_straight(datum/move_loop/has_target/jps/loop)
+	var/mob/living/mover = loop.moving
+	var/atom/movable/target = loop.target
+	if(loop.is_pathing || !isliving(mover) || !ismovable(target))
+		return
+	var/turf/from = get_turf(mover)
+	var/turf/goal = get_turf(target)
+	if(!isturf(mover.loc) || !goal || goal.z != from.z)
+		return
+	var/stop_at = max(loop.minimum_distance, 1)
+	var/distance = get_dist(from, goal)
+	if(distance <= stop_at || distance > BOUNTY_CHASE_STRAIGHT_RANGE)
+		return
+	var/datum/can_pass_info/pass_info = new(mover, loop.access)
+	var/mob/living/basic/bounty_criminal/leash_holder = bounty_ai_side_of(mover)
+	var/list/line = list()
+	var/turf/current = from
+	while(get_dist(current, goal) > stop_at)
+		var/turf/next = get_step_towards(current, goal)
+		// JPS's own step rule (no space when it keeps to simulated turfs), and no hazard
+		if(!CAN_STEP(current, next, loop.simulated_only, pass_info, loop.avoid) || !next.can_cross_safely(mover))
+			return
+		// A diagonal only where both of its sides are open, as JPS's clunky-diagonal rule
+		if(next.x != current.x && next.y != current.y)
+			var/turf/side_x = locate(next.x, current.y, current.z)
+			var/turf/side_y = locate(current.x, next.y, current.z)
+			if(!CAN_STEP(current, side_x, loop.simulated_only, pass_info, loop.avoid) || !CAN_STEP(current, side_y, loop.simulated_only, pass_info, loop.avoid))
+				return
+		if(leash_holder && !leash_holder.leash_ok(next))
+			return
+		line += next
+		current = next
+	loop.movement_path = line
+
+/**
  * Smart pathing that stays on their site (AR-E1): a step off the leash (P2's leash_ok(): the site's
  * bounds, never a ship, hangar or player outpost) is refused. Paths are bounded by
- * AI_MAX_PATH_LENGTH like any jps mover.
+ * AI_MAX_PATH_LENGTH like any jps mover. The pace and the chase are bounty_paced's.
  */
 /datum/ai_movement/jps/bounty
+	parent_type = /datum/ai_movement/jps/bounty_paced
 
 /datum/ai_movement/jps/bounty/allowed_to_move(datum/move_loop/has_target/jps/source)
 	. = ..()

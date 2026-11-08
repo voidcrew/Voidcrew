@@ -1281,7 +1281,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 		BB_TARGET_MINIMUM_STAT = CONSCIOUS,
 		BB_AGGRO_RANGE = BOUNTY_BOSS_POSSE_RANGE,
 	)
-	ai_movement = /datum/ai_movement/jps
+	// Its own pace walked exactly, and a straight chase at close range (bounty_ai.dm)
+	ai_movement = /datum/ai_movement/jps/bounty_paced
 	idle_behavior = null
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/bounty_boss_busy,

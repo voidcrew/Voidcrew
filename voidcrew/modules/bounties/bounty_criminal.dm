@@ -60,7 +60,8 @@
 	unique_name = FALSE
 	maxHealth = BOUNTY_NORMAL_HEALTH_WANTED
 	health = BOUNTY_NORMAL_HEALTH_WANTED
-	speed = BOUNTY_BODY_NORMAL_SPEED_MELEE
+	// The AI sets the pace (ai_set_pace()): calm until there is a fight
+	speed = BOUNTY_CALM_SPEED
 	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
 	mob_size = MOB_SIZE_HUMAN
 	sentience_type = BOUNTY_CRIMINAL_NO_SENTIENCE
@@ -119,7 +120,6 @@
 /mob/living/basic/bounty_criminal/meek
 	maxHealth = BOUNTY_MEEK_HEALTH
 	health = BOUNTY_MEEK_HEALTH
-	speed = BOUNTY_BODY_MEEK_SPEED
 	max_stamina_slowdown = BOUNTY_MEEK_STAMINA_SLOWDOWN
 	stamina_regen_time = BOUNTY_MEEK_STAMCRIT_TIME
 
@@ -225,9 +225,6 @@
 	if(tier_health)
 		maxHealth = tier_health
 		updatehealth()
-	if(istype(src, /mob/living/basic/bounty_criminal/normal))
-		var/ranged = (record?.style in list(BOUNTY_STYLE_PISTOL, BOUNTY_STYLE_SMG, BOUNTY_STYLE_REVOLVER, BOUNTY_STYLE_BOTTLE))
-		set_varspeed(ranged ? BOUNTY_BODY_NORMAL_SPEED_RANGED : BOUNTY_BODY_NORMAL_SPEED_MELEE)
 	body_update_stamina_coeff()
 	body_set_site(new_posting?.site_ref?.resolve())
 	if(new_posting)

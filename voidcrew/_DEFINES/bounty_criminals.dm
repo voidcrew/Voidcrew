@@ -65,12 +65,6 @@
 /// An explosion counts as a player's when the explosive was last touched by one, or someone with a mind stands within this many tiles
 #define BOUNTY_EXPLOSION_WITNESS_RANGE 7
 
-/// Pace of a meek criminal: its sprint (P3 slows it while winded)
-#define BOUNTY_BODY_MEEK_SPEED 1.1
-/// Pace of a normal criminal with a melee style, and with a ranged one (pistol, bottle)
-#define BOUNTY_BODY_NORMAL_SPEED_MELEE 1.25
-#define BOUNTY_BODY_NORMAL_SPEED_RANGED 1.4
-
 // ===== STAMINA =====
 // max_stamina stays at 100 on every criminal: basic mobs leave stamina crit by comparing raw stamina
 // with a percentage (stamcrit.dm), which only agree at 100. A pool of any other size is the stamina

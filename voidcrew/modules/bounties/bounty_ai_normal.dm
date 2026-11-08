@@ -125,7 +125,7 @@
 	ai_set_threat(target)
 	ai_add_grudge(target)
 	var/datum/bounty_style/style = bounty_ai_style(src)
-	ai_set_pace(style?.speed || BOUNTY_NORMAL_SPEED_MELEE)
+	ai_set_pace(style ? style.speed : BOUNTY_FIGHT_SPEED)
 	bounty_ai_draw(src, ai_hand)
 	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
 	if(fresh)
@@ -253,7 +253,10 @@
 	if(style.min_range && get_dist(fighter, target) < style.min_range && !controller.blackboard[BB_BOUNTY_WINDUP_UNTIL])
 		back_off(controller, fighter, target)
 	if(avoid_friendly_fire && check_friendly_in_path(fighter, target, strategy))
-		adjust_position(fighter, target)
+		// A step aside at their own pace: this runs ten times a second, and tg's step ignores the move delay
+		if(world.time >= controller.blackboard[BB_BOUNTY_SIDESTEP_AT])
+			controller.set_blackboard_key(BB_BOUNTY_SIDESTEP_AT, world.time + fighter.cached_multiplicative_slowdown)
+			adjust_position(fighter, target)
 		return AI_BEHAVIOR_DELAY
 	return style.ranged_tick(fighter, target)
 
@@ -285,7 +288,7 @@
 
 /// A step back from `target`, now and then, never off the leash
 /datum/ai_behavior/basic_ranged_attack/bounty/proc/back_off(datum/ai_controller/controller, mob/living/basic/fighter, atom/target)
-	if(world.time < controller.blackboard[BB_BOUNTY_BACKSTEP_AT] || !isturf(fighter.loc))
+	if(world.time < controller.blackboard[BB_BOUNTY_BACKSTEP_AT] || world.time < controller.blackboard[BB_BOUNTY_SIDESTEP_AT] || !isturf(fighter.loc))
 		return
 	controller.set_blackboard_key(BB_BOUNTY_BACKSTEP_AT, world.time + BOUNTY_BACKSTEP_GAP)
 	var/away_dir = get_dir(target, fighter)
@@ -295,7 +298,9 @@
 	var/mob/living/basic/bounty_criminal/leash_holder = bounty_ai_side_of(fighter)
 	if(leash_holder && !leash_holder.leash_ok(away))
 		return
-	fighter.Move(away, away_dir)
+	if(fighter.Move(away, away_dir))
+		// Never another step of their own sooner than their pace
+		controller.set_blackboard_key(BB_BOUNTY_SIDESTEP_AT, world.time + fighter.cached_multiplicative_slowdown)
 	fighter.face_atom(target)
 
 /// The shotgun closes in to BOUNTY_SHOTGUN_RANGE
@@ -405,7 +410,7 @@
 	ai_suspend_activity()
 	ai_set_mode(BOUNTY_AI_RETREATING)
 	ai_hand = bounty_ai_update_held(src, ai_hand, null)
-	ai_set_pace(BOUNTY_NORMAL_SPEED_RANGED)
+	ai_set_pace(BOUNTY_FIGHT_SPEED)
 	ai_controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
 	if(best)
 		ai_controller.set_blackboard_key(BB_BOUNTY_DESTINATION, best)
@@ -518,8 +523,8 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	var/stamina_mult = 1
 	/// Between attacks
 	var/interval = 1.4 SECONDS
-	/// Speed in a fight
-	var/speed = BOUNTY_NORMAL_SPEED_MELEE
+	/// Speed in a fight (see BOUNTY_FIGHT_SPEED)
+	var/speed = BOUNTY_FIGHT_SPEED
 	/// The real item they fight with, shown in their hand (a typepath; null for bare fists)
 	var/held_look
 	/// The heavier real item a Wanted criminal carries instead, if the style has one
@@ -712,7 +717,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	ranged = TRUE
 	health_mult = BOUNTY_PISTOL_HEALTH
 	interval = BOUNTY_PISTOL_INTERVAL
-	speed = BOUNTY_NORMAL_SPEED_RANGED
 	held_look = /obj/item/gun/ballistic/automatic/pistol/aps
 	projectile_type = /obj/projectile/bullet/bounty
 	windup = BOUNTY_PISTOL_WINDUP
@@ -761,7 +765,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	ranged = TRUE
 	health_mult = BOUNTY_SMG_HEALTH
 	interval = BOUNTY_SMG_INTERVAL
-	speed = BOUNTY_NORMAL_SPEED_RANGED
 	held_look = /obj/item/gun/ballistic/automatic/mini_uzi
 	heavy_look = /obj/item/gun/ballistic/automatic/wt550
 	projectile_type = /obj/projectile/bullet/bounty
@@ -789,7 +792,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	ranged = TRUE
 	health_mult = BOUNTY_REVOLVER_HEALTH
 	interval = BOUNTY_REVOLVER_INTERVAL
-	speed = BOUNTY_NORMAL_SPEED_RANGED
 	held_look = /obj/item/gun/ballistic/revolver/c38
 	projectile_type = /obj/projectile/bullet/bounty
 	windup = BOUNTY_REVOLVER_WINDUP
@@ -810,7 +812,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	ranged = TRUE
 	health_mult = BOUNTY_SHOTGUN_HEALTH
 	interval = BOUNTY_SHOTGUN_INTERVAL
-	speed = BOUNTY_NORMAL_SPEED_RANGED
 	held_look = /obj/item/gun/ballistic/shotgun
 	heavy_look = /obj/item/gun/ballistic/shotgun/automatic/combat
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
@@ -829,7 +830,6 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	ranged = TRUE
 	health_mult = BOUNTY_BOTTLE_HEALTH
 	interval = BOUNTY_BOTTLE_INTERVAL
-	speed = BOUNTY_NORMAL_SPEED_RANGED
 	held_look = /obj/item/reagent_containers/cup/glass/bottle/beer
 	projectile_type = /obj/projectile/bounty_bottle
 	projectile_sound = 'sound/items/weapons/punchmiss.ogg'
