@@ -2017,9 +2017,7 @@
 /obj/structure/chair/wood{
 	dir = 8
 	},
-/mob/living/basic/trooper/russian{
-	dir = 8
-	},
+/obj/effect/spawner/human_npc/ruin/russian,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "tI" = (

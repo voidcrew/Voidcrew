@@ -45,7 +45,7 @@
 	var/datum/weakref/board_proof_ref
 	/// Weakrefs to GPS units (/datum/component/gps/item) its sighting beacon was uploaded to -> weakref of the ship that linked them
 	var/list/board_gps_units = list()
-	/// The worst capture state (BOUNTY_STATE_*) any body of its criminal reached. A criminal that comes back when its site loads again starts from here: once downed, never full pay; once dead, only proof (12.1).
+	/// BOUNTY_STATE_DEAD once a body of its criminal was dead when its site unloaded: the next load places its proof of death, never a living body again. Otherwise BOUNTY_STATE_FREE.
 	var/board_worst_state = BOUNTY_STATE_FREE
 	/// The sighting beacon's tag on those units
 	var/board_gps_tag
@@ -348,7 +348,7 @@
  * so this never touches one being beamed out.
  */
 /datum/criminal_bounty/proc/board_remove_mobs(reason, relisting = FALSE)
-	var/mob/living/basic/bounty_criminal/criminal = criminal()
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = criminal()
 	board_detach_criminal()
 	var/list/extras = list()
 	for(var/datum/weakref/ref as anything in companions + decoys)
@@ -382,6 +382,12 @@
 	var/turf/spot = get_turf(leaving)
 	if(spot && leaving.stat != DEAD)
 		new /obj/effect/temp_visual/transporter_flash/departure(spot)
+	// Its locked kit goes with it (D3); whatever on it isn't its own (papers, a key, a crew's cuffs) stays behind.
+	if(ishumannpc(leaving) && spot)
+		var/mob/living/carbon/human/npc/body = leaving
+		body.npc_drop_not_gear()
+		for(var/obj/item/restraints/worn in list(body.handcuffed, body.legcuffed))
+			body.transferItemToLoc(worn, spot, force = TRUE)
 	qdel(leaving)
 
 // ===== RELISTING =====
@@ -483,19 +489,12 @@
 	return 0
 
 /**
- * Percent paid for a criminal in `state` at the pad that has at some point been as bad as
- * `worst_state` (12.1: once downed, at most the downed share; once dead, the dead share). 0 for a
- * free criminal, which the pad refuses.
+ * Percent paid for a criminal in `state` at the pad: its condition there, nothing it went through on the
+ * way (owner ruling 2026-11-08). 0 for a free criminal, which the pad refuses. The kingpin and kill-only
+ * postings override it.
  */
-/datum/criminal_bounty/proc/board_share_for(state, worst_state)
-	var/share = bounty_state_share(state)
-	if(!share)
-		return 0
-	if(worst_state && worst_state != BOUNTY_STATE_FREE)
-		var/worst_share = bounty_state_share(worst_state)
-		if(worst_share)
-			share = min(share, worst_share)
-	return share
+/datum/criminal_bounty/proc/board_share_for(state)
+	return bounty_state_share(state)
 
 /**
  * What a turn-in at `share` percent pays: list(credits, vouchers). Vouchers come only with the

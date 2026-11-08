@@ -134,8 +134,8 @@
 		/mob/living/simple_animal/hostile/asteroid/elite,
 		/mob/living/basic/boss,
 		/mob/living/basic/trooper/pirate/faction/boss,
-		/mob/living/basic/bounty_criminal/boss,
-		/mob/living/basic/bounty_criminal/kingpin,
+		/mob/living/carbon/human/npc/bounty_criminal/boss,
+		/mob/living/carbon/human/npc/bounty_criminal/kingpin,
 		/mob/living/basic/bounty_lair_boss,
 		/mob/living/basic/lich,
 		/mob/living/basic/hoarfrost_matriarch,
@@ -587,111 +587,22 @@
 		controller.clear_target()
 
 /datum/unit_test/voidcrew_npc_zone_bounty_routes/Run()
+	// Bounty NPCs are real humans (human NPC migration, phase D): a zone never touches their health or
+	// their blows. Harder zones dress them in better armour instead (bounty_outfits.dm).
 	var/turf/location = run_loc_floor_bottom_left
 	var/datum/bounty_record/record = allocate(/datum/bounty_record)
 	record.tier = 2 // BOUNTY_TIER_WANTED
 	record.style = "brawler"
-	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, location, null)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(record, location, null)
 	allocated += criminal
-	var/raw_health = criminal.body_tier_health()
-	criminal.npc_spawn_context.on_zone_resolved(3)
-	TEST_ASSERT(abs(criminal.maxHealth - raw_health * 1.8) < 0.001, "Criminal route finalized before body_setup")
-	criminal.setBruteLoss(criminal.maxHealth / 2)
-	var/mob/living/basic/bounty_criminal/decoy/decoy = allocate(/mob/living/basic/bounty_criminal/decoy, location)
+	criminal.npc_spawn_context?.on_zone_resolved(3)
+	TEST_ASSERT_EQUAL(criminal.maxHealth, 100, "A human criminal's health was zone-scaled")
+	TEST_ASSERT(!criminal.npc_zone_applied, "A human criminal took a zone profile")
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = allocate(/mob/living/carbon/human/npc/bounty_criminal/decoy, location)
 	decoy.body_match(criminal)
 	decoy.body_match(criminal)
-	TEST_ASSERT_EQUAL(decoy.npc_spawn_context.source_id, criminal.npc_spawn_context.source_id, "Decoy lost the fugitive source")
-	TEST_ASSERT_EQUAL(decoy.maxHealth, criminal.maxHealth, "Repeated body_match multiplied copied health")
-	TEST_ASSERT(abs(decoy.health / decoy.maxHealth - criminal.health / criminal.maxHealth) < 0.001, "Decoy copy changed health fraction")
-	var/mob/living/carbon/human/consistent/admin = allocate(/mob/living/carbon/human/consistent, run_loc_floor_top_right)
-	var/datum/bounty_admin_panel/unit_test/panel = allocate(/datum/bounty_admin_panel/unit_test, admin)
-	var/mob/living/basic/bounty_criminal/decoy/admin_decoy = panel.admin_spawn_decoy(admin, criminal)
-	TEST_ASSERT_NOTNULL(admin_decoy, "Admin decoy fixture failed")
-	allocated += admin_decoy
-	TEST_ASSERT_EQUAL(admin_decoy.maxHealth, criminal.maxHealth, "Admin decoy route stacked the copied pool")
-	var/datum/bounty_real_weapon/knife = bounty_real_weapon(/obj/item/knife/combat)
-	knife.apply_melee(criminal)
-	knife.apply_melee(criminal)
-	TEST_ASSERT(abs(criminal.melee_damage_upper - knife.force_high * 1.35) < 0.001, "Bounty weapon replacement stacked or lost the profile")
-	var/mob/living/basic/bounty_criminal/kingpin/kingpin = bounty_kingpin_setup(location, list(), null)
-	allocated += kingpin
-	kingpin.npc_spawn_context.on_zone_resolved(2)
-	TEST_ASSERT_EQUAL(kingpin.npc_zone_role, "boss", "The neutral lounge kingpin missed its explicit boss profile")
-	var/mob/living/basic/bounty_kingpin_goon/goon = kingpin.kingpin_crew.spawn_goon(run_loc_floor_top_right)
-	allocated += goon
-	TEST_ASSERT_EQUAL(goon.npc_spawn_context.zone_type, 2, "Replacement goon lost its kingpin's site band")
-	TEST_ASSERT_EQUAL(goon.npc_zone_role, "ordinary", "Goon inherited the kingpin's boss role")
-	TEST_ASSERT(abs(goon.maxHealth - goon.npc_zone_original_max_health * 1.35) < 0.001, "Replacement goon did not finalize")
-	kingpin.exempt_npc_zone()
-	var/mob/living/basic/bounty_kingpin_goon/owned_goon = kingpin.kingpin_crew.spawn_goon(location)
-	allocated += owned_goon
-	TEST_ASSERT(!owned_goon.npc_zone_applied && owned_goon.npc_zone_exempt, "Player ownership did not propagate to goons")
-
-/datum/unit_test/voidcrew_npc_zone_bounty_damage/Run()
-	var/turf/location = run_loc_floor_bottom_left
-	var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, 3, "boss")
-	var/mob/living/basic/bounty_criminal/boss/boss = spawn_npc_in_zone(/mob/living/basic/bounty_criminal/boss/juggernaut, location, context)
-	allocated += boss
-	var/mob/living/basic/npc_zone_test/victim = allocate(/mob/living/basic/npc_zone_test, run_loc_floor_top_right)
-	boss.boss_hit(victim, 10)
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 12, "Raw boss ability escaped scaling")
-	boss.boss_hit(victim, 12, already_scaled = TRUE)
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 24, "Scaled melee input multiplied twice")
-	var/list/table = boss.boss_health_table()
-	boss.boss_engaged = list("first" = TRUE, "second" = TRUE)
-	boss.boss_apply_posse_health(FALSE)
-	TEST_ASSERT(abs(boss.maxHealth - table[2] * 1.3) < 0.001, "Posse health lost the boss factor")
-	var/obj/effect/bounty_boss_explosive/explosive = allocate(/obj/effect/bounty_boss_explosive, location, boss)
-	var/obj/effect/bounty_boss_fire_pool/pool = allocate(/obj/effect/bounty_boss_fire_pool, location, list(location), 5 SECONDS, boss)
-	var/factor = boss.get_npc_zone_damage_factor()
-	qdel(boss)
-	TEST_ASSERT_EQUAL(explosive.damage_factor, factor, "Delayed explosive lost its creator's factor")
-	TEST_ASSERT_EQUAL(pool.damage_factor, factor, "Delayed fire lost its creator's factor")
-	victim.setMaxHealth(1000)
-	victim.updatehealth()
-	victim.mind_initialize()
-	victim.forceMove(location)
-	var/before_blast = victim.getBruteLoss()
-	var/raw_blast = explosive.damage
-	explosive.detonate()
-	TEST_ASSERT(abs(victim.getBruteLoss() - before_blast - raw_blast * factor) < 0.001, "Orphaned explosive fallback lost or doubled its captured factor")
-	var/before_fire = victim.getBruteLoss()
-	pool.scorch(10)
-	TEST_ASSERT(abs(victim.getBruteLoss() - before_fire - 10 * factor) < 0.001, "Orphaned fire pool lost its captured factor")
-	var/datum/status_effect/bounty_boss_burning/burning = victim.apply_status_effect(/datum/status_effect/bounty_boss_burning, factor)
-	// scorch already applied the refreshable effect.
-	burning = victim.has_status_effect(/datum/status_effect/bounty_boss_burning)
-	var/before = victim.getBruteLoss()
-	burning.tick(1)
-	TEST_ASSERT(abs(victim.getBruteLoss() - before - 3 * factor) < 0.001, "Lingering fire did not retain its numeric factor") // BOUNTY_BOSS_BURNING_DAMAGE
-
-/// Exercise the mafia override in a real club room, which bypasses base marker spawning.
-/datum/unit_test/voidcrew_npc_zone_mafia_room
-	var/turf/room_floor
-	var/area/original_area
-
-/datum/unit_test/voidcrew_npc_zone_mafia_room/Destroy()
-	if(room_floor && original_area)
-		room_floor.change_area(get_area(room_floor), original_area)
-	return ..()
-
-/datum/unit_test/voidcrew_npc_zone_mafia_room/Run()
-	room_floor = run_loc_floor_bottom_left
-	original_area = get_area(room_floor)
-	var/area/ruin/space/has_grav/powered/mafia_club/casino/room = allocate(/area/ruin/space/has_grav/powered/mafia_club/casino)
-	room_floor.change_area(original_area, room)
-	var/obj/effect/zone_mobs/mafia/marker = allocate(/obj/effect/zone_mobs/mafia)
-	marker.forceMove(room_floor)
-	marker.do_spawn(3)
-	var/count = 0
-	var/list/roster = bounty_mafia_room_crew(room.type)
-	for(var/mob/living/basic/trooper/russian/mafia/goon in room_floor)
-		allocated += goon
-		count++
-		TEST_ASSERT(roster[goon.type], "Custom mafia marker escaped its existing room roster")
-		TEST_ASSERT_EQUAL(goon.npc_zone_role, "ordinary", "Custom mafia room output missed finalization")
-		TEST_ASSERT(abs(goon.maxHealth - goon.npc_zone_original_max_health * 1.8) < 0.001, "Custom mafia room output missed the selected factor")
-	TEST_ASSERT(count >= 1 && count <= 2, "Custom mafia marker escaped the 1-2 output budget")
+	TEST_ASSERT_EQUAL(decoy.maxHealth, 100, "Matching a decoy to its fugitive changed its health")
+	TEST_ASSERT_EQUAL(decoy.npc_damage_taken, criminal.npc_damage_taken, "A decoy isn't as tough as its fugitive")
 
 /// Field-route fixtures suppress offer generation, retaining the real spawn/tracking paths.
 /datum/mission/npc_zone_test/generate_mission_details()
@@ -780,7 +691,6 @@
 		/mob/living/basic/mining/wolf/random = /mob/living/basic/mining/wolf/alpha,
 		/mob/living/basic/mining/wolf/wasteland/random = /mob/living/basic/mining/wolf/alpha/wasteland,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/random = /mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
-		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random = /mob/living/simple_animal/hostile/asteroid/hermit/ranged,
 	)
 	for(var/spawn_type in replacement_types)
 		var/found_replacement = FALSE
@@ -940,8 +850,16 @@
 	for(var/loan_type in list(/datum/voidcrew_shuttle_loan/syndiehijacking, /datum/voidcrew_shuttle_loan/lots_of_bees, /datum/voidcrew_shuttle_loan/russian_party, /datum/voidcrew_shuttle_loan/spider_gift))
 		token.current_zone = red
 		var/datum/voidcrew_shuttle_loan/loan = allocate(loan_type)
+		var/list/queued_before = SShuman_npcs.queue.Copy()
 		loan.spawn_items(cargo)
 		var/hostiles = 0
+		// People (human NPCs) are queued, a body a tick: their orders carry the same delivery context.
+		for(var/datum/human_npc_order/order as anything in SShuman_npcs.queue - queued_before)
+			hostiles++
+			TEST_ASSERT_EQUAL(order.context?.zone_type, 3, "[loan_type] queued a person against the cargo bay")
+			TEST_ASSERT_EQUAL(order.context?.source_id, REF(cargo), "[loan_type] queued a person without its delivery identity")
+			TEST_ASSERT_EQUAL(order.context?.role, "ordinary", "[loan_type] queued a person without its encounter role")
+			qdel(order)
 		for(var/turf/tile as anything in cargo.test_turfs)
 			for(var/mob/living/body in tile)
 				if(!isbasicmob(body) && !isanimal(body))

@@ -6,8 +6,9 @@
  *
  * The panel runs without an admin client: /datum/bounty_admin_panel/unit_test answers its prompts
  * from a list and notes what it logged and said. The tests call the action procs straight, and the
- * menu once each through its prompts. They run against the real packages: capture states are read
- * back through P2's capture_state(), the pool through P7's procs, the clock through P5's.
+ * menu once each through its prompts. They run against the real packages: criminals are real human
+ * bodies, so a forced state is checked on tg's own state (crit, Paralyze, the cuff slot, death) and read
+ * back through P2's capture_state(); the pool through P7's procs, the clock through P5's.
  *
  * Every test that touches a global list (the postings, the pool) sets it aside first and puts it back
  * after, from a Run() that calls a separate checks proc, so a failed check can't skip the restore.
@@ -81,7 +82,7 @@
 
 /// A criminal spawned by the panel, deleted with the test
 /datum/unit_test/voidcrew_bounty_admin/proc/spawn_criminal(datum/bounty_admin_panel/unit_test/panel, mob/operator, tier, archetype, variant, turf/spot)
-	var/mob/living/basic/bounty_criminal/criminal = panel.admin_spawn_criminal(operator, tier, archetype, variant, null, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = panel.admin_spawn_criminal(operator, tier, archetype, variant, null, spot)
 	if(criminal)
 		allocated += criminal
 	return criminal
@@ -107,19 +108,19 @@
 
 	// Every archetype and kit: list(archetype, kit or style, the subtype P2 picks)
 	var/list/cases = list(
-		list("meek", null, /mob/living/basic/bounty_criminal/meek), // BOUNTY_ARCHETYPE_MEEK
-		list("normal", "knife", /mob/living/basic/bounty_criminal/normal), // BOUNTY_ARCHETYPE_NORMAL, BOUNTY_STYLE_KNIFE
-		list("boss", "juggernaut", /mob/living/basic/bounty_criminal/boss/juggernaut), // BOUNTY_ARCHETYPE_BOSS, BOUNTY_KIT_*
-		list("boss", "pyromaniac", /mob/living/basic/bounty_criminal/boss/pyromaniac),
-		list("boss", "demolitionist", /mob/living/basic/bounty_criminal/boss/demolitionist),
-		list("boss", "ghost", /mob/living/basic/bounty_criminal/boss/ghost),
-		list("boss", "heavy", /mob/living/basic/bounty_criminal/boss/heavy),
+		list("meek", null, /mob/living/carbon/human/npc/bounty_criminal/meek), // BOUNTY_ARCHETYPE_MEEK
+		list("normal", "knife", /mob/living/carbon/human/npc/bounty_criminal/normal), // BOUNTY_ARCHETYPE_NORMAL, BOUNTY_STYLE_KNIFE
+		list("boss", "juggernaut", /mob/living/carbon/human/npc/bounty_criminal/boss/juggernaut), // BOUNTY_ARCHETYPE_BOSS, BOUNTY_KIT_*
+		list("boss", "pyromaniac", /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac),
+		list("boss", "demolitionist", /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist),
+		list("boss", "ghost", /mob/living/carbon/human/npc/bounty_criminal/boss/ghost),
+		list("boss", "heavy", /mob/living/carbon/human/npc/bounty_criminal/boss/heavy),
 	)
 	for(var/list/spawn_case as anything in cases)
 		var/archetype = spawn_case[1]
 		var/variant = spawn_case[2]
 		var/expected = spawn_case[3]
-		var/mob/living/basic/bounty_criminal/criminal = spawn_criminal(panel, operator, 2, archetype, variant, spot) // BOUNTY_TIER_WANTED
+		var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_criminal(panel, operator, 2, archetype, variant, spot) // BOUNTY_TIER_WANTED
 		TEST_ASSERT_NOTNULL(criminal, "No [archetype] [variant] criminal spawned: [panel.error]")
 		TEST_ASSERT_EQUAL(criminal.type, expected, "The [archetype] [variant] criminal is a [criminal.type]")
 		TEST_ASSERT_EQUAL(get_turf(criminal), spot, "The [archetype] [variant] criminal spawned away from the spot")
@@ -138,7 +139,7 @@
 	TEST_ASSERT_EQUAL(length(panel.operations), length(cases), "The panel logged [length(panel.operations)] spawns for [length(cases)]")
 
 	// A random kit is still a kit.
-	var/mob/living/basic/bounty_criminal/random_boss = spawn_criminal(panel, operator, 3, "boss", null, spot) // BOUNTY_TIER_MOST_WANTED
+	var/mob/living/carbon/human/npc/bounty_criminal/random_boss = spawn_criminal(panel, operator, 3, "boss", null, spot) // BOUNTY_TIER_MOST_WANTED
 	TEST_ASSERT((random_boss?.record?.kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")), "A boss with a random kit has the kit [random_boss?.record?.kit]")
 
 	// Bad requests are refused, with a reason and no log line.
@@ -155,8 +156,8 @@
 	panel.answers = list("Spawn a criminal at my feet", "Normal", "Petty", "Shotgun", "Camping")
 	panel.run_menu(operator)
 	TEST_ASSERT_EQUAL(length(panel.missed), 0, "The spawn menu did not offer: [jointext(panel.missed, "; ")]")
-	var/mob/living/basic/bounty_criminal/from_menu
-	for(var/mob/living/basic/bounty_criminal/found in get_turf(operator))
+	var/mob/living/carbon/human/npc/bounty_criminal/from_menu
+	for(var/mob/living/carbon/human/npc/bounty_criminal/found in get_turf(operator))
 		from_menu = found
 	TEST_ASSERT_NOTNULL(from_menu, "The spawn menu put nobody at the admin's feet")
 	allocated += from_menu
@@ -164,16 +165,16 @@
 	TEST_ASSERT_EQUAL(from_menu.record?.tier, 1, "The spawn menu's criminal is not petty") // BOUNTY_TIER_PETTY
 
 	// A decoy, through P6's builder: its own record, beside the criminal, blending in, on no posting.
-	var/mob/living/basic/bounty_criminal/wanted = spawn_criminal(panel, operator, 1, "meek", null, spot)
-	var/mob/living/basic/bounty_criminal/decoy/decoy = panel.admin_spawn_decoy(operator, wanted, 2)
+	var/mob/living/carbon/human/npc/bounty_criminal/wanted = spawn_criminal(panel, operator, 1, "meek", null, spot)
+	var/mob/living/carbon/human/npc/bounty_criminal/decoy/decoy = panel.admin_spawn_decoy(operator, wanted, 2)
 	TEST_ASSERT_NOTNULL(decoy, "No decoy spawned: [panel.error]")
 	allocated += decoy
-	TEST_ASSERT(istype(decoy, /mob/living/basic/bounty_criminal/decoy), "The decoy is a [decoy.type]")
+	TEST_ASSERT(istype(decoy, /mob/living/carbon/human/npc/bounty_criminal/decoy), "The decoy is a [decoy.type]")
 	TEST_ASSERT(decoy.record && decoy.record != wanted.record, "The decoy has no record of its own")
 	TEST_ASSERT(get_dist(decoy, wanted) <= 1, "The decoy spawned [get_dist(decoy, wanted)] tiles from its criminal")
 	TEST_ASSERT_NULL(decoy.posting_ref, "The decoy is linked to a posting through posting_ref")
 	TEST_ASSERT(decoy.blended, "The decoy is not blending in: it skipped P6's builder")
-	TEST_ASSERT_EQUAL(decoy.maxHealth, wanted.maxHealth, "The decoy's health does not match its criminal's")
+	TEST_ASSERT_EQUAL(decoy.npc_damage_taken, wanted.npc_damage_taken, "The decoy's toughness does not match its criminal's")
 	TEST_ASSERT_NULL(panel.admin_spawn_decoy(operator, decoy, 1), "A decoy of a decoy was spawned")
 	TEST_ASSERT(!(decoy in panel.live_criminals()), "Decoys are offered as wanted criminals")
 	TEST_ASSERT(decoy in panel.live_criminals(include_decoys = TRUE), "Decoys are missing when asked for")
@@ -181,21 +182,26 @@
 // ===== CAPTURE STATES =====
 
 /**
- * Each forced state reads back through P2's capture_state(), each on a fresh criminal; restraints go on
- * through P2's own proc with nobody on the grudge list; and "Free" takes off everything P2 puts on,
- * including cuffs a player put on a downed criminal.
+ * Each forced state is tg's own, read back through P2's capture_state(), each on a fresh criminal:
+ * downed is real brute on the chest to just past the crit line (soft crit, not hard, and no wound), a
+ * tough Most Wanted body included; stunned is a real Paralyze; restrained is real handcuffs in tg's cuff
+ * slot with nobody on the grudge list; dead is death(). "Free" takes all of it off through tg
+ * (revive(HEAL_ALL), uncuff(), the stuns ended): a real *surrender, a hunter's cuffs on a body in crit,
+ * and death itself.
  */
 /datum/unit_test/voidcrew_bounty_admin/force_state
 
-/datum/unit_test/voidcrew_bounty_admin/force_state/proc/fresh(datum/bounty_admin_panel/unit_test/panel, mob/operator)
-	return spawn_criminal(panel, operator, 1, "normal", "brawler", run_loc_floor_bottom_left) // BOUNTY_TIER_PETTY
+/datum/unit_test/voidcrew_bounty_admin/force_state/proc/fresh(datum/bounty_admin_panel/unit_test/panel, mob/operator, tier = 1)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_criminal(panel, operator, tier, "normal", "brawler", run_loc_floor_bottom_left) // BOUNTY_TIER_PETTY
+	criminal?.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	return criminal
 
 /datum/unit_test/voidcrew_bounty_admin/force_state/Run()
 	var/mob/living/carbon/human/operator = make_operator(run_loc_floor_top_right)
 	var/datum/bounty_admin_panel/unit_test/panel = allocate(__IMPLIED_TYPE__, operator)
 
 	// Only an admin, and only known states; refusals log nothing.
-	var/mob/living/basic/bounty_criminal/criminal = fresh(panel, operator)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = fresh(panel, operator)
 	TEST_ASSERT_NOTNULL(criminal, "No criminal spawned: [panel.error]")
 	var/logged = length(panel.operations)
 	panel.allow_actions = FALSE
@@ -205,77 +211,85 @@
 	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "fine") && panel.error, "An unknown state was accepted")
 	TEST_ASSERT_EQUAL(length(panel.operations), logged, "A refused forced state was logged")
 
-	// Downed: down, alive, at or under P2's line.
+	// Downed: tg's crit, just past the line, from real brute on the chest.
 	criminal = fresh(panel, operator)
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "downed"), "Forcing downed was refused: [panel.error]") // BOUNTY_STATE_DOWNED
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A forced downed criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(criminal.is_downed(), "A forced downed criminal is not down")
-	TEST_ASSERT(criminal.health <= criminal.body_downed_line(), "Forcing downed left them at [criminal.health] health, over the line")
-	TEST_ASSERT_EQUAL(criminal.worst_state, "downed", "A forced downed criminal's worst state is [criminal.worst_state]")
+	TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_CRITICAL_CONDITION), "A forced downed criminal is not in tg's crit")
+	TEST_ASSERT_EQUAL(criminal.stat, SOFT_CRIT, "Forcing downed left them at stat [criminal.stat], not just into soft crit")
+	TEST_ASSERT(criminal.health <= HEALTH_THRESHOLD_CRIT && criminal.health > HEALTH_THRESHOLD_FULLCRIT, "Forcing downed left them at [criminal.health] health, not just past the crit line")
+	var/obj/item/bodypart/chest = criminal.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT(chest?.brute_dam > 0, "Forcing downed put no brute on their chest")
+	TEST_ASSERT_EQUAL(LAZYLEN(criminal.all_wounds), 0, "Forcing downed wounded them")
 	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "downed"), "A downed criminal was downed again")
+	// A tougher body (Most Wanted takes less of each hit) still goes down, no further than a person would.
+	var/mob/living/carbon/human/npc/bounty_criminal/tough = fresh(panel, operator, 3) // BOUNTY_TIER_MOST_WANTED
+	TEST_ASSERT(tough.npc_damage_taken < 1, "Test fixture: a Most Wanted criminal takes a person's damage")
+	TEST_ASSERT(panel.admin_force_state(operator, tough, "downed"), "Forcing a Most Wanted criminal downed was refused: [panel.error]")
+	TEST_ASSERT_EQUAL(tough.stat, SOFT_CRIT, "A forced downed Most Wanted criminal is at stat [tough.stat]")
 
-	// Stunned: paralysed.
+	// Stunned: a real paralysis.
 	criminal = fresh(panel, operator)
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "stunned"), "Forcing a stun was refused: [panel.error]") // BOUNTY_STATE_STUNNED
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "stunned", "A forced stunned criminal reads as [criminal.capture_state()]")
 	TEST_ASSERT(criminal.IsParalyzed(), "A forced stunned criminal is not paralysed")
 
-	// Restrained: P2's cuffs and everything that comes with them, and nobody on the grudge list.
+	// Restrained: real handcuffs in tg's cuff slot, put on by nobody.
 	criminal = fresh(panel, operator)
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "restrained"), "Forcing restraints was refused: [panel.error]") // BOUNTY_STATE_RESTRAINED
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "restrained", "A forced restrained criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(criminal.is_restrained(), "A forced restrained criminal has no restraints on")
-	TEST_ASSERT(istype(criminal.restraints, /obj/item/restraints/handcuffs), "Forcing restraints put no handcuffs on them")
-	TEST_ASSERT(HAS_TRAIT_FROM(criminal, TRAIT_IMMOBILIZED, "bounty_body_cuffs"), "The forced cuffs don't hold them still") // BOUNTY_BODY_CUFFS_TRAIT
-	TEST_ASSERT(HAS_TRAIT_FROM(criminal, TRAIT_AI_PAUSED, "bounty_body_held"), "The forced cuffs don't pause their AI") // BOUNTY_BODY_HELD_TRAIT
+	TEST_ASSERT(istype(criminal.handcuffed, /obj/item/restraints/handcuffs), "Forcing restraints put no handcuffs in their cuff slot")
+	TEST_ASSERT(HAS_TRAIT(criminal, TRAIT_RESTRAINED), "The forced cuffs don't restrain them")
 	TEST_ASSERT_EQUAL(length(criminal.grudge), 0, "Forcing restraints put someone on their grudge list")
 	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "restrained") && panel.error, "Cuffing a cuffed criminal was accepted")
-	// Free takes them off through P2: the cuffs drop at their feet and the hold is gone.
-	var/obj/item/restraints/handcuffs/forced_cuffs = criminal.restraints
+	// Free takes them off the tg way: the cuffs drop at their feet.
+	var/obj/item/restraints/handcuffs/forced_cuffs = criminal.handcuffed
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a cuffed criminal was refused: [panel.error]") // BOUNTY_STATE_FREE
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "free", "A freed criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_IMMOBILIZED, "bounty_body_cuffs"), "Freeing left them held still by the cuffs")
-	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_AI_PAUSED, "bounty_body_held"), "Freeing left their AI paused")
+	TEST_ASSERT_NULL(criminal.handcuffed, "Freeing left the cuffs on")
+	TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_RESTRAINED), "Freeing left them restrained")
 	TEST_ASSERT_EQUAL(forced_cuffs.loc, get_turf(criminal), "Freeing did not drop the cuffs at their feet")
 	allocated += forced_cuffs
 
-	// Surrendered reads as stunned, and free ends it.
+	// A real *surrender reads as stunned, and free ends it.
 	criminal = fresh(panel, operator)
-	ADD_TRAIT(criminal, "bounty_surrendered", "bounty") // TRAIT_BOUNTY_SURRENDERED, BOUNTY_TRAIT
-	TEST_ASSERT_EQUAL(criminal.capture_state(), "stunned", "A surrendered criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a surrendered criminal was refused: [panel.error]")
-	TEST_ASSERT(!HAS_TRAIT(criminal, "bounty_surrendered"), "Freeing left the surrender on")
-	TEST_ASSERT_EQUAL(criminal.capture_state(), "free", "A freed surrendered criminal reads as [criminal.capture_state()]")
+	TEST_ASSERT(criminal.npc_surrender(), "Test fixture: the criminal would not give up")
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "stunned", "A criminal who gave up reads as [criminal.capture_state()]")
+	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a criminal who gave up was refused: [panel.error]")
+	TEST_ASSERT(!criminal.IsParalyzed(), "Freeing left them paralysed")
+	TEST_ASSERT(!criminal.npc_surrendering, "Freeing left the surrender on")
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "free", "A freed criminal who gave up reads as [criminal.capture_state()]")
 
-	// A player cuffs a downed criminal through P2; the admin frees it: up, healed, uncuffed, nothing of P2's left on it.
+	// A hunter cuffs a criminal in crit (tg's apply_cuffs, without the do_after); the admin frees it: up, healed, uncuffed.
 	criminal = fresh(panel, operator)
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "downed"), "Forcing downed was refused: [panel.error]")
 	var/mob/living/carbon/human/hunter = make_operator(run_loc_floor_bottom_left)
 	var/obj/item/restraints/handcuffs/player_cuffs = allocate(/obj/item/restraints/handcuffs, run_loc_floor_bottom_left)
 	hunter.put_in_hands(player_cuffs)
-	TEST_ASSERT(criminal.body_apply_cuffs(player_cuffs, hunter), "The hunter's cuffs did not go on the downed criminal")
-	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A cuffed downed criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a cuffed downed criminal was refused: [panel.error]")
+	player_cuffs.apply_cuffs(criminal, hunter)
+	TEST_ASSERT_EQUAL(criminal.handcuffed, player_cuffs, "The hunter's cuffs did not go on the criminal in crit")
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "downed", "A cuffed criminal in crit reads as [criminal.capture_state()]")
+	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a cuffed criminal in crit was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "free", "The freed criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(!criminal.is_downed(), "Freeing left them down")
+	TEST_ASSERT_EQUAL(criminal.stat, CONSCIOUS, "Freeing left them at stat [criminal.stat]")
+	TEST_ASSERT(!HAS_TRAIT(criminal, TRAIT_CRITICAL_CONDITION), "Freeing left them in crit")
 	TEST_ASSERT(!criminal.is_restrained(), "Freeing left the hunter's cuffs on")
+	TEST_ASSERT_EQUAL(player_cuffs.loc, get_turf(criminal), "Freeing did not drop the hunter's cuffs at their feet")
 	TEST_ASSERT_EQUAL(criminal.health, criminal.maxHealth, "Freeing left them hurt")
-	TEST_ASSERT_EQUAL(criminal.worst_state, "free", "Freeing left the worst state at [criminal.worst_state]")
-	for(var/source in list("bounty_body_cuffs", "bounty_body_downed")) // BOUNTY_BODY_CUFFS_TRAIT, BOUNTY_BODY_DOWNED_TRAIT
-		TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_IMMOBILIZED, source), "Freeing left them held still ([source])")
-	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_FLOORED, "bounty_body_downed"), "Freeing left them on the floor")
-	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, TRAIT_AI_PAUSED, "bounty_body_held"), "Freeing left their AI paused")
-	TEST_ASSERT(!HAS_TRAIT_FROM(criminal, "bounty_held", "bounty_body_held"), "Freeing left them held") // TRAIT_BOUNTY_HELD
+	chest = criminal.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_EQUAL(chest?.brute_dam, 0, "Freeing left brute on their chest")
 
-	// Dead: dead, and the pad would read it so. The dead stay dead and take no other state.
+	// Dead: dead, and the pad would read it so. No other state goes on a corpse; free brings them back.
 	criminal = fresh(panel, operator)
 	TEST_ASSERT(panel.admin_force_state(operator, criminal, "dead"), "Forcing death was refused: [panel.error]")
 	TEST_ASSERT_EQUAL(criminal.stat, DEAD, "Forcing death left them alive")
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "dead", "A dead criminal reads as [criminal.capture_state()]")
-	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "free"), "A dead criminal was freed")
-	TEST_ASSERT_EQUAL(criminal.stat, DEAD, "Freeing a dead criminal revived them")
 	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "downed"), "A dead criminal was downed")
 	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "restrained"), "A dead criminal was cuffed")
+	TEST_ASSERT(!panel.admin_force_state(operator, criminal, "stunned"), "A dead criminal was stunned")
+	TEST_ASSERT(panel.admin_force_state(operator, criminal, "free"), "Freeing a dead criminal was refused: [panel.error]")
+	TEST_ASSERT(criminal.stat != DEAD, "Freeing a dead criminal did not revive them")
+	TEST_ASSERT_EQUAL(criminal.capture_state(), "free", "A revived criminal reads as [criminal.capture_state()]")
 
 	// Through the menu: pick the criminal, then the state.
 	criminal = fresh(panel, operator)
@@ -382,7 +396,7 @@
 	posting.value = 1234
 	posting.expires_at = world.time + 20 MINUTES
 	GLOB.criminal_bounties += posting
-	var/mob/living/basic/bounty_criminal/criminal = spawn_bounty_criminal(record, run_loc_floor_bottom_left, posting)
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = spawn_bounty_criminal(record, run_loc_floor_bottom_left, posting)
 	if(criminal)
 		allocated += criminal
 		posting.criminal_ref = WEAKREF(criminal)
@@ -392,7 +406,7 @@
 	GLOB.criminal_bounties.Cut()
 	GLOB.criminal_bounties += postings_before
 
-/datum/unit_test/voidcrew_bounty_admin/postings/proc/run_checks(datum/bounty_admin_panel/unit_test/panel, mob/operator, datum/criminal_bounty/posting, mob/living/basic/bounty_criminal/criminal)
+/datum/unit_test/voidcrew_bounty_admin/postings/proc/run_checks(datum/bounty_admin_panel/unit_test/panel, mob/operator, datum/criminal_bounty/posting, mob/living/carbon/human/npc/bounty_criminal/criminal)
 	TEST_ASSERT_NOTNULL(criminal, "No criminal spawned for the posting")
 
 	// The row: every field, a jump link to the criminal, the time left.

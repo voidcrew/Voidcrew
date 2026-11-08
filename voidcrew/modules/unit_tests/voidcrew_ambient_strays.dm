@@ -271,7 +271,13 @@
 // THE ESCAPED CONVICT
 // =========================================================================
 
-/// The cap follows the crews; a convict is a meek petty criminal in orange; seen, they get one private offer on their own record, within the two-offer limit; talked down, the offer is withdrawn unpaid and a stray with their name follows the crew; an offer that ends leaves a free convict where they are
+/**
+ * The cap follows the crews; a convict is a meek petty criminal in prison orange with the meek's holdout
+ * kit; seen, they give up the tg way (weapon away, *surrender's real Paralyze) and get one private offer on
+ * their own record, within the two-offer limit; talked down, the SAME body goes with the crew (follower AI,
+ * the people's side, off the board for good) and the offer is withdrawn unpaid; aboard they stay aboard; an
+ * offer that ends leaves a free convict where they are
+ */
 /datum/unit_test/voidcrew_ambient_strays_convict
 
 /datum/unit_test/voidcrew_ambient_strays_convict/Run()
@@ -285,23 +291,43 @@
 	var/list/room = ambient_test_room_bounds()
 	var/turf/corner = run_loc_floor_bottom_left
 	var/obj/structure/overmap/space_ruin/ruin = allocate(/obj/structure/overmap/space_ruin)
-	var/mob/living/basic/bounty_criminal/meek/convict/convict = ambient_spawn_convict(corner, ruin, "ruin") // BOUNTY_PLACEMENT_RUIN
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/convict = ambient_spawn_convict(corner, ruin, "ruin") // BOUNTY_PLACEMENT_RUIN
 	TEST_ASSERT_NOTNULL(convict, "No convict was made")
 	allocated += convict
 	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT(WEAKREF(convict) in GLOB.ambient_convicts, "A convict is not on the list")
 	TEST_ASSERT_EQUAL(convict.record?.tier, 1, "A convict is not a petty criminal") // BOUNTY_TIER_PETTY
 	TEST_ASSERT_EQUAL(convict.record?.archetype, "meek", "A convict is not meek") // BOUNTY_ARCHETYPE_MEEK
-	TEST_ASSERT_EQUAL(convict.bounty_outfit(), /datum/outfit/prisoner, "A convict is not in prison orange")
+
+	// Prison orange, under their own name, with the meek's holdout carried, not held
+	TEST_ASSERT(ispath(convict.bounty_build_outfit(1), /datum/outfit/prisoner), "A convict is not dressed as an escapee") // ZONE_GREEN
+	TEST_ASSERT(istype(convict.w_uniform, /obj/item/clothing/under/rank/prisoner), "A convict is not in prison orange")
+	TEST_ASSERT(istype(convict.shoes, /obj/item/clothing/shoes/sneakers/orange), "A convict is not in orange shoes")
+	TEST_ASSERT_EQUAL(convict.real_name, convict.record?.name, "A convict goes by a prisoner number, not their own name")
+	var/obj/item/gun/ballistic/automatic/pistol/holdout = locate() in convict.get_all_contents()
+	TEST_ASSERT_NOTNULL(holdout, "A convict carries no holdout")
+	TEST_ASSERT(!convict.is_holding(holdout), "A convict walks about with the holdout in hand")
+	TEST_ASSERT_NOTNULL(locate(/obj/item/ammo_box/magazine/m9mm) in convict.get_all_contents(), "A convict carries no spare magazine")
+
 	TEST_ASSERT_NULL(convict.posting(), "A convict nobody has seen is wanted")
 	TEST_ASSERT(convict.convict_can_talk(), "A calm convict won't talk")
 	convict.hidden = TRUE
 	TEST_ASSERT(!convict.convict_can_talk(), "A hidden convict talks")
 	convict.hidden = FALSE
 
-	// Seen: one private petty offer, to that crew, on the convict's own record
+	// Seen: they give up the way a person does, and one private petty offer goes to that crew, on the convict's own record
 	var/obj/structure/overmap/ship/ship = strays_test_ship(room)
-	var/datum/criminal_bounty/posting = convict.convict_post_bounty(ship)
+	var/mob/living/carbon/human/consistent/spotter = allocate(__IMPLIED_TYPE__, run_loc_floor_top_right)
+	TEST_ASSERT(human_npc_take_in_hand(convict, holdout), "Test fixture: the convict could not draw the holdout")
+	convict.convict_sighted(spotter, ship)
+	TEST_ASSERT(convict.IsParalyzed(), "A sighted convict did not give up with tg's *surrender")
+	TEST_ASSERT(convict.npc_surrendering, "A sighted convict is not lying there with their hands on their head")
+	TEST_ASSERT_EQUAL(convict.npc_last_bark, "surrender", "A sighted convict gave no line as they gave up") // HUMAN_NPC_BARK_SURRENDER
+	TEST_ASSERT_EQUAL(convict.capture_state(), "stunned", "A convict who gave up reads as [convict.capture_state()]") // BOUNTY_STATE_STUNNED
+	TEST_ASSERT(!convict.is_holding(holdout), "A convict who gave up kept the holdout in hand")
+	TEST_ASSERT_EQUAL(human_npc_holding(holdout), convict, "A convict's holdout left their body when they gave up")
+	TEST_ASSERT(!convict.convict_can_talk(), "A convict lying there with their hands on their head talks")
+	var/datum/criminal_bounty/posting = convict.posting()
 	TEST_ASSERT_NOTNULL(posting, "Seeing a convict posted no bounty")
 	TEST_ASSERT_EQUAL(posting?.record, convict.record, "The bounty shows someone other than the convict")
 	TEST_ASSERT_EQUAL(posting?.offered_to(), ship, "The bounty was not offered to the crew who saw the convict")
@@ -315,25 +341,51 @@
 	var/obj/structure/overmap/ship/busy = strays_test_ship(room)
 	SScriminal_bounties.board_post(1, null, ruin, busy, TRUE) // BOUNTY_TIER_PETTY
 	SScriminal_bounties.board_post(1, null, ruin, busy, TRUE)
-	var/mob/living/basic/bounty_criminal/meek/convict/other = ambient_spawn_convict(run_loc_floor_top_right, ruin, "ruin")
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/other = ambient_spawn_convict(run_loc_floor_top_right, ruin, "ruin")
 	allocated += other
 	other.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	TEST_ASSERT_NULL(other.convict_post_bounty(busy), "A convict's bounty went past the two private offers") // BOUNTY_PRIVATE_MAX
 
-	// Talked down: the bounty is withdrawn unpaid, and a stray with their name follows the crew
+	// Talked down once they are up again: the same body goes with the crew, and the bounty is withdrawn unpaid
+	convict.SetParalyzed(0)
 	var/mob/living/carbon/human/consistent/leader = allocate(__IMPLIED_TYPE__, locate(corner.x + 1, corner.y, corner.z))
 	var/convict_name = convict.real_name
 	var/datum/bounty_record/convict_record = convict.record
-	var/mob/living/basic/ambient_npc/stray/convict/stray = convict.convict_join(leader, ship)
-	TEST_ASSERT_NOTNULL(stray, "A talked-down convict did not join the crew")
-	allocated += stray
-	TEST_ASSERT(QDELETED(convict), "The convict's body stayed after they joined a crew")
+	var/datum/ambient_place/ship/deck = GLOB.ambient_ship_places[REF(ship)]
+	var/taken_before = deck?.taken
+	TEST_ASSERT_EQUAL(convict.convict_join(leader, ship), convict, "A talked-down convict did not go with the crew in their own body")
+	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	TEST_ASSERT(!QDELETED(convict), "The convict's body was replaced when they joined a crew")
+	TEST_ASSERT(convict.convict_recruited, "The talked-down convict is not with the crew")
 	TEST_ASSERT(!(posting in GLOB.criminal_bounties), "Recruiting the convict left their bounty open")
+	TEST_ASSERT_NULL(convict.posting(), "A recruited convict is still wanted on a posting")
 	TEST_ASSERT_EQUAL(convict_record.status, "closed", "The recruited convict's record is still wanted") // BOUNTY_RECORD_CLOSED
-	TEST_ASSERT_EQUAL(stray?.real_name, convict_name, "The convict came back as someone else")
-	TEST_ASSERT_EQUAL(stray?.bounty_record, convict_record, "The recruited convict lost their face")
-	TEST_ASSERT(stray?.is_following(), "The recruited convict is not following the crew")
-	TEST_ASSERT_NULL(locate(/obj/item/bounty_proof) in get_turf(stray), "Recruiting the convict left proof of death")
+	TEST_ASSERT_EQUAL(convict.real_name, convict_name, "The recruited convict is someone else now")
+	TEST_ASSERT_EQUAL(convict.record, convict_record, "The recruited convict lost who they are")
+	TEST_ASSERT(istype(convict.ai_controller, /datum/ai_controller/basic_controller/convict_follower), "The recruited convict kept the criminal's AI")
+	TEST_ASSERT_EQUAL(convict.convict_leader(), leader, "The recruited convict is not following the crew member who asked")
+	TEST_ASSERT((FACTION_NEUTRAL in convict.faction) && !(FACTION_HOSTILE in convict.faction), "The recruited convict is still on the hostiles' side")
+	TEST_ASSERT(!(WEAKREF(convict) in GLOB.ambient_convicts), "A recruited convict still counts as a convict on the loose")
+	TEST_ASSERT(!HAS_TRAIT(convict, TRAIT_NO_TELEPORT), "A recruited convict still can't be teleported")
+	TEST_ASSERT_NULL(convict.GetComponent(/datum/component/bounty_body), "A recruited convict still has the bounty body's hooks")
+	TEST_ASSERT(!HAS_TRAIT(convict, "mission_field_mob"), "A recruited convict is still kept from the sweep") // TRAIT_MISSION_FIELD_MOB
+	TEST_ASSERT(!is_hostile_creature(convict), "A hull turret would take the recruited convict for a threat")
+	TEST_ASSERT_EQUAL(deck?.taken, taken_before + 1, "The ship did not count the convict it took in")
+	TEST_ASSERT_NULL(locate(/obj/item/bounty_proof) in get_turf(convict), "Recruiting the convict left proof of death")
+	TEST_ASSERT(!convict.convict_can_talk(), "A recruited convict pleads to be taken in again")
+
+	// Aboard (the test room counts as the ship): they step aboard once, and from then on stay aboard
+	TEST_ASSERT(convict.convict_board_if_aboard(), "The recruited convict did not step aboard")
+	TEST_ASSERT(convict.convict_aboard, "The recruited convict does not live aboard")
+	TEST_ASSERT(!convict.convict_board_if_aboard(), "The recruited convict stepped aboard twice")
+	TEST_ASSERT(convict.convict_may_step(locate(corner.x + 1, corner.y + 1, corner.z)), "Aboard, the recruited convict won't walk about the ship")
+	TEST_ASSERT(!convict.convict_may_step(locate(corner.x - 1, corner.y, corner.z)), "Aboard, the recruited convict would walk off the ship")
+
+	// Told to stay, they stay; asked again, they follow
+	convict.convict_stay()
+	TEST_ASSERT_NULL(convict.convict_leader(), "Told to stay, the recruited convict still follows someone")
+	TEST_ASSERT(convict.convict_follow(leader), "The recruited convict would not follow again")
+	TEST_ASSERT_EQUAL(convict.convict_leader(), leader, "Asked again, the recruited convict follows someone else")
 
 	// The crew's last offer just ended: none during the board's gap after it
 	TEST_ASSERT_NULL(other.convict_post_bounty(ship), "A convict was offered during the gap after the crew's last private offer ended") // BOUNTY_PRIVATE_GAP
@@ -374,7 +426,7 @@
 	record.sites += site
 	TEST_ASSERT(kind.realize(site), "A hideout brought no convict out")
 	var/datum/weakref/convict_ref = site.data["convict"]
-	var/mob/living/basic/bounty_criminal/meek/convict/convict = convict_ref?.resolve()
+	var/mob/living/carbon/human/npc/bounty_criminal/meek/convict/convict = convict_ref?.resolve()
 	TEST_ASSERT(istype(convict), "A hideout's convict is not a convict")
 	allocated += convict
 	convict.ai_controller?.set_ai_status(AI_STATUS_OFF)

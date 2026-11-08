@@ -26,11 +26,16 @@
 //
 // The exceptions, explicit and tested:
 // * GLOB.human_npc_not_gear: items whose loss would break something outside the NPC (a ship key, a
-//   contract's recovery item, bounty proof). Never locked; they drop at the NPC's feet when it dies.
-// * GLOB.human_npc_consumable_gear: things an NPC uses up (grenades, bottles, syringe darts, medipens,
-//   pills, thrown spears, stars and bolas). They may leave its body the way a person's would: thrown,
-//   fired, dropped or knocked out of its hand. They still never become loot: in anyone's hands or
-//   bags but a human NPC's they are deleted, and loose ones go when the NPC that carried them does.
+//   contract's recovery item, bounty proof, a paper someone has to read). Never locked; they drop at
+//   the NPC's feet when it dies.
+// * GLOB.human_npc_consumable_gear: things an NPC uses up (grenades, barrier grenades, bottles, syringe
+//   darts, medipens, pills, bandages and other medical stacks, thrown spears, stars and bolas). They
+//   may leave its body the way a person's would: thrown, fired, dropped or knocked out of its hand.
+//   They still never become loot: in anyone's hands or bags but a human NPC's they are deleted, and
+//   loose ones go when the NPC that carried them does.
+// * NPCs with npc_gear_locked = FALSE lock nothing at all (owner ruling OC-11: prisoners' jumpsuits,
+//   contraband and shivs are ordinary items, so shakedowns, confiscation and uniform swaps work). Their
+//   guards keep the lock.
 
 /// Items an NPC carries that aren't its gear: never locked, dropped when it dies. Their loss would
 /// break something outside the NPC (the cryo pod refuses to delete the first two for the same reason).
@@ -38,6 +43,7 @@ GLOBAL_LIST_INIT(human_npc_not_gear, typecacheof(list(
 	/obj/item/ship_key,
 	/obj/item/mission_recovery,
 	/obj/item/bounty_proof,
+	/obj/item/paper,
 )))
 
 /// Items an NPC uses up: they leave its body like a person's would, but never become loot.
@@ -47,6 +53,7 @@ GLOBAL_LIST_INIT(human_npc_consumable_gear, typecacheof(list(
 	/obj/item/reagent_containers/syringe,
 	/obj/item/reagent_containers/hypospray/medipen,
 	/obj/item/reagent_containers/applicator/pill,
+	/obj/item/stack/medical,
 	/obj/item/spear,
 	/obj/item/throwing_star,
 	/obj/item/restraints/legcuffs/bola,
@@ -189,11 +196,12 @@ GLOBAL_LIST_INIT(human_npc_consumable_gear, typecacheof(list(
 
 /**
  * Locks `item` to this NPC's body, or issues it as a consumable, by the lists above. Items that aren't
- * gear, body parts, organs, ammunition casings and abstract items are left alone. Use it for anything
- * handed to an NPC after it spawned. Returns TRUE if the item is now locked or issued.
+ * gear, body parts, organs, ammunition casings and abstract items are left alone, and so is everything
+ * on an NPC whose gear isn't locked (npc_gear_locked). Use it for anything handed to an NPC after it
+ * spawned. Returns TRUE if the item is now locked or issued.
  */
 /mob/living/carbon/human/npc/proc/npc_lock_item(obj/item/item)
-	if(QDELETED(item) || isbodypart(item) || isorgan(item) || isammocasing(item) || (item.item_flags & ABSTRACT))
+	if(!npc_gear_locked || QDELETED(item) || isbodypart(item) || isorgan(item) || isammocasing(item) || (item.item_flags & ABSTRACT))
 		return FALSE
 	if(is_type_in_typecache(item, GLOB.human_npc_not_gear))
 		return FALSE

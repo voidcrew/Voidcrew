@@ -96,28 +96,28 @@
 /obj/effect/zone_mobs/syndicate
 	name = "zone mob spawner (syndicate)"
 	mobs_green = list(
-		/mob/living/basic/trooper/syndicate/melee = 14,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 14,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/syndicate/melee/sword = 8,
-		/mob/living/basic/trooper/syndicate/ranged = 12,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/sword = 8,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner = 12,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/syndicate/ranged/smg = 8,
-		/mob/living/basic/trooper/syndicate/ranged/shotgun = 6,
-		/mob/living/basic/trooper/syndicate/melee/sword = 5,
-		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper = 2,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/smg = 8,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner/shotgun = 6,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/sword = 5,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper = 2,
 	)
 
 /obj/effect/zone_mobs/syndicate/boss
 	name = "zone mob spawner (syndicate boss)"
 	mobs_green = list(
-		/mob/living/basic/trooper/syndicate/melee = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate = 1,
 	)
 	mobs_yellow = list(
-		/mob/living/basic/trooper/syndicate/ranged = 2,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/gunner = 2,
 	)
 	mobs_red = list(
-		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper = 1,
-		/mob/living/basic/trooper/syndicate/ranged/shotgun/space/stormtrooper = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper = 1,
+		/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper/shotgun = 1,
 	)
