@@ -342,7 +342,7 @@
 	// The player lattice's crash colours, on the body instead of the screen
 	owner.add_filter(BOUNTY_CASCADE_CRASH_FILTER, 2, color_matrix_filter(list(0.55, 0.3, 0.25, 0.35, 0.55, 0.25, 0.25, 0.25, 0.5)))
 	playsound(owner, 'sound/machines/warning-buzzer.ogg', 50, TRUE)
-	owner.visible_message(span_warning("[owner] staggers, every movement suddenly leaden."))
+	owner.visible_message(span_warning("[owner] stumbles, suddenly slow and heavy."))
 	owner.Shake(1, 0, 0.5 SECONDS)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(end_crash)), BOUNTY_CASCADE_CRASH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	// Last: a dump that stamina-crits a companion makes it give up, which ends the surge (on_downed())

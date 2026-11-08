@@ -6,10 +6,12 @@
  * What it owns: /mob/living/basic/bounty_companion (its body, its built-in values and its AI) and
  * spawn_companions(). Companions (0-2, spec C7) keep a criminal company: they sit at the bar with
  * them, take turns in their talk, sit round their camp, and fight beside them with a style of their
- * own (BOUNTY_COMPANION_HEALTH x the style's health; its weapon hits as the real one does). The
- * AI is the trooper's peaceful pattern: retaliation, then calling the rest of the gang in, then the
- * attack, then going to whoever called. A badly hurt companion may run; when their criminal goes
- * down, is cuffed or gives up, each may run; a stamina-crit companion gives up for good.
+ * own (BOUNTY_COMPANION_HEALTH x the style's health; its weapon hits as the real one does). At most
+ * one of a criminal's companions carries a gun, and they back their criminal up: they get their
+ * weapon out a moment after them, and fire shorter strings and bursts. The AI is the trooper's
+ * peaceful pattern: retaliation, then calling the rest of the gang in, then the attack, then going
+ * to whoever called. A badly hurt companion may run; when their criminal goes down, is cuffed or
+ * gives up, each may run; a stamina-crit companion gives up for good.
  *
  * They are not bounties, pay nothing, drop nothing and carry no real weapon (what is in their hand
  * is only a picture, though its blows and shots are the real item's). P5 deletes them when the posting closes; deleting one at any time
@@ -60,6 +62,10 @@
 	var/ai_flee_rolled = FALSE
 	/// In the fight now (weapon out, fighting pace)
 	var/ai_in_fight = FALSE
+	/// Joined a fight and still getting up: no blow or shot until their weapon is out (ai_draw())
+	var/ai_drawing = FALSE
+	/// The timer that gets their weapon out, BOUNTY_COMPANION_DRAW_DELAY after they join a fight
+	var/ai_draw_timer
 	/// Their drink at the bar, in their contents
 	var/obj/item/reagent_containers/cup/glass/drinkingglass/ai_drink
 	/// Weakref to the seat they sat on
@@ -95,10 +101,10 @@
 	return stat == CONSCIOUS && !ai_gave_up && !ai_fled && !HAS_TRAIT(src, TRAIT_INCAPACITATED) && !HAS_TRAIT(src, TRAIT_FLOORED)
 
 /**
- * Joins `leader`: their faction, a style of their own, a look for the site, and a name. Called by
- * spawn_companions().
+ * Joins `leader`: their faction, style `style_key` (rolled when not given, never a second gun among
+ * the leader's company), a look for the site, and a name. Called by spawn_companions().
  */
-/mob/living/basic/bounty_companion/proc/ai_join(mob/living/basic/bounty_criminal/leader)
+/mob/living/basic/bounty_companion/proc/ai_join(mob/living/basic/bounty_criminal/leader, style_key)
 	leader_ref = WEAKREF(leader)
 	faction = leader.faction.Copy()
 	gender = pick(MALE, FEMALE)
@@ -106,16 +112,14 @@
 	name = generate_random_name_species_based(gender, TRUE, species)
 	real_name = name
 	ai_controller?.set_blackboard_key(BB_BOUNTY_LEADER, leader)
-	ai_take_style(pick_weight(list(
-		BOUNTY_STYLE_BRAWLER = 3,
-		BOUNTY_STYLE_KNIFE = 2,
-		BOUNTY_STYLE_CLUB = 2,
-		BOUNTY_STYLE_PISTOL = 1,
-		BOUNTY_STYLE_BOTTLE = 1,
-		BOUNTY_STYLE_SHOTGUN = 1,
-		BOUNTY_STYLE_SMG = 1,
-		BOUNTY_STYLE_REVOLVER = 1,
-	)))
+	if(!GLOB.bounty_styles[style_key])
+		var/armed_already = FALSE
+		for(var/mob/living/basic/bounty_companion/buddy as anything in leader.ai_companions())
+			if(buddy != src && bounty_style_is_gun(bounty_ai_style(buddy)?.key))
+				armed_already = TRUE
+				break
+		style_key = bounty_roll_companion_style(no_gun = armed_already)
+	ai_take_style(style_key)
 	// Now and then some chrome of their own, rarer than their criminal's (bounty_chrome.dm)
 	// The roll is a list of keys already (or null): wrapped in another list, the install found no piece and stack-traced
 	bounty_chrome_install(src, bounty_roll_companion_chrome(leader.record?.tier, bounty_ai_style(src)?.key))
@@ -124,26 +128,91 @@
 
 /**
  * Takes style `key`: health BOUNTY_COMPANION_HEALTH x the style's (and their chrome's), and the style's
- * own weapon (never a Wanted criminal's heavier one). Already hurt, the damage stays taken and a higher
- * ceiling doesn't raise their health.
+ * own weapon (never a Wanted criminal's heavier one). A change of style never heals or hurts them
+ * (ai_fit_health()).
  */
 /mob/living/basic/bounty_companion/proc/ai_take_style(key)
 	var/datum/bounty_style/style = GLOB.bounty_styles[key]
 	if(!style)
 		return FALSE
-	var/new_max = ai_style_health(style)
-	// Basic mobs keep all their damage as bruteloss: more of it keeps their health where it was
-	if(health < maxHealth && new_max > maxHealth)
-		bruteloss += new_max - maxHealth
-	maxHealth = new_max
-	updatehealth()
+	ai_fit_health(ai_style_health(style))
 	damage_coeff = damage_coeff.Copy()
 	damage_coeff[STAMINA] = style.stamina_mult
 	return bounty_ai_apply_style(src, key)
 
-/// Their max health in `style` (a /datum/bounty_style, or null for none): BOUNTY_COMPANION_HEALTH x the style's, x what their chrome adds (bounty_chrome_health_mult())
+/**
+ * Puts their max health at `raw`, with the zone's health factor on top once it is applied. Unhurt,
+ * they are at the new max. Hurt, the damage stays taken: a higher ceiling doesn't raise their health,
+ * and a lower one is not taken, so their health never drops either. TRUE if the max changed.
+ */
+/mob/living/basic/bounty_companion/proc/ai_fit_health(raw)
+	if(!raw || stat == DEAD)
+		return FALSE
+	var/wanted = npc_zone_applied ? raw * npc_zone_health_factor : raw
+	var/hurt = health < maxHealth
+	if(wanted == maxHealth || (hurt && wanted < maxHealth))
+		return FALSE
+	if(npc_zone_applied)
+		npc_zone_original_max_health = raw
+	// Basic mobs keep all their damage as bruteloss: more of it keeps their health where it was
+	if(hurt)
+		bruteloss += wanted - maxHealth
+	setMaxHealth(wanted)
+	updatehealth()
+	return TRUE
+
+/// Their max health in `style` (a /datum/bounty_style, or null for none), before the zone's factor: BOUNTY_COMPANION_HEALTH x the style's, x what their chrome adds (bounty_chrome_health_mult())
 /mob/living/basic/bounty_companion/proc/ai_style_health(datum/bounty_style/style)
 	return round(BOUNTY_COMPANION_HEALTH * (style ? style.health_mult : 1) * bounty_chrome_health_mult(src))
+
+/// Whether fighting style `key` (BOUNTY_STYLE_*) is a gun
+/proc/bounty_style_is_gun(key)
+	var/datum/bounty_style/style = GLOB.bounty_styles[key]
+	return style?.gun
+
+/**
+ * A companion's fighting style (BOUNTY_STYLE_*), by weight: mostly fists and blades, a gun now and
+ * then. `no_gun` (their criminal has an armed companion already) rolls among the rest.
+ */
+/proc/bounty_roll_companion_style(no_gun = FALSE)
+	var/static/list/weights = list(
+		BOUNTY_STYLE_BRAWLER = 3,
+		BOUNTY_STYLE_KNIFE = 2,
+		BOUNTY_STYLE_CLUB = 2,
+		BOUNTY_STYLE_PISTOL = 1,
+		BOUNTY_STYLE_BOTTLE = 1,
+		BOUNTY_STYLE_SHOTGUN = 1,
+		BOUNTY_STYLE_SMG = 1,
+		BOUNTY_STYLE_REVOLVER = 1,
+	)
+	if(!no_gun)
+		return pick_weight(weights)
+	var/list/unarmed = list()
+	for(var/key in weights)
+		if(!bounty_style_is_gun(key))
+			unarmed[key] = weights[key]
+	return pick_weight(unarmed)
+
+/**
+ * The styles of `count` companions for one criminal, at most one of them a gun, which comes first
+ * (a server short of room for companions spawns the first ones, so the posting's "one armed" holds).
+ */
+/proc/bounty_roll_companion_styles(count)
+	var/list/styles = list()
+	var/armed = FALSE
+	for(var/i in 1 to count)
+		var/key = bounty_roll_companion_style(no_gun = armed)
+		if(bounty_style_is_gun(key))
+			armed = TRUE
+			styles.Insert(1, key)
+		else
+			styles += key
+	return styles
+
+/// Whether `fighter` is a companion still getting up and getting their weapon out
+/proc/bounty_ai_drawing(mob/living/basic/fighter)
+	var/mob/living/basic/bounty_companion/companion = fighter
+	return istype(companion) && companion.ai_drawing
 
 /// What a companion of `leader` wears, by where the criminal is: a mix of rough clothes, so no two crews look alike
 /proc/bounty_companion_outfit(mob/living/basic/bounty_criminal/leader)
@@ -177,7 +246,11 @@
 		ai_controller.set_blackboard_key(BB_BASIC_MOB_REINFORCEMENT_TARGET, leader)
 	ai_enter_fight()
 
-/// Weapon out, up from their seat, fighting pace
+/**
+ * Up from their seat, fighting pace, and their chrome wakes. Their weapon comes out
+ * BOUNTY_COMPANION_DRAW_DELAY later (ai_draw()), a beat after their criminal's: no blow or shot
+ * before it.
+ */
 /mob/living/basic/bounty_companion/proc/ai_enter_fight()
 	if(ai_in_fight)
 		return
@@ -186,18 +259,41 @@
 	ai_stand_up()
 	var/datum/bounty_style/style = bounty_ai_style(src)
 	set_varspeed(style ? style.speed : BOUNTY_FIGHT_SPEED)
-	bounty_ai_draw(src, ai_hand)
-	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
+	ai_drawing = TRUE
+	deltimer(ai_draw_timer)
+	ai_draw_timer = addtimer(CALLBACK(src, PROC_REF(ai_draw)), BOUNTY_COMPANION_DRAW_DELAY, TIMER_STOPPABLE | TIMER_DELETE_ME)
 	var/datum/component/bounty_chrome/chrome = GetComponent(/datum/component/bounty_chrome)
 	chrome?.fight_started(bounty_chrome_target(src))
+
+/**
+ * Their weapon comes out, a gun with its draw line and sound (bounty_ai_draw()). Down or stunned
+ * when it is due, it waits until they are up (bounty_companion_gate). TRUE if it came out now.
+ * Tests call it directly instead of waiting.
+ */
+/mob/living/basic/bounty_companion/proc/ai_draw()
+	deltimer(ai_draw_timer)
+	ai_draw_timer = null
+	if(!ai_drawing || !ai_in_fight || !ai_can_fight())
+		return FALSE
+	ai_drawing = FALSE
+	bounty_ai_draw(src, ai_hand)
+	ai_hand = bounty_ai_update_held(src, ai_hand, bounty_ai_held_look(src))
+	return TRUE
 
 /// The fight is over for them: weapon away, easy pace
 /mob/living/basic/bounty_companion/proc/ai_leave_fight()
 	if(!ai_in_fight)
 		return
 	ai_in_fight = FALSE
+	ai_stop_drawing()
 	set_varspeed(BOUNTY_CALM_SPEED)
 	ai_hand = bounty_ai_update_held(src, ai_hand, null)
+
+/// Whatever weapon was on its way out stays put
+/mob/living/basic/bounty_companion/proc/ai_stop_drawing()
+	ai_drawing = FALSE
+	deltimer(ai_draw_timer)
+	ai_draw_timer = null
 
 /// Their criminal is down, cuffed or gave up: half the time they run for it
 /mob/living/basic/bounty_companion/proc/ai_lose_heart()
@@ -281,6 +377,7 @@
 
 /// Everything down: drink, seat, weapon
 /mob/living/basic/bounty_companion/proc/ai_let_go()
+	ai_stop_drawing()
 	ai_put_drink_away()
 	ai_stand_up()
 	ai_hand = bounty_ai_update_held(src, ai_hand, null)
@@ -397,10 +494,12 @@
 
 /**
  * Spawns `count` companions (clamped to BOUNTY_COMPANIONS_MIN-BOUNTY_COMPANIONS_MAX) on free tiles
- * beside them, remembered in their own `companions`. Returns the companions spawned: the caller
- * (P5) puts them on the posting, and keeps to the global cap on live companions.
+ * beside them, remembered in their own `companions`, the first ones in the fighting styles `styles`
+ * (BOUNTY_STYLE_*; the posting rolled them, bounty_roll_companion_styles()) and any others rolled
+ * here. Returns the companions spawned: the caller (P5) puts them on the posting, and keeps to the
+ * global cap on live companions.
  */
-/mob/living/basic/bounty_criminal/proc/spawn_companions(count)
+/mob/living/basic/bounty_criminal/proc/spawn_companions(count, list/styles)
 	. = list()
 	count = clamp(count, BOUNTY_COMPANIONS_MIN, BOUNTY_COMPANIONS_MAX)
 	var/turf/home = get_turf(src)
@@ -418,7 +517,7 @@
 		if(!length(spots))
 			break
 		var/mob/living/basic/bounty_companion/buddy = new(pick_n_take(spots))
-		buddy.ai_join(src)
+		buddy.ai_join(src, LAZYACCESS(styles, i))
 		companions |= WEAKREF(buddy)
 		. += buddy
 
@@ -471,11 +570,11 @@
 
 /datum/ai_controller/basic_controller/bounty/companion/may_shoot(atom/target)
 	var/mob/living/basic/bounty_companion/companion = pawn
-	return istype(companion) && companion.ai_can_fight() && ..()
+	return istype(companion) && companion.ai_can_fight() && !companion.ai_drawing && ..()
 
 /datum/ai_controller/basic_controller/bounty/companion/may_strike(atom/target)
 	var/mob/living/basic/bounty_companion/companion = pawn
-	return istype(companion) && companion.ai_can_fight() && ..()
+	return istype(companion) && companion.ai_can_fight() && !companion.ai_drawing && ..()
 
 /datum/ai_controller/basic_controller/bounty/companion/pawn_attacked(mob/living/attacker)
 	var/mob/living/basic/bounty_companion/companion = pawn
@@ -509,6 +608,9 @@
 	// Knocked down or stunned: nothing at all until they are up (H2)
 	if(HAS_TRAIT(companion, TRAIT_FLOORED) || HAS_TRAIT(companion, TRAIT_INCAPACITATED))
 		return SUBTREE_RETURN_FINISH_PLANNING
+	// Up again with a weapon still due out (they were down when it was): it comes out now
+	if(companion.ai_drawing && !companion.ai_draw_timer)
+		companion.ai_draw()
 	if(!companion.ai_fled)
 		return
 	var/atom/threat = controller.blackboard[BB_BASIC_MOB_FLEE_TARGET]

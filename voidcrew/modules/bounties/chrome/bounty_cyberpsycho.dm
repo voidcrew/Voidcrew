@@ -222,7 +222,8 @@
 /**
  * Its Redline core trips: the red takes over. Whatever it was doing stops, and a surge winding up or
  * running crashes, as an EMP crashes it: the burn starts leaden, and the hunters get the crash they
- * earned. A crash under way runs on. Called by the core as it trips; must not sleep.
+ * earned. A crash under way runs on. Called by the core as it trips, once its stun immunity is on
+ * (the crash's stamina dump must not land a stamina crit); must not sleep.
  */
 /mob/living/basic/bounty_criminal/boss/cyberpsycho/proc/psycho_before_redline()
 	if(boss_busy)
@@ -537,9 +538,11 @@
 /datum/bounty_chrome/redline/psycho/start_tell()
 	psycho_spent = TRUE
 	var/mob/living/basic/bounty_criminal/boss/cyberpsycho/psycho = owner
+	// The core's stun immunity goes on first: crashing a surge dumps stamina, and that dump must not
+	// land the very stamina crit this trip is turning away
+	..()
 	if(istype(psycho))
 		psycho.psycho_before_redline()
-	..()
 	if(!istype(psycho) || psycho.stat != CONSCIOUS)
 		return
 	// It stands and roars: the tell is a move of its own. A rage line (cyberpsycho_redline), not a burnt-out one.
@@ -553,7 +556,7 @@
 	..()
 	var/mob/living/basic/bounty_criminal/boss/psycho = owner
 	if(istype(psycho))
-		psycho.boss_bark("burnout", "exhausted")
+		psycho.boss_bark("exhausted")
 
 /// The Lazarus node: stands it up once a spawn, not once a recharge (review r1 F7)
 /datum/bounty_chrome/lazarus/psycho

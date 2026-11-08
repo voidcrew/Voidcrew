@@ -2,7 +2,7 @@
 #define BOUNTY_LAZARUS_CHARGE (1.5 SECONDS)
 /// Once it has started a charge, it is spent for this long: the player node's own clock (CYBERWARE_LAZARUS_COOLDOWN), in practice once a fight
 #define BOUNTY_LAZARUS_RECHARGE (6 MINUTES)
-/// Percent of max health a criminal or companion stands back up with. A mini-boss gets up with its own recovery health (BOUNTY_RECOVER_TO) instead.
+/// Percent of max health a criminal stands back up with. A mini-boss gets up with its own recovery health (BOUNTY_RECOVER_TO) instead.
 #define BOUNTY_LAZARUS_HEAL_TO 50
 /// With someone putting cuffs on them when the charge is due, it waits: checked this often...
 #define BOUNTY_LAZARUS_HOLD_CHECK (0.5 SECONDS)
@@ -28,19 +28,20 @@
 /**
  * # Lazarus on a bounty fighter
  *
- * The player's Lazarus node (voidcrew/modules/cyberware/ware_military_body.dm) in a criminal or a
- * companion. When they are beaten it screams up to charge where the whole room can see and hear it:
+ * The player's Lazarus node (voidcrew/modules/cyberware/ware_military_body.dm) in a criminal. When
+ * they are beaten it screams up to charge where the whole room can see and hear it:
  * the node's own whine, red lightning crawling over the body, a red halo flickering brighter, red bolts
  * jumping off them onto the floor, walls and things around, faster as it fills, and a red light. Then
  * it slams them back onto their feet with a thunderclap and a burst of red lightning in every direction:
- * a criminal or companion at BOUNTY_LAZARUS_HEAL_TO percent of their health, a mini-boss at its own
+ * a criminal at BOUNTY_LAZARUS_HEAL_TO percent of their health, a mini-boss at its own
  * recovery health, rallying as it does whenever it gets up. A charge, however it ends, spends the node
  * for BOUNTY_LAZARUS_RECHARGE. Every bolt is only a picture: nothing is hurt, nothing is lit on fire.
  *
  * When it fires: a criminal (mini-bosses too) when it goes down at the downed line
  * (COMSIG_BOUNTY_CRIMINAL_DOWNED), as the player node fires on going into crit. Taken down with
- * stamina it never fires: only a failing body sets it off. A companion when it gives up (stamina
- * crit, the framework's downed moment for them), standing them back up to fight.
+ * stamina it never fires: only a failing body sets it off. Never in a companion: a stamina takedown
+ * is the answer to every one of them, and a jolt standing one back up would take it away. No
+ * companion rolls it, and one handed it gets nothing (bounty_chrome_suits()).
  *
  * Counterplay, besides the EMP every piece answers to: cuff them during the charge (cuffs already
  * going on when the charge is due hold it, and it fizzles if they close), finish them during the
@@ -61,8 +62,8 @@
 	// Rarer than the fighting chrome: a second round in one fight is a lot.
 	weight = 8
 	min_tier = BOUNTY_TIER_WANTED
-	// Not the meek: a runner back on its feet only runs again. Every mini-boss kit: it gets up at its own recovery health, so the kit's tired window still comes.
-	archetypes = list(BOUNTY_ARCHETYPE_NORMAL, BOUNTY_ARCHETYPE_BOSS, BOUNTY_CHROME_COMPANION)
+	// Not the meek: a runner back on its feet only runs again. Every mini-boss kit: it gets up at its own recovery health, so the kit's tired window still comes. Never a companion (see above).
+	archetypes = list(BOUNTY_ARCHETYPE_NORMAL, BOUNTY_ARCHETYPE_BOSS)
 	organ_looks = list(/obj/item/organ/cyberimp/cyberware/lazarus)
 	/// Charging now, between going down and the jolt
 	var/charging = FALSE
@@ -123,9 +124,9 @@
 	return "Something under %THEIR ribs ticks."
 
 /**
- * Whether the node may stand its fighter up now: alive and beaten (a criminal down, a companion given
- * up), and nothing about where they are or what is being done to them makes it a capture (see the
- * header). Read when a charge would start and again when it would fire.
+ * Whether the node may stand its criminal up now: alive and down, and nothing about where they are or
+ * what is being done to them makes it a capture (see the header). Read when a charge would start and
+ * again when it would fire.
  */
 /datum/bounty_chrome/lazarus/proc/may_jolt()
 	var/mob/living/basic/fighter = owner
@@ -135,9 +136,6 @@
 		return FALSE
 	if(locate(/obj/machinery/mission_pad) in fighter.loc)
 		return FALSE
-	if(istype(fighter, /mob/living/basic/bounty_companion))
-		var/mob/living/basic/bounty_companion/companion = fighter
-		return companion.ai_gave_up && !companion.ai_fled
 	var/mob/living/basic/bounty_criminal/criminal = fighter
 	if(!istype(criminal) || !criminal.is_downed() || criminal.is_restrained())
 		return FALSE
@@ -270,24 +268,10 @@
 		var/health_now = fighter.maxHealth - fighter.bruteloss
 		if(health_now < stand_health)
 			fighter.adjust_health(health_now - stand_health, forced = TRUE)
-	if(istype(fighter, /mob/living/basic/bounty_companion))
-		lazarus_rejoin(fighter)
-		return
 	var/mob/living/basic/bounty_criminal/criminal = fighter
 	// Its recovery clock stops first: left running, it would stand it up early the next time it goes down
 	criminal.body_cancel_recovery()
 	criminal.body_stand_up()
-
-/// A companion back on its feet: hands down, and with a hunter in sight, weapon out and after them
-/datum/bounty_chrome/lazarus/proc/lazarus_rejoin(mob/living/basic/bounty_companion/companion)
-	companion.ai_gave_up = FALSE
-	companion.ai_over_head = bounty_ai_update_held(companion, companion.ai_over_head, null)
-	var/mob/living/hunter = bounty_lazarus_nearest_hunter(companion)
-	if(!hunter)
-		return
-	// Giving up dropped the weapon but left them in the fight, and ai_enter_fight() only draws for someone joining it
-	companion.ai_in_fight = FALSE
-	companion.ai_join_fight(hunter)
 
 /// Ends any charge: its timers, the halo, the lightning, the light. Safe to call at any time, the fighter being deleted included.
 /datum/bounty_chrome/lazarus/proc/end_charge()
@@ -434,23 +418,6 @@
 	crackle.color = bounty_lazarus_red()
 	crackle.transform = matrix().Scale(2)
 	new /obj/effect/dummy/lighting_obj(here, 5, 4, BOUNTY_LAZARUS_COLOR, 0.5 SECONDS)
-
-/// The nearest hunter `fighter` can see and may hit, within a screen, or null
-/proc/bounty_lazarus_nearest_hunter(mob/living/basic/fighter)
-	var/turf/here = get_turf(fighter)
-	if(!here)
-		return null
-	var/mob/living/nearest
-	var/nearest_dist = INFINITY
-	for(var/mob/living/person in SSspatial_grid.orthogonal_range_search(here, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, DEFAULT_MESSAGE_RANGE))
-		if(!bounty_ai_is_hunter(person) || !bounty_ai_may_hit(fighter, person))
-			continue
-		var/dist = get_dist(here, person)
-		if(dist >= nearest_dist || !can_see(here, get_turf(person), DEFAULT_MESSAGE_RANGE))
-			continue
-		nearest = person
-		nearest_dist = dist
-	return nearest
 
 #undef BOUNTY_LAZARUS_CHARGE
 #undef BOUNTY_LAZARUS_RECHARGE

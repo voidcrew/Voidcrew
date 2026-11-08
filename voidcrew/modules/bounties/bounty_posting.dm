@@ -55,6 +55,8 @@
 	var/list/board_warrants = list()
 	/// Timer deciding, a moment after its criminal was deleted, whether anything is left to turn in
 	var/board_lost_timer
+	/// The company its criminal keeps at its site: one fighting style (BOUNTY_STYLE_*) a companion, rolled with the site (board_roll_company()) so the sighting can say it. Null until rolled.
+	var/list/board_company
 
 /datum/criminal_bounty/Destroy()
 	// close() is the way out; this catches an admin qdel that skipped it
@@ -186,7 +188,7 @@
 		if(record && !record.mugshot)
 			bounty_queue_mugshot(record)
 	board_push_waypoint(ship)
-	ship.ship_notify("WANTED: now hunting [record?.name]. [board_place_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship.ship_notify("WANTED: now hunting [record?.name]. [board_sighting_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("BOUNTY: [ship.name] is hunting the [board_log_name()]")
 	board_arm()
 	return TRUE
@@ -445,7 +447,7 @@
 	SScriminal_bounties.board_changed()
 	for(var/obj/structure/overmap/ship/hunter as anything in hunter_ships())
 		board_push_waypoint(hunter)
-		hunter.ship_notify("WANTED: new sighting of [record?.name]. [board_place_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		hunter.ship_notify("WANTED: new sighting of [record?.name]. [board_sighting_text()].", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("BOUNTY: the [board_log_name()] relisted")
 	board_arm()
 	return TRUE
@@ -551,6 +553,29 @@
 			return "Seen at the [site_name]"
 	return "Seen on [site_name]"
 
+/// The sighting as the card and the notices give it: where they were seen, and who with ("Seen on Kepler IV with two friends, one armed")
+/datum/criminal_bounty/proc/board_sighting_text()
+	var/company = board_company_text()
+	return company ? "[board_place_text()] [company]" : board_place_text()
+
+/// Who they were seen with, or null for nobody: "with a friend", "with an armed friend", "with two friends", "with two friends, one armed"
+/datum/criminal_bounty/proc/board_company_text()
+	if(board_relisting || !length(board_company))
+		return null
+	var/armed = 0
+	for(var/key in board_company)
+		if(bounty_style_is_gun(key))
+			armed++
+	if(length(board_company) == 1)
+		return armed ? "with an armed friend" : "with a friend"
+	var/friends = "with [length(board_company) == 2 ? "two" : length(board_company)] friends"
+	switch(armed)
+		if(0)
+			return friends
+		if(1)
+			return "[friends], one armed"
+	return "[friends], all armed"
+
 /// How the poster says they're wanted: alive, dead or alive, or dead
 /datum/criminal_bounty/proc/board_terms()
 	return "Wanted alive"
@@ -592,7 +617,7 @@
 		"tier" = record?.tier || BOUNTY_TIER_PETTY,
 		"terms" = board_terms(),
 		"crime" = record?.crime,
-		"place" = board_place_text(),
+		"place" = board_sighting_text(),
 		"zone" = board_zone_name(),
 		"zone_color" = board_zone_color(),
 		"mugshot_id" = record?.id,
@@ -648,6 +673,9 @@
 		lines += "<b>Wanted for:</b> [record.crime].<br>"
 	lines += "<b>[board_terms()]</b>.<br>"
 	lines += "[board_place_text()], [board_zone_name()].<br>"
+	var/company = board_company_text()
+	if(company)
+		lines += "[capitalize(company)].<br>"
 	// One feature is left off, so what the traders say about them still tells a hunter something new
 	var/list/features = record?.feature_lines()
 	if(length(features))

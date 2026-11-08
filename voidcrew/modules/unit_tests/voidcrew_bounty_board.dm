@@ -1106,6 +1106,67 @@
 	ruin.name = "Test Derelict"
 	TEST_ASSERT_EQUAL(posting.board_place_text(), "Seen at the Test Derelict", "A surveyed ruin's card doesn't name it")
 
+/**
+ * The company a normal criminal keeps is rolled with its site and named on the sighting (review r2):
+ * the card, the hunt notice and the warrant say who they were seen with, at most one of them armed,
+ * and that company is who spawns beside them. Nobody comes with anyone else, or at a trader outpost,
+ * and one at most aboard a pirate ship.
+ */
+/datum/unit_test/voidcrew_bounty_board/company
+
+/datum/unit_test/voidcrew_bounty_board/company/Run()
+	var/datum/criminal_bounty/posting = board_test_posting(archetype = "normal") // BOUNTY_ARCHETYPE_NORMAL
+	// What the sighting says
+	posting.board_company = list("brawler") // BOUNTY_STYLE_*
+	TEST_ASSERT_EQUAL(posting.board_company_text(), "with a friend", "One unarmed companion")
+	posting.board_company = list("pistol")
+	TEST_ASSERT_EQUAL(posting.board_company_text(), "with an armed friend", "One armed companion")
+	posting.board_company = list("knife", "club")
+	TEST_ASSERT_EQUAL(posting.board_company_text(), "with two friends", "Two unarmed companions")
+	posting.board_company = list("smg", "knife")
+	TEST_ASSERT_EQUAL(posting.board_company_text(), "with two friends, one armed", "Two companions, one armed")
+	TEST_ASSERT_EQUAL(posting.board_sighting_text(), "[posting.board_place_text()] with two friends, one armed", "The sighting doesn't name the company after the place")
+	var/list/entry = posting.board_ui_entry(null, null)
+	TEST_ASSERT_EQUAL(entry["place"], posting.board_sighting_text(), "The card doesn't name the company")
+	TEST_ASSERT(findtext(posting.board_warrant_text(), "With two friends, one armed."), "The warrant doesn't name the company")
+	var/obj/structure/overmap/ship/board_test_listener/ship = board_test_listener()
+	TEST_ASSERT_EQUAL(posting.hunt(ship), TRUE, "The ship could not hunt the bounty")
+	TEST_ASSERT(ship.board_test_heard("WANTED: now hunting [posting.record.name]. [posting.board_sighting_text()]."), "The hunt notice doesn't name the company")
+	posting.board_company = list()
+	TEST_ASSERT_NULL(posting.board_company_text(), "A criminal on their own is seen with someone")
+	TEST_ASSERT_EQUAL(posting.board_sighting_text(), posting.board_place_text(), "A criminal on their own isn't seen just where they are")
+
+	// The roll: no more than two, at most one of them armed and that one first
+	for(var/i in 1 to 200)
+		var/list/styles = bounty_roll_companion_styles(2)
+		var/guns = 0
+		for(var/key in styles)
+			if(bounty_style_is_gun(key))
+				guns++
+		TEST_ASSERT(guns <= 1, "Two companions rolled [guns] guns: [jointext(styles, ", ")]")
+		if(guns)
+			TEST_ASSERT(bounty_style_is_gun(styles[1]), "The armed companion isn't first: [jointext(styles, ", ")]")
+	for(var/i in 1 to 50)
+		TEST_ASSERT(length(posting.board_roll_company()) <= 2, "A planet criminal rolled more than two companions") // BOUNTY_MAX_COMPANIONS
+	posting.placement_kind = "npc_ship" // BOUNTY_PLACEMENT_NPC_SHIP
+	for(var/i in 1 to 50)
+		TEST_ASSERT(length(posting.board_roll_company()) <= 1, "A criminal aboard a pirate ship rolled more than one companion")
+	posting.placement_kind = "trader_outpost" // BOUNTY_PLACEMENT_TRADER_OUTPOST
+	TEST_ASSERT(!length(posting.board_roll_company()), "A trader-outpost fugitive rolled companions")
+	posting.placement_kind = "planet" // BOUNTY_PLACEMENT_PLANET
+	var/datum/criminal_bounty/runner = board_test_posting() // a meek criminal
+	for(var/i in 1 to 20)
+		TEST_ASSERT(!length(runner.board_roll_company()), "A meek criminal rolled companions")
+
+	// The company the posting rolled is who spawns
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, run_loc_floor_bottom_left)
+	posting.board_company = list("smg", "knife")
+	var/list/spawned = posting.board_spawn_companions(criminal)
+	allocated += spawned
+	TEST_ASSERT_EQUAL(length(spawned), 2, "The posting's company didn't spawn")
+	TEST_ASSERT_EQUAL(bounty_ai_style(spawned[1])?.key, "smg", "The armed companion didn't spawn with the posting's gun")
+	TEST_ASSERT_EQUAL(bounty_ai_style(spawned[2])?.key, "knife", "The unarmed companion didn't spawn with the posting's style")
+
 /// The hunt notice names who and where, never what to do next (2026-09-26), and a trader-outpost hunt's GPS says why there is no beacon (BUG-15)
 /datum/unit_test/voidcrew_bounty_board/hunt_notice
 

@@ -25,7 +25,7 @@
 	TEST_ASSERT(proto.weight > 0, "Lazarus never rolls")
 
 	// Who rolls it: Wanted and up (tier 2, BOUNTY_TIER_WANTED), never the meek; every kit; never a
-	// companion (bounty_roll_companion_chrome() leaves it out: a jolt would undo the takedown that works on every companion).
+	// companion at any tier (a jolt would undo the takedown that works on every companion).
 	TEST_ASSERT(!proto.can_roll(1, "normal", "pistol", null, list()), "A Petty criminal can roll Lazarus") // BOUNTY_TIER_PETTY, BOUNTY_ARCHETYPE_NORMAL
 	TEST_ASSERT(proto.can_roll(2, "normal", "pistol", null, list()), "A Wanted pistol criminal can't roll Lazarus")
 	TEST_ASSERT(proto.can_roll(3, "normal", "brawler", null, list()), "A Most Wanted brawler can't roll Lazarus")
@@ -33,6 +33,7 @@
 	for(var/kit in list("juggernaut", "pyromaniac", "demolitionist", "ghost", "heavy")) // BOUNTY_KIT_*
 		TEST_ASSERT(proto.can_roll(3, "boss", null, kit, list()), "A [kit] mini-boss can't roll Lazarus") // BOUNTY_ARCHETYPE_BOSS
 	TEST_ASSERT(!proto.can_roll(1, "companion", "knife", null, list()), "A Petty criminal's companion can roll Lazarus") // BOUNTY_CHROME_COMPANION
+	TEST_ASSERT(!proto.can_roll(3, "companion", "knife", null, list()), "A Most Wanted criminal's companion can roll Lazarus")
 	for(var/i in 1 to 100)
 		TEST_ASSERT(!("lazarus" in bounty_roll_chrome(3, "meek", "holdout", null)), "A meek criminal rolled Lazarus")
 	// About one roll in five gives a Most Wanted companion chrome (BOUNTY_CHROME_CHANCE_MOST_WANTED / BOUNTY_CHROME_COMPANION_DIVISOR)
@@ -189,21 +190,20 @@
 	TEST_ASSERT(boss.health >= boss.maxHealth * 0.35 - 1 && boss.health < boss.maxHealth * 0.5, "The mini-boss got up at [boss.health]/[boss.maxHealth], not its recovery health") // BOUNTY_RECOVER_TO
 	TEST_ASSERT(boss.body_is_rallying(), "The mini-boss didn't rally after the jolt")
 
-	// A companion: giving up sets it off, and the jolt puts them back on their feet, hands down
+	// Never in a companion, however it is put in: handed it alone they get no chrome at all, handed it
+	// with something else only the other piece goes in, and a stamina takedown keeps them given up
 	var/mob/living/basic/bounty_companion/buddy = allocate(/mob/living/basic/bounty_companion, run_loc_floor_bottom_left)
-	bounty_chrome_install(buddy, list("lazarus"))
-	piece = bounty_chrome_piece(buddy, "lazarus")
+	var/bare_max = buddy.maxHealth
+	TEST_ASSERT_NULL(bounty_chrome_install(buddy, list("lazarus")), "A companion took Lazarus")
+	TEST_ASSERT_NULL(buddy.GetComponent(/datum/component/bounty_chrome), "Refused Lazarus left a companion an empty chrome component")
+	TEST_ASSERT_EQUAL(buddy.maxHealth, bare_max, "Refused Lazarus still made a companion tougher")
+	bounty_chrome_install(buddy, list("lazarus", "cascade")) // BOUNTY_CHROME_CASCADE
+	TEST_ASSERT_NULL(bounty_chrome_piece(buddy, "lazarus"), "A companion carries Lazarus")
+	TEST_ASSERT_NOTNULL(bounty_chrome_piece(buddy, "cascade"), "The piece a companion may carry didn't go in beside the refused one")
 	buddy.adjust_health(buddy.maxHealth * 0.8)
 	buddy.adjustStaminaLoss(1000, forced = TRUE)
 	TEST_ASSERT(buddy.ai_gave_up, "Stamina crit didn't make the companion give up")
-	TEST_ASSERT(piece.charging, "A companion giving up didn't charge")
-	TEST_ASSERT(piece.discharge(piece.charge_serial), "The companion's charge didn't jolt")
-	TEST_ASSERT(!buddy.ai_gave_up, "The jolted companion still has their hands up")
-	TEST_ASSERT_NULL(buddy.ai_over_head, "The hands-up mark stayed")
-	TEST_ASSERT_EQUAL(buddy.staminaloss, 0, "The jolt left the companion winded")
-	TEST_ASSERT(!buddy.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The jolted companion is still in stamina crit")
-	TEST_ASSERT(buddy.health >= buddy.maxHealth * 0.5 - 1, "The companion got up at [buddy.health]/[buddy.maxHealth], not half")
-	TEST_ASSERT(buddy.ai_can_fight(), "The jolted companion can't fight")
+	TEST_ASSERT(buddy.ai_gave_up && !buddy.ai_can_fight(), "A companion got back up from a stamina takedown")
 
 /**
  * The real clocks, nothing called by hand: left alone, the charge fires on its own; cuffs started

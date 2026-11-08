@@ -621,11 +621,14 @@
 	TEST_ASSERT(!held(hunter), "Knocked down, they kept hold")
 	TEST_ASSERT_NULL(piece.busy, "Knocked down, they are still busy")
 	criminal.SetKnockdown(0)
-	// Still on the floor for tg's second of getting up: no reach from there
+	// Still on the floor for tg's second of getting up: no reach from there. Held on the floor here, so
+	// the check never depends on how quickly tg stood them up.
+	if(criminal.body_position != LYING_DOWN)
+		criminal.set_body_position(LYING_DOWN)
+	TEST_ASSERT_EQUAL(criminal.body_position, LYING_DOWN, "The criminal isn't on the floor for the getting-up check")
 	ready_grab(piece)
 	criminal.next_move = 0
-	if(criminal.body_position == LYING_DOWN)
-		TEST_ASSERT(!piece.start_grab(hunter), "They reached for someone while still getting up")
+	TEST_ASSERT(!piece.start_grab(hunter), "They reached for someone while still getting up")
 	criminal.get_up(instant = TRUE)
 
 	// Pulled apart: the hold is gone, the next blow never lands, and they are left off balance

@@ -223,6 +223,12 @@
 #define BOUNTY_COMPANION_FOLLOW 2
 /// How often a companion calls the rest of the gang in (the trooper's 30 s)
 #define BOUNTY_REINFORCE_COOLDOWN (30 SECONDS)
+/// A companion gets up and gets their weapon out this long after joining a fight, so their criminal draws first. No blow or shot before.
+#define BOUNTY_COMPANION_DRAW_DELAY (1 SECONDS)
+/// A companion's gun is backup: pistol strings this long (a criminal's are BOUNTY_PISTOL_STRING_SHOTS)...
+#define BOUNTY_COMPANION_PISTOL_STRING 3
+/// ...and SMG bursts this long (a criminal's are BOUNTY_SMG_BURST)
+#define BOUNTY_COMPANION_SMG_BURST 2
 
 // ===== STYLES (combat.md 6.2) =====
 // Every blow and shot is the real weapon's (bounty_weapons.dm): the item in their hand is each
@@ -238,9 +244,12 @@
 #define BOUNTY_KNIFE_HEALTH 1
 #define BOUNTY_KNIFE_INTERVAL (0.8 SECONDS)
 
+/// A gun fires at anyone it can see this far off, while its holder still walks in to its style's own distance (BOUNTY_PISTOL_RANGE). The shotgun's spread and the bottle's throw keep them to their own.
+#define BOUNTY_GUN_FIRE_RANGE 7
+
 #define BOUNTY_PISTOL_HEALTH 0.9
 #define BOUNTY_PISTOL_INTERVAL (0.5 SECONDS)
-/// Keeps about this far away
+/// Walks in to about this far away
 #define BOUNTY_PISTOL_RANGE 5
 #define BOUNTY_PISTOL_MIN_RANGE 3
 /// The reload: the window to close in
@@ -254,8 +263,8 @@
 /// ...with this pause before the next string. A reload after an empty magazine is separate.
 #define BOUNTY_PISTOL_STRING_PAUSE (1.5 SECONDS)
 
-/// A sub-machine gun: bursts, a spin-up before each one
-#define BOUNTY_SMG_HEALTH 0.9
+/// A sub-machine gun: bursts, a spin-up before each one. The WT-550's bursts make it the deadliest gun for its holder's health: 0.8, so a Wanted SMG gunman with a Cascade window is no deadlier to one hunter than a mini-boss. One value for criminals and companions (the style datum's health_mult).
+#define BOUNTY_SMG_HEALTH 0.8
 /// From one burst to the next
 #define BOUNTY_SMG_INTERVAL (1.4 SECONDS)
 #define BOUNTY_SMG_BURST 4
