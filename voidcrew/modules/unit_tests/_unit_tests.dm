@@ -42,6 +42,7 @@
 #include "voidcrew_bounty_admin.dm"
 #include "voidcrew_bounty_ai.dm"
 #include "voidcrew_bounty_board.dm"
+#include "voidcrew_bounty_boss_reach.dm"
 #include "voidcrew_bounty_bosses.dm"
 #include "voidcrew_bounty_chrome.dm"
 #include "voidcrew_bounty_companions_backup.dm"

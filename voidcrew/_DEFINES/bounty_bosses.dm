@@ -60,6 +60,33 @@
 /// A spot any player within this many tiles can see is in view. (phase D)
 #define BOUNTY_BOSS_REINFORCE_SIGHT 13
 
+// ===== HURT FROM WHERE IT CAN'T REACH (review r1 F4, r2) =====
+
+/// Someone who hurt it from where it can't get at them (behind glass, a shut door or a gap, or off its site) is shunned this long: it doesn't go after them, and it keeps out of their sight
+#define BOUNTY_BOSS_SHUN_TIME (60 SECONDS)
+/// How far it walks for cover, in steps
+#define BOUNTY_BOSS_COVER_RANGE 7
+/// How far a shooter is taken to see, for cover, at the least: one farther off sees as far as a clear line from them goes (a scope, or a shot from across the site)
+#define BOUNTY_BOSS_COVER_SIGHT 9
+/// How far it works out its walk to someone behind something, in tiles, and how long that walk holds while it stands on the same tile. Someone farther off is in reach if the walk gets it at least half this much closer to them.
+#define BOUNTY_BOSS_REACH_RANGE 10
+#define BOUNTY_BOSS_REACH_RETHINK (2 SECONDS)
+/// It says a line as it breaks for cover at most this often
+#define BOUNTY_BOSS_COVER_BARK_COOLDOWN (30 SECONDS)
+
+// ===== GORILLA ARMS THROUGH GLASS =====
+
+/// The tell before its Gorilla Arms go at a window, grille, table or door: the fist drawn back, the pistons heard, the tile lit. At least 0.8 s (decision 5).
+#define BOUNTY_BOSS_SMASH_WINDUP (0.9 SECONDS)
+/// What one Gorilla Arms punch does to a structure, used only to count the punches something takes. The punch itself is the implant's (CYBERWARE_GORILLA_STRUCTURE_DAMAGE, which ware_military_arms.dm undefines); a test checks the two agree.
+#define BOUNTY_BOSS_SMASH_BLOW 40
+/// It only goes at something it breaks in this many punches; anything tougher, it goes round or takes cover
+#define BOUNTY_BOSS_SMASH_MOST_BLOWS 6
+/// The pause after the tell before its next ability may start
+#define BOUNTY_BOSS_SMASH_RECOVER (1 SECONDS)
+/// The tell's glow and floor mark: the piston punch's orange
+#define BOUNTY_BOSS_SMASH_COLOR "#ff8a1f"
+
 // ===== SUMMONED THINGS: CAPS AND LIFETIMES (P4) =====
 
 /// Fire pools (flamer floors and molotovs) burning at once, server-wide
@@ -95,8 +122,8 @@
 #define BOUNTY_JUGGERNAUT_WALL_STAMINA 30
 #define BOUNTY_JUGGERNAUT_WALL_PARALYZE (1 SECONDS)
 #define BOUNTY_JUGGERNAUT_WALL_KNOCKDOWN (3 SECONDS)
-/// Slam: both fists up, a red ring
-#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.7 SECONDS)
+/// Slam: both fists up, a red ring. 0.7 -> 0.8 s after review r2, long enough to step out of on sight.
+#define BOUNTY_JUGGERNAUT_SLAM_WINDUP (0.8 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_COOLDOWN (7 SECONDS)
 #define BOUNTY_JUGGERNAUT_SLAM_DAMAGE 20
 #define BOUNTY_JUGGERNAUT_SLAM_KNOCKDOWN (1.5 SECONDS)
@@ -105,8 +132,8 @@
 
 /// Its torch: lit, and it never goes out (a real tg torch, held from the start: it doesn't holster)
 #define BOUNTY_PYROMANIAC_TORCH /obj/item/flashlight/flare/torch/everburning
-/// Flamer: a pilot light hiss, an orange cone
-#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.5 SECONDS)
+/// Flamer: a pilot light hiss, an orange cone. 0.5 -> 0.8 s after review r2, long enough to step out of on sight.
+#define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.8 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_COOLDOWN (5 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_RANGE 3
 /// Full width of the cone, in degrees
@@ -158,8 +185,8 @@
 
 /// Its blade: a real combat knife, carried in a pocket until the fight starts, and every cut it lands is the knife's (CB-9)
 #define BOUNTY_GHOST_KNIFE /obj/item/knife/combat
-/// Dash: a blur line to the target, the Cascade lattice firing as it goes (OC-6 ruling)
-#define BOUNTY_GHOST_DASH_WINDUP (0.3 SECONDS)
+/// Dash: a blur line to the target, the Cascade lattice firing as it goes (OC-6 ruling). 0.3 -> 0.6 s after review r2: at 0.3 s only someone already moving could step off the line.
+#define BOUNTY_GHOST_DASH_WINDUP (0.6 SECONDS)
 #define BOUNTY_GHOST_DASH_COOLDOWN (5 SECONDS)
 #define BOUNTY_GHOST_DASH_RANGE 5
 /// Cloak: a shimmer, then a faint distortion. Only how it looks: nothing misses it for it (OC-6 ruling, CB-12)
@@ -214,3 +241,7 @@
 #define BB_BOUNTY_BOSS_FALL_BACK_FROM "BB_bounty_boss_fall_back_from"
 /// world.time a Heavy's belt change in progress gives up
 #define BB_BOUNTY_BOSS_RELOAD_UNTIL "BB_bounty_boss_reload_until"
+/// Where it is walking to, to go through the window, door or wall in its way
+#define BB_BOUNTY_BOSS_SPOT "BB_bounty_boss_spot"
+/// Where it is walking to, out of the sight of someone it can't get at
+#define BB_BOUNTY_BOSS_COVER "BB_bounty_boss_cover"
