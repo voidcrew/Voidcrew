@@ -51,6 +51,7 @@
 /area/ruin/unpowered)
 "al" = (
 /obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	dir = 4;
 	npc_faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
@@ -104,6 +105,7 @@
 /area/ruin/unpowered)
 "aw" = (
 /obj/effect/spawner/human_npc/ruin/hermit/hunter{
+	dir = 4;
 	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -111,6 +113,7 @@
 /area/ruin/unpowered)
 "ax" = (
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 4;
 	npc_faction = list("adobe")
 	},
 /turf/open/misc/wasteland/lit,
@@ -149,12 +152,14 @@
 /area/overmap_encounter/planetoid/wasteland)
 "aD" = (
 /obj/effect/spawner/human_npc/ruin/hermit/gunslinger{
+	dir = 4;
 	npc_faction = list("adobe")
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "aE" = (
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 1;
 	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -211,6 +216,7 @@
 	dir = 4
 	},
 /obj/effect/spawner/human_npc/ruin/hermit{
+	dir = 4;
 	npc_faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,

@@ -92,6 +92,8 @@
 #define HUMAN_NPC_SITE_COLD_TEMP (T0C - 10)
 /// Oxygen partial pressure below this, in kPa, is not breathable (tg's safe minimum).
 #define HUMAN_NPC_SITE_MIN_OXYGEN 16
+/// How much better than its lungs' limits (kPa) the air must be before an NPC on internals closes its valve.
+#define HUMAN_NPC_AIR_MARGIN 2
 /// A queued NPC dressed by an outfit table waits this long for its spawn zone to resolve, then takes green.
 #define HUMAN_NPC_ZONE_WAIT (60 SECONDS)
 
