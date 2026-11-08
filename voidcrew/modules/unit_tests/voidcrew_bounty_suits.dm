@@ -201,18 +201,16 @@
 	TEST_ASSERT(!bounty_ship_hides_criminals(pirate), "A skeleton crew's ship hides a criminal")
 	pirate.pirate_faction = null
 	TEST_ASSERT(!bounty_ship_hides_criminals(null), "Nothing hides a criminal")
-	// Every themed crew's ship says whose it is, so the board passes it by
-	for(var/obj/structure/overmap/ship/npc/pirate/themed as anything in list(
-		/obj/structure/overmap/ship/npc/pirate/silverscale,
-		/obj/structure/overmap/ship/npc/pirate/skeleton,
-		/obj/structure/overmap/ship/npc/pirate/grey,
-		/obj/structure/overmap/ship/npc/pirate/lustrous,
-		/obj/structure/overmap/ship/npc/pirate/interdyne,
-		/obj/structure/overmap/ship/npc/pirate/irs,
-		/obj/structure/overmap/ship/npc/pirate/medieval,
-		/obj/structure/overmap/ship/npc/pirate/nt_patrol,
-	))
-		TEST_ASSERT(initial(themed.pirate_faction), "[themed] names no crew, so a criminal would hide aboard it")
+	// Crews of ordinary people hide one; themed crews never do
+	for(var/faction in list("grey", "interdyne"))
+		pirate.pirate_faction = faction
+		TEST_ASSERT(bounty_ship_hides_criminals(pirate), "A [faction] crew's ship won't hide a criminal")
+	for(var/faction in list("silverscale", "skeleton", "lustrous", "irs", "medieval", "nt_patrol"))
+		pirate.pirate_faction = faction
+		TEST_ASSERT(!bounty_ship_hides_criminals(pirate), "A [faction] crew's ship hides a criminal")
+	// The spawner's grey and Interdyne ships carry the factions the board looks for
+	TEST_ASSERT_EQUAL(initial(/obj/structure/overmap/ship/npc/pirate/grey::pirate_faction), "grey", "The grey ship's crew changed name")
+	TEST_ASSERT_EQUAL(initial(/obj/structure/overmap/ship/npc/pirate/interdyne::pirate_faction), "interdyne", "The Interdyne ship's crew changed name")
 
 /// Companions are people of the criminals' species mix, in rough clothes picked by their criminal's site, and never carry what those clothes came with
 /datum/unit_test/voidcrew_bounty_suits/company

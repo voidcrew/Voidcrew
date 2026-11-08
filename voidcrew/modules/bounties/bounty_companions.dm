@@ -475,8 +475,11 @@
  * (skeletons, geodes, lizard nobles, customs and the like), so the guards it hides among are ordinary
  * pirates (board_pick_npc_ship()).
  */
+/// Pirate crews of ordinary people a fugitive can hide among: the grey tide's salvagers and Interdyne's rogue researchers. Never skeletons, geodes, lizard nobles, knights or customs.
 /proc/bounty_ship_hides_criminals(obj/structure/overmap/ship/npc/pirate/npc_ship)
-	return istype(npc_ship) && !npc_ship.pirate_faction
+	if(!istype(npc_ship))
+		return FALSE
+	return !npc_ship.pirate_faction || (npc_ship.pirate_faction in list("grey", "interdyne"))
 
 /// A queued companion is made: it joins its criminal, or goes if its criminal is gone
 /proc/bounty_companion_spawned(datum/weakref/leader_ref, datum/callback/on_spawned, mob/living/carbon/human/npc/bounty_companion/companion)
