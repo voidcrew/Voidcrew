@@ -784,6 +784,8 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 	var/tell_time = BOUNTY_CHROME_TELL_MIN
 	/// It stands still through the tell (TRAIT_IMMOBILIZED, as a mini-boss winding up does)
 	var/tell_holds_still = TRUE
+	/// Its AI carries on through the tell (drawing, shooting, moving) instead of going quiet: a tell that is only a look, a gunman's Deadeye lock. Interrupts still cut it short.
+	var/tell_keeps_acting = FALSE
 	/// The outline it glows with through the tell
 	var/tell_color = BOUNTY_CHROME_TELL_COLOR
 	/// The sound at the start of the tell
@@ -1050,13 +1052,14 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 		move.on_fight_end()
 
 /**
- * The bounty_chrome planning subtree's work: nothing else is planned while a tell runs; in a fight, a
+ * The bounty_chrome planning subtree's work: nothing else is planned while a tell runs (unless the move
+ * keeps acting through it, tell_keeps_acting, when only no other move starts); in a fight, a
  * move that plans its own behaviours goes first, then, past the gap since the last one, a move that can
  * start does. Returns the subtree's result. Doesn't sleep.
  */
 /datum/component/bounty_chrome/proc/plan(datum/ai_controller/controller, seconds_per_tick)
 	if(telling)
-		return SUBTREE_RETURN_FINISH_PLANNING
+		return telling.tell_keeps_acting ? null : SUBTREE_RETURN_FINISH_PLANNING
 	update_fight()
 	if(!fighting || !bounty_chrome_can_act(parent))
 		return
@@ -1088,7 +1091,8 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 	tell_target = target ? WEAKREF(target) : null
 	if(move.tell_holds_still)
 		ADD_TRAIT(npc, TRAIT_IMMOBILIZED, BOUNTY_CHROME_TRAIT)
-	npc.ai_controller?.CancelActions()
+	if(!move.tell_keeps_acting)
+		npc.ai_controller?.CancelActions()
 	if(target)
 		npc.face_atom(target)
 	move.tell(target)
