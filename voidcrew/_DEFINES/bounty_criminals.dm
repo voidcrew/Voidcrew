@@ -46,3 +46,8 @@
 #define BOUNTY_TREAT_SELF_COOLDOWN (20 SECONDS)
 /// Blackboard key: the medical stack it is using on itself has been clicked on it once this go (bounty_ai_human.dm)
 #define BB_BOUNTY_TREAT_APPLIED "bounty_treat_applied"
+
+// ===== SUITS (bounty_suits.dm) =====
+
+/// Open tiles of a planet site, picked at random, whose air is read when a criminal is made there: any one that would hurt a person dresses it for that
+#define BOUNTY_SITE_AIR_SAMPLES 6

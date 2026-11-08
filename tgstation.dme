@@ -7114,6 +7114,7 @@
 #include "voidcrew\modules\bounties\bounty_posting.dm"
 #include "voidcrew\modules\bounties\bounty_restraints.dm"
 #include "voidcrew\modules\bounties\bounty_styles.dm"
+#include "voidcrew\modules\bounties\bounty_suits.dm"
 #include "voidcrew\modules\bounties\bounty_turn_in.dm"
 #include "voidcrew\modules\bounties\bounty_types.dm"
 #include "voidcrew\modules\bounties\bounty_weapons.dm"
