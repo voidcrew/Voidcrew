@@ -292,6 +292,7 @@
 		fail("No mission pad to deliver the formula chip to.")
 		return
 	formula = new(chip_turf)
+	mission_pad_delivery_effect(chip_turf)
 	formula.recipe = recipe
 	servant?.ship_notify("Formula chip for '[recipe.street_name]' delivered to your mission pad. Examine it for the shopping list.", "DRUG RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
@@ -433,6 +434,8 @@
 		fail("Nowhere to deliver the finished batch, contract void.")
 		return
 	var/obj/item/mission_recovery/drug_product/product = new(product_turf)
+	if(!preferred_turf)
+		mission_pad_delivery_effect(product_turf) // the pad fallback: it arrives like any other delivery
 	product.configure(recipe, purity_tier)
 	bind_item(product)
 	register_quest_atom(product)

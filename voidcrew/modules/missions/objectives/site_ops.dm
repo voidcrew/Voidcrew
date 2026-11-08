@@ -516,6 +516,7 @@
 		mission.fail("No mission pad to dispense the claim beacon to.")
 		return FALSE
 	kit = new(kit_turf)
+	mission_pad_delivery_effect(kit_turf)
 	kit.objective_ref = WEAKREF(src)
 	notify_crew("Claim beacon kit delivered.")
 	return TRUE
