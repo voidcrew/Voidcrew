@@ -65,10 +65,10 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/item/gun/ballistic/automatic/pistol) in storm_green?.held_items, "A green-zone stormtrooper doesn't hold the ladder pistol")
 	var/mob/living/carbon/human/npc/storm_yellow = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/trooper/syndicate/stormtrooper, 2)
 	TEST_ASSERT_NOTNULL(locate(/obj/item/gun/ballistic/automatic/c20r) in storm_yellow?.held_items, "A yellow-zone stormtrooper holds no C-20r")
-	// Space kit is sealed and breathes from its own tank.
+	// Space kit is sealed and carries its own air (opened when the air goes bad, human_npc.dm).
 	var/mob/living/carbon/human/npc/commando = human_npc_build_in_zone(/mob/living/carbon/human/npc/ruin/trooper/syndicate/commando/gunner, 1)
 	TEST_ASSERT(istype(commando?.wear_suit, /obj/item/clothing/suit/space/syndicate), "A Syndicate commando wears no space suit")
-	TEST_ASSERT_NOTNULL(commando?.internal, "A Syndicate commando isn't breathing from its tank")
+	TEST_ASSERT(commando?.can_breathe_internals() && length(commando.get_all_contents_type(/obj/item/tank/internals)), "A Syndicate commando carries no air it can breathe")
 
 /// Faction pirates (shared with the NPC ship crews, voidcrew/modules/npc_ships/code/faction_pirates/faction_pirate_humans.dm)
 /// drop what the basic mobs dropped: fixed pieces, a captain's zone blade, the ladder weapon, cash.

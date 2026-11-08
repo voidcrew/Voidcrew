@@ -51,7 +51,7 @@
 		else
 			TEST_ASSERT(boarder.wear_suit && (boarder.wear_suit.clothing_flags & STOPSPRESSUREDAMAGE), "A [faction] boarder has no sealed suit")
 			TEST_ASSERT(boarder.head && (boarder.head.clothing_flags & STOPSPRESSUREDAMAGE), "A [faction] boarder has no sealed helmet")
-			TEST_ASSERT_NOTNULL(boarder.internal, "A [faction] boarder isn't breathing from a tank")
+			TEST_ASSERT(boarder.can_breathe_internals() && length(boarder.get_all_contents_type(/obj/item/tank/internals)), "A [faction] boarder carries no air it can breathe")
 		if(faction == "medieval")
 			TEST_ASSERT(HAS_TRAIT(melee, TRAIT_NOGUNS), "A medieval footsoldier will use guns")
 			TEST_ASSERT(HAS_TRAIT(captain, TRAIT_NOGUNS), "The medieval warlord will use guns")
@@ -70,6 +70,9 @@
 	var/obj/item/ship_key/key = locate() in captain.get_all_contents()
 	TEST_ASSERT_NOTNULL(key, "The captain doesn't carry the ship key")
 	TEST_ASSERT(!human_npc_gear_locked(key) && !human_npc_gear_consumable(key), "The ship key was locked to the captain like his gear")
+	// In a pocket, where a crew that cuffs or downs him can take it through the strip menu
+	TEST_ASSERT(captain.get_slot_by_item(key) & ITEM_SLOT_POCKETS, "The captain doesn't keep the ship key in a pocket")
+	TEST_ASSERT(!HAS_TRAIT(key, TRAIT_NO_STRIP), "The ship key is hidden from the strip menu")
 	TEST_ASSERT(captain in hull.tracked_crew, "The hull doesn't track its captain")
 	TEST_ASSERT(hull.crew_ever_spawned, "The hull doesn't know it has a crew")
 	TEST_ASSERT_EQUAL(pirate_crew_of(hull)?.members[captain], "captain", "The captain isn't his crew's captain")

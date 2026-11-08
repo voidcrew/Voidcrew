@@ -59,8 +59,7 @@
 	if(istype(src, /mob/living/basic/trooper/nanotrasen/ranged))
 		if((zone == ZONE_GREEN && (istype(src, /mob/living/basic/trooper/nanotrasen/ranged/smg) || istype(src, /mob/living/basic/trooper/nanotrasen/ranged/assault))) || (zone != ZONE_RED && istype(src, /mob/living/basic/trooper/nanotrasen/ranged/elite)))
 			pistol_type = /mob/living/basic/trooper/nanotrasen/ranged
-		if(zone != ZONE_RED && (istype(src, /mob/living/basic/trooper/nanotrasen/ranged/smg/customs) || istype(src, /mob/living/basic/trooper/nanotrasen/ranged/assault/customs)))
-			pistol_type = /mob/living/basic/trooper/nanotrasen/ranged
+		// NT customs are human NPCs now: their ladder pistol is in their outfit table (faction_pirates/nt_patrol.dm)
 	else if(istype(src, /mob/living/basic/trooper/syndicate/ranged))
 		if(zone != ZONE_RED && (istype(src, /mob/living/basic/trooper/syndicate/ranged/smg) || istype(src, /mob/living/basic/trooper/syndicate/ranged/shotgun) || (zone == ZONE_GREEN && istype(src, /mob/living/basic/trooper/syndicate/ranged/space/stormtrooper))))
 			pistol_type = /mob/living/basic/trooper/syndicate/ranged

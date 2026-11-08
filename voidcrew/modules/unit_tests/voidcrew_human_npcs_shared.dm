@@ -300,8 +300,9 @@
 			TEST_ASSERT_NOTNULL(human_npc_find_ammo(pirate, gun), "[outfit_type] carries no spare ammunition for its [gun]")
 		qdel(pirate)
 
-/// N7: where the air can't keep a person alive the NPC gets a sealed suit and an open tank; in the cold
-/// it gets cold-weather wear; a species that needs neither is left alone.
+/// N7: where the air can't keep a person alive the NPC gets a sealed suit and a tank; in the cold it gets
+/// cold-weather wear; a species that needs neither is left alone. It minds its valve like a person: open
+/// while the air would hurt it, shut while the air is fine (so the tank doesn't run dry in a good room).
 /datum/unit_test/voidcrew_human_npc_site_layers
 
 /datum/unit_test/voidcrew_human_npc_site_layers/Run()
@@ -324,7 +325,17 @@
 	TEST_ASSERT(istype(spacer.wear_suit, /obj/item/clothing/suit/space/pirate), "An NPC dressed for vacuum has no space suit")
 	TEST_ASSERT(istype(spacer.head, /obj/item/clothing/head/helmet/space), "An NPC dressed for vacuum has no space helmet")
 	TEST_ASSERT(istype(spacer.s_store, /obj/item/tank/internals), "An NPC dressed for vacuum carries no tank")
-	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC dressed for vacuum didn't open its tank")
+	TEST_ASSERT(spacer.can_breathe_internals(), "An NPC dressed for vacuum has nothing to breathe its tank through")
+	TEST_ASSERT_NULL(spacer.internal, "An NPC dressed for vacuum keeps its tank open in good air")
+	var/turf/spacer_turf = get_turf(spacer)
+	var/datum/gas_mixture/room_air = spacer_turf.return_air()
+	var/datum/gas_mixture/saved_air = room_air.copy()
+	room_air.remove_ratio(1)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NOTNULL(spacer.internal, "An NPC in vacuum didn't open its tank")
+	room_air.copy_from(saved_air)
+	spacer.npc_update_internals()
+	TEST_ASSERT_NULL(spacer.internal, "An NPC back in good air didn't shut its tank")
 	var/obj/item/clothing/suit/space/suit = spacer.wear_suit
 	TEST_ASSERT(suit?.thermal_on, "An NPC dressed for vacuum didn't switch on its suit's heating")
 	// Dormant, the regulator is off so the cell lasts; awake, it goes back on.

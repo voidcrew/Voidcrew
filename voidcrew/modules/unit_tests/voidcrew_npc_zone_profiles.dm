@@ -1315,8 +1315,6 @@
 		/mob/living/basic/trooper/nanotrasen/ranged/smg,
 		/mob/living/basic/trooper/nanotrasen/ranged/assault,
 		/mob/living/basic/trooper/nanotrasen/ranged/elite,
-		/mob/living/basic/trooper/nanotrasen/ranged/smg/customs,
-		/mob/living/basic/trooper/nanotrasen/ranged/assault/customs,
 		/mob/living/basic/trooper/syndicate/ranged/smg,
 		/mob/living/basic/trooper/syndicate/ranged/shotgun,
 		/mob/living/basic/trooper/syndicate/ranged/smg/space/stormtrooper,
@@ -1324,8 +1322,8 @@
 	for(var/mob_type in shooters)
 		for(var/zone in 1 to 3)
 			var/is_nt = ispath(mob_type, /mob/living/basic/trooper/nanotrasen)
-			var/is_customs = mob_type == /mob/living/basic/trooper/nanotrasen/ranged/smg/customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/assault/customs
-			var/replaced = zone == 1 || (zone == 2 && (!is_nt || is_customs || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
+			// NT customs are human NPCs now; their ladder is tested in voidcrew_human_npcs_nt_customs.dm
+			var/replaced = zone == 1 || (zone == 2 && (!is_nt || mob_type == /mob/living/basic/trooper/nanotrasen/ranged/elite))
 			var/datum/npc_spawn_context/context = allocate(/datum/npc_spawn_context, src, zone)
 			var/mob/living/basic/trooper/body = spawn_npc_in_zone(mob_type, run_loc_floor_bottom_left, context)
 			var/datum/component/ranged_attacks/ranged = body.GetComponent(/datum/component/ranged_attacks)
