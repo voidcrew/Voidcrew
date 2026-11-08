@@ -82,6 +82,7 @@
 #include "voidcrew_dynamic_events.dm"
 #include "voidcrew_economy_metrics.dm"
 #include "voidcrew_event_horizon.dm"
+#include "voidcrew_exploration_sweep.dm"
 #include "voidcrew_fleet_waypoints.dm"
 #include "voidcrew_fresh_cores.dm"
 #include "voidcrew_gear_behaviour.dm"
