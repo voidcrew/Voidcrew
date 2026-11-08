@@ -3,21 +3,35 @@
 // After CM-SS13's handle_battlefield_execution() (cmss13-devs/cmss13 @ e9b299d266c2be727403751c3474e085803b5934,
 // code/modules/projectiles/gun.dm, AGPL-3.0, by the CM-SS13 team), rewritten for tg's guns.
 //
-// The trigger: tg already turns a point-blank click with the mouth selected into "points the gun at
-// their head" (handle_suicide: a 12 second wait, on anyone). When the target is humanoid and can't
-// fight back (down, out cold, cuffed, stunned or held in an aggressive grab) that click becomes an
-// execution instead: a short wind-up that both have to hold still for, then the gun's own shot into
-// the head. A round heavy enough bursts the head (hv_burst_head, which keeps the brain); a lighter
-// one leaves a heavy skull wound and finishes them. The brain is never destroyed, so revival works
-// as usual. Head-selected point-blank shots, holding someone up (right click) and gun bashes are
-// unchanged, and anyone the wind-up does not apply to still gets tg's slow version.
+// The trigger: a point-blank click with the head or the mouth selected, on a humanoid who can't fight
+// back (down, out cold, dead, cuffed, stunned, held in an aggressive grab, or an NPC staggering on
+// its last legs), is an execution: a short wind-up that both have to hold still for, then the gun's
+// own shot into the head. A round heavy enough bursts the head (hv_burst_head, which keeps the
+// brain); a lighter one leaves a heavy skull wound and finishes them. The brain is never destroyed,
+// so revival works as usual. An NPC that leaves a human corpse has the outcome replayed on that
+// corpse (corpses/). The mouth click reaches us through tg's handle_suicide(); the head click through
+// hv_try_head_execution(), called from a marked line in tg's fire_gun(). Anyone the execution does
+// not apply to keeps tg's behaviour: a normal point-blank shot to the head, or tg's slow mouth
+// version (which is also how you shoot yourself). Holding someone up (right click) and gun bashes are
+// unchanged.
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer)
 	if(bypass_timer || !hv_execution_possible(user, target))
 		return ..()
 	hv_start_execution(user, target, params)
 
-/// Whether a mouth-aimed point-blank click by `user` on `target` should be an execution.
+/// Called by tg's fire_gun() for a point-blank shot, after its own checks (safeties, firing pins, the
+/// mouth). A head-aimed one at someone who can be executed starts the execution instead of firing.
+/// Returns TRUE if it did.
+/obj/item/gun/proc/hv_try_head_execution(mob/living/user, atom/target, params)
+	if(!doafter_self_shoot || !isliving(user) || user.zone_selected != BODY_ZONE_HEAD)
+		return FALSE
+	if(!hv_execution_possible(user, target))
+		return FALSE
+	hv_start_execution(user, target, params)
+	return TRUE
+
+/// Whether a head- or mouth-aimed point-blank click by `user` on `target` should be an execution.
 /obj/item/gun/proc/hv_execution_possible(mob/living/user, mob/living/target)
 	if(!isliving(user) || !isliving(target) || user == target)
 		return FALSE
@@ -57,9 +71,11 @@
 		return
 	hv_fire_execution(user, target, params)
 
-/// do_after check: the shooter still holds the gun to the mouth of someone who still can't fight back.
+/// do_after check: the shooter still holds the gun to the head of someone who still can't fight back.
 /obj/item/gun/proc/hv_execution_holds(mob/living/user, mob/living/target)
-	return user.is_holding(src) && user.zone_selected == BODY_ZONE_PRECISE_MOUTH && target.hv_can_be_executed()
+	if(!user.is_holding(src) || !target.hv_can_be_executed())
+		return FALSE
+	return user.zone_selected == BODY_ZONE_HEAD || user.zone_selected == BODY_ZONE_PRECISE_MOUTH
 
 /// Fires the execution shot. Returns TRUE if the gun went off.
 /obj/item/gun/proc/hv_fire_execution(mob/living/user, mob/living/target, params)
@@ -72,6 +88,9 @@
 		return process_fire(target, user, TRUE, params, BODY_ZONE_HEAD)
 	var/blow = hv_execution_blow(target)
 	var/shot_dir = get_dir(user, target)
+	// An NPC the bullet itself kills dies before the shot is settled below, so tell it now.
+	if((target.hv_leaves_human_corpse || target.hv_gory_own_body) && target.hv_execution_killable())
+		target.hv_note_npc_execution(blow, shot_dir)
 	if(!process_fire(target, user, TRUE, params, BODY_ZONE_HEAD))
 		return FALSE
 	log_combat(user, target, "executed", src)
@@ -131,6 +150,12 @@
 		return TRUE
 	return pulledby?.grab_state >= GRAB_AGGRESSIVE
 
+// An NPC has no crit to fall into: it fights on until it dies. On its last legs it is staggering.
+/mob/living/basic/hv_is_helpless()
+	if(..())
+		return TRUE
+	return maxHealth > 0 && stat != DEAD && health <= maxHealth * HV_EXECUTION_STAGGER_HEALTH
+
 // Bounty criminals keep their own cuffs, downed and stunned states (voidcrew/modules/bounties/).
 /mob/living/basic/bounty_criminal/hv_is_helpless()
 	return ..() || is_restrained() || is_downed() || body_is_stunned()
@@ -138,13 +163,33 @@
 // ---- What the shot does ----
 
 /// Takes an execution shot that hit with `blow` force, travelling `shot_dir`. Past the shot itself, a
-/// target too tough to finish (see hv_execution_killable()) takes nothing extra.
+/// target too tough to finish (see hv_execution_killable()) takes nothing extra. A human-looking NPC
+/// notes the shot first, so the corpse it leaves, or its own body as it dies, shows the same outcome
+/// (corpses/); one already dead shows it at once.
 /mob/living/proc/hv_take_execution(blow, shot_dir)
 	if(stat != DEAD && !hv_execution_killable())
 		return
-	hv_blood_spray(shot_dir, blow >= HV_EXECUTION_BURST_DAMAGE ? 4 : 3)
-	hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
-	hv_execution_kill()
+	var/heavy = blow >= HV_EXECUTION_BURST_DAMAGE
+	hv_blood_spray(shot_dir, heavy ? 4 : 3)
+	if(hv_body_headless)
+		return // nothing left to shoot
+	// Only an NPC whose corpse or own body can show it has a head to burst.
+	var/bursts = heavy && (hv_leaves_human_corpse || hv_body_head_can_burst())
+	if(stat != DEAD && (hv_leaves_human_corpse || hv_gory_own_body))
+		hv_note_npc_execution(blow, shot_dir, TRUE)
+	if(bursts)
+		hv_add_hit_line("[src]'s head bursts apart!", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
+	else
+		hv_add_hit_line("The shot blows out the back of [src]'s skull.", HV_LINE_HUGE, null, DEFAULT_MESSAGE_RANGE)
+	if(stat != DEAD)
+		hv_execution_kill()
+		return
+	// A body already dead: nothing settles it at death any more, so it shows now.
+	if(bursts)
+		hv_burst_body_head(shot_dir, FALSE)
+	else if(hv_gory_own_body && hv_looks_human())
+		hv_body_skull = 3
+		update_appearance(UPDATE_OVERLAYS)
 
 /mob/living/carbon/hv_take_execution(blow, shot_dir)
 	if(stat != DEAD && !hv_execution_killable())
