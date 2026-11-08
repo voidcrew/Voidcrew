@@ -732,7 +732,7 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
  * friends); the dead and creatures with nobody behind them (site fauna) don't count. The implant itself
  * is never changed: once it fires it hits whoever is there, as it would for a player.
  */
-/proc/bounty_chrome_area_clear(mob/living/carbon/human/npc/npc, list/turfs, atom/aimed)
+/proc/bounty_chrome_area_clear(mob/living/carbon/human/npc/npc, list/turfs, atom/aimed, ignore_faction = FALSE)
 	if(QDELETED(npc))
 		return FALSE
 	for(var/turf/spot as anything in turfs)
@@ -740,6 +740,9 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 			continue
 		for(var/mob/living/person in spot)
 			if(person == npc || person.stat == DEAD)
+				continue
+			// A move that spares its own side (the Redline roar) doesn't wait on its own companions
+			if(ignore_faction && bounty_ai_same_gang(npc, person))
 				continue
 			if(!bounty_chrome_in_posse(npc, person, aimed) && bounty_chrome_counts_as_bystander(npc, person))
 				return FALSE
@@ -850,9 +853,13 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 		return FALSE
 	if(!ready())
 		return FALSE
-	if(area_move && !bounty_chrome_area_clear(owner, area_turfs(target), target))
+	if(area_move && !area_clear(target))
 		return FALSE
 	return TRUE
+
+/// Whether nobody outside the fight stands where it would land on `target` (the bystander gate). A move whose implant spares its own side overrides it.
+/datum/bounty_chrome_move/proc/area_clear(atom/target)
+	return bounty_chrome_area_clear(owner, area_turfs(target), target)
 
 /// The turfs it would catch if it fired on `target` now, for the bystander gate. Area moves override it.
 /datum/bounty_chrome_move/proc/area_turfs(atom/target)

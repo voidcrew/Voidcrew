@@ -50,6 +50,10 @@
 		return FALSE
 	return npc.health <= npc.maxHealth * BOUNTY_REDLINE_HURT_BELOW / 100 || npc.getStaminaLoss() >= BOUNTY_REDLINE_WINDED_AT
 
+// The implant's roar staggers only those outside its side (cyberware_is_ally()), so its own companions don't hold it back
+/datum/bounty_chrome_move/redline/area_clear(atom/target)
+	return bounty_chrome_area_clear(owner, area_turfs(target), target, TRUE)
+
 /// The roar's reach: every tile it can see within BOUNTY_REDLINE_ROAR_RANGE, as the implant's roar looks (oview())
 /datum/bounty_chrome_move/redline/area_turfs(atom/target)
 	. = list()
@@ -70,7 +74,7 @@
 
 // Someone outside the fight stepped into the roar's reach during the tell: the button stays unpressed (the gate, owner decision 5)
 /datum/bounty_chrome_move/redline/effect(atom/target)
-	if(!bounty_chrome_area_clear(owner, area_turfs(target), target))
+	if(!area_clear(target))
 		return FALSE
 	. = ..()
 	if(. && owner.has_status_effect(/datum/status_effect/cyberware_redline_window))

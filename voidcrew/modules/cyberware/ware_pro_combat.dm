@@ -164,6 +164,9 @@
 		return TRUE
 	if(!istype(user) || !istype(target))
 		return FALSE
+	// A bounty criminal's own companions and creatures (voidcrew/modules/bounties)
+	if(bounty_ai_same_gang(user, target))
+		return TRUE
 	var/datum/team/user_team = cyberware_crew_team(user)
 	if(!user_team)
 		return FALSE

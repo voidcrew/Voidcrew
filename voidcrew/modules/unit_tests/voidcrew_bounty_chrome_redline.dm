@@ -74,7 +74,7 @@
 	TEST_ASSERT_NULL(criminal.has_status_effect(/datum/status_effect/bounty_redline_eyes), "Its eyes stayed red after the burn")
 	TEST_ASSERT_NOTEQUAL(criminal.get_left_eye_color(), "#ff2a2a", "Its eyes stayed red after the burn")
 
-/// Winded by stamina it burns too; with someone outside the fight in the roar's reach it doesn't start, and someone stepping in during the tell keeps the button unpressed
+/// Winded by stamina it burns too; with someone outside the fight in the roar's reach it doesn't start, and someone stepping in during the tell keeps the button unpressed; its own companion does neither, and the roar spares it
 /datum/unit_test/voidcrew_bounty_chrome/redline_gate
 
 /datum/unit_test/voidcrew_bounty_chrome/redline_gate/Run()
@@ -101,6 +101,20 @@
 	TEST_ASSERT_NULL(criminal.has_status_effect(/datum/status_effect/cyberware_redline_window), "It roared at a bystander who stepped in during the tell")
 	TEST_ASSERT_NULL(bystander.has_status_effect(/datum/status_effect/staggered), "The bystander was staggered")
 	TEST_ASSERT(move.ready(), "The unpressed burn still went on cooldown")
+
+	// Its own companion in the roar's reach doesn't hold it back, and the roar spares it
+	qdel(bystander)
+	var/datum/human_npc_order/order = bounty_spawn_companion(criminal, spot(1, 2), null, TRUE, bounty_test_company_member("brawler", null)) // BOUNTY_STYLE_BRAWLER
+	var/mob/living/carbon/human/npc/bounty_companion/buddy = order?.spawned_ref?.resolve()
+	qdel(order)
+	TEST_ASSERT_NOTNULL(buddy, "Test fixture: no companion was made")
+	allocated += buddy
+	buddy.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	TEST_ASSERT(move.can_start(hunter), "Its own companion in the roar's reach keeps the Redline shut")
+	TEST_ASSERT(chrome_ai.start_move(move, hunter), "The tell didn't start with its companion near")
+	sleep(1.2 SECONDS)
+	TEST_ASSERT_NOTNULL(criminal.has_status_effect(/datum/status_effect/cyberware_redline_window), "It didn't burn with only its companion near")
+	TEST_ASSERT_NULL(buddy.has_status_effect(/datum/status_effect/staggered), "The roar staggered its own companion")
 
 /// An EMP in the tell fires nothing; one in the burn drops it straight into the implant's crash and back on its cooldown
 /datum/unit_test/voidcrew_bounty_chrome/redline_emp
