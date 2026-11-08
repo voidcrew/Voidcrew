@@ -1,12 +1,11 @@
 /**
  * # Human NPCs in soft crit (N5)
  *
- * A person in soft crit is on the floor, can crawl, and (Voidcrew's soft-crit item use, PR #284,
- * voidcrew/edits/modules/mob/mob.dm) can use what is on them at a quarter of the speed. An NPC does the
- * same, and nothing else: it crawls away from whoever is nearest, pleads now and then, and injects a
+ * A person in soft crit is on the floor and (Voidcrew's soft-crit item use, PR #284,
+ * voidcrew/edits/modules/mob/mob.dm) can use what is on them at a quarter of the speed. An NPC stays
+ * where it fell (the owner didn't want NPCs crawling about), pleads now and then, and injects a
  * medipen it carries. Elites and bosses also fire wild from the floor, at the ground around their
- * attacker, the way a player shooting from crit does. Everything goes through tg: the crawl is a crawl,
- * the medipen is the player's "use in hand" (execute_mode()), the shot is a click with the gun.
+ * attacker, the way a player shooting from crit does. Everything goes through tg: the medipen is the player's "use in hand" (execute_mode()), the shot is a click with the gun.
  * Brute packs and other medical stacks need a do_after, which tg refuses to anyone incapacitated, so a
  * person in soft crit can't use them, and neither can an NPC.
  *
@@ -48,7 +47,7 @@
 	if(new_stat == SOFT_CRIT)
 		controller.CancelActions()
 
-/// In soft crit: treat itself, fire wild (elites and bosses), crawl away, plead. Must come first.
+/// In soft crit: treat itself, fire wild (elites and bosses), plead. It stays where it fell. Must come first.
 /datum/ai_planning_subtree/human_npc_soft_crit
 
 /datum/ai_planning_subtree/human_npc_soft_crit/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
@@ -71,7 +70,6 @@
 	controller.set_blackboard_key(BB_HUMAN_NPC_FLEE_FROM, threat)
 	if(human_npc?.npc_rank >= HUMAN_NPC_RANK_ELITE && !isnull(human_npc_loaded_gun(npc)))
 		controller.queue_behavior(/datum/ai_behavior/human_npc_fire_wild, BB_HUMAN_NPC_FLEE_FROM)
-	controller.queue_behavior(/datum/ai_behavior/run_away_from_target, BB_HUMAN_NPC_FLEE_FROM)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Something it carries that it can use on itself in soft crit: a medipen with something in it.

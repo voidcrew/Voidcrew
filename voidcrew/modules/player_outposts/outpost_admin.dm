@@ -322,7 +322,7 @@ ADMIN_VERB(outpost_manipulator, R_ADMIN, "Outpost Manipulator", "Create and mana
 			return
 		else
 			return
-	record(user, home, "[action][params["mode"] ? " ([params["mode"]])" : ""]")
+	record(user, home, "[action][params["mode"] ? " ([html_encode(params["mode"])])" : ""]")
 
 /**
  * Never tear a loaded ship, occupied habitat or unfinished map load out from under it.

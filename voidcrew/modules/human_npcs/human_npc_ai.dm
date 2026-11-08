@@ -20,7 +20,7 @@
  * The AI goes off with the body's dormancy: tg switches it off while no player is on the z-level, the
  * same test human_npc.dm uses for Life().
  *
- * Planning order: soft crit (crawl, plead, medipen), escape captivity, walk out (human_npc_states.dm),
+ * Planning order: soft crit (plead, medipen, elites fire wild), escape captivity, walk out (human_npc_states.dm),
  * surrender (human_npc_surrender.dm), then find a target, arm, shoot, melee.
  *
  * Phase B (PR #500's pirate crews) can drop these subtrees into its own planning lists:

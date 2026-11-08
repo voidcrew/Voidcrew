@@ -105,7 +105,7 @@
 	/// The bark kind it last gave, for tests and admins
 	var/npc_last_bark
 	COOLDOWN_DECLARE(npc_bark_cooldown)
-	/// world.time it may next plead while crawling in soft crit
+	/// world.time it may next plead while down in soft crit
 	var/npc_next_plead = 0
 	/// TRUE while the paralysis of its own *surrender runs
 	var/npc_surrendering = FALSE
