@@ -38,12 +38,12 @@
 	gloves = /obj/item/clothing/gloves/fishing
 	shoes = /obj/item/clothing/shoes/galoshes
 
-/// Camo trousers, an old field jacket and a battered fishing hat
+/// Camo trousers, an old field jacket and a green cap (the legendary fishing hat only goes on a master angler)
 /datum/outfit/ambient_angler/camo
 	name = "Pond angler (field jacket)"
 	uniform = /obj/item/clothing/under/pants/camo
 	suit = /obj/item/clothing/suit/jacket/miljacket
-	head = /obj/item/clothing/head/soft/fishing_hat
+	head = /obj/item/clothing/head/soft/green
 	gloves = null
 	shoes = /obj/item/clothing/shoes/workboots
 

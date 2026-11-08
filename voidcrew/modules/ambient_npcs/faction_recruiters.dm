@@ -279,13 +279,13 @@
 // OUTFITS (plain clothes, nothing worth stripping)
 // =========================================================================
 
-/datum/outfit/ambient/recruiter_nanotrasen
+/datum/outfit/ambient_recruiter_nanotrasen
 	name = "Nanotrasen recruiter"
 	uniform = /obj/item/clothing/under/rank/civilian/head_of_personnel/suit
 	neck = /obj/item/clothing/neck/tie/blue
 	shoes = /obj/item/clothing/shoes/laceup
 
-/datum/outfit/ambient/recruiter_syndicate
+/datum/outfit/ambient_recruiter_syndicate
 	name = "Syndicate recruiter"
 	uniform = /obj/item/clothing/under/rank/civilian/lawyer/black
 	neck = /obj/item/clothing/neck/tie/black/tied
@@ -299,7 +299,7 @@
 /mob/living/carbon/human/npc/ambient_npc/recruiter/nanotrasen
 	name = "Nanotrasen recruiter"
 	desc = "A neatly pressed suit and a stack of pamphlets."
-	outfit = /datum/outfit/ambient/recruiter_nanotrasen
+	outfit = /datum/outfit/ambient_recruiter_nanotrasen
 	dialogue_section = "nanotrasen"
 	pamphlet_type = /obj/item/paper/pamphlet/nanotrasen
 	poster_types = list(
@@ -329,7 +329,7 @@
 /mob/living/carbon/human/npc/ambient_npc/recruiter/syndicate
 	name = "sharp-dressed stranger"
 	desc = "A dark suit, dark glasses, and a way of not quite looking at the cameras."
-	outfit = /datum/outfit/ambient/recruiter_syndicate
+	outfit = /datum/outfit/ambient_recruiter_syndicate
 	dialogue_section = "syndicate"
 	pamphlet_type = /obj/item/paper/pamphlet/syndicate
 	poster_types = list(

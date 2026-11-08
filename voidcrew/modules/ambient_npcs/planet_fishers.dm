@@ -431,7 +431,7 @@
 	name = "Ambient NPC: boat fisher"
 	uniform = /obj/item/clothing/under/color/blue
 	suit = /obj/item/clothing/suit/jacket/puffer/vest
-	head = /obj/item/clothing/head/soft/fishing_hat
+	head = /obj/item/clothing/head/soft/blue // the legendary fishing hat only stays on a master angler
 	shoes = /obj/item/clothing/shoes/workboots
 
 /// Red: a flak vest instead of the puffer
