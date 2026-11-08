@@ -143,6 +143,7 @@
 	playsound(drop_spot, 'sound/effects/rock/rock_break.ogg', 40, TRUE)
 	new /obj/effect/temp_visual/xenoarch_dust(get_turf(drop_spot), "#9c8c78", TRUE)
 	if(find)
+		new /obj/effect/temp_visual/xenoarch_glint(get_turf(drop_spot))
 		var/atom/speaker = holder || src
 		speaker.visible_message(
 			span_notice("The last crust of rock falls away from [find]."),

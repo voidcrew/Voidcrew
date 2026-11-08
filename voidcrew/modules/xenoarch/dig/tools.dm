@@ -173,6 +173,9 @@
 	desc = "A padded satchel with a pocket for every strange rock."
 	icon = 'voidcrew/modules/xenoarch/icons/dig_tools.dmi'
 	icon_state = "find_bag"
+	inhand_icon_state = "satchel-explorer"
+	lefthand_file = 'icons/mob/inhands/equipment/backpack_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/backpack_righthand.dmi'
 	worn_icon_state = "satchel"
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 	w_class = WEIGHT_CLASS_SMALL

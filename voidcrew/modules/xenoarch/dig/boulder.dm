@@ -317,6 +317,7 @@
 		find.alpha = 0
 		find.pixel_z = -6
 		animate(find, alpha = 255, pixel_z = 0, time = 1.2 SECONDS, easing = SINE_EASING | EASE_OUT)
+		new /obj/effect/temp_visual/xenoarch_glint(spot)
 		visible_message(span_notice("The last of the rock sloughs away, and [find] stands clear of the dust."))
 		if(damaged)
 			visible_message(span_warning("Cracks run through [find] where the rock let go of it badly."))
@@ -402,4 +403,24 @@
 	else
 		size.Scale(0.8)
 	transform = size
+	animate(src, alpha = 0, time = duration, easing = EASE_IN)
+
+/**
+ * # Find glint
+ *
+ * A warm glitter over a find the moment the last grit comes off it. tg's shield sparkles, tinted.
+ */
+/obj/effect/temp_visual/xenoarch_glint
+	name = "glint"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "shieldsparkles"
+	color = "#ffe6a8"
+	layer = ABOVE_MOB_LAYER
+	plane = GAME_PLANE
+	randomdir = FALSE
+	duration = 1.2 SECONDS
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/temp_visual/xenoarch_glint/Initialize(mapload)
+	. = ..()
 	animate(src, alpha = 0, time = duration, easing = EASE_IN)

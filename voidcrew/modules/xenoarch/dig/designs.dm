@@ -6,7 +6,7 @@
  * quick brush to "Advanced Excavation". Those nodes list these ids:
  *
  * - Xenoarchaeology: "xenoarch_stabiliser", "xenoarch_spectrometer"
- * - Advanced Excavation: "xenoarch_depth_scanner_adv", "xenoarch_brush_quick"
+ * - Advanced Excavation: "xenoarch_scanner_advanced", "xenoarch_brush_quick"
  */
 
 // ===== Autolathe, from round start =====
@@ -110,10 +110,10 @@
 
 // ===== Research: Advanced Excavation =====
 
-/datum/design/xenoarch_depth_scanner_adv
+/datum/design/xenoarch_scanner_advanced
 	name = "Advanced Depth Scanner"
 	desc = "Reads a find's exact depth and the field its rock needs, on site."
-	id = "xenoarch_depth_scanner_adv"
+	id = "xenoarch_scanner_advanced"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 3, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 2, /datum/material/uranium = SMALL_MATERIAL_AMOUNT * 2)
 	build_path = /obj/item/excavation/depth_scanner/advanced

@@ -330,7 +330,7 @@ GLOBAL_LIST_INIT(xenoarch_curio_values, list(
 	variants = list("unknown1")
 	descs = list(
 		"A banded column of gold-coloured metal, stacked like a spine.",
-		"A ritual column of metal rings. It's warm, though it was buried.",
+		"A column of metal rings, stacked and worn smooth where hands once held it.",
 	)
 
 /obj/item/xenoarch_curio/scrap
