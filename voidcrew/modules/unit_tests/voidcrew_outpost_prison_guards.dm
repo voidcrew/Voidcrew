@@ -506,8 +506,9 @@
 	guard.finish_beam_in()
 
 	// Real damage into tg crit: down, and nothing protects them there.
-	var/list/face = record.look?.Copy()
-	TEST_ASSERT(length(face), "The payroll did not keep the guard's face")
+	TEST_ASSERT(length(record.look), "The payroll did not keep the guard's face")
+	var/face_skin = LAZYACCESS(record.look, "skin_tone")
+	var/face_hair = LAZYACCESS(record.look, "hairstyle")
 	guard.adjustBruteLoss(110)
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_CRITICAL_CONDITION), "110 brute did not put a guard in crit")
 	TEST_ASSERT_EQUAL(guard.phase, "down", "A guard in crit did not go down") // OUTPOST_GUARD_DOWN
@@ -532,8 +533,8 @@
 	prison.tick(1)
 	TEST_ASSERT_NOTNULL(record.guard, "A downed guard did not come back after ten minutes")
 	TEST_ASSERT_EQUAL(record.guard.real_name, guard_name, "A different guard came back")
-	TEST_ASSERT_EQUAL(record.guard.skin_tone, face["skin_tone"], "The guard came back with someone else's face")
-	TEST_ASSERT_EQUAL(record.guard.hairstyle, face["hairstyle"], "The guard came back with someone else's hair")
+	TEST_ASSERT_EQUAL(record.guard.skin_tone, face_skin, "The guard came back with someone else's face")
+	TEST_ASSERT_EQUAL(record.guard.hairstyle, face_hair, "The guard came back with someone else's hair")
 	TEST_ASSERT(record.guard.health >= record.guard.maxHealth, "The guard came back hurt")
 	TEST_ASSERT_EQUAL(treasury.account_balance, 4000, "The return cost [4000 - treasury.account_balance] cr")
 
