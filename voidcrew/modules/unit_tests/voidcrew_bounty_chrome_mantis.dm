@@ -281,6 +281,78 @@
 		clothed.update_body_parts()
 		qdel(clothed)
 
+/// With the blades out every blow is the blade's, blow after blow, and a club fighter's bat knock-back stays out of it
+/datum/unit_test/voidcrew_bounty_chrome_mantis/blows
+
+/datum/unit_test/voidcrew_bounty_chrome_mantis/blows/Run()
+	var/obj/item/blade = /obj/item/melee/energy/blade/hardlight/cyberware_mantis
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(1, 2))
+	var/mob/living/basic/bounty_criminal/normal/criminal = allocate(/mob/living/basic/bounty_criminal/normal, tile(0, 2))
+	test_record = new
+	test_record.style = "club" // BOUNTY_STYLE_CLUB
+	test_record.tier = 1 // BOUNTY_TIER_PETTY
+	test_record.archetype = "normal" // BOUNTY_ARCHETYPE_NORMAL
+	criminal.record = test_record
+	bounty_ai_apply_style(criminal, "club")
+	bounty_chrome_install(criminal, list("mantis")) // BOUNTY_CHROME_MANTIS
+	var/datum/bounty_chrome/mantis/piece = bounty_chrome_piece(criminal, "mantis")
+	TEST_ASSERT_EQUAL(test_record.style, "club", "A club fighter was made over by the blades")
+	TEST_ASSERT(!bounty_chrome_owns_blow(criminal), "With the blades in, the chrome owns their blow")
+	TEST_ASSERT(criminal.ai_start_fight(hunter), "The criminal wouldn't fight")
+	TEST_ASSERT(piece.deployed, "The blades didn't come out")
+	piece.next_lunge_at = world.time + 100 SECONDS
+	TEST_ASSERT(bounty_chrome_owns_blow(criminal), "With the blades out, the bat's knock-back still rides on their blows")
+	TEST_ASSERT_EQUAL(criminal.attack_vis_effect, ATTACK_EFFECT_SLASH, "A blade blow doesn't look like a cut")
+	var/turf/start = get_turf(hunter)
+	var/before = hunter.getBruteLoss()
+	for(var/blow in 1 to 3)
+		TEST_ASSERT(criminal.melee_attack(hunter, null, TRUE), "Blow [blow] with the blades didn't land")
+		var/dealt = hunter.getBruteLoss() - before
+		before = hunter.getBruteLoss()
+		TEST_ASSERT(dealt >= initial(blade.force) - 1, "Blow [blow] with the blades did [dealt] brute, not a mantis blade's")
+		TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_weapon"], blade, "After blow [blow], the blade isn't their weapon") // BB_BOUNTY_WEAPON
+	sleep(0.5 SECONDS) // a bat's throw would have started by now
+	TEST_ASSERT(!hunter.throwing && get_turf(hunter) == start, "A blade blow knocked the hunter back like a bat")
+
+	// Blades in: the chrome no longer owns the blow
+	criminal.emp_act(EMP_HEAVY)
+	TEST_ASSERT(!piece.deployed, "The blades stayed out through an EMP")
+	TEST_ASSERT(!bounty_chrome_owns_blow(criminal), "With the blades in, the chrome still owns their blow")
+
+/// However the housings got there, the blades are the weapon: an admin's gunman fights with a knife and the blades, a companion's gun or bottle goes, a club stays; no holster shows
+/datum/unit_test/voidcrew_bounty_chrome_mantis/style
+
+/datum/unit_test/voidcrew_bounty_chrome_mantis/style/Run()
+	var/obj/item/blade = /obj/item/melee/energy/blade/hardlight/cyberware_mantis
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(tile(4, 4))
+	var/mob/living/carbon/human/consistent/operator = allocate(/mob/living/carbon/human/consistent, tile(4, 0))
+	var/datum/bounty_admin_panel/unit_test/panel = allocate(/datum/bounty_admin_panel/unit_test, operator)
+
+	// The Bounty Panel: a Wanted SMG criminal with Mantis Blades picked
+	var/mob/living/basic/bounty_criminal/criminal = panel.admin_spawn_criminal(operator, 2, "normal", "smg", null, tile(0, 0), list("mantis")) // BOUNTY_TIER_WANTED, BOUNTY_STYLE_SMG
+	TEST_ASSERT_NOTNULL(criminal, "The panel didn't spawn the criminal: [panel.error]")
+	allocated += criminal
+	TEST_ASSERT_EQUAL(criminal.record.style, "knife", "A gunman given Mantis Blades kept the gun on their record") // BOUNTY_STYLE_KNIFE
+	TEST_ASSERT_EQUAL(criminal.ai_controller.blackboard["bb_bounty_style"], "knife", "A gunman given Mantis Blades still fights with the gun") // BB_BOUNTY_STYLE
+	TEST_ASSERT(!ispath(criminal.ai_controller.blackboard["bb_bounty_weapon"], /obj/item/gun), "A Mantis Blades fighter still carries a gun") // BB_BOUNTY_WEAPON
+	TEST_ASSERT_NULL(criminal.ai_holster, "A holstered gun shows on a Mantis Blades fighter")
+	TEST_ASSERT(criminal.ai_start_fight(hunter), "The criminal wouldn't fight")
+	var/datum/bounty_chrome/mantis/piece = bounty_chrome_piece(criminal, "mantis")
+	TEST_ASSERT(piece?.deployed, "The blades didn't come out in the fight")
+	TEST_ASSERT_EQUAL(criminal.ai_hand?.held_type, blade, "The hand doesn't show a blade in the fight")
+	TEST_ASSERT_NULL(criminal.ai_holster, "A holstered gun shows in the fight")
+	TEST_ASSERT(!bounty_ai_style(criminal).ranged, "A Mantis Blades fighter fights at range")
+
+	// Companions: a gun or a bottle goes for a knife, a club stays
+	for(var/style in list("revolver", "bottle", "club")) // BOUNTY_STYLE_REVOLVER, BOUNTY_STYLE_BOTTLE, BOUNTY_STYLE_CLUB
+		var/mob/living/basic/bounty_companion/buddy = allocate(/mob/living/basic/bounty_companion, tile(2, 0))
+		buddy.ai_take_style(style)
+		bounty_chrome_install(buddy, list("mantis"))
+		var/expected = style == "club" ? "club" : "knife"
+		TEST_ASSERT_EQUAL(bounty_ai_style(buddy)?.key, expected, "A [style] companion given Mantis Blades fights as [bounty_ai_style(buddy)?.key]")
+		TEST_ASSERT_NULL(buddy.ai_holster, "A [style] companion given Mantis Blades shows a holstered gun")
+		qdel(buddy)
+
 /**
  * Not a check: draws the worn housings and the blades out to data/bounty_chrome_renders/ for a person
  * to look at. Each look three ways: housings only, blades out facing south, blades out facing east.
