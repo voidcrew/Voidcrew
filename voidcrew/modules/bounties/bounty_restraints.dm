@@ -31,8 +31,16 @@
 /mob/living/carbon/human/npc/bounty_criminal/proc/body_hook_cuffs()
 	RegisterSignal(src, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(body_on_cuff_signal))
 	RegisterSignal(src, COMSIG_MOB_REMOVING_CUFFS, PROC_REF(body_on_working_cuffs))
-	RegisterSignal(src, SIGNAL_ADDTRAIT(TRAIT_RESTRAINED), PROC_REF(body_on_restrained))
-	RegisterSignal(src, SIGNAL_REMOVETRAIT(TRAIT_RESTRAINED), PROC_REF(body_on_unrestrained))
+
+// tg's own TRAIT_RESTRAINED handlers (code/modules/mob/living/init_signals.dm) block its hands. Registering
+// the trait's signals again on itself would replace them, so the body hears the cuffs through them.
+/mob/living/carbon/human/npc/bounty_criminal/on_restrained_trait_gain(datum/source)
+	. = ..()
+	body_on_restrained(source)
+
+/mob/living/carbon/human/npc/bounty_criminal/on_restrained_trait_loss(datum/source)
+	. = ..()
+	body_on_unrestrained(source)
 
 // A fulton never goes on a criminal (M2).
 /mob/living/carbon/human/npc/bounty_criminal/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
