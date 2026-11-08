@@ -29,9 +29,10 @@
 	/// Path of the left hand held item we give to the mob's visuals.
 	var/l_hand
 
+
 /mob/living/basic/trooper/Initialize(mapload)
 	. = ..()
-	apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
+	apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand) // VOIDCREW EDIT CHANGE: unconditional again; the static-sprite opt-out went with the human NPC migration (voidcrew/modules/human_npcs)
 	if(LAZYLEN(loot) || corpse)
 		LAZYOR(loot, corpse)
 		loot = string_list(loot)
