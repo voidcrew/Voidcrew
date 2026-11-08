@@ -660,6 +660,8 @@
 		var/list/inhand = npc_inhand_look(held_item)
 		if(inhand)
 			var/mutable_appearance/carried = mutable_appearance(inhand[1], inhand[2])
+			carried.pixel_w = inhand[3]
+			carried.pixel_z = inhand[4]
 			carried.plane = FLOAT_PLANE
 			carried.layer = FLOAT_LAYER
 			. += carried

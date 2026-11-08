@@ -170,6 +170,9 @@
 	var/inhand = FALSE
 	/// The typepath it shows, when it was given one
 	var/held_type
+	/// Pixel offset that centres an in-hand sprite bigger than a tile on the body
+	var/inhand_offset_x = 0
+	var/inhand_offset_y = 0
 
 /**
  * Draws `look` in `owner`'s hand (or over their head), reusing `holder`: `look` is an atom, whose
@@ -201,6 +204,8 @@
 	holder.over_head = over_head
 	holder.inhand = !!inhand_look
 	holder.held_type = ispath(look) ? look : null
+	holder.inhand_offset_x = inhand_look ? inhand_look[3] : 0
+	holder.inhand_offset_y = inhand_look ? inhand_look[4] : 0
 	holder.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	holder.appearance_flags = KEEP_APART | RESET_COLOR | RESET_TRANSFORM | PIXEL_SCALE
 	holder.vis_flags = VIS_INHERIT_PLANE
@@ -215,24 +220,31 @@
 	return holder
 
 /**
- * The right-hand sprite of `look` (an item or item typepath) as list(file, state), or null when it
+ * The right-hand sprite of `look` (an item or item typepath) as list(file, state, x offset, y offset), or null when it
  * has none: what a player holding it shows. Drawn on an NPC's body it turns with them, as a player's
  * does. Used by bounty NPCs and the prison's prisoners and guards.
  */
 /proc/npc_inhand_look(look)
 	var/hand_file
 	var/state
+	var/width = ICON_SIZE_X
+	var/height = ICON_SIZE_Y
 	if(ispath(look, /obj/item))
 		var/obj/item/item_type = look
 		hand_file = initial(item_type.righthand_file)
 		state = initial(item_type.inhand_icon_state) || initial(item_type.icon_state)
+		width = initial(item_type.inhand_x_dimension)
+		height = initial(item_type.inhand_y_dimension)
 	else if(isitem(look))
 		var/obj/item/item = look
 		hand_file = item.righthand_file
 		state = item.inhand_icon_state || item.icon_state
+		width = item.inhand_x_dimension
+		height = item.inhand_y_dimension
 	if(!hand_file || !state || !icon_exists(hand_file, state))
 		return null
-	return list(hand_file, state)
+	// A sprite bigger than a tile (a shotgun's 64x64) is centred on the body, as tg's center_image() does for a player
+	return list(hand_file, state, -(width - ICON_SIZE_X) / 2, -(height - ICON_SIZE_Y) / 2)
 
 /// Puts a held thing in the hand on the side they face (`facing`, or the way they face now), or over their head
 /proc/bounty_ai_place_held(mob/living/owner, obj/effect/abstract/bounty_held/holder, facing)
@@ -241,8 +253,8 @@
 	// An in-hand sprite is drawn for a whole body: full size, no offset, facing their way
 	if(holder.inhand)
 		holder.transform = matrix()
-		holder.pixel_w = 0
-		holder.pixel_z = 0
+		holder.pixel_w = holder.inhand_offset_x
+		holder.pixel_z = holder.inhand_offset_y
 		holder.dir = facing || owner.dir
 		return
 	holder.transform = matrix().Scale(0.6)
