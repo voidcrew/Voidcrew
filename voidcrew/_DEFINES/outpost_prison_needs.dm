@@ -17,8 +17,6 @@
 #define PRISONER_INJURED_BELOW 90
 /// Below this health percent an untreated prisoner leaves the odd drip of blood
 #define PRISONER_BLEED_BELOW 50
-/// How long stamina crit holds after the last stamina hit, long enough to drag one to a cell
-#define PRISONER_STAMCRIT_TIME (20 SECONDS)
 /// Percent chance per minute that a prisoner drops some mess
 #define OUTPOST_PRISON_MESS_CHANCE 4
 /// Pause between spontaneous prisoner lines anywhere in one wing (deciseconds)

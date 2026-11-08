@@ -20,21 +20,6 @@
 	TEST_ASSERT(has_state(get_outpost_npc_look(/datum/outfit/outpost_prisoner, MALE, 1), "_chest_m"), "A man's look has no male chest")
 	TEST_ASSERT(has_state(get_outpost_npc_look(/datum/outfit/outpost_prisoner, FEMALE, 1), "_chest_f"), "A woman's look has no female chest")
 
-	// A prisoner wears their own look, keyed by their gender.
-	var/mob/living/basic/outpost_prisoner/prisoner = allocate(/mob/living/basic/outpost_prisoner)
-	var/deadline = world.time + 5 SECONDS
-	// Let the look Initialize() started finish first, so it cannot land on top of this one.
-	UNTIL(prisoner.icon == 'icons/mob/human/human.dmi' || world.time > deadline)
-	TEST_ASSERT(prisoner.look_number >= 1 && prisoner.look_number <= 8, "A prisoner got look number [prisoner.look_number]")
-	prisoner.gender = FEMALE
-	prisoner.look_number = 3
-	prisoner.build_look()
-	TEST_ASSERT_NOTNULL(GLOB.outpost_npc_looks[outpost_npc_look_key(prisoner.outfit_path, FEMALE, 3)], "A woman's look was not cached under her gender")
-	TEST_ASSERT_EQUAL(prisoner.icon, 'icons/mob/human/human.dmi', "A prisoner's look did not set the human icon")
-	TEST_ASSERT_EQUAL(prisoner.icon_state, "", "A prisoner's look left an icon state")
-	TEST_ASSERT(prisoner.appearance_flags & KEEP_TOGETHER, "A prisoner's look did not keep its overlays together")
-	TEST_ASSERT(has_state(prisoner, "_chest_f"), "A woman prisoner does not have a woman's body")
-
 	// Anything that is not female gets a male body.
 	TEST_ASSERT_EQUAL(outpost_npc_look_key(/datum/outfit/outpost_prisoner, NEUTER, 2), outpost_npc_look_key(/datum/outfit/outpost_prisoner, MALE, 2), "A neuter look is not the male one")
 

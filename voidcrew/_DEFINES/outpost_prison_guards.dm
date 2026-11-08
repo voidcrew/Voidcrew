@@ -93,3 +93,5 @@
 
 /// Trait source for the beam holding a guard still
 #define OUTPOST_GUARD_BEAM_TRAIT "outpost_guard_beam"
+/// Trait source for what a guard on their feet refuses (lockers, bags)
+#define OUTPOST_GUARD_UPRIGHT_TRAIT "outpost_guard_upright"

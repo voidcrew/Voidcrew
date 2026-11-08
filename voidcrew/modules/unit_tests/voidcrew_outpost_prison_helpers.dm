@@ -215,3 +215,20 @@
 			else if(candidate == line)
 				return TRUE
 	return FALSE
+
+/**
+ * Puts `cuffs` (an /obj/item/restraints/handcuffs, or a typepath) on `target` the way tg's cuffing ends
+ * (equip_to_slot() into the handcuff slot, zipties becoming their used pair), as if a member had just
+ * finished cuffing them. Returns TRUE if they are cuffed.
+ */
+/proc/outpost_prison_test_cuff(mob/living/carbon/target, obj/item/restraints/handcuffs/cuffs = /obj/item/restraints/handcuffs)
+	if(QDELETED(target) || target.handcuffed)
+		return FALSE
+	if(ispath(cuffs))
+		cuffs = new cuffs(target.drop_location())
+	if(cuffs.trashtype)
+		var/used_type = cuffs.trashtype
+		qdel(cuffs)
+		cuffs = new used_type(target.drop_location())
+	target.equip_to_slot(cuffs, ITEM_SLOT_HANDCUFFED)
+	return target.handcuffed == cuffs

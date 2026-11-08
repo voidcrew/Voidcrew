@@ -305,13 +305,9 @@
 	prison.refresh_conditions()
 	// Counted in the mess load; Clean itself only drops past PRISON_MESS_FREE units per 100 floor tiles.
 	TEST_ASSERT(prison.mess_load > mess_before, "Blood on the floor did not count as mess")
-	// Badly hurt and untreated, they drip; treated, they stop.
-	prisoner.forceMove(prison_spot(home, 11, 8))
-	prisoner.adjustBruteLoss(60 - prisoner.getBruteLoss())
-	TEST_ASSERT(prisoner.maybe_drip(1000), "A prisoner at 40% health never dripped")
-	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood) in prison_spot(home, 11, 8), "The drip left nothing on the floor")
+	// Their blood is a person's: real blood in their veins, lost through tg's own bleeding.
+	TEST_ASSERT(prisoner.blood_volume > 0, "A prisoner has no blood")
 	prisoner.adjustBruteLoss(-prisoner.getBruteLoss())
-	TEST_ASSERT(!prisoner.maybe_drip(1000), "A treated prisoner still dripped")
 
 	// The wing's first aid kit holds dressings and a scanner, nothing that goes in a mouth or vein.
 	var/obj/item/storage/medkit/brute/outpost_prison/kit = locate() in prison_spot(home, 16, 2)

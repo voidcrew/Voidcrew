@@ -54,7 +54,7 @@
 	prison.creature_panic_tick(1)
 	TEST_ASSERT(watcher.is_panicking(), "A creature in sight within range did not frighten a prisoner")
 	TEST_ASSERT(istype(watcher.activity, /datum/prisoner_activity/creature_panic), "A frightened prisoner did not run ([watcher.activity?.type])")
-	TEST_ASSERT_EQUAL(watcher.speed, 1.3, "A running prisoner moves at [watcher.speed], not 1.3") // OUTPOST_PANIC_FLEE_SPEED
+	TEST_ASSERT_EQUAL(watcher.move_intent, MOVE_INTENT_RUN, "A frightened prisoner is not running")
 	if(!can_see(corner, hulk, 7))
 		TEST_ASSERT(!corner.is_panicking(), "A creature out of sight frightened a prisoner")
 
@@ -66,7 +66,7 @@
 	prison.creature_panic_tick(2)
 	TEST_ASSERT(!watcher.is_panicking(), "A prisoner was still frightened a minute after the creature went out of sight")
 	TEST_ASSERT(!istype(watcher.activity, /datum/prisoner_activity/creature_panic), "A calm prisoner kept running")
-	TEST_ASSERT_EQUAL(watcher.speed, 2, "A calm prisoner kept running at [watcher.speed]")
+	TEST_ASSERT_EQUAL(watcher.move_intent, MOVE_INTENT_WALK, "A calm prisoner kept running")
 	prison.calm_from_panic(corner)
 
 	// Loose in the cell block, it frightens everyone, however far off and out of sight.
@@ -225,7 +225,7 @@
 	TEST_ASSERT_NOTNULL(first.creature_retreat_spot, "A rioter who rolled to run did not run")
 	TEST_ASSERT(get_dist(first.creature_retreat_spot, hulk) > get_dist(first, hulk), "The rioter ran toward the hulk")
 	TEST_ASSERT(prison.in_cell_block(first.creature_retreat_spot), "The rioter ran out of the cell block")
-	TEST_ASSERT_EQUAL(first.speed, 1.3, "A running rioter moves at [first.speed], not 1.3") // OUTPOST_PANIC_FLEE_SPEED
+	TEST_ASSERT_EQUAL(first.move_intent, MOVE_INTENT_RUN, "A rioter running from the hulk is not running")
 
 	// The roll runs out, and the next one sends them at it, shiv and all.
 	first.creature_reaction_until = 0

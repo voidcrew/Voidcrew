@@ -68,10 +68,6 @@
 #define BOUNTY_PRISON_BREAKOUT_MULT_PETTY 1
 #define BOUNTY_PRISON_BREAKOUT_MULT_WANTED 1.25
 #define BOUNTY_PRISON_BREAKOUT_MULT_MOST_WANTED 1.5
-/// Multiplier on how long cuffing them takes
-#define BOUNTY_PRISON_CUFF_MULT_PETTY 1
-#define BOUNTY_PRISON_CUFF_MULT_WANTED 1
-#define BOUNTY_PRISON_CUFF_MULT_MOST_WANTED 1
 /// How much likelier a Wanted or Most Wanted prisoner who is not meek is to hit back when hit (like a grumpy one)
 #define BOUNTY_PRISON_HIT_BACK_MULT_WANTED 1.5
 #define BOUNTY_PRISON_HIT_BACK_MULT_MOST_WANTED 1.5
@@ -104,5 +100,3 @@
 #define BOUNTY_PRISON_MEEK_DART_STEP 2
 /// Steps a dart takes at most, waits for the door to swing open or for someone to get out of the way included, before they give up on it
 #define BOUNTY_PRISON_MEEK_DART_STEPS 10
-/// Their speed while loose (others keep their own, 2)
-#define BOUNTY_PRISON_MEEK_LOOSE_SPEED 1.6

@@ -71,7 +71,7 @@
 	var/mob/living/basic/outpost_experiment/hulk/hulk = allocate(/mob/living/basic/outpost_experiment/hulk, prison_spot(home, 7, 7), prison, null)
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, prison_spot(home, 8, 7))
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
-	TEST_ASSERT(cuffed.apply_cuffs(allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(cuffed, allocate(/obj/item/restraints/handcuffs)), "The prisoner could not be cuffed")
 	ADD_TRAIT(downed, TRAIT_INCAPACITATED, TRAIT_SOURCE_UNIT_TESTS)
 	prison.refresh_reach()
 	TEST_ASSERT(rioter.reachable?[get_turf(probe)], "A rioter in the yard cannot reach the turret standing in it")
@@ -327,7 +327,8 @@
 	// A rioter who gives up puts the shiv down and heads for their own cell; they are not shot
 	prison.forced_turret_reaction = "give_up" // OUTPOST_PRISON_TURRET_GIVE_UP
 	rioter.trouble = "riot" // PRISONER_TROUBLE_RIOT
-	rioter.draw_shiv()
+	rioter.cell.stash_shiv = TRUE
+	prison.draw_stashed_shiv(rioter)
 	TEST_ASSERT(rioter.has_shiv(), "The rioter has no shiv")
 	TEST_ASSERT_NULL(turret.shootAt(rioter), "The turret fired at a rioter without a warning")
 	TEST_ASSERT(rioter.surrendered_to_turret(), "A rioter who gave up did not")

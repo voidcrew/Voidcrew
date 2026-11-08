@@ -25,12 +25,11 @@
 	// An ordinary prisoner: no record, and every bounty helper neutral.
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = allocate(/mob/living/carbon/human/npc/outpost_prisoner)
 	TEST_ASSERT_NULL(prisoner.bounty_record, "An ordinary prisoner has a bounty record")
-	TEST_ASSERT_EQUAL(prisoner.bounty_damage_mult(), 1, "An ordinary prisoner's blows are scaled")
 	TEST_ASSERT_EQUAL(prisoner.bounty_mood_scale(), 1, "An ordinary prisoner's mood losses are scaled")
 	TEST_ASSERT_EQUAL(prisoner.bounty_threat_bonus(), 0, "An ordinary prisoner's threat line is moved")
 	TEST_ASSERT_EQUAL(prisoner.bounty_riot_bonus(), 0, "An ordinary prisoner's riot line is moved")
 	TEST_ASSERT_EQUAL(prisoner.bounty_breakout_mult(), 1, "An ordinary prisoner's breakout blows are scaled")
-	TEST_ASSERT_EQUAL(prisoner.bounty_cuff_mult(), 1, "Cuffing an ordinary prisoner takes longer or shorter")
+	TEST_ASSERT_EQUAL(prisoner.npc_damage_taken, 1, "An ordinary prisoner takes more or less from a blow than anyone")
 	TEST_ASSERT_NULL(bounty_experiment_refusal(prisoner), "Kessler refuses an ordinary prisoner")
 
 	// A prisoner made from a record keeps it.

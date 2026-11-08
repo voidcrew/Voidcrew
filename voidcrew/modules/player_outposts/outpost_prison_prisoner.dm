@@ -1,23 +1,26 @@
 /**
  * # Outpost prisoner
  *
- * An inmate of a player outpost's prison wing (outpost_prison_core.dm). Each prisoner owns one
- * cell, beams into it on arrival and out of it on release, and fills the time in between with the
- * routine in outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy
- * they threaten, fight, riot and escape (outpost_prison_trouble.dm, outpost_prison_riot.dm).
+ * An inmate of a player outpost's prison wing (outpost_prison_core.dm), and a real human body
+ * (voidcrew/modules/human_npcs/): they breathe, bleed, bruise, stamcrit, go into crit, die and can be
+ * revived through tg's own code, like anyone. Each prisoner owns one cell, beams into it on arrival
+ * and out of it on release, and fills the time in between with the routine in
+ * outpost_prison_routine.dm. They talk (outpost_prison_dialogue.dm), and when unhappy they threaten,
+ * fight, riot and escape (outpost_prison_trouble.dm, outpost_prison_riot.dm).
  *
  * Needs, on 0-100 scales: `hunger` falls over time and food restores it, by how good the food
- * is; `uniform_grime` rises over time, three times as fast at sport, and a cleaner prison uniform
- * resets it. Health does not come back on its own; brute medical stacks treat it. Arrivals come in
- * hungry, a third in a stained uniform and a fifth roughed up in transfer. A thought bubble with
- * the item they need shows when one needs attention, cycling when they need several. They bleed
- * when hit, and drip while badly hurt. They take supplies only from a serving hatch or from a
- * person's hand (outpost_prison_core.dm).
+ * is (the prison's own meter: human NPCs have tg's hunger off); `uniform_grime` rises over time,
+ * three times as fast at sport, shows on the real prison jumpsuit they wear, and a cleaner prison
+ * uniform resets it. Health does not come back on its own; treatment does. Arrivals come in hungry, a
+ * third in a stained uniform and a fifth roughed up in transfer (real limb damage). A thought bubble
+ * with the item they need shows when one needs attention, cycling when they need several. They take
+ * supplies only from a serving hatch or from a person's hand (outpost_prison_core.dm), into a real hand.
  *
- * Awake, they cannot be dragged onto things or boxed, and only a calm one (calm_for_pull()) can be
- * pulled, going along with it (outpost_prison_warden_tools.dm). Knocked down, in stamina crit,
- * cuffed or dead, staff can drag them; stamina crit lasts PRISONER_STAMCRIT_TIME after the last
- * hit. Cuffs and lockdown are in outpost_prison_capture.dm.
+ * Owner ruling OC-11: their jumpsuit, contraband and shivs are ordinary items, not locked to them, so
+ * they can be searched, stripped and disarmed like anyone. Awake and free they keep out of bags and
+ * lockers (a bluespace bag is a way out of the wing); down or dead they can be bagged. Anyone can
+ * pull them: a calm one goes along with it (outpost_prison_warden_tools.dm), one making trouble
+ * resists it, as anyone can. Cuffs (tg's) and lockdown are in outpost_prison_capture.dm.
  */
 
 /// Trait source for the beam holding a prisoner still

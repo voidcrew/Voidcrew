@@ -567,11 +567,16 @@
 	TEST_ASSERT_NULL(guard.change_mob_type(/mob/living/basic/mouse, delete_old_mob = TRUE), "A guard was turned into another mob")
 	TEST_ASSERT(HAS_TRAIT(guard, "no_containment"), "A guard can be shut in a locker") // TRAIT_NO_CONTAINMENT
 	TEST_ASSERT(HAS_TRAIT(guard, TRAIT_NO_STORAGE_INSERT), "A guard can be put in a bag")
-	TEST_ASSERT_EQUAL(guard.sentience_type, SENTIENCE_HUMANOID, "A sentience potion would work on a guard")
+	TEST_ASSERT(ishuman(guard), "A guard is not a real human body")
 
+	// A member of the wing may lead a guard by the arm; anyone else gets shaken off (tg's resist).
 	var/mob/living/carbon/human/owner = make_player(prison_spot(home, 11, 4), "guardrefuseowner")
-	owner.start_pulling(guard)
-	TEST_ASSERT(owner.pulling != guard, "Someone pulled a guard")
+	var/mob/living/carbon/human/stranger = make_player(prison_spot(home, 12, 4), "guardrefusestranger")
+	stranger.start_pulling(guard)
+	TEST_ASSERT_EQUAL(stranger.pulling, guard, "tg's pulling could not take hold of a guard")
+	guard.next_move = 0
+	guard.shake_off_pull()
+	TEST_ASSERT(stranger.pulling != guard, "A guard on duty let a stranger lead them about")
 	TEST_ASSERT(SEND_SIGNAL(guard, COMSIG_MOUSEDROP_ONTO, owner, owner) & COMPONENT_CANCEL_MOUSEDROP_ONTO, "A guard could be dragged onto something")
 
 	// A punch: a word and a step back, never the baton.

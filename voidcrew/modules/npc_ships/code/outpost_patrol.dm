@@ -163,7 +163,7 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
  * was doing is cancelled first; the old controller and its blackboard are deleted. Returns the new
  * controller, or null if it could not take the mob.
  */
-/proc/swap_basic_ai_controller(mob/living/basic/pawn, controller_type)
+/proc/swap_basic_ai_controller(mob/living/pawn, controller_type)
 	if(QDELETED(pawn) || !ispath(controller_type, /datum/ai_controller))
 		return null
 	var/datum/ai_controller/old_controller = pawn.ai_controller
@@ -571,16 +571,16 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
 // ===== BREAKOUT AI =====
 
 /**
- * Someone who broke out of an outpost prison. Walks the outpost's patrol path, opens or smashes the
- * doors on the way, searches lockers, and fights anyone who is not a prisoner with its own melee.
+ * Someone who broke out of an outpost prison. Walks the outpost's patrol path, opens the doors on the
+ * way that open for them, searches lockers, and fights anyone who is not a prisoner with their fists.
  * Swapped onto a prisoner with swap_basic_ai_controller(), then given a path with
  * assign_mob_to_outpost_patrol(). Without a path it wanders and still fights.
  */
 /datum/ai_controller/basic_controller/outpost_breakout
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/outpost_breakout,
-		// People are beaten down, not finished off
-		BB_TARGET_MINIMUM_STAT = SOFT_CRIT,
+		// People are beaten down, not finished off: nobody in crit is hit (defaults 1.13)
+		BB_TARGET_MINIMUM_STAT = HUMAN_NPC_SPARES_DOWNED,
 	)
 	ai_movement = /datum/ai_movement/jps
 	idle_behavior = /datum/idle_behavior/idle_random_walk
@@ -664,19 +664,16 @@ GLOBAL_LIST_EMPTY(outpost_patrol_caches)
 
 /datum/ai_behavior/attack_obstructions/trooper/include_mobs/outpost_breakout
 
-/datum/ai_behavior/attack_obstructions/trooper/include_mobs/outpost_breakout/attack_in_direction(datum/ai_controller/controller, mob/living/basic/basic_mob, direction)
-	var/turf/next_step = get_step(basic_mob, direction)
+// A runner is a real human body (outpost_prison_prisoner.dm): it throws punches at whoever is in its way
+// through its own hands, and walks round what fists can't move.
+/datum/ai_behavior/attack_obstructions/trooper/include_mobs/outpost_breakout/attack_in_direction(datum/ai_controller/controller, mob/living/runner, direction)
+	var/turf/next_step = get_step(runner, direction)
 	if(!next_step?.is_blocked_turf(exclude_mobs = FALSE, source_atom = controller.pawn))
 		return FALSE
 	for(var/mob/living/blocking_mob in next_step)
-		if(blocking_mob == basic_mob || is_outpost_breakout_ally(blocking_mob))
+		if(blocking_mob == runner || is_outpost_breakout_ally(blocking_mob))
 			continue
-		basic_mob.melee_attack(blocking_mob)
-		return TRUE
-	for(var/obj/object as anything in next_step.contents)
-		if(!can_smash_object(basic_mob, object))
-			continue
-		basic_mob.melee_attack(object)
+		controller.ai_interact(blocking_mob, combat_mode = TRUE)
 		return TRUE
 	return FALSE
 

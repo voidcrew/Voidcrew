@@ -500,30 +500,23 @@
 	TEST_ASSERT_EQUAL(wanted_record.status, "released", "A later close replaced the release") // the first close wins
 	TEST_ASSERT(!pool(wanted_record), "A released record went back into the pool")
 
-	// Danger, by tier; Petty is the ordinary baseline.
-	TEST_ASSERT_EQUAL(meek.bounty_damage_mult(), 1, "A Petty prisoner's punches are scaled") // BOUNTY_PRISON_PUNCH_MULT_PETTY
-	TEST_ASSERT_EQUAL(boss.bounty_damage_mult(), 1.5, "A Most Wanted prisoner's punches are x[boss.bounty_damage_mult()]") // BOUNTY_PRISON_PUNCH_MULT_MOST_WANTED
-	boss.update_melee()
-	TEST_ASSERT_EQUAL(boss.melee_damage_upper, 12, "A Most Wanted prisoner's punch tops out at [boss.melee_damage_upper]") // PRISONER_PUNCH_MAX x 1.5
-	boss.draw_shiv()
-	TEST_ASSERT_EQUAL(boss.bounty_damage_mult(), 1.3, "A Most Wanted prisoner's shiv is x[boss.bounty_damage_mult()]") // BOUNTY_PRISON_SHIV_MULT_MOST_WANTED
-	TEST_ASSERT(abs(boss.melee_damage_upper - 19.5) < 0.001, "A Most Wanted prisoner's shiv tops out at [boss.melee_damage_upper]") // PRISONER_SHIV_MAX x 1.3
-	qdel(boss.drop_shiv())
+	// Danger, by tier; Petty is the ordinary baseline. Their blows are a person's (PR-16); a tougher
+	// criminal takes less from one, through physiology (npc_damage_taken), never more health.
+	TEST_ASSERT_EQUAL(meek.npc_damage_taken, 1, "A Petty prisoner takes [meek.npc_damage_taken] of a blow, not all of it") // BOUNTY_PRISONER_DAMAGE_TAKEN_PETTY
+	TEST_ASSERT_EQUAL(boss.npc_damage_taken, 0.8, "A Most Wanted prisoner takes [boss.npc_damage_taken] of a blow, not 0.8") // BOUNTY_PRISONER_DAMAGE_TAKEN_MOST_WANTED
+	TEST_ASSERT_EQUAL(boss.maxHealth, meek.maxHealth, "A Most Wanted prisoner has more health than a Petty one")
 	TEST_ASSERT_EQUAL(meek.bounty_mood_scale(), 1, "A Petty prisoner's mood losses are scaled")
 	TEST_ASSERT_EQUAL(boss.bounty_mood_scale(), 1.2, "A Most Wanted prisoner's mood losses are x[boss.bounty_mood_scale()]") // BOUNTY_PRISON_MOOD_SCALE_MOST_WANTED
 	TEST_ASSERT(abs(boss.mood_scale() - 1.4 * 1.2) < 0.001, "A grumpy Most Wanted prisoner's mood scale is [boss.mood_scale()]") // grumpy 1.4
 	TEST_ASSERT_EQUAL(meek.bounty_riot_bonus(), 0, "A Petty prisoner's riot line moved")
 	TEST_ASSERT_EQUAL(prison.riot_join_bonus(boss), 10, "A Most Wanted prisoner's riot line moved [prison.riot_join_bonus(boss)]") // BOUNTY_PRISON_RIOT_BONUS_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_breakout_mult(), 1.5, "A Most Wanted prisoner hits the doors x[boss.bounty_breakout_mult()]") // BOUNTY_PRISON_BREAKOUT_MULT_MOST_WANTED
-	TEST_ASSERT_EQUAL(boss.bounty_cuff_mult(), 1, "Cuffing a Most Wanted prisoner takes longer") // BOUNTY_PRISON_CUFF_MULT_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_threat_bonus(), 0, "A Most Wanted prisoner's threat line moved") // BOUNTY_PRISON_THREAT_BONUS_MOST_WANTED
 	TEST_ASSERT_EQUAL(prison.threat_mood_ceiling(boss), prison.threat_mood_ceiling(), "The threat ceiling moved for a Most Wanted prisoner")
 	TEST_ASSERT_EQUAL(boss.bounty_hit_back_mult(), 1.5, "A Most Wanted prisoner hits back x[boss.bounty_hit_back_mult()]") // BOUNTY_PRISON_HIT_BACK_MULT_MOST_WANTED
 	TEST_ASSERT_EQUAL(boss.bounty_snap_weight_mult(), 2, "A Most Wanted ringleader's snap weight is x[boss.bounty_snap_weight_mult()]") // BOUNTY_PRISON_RINGLEADER_SNAP_MULT
 	TEST_ASSERT_EQUAL(meek.bounty_back_off_mult(), 2, "A meek prisoner backs off x[meek.bounty_back_off_mult()]") // BOUNTY_PRISON_MEEK_BACK_OFF_MULT
 	TEST_ASSERT_EQUAL(meek.bounty_hit_back_mult(), 1, "A meek prisoner hits back harder")
-	TEST_ASSERT_EQUAL(meek.bounty_loose_speed(), 1.6, "A meek prisoner runs loose at [meek.bounty_loose_speed()]") // BOUNTY_PRISON_MEEK_LOOSE_SPEED
-	TEST_ASSERT_NULL(boss.bounty_loose_speed(), "A Most Wanted prisoner runs loose faster")
 	TEST_ASSERT_EQUAL(ordinary.bounty_back_off_mult(), 1, "An ordinary prisoner backs off more")
 
 	// Hitting back or backing off when a player hits them (hit_reaction()), at mood 50 for a quiet prisoner.
@@ -722,10 +715,9 @@
 	TEST_ASSERT(meek.loc != get_turf(staff_door), "The dart left them standing in the doorway")
 	TEST_ASSERT_EQUAL(meek.trouble, "loose", "A prisoner who slipped out of the cell block is [meek.trouble || "not in trouble"]") // PRISONER_TROUBLE_LOOSE
 	TEST_ASSERT(meek.activity != watch, "The watch went on after they got out")
-	TEST_ASSERT_EQUAL(meek.speed, 1.6, "A loose meek prisoner runs at [meek.speed]") // BOUNTY_PRISON_MEEK_LOOSE_SPEED
-	TEST_ASSERT_EQUAL(meek.obj_damage, 25, "A loose Petty prisoner does [meek.obj_damage] damage to things") // PRISONER_LOOSE_OBJ_DAMAGE x 1
+	TEST_ASSERT_EQUAL(meek.move_intent, MOVE_INTENT_RUN, "A loose prisoner is not running")
 	prison.recapture(meek)
-	TEST_ASSERT_EQUAL(meek.speed, 2, "A recaptured meek prisoner still runs at [meek.speed]") // their own speed
+	TEST_ASSERT_EQUAL(meek.move_intent, MOVE_INTENT_WALK, "A recaptured prisoner is still running")
 	staff_door.close()
 	prison.prison_bounty_forced_dart = null
 	prison.crew_home_override = null
@@ -1165,7 +1157,7 @@
 	// Uncuffed there is nothing to slip; just cuffed, not yet.
 	TEST_ASSERT(!move.try_start(), "An uncuffed ghost slipped out of cuffs")
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
-	TEST_ASSERT(ghost.apply_cuffs(cuffs), "The ghost could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, cuffs), "The ghost could not be cuffed")
 	move.observe(ghost)
 	TEST_ASSERT(!move.try_start(), "The ghost started on the cuffs the moment they went on")
 	move.cuffed_at = world.time - 10 SECONDS
@@ -1178,11 +1170,11 @@
 
 	// Working at them first; a knockdown stops it, the cuffs still on.
 	TEST_ASSERT(move.try_start(), "A cuffed rioting ghost did not work at the cuffs")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "The cuffs came off before the ghost finished working at them")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "The cuffs came off before the ghost finished working at them")
 	ghost.Knockdown(2 SECONDS)
 	TEST_ASSERT(!move.watch_windup(move.pending_serial), "Knocking the ghost down did not stop the work on the cuffs")
 	TEST_ASSERT(!move.pending_serial, "The work on the cuffs went on after a knockdown")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "A knocked-down ghost got out of the cuffs")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "A knocked-down ghost got out of the cuffs")
 	ghost.SetKnockdown(0)
 
 	// Being dragged stops it too.
@@ -1192,7 +1184,7 @@
 	warden.start_pulling(ghost)
 	TEST_ASSERT(ghost.pulledby == warden, "The warden could not drag the cuffed ghost")
 	TEST_ASSERT(!move.watch_windup(move.pending_serial), "Dragging the ghost did not stop the work on the cuffs")
-	TEST_ASSERT_EQUAL(ghost.cuffs, cuffs, "A dragged ghost got out of the cuffs")
+	TEST_ASSERT_EQUAL(ghost.handcuffed, cuffs, "A dragged ghost got out of the cuffs")
 	warden.stop_pulling()
 	warden.forceMove(prison_spot(home, 10, 9))
 
@@ -1200,7 +1192,7 @@
 	move.ready_at = 0
 	TEST_ASSERT(move.try_start(), "The ghost did not try the cuffs a third time")
 	TEST_ASSERT(move.finish_windup(move.pending_serial), "The ghost never got out of the cuffs")
-	TEST_ASSERT_NULL(ghost.cuffs, "The ghost is still cuffed")
+	TEST_ASSERT_NULL(ghost.handcuffed, "The ghost is still cuffed")
 	TEST_ASSERT(!QDELETED(cuffs) && cuffs.loc == ghost.loc, "The cuffs are not on the floor at the ghost's feet ([cuffs?.loc])")
 	var/cuffs_there = 0
 	for(var/obj/item/restraints/handcuffs/pair in ghost.loc)
@@ -1216,7 +1208,7 @@
 	TEST_ASSERT(!ghost.has_status_effect(/datum/status_effect/prison_boss_shimmer), "A hit that landed did not break the shimmer")
 
 	// Once a riot.
-	TEST_ASSERT(ghost.apply_cuffs(cuffs), "The ghost could not be cuffed again")
+	TEST_ASSERT(outpost_prison_test_cuff(ghost, cuffs), "The ghost could not be cuffed again")
 	move.observe(ghost)
 	move.cuffed_at = world.time - 10 SECONDS
 	move.ready_at = 0
@@ -1321,7 +1313,7 @@
 	prison.admin_calm()
 	prison.set_subdued(0)
 	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
-	TEST_ASSERT(kingpin.apply_cuffs(cuffs), "The kingpin could not be cuffed")
+	TEST_ASSERT(outpost_prison_test_cuff(kingpin, cuffs), "The kingpin could not be cuffed")
 	set_word_moods(kingpin, rioter, fence, content)
 	TEST_ASSERT(prison.start_riot("test"), "The riot with the kingpin cuffed did not start")
 	TEST_ASSERT_NULL(fence.trouble, "A prisoner on the fence joined with the kingpin cuffed")

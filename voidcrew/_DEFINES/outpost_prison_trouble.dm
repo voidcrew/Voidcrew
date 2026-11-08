@@ -201,8 +201,6 @@
 #define PRISON_LOOSE_PING_2 60
 /// Mood of a recaptured prisoner
 #define PRISONER_RECAPTURED_MOOD 35
-/// Damage a loose prisoner does to doors and machines per blow (normal airlocks shrug off under 21)
-#define PRISONER_LOOSE_OBJ_DAMAGE 25
 
 // Lock-in
 /// Confined this many seconds at mood PRISONER_WRECK_MOOD or less, a prisoner wrecks the cell; the bolts shear PRISONER_WRECK_TIME seconds later
@@ -211,8 +209,7 @@
 #define PRISONER_WRECK_TIME 180
 
 // Cuffs (outpost_prison_capture.dm)
-/// Seconds cuffing takes: a prisoner who is down, and one on their feet and out of trouble
-#define PRISONER_CUFF_TIME_DOWN (2 SECONDS)
+/// How long a prisoner holds still for tg's cuffing (its handcuffs take 4 seconds)
 #define PRISONER_CUFF_TIME_STANDING (4 SECONDS)
 /// Seconds taking the cuffs off takes
 #define PRISONER_UNCUFF_TIME (2 SECONDS)

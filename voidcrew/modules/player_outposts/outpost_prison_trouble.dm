@@ -601,8 +601,9 @@
 /mob/living/carbon/human/npc/outpost_prisoner/proc/beaten_tick()
 	if(yielded_until && world.time >= yielded_until)
 		yielded_until = 0
+		// Getting up takes a moment, as it does for anyone (tg's get_up() do_after); not in the prison's tick.
 		if(resting && stat == CONSCIOUS)
-			set_resting(FALSE, silent = TRUE)
+			INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living, set_resting), FALSE, TRUE)
 	if(beaten && stat == CONSCIOUS && !is_down() && !yielded_until)
 		recover()
 

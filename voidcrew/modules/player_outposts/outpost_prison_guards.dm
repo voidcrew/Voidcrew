@@ -109,8 +109,10 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	RegisterSignal(src, COMSIG_MOVABLE_TELEPORTING, PROC_REF(refuse_teleport))
 	RegisterSignal(src, COMSIG_LIVING_PRE_WABBAJACKED, PROC_REF(refuse_polymorph))
 	RegisterSignal(src, COMSIG_PRE_MOB_CHANGED_TYPE, PROC_REF(refuse_type_change))
+	RegisterSignal(src, COMSIG_MOUSEDROP_ONTO, PROC_REF(block_being_dragged))
+	// On their feet nobody boxes or bags them; down or dead they are a body like anyone's (set_guard_upright()).
 	// Anyone can drag a guard who is down. A guard on their feet shakes off anyone but the wing's members (guards_tick()).
-	ADD_TRAIT(src, TRAIT_NO_STORAGE_INSERT, INNATE_TRAIT)
+	set_guard_upright(TRUE)
 	set_prison_pace(hurry = FALSE)
 
 /mob/living/carbon/human/npc/outpost_prison_guard/Destroy()
@@ -192,6 +194,18 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	SIGNAL_HANDLER
 	return COMPONENT_BLOCK_MOB_CHANGE
 
+/// On their feet they refuse lockers and bags; down or dead, a body can be bagged like anyone's
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/set_guard_upright(upright)
+	if(upright)
+		add_traits(list(TRAIT_NO_CONTAINMENT, TRAIT_NO_STORAGE_INSERT), OUTPOST_GUARD_UPRIGHT_TRAIT)
+	else
+		remove_traits(list(TRAIT_NO_CONTAINMENT, TRAIT_NO_STORAGE_INSERT), OUTPOST_GUARD_UPRIGHT_TRAIT)
+
+/// Not dragged onto things while on their feet
+/mob/living/carbon/human/npc/outpost_prison_guard/proc/block_being_dragged(atom/over, mob/user)
+	SIGNAL_HANDLER
+	return stat == CONSCIOUS && phase == OUTPOST_GUARD_PRESENT ? COMPONENT_CANCEL_MOUSEDROP_ONTO : NONE
+
 /// On their feet, a guard won't be led about by anyone but the wing's members: they resist it, as anyone resists a pull
 /mob/living/carbon/human/npc/outpost_prison_guard/proc/shake_off_pull()
 	if(!pulledby || !on_duty() || world.time < next_move)
@@ -218,6 +232,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	phase = OUTPOST_GUARD_PRESENT
 	down_left = 0
 	down_since = 0
+	set_guard_upright(TRUE)
 	prison?.add_log("[real_name] is back on [p_their()] feet.")
 
 /// The prison's guards speak from their own file (say_guard()); a few of tg's changes map onto their lines.
@@ -233,6 +248,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	if(!was_alive || stat != DEAD)
 		return
 	died_on_duty = TRUE
+	set_guard_upright(FALSE)
 	if(phase == OUTPOST_GUARD_LEAVING || !prison)
 		return
 	end_response()
@@ -256,6 +272,7 @@ GLOBAL_LIST_INIT(outpost_guard_placeholders, list("{boss}", "{count}", "{cause}"
 	end_response()
 	end_activity()
 	baton_out = FALSE
+	set_guard_upright(FALSE)
 	down_since = world.time
 	down_left = was_leaving ? 0 : OUTPOST_GUARD_RECALL_DELAY / (1 SECONDS)
 	visible_message(span_danger("[src] goes down!"))
