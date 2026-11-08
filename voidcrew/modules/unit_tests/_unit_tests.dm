@@ -108,6 +108,7 @@
 #include "voidcrew_mission_console_rewards.dm"
 #include "voidcrew_mission_gps.dm"
 #include "voidcrew_mission_metrics.dm"
+#include "voidcrew_mission_spawn_cover.dm"
 #include "voidcrew_missions.dm"
 #include "voidcrew_nanite_research.dm"
 #include "voidcrew_npc_boarding_docking.dm"

@@ -7292,6 +7292,8 @@
 #include "voidcrew\modules\missions\mission_pad.dm"
 #include "voidcrew\modules\missions\mission_target.dm"
 #include "voidcrew\modules\missions\player_bounty.dm"
+#include "voidcrew\modules\missions\site_dressing.dm"
+#include "voidcrew\modules\missions\spawn_cover.dm"
 #include "voidcrew\modules\missions\code\controllers\subsystem\missions.dm"
 #include "voidcrew\modules\missions\missions\big_game_hunt.dm"
 #include "voidcrew\modules\missions\missions\delivery.dm"
