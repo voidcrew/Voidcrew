@@ -376,6 +376,11 @@
 
 // The swinger's lunge stays; only the picture over the target changes.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
+	// The arm swings the blade (mantis_gore/mantis_swing.dm), and the impact waits for its strike. The swing is the
+	// picture on its own where there is no impact (a wall), never tg's flying blade beside it.
+	if(mantis_play_swing(attacker, attacked_atom))
+		mantis_swing_impact(attacker, attacked_atom)
+		return
 	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
 		return ..()
 

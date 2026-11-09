@@ -223,7 +223,7 @@
 	)
 	if(!QDELETED(victim))
 		victim.set_staggered_if_lower(MANTIS_XSLASH_STAGGER)
-	mantis_xslash_fx(user, victim, impact_state)
+	mantis_xslash_cross(user, victim, off_blade)
 	log_combat(user, victim, "x-slashed", src)
 
 // =========================================================================

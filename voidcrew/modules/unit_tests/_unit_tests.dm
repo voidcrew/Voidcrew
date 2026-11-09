@@ -126,6 +126,7 @@
 #include "voidcrew_linda_space_share.dm"
 #include "voidcrew_loot.dm"
 #include "voidcrew_mantis_gore.dm"
+#include "voidcrew_mantis_swing.dm"
 #include "voidcrew_map_packing.dm"
 #include "voidcrew_mapload_floor_dir.dm"
 #include "voidcrew_medical_research_links.dm"
