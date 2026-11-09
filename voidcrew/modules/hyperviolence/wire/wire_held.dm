@@ -257,12 +257,20 @@
  * A landed swing: the wire lashes from the hand holding it to the part of `target` it cut (`zone`, else the part the
  * wielder aimed at), one thin line in its own colour that fades out over half a second. A single stretched line, not
  * tg's Beam(): a beam's full-tile segments are drawn over a body facing away whatever layer they are given, and this
- * one must pass behind it from a hidden hand. A body nearer the viewer than the wielder (on a lower row) hides the
- * end of the line, which meets it on the far side.
+ * one must pass behind it from a hidden hand. `end_shift` (x, y) moves where it lands, in pixels; else the shift a
+ * crossing cut left for this wire (wire_cross_lash()).
+ *
+ * A body nearer the viewer than the wielder (on a lower row) is met on its far side, so the line goes in two pieces:
+ * from the hand to the foot of the wielder's tile, drawn over the wielder like any hand in front, and from there on
+ * the target's tile under the target. The map draws a lower row over a higher one whatever the layer, but a line
+ * hanging over the edge of its tile counts as on both.
  */
-/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone)
+/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone, list/end_shift)
 	var/turf/from = get_turf(user)
 	var/turf/hit = get_turf(target)
+	if(!end_shift)
+		end_shift = lash_end_shift
+	lash_end_shift = null
 	if(!from || !hit || from == hit || from.z != hit.z)
 		return
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
@@ -274,14 +282,42 @@
 		var/list/part = wire_zone_point(target, zone || check_zone(user.zone_selected))
 		end_x = part[1]
 		end_y = part[2]
-	var/span_x = (hit.x - from.x) * ICON_SIZE_X + end_x - hand_x
-	var/span_y = (hit.y - from.y) * ICON_SIZE_Y + end_y - hand_y
-	var/obj/effect/abstract/wire_reach/lash = new(from)
+	if(length(end_shift) >= 2)
+		end_x += end_shift[1]
+		end_y += end_shift[2]
+	var/tile_x = (hit.x - from.x) * ICON_SIZE_X
+	var/tile_y = (hit.y - from.y) * ICON_SIZE_Y
+	var/span_x = tile_x + end_x - hand_x
+	var/span_y = tile_y + end_y - hand_y
+	var/hand_layer = wire_line_layer(hand[3])
+	if(hit.y >= from.y)
+		// Hanging over its tile's edges on purpose: over the target beside the wielder, as a hand in front would be.
+		wire_line_piece(from, hand_x, hand_y, span_x, span_y, hand_layer, on_tile = FALSE)
+		return
+	// Where the line leaves the foot of the wielder's tile.
+	var/edge_y = -ICON_SIZE_Y / 2
+	var/edge_x = hand_x + span_x * (hand_y - edge_y) / max(hand_y - (tile_y + end_y), 1)
+	wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, hand_layer)
+	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, end_x - (edge_x - tile_x), end_y - (edge_y - tile_y), BELOW_MOB_LAYER)
+
+/**
+ * One straight piece of a lash on `where`: from (`start_x`, `start_y`) pixels off the middle of that tile, running
+ * (`span_x`, `span_y`), at world `line_layer`; it fades out with the rest of the lash. `on_tile` shifts it with
+ * pixel_w/pixel_z, which only move the picture, so it keeps to its own tile in the map's front-to-back order.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, on_tile = TRUE)
+	if(!where || (abs(span_x) < 1 && abs(span_y) < 1))
+		return
+	var/obj/effect/abstract/wire_reach/lash = new(where)
 	lash.icon_state = lash_state()
-	lash.layer = hit.y < from.y ? BELOW_MOB_LAYER : wire_line_layer(hand[3])
+	lash.layer = line_layer
 	lash.add_overlay(emissive_appearance(lash.icon, lash.icon_state, lash))
-	lash.pixel_x = hand_x
-	lash.pixel_y = hand_y
+	if(on_tile)
+		lash.pixel_w = start_x
+		lash.pixel_z = start_y
+	else
+		lash.pixel_x = start_x
+		lash.pixel_y = start_y
 	lash.transform = wire_reach_shape(span_x, span_y)
 	animate(lash, alpha = 0, time = 0.5 SECONDS, easing = QUAD_EASING | EASE_IN)
 	QDEL_IN(lash, 0.5 SECONDS)
@@ -360,6 +396,9 @@
 		var/reach = 14 + ((i * 5) % WIRE_FLICK_DROPS) * 5
 		var/land_x = start_x + forward_x * reach + (forward_x ? (i % 3 - 1) * 3 : spread)
 		var/land_y = start_y + forward_y * reach + (forward_x ? (i % 2 ? -2 : 3) : (i % 3 - 1) * 2)
+		// Facing away, the middle drops land past the head, not on the floor drawn just above it.
+		if(forward_y > 0 && abs(spread) < 8)
+			land_y = max(land_y, 26)
 		var/height = 6 + (i % 3) * 3
 		var/flight = round(2 + reach / 12, 0.5)
 		. += list(list(start_x, start_y, land_x, land_y, height, flight))
@@ -384,6 +423,10 @@
 	var/crack = length(drop) >= 7 ? drop[7] : 0.5
 	duration = crack + flight
 	. = ..()
+	// Thrown away from the viewer, it flies behind whoever it leaves, not over their head. An 8th entry says so outright,
+	// for drops that leave from above the floor; else it is read from where it lands.
+	if(length(drop) >= 8 ? drop[8] : (land_y > start_y + 2))
+		layer = BELOW_MOB_LAYER
 	color = blood_color
 	pixel_x = start_x
 	pixel_y = start_y
@@ -409,8 +452,7 @@
 	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(landing, null, blood_dna)
 	if(QDELETED(drop))
 		return
-	drop.pixel_x = land_x - tile_x * 32
-	drop.pixel_y = land_y - tile_y * 32
+	drop.wire_place(land_x - tile_x * 32, land_y - tile_y * 32)
 
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/Extend(obj/item/augment)
 	. = ..()
@@ -433,3 +475,11 @@
 /// A drop of the fan. Each stays where it fell instead of pooling with the others on its tile; a fan is a handful.
 /obj/effect/decal/cleanable/blood/drip/wire_flick
 	mergeable_decal = FALSE
+
+/// Puts the drop's blood, not its picture, at (`x`, `y`) pixels off the middle of its tile: each of tg's drop
+/// pictures sits off the middle its own way, by up to eight pixels.
+/obj/effect/decal/cleanable/blood/drip/wire_flick/proc/wire_place(x, y)
+	var/static/list/offsets = list("drip1" = list(-2, 0), "drip2" = list(4, -1), "drip3" = list(6, -5), "drip4" = list(1, -8), "drip5" = list(-6, -6))
+	var/list/offset = offsets[icon_state] || list(0, 0)
+	pixel_x = x - offset[1]
+	pixel_y = y - offset[2]

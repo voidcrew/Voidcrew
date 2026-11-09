@@ -203,7 +203,8 @@
 		qdel(old_lash)
 	cut(user, victim, BODY_ZONE_L_ARM)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The crossing cut didn't take an arm at 30%")
-	// The other hand's wire lashes out too; nothing is drawn over the target.
+	// The other hand's wire lashes out too, a beat later; nothing is drawn over the target.
+	sleep(0.2 SECONDS)
 	TEST_ASSERT(locate(/obj/effect/abstract/wire_reach) in get_turf(user), "The crossing cut didn't lash the other wire")
 	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in victim.vis_contents), "The crossing cut drew over its target")
 	TEST_ASSERT_EQUAL(user.wire_cross_hits, 0, "The count didn't start again after the crossing cut")

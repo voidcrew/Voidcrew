@@ -33,6 +33,8 @@
 	var/force_cross = FALSE
 	/// The body zone the last landed cut went into, for the lash drawn after the hit (wire_lash_at()).
 	var/lash_zone
+	/// Where the next lash lands off its usual point, list(x, y) in pixels: a crossing cut parts the two lines.
+	var/list/lash_end_shift
 
 /mob/living
 	/// Landed Widowline hits in a row with a wire out in each hand, and when the last one landed.
@@ -74,8 +76,11 @@
 	var/cross = wire_count_landed(user)
 	if(cross)
 		wire_cross_lash(user, source)
-	wire_bloody(source, def_zone)
-	wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross)
+	if(wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross))
+		// The cut shows when the limb slides off (wire_sever_fx.dm), and the wire comes away wet then too.
+		addtimer(CALLBACK(src, PROC_REF(wire_bloody), source), WIRE_CUT_DELAY)
+	else
+		wire_bloody(source, def_zone)
 	wire_cleave(source, user)
 
 // ---- The crossing cut ----
@@ -111,13 +116,36 @@
 	user.wire_cross_hits = 0
 	return TRUE
 
-/// The crossing cut: the other hand's wire lashes into the target beside this one's.
+/// The other wire's lash in a crossing cut follows this wire's by this much.
+#define WIRE_CROSS_LASH_LAG (0.1 SECONDS)
+/// Pixels each crossing lash lands off the cut, one each way.
+#define WIRE_CROSS_PART 5
+
+/**
+ * The crossing cut: the other hand's wire lashes into the target beside this one's, a beat after it. Seen side on
+ * the hands are a few pixels apart, so the two lines land apart too, each on its own hand's side: two lines, not one.
+ */
 /obj/item/melee/cyberware_monowire/proc/wire_cross_lash(mob/living/swinger, mob/living/target)
 	swinger.mob_light(2, 1, cross_light_color(), 0.3 SECONDS)
+	var/list/own_hand = wire_hand_point(swinger, held_side(swinger) || "right")
 	for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
-		if(other != src)
-			other.wire_lash_at(swinger, target, lash_zone)
+		if(other == src)
+			continue
+		var/list/other_hand = wire_hand_point(swinger, other.held_side(swinger) || "left")
+		var/list/shift = wire_cross_shift(own_hand, other_hand)
+		lash_end_shift = shift
+		addtimer(CALLBACK(other, PROC_REF(wire_lash_at), swinger, target, lash_zone, list(-shift[1], -shift[2])), WIRE_CROSS_LASH_LAG)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
+
+/// How far from the cut the lash from `hand` lands, list(x, y), when the other hand's lash (from `other_hand`) lands as
+/// far the other way: apart the way the hands are apart, more along the line between them that is shorter.
+/proc/wire_cross_shift(list/hand, list/other_hand)
+	var/dx = hand[1] - other_hand[1]
+	var/dy = hand[2] - other_hand[2]
+	// Side by side (a body facing toward or away): the lines already meet in a V.
+	if(abs(dx) > 8)
+		return list(0, 0)
+	return list(0, dy >= 0 ? WIRE_CROSS_PART : -WIRE_CROSS_PART)
 
 /obj/item/melee/cyberware_monowire/proc/cross_light_color()
 	return "#ff8cf8"
@@ -194,7 +222,10 @@
 		LAZYSET(victim.hv_stump_burnt, zone, TRUE)
 	// tg pulls the shoes off a leg that comes off; they go with the leg.
 	var/obj/item/shoes = (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG) && ishuman(victim) ? victim.get_item_by_slot(ITEM_SLOT_FEET) : null
-	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, !seared)
+	// No blood on the floor yet: it starts when the limb slides off (wire_ghost/slide()).
+	ADD_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
+	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, splatter = FALSE)
+	REMOVE_TRAIT(victim, TRAIT_HV_CLEAN_CUT, "wire_sever")
 	if(!severed)
 		LAZYREMOVE(victim.hv_stump_reveal_at, zone)
 		LAZYREMOVE(victim.hv_stump_burnt, zone)
@@ -202,6 +233,8 @@
 		return null
 	if(seared)
 		severed.wire_char()
+	else
+		severed.wire_clean_look()
 	ghost?.hold_severed(severed)
 	if(shoes)
 		ghost?.hold_shoes(shoes)
@@ -266,3 +299,6 @@
 	nearby.hv_wire_owed_sever = null
 	if(owed?.owner == nearby && wire_can_sever(owed, user, corpse = FALSE))
 		wire_sever(owed, user, get_dir(user, nearby), FALSE)
+
+#undef WIRE_CROSS_LASH_LAG
+#undef WIRE_CROSS_PART

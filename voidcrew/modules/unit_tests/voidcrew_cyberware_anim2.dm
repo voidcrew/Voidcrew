@@ -313,16 +313,12 @@
 		TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "[wire_type] drew an impact over its target")
 		TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "[wire_type] drew tg's flying spool")
 
-	// Its shock is a crackle along the wire, never a lightning bolt from the wielder.
+	// Its shock is a small crackle where the wire touched: never a bolt from the wielder, nor sparks thrown about.
 	var/obj/item/melee/cyberware_monowire/live/arc = wire
 	arc.arc_visuals(east, west)
-	var/list/drawn = list()
-	for(var/obj/effect/ebeam/segment in get_turf(west))
-		for(var/obj/effect/ebeam/look in segment.vis_contents)
-			drawn += look.icon_state
-	TEST_ASSERT(("arc_crackle" in drawn), "The Arc's shock drew no crackle along the wire")
-	for(var/state in drawn)
-		TEST_ASSERT(!findtext(state, "lightning"), "The Arc's shock drew a lightning bolt")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/cyberware_arc_crackle) in get_turf(east), "The Arc's shock drew no crackle where it touched")
+	TEST_ASSERT(!(locate(/obj/effect/ebeam) in get_turf(west)), "The Arc's shock drew a beam from the wielder")
+	TEST_ASSERT(!(locate(/obj/effect/particle_effect/sparks) in range(1, east)), "The Arc's shock threw sparks")
 
 	// A Scorch cut throws embers but draws nothing over the blade's own slash.
 	cyberware_scorch_trail_fx(west, east)
