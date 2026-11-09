@@ -129,6 +129,9 @@
 	wildcard_reset(prison)
 
 	// Rivals are picked first, and a shiv under the mattress makes its owner likelier to be the one.
+	// The incidents rolled above may have been fights, and each fight leaves a pair on worse terms
+	// (PRISON_AFFINITY_FIGHT -20; rivals from -25): two make the first two rivals too, so they start even.
+	prison.set_affinity(first, second, 0)
 	var/mob/living/carbon/human/npc/outpost_prisoner/third = trouble_prisoner(prison, prison_spot(home, 11, 8))
 	prison.refresh_reach()
 	prison.set_affinity(first, third, -100)
