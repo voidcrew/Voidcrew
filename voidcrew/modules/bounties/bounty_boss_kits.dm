@@ -15,9 +15,10 @@
  *   tables, chairs and plain windows and tearing through an interior wall; running into anything else
  *   hurts it and knocks it down, as running into a wall does anyone (CB-6). Slams the floor around it
  *   when someone is close. Fights with its shield and its free fist.
- * - Pyromaniac: a real firefighter suit and helmet (tg's thermal protection, CB-7) and a lit torch.
- *   Sweeps a cone of fire and throws molotovs that leave a burning patch; whoever it catches burns with
- *   tg's fire stacks (CB-8). Shot with a disabler, it goes for the shooter until its flamer reaches
+ * - Pyromaniac: a real firefighter suit and helmet (tg's thermal protection, CB-7), a gas mask, a real
+ *   flamethrower with a plasma tank and a molotov in hand. Sweeps a line of real flamethrower fire (tg's
+ *   plasma fire, until its tank runs low) and throws molotovs that leave a burning patch; whoever it catches
+ *   burns with tg's fire stacks (CB-8). Its mask keeps its own smoke out of its lungs. Shot with a disabler, it goes for the shooter until its flamer reaches
  *   them (C8: keep your distance and keep moving). Shot from past its flamer's reach, it pulls the pin
  *   on one of its two real smoke grenades and throws it halfway to the shooter, then comes through the
  *   cloud to where the shots came from (C9: back out of the smoke, flank it, or see through it).
@@ -375,7 +376,7 @@
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac
 	name = "scorched criminal"
-	desc = "A criminal in a blackened fire suit, with a lit torch in hand."
+	desc = "A criminal in a blackened fire suit and a gas mask, a flamethrower in one hand and a bottle in the other."
 	boss_kit = BOUNTY_KIT_PYROMANIAC
 	npc_combat_sense = /datum/npc_combat_sense/bounty/boss/pyromaniac
 	boss_ability_types = list(
@@ -416,6 +417,31 @@
 	if(suffix == "ability" && istype(boss_winding(), /datum/action/cooldown/mob_cooldown/bounty_boss/smoke))
 		return ..("smoke", "ability")
 	return ..()
+
+/// The flamethrower it holds, or null
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_flamethrower()
+	return locate(/obj/item/flamethrower) in held_items
+
+/// Whether `flamer` has the igniter and the plasma for a sweep
+/proc/bounty_pyro_flamer_fuelled(obj/item/flamethrower/flamer)
+	if(QDELETED(flamer) || !flamer.igniter || !flamer.status || QDELETED(flamer.ptank))
+		return FALSE
+	var/datum/gas_mixture/tank_air = flamer.ptank.return_air()
+	return tank_air?.return_pressure() >= BOUNTY_PYROMANIAC_FLAMER_EMPTY
+
+/// The molotov it carries, in hand or in its bag, or null
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_molotov()
+	for(var/obj/item/reagent_containers/cup/glass/bottle/molotov/bottle in get_all_contents_type(/obj/item/reagent_containers/cup/glass/bottle/molotov))
+		if(is_holding(bottle) || human_npc_can_draw(src, bottle))
+			return bottle
+	return null
+
+/// Whether it has a hand for a grenade: one free, or its bottle can go back in its bag
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_hand_for_grenade()
+	if(length(get_empty_held_indexes()))
+		return TRUE
+	var/obj/item/bottle = locate(/obj/item/reagent_containers/cup/glass/bottle/molotov) in held_items
+	return !isnull(bottle) && !!back?.atom_storage?.can_insert(bottle, src, messages = FALSE)
 
 /// A smoke grenade it carries with the pin still in, in hand or where it can draw it from
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_smoke_grenade()
@@ -464,58 +490,107 @@
 			return SUBTREE_RETURN_FINISH_PLANNING
 	return ..()
 
-// The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7). The torch
-// doesn't holster, so it is in hand from the start. A smoke grenade in each pocket (C9).
+// The firefighter suit and helmet are what keep its own fire off it (tg's thermal protection, CB-7); the gas
+// mask keeps smoke out of its lungs. The flamethrower doesn't holster, so it is in hand from the start, the
+// bottle in the other. A smoke grenade in each pocket (C9).
 /datum/outfit/bounty_boss/pyromaniac
 	name = "Bounty mini-boss: Pyromaniac"
 	uniform = /obj/item/clothing/under/color/black
 	suit = /obj/item/clothing/suit/utility/fire/firefighter
 	head = /obj/item/clothing/head/utility/hardhat/red
+	mask = /obj/item/clothing/mask/gas
 	gloves = /obj/item/clothing/gloves/color/black
 	shoes = /obj/item/clothing/shoes/workboots
-	r_hand = BOUNTY_PYROMANIAC_TORCH
+	r_hand = BOUNTY_PYROMANIAC_FLAMETHROWER
+	l_hand = BOUNTY_PYROMANIAC_MOLOTOV_BOTTLE
 	l_pocket = BOUNTY_PYROMANIAC_SMOKE
 	r_pocket = BOUNTY_PYROMANIAC_SMOKE
 
+/// The Pyromaniac's flamethrower: tg's, built and fuelled. It is a kit item, so lighting it is no news for admins.
+/obj/item/flamethrower/full/tank/bounty_boss
+	warned_admins = TRUE
+
+/// The Pyromaniac's bottle: tg's molotov, filled with welding fuel
+/obj/item/reagent_containers/cup/glass/bottle/molotov/bounty_boss
+	list_reagents = list(/datum/reagent/fuel = 50)
+
 /**
- * Flamer: the pilot light hisses and an orange cone shows on the floor, then a jet of fire sweeps
- * it. Everyone it catches in the cone takes BOUNTY_PYROMANIAC_FLAMER_DAMAGE burn and catches fire
- * (tg's fire stacks); the floor burns on for BOUNTY_PYROMANIAC_FLAMER_FLOOR.
+ * Flamer: it lights its flamethrower and an orange line shows on the floor, then it pulls the trigger
+ * on the end of that line, as a player clicks (ai_interact()). The fire is the flamethrower's own: plasma
+ * from its tank lit along the line, tg's fire, which sets alight whoever stands in it. Once its tank runs
+ * low (BOUNTY_PYROMANIAC_FLAMER_EMPTY) it stops using it, and a shot can burst the tank (tg's
+ * flamethrower). It shuts the valve after each sweep.
  */
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer
 	name = "Flamer"
-	desc = "Sweep a cone of fire in front of you."
+	desc = "Sweep a line of fire in front of you."
 	cooldown_time = BOUNTY_PYROMANIAC_FLAMER_COOLDOWN
 	windup = BOUNTY_PYROMANIAC_FLAMER_WINDUP
-	/// The tiles it will cover, from the telegraph
-	var/list/cone
+	/// The tile it fires at, from the telegraph: the far end of the lit line
+	var/turf/aim_turf
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/Destroy()
-	cone = null
+	aim_turf = null
 	return ..()
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/worth_using(atom/target)
-	return aimable(target) && get_dist(owner, target) <= BOUNTY_PYROMANIAC_FLAMER_RANGE && can_see(owner, target, BOUNTY_PYROMANIAC_FLAMER_RANGE) && landing_ok(target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	if(!istype(boss) || !aimable(target) || !bounty_pyro_flamer_fuelled(boss.boss_flamethrower()))
+		return FALSE
+	return get_dist(owner, target) <= BOUNTY_PYROMANIAC_FLAMER_RANGE && can_see(owner, target, BOUNTY_PYROMANIAC_FLAMER_RANGE) && landing_ok(target) && !human_npc_ally_in_line(boss, target) && length(line_turfs(target))
+
+/// The line its fire runs from it to `target`, as far as its fire may reach: never off its site or into a ship (M2)
+/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/proc/line_turfs(atom/target)
+	. = list()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
+	var/turf/start = get_turf(owner)
+	var/turf/aim = get_turf(target)
+	if(!istype(boss) || !start || !aim)
+		return
+	for(var/turf/spot as anything in get_line(start, aim))
+		if(spot == start)
+			continue
+		if(!boss.boss_reach_ok(spot))
+			break
+		. += spot
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/telegraph(atom/target)
-	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
-	cone = list()
-	// Only where its fire may reach: never off its site or into a ship (M2).
-	for(var/turf/spot as anything in cone_turfs(target, BOUNTY_PYROMANIAC_FLAMER_RANGE, BOUNTY_PYROMANIAC_FLAMER_ARC))
-		if(boss.boss_reach_ok(spot))
-			cone += spot
-	owner.visible_message(span_boldwarning("[owner] opens the valve on [owner.p_their()] flamer. The pilot light hisses."))
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	var/list/line = line_turfs(target)
+	aim_turf = length(line) ? line[length(line)] : null
+	var/obj/item/flamethrower/flamer = boss.boss_flamethrower()
+	if(flamer && human_npc_ready_item(boss, flamer) && !flamer.lit)
+		flamer.attack_self(boss)
+	owner.visible_message(span_boldwarning("[owner] opens the valve on [owner.p_their()] flamethrower. The pilot light hisses."))
 	playsound(owner, 'sound/effects/spray.ogg', 50, TRUE)
-	mark_turfs(cone, "#ff8a1f")
+	mark_turfs(line, "#ff8a1f")
+
+/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/cancel_windup()
+	aim_turf = null
+	shut_valve()
+	return ..()
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/effect(atom/target)
-	var/list/fire_turfs = cone
-	cone = null
-	if(!length(fire_turfs))
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	var/turf/spot = aim_turf
+	aim_turf = null
+	var/obj/item/flamethrower/flamer = boss?.boss_flamethrower()
+	if(!spot || !flamer?.lit || !boss.ai_controller || !human_npc_ready_item(boss, flamer))
+		shut_valve()
 		return
-	owner.visible_message(span_danger("[owner] sweeps a jet of fire across the floor!"))
-	playsound(owner, 'sound/items/weapons/fwoosh.ogg', 80, TRUE)
-	new /obj/effect/bounty_boss_fire_pool(get_turf(owner), fire_turfs, BOUNTY_PYROMANIAC_FLAMER_FLOOR, owner, BOUNTY_PYROMANIAC_FLAMER_DAMAGE, BOUNTY_PYROMANIAC_FLAMER_STACKS)
+	// The player's way: a click on the line's end with the flamethrower in hand. Its fire runs the line a
+	// tile a moment (it sleeps), so on its own call.
+	INVOKE_ASYNC(boss.ai_controller, TYPE_PROC_REF(/datum/ai_controller, ai_interact), spot, TRUE)
+	addtimer(CALLBACK(src, PROC_REF(shut_valve)), BOUNTY_PYROMANIAC_FLAMER_SHUTOFF, TIMER_DELETE_ME)
+
+/// Puts its flamethrower out, if it is lit and done firing
+/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/proc/shut_valve()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
+	if(!istype(boss) || QDELETED(boss))
+		return
+	var/obj/item/flamethrower/flamer = boss.boss_flamethrower()
+	if(flamer?.lit && !flamer.operating)
+		flamer.toggle_igniter(boss)
 
 /**
  * Molotov: it lights the rag on a bottle and a ring shows where it will land, then it throws. The
@@ -542,6 +617,12 @@
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/molotov/telegraph(atom/target)
 	landing = get_turf(target)
+	// Its bottle back in hand, if the smoke put it away
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = owner
+	if(istype(pyro))
+		var/obj/item/bottle = pyro.boss_molotov()
+		if(bottle)
+			human_npc_take_in_hand(pyro, bottle)
 	owner.visible_message(span_boldwarning("[owner] lights the rag on a bottle and takes aim!"))
 	playsound(owner, 'sound/items/match_strike.ogg', 60, TRUE)
 	// The ring stays until the bottle lands (L3).
@@ -600,7 +681,7 @@
 	if(!aimable(target) || !istype(boss) || !boss.boss_valid_target(target))
 		return FALSE
 	var/obj/item/grenade/smokebomb/grenade = boss.boss_smoke_grenade()
-	if(isnull(grenade) || (!boss.is_holding(grenade) && !length(boss.get_empty_held_indexes())))
+	if(isnull(grenade) || (!boss.is_holding(grenade) && !boss.boss_hand_for_grenade()))
 		return FALSE
 	var/distance = get_dist(owner, target)
 	if(distance <= BOUNTY_PYROMANIAC_FLAMER_RANGE || distance > BOUNTY_PYROMANIAC_SMOKE_RANGE || !can_see(owner, target, BOUNTY_PYROMANIAC_SMOKE_RANGE) || !throw_reaches(target))
@@ -635,7 +716,14 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
 	landing = find_spot(target)
 	var/obj/item/grenade/smokebomb/grenade = boss.boss_smoke_grenade()
-	if(isnull(grenade) || !human_npc_take_in_hand(boss, grenade) || !human_npc_ready_item(boss, grenade))
+	if(isnull(grenade))
+		return
+	// Both hands full: the bottle goes back in its bag for the grenade
+	if(!boss.is_holding(grenade) && !length(boss.get_empty_held_indexes()))
+		var/obj/item/bottle = locate(/obj/item/reagent_containers/cup/glass/bottle/molotov) in boss.held_items
+		if(bottle)
+			boss.back?.atom_storage?.attempt_insert(bottle, boss, messages = FALSE)
+	if(!human_npc_take_in_hand(boss, grenade) || !human_npc_ready_item(boss, grenade))
 		return
 	owner.visible_message(span_boldwarning("[owner] pulls out a smoke grenade!"))
 	if(landing)

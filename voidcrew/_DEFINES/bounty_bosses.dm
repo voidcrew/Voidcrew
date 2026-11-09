@@ -144,19 +144,18 @@
 
 // ===== PYROMANIAC =====
 
-/// Its torch: lit, and it never goes out (a real tg torch, held from the start: it doesn't holster)
-#define BOUNTY_PYROMANIAC_TORCH /obj/item/flashlight/flare/torch/everburning
-/// Flamer: a pilot light hiss, an orange cone. 0.5 -> 0.8 s after review r2, long enough to step out of on sight.
+/// Its flamethrower: tg's, igniter and full plasma tank fitted, held from the start (it doesn't holster)
+#define BOUNTY_PYROMANIAC_FLAMETHROWER /obj/item/flamethrower/full/tank/bounty_boss
+/// The bottle in its other hand: tg's molotov, filled with welding fuel
+#define BOUNTY_PYROMANIAC_MOLOTOV_BOTTLE /obj/item/reagent_containers/cup/glass/bottle/molotov/bounty_boss
+/// Flamer: the pilot light, an orange line on the floor. 0.5 -> 0.8 s after review r2, long enough to step out of on sight.
 #define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.8 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_COOLDOWN (5 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_RANGE 3
-/// Full width of the cone, in degrees
-#define BOUNTY_PYROMANIAC_FLAMER_ARC 90
-#define BOUNTY_PYROMANIAC_FLAMER_DAMAGE 18
-/// Fire stacks (tg's) the jet puts on anyone in the cone. (phase D, CB-8)
-#define BOUNTY_PYROMANIAC_FLAMER_STACKS 4
-/// How long the floor the cone covered keeps burning
-#define BOUNTY_PYROMANIAC_FLAMER_FLOOR (4 SECONDS)
+/// Tank pressure (kPa) under which its flamethrower is spent: about fifteen sweeps from a full tank
+#define BOUNTY_PYROMANIAC_FLAMER_EMPTY ONE_ATMOSPHERE
+/// The flamethrower stays lit this long after a sweep, for the flame to run its line, then it shuts the valve
+#define BOUNTY_PYROMANIAC_FLAMER_SHUTOFF (1 SECONDS)
 /// Molotov: a lit rag, the throw, a ring where it lands
 #define BOUNTY_PYROMANIAC_MOLOTOV_WINDUP (0.7 SECONDS)
 #define BOUNTY_PYROMANIAC_MOLOTOV_COOLDOWN (7 SECONDS)

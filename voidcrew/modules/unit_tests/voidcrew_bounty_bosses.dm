@@ -182,16 +182,25 @@
 	TEST_ASSERT(length(jugg.get_empty_held_indexes()), "The Juggernaut has no free fist beside its shield")
 	TEST_ASSERT(findtext(jugg.boss_gear_text(), "shield"), "The Juggernaut's examine doesn't show its shield")
 
-	// The Pyromaniac: its fire suit and helmet keep fire off it, not a trait (CB-7). Its torch is a real one, lit.
+	// The Pyromaniac: its fire suit and helmet keep fire off it, not a trait (CB-7). A real flamethrower, fuelled, and a real molotov in hand; a real gas mask on.
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac)
 	TEST_ASSERT(!HAS_TRAIT(pyro, TRAIT_NOFIRE), "The Pyromaniac is fireproof by a trait")
 	TEST_ASSERT(!HAS_TRAIT(pyro, TRAIT_RESISTHEAT), "The Pyromaniac is heat-proof by a trait")
 	TEST_ASSERT(istype(pyro.wear_suit, /obj/item/clothing/suit/utility/fire/firefighter), "The Pyromaniac isn't wearing a firefighter suit")
 	TEST_ASSERT(istype(pyro.head, /obj/item/clothing/head/utility/hardhat/red), "The Pyromaniac isn't wearing a firefighter helmet")
 	TEST_ASSERT(pyro.get_thermal_protection() >= FIRE_SUIT_MAX_TEMP_PROTECT, "The Pyromaniac's gear doesn't keep the fire off it")
-	var/obj/item/flashlight/flare/torch/torch = locate() in pyro.held_items
-	TEST_ASSERT_NOTNULL(torch, "The Pyromaniac holds no torch")
-	TEST_ASSERT(torch.light_on && torch.damtype == BURN, "The Pyromaniac's torch isn't lit")
+	var/obj/item/flamethrower/flamer = pyro.boss_flamethrower()
+	TEST_ASSERT_NOTNULL(flamer, "The Pyromaniac holds no flamethrower")
+	TEST_ASSERT(bounty_pyro_flamer_fuelled(flamer), "The Pyromaniac's flamethrower has no igniter or plasma")
+	TEST_ASSERT(!flamer.lit, "The Pyromaniac's flamethrower is lit before any fight")
+	TEST_ASSERT(human_npc_gear_locked(flamer), "The Pyromaniac's flamethrower isn't locked to it")
+	TEST_ASSERT(human_npc_gear_locked(flamer.ptank), "The Pyromaniac's plasma tank isn't locked to it")
+	var/obj/item/reagent_containers/cup/glass/bottle/molotov/bottle = locate() in pyro.held_items
+	TEST_ASSERT_NOTNULL(bottle, "The Pyromaniac holds no molotov")
+	TEST_ASSERT(human_npc_gear_consumable(bottle), "The Pyromaniac's molotov isn't issued as a consumable")
+	TEST_ASSERT(istype(pyro.wear_mask, /obj/item/clothing/mask/gas), "The Pyromaniac isn't wearing a gas mask")
+	TEST_ASSERT(pyro.has_smoke_protection(), "The Pyromaniac's mask doesn't keep smoke out")
+	TEST_ASSERT(pyro.boss_hand_for_grenade(), "The Pyromaniac has no hand for its smoke grenade")
 
 	// The Demolitionist: a hard hat, its crowbar in its bag until the fight starts, and a real CNS rebooter in its head (C8).
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/demo = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist)
@@ -446,6 +455,44 @@
 	TEST_ASSERT_NOTNULL(boss.boss_choose_ability(far), "The rotation won't reuse the only ability ready")
 	boss.boss_strict_rotation = TRUE
 	TEST_ASSERT_NULL(boss.boss_choose_ability(far), "The strict rotation chose the same ability twice in a row")
+
+// ===== THE PYROMANIAC'S FLAMER IS ITS REAL FLAMETHROWER =====
+
+/// Lit for the wind-up, fired down the lit line as a player clicks: its tank's plasma spent and tg's fire on whoever stands there; the valve shut after; no use with the tank run dry
+/datum/unit_test/voidcrew_bounty_boss/flamethrower
+
+/datum/unit_test/voidcrew_bounty_boss/flamethrower/Destroy()
+	// Its fire is real plasma fire: the room's air goes back to how it was
+	for(var/turf/open/room_turf in block(spot(0, 0), spot(4, 4)))
+		if(room_turf.active_hotspot)
+			qdel(room_turf.active_hotspot)
+		room_turf.copy_air(room_turf.create_gas_mixture())
+		room_turf.air_update_turf(FALSE, FALSE)
+	return ..()
+
+/datum/unit_test/voidcrew_bounty_boss/flamethrower/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(0, 2))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(2, 2))
+	var/obj/item/flamethrower/flamer = pyro.boss_flamethrower()
+	TEST_ASSERT_NOTNULL(flamer, "The Pyromaniac holds no flamethrower")
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/sweep = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/flamer)
+	ready(pyro)
+	TEST_ASSERT(sweep.worth_using(hunter), "The flamer isn't worth using two tiles off")
+	var/pressure_before = flamer.ptank.return_air().return_pressure()
+	TEST_ASSERT(sweep.Trigger(target = hunter), "The flamer didn't start")
+	TEST_ASSERT(flamer.lit, "The flamethrower wasn't lit for the wind-up")
+	TEST_ASSERT_EQUAL(pyro.get_active_held_item(), flamer, "The flamethrower isn't in its active hand")
+	sleep(1.4 SECONDS) // BOUNTY_PYROMANIAC_FLAMER_WINDUP, then the flame running its line
+	TEST_ASSERT(flamer.ptank.return_air().return_pressure() < pressure_before, "The sweep spent none of the tank's plasma")
+	TEST_ASSERT(hunter.on_fire || hunter.fire_stacks > 0 || hunter.getFireLoss() > 0, "The flamethrower's fire didn't catch the hunter on its line")
+	sleep(1 SECONDS) // BOUNTY_PYROMANIAC_FLAMER_SHUTOFF
+	TEST_ASSERT(!flamer.lit, "The valve wasn't shut after the sweep")
+	hunter.extinguish_mob()
+	pyro.extinguish_mob()
+
+	// A dry tank: no more sweeps
+	flamer.ptank.return_air().remove_ratio(1)
+	TEST_ASSERT(!sweep.worth_using(hunter), "The flamer is worth using on an empty tank")
 
 // ===== FIRE IS TG'S FIRE, ON ANYONE IT CATCHES (CB-8, CB-11) =====
 
