@@ -504,7 +504,7 @@
 	run_to_end(finisher)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The head clap didn't burst the head")
 	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The burst moved the bearer (a thrown head knocks a body back)")
-	TEST_ASSERT_EQUAL(victim.loc, spot(2, 1), "The burst moved the body")
+	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The burst body didn't come down on the bearer's tile, where it was held")
 	var/obj/item/organ/brain/brain
 	for(var/turf/floor in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
 		brain ||= locate(/obj/item/organ/brain) in floor
@@ -593,8 +593,10 @@
 	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_EAST, "The body lies the other way from its bent halves, so it flips when they come down")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
 	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
+	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "The body isn't drawn in front of the bearer standing over it")
 	victim.forceMove(spot(3, 3))
 	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_fold), "The fold stayed on a moved body")
+	TEST_ASSERT_NULL(victim.GetComponent(/datum/component/gorilla_laid_in_front), "A moved body is still drawn off its tile")
 	TEST_ASSERT_NULL(victim.get_filter("chrome_rig_hide"), "A moved body stayed hidden")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The fold left puppets behind")
 	var/spine_ref = REF(spine)

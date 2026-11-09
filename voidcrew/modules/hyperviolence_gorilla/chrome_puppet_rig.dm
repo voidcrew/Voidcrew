@@ -370,7 +370,10 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 
 /// Where the hand on [side] is drawn in the arm's last pose: pixels from the middle of the puppet, before its offsets.
 /datum/chrome_rig/proc/hand_point(side)
-	var/list/pose = arm_poses[side] || list(0, 1)
+	return hand_at(side, arm_poses[side] || list(0, 1))
+
+/// Where the hand on [side] is drawn in [pose] (list(turn, length), or list(turn, length, base)): pixels from the middle of the puppet, before its offsets.
+/datum/chrome_rig/proc/hand_at(side, list/pose)
 	var/list/pivot = shoulder(side)
 	var/list/hand = hand_offset(side)
 	return chrome_rig_apply(arm_matrix(side, pose[1], pose[2], length(pose) > 2 ? pose[3] : null), pivot[1] + hand[1], pivot[2] + hand[2])
@@ -412,8 +415,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 
 /**
  * Sends the arm on [side] through [poses] (each list(turn, length), or list(turn, length, base) with the
- * body's turn at that step), one straight step of [step_time] to each. Arms sent through matching poses in the
- * same steps move together, hand on hand.
+ * body's turn at that step), one straight step of [step_time] to each (or of step_time[i] to the i-th, given a
+ * list). Arms sent through matching poses in the same steps move together, hand on hand.
  */
 /datum/chrome_rig/proc/pose_arm_through(side, list/poses, step_time)
 	var/obj/effect/abstract/chrome_puppet/arm = puppet("arm_[side]")
@@ -422,12 +425,34 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	for(var/i in 1 to length(poses))
 		var/list/pose = poses[i]
 		var/matrix/posed = arm_matrix(side, pose[1], pose[2], length(pose) > 2 ? pose[3] : null)
+		var/this_step = islist(step_time) ? step_time[i] : step_time
 		if(i == 1)
-			animate(arm, transform = posed, time = step_time)
+			animate(arm, transform = posed, time = this_step)
 		else
-			animate(transform = posed, time = step_time)
+			animate(transform = posed, time = this_step)
 	var/list/last = poses[length(poses)]
 	arm_poses[side] = list(last[1], last[2])
+
+/**
+ * Sends the hand on [side] to each of [points] in turn (list(x, y), pixels from the middle of the puppet, as
+ * pose_reaching() takes them), times[i] to the i-th, each leg cut into short steps so the shoulder stays put. The
+ * arm is never stretched past [max_length] times its length: the hand stops short instead.
+ */
+/datum/chrome_rig/proc/reach_through(side, list/points, list/times, max_length = 2)
+	var/list/from = arm_poses[side] || list(0, 1)
+	var/list/poses = list()
+	var/list/step_times = list()
+	for(var/i in 1 to length(points))
+		var/list/point = points[i]
+		var/list/to_pose = pose_reaching(side, point[1], point[2], from[1])
+		to_pose[2] = min(to_pose[2], max_length)
+		var/steps = swing_steps(from[1], to_pose[1])
+		for(var/j in 1 to steps)
+			var/progress = (1 - cos(180 * j / steps)) / 2
+			poses += list(list(from[1] + (to_pose[1] - from[1]) * progress, from[2] + (to_pose[2] - from[2]) * progress))
+			step_times += times[i] / steps
+		from = to_pose
+	pose_arm_through(side, poses, step_times)
 
 /// The arm nearer the viewer in a side view ("l" or "r"); the right arm in other views.
 /datum/chrome_rig/proc/near_side()

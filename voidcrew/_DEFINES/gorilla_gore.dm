@@ -145,6 +145,30 @@
 /// How far the head clap throws the brain (the eyes, ears and tongue drop on the spot or a tile out).
 #define GORILLA_CLAP_BRAIN_MIN 1
 #define GORILLA_CLAP_BRAIN_MAX 2
+/// The head clap's look. How far the held body is brought in toward the bearer (a share of a tile) and how many pixels
+/// up it is held until the burst, seen from the side, the front and the back: close enough for his fists to close on its head.
+#define GORILLA_CLAP_HOLD_SIDE 0.875
+#define GORILLA_CLAP_HOLD_FRONT 0.7
+#define GORILLA_CLAP_HOLD_BACK 0.85
+#define GORILLA_CLAP_LIFT_SIDE 4
+#define GORILLA_CLAP_LIFT_FRONT 15
+#define GORILLA_CLAP_LIFT_BACK 6
+/// The most his piston arms push out to reach the head, as a share of their length, and the pixels they come off it before the clap.
+#define GORILLA_CLAP_MAX_REACH 2.1
+#define GORILLA_CLAP_WIND 3
+/// How long the burst body takes to fall from where it was held.
+#define GORILLA_CLAP_DROP_TIME (0.2 SECONDS)
+/// The limb rip's blow with the torn arm: up over his head, then down on theirs. The hit lands as it comes down.
+#define GORILLA_CLUB_RAISE (0.2 SECONDS)
+#define GORILLA_CLUB_STRIKE (0.1 SECONDS)
+/// How long before the arm is all the way down the blow lands (recorded 0 to 0.12 s late without it).
+#define GORILLA_CLUB_HIT_LEAD (0.05 SECONDS)
+/// How far his arms push out on that blow, and the most the torn arm in his fists stretches to reach, as shares of their length.
+#define GORILLA_CLUB_REACH 1.6
+#define GORILLA_CLUB_MAX_STRETCH 1.5
+/// Pixels toward the viewer a backbroken body lies on the bearer's tile, so he doesn't hide it, and the offset's source.
+#define GORILLA_BACK_IN_FRONT 10
+#define GORILLA_LAID_IN_FRONT_OFFSET "gorilla_laid_in_front"
 /// How long a broken back stays folded over the knee before it is rolled off.
 #define GORILLA_BACK_FOLD_HOLD (0.3 SECONDS)
 
