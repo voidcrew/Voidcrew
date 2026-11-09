@@ -209,15 +209,16 @@
 	for(var/index in worn)
 		clothes.overlays += worn[index]
 	// Built as tg builds the missing-hand glove mask (update_worn_gloves()), and the sleeve mask: an atom's appearance
-	// carries the render target. A mutable_appearance carrying one draws nothing through the filter.
-	var/static/atom/movable/cutout
-	if(isnull(cutout))
-		cutout = new(null)
+	// carries the render target. A mutable_appearance carrying one draws nothing through the filter. A new atom for
+	// each picture: one shared atom given a second picture's target for the same limb took the first one's mask away,
+	// and that picture drew nothing (a cut leg's trouser, made just before its shoe's picture).
+	var/atom/movable/cutout = new(null)
 	cutout.icon = HV_SLEEVE_MASK_ICON
 	cutout.icon_state = mask_state
 	cutout.render_target = "*wire_cut [key] [mask_state]"
 	clothes.overlays += cutout
 	clothes.add_filter("wire_cut_clothes", 0, alpha_mask_filter(render_source = cutout.render_target))
+	qdel(cutout)
 	return clothes
 
 /**
@@ -426,12 +427,13 @@
 	// The blood starts now, as the limb leaves: a short spray from the stump and a drop under it.
 	if(!seared)
 		victim.hv_wire_spray(spray_dir, 2, zone)
-		wire_stump_drip(victim, zone)
+		wire_stump_drip(victim, zone, side)
 	QDEL_IN(src, WIRE_SLIDE_TIME + WIRE_FALL_TIME + 0.1 SECONDS)
 
 /// A drop of blood on the floor under a fresh stump: where the feet stand on a body standing (not at the foot of the
-/// tile, where it would sit on the head of anyone standing below), at the stump of one lying.
-/proc/wire_stump_drip(mob/living/carbon/victim, zone)
+/// tile, where it would sit on the head of anyone standing below), at the stump of one lying. Side on, it lands clear
+/// of the feet, away from the limb that fell to `side`: under them, it shows past the legs as a red bar.
+/proc/wire_stump_drip(mob/living/carbon/victim, zone, side = 1)
 	var/turf/floor = get_turf(victim)
 	if(!floor || isgroundlessturf(floor) || !floor.has_gravity() || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return
@@ -439,8 +441,12 @@
 	if(QDELETED(drop))
 		return
 	var/list/spot = wire_zone_point(victim, zone)
+	if(victim.body_position == LYING_DOWN)
+		drop.wire_place(clamp(spot[1], -12, 12), clamp(spot[2], -12, 12))
+		return
 	// On the floor at the feet: higher, it shows through the gap a leg leaves as a blot at the hip.
-	drop.wire_place(clamp(spot[1], -12, 12), victim.body_position == LYING_DOWN ? clamp(spot[2], -12, 12) : -13)
+	var/drop_x = (victim.dir & (EAST | WEST)) ? victim.pixel_x - side * 9 : clamp(spot[1], -12, 12)
+	drop.wire_place(drop_x, -13)
 
 // ---- The seam ----
 
@@ -459,7 +465,8 @@
 	// No blood until the limb comes away.
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_seam_beads), victim, zone), WIRE_CUT_DELAY)
 
-/// The seam beads with blood as the limb slides off it.
+/// The seam beads with blood as the limb slides off it. The beads keep to the body's side of the cut (the stump):
+/// past it there is only air now.
 /proc/wire_seam_beads(mob/living/carbon/victim, zone)
 	if(QDELETED(victim) || victim.get_bodypart(zone) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return

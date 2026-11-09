@@ -116,6 +116,9 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	hv_wire_drops(stump, floor_y, 3, 265, 15, 16, behind)
 	return TRUE
 
+/// How far from the middle of a body side on drops leaving a stump behind it first show: past its back or chest.
+#define WIRE_DROPS_CLEAR_X 10
+
 /**
  * `count` drops thrown from `from` (x, y pixels off the middle of src's tile) on `bearing` (degrees from north), give
  * or take `spread`, each landing as a drop on the floor up to `reach` pixels from (from x, `floor_y`). Spread evenly
@@ -124,6 +127,10 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
  * them all behind the bodies they pass.
  */
 /mob/living/proc/hv_wire_drops(list/from, floor_y, count, bearing, spread, reach, behind = FALSE)
+	// From a stump behind a body side on, they come out past its back or front, not over its outline: a drop crossing
+	// the edge of the body, half hidden, reads as a speck on it.
+	if(behind && round(sin(bearing), 0.01))
+		from = list(pixel_x + SIGN(sin(bearing)) * WIRE_DROPS_CLEAR_X, from[2])
 	var/blood_color = wire_blood_color(src)
 	var/list/blood_dna = get_blood_dna_list()
 	var/list/reaches = list()
@@ -140,6 +147,8 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 		// Never all at once: a burst of drops leaving one point at once reads as a red star on the stump.
 		var/delay = pick(0.05, 0.1, 0.15, 0.2) SECONDS
 		new /obj/effect/temp_visual/wire_blood_drop(loc, list(from[1], from[2], land_x, land_y, 2 + rand(0, 4), flight, delay, behind || cos(angle) > 0.3), blood_color, blood_dna)
+
+#undef WIRE_DROPS_CLEAR_X
 
 // ---- Stumps: held back, and seared ----
 
