@@ -217,16 +217,16 @@
 
 /**
  * Both of [bearer]'s blades reaching into [victim]: three pictures from the reach sheet, turned the way
- * [victim] lies from [bearer], each drawn on the body it has to sit against.
- * - "[state]_over": the blade in front, drawn over both.
+ * [victim] lies from [bearer].
+ * - "[state]_over": the blade in front of both bodies, on the bearer.
  * - "[state]_under": the blade behind the bearer's own body (the far arm from the side, both facing
- *   away), an underlay of the bearer.
- * - "[state]_in": the blade inside or behind the victim, an underlay of the victim, drawn where the
- *   victim's own sprite sits.
- * What passes behind a body is a real underlay of it (the body's `underlays`): a picture in vis_contents
- * draws over its parent whatever its layer or vis_flags. The bearer's pictures move with the bearer's lean
- * and the victim's with the victim. The held blades should be hidden while these play. Returns the
- * pictures, each gone after [lifetime] or when deleted.
+ *   away), on the bearer.
+ * - "[state]_in": the blade inside or behind the victim, on the victim, drawn where the victim's own
+ *   sprite sits, upright whatever way they lie.
+ * What passes behind a body is already cut out of the "_under" and "_in" pictures along that body's
+ * outline: BYOND draws a picture attached to a mob over the mob's whole body, underlay or not, so the
+ * occlusion has to be in the picture. The bearer's pictures move with the bearer's lean and the victim's
+ * with the victim. The held blades should be hidden while these play. Returns the holders.
  */
 /proc/mantis_reach_fx(mob/living/bearer, mob/living/victim, state, lifetime)
 	RETURN_TYPE(/list)
@@ -240,13 +240,10 @@
 		var/full_state = "[state]_[part]"
 		if(!icon_exists(MANTIS_GORE_REACH_ICON, full_state))
 			continue
-		if(part != "over")
-			. += new /datum/mantis_underlay(part == "in" ? victim : bearer, MANTIS_GORE_REACH_ICON, full_state, reach_dir, -32, lifetime)
-			continue
-		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(bearer, MANTIS_GORE_REACH_ICON, full_state, MANTIS_OVER_VICTIM_LAYER, lifetime)
+		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(part == "in" ? victim : bearer, MANTIS_GORE_REACH_ICON, full_state, MANTIS_OVER_VICTIM_LAYER, lifetime)
 		if(!blades)
 			continue
-		blades.appearance_flags |= KEEP_APART
+		blades.appearance_flags |= KEEP_APART|RESET_TRANSFORM
 		blades.vis_flags &= ~VIS_INHERIT_DIR
 		blades.dir = reach_dir
 		blades.pixel_x = -32
@@ -254,62 +251,14 @@
 		. += blades
 
 /**
- * A picture drawn behind a body: one of its underlays, upright whatever way the body is turned, for
- * [lifetime] or until deleted.
- */
-/datum/mantis_underlay
-	var/atom/movable/body
-	var/mutable_appearance/picture
-
-/datum/mantis_underlay/New(atom/movable/body, icon_file, state, picture_dir, shift, lifetime)
-	. = ..()
-	if(QDELETED(body))
-		return
-	src.body = body
-	picture = mutable_appearance(icon_file, state, MANTIS_BEHIND_BODY_LAYER, appearance_flags = RESET_COLOR|RESET_ALPHA|PIXEL_SCALE)
-	picture.dir = picture_dir
-	picture.pixel_x = shift
-	picture.pixel_y = shift
-	mantis_undo_turn(picture, body)
-	body.underlays += picture
-	RegisterSignal(body, COMSIG_QDELETING, PROC_REF(on_body_deleted))
-	QDEL_IN(src, lifetime)
-
-/datum/mantis_underlay/Destroy()
-	if(body)
-		body.underlays -= picture
-		UnregisterSignal(body, COMSIG_QDELETING)
-		body = null
-	picture = null
-	return ..()
-
-/datum/mantis_underlay/proc/on_body_deleted(datum/source)
-	SIGNAL_HANDLER
-	qdel(src)
-
-/// A picture drawn as part of [body] turns with it; this turns it back, so it stays the way it was drawn
-/// (someone lying down is turned by tg).
-/proc/mantis_undo_turn(picture, atom/movable/body)
-	if(isnull(body.transform))
-		return
-	var/matrix/undo = matrix(body.transform)
-	if(undo.a == 1 && undo.b == 0 && undo.d == 0 && undo.e == 1)
-		return
-	var/atom/movable/drawn = picture
-	drawn.transform = undo.Invert()
-
-/**
  * The two points standing out of someone skewered, the far ends of the blades in them. Drawn on the
- * victim, upright: over them, or behind them when the blades went in from the south and out of a back
- * that faces away.
+ * victim, upright. Out of a back that faces away (skewered from below), the picture is cut along the
+ * body so only what stands past the shoulders shows.
  */
 /proc/mantis_impale_tips_fx(mob/living/victim, lunge_dir, model, lifetime)
 	var/state = "[model]_impale"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		state = "mantis_impale"
-	if(lunge_dir == NORTH)
-		// Out of a back that faces away: behind them.
-		return new /datum/mantis_underlay(victim, MANTIS_GORE_ICON, state, lunge_dir, 0, lifetime)
 	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_OVER_VICTIM_LAYER, lifetime)
 	if(!tips)
 		return null

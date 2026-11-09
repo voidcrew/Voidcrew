@@ -8,9 +8,6 @@
 /// 96x96 pictures: both blades reaching into the next tile for the scissor and the impale, eight directions
 /// (bearer to victim). "_over" and "_under" are centred on the bearer, "_in" on the victim.
 #define MANTIS_GORE_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
-/// Layer of a picture drawn as an underlay of a body: below every layer the body and what it wears are
-/// drawn at (-1 to -TOTAL_LAYERS). An underlay only goes under the parts that share its layer.
-#define MANTIS_BEHIND_BODY_LAYER (-(TOTAL_LAYERS + 1))
 /// Layer for blade drawn in front of the victim (and the bearer).
 #define MANTIS_OVER_VICTIM_LAYER ABOVE_MOB_LAYER
 /// The posed held blades.
