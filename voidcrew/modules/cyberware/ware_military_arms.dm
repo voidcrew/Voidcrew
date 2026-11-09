@@ -651,7 +651,8 @@
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
 	items_to_create = list(/obj/item/melee/cyberware_monowire)
-	extend_sound = 'sound/items/weapons/batonextend.ogg'
+	extend_sound = 'voidcrew/sound/monowire_deploy.ogg'
+	retract_sound = 'voidcrew/sound/monowire_retract.ogg'
 
 // =========================================================================
 // POPUP RONIN SMG
