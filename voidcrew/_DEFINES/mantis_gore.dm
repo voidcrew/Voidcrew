@@ -5,8 +5,8 @@
 #define MANTIS_GORE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 /// 64x64 pictures: the artery spurt, the flick.
 #define MANTIS_GORE_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
-/// 96x96 pictures: both blades reaching into the next tile for the scissor and the impale, eight directions
-/// (bearer to victim). "_over" and "_under" are centred on the bearer, "_in" on the victim.
+/// 96x96 pictures centred on the bearer: the arms and blades of each beat of the impale and the scissor, drawn
+/// around the victim by the blade rig (mantis_rig.dm).
 #define MANTIS_GORE_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
 /// Layer for blade drawn in front of the victim (and the bearer).
 #define MANTIS_OVER_VICTIM_LAYER ABOVE_MOB_LAYER
@@ -34,6 +34,19 @@
 #define MANTIS_POSE_LUNGE "lunge"
 #define MANTIS_POSE_RAISE "raise"
 #define MANTIS_POSE_COIL "coil"
+
+/// FALSE while the impale and the scissor are being blocked out (poses and layering only): their sparks,
+/// flashes, glints and blood sprays are left out until the full build.
+#define MANTIS_FINISHER_FX FALSE
+
+// Fields of mantis_rig_beat().
+#define MANTIS_RIG_ORDER 1
+#define MANTIS_RIG_BEARER_W 2
+#define MANTIS_RIG_BEARER_Z 3
+#define MANTIS_RIG_TARGET_W 4
+#define MANTIS_RIG_TARGET_Z 5
+#define MANTIS_RIG_TILT 6
+#define MANTIS_RIG_RAISE 7
 
 /// Trait and offset sources.
 #define MANTIS_IMPALE_TRAIT "mantis_impale"
@@ -86,24 +99,15 @@
 #define MANTIS_IMPALE_BREAK_DAMAGE 15
 /// A target at or under this share of max health is hurt enough to skewer.
 #define MANTIS_IMPALE_HEALTH_FRACTION 0.7
-// Where the two bodies sit while the blades are in: brought together, so the blades keep the length they
-// have in the hand. The reach art (mantis_gore_reach.dmi) is drawn for exactly these, so change them together.
-/// Pixels the bearer leans into a thrust to the side or a diagonal.
-#define MANTIS_IMPALE_LEAN 8
-/// Pixels someone skewered to the side or a diagonal is drawn onto the blades, along each axis it lies off.
-#define MANTIS_IMPALE_PULL 12
-/// Pixels someone skewered straight to the side is lifted.
-#define MANTIS_IMPALE_LIFT 5
-/// Skewered straight below: the bearer leans down, they are drawn up.
-#define MANTIS_IMPALE_LEAN_SOUTH 6
-#define MANTIS_IMPALE_PULL_SOUTH 8
-/// Skewered straight above: the bearer leans up, they are drawn down.
-#define MANTIS_IMPALE_LEAN_NORTH 3
-#define MANTIS_IMPALE_PULL_NORTH 3
-/// Layer of whichever of the two is nearer the viewer when they overlap up and down the screen.
-#define MANTIS_IMPALE_FRONT_LAYER (MOB_LAYER + 0.02)
-/// Pixels the bearer draws back before the blades come out.
-#define MANTIS_IMPALE_PULL_BACK 6
+// The beats of the impale (mantis_impale.dm), from the approved storyboard. The bearer's lunge pose shows
+// while the lunging body glides in; the blades go in as it lands, and the hold, the pull-back, the rip and
+// the drop follow. Where the two bodies sit in each beat is mantis_rig_beat()'s.
+/// From the blades going in to the bodies settling on them, held up.
+#define MANTIS_IMPALE_ENTER_BEAT (0.1 SECONDS)
+/// From the pull-back to the rip-out.
+#define MANTIS_IMPALE_RIP_BEAT (0.2 SECONDS)
+/// How long the bearer holds the last pose after the blades are out, before they are drawn as usual again.
+#define MANTIS_IMPALE_DROP_BEAT (0.3 SECONDS)
 /// From the pull-back to the blades coming out and the body dropping.
 #define MANTIS_IMPALE_PULL_BEAT (0.3 SECONDS)
 
@@ -129,9 +133,11 @@
 // ---- Scissor ----
 #define MANTIS_SCISSOR_WINDUP (1.2 SECONDS)
 /// Pixels the bearer leans in for the cut, and further when the head lies on the far side of the body.
-/// The reach art is drawn for these.
+/// Drawn by the blade rig; this is the bearer's own lean when the rig can't draw them.
 #define MANTIS_SCISSOR_LEAN 12
 #define MANTIS_SCISSOR_FAR_LEAN 16
+/// The scissor's beats after the cut: the blades shut through the neck, then the bearer straightens.
+#define MANTIS_SCISSOR_RECOVER_BEAT (0.25 SECONDS)
 #define MANTIS_SCISSOR_COOLDOWN (10 SECONDS)
 /// Brute to the neck when the head won't come off.
 #define MANTIS_SCISSOR_FALLBACK_DAMAGE 25

@@ -1,6 +1,7 @@
 // The scissor: both blades out, head aimed, a swing at someone adjacent who is dying. The blades rise,
-// catch the light, then come down from the bearer's hands and close on the neck, one blade behind it and
-// one in front, and #509's decapitation takes the head. A #509 finisher
+// catch the light, then come down and close on the neck, one blade behind it and one in front, and #509's
+// decapitation takes the head. The bearer is drawn by the blade rig (mantis_rig.dm) from the raise to the
+// recovery, so the far blade can pass under the neck while the bearer stands over the body. A #509 finisher
 // (voidcrew/modules/hyperviolence/finishers/), drawn the way the bosses' are rather than as real blows,
 // so the bearer stands rooted and exposed through the wind-up and a hit makes them reel. No mark over the
 // victim (owner D34): the wind-up reads only from the bodies. An Atlas frame stops the cut.
@@ -30,6 +31,7 @@
 /// The scissor ended, however it ended: the blades go back to the guard.
 /proc/mantis_scissor_ended(datum/hv_finisher/mantis_scissor/scissor, result)
 	var/mob/living/bearer = scissor.user
+	QDEL_NULL(scissor.rig)
 	if(!QDELETED(bearer))
 		if(bearer.mantis_state?.scissor == scissor)
 			bearer.mantis_state.scissor = null
@@ -51,6 +53,16 @@
 	)
 	/// The model of the blades doing it, for the pictures.
 	var/model = "mantis"
+	/// The bearer drawn around the victim, while it runs.
+	var/datum/mantis_rig/rig
+
+/datum/hv_finisher/mantis_scissor/Destroy()
+	QDEL_NULL(rig)
+	return ..()
+
+/// Draws [beat] of the scissor, if the bearer is drawn by the rig.
+/datum/hv_finisher/mantis_scissor/proc/show_beat(beat)
+	rig?.show(beat)
 
 // Drawn, not real blows: a bearer with two blades fused to the arms makes no aggressive grab, and the
 // head comes off by the finisher's own hand. That also roots them and makes them take more damage.
@@ -114,9 +126,12 @@
 // ---- The wind-up -----------------------------------------------------------
 
 /// Someone on the floor is turned so their head lies toward [bearer], the way tg turns someone dragged.
-/// Straight above or below them, the head stays the side it was.
+/// Straight above or below them, the head goes to the left, where the blades are drawn to close on it.
 /proc/mantis_turn_head_toward(mob/living/victim, mob/living/bearer)
-	if(victim.body_position != LYING_DOWN || !victim.rotate_on_lying || !victim.lying_angle || bearer.x == victim.x)
+	if(victim.body_position != LYING_DOWN || !victim.rotate_on_lying || !victim.lying_angle)
+		return
+	if(bearer.x == victim.x)
+		victim.set_lying_angle(LYING_ANGLE_WEST)
 		return
 	victim.set_lying_angle(bearer.x > victim.x ? LYING_ANGLE_EAST : LYING_ANGLE_WEST)
 
@@ -134,15 +149,24 @@
 	var/datum/hv_finisher/mantis_scissor/scissor = host
 	scissor.pose_blades(MANTIS_POSE_RAISE)
 	mantis_turn_head_toward(host.victim, host.user)
+	QDEL_NULL(scissor.rig)
+	scissor.rig = new(host.user, host.victim, mantis_rig_facing(host.user, host.victim), scissor.model, "scissor")
+	if(!scissor.rig.start())
+		QDEL_NULL(scissor.rig)
+	scissor.show_beat("raise")
 	glint_timer = addtimer(CALLBACK(src, PROC_REF(glint)), duration * 0.5, TIMER_STOPPABLE|TIMER_DELETE_ME)
-	mantis_struggle_fx(host.victim, duration)
 
+/// Halfway through the wind-up the light runs along the near blade and the victim shudders.
 /datum/hv_finisher_stage/windup/mantis/proc/glint()
 	glint_timer = null
 	if(!host?.running)
 		return
-	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
-		blade.play_glint(MANTIS_POSE_RAISE)
+	var/datum/hv_finisher/mantis_scissor/scissor = host
+	scissor.show_beat("glint")
+	mantis_struggle_fx(host.victim, duration * 0.5)
+	if(MANTIS_FINISHER_FX)
+		for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
+			blade.play_glint(MANTIS_POSE_RAISE)
 
 /datum/hv_finisher_stage/windup/mantis/on_stop()
 	if(glint_timer)
@@ -166,16 +190,18 @@
 	lunge = MANTIS_SCISSOR_LEAN
 	effect_sound = 'sound/items/weapons/bladeslice.ogg'
 	spray_strength = 4
-	/// The blades coming down on the neck, while they do.
-	var/list/datum/reach
+	/// The bearer straightening up out of the cut, to come.
+	var/recover_timer
 
 /datum/hv_finisher_stage/kill/decapitate/mantis/Destroy()
-	reach = null
+	if(recover_timer)
+		deltimer(recover_timer)
+		recover_timer = null
 	return ..()
 
 /**
- * The blades come down out of the raise and close on the neck. The held blades step aside for the reach
- * art, which runs from the bearer's hands to wherever the neck is: one blade behind it, one in front.
+ * The blades come down out of the raise and close on the neck: the far one passes under it, the near one
+ * over it (the blade rig draws both). The bearer leans in, further if the head lies on the far side.
  */
 /datum/hv_finisher_stage/kill/decapitate/mantis/enter()
 	. = ..()
@@ -186,18 +212,22 @@
 	// The head lies on the far side of the body: the bearer leans right over them to reach it.
 	if((posture == "lie90" && (toward & EAST)) || (posture == "lie270" && (toward & WEST)))
 		host.pose_user(MANTIS_SCISSOR_FAR_LEAN, rise)
-	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
-		blade.hide_inhand_for(duration)
-	reach = mantis_reach_fx(host.user, host.victim, "[scissor.model]_scissor_[posture]", duration)
+	scissor.show_beat("close")
+	recover_timer = addtimer(CALLBACK(src, PROC_REF(recover)), MANTIS_SCISSOR_RECOVER_BEAT, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
-// Pulled away before the blades met: they go straight back into the hands.
-/datum/hv_finisher_stage/kill/decapitate/mantis/on_interrupt()
-	for(var/datum/blades as anything in reach)
-		if(!QDELETED(blades))
-			qdel(blades)
-	reach = null
-	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
-		blade.show_inhand()
+/// The blades are through: the bearer straightens back to the guard.
+/datum/hv_finisher_stage/kill/decapitate/mantis/proc/recover()
+	recover_timer = null
+	if(!host?.running)
+		return
+	var/datum/hv_finisher/mantis_scissor/scissor = host
+	scissor.show_beat("recover")
+
+/datum/hv_finisher_stage/kill/decapitate/mantis/on_stop()
+	. = ..()
+	if(recover_timer)
+		deltimer(recover_timer)
+		recover_timer = null
 
 /**
  * The blades come together at the neck: one line for the cut, a huge one if the head comes off. An
@@ -206,6 +236,8 @@
 /datum/hv_finisher_stage/kill/decapitate/mantis/effect()
 	var/mob/living/carbon/victim = host.victim
 	var/mob/living/bearer = host.user
+	var/datum/hv_finisher/mantis_scissor/scissor = host
+	scissor.show_beat("cut")
 	if(effect_sound)
 		playsound(victim, effect_sound, effect_volume, TRUE)
 	var/spray_dir = away_dir()
@@ -241,8 +273,14 @@
 		victim.hv_add_hit_line("[bearer]'s blades bite deep into [victim]'s neck!", HV_LINE_BOLD, "[bearer]'s blades bite deep into your neck!", DEFAULT_MESSAGE_RANGE)
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = locate() in bearer.held_items
 	victim.apply_damage(MANTIS_SCISSOR_FALLBACK_DAMAGE, BRUTE, BODY_ZONE_HEAD, wound_bonus = 20, sharpness = SHARP_EDGED, attack_direction = spray_dir, attacking_item = blade)
-	if(!QDELETED(victim))
+	if(MANTIS_FINISHER_FX && !QDELETED(victim))
 		victim.hv_blood_spray(spray_dir, 2)
+
+// The head comes off; the spray waits for the full build (MANTIS_FINISHER_FX).
+/datum/hv_finisher_stage/kill/decapitate/mantis/gore(spray_dir)
+	if(MANTIS_FINISHER_FX)
+		return ..()
+	hv_finisher_take_head(host.victim, WOUND_SLASH)
 
 // ---- After -------------------------------------------------------------------
 

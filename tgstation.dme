@@ -7339,6 +7339,7 @@
 #include "voidcrew\modules\mantis_gore\mantis_housing.dm"
 #include "voidcrew\modules\mantis_gore\mantis_impale.dm"
 #include "voidcrew\modules\mantis_gore\mantis_lunge_fx.dm"
+#include "voidcrew\modules\mantis_gore\mantis_rig.dm"
 #include "voidcrew\modules\mantis_gore\mantis_scissor.dm"
 #include "voidcrew\modules\mantis_gore\mantis_wounds.dm"
 #include "voidcrew\modules\metrics\combat_metrics.dm"

@@ -2,7 +2,8 @@
 // mechanics call in after they have happened. One-shot holders and temp visuals only; every animate()
 // on a mob here is relative and parallel and ends where it began, so tg's offsets, lying turn and #509's
 // death throes stay right. (The impale's hoist, which turns a body upright for the hold, is in
-// mantis_impale.dm and gives tg's turn back.)
+// mantis_impale.dm and gives tg's turn back. The blades going into a body are drawn by the blade rig,
+// mantis_rig.dm.)
 
 // =========================================================================
 // THE LUNGE
@@ -214,58 +215,6 @@
 // =========================================================================
 // IMPALE, SCISSOR, CROUCH
 // =========================================================================
-
-/**
- * Both of [bearer]'s blades reaching into [victim]: three pictures from the reach sheet, turned the way
- * [victim] lies from [bearer].
- * - "[state]_over": the blade in front of both bodies, on the bearer.
- * - "[state]_under": the blade behind the bearer's own body (the far arm from the side, both facing
- *   away), on the bearer.
- * - "[state]_in": the blade inside or behind the victim, on the victim, drawn where the victim's own
- *   sprite sits, upright whatever way they lie.
- * What passes behind a body is already cut out of the "_under" and "_in" pictures along that body's
- * outline: BYOND draws a picture attached to a mob over the mob's whole body, underlay or not, so the
- * occlusion has to be in the picture. The bearer's pictures move with the bearer's lean and the victim's
- * with the victim. The held blades should be hidden while these play. Returns the holders.
- */
-/proc/mantis_reach_fx(mob/living/bearer, mob/living/victim, state, lifetime)
-	RETURN_TYPE(/list)
-	. = list()
-	if(QDELETED(bearer) || QDELETED(victim))
-		return
-	var/reach_dir = get_dir(bearer, victim)
-	if(!reach_dir)
-		return
-	for(var/part in list("under", "over", "in"))
-		var/full_state = "[state]_[part]"
-		if(!icon_exists(MANTIS_GORE_REACH_ICON, full_state))
-			continue
-		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(part == "in" ? victim : bearer, MANTIS_GORE_REACH_ICON, full_state, MANTIS_OVER_VICTIM_LAYER, lifetime)
-		if(!blades)
-			continue
-		blades.appearance_flags |= KEEP_APART|RESET_TRANSFORM
-		blades.vis_flags &= ~VIS_INHERIT_DIR
-		blades.dir = reach_dir
-		blades.pixel_x = -32
-		blades.pixel_y = -32
-		. += blades
-
-/**
- * The two points standing out of someone skewered, the far ends of the blades in them. Drawn on the
- * victim, upright. Out of a back that faces away (skewered from below), the picture is cut along the
- * body so only what stands past the shoulders shows.
- */
-/proc/mantis_impale_tips_fx(mob/living/victim, lunge_dir, model, lifetime)
-	var/state = "[model]_impale"
-	if(!icon_exists(MANTIS_GORE_ICON, state))
-		state = "mantis_impale"
-	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_OVER_VICTIM_LAYER, lifetime)
-	if(!tips)
-		return null
-	tips.appearance_flags |= KEEP_APART|RESET_TRANSFORM
-	tips.vis_flags &= ~VIS_INHERIT_DIR
-	tips.dir = lunge_dir
-	return tips
 
 /// The way [looker] turns to look at [seen], as face_atom() picks it, whatever state [looker] is in.
 /proc/mantis_face_dir(atom/looker, atom/seen)
