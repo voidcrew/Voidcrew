@@ -174,9 +174,11 @@
 	return null
 
 /// The flash, sparks, ring and shake of a killing blow on [where]. Only the victim flashes; the arms keep their look.
-/datum/hv_finisher/chrome/gorilla/proc/hit_stop(atom/movable/where, heavy = TRUE)
+/datum/hv_finisher/chrome/gorilla/proc/hit_stop(atom/movable/where, heavy = TRUE, spark_z = 0)
 	victim_rig?.flash()
-	gorilla_play_impact(user, where, "impact_gorilla")
+	var/obj/effect/abstract/cyberware_anim/sparks = gorilla_play_impact(user, where, "impact_gorilla")
+	if(sparks && spark_z)
+		sparks.pixel_z += spark_z
 	var/turf/spot = get_turf(where)
 	if(spot)
 		new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, heavy ? 1 : 0.6)
@@ -375,7 +377,7 @@
 		if("clap")
 			if(side_view())
 				// ...and close on the head from below and above as the body drops into them
-				arm_to("near", 110, 0.08 SECONDS, 6)
+				arm_to("near", 117, 0.08 SECONDS, 6)
 				arm_to("far", 95, 0.08 SECONDS, 6)
 				var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
 				if(held)
@@ -383,7 +385,8 @@
 			else
 				// Both fists in from the sides, meeting across the head
 				arms_to(-95, 0.08 SECONDS, -6)
-			hit_stop(victim_rig?.puppet("whole") || victim)
+			// The sparks go where the fists meet, on the head
+			hit_stop(victim_rig?.puppet("whole") || victim, TRUE, 9)
 		if("recover")
 			arms_to(0, 0.5 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/far_arm = arm_puppet("far")
@@ -906,7 +909,7 @@
 				animate(pixel_x = 0, pixel_y = 1, pixel_z = 0, transform = chrome_rig_turn(90 - bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
 			if(broke && !QDELETED(victim))
 				// A pool from the mouth where he lands
-				addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob/living, add_splatter_floor), get_turf(victim), FALSE), hold + 0.45 SECONDS)
+				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(gorilla_mouth_pool), victim), hold + 0.45 SECONDS)
 			for(var/half in list("upper", "lower"))
 				var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
 				if(part)
@@ -942,6 +945,12 @@
 			if(part)
 				animate(part, pixel_z = 6, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 				animate(pixel_z = 2, time = 0.12 SECONDS, easing = SINE_EASING | EASE_IN)
+
+/// A pool of [victim]'s blood where a broken back lands.
+/proc/gorilla_mouth_pool(mob/living/carbon/victim)
+	if(QDELETED(victim) || !isturf(victim.loc) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
+		return
+	new /obj/effect/decal/cleanable/blood(victim.loc, victim.get_static_viruses(), victim.get_blood_dna_list())
 
 /datum/hv_finisher/chrome/gorilla/backbreaker/cleanup_rigs()
 	// A broken back stays drawn bent for a while after
