@@ -306,7 +306,7 @@
 // =========================================================================
 
 /// The mark a wall impact leaves follows the injury: a dent with no broken skin, a floor half-moon and
-/// edge smear for a bleeding cut, a spray and runs for a heavy one. The body is pinned, then slides off.
+/// edge smear for a bleeding cut, a spray and runs for a heavy one. 
 /datum/unit_test/voidcrew_gorilla_gore/wall_impact
 
 /datum/unit_test/voidcrew_gorilla_gore/wall_impact/Run()
@@ -320,9 +320,6 @@
 	var/dents_before = LAZYLEN(wall.dent_decals)
 	victim.gorilla_wall_impact(wall, null)
 	TEST_ASSERT_EQUAL(LAZYLEN(wall.dent_decals), dents_before + 1, "An unhurt impact left no dent")
-	TEST_ASSERT(victim.has_offset("gorilla_wall_sag"), "The body wasn't pinned to the wall") // GORILLA_WALL_SAG
-	sleep(0.5 SECONDS)
-	TEST_ASSERT(!victim.has_offset("gorilla_wall_sag"), "The body stayed pinned to the wall")
 
 	// A bleeding cut: the half-moon and the edge
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)

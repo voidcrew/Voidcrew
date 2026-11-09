@@ -137,19 +137,25 @@
 	bearer_rig?.swing_arm("l", angle, time, reach)
 	bearer_rig?.swing_arm("r", angle, time, reach)
 
-/// Both arms heat and steam.
-/datum/hv_finisher/chrome/gorilla/proc/arms_strain(time)
-	if(!bearer_rig)
-		return
-	for(var/side in list("l", "r"))
-		bearer_rig.heat_arm(side, time)
-		bearer_rig.steam_arm(side, time)
-	playsound(user, 'sound/machines/steam_hiss.ogg', 35, TRUE)
-
 /// The bearer's punching hand, the attacking item for #509's hooks.
 /datum/hv_finisher/chrome/gorilla/proc/fist()
 	var/mob/living/carbon/bearer = user
 	return bearer.get_active_hand() || bearer.get_bodypart(BODY_ZONE_R_ARM)
+
+/// The bearer's arm on [which] ("near" or "far" to the viewer in a side view) to [angle], with [reach].
+/datum/hv_finisher/chrome/gorilla/proc/arm_to(which, angle, time, reach = 0)
+	if(!bearer_rig)
+		return
+	var/near = bearer_rig.near_side()
+	var/side = which == "near" ? near : (near == "l" ? "r" : "l")
+	bearer_rig.swing_arm(side, angle, time, reach)
+
+/// The bearer's arm puppet on [which] ("near" or "far"), or null.
+/datum/hv_finisher/chrome/gorilla/proc/arm_puppet(which)
+	if(!bearer_rig)
+		return null
+	var/near = bearer_rig.near_side()
+	return bearer_rig.puppet("arm_[which == "near" ? near : (near == "l" ? "r" : "l")]")
 
 /// The beat a stage begins with: poses and sounds. Lines come from enter_line().
 /datum/hv_finisher/chrome/gorilla/proc/pose(key)
@@ -167,9 +173,8 @@
 /datum/hv_finisher/chrome/gorilla/proc/enter_self_line(key)
 	return null
 
-/// The flash, sparks, ring and shake of a killing blow on [where].
+/// The flash, sparks, ring and shake of a killing blow on [where]. Only the victim flashes; the arms keep their look.
 /datum/hv_finisher/chrome/gorilla/proc/hit_stop(atom/movable/where, heavy = TRUE)
-	bearer_rig?.flash()
 	victim_rig?.flash()
 	gorilla_play_impact(user, where, "impact_gorilla")
 	var/turf/spot = get_turf(where)
@@ -240,6 +245,19 @@
 	var/datum/hv_finisher/chrome/gorilla/finisher = host
 	return finisher.enter_line(key)
 
+/**
+ * Keeps #509's heavy-hit spray and its lost-limb spray off [victim] for the blow being dealt now. A
+ * finisher lays its own blood; #509's full fan from a held body reads as blood out of nowhere.
+ */
+/proc/gorilla_hold_spray(mob/living/victim)
+	victim.hv_blood_spray_until = max(victim.hv_blood_spray_until, world.time + 1)
+	victim.hv_blood_spray_strength = INFINITY
+
+/// One short line of [victim]'s blood toward [direction], [tiles] long, and nothing more from #509 for this blow.
+/proc/gorilla_short_spray(mob/living/victim, direction, tiles = 2)
+	victim.hv_blood_throw(direction, tiles)
+	gorilla_hold_spray(victim)
+
 // =========================================================================
 // (A) THE HEAD CLAP
 // =========================================================================
@@ -258,8 +276,6 @@
 /datum/hv_finisher_stage/hold/gorilla/clap_hoist
 	key = "hoist"
 	duration = 0.65 SECONDS
-	enter_sound = 'sound/machines/hiss.ogg'
-	enter_volume = 40
 
 /datum/hv_finisher_stage/hold/gorilla/clap_squeeze
 	key = "squeeze"
@@ -307,16 +323,28 @@
 			victim_rig = new(victim, REVERSE_DIR(facing || user.dir))
 			if(victim_rig.snapshot())
 				var/obj/effect/abstract/chrome_puppet/held = victim_rig.add_puppet("whole", victim_rig.flat, TRUE)
-				// The held body is nearer the viewer than the bearer only when the bearer faces south.
-				held.layer = facing == SOUTH ? user.layer + 0.02 : user.layer - 0.02
+				// The held body is in front of the bearer, unless he faces away from the viewer.
+				held.layer = facing == NORTH ? user.layer - 0.02 : user.layer + 0.02
 				victim_rig.conceal()
 				var/list/toward = to_bearer()
-				animate(held, transform = matrix(), pixel_x = round(toward[1] * 0.6), pixel_y = round(toward[2] * 0.6), pixel_w = 0, pixel_z = 9, time = 0.4 SECONDS, easing = SINE_EASING | EASE_OUT)
+				animate(held, transform = matrix(), pixel_x = round(toward[1] * 0.7), pixel_y = round(toward[2] * 0.7), pixel_w = 0, pixel_z = 6, time = 0.4 SECONDS, easing = SINE_EASING | EASE_OUT)
 			else
 				QDEL_NULL(victim_rig)
-			arms_to(side_view() ? 80 : 140, 0.4 SECONDS, 3)
+			if(side_view())
+				// The near fist holds the shirt front, kept under the bearer's face; the far one waits low behind.
+				var/obj/effect/abstract/chrome_puppet/near_arm = arm_puppet("near")
+				if(near_arm)
+					near_arm.layer = user.layer + 0.03
+				arm_to("near", 100, 0.4 SECONDS, 4)
+				arm_to("far", 40, 0.4 SECONDS, 2)
+			else
+				// Seen from the front or back: both hands on the shoulders of the body held in front
+				for(var/side in list("l", "r"))
+					var/obj/effect/abstract/chrome_puppet/arm = bearer_rig?.puppet("arm_[side]")
+					if(arm)
+						arm.layer = facing == NORTH ? user.layer + 0.01 : user.layer + 0.03
+				arms_to(-25, 0.4 SECONDS)
 		if("squeeze")
-			arms_strain(1 SECONDS)
 			bearer_rig?.tremble(1 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
 			if(held)
@@ -332,18 +360,35 @@
 		if("toss")
 			var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
 			if(held)
-				animate(held, pixel_z = 13, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT)
-				animate(pixel_z = 9, time = 0.15 SECONDS, easing = SINE_EASING | EASE_IN)
-			arms_to(side_view() ? 20 : 80, 0.15 SECONDS, 4)
+				animate(held, pixel_z = 10, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT)
+				animate(pixel_z = 6, time = 0.15 SECONDS, easing = SINE_EASING | EASE_IN)
+			if(side_view())
+				// Both fists draw back: the near one low, the far one up by the head. An arm swung high about
+				// the shoulder would cross the bearer's face from the side, so the far arm is lifted instead.
+				arm_to("near", 30, 0.15 SECONDS, 4)
+				arm_to("far", 50, 0.15 SECONDS, 2)
+				var/obj/effect/abstract/chrome_puppet/far_arm = arm_puppet("far")
+				if(far_arm)
+					animate(far_arm, pixel_z = 9, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+			else
+				arms_to(80, 0.15 SECONDS, 4)
 		if("clap")
-			arms_to(side_view() ? 95 : 160, 0.08 SECONDS, 5)
+			if(side_view())
+				// ...and close on the head from below and above as the body drops into them
+				arm_to("near", 110, 0.08 SECONDS, 6)
+				arm_to("far", 95, 0.08 SECONDS, 6)
+				var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
+				if(held)
+					animate(held, pixel_z = 0, time = 0.08 SECONDS, easing = SINE_EASING | EASE_IN)
+			else
+				// Both fists in from the sides, meeting across the head
+				arms_to(-95, 0.08 SECONDS, -6)
 			hit_stop(victim_rig?.puppet("whole") || victim)
 		if("recover")
 			arms_to(0, 0.5 SECONDS)
-			if(bearer_rig)
-				for(var/side in list("l", "r"))
-					bearer_rig.heat_arm(side, 0.6 SECONDS, 0)
-					bearer_rig.steam_arm(side, 0.4 SECONDS)
+			var/obj/effect/abstract/chrome_puppet/far_arm = arm_puppet("far")
+			if(far_arm)
+				animate(far_arm, pixel_z = 0, time = 0.5 SECONDS, flags = ANIMATION_PARALLEL)
 
 /datum/hv_finisher/chrome/gorilla/clap/beat(key)
 	if(key != "clap" || QDELETED(victim))
@@ -368,13 +413,14 @@
 	. = "burst"
 	if(HAS_TRAIT(victim, TRAIT_NODISMEMBER) && HAS_TRAIT(victim, TRAIT_CYBERWARE_UNBREAKABLE_BONES))
 		// The Atlas frame: nothing bursts and nothing breaks
-		victim.apply_damage(35, BRUTE, head, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND, attack_direction = direction)
+		victim.apply_damage(35, BRUTE, head, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND)
 		victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, 20)
 		victim.hv_add_hit_line("[victim]'s frame holds!", HV_LINE_BOLD, "Your frame holds!")
 		. = "frame"
 	else if(HAS_TRAIT(victim, TRAIT_HEAD_INJURY_BLOCKED) || hv_crit_cover_rating(victim, head, MELEE) >= GORILLA_CLAP_HELMET_ARMOUR)
 		// A helmet or plating: no burst. It crumples and the skull caves in under it.
-		victim.apply_damage(35, BRUTE, head, wound_bonus = CANT_WOUND, attack_direction = direction)
+		// No attack direction: a sealed helmet throws no blood
+		victim.apply_damage(35, BRUTE, head, wound_bonus = CANT_WOUND)
 		var/obj/item/clothing/helmet
 		if(ishuman(victim))
 			var/mob/living/carbon/human/human_victim = victim
@@ -388,10 +434,11 @@
 			victim.hv_add_hit_line("[victim]'s skull caves in!", HV_LINE_HUGE, "Your skull caves in!", DEFAULT_MESSAGE_RANGE)
 		. = "helmet"
 	else
-		victim.apply_damage(30, BRUTE, head, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND, attack_direction = direction)
+		// No attack direction: the burst lays its own blood (gorilla_clap_burst())
+		victim.apply_damage(30, BRUTE, head, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND)
 		if(QDELETED(victim) || isnull(victim.get_bodypart(BODY_ZONE_HEAD)))
 			. = "burst"
-		else if(!victim.hv_burst_head(direction))
+		else if(!gorilla_clap_burst(victim, direction))
 			// A head that can't come off: the skull caves in instead
 			if(hv_crit_apply_wound(head, /datum/wound/blunt/bone/critical/hv_skull, direction, fist))
 				victim.hv_add_hit_line("[victim]'s skull caves in!", HV_LINE_HUGE, "Your skull caves in!", DEFAULT_MESSAGE_RANGE)
@@ -400,6 +447,72 @@
 		victim.hv_flush_hit()
 	playsound(victim, 'sound/effects/wounds/splatter.ogg', 60, TRUE)
 	log_combat(user, victim, "head-clapped", "gorilla arms", "([.])")
+
+/**
+ * #509's head burst (hv_burst_head_apart()) sized for two fists at arm's length: the gibs and splatter
+ * stay round the head, one short line of blood goes out along [burst_dir], the eyes, ears and tongue
+ * drop on the spot or a tile out and the brain lands a tile or two away, whole, for revival.
+ * Returns TRUE if the head burst.
+ */
+/proc/gorilla_clap_burst(mob/living/carbon/victim, burst_dir)
+	if(HAS_TRAIT(victim, TRAIT_GODMODE))
+		return FALSE
+	var/obj/item/bodypart/head/head = victim.get_bodypart(BODY_ZONE_HEAD)
+	if(!head || !head.can_dismember())
+		return FALSE
+	if(!burst_dir)
+		burst_dir = pick(GLOB.alldirs)
+	var/turf/here = get_turf(victim)
+	var/organic = IS_ORGANIC_LIMB(head)
+	var/bleeds = head.can_bleed()
+	var/list/blood_dna = bleeds ? victim.get_blood_dna_list() : null
+	var/blood_color = bleeds ? victim.get_bloodtype()?.get_color() : null
+	var/list/obj/item/organ/loose = list()
+	for(var/obj/item/organ/organ in head)
+		if(!(organ.organ_flags & ORGAN_UNREMOVABLE))
+			loose += organ
+	// One short line; the lost-limb spray the dismember would add is held off
+	gorilla_short_spray(victim, burst_dir, GORILLA_CLAP_SPRAY_TILES)
+	if(!head.dismember(BRUTE, silent = TRUE))
+		return FALSE
+	// dismember() throws the head; a burst head comes apart where it was
+	if(isturf(here) && head.loc != here)
+		head.forceMove(here)
+	// No violent removal: the brain has to stay good for revival
+	head.drop_organs()
+	qdel(head)
+	if(isturf(here))
+		if(!organic)
+			new /obj/effect/gibspawner/robot(here, victim)
+		else if(bleeds)
+			gorilla_clap_gibs(here, burst_dir, blood_dna)
+			hv_head_burst_splatter(here, burst_dir, blood_color)
+		playsound(here, 'sound/effects/wounds/splatter.ogg', 80, TRUE)
+	for(var/obj/item/organ/organ as anything in loose)
+		if(QDELETED(organ) || !isturf(organ.loc))
+			continue
+		if(istype(organ, /obj/item/organ/brain))
+			var/datum/callback/landed = blood_dna ? CALLBACK(organ, TYPE_PROC_REF(/obj/item/organ, hv_landed), blood_dna) : null
+			hv_fling_organ(organ, burst_dir, GORILLA_CLAP_BRAIN_MIN, GORILLA_CLAP_BRAIN_MAX, landed)
+		else if(prob(50))
+			hv_fling_organ(organ, turn(burst_dir, pick(-45, 0, 45)), 1, 1)
+	victim.hv_add_hit_line(pick("[victim]'s head bursts apart!", "[victim]'s skull bursts open!"), HV_LINE_HUGE, range = DEFAULT_MESSAGE_RANGE)
+	return TRUE
+
+/**
+ * The clap's gibs: piled round the head, one a tile out along [burst_dir]. #509's burst gibs streak up to
+ * three tiles across a cone, which from two fists at arm's length reads as a blast.
+ */
+/proc/gorilla_clap_gibs(turf/where, burst_dir, list/blood_dna)
+	for(var/i in 1 to 3)
+		var/obj/effect/decal/cleanable/blood/gibs/gib = new(where, null, blood_dna)
+		if(!QDELETED(gib))
+			gib.pixel_x = rand(-8, 8)
+			gib.pixel_y = rand(-8, 8)
+	var/turf/ahead = get_step(where, burst_dir)
+	if(ahead && !isgroundlessturf(ahead) && !hv_blood_spray_blocked(ahead))
+		new /obj/effect/decal/cleanable/blood/gibs(ahead, null, blood_dna)
+	new /obj/effect/decal/cleanable/blood/gibs/core(where, null, blood_dna)
 
 /// A crumpled dent drawn over the helmet for a while.
 /proc/gorilla_helmet_dent(mob/living/carbon/victim)
@@ -499,7 +612,6 @@
 				animate(part, pixel_x = part.pixel_x - round(toward[1] * 0.18), pixel_y = part.pixel_y - round(toward[2] * 0.18), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 			arms_to(side_view() ? 45 : 30, 0.3 SECONDS, 3)
 		if("strain")
-			arms_strain(1.35 SECONDS)
 			bearer_rig?.tremble(1.3 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/arm = victim_rig?.puppet("arm")
 			if(arm)
@@ -556,6 +668,7 @@
 			victim.hv_flush_hit()
 			playsound(victim, 'sound/effects/wounds/splatter.ogg', 60, TRUE)
 			gorilla_play_impact(user, victim, "impact_gorilla")
+			victim.Shake(2, 1, 0.2 SECONDS)
 			if(held_limb.can_bleed())
 				victim.add_splatter_floor(get_turf(victim), small_drip = TRUE)
 
@@ -614,6 +727,9 @@
 	// The spray runs back at the bearer: the last hit on the body came from them.
 	victim.hv_hold_attack_message("[user] tears [victim]'s [limb.plaintext_zone] off at the shoulder!", "[user] tears your [limb.plaintext_zone] off at the shoulder!", "You tear [victim]'s [limb.plaintext_zone] off at the shoulder!", user, vision_range = DEFAULT_MESSAGE_RANGE)
 	victim.apply_damage(10, BRUTE, limb, wound_bonus = CANT_WOUND, attack_direction = toward_bearer)
+	// One straight line back at the bearer, who takes it; no fan past him
+	if(limb.can_bleed())
+		gorilla_short_spray(victim, toward_bearer, 2)
 	var/obj/item/bodypart/torn = gorilla_tear_limb(victim, limb, toward_bearer)
 	victim.hv_flush_hit()
 	if(isnull(torn))
@@ -672,8 +788,6 @@
 /datum/hv_finisher_stage/hold/gorilla/back_hoist
 	key = "hoist"
 	duration = 0.85 SECONDS
-	enter_sound = 'sound/machines/hiss.ogg'
-	enter_volume = 40
 
 /datum/hv_finisher_stage/hold/gorilla/back_press
 	key = "press"
@@ -686,7 +800,7 @@
 
 /datum/hv_finisher_stage/recover/gorilla/backbreaker
 	key = "roll"
-	duration = 0.75 SECONDS
+	duration = 0.8 SECONDS
 
 /datum/hv_finisher/chrome/gorilla/backbreaker/pick_zone()
 	target_zone = BODY_ZONE_CHEST
@@ -723,14 +837,18 @@
 			if(victim_rig.snapshot())
 				for(var/half in list("upper", "lower"))
 					var/obj/effect/abstract/chrome_puppet/part = victim_rig.add_puppet(half, victim_rig.cut("rig_[half]"), TRUE, user.layer + 0.05)
-					// Overhead on his back, flat: over the bearer's head
-					animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 17, transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
+					// Overhead on his back, flat, held clear above the bearer's head
+					animate(part, pixel_x = toward[1], pixel_y = toward[2], pixel_w = 0, pixel_z = 29, transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.55 SECONDS, easing = SINE_EASING | EASE_OUT)
 				victim_rig.conceal()
 			else
 				QDEL_NULL(victim_rig)
-			arms_to(175, 0.5 SECONDS, 4)
+			// Fists up under the body
+			if(side_view())
+				arm_to("near", 166, 0.5 SECONDS, 9)
+				arm_to("far", 174, 0.5 SECONDS, 9)
+			else
+				arms_to(170, 0.5 SECONDS, 8)
 		if("press")
-			arms_strain(1 SECONDS)
 			bearer_rig?.tremble(1 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
 			var/obj/effect/abstract/chrome_puppet/lower = victim_rig?.puppet("lower")
@@ -773,15 +891,22 @@
 				if(arm)
 					animate(arm, pixel_z = 0, time = 0.4 SECONDS, flags = ANIMATION_PARALLEL)
 			arms_to(0, 0.5 SECONDS)
-			// Off the knee onto their own tile, still bent if the back broke. The halves turn about the belt,
-			// seven pixels under the middle, so they sit a pixel up to lie where a lying body lies.
-			var/bend = broke ? 26 : 0
+			// Off the knee onto their own tile, still bent if the back broke. A broken back hangs folded over
+			// the knee for a moment first. The halves turn about the belt, seven pixels under the middle, so
+			// they sit a pixel up to lie where a lying body lies.
+			var/bend = broke ? 33 : 0
+			var/hold = broke ? GORILLA_BACK_FOLD_HOLD : 0
 			var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
 			var/obj/effect/abstract/chrome_puppet/lower = victim_rig?.puppet("lower")
 			if(upper)
-				animate(upper, pixel_x = 0, pixel_y = 1, pixel_z = 0, transform = chrome_rig_turn(90 + bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
+				animate(upper, transform = chrome_rig_turn(90 + (broke ? 38 : 0), 0, BACK_WAIST_PIVOT_Y), time = hold)
+				animate(pixel_x = 0, pixel_y = 1, pixel_z = 0, transform = chrome_rig_turn(90 + bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
 			if(lower)
-				animate(lower, pixel_x = 0, pixel_y = 1, pixel_z = 0, transform = chrome_rig_turn(90 - bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
+				animate(lower, transform = chrome_rig_turn(90 - (broke ? 38 : 0), 0, BACK_WAIST_PIVOT_Y), time = hold)
+				animate(pixel_x = 0, pixel_y = 1, pixel_z = 0, transform = chrome_rig_turn(90 - bend, 0, BACK_WAIST_PIVOT_Y), time = 0.45 SECONDS, easing = SINE_EASING | EASE_IN | EASE_OUT)
+			if(broke && !QDELETED(victim))
+				// A pool from the mouth where he lands
+				addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob/living, add_splatter_floor), get_turf(victim), FALSE), hold + 0.45 SECONDS)
 			for(var/half in list("upper", "lower"))
 				var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
 				if(part)
@@ -791,7 +916,7 @@
 	if(key != "slam" || QDELETED(victim))
 		return
 	hit_stop(victim_rig?.puppet("upper") || victim, TRUE)
-	playsound(victim, 'sound/effects/wounds/crack2.ogg', 90, TRUE)
+	gorilla_backbreaker_sound(victim)
 	playsound(victim, 'sound/effects/meteorimpact.ogg', 50, TRUE)
 	var/turf/knee = get_turf(user)
 	if(knee)
@@ -799,6 +924,9 @@
 		cyberware_grey_dust(knee)
 	var/outcome = gorilla_backbreak(victim, user, fist())
 	broke = outcome == "broken"
+	if(broke && !QDELETED(victim))
+		// A trickle from the mouth, under where his head hangs over the knee
+		victim.add_splatter_floor(get_turf(victim), TRUE)
 	if(broke)
 		// The body folds over the knee
 		var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
@@ -834,7 +962,8 @@
 		return null
 	var/direction = get_dir(user, victim)
 	victim.hv_hold_attack_message("[user] drops to one knee and brings [victim] down across it!", "[user] drops to one knee and brings you down across it!", "You drop to one knee and bring [victim] down across it!", user, vision_range = DEFAULT_MESSAGE_RANGE)
-	victim.apply_damage(45, BRUTE, chest, victim.run_armor_check(chest, MELEE), wound_bonus = CANT_WOUND, attack_direction = direction)
+	// No attack direction: a body bent over a knee throws no blood across the room (#509's heavy-hit spray)
+	victim.apply_damage(45, BRUTE, chest, victim.run_armor_check(chest, MELEE), wound_bonus = CANT_WOUND)
 	. = "bruised"
 	if(HAS_TRAIT(victim, TRAIT_CYBERWARE_UNBREAKABLE_BONES))
 		victim.hv_add_hit_line("[victim]'s frame holds!", HV_LINE_BOLD, "Your frame holds!")

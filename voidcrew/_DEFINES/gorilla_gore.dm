@@ -89,6 +89,8 @@
 #define GORILLA_THROW_SHORT 3
 /// Most decals a Gorilla throw leaves along its path.
 #define GORILLA_TRAIL_MAX 4
+/// Most blood drops and splats one tile of a bleeding body's skid gets.
+#define GORILLA_SKID_SPLATS 4
 
 // What a wall impact draws, by the injury it caused (owner D38).
 /// No skin broken: a dent and chips.
@@ -118,7 +120,19 @@
 #define GORILLA_BACK_ARMOUR 40
 /// How long a broken back's fold stays drawn after the finisher.
 #define GORILLA_FOLD_TIME (10 SECONDS)
+/// The head clap's burst: one short line of blood this many tiles long.
+#define GORILLA_CLAP_SPRAY_TILES 2
+/// How far the head clap throws the brain (the eyes, ears and tongue drop on the spot or a tile out).
+#define GORILLA_CLAP_BRAIN_MIN 1
+#define GORILLA_CLAP_BRAIN_MAX 2
+/// How long a broken back stays folded over the knee before it is rolled off.
+#define GORILLA_BACK_FOLD_HOLD (0.3 SECONDS)
 
-/// Offset and filter sources.
-#define GORILLA_WALL_SAG "gorilla_wall_sag"
+// The landed piston punch, the haymaker's hit and the backbreaker's break (gorilla_punch.dm's sound procs).
+/// A sound key (/datum/sound_effect/gorilla_piston_punch): one of three punches at random.
+#define GORILLA_PUNCH_SOUND "gorilla_piston_punch"
+#define GORILLA_HAYMAKER_SOUND 'voidcrew/modules/hyperviolence_gorilla/sound/gorilla_haymaker.ogg'
+#define GORILLA_BACKBREAKER_SOUND 'voidcrew/modules/hyperviolence_gorilla/sound/gorilla_backbreaker.ogg'
+
+/// Filter sources.
 #define GORILLA_PUPPET_HIDE "gorilla_puppet_hide"

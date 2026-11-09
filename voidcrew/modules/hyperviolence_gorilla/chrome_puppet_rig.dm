@@ -217,13 +217,25 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		return FALSE
 	add_puppet("body", cut_without_arms("both"))
 	// The far arm in a side view sits under the body; the near one over it.
-	var/near = facing == WEST ? "l" : "r"
+	var/near = near_side()
 	for(var/side in list("l", "r"))
-		var/obj/effect/abstract/chrome_puppet/arm = add_puppet("arm_[side]", cut("rig_arm_[side]"))
-		if(facing in list(EAST, WEST))
+		var/side_view = (facing in list(EAST, WEST))
+		var/icon/picture = cut("rig_arm_[side]")
+		if(side_view && side != near)
+			// The far arm is hidden behind the body in a side view, so its cut is empty: draw it as the
+			// near arm, a pixel further back and in shadow, so a raised pair reads as two arms.
+			picture = cut("rig_arm_[near]")
+			picture.Shift(facing == EAST ? WEST : EAST, 1)
+			picture.Blend(rgb(170, 170, 178), ICON_MULTIPLY)
+		var/obj/effect/abstract/chrome_puppet/arm = add_puppet("arm_[side]", picture)
+		if(side_view)
 			arm.layer = side == near ? body.layer + 0.01 : body.layer - 0.01
 	conceal()
 	return TRUE
+
+/// The arm nearer the viewer in a side view ("l" or "r"); the right arm in other views.
+/datum/chrome_rig/proc/near_side()
+	return facing == WEST ? "l" : "r"
 
 /// Turns the arm on [side] to [angle] degrees up from hanging (0) over [time], with [reach] pixels of piston out along it.
 /datum/chrome_rig/proc/swing_arm(side, angle, time, reach = 0, easing = SINE_EASING)
@@ -236,22 +248,6 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	var/push_x = -reach * sin(turn)
 	var/push_y = -reach * cos(turn)
 	animate(arm, transform = chrome_rig_turn(turn, pivot[1], pivot[2], round(push_x), round(push_y)), time = time, easing = easing)
-
-/// Heats an arm puppet's colour toward white-hot over [time].
-/datum/chrome_rig/proc/heat_arm(side, time, heat = 1)
-	var/obj/effect/abstract/chrome_puppet/arm = puppet("arm_[side]")
-	if(!arm)
-		return
-	if(!islist(arm.color))
-		arm.color = list(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
-	var/list/hot = list(1, 0, 0, 0, 1 - 0.1 * heat, 0, 0, 0, 1 - 0.2 * heat, 0.3 * heat, 0.16 * heat, 0.04 * heat)
-	animate(arm, color = hot, time = time, flags = ANIMATION_PARALLEL)
-
-/// A puff of steam off an arm puppet.
-/datum/chrome_rig/proc/steam_arm(side, emit_time = 0.3 SECONDS)
-	var/obj/effect/abstract/chrome_puppet/arm = puppet("arm_[side]")
-	if(arm)
-		cyberware_anim_particles(arm, /particles/smoke/steam/gorilla_puff, FLOAT_LAYER, emit_time, emit_time + 0.8 SECONDS)
 
 /// Every puppet trembles a pixel for [time].
 /datum/chrome_rig/proc/tremble(time = 0.4 SECONDS)

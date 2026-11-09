@@ -49,12 +49,9 @@
 		return FALSE
 	StartCooldown()
 	gorilla_cooldown(bearer, COOLDOWN_GORILLA_POUND, GORILLA_POUND_COOLDOWN)
-	// The crouch: down and wide, both arms heating
+	// The crouch: down and wide
 	animate(bearer, pixel_z = -2, time = GORILLA_POUND_CROUCH, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
 	animate(pixel_z = 2, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
-	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_heavy_arms(bearer))
-		arm.play_heat(GORILLA_POUND_CROUCH, GORILLA_POUND_CROUCH + 0.3 SECONDS)
-	playsound(bearer, 'sound/machines/hiss.ogg', 40, TRUE, frequency = 0.6)
 	crouch_timer = addtimer(CALLBACK(src, PROC_REF(slam), get_turf(bearer)), GORILLA_POUND_CROUCH, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	return TRUE
 
@@ -83,8 +80,6 @@
 	playsound(where, 'sound/effects/meteorimpact.ogg', 80, TRUE, 8)
 	cyberware_piledriver_impact_fx(where, 1.5)
 	cyberware_grey_dust(where)
-	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_heavy_arms(bearer))
-		arm.play_pump()
 	for(var/mob/living/shaken in range(3, where))
 		if(shaken.client && shaken != bearer)
 			shake_camera(shaken, 3, get_dist(shaken, where) <= 1 ? 2 : 1)

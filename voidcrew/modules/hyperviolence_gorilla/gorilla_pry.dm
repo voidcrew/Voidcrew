@@ -5,8 +5,8 @@
  * powered one, refused through bolts, welds and seals), with two changes:
  * - Trader outpost doors never give: the sanctuary airlocks and any door on an outpost's protected
  *   ground. Trying counts as aggression against the outpost.
- * - A powered pry strains: every half second the pistons pump and steam, the arms heat and tremble, the
- *   door shakes, the seam opens a little wider and throws sparks.
+ * - A powered pry strains: every half second the bearer trembles, the door shakes, the seam opens a
+ *   little wider and throws sparks.
  */
 /datum/element/door_pryer/gorilla
 
@@ -85,11 +85,6 @@
 	if(QDELETED(bearer) || QDELETED(door) || !DOING_INTERACTION_WITH_TARGET(bearer, door))
 		return
 	beats++
-	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_heavy_arms(bearer))
-		arm.play_pump()
-		if(beats == 1)
-			arm.play_heat(4 SECONDS, 4.5 SECONDS)
-	cyberware_anim_particles(bearer, /particles/smoke/steam/gorilla_puff, GORILLA_ANIM_TOP_LAYER, 0.2 SECONDS, 1 SECONDS)
 	bearer.do_jitter_animation(20)
 	door.Shake(1, 0, 0.3 SECONDS)
 	seam.set_width(beats)

@@ -3,10 +3,10 @@
  *
  * A chrome wheel chip on each real Gorilla arm. Hold Use chrome to wind up and let go to throw it at
  * whoever is in the tile you face; or tap Use chrome (or pick the chip) and click someone next to you.
- * The wind-up slows the bearer, lets go of any grab, leans back and heats the arm, so the target has a
+ * The wind-up slows the bearer, lets go of any grab and leans back, so the target has a
  * beat to step out of line. The hit sends the body flying along the safe path, further for a full
  * charge; into a wall it hits harder and cracks the chest. A swing at nobody staggers the bearer.
- * Held too long, or called off, the pistons vent and the charge is lost.
+ * Held too long, or called off, the charge is lost.
  *
  * The haymaker and every Gorilla finisher share one cooldown, kept on the bearer, so they never chain.
  */
@@ -109,7 +109,6 @@
 	charge_started = world.time
 	pressed_at = world.time
 	bearer.apply_status_effect(/datum/status_effect/gorilla_windup, src)
-	playsound(bearer, 'sound/machines/hiss.ogg', 35, TRUE, frequency = 0.7)
 	vent_timer = addtimer(CALLBACK(src, PROC_REF(vent)), GORILLA_HAYMAKER_VENT_AFTER, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /// Ends the wind-up without throwing anything. Clears every timer and the look.
@@ -128,7 +127,7 @@
 		if(windup?.action == src)
 			qdel(windup)
 
-/// Held too long, or called off: steam, a short cooldown, nothing thrown.
+/// Held too long, or called off: a short cooldown, nothing thrown.
 /datum/action/cooldown/cyberware/gorilla_haymaker/proc/vent()
 	vent_timer = null
 	if(!charging())
@@ -137,8 +136,6 @@
 	stop_charge()
 	if(QDELETED(bearer))
 		return
-	playsound(bearer, 'sound/machines/steam_hiss.ogg', 50, TRUE)
-	cyberware_anim_particles(bearer, /particles/smoke/steam/cyberware_vent, GORILLA_ANIM_TOP_LAYER, 0.3 SECONDS, 1.2 SECONDS)
 	gorilla_spend_pistons(bearer, GORILLA_PISTONS_VENTED)
 	if(bearer.click_intercept == src)
 		releasing = TRUE
@@ -210,7 +207,6 @@
 		playsound(bearer, 'sound/items/weapons/punchmiss.ogg', 50, TRUE)
 		bearer.visible_message(span_danger("[bearer]'s fist hits nothing but air!"), span_userdanger("Your fist hits nothing but air!"))
 		bearer.adjust_staggered_up_to(1 SECONDS, 1 SECONDS)
-		arm.play_pump()
 		return
 	var/charge = clamp((held - GORILLA_HAYMAKER_MIN_CHARGE) / (GORILLA_HAYMAKER_FULL_CHARGE - GORILLA_HAYMAKER_MIN_CHARGE), 0, 1)
 	gorilla_haymaker_hit(bearer, victim, arm, charge)
@@ -259,6 +255,9 @@
 	if(iscarbon(victim))
 		var/mob/living/carbon/carbon_victim = victim
 		wounds_before = carbon_victim.gorilla_wound_snapshot()
+	if(flies)
+		// The flight leaves its own trail and the wall its own marks; no #509 fan on top of them
+		gorilla_hold_spray(victim)
 	var/dealt = victim.apply_damage(damage, BRUTE, zone, armour, wound_bonus = GORILLA_PUNCH_WOUND_BONUS + 5, attack_direction = direction, attacking_item = hand)
 	var/wounded = FALSE
 	if(iscarbon(victim) && !QDELETED(victim))
@@ -268,8 +267,7 @@
 		wounded = gorilla_new_wound(carbon_victim, wounds_before)
 	victim.hv_flush_hit()
 	gorilla_register_aggression(victim, bearer)
-	playsound(victim, 'sound/effects/meteorimpact.ogg', 50, TRUE)
-	playsound(victim, 'sound/items/weapons/punch4.ogg', 70, TRUE)
+	gorilla_haymaker_impact_sound(victim)
 	arm.gorilla_punch_fx(bearer, victim, TRUE)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
 	shake_camera(victim, 3, 2)
@@ -297,7 +295,7 @@
 // THE WIND-UP
 // =========================================================================
 
-/// The bearer winding up a haymaker: slowed, empty-handed of grabs, leaning back with the arm heating.
+/// The bearer winding up a haymaker: slowed, empty-handed of grabs, leaning back, trembling at full charge.
 /datum/status_effect/gorilla_windup
 	id = "gorilla_windup"
 	alert_type = null
@@ -306,10 +304,6 @@
 	status_type = STATUS_EFFECT_UNIQUE
 	/// The haymaker winding up
 	var/datum/action/cooldown/cyberware/gorilla_haymaker/action
-	/// The heat glow over the arm
-	var/obj/effect/abstract/cyberware_anim/heat
-	/// Steam off the arm
-	var/obj/effect/abstract/cyberware_anim/steam
 	/// Trembling at full charge
 	var/trembling = FALSE
 
@@ -329,20 +323,12 @@
 	var/dx = (back & EAST) ? 2 : ((back & WEST) ? -2 : 0)
 	var/dz = (back & NORTH) ? 1 : 0
 	owner.add_offsets(id, x_add = dx, z_add = dz)
-	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm = action?.organ
-	if(istype(arm))
-		heat = arm.play_heat(GORILLA_HAYMAKER_FULL_CHARGE, duration)
-	steam = cyberware_anim_particles(owner, /particles/smoke/steam/gorilla_puff, GORILLA_ANIM_TOP_LAYER, duration, duration + 1 SECONDS)
 	return TRUE
 
 /datum/status_effect/gorilla_windup/on_remove()
 	UnregisterSignal(owner, COMSIG_MOB_STATCHANGE)
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/gorilla_windup)
 	owner.remove_offsets(id)
-	QDEL_NULL(heat)
-	if(steam)
-		steam.stop_particles()
-		steam = null
 	var/datum/action/cooldown/cyberware/gorilla_haymaker/haymaker = action
 	action = null
 	haymaker?.windup_lost()
@@ -360,9 +346,8 @@
 		return
 	if(world.time - action.charge_started < GORILLA_HAYMAKER_FULL_CHARGE)
 		return
-	// Full: a light on the fist and a tremble
+	// Full: a tremble
 	trembling = TRUE
-	owner.mob_light(1.5, 0.8, "#ffb35c", max(1, duration - world.time))
 	owner.do_jitter_animation(30)
 
 /datum/status_effect/gorilla_windup/proc/on_stat_change(datum/source, new_stat, old_stat)
@@ -372,17 +357,3 @@
 
 /datum/movespeed_modifier/gorilla_windup
 	multiplicative_slowdown = 1.5
-
-/// A thin puff of steam off a working arm.
-/particles/smoke/steam/gorilla_puff
-	icon_state = list("steam_1" = 1, "steam_2" = 1, "steam_3" = 2)
-	count = 20
-	spawning = 1.2
-	lifespan = 0.7 SECONDS
-	fade = 0.4 SECONDS
-	position = generator(GEN_BOX, list(-8, -2, 0), list(8, 6, 0), UNIFORM_RAND)
-	velocity = generator(GEN_VECTOR, list(-0.3, 0.6, 0), list(0.3, 1.2, 0), NORMAL_RAND)
-	gravity = list(0, 0.15)
-	friction = 0.2
-	grow = 0.04
-	scale = 0.45

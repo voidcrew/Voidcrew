@@ -7,14 +7,14 @@
  * grille. It never launches at all from a tile with no gravity. A wall or a standing body in the way
  * is hit, as tg would.
  *
- * Along the way the body leaves a scuff and a little dust on each tile, or a blood streak if it bleeds,
- * at most GORILLA_TRAIL_MAX of them.
+ * Bodies fly flat, without spinning, and skid. Along the way the body leaves a scuff and a little dust
+ * on each tile, or a ragged smear of blood drops if it bleeds, on at most GORILLA_TRAIL_MAX tiles.
  *
  * Any hard throw into a wall (a Gorilla's or anyone else's) leaves a mark chosen by the injury the body
  * carries when it hits (owner D38): no broken skin dents the wall and knocks chips off it; a bleeding
  * cut or a compound fracture splashes a half-moon on the floor and smears the wall's edge; heavy
- * bleeding or a torn artery sprays up the wall and runs. The body is pinned to the wall for a moment
- * and slides down it. A haymaker always dents the wall as well, and adds its own damage and a cracked
+ * bleeding or a torn artery sprays up the wall and runs. The body drops at the foot of the wall with
+ * tg's knockdown. A haymaker always dents the wall as well, and adds its own damage and a cracked
  * chest.
  */
 
@@ -93,7 +93,7 @@
 	trail_left++
 	var/travel = get_dir(old_loc, victim) || dir
 	if(bleeds())
-		hv_blood_lay_spray(left, /obj/effect/decal/cleanable/blood/hv_spray/streak, travel, victim.get_blood_dna_list(), victim.get_static_viruses())
+		gorilla_lay_skid_blood(left, travel, victim.get_blood_dna_list(), victim.get_static_viruses())
 		return
 	new /obj/effect/temp_visual/gorilla_scuff(left, travel)
 	var/obj/effect/temp_visual/mook_dust/dust = cyberware_grey_dust(left)
@@ -107,6 +107,35 @@
 	if(isfloorturf(stop) && stop.has_gravity() && bleeds() && trail_left < GORILLA_TRAIL_MAX)
 		hv_blood_lay_spray(stop, /obj/effect/decal/cleanable/blood/hv_spray, throwing_datum?.init_dir || victim.dir, victim.get_blood_dna_list(), victim.get_static_viruses())
 	end()
+
+/**
+ * A bleeding body's skid over [floor] along [travel]: two to GORILLA_SKID_SPLATS drops and small splats
+ * of tg's blood, each a different shape, size and place along the line, so tiles don't repeat.
+ */
+/proc/gorilla_lay_skid_blood(turf/floor, travel, list/blood_dna, list/viruses)
+	var/along_x = (travel & EAST) ? 1 : ((travel & WEST) ? -1 : 0)
+	var/along_y = (travel & NORTH) ? 1 : ((travel & SOUTH) ? -1 : 0)
+	for(var/i in 1 to rand(2, GORILLA_SKID_SPLATS))
+		var/obj/effect/decal/cleanable/blood/splatter/gorilla_skid/splat = new(floor, viruses, blood_dna)
+		if(QDELETED(splat))
+			continue
+		// Spread along the line of travel, a little either side of it
+		var/along = rand(-13, 13)
+		var/across = rand(-3, 3)
+		splat.pixel_x = along * along_x + across * along_y
+		splat.pixel_y = along * along_y + across * along_x
+		var/matrix/shape = matrix()
+		var/size = pick(0.6, 0.75, 0.9, 1.1)
+		shape.Scale(size * pick(1, -1), size)
+		shape.Turn(pick(0, 90, 180, 270))
+		splat.transform = shape
+
+/// One drop or splat of a bleeding body's skid. Several share a tile.
+/obj/effect/decal/cleanable/blood/splatter/gorilla_skid
+	random_icon_states = list("gibbl1", "gibbl2", "gibbl3", "gibbl4", "gibbl5", "drip2", "drip4")
+	mergeable_decal = FALSE
+	// Thin enough that walking through it does not leave footprints
+	bloodiness = 5
 
 /// The grey drag mark a launched body leaves on the floor. It fades on its own.
 /obj/effect/temp_visual/gorilla_scuff
@@ -203,7 +232,8 @@
 	if(victim.gorilla_flight)
 		qdel(victim.gorilla_flight)
 	var/datum/gorilla_flight/flight = new(victim, thrower, haymaker, wounded)
-	if(!victim.throw_at(target, distance, speed, thrower, spin = !gentle, gentle = gentle))
+	// Flat, no spin: the body skids to a stop
+	if(!victim.throw_at(target, distance, speed, thrower, spin = FALSE, gentle = gentle))
 		flight.end()
 		return 0
 	return distance
@@ -251,7 +281,7 @@
 	gorilla_wall_impact(hit_atom, flight)
 
 /**
- * A hard landing against [wall]: the haymaker's extra, the pinned slide down the wall and the marks.
+ * A hard landing against [wall]: the haymaker's extra and the marks.
  */
 /mob/living/carbon/proc/gorilla_wall_impact(turf/wall, datum/gorilla_flight/flight)
 	var/turf/floor = get_turf(src)
@@ -260,7 +290,6 @@
 		return
 	if(flight?.haymaker)
 		gorilla_haymaker_wall_hit(flight)
-	gorilla_wall_sag(toward)
 	var/kind = gorilla_splat_kind()
 	// Only a straight hit on a wall face gets the pictures; a glancing corner hit gets the dent.
 	if(!(toward in GLOB.cardinals))
@@ -289,13 +318,6 @@
 		return
 	if(hv_crit_apply_wound(chest, /datum/wound/blunt/bone/severe, get_dir(flight?.thrower || src, src), flight?.thrower))
 		hv_add_hit_line("[src]'s ribs crack against the wall!", HV_LINE_BOLD, "Your ribs crack against the wall!")
-
-/// Pinned to the wall for a beat, then sliding down it. Every offset is a tracked source tg removes.
-/mob/living/proc/gorilla_wall_sag(toward)
-	var/dx = (toward & EAST) ? 5 : ((toward & WEST) ? -5 : 0)
-	var/dy = (toward & NORTH) ? 7 : ((toward & SOUTH) ? -3 : 0)
-	add_offsets(GORILLA_WALL_SAG, x_add = dx, z_add = dy, animate = FALSE)
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/living, remove_offsets), GORILLA_WALL_SAG, TRUE), 0.15 SECONDS)
 
 /// Lays (or refreshes) one wall-impact decal on the floor tile in front of the wall.
 /mob/living/carbon/proc/gorilla_lay_wall_decal(turf/floor, decal_type, toward)
@@ -387,6 +409,12 @@
 	setDir(spray_dir)
 	pixel_x = -16
 	pixel_y = -16
+	// Against a side wall, seen from above, the half-moon would sit on the wall line like option A's spray:
+	// pull it out onto the floor so it reads as a puddle at the wall's foot.
+	if(spray_dir & EAST)
+		pixel_x -= 8
+	else if(spray_dir & WEST)
+		pixel_x += 8
 
 /// Wall pictures: 64x64 on the floor tile at -16,-16, drawn up onto the wall's near edge.
 /obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray

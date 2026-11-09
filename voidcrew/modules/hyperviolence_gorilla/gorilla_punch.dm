@@ -87,7 +87,7 @@
 	var/hurl = heavy_moves && hurl_range > 0 && grabbed && standing && TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE)
 	var/direction = get_dir(source, living_target) || source.dir
 	source.do_attack_animation(living_target, ATTACK_EFFECT_SMASH)
-	playsound(living_target.loc, 'sound/items/weapons/punch1.ogg', 40, TRUE, -1)
+	gorilla_punch_impact_sound(living_target)
 	var/target_zone = living_target.get_random_valid_zone(source.zone_selected)
 	var/armor_block = living_target.run_armor_check(target_zone, MELEE, armour_penetration = active_hand.unarmed_effectiveness)
 	if(hurl)
@@ -125,18 +125,35 @@
 	return FALSE
 
 /**
- * What a piston punch looks like: knuckle sparks over the target, the punching arm's pistons pump
- * with a puff of steam, a light, and on a heavy hit a small ring.
+ * What a piston punch looks like: knuckle sparks over the target, and on a heavy hit a small ring.
  */
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/gorilla_punch_fx(mob/living/carbon/human/source, mob/living/target, heavy = FALSE)
 	gorilla_play_impact(source, target, impact_state)
-	play_pump()
-	if(heavy_moves)
-		source.mob_light(1.5, 0.6, "#ffcf8a", 0.2 SECONDS)
 	if(heavy)
 		var/turf/spot = get_turf(target)
 		if(spot)
 			new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.4)
+
+/// The sound of a landed piston punch on [target]. The one place to swap it.
+/proc/gorilla_punch_impact_sound(atom/target)
+	playsound(get_turf(target), GORILLA_PUNCH_SOUND, 55, TRUE, -1)
+
+/// The landed piston punch: one of three at random.
+/datum/sound_effect/gorilla_piston_punch
+	key = GORILLA_PUNCH_SOUND
+	file_paths = list(
+		'voidcrew/modules/hyperviolence_gorilla/sound/gorilla_piston_punch.ogg',
+		'voidcrew/modules/hyperviolence_gorilla/sound/gorilla_piston_punch2.ogg',
+		'voidcrew/modules/hyperviolence_gorilla/sound/gorilla_piston_punch3.ogg',
+	)
+
+/// The sound of a landed haymaker on [target]. The one place to swap it.
+/proc/gorilla_haymaker_impact_sound(atom/target)
+	playsound(target, GORILLA_HAYMAKER_SOUND, 70, TRUE)
+
+/// The sound of a back breaking across a Gorilla's knee on [target]. The one place to swap it.
+/proc/gorilla_backbreaker_sound(atom/target)
+	playsound(target, GORILLA_BACKBREAKER_SOUND, 70, TRUE)
 
 /**
  * Knuckle sparks over [target]: a short one-shot drawn upright and turned to come from the
@@ -340,5 +357,4 @@
 		playsound(spot, 'sound/effects/meteorimpact.ogg', 40, TRUE)
 		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 220)
 		cyberware_grey_dust(spot)
-	play_pump()
 	log_combat(source, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")

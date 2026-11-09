@@ -2,15 +2,12 @@
  * # Gorilla Arms looks
  *
  * Pictures on top of moves that already happened; nothing here changes a number.
- * - The piston pump: the punching arm's pistons compress, fire and return.
- * - Heat: the pistons whiten and glow as an arm winds up or strains.
+ * The arms always look like their worn sprite: no tint, glow or steam over them (owner).
  * - The deploy flex: as the pair syncs, after an EMP reboot, or on the Arm chrome key when the Gorilla
- *   has nothing to deploy. A squat, both pumps in turn with steam, the knuckles flash, and it settles.
+ *   has nothing to deploy. A squat, the knuckles flash in turn, and it settles.
  * - Snapped bones: a compound fracture on an arm, a leg or the chest shows bone through the skin and
  *   blood, whatever broke it. Drawn like #509's stumps (bone plus greyscale blood tinted to the body's
  *   blood), on its own overlay list beside them.
- *
- * Plates under a suit that covers the arms don't show, so their pump and heat don't either.
  */
 
 /// Whether this arm's worn plate is on show (no suit over the arms).
@@ -19,36 +16,6 @@
 	if(!ishuman(bearer))
 		return FALSE
 	return !(bearer.wear_suit?.body_parts_covered & ARMS)
-
-/// The pistons on this arm pump once: compress, fire, return. Returns the holder or null.
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/play_pump()
-	if(!owner || !plate_shows())
-		return null
-	var/state = "pump_[aug_overlay]"
-	if(!icon_exists(GORILLA_GORE_ICON, state))
-		return null
-	var/obj/effect/abstract/cyberware_anim/pump = cyberware_anim_play(owner, GORILLA_GORE_ICON, state, GORILLA_ANIM_PLATE_LAYER, 0.3 SECONDS)
-	if(pump && icon_exists(GORILLA_GORE_ICON, "[state]_e"))
-		pump.add_overlay(emissive_appearance(GORILLA_GORE_ICON, "[state]_e", owner))
-	return pump
-
-/**
- * The pistons heat over [rise_time] and stay hot until [lifetime], then the glow goes. Returns the
- * holder, which the caller may delete sooner.
- */
-/obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/play_heat(rise_time, lifetime)
-	if(!owner || !plate_shows())
-		return null
-	var/state = "hot_[aug_overlay]"
-	if(!icon_exists(GORILLA_GORE_ICON, state))
-		return null
-	var/obj/effect/abstract/cyberware_anim/heat = cyberware_anim_play(owner, GORILLA_GORE_ICON, state, GORILLA_ANIM_PLATE_LAYER, lifetime)
-	if(!heat)
-		return null
-	heat.add_overlay(emissive_appearance(GORILLA_GORE_ICON, state, owner))
-	heat.alpha = 0
-	animate(heat, alpha = 255, time = rise_time, easing = SINE_EASING | EASE_IN)
-	return heat
 
 // =========================================================================
 // THE DEPLOY FLEX
@@ -73,16 +40,12 @@
 	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in arms)
 		addtimer(CALLBACK(arm, TYPE_PROC_REF(/obj/item/organ/cyberimp/cyberware/gorilla_arms, flex_beat)), delay)
 		delay += 0.15 SECONDS
-	playsound(bearer, 'sound/machines/hiss.ogg', 30, TRUE, frequency = 0.8)
 	return TRUE
 
-/// One arm's part of the flex: the pump, a puff of steam, and the knuckles flashing.
+/// One arm's part of the flex: the knuckles flashing.
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/proc/flex_beat()
 	if(!owner)
 		return
-	play_pump()
-	play_heat(0.1 SECONDS, 0.35 SECONDS)
-	cyberware_anim_particles(owner, /particles/smoke/steam/gorilla_puff, GORILLA_ANIM_TOP_LAYER, 0.15 SECONDS, 0.9 SECONDS)
 	var/obj/effect/abstract/cyberware_anim/spark = cyberware_anim_play(owner, GORILLA_GORE_ICON, "impact_brawler", GORILLA_ANIM_TOP_LAYER, 0.4 SECONDS)
 	if(spark)
 		spark.appearance_flags |= RESET_TRANSFORM
