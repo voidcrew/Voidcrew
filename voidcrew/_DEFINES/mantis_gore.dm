@@ -99,7 +99,7 @@
 // while the lunging body glides in; the blades go in as it lands, and the hold, the pull-back, the rip and
 // the drop follow. Where the two bodies sit in each beat is mantis_rig_beat()'s.
 /// The points at their front, nothing in yet, after the lunging body lands.
-#define MANTIS_IMPALE_CONTACT_BEAT (0.05 SECONDS)
+#define MANTIS_IMPALE_CONTACT_BEAT (0.1 SECONDS)
 /// From the blades going in to the bodies settling on them, held up. Short, so the hold fills the 0.8 s.
 #define MANTIS_IMPALE_ENTER_BEAT (0.05 SECONDS)
 /// From the pull-back to the rip-out.

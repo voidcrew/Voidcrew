@@ -237,7 +237,18 @@
 /datum/mantis_impale/proc/place_victim(w, z)
 	// Brought upright off the floor: tg draws someone lying down a little low.
 	var/upright = hoist_angle ? -PIXEL_Y_OFFSET_LYING : 0
-	victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = w, z_add = z + upright)
+	// Drawn onto the blades as fast as the rig leans in (tg's own glide takes twice as long), so the points
+	// are at their front as they arrive, not after.
+	var/from_w = victim.pixel_w
+	var/from_z = victim.pixel_z
+	victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = w, z_add = z + upright, animate = FALSE)
+	var/to_w = victim.pixel_w
+	var/to_z = victim.pixel_z
+	if(to_w == from_w && to_z == from_z)
+		return
+	victim.pixel_w = from_w
+	victim.pixel_z = from_z
+	animate(victim, pixel_w = to_w, pixel_z = to_z, time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /// The matrix tipping a body [angle] degrees about its feet (clockwise), after [base].
 /proc/mantis_tip_matrix(matrix/base, angle)
