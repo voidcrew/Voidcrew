@@ -565,8 +565,8 @@
 
 	lunger.face_atom(victim)
 	lunger.do_attack_animation(victim, no_effect = TRUE)
-	// The blade's own impact over the target, twice, and a burst of light and dust (mantis_gore/mantis_lunge_fx.dm).
-	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", blades)
+	// The blade's own impact over the target (both blades for a pounce), and a burst of light and dust (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_arrival_fx(lunger, victim, istype(lunge_blade) ? lunge_blade.impact_state : "impact_mantis", charged && blades > 1)
 	// The arrival counts toward the lunger's kill (mantis_gore/mantis_cuts.dm).
 	mantis_note_hit(victim, lunger)
 	// One armor roll for the arrival, reused per blade. Both land in the same

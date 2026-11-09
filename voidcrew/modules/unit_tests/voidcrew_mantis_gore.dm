@@ -22,6 +22,8 @@
 #define MANTIS_TEST_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
 #define MANTIS_TEST_LEFTHAND 'voidcrew/modules/mantis_gore/icons/mantis_lefthand.dmi'
 #define MANTIS_TEST_RIGHTHAND 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
+/// MANTIS_GORE_REACH_ICON
+#define MANTIS_TEST_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
 
 /datum/unit_test/voidcrew_mantis_gore
 	abstract_type = /datum/unit_test/voidcrew_mantis_gore
@@ -65,6 +67,13 @@
 
 /// Puts [victim] in crit with plenty of health to spare before death. That much air loss also knocks
 /// them out, which still counts: out cold at crit health.
+/// The reach pictures of [state] riding on [body], drawn apart from it so they can sit under or over a victim.
+/datum/unit_test/voidcrew_mantis_gore/proc/reach_pictures(mob/living/body, state)
+	. = list()
+	for(var/obj/effect/abstract/cyberware_anim/picture in body.vis_contents)
+		if(picture.icon == MANTIS_TEST_REACH_ICON && findtext(picture.icon_state, state) == 1 && (picture.appearance_flags & KEEP_APART))
+			. += picture
+
 /datum/unit_test/voidcrew_mantis_gore/proc/crit(mob/living/carbon/victim)
 	victim.adjustOxyLoss(110)
 	TEST_ASSERT(mantis_in_crit(victim), "Fixture: [victim] isn't dying (stat [victim.stat], health [victim.health])")
@@ -212,6 +221,15 @@
 	var/mob/living/carbon/human/consistent/floored = allocate(/mob/living/carbon/human/consistent, spot(1, 3))
 	floored.Knockdown(10 SECONDS)
 	TEST_ASSERT(mantis_can_impale(user, floored, held_housings), "Someone on the floor can't be skewered")
+	// Off the floor and up on the blades: drawn upright, still lying down to tg, and laid back down after.
+	var/datum/mantis_impale/hoisted = new(user, floored, held_housings, 2 SECONDS)
+	TEST_ASSERT(hoisted.start(), "Someone on the floor wasn't skewered")
+	TEST_ASSERT(hoisted.hoist_angle, "Someone on the floor wasn't brought up on the blades")
+	TEST_ASSERT(abs(floored.transform.b) < 0.01 && floored.transform.a > 0.99, "Someone brought up on the blades isn't drawn upright")
+	TEST_ASSERT_EQUAL(floored.body_position, LYING_DOWN, "Bringing them up stood them up")
+	hoisted.finish()
+	TEST_ASSERT(!hoisted.hoist_angle, "The hoist outlived the hold")
+	TEST_ASSERT(!length(reach_pictures(user, "mantis_thrust_")), "The blades stayed drawn after the hold")
 	var/mob/living/basic/mouse/mouse = allocate(/mob/living/basic/mouse, spot(1, 1))
 	TEST_ASSERT(!mantis_can_impale(user, mouse, held_housings), "A mouse was skewered")
 
@@ -225,8 +243,19 @@
 	TEST_ASSERT(HAS_TRAIT_FROM(fresh, TRAIT_IMMOBILIZED, MG_IMPALE_TRAIT), "The victim isn't held")
 	TEST_ASSERT(!HAS_TRAIT(fresh, TRAIT_HANDS_BLOCKED), "The victim's hands are tied")
 	TEST_ASSERT(fresh.has_offset(MG_IMPALE_TRAIT, PIXEL_Z_OFFSET), "The victim isn't lifted")
+	TEST_ASSERT_EQUAL(fresh.dir, WEST, "The victim wasn't turned onto the blades")
+	TEST_ASSERT_EQUAL(length(reach_pictures(user, "mantis_thrust_")), 2, "The blades going in aren't drawn from the bearer, under and over")
+	var/obj/effect/abstract/cyberware_anim/tips = skewer.tips_ref?.resolve()
+	TEST_ASSERT(tips && (tips in fresh.vis_contents) && tips.dir == EAST, "The points aren't standing out of their back")
+	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/held_blade = right_blade(user)
+	TEST_ASSERT(held_blade.inhand_hidden_until > world.time, "The held blade is drawn over the blades going in")
 	var/brute_before = fresh.getBruteLoss()
 	skewer.rip()
+	TEST_ASSERT(QDELETED(tips), "The points still stand out of them after the pull-back")
+	TEST_ASSERT(HAS_TRAIT_FROM(fresh, TRAIT_IMMOBILIZED, MG_IMPALE_TRAIT), "The pull-back let them go before the blades came out")
+	skewer.tear_out()
+	TEST_ASSERT(!length(reach_pictures(user, "mantis_thrust_")), "The blades stayed drawn in them after the rip")
+	TEST_ASSERT(!held_blade.inhand_hidden_until, "The held blade never came back")
 	TEST_ASSERT(fresh.getBruteLoss() > brute_before, "The rip did no damage")
 	TEST_ASSERT(fresh.IsKnockdown(), "The rip didn't floor them")
 	TEST_ASSERT(!HAS_TRAIT_FROM(user, TRAIT_IMMOBILIZED, MG_IMPALE_TRAIT) && !HAS_TRAIT_FROM(user, TRAIT_HANDS_BLOCKED, MG_IMPALE_TRAIT), "The bearer is still held")
@@ -361,6 +390,10 @@
 	crit(doomed)
 	var/datum/hv_finisher/mantis_scissor/kill = allocate(/datum/hv_finisher/mantis_scissor, user, doomed)
 	TEST_ASSERT(kill.start(), "The scissor didn't start")
+	kill.advance()
+	var/posture = doomed.lying_angle == 270 ? "lie270" : "lie90"
+	TEST_ASSERT_EQUAL(length(reach_pictures(user, "mantis_scissor_[posture]_")), 2, "The closing blades aren't drawn from the bearer to the neck, under and over")
+	TEST_ASSERT(right_blade(user).inhand_hidden_until > world.time, "The held blade is drawn over the closing blades")
 	for(var/i in 1 to 20)
 		if(!kill.running)
 			break
@@ -685,8 +718,13 @@
 				TEST_ASSERT(icon_exists(hand_file, "[model]_[pose]"), "[hand_file] has no [model]_[pose]")
 	for(var/state in list("mantis_trail", "mantis_scorch_trail", "mantis_impale", "mantis_scorch_impale", "mantis_coil_glow_right", "mantis_scorch_coil_glow_left", "mantis_guard_glint_right", "mantis_raise_glint_left", "scorch_gash_l_arm", "scorch_gash_head"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_ICON, state), "The gore sheet has no [state]")
-	for(var/state in list("mantis_spurt", "mantis_scissor", "mantis_scorch_scissor", "mantis_flick_right", "mantis_flick_left"))
+	for(var/state in list("mantis_spurt", "mantis_flick_right", "mantis_flick_left"))
 		TEST_ASSERT(icon_exists(MANTIS_TEST_LARGE_ICON, state), "The large gore sheet has no [state]")
+	for(var/model in list("mantis", "mantis_scorch"))
+		for(var/part in list("under", "over"))
+			TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_thrust_[part]"), "The reach sheet has no [model]_thrust_[part]")
+			for(var/posture in list("stand", "lie90", "lie270"))
+				TEST_ASSERT(icon_exists(MANTIS_TEST_REACH_ICON, "[model]_scissor_[posture]_[part]"), "The reach sheet has no [model]_scissor_[posture]_[part]")
 
 #undef MG_MOVE_IMPALE
 #undef MG_MOVE_XSLASH
@@ -699,3 +737,4 @@
 #undef MANTIS_TEST_LARGE_ICON
 #undef MANTIS_TEST_LEFTHAND
 #undef MANTIS_TEST_RIGHTHAND
+#undef MANTIS_TEST_REACH_ICON

@@ -1,7 +1,8 @@
 // Pictures for the Mantis line's gore. Nothing here changes who gets hit, when or how hard: the
 // mechanics call in after they have happened. One-shot holders and temp visuals only; every animate()
-// on a mob is relative and parallel and ends where it began, so tg's offsets, lying turn and #509's
-// death throes stay right.
+// on a mob here is relative and parallel and ends where it began, so tg's offsets, lying turn and #509's
+// death throes stay right. (The impale's hoist, which turns a body upright for the hold, is in
+// mantis_impale.dm and gives tg's turn back.)
 
 // =========================================================================
 // THE LUNGE
@@ -41,8 +42,8 @@
 	add_overlay(emissive_appearance(icon, icon_state, src))
 
 /**
- * The dash, drawn after the lunger has already arrived: afterimages every half tile fading down the
- * line, a streak across each tile, and the body glides the last of the way in.
+ * The dash, drawn after the lunger has already arrived: the body glides in from where it started, and
+ * each afterimage and streak shows as the body passes it, so the line trails behind.
  */
 /proc/mantis_lunge_dash_fx(mob/living/lunger, turf/start, list/passed, charged, model)
 	var/turf/finish = get_turf(lunger)
@@ -50,35 +51,61 @@
 		return
 	var/dash_dir = get_dir(start, finish)
 	var/count = length(passed)
-	var/step_x = (dash_dir & EAST) ? 16 : ((dash_dir & WEST) ? -16 : 0)
-	var/step_y = (dash_dir & NORTH) ? 16 : ((dash_dir & SOUTH) ? -16 : 0)
-	for(var/i in 1 to count)
-		var/turf/spot = passed[i]
-		var/fade = i / (count + 1)
-		new /obj/effect/temp_visual/decoy/fading/mantis_afterimage(spot, lunger, model, fade * 0.7)
-		var/obj/effect/temp_visual/decoy/fading/mantis_afterimage/half = new(spot, lunger, model, fade)
-		half.pixel_x += step_x
-		half.pixel_y += step_y
-		new /obj/effect/temp_visual/mantis_trail(spot, dash_dir, model)
+	var/glide = charged ? 2 : MANTIS_LUNGE_GLIDE
 	// The body is already there: draw it back where it started and let it slide in.
 	var/back_w = (start.x - finish.x) * ICON_SIZE_X
 	var/back_z = (start.y - finish.y) * ICON_SIZE_Y
 	animate(lunger, pixel_w = back_w, pixel_z = back_z, time = 0, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
 	if(charged)
-		// A pounce arcs.
-		animate(pixel_w = -back_w * 0.5, pixel_z = -back_z * 0.5 + 8, time = 1, easing = SINE_EASING|EASE_OUT, flags = ANIMATION_RELATIVE)
-		animate(pixel_w = -back_w * 0.5, pixel_z = -back_z * 0.5 - 8, time = 1, easing = SINE_EASING|EASE_IN, flags = ANIMATION_RELATIVE)
+		// A pounce arcs, higher the further it goes.
+		var/arc = min(2 * get_dist(start, finish) + 4, 16)
+		animate(pixel_w = -back_w * 0.5, pixel_z = -back_z * 0.5 + arc, time = glide * 0.5, easing = SINE_EASING|EASE_OUT, flags = ANIMATION_RELATIVE)
+		animate(pixel_w = -back_w * 0.5, pixel_z = -back_z * 0.5 - arc, time = glide * 0.5, easing = SINE_EASING|EASE_IN, flags = ANIMATION_RELATIVE)
 		cyberware_grey_dust(start)
 	else
-		animate(pixel_w = -back_w, pixel_z = -back_z, time = 1.5, easing = SINE_EASING|EASE_OUT, flags = ANIMATION_RELATIVE)
+		animate(pixel_w = -back_w, pixel_z = -back_z, time = glide, easing = SINE_EASING|EASE_OUT, flags = ANIMATION_RELATIVE)
+	var/list/spots = list()
+	for(var/turf/spot as anything in passed)
+		spots += WEAKREF(spot)
+	for(var/i in 1 to count)
+		var/delay = round(glide * (i - 1) / count, world.tick_lag)
+		if(delay <= 0)
+			mantis_dash_ghost(WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model)
+		else
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_dash_ghost), WEAKREF(lunger), spots[i], dash_dir, i / (count + 1), model), delay)
 
-/// The lunge lands: the blade's impact twice, the second mirrored a beat later, a flash and a puff of dust.
-/proc/mantis_lunge_arrival_fx(mob/living/lunger, mob/living/victim, impact_state, blades = 1)
+/// One step of the dash's wake: two afterimages half a tile apart and the streak, on the tile the body just crossed.
+/proc/mantis_dash_ghost(datum/weakref/lunger_ref, datum/weakref/spot_ref, dash_dir, fade, model)
+	var/mob/living/lunger = lunger_ref?.resolve()
+	var/turf/spot = spot_ref?.resolve()
+	if(QDELETED(lunger) || isnull(spot))
+		return
+	var/step_x = (dash_dir & EAST) ? 16 : ((dash_dir & WEST) ? -16 : 0)
+	var/step_y = (dash_dir & NORTH) ? 16 : ((dash_dir & SOUTH) ? -16 : 0)
+	new /obj/effect/temp_visual/decoy/fading/mantis_afterimage(spot, lunger, model, fade * 0.7)
+	var/obj/effect/temp_visual/decoy/fading/mantis_afterimage/half = new(spot, lunger, model, fade)
+	half.pixel_x += step_x
+	half.pixel_y += step_y
+	new /obj/effect/temp_visual/mantis_trail(spot, dash_dir, model)
+
+/// The lunge lands: one impact, a flash and a puff of dust, as the gliding body reaches them. A [pounce]
+/// lands with both blades, the second mirrored a beat later.
+/proc/mantis_lunge_arrival_fx(mob/living/lunger, mob/living/victim, impact_state, pounce = FALSE)
 	if(QDELETED(victim))
 		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_land_fx), WEAKREF(lunger), WEAKREF(victim), impact_state, pounce), MANTIS_LUNGE_GLIDE)
+
+/proc/mantis_lunge_land_fx(datum/weakref/lunger_ref, datum/weakref/victim_ref, impact_state, pounce)
+	var/mob/living/lunger = lunger_ref?.resolve()
+	var/mob/living/victim = victim_ref?.resolve()
+	if(QDELETED(lunger) || QDELETED(victim))
+		return
+	// Skewered: the blades in them are the picture of this hit.
+	if(HAS_TRAIT_FROM(victim, TRAIT_IMMOBILIZED, MANTIS_IMPALE_TRAIT))
+		return
 	cyberware_play_impact(lunger, victim, impact_state)
-	if(blades > 1)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_mirrored_impact), WEAKREF(lunger), WEAKREF(victim), impact_state), 0.4)
+	if(pounce)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_mirrored_impact), lunger_ref, victim_ref, impact_state), 0.4)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
 	var/obj/effect/temp_visual/mook_dust/dust = cyberware_grey_dust(get_turf(victim))
 	if(dust)
@@ -89,6 +116,9 @@
 	var/mob/living/lunger = lunger_ref?.resolve()
 	var/mob/living/victim = victim_ref?.resolve()
 	if(QDELETED(lunger) || QDELETED(victim))
+		return
+	// Skewered: the blades in them are the picture of this hit.
+	if(HAS_TRAIT_FROM(victim, TRAIT_IMMOBILIZED, MANTIS_IMPALE_TRAIT))
 		return
 	var/obj/effect/abstract/cyberware_anim/impact = cyberware_play_impact(lunger, victim, impact_state)
 	if(impact)
@@ -172,31 +202,66 @@
 // IMPALE, SCISSOR, CROUCH
 // =========================================================================
 
-/// The two points showing through the far side of someone skewered. The picture faces the way the lunge went.
-/proc/mantis_impale_tips_fx(mob/living/victim, lunge_dir, model)
+/**
+ * Both of [bearer]'s blades reaching into [victim]'s tile: the pair "[state]_under" and "[state]_over" from
+ * the reach sheet, turned the way [victim] lies from [bearer]. The under half is the blade behind and
+ * inside the victim's body, so the body hides it; the over half is what passes in front. Both ride on the
+ * bearer, so they move with the bearer's lean, but are drawn apart from the bearer's own sprite so they
+ * can sit under or over the victim. The held blades should be hidden while these play. Returns the
+ * holders.
+ */
+/proc/mantis_reach_fx(mob/living/bearer, mob/living/victim, state, lifetime)
+	RETURN_TYPE(/list)
+	. = list()
+	if(QDELETED(bearer) || QDELETED(victim))
+		return
+	var/reach_dir = get_dir(bearer, victim)
+	if(!reach_dir)
+		return
+	for(var/part in list("under", "over"))
+		var/full_state = "[state]_[part]"
+		if(!icon_exists(MANTIS_GORE_REACH_ICON, full_state))
+			continue
+		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(bearer, MANTIS_GORE_REACH_ICON, full_state, part == "under" ? MANTIS_UNDER_VICTIM_LAYER : MANTIS_OVER_VICTIM_LAYER, lifetime)
+		if(!blades)
+			continue
+		blades.appearance_flags |= KEEP_APART
+		blades.vis_flags &= ~VIS_INHERIT_DIR
+		blades.dir = reach_dir
+		blades.pixel_x = -32
+		blades.pixel_y = -32
+		. += blades
+
+/**
+ * The two points standing out of someone skewered, the far ends of the blades in them. Drawn on the
+ * victim, upright: over them, or behind them when the blades went in from the south and out of a back
+ * that faces away.
+ */
+/proc/mantis_impale_tips_fx(mob/living/victim, lunge_dir, model, lifetime)
 	var/state = "[model]_impale"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		state = "mantis_impale"
-	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_ANIM_TOP_LAYER, MANTIS_IMPALE_PIN_HOLD + 1 SECONDS)
+	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, lunge_dir == NORTH ? MANTIS_UNDER_VICTIM_LAYER : MANTIS_OVER_VICTIM_LAYER, lifetime)
 	if(!tips)
 		return null
+	tips.appearance_flags |= KEEP_APART|RESET_TRANSFORM
 	tips.vis_flags &= ~VIS_INHERIT_DIR
-	tips.appearance_flags |= RESET_TRANSFORM
-	tips.dir = (lunge_dir & (EAST|WEST)) ? ((lunge_dir & EAST) ? EAST : WEST) : ((lunge_dir & NORTH) ? NORTH : SOUTH)
+	tips.dir = lunge_dir
 	return tips
 
-/// The blades close at the neck. Drawn on the body, so it lies down with someone lying down.
-/proc/mantis_scissor_fx(mob/living/victim, model)
-	var/state = "[model]_scissor"
-	if(!icon_exists(MANTIS_GORE_LARGE_ICON, state))
-		state = "mantis_scissor"
-	var/obj/effect/abstract/cyberware_anim/cut = cyberware_anim_play(victim, MANTIS_GORE_LARGE_ICON, state, MANTIS_ANIM_TOP_LAYER, 0.8 SECONDS, glow = TRUE)
-	if(!cut)
-		return null
-	cut.vis_flags &= ~VIS_INHERIT_DIR
-	cut.pixel_x = -16
-	cut.pixel_y = -16
-	return cut
+/// The way [looker] turns to look at [seen], as face_atom() picks it, whatever state [looker] is in.
+/proc/mantis_face_dir(atom/looker, atom/seen)
+	var/dx = seen.x - looker.x
+	var/dy = seen.y - looker.y
+	if(abs(dx) < abs(dy))
+		return dy > 0 ? NORTH : SOUTH
+	return dx > 0 ? EAST : WEST
+
+/// How [victim] lies, for the scissor's art: "stand", or "lie90"/"lie270" by the way tg has turned them.
+/proc/mantis_scissor_posture(mob/living/victim)
+	if(victim.body_position != LYING_DOWN || !victim.rotate_on_lying)
+		return "stand"
+	return victim.lying_angle == 270 ? "lie270" : "lie90"
 
 /// Someone under the raised blades shudders: small sideways jolts, relative, ending where they began.
 /proc/mantis_struggle_fx(mob/living/victim, duration)

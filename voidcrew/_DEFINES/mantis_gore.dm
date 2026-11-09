@@ -3,8 +3,15 @@
 
 /// 32x32 pictures: glints, the coil glow, trails, the impale tips, the scorch seam.
 #define MANTIS_GORE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
-/// 64x64 pictures: the artery spurt, the scissor, the flick.
+/// 64x64 pictures: the artery spurt, the flick.
 #define MANTIS_GORE_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
+/// 96x96 pictures centred on the bearer: both blades reaching into the next tile for the scissor and the
+/// impale, one state under the victim and one over it, eight directions (bearer to victim).
+#define MANTIS_GORE_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
+/// Layer for blade drawn behind or inside the victim's body: under a lying body, so under a standing one too.
+#define MANTIS_UNDER_VICTIM_LAYER (LYING_MOB_LAYER - 0.01)
+/// Layer for blade drawn in front of the victim (and the bearer).
+#define MANTIS_OVER_VICTIM_LAYER ABOVE_MOB_LAYER
 /// The posed held blades.
 #define MANTIS_LEFTHAND_ICON 'voidcrew/modules/mantis_gore/icons/mantis_lefthand.dmi'
 #define MANTIS_RIGHTHAND_ICON 'voidcrew/modules/mantis_gore/icons/mantis_righthand.dmi'
@@ -81,12 +88,33 @@
 #define MANTIS_IMPALE_BREAK_DAMAGE 15
 /// A target at or under this share of max health is hurt enough to skewer.
 #define MANTIS_IMPALE_HEALTH_FRACTION 0.7
+// Where the two bodies sit while the blades are in. The reach art (mantis_gore_reach.dmi) is drawn for
+// exactly these, so change them together.
+/// Pixels the bearer leans into the thrust.
+#define MANTIS_IMPALE_LEAN 4
+/// Pixels someone skewered from the side is drawn onto the blades.
+#define MANTIS_IMPALE_PULL 4
+/// Pixels someone skewered from the side is lifted.
+#define MANTIS_IMPALE_LIFT 5
+/// Pixels someone skewered from straight above is lifted (toward the bearer). From straight below, none.
+#define MANTIS_IMPALE_LIFT_SOUTH 3
+/// Pixels the wall takes them back by when pinned.
+#define MANTIS_IMPALE_PIN_SHOVE 5
+/// Pixels the bearer draws back before the blades come out.
+#define MANTIS_IMPALE_PULL_BACK 6
+/// From the pull-back to the blades coming out and the body dropping.
+#define MANTIS_IMPALE_PULL_BEAT (0.3 SECONDS)
+
+/// How long the lunging body takes to glide in after it has arrived. The hit shows as it lands.
+#define MANTIS_LUNGE_GLIDE 1.5
 
 // ---- Charged leap ----
 /// Held shorter than this, it is the ordinary lunge.
 #define MANTIS_CHARGE_TAP (0.35 SECONDS)
 /// Held this long, it reaches the furthest.
 #define MANTIS_CHARGE_FULL (1.2 SECONDS)
+/// Pixels the body sinks into the crouch.
+#define MANTIS_CHARGE_CROUCH_DROP 5
 /// Held this long, the bearer gives up and straightens.
 #define MANTIS_CHARGE_MAX_HOLD (3 SECONDS)
 /// After straightening, this long before they can crouch again.
@@ -98,6 +126,10 @@
 
 // ---- Scissor ----
 #define MANTIS_SCISSOR_WINDUP (1.2 SECONDS)
+/// Pixels the bearer leans in for the cut, and further when the head lies on the far side of the body.
+/// The reach art is drawn for these.
+#define MANTIS_SCISSOR_LEAN 8
+#define MANTIS_SCISSOR_FAR_LEAN 14
 #define MANTIS_SCISSOR_COOLDOWN (10 SECONDS)
 /// Brute to the neck when the head won't come off.
 #define MANTIS_SCISSOR_FALLBACK_DAMAGE 25

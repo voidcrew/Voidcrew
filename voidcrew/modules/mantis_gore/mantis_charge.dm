@@ -125,7 +125,7 @@
 	crouched = TRUE
 	crouch_body = WEAKREF(bearer)
 	ADD_TRAIT(bearer, TRAIT_IMMOBILIZED, MANTIS_CHARGE_TRAIT)
-	bearer.add_offsets(MANTIS_CHARGE_TRAIT, z_add = -2, animate = FALSE)
+	bearer.add_offsets(MANTIS_CHARGE_TRAIT, z_add = -MANTIS_CHARGE_CROUCH_DROP)
 	var/list/housings = get_extended_housings()
 	mantis_pose_blades(housings, MANTIS_POSE_COIL)
 	crouch_glows = list()

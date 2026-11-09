@@ -307,11 +307,20 @@
 	var/inhand_hidden_until = 0
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/hide_inhand_for(duration)
+	// A longer hide already running (the impale's or the scissor's blade art) is never cut short by a swing.
+	if(world.time + duration <= inhand_hidden_until)
+		return
 	inhand_hidden_until = world.time + duration
 	var/mob/holder = loc
 	if(ismob(holder))
 		holder.update_held_items()
-	addtimer(CALLBACK(src, PROC_REF(show_inhand)), duration, TIMER_UNIQUE | TIMER_OVERRIDE)
+	// Each hide ends on its own timer, and a timer ends nothing while a later hide still runs.
+	addtimer(CALLBACK(src, PROC_REF(inhand_hide_expired)), duration, TIMER_DELETE_ME)
+
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/inhand_hide_expired()
+	if(world.time < inhand_hidden_until)
+		return
+	show_inhand()
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/show_inhand()
 	if(!inhand_hidden_until)

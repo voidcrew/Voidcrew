@@ -1,5 +1,6 @@
-// The scissor: both blades out, head aimed, a swing at someone adjacent who is dying. The blades rise
-// over them into a V, catch the light, and come together at the neck. A #509 finisher
+// The scissor: both blades out, head aimed, a swing at someone adjacent who is dying. The blades rise,
+// catch the light, then come down from the bearer's hands and close on the neck, one blade behind it and
+// one in front, and #509's decapitation takes the head. A #509 finisher
 // (voidcrew/modules/hyperviolence/finishers/), drawn the way the bosses' are rather than as real blows,
 // so the bearer stands rooted and exposed through the wind-up and a hit makes them reel. No mark over the
 // victim (owner D34): the wind-up reads only from the bodies. An Atlas frame stops the cut.
@@ -112,7 +113,14 @@
 
 // ---- The wind-up -----------------------------------------------------------
 
-/// Both blades rise over the victim into a V. A glint runs along them, and the victim shudders.
+/// Someone on the floor is turned so their head lies toward [bearer], the way tg turns someone dragged.
+/// Straight above or below them, the head stays the side it was.
+/proc/mantis_turn_head_toward(mob/living/victim, mob/living/bearer)
+	if(victim.body_position != LYING_DOWN || !victim.rotate_on_lying || !victim.lying_angle || bearer.x == victim.x)
+		return
+	victim.set_lying_angle(bearer.x > victim.x ? LYING_ANGLE_EAST : LYING_ANGLE_WEST)
+
+/// Both blades rise. A glint runs along them, and the victim shudders.
 /datum/hv_finisher_stage/windup/mantis
 	duration = MANTIS_SCISSOR_WINDUP
 	rise = 1
@@ -125,6 +133,7 @@
 	. = ..()
 	var/datum/hv_finisher/mantis_scissor/scissor = host
 	scissor.pose_blades(MANTIS_POSE_RAISE)
+	mantis_turn_head_toward(host.victim, host.user)
 	glint_timer = addtimer(CALLBACK(src, PROC_REF(glint)), duration * 0.5, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	mantis_struggle_fx(host.victim, duration)
 
@@ -154,28 +163,53 @@
 /datum/hv_finisher_stage/kill/decapitate/mantis
 	duration = 0.4 SECONDS
 	effect_delay = 0.1 SECONDS
-	lunge = 4
+	lunge = MANTIS_SCISSOR_LEAN
 	effect_sound = 'sound/items/weapons/bladeslice.ogg'
 	spray_strength = 4
+	/// The blades coming down on the neck, while they do.
+	var/list/obj/effect/abstract/cyberware_anim/reach
 
+/datum/hv_finisher_stage/kill/decapitate/mantis/Destroy()
+	reach = null
+	return ..()
+
+/**
+ * The blades come down out of the raise and close on the neck. The held blades step aside for the reach
+ * art, which runs from the bearer's hands to wherever the neck is: one blade behind it, one in front.
+ */
 /datum/hv_finisher_stage/kill/decapitate/mantis/enter()
 	. = ..()
 	var/datum/hv_finisher/mantis_scissor/scissor = host
 	scissor.pose_blades(MANTIS_POSE_GUARD)
+	var/posture = mantis_scissor_posture(host.victim)
+	var/toward = get_dir(host.user, host.victim)
+	// The head lies on the far side of the body: the bearer leans right over them to reach it.
+	if((posture == "lie90" && (toward & EAST)) || (posture == "lie270" && (toward & WEST)))
+		host.pose_user(MANTIS_SCISSOR_FAR_LEAN, rise)
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
+		blade.hide_inhand_for(duration)
+	reach = mantis_reach_fx(host.user, host.victim, "[scissor.model]_scissor_[posture]", duration)
+
+// Pulled away before the blades met: they go straight back into the hands.
+/datum/hv_finisher_stage/kill/decapitate/mantis/on_interrupt()
+	for(var/obj/effect/abstract/cyberware_anim/blades as anything in reach)
+		if(!QDELETED(blades))
+			qdel(blades)
+	reach = null
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
+		blade.show_inhand()
 
 /**
  * The blades come together at the neck: one line for the cut, a huge one if the head comes off. An
  * Atlas frame (or anything else that won't let the head go) takes a deep cut instead.
  */
 /datum/hv_finisher_stage/kill/decapitate/mantis/effect()
-	var/datum/hv_finisher/mantis_scissor/scissor = host
 	var/mob/living/carbon/victim = host.victim
 	var/mob/living/bearer = host.user
 	if(effect_sound)
 		playsound(victim, effect_sound, effect_volume, TRUE)
 	var/spray_dir = away_dir()
 	mantis_note_hit(victim, bearer)
-	mantis_scissor_fx(victim, scissor.model)
 	victim.hv_hold_attack_message(
 		"[bearer] brings both blades together at [victim]'s neck!",
 		"[bearer] brings both blades together at your neck!",
