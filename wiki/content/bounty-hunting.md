@@ -99,6 +99,8 @@ About 70% of Wanted criminals and 30% of Petty ones are normal. A Wanted crimina
 - They notice anyone holding a weapon, cuffs or a warrant within 6 tiles. Cuffs or a warrant and they stop and watch you. A weapon out and they fight.
 - Each has one fighting style, with a real weapon they carry and draw when the fight starts: fists (and shoves), a knife, a machine pistol with a spare magazine, a pump shotgun with buckshot, a baseball bat or thrown bottles. Wanted criminals carry a combat knife or a semi-automatic shotgun instead. Their guns run dry and they reload them like you do.
 - Wanted criminals wear an armour vest, and Most Wanted a vest and a helmet. Nothing a criminal carries can be taken: it goes with the body.
+- Wanted criminals carry a stimpack if their pockets have room, and jab it when they tire in a fight.
+- Hit by a disabler or other stun shot, a gunner or bottle thrower ducks behind the nearest cover and looks out again a moment later. A fist, knife, bat or shotgun fighter charges whoever shot it.
 - They may have up to two companions who fight beside them. Companions pay nothing. They may run when badly hurt or when their criminal goes down, and when they come round from a stun they may give up or run.
 - Badly hurt, with two hunters nearby who can see them, they may give up: they put their weapon away, put their hands on their head and lie down for 20 seconds. Cuff them then for full pay. If nobody does, they get up and decide again.
 - Badly hurt with nobody around, they break off, sit down and patch themselves up with what they carry.
