@@ -356,7 +356,7 @@
 	TEST_ASSERT(!door.density, "The set bonus didn't force the door open")
 	TEST_ASSERT_EQUAL(get_turf(criminal), spot(1, 2), "The gorilla walked through instead of forcing the door")
 
-/// A Juggernaut with the arms gets the grab in its own rotation, held busy while it holds on, and free again after
+/// A Juggernaut with the arms gets the grab in its own rotation: not while its shield fills a hand, then held busy while it holds on, and free again after
 /datum/unit_test/voidcrew_bounty_chrome/gorilla_juggernaut
 
 /datum/unit_test/voidcrew_bounty_chrome/gorilla_juggernaut/Run()
@@ -372,6 +372,15 @@
 	TEST_ASSERT_NOTNULL(ability, "The Juggernaut's grab isn't in its ability rotation")
 	TEST_ASSERT(ability.windup >= 0.8 SECONDS, "The grab winds up for [ability.windup / 10] s") // BOUNTY_CHROME_TELL_MIN
 	arm_reload(arms[1], 3.9 SECONDS)
+	// Its tower shield fills its off hand (C8): one fist free, and the grab takes two
+	var/obj/item/shield/riot/phalanx_buckler/shield = locate() in boss.held_items
+	TEST_ASSERT_NOTNULL(shield, "The Juggernaut isn't holding its shield")
+	TEST_ASSERT_EQUAL(length(boss.get_empty_held_indexes()), 1, "With its shield in hand, the Juggernaut doesn't have one fist free")
+	TEST_ASSERT(!bounty_gorilla_fists_for_grab(boss), "With its shield in hand, the Juggernaut has two fists for the grab")
+	TEST_ASSERT(!ability.worth_using(hunter), "The Juggernaut wanted the grab with its shield in hand")
+	// Its shield broken (the gear lock keeps it from being dropped), both fists are free and the grab comes back
+	qdel(shield)
+	TEST_ASSERT(bounty_gorilla_fists_for_grab(boss), "Its shield gone, the Juggernaut doesn't have two fists for the grab")
 	TEST_ASSERT(ability.worth_using(hunter), "The grab isn't worth using on a hunter beside it")
 	TEST_ASSERT(ability.Trigger(target = hunter), "The grab ability wouldn't start")
 	TEST_ASSERT_EQUAL(boss.pulling, hunter, "The Juggernaut's hand isn't on the hunter through its wind-up")

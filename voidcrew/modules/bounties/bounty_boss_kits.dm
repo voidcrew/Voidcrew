@@ -416,6 +416,10 @@
 
 /// A smoke grenade it carries with the pin still in, in hand or where it can draw it from
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_smoke_grenade()
+	// One already in hand first (kept from a wind-up it was stunned out of): a pocket one would need a free hand
+	for(var/obj/item/grenade/smokebomb/grenade in held_items)
+		if(!grenade.active)
+			return grenade
 	for(var/obj/item/grenade/smokebomb/grenade in get_all_contents_type(/obj/item/grenade/smokebomb))
 		if(!grenade.active && (is_holding(grenade) || human_npc_can_draw(src, grenade)))
 			return grenade

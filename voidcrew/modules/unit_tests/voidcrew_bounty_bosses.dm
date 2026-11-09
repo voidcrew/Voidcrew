@@ -1299,6 +1299,10 @@
 	pyro.set_handcuffed(null)
 	pyro.update_handcuffed()
 	qdel(cuffs)
+	// The cuffs knocked the grenade out of its hand (tg's): back in hand, so both stay its own
+	if(!QDELETED(kept) && !pyro.is_holding(kept))
+		pyro.put_in_hands(kept)
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/grenade/smokebomb), 2, "Test fixture: the Pyromaniac's dropped smoke grenade didn't go back in hand")
 
 	// A lethal hit from past its reach counts too
 	controller.CancelActions()
@@ -1327,10 +1331,15 @@
 	pyro.setStaminaLoss(0)
 	TEST_ASSERT(pyro.boss_choose_ability(shooter) != smoke, "The Pyromaniac threw smoke again inside its cooldown")
 
-	// The cloud is tg's: opaque smoke where the grenade goes off, and the grenade spent
+	// The cloud is tg's: opaque smoke where the grenade goes off, and the grenade spent. tg starts the
+	// cloud inside the grenade and spreads it a tile per smoke tick, so give it time to fill in (and the
+	// Pyromaniac time to get back up from the stun above, tg's one-second get_up())
 	var/turf/where = get_turf(first)
 	first.detonate()
 	TEST_ASSERT(QDELETED(first), "The smoke grenade wasn't used up")
+	controller.set_ai_status(AI_STATUS_OFF)
+	sleep(1.5 SECONDS)
+	controller.set_ai_status(AI_STATUS_ON)
 	var/obj/effect/particle_effect/fluid/smoke/cloud = locate() in where
 	TEST_ASSERT_NOTNULL(cloud, "No smoke came out of the grenade")
 	TEST_ASSERT(cloud.opacity, "The smoke can be seen through")
