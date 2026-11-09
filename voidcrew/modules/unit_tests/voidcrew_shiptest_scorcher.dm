@@ -40,33 +40,71 @@
 	var/obj/item/gun/ballistic/automatic/heater/scorcher/scorcher = allocate(/obj/item/gun/ballistic/automatic/heater/scorcher)
 	TEST_ASSERT(heater.w_class < scorcher.w_class, "The stocked Scorcher should be bigger than the Heater")
 
-/// The flamethrower burns fuel per spray, waits between sprays, and only takes welding fuel.
+/// The flamethrower burns a unit of fuel a puff with no wait between puffs, and only takes welding fuel.
 /datum/unit_test/voidcrew_scorcher_flamer
 /datum/unit_test/voidcrew_scorcher_flamer/Run()
 	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent)
 	var/obj/item/gun/ballistic/automatic/heater/scorcher/scorcher = allocate(/obj/item/gun/ballistic/automatic/heater/scorcher)
 	TEST_ASSERT(shooter.put_in_hands(scorcher), "The shooter could not hold the Scorcher")
 	TEST_ASSERT_EQUAL(scorcher.fuel, 40, "The Scorcher should start with a full tank")
-	scorcher.spray_fire(run_loc_floor_top_right, shooter)
-	TEST_ASSERT_EQUAL(scorcher.fuel, 35, "A spray should burn five units of fuel")
-	scorcher.spray_fire(run_loc_floor_top_right, shooter)
-	TEST_ASSERT_EQUAL(scorcher.fuel, 35, "A second spray went off during the cooldown")
-	scorcher.fuel = 2
-	COOLDOWN_RESET(scorcher, spray_cooldown)
-	scorcher.spray_fire(run_loc_floor_top_right, shooter)
-	TEST_ASSERT_EQUAL(scorcher.fuel, 2, "A nearly dry tank still sprayed")
+	TEST_ASSERT(scorcher.spray_fire(run_loc_floor_top_right, shooter), "A puff did not fire")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 39, "A puff should burn one unit of fuel")
+	TEST_ASSERT(scorcher.spray_fire(run_loc_floor_top_right, shooter), "A second puff right after the first did not fire")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 38, "A second puff should burn another unit")
+	scorcher.fuel = 0
+	TEST_ASSERT(!scorcher.spray_fire(run_loc_floor_top_right, shooter), "A dry tank still sprayed")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 0, "A dry tank went below empty")
 
 	var/obj/item/reagent_containers/cup/beaker/large/beaker = allocate(/obj/item/reagent_containers/cup/beaker/large)
 	beaker.reagents.add_reagent(/datum/reagent/water, 30)
 	beaker.reagents.add_reagent(/datum/reagent/fuel/oil, 30)
 	scorcher.draw_fuel(beaker, shooter)
-	TEST_ASSERT_EQUAL(scorcher.fuel, 2, "The tank took something that isn't welding fuel")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 0, "The tank took something that isn't welding fuel")
 	// A large beaker holds 100, so this fills it.
 	beaker.reagents.add_reagent(/datum/reagent/fuel, 40)
 	scorcher.draw_fuel(beaker, shooter)
 	TEST_ASSERT_EQUAL(scorcher.fuel, 40, "The tank did not fill from a beaker of fuel")
-	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/fuel), 2, "The tank took more fuel than it holds")
+	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/fuel), 0, "The tank took more fuel than it holds")
 	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/water), 30, "Refuelling took water out of the beaker")
+
+/// Holding the trigger starts a processing spray that puffs at once, and stopping, dropping or deleting the gun cleans it all up.
+/datum/unit_test/voidcrew_scorcher_held_spray
+/datum/unit_test/voidcrew_scorcher_held_spray/Run()
+	var/mob/living/carbon/human/consistent/shooter = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/gun/ballistic/automatic/heater/scorcher/scorcher = allocate(/obj/item/gun/ballistic/automatic/heater/scorcher)
+	TEST_ASSERT(shooter.put_in_hands(scorcher), "The shooter could not hold the Scorcher")
+	TEST_ASSERT_EQUAL(scorcher.spray_holder, shooter, "Holding the Scorcher did not start watching the holder")
+
+	scorcher.start_spraying(run_loc_floor_top_right)
+	TEST_ASSERT(scorcher.spraying, "The spray did not start")
+	TEST_ASSERT(scorcher.datum_flags & DF_ISPROCESSING, "The spray is not processing")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 39, "The spray's first puff did not go off at once")
+	TEST_ASSERT(scorcher.spray_puff(), "A held puff did not fire")
+	TEST_ASSERT_EQUAL(scorcher.fuel, 38, "A held puff should burn one unit of fuel")
+	scorcher.stop_spraying()
+	TEST_ASSERT(!scorcher.spraying, "The spray did not stop")
+	TEST_ASSERT(!(scorcher.datum_flags & DF_ISPROCESSING), "The stopped spray is still processing")
+	TEST_ASSERT_NULL(scorcher.spray_target, "The stopped spray kept its target")
+
+	scorcher.fuel = 0
+	scorcher.start_spraying(run_loc_floor_top_right)
+	TEST_ASSERT(!scorcher.spraying, "A dry tank started spraying")
+	TEST_ASSERT(!(scorcher.datum_flags & DF_ISPROCESSING), "A dry tank left the spray processing")
+
+	scorcher.fuel = 40
+	scorcher.start_spraying(run_loc_floor_top_right)
+	TEST_ASSERT(scorcher.spraying, "The refuelled spray did not start")
+	shooter.dropItemToGround(scorcher)
+	TEST_ASSERT(!scorcher.spraying, "Dropping the Scorcher did not stop the spray")
+	TEST_ASSERT(!(scorcher.datum_flags & DF_ISPROCESSING), "The dropped Scorcher is still processing")
+	TEST_ASSERT_NULL(scorcher.spray_holder, "The dropped Scorcher kept its holder")
+
+	TEST_ASSERT(shooter.put_in_hands(scorcher), "The shooter could not pick the Scorcher back up")
+	scorcher.start_spraying(run_loc_floor_top_right)
+	TEST_ASSERT(scorcher.spraying, "The spray did not start again")
+	qdel(scorcher)
+	TEST_ASSERT(!(scorcher.datum_flags & DF_ISPROCESSING), "A deleted Scorcher is still processing")
+	TEST_ASSERT_NULL(scorcher.spray_holder, "A deleted Scorcher kept its holder")
 
 /// Each gun can be bought at its tier and found in plunder, with a spare magazine, and its magazine is sold.
 /datum/unit_test/voidcrew_scorcher_routes

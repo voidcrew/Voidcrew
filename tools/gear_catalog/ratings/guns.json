@@ -141,7 +141,7 @@
    "hash": "",
    "name": "Scorcher",
    "rank": 3,
-   "reason": "A Heater (20 damage 5.7mm at 6.7 a second, 30 to a magazine) with a flamethrower under it: a 5-tile plume that burns and sets people alight every 2 seconds, eight sprays to a tank of welding fuel. The flamer alone is the MOD module's yellow, together they edge over the red line.",
+   "reason": "A Heater (20 damage 5.7mm at 6.7 a second, 30 to a magazine) with a flamethrower under it: a held spray of 5-tile plumes, five a second, that burn and set people alight, eight seconds of spray to a tank of welding fuel. The flamer alone is the MOD module's yellow, together they edge over the red line.",
    "score": 115,
    "tier": "red"
   },
