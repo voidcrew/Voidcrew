@@ -120,6 +120,22 @@
 #define GORILLA_CLAP_HELMET_ARMOUR 30
 /// Melee cover on an arm that turns the limb rip into a dislocation.
 #define GORILLA_RIP_ARMOUR 40
+/// The limb rip's look. Pixels the bearer steps in toward the body, and degrees he leans back from his feet as he
+/// hauls (seen from the side).
+#define GORILLA_RIP_LEAN 5
+#define GORILLA_RIP_LEAN_BACK 12
+/// How far his piston arms push out to take the wrist, as a share of their length. They hold it there as he hauls.
+#define GORILLA_RIP_REACH 1.7
+/// The hauled arm, as a share of its length: the most it stretches to meet his fists, how much further the haul
+/// pulls it, and the most it ever stretches.
+#define GORILLA_RIP_MAX_STRETCH 1.8
+#define GORILLA_RIP_HAUL 0.35
+#define GORILLA_RIP_MAX_HAUL 2.1
+/// Seen from the side, degrees the arm comes up off the floor into his fists.
+#define GORILLA_RIP_TILT 30
+/// The haul's steps, and the pixels the body comes up off the floor with the arm.
+#define GORILLA_RIP_HAUL_STEPS 6
+#define GORILLA_RIP_LIFT 3
 /// Melee cover on the chest that turns the broken back into cracked ribs.
 #define GORILLA_BACK_ARMOUR 40
 /// How long a broken back's fold stays drawn after the finisher.
