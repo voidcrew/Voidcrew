@@ -234,6 +234,7 @@
 #include "voidcrew_simple_mob_ai.dm"
 #include "voidcrew_slime_extract_piles.dm"
 #include "voidcrew_smart_locker.dm"
+#include "voidcrew_stealth.dm"
 #include "voidcrew_survey_archive.dm"
 #include "voidcrew_survey_capabilities.dm"
 #include "voidcrew_survey_identity.dm"
