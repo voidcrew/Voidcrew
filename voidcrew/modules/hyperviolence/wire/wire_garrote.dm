@@ -361,11 +361,11 @@
 
 /**
  * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
- * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states), in pixels from
- * the middle of the tile, as a line's base is placed. The hands hang at the hips; in profile the near hand is at the
- * middle of the body and the far one just shows at its front edge, behind the torso. Facing the viewer both hands
- * show at the sides. Facing away they show at the sides too, but the wire runs forward from them, through the
- * garroter's body, so both count as behind it. list(x, y, behind)
+ * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states). The pixel a line
+ * of wire leaves from, by its lower left corner, in pixels from the middle of the tile. The hands hang at the hips;
+ * in profile the near hand is at the middle of the body and the far one just shows at its front edge, behind the
+ * torso. Facing the viewer both hands show at the sides. Facing away they show at the sides too, but the wire runs
+ * forward from them, through the garroter's body, so both count as behind it. list(x, y, behind)
  */
 /datum/hv_finisher/garrote/proc/hand_point(side)
 	var/right = side != "left"
@@ -379,15 +379,23 @@
 	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
 
 /**
- * The world layer for wire leaving a hand. Facing away, the wire runs from the hands, forward through the garroter, to
- * the body lying beyond them: it goes between the two, under the garroter so their back and head hide it, and over the
- * one lying there, so only the stretch from over their head to the neck shows. Otherwise over the bodies, or under them
- * for the far hand in profile.
+ * Where a line of wire from the garroter's `side` hand is drawn from: the hand (hand_point()), except facing away.
+ * Facing away it runs from the hands, hidden in front of the garroter, to the neck beyond their head; drawn from the
+ * hands it showed through the gaps between head and shoulders as a stray pixel each. It is drawn from behind the head
+ * instead, on the same line, so it shows only once it clears the head. list(x, y, behind)
+ */
+/datum/hv_finisher/garrote/proc/line_origin(side)
+	if(user.dir == NORTH)
+		return side == "left" ? list(-4, 8, TRUE) : list(2, 8, TRUE)
+	return hand_point(side)
+
+/**
+ * The world layer for wire leaving a hand. Wire from a hand behind the garroter (both facing away, the far one in
+ * profile) goes between the two bodies: under the garroter, so their torso, back and head hide it, and over the one
+ * lying there, so it shows from where it clears the garroter to the neck. Wire from a hand in front goes over both.
  */
 /datum/hv_finisher/garrote/proc/strand_layer(behind)
-	if(behind && user.dir == NORTH)
-		return WIRE_BETWEEN_LAYER
-	return wire_line_layer(behind)
+	return behind ? WIRE_BETWEEN_LAYER : wire_line_layer(FALSE)
 
 /// "left" or "right": the hand the wire is in.
 /datum/hv_finisher/garrote/proc/wire_side()
@@ -403,12 +411,14 @@
 	var/turf/from = get_turf(user)
 	if(!from || QDELETED(victim))
 		return
-	var/list/hand = hand_point(wire_side())
+	var/side = wire_side()
+	var/list/hand = line_origin(side)
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
-	var/list/neck = neck_point()
-	var/span_x = neck[1] - hand_x
-	var/span_y = neck[2] - hand_y
+	// Thrown at the pixel of the loop this hand's strand will meet, so it lands on the loop as it winds on.
+	var/list/meet = loop_point(side)
+	var/span_x = meet[1] - (hand_x + 0.5)
+	var/span_y = meet[2] - (hand_y + 0.5)
 	var/step = WIRE_GARROTE_REACH_TIME / WIRE_GARROTE_THROW_BEATS
 	var/obj/effect/abstract/wire_reach/line = new(from)
 	line.icon_state = "wire_reach[wire_suffix()]"
@@ -417,13 +427,13 @@
 	line.pixel_x = hand_x
 	line.pixel_y = hand_y
 	// A pixel of wire leaving the hand toward the neck.
-	line.transform = wire_reach_shape(span_x, span_y, 1)
+	line.transform = wire_throw_shape(span_x, span_y, 1)
 	if(delay)
 		line.alpha = 0
 		animate(line, alpha = 0, time = delay)
 	for(var/beat in 1 to WIRE_GARROTE_THROW_BEATS)
 		var/flown = beat / WIRE_GARROTE_THROW_BEATS
-		var/matrix/shape = wire_reach_shape(span_x, span_y, flown * sqrt(span_x ** 2 + span_y ** 2))
+		var/matrix/shape = wire_throw_shape(span_x, span_y, flown * wire_line_length(span_x, span_y))
 		if(beat == 1 && !delay)
 			animate(line, transform = shape, time = step)
 		else
@@ -445,20 +455,53 @@
 	shape.Turn(arctan(span_y, span_x))
 	return shape
 
+/**
+ * The garrote's thrown wire (wire_reach, half a tile of line running up a half pixel left of the middle) drawn from
+ * the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away and half a pixel on, so it
+ * covers the pixel it lands on. `length` draws only that much of it along the same bearing.
+ */
+/proc/wire_throw_shape(span_x, span_y, length)
+	var/matrix/shape = matrix()
+	shape.Translate(0.5, 0)
+	shape.Scale(1, max(isnull(length) ? wire_line_length(span_x, span_y) : length, 1) / 16)
+	shape.Turn(arctan(span_y, span_x))
+	shape.Translate(0.5, 0.5)
+	return shape
+
+/// How long a line of wire from the middle of one pixel to the middle of another (`span_x`, `span_y`) away is drawn:
+/// half a pixel more, to the far side of the pixel it ends on.
+/proc/wire_line_length(span_x, span_y)
+	return sqrt(span_x ** 2 + span_y ** 2) + 0.5
+
+/**
+ * The thrown wire's end put on the loop where the neck is drawn as it lands. It was aimed where the neck was drawn as
+ * it left the hand, and anything that moves the body in flight leaves it short of the loop (recorded once, two pixels
+ * short facing the viewer).
+ */
+/datum/hv_finisher/garrote/proc/land_reach()
+	var/datum/weakref/line_ref = LAZYACCESS(reach_refs, 1)
+	var/obj/effect/abstract/wire_reach/line = line_ref?.resolve()
+	if(!line)
+		return
+	// The throw's beats end here anyway; ended now, it is drawn as they leave it (whole, lit) before it is moved.
+	animate(line)
+	line.transform = reach_to_neck(line, victim.transform)
+
 /// The end of the throw: the wire winds round the neck and is held there, loose, for the rest of the wind-up (`rest`).
 /datum/hv_finisher/garrote/proc/wind_loop(rest)
 	if(!winding_up())
 		return
+	land_reach()
 	show_loop("draw")
 	// Wound on, it hangs loose until the hold pulls it tight. With no time left for that, the hold takes it from here.
 	if(rest > WIRE_GARROTE_WIND_TIME)
 		LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(show_loop), "loop"), WIRE_GARROTE_WIND_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(user, WIRE_GORE_ICON, "wire_glint[wire_suffix()]", WIRE_FX_LAYER, 0.3 SECONDS, glow = TRUE)
 	if(glint)
-		// On the hand: the glint's picture is centred a pixel right of a line's base.
+		// On the hand's pixel: the glint's picture is centred on the pixel down and right of its icon's middle.
 		var/list/hand = hand_point(wire_side())
-		glint.pixel_x = hand[1] - 1
-		glint.pixel_y = hand[2]
+		glint.pixel_x = hand[1]
+		glint.pixel_y = hand[2] + 1
 
 /// The wire in flight. Nothing to click.
 /obj/effect/abstract/wire_reach
@@ -527,10 +570,70 @@
 		animate(transform = reach_to_neck(line, after), time = WIRE_GARROTE_TURN_TIME / 2, easing = SINE_EASING | EASE_OUT)
 	return WIRE_GARROTE_TURN_TIME
 
-/// The thrown wire `line` drawn from where it left the hand to the neck of the victim turned to `body_shape`.
+/// The thrown wire `line` drawn from where it left the hand to the loop on the neck of the victim turned to `body_shape`.
 /datum/hv_finisher/garrote/proc/reach_to_neck(obj/effect/abstract/wire_reach/line, matrix/body_shape)
-	var/list/neck = neck_point(body_shape)
-	return wire_reach_shape(neck[1] - line.pixel_x, neck[2] - line.pixel_y)
+	var/list/meet = loop_point(wire_side(), body_shape)
+	return wire_throw_shape(meet[1] - (line.pixel_x + 0.5), meet[2] - (line.pixel_y + 0.5))
+
+/**
+ * Where the strand from the garroter's `side` hand meets the loop, as the loop is drawn now (or with the body turned
+ * to `shape`): the middle of one of the near half's pixels, in pixels from the middle of the garroter's tile.
+ * list(x, y)
+ *
+ * On a body lying down the loop shows as a short line up and down across the neck. In profile the near hand's strand
+ * meets its lower end and the far hand's its upper end, so the two show as two strands. Facing the viewer both meet
+ * its top, the end toward the garroter; facing away both meet it at the neck, since its lower end is hidden behind the
+ * garroter's head. On a body still on its feet the loop lies across the neck: facing toward or away each strand meets
+ * the end on its own side, and in profile the near one the end toward the garroter, the far one the middle.
+ */
+/datum/hv_finisher/garrote/proc/loop_point(side, matrix/shape)
+	if(!shape)
+		shape = victim.transform
+	var/list/drawn = list()
+	for(var/list/spot as anything in wire_loop_line(victim.dir))
+		drawn += list(wire_pixel_drawn(shape, spot[1], spot[2]))
+	var/list/first = drawn[1]
+	var/list/middle = drawn[2]
+	var/list/last = drawn[3]
+	var/behind = hand_point(side)[3]
+	var/list/meet
+	if(abs(first[2] - last[2]) > abs(first[1] - last[1]))
+		var/list/upper = first[2] > last[2] ? first : last
+		var/list/lower = upper == first ? last : first
+		switch(user.dir)
+			if(NORTH)
+				meet = middle
+			if(SOUTH)
+				meet = upper
+			else
+				meet = behind ? upper : lower
+	else
+		var/list/leftmost = first[1] < last[1] ? first : last
+		var/list/rightmost = leftmost == first ? last : first
+		if(user.dir & (EAST | WEST))
+			meet = behind ? middle : ((user.dir & EAST) ? leftmost : rightmost)
+		else
+			meet = hand_point(side)[1] < 0 ? leftmost : rightmost
+	return list(meet[1] + victim.pixel_x + (victim.x - user.x) * ICON_SIZE_X, meet[2] + victim.pixel_y + (victim.y - user.y) * ICON_SIZE_Y)
+
+/**
+ * The loop's near half as wire_gore.dmi draws it (garrote_tight_front): a line of wire one pixel high and seven long
+ * across the neck, a pixel below where the jaw meets it, on the row the slit throat is drawn on. The middles of its
+ * end pixels and of its middle one, in pixels from the middle of the icon, for the body facing `facing` (its picture
+ * facing east is a pixel to the right). list(list(x, y) first, middle, last)
+ */
+/proc/wire_loop_line(facing)
+	var/left = facing == EAST ? -2.5 : -3.5
+	return list(list(left, 5.5), list(left + 3, 5.5), list(left + 6, 5.5))
+
+/**
+ * The middle of the pixel that a picture's pixel, its middle (`x`, `y`) from the middle of the icon, is drawn on once
+ * `shape` turns and moves it, from the same middle. list(x, y)
+ * Rounded down, not to the nearest: a quarter turn leaves the middle of a pixel on the middle of another, give or take
+ * the rounding in the turn.
+ */
+/proc/wire_pixel_drawn(matrix/shape, x, y)
+	return list(round(shape.a * x + shape.b * y + shape.c) + 0.5, round(shape.d * x + shape.e * y + shape.f) + 0.5)
 
 /// Where the victim's neck is drawn, in pixels from the middle of its tile before its own offsets: 6 px above the
 /// middle of an upright body, turned with a lying one (or as `shape`, a transform, would turn it). list(x, y)
@@ -575,11 +678,34 @@
 		return
 	var/list/neck = neck_point()
 	var/list/target = hold_point()
-	victim.add_offsets(HV_FINISHER_OFFSET, x_add = clamp(target[1] - neck[1], -12, 12), y_add = clamp(target[2] - neck[2], -12, 12))
+	victim.add_offsets(HV_FINISHER_OFFSET, x_add = clamp(target[1] - neck[1], -12, 12), y_add = clamp(target[2] - neck[2], -12, 12), animate = FALSE)
+	slide_in()
 	// Facing the viewer, the body is drawn up in front of the garroter's legs, not behind them.
 	if(user.dir == SOUTH && victim.y < user.y && isnull(victim_old_layer))
 		victim_old_layer = victim.layer
 		victim.layer = WIRE_PULLED_LAYER
+
+/**
+ * The body slides in as one move, from where it was drawn before the grab (pull_from) to where the grab's pull and the
+ * hold's drag put it, over the time the strands slide in with it (draw_wire()). tg slides the grab's pull (passive,
+ * then aggressive) and the drag as separate moves on top of each other, and recorded, the body fell a pixel behind
+ * the strands' ends on the neck for the first frames of the longest pull.
+ */
+/datum/hv_finisher/garrote/proc/slide_in()
+	if(!pull_from)
+		return
+	var/to_x = victim.pixel_x
+	var/to_y = victim.pixel_y
+	if(to_x == pull_from[3] && to_y == pull_from[4])
+		return
+	// Ends tg's own slides, so they don't run on top of this one.
+	animate(victim)
+	// No floating bob meanwhile, as tg's own offset moves hold it off.
+	ADD_TRAIT(victim, TRAIT_NO_FLOATING_ANIM, WIRE_SHAKE_TRAIT)
+	addtimer(TRAIT_CALLBACK_REMOVE(victim, TRAIT_NO_FLOATING_ANIM, WIRE_SHAKE_TRAIT), UPDATE_TRANSFORM_ANIMATION_TIME, TIMER_UNIQUE | TIMER_OVERRIDE)
+	victim.pixel_x = pull_from[3]
+	victim.pixel_y = pull_from[4]
+	animate(victim, pixel_x = to_x, pixel_y = to_y, time = UPDATE_TRANSFORM_ANIMATION_TIME)
 
 /// The victim thrashes in the wire from `delay` on, for `duration`.
 /datum/hv_finisher/garrote/proc/struggle(delay, duration)
@@ -683,41 +809,47 @@
 		return
 	// Never a strand from a hand that still draws a wire hanging in it.
 	hide_hands()
-	var/list/neck = neck_point()
 	var/list/start = slide_from || drawn_offsets()
 	for(var/side in list("left", "right"))
-		var/list/hand = hand_point(side)
-		// Facing toward or away, each strand meets its own side of the loop, so the two read as two lines, not one.
-		var/end_x = (user.dir & (NORTH | SOUTH)) ? clamp(hand[1], -2, 2) : 0
+		var/list/hand = line_origin(side)
 		var/hand_x = user.pixel_x + hand[1]
 		var/hand_y = user.pixel_y + hand[2]
-		var/neck_x = neck[1] + end_x
-		var/neck_y = neck[2]
+		// From the middle of the hand's pixel to the middle of the loop's, where the loop is drawn: whole pixels.
+		var/list/meet = loop_point(side)
+		var/span_x = meet[1] - (hand_x + 0.5)
+		var/span_y = meet[2] - (hand_y + 0.5)
 		var/start_hand_x = hand_x + start[1] - user.pixel_x
 		var/start_hand_y = hand_y + start[2] - user.pixel_y
-		var/start_neck_x = neck_x + start[3] - victim.pixel_x
-		var/start_neck_y = neck_y + start[4] - victim.pixel_y
+		var/start_span_x = span_x + (start[3] - victim.pixel_x) - (start[1] - user.pixel_x)
+		var/start_span_y = span_y + (start[4] - victim.pixel_y) - (start[2] - user.pixel_y)
 		var/obj/effect/abstract/wire_reach/strand = new(from)
 		strand.icon_state = "wire_taut[wire_suffix()]"
 		strand.layer = strand_layer(hand[3])
 		strand.add_overlay(emissive_appearance(strand.icon, strand.icon_state, strand))
 		strand.pixel_x = start_hand_x
 		strand.pixel_y = start_hand_y
-		strand.span = list(neck_x - hand_x, neck_y - hand_y)
-		strand.transform = wire_strand_shape(start_neck_x - start_hand_x, start_neck_y - start_hand_y)
-		if(start_hand_x != hand_x || start_hand_y != hand_y || start_neck_x != neck_x || start_neck_y != neck_y)
-			// Linear, as tg's offset moves are, and the matrix too, so both ends of the line run straight with the bodies.
-			animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(neck_x - hand_x, neck_y - hand_y), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+		strand.span = list(span_x, span_y)
+		strand.transform = wire_strand_shape(start_span_x, start_span_y)
+		if(start_hand_x != hand_x || start_hand_y != hand_y || start_span_x != span_x || start_span_y != span_y)
+			// Linear, as the body's slide in is (slide_in()), and the matrix blended straight too, so the far end keeps
+			// step with the neck all the way.
+			animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(span_x, span_y), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
 		LAZYADD(strand_refs, WEAKREF(strand))
 		QDEL_IN(strand, duration)
 
-/// A taut strand of wire from its start to (`span_x`, `span_y`) pixels away: the sprite is a tile-long line through the
-/// middle, so it is moved up to start at the middle, then stretched and turned.
+/**
+ * A taut strand of wire from the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away
+ * and half a pixel on, so it covers the pixel it ends on. The sprite is a tile-long line running up a half pixel left
+ * of the middle: it is moved onto the middle and up to start there, stretched and turned, then moved to the middle of
+ * the base pixel. That end stays put under any blend of two of these, so a strand tweened between two keeps its base in
+ * the hand and runs its far end straight from one spot to the other.
+ */
 /proc/wire_strand_shape(span_x, span_y)
 	var/matrix/shape = matrix()
-	shape.Translate(0, ICON_SIZE_Y / 2)
-	shape.Scale(1, max(sqrt(span_x ** 2 + span_y ** 2), 1) / ICON_SIZE_Y)
+	shape.Translate(0.5, ICON_SIZE_Y / 2)
+	shape.Scale(1, wire_line_length(span_x, span_y) / ICON_SIZE_Y)
 	shape.Turn(arctan(span_y, span_x))
+	shape.Translate(0.5, 0.5)
 	return shape
 
 /datum/hv_finisher/garrote/proc/clear_strands()
