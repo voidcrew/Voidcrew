@@ -266,10 +266,10 @@
 	TEST_ASSERT_EQUAL(get_turf(criminal), spot(3, 2), "The dash didn't run down the lit line to its last tile")
 	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "The dash cut a hunter who had stepped off its line")
 
-/// The player's lunge is a real run: a standing body or a window on the line stops it short, and nobody is cut
-/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_blocked
+/// The player's lunge is the implant's ordinary one: it follows its target through the wind-up, passes over someone standing in the way, and stops at a window
+/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_player
 
-/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_blocked/Run()
+/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_player/Run()
 	var/mob/living/carbon/human/lunger = make_person(spot(0, 2))
 	var/mob/living/carbon/human/victim = make_person(spot(4, 2))
 	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/housing = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
@@ -282,26 +282,53 @@
 	var/mob/living/carbon/human/bystander = make_person(spot(2, 2))
 	TEST_ASSERT(press.Trigger(target = victim), "The lunge wouldn't start past someone standing in the way")
 	sleep(0.8 SECONDS)
-	TEST_ASSERT_EQUAL(get_turf(lunger), spot(1, 2), "The dash went through someone standing in its way")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "A dash stopped short still cut its target")
-	TEST_ASSERT_EQUAL(bystander.getBruteLoss(), 0, "A dash stopped short cut whoever stopped it")
+	TEST_ASSERT_EQUAL(get_turf(lunger), spot(3, 2), "The player's lunge didn't pass over someone standing in the way")
+	TEST_ASSERT(victim.getBruteLoss() > 0, "The player's lunge didn't cut its target")
+	TEST_ASSERT_EQUAL(bystander.getBruteLoss(), 0, "The player's lunge cut whoever stood in the way")
 	bystander.forceMove(spot(2, 4))
 
+	// It follows its target through the wind-up
 	lunger.forceMove(spot(0, 2))
+	victim.get_up(instant = TRUE)
+	var/brute_before = victim.getBruteLoss()
+	press.ResetCooldown()
+	TEST_ASSERT(press.Trigger(target = victim), "The lunge wouldn't start in the clear")
+	victim.forceMove(spot(4, 3))
+	sleep(0.8 SECONDS)
+	TEST_ASSERT(lunger.Adjacent(victim), "The player's lunge didn't follow its target through the wind-up")
+	TEST_ASSERT(victim.getBruteLoss() > brute_before, "The player's lunge didn't cut a target who moved in the wind-up")
+	victim.forceMove(spot(4, 2))
+
+	lunger.forceMove(spot(0, 2))
+	brute_before = victim.getBruteLoss()
 	var/obj/structure/window/fulltile/pane = allocate(/obj/structure/window/fulltile, spot(2, 2))
 	press.ResetCooldown()
 	TEST_ASSERT(press.Trigger(target = victim), "The lunge wouldn't start at someone behind a window")
 	sleep(0.8 SECONDS)
-	TEST_ASSERT_EQUAL(get_turf(lunger), spot(1, 2), "The dash went through a window")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "A dash stopped by a window still cut its target")
+	TEST_ASSERT_EQUAL(get_turf(lunger), spot(1, 2), "The player's lunge went through a window")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), brute_before, "A lunge stopped by a window still cut its target")
 	qdel(pane)
 
-	lunger.forceMove(spot(0, 2))
-	press.ResetCooldown()
-	TEST_ASSERT(press.Trigger(target = victim), "The lunge wouldn't start in the clear")
-	sleep(0.8 SECONDS)
-	TEST_ASSERT_EQUAL(get_turf(lunger), spot(3, 2), "The clear dash didn't reach its target")
-	TEST_ASSERT(victim.getBruteLoss() > 0, "The clear dash didn't cut its target")
+/// The bounty NPC's shown-line dash is a real run: someone who steps onto its line during the tell stops it short, and nobody is cut
+/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_npc_blocked
+
+/datum/unit_test/voidcrew_bounty_chrome/mantis_lunge_npc_blocked/Run()
+	var/mob/living/carbon/human/hunter = make_person(spot(4, 2))
+	var/mob/living/carbon/human/npc/bounty_criminal/criminal = make_mantis(spot(0, 2))
+	var/datum/component/bounty_chrome/chrome = chrome_fight(criminal, hunter)
+	var/datum/bounty_chrome_move/mantis_blades/blades = chrome.move_of(/datum/bounty_chrome_move/mantis_blades)
+	var/datum/bounty_chrome_move/mantis_lunge/lunge = chrome.move_of(/datum/bounty_chrome_move/mantis_lunge)
+	blades.plan(criminal.ai_controller, hunter)
+	blades.plan(criminal.ai_controller, hunter)
+	lunge.opens_at = 0
+	chrome.next_move_at = 0
+	TEST_ASSERT(chrome.start_move(lunge, hunter), "The lunge's tell didn't start")
+	var/mob/living/carbon/human/bystander = make_person(spot(2, 2))
+	sleep(1.6 SECONDS)
+	TEST_ASSERT_NULL(lunge.lunge_action(), "The housing's own Mantis Lunge wasn't used")
+	TEST_ASSERT_EQUAL(get_turf(criminal), spot(1, 2), "The NPC's dash went through someone standing on its line")
+	TEST_ASSERT_EQUAL(hunter.getBruteLoss(), 0, "A dash stopped short still cut its target")
+	TEST_ASSERT_EQUAL(bystander.getBruteLoss(), 0, "A dash stopped short cut whoever stopped it")
 
 #ifdef BOUNTY_CHROME_RENDERS
 /// Writes a Mantis criminal with its blades out, a Gorilla brawler and the tells' floor marks to data/bounty_chrome_renders/

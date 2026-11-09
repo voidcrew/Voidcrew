@@ -296,7 +296,7 @@
 /// How long a connecting lunge floors its target. Above the module's usual
 /// 1-1.5s band because the lunge is telegraphed and on a 20 second clock.
 #define CYBERWARE_MANTIS_LUNGE_KNOCKDOWN (2 SECONDS)
-/// How long the dash takes per tile: a real run down the line, one tick a step.
+/// How long a shown-line dash (dash_aim) takes per tile: a real run down the line, one tick a step.
 #define CYBERWARE_MANTIS_LUNGE_STEP (0.5)
 
 /**
@@ -376,8 +376,8 @@
 	button_icon_state = "act_mantis_lunge"
 	cooldown_time = 20 SECONDS
 	click_to_activate = TRUE
-	/// The tile the next press dashes at instead of where its target stands, for a bearer that showed
-	/// its line before pressing (a bounty NPC's tell). Spent by the press.
+	/// Set by a bearer that showed its line before pressing (a bounty NPC's tell): the next press runs down
+	/// that line to this tile with real movement (dash()) instead of the ordinary lunge. Spent by the press.
 	var/turf/dash_aim
 
 /**
@@ -418,9 +418,9 @@
 	if(get_dist(lunger, victim) > CYBERWARE_MANTIS_LUNGE_RANGE || !can_see(lunger, victim, CYBERWARE_MANTIS_LUNGE_RANGE))
 		lunger.balloon_alert(lunger, "out of reach!")
 		return FALSE
-	// The line is set as the button is pressed: where they stand now, or the tile a tell already showed
-	if(!aim || aim.z != lunger.z || get_dist(lunger, aim) > CYBERWARE_MANTIS_LUNGE_RANGE)
-		aim = get_turf(victim)
+	// A shown line out of reach is no line: the ordinary lunge
+	if(aim && (aim.z != lunger.z || get_dist(lunger, aim) > CYBERWARE_MANTIS_LUNGE_RANGE))
+		aim = null
 	// One lunge clock across both housings: start every mantis_lunge button
 	// this owner has, ours included.
 	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in lunger.actions)
@@ -436,22 +436,46 @@
 	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim), aim), CYBERWARE_MANTIS_LUNGE_TELEGRAPH)
 	return TRUE
 
-/// The dash starts, if its bearer can still go and its target still lives. Sleeps in its own call (dash()).
+/// The dash: the ordinary lunge at where the target is now, or with a shown line (dash_aim) a run down it (dash()).
 /datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref, turf/aim)
 	var/mob/living/lunger = owner
 	if(QDELETED(lunger) || lunger.incapacitated || !isturf(lunger.loc))
 		return
 	var/mob/living/victim = victim_ref?.resolve()
-	if(QDELETED(victim) || victim.stat == DEAD || !aim || aim.z != lunger.z)
+	if(QDELETED(victim) || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "target lost!")
 		return
-	INVOKE_ASYNC(src, PROC_REF(dash), lunger, victim_ref, aim)
+	if(aim)
+		if(aim.z != lunger.z)
+			lunger.balloon_alert(lunger, "target lost!")
+			return
+		INVOKE_ASYNC(src, PROC_REF(dash), lunger, victim_ref, aim)
+		return
+	// The ordinary lunge: walk the line to the target with a decoy per tile and stop adjacent
+	var/turf/victim_turf = get_turf(victim)
+	if(!victim_turf || get_dist(lunger, victim_turf) > CYBERWARE_MANTIS_LUNGE_RANGE + 1)
+		lunger.balloon_alert(lunger, "target lost!")
+		return
+	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
+	for(var/turf/step_turf as anything in get_line(get_turf(lunger), victim_turf))
+		if(step_turf == get_turf(lunger))
+			continue
+		if(step_turf == victim_turf)
+			break
+		if(step_turf.is_blocked_turf(exclude_mobs = TRUE))
+			break
+		new /obj/effect/temp_visual/decoy/fading/halfsecond(lunger.loc, lunger)
+		lunger.forceMove(step_turf)
+	if(!lunger.Adjacent(victim))
+		lunger.balloon_alert(lunger, "fell short!")
+		return
+	land_lunge(lunger, victim)
 
 /**
- * The dash itself: a real run down the line set at the press, a tile a tick with a decoy per tile, up to
- * the tile before `aim`. Anything that stops a walker stops it there: a wall, a window, a shut door, a
- * standing body, a stun or a grab. If its target is next to it where it stops, the bonus cut lands once per
- * blade and floors them; otherwise it fell short.
+ * A shown-line dash (dash_aim, a bounty NPC's tell): a real run down the line it showed, a tile a tick with
+ * a decoy per tile, up to the tile before `aim`. Anything that stops a walker stops it there: a wall, a
+ * window, a shut door, a standing body, a stun or a grab. If its target is next to it where it stops, the
+ * lunge lands; otherwise it fell short.
  */
 /datum/action/cooldown/cyberware/mantis_lunge/proc/dash(mob/living/lunger, datum/weakref/victim_ref, turf/aim)
 	var/turf/start = get_turf(lunger)
@@ -480,6 +504,10 @@
 	if(QDELETED(victim) || victim.stat == DEAD || !lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
 		return
+	land_lunge(lunger, victim)
+
+/// The arrival: the bonus cut once per blade, and they go down
+/datum/action/cooldown/cyberware/mantis_lunge/proc/land_lunge(mob/living/lunger, mob/living/victim)
 	// Both housings deployed means both blades arrive. Floored at one: a blade
 	// stowed during the 0.3s telegraph shouldn't eat the whole cooldown for
 	// nothing when the dash still connected.
