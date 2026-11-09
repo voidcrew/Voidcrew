@@ -424,29 +424,46 @@
 	animate(transform = rest, time = WIRE_FALL_TIME / 2, easing = QUAD_EASING | EASE_IN)
 	// Down: the limb on the floor takes over.
 	animate(alpha = 0, time = 0.5)
-	// The blood starts now, as the limb leaves: a short spray from the stump and a drop under it.
+	// The blood starts now, as the limb leaves: a short spray from the stump and a drop falling under it.
 	if(!seared)
 		victim.hv_wire_spray(spray_dir, 2, zone)
 		wire_stump_drip(victim, zone, side)
 	QDEL_IN(src, WIRE_SLIDE_TIME + WIRE_FALL_TIME + 0.1 SECONDS)
 
-/// A drop of blood on the floor under a fresh stump: where the feet stand on a body standing (not at the foot of the
-/// tile, where it would sit on the head of anyone standing below), at the stump of one lying. Side on, it lands clear
-/// of the feet, away from the limb that fell to `side`: under them, it shows past the legs as a red bar.
+/// The drop under a fresh stump leaves it this long after the limb starts to slide, as the stump shows...
+#define WIRE_STUMP_DRIP_WAIT 1
+/// ...and falls for this long (both in deciseconds, as the drop's flight is given).
+#define WIRE_STUMP_DRIP_FALL 2
+
+/// A drop of blood falls from a fresh stump and lands on the floor under it: where the feet stand on a body standing
+/// (not at the foot of the tile, where it would sit on the head of anyone standing below), at the stump of one lying.
+/// Side on, it lands clear of the feet, away from the limb that fell to `side`: under them, it shows past the legs as a
+/// red bar. From a limb on the far side it falls behind the body.
 /proc/wire_stump_drip(mob/living/carbon/victim, zone, side = 1)
 	var/turf/floor = get_turf(victim)
 	if(!floor || isgroundlessturf(floor) || !floor.has_gravity() || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return
-	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(floor, victim.get_static_viruses(), victim.get_blood_dna_list())
-	if(QDELETED(drop))
-		return
 	var/list/spot = wire_zone_point(victim, zone)
+	var/start_x = spot[1]
+	var/start_y = spot[2]
+	var/land_x
+	var/land_y
+	var/behind = FALSE
 	if(victim.body_position == LYING_DOWN)
-		drop.wire_place(clamp(spot[1], -12, 12), clamp(spot[2], -12, 12))
-		return
-	// On the floor at the feet: higher, it shows through the gap a leg leaves as a blot at the hip.
-	var/drop_x = (victim.dir & (EAST | WEST)) ? victim.pixel_x - side * 9 : clamp(spot[1], -12, 12)
-	drop.wire_place(drop_x, -13)
+		// Down already: it only runs off the stump onto the floor.
+		land_x = clamp(spot[1], -12, 12)
+		land_y = clamp(spot[2], -12, 12)
+		start_x = land_x
+		start_y = land_y + 3
+	else
+		// On the floor at the feet: higher, it shows through the gap a leg leaves as a blot at the hip.
+		land_x = (victim.dir & (EAST | WEST)) ? victim.pixel_x - side * 9 : clamp(spot[1], -12, 12)
+		land_y = -13
+		behind = wire_limb_far(zone, victim.dir)
+	new /obj/effect/temp_visual/wire_blood_drop(floor, list(start_x, start_y, land_x, land_y, 1, WIRE_STUMP_DRIP_FALL, WIRE_STUMP_DRIP_WAIT, behind), wire_blood_color(victim), victim.get_blood_dna_list(), victim.get_static_viruses())
+
+#undef WIRE_STUMP_DRIP_WAIT
+#undef WIRE_STUMP_DRIP_FALL
 
 // ---- The seam ----
 

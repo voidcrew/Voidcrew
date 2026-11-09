@@ -634,7 +634,7 @@
 	swing_landed = TRUE
 	if(!isliving(user) || QDELETED(target) || target == user)
 		return
-	// The wire lashes out of the hand to what it hit (hyperviolence/wire/wire_held.dm); the held wire stays drawn.
+	// The wire lashes out of the hand to what it hit (hyperviolence/wire/wire_held.dm), standing in for the held wire.
 	wire_lash_at(user, target, lash_zone)
 	lash_zone = null
 

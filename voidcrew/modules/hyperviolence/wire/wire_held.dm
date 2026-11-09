@@ -272,7 +272,8 @@
 
 /**
  * A landed swing: the wire lashes from the hand holding it to the part of `target` it cut (`zone`, else the part the
- * wielder aimed at): one straight thin line in its own colour that fades out over half a second. A single stretched
+ * wielder aimed at): one straight thin line in its own colour that fades out over half a second. It is the wire: the
+ * one hanging in the hand isn't drawn until the line fades (wire_lash_hide()). A single stretched
  * line, not tg's Beam(): a beam's full-tile segments are drawn over a body facing away whatever layer they are given,
  * and this one must pass behind it from a hidden hand. `end_shift` (x, y) moves where it lands, in pixels; else the
  * shift a crossing cut left for this wire (wire_cross_lash()). `lunge_after`: how long ago the swing's lunge began
@@ -284,6 +285,8 @@
  * - A body nearer the viewer (a row down) is met on its far side: the hand's piece is drawn over the wielder like any
  *   hand in front, the other on the target's tile under the target. A line that would run straight down from the hand
  *   lands on the outer edge of the part instead, so it slants off the wielder's legs rather than running down one.
+ *   From a wielder facing the viewer, a line that would slant across his own legs lands further out to the hand's side,
+ *   so it runs down beside them (wire_lash_clear_legs()).
  * - A body further off (a row up): the hand's piece as on the same row, the other on the target's tile over the
  *   target. On a leg that piece goes at once, as the line snaps through: left on, it runs along the leg and paints it.
  */
@@ -320,6 +323,9 @@
 	if(hit.y < from.y && abs(tile_x + end_x - hand_x) <= WIRE_LASH_STRAIGHT_DOWN)
 		var/off_middle = end_x - target.pixel_x
 		end_x += (off_middle ? SIGN(off_middle) : (hand_x >= user.pixel_x ? 1 : -1)) * WIRE_LASH_EDGE
+	if(hit.y < from.y && user.dir == SOUTH && user.body_position != LYING_DOWN)
+		end_x = wire_lash_clear_legs(user, hand_x, hand_y, tile_x + end_x, tile_y + end_y, tile_x + target.pixel_x) - tile_x
+	wire_lash_hide(user)
 	var/span_x = tile_x + end_x - hand_x
 	var/span_y = tile_y + end_y - hand_y
 	var/hand_layer = wire_line_layer(hand[3])
@@ -339,11 +345,63 @@
 		return
 	var/leg = zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG
 	wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, hand_layer, on_tile = FALSE, lunge = lunge, lunge_after = lunge_after)
-	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, rest_x, rest_y, ABOVE_MOB_LAYER, fade = leg ? WIRE_LASH_SNAP_FADE : 0.5 SECONDS)
+	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, rest_x, rest_y, ABOVE_MOB_LAYER, fade = leg ? WIRE_LASH_SNAP_FADE : WIRE_LASH_FADE)
 
 #undef WIRE_LASH_STRAIGHT_DOWN
 #undef WIRE_LASH_EDGE
 #undef WIRE_LASH_SNAP_FADE
+
+/// While its lash shows, the wire hanging in the hand isn't drawn: the line out of the grip is the wire. It is back as
+/// the line fades. A longer hide already running (the swing out of the spool, the garrote) is left as it is. Facing
+/// away, the line leaves the hand behind `user`'s back, out of sight: the wire stays in the hand, or it would look empty.
+/obj/item/melee/cyberware_monowire/proc/wire_lash_hide(mob/living/user)
+	if(user.dir == NORTH || inhand_hidden_until >= world.time + WIRE_LASH_HIDE)
+		return
+	hide_inhand_for(WIRE_LASH_HIDE)
+
+/// The middle of a body facing the viewer, in pixels from the middle of its tile as a lash's line is placed: tg draws
+/// bodies a pixel left of the tile's middle.
+#define WIRE_BODY_MIDDLE -1
+/// A lash's line keeps at least this far off that middle down the trouser legs (rows 6 to 13 below the tile's middle)...
+#define WIRE_CLEAR_TROUSERS 5.75
+/// ...and this far down the shoes (rows 14 to 16), which stand wider. Either way its soft edge stays off them.
+#define WIRE_CLEAR_SHOES 6.7
+/// A lash's end moves no further than this off the middle of what it hit to clear the legs.
+#define WIRE_CLEAR_REACH 12
+
+/**
+ * Where across a lash from a hand at (`hand_x`, `hand_y`) to a body a row down lands, given that it would land at
+ * (`end_x`, `end_y`) (all in pixels off the middle of the wielder's tile), so that it runs down beside the legs of a
+ * wielder facing the viewer, not across them: moved out to the hand's side as far as it has to go and no further. One
+ * that can't clear them without landing more than WIRE_CLEAR_REACH off the middle of what it hit (`target_x`), a body
+ * a tile off to the side, is left where it was.
+ */
+/proc/wire_lash_clear_legs(mob/living/user, hand_x, hand_y, end_x, end_y, target_x)
+	var/span_y = end_y - hand_y
+	if(span_y >= 0)
+		return end_x
+	var/middle = user.pixel_x + WIRE_BODY_MIDDLE
+	var/side = hand_x < middle ? -1 : 1
+	var/span_x = end_x - hand_x
+	// Each band's top and bottom rows (a straight line is furthest in at one of them), and how far off the middle it keeps.
+	var/static/list/bands = list(list(-6, -13, WIRE_CLEAR_TROUSERS), list(-14, -16, WIRE_CLEAR_SHOES))
+	for(var/list/band as anything in bands)
+		for(var/row in list(band[1], band[2]))
+			// How far along the line that row's middle is.
+			var/along = (user.pixel_y + row + 0.5 - hand_y) / span_y
+			if(along <= 0 || along > 1)
+				continue
+			var/most = (middle + side * band[3] - hand_x) / along
+			span_x = side < 0 ? min(span_x, most) : max(span_x, most)
+	var/cleared = hand_x + span_x
+	if(abs(cleared - target_x) > WIRE_CLEAR_REACH)
+		return end_x
+	return cleared
+
+#undef WIRE_BODY_MIDDLE
+#undef WIRE_CLEAR_TROUSERS
+#undef WIRE_CLEAR_SHOES
+#undef WIRE_CLEAR_REACH
 
 /// tg's lunge for a swing at `target` (do_attack_animation()): how far the body leans in, in pixels. list(x, y)
 /proc/wire_lunge_offset(mob/living/user, atom/target)
@@ -358,12 +416,14 @@
 
 /**
  * One straight piece of a lash on `where`: from (`start_x`, `start_y`) pixels off the middle of that tile, running
- * (`span_x`, `span_y`), at world `line_layer`; it fades out over `fade`. `on_tile` shifts it with pixel_w/pixel_z, which
- * only move the picture, so it keeps to its own tile in the map's front-to-back order. A piece leaving a hand takes
- * `lunge` (wire_lunge_offset()) and `lunge_after`: its start moves with the hand as the body leans in and back, and
- * its far end stays put.
+ * (`span_x`, `span_y`), at world `line_layer`; it fades out over `fade`. Over the usual WIRE_LASH_FADE it is down to a
+ * trace as the wire comes back into the hand (wire_lash_hide()) and holds that until it goes: both are the server's
+ * timers, so a server running behind keeps the line in the hand until the wire is drawn. `on_tile` shifts it with
+ * pixel_w/pixel_z, which only move the picture, so it keeps to its own tile in the map's front-to-back order. A piece
+ * leaving a hand takes `lunge` (wire_lunge_offset()) and `lunge_after`: its start moves with the hand as the body leans
+ * in and back, and its far end stays put.
  */
-/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, on_tile = TRUE, fade = 0.5 SECONDS, list/lunge, lunge_after = 0)
+/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, on_tile = TRUE, fade = WIRE_LASH_FADE, list/lunge, lunge_after = 0)
 	if(!where || (abs(span_x) < 1 && abs(span_y) < 1))
 		return
 	var/obj/effect/abstract/wire_reach/lash = new(where)
@@ -377,7 +437,10 @@
 		lash.pixel_x = start_x
 		lash.pixel_y = start_y
 	lash.transform = wire_reach_shape(span_x, span_y)
-	animate(lash, alpha = 0, time = fade, easing = QUAD_EASING | EASE_IN)
+	if(fade == WIRE_LASH_FADE)
+		animate(lash, alpha = WIRE_LASH_TRACE, time = WIRE_LASH_HIDE, easing = QUAD_EASING | EASE_IN)
+	else
+		animate(lash, alpha = 0, time = fade, easing = QUAD_EASING | EASE_IN)
 	if(length(lunge) && lunge_after < WIRE_LUNGE_OUT + WIRE_LUNGE_BACK)
 		wire_line_lunge(lash, on_tile, start_x, start_y, span_x, span_y, lunge, lunge_after)
 	QDEL_IN(lash, fade)
@@ -514,7 +577,7 @@
 	randomdir = FALSE
 	duration = 0.6 SECONDS
 
-/obj/effect/temp_visual/wire_blood_drop/Initialize(mapload, list/drop, blood_color, list/blood_dna)
+/obj/effect/temp_visual/wire_blood_drop/Initialize(mapload, list/drop, blood_color, list/blood_dna, list/viruses)
 	var/start_x = drop[1]
 	var/start_y = drop[2]
 	var/land_x = drop[3]
@@ -540,10 +603,10 @@
 		alpha = 255
 		animate(src, pixel_x = (start_x + land_x) / 2, pixel_y = max(start_y, land_y) + height, time = flight / 2, easing = SINE_EASING | EASE_OUT)
 	animate(pixel_x = land_x, pixel_y = land_y, time = flight / 2, easing = SINE_EASING | EASE_IN)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_drop_land), get_turf(src), land_x, land_y, blood_dna), duration - 0.1)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_drop_land), get_turf(src), land_x, land_y, blood_dna, viruses), duration - 0.1)
 
 /// A drop of the fan comes down at (`land_x`, `land_y`) pixels from the middle of `origin`.
-/proc/wire_drop_land(turf/origin, land_x, land_y, list/blood_dna)
+/proc/wire_drop_land(turf/origin, land_x, land_y, list/blood_dna, list/viruses)
 	if(!origin)
 		return
 	var/tile_x = floor((land_x + 16) / 32)
@@ -551,7 +614,7 @@
 	var/turf/landing = locate(origin.x + tile_x, origin.y + tile_y, origin.z)
 	if(!landing || isgroundlessturf(landing) || !landing.has_gravity() || (landing != origin && hv_blood_spray_blocked(landing)))
 		return
-	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(landing, null, blood_dna)
+	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(landing, viruses, blood_dna)
 	if(QDELETED(drop))
 		return
 	drop.wire_place(land_x - tile_x * 32, land_y - tile_y * 32)
