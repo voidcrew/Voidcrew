@@ -152,10 +152,21 @@
 #define BOUNTY_PYROMANIAC_FLAMER_WINDUP (0.8 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_COOLDOWN (5 SECONDS)
 #define BOUNTY_PYROMANIAC_FLAMER_RANGE 3
-/// Tank pressure (kPa) under which its flamethrower is spent: about fifteen sweeps from a full tank
+/// Tank pressure (kPa) under which its flamethrower is dry and it won't sweep
 #define BOUNTY_PYROMANIAC_FLAMER_EMPTY ONE_ATMOSPHERE
-/// The flamethrower stays lit this long after a sweep, for the flame to run its line, then it shuts the valve
+/// The flamethrower stays lit this long after a sweep, then it shuts the valve
 #define BOUNTY_PYROMANIAC_FLAMER_SHUTOFF (1 SECONDS)
+#define BOUNTY_PYROMANIAC_FLAMER_DAMAGE 18
+/// Fire stacks (tg's) the jet puts on anyone on its line. (phase D, CB-8)
+#define BOUNTY_PYROMANIAC_FLAMER_STACKS 4
+/// How long the floor the line covered keeps burning
+#define BOUNTY_PYROMANIAC_FLAMER_FLOOR (4 SECONDS)
+/// Sweeps a plasma tank feeds before the flamethrower runs dry and it changes tanks
+#define BOUNTY_PYROMANIAC_FLAMER_SWEEPS 4
+/// Full plasma tanks it carries in its bag for the change
+#define BOUNTY_PYROMANIAC_SPARE_TANKS 2
+/// The tank change: it stops to wrench the empty off and fit a full one, at least this long, open the whole time
+#define BOUNTY_PYROMANIAC_RELOAD_TIME (3 SECONDS)
 /// Molotov: a lit rag, the throw, a ring where it lands
 #define BOUNTY_PYROMANIAC_MOLOTOV_WINDUP (0.7 SECONDS)
 #define BOUNTY_PYROMANIAC_MOLOTOV_COOLDOWN (7 SECONDS)

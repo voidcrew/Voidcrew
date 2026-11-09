@@ -16,9 +16,10 @@
  *   hurts it and knocks it down, as running into a wall does anyone (CB-6). Slams the floor around it
  *   when someone is close. Fights with its shield and its free fist.
  * - Pyromaniac: a real firefighter suit and helmet (tg's thermal protection, CB-7), a gas mask, a real
- *   flamethrower with a plasma tank and a molotov in hand. Sweeps a line of real flamethrower fire (tg's
- *   plasma fire, until its tank runs low) and throws molotovs that leave a burning patch; whoever it catches
- *   burns with tg's fire stacks (CB-8). Its mask keeps its own smoke out of its lungs. Shot with a disabler, it goes for the shooter until its flamer reaches
+ *   flamethrower with a plasma tank and a molotov in hand, and an ID with its name. Hoses a short line of
+ *   fire with the flamethrower and throws molotovs that leave a burning patch; whoever it catches burns with
+ *   tg's fire stacks (CB-8). Every BOUNTY_PYROMANIAC_FLAMER_SWEEPS sweeps the tank runs dry and it stops to
+ *   change it for one of its spares, open while it does. Its mask keeps its own smoke out of its lungs. Shot with a disabler, it goes for the shooter until its flamer reaches
  *   them (C8: keep your distance and keep moving). Shot from past its flamer's reach, it pulls the pin
  *   on one of its two real smoke grenades and throws it halfway to the shooter, then comes through the
  *   cloud to where the shots came from (C9: back out of the smoke, flank it, or see through it).
@@ -384,9 +385,113 @@
 		/datum/action/cooldown/mob_cooldown/bounty_boss/molotov,
 		/datum/action/cooldown/mob_cooldown/bounty_boss/smoke,
 	)
+	/// Sweeps fired off the tank in its flamethrower now
+	var/boss_flamer_sweeps = 0
+	/// world.time its tank change may finish: it takes BOUNTY_PYROMANIAC_RELOAD_TIME
+	var/boss_reload_ready_at = 0
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/bounty_build_outfit(zone)
-	return boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/pyromaniac))
+	var/datum/outfit/kit = boss_supplies(bounty_outfit_instance(/datum/outfit/bounty_boss/pyromaniac))
+	if(istype(kit))
+		kit.backpack_contents[/obj/item/tank/internals/plasma/full] = BOUNTY_PYROMANIAC_SPARE_TANKS
+	return kit
+
+// The flamethrower's tank runs dry: it changes it for a spare from its bag (bounty_pyro_reload)
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_gear_plan(datum/ai_controller/controller)
+	if(world.time < controller.blackboard[BB_HUMAN_NPC_ARMING_RETRY_AT] || HAS_TRAIT(src, TRAIT_HANDS_BLOCKED))
+		return FALSE
+	var/obj/item/flamethrower/flamer = boss_flamethrower()
+	if(isnull(flamer) || bounty_pyro_flamer_fuelled(flamer) || isnull(boss_spare_tank()))
+		return FALSE
+	controller.queue_behavior(/datum/ai_behavior/bounty_pyro_reload)
+	return TRUE
+
+/// A full plasma tank it carries that isn't in its flamethrower, in hand or where it can draw it from
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_spare_tank()
+	var/obj/item/flamethrower/flamer = boss_flamethrower()
+	for(var/obj/item/tank/internals/plasma/tank in get_all_contents_type(/obj/item/tank/internals/plasma))
+		if(tank == flamer?.ptank || !(is_holding(tank) || human_npc_can_draw(src, tank)))
+			continue
+		var/datum/gas_mixture/tank_air = tank.return_air()
+		if(tank_air?.return_pressure() >= BOUNTY_PYROMANIAC_FLAMER_EMPTY)
+			return tank
+	return null
+
+/**
+ * One sweep's plasma out of its flamethrower's tank: an even share of what is left, so the tank is dry
+ * after BOUNTY_PYROMANIAC_FLAMER_SWEEPS sweeps.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/proc/boss_spend_flamer_fuel(obj/item/flamethrower/flamer)
+	var/datum/gas_mixture/tank_air = flamer?.ptank?.return_air()
+	if(isnull(tank_air))
+		return
+	boss_flamer_sweeps++
+	var/sweeps_left = BOUNTY_PYROMANIAC_FLAMER_SWEEPS - boss_flamer_sweeps
+	tank_air.remove_ratio(sweeps_left <= 0 ? 1 : 1 / (sweeps_left + 1))
+	if(sweeps_left <= 0)
+		visible_message(span_warning("[src]'s flamethrower coughs and sputters out."))
+
+/**
+ * Changes the plasma tank on its flamethrower the way a player does: a hand freed (the bottle into its
+ * bag), a full tank out of the bag, and the flamethrower clicked with it, which swaps the tanks and drops
+ * the empty (tg's flamethrower; the empty is its locked gear, so it is gone once on the floor). It stops
+ * for it, with a line and the wrench of the fitting, and takes at least BOUNTY_PYROMANIAC_RELOAD_TIME.
+ * Gives up after a while and fights on.
+ */
+/datum/ai_behavior/bounty_pyro_reload
+	action_cooldown = 0.5 SECONDS
+
+/datum/ai_behavior/bounty_pyro_reload/setup(datum/ai_controller/controller)
+	. = ..()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = controller.pawn
+	var/obj/item/flamethrower/flamer = istype(pyro) ? pyro.boss_flamethrower() : null
+	if(isnull(flamer))
+		return FALSE
+	controller.set_blackboard_key(BB_BOUNTY_BOSS_RELOAD_UNTIL, world.time + 12 SECONDS)
+	pyro.boss_reload_ready_at = world.time + BOUNTY_PYROMANIAC_RELOAD_TIME
+	if(flamer.lit)
+		flamer.toggle_igniter(pyro)
+	pyro.visible_message(span_warning("[pyro] stops and wrenches the empty tank off [pyro.p_their()] flamethrower."))
+	playsound(pyro, 'sound/items/tools/ratchet_slow.ogg', 60, TRUE)
+	pyro.boss_bark("reload")
+
+/datum/ai_behavior/bounty_pyro_reload/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = controller.pawn
+	var/obj/item/flamethrower/flamer = istype(pyro) ? pyro.boss_flamethrower() : null
+	if(isnull(flamer) || world.time >= controller.blackboard[BB_BOUNTY_BOSS_RELOAD_UNTIL] || HAS_TRAIT(pyro, TRAIT_HANDS_BLOCKED))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(bounty_pyro_flamer_fuelled(flamer))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
+	if(pyro.next_move > world.time)
+		return AI_BEHAVIOR_DELAY
+	var/obj/item/tank/internals/plasma/tank = pyro.boss_spare_tank()
+	if(isnull(tank))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	if(!pyro.is_holding(tank))
+		if(!length(pyro.get_empty_held_indexes()))
+			var/obj/item/bottle = locate(/obj/item/reagent_containers/cup/glass/bottle/molotov) in pyro.held_items
+			if(isnull(bottle) || !pyro.back?.atom_storage?.attempt_insert(bottle, pyro, messages = FALSE))
+				return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+			return AI_BEHAVIOR_DELAY
+		if(!human_npc_take_in_hand(pyro, tank))
+			return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+		return AI_BEHAVIOR_DELAY
+	if(world.time < pyro.boss_reload_ready_at)
+		return AI_BEHAVIOR_DELAY
+	if(!human_npc_ready_item(pyro, tank))
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	controller.ai_interact(target = flamer, combat_mode = FALSE)
+	if(flamer.ptank == tank)
+		pyro.boss_flamer_sweeps = 0
+		playsound(pyro, 'sound/items/tools/ratchet.ogg', 60, TRUE)
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/bounty_pyro_reload/finish_action(datum/ai_controller/controller, succeeded)
+	. = ..()
+	controller.clear_blackboard_key(BB_BOUNTY_BOSS_RELOAD_UNTIL)
+	if(!succeeded)
+		// A change that got nowhere: it fights on with what it has for a while
+		controller.set_blackboard_key(BB_HUMAN_NPC_ARMING_RETRY_AT, world.time + 10 SECONDS)
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_gear_text()
 	if(istype(wear_suit, /obj/item/clothing/suit/utility/fire))
@@ -505,6 +610,16 @@
 	l_hand = BOUNTY_PYROMANIAC_MOLOTOV_BOTTLE
 	l_pocket = BOUNTY_PYROMANIAC_SMOKE
 	r_pocket = BOUNTY_PYROMANIAC_SMOKE
+	id = /obj/item/card/id
+
+// Its ID carries its name, so with its face behind the mask it still goes by it (tg's own naming). No
+// access and no account; a rename (the bounty record's name) follows it onto the card.
+/datum/outfit/bounty_boss/pyromaniac/post_equip(mob/living/carbon/human/user, visuals_only = FALSE)
+	. = ..()
+	var/obj/item/card/id/card = user.wear_id
+	if(istype(card))
+		card.registered_name = user.real_name
+		card.update_label()
 
 /// The Pyromaniac's flamethrower: tg's, built and fuelled. It is a kit item, so lighting it is no news for admins.
 /obj/item/flamethrower/full/tank/bounty_boss
@@ -515,22 +630,22 @@
 	list_reagents = list(/datum/reagent/fuel = 50)
 
 /**
- * Flamer: it lights its flamethrower and an orange line shows on the floor, then it pulls the trigger
- * on the end of that line, as a player clicks (ai_interact()). The fire is the flamethrower's own: plasma
- * from its tank lit along the line, tg's fire, which sets alight whoever stands in it. Once its tank runs
- * low (BOUNTY_PYROMANIAC_FLAMER_EMPTY) it stops using it, and a shot can burst the tank (tg's
- * flamethrower). It shuts the valve after each sweep.
+ * Flamer: it lights its flamethrower and an orange line shows on the floor, then a jet of fire hoses the
+ * line: BOUNTY_PYROMANIAC_FLAMER_DAMAGE burn and tg's fire stacks on whoever it catches, and the floor
+ * burns on for BOUNTY_PYROMANIAC_FLAMER_FLOOR (the boss fire, not loose plasma). Each sweep spends a
+ * share of the tank (boss_spend_flamer_fuel()); with it dry it doesn't sweep until it has changed tanks.
+ * It shuts the valve after each sweep.
  */
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer
 	name = "Flamer"
 	desc = "Sweep a line of fire in front of you."
 	cooldown_time = BOUNTY_PYROMANIAC_FLAMER_COOLDOWN
 	windup = BOUNTY_PYROMANIAC_FLAMER_WINDUP
-	/// The tile it fires at, from the telegraph: the far end of the lit line
-	var/turf/aim_turf
+	/// The tiles it will hose, from the telegraph
+	var/list/fire_line
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/Destroy()
-	aim_turf = null
+	fire_line = null
 	return ..()
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/worth_using(atom/target)
@@ -539,7 +654,11 @@
 		return FALSE
 	return get_dist(owner, target) <= BOUNTY_PYROMANIAC_FLAMER_RANGE && can_see(owner, target, BOUNTY_PYROMANIAC_FLAMER_RANGE) && landing_ok(target) && !human_npc_ally_in_line(boss, target) && length(line_turfs(target))
 
-/// The line its fire runs from it to `target`, as far as its fire may reach: never off its site or into a ship (M2)
+/**
+ * The line its fire runs from it to `target`: as far as a flamethrower's flame gets (it stops where air
+ * can't pass, a wall, a window or a shut door) and as far as its fire may reach: never off its site or
+ * into a ship (M2)
+ */
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/proc/line_turfs(atom/target)
 	. = list()
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
@@ -547,17 +666,19 @@
 	var/turf/aim = get_turf(target)
 	if(!istype(boss) || !start || !aim)
 		return
+	var/turf/previous = start
 	for(var/turf/spot as anything in get_line(start, aim))
 		if(spot == start)
 			continue
-		if(!boss.boss_reach_ok(spot))
+		if(!isopenturf(previous) || !(spot in previous.get_atmos_adjacent_turfs(alldir = TRUE)) || !boss.boss_reach_ok(spot))
 			break
 		. += spot
+		previous = spot
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/telegraph(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
 	var/list/line = line_turfs(target)
-	aim_turf = length(line) ? line[length(line)] : null
+	fire_line = line
 	var/obj/item/flamethrower/flamer = boss.boss_flamethrower()
 	if(flamer && human_npc_ready_item(boss, flamer) && !flamer.lit)
 		flamer.attack_self(boss)
@@ -566,21 +687,22 @@
 	mark_turfs(line, "#ff8a1f")
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/cancel_windup()
-	aim_turf = null
+	fire_line = null
 	shut_valve()
 	return ..()
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/flamer/effect(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss = owner
-	var/turf/spot = aim_turf
-	aim_turf = null
+	var/list/fire_turfs = fire_line
+	fire_line = null
 	var/obj/item/flamethrower/flamer = boss?.boss_flamethrower()
-	if(!spot || !flamer?.lit || !boss.ai_controller || !human_npc_ready_item(boss, flamer))
+	if(!length(fire_turfs) || !flamer?.lit || !bounty_pyro_flamer_fuelled(flamer) || !human_npc_ready_item(boss, flamer))
 		shut_valve()
 		return
-	// The player's way: a click on the line's end with the flamethrower in hand. Its fire runs the line a
-	// tile a moment (it sleeps), so on its own call.
-	INVOKE_ASYNC(boss.ai_controller, TYPE_PROC_REF(/datum/ai_controller, ai_interact), spot, TRUE)
+	owner.visible_message(span_danger("[owner] hoses a jet of fire across the floor!"))
+	playsound(owner, 'sound/items/weapons/fwoosh.ogg', 80, TRUE)
+	new /obj/effect/bounty_boss_fire_pool(get_turf(owner), fire_turfs, BOUNTY_PYROMANIAC_FLAMER_FLOOR, owner, BOUNTY_PYROMANIAC_FLAMER_DAMAGE, BOUNTY_PYROMANIAC_FLAMER_STACKS)
+	boss.boss_spend_flamer_fuel(flamer)
 	addtimer(CALLBACK(src, PROC_REF(shut_valve)), BOUNTY_PYROMANIAC_FLAMER_SHUTOFF, TIMER_DELETE_ME)
 
 /// Puts its flamethrower out, if it is lit and done firing

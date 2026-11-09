@@ -550,6 +550,15 @@
 				"Mind your eyes."
 			]
 		},
+		"pyromaniac_reload": {
+			"any": [
+				"Hang on, changing tanks.",
+				"Fresh tank. Don't go anywhere.",
+				"Stay right there.",
+				"Just need a top-up.",
+				"Hold that thought."
+			]
+		},
 		"pyromaniac_exhausted": {
 			"any": [
 				"Running low on fuel...",

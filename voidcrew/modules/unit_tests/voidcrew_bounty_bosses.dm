@@ -201,6 +201,13 @@
 	TEST_ASSERT(istype(pyro.wear_mask, /obj/item/clothing/mask/gas), "The Pyromaniac isn't wearing a gas mask")
 	TEST_ASSERT(pyro.has_smoke_protection(), "The Pyromaniac's mask doesn't keep smoke out")
 	TEST_ASSERT(pyro.boss_hand_for_grenade(), "The Pyromaniac has no hand for its smoke grenade")
+	var/obj/item/card/id/pyro_card = pyro.wear_id
+	TEST_ASSERT(istype(pyro_card), "The Pyromaniac has no ID")
+	TEST_ASSERT_EQUAL(pyro.get_visible_name(), pyro.real_name, "Masked, the Pyromaniac doesn't go by its name")
+	TEST_ASSERT(!length(pyro_card.access) && isnull(pyro_card.registered_account), "The Pyromaniac's ID opens doors or holds money")
+	TEST_ASSERT(human_npc_gear_locked(pyro_card), "The Pyromaniac's ID isn't locked to it")
+	for(var/obj/item/tank/internals/plasma/spare as anything in pyro.get_all_contents_type(/obj/item/tank/internals/plasma))
+		TEST_ASSERT(human_npc_gear_locked(spare), "A Pyromaniac's plasma tank isn't locked to it")
 
 	// The Demolitionist: a hard hat, its crowbar in its bag until the fight starts, and a real CNS rebooter in its head (C8).
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/demo = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist)
@@ -456,43 +463,67 @@
 	boss.boss_strict_rotation = TRUE
 	TEST_ASSERT_NULL(boss.boss_choose_ability(far), "The strict rotation chose the same ability twice in a row")
 
-// ===== THE PYROMANIAC'S FLAMER IS ITS REAL FLAMETHROWER =====
+// ===== THE PYROMANIAC'S FLAMETHROWER: SWEEPS, A DRY TANK, A TANK CHANGE =====
 
-/// Lit for the wind-up, fired down the lit line as a player clicks: its tank's plasma spent and tg's fire on whoever stands there; the valve shut after; no use with the tank run dry
+/// Lit for the wind-up, a jet of the boss fire down the lit line; each sweep spends a share of the tank, dry after four; then it changes tanks for a spare in no less than three seconds, the empty gone
 /datum/unit_test/voidcrew_bounty_boss/flamethrower
-
-/datum/unit_test/voidcrew_bounty_boss/flamethrower/Destroy()
-	// Its fire is real plasma fire: the room's air goes back to how it was
-	for(var/turf/open/room_turf in block(spot(0, 0), spot(4, 4)))
-		if(room_turf.active_hotspot)
-			qdel(room_turf.active_hotspot)
-		room_turf.copy_air(room_turf.create_gas_mixture())
-		room_turf.air_update_turf(FALSE, FALSE)
-	return ..()
 
 /datum/unit_test/voidcrew_bounty_boss/flamethrower/Run()
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = allocate(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(0, 2))
 	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(2, 2))
+	pyro.ai_controller?.set_ai_status(AI_STATUS_OFF)
 	var/obj/item/flamethrower/flamer = pyro.boss_flamethrower()
 	TEST_ASSERT_NOTNULL(flamer, "The Pyromaniac holds no flamethrower")
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/tank/internals/plasma), 3, "The Pyromaniac doesn't carry its flamethrower's tank and two spares") // BOUNTY_PYROMANIAC_SPARE_TANKS
 	var/datum/action/cooldown/mob_cooldown/bounty_boss/flamer/sweep = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/flamer)
 	ready(pyro)
 	TEST_ASSERT(sweep.worth_using(hunter), "The flamer isn't worth using two tiles off")
 	var/pressure_before = flamer.ptank.return_air().return_pressure()
 	TEST_ASSERT(sweep.Trigger(target = hunter), "The flamer didn't start")
 	TEST_ASSERT(flamer.lit, "The flamethrower wasn't lit for the wind-up")
-	TEST_ASSERT_EQUAL(pyro.get_active_held_item(), flamer, "The flamethrower isn't in its active hand")
-	sleep(1.4 SECONDS) // BOUNTY_PYROMANIAC_FLAMER_WINDUP, then the flame running its line
-	TEST_ASSERT(flamer.ptank.return_air().return_pressure() < pressure_before, "The sweep spent none of the tank's plasma")
-	TEST_ASSERT(hunter.on_fire || hunter.fire_stacks > 0 || hunter.getFireLoss() > 0, "The flamethrower's fire didn't catch the hunter on its line")
-	sleep(1 SECONDS) // BOUNTY_PYROMANIAC_FLAMER_SHUTOFF
+	TEST_ASSERT(sweep.finish_windup(sweep.pending_serial), "The flamer's wind-up didn't finish")
+	TEST_ASSERT(hunter.on_fire && hunter.getFireLoss() > 0, "The jet didn't burn and light the hunter on its line")
+	TEST_ASSERT(locate(/obj/effect/bounty_boss_fire_pool) in GLOB.bounty_boss_fire_pools, "The jet left no burning floor")
+	var/datum/gas_mixture/spare_air = flamer.ptank.return_air()
+	TEST_ASSERT(spare_air.return_pressure() < pressure_before, "The sweep spent none of the tank")
+	TEST_ASSERT(spare_air.return_pressure() > pressure_before * 0.7, "One sweep spent more than its share of the tank")
+	sleep(1.2 SECONDS) // BOUNTY_PYROMANIAC_FLAMER_SHUTOFF
 	TEST_ASSERT(!flamer.lit, "The valve wasn't shut after the sweep")
 	hunter.extinguish_mob()
-	pyro.extinguish_mob()
+	for(var/obj/effect/bounty_boss_fire_pool/pool as anything in GLOB.bounty_boss_fire_pools)
+		qdel(pool)
 
-	// A dry tank: no more sweeps
-	flamer.ptank.return_air().remove_ratio(1)
-	TEST_ASSERT(!sweep.worth_using(hunter), "The flamer is worth using on an empty tank")
+	// Three more sweeps and the tank is dry: no more sweeps until it changes tanks
+	for(var/i in 1 to 3)
+		pyro.boss_spend_flamer_fuel(flamer)
+	TEST_ASSERT(!bounty_pyro_flamer_fuelled(flamer), "The tank isn't dry after four sweeps") // BOUNTY_PYROMANIAC_FLAMER_SWEEPS
+	TEST_ASSERT(!sweep.worth_using(hunter), "The flamer is worth using on a dry tank")
+
+	// The change: the plan picks it, and it takes at least three seconds
+	var/datum/ai_controller/controller = pyro.ai_controller
+	TEST_ASSERT(pyro.boss_gear_plan(controller), "With a dry tank and a spare, the Pyromaniac didn't plan a tank change")
+	controller.CancelActions()
+	var/obj/item/tank/internals/plasma/empty = flamer.ptank
+	var/datum/ai_behavior/bounty_pyro_reload/change = GET_AI_BEHAVIOR(/datum/ai_behavior/bounty_pyro_reload)
+	var/started = world.time
+	change.setup(controller)
+	var/result = 0
+	for(var/i in 1 to 30)
+		pyro.next_move = 0
+		result = change.perform(1, controller)
+		if(result & (AI_BEHAVIOR_SUCCEEDED | AI_BEHAVIOR_FAILED))
+			break
+		sleep(0.5 SECONDS)
+	change.finish_action(controller, !!(result & AI_BEHAVIOR_SUCCEEDED))
+	TEST_ASSERT(result & AI_BEHAVIOR_SUCCEEDED, "The tank change didn't finish")
+	TEST_ASSERT(world.time - started >= 3 SECONDS, "The tank change took [world.time - started] deciseconds, under three seconds") // BOUNTY_PYROMANIAC_RELOAD_TIME
+	TEST_ASSERT(bounty_pyro_flamer_fuelled(flamer), "The flamethrower isn't fuelled after the change")
+	TEST_ASSERT(flamer.ptank != empty, "The empty tank is still on the flamethrower")
+	TEST_ASSERT_EQUAL(pyro.boss_flamer_sweeps, 0, "The sweep count didn't start over on the new tank")
+	sleep(0.2 SECONDS)
+	TEST_ASSERT(QDELETED(empty), "The dropped empty tank is loot")
+	TEST_ASSERT_EQUAL(carried(pyro, /obj/item/tank/internals/plasma), 2, "The Pyromaniac doesn't have its flamethrower's tank and one spare left")
+	TEST_ASSERT(sweep.worth_using(hunter), "The flamer isn't worth using after the change")
 
 // ===== FIRE IS TG'S FIRE, ON ANYONE IT CATCHES (CB-8, CB-11) =====
 
