@@ -44,7 +44,9 @@
  * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
  * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
  * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds, and real Gorilla Arms (the cyberpsycho's,
- * or an admin's pick; no kit rolls them).
+ * or an admin's pick; no kit rolls them). A grenade or a molotov only goes where a thrown item would
+ * (boss_throw_passes(), boss_throw_reaches()): over a table, a railing or a gap, never through glass,
+ * a windoor, a grille or a shut door.
  * The Ghost has nothing for it, and takes cover instead. It walks up to the barrier only while that
  * ability is off cooldown (boss_breaks_through_now()), or when there is no way round; otherwise it goes
  * round on foot.
@@ -394,13 +396,13 @@
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/bounty_sealed_gear()
 	return list(/obj/item/clothing/suit/space/eva, /obj/item/clothing/head/helmet/space/eva)
 
-// A molotov goes over anything it can see across
+// A molotov goes over anything a thrown bottle gets past (a table, a railing, a gap), never through glass or a door
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_goes_through(atom/barrier)
-	return ..() || !barrier.opacity
+	return ..() || boss_throw_passes(barrier)
 
 // With a molotov ready
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_breaks_through_now(atom/barrier)
-	return ..() || (!barrier.opacity && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
+	return ..() || (boss_throw_passes(barrier) && !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/molotov)))
 
 // Shot from past its flamer's reach, the smoke goes before anything else (C9)
 /mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/boss_choose_ability(atom/target)
@@ -536,7 +538,7 @@
 	if(!aimable(target))
 		return FALSE
 	var/distance = get_dist(owner, target)
-	return distance >= 2 && distance <= BOUNTY_PYROMANIAC_MOLOTOV_RANGE && can_see(owner, target, BOUNTY_PYROMANIAC_MOLOTOV_RANGE) && landing_ok(target)
+	return distance >= 2 && distance <= BOUNTY_PYROMANIAC_MOLOTOV_RANGE && can_see(owner, target, BOUNTY_PYROMANIAC_MOLOTOV_RANGE) && landing_ok(target) && throw_reaches(target)
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/molotov/telegraph(atom/target)
 	landing = get_turf(target)
@@ -558,7 +560,8 @@
 /datum/action/cooldown/mob_cooldown/bounty_boss/molotov/effect(atom/target)
 	var/turf/spot = landing
 	landing = null
-	if(!spot)
+	// Glass or a door shut across the way during the wind-up: it holds the bottle.
+	if(!spot || !throw_reaches(spot))
 		return
 	owner.visible_message(span_danger("[owner] throws a flaming bottle!"))
 	playsound(owner, 'sound/items/weapons/fwoosh.ogg', 40, TRUE)
@@ -600,7 +603,7 @@
 	if(isnull(grenade) || (!boss.is_holding(grenade) && !length(boss.get_empty_held_indexes())))
 		return FALSE
 	var/distance = get_dist(owner, target)
-	if(distance <= BOUNTY_PYROMANIAC_FLAMER_RANGE || distance > BOUNTY_PYROMANIAC_SMOKE_RANGE || !can_see(owner, target, BOUNTY_PYROMANIAC_SMOKE_RANGE))
+	if(distance <= BOUNTY_PYROMANIAC_FLAMER_RANGE || distance > BOUNTY_PYROMANIAC_SMOKE_RANGE || !can_see(owner, target, BOUNTY_PYROMANIAC_SMOKE_RANGE) || !throw_reaches(target))
 		return FALSE
 	var/datum/component/npc_combat_sense/sense = boss.GetComponent(/datum/component/npc_combat_sense)
 	var/shot = sense?.under_fire() && boss.boss_target_for(sense.threat()) == target
@@ -624,7 +627,7 @@
 		if(isnull(next) || next == there || next.is_blocked_turf(exclude_mobs = TRUE))
 			break
 		spot = next
-	if(spot == here || !boss.boss_landing_ok(spot))
+	if(spot == here || !boss.boss_landing_ok(spot) || !boss.boss_throw_reaches(here, spot))
 		return null
 	return spot
 
@@ -643,7 +646,8 @@
 	landing = null
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
 	var/obj/item/grenade/smokebomb/grenade = locate() in boss.held_items
-	if(isnull(grenade) || grenade.active || !spot || !human_npc_ready_item(boss, grenade))
+	// Glass or a door shut across the way during the wind-up: the pin stays in.
+	if(isnull(grenade) || grenade.active || !spot || !throw_reaches(spot) || !human_npc_ready_item(boss, grenade))
 		return
 	// The player's way: pull the pin in hand, then throw it. From here the fuse is the grenade's own.
 	grenade.attack_self(boss)
@@ -721,17 +725,17 @@
 // Out where the air kills: a plain grey space suit over its work clothes
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/bounty_sealed_gear()
 	return list(/obj/item/clothing/suit/space, /obj/item/clothing/head/helmet/space)
-// A grenade goes over anything it can see across, and a breaching charge through an interior wall or door
+// A grenade goes over anything a thrown grenade gets past (a table, a railing, a gap), and a breaching charge through an interior wall or door
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_goes_through(atom/barrier)
-	if(..() || !barrier.opacity)
+	if(..() || boss_throw_passes(barrier))
 		return TRUE
 	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier)
 
-// With a grenade ready for anything it can see across, or a breaching charge for an interior wall or door
+// With a grenade ready for anything a thrown grenade gets past, or a breaching charge for an interior wall or door
 /mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/boss_breaks_through_now(atom/barrier)
 	if(..())
 		return TRUE
-	if(!barrier.opacity && boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/grenade))
+	if(boss_throw_passes(barrier) && boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/grenade))
 		return TRUE
 	return (iswallturf(barrier) || istype(barrier, /obj/machinery/door)) && boss_may_break(barrier) \
 		&& !isnull(boss_ability_off_cooldown(/datum/action/cooldown/mob_cooldown/bounty_boss/breach))
@@ -765,9 +769,9 @@
 	for(var/datum/action/cooldown/mob_cooldown/bounty_boss/ability as anything in boss_abilities)
 		if(QDELETED(ability) || (boss_strict_rotation && ability.type == boss_last_ability))
 			continue
-		// A grenade needs the target in sight; its range is checked by the band itself. A breach only when one is possible now.
+		// A grenade needs the target in sight and a throw that lands on them; its range is checked by the band itself. A breach only when one is possible now.
 		if(istype(ability, /datum/action/cooldown/mob_cooldown/bounty_boss/grenade))
-			if(can_see(src, target, get_dist(src, target)))
+			if(can_see(src, target, get_dist(src, target)) && boss_throw_reaches(get_turf(src), get_turf(target)))
 				return TRUE
 			continue
 		if(ability.worth_using(target))
@@ -809,7 +813,7 @@
 	if(!aimable(target))
 		return FALSE
 	var/distance = get_dist(owner, target)
-	return distance >= 2 && distance <= BOUNTY_DEMOLITIONIST_GRENADE_RANGE && can_see(owner, target, BOUNTY_DEMOLITIONIST_GRENADE_RANGE) && landing_ok(target)
+	return distance >= 2 && distance <= BOUNTY_DEMOLITIONIST_GRENADE_RANGE && can_see(owner, target, BOUNTY_DEMOLITIONIST_GRENADE_RANGE) && landing_ok(target) && throw_reaches(target)
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/grenade/telegraph(atom/target)
 	landing = get_turf(target)
@@ -829,7 +833,7 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
 	var/list/near = list()
 	for(var/turf/other as anything in RANGE_TURFS(2, spot))
-		if(other != spot && !isclosedturf(other) && boss.boss_reach_ok(other) && bounty_boss_clear_line(get_turf(owner), other))
+		if(other != spot && !isclosedturf(other) && boss.boss_reach_ok(other) && boss.boss_throw_reaches(get_turf(owner), other))
 			near += other
 	if(length(near))
 		addtimer(CALLBACK(src, PROC_REF(throw_grenade), pick(near)), 0.5 SECONDS, TIMER_DELETE_ME)
@@ -838,7 +842,8 @@
 /datum/action/cooldown/mob_cooldown/bounty_boss/grenade/proc/throw_grenade(turf/spot)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
 	// The second grenade comes half a second later: not if it was downed, cuffed or stunned meanwhile.
-	if(!istype(boss) || !boss.boss_can_act() || !spot)
+	// Nor with glass or a door shut across the way since it aimed: it holds the grenade.
+	if(!istype(boss) || !boss.boss_can_act() || !spot || !throw_reaches(spot))
 		return
 	boss.visible_message(span_danger("[boss] throws a grenade!"))
 	new /obj/effect/temp_visual/bounty_boss_thrown(get_turf(boss), spot)

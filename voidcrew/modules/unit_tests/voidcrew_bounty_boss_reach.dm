@@ -485,7 +485,7 @@
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/heavy/heavy = boss_at(/mob/living/carbon/human/npc/bounty_criminal/boss/heavy, spot(4, 3))
 	TEST_ASSERT(heavy.boss_goes_through(thick), "The Heavy's rounds don't chip interior glass")
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = boss_at(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(3, 3))
-	TEST_ASSERT(pyro.boss_goes_through(thick), "The Pyromaniac's molotov doesn't go over glass")
+	TEST_ASSERT(!pyro.boss_goes_through(thick), "The Pyromaniac's molotov goes through reinforced glass")
 	TEST_ASSERT(!pyro.boss_goes_through(door), "The Pyromaniac's molotov goes over a shut airlock")
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/ghost/ghost = boss_at(/mob/living/carbon/human/npc/bounty_criminal/boss/ghost, spot(4, 4))
 	TEST_ASSERT(!ghost.boss_goes_through(plain), "The Ghost goes through glass")
@@ -494,3 +494,68 @@
 	make_ship_tile(spot(4, 1))
 	TEST_ASSERT(!boss.boss_can_smash(other_pane), "Gorilla Arms go at glass near a player's ship")
 	TEST_ASSERT(!boss.boss_gorilla_goes_through(other_pane), "Gorilla Arms go through glass near a player's ship")
+
+// ===== THROWS STOP AT GLASS =====
+
+/**
+ * A thrown molotov, grenade or smoke grenade goes where a real thrown item would: a hunter behind
+ * reinforced glass or a shut glass airlock is no throw target for the Pyromaniac or the Demolitionist,
+ * and their throws don't count as getting through it. Over a table, or with nothing in the way, they do.
+ */
+/datum/unit_test/voidcrew_bounty_boss/reach/throws_stop_at_glass
+
+/datum/unit_test/voidcrew_bounty_boss/reach/throws_stop_at_glass/Run()
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac/pyro = boss_at(/mob/living/carbon/human/npc/bounty_criminal/boss/pyromaniac, spot(0, 2))
+	var/mob/living/carbon/human/consistent/hunter = hunter_at(spot(4, 2))
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/molotov/molotov = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/molotov)
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/smoke/smoke = ability_of(pyro, /datum/action/cooldown/mob_cooldown/bounty_boss/smoke)
+	TEST_ASSERT_NOTNULL(molotov, "The Pyromaniac has no molotov")
+	TEST_ASSERT_NOTNULL(smoke, "The Pyromaniac has no smoke")
+	TEST_ASSERT(fight(pyro, hunter), "Test fixture: the Pyromaniac didn't turn hostile")
+
+	// Behind reinforced glass: seen, but no throw lands on them
+	var/obj/structure/window/reinforced/fulltile/glass = allocate(/obj/structure/window/reinforced/fulltile, spot(2, 2))
+	TEST_ASSERT(can_see(pyro, hunter, 7), "Test fixture: the Pyromaniac can't see through the glass")
+	TEST_ASSERT(!pyro.boss_throw_reaches(spot(0, 2), spot(4, 2)), "A throw goes through reinforced glass")
+	TEST_ASSERT(!pyro.boss_goes_through(glass), "The Pyromaniac's molotov goes through reinforced glass")
+	TEST_ASSERT(!pyro.boss_breaks_through_now(glass), "The Pyromaniac walks up to glass to throw over it")
+	TEST_ASSERT(!molotov.worth_using(hunter), "The Pyromaniac throws a molotov at someone behind glass")
+	pyro.boss_last_attacker = WEAKREF(hunter)
+	pyro.boss_last_attacked_at = world.time
+	TEST_ASSERT(!smoke.worth_using(hunter), "The Pyromaniac throws smoke at someone behind glass")
+
+	// A shut glass airlock: the same
+	qdel(glass)
+	var/obj/machinery/door/airlock/glass/airlock = allocate(/obj/machinery/door/airlock/glass, spot(2, 2))
+	TEST_ASSERT(airlock.density && !airlock.opacity, "Test fixture: the glass airlock isn't shut and see-through")
+	TEST_ASSERT(!pyro.boss_throw_reaches(spot(0, 2), spot(4, 2)), "A throw goes through a shut glass airlock")
+	TEST_ASSERT(!pyro.boss_goes_through(airlock), "The Pyromaniac's molotov goes through a shut glass airlock")
+	TEST_ASSERT(!molotov.worth_using(hunter), "The Pyromaniac throws a molotov through a shut glass airlock")
+	qdel(airlock)
+
+	// In the open: they are
+	TEST_ASSERT(pyro.boss_throw_reaches(spot(0, 2), spot(4, 2)), "A throw doesn't cross open floor")
+	TEST_ASSERT(molotov.worth_using(hunter), "The Pyromaniac won't throw a molotov at someone in the open")
+	pyro.boss_last_attacker = WEAKREF(hunter)
+	pyro.boss_last_attacked_at = world.time
+	TEST_ASSERT(smoke.worth_using(hunter), "The Pyromaniac won't throw smoke at someone in the open who shot it")
+
+	// Over a table: still
+	var/obj/structure/table/table = allocate(/obj/structure/table, spot(2, 2))
+	TEST_ASSERT(pyro.boss_throw_reaches(spot(0, 2), spot(4, 2)), "A throw doesn't go over a table")
+	TEST_ASSERT(pyro.boss_goes_through(table), "The Pyromaniac's molotov doesn't go over a table")
+	qdel(table)
+
+	// The Demolitionist's grenades, from the same spot
+	qdel(pyro)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist/demo = boss_at(/mob/living/carbon/human/npc/bounty_criminal/boss/demolitionist, spot(0, 2))
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/grenade/grenade = ability_of(demo, /datum/action/cooldown/mob_cooldown/bounty_boss/grenade)
+	TEST_ASSERT_NOTNULL(grenade, "The Demolitionist has no grenade")
+	TEST_ASSERT(fight(demo, hunter), "Test fixture: the Demolitionist didn't turn hostile")
+	TEST_ASSERT(grenade.worth_using(hunter), "The Demolitionist won't throw a grenade at someone in the open")
+	TEST_ASSERT(demo.boss_has_next_throw(hunter), "The Demolitionist has no throw for someone in the open")
+	glass = allocate(/obj/structure/window/reinforced/fulltile, spot(2, 2))
+	TEST_ASSERT(!grenade.worth_using(hunter), "The Demolitionist throws a grenade at someone behind glass")
+	TEST_ASSERT(!demo.boss_goes_through(glass), "The Demolitionist's grenade goes through reinforced glass")
+	TEST_ASSERT(!demo.boss_breaks_through_now(glass), "The Demolitionist walks up to glass to throw over it")
+	TEST_ASSERT(!demo.boss_has_next_throw(hunter), "The Demolitionist holds its range for a throw that hits glass")

@@ -167,6 +167,8 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	var/datum/weakref/boss_smash_target
 	var/datum/weakref/boss_smash_mark
 	var/boss_smash_blows = 0
+	/// A thrown item of its own, kept out of the world, that its throws are checked with (boss_throw_reaches())
+	var/obj/item/bounty_boss_throw_probe/boss_throw_probe
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/Initialize(mapload, datum/human_npc_order/order)
 	. = ..()
@@ -189,6 +191,7 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 	boss_shunned = null
 	boss_walk_cache = null
 	boss_walk_origin = null
+	QDEL_NULL(boss_throw_probe)
 	return ..()
 
 /mob/living/carbon/human/npc/bounty_criminal/boss/death(gibbed)
@@ -1042,6 +1045,105 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 			return TRUE
 	return FALSE
 
+// ----- what a throw gets past -----
+
+/**
+ * Something it throws, never in the world: an item with a throw of its own and the boss as its thrower,
+ * so tg's own CanPass() rules for a thrown item decide what stops it (windows, windoors, shut doors and
+ * grilles do; tables, railings and gaps don't).
+ */
+/obj/item/bounty_boss_throw_probe
+	name = "thrown thing"
+	item_flags = ABSTRACT
+
+/obj/item/bounty_boss_throw_probe/Destroy()
+	QDEL_NULL(throwing)
+	return ..()
+
+/// Its throw probe, made the first time it is needed
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_get_throw_probe()
+	if(QDELETED(boss_throw_probe))
+		boss_throw_probe = new
+	if(QDELETED(boss_throw_probe.throwing))
+		boss_throw_probe.throwing = new /datum/thrownthing(boss_throw_probe, src, SOUTH, world.maxx, 1, src)
+	return boss_throw_probe
+
+/**
+ * Whether something it throws from `start` lands on `finish`: it takes the steps tg's throw takes
+ * (throw_at() and /datum/thrownthing/tick()), and each one must be a move tg would let a thrown item
+ * make. People and mechs on the way never count.
+ */
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_throw_reaches(turf/start, turf/finish)
+	start = get_turf(start)
+	finish = get_turf(finish)
+	if(!start || !finish || start.z != finish.z)
+		return FALSE
+	if(start == finish)
+		return TRUE
+	var/obj/item/probe = boss_get_throw_probe()
+	var/dist_x = abs(finish.x - start.x)
+	var/dist_y = abs(finish.y - start.y)
+	var/dx = (finish.x > start.x) ? EAST : WEST
+	var/dy = (finish.y > start.y) ? NORTH : SOUTH
+	var/pure_diagonal = dist_x == dist_y
+	if(!pure_diagonal && dist_x <= dist_y)
+		var/old_dist = dist_x
+		dist_x = dist_y
+		dist_y = old_dist
+		var/old_dir = dx
+		dx = dy
+		dy = old_dir
+	var/longest = max(dist_x, dist_y)
+	var/diagonal_error = dist_x / 2 - dist_y
+	var/turf/at = start
+	for(var/travelled in 0 to longest)
+		if(at == finish)
+			return TRUE
+		var/turf/step = get_step(at, get_dir(at, finish))
+		if(!pure_diagonal)
+			if(diagonal_error >= 0 && longest - travelled != 1)
+				step = get_step(at, dx)
+			diagonal_error += (diagonal_error < 0) ? dist_x / 2 : -dist_y
+		if(!step || !bounty_boss_throw_move(at, step, probe))
+			return FALSE
+		at = step
+	return at == finish
+
+/// Whether a thrown thing gets past `barrier` (from boss_line_blockers()), by tg's rules for a thrown item: a gap yes, a wall no
+/mob/living/carbon/human/npc/bounty_criminal/boss/proc/boss_throw_passes(atom/barrier)
+	if(isturf(barrier))
+		return !barrier.density
+	var/border_dir = (barrier.flags_1 & ON_BORDER_1) ? barrier.dir : get_dir(barrier, src)
+	return barrier.CanPass(boss_get_throw_probe(), border_dir)
+
+/**
+ * Whether `probe`, thrown, moves from `origin` onto `destination` beside it. A diagonal goes the way
+ * tg's Move() takes one, north or south first; whatever stops that half is bumped, and a bump ends a
+ * throw (/atom/movable/Bump()), so it never gets to try east or west first.
+ */
+/proc/bounty_boss_throw_move(turf/origin, turf/destination, obj/item/probe)
+	var/direction = get_dir(origin, destination)
+	if(!(direction & (direction - 1)))
+		return bounty_boss_throw_step(origin, destination, probe)
+	var/turf/first = get_step(origin, direction & (NORTH|SOUTH))
+	return first && bounty_boss_throw_step(origin, first, probe) && bounty_boss_throw_step(first, destination, probe)
+
+/// One straight step of a thrown `probe`: nothing on the edge of `origin` it leaves by, and tg's CanPass() of `destination` and all on it but people and mechs
+/proc/bounty_boss_throw_step(turf/origin, turf/destination, obj/item/probe)
+	var/direction = get_dir(origin, destination)
+	for(var/atom/movable/border as anything in origin)
+		if(border != probe && (border.flags_1 & ON_BORDER_1) && border.density && (border.dir & direction) && !border.CanPass(probe, direction))
+			return FALSE
+	var/from_dir = get_dir(destination, origin)
+	if(!destination.CanPass(probe, from_dir))
+		return FALSE
+	for(var/atom/movable/thing as anything in destination)
+		if(thing == probe || isliving(thing) || ismecha(thing))
+			continue
+		if(!thing.CanPass(probe, from_dir))
+			return FALSE
+	return TRUE
+
 /**
  * Every tile it could walk to from where it stands, within BOUNTY_BOSS_REACH_RANGE and on its leash,
  * through nothing it can't open: turf -> steps, nearest first. Worked out again once it stands on
@@ -1477,6 +1579,11 @@ GLOBAL_LIST_EMPTY(bounty_boss_barricades)
 /datum/action/cooldown/mob_cooldown/bounty_boss/proc/landing_ok(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
 	return istype(boss) && boss.boss_landing_ok(get_turf(target))
+
+/// Whether something it throws from where it stands would land where `target` stands, and not stop on glass or a door on the way
+/datum/action/cooldown/mob_cooldown/bounty_boss/proc/throw_reaches(atom/target)
+	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
+	return istype(boss) && boss.boss_throw_reaches(get_turf(boss), get_turf(target))
 
 /datum/action/cooldown/mob_cooldown/bounty_boss/Activate(atom/target)
 	var/mob/living/carbon/human/npc/bounty_criminal/boss/boss = owner
