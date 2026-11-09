@@ -79,7 +79,7 @@
    "hash": "",
    "name": "NT BR-38 battle rifle",
    "note": "Right-click scopes in at 2x view range. After ten shots each shot has a 1 in 10 chance to wear the rifle down a stage, up to five; at the last stage it misfires three shots in four. A multitool (20 s) or a weapon recharger sets it right, and an EMP wears it down at once. An emag lifts its shots from 30 to 40 damage, and a fully worn emagged rifle blows up five seconds after the next trigger pull.",
-   "rank": 12,
+   "rank": 13,
    "reason": "Fires 30 damage .38 rounds from a 15 round magazine, with a 2x scope. It wears itself out after ten shots until someone recalibrates it, which keeps it just under the yellow line.",
    "score": 36,
    "tier": "green"
@@ -110,7 +110,7 @@
    "group": "smgs",
    "hash": "d9b40f6fa856925a",
    "name": "C-20r SMG",
-   "rank": 6,
+   "rank": 8,
    "reason": "Puts a vested man down in about a second, with 24 rounds, from one hand.",
    "score": 79,
    "tier": "yellow"
@@ -120,7 +120,7 @@
    "group": "smgs",
    "hash": "bb032c110b509c59",
    "name": "Popup Ronin machine-pistol",
-   "rank": 8,
+   "rank": 10,
    "reason": "20 damage at 3.3 a second, WT-550 numbers with some spread. Lives in the arm, so it can't be disarmed, and reloads are hard to get.",
    "score": 47,
    "tier": "yellow"
@@ -130,7 +130,7 @@
    "group": "smgs",
    "hash": "",
    "name": "Heater",
-   "rank": 3,
+   "rank": 4,
    "reason": "20 damage 5.7mm rounds at 6.7 a second from a 30 round magazine, with a little spread. Level with the Saber, and it fits in a bag.",
    "score": 106,
    "tier": "yellow"
@@ -140,7 +140,7 @@
    "group": "smgs",
    "hash": "",
    "name": "Scorcher",
-   "rank": 2,
+   "rank": 3,
    "reason": "A Heater (20 damage 5.7mm at 6.7 a second, 30 to a magazine) with a flamethrower under it: a 5-tile plume that burns and sets people alight every 2 seconds, eight sprays to a tank of welding fuel. The flamer alone is the MOD module's yellow, together they edge over the red line.",
    "score": 115,
    "tier": "red"
@@ -199,7 +199,7 @@
    "group": "smgs",
    "hash": "57d5080462a9a158",
    "name": "Type U3 Uzi",
-   "rank": 7,
+   "rank": 9,
    "reason": "Fires the C-20r's bullet at a lower rate, with 32 rounds. Solid, not dangerous.",
    "score": 70,
    "tier": "yellow"
@@ -219,7 +219,7 @@
    "group": "smgs",
    "hash": "517391feb1e23558",
    "name": "Stechkin APS machine pistol",
-   "rank": 5,
+   "rank": 6,
    "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
    "score": 105,
    "tier": "yellow"
@@ -395,7 +395,7 @@
    "group": "smgs",
    "hash": "3a82e5bc193f1d07",
    "name": "Nanotrasen Saber SMG",
-   "rank": 4,
+   "rank": 5,
    "reason": "A hard-hitting automatic with 21 rounds that empties in 4 s.",
    "score": 105,
    "tier": "yellow"
@@ -405,7 +405,7 @@
    "group": "smgs",
    "hash": "",
    "name": "M-94 'Rapier' submachinegun",
-   "rank": 9,
+   "rank": 11,
    "reason": "Fires 16 damage bullets at 3.3 a second from a 30 round magazine, a WT-550 with a fifth less damage. It scores just under the yellow line, and it takes a suppressor.",
    "score": 37,
    "tier": "green"
@@ -416,7 +416,7 @@
    "hash": "",
    "name": "PD46 'Resolution'",
    "note": "Right-click in hand folds or unfolds the stock. Folded it is normal sized with spread 11 and a little kick; unfolded it is bulky with spread 4 and no extra kick. Spawns folded. Takes a suppressor.",
-   "rank": 5,
+   "rank": 7,
    "reason": "Full auto 4.6x30mm at 6.7 a second from a 30 round magazine: twice the WT-550's rate with half again its magazine. Between the C-20r and the Saber.",
    "score": 93,
    "tier": "yellow"
@@ -437,7 +437,7 @@
    "group": "smgs",
    "hash": "df8d939590e38d5f",
    "name": "Abielle Smart-SMG",
-   "rank": 10,
+   "rank": 12,
    "reason": "Fires 10 damage homing rounds. Its spread of 40 is the drawback the homing fixes. Upstream tg prices it as junk.",
    "score": 32,
    "score_inputs": {
@@ -495,7 +495,7 @@
    "group": "smgs",
    "hash": "2ea01a015382d859",
    "name": "WT-550 Autorifle",
-   "rank": 8,
+   "rank": 10,
    "reason": "Fires 20 damage bullets at 3.3 a second, about what a laser gun does, yet it's sold as a top yellow gun.",
    "score": 47,
    "tier": "yellow"
@@ -506,7 +506,7 @@
    "hash": "9b6b11da9005d066",
    "name": "bow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 14,
+   "rank": 16,
    "reason": "Does 50 damage per arrow, drawn by hand.",
    "score": 7,
    "score_inputs": {
@@ -523,7 +523,7 @@
    "hash": "4231c1aae8664849",
    "name": "shortbow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands. Same as the bow; only the damage multiplier differs. / Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 18,
+   "rank": 20,
    "reason": "Does 18 damage per arrow. Its recipe book comes in a 1,000 cr cargo kit.",
    "score": 3,
    "score_inputs": {
@@ -696,7 +696,7 @@
    "group": "rifles",
    "hash": "a0e09364d4321fcb",
    "name": "Sakhno Precision Rifle",
-   "rank": 8,
+   "rank": 9,
    "reason": "A surplus rifle with real rounds: AP 10 keeps its 60 damage useful through armor.",
    "score": 48,
    "tier": "yellow"
@@ -707,7 +707,7 @@
    "hash": "07e5a8b46b6618fc",
    "name": "Donk Co. Jezail",
    "note": "The bolt must be cycled between shots and be open to load. Sawing it off (needs a saw; a live round in the gun goes off in the user's face) makes it belt-sized, cuts damage by a quarter and sets spread to 50. Accepts a bayonet.",
-   "rank": 9,
+   "rank": 10,
    "reason": "A precision rifle with 4 rounds in a huge frame.",
    "score": 44,
    "tier": "yellow"
@@ -718,7 +718,7 @@
    "hash": "",
    "name": "ballistic harpoon gun",
    "note": "Holds one harpoon, so every shot needs the bolt worked and a new harpoon loaded by hand. A hit nearly always embeds and hurts when the target moves, until someone pulls it out.",
-   "rank": 11,
+   "rank": 12,
    "reason": "One harpoon at a time: 60 damage that goes through a vest and sticks in the target. It scores just over the yellow line, and every shot is a reload.",
    "score": 41,
    "score_inputs": {
@@ -735,7 +735,7 @@
    "hash": "09224ff4494cd405",
    "name": "pipegun",
    "note": "Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 16,
+   "rank": 18,
    "reason": "Fires one hand-loaded round at a time.",
    "score": 5,
    "score_inputs": {
@@ -769,7 +769,7 @@
    "hash": "6a105958c2af93f0",
    "name": "regal pipegun",
    "note": "Bolt action loaded with reaper rounds, which are hitscan (instant) junk rounds. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 10,
+   "rank": 11,
    "reason": "Fires hitscan shots of 60 with 4 rounds. Crafting it needs a one-use book.",
    "score": 41,
    "score_inputs": {
@@ -802,7 +802,7 @@
    "group": "rifles",
    "hash": "7673980e5008c01b",
    "name": "Sakhno M2442 Army",
-   "rank": 13,
+   "rank": 15,
    "reason": "Does 60 damage on bare targets and about 24 through a vest, with five shots and a bolt to work.",
    "score": 15,
    "tier": "green"
@@ -823,7 +823,7 @@
    "hash": "2ed82f9db0fc22be",
    "name": "heated rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 17,
+   "rank": 19,
    "reason": "Does 30 damage then needs a 3 s draw. Better ammo exists, which the score doesn't cover.",
    "score": 3,
    "score_inputs": {
@@ -840,7 +840,7 @@
    "hash": "04bae29a51921f7d",
    "name": "stressed rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target. Here the redraw time is 1.5 ticks (about 0.15 s) because the value lacks SECONDS, and 25% of shots aimed at someone else misfire into the shooter. / Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 15,
+   "rank": 17,
    "reason": "Redraws almost instantly at the cost of shooting yourself one time in four.",
    "score": 7,
    "score_inputs": {
@@ -1004,6 +1004,23 @@
    },
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/shotgun/brimstone": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "",
+   "name": "HP Brimstone",
+   "note": "Holding the trigger and pumping fires each fresh shell as soon as it is chambered (slamfire), so it never needs a click per shot. Sawing it off makes it one-handed with much worse spread (25) and more kick.",
+   "rank": 12,
+   "reason": "A five-shell buckshot pump that fires as fast as you can work it while the trigger is held. Still plain buckshot from a short tube.",
+   "score": 14,
+   "score_inputs": {
+    "rate": {
+     "value": 2.0,
+     "why": "Fires once per pump with the trigger held; the automatic fire only waits on the pump, which is 0.4 s apart. The pump keypress caps it like clicking a semi-auto."
+    }
+   },
+   "tier": "green"
+  },
   "/obj/item/gun/ballistic/shotgun/bulldog/unrestricted": {
    "confidence": "medium",
    "group": "shotguns",
@@ -1073,6 +1090,39 @@
     }
    },
    "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "HP Flaming Arrow",
+   "note": "Lever-action: worked by hand after every shot like a pump. 18 .38 rounds loaded one at a time. Sawn off it holds 7. Racking it one-handed or sawn off spins it.",
+   "rank": 14,
+   "reason": "Fires 25 damage .38 rounds from an 18-round tube, one lever stroke a shot. A long green carbine, below the BR-38.",
+   "score": 21,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "HP Absolution",
+   "note": "Lever-action: worked by hand after every shot. 8 .357 rounds loaded one at a time; the tube stays 8 when sawn off.",
+   "rank": 8,
+   "reason": "Eight 60 damage .357 rounds with a lever stroke each: a revolver with a long tube, a step under the Unica.",
+   "score": 50,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration": {
+   "confidence": "low",
+   "group": "shotguns",
+   "hash": "",
+   "name": "HP Conflagration",
+   "note": "Lever-action shotgun with a 1.75 damage multiplier on every shell. Six shells, five sawn off. Racking it one-handed or sawn off spins it.",
+   "rank": 6,
+   "reason": "Buckshot at 1.75 times the usual damage, six to a tube, one lever stroke a shot. Hits like a combat shotgun per shell but cycles by hand.",
+   "score": 41,
+   "tier": "yellow"
   },
   "/obj/item/gun/ballistic/shotgun/hook": {
    "confidence": "medium",
@@ -1147,6 +1197,17 @@
     }
    },
    "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/slammer": {
+   "confidence": "low",
+   "group": "shotguns",
+   "hash": "",
+   "name": "Slammer",
+   "note": "Pump shotgun fed from six-shell box magazines, with tactical reloads. 1.75 damage multiplier on every shell. Magazines can be hand-filled with any 12 gauge shell.",
+   "rank": 5,
+   "reason": "Buckshot at 1.75 times the usual damage, pumped by hand, but it reloads six shells at once from a box magazine.",
+   "score": 41,
+   "tier": "yellow"
   },
   "/obj/item/gun/ballistic/shotgun/toy": {
    "confidence": "high",

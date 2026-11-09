@@ -81,6 +81,7 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/automatic/wt550 = /obj/item/ammo_box/magazine/wt550m9,
 	/obj/item/gun/ballistic/automatic/woodsman = /obj/item/ammo_box/magazine/m23,
 	/obj/item/gun/ballistic/rifle/sniper_rifle = /obj/item/ammo_box/magazine/sniper_rounds,
+	/obj/item/gun/ballistic/shotgun/slammer = /obj/item/ammo_box/magazine/m12g_slammer,
 	/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = /obj/item/ammo_box/magazine/m12g,
 	// internal magazines: loose rounds instead
 	/obj/item/gun/ballistic/revolver = /obj/item/ammo_box/a357,
@@ -90,11 +91,15 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/rifle/boltaction/harpoon = /obj/item/storage/bag/harpoon_quiver,
 	/obj/item/gun/ballistic/rifle/boltaction/prime = /obj/item/ammo_box/strilka310,
 	/obj/item/gun/ballistic/rifle/boltaction/surplus = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/shotgun/flaming_arrow = /obj/item/ammo_box/c38,
+	/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution = /obj/item/ammo_box/a357,
 	/obj/item/gun/ballistic/rocketlauncher/unrestricted = /obj/item/ammo_casing/rocket,
 	// break/pump actions: a box of shells
 	/obj/item/gun/ballistic/shotgun/automatic/combat = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly = /obj/item/storage/box/lethalshot,
+	/obj/item/gun/ballistic/shotgun/brimstone = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/doublebarrel = /obj/item/storage/box/lethalshot,
+	/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration = /obj/item/storage/box/lethalshot,
 	/obj/item/gun/ballistic/shotgun/riot = /obj/item/storage/box/lethalshot,
 ))
 /obj/structure/closet/crate/zone_loot

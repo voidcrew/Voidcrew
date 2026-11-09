@@ -74,6 +74,7 @@
 		/datum/shop_sku/outfitter/woodsman_mag,
 		/datum/shop_sku/outfitter/skm_mag,
 		/datum/shop_sku/outfitter/skm_extended_mag,
+		/datum/shop_sku/outfitter/slammer_mag,
 		/datum/shop_sku/outfitter/firing_pin,
 		/datum/shop_sku/outfitter/riot_shotgun,
 		// Melee
@@ -409,6 +410,15 @@
 	price_credits = 450
 	stock_min = 4
 	stock_max = 8
+
+/datum/shop_sku/outfitter/slammer_mag
+	category = "Firearms & Ammo"
+	name = "slammer magazine"
+	desc = "A loaded six-shell box magazine for a Slammer."
+	item_path = /obj/item/ammo_box/magazine/m12g_slammer
+	price_credits = 250
+	stock_min = 10
+	stock_max = 20
 
 /datum/shop_sku/outfitter/firing_pin
 	category = "Firearms & Ammo"

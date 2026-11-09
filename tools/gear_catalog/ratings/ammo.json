@@ -398,6 +398,15 @@
    "reason": "Built into the NT M-96, never on its own. Rated with the gun.",
    "tier": "green"
   },
+  "/obj/item/ammo_box/magazine/internal/shot/absolution": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Absolution internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Absolution, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/internal/shot/bounty": {
    "confidence": "high",
    "group": "magazines built into a gun",
@@ -405,6 +414,24 @@
    "name": "triple-barrel shotgun internal magazine",
    "rank": 7,
    "reason": "Built into the hook shotgun, never on its own. Rated with the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/brimstone": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Brimstone internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Brimstone, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/conflagration": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Conflagration internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Conflagration, never on its own. Rated with the gun.",
    "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/internal/shot/dual/breacherslug": {
@@ -423,6 +450,15 @@
    "name": "double-barrel shotgun internal magazine (slugs)",
    "rank": 10,
    "reason": "Built into a green shotgun, never on its own. Rated with the gun.",
+   "tier": "green"
+  },
+  "/obj/item/ammo_box/magazine/internal/shot/flaming_arrow": {
+   "confidence": "high",
+   "group": "magazines built into a gun",
+   "hash": "",
+   "name": "HP Flaming Arrow internal tube",
+   "rank": 11,
+   "reason": "Built into the HP Flaming Arrow, never on its own. Rated with the gun.",
    "tier": "green"
   },
   "/obj/item/ammo_box/magazine/internal/shot/lethal": {
@@ -590,6 +626,15 @@
    "rank": 1,
    "reason": "Eight taser slugs in a burst-fire drum. A 10 second paralysis on the first hit, with the next already on its way.",
    "tier": "red"
+  },
+  "/obj/item/ammo_box/magazine/m12g_slammer": {
+   "confidence": "medium",
+   "group": "shotgun shells",
+   "hash": "",
+   "name": "Slammer box magazine",
+   "rank": 10,
+   "reason": "Six plain buckshot shells in a box magazine. The shells sell freely; the magazine only matters in a Slammer.",
+   "tier": "green"
   },
   "/obj/item/ammo_box/magazine/m223": {
    "confidence": "high",
@@ -2439,6 +2484,7 @@
   "/obj/item/ammo_box/magazine/internal/sks": "abstract",
   "/obj/item/ammo_box/magazine/internal/sks/empty": "no route",
   "/obj/item/ammo_box/magazine/m23/empty": "no route",
+  "/obj/item/ammo_box/magazine/m12g_slammer/empty": "no route",
   "/obj/item/ammo_box/magazine/m38/empty": "no route",
   "/obj/item/ammo_box/magazine/m75": "needs another system",
   "/obj/item/ammo_box/magazine/m9mm_rattlesnake/empty": "no route",

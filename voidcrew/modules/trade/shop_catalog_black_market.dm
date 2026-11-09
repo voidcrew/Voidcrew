@@ -77,6 +77,11 @@
 		/datum/shop_sku/black_market/woodsman,
 		/datum/shop_sku/black_market/skm,
 		/datum/shop_sku/black_market/skm_drum,
+		/datum/shop_sku/black_market/brimstone,
+		/datum/shop_sku/black_market/flaming_arrow,
+		/datum/shop_sku/black_market/slammer,
+		/datum/shop_sku/black_market/absolution,
+		/datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -991,11 +996,59 @@
 	fixed_price = TRUE
 	contract_reward = FALSE
 
+/datum/shop_sku/black_market/brimstone
+	category = "Weapons"
+	desc = "A plain pump-action shotgun. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/brimstone
+	price_credits = 900
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
 /datum/shop_sku/black_market/woodsman
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	desc = "A scoped semi-automatic hunting rifle. Chambered in 8x50mmR."
 	item_path = /obj/item/gun/ballistic/automatic/woodsman
+	price_credits = 2600
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/flaming_arrow
+	category = "Weapons"
+	desc = "A light lever-action rifle. Chambered in .38."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow
+	price_credits = 1200
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/slammer
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A pump shotgun that feeds from box magazines. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/slammer
+	price_credits = 2400
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/absolution
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A big lever-action rifle. Chambered in .357."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution
 	price_credits = 2600
 	price_vouchers = 1
 	stock_min = 1
@@ -1066,6 +1119,19 @@
 	price_vouchers = 1
 	stock_min = 1
 	stock_max = 2
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/conflagration
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A lever-action shotgun. Chambered in 12 gauge."
+	item_path = /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration
+	price_credits = 2200
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
 	contract_reward = FALSE
 
 /// Counter-bought caches retain themed supplies, with a single freight weapon roll.

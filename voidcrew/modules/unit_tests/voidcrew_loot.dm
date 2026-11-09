@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(3, 6, 5), "syndicate" = list(2, 3, 4), "plunder" = list(3, 4, 4), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(3, 6, 5), "syndicate" = list(2, 4, 4), "plunder" = list(5, 6, 4), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -709,9 +709,11 @@
 			/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
 			/obj/item/gun/ballistic/rifle/boltaction/surplus,
 			/obj/item/gun/ballistic/rifle/nt_m96,
+			/obj/item/gun/ballistic/shotgun/brimstone,
 			/obj/item/gun/ballistic/shotgun/doublebarrel,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
 			/obj/item/gun/ballistic/shotgun/doublebarrel/slugs,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow,
 			/obj/item/gun/ballistic/shotgun/musket,
 			/obj/item/gun/ballistic/shotgun/toy,
 			/obj/item/gun/ballistic/shotgun/toy/crossbow,
@@ -768,8 +770,11 @@
 			/obj/item/gun/ballistic/rifle/rebarxbow/forced,
 			/obj/item/gun/ballistic/shotgun,
 			/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 			/obj/item/gun/ballistic/shotgun/lethal,
 			/obj/item/gun/ballistic/shotgun/musket/no_quarter,
+			/obj/item/gun/ballistic/shotgun/slammer,
 			/obj/item/gun/ballistic/shotgun/riot,
 			/obj/item/gun/energy/e_gun,
 			/obj/item/gun/energy/e_gun/dragnet,

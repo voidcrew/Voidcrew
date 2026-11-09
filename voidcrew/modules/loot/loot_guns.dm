@@ -75,6 +75,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 			/obj/item/gun/ballistic/automatic/c20r/unrestricted = 10,
 			/obj/item/gun/ballistic/automatic/mini_uzi = 10,
 			/obj/item/gun/ballistic/automatic/pistol/clandestine = 10,
+			/obj/item/gun/ballistic/shotgun/slammer = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = 10,
@@ -88,12 +89,16 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 			/obj/item/gun/ballistic/revolver/c38/detective = 10,
 			/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
 			/obj/item/gun/ballistic/automatic/pistol/zashch = 10,
+			/obj/item/gun/ballistic/shotgun/brimstone = 10,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow = 10,
 		),
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,
 			/obj/item/gun/ballistic/rifle/boltaction/harpoon = 10,
 			/obj/item/gun/ballistic/automatic/heater = 10,
 			/obj/item/gun/ballistic/automatic/skm = 10,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution = 10,
+			/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,
