@@ -95,6 +95,19 @@
 		return
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_land_fx), WEAKREF(lunger), WEAKREF(victim), impact_state, pounce), MANTIS_LUNGE_GLIDE)
 
+/// Knocks [victim] down when the lunging body lands on them, with the impact, rather than as the lunge
+/// starts its glide in.
+/proc/mantis_lunge_knockdown(mob/living/victim, amount)
+	if(QDELETED(victim))
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_lunge_knockdown_now), WEAKREF(victim), amount), MANTIS_LUNGE_GLIDE)
+
+/proc/mantis_lunge_knockdown_now(datum/weakref/victim_ref, amount)
+	var/mob/living/victim = victim_ref?.resolve()
+	if(QDELETED(victim))
+		return
+	victim.Knockdown(amount)
+
 /proc/mantis_lunge_land_fx(datum/weakref/lunger_ref, datum/weakref/victim_ref, impact_state, pounce)
 	var/mob/living/lunger = lunger_ref?.resolve()
 	var/mob/living/victim = victim_ref?.resolve()
@@ -203,12 +216,17 @@
 // =========================================================================
 
 /**
- * Both of [bearer]'s blades reaching into [victim]'s tile: the pair "[state]_under" and "[state]_over" from
- * the reach sheet, turned the way [victim] lies from [bearer]. The under half is the blade behind and
- * inside the victim's body, so the body hides it; the over half is what passes in front. Both ride on the
- * bearer, so they move with the bearer's lean, but are drawn apart from the bearer's own sprite so they
- * can sit under or over the victim. The held blades should be hidden while these play. Returns the
- * holders.
+ * Both of [bearer]'s blades reaching into [victim]: three pictures from the reach sheet, turned the way
+ * [victim] lies from [bearer], each drawn on the body it has to sit against.
+ * - "[state]_over": the blade in front, drawn over both.
+ * - "[state]_under": the blade behind the bearer's own body (the far arm from the side, both facing
+ *   away), an underlay of the bearer.
+ * - "[state]_in": the blade inside or behind the victim, an underlay of the victim, drawn where the
+ *   victim's own sprite sits.
+ * What passes behind a body is a real underlay of it (the body's `underlays`): a picture in vis_contents
+ * draws over its parent whatever its layer or vis_flags. The bearer's pictures move with the bearer's lean
+ * and the victim's with the victim. The held blades should be hidden while these play. Returns the
+ * pictures, each gone after [lifetime] or when deleted.
  */
 /proc/mantis_reach_fx(mob/living/bearer, mob/living/victim, state, lifetime)
 	RETURN_TYPE(/list)
@@ -218,11 +236,14 @@
 	var/reach_dir = get_dir(bearer, victim)
 	if(!reach_dir)
 		return
-	for(var/part in list("under", "over"))
+	for(var/part in list("under", "over", "in"))
 		var/full_state = "[state]_[part]"
 		if(!icon_exists(MANTIS_GORE_REACH_ICON, full_state))
 			continue
-		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(bearer, MANTIS_GORE_REACH_ICON, full_state, part == "under" ? MANTIS_UNDER_VICTIM_LAYER : MANTIS_OVER_VICTIM_LAYER, lifetime)
+		if(part != "over")
+			. += new /datum/mantis_underlay(part == "in" ? victim : bearer, MANTIS_GORE_REACH_ICON, full_state, reach_dir, -32, lifetime)
+			continue
+		var/obj/effect/abstract/cyberware_anim/blades = cyberware_anim_play(bearer, MANTIS_GORE_REACH_ICON, full_state, MANTIS_OVER_VICTIM_LAYER, lifetime)
 		if(!blades)
 			continue
 		blades.appearance_flags |= KEEP_APART
@@ -233,6 +254,51 @@
 		. += blades
 
 /**
+ * A picture drawn behind a body: one of its underlays, upright whatever way the body is turned, for
+ * [lifetime] or until deleted.
+ */
+/datum/mantis_underlay
+	var/atom/movable/body
+	var/mutable_appearance/picture
+
+/datum/mantis_underlay/New(atom/movable/body, icon_file, state, picture_dir, shift, lifetime)
+	. = ..()
+	if(QDELETED(body))
+		return
+	src.body = body
+	picture = mutable_appearance(icon_file, state, MANTIS_BEHIND_BODY_LAYER, appearance_flags = RESET_COLOR|RESET_ALPHA|PIXEL_SCALE)
+	picture.dir = picture_dir
+	picture.pixel_x = shift
+	picture.pixel_y = shift
+	mantis_undo_turn(picture, body)
+	body.underlays += picture
+	RegisterSignal(body, COMSIG_QDELETING, PROC_REF(on_body_deleted))
+	QDEL_IN(src, lifetime)
+
+/datum/mantis_underlay/Destroy()
+	if(body)
+		body.underlays -= picture
+		UnregisterSignal(body, COMSIG_QDELETING)
+		body = null
+	picture = null
+	return ..()
+
+/datum/mantis_underlay/proc/on_body_deleted(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/// A picture drawn as part of [body] turns with it; this turns it back, so it stays the way it was drawn
+/// (someone lying down is turned by tg).
+/proc/mantis_undo_turn(picture, atom/movable/body)
+	if(isnull(body.transform))
+		return
+	var/matrix/undo = matrix(body.transform)
+	if(undo.a == 1 && undo.b == 0 && undo.d == 0 && undo.e == 1)
+		return
+	var/atom/movable/drawn = picture
+	drawn.transform = undo.Invert()
+
+/**
  * The two points standing out of someone skewered, the far ends of the blades in them. Drawn on the
  * victim, upright: over them, or behind them when the blades went in from the south and out of a back
  * that faces away.
@@ -241,7 +307,10 @@
 	var/state = "[model]_impale"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		state = "mantis_impale"
-	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, lunge_dir == NORTH ? MANTIS_UNDER_VICTIM_LAYER : MANTIS_OVER_VICTIM_LAYER, lifetime)
+	if(lunge_dir == NORTH)
+		// Out of a back that faces away: behind them.
+		return new /datum/mantis_underlay(victim, MANTIS_GORE_ICON, state, lunge_dir, 0, lifetime)
+	var/obj/effect/abstract/cyberware_anim/tips = cyberware_anim_play(victim, MANTIS_GORE_ICON, state, MANTIS_OVER_VICTIM_LAYER, lifetime)
 	if(!tips)
 		return null
 	tips.appearance_flags |= KEEP_APART|RESET_TRANSFORM

@@ -592,7 +592,8 @@
 		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
 		return
 	mantis_pose_blades(posed, MANTIS_POSE_GUARD)
-	victim.Knockdown(housing.lunge_knockdown)
+	// They go down as the gliding body reaches them, with the impact (mantis_gore/mantis_lunge_fx.dm).
+	mantis_lunge_knockdown(victim, housing.lunge_knockdown)
 	if(charged)
 		if(blades > 1)
 			victim.visible_message(

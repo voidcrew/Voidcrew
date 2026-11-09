@@ -167,7 +167,7 @@
 	effect_sound = 'sound/items/weapons/bladeslice.ogg'
 	spray_strength = 4
 	/// The blades coming down on the neck, while they do.
-	var/list/obj/effect/abstract/cyberware_anim/reach
+	var/list/datum/reach
 
 /datum/hv_finisher_stage/kill/decapitate/mantis/Destroy()
 	reach = null
@@ -192,7 +192,7 @@
 
 // Pulled away before the blades met: they go straight back into the hands.
 /datum/hv_finisher_stage/kill/decapitate/mantis/on_interrupt()
-	for(var/obj/effect/abstract/cyberware_anim/blades as anything in reach)
+	for(var/datum/blades as anything in reach)
 		if(!QDELETED(blades))
 			qdel(blades)
 	reach = null

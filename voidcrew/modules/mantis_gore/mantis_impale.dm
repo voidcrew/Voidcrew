@@ -57,11 +57,15 @@
 	/// The tips showing through them.
 	var/datum/weakref/tips_ref
 	/// The blades reaching into them from the bearer's hands (mantis_reach_fx()).
-	var/list/obj/effect/abstract/cyberware_anim/reach
+	var/list/datum/reach
 	/// How far tg had them turned to lie down when they came up on the blades, or 0.
 	var/hoist_angle = 0
 	/// The way they faced before they were turned onto the blades.
 	var/prior_dir
+	/// Whichever of the two is drawn in front of the other while they overlap up and down the screen.
+	var/mob/living/front
+	/// Its layer before that.
+	var/front_prior_layer
 	var/running = FALSE
 	/// TRUE from the pull-back until the blades are out.
 	var/ripping = FALSE
@@ -77,6 +81,7 @@
 /datum/mantis_impale/Destroy()
 	if(running)
 		finish()
+	front = null
 	bearer = null
 	victim = null
 	housings = null
@@ -128,23 +133,55 @@
 	return TRUE
 
 /**
- * Leans the bearer into the thrust and sets the victim on the blades: drawn onto them and lifted, or
- * shoved back into the wall. Pictures only. The reach art (mantis_gore_reach.dmi) is drawn for these.
+ * Brings the two bodies together for the hold: the bearer leans into the thrust and the victim is drawn
+ * onto the blades and lifted, so the blades keep their length. Against a wall the victim stays put and
+ * the bearer drives in the whole way. Pictures only. The reach art (mantis_gore_reach.dmi) is drawn for
+ * these offsets, relative to the bearer.
  */
 /datum/mantis_impale/proc/place_bodies()
 	var/dx = (lunge_dir & EAST) ? 1 : ((lunge_dir & WEST) ? -1 : 0)
 	var/dy = (lunge_dir & NORTH) ? 1 : ((lunge_dir & SOUTH) ? -1 : 0)
-	bearer.add_offsets(MANTIS_IMPALE_TRAIT, w_add = dx * MANTIS_IMPALE_LEAN, z_add = dy * MANTIS_IMPALE_LEAN)
 	// Brought upright off the floor: tg draws someone lying down a little low.
 	var/upright = hoist_angle ? -PIXEL_Y_OFFSET_LYING : 0
-	if(wall_pin)
-		victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = dx * MANTIS_IMPALE_PIN_SHOVE, z_add = dy * MANTIS_IMPALE_PIN_SHOVE + upright)
-	else if(dx)
-		victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = -dx * MANTIS_IMPALE_PULL, z_add = MANTIS_IMPALE_LIFT + upright)
+	var/lean_w = 0
+	var/lean_z = 0
+	var/pull_w = 0
+	var/pull_z = 0
+	var/lift = 0
+	if(dx)
+		lean_w = dx * MANTIS_IMPALE_LEAN
+		lean_z = dy * MANTIS_IMPALE_LEAN
+		pull_w = -dx * MANTIS_IMPALE_PULL
+		if(dy)
+			pull_z = -dy * MANTIS_IMPALE_PULL
+		else
+			lift = MANTIS_IMPALE_LIFT
+	else if(dy > 0)
+		lean_z = MANTIS_IMPALE_LEAN_NORTH
+		pull_z = -MANTIS_IMPALE_PULL_NORTH
 	else
-		// Straight up or down the screen a lift runs along the thrust: skewered from the north it draws them
-		// up onto the blades; from the south it would pull them off, so they stay put.
-		victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = 0, z_add = (dy < 0 ? MANTIS_IMPALE_LIFT_SOUTH : 0) + upright)
+		lean_z = -MANTIS_IMPALE_LEAN_SOUTH
+		pull_z = MANTIS_IMPALE_PULL_SOUTH
+	if(wall_pin)
+		lean_w -= pull_w
+		lean_z -= pull_z
+		pull_w = 0
+		pull_z = 0
+	bearer.add_offsets(MANTIS_IMPALE_TRAIT, w_add = lean_w, z_add = lean_z)
+	victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = pull_w, z_add = pull_z + lift + upright)
+	// Straight up or down the screen the two overlap: the one nearer the viewer is drawn over the other.
+	if(!dx)
+		front = dy > 0 ? bearer : victim
+		front_prior_layer = front.layer
+		front.layer = MANTIS_IMPALE_FRONT_LAYER
+
+/// Gives back the layer of whichever body was drawn in front, if nothing else has changed it since.
+/datum/mantis_impale/proc/restore_front()
+	if(isnull(front))
+		return
+	if(!QDELETED(front) && front.layer == MANTIS_IMPALE_FRONT_LAYER)
+		front.layer = front_prior_layer
+	front = null
 
 /**
  * Someone skewered off the floor comes up with the blades and is drawn upright for the hold. Only the
@@ -231,7 +268,7 @@
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null
-	var/obj/effect/abstract/cyberware_anim/tips = tips_ref?.resolve()
+	var/datum/tips = tips_ref?.resolve()
 	if(tips)
 		qdel(tips)
 	tips_ref = null
@@ -325,14 +362,15 @@
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null
-	var/obj/effect/abstract/cyberware_anim/tips = tips_ref?.resolve()
+	var/datum/tips = tips_ref?.resolve()
 	if(tips)
 		qdel(tips)
 	tips_ref = null
-	for(var/obj/effect/abstract/cyberware_anim/blades as anything in reach)
+	for(var/datum/blades as anything in reach)
 		if(!QDELETED(blades))
 			qdel(blades)
 	reach = null
+	restore_front()
 	if(bearer)
 		UnregisterSignal(bearer, list(COMSIG_MOB_AFTER_APPLY_DAMAGE, COMSIG_LIVING_DEATH, COMSIG_QDELETING, COMSIG_MOVABLE_MOVED))
 		bearer.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), MANTIS_IMPALE_TRAIT)

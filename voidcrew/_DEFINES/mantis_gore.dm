@@ -5,11 +5,12 @@
 #define MANTIS_GORE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore.dmi'
 /// 64x64 pictures: the artery spurt, the flick.
 #define MANTIS_GORE_LARGE_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_large.dmi'
-/// 96x96 pictures centred on the bearer: both blades reaching into the next tile for the scissor and the
-/// impale, one state under the victim and one over it, eight directions (bearer to victim).
+/// 96x96 pictures: both blades reaching into the next tile for the scissor and the impale, eight directions
+/// (bearer to victim). "_over" and "_under" are centred on the bearer, "_in" on the victim.
 #define MANTIS_GORE_REACH_ICON 'voidcrew/modules/mantis_gore/icons/mantis_gore_reach.dmi'
-/// Layer for blade drawn behind or inside the victim's body: under a lying body, so under a standing one too.
-#define MANTIS_UNDER_VICTIM_LAYER (LYING_MOB_LAYER - 0.01)
+/// Layer of a picture drawn as an underlay of a body: below every layer the body and what it wears are
+/// drawn at (-1 to -TOTAL_LAYERS). An underlay only goes under the parts that share its layer.
+#define MANTIS_BEHIND_BODY_LAYER (-(TOTAL_LAYERS + 1))
 /// Layer for blade drawn in front of the victim (and the bearer).
 #define MANTIS_OVER_VICTIM_LAYER ABOVE_MOB_LAYER
 /// The posed held blades.
@@ -88,18 +89,22 @@
 #define MANTIS_IMPALE_BREAK_DAMAGE 15
 /// A target at or under this share of max health is hurt enough to skewer.
 #define MANTIS_IMPALE_HEALTH_FRACTION 0.7
-// Where the two bodies sit while the blades are in. The reach art (mantis_gore_reach.dmi) is drawn for
-// exactly these, so change them together.
-/// Pixels the bearer leans into the thrust.
-#define MANTIS_IMPALE_LEAN 4
-/// Pixels someone skewered from the side is drawn onto the blades.
-#define MANTIS_IMPALE_PULL 4
-/// Pixels someone skewered from the side is lifted.
+// Where the two bodies sit while the blades are in: brought together, so the blades keep the length they
+// have in the hand. The reach art (mantis_gore_reach.dmi) is drawn for exactly these, so change them together.
+/// Pixels the bearer leans into a thrust to the side or a diagonal.
+#define MANTIS_IMPALE_LEAN 8
+/// Pixels someone skewered to the side or a diagonal is drawn onto the blades, along each axis it lies off.
+#define MANTIS_IMPALE_PULL 12
+/// Pixels someone skewered straight to the side is lifted.
 #define MANTIS_IMPALE_LIFT 5
-/// Pixels someone skewered from straight above is lifted (toward the bearer). From straight below, none.
-#define MANTIS_IMPALE_LIFT_SOUTH 3
-/// Pixels the wall takes them back by when pinned.
-#define MANTIS_IMPALE_PIN_SHOVE 5
+/// Skewered straight below: the bearer leans down, they are drawn up.
+#define MANTIS_IMPALE_LEAN_SOUTH 6
+#define MANTIS_IMPALE_PULL_SOUTH 8
+/// Skewered straight above: the bearer leans up, they are drawn down.
+#define MANTIS_IMPALE_LEAN_NORTH 3
+#define MANTIS_IMPALE_PULL_NORTH 3
+/// Layer of whichever of the two is nearer the viewer when they overlap up and down the screen.
+#define MANTIS_IMPALE_FRONT_LAYER (MOB_LAYER + 0.02)
 /// Pixels the bearer draws back before the blades come out.
 #define MANTIS_IMPALE_PULL_BACK 6
 /// From the pull-back to the blades coming out and the body dropping.
@@ -128,8 +133,8 @@
 #define MANTIS_SCISSOR_WINDUP (1.2 SECONDS)
 /// Pixels the bearer leans in for the cut, and further when the head lies on the far side of the body.
 /// The reach art is drawn for these.
-#define MANTIS_SCISSOR_LEAN 8
-#define MANTIS_SCISSOR_FAR_LEAN 14
+#define MANTIS_SCISSOR_LEAN 12
+#define MANTIS_SCISSOR_FAR_LEAN 16
 #define MANTIS_SCISSOR_COOLDOWN (10 SECONDS)
 /// Brute to the neck when the head won't come off.
 #define MANTIS_SCISSOR_FALLBACK_DAMAGE 25
