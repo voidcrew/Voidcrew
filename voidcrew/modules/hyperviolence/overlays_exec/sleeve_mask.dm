@@ -52,7 +52,15 @@
 	if(!length(missing))
 		return
 	cut_overlay(worn)
-	var/mutable_appearance/mask = mutable_appearance(HV_SLEEVE_MASK_ICON, "missing_[missing[1]]")
+	// Built as tg builds the missing-hand glove mask (update_worn_gloves()): an atom's appearance carries the
+	// render target. A mutable_appearance carrying it was drawn on screen as a white limb.
+	var/static/atom/movable/mask
+	if(isnull(mask))
+		mask = new(null)
+	mask.icon = HV_SLEEVE_MASK_ICON
+	mask.icon_state = "missing_[missing[1]]"
+	// Set at once, not through the overlay queue: the appearance is copied below.
+	mask.overlays.Cut()
 	for(var/i in 2 to length(missing))
 		mask.overlays += mutable_appearance(HV_SLEEVE_MASK_ICON, "missing_[missing[i]]")
 	mask.render_target = "*hv_sleeves [cache_index] [REF(src)]"

@@ -48,23 +48,32 @@
 	return list(arm ? (right ? -7 : 6) : (right ? -4 : 3), y)
 
 /**
- * Where a cut limb comes to rest, as a transform for something drawing it about `pivot` (where the limb's middle
- * is drawn in that thing's own picture). Upright, it has toppled over `side` and lies on the floor beside the feet;
- * off a body already lying down it only slides out a little, since it is on the floor already. Then it is moved and
- * turned as the body was (`body_shape`).
+ * Where a cut limb comes to rest, as a transform for something drawing it with its middle at `centre`. Upright, it
+ * has toppled over `side` and lies on the floor beside the feet; off a body already lying down it only slides out a
+ * little, since it is on the floor already. For something drawn apart from the body, `body` places and turns it as
+ * that body is drawn. A dropped limb shifts its own picture by (`shift_x`, `shift_y`) after any transform, so that
+ * is taken back off at the end.
  */
-/proc/wire_limb_rest(list/pivot, list/centre, side, lying, matrix/body_shape)
-	var/matrix/rest = matrix()
-	rest.Translate(-pivot[1], -pivot[2])
-	if(lying)
-		rest.Turn(side * 10)
-		rest.Translate(centre[1] + side * 3, centre[2] - 1)
-	else
-		rest.Turn(side * 90)
-		rest.Translate(side * 10, -13)
-	if(body_shape)
-		rest.Multiply(body_shape)
-	return rest
+/proc/wire_limb_rest(list/centre, side, lying, mob/living/body, shift_x = 0, shift_y = 0)
+	var/list/target = lying ? list(centre[1] + side * 3, centre[2] - 1) : list(side * 10, -13)
+	return wire_part_pose(centre, lying ? side * 10 : side * 90, target, body, shift_x, shift_y)
+
+/**
+ * A transform that draws a part whose middle is at `centre` turned `turn` degrees about that middle, with the middle
+ * at `target` (both in its body's own frame), then placed and turned as `body` is drawn, if given; less a shift
+ * the picture applies after its transform.
+ */
+/proc/wire_part_pose(list/centre, turn, list/target, mob/living/body, shift_x = 0, shift_y = 0)
+	var/list/spot = target
+	if(body)
+		turn += body.body_position == LYING_DOWN ? body.lying_angle : 0
+		var/matrix/shape = body.transform
+		spot = list(shape.a * target[1] + shape.b * target[2] + shape.c, shape.d * target[1] + shape.e * target[2] + shape.f)
+	var/matrix/pose = matrix()
+	pose.Translate(-centre[1], -centre[2])
+	pose.Turn(turn)
+	pose.Translate(spot[1] - shift_x, spot[2] - shift_y)
+	return pose
 
 // ---- The held limb ----
 
@@ -178,9 +187,8 @@
 	var/far_arm = (facing == EAST && zone == BODY_ZONE_L_ARM) || (facing == WEST && zone == BODY_ZONE_R_ARM)
 	severed.setDir(far_arm ? REVERSE_DIR(facing) : facing)
 	var/list/centre = wire_limb_centre(zone, facing)
-	// The dropped limb's picture is shifted by (px_x, px_y) to sit mid-tile, flipped with it for the far arm.
-	var/list/pivot = list(centre[1] + (far_arm ? -severed.px_x : severed.px_x), centre[2] + severed.px_y)
-	var/matrix/rest = wire_limb_rest(pivot, centre, side, lying, body?.transform)
+	// The dropped limb's picture is shifted by (px_x, px_y) to sit mid-tile, after its transform.
+	var/matrix/rest = wire_limb_rest(centre, side, lying, body, severed.px_x, severed.px_y)
 	if(far_arm)
 		var/matrix/flipped = matrix(-1, 0, 0, 0, 1, 0)
 		flipped.Multiply(rest)
@@ -239,7 +247,7 @@
 	slid.Translate(-centre[1], -centre[2])
 	slid.Turn(side * (lying ? 4 : 15))
 	slid.Translate(centre[1] + side * 2, centre[2] - 1)
-	var/matrix/rest = wire_limb_rest(centre, centre, side, lying)
+	var/matrix/rest = wire_limb_rest(centre, side, lying)
 	// Halfway over: the turn is split so it turns rather than squashes on the way.
 	var/matrix/tipping = matrix()
 	tipping.Translate(-centre[1], -centre[2])

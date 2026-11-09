@@ -304,8 +304,7 @@
 	if(!head)
 		return
 	var/seared = wire.wire_sears(victim)
-	// The body as it is drawn while the wire goes through, for where the head lands.
-	var/matrix/body_shape = matrix(victim.transform)
+	// Where the body is drawn while the wire goes through, for where the head lands.
 	var/list/body_offsets = list(victim.pixel_x, victim.pixel_y, victim.pixel_w, victim.pixel_z)
 	var/head_side = (get_dir(victim, user) & (EAST | NORTH)) ? 1 : -1
 	clear_wire_fx()
@@ -316,7 +315,7 @@
 			LAZYSET(victim.hv_stump_burnt, BODY_ZONE_HEAD, TRUE)
 		// Dropped, brain and all, as #509's finishers drop a head: where the neck was, at the garroter's feet.
 		if(hv_wire_take_part(head, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, !seared))
-			wire_drop_head(head, body_shape, body_offsets, head_side)
+			wire_drop_head(head, victim, body_offsets, head_side)
 			finish_blood(spray_dir, seared)
 			log_combat(user, victim, "garroted the head off", wire)
 			return
@@ -338,12 +337,12 @@
  * The head comes off the end of the neck and lies where it was drawn, a few pixels clear of it: at the garroter's
  * feet, since the hold drew the neck to their hands. Turned as the body lay; an ordinary head again once moved.
  */
-/proc/wire_drop_head(obj/item/bodypart/head/head, matrix/body_shape, list/body_offsets, side)
+/proc/wire_drop_head(obj/item/bodypart/head/head, mob/living/body, list/body_offsets, side)
 	if(QDELETED(head) || !isturf(head.loc))
 		return
-	// Its picture is shifted by (px_x, px_y) to sit mid-tile; on the body its middle is 9 px up.
-	var/list/pivot = list(head.px_x, 9 + head.px_y)
-	head.transform = wire_limb_rest(pivot, list(0, 13), side, TRUE, body_shape)
+	// On the body its middle is 9 px up; it lies 4 px further out, off the end of the neck. Its picture is
+	// shifted by (px_x, px_y) to sit mid-tile, after its transform.
+	head.transform = wire_part_pose(list(0, 9), side * 10, list(side * 2, 13), body, head.px_x, head.px_y)
 	head.pixel_x = body_offsets[1]
 	head.pixel_y = body_offsets[2]
 	head.pixel_w = body_offsets[3]

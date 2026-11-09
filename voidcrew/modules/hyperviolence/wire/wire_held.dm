@@ -288,7 +288,7 @@
 	var/turf/landing = locate(origin.x + tile_x, origin.y + tile_y, origin.z)
 	if(!landing || isgroundlessturf(landing) || !landing.has_gravity() || (landing != origin && hv_blood_spray_blocked(landing)))
 		return
-	var/obj/effect/decal/cleanable/blood/drip/drop = new(landing, null, blood_dna)
+	var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(landing, null, blood_dna)
 	if(QDELETED(drop))
 		return
 	drop.pixel_x = land_x - tile_x * 32
@@ -311,3 +311,7 @@
 	. = ..()
 	if(. && side && !QDELETED(wire))
 		wire.play_retract(stowing_owner, side, stage)
+
+/// A drop of the fan. Each stays where it fell instead of pooling with the others on its tile; a fan is a handful.
+/obj/effect/decal/cleanable/blood/drip/wire_flick
+	mergeable_decal = FALSE
