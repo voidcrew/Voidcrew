@@ -470,29 +470,30 @@
 	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A garrote started on someone only knocked down")
 	victim.SetKnockdown(0)
 
-	// Stunned, though both are neutral-faction people: yes. No mark, a loop round the neck.
+	// Stunned, though both are neutral-faction people: yes. No mark; the wire thrown at the neck.
 	victim.Paralyze(100 SECONDS)
 	TEST_ASSERT(wire.wire_try_garrote(victim, user), "A garrote didn't start on a stunned person")
 	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
 	TEST_ASSERT_NOTNULL(garrote, "The wire doesn't know its garrote")
 	TEST_ASSERT_NULL(garrote.mark, "The garrote put a mark over its victim")
-	var/obj/effect/abstract/cyberware_anim/loop = garrote.loop_ref?.resolve()
-	TEST_ASSERT(loop && loop.icon_state == "garrote_loop", "No loop round the neck in the wind-up")
+	TEST_ASSERT_EQUAL(length(garrote.reach_refs), 2, "No wire thrown at the neck in the wind-up")
 	TEST_ASSERT(user.wire_garrote_ready_at > world.time, "The garrote started with no wait after it")
 	TEST_ASSERT(!wire.wire_try_garrote(victim, user), "A second garrote started at once")
 	// The hold: a real grab, the wire tight.
 	garrote.advance()
 	TEST_ASSERT(garrote.gripped, "The garrote's hold didn't grip")
 	TEST_ASSERT(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE, "The garrote's hold isn't a real aggressive grab")
-	loop = garrote.loop_ref?.resolve()
-	TEST_ASSERT(loop && loop.icon_state == "garrote_tight", "The wire didn't pull tight")
+	var/datum/weakref/loop_ref = LAZYACCESS(garrote.loop_refs, 1)
+	var/obj/effect/abstract/cyberware_anim/loop = loop_ref?.resolve()
+	TEST_ASSERT(loop && loop.icon_state == "garrote_tight_front", "The wire didn't pull tight")
 	// The grab's own pull is applied (12 px toward the garroter, who stands west), the body lies head first to them,
-	// and the hold draws the neck the rest of the way in to their hands.
+	// and the hold draws it in until its head lies at their feet, on the floor: never lifted.
 	TEST_ASSERT_EQUAL(LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_X_OFFSET), GRABBING_TRAIT), -12, "The grab didn't pull the body in")
 	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_WEST, "The body doesn't lie head first to the garroter")
 	var/list/neck = garrote.neck_point()
 	var/list/hands = garrote.hold_point()
-	TEST_ASSERT(abs(neck[1] - hands[1]) <= 2 && abs(neck[2] - hands[2]) <= 2, "The neck isn't at the garroter's hands ([neck[1]],[neck[2]] vs [hands[1]],[hands[2]])")
+	TEST_ASSERT(abs(neck[1] - hands[1]) <= 2 && abs(neck[2] - hands[2]) <= 2, "The neck isn't at the garroter's feet ([neck[1]],[neck[2]] vs [hands[1]],[hands[2]])")
+	TEST_ASSERT(!LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_Y_OFFSET), HV_FINISHER_OFFSET), "The hold lifted the body off the floor")
 	TEST_ASSERT_EQUAL(length(garrote.strand_refs), 2, "The wire doesn't run from both hands")
 	TEST_ASSERT(user.wire_garrote_ready_at - world.time > 10 SECONDS, "A garrote that got a grip has the short wait")
 	// The kill, not in hard crit: the throat.
@@ -505,10 +506,14 @@
 	TEST_ASSERT_NOTNULL(locate(/datum/wound/slash/flesh/critical/hv_carotid) in head.wounds, "The garrote didn't slit the throat")
 	TEST_ASSERT_NULL(wire.garrote_running, "The wire still thinks it is garroting")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold), "The victim is still held")
+	// Let go at the kill: nothing of the grab or the hold still draws the body off its tile.
+	TEST_ASSERT(user.pulling != victim, "The garroter still holds the body")
+	TEST_ASSERT(!LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_X_OFFSET), GRABBING_TRAIT) && !LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_X_OFFSET), HV_FINISHER_OFFSET), "The body is still drawn pulled in after the kill")
 
 	// Hard crit: the head, at the body's feet.
 	user.wire_garrote_ready_at = 0
 	var/mob/living/carbon/human/consistent/dying = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	dying.equip_to_slot_or_del(new /obj/item/radio/headset(dying), ITEM_SLOT_EARS)
 	dying.apply_damage(150, OXY)
 	TEST_ASSERT(dying.stat >= HARD_CRIT && dying.stat != DEAD, "Fixture: not in hard crit ([dying.stat])")
 	user.zone_selected = BODY_ZONE_CHEST
@@ -526,6 +531,10 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/brain) in taken, "The head lost its brain")
 	// The garroter stands south of this one: the head drops toward their feet.
 	TEST_ASSERT(taken.transform.f + taken.pixel_y < 0, "The head didn't drop at the garroter's feet ([taken.transform.f], [taken.pixel_y])")
+	// The headset came off with it and lies on its side by it, not stood up on the body.
+	var/obj/item/radio/headset/headset = locate() in get_turf(dying)
+	TEST_ASSERT_NOTNULL(headset, "The headset didn't come off with the head")
+	TEST_ASSERT(abs(headset.transform.b) > 0.5, "The headset isn't lying on its side by the head")
 	var/pooled = FALSE
 	for(var/obj/effect/decal/cleanable/blood/pool in get_turf(dying))
 		if(!istype(pool, /obj/effect/decal/cleanable/blood/drip) && !istype(pool, /obj/effect/decal/cleanable/blood/hv_spray))
