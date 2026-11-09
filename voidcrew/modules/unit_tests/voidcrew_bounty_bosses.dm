@@ -204,7 +204,8 @@
 	var/obj/item/card/id/pyro_card = pyro.wear_id
 	TEST_ASSERT(istype(pyro_card), "The Pyromaniac has no ID")
 	TEST_ASSERT_EQUAL(pyro.get_visible_name(), pyro.real_name, "Masked, the Pyromaniac doesn't go by its name")
-	TEST_ASSERT(!length(pyro_card.access) && isnull(pyro_card.registered_account), "The Pyromaniac's ID opens doors or holds money")
+	TEST_ASSERT(!length(pyro_card.access), "The Pyromaniac's ID opens doors")
+	TEST_ASSERT(!pyro_card.registered_account?.account_balance, "The Pyromaniac's ID holds money")
 	TEST_ASSERT(human_npc_gear_locked(pyro_card), "The Pyromaniac's ID isn't locked to it")
 	for(var/obj/item/tank/internals/plasma/spare as anything in pyro.get_all_contents_type(/obj/item/tank/internals/plasma))
 		TEST_ASSERT(human_npc_gear_locked(spare), "A Pyromaniac's plasma tank isn't locked to it")
