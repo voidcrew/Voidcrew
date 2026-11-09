@@ -463,14 +463,11 @@
 
 /obj/effect/decal/cleanable/blood/hv_spray/gorilla_splash/hv_aim(spray_dir)
 	setDir(spray_dir)
+	// Centred, the half-moon's flat side lies on this tile's edge toward the wall in every facing, so the
+	// splash meets the wall's foot. Its ragged 2 px fringe past that sits under the wall, which draws over
+	// floor decals. Pulled back any further, floor shows between the blood and the wall.
 	pixel_x = -16
 	pixel_y = -16
-	// Against a side wall, seen from above, the half-moon would sit on the wall line like option A's spray:
-	// pull it out onto the floor so it reads as a puddle at the wall's foot.
-	if(spray_dir & EAST)
-		pixel_x -= 8
-	else if(spray_dir & WEST)
-		pixel_x += 8
 
 /// Wall pictures: 64x64 on the floor tile at -16,-16, drawn up onto the wall's near edge.
 /obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray
