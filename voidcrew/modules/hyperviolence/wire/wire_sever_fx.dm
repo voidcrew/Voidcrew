@@ -55,7 +55,7 @@
  * is taken back off at the end.
  */
 /proc/wire_limb_rest(list/centre, side, lying, mob/living/body, shift_x = 0, shift_y = 0)
-	var/list/target = lying ? list(centre[1] + side * 3, centre[2] - 1) : list(side * 10, -13)
+	var/list/target = lying ? list(centre[1] + side * 7, centre[2] - 2) : list(side * 10, -13)
 	return wire_part_pose(centre, lying ? side * 10 : side * 90, target, body, shift_x, shift_y)
 
 /**
@@ -253,7 +253,7 @@
 	tipping.Translate(-centre[1], -centre[2])
 	tipping.Turn(side * (lying ? 7 : 50))
 	if(lying)
-		tipping.Translate(centre[1] + side * 3, centre[2] - 1)
+		tipping.Translate(centre[1] + side * 5, centre[2] - 1)
 	else
 		tipping.Translate((centre[1] + side * 12) / 2, (centre[2] - 13) / 2)
 	animate(src, transform = slid, time = WIRE_SLIDE_TIME, easing = SINE_EASING | EASE_IN)
@@ -295,17 +295,36 @@
 
 /proc/wire_stump_smoke(mob/living/carbon/victim, zone)
 	var/obj/effect/abstract/cyberware_anim/wire_smoke/smoke = new(null)
-	smoke.layer = WIRE_FX_LAYER
-	var/particles/smoke/steam/mild/puff = new
-	var/side = wire_limb_side(zone, victim.dir)
-	var/arm = (zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM)
-	puff.position = zone == BODY_ZONE_HEAD ? list(0, 8, 0) : list(side * 6, arm ? 4 : -6, 0)
+	// On the body, over the stump, not over everything on the tile.
+	smoke.layer = WIRE_GHOST_LAYER
+	var/particles/smoke/steam/mild/wire_stump/puff = new
+	puff.position = wire_stump_joint(zone, victim.dir)
 	smoke.particles = puff
 	smoke.bearer = victim
 	smoke.RegisterSignal(victim, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))
 	victim.vis_contents += smoke
 	addtimer(CALLBACK(smoke, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim/wire_smoke, stop_smoking)), WIRE_ARC_SMOKE_TIME - 1 SECONDS)
 	QDEL_IN(smoke, WIRE_ARC_SMOKE_TIME)
+
+/// Where a limb in `zone` joins a body facing `facing` (the shoulder, the hip, the neck), in pixels from the middle
+/// of the tile, as the body draws it standing. list(x, y, 0)
+/proc/wire_stump_joint(zone, facing)
+	if(zone == BODY_ZONE_HEAD)
+		return list(0, 6, 0)
+	var/list/centre = wire_limb_centre(zone, facing)
+	var/arm = (zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM)
+	return list(centre[1], arm ? 4 : -6, 0)
+
+/// Thin wisps off a seared stump: small, rising slowly from the joint.
+/particles/smoke/steam/mild/wire_stump
+	scale = 0.4
+	grow = 0.02
+	spawning = 0.6
+	lifespan = 1.2 SECONDS
+	fade = 0.8 SECONDS
+	velocity = list(0, 0.2, 0)
+	gravity = list(0, 0.25)
+	drift = generator(GEN_SPHERE, 0, 0.6, NORMAL_RAND)
 
 // ---- Through two bodies ----
 
