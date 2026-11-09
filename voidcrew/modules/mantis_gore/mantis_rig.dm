@@ -47,14 +47,28 @@
 		// front; then they go in. The steel inside the target is cut out of the pieces.
 		if("impale_arrive_E")
 			spec = list(list("T", "far", "body", "near"), 2, 0, 0, 0, 0, 2)
+		// The stab goes in at the chest of the target as it stands; the blades rise with it as it is lifted
+		// ("lift1", "lift2"), so they go through the same place on the body from the stab to the hold.
 		if("impale_contact_E")
-			spec = list(list("far", "body", "T", "narm", "near"), 7, 0, -17, 0, 0, 2)
+			spec = list(list("far", "body", "T", "narm", "near"), 7, 0, -17, 0, 0, 1)
 		if("impale_enter_E")
-			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 0, 0, 2)
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 0, 0, 1)
+		if("impale_lift1_E")
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 2, 0, 2)
+		if("impale_lift2_E")
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 3, 0, 2)
 		if("impale_hold_E")
 			spec = list(list("far", "body", "T", "wound", "drip", "narm", "near"), 7, 0, -17, 4, 0, 2)
 		if("impale_pull_E")
 			spec = list(list("far", "body", "T", "wound", "narm", "near"), 4, 0, -19, 1, 0, 1)
+		// The pull-back in three steps: the bearer leans back, the arms draw back and the target slides off,
+		// 3 px of steel out a step. Only what has come out of the front shows.
+		if("impale_pull1_E")
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 6, 0, -16, 3, 0, 2)
+		if("impale_pull2_E")
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 5, 0, -15, 2, 0, 2)
+		if("impale_pull3_E")
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 4, 0, -14, 1, 0, 2)
 		if("impale_rip_E")
 			spec = list(list("far", "body", "T", "near"), 6, 0, -12, 2, 14, 1)
 		if("impale_drop_E")
@@ -92,6 +106,9 @@
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 3)
 		if("scissor_glint_E")
 			spec = list(list("T", "far", "body", "near", "glint"), 0, 0, 0, 0, 0, 3)
+		// Half way down from the raise to the close: the swing.
+		if("scissor_swing_E")
+			spec = list(list("T", "far", "body", "near"), 5, 0, 0, 0, 0, 2)
 		if("scissor_close_E", "scissor_cut_E")
 			spec = list(list("fblade", "T", "farm", "body", "near"), 10, 0, 0, 0, 0, 1)
 		if("scissor_recover_E")
@@ -106,6 +123,8 @@
 			spec = list(list("T", "body", "arms"), 0, 0, 0, 0, 0, 0)
 		if("scissor_glint_S")
 			spec = list(list("T", "body", "arms", "glint"), 0, 0, 0, 0, 0, 0)
+		if("scissor_swing_S")
+			spec = list(list("T", "body", "arms"), 0, -8, 0, 0, 0, 0)
 		if("scissor_close_S", "scissor_cut_S")
 			spec = list(list("T", "body", "arms"), 0, -16, 0, 0, 0, 0)
 	if(isnull(spec))
@@ -187,6 +206,8 @@
 	/// The blood on the blades drawn now: null, "blood" or "soak" (the held art's coats), and its colour
 	var/coat
 	var/coat_color
+	/// TRUE while the pictures fade out and the real bearer fades back in (hand_back())
+	var/handing_back = FALSE
 
 /datum/mantis_rig/New(mob/living/carbon/bearer, mob/living/victim, facing, model, move)
 	. = ..()
@@ -196,6 +217,8 @@
 	src.model = model
 	src.move = move
 	RegisterSignal(bearer, COMSIG_QDELETING, PROC_REF(on_bearer_deleted))
+	// A kill while the rig draws the blades only stains them: the rig draws the blood it leaves (mantis_kill_credit()).
+	bearer.get_mantis_state().rig = src
 	if(victim)
 		RegisterSignal(victim, COMSIG_QDELETING, PROC_REF(on_victim_deleted))
 		if(victim.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER)
@@ -209,6 +232,8 @@
 	puppets = null
 	if(bearer)
 		UnregisterSignal(bearer, COMSIG_QDELETING)
+		if(bearer.mantis_state?.rig == src)
+			bearer.mantis_state.rig = null
 		for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
 			blade.show_inhand()
 	if(victim)
@@ -260,10 +285,20 @@
 	body.dir = facing
 	body.layer = body_layer
 	body.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	body.pixel_x = bearer.pixel_x
+	body.pixel_x = own_x()
 	body.pixel_y = body_row
 	body.pixel_w = base_w + lean_w + body.shift_w
 	body.pixel_z = base_z + lean_z + body.shift_z
+
+/**
+ * The bearer's pixel_x and pixel_y under the rig's own lean: without a #509 finisher's lean (pose_user()), which
+ * the rig draws itself. pixel_y is also the row the pictures sort on.
+ */
+/datum/mantis_rig/proc/own_x()
+	return bearer.pixel_x - bearer.has_offset(HV_FINISHER_OFFSET, PIXEL_X_OFFSET)
+
+/datum/mantis_rig/proc/own_y()
+	return bearer.pixel_y - bearer.has_offset(HV_FINISHER_OFFSET, PIXEL_Y_OFFSET)
 
 /// The fists ride [new_raise] pixels high in the body picture (mantis_stance_raise()).
 /datum/mantis_rig/proc/set_raise(new_raise)
@@ -283,8 +318,8 @@
 		return picture
 	picture = new(get_turf(bearer))
 	picture.name = bearer.name
-	picture.pixel_x = bearer.pixel_x
-	picture.pixel_y = bearer.pixel_y
+	picture.pixel_x = own_x()
+	picture.pixel_y = own_y()
 	// Centred with pixel_w and pixel_z only: pixel_y picks the row it sorts on (set_row()).
 	if(key != "body")
 		picture.icon = MANTIS_GORE_REACH_ICON
@@ -302,7 +337,7 @@
  * the right side of the victim stays on the bearer's row, under or over everything else there as before.
  */
 /datum/mantis_rig/proc/sort_y(behind)
-	var/own = bearer.pixel_y
+	var/own = own_y()
 	if(!victim || QDELETED(victim) || victim.z != bearer.z || !isturf(victim.loc))
 		return own
 	var/theirs = (victim.y - bearer.y) * ICON_SIZE_Y + victim.pixel_y
@@ -322,8 +357,10 @@
 /**
  * Draws [new_beat]: each piece of its stack is swapped in at its layer next to the victim's, pieces it
  * doesn't use go, and the whole bearer leans to the beat's lean, plus [extra_w] and [extra_z], over [time].
+ * With [from_w] or [from_z] every picture starts that far off and glides into place over [time] instead, the
+ * way the lunging body glides in (mantis_lunge_dash_fx()): one animation, so the client sees the start.
  */
-/datum/mantis_rig/proc/show(new_beat, extra_w = 0, extra_z = 0, time = 0.1 SECONDS)
+/datum/mantis_rig/proc/show(new_beat, extra_w = 0, extra_z = 0, time = 0.1 SECONDS, from_w = 0, from_z = 0, easing = SINE_EASING)
 	if(QDELETED(bearer))
 		return
 	var/list/spec = mantis_rig_beat(move, new_beat, facing)
@@ -364,7 +401,16 @@
 	lean_z = spec[MANTIS_RIG_BEARER_Z] + extra_z
 	for(var/key in puppets)
 		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
-		animate(picture, pixel_w = base_w + lean_w + picture.shift_w, pixel_z = base_z + lean_z + picture.shift_z, time = time, easing = SINE_EASING)
+		var/to_w = base_w + lean_w + picture.shift_w
+		var/to_z = base_z + lean_z + picture.shift_z
+		if(from_w || from_z)
+			picture.pixel_w = to_w + from_w
+			picture.pixel_z = to_z + from_z
+		if(!time)
+			picture.pixel_w = to_w
+			picture.pixel_z = to_z
+			continue
+		animate(picture, pixel_w = to_w, pixel_z = to_z, time = time, easing = easing)
 
 /**
  * Blood on the blades as the held blades have it now: the heavier coat while one is drenched, the light one
@@ -427,27 +473,31 @@
 	var/beside_layer = beside ? beside.layer : victim_layer
 	spray.layer = beside_layer + (under ? -0.5 : 0.5) * MANTIS_RIG_LAYER_STEP
 	// On the row of what it sorts against, centred with pixel_w and pixel_z (set_row()).
-	spray.pixel_x = bearer.pixel_x
+	spray.pixel_x = own_x()
 	spray.pixel_y = beside ? beside.pixel_y : sort_y(under)
 	spray.pixel_w = base_w + lean_w - ICON_SIZE_X
-	spray.pixel_z = base_z + lean_z - ICON_SIZE_Y + bearer.pixel_y - spray.pixel_y
+	spray.pixel_z = base_z + lean_z - ICON_SIZE_Y + own_y() - spray.pixel_y
 	QDEL_IN(spray, lifetime)
 	return spray
 
 /**
- * Every picture drawn now starts [back_w], [back_z] pixels off and glides into place over [time], the way the
- * lunging body glides in (mantis_lunge_dash_fx()).
+ * The move is over: the pictures fade out over [time] while the real bearer, held blades and all, fades back in
+ * where they stand, so a pose that differs from the held art eases over instead of jumping. Then the rig goes.
  */
-/datum/mantis_rig/proc/glide_from(back_w, back_z, time)
-	if(!time || (!back_w && !back_z))
+/datum/mantis_rig/proc/hand_back(time = MANTIS_RIG_HANDBACK)
+	if(handing_back || QDELETED(src))
 		return
+	handing_back = TRUE
+	if(QDELETED(bearer) || !time)
+		qdel(src)
+		return
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
+		blade.show_inhand()
+	if(hidden && bearer.get_filter(MANTIS_RIG_HIDE_FILTER))
+		bearer.transition_filter(MANTIS_RIG_HIDE_FILTER, list("color" = list(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0)), time)
 	for(var/key in puppets)
-		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
-		var/to_w = picture.pixel_w
-		var/to_z = picture.pixel_z
-		picture.pixel_w += back_w
-		picture.pixel_z += back_z
-		animate(picture, pixel_w = to_w, pixel_z = to_z, time = time, easing = SINE_EASING|EASE_OUT)
+		animate(puppets[key], alpha = 0, time = time, flags = ANIMATION_PARALLEL)
+	QDEL_IN(src, time)
 
 /// Hides the real bearer. Its whole tile still takes clicks.
 /datum/mantis_rig/proc/conceal()

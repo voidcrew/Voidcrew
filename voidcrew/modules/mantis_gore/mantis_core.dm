@@ -44,10 +44,13 @@
 	var/next_charge = 0
 	/// The scissor running now, if any
 	var/datum/hv_finisher/mantis_scissor/scissor
+	/// The blade rig drawing this bearer now, if any (mantis_rig.dm)
+	var/datum/mantis_rig/rig
 
 /datum/mantis_bearer/Destroy()
 	xslash_target = null
 	scissor = null
+	rig = null
 	return ..()
 
 /mob/living
@@ -177,12 +180,15 @@
 		return
 	mantis_kill_credit(bearer, owner)
 
-/// [bearer] killed [victim]: the blades are drenched, and the lunge may come back early.
+/// [bearer] killed [victim]: the blades are drenched, and the lunge may come back early. A kill in the impale
+/// or the scissor only stains them: the blade rig draws the blood they leave on the steel, and the held art
+/// keeps that coat after.
 /proc/mantis_kill_credit(mob/living/bearer, mob/living/victim)
 	if(QDELETED(bearer) || bearer.stat == DEAD)
 		return FALSE
+	var/light = !isnull(bearer.mantis_state?.rig)
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
-		blade.drench(victim)
+		blade.drench(victim, light)
 	return mantis_try_kill_reset(bearer, victim)
 
 /// Whether killing [victim] can reset a lunge at all: a person (not a monkey), or something big.

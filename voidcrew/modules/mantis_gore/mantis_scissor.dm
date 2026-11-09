@@ -28,15 +28,17 @@
 	state.next_scissor = world.time + MANTIS_SCISSOR_COOLDOWN
 	return TRUE
 
-/// The scissor ended, however it ended: the blades go back to the guard.
+/// The scissor ended, however it ended: the blades go back to the guard, and the rig fades into the real bearer.
 /proc/mantis_scissor_ended(datum/hv_finisher/mantis_scissor/scissor, result)
 	var/mob/living/bearer = scissor.user
-	QDEL_NULL(scissor.rig)
+	var/datum/mantis_rig/rig = scissor.rig
+	scissor.rig = null
 	if(!QDELETED(bearer))
 		if(bearer.mantis_state?.scissor == scissor)
 			bearer.mantis_state.scissor = null
 		for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
 			blade.set_mantis_pose(MANTIS_POSE_GUARD)
+	rig?.hand_back()
 	qdel(scissor)
 
 /datum/hv_finisher/mantis_scissor
@@ -60,9 +62,9 @@
 	QDEL_NULL(rig)
 	return ..()
 
-/// Draws [beat] of the scissor, if the bearer is drawn by the rig.
-/datum/hv_finisher/mantis_scissor/proc/show_beat(beat)
-	rig?.show(beat)
+/// Draws [beat] of the scissor, if the bearer is drawn by the rig, leaning into it over [time].
+/datum/hv_finisher/mantis_scissor/proc/show_beat(beat, time = 0.1 SECONDS)
+	rig?.show(beat, time = time)
 
 // Drawn, not real blows: a bearer with two blades fused to the arms makes no aggressive grab, and the
 // head comes off by the finisher's own hand. That also roots them and makes them take more damage.
@@ -186,35 +188,68 @@
 // ---- The cut ---------------------------------------------------------------
 
 /datum/hv_finisher_stage/kill/decapitate/mantis
-	duration = 0.4 SECONDS
-	effect_delay = 0.1 SECONDS
-	lunge = MANTIS_SCISSOR_LEAN
+	duration = 0.6 SECONDS
+	// The swing shuts the blades itself, on its own clock (strike()); this only catches a swing that never got there.
+	effect_delay = 0.4 SECONDS
+	// The blade rig draws the bearer's lean; without it, enter() leans the real bearer.
+	lunge = 0
 	effect_sound = 'sound/items/weapons/bladeslice.ogg'
 	spray_strength = 4
+	/// The swing's next frame and the blades shutting, to come.
+	var/close_timer
+	var/strike_timer
 	/// The bearer straightening up out of the cut, to come.
 	var/recover_timer
 
 /datum/hv_finisher_stage/kill/decapitate/mantis/Destroy()
-	if(recover_timer)
-		deltimer(recover_timer)
-		recover_timer = null
+	stop_timers()
 	return ..()
 
+/datum/hv_finisher_stage/kill/decapitate/mantis/proc/stop_timers()
+	for(var/timer in list(close_timer, strike_timer, recover_timer))
+		if(timer)
+			deltimer(timer)
+	close_timer = null
+	strike_timer = null
+	recover_timer = null
+
 /**
- * The blades come down out of the raise and close on the neck: the far one passes under it, the near one
- * over it (the blade rig draws both). The bearer leans in, further if the head lies on the far side.
+ * The swing: the blades come down out of the raise, close on the neck (the far one passes under it, the near
+ * one over it; the blade rig draws both) and shut through it, a frame apart, and the head comes off as they
+ * shut. The bearer leans in as they come down.
  */
 /datum/hv_finisher_stage/kill/decapitate/mantis/enter()
 	. = ..()
 	var/datum/hv_finisher/mantis_scissor/scissor = host
 	scissor.pose_blades(MANTIS_POSE_GUARD)
-	var/posture = mantis_scissor_posture(host.victim)
-	var/toward = get_dir(host.user, host.victim)
-	// The head lies on the far side of the body: the bearer leans right over them to reach it.
-	if((posture == "lie90" && (toward & EAST)) || (posture == "lie270" && (toward & WEST)))
-		host.pose_user(MANTIS_SCISSOR_FAR_LEAN, rise)
-	scissor.show_beat("close")
-	recover_timer = addtimer(CALLBACK(src, PROC_REF(recover)), MANTIS_SCISSOR_RECOVER_BEAT, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	if(!scissor.rig)
+		// Drawn as the bearer: a lean, further if the head lies on the far side of the body.
+		var/posture = mantis_scissor_posture(host.victim)
+		var/toward = get_dir(host.user, host.victim)
+		var/far = (posture == "lie90" && (toward & EAST)) || (posture == "lie270" && (toward & WEST))
+		host.pose_user(far ? MANTIS_SCISSOR_FAR_LEAN : MANTIS_SCISSOR_LEAN, rise)
+	scissor.show_beat("swing", MANTIS_SCISSOR_SWING_STEP)
+	close_timer = addtimer(CALLBACK(src, PROC_REF(close)), MANTIS_SCISSOR_SWING_STEP, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	strike_timer = addtimer(CALLBACK(src, PROC_REF(strike)), 1.5 * MANTIS_SCISSOR_SWING_STEP, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
+/// The blades meet at the neck.
+/datum/hv_finisher_stage/kill/decapitate/mantis/proc/close()
+	close_timer = null
+	if(!host?.running)
+		return
+	var/datum/hv_finisher/mantis_scissor/scissor = host
+	scissor.show_beat("close", MANTIS_SCISSOR_SWING_STEP)
+
+/// The blades shut through the neck: the stage's beat (effect()), checked the way #509's tick checks it.
+/datum/hv_finisher_stage/kill/decapitate/mantis/proc/strike()
+	strike_timer = null
+	if(!host?.running || host.current_stage != src || effect_done)
+		return
+	var/reason = host.safety_check()
+	if(reason)
+		host.end_early(reason)
+		return
+	host.fire_effect()
 
 /// The blades are through: the bearer straightens back to the guard.
 /datum/hv_finisher_stage/kill/decapitate/mantis/proc/recover()
@@ -222,13 +257,11 @@
 	if(!host?.running)
 		return
 	var/datum/hv_finisher/mantis_scissor/scissor = host
-	scissor.show_beat("recover")
+	scissor.show_beat("recover", MANTIS_SCISSOR_STRAIGHTEN)
 
 /datum/hv_finisher_stage/kill/decapitate/mantis/on_stop()
 	. = ..()
-	if(recover_timer)
-		deltimer(recover_timer)
-		recover_timer = null
+	stop_timers()
 
 /**
  * The blades come together at the neck: one line for the cut, a huge one if the head comes off. An
@@ -238,7 +271,10 @@
 	var/mob/living/carbon/victim = host.victim
 	var/mob/living/bearer = host.user
 	var/datum/hv_finisher/mantis_scissor/scissor = host
-	scissor.show_beat("cut")
+	scissor.show_beat("cut", MANTIS_SCISSOR_SWING_STEP)
+	// The cut holds, then the bearer straightens.
+	if(!recover_timer)
+		recover_timer = addtimer(CALLBACK(src, PROC_REF(recover)), MANTIS_SCISSOR_RECOVER_BEAT, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	if(effect_sound)
 		playsound(victim, effect_sound, effect_volume, TRUE)
 	var/spray_dir = away_dir()

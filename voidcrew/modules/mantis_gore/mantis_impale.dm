@@ -130,8 +130,7 @@
 	mantis_pose_blades(housings, MANTIS_POSE_LUNGE)
 	put_up_rig()
 	if(rig)
-		show_beat("arrive")
-		rig.glide_from(glide_w, glide_z, glide_time)
+		show_beat("arrive", glide_time, glide_w, glide_z)
 	rig_timer = addtimer(CALLBACK(src, PROC_REF(begin_rig)), max(glide_time, world.tick_lag), TIMER_STOPPABLE|TIMER_DELETE_ME)
 	// The lunge's own slash, drawn as it landed, would float over the blades.
 	for(var/obj/effect/abstract/cyberware_anim/picture in victim.vis_contents)
@@ -168,7 +167,8 @@
 	if(!running || ripping)
 		return
 	put_up_rig()
-	show_beat("contact")
+	// Drawn onto the points in a frame, so the short blades are never seen apart from them.
+	show_beat("contact", MANTIS_IMPALE_STEP)
 	addtimer(CALLBACK(src, PROC_REF(stab)), MANTIS_IMPALE_CONTACT_BEAT, TIMER_DELETE_ME)
 
 /// The blades go in: the points come out of the back wet, with a burst of blood and a crackle of their light.
@@ -188,14 +188,27 @@
 		else
 			rig?.burst("enter_puff", 0.25 SECONDS, "T")
 			rig?.burst("enter_spark", 0.2 SECONDS, "near", blood = FALSE)
-	addtimer(CALLBACK(src, PROC_REF(hang)), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(lift), 1), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
+
+/**
+ * The hoist from the stab to the hold, a frame at a time in the side views: the victim and the blades in them
+ * rise together, so the steel stays where it went in. Seen from the front or back it is one step.
+ */
+/datum/mantis_impale/proc/lift(step)
+	if(!running || ripping)
+		return
+	if(!mantis_rig_beat("impale", "lift[step]", facing))
+		hang()
+		return
+	show_beat("lift[step]", 0)
+	addtimer(CALLBACK(src, PROC_REF(lift), step + 1), MANTIS_IMPALE_STEP, TIMER_DELETE_ME)
 
 /**
  * Held up: the victim is drawn up onto the blades, then hangs there, sagging and jerking on them until the
  * pull-back. The sag is relative and ends where it began.
  */
 /datum/mantis_impale/proc/hang()
-	show_beat("hold")
+	show_beat("hold", rig && mantis_rig_beat("impale", "lift1", facing) ? 0 : 0.1 SECONDS)
 	if(!running || ripping || QDELETED(victim))
 		return
 	animate(victim, time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_PARALLEL)
@@ -209,8 +222,8 @@
  * Up against a wall the victim stays where they are and the bearer comes the whole way; from a diagonal the
  * two meet halfway up or down the screen. Pictures only.
  */
-/datum/mantis_impale/proc/show_beat(new_beat)
-	if(!running || (ripping && new_beat == "hold"))
+/datum/mantis_impale/proc/show_beat(new_beat, time = 0.1 SECONDS, from_w = 0, from_z = 0)
+	if(!running || (ripping && (new_beat == "hold" || findtext(new_beat, "lift") == 1)))
 		return
 	var/list/spec = mantis_rig_beat("impale", new_beat, facing)
 	if(!spec)
@@ -229,12 +242,12 @@
 		extra_z -= target_z
 		target_w = 0
 		target_z = 0
-	rig?.show(new_beat, extra_w, extra_z)
-	place_victim(target_w, target_z)
+	rig?.show(new_beat, extra_w, extra_z, time, from_w, from_z)
+	place_victim(target_w, target_z, time)
 	set_tilt(spec[MANTIS_RIG_TILT])
 
-/// Draws the victim [w], [z] pixels off their tile (and upright, if brought up off the floor).
-/datum/mantis_impale/proc/place_victim(w, z)
+/// Draws the victim [w], [z] pixels off their tile (and upright, if brought up off the floor), over [time].
+/datum/mantis_impale/proc/place_victim(w, z, time = 0.1 SECONDS)
 	// Brought upright off the floor: tg draws someone lying down a little low.
 	var/upright = hoist_angle ? -PIXEL_Y_OFFSET_LYING : 0
 	// Drawn onto the blades as fast as the rig leans in (tg's own glide takes twice as long), so the points
@@ -244,20 +257,73 @@
 	victim.add_offsets(MANTIS_IMPALE_TRAIT, w_add = w, z_add = z + upright, animate = FALSE)
 	var/to_w = victim.pixel_w
 	var/to_z = victim.pixel_z
-	if(to_w == from_w && to_z == from_z)
+	if((to_w == from_w && to_z == from_z) || !time)
 		return
 	victim.pixel_w = from_w
 	victim.pixel_z = from_z
-	animate(victim, pixel_w = to_w, pixel_z = to_z, time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	animate(victim, pixel_w = to_w, pixel_z = to_z, time = time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /// The matrix tipping a body [angle] degrees about its feet (clockwise), after [base].
 /proc/mantis_tip_matrix(matrix/base, angle)
 	var/matrix/turned = matrix(base)
-	var/feet = ICON_SIZE_Y / 2 - 4
-	turned.Translate(0, feet)
+	turned.Translate(0, MANTIS_TIP_FEET)
 	turned.Turn(angle)
-	turned.Translate(0, -feet)
+	turned.Translate(0, -MANTIS_TIP_FEET)
 	return turned
+
+/// Where the point [x], [y] (pixels from a sprite's middle, y up) is drawn once the sprite is turned [angle]
+/// degrees clockwise about [about_x], [about_y].
+/proc/mantis_turn_point(x, y, angle, about_x, about_y)
+	var/dx = x - about_x
+	var/dy = y - about_y
+	return list(about_x + dx * cos(angle) + dy * sin(angle), about_y - dx * sin(angle) + dy * cos(angle))
+
+/**
+ * [body] falls in one motion from how it was drawn on the blades (offsets [from_w], [from_z], [from_y], upright
+ * and tipped back [from_angle] degrees about its feet) to how tg has it now, lying or standing, turning about
+ * the point [pivot] pixels under its middle (its feet for a fall backwards, 0 for a drop in place). It is the
+ * real body the whole way and ends on tg's own turn and offsets, so nothing takes over at the end. Gravity:
+ * slow off the blades, fast at the floor. A picture only: tg's lying state is set before this.
+ */
+/proc/mantis_drop_body(mob/living/body, from_w, from_z, from_y, from_angle, pivot, time)
+	if(QDELETED(body))
+		return
+	var/matrix/to_transform = matrix(body.transform)
+	var/to_w = body.pixel_w
+	var/to_z = body.pixel_z
+	var/to_y = body.pixel_y
+	var/to_angle = (body.body_position == LYING_DOWN && body.rotate_on_lying) ? body.lying_angle : 0
+	if(to_angle > 180)
+		to_angle -= 360
+	// The turning point at the start (the picture tipped about the feet) and at the end (tg turns about the middle).
+	var/list/start = mantis_turn_point(0, -pivot, from_angle, 0, -MANTIS_TIP_FEET)
+	var/start_x = start[1] + from_w
+	var/start_y = start[2] + from_z + from_y
+	var/list/end = mantis_turn_point(0, -pivot, to_angle, 0, 0)
+	var/end_x = end[1] + to_w
+	var/end_y = end[2] + to_z + to_y
+	var/steps = 4
+	for(var/step in 0 to steps)
+		var/fallen = (step / steps) ** 2
+		var/matrix/turned = to_transform
+		var/step_w = to_w
+		var/step_z = to_z
+		if(step < steps)
+			turned = matrix()
+			turned.Translate(0, pivot)
+			turned.Turn(from_angle + (to_angle - from_angle) * fallen)
+			turned.Translate(0, -pivot)
+			step_w = round(start_x + (end_x - start_x) * fallen, 1)
+			step_z = round(start_y + (end_y - start_y) * fallen + pivot - to_y, 1)
+		if(step == 0)
+			body.transform = turned
+			body.pixel_w = step_w
+			body.pixel_z = step_z
+			continue
+		if(step == 1)
+			animate(body, transform = turned, pixel_w = step_w, pixel_z = step_z, time = time / steps)
+		else
+			animate(transform = turned, pixel_w = step_w, pixel_z = step_z, time = time / steps)
 
 /// Tips the victim back to [angle] degrees about their feet.
 /datum/mantis_impale/proc/set_tilt(angle)
@@ -361,6 +427,13 @@
 	if(tick_timer)
 		deltimer(tick_timer)
 		tick_timer = null
+	// The side views draw the pull-back in steps, the steel coming out a little at a time.
+	if(rig && mantis_rig_beat("impale", "pull1", facing))
+		for(var/step in 1 to 3)
+			addtimer(CALLBACK(src, PROC_REF(show_beat), "pull[step]", 0), (step - 1) * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(show_rip)), 3 * MANTIS_IMPALE_PULL_STEP, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(tear_out), half), 3 * MANTIS_IMPALE_PULL_STEP + MANTIS_IMPALE_PULL_BEAT - MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
+		return
 	show_beat("pull")
 	addtimer(CALLBACK(src, PROC_REF(show_rip)), MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(tear_out), half), MANTIS_IMPALE_PULL_BEAT, TIMER_DELETE_ME)
@@ -386,7 +459,16 @@
 	// The rig stays up for the drop; finish() would take it down.
 	var/datum/mantis_rig/dropping = rig
 	rig = null
-	finish()
+	// They fall from where they are drawn now: tipped back about their feet, up on the blades.
+	var/fall_w = held?.pixel_w
+	var/fall_z = held?.pixel_z
+	var/fall_y = held?.pixel_y
+	var/fall_tilt = tilt_angle
+	// Only a body drawn upright on the blades (brought up off the floor, or standing) at its usual size.
+	var/can_fall = held && held.current_size == RESIZE_DEFAULT_SIZE && (hoist_angle || held.body_position != LYING_DOWN || !held.rotate_on_lying || !held.lying_angle)
+	var/side = facing & (EAST|WEST)
+	var/face = held?.dir
+	finish(settle = !can_fall)
 	if(!QDELETED(held) && held.stat != DEAD)
 		mantis_note_hit(held, holder)
 		if(half)
@@ -420,10 +502,18 @@
 			if(half && !QDELETED(holder))
 				holder.set_staggered_if_lower(1.5 SECONDS)
 			log_combat(holder, held, half ? "lost the grip on" : "ripped the mantis blades out of")
-	// The drop, drawn once they are down (their layer is the floor's now).
+	// The fall: one motion from the blades to the floor, ending where tg lays them. Seen from the side they
+	// were tipped back, so they land on their back, head away from the bearer, still facing them.
+	if(can_fall && !QDELETED(held))
+		if(side && held.body_position == LYING_DOWN && held.rotate_on_lying)
+			held.set_lying_angle(side == EAST ? LYING_ANGLE_EAST : LYING_ANGLE_WEST)
+		if(face)
+			held.setDir(face)
+		mantis_drop_body(held, fall_w, fall_z, fall_y, fall_tilt, side ? MANTIS_TIP_FEET : 0, MANTIS_IMPALE_DROP_BEAT)
+	// The drop, drawn once they are down (their layer is the floor's now), then the real bearer fades back in.
 	if(dropping && !QDELETED(dropping))
 		dropping.show("drop", time = MANTIS_IMPALE_DROP_BEAT)
-		QDEL_IN(dropping, MANTIS_IMPALE_DROP_BEAT)
+		addtimer(CALLBACK(dropping, TYPE_PROC_REF(/datum/mantis_rig, hand_back)), MANTIS_IMPALE_DROP_BEAT, TIMER_DELETE_ME)
 
 /// The bearer is hit while holding them up. Enough of it and they lose the grip.
 /datum/mantis_impale/proc/on_bearer_damaged(datum/source, damage_dealt, damagetype)
@@ -443,8 +533,11 @@
 	if(!holds())
 		finish()
 
-/// Lets go of both, puts everything back, and ends.
-/datum/mantis_impale/proc/finish()
+/**
+ * Lets go of both, puts everything back, and ends. Without [settle] the victim's picture is put back at once
+ * for the drop to draw the fall from (tear_out()); with it they ease back the way tg would.
+ */
+/datum/mantis_impale/proc/finish(settle = TRUE)
 	if(!running)
 		return
 	running = FALSE
@@ -464,12 +557,12 @@
 	if(victim)
 		UnregisterSignal(victim, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_POST_UPDATE_TRANSFORM))
 		REMOVE_TRAIT(victim, TRAIT_IMMOBILIZED, MANTIS_IMPALE_TRAIT)
-		victim.remove_offsets(MANTIS_IMPALE_TRAIT)
+		victim.remove_offsets(MANTIS_IMPALE_TRAIT, animate = settle)
 		if(!QDELETED(victim))
 			untilt()
-			unhoist(fall = TRUE)
+			unhoist(fall = settle)
 			// Still on the floor: back to the way tg laid them.
-			if(victim.body_position == LYING_DOWN && prior_dir)
+			if(settle && victim.body_position == LYING_DOWN && prior_dir)
 				victim.setDir(prior_dir)
 	if(housings)
 		mantis_pose_blades(housings, MANTIS_POSE_GUARD)
