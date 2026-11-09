@@ -173,7 +173,7 @@
 	victim.spray_blood(EAST, 3)
 	TEST_ASSERT(splatter(victim) > before, "spray_blood() is dead outside a clean cut")
 
-/// With a wire out in each hand every third landed hit crosses: an X of light, and a sever at half the damage.
+/// With a wire out in each hand every third landed hit crosses: both wires lash out, and a sever at half the damage.
 /datum/unit_test/voidcrew_widowline/crossing
 
 /datum/unit_test/voidcrew_widowline/crossing/Run()
@@ -199,18 +199,13 @@
 	cut(user, victim, BODY_ZONE_CHEST)
 	var/obj/item/melee/cyberware_monowire/wire = held(user)
 	TEST_ASSERT(wire.wire_cross_due(user), "The third hit with two wires out isn't the crossing one")
-	// The crossing swing shows its X instead of the single wire's impact.
-	wire.crossing = TRUE
-	wire.animate_attack(user, victim)
-	wire.crossing = FALSE
-	var/found = FALSE
-	for(var/obj/effect/abstract/cyberware_anim/look in victim.vis_contents)
-		if(look.icon_state == "impact_widowline_cross")
-			found = TRUE
-		TEST_ASSERT_NOTEQUAL(look.icon_state, "impact_widowline", "The crossing swing drew the single wire's impact")
-	TEST_ASSERT(found, "The crossing swing drew no X")
+	for(var/obj/effect/abstract/wire_reach/old_lash in get_turf(user))
+		qdel(old_lash)
 	cut(user, victim, BODY_ZONE_L_ARM)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The crossing cut didn't take an arm at 30%")
+	// The other hand's wire lashes out too; nothing is drawn over the target.
+	TEST_ASSERT(locate(/obj/effect/abstract/wire_reach) in get_turf(user), "The crossing cut didn't lash the other wire")
+	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in victim.vis_contents), "The crossing cut drew over its target")
 	TEST_ASSERT_EQUAL(user.wire_cross_hits, 0, "The count didn't start again after the crossing cut")
 
 	// Hits too far apart start the count again.
@@ -220,15 +215,14 @@
 	TEST_ASSERT(!wire.wire_cross_due(user), "Hits seconds apart still cross")
 
 	// The entry point with no mouse behind it: a crossing swing on demand, the target doll left as it was.
-	for(var/obj/effect/abstract/cyberware_anim/look in victim.vis_contents)
-		qdel(look)
+	for(var/obj/effect/abstract/wire_reach/old_lash in get_turf(user))
+		qdel(old_lash)
 	user.zone_selected = BODY_ZONE_HEAD
 	TEST_ASSERT(wire.wire_crossing_swing(user, victim, BODY_ZONE_CHEST), "wire_crossing_swing() didn't swing")
-	found = FALSE
-	for(var/obj/effect/abstract/cyberware_anim/look in victim.vis_contents)
-		if(look.icon_state == "impact_widowline_cross")
-			found = TRUE
-	TEST_ASSERT(found, "wire_crossing_swing() didn't cross")
+	var/lashes = 0
+	for(var/obj/effect/abstract/wire_reach/lash in get_turf(user))
+		lashes++
+	TEST_ASSERT(lashes >= 2, "wire_crossing_swing() didn't cross: [lashes] lash(es)")
 	TEST_ASSERT_EQUAL(user.zone_selected, BODY_ZONE_HEAD, "An aimed swing left the wielder's target doll changed")
 	TEST_ASSERT(!wire.force_cross, "A crossing swing left the next one crossing too")
 

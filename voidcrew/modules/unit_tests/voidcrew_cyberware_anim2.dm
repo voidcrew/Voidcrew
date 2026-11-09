@@ -306,18 +306,12 @@
 	TEST_ASSERT(!length(impact.overlays), "The Shiv's steel impact glows")
 	qdel(impact)
 
-	var/obj/item/melee/cyberware_monowire/wire = allocate(/obj/item/melee/cyberware_monowire)
-	wire.animate_attack(west, east)
-	impact = locate() in east.vis_contents
-	TEST_ASSERT(impact && impact.icon_state == "impact_widowline", "A Widowline hit drew the wrong impact")
-	qdel(impact)
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "The impact stayed on its target")
-
-	// The Arc's lash, crackle and burst are its picture: nothing goes on top, not even tg's flying spool.
-	wire = allocate(/obj/item/melee/cyberware_monowire/live)
-	wire.animate_attack(west, east)
-	TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "A Widowline Arc hit drew an impact over its shock")
-	TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "A Widowline Arc hit drew tg's flying spool")
+	// The wire's lash from the hand is its picture: nothing goes over the target, not even tg's flying spool.
+	for(var/wire_type in list(/obj/item/melee/cyberware_monowire, /obj/item/melee/cyberware_monowire/live))
+		var/obj/item/melee/cyberware_monowire/wire = allocate(wire_type)
+		wire.animate_attack(west, east)
+		TEST_ASSERT(!(locate(/obj/effect/abstract/cyberware_anim) in east.vis_contents), "[wire_type] drew an impact over its target")
+		TEST_ASSERT(!(locate(/atom/movable/flick_visual) in east.vis_contents), "[wire_type] drew tg's flying spool")
 
 	// Its shock is a crackle along the wire, never a lightning bolt from the wielder.
 	var/obj/item/melee/cyberware_monowire/live/arc = wire

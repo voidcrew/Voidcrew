@@ -2,10 +2,8 @@
 // The folder sorts after cyberware/ and every other hyperviolence part on purpose: it overrides procs both
 // declare, and an override included before its declaration is silently dead.
 
-/// Clean cuts, seams, the through-cut and blood beams, the crossing X, the garrote loop and taut wire.
+/// Clean cuts, seams, the through-cut and blood beams, the garrote loop and taut wire.
 #define WIRE_GORE_ICON 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi'
-/// The chrome weapons' hit flashes (cyberware/cyberware_anim.dm), for the wire's drawn behind a body.
-#define WIRE_IMPACT_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim.dmi'
 /// The wire swinging out of its spool and reeling back in, with blood-flick twins.
 #define WIRE_HELD_ANIM_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_monowire.dmi'
 
