@@ -10,12 +10,14 @@
  * Bodies fly flat, without spinning, and skid. Along the way the body leaves a scuff and a little dust
  * on each tile, or a ragged smear of blood drops if it bleeds, on at most GORILLA_TRAIL_MAX tiles.
  *
- * Any hard throw into a wall (a Gorilla's or anyone else's) leaves a mark chosen by the injury the body
- * carries when it hits (owner D38): no broken skin dents the wall and knocks chips off it; a bleeding
- * cut or a compound fracture splashes a half-moon on the floor and smears the wall's edge; heavy
- * bleeding or a torn artery sprays up the wall and runs. The body drops at the foot of the wall with
- * tg's knockdown. A haymaker always dents the wall as well, and adds its own damage and a cracked
- * chest.
+ * A Gorilla throw that meets a wall hurts through tg's damage and wound rolls (owner D48): a blunt hit
+ * on the part that meets it and split skin on the wall's edge, harder for a haymaker than a hurl, and
+ * likelier to wound a part that is already beaten. It replaces tg's own random-limb wall crash for that
+ * throw. A shove only dents the wall. Any hard throw into a wall (a Gorilla's or anyone else's) then
+ * leaves a mark chosen by the injuries the body carries after the hit (owner D38): no broken skin dents
+ * the wall and knocks chips off it; a bleeding cut or a compound fracture splashes a half-moon on the
+ * floor and smears the wall's edge; heavy bleeding or a torn artery sprays up the wall and runs. The
+ * body drops at the foot of the wall with tg's knockdown, no slide (D44). A haymaker always dents too.
  */
 
 /mob/living
@@ -28,8 +30,10 @@
 	var/mob/living/victim
 	/// Who threw it
 	var/mob/living/thrower
-	/// TRUE for a haymaker: extra damage, a cracked chest and a dent on a wall
+	/// TRUE for a haymaker: it always dents a wall
 	var/haymaker = FALSE
+	/// GORILLA_IMPACT_*: how hard it meets a wall
+	var/impact = GORILLA_IMPACT_HURL
 	/// Decals left so far
 	var/trail_left = 0
 	/// The punch that launched it broke the skin: the trail is blood even if nothing bled before
@@ -37,12 +41,13 @@
 	/// Safety timer that ends the flight if the landing signal never comes
 	var/expiry_timer
 
-/datum/gorilla_flight/New(mob/living/victim, mob/living/thrower, haymaker = FALSE, wounded = FALSE)
+/datum/gorilla_flight/New(mob/living/victim, mob/living/thrower, haymaker = FALSE, wounded = FALSE, impact = GORILLA_IMPACT_HURL)
 	. = ..()
 	src.victim = victim
 	src.thrower = thrower
 	src.haymaker = haymaker
 	src.wounded = wounded
+	src.impact = haymaker ? GORILLA_IMPACT_HAYMAKER : impact
 	victim.gorilla_flight = src
 	RegisterSignal(victim, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(victim, COMSIG_MOVABLE_THROW_LANDED, PROC_REF(on_landed))
@@ -231,7 +236,7 @@
 		return 0
 	if(victim.gorilla_flight)
 		qdel(victim.gorilla_flight)
-	var/datum/gorilla_flight/flight = new(victim, thrower, haymaker, wounded)
+	var/datum/gorilla_flight/flight = new(victim, thrower, haymaker, wounded, gentle ? GORILLA_IMPACT_SHOVE : GORILLA_IMPACT_HURL)
 	// Flat, no spin: the body skids to a stop
 	if(!victim.throw_at(target, distance, speed, thrower, spin = FALSE, gentle = gentle))
 		flight.end()
@@ -249,7 +254,7 @@
 		.[wound] = wound.severity
 
 /**
- * Which picture a wall impact leaves, from the injury the body carries as it hits (owner D38):
+ * Which picture a wall impact leaves, from the injuries the body carries after the hit (owner D38, D48):
  * GORILLA_SPLAT_SPRAY for a heavy cut or stab or a torn artery, GORILLA_SPLAT_EDGE for a bleeding
  * cut or stab or a compound fracture, else GORILLA_SPLAT_DENT. A body that can't bleed only dents.
  */
@@ -274,23 +279,34 @@
 
 /mob/living/carbon/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	var/datum/gorilla_flight/flight = gorilla_flight
-	var/hard_wall = isclosedturf(hit_atom) && hit_atom.density && istype(throwingdatum) && !throwingdatum.gentle
+	if(!isclosedturf(hit_atom) || !hit_atom.density || !istype(throwingdatum))
+		return ..()
+	var/was_gentle = throwingdatum.gentle
+	// A Gorilla throw's crash is its own (gorilla_wall_crash()): tg's random-limb crash is held off by
+	// passing the throw to the parent as gentle, then put back.
+	var/own_crash = !isnull(flight) && flight.victim == src
+	if(own_crash)
+		throwingdatum.gentle = TRUE
 	. = ..()
-	if(!hard_wall || QDELETED(src))
+	throwingdatum.gentle = was_gentle
+	if(QDELETED(src) || (was_gentle && !own_crash))
 		return
-	gorilla_wall_impact(hit_atom, flight)
+	gorilla_wall_impact(hit_atom, own_crash ? flight : null)
 
 /**
- * A hard landing against [wall]: the haymaker's extra and the marks.
+ * A landing against [wall]: the Gorilla throw's crash, if it was one, then the marks by the wounds after it.
  */
 /mob/living/carbon/proc/gorilla_wall_impact(turf/wall, datum/gorilla_flight/flight)
 	var/turf/floor = get_turf(src)
 	var/toward = get_dir(floor, wall)
 	if(!toward)
 		return
-	if(flight?.haymaker)
-		gorilla_haymaker_wall_hit(flight)
-	var/kind = gorilla_splat_kind()
+	if(flight)
+		gorilla_wall_crash(wall, flight, toward)
+		if(QDELETED(src))
+			return
+	// A shove only bumps the wall, whatever the body carries
+	var/kind = flight?.impact == GORILLA_IMPACT_SHOVE ? GORILLA_SPLAT_DENT : gorilla_splat_kind()
 	// Only a straight hit on a wall face gets the pictures; a glancing corner hit gets the dent.
 	if(!(toward in GLOB.cardinals))
 		gorilla_wall_dent(wall, toward)
@@ -307,17 +323,57 @@
 	if(kind == GORILLA_SPLAT_DENT || flight?.haymaker)
 		gorilla_wall_dent(wall, toward)
 
-/// The haymaker's body hits the wall harder: more damage and a cracked chest unless armour stops it.
-/mob/living/carbon/proc/gorilla_haymaker_wall_hit(datum/gorilla_flight/flight)
-	var/obj/item/bodypart/chest = get_bodypart(BODY_ZONE_CHEST)
-	if(isnull(chest))
+/**
+ * A Gorilla throw meets [wall] going [toward] (owner D48). A shove does nothing more than tg's gentle
+ * throw. A hurl or a haymaker knocks the body down as tg's crash does and lands two real hits on the
+ * part that meets the wall: a blunt one (tg's bone wounds) and the skin split on the wall's edge (tg's
+ * cuts), each through armour and tg's wound roll. A part that is already beaten gets a higher wound
+ * bonus, so a hurt body is likelier to break open.
+ */
+/mob/living/carbon/proc/gorilla_wall_crash(turf/wall, datum/gorilla_flight/flight, toward)
+	var/blunt
+	var/blunt_wound
+	var/edge
+	var/edge_wound
+	switch(flight.impact)
+		if(GORILLA_IMPACT_HAYMAKER)
+			blunt = GORILLA_WALL_HAYMAKER_BLUNT
+			blunt_wound = GORILLA_WALL_HAYMAKER_BLUNT_WOUND
+			edge = GORILLA_WALL_HAYMAKER_EDGE
+			edge_wound = GORILLA_WALL_HAYMAKER_EDGE_WOUND
+		if(GORILLA_IMPACT_HURL)
+			blunt = GORILLA_WALL_HURL_BLUNT
+			blunt_wound = GORILLA_WALL_HURL_BLUNT_WOUND
+			edge = GORILLA_WALL_HURL_EDGE
+			edge_wound = GORILLA_WALL_HURL_EDGE_WOUND
+		else
+			return
+	Paralyze(GORILLA_WALL_KNOCKDOWN)
+	visible_message(span_danger("[src] slams into [wall]!"), span_userdanger("You slam into [wall]!"))
+	playsound(src, 'sound/items/weapons/punch1.ogg', 50, TRUE)
+	log_combat(flight.thrower || wall, src, "slammed into a wall", null, "(gorilla throw, impact [flight.impact])")
+	var/obj/item/bodypart/part = get_bodypart(gorilla_wall_zone(toward)) || get_bodypart(BODY_ZONE_CHEST)
+	if(isnull(part))
 		return
-	var/armour = run_armor_check(chest, MELEE)
-	apply_damage(GORILLA_HAYMAKER_WALL_DAMAGE, BRUTE, chest, armour, wound_bonus = CANT_WOUND)
-	if(hv_crit_cover_rating(src, chest, MELEE) >= GORILLA_SNAP_ARMOUR)
+	var/hurt_bonus = min(GORILLA_WALL_HURT_MAX, round(part.brute_dam / GORILLA_WALL_HURT_PER_POINT))
+	var/armour = run_armor_check(part, MELEE, silent = TRUE)
+	// The wall's marks are the picture; no #509 blood fan on top of them
+	gorilla_hold_spray(src)
+	apply_damage(blunt, BRUTE, part, armour, wound_bonus = blunt_wound + hurt_bonus, attack_direction = toward)
+	if(QDELETED(src) || part.owner != src)
 		return
-	if(hv_crit_apply_wound(chest, /datum/wound/blunt/bone/severe, get_dir(flight?.thrower || src, src), flight?.thrower))
-		hv_add_hit_line("[src]'s ribs crack against the wall!", HV_LINE_BOLD, "Your ribs crack against the wall!")
+	apply_damage(edge, BRUTE, part, armour, wound_bonus = edge_wound + hurt_bonus, sharpness = SHARP_EDGED, attack_direction = toward)
+
+/**
+ * The part that meets a wall at [toward]: a body side-on to it takes it on the shoulder half the time,
+ * otherwise the chest, sometimes the head.
+ */
+/mob/living/carbon/proc/gorilla_wall_zone(toward)
+	if(turn(dir, -90) == toward && prob(50))
+		return BODY_ZONE_R_ARM
+	if(turn(dir, 90) == toward && prob(50))
+		return BODY_ZONE_L_ARM
+	return prob(75) ? BODY_ZONE_CHEST : BODY_ZONE_HEAD
 
 /// Lays (or refreshes) one wall-impact decal on the floor tile in front of the wall.
 /mob/living/carbon/proc/gorilla_lay_wall_decal(turf/floor, decal_type, toward)

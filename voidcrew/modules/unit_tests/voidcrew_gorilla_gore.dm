@@ -338,6 +338,79 @@
 			sprays++
 	TEST_ASSERT_EQUAL(sprays, 1, "Wall sprays stacked")
 
+/// A Gorilla throw's wall crash wounds through tg (owner D48): a shove only dents; a haymaker into a wall
+/// wounds an unhurt body and the mark follows the wound it caused; an already-bleeding body sprays; a hurl
+/// through the real throw_impact deals the crash's own damage instead of tg's random-limb crash.
+/datum/unit_test/voidcrew_gorilla_gore/wall_crash
+
+/datum/unit_test/voidcrew_gorilla_gore/wall_crash/Run()
+	var/turf/wall_spot = spot(2, 0)
+	change_turf(wall_spot, /turf/closed/wall)
+	var/turf/closed/wall/wall = spot(2, 0)
+	var/mob/living/carbon/human/consistent/thrower = allocate(/mob/living/carbon/human/consistent, spot(0, 2))
+
+	// A light shove: a dent, nothing else
+	var/mob/living/carbon/human/consistent/shoved = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	var/datum/gorilla_flight/shove = new(shoved, thrower, FALSE, FALSE, 1) // GORILLA_IMPACT_SHOVE
+	var/dents_before = LAZYLEN(wall.dent_decals)
+	shoved.gorilla_wall_impact(wall, shove)
+	shove.end()
+	TEST_ASSERT_EQUAL(LAZYLEN(wall.dent_decals), dents_before + 1, "A shove into a wall left no dent")
+	TEST_ASSERT_EQUAL(shoved.getBruteLoss(), 0, "A shove into a wall did damage")
+	TEST_ASSERT_EQUAL(length(shoved.all_wounds), 0, "A shove into a wall wounded")
+	TEST_ASSERT(!shoved.IsParalyzed(), "A shove into a wall knocked them down")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in spot(1, 0), "A shove into a wall left blood")
+	qdel(shoved)
+
+	// A haymaker into the wall: a real wound on an unhurt body, and the mark that wound calls for. The roll
+	// is tg's, so a few fresh bodies get a go; each must match its own wounds.
+	var/wounded_one = FALSE
+	for(var/attempt in 1 to 6)
+		var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+		var/datum/gorilla_flight/flight = new(victim, thrower, TRUE, FALSE)
+		TEST_ASSERT_EQUAL(flight.impact, 3, "A haymaker flight isn't a haymaker impact") // GORILLA_IMPACT_HAYMAKER
+		victim.gorilla_wall_impact(wall, flight)
+		flight.end()
+		TEST_ASSERT(victim.getBruteLoss() > 0, "A haymaker into a wall did no damage")
+		TEST_ASSERT(victim.IsParalyzed(), "A haymaker into a wall didn't knock them down")
+		var/kind = victim.gorilla_splat_kind()
+		if(kind == 3) // GORILLA_SPLAT_SPRAY
+			TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray/runs) in spot(1, 0), "A haymaker that tore a heavy wound left no spray")
+		else if(kind == 2) // GORILLA_SPLAT_EDGE
+			TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/gorilla_splash) in spot(1, 0), "A haymaker that split the skin left no half-moon")
+		else
+			TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in spot(1, 0), "A haymaker with no broken skin left blood")
+		if(length(victim.all_wounds))
+			wounded_one = TRUE
+		qdel(victim)
+		clear_mess(spot(1, 0))
+		if(wounded_one)
+			break
+	TEST_ASSERT(wounded_one, "Six haymakers into a wall never wounded an unhurt body")
+
+	// Already bleeding hard: the spray up the wall
+	var/mob/living/carbon/human/consistent/bleeder = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	var/datum/wound/slash/flesh/severe/gash = new
+	gash.apply_wound(bleeder.get_bodypart(BODY_ZONE_L_ARM), silent = TRUE)
+	var/datum/gorilla_flight/slam = new(bleeder, thrower, TRUE, FALSE)
+	bleeder.gorilla_wall_impact(wall, slam)
+	slam.end()
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray) in spot(1, 0), "A bleeding body slammed into a wall left no spray")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray/runs) in spot(1, 0), "A bleeding body slammed into a wall left no runs")
+	qdel(bleeder)
+	clear_mess(spot(1, 0))
+
+	// A hurl through the real impact: the crash's own 12 brute, not tg's random-limb crash on top
+	var/mob/living/carbon/human/consistent/hurled = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	var/datum/gorilla_flight/hurl = new(hurled, thrower, FALSE, FALSE, 2) // GORILLA_IMPACT_HURL
+	var/datum/thrownthing/throw_datum = new(hurled, wall, EAST, 1, 2, thrower, FALSE, MOVE_FORCE_STRONG, FALSE, null, null)
+	hurled.throw_impact(wall, throw_datum)
+	TEST_ASSERT(!throw_datum.gentle, "The wall crash left the throw marked gentle")
+	TEST_ASSERT_EQUAL(hurled.getBruteLoss(), 12, "A hurl into a wall did the wrong damage") // GORILLA_WALL_HURL_BLUNT + GORILLA_WALL_HURL_EDGE
+	TEST_ASSERT(hurled.IsParalyzed(), "A hurl into a wall didn't knock them down")
+	hurl.end()
+	qdel(throw_datum)
+
 // =========================================================================
 // THE HAYMAKER
 // =========================================================================

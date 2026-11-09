@@ -61,8 +61,6 @@
 #define GORILLA_HAYMAKER_MIN_RANGE 3
 #define GORILLA_HAYMAKER_MAX_RANGE 4
 #define GORILLA_HAYMAKER_SPEED 3
-/// Extra brute when a haymaker's body hits a wall.
-#define GORILLA_HAYMAKER_WALL_DAMAGE 10
 
 // ---- Grab and slam ----
 
@@ -121,6 +119,32 @@
 #define GORILLA_SPLAT_EDGE 2
 /// Severe bleeding or a torn artery: a spray up the wall and runs.
 #define GORILLA_SPLAT_SPRAY 3
+
+// How hard a Gorilla throw meets a wall (owner D48). The crash goes through tg's damage and wound rolls.
+/// The one-tile shove off a punch (both lines): a dent, no damage, no knockdown.
+#define GORILLA_IMPACT_SHOVE 1
+/// The grab hurl.
+#define GORILLA_IMPACT_HURL 2
+/// The haymaker.
+#define GORILLA_IMPACT_HAYMAKER 3
+/// A hurl's blunt hit on the part that meets the wall, and its wound bonus.
+#define GORILLA_WALL_HURL_BLUNT 6
+#define GORILLA_WALL_HURL_BLUNT_WOUND 15
+/// A hurl's split skin on the wall's edge (a slash roll), and its wound bonus.
+#define GORILLA_WALL_HURL_EDGE 6
+#define GORILLA_WALL_HURL_EDGE_WOUND 5
+/// A haymaker's blunt hit and its wound bonus.
+#define GORILLA_WALL_HAYMAKER_BLUNT 16
+#define GORILLA_WALL_HAYMAKER_BLUNT_WOUND 25
+/// A haymaker's split skin and its wound bonus.
+#define GORILLA_WALL_HAYMAKER_EDGE 8
+#define GORILLA_WALL_HAYMAKER_EDGE_WOUND 15
+/// A part already beaten adds a point of wound bonus per this much brute on it...
+#define GORILLA_WALL_HURT_PER_POINT 4
+/// ...up to this many.
+#define GORILLA_WALL_HURT_MAX 15
+/// The knockdown of a hard crash, as tg's own wall crash.
+#define GORILLA_WALL_KNOCKDOWN (2 SECONDS)
 
 // ---- Ground pound ----
 
