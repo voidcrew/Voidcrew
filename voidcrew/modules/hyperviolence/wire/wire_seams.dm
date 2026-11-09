@@ -5,6 +5,7 @@
 // - tg's own wound roll never tears a limb off mid wire cut; the wire takes that limb off clean after.
 // - A limb taken by the wire sprays nothing when it leaves (hv_sever_spray); the wire lays its own streak.
 // - A wire stump can be held back for the beat the severed arm is still drawn on, and can be seared shut.
+// - A neck the wire took the head off shows its own stump: a clean flat cut, not #509's ragged one.
 // - hv_wire_take_part(): tg's dismemberment without the throw and the fan of blood.
 
 /mob/living
@@ -18,6 +19,12 @@
 	var/list/hv_stump_reveal_at
 	/// Body zones whose stump a hot wire seared shut. Lazy.
 	var/list/hv_stump_burnt
+	/// Body zones a wire cut through, whose stump is drawn with the wire's own art (GLOB.hv_wire_stump_zones). Lazy.
+	var/list/hv_stump_wire_cut
+
+/// The stumps the wire has its own art for: "stump_<zone>_wire_blood" and "stump_<zone>_wire_bone" in WIRE_GORE_ICON.
+/// Only the neck the garrote cuts; every other stump, and a head taken any other way, keeps #509's.
+GLOBAL_LIST_INIT(hv_wire_stump_zones, list(BODY_ZONE_HEAD))
 
 // ---- Clean cuts ----
 
@@ -80,6 +87,9 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	for(var/zone in hv_stump_burnt?.Copy())
 		if(get_bodypart(zone))
 			LAZYREMOVE(hv_stump_burnt, zone)
+	for(var/zone in hv_stump_wire_cut?.Copy())
+		if(get_bodypart(zone))
+			LAZYREMOVE(hv_stump_wire_cut, zone)
 	// A held-back stump whose time has come shows now, whatever else changed.
 	for(var/zone in hv_stump_reveal_at?.Copy())
 		if(get_bodypart(zone) || world.time >= hv_stump_reveal_at[zone])
@@ -95,14 +105,31 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 			if(world.time < hv_stump_reveal_at[zone])
 				shown -= zone
 	. = ..(shown, skull, blood_color)
-	if(!LAZYLEN(hv_stump_burnt))
+	if(!LAZYLEN(hv_stump_burnt) && !LAZYLEN(hv_stump_wire_cut))
 		return
-	for(var/image/gore_image as anything in .)
-		for(var/zone in hv_stump_burnt)
+	for(var/zone in shown)
+		var/wire_cut = LAZYACCESS(hv_stump_wire_cut, zone) && (zone in GLOB.hv_wire_stump_zones)
+		var/burnt = LAZYACCESS(hv_stump_burnt, zone)
+		if(!wire_cut && !burnt)
+			continue
+		for(var/image/gore_image as anything in .)
+			var/layer_part
 			if(gore_image.icon_state == "stump_[zone]_blood")
+				layer_part = "blood"
+			else if(gore_image.icon_state == "stump_[zone]_bone")
+				layer_part = "bone"
+			else
+				continue
+			// Same layer, alpha, colour and height filters as #509's stump; the wire's own picture.
+			if(wire_cut)
+				gore_image.icon = WIRE_GORE_ICON
+				gore_image.icon_state = "stump_[zone]_wire_[layer_part]"
+			if(!burnt)
+				continue
+			if(layer_part == "blood")
 				gore_image.color = WIRE_BURNT_STUMP_COLOR
 				gore_image.alpha = 255
-			else if(gore_image.icon_state == "stump_[zone]_bone")
+			else
 				gore_image.color = WIRE_BURNT_BONE_COLOR
 
 /// Draws a stump a wire cut held back, now that the limb has left the body.
@@ -136,7 +163,13 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	var/turf/spot = get_turf(victim)
 	var/old_value = victim.hv_sever_spray
 	victim.hv_sever_spray = 0
+	// Before the drop, which draws the stump: the wire's own clean cut where it has one (the garrote's neck).
+	var/zone = part.body_zone
+	if(zone in GLOB.hv_wire_stump_zones)
+		LAZYSET(victim.hv_stump_wire_cut, zone, TRUE)
 	part.drop_limb(FALSE, TRUE)
+	if(victim.get_bodypart(zone) == part)
+		LAZYREMOVE(victim.hv_stump_wire_cut, zone)
 	victim.hv_sever_spray = old_value
 	victim.update_equipment_speed_mods()
 	if(bleeds && !QDELETED(victim))
