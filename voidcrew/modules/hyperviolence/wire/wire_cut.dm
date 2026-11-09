@@ -126,7 +126,7 @@
 		for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
 			if(other == src)
 				continue
-			cyberware_monowire_lash_fx(swinger, target, origin_offset_x = 5)
+			other.wire_lash_at(swinger, target)
 			other.hide_inhand_for(0.5 SECONDS)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 	return cross
@@ -221,6 +221,8 @@
 	LAZYSET(victim.hv_stump_reveal_at, zone, world.time + WIRE_CUT_DELAY)
 	if(seared)
 		LAZYSET(victim.hv_stump_burnt, zone, TRUE)
+	// tg pulls the shoes off a leg that comes off; they go with the leg.
+	var/obj/item/shoes = (zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG) && ishuman(victim) ? victim.get_item_by_slot(ITEM_SLOT_FEET) : null
 	var/obj/item/bodypart/severed = hv_wire_take_part(limb, seared ? WOUND_BURN : WOUND_SLASH, seared ? WIRE_ARC_BLEED_MULT : 1, !seared)
 	if(!severed)
 		LAZYREMOVE(victim.hv_stump_reveal_at, zone)
@@ -230,6 +232,8 @@
 	if(seared)
 		severed.wire_char()
 	ghost?.hold_severed(severed)
+	if(shoes)
+		ghost?.hold_shoes(shoes)
 	wire_seam_fx(victim, zone, seared)
 	if(seared)
 		victim.hv_add_hit_line("[victim]'s [zone_name] drops away, the stump seared shut!", HV_LINE_HUGE, "Your [zone_name] drops away, the stump seared shut!", DEFAULT_MESSAGE_RANGE)

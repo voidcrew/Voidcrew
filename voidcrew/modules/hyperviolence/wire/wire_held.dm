@@ -179,6 +179,46 @@
 		return null
 	return IS_LEFT_INDEX(index) ? "left" : "right"
 
+/**
+ * Where the `side` hand ("left" or "right") of `holder` is drawn, in pixels from the middle of its tile, and
+ * whether it is behind the body as the body faces: the far hand in profile, and both hands of a body facing away.
+ * list(x, y, behind)
+ */
+/proc/wire_hand_point(mob/living/holder, side)
+	var/right = side != "left"
+	switch(holder.dir)
+		if(EAST)
+			return right ? list(5, -5, FALSE) : list(2, -6, TRUE)
+		if(WEST)
+			return right ? list(-2, -6, TRUE) : list(-5, -5, FALSE)
+		if(NORTH)
+			return right ? list(7, -5, TRUE) : list(-7, -5, TRUE)
+	return right ? list(-7, -5, FALSE) : list(7, -5, FALSE)
+
+/// The world layer for a line of wire leaving a hand: over the bodies, or under them for a hand behind its body.
+/proc/wire_line_layer(behind)
+	return behind ? BELOW_MOB_LAYER : ABOVE_ALL_MOB_LAYER
+
+/// The overlay layer on its wielder for the wire swinging in a hand: over the hands, or under the whole body for
+/// the far hand in profile, so the torso hides what passes behind it.
+/proc/wire_swing_layer(mob/living/holder, side)
+	if(holder.dir & (EAST | WEST))
+		var/list/hand = wire_hand_point(holder, side)
+		if(hand[3])
+			return -(TOTAL_LAYERS + 0.5)
+	return WIRE_SWING_LAYER
+
+/// A landed swing: the wire lashes from the hand holding it to `target`, thin and in its own colour.
+/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target)
+	var/list/hand = wire_hand_point(user, held_side(user) || "right")
+	cyberware_monowire_lash_fx(user, target, hand[1], hand[2], lash_state(), wire_line_layer(hand[3]))
+
+/obj/item/melee/cyberware_monowire/proc/lash_state()
+	return "monowire_lash"
+
+/obj/item/melee/cyberware_monowire/live/lash_state()
+	return "monowire_lash_live"
+
 /// The light at the spool while the wire runs out or snaps back: the wire's own colour.
 /obj/item/melee/cyberware_monowire/proc/spool_light_color()
 	return "#f86cfa"
@@ -191,7 +231,7 @@
 	var/side = held_side(user)
 	if(!side)
 		return
-	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_deploy_[side]", WIRE_SWING_LAYER, WIRE_SWING_TIME)
+	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_deploy_[side]", wire_swing_layer(user, side), WIRE_SWING_TIME)
 	hide_inhand_for(WIRE_SWING_TIME)
 	user.mob_light(1.5, 0.6, spool_light_color(), 0.3 SECONDS)
 
@@ -199,10 +239,11 @@
 /obj/item/melee/cyberware_monowire/proc/play_retract(mob/living/user, side, stage)
 	if(QDELETED(user) || !side)
 		return
-	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_retract_[side]", WIRE_SWING_LAYER, WIRE_SWING_TIME)
+	var/swing_layer = wire_swing_layer(user, side)
+	cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "[icon_state]_retract_[side]", swing_layer, WIRE_SWING_TIME)
 	user.mob_light(1.5, 0.6, spool_light_color(), 0.3 SECONDS)
 	if(stage)
-		var/obj/effect/abstract/cyberware_anim/blood = cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "monowire_retract_blood[stage]_[side]", WIRE_SWING_LAYER + 0.05, WIRE_SWING_TIME)
+		var/obj/effect/abstract/cyberware_anim/blood = cyberware_anim_play(user, WIRE_HELD_ANIM_ICON, "monowire_retract_blood[stage]_[side]", swing_layer + 0.05, WIRE_SWING_TIME)
 		if(blood)
 			blood.appearance_flags |= RESET_COLOR
 			blood.color = get_blood_dna_color() || BLOOD_COLOR_RED
@@ -266,16 +307,20 @@
 	var/land_y = drop[4]
 	var/height = drop[5]
 	var/flight = drop[6]
-	// Held back a beat: the drops leave on the crack, the retract's second frame.
-	var/crack = 0.5
+	// Held back a beat (a 7th entry, else the flick's): the flick's drops leave on the crack, the retract's second frame.
+	var/crack = length(drop) >= 7 ? drop[7] : 0.5
 	duration = crack + flight
 	. = ..()
 	color = blood_color
 	pixel_x = start_x
 	pixel_y = start_y
 	alpha = 0
-	animate(src, alpha = 0, time = crack)
-	animate(alpha = 255, pixel_x = (start_x + land_x) / 2, pixel_y = max(start_y, land_y) + height, time = flight / 2, easing = SINE_EASING | EASE_OUT)
+	if(crack)
+		animate(src, alpha = 0, time = crack)
+		animate(alpha = 255, pixel_x = (start_x + land_x) / 2, pixel_y = max(start_y, land_y) + height, time = flight / 2, easing = SINE_EASING | EASE_OUT)
+	else
+		alpha = 255
+		animate(src, pixel_x = (start_x + land_x) / 2, pixel_y = max(start_y, land_y) + height, time = flight / 2, easing = SINE_EASING | EASE_OUT)
 	animate(pixel_x = land_x, pixel_y = land_y, time = flight / 2, easing = SINE_EASING | EASE_IN)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_drop_land), get_turf(src), land_x, land_y, blood_dna), duration - 0.1)
 

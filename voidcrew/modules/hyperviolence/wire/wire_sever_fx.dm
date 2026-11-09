@@ -132,10 +132,20 @@
 	QDEL_IN(ghost, WIRE_CUT_DELAY + WIRE_SLIDE_TIME + WIRE_FALL_TIME + 0.3 SECONDS)
 	return ghost
 
+/// Whether a limb in `zone` is on the far side of a body facing `facing`, drawn behind its chest: the left arm and
+/// leg of a body facing east, the right of one facing west.
+/proc/wire_limb_far(zone, facing)
+	if(facing == EAST)
+		return zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_L_LEG
+	if(facing == WEST)
+		return zone == BODY_ZONE_R_ARM || zone == BODY_ZONE_R_LEG
+	return FALSE
+
 /// Builds the picture: the limb as the body drew it, with the clothes over it cut to its shape.
 /obj/effect/abstract/cyberware_anim/wire_ghost/proc/dress(mob/living/carbon/victim, obj/item/bodypart/limb)
 	icon = null
-	layer = WIRE_GHOST_LAYER
+	// A far limb stays behind the chest, as the body drew it, until it falls clear.
+	layer = wire_limb_far(zone, victim.dir) ? -(BODYPARTS_LOW_LAYER - 0.1) : WIRE_GHOST_LAYER
 	var/mob/living/carbon/human/dressed = ishuman(victim) ? victim : null
 	var/reshaped = dressed && dressed.mob_height != HUMAN_HEIGHT_MEDIUM
 	// The dropped form carries its bruising and burns, which the body draws on a layer of its own.
@@ -204,6 +214,33 @@
 	severed.alpha = 0
 	animate(severed, alpha = 0, time = WIRE_CUT_DELAY + WIRE_SLIDE_TIME + WIRE_FALL_TIME)
 	animate(alpha = 255, time = 0.5)
+
+/**
+ * The shoe tg pulls off a leg that comes away goes with the leg: unseen until the leg lands, then lying on the floor
+ * just past it, not hanging in the air at the hip where tg drops it.
+ */
+/obj/effect/abstract/cyberware_anim/wire_ghost/proc/hold_shoes(obj/item/shoes)
+	if(QDELETED(shoes) || !isturf(shoes.loc))
+		return
+	var/mob/living/body = bearer
+	var/list/spot = lying ? list(side * 14, -8) : list(side * 15, -12)
+	if(body)
+		var/matrix/shape = body.transform
+		spot = list(shape.a * spot[1] + shape.b * spot[2] + shape.c + body.pixel_x, shape.d * spot[1] + shape.e * spot[2] + shape.f + body.pixel_y)
+	shoes.pixel_x = round(spot[1])
+	shoes.pixel_y = round(spot[2])
+	shoes.RegisterSignal(shoes, COMSIG_MOVABLE_MOVED, TYPE_PROC_REF(/obj/item, wire_show_shoes), override = TRUE)
+	shoes.alpha = 0
+	animate(shoes, alpha = 0, time = WIRE_CUT_DELAY + WIRE_SLIDE_TIME + WIRE_FALL_TIME)
+	animate(alpha = 255, time = 0.5)
+
+/// Shoes that came off with a cut leg, once moved: drawn as any item.
+/obj/item/proc/wire_show_shoes()
+	SIGNAL_HANDLER
+	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
+	animate(src, alpha = 255, time = 0)
+	pixel_x = base_pixel_x
+	pixel_y = base_pixel_y
 
 /// A limb the wire cut, once it is moved: drawn as any dropped limb.
 /obj/item/bodypart/proc/wire_stand_up()

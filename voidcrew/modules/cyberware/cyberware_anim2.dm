@@ -668,12 +668,14 @@
 	velocity = generator(GEN_CIRCLE, 2, 3, SQUARE_RAND)
 	gravity = list(0, -0.15)
 
-/// A landed Widowline swing: the wire lashes out to whatever it hit, a
-/// pale line held for half a second.
-/proc/cyberware_monowire_lash_fx(mob/living/user, atom/target, origin_offset_x = 0)
+/// A landed Widowline swing: the wire lashes out to whatever it hit, a thin
+/// line in the wire's own colour ([state]) held for half a second. It leaves
+/// the hand at ([origin_offset_x], [origin_offset_y]) from the middle of the
+/// user's tile, and draws at [beam_layer] (under the body for a hand behind it).
+/proc/cyberware_monowire_lash_fx(mob/living/user, atom/target, origin_offset_x = 0, origin_offset_y = 0, state = "monowire_lash", beam_layer = ABOVE_ALL_MOB_LAYER)
 	if(QDELETED(user) || QDELETED(target) || get_turf(user) == get_turf(target))
 		return
-	user.Beam(target, icon_state = "monowire_lash", icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y)
+	user.Beam(target, icon_state = state, icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y + origin_offset_y, layer = beam_layer)
 
 /// The Arc's shock: a small crackle runs along the wire and sparks burst where
 /// it touched. It's a wire, so there is no bolt of its own.

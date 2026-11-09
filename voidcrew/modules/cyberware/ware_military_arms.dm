@@ -633,7 +633,7 @@
 	if(!isliving(user) || QDELETED(target) || target == user)
 		return
 	// The wire lashes out of the hand to what it hit (cyberware_anim2.dm), so the hanging wire isn't drawn meanwhile.
-	cyberware_monowire_lash_fx(user, target)
+	wire_lash_at(user, target)
 	hide_inhand_for(0.5 SECONDS)
 
 /**
