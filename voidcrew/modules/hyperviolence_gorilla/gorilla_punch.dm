@@ -407,5 +407,5 @@
 		cyberware_grey_dust(spot)
 	else
 		playsound(spot, SFX_BODYFALL, 70, TRUE)
-		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 110)
+		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 70)
 	log_combat(source, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")

@@ -20,6 +20,11 @@
 			gorilla_pry_aggression(airlock_target, attacker)
 			attacker.log_message("tried to pry open [airlock_target] at a trader outpost, located at [loc_name(airlock_target)].", LOG_GAME)
 			return COMPONENT_CANCEL_ATTACK_CHAIN
+		// Browned out or EMP'd, the arms are only arms: an ordinary click on the door
+		if(airlock_target.density && iscarbon(attacker))
+			for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_synced_pair(attacker))
+				if(!arm.gorilla_running())
+					return NONE
 	return ..()
 
 /// Whether a trader outpost keeps this door shut against Gorilla Arms or Brawler myomers, pried or punched.

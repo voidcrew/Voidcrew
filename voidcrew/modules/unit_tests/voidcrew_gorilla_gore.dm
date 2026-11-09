@@ -862,6 +862,15 @@
 	sleep(3 SECONDS)
 	TEST_ASSERT(!shut.density, "The Brawler pair never forced the airlock") // BRAWLER_PRY_TIME 7 s
 
+	// An arm that's down forces nothing: the click is an ordinary one
+	var/obj/machinery/door/airlock/second_shut = allocate(/obj/machinery/door/airlock, spot(1, 2))
+	second_shut.req_access = list(ACCESS_CAPTAIN)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/down_arm = arm(brawler, BODY_ZONE_L_ARM)
+	down_arm.organ_flags |= ORGAN_FAILING
+	var/weak = SEND_SIGNAL(brawler, COMSIG_LIVING_UNARMED_ATTACK, second_shut, TRUE, list())
+	TEST_ASSERT(!(weak & COMPONENT_CANCEL_ATTACK_CHAIN), "A Brawler pair with an arm down started forcing an airlock")
+	down_arm.organ_flags &= ~ORGAN_FAILING
+
 	// A trader outpost's airlock takes no punch and no pry
 	var/obj/machinery/door/airlock/outpost/outpost_door = allocate(/obj/machinery/door/airlock/outpost, spot(0, 2))
 	var/outpost_before = outpost_door.get_integrity()
