@@ -284,17 +284,34 @@
 
 /**
  * No mark over the victim (owner D34). The garroter leans in (the stage's lunge) and the wire shoots straight from the
- * hand to the neck and winds round it; then it hangs there loose, glinting, while they struggle.
+ * hand to the neck. Once it is there it drags the body round head first to them, if it lay the other way, and winds
+ * round the neck; then it hangs there loose, glinting, while they struggle.
  */
 /datum/hv_finisher/garrote/place_mark(duration)
 	QDEL_NULL(mark)
-	face_victim_in()
 	// Thrown once the lean has carried the hand to where the throw starts.
 	throw_wire(WIRE_GARROTE_LEAN_TIME)
 	// The wire leaves the hand: from then on it is drawn in flight and round the neck, not hanging.
 	if(wire)
 		LAZYADD(windup_timers, addtimer(CALLBACK(wire, TYPE_PROC_REF(/obj/item/melee/cyberware_monowire, hide_inhand_for), longest_duration()), WIRE_GARROTE_LEAN_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
-	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), duration - WIRE_GARROTE_LEAN_TIME - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_LEAN_TIME + WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
+	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wire_arrives), duration - WIRE_GARROTE_LEAN_TIME - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_LEAN_TIME + WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
+
+/// TRUE while the garrote is still in its wind-up, the wire loose round the neck.
+/datum/hv_finisher/garrote/proc/winding_up()
+	return running && !QDELETED(user) && !QDELETED(victim) && istype(current_stage, /datum/hv_finisher_stage/windup)
+
+/**
+ * The thrown wire reaches the neck: it drags the body round head first to the garroter, if it lay the other way, and
+ * then winds round the neck. `rest` is what is left of the wind-up.
+ */
+/datum/hv_finisher/garrote/proc/wire_arrives(rest)
+	if(!winding_up())
+		return
+	var/turn_time = face_victim_in()
+	if(!turn_time)
+		wind_loop(rest)
+		return
+	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), rest - turn_time), turn_time, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
  * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
@@ -382,12 +399,14 @@
 	shape.Turn(arctan(span_y, span_x))
 	return shape
 
-/// The end of the throw: the wire winds round the neck and is held there, loose, for the rest of the wind-up.
+/// The end of the throw: the wire winds round the neck and is held there, loose, for the rest of the wind-up (`rest`).
 /datum/hv_finisher/garrote/proc/wind_loop(rest)
-	if(QDELETED(user) || QDELETED(victim) || !running)
+	if(!winding_up())
 		return
 	show_loop("draw")
-	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(show_loop), "loop"), WIRE_GARROTE_WIND_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
+	// Wound on, it hangs loose until the hold pulls it tight. With no time left for that, the hold takes it from here.
+	if(rest > WIRE_GARROTE_WIND_TIME)
+		LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(show_loop), "loop"), WIRE_GARROTE_WIND_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(user, WIRE_GORE_ICON, "wire_glint[wire_suffix()]", WIRE_FX_LAYER, 0.3 SECONDS, glow = TRUE)
 	if(glint)
 		// On the hand: the glint's picture is centred a pixel right of a line's base.
@@ -407,12 +426,14 @@
 	return istype(wire, /obj/item/melee/cyberware_monowire/live) ? "_live" : ""
 
 /**
- * A body lying beside the garroter is turned head first to them, as tg turns a body dragged sideways. tg turns one
- * lying the other way round in a single frame; this swings it round instead, through head toward the viewer.
+ * A body lying beside the garroter is turned head first to them, as tg turns a body dragged sideways: the wire on its
+ * neck drags it round. tg turns one lying the other way round in a single frame; this swings it round instead, through
+ * head toward the viewer, and the thrown wire's end stays on the neck as it goes. Returns how long the turn takes, 0 if
+ * it already lay that way.
  */
 /datum/hv_finisher/garrote/proc/face_victim_in()
 	if(QDELETED(victim) || victim.body_position != LYING_DOWN)
-		return
+		return 0
 	var/toward = get_dir(victim, user)
 	var/new_angle
 	if(toward & EAST)
@@ -420,23 +441,38 @@
 	else if(toward & WEST)
 		new_angle = LYING_ANGLE_WEST
 	if(isnull(new_angle) || victim.lying_angle == new_angle)
-		return
+		return 0
 	var/end_for_end = REVERSE_ANGLE(new_angle) == victim.lying_angle
 	var/matrix/before = matrix(victim.transform)
 	victim.set_lying_angle(new_angle)
-	if(!end_for_end)
-		return
 	var/matrix/after = matrix(victim.transform)
+	var/datum/weakref/line_ref = LAZYACCESS(reach_refs, 1)
+	var/obj/effect/abstract/wire_reach/line = line_ref?.resolve()
+	if(!end_for_end)
+		// tg's own turn.
+		if(line)
+			animate(line, transform = reach_to_neck(line, after), time = UPDATE_TRANSFORM_ANIMATION_TIME)
+		return UPDATE_TRANSFORM_ANIMATION_TIME
 	var/matrix/halfway = matrix(before)
 	halfway.Turn(new_angle == LYING_ANGLE_WEST ? 90 : -90)
 	victim.transform = before
 	animate(victim, transform = halfway, time = WIRE_GARROTE_TURN_TIME / 2, easing = SINE_EASING | EASE_IN)
 	animate(transform = after, time = WIRE_GARROTE_TURN_TIME / 2, easing = SINE_EASING | EASE_OUT)
+	if(line)
+		animate(line, transform = reach_to_neck(line, halfway), time = WIRE_GARROTE_TURN_TIME / 2, easing = SINE_EASING | EASE_IN)
+		animate(transform = reach_to_neck(line, after), time = WIRE_GARROTE_TURN_TIME / 2, easing = SINE_EASING | EASE_OUT)
+	return WIRE_GARROTE_TURN_TIME
+
+/// The thrown wire `line` drawn from where it left the hand to the neck of the victim turned to `body_shape`.
+/datum/hv_finisher/garrote/proc/reach_to_neck(obj/effect/abstract/wire_reach/line, matrix/body_shape)
+	var/list/neck = neck_point(body_shape)
+	return wire_reach_shape(neck[1] - line.pixel_x, neck[2] - line.pixel_y)
 
 /// Where the victim's neck is drawn, in pixels from the middle of its tile before its own offsets: 6 px above the
-/// middle of an upright body, turned with a lying one. list(x, y)
-/datum/hv_finisher/garrote/proc/neck_offset()
-	var/matrix/shape = victim.transform
+/// middle of an upright body, turned with a lying one (or as `shape`, a transform, would turn it). list(x, y)
+/datum/hv_finisher/garrote/proc/neck_offset(matrix/shape)
+	if(!shape)
+		shape = victim.transform
 	return list(round(shape.b * 6 + shape.c), round(shape.e * 6 + shape.f))
 
 /**
@@ -454,9 +490,10 @@
 		return list(user.pixel_x, 16 + user.pixel_y)
 	return list(user.pixel_x, -13 + user.pixel_y)
 
-/// Where the neck is drawn now, in pixels from the middle of the garroter's tile. list(x, y)
-/datum/hv_finisher/garrote/proc/neck_point()
-	var/list/neck = neck_offset()
+/// Where the neck is drawn now (or with the body turned to `shape`), in pixels from the middle of the garroter's tile.
+/// list(x, y)
+/datum/hv_finisher/garrote/proc/neck_point(matrix/shape)
+	var/list/neck = neck_offset(shape)
 	return list(neck[1] + victim.pixel_x + (victim.x - user.x) * ICON_SIZE_X, neck[2] + victim.pixel_y + (victim.y - user.y) * ICON_SIZE_Y)
 
 /// Where the neck is drawn now, in pixels from the middle of the victim's own tile. list(x, y)
