@@ -7730,6 +7730,7 @@
 #include "voidcrew\modules\stealth\scav_guards.dm"
 #include "voidcrew\modules\stealth\stealth_admin.dm"
 #include "voidcrew\modules\stealth\stealth_ai.dm"
+#include "voidcrew\modules\stealth\stealth_meter.dm"
 #include "voidcrew\modules\stealth\stealth_patrol.dm"
 #include "voidcrew\modules\stealth\stealth_perception.dm"
 #include "voidcrew\modules\stealth\stealth_test_ruin.dm"

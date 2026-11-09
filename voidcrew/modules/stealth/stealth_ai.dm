@@ -151,6 +151,7 @@
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers?.Copy())
 		qdel(overlay)
 	watchers = null
+	QDEL_NULL(meter)
 	goto_turf = null
 	investigate_turf = null
 	search_center = null
@@ -180,6 +181,7 @@
 	human_npc_set_ai_movement(src, new_state == STEALTH_ALERT ? /datum/ai_movement/basic_avoidance : /datum/ai_movement/jps/stealth)
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
+	stealth_meter_update()
 
 /// Makes it wary, or starts the wary clock again.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_set_wary()
@@ -359,6 +361,7 @@
 			stealth_check_bodies()
 	for(var/datum/stealth_sight_overlay/overlay as anything in watchers)
 		overlay.refresh()
+	stealth_meter_update()
 
 /// The cone half-angle it sees with now.
 /datum/ai_controller/basic_controller/human_npc/stealth/proc/stealth_half_angle()
@@ -699,6 +702,8 @@
 /// listens for the level change.
 /datum/ai_controller/basic_controller/human_npc/stealth/on_changed_z_level(atom/source, turf/old_turf, turf/new_turf, same_z_layer, notify_contents)
 	. = ..()
+	// Its mark's plane belongs to the old level; the next scan builds a new one.
+	QDEL_NULL(meter)
 	if(stealth_ready && new_turf)
 		stealth_become_sentry(new_turf)
 
@@ -706,6 +711,8 @@
 	. = ..()
 	var/was = last_stat
 	last_stat = new_stat
+	if(new_stat != CONSCIOUS)
+		QDEL_NULL(meter)
 	if(new_stat == CONSCIOUS && was != CONSCIOUS && was != DEAD)
 		stealth_came_round()
 

@@ -82,7 +82,7 @@
 /// After putting its target down with nobody else about: how long it looks round before calming down
 #define STEALTH_CALM_LOOK_TIME (6 SECONDS)
 /// How long wary lasts after the last notice gain, hit, touch, alert or search
-#define STEALTH_WARY_TIME (3 MINUTES)
+#define STEALTH_WARY_TIME (60 SECONDS)
 #define STEALTH_SEARCH_POINTS 3
 #define STEALTH_SEARCH_RADIUS 5
 #define STEALTH_BODY_SCAN_INTERVAL (2 SECONDS)
@@ -103,6 +103,16 @@
 #define STEALTH_ADMIN_OVERLAY_TIME (5 MINUTES)
 /// Seconds of search between "Come on out." lines
 #define STEALTH_SEARCH_BARK_INTERVAL (12 SECONDS)
+
+// The mark over a guard's head (stealth_meter.dm, owner decision 27)
+/// Pixel rows in the "?" and "!" glyphs: fill and drain steps
+#define STEALTH_METER_ROWS 7
+/// Tiles from the guard within which a living player makes the mark worth drawing
+#define STEALTH_METER_RANGE 10
+/// pixel_z of the glyph's bottom over a standing, medium-height guard: 1 px clear of the head
+#define STEALTH_METER_HEAD_Z 30
+/// pixel_z of the glyph's bottom over a guard lying down
+#define STEALTH_METER_LYING_Z 17
 
 /// The scav den's side
 #define FACTION_SCAV "scav"

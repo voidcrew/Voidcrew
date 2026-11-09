@@ -1,7 +1,7 @@
 // Stealth guards (voidcrew/modules/stealth/). Unit tests compile before voidcrew/_DEFINES, so values from
 // there are written out: states "unaware", "suspicious", "alert", "searching"; blackboard keys
 // "stealth_state", "stealth_wary", "stealth_last_seen_turf"; STEALTH_PATROL_MAX_FAILS 3,
-// STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_SEARCH_TIME 40 s, STEALTH_CALM_LOOK_TIME 6 s, STEALTH_WARY_TIME 3 min.
+// STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_SEARCH_TIME 40 s, STEALTH_CALM_LOOK_TIME 6 s, STEALTH_WARY_TIME 60 s.
 
 #define STEALTH_TEST_GUARD /mob/living/carbon/human/npc/ruin/trooper/scav
 
@@ -383,7 +383,7 @@
 	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "The search didn't end")
 	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A guard that searched isn't wary")
-	stealth_ai.stealth_rewind(2 MINUTES)
+	stealth_ai.stealth_rewind(40 SECONDS)
 	stealth_scans(guard, 1)
 	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "Wary faded too soon")
 	// A glimpse of someone far off starts the clock again.
@@ -391,10 +391,10 @@
 	stealth_scans(guard, 1)
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A glimpse at the edge of sight made the guard suspicious")
 	qdel(person)
-	stealth_ai.stealth_rewind(2 MINUTES)
+	stealth_ai.stealth_rewind(40 SECONDS)
 	stealth_scans(guard, 1)
 	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A notice gain didn't refresh wary")
-	stealth_ai.stealth_rewind(70 SECONDS)
+	stealth_ai.stealth_rewind(30 SECONDS)
 	stealth_scans(guard, 1)
 	TEST_ASSERT(!stealth_ai.blackboard["stealth_wary"], "Wary didn't fade with nothing new")
 	TEST_ASSERT(stealth_ai.stealth_half_angle() == 60, "A guard no longer wary still has the wary cone")
@@ -402,6 +402,91 @@
 	var/mob/living/carbon/human/attacker = stealth_person(block, 11, 4)
 	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, attacker, ATTACKER_DAMAGING_ATTACK)
 	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A hit didn't make the guard wary again")
+	qdel(block)
+
+/// The mark over a guard's head: notice and state to icon_state (draft D: fills round to nearest, drains round up).
+/datum/unit_test/voidcrew_stealth_meter_states
+
+/datum/unit_test/voidcrew_stealth_meter_states/Run()
+	// Private "?": yellow to 1.0, then red to 2.5.
+	TEST_ASSERT_NULL(stealth_meter_notice_state(0), "No notice still shows a mark")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(0.05), "q_y0", "A little notice isn't an empty grey ?")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(0.3), "q_y2", "0.3 notice")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(0.5), "q_y4", "Half notice doesn't round to the nearest row")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(1), "q_y7", "Suspicious isn't a full yellow ?")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(1.75), "q_r4", "Halfway to alert isn't half red")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(2.5), "q_r7", "Alert notice isn't a full red ?")
+	TEST_ASSERT_EQUAL(stealth_meter_notice_state(4), "q_r7", "Notice past alert overflows the glyph")
+	// Public marks. Times in deciseconds; now = 10000.
+	TEST_ASSERT_NULL(stealth_meter_public_state("unaware", 10000, 0, 9000, 0), "An unaware guard has a public mark")
+	TEST_ASSERT_NULL(stealth_meter_public_state("suspicious", 10000, 0, 9000, 0), "A suspicious guard has a public mark")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("alert", 10000, 0, 9000, 0), "ex_r7", "Alert with the target in sight isn't a full red !")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("alert", 10000, 9980, 9000, 0), "ex_r4", "Target lost 2 of 4 s: the ! doesn't drain rounding up")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("alert", 10000, 9961, 9000, 0), "ex_r1", "The last row of the ! went out early")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("alert", 10000, 9960, 9000, 0), "q_y7", "A drained ! doesn't become the yellow ?")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("searching", 10000, 0, 10000, 0), "q_y7", "A fresh search isn't a full yellow ?")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("searching", 10000, 0, 9800, 0), "q_y4", "Halfway through the 40 s search")
+	TEST_ASSERT_NULL(stealth_meter_public_state("searching", 10000, 0, 9600, 0), "A finished search still shows")
+	TEST_ASSERT_EQUAL(stealth_meter_public_state("searching", 10000, 0, 9970, 10030), "q_y4", "Calming down doesn't drain to calm_until")
+	// The drain steps at each row: the full ! loses its top row after 1/7 of 4 s.
+	var/step = stealth_meter_next_step("alert", 10000, 10000, 9000, 0)
+	TEST_ASSERT(step > 40 / 7 && step < 40 / 7 + 1, "The first drain step isn't at 1/7 of the lose time (got [step])")
+	TEST_ASSERT_EQUAL(stealth_meter_next_step("alert", 10000, 0, 9000, 0), 0, "A steady ! schedules a drain")
+
+/// The mark goes with its guard: death, deletion, and the public mark hides the private one.
+/datum/unit_test/voidcrew_stealth_meter_cleanup
+
+/datum/unit_test/voidcrew_stealth_meter_cleanup/Run()
+	var/datum/turf_reservation/block = stealth_block(8, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	var/mob/living/carbon/human/person = stealth_person(block, 4, 2)
+	stealth_ai.stealth_go_alert(person)
+	// No client is near in a test, so build it by hand.
+	stealth_ai.meter = new /datum/stealth_meter(stealth_ai, guard)
+	var/datum/stealth_meter/meter = stealth_ai.meter
+	meter.update()
+	var/obj/effect/abstract/stealth_mark/mark = meter.mark
+	TEST_ASSERT_NOTNULL(mark, "An alert guard has no mark")
+	TEST_ASSERT_EQUAL(mark.icon_state, "ex_r7", "An alert guard's mark isn't a full red !")
+	TEST_ASSERT(mark in guard.vis_contents, "The mark isn't drawn on the guard")
+	TEST_ASSERT_EQUAL(mark.pixel_z, stealth_meter_offset(guard), "The mark isn't just over a standing guard's head")
+	TEST_ASSERT(mark.pixel_z >= 25, "The mark sits in a standing guard's face")
+	guard.set_body_position(LYING_DOWN)
+	TEST_ASSERT_EQUAL(mark.pixel_z, 17, "The mark didn't drop when the guard lay down")
+	guard.set_body_position(STANDING_UP)
+	guard.death()
+	TEST_ASSERT(QDELETED(meter), "A dead guard kept its mark")
+	TEST_ASSERT(!(mark in guard.vis_contents), "A dead guard still draws its mark")
+	TEST_ASSERT(QDELETED(mark), "A dead guard's mark wasn't deleted")
+	// Deletion.
+	var/mob/living/carbon/human/npc/second = stealth_guard(block, 6, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/second_ai = stealth_ai(second)
+	second_ai.stealth_go_searching(stealth_at(block, 6, 3))
+	second_ai.meter = new /datum/stealth_meter(second_ai, second)
+	meter = second_ai.meter
+	meter.update()
+	mark = meter.mark
+	TEST_ASSERT_EQUAL(mark?.icon_state, "q_y7", "A searching guard's mark isn't a full yellow ?")
+	qdel(second)
+	TEST_ASSERT(QDELETED(meter), "A deleted guard's meter lived on")
+	TEST_ASSERT(QDELETED(mark), "A deleted guard's mark lived on")
+	qdel(block)
+
+/// A stealth guard hit by an ally's stray shot doesn't turn on them or raise the alarm.
+/datum/unit_test/voidcrew_stealth_ally_hit
+
+/datum/unit_test/voidcrew_stealth_ally_hit/Run()
+	var/datum/turf_reservation/block = stealth_block(6, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/mob/living/carbon/human/npc/ally = stealth_guard(block, 4, 2, WEST)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, ally, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "An ally's stray shot raised the alarm")
+	TEST_ASSERT_NULL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "An ally's stray shot made the guard target them")
+	TEST_ASSERT(!stealth_ai.blackboard["stealth_wary"], "An ally's stray shot made the guard wary")
 	qdel(block)
 
 #undef STEALTH_TEST_GUARD
