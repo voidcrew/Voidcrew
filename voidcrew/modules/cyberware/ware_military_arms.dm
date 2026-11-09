@@ -632,10 +632,9 @@
 	swing_landed = TRUE
 	if(!isliving(user) || QDELETED(target) || target == user)
 		return
-	// The wire lashes out of the hand to what it hit (cyberware_anim2.dm), so the hanging wire isn't drawn meanwhile.
+	// The wire lashes out of the hand to what it hit (hyperviolence/wire/wire_held.dm); the held wire stays drawn.
 	wire_lash_at(user, target, lash_zone)
 	lash_zone = null
-	hide_inhand_for(0.5 SECONDS)
 
 /**
  * # Widowline Monowire (T3, one arm, aug slot, load 5)
