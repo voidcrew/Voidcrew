@@ -414,7 +414,13 @@
 	TEST_ASSERT_EQUAL(move.owner, boss, "The chrome ability runs someone else's move")
 	TEST_ASSERT(ability.windup >= 0.8 SECONDS, "The chrome ability winds up for [ability.windup / 10] s") // BOUNTY_CHROME_TELL_MIN
 	TEST_ASSERT(ability.worth_using(hunter), "The chrome ability isn't worth using on a hunter in sight")
+	// A move with its own lines says one of them, and the kit's ability line stays unsaid: one line per tell
+	move.tell_lines = list("Watch this.")
+	var/datum/component/bounty_identity_voice/voice = boss.LoadComponent(/datum/component/bounty_identity_voice)
+	COOLDOWN_RESET(voice, line_cooldown)
+	voice.last_line = null
 	TEST_ASSERT(ability.Trigger(target = hunter), "The chrome ability wouldn't start")
+	TEST_ASSERT_NULL(voice.last_line, "The Juggernaut barked its kit's ability line over its chrome's own tell line")
 	TEST_ASSERT_EQUAL(boss.boss_busy, "windup", "The Juggernaut isn't winding up")
 	TEST_ASSERT_NOTNULL(boss.get_filter(move.tell_filter()), "The wind-up has no outline")
 	sleep(1.3 SECONDS)
