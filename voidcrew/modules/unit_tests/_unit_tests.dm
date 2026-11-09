@@ -219,6 +219,7 @@
 #include "voidcrew_ship_turret_targeting.dm"
 #include "voidcrew_shiptest_sidearms.dm"
 #include "voidcrew_shiptest_scorcher.dm"
+#include "voidcrew_shiptest_rifles.dm"
 #include "voidcrew_shop_catalog.dm"
 #include "voidcrew_silicon_ship_systems.dm"
 #include "voidcrew_simple_mob_ai.dm"

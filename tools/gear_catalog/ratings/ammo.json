@@ -10,6 +10,8 @@
   "4.6x30mm loads",
   "5.7x39mm loads",
   ".310 rifle loads",
+  "8x50mmR loads",
+  "7.62x40mm loads",
   ".223 rifle loads",
   "7mm machine gun loads",
   ".50 sniper loads",
@@ -69,6 +71,24 @@
    "note": "On hit it explodes at the target: light-severity blast out to 2 tiles, fire out to 3 and a flash at 1, with no heavy or devastating ring. It affects everything in range, the shooter included.",
    "rank": 4,
    "reason": "60 damage and a light blast with fire around the target. Hurts a room, cannot open a hull. Only the M-90 can fire it.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/a762x40": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "stripper clip (7.62x40mm)",
+   "rank": 4,
+   "reason": "Five loose 7.62x40mm rounds to refill SKM magazines. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/a8x50r": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "stripper clip (8x50mmR)",
+   "rank": 2,
+   "reason": "Five loose 8x50mmR rounds to refill Woodsman magazines. Follows the gun.",
    "tier": "yellow"
   },
   "/obj/item/ammo_box/c10mm": {
@@ -589,6 +609,15 @@
    "reason": "30 damage that ignores armor and flies through walls, in a 30 round magazine on a burst rifle. Far past the X-ray gun.",
    "tier": "red"
   },
+  "/obj/item/ammo_box/magazine/m23": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "Model 23 magazine (8x50mmR)",
+   "rank": 1,
+   "reason": "Five 50 damage rounds that go through a vest. Follows the Woodsman.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_box/magazine/m38": {
    "confidence": "high",
    "group": ".38 loads",
@@ -864,6 +893,33 @@
    "name": "PD46 magazine (4.6x30mm)",
    "rank": 2,
    "reason": "30 plain 4.6x30mm rounds, the Rapier magazine's load. Follows the PD46, as the WT-550 magazine follows its gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/skm": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "SKM magazine (7.62x40mm)",
+   "rank": 3,
+   "reason": "Plain SKM magazine, 20 rounds of 24 damage. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/skm/drum": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "SKM drum (7.62x40mm)",
+   "rank": 1,
+   "reason": "75 rounds of automatic fire without a reload, half again what the red L6 SAW holds. This is what makes the SKM red.",
+   "tier": "red"
+  },
+  "/obj/item/ammo_box/magazine/skm/extended": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "extended SKM magazine (7.62x40mm)",
+   "rank": 2,
+   "reason": "40 rounds. The SKM scores 108 with it, just under red.",
    "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/smartgun": {
@@ -1198,6 +1254,24 @@
    "name": ".50AE bullet casing",
    "rank": 5,
    "reason": "Plain 60 damage in a Desert Eagle magazine. Follows the yellow gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_casing/a762x40": {
+   "confidence": "high",
+   "group": "7.62x40mm loads",
+   "hash": "",
+   "name": "7.62x40mm bullet casing",
+   "rank": 5,
+   "reason": "One SKM round. Follows the gun.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_casing/a8x50r": {
+   "confidence": "high",
+   "group": "8x50mmR loads",
+   "hash": "",
+   "name": "8x50mmR bullet casing",
+   "rank": 3,
+   "reason": "One Woodsman round. Follows the gun.",
    "tier": "yellow"
   },
   "/obj/item/ammo_casing/arrow": {
@@ -2328,6 +2402,8 @@
  "unrated": {
   "/obj/item/ammo_box": "abstract",
   "/obj/item/ammo_box/a40mm/rubber": "no route",
+  "/obj/item/ammo_box/a762x40/empty": "no route",
+  "/obj/item/ammo_box/a8x50r/empty": "no route",
   "/obj/item/ammo_box/magazine": "abstract",
   "/obj/item/ammo_box/magazine/heater/empty": "no route",
   "/obj/item/ammo_box/magazine/internal": "abstract",
@@ -2362,6 +2438,7 @@
   "/obj/item/ammo_box/magazine/internal/shot/tube/slug": "no route",
   "/obj/item/ammo_box/magazine/internal/sks": "abstract",
   "/obj/item/ammo_box/magazine/internal/sks/empty": "no route",
+  "/obj/item/ammo_box/magazine/m23/empty": "no route",
   "/obj/item/ammo_box/magazine/m38/empty": "no route",
   "/obj/item/ammo_box/magazine/m75": "needs another system",
   "/obj/item/ammo_box/magazine/m9mm_rattlesnake/empty": "no route",
@@ -2385,6 +2462,9 @@
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/red": "no route",
   "/obj/item/ammo_box/magazine/recharge/ctf/shotgun/yellow": "no route",
   "/obj/item/ammo_box/magazine/resolution/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/drum/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/empty": "no route",
+  "/obj/item/ammo_box/magazine/skm/extended/empty": "no route",
   "/obj/item/ammo_box/magazine/sniper_rounds/surplus": "no route",
   "/obj/item/ammo_box/magazine/toy": "abstract",
   "/obj/item/ammo_box/magazine/zashch/empty": "no route",

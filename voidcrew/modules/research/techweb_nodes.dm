@@ -424,6 +424,8 @@
 		"vc_ammo_uzi",
 		"vc_strilka310_clip",
 		"vc_ammo_harpoon",
+		"vc_ammo_a8x50r_clip",
+		"vc_ammo_a762x40_clip",
 		"suppressor",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)

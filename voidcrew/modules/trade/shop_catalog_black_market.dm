@@ -74,6 +74,9 @@
 		/datum/shop_sku/black_market/resolution,
 		/datum/shop_sku/black_market/heater,
 		/datum/shop_sku/black_market/scorcher,
+		/datum/shop_sku/black_market/woodsman,
+		/datum/shop_sku/black_market/skm,
+		/datum/shop_sku/black_market/skm_drum,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -988,12 +991,38 @@
 	fixed_price = TRUE
 	contract_reward = FALSE
 
+/datum/shop_sku/black_market/woodsman
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A scoped semi-automatic hunting rifle. Chambered in 8x50mmR."
+	item_path = /obj/item/gun/ballistic/automatic/woodsman
+	price_credits = 2600
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
 /datum/shop_sku/black_market/resolution
 	zone_permission = ZONE_PERMISSION_YELLOW
 	category = "Weapons"
 	desc = "A 4.6x30mm personal defense weapon with a folding stock."
 	item_path = /obj/item/gun/ballistic/automatic/resolution
 	price_credits = 4200
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/skm
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A surplus automatic rifle. Chambered in 7.62x40mm."
+	item_path = /obj/item/gun/ballistic/automatic/skm
+	price_credits = 3600
 	price_vouchers = 2
 	stock_min = 1
 	stock_max = 1
@@ -1025,6 +1054,18 @@
 	stock_max = 1
 	restock_interval = 1 HOURS
 	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/skm_drum
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Weapons"
+	name = "skm drum"
+	desc = "A loaded 75-round 7.62x40mm drum for an SKM rifle."
+	item_path = /obj/item/ammo_box/magazine/skm/drum
+	price_credits = 1500
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 2
 	contract_reward = FALSE
 
 /// Counter-bought caches retain themed supplies, with a single freight weapon roll.

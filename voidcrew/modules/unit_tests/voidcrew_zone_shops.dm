@@ -39,6 +39,8 @@
 		/datum/shop_sku/black_market/resolution = 1,
 		/datum/shop_sku/outfitter/resolution_mag = 1,
 		/datum/shop_sku/black_market/heater = 1,
+		/datum/shop_sku/black_market/woodsman = 1,
+		/datum/shop_sku/black_market/skm = 1,
 		/datum/shop_sku/outfitter/rare/ablative_vest = 1,
 		/datum/shop_sku/skunk/rotating/thermal_glasses = 1,
 		/datum/shop_sku/black_market/thermals = 1,
@@ -68,6 +70,9 @@
 		/datum/shop_sku/outfitter/wt550_mag = 1,
 		/datum/shop_sku/outfitter/heater_mag = 1,
 		/datum/shop_sku/outfitter/rifle_clip = 1,
+		/datum/shop_sku/outfitter/woodsman_mag = 1,
+		/datum/shop_sku/outfitter/skm_mag = 1,
+		/datum/shop_sku/outfitter/skm_extended_mag = 1,
 		/datum/shop_sku/outfitter/bulletproof_vest = 1,
 		/datum/shop_sku/outfitter/bulletproof_helmet = 1,
 		/datum/shop_sku/outfitter/rare/ablative_hood = 1,
@@ -105,6 +110,7 @@
 		/datum/shop_sku/fitter/rare/mod_emp_shield_advanced = 2,
 		/datum/shop_sku/fitter/rare/mod_projectile_dampener = 2,
 		/datum/shop_sku/black_market/mod_chassis_syndicate = 2,
+		/datum/shop_sku/black_market/skm_drum = 2,
 		/datum/shop_sku/black_market/mod_interdyne = 2,
 		/datum/shop_sku/black_market/mod_energy_shield = 2,
 		/datum/shop_sku/black_market/shield_generator_board = 2,
@@ -137,7 +143,7 @@
 
 /datum/unit_test/voidcrew_zone_shops/catalog/Run()
 	var/list/expected = expected_tags()
-	TEST_ASSERT_EQUAL(length(expected), 107, "The retained permission catalog is incomplete")
+	TEST_ASSERT_EQUAL(length(expected), 113, "The retained permission catalog is incomplete")
 	var/datum/voidcrew_crew_record/crew = allocate(/datum/voidcrew_crew_record)
 	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
 		var/permission = expected[sku_type] || 0

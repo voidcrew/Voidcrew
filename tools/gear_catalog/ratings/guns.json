@@ -79,7 +79,7 @@
    "hash": "",
    "name": "NT BR-38 battle rifle",
    "note": "Right-click scopes in at 2x view range. After ten shots each shot has a 1 in 10 chance to wear the rifle down a stage, up to five; at the last stage it misfires three shots in four. A multitool (20 s) or a weapon recharger sets it right, and an EMP wears it down at once. An emag lifts its shots from 30 to 40 damage, and a fully worn emagged rifle blows up five seconds after the next trigger pull.",
-   "rank": 10,
+   "rank": 12,
    "reason": "Fires 30 damage .38 rounds from a 15 round magazine, with a 2x scope. It wears itself out after ten shots until someone recalibrates it, which keeps it just under the yellow line.",
    "score": 36,
    "tier": "green"
@@ -421,6 +421,17 @@
    "score": 93,
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/automatic/skm": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "SKM-24",
+   "note": "Fires automatically while the trigger is held. Takes a suppressor and a bayonet. Also takes a 40 round magazine and a 75 round drum.",
+   "rank": 6,
+   "reason": "Automatic at 4 shots a second, 24 damage rounds that mostly ignore a vest, from a 20 round magazine. The 40 round magazine lifts it to 108, still under red; the 75 round drum is what makes it red.",
+   "score": 86,
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/automatic/smartgun": {
    "confidence": "medium",
    "group": "smgs",
@@ -468,6 +479,17 @@
    "score": 39,
    "tier": "green"
   },
+  "/obj/item/gun/ballistic/automatic/woodsman": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "Model 23 Woodsman",
+   "note": "Right-click scopes in at 2x view range. Takes a bayonet.",
+   "rank": 7,
+   "reason": "Semi-automatic: one 50 damage round that goes through a vest every 0.75 s, from a 5 round magazine, with a 2x scope. Beats the Sakhno by not needing the bolt worked, and stays far below the automatic rifles.",
+   "score": 53,
+   "tier": "yellow"
+  },
   "/obj/item/gun/ballistic/automatic/wt550": {
    "confidence": "high",
    "group": "smgs",
@@ -484,7 +506,7 @@
    "hash": "9b6b11da9005d066",
    "name": "bow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 12,
+   "rank": 14,
    "reason": "Does 50 damage per arrow, drawn by hand.",
    "score": 7,
    "score_inputs": {
@@ -501,7 +523,7 @@
    "hash": "4231c1aae8664849",
    "name": "shortbow",
    "note": "Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands. Same as the bow; only the damage multiplier differs. / Needs no firing pin and starts empty: an arrow must be nocked by hand, and the bow drawn (use in hand) before it will fire, otherwise the arrow just falls to the floor. The arrow also drops out if the bow is dropped or moved out of the hands (e.g. onto the back).",
-   "rank": 16,
+   "rank": 18,
    "reason": "Does 18 damage per arrow. Its recipe book comes in a 1,000 cr cargo kit.",
    "score": 3,
    "score_inputs": {
@@ -674,7 +696,7 @@
    "group": "rifles",
    "hash": "a0e09364d4321fcb",
    "name": "Sakhno Precision Rifle",
-   "rank": 6,
+   "rank": 8,
    "reason": "A surplus rifle with real rounds: AP 10 keeps its 60 damage useful through armor.",
    "score": 48,
    "tier": "yellow"
@@ -685,7 +707,7 @@
    "hash": "07e5a8b46b6618fc",
    "name": "Donk Co. Jezail",
    "note": "The bolt must be cycled between shots and be open to load. Sawing it off (needs a saw; a live round in the gun goes off in the user's face) makes it belt-sized, cuts damage by a quarter and sets spread to 50. Accepts a bayonet.",
-   "rank": 7,
+   "rank": 9,
    "reason": "A precision rifle with 4 rounds in a huge frame.",
    "score": 44,
    "tier": "yellow"
@@ -696,7 +718,7 @@
    "hash": "",
    "name": "ballistic harpoon gun",
    "note": "Holds one harpoon, so every shot needs the bolt worked and a new harpoon loaded by hand. A hit nearly always embeds and hurts when the target moves, until someone pulls it out.",
-   "rank": 9,
+   "rank": 11,
    "reason": "One harpoon at a time: 60 damage that goes through a vest and sticks in the target. It scores just over the yellow line, and every shot is a reload.",
    "score": 41,
    "score_inputs": {
@@ -713,7 +735,7 @@
    "hash": "09224ff4494cd405",
    "name": "pipegun",
    "note": "Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 14,
+   "rank": 16,
    "reason": "Fires one hand-loaded round at a time.",
    "score": 5,
    "score_inputs": {
@@ -747,7 +769,7 @@
    "hash": "6a105958c2af93f0",
    "name": "regal pipegun",
    "note": "Bolt action loaded with reaper rounds, which are hitscan (instant) junk rounds. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. Anyone can fire it (hulks included) and a point-blank shot throws the target back 3 tiles. / Bolt action that anyone can fire (hulks included), and a point-blank shot throws the target back 3 tiles. Every shot and every bolt cycle throws a spark, which can ignite flammable gas on its tile, and junk rounds do 50% extra damage to robotic mobs. / Against robotic mobs it adds half the shot's own damage again as brute to the chest, which armor does not reduce. Junk variants (hunter, shock, reaper and so on) change which mobs are hit harder or what the extra damage is.",
-   "rank": 8,
+   "rank": 10,
    "reason": "Fires hitscan shots of 60 with 4 rounds. Crafting it needs a one-use book.",
    "score": 41,
    "score_inputs": {
@@ -780,7 +802,7 @@
    "group": "rifles",
    "hash": "7673980e5008c01b",
    "name": "Sakhno M2442 Army",
-   "rank": 11,
+   "rank": 13,
    "reason": "Does 60 damage on bare targets and about 24 through a vest, with five shots and a bolt to work.",
    "score": 15,
    "tier": "green"
@@ -801,7 +823,7 @@
    "hash": "2ed82f9db0fc22be",
    "name": "heated rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 15,
+   "rank": 17,
    "reason": "Does 30 damage then needs a 3 s draw. Better ammo exists, which the score doesn't cover.",
    "score": 3,
    "score_inputs": {
@@ -818,7 +840,7 @@
    "hash": "04bae29a51921f7d",
    "name": "stressed rebar crossbow",
    "note": "Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target. Here the redraw time is 1.5 ticks (about 0.15 s) because the value lacks SECONDS, and 25% of shots aimed at someone else misfire into the shooter. / Every shot leaves the string loose; drawing it takes a 3 s do-after (clicking the empty crossbow starts it) before the next rod can fire. The rod can embed in the target.",
-   "rank": 13,
+   "rank": 15,
    "reason": "Redraws almost instantly at the cost of shooting yourself one time in four.",
    "score": 7,
    "score_inputs": {

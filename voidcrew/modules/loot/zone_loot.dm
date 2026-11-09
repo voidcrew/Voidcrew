@@ -76,8 +76,10 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/automatic/proto/unrestricted = /obj/item/ammo_box/magazine/smgm9mm,
 	/obj/item/gun/ballistic/automatic/rapier = /obj/item/ammo_box/magazine/rapier,
 	/obj/item/gun/ballistic/automatic/resolution = /obj/item/ammo_box/magazine/resolution,
+	/obj/item/gun/ballistic/automatic/skm = /obj/item/ammo_box/magazine/skm,
 	/obj/item/gun/ballistic/automatic/tommygun = /obj/item/ammo_box/magazine/tommygunm45,
 	/obj/item/gun/ballistic/automatic/wt550 = /obj/item/ammo_box/magazine/wt550m9,
+	/obj/item/gun/ballistic/automatic/woodsman = /obj/item/ammo_box/magazine/m23,
 	/obj/item/gun/ballistic/rifle/sniper_rifle = /obj/item/ammo_box/magazine/sniper_rounds,
 	/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = /obj/item/ammo_box/magazine/m12g,
 	// internal magazines: loose rounds instead

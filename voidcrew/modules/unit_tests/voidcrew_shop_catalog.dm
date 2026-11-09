@@ -352,6 +352,8 @@
 			list(/datum/shop_sku/black_market/resolution, /obj/item/gun/ballistic/automatic/resolution, 1, 4200, 2),
 			list(/datum/shop_sku/black_market/heater, /obj/item/gun/ballistic/automatic/heater, 1, 3000, 2),
 			list(/datum/shop_sku/black_market/scorcher, /obj/item/gun/ballistic/automatic/heater/scorcher, 1, 4000, 3),
+			list(/datum/shop_sku/black_market/woodsman, /obj/item/gun/ballistic/automatic/woodsman, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/skm, /obj/item/gun/ballistic/automatic/skm, 1, 3600, 2),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
@@ -413,6 +415,8 @@
 		/obj/item/gun/ballistic/automatic/resolution,
 		/obj/item/gun/ballistic/automatic/heater,
 		/obj/item/gun/ballistic/automatic/heater/scorcher,
+		/obj/item/gun/ballistic/automatic/woodsman,
+		/obj/item/gun/ballistic/automatic/skm,
 		/obj/item/gun/ballistic/revolver/mateba,
 	)
 	var/list/printed_gear = list(
@@ -533,6 +537,7 @@
 		/datum/shop_sku/black_market/battle_rifle, /datum/shop_sku/black_market/ansem, /datum/shop_sku/black_market/ansem_sc,
 		/datum/shop_sku/black_market/lethal_cycler, /datum/shop_sku/black_market/rattlesnake, /datum/shop_sku/black_market/resolution,
 		/datum/shop_sku/black_market/heater, /datum/shop_sku/black_market/scorcher,
+		/datum/shop_sku/black_market/lethal_cycler, /datum/shop_sku/black_market/woodsman, /datum/shop_sku/black_market/skm,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
 		/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare,
