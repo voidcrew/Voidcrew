@@ -635,3 +635,58 @@
 	var/before = victim.getBruteLoss()
 	TEST_ASSERT(wire.wire_aimed_swing(npc, victim, BODY_ZONE_CHEST), "A human NPC couldn't swing the wire at all")
 	TEST_ASSERT(victim.getBruteLoss() > before, "A human NPC's wire swing did nothing")
+
+/// A second housing through the cradle goes on the free arm, one wire per arm, and both deploy. A third, with
+/// both arms taken, replaces the right one and racks it in the tray: nothing lost, nothing doubled.
+/datum/unit_test/voidcrew_widowline/cradle_second_arm
+
+/datum/unit_test/voidcrew_widowline/cradle_second_arm/Run()
+	var/obj/machinery/chrome_cradle/rig = allocate(/obj/machinery/chrome_cradle, spot(1, 1))
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	rig.buckle_mob(patient, force = TRUE)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/first = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/second = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	first.forceMove(rig)
+	rig.begin_install(first)
+	TEST_ASSERT(rig.busy, "The first housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(first.owner, patient, "The first housing didn't go in")
+	TEST_ASSERT_EQUAL(first.zone, BODY_ZONE_R_ARM, "The first housing didn't take its own arm")
+
+	second.forceMove(rig)
+	rig.begin_install(second)
+	TEST_ASSERT(rig.busy, "The second housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(second.owner, patient, "The second housing didn't go in")
+	TEST_ASSERT_EQUAL(first.owner, patient, "The second housing evicted the first")
+	TEST_ASSERT(!(first in rig.tray), "The first housing was racked in the tray")
+	TEST_ASSERT_EQUAL(second.zone, BODY_ZONE_L_ARM, "The second housing didn't go on the free arm")
+	TEST_ASSERT_EQUAL(second.slot, ORGAN_SLOT_LEFT_ARM_AUG, "The second housing's slot didn't follow its arm")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_RIGHT_ARM_AUG), first, "The right arm doesn't hold the first housing")
+	TEST_ASSERT_EQUAL(patient.get_organ_slot(ORGAN_SLOT_LEFT_ARM_AUG), second, "The left arm doesn't hold the second housing")
+
+	rig.unbuckle_mob(patient, force = TRUE)
+	first.ui_action_click()
+	second.ui_action_click()
+	var/obj/item/melee/cyberware_monowire/right_wire = first.active_item
+	var/obj/item/melee/cyberware_monowire/left_wire = second.active_item
+	TEST_ASSERT(istype(right_wire) && patient.is_holding(right_wire), "The right wire didn't deploy")
+	TEST_ASSERT(istype(left_wire) && patient.is_holding(left_wire), "The left wire didn't deploy")
+	TEST_ASSERT(IS_RIGHT_INDEX(patient.get_held_index_of_item(right_wire)), "The right housing's wire isn't in the right hand")
+	TEST_ASSERT(IS_LEFT_INDEX(patient.get_held_index_of_item(left_wire)), "The left housing's wire isn't in the left hand")
+	first.ui_action_click()
+	second.ui_action_click()
+	TEST_ASSERT(right_wire.loc == first && left_wire.loc == second, "The wires didn't stow")
+
+	// Both arms taken: a third replaces the one on its own arm, which goes to the tray.
+	rig.buckle_mob(patient, force = TRUE)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/third = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	third.forceMove(rig)
+	rig.begin_install(third)
+	TEST_ASSERT(rig.busy, "The third housing's install didn't begin")
+	rig.finish_install()
+	TEST_ASSERT_EQUAL(third.owner, patient, "The third housing didn't go in")
+	TEST_ASSERT_EQUAL(third.zone, BODY_ZONE_R_ARM, "With both arms taken, the third housing left its own arm")
+	TEST_ASSERT(!first.owner && first.loc == rig && (first in rig.tray), "The replaced housing wasn't racked in the tray")
+	TEST_ASSERT_EQUAL(second.owner, patient, "The left housing was disturbed")
+	TEST_ASSERT(!QDELETED(first) && !QDELETED(second) && !QDELETED(third), "A housing was consumed")
