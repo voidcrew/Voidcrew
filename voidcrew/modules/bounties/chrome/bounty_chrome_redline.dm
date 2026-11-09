@@ -26,7 +26,8 @@
  *   nothing happens (the framework).
  * - Then the implant's Redline Burn, Trigger()ed as a player's button: the roar (it staggers everyone in
  *   reach who isn't crew with the bearer, so the gate is checked again as it fires), 12 seconds of stun
- *   immunity, 40% less brute and burn through its physiology, harder fists, 90 seconds of cooldown, then
+ *   immunity, a red outline over it the whole time (the implant's, as on a player), 40% less brute and
+ *   burn through its physiology, harder fists, 90 seconds of cooldown, then
  *   the crash: a hundred stamina, which floors it in stamina crit, and leaden legs. That collapse is the
  *   hunters' window. An EMP in the burn drops it straight into the crash, as it does a player.
  * - Its eyes stay red through the burn (the implant's own lines say they flood red and drain), a look only.

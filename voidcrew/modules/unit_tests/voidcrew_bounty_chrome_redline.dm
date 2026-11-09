@@ -59,12 +59,14 @@
 	TEST_ASSERT_EQUAL(criminal.get_left_eye_color(), "#ff2a2a", "Its eyes aren't red through the burn")
 	TEST_ASSERT(!move.ready(), "The implant isn't cooling down after the burn")
 	TEST_ASSERT_NULL(criminal.get_filter(move.tell_filter()), "The tell's outline stayed on")
+	TEST_ASSERT_NOTNULL(criminal.get_filter("cyberware_redline_window"), "The burn has no red outline")
 	criminal.Paralyze(3 SECONDS)
 	TEST_ASSERT(!criminal.IsParalyzed(), "A stun landed in the burn")
 
 	// The implant's 12 seconds from the end of the tell, then the crash
 	sleep(12.4 SECONDS)
 	TEST_ASSERT_NULL(criminal.has_status_effect(/datum/status_effect/cyberware_redline_window), "The burn outlasted the implant's 12 seconds")
+	TEST_ASSERT_NULL(criminal.get_filter("cyberware_redline_window"), "The red outline outlasted the burn")
 	TEST_ASSERT_NOTNULL(criminal.has_status_effect(/datum/status_effect/cyberware_redline_crash), "No crash after the burn")
 	TEST_ASSERT_NOTNULL(criminal.has_status_effect(/datum/status_effect/incapacitating/stamcrit), "The crash didn't floor it in stamina crit")
 	TEST_ASSERT_EQUAL(criminal.capture_state(), "stunned", "The crash isn't a stunned capture") // BOUNTY_STATE_STUNNED

@@ -250,6 +250,8 @@
 #define CYBERWARE_REDLINE_CRASH_STAMINA 100
 /// Crash slowdown duration.
 #define CYBERWARE_REDLINE_CRASH (5 SECONDS)
+/// The outline a bearer wears through the window.
+#define CYBERWARE_REDLINE_OUTLINE_COLOR "#ff2a2a"
 
 /**
  * # Redline Core (T4, chest, OS slot, load 10)
@@ -400,9 +402,17 @@
 	RegisterSignal(owner, COMSIG_LIVING_EARLY_UNARMED_ATTACK, PROC_REF(on_early_unarmed_attack))
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	owner.add_client_colour(/datum/client_colour/cyberware_redline, id)
+	// Everyone can see a bearer is burning: a red outline for the whole window, gone when it ends or they die
+	owner.add_filter(id, 2, outline_filter(1, CYBERWARE_REDLINE_OUTLINE_COLOR))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_bearer_death))
 	owner.balloon_alert(owner, "REDLINE")
 	INVOKE_ASYNC(src, PROC_REF(roar))
 	return TRUE
+
+/// The burn's outline goes out with its bearer
+/datum/status_effect/cyberware_redline_window/proc/on_bearer_death(mob/living/source, gibbed)
+	SIGNAL_HANDLER
+	source.remove_filter(id)
 
 /datum/status_effect/cyberware_redline_window/on_remove()
 	owner.remove_traits(list(TRAIT_STUNIMMUNE, TRAIT_BATON_RESISTANCE), id)
@@ -417,7 +427,8 @@
 		limb.unarmed_damage_low -= CYBERWARE_REDLINE_MELEE_BONUS
 		limb.unarmed_damage_high -= CYBERWARE_REDLINE_MELEE_BONUS
 	buffed_parts.Cut()
-	UnregisterSignal(owner, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))
+	UnregisterSignal(owner, list(COMSIG_LIVING_EARLY_UNARMED_ATTACK, COMSIG_LIVING_UNARMED_ATTACK, COMSIG_LIVING_DEATH))
+	owner.remove_filter(id)
 	bypassed_victim = null
 	bypassed_penetration = 0
 	owner.remove_client_colour(id)
@@ -899,6 +910,7 @@
 #undef CYBERWARE_REDLINE_ROAR_RANGE
 #undef CYBERWARE_REDLINE_CRASH_STAMINA
 #undef CYBERWARE_REDLINE_CRASH
+#undef CYBERWARE_REDLINE_OUTLINE_COLOR
 #undef CYBERWARE_PILEDRIVER_RANGE
 #undef CYBERWARE_PILEDRIVER_AIRTIME
 #undef CYBERWARE_PILEDRIVER_IMPACT_RANGE

@@ -259,6 +259,23 @@
 	TEST_ASSERT(!bladder.engaged, "Second Wind stayed engaged in breathable air")
 	vacuum.ChangeTurf(floor_type)
 
+/// A player's Redline burn wears a red outline for the whole window, and it goes out when the bearer dies
+/datum/unit_test/voidcrew_cyberware_redline_outline
+
+/datum/unit_test/voidcrew_cyberware_redline_outline/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/redline/core = allocate(/obj/item/organ/cyberimp/cyberware/redline)
+	TEST_ASSERT(core.Insert(lab_rat, special = TRUE), "Redline staging insert was refused")
+	var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in lab_rat.actions
+	TEST_ASSERT_NOTNULL(burn, "The Redline core gave no burn action")
+	burn.Trigger()
+	TEST_ASSERT_NOTNULL(lab_rat.has_status_effect(/datum/status_effect/cyberware_redline_window), "Pressing the burn opened no window")
+	TEST_ASSERT_NOTNULL(lab_rat.get_filter("cyberware_redline_window"), "A player's burn has no red outline")
+	lab_rat.death()
+	TEST_ASSERT_NULL(lab_rat.get_filter("cyberware_redline_window"), "The red outline stayed on a dead bearer")
+	lab_rat.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_NULL(lab_rat.get_filter("cyberware_redline_window"), "The red outline outlasted the window")
+
 /// (g) The Chrome Cradle console: every reachable piece files into exactly one
 /// rack group, and the highlight projects its own swap before anything commits.
 /// The interface reads all of this straight out of ui_data(), so a silent
