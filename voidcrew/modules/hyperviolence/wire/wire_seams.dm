@@ -57,23 +57,20 @@
 GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 
 /**
- * One line of blood from src toward spray_dir, `tiles` long: the streak of a clean cut. The shared spray
- * (hv_blood_throw()) fans out at strength 3 and up; a wire's never does. Returns TRUE if anything was sprayed.
+ * The short spray of a clean cut: a few drops thrown from src toward spray_dir, landing within a tile or so in a
+ * narrow fan. No streak along the floor; the shared spray (hv_blood_throw()) lays a straight line, a wire's never
+ * does. `tiles` sets how far the furthest drops reach. Returns TRUE if anything was sprayed.
  */
 /mob/living/proc/hv_wire_spray(spray_dir, tiles = 2)
 	if(QDELETED(src) || !isturf(loc) || can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return FALSE
-	tiles = clamp(round(tiles), 1, 5)
+	tiles = clamp(round(tiles), 1, 2)
 	if(!spray_dir)
 		spray_dir = pick(GLOB.alldirs)
 	hv_blood_spray_until = world.time + 0.4 SECONDS
 	hv_blood_spray_strength = max(hv_blood_spray_strength, tiles)
-	var/list/blood_dna = get_blood_dna_list()
-	var/list/viruses = get_static_viruses()
-	var/list/drenched = list()
-	hv_blood_spray_line(spray_dir, tiles, blood_dna, viruses, drenched)
-	for(var/mob/living/splashed as anything in drenched)
-		splashed.hv_blood_drench(blood_dna, viruses)
+	var/list/reach = tiles > 1 ? list(10, 16, 22, 30, 38) : list(8, 12, 16, 20)
+	wire_blood_burst(loc, pixel_x, pixel_y - 2, wire_blood_color(src), get_blood_dna_list(), 6, dir2angle(spray_dir), 28, reach)
 	return TRUE
 
 // ---- Stumps: held back, and seared ----

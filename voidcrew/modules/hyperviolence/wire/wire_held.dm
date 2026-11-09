@@ -199,6 +199,17 @@
 /proc/wire_line_layer(behind)
 	return behind ? BELOW_MOB_LAYER : ABOVE_ALL_MOB_LAYER
 
+/**
+ * A segment of a line of wire drawn with Beam(). tg's segments all sit at ABOVE_ALL_MOB_LAYER whatever layer the beam
+ * is given (their picture inherits the segment's layer), so a line that has to pass behind a body takes its beam's.
+ */
+/obj/effect/ebeam/wire_line
+
+/obj/effect/ebeam/wire_line/Initialize(mapload, beam_owner)
+	. = ..()
+	if(owner?.beam_layer)
+		layer = owner.beam_layer
+
 /// The overlay layer on its wielder for the wire swinging in a hand: over the hands, or under the whole body for
 /// the far hand in profile, so the torso hides what passes behind it.
 /proc/wire_swing_layer(mob/living/holder, side)

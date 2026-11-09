@@ -675,7 +675,7 @@
 /proc/cyberware_monowire_lash_fx(mob/living/user, atom/target, origin_offset_x = 0, origin_offset_y = 0, state = "monowire_lash", beam_layer = ABOVE_ALL_MOB_LAYER)
 	if(QDELETED(user) || QDELETED(target) || get_turf(user) == get_turf(target))
 		return
-	user.Beam(target, icon_state = state, icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y + origin_offset_y, layer = beam_layer)
+	user.Beam(target, icon_state = state, icon = CYBERWARE_ANIM2_ICON, time = 0.5 SECONDS, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + origin_offset_x, override_origin_pixel_y = user.pixel_y + origin_offset_y, layer = beam_layer)
 
 /// The Arc's shock: a small crackle runs along the wire and sparks burst where
 /// it touched. It's a wire, so there is no bolt of its own.

@@ -52,6 +52,11 @@
 #define WIRE_GARROTE_MISS_COOLDOWN (5 SECONDS)
 /// Worn and plated cover at the neck (crit gate rating, the wire's penetration not counted) that turns the garrote.
 #define WIRE_GARROTE_COVER 25
+/// World layer between a body lying on the floor and one standing: the garrote's wire facing away, which runs from the
+/// hands hidden behind the garroter to the neck of the body lying beyond them.
+#define WIRE_BETWEEN_LAYER (LYING_MOB_LAYER + 0.05)
+/// Most blood the garrote pours into the pool under the neck: a pool that keeps to its tile (blood/blood_pools.dm).
+#define WIRE_GARROTE_POOL_CAP 190
 
 /// Mob overlay layers. The held limb: over the jumpsuit and the stump, under the ID, belt, suit and hands.
 #define WIRE_GHOST_LAYER (-(HV_STUMP_FRESH_LAYER - 0.1))

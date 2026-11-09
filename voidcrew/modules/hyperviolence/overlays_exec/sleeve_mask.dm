@@ -51,6 +51,10 @@
 	var/list/missing = hv_sleeve_mask_zones()
 	if(!length(missing))
 		return
+	// In profile one leg hides the other, so one lost leg masks nothing there (its state is empty side on) and both
+	// lost take one mask of the pair: each leg's own mask spares the other leg's outline.
+	if((BODY_ZONE_L_LEG in missing) && (BODY_ZONE_R_LEG in missing))
+		missing = missing - list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG) + "legs"
 	cut_overlay(worn)
 	// Built as tg builds the missing-hand glove mask (update_worn_gloves()): an atom's appearance carries the
 	// render target. A mutable_appearance carrying it was drawn on screen as a white limb.

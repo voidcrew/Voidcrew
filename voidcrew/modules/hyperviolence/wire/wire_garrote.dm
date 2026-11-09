@@ -205,6 +205,15 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), duration - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 	victim.Shake(1, 0, duration)
 
+/**
+ * The world layer for wire leaving a hand. Facing away, the hands are hidden in front of the garroter and the body lies
+ * beyond them: the wire runs between the two bodies, under the garroter and over the one lying there.
+ */
+/datum/hv_finisher/garrote/proc/strand_layer(behind)
+	if(behind && user.dir == NORTH)
+		return WIRE_BETWEEN_LAYER
+	return wire_line_layer(behind)
+
 /// "left" or "right": the hand the wire is in.
 /datum/hv_finisher/garrote/proc/wire_side()
 	return wire?.held_side(user) || "right"
@@ -225,7 +234,7 @@
 	var/list/neck = neck_point()
 	var/obj/effect/abstract/wire_reach/reach = new(from)
 	reach.icon_state = "wire_reach[wire_suffix()]"
-	reach.layer = wire_line_layer(hand[3])
+	reach.layer = strand_layer(hand[3])
 	reach.add_overlay(emissive_appearance(reach.icon, reach.icon_state, reach))
 	reach.pixel_x = hand_x
 	reach.pixel_y = hand_y
@@ -295,7 +304,8 @@
 	else if(user.dir & WEST)
 		front_x = -9
 	else if(user.dir & NORTH)
-		front_y = 8
+		// Facing away the neck is beyond the garroter: drawn just over their head, not hidden behind it.
+		front_y = 16
 	else
 		front_y = -14
 	return list(front_x + user.pixel_x, front_y + user.pixel_y)
@@ -328,8 +338,9 @@
 		return
 	var/lifetime = longest_duration()
 	var/obj/effect/abstract/cyberware_anim/far_side = cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_[kind]_back[wire_suffix()]", -(TOTAL_LAYERS + 0.5), lifetime, glow = TRUE)
-	// Over the garroter's legs, which the body lies against.
-	var/obj/effect/abstract/cyberware_anim/near_side = cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_[kind]_front[wire_suffix()]", ABOVE_MOB_LAYER, lifetime, glow = TRUE)
+	// Over the garroter's legs, which the body lies against; facing away, over the neck but under the garroter.
+	var/near_layer = user.dir == NORTH ? WIRE_BETWEEN_LAYER : ABOVE_MOB_LAYER
+	var/obj/effect/abstract/cyberware_anim/near_side = cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_[kind]_front[wire_suffix()]", near_layer, lifetime, glow = TRUE)
 	loop_refs = list(WEAKREF(far_side), WEAKREF(near_side))
 
 /datum/hv_finisher/garrote/proc/clear_loop()
@@ -350,7 +361,7 @@
 	var/list/sides = both_hands ? list("left", "right") : list(wire_side())
 	for(var/side in sides)
 		var/list/hand = wire_hand_point(user, side)
-		var/datum/beam/strand = user.Beam(victim, icon_state = "wire_taut[wire_suffix()]", icon = WIRE_GORE_ICON, time = duration, override_origin_pixel_x = user.pixel_x + hand[1], override_origin_pixel_y = user.pixel_y + hand[2], override_target_pixel_x = victim.pixel_x + neck[1], override_target_pixel_y = victim.pixel_y + neck[2], layer = wire_line_layer(hand[3]))
+		var/datum/beam/strand = user.Beam(victim, icon_state = "wire_taut[wire_suffix()]", icon = WIRE_GORE_ICON, time = duration, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + hand[1], override_origin_pixel_y = user.pixel_y + hand[2], override_target_pixel_x = victim.pixel_x + neck[1], override_target_pixel_y = victim.pixel_y + neck[2], layer = strand_layer(hand[3]))
 		LAZYADD(strand_refs, WEAKREF(strand))
 
 /datum/hv_finisher/garrote/proc/clear_strands()
@@ -397,7 +408,8 @@
 	var/datum/hv_crit/throat/throat = locate() in GLOB.hv_crits
 	var/blocker = wire_turned_by(head, throat)
 	if(!blocker && throat)
-		var/datum/wound/slit = hv_crit_apply_wound(head, throat.wound_type, spray_dir, wire)
+		// No direction: tg would throw its flying splatter down a straight line. The garrote's blood is finish_blood().
+		var/datum/wound/slit = hv_crit_apply_wound(head, throat.wound_type, null, wire)
 		if(slit)
 			victim.hv_add_hit_line("[user] jerks the wire across [victim]'s throat!")
 			throat.announce(victim, spray_dir)
@@ -448,7 +460,7 @@
 	var/neck_x = neck[1] - (victim.x - user.x) * ICON_SIZE_X
 	var/neck_y = neck[2] - (victim.y - user.y) * ICON_SIZE_Y
 	wire_pool_under(neck_turf, neck_x, neck_y, blood_dna, viruses)
-	wire_blood_ring(neck_turf, neck_x, neck_y, wire_blood_color(victim), blood_dna)
+	wire_blood_burst(neck_turf, neck_x, neck_y, wire_blood_color(victim), blood_dna)
 	if(!QDELETED(user))
 		user.hv_blood_drench(blood_dna, viruses)
 		if(ishuman(user))
@@ -464,7 +476,7 @@
 
 /**
  * The pool under the neck: tg's blood decal for the tile, centred on the neck, filled over a couple of seconds so it
- * steps up through the pool sizes (blood/blood_pools.dm) as it spreads.
+ * steps up through the pool sizes (blood/blood_pools.dm) as it spreads, to one that keeps to the tile.
  */
 /proc/wire_pool_under(turf/neck_turf, neck_x, neck_y, list/blood_dna, list/viruses)
 	if(isgroundlessturf(neck_turf))
@@ -485,33 +497,39 @@
 		pool.pixel_y = pool.base_pixel_y
 	else
 		pool.add_blood_DNA(blood_dna)
-	for(var/step in 0 to 4)
-		addtimer(CALLBACK(pool, TYPE_PROC_REF(/obj/effect/decal/cleanable/blood, adjust_bloodiness), 45), step * 0.45 SECONDS)
+	for(var/step in 0 to 3)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_pool_fill), pool), step * 0.45 SECONDS)
+
+/// One beat of the garrote's pool filling, never past WIRE_GARROTE_POOL_CAP.
+/proc/wire_pool_fill(obj/effect/decal/cleanable/blood/pool)
+	if(QDELETED(pool) || pool.bloodiness >= WIRE_GARROTE_POOL_CAP)
+		return
+	pool.adjust_bloodiness(min(40, WIRE_GARROTE_POOL_CAP - pool.bloodiness))
 
 /**
- * Blood bursts from the neck at (`neck_x`, `neck_y`) pixels from the middle of `neck_turf` and lands all round it:
- * drops thrown out every way at uneven reach, landing as drips, and a few heavier splats among them. No two bearings
- * in a row are alike, so it lands as a broken ring, not a line or a fan.
+ * Blood bursts from a wound at (`from_x`, `from_y`) pixels from the middle of `origin` and lands round it: `count` drops
+ * thrown at uneven reach (`reach` pixels, give or take a few), landing as drips, and every third a heavier splat. With
+ * no `bearing` they go every way, no two in a row alike, so it lands as a broken ring; with one (degrees, 0 north)
+ * they go within `spread` degrees either side of it, a short spray rather than a line.
  */
-/proc/wire_blood_ring(turf/neck_turf, neck_x, neck_y, blood_color, list/blood_dna)
-	var/count = 10
+/proc/wire_blood_burst(turf/origin, from_x, from_y, blood_color, list/blood_dna, count = 10, bearing = null, spread = 0, list/reach = list(9, 13, 17, 22, 26))
 	var/start = rand(0, 359)
 	var/list/splatted = list()
 	for(var/i in 1 to count)
-		var/bearing = start + i * (360 / count) + rand(-14, 14)
-		var/reach = pick(9, 13, 17, 22, 26) + rand(-2, 2)
-		var/land_x = neck_x + round(sin(bearing) * reach)
-		var/land_y = neck_y + round(cos(bearing) * reach)
+		var/angle = isnull(bearing) ? start + i * (360 / count) + rand(-14, 14) : bearing + rand(-spread, spread)
+		var/distance = pick(reach) + rand(-2, 2)
+		var/land_x = from_x + round(sin(angle) * distance)
+		var/land_y = from_y + round(cos(angle) * distance)
 		var/height = 3 + rand(0, 5)
-		var/flight = round(1.5 + reach / 14, 0.5)
-		new /obj/effect/temp_visual/wire_blood_drop(neck_turf, list(neck_x, neck_y, land_x, land_y, height, flight, 0), blood_color, blood_dna)
-		// Every third drop is a heavier splat where it comes down, one to a tile.
+		var/flight = round(1.5 + distance / 14, 0.5)
+		new /obj/effect/temp_visual/wire_blood_drop(origin, list(from_x, from_y, land_x, land_y, height, flight, 0), blood_color, blood_dna)
 		if(i % 3)
 			continue
+		// One splat to a tile.
 		var/tile_x = floor((land_x + 16) / 32)
 		var/tile_y = floor((land_y + 16) / 32)
-		var/turf/landing = locate(neck_turf.x + tile_x, neck_turf.y + tile_y, neck_turf.z)
-		if(!landing || (landing in splatted) || isgroundlessturf(landing) || (landing != neck_turf && hv_blood_spray_blocked(landing)))
+		var/turf/landing = locate(origin.x + tile_x, origin.y + tile_y, origin.z)
+		if(!landing || (landing in splatted) || isgroundlessturf(landing) || (landing != origin && hv_blood_spray_blocked(landing)))
 			continue
 		splatted += landing
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_ring_splat), landing, land_x - tile_x * 32, land_y - tile_y * 32, blood_dna), flight)

@@ -530,9 +530,8 @@
 	TEST_ASSERT_NULL(dying.get_bodypart(BODY_ZONE_HEAD), "A garrote in hard crit didn't take the head")
 	TEST_ASSERT_NOTNULL(taken, "The head wasn't left at the body")
 	TEST_ASSERT_NOTNULL(locate(/obj/item/organ/brain) in taken, "The head lost its brain")
-	// The garroter stands south of this one: the head drops toward their feet, the spray goes the other way.
+	// The garroter stands south of this one: the head drops toward their feet.
 	TEST_ASSERT(taken.transform.f + taken.pixel_y < 0, "The head didn't drop at the garroter's feet ([taken.transform.f], [taken.pixel_y])")
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray) in get_step(dying, get_dir(user, dying)), "The neck threw no spray away from the garroter")
 	var/pooled = FALSE
 	for(var/obj/effect/decal/cleanable/blood/pool in get_turf(dying))
 		if(!istype(pool, /obj/effect/decal/cleanable/blood/drip) && !istype(pool, /obj/effect/decal/cleanable/blood/hv_spray))
