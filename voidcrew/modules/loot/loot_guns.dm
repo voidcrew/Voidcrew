@@ -55,6 +55,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 			/obj/item/gun/energy/e_gun = 10,
 			/obj/item/gun/ballistic/automatic/wt550 = 10,
 			/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly = 10,
+			/obj/item/gun/ballistic/automatic/woodsman = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/energy/laser/carbine = 10,
@@ -89,6 +90,7 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,
 			/obj/item/gun/ballistic/rifle/boltaction/harpoon = 10,
+			/obj/item/gun/ballistic/automatic/skm = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,

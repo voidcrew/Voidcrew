@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(3, 4, 5), "syndicate" = list(2, 3, 3), "plunder" = list(3, 2, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(3, 5, 5), "syndicate" = list(2, 3, 3), "plunder" = list(3, 3, 3), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -750,7 +750,9 @@
 			/obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 			/obj/item/gun/ballistic/automatic/pistol/deagle/gold,
 			/obj/item/gun/ballistic/automatic/proto/unrestricted,
+			/obj/item/gun/ballistic/automatic/skm,
 			/obj/item/gun/ballistic/automatic/smartgun,
+			/obj/item/gun/ballistic/automatic/woodsman,
 			/obj/item/gun/ballistic/automatic/wt550,
 			/obj/item/gun/ballistic/revolver,
 			/obj/item/gun/ballistic/revolver/c38/housecall,
