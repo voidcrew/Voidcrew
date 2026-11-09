@@ -192,7 +192,10 @@
 		return using
 	if(!winded(npc) || !in_fight(npc, controller, sense) || human_npc_stimmed(npc))
 		return null
-	return find_stim(npc)
+	. = find_stim(npc)
+	// Nothing on it: don't turn its pockets out again every plan
+	if(isnull(.))
+		sense.next_stim_at = world.time + HUMAN_NPC_SENSE_STIM_RETRY
 
 /**
  * A gunner under stun fire: on the way to cover, it keeps going; in cover, it keeps down (using its
@@ -209,6 +212,10 @@
 		var/blown = human_npc_line_of_fire(threat_turf, sense.cover, sense.shot_pass_flags)
 		if(here == sense.cover)
 			sense.arrived_at ||= world.time
+			// Whoever it is fighting at arm's length gets fought, cover or not
+			var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+			if(target && get_dist(npc, target) <= 1)
+				blown = TRUE
 			if(!blown && world.time < hold_until(npc, sense))
 				// Hits taken getting here or in here were answered by being here
 				sense.decided_at = world.time

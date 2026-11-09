@@ -99,6 +99,8 @@
 	// Nothing to use: winded or not, nothing is planned
 	npc.setStaminaLoss(60)
 	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "Winded with no stimulant on it, it planned something")
+	TEST_ASSERT(sense.next_stim_at > world.time, "Finding no stimulant, it will search its pockets again next plan")
+	sense.next_stim_at = 0
 
 	var/obj/item/reagent_containers/hypospray/medipen/stimpack/pen = allocate(/obj/item/reagent_containers/hypospray/medipen/stimpack)
 	TEST_ASSERT(npc.equip_to_slot_if_possible(pen, ITEM_SLOT_LPOCKET, disable_warning = TRUE), "Test fixture: the stimpack didn't go in its pocket")
@@ -195,6 +197,17 @@
 	TEST_ASSERT(human_npc_line_of_fire(tile(4, 0), cover, beam_flags), "Test fixture: the hunter can't see the cover from the south")
 	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "Seen in its cover, it kept hiding instead of fighting")
 	TEST_ASSERT_NULL(sense.cover, "Seen in its cover, it kept its cover plan")
+
+	// Back in cover, out of the shooter's sight, with the one it fights beside it: it fights, not hides
+	hunter.forceMove(tile(0, 2))
+	sense.take_cover(controller, cover)
+	sense.arrived_at = world.time
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, get_step(cover, SOUTH))
+	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, bystander)
+	TEST_ASSERT_NULL(subtree.SelectBehaviors(controller, 1), "In cover with the one it fights beside it, it kept hiding")
+	TEST_ASSERT_NULL(sense.cover, "In cover with the one it fights beside it, it kept its cover plan")
+	controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hunter)
+	bystander.forceMove(tile(0, 0))
 
 	// Out of runs: it stands and fights
 	hunter.forceMove(tile(0, 2))
