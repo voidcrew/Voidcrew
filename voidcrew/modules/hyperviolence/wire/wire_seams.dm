@@ -133,9 +133,9 @@ GLOBAL_LIST_INIT(hv_wire_sever_zones, list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BOD
 	var/slice = count > 1 ? 2 * spread / count : 0
 	for(var/i in 1 to count)
 		var/angle = bearing - spread + slice * (i - 0.5) + rand(-slice, slice) / 2
-		var/distance = reaches[i] + rand(-2, 2)
-		var/land_x = from[1] + round(sin(angle) * distance) + rand(-2, 2)
-		var/land_y = floor_y + round(cos(angle) * distance) + rand(-2, 2)
+		var/distance = reaches[i] + rand(-3, 3)
+		var/land_x = from[1] + round(sin(angle) * distance) + rand(-3, 3)
+		var/land_y = floor_y + round(cos(angle) * distance) + rand(-3, 3)
 		var/flight = round(1.5 + distance / 14, 0.5)
 		// Never all at once: a burst of drops leaving one point at once reads as a red star on the stump.
 		var/delay = pick(0.05, 0.1, 0.15, 0.2) SECONDS

@@ -196,20 +196,21 @@
 	return IS_LEFT_INDEX(index) ? "left" : "right"
 
 /**
- * Where the `side` hand ("left" or "right") of `holder` is drawn, in pixels from the middle of its tile, and
- * whether it is behind the body as the body faces: the far hand in profile, and both hands of a body facing away.
- * list(x, y, behind)
+ * Where the wire leaves the `side` hand ("left" or "right") of `holder`, in pixels from the middle of its tile, and
+ * whether that hand is behind the body as the body faces: the far hand in profile, and both hands of a body facing
+ * away. The grip as the held wire draws it (rows 17-18 of the "monowire" states in cyberware_lefthand.dmi and
+ * cyberware_righthand.dmi), the same points the garrote uses. list(x, y, behind)
  */
 /proc/wire_hand_point(mob/living/holder, side)
 	var/right = side != "left"
 	switch(holder.dir)
 		if(EAST)
-			return right ? list(5, -5, FALSE) : list(2, -6, TRUE)
+			return right ? list(-1, -3, FALSE) : list(5, -3, TRUE)
 		if(WEST)
-			return right ? list(-2, -6, TRUE) : list(-5, -5, FALSE)
+			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
 		if(NORTH)
-			return right ? list(7, -5, TRUE) : list(-7, -5, TRUE)
-	return right ? list(-7, -5, FALSE) : list(7, -5, FALSE)
+			return right ? list(7, -3, TRUE) : list(-7, -3, TRUE)
+	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
 
 /// The world layer for a line of wire leaving a hand: over the bodies, or under them for a hand behind its body.
 /proc/wire_line_layer(behind)

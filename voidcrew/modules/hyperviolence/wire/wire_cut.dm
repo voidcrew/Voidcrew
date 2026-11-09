@@ -74,9 +74,13 @@
 	var/obj/item/bodypart/cut_part = isbodypart(def_zone) ? def_zone : null
 	lash_zone = cut_part ? cut_part.body_zone : check_zone(def_zone)
 	var/cross = wire_count_landed(user)
+	var/obj/item/bodypart/severed = wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross)
+	// The lash meets the limb that comes off, whichever part the blow landed on.
+	if(severed)
+		lash_zone = severed.body_zone
 	if(cross)
 		wire_cross_lash(user, source)
-	if(wire_try_sever(source, user, def_zone, damage_dealt, attack_direction || get_dir(user, source), cross))
+	if(severed)
 		// The cut shows when the limb slides off (wire_sever_fx.dm), and the wire comes away wet then too.
 		addtimer(CALLBACK(src, PROC_REF(wire_bloody), source), WIRE_CUT_DELAY)
 	else
