@@ -138,7 +138,7 @@
 		var/list/other_hand = wire_hand_point(swinger, other.held_side(swinger) || "left")
 		var/list/shift = wire_cross_shift(own_hand, other_hand)
 		lash_end_shift = shift
-		addtimer(CALLBACK(other, PROC_REF(wire_lash_at), swinger, target, lash_zone, list(-shift[1], -shift[2])), WIRE_CROSS_LASH_LAG)
+		addtimer(CALLBACK(other, PROC_REF(wire_lash_at), swinger, target, lash_zone, list(-shift[1], -shift[2]), WIRE_CROSS_LASH_LAG), WIRE_CROSS_LASH_LAG)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 
 /// How far from the cut the lash from `hand` lands, list(x, y), when the other hand's lash (from `other_hand`) lands as

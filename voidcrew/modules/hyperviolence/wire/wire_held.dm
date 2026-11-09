@@ -272,24 +272,29 @@
 
 /**
  * A landed swing: the wire lashes from the hand holding it to the part of `target` it cut (`zone`, else the part the
- * wielder aimed at), one thin line in its own colour that fades out over half a second. A single stretched line, not
- * tg's Beam(): a beam's full-tile segments are drawn over a body facing away whatever layer they are given, and this
- * one must pass behind it from a hidden hand. `end_shift` (x, y) moves where it lands, in pixels; else the shift a
- * crossing cut left for this wire (wire_cross_lash()).
+ * wielder aimed at): one straight thin line in its own colour that fades out over half a second. A single stretched
+ * line, not tg's Beam(): a beam's full-tile segments are drawn over a body facing away whatever layer they are given,
+ * and this one must pass behind it from a hidden hand. `end_shift` (x, y) moves where it lands, in pixels; else the
+ * shift a crossing cut left for this wire (wire_cross_lash()). `lunge_after`: how long ago the swing's lunge began
+ * (tg's do_attack_animation()); the line's end at the hand goes with the hand through it.
  *
- * A body nearer the viewer than the wielder (on a lower row) is met on its far side, so the line goes in two pieces:
- * from the hand to the foot of the wielder's tile, drawn over the wielder like any hand in front, and from there on
- * the target's tile under the target. The map draws a lower row over a higher one whatever the layer, but a line
- * hanging over the edge of its tile counts as on both.
+ * The map draws a lower row over a higher one whatever the layer, but a line hanging over the edge of its tile counts
+ * as on both. A line to another row is drawn in two pieces that meet where it crosses the edge of the wielder's tile,
+ * as one straight line:
+ * - A body nearer the viewer (a row down) is met on its far side: the hand's piece is drawn over the wielder like any
+ *   hand in front, the other on the target's tile under the target. A line that would run straight down from the hand
+ *   lands on the outer edge of the part instead, so it slants off the wielder's legs rather than running down one.
+ * - A body further off (a row up): the hand's piece as on the same row, the other on the target's tile over the
+ *   target. On a leg that piece goes at once, as the line snaps through: left on, it runs along the leg and paints it.
  */
-/// A lash to a body below the wielder that lands within this many pixels of straight below the hand is bowed out.
+/// A lash to a body a row down that would land within this many pixels of straight below the hand...
 #define WIRE_LASH_STRAIGHT_DOWN 6
-/// How far out to the wire's side the bowed lash reaches at the wielder's feet, in pixels.
-#define WIRE_LASH_BOW 8
-/// Where a bowed lash leaves the arm: chest height, in pixels from the middle of the tile.
-#define WIRE_LASH_CHEST_Y 2
+/// ...lands this many pixels further out instead, on the part's outer edge.
+#define WIRE_LASH_EDGE 3
+/// How fast the piece of a lash that runs along a leg beyond the wielder goes.
+#define WIRE_LASH_SNAP_FADE (0.15 SECONDS)
 
-/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone, list/end_shift)
+/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone, list/end_shift, lunge_after = 0)
 	var/turf/from = get_turf(user)
 	var/turf/hit = get_turf(target)
 	if(!end_shift)
@@ -297,13 +302,14 @@
 	lash_end_shift = null
 	if(!from || !hit || from == hit || from.z != hit.z)
 		return
+	zone = zone || check_zone(user.zone_selected)
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
 	var/end_x = target.pixel_x
 	var/end_y = target.pixel_y
 	if(isliving(target))
-		var/list/part = wire_zone_point(target, zone || check_zone(user.zone_selected))
+		var/list/part = wire_zone_point(target, zone)
 		end_x = part[1]
 		end_y = part[2]
 	if(length(end_shift) >= 2)
@@ -311,36 +317,53 @@
 		end_y += end_shift[2]
 	var/tile_x = (hit.x - from.x) * ICON_SIZE_X
 	var/tile_y = (hit.y - from.y) * ICON_SIZE_Y
+	if(hit.y < from.y && abs(tile_x + end_x - hand_x) <= WIRE_LASH_STRAIGHT_DOWN)
+		var/off_middle = end_x - target.pixel_x
+		end_x += (off_middle ? SIGN(off_middle) : (hand_x >= user.pixel_x ? 1 : -1)) * WIRE_LASH_EDGE
 	var/span_x = tile_x + end_x - hand_x
 	var/span_y = tile_y + end_y - hand_y
 	var/hand_layer = wire_line_layer(hand[3])
-	if(hit.y >= from.y)
+	var/list/lunge = wire_lunge_offset(user, target)
+	if(hit.y == from.y)
 		// Hanging over its tile's edges on purpose: over the target beside the wielder, as a hand in front would be.
-		wire_line_piece(from, hand_x, hand_y, span_x, span_y, hand_layer, on_tile = FALSE)
+		wire_line_piece(from, hand_x, hand_y, span_x, span_y, hand_layer, on_tile = FALSE, lunge = lunge, lunge_after = lunge_after)
 		return
-	// Where the line leaves the foot of the wielder's tile.
-	var/edge_y = -ICON_SIZE_Y / 2
-	var/edge_x = hand_x + span_x * (hand_y - edge_y) / max(hand_y - (tile_y + end_y), 1)
-	var/start_y = hand_y
-	// Straight down from the hand, the line would run down the wielder's leg like the wire hanging at rest. A lash is
-	// swung: it leaves the arm at chest height and bows out to the wire's side past the feet before it comes in.
-	if(abs(span_x) <= WIRE_LASH_STRAIGHT_DOWN)
-		start_y = user.pixel_y + WIRE_LASH_CHEST_Y
-		var/user_x = user.pixel_x
-		edge_x = hand_x + (hand_x >= user_x ? 1 : -1) * WIRE_LASH_BOW
-	wire_line_piece(from, hand_x, start_y, edge_x - hand_x, edge_y - start_y, hand_layer)
-	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, end_x - (edge_x - tile_x), end_y - (edge_y - tile_y), BELOW_MOB_LAYER)
+	// Where the line crosses the foot (or head) of the wielder's tile.
+	var/edge_y = (hit.y < from.y ? -1 : 1) * ICON_SIZE_Y / 2
+	var/edge_x = hand_x + span_x * (edge_y - hand_y) / (span_y || 1)
+	var/rest_x = end_x - (edge_x - tile_x)
+	var/rest_y = end_y - (edge_y - tile_y)
+	if(hit.y < from.y)
+		wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, hand_layer, lunge = lunge, lunge_after = lunge_after)
+		wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, rest_x, rest_y, BELOW_MOB_LAYER)
+		return
+	var/leg = zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG
+	wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, hand_layer, on_tile = FALSE, lunge = lunge, lunge_after = lunge_after)
+	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, rest_x, rest_y, ABOVE_MOB_LAYER, fade = leg ? WIRE_LASH_SNAP_FADE : 0.5 SECONDS)
 
 #undef WIRE_LASH_STRAIGHT_DOWN
-#undef WIRE_LASH_BOW
-#undef WIRE_LASH_CHEST_Y
+#undef WIRE_LASH_EDGE
+#undef WIRE_LASH_SNAP_FADE
+
+/// tg's lunge for a swing at `target` (do_attack_animation()): how far the body leans in, in pixels. list(x, y)
+/proc/wire_lunge_offset(mob/living/user, atom/target)
+	var/direction = get_dir(user, target)
+	var/lean_x = (direction & EAST) ? 8 : ((direction & WEST) ? -8 : 0)
+	var/lean_y = (direction & NORTH) ? 8 : ((direction & SOUTH) ? -8 : 0)
+	return list(lean_x, lean_y)
+
+/// tg's lunge leans in over WIRE_LUNGE_OUT, then comes back over WIRE_LUNGE_BACK.
+#define WIRE_LUNGE_OUT (0.1 SECONDS)
+#define WIRE_LUNGE_BACK (0.2 SECONDS)
 
 /**
  * One straight piece of a lash on `where`: from (`start_x`, `start_y`) pixels off the middle of that tile, running
- * (`span_x`, `span_y`), at world `line_layer`; it fades out with the rest of the lash. `on_tile` shifts it with
- * pixel_w/pixel_z, which only move the picture, so it keeps to its own tile in the map's front-to-back order.
+ * (`span_x`, `span_y`), at world `line_layer`; it fades out over `fade`. `on_tile` shifts it with pixel_w/pixel_z, which
+ * only move the picture, so it keeps to its own tile in the map's front-to-back order. A piece leaving a hand takes
+ * `lunge` (wire_lunge_offset()) and `lunge_after`: its start moves with the hand as the body leans in and back, and
+ * its far end stays put.
  */
-/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, on_tile = TRUE)
+/obj/item/melee/cyberware_monowire/proc/wire_line_piece(turf/where, start_x, start_y, span_x, span_y, line_layer, on_tile = TRUE, fade = 0.5 SECONDS, list/lunge, lunge_after = 0)
 	if(!where || (abs(span_x) < 1 && abs(span_y) < 1))
 		return
 	var/obj/effect/abstract/wire_reach/lash = new(where)
@@ -354,8 +377,44 @@
 		lash.pixel_x = start_x
 		lash.pixel_y = start_y
 	lash.transform = wire_reach_shape(span_x, span_y)
-	animate(lash, alpha = 0, time = 0.5 SECONDS, easing = QUAD_EASING | EASE_IN)
-	QDEL_IN(lash, 0.5 SECONDS)
+	animate(lash, alpha = 0, time = fade, easing = QUAD_EASING | EASE_IN)
+	if(length(lunge) && lunge_after < WIRE_LUNGE_OUT + WIRE_LUNGE_BACK)
+		wire_line_lunge(lash, on_tile, start_x, start_y, span_x, span_y, lunge, lunge_after)
+	QDEL_IN(lash, fade)
+
+/// Moves the start of `lash` with the hand through tg's lunge, `lunge_after` into it, keeping its far end where it is.
+/proc/wire_line_lunge(obj/effect/abstract/wire_reach/lash, on_tile, start_x, start_y, span_x, span_y, list/lunge, lunge_after)
+	var/matrix/rest_shape = wire_reach_shape(span_x, span_y)
+	// How far in the body leans: all the way at the end of the lean, less on the way back.
+	var/lean = 1
+	if(lunge_after >= WIRE_LUNGE_OUT)
+		lean = 1 - (lunge_after - WIRE_LUNGE_OUT) / WIRE_LUNGE_BACK
+	var/lean_x = lunge[1] * lean
+	var/lean_y = lunge[2] * lean
+	var/matrix/lean_shape = wire_reach_shape(span_x - lean_x, span_y - lean_y)
+	var/back_time = WIRE_LUNGE_BACK * lean
+	if(lunge_after < WIRE_LUNGE_OUT)
+		var/out_time = WIRE_LUNGE_OUT - lunge_after
+		if(on_tile)
+			animate(lash, pixel_w = start_x + lean_x, pixel_z = start_y + lean_y, transform = lean_shape, time = out_time, easing = BACK_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+			animate(pixel_w = start_x, pixel_z = start_y, transform = rest_shape, time = back_time, easing = SINE_EASING)
+		else
+			animate(lash, pixel_x = start_x + lean_x, pixel_y = start_y + lean_y, transform = lean_shape, time = out_time, easing = BACK_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+			animate(pixel_x = start_x, pixel_y = start_y, transform = rest_shape, time = back_time, easing = SINE_EASING)
+		return
+	// Already on the way back: from where the hand is now.
+	lash.transform = lean_shape
+	if(on_tile)
+		lash.pixel_w = start_x + lean_x
+		lash.pixel_z = start_y + lean_y
+		animate(lash, pixel_w = start_x, pixel_z = start_y, transform = rest_shape, time = back_time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	else
+		lash.pixel_x = start_x + lean_x
+		lash.pixel_y = start_y + lean_y
+		animate(lash, pixel_x = start_x, pixel_y = start_y, transform = rest_shape, time = back_time, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+
+#undef WIRE_LUNGE_OUT
+#undef WIRE_LUNGE_BACK
 
 /obj/item/melee/cyberware_monowire/proc/lash_state()
 	return "wire_reach"
@@ -439,9 +498,9 @@
 		var/reach = reaches[i] + rand(-3, 3)
 		var/land_x = start_x + round(sin(angle) * reach) + rand(-3, 3)
 		var/land_y = start_y + round(cos(angle) * reach) + rand(-3, 3)
-		// Facing away, the drops that would land by the head land past it, not on the floor drawn just above it.
-		if(forward_y > 0 && abs(land_x) < 10)
-			land_y = max(land_y, 26 + rand(0, 6))
+		// Facing away, every drop lands past the head, ahead of him: on the floor beside it, it reads as blood by his ear.
+		if(forward_y > 0)
+			land_y = max(land_y, (abs(land_x) < 10 ? 26 : 22) + rand(0, 6))
 		var/height = 5 + rand(0, 6)
 		var/flight = round(2 + reach / 12, 0.5)
 		. += list(list(start_x, start_y, land_x, land_y, height, flight))
@@ -526,3 +585,12 @@
 	var/list/offset = offsets[icon_state] || list(0, 0)
 	pixel_x = x - offset[1]
 	pixel_y = y - offset[2]
+	// tg's five drops are all one size of blob. These land smaller or larger, turned and flipped, about their own middle.
+	var/size = pick(0.5, 0.75, 1, 1, 1.25)
+	var/matrix/shape = matrix()
+	shape.Translate(-offset[1], -offset[2])
+	shape.Scale(size * pick(-1, 1), size)
+	shape.Turn(pick(0, 90, 180, 270))
+	shape.Translate(offset[1], offset[2])
+	transform = shape
+	appearance_flags |= PIXEL_SCALE
