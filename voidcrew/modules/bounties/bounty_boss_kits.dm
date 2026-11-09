@@ -43,7 +43,8 @@
  *
  * Behind something it can't walk through, a hunter is out of reach unless the kit gets through it
  * (boss_goes_through(), bounty_boss.dm): the Juggernaut's charge, the Demolitionist's grenades and
- * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds, and real Gorilla Arms on any kit.
+ * breaching charge, the Pyromaniac's molotovs, the Heavy's rounds, and real Gorilla Arms (the cyberpsycho's,
+ * or an admin's pick; no kit rolls them).
  * The Ghost has nothing for it, and takes cover instead. It walks up to the barrier only while that
  * ability is off cooldown (boss_breaks_through_now()), or when there is no way round; otherwise it goes
  * round on foot.

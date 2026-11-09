@@ -164,9 +164,9 @@ GLOBAL_LIST_INIT(bounty_chrome_pieces, init_bounty_chrome_pieces())
 	key = BOUNTY_CHROME_GORILLA
 	name = "Gorilla Arms"
 	weight = 12
-	// The implant powers a bare-handed punch: brawlers only, and the one mini-boss that fights with its fists
+	// The implant powers a bare-handed punch: brawlers only. Never a mini-boss: the Juggernaut's shield fills a hand, so its grab never fires
 	styles = list(BOUNTY_STYLE_BRAWLER)
-	kits = list(BOUNTY_KIT_JUGGERNAUT)
+	archetypes = list(BOUNTY_ARCHETYPE_NORMAL)
 	organs = list(
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms,
 		/obj/item/organ/cyberimp/cyberware/gorilla_arms/left,
