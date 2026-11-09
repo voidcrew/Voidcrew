@@ -17,12 +17,37 @@
 	cooldown_time = GORILLA_POUND_COOLDOWN
 	/// The crouch before the slam
 	var/crouch_timer
+	/// The bearer's arm rig while the pound is drawn (chrome_puppet_rig.dm)
+	var/datum/chrome_rig/rig
 
 /datum/action/cooldown/cyberware/gorilla_pound/Destroy()
 	if(crouch_timer)
 		deltimer(crouch_timer)
 		crouch_timer = null
+	drop_rig()
 	return ..()
+
+/// Draws the bearer crouching with both arms up. Returns TRUE if the rig is up.
+/datum/action/cooldown/cyberware/gorilla_pound/proc/raise_rig(mob/living/carbon/human/bearer)
+	drop_rig()
+	rig = new(bearer, bearer.dir)
+	if(!rig.rig_arms())
+		QDEL_NULL(rig)
+		return FALSE
+	// Moved, knocked down or gone: the drawing comes down at once
+	RegisterSignals(bearer, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING), PROC_REF(drop_rig))
+	// Arms first: a crouch runs alongside, and a swing started after it would cut it short
+	for(var/side in list("l", "r"))
+		rig.swing_arm(side, 150, GORILLA_POUND_CROUCH, 0, SINE_EASING)
+	rig.crouch(0.88, 2, GORILLA_POUND_CROUCH, SINE_EASING | EASE_OUT)
+	return TRUE
+
+/// Takes the rig down and shows the real body.
+/datum/action/cooldown/cyberware/gorilla_pound/proc/drop_rig(datum/source)
+	SIGNAL_HANDLER
+	if(rig?.body)
+		UnregisterSignal(rig.body, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_SET_BODY_POSITION, COMSIG_QDELETING))
+	QDEL_NULL(rig)
 
 /datum/action/cooldown/cyberware/gorilla_pound/IsAvailable(feedback = FALSE)
 	. = ..()
@@ -49,9 +74,10 @@
 		return FALSE
 	StartCooldown()
 	gorilla_cooldown(bearer, COOLDOWN_GORILLA_POUND, GORILLA_POUND_COOLDOWN)
-	// The crouch: down and wide
-	animate(bearer, pixel_z = -2, time = GORILLA_POUND_CROUCH, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
-	animate(pixel_z = 2, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
+	// The crouch: down, both fists up. Without a rig (something huge worn) the body only dips.
+	if(!raise_rig(bearer))
+		animate(bearer, pixel_z = -2, time = GORILLA_POUND_CROUCH, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+		animate(pixel_z = 2, time = 0.1 SECONDS, flags = ANIMATION_RELATIVE)
 	crouch_timer = addtimer(CALLBACK(src, PROC_REF(slam), get_turf(bearer)), GORILLA_POUND_CROUCH, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	return TRUE
 
@@ -68,8 +94,24 @@
 	crouch_timer = null
 	var/mob/living/carbon/human/bearer = owner
 	if(!ishuman(bearer) || bearer.loc != where || bearer.stat != CONSCIOUS || HAS_TRAIT(bearer, TRAIT_INCAPACITATED) || HAS_TRAIT(bearer, TRAIT_HANDS_BLOCKED))
+		drop_rig()
 		return
+	if(rig)
+		// Down hard, fists on the floor, then back up
+		for(var/side in list("l", "r"))
+			rig.swing_arm(side, 0, GORILLA_POUND_DRIVE, 3, NONE)
+		rig.crouch(0.72, 6, GORILLA_POUND_DRIVE, SINE_EASING | EASE_IN)
+		addtimer(CALLBACK(src, PROC_REF(rise)), GORILLA_POUND_DRIVE + 0.1 SECONDS, TIMER_DELETE_ME)
 	gorilla_ground_pound(bearer, where)
+
+/// The bearer stands back up after the pound.
+/datum/action/cooldown/cyberware/gorilla_pound/proc/rise()
+	if(!rig)
+		return
+	for(var/side in list("l", "r"))
+		rig.swing_arm(side, 0, GORILLA_POUND_RISE, 0)
+	rig.crouch(1, 0, GORILLA_POUND_RISE, SINE_EASING | EASE_OUT)
+	addtimer(CALLBACK(src, PROC_REF(drop_rig)), GORILLA_POUND_RISE, TIMER_DELETE_ME)
 
 /// Both fists into the floor at [where]: the shock, the stagger and the hop. Returns the mobs it hit.
 /proc/gorilla_ground_pound(mob/living/carbon/human/bearer, turf/where)
@@ -78,7 +120,7 @@
 	bearer.do_attack_animation(where, ATTACK_EFFECT_SMASH)
 	bearer.visible_message(span_danger("[bearer] drives both fists into the floor!"), span_danger("You drive both fists into the floor!"), vision_distance = DEFAULT_MESSAGE_RANGE)
 	playsound(where, 'sound/effects/meteorimpact.ogg', 80, TRUE, 8)
-	cyberware_piledriver_impact_fx(where, 1.5)
+	gorilla_pound_impact_fx(where, 1.5)
 	cyberware_grey_dust(where)
 	for(var/mob/living/shaken in range(3, where))
 		if(shaken.client && shaken != bearer)
@@ -95,6 +137,20 @@
 		log_combat(bearer, hit, "ground-pounded", "gorilla arms")
 		. += hit
 	gorilla_pound_scatter(where)
+
+/// The ring and the cracks under a ground pound: the Piledriver's cross, gone sooner.
+/proc/gorilla_pound_impact_fx(turf/where, reach)
+	if(isnull(where))
+		return
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
+	new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(where, "damaged1", 255)
+	for(var/direction in GLOB.cardinals)
+		var/turf/next = get_step(where, direction)
+		if(next)
+			new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(next, "damaged5", 140)
+
+/obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound
+	duration = 4 SECONDS
 
 /// Loose things on the floor near [where] hop a tile outward, never into a hazard, glass or a door.
 /proc/gorilla_pound_scatter(turf/where)

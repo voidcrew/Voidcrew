@@ -437,10 +437,19 @@
 
 /obj/effect/decal/cleanable/blood/hv_spray/wall/gorilla_spray/runs/hv_aim(spray_dir)
 	. = ..()
-	// The runs grow downward from where the spray hit. Parallel: tg's drying animation keeps running.
+	// The runs grow downward from their top on the wall face, so they never show past it. Parallel: tg's
+	// drying animation keeps running.
+	var/top = 0
+	switch(spray_dir)
+		if(SOUTH)
+			top = -17
+		if(NORTH)
+			top = 25
+		else
+			top = -1
 	var/matrix/start = matrix()
 	start.Scale(1, 0.25)
-	start.Translate(0, 16)
+	start.Translate(0, round(top * 0.75))
 	transform = start
 	animate(src, transform = matrix(), time = 3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 

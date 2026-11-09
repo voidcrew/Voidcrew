@@ -103,6 +103,10 @@
 // ---- Ground pound ----
 
 #define GORILLA_POUND_CROUCH (0.45 SECONDS)
+/// How long the fists take from overhead to the floor
+#define GORILLA_POUND_DRIVE (0.08 SECONDS)
+/// How long the bearer takes to stand back up after a ground pound
+#define GORILLA_POUND_RISE (0.3 SECONDS)
 #define GORILLA_POUND_STAMINA 20
 #define GORILLA_POUND_DAZE (3 SECONDS)
 /// Loose items this far from the pound hop a tile outward.

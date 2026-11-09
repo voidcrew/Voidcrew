@@ -37,6 +37,24 @@ GLOBAL_LIST_INIT(chrome_rig_shoulders, list(
 	"[WEST]" = list(4, 2, 4, 2),
 ))
 
+/// Pixels from a shoulder pivot to the fist on a hanging arm, per facing.
+GLOBAL_LIST_INIT(chrome_rig_arm_length, list(
+	"[SOUTH]" = 10,
+	"[NORTH]" = 10,
+	"[EAST]" = 7,
+	"[WEST]" = 7,
+))
+
+/// The lowest pixel row (from the bottom, 1-based) of a human head; the neck is under it.
+#define CHROME_RIG_NECK_Y 23
+/// The middle of the head, from the icon's centre.
+#define CHROME_RIG_HEAD_PIVOT_Y 9
+
+/// Most degrees an arm turns in one animation step.
+#define CHROME_RIG_SWING_STEP 12
+/// The shortest an arm is drawn, as a share of its length.
+#define CHROME_RIG_MIN_ARM_LENGTH 0.4
+
 /// Where the torso under a side view's near arm is filled from: a pixel takes the one this far behind
 /// it along x (negative: from in front). list(dir = shift).
 GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
@@ -81,6 +99,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	var/old_mouse_opacity
 	/// TRUE while the body is hidden
 	var/hidden = FALSE
+	/// Side -> list(turn, length) the arm was last sent to
+	var/list/arm_poses = list()
 
 /datum/chrome_rig/New(mob/living/body, facing)
 	. = ..()
@@ -132,6 +152,15 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		fill.Shift(shift > 0 ? EAST : WEST, abs(shift))
 		fill.Blend(icon(GORILLA_GORE_ICON, "rig_fill_[fill_side]", facing), ICON_MULTIPLY)
 		piece.Blend(fill, ICON_OVERLAY)
+	return piece
+
+/// The flat picture above the neck (the head, with its hair and hat) if [head], else below it.
+/datum/chrome_rig/proc/cut_at_neck(head = TRUE)
+	var/icon/piece = icon(flat)
+	if(head)
+		piece.DrawBox(null, 1, 1, ICON_SIZE_X, CHROME_RIG_NECK_Y - 1)
+	else
+		piece.DrawBox(null, 1, CHROME_RIG_NECK_Y, ICON_SIZE_X, ICON_SIZE_Y)
 	return piece
 
 /// Hides the real body. Its whole tile still takes clicks.
@@ -228,8 +257,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 			picture.Shift(facing == EAST ? WEST : EAST, 1)
 			picture.Blend(rgb(170, 170, 178), ICON_MULTIPLY)
 		var/obj/effect/abstract/chrome_puppet/arm = add_puppet("arm_[side]", picture)
-		if(side_view)
-			arm.layer = side == near ? body.layer + 0.01 : body.layer - 0.01
+		// Seen from the front or back both arms are over the body
+		arm.layer = (!side_view || side == near) ? body.layer + 0.01 : body.layer - 0.01
 	conceal()
 	return TRUE
 
@@ -237,17 +266,49 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 /datum/chrome_rig/proc/near_side()
 	return facing == WEST ? "l" : "r"
 
-/// Turns the arm on [side] to [angle] degrees up from hanging (0) over [time], with [reach] pixels of piston out along it.
+/**
+ * Turns the arm on [side] to [angle] degrees up from hanging (0) over [time]. [reach] pixels of piston
+ * push the fist out along the arm (negative pulls it in, as an arm reaching toward the viewer looks
+ * shorter). The arm stretches or shortens from the shoulder, so its top never leaves the shoulder.
+ *
+ * BYOND blends the move part of a turned matrix in a straight line, which would carry the shoulder off
+ * its pivot halfway through a big swing, so a swing is cut into steps of a few degrees.
+ */
 /datum/chrome_rig/proc/swing_arm(side, angle, time, reach = 0, easing = SINE_EASING)
 	var/obj/effect/abstract/chrome_puppet/arm = puppet("arm_[side]")
 	if(!arm)
 		return
 	var/list/pivot = shoulder(side)
-	var/turn = angle * raise_sign(side)
-	// The piston pushes the fist out along the arm: straight down when hanging, turned with it.
-	var/push_x = -reach * sin(turn)
-	var/push_y = -reach * cos(turn)
-	animate(arm, transform = chrome_rig_turn(turn, pivot[1], pivot[2], round(push_x), round(push_y)), time = time, easing = easing)
+	var/list/from = arm_poses[side] || list(0, 1)
+	var/to_turn = angle * raise_sign(side)
+	var/to_length = max(CHROME_RIG_MIN_ARM_LENGTH, 1 + reach / (GLOB.chrome_rig_arm_length["[facing]"] || 10))
+	arm_poses[side] = list(to_turn, to_length)
+	var/steps = max(1, CEILING(abs(to_turn - from[1]) / CHROME_RIG_SWING_STEP, 1))
+	var/step_time = time / steps
+	for(var/i in 1 to steps)
+		// Sine in and out across the whole swing; each step itself is straight
+		var/progress = (easing & SINE_EASING) ? (1 - cos(180 * i / steps)) / 2 : i / steps
+		var/matrix/pose = chrome_rig_turn(from[1] + (to_turn - from[1]) * progress, pivot[1], pivot[2], 0, 0, 1, from[2] + (to_length - from[2]) * progress)
+		if(i == 1)
+			animate(arm, transform = pose, time = step_time)
+		else
+			animate(transform = pose, time = step_time)
+
+/**
+ * The body crouches over [time]: squashed to [squash] of its height and dropped [drop] pixels, the arms
+ * coming down with their shoulders. 1 and 0 stand it back up.
+ */
+/datum/chrome_rig/proc/crouch(squash, drop, time, easing = SINE_EASING)
+	var/obj/effect/abstract/chrome_puppet/body_puppet = puppet("body")
+	if(body_puppet)
+		animate(body_puppet, transform = matrix(1, 0, 0, 0, squash, -drop), time = time, easing = easing)
+	for(var/side in list("l", "r"))
+		var/obj/effect/abstract/chrome_puppet/arm = puppet("arm_[side]")
+		if(!arm)
+			continue
+		// Where the squashed body puts this shoulder
+		var/list/pivot = shoulder(side)
+		animate(arm, pixel_z = round(pivot[2] * squash - drop - pivot[2]), time = time, easing = easing, flags = ANIMATION_PARALLEL)
 
 /// Every puppet trembles a pixel for [time].
 /datum/chrome_rig/proc/tremble(time = 0.4 SECONDS)
@@ -267,3 +328,5 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		cyberware_flash_fx(puppets[key], 0.2 SECONDS)
 
 #undef CHROME_RIG_HIDE_FILTER
+#undef CHROME_RIG_SWING_STEP
+#undef CHROME_RIG_MIN_ARM_LENGTH

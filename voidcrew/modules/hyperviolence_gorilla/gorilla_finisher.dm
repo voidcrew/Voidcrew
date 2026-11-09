@@ -318,80 +318,108 @@
 		if("squeeze")
 			return "You choke and kick in [user]'s grip."
 
+/// Every puppet of the body held in the clap.
+/datum/hv_finisher/chrome/gorilla/clap/proc/held_parts()
+	. = list()
+	for(var/key_name in victim_rig?.puppets)
+		. += victim_rig.puppets[key_name]
+
 /datum/hv_finisher/chrome/gorilla/clap/pose(key)
 	switch(key)
 		if("hoist")
 			rig_bearer()
 			victim_rig = new(victim, REVERSE_DIR(facing || user.dir))
 			if(victim_rig.snapshot())
-				var/obj/effect/abstract/chrome_puppet/held = victim_rig.add_puppet("whole", victim_rig.flat, TRUE)
-				// The held body is in front of the bearer, unless he faces away from the viewer.
-				held.layer = facing == NORTH ? user.layer - 0.02 : user.layer + 0.02
+				// The head on its own puppet, so it can strain and crush while the body hangs
+				victim_rig.add_puppet("body", victim_rig.cut_at_neck(FALSE), TRUE)
+				victim_rig.add_puppet("head", victim_rig.cut_at_neck(TRUE), TRUE)
 				victim_rig.conceal()
 				var/list/toward = to_bearer()
-				animate(held, transform = matrix(), pixel_x = round(toward[1] * 0.7), pixel_y = round(toward[2] * 0.7), pixel_w = 0, pixel_z = 6, time = 0.4 SECONDS, easing = SINE_EASING | EASE_OUT)
+				for(var/obj/effect/abstract/chrome_puppet/held as anything in held_parts())
+					// The held body is in front of the bearer, unless he faces away from the viewer. Held up to his
+				// face when he faces the viewer, so its head is between the fists.
+					held.layer = facing == NORTH ? user.layer - 0.02 : user.layer + 0.02
+					animate(held, transform = matrix(), pixel_x = round(toward[1] * 0.7), pixel_y = round(toward[2] * 0.7), pixel_w = 0, pixel_z = facing == SOUTH ? 15 : 6, time = 0.4 SECONDS, easing = SINE_EASING | EASE_OUT)
 			else
 				QDEL_NULL(victim_rig)
 			if(side_view())
-				// The near fist holds the shirt front, kept under the bearer's face; the far one waits low behind.
+				// The near fist holds the shirt front, over the held body; the far one is behind the bearer.
 				var/obj/effect/abstract/chrome_puppet/near_arm = arm_puppet("near")
 				if(near_arm)
 					near_arm.layer = user.layer + 0.03
-				arm_to("near", 100, 0.4 SECONDS, 4)
-				arm_to("far", 40, 0.4 SECONDS, 2)
+				arm_to("near", 125, 0.4 SECONDS, 2)
+				arm_to("far", 60, 0.4 SECONDS)
 			else
-				// Seen from the front or back: both hands on the shoulders of the body held in front
+				// Seen from the front or back: both hands on the shoulders of the body held in front. The arms
+				// are over the bearer's body and under the held one (which is behind him when he faces away).
 				for(var/side in list("l", "r"))
 					var/obj/effect/abstract/chrome_puppet/arm = bearer_rig?.puppet("arm_[side]")
 					if(arm)
-						arm.layer = facing == NORTH ? user.layer + 0.01 : user.layer + 0.03
+						arm.layer = user.layer + 0.01
 				arms_to(-25, 0.4 SECONDS)
 		if("squeeze")
+			// The fists close on the head and press. The body hangs still; the head strains and gives between them.
+			if(side_view())
+				arm_to("near", 122, 0.3 SECONDS, 3)
+				arm_to("far", 122, 0.3 SECONDS, 3)
+			else if(facing == NORTH)
+				arms_to(165, 0.3 SECONDS, 7)
+			else
+				arms_to(160, 0.3 SECONDS, -2)
+			// After the swings: the tremble runs alongside them
 			bearer_rig?.tremble(1 SECONDS)
-			var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
-			if(held)
-				// Swinging on the collar: turns about the top of the body
-				for(var/i in 1 to 4)
-					var/angle = (i % 2) ? 6 : -6
+			if(facing != SOUTH)
+				for(var/obj/effect/abstract/chrome_puppet/held as anything in held_parts())
+					animate(held, pixel_z = 1, time = 0.3 SECONDS, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+			var/obj/effect/abstract/chrome_puppet/head = victim_rig?.puppet("head")
+			if(head)
+				// Narrower in steps, a strain jerk between each
+				var/list/jerks = list(-5, 4, -4, 5, -3, 0)
+				for(var/i in 1 to length(jerks))
+					var/give = 1 - 0.05 * i
+					var/matrix/pressed = side_view() 						? chrome_rig_turn(jerks[i], 0, CHROME_RIG_HEAD_PIVOT_Y, 0, 0, 1 + (1 - give) * 0.5, give) 						: chrome_rig_turn(jerks[i], 0, CHROME_RIG_HEAD_PIVOT_Y, 0, 0, give, 1 + (1 - give) * 0.3)
 					if(i == 1)
-						animate(held, transform = chrome_rig_turn(angle, 0, 10), time = 0.12 SECONDS, easing = SINE_EASING)
+						animate(head, transform = pressed, time = 0.2 SECONDS, easing = SINE_EASING)
 					else
-						animate(transform = chrome_rig_turn(angle, 0, 10), time = 0.24 SECONDS, easing = SINE_EASING)
-				animate(transform = matrix(), time = 0.12 SECONDS)
+						animate(transform = pressed, time = 0.15 SECONDS, easing = SINE_EASING)
 			playsound(victim, 'sound/mobs/humanoids/human/gasp/gasp_male1.ogg', 30, TRUE)
 		if("toss")
-			var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
-			if(held)
-				animate(held, pixel_z = 10, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT)
-				animate(pixel_z = 6, time = 0.15 SECONDS, easing = SINE_EASING | EASE_IN)
+			for(var/obj/effect/abstract/chrome_puppet/held as anything in held_parts())
+				// A small jolt as the fists let go. Seen from the front he stays up, so his head is where the fists
+				// meet behind it.
+				animate(held, pixel_z = facing == SOUTH ? 17 : 4, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+				animate(pixel_z = facing == SOUTH ? 15 : 2, time = 0.15 SECONDS, easing = SINE_EASING | EASE_IN)
+			// The fists come off the head a little, for the clap
 			if(side_view())
-				// Both fists draw back: the near one low, the far one up by the head. An arm swung high about
-				// the shoulder would cross the bearer's face from the side, so the far arm is lifted instead.
-				arm_to("near", 30, 0.15 SECONDS, 4)
-				arm_to("far", 50, 0.15 SECONDS, 2)
-				var/obj/effect/abstract/chrome_puppet/far_arm = arm_puppet("far")
-				if(far_arm)
-					animate(far_arm, pixel_z = 9, time = 0.15 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+				arm_to("near", 95, 0.15 SECONDS)
+				arm_to("far", 100, 0.15 SECONDS)
+			else if(facing == NORTH)
+				arms_to(135, 0.15 SECONDS)
 			else
-				arms_to(80, 0.15 SECONDS, 4)
+				arms_to(125, 0.15 SECONDS)
 		if("clap")
 			if(side_view())
-				// ...and close on the head from below and above as the body drops into them
-				arm_to("near", 117, 0.08 SECONDS, 6)
-				arm_to("far", 95, 0.08 SECONDS, 6)
-				var/obj/effect/abstract/chrome_puppet/held = victim_rig?.puppet("whole")
-				if(held)
-					animate(held, pixel_z = 0, time = 0.08 SECONDS, easing = SINE_EASING | EASE_IN)
+				// ...and close on the head as the body drops into them: the near fist over it, the far one
+				// behind it
+				arm_to("near", 120, 0.08 SECONDS, 3)
+				arm_to("far", 120, 0.08 SECONDS, 3)
+			else if(facing == NORTH)
+				// Seen from behind: both fists up past his head onto the one held beyond it
+				arms_to(165, 0.08 SECONDS, 7)
 			else
-				// Both fists in from the sides, meeting across the head
-				arms_to(-95, 0.08 SECONDS, -6)
+				// Seen from the front: the arms come up behind the held body, the fists on either side of its head
+				arms_to(160, 0.08 SECONDS, -2)
+			if(facing != SOUTH)
+				for(var/obj/effect/abstract/chrome_puppet/held as anything in held_parts())
+					animate(held, pixel_z = 0, time = 0.08 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+			var/obj/effect/abstract/chrome_puppet/head = victim_rig?.puppet("head")
+			if(head)
+				// The fists close and the head gives between them
+				animate(head, transform = chrome_rig_turn(0, 0, CHROME_RIG_HEAD_PIVOT_Y, 0, 0, side_view() ? 1.2 : 0.55, side_view() ? 0.6 : 1.15), time = 0.08 SECONDS, easing = SINE_EASING | EASE_IN)
 			// The sparks go where the fists meet, on the head
-			hit_stop(victim_rig?.puppet("whole") || victim, TRUE, 9)
+			hit_stop(head || victim, TRUE, 9)
 		if("recover")
 			arms_to(0, 0.5 SECONDS)
-			var/obj/effect/abstract/chrome_puppet/far_arm = arm_puppet("far")
-			if(far_arm)
-				animate(far_arm, pixel_z = 0, time = 0.5 SECONDS, flags = ANIMATION_PARALLEL)
 
 /datum/hv_finisher/chrome/gorilla/clap/beat(key)
 	if(key != "clap" || QDELETED(victim))
@@ -609,13 +637,13 @@
 				victim_rig.conceal()
 			else
 				QDEL_NULL(victim_rig)
-			// A boot on the body: the bearer leans over them
+			arms_to(side_view() ? 45 : 30, 0.3 SECONDS, 3)
+			// A boot on the body: the bearer leans over them, arms and all (after the swing, which would cut
+			// the lean short on the arms)
 			for(var/key_name in bearer_rig?.puppets)
 				var/obj/effect/abstract/chrome_puppet/part = bearer_rig.puppets[key_name]
-				animate(part, pixel_x = part.pixel_x - round(toward[1] * 0.18), pixel_y = part.pixel_y - round(toward[2] * 0.18), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
-			arms_to(side_view() ? 45 : 30, 0.3 SECONDS, 3)
+				animate(part, pixel_x = part.pixel_x - round(toward[1] * 0.08), pixel_y = part.pixel_y - round(toward[2] * 0.08), time = 0.3 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 		if("strain")
-			bearer_rig?.tremble(1.3 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/arm = victim_rig?.puppet("arm")
 			if(arm)
 				// The arm comes out of the shoulder toward the bearer, five pixels over the strain
@@ -624,6 +652,7 @@
 			if(body)
 				body.Shake(1, 1, 1.3 SECONDS)
 			arms_to(side_view() ? 25 : 15, 1.3 SECONDS, 1)
+			bearer_rig?.tremble(1.3 SECONDS)
 		if("tear")
 			arms_to(side_view() ? -20 : 0, 0.1 SECONDS)
 		if("club")
@@ -819,7 +848,7 @@
 		if("press")
 			return "[victim] thrashes in [user]'s grip."
 		if("roll")
-			return "[user] rolls [victim] off [user.p_their()] knee."
+			return "[user] drops [victim] off [user.p_their()] knee."
 
 /datum/hv_finisher/chrome/gorilla/backbreaker/enter_self_line(key)
 	switch(key)
@@ -847,10 +876,10 @@
 				QDEL_NULL(victim_rig)
 			// Fists up under the body
 			if(side_view())
-				arm_to("near", 166, 0.5 SECONDS, 9)
-				arm_to("far", 174, 0.5 SECONDS, 9)
+				arm_to("near", 166, 0.5 SECONDS, 6)
+				arm_to("far", 174, 0.5 SECONDS, 6)
 			else
-				arms_to(170, 0.5 SECONDS, 8)
+				arms_to(170, 0.5 SECONDS, 3)
 		if("press")
 			bearer_rig?.tremble(1 SECONDS)
 			var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
@@ -873,30 +902,28 @@
 				animate(transform = chrome_rig_turn(90, 0, BACK_WAIST_PIVOT_Y), time = 0.1 SECONDS)
 		if("slam")
 			// Down to one knee, and the body comes down across it
-			var/obj/effect/abstract/chrome_puppet/body = bearer_rig?.puppet("body")
-			if(body)
-				animate(body, transform = matrix(1, 0, 0, 0, 0.8, -3), time = 0.15 SECONDS, easing = SINE_EASING | EASE_IN)
-			for(var/side in list("l", "r"))
-				var/obj/effect/abstract/chrome_puppet/arm = bearer_rig?.puppet("arm_[side]")
-				if(arm)
-					animate(arm, pixel_z = -6, time = 0.15 SECONDS, flags = ANIMATION_PARALLEL)
 			arms_to(120, 0.15 SECONDS, 2)
+			bearer_rig?.crouch(0.8, 3, 0.15 SECONDS, SINE_EASING | EASE_IN)
 			for(var/half in list("upper", "lower"))
 				var/obj/effect/abstract/chrome_puppet/part = victim_rig?.puppet(half)
 				if(part)
 					animate(part, pixel_z = 2, time = 0.16 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 		if("roll")
-			var/obj/effect/abstract/chrome_puppet/body = bearer_rig?.puppet("body")
-			if(body)
-				animate(body, transform = matrix(), time = 0.4 SECONDS, easing = SINE_EASING | EASE_OUT)
-			for(var/side in list("l", "r"))
-				var/obj/effect/abstract/chrome_puppet/arm = bearer_rig?.puppet("arm_[side]")
-				if(arm)
-					animate(arm, pixel_z = 0, time = 0.4 SECONDS, flags = ANIMATION_PARALLEL)
 			arms_to(0, 0.5 SECONDS)
-			// Off the knee onto their own tile, still bent if the back broke. A broken back hangs folded over
-			// the knee for a moment first. The halves turn about the belt, seven pixels under the middle, so
-			// they sit a pixel up to lie where a lying body lies.
+			bearer_rig?.crouch(1, 0, 0.4 SECONDS, SINE_EASING | EASE_OUT)
+			// Off the knee and down where it happened, on the bearer's tile (a body on the floor shares it).
+			// The halves stay drawn where they are as the body moves under them.
+			var/turf/knee = get_turf(user)
+			var/turf/from = get_turf(victim)
+			if(knee && from && knee != from && victim.body_position == LYING_DOWN && victim.Move(knee, get_dir(from, knee)))
+				for(var/key_name in victim_rig?.puppets)
+					var/obj/effect/abstract/chrome_puppet/part = victim_rig.puppets[key_name]
+					part.forceMove(knee)
+					part.pixel_x -= (knee.x - from.x) * ICON_SIZE_X
+					part.pixel_y -= (knee.y - from.y) * ICON_SIZE_Y
+			// Still bent if the back broke. A broken back hangs folded over the knee for a moment first. The
+			// halves turn about the belt, seven pixels under the middle, so they sit a pixel up to lie where a
+			// lying body lies.
 			var/bend = broke ? 33 : 0
 			var/hold = broke ? GORILLA_BACK_FOLD_HOLD : 0
 			var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")
@@ -929,7 +956,7 @@
 	broke = outcome == "broken"
 	if(broke && !QDELETED(victim))
 		// A trickle from the mouth, under where his head hangs over the knee
-		victim.add_splatter_floor(get_turf(victim), TRUE)
+		victim.add_splatter_floor(get_turf(user), TRUE)
 	if(broke)
 		// The body folds over the knee
 		var/obj/effect/abstract/chrome_puppet/upper = victim_rig?.puppet("upper")

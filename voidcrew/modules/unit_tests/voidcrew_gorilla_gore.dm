@@ -587,6 +587,7 @@
 	var/datum/wound/spine = chest.get_wound_type(/datum/wound/blunt/bone/critical/gorilla_spine)
 	TEST_ASSERT_NOTNULL(spine, "The back didn't break")
 	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_FLOORED, REF(spine)), "A broken back can still stand")
+	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The body didn't come down off the knee where it broke")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
 	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
 	victim.forceMove(spot(3, 3))
