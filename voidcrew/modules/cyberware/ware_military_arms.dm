@@ -474,11 +474,13 @@
 /**
  * A shown-line dash (dash_aim, a bounty NPC's tell): a real run down the line it showed, a tile a tick with
  * a decoy per tile, up to the tile before `aim`. Anything that stops a walker stops it there: a wall, a
- * window, a shut door, a standing body, a stun or a grab. If its target is next to it where it stops, the
- * lunge lands; otherwise it fell short.
+ * window, a shut door, a standing body, a stun or a grab. The lunge lands only where the line said: on a
+ * target still on the marked tile, or one who stepped into its way, next to it where it stops. Anyone who
+ * stepped off the line is missed.
  */
 /datum/action/cooldown/cyberware/mantis_lunge/proc/dash(mob/living/lunger, datum/weakref/victim_ref, turf/aim)
 	var/turf/start = get_turf(lunger)
+	var/turf/stopped_at
 	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 	for(var/turf/step_turf as anything in get_line(start, aim))
 		if(step_turf == start)
@@ -491,6 +493,7 @@
 				blocked = TRUE
 				break
 		if(blocked)
+			stopped_at = step_turf
 			break
 		var/turf/from = lunger.loc
 		lunger.set_glide_size(DELAY_TO_GLIDE_SIZE(CYBERWARE_MANTIS_LUNGE_STEP))
@@ -501,7 +504,8 @@
 	if(QDELETED(lunger) || lunger.stat != CONSCIOUS)
 		return
 	var/mob/living/victim = victim_ref?.resolve()
-	if(QDELETED(victim) || victim.stat == DEAD || !lunger.Adjacent(victim))
+	var/turf/victim_turf = get_turf(victim)
+	if(QDELETED(victim) || victim.stat == DEAD || (victim_turf != aim && victim_turf != stopped_at) || !lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
 		return
 	land_lunge(lunger, victim)

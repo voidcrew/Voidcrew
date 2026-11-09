@@ -259,8 +259,8 @@
 	lunge.opens_at = 0
 	chrome.next_move_at = 0
 	TEST_ASSERT(chrome.start_move(lunge, hunter), "The lunge's tell didn't start")
-	// Out of the lit line during the tell
-	hunter.forceMove(spot(4, 4))
+	// One step off the lit line during the tell: still next to where the dash stops, but off the marked tile
+	hunter.forceMove(spot(4, 3))
 	sleep(1.6 SECONDS)
 	TEST_ASSERT_NULL(lunge.lunge_action(), "The housing's own Mantis Lunge wasn't used")
 	TEST_ASSERT_EQUAL(get_turf(criminal), spot(3, 2), "The dash didn't run down the lit line to its last tile")
