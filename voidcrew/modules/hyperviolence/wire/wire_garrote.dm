@@ -37,6 +37,10 @@
 #define WIRE_GARROTE_HEAD_FALL_TIME (0.2 SECONDS)
 /// Pixels below the neck the pool goes facing away, where the dropped head lies against the stump.
 #define WIRE_GARROTE_POOL_DROP_NORTH 6
+/// One beat of the victim's thrashing in the hold.
+#define WIRE_GARROTE_JOLT_TIME (0.05 SECONDS)
+/// Trait source: a body held still from bobbing while wire_shake() shakes it.
+#define WIRE_SHAKE_TRAIT "wire_shake"
 
 /mob/living
 	/// The garrote can be tried again from this world.time.
@@ -420,6 +424,24 @@
 	icon = WIRE_GORE_ICON
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	appearance_flags = PIXEL_SCALE | TILE_BOUND
+	/// A taut strand's far end, on the neck, from its base in the hand: list(x, y) pixels. Null for any other line.
+	var/list/span
+
+/**
+ * A taut strand on a neck that thrashes: its far end jolts by each of `jolts` (wire_jolts()) in turn, a beat apart,
+ * as the body does, while its base stays in the hand. Linear, so the end runs straight to each spot, as the body does.
+ */
+/obj/effect/abstract/wire_reach/proc/jolt_end(list/jolts)
+	if(!span)
+		return
+	var/first = TRUE
+	for(var/list/jolt as anything in jolts)
+		var/matrix/shape = wire_strand_shape(span[1] + jolt[1], span[2] + jolt[2])
+		if(first)
+			animate(src, transform = shape, time = WIRE_GARROTE_JOLT_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+			first = FALSE
+		else
+			animate(transform = shape, time = WIRE_GARROTE_JOLT_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
 
 /// "" for the plain wire's colours, "_live" for the Arc's.
 /datum/hv_finisher/garrote/proc/wire_suffix()
@@ -517,26 +539,59 @@
 		victim_old_layer = victim.layer
 		victim.layer = WIRE_PULLED_LAYER
 
-/// The victim thrashes in the wire from `delay` on, for `duration`: a shake round wherever the body is drawn then.
+/// The victim thrashes in the wire from `delay` on, for `duration`.
 /datum/hv_finisher/garrote/proc/struggle(delay, duration)
 	if(struggle_timer)
 		deltimer(struggle_timer)
-	struggle_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_shake), victim, 2, 1, duration), delay, TIMER_STOPPABLE | TIMER_DELETE_ME)
+	struggle_timer = addtimer(CALLBACK(src, PROC_REF(thrash), duration), delay, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/**
+ * The victim thrashes in the wire for `duration`: the body jolts round wherever it is drawn now, and the ends of the
+ * strands on its neck jolt with it, beat for beat, so the wire stays on the neck. The hands' ends stay put.
+ */
+/datum/hv_finisher/garrote/proc/thrash(duration)
+	struggle_timer = null
+	if(QDELETED(victim) || !running)
+		return
+	var/list/jolts = wire_jolts(2, 1, duration)
+	wire_shake(victim, jolts = jolts)
+	for(var/datum/weakref/strand_ref as anything in strand_refs)
+		var/obj/effect/abstract/wire_reach/strand = strand_ref.resolve()
+		strand?.jolt_end(jolts)
+
+/// A shake's beats, one each WIRE_GARROTE_JOLT_TIME for `duration`: list(x, y) offsets of up to `shift_x` and `shift_y`
+/// pixels from where the shaken thing is drawn, the last one back where it was.
+/proc/wire_jolts(shift_x, shift_y, duration)
+	. = list()
+	for(var/i in 1 to max(round(duration / WIRE_GARROTE_JOLT_TIME) - 1, 2))
+		. += list(list(rand(-shift_x, shift_x), rand(-shift_y, shift_y)))
+	. += list(list(0, 0))
 
 /**
  * tg's Shake() without its slip (its first beat sets pixel_y from pixel_x, a jump on a body drawn off its tile's
  * middle): jitters `body` up to `shift_x` and `shift_y` pixels round where it is drawn now, then puts it back there.
+ * `jolts` (wire_jolts()) are the beats to use, for something else drawn on the body to follow them.
+ *
+ * Its own animation, not one run in parallel as tg's is: recorded on a lying body, a parallel shake (absolute or
+ * relative steps alike) showed each jolt at about twice its size, so nothing following the jolts could keep with it.
+ * Being its own animation it would stop a floating body's bob, so the bob is held off until the shake is over.
  */
-/proc/wire_shake(atom/movable/body, shift_x, shift_y, duration)
+/proc/wire_shake(atom/movable/body, shift_x, shift_y, duration, list/jolts)
 	if(QDELETED(body))
 		return
+	if(!length(jolts))
+		jolts = wire_jolts(shift_x, shift_y, duration)
+	ADD_TRAIT(body, TRAIT_NO_FLOATING_ANIM, WIRE_SHAKE_TRAIT)
+	addtimer(TRAIT_CALLBACK_REMOVE(body, TRAIT_NO_FLOATING_ANIM, WIRE_SHAKE_TRAIT), length(jolts) * WIRE_GARROTE_JOLT_TIME, TIMER_UNIQUE | TIMER_OVERRIDE)
 	var/start_x = body.pixel_x
 	var/start_y = body.pixel_y
-	var/interval = 0.05 SECONDS
-	animate(body, pixel_x = start_x + rand(-shift_x, shift_x), pixel_y = start_y + rand(-shift_y, shift_y), time = interval, flags = ANIMATION_PARALLEL)
-	for(var/i in 2 to max(round(duration / interval) - 1, 2))
-		animate(pixel_x = start_x + rand(-shift_x, shift_x), pixel_y = start_y + rand(-shift_y, shift_y), time = interval)
-	animate(pixel_x = start_x, pixel_y = start_y, time = interval)
+	var/first = TRUE
+	for(var/list/jolt as anything in jolts)
+		if(first)
+			animate(body, pixel_x = start_x + jolt[1], pixel_y = start_y + jolt[2], time = WIRE_GARROTE_JOLT_TIME)
+			first = FALSE
+		else
+			animate(pixel_x = start_x + jolt[1], pixel_y = start_y + jolt[2], time = WIRE_GARROTE_JOLT_TIME)
 
 /**
  * Draws the loop round the victim's neck: `kind` "draw" (winding on), "loop" (hanging loose) or "tight" (drawing
@@ -604,6 +659,7 @@
 		strand.add_overlay(emissive_appearance(strand.icon, strand.icon_state, strand))
 		strand.pixel_x = start_hand_x
 		strand.pixel_y = start_hand_y
+		strand.span = list(neck_x - hand_x, neck_y - hand_y)
 		strand.transform = wire_strand_shape(start_neck_x - start_hand_x, start_neck_y - start_hand_y)
 		if(start_hand_x != hand_x || start_hand_y != hand_y || start_neck_x != neck_x || start_neck_y != neck_y)
 			// Linear, as tg's offset moves are, and the matrix too, so both ends of the line run straight with the bodies.
@@ -1063,3 +1119,5 @@
 #undef WIRE_GARROTE_POOL_TIME
 #undef WIRE_GARROTE_HEAD_FALL_TIME
 #undef WIRE_GARROTE_POOL_DROP_NORTH
+#undef WIRE_GARROTE_JOLT_TIME
+#undef WIRE_SHAKE_TRAIT

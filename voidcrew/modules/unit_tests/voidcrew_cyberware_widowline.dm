@@ -495,6 +495,11 @@
 	TEST_ASSERT(abs(neck[1] - hands[1]) <= 2 && abs(neck[2] - hands[2]) <= 2, "The neck isn't at the garroter's feet ([neck[1]],[neck[2]] vs [hands[1]],[hands[2]])")
 	TEST_ASSERT(!LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_Y_OFFSET), HV_FINISHER_OFFSET), "The hold lifted the body off the floor")
 	TEST_ASSERT_EQUAL(length(garrote.strand_refs), 2, "The wire doesn't run from both hands")
+	// The strands' ends on the neck go with it as it thrashes.
+	for(var/datum/weakref/strand_ref as anything in garrote.strand_refs)
+		var/obj/effect/abstract/wire_reach/strand = strand_ref.resolve()
+		TEST_ASSERT_EQUAL(length(strand?.span), 2, "A strand doesn't know where its end on the neck is")
+	garrote.thrash(0.5 SECONDS)
 	TEST_ASSERT(user.wire_garrote_ready_at - world.time > 10 SECONDS, "A garrote that got a grip has the short wait")
 	// The kill, not in hard crit: the throat.
 	for(var/i in 1 to 10)
