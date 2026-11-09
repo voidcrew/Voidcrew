@@ -514,7 +514,10 @@
 		var/key = REF(member)
 		if(key in seen)
 			continue
-		var/turf/where = get_turf(member)
+		// A body stuffed in a locker, a crate or a bag is hidden, as a living person there is.
+		if(!isturf(member.loc))
+			continue
+		var/turf/where = member.loc
 		if(isnull(where) || where.z != guard.z)
 			continue
 		var/dist = get_dist(guard, where)
