@@ -110,7 +110,7 @@
    "group": "smgs",
    "hash": "d9b40f6fa856925a",
    "name": "C-20r SMG",
-   "rank": 4,
+   "rank": 6,
    "reason": "Puts a vested man down in about a second, with 24 rounds, from one hand.",
    "score": 79,
    "tier": "yellow"
@@ -120,7 +120,7 @@
    "group": "smgs",
    "hash": "bb032c110b509c59",
    "name": "Popup Ronin machine-pistol",
-   "rank": 6,
+   "rank": 8,
    "reason": "20 damage at 3.3 a second, WT-550 numbers with some spread. Lives in the arm, so it can't be disarmed, and reloads are hard to get.",
    "score": 47,
    "tier": "yellow"
@@ -179,7 +179,7 @@
    "group": "smgs",
    "hash": "57d5080462a9a158",
    "name": "Type U3 Uzi",
-   "rank": 5,
+   "rank": 7,
    "reason": "Fires the C-20r's bullet at a lower rate, with 32 rounds. Solid, not dangerous.",
    "score": 70,
    "tier": "yellow"
@@ -199,7 +199,7 @@
    "group": "smgs",
    "hash": "517391feb1e23558",
    "name": "Stechkin APS machine pistol",
-   "rank": 3,
+   "rank": 4,
    "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
    "score": 105,
    "tier": "yellow"
@@ -328,6 +328,17 @@
    "score": 42,
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/automatic/pistol/rattlesnake": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "",
+   "name": "MP-84 'Rattlesnake' machine pistol",
+   "note": "Right-click in hand cycles single shots, three-round bursts and full auto. Spawns on single shots. Takes a suppressor.",
+   "rank": 2,
+   "reason": "A machine pistol that fires 24 damage 9mm at 10 a second on full auto, from an 18 round magazine it empties in under two seconds. Wide spread and a hard kick, but it sits in one hand and fits a belt. Well past the Stechkin and the Saber, under the M-90.",
+   "score": 137,
+   "tier": "red"
+  },
   "/obj/item/gun/ballistic/automatic/pistol/toy": {
    "confidence": "high",
    "group": "toys and novelties",
@@ -364,7 +375,7 @@
    "group": "smgs",
    "hash": "3a82e5bc193f1d07",
    "name": "Nanotrasen Saber SMG",
-   "rank": 2,
+   "rank": 3,
    "reason": "A hard-hitting automatic with 21 rounds that empties in 4 s.",
    "score": 105,
    "tier": "yellow"
@@ -374,17 +385,28 @@
    "group": "smgs",
    "hash": "",
    "name": "M-94 'Rapier' submachinegun",
-   "rank": 7,
+   "rank": 9,
    "reason": "Fires 16 damage bullets at 3.3 a second from a 30 round magazine, a WT-550 with a fifth less damage. It scores just under the yellow line, and it takes a suppressor.",
    "score": 37,
    "tier": "green"
+  },
+  "/obj/item/gun/ballistic/automatic/resolution": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "",
+   "name": "PD46 'Resolution'",
+   "note": "Right-click in hand folds or unfolds the stock. Folded it is normal sized with spread 11 and a little kick; unfolded it is bulky with spread 4 and no extra kick. Spawns folded. Takes a suppressor.",
+   "rank": 5,
+   "reason": "Full auto 4.6x30mm at 6.7 a second from a 30 round magazine: twice the WT-550's rate with half again its magazine. Between the C-20r and the Saber.",
+   "score": 93,
+   "tier": "yellow"
   },
   "/obj/item/gun/ballistic/automatic/smartgun": {
    "confidence": "medium",
    "group": "smgs",
    "hash": "df8d939590e38d5f",
    "name": "Abielle Smart-SMG",
-   "rank": 8,
+   "rank": 10,
    "reason": "Fires 10 damage homing rounds. Its spread of 40 is the drawback the homing fixes. Upstream tg prices it as junk.",
    "score": 32,
    "score_inputs": {
@@ -431,7 +453,7 @@
    "group": "smgs",
    "hash": "2ea01a015382d859",
    "name": "WT-550 Autorifle",
-   "rank": 6,
+   "rank": 8,
    "reason": "Fires 20 damage bullets at 3.3 a second, about what a laser gun does, yet it's sold as a top yellow gun.",
    "score": 47,
    "tier": "yellow"
@@ -2038,11 +2060,13 @@
   "/obj/item/gun/ballistic/automatic/pistol/deagle/ctf": "admin",
   "/obj/item/gun/ballistic/automatic/pistol/fire_mag": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/m1911/chimpgun": "needs another system",
+  "/obj/item/gun/ballistic/automatic/pistol/rattlesnake/no_mag": "no route",
   "/obj/item/gun/ballistic/automatic/pistol/riot": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/stickman": "literal only",
   "/obj/item/gun/ballistic/automatic/pistol/suppressed": "leftover",
   "/obj/item/gun/ballistic/automatic/pistol/toy/riot/clandestine": "toy",
   "/obj/item/gun/ballistic/automatic/proto": "leftover",
+  "/obj/item/gun/ballistic/automatic/resolution/no_mag": "no route",
   "/obj/item/gun/ballistic/automatic/tommygun/chimpgun": "needs another system",
   "/obj/item/gun/ballistic/bow/divine": "leftover",
   "/obj/item/gun/ballistic/bow/divine/with_quiver": "leftover",
