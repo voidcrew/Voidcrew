@@ -267,7 +267,7 @@ GLOBAL_LIST_INIT(bounty_styles, init_bounty_styles())
 	var/string_shots = 0
 	var/string_pause = 0
 	/// Its weapon goes where nobody sees it while they pass as a customer: a pocket, a holster or a bag under
-	/// a coat (decoys wear the same holster or bag, outpost_match_carry()). A gun on the belt or the back, or
+	/// a coat (decoys wear the same holster or bag, outpost_match_kit()). A gun on the belt or the back, or
 	/// a bat in hand, gives them away, so a trader-outpost fugitive never fights this way (bounty_roll_style()).
 	var/concealable = TRUE
 
