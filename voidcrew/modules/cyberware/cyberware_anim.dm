@@ -277,6 +277,21 @@
 	blade_flash(0.7, BLADE_UNFOLD_SWING)
 
 /**
+ * The unfold ends on the guard and keeps it under its last sparks, so a blade is drawn while the held blade
+ * comes back, whenever that reaches the client. If the blade takes another pose or swings while the unfold is
+ * still on it, the unfold stops, so its guard is never drawn over the new picture, and the held blade shows at
+ * once unless something else is hiding it for longer.
+ */
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/proc/unfold_overtaken(obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade)
+	var/obj/effect/abstract/cyberware_anim/unfold = blade_anim()
+	if(isnull(unfold) || unfold.icon_state != blade_anim_state("unfold"))
+		return FALSE
+	stop_blade_anim()
+	if(blade.inhand_hidden_until <= world.time + BLADE_UNFOLD_SWING)
+		blade.show_inhand()
+	return TRUE
+
+/**
  * The blade folds back into the housing. Called once it is stowed; the
  * folded housing stays see-through until the swing has played.
  */
