@@ -108,6 +108,12 @@
 	var/list/windup_timers
 	/// The strands of wire from the garroter's hands to the neck
 	var/list/strand_refs
+	/// The far side of the loop, drawn among the victim's own overlays under the body
+	var/mutable_appearance/loop_back
+	/// The victim's layer before the hold drew them over a garroter facing the viewer, or null
+	var/victim_old_layer
+	/// Timer of the victim's struggle in the hold
+	var/struggle_timer
 
 /datum/hv_finisher/garrote/Destroy()
 	. = ..()
@@ -164,7 +170,25 @@
 
 /datum/hv_finisher/garrote/stop(reason)
 	clear_wire_fx()
+	restore_victim_layer()
 	return ..()
+
+/**
+ * Letting go after the kill puts the body back all at once: the grab's pull, the hold's drag to the hands and the
+ * layer it was drawn on go together, so nothing moves again when the finisher ends a second later.
+ */
+/datum/hv_finisher/garrote/release_grip()
+	. = ..()
+	if(!QDELETED(victim))
+		victim.remove_offsets(HV_FINISHER_OFFSET)
+	restore_victim_layer()
+
+/datum/hv_finisher/garrote/proc/restore_victim_layer()
+	if(isnull(victim_old_layer))
+		return
+	if(!QDELETED(victim) && victim.layer == WIRE_PULLED_LAYER)
+		victim.layer = victim_old_layer
+	victim_old_layer = null
 
 /// The wire's blow, never the heaviest thing in the garroter's hands.
 /datum/hv_finisher/garrote/real_blow(zone, extra_wound_bonus = 0)
@@ -203,7 +227,22 @@
 	wire?.hide_inhand_for(longest_duration())
 	throw_wire()
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), duration - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
-	victim.Shake(1, 0, duration)
+
+/**
+ * Where the garroter holds the wire: the hands drawn up to the chest, pulling, and whether that hand is behind the
+ * body. In profile both hands are in front of the chest (the far one just behind the near arm's line, never down
+ * behind the hip); facing away both are hidden. list(x, y, behind)
+ */
+/datum/hv_finisher/garrote/proc/hand_point(side)
+	var/right = side != "left"
+	switch(user.dir)
+		if(EAST)
+			return right ? list(5, -1, FALSE) : list(4, 0, FALSE)
+		if(WEST)
+			return right ? list(-4, 0, FALSE) : list(-5, -1, FALSE)
+		if(NORTH)
+			return right ? list(5, -1, TRUE) : list(-5, -1, TRUE)
+	return right ? list(-5, -1, FALSE) : list(5, -1, FALSE)
 
 /**
  * The world layer for wire leaving a hand. Facing away, the hands are hidden in front of the garroter and the body lies
@@ -228,7 +267,7 @@
 	var/turf/from = get_turf(user)
 	if(!from || QDELETED(victim))
 		return
-	var/list/hand = wire_hand_point(user, wire_side())
+	var/list/hand = hand_point(wire_side())
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
 	var/list/neck = neck_point()
@@ -265,7 +304,9 @@
 	draw_wire(rest, both_hands = FALSE)
 	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(user, WIRE_GORE_ICON, "wire_glint[wire_suffix()]", WIRE_FX_LAYER, 0.3 SECONDS, glow = TRUE)
 	if(glint)
-		glint.pixel_y = -4
+		var/list/hand = hand_point(wire_side())
+		glint.pixel_x = hand[1] - 1
+		glint.pixel_y = hand[2] + 4
 
 /// The wire in flight. Nothing to click.
 /obj/effect/abstract/wire_reach
@@ -298,7 +339,8 @@
 /// its hands. list(x, y)
 /datum/hv_finisher/garrote/proc/hold_point()
 	var/front_x = 0
-	var/front_y = -6
+	// In profile, up at the hands.
+	var/front_y = -3
 	if(user.dir & EAST)
 		front_x = 9
 	else if(user.dir & WEST)
@@ -326,6 +368,31 @@
 	var/list/neck = neck_point()
 	var/list/target = hold_point()
 	victim.add_offsets(HV_FINISHER_OFFSET, x_add = clamp(target[1] - neck[1], -12, 12), y_add = clamp(target[2] - neck[2], -12, 12))
+	// Facing the viewer, the body is drawn up in front of the garroter's legs, not behind them.
+	if(user.dir == SOUTH && victim.y < user.y && isnull(victim_old_layer))
+		victim_old_layer = victim.layer
+		victim.layer = WIRE_PULLED_LAYER
+
+/// The victim thrashes in the wire from `delay` on, for `duration`: a shake round wherever the body is drawn then.
+/datum/hv_finisher/garrote/proc/struggle(delay, duration)
+	if(struggle_timer)
+		deltimer(struggle_timer)
+	struggle_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_shake), victim, 2, 1, duration), delay, TIMER_STOPPABLE | TIMER_DELETE_ME)
+
+/**
+ * tg's Shake() without its slip (its first beat sets pixel_y from pixel_x, a jump on a body drawn off its tile's
+ * middle): jitters `body` up to `shift_x` and `shift_y` pixels round where it is drawn now, then puts it back there.
+ */
+/proc/wire_shake(atom/movable/body, shift_x, shift_y, duration)
+	if(QDELETED(body))
+		return
+	var/start_x = body.pixel_x
+	var/start_y = body.pixel_y
+	var/interval = 0.05 SECONDS
+	animate(body, pixel_x = start_x + rand(-shift_x, shift_x), pixel_y = start_y + rand(-shift_y, shift_y), time = interval, flags = ANIMATION_PARALLEL)
+	for(var/i in 2 to max(round(duration / interval) - 1, 2))
+		animate(pixel_x = start_x + rand(-shift_x, shift_x), pixel_y = start_y + rand(-shift_y, shift_y), time = interval)
+	animate(pixel_x = start_x, pixel_y = start_y, time = interval)
 
 /**
  * Draws the loop round the victim's neck: `kind` "draw" (winding on), "loop" (hanging loose) or "tight" (drawing
@@ -337,16 +404,21 @@
 	if(QDELETED(victim) || !running)
 		return
 	var/lifetime = longest_duration()
-	var/obj/effect/abstract/cyberware_anim/far_side = cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_[kind]_back[wire_suffix()]", -(TOTAL_LAYERS + 0.5), lifetime, glow = TRUE)
+	// One of the body's own overlays, so the neck and head drawn over it hide it.
+	loop_back = mutable_appearance(WIRE_GORE_ICON, "garrote_[kind]_back[wire_suffix()]", -(TOTAL_LAYERS + 0.5))
+	victim.add_overlay(loop_back)
 	// Over the garroter's legs, which the body lies against; facing away, over the neck but under the garroter.
 	var/near_layer = user.dir == NORTH ? WIRE_BETWEEN_LAYER : ABOVE_MOB_LAYER
 	var/obj/effect/abstract/cyberware_anim/near_side = cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_[kind]_front[wire_suffix()]", near_layer, lifetime, glow = TRUE)
-	loop_refs = list(WEAKREF(far_side), WEAKREF(near_side))
+	loop_refs = list(WEAKREF(near_side))
 
 /datum/hv_finisher/garrote/proc/clear_loop()
 	for(var/datum/weakref/loop_ref as anything in loop_refs)
 		qdel(loop_ref.resolve())
 	loop_refs = null
+	if(loop_back)
+		victim?.cut_overlay(loop_back)
+		loop_back = null
 
 /**
  * The wire from the garroter's hands to the neck, one strand a hand (or only the wire's hand), in the wire's own
@@ -360,8 +432,10 @@
 	var/list/neck = neck_offset()
 	var/list/sides = both_hands ? list("left", "right") : list(wire_side())
 	for(var/side in sides)
-		var/list/hand = wire_hand_point(user, side)
-		var/datum/beam/strand = user.Beam(victim, icon_state = "wire_taut[wire_suffix()]", icon = WIRE_GORE_ICON, time = duration, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + hand[1], override_origin_pixel_y = user.pixel_y + hand[2], override_target_pixel_x = victim.pixel_x + neck[1], override_target_pixel_y = victim.pixel_y + neck[2], layer = strand_layer(hand[3]))
+		var/list/hand = hand_point(side)
+		// Facing toward or away, each strand meets its own side of the loop, so the two read as two lines, not one.
+		var/end_x = (user.dir & (NORTH | SOUTH)) ? clamp(hand[1], -2, 2) : 0
+		var/datum/beam/strand = user.Beam(victim, icon_state = "wire_taut[wire_suffix()]", icon = WIRE_GORE_ICON, time = duration, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + hand[1], override_origin_pixel_y = user.pixel_y + hand[2], override_target_pixel_x = victim.pixel_x + neck[1] + end_x, override_target_pixel_y = victim.pixel_y + neck[2], layer = strand_layer(hand[3]))
 		LAZYADD(strand_refs, WEAKREF(strand))
 
 /datum/hv_finisher/garrote/proc/clear_strands()
@@ -373,6 +447,9 @@
 	for(var/timer in windup_timers)
 		deltimer(timer)
 	windup_timers = null
+	if(struggle_timer)
+		deltimer(struggle_timer)
+		struggle_timer = null
 	qdel(reach_ref?.resolve())
 	reach_ref = null
 	clear_loop()
@@ -629,7 +706,8 @@
 	garrote.show_loop("tight")
 	// Taut until the kill beat cuts it.
 	garrote.draw_wire(duration + 0.5 SECONDS)
-	host.victim.Shake(2, 1, duration)
+	// Drawn in to the hands first, then the thrashing.
+	garrote.struggle(UPDATE_TRANSFORM_ANIMATION_TIME, duration - UPDATE_TRANSFORM_ANIMATION_TIME)
 
 /datum/hv_finisher_stage/hold/garrote/enter_message()
 	return "[host.user] pulls the wire tight!"

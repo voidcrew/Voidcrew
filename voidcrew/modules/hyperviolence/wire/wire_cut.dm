@@ -33,6 +33,8 @@
 	var/cut_aim
 	/// The next landed hit crosses, whatever the count (wire_crossing_swing()).
 	var/force_cross = FALSE
+	/// The body zone the last landed cut went into, for the lash drawn after the hit (wire_lash_at()).
+	var/lash_zone
 
 /mob/living
 	/// Landed Widowline hits in a row with a wire out in each hand, and when the last one landed.
@@ -71,6 +73,8 @@
 	var/mob/living/user = loc
 	if(!isliving(user))
 		return
+	var/obj/item/bodypart/cut_part = isbodypart(def_zone) ? def_zone : null
+	lash_zone = cut_part ? cut_part.body_zone : check_zone(def_zone)
 	var/cross = wire_count_landed(user)
 	if(cross && !crossing)
 		wire_play_cross(user, source)
@@ -111,14 +115,21 @@
 	user.wire_cross_hits = 0
 	return TRUE
 
-/// The X of light over the target, mirrored to the side the blow came from.
+/// The X of light over the target, mirrored to the side the blow came from. Behind a body nearer the viewer.
 /obj/item/melee/cyberware_monowire/proc/wire_play_cross(atom/movable/attacker, atom/movable/target)
-	var/obj/effect/abstract/cyberware_anim/cross = cyberware_anim_play(target, WIRE_GORE_ICON, cross_state(), WIRE_FX_LAYER, 0.5 SECONDS, glow = TRUE)
+	var/mirror = get_dir(attacker, target) & WEST
+	var/cross
+	if(wire_cut_from_behind(attacker, target))
+		cross = wire_play_under(target, WIRE_GORE_ICON, cross_state(), 0.5 SECONDS, mirror)
+	else
+		var/obj/effect/abstract/cyberware_anim/over = cyberware_anim_play(target, WIRE_GORE_ICON, cross_state(), WIRE_FX_LAYER, 0.5 SECONDS, glow = TRUE)
+		if(over)
+			over.appearance_flags |= RESET_TRANSFORM
+			if(mirror)
+				over.transform = matrix(-1, 0, 0, 0, 1, 0)
+		cross = over
 	if(!cross)
 		return null
-	cross.appearance_flags |= RESET_TRANSFORM
-	if(get_dir(attacker, target) & WEST)
-		cross.transform = matrix(-1, 0, 0, 0, 1, 0)
 	if(isliving(attacker))
 		var/mob/living/swinger = attacker
 		swinger.mob_light(2, 1, cross_light_color(), 0.3 SECONDS)
@@ -126,7 +137,7 @@
 		for(var/obj/item/melee/cyberware_monowire/other in swinger.held_items)
 			if(other == src)
 				continue
-			other.wire_lash_at(swinger, target)
+			other.wire_lash_at(swinger, target, lash_zone)
 			other.hide_inhand_for(0.5 SECONDS)
 	playsound(target, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
 	return cross
@@ -143,10 +154,36 @@
 /obj/item/melee/cyberware_monowire/live/cross_light_color()
 	return "#9fe4ff"
 
-// The crossing swing shows its X instead of the single wire's impact.
+/**
+ * Whether a cut on `target` comes from the far side of it as the viewer sees it: the wielder on a row above, so the
+ * body stands between the viewer and where the wire meets it.
+ */
+/proc/wire_cut_from_behind(atom/movable/attacker, atom/movable/target)
+	return ismob(target) && attacker.z == target.z && attacker.y > target.y
+
+/**
+ * Plays `state` on `body` for `lifetime` as one of its own overlays under everything it is drawn with, upright and
+ * mirrored if `mirror`: the body hides all of it but what shows past its outline. Returns the overlay, or null.
+ */
+/proc/wire_play_under(atom/movable/body, icon_file, state, lifetime, mirror = FALSE)
+	if(QDELETED(body) || !state)
+		return null
+	var/mutable_appearance/under = mutable_appearance(icon_file, state, -(TOTAL_LAYERS + 0.5), appearance_flags = RESET_TRANSFORM)
+	if(mirror)
+		under.transform = matrix(-1, 0, 0, 0, 1, 0)
+	body.add_overlay(under)
+	addtimer(CALLBACK(body, TYPE_PROC_REF(/atom, cut_overlay), under), lifetime)
+	return under
+
+// The crossing swing shows its X instead of the single wire's impact; a cut from beyond the body is drawn behind it.
 /obj/item/melee/cyberware_monowire/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
 	if(crossing && ismovable(attacked_atom) && wire_play_cross(attacker, attacked_atom))
 		return
+	if(impact_state && ismovable(attacked_atom) && wire_cut_from_behind(attacker, attacked_atom))
+		// The art swings in from the left, as cyberware_play_impact() draws it.
+		var/direction = get_dir(attacker, attacked_atom)
+		if(wire_play_under(attacked_atom, WIRE_IMPACT_ICON, impact_state, 0.4 SECONDS, (direction & WEST) || (!(direction & EAST) && prob(50))))
+			return
 	return ..()
 
 /obj/item/melee/cyberware_monowire/live/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)

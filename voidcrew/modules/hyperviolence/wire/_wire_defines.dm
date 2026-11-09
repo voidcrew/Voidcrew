@@ -4,6 +4,8 @@
 
 /// Clean cuts, seams, the through-cut and blood beams, the crossing X, the garrote loop and taut wire.
 #define WIRE_GORE_ICON 'voidcrew/modules/hyperviolence/wire/icons/wire_gore.dmi'
+/// The chrome weapons' hit flashes (cyberware/cyberware_anim.dm), for the wire's drawn behind a body.
+#define WIRE_IMPACT_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim.dmi'
 /// The wire swinging out of its spool and reeling back in, with blood-flick twins.
 #define WIRE_HELD_ANIM_ICON 'voidcrew/modules/cyberware/icons/cyberware_anim_monowire.dmi'
 
@@ -55,6 +57,9 @@
 /// World layer between a body lying on the floor and one standing: the garrote's wire facing away, which runs from the
 /// hands hidden behind the garroter to the neck of the body lying beyond them.
 #define WIRE_BETWEEN_LAYER (LYING_MOB_LAYER + 0.05)
+/// World layer of a body the garrote holds up in front of a garroter facing the viewer: over the garroter, under the
+/// near side of the loop.
+#define WIRE_PULLED_LAYER (MOB_LAYER + 0.02)
 /// Most blood the garrote pours into the pool under the neck: a pool that keeps to its tile (blood/blood_pools.dm).
 #define WIRE_GARROTE_POOL_CAP 190
 

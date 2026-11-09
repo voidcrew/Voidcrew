@@ -207,6 +207,8 @@
 
 /obj/effect/ebeam/wire_line/Initialize(mapload, beam_owner)
 	. = ..()
+	// Turned to the bearing without smoothing, so the line stays one pixel wide.
+	appearance_flags |= PIXEL_SCALE
 	if(owner?.beam_layer)
 		layer = owner.beam_layer
 
@@ -220,11 +222,45 @@
 	return WIRE_SWING_LAYER
 
 /**
- * A landed swing: the wire lashes from the hand holding it to `target`, one thin line in its own colour that fades
- * out over half a second. A single stretched line, not tg's Beam(): a beam's full-tile segments are drawn over a body
- * facing away whatever layer they are given, and this one must pass behind it from a hidden hand.
+ * Where the `zone` part of `body` is drawn, in pixels from the middle of its tile: as it stands and faces, turned
+ * with it when it lies, then moved by its offsets. list(x, y)
  */
-/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target)
+/proc/wire_zone_point(mob/living/body, zone)
+	var/x = 0
+	var/y = 2
+	// Screen side of the body's right: left facing south, right facing north, the middle in profile.
+	var/right_x = 0
+	switch(body.dir)
+		if(SOUTH)
+			right_x = -1
+		if(NORTH)
+			right_x = 1
+	switch(zone)
+		if(BODY_ZONE_HEAD)
+			y = 10
+		if(BODY_ZONE_R_ARM)
+			x = right_x * 6
+			y = 1
+		if(BODY_ZONE_L_ARM)
+			x = -right_x * 6
+			y = 1
+		if(BODY_ZONE_R_LEG)
+			x = right_x * 3
+			y = -8
+		if(BODY_ZONE_L_LEG)
+			x = -right_x * 3
+			y = -8
+	var/matrix/shape = body.transform
+	return list(round(shape.a * x + shape.b * y + shape.c) + body.pixel_x, round(shape.d * x + shape.e * y + shape.f) + body.pixel_y)
+
+/**
+ * A landed swing: the wire lashes from the hand holding it to the part of `target` it cut (`zone`, else the part the
+ * wielder aimed at), one thin line in its own colour that fades out over half a second. A single stretched line, not
+ * tg's Beam(): a beam's full-tile segments are drawn over a body facing away whatever layer they are given, and this
+ * one must pass behind it from a hidden hand. A body nearer the viewer than the wielder (on a lower row) hides the
+ * end of the line, which meets it on the far side.
+ */
+/obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone)
 	var/turf/from = get_turf(user)
 	var/turf/hit = get_turf(target)
 	if(!from || !hit || from == hit || from.z != hit.z)
@@ -232,11 +268,17 @@
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
-	var/span_x = (hit.x - from.x) * ICON_SIZE_X + target.pixel_x - hand_x
-	var/span_y = (hit.y - from.y) * ICON_SIZE_Y + target.pixel_y - hand_y
+	var/end_x = target.pixel_x
+	var/end_y = target.pixel_y
+	if(isliving(target))
+		var/list/part = wire_zone_point(target, zone || check_zone(user.zone_selected))
+		end_x = part[1]
+		end_y = part[2]
+	var/span_x = (hit.x - from.x) * ICON_SIZE_X + end_x - hand_x
+	var/span_y = (hit.y - from.y) * ICON_SIZE_Y + end_y - hand_y
 	var/obj/effect/abstract/wire_reach/lash = new(from)
 	lash.icon_state = lash_state()
-	lash.layer = wire_line_layer(hand[3])
+	lash.layer = hit.y < from.y ? BELOW_MOB_LAYER : wire_line_layer(hand[3])
 	lash.add_overlay(emissive_appearance(lash.icon, lash.icon_state, lash))
 	lash.pixel_x = hand_x
 	lash.pixel_y = hand_y
