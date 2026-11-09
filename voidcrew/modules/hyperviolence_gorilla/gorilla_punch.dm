@@ -11,15 +11,36 @@
  * - The knockback rides the safe path (gorilla_throw.dm). A grabbed body is hurled, once per grab-move
  *   cooldown shared with the slam, so a held body can't be thrown into a wall over and over.
  * - Grab and slam: with someone in an aggressive grab, a click on the floor under them, an open floor
- *   beside you or a table lifts them and brings them down (Gorilla only). A table click while grabbing
- *   slams instead of caving the table in.
+ *   beside you or a table lifts them and brings them down. Brawler myomers slam lighter, with a lower
+ *   lift and a body-fall thud. A table click while grabbing slams instead of caving the table in.
  * - Every Gorilla blow on a person counts as PvP aggression at a trader outpost: the punch cancels the
  *   attack chain before the outpost's own unarmed-attack listener ever hears it.
  */
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms
-	/// The hurl, the slam, the haymaker, the ground pound and the finishers. The Brawler has none.
+	/// The hurl, the haymaker, the flex, and the Gorilla pair's pound and three finishers. The Brawler has none
+	/// of these; its pair has its own pound and the limb rip (cyberware_brawler, ware_line_models_a.dm).
 	var/heavy_moves = TRUE
+	/// Whether a grabbed body can be slammed onto the floor or a table.
+	var/grab_slam = TRUE
+	/// Brute a floor slam deals.
+	var/slam_floor_damage = GORILLA_SLAM_FLOOR_DAMAGE
+	/// Stamina a floor slam takes.
+	var/slam_floor_stamina = GORILLA_SLAM_FLOOR_STAMINA
+	/// Brute a table slam deals.
+	var/slam_table_damage = GORILLA_SLAM_TABLE_DAMAGE
+	/// Stamina a table slam takes.
+	var/slam_table_stamina = GORILLA_SLAM_TABLE_STAMINA
+	/// How long a slam floors them.
+	var/slam_knockdown = GORILLA_SLAM_KNOCKDOWN
+	/// Damage a table slam does to the table.
+	var/slam_table_break = GORILLA_SLAM_TABLE_BREAK
+	/// The bearer-wide wait after a slam or a hurl before the next one.
+	var/grab_move_cooldown = GORILLA_GRAB_MOVE_COOLDOWN
+	/// How high a slammed body is lifted, in pixels.
+	var/slam_lift = GORILLA_SLAM_LIFT
+	/// The Gorilla's floor slam: the meteor crash, the big ring and the cracks. Off: a body-fall thud, a small ring.
+	var/slam_full_fx = TRUE
 	/// What drives the fist, in the attack line.
 	var/fist_word = "piston-driven"
 	/// Strain on one limb that snaps it.
@@ -57,6 +78,30 @@
 /proc/gorilla_synced(mob/living/carbon/bearer)
 	var/datum/status_effect/organ_set_bonus/cyberware_gorilla/bonus = bearer?.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_gorilla)
 	return !!bonus?.bonus_active
+
+/// Whether [bearer] has both Brawler myomers synced: the Brawler pound, the forced door and the limb rip.
+/proc/brawler_synced(mob/living/carbon/bearer)
+	var/datum/status_effect/organ_set_bonus/cyberware_gorilla/bonus = bearer?.has_status_effect(/datum/status_effect/organ_set_bonus/cyberware_brawler)
+	return !!bonus?.bonus_active
+
+/// [bearer]'s installed arms that sync into [bonus_type] (an arm's pair_bonus).
+/proc/gorilla_pair_arms(mob/living/carbon/bearer, bonus_type)
+	RETURN_TYPE(/list)
+	. = list()
+	if(!iscarbon(bearer) || !bonus_type)
+		return
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in bearer.organs)
+		if(arm.pair_bonus == bonus_type && arm.owner == bearer)
+			. += arm
+
+/// The arms of [bearer]'s synced pair, Gorilla or Brawler; empty when neither is synced.
+/proc/gorilla_synced_pair(mob/living/carbon/bearer)
+	RETURN_TYPE(/list)
+	if(gorilla_synced(bearer))
+		return gorilla_pair_arms(bearer, /datum/status_effect/organ_set_bonus/cyberware_gorilla)
+	if(brawler_synced(bearer))
+		return gorilla_pair_arms(bearer, /datum/status_effect/organ_set_bonus/cyberware_brawler)
+	return list()
 
 /**
  * Who may use the Gorilla's heavy moves: the slam, the haymaker, the ground pound and the finishers.
@@ -109,7 +154,7 @@
 	gorilla_register_aggression(living_target, source)
 	if(standing && !QDELETED(living_target))
 		if(hurl)
-			gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, GORILLA_GRAB_MOVE_COOLDOWN)
+			gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
 			gorilla_launch(living_target, source, direction, hurl_range, 2, FALSE, FALSE, wounded)
 		else if(!grabbed)
 			gorilla_launch(living_target, source, direction, 1, rand(1, 4), TRUE, FALSE, wounded)
@@ -258,7 +303,7 @@
 	var/obj/structure/table/table = istype(target, /obj/structure/table) ? target : null
 	if(!table && !isturf(target))
 		return GORILLA_SLAM_NO
-	if(!heavy_moves || !gorilla_may_use_heavy_moves(source) || HAS_TRAIT(source, TRAIT_PACIFISM) || victim.buckled || source.body_position == LYING_DOWN)
+	if(!grab_slam || !gorilla_running() || !gorilla_may_use_heavy_moves(source) || HAS_TRAIT(source, TRAIT_PACIFISM) || victim.buckled || source.body_position == LYING_DOWN)
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
 	if(!TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_GRAB_MOVE))
 		return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
@@ -279,13 +324,13 @@
 		if(victim.loc != spot)
 			// Something stopped them getting there: no slam, but the grab is gone
 			return table ? GORILLA_SLAM_PASS : GORILLA_SLAM_NO
-	gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, GORILLA_GRAB_MOVE_COOLDOWN)
+	gorilla_cooldown(source, COOLDOWN_GORILLA_GRAB_MOVE, grab_move_cooldown)
 	source.changeNext_move(CLICK_CD_MELEE)
 	source.face_atom(victim)
 	// Up, then down: the blow lands as the body comes down.
-	animate(victim, pixel_z = 12, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(victim, pixel_z = slam_lift, time = 0.12 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
 	animate(pixel_z = 0, time = 0.06 SECONDS, flags = ANIMATION_RELATIVE)
-	animate(pixel_z = -12, time = 0.06 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
+	animate(pixel_z = -slam_lift, time = 0.06 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
 	source.do_attack_animation(victim, ATTACK_EFFECT_SMASH)
 	addtimer(CALLBACK(src, PROC_REF(slam_down), source, victim, spot, table ? WEAKREF(table) : null, active_hand), 0.24 SECONDS)
 	return GORILLA_SLAM_DONE
@@ -293,11 +338,14 @@
 /**
  * Slams whoever [bearer] holds in an aggressive grab onto [onto] (their own tile, an open floor beside the
  * bearer, or a table) with the active arm, as a click there would. Returns TRUE if it slammed. For an AI.
+ * Brawler arms slam too; gorilla_may_use_heavy_moves() still keeps it to players and boss-rank NPCs.
  */
 /proc/gorilla_try_slam(mob/living/carbon/human/bearer, atom/onto)
 	var/obj/item/bodypart/hand = bearer?.get_active_hand()
-	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_heavy_arms(bearer))
-		if(arm.zone != hand?.body_zone || !arm.gorilla_running() || !COOLDOWN_FINISHED(arm, slam_cooldown))
+	if(!iscarbon(bearer))
+		return FALSE
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in bearer.organs)
+		if(arm.owner != bearer || !arm.grab_slam || arm.zone != hand?.body_zone || !arm.gorilla_running() || !COOLDOWN_FINISHED(arm, slam_cooldown))
 			continue
 		if(arm.try_slam(bearer, onto, hand) != GORILLA_SLAM_DONE)
 			return FALSE
@@ -324,8 +372,8 @@
 	var/aimed = source.zone_selected
 	var/obj/item/bodypart/limb = victim.get_bodypart(check_zone(aimed)) || victim.get_bodypart(BODY_ZONE_CHEST)
 	var/face_first = check_zone(aimed) == BODY_ZONE_HEAD
-	var/damage = table ? GORILLA_SLAM_TABLE_DAMAGE : GORILLA_SLAM_FLOOR_DAMAGE
-	var/stamina = table ? GORILLA_SLAM_TABLE_STAMINA : GORILLA_SLAM_FLOOR_STAMINA
+	var/damage = table ? slam_table_damage : slam_floor_damage
+	var/stamina = table ? slam_table_stamina : slam_floor_stamina
 	var/others
 	var/self
 	if(table)
@@ -336,25 +384,28 @@
 		self = "[source] slams you into the floor!"
 	victim.hv_hold_attack_message(others, self, null, source, vision_range = DEFAULT_MESSAGE_RANGE)
 	var/armour = victim.run_armor_check(limb, MELEE)
-	victim.apply_damage(damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = GORILLA_PUNCH_WOUND_BONUS, attack_direction = get_dir(source, victim) || source.dir, attacking_item = active_hand)
+	victim.apply_damage(damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = punch_wound_bonus, attack_direction = get_dir(source, victim) || source.dir, attacking_item = active_hand)
 	victim.hv_flush_hit()
 	if(QDELETED(victim))
 		return
 	victim.apply_damage(stamina, STAMINA)
-	victim.Knockdown(GORILLA_SLAM_KNOCKDOWN)
+	victim.Knockdown(slam_knockdown)
 	gorilla_register_aggression(victim, source)
-	shake_camera(victim, 3, 2)
+	shake_camera(victim, slam_full_fx ? 3 : 2, slam_full_fx ? 2 : 1)
 	cyberware_flash_fx(victim, 0.2 SECONDS)
-	new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, 0.8)
+	new /obj/effect/temp_visual/circle_wave/cyberware_slam(spot, slam_full_fx ? 0.8 : 0.5)
 	if(table)
 		playsound(victim, 'sound/effects/tableslam.ogg', 90, TRUE)
 		var/datum/component/table_smash/smash = table.GetComponent(/datum/component/table_smash)
-		table.take_damage(GORILLA_SLAM_TABLE_BREAK)
+		table.take_damage(slam_table_break)
 		// Glass tables break as they do under any slammed body
 		if(!QDELETED(table))
 			smash?.after_smash?.Invoke(victim)
-	else
+	else if(slam_full_fx)
 		playsound(spot, 'sound/effects/meteorimpact.ogg', 40, TRUE)
 		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 220)
 		cyberware_grey_dust(spot)
+	else
+		playsound(spot, SFX_BODYFALL, 70, TRUE)
+		new /obj/effect/temp_visual/cyberware_impact_cracks(spot, "damaged1", 110)
 	log_combat(source, victim, table ? "piston-slammed onto a table" : "piston-slammed into the floor", "gorilla arms")

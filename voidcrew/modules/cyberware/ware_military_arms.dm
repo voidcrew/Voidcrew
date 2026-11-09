@@ -143,6 +143,8 @@
 	var/hurl_range = CYBERWARE_GORILLA_HURL_RANGE
 	/// Whether a matched pair of these pries closed airlocks (the set bonus).
 	var/pries_doors = TRUE
+	/// The set bonus a matched pair of this model syncs into. Each model has its own, so a mixed pair syncs into neither.
+	var/pair_bonus = /datum/status_effect/organ_set_bonus/cyberware_gorilla
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/left
 	name = "\improper Gorilla Arms myomer lattice (left)"
@@ -152,8 +154,8 @@
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/Initialize(mapload)
 	. = ..()
-	if(pries_doors)
-		AddElement(/datum/element/organ_set_bonus, /datum/status_effect/organ_set_bonus/cyberware_gorilla)
+	if(pries_doors && pair_bonus)
+		AddElement(/datum/element/organ_set_bonus, pair_bonus)
 	// Each real arm winds up a haymaker; both share the pistons' cooldown (hyperviolence_gorilla/gorilla_haymaker.dm)
 	if(heavy_moves)
 		add_item_action(/datum/action/cooldown/cyberware/gorilla_haymaker)
@@ -228,6 +230,18 @@
 		if(GORILLA_SLAM_PASS)
 			return NONE
 
+	// A trader outpost's doors hold against a fist as they do against a pry, and trying counts against you
+	// (hyperviolence_gorilla/gorilla_pry.dm).
+	if(istype(target, /obj/machinery/door) && gorilla_pry_refused(target))
+		source.changeNext_move(CLICK_CD_MELEE)
+		source.do_attack_animation(target, ATTACK_EFFECT_SMASH)
+		playsound(target, 'sound/items/weapons/tap.ogg', 50, TRUE)
+		target.balloon_alert(source, "it won't budge!")
+		gorilla_pry_aggression(target, source)
+		source.log_message("punched [target] at a trader outpost, located at [loc_name(target)].", LOG_GAME)
+		COOLDOWN_START(src, slam_cooldown, smash_cooldown_time)
+		return COMPONENT_CANCEL_ATTACK_CHAIN
+
 	// Structures, girders, machines cave in. Loose items are beneath us.
 	if(isobj(target) && !isitem(target))
 		var/obj/smashed = target
@@ -282,20 +296,27 @@
 	required_biotype = NONE
 	bonus_activate_text = span_notice("Your Gorilla Arms sync up.")
 	bonus_deactivate_text = span_notice("Your arms fall out of sync.")
+	/// How long the pair takes to force a powered airlock.
+	var/pry_time = GORILLA_PRY_TIME
+	/// The ground pound chip the pair grants.
+	var/pound_type = /datum/action/cooldown/cyberware/gorilla_pound
+	/// Whether the arms flex as they sync.
+	var/flexes = TRUE
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/enable_bonus(obj/item/organ/inserted_organ)
 	. = ..()
 	if(!.)
 		return
 	// The pry refuses trader outpost doors and plays the strain (hyperviolence_gorilla/gorilla_pry.dm)
-	owner.AddElement(/datum/element/door_pryer/gorilla, pry_time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	owner.AddElement(/datum/element/door_pryer/gorilla, pry_time = pry_time, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
 	// The ground pound chip, and the flex as the arms come online (hyperviolence_gorilla/gorilla_pound.dm)
 	grant_pound()
-	gorilla_flex(owner)
+	if(flexes)
+		gorilla_flex(owner)
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/disable_bonus(obj/item/organ/removed_organ)
 	. = ..()
-	owner.RemoveElement(/datum/element/door_pryer/gorilla, pry_time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
+	owner.RemoveElement(/datum/element/door_pryer/gorilla, pry_time = pry_time, interaction_key = DOAFTER_SOURCE_GORILLA_PRY)
 	take_pound()
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/on_remove()

@@ -12,6 +12,7 @@
  * - Chest: the backbreaker. Pressed overhead, brought down across a knee, the back breaks and the body
  *   is rolled off still bent. Armour on the chest cracks the ribs instead.
  * The Atlas frame beats all three: nothing bursts, tears or breaks.
+ * A synced pair of Brawler myomers has the limb rip only, the same rip on the same terms.
  *
  * The wind-up is the two bodies (owner D34: no mark): the puppet rig (chrome_puppet_rig.dm) poses the
  * bearer's arms and the victim. It can be stopped like any #509 finisher: enough damage on the bearer,
@@ -25,14 +26,17 @@
  * Returns TRUE if it did. The punch calls it with the aim; an AI can call it with a zone.
  */
 /proc/gorilla_try_finisher(mob/living/carbon/human/source, mob/living/victim, zone)
-	if(!iscarbon(victim) || !ishuman(source) || !gorilla_synced(source) || !gorilla_may_use_heavy_moves(source))
+	if(!iscarbon(victim) || !ishuman(source) || !gorilla_may_use_heavy_moves(source))
+		return FALSE
+	var/gorilla_pair = gorilla_synced(source)
+	if(!gorilla_pair && !brawler_synced(source))
 		return FALSE
 	if(!TIMER_COOLDOWN_FINISHED(source, COOLDOWN_GORILLA_PISTONS) || source.chrome_finisher)
 		return FALSE
 	if(!chrome_finisher_valid_victim(source, victim))
 		return FALSE
 	zone = check_zone(zone || source.zone_selected)
-	var/finisher_type
+	var/datum/hv_finisher/chrome/gorilla/finisher_type
 	switch(zone)
 		if(BODY_ZONE_HEAD)
 			finisher_type = /datum/hv_finisher/chrome/gorilla/clap
@@ -41,6 +45,9 @@
 		if(BODY_ZONE_CHEST)
 			finisher_type = /datum/hv_finisher/chrome/gorilla/backbreaker
 	if(!finisher_type)
+		return FALSE
+	// Brawler myomers have the rip and nothing else
+	if(!gorilla_pair && !initial(finisher_type.brawler_ok))
 		return FALSE
 	var/datum/hv_finisher/chrome/gorilla/finisher = new finisher_type(source, victim)
 	finisher.aimed_zone = zone
@@ -60,16 +67,18 @@
 	var/datum/chrome_rig/bearer_rig
 	/// The victim's puppets
 	var/datum/chrome_rig/victim_rig
+	/// Whether a synced pair of Brawler myomers can do this one too, not only Gorilla Arms
+	var/brawler_ok = FALSE
 
 /datum/hv_finisher/chrome/gorilla/can_start()
 	if(!..())
 		return FALSE
-	if(!ishuman(user) || !gorilla_synced(user) || !TIMER_COOLDOWN_FINISHED(user, COOLDOWN_GORILLA_PISTONS))
+	if(!ishuman(user) || !pair_synced() || !TIMER_COOLDOWN_FINISHED(user, COOLDOWN_GORILLA_PISTONS))
 		return FALSE
 	var/mob/living/carbon/human/bearer = user
 	for(var/obj/item/held in bearer.held_items)
 		return FALSE
-	var/list/arms = gorilla_heavy_arms(bearer)
+	var/list/arms = gorilla_synced_pair(bearer)
 	if(length(arms) < 2)
 		return FALSE
 	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in arms)
@@ -77,13 +86,17 @@
 			return FALSE
 	return can_start_on(victim)
 
+/// Whether the bearer's arms are synced for this finisher: a Gorilla pair, or a Brawler pair where it allows one.
+/datum/hv_finisher/chrome/gorilla/proc/pair_synced()
+	return gorilla_synced(user) || (brawler_ok && brawler_synced(user))
+
 /// What this finisher needs of the victim besides being down.
 /datum/hv_finisher/chrome/gorilla/proc/can_start_on(mob/living/carbon/target)
 	return TRUE
 
 /datum/hv_finisher/chrome/gorilla/safety_check()
 	. = ..()
-	if(!. && !completed && !gorilla_synced(user))
+	if(!. && !completed && !pair_synced())
 		return HV_FINISHER_ATTACKER_DOWN
 
 /datum/hv_finisher/chrome/gorilla/stop(reason)
@@ -640,6 +653,7 @@
 
 /datum/hv_finisher/chrome/gorilla/rip
 	name = "gorilla limb rip"
+	brawler_ok = TRUE
 	stages = list(
 		/datum/hv_finisher_stage/hold/gorilla/rip_plant,
 		/datum/hv_finisher_stage/hold/gorilla/rip_strain,

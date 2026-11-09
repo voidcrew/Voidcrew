@@ -19,7 +19,7 @@
    "hash": "c229d282cf893570",
    "name": "Strong-Arm empowered musculature implant",
    "note": "Humans only. With the implanted arm active, an empty-hand combat-mode left-click on a mob becomes a slam on a 5 s cooldown: the hand's unarmed damage roll plus 5 (plus 20 more against beast, special and mining mobs), doubled and run through melee armor, and the target is thrown 1 tile if the wearer is standing; it is not used while Hulk. One implant in each arm lets the wearer pry closed airlocks open bare-handed (6 s, instant if unpowered, refused if bolted or welded). An EMP puts the arm down for 9 s (4.5 s on a light pulse): slams fail, and half the time the wearer lunges onto the target and falls for 3 s, otherwise is paralyzed for 1 s.",
-   "rank": 12,
+   "rank": 14,
    "reason": "A slam for 20 to 30 damage every 5 s per arm, 60 to 70 against mining mobs and beasts, and a pair pries powered airlocks in 6 s. 1,200 cr for two from cargo. EMP makes the arm a liability for 9 s.",
    "tier": "yellow"
   },
@@ -124,7 +124,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (right)",
-   "rank": 13,
+   "rank": 15,
    "reason": "Half of a pair: 14-force blades that can't be disarmed, no lunge. Load 4 the pair, 2,400 cr at yellow reputation. Splice takes a pulled housing back for 600 cr.",
    "tier": "yellow"
   },
@@ -133,7 +133,7 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Shiv Blade housing (left)",
-   "rank": 14,
+   "rank": 16,
    "reason": "Left half of the Shiv pair: 14-force blades that can't be disarmed, no lunge.",
    "tier": "yellow"
   },
@@ -604,20 +604,20 @@
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (right)",
-   "rank": 15,
-   "reason": "Half of a pair: a 14 damage punch every 5 s that can snap a limb on the fourth hit, 20 to machines and structures every 1.5 s, breaks rock. No throw on a grab, no heavy moves and no door prying. Load 4 the pair, 1,600 cr at reputation 4. Either ripperdoc takes a pulled arm back for 400 cr.",
+   "rank": 12,
+   "reason": "Half of a pair: a 14 damage punch every 5 s that snaps a limb on the fourth hit, a grab slam for 18 to 22 with a 1 s knockdown every 15 s, and 32 to structures, enough to break down an airlock. The pair forces powered airlocks in 7 s, staggers everything adjacent every 60 s and tears an arm off a downed target. Above the Strong-Arm, which slams a little harder but has no finisher or door damage; below Gorilla Arms, which hurl, hit harder, pry faster and have three finishers. Load 4 the pair, 2,000 cr at reputation 4. Either ripperdoc takes a pulled arm back for 500 cr.",
    "tier": "yellow",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 20 to structures every 1.5 s, breaks rock. No hurl, slam, haymaker, ground pound, finisher or door pry."
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair."
   },
   "/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left": {
    "confidence": "medium",
    "group": "Arm weapons and fists",
    "hash": "",
    "name": "Brawler myomers (left)",
-   "rank": 16,
-   "reason": "Left half of the Brawler pair: a 14 damage punch every 5 s that can snap a limb on the fourth hit, 20 to machines and structures every 1.5 s, breaks rock. No heavy moves and no door prying.",
+   "rank": 13,
+   "reason": "Left half of the Brawler pair: a 14 damage punch every 5 s, an 18 to 22 grab slam every 15 s, 32 to structures. The pair forces airlocks, has a light ground pound and the limb rip.",
    "tier": "yellow",
-   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 20 to structures every 1.5 s, breaks rock. No hurl, slam, haymaker, ground pound, finisher or door pry."
+   "note": "Humans only. Each arm turns an empty-hand combat-mode left-click into a 14 brute punch (armor rolled, +10 wound bonus, through the gore layer's aimed crits) with a 1-tile knockback, 5 s cooldown per arm; four punches on one limb inside 15 s snap it unless 40+ melee covers it. 32 to structures every 1.5 s, which dents plain and reinforced airlocks; breaks rock. A mob held in an aggressive grab is slammed into the floor (18 brute, 20 stamina) or onto a table (22 brute, 30 stamina, 30 to the table) with a 1 s knockdown, once per 15 s grab-move cooldown; it is never hurled. The synced pair forces powered airlocks open in 7 s (instant if unpowered, refused if bolted or welded, and refused at trader outposts, where a pry or punch at a door counts as aggression), adds Ground pound (stagger up to 6 s and 10 stamina on everything adjacent bar crew, no daze, nothing moved, 60 s) and the limb rip finisher on a target in crit or stunned. No haymaker, head clap, backbreaker or flex. A Brawler arm beside a Gorilla arm syncs neither pair."
   },
   "/obj/item/organ/cyberimp/cyberware/governor_delete": {
    "confidence": "medium",

@@ -1,10 +1,11 @@
 /**
  * # Gorilla door pry
  *
- * The synced pair's bare-handed pry is tg's door_pryer (instant on an unpowered door, a slow pry on a
+ * The synced pair's bare-handed pry (Gorilla Arms, and slower from Brawler myomers) is tg's door_pryer (instant on an unpowered door, a slow pry on a
  * powered one, refused through bolts, welds and seals), with two changes:
  * - Trader outpost doors never give: the sanctuary airlocks and any door on an outpost's protected
- *   ground. Trying counts as aggression against the outpost.
+ *   ground. Trying counts as aggression against the outpost. A combat-mode punch at one is refused the
+ *   same way (ware_military_arms.dm on_punch()).
  * - A powered pry strains: every half second the bearer trembles, the door shakes, the seam opens a
  *   little wider and throws sparks.
  */
@@ -21,12 +22,12 @@
 			return COMPONENT_CANCEL_ATTACK_CHAIN
 	return ..()
 
-/// Whether a trader outpost keeps this door shut against the Gorilla.
-/proc/gorilla_pry_refused(obj/machinery/door/airlock/door)
+/// Whether a trader outpost keeps this door shut against Gorilla Arms or Brawler myomers, pried or punched.
+/proc/gorilla_pry_refused(obj/machinery/door/door)
 	return istype(door, /obj/machinery/door/airlock/outpost) || is_trader_outpost_protected(door)
 
 /// Trying to force a trader outpost's door counts against the one who tried.
-/proc/gorilla_pry_aggression(obj/machinery/door/airlock/door, mob/living/offender)
+/proc/gorilla_pry_aggression(obj/machinery/door/door, mob/living/offender)
 	var/obj/machinery/door/airlock/outpost/outpost_door = door
 	if(istype(outpost_door) && outpost_door.outpost)
 		outpost_door.outpost.register_aggression(offender)

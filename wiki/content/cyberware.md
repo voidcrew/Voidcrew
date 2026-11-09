@@ -115,7 +115,7 @@ The **ammunition shelf** is the return-visit hook: Ronin magazines at 250 credit
 The newer makers fill in the gaps under the big names. Each takes the same slot as the piece it copies, so it sells back and climbs like the others.
 
 - **Spring calves** and **Vaulter pistons**: a short hop on cheap springs, and the service pistons that clear a room.
-- **Brawler myomers**: a cased pair of forearms that hit hard and break rock, but no door gives way to them.
+- **Brawler myomers**: a cased pair of forearms that hit hard, break rock, slam a held body down and force an airlock, slower than Gorilla Arms.
 - **Tinker's fingers** and the **Deepcore drill fist**: a looser set of fingertip tools, and a heavier drill on the same ore hopper.
 - **Holdout housing**: a snub revolver folded into the forearm, loaded one round at a time.
 - **Hardweave plating** and the **Strut frame**: a heavier dermal weave, and a frame that keeps your bones whole.

@@ -6,6 +6,9 @@
  * bar the bearer's own crew, staggers, is dazed (the next shove knocks them down) and loses some wind; it
  * does no brute. Loose things on the floor nearby hop a tile outward. They are moved, never thrown, so a
  * ring of knives never becomes a ring of thrown knives, and they never hop into a hazard or through glass.
+ *
+ * Brawler myomers' synced pair gets a lighter one (the /brawler chip): a shorter stagger, less wind, no daze,
+ * nothing hops, a smaller ring and one crack, on a longer clock. Same crouch, so it reads the same.
  */
 
 /datum/action/cooldown/cyberware/gorilla_pound
@@ -19,6 +22,29 @@
 	var/crouch_timer
 	/// The bearer's arm rig while the pound is drawn (chrome_puppet_rig.dm)
 	var/datum/chrome_rig/rig
+	/// The longest stagger it leaves
+	var/stagger = GORILLA_POUND_STAGGER
+	/// Daze on everyone it hits; 0 for none
+	var/daze = GORILLA_POUND_DAZE
+	/// Stamina it takes from everyone it hits
+	var/stamina = GORILLA_POUND_STAMINA
+	/// Whether loose things nearby hop outward, and the full crash, ring and cracks
+	var/full_pound = TRUE
+
+/// Brawler myomers' pound: a shove-off, no daze, nothing hops.
+/datum/action/cooldown/cyberware/gorilla_pound/brawler
+	cooldown_time = BRAWLER_POUND_COOLDOWN
+	stagger = BRAWLER_POUND_STAGGER
+	daze = 0
+	stamina = BRAWLER_POUND_STAMINA
+	full_pound = FALSE
+
+/// Whether the pair this chip belongs to is synced.
+/datum/action/cooldown/cyberware/gorilla_pound/proc/pair_synced()
+	return gorilla_synced(owner)
+
+/datum/action/cooldown/cyberware/gorilla_pound/brawler/pair_synced()
+	return brawler_synced(owner)
 
 /datum/action/cooldown/cyberware/gorilla_pound/Destroy()
 	if(crouch_timer)
@@ -53,7 +79,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(!gorilla_synced(owner) || !gorilla_may_use_heavy_moves(owner))
+	if(!pair_synced() || !gorilla_may_use_heavy_moves(owner))
 		if(feedback)
 			owner.balloon_alert(owner, "arms out of sync!")
 		return FALSE
@@ -73,7 +99,7 @@
 	if(!ishuman(bearer) || crouch_timer)
 		return FALSE
 	StartCooldown()
-	gorilla_cooldown(bearer, COOLDOWN_GORILLA_POUND, GORILLA_POUND_COOLDOWN)
+	gorilla_cooldown(bearer, COOLDOWN_GORILLA_POUND, cooldown_time)
 	// The crouch: down, both fists up. Without a rig (something huge worn) the body only dips.
 	if(!raise_rig(bearer))
 		animate(bearer, pixel_z = -2, time = GORILLA_POUND_CROUCH, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
@@ -83,7 +109,9 @@
 
 /// A ground pound from [bearer], as the chip would. For an AI. Returns TRUE if it began.
 /proc/gorilla_try_pound(mob/living/carbon/human/bearer)
-	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in gorilla_heavy_arms(bearer))
+	if(!iscarbon(bearer))
+		return FALSE
+	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm in bearer.organs)
 		for(var/datum/action/cooldown/cyberware/gorilla_pound/pound in arm.actions)
 			if(pound.owner == bearer)
 				return !!pound.Trigger()
@@ -102,7 +130,7 @@
 			rig.swing_arm(side, 0, GORILLA_POUND_DRIVE, 3, NONE)
 		rig.crouch(0.72, 6, GORILLA_POUND_DRIVE, SINE_EASING | EASE_IN)
 		addtimer(CALLBACK(src, PROC_REF(rise)), GORILLA_POUND_DRIVE + 0.1 SECONDS, TIMER_DELETE_ME)
-	gorilla_ground_pound(bearer, where)
+	gorilla_ground_pound(bearer, where, stagger, daze, stamina, full_pound)
 
 /// The bearer stands back up after the pound.
 /datum/action/cooldown/cyberware/gorilla_pound/proc/rise()
@@ -113,16 +141,20 @@
 	rig.crouch(1, 0, GORILLA_POUND_RISE, SINE_EASING | EASE_OUT)
 	addtimer(CALLBACK(src, PROC_REF(drop_rig)), GORILLA_POUND_RISE, TIMER_DELETE_ME)
 
-/// Both fists into the floor at [where]: the shock, the stagger and the hop. Returns the mobs it hit.
-/proc/gorilla_ground_pound(mob/living/carbon/human/bearer, turf/where)
+/**
+ * Both fists into the floor at [where]: the shock, the stagger and the hop. Returns the mobs it hit.
+ * [full] is the Gorilla's: the big crash and ring, the cracks round it, and loose things hopping. Without it
+ * (Brawler myomers) a smaller ring, one crack and nothing moved.
+ */
+/proc/gorilla_ground_pound(mob/living/carbon/human/bearer, turf/where, stagger = GORILLA_POUND_STAGGER, daze = GORILLA_POUND_DAZE, stamina = GORILLA_POUND_STAMINA, full = TRUE)
 	. = list()
 	cyberware_camo_drop(bearer, "ground pound")
 	bearer.do_attack_animation(where, ATTACK_EFFECT_SMASH)
 	bearer.visible_message(span_danger("[bearer] drives both fists into the floor!"), span_danger("You drive both fists into the floor!"), vision_distance = DEFAULT_MESSAGE_RANGE)
-	playsound(where, 'sound/effects/meteorimpact.ogg', 80, TRUE, 8)
-	gorilla_pound_impact_fx(where, 1.5)
+	playsound(where, 'sound/effects/meteorimpact.ogg', full ? 80 : 50, TRUE, full ? 8 : 2)
+	gorilla_pound_impact_fx(where, full ? 1.5 : 1, full)
 	cyberware_grey_dust(where)
-	for(var/mob/living/shaken in range(3, where))
+	for(var/mob/living/shaken in range(full ? 3 : 2, where))
 		if(shaken.client && shaken != bearer)
 			shake_camera(shaken, 3, get_dist(shaken, where) <= 1 ? 2 : 1)
 	shake_camera(bearer, 2, 1)
@@ -130,20 +162,24 @@
 		// Not through glass or a door edge, and never the bearer's own crew
 		if(hit == bearer || hit.stat == DEAD || !hit.Adjacent(bearer) || cyberware_is_ally(bearer, hit))
 			continue
-		hit.adjust_staggered_up_to(STAGGERED_SLOWDOWN_LENGTH, 10 SECONDS)
-		hit.apply_status_effect(/datum/status_effect/dazed, GORILLA_POUND_DAZE)
-		hit.apply_damage(GORILLA_POUND_STAMINA, STAMINA)
+		hit.adjust_staggered_up_to(STAGGERED_SLOWDOWN_LENGTH, stagger)
+		if(daze > 0)
+			hit.apply_status_effect(/datum/status_effect/dazed, daze)
+		hit.apply_damage(stamina, STAMINA)
 		gorilla_register_aggression(hit, bearer)
 		log_combat(bearer, hit, "ground-pounded", "gorilla arms")
 		. += hit
-	gorilla_pound_scatter(where)
+	if(full)
+		gorilla_pound_scatter(where)
 
-/// The ring and the cracks under a ground pound: the Piledriver's cross, gone sooner.
-/proc/gorilla_pound_impact_fx(turf/where, reach)
+/// The ring and the cracks under a ground pound: the Piledriver's cross, gone sooner. Without [cross], the centre crack only.
+/proc/gorilla_pound_impact_fx(turf/where, reach, cross = TRUE)
 	if(isnull(where))
 		return
 	new /obj/effect/temp_visual/circle_wave/cyberware_slam(where, reach)
-	new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(where, "damaged1", 255)
+	new /obj/effect/temp_visual/cyberware_impact_cracks/gorilla_pound(where, "damaged1", cross ? 255 : 180)
+	if(!cross)
+		return
 	for(var/direction in GLOB.cardinals)
 		var/turf/next = get_step(where, direction)
 		if(next)
@@ -173,7 +209,7 @@
 		animate(loose, pixel_z = 5, time = 0.08 SECONDS, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
 		animate(pixel_z = -5, time = 0.1 SECONDS, easing = SINE_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
 
-// The set bonus grants the chip to the right arm, or whichever real arm there is.
+// The set bonus grants the chip to the right arm of its pair, or whichever arm there is.
 
 /datum/status_effect/organ_set_bonus/cyberware_gorilla
 	/// The ground pound chip, while the pair is synced
@@ -182,14 +218,14 @@
 /datum/status_effect/organ_set_bonus/cyberware_gorilla/proc/grant_pound()
 	if(pound && !QDELETED(pound))
 		return
-	var/list/arms = gorilla_heavy_arms(owner)
+	var/list/arms = gorilla_pair_arms(owner, type)
 	if(!length(arms))
 		return
 	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/carrier = arms[1]
 	for(var/obj/item/organ/cyberimp/cyberware/gorilla_arms/arm as anything in arms)
 		if(arm.zone == BODY_ZONE_R_ARM)
 			carrier = arm
-	pound = carrier.add_item_action(/datum/action/cooldown/cyberware/gorilla_pound)
+	pound = carrier.add_item_action(pound_type)
 	if(carrier.owner)
 		pound.Grant(carrier.owner)
 

@@ -294,13 +294,6 @@
 	sleep(0.5 SECONDS)
 	TEST_ASSERT(QDELETED(table) || table.get_integrity() <= table_before - 50, "The table didn't take the slam") // GORILLA_SLAM_TABLE_BREAK
 
-	// A Brawler never slams
-	var/mob/living/carbon/human/brawler = gorilla(spot(3, 0), street = TRUE)
-	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, spot(4, 0))
-	held.grabbedby(brawler, supress_message = TRUE)
-	held.grabbedby(brawler, supress_message = TRUE)
-	TEST_ASSERT_NOTEQUAL(punch(brawler, spot(4, 0)), COMPONENT_CANCEL_ATTACK_CHAIN, "Brawler myomers slammed someone")
-
 // =========================================================================
 // WALL IMPACTS (owner D38)
 // =========================================================================
@@ -464,7 +457,7 @@
 // FINISHERS (owner D39)
 // =========================================================================
 
-/// Never on someone just lying there; never from Brawler myomers or with something in hand.
+/// Never on someone just lying there or with something in hand; Brawler myomers never clap a head.
 /datum/unit_test/voidcrew_gorilla_gore/finisher_gates
 
 /datum/unit_test/voidcrew_gorilla_gore/finisher_gates/Run()
@@ -483,7 +476,7 @@
 	var/mob/living/carbon/human/brawler = gorilla(spot(3, 3), street = TRUE)
 	brawler.zone_selected = BODY_ZONE_HEAD
 	var/mob/living/carbon/human/consistent/brawler_victim = downed(spot(4, 3))
-	TEST_ASSERT(!gorilla_try_finisher(brawler, brawler_victim), "Brawler myomers started a finisher")
+	TEST_ASSERT(!gorilla_try_finisher(brawler, brawler_victim), "Brawler myomers started the head clap")
 
 	// The pistons' cooldown blocks it
 	gorilla_cooldown(bearer, "gorilla_pistons", 20 SECONDS) // COOLDOWN_GORILLA_PISTONS
@@ -683,3 +676,200 @@
 	held.grabbedby(slammer, supress_message = TRUE)
 	slammer.swap_hand(2, silent = TRUE)
 	TEST_ASSERT(gorilla_try_slam(slammer, get_turf(held)), "The slam couldn't be started without a click")
+
+// =========================================================================
+// BRAWLER MYOMERS (owner D49): the street slam, the light pound, the rip, doors
+// =========================================================================
+
+/// Brawler myomers slam a held body lighter and on a longer clock, never hurl it, and need the chrome
+/// running and a bearer who will hurt someone.
+/datum/unit_test/voidcrew_gorilla_gore/brawler_slam
+
+/datum/unit_test/voidcrew_gorilla_gore/brawler_slam/Run()
+	var/mob/living/carbon/human/brawler = gorilla(spot(0, 0), street = TRUE)
+	var/mob/living/carbon/human/consistent/held = allocate(/mob/living/carbon/human/consistent, spot(1, 0))
+	held.grabbedby(brawler, supress_message = TRUE)
+	held.grabbedby(brawler, supress_message = TRUE)
+	var/brute_before = held.getBruteLoss()
+	var/stamina_before = held.getStaminaLoss()
+	TEST_ASSERT_EQUAL(punch(brawler, spot(1, 0)), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler floor click while grabbing wasn't a slam")
+	TEST_ASSERT_NULL(brawler.pulling, "The Brawler slam kept the grab")
+	var/grab_wait = S_TIMER_COOLDOWN_TIMELEFT(brawler, "gorilla_grab_move") // COOLDOWN_GORILLA_GRAB_MOVE
+	TEST_ASSERT(grab_wait > 10 SECONDS, "The Brawler slam's grab clock is the Gorilla's ([grab_wait])") // BRAWLER_GRAB_MOVE_COOLDOWN 15 s
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_EQUAL(held.loc, spot(1, 0), "The Brawler slam moved the body")
+	TEST_ASSERT_EQUAL(held.getBruteLoss() - brute_before, 18, "A Brawler floor slam didn't land 18") // BRAWLER_SLAM_FLOOR_DAMAGE
+	var/winded = held.getStaminaLoss() - stamina_before
+	TEST_ASSERT(winded > 15 && winded <= 20, "A Brawler floor slam took [winded] stamina, not 20") // BRAWLER_SLAM_FLOOR_STAMINA
+	TEST_ASSERT(held.body_position == LYING_DOWN, "The Brawler slam didn't knock them down")
+	TEST_ASSERT(held.AmountKnockdown() <= 1 SECONDS, "The Brawler slam floored them for the Gorilla's two seconds") // BRAWLER_SLAM_KNOCKDOWN
+
+	// The table, lighter on the body and on the table
+	var/mob/living/carbon/human/table_brawler = gorilla(spot(0, 3), street = TRUE)
+	var/mob/living/carbon/human/consistent/table_victim = allocate(/mob/living/carbon/human/consistent, spot(1, 3))
+	var/obj/structure/table/table = allocate(/obj/structure/table, spot(1, 4))
+	var/table_before = table.get_integrity()
+	var/table_brute = table_victim.getBruteLoss()
+	table_victim.grabbedby(table_brawler, supress_message = TRUE)
+	table_victim.grabbedby(table_brawler, supress_message = TRUE)
+	TEST_ASSERT_EQUAL(punch(table_brawler, table), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler table click while grabbing wasn't a slam")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_EQUAL(table_victim.getBruteLoss() - table_brute, 22, "A Brawler table slam didn't land 22") // BRAWLER_SLAM_TABLE_DAMAGE
+	TEST_ASSERT(!QDELETED(table) && table.get_integrity() > table_before - 50 && table.get_integrity() <= table_before - 30, "A Brawler table slam didn't do 30 to the table") // BRAWLER_SLAM_TABLE_BREAK
+
+	// A punch on a held body lands where it stands: no hurl
+	var/mob/living/carbon/human/hurler = gorilla(spot(3, 0), street = TRUE)
+	var/mob/living/carbon/human/consistent/punched = allocate(/mob/living/carbon/human/consistent, spot(4, 0))
+	punched.grabbedby(hurler, supress_message = TRUE)
+	punched.grabbedby(hurler, supress_message = TRUE)
+	TEST_ASSERT_EQUAL(punch(hurler, punched), COMPONENT_CANCEL_ATTACK_CHAIN, "Test fixture: the Brawler punch didn't land")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT_EQUAL(punched.loc, spot(4, 0), "Brawler myomers hurled a held body")
+
+	// A pacifist never slams; neither does an arm that's down
+	var/mob/living/carbon/human/pacifist = gorilla(spot(3, 2), street = TRUE)
+	var/mob/living/carbon/human/consistent/spared = allocate(/mob/living/carbon/human/consistent, spot(4, 2))
+	ADD_TRAIT(pacifist, TRAIT_PACIFISM, TRAIT_SOURCE_UNIT_TESTS)
+	spared.grabbedby(pacifist, supress_message = TRUE)
+	spared.grabbedby(pacifist, supress_message = TRUE)
+	TEST_ASSERT_NOTEQUAL(punch(pacifist, spot(4, 2)), COMPONENT_CANCEL_ATTACK_CHAIN, "A pacifist Brawler slammed someone")
+	REMOVE_TRAIT(pacifist, TRAIT_PACIFISM, TRAIT_SOURCE_UNIT_TESTS)
+	var/obj/item/organ/cyberimp/cyberware/gorilla_arms/fried = arm(pacifist)
+	fried.organ_flags |= ORGAN_FAILING
+	TEST_ASSERT(!fried.gorilla_running(), "Test fixture: the failing arm still runs")
+	TEST_ASSERT_NOTEQUAL(fried.try_slam(pacifist, spot(4, 2), pacifist.get_active_hand()), 1, "A failing Brawler arm slammed someone") // GORILLA_SLAM_DONE
+
+/// The synced Brawler pair's pound staggers and winds those beside it, never dazes them and moves nothing.
+/datum/unit_test/voidcrew_gorilla_gore/brawler_pound
+
+/datum/unit_test/voidcrew_gorilla_gore/brawler_pound/Run()
+	var/mob/living/carbon/human/brawler = gorilla(spot(2, 2), street = TRUE)
+	TEST_ASSERT(brawler_synced(brawler), "Test fixture: the Brawler pair isn't synced")
+	TEST_ASSERT(!gorilla_synced(brawler), "A Brawler pair synced as Gorilla Arms")
+	var/datum/action/cooldown/cyberware/gorilla_pound/brawler/pound = locate() in arm(brawler, BODY_ZONE_R_ARM).actions
+	TEST_ASSERT_NOTNULL(pound, "A synced Brawler pair has no ground pound")
+	TEST_ASSERT_EQUAL(pound.owner, brawler, "The Brawler ground pound wasn't granted")
+	TEST_ASSERT_EQUAL(pound.cooldown_time, 60 SECONDS, "The Brawler pound isn't on a minute's clock") // BRAWLER_POUND_COOLDOWN
+	TEST_ASSERT(!pound.daze, "The Brawler pound dazes")
+
+	var/mob/living/carbon/human/consistent/near = allocate(/mob/living/carbon/human/consistent, spot(3, 2))
+	var/obj/item/wrench/loose = allocate(/obj/item/wrench, spot(1, 2))
+	var/brute_before = near.getBruteLoss()
+	var/stamina_before = near.getStaminaLoss()
+	var/list/hit = gorilla_ground_pound(brawler, get_turf(brawler), pound.stagger, pound.daze, pound.stamina, pound.full_pound)
+	TEST_ASSERT(near in hit, "The Brawler pound missed someone beside it")
+	var/datum/status_effect/staggered/stagger = near.has_status_effect(/datum/status_effect/staggered)
+	TEST_ASSERT_NOTNULL(stagger, "The Brawler pound didn't stagger")
+	TEST_ASSERT(stagger.duration - world.time <= 6 SECONDS, "The Brawler pound staggered past six seconds") // BRAWLER_POUND_STAGGER
+	TEST_ASSERT_NULL(near.has_status_effect(/datum/status_effect/dazed), "The Brawler pound dazed someone")
+	var/winded = near.getStaminaLoss() - stamina_before
+	TEST_ASSERT(winded > 5 && winded <= 10, "The Brawler pound took [winded] stamina, not 10") // BRAWLER_POUND_STAMINA
+	TEST_ASSERT_EQUAL(near.getBruteLoss(), brute_before, "The Brawler pound did brute")
+	TEST_ASSERT_EQUAL(loose.loc, spot(1, 2), "The Brawler pound moved a loose thing")
+
+	// Through the chip, on its own clock
+	var/mob/living/carbon/human/pounder = gorilla(spot(0, 4), street = TRUE)
+	TEST_ASSERT(gorilla_try_pound(pounder), "The Brawler pound couldn't be started without the chip")
+	TEST_ASSERT(S_TIMER_COOLDOWN_TIMELEFT(pounder, "gorilla_pound") > 45 SECONDS, "The Brawler pound ran on the Gorilla's clock") // COOLDOWN_GORILLA_POUND
+
+	// A mixed pair has no pound at all
+	var/mob/living/carbon/human/consistent/mixed = allocate(/mob/living/carbon/human/consistent, spot(4, 4))
+	var/obj/item/organ/real = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms)
+	var/obj/item/organ/street = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left)
+	TEST_ASSERT(real.Insert(mixed, special = TRUE), "Test fixture: the real arm wouldn't go in")
+	TEST_ASSERT(street.Insert(mixed, special = TRUE), "Test fixture: the Brawler arm wouldn't go in")
+	TEST_ASSERT_NULL(locate(/datum/action/cooldown/cyberware/gorilla_pound) in real.actions, "A mixed pair got a ground pound")
+	TEST_ASSERT_NULL(locate(/datum/action/cooldown/cyberware/gorilla_pound) in street.actions, "A mixed pair got a Brawler pound")
+
+	// Out of sync: the chip goes
+	var/obj/item/organ/left = arm(brawler, BODY_ZONE_L_ARM)
+	left.Remove(brawler, special = TRUE)
+	sleep(0.1 SECONDS)
+	TEST_ASSERT(QDELETED(pound) || pound.owner != brawler, "The Brawler pound outlived the pair")
+
+/// The synced Brawler pair's only finisher is the limb rip, on the same terms as the Gorilla's. A mixed pair has none.
+/datum/unit_test/voidcrew_gorilla_gore/brawler_rip
+
+/datum/unit_test/voidcrew_gorilla_gore/brawler_rip/Run()
+	var/mob/living/carbon/human/brawler = gorilla(spot(1, 1), street = TRUE)
+	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	brawler.zone_selected = BODY_ZONE_HEAD
+	TEST_ASSERT(!gorilla_try_finisher(brawler, victim), "Brawler myomers started the head clap")
+	brawler.zone_selected = BODY_ZONE_CHEST
+	TEST_ASSERT(!gorilla_try_finisher(brawler, victim), "Brawler myomers started the backbreaker")
+	brawler.zone_selected = BODY_ZONE_L_ARM
+	TEST_ASSERT(gorilla_try_finisher(brawler, victim), "The Brawler limb rip didn't start")
+	var/datum/hv_finisher/chrome/gorilla/rip/finisher = brawler.chrome_finisher
+	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip for a Brawler")
+	run_to_end(finisher)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_ARM), "The Brawler rip didn't tear the aimed arm off")
+	TEST_ASSERT_NOTNULL(victim.get_bodypart(BODY_ZONE_R_ARM), "The Brawler rip tore the wrong arm off")
+	TEST_ASSERT_EQUAL(puppets_left(), 0, "The Brawler rip left puppets behind")
+	TEST_ASSERT(!TIMER_COOLDOWN_FINISHED(brawler, "gorilla_pistons"), "The Brawler rip didn't spend the pistons") // COOLDOWN_GORILLA_PISTONS
+
+	// Not someone just lying there
+	var/mob/living/carbon/human/second = gorilla(spot(1, 3), street = TRUE)
+	second.zone_selected = BODY_ZONE_R_ARM
+	var/mob/living/carbon/human/consistent/resting = allocate(/mob/living/carbon/human/consistent, spot(2, 3))
+	resting.set_resting(TRUE, instant = TRUE)
+	TEST_ASSERT(!gorilla_try_finisher(second, resting), "The Brawler rip started on someone just lying down")
+
+	// A mixed pair rips nothing
+	var/mob/living/carbon/human/consistent/mixed = allocate(/mob/living/carbon/human/consistent, spot(4, 1))
+	var/obj/item/organ/real = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms)
+	var/obj/item/organ/street = allocate(/obj/item/organ/cyberimp/cyberware/gorilla_arms/street/left)
+	TEST_ASSERT(real.Insert(mixed, special = TRUE), "Test fixture: the real arm wouldn't go in")
+	TEST_ASSERT(street.Insert(mixed, special = TRUE), "Test fixture: the Brawler arm wouldn't go in")
+	mixed.set_combat_mode(TRUE)
+	mixed.zone_selected = BODY_ZONE_L_ARM
+	var/mob/living/carbon/human/consistent/mixed_victim = downed(spot(4, 2))
+	TEST_ASSERT(!gorilla_try_finisher(mixed, mixed_victim), "A mixed pair started the limb rip")
+
+/// Brawler punches dent plain and reinforced airlocks, less than the Gorilla's; the synced pair forces a
+/// powered one slower than the Gorilla; a trader outpost's door takes neither.
+/datum/unit_test/voidcrew_gorilla_gore/brawler_doors
+
+/datum/unit_test/voidcrew_gorilla_gore/brawler_doors/Run()
+	var/mob/living/carbon/human/brawler = gorilla(spot(0, 0), street = TRUE)
+	var/obj/machinery/door/airlock/plain = allocate(/obj/machinery/door/airlock, spot(1, 0))
+	var/plain_before = plain.get_integrity()
+	TEST_ASSERT_EQUAL(punch(brawler, plain), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler punch at an airlock wasn't a smash")
+	var/brawler_dent = plain_before - plain.get_integrity()
+	TEST_ASSERT(brawler_dent > 0, "A Brawler punch didn't dent a plain airlock")
+
+	var/obj/machinery/door/airlock/reinforced = allocate(/obj/machinery/door/airlock, spot(0, 1))
+	reinforced.damage_deflection = 30 // AIRLOCK_DAMAGE_DEFLECTION_R
+	var/reinforced_before = reinforced.get_integrity()
+	punch(brawler, reinforced)
+	TEST_ASSERT(reinforced.get_integrity() < reinforced_before, "A Brawler punch didn't dent a reinforced airlock")
+
+	var/mob/living/carbon/human/real = gorilla(spot(3, 0))
+	var/obj/machinery/door/airlock/real_door = allocate(/obj/machinery/door/airlock, spot(4, 0))
+	var/real_before = real_door.get_integrity()
+	punch(real, real_door)
+	TEST_ASSERT(real_before - real_door.get_integrity() > brawler_dent, "A Brawler punch dents an airlock as deep as a Gorilla's")
+
+	// Forcing a powered airlock that won't open for them: slower than the Gorilla's four seconds
+	brawler.set_combat_mode(FALSE)
+	var/obj/machinery/door/airlock/shut = allocate(/obj/machinery/door/airlock, spot(1, 1))
+	shut.req_access = list(ACCESS_CAPTAIN)
+	TEST_ASSERT(shut.hasPower(), "Test fixture: the test room airlock has no power")
+	TEST_ASSERT(!shut.allowed(brawler), "Test fixture: the airlock opens for the Brawler anyway")
+	var/forced = SEND_SIGNAL(brawler, COMSIG_LIVING_UNARMED_ATTACK, shut, TRUE, list())
+	TEST_ASSERT(forced & COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler pair didn't take the airlock click")
+	sleep(4.5 SECONDS)
+	TEST_ASSERT(shut.density, "The Brawler pair forced an airlock as fast as the Gorilla") // GORILLA_PRY_TIME
+	sleep(3 SECONDS)
+	TEST_ASSERT(!shut.density, "The Brawler pair never forced the airlock") // BRAWLER_PRY_TIME 7 s
+
+	// A trader outpost's airlock takes no punch and no pry
+	var/obj/machinery/door/airlock/outpost/outpost_door = allocate(/obj/machinery/door/airlock/outpost, spot(0, 2))
+	var/outpost_before = outpost_door.get_integrity()
+	brawler.set_combat_mode(TRUE)
+	TEST_ASSERT_EQUAL(punch(brawler, outpost_door), COMPONENT_CANCEL_ATTACK_CHAIN, "A Brawler punch at an outpost airlock went through to the door")
+	TEST_ASSERT_EQUAL(outpost_door.get_integrity(), outpost_before, "A Brawler punch dented an outpost airlock")
+	brawler.set_combat_mode(FALSE)
+	var/refused = SEND_SIGNAL(brawler, COMSIG_LIVING_UNARMED_ATTACK, outpost_door, TRUE, list())
+	TEST_ASSERT(refused & COMPONENT_CANCEL_ATTACK_CHAIN, "The Brawler pry didn't take the outpost door click")
+	sleep(0.5 SECONDS)
+	TEST_ASSERT(outpost_door.density, "The Brawler pair pried an outpost airlock")

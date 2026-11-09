@@ -45,6 +45,8 @@
 #define GORILLA_GRAB_MOVE_COOLDOWN (10 SECONDS)
 #define GORILLA_POUND_COOLDOWN (45 SECONDS)
 #define GORILLA_FLEX_COOLDOWN (10 SECONDS)
+/// A powered airlock forced by the synced Gorilla pair.
+#define GORILLA_PRY_TIME (4 SECONDS)
 
 // ---- The haymaker (gorilla_haymaker.dm) ----
 
@@ -70,6 +72,26 @@
 #define GORILLA_SLAM_TABLE_STAMINA 40
 #define GORILLA_SLAM_KNOCKDOWN (2 SECONDS)
 #define GORILLA_SLAM_TABLE_BREAK 50
+/// How high a slammed body goes up before it comes down, in pixels.
+#define GORILLA_SLAM_LIFT 12
+
+// ---- Brawler myomers (ware_line_models_a.dm): the street slam, pound, smash and pry ----
+
+#define BRAWLER_SLAM_FLOOR_DAMAGE 18
+#define BRAWLER_SLAM_FLOOR_STAMINA 20
+#define BRAWLER_SLAM_TABLE_DAMAGE 22
+#define BRAWLER_SLAM_TABLE_STAMINA 30
+#define BRAWLER_SLAM_KNOCKDOWN (1 SECONDS)
+#define BRAWLER_SLAM_TABLE_BREAK 30
+#define BRAWLER_SLAM_LIFT 8
+#define BRAWLER_GRAB_MOVE_COOLDOWN (15 SECONDS)
+/// Damage per structure smash: over a plain airlock's deflection (21) and a reinforced one's (30).
+#define BRAWLER_STRUCTURE_DAMAGE 32
+/// A powered airlock forced by the synced pair. The Gorilla takes GORILLA_PRY_TIME.
+#define BRAWLER_PRY_TIME (7 SECONDS)
+#define BRAWLER_POUND_COOLDOWN (60 SECONDS)
+#define BRAWLER_POUND_STAGGER (6 SECONDS)
+#define BRAWLER_POUND_STAMINA 10
 /// What a click while grabbing turned into (gorilla_arms/proc/try_slam()). Not a slam: carry on with the punch.
 #define GORILLA_SLAM_NO 0
 /// A slam was done.
@@ -108,6 +130,8 @@
 /// How long the bearer takes to stand back up after a ground pound
 #define GORILLA_POUND_RISE (0.3 SECONDS)
 #define GORILLA_POUND_STAMINA 20
+/// The longest stagger a pound leaves.
+#define GORILLA_POUND_STAGGER (10 SECONDS)
 #define GORILLA_POUND_DAZE (3 SECONDS)
 /// Loose items this far from the pound hop a tile outward.
 #define GORILLA_POUND_ITEM_REACH 2
