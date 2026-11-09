@@ -35,6 +35,8 @@
 #define WIRE_GARROTE_POOL_TIME (1.8 SECONDS)
 /// The head's drop from the neck to the floor.
 #define WIRE_GARROTE_HEAD_FALL_TIME (0.2 SECONDS)
+/// Pixels below the neck the pool goes facing away, where the dropped head lies against the stump.
+#define WIRE_GARROTE_POOL_DROP_NORTH 6
 
 /mob/living
 	/// The garrote can be tried again from this world.time.
@@ -125,6 +127,9 @@
 	var/victim_old_layer
 	/// Timer of the victim's struggle in the hold
 	var/struggle_timer
+	/// Where the two were drawn as the grip was taken, before the hold drew them into place:
+	/// list(garroter pixel_x, pixel_y, victim pixel_x, pixel_y)
+	var/list/pull_from
 
 /datum/hv_finisher/garrote/Destroy()
 	. = ..()
@@ -165,6 +170,8 @@
 	cyberware_camo_drop(user)
 
 /datum/hv_finisher/garrote/take_grip()
+	if(!gripped && !QDELETED(user) && !QDELETED(victim))
+		pull_from = drawn_offsets()
 	. = ..()
 	if(. && !QDELETED(user))
 		user.wire_garrote_ready_at = world.time + WIRE_GARROTE_COOLDOWN
@@ -197,12 +204,13 @@
 
 /**
  * The kill lets the body go as the wire goes through: the grab's pull and the hold's drag come off together, and
- * it slumps back onto its own tile in one short move. Nothing moves it after this, so the head, the pool and
- * anything else laid out after the kill are placed where it rests.
+ * it slumps back onto its own tile in one short move. The garroter straightens out of the lean over the same move,
+ * here rather than as the finisher ends, so neither of them moves again after it. Returns how long the move takes:
+ * the head, the pool and anything else laid out after the kill wait for it and go where the body rests.
  */
 /datum/hv_finisher/garrote/proc/let_go_at_kill()
 	if(QDELETED(victim))
-		return
+		return 0
 	var/old_x = victim.pixel_x
 	var/old_y = victim.pixel_y
 	victim.remove_offsets(HV_FINISHER_OFFSET, animate = FALSE)
@@ -224,6 +232,18 @@
 		animate(victim, pixel_x = new_x, pixel_y = new_y, time = settle_time, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	if(!isnull(drawn_up_from))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_garrote_lay_back), victim, drawn_up_from), settle_time)
+	// The lean off now: the recover stage's pose and the finisher's end then find nothing left to move.
+	if(!QDELETED(user))
+		var/user_old_x = user.pixel_x
+		var/user_old_y = user.pixel_y
+		user.add_offsets(HV_FINISHER_OFFSET, null, 0, 0, animate = FALSE)
+		if(user.pixel_x != user_old_x || user.pixel_y != user_old_y)
+			var/user_new_x = user.pixel_x
+			var/user_new_y = user.pixel_y
+			user.pixel_x = user_old_x
+			user.pixel_y = user_old_y
+			animate(user, pixel_x = user_new_x, pixel_y = user_new_y, time = max(settle_time, 2), easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	return settle_time
 
 /// A body the garrote drew up over its garroter goes back to `old_layer`, unless something else has changed it since.
 /proc/wire_garrote_lay_back(mob/living/body, old_layer)
@@ -278,29 +298,25 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), duration - WIRE_GARROTE_LEAN_TIME - WIRE_GARROTE_REACH_TIME), WIRE_GARROTE_LEAN_TIME + WIRE_GARROTE_REACH_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
- * Where the garroter holds the wire: the hands drawn up to the chest, pulling, and whether that hand is behind the
- * body. In profile both hands are in front of the chest (the far one just behind the near arm's line, never down
- * behind the hip); facing away both are hidden; facing the viewer they are held apart, so the two strands meet
- * the neck in a V. list(x, y, behind)
+ * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
+ * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states), in pixels from
+ * the middle of the tile, as a line's base is placed. The hands hang at the hips; in profile the near hand is at the
+ * middle of the body and the far one just shows at its front edge, behind the torso. Facing away or toward the
+ * viewer both hands show at the sides. list(x, y, behind)
  */
 /datum/hv_finisher/garrote/proc/hand_point(side)
 	var/right = side != "left"
 	switch(user.dir)
 		if(EAST)
-			return right ? list(5, 3, FALSE) : list(4, 4, FALSE)
+			return right ? list(-1, -3, FALSE) : list(5, -3, TRUE)
 		if(WEST)
-			return right ? list(-4, 4, FALSE) : list(-5, 3, FALSE)
+			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
 		if(NORTH)
-			return right ? list(5, 3, TRUE) : list(-5, 3, TRUE)
-	return right ? list(-6, 3, FALSE) : list(6, 3, FALSE)
+			return right ? list(7, -3, FALSE) : list(-7, -3, FALSE)
+	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
 
-/**
- * The world layer for wire leaving a hand. Facing away, the hands are hidden in front of the garroter and the body lies
- * beyond them: the wire runs between the two bodies, under the garroter and over the one lying there.
- */
+/// The world layer for wire leaving a hand: over the bodies, or under them for the far hand in profile.
 /datum/hv_finisher/garrote/proc/strand_layer(behind)
-	if(behind && user.dir == NORTH)
-		return WIRE_BETWEEN_LAYER
 	return wire_line_layer(behind)
 
 /// "left" or "right": the hand the wire is in.
@@ -401,9 +417,10 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(show_loop), "loop"), WIRE_GARROTE_WIND_TIME, TIMER_STOPPABLE | TIMER_DELETE_ME))
 	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(user, WIRE_GORE_ICON, "wire_glint[wire_suffix()]", WIRE_FX_LAYER, 0.3 SECONDS, glow = TRUE)
 	if(glint)
+		// On the hand: the glint's picture is centred a pixel right of a line's base.
 		var/list/hand = hand_point(wire_side())
 		glint.pixel_x = hand[1] - 1
-		glint.pixel_y = hand[2] + 4
+		glint.pixel_y = hand[2]
 
 /// The wire in flight. Nothing to click.
 /obj/effect/abstract/wire_reach
@@ -537,43 +554,66 @@
 		victim?.cut_overlay(loop_back)
 		loop_back = null
 
+/// Where the garroter and the victim are drawn now: list(garroter pixel_x, pixel_y, victim pixel_x, pixel_y)
+/datum/hv_finisher/garrote/proc/drawn_offsets()
+	return list(user.pixel_x, user.pixel_y, victim.pixel_x, victim.pixel_y)
+
 /**
- * The wire from the garroter's hands to the neck, one strand a hand (or only the wire's hand), in the wire's own
- * colour. A strand from a hand behind the garroter's body (the far hand in profile, both facing away) is drawn under
- * the bodies, so the torso hides it.
+ * The wire from the garroter's hands to the neck, one strand a hand, in the wire's own colour: one line of wire
+ * each, stretched from the hand to the neck. A strand from a hand behind the garroter's body
+ * (the far hand in profile) is drawn under the bodies, so the torso hides it. Whatever wire was drawn before (the
+ * slack throw, or the strands before a lean) goes as these go up.
+ *
+ * `slide_from` (drawn_offsets(), or null) is where the two were drawn before a move that is sliding them into place
+ * now, over tg's offset time: the strands start from there and slide with them, so they stay on the hands and the
+ * neck all the way.
  */
-/datum/hv_finisher/garrote/proc/draw_wire(duration, both_hands = TRUE)
-	// The wire drawn before (the slack throw, or strands from before a lean) goes a tick after the new strands are
-	// up, so the wire never blinks out between them.
-	var/list/old_lines = list()
-	if(strand_refs)
-		old_lines += strand_refs
-	if(reach_refs)
-		old_lines += reach_refs
-	strand_refs = null
-	reach_refs = null
-	if(length(old_lines))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_qdel_refs), old_lines), world.tick_lag)
-	if(QDELETED(user) || QDELETED(victim))
+/datum/hv_finisher/garrote/proc/draw_wire(duration, list/slide_from)
+	clear_reach()
+	clear_strands()
+	var/turf/from = get_turf(user)
+	if(!from || QDELETED(user) || QDELETED(victim))
 		return
-	var/list/neck = neck_offset()
-	var/list/sides = both_hands ? list("left", "right") : list(wire_side())
-	for(var/side in sides)
+	var/list/neck = neck_point()
+	var/list/start = slide_from || drawn_offsets()
+	for(var/side in list("left", "right"))
 		var/list/hand = hand_point(side)
 		// Facing toward or away, each strand meets its own side of the loop, so the two read as two lines, not one.
 		var/end_x = (user.dir & (NORTH | SOUTH)) ? clamp(hand[1], -2, 2) : 0
-		var/datum/beam/strand = user.Beam(victim, icon_state = "wire_taut[wire_suffix()]", icon = WIRE_GORE_ICON, time = duration, beam_type = /obj/effect/ebeam/wire_line, override_origin_pixel_x = user.pixel_x + hand[1], override_origin_pixel_y = user.pixel_y + hand[2], override_target_pixel_x = victim.pixel_x + neck[1] + end_x, override_target_pixel_y = victim.pixel_y + neck[2], layer = strand_layer(hand[3]))
+		var/hand_x = user.pixel_x + hand[1]
+		var/hand_y = user.pixel_y + hand[2]
+		var/neck_x = neck[1] + end_x
+		var/neck_y = neck[2]
+		var/start_hand_x = hand_x + start[1] - user.pixel_x
+		var/start_hand_y = hand_y + start[2] - user.pixel_y
+		var/start_neck_x = neck_x + start[3] - victim.pixel_x
+		var/start_neck_y = neck_y + start[4] - victim.pixel_y
+		var/obj/effect/abstract/wire_reach/strand = new(from)
+		strand.icon_state = "wire_taut[wire_suffix()]"
+		strand.layer = strand_layer(hand[3])
+		strand.add_overlay(emissive_appearance(strand.icon, strand.icon_state, strand))
+		strand.pixel_x = start_hand_x
+		strand.pixel_y = start_hand_y
+		strand.transform = wire_strand_shape(start_neck_x - start_hand_x, start_neck_y - start_hand_y)
+		if(start_hand_x != hand_x || start_hand_y != hand_y || start_neck_x != neck_x || start_neck_y != neck_y)
+			// Linear, as tg's offset moves are, and the matrix too, so both ends of the line run straight with the bodies.
+			animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(neck_x - hand_x, neck_y - hand_y), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
 		LAZYADD(strand_refs, WEAKREF(strand))
+		QDEL_IN(strand, duration)
+
+/// A taut strand of wire from its start to (`span_x`, `span_y`) pixels away: the sprite is a tile-long line through the
+/// middle, so it is moved up to start at the middle, then stretched and turned.
+/proc/wire_strand_shape(span_x, span_y)
+	var/matrix/shape = matrix()
+	shape.Translate(0, ICON_SIZE_Y / 2)
+	shape.Scale(1, max(sqrt(span_x ** 2 + span_y ** 2), 1) / ICON_SIZE_Y)
+	shape.Turn(arctan(span_y, span_x))
+	return shape
 
 /datum/hv_finisher/garrote/proc/clear_strands()
 	for(var/datum/weakref/strand_ref as anything in strand_refs)
 		qdel(strand_ref.resolve())
 	strand_refs = null
-
-/// Deletes whatever the weakrefs in `refs` still point at.
-/proc/wire_qdel_refs(list/refs)
-	for(var/datum/weakref/thing_ref as anything in refs)
-		qdel(thing_ref.resolve())
 
 /datum/hv_finisher/garrote/proc/clear_wire_fx()
 	for(var/timer in windup_timers)
@@ -604,8 +644,8 @@
 	var/facing = user.dir
 	clear_wire_fx()
 	// The garroter lets go as the wire goes through, and the body drops back once, here. The pool and the smoke go
-	// where it comes to rest.
-	let_go_at_kill()
+	// where it comes to rest, once it is there.
+	var/settle_time = let_go_at_kill()
 	var/list/rest_neck = neck_on_tile()
 	// Facing away, the snap is between the two bodies, not over the garroter's head.
 	cyberware_anim_play(victim, WIRE_GORE_ICON, "garrote_snap[wire_suffix()]", facing == NORTH ? WIRE_BETWEEN_LAYER : ABOVE_MOB_LAYER, 0.6 SECONDS, glow = TRUE)
@@ -622,7 +662,10 @@
 		if(hv_wire_take_part(head, seared ? WOUND_BURN : WOUND_SLASH, 0, FALSE))
 			wire_neck_blood_loss(victim, seared)
 			wire_drop_head(head, victim, body_offsets, head_side, facing, worn, list(rest_neck[1] - cut_neck[1], rest_neck[2] - cut_neck[2]))
-			finish_blood(spray_dir, seared, cut_neck, rest_neck)
+			// Facing away, the head lies against the stump, below the body's line, with the garroter just beyond it: a pool
+			// centred on the neck would show only above the shoulders. It goes a little lower, and shows round the head.
+			var/list/pool_at = facing == NORTH ? list(rest_neck[1], rest_neck[2] - WIRE_GARROTE_POOL_DROP_NORTH) : rest_neck
+			finish_blood(spray_dir, seared, cut_neck, rest_neck, settle_time, pool_at)
 			log_combat(user, victim, "garroted the head off", wire)
 			return
 		LAZYREMOVE(victim.hv_stump_burnt, BODY_ZONE_HEAD)
@@ -635,7 +678,7 @@
 			victim.hv_add_hit_line("[user] jerks the wire across [victim]'s throat!")
 			throat.announce(victim, spray_dir)
 			wire_open_throat(victim, slit)
-			finish_blood(spray_dir, seared, cut_neck, rest_neck)
+			finish_blood(spray_dir, seared, cut_neck, rest_neck, settle_time)
 			log_combat(user, victim, "garroted the throat of", wire)
 			return
 	if(blocker)
@@ -716,14 +759,18 @@
 /**
  * The open neck empties. Blood bursts out all round where the wire cut it (`cut_neck`, from the middle of the victim's
  * tile) and lands in a rough ring of drops and splats over the floor about the neck, the garroter included; it wets
- * the garroter's hands, then their clothes and feet as the drops come down; and a pool spreads under the neck where
- * the body came to rest (`rest_neck`) over the next couple of seconds. A seared one only smokes.
+ * the garroter's hands, then their clothes and feet as the drops come down; and once the body has come to rest
+ * (`settle_time` on), a pool spreads under the neck there (`rest_neck`, or `pool_at`) over the next couple of seconds.
+ * A seared one only smokes, from there.
  */
-/datum/hv_finisher/garrote/proc/finish_blood(spray_dir, seared, list/cut_neck, list/rest_neck)
+/datum/hv_finisher/garrote/proc/finish_blood(spray_dir, seared, list/cut_neck, list/rest_neck, settle_time = 0, list/pool_at)
 	if(QDELETED(victim))
 		return
 	if(seared)
-		wire_neck_smoke(victim, rest_neck)
+		if(settle_time)
+			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_neck_smoke), victim, rest_neck), settle_time)
+		else
+			wire_neck_smoke(victim, rest_neck)
 		playsound(victim, 'sound/effects/wounds/sizzle1.ogg', 60, TRUE)
 		return
 	var/turf/neck_turf = get_turf(victim)
@@ -731,7 +778,12 @@
 		return
 	var/list/blood_dna = victim.get_blood_dna_list()
 	var/list/viruses = victim.get_static_viruses()
-	wire_pool_under(neck_turf, rest_neck[1], rest_neck[2], blood_dna, viruses)
+	if(!pool_at)
+		pool_at = rest_neck
+	if(settle_time)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_pool_under), neck_turf, pool_at[1], pool_at[2], blood_dna, viruses), settle_time)
+	else
+		wire_pool_under(neck_turf, pool_at[1], pool_at[2], blood_dna, viruses)
 	wire_blood_burst(neck_turf, cut_neck[1], cut_neck[2], wire_blood_color(victim), blood_dna)
 	if(QDELETED(user))
 		return
@@ -823,7 +875,7 @@
 	if(QDELETED(pool))
 		return
 	pool.base_pixel_x = clamp(neck_x, -8, 8)
-	pool.base_pixel_y = clamp(neck_y, -8, 8)
+	pool.base_pixel_y = clamp(neck_y, -12, 8)
 	pool.pixel_x = pool.base_pixel_x
 	pool.pixel_y = pool.base_pixel_y
 	// It keeps to the neck's tile: it never runs onto the tiles beside it, however much the body bleeds into it.
@@ -963,8 +1015,8 @@
 	var/datum/hv_finisher/garrote/garrote = host
 	garrote.pull_close()
 	garrote.show_loop("tight")
-	// Taut until the kill beat cuts it.
-	garrote.draw_wire(duration + 0.5 SECONDS)
+	// Taut until the kill beat cuts it, sliding in with the bodies from where they were before the grab.
+	garrote.draw_wire(duration + 0.5 SECONDS, garrote.pull_from)
 	// Drawn in to the hands first, then the thrashing.
 	garrote.struggle(UPDATE_TRANSFORM_ANIMATION_TIME, duration - UPDATE_TRANSFORM_ANIMATION_TIME)
 
@@ -981,11 +1033,12 @@
 	lunge = -2
 
 /datum/hv_finisher_stage/kill/garrote/enter()
-	. = ..()
-	// The strands leave the hands where the lean has taken them.
 	var/datum/hv_finisher/garrote/garrote = host
+	var/list/before_lean = garrote.drawn_offsets()
+	. = ..()
+	// The strands stay on the hands as the lean takes them back.
 	if(garrote.running)
-		garrote.draw_wire(effect_delay + 0.1 SECONDS)
+		garrote.draw_wire(effect_delay + 0.1 SECONDS, before_lean)
 
 /datum/hv_finisher_stage/kill/garrote/effect()
 	var/datum/hv_finisher/garrote/garrote = host
@@ -999,3 +1052,4 @@
 #undef WIRE_GARROTE_TURN_TIME
 #undef WIRE_GARROTE_POOL_TIME
 #undef WIRE_GARROTE_HEAD_FALL_TIME
+#undef WIRE_GARROTE_POOL_DROP_NORTH

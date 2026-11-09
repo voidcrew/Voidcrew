@@ -535,6 +535,8 @@
 	var/obj/item/radio/headset/headset = locate() in get_turf(dying)
 	TEST_ASSERT_NOTNULL(headset, "The headset didn't come off with the head")
 	TEST_ASSERT(abs(headset.transform.b) > 0.5, "The headset isn't lying on its side by the head")
+	// The pool goes down once the body has settled after the kill.
+	sleep(0.5 SECONDS)
 	var/pooled = FALSE
 	for(var/obj/effect/decal/cleanable/blood/pool in get_turf(dying))
 		if(!istype(pool, /obj/effect/decal/cleanable/blood/drip) && !istype(pool, /obj/effect/decal/cleanable/blood/hv_spray))
