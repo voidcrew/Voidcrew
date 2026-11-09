@@ -276,6 +276,37 @@
 	lab_rat.remove_status_effect(/datum/status_effect/cyberware_redline_window)
 	TEST_ASSERT_NULL(lab_rat.get_filter("cyberware_redline_window"), "The red outline outlasted the window")
 
+/// Splice buys burnt-out chrome as scrap, for less than the cheapest piece he sells for credits
+/datum/unit_test/voidcrew_cyberware_burnt_chrome_sale
+
+/datum/unit_test/voidcrew_cyberware_burnt_chrome_sale/Run()
+	var/mob/living/carbon/human/seller = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/obj/item/card/id/id = allocate(/obj/item/card/id)
+	var/datum/bank_account/account = allocate(/datum/bank_account, "Burnt chrome test", null, 1, FALSE)
+	id.registered_account = account
+	TEST_ASSERT(seller.put_in_hands(id), "The seller could not hold their ID")
+	var/datum/shop_buyback/ripperdoc/burnt_chrome/ledger = allocate(/datum/shop_buyback/ripperdoc/burnt_chrome)
+	ledger.demand = 2
+	var/datum/outpost_shop/vendor/ripperdoc/splice = allocate(/datum/outpost_shop/vendor/ripperdoc)
+	var/takes_burnt = FALSE
+	for(var/datum/shop_buyback/intake as anything in splice.buybacks)
+		if(intake.type == ledger.type)
+			takes_burnt = TRUE
+	TEST_ASSERT(takes_burnt, "Splice doesn't take burnt-out chrome")
+	for(var/datum/shop_sku/sku as anything in subtypesof(/datum/shop_sku/ripperdoc))
+		var/price = initial(sku.price_credits)
+		if(price > 0)
+			TEST_ASSERT(ledger.pay_credits * 4 < price, "Burnt-out chrome pays [ledger.pay_credits], near [sku]'s [price] credit price")
+
+	var/obj/item/organ/cyberimp/cyberware/scrapper/knuckles = allocate(/obj/item/organ/cyberimp/cyberware/scrapper, run_loc_floor_bottom_left)
+	var/obj/item/burnt_chrome/husk = allocate(/obj/item/burnt_chrome, run_loc_floor_bottom_left, knuckles)
+	TEST_ASSERT(seller.put_in_hands(husk), "The seller could not hold the burnt-out chrome")
+	var/balance = account.account_balance
+	TEST_ASSERT(ledger.try_sell(seller, null, TRUE), "Splice refused burnt-out chrome")
+	TEST_ASSERT(QDELETED(husk), "The sold burnt-out chrome wasn't taken")
+	TEST_ASSERT_EQUAL(account.account_balance, balance + ledger.pay_credits, "Burnt-out chrome paid the wrong amount")
+	TEST_ASSERT_EQUAL(ledger.demand, 1, "The sale used no demand")
+
 /// (g) The Chrome Cradle console: every reachable piece files into exactly one
 /// rack group, and the highlight projects its own swap before anything commits.
 /// The interface reads all of this straight out of ui_data(), so a silent
