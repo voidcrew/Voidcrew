@@ -472,6 +472,9 @@
 
 	// Stunned, though both are neutral-faction people: yes. No mark; the wire thrown at the neck.
 	victim.Paralyze(100 SECONDS)
+	// A second wire in the other hand: the strands run from both hands, so it isn't drawn hanging there meanwhile.
+	var/obj/item/melee/cyberware_monowire/second = allocate(/obj/item/melee/cyberware_monowire)
+	TEST_ASSERT(user.put_in_inactive_hand(second), "Fixture: the garroter couldn't hold a second wire")
 	TEST_ASSERT(wire.wire_try_garrote(victim, user), "A garrote didn't start on a stunned person")
 	var/datum/hv_finisher/garrote/garrote = wire.garrote_running
 	TEST_ASSERT_NOTNULL(garrote, "The wire doesn't know its garrote")
@@ -495,6 +498,8 @@
 	TEST_ASSERT(abs(neck[1] - hands[1]) <= 2 && abs(neck[2] - hands[2]) <= 2, "The neck isn't at the garroter's feet ([neck[1]],[neck[2]] vs [hands[1]],[hands[2]])")
 	TEST_ASSERT(!LAZYACCESS(LAZYACCESS(victim.offsets, PIXEL_Y_OFFSET), HV_FINISHER_OFFSET), "The hold lifted the body off the floor")
 	TEST_ASSERT_EQUAL(length(garrote.strand_refs), 2, "The wire doesn't run from both hands")
+	TEST_ASSERT(wire.inhand_hidden_until > world.time, "The garroting wire still hangs in its hand")
+	TEST_ASSERT(second.inhand_hidden_until > world.time, "The second wire hangs in its hand while a strand runs from it")
 	// The strands' ends on the neck go with it as it thrashes.
 	for(var/datum/weakref/strand_ref as anything in garrote.strand_refs)
 		var/obj/effect/abstract/wire_reach/strand = strand_ref.resolve()
@@ -510,6 +515,8 @@
 	TEST_ASSERT_NOTNULL(head, "A garrote took the head off someone only stunned")
 	TEST_ASSERT_NOTNULL(locate(/datum/wound/slash/flesh/critical/hv_carotid) in head.wounds, "The garrote didn't slit the throat")
 	TEST_ASSERT_NULL(wire.garrote_running, "The wire still thinks it is garroting")
+	TEST_ASSERT(wire.inhand_hidden_until <= world.time, "The garroting wire isn't drawn in its hand again after the kill")
+	TEST_ASSERT(second.inhand_hidden_until <= world.time, "The second wire isn't drawn in its hand again after the kill")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/hv_finisher_hold), "The victim is still held")
 	// Let go at the kill: nothing of the grab or the hold still draws the body off its tile.
 	TEST_ASSERT(user.pulling != victim, "The garroter still holds the body")
@@ -568,11 +575,16 @@
 	saved.Paralyze(100 SECONDS)
 	TEST_ASSERT(wire.wire_try_garrote(saved, user), "Fixture: no garrote on the last victim")
 	garrote = wire.garrote_running
+	// The wire thrown (its wind-up timer), then broken off: the second wire comes back to its hand.
+	garrote.hide_hands()
+	TEST_ASSERT(second.inhand_hidden_until > world.time, "The thrown wire left the second wire hanging in its hand")
 	user.apply_damage(25, BRUTE, BODY_ZONE_CHEST)
 	TEST_ASSERT(!garrote.running, "25 damage on the garroter didn't break the garrote")
 	TEST_ASSERT_EQUAL(garrote.result, 3, "The garrote ended for the wrong reason") // HV_FINISHER_DAMAGED
 	TEST_ASSERT(user.wire_garrote_ready_at - world.time <= 5 SECONDS, "A garrote that never gripped has the long wait")
 	TEST_ASSERT(!saved.has_status_effect(/datum/status_effect/hv_finisher_hold), "The broken garrote still holds its victim")
+	TEST_ASSERT(second.inhand_hidden_until <= world.time, "The second wire stayed hidden after the garrote broke")
+	qdel(second)
 
 	// The garrote's blow is the wire's, never the heaviest thing in the other hand.
 	user.fully_heal(HEAL_ALL)
