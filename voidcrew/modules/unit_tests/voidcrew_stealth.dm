@@ -13,6 +13,7 @@
 	var/turf/corner = block.bottom_left_turfs[1]
 	for(var/turf/spot as anything in block(corner.x, corner.y, corner.z, corner.x + width - 1, corner.y + height - 1, corner.z))
 		spot.ChangeTurf(/turf/open/floor/iron)
+		GLOB.stealth_test_dark_turfs[spot] = FALSE
 	return block
 
 /datum/unit_test/proc/stealth_at(datum/turf_reservation/block, dx, dy)
@@ -52,7 +53,8 @@
 	var/list/cases = list(
 		list(3, 0, TRUE, TRUE, TRUE),
 		list(3, 2, TRUE, TRUE, TRUE),
-		list(2, 3, FALSE, TRUE, TRUE),
+		list(2, 3, TRUE, TRUE, TRUE),
+		list(1, 3, FALSE, TRUE, TRUE),
 		list(0, 3, FALSE, FALSE, FALSE),
 		list(-2, 0, FALSE, FALSE, FALSE),
 		list(0, 0, TRUE, TRUE, TRUE),
@@ -64,7 +66,7 @@
 			TEST_ASSERT_EQUAL(!!stealth_in_cone(viewer, spot, angles[i]), test_case[2 + i], "Offset ([test_case[1]], [test_case[2]]) at half-angle [angles[i]]")
 	qdel(block)
 
-/// The dark helper reads the test list; ordinary test floor is lit.
+/// The dark helper reads the test lists: a dark-listed turf is dark, a lit-listed one is not.
 /datum/unit_test/voidcrew_stealth_dark
 
 /datum/unit_test/voidcrew_stealth_dark/Run()
@@ -72,10 +74,10 @@
 	TEST_ASSERT_NOTNULL(block, "No room for the test")
 	var/turf/lit = stealth_at(block, 0, 0)
 	var/turf/dark = stealth_at(block, 1, 0)
-	GLOB.stealth_test_dark_turfs += dark
-	TEST_ASSERT(!stealth_tile_is_dark(lit), "Ordinary test floor reads as dark")
+	GLOB.stealth_test_dark_turfs[dark] = TRUE
+	TEST_ASSERT(!stealth_tile_is_dark(lit), "A lit test turf reads as dark")
 	TEST_ASSERT(stealth_tile_is_dark(dark), "A turf in the test dark list reads as lit")
-	GLOB.stealth_test_dark_turfs -= dark
+	GLOB.stealth_test_dark_turfs[dark] = FALSE
 	qdel(block)
 
 /// Sight: behind stays unaware, in front goes suspicious then alert, dark at range and off-screen never alert.
@@ -105,10 +107,10 @@
 	guard = stealth_guard(block, 6, 2)
 	stealth_ai = stealth_ai(guard)
 	var/turf/dark = stealth_at(block, 12, 2)
-	GLOB.stealth_test_dark_turfs += dark
+	GLOB.stealth_test_dark_turfs[dark] = TRUE
 	person.forceMove(dark)
 	stealth_scans(guard, 10)
-	GLOB.stealth_test_dark_turfs -= dark
+	GLOB.stealth_test_dark_turfs[dark] = FALSE
 	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard saw someone 6 tiles off in the dark")
 	qdel(guard)
 	// In front, 8 tiles, lit: never alert from off-screen.

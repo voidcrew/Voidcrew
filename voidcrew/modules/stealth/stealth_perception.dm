@@ -13,7 +13,7 @@
  */
 
 #ifdef UNIT_TESTS
-/// Turfs the unit tests treat as dark, since the test level is fully lit
+/// Unit tests: turf => TRUE to treat it as dark, FALSE as lit (reserved test space has no light of its own)
 GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 #endif
 
@@ -61,7 +61,7 @@ GLOBAL_LIST_EMPTY(stealth_test_dark_turfs)
 		return FALSE
 #ifdef UNIT_TESTS
 	if(tile in GLOB.stealth_test_dark_turfs)
-		return TRUE
+		return GLOB.stealth_test_dark_turfs[tile]
 #endif
 	if(!tile.lighting_object)
 		var/area/tile_area = tile.loc

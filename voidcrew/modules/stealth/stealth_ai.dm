@@ -122,7 +122,6 @@
 	RegisterSignal(new_pawn, COMSIG_ATOM_BUMPED, PROC_REF(on_bumped))
 	RegisterSignal(new_pawn, COMSIG_CARBON_HELP_ACT, PROC_REF(on_helped))
 	RegisterSignal(new_pawn, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_projectile_prehit))
-	RegisterSignal(new_pawn, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(on_z_changed))
 	RegisterSignal(new_pawn, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_status_removed))
 	RegisterSignal(new_pawn, COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET), PROC_REF(on_target_set))
 
@@ -133,7 +132,6 @@
 			COMSIG_ATOM_BUMPED,
 			COMSIG_CARBON_HELP_ACT,
 			COMSIG_PROJECTILE_PREHIT,
-			COMSIG_MOVABLE_Z_CHANGED,
 			COMSIG_LIVING_STATUS_REMOVED,
 			COMSIG_AI_BLACKBOARD_KEY_SET(BB_BASIC_MOB_CURRENT_TARGET),
 		))
@@ -596,10 +594,12 @@
 	stealth_set_wary()
 	set_blackboard_key(BB_STEALTH_FOCUS, target)
 
-/// Carried off the level: drops its route and holds where it is (abuse R3).
-/datum/ai_controller/basic_controller/human_npc/stealth/proc/on_z_changed(datum/source)
-	SIGNAL_HANDLER
-	stealth_become_sentry(get_turf(pawn))
+/// Carried off the level: drops its route and holds where it is (abuse R3). The base controller already
+/// listens for the level change.
+/datum/ai_controller/basic_controller/human_npc/stealth/on_changed_z_level(atom/source, turf/old_turf, turf/new_turf, same_z_layer, notify_contents)
+	. = ..()
+	if(stealth_ready && new_turf)
+		stealth_become_sentry(new_turf)
 
 /datum/ai_controller/basic_controller/human_npc/stealth/on_stat_changed(mob/living/source, new_stat)
 	. = ..()
