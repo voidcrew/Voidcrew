@@ -504,9 +504,12 @@
 			loose += organ
 	// One short line; the lost-limb spray the dismember would add is held off
 	gorilla_short_spray(victim, burst_dir, GORILLA_CLAP_SPRAY_TILES)
-	if(!head.dismember(BRUTE, silent = TRUE))
+	// Not dismember(): it throws the head a tile or two, and a head is heavy enough to knock whoever it hits
+	// a tile back. Thrown into the bearer it shoved him off the body and ended the finisher at the burst.
+	head = gorilla_tear_limb(victim, head, burst_dir, FALSE)
+	if(isnull(head))
 		return FALSE
-	// dismember() throws the head; a burst head comes apart where it was
+	// A burst head comes apart where it was
 	if(isturf(here) && head.loc != here)
 		head.forceMove(here)
 	// No violent removal: the brain has to stay good for revival
@@ -665,6 +668,10 @@
 		if("recover")
 			bearer_rig?.drop_puppet("club")
 			arms_to(0, 0.5 SECONDS)
+			// Straightens up off the body, so the real one shows where he stands (after the swing, as the lean was)
+			for(var/key_name in bearer_rig?.puppets)
+				var/obj/effect/abstract/chrome_puppet/part = bearer_rig.puppets[key_name]
+				animate(part, pixel_x = user.pixel_x, pixel_y = user.pixel_y, time = 0.4 SECONDS, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
 
 /datum/hv_finisher/chrome/gorilla/rip/beat(key)
 	if(QDELETED(victim))
@@ -775,10 +782,11 @@
 
 /**
  * Takes [limb] off as tg's dismember() does (chest damage, scream, sound, mood, memory, bleeding, the
- * floor splatter, the wet stump and the spray along the last blow), but keeps it out of the world instead
- * of flinging it: the finisher holds it, then drops it on the victim's tile. Returns the limb or null.
+ * floor splatter, the wet stump and the spray along the last blow), but never flings it: with [keep_out]
+ * it is kept out of the world for the finisher to hold, else it is left on the victim's tile. Returns the
+ * limb or null.
  */
-/proc/gorilla_tear_limb(mob/living/carbon/victim, obj/item/bodypart/limb, direction)
+/proc/gorilla_tear_limb(mob/living/carbon/victim, obj/item/bodypart/limb, direction, keep_out = TRUE)
 	if(isnull(limb) || limb.owner != victim || !limb.can_dismember() || HAS_TRAIT(victim, TRAIT_GODMODE))
 		return null
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
@@ -798,7 +806,8 @@
 		victim.add_splatter_floor(spot)
 	if(QDELETED(limb))
 		return null
-	limb.moveToNullspace()
+	if(keep_out)
+		limb.moveToNullspace()
 	return limb
 
 // =========================================================================
@@ -921,6 +930,10 @@
 					part.forceMove(knee)
 					part.pixel_x -= (knee.x - from.x) * ICON_SIZE_X
 					part.pixel_y -= (knee.y - from.y) * ICON_SIZE_Y
+			// The halves lie head east (turned 90). tg turns a lying body to the way it last crawled, so the move
+			// above can leave it head west: lay it as the halves are, or it flips over when they come down.
+			if(victim.body_position == LYING_DOWN)
+				victim.set_lying_angle(LYING_ANGLE_EAST)
 			// Still bent if the back broke. A broken back hangs folded over the knee for a moment first. The
 			// halves turn about the belt, seven pixels under the middle, so they sit a pixel up to lie where a
 			// lying body lies.

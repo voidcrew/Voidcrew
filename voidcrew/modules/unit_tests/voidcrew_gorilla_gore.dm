@@ -503,6 +503,8 @@
 	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/telegraphing/hv_finisher_mark) in get_turf(victim), "A chrome finisher marked its victim")
 	run_to_end(finisher)
 	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_HEAD), "The head clap didn't burst the head")
+	TEST_ASSERT_EQUAL(bearer.loc, spot(1, 1), "The burst moved the bearer (a thrown head knocks a body back)")
+	TEST_ASSERT_EQUAL(victim.loc, spot(2, 1), "The burst moved the body")
 	var/obj/item/organ/brain/brain
 	for(var/turf/floor in block(run_loc_floor_bottom_left, run_loc_floor_top_right))
 		brain ||= locate(/obj/item/organ/brain) in floor
@@ -588,6 +590,7 @@
 	TEST_ASSERT_NOTNULL(spine, "The back didn't break")
 	TEST_ASSERT(HAS_TRAIT_FROM(victim, TRAIT_FLOORED, REF(spine)), "A broken back can still stand")
 	TEST_ASSERT_EQUAL(victim.loc, spot(1, 1), "The body didn't come down off the knee where it broke")
+	TEST_ASSERT_EQUAL(victim.lying_angle, LYING_ANGLE_EAST, "The body lies the other way from its bent halves, so it flips when they come down")
 	TEST_ASSERT_NOTNULL(victim.GetComponent(/datum/component/gorilla_fold), "The broken back isn't drawn bent")
 	TEST_ASSERT_NOTNULL(victim.get_filter("chrome_rig_hide"), "The bent body isn't the one shown")
 	victim.forceMove(spot(3, 3))

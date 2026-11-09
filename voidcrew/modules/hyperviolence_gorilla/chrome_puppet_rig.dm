@@ -81,6 +81,8 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE
 	appearance_flags = PIXEL_SCALE | TILE_BOUND | LONG_GLIDE
+	// A puppet moved to the next tile is re-offset by a tile at once; a glide would draw it a tile out and slide it back
+	animate_movement = NO_STEPS
 	plane = GAME_PLANE
 	layer = MOB_LAYER
 	vis_flags = NONE
@@ -310,17 +312,24 @@ GLOBAL_LIST_INIT(chrome_rig_fill_shift, list(
 		var/list/pivot = shoulder(side)
 		animate(arm, pixel_z = round(pivot[2] * squash - drop - pivot[2]), time = time, easing = easing, flags = ANIMATION_PARALLEL)
 
-/// Every puppet trembles a pixel for [time].
+/// Every puppet trembles a pixel for [time], and ends where it began.
 /datum/chrome_rig/proc/tremble(time = 0.4 SECONDS)
 	for(var/key in puppets)
 		var/obj/effect/abstract/chrome_puppet/puppet = puppets[key]
+		var/moved = 0
 		for(var/i in 1 to max(1, round(time / (0.1 SECONDS))))
 			var/step = (i % 2) ? 1 : -1
 			if(i == 1)
 				animate(puppet, pixel_w = step, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+				moved += step
 			else
 				animate(pixel_w = step * 2, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
+				moved += step * 2
 			animate(pixel_w = -step, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
+			moved -= step
+		// An even count leaves it a pixel off, which would jump back when the rig comes down
+		if(moved)
+			animate(pixel_w = -moved, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
 
 /// Every puppet flashes white and fades back.
 /datum/chrome_rig/proc/flash()
