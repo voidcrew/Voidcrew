@@ -8,6 +8,7 @@
   ".45 loads",
   ".160 Smart loads",
   "4.6x30mm loads",
+  "5.7x39mm loads",
   ".310 rifle loads",
   ".223 rifle loads",
   "7mm machine gun loads",
@@ -235,6 +236,15 @@
    "name": "Ronin flush-feed magazine (10x24mm)",
    "rank": 2,
    "reason": "Reload for the Popup Ronin arm, 20 rounds of 20 damage. Follows the gun; fits nothing else.",
+   "tier": "yellow"
+  },
+  "/obj/item/ammo_box/magazine/heater": {
+   "confidence": "high",
+   "group": "5.7x39mm loads",
+   "hash": "",
+   "name": "Heater magazine (5.7x39mm)",
+   "rank": 1,
+   "reason": "Plain 5.7x39mm rounds, 30 to a magazine, 20 damage with a little armor piercing. Follows the Heater.",
    "tier": "yellow"
   },
   "/obj/item/ammo_box/magazine/internal/boltaction/jezail": {
@@ -1327,6 +1337,15 @@
    "reason": "15 damage that cancels a vest. A little better than plain rounds through armor, worse on bare skin.",
    "tier": "yellow"
   },
+  "/obj/item/ammo_casing/c57x39mm": {
+   "confidence": "high",
+   "group": "5.7x39mm loads",
+   "hash": "",
+   "name": "5.7x39mm bullet casing",
+   "rank": 2,
+   "reason": "The plain Heater round. Follows the gun.",
+   "tier": "yellow"
+  },
   "/obj/item/ammo_casing/c9mm": {
    "confidence": "medium",
    "group": "9mm loads",
@@ -2292,6 +2311,7 @@
   "/obj/item/ammo_box": "abstract",
   "/obj/item/ammo_box/a40mm/rubber": "no route",
   "/obj/item/ammo_box/magazine": "abstract",
+  "/obj/item/ammo_box/magazine/heater/empty": "no route",
   "/obj/item/ammo_box/magazine/internal": "abstract",
   "/obj/item/ammo_box/magazine/internal/boltaction": "abstract",
   "/obj/item/ammo_box/magazine/internal/boltaction/harpoon": "no route",

@@ -61,6 +61,8 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	/obj/item/gun/ballistic/automatic/battle_rifle = /obj/item/ammo_box/magazine/m38,
 	/obj/item/gun/ballistic/automatic/c20r/unrestricted = /obj/item/ammo_box/magazine/smgm45,
 	/obj/item/gun/ballistic/automatic/gyropistol = /obj/item/ammo_box/magazine/m75,
+	/obj/item/gun/ballistic/automatic/heater = /obj/item/ammo_box/magazine/heater,
+	/obj/item/gun/ballistic/automatic/heater/scorcher = /obj/item/ammo_box/magazine/heater,
 	/obj/item/gun/ballistic/automatic/l6_saw/unrestricted = /obj/item/ammo_box/magazine/m7mm,
 	/obj/item/gun/ballistic/automatic/m90 = /obj/item/ammo_box/magazine/m223,
 	/obj/item/gun/ballistic/automatic/mini_uzi = /obj/item/ammo_box/magazine/uzim9mm,

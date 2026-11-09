@@ -110,7 +110,7 @@
    "group": "smgs",
    "hash": "d9b40f6fa856925a",
    "name": "C-20r SMG",
-   "rank": 4,
+   "rank": 6,
    "reason": "Puts a vested man down in about a second, with 24 rounds, from one hand.",
    "score": 79,
    "tier": "yellow"
@@ -120,10 +120,30 @@
    "group": "smgs",
    "hash": "bb032c110b509c59",
    "name": "Popup Ronin machine-pistol",
-   "rank": 6,
+   "rank": 8,
    "reason": "20 damage at 3.3 a second, WT-550 numbers with some spread. Lives in the arm, so it can't be disarmed, and reloads are hard to get.",
    "score": 47,
    "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/heater": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "",
+   "name": "Heater",
+   "rank": 3,
+   "reason": "20 damage 5.7mm rounds at 6.7 a second from a 30 round magazine, with a little spread. Level with the Saber, and it fits in a bag.",
+   "score": 106,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/heater/scorcher": {
+   "confidence": "low",
+   "group": "smgs",
+   "hash": "",
+   "name": "Scorcher",
+   "rank": 2,
+   "reason": "A Heater (20 damage 5.7mm at 6.7 a second, 30 to a magazine) with a flamethrower under it: a 5-tile plume that burns and sets people alight every 2 seconds, eight sprays to a tank of welding fuel. The flamer alone is the MOD module's yellow, together they edge over the red line.",
+   "score": 115,
+   "tier": "red"
   },
   "/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted": {
    "confidence": "high",
@@ -179,7 +199,7 @@
    "group": "smgs",
    "hash": "57d5080462a9a158",
    "name": "Type U3 Uzi",
-   "rank": 5,
+   "rank": 7,
    "reason": "Fires the C-20r's bullet at a lower rate, with 32 rounds. Solid, not dangerous.",
    "score": 70,
    "tier": "yellow"
@@ -199,7 +219,7 @@
    "group": "smgs",
    "hash": "517391feb1e23558",
    "name": "Stechkin APS machine pistol",
-   "rank": 3,
+   "rank": 5,
    "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
    "score": 105,
    "tier": "yellow"
@@ -364,7 +384,7 @@
    "group": "smgs",
    "hash": "3a82e5bc193f1d07",
    "name": "Nanotrasen Saber SMG",
-   "rank": 2,
+   "rank": 4,
    "reason": "A hard-hitting automatic with 21 rounds that empties in 4 s.",
    "score": 105,
    "tier": "yellow"
@@ -374,7 +394,7 @@
    "group": "smgs",
    "hash": "",
    "name": "M-94 'Rapier' submachinegun",
-   "rank": 7,
+   "rank": 9,
    "reason": "Fires 16 damage bullets at 3.3 a second from a 30 round magazine, a WT-550 with a fifth less damage. It scores just under the yellow line, and it takes a suppressor.",
    "score": 37,
    "tier": "green"
@@ -384,7 +404,7 @@
    "group": "smgs",
    "hash": "df8d939590e38d5f",
    "name": "Abielle Smart-SMG",
-   "rank": 8,
+   "rank": 10,
    "reason": "Fires 10 damage homing rounds. Its spread of 40 is the drawback the homing fixes. Upstream tg prices it as junk.",
    "score": 32,
    "score_inputs": {
@@ -431,7 +451,7 @@
    "group": "smgs",
    "hash": "2ea01a015382d859",
    "name": "WT-550 Autorifle",
-   "rank": 6,
+   "rank": 8,
    "reason": "Fires 20 damage bullets at 3.3 a second, about what a laser gun does, yet it's sold as a top yellow gun.",
    "score": 47,
    "tier": "yellow"
