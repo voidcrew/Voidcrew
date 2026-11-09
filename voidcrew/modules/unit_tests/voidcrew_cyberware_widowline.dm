@@ -401,7 +401,13 @@
 	wire.flick_blood(user, "right")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/wire_blood_drop) in get_turf(user), "The fan threw no drops")
 	sleep(1 SECONDS)
-	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/drip) in ahead, "The fan landed no blood ahead")
+	// It scatters over the floor ahead: a row nearer or further as well as level with the wielder.
+	var/landed_ahead = FALSE
+	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
+		if(drop.x == ahead.x)
+			landed_ahead = TRUE
+			break
+	TEST_ASSERT(landed_ahead, "The fan landed no blood ahead")
 	var/after = 0
 	for(var/obj/effect/decal/cleanable/blood/drip/drop in range(2, user))
 		if(get_turf(drop) != get_turf(user))

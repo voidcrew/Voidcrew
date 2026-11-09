@@ -610,15 +610,16 @@
 	// while tg resolves it, so their lines join its message (hyperviolence/wire/wire_cut.dm).
 	wire_cut_begin(target, user)
 	. = ..()
-	wire_cut_end(target)
 	var/landed = swing_landed
 	swing_landed = FALSE
 	// No cut landed (blocked, cancelled, pulled), so nothing burns.
 	if(. || !landed || QDELETED(target) || !isliving(user))
+		wire_cut_end(target)
 		return
 
 	// The charge on the line, on top of the cut. Silent armor check: the parent
-	// already announced the penetration for this same swing.
+	// already announced the penetration for this same swing. Still part of the clean
+	// cut: a wound the cut just opened throws no blood when the charge lands on it.
 	var/burn_zone = target.get_random_valid_zone(user.zone_selected)
 	target.apply_damage(
 		charge_burn,
@@ -626,6 +627,7 @@
 		burn_zone,
 		target.run_armor_check(burn_zone, MELEE, armour_penetration = armour_penetration, silent = TRUE),
 	)
+	wire_cut_end(target)
 
 /obj/item/melee/cyberware_monowire/afterattack(atom/target, mob/user, list/modifiers, list/attack_modifiers)
 	. = ..()

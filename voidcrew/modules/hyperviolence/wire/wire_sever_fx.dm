@@ -187,8 +187,7 @@
 	if(!dressed || (dressed.bodyshape & (BODYSHAPE_MONKEY | BODYSHAPE_DIGITIGRADE)))
 		return
 	worn = wire_worn_over(dressed, arm ? list(UNIFORM_LAYER, SUIT_LAYER, GLOVES_LAYER) : list(UNIFORM_LAYER, SUIT_LAYER, SHOES_LAYER))
-	var/mutable_appearance/clothes = wire_cut_clothes(worn, "limb_[zone]", "ghost [REF(src)]")
-	if(clothes)
+	for(var/mutable_appearance/clothes as anything in wire_dress_limb(worn, "limb_[zone]", "ghost [REF(src)]"))
 		overlays += clothes
 
 /// Copies of the overlays `body` wears at `layers` (UNIFORM_LAYER and so on), as they are now. list(layer = copy)
@@ -220,6 +219,24 @@
 	clothes.overlays += cutout
 	clothes.add_filter("wire_cut_clothes", 0, alpha_mask_filter(render_source = cutout.render_target))
 	return clothes
+
+/**
+ * The `worn` overlays cut to a limb's shape (wire_cut_clothes()), layered as tg layers them on a body: the jumpsuit
+ * under the hand, the suit, gloves and shoes over it. Side on, a jumpsuit has cloth behind the hand that would
+ * otherwise cover it. list() if nothing is worn.
+ */
+/proc/wire_dress_limb(list/worn, mask_state, key)
+	. = list()
+	var/uniform_key = "[UNIFORM_LAYER]"
+	var/list/over = worn.Copy()
+	if(worn[uniform_key])
+		over -= uniform_key
+		var/mutable_appearance/under = wire_cut_clothes(list("[UNIFORM_LAYER]" = worn[uniform_key]), mask_state, "[key] under")
+		under.layer = -UNIFORM_LAYER
+		. += under
+	var/mutable_appearance/rest = wire_cut_clothes(over, mask_state, "[key] over")
+	if(rest)
+		. += rest
 
 /// The leg's own shoe goes with the leg, but tg takes the other one off too. It stays drawn on its foot until the leg
 /// slides off.
@@ -265,7 +282,7 @@
 	// It keeps the sleeve, trouser leg or shoe it was cut with. tg took both shoes off; the pair lies beside it
 	// (hold_shoes()), as the other foot's.
 	if(worn)
-		severed.hv_wire_dressing = wire_cut_clothes(worn, "limb_[zone]", "limb [REF(severed)]")
+		severed.hv_wire_dressing = wire_dress_limb(worn, "limb_[zone]", "limb [REF(severed)]")
 		severed.update_icon_dropped()
 	severed.pixel_x = body ? body.pixel_x : 0
 	severed.pixel_y = body ? body.pixel_y : 0
@@ -325,18 +342,19 @@
 	pixel_z = base_pixel_z
 
 /obj/item/bodypart
-	/// The sleeve or trouser leg a wire cut this limb off with, drawn on it while it lies severed
-	var/mutable_appearance/hv_wire_dressing
+	/// The sleeve or trouser leg a wire cut this limb off with, drawn on it while it lies severed (wire_dress_limb())
+	var/list/hv_wire_dressing
 
 /obj/item/bodypart/update_icon_dropped()
 	. = ..()
-	if(!hv_wire_dressing || owner)
+	if(!length(hv_wire_dressing) || owner)
 		return
 	// Shifted as get_limb_icon()'s pieces are, to sit on the limb.
-	var/mutable_appearance/dressing = new(hv_wire_dressing)
-	dressing.pixel_w += px_x
-	dressing.pixel_z += px_y
-	add_overlay(dressing)
+	for(var/mutable_appearance/piece as anything in hv_wire_dressing)
+		var/mutable_appearance/dressing = new(piece)
+		dressing.pixel_w += px_x
+		dressing.pixel_z += px_y
+		add_overlay(dressing)
 
 // Back on a body, it wears that body's clothes again.
 /obj/item/bodypart/try_attach_limb(mob/living/carbon/new_limb_owner, special, lazy)
@@ -421,7 +439,8 @@
 	if(QDELETED(drop))
 		return
 	var/list/spot = wire_zone_point(victim, zone)
-	drop.wire_place(clamp(spot[1], -12, 12), victim.body_position == LYING_DOWN ? clamp(spot[2], -12, 12) : -9)
+	// On the floor at the feet: higher, it shows through the gap a leg leaves as a blot at the hip.
+	drop.wire_place(clamp(spot[1], -12, 12), victim.body_position == LYING_DOWN ? clamp(spot[2], -12, 12) : -13)
 
 // ---- The seam ----
 
@@ -435,8 +454,14 @@
 		playsound(victim, 'sound/effects/wounds/sizzle1.ogg', 60, TRUE)
 		wire_stump_smoke(victim, zone)
 		return
-	cyberware_anim_play(victim, WIRE_GORE_ICON, "wire_cut_[zone]", WIRE_FX_LAYER, 0.7 SECONDS, glow = TRUE)
-	if(victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
+	// Gone as the limb slides: its last frame left behind would hang in the air where the limb was.
+	cyberware_anim_play(victim, WIRE_GORE_ICON, "wire_cut_[zone]", WIRE_FX_LAYER, WIRE_CUT_DELAY, glow = TRUE)
+	// No blood until the limb comes away.
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_seam_beads), victim, zone), WIRE_CUT_DELAY)
+
+/// The seam beads with blood as the limb slides off it.
+/proc/wire_seam_beads(mob/living/carbon/victim, zone)
+	if(QDELETED(victim) || victim.get_bodypart(zone) || victim.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
 		return
 	var/obj/effect/abstract/cyberware_anim/beads = cyberware_anim_play(victim, WIRE_GORE_ICON, "wire_cut_blood_[zone]", WIRE_FX_LAYER - 0.1, 0.9 SECONDS)
 	if(beads)
@@ -457,6 +482,11 @@
 	smoke.layer = WIRE_GHOST_LAYER
 	var/particles/smoke/steam/mild/wire_stump/puff = new
 	puff.position = wire_stump_joint(zone, victim.dir)
+	// Side on, the face is just above a shoulder: the smoke leans back over the shoulders, away from it.
+	if(victim.dir & (EAST | WEST))
+		var/back = victim.dir == EAST ? -1 : 1
+		puff.velocity = list(back * 0.3, 0.15, 0)
+		puff.gravity = list(back * 0.12, 0.18)
 	smoke.particles = puff
 	smoke.bearer = victim
 	smoke.RegisterSignal(victim, COMSIG_QDELETING, TYPE_PROC_REF(/obj/effect/abstract/cyberware_anim, on_bearer_deleted))

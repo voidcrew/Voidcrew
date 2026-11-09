@@ -100,9 +100,25 @@
 		return
 	var/turf/below = holder.loc
 	if(isturf(below) && !isgroundlessturf(below) && below.has_gravity() && length(GET_ATOM_BLOOD_DNA(src)))
-		new /obj/effect/decal/cleanable/blood/drip(below, null, GET_ATOM_BLOOD_DNA(src))
+		// Off the tip, which hangs to the floor: not wherever tg's drip would land, which can be the wielder's hip.
+		var/obj/effect/decal/cleanable/blood/drip/wire_flick/drop = new(below, null, GET_ATOM_BLOOD_DNA(src))
+		if(!QDELETED(drop))
+			drop.wire_place(holder.pixel_x + wire_tip_x(holder, held_side(holder) || "right") + rand(-2, 2), holder.pixel_y - 13 + rand(-1, 1))
 		drips_left--
 	drip_timer = addtimer(CALLBACK(src, PROC_REF(drip)), rand(1 SECONDS, 2 SECONDS), TIMER_STOPPABLE)
+
+/// Where the tip of a wire held in the `side` hand ("left" or "right") of `holder` touches the floor, in pixels across
+/// from the middle of its tile, as the held wire is drawn (cyberware_lefthand.dmi, cyberware_righthand.dmi).
+/proc/wire_tip_x(mob/living/holder, side)
+	var/right = side != "left"
+	switch(holder.dir)
+		if(EAST)
+			return right ? 1 : 6
+		if(WEST)
+			return right ? -7 : -1
+		if(NORTH)
+			return right ? 9 : -10
+	return right ? -10 : 9
 
 /// A wash takes the blood off, look and all.
 /obj/item/melee/cyberware_monowire/proc/on_wash(datum/source, clean_types)
@@ -265,6 +281,13 @@
  * the target's tile under the target. The map draws a lower row over a higher one whatever the layer, but a line
  * hanging over the edge of its tile counts as on both.
  */
+/// A lash to a body below the wielder that lands within this many pixels of straight below the hand is bowed out.
+#define WIRE_LASH_STRAIGHT_DOWN 6
+/// How far out to the wire's side the bowed lash reaches at the wielder's feet, in pixels.
+#define WIRE_LASH_BOW 8
+/// Where a bowed lash leaves the arm: chest height, in pixels from the middle of the tile.
+#define WIRE_LASH_CHEST_Y 2
+
 /obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target, zone, list/end_shift)
 	var/turf/from = get_turf(user)
 	var/turf/hit = get_turf(target)
@@ -297,8 +320,19 @@
 	// Where the line leaves the foot of the wielder's tile.
 	var/edge_y = -ICON_SIZE_Y / 2
 	var/edge_x = hand_x + span_x * (hand_y - edge_y) / max(hand_y - (tile_y + end_y), 1)
-	wire_line_piece(from, hand_x, hand_y, edge_x - hand_x, edge_y - hand_y, hand_layer)
+	var/start_y = hand_y
+	// Straight down from the hand, the line would run down the wielder's leg like the wire hanging at rest. A lash is
+	// swung: it leaves the arm at chest height and bows out to the wire's side past the feet before it comes in.
+	if(abs(span_x) <= WIRE_LASH_STRAIGHT_DOWN)
+		start_y = user.pixel_y + WIRE_LASH_CHEST_Y
+		var/user_x = user.pixel_x
+		edge_x = hand_x + (hand_x >= user_x ? 1 : -1) * WIRE_LASH_BOW
+	wire_line_piece(from, hand_x, start_y, edge_x - hand_x, edge_y - start_y, hand_layer)
 	wire_line_piece(hit, edge_x - tile_x, edge_y - tile_y, end_x - (edge_x - tile_x), end_y - (edge_y - tile_y), BELOW_MOB_LAYER)
+
+#undef WIRE_LASH_STRAIGHT_DOWN
+#undef WIRE_LASH_BOW
+#undef WIRE_LASH_CHEST_Y
 
 /**
  * One straight piece of a lash on `where`: from (`start_x`, `start_y`) pixels off the middle of that tile, running
@@ -391,15 +425,23 @@
 		var/screen_left = (side == "right") == (facing != NORTH)
 		start_x = screen_left ? -6 : 6
 	var/start_y = -13
+	var/bearing = forward_x ? (forward_x > 0 ? 90 : 270) : (forward_y > 0 ? 0 : 180)
+	// Spread evenly over a cone ahead and over the reach, each with some give, and dealt out at random so that no two
+	// neighbours in the cone are also neighbours in reach: the drops land as a scatter, never a row or a line.
+	var/list/reaches = list()
 	for(var/i in 1 to WIRE_FLICK_DROPS)
-		var/spread = (i - (WIRE_FLICK_DROPS + 1) / 2) * 7
-		var/reach = 14 + ((i * 5) % WIRE_FLICK_DROPS) * 5
-		var/land_x = start_x + forward_x * reach + (forward_x ? (i % 3 - 1) * 3 : spread)
-		var/land_y = start_y + forward_y * reach + (forward_x ? (i % 2 ? -2 : 3) : (i % 3 - 1) * 2)
-		// Facing away, the middle drops land past the head, not on the floor drawn just above it.
-		if(forward_y > 0 && abs(spread) < 8)
-			land_y = max(land_y, 26)
-		var/height = 6 + (i % 3) * 3
+		reaches += 12 + round(24 * i / WIRE_FLICK_DROPS)
+	shuffle_inplace(reaches)
+	var/slice = 90 / WIRE_FLICK_DROPS
+	for(var/i in 1 to WIRE_FLICK_DROPS)
+		var/angle = bearing - 45 + slice * (i - 0.5) + rand(-slice, slice) / 2
+		var/reach = reaches[i] + rand(-3, 3)
+		var/land_x = start_x + round(sin(angle) * reach) + rand(-3, 3)
+		var/land_y = start_y + round(cos(angle) * reach) + rand(-3, 3)
+		// Facing away, the drops that would land by the head land past it, not on the floor drawn just above it.
+		if(forward_y > 0 && abs(land_x) < 10)
+			land_y = max(land_y, 26 + rand(0, 6))
+		var/height = 5 + rand(0, 6)
 		var/flight = round(2 + reach / 12, 0.5)
 		. += list(list(start_x, start_y, land_x, land_y, height, flight))
 
