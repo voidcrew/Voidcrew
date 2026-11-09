@@ -219,16 +219,36 @@
 			return -(TOTAL_LAYERS + 0.5)
 	return WIRE_SWING_LAYER
 
-/// A landed swing: the wire lashes from the hand holding it to `target`, thin and in its own colour.
+/**
+ * A landed swing: the wire lashes from the hand holding it to `target`, one thin line in its own colour that fades
+ * out over half a second. A single stretched line, not tg's Beam(): a beam's full-tile segments are drawn over a body
+ * facing away whatever layer they are given, and this one must pass behind it from a hidden hand.
+ */
 /obj/item/melee/cyberware_monowire/proc/wire_lash_at(mob/living/user, atom/target)
+	var/turf/from = get_turf(user)
+	var/turf/hit = get_turf(target)
+	if(!from || !hit || from == hit || from.z != hit.z)
+		return
 	var/list/hand = wire_hand_point(user, held_side(user) || "right")
-	cyberware_monowire_lash_fx(user, target, hand[1], hand[2], lash_state(), wire_line_layer(hand[3]))
+	var/hand_x = user.pixel_x + hand[1]
+	var/hand_y = user.pixel_y + hand[2]
+	var/span_x = (hit.x - from.x) * ICON_SIZE_X + target.pixel_x - hand_x
+	var/span_y = (hit.y - from.y) * ICON_SIZE_Y + target.pixel_y - hand_y
+	var/obj/effect/abstract/wire_reach/lash = new(from)
+	lash.icon_state = lash_state()
+	lash.layer = wire_line_layer(hand[3])
+	lash.add_overlay(emissive_appearance(lash.icon, lash.icon_state, lash))
+	lash.pixel_x = hand_x
+	lash.pixel_y = hand_y
+	lash.transform = wire_reach_shape(span_x, span_y)
+	animate(lash, alpha = 0, time = 0.5 SECONDS, easing = QUAD_EASING | EASE_IN)
+	QDEL_IN(lash, 0.5 SECONDS)
 
 /obj/item/melee/cyberware_monowire/proc/lash_state()
-	return "monowire_lash"
+	return "wire_reach"
 
 /obj/item/melee/cyberware_monowire/live/lash_state()
-	return "monowire_lash_live"
+	return "wire_reach_live"
 
 /// The light at the spool while the wire runs out or snaps back: the wire's own colour.
 /obj/item/melee/cyberware_monowire/proc/spool_light_color()

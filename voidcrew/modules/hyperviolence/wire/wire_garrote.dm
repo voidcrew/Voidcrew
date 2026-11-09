@@ -497,6 +497,8 @@
 		pool.pixel_y = pool.base_pixel_y
 	else
 		pool.add_blood_DNA(blood_dna)
+	// It keeps to the neck's tile: it never runs onto the tiles beside it, however much the body bleeds into it.
+	pool.hv_pool_lobe_tried |= (NORTH | SOUTH | EAST | WEST)
 	for(var/step in 0 to 3)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_pool_fill), pool), step * 0.45 SECONDS)
 
