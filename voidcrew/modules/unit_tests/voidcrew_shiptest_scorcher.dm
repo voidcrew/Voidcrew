@@ -61,10 +61,11 @@
 	beaker.reagents.add_reagent(/datum/reagent/fuel/oil, 30)
 	scorcher.draw_fuel(beaker, shooter)
 	TEST_ASSERT_EQUAL(scorcher.fuel, 2, "The tank took something that isn't welding fuel")
-	beaker.reagents.add_reagent(/datum/reagent/fuel, 60)
+	// A large beaker holds 100, so this fills it.
+	beaker.reagents.add_reagent(/datum/reagent/fuel, 40)
 	scorcher.draw_fuel(beaker, shooter)
 	TEST_ASSERT_EQUAL(scorcher.fuel, 40, "The tank did not fill from a beaker of fuel")
-	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/fuel), 22, "The tank took more fuel than it holds")
+	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/fuel), 2, "The tank took more fuel than it holds")
 	TEST_ASSERT_EQUAL(beaker.reagents.get_reagent_amount(/datum/reagent/water), 30, "Refuelling took water out of the beaker")
 
 /// Each gun can be bought at its tier and found in plunder, with a spare magazine, and its magazine is sold.

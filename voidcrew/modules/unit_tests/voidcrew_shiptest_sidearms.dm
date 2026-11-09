@@ -42,7 +42,9 @@
 	TEST_ASSERT_EQUAL(snake.magazine.type, /obj/item/ammo_box/magazine/m9mm_rattlesnake, "The MP-84 spawned with the wrong magazine")
 	TEST_ASSERT_EQUAL(snake.chambered?.type, /obj/item/ammo_casing/c9mm, "The MP-84 fires the wrong round")
 	TEST_ASSERT(!length(snake.actions_types), "The MP-84 should have no action button")
-	TEST_ASSERT_EQUAL("[snake.fire_sound]", "voidcrew/modules/shiptest_guns/sidearms/sound/rattlesnake.ogg", "Gun feel swapped the MP-84's own shot")
+	// Compare the resource, not its path: the recording is byte-identical to nova_guns/sound/pistol_heavy.ogg, and the
+	// resource cache keeps one copy under whichever path it saw first.
+	TEST_ASSERT_EQUAL(snake.fire_sound, 'voidcrew/modules/shiptest_guns/sidearms/sound/rattlesnake.ogg', "Gun feel swapped the MP-84's own shot")
 	var/datum/component/automatic_fire/autofire = snake.GetComponent(/datum/component/automatic_fire)
 	TEST_ASSERT_NOTNULL(autofire, "The MP-84 has no full auto")
 	TEST_ASSERT_EQUAL(autofire.autofire_shot_delay, 0.1 SECONDS, "The MP-84 fires at the wrong rate")
