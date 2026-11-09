@@ -35,10 +35,6 @@
 #define MANTIS_POSE_RAISE "raise"
 #define MANTIS_POSE_COIL "coil"
 
-/// FALSE while the impale and the scissor are being blocked out (poses and layering only): their sparks,
-/// flashes, glints and blood sprays are left out until the full build.
-#define MANTIS_FINISHER_FX FALSE
-
 // Fields of mantis_rig_beat().
 #define MANTIS_RIG_ORDER 1
 #define MANTIS_RIG_BEARER_W 2
@@ -102,8 +98,10 @@
 // The beats of the impale (mantis_impale.dm), from the approved storyboard. The bearer's lunge pose shows
 // while the lunging body glides in; the blades go in as it lands, and the hold, the pull-back, the rip and
 // the drop follow. Where the two bodies sit in each beat is mantis_rig_beat()'s.
-/// From the blades going in to the bodies settling on them, held up.
-#define MANTIS_IMPALE_ENTER_BEAT (0.1 SECONDS)
+/// The points at their front, nothing in yet, after the lunging body lands.
+#define MANTIS_IMPALE_CONTACT_BEAT (0.05 SECONDS)
+/// From the blades going in to the bodies settling on them, held up. Short, so the hold fills the 0.8 s.
+#define MANTIS_IMPALE_ENTER_BEAT (0.05 SECONDS)
 /// From the pull-back to the rip-out.
 #define MANTIS_IMPALE_RIP_BEAT (0.2 SECONDS)
 /// How long the bearer holds the last pose after the blades are out, before they are drawn as usual again.
@@ -141,6 +139,11 @@
 #define MANTIS_SCISSOR_COOLDOWN (10 SECONDS)
 /// Brute to the neck when the head won't come off.
 #define MANTIS_SCISSOR_FALLBACK_DAMAGE 25
+/// Where a head cut off by the scissor is drawn on its tile: pixels out from the middle toward the side the
+/// head lay, where the neck was, then where it comes to rest, and how far below the middle.
+#define MANTIS_HEAD_ROLL_FROM 7
+#define MANTIS_HEAD_ROLL_TO 11
+#define MANTIS_HEAD_ROLL_DROP 5
 
 // ---- Blood on the blades ----
 /// How long a drenched blade drips.

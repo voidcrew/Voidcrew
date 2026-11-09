@@ -16,6 +16,8 @@
 	var/datum/weakref/cut_wielder
 	/// Until this world.time the blade drips.
 	var/drenched_until = 0
+	/// Until this world.time the blade is drawn soaked, not just bloodied.
+	var/soaked_until = 0
 	/// Drops it can still leave from this drench.
 	var/drips_left = 0
 	/// Timer of the next drop.
@@ -284,7 +286,9 @@
 	return !(item_flags & NO_BLOOD_ON_ITEM) && GET_ATOM_BLOOD_DECAL_LENGTH(src)
 
 /// A kill, a torn artery, a rip or the scissor: the blade runs red with [source]'s blood and drips for a while.
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/drench(mob/living/source)
+/// [light]: the steel that went through is bloodied (the lighter coat), not soaked: the impale and the scissor,
+/// so the held blade matches the one the finisher drew.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/drench(mob/living/source, light = FALSE)
 	if(item_flags & NO_BLOOD_ON_ITEM)
 		return FALSE
 	if(isliving(source) && source.can_bleed(BLOOD_COVER_ITEMS) == BLEED_SPLATTER)
@@ -292,6 +296,8 @@
 	if(!is_bloody())
 		return FALSE
 	drenched_until = world.time + MANTIS_DRENCH_TIME
+	if(!light)
+		soaked_until = drenched_until
 	drips_left = MANTIS_DRIP_MAX
 	if(!drip_timer)
 		drip_timer = addtimer(CALLBACK(src, PROC_REF(drip)), MANTIS_DRIP_INTERVAL, TIMER_STOPPABLE|TIMER_DELETE_ME)
@@ -324,6 +330,7 @@
 		drip_timer = null
 	var/was_drenched = drenched_until
 	drenched_until = 0
+	soaked_until = 0
 	drips_left = 0
 	if(was_drenched)
 		refresh_held()
@@ -354,7 +361,7 @@
 		return
 	var/blood_color = get_blood_dna_color()
 	var/drenched = world.time < drenched_until
-	var/coat_state = "[standing.icon_state]_[drenched ? "soak" : "blood"]"
+	var/coat_state = "[standing.icon_state]_[world.time < soaked_until ? "soak" : "blood"]"
 	if(icon_exists(icon_file, coat_state))
 		var/mutable_appearance/coat = mutable_appearance(icon_file, coat_state, appearance_flags = RESET_COLOR)
 		coat.color = blood_color

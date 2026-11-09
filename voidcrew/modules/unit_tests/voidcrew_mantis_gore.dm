@@ -243,12 +243,15 @@
 	TEST_ASSERT(HAS_TRAIT_FROM(fresh, TRAIT_IMMOBILIZED, MG_IMPALE_TRAIT), "The victim isn't held")
 	TEST_ASSERT(!HAS_TRAIT(fresh, TRAIT_HANDS_BLOCKED), "The victim's hands are tied")
 	TEST_ASSERT_EQUAL(fresh.dir, WEST, "The victim wasn't turned onto the blades")
-	// The lunging body lands, and the bearer is drawn around them: under them and over them.
+	// The bearer is drawn by the rig from the glide in; the lunging body lands and the blades go in: drawn
+	// under them and over them.
+	TEST_ASSERT(skewer.rig, "The lunging body isn't drawn by the rig")
 	skewer.begin_rig()
+	skewer.stab()
 	TEST_ASSERT(skewer.rig, "The bearer isn't drawn around the victim")
 	TEST_ASSERT(fresh.has_offset(MG_IMPALE_TRAIT, PIXEL_W_OFFSET) < 0, "The victim isn't drawn onto the blades")
 	var/list/pictures = rig_pictures(user)
-	TEST_ASSERT_EQUAL(length(pictures), 5, "The blades going in aren't drawn in five pieces")
+	TEST_ASSERT_EQUAL(length(pictures), 5, "The blades going in aren't drawn in four pieces and the wounds")
 	var/under = 0
 	var/over = 0
 	for(var/obj/effect/abstract/mantis_puppet/picture as anything in pictures)
@@ -256,7 +259,7 @@
 			under++
 		else if(picture.layer > fresh.layer)
 			over++
-	TEST_ASSERT(under == 3 && over == 2, "The bearer isn't split around the victim ([under] under, [over] over)")
+	TEST_ASSERT(under == 2 && over == 3, "The bearer isn't split around the victim ([under] under, [over] over)")
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/held_blade = right_blade(user)
 	TEST_ASSERT(held_blade.inhand_hidden_until > world.time, "The held blade is drawn over the blades going in")
 	skewer.show_beat("hold")

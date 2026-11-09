@@ -12,7 +12,15 @@
  * - "body": a copy of the bearer's appearance without the held blades, and without the hands seen from the
  *   front or back, where the blades' forearms take their place.
  * - The arms and blades of each beat, from mantis_gore_reach.dmi: "<model>_<move>_<beat>_<piece>", 96x96 with
- *   the bearer's tile in the middle, already cut where a body hides them.
+ *   the bearer's tile in the middle, already cut where a body hides them. Blood on the blades is a coat over
+ *   each piece ("<piece>_blood" or "_soak", the held art's two coats) tinted by the blood, read off the held
+ *   blades, so a blade already wet stays wet and one drenched in the move turns red as it happens. The impale
+ *   also has wet points from the moment they come out of the back, in the victim's blood.
+ * - Pieces of the victim's blood: "wound" (where the steel goes in and out) and "drip" (drops off the points),
+ *   and "glint", the light on the near blade before the scissor. Sprays, and the crackle of the blades' light
+ *   at the points as they punch out, are loose pictures (burst()) that stay where they started and outlive the beat.
+ * - The map is SIDE_MAP: rows sort before layers, so every picture is centred with pixel_w/pixel_z and stands on
+ *   the row of what it must sort against (sort_y()).
  *
  * mantis_rig_beat() has each beat's stack, back to front, with "T" where the victim goes, and the lean.
  * Puppets are plain objects on the bearer's tile, so nothing touches the real bearer's own picture,
@@ -35,17 +43,26 @@
 	var/view = (facing & (EAST|WEST)) ? "E" : (facing == NORTH ? "N" : "S")
 	var/list/spec
 	switch("[move]_[beat]_[view]")
-		// ---- The impale. The lunge arrival is the bearer's own lunge pose.
+		// ---- The impale. "arrive" glides in with the lunging body; at "contact" the points touch the target's
+		// front; then they go in. The steel inside the target is cut out of the pieces.
+		if("impale_arrive_E")
+			spec = list(list("T", "far", "body", "near"), 2, 0, 0, 0, 0, 2)
+		if("impale_contact_E")
+			spec = list(list("far", "body", "T", "narm", "near"), 7, 0, -17, 0, 0, 2)
 		if("impale_enter_E")
-			spec = list(list("far", "body", "nrest", "T", "narm", "ntop"), 7, 0, -17, 0, 0, 2)
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 7, 0, -17, 0, 0, 2)
 		if("impale_hold_E")
-			spec = list(list("far", "body", "nrest", "T", "narm", "ntop"), 7, 0, -17, 4, 0, 2)
+			spec = list(list("far", "body", "T", "wound", "drip", "narm", "near"), 7, 0, -17, 4, 0, 2)
 		if("impale_pull_E")
-			spec = list(list("far", "body", "nrest", "T", "narm", "ntop"), 4, 0, -19, 1, 0, 1)
+			spec = list(list("far", "body", "T", "wound", "narm", "near"), 4, 0, -19, 1, 0, 1)
 		if("impale_rip_E")
 			spec = list(list("far", "body", "T", "near"), 6, 0, -12, 2, 14, 1)
 		if("impale_drop_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 2)
+		if("impale_arrive_N")
+			spec = list(list("T", "arms", "body"), 0, 2, 0, 0, 0, 0)
+		if("impale_contact_N")
+			spec = list(list("T", "arms", "body"), 0, 24, 0, 0, 0, 0)
 		if("impale_enter_N")
 			spec = list(list("tips", "T", "arms", "body"), 0, 24, 0, 0, 0, 0)
 		if("impale_hold_N")
@@ -56,29 +73,39 @@
 			spec = list(list("T", "arms", "body"), 0, 15, 0, 0, 0, 0)
 		if("impale_drop_N")
 			spec = list(list("T", "arms", "body"), 0, 0, 0, 0, 0, 0)
+		if("impale_arrive_S")
+			spec = list(list("body", "arms", "T"), 0, -2, 0, 0, 0, 0)
+		if("impale_contact_S")
+			spec = list(list("body", "arms", "T"), 0, 0, 0, 24, 0, 0)
 		if("impale_enter_S")
-			spec = list(list("body", "arms", "T", "tips"), 0, 0, 0, 24, 0, 0)
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 24, 0, 0)
 		if("impale_hold_S")
-			spec = list(list("body", "arms", "T", "tips"), 0, 0, 0, 28, 0, 0)
+			spec = list(list("body", "arms", "T", "wound", "tips", "drip"), 0, 0, 0, 28, 0, 0)
 		if("impale_pull_S")
-			spec = list(list("body", "arms", "T", "tips"), 0, 0, 0, 23, 0, 0)
+			spec = list(list("body", "arms", "T", "wound", "tips"), 0, 0, 0, 23, 0, 0)
 		if("impale_rip_S")
 			spec = list(list("body", "arms", "T"), 0, -2, 0, 13, 0, 0)
 		if("impale_drop_S")
 			spec = list(list("T", "body", "arms"), 0, 0, 0, 0, 0, 0)
 		// ---- The scissor.
-		if("scissor_raise_E", "scissor_glint_E")
+		if("scissor_raise_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 3)
+		if("scissor_glint_E")
+			spec = list(list("T", "far", "body", "near", "glint"), 0, 0, 0, 0, 0, 3)
 		if("scissor_close_E", "scissor_cut_E")
 			spec = list(list("fblade", "T", "farm", "body", "near"), 10, 0, 0, 0, 0, 1)
 		if("scissor_recover_E")
 			spec = list(list("T", "far", "body", "near"), 0, 0, 0, 0, 0, 2)
-		if("scissor_raise_N", "scissor_glint_N", "scissor_recover_N")
+		if("scissor_raise_N", "scissor_recover_N")
 			spec = list(list("T", "arms", "body"), 0, 0, 0, 0, 0, 0)
+		if("scissor_glint_N")
+			spec = list(list("T", "arms", "glint", "body"), 0, 0, 0, 0, 0, 0)
 		if("scissor_close_N", "scissor_cut_N")
 			spec = list(list("T", "arms", "body"), 0, 10, 0, 0, 0, 0)
-		if("scissor_raise_S", "scissor_glint_S", "scissor_recover_S")
+		if("scissor_raise_S", "scissor_recover_S")
 			spec = list(list("T", "body", "arms"), 0, 0, 0, 0, 0, 0)
+		if("scissor_glint_S")
+			spec = list(list("T", "body", "arms", "glint"), 0, 0, 0, 0, 0, 0)
 		if("scissor_close_S", "scissor_cut_S")
 			spec = list(list("T", "body", "arms"), 0, -16, 0, 0, 0, 0)
 	if(isnull(spec))
@@ -101,6 +128,22 @@
 /// One picture of the rig on the bearer's tile.
 /obj/effect/abstract/mantis_puppet
 	name = "body"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	appearance_flags = PIXEL_SCALE | TILE_BOUND | LONG_GLIDE
+	animate_movement = NO_STEPS
+	plane = GAME_PLANE
+	layer = MOB_LAYER
+	vis_flags = NONE
+	/// Pixels it is drawn off the bearer's lean (pixel_w, pixel_z): a 96x96 piece is centred on the tile, and
+	/// one standing on another row (mantis_rig/proc/set_row()) is drawn back where it belongs.
+	var/shift_w = 0
+	var/shift_z = 0
+
+/// A spray of the victim's blood drawn by the rig: it stays where it started and goes on its own.
+/obj/effect/abstract/mantis_rig_fx
+	name = "blood"
+	icon = MANTIS_GORE_REACH_ICON
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE
 	appearance_flags = PIXEL_SCALE | TILE_BOUND | LONG_GLIDE
@@ -135,6 +178,15 @@
 	/// TRUE while the real bearer is hidden
 	var/hidden = FALSE
 	var/old_mouse_opacity
+	/// The victim's layer when the beat drawn now went up
+	var/victim_layer = MOB_LAYER
+	/// The colour of the victim's blood, or null if they don't bleed
+	var/victim_color
+	/// TRUE once the points have been through the victim: wet with their blood even before a drench
+	var/wet = FALSE
+	/// The blood on the blades drawn now: null, "blood" or "soak" (the held art's coats), and its colour
+	var/coat
+	var/coat_color
 
 /datum/mantis_rig/New(mob/living/carbon/bearer, mob/living/victim, facing, model, move)
 	. = ..()
@@ -146,6 +198,9 @@
 	RegisterSignal(bearer, COMSIG_QDELETING, PROC_REF(on_bearer_deleted))
 	if(victim)
 		RegisterSignal(victim, COMSIG_QDELETING, PROC_REF(on_victim_deleted))
+		if(victim.can_bleed(BLOOD_COVER_TURFS) == BLEED_SPLATTER)
+			var/datum/blood_type/blood = victim.get_bloodtype()
+			victim_color = blood?.get_color()
 
 /datum/mantis_rig/Destroy()
 	reveal()
@@ -200,14 +255,15 @@
 				look.overlays -= part
 	var/obj/effect/abstract/mantis_puppet/body = puppet("body")
 	var/body_layer = body.layer
+	var/body_row = body.pixel_y
 	body.appearance = look
 	body.dir = facing
 	body.layer = body_layer
 	body.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	body.pixel_x = bearer.pixel_x
-	body.pixel_y = bearer.pixel_y
-	body.pixel_w = base_w + lean_w
-	body.pixel_z = base_z + lean_z
+	body.pixel_y = body_row
+	body.pixel_w = base_w + lean_w + body.shift_w
+	body.pixel_z = base_z + lean_z + body.shift_z
 
 /// The fists ride [new_raise] pixels high in the body picture (mantis_stance_raise()).
 /datum/mantis_rig/proc/set_raise(new_raise)
@@ -229,14 +285,39 @@
 	picture.name = bearer.name
 	picture.pixel_x = bearer.pixel_x
 	picture.pixel_y = bearer.pixel_y
-	picture.pixel_w = base_w + lean_w
-	picture.pixel_z = base_z + lean_z
+	// Centred with pixel_w and pixel_z only: pixel_y picks the row it sorts on (set_row()).
 	if(key != "body")
 		picture.icon = MANTIS_GORE_REACH_ICON
-		picture.pixel_x -= ICON_SIZE_X
-		picture.pixel_y -= ICON_SIZE_Y
+		picture.shift_w = -ICON_SIZE_X
+		picture.shift_z = -ICON_SIZE_Y
+	picture.pixel_w = base_w + lean_w + picture.shift_w
+	picture.pixel_z = base_z + lean_z + picture.shift_z
 	puppets[key] = picture
 	return picture
+
+/**
+ * The pixel_y, from the bearer's tile, of the row a picture drawn [behind] the victim (or in front of them)
+ * sorts on. The map is SIDE_MAP: BYOND sorts by row (a tile's y plus pixel_y) before layer, so a picture
+ * only sorts against the victim by its layer on the victim's own row. One the bearer's row already puts on
+ * the right side of the victim stays on the bearer's row, under or over everything else there as before.
+ */
+/datum/mantis_rig/proc/sort_y(behind)
+	var/own = bearer.pixel_y
+	if(!victim || QDELETED(victim) || victim.z != bearer.z || !isturf(victim.loc))
+		return own
+	var/theirs = (victim.y - bearer.y) * ICON_SIZE_Y + victim.pixel_y
+	if(behind ? own > theirs : own < theirs)
+		return own
+	return theirs
+
+/// Stands [picture] on the row [row_y], still drawn where it was.
+/datum/mantis_rig/proc/set_row(obj/effect/abstract/mantis_puppet/picture, row_y)
+	var/change = row_y - picture.pixel_y
+	if(!change)
+		return
+	picture.pixel_y = row_y
+	picture.shift_z -= change
+	picture.pixel_z -= change
 
 /**
  * Draws [new_beat]: each piece of its stack is swapped in at its layer next to the victim's, pieces it
@@ -252,26 +333,121 @@
 	set_raise(spec[MANTIS_RIG_RAISE])
 	var/list/order = spec[MANTIS_RIG_ORDER]
 	var/victim_at = order.Find("T")
-	var/victim_layer = (victim && !QDELETED(victim)) ? victim.layer : bearer.layer
+	victim_layer = (victim && !QDELETED(victim)) ? victim.layer : bearer.layer
 	var/list/used = list()
 	for(var/i in 1 to length(order))
 		var/key = order[i]
 		if(key == "T")
 			continue
+		// The victim's own blood: nothing to draw on someone who doesn't bleed.
+		var/bloody = (key == "wound" || key == "drip")
+		if(bloody && !victim_color)
+			continue
 		var/obj/effect/abstract/mantis_puppet/picture = puppet(key)
 		if(key != "body")
-			picture.icon_state = "[model]_[move]_[beat]_[key]"
+			var/state = "[model]_[move]_[beat]_[key]"
+			// A looping picture (the drops) would start over if it were set again.
+			if(picture.icon_state != state)
+				picture.icon_state = state
 			picture.dir = facing
+			if(bloody)
+				picture.color = victim_color
 		picture.layer = victim_layer + (i - victim_at) * MANTIS_RIG_LAYER_STEP
+		set_row(picture, sort_y(i < victim_at))
 		used[key] = TRUE
 	for(var/key in puppets.Copy())
 		if(!used[key])
 			qdel(puppets[key])
 			puppets -= key
+	dress()
 	lean_w = spec[MANTIS_RIG_BEARER_W] + extra_w
 	lean_z = spec[MANTIS_RIG_BEARER_Z] + extra_z
 	for(var/key in puppets)
-		animate(puppets[key], pixel_w = base_w + lean_w, pixel_z = base_z + lean_z, time = time, easing = SINE_EASING)
+		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
+		animate(picture, pixel_w = base_w + lean_w + picture.shift_w, pixel_z = base_z + lean_z + picture.shift_z, time = time, easing = SINE_EASING)
+
+/**
+ * Blood on the blades as the held blades have it now: the heavier coat while one is drenched, the light one
+ * while one is only stained, and at least the light one in the victim's blood once the points have been
+ * through them. A blade that keeps itself clean (the Scorch) shows none.
+ */
+/datum/mantis_rig/proc/read_coat()
+	coat = null
+	coat_color = null
+	if(QDELETED(bearer))
+		return
+	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
+		if(blade.item_flags & NO_BLOOD_ON_ITEM)
+			coat = null
+			return
+		if(!blade.is_bloody() || coat == "soak")
+			continue
+		coat = world.time < blade.soaked_until ? "soak" : "blood"
+		coat_color = blade.get_blood_dna_color()
+	if(!coat && wet && victim_color)
+		coat = "blood"
+		coat_color = victim_color
+
+/// Puts the blood on every blade piece drawn now (read_coat()).
+/datum/mantis_rig/proc/dress()
+	read_coat()
+	for(var/key in puppets)
+		if(key == "body" || key == "wound" || key == "drip" || key == "glint")
+			continue
+		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
+		picture.cut_overlays()
+		if(!coat)
+			continue
+		var/state = "[picture.icon_state]_[coat]"
+		if(!icon_exists(MANTIS_GORE_REACH_ICON, state))
+			continue
+		var/mutable_appearance/blood = mutable_appearance(MANTIS_GORE_REACH_ICON, state)
+		blood.color = coat_color
+		picture.add_overlay(blood)
+
+/**
+ * A spray of the victim's blood, "<model>_<move>_<name>", drawn where the beat drawn now puts it and left
+ * there for [lifetime]: just over (or, with [under], just under) the piece [key], or the victim for "T".
+ * Not [blood]: a flash of the blades' own light, drawn in its own colours.
+ */
+/datum/mantis_rig/proc/burst(name, lifetime, key = "T", under = FALSE, blood = TRUE)
+	if(QDELETED(bearer) || (blood && !victim_color))
+		return null
+	var/state = "[model]_[move]_[name]"
+	if(!icon_exists(MANTIS_GORE_REACH_ICON, state))
+		return null
+	var/obj/effect/abstract/mantis_rig_fx/spray = new(get_turf(bearer))
+	spray.icon_state = state
+	spray.dir = facing
+	if(blood)
+		spray.color = victim_color
+	else
+		spray.name = "light"
+	var/obj/effect/abstract/mantis_puppet/beside = puppets[key]
+	var/beside_layer = beside ? beside.layer : victim_layer
+	spray.layer = beside_layer + (under ? -0.5 : 0.5) * MANTIS_RIG_LAYER_STEP
+	// On the row of what it sorts against, centred with pixel_w and pixel_z (set_row()).
+	spray.pixel_x = bearer.pixel_x
+	spray.pixel_y = beside ? beside.pixel_y : sort_y(under)
+	spray.pixel_w = base_w + lean_w - ICON_SIZE_X
+	spray.pixel_z = base_z + lean_z - ICON_SIZE_Y + bearer.pixel_y - spray.pixel_y
+	QDEL_IN(spray, lifetime)
+	return spray
+
+/**
+ * Every picture drawn now starts [back_w], [back_z] pixels off and glides into place over [time], the way the
+ * lunging body glides in (mantis_lunge_dash_fx()).
+ */
+/datum/mantis_rig/proc/glide_from(back_w, back_z, time)
+	if(!time || (!back_w && !back_z))
+		return
+	for(var/key in puppets)
+		var/obj/effect/abstract/mantis_puppet/picture = puppets[key]
+		var/to_w = picture.pixel_w
+		var/to_z = picture.pixel_z
+		picture.pixel_w += back_w
+		picture.pixel_z += back_z
+		animate(picture, pixel_w = to_w, pixel_z = to_z, time = time, easing = SINE_EASING|EASE_OUT)
 
 /// Hides the real bearer. Its whole tile still takes clicks.
 /datum/mantis_rig/proc/conceal()

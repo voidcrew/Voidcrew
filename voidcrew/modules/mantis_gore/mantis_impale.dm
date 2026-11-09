@@ -24,9 +24,15 @@
 		return TRUE
 	return victim.body_position == LYING_DOWN || victim.stat >= SOFT_CRIT || HAS_TRAIT(victim, TRAIT_INCAPACITATED)
 
-/// Skewers [victim] on the blades of [housings]. Returns TRUE if it took hold.
-/proc/mantis_start_impale(datum/action/cooldown/cyberware/mantis_lunge/lunge, mob/living/carbon/lunger, mob/living/carbon/victim, list/housings, knockdown)
+/// Skewers [victim] on the blades of [housings]. Returns TRUE if it took hold. [from] is where the lunge set
+/// out, for the [glide] the lunging body takes to reach them (mantis_lunge_dash_fx()).
+/proc/mantis_start_impale(datum/action/cooldown/cyberware/mantis_lunge/lunge, mob/living/carbon/lunger, mob/living/carbon/victim, list/housings, knockdown, turf/from, glide = MANTIS_LUNGE_GLIDE)
 	var/datum/mantis_impale/skewer = new(lunger, victim, housings, knockdown)
+	var/turf/landed = get_turf(lunger)
+	if(from && landed && from != landed)
+		skewer.glide_w = (from.x - landed.x) * ICON_SIZE_X
+		skewer.glide_z = (from.y - landed.y) * ICON_SIZE_Y
+		skewer.glide_time = glide
 	if(!skewer.start())
 		qdel(skewer)
 		return FALSE
@@ -40,11 +46,11 @@
 /**
  * # The skewer
  *
- * The beats, from the approved storyboard: the lunging body lands in its lunge pose; the blades go in and
- * the two are drawn together; the victim is held up on the blades; the bearer pulls back, rips the blades
- * out and the victim drops. From the landing to the drop the bearer is drawn by the blade rig
+ * The beats, from the approved storyboard: the lunging body glides in, blades out; the points reach them
+ * and go in, and the two are drawn together; the victim is held up on the blades; the bearer pulls back, rips
+ * the blades out and the victim drops. From the glide to the drop the bearer is drawn by the blade rig
  * (mantis_rig.dm): the far blade, the far arm and the bearer's body under the victim, the near arm and the
- * near blade over them, the steel inside them hidden.
+ * near blade over them, the steel inside them cut out.
  */
 /datum/mantis_impale
 	var/mob/living/carbon/bearer
@@ -65,10 +71,14 @@
 	/// Damage the bearer has taken since it began.
 	var/taken = 0
 	var/tick_timer
-	/// The bearer drawn around the victim, from the moment the lunging body lands.
+	/// The bearer drawn around the victim, from the start of the glide in.
 	var/datum/mantis_rig/rig
-	/// The landing, when the rig takes over from the bearer's own lunge pose.
+	/// The landing, when the points reach them.
 	var/rig_timer
+	/// Where the lunging body glides in from, in pixels off the bearer's tile, and how long it takes.
+	var/glide_w = 0
+	var/glide_z = 0
+	var/glide_time = 0
 	/// The beat drawn now.
 	var/beat
 	/// How far tg had them turned to lie down when they came up on the blades, or 0.
@@ -110,14 +120,19 @@
 	started_at = world.time
 	bearer.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_HANDS_BLOCKED), MANTIS_IMPALE_TRAIT)
 	ADD_TRAIT(victim, TRAIT_IMMOBILIZED, MANTIS_IMPALE_TRAIT)
-	// Turned onto the blades and brought up off the floor if they were on it. The lunging body lands in its
-	// lunge pose first; the blades go in as it does (begin_rig()).
+	// Turned onto the blades and brought up off the floor if they were on it. The rig draws the lunging body
+	// gliding in, blades out and short of them (the bearer's own lunge pose would lie over them); the points
+	// reach them as it lands (begin_rig()).
 	prior_dir = victim.dir
 	victim.setDir(mantis_face_dir(victim, bearer))
 	hoist()
 	place_victim(0, 0)
 	mantis_pose_blades(housings, MANTIS_POSE_LUNGE)
-	rig_timer = addtimer(CALLBACK(src, PROC_REF(begin_rig)), MANTIS_LUNGE_GLIDE, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	put_up_rig()
+	if(rig)
+		show_beat("arrive")
+		rig.glide_from(glide_w, glide_z, glide_time)
+	rig_timer = addtimer(CALLBACK(src, PROC_REF(begin_rig)), max(glide_time, world.tick_lag), TIMER_STOPPABLE|TIMER_DELETE_ME)
 	// The lunge's own slash, drawn as it landed, would float over the blades.
 	for(var/obj/effect/abstract/cyberware_anim/picture in victim.vis_contents)
 		if(findtext(picture.icon_state, "impact_") == 1)
@@ -139,16 +154,55 @@
 	schedule_tick()
 	return TRUE
 
-/// The lunging body has landed: the bearer is drawn around the victim and the blades go in.
-/datum/mantis_impale/proc/begin_rig()
-	rig_timer = null
-	if(!running || ripping)
+/// The bearer is drawn by the rig from here to the drop.
+/datum/mantis_impale/proc/put_up_rig()
+	if(rig)
 		return
 	rig = new(bearer, victim, facing, model(), "impale")
 	if(!rig.start())
 		QDEL_NULL(rig)
+
+/// The lunging body has landed: the points are at their front.
+/datum/mantis_impale/proc/begin_rig()
+	rig_timer = null
+	if(!running || ripping)
+		return
+	put_up_rig()
+	show_beat("contact")
+	addtimer(CALLBACK(src, PROC_REF(stab)), MANTIS_IMPALE_CONTACT_BEAT, TIMER_DELETE_ME)
+
+/// The blades go in: the points come out of the back wet, with a burst of blood and a crackle of their light.
+/datum/mantis_impale/proc/stab()
+	if(!running || ripping)
+		return
+	if(rig)
+		rig.wet = TRUE
 	show_beat("enter")
-	addtimer(CALLBACK(src, PROC_REF(show_beat), "hold"), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
+	switch(facing)
+		if(NORTH)
+			rig?.burst("enter_puff", 0.25 SECONDS, "T", under = TRUE)
+			rig?.burst("enter_spark", 0.2 SECONDS, "tips", blood = FALSE)
+		if(SOUTH)
+			rig?.burst("enter_puff", 0.25 SECONDS, "tips")
+			rig?.burst("enter_spark", 0.2 SECONDS, "tips", blood = FALSE)
+		else
+			rig?.burst("enter_puff", 0.25 SECONDS, "T")
+			rig?.burst("enter_spark", 0.2 SECONDS, "near", blood = FALSE)
+	addtimer(CALLBACK(src, PROC_REF(hang)), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
+
+/**
+ * Held up: the victim is drawn up onto the blades, then hangs there, sagging and jerking on them until the
+ * pull-back. The sag is relative and ends where it began.
+ */
+/datum/mantis_impale/proc/hang()
+	show_beat("hold")
+	if(!running || ripping || QDELETED(victim))
+		return
+	animate(victim, time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_PARALLEL)
+	animate(pixel_z = -1, time = 0.2 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+	animate(pixel_z = 1, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
+	animate(pixel_z = -1, time = 0.1 SECONDS, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+	animate(pixel_z = 1, time = 0.05 SECONDS, flags = ANIMATION_RELATIVE)
 
 /**
  * Draws [new_beat] (mantis_rig_beat()): the bearer's arms and lean, and the victim drawn onto the blades.
@@ -297,19 +351,15 @@
 		deltimer(tick_timer)
 		tick_timer = null
 	show_beat("pull")
-	addtimer(CALLBACK(src, PROC_REF(show_beat), "rip"), MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
-	if(MANTIS_FINISHER_FX)
-		var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/first_blade = locate() in mantis_housing_blades(housings)
-		var/impact_state = first_blade?.impact_state || "impact_mantis"
-		cyberware_play_impact(bearer, victim, impact_state)
-		if(length(mantis_housing_blades(housings)) > 1)
-			var/obj/effect/abstract/cyberware_anim/second = cyberware_play_impact(bearer, victim, impact_state)
-			if(second)
-				var/matrix/flipped = matrix(second.transform)
-				flipped.d = -flipped.d
-				second.transform = flipped
-		cyberware_flash_fx(victim, 0.2 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(show_rip)), MANTIS_IMPALE_RIP_BEAT, TIMER_DELETE_ME)
 	addtimer(CALLBACK(src, PROC_REF(tear_out), half), MANTIS_IMPALE_PULL_BEAT, TIMER_DELETE_ME)
+
+/// The blades tear up and down out of them: blood sprays out of the back as they come free.
+/datum/mantis_impale/proc/show_rip()
+	if(!running)
+		return
+	show_beat("rip")
+	rig?.burst("rip_spray", 0.4 SECONDS, "T", under = (facing == NORTH))
 
 /// The blades come out after the pull-back: the damage, the spray and the fall. The bearer holds the
 /// last pose for the drop, then is drawn as usual again.
@@ -349,14 +399,13 @@
 		if(!QDELETED(held))
 			held.hv_flush_hit()
 		if(!QDELETED(held))
-			if(MANTIS_FINISHER_FX)
-				held.hv_blood_spray(rip_dir, half ? 2 : 3)
-				if(wall_pin)
-					held.hv_blood_lay_wall_spray(get_turf(held), rip_dir, held.get_blood_dna_list(), held.get_static_viruses())
+			held.hv_blood_spray(rip_dir, half ? 2 : 3)
+			if(wall_pin)
+				held.hv_blood_lay_wall_spray(get_turf(held), rip_dir, held.get_blood_dna_list(), held.get_static_viruses())
 			held.Knockdown(knockdown)
 			playsound(held, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 			for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in blades)
-				blade.drench(held)
+				blade.drench(held, light = TRUE)
 			if(half && !QDELETED(holder))
 				holder.set_staggered_if_lower(1.5 SECONDS)
 			log_combat(holder, held, half ? "lost the grip on" : "ripped the mantis blades out of")

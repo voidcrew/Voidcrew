@@ -156,7 +156,7 @@
 	scissor.show_beat("raise")
 	glint_timer = addtimer(CALLBACK(src, PROC_REF(glint)), duration * 0.5, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
-/// Halfway through the wind-up the light runs along the near blade and the victim shudders.
+/// Halfway through the wind-up the light runs along the near blade (the rig draws it) and the victim shudders.
 /datum/hv_finisher_stage/windup/mantis/proc/glint()
 	glint_timer = null
 	if(!host?.running)
@@ -164,9 +164,10 @@
 	var/datum/hv_finisher/mantis_scissor/scissor = host
 	scissor.show_beat("glint")
 	mantis_struggle_fx(host.victim, duration * 0.5)
-	if(MANTIS_FINISHER_FX)
-		for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(host.user))
-			blade.play_glint(MANTIS_POSE_RAISE)
+	// Not drawn by the rig: the light runs along one held blade instead.
+	if(!scissor.rig)
+		var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = locate() in host.user.held_items
+		blade?.play_glint(MANTIS_POSE_RAISE)
 
 /datum/hv_finisher_stage/windup/mantis/on_stop()
 	if(glint_timer)
@@ -259,7 +260,17 @@
 	if(!QDELETED(victim))
 		victim.hv_flush_hit()
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
-		blade.drench(victim)
+		blade.drench(victim, light = TRUE)
+	// The blades come out of the neck red, and it sprays.
+	if(scissor.rig)
+		scissor.rig.dress()
+		switch(scissor.rig.facing)
+			if(NORTH)
+				scissor.rig.burst("cut_spray", 0.4 SECONDS, "T")
+			if(SOUTH)
+				scissor.rig.burst("cut_spray", 0.4 SECONDS, "arms")
+			else
+				scissor.rig.burst("cut_spray", 0.4 SECONDS, "near", under = TRUE)
 	log_combat(bearer, victim, "scissored", addition = "([beheads ? "beheaded" : "cut"])")
 
 // The head stays on: a deep cut across the neck. Atlas plating stops the blades on metal.
@@ -273,14 +284,26 @@
 		victim.hv_add_hit_line("[bearer]'s blades bite deep into [victim]'s neck!", HV_LINE_BOLD, "[bearer]'s blades bite deep into your neck!", DEFAULT_MESSAGE_RANGE)
 	var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade = locate() in bearer.held_items
 	victim.apply_damage(MANTIS_SCISSOR_FALLBACK_DAMAGE, BRUTE, BODY_ZONE_HEAD, wound_bonus = 20, sharpness = SHARP_EDGED, attack_direction = spray_dir, attacking_item = blade)
-	if(MANTIS_FINISHER_FX && !QDELETED(victim))
+	if(!QDELETED(victim))
 		victim.hv_blood_spray(spray_dir, 2)
 
-// The head comes off; the spray waits for the full build (MANTIS_FINISHER_FX).
+// #509's: the spray, and the head comes off. Then it comes away from the neck on the floor.
 /datum/hv_finisher_stage/kill/decapitate/mantis/gore(spray_dir)
-	if(MANTIS_FINISHER_FX)
-		return ..()
-	hv_finisher_take_head(host.victim, WOUND_SLASH)
+	var/mob/living/carbon/victim = host.victim
+	var/angle = victim.lying_angle
+	victim.hv_blood_spray(spray_dir, spray_strength)
+	var/obj/item/bodypart/head/head = hv_finisher_take_head(victim, WOUND_SLASH)
+	mantis_roll_head(head, angle)
+
+/// [head], just cut off a body lying at [angle], comes away from the neck on the floor: from where the neck
+/// was to a hand's width off it. Only where it is drawn on its tile.
+/proc/mantis_roll_head(obj/item/bodypart/head/head, angle)
+	if(QDELETED(head) || !isturf(head.loc) || !angle)
+		return
+	var/side = angle == LYING_ANGLE_EAST ? 1 : -1
+	head.pixel_w = side * MANTIS_HEAD_ROLL_FROM
+	head.pixel_z = -MANTIS_HEAD_ROLL_DROP
+	animate(head, pixel_w = side * MANTIS_HEAD_ROLL_TO, pixel_z = -MANTIS_HEAD_ROLL_DROP - 2, time = 0.3 SECONDS, easing = SINE_EASING|EASE_OUT)
 
 // ---- After -------------------------------------------------------------------
 

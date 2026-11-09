@@ -587,7 +587,7 @@
 		cyberware_scorch_target(victim, lunge_fire)
 	// Both blades into someone already hurt: held up on them, then ripped free (mantis_gore/mantis_impale.dm).
 	// The knockdown waits for the rip.
-	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown))
+	if(skewer && !QDELETED(victim) && victim.stat != DEAD && mantis_start_impale(src, lunger, victim, blade_housings, housing.lunge_knockdown, start, charged ? 2 : MANTIS_LUNGE_GLIDE))
 		log_combat(lunger, victim, "mantis-lunged and impaled", "mantis blades ([blades] landed)")
 		playsound(victim, 'sound/effects/wounds/pierce3.ogg', 70, TRUE)
 		return
