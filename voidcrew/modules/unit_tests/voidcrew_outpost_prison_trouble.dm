@@ -1422,6 +1422,9 @@
 	var/datum/outpost_prison/prison = test_prison(home)
 	var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = trouble_awake_prisoner(prison, prison_spot(home, 8, 8))
 	var/mob/living/carbon/human/warden = make_player(prison_spot(home, 9, 8), "hitbackowner")
+	// The warden's blows go at an arm: a blunt blow to the chest has a chance (as much as its damage) to
+	// knock someone down for six seconds, as it does anyone, and someone down reacts to nothing.
+	warden.zone_selected = BODY_ZONE_R_ARM
 
 	// A calm prisoner hit by a player hits back (the roll forced): at the attacker, with a line.
 	prison.forced_hit_reaction = "fight" // PRISONER_HIT_FIGHT
@@ -1444,10 +1447,14 @@
 	TEST_ASSERT(prisoner.hit_justified(deputy), "Someone else stepping in on a prisoner hitting back was unprovoked")
 	deputy.key = null // a test key on a deleted mob is a runtime; the fixture only clears keys at the end
 	qdel(deputy)
-	// One blow does not end it.
+	// One blow does not end it. (A punch misses now and then, as anyone's does: a few tries.)
 	var/brute_before = warden.getBruteLoss()
-	TEST_ASSERT(prisoner.confront(warden), "The prisoner hitting back could not land a blow")
-	TEST_ASSERT(warden.getBruteLoss() > brute_before, "The prisoner's blow did no harm")
+	for(var/attempt in 1 to 10)
+		outpost_prison_test_ready_blow(prisoner)
+		TEST_ASSERT(prisoner.confront(warden), "The prisoner hitting back could not throw a blow")
+		if(warden.getBruteLoss() > brute_before)
+			break
+	TEST_ASSERT(warden.getBruteLoss() > brute_before, "The prisoner's blows did no harm")
 	TEST_ASSERT(prisoner.retaliating(), "One blow ended the prisoner hitting back")
 	// Turrets answer it as a swing at staff.
 	var/obj/machinery/porta_turret/prison_test_probe/probe = allocate(/obj/machinery/porta_turret/prison_test_probe, prison_spot(home, 11, 10))
@@ -1529,6 +1536,8 @@
 	var/mob/living/carbon/human/bystander = make_player(prison_spot(home, 7, 9), "hitbackbystander")
 	var/mob/living/carbon/human/npc/outpost_prisoner/rioter = trouble_awake_prisoner(prison, prison_spot(home, 7, 8))
 	rioter.start_rioting(FALSE)
+	// At an arm, as above: a blow to the chest can knock them down, and then they turn on nobody
+	bystander.zone_selected = BODY_ZONE_R_ARM
 	hit_with_toolbox(bystander, rioter)
 	TEST_ASSERT_EQUAL(rioter.swing_ref?.resolve(), bystander, "A rioter did not turn on the player who hit them")
 	TEST_ASSERT_EQUAL(rioter.trouble, "riot", "Turning on the player ended the riot for them") // PRISONER_TROUBLE_RIOT
