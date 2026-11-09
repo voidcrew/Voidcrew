@@ -240,6 +240,7 @@
 	housing?.set_stance_raise(mantis_stance_raise(pose))
 	if(mantis_pose == pose && inhand_icon_state == state)
 		return
+	housing?.unfold_overtaken(src)
 	mantis_pose = pose
 	inhand_icon_state = state
 	var/mob/holder = loc
