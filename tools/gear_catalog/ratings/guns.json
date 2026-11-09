@@ -125,6 +125,26 @@
    "score": 47,
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/automatic/heater": {
+   "confidence": "medium",
+   "group": "smgs",
+   "hash": "",
+   "name": "Heater",
+   "rank": 3,
+   "reason": "20 damage 5.7mm rounds at 6.7 a second from a 30 round magazine, with a little spread. Level with the Saber, and it fits in a bag.",
+   "score": 106,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/automatic/heater/scorcher": {
+   "confidence": "low",
+   "group": "smgs",
+   "hash": "",
+   "name": "Scorcher",
+   "rank": 2,
+   "reason": "A Heater (20 damage 5.7mm at 6.7 a second, 30 to a magazine) with a flamethrower under it: a 5-tile plume that burns and sets people alight every 2 seconds, eight sprays to a tank of welding fuel. The flamer alone is the MOD module's yellow, together they edge over the red line.",
+   "score": 115,
+   "tier": "red"
+  },
   "/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted": {
    "confidence": "high",
    "group": "toys and novelties",
@@ -199,7 +219,7 @@
    "group": "smgs",
    "hash": "517391feb1e23558",
    "name": "Stechkin APS machine pistol",
-   "rank": 4,
+   "rank": 5,
    "reason": "A burst pistol firing the C-20r's bullets. Its 15 rounds go in 3 s.",
    "score": 105,
    "tier": "yellow"
@@ -375,7 +395,7 @@
    "group": "smgs",
    "hash": "3a82e5bc193f1d07",
    "name": "Nanotrasen Saber SMG",
-   "rank": 3,
+   "rank": 4,
    "reason": "A hard-hitting automatic with 21 rounds that empties in 4 s.",
    "score": 105,
    "tier": "yellow"

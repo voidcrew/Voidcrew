@@ -7647,6 +7647,8 @@
 #include "voidcrew\modules\ship_upgrades\workshop\bogatyr.dm"
 #include "voidcrew\modules\shiptest_guns\sidearms\rattlesnake.dm"
 #include "voidcrew\modules\shiptest_guns\sidearms\resolution.dm"
+#include "voidcrew\modules\shiptest_guns\scorcher\ammo_57x39.dm"
+#include "voidcrew\modules\shiptest_guns\scorcher\scorcher.dm"
 #include "voidcrew\modules\shuttle\boards.dm"
 #include "voidcrew\modules\shuttle\design.dm"
 #include "voidcrew\modules\shuttle\emergency.dm"

@@ -68,6 +68,7 @@
 		/datum/shop_sku/outfitter/smg_mag,
 		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/rapier_mag,
+		/datum/shop_sku/outfitter/heater_mag,
 		/datum/shop_sku/outfitter/zashch_mag,
 		/datum/shop_sku/outfitter/resolution_mag,
 		/datum/shop_sku/outfitter/firing_pin,
@@ -344,6 +345,16 @@
 	desc = "A loaded 4.6x30mm magazine for an M-94 'Rapier'."
 	item_path = /obj/item/ammo_box/magazine/rapier
 	price_credits = 180
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/heater_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "heater magazine"
+	desc = "A loaded 5.7x39mm magazine for a Heater or Scorcher."
+	item_path = /obj/item/ammo_box/magazine/heater
+	price_credits = 200
 	stock_min = 10
 	stock_max = 20
 

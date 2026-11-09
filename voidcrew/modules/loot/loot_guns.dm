@@ -91,11 +91,13 @@ GLOBAL_LIST_INIT(loot_gun_pools, list(
 		LOOT_WEAPON_YELLOW = list(
 			/obj/item/gun/ballistic/revolver = 10,
 			/obj/item/gun/ballistic/rifle/boltaction/harpoon = 10,
+			/obj/item/gun/ballistic/automatic/heater = 10,
 		),
 		LOOT_WEAPON_RED = list(
 			/obj/item/gun/ballistic/shotgun/bulldog/unrestricted = 10,
 			/obj/item/gun/energy/laser/hellgun = 10,
 			/obj/item/gun/ballistic/automatic/tommygun = 10,
+			/obj/item/gun/ballistic/automatic/heater/scorcher = 10,
 		),
 	),
 	LOOT_GUN_POOL_FREIGHT = list(

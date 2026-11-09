@@ -291,7 +291,7 @@
 
 /// A working copy may be consumed without damaging another crate's singleton tables.
 /datum/unit_test/voidcrew_cache_weapon_pools/Run()
-	var/list/main_counts = list("armory" = list(3, 5, 5), "syndicate" = list(2, 3, 4), "plunder" = list(3, 2, 3), "freight" = list(4, 2))
+	var/list/main_counts = list("armory" = list(3, 5, 5), "syndicate" = list(2, 3, 4), "plunder" = list(3, 3, 4), "freight" = list(4, 2))
 	for(var/family in main_counts)
 		var/list/counts = main_counts[family]
 		var/list/classes = GLOB.loot_gun_pools[family]
@@ -742,6 +742,7 @@
 			/obj/item/fireaxe/boneaxe,
 			/obj/item/gun/ballistic/automatic/ar,
 			/obj/item/gun/ballistic/automatic/c20r/unrestricted,
+			/obj/item/gun/ballistic/automatic/heater,
 			/obj/item/gun/ballistic/automatic/mini_uzi,
 			/obj/item/gun/ballistic/automatic/pistol/aps,
 			/obj/item/gun/ballistic/automatic/pistol/clandestine,
@@ -821,6 +822,7 @@
 			/obj/item/cyberware_pair_case/gorilla_arms,
 			/obj/item/cyberware_pair_case/mantis_blades,
 			/obj/item/energy_katana,
+			/obj/item/gun/ballistic/automatic/heater/scorcher,
 			/obj/item/gun/ballistic/automatic/l6_saw/unrestricted,
 			/obj/item/gun/ballistic/automatic/m90/unrestricted,
 			/obj/item/gun/ballistic/automatic/pistol/rattlesnake,
