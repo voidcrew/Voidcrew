@@ -940,6 +940,23 @@
    },
    "tier": "yellow"
   },
+  "/obj/item/gun/ballistic/shotgun/brimstone": {
+   "confidence": "medium",
+   "group": "shotguns",
+   "hash": "",
+   "name": "HP Brimstone",
+   "note": "Holding the trigger and pumping fires each fresh shell as soon as it is chambered (slamfire), so it never needs a click per shot. Sawing it off makes it one-handed with much worse spread (25) and more kick.",
+   "rank": 12,
+   "reason": "A five-shell buckshot pump that fires as fast as you can work it while the trigger is held. Still plain buckshot from a short tube.",
+   "score": 14,
+   "score_inputs": {
+    "rate": {
+     "value": 2.0,
+     "why": "Fires once per pump with the trigger held; the automatic fire only waits on the pump, which is 0.4 s apart. The pump keypress caps it like clicking a semi-auto."
+    }
+   },
+   "tier": "green"
+  },
   "/obj/item/gun/ballistic/shotgun/bulldog/unrestricted": {
    "confidence": "medium",
    "group": "shotguns",
@@ -1009,6 +1026,39 @@
     }
    },
    "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "HP Flaming Arrow",
+   "note": "Lever-action: worked by hand after every shot like a pump. 18 .38 rounds loaded one at a time. Sawn off it holds 7. Racking it one-handed or sawn off spins it.",
+   "rank": 11,
+   "reason": "Fires 25 damage .38 rounds from an 18-round tube, one lever stroke a shot. A long green carbine, below the BR-38.",
+   "score": 21,
+   "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution": {
+   "confidence": "medium",
+   "group": "rifles",
+   "hash": "",
+   "name": "HP Absolution",
+   "note": "Lever-action: worked by hand after every shot. 8 .357 rounds loaded one at a time; the tube stays 8 when sawn off.",
+   "rank": 9,
+   "reason": "Eight 60 damage .357 rounds with a lever stroke each: a revolver with a long tube, a step under the Unica.",
+   "score": 50,
+   "tier": "yellow"
+  },
+  "/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration": {
+   "confidence": "low",
+   "group": "shotguns",
+   "hash": "",
+   "name": "HP Conflagration",
+   "note": "Lever-action shotgun with a 1.75 damage multiplier on every shell. Six shells, five sawn off. Racking it one-handed or sawn off spins it.",
+   "rank": 6,
+   "reason": "Buckshot at 1.75 times the usual damage, six to a tube, one lever stroke a shot. Hits like a combat shotgun per shell but cycles by hand.",
+   "score": 41,
+   "tier": "yellow"
   },
   "/obj/item/gun/ballistic/shotgun/hook": {
    "confidence": "medium",
@@ -1083,6 +1133,17 @@
     }
    },
    "tier": "green"
+  },
+  "/obj/item/gun/ballistic/shotgun/slammer": {
+   "confidence": "low",
+   "group": "shotguns",
+   "hash": "",
+   "name": "Slammer",
+   "note": "Pump shotgun fed from six-shell box magazines, with tactical reloads. 1.75 damage multiplier on every shell. Magazines can be hand-filled with any 12 gauge shell.",
+   "rank": 5,
+   "reason": "Buckshot at 1.75 times the usual damage, pumped by hand, but it reloads six shells at once from a box magazine.",
+   "score": 41,
+   "tier": "yellow"
   },
   "/obj/item/gun/ballistic/shotgun/toy": {
    "confidence": "high",

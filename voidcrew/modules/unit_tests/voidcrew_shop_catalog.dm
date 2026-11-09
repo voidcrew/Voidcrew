@@ -348,6 +348,11 @@
 			list(/datum/shop_sku/black_market/ansem, /obj/item/gun/ballistic/automatic/pistol/clandestine, 1, 2000, 1),
 			list(/datum/shop_sku/black_market/ansem_sc, /obj/item/gun/ballistic/automatic/pistol/clandestine/fisher, 1, 2800, 1),
 			list(/datum/shop_sku/black_market/lethal_cycler, /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/brimstone, /obj/item/gun/ballistic/shotgun/brimstone, 1, 900, 0),
+			list(/datum/shop_sku/black_market/flaming_arrow, /obj/item/gun/ballistic/shotgun/flaming_arrow, 1, 1200, 0),
+			list(/datum/shop_sku/black_market/slammer, /obj/item/gun/ballistic/shotgun/slammer, 1, 2400, 1),
+			list(/datum/shop_sku/black_market/absolution, /obj/item/gun/ballistic/shotgun/flaming_arrow/absolution, 1, 2600, 1),
+			list(/datum/shop_sku/black_market/conflagration, /obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration, 1, 2200, 1),
 			list(/datum/shop_sku/black_market/rotating/mateba, /obj/item/gun/ballistic/revolver/mateba, 1, 3000, 1),
 		),
 		/datum/outpost_shop/vendor/ripperdoc = list(
@@ -405,6 +410,11 @@
 		/obj/item/gun/ballistic/automatic/pistol/clandestine,
 		/obj/item/gun/ballistic/automatic/pistol/clandestine/fisher,
 		/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+		/obj/item/gun/ballistic/shotgun/brimstone,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow,
+		/obj/item/gun/ballistic/shotgun/slammer,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/absolution,
+		/obj/item/gun/ballistic/shotgun/flaming_arrow/conflagration,
 		/obj/item/gun/ballistic/revolver/mateba,
 	)
 	var/list/printed_gear = list(
@@ -524,6 +534,7 @@
 		/datum/shop_sku/black_market/rapier, /datum/shop_sku/black_market/zashch, /datum/shop_sku/black_market/nt_m96,
 		/datum/shop_sku/black_market/battle_rifle, /datum/shop_sku/black_market/ansem, /datum/shop_sku/black_market/ansem_sc,
 		/datum/shop_sku/black_market/lethal_cycler,
+		/datum/shop_sku/black_market/brimstone, /datum/shop_sku/black_market/flaming_arrow, /datum/shop_sku/black_market/slammer, /datum/shop_sku/black_market/absolution, /datum/shop_sku/black_market/conflagration,
 		/datum/shop_sku/black_market/cutlass, /datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/ripperdoc/monowire, /datum/shop_sku/ripperdoc/gorilla, /datum/shop_sku/ripperdoc/mantis,
 		/datum/shop_sku/general/rotating/freight_crate, /datum/shop_sku/black_market/mystery_cache, /datum/shop_sku/black_market/mystery_cache_rare,

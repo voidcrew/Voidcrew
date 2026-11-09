@@ -69,6 +69,7 @@
 		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/rapier_mag,
 		/datum/shop_sku/outfitter/zashch_mag,
+		/datum/shop_sku/outfitter/slammer_mag,
 		/datum/shop_sku/outfitter/firing_pin,
 		/datum/shop_sku/outfitter/riot_shotgun,
 		// Melee
@@ -352,6 +353,15 @@
 	desc = "A loaded 10mm box magazine for a 'Zashch' heavy pistol."
 	item_path = /obj/item/ammo_box/magazine/zashch
 	price_credits = 300
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/slammer_mag
+	category = "Firearms & Ammo"
+	name = "slammer magazine"
+	desc = "A loaded six-shell box magazine for a Slammer."
+	item_path = /obj/item/ammo_box/magazine/m12g_slammer
+	price_credits = 250
 	stock_min = 10
 	stock_max = 20
 
