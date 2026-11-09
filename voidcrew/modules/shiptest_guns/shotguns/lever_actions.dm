@@ -2,7 +2,7 @@
 // Art credits are in attribution.txt beside icons/. Sounds are our own stock and gun-feel files.
 //
 // They sit on tg's pump shotgun: a tube magazine and a manual cycle per shot, with "lever" wording.
-// Racking one held in one hand, or a sawn-off one, spins the gun once.
+// Racking the lever spins the gun once.
 
 /obj/item/gun/ballistic/shotgun/flaming_arrow
 	name = "\improper HP Flaming Arrow"
@@ -39,7 +39,7 @@
 
 /obj/item/gun/ballistic/shotgun/flaming_arrow/rack(mob/user = null)
 	. = ..()
-	if(user && (sawn_off || user.get_inactive_held_item() || !user.has_hand_for_held_index(user.get_inactive_hand_index())))
+	if(user)
 		SpinAnimation(7, 1)
 
 /obj/item/gun/ballistic/shotgun/flaming_arrow/sawoff(mob/user, obj/item/saw, handle_modifications = TRUE)
