@@ -1,7 +1,7 @@
 // Stealth guards (voidcrew/modules/stealth/). Unit tests compile before voidcrew/_DEFINES, so values from
 // there are written out: states "unaware", "suspicious", "alert", "searching"; blackboard keys
 // "stealth_state", "stealth_wary", "stealth_last_seen_turf"; STEALTH_PATROL_MAX_FAILS 3,
-// STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_SEARCH_TIME 40 s.
+// STEALTH_LOSE_TARGET_TIME 4 s, STEALTH_SEARCH_TIME 40 s, STEALTH_CALM_LOOK_TIME 6 s, STEALTH_WARY_TIME 3 min.
 
 #define STEALTH_TEST_GUARD /mob/living/carbon/human/npc/ruin/trooper/scav
 
@@ -318,6 +318,90 @@
 	TEST_ASSERT(group in GLOB.stealth_groups, "A group with its marker standing was removed")
 	qdel(marker)
 	TEST_ASSERT(!(group in GLOB.stealth_groups), "A group with no marker and no guards is still registered")
+	qdel(block)
+
+/// Its target dead with nobody else about: a short look round, then unaware. Anyone else in view or hurting it
+/// keeps the alarm going.
+/datum/unit_test/voidcrew_stealth_calm
+
+/datum/unit_test/voidcrew_stealth_calm/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	var/mob/living/carbon/human/target = stealth_person(block, 4, 2)
+	stealth_ai.stealth_go_alert(target)
+	stealth_scans(guard, 1)
+	target.death()
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "searching", "A guard that killed its target isn't looking round")
+	TEST_ASSERT(stealth_ai.calm_until, "A guard that killed its target with nobody about isn't calming down")
+	TEST_ASSERT_NULL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "A guard still has a dead target")
+	stealth_ai.stealth_rewind(7 SECONDS)
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A guard didn't calm down after its target died")
+	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A guard that just fought isn't wary")
+	qdel(guard)
+	qdel(target)
+	// Someone else in plain view: no calming down.
+	guard = stealth_guard(block, 2, 2)
+	stealth_ai = stealth_ai(guard)
+	target = stealth_person(block, 4, 2)
+	var/mob/living/carbon/human/bystander = stealth_person(block, 5, 3)
+	stealth_ai.stealth_go_alert(target)
+	target.death()
+	stealth_scans(guard, 1)
+	TEST_ASSERT(stealth_ai.stealth_state() == "suspicious" || stealth_ai.stealth_state() == "alert", "A guard calmed down with someone else in front of it")
+	TEST_ASSERT(!stealth_ai.calm_until, "A guard is calming down with someone else in front of it")
+	qdel(guard)
+	qdel(target)
+	qdel(bystander)
+	// Someone behind it hit it during the fight: it turns on them.
+	guard = stealth_guard(block, 6, 2)
+	stealth_ai = stealth_ai(guard)
+	target = stealth_person(block, 8, 2)
+	var/mob/living/carbon/human/flanker = stealth_person(block, 3, 2)
+	stealth_ai.stealth_go_alert(target)
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, flanker, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], target, "A hit from someone else pulled the guard off its target")
+	target.death()
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "alert", "A guard calmed down while someone else was hurting it")
+	TEST_ASSERT_EQUAL(stealth_ai.blackboard[BB_BASIC_MOB_CURRENT_TARGET], flanker, "The guard didn't turn on whoever else hit it")
+	qdel(block)
+
+/// Wary fades after STEALTH_WARY_TIME with nothing new; a notice gain starts the clock again.
+/datum/unit_test/voidcrew_stealth_wary_fade
+
+/datum/unit_test/voidcrew_stealth_wary_fade/Run()
+	var/datum/turf_reservation/block = stealth_block(12, 5)
+	TEST_ASSERT_NOTNULL(block, "No room for the test")
+	var/mob/living/carbon/human/npc/guard = stealth_guard(block, 2, 2)
+	var/datum/ai_controller/basic_controller/human_npc/stealth/stealth_ai = stealth_ai(guard)
+	stealth_ai.stealth_go_searching(stealth_at(block, 3, 3))
+	stealth_ai.stealth_rewind(41 SECONDS)
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "The search didn't end")
+	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A guard that searched isn't wary")
+	stealth_ai.stealth_rewind(2 MINUTES)
+	stealth_scans(guard, 1)
+	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "Wary faded too soon")
+	// A glimpse of someone far off starts the clock again.
+	var/mob/living/carbon/human/person = stealth_person(block, 9, 2)
+	stealth_scans(guard, 1)
+	TEST_ASSERT_EQUAL(stealth_ai.stealth_state(), "unaware", "A glimpse at the edge of sight made the guard suspicious")
+	qdel(person)
+	stealth_ai.stealth_rewind(2 MINUTES)
+	stealth_scans(guard, 1)
+	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A notice gain didn't refresh wary")
+	stealth_ai.stealth_rewind(70 SECONDS)
+	stealth_scans(guard, 1)
+	TEST_ASSERT(!stealth_ai.blackboard["stealth_wary"], "Wary didn't fade with nothing new")
+	TEST_ASSERT(stealth_ai.stealth_half_angle() == 60, "A guard no longer wary still has the wary cone")
+	// A hit makes it wary again.
+	var/mob/living/carbon/human/attacker = stealth_person(block, 11, 4)
+	SEND_SIGNAL(guard, COMSIG_ATOM_WAS_ATTACKED, attacker, ATTACKER_DAMAGING_ATTACK)
+	TEST_ASSERT(stealth_ai.blackboard["stealth_wary"], "A hit didn't make the guard wary again")
 	qdel(block)
 
 #undef STEALTH_TEST_GUARD

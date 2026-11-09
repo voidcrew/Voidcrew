@@ -13,10 +13,8 @@
 #define BB_STEALTH_STATE_SINCE "stealth_state_since"
 /// world.time the guard last stopped being unaware (stealth_was_unaware())
 #define BB_STEALTH_UNAWARE_LOST_AT "stealth_unaware_lost_at"
-/// TRUE once alerted, searching or hit. Never cleared by time or dormancy.
+/// TRUE once alerted, searching or hit. Fades after STEALTH_WARY_TIME with nothing new (checked each scan).
 #define BB_STEALTH_WARY "stealth_wary"
-/// REF(mob) => list(notice, turf last scan, world.time last perceived)
-#define BB_STEALTH_NOTICE "stealth_notice"
 /// The candidate with the highest notice
 #define BB_STEALTH_FOCUS "stealth_focus"
 /// Where it last saw (or was hit from) whoever it is after
@@ -28,7 +26,7 @@
 /// Its claimed stop, or the sentry's post
 #define BB_STEALTH_HOME_TURF "stealth_home_turf"
 
-// Notice entry fields
+// Notice entry fields (the controller's notice_map)
 #define STEALTH_ENTRY_NOTICE 1
 #define STEALTH_ENTRY_TURF 2
 #define STEALTH_ENTRY_SEEN_AT 3
@@ -41,6 +39,8 @@
 #define STEALTH_BARK_HIT_UNSEEN "stealth_hit_unseen"
 #define STEALTH_BARK_BODY "stealth_body"
 #define STEALTH_BARK_CHATTER "stealth_chatter"
+/// It just put its target down
+#define STEALTH_BARK_DOWNED "stealth_target_downed"
 
 // ===== What a stealth goto is for =====
 #define STEALTH_GOTO_PATROL "patrol"
@@ -79,6 +79,10 @@
 #define STEALTH_SUSPICIOUS_TIMEOUT (12 SECONDS)
 #define STEALTH_LOSE_TARGET_TIME (4 SECONDS)
 #define STEALTH_SEARCH_TIME (40 SECONDS)
+/// After putting its target down with nobody else about: how long it looks round before calming down
+#define STEALTH_CALM_LOOK_TIME (6 SECONDS)
+/// How long wary lasts after the last notice gain, hit, touch, alert or search
+#define STEALTH_WARY_TIME (3 MINUTES)
 #define STEALTH_SEARCH_POINTS 3
 #define STEALTH_SEARCH_RADIUS 5
 #define STEALTH_BODY_SCAN_INTERVAL (2 SECONDS)

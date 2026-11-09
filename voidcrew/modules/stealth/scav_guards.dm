@@ -18,6 +18,7 @@
 		STEALTH_BARK_HIT_UNSEEN = list("Contact!", "Where's that coming from?"),
 		STEALTH_BARK_BODY = list("Man down!", "Who did this?"),
 		STEALTH_BARK_CHATTER = list("Shipment's late again.", "My feet are killing me.", "You hear that? No? Good."),
+		STEALTH_BARK_DOWNED = list("Got 'em.", "Stay down.", "That's handled."),
 	)
 	emotes = list(
 		HUMAN_NPC_BARK_DOWNED = list("collapses."),
@@ -26,6 +27,7 @@
 		STEALTH_BARK_SEARCH = list("checks behind a crate."),
 		STEALTH_BARK_HIT_UNSEEN = list("ducks."),
 		STEALTH_BARK_CHATTER = list("yawns.", "stretches."),
+		STEALTH_BARK_DOWNED = list("spits."),
 	)
 	chances = list(RUIN_NPC_BARK_SPOT = 100)
 
