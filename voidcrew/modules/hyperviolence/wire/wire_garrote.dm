@@ -27,7 +27,7 @@
 /// The garroter leans in (the wind-up's lunge, drawn over tg's offset time) before the wire leaves the hand.
 #define WIRE_GARROTE_LEAN_TIME UPDATE_TRANSFORM_ANIMATION_TIME
 #define WIRE_GARROTE_WIND_TIME (0.3 SECONDS)
-/// Steps the flying wire's arc is drawn in.
+/// Steps the flying wire is drawn out in.
 #define WIRE_GARROTE_THROW_BEATS 6
 /// A body turned end for end at the wind-up swings round over this long, not in one frame.
 #define WIRE_GARROTE_TURN_TIME (0.24 SECONDS)
@@ -114,8 +114,7 @@
 	var/obj/item/melee/cyberware_monowire/wire
 	/// The loop drawn round the neck: its far side, behind the neck, and its near side
 	var/list/loop_refs
-	/// The wire in flight from the hand to the neck: two pieces of line that bend it into an arc. It lies there, slack,
-	/// until the hold pulls it taut.
+	/// The wire in flight from the hand to the neck: one straight line. It lies there, slack, until the hold pulls it taut.
 	var/list/reach_refs
 	/// Timers of the wind-up's beats
 	var/list/windup_timers
@@ -284,8 +283,8 @@
 	return TRUE
 
 /**
- * No mark over the victim (owner D34). The garroter leans in (the stage's lunge) and the wire shoots from the hand,
- * arcs through the air to the neck and winds round it; then it hangs there loose, glinting, while they struggle.
+ * No mark over the victim (owner D34). The garroter leans in (the stage's lunge) and the wire shoots straight from the
+ * hand to the neck and winds round it; then it hangs there loose, glinting, while they struggle.
  */
 /datum/hv_finisher/garrote/place_mark(duration)
 	QDEL_NULL(mark)
@@ -301,8 +300,9 @@
  * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
  * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states), in pixels from
  * the middle of the tile, as a line's base is placed. The hands hang at the hips; in profile the near hand is at the
- * middle of the body and the far one just shows at its front edge, behind the torso. Facing away or toward the
- * viewer both hands show at the sides. list(x, y, behind)
+ * middle of the body and the far one just shows at its front edge, behind the torso. Facing the viewer both hands
+ * show at the sides. Facing away they show at the sides too, but the wire runs forward from them, through the
+ * garroter's body, so both count as behind it. list(x, y, behind)
  */
 /datum/hv_finisher/garrote/proc/hand_point(side)
 	var/right = side != "left"
@@ -312,11 +312,18 @@
 		if(WEST)
 			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
 		if(NORTH)
-			return right ? list(7, -3, FALSE) : list(-7, -3, FALSE)
+			return right ? list(7, -3, TRUE) : list(-7, -3, TRUE)
 	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
 
-/// The world layer for wire leaving a hand: over the bodies, or under them for the far hand in profile.
+/**
+ * The world layer for wire leaving a hand. Facing away, the wire runs from the hands, forward through the garroter, to
+ * the body lying beyond them: it goes between the two, under the garroter so their back and head hide it, and over the
+ * one lying there, so only the stretch from over their head to the neck shows. Otherwise over the bodies, or under them
+ * for the far hand in profile.
+ */
 /datum/hv_finisher/garrote/proc/strand_layer(behind)
+	if(behind && user.dir == NORTH)
+		return WIRE_BETWEEN_LAYER
 	return wire_line_layer(behind)
 
 /// "left" or "right": the hand the wire is in.
@@ -324,12 +331,9 @@
 	return wire?.held_side(user) || "right"
 
 /**
- * The wire in flight: thrown from the hand at the chest, its end flies out along an arc and comes down on the neck.
- * Across the screen the arc goes up and over; toward or away from the viewer it swings out to the wire's side, so a
- * throw at someone lying in front never reads as a line dropping straight down. Drawn as two pieces of straight
- * line (hand to the middle of the arc flown so far, and on to the end), each one sprite stretched and turned every
- * beat, so the line stays as thin as the hanging filament. It lies along that arc, slack, until the hold. Unseen for
- * `delay` first.
+ * The wire in flight: thrown from the hand, its end flies straight to the neck, the line paying out behind it. One
+ * sprite, stretched and turned every beat, so the line stays as thin as the hanging filament. It lies there, slack,
+ * until the hold. Unseen for `delay` first.
  */
 /datum/hv_finisher/garrote/proc/throw_wire(delay = 0)
 	clear_reach()
@@ -340,65 +344,35 @@
 	var/hand_x = user.pixel_x + hand[1]
 	var/hand_y = user.pixel_y + hand[2]
 	var/list/neck = neck_point()
-	var/list/bend = wire_throw_bend(hand_x, hand_y, neck[1], neck[2], hand[1])
+	var/span_x = neck[1] - hand_x
+	var/span_y = neck[2] - hand_y
 	var/step = WIRE_GARROTE_REACH_TIME / WIRE_GARROTE_THROW_BEATS
-	for(var/piece in 1 to 2)
-		var/obj/effect/abstract/wire_reach/line = new(from)
-		line.icon_state = "wire_reach[wire_suffix()]"
-		line.layer = strand_layer(hand[3])
-		line.add_overlay(emissive_appearance(line.icon, line.icon_state, line))
-		line.pixel_x = hand_x
-		line.pixel_y = hand_y
-		// A pixel of wire leaving the hand toward the arc.
-		line.transform = wire_reach_shape(bend[1] - hand_x, bend[2] - hand_y, 1)
-		if(delay)
-			line.alpha = 0
-			animate(line, alpha = 0, time = delay)
-		for(var/beat in 1 to WIRE_GARROTE_THROW_BEATS)
-			var/flown = beat / WIRE_GARROTE_THROW_BEATS
-			var/list/middle = wire_arc_point(hand_x, hand_y, bend, neck, flown / 2)
-			var/list/tip = wire_arc_point(hand_x, hand_y, bend, neck, flown)
-			var/list/start = piece == 1 ? list(hand_x, hand_y) : middle
-			var/list/finish = piece == 1 ? middle : tip
-			var/matrix/shape = wire_reach_shape(finish[1] - start[1], finish[2] - start[2])
-			if(beat == 1 && !delay)
-				animate(line, transform = shape, pixel_x = start[1], pixel_y = start[2], time = step)
-			else
-				animate(alpha = 255, transform = shape, pixel_x = start[1], pixel_y = start[2], time = step)
-		LAZYADD(reach_refs, WEAKREF(line))
-		// Never outlives the garrote, whatever ends it.
-		QDEL_IN(line, longest_duration())
+	var/obj/effect/abstract/wire_reach/line = new(from)
+	line.icon_state = "wire_reach[wire_suffix()]"
+	line.layer = strand_layer(hand[3])
+	line.add_overlay(emissive_appearance(line.icon, line.icon_state, line))
+	line.pixel_x = hand_x
+	line.pixel_y = hand_y
+	// A pixel of wire leaving the hand toward the neck.
+	line.transform = wire_reach_shape(span_x, span_y, 1)
+	if(delay)
+		line.alpha = 0
+		animate(line, alpha = 0, time = delay)
+	for(var/beat in 1 to WIRE_GARROTE_THROW_BEATS)
+		var/flown = beat / WIRE_GARROTE_THROW_BEATS
+		var/matrix/shape = wire_reach_shape(span_x, span_y, flown * sqrt(span_x ** 2 + span_y ** 2))
+		if(beat == 1 && !delay)
+			animate(line, transform = shape, time = step)
+		else
+			animate(alpha = 255, transform = shape, time = step)
+	LAZYADD(reach_refs, WEAKREF(line))
+	// Never outlives the garrote, whatever ends it.
+	QDEL_IN(line, longest_duration())
 
 /datum/hv_finisher/garrote/proc/clear_reach()
 	for(var/datum/weakref/line_ref as anything in reach_refs)
 		qdel(line_ref.resolve())
 	reach_refs = null
-
-/**
- * The bend of a throw from (`from_x`, `from_y`) to (`to_x`, `to_y`): the control point of its arc. Across the screen it
- * is above the line between them; toward or away from the viewer it is out to the side of the throwing hand
- * (`side_x`, that hand's x from the body's middle) and a little up. list(x, y)
- */
-/proc/wire_throw_bend(from_x, from_y, to_x, to_y, side_x)
-	var/span_x = to_x - from_x
-	var/span_y = to_y - from_y
-	var/span = max(sqrt(span_x ** 2 + span_y ** 2), 1)
-	var/out_x = -span_y / span
-	var/out_y = span_x / span
-	var/across = abs(span_x) >= abs(span_y)
-	if(across ? out_y < 0 : (out_x < 0) != (side_x < 0))
-		out_x = -out_x
-		out_y = -out_y
-	var/bulge = clamp(span * 0.5, 8, 18)
-	return list((from_x + to_x) / 2 + out_x * bulge, (from_y + to_y) / 2 + out_y * bulge + (across ? 0 : 6))
-
-/// The point `flown` (0 to 1) of the way along the arc from (`from_x`, `from_y`) over `bend` to `finish`. list(x, y)
-/proc/wire_arc_point(from_x, from_y, list/bend, list/finish, flown)
-	var/rest = 1 - flown
-	return list(
-		round(rest * rest * from_x + 2 * rest * flown * bend[1] + flown * flown * finish[1]),
-		round(rest * rest * from_y + 2 * rest * flown * bend[2] + flown * flown * finish[2]),
-	)
 
 /// The flying wire's line drawn from its start to (`span_x`, `span_y`) pixels away, or `length` pixels along that
 /// bearing: the sprite is half a tile of line running up from the middle, so it is stretched and turned.
@@ -408,8 +382,7 @@
 	shape.Turn(arctan(span_y, span_x))
 	return shape
 
-/// The end of the throw: the wire winds round the neck and is held there, loose along its arc, for the rest of the
-/// wind-up.
+/// The end of the throw: the wire winds round the neck and is held there, loose, for the rest of the wind-up.
 /datum/hv_finisher/garrote/proc/wind_loop(rest)
 	if(QDELETED(user) || QDELETED(victim) || !running)
 		return
@@ -560,8 +533,8 @@
 
 /**
  * The wire from the garroter's hands to the neck, one strand a hand, in the wire's own colour: one line of wire
- * each, stretched from the hand to the neck. A strand from a hand behind the garroter's body
- * (the far hand in profile) is drawn under the bodies, so the torso hides it. Whatever wire was drawn before (the
+ * each, stretched from the hand to the neck. A strand from a hand behind the garroter's body (the far hand in profile,
+ * both facing away) is drawn under the garroter, so the torso hides it (strand_layer()). Whatever wire was drawn before (the
  * slack throw, or the strands before a lean) goes as these go up.
  *
  * `slide_from` (drawn_offsets(), or null) is where the two were drawn before a move that is sliding them into place
