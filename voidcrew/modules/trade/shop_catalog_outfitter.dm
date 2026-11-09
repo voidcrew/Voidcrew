@@ -69,6 +69,7 @@
 		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/rapier_mag,
 		/datum/shop_sku/outfitter/zashch_mag,
+		/datum/shop_sku/outfitter/resolution_mag,
 		/datum/shop_sku/outfitter/firing_pin,
 		/datum/shop_sku/outfitter/riot_shotgun,
 		// Melee
@@ -352,6 +353,16 @@
 	desc = "A loaded 10mm box magazine for a 'Zashch' heavy pistol."
 	item_path = /obj/item/ammo_box/magazine/zashch
 	price_credits = 300
+	stock_min = 10
+	stock_max = 20
+
+/datum/shop_sku/outfitter/resolution_mag
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Firearms & Ammo"
+	name = "pd46 magazine"
+	desc = "A loaded 4.6x30mm magazine for a PD46."
+	item_path = /obj/item/ammo_box/magazine/resolution
+	price_credits = 180
 	stock_min = 10
 	stock_max = 20
 

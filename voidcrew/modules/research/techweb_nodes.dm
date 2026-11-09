@@ -418,6 +418,7 @@
 	prereq_ids = list(TECHWEB_NODE_BALLISTIC_AMMO)
 	design_ids = list(
 		"vc_mag_m9mm_aps",
+		"vc_mag_m9mm_rattlesnake",
 		"vc_mag_smgm9mm",
 		"vc_shotgun_dragonsbreath",
 		"vc_ammo_uzi",

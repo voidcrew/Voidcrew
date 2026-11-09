@@ -70,6 +70,8 @@
 		/datum/shop_sku/black_market/ansem,
 		/datum/shop_sku/black_market/ansem_sc,
 		/datum/shop_sku/black_market/lethal_cycler,
+		/datum/shop_sku/black_market/rattlesnake,
+		/datum/shop_sku/black_market/resolution,
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/pistol_mag,
 		/datum/shop_sku/black_market/speedloader,
@@ -965,6 +967,32 @@
 	item_path = /obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly
 	price_credits = 2400
 	price_vouchers = 1
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/rattlesnake
+	zone_permission = ZONE_PERMISSION_ADVANCED
+	category = "Weapons"
+	desc = "A 9mm machine pistol with a long magazine and a fire selector."
+	item_path = /obj/item/gun/ballistic/automatic/pistol/rattlesnake
+	price_credits = 4800
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+	restock_interval = 1 HOURS
+	fixed_price = TRUE
+	contract_reward = FALSE
+
+/datum/shop_sku/black_market/resolution
+	zone_permission = ZONE_PERMISSION_YELLOW
+	category = "Weapons"
+	desc = "A 4.6x30mm personal defense weapon with a folding stock."
+	item_path = /obj/item/gun/ballistic/automatic/resolution
+	price_credits = 4200
+	price_vouchers = 2
 	stock_min = 1
 	stock_max = 1
 	restock_interval = 1 HOURS

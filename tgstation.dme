@@ -7645,6 +7645,8 @@
 #include "voidcrew\modules\ship_upgrades\ships\squab.dm"
 #include "voidcrew\modules\ship_upgrades\ships\test_modular.dm"
 #include "voidcrew\modules\ship_upgrades\workshop\bogatyr.dm"
+#include "voidcrew\modules\shiptest_guns\sidearms\rattlesnake.dm"
+#include "voidcrew\modules\shiptest_guns\sidearms\resolution.dm"
 #include "voidcrew\modules\shuttle\boards.dm"
 #include "voidcrew\modules\shuttle\design.dm"
 #include "voidcrew\modules\shuttle\emergency.dm"
