@@ -67,14 +67,14 @@
 	if(isliving(target))
 		UnregisterSignal(target, list(COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOB_AFTER_APPLY_DAMAGE))
 
-/// Before the cut lands: a death from it counts as the wielder's kill.
+/// Before the cut lands: a death from it counts as the wielder's kill, and only this blade runs red for it.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/on_cut_damage_pre(mob/living/source, damage_amount, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
 	SIGNAL_HANDLER
 	if(attacking_item != src)
 		return
 	var/mob/living/user = cut_wielder?.resolve()
 	if(user)
-		mantis_note_hit(source, user)
+		mantis_note_hit(source, user, list(src))
 
 /// The cut has landed, while its attack line is still held: what it does goes into the same message.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/on_cut_damage(mob/living/source, damage_dealt, damagetype, def_zone, blocked, wound_bonus, exposed_wound_bonus, sharpness, attack_direction, attacking_item, wound_clothing)
@@ -284,7 +284,8 @@
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/is_bloody()
 	return !(item_flags & NO_BLOOD_ON_ITEM) && GET_ATOM_BLOOD_DECAL_LENGTH(src)
 
-/// A kill, a torn artery, a rip or the scissor: the blade runs red with [source]'s blood and drips for a while.
+/// A kill, a torn artery, a rip, the scissor or the X-slash: the blade runs red with [source]'s blood and drips
+/// for a while. Only the blade that did it: the other keeps whatever it had.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/drench(mob/living/source)
 	if(item_flags & NO_BLOOD_ON_ITEM)
 		return FALSE

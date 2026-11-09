@@ -109,9 +109,10 @@
 
 /**
  * [bearer] has just cut [victim] with the line: a death in the next few seconds is their kill.
- * Called before the damage lands, so the cut that kills counts.
+ * Called before the damage lands, so the cut that kills counts. [blades] are the blades that cut, the ones
+ * a kill drenches; null when every blade out struck (the lunge, the impale, the scissor).
  */
-/proc/mantis_note_hit(mob/living/victim, mob/living/bearer)
+/proc/mantis_note_hit(mob/living/victim, mob/living/bearer, list/blades)
 	if(!isliving(victim) || !isliving(bearer) || victim == bearer || QDELETED(victim) || victim.stat == DEAD)
 		return null
 	var/datum/status_effect/mantis_cuts/cuts = victim.has_status_effect(/datum/status_effect/mantis_cuts)
@@ -123,6 +124,9 @@
 		return null
 	cuts.last_bearer = WEAKREF(bearer)
 	cuts.last_hit = world.time
+	cuts.last_blades = null
+	for(var/obj/item/blade as anything in blades)
+		LAZYADD(cuts.last_blades, WEAKREF(blade))
 	return cuts
 
 /**
@@ -143,6 +147,8 @@
 	var/datum/weakref/last_bearer
 	/// world.time of that cut
 	var/last_hit = 0
+	/// Weakrefs to the blades of that cut, or null if every blade out struck
+	var/list/last_blades
 
 /datum/status_effect/mantis_cuts/on_apply()
 	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death))
@@ -153,6 +159,7 @@
 
 /datum/status_effect/mantis_cuts/Destroy()
 	last_bearer = null
+	last_blades = null
 	return ..()
 
 /// One more cut on [zone]. Returns how many now add up there.
@@ -175,14 +182,23 @@
 	var/mob/living/bearer = last_bearer?.resolve()
 	if(isnull(bearer) || world.time - last_hit > MANTIS_KILL_CREDIT_WINDOW)
 		return
-	mantis_kill_credit(bearer, owner)
+	var/list/killing_blades
+	for(var/datum/weakref/blade_ref as anything in last_blades)
+		var/obj/item/blade = blade_ref.resolve()
+		if(blade)
+			LAZYADD(killing_blades, blade)
+	mantis_kill_credit(bearer, owner, last_blades ? (killing_blades || list()) : null)
 
-/// [bearer] killed [victim]: the blades are drenched, and the lunge may come back early.
-/proc/mantis_kill_credit(mob/living/bearer, mob/living/victim)
+/**
+ * [bearer] killed [victim]: the blades that did it are drenched, and the lunge may come back early.
+ * [blades] are those blades; null means every blade [bearer] has out.
+ */
+/proc/mantis_kill_credit(mob/living/bearer, mob/living/victim, list/blades)
 	if(QDELETED(bearer) || bearer.stat == DEAD)
 		return FALSE
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in mantis_held_blades(bearer))
-		blade.drench(victim)
+		if(isnull(blades) || (blade in blades))
+			blade.drench(victim)
 	return mantis_try_kill_reset(bearer, victim)
 
 /// Whether killing [victim] can reset a lunge at all: a person (not a monkey), or something big.
