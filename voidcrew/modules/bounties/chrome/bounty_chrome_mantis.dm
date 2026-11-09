@@ -22,8 +22,9 @@
  * - The lunge (/datum/bounty_chrome_move/mantis_lunge). With someone two to five tiles off in a clear
  *   line, it turns its blades on them in a blue outline and a blue line lights the floor up to them, then
  *   it presses a housing's own Mantis Lunge on them: the implant's telegraph, dash, cuts and knockdown and
- *   its 20 second cooldown, all as written. The AI only picks when: never at someone already on the floor,
- *   never down a line with anything solid on it (the dash would fall short), and never where the dash
+ *   its 20 second cooldown, all as written. The dash runs down the line it showed (the implant's dash_aim),
+ *   so a hunter who steps off it is missed. The AI only picks when: never at someone already on the floor,
+ *   never down a line with anything solid or anyone standing on it (the dash would fall short), and never where the dash
  *   could carry it off its side's site or past a drop, lava or space (the implant moves its bearer by
  *   force, so the AI looks first). The first lunge may come a second into a fight.
  */
@@ -42,6 +43,8 @@
 #define BOUNTY_MANTIS_COLOR "#6cb8ff"
 /// The line on the floor: the mark art is pure red, which a plain colour only darkens, so a matrix turns it the blade's blue
 #define BOUNTY_MANTIS_MARK_MATRIX list(0.42, 0.72, 1, 0, 0, 0, 0, 0, 0)
+/// How long the line stays lit once the lunge is pressed: the implant's 0.3 second wind-up and the run itself
+#define BOUNTY_MANTIS_LINE_HOLD (0.5 SECONDS)
 
 // ===== HELPERS =====
 
@@ -232,6 +235,8 @@
 	var/opens_at = 0
 	/// world.time this fight started
 	var/fight_started_at = 0
+	/// The tile its tell's line ends on: the dash runs there, not to wherever the target has gone
+	var/turf/aimed_at
 
 /datum/bounty_chrome_move/mantis_lunge/on_fight_start(atom/target)
 	fight_started_at = world.time
@@ -276,7 +281,8 @@
 			continue
 		if(spot == aim)
 			break
-		if(spot.is_blocked_turf(exclude_mobs = TRUE) || !side.leash_ok(spot))
+		// A standing body stops the dash as a wall does
+		if(spot.is_blocked_turf(source_atom = owner) || !side.leash_ok(spot))
 			return FALSE
 		for(var/turf/beside as anything in RANGE_TURFS(1, spot))
 			if(bounty_mantis_drop(beside))
@@ -296,20 +302,41 @@
 /datum/bounty_chrome_move/mantis_lunge/tell(atom/target)
 	..()
 	var/turf/start = get_turf(owner)
-	var/turf/aim = get_turf(target)
-	if(!start || !aim)
+	aimed_at = get_turf(target)
+	if(!start || !aimed_at)
 		return
 	// The way it will come, lit up to whoever it is aimed at
+	light_line(start, aimed_at, tell_time + 1, TRUE)
+
+/// Lights the floor from `start` to `aim` for `time`, kept as the tell's marks if `as_tell`
+/datum/bounty_chrome_move/mantis_lunge/proc/light_line(turf/start, turf/aim, time, as_tell)
 	for(var/turf/spot as anything in get_line(start, aim))
 		if(spot == start)
 			continue
-		add_mark(new /obj/effect/temp_visual/bounty_boss_mark(spot, tell_time + 1, BOUNTY_MANTIS_MARK_MATRIX, spot == aim ? "target_circle" : null))
+		var/obj/effect/mark = new /obj/effect/temp_visual/bounty_boss_mark(spot, time, BOUNTY_MANTIS_MARK_MATRIX, spot == aim ? "target_circle" : null)
+		if(as_tell)
+			add_mark(mark)
 
 /datum/bounty_chrome_move/mantis_lunge/effect(atom/target)
+	var/turf/aim = aimed_at
+	aimed_at = null
 	var/datum/action/cooldown/cyberware/mantis_lunge/lunge = lunge_action()
 	if(!lunge || !isliving(target) || QDELETED(target))
 		return FALSE
-	return !!lunge.Trigger(target = target)
+	// The dash goes down the line the tell showed
+	lunge.dash_aim = aim
+	if(!lunge.Trigger(target = target))
+		lunge.dash_aim = null
+		return FALSE
+	// The line stays lit through the implant's own wind-up and the run
+	var/turf/start = get_turf(owner)
+	if(start && aim)
+		light_line(start, aim, BOUNTY_MANTIS_LINE_HOLD, FALSE)
+	return TRUE
+
+/datum/bounty_chrome_move/mantis_lunge/detach()
+	aimed_at = null
+	return ..()
 
 #undef BOUNTY_MANTIS_LUNGE_RANGE
 #undef BOUNTY_MANTIS_LUNGE_MIN
@@ -318,3 +345,4 @@
 #undef BOUNTY_MANTIS_STOW_RETRY
 #undef BOUNTY_MANTIS_COLOR
 #undef BOUNTY_MANTIS_MARK_MATRIX
+#undef BOUNTY_MANTIS_LINE_HOLD

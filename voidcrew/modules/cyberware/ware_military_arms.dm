@@ -296,6 +296,8 @@
 /// How long a connecting lunge floors its target. Above the module's usual
 /// 1-1.5s band because the lunge is telegraphed and on a 20 second clock.
 #define CYBERWARE_MANTIS_LUNGE_KNOCKDOWN (2 SECONDS)
+/// How long the dash takes per tile: a real run down the line, one tick a step.
+#define CYBERWARE_MANTIS_LUNGE_STEP (0.5)
 
 /**
  * The blade itself: hardlight, ~20 force (cap 22), sharp, wounding. Only
@@ -374,6 +376,9 @@
 	button_icon_state = "act_mantis_lunge"
 	cooldown_time = 20 SECONDS
 	click_to_activate = TRUE
+	/// The tile the next press dashes at instead of where its target stands, for a bearer that showed
+	/// its line before pressing (a bounty NPC's tell). Spent by the press.
+	var/turf/dash_aim
 
 /**
  * How many mantis blades this owner has out right now. Every housing grants
@@ -405,12 +410,17 @@
 		lunger.balloon_alert(lunger, "no target!")
 		return FALSE
 	var/mob/living/victim = target
+	var/turf/aim = dash_aim
+	dash_aim = null
 	if(victim == lunger || victim.stat == DEAD)
 		lunger.balloon_alert(lunger, "no target!")
 		return FALSE
 	if(get_dist(lunger, victim) > CYBERWARE_MANTIS_LUNGE_RANGE || !can_see(lunger, victim, CYBERWARE_MANTIS_LUNGE_RANGE))
 		lunger.balloon_alert(lunger, "out of reach!")
 		return FALSE
+	// The line is set as the button is pressed: where they stand now, or the tile a tell already showed
+	if(!aim || aim.z != lunger.z || get_dist(lunger, aim) > CYBERWARE_MANTIS_LUNGE_RANGE)
+		aim = get_turf(victim)
 	// One lunge clock across both housings: start every mantis_lunge button
 	// this owner has, ours included.
 	for(var/datum/action/cooldown/cyberware/mantis_lunge/lunge_action in lunger.actions)
@@ -423,34 +433,51 @@
 		span_warning("You coil for the lunge."),
 	)
 	playsound(lunger, 'sound/items/weapons/sear.ogg', 50, TRUE)
-	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim)), CYBERWARE_MANTIS_LUNGE_TELEGRAPH)
+	addtimer(CALLBACK(src, PROC_REF(do_lunge), WEAKREF(victim), aim), CYBERWARE_MANTIS_LUNGE_TELEGRAPH)
 	return TRUE
 
-/// The dash itself: walk the line to the target with a decoy per tile,
-/// stop adjacent, land the bonus cut once per blade and floor them.
-/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref)
+/// The dash starts, if its bearer can still go and its target still lives. Sleeps in its own call (dash()).
+/datum/action/cooldown/cyberware/mantis_lunge/proc/do_lunge(datum/weakref/victim_ref, turf/aim)
 	var/mob/living/lunger = owner
 	if(QDELETED(lunger) || lunger.incapacitated || !isturf(lunger.loc))
 		return
 	var/mob/living/victim = victim_ref?.resolve()
-	if(QDELETED(victim) || victim.stat == DEAD)
+	if(QDELETED(victim) || victim.stat == DEAD || !aim || aim.z != lunger.z)
 		lunger.balloon_alert(lunger, "target lost!")
 		return
-	var/turf/victim_turf = get_turf(victim)
-	if(!victim_turf || get_dist(lunger, victim_turf) > CYBERWARE_MANTIS_LUNGE_RANGE + 1)
-		lunger.balloon_alert(lunger, "target lost!")
-		return
+	INVOKE_ASYNC(src, PROC_REF(dash), lunger, victim_ref, aim)
+
+/**
+ * The dash itself: a real run down the line set at the press, a tile a tick with a decoy per tile, up to
+ * the tile before `aim`. Anything that stops a walker stops it there: a wall, a window, a shut door, a
+ * standing body, a stun or a grab. If its target is next to it where it stops, the bonus cut lands once per
+ * blade and floors them; otherwise it fell short.
+ */
+/datum/action/cooldown/cyberware/mantis_lunge/proc/dash(mob/living/lunger, datum/weakref/victim_ref, turf/aim)
+	var/turf/start = get_turf(lunger)
 	playsound(lunger, 'sound/items/weapons/bladeslice.ogg', 60, TRUE)
-	for(var/turf/step_turf as anything in get_line(get_turf(lunger), victim_turf))
-		if(step_turf == get_turf(lunger))
+	for(var/turf/step_turf as anything in get_line(start, aim))
+		if(step_turf == start)
 			continue
-		if(step_turf == victim_turf)
+		if(step_turf == aim || QDELETED(lunger) || lunger.incapacitated || lunger.body_position == LYING_DOWN || !isturf(lunger.loc) || lunger.pulledby?.grab_state > GRAB_PASSIVE)
 			break
-		if(step_turf.is_blocked_turf(exclude_mobs = TRUE))
+		var/blocked = FALSE
+		for(var/mob/living/body in step_turf)
+			if(body.density)
+				blocked = TRUE
+				break
+		if(blocked)
 			break
-		new /obj/effect/temp_visual/decoy/fading/halfsecond(lunger.loc, lunger)
-		lunger.forceMove(step_turf)
-	if(!lunger.Adjacent(victim))
+		var/turf/from = lunger.loc
+		lunger.set_glide_size(DELAY_TO_GLIDE_SIZE(CYBERWARE_MANTIS_LUNGE_STEP))
+		if(!lunger.Move(step_turf, get_dir(from, step_turf)) || lunger.loc != step_turf)
+			break
+		new /obj/effect/temp_visual/decoy/fading/halfsecond(from, lunger)
+		sleep(CYBERWARE_MANTIS_LUNGE_STEP)
+	if(QDELETED(lunger) || lunger.stat != CONSCIOUS)
+		return
+	var/mob/living/victim = victim_ref?.resolve()
+	if(QDELETED(victim) || victim.stat == DEAD || !lunger.Adjacent(victim))
 		lunger.balloon_alert(lunger, "fell short!")
 		return
 	// Both housings deployed means both blades arrive. Floored at one: a blade
@@ -815,6 +842,7 @@
 #undef CYBERWARE_MANTIS_LUNGE_BONUS
 #undef CYBERWARE_MANTIS_LUNGE_TELEGRAPH
 #undef CYBERWARE_MANTIS_LUNGE_KNOCKDOWN
+#undef CYBERWARE_MANTIS_LUNGE_STEP
 #undef CYBERWARE_MONOWIRE_CLEAVE_MULT
 #undef CYBERWARE_MONOWIRE_BURN
 #undef CYBERWARE_CALIBER_RONIN
