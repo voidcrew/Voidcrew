@@ -562,11 +562,10 @@
 	return ..()
 
 /**
- * Whether a criminal may hide aboard `npc_ship`: a plain pirate crew's ship, never a themed crew's
- * (skeletons, geodes, lizard nobles, customs and the like), so the guards it hides among are ordinary
- * pirates (board_pick_npc_ship()).
+ * Whether a criminal may hide aboard `npc_ship` (board_pick_npc_ship()): a crew of ordinary people, the
+ * grey tide's salvagers, Interdyne's rogue researchers or a crew with no faction. Never a themed crew's
+ * (skeletons, geodes, lizard nobles, knights, customs and the like).
  */
-/// Pirate crews of ordinary people a fugitive can hide among: the grey tide's salvagers and Interdyne's rogue researchers. Never skeletons, geodes, lizard nobles, knights or customs.
 /proc/bounty_ship_hides_criminals(obj/structure/overmap/ship/npc/pirate/npc_ship)
 	if(!istype(npc_ship))
 		return FALSE

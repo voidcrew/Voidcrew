@@ -236,6 +236,9 @@ GLOBAL_LIST_INIT(bounty_armoured_suits, list(
 	if(suits_garment_offered(user, worn) != garment || capture_state() == BOUNTY_STATE_FREE)
 		return FALSE
 	var/slot = get_slot_by_item(worn)
+	// One that wouldn't fit them (their species, their shape) leaves their own piece on
+	if(!can_equip(garment, slot, disable_warning = TRUE, bypass_equip_delay_self = TRUE, ignore_equipped = TRUE))
+		return FALSE
 	if(!user.temporarilyRemoveItemFromInventory(garment))
 		return FALSE
 	qdel(worn)

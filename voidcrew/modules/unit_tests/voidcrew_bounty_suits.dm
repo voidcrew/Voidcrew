@@ -129,6 +129,9 @@
 
 /datum/unit_test/voidcrew_bounty_suits/suit_up/Run()
 	var/mob/living/carbon/human/npc/bounty_criminal/criminal = new_criminal("normal", 3) // BOUNTY_TIER_MOST_WANTED: a vest and a helmet
+	// Whatever else it rolled (anything that bares its torso), it wears a locked suit for this test to reach for
+	if(!criminal.wear_suit && criminal.equip_to_slot_or_del(new /obj/item/clothing/suit/armor/vest(criminal), ITEM_SLOT_OCLOTHING))
+		criminal.npc_lock_item(criminal.wear_suit)
 	var/obj/item/jacket = criminal.wear_suit
 	var/obj/item/hat = criminal.head
 	TEST_ASSERT(human_npc_gear_locked(jacket) && human_npc_gear_locked(hat), "Test fixture: the criminal's vest and helmet aren't locked to it")
@@ -183,6 +186,9 @@
 
 	// Taken away by the board instead (a relist, the clock running out): the crew's things are left there too
 	criminal = new_criminal("normal", 1) // BOUNTY_TIER_PETTY
+	if(!criminal.wear_suit && criminal.equip_to_slot_or_del(new /obj/item/clothing/suit/jacket/leather(criminal), ITEM_SLOT_OCLOTHING))
+		criminal.npc_lock_item(criminal.wear_suit)
+	TEST_ASSERT(human_npc_gear_locked(criminal.wear_suit), "Test fixture: the second criminal wears no locked suit")
 	board_test_cuff(criminal)
 	cuffs = criminal.handcuffed
 	hunter.put_in_active_hand(suit)
