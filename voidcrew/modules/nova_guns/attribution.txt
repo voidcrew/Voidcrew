@@ -25,5 +25,7 @@ icons/magazines.dmi       - states rapier, rapier-full, rapier-empty from
 Sounds (Nova paths are under modular_nova/modules/modular_weapons/sounds/, taken unmodified)
 sound/smg_light.ogg           - sounds/smg_light.ogg
 sound/pistol_heavy.ogg        - sounds/pistol_heavy.ogg
+                                Byte-identical to TerraGov Marine Corps sound/weapons/guns/fire/gun_p23.ogg
+                                (TGMC PR #13409), licensed CC BY-NC-SA 3.0. Non-commercial use only.
 sound/bay_gunshot_magnum.ogg  - sounds/bay_gunshot_magnum.ogg. Nova's sounds/attributions.txt says it was
                                 taken from Baystation12 (https://github.com/Baystation12/Baystation12).
