@@ -387,6 +387,10 @@
 	sleep(1 SECONDS)
 	TEST_ASSERT(held_by(hunter, boss), "The Juggernaut's grip didn't tighten")
 	TEST_ASSERT_EQUAL(boss.boss_busy, "gorilla_hold", "Holding on, the Juggernaut isn't busy") // BOUNTY_GORILLA_BOSS_BUSY
-	sleep(2.6 SECONDS)
+	// The finisher or the hold's own clock (BOUNTY_GORILLA_HOLD_MAX, 4 s from the grip) lets go, whichever comes first
+	var/waited = 0
+	while((held_by(hunter, boss) || boss.boss_busy) && waited < 5 SECONDS)
+		sleep(0.2 SECONDS)
+		waited += 0.2 SECONDS
 	TEST_ASSERT(!held_by(hunter, boss), "The Juggernaut never let go")
 	TEST_ASSERT_NULL(boss.boss_busy, "The Juggernaut is still busy after the hold")
