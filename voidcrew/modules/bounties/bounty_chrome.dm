@@ -1220,6 +1220,13 @@ GLOBAL_LIST_EMPTY(bounty_chrome_organ_facts)
 	/// The move it runs, one of its boss's own (/datum/component/bounty_chrome)
 	var/datum/bounty_chrome_move/move
 
+// A chrome move with lines of its own says one of them in its tell (move.tell()): its kit's ability line ("Grenade!" before a roar) would be a second line, and the wrong one
+/mob/living/carbon/human/npc/bounty_criminal/boss/boss_bark(suffix, fallback)
+	var/datum/action/cooldown/mob_cooldown/bounty_boss/chrome/winding = boss_winding()
+	if(suffix == "ability" && istype(winding) && length(winding.move?.tell_lines))
+		return
+	return ..()
+
 /datum/action/cooldown/mob_cooldown/bounty_boss/chrome/Destroy()
 	if(move?.boss_ability == src)
 		move.boss_ability = null
