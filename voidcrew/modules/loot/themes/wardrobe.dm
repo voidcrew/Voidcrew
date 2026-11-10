@@ -32,6 +32,7 @@
 	theme_skus = list(
 		/datum/shop_sku/ripperdoc/chromatic_dermis,
 		/datum/shop_sku/ripperdoc/nightshade,
+		/datum/shop_sku/ripperdoc/spyglass,
 	)
 	loot_common = list(
 		/obj/item/clothing/suit/jacket/leather = 10,
@@ -48,6 +49,8 @@
 		// somebody's unused parlor appointment: tattoo ink you wear under
 		// the skin, colour and pattern set at a Cradle
 		/obj/item/organ/cyberimp/cyberware/chromatic_dermis = 4,
+		// cheap zoom eyes, bought for the look as much as the view
+		/obj/item/organ/eyes/robotic/cyberware/spyglass = 3,
 	)
 	loot_uncommon = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 10,

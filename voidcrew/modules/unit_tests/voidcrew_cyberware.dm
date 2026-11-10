@@ -158,7 +158,14 @@
 /datum/unit_test/voidcrew_cyberware_arm_slots
 
 /datum/unit_test/voidcrew_cyberware_arm_slots/Run()
-	var/list/exempt = list(/obj/item/organ/cyberimp/cyberware/gecko)
+	// The other two palm and wrist pieces share the hands slot with it (ware_street_passives.dm),
+	// and the chrome wheel tests' hand fixture stands in for them (voidcrew_chrome_wheel.dm).
+	var/list/exempt = list(
+		/obj/item/organ/cyberimp/cyberware/gecko,
+		/obj/item/organ/cyberimp/cyberware/medic_palms,
+		/obj/item/organ/cyberimp/cyberware/cuffer_wrists,
+		/obj/item/organ/cyberimp/cyberware/test_wheel_hand,
+	)
 	var/list/arm_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
 	for(var/organ_path in arm_ware)
 		if(organ_path in exempt)
@@ -169,6 +176,51 @@
 				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_RIGHT_ARM_AUG, "[organ_path] is right-arm chrome off the arm hardware slot. It would stack with blades/launchers on the same arm")
 			if(BODY_ZONE_L_ARM)
 				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot. It would stack with blades/launchers on the same arm")
+
+/// The Widowline Arc: same slot as the Widowline it steps up from, a heavier
+/// load, and a wire whose shock lands through insulated gloves, skips the
+/// shock-immune, hits robots harder, and shorts a turret once per recharge.
+/datum/unit_test/voidcrew_cyberware_widowline_arc
+
+/datum/unit_test/voidcrew_cyberware_widowline_arc/Run()
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/plain = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire)
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live/arc = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/monowire/live)
+	TEST_ASSERT_EQUAL(arc.slot, plain.slot, "The Arc housing isn't in the Widowline's slot, so the two would stack")
+	TEST_ASSERT(arc.chrome_load > plain.chrome_load, "The Arc housing is no heavier than the plain Widowline")
+	var/obj/item/melee/cyberware_monowire/live/wire = locate() in arc
+	TEST_ASSERT(wire, "The Arc housing didn't build its live wire")
+
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/consistent, start)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	TEST_ASSERT(wire.discharge_into_mob(victim, user), "The shock didn't land on a plain human")
+	TEST_ASSERT(victim.getFireLoss() > 0, "The shock left no burn")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/staggered), "The shock left no stagger")
+
+	var/mob/living/carbon/human/gloved = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	var/obj/item/clothing/gloves/color/yellow/insulated = allocate(/obj/item/clothing/gloves/color/yellow)
+	gloved.equip_to_slot_if_possible(insulated, ITEM_SLOT_GLOVES, qdel_on_fail = FALSE, disable_warning = TRUE)
+	TEST_ASSERT_EQUAL(gloved.gloves, insulated, "Insulated gloves fixture failed to equip")
+	TEST_ASSERT(wire.discharge_into_mob(gloved, user), "Insulated gloves stopped the shock")
+
+	var/mob/living/carbon/human/immune = allocate(/mob/living/carbon/human/consistent, get_step(start, EAST))
+	ADD_TRAIT(immune, TRAIT_SHOCKIMMUNE, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(!wire.discharge_into_mob(immune, user), "A shock-immune target was shocked")
+	TEST_ASSERT_EQUAL(immune.getFireLoss(), 0, "A shock-immune target took burn")
+	TEST_ASSERT(!immune.has_status_effect(/datum/status_effect/staggered), "A shock-immune target was staggered")
+
+	// Any robotic biotype takes the robot bonus, not just silicons.
+	var/mob/living/basic/pet/dog/corgi/robot = allocate(/mob/living/basic/pet/dog/corgi, get_step(start, EAST))
+	robot.mob_biotypes = MOB_ROBOTIC
+	TEST_ASSERT(wire.discharge_into_mob(robot, user), "The robot bonus didn't land on a robotic mob")
+	TEST_ASSERT(robot.health < robot.maxHealth, "The robot bonus did no damage")
+
+	var/obj/machinery/porta_turret/turret = allocate(/obj/machinery/porta_turret, get_step(start, NORTH))
+	TEST_ASSERT(wire.discharge_into_machine(turret, user), "The wire didn't short a porta-turret")
+	TEST_ASSERT(!COOLDOWN_FINISHED(turret, disabled_time), "A shorted porta-turret isn't disabled")
+	var/obj/machinery/porta_turret/second_turret = allocate(/obj/machinery/porta_turret, get_step(start, NORTH))
+	TEST_ASSERT(!wire.discharge_into_machine(second_turret, user), "The wire shorted a second machine before it recharged")
+	TEST_ASSERT(COOLDOWN_FINISHED(second_turret, disabled_time), "A turret was disabled with the wire recharging")
 
 /// (f) Chrome read: the optics' scan resolves installed hardware by name at
 /// itemized resolution, rates parlor chrome by tier and everything else
@@ -203,7 +255,7 @@
 	// printable augments unrated, and skips what it can't see.
 	var/itemized = jointext(cyberware_scan_readout(lab_rat, 2), "\n")
 	TEST_ASSERT(findtext(itemized, uppertext(optics.name)), "An itemized chrome read didn't name the installed optics: [itemized]")
-	TEST_ASSERT(findtext(itemized, "T1"), "An itemized chrome read didn't rate the tier 1 optics: [itemized]")
+	TEST_ASSERT(findtext(itemized, "STREET"), "An itemized chrome read didn't rate the street-grade optics: [itemized]")
 	TEST_ASSERT(findtext(itemized, "UNRATED"), "An itemized chrome read rated a printable augment as parlor chrome: [itemized]")
 	TEST_ASSERT(!findtext(itemized, uppertext(stash.name)), "An itemized chrome read named the ORGAN_HIDDEN Cargo Cavity: [itemized]")
 	TEST_ASSERT(findtext(itemized, "SIGNATURES 2"), "An itemized chrome read miscounted the visible signatures: [itemized]")
@@ -213,6 +265,165 @@
 	TEST_ASSERT(!findtext(silhouette, uppertext(optics.name)), "A silhouette chrome read named a ware it shouldn't resolve: [silhouette]")
 	TEST_ASSERT(findtext(silhouette, "SIGNATURES 2"), "A silhouette chrome read didn't report the signature count: [silhouette]")
 	TEST_ASSERT_EQUAL(initial(optics.chrome_scan_resolution), 1, "The street-tier Nightshade isn't set to silhouette resolution")
+
+/// (f2) Chrome read overlay: the report it draws, and the readout's life.
+/// Every reader here is clientless, so this proves the data and the teardown,
+/// never how the client draws it.
+/// Literals: resolution 1 = CYBERWARE_SCAN_SILHOUETTE, 2 = _ITEMIZED; tier 1 =
+/// CYBERWARE_TIER_1; "#8fa1a8" is the unrated colour; "cyber_camo" is
+/// TRAIT_CYBER_CAMO; looks are the overlay's own "itemized", "silhouette",
+/// "scatter" and "clean".
+/datum/unit_test/voidcrew_cyberware_scan_overlay
+
+/datum/unit_test/voidcrew_cyberware_scan_overlay/Run()
+	var/mob/living/carbon/human/reader = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/eyes/robotic/cyberware/deadeye/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/deadeye)
+	TEST_ASSERT(optics.Insert(reader, special = TRUE), "Deadeye staging insert was refused")
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate() in optics.actions
+	TEST_ASSERT_NOTNULL(read, "The Deadeye link lost its chrome read")
+	TEST_ASSERT(!reader.is_blind(), "Test fixture: the staged optics left the reader blind")
+
+	// The subject: a hidden stash, a printable augment, and a weave knocked offline.
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cargo_cavity/stash = allocate(/obj/item/organ/cyberimp/cyberware/cargo_cavity)
+	TEST_ASSERT(stash.Insert(subject, special = TRUE), "Cargo Cavity staging insert was refused")
+	var/obj/item/organ/cyberimp/chest/reviver/printable = allocate(/obj/item/organ/cyberimp/chest/reviver)
+	TEST_ASSERT(printable.Insert(subject, special = TRUE), "Reviver implant staging insert was refused")
+	var/obj/item/organ/cyberimp/cyberware/dermal_mesh/weave = allocate(/obj/item/organ/cyberimp/cyberware/dermal_mesh)
+	TEST_ASSERT(weave.Insert(subject, special = TRUE), "Dermal Mesh staging insert was refused")
+	var/datum/component/cyberware/weave_chrome = weave.GetComponent(/datum/component/cyberware)
+	weave_chrome.start_emp_reboot()
+	TEST_ASSERT(weave.organ_flags & ORGAN_FAILING, "Test fixture: an EMP didn't knock the weave offline")
+
+	// The report: one entry per visible signature, nothing hidden, the
+	// printable augment unrated and grey, the EMP'd weave offline.
+	var/list/report = cyberware_scan_report(subject, 2)
+	TEST_ASSERT_EQUAL(report["count"], 2, "The report miscounted the visible hardware")
+	TEST_ASSERT_EQUAL(length(report["entries"]), length(cyberware_scannable_hardware(subject)), "The report's entries don't match the scannable hardware")
+	var/list/reviver_entry
+	var/list/weave_entry
+	for(var/list/entry as anything in report["entries"])
+		TEST_ASSERT(entry["name"] != stash.name, "The report listed the ORGAN_HIDDEN Cargo Cavity")
+		if(entry["name"] == printable.name)
+			reviver_entry = entry
+		if(entry["name"] == weave.name)
+			weave_entry = entry
+	TEST_ASSERT_NOTNULL(reviver_entry, "The report dropped the printable reviver")
+	TEST_ASSERT(!reviver_entry["rated"], "The report rated a printable augment as parlor chrome")
+	TEST_ASSERT_EQUAL(reviver_entry["color"], "#8fa1a8", "An unrated augment didn't get the unrated colour")
+	TEST_ASSERT_NOTNULL(weave_entry, "The report dropped the Dermal Mesh")
+	TEST_ASSERT(weave_entry["offline"], "An EMP'd weave didn't read as offline")
+	TEST_ASSERT_EQUAL(weave_entry["tier"], 1, "The weave lost its tier")
+	TEST_ASSERT_EQUAL(weave_entry["label"], "Dermal Mesh weave", "The label kept the name's formatting macro")
+	var/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/blade = allocate(/obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis)
+	TEST_ASSERT_EQUAL(cyberware_scan_label(blade), "Mantis Blade housing", "A paired arm piece kept its side in the label")
+
+	// Silhouette resolution counts the same signatures and resolves none of them.
+	var/list/blurred = cyberware_scan_report(subject, 1)
+	TEST_ASSERT_EQUAL(length(blurred["entries"]), 2, "A silhouette report miscounted")
+	for(var/list/entry as anything in blurred["entries"])
+		TEST_ASSERT(isnull(entry["label"]) && isnull(entry["icon"]), "A silhouette report named or pictured a piece it shouldn't resolve")
+
+	// A read draws a readout: one socket and one name line per entry, every
+	// image hung off the subject (never through walls) and deaf to clicks.
+	TEST_ASSERT(read.PreActivate(subject), "The chrome read didn't run on a subject in reach")
+	var/datum/chrome_readout/first = read.current_readout
+	TEST_ASSERT_NOTNULL(first, "A read left no readout on the action")
+	TEST_ASSERT_EQUAL(first.mode, "itemized", "Deadeye optics drew the wrong look")
+	TEST_ASSERT_EQUAL(length(first.sockets), 2, "The readout drew the wrong number of sockets")
+	TEST_ASSERT_EQUAL(length(first.name_lines), 2, "The readout drew the wrong number of names")
+	TEST_ASSERT_NULL(first.shown_to, "A clientless reader was handed images")
+	for(var/image/drawn as anything in first.images)
+		TEST_ASSERT_EQUAL(drawn.loc, subject, "A readout image hangs off something other than the subject")
+		TEST_ASSERT_EQUAL(drawn.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A readout image takes clicks meant for the floor")
+
+	// A new read replaces the old one.
+	read.ResetCooldown()
+	TEST_ASSERT(read.PreActivate(subject), "A second read didn't run")
+	TEST_ASSERT(QDELETED(first), "A second read left the first readout up")
+	var/datum/chrome_readout/readout = read.current_readout
+	TEST_ASSERT(readout && readout != first, "A second read didn't draw a new readout")
+
+	// Each way it ends early.
+	SEND_SIGNAL(reader, COMSIG_MOB_LOGOUT)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its reader logging out")
+	TEST_ASSERT_NULL(read.current_readout, "The action held on to a readout that had ended")
+
+	read.PreActivate(subject)
+	readout = read.current_readout
+	SEND_SIGNAL(subject, COMSIG_MOVABLE_Z_CHANGED, null, null, TRUE)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its subject changing z")
+
+	read.PreActivate(subject)
+	readout = read.current_readout
+	optics.Remove(reader, special = TRUE)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived the optics that drew it")
+	TEST_ASSERT(optics.Insert(reader, special = TRUE), "The optics wouldn't go back in")
+
+	var/mob/living/carbon/human/doomed = allocate(/mob/living/carbon/human/consistent)
+	TEST_ASSERT(read.PreActivate(doomed), "The chrome read didn't run on a bare body")
+	readout = read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "clean", "A body with no hardware drew the wrong look")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 0, "A body with no hardware drew sockets")
+	qdel(doomed)
+	TEST_ASSERT(QDELETED(readout), "The readout outlived its subject")
+
+	// Ghostskin: the lock breaks. No sockets, no names, and it stays on the
+	// turf where the lock was tried instead of following the subject.
+	ADD_TRAIT(subject, "cyber_camo", "chrome_read_overlay_test")
+	TEST_ASSERT(read.PreActivate(subject), "The chrome read didn't run on a camouflaged subject")
+	readout = read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "scatter", "Ghostskin didn't scatter the readout")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 0, "A scattered readout drew sockets")
+	TEST_ASSERT_EQUAL(length(readout.name_lines), 0, "A scattered readout named hardware")
+	for(var/image/drawn as anything in readout.images)
+		TEST_ASSERT_EQUAL(drawn.loc, get_turf(subject), "A scattered readout image follows the camouflaged subject")
+	REMOVE_TRAIT(subject, "cyber_camo", "chrome_read_overlay_test")
+
+	// Street optics: a socket per signature, and not one name.
+	var/mob/living/carbon/human/street_reader = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/eyes/robotic/cyberware/nightshade/street_optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
+	TEST_ASSERT(street_optics.Insert(street_reader, special = TRUE), "Nightshade staging insert was refused")
+	var/datum/action/cooldown/cyberware/chrome_read/street_read = locate() in street_optics.actions
+	TEST_ASSERT(street_read.PreActivate(subject), "The street read didn't run")
+	readout = street_read.current_readout
+	TEST_ASSERT_EQUAL(readout.mode, "silhouette", "Nightshade optics drew the wrong look")
+	TEST_ASSERT_EQUAL(length(readout.sockets), 2, "A silhouette readout didn't draw a socket per signature")
+	TEST_ASSERT_EQUAL(length(readout.name_lines), 0, "A silhouette readout named hardware")
+
+/// Camo line: the street weave fades its bearer but never takes the
+/// cyber_camo trait (NPC targeting and chrome reads key on it, so it fools
+/// players only), while the full Ghostskin keeps both. They share the skin
+/// slot, so the upgrade evicts the street weave and drops its field.
+/// Literals: trait is TRAIT_CYBER_CAMO ("cyber_camo"), alphas are 60 street
+/// and 40 full, times are in deciseconds (70 = 7 s), tier 2 = CYBERWARE_TIER_2.
+/datum/unit_test/voidcrew_cyberware_camo_line
+
+/datum/unit_test/voidcrew_cyberware_camo_line/Run()
+	var/mob/living/carbon/human/lab_rat = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/street/street = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin/street)
+	TEST_ASSERT_EQUAL(street.chrome_load, 2, "The street camo weave's load drifted")
+	TEST_ASSERT_EQUAL(street.tier, 2, "The street camo weave left tier 2")
+	TEST_ASSERT_EQUAL(street.field_duration, 70, "The street camo weave's field duration drifted")
+	TEST_ASSERT(!street.hides_from_mobs, "The street camo weave hides its bearer from mobs")
+	TEST_ASSERT(street.Insert(lab_rat, special = TRUE), "Street weave staging insert was refused")
+	street.engage_camo(lab_rat)
+	TEST_ASSERT(street.camo_active, "The street weave's field never came up")
+	TEST_ASSERT_EQUAL(lab_rat.alpha, 60, "The street weave faded its bearer to the wrong alpha")
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "The street weave granted the mob-hiding camo trait")
+
+	// The full weave is unchanged: trait, alpha 40, ten seconds.
+	var/obj/item/organ/cyberimp/cyberware/ghostskin/full = allocate(/obj/item/organ/cyberimp/cyberware/ghostskin)
+	TEST_ASSERT(full.Insert(lab_rat, special = TRUE), "Ghostskin staging insert was refused")
+	TEST_ASSERT(!street.camo_active, "Evicting the street weave left its field up")
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "Nothing should hold the camo trait between fields")
+	TEST_ASSERT_EQUAL(full.field_duration, 100, "Ghostskin's field duration drifted")
+	TEST_ASSERT(full.hides_from_mobs, "Ghostskin stopped hiding its bearer from mobs")
+	full.engage_camo(lab_rat)
+	TEST_ASSERT(HAS_TRAIT(lab_rat, "cyber_camo"), "Ghostskin stopped granting the camo trait")
+	TEST_ASSERT_EQUAL(lab_rat.alpha, 40, "Ghostskin faded its bearer to the wrong alpha")
+	full.break_camo(lab_rat, silent = TRUE)
+	TEST_ASSERT(!HAS_TRAIT(lab_rat, "cyber_camo"), "Ghostskin left the camo trait behind when its field dropped")
 
 /// (e) Second Wind Bladder: blocks suffocation while reserve lasts, runs
 /// dry, and refills in breathable air.
@@ -335,6 +546,49 @@
 		TEST_ASSERT(!isnull(paired), "[half] got no price entry, the pair case never resolved to its contents")
 		TEST_ASSERT(paired["vouchers"] > 0, "[half] indexed with no voucher price")
 		TEST_ASSERT(paired["paired"], "[half] came out of a pair case without the paired flag")
+
+/// (h2) Ratchet, the street doc at Quartermain: credit sales only, every piece
+/// he sells has a cradle quote that matches his shelf, his ledger never pays
+/// vouchers, and on the map he stands in view of his own cradle, so the install
+/// patter (play_ripperdoc_bark) comes out of his mouth.
+/datum/unit_test/voidcrew_street_doc
+
+/datum/unit_test/voidcrew_street_doc/Run()
+	build_cyberware_price_index()
+	var/datum/outpost_shop/vendor/street_doc/shop = allocate(/datum/outpost_shop/vendor/street_doc)
+	TEST_ASSERT(length(shop.skus), "The street doc has nothing on his shelf")
+	for(var/datum/shop_sku/sku as anything in shop.skus)
+		TEST_ASSERT(istype(sku, /datum/shop_sku/ripperdoc), "[sku.type] at the street doc is not ripperdoc stock, so the cradle never quotes it")
+		TEST_ASSERT(sku.price_credits > 0 && !sku.price_vouchers, "[sku.type] at the street doc is not a credit sale")
+		if(!ispath(sku.item_path, /obj/item/organ))
+			continue
+		var/list/quote = GLOB.cyberware_price_index[sku.item_path]
+		TEST_ASSERT(!isnull(quote), "The cradle has no price for [sku.item_path], which the street doc sells")
+		if(quote)
+			TEST_ASSERT_EQUAL(quote["credits"], sku.price_credits, "The cradle quotes [sku.item_path] differently from the street doc's shelf")
+	TEST_ASSERT(length(shop.buybacks), "The street doc buys nothing back")
+	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+		TEST_ASSERT(buyback.pay_credits > 0 && !buyback.pay_vouchers, "[buyback.type] at the street doc pays vouchers for chrome a ship can buy")
+
+	var/obj/structure/overmap/trader_outpost/outpost = allocate(/obj/structure/overmap/trader_outpost/outfitter)
+	TEST_ASSERT(outpost.load_level(), "Quartermain's interior failed to load")
+	var/turf/bottom_left = outpost.template_bottom_left
+	var/turf/top_right = locate(bottom_left.x + outpost.outpost_template.width - 1, bottom_left.y + outpost.outpost_template.height - 1, bottom_left.z)
+	var/list/docs = list()
+	var/list/cradles = list()
+	for(var/turf/interior as anything in block(bottom_left, top_right))
+		for(var/mob/living/basic/outpost_trader/ripperdoc/street_doc/doc in interior)
+			docs += doc
+		for(var/obj/machinery/chrome_cradle/cradle in interior)
+			cradles += cradle
+	TEST_ASSERT_EQUAL(length(docs), 1, "Quartermain has [length(docs)] street docs, not one")
+	TEST_ASSERT_EQUAL(length(cradles), 1, "Quartermain has [length(cradles)] chrome cradles, not one")
+	var/mob/living/basic/outpost_trader/ripperdoc/street_doc/ratchet = docs[1]
+	var/obj/machinery/chrome_cradle/rig = cradles[1]
+	TEST_ASSERT(istype(ratchet.shop, /datum/outpost_shop/vendor/street_doc), "The street doc is not running his own counter")
+	TEST_ASSERT(ratchet in view(7, rig), "The street doc can't see his cradle, so installs there run without him")
+	TEST_ASSERT_EQUAL(get_trader_outpost_for_turf(get_turf(rig)), outpost, "Quartermain's cradle does not know which outpost it is in")
+	qdel(outpost)
 
 /// Recheck the complete final installation after the delay, before touching incumbents.
 /datum/unit_test/voidcrew_cradle_installed_capacity
@@ -541,8 +795,9 @@
 	// the cursor and needs a client, so it is deliberately not what we call.
 	var/obj/item/organ/eyes/robotic/cyberware/nightshade/optics = allocate(/obj/item/organ/eyes/robotic/cyberware/nightshade)
 	TEST_ASSERT(optics.Insert(lab_rat, special = TRUE), "Nightshade staging insert was refused")
-	var/datum/action/cooldown/cyberware/chrome_read/read = locate(/datum/action/cooldown/cyberware/chrome_read) in lab_rat.actions
-	TEST_ASSERT(!isnull(read), "The optics never granted their chrome read action to the body")
+	// Chrome abilities have no HUD button, so they never join lab_rat.actions (chrome_hud.dm).
+	var/datum/action/cooldown/cyberware/chrome_read/read = locate(/datum/action/cooldown/cyberware/chrome_read) in optics.actions
+	TEST_ASSERT(read?.owner == lab_rat, "The optics never granted their chrome read action to the body")
 	TEST_ASSERT(!lab_rat.is_blind(), "Test fixture: the staged optics left the body blind, so the read could never run")
 
 	var/before = ink.pulse_count
@@ -887,6 +1142,60 @@
 	TEST_ASSERT(governor.Insert(patient, TRUE), "Governor couldn't replace an OS")
 	TEST_ASSERT(!cascade.owner && governor.owner == patient, "Chest OS hardware stacked")
 
+/// The Governor line: each rung gives its own headroom at no load in the shared
+/// OS slot, and swapping down never leaves the body quietly over its new ceiling.
+/datum/unit_test/voidcrew_governor_line
+
+/datum/unit_test/voidcrew_governor_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/delete = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/milspec/bypass = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete/milspec)
+	var/obj/item/organ/cyberimp/cyberware/governor_delete/street/patch = allocate(/obj/item/organ/cyberimp/cyberware/governor_delete/street)
+	// ware, bonus, tier (the defines aren't visible from here: CYBERWARE_TIER_2/3/4)
+	var/list/rungs = list(
+		list(patch, 5, 2),
+		list(bypass, 10, 3),
+		list(delete, 15, 4),
+	)
+	for(var/list/rung as anything in rungs)
+		var/obj/item/organ/cyberimp/cyberware/ware = rung[1]
+		var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+		TEST_ASSERT_EQUAL(ware.slot, delete.slot, "[ware.type] isn't in the Governor's OS slot")
+		TEST_ASSERT_EQUAL(chrome.chrome_load, 0, "[ware.type] costs load, a Governor never does")
+		TEST_ASSERT_EQUAL(chrome.capacity_bonus, rung[2], "[ware.type] has the wrong capacity bonus")
+		TEST_ASSERT_EQUAL(chrome.tier, rung[3], "[ware.type] has the wrong tier")
+		TEST_ASSERT(ware.Insert(patient, TRUE), "[ware.type] fixture failed to install")
+		TEST_ASSERT_EQUAL(get_chrome_capacity(patient), 20 + rung[2], "[ware.type] gave the wrong capacity")
+		TEST_ASSERT_EQUAL(get_chrome_load(patient), 0, "[ware.type] put load on the body")
+	// Only the last rung is left in the slot: each install evicted the one before.
+	TEST_ASSERT(delete.owner == patient && !bypass.owner && !patch.owner, "Governor rungs stacked in the OS slot")
+
+	// Swapping down is gated, not trapped: at a load the lower rung can't hold, the
+	// swap is refused with the incumbent still online.
+	var/obj/item/organ/cyberimp/cyberware/test_full_body/bulk = allocate(/obj/item/organ/cyberimp/cyberware/test_full_body)
+	var/obj/item/organ/cyberimp/cyberware/test_heavy/heavy = allocate(/obj/item/organ/cyberimp/cyberware/test_heavy)
+	bulk.Insert(patient, TRUE)
+	heavy.Insert(patient, TRUE)
+	TEST_ASSERT_EQUAL(get_chrome_load(patient), 35, "Governor line fixture load is wrong")
+	TEST_ASSERT(!cyberware_insert_check(bypass, patient, TRUE), "35 load fit under the Bypass's 30")
+	TEST_ASSERT(!cyberware_insert_check(patch, patient, TRUE), "35 load fit under the Patch's 25")
+	TEST_ASSERT(delete.owner == patient && !(delete.organ_flags & ORGAN_FAILING), "A refused downgrade disturbed the incumbent Governor")
+	heavy.Remove(patient, TRUE)
+	TEST_ASSERT(cyberware_insert_check(patch, patient, TRUE), "20 load didn't fit under the Patch's 25")
+	TEST_ASSERT(cyberware_insert_check(bypass, patient, TRUE), "20 load didn't fit under the Bypass's 30")
+	heavy.Insert(patient, TRUE)
+
+	// Pulling the Governor is never blocked: everything browns out, and the
+	// smaller one that goes back in only lifts it once load fits.
+	var/datum/component/cyberware/bulk_chrome = bulk.GetComponent(/datum/component/cyberware)
+	TEST_ASSERT(bulk_chrome.is_running(), "35 of 35 browned out")
+	delete.Remove(patient, TRUE)
+	TEST_ASSERT(!bulk_chrome.is_running(), "Losing the Governor didn't brown out the over-capacity chrome")
+	TEST_ASSERT(patch.Insert(patient, TRUE), "The Patch couldn't go in over capacity with special")
+	TEST_ASSERT(!bulk_chrome.is_running(), "35 load stayed up under the Patch's 25")
+	heavy.Remove(patient, TRUE)
+	TEST_ASSERT(bulk_chrome.is_running(), "20 load stayed browned out under the Patch's 25")
+
 /// Every approved exception is checked independently of the table under test.
 /datum/unit_test/voidcrew_nanite_capacity_costs
 
@@ -1030,6 +1339,62 @@
 	TEST_ASSERT_EQUAL(get_chrome_load(patient), 16, "Deleting nanites retained installed program costs")
 	TEST_ASSERT_EQUAL(patient.physiology.armor.get_rating(MELEE), bare_armor, "Deleting recovered nanites retained their armor")
 
+/// The Berserk line: street and milspec cores share the Redline's OS slot and
+/// retune its one burn through vars, and the Redline core itself is unchanged.
+/datum/unit_test/voidcrew_berserk_line
+
+/datum/unit_test/voidcrew_berserk_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/redline/core = allocate(/obj/item/organ/cyberimp/cyberware/redline)
+	TEST_ASSERT_EQUAL(core.burn_window, 12 SECONDS, "Redline core's window moved")
+	TEST_ASSERT_EQUAL(core.burn_damage_mult, 0.6, "Redline core's damage multiplier moved")
+	TEST_ASSERT_EQUAL(core.burn_melee_bonus, 8, "Redline core's punch bonus moved")
+	TEST_ASSERT(core.burn_stun_immune, "Redline core lost its stun immunity")
+	TEST_ASSERT_EQUAL(core.burn_roar_range, 5, "Redline core's roar moved")
+	TEST_ASSERT_EQUAL(core.burn_crash, 5 SECONDS, "Redline core's crash moved")
+	TEST_ASSERT_EQUAL(core.burn_cooldown, 90 SECONDS, "Redline core's cooldown moved")
+	TEST_ASSERT_EQUAL(core.chrome_load, 10, "Redline core's load moved")
+	for(var/model_type in list(/obj/item/organ/cyberimp/cyberware/redline/street, /obj/item/organ/cyberimp/cyberware/redline/milspec))
+		var/obj/item/organ/cyberimp/cyberware/redline/model = allocate(model_type)
+		TEST_ASSERT_EQUAL(model.slot, core.slot, "[model_type] doesn't share the Redline's OS slot")
+		TEST_ASSERT(model.chrome_load < core.chrome_load, "[model_type] doesn't cost less load than the Redline core")
+		TEST_ASSERT(model.tier < core.tier, "[model_type] isn't a lower tier than the Redline core")
+		// The street core cycles as fast as the Redline (final balance pass); no model cycles faster.
+		TEST_ASSERT(model.burn_window < core.burn_window && model.burn_cooldown >= core.burn_cooldown, "[model_type] isn't a shorter burn, no faster, than the Redline core")
+		TEST_ASSERT(model.icon_state != core.icon_state && model.aug_overlay != core.aug_overlay, "[model_type] reuses the Redline core's sprite states")
+	var/obj/item/organ/cyberimp/cyberware/redline/street/street = allocate(/obj/item/organ/cyberimp/cyberware/redline/street)
+	var/obj/item/organ/cyberimp/cyberware/redline/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/redline/milspec)
+	for(var/obj/item/organ/cyberimp/cyberware/redline/model as anything in list(street, milspec))
+		var/datum/action/cooldown/cyberware/redline_burn/burn = locate() in model.actions
+		TEST_ASSERT_NOTNULL(burn, "[model.type] has no Redline Burn button")
+		TEST_ASSERT_EQUAL(burn.cooldown_time, model.burn_cooldown, "[model.type]'s button doesn't use the core's cooldown")
+	// The street burn: no stun immunity, its own damage cut, window and crash length.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window, street)
+	var/datum/status_effect/cyberware_redline_window/window = patient.has_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_NOTNULL(window, "The street core didn't open a burn window")
+	TEST_ASSERT(!HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The street burn granted stun immunity")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.8, "The street burn didn't cut brute by its own multiplier")
+	TEST_ASSERT_EQUAL(window.duration - world.time, street.burn_window, "The street burn ignored its window length")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 1, "The street burn left a damage multiplier behind")
+	var/datum/status_effect/cyberware_redline_crash/crash = patient.has_status_effect(/datum/status_effect/cyberware_redline_crash)
+	TEST_ASSERT_NOTNULL(crash, "The street burn didn't roll into a crash")
+	TEST_ASSERT(crash.duration - world.time <= street.burn_crash && crash.duration - world.time > street.burn_crash - 1 SECONDS, "The street crash ignored its length")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+	// The milspec burn holds stuns off, and drops them cleanly.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window, milspec)
+	TEST_ASSERT(HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The milspec burn didn't grant stun immunity")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.7, "The milspec burn didn't cut brute by its own multiplier")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT(!HAS_TRAIT(patient, TRAIT_STUNIMMUNE), "The milspec burn kept stun immunity after it ended")
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 1, "The milspec burn left a damage multiplier behind")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+	// With no core named the window runs the Redline core's own numbers.
+	patient.apply_status_effect(/datum/status_effect/cyberware_redline_window)
+	TEST_ASSERT_EQUAL(patient.physiology.brute_mod, 0.6, "A bare burn window didn't use the Redline core's numbers")
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_window)
+	patient.remove_status_effect(/datum/status_effect/cyberware_redline_crash)
+
 /datum/unit_test/voidcrew_cyberware_running_gates
 
 /datum/unit_test/voidcrew_cyberware_running_gates/Run()
@@ -1127,3 +1492,167 @@
 	node.Remove(patient, TRUE)
 	node.Insert(patient, TRUE)
 	TEST_ASSERT_EQUAL(node.jolt_cooldown, ready_at, "Removal/reinstall reset Lazarus cooldown")
+
+/// The Cascade line: the street and service models share the lattice's OS slot,
+/// carry their own numbers onto the window and crash, and the original lattice
+/// keeps every one of its.
+/datum/unit_test/voidcrew_cascade_line
+
+/datum/unit_test/voidcrew_cascade_line/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/cyberimp/cyberware/cascade/lattice = allocate(/obj/item/organ/cyberimp/cyberware/cascade)
+	var/obj/item/organ/cyberimp/cyberware/cascade/street/street = allocate(/obj/item/organ/cyberimp/cyberware/cascade/street)
+	var/obj/item/organ/cyberimp/cyberware/cascade/milspec/milspec = allocate(/obj/item/organ/cyberimp/cyberware/cascade/milspec)
+	TEST_ASSERT_EQUAL(street.slot, lattice.slot, "The street rig isn't in the lattice's OS slot")
+	TEST_ASSERT_EQUAL(milspec.slot, lattice.slot, "The service lattice isn't in the lattice's OS slot")
+	TEST_ASSERT(street.chrome_load < milspec.chrome_load && milspec.chrome_load < lattice.chrome_load, "The Cascade line's loads don't climb")
+	TEST_ASSERT(street.Insert(patient, TRUE), "Street fixture failed")
+	TEST_ASSERT(milspec.Insert(patient, TRUE), "Service fixture failed")
+	TEST_ASSERT(!street.owner && milspec.owner == patient, "Two Cascade models shared the OS slot")
+
+	// The original lattice runs on its original numbers.
+	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, lattice)
+	var/datum/status_effect/cyberware_cascade_window/window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(window, "The lattice didn't open a window")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 40, "The lattice window lost its dodge")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.5, "The lattice window lost its melee boost")
+	TEST_ASSERT_EQUAL(window.duration, world.time + 8 SECONDS, "The lattice window lost its length")
+	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade), "The lattice window lost its gait")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	var/datum/status_effect/cyberware_cascade_crash/crash = patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NOTNULL(crash, "The lattice window ended without a crash")
+	TEST_ASSERT_EQUAL(crash.duration, world.time + 6 SECONDS, "The lattice crash lost its length")
+	TEST_ASSERT_EQUAL(patient.getStaminaLoss(), 80, "The lattice crash lost its stamina dump")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	patient.setStaminaLoss(0)
+
+	// The street rig runs on its own.
+	patient.apply_status_effect(/datum/status_effect/cyberware_cascade_window, street)
+	window = patient.has_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT_NOTNULL(window, "The street rig didn't open a window")
+	TEST_ASSERT_EQUAL(window.dodge_chance, 15, "The street window kept the wrong dodge")
+	TEST_ASSERT_EQUAL(window.nextmove_modifier(), 0.75, "The street window kept the wrong melee boost")
+	TEST_ASSERT_EQUAL(window.duration, world.time + 6 SECONDS, "The street window kept the wrong length")
+	TEST_ASSERT(patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade/street), "The street window lost its gait")
+	TEST_ASSERT(!patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade), "The street window kept the lattice's gait")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_window)
+	TEST_ASSERT(!patient.has_movespeed_modifier(/datum/movespeed_modifier/cyberware_cascade/street), "The street gait outlived its window")
+	crash = patient.has_status_effect(/datum/status_effect/cyberware_cascade_crash)
+	TEST_ASSERT_NOTNULL(crash, "The street window ended without a crash")
+	TEST_ASSERT_EQUAL(crash.duration, world.time + 8 SECONDS, "The street crash kept the wrong length")
+	TEST_ASSERT_EQUAL(crash.crash_stamina, 90, "The street crash kept the wrong stamina dump")
+	TEST_ASSERT_EQUAL(patient.getStaminaLoss(), 90, "The street crash didn't dump its stamina")
+	TEST_ASSERT(!HAS_TRAIT_FROM(patient, TRAIT_INCAPACITATED, STAMINA), "The street crash floored its user")
+	patient.remove_status_effect(/datum/status_effect/cyberware_cascade_crash)
+
+	// What Splice quotes for the two lesser models.
+	build_cyberware_price_index()
+	var/list/street_price = GLOB.cyberware_price_index[street.type]
+	var/list/milspec_price = GLOB.cyberware_price_index[milspec.type]
+	TEST_ASSERT(street_price && street_price["credits"] > 0 && !street_price["vouchers"], "The street rig isn't a credit-priced SKU")
+	TEST_ASSERT(milspec_price && milspec_price["vouchers"] > 0, "The service lattice isn't a voucher-priced SKU")
+
+/// The ripperdoc trade-in, the one ledger that takes chrome bought over a
+/// counter. No entry may pay more than half the cheapest shelf price of the
+/// piece (a special takes at most 30% off, so a bought piece always sells back
+/// at a loss), none may buy back a piece any shop sells for vouchers, and none
+/// may reach into the seller's body. Every other ledger and the cargo shuttle
+/// still refuse the same piece once it is pulled.
+/datum/unit_test/voidcrew_ripperdoc_resale
+
+/datum/unit_test/voidcrew_ripperdoc_resale/Run()
+	// Every installable piece any shelf sells: its lowest credit price for one
+	// piece, and whether any shelf asks vouchers for it.
+	var/list/lowest_credits = list()
+	var/list/voucher_sold = list()
+	for(var/datum/shop_sku/sku_type as anything in subtypesof(/datum/shop_sku))
+		var/item_path = initial(sku_type.item_path)
+		var/list/pieces = list()
+		if(ispath(item_path, /obj/item/organ))
+			pieces += item_path
+		else if(ispath(item_path, /obj/item/cyberware_pair_case) || ispath(item_path, /obj/item/storage/case/cyberware))
+			// A cased set sells every piece inside it for the one price.
+			var/obj/item/sample = new item_path(null)
+			for(var/obj/item/organ/held in sample.contents)
+				pieces += held.type
+			for(var/atom/movable/packed as anything in sample.contents.Copy())
+				qdel(packed)
+			qdel(sample)
+		if(!length(pieces))
+			continue
+		var/credits = initial(sku_type.price_credits)
+		for(var/piece in pieces)
+			if(initial(sku_type.price_vouchers) > 0)
+				voucher_sold[piece] = TRUE
+			if(credits > 0)
+				var/each = credits / length(pieces)
+				lowest_credits[piece] = isnull(lowest_credits[piece]) ? each : min(lowest_credits[piece], each)
+
+	var/list/ledger_types = typesof(/datum/shop_buyback/ripperdoc) - /datum/shop_buyback/ripperdoc
+	TEST_ASSERT(length(ledger_types), "There is no ripperdoc trade-in")
+	for(var/buyback_type in ledger_types)
+		var/datum/shop_buyback/ledger = allocate(buyback_type)
+		TEST_ASSERT(ledger.takes_shop_stock(), "[buyback_type] refuses chrome bought at a counter")
+		TEST_ASSERT(ledger.pay_credits > 0 && !ledger.pay_vouchers, "[buyback_type] does not pay in credits alone")
+		var/matched = 0
+		for(var/piece in lowest_credits | voucher_sold)
+			if(ledger.match_subtypes ? !ispath(piece, ledger.item_path) : piece != ledger.item_path)
+				continue
+			matched++
+			TEST_ASSERT(!voucher_sold[piece], "[buyback_type] buys back [piece], which a shop sells for vouchers")
+			var/lowest = lowest_credits[piece]
+			if(isnull(lowest))
+				continue
+			TEST_ASSERT(ledger.pay_credits * 2 <= lowest, "[buyback_type] pays [ledger.pay_credits] cr for [piece], more than half its lowest shelf price ([lowest] cr)")
+			// The deepest special (shop.dm roll_special, 30% off) still loses money.
+			TEST_ASSERT(ledger.pay_credits < max(5, round(lowest * 70 / 100, 5)), "[buyback_type] pays more for [piece] than it costs on special")
+		TEST_ASSERT(matched, "[buyback_type] buys back a piece no shelf sells")
+
+	// One street core, bought, installed, pulled and sold back.
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/obj/item/card/id/id = allocate(/obj/item/card/id)
+	id.registered_account = allocate(/datum/bank_account, "Ripperdoc resale test", null, 1, FALSE)
+	patient.put_in_active_hand(id)
+	var/datum/bank_account/account = id.registered_account
+	var/datum/shop_sku/sku = allocate(/datum/shop_sku/ripperdoc/redline_street)
+	var/obj/item/organ/cyberimp/cyberware/redline/street/core = sku.dispense(patient, null)
+	TEST_ASSERT(istype(core), "The street core's shelf handed over [core]")
+	TEST_ASSERT(is_trader_good(core), "Chrome bought at the counter came without the shop mark")
+	patient.dropItemToGround(core)
+	TEST_ASSERT(core.Insert(patient, special = TRUE), "The bought core would not install")
+
+	var/datum/shop_buyback/splice = allocate(/datum/shop_buyback/ripperdoc/redline_street)
+	var/datum/shop_buyback/ratchet = allocate(/datum/shop_buyback/ripperdoc/redline_street/street_doc)
+	splice.demand = 2
+	var/balance = account.account_balance
+	TEST_ASSERT_EQUAL(splice.count_carried_units(patient), 0, "The trade-in offered to buy a core still installed in its owner")
+	TEST_ASSERT(!splice.try_sell(patient, null), "The trade-in bought a core out of a living chest")
+	TEST_ASSERT(!QDELETED(core) && core.owner == patient, "A trade-in took chrome out of its owner")
+	TEST_ASSERT_EQUAL(account.account_balance, balance, "A refused trade-in paid out")
+
+	core.Remove(patient, special = TRUE)
+	patient.put_in_hands(core)
+	TEST_ASSERT(is_trader_good(core), "Pulling the core wiped its shop mark")
+
+	// Nobody else buys it: a plain ledger for this exact piece, every other
+	// ledger in the game, or the cargo shuttle.
+	var/datum/shop_buyback/any_ledger = allocate(/datum/shop_buyback)
+	any_ledger.item_path = core.type
+	any_ledger.pay_credits = 10
+	TEST_ASSERT(!any_ledger.matches(core), "A plain ledger for this very core bought it")
+	for(var/buyback_type in subtypesof(/datum/shop_buyback))
+		if(ispath(buyback_type, /datum/shop_buyback/ripperdoc))
+			continue
+		var/datum/shop_buyback/other = allocate(buyback_type)
+		if(other.item_path)
+			TEST_ASSERT(!other.matches(core), "[buyback_type] bought back chrome sold at a counter")
+	var/datum/export/export = allocate(/datum/export)
+	export.export_types = typecacheof(list(core.type))
+	TEST_ASSERT(!export.applies_to(core), "Cargo would export chrome sold at a counter")
+
+	// Both ripperdocs take it, at half list.
+	TEST_ASSERT(ratchet.matches(core), "The street doc won't take back chrome a ripperdoc sold")
+	TEST_ASSERT(splice.try_sell(patient, null), "Splice won't take back chrome a ripperdoc sold")
+	TEST_ASSERT(QDELETED(core), "The sold core stayed with the seller")
+	TEST_ASSERT_EQUAL(account.account_balance, balance + splice.pay_credits, "The trade-in paid the wrong amount")
+	TEST_ASSERT_EQUAL(splice.pay_credits * 2, sku.price_credits, "The street core does not sell back at half list")

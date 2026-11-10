@@ -264,6 +264,8 @@
 		return FALSE
 	if(is_outpost_experiment_mob(victim) || HAS_TRAIT(victim, TRAIT_GODMODE))
 		return FALSE
+	if(cyberware_camo_hides(victim, parent)) // optical camo (cyberware_stealth.dm)
+		return FALSE
 	if(is_outpost_prisoner(victim))
 		var/mob/living/carbon/human/npc/outpost_prisoner/prisoner = victim
 		if(prisoner.phase != PRISONER_PRESENT || !may_hit_prisoner(prisoner))
