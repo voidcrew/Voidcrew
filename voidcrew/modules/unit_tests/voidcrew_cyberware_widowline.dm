@@ -428,6 +428,31 @@
 	cut(attacker, victim, BODY_ZONE_CHEST)
 	TEST_ASSERT_EQUAL(arc.blood_stage(), 0, "The Arc shows blood")
 
+/// A lash hides the wire hanging in the hand that throws it whichever way the wielder faces, and is drawn behind a
+/// body standing a row nearer the viewer and over one a row further off.
+/datum/unit_test/voidcrew_widowline/wire_lash_look
+
+/datum/unit_test/voidcrew_widowline/wire_lash_look/Run()
+	var/mob/living/carbon/human/consistent/user = wielder(spot(2, 2))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	for(var/facing in GLOB.cardinals)
+		var/turf/stand = get_step(user, facing)
+		victim.forceMove(stand)
+		victim.setDir(REVERSE_DIR(facing))
+		user.setDir(facing)
+		wire.show_inhand()
+		wire.wire_lash_at(user, victim, BODY_ZONE_R_LEG)
+		TEST_ASSERT(wire.inhand_hidden_until > world.time, "A lash facing [dir2text(facing)] left the hanging wire drawn")
+		var/obj/effect/abstract/wire_reach/lash_end = locate() in stand
+		TEST_ASSERT_NOTNULL(lash_end, "A lash facing [dir2text(facing)] drew nothing on its target's tile")
+		if(facing == SOUTH)
+			TEST_ASSERT_EQUAL(lash_end.layer, BELOW_MOB_LAYER, "A lash down to a body nearer the viewer drew over it")
+		else if(facing == NORTH)
+			TEST_ASSERT_EQUAL(lash_end.layer, ABOVE_MOB_LAYER, "A lash up to a body further off drew under it")
+		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
+			qdel(lash)
+
 /// The wire swings out of the spool and reels back in, the held wire hidden for the swing; a wet one flicks.
 /datum/unit_test/voidcrew_widowline/play_deploy
 

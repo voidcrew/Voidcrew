@@ -300,7 +300,7 @@
  * limb it cuts, if it can clear them there (wire_lash_clear_legs()).
  */
 /// How fast the piece of a lash that runs along a leg beyond the wielder goes.
-#define WIRE_LASH_SNAP_FADE (0.15 SECONDS)
+#define WIRE_LASH_SNAP_FADE (0.25 SECONDS)
 /// How far past the middle of the chest each line of a crossing cut runs, in pixels.
 #define WIRE_CROSS_PAST 6
 /// tg's lunge moves the wielder up to 8 pixels along pixel_y, which moves him in the map's front-to-back order: the
@@ -363,21 +363,32 @@
 #undef WIRE_LASH_ROW_TARGET
 
 /**
- * Whether a lash from `user` meets `body` behind it, so its end is drawn under the body: an arm or leg on the far side
- * of a body standing side on (wire_limb_far()), behind the near limbs and the torso. Facing toward or away from the
- * viewer neither side is further off, and the line is drawn over the body. In a crossing cut, the wire from the
- * wielder's far hand side on (`hand_behind`) runs through behind the near hand's, under both bodies.
+ * Whether a lash from `user` meets `body` behind it, so its end is drawn under the body:
+ * - A body standing nearer the viewer than the wielder (a row down the screen) is met on its far side, whatever way it
+ *   faces: the line runs down from the hand to its outline and on behind it, its head, back and other leg, to the part
+ *   it cuts. A crossing cut's two wires cross behind it too.
+ * - Side on, an arm or leg on the far side of a standing body (wire_limb_far()), behind the near limbs and the torso.
+ *   In a crossing cut, the wire from the wielder's far hand side on (`hand_behind`) runs through behind the near
+ *   hand's, under both bodies.
+ * - A body further off than the wielder is met on the side facing the viewer: over it. So is one lying on the floor.
  */
 /proc/wire_lash_behind(mob/living/user, mob/living/body, zone, hand_behind, cross)
+	var/turf/body_turf = get_turf(body)
+	var/turf/user_turf = get_turf(user)
+	if(body.body_position != LYING_DOWN && body_turf && user_turf && body_turf.y < user_turf.y)
+		return TRUE
 	if(cross)
 		return hand_behind && (user.dir & (EAST | WEST))
 	return body.body_position != LYING_DOWN && wire_limb_far(zone, body.dir)
 
-/// While its lash shows, the wire hanging in the hand isn't drawn: the line out of the grip is the wire. It is back as
-/// the line fades. A longer hide already running (the swing out of the spool, the garrote) is left as it is. Facing
-/// away, the line leaves the hand behind `user`'s back, out of sight: the wire stays in the hand, or it would look empty.
+/**
+ * While its lash shows, the wire hanging in the hand isn't drawn, whichever way `user` faces: the line out of the grip
+ * is the wire, out to the target. It is back as the line fades, never both at once and never neither. Every lash goes
+ * through here (wire_lash_at()): an ordinary swing, the aimed sever, the Arc's, and both halves of a crossing cut, each
+ * wire for its own hand. A longer hide already running (the swing out of the spool, the garrote) is left as it is.
+ */
 /obj/item/melee/cyberware_monowire/proc/wire_lash_hide(mob/living/user)
-	if(user.dir == NORTH || inhand_hidden_until >= world.time + WIRE_LASH_HIDE)
+	if(inhand_hidden_until >= world.time + WIRE_LASH_HIDE)
 		return
 	hide_inhand_for(WIRE_LASH_HIDE)
 
