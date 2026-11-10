@@ -1290,6 +1290,14 @@
 	lunge = 3
 	enter_range = COMBAT_MESSAGE_RANGE
 
+// The gore pass rears every finisher's attacker up for its wind-up, bigger and tipped back away from the victim
+// (visuals/finisher_motion.dm): a beast looming over its kill. A garroter leans in to throw the wire, and the wire
+// leaves the hand where the hand is drawn, so that picture is taken straight back off, before any client sees it.
+/datum/hv_finisher_stage/windup/garrote/enter()
+	. = ..()
+	if(host && !QDELETED(host.user))
+		host.user.hv_vis_stop(list(HV_VIS_TAG_REAR))
+
 /datum/hv_finisher_stage/windup/garrote/enter_message()
 	return "[host.user] loops the wire around [host.victim]'s neck."
 
