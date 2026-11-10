@@ -919,9 +919,8 @@
 
 /**
  * The garroter has just been leaned somewhere else (the kill's lean), sliding there over tg's offset time: each strand's
- * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not drawn
- * again: a picture a client already has moves in step with the body, a new one starts a frame behind it. Returns FALSE
- * if there are none to move.
+ * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not taken
+ * down and drawn again. Returns FALSE if there are none to move.
  */
 /datum/hv_finisher/garrote/proc/lean_wire()
 	if(QDELETED(user) || QDELETED(victim))

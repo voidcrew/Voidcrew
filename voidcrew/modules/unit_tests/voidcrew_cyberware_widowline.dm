@@ -453,6 +453,43 @@
 		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
 			qdel(lash)
 
+/// The wire leaves the hand at the pixel its spool lights: the hand table against the held art, facing by facing; a
+/// lash's line placed on that pixel; and the spool left in the hand while the line is out.
+/datum/unit_test/voidcrew_widowline/wire_hand_point
+
+/datum/unit_test/voidcrew_widowline/wire_hand_point/Run()
+	var/mob/living/carbon/human/consistent/user = wielder(spot(2, 2))
+	var/obj/item/melee/cyberware_monowire/wire = held(user)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 1))
+	var/icon/spools = icon('voidcrew/modules/hyperviolence/wire/icons/wire_spool.dmi') // WIRE_SPOOL_ICON
+	for(var/facing in GLOB.cardinals)
+		user.setDir(facing)
+		for(var/side in list("left", "right"))
+			var/list/hand = wire_hand_point(user, side)
+			// A hand behind the body shows no lit pixel: its line comes out from behind the body.
+			if(hand[3])
+				continue
+			// Icon pixels count from 1 at the lower left corner; the table counts from the middle of the tile.
+			var/icon/held_art = icon(side == "left" ? wire.lefthand_file : wire.righthand_file)
+			var/lit = held_art.GetPixel(hand[1] + 17, hand[2] + 17, wire.inhand_icon_state, facing)
+			TEST_ASSERT_EQUAL(lit, "#f86cfa", "Facing [dir2text(facing)], the [side] hand's wire isn't drawn from the spool's lit pixel ([hand[1]], [hand[2]])")
+			var/spool = spools.GetPixel(hand[1] + 17, hand[2] + 17, "[wire.inhand_icon_state]_[side]", facing)
+			TEST_ASSERT_EQUAL(spool, lit, "Facing [dir2text(facing)], the [side] hand's spool on its own has no lit pixel where the wire leaves it")
+		var/turf/stand = get_step(user, facing)
+		victim.forceMove(stand)
+		victim.setDir(REVERSE_DIR(facing))
+		wire.show_inhand()
+		wire.wire_lash_at(user, victim, BODY_ZONE_CHEST)
+		var/list/grip = wire_hand_point(user, wire.held_side(user))
+		var/on_grip = FALSE
+		for(var/obj/effect/abstract/wire_reach/piece in get_turf(user))
+			if(piece.pixel_w == user.pixel_x + grip[1] && piece.pixel_y + piece.pixel_z == user.pixel_y + grip[2])
+				on_grip = TRUE
+		TEST_ASSERT(on_grip, "A lash facing [dir2text(facing)] doesn't start on the pixel the wire leaves the hand from")
+		TEST_ASSERT(wire.inhand_hidden_until > world.time && wire.inhand_bare_until <= world.time, "A lash facing [dir2text(facing)] took the spool out of the hand with the wire")
+		for(var/obj/effect/abstract/wire_reach/lash in range(1, user))
+			qdel(lash)
+
 /// The wire swings out of the spool and reels back in, the held wire hidden for the swing; a wet one flicks.
 /datum/unit_test/voidcrew_widowline/play_deploy
 
