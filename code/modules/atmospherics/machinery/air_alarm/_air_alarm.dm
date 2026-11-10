@@ -485,7 +485,8 @@ GLOBAL_LIST_EMPTY_TYPED(air_alarms, /obj/machinery/airalarm)
 			var/threshold_type = params["threshold_type"]
 			var/value = params["value"]
 			tlv.set_value(threshold_type, value)
-			investigate_log("threshold value for [threshold]:[threshold_type] was set to [value] by [key_name(user)]", INVESTIGATE_ATMOS)
+			// VOIDCREW EDIT CHANGE - port of tgstation/tgstation#98413: value comes from a client, so the log must encode it
+			investigate_log("threshold value for [threshold]:[threshold_type] was set to [html_encode(value)] by [key_name(user)]", INVESTIGATE_ATMOS)
 
 			check_enviroment()
 

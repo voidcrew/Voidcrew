@@ -84,6 +84,8 @@
 #define HV_GUT_TETHER_RANGE 3
 /// How far apart the guts and their owner can get before the tether tears.
 #define HV_GUT_TETHER_SNAP_RANGE 7
+/// How long guts dragged in on the tether take to cross a tile.
+#define HV_GUT_DRAG_STEP (0.1 SECONDS)
 /// Minimum time between the pain of two tugs on the tether.
 #define HV_GUT_YANK_COOLDOWN (2 SECONDS)
 /// Brute damage to the chest from one tug on the tether.

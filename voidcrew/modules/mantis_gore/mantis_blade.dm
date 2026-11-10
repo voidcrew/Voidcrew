@@ -16,6 +16,8 @@
 	var/datum/weakref/cut_wielder
 	/// Until this world.time the blade drips.
 	var/drenched_until = 0
+	/// Until this world.time the blade is drawn soaked, not just bloodied.
+	var/soaked_until = 0
 	/// Drops it can still leave from this drench.
 	var/drips_left = 0
 	/// Timer of the next drop.
@@ -90,6 +92,8 @@
 /// A cut that did damage: the artery count, the scorch seam and the X-slash count.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_cut_landed(mob/living/victim, mob/living/user, obj/item/bodypart/limb, damage, attack_direction)
 	if(limb && iscarbon(victim))
+		// The swing's slash goes on the part it cut (mantis_swing.dm).
+		mantis_swing_impact_onto(victim, limb.body_zone)
 		cut_fx(victim, limb)
 		if(gore_moves & MANTIS_MOVE_ARTERY)
 			mantis_gash(victim, user, limb, damage, attack_direction)
@@ -155,7 +159,10 @@
 	var/datum/wound_pregen_data/pregen = GLOB.all_wound_pregen_data[wound_type]
 	if(!pregen?.can_be_applied_to(limb, list(WOUND_SLASH)))
 		return FALSE
-	var/datum/wound/torn = hv_crit_apply_wound(limb, wound_type, attack_direction, src)
+	// The throat's and the aorta's wounds are #509's and tg's: given the cut's direction they throw tg's wound
+	// spray along it, a line of blood three tiles long. The tear throws its own drops instead, so they get none.
+	var/own_wound = ispath(wound_type, /datum/wound/slash/flesh/critical/hv_carotid/limb)
+	var/datum/wound/torn = hv_crit_apply_wound(limb, wound_type, own_wound ? attack_direction : null, src)
 	if(!torn)
 		return FALSE
 	var/seared = ispath(artery_wound_type, /datum/wound/slash/flesh/critical/hv_carotid/limb/seared)
@@ -165,12 +172,12 @@
 		if(!istype(torn, /datum/wound/slash/flesh/critical/hv_carotid/limb))
 			torn.adjust_blood_flow(-torn.blood_flow * 0.4)
 		victim.hv_add_hit_line("[victim]'s [place] is seared open to the artery!", HV_LINE_BOLD, "Your [place] is seared open to the artery!", DEFAULT_MESSAGE_RANGE)
-		victim.hv_blood_spray(attack_direction, 2)
 	else
 		victim.hv_add_hit_line("The artery in [victim]'s [place] is cut!", HV_LINE_BOLD, "The artery in your [place] is cut!", DEFAULT_MESSAGE_RANGE)
-		victim.hv_blood_spray(attack_direction, 4)
 		drench(victim)
+	// What it looks like: one spurt of drops the way the cut went, then the blood runs down the body.
 	mantis_spurt_fx(victim, limb.body_zone, attack_direction, seared)
+	mantis_artery_run_fx(victim, limb.body_zone, torn)
 	log_combat(user, victim, "tore an artery in", src, "([limb.plaintext_zone])")
 	return TRUE
 
@@ -223,7 +230,7 @@
 	)
 	if(!QDELETED(victim))
 		victim.set_staggered_if_lower(MANTIS_XSLASH_STAGGER)
-	mantis_xslash_cross(user, victim, off_blade)
+	mantis_xslash_cross(user, victim, off_blade, zone)
 	log_combat(user, victim, "x-slashed", src)
 
 // =========================================================================
@@ -274,7 +281,10 @@
 	var/state = "[base_icon_state]_[pose]_glint_[hand_side()]"
 	if(!icon_exists(MANTIS_GORE_ICON, state))
 		return null
-	return cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	var/obj/effect/abstract/cyberware_anim/glint = cyberware_anim_play(holder, MANTIS_GORE_ICON, state, MANTIS_ANIM_BLADE_LAYER, 0.3 SECONDS, glow = TRUE)
+	// Side on, the far blade's light stays behind the near blade.
+	glint?.sort_as_arm(hand_side())
+	return glint
 
 // =========================================================================
 // BLOOD
@@ -286,7 +296,9 @@
 
 /// A kill, a torn artery, a rip, the scissor or the X-slash: the blade runs red with [source]'s blood and drips
 /// for a while. Only the blade that did it: the other keeps whatever it had.
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/drench(mob/living/source)
+/// [light]: the steel that went through is bloodied (the lighter coat), not soaked: the impale and the scissor,
+/// so the held blade matches the one the finisher drew.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/drench(mob/living/source, light = FALSE)
 	if(item_flags & NO_BLOOD_ON_ITEM)
 		return FALSE
 	if(isliving(source) && source.can_bleed(BLOOD_COVER_ITEMS) == BLEED_SPLATTER)
@@ -294,6 +306,8 @@
 	if(!is_bloody())
 		return FALSE
 	drenched_until = world.time + MANTIS_DRENCH_TIME
+	if(!light)
+		soaked_until = drenched_until
 	drips_left = MANTIS_DRIP_MAX
 	if(!drip_timer)
 		drip_timer = addtimer(CALLBACK(src, PROC_REF(drip)), MANTIS_DRIP_INTERVAL, TIMER_STOPPABLE|TIMER_DELETE_ME)
@@ -326,6 +340,7 @@
 		drip_timer = null
 	var/was_drenched = drenched_until
 	drenched_until = 0
+	soaked_until = 0
 	drips_left = 0
 	if(was_drenched)
 		refresh_held()
@@ -356,7 +371,7 @@
 		return
 	var/blood_color = get_blood_dna_color()
 	var/drenched = world.time < drenched_until
-	var/coat_state = "[standing.icon_state]_[drenched ? "soak" : "blood"]"
+	var/coat_state = "[standing.icon_state]_[world.time < soaked_until ? "soak" : "blood"]"
 	if(icon_exists(icon_file, coat_state))
 		var/mutable_appearance/coat = mutable_appearance(icon_file, coat_state, appearance_flags = RESET_COLOR)
 		coat.color = blood_color

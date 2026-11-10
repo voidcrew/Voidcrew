@@ -118,7 +118,7 @@
 	var/panel_x
 	var/panel_width
 	var/panel_height
-	/// TRUE when the panel opens on the subject's left, away from the screen edge.
+	/// TRUE when the panel opens on the subject's left: the reader is to their right, or the right has no room.
 	var/flipped = FALSE
 	/// Pixel offset every image carries. Zero on the subject; on a turf it lines
 	/// the scatter up with where the subject was drawn.
@@ -410,10 +410,24 @@
 		if(READOUT_SILHOUETTE)
 			height = 20 + 24 * rows
 
-	// Open away from the edge of the reader's screen.
+	// Open on the subject's far side from the reader, so the panel never lies over the reader or the ground
+	// between the two; on the near side only when the far side would run off the reader's screen.
 	var/turf/viewer_turf = get_turf(viewer)
 	var/turf/target_turf = get_turf(target)
-	flipped = viewer_turf && target_turf && (target_turf.x - viewer_turf.x >= 2)
+	flipped = FALSE
+	if(viewer_turf && target_turf)
+		// The left edge of the subject's tile on the reader's screen, in pixels from the middle of it. A zoom pans
+		// the screen through the client's own pixel offset.
+		var/tile_left = (target_turf.x - viewer_turf.x) * ICON_SIZE_X - ICON_SIZE_X / 2 - (viewer.client?.pixel_x || 0)
+		var/list/screen_pixels = view_to_pixels(viewer.client?.view || world.view)
+		var/half_screen = screen_pixels[1] / 2
+		var/fits_right = tile_left + READOUT_PANEL_X + width <= half_screen
+		var/fits_left = tile_left - 5 - width >= -half_screen
+		flipped = target_turf.x < viewer_turf.x
+		if(flipped && !fits_left && fits_right)
+			flipped = FALSE
+		else if(!flipped && !fits_right && fits_left)
+			flipped = TRUE
 	panel_x = flipped ? (-5 - width) : READOUT_PANEL_X
 	panel_width = width
 	panel_height = height

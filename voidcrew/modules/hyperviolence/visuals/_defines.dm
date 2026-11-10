@@ -29,6 +29,7 @@
 #define HV_VIS_TAG_LIFT "hv_lift"
 #define HV_VIS_TAG_SHAKE "hv_shake"
 #define HV_VIS_TAG_REAR "hv_rear"
+#define HV_VIS_TAG_SHUDDER "hv_shudder"
 
 /// What ends a held animation (/datum/component/hv_motion_hold).
 #define HV_VIS_END_MOVE (1<<0)
@@ -87,6 +88,8 @@
 /// How long a corpse keeps a pose (a slide, a curl) before it eases back. Moving, standing up or
 /// being revived ends it at once.
 #define HV_VIS_POSE_HOLD (20 MINUTES)
+/// How long a held pose takes to ease back when something ends it early (the body is dragged off).
+#define HV_VIS_POSE_RELEASE (0.3 SECONDS)
 /// The beat an executed body holds before it slumps.
 #define HV_VIS_SLUMP_BEAT (0.3 SECONDS)
 /// How a body died, which decides how it falls (hv_vis_death_kind()).
@@ -111,8 +114,14 @@
 #define HV_VIS_TUMBLE_BRAIN 3
 #define HV_VIS_TUMBLE_ORGAN 4
 #define HV_VIS_TUMBLE_SLIDE 5
-/// Throw speed (tiles a decisecond) of a tumbling part, slow enough to see the arc.
-#define HV_VIS_TUMBLE_SPEED 1
+/// A part that comes off but goes nowhere (a head that bursts where it is).
+#define HV_VIS_TUMBLE_NONE 6
+/// How long a tumbling part takes to cross a tile, slow enough to see the arc.
+#define HV_VIS_TUMBLE_STEP (0.1 SECONDS)
+/// How long a part with nowhere to fly takes to drop to the floor.
+#define HV_VIS_TUMBLE_DROP (0.2 SECONDS)
+/// The layer of a part in the air: over bodies on the floor, under anyone on their feet.
+#define HV_VIS_TUMBLE_LAYER (LYING_MOB_LAYER + 0.05)
 /// Most blood streaks one tumbling part leaves along its way.
 #define HV_VIS_TUMBLE_MAX_STREAKS 4
 
@@ -137,7 +146,13 @@
 #define HV_VIS_PRESS_LEAN 4
 /// The still moment at the end of the press, after the trembling stops.
 #define HV_VIS_PRESS_PAUSE (0.3 SECONDS)
+/// How far off the middle of its tile tg's muzzle flash art sits, toward the way it faces, in pixels.
+#define HV_VIS_FLASH_CORE 9
+/// How far short of the head the barrel's end, and so the flash, sits.
+#define HV_VIS_FLASH_SHORT 6
 /// Screen shake of a finisher's killing blow, for everyone who sees it: length and strength in tiles.
 #define HV_VIS_KILL_SHAKE_TIME 4
 #define HV_VIS_KILL_SHAKE_STRENGTH 0.12
 #define HV_VIS_KILL_SHAKE_RANGE 7
+/// How long each jolt of a mauled body's shudder lasts.
+#define HV_VIS_SHUDDER_BEAT (0.02 SECONDS)
