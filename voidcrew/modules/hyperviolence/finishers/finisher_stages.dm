@@ -276,7 +276,11 @@
 
 /datum/hv_finisher_stage/kill/decapitate/gore(spray_dir)
 	host.victim.hv_blood_spray(spray_dir, spray_strength)
-	hv_finisher_take_head(host.victim, WOUND_SLASH)
+	// Where the head is on the body, read before it comes off.
+	var/list/head_at = host.victim.hv_vis_head_offset()
+	var/obj/item/bodypart/head/head = hv_finisher_take_head(host.victim, WOUND_SLASH)
+	// It falls from the neck toward whoever took it, and goes no further: a head carries the brain.
+	head?.hv_fling(REVERSE_DIR(spray_dir), 0, null, head_at)
 
 /// Bursts the head through the shared hook, which keeps the brain intact
 /datum/hv_finisher_stage/kill/burst_head
