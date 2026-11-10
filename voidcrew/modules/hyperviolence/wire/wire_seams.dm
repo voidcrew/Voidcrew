@@ -88,7 +88,7 @@ GLOBAL_LIST_INIT(hv_wire_stump_zones, list(BODY_ZONE_HEAD))
 // the moment the limb is lost, which for a wire is the hit: its limb stays drawn on for a beat after, and the lash still
 // runs to it. None of that plays for a limb the wire takes (hv_wire_take_part()): the cut is clean and the body stands
 // as it stood; the garrote, taking a head, lets its own body go in its own one move (let_go_at_kill()). A leg gone
-// still limps from then on.
+// still limps from then on, and puts someone on their feet down once it has dropped (wire_leg_fall()).
 /mob/living/carbon/hv_vis_on_limb_lost(obj/item/bodypart/lost_limb, special, dismembered)
 	if(isnull(hv_sever_spray))
 		return ..()

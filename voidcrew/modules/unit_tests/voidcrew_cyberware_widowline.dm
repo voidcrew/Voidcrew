@@ -799,6 +799,29 @@
 	TEST_ASSERT_NOTNULL(head, "The plain wire took the head off someone only stunned")
 	TEST_ASSERT_NOTNULL(locate(/datum/wound/slash/flesh/critical/hv_carotid) in head.wounds, "The plain wire didn't slit the throat")
 
+/// A leg cut from someone on their feet puts them down (tg's knockdown) once it has dropped; an arm doesn't.
+/datum/unit_test/voidcrew_widowline/wire_leg_fall
+
+/datum/unit_test/voidcrew_widowline/wire_leg_fall/Run()
+	var/mob/living/carbon/human/user = wielder(spot(0, 1))
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 1))
+	var/obj/item/bodypart/leg = victim.get_bodypart(BODY_ZONE_L_LEG)
+	leg.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, victim, BODY_ZONE_L_LEG)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_L_LEG), "Fixture: the leg didn't come off")
+	TEST_ASSERT_EQUAL(victim.body_position, STANDING_UP, "The body went down before the leg dropped")
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "Someone on their feet stayed up after losing a leg")
+	TEST_ASSERT(victim.IsKnockdown(), "The fall after losing a leg isn't tg's knockdown")
+
+	var/mob/living/carbon/human/consistent/armless = allocate(/mob/living/carbon/human/consistent, spot(1, 2))
+	var/obj/item/bodypart/arm = armless.get_bodypart(BODY_ZONE_L_ARM)
+	arm.receive_damage(brute = 30, wound_bonus = CANT_WOUND)
+	cut(user, armless, BODY_ZONE_L_ARM)
+	TEST_ASSERT_NULL(armless.get_bodypart(BODY_ZONE_L_ARM), "Fixture: the arm didn't come off")
+	sleep(1 SECONDS)
+	TEST_ASSERT_EQUAL(armless.body_position, STANDING_UP, "Losing an arm put someone down")
+
 /// Every stump: the jumpsuit is cut away where the lost limb was, and comes back with the limb.
 /datum/unit_test/voidcrew_widowline/hv_mask_sleeves
 

@@ -7,7 +7,8 @@
  * - An aimed cut takes off an arm or leg that is already badly hurt (WIRE_SEVER_AT of its max damage before
  *   the hit), or less hurt on someone already down (WIRE_SEVER_AT_DOWN). Never a corpse, never through an
  *   Atlas frame (tg's can_dismember()), never an ally. The limb is off at the hit; it stays drawn on for a
- *   beat and slides off after (wire_sever_fx.dm).
+ *   beat and slides off after (wire_sever_fx.dm). Someone on their feet who loses a leg goes down once it has
+ *   dropped (wire_leg_fall()): tg's own knockdown, so the fall is tg's and they get up again on one leg.
  * - The Arc's charged wire sears the stump shut: little blood, no spray (wire_sever_fx.dm).
  * - It carries on into whoever stands right behind the target, and cleaves everyone else beside it, all as
  *   lines of the one hit message. Hurting someone at a trader outpost this way counts as an attack there.
@@ -239,7 +240,17 @@
 	else
 		victim.hv_add_hit_line("[victim]'s [zone_name] comes away clean!", HV_LINE_HUGE, "Your [zone_name] comes away clean!", DEFAULT_MESSAGE_RANGE)
 	log_combat(user, victim, "severed the [zone_name] of", src, cross ? "(crossing cut)" : null)
+	if(zone == BODY_ZONE_L_LEG || zone == BODY_ZONE_R_LEG)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(wire_leg_fall), victim, zone), WIRE_LEG_FALL_DELAY)
 	return severed
+
+/// Someone still on their feet without the leg in `zone` goes down: tg's knockdown, as a shove gives.
+/proc/wire_leg_fall(mob/living/carbon/victim, zone)
+	if(QDELETED(victim) || victim.stat == DEAD || victim.body_position != STANDING_UP || victim.get_bodypart(zone))
+		return
+	if(victim.movement_type & (FLYING | FLOATING))
+		return
+	victim.Knockdown(WIRE_LEG_KNOCKDOWN)
 
 // ---- Through and around ----
 
