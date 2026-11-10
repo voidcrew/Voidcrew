@@ -40,6 +40,8 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 	var/list/yard_previews_sent = list()
 	/// TRUE once the preview URL mappings went to the browser.
 	var/yard_mappings_sent = FALSE
+	/// Bumped when a commission put the player aboard: the client drops its fit when it sees a new value.
+	var/yard_fit_serial = 0
 
 // ---------------------------------------------------------------------------
 // Data
@@ -59,6 +61,7 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 		"free_ships" = !!CONFIG_GET(flag/free_ships),
 		"can_requisition" = !!(SSticker?.IsRoundInProgress() && can_requisition_hull(user)),
 		"crew_change" = crew_change_name(user),
+		"fit_serial" = yard_fit_serial,
 	)
 
 /// Fetches parts and ownership from the DB (sleeps) and caches them on the terminal.
@@ -403,7 +406,9 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 				yard_opened = TRUE
 				if(ui && !QDELETED(ui))
 					update_static_data(player, ui)
-			yard_refresh()
+			// Sent on every SHIPYARD open, so it may only reach the DB once a minute.
+			if(!yard_refreshed_at || world.time - yard_refreshed_at > LOBBY_YARD_REFRESH_INTERVAL)
+				yard_refresh()
 			return TRUE
 		if("yard_preview")
 			yard_send_preview(params["hull"])
@@ -533,21 +538,27 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 		set_notice("This leaves [crew_name].", "warn")
 		return
 	log_game("[key_name(player)] commissioned [hull.name] ([hull.type]) from the dock terminal[theme ? " in [theme.id]" : ""]")
-	player.spawn_ship_with_upgrades(hull, selections, theme, form_new)
+	var/unseated = player.spawn_ship_with_upgrades(hull, selections, theme, form_new)
 	release_join_lock(player_ckey)
-	yard_report_failed_launch(player)
+	// Aboard: the fit is built, so the client can forget it. On any failure it keeps it for a retry.
+	if(!QDELETED(src) && !istype(owner?.mob, /mob/dead/new_player))
+		yard_fit_serial++
+	yard_report_failed_launch(player, istype(unseated, /obj/structure/overmap/ship))
 
 /// Re-reads ownership after something may have been bought.
 /datum/lobby_terminal/proc/yard_refresh_after_purchase()
 	if(yard_opened)
 		yard_refresh()
 
-/// After a launch call returns: if the player is still in the lobby, say why.
-/datum/lobby_terminal/proc/yard_report_failed_launch(mob/dead/new_player/player)
+/**
+ * After a launch call returns: if the player is still in the lobby, say why.
+ * unseated: the ship was built but the player couldn't take a berth on it.
+ */
+/datum/lobby_terminal/proc/yard_report_failed_launch(mob/dead/new_player/player, unseated = FALSE)
 	if(QDELETED(src) || QDELETED(player) || !player.client || !istype(player.client.mob, /mob/dead/new_player))
 		return
 	goto_tab("shipyard")
-	if(player.spawning_ship)
+	if(unseated)
 		set_notice("Your ship is ready, but no berth is free aboard.", "bad")
 	else if(SSmapping.at_z_level_ceiling())
 		set_notice("The shipyard is congested. What you paid for stays yours; try again shortly.", "bad")
@@ -578,10 +589,13 @@ GLOBAL_LIST_EMPTY(lobby_yard_preview_files)
 		release_join_lock(player_ckey)
 		return
 	player.lobby_form_new = form_new
-	player.requisition_free_hull()
+	var/unseated = player.requisition_free_hull()
 	if(!QDELETED(player))
 		player.lobby_form_new = null
 	release_join_lock(player_ckey)
+	if(istype(unseated, /obj/structure/overmap/ship))
+		yard_report_failed_launch(player, TRUE)
+		return
 	// The fleet opened a berth while the request ran: requisition_free_hull() refused it.
 	if(!QDELETED(src) && !QDELETED(player) && player.client && istype(player.client.mob, /mob/dead/new_player) && !player.spawning_ship && !can_requisition_hull(player))
 		goto_tab("crews")

@@ -95,7 +95,7 @@ function Card(props: {
   const lines: [string, number | null, string][] = fit.map((f) => [
     f[0],
     f[1],
-    f[2] || 'red',
+    f[2] ?? 'red',
   ]);
   if (sv.lab) {
     lines.push(['Lab machines', sv.lab, '']);

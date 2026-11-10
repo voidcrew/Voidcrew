@@ -121,6 +121,8 @@ export function LobbyTerminal() {
   );
 
   const [tab, setTab] = useState<TabId>('crews');
+  /** Bumped when SHIPYARD is pressed while already on it. */
+  const [yardHome, setYardHome] = useState(0);
   const request = data.tab_request;
   useEffect(() => {
     if (request) {
@@ -156,7 +158,7 @@ export function LobbyTerminal() {
   } else if (tab === 'crews') {
     body = <CrewsTab />;
   } else if (tab === 'shipyard') {
-    body = <YardTab />;
+    body = <YardTab home={yardHome} />;
   } else {
     body = <HousingTab />;
   }
@@ -189,6 +191,9 @@ export function LobbyTerminal() {
               <Header
                 tab={tab}
                 setTab={(next) => {
+                  if (next === tab && next === 'shipyard') {
+                    setYardHome(yardHome + 1);
+                  }
                   setTab(next);
                   if (confirmed) {
                     act('dismiss');

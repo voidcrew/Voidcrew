@@ -227,31 +227,44 @@
 /datum/lobby_terminal/proc/crew_enter_code(mob/dead/new_player/player, obj/structure/overmap/ship/ship, code)
 	if(!ship.join_password || ship.is_password_cleared(player.ckey))
 		return TRUE
-	var/ship_ref = REF(ship)
-	// A new code on the ship wipes everyone's wrong-code count for it.
-	var/code_hash = md5(lowertext(ship.join_password))
-	if(crew_code_seen[ship_ref] != code_hash)
-		crew_code_seen[ship_ref] = code_hash
-		clear_code_failures(null, ship_ref)
-	if(code_lock_wait(player.ckey, ship_ref))
-		set_notice("Too many wrong codes. Wait a minute.", "bad")
-		return TRUE
 	// Raw on purpose: captains set the code through raw TGUI params, so the attempt stays raw
 	// too (as select_job_on_ship() does). It is only compared, never shown or logged.
 	var/attempt = trim("[code || ""]", SHIP_JOIN_PASSWORD_MAX_LEN + 1)
-	if(!length(attempt))
+	if(!length(attempt) && !code_lock_wait(player.ckey, crew_code_key(ship)))
 		return FALSE
-	if(!ship.check_join_password(attempt))
-		if(note_code_failure(player.ckey, ship_ref))
+	switch(crew_check_code(player, ship, attempt))
+		if("locked")
 			set_notice("Too many wrong codes. Wait a minute.", "bad")
-		else
+		if("wrong")
 			set_notice("Wrong code.", "bad")
-		return TRUE
-	ship.password_cleared_ckeys[player.ckey] = TRUE
-	clear_code_failures(player.ckey, ship_ref)
-	log_game("[key_name(player)] entered the join code of ship [ship.name] at the lobby terminal")
-	set_notice(null)
+		else
+			log_game("[key_name(player)] entered the join code of ship [ship.name] at the lobby terminal")
+			set_notice(null)
 	return TRUE
+
+/// Limiter key for a ship's join code. A new code on the ship wipes everyone's wrong-code count for it.
+/datum/lobby_terminal/proc/crew_code_key(obj/structure/overmap/ship/ship)
+	var/ship_ref = REF(ship)
+	var/code_hash = md5(lowertext("[ship.join_password]"))
+	if(crew_code_seen[ship_ref] != code_hash)
+		crew_code_seen[ship_ref] = code_hash
+		clear_code_failures(null, ship_ref)
+	return ship_ref
+
+/**
+ * Checks a join code through the shared limiter and clears the player on a match. Used by the
+ * CODE field and by the old join menu's password popup (select_job_on_ship()).
+ * Returns "ok", "wrong" or "locked".
+ */
+/datum/lobby_terminal/proc/crew_check_code(mob/dead/new_player/player, obj/structure/overmap/ship/ship, attempt)
+	var/lock_key = crew_code_key(ship)
+	if(code_lock_wait(player.ckey, lock_key))
+		return "locked"
+	if(!ship.check_join_password(attempt))
+		return note_code_failure(player.ckey, lock_key) ? "locked" : "wrong"
+	ship.password_cleared_ckeys[player.ckey] = TRUE
+	clear_code_failures(player.ckey, lock_key)
+	return "ok"
 
 /datum/lobby_terminal/proc/crew_apply(mob/dead/new_player/player, obj/structure/overmap/ship/ship, note)
 	if(!ship.join_password || ship.is_password_cleared(player.ckey) || ship.find_crew_application(player.ckey))

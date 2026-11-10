@@ -79,6 +79,9 @@
 	data["notice"] = notice
 	data["tab_request"] = tab_request ? list("tab" = tab_request, "serial" = tab_request_serial) : null
 
+/// world.time the client's display metrics were last logged.
+/datum/lobby_terminal/var/metrics_logged_at = -1 MINUTES
+
 /datum/lobby_terminal/proc/shell_act(action, list/params, mob/dead/new_player/user)
 	switch(action)
 		if("join")
@@ -127,6 +130,10 @@
 			return TRUE
 		if("metrics")
 			// Display metrics from the client (Windows scaling, pane size), logged once per load for tuning.
+			// A client can send this as often as it likes, so at most once a minute reaches the log.
+			if(world.time < metrics_logged_at + 1 MINUTES)
+				return FALSE
+			metrics_logged_at = world.time
 			log_tgui(user, "Lobby terminal metrics: dpr [text2num(params["dpr"])], pane [text2num(params["w"])]x[text2num(params["h"])], scale [text2num(params["s"])], grid [text2num(params["cols"])]x[text2num(params["rows"])]", window = window)
 			return FALSE
 	return FALSE

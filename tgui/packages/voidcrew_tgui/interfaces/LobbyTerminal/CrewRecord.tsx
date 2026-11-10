@@ -8,13 +8,13 @@ import { useBackend } from 'tgui/backend';
 import {
   Blocks,
   Btn,
+  Field,
   Frame,
   Put,
   pad,
   RPut,
   Rule,
   TOP,
-  useGrid,
   wrap,
 } from './term';
 import type { Crew, LobbyData } from './types';
@@ -37,62 +37,6 @@ export function cut(str: string, n: number): string {
 
 /** Locked and not yet cleared to board. */
 export const isLocked = (c: Crew) => !!c.locked && !c.cleared;
-
-/** A one-line text field on the grid, drawn in amber inside [ ]. Enter submits. */
-function Field(props: {
-  x: number;
-  y: number;
-  w: number;
-  value: string;
-  max: number;
-  disabled?: boolean;
-  onChange: (value: string) => void;
-  onEnter: () => void;
-}) {
-  const { x, y, w, value, max, disabled, onChange, onEnter } = props;
-  const { cw, ch } = useGrid();
-  return (
-    <>
-      <Put x={x} y={y} cls={disabled ? 'faint' : 'amb'}>
-        {`[${' '.repeat(w)}]`}
-      </Put>
-      <input
-        type="text"
-        value={value}
-        maxLength={max}
-        disabled={disabled}
-        spellCheck={false}
-        autoComplete="off"
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            onEnter();
-          }
-        }}
-        style={{
-          position: 'absolute',
-          left: Math.round((x + 1) * cw),
-          top: Math.round(y * ch),
-          width: Math.round(w * cw),
-          height: ch,
-          padding: 0,
-          margin: 0,
-          border: 'none',
-          outline: 'none',
-          background: 'transparent',
-          color: 'var(--lt-amb)',
-          caretColor: 'var(--lt-amb)',
-          font: 'inherit',
-          lineHeight: `${ch}px`,
-          textShadow: 'inherit',
-          userSelect: 'text',
-          zIndex: 6,
-        }}
-      />
-    </>
-  );
-}
 
 type Props = {
   crew: Crew;
@@ -273,6 +217,7 @@ export function CrewRecord(props: Props) {
         value={code}
         max={CODE_MAX}
         disabled={waiting}
+        secret
         onChange={setCode}
         onEnter={sendCode}
       />,

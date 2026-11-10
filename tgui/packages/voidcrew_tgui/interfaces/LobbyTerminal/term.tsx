@@ -139,6 +139,73 @@ export function Btn(props: BtnProps) {
   );
 }
 
+type FieldProps = {
+  /** Column of the opening bracket; the text starts one cell to the right. */
+  x: number;
+  y: number;
+  /** Cells between the brackets. */
+  w: number;
+  value: string;
+  max: number;
+  disabled?: boolean;
+  /** Mask the text (codes). */
+  secret?: boolean;
+  onChange: (value: string) => void;
+  onEnter: () => void;
+};
+
+/**
+ * A one-line text field on the grid: `[          ]` in amber with an input over it.
+ * Enter submits. tgui-core's key passthrough ignores keys typed into an input, so typing
+ * here never reaches the player's BYOND hotkeys.
+ */
+export function Field(props: FieldProps) {
+  const { x, y, w, value, max, disabled, secret, onChange, onEnter } = props;
+  const { cw, ch } = useGrid();
+  return (
+    <>
+      <Put x={x} y={y} cls={disabled ? 'faint' : 'amb'}>
+        {`[${' '.repeat(w)}]`}
+      </Put>
+      <input
+        type={secret ? 'password' : 'text'}
+        value={value}
+        maxLength={max}
+        disabled={disabled}
+        spellCheck={false}
+        autoComplete="off"
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter();
+          }
+        }}
+        style={{
+          position: 'absolute',
+          left: Math.round((x + 1) * cw),
+          top: Math.round(y * ch),
+          width: Math.round(w * cw),
+          height: ch,
+          padding: 0,
+          margin: 0,
+          border: 'none',
+          outline: 'none',
+          background: 'transparent',
+          color: disabled ? 'var(--lt-faint)' : 'var(--lt-amb)',
+          caretColor: 'var(--lt-amb)',
+          font: 'inherit',
+          lineHeight: `${ch}px`,
+          letterSpacing: 0,
+          textShadow: 'inherit',
+          userSelect: 'text',
+          zIndex: 6,
+        }}
+      />
+    </>
+  );
+}
+
 type FrameProps = {
   x: number;
   y: number;

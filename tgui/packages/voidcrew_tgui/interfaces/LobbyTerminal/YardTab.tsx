@@ -255,7 +255,10 @@ const HOME: YardView = {
 };
 
 /** Survives the tab unmounting (tab switch, the CONFIRMED box). */
-const store: { view: YardView } = { view: HOME };
+const store: { view: YardView; fitSerial: number | null } = {
+  view: HOME,
+  fitSerial: null,
+};
 /** Hulls whose preview pictures have been asked for this session. */
 const previewed = new Set<string>();
 
@@ -575,12 +578,31 @@ function Waiting() {
   );
 }
 
-export function YardTab() {
+export function YardTab(props: { home: number }) {
   const { data, act } = useBackend<LobbyData>();
   const [view, set] = useYardView();
   useEffect(() => {
     act('yard_open');
   }, []);
+  // SHIPYARD pressed again while on it: back to the yard's front page.
+  const [home, setHome] = useState(props.home);
+  if (home !== props.home) {
+    setHome(props.home);
+    if (view.screen !== 'home') {
+      set(HOME);
+    }
+  }
+  // A commission put the player aboard: the fit was built, so forget it. A refusal keeps it.
+  const fitSerial = data.fit_serial;
+  useEffect(() => {
+    if (fitSerial === undefined) {
+      return;
+    }
+    if (store.fitSerial !== null && store.fitSerial !== fitSerial) {
+      set(HOME);
+    }
+    store.fitSerial = fitSerial;
+  }, [fitSerial]);
 
   const catalog = useMemo(() => data.catalog || [], [data.catalog]);
   const hull = useMemo(
@@ -616,11 +638,7 @@ export function YardTab() {
       <Bill
         ctx={ctx}
         hull={hull}
-        onCommission={(params) => {
-          // The client forgets the fit once it is sent.
-          set(HOME);
-          act('yard_commission', params);
-        }}
+        onCommission={(params) => act('yard_commission', params)}
       />
     );
   }

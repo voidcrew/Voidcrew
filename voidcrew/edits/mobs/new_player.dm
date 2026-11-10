@@ -74,14 +74,24 @@
 	// Password gate. Saved clearance lasts until a password change or join access reset.
 	// encode = FALSE: captains set the password through raw TGUI params, so the attempt
 	// must stay raw too or any password with an HTML-special character never matches.
+	// Wrong guesses go through the dock terminal's code limiter (lobby_terminal/lobby_crews.dm).
 	if(!ship.is_password_cleared(ckey))
-		var/attempt = tgui_input_text(src, "This ship is password-locked by its crew. Enter the join password.", "[ship.name] - Join Password", max_length = SHIP_JOIN_PASSWORD_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
-		if(isnull(attempt) || QDELETED(ship))
-			return select_ship() // Cancelled, timed out, or the ship died mid-prompt
-		if(!ship.check_join_password(attempt))
-			to_chat(src, span_warning("Incorrect join password for [ship.name]."))
+		var/datum/lobby_terminal/terminal = client?.lobby_terminal
+		if(!terminal)
+			return
+		if(terminal.code_lock_wait(ckey, terminal.crew_code_key(ship)))
+			to_chat(src, span_warning("Too many wrong passwords for [ship.name]. Wait a minute."))
 			return select_ship()
-		ship.password_cleared_ckeys[ckey] = TRUE
+		var/attempt = tgui_input_text(src, "This ship is password-locked by its crew. Enter the join password.", "[ship.name] - Join Password", max_length = SHIP_JOIN_PASSWORD_MAX_LEN, encode = FALSE, timeout = 60 SECONDS)
+		if(isnull(attempt) || QDELETED(ship) || QDELETED(terminal))
+			return select_ship() // Cancelled, timed out, or the ship died mid-prompt
+		switch(terminal.crew_check_code(src, ship, attempt))
+			if("locked")
+				to_chat(src, span_warning("Too many wrong passwords for [ship.name]. Wait a minute."))
+				return select_ship()
+			if("wrong")
+				to_chat(src, span_warning("Incorrect join password for [ship.name]."))
+				return select_ship()
 
 	// Build job choices
 	var/list/job_choices = list()
@@ -134,6 +144,7 @@
 /**
  * Actually spawn the ship with the given upgrade selections and theme.
  * preset_form_new: the crew-leave answer the dock terminal already collected (lobby_terminal/lobby_yard.dm); null asks with a popup.
+ * Returns the ship when it was built but the player couldn't be seated on it.
  */
 /mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme, preset_form_new = null)
 	if(!template)
@@ -173,7 +184,10 @@
 	to_chat(src, span_notice("Your ship is ready."))
 
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
+		// The hull exists and is theirs; let them try again from the crew list.
+		spawning_ship = FALSE
 		to_chat(src, span_danger("Your berth is unavailable."))
+		return target
 
 /**
  * Spawns a free hull for a player the fleet has no room for, and seats them on it as
@@ -187,6 +201,7 @@
  *
  * The gate is re-checked here rather than trusted from ui_act, since the fleet can
  * open up in the time it takes someone to read the menu.
+ * Returns the ship when it was built but the player couldn't be seated on it.
  */
 /mob/dead/new_player/proc/requisition_free_hull()
 	if(!SSticker?.IsRoundInProgress())
@@ -224,7 +239,10 @@
 	ship_metric_purchased(target, src, requisition = TRUE)
 
 	if(!AttemptSpawnOnShip(target.job_slots[1], target))
+		// The hull exists and is theirs; let them try again from the crew list.
+		spawning_ship = FALSE
 		to_chat(src, span_danger("Your berth is unavailable."))
+		return target
 
 /**
  * Join as the given job

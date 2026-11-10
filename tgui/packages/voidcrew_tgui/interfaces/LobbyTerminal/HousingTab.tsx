@@ -1,11 +1,21 @@
 /**
  * HOUSING tab: player outposts taking residents (DM: lobby_housing.dm).
- * Draws only with the term.tsx primitives, plus one input for the CODE field.
+ * Draws only with the term.tsx primitives.
  */
 import { Fragment, type ReactNode, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 
-import { Blocks, Btn, type Cls, Frame, Put, Rule, TOP, useGrid } from './term';
+import {
+  Blocks,
+  Btn,
+  type Cls,
+  Field,
+  Frame,
+  Put,
+  Rule,
+  TOP,
+  useGrid,
+} from './term';
 import type { LobbyData, Outpost, OutpostMode } from './types';
 
 const MODES: Record<OutpostMode, [string, Cls]> = {
@@ -25,54 +35,6 @@ const FIELD = 10;
 const MOVE_IN = '[ MOVE IN ]';
 /** Widest key group at the right of a row: CODE [field] [ MOVE IN ]. */
 const KEYS_W = 5 + FIELD + 3 + MOVE_IN.length;
-
-/** A text field on the grid, n cells wide, drawn in the terminal font. */
-function CodeField(props: {
-  x: number;
-  y: number;
-  n: number;
-  value: string;
-  disabled: boolean;
-  onChange: (value: string) => void;
-  onEnter: () => void;
-}) {
-  const { x, y, n, value, disabled, onChange, onEnter } = props;
-  const { cw, ch } = useGrid();
-  return (
-    <input
-      type="password"
-      maxLength={64}
-      spellCheck={false}
-      autoComplete="off"
-      disabled={disabled}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          onEnter();
-        }
-      }}
-      style={{
-        position: 'absolute',
-        left: x * cw,
-        top: y * ch,
-        width: n * cw,
-        height: ch,
-        padding: 0,
-        margin: 0,
-        border: 'none',
-        outline: 'none',
-        background: 'transparent',
-        color: disabled ? 'var(--lt-faint)' : 'var(--lt-amb)',
-        caretColor: 'var(--lt-amb)',
-        font: 'inherit',
-        lineHeight: 'inherit',
-        letterSpacing: 0,
-        zIndex: 6,
-      }}
-    />
-  );
-}
 
 export function HousingTab() {
   const { act, data } = useBackend<LobbyData>();
@@ -115,15 +77,14 @@ export function HousingTab() {
         <Put x={fx - 6} y={y} cls={cls}>
           CODE
         </Put>
-        <Put x={fx - 1} y={y} cls={cls}>
-          {`[${' '.repeat(FIELD)}]`}
-        </Put>
-        <CodeField
-          x={fx}
+        <Field
+          x={fx - 1}
           y={y}
-          n={FIELD}
+          w={FIELD}
           value={code}
+          max={64}
           disabled={locked}
+          secret
           onChange={(value) => setCodes({ ...codes, [o.ref]: value })}
           onEnter={() => moveIn(o)}
         />

@@ -145,6 +145,43 @@ GLOBAL_LIST_EMPTY(lobby_housing_requests)
 	var/denial = (!QDELETED(home) && player_key) ? housing_denial(home, player_key) : null
 	set_notice(denial || "Couldn't move in. Try again.", "warn")
 
+/**
+ * The old join menu's outpost button (ship_join_menu.dm). Asks for the code in a popup, through
+ * the same limiter as the HOUSING code field, then moves in like MOVE IN does.
+ */
+/datum/lobby_terminal/proc/housing_prompt_move_in(mob/dead/new_player/player, obj/structure/overmap/dynamic/player_outpost/home)
+	var/player_key = player?.ckey
+	if(!player_key || QDELETED(home))
+		return
+	var/attempt = ""
+	if(home.resident_mode == "password" && !home.has_resident_clearance(player_key))
+		var/lock_key = housing_code_key(home)
+		var/wait = code_lock_wait(player_key, lock_key)
+		if(wait)
+			to_chat(player, span_warning("The keypad is locked. Try again in [wait] seconds."))
+			return
+		attempt = tgui_input_text(player, "Enter the resident password for [home.name].", "Resident Arrival", max_length = 64, encode = FALSE, timeout = 60 SECONDS)
+		if(isnull(attempt) || QDELETED(player) || QDELETED(home) || QDELETED(src))
+			return
+		if(lock_key != housing_code_key(home))
+			to_chat(player, span_warning("Resident access changed. Select the outpost again."))
+			return
+		// Several popups can be open at once; the lock is checked again after each answer.
+		wait = code_lock_wait(player_key, lock_key)
+		if(wait)
+			to_chat(player, span_warning("The keypad is locked. Try again in [wait] seconds."))
+			return
+		if(attempt != home.resident_password)
+			if(note_code_failure(player_key, lock_key))
+				to_chat(player, span_warning("The keypad is locked."))
+			else
+				to_chat(player, span_warning("Wrong code."))
+			return
+		clear_code_failures(player_key, lock_key)
+	if(!try_join_lock(player))
+		return
+	housing_finish_move_in(player, home, attempt, player_key)
+
 /// INVITE outposts: tells the residents on shift that this player wants to move in.
 /datum/lobby_terminal/proc/housing_request(mob/dead/new_player/player, obj/structure/overmap/dynamic/player_outpost/home)
 	var/player_key = player.ckey

@@ -13,7 +13,7 @@
  *       .lt-deck-row
  *         .lt-keys > .lt-key.lt-key--join (or --ready/--notready + .lt-lamp), --observe, --character
  *         .lt-grille-slot > .lt-grille
- *         .lt-tray > .lt-sbtn x5 (spritesheet icon inside; .lt-sbtn-mark for the new-poll lamp)
+ *         .lt-tray > .lt-sbtn x5 (an lt_<button>.png icon inside; .lt-sbtn-mark for the new-poll lamp)
  */
 
 .lt-bezel {
@@ -211,8 +211,8 @@
   background: url('grille.png') 0 0 / calc(var(--s) * 4px) calc(var(--s) * 14px) space no-repeat;
 }
 
-/* Small lobby buttons. The icon inside each slot comes from the bottom_buttons spritesheet
- * at 1x; .lt-sbtn-icon scales it by --s. */
+/* Small lobby buttons. Each slot holds one 1x PNG, lt_<button>[_highlighted|_disabled].png,
+ * cut at runtime from the lobby button sprites (lobby_assets.dm); .lt-sbtn-icon scales it by --s. */
 .lt-tray {
   flex: none;
   position: relative;

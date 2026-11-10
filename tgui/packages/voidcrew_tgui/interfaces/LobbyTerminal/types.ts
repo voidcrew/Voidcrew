@@ -189,6 +189,8 @@ export type YardData = {
   can_requisition?: BooleanLike;
   /** Name of the crew the player would leave by founding a new one, or null. */
   crew_change?: string | null;
+  /** Bumped when a commission put the player aboard: drop the fit. */
+  fit_serial?: number;
   /** Saved ships, null entries for empty slots. Null hides the SAVED SHIPS box. Always sent by the shell. */
   saves: (SaveCard | null)[] | null;
 };
