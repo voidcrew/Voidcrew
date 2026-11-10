@@ -232,6 +232,22 @@
 	TEST_ASSERT(same_matrix(arm.transform, matrix()), "The landed arm is left turned")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in start, "The arm left no blood along its way")
 
+/// A limb taken off by a blow flies the way that same blow travelled: tg severs it in the middle of the
+/// hit, before the hit's damage is counted
+/datum/unit_test/voidcrew_hv_visuals/sever_follows_blow
+
+/datum/unit_test/voidcrew_hv_visuals/sever_follows_blow/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(2, 2))
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_R_ARM)
+	// Cut to the bone and broken, so tg's wound roll is certain to take it off
+	arm.force_wound_upwards(/datum/wound/slash/flesh/critical)
+	arm.force_wound_upwards(/datum/wound/blunt/bone/critical)
+	victim.apply_damage(100, BRUTE, BODY_ZONE_R_ARM, wound_bonus = 50, sharpness = SHARP_EDGED, attack_direction = WEST)
+	TEST_ASSERT_NULL(victim.get_bodypart(BODY_ZONE_R_ARM), "Test fixture: the blow did not take the arm off")
+	var/datum/component/hv_tumble/tumble = arm.GetComponent(/datum/component/hv_tumble)
+	TEST_ASSERT_NOTNULL(tumble, "The severed arm did not fly")
+	TEST_ASSERT_EQUAL(tumble.fling_dir, WEST, "The arm did not fly the way the blow that took it off travelled")
+
 /// A burst head's brain tumbles out and lands clean, and no organ keeps a fling mark
 /datum/unit_test/voidcrew_hv_visuals/brain_tumble
 
