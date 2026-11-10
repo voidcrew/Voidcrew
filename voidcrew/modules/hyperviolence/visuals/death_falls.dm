@@ -211,7 +211,9 @@
 /mob/living/carbon/proc/hv_vis_whip_then_fall_steps(hit_dir)
 	var/list/upright = hv_vis_upright()
 	var/matrix/standing = upright[2]
-	var/back = HV_VIS_DX(hit_dir) || (prob(50) ? 1 : -1)
+	// Back along the shot. A shot from straight ahead or behind whips it the way the body is about to
+	// fall, so it never rocks one way and drops the other.
+	var/back = HV_VIS_DX(hit_dir) || (lying_angle == LYING_ANGLE_WEST ? -1 : 1)
 	var/matrix/whipped = hv_vis_turned(standing, back * 14, HV_VIS_FEET_Y)
 	return list(
 		list(upright[1], standing, 0, LINEAR_EASING),
