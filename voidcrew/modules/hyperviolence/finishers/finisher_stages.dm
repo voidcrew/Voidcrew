@@ -283,9 +283,12 @@
 	// Where the head is drawn, on a body held up off the floor, read before it comes off.
 	var/list/head_at = host.victim.hv_vis_head_offset()
 	head_at[2] += hv_vis_lift
+	var/lying_turn = host.victim.hv_vis_lying_turn()
 	var/obj/item/bodypart/head/head = hv_finisher_take_head(host.victim, WOUND_SLASH)
 	// It falls from the neck toward whoever took it, and goes no further: a head carries the brain.
-	head?.hv_fling(REVERSE_DIR(spray_dir), 0, null, head_at)
+	if(head)
+		head.hv_vis_fling_turn = lying_turn
+		head.hv_fling(REVERSE_DIR(spray_dir), 0, null, head_at)
 
 /// Bursts the head through the shared hook, which keeps the brain intact
 /datum/hv_finisher_stage/kill/burst_head

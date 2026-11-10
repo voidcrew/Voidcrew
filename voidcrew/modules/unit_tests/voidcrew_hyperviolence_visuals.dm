@@ -235,6 +235,47 @@
 	TEST_ASSERT(same_matrix(arm.transform, matrix()), "The landed arm is left turned")
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/blood/hv_spray/streak) in start, "The arm left no blood along its way")
 
+/// An arm cut from a body on the floor comes off turned as the body lies and ends as a loose arm lies; cut
+/// from a body on its feet, or from one that went down this very tick, it comes off as it always did
+/datum/unit_test/voidcrew_hv_visuals/tumble_off_the_floor
+
+/datum/unit_test/voidcrew_hv_visuals/tumble_off_the_floor/Run()
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent, spot(1, 3))
+	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), 0, "A body on its feet counts as turned")
+	victim.Paralyze(10 SECONDS)
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "Test fixture: the body is not lying down")
+	// Nobody has seen it fall yet: a part cut off it in the same tick starts as it stood
+	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), 0, "A body counts as turned in the tick it goes down")
+	sleep(world.tick_lag)
+	victim.set_lying_angle(LYING_ANGLE_EAST)
+	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), 90, "A body lying head east is not a quarter turn clockwise")
+	victim.set_lying_angle(LYING_ANGLE_WEST)
+	TEST_ASSERT_EQUAL(victim.hv_vis_lying_turn(), -90, "A body lying head west is not a quarter turn the other way")
+
+	victim.hv_blood_hit_dir = EAST
+	victim.hv_blood_hit_time = world.time
+	var/obj/item/bodypart/arm = victim.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT(arm.dismember(BRUTE, TRUE, WOUND_SLASH), "Test fixture: the arm did not come off")
+	TEST_ASSERT_NULL(arm.hv_vis_fling_turn, "The flight did not use up the arm's turn")
+	var/datum/component/hv_tumble/tumble = arm.GetComponent(/datum/component/hv_tumble)
+	TEST_ASSERT_NOTNULL(tumble, "An arm cut from a body on the floor did not tumble")
+	TEST_ASSERT_EQUAL(tumble.starts_turned, -90, "An arm cut from a body on the floor did not come off as it lay")
+	// Its spin starts as it lay on the body, at once, and ends as the loose arm really lies
+	var/list/pivot = arm.hv_vis_spin_pivot()
+	var/list/steps = hv_vis_spin_steps(arm, 2, 3, 1, -90)
+	var/list/first = steps[1]
+	TEST_ASSERT_EQUAL(first[4], 0, "The spin of an arm cut from a body on the floor takes time to start as it lay")
+	TEST_ASSERT(same_matrix(first[3], hv_vis_turned(matrix(arm.transform), -90, pivot[2], pivot[1])), "The spin of an arm cut from a body on the floor does not start as it lay")
+	check_ends_at_rest(arm, steps, "The spin of an arm cut from a body on the floor")
+	// Off a body on its feet the spin is the one it always was: whole turns, nothing before them
+	TEST_ASSERT_EQUAL(length(hv_vis_spin_steps(arm, 2, 3, 1)), 6, "The spin of an arm cut from a body on its feet changed")
+	for(var/i in 1 to 50)
+		if(!arm.GetComponent(/datum/component/hv_tumble))
+			break
+		sleep(1)
+	TEST_ASSERT_NULL(arm.GetComponent(/datum/component/hv_tumble), "The tumble outlived the landing")
+	TEST_ASSERT(same_matrix(arm.transform, matrix()), "The landed arm is left turned")
+
 /// A limb taken off by a blow flies the way that same blow travelled: tg severs it in the middle of the
 /// hit, before the hit's damage is counted
 /datum/unit_test/voidcrew_hv_visuals/sever_follows_blow

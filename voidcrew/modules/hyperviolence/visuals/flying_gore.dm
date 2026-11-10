@@ -30,6 +30,9 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	/// Set when it was drawn in front of the body it comes off (the near arm of a body seen side-on):
 	/// it stays in front of that body until it is clear of it. Used up by the flight.
 	var/hv_vis_fling_over
+	/// How far the body it comes off is turned, in degrees clockwise (a body on the floor lies on its side):
+	/// the part starts turned the same way and rights itself as it goes. Used up by the flight.
+	var/hv_vis_fling_turn
 
 /// Forgets a fling that was marked on this part.
 /obj/item/proc/hv_vis_forget_fling()
@@ -38,6 +41,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	hv_vis_tumble_dna = null
 	hv_vis_fling_from = null
 	hv_vis_fling_over = null
+	hv_vis_fling_turn = null
 
 /// How this kind of part tumbles when nothing marked it (HV_VIS_TUMBLE_*).
 /obj/item/proc/hv_vis_tumble_style()
@@ -63,6 +67,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/list/blood_dna = hv_vis_tumble_dna
 	var/list/from = hv_vis_fling_from
 	var/starts_over = hv_vis_fling_over
+	var/starts_turned = hv_vis_fling_turn
 	hv_vis_forget_fling()
 	if(QDELETED(src) || !isturf(loc))
 		return FALSE
@@ -80,7 +85,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		else
 			pixel_x = base_pixel_x + HV_VIS_DX(fling_dir) * 7 + rand(-3, 3)
 			pixel_y = base_pixel_y + HV_VIS_DY(fling_dir) * 7 + rand(-3, 3)
-	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from, starts_over)
+	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from, starts_over, starts_turned)
 	tumble.launch()
 	return TRUE
 
@@ -157,8 +162,10 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/starts_over = FALSE
 	/// How many of its own steps it has taken.
 	var/steps_taken = 0
+	/// How far it is turned as it comes off, in degrees clockwise: the way the body it was on lay.
+	var/starts_turned = 0
 
-/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir, list/turf/path, datum/callback/on_landed, list/from, starts_over = FALSE)
+/datum/component/hv_tumble/Initialize(style, list/blood_dna, fling_dir, list/turf/path, datum/callback/on_landed, list/from, starts_over = FALSE, starts_turned = 0)
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 	var/obj/item/part = parent
@@ -169,6 +176,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	src.on_landed = on_landed
 	src.from = from
 	src.starts_over = starts_over
+	src.starts_turned = starts_turned || 0
 	grounded = part.has_gravity() > 0
 	// A slide along the floor is slower than a flight, and so is a drift with nothing to pull it down.
 	if(style == HV_VIS_TUMBLE_SLIDE)
@@ -233,10 +241,11 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/from_z = from ? from[2] - (part.pixel_y - part.base_pixel_y) : 0
 	if(style == HV_VIS_TUMBLE_SLIDE)
 		// The legs of a body cut in half: a slide across the floor from where they were, with a slight turn.
-		var/turn = pick(-1, 1) * 20
+		// Off a body on the floor they start as they lay and come round as they slide.
+		var/turn = starts_turned ? starts_turned * 0.3 : pick(-1, 1) * 20
 		var/list/pivot = part.hv_vis_spin_pivot()
 		part.hv_vis_play(HV_VIS_TAG_SPIN, list(
-			list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
+			list(part.pixel_w + from_w, part.pixel_z + from_z, hv_vis_turned(base, starts_turned, pivot[2], pivot[1]), 0, LINEAR_EASING),
 			list(part.pixel_w, part.pixel_z, hv_vis_turned(base, turn, pivot[2], pivot[1]), time, CUBIC_EASING|EASE_OUT),
 			list(part.pixel_w, part.pixel_z, base, 4, SINE_EASING),
 		))
@@ -248,7 +257,7 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 				list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
 				list(part.pixel_w, part.pixel_z, base, time, LINEAR_EASING),
 			))
-		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1)))
+		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1), starts_turned))
 		return
 	// In the air it passes over bodies on the floor and behind anyone standing. A part tg already draws
 	// over everyone (a brain, so it can be found) keeps its own layer. One that was in front of the body
@@ -264,11 +273,18 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		list(part.pixel_w + from_w / 2, part.pixel_z + from_z / 2 + height, base, time / 2, QUAD_EASING|EASE_OUT),
 		list(part.pixel_w, part.pixel_z, base, time / 2, QUAD_EASING|EASE_IN),
 	))
-	// It tumbles as it flies; a part that only drops keeps the way it lies.
+	// It tumbles as it flies; a part that only drops keeps the way it lies, or comes round from the way the
+	// body it came off lay.
 	if(!length(path))
+		if(starts_turned)
+			var/list/pivot = part.hv_vis_spin_pivot()
+			part.hv_vis_play(HV_VIS_TAG_SPIN, list(
+				list(part.pixel_w, part.pixel_z, hv_vis_turned(base, starts_turned, pivot[2], pivot[1]), 0, LINEAR_EASING),
+				list(part.pixel_w, part.pixel_z, base, time, SINE_EASING),
+			))
 		return
 	var/turns = style == HV_VIS_TUMBLE_ORGAN ? 1 : 2
-	part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, turns, time, HV_VIS_DX(fling_dir) || pick(-1, 1)))
+	part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, turns, time, HV_VIS_DX(fling_dir) || pick(-1, 1), starts_turned))
 
 /// One tile further along its path, or down if there is no more of it or something got in the way.
 /datum/component/hv_tumble/proc/take_step()
@@ -363,14 +379,20 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 /obj/item/bodypart/hv_vis_spin_pivot()
 	return list(-px_x, -px_y)
 
-/// `turns` whole turns over `time`, clockwise for `spin_sign` 1, ending where the part started.
-/proc/hv_vis_spin_steps(atom/movable/part, turns, time, spin_sign = 1)
+/// `turns` whole turns over `time`, clockwise for `spin_sign` 1, ending as the part really lies. With
+/// `from_angle` it starts turned that many degrees clockwise (as the body it came off lay) and the turns
+/// bring it round from there.
+/proc/hv_vis_spin_steps(atom/movable/part, turns, time, spin_sign = 1, from_angle = 0)
 	var/matrix/base = matrix(part.transform)
 	var/list/pivot = part.hv_vis_spin_pivot()
 	var/list/steps = list()
 	var/segments = max(3, turns * 3)
+	// The whole way round it has to go, the way it spins, to end as it really lies.
+	var/sweep = spin_sign * 360 * turns - from_angle
+	if(from_angle)
+		steps += list(list(part.pixel_w, part.pixel_z, hv_vis_turned(base, from_angle, pivot[2], pivot[1]), 0, LINEAR_EASING))
 	for(var/i in 1 to segments)
-		var/matrix/turned = i == segments ? matrix(base) : hv_vis_turned(base, spin_sign * 120 * i, pivot[2], pivot[1])
+		var/matrix/turned = i == segments ? matrix(base) : hv_vis_turned(base, from_angle + sweep * i / segments, pivot[2], pivot[1])
 		steps += list(list(part.pixel_w, part.pixel_z, turned, time / segments, LINEAR_EASING))
 	return steps
 
@@ -442,6 +464,8 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 			hv_vis_fling_from = limb_owner.hv_vis_part_offset(body_zone)
 		if(isnull(hv_vis_fling_over))
 			hv_vis_fling_over = limb_owner.hv_vis_part_in_front(body_zone)
+		if(isnull(hv_vis_fling_turn))
+			hv_vis_fling_turn = limb_owner.hv_vis_lying_turn()
 	. = ..()
 	// Not sent flying after all (it burned away, or it was never let go): forget the fling.
 	if(marked && !QDELETED(src))
@@ -476,6 +500,15 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		else
 			. = list(x, y)
 	.[2] += pixel_y - base_pixel_y
+
+/// How far this body is drawn turned from upright as it lies now, in degrees clockwise, the short way round
+/// (tg lays a body on its side, head to the east or to the west). 0 on its feet, 0 for a body on the floor
+/// that a move draws upright, and 0 for one that went down this very tick: nobody has seen it fall yet.
+/mob/living/carbon/proc/hv_vis_lying_turn()
+	if(body_position != LYING_DOWN || hv_vis_fell_time == world.time)
+		return 0
+	var/matrix/drawn = transform
+	return round(arctan(drawn.a, drawn.b), 1)
 
 /// Whether the part at `zone` is drawn in front of the rest of this body as it stands now: the arm and
 /// leg on our side of a body seen side-on (its right ones facing east, its left ones facing west).
