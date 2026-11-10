@@ -393,15 +393,17 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/x = 0
 	var/y = 0
 	var/side = hv_vis_zone_side(zone)
+	// Measured off the human body sprites (icons/mob/human/bodyparts_greyscale.dmi), each facing.
 	switch(zone)
 		if(BODY_ZONE_HEAD)
-			y = 10
+			y = 9
 		if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
-			x = side * 6
+			// Side-on, the arm we can see hangs a little behind the middle of the body.
+			x = side ? side * 6 : -HV_VIS_DX(dir) * 3
 			y = 1
 		if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 			x = side * 3
-			y = -11
+			y = -12
 	// tg lays a body down by turning it clockwise.
 	switch(lying_angle)
 		if(90)
