@@ -25,6 +25,10 @@
 #define MANTIS_SWING_IMPACT_LIFETIME (4.5 DECISECONDS)
 /// The X-slash's other blade swings one beat behind the first, so its stroke crosses one already through.
 #define MANTIS_XSLASH_SWING_DELAY (1 DECISECONDS)
+/// Where an X-slash on a leg is centred, in pixels up from the middle of the tile: half way down the leg, whichever
+/// way the body faces (a human leg runs from 7.5 to 15.5 pixels below the middle, and the strokes cross half a pixel
+/// above the middle of their art).
+#define MANTIS_XSLASH_LEG_Y -12
 
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis
 	/// The swing playing for this blade right now, if any. Weak: it deletes itself.
@@ -195,7 +199,7 @@
 	if(victim.on_fire)
 		stroke.appearance_flags |= KEEP_APART
 		stroke.layer = ABOVE_ALL_MOB_LAYER + 0.01
-	var/list/point = mantis_part_point(victim, zone || BODY_ZONE_CHEST)
+	var/list/point = mantis_xslash_point(victim, zone || BODY_ZONE_CHEST)
 	// 64x64 around the part, upright even on someone lying down.
 	stroke.pixel_w = -16 + point[1]
 	stroke.pixel_z = -16 + point[2]
@@ -203,6 +207,17 @@
 	if(flipped)
 		stroke.transform = matrix(-1, 0, 0, 0, 1, 0)
 	return stroke
+
+/**
+ * Where the X-slash's strokes cross on the [zone] part of [body], as mantis_part_point() gives it, but on a leg half
+ * way down it rather than at the hip a wire's lash ends on.
+ */
+/proc/mantis_xslash_point(mob/living/body, zone)
+	if(zone != BODY_ZONE_L_LEG && zone != BODY_ZONE_R_LEG)
+		return mantis_part_point(body, zone)
+	var/list/part = wire_part_offset(zone, body.dir)
+	var/matrix/shape = body.transform
+	return list(round(shape.a * part[1] + shape.b * MANTIS_XSLASH_LEG_Y + shape.c), round(shape.d * part[1] + shape.e * MANTIS_XSLASH_LEG_Y + shape.f))
 
 /// The second stroke of the X-slash: [off_blade] swings, and its stroke goes up [flipped] to cross the first.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_second(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade, zone, flipped)
@@ -286,3 +301,4 @@
 #undef MANTIS_SWING_IMPACT_DELAY
 #undef MANTIS_SWING_IMPACT_LIFETIME
 #undef MANTIS_XSLASH_SWING_DELAY
+#undef MANTIS_XSLASH_LEG_Y
