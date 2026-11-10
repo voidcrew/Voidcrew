@@ -180,16 +180,17 @@
 	if(rig)
 		rig.wet = TRUE
 	show_beat("enter", 0)
+	// The crackle is at the points, so it lasts only while they are still: it is gone as the hoist begins.
 	switch(facing)
 		if(NORTH)
 			rig?.burst("enter_puff", 0.25 SECONDS, "T", under = TRUE)
-			rig?.burst("enter_spark", 0.2 SECONDS, "tips", blood = FALSE)
+			rig?.burst("enter_spark", MANTIS_IMPALE_ENTER_BEAT, "tips", blood = FALSE)
 		if(SOUTH)
 			rig?.burst("enter_puff", 0.25 SECONDS, "tips")
-			rig?.burst("enter_spark", 0.2 SECONDS, "tips", blood = FALSE)
+			rig?.burst("enter_spark", MANTIS_IMPALE_ENTER_BEAT, "tips", blood = FALSE)
 		else
 			rig?.burst("enter_puff", 0.25 SECONDS, "T")
-			rig?.burst("enter_spark", 0.2 SECONDS, "near", blood = FALSE)
+			rig?.burst("enter_spark", MANTIS_IMPALE_ENTER_BEAT, "near", blood = FALSE)
 	addtimer(CALLBACK(src, PROC_REF(lift), 1), MANTIS_IMPALE_ENTER_BEAT, TIMER_DELETE_ME)
 
 /**
