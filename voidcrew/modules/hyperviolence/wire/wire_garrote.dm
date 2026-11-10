@@ -41,6 +41,8 @@
 #define WIRE_GARROTE_POOL_DROP_NORTH 6
 /// One beat of the victim's thrashing in the hold.
 #define WIRE_GARROTE_JOLT_TIME (0.05 SECONDS)
+/// A line of wire starts this far before the middle of the pixel at its base, so that pixel is always drawn.
+#define WIRE_LINE_BACK 0.5
 /// Trait source: a body held still from bobbing while wire_shake() shakes it.
 #define WIRE_SHAKE_TRAIT "wire_shake"
 
@@ -382,9 +384,10 @@
 	LAZYADD(windup_timers, addtimer(CALLBACK(src, PROC_REF(wind_loop), rest - turn_time), turn_time, TIMER_STOPPABLE | TIMER_DELETE_ME))
 
 /**
- * Where the garroter's `side` hand is drawn, the hand the wire leaves from: where the held wire's grip sits in that
- * hand for each facing (cyberware_lefthand.dmi and cyberware_righthand.dmi, the "monowire" states). The pixel a line
- * of wire leaves from, by its lower left corner, in pixels from the middle of the tile. The hands hang at the hips;
+ * The pixel the wire leaves the garroter's `side` hand from: the one the held wire's spool lights, where the wire comes
+ * out of it, for each facing (the bright pixel in the spool of the "monowire" states in cyberware_lefthand.dmi and
+ * cyberware_righthand.dmi; the far hand in profile shows no spool, only the hand's edge). By its lower left corner, in
+ * pixels from the middle of the tile: a line of wire is drawn from the middle of this pixel. The hands hang at the hips;
  * in profile the near hand is at the middle of the body and the far one just shows at its front edge, behind the
  * torso. Facing the viewer both hands show at the sides. Facing away they show at the sides too, but the wire runs
  * forward from them, through the garroter's body, so both count as behind it. list(x, y, behind)
@@ -393,12 +396,12 @@
 	var/right = side != "left"
 	switch(user.dir)
 		if(EAST)
-			return right ? list(-1, -3, FALSE) : list(5, -3, TRUE)
+			return right ? list(-2, -3, FALSE) : list(4, -3, TRUE)
 		if(WEST)
-			return right ? list(-4, -3, TRUE) : list(2, -3, FALSE)
+			return right ? list(-5, -3, TRUE) : list(1, -3, FALSE)
 		if(NORTH)
-			return right ? list(7, -3, TRUE) : list(-7, -3, TRUE)
-	return right ? list(-7, -3, FALSE) : list(7, -3, FALSE)
+			return right ? list(7, -3, TRUE) : list(-8, -3, TRUE)
+	return right ? list(-8, -3, FALSE) : list(7, -3, FALSE)
 
 /**
  * Where a line of wire from the garroter's `side` hand is drawn from: the hand (hand_point()), except facing away.
@@ -508,12 +511,15 @@
 /**
  * The garrote's thrown wire (wire_reach, half a tile of line running up a half pixel left of the middle) drawn from
  * the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away and half a pixel on, so it
- * covers the pixel it lands on. `length` draws only that much of it along the same bearing.
+ * covers the pixel it lands on. `length` draws only that much of it along the same bearing. It starts half a pixel
+ * before the middle of its base pixel too: a line that starts on the middle itself draws that pixel on some bearings
+ * and not on others, and the wire would leave the hand a pixel out.
  */
 /proc/wire_throw_shape(span_x, span_y, length)
 	var/matrix/shape = matrix()
 	shape.Translate(0.5, 0)
-	shape.Scale(1, max(isnull(length) ? wire_line_length(span_x, span_y) : length, 1) / 16)
+	shape.Scale(1, (max(isnull(length) ? wire_line_length(span_x, span_y) : length, 1) + WIRE_LINE_BACK) / 16)
+	shape.Translate(0, -WIRE_LINE_BACK)
 	shape.Turn(arctan(span_y, span_x))
 	shape.Translate(0.5, 0.5)
 	return shape
@@ -563,6 +569,8 @@
 	appearance_flags = PIXEL_SCALE | TILE_BOUND
 	/// A taut strand's far end, on the neck, from its base in the hand: list(x, y) pixels. Null for any other line.
 	var/list/span
+	/// "left" or "right": the hand a taut strand runs from. Null for any other line.
+	var/hand_side
 
 /**
  * A taut strand on a neck that thrashes: its far end jolts by each of `jolts` (wire_jolts()) in turn, a beat apart,
@@ -883,6 +891,7 @@
 		strand.pixel_x = start_hand_x
 		strand.pixel_y = start_hand_y
 		strand.span = list(span_x, span_y)
+		strand.hand_side = side
 		strand.transform = wire_strand_shape(start_span_x, start_span_y)
 		if(start_hand_x != hand_x || start_hand_y != hand_y || start_span_x != span_x || start_span_y != span_y)
 			// Linear, as the body's slide in is (slide_in()), and the matrix blended straight too, so the far end keeps
@@ -892,19 +901,46 @@
 		QDEL_IN(strand, duration)
 
 /**
- * A taut strand of wire from the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away
- * and half a pixel on, so it covers the pixel it ends on. The sprite is a tile-long line running up a half pixel left
- * of the middle: it is moved onto the middle and up to start there, stretched and turned, then moved to the middle of
- * the base pixel. That end stays put under any blend of two of these, so a strand tweened between two keeps its base in
- * the hand and runs its far end straight from one spot to the other.
+ * A taut strand of wire from the middle of the pixel at its base to the middle of the pixel (`span_x`, `span_y`) away,
+ * and half a pixel past each, so it covers the pixel it starts on and the pixel it ends on whatever its bearing (a line
+ * that starts on the middle of a pixel draws that pixel on some bearings and not on others: recorded, the strand's end
+ * in the hand blinked a pixel off the hand as its other end thrashed with the neck). The sprite is a tile-long line
+ * running up a half pixel left of the middle: it is moved onto the middle and up to start there, stretched, moved back
+ * half a pixel and turned, then moved to the middle of the base pixel. The base pixel stays covered under any blend of
+ * two of these, so a strand tweened between two keeps its base in the hand and runs its far end straight from one spot
+ * to the other.
  */
 /proc/wire_strand_shape(span_x, span_y)
 	var/matrix/shape = matrix()
 	shape.Translate(0.5, ICON_SIZE_Y / 2)
-	shape.Scale(1, wire_line_length(span_x, span_y) / ICON_SIZE_Y)
+	shape.Scale(1, (wire_line_length(span_x, span_y) + WIRE_LINE_BACK) / ICON_SIZE_Y)
+	shape.Translate(0, -WIRE_LINE_BACK)
 	shape.Turn(arctan(span_y, span_x))
 	shape.Translate(0.5, 0.5)
 	return shape
+
+/**
+ * The garroter has just been leaned somewhere else (the kill's lean), sliding there over tg's offset time: each strand's
+ * end in the hand slides with the hand, and its end on the neck stays put. The strands already up are moved, not drawn
+ * again: a picture a client already has moves in step with the body, a new one starts a frame behind it. Returns FALSE
+ * if there are none to move.
+ */
+/datum/hv_finisher/garrote/proc/lean_wire()
+	if(QDELETED(user) || QDELETED(victim))
+		return FALSE
+	var/moved = FALSE
+	for(var/datum/weakref/strand_ref as anything in strand_refs)
+		var/obj/effect/abstract/wire_reach/strand = strand_ref.resolve()
+		if(QDELETED(strand) || !strand.hand_side)
+			continue
+		var/list/hand = line_origin(strand.hand_side)
+		var/hand_x = user.pixel_x + hand[1]
+		var/hand_y = user.pixel_y + hand[2]
+		var/list/meet = loop_point(strand.hand_side)
+		strand.span = list(meet[1] - (hand_x + 0.5), meet[2] - (hand_y + 0.5))
+		animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(strand.span[1], strand.span[2]), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+		moved = TRUE
+	return moved
 
 /datum/hv_finisher/garrote/proc/clear_strands()
 	for(var/datum/weakref/strand_ref as anything in strand_refs)
@@ -1318,8 +1354,9 @@
 	var/datum/hv_finisher/garrote/garrote = host
 	garrote.pull_close()
 	garrote.show_loop("tight")
-	// Taut until the kill beat cuts it, sliding in with the bodies from where they were before the grab.
-	garrote.draw_wire(duration + 0.5 SECONDS, garrote.pull_from)
+	// Taut until the kill beat cuts it (kill() takes them down; the time is only the garrote's own backstop), sliding in
+	// with the bodies from where they were before the grab.
+	garrote.draw_wire(garrote.longest_duration(), garrote.pull_from)
 	// Drawn in to the hands first, then the thrashing.
 	garrote.struggle(UPDATE_TRANSFORM_ANIMATION_TIME, duration - UPDATE_TRANSFORM_ANIMATION_TIME)
 
@@ -1339,8 +1376,8 @@
 	var/datum/hv_finisher/garrote/garrote = host
 	var/list/before_lean = garrote.drawn_offsets()
 	. = ..()
-	// The strands stay on the hands as the lean takes them forward.
-	if(garrote.running)
+	// The strands stay on the hands as the lean takes them forward: the hold's own strands, which last until the cut.
+	if(garrote.running && !garrote.lean_wire())
 		garrote.draw_wire(effect_delay + 0.1 SECONDS, before_lean)
 
 /datum/hv_finisher_stage/kill/garrote/effect()
@@ -1357,4 +1394,5 @@
 #undef WIRE_GARROTE_HEAD_FALL_TIME
 #undef WIRE_GARROTE_POOL_DROP_NORTH
 #undef WIRE_GARROTE_JOLT_TIME
+#undef WIRE_LINE_BACK
 #undef WIRE_SHAKE_TRAIT
