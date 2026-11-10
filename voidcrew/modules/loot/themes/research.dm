@@ -116,6 +116,7 @@
 /// Infested nests: giant spiders. Webs sold separately.
 /obj/effect/zone_mobs/bug
 	name = "zone mob spawner (bug)"
+	wave_arrival = ZONE_MOBS_ARRIVE_EMERGE
 	mobs_green = list(
 		/mob/living/basic/spider/giant/nurse = 8,
 		/mob/living/basic/spider/giant = 6,

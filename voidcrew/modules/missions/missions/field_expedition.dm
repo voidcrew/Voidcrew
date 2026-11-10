@@ -64,7 +64,7 @@
 	UnregisterSignal(source, COMSIG_ITEM_PICKUP)
 	if(failed || completed || !wave_theme || !prob(ambush_chance))
 		return
-	new wave_theme(get_turf(taker), list(1, 2))
+	new wave_theme(get_turf(taker), list(1, 2), TRUE)
 	servant?.ship_notify("[name]: ground team disturbed something at the crash site.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 /datum/mission/field_expedition/update_text()
