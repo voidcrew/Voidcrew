@@ -31,6 +31,8 @@
 #define WIRE_GARROTE_WIND_TIME (0.3 SECONDS)
 /// Steps the flying wire is drawn out in.
 #define WIRE_GARROTE_THROW_BEATS 6
+/// Steps a strand slides in with the body in, as the hold pulls it to the garroter's feet.
+#define WIRE_GARROTE_SLIDE_BEATS 8
 /// A body turned end for end at the wind-up swings round over this long, not in one frame.
 #define WIRE_GARROTE_TURN_TIME (0.24 SECONDS)
 /// The pool under the neck spreads from a spot to its full size over this long.
@@ -894,9 +896,21 @@
 		strand.hand_side = side
 		strand.transform = wire_strand_shape(start_span_x, start_span_y)
 		if(start_hand_x != hand_x || start_hand_y != hand_y || start_span_x != span_x || start_span_y != span_y)
-			// Linear, as the body's slide in is (slide_in()), and the matrix blended straight too, so the far end keeps
-			// step with the neck all the way.
-			animate(strand, pixel_x = hand_x, pixel_y = hand_y, transform = wire_strand_shape(span_x, span_y), time = UPDATE_TRANSFORM_ANIMATION_TIME, flags = ANIMATION_LINEAR_TRANSFORM)
+			// Linear, as the body's slide in is (slide_in()), so the far end keeps step with the neck all the way. In beats:
+			// each beat ends on the strand's true shape for where its two ends are by then, and the matrix is blended
+			// straight from one beat's shape to the next. Blended in one go from the first shape to the last, a strand that
+			// turns far on the way (40 degrees, facing the viewer) is drawn thinner than a pixel in between, and recorded
+			// it showed a pixel missing for the first frames of the pull.
+			var/beat_time = UPDATE_TRANSFORM_ANIMATION_TIME / WIRE_GARROTE_SLIDE_BEATS
+			for(var/beat in 1 to WIRE_GARROTE_SLIDE_BEATS)
+				var/done = beat / WIRE_GARROTE_SLIDE_BEATS
+				var/beat_x = start_hand_x + (hand_x - start_hand_x) * done
+				var/beat_y = start_hand_y + (hand_y - start_hand_y) * done
+				var/matrix/shape = wire_strand_shape(start_span_x + (span_x - start_span_x) * done, start_span_y + (span_y - start_span_y) * done)
+				if(beat == 1)
+					animate(strand, pixel_x = beat_x, pixel_y = beat_y, transform = shape, time = beat_time, flags = ANIMATION_LINEAR_TRANSFORM)
+				else
+					animate(pixel_x = beat_x, pixel_y = beat_y, transform = shape, time = beat_time, flags = ANIMATION_LINEAR_TRANSFORM)
 		LAZYADD(strand_refs, WEAKREF(strand))
 		QDEL_IN(strand, duration)
 
@@ -1389,6 +1403,7 @@
 #undef WIRE_GARROTE_LEAN_TIME
 #undef WIRE_GARROTE_WIND_TIME
 #undef WIRE_GARROTE_THROW_BEATS
+#undef WIRE_GARROTE_SLIDE_BEATS
 #undef WIRE_GARROTE_TURN_TIME
 #undef WIRE_GARROTE_POOL_TIME
 #undef WIRE_GARROTE_HEAD_FALL_TIME
