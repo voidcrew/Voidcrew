@@ -21,6 +21,14 @@
 	var/credits_dropped = FALSE
 	/// A named mission target keeps this even after replacement or mission expiry.
 	var/datum/weakref/mission_payout_ref
+	/// What this faction shouts when its ship's crew goes on alert (pirate_crew.dm). Null uses the generic lines.
+	var/list/crew_alert_lines
+	/// What it shouts when it spots someone. Null uses the generic lines.
+	var/list/crew_spot_lines
+	/// Weights of the guns a gunner of this faction rolls when it joins a crew (pirate_guns.dm). Null: the default mix.
+	var/list/crew_gun_weights
+	/// Keeps its own ranged weapon instead of rolling a gun
+	var/crew_keeps_gun = FALSE
 	/// Random combat loot - one item is picked at random and added to death drops.
 	var/list/random_loot = list(\
 		/obj/item/knife/combat/survival,\
@@ -170,7 +178,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/melee/sabre
 	random_loot = null
 	plunder_credits = 1000
 
@@ -181,6 +189,16 @@
 	desc = "Yarr! An undead scourge of the space lanes."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
+	crew_alert_lines = list(
+		"All hands! Boarders!",
+		"Fresh crew coming aboard!",
+		"They'll fit right in. Eventually.",
+	)
+	crew_spot_lines = list(
+		"There ye are!",
+		"I see ye!",
+		"Over here, lads!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/skeleton/melee
 	name = "Skeleton Swashbuckler"
@@ -236,7 +254,7 @@
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand = /obj/item/claymore/cutlass
 	loot_pool = list(/obj/item/gun/energy/laser)
 	random_loot = null
 	plunder_credits = 1000
@@ -249,6 +267,16 @@
 	speak_emote = list("greytides")
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey
+	crew_alert_lines = list(
+		"Someone's on the ship!",
+		"Who let them in?",
+		"They're after our stuff!",
+	)
+	crew_spot_lines = list(
+		"Get 'em!",
+		"That one, there!",
+		"Over here!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/grey/melee
 	name = "Grey Tider"
@@ -443,6 +471,16 @@
 	faction = list(FACTION_PIRATE, FACTION_IRS)
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
+	crew_alert_lines = list(
+		"Unscheduled visitors. Begin the audit.",
+		"Everyone aboard is now under review.",
+		"Intruders on deck. Find them.",
+	)
+	crew_spot_lines = list(
+		"There's the taxpayer!",
+		"Stop right there.",
+		"You're overdue.",
+	)
 
 /mob/living/basic/trooper/pirate/faction/irs/melee
 	name = "IRS Enforcer"
@@ -515,6 +553,16 @@
 	desc = "A space-faring knight who somehow operates a starship."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
+	crew_alert_lines = list(
+		"To arms! Intruders!",
+		"Who dares board us?",
+		"Defend the ship!",
+	)
+	crew_spot_lines = list(
+		"Have at thee!",
+		"There, the coward!",
+		"Halt!",
+	)
 
 /mob/living/basic/trooper/pirate/faction/medieval/melee
 	name = "Medieval Footsoldier"
@@ -588,3 +636,56 @@
 	ADD_TRAIT(src, TRAIT_PUSHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
+
+// ==================== CREW GUNS ====================
+// What each faction's gunners roll when they join a crew (pirate_guns.dm)
+
+/mob/living/basic/trooper/pirate/faction/silverscale
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 2,
+		/datum/pirate_gun_loadout/pistol = 3,
+		/datum/pirate_gun_loadout/shotgun = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/skeleton
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/laser_rifle = 1,
+		/datum/pirate_gun_loadout/pistol = 2,
+		/datum/pirate_gun_loadout/smg = 2,
+		/datum/pirate_gun_loadout/shotgun = 3,
+	)
+
+/mob/living/basic/trooper/pirate/faction/grey
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 3,
+		/datum/pirate_gun_loadout/smg = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/lustrous
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 3,
+		/datum/pirate_gun_loadout/laser_rifle = 3,
+		/datum/pirate_gun_loadout/pistol = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/interdyne
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 2,
+		/datum/pirate_gun_loadout/pistol = 2,
+		/datum/pirate_gun_loadout/smg = 3,
+		/datum/pirate_gun_loadout/shotgun = 1,
+	)
+
+/mob/living/basic/trooper/pirate/faction/irs
+	crew_gun_weights = list(
+		/datum/pirate_gun_loadout/energy_gun = 1,
+		/datum/pirate_gun_loadout/pistol = 3,
+		/datum/pirate_gun_loadout/smg = 2,
+		/datum/pirate_gun_loadout/shotgun = 2,
+	)
+
+// Crossbows suit them
+/mob/living/basic/trooper/pirate/faction/medieval
+	crew_keeps_gun = TRUE
