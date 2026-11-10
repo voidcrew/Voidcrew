@@ -10,8 +10,8 @@
  *
  * The arm shows it. A bearer who stands their ground is drawn on the puppet rig (chrome_puppet_rig.dm, with the swing
  * of gorilla_swing.dm): the punching arm draws back as the charge builds and is held there, the other comes up as a
- * guard, and on the release the fist is thrown onto the part it hits with a step in behind it, follows through and
- * comes back to rest. The blow lands as the fist arrives, a tick after the release. A bearer who walks or turns while
+ * guard, and on the release the fist is thrown onto the part it hits with a step in behind it, stays there a beat,
+ * follows through and comes back to rest. The blow lands as the fist arrives, a tick after the release. A bearer who walks or turns while
  * winding up keeps the lean alone, and their blow is tg's lunge.
  *
  * The haymaker and every Gorilla finisher share one cooldown, kept on the bearer, so they never chain.
@@ -396,6 +396,8 @@
 	var/datum/chrome_swing_beat/throw_beat = new(GORILLA_HAYMAKER_THROW, CHROME_SWING_LINEAR, way[1] * step, way[2] * step)
 	throw_beat.arm(side, thrown, throw_layer)
 	throw_beat.arm(guard, rig.pose_of(guard, poses[6][1], poses[6][2]))
+	// The fist stays on what it hit for a beat, as the blow lands
+	var/datum/chrome_swing_beat/dwell_beat = new(GORILLA_HAYMAKER_DWELL, CHROME_SWING_LINEAR, way[1] * step, way[2] * step)
 	// The follow-through carries the fist on the way it was going, and the body half way back
 	var/follow_step = round(step * 0.4)
 	var/datum/chrome_swing_beat/follow_beat = new(GORILLA_HAYMAKER_FOLLOW, CHROME_SWING_EASE_OUT, way[1] * follow_step, way[2] * follow_step)
@@ -408,10 +410,10 @@
 		// Out from behind the head once it is clear of it
 		return_beat.layer_once_under = list()
 		return_beat.layer_once_under[side] = list(120, over)
-	play_rig(list(throw_beat, follow_beat, return_beat), leant[1], leant[2], settle = TRUE)
+	play_rig(list(throw_beat, dwell_beat, follow_beat, return_beat), leant[1], leant[2], settle = TRUE)
 	if(rig_timer)
 		deltimer(rig_timer)
-	rig_timer = addtimer(CALLBACK(src, PROC_REF(drop_rig)), GORILLA_HAYMAKER_THROW + GORILLA_HAYMAKER_FOLLOW + GORILLA_HAYMAKER_RETURN, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	rig_timer = addtimer(CALLBACK(src, PROC_REF(drop_rig)), GORILLA_HAYMAKER_THROW + GORILLA_HAYMAKER_DWELL + GORILLA_HAYMAKER_FOLLOW + GORILLA_HAYMAKER_RETURN, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	return TRUE
 
 /// A wind-up that ended with nothing thrown: the arms come down, then the rig does.

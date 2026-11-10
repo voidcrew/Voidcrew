@@ -71,10 +71,12 @@
 #define GORILLA_HAYMAKER_DRAWN (0.75 SECONDS)
 /// The throw: the blow lands as it ends. One server tick, so the sparks come up on the frame the fist arrives.
 #define GORILLA_HAYMAKER_THROW (0.05 SECONDS)
-/// The fist carries on past the blow...
+/// The fist stays on what it hit for a beat, so the blow's sparks find it there...
+#define GORILLA_HAYMAKER_DWELL (0.05 SECONDS)
+/// ...carries on past it...
 #define GORILLA_HAYMAKER_FOLLOW (0.15 SECONDS)
 /// ...and the arms come back to rest.
-#define GORILLA_HAYMAKER_RETURN (0.35 SECONDS)
+#define GORILLA_HAYMAKER_RETURN (0.3 SECONDS)
 /// A wind-up held too long or called off: the arms come down.
 #define GORILLA_HAYMAKER_LOWER (0.25 SECONDS)
 /// Pixels the body steps in behind the throw: as few as put the fist on the body.
