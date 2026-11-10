@@ -136,7 +136,54 @@
 /// How long flicked blood is in the air: the flick's three frames.
 #define MANTIS_FLICK_FLIGHT (0.3 SECONDS)
 
-/// The blade snaps back in bloody: the blood flies off ahead in a streak, and some stays on the housing.
+/**
+ * What a flicked blade leaves on the tile ahead: a thin line of spatter from where the blade pointed, bending a
+ * little and breaking into drops toward its far end ("flick_spatter_[hand]", drawn for the tile ahead in each
+ * facing). One per hand, so two blades lay a line each. Its own kind of blood, not one of the sprays: a tile's
+ * spray is neither turned by a flick nor kept off the tile by one.
+ */
+/obj/effect/decal/cleanable/blood/mantis_flick
+	name = "blood spatter"
+	icon = MANTIS_GORE_ICON
+	icon_state = "flick_spatter_right"
+	random_icon_states = null
+	mergeable_decal = FALSE
+	// Thin enough that walking through it does not leave footprints.
+	bloodiness = 15
+	drying_time = 3 MINUTES
+	beauty = -20
+	base_name = null
+	base_suffix = "spatter"
+	/// The hand that flicked it: "left" or "right".
+	var/hand = "right"
+
+// Too thin to dive into.
+/obj/effect/decal/cleanable/blood/mantis_flick/can_bloodcrawl_in()
+	return FALSE
+
+/// The [hand] blade's flicked blood lands on [ahead], thrown the way [flick_dir]. Wet spatter that hand already
+/// left there is only freshened. Returns the spatter.
+/proc/mantis_flick_land(turf/ahead, flick_dir, hand, list/blood_dna)
+	if(!isturf(ahead) || !length(blood_dna))
+		return null
+	for(var/obj/effect/decal/cleanable/blood/mantis_flick/wet in ahead)
+		if(wet.hand != hand || wet.dir != flick_dir || wet.dried || QDELETED(wet))
+			continue
+		wet.add_blood_DNA(blood_dna)
+		return wet
+	var/obj/effect/decal/cleanable/blood/mantis_flick/spatter = new(ahead, null, blood_dna)
+	if(QDELETED(spatter))
+		return null
+	spatter.hand = hand
+	spatter.icon_state = "flick_spatter_[hand]"
+	spatter.setDir(flick_dir)
+	var/full_alpha = spatter.alpha
+	spatter.alpha = 0
+	animate(spatter, alpha = full_alpha, time = 0.1 SECONDS)
+	return spatter
+
+/// The blade snaps back in bloody: the blood flies off ahead and lands as a line of spatter, and some stays on
+/// the housing.
 /obj/item/organ/cyberimp/arm/toolkit/cyberware/mantis/proc/flick_blood(mob/living/carbon/bearer, obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade)
 	var/blood_color = blade.get_blood_dna_color()
 	var/list/blood_dna = blade.blood_dna_copy()
@@ -148,7 +195,7 @@
 	var/turf/ahead = get_step(bearer, bearer.dir)
 	if(isturf(bearer.loc) && ahead && length(blood_dna) && !hv_blood_spray_blocked(ahead) && !isgroundlessturf(ahead) && ahead.has_gravity())
 		// It lands once the flick has crossed to it, not as the blade starts back in.
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(hv_blood_lay_spray), ahead, /obj/effect/decal/cleanable/blood/hv_spray/streak, bearer.dir, blood_dna, null), MANTIS_FLICK_FLIGHT)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(mantis_flick_land), ahead, bearer.dir, zone == BODY_ZONE_L_ARM ? "left" : "right", blood_dna), MANTIS_FLICK_FLIGHT)
 	blade.wash(CLEAN_TYPE_BLOOD)
 	stained = TRUE
 	stain_color = blood_color
