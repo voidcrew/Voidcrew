@@ -1790,6 +1790,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 	rocket.rocket_area_ref = mech_home_ref
 	rocket.firer = src
 	rocket.fired_from = src
+	rocket.npc_shot_hits_allies = TRUE
 	rocket.range = get_dist(start, spot) + 3
 	rocket.maximum_range = rocket.range
 	rocket.aim_projectile(spot, src)
@@ -1862,6 +1863,7 @@ GLOBAL_LIST_EMPTY(bounty_mafia_rooms)
 			bullet.maximum_range = max_range
 		bullet.firer = src
 		bullet.fired_from = src
+		bullet.npc_shot_hits_allies = TRUE
 		bullet.spread = spread
 		bullet.aim_projectile(target, src, null, weapon.shot_spread())
 		if(QDELETED(bullet))
