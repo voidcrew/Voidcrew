@@ -8,6 +8,7 @@ const TABS: [TabId, string][] = [
   ['crews', 'CREWS'],
   ['shipyard', 'SHIPYARD'],
   ['housing', 'HOUSING'],
+  ['character', 'CHARACTER'],
 ];
 
 const two = (n: number) => String(Math.floor(n)).padStart(2, '0');

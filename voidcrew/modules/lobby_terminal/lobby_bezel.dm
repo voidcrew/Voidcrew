@@ -93,13 +93,17 @@
 				return FALSE
 			INVOKE_ASYNC(user, TYPE_PROC_REF(/mob/dead/new_player, make_me_an_observer))
 			return FALSE
-		if("character", "settings")
+		if("character")
+			// The CHARACTER key opens the terminal's own CHARACTER tab (lobby_character.dm).
+			goto_tab("character")
+			return FALSE
+		if("settings")
 			var/datum/preferences/preferences = user.client?.prefs
 			if(!preferences)
 				return FALSE
 			if(!(SSearly_assets.initialized == INITIALIZATION_INNEW_REGULAR || SSatoms.initialized == INITIALIZATION_INNEW_REGULAR))
 				return FALSE
-			preferences.current_window = action == "character" ? PREFERENCE_TAB_CHARACTER_PREFERENCES : PREFERENCE_TAB_GAME_PREFERENCES
+			preferences.current_window = PREFERENCE_TAB_GAME_PREFERENCES
 			preferences.update_static_data(user)
 			preferences.ui_interact(user)
 			return FALSE
