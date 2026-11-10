@@ -13,7 +13,8 @@
  *   drops and lunges.
  * - Impact: the damage, the knockdown and the grab letting go all land here, and the real body is put on the tile.
  *   A ring, and on a floor cracks (and dust and the heavy crash, for Gorilla Arms); both cameras shake and the body
- *   flashes white. Blood only if the blow opened a wound that bleeds, as a few drops thrown out round the body.
+ *   flashes white. Blood only if the blow made them bleed (a wound through the skin, or tg's cracked ribs bleeding
+ *   inside), as a few drops thrown out round the body.
  * - Rebound: the body bounces once and he comes up, hands off. The puppets go once both are still, with the real body
  *   lying in the same pixels.
  *
@@ -945,19 +946,31 @@
 	gorilla_hold_spray(victim)
 	var/mob/living/carbon/carbon_victim = iscarbon(victim) ? victim : null
 	var/list/wounds_before = carbon_victim?.gorilla_wound_snapshot()
-	var/list/bursts_before = list()
-	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/burst in spot)
-		bursts_before += burst
+	// What tg lays itself for a chest that bleeds inside from the blow (below): where, and what is there already
+	var/list/coughed_on = list(spot)
+	var/turf/faced = get_step(spot, victim.dir)
+	if(faced)
+		coughed_on += faced
+	var/list/blood_before = list()
+	for(var/turf/where as anything in coughed_on)
+		for(var/obj/effect/blood in where)
+			if(istype(blood, /obj/effect/decal/cleanable/blood) || istype(blood, /obj/effect/temp_visual/dir_setting/bloodsplatter))
+				blood_before += blood
 	victim.apply_damage(table ? arm.slam_table_damage : arm.slam_floor_damage, BRUTE, limb || BODY_ZONE_CHEST, armour, wound_bonus = arm.punch_wound_bonus, attacking_item = fist)
 	victim.hv_flush_hit()
 	if(QDELETED(victim))
 		return FALSE
 	. = !isnull(carbon_victim) && gorilla_slam_opened_wound(carbon_victim, wounds_before)
-	// A chest that bleeds inside from the blow coughs it up (tg's cracked ribs). That blood is real and tg lays it on the
-	// floor itself; only its burst, thrown one way over the top of a body lying on its back, is taken away.
-	for(var/obj/effect/temp_visual/dir_setting/bloodsplatter/burst in spot)
-		if(!(burst in bursts_before))
-			qdel(burst)
+	// A chest that bleeds inside from the blow coughs it up (tg's cracked ribs): real blood, which tg bursts one way over
+	// the top of the body and splashes on the tile it faces. A body on its back throws the slam's drops instead, so what
+	// tg has just laid is taken up and the drops (the same blood) go down in its place.
+	for(var/turf/where as anything in coughed_on)
+		for(var/obj/effect/blood in where)
+			if(blood in blood_before)
+				continue
+			if(istype(blood, /obj/effect/decal/cleanable/blood) || istype(blood, /obj/effect/temp_visual/dir_setting/bloodsplatter))
+				qdel(blood)
+				. = TRUE
 	victim.apply_damage(table ? arm.slam_table_stamina : arm.slam_floor_stamina, STAMINA)
 	victim.Knockdown(arm.slam_knockdown)
 	gorilla_register_aggression(victim, bearer)
