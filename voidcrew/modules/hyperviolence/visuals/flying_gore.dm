@@ -65,11 +65,17 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		style = hv_vis_tumble_style()
 	if(!fling_dir)
 		fling_dir = pick(GLOB.alldirs)
-	// Where it will lie on its last tile is settled now, so nothing jumps when it lands.
+	var/list/turf/path = hv_vis_fling_path(loc, fling_dir, distance)
+	// Where it will lie on its last tile is settled now, so nothing jumps when it lands. With nowhere to
+	// go it comes down on the side of its tile it was heading for.
 	if(!pixel_x && !pixel_y && !(item_flags & NO_PIXEL_RANDOM_DROP))
-		pixel_x = base_pixel_x + rand(-6, 6)
-		pixel_y = base_pixel_y + rand(-6, 6)
-	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, hv_vis_fling_path(loc, fling_dir, distance), on_landed, from)
+		if(length(path))
+			pixel_x = base_pixel_x + rand(-6, 6)
+			pixel_y = base_pixel_y + rand(-6, 6)
+		else
+			pixel_x = base_pixel_x + HV_VIS_DX(fling_dir) * 7 + rand(-3, 3)
+			pixel_y = base_pixel_y + HV_VIS_DY(fling_dir) * 7 + rand(-3, 3)
+	var/datum/component/hv_tumble/tumble = AddComponent(/datum/component/hv_tumble, style, blood_dna, fling_dir, path, on_landed, from)
 	tumble.launch()
 	return TRUE
 
