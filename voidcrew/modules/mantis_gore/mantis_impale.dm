@@ -315,13 +315,10 @@
 			turned.Translate(0, -pivot)
 			step_w = round(start_x + (end_x - start_x) * fallen, 1)
 			step_z = round(start_y + (end_y - start_y) * fallen + pivot - to_y, 1)
+		// The first step puts the picture back where it was drawn at once: it replaces tg's own turn, and
+		// whatever else this tick started on the body.
 		if(step == 0)
-			body.transform = turned
-			body.pixel_w = step_w
-			body.pixel_z = step_z
-			continue
-		if(step == 1)
-			animate(body, transform = turned, pixel_w = step_w, pixel_z = step_z, time = time / steps)
+			animate(body, transform = turned, pixel_w = step_w, pixel_z = step_z, pixel_y = to_y, time = 0)
 		else
 			animate(transform = turned, pixel_w = step_w, pixel_z = step_z, time = time / steps)
 
@@ -495,7 +492,14 @@
 			held.hv_blood_spray(rip_dir, half ? 2 : 3)
 			if(wall_pin)
 				held.hv_blood_lay_wall_spray(get_turf(held), rip_dir, held.get_blood_dna_list(), held.get_static_viruses())
+			// Someone held up standing goes down now. tg would slide them the 6 px down into its lying offset
+			// on its own clock while the fall draws them; give them the offset first, so the fall draws it.
+			var/was_standing = can_fall && held.body_position != LYING_DOWN && held.rotate_on_lying
+			if(was_standing)
+				held.add_offsets(LYING_DOWN_TRAIT, y_add = PIXEL_Y_OFFSET_LYING, animate = FALSE)
 			held.Knockdown(knockdown)
+			if(was_standing && held.body_position != LYING_DOWN)
+				held.remove_offsets(LYING_DOWN_TRAIT, animate = FALSE)
 			playsound(held, 'sound/items/weapons/bladeslice.ogg', 70, TRUE)
 			for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/blade as anything in blades)
 				blade.drench(held, light = TRUE)
