@@ -21,6 +21,11 @@
 #define MANTIS_SWING_IMPACT_DELAY (0.5 DECISECONDS)
 /// How long the slash over the target stays: that half beat, then its four frames.
 #define MANTIS_SWING_IMPACT_LIFETIME (4.5 DECISECONDS)
+/// How much bigger each stroke of the X-slash is drawn.
+#define MANTIS_XSLASH_SCALE 1.4
+/// The two strokes of the X-slash cross this many pixels above the middle of the chest when drawn that big: they
+/// are set this much lower, so they cross on the part cut.
+#define MANTIS_XSLASH_DROP 5
 /// The X-slash's other blade swings one beat behind the first, so the two cross.
 #define MANTIS_XSLASH_SWING_DELAY (0.5 DECISECONDS)
 
@@ -133,21 +138,45 @@
 	return (facing == NORTH) == (side == "right")
 
 /**
- * The X-slash as it looks: the other blade swings a beat behind this one and the crossed slash lands with its
- * strike. Without a swing playing (a blade out of its guard) it lands at once, as before the swing.
+ * The X-slash as it looks: this blade's own slash is the first stroke of the cross, drawn bigger; the other
+ * blade swings a beat behind and its slash, turned the other way, is the second, up with its strike; the
+ * flash lands then. The strokes cross on the part cut ([zone]). Without a swing playing (a blade out of its
+ * guard) the whole cross lands at once, as before the swing.
  */
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_cross(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade)
-	if(!mantis_swing())
-		mantis_xslash_land(user, victim, off_blade)
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_cross(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade, zone)
+	var/obj/effect/abstract/cyberware_anim/first = swing_impact_ref?.resolve()
+	if(!mantis_swing() || isnull(first) || first.bearer != victim)
+		mantis_xslash_land(user, victim, off_blade, TRUE)
 		return
-	addtimer(CALLBACK(off_blade, PROC_REF(mantis_play_swing), user, victim), MANTIS_XSLASH_SWING_DELAY)
+	var/matrix/turned = first.transform
+	mantis_xslash_stroke(victim, zone)
+	addtimer(CALLBACK(src, PROC_REF(mantis_xslash_second), user, victim, off_blade, zone, turned.a > 0), MANTIS_XSLASH_SWING_DELAY)
 	addtimer(CALLBACK(src, PROC_REF(mantis_xslash_land), user, victim, off_blade), MANTIS_XSLASH_SWING_DELAY + MANTIS_SWING_IMPACT_DELAY)
 
-/// The crossed slash lands on [victim]: both blades cut, so both run red.
-/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_land(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade)
+/// This blade's slash over [victim] becomes a stroke of the X-slash: bigger, and set so the two cross on [zone].
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_stroke(mob/living/victim, zone)
+	var/obj/effect/abstract/cyberware_anim/impact = swing_impact_ref?.resolve()
+	if(isnull(impact))
+		return
+	var/matrix/bigger = matrix(impact.transform)
+	bigger.Scale(MANTIS_XSLASH_SCALE, MANTIS_XSLASH_SCALE)
+	impact.transform = bigger
+	mantis_swing_impact_onto(victim, zone, MANTIS_XSLASH_DROP)
+
+/// The second stroke of the X-slash: [off_blade] swings, and its slash goes up [mirrored] to cross the first.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_second(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade, zone, mirrored)
+	if(QDELETED(victim) || QDELETED(user) || QDELETED(off_blade) || !user.is_holding(off_blade))
+		return
+	off_blade.mantis_play_swing(user, victim)
+	if(off_blade.mantis_swing_impact(user, victim, mirrored))
+		off_blade.mantis_xslash_stroke(victim, zone)
+
+/// The crossed slash lands on [victim]: both blades cut, so both run red. [strokes] draws both strokes here,
+/// at once, when the blades' own swings haven't.
+/obj/item/melee/energy/blade/hardlight/cyberware_mantis/proc/mantis_xslash_land(mob/living/user, mob/living/victim, obj/item/melee/energy/blade/hardlight/cyberware_mantis/off_blade, strokes = FALSE)
 	if(QDELETED(victim))
 		return
-	mantis_xslash_fx(user, victim, impact_state)
+	mantis_xslash_fx(user, victim, impact_state, strokes)
 	for(var/obj/item/melee/energy/blade/hardlight/cyberware_mantis/crossed as anything in list(src, off_blade))
 		if(!QDELETED(crossed) && user?.is_holding(crossed))
 			crossed.drench(victim)
@@ -215,4 +244,6 @@
 #undef MANTIS_SWING_LIFETIME
 #undef MANTIS_SWING_IMPACT_DELAY
 #undef MANTIS_SWING_IMPACT_LIFETIME
+#undef MANTIS_XSLASH_SCALE
+#undef MANTIS_XSLASH_DROP
 #undef MANTIS_XSLASH_SWING_DELAY
