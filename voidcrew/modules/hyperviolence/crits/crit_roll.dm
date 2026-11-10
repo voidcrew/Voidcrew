@@ -197,8 +197,13 @@ GLOBAL_LIST_INIT(hv_crits, hv_crit_init_list())
 		return shot.armour_penetration
 	if(isitem(source))
 		var/obj/item/weapon = source
-		return weapon.armour_penetration
+		return weapon.hv_crit_armour_pen()
 	return 0
+
+/// How much armour this weapon ignores at the crit gates. Its armour_penetration unless it says otherwise:
+/// the Widowline's full penetration is for its cuts, not for getting a crit past a collar (hyperviolence/wire/).
+/obj/item/proc/hv_crit_armour_pen()
+	return armour_penetration
 
 /// How well the victim is armoured against armour_flag on limb, less armour_penetration: the best rating among
 /// the clothes covering it, stacked on the human's own physiology armour (cyberware dermal plating lives there)

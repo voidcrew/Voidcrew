@@ -366,14 +366,6 @@
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/scorch
 	impact_state = "impact_scorch"
 
-/obj/item/melee/cyberware_monowire
-	/// What a hit with this wire plays over its target, in place of tg's flying spool.
-	var/impact_state = "impact_widowline"
-
-/obj/item/melee/cyberware_monowire/live
-	// A landed Arc hit already lashes, crackles and bursts (cyberware_anim2.dm), so no impact goes on top.
-	impact_state = null
-
 // The swinger's lunge stays; only the picture over the target changes.
 /obj/item/melee/energy/blade/hardlight/cyberware_mantis/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
 	// The arm swings the blade (mantis_gore/mantis_swing.dm), and the impact waits for its strike. The swing is the
@@ -384,12 +376,9 @@
 	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
 		return ..()
 
+// No picture over what a wire hits, nor tg's flying spool: the lash from the hand is its picture
+// (hyperviolence/wire/wire_held.dm). Walls and floors keep tg's own.
 /obj/item/melee/cyberware_monowire/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
-	if(!cyberware_play_impact(attacker, attacked_atom, impact_state))
-		return ..()
-
-// Nor tg's flying spool in its place: the Arc's shock is its picture. Walls and floors keep tg's own.
-/obj/item/melee/cyberware_monowire/live/animate_attack(atom/movable/attacker, atom/attacked_atom, animation_type)
 	if(!ismovable(attacked_atom))
 		return ..()
 
