@@ -188,11 +188,13 @@
 	var/obj/effect/abstract/cyberware_anim/stroke = cyberware_anim_play(victim, MANTIS_SWING_ICON, state, MANTIS_ANIM_TOP_LAYER, MANTIS_SWING_IMPACT_LIFETIME, glow = TRUE)
 	if(isnull(stroke))
 		return null
-	// A body on fire draws its flames apart from the rest of it and over all of its own pictures, and a cross
-	// on it lost its middle to them. There the stroke is drawn apart as well, just over the body.
+	// A body on fire draws its flames apart from the rest of it and over all of its own pictures, and tg throws
+	// its embers over those (a particle holder at ABOVE_ALL_MOB_LAYER): a cross on it lost its middle to them.
+	// There the stroke is drawn apart as well, just over the embers. It stays on the body's own row, so whoever
+	// stands in front of the body still covers it.
 	if(victim.on_fire)
 		stroke.appearance_flags |= KEEP_APART
-		stroke.layer = MANTIS_OVER_VICTIM_LAYER
+		stroke.layer = ABOVE_ALL_MOB_LAYER + 0.01
 	var/list/point = mantis_part_point(victim, zone || BODY_ZONE_CHEST)
 	// 64x64 around the part, upright even on someone lying down.
 	stroke.pixel_w = -16 + point[1]
