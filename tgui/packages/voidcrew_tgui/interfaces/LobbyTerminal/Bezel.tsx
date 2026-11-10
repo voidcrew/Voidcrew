@@ -8,6 +8,7 @@
  * Without the art (static.bezel null) the same tree is drawn by PLACEHOLDER_CSS.
  */
 import { type ReactNode, useState } from 'react';
+import { resolveAsset } from 'tgui/assets';
 import { useBackend } from 'tgui/backend';
 
 import type { LobbyData } from './types';
@@ -65,10 +66,22 @@ function SmallButton(props: {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <span className={`lt-sbtn-icon lobbyterminal24x24 lt-${id}${state}`} />
-      {!!mark && (
-        <span className="lt-sbtn-mark lobbyterminal24x26 lt-new_poll" />
-      )}
+      <img
+        className="lt-sbtn-icon"
+        src={resolveAsset(`lt_${id}${state}.png`)}
+        width={24}
+        height={24}
+        alt=""
+      />
+      {mark ? (
+        <img
+          className="lt-sbtn-mark"
+          src={resolveAsset('lt_new_poll.png')}
+          width={24}
+          height={26}
+          alt=""
+        />
+      ) : null}
     </button>
   );
 }

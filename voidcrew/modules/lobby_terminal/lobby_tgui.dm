@@ -72,10 +72,7 @@ GLOBAL_DATUM_INIT(lobby_terminal_state, /datum/ui_state/lobby_terminal, new)
 	hide_control()
 
 /datum/lobby_terminal/ui_assets(mob/user)
-	return list(
-		get_asset_datum(/datum/asset/simple/namespaced/lobby_terminal),
-		get_asset_datum(/datum/asset/spritesheet_batched/lobby_terminal_buttons),
-	)
+	return list(get_asset_datum(/datum/asset/simple/namespaced/lobby_terminal))
 
 /datum/lobby_terminal/ui_static_data(mob/user)
 	var/list/data = list()
