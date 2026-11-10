@@ -521,11 +521,6 @@
 		return FALSE
 	return !claimed_by_buyback_family(offered, /datum/shop_buyback/diner/special)
 
-/datum/outpost_shop/vendor/diner/convoy_restock()
-	var/list/held = hold_voucher_buyback_demand(src)
-	. = ..()
-	restore_voucher_buyback_demand(held)
-
 // ===== ROUX'S SPECIALS =====
 // Dishes that need an ingredient a galley can't just order. Same chef gate as
 // the order wheel: cooked by a person, and not on Roux's own pass. Loot-spawned

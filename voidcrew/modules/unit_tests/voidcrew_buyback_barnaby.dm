@@ -86,20 +86,37 @@
 	TEST_ASSERT(wheel.matches(burger), "Roux refused a home-cooked burger")
 	TEST_ASSERT(!claimed_by_buyback_family(burger, /datum/shop_buyback/diner/special), "A plain burger hit a special")
 
-/// The convoy refills credit entries but never a voucher entry.
+/// The convoy refills credit entries but never a voucher entry, at every trader.
 /datum/unit_test/voidcrew_buyback_halcyon/voucher_demand/Run()
-	var/datum/outpost_shop/vendor/diner/shop = allocate(/datum/outpost_shop/vendor/diner)
-	var/datum/shop_buyback/voucher_entry
-	var/datum/shop_buyback/credit_entry
-	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
-		if(buyback.pay_vouchers > 0)
-			voucher_entry ||= buyback
-		else
-			credit_entry ||= buyback
-	TEST_ASSERT_NOTNULL(voucher_entry, "Roux has no voucher entry")
-	TEST_ASSERT_NOTNULL(credit_entry, "Roux has no credit entry")
-	voucher_entry.demand = 0
-	credit_entry.demand = 0
-	shop.convoy_restock()
-	TEST_ASSERT_EQUAL(voucher_entry.demand, 0, "A convoy refilled a voucher buyback")
-	TEST_ASSERT(credit_entry.demand > 0, "A convoy stopped refilling credit buybacks")
+	var/list/shop_types = list(
+		/datum/outpost_shop/black_market,
+		/datum/outpost_shop/vendor/dregs_bar,
+		/datum/outpost_shop/vendor/patchup_clinic,
+		/datum/outpost_shop/general,
+		/datum/outpost_shop/vendor/potting_shed,
+		/datum/outpost_shop/vendor/bait_shop,
+		/datum/outpost_shop/vendor/diner,
+		/datum/outpost_shop/outfitter,
+		/datum/outpost_shop/vendor/skunkworks,
+		/datum/outpost_shop/vendor/suit_fitter,
+	)
+	var/voucher_rows = 0
+	for(var/shop_type in shop_types)
+		var/datum/outpost_shop/shop = allocate(shop_type)
+		var/list/rolled = list()
+		var/datum/shop_buyback/credit_entry
+		for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+			if(buyback.pay_vouchers > 0)
+				buyback.demand = max(0, buyback.demand - 1)
+				rolled[buyback] = buyback.demand
+				voucher_rows++
+			else
+				credit_entry ||= buyback
+		if(credit_entry)
+			credit_entry.demand = 0
+		shop.convoy_restock()
+		for(var/datum/shop_buyback/buyback as anything in rolled)
+			TEST_ASSERT_EQUAL(buyback.demand, rolled[buyback], "A convoy refilled [buyback.type] at [shop_type]")
+		if(credit_entry)
+			TEST_ASSERT(credit_entry.demand > 0, "A convoy stopped refilling credit buybacks at [shop_type]")
+	TEST_ASSERT(voucher_rows > 0, "No trader has a voucher buyback")

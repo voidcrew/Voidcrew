@@ -727,24 +727,6 @@
 			return TRUE
 	return FALSE
 
-/**
- * Voucher-paying buybacks keep the demand they rolled at round start: the
- * supply convoy refills only the credit entries. A ship can grow, cook or
- * breed its rare goods without end, so a short demand that refilled every
- * convoy would put no cap on them at all. Returns entry -> demand for
- * restore_voucher_buyback_demand() after the convoy has run.
- */
-/proc/hold_voucher_buyback_demand(datum/outpost_shop/shop)
-	var/list/held = list()
-	for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
-		if(buyback.pay_vouchers > 0)
-			held[buyback] = buyback.demand
-	return held
-
-/proc/restore_voucher_buyback_demand(list/held)
-	for(var/datum/shop_buyback/buyback as anything in held)
-		buyback.demand = held[buyback]
-
 /datum/shop_buyback/general/bear_pelt
 	name = "bear hide"
 	desc = "Cave bear hide off the green worlds. Barnaby says it's for the guest bunks. There are no guest bunks."

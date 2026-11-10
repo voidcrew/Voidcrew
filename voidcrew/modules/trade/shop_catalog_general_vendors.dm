@@ -379,11 +379,6 @@
 		return FALSE
 	return !claimed_by_buyback_family(offered, /datum/shop_buyback/potting/prize)
 
-/datum/outpost_shop/vendor/potting_shed/convoy_restock()
-	var/list/held = hold_voucher_buyback_demand(src)
-	. = ..()
-	restore_voucher_buyback_demand(held)
-
 // ===== FERN'S PRIZE PLANTS =====
 // Mutation-chain crops, bought one at a time. Once a crew has the seed it can
 // grow these forever, so the cap is demand (1-3, and the voucher rows never
@@ -815,7 +810,3 @@
 	demand_min = 1
 	demand_max = 2
 
-/datum/outpost_shop/vendor/bait_shop/convoy_restock()
-	var/list/held = hold_voucher_buyback_demand(src)
-	. = ..()
-	restore_voucher_buyback_demand(held)
