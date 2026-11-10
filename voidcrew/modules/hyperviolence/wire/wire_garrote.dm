@@ -345,8 +345,8 @@
 	RegisterSignal(user, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(on_user_equipped))
 
 /datum/hv_finisher/garrote/proc/hide_held_wire(obj/item/melee/cyberware_monowire/held)
-	// The timeout only backs show_hands() up.
-	held.hide_inhand_for(longest_duration())
+	// The timeout only backs show_hands() up. Its spool stays in the hand: the wire runs out of it.
+	held.hide_inhand_for(longest_duration(), spool = TRUE)
 	if(held != wire)
 		LAZYOR(off_hand_refs, WEAKREF(held))
 

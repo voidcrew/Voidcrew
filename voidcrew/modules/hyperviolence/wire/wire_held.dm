@@ -3,6 +3,8 @@
  *
  * - Deploying and stowing: the wire swings out of the spool and reels back in (WIRE_HELD_ANIM_ICON), played
  *   on the wielder while the held wire itself is not drawn, like the Mantis unfold.
+ * - While the wire is out of the hand as a line (a lash, the garrote's thrown wire and strands) the hanging wire isn't
+ *   drawn there, but its spool is (WIRE_SPOOL_ICON): the line comes out of the spool's lit pixel.
  * - Blood: a cut that draws blood leaves the wire wet (dripping) for WIRE_WET_TIME, then stained until
  *   WIRE_STAINED_TIME, drawn from greyscale states tinted to the blood. Stowing a wet wire cracks a fan of
  *   drops off it that land spread over the floor ahead. Only the picture clears: the blood's DNA stays on the wire until it is washed.
@@ -21,8 +23,10 @@
 	/// Timer of the next drip, and of the next change of look.
 	var/drip_timer
 	var/dry_timer
-	/// Until this world.time the wire isn't drawn in the hand: its swing is.
+	/// Until this world.time the wire isn't drawn hanging in the hand: its swing is, or a line of it out to something.
 	var/inhand_hidden_until = 0
+	/// Until this world.time its spool isn't drawn in the hand either: the swing out of the spool draws its own.
+	var/inhand_bare_until = 0
 
 /obj/item/melee/cyberware_monowire/Initialize(mapload)
 	. = ..()
@@ -166,9 +170,19 @@
 
 // ---- Out of the spool and back ----
 
-/obj/item/melee/cyberware_monowire/proc/hide_inhand_for(duration)
+/**
+ * The wire isn't drawn hanging in the hand for `duration`. With `spool` its spool still is: the wire is out of the hand
+ * as a line (a lash, the garrote's), which comes out of the spool. Without, nothing of it is: its swing out of the
+ * spool is being played, spool and all.
+ */
+/obj/item/melee/cyberware_monowire/proc/hide_inhand_for(duration, spool = FALSE)
 	// A shorter hide (a swing out of the spool) never cuts a longer one (a garrote's) short.
 	inhand_hidden_until = max(inhand_hidden_until, world.time + duration)
+	if(!spool)
+		inhand_bare_until = max(inhand_bare_until, world.time + duration)
+	// A hide that runs on past a swing's draws the spool from the end of the swing.
+	if(inhand_bare_until > world.time && inhand_bare_until < inhand_hidden_until)
+		addtimer(CALLBACK(src, PROC_REF(redraw_inhand)), inhand_bare_until - world.time, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_NO_HASH_WAIT)
 	var/mob/holder = loc
 	if(ismob(holder))
 		holder.update_held_items()
@@ -178,16 +192,25 @@
 	if(!inhand_hidden_until)
 		return
 	inhand_hidden_until = 0
+	inhand_bare_until = 0
+	redraw_inhand()
+
+/obj/item/melee/cyberware_monowire/proc/redraw_inhand()
 	var/mob/holder = loc
 	if(ismob(holder))
 		holder.update_held_items()
 
-// The wire is in the hand from the first tick; only its drawing waits for the swing.
+// The wire is in the hand from the first tick; only its drawing waits for the swing, or for the line of it that is out.
 /obj/item/melee/cyberware_monowire/build_worn_icon(default_layer = 0, default_icon_file = null, isinhands = FALSE, female_uniform = NO_FEMALE_UNIFORM, override_state = null, override_file = null)
+	if(!isinhands || world.time >= inhand_hidden_until)
+		return ..()
+	// Out of the hand as a line: the spool it comes out of stays.
+	var/spool_state = "[inhand_icon_state]_[default_icon_file == lefthand_file ? "left" : "right"]"
+	if(world.time >= inhand_bare_until && icon_exists(WIRE_SPOOL_ICON, spool_state))
+		return ..(default_layer, default_icon_file, isinhands, female_uniform, spool_state, WIRE_SPOOL_ICON)
 	. = ..()
-	if(isinhands && world.time < inhand_hidden_until)
-		var/mutable_appearance/standing = .
-		standing.alpha = 0
+	var/mutable_appearance/standing = .
+	standing.alpha = 0
 
 /// "left" or "right": the hand `user` holds this wire in, or null.
 /obj/item/melee/cyberware_monowire/proc/held_side(mob/living/user)
@@ -426,14 +449,15 @@
 
 /**
  * While its lash shows, the wire hanging in the hand isn't drawn, whichever way `user` faces: the line out of the grip
- * is the wire, out to the target. It is back as the line fades, never both at once and never neither. Every lash goes
- * through here (wire_lash_at()): an ordinary swing, the aimed sever, the Arc's, and both halves of a crossing cut, each
- * wire for its own hand. A longer hide already running (the swing out of the spool, the garrote) is left as it is.
+ * is the wire, out to the target. It is back as the line fades, never both at once and never neither. Its spool stays
+ * in the hand: the line comes out of it. Every lash goes through here (wire_lash_at()): an ordinary swing, the aimed
+ * sever, the Arc's, and both halves of a crossing cut, each wire for its own hand. A longer hide already running (the
+ * swing out of the spool, the garrote) is left as it is.
  */
 /obj/item/melee/cyberware_monowire/proc/wire_lash_hide(mob/living/user)
 	if(inhand_hidden_until >= world.time + WIRE_LASH_HIDE)
 		return
-	hide_inhand_for(WIRE_LASH_HIDE)
+	hide_inhand_for(WIRE_LASH_HIDE, spool = TRUE)
 
 /// The middle of a body facing the viewer, in pixels from the middle of its tile as a lash's line is placed: tg draws
 /// bodies a pixel left of the tile's middle.
