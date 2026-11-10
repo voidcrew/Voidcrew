@@ -210,16 +210,26 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 	var/obj/item/part = parent
 	var/matrix/base = matrix(part.transform)
 	var/time = flight_time()
+	// Where it was on the body, from where it will lie on its tile.
+	var/from_w = from ? from[1] - (part.pixel_x - part.base_pixel_x) : 0
+	var/from_z = from ? from[2] - (part.pixel_y - part.base_pixel_y) : 0
 	if(style == HV_VIS_TUMBLE_SLIDE)
-		// The legs of a body cut in half: a slide across the floor with a slight turn.
+		// The legs of a body cut in half: a slide across the floor from where they were, with a slight turn.
 		var/turn = pick(-1, 1) * 20
 		var/list/pivot = part.hv_vis_spin_pivot()
 		part.hv_vis_play(HV_VIS_TAG_SPIN, list(
+			list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
 			list(part.pixel_w, part.pixel_z, hv_vis_turned(base, turn, pivot[2], pivot[1]), time, CUBIC_EASING|EASE_OUT),
 			list(part.pixel_w, part.pixel_z, base, 4, SINE_EASING),
 		))
 		return
 	if(!grounded)
+		// Nothing to pull it down: it drifts straight out from where it was, turning slowly.
+		if(from_w || from_z)
+			part.hv_vis_play(HV_VIS_TAG_ARC, list(
+				list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
+				list(part.pixel_w, part.pixel_z, base, time, LINEAR_EASING),
+			))
 		part.hv_vis_play(HV_VIS_TAG_SPIN, hv_vis_spin_steps(part, 2, 30, pick(-1, 1)))
 		return
 	// In the air it passes over bodies on the floor and behind anyone standing. A part tg already draws
@@ -228,8 +238,6 @@ GLOBAL_LIST(hv_vis_arcing_gibs)
 		part.layer = HV_VIS_TUMBLE_LAYER
 	var/height = arc_height()
 	// From where it was on the body, over the top of the arc, down onto its own spot on the last tile.
-	var/from_w = from ? from[1] - (part.pixel_x - part.base_pixel_x) : 0
-	var/from_z = from ? from[2] - (part.pixel_y - part.base_pixel_y) : 0
 	part.hv_vis_play(HV_VIS_TAG_ARC, list(
 		list(part.pixel_w + from_w, part.pixel_z + from_z, base, 0, LINEAR_EASING),
 		list(part.pixel_w + from_w / 2, part.pixel_z + from_z / 2 + height, base, time / 2, QUAD_EASING|EASE_OUT),
