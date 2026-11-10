@@ -617,6 +617,8 @@
 	var/mob/living/carbon/human/bearer = gorilla(spot(1, 1))
 	bearer.zone_selected = BODY_ZONE_L_ARM
 	var/mob/living/carbon/human/consistent/victim = downed(spot(2, 1))
+	// Blood an earlier test left here would keep the tear's own where it is
+	clear_mess(spot(2, 1))
 	TEST_ASSERT(gorilla_try_finisher(bearer, victim), "The limb rip didn't start")
 	var/datum/hv_finisher/chrome/gorilla/rip/finisher = bearer.chrome_finisher
 	TEST_ASSERT(istype(finisher), "An arm aim didn't pick the limb rip")
@@ -626,6 +628,14 @@
 	var/obj/item/bodypart/arm/left/torn = locate() in get_turf(victim)
 	TEST_ASSERT_NOTNULL(torn, "The torn arm wasn't left on the victim's tile")
 	TEST_ASSERT_EQUAL(puppets_left(), 0, "The limb rip left puppets behind")
+	// The blood is the tear's, laid under the shoulder as the arm came off: nothing fresh when the arm is dropped
+	var/obj/effect/decal/cleanable/blood/pool
+	for(var/obj/effect/decal/cleanable/blood/found in get_turf(victim))
+		if(found.type == /obj/effect/decal/cleanable/blood)
+			pool = found
+	TEST_ASSERT_NOTNULL(pool, "The torn shoulder left no blood on the floor")
+	TEST_ASSERT(pool.base_pixel_x || pool.base_pixel_y, "The torn shoulder's blood was laid on the middle of the tile, off the body held in the grab")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/splatter) in get_turf(victim), "The dropped arm laid a splash of its own after the wound")
 
 	// Armour on the arm: the shoulder comes out instead
 	var/mob/living/carbon/human/second = gorilla(spot(1, 3))

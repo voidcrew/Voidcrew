@@ -1138,6 +1138,106 @@
 /datum/hv_finisher/chrome/gorilla/rip/proc/fallen()
 	QDEL_NULL(victim_rig)
 
+/**
+ * The stand-ins take on how both bodies look now. With the arm [torn] off, the victim's whole picture is the body,
+ * stump and all; else the arm is still its own piece.
+ */
+/datum/hv_finisher/chrome/gorilla/rip/proc/redraw_bodies(torn)
+	bearer_rig?.redraw_arms()
+	if(QDELETED(victim) || !victim_rig?.snapshot())
+		return
+	victim_rig.repaint("body", torn ? victim_rig.flat : victim_rig.cut_without_arms(side))
+	if(!torn)
+		victim_rig.repaint("arm_[side]", victim_rig.arm_picture(side))
+
+/// Blood bursts every way from the socket the arm just left, where the shoulder is drawn at that moment.
+/datum/hv_finisher/chrome/gorilla/rip/proc/shoulder_burst()
+	var/turf/spot = get_turf(victim)
+	if(!isturf(spot))
+		return
+	var/list/joint
+	if(victim_rig?.puppet("body"))
+		// The stand-in's shoulder, hauled up off the floor: from the middle of the bearer's tile, so back onto the victim's
+		var/list/at = body_shoulder_at()
+		var/list/toward = to_bearer()
+		joint = list(at[1] + toward[1], at[2] + toward[2])
+	else
+		joint = gorilla_shoulder_at(victim, side)
+	gorilla_blood_burst(spot, round(joint[1]), round(joint[2]), victim, GORILLA_RIP_BURST_DROPS)
+
+/**
+ * Where the pool under the torn shoulder goes: pixels from the middle of the victim's tile. Half-way between where the
+ * shoulder lies as the arm comes off, pulled in by the grab, and where it lies once he lets go, so the stump is over it
+ * both times.
+ */
+/datum/hv_finisher/chrome/gorilla/rip/proc/pool_spot()
+	if(QDELETED(victim))
+		return null
+	var/list/joint = gorilla_shoulder_at(victim, side, victim_rig?.facing)
+	// Off a body still on its feet it lands at them
+	if(victim.body_position != LYING_DOWN)
+		joint[2] = CHROME_RIG_FEET_Y + victim.pixel_y + victim.pixel_z
+	var/list/back = grab_pull_back()
+	return list(clamp(round(joint[1] + back[1] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH), clamp(round(joint[2] + back[2] / 2), -GORILLA_RIP_POOL_REACH, GORILLA_RIP_POOL_REACH))
+
+/**
+ * Where the shoulder on [side] ("l" or "r") of [body] is drawn, lying or standing as it is now: pixels from the middle of
+ * its tile. [facing] is the way its picture faces, else its own.
+ */
+/proc/gorilla_shoulder_at(mob/living/body, side, facing)
+	var/list/pivots = GLOB.chrome_rig_shoulders["[facing || body.dir]"] || GLOB.chrome_rig_shoulders["[SOUTH]"]
+	var/list/at = chrome_rig_apply(body.transform, side == "l" ? pivots[1] : pivots[3], side == "l" ? pivots[2] : pivots[4])
+	return list(at[1] + body.pixel_x + body.pixel_w, at[2] + body.pixel_y + body.pixel_z)
+
+/**
+ * Blood bursts from a wound at [from_x], [from_y] (pixels from the middle of [origin]) every way at once: [count] drops
+ * of [bleeder]'s blood thrown in a broken ring, no two in a row alike, each landing as a drip one of [reach] pixels out,
+ * give or take. Drops only: no line along the floor, as #509's sprays lay, and no heavy splats.
+ */
+/proc/gorilla_blood_burst(turf/origin, from_x, from_y, mob/living/bleeder, count = 10, list/reach = list(6, 9, 12, 15, 19))
+	if(!isturf(origin) || QDELETED(bleeder) || bleeder.can_bleed(BLOOD_COVER_TURFS) != BLEED_SPLATTER)
+		return
+	var/blood_color = bleeder.get_bloodtype()?.get_damage_color(bleeder) || BLOOD_COLOR_RED
+	var/list/blood_dna = bleeder.get_blood_dna_list()
+	var/list/viruses = bleeder.get_static_viruses()
+	var/start = rand(0, 359)
+	for(var/i in 1 to count)
+		var/angle = start + i * (360 / count) + rand(-14, 14)
+		var/distance = pick(reach) + rand(-2, 2)
+		var/land_x = from_x + round(sin(angle) * distance)
+		var/land_y = from_y + round(cos(angle) * distance)
+		// list(start x, start y, land x, land y, arc height, flight time, wait): the monowire's drop, which lands as a drip
+		new /obj/effect/temp_visual/wire_blood_drop(origin, list(from_x, from_y, land_x, land_y, 3 + rand(0, 5), round(1.5 + distance / 14, 0.5), 0), blood_color, blood_dna, viruses)
+
+/**
+ * Moves [pool] (blood just laid on the floor) so its middle is [x], [y] pixels from the middle of its tile, and keeps it
+ * there as it grows into a pool.
+ */
+/proc/gorilla_place_blood(obj/effect/decal/cleanable/blood/pool, x, y)
+	pool.pixel_x += x - pool.base_pixel_x
+	pool.pixel_y += y - pool.base_pixel_y
+	pool.base_pixel_x = x
+	pool.base_pixel_y = y
+
+/**
+ * [body] shudders up to [shift_x], [shift_y] pixels for [time] and ends where it began. Drawn only (pixel_w and pixel_z,
+ * each step relative), so whatever offsets tg has on the body stay as they are.
+ */
+/proc/gorilla_shudder(atom/movable/body, shift_x = 2, shift_y = 1, time = 0.2 SECONDS)
+	var/steps = max(2, round(time / (0.04 SECONDS)))
+	var/moved_w = 0
+	var/moved_z = 0
+	for(var/i in 1 to steps)
+		// The last step takes it back
+		var/to_w = i == steps ? 0 : rand(-shift_x, shift_x)
+		var/to_z = i == steps ? 0 : rand(-shift_y, shift_y)
+		if(i == 1)
+			animate(body, pixel_w = to_w - moved_w, pixel_z = to_z - moved_z, time = time / steps, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+		else
+			animate(pixel_w = to_w - moved_w, pixel_z = to_z - moved_z, time = time / steps, flags = ANIMATION_RELATIVE)
+		moved_w = to_w
+		moved_z = to_z
+
 /// Sends every puppet in [parts] (key -> puppet) through [points] (list(x, y) pixels on from [base_x], [base_y]), [step_time] a step, alongside its turns.
 /proc/gorilla_offsets_through(list/parts, list/points, base_x, base_y, step_time)
 	for(var/key_name in parts)
@@ -1193,9 +1293,14 @@
 	switch(key)
 		if("tear")
 			hit_stop(victim_rig?.puppet("arm_[side]") || victim)
-			var/outcome = gorilla_limb_rip(victim, target_zone, user, fist())
+			var/outcome = gorilla_limb_rip(victim, target_zone, user, fist(), pool_spot())
+			// Both bodies are hidden behind their stand-ins, and so is what this just did to them (the stump, the blood
+			// that ran back over him): the stand-ins take it on now, or it would only show when they come down
+			redraw_bodies(outcome == "torn")
 			if(outcome == "torn")
 				held_limb = gorilla_last_torn_limb(victim, target_zone)
+				if(held_limb?.can_bleed())
+					shoulder_burst()
 				// The arm goes with the bearer's fists; the body drops back to the floor
 				var/obj/effect/abstract/chrome_puppet/arm = victim_rig?.puppet("arm_[side]")
 				if(arm && bearer_rig)
@@ -1362,6 +1467,8 @@
 		return
 	var/obj/item/bodypart/head = victim.get_bodypart(BODY_ZONE_HEAD)
 	victim.hv_hold_attack_message("[user] beats [victim] with [victim.p_their()] own arm!", "[user] beats you with your own arm!", "You beat [victim] with [victim.p_their()] own arm!", user, vision_range = DEFAULT_MESSAGE_RANGE)
+	// None of #509's heavy-hit spray for this blow: its fan lands a tile out past the body, nowhere near the head
+	gorilla_hold_spray(victim)
 	victim.apply_damage(15, BRUTE, head || BODY_ZONE_CHEST, victim.run_armor_check(head, MELEE), wound_bonus = CANT_WOUND, attack_direction = get_dir(user, victim), attacking_item = fist())
 	victim.hv_flush_hit()
 	playsound(victim, 'sound/effects/wounds/splatter.ogg', 60, TRUE)
@@ -1369,7 +1476,9 @@
 	if(impact)
 		// On the head, where the arm lands. It rides on the body, so its offset turns with a lying one: up is the head.
 		impact.pixel_y += round(CHROME_RIG_NECK_PIVOT_Y + 3.5)
-	victim.Shake(2, 1, 0.2 SECONDS)
+	// Not tg's Shake(): its first step takes pixel_y from pixel_x, which throws a body pulled in by a grab a third of a
+	// tile aside for a frame
+	gorilla_shudder(victim, 2, 1, 0.2 SECONDS)
 	if(held_limb.can_bleed())
 		victim.add_splatter_floor(get_turf(victim), small_drip = TRUE)
 
@@ -1384,8 +1493,13 @@
 	var/turf/spot = get_turf(victim) || get_turf(user)
 	if(spot)
 		limb.forceMove(spot)
+		// What still runs out of it as it lands: a drip, into the pool from the tear where there is one. Not a fresh
+		// splash on the body's tile a second after the wound
 		if(limb.can_bleed())
-			new /obj/effect/decal/cleanable/blood/splatter(spot, null, limb.blood_dna_info)
+			if(!QDELETED(victim) && get_turf(victim) == spot)
+				victim.add_splatter_floor(spot, TRUE)
+			else
+				new /obj/effect/decal/cleanable/blood/drip(spot, null, limb.blood_dna_info)
 
 /// The arm just torn from [victim] at [zone], waiting in nullspace, or null.
 /proc/gorilla_last_torn_limb(mob/living/carbon/victim, zone)
@@ -1402,9 +1516,10 @@
 /**
  * Tears [victim]'s arm at [zone] off, or wrenches the shoulder out of its socket when it's armoured, or
  * does nothing but hurt on the Atlas frame or a limb that can't come off. Returns "torn",
- * "dislocated" or "held".
+ * "dislocated" or "held". [blood_at] (list(x, y) pixels from the middle of the victim's tile) is where
+ * the blood the torn shoulder puts on the floor goes; the middle of the tile without it.
  */
-/proc/gorilla_limb_rip(mob/living/carbon/victim, zone, mob/living/user, obj/item/fist)
+/proc/gorilla_limb_rip(mob/living/carbon/victim, zone, mob/living/user, obj/item/fist, list/blood_at)
 	var/obj/item/bodypart/limb = victim.get_bodypart(zone)
 	if(isnull(limb))
 		return null
@@ -1431,7 +1546,7 @@
 	// One straight line back at the bearer, who takes it; no fan past him
 	if(limb.can_bleed())
 		gorilla_short_spray(victim, toward_bearer, 2)
-	var/obj/item/bodypart/torn = gorilla_tear_limb(victim, limb, toward_bearer)
+	var/obj/item/bodypart/torn = gorilla_tear_limb(victim, limb, toward_bearer, TRUE, blood_at)
 	victim.hv_flush_hit()
 	if(isnull(torn))
 		return "held"
@@ -1445,10 +1560,11 @@
 /**
  * Takes [limb] off as tg's dismember() does (chest damage, scream, sound, mood, memory, bleeding, the
  * floor splatter, the wet stump and the spray along the last blow), but never flings it: with [keep_out]
- * it is kept out of the world for the finisher to hold, else it is left on the victim's tile. Returns the
- * limb or null.
+ * it is kept out of the world for the finisher to hold, else it is left on the victim's tile. Fresh blood
+ * it puts on the floor goes [blood_at] (list(x, y) pixels from the middle of the tile), under the wound, if
+ * given; blood already on the tile stays where it is. Returns the limb or null.
  */
-/proc/gorilla_tear_limb(mob/living/carbon/victim, obj/item/bodypart/limb, direction, keep_out = TRUE)
+/proc/gorilla_tear_limb(mob/living/carbon/victim, obj/item/bodypart/limb, direction, keep_out = TRUE, list/blood_at)
 	if(isnull(limb) || limb.owner != victim || !limb.can_dismember() || HAS_TRAIT(victim, TRAIT_GODMODE))
 		return null
 	var/obj/item/bodypart/chest = victim.get_bodypart(BODY_ZONE_CHEST)
@@ -1459,13 +1575,22 @@
 	victim.add_mob_memory(/datum/memory/was_dismembered, lost_limb = limb)
 	LAZYSET(victim.body_zone_dismembered_by, limb.body_zone, WOUND_BLUNT)
 	var/bleeds = limb.can_bleed()
+	var/turf/spot = get_turf(victim)
+	var/list/old_blood = list()
+	if(blood_at && isturf(spot))
+		for(var/obj/effect/decal/cleanable/blood/there in spot)
+			old_blood += there
 	if(bleeds)
 		victim.bleed(rand(20, 40))
-	var/turf/spot = get_turf(victim)
 	limb.drop_limb(FALSE, TRUE)
 	victim.update_equipment_speed_mods()
 	if(bleeds && isturf(spot))
 		victim.add_splatter_floor(spot)
+		if(blood_at)
+			// tg lays it on the middle of the tile, which a body held in a grab is drawn well off
+			for(var/obj/effect/decal/cleanable/blood/pool in spot)
+				if(pool.type == /obj/effect/decal/cleanable/blood && !(pool in old_blood) && !QDELETED(pool))
+					gorilla_place_blood(pool, blood_at[1], blood_at[2])
 	if(QDELETED(limb))
 		return null
 	if(keep_out)
